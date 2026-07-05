@@ -278,6 +278,14 @@ Completed checkpoints:
    - Validation passed: `just ctypes`, `just ctypes-check`, `just ctypes-smoke`,
      `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`, `just test fileio`,
      `just build`, `just spec-check`, and `git diff --check`.
+26. `2a340b51c` `api: make DvzAlpha a typedef`
+   - Replaced public `DvzAlpha` macro with a real `typedef uint8_t DvzAlpha`.
+   - Updated generated C API type docs.
+   - Exported symbol delta: no exported functions were added or removed; public type metadata
+     changed from macro to typedef before RC1.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `just ctypes-smoke`,
+     `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`, `just build`,
+     `just spec-check`, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -577,8 +585,8 @@ Preferred fix:
 
 ### 10. Clean Support-Header Leakage
 
-Status: `dvz_load_jpeg()` byte-buffer argument order normalized by `52e38e358`; other support-header
-leakage remains open.
+Status: `dvz_load_jpeg()` byte-buffer argument order normalized by `52e38e358`, and the
+`DvzAlpha` macro replaced with a typedef by `2a340b51c`; other support-header leakage remains open.
 
 Public support headers leak unprefixed macros, mutable TU-local buffers, test resources, and
 inconsistent byte-buffer signatures.
