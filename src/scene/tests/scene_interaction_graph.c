@@ -1638,20 +1638,19 @@ int test_scene_panel_view3d_state_readback(TstContext* suite, const TstCase* ite
 
     DvzPanelView3DDesc desc = dvz_panel_view3d_desc();
     AT(desc.struct_size == DVZ_STRUCT_SIZE(DvzPanelView3DDesc));
-    AT(desc.camera.struct_size == DVZ_STRUCT_SIZE(DvzCameraDesc));
-    desc.camera.view.eye[0] = 1.0f;
-    desc.camera.view.eye[1] = 2.0f;
-    desc.camera.view.eye[2] = 3.0f;
-    desc.camera.view.target[0] = 0.25f;
-    desc.camera.view.target[1] = -0.50f;
-    desc.camera.view.target[2] = 0.75f;
-    desc.camera.view.up[0] = 0.0f;
-    desc.camera.view.up[1] = 0.0f;
-    desc.camera.view.up[2] = 1.0f;
-    desc.camera.projection.type = DVZ_CAMERA_ORTHOGRAPHIC;
-    desc.camera.projection.ortho_height = 4.0f;
-    desc.camera.projection.near_clip = 0.1f;
-    desc.camera.projection.far_clip = 50.0f;
+    desc.view.eye[0] = 1.0f;
+    desc.view.eye[1] = 2.0f;
+    desc.view.eye[2] = 3.0f;
+    desc.view.target[0] = 0.25f;
+    desc.view.target[1] = -0.50f;
+    desc.view.target[2] = 0.75f;
+    desc.view.up[0] = 0.0f;
+    desc.view.up[1] = 0.0f;
+    desc.view.up[2] = 1.0f;
+    desc.projection.type = DVZ_CAMERA_ORTHOGRAPHIC;
+    desc.projection.ortho_height = 4.0f;
+    desc.projection.near_clip = 0.1f;
+    desc.projection.far_clip = 50.0f;
 
     AT(dvz_panel_set_view3d_desc(panel, &desc) == 0);
     DvzPanelView3DState state = {0};

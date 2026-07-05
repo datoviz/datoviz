@@ -3045,7 +3045,8 @@ struct DvzPanelView2DState {
 struct DvzPanelView3DDesc {
     uint32_t struct_size;
     uint32_t flags;
-    DvzCameraDesc camera;
+    DvzCameraView view;
+    DvzCameraProjection projection;
 };
 ```
 

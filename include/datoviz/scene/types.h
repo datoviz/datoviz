@@ -694,7 +694,8 @@ struct DvzPanelView3DDesc
 {
     uint32_t struct_size;
     uint32_t flags;
-    DvzCameraDesc camera;
+    DvzCameraView view;
+    DvzCameraProjection projection;
 };
 typedef struct DvzPanelView3DDesc DvzPanelView3DDesc;
 

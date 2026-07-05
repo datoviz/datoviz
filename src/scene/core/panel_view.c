@@ -329,10 +329,12 @@ bool dvz_panel_view2d_state(const DvzPanel* panel, DvzPanelView2DState* out)
 
 DvzPanelView3DDesc dvz_panel_view3d_desc(void)
 {
+    DvzCameraDesc camera = dvz_camera_desc();
     DvzPanelView3DDesc desc = {
         DVZ_STRUCT_INIT_FIELDS(DvzPanelView3DDesc),
+        .view = camera.view,
+        .projection = camera.projection,
     };
-    desc.camera = dvz_camera_desc();
     return desc;
 }
 
@@ -355,7 +357,12 @@ DvzResult dvz_panel_set_view3d_desc(DvzPanel* panel, const DvzPanelView3DDesc* d
     }
     if (!_panel_view3d_desc_validate(desc))
         return -1;
-    if (dvz_panel_set_camera_desc(panel, &desc->camera) != 0)
+    DvzCameraDesc camera = {
+        DVZ_STRUCT_INIT_FIELDS(DvzCameraDesc),
+        .view = desc->view,
+        .projection = desc->projection,
+    };
+    if (dvz_panel_set_camera_desc(panel, &camera) != 0)
         return -1;
     panel->active_view_kind = DVZ_PANEL_VIEW_KIND_3D;
     return 0;

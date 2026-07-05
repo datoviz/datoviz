@@ -5910,7 +5910,8 @@ DvzPanelView2DDesc._fields_ = [
 DvzPanelView3DDesc._fields_ = [
     ('struct_size', ctypes.c_uint32),
     ('flags', ctypes.c_uint32),
-    ('camera', DvzCameraDesc),
+    ('view', DvzCameraView),
+    ('projection', DvzCameraProjection),
 ]
 
 
