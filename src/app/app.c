@@ -120,6 +120,17 @@ typedef struct DvzViewPostItem
 } DvzViewPostItem;
 
 
+typedef struct DvzResolvedViewDesc
+{
+    DvzViewDesc desc;
+    uint32_t logical_width;
+    uint32_t logical_height;
+    uint32_t framebuffer_width;
+    uint32_t framebuffer_height;
+    float device_scale;
+} DvzResolvedViewDesc;
+
+
 
 struct DvzView
 {
@@ -1081,6 +1092,21 @@ static DvzViewSizeDesc _view_desc_size_desc(const DvzViewDesc* desc)
     size.monitor_dpi_y_override = desc->size_monitor_dpi_y_override;
     size.strict_framebuffer_size = desc->size_strict_framebuffer_size;
     return size;
+}
+
+
+static void _view_desc_assign_size(DvzViewDesc* desc, const DvzViewSizeDesc* size)
+{
+    ANN(desc);
+    ANN(size);
+    desc->size_policy = size->policy;
+    desc->size_width = size->width;
+    desc->size_height = size->height;
+    desc->size_reference_dpi = size->reference_dpi;
+    desc->size_requested_device_scale = size->requested_device_scale;
+    desc->size_monitor_dpi_x_override = size->monitor_dpi_x_override;
+    desc->size_monitor_dpi_y_override = size->monitor_dpi_y_override;
+    desc->size_strict_framebuffer_size = size->strict_framebuffer_size;
 }
 
 
@@ -4103,7 +4129,7 @@ DvzViewDesc dvz_view_desc(DvzViewKind kind)
  * @param out resolved descriptor
  */
 static void _view_desc_resolve(
-    const DvzViewDesc* src, const DvzFigure* figure, DvzViewDesc* out)
+    const DvzViewDesc* src, const DvzFigure* figure, DvzResolvedViewDesc* out)
 {
     ANN(out);
     DvzViewDesc desc = src != NULL ? *src : dvz_view_desc(DVZ_VIEW_OFFSCREEN);
@@ -4113,6 +4139,11 @@ static void _view_desc_resolve(
     desc.device_scale = _view_valid_scale(desc.device_scale);
     desc.user_scale = _view_valid_scale(desc.user_scale);
     desc.render_scale = _view_valid_scale(desc.render_scale);
+    float device_scale = desc.device_scale;
+    uint32_t logical_width = 0;
+    uint32_t logical_height = 0;
+    uint32_t framebuffer_width = 0;
+    uint32_t framebuffer_height = 0;
 
     DvzViewSizeDesc size = _view_desc_size_desc(&desc);
     if (_view_size_desc_active(&size))
@@ -4123,34 +4154,41 @@ static void _view_desc_resolve(
             desc.size_requested_device_scale = size.requested_device_scale;
         }
         DvzResolvedViewSize resolved = dvz_view_size_resolve(&size, desc.kind);
-        desc.logical_width = resolved.host_logical_width;
-        desc.logical_height = resolved.host_logical_height;
-        desc.framebuffer_width = resolved.framebuffer_width;
-        desc.framebuffer_height = resolved.framebuffer_height;
-        desc.device_scale = (float)(0.5 * (resolved.device_scale_x + resolved.device_scale_y));
+        logical_width = resolved.host_logical_width;
+        logical_height = resolved.host_logical_height;
+        framebuffer_width = resolved.framebuffer_width;
+        framebuffer_height = resolved.framebuffer_height;
+        device_scale = (float)(0.5 * (resolved.device_scale_x + resolved.device_scale_y));
     }
 
-    if (desc.logical_width == 0 && desc.framebuffer_width > 0)
-        desc.logical_width = _view_round_size((float)desc.framebuffer_width / desc.device_scale);
-    if (desc.logical_height == 0 && desc.framebuffer_height > 0)
-        desc.logical_height = _view_round_size((float)desc.framebuffer_height / desc.device_scale);
+    if (logical_width == 0 && framebuffer_width > 0)
+        logical_width = _view_round_size((float)framebuffer_width / device_scale);
+    if (logical_height == 0 && framebuffer_height > 0)
+        logical_height = _view_round_size((float)framebuffer_height / device_scale);
 
-    if (desc.logical_width == 0 && figure != NULL && figure->width > 0)
-        desc.logical_width = figure->width;
-    if (desc.logical_height == 0 && figure != NULL && figure->height > 0)
-        desc.logical_height = figure->height;
+    if (logical_width == 0 && figure != NULL && figure->width > 0)
+        logical_width = figure->width;
+    if (logical_height == 0 && figure != NULL && figure->height > 0)
+        logical_height = figure->height;
 
-    if (desc.logical_width == 0)
-        desc.logical_width = 800;
-    if (desc.logical_height == 0)
-        desc.logical_height = 600;
+    if (logical_width == 0)
+        logical_width = 800;
+    if (logical_height == 0)
+        logical_height = 600;
 
-    if (desc.framebuffer_width == 0)
-        desc.framebuffer_width = _view_round_size((float)desc.logical_width * desc.device_scale);
-    if (desc.framebuffer_height == 0)
-        desc.framebuffer_height = _view_round_size((float)desc.logical_height * desc.device_scale);
+    if (framebuffer_width == 0)
+        framebuffer_width = _view_round_size((float)logical_width * device_scale);
+    if (framebuffer_height == 0)
+        framebuffer_height = _view_round_size((float)logical_height * device_scale);
 
-    *out = desc;
+    *out = (DvzResolvedViewDesc){
+        .desc = desc,
+        .logical_width = logical_width,
+        .logical_height = logical_height,
+        .framebuffer_width = framebuffer_width,
+        .framebuffer_height = framebuffer_height,
+        .device_scale = device_scale,
+    };
 }
 
 
@@ -4161,16 +4199,16 @@ static void _view_desc_resolve(
  * @param win view to update
  * @param desc resolved descriptor
  */
-static void _view_apply_desc_state(DvzView* win, const DvzViewDesc* desc)
+static void _view_apply_desc_state(DvzView* win, const DvzResolvedViewDesc* resolved)
 {
     ANN(win);
-    ANN(desc);
-    win->requested_size = _view_desc_size_desc(desc);
-    win->user_scale = _view_valid_scale(desc->user_scale);
-    win->render_scale = _view_valid_scale(desc->render_scale);
+    ANN(resolved);
+    win->requested_size = _view_desc_size_desc(&resolved->desc);
+    win->user_scale = _view_valid_scale(resolved->desc.user_scale);
+    win->render_scale = _view_valid_scale(resolved->desc.render_scale);
     _view_update_size_state(
-        win, desc->logical_width, desc->logical_height, desc->framebuffer_width,
-        desc->framebuffer_height, desc->device_scale, desc->device_scale);
+        win, resolved->logical_width, resolved->logical_height, resolved->framebuffer_width,
+        resolved->framebuffer_height, resolved->device_scale, resolved->device_scale);
     _view_sync_figure_layout_size(win);
 }
 
@@ -4181,13 +4219,13 @@ static void _view_apply_desc_state(DvzView* win, const DvzViewDesc* desc)
  * @param win view to update
  * @param desc resolved descriptor
  */
-static void _view_apply_desc_scales(DvzView* win, const DvzViewDesc* desc)
+static void _view_apply_desc_scales(DvzView* win, const DvzResolvedViewDesc* resolved)
 {
     ANN(win);
-    ANN(desc);
-    win->requested_size = _view_desc_size_desc(desc);
-    win->user_scale = _view_valid_scale(desc->user_scale);
-    win->render_scale = _view_valid_scale(desc->render_scale);
+    ANN(resolved);
+    win->requested_size = _view_desc_size_desc(&resolved->desc);
+    win->user_scale = _view_valid_scale(resolved->desc.user_scale);
+    win->render_scale = _view_valid_scale(resolved->desc.render_scale);
 }
 
 
@@ -4205,11 +4243,11 @@ DvzView* dvz_view(DvzApp* app, DvzFigure* figure, const DvzViewDesc* desc)
     ANN(app);
     ANN(figure);
 
-    DvzViewDesc resolved = {0};
+    DvzResolvedViewDesc resolved = {0};
     _view_desc_resolve(desc, figure, &resolved);
 
     DvzView* win = NULL;
-    switch (resolved.kind)
+    switch (resolved.desc.kind)
     {
     case DVZ_VIEW_OFFSCREEN:
         win = _view_create_offscreen(
@@ -4217,8 +4255,8 @@ DvzView* dvz_view(DvzApp* app, DvzFigure* figure, const DvzViewDesc* desc)
         break;
     case DVZ_VIEW_WINDOW:
         win = _view_create_glfw(
-            app, figure, resolved.logical_width, resolved.logical_height, resolved.title,
-            resolved.has_position, resolved.x, resolved.y);
+            app, figure, resolved.logical_width, resolved.logical_height, resolved.desc.title,
+            resolved.desc.has_position, resolved.desc.x, resolved.desc.y);
         break;
     case DVZ_VIEW_EXTERNAL_SURFACE:
         log_error("use dvz_view_external_surface() to create external-surface views");
@@ -4229,7 +4267,7 @@ DvzView* dvz_view(DvzApp* app, DvzFigure* figure, const DvzViewDesc* desc)
     if (win == NULL)
         return NULL;
 
-    if (resolved.kind == DVZ_VIEW_WINDOW)
+    if (resolved.desc.kind == DVZ_VIEW_WINDOW)
     {
         _view_apply_desc_scales(win, &resolved);
         _view_refresh_size_state(win, NULL);
@@ -4486,10 +4524,8 @@ DvzView*
 dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height)
 {
     DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_OFFSCREEN);
-    desc.logical_width = width;
-    desc.logical_height = height;
-    desc.framebuffer_width = width;
-    desc.framebuffer_height = height;
+    DvzViewSizeDesc size = dvz_view_size_desc_framebuffer_px(width, height);
+    _view_desc_assign_size(&desc, &size);
     return dvz_view(app, figure, &desc);
 }
 
@@ -4509,8 +4545,8 @@ DvzView* dvz_view_window(
     DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height, const char* title)
 {
     DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_WINDOW);
-    desc.logical_width = width;
-    desc.logical_height = height;
+    DvzViewSizeDesc size = dvz_view_size_desc_host_logical_px(width, height);
+    _view_desc_assign_size(&desc, &size);
     desc.title = title;
     return dvz_view(app, figure, &desc);
 }

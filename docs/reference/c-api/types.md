@@ -6732,10 +6732,6 @@ struct DvzViewDesc {
     double size_monitor_dpi_x_override;
     double size_monitor_dpi_y_override;
     _Bool size_strict_framebuffer_size;
-    uint32_t logical_width;
-    uint32_t logical_height;
-    uint32_t framebuffer_width;
-    uint32_t framebuffer_height;
     float device_scale;
     float user_scale;
     float render_scale;

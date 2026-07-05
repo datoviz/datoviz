@@ -60,8 +60,9 @@ The canonical view API should move toward one descriptor path:
 
 ```c
 DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_OFFSCREEN);
-desc.logical_width = 800;
-desc.logical_height = 600;
+desc.size_policy = DVZ_VIEW_SIZE_HOST_LOGICAL_PX;
+desc.size_width = 800;
+desc.size_height = 600;
 desc.device_scale = 2.0f;
 desc.user_scale = 1.0f;
 desc.render_scale = 1.0f;
@@ -71,9 +72,9 @@ DvzView* view = dvz_view(app, figure, &desc);
 
 Definitions:
 
-- `logical_width`, `logical_height`: layout size in logical pixels.
-- `framebuffer_width`, `framebuffer_height`: physical render-target size in pixels. These may be
-  derived from logical size and device scale.
+- `DVZ_VIEW_SIZE_HOST_LOGICAL_PX`: requests layout size in logical pixels.
+- `DVZ_VIEW_SIZE_FRAMEBUFFER_PX`: requests physical render-target size in pixels. Logical size may
+  be derived from framebuffer size and device scale.
 - `device_scale`: physical pixels per logical pixel. Native window backends usually own this value.
 - `user_scale`: user-controlled multiplier for UI-like scene quantities such as text size, marker
   edge width, line width, tick sizes, margins, reserves, and overlay padding.

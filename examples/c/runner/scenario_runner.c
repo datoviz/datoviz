@@ -838,10 +838,10 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     {
         const char* title = spec->title != NULL ? spec->title : spec->id;
         DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_WINDOW);
-        desc.logical_width = ctx.logical_width;
-        desc.logical_height = ctx.logical_height;
-        desc.framebuffer_width = ctx.framebuffer_width;
-        desc.framebuffer_height = ctx.framebuffer_height;
+        desc.size_policy = DVZ_VIEW_SIZE_HOST_LOGICAL_PX;
+        desc.size_width = ctx.logical_width;
+        desc.size_height = ctx.logical_height;
+        desc.size_requested_device_scale = ctx.device_scale;
         desc.device_scale = ctx.device_scale;
         desc.user_scale = ctx.user_scale;
         desc.render_scale = ctx.render_scale;
@@ -851,10 +851,10 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     else
     {
         DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_OFFSCREEN);
-        desc.logical_width = ctx.logical_width;
-        desc.logical_height = ctx.logical_height;
-        desc.framebuffer_width = ctx.framebuffer_width;
-        desc.framebuffer_height = ctx.framebuffer_height;
+        desc.size_policy = DVZ_VIEW_SIZE_FRAMEBUFFER_PX;
+        desc.size_width = ctx.framebuffer_width;
+        desc.size_height = ctx.framebuffer_height;
+        desc.size_requested_device_scale = ctx.device_scale;
         desc.device_scale = ctx.device_scale;
         desc.user_scale = ctx.user_scale;
         desc.render_scale = ctx.render_scale;
@@ -898,10 +898,10 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
         resolved.capture_kind == DVZ_RUNNER_CAPTURE_VIDEO)
     {
         DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_OFFSCREEN);
-        desc.logical_width = ctx.logical_width;
-        desc.logical_height = ctx.logical_height;
-        desc.framebuffer_width = ctx.framebuffer_width;
-        desc.framebuffer_height = ctx.framebuffer_height;
+        desc.size_policy = DVZ_VIEW_SIZE_FRAMEBUFFER_PX;
+        desc.size_width = ctx.framebuffer_width;
+        desc.size_height = ctx.framebuffer_height;
+        desc.size_requested_device_scale = ctx.device_scale;
         desc.device_scale = ctx.device_scale;
         desc.user_scale = ctx.user_scale;
         desc.render_scale = ctx.render_scale;

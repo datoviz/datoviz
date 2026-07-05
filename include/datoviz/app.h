@@ -249,11 +249,6 @@ struct DvzViewDesc
     double size_monitor_dpi_y_override;
     bool size_strict_framebuffer_size;
 
-    uint32_t logical_width;
-    uint32_t logical_height;
-    uint32_t framebuffer_width;
-    uint32_t framebuffer_height;
-
     float device_scale;
     float user_scale;
     float render_scale;
@@ -438,10 +433,10 @@ dvz_view_size_resolve(const DvzViewSizeDesc* desc, DvzViewKind kind);
 /**
  * Create a view for a figure from an explicit descriptor.
  *
- * Descriptor dimensions distinguish logical pixels from framebuffer pixels.  For offscreen views,
- * setting only framebuffer_width/framebuffer_height preserves exact-pixel output; setting
- * logical_width/logical_height plus device_scale derives the framebuffer size.  render_scale is
- * tracked separately for future supersampling and does not currently change the framebuffer size.
+ * Descriptor dimensions use the `size_policy` and `size_*` fields.  For offscreen views,
+ * `DVZ_VIEW_SIZE_FRAMEBUFFER_PX` preserves exact-pixel output; `DVZ_VIEW_SIZE_HOST_LOGICAL_PX`
+ * derives the framebuffer size from logical dimensions and device scale.  render_scale is tracked
+ * separately for future supersampling and does not currently change the framebuffer size.
  *
  * @param app the app
  * @param figure the figure to render (borrowed)

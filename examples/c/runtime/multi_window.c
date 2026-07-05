@@ -90,8 +90,9 @@ static DvzView*
 _positioned_view(DvzApp* app, DvzFigure* figure, const char* title, int32_t x, int32_t y)
 {
     DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_WINDOW);
-    desc.logical_width = WIDTH;
-    desc.logical_height = HEIGHT;
+    desc.size_policy = DVZ_VIEW_SIZE_HOST_LOGICAL_PX;
+    desc.size_width = WIDTH;
+    desc.size_height = HEIGHT;
     desc.title = title;
     desc.has_position = true;
     desc.x = x;

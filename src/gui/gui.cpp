@@ -2237,10 +2237,10 @@ dvz_gui_viewport(DvzGui* gui, DvzFigure* figure, const DvzGuiViewportConfig* con
     DvzGuiViewportConfig cfg = _gui_viewport_config_normalize(config);
     float scale = gui->view != NULL ? dvz_view_device_scale(gui->view) : 1.0f;
     DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_OFFSCREEN);
-    desc.logical_width = cfg.initial_width;
-    desc.logical_height = cfg.initial_height;
-    desc.framebuffer_width = _gui_viewport_scale_dimension(cfg.initial_width, scale);
-    desc.framebuffer_height = _gui_viewport_scale_dimension(cfg.initial_height, scale);
+    desc.size_policy = DVZ_VIEW_SIZE_FRAMEBUFFER_PX;
+    desc.size_width = _gui_viewport_scale_dimension(cfg.initial_width, scale);
+    desc.size_height = _gui_viewport_scale_dimension(cfg.initial_height, scale);
+    desc.size_requested_device_scale = scale;
     desc.device_scale = scale;
     DvzView* source = dvz_view(gui->app, figure, &desc);
     if (source == NULL)

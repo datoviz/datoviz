@@ -1395,8 +1395,9 @@ int test_app_view_desc_offscreen_scale(TstContext* suite, const TstCase* item)
     }
 
     DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_OFFSCREEN);
-    desc.logical_width = 80;
-    desc.logical_height = 60;
+    desc.size_policy = DVZ_VIEW_SIZE_HOST_LOGICAL_PX;
+    desc.size_width = 80;
+    desc.size_height = 60;
     desc.device_scale = 2.0f;
     desc.user_scale = 1.5f;
     desc.render_scale = 1.25f;
@@ -1486,8 +1487,9 @@ int test_app_view_desc_offscreen_exact_pixels(TstContext* suite, const TstCase* 
     }
 
     DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_OFFSCREEN);
-    desc.framebuffer_width = 96;
-    desc.framebuffer_height = 64;
+    desc.size_policy = DVZ_VIEW_SIZE_FRAMEBUFFER_PX;
+    desc.size_width = 96;
+    desc.size_height = 64;
     DvzView* win = dvz_view(app, figure, &desc);
     AT(win != NULL);
 
@@ -1549,8 +1551,9 @@ int test_app_offscreen_small_view_clamps_layout(TstContext* suite, const TstCase
     }
 
     DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_OFFSCREEN);
-    desc.logical_width = 120;
-    desc.logical_height = 90;
+    desc.size_policy = DVZ_VIEW_SIZE_HOST_LOGICAL_PX;
+    desc.size_width = 120;
+    desc.size_height = 90;
     DvzView* win = dvz_view(app, figure, &desc);
     AT(win != NULL);
 
