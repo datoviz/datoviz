@@ -376,6 +376,16 @@ Completed checkpoints:
      `just test scene/fields`, `just ctypes-smoke`, `just docs-api-check`,
      `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`, and
      `git diff --check`.
+35. `8ec409e7f` `api: const borrowed marker symbol binding`
+   - Changed `dvz_marker_set_symbols()` to take `const DvzSymbolSet*`, matching its borrowed
+     bind-only public contract.
+   - Updated generated C API docs.
+   - Exported symbol delta: no exported functions were added or removed; pointer constness changed
+     at the C source/API level without changing the dynamic symbol set.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `just build`,
+     `just test marker_api_and_emit_glsl`, `just ctypes-smoke`, `just docs-api-check`,
+     `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`, and
+     `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -635,8 +645,8 @@ Apply this especially to `dvz_visual_set_data_range()` and text batch setters.
 ### 8. Tighten Constness And Borrowed Ownership
 
 Status: sampled-field bind-only constness and text-atlas borrowed-field constness completed by
-`ed1f2a289`; scale binding constness completed by `4172b38bd`. Symbol-set binding and borrowed
-descriptor getter replacement remain open.
+`ed1f2a289`; scale binding constness completed by `4172b38bd`; marker symbol-set binding
+constness completed by `8ec409e7f`. Borrowed descriptor getter replacement remains open.
 
 Bind-only APIs accept mutable resources, and descriptor getters expose borrowed internals.
 
@@ -647,7 +657,6 @@ References:
 
 Preferred fix:
 
-- Use `const DvzSymbolSet*` for bind-only resource arguments when ownership is not transferred.
 - Replace borrowed descriptor getters with copy-out APIs such as
   `bool dvz_sampled_field_info(const DvzSampledField*, DvzSampledFieldDesc* out)` and
   `bool dvz_scene_buffer_info(const DvzSceneBuffer*, DvzSceneBufferDesc* out)`.
