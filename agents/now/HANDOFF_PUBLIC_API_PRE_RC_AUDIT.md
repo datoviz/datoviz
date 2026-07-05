@@ -76,16 +76,24 @@ Completed checkpoints:
    - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
      `python3 tools/build_api_c.py --check`, `just configure`, `just build`, `just test math`,
      `just spec-check`, stale-reference scan, and `git diff --check`.
+8. `93c706d6a` `api: remove transitional texture wrappers`
+   - Removed `dvz_visual_set_texture_rgba8()` and `dvz_visual_set_texture_r32f()` from the public C
+     header, generated raw `ctypes`, and generated C API docs.
+   - Kept the internal/wasm wrapper path private and migrated public C examples/docs to sampled
+     fields plus `dvz_visual_set_field()`.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, `just build`, `just test scene/fields`,
+     `just test scene/scene-graph`, `just test app`, `just spec-check`, stale-reference scan, and
+     `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
 - dirty `data` submodule state;
 - untracked `paper/paper.pdf`.
 
-Next recommended checkpoint: decide and execute the transitional texture wrapper cleanup for
-`dvz_visual_set_texture_rgba8()` and `dvz_visual_set_texture_r32f()`. Preferred direction is to
-remove them from the stable public surface unless a concrete replacement path needs a renamed,
-slot-explicit sampled-field helper.
+Next recommended checkpoint: stable scene naming cleanup. Preferred first slice is collapsing the
+old/new 2D view API around `DvzPanelView2DDesc` and `dvz_panel_set_view2d*()` before continuing to
+other spelling consistency issues such as scale-bar naming.
 
 
 ## Maintainer Decisions
@@ -224,8 +232,6 @@ References:
 - `include/datoviz/scene/animation.h`: `DVZ_CLOCK_REALTIME`, `DVZ_CLOCK_OFFLINE`
 - `include/datoviz/scene.h`: old and new 2D view APIs coexist around `DvzPanelView2D`,
   `dvz_panel_view2d()`, `dvz_panel_set_view2d()`, and `dvz_panel_set_view2d_desc()`
-- `include/datoviz/scene.h`: `dvz_visual_set_texture_rgba8()` and
-  `dvz_visual_set_texture_r32f()` are documented as legacy/transitional wrappers
 
 Preferred fix:
 
@@ -233,8 +239,11 @@ Preferred fix:
   `DVZ_SCENE_CLOCK_FIXED_STEP`, and `DVZ_SCENE_CLOCK_EXTERNAL`.
 - Collapse the 2D view API onto `DvzPanelView2DDesc`; rename
   `dvz_panel_set_view2d_desc()` to `dvz_panel_set_view2d(DvzPanel*, const DvzPanelView2DDesc*)`.
-- Remove texture wrappers from the stable API, or rename them as explicit sampled-field helpers
-  such as `dvz_visual_set_field_rgba8_2d()` with a slot name.
+
+Status:
+
+- Clock alias cleanup completed by `a703f01e1`.
+- Texture wrapper cleanup completed by `93c706d6a`.
 
 
 ### 3. Fix Raw `ctypes` Ownership Traps
