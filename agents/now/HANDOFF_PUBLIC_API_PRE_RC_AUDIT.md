@@ -85,15 +85,24 @@ Completed checkpoints:
      `python3 tools/build_api_c.py --check`, `just build`, `just test scene/fields`,
      `just test scene/scene-graph`, `just test app`, `just spec-check`, stale-reference scan, and
      `git diff --check`.
+9. `0453620fd` `api: collapse panel view2d descriptor API`
+   - Removed the compact `DvzPanelView2D` public struct, `dvz_panel_view2d()`, and
+     `dvz_panel_set_view2d_desc()`.
+   - Made `dvz_panel_set_view2d()` take `const DvzPanelView2DDesc*`, and migrated examples/tests,
+     generated raw `ctypes`, and generated C API docs.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, `just build`, `just test scene/axis`,
+     `just test scene/scene-graph`, `just test app`, `just spec-check`, stale-reference scan, and
+     `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
 - dirty `data` submodule state;
 - untracked `paper/paper.pdf`.
 
-Next recommended checkpoint: stable scene naming cleanup. Preferred first slice is collapsing the
-old/new 2D view API around `DvzPanelView2DDesc` and `dvz_panel_set_view2d*()` before continuing to
-other spelling consistency issues such as scale-bar naming.
+Next recommended checkpoint: continue stable scene naming cleanup. Preferred next slice is the
+scale-bar spelling/API pass (`ScaleBar`/`scalebar` naming consistency) before moving to broader
+app/backend-neutral naming.
 
 
 ## Maintainer Decisions
@@ -230,20 +239,19 @@ transitional.
 References:
 
 - `include/datoviz/scene/animation.h`: `DVZ_CLOCK_REALTIME`, `DVZ_CLOCK_OFFLINE`
-- `include/datoviz/scene.h`: old and new 2D view APIs coexist around `DvzPanelView2D`,
-  `dvz_panel_view2d()`, `dvz_panel_set_view2d()`, and `dvz_panel_set_view2d_desc()`
 
 Preferred fix:
 
 - Remove legacy clock aliases; keep only `DVZ_SCENE_CLOCK_REALTIME`,
   `DVZ_SCENE_CLOCK_FIXED_STEP`, and `DVZ_SCENE_CLOCK_EXTERNAL`.
-- Collapse the 2D view API onto `DvzPanelView2DDesc`; rename
-  `dvz_panel_set_view2d_desc()` to `dvz_panel_set_view2d(DvzPanel*, const DvzPanelView2DDesc*)`.
+- Collapse the 2D view API onto `DvzPanelView2DDesc` and the descriptor-taking
+  `dvz_panel_set_view2d(DvzPanel*, const DvzPanelView2DDesc*)`.
 
 Status:
 
 - Clock alias cleanup completed by `a703f01e1`.
 - Texture wrapper cleanup completed by `93c706d6a`.
+- 2D view descriptor cleanup completed by `0453620fd`.
 
 
 ### 3. Fix Raw `ctypes` Ownership Traps
