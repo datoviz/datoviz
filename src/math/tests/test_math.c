@@ -52,6 +52,7 @@ int test_math(TstSuite* suite)
 
     TST_GROUP("stats");
     TST_CASE(test_stats_parallel);
+    TST_CASE(test_parallel_thread_config);
 
     TST_GROUP("anim");
     TST_CASE(test_anim_1);

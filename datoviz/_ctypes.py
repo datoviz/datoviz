@@ -14513,9 +14513,10 @@ else:
  *
  * @param cb the error callback
  * @param user_data opaque pointer passed to the callback
+ * @return DVZ_OK on success
  */"""
     _dvz_error_set_callback.argtypes = [DvzErrorCallback, ctypes.c_void_p]
-    _dvz_error_set_callback.restype = None
+    _dvz_error_set_callback.restype = ctypes.c_int32
     def dvz_error_set_callback(cb, user_data):
         cb = _callback_store_global('dvz_error_set_callback', DvzErrorCallback, cb)
         return _dvz_error_set_callback(cb, user_data)

@@ -1375,6 +1375,27 @@ Result: all passed. This slice converted stable `dvz_geometry_reset()` and
 `dvz_keyboard_modifier_state_update()` from `void` to `DvzResult`, with tests covering success and
 validation-error paths.
 
+Validation for the stable global setter slice:
+
+```sh
+just build
+just ctypes
+just ctypes-check
+python3 tools/build_api_c.py
+python3 tools/build_api_c.py --check
+python3 tools/check_api_status.py
+just docs-api
+just docs-api-check
+just test common
+just test math
+just ctypes-smoke
+just ctypes-python-smoke
+```
+
+Result: all passed. This slice converted stable `dvz_error_set_callback()`,
+`dvz_threads_set()`, and `dvz_threads_default()` from `void` to `DvzResult`, with common/math tests
+covering the new return values.
+
 
 ## Validation Baseline For Future Agent
 

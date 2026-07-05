@@ -32,11 +32,12 @@ void* error_callback_user_data = NULL;
 
 
 
-void dvz_error_set_callback(DvzErrorCallback cb, void* user_data)
+DvzResult dvz_error_set_callback(DvzErrorCallback cb, void* user_data)
 {
     // log_debug("Registering an error callback function");
     error_callback = cb;
     error_callback_user_data = user_data;
+    return DVZ_OK;
 }
 
 

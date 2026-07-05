@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "_assertions.h"
+#include "datoviz/math/parallel.h"
 #include "datoviz/math/stats.h"
 #include "test_math.h"
 #include "testing.h"
@@ -43,6 +44,23 @@ int test_stats_parallel(TstContext* suite, const TstCase* tstitem)
     dvz_range(1, &negative, min_max);
     AC(min_max[0], negative, EPS);
     AC(min_max[1], negative, EPS);
+
+    return 0;
+}
+
+
+
+int test_parallel_thread_config(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+
+#if DVZ_HAS_OPENMP
+    AT(dvz_threads_set(1) == DVZ_OK);
+    AT(dvz_threads_default() == DVZ_OK);
+#else
+    AT(dvz_threads_set(1) == DVZ_ERROR);
+    AT(dvz_threads_default() == DVZ_ERROR);
+#endif
 
     return 0;
 }

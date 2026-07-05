@@ -5744,7 +5744,7 @@ _Declared in `include/datoviz/math/anim.h`:97._
 ### `dvz_error_set_callback()`
 
 ```c title="dvz_error_set_callback"
-void dvz_error_set_callback(
+DvzResult dvz_error_set_callback(
     DvzErrorCallback cb,
     void * user_data
 );
@@ -5752,6 +5752,7 @@ void dvz_error_set_callback(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK on success |
 | `cb` | `DvzErrorCallback` | the error callback |
 | `user_data` | `void *` | opaque pointer passed to the callback |
 
@@ -5759,7 +5760,7 @@ Register an error callback.
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/common/functions.h`:55._
+_Declared in `include/datoviz/common/functions.h`:57._
 
 ## Fence
 
@@ -9289,7 +9290,7 @@ shader compilation, screenshots, and readbacks. Passing NULL is allowed.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/common/functions.h`:66._
+_Declared in `include/datoviz/common/functions.h`:68._
 
 ## Min
 
@@ -12415,7 +12416,7 @@ Return a monotonic timestamp in nanoseconds.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/common/functions.h`:74._
+_Declared in `include/datoviz/common/functions.h`:76._
 
 ## Turntable
 

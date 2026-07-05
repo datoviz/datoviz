@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 #include "types.h"
 
 
@@ -42,8 +43,9 @@ DVZ_EXPORT int dvz_num_procs(void);
  * Set the number of threads to use in OpenMP-aware functions.
  *
  *  @param num_threads the requested number of threads
+ *  @returns DVZ_OK on success, DVZ_ERROR on validation error or when OpenMP is unavailable
  */
-DVZ_EXPORT void dvz_threads_set(int num_threads);
+DVZ_EXPORT DvzResult dvz_threads_set(int num_threads);
 
 
 
@@ -59,8 +61,10 @@ DVZ_EXPORT int dvz_threads_get(void);
 /**
  * Set the number of threads to use in OpenMP-aware functions based on DVZ_NUM_THREADS, or take
  * half of dvz_num_procs().
+ *
+ * @returns DVZ_OK on success, DVZ_ERROR on validation error or when OpenMP is unavailable
  */
-DVZ_EXPORT void dvz_threads_default(void);
+DVZ_EXPORT DvzResult dvz_threads_default(void);
 
 
 
