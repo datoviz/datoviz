@@ -503,8 +503,8 @@ Functions: 388
     | [`dvz_sampled_field()`](#dvz_sampled_field) | `include/datoviz/scene/field.h` |
     | [`dvz_sampled_field_desc()`](#dvz_sampled_field_desc) | `include/datoviz/scene/field.h` |
     | [`dvz_sampled_field_destroy()`](#dvz_sampled_field_destroy) | `include/datoviz/scene/field.h` |
-    | [`dvz_sampled_field_get_desc()`](#dvz_sampled_field_get_desc) | `include/datoviz/scene/field.h` |
     | [`dvz_sampled_field_id()`](#dvz_sampled_field_id) | `include/datoviz/scene/field.h` |
+    | [`dvz_sampled_field_info()`](#dvz_sampled_field_info) | `include/datoviz/scene/field.h` |
     | [`dvz_sampled_field_resize()`](#dvz_sampled_field_resize) | `include/datoviz/scene/field.h` |
     | [`dvz_sampled_field_set_data()`](#dvz_sampled_field_set_data) | `include/datoviz/scene/field.h` |
     | [`dvz_sampled_field_set_geometry()`](#dvz_sampled_field_set_geometry) | `include/datoviz/scene/field.h` |
@@ -547,7 +547,7 @@ Functions: 388
     | [`dvz_scene_buffer()`](#dvz_scene_buffer) | `include/datoviz/scene.h` |
     | [`dvz_scene_buffer_desc()`](#dvz_scene_buffer_desc) | `include/datoviz/scene.h` |
     | [`dvz_scene_buffer_destroy()`](#dvz_scene_buffer_destroy) | `include/datoviz/scene.h` |
-    | [`dvz_scene_buffer_get_desc()`](#dvz_scene_buffer_get_desc) | `include/datoviz/scene.h` |
+    | [`dvz_scene_buffer_info()`](#dvz_scene_buffer_info) | `include/datoviz/scene.h` |
     | [`dvz_scene_buffer_resource_key()`](#dvz_scene_buffer_resource_key) | `include/datoviz/scene.h` |
     | [`dvz_scene_buffer_set_data()`](#dvz_scene_buffer_set_data) | `include/datoviz/scene.h` |
     | [`dvz_scene_clock_dt()`](#dvz_scene_clock_dt) | `include/datoviz/scene/animation.h` |
@@ -6432,28 +6432,6 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/field.h`:213._
 
-### `dvz_sampled_field_get_desc()`
-
-```c title="dvz_sampled_field_get_desc"
-const DvzSampledFieldDesc * dvz_sampled_field_get_desc(
-    const DvzSampledField * field
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `const DvzSampledFieldDesc *` | the descriptor, or NULL on error |
-| `field` | `const DvzSampledField *` | the sampled field |
-
-Return the immutable field descriptor.
-
-The returned pointer is borrowed from the field and remains valid until the field is destroyed or
-resized. Callers must not cast away const or retain it past field lifetime.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene/field.h`:286._
-
 ### `dvz_sampled_field_id()`
 
 ```c title="dvz_sampled_field_id"
@@ -6472,6 +6450,29 @@ Return the scene-local identity of a sampled field.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/field.h`:203._
+
+### `dvz_sampled_field_info()`
+
+```c title="dvz_sampled_field_info"
+_Bool dvz_sampled_field_info(
+    const DvzSampledField * field,
+    DvzSampledFieldDesc * out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the descriptor was copied |
+| `field` | `const DvzSampledField *` | the sampled field |
+| `out` | `DvzSampledFieldDesc *` | output field descriptor |
+
+Copy immutable field descriptor information.
+
+The descriptor is copied into caller-owned storage and remains valid after return.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene/field.h`:286._
 
 ### `dvz_sampled_field_resize()`
 
@@ -7188,20 +7189,22 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:2195._
 
-### `dvz_scene_buffer_get_desc()`
+### `dvz_scene_buffer_info()`
 
-```c title="dvz_scene_buffer_get_desc"
-const DvzSceneBufferDesc * dvz_scene_buffer_get_desc(
-    const DvzSceneBuffer * buffer
+```c title="dvz_scene_buffer_info"
+_Bool dvz_scene_buffer_info(
+    const DvzSceneBuffer * buffer,
+    DvzSceneBufferDesc * out
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `const DvzSceneBufferDesc *` | the descriptor, or NULL on error |
+| return | `_Bool` | whether the descriptor was copied |
 | `buffer` | `const DvzSceneBuffer *` | the buffer |
+| `out` | `DvzSceneBufferDesc *` | output buffer descriptor |
 
-Return the immutable buffer descriptor.
+Copy immutable buffer descriptor information.
 
 Raw ctypes: emitted.
 

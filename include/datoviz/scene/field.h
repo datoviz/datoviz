@@ -275,15 +275,15 @@ DVZ_EXPORT bool dvz_sampled_field_set_geometry(
 
 
 /**
- * Return the immutable field descriptor.
+ * Copy immutable field descriptor information.
  *
- * The returned pointer is borrowed from the field and remains valid until the field is destroyed or
- * resized. Callers must not cast away const or retain it past field lifetime.
+ * The descriptor is copied into caller-owned storage and remains valid after return.
  *
  * @param field the sampled field
- * @return the descriptor, or NULL on error
+ * @param out output field descriptor
+ * @return whether the descriptor was copied
  */
-DVZ_EXPORT const DvzSampledFieldDesc* dvz_sampled_field_get_desc(const DvzSampledField* field);
+DVZ_EXPORT bool dvz_sampled_field_info(const DvzSampledField* field, DvzSampledFieldDesc* out);
 
 
 

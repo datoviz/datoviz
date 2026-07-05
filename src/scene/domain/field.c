@@ -333,14 +333,18 @@ bool dvz_sampled_field_set_geometry(
 
 
 /**
- * Return the immutable field descriptor.
+ * Copy immutable field descriptor information.
  *
  * @param field the sampled field
- * @return the descriptor, or NULL on error
+ * @param out output field descriptor
+ * @return whether the descriptor was copied
  */
-const DvzSampledFieldDesc* dvz_sampled_field_get_desc(const DvzSampledField* field)
+bool dvz_sampled_field_info(const DvzSampledField* field, DvzSampledFieldDesc* out)
 {
-    return field != NULL ? &field->desc : NULL;
+    if (field == NULL || out == NULL)
+        return false;
+    *out = field->desc;
+    return true;
 }
 
 

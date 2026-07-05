@@ -1916,9 +1916,9 @@ int test_scene_sampled_field_color_role_defaults(TstContext* suite, const TstCas
     desc.height = 2;
     DvzSampledField* rgba = dvz_sampled_field(scene, &desc);
     ANN(rgba);
-    const DvzSampledFieldDesc* rgba_desc = dvz_sampled_field_get_desc(rgba);
-    ANN(rgba_desc);
-    AT(rgba_desc->color_role == DVZ_COLOR_ROLE_SRGB_COLOR);
+    DvzSampledFieldDesc rgba_desc = {0};
+    AT(dvz_sampled_field_info(rgba, &rgba_desc));
+    AT(rgba_desc.color_role == DVZ_COLOR_ROLE_SRGB_COLOR);
 
     DvzSampledField* explicit_linear = dvz_sampled_field(
         scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
@@ -1931,9 +1931,9 @@ int test_scene_sampled_field_color_role_defaults(TstContext* suite, const TstCas
                    .depth = 1,
                });
     ANN(explicit_linear);
-    const DvzSampledFieldDesc* linear_desc = dvz_sampled_field_get_desc(explicit_linear);
-    ANN(linear_desc);
-    AT(linear_desc->color_role == DVZ_COLOR_ROLE_LINEAR_COLOR);
+    DvzSampledFieldDesc linear_desc = {0};
+    AT(dvz_sampled_field_info(explicit_linear, &linear_desc));
+    AT(linear_desc.color_role == DVZ_COLOR_ROLE_LINEAR_COLOR);
 
     DvzSampledField* scalar = dvz_sampled_field(
         scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
@@ -1945,9 +1945,9 @@ int test_scene_sampled_field_color_role_defaults(TstContext* suite, const TstCas
                    .depth = 1,
                });
     ANN(scalar);
-    const DvzSampledFieldDesc* scalar_desc = dvz_sampled_field_get_desc(scalar);
-    ANN(scalar_desc);
-    AT(scalar_desc->color_role == DVZ_COLOR_ROLE_DATA);
+    DvzSampledFieldDesc scalar_desc = {0};
+    AT(dvz_sampled_field_info(scalar, &scalar_desc));
+    AT(scalar_desc.color_role == DVZ_COLOR_ROLE_DATA);
 
     DvzSampledField* label = dvz_sampled_field(
         scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
@@ -1959,9 +1959,9 @@ int test_scene_sampled_field_color_role_defaults(TstContext* suite, const TstCas
                    .depth = 1,
                });
     ANN(label);
-    const DvzSampledFieldDesc* label_desc = dvz_sampled_field_get_desc(label);
-    ANN(label_desc);
-    AT(label_desc->color_role == DVZ_COLOR_ROLE_DATA);
+    DvzSampledFieldDesc label_desc = {0};
+    AT(dvz_sampled_field_info(label, &label_desc));
+    AT(label_desc.color_role == DVZ_COLOR_ROLE_DATA);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -2040,10 +2040,10 @@ int test_scene_sampled_fields_set_explicit_color_roles(TstContext* suite, const 
     DvzVisualFamilyState* rgba_state = _visual_family_state(rgba_image);
     ANN(rgba_state);
     ANN(rgba_state->field);
-    const DvzSampledFieldDesc* rgba_desc = dvz_sampled_field_get_desc(rgba_state->field);
-    ANN(rgba_desc);
-    AT(rgba_desc->semantic == DVZ_FIELD_SEMANTIC_COLOR);
-    AT(rgba_desc->color_role == DVZ_COLOR_ROLE_SRGB_COLOR);
+    DvzSampledFieldDesc rgba_desc = {0};
+    AT(dvz_sampled_field_info(rgba_state->field, &rgba_desc));
+    AT(rgba_desc.semantic == DVZ_FIELD_SEMANTIC_COLOR);
+    AT(rgba_desc.color_role == DVZ_COLOR_ROLE_SRGB_COLOR);
 
     DvzVisual* scalar_image = dvz_image(scene, 0);
     ANN(scalar_image);
@@ -2067,10 +2067,10 @@ int test_scene_sampled_fields_set_explicit_color_roles(TstContext* suite, const 
     DvzVisualFamilyState* scalar_state = _visual_family_state(scalar_image);
     ANN(scalar_state);
     ANN(scalar_state->field);
-    const DvzSampledFieldDesc* scalar_desc = dvz_sampled_field_get_desc(scalar_state->field);
-    ANN(scalar_desc);
-    AT(scalar_desc->semantic == DVZ_FIELD_SEMANTIC_SCALAR);
-    AT(scalar_desc->color_role == DVZ_COLOR_ROLE_DATA);
+    DvzSampledFieldDesc scalar_desc = {0};
+    AT(dvz_sampled_field_info(scalar_state->field, &scalar_desc));
+    AT(scalar_desc.semantic == DVZ_FIELD_SEMANTIC_SCALAR);
+    AT(scalar_desc.color_role == DVZ_COLOR_ROLE_DATA);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -4469,10 +4469,10 @@ int test_scene_image_field_resize_emits_texture_reallocation(TstContext* suite, 
     AT(dvz_sampled_field_resize(
         field, 4, 3, 1,
         &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = resized, .bytes_per_row = 4 * 4, .rows_per_image = 3}));
-    const DvzSampledFieldDesc* desc = dvz_sampled_field_get_desc(field);
-    ANN(desc);
-    AT(desc->width == 4);
-    AT(desc->height == 3);
+    DvzSampledFieldDesc desc = {0};
+    AT(dvz_sampled_field_info(field, &desc));
+    AT(desc.width == 4);
+    AT(desc.height == 3);
 
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream1 = _test_scene_emit_stream(figure, &caps, &report);

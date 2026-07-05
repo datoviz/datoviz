@@ -24791,24 +24791,6 @@ else:
 
 
 try:
-    dvz_sampled_field_get_desc = dvz.dvz_sampled_field_get_desc
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_sampled_field_get_desc')
-else:
-    dvz_sampled_field_get_desc.__doc__ = """/**
- * Return the immutable field descriptor.
- *
- * The returned pointer is borrowed from the field and remains valid until the field is destroyed or
- * resized. Callers must not cast away const or retain it past field lifetime.
- *
- * @param field the sampled field
- * @return the descriptor, or NULL on error
- */"""
-    dvz_sampled_field_get_desc.argtypes = [ctypes.POINTER(DvzSampledField)]
-    dvz_sampled_field_get_desc.restype = ctypes.POINTER(DvzSampledFieldDesc)
-
-
-try:
     dvz_sampled_field_id = dvz.dvz_sampled_field_id
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_sampled_field_id')
@@ -24821,6 +24803,24 @@ else:
  */"""
     dvz_sampled_field_id.argtypes = [ctypes.POINTER(DvzSampledField)]
     dvz_sampled_field_id.restype = ctypes.c_uint64
+
+
+try:
+    dvz_sampled_field_info = dvz.dvz_sampled_field_info
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_sampled_field_info')
+else:
+    dvz_sampled_field_info.__doc__ = """/**
+ * Copy immutable field descriptor information.
+ *
+ * The descriptor is copied into caller-owned storage and remains valid after return.
+ *
+ * @param field the sampled field
+ * @param out output field descriptor
+ * @return whether the descriptor was copied
+ */"""
+    dvz_sampled_field_info.argtypes = [ctypes.POINTER(DvzSampledField), ctypes.POINTER(DvzSampledFieldDesc)]
+    dvz_sampled_field_info.restype = ctypes.c_bool
 
 
 try:
@@ -25522,18 +25522,18 @@ else:
 
 
 try:
-    dvz_scene_buffer_get_desc = dvz.dvz_scene_buffer_get_desc
+    dvz_scene_buffer_info = dvz.dvz_scene_buffer_info
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_scene_buffer_get_desc')
+    _MISSING_FUNCTIONS.append('dvz_scene_buffer_info')
 else:
-    dvz_scene_buffer_get_desc.__doc__ = """/**
- * Return the immutable buffer descriptor.
- *
+    dvz_scene_buffer_info.__doc__ = """/**
+ * Copy immutable buffer descriptor information.
  * @param buffer the buffer
- * @return the descriptor, or NULL on error
+ * @param out output buffer descriptor
+ * @return whether the descriptor was copied
  */"""
-    dvz_scene_buffer_get_desc.argtypes = [ctypes.POINTER(DvzSceneBuffer)]
-    dvz_scene_buffer_get_desc.restype = ctypes.POINTER(DvzSceneBufferDesc)
+    dvz_scene_buffer_info.argtypes = [ctypes.POINTER(DvzSceneBuffer), ctypes.POINTER(DvzSceneBufferDesc)]
+    dvz_scene_buffer_info.restype = ctypes.c_bool
 
 
 try:

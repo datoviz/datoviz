@@ -346,17 +346,17 @@ bool example_visual_set_rgba8_field(
     }
     else
     {
-        const DvzSampledFieldDesc* desc = dvz_sampled_field_get_desc(field);
+        DvzSampledFieldDesc desc = {0};
         if (
-            desc == NULL || desc->dim != DVZ_FIELD_DIM_2D ||
-            desc->format != DVZ_FIELD_FORMAT_RGBA8_UNORM ||
-            desc->semantic != DVZ_FIELD_SEMANTIC_COLOR)
+            !dvz_sampled_field_info(field, &desc) || desc.dim != DVZ_FIELD_DIM_2D ||
+            desc.format != DVZ_FIELD_FORMAT_RGBA8_UNORM ||
+            desc.semantic != DVZ_FIELD_SEMANTIC_COLOR)
         {
             return false;
         }
 
         bool ok = false;
-        if (desc->width == width && desc->height == height && desc->depth == 1)
+        if (desc.width == width && desc.height == height && desc.depth == 1)
             ok = dvz_sampled_field_set_data(field, &view);
         else
             ok = dvz_sampled_field_resize(field, width, height, 1, &view);

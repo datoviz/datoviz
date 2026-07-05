@@ -2211,12 +2211,12 @@ dvz_scene_buffer_set_data(DvzSceneBuffer* buffer, const void* data, uint64_t byt
 
 
 /**
- * Return the immutable buffer descriptor.
- *
+ * Copy immutable buffer descriptor information.
  * @param buffer the buffer
- * @return the descriptor, or NULL on error
+ * @param out output buffer descriptor
+ * @return whether the descriptor was copied
  */
-DVZ_EXPORT const DvzSceneBufferDesc* dvz_scene_buffer_get_desc(const DvzSceneBuffer* buffer);
+DVZ_EXPORT bool dvz_scene_buffer_info(const DvzSceneBuffer* buffer, DvzSceneBufferDesc* out);
 
 
 /**
