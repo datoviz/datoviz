@@ -1,6 +1,6 @@
 # C/C++ Distribution and Integration
 
-Status: active RC blocker lane. Updated: 2026-06-18.
+Status: active release gate, no current distribution blocker recorded. Updated: 2026-07-05.
 
 Keep this file as the short active handoff. Durable user documentation, build options, and release
 validation details live in the linked files below.

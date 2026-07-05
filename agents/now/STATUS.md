@@ -8,15 +8,15 @@ history, not in agent archives.
 
 ## Current Pickup
 
-Next critical path: execute the public API/ABI cleanup campaign on `api/pre-rc-cleanup`, then move
-directly to RC1 release notes, tag, artifacts, and publication checks.
+Next critical path: merge the completed public API/ABI cleanup branch back to `v0.4-dev`, then
+move directly to RC1 release notes, tag, artifacts, and publication checks.
 
 Pre-RC1 execution order:
 
-1. Complete the reopened aggressive public API/ABI consistency campaign before RC1. The maintainer
-   decision is to break API/ABI now where removal, renaming, argument-ordering, ownership,
-   backend-neutral naming, or raw-binding safety improves the v0.4 public contract. Use
-   [HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md](HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md).
+1. Integrate the completed aggressive public API/ABI consistency campaign from
+   `api/pre-rc-cleanup` into `v0.4-dev`, preserving its checkpointed history and validation
+   evidence. Use [HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md](HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md) as the
+   completed audit record for final reconciliation.
 2. Run the v0.4 Git history cleanup if it is still desired before stable RC refs exist.
 3. Keep the now-green wheel matrix in release evidence and inspect downloaded artifacts before
    upload.
@@ -31,10 +31,10 @@ Pre-RC1 execution order:
    non-parity boundaries.
 8. Proofread the public docs, gallery pages, generated matrices, screenshots, and example metadata.
 9. Cut RC1 only after final validation and release notes are recorded.
-10. Add the narrow retained visual item-range slice only if it remains low-risk: spec-backed
-   `dvz_visual_set_item_range()` / clear/get API, point first, splat optional, and explicit deferral
-   of broader attribute views, scalar GPU mappings, modifiers, compaction, sorting, and indirect
-   draw.
+10. Keep the narrow retained visual item-range slice in validation: the point-first
+   `dvz_visual_set_item_range()` / clear/get API is active, with broader attribute views, scalar
+   GPU mappings, modifiers, compaction, sorting, indirect draw, and additional visual families
+   deferred unless a concrete RC blocker appears.
 
 Pre-RC repository hygiene note: if the v0.4 Git history cleanup remains desired, do it before
 `v0.4.0-rc1` and before treating release refs as stable. The agreed process, user migration note,
@@ -58,7 +58,7 @@ Blockers:
 | Compute+graphics experimental path | DRP2 `ResourceBarrier`, FramePlan scene compute lowering, WebGPU fixture parity, and the C `gpu_particle_smoke` showcase are active. CPU command-generation proof passed on 2026-06-04. Native Vulkan compute+graphics proof passed on 2026-06-17: `test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes`, `test_vklite_compute_1`, `test_technique_compute_graphics`, and `examples/c/showcases/gpu_particle_smoke.c --png` with artifact `build/release-evidence/gpu_particle_smoke.png`. | Keep the slice classified as experimental in the feature/status table: native proof exists, but this is a narrow scene-compute/DRP2 interop path, not a general compute framework. |
 | Qt/PyQt hosted path | Native Qt hosting and the optional `datoviz_qtbridge` provider are active. On 2026-06-18, `DVZ_CMAKE_ARGS="-DDVZ_ENABLE_QT_BRIDGE=ON" just build`, `./build/examples/qt/hosted_qt_smoke 120`, `./build/examples/qt/hosted_qt_widgets --smoke-ms 1000`, `DATOVIZ_QTBRIDGE_LIBRARY=build/qtbridge/libdatoviz_qtbridge.so uv run --isolated --with PyQt6 python -m datoviz.qt`, and the hosted PyQt smoke passed after updating the example to pass `DvzColor` to the raw background-color API. The isolated probe reported bridge Qt 6.11.1 and PyQt Qt 6.11.0; the system PyQt6 package in this shell lacks `QVulkanInstance` and is not a valid PyQt hosting proof. Public docs classify this as `supported, optional provider`. | Keep packaging/install diagnostics explicit for missing bridge, unsupported PyQt/PySide bindings, and Qt runtime mismatches; retain optional wheel checks with `--qt-probe optional`. |
 | v0.3 visible parity audit | Public table landed in `docs/reference/v03-visible-parity.md`, classifying visible v0.3-era capabilities as fixed, experimental, deferred, or external/GSP without preserving old APIs. | Keep it reconciled with feature/status docs, installed headers, generated C reference, and known gaps before RC1. |
-| Public API/status cleanup | Reopened as an active pre-RC blocker by July 2026 maintainer decision. Work branch: `api/pre-rc-cleanup`. Use the pre-RC window for aggressive API/ABI breaks where they improve v0.4 consistency: remove unused legacy/internal public APIs, collapse transitional aliases, normalize naming and argument ordering, tighten ownership/constness, make stable app-facing names backend-neutral, classify DRP2/vklite protocol escape hatches as advanced/unstable, and keep raw `ctypes` exact but safe from known ownership traps. Earlier hardening still applies: raw ctypes and generated C reference track exported `DVZ_EXPORT` ABI, `dvz_ffi_*` is the explicit FFI helper namespace, owned string returns are policy-marked, and FramePlan packet APIs are intentionally classified advanced/unstable. | Execute [HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md](HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md) as checkpointed API waves. After public header/export/binding changes, run `just ctypes`, `just ctypes-check`, focused tests, exported symbol/header delta checks, and `git diff --check`; keep examples, docs, generated bindings, and generated references in sync with each API break. |
+| Public API/status cleanup | Completed on `api/pre-rc-cleanup` by the July 2026 pre-RC campaign. The cleanup removed unused legacy/internal public APIs, collapsed transitional aliases, normalized naming and argument ordering, tightened ownership/constness, made stable app-facing names backend-neutral, classified DRP2/vklite protocol escape hatches as advanced/unstable, kept raw `ctypes` exact while fixing known ownership traps, and converted stable fallible mutators to `DvzResult` where appropriate. | Merge `api/pre-rc-cleanup` back to `v0.4-dev`, rerun final validation, then keep generated C reference, raw `ctypes` docs/policy, public status docs, and examples reconciled before RC1. |
 | Release example proof | Partial for the full RC, but the 2026-06-09 `EXAMPLES_NOTES.md` ledger is closed: source/gallery polish, `showcases/surface_grid`, `features/bounds_overlay`, runtime/readability fixes, scenario-helper audit, comment metadata audit, and builtin-shapes parity audit are resolved with native smoke or explicit audit evidence. | Continue broader release proof outside `EXAMPLES_NOTES.md`: visible parity table, API disposition, and any additional focused native evidence where the environment supports Vulkan. |
 
 Closed first slices that should stay in validation: frame artifact scene emission, raw `ctypes`,
@@ -86,9 +86,10 @@ alpha-preserving PNG bytes can be deferred.
 
 ## Active Lanes
 
-1. **Public API/ABI cleanup:** execute `HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md` on
-   `api/pre-rc-cleanup`; break API/ABI now when it improves v0.4 consistency.
-2. **Release closure:** visible parity audit, final API/status reconciliation, known gaps.
+1. **Branch integration:** merge completed `api/pre-rc-cleanup` into `v0.4-dev` with validation
+   and without squashing the checkpointed API-break history.
+2. **Release closure:** visible parity audit, final API/status reconciliation, known gaps, release
+   notes, source bundle/checksum, artifact inspection, and publication rehearsal.
 3. **Example proof:** C examples and fixture smokes for the declared release surface, especially
    one short feature example per public v0.4 feature, retained textured mesh, and composed
    annotation/layout examples.

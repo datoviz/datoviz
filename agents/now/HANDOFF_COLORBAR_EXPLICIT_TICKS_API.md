@@ -1,14 +1,18 @@
 # Handoff: Colorbar Explicit Ticks API
 
-Updated: 2026-06-26
+Status: completed historical handoff. Updated: 2026-07-05
 
-## Current Branch And Commit
+## Resolution
 
-- Branch: `v0.4-dev`
-- Pushed WIP commit: `0be4b0da8 WIP add explicit colorbar ticks API`
-- Prior related commits:
+The original WIP landed in `0be4b0da8`, and the known crash was resolved by
+`fb6a94718 Fix explicit colorbar tick handling`. The API is now part of the active v0.4 surface and
+has since been migrated through the public API cleanup branch.
+
+Related commits:
   - `20be4d8ea Fix glyph rotation angle convention`
   - `7a864688c Use dark colorbar adornments`
+  - `0be4b0da8 WIP add explicit colorbar ticks API`
+  - `fb6a94718 Fix explicit colorbar tick handling`
 
 ## What Was Added
 
@@ -32,7 +36,7 @@ The renderer resolves explicit ticks before automatic ticks and uses explicit la
 The Python array facade generator has a `dvz_colorbar_set_ticks(colorbar, values, labels=None)`
 wrapper mirroring the axis tick wrapper.
 
-## Validation State
+## Historical Validation State
 
 Completed:
 
@@ -41,16 +45,17 @@ Completed:
 - `python -m py_compile tools/bindings/generate_array_facade.py tools/bindings/array_facade_smoke.py`
   was clean before the WIP commit.
 
-Not complete:
+Resolved after this handoff was first written:
 
-- Focused runtime test `./build/testing/dvztest_scene scene/fields/colorbar` exited with code 139.
-- The same crash reproduced for a narrower colorbar filter.
-- This was not debugged because the user requested an immediate WIP commit and push.
+- Focused runtime colorbar tests no longer carry the recorded code-139 crash after
+  `fb6a94718`.
+- Later API cleanup validation converted `dvz_colorbar_set_ticks()` and
+  `dvz_colorbar_clear_ticks()` to `DvzResult` and kept generated `ctypes`/C docs in sync.
 
-## Known Issue To Start With
+## Current Pickup
 
-Debug the `dvztest_scene` segfault before considering the API done. Start by running the new case
-under `lldb` or with ASAN:
+No Datoviz-side pickup remains for the original colorbar explicit-ticks WIP. If colorbar tick
+behavior changes again, validate with:
 
 ```bash
 ./build/testing/dvztest_scene --module scene --group fields --case test_scene_colorbar_explicit_ticks_and_labels
@@ -58,18 +63,6 @@ under `lldb` or with ASAN:
 
 Also verify whether the test filter syntax was selecting the intended case; the command-line filters
 accepted by `dvztest_scene --help` include `--module`, `--group`, and `--case`.
-
-## Next Steps
-
-1. Fix the colorbar test crash.
-2. Regenerate ctypes/raw and array facade outputs if required by the binding workflow.
-3. Run:
-   - `cmake --build build --target dvztest_scene -j4`
-   - `./build/testing/dvztest_scene --module scene --group fields --case test_scene_colorbar_explicit_ticks_and_labels`
-   - `./build/testing/dvztest_scene --module scene --group fields`
-   - Python array facade smoke after regenerated bindings expose `DvzColorbarTicks`.
-4. Once Datoviz is green, update GSP to call `dvz_colorbar_set_ticks()` for explicit colorbar
-   ticks/labels and regenerate the S029 review pack.
 
 ## Do Not Lose
 

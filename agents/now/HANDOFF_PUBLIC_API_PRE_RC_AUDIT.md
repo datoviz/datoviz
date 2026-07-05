@@ -1,26 +1,25 @@
 # Public API Pre-RC Audit Handoff
 
-Status: approved pre-RC API/ABI cleanup campaign.
+Status: completed pre-RC API/ABI cleanup campaign; keep as audit evidence.
 
-Purpose: preserve the July 2026 user-side public API consistency audit and give a future agent a
-concrete plan to implement, validate, commit, and push the cleanup. The audit focused on function
-naming, signatures, argument ordering, constness, ownership, raw `ctypes` shape, and legacy or
-accidental public symbols.
+Purpose: preserve the July 2026 user-side public API consistency audit, checkpoint history, and
+validation evidence. The audit focused on function naming, signatures, argument ordering,
+constness, ownership, raw `ctypes` shape, and legacy or accidental public symbols.
 
-Primary recommendation: break API/ABI now where the current surface is accidental, transitional,
-hard to bind correctly, or inconsistent with v0.4 architecture. Do not preserve v0.3 compatibility
-when it conflicts with a cleaner v0.4 surface.
+Campaign result: the approved API/ABI breaks and explicit classifications have landed on
+`api/pre-rc-cleanup`. Future agents should use this file to understand what changed and what was
+intentionally left classified, not as a request to restart broad API churn.
 
 Maintainer decision, July 2026: use the pre-RC window aggressively. It is critically important that
 the v0.4 API is internally consistent before RC1, even if that means broad source/ABI breaks across
 examples, docs, tests, raw `ctypes`, and public C headers.
 
 
-## Execution Authorization
+## Execution Summary
 
-Approved branch: `api/pre-rc-cleanup`, created from current `v0.4-dev`.
+Execution branch: `api/pre-rc-cleanup`, created from `v0.4-dev`.
 
-Approved workflow:
+Completed workflow:
 
 1. Make local checkpoint commits by coherent API wave.
 2. Push the branch when checkpoint validation passes.
@@ -30,8 +29,8 @@ Approved workflow:
 5. Leave existing dirty `data` submodule state and untracked `paper/paper.pdf` unstaged and
    untouched unless the maintainer explicitly approves those paths in the current turn.
 
-Expected implementation shape: roughly 8-11 checkpoint commits. Prefer smaller commits when a wave
-changes public headers, generated bindings, generated C reference, examples, and tests together.
+The campaign produced more checkpoints than first estimated because result-type cleanup and
+exception classification were split into smaller reviewable slices.
 
 Use `spec/api/status.yml` as the API tiering source of truth. Do not create a second stable,
 advanced, experimental, or internal classification table in agent notes, docs, or binding policy.
@@ -592,7 +591,7 @@ Completed checkpoints:
 Current working-tree noise to leave untouched unless explicitly approved in the current turn: none
 known at this checkpoint.
 
-Next recommended checkpoints, in safe execution order:
+Post-Campaign Disposition:
 
 1. Treat the stable user-facing mutator naming, argument-order, and result-type audits as complete
    unless a fresh stale-reference scan finds an active public header, example, or generated doc
@@ -601,15 +600,13 @@ Next recommended checkpoints, in safe execution order:
    Frame-plan builders, DRP2 streams/runtime, window/backend SPI, Vulkan/vklite builders, and GUI
    immediate-mode helpers are not ordinary user API; changing their bool/int/string conventions now
    would be higher churn than value.
-3. Split stable `window.h` from backend SPI so ordinary window users do not include backend
-   registration, GLFW hooks, or wrap-surface helpers. This include-boundary split is complete:
+3. Stable `window.h` has been split from backend SPI so ordinary window users do not include backend
+   registration, GLFW hooks, or wrap-surface helpers:
    `window.h` no longer includes `window/backend.h`, `advanced.h` opts into both, and ctypes parses
    the backend header directly. Remaining caveat: `DvzWindowSurface` still carries Vulkan handle
    types through `window/types.h`, so a full Vulkan-free window surface record would need a
    separate ABI break if desired.
-4. Make `vk.h` a complete low-level Vulkan umbrella if headers parse cleanly together; otherwise
-   document it explicitly as a narrow GPU-context umbrella and direct advanced users to explicit
-   `datoviz/vk/*.h` includes. This is complete: `vk.h` now includes `vk/vulkan.h`, queue,
+4. `vk.h` is now a complete low-level Vulkan umbrella: it includes `vk/vulkan.h`, queue,
    instance/GPU/device, memory, memory interop, GPU-context, and Vulkan macro helpers.
 5. Keep the remaining prefixed support macros as intentional stable support helpers for RC unless a
    concrete side-effect or type-safety bug is found.

@@ -8,12 +8,12 @@ public Datoviz v0.4 documentation and website before RC publication.
 
 ## Start Condition
 
-Do not start the broad rewrite until the current pre-RC public API cleanup/refactor has landed or
-the maintainer explicitly freezes the public API surface for documentation work.
+Do not start the broad rewrite until the completed pre-RC public API cleanup branch has landed on
+`v0.4-dev` or the maintainer explicitly freezes the public API surface for documentation work.
 
-The documentation must describe the final pre-RC API, not the transitional API visible before the
-cleanup campaign completes. Treat headers, exported API manifests, generated ctypes policy, examples,
-and generated references at execution time as the source of truth.
+The documentation must describe the final pre-RC API, not transitional pre-cleanup APIs. Treat
+headers, exported API manifests, generated ctypes policy, examples, and generated references at
+execution time as the source of truth.
 
 
 ## Mandatory First Pass
