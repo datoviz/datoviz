@@ -35,9 +35,9 @@ docs/
   examples/
   how-to/
   reference/
-  explanation/   # exposed as Internals
-  advanced/      # exposed as Internals / Lower layers
-  contributors/
+  explanation/   # exposed under Advanced / Architecture
+  advanced/      # exposed under Advanced / Runtime layers
+  contributors/  # exposed under Advanced / Contributors
 ```
 
 This is a compact, Datoviz-specific structure:
@@ -47,8 +47,10 @@ This is a compact, Datoviz-specific structure:
    content, screenshots, and the best input for coding agents.
 3. `how-to/` explains task workflows and points to canonical examples instead of duplicating them.
 4. `reference/` provides exact facts, tables, signatures, attributes, statuses, and limits.
-5. `explanation/` and `advanced/` are exposed as **Internals**, not as the main user path.
-6. `contributors/` is a top-level section for humans and agents changing the repository.
+5. `explanation/`, `advanced/`, and `contributors/` are exposed through **Advanced**, not as the
+   main user path.
+6. Contributor and release-maintainer docs remain reachable, but they are secondary to the public
+   user path.
 
 Page roles should stay distinct:
 
@@ -280,8 +282,13 @@ reference/
     coordinate-systems.md
     controllers.md
     callbacks.md
+    visual-attributes.md
+    queries.md
+    errors-and-logging.md
   Compatibility/
+    project-status.md
     feature-status.md
+    v03-visible-parity.md
     platform-support.md
     build-options.md
   Backends/
@@ -327,26 +334,32 @@ Purpose: explain concepts, architecture, and tradeoffs.
 Current MkDocs navigation:
 
 ```text
-explanation/
-  System/
-    architecture.md
+Advanced/
+  Architecture/
     why-datoviz.md
-    gsp-vispy2-boundary.md
-  Scene/
     scene-model.md
-    figure-panel-visual-model.md
-    coordinate-systems.md
-    interaction-model.md
-  Runtime/
-    scene-to-drp2-runtime.md
-    frame-lifecycle.md
-    retained-resources.md
-    invalidation-and-caching.md
-    gpu-resource-ownership.md
-  Advanced/
-    query-pick-probe-model.md
     performance-model.md
     portability-webgpu.md
+  Runtime layers/
+    reference/drp2/index.md
+    advanced/vklite.md
+    advanced/canvas.md
+    advanced/webgpu-renderer.md
+  Contributors/
+    contributors/build-and-test.md
+    contributors/coding-style.md
+    contributors/adding-examples.md
+    contributors/adding-a-visual.md
+    contributors/docs-authoring.md
+    contributors/ai-agents.md
+    contributors/agent-quickstart.md
+  Release maintainers/
+    releases/index.md
+    releases/v0.4.0rc1.md
+    contributors/release-process.md
+    contributors/release-flight-checklist.md
+    contributors/release-wheels.md
+    contributors/release-validation.md
 ```
 
 Explanation pages should answer why the system is shaped as it is. They should be explicit about
@@ -358,27 +371,24 @@ or runtime contracts.
 
 Purpose: document how humans and agents change Datoviz safely.
 
-Current MkDocs navigation:
+Current MkDocs navigation exposes contributor pages under `Advanced`, not as a top-level public tab:
 
 ```text
-Contributing/
-  Getting started/
+Advanced/
+  Contributors/
     build-and-test.md
     coding-style.md
-  Adding content/
     adding-examples.md
     adding-a-visual.md
     docs-authoring.md
-  AI workflows/
     ai-agents.md
     agent-quickstart.md
-  Release/
+  Release maintainers/
     release-process.md
     release-flight-checklist.md
     release-wheels.md
     release-validation.md
     examples/validation-gallery.md
-    examples/webgpu-matrix.md
 ```
 
 Advanced contributor appendices may remain outside the navigation when they are linked from the

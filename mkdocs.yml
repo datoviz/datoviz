@@ -99,6 +99,7 @@ nav:
     - Features: 'examples/features.md'
     - Runtime & Capture: 'examples/runtime.md'
     - Advanced: 'examples/advanced.md'
+    - WebGPU matrix: 'examples/webgpu-matrix.md'
   - How-To:
     - Core Workflow:
       - Create a scene: 'how-to/create-a-scene.md'
@@ -184,7 +185,11 @@ nav:
       - Coordinate systems: 'reference/coordinate-systems.md'
       - Controllers: 'reference/controllers.md'
       - Callbacks and events: 'reference/callbacks.md'
+      - Visual attributes: 'reference/visual-attributes.md'
+      - Queries: 'reference/queries.md'
+      - Errors and logging: 'reference/errors-and-logging.md'
     - Compatibility:
+      - Project status: 'reference/project-status.md'
       - Feature status: 'reference/feature-status.md'
       - v0.3 visible parity: 'reference/v03-visible-parity.md'
       - Platform support: 'reference/platform-support.md'
@@ -192,28 +197,26 @@ nav:
     - Backends:
       - WebGPU subset: 'reference/webgpu-subset.md'
       - Compute and graphics: 'reference/compute-graphics.md'
-  - Internals:
+  - Advanced:
     - Architecture:
       - Why Datoviz: 'explanation/why-datoviz.md'
       - Scene model: 'explanation/scene-model.md'
       - Performance model: 'explanation/performance-model.md'
       - Portability and WebGPU: 'explanation/portability-webgpu.md'
-    - Lower Layers:
+    - Runtime layers:
+      - DRP2 internals: 'reference/drp2/index.md'
       - vklite: 'advanced/vklite.md'
       - Canvas and stream API: 'advanced/canvas.md'
       - WebGPU renderer: 'advanced/webgpu-renderer.md'
-  - Contributing:
-    - Getting started:
+    - Contributors:
       - Build and test: 'contributors/build-and-test.md'
       - Coding style: 'contributors/coding-style.md'
-    - Adding content:
       - Adding examples: 'contributors/adding-examples.md'
       - Adding a visual: 'contributors/adding-a-visual.md'
       - Docs authoring: 'contributors/docs-authoring.md'
-    - AI workflows:
       - AI agents: 'contributors/ai-agents.md'
       - Agent quickstart: 'contributors/agent-quickstart.md'
-    - Release:
+    - Release maintainers:
       - Release notes:
         - Overview: 'releases/index.md'
         - v0.4.0rc1 draft: 'releases/v0.4.0rc1.md'
@@ -222,7 +225,6 @@ nav:
       - Release wheels: 'contributors/release-wheels.md'
       - Release validation: 'contributors/release-validation.md'
       - Validation gallery: 'examples/validation-gallery.md'
-      - WebGPU matrix: 'examples/webgpu-matrix.md'
 not_in_nav: |
   _old/*
   architecture/*
@@ -240,11 +242,7 @@ not_in_nav: |
   start/what-is-datoviz.md
   tutorials/index.md
   tutorials/first-scene.md
-  reference/drp2/index.md
-  reference/project-status.md
-  reference/visual-attributes.md
-  reference/queries.md
-  reference/errors-and-logging.md
+  reference/api_c.md
   explanation/index.md
   explanation/architecture.md
   explanation/figure-panel-visual-model.md

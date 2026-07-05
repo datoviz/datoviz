@@ -44,6 +44,8 @@ support, and links to minimal examples.
 
 | Page | Use it for |
 | --- | --- |
-| [DRP2](drp2/index.md) | Advanced command-stream, fixture, packet, capability, and conformance reference. |
 | [WebGPU subset](webgpu-subset.md) | Experimental browser/WASM support and parity limits. |
 | [Compute and graphics](compute-graphics.md) | Narrow experimental compute-to-render slice. |
+
+Advanced command-stream and lower-layer runtime material is under
+[Advanced](../advanced/vklite.md), not the primary Reference path.
