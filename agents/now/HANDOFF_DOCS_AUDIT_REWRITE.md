@@ -87,20 +87,25 @@ They supersede earlier agent-facing wording when there is a conflict.
    what the example demonstrates, what visual result to expect, which data attributes matter, which
    user interaction applies, and where to go next. Code comments in examples should describe intent
    and important choices, not merely restate the function name.
-11. When describing the usual scene workflow, include the whole user-visible sequence: create the
+11. Generated "About This Example" sections must be example-specific. Do not use generic category
+    prose such as "this focused feature example demonstrates..." unless it is immediately followed
+    by concrete details from that example. Prefer manifest-backed fields such as `explains`,
+    `look_for`, `data_attributes`, `interaction`, and `next_steps`. If rich metadata is missing,
+    use one short useful fallback sentence rather than a generic paragraph.
+12. When describing the usual scene workflow, include the whole user-visible sequence: create the
     scene/figure/panel, create a visual, attach data arrays to visual attributes, add the visual to a
     panel, create a window or offscreen target, then run the app or capture the frame.
-12. Explain visual granularity with realistic examples. Do not rely on extreme comparisons such as
+13. Explain visual granularity with realistic examples. Do not rely on extreme comparisons such as
     one million one-item visuals. Say that semantically linked elements of the same visual family
     should usually be grouped into one visual, for example 100 related points in one point visual
     with 100 positions, colors, and sizes.
-13. Prefer short, readable public page slugs. When rewriting or moving task pages, simplify verbose
+14. Prefer short, readable public page slugs. When rewriting or moving task pages, simplify verbose
     filenames and URLs where it improves the site, for example `how-to/multiple-panels/` rather than
     `how-to/create-multiple-panels/`. Update `mkdocs.yml`, cross-links, generated references, and
     redirects or compatibility aliases as needed so existing links do not silently break. Check that
     the slug, page title, and navigation label describe the same task; they need not be identical,
     but they should not drift into different wording or scope.
-14. If an example is minimal, say why it is minimal. If it is advanced, say what prior concepts the
+15. If an example is minimal, say why it is minimal. If it is advanced, say what prior concepts the
     reader should know before using it.
 
 
