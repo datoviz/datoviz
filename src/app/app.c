@@ -1739,6 +1739,12 @@ static bool _app_should_exit(DvzApp* app)
 static void _view_close_runtime_resources(DvzView* win)
 {
     ANN(win);
+    if (win->app != NULL && win->app->gpu_ctx != NULL)
+    {
+        DvzDevice* device = dvz_gpu_ctx_device(win->app->gpu_ctx);
+        if (device != NULL)
+            dvz_device_wait(device);
+    }
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     if (win->gui != NULL)
     {
@@ -4003,6 +4009,12 @@ void dvz_app_destroy(DvzApp* app)
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     _dvz_app_status_finish(&app->status);
+    if (app->gpu_ctx != NULL)
+    {
+        DvzDevice* device = dvz_gpu_ctx_device(app->gpu_ctx);
+        if (device != NULL)
+            dvz_device_wait(device);
+    }
     for (uint32_t i = 0; i < app->view_count; i++)
     {
         DvzView* win = &app->views[i];
