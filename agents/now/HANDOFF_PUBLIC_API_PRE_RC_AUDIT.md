@@ -40,6 +40,41 @@ Before and after each major wave, record an exported-header/symbol delta. Remove
 but it must be deliberate and visible in the wave notes or commit message.
 
 
+## Current Progress
+
+Last updated: 2026-07-05 on `api/pre-rc-cleanup`.
+
+Completed checkpoints:
+
+1. `d24d1ce86` `agents: authorize pre-rc api cleanup branch`
+   - Authorized `api/pre-rc-cleanup` as the execution branch and recorded branch guardrails.
+2. `fe425ff78` `agents: prune completed pre-rc handoffs`
+   - Removed stale completed handoff files from the active `agents/now/` dispatch set.
+3. `ffda98d5d` `agents: record api cleanup baseline`
+   - Recorded the API cleanup baseline before public-surface edits.
+4. `c3caf968d` `api: demote object container internals`
+   - Moved `DvzObject`/`DvzContainer` declarations out of installed public headers.
+   - Removed object/container from generated C docs and raw `ctypes`.
+   - Refreshed and validated bindings with `just ctypes` and `just ctypes-check`.
+   - Deferred dynamic symbol hiding because split dylib linkage still needs internal
+     `dvz_obj_*`/`dvz_container_*` exports across private library boundaries.
+5. `7db8bf535` `scene: route visual family mapping through registry`
+   - Fixed the scene visual-boundary guard by moving visual family/type mapping into the visual
+     registry instead of maintaining root-facade enum switches.
+   - Validation passed: scene visual boundary checker, `just spec-check`, `just build`,
+     `just test scene/scene-graph`, and `git diff --check`.
+
+Current working-tree noise to leave untouched unless explicitly approved in the current turn:
+
+- dirty `data` submodule state;
+- untracked `paper/paper.pdf`.
+
+Next recommended checkpoint: remove the legacy scene clock aliases
+`DVZ_CLOCK_REALTIME` and `DVZ_CLOCK_OFFLINE`, then regenerate and validate bindings. This is the
+smallest remaining API-breaking slice. After that, continue with public mock-data helper demotion
+and a separate decision on the transitional texture wrappers.
+
+
 ## Maintainer Decisions
 
 Use these defaults unless the code audit finds a stronger local reason:
@@ -148,6 +183,8 @@ Suggested execution order:
 ## Highest Priority Findings
 
 ### 1. Remove Internal Object/Container API From Public Surface
+
+Status: completed by `c3caf968d` except for deferred dynamic export-list tightening.
 
 `DvzObject`, `DvzContainer`, object status/type enums, and generic container functions are installed,
 exported, documented, and emitted in raw `ctypes`, but look like internal lifetime/runtime plumbing.
@@ -368,9 +405,11 @@ Use small checkpoint commits. Each commit should keep public headers, implementa
 generated ctypes, generated docs if applicable, and examples in sync.
 
 1. **API exposure cleanup**
-   - Remove or demote internal object/container API.
-   - Remove legacy clock aliases and transitional texture wrappers.
-   - Remove or demote mock-data helpers.
+   - Completed: remove or demote internal object/container API.
+   - Next: remove legacy clock aliases.
+   - Then: remove or demote mock-data helpers.
+   - Decide separately: remove transitional texture wrappers, or rename them as explicit sampled
+     field helpers.
    - Validation: `just ctypes`, `just ctypes-check`, narrow compile/build check.
 
 2. **Stable scene naming cleanup**
