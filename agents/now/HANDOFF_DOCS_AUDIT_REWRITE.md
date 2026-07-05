@@ -99,13 +99,16 @@ They supersede earlier agent-facing wording when there is a conflict.
     one million one-item visuals. Say that semantically linked elements of the same visual family
     should usually be grouped into one visual, for example 100 related points in one point visual
     with 100 positions, colors, and sizes.
-14. Prefer short, readable public page slugs. When rewriting or moving task pages, simplify verbose
+14. For How-To pages, start from a concrete user situation, then give the workflow, then explain the
+    available choices with practical examples. Keep tables, code snippets, and "common mistakes"
+    sections, but make sure prose around them explains why the user would choose each path.
+15. Prefer short, readable public page slugs. When rewriting or moving task pages, simplify verbose
     filenames and URLs where it improves the site, for example `how-to/multiple-panels/` rather than
     `how-to/create-multiple-panels/`. Update `mkdocs.yml`, cross-links, generated references, and
     redirects or compatibility aliases as needed so existing links do not silently break. Check that
     the slug, page title, and navigation label describe the same task; they need not be identical,
     but they should not drift into different wording or scope.
-15. If an example is minimal, say why it is minimal. If it is advanced, say what prior concepts the
+16. If an example is minimal, say why it is minimal. If it is advanced, say what prior concepts the
     reader should know before using it.
 
 
@@ -257,6 +260,9 @@ Before broad autonomous rewriting, deliver a short plan for maintainer feedback:
 
 Landing and quickstart samples should show Python first, then C. Generated example/reference pages
 may remain C-first where C is the source of truth.
+
+The accepted How-To tone sample is `docs/how-to/update-visual-data.md`: practical, beginner-facing,
+and explicit about arrays, attributes, batching, and update choices without leading with internals.
 
 
 ## First-Pass Audit Snapshot
