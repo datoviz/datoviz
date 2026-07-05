@@ -408,6 +408,53 @@ generated ctypes, generated docs if applicable, and examples in sync.
    - Validation: fileio/math/geom tests, raw ctypes regeneration/check.
 
 
+## Execution Log
+
+### Baseline And API Inventory
+
+Status: complete on branch `api/pre-rc-cleanup`.
+
+Baseline commands:
+
+```sh
+git status --short --branch
+git submodule status data
+git diff --check
+just build
+python3 tools/check_api_status.py
+python3 tools/build_api_c.py --check
+just spec-check
+```
+
+Results:
+
+1. `git status --short --branch` reported branch
+   `api/pre-rc-cleanup...origin/api/pre-rc-cleanup`, unstaged `data`, and untracked
+   `paper/paper.pdf`.
+2. `git submodule status data` reported
+   `c1506b18196e509a9d50f26faba41d6838620aa8 data (remotes/origin/v0.4-dev)`.
+3. `git diff --check` passed.
+4. `just build` passed with no rebuild work.
+5. `python3 tools/build_api_c.py --check` passed with 1557 functions and 7 pages classified.
+6. `python3 tools/check_api_status.py` failed on an existing metadata gap:
+   `include/datoviz/video/types.h` is installed but unclassified in `spec/api/status.yml`.
+7. `just spec-check` failed for the same API status gap and for the existing scene visual-boundary
+   guard findings from `tools/check_scene_visual_boundaries.py`.
+
+Inventory:
+
+1. Installed public headers under `include/datoviz/`: 112.
+2. `DVZ_EXPORT` occurrences in installed public headers: 1585.
+3. `spec/api/status.yml`: 24 entries covering 57 headers; tiers are 9 stable, 14 advanced, and
+   1 experimental.
+4. Generated raw `datoviz/_ctypes.py`: 1568 bound functions and 189 generated structure/enum
+   classes.
+
+Next wave target: public exposure cleanup. First fix or deliberately classify the baseline
+`video/types.h` manifest gap, then remove or demote accidental/internal public surfaces such as
+object/container declarations, legacy scene aliases, and mock-data helpers.
+
+
 ## Validation Baseline For Future Agent
 
 Minimum after any public API change:
