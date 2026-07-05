@@ -49,11 +49,6 @@ static bool _annotation_desc_validate(const DvzAnnotationDesc* desc)
         log_error("invalid annotation descriptor ABI");
         return false;
     }
-    if (!_text_style_is_zero(&desc->style) && !_text_style_validate(&desc->style))
-        return false;
-    if (!_text_placement_is_zero(&desc->placement) &&
-        !_text_placement_validate(&desc->placement))
-        return false;
     return true;
 }
 
@@ -67,11 +62,6 @@ static bool _label_desc_validate(const DvzLabelDesc* desc)
         log_error("invalid label descriptor ABI");
         return false;
     }
-    if (!_text_style_is_zero(&desc->style) && !_text_style_validate(&desc->style))
-        return false;
-    if (!_text_placement_is_zero(&desc->placement) &&
-        !_text_placement_validate(&desc->placement))
-        return false;
     return true;
 }
 
@@ -86,8 +76,6 @@ DvzAnnotationDesc dvz_annotation_desc(void)
     return (DvzAnnotationDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzAnnotationDesc),
         .kind = DVZ_ANNOTATION_LABEL,
-        .style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle)},
-        .placement = {DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement)},
     };
 }
 
@@ -101,8 +89,6 @@ DvzLabelDesc dvz_label_desc(void)
 {
     return (DvzLabelDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc),
-        .style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle)},
-        .placement = {DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement)},
     };
 }
 
@@ -128,19 +114,14 @@ DvzAnnotation* dvz_annotation(DvzPanel* panel, const DvzAnnotationDesc* desc)
         log_error("maximum annotation count reached");
         return NULL;
     }
-    if (desc->style.font != NULL && desc->style.font->scene != scene)
-    {
-        log_error("cannot bind a font from a different scene");
-        return NULL;
-    }
     DvzAnnotation* annotation = &scene->annotations[scene->annotation_count++];
     dvz_memset(annotation, sizeof(DvzAnnotation), 0, sizeof(DvzAnnotation));
     annotation->scene = scene;
     annotation->id = _scene_next_id(scene);
     annotation->panel = panel;
     annotation->kind = desc->kind;
-    annotation->style = desc->style;
-    annotation->placement = desc->placement;
+    annotation->style = (DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle)};
+    annotation->placement = (DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement)};
     annotation->flags = desc->annotation_flags;
     annotation->dirty_flags = DVZ_TEXT_DIRTY_ALL;
     annotation->version = 1;
@@ -175,9 +156,44 @@ DvzAnnotation* dvz_annotation_label(DvzPanel* panel, const DvzLabelDesc* desc)
                    DVZ_STRUCT_INIT_FIELDS(DvzAnnotationDesc),
                    .kind = DVZ_ANNOTATION_LABEL,
                    .text = desc->text,
-                   .style = desc->style,
-                   .placement = desc->placement,
                    .annotation_flags = desc->label_flags});
+}
+
+
+DvzResult dvz_annotation_set_style(DvzAnnotation* annotation, const DvzTextStyle* style)
+{
+    if (annotation == NULL || annotation->scene == NULL)
+        return -1;
+    if (style != NULL && !_text_style_validate(style))
+        return -1;
+    DvzTextStyle resolved = style != NULL ?
+                                *style :
+                                (DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle)};
+    if (resolved.font != NULL && resolved.font->scene != annotation->scene)
+        return -1;
+    annotation->style = resolved;
+    annotation->dirty_flags |= DVZ_TEXT_DIRTY_STYLE | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER;
+    annotation->version++;
+    _scene_notify_request_frame(annotation->panel != NULL ? annotation->panel->figure : NULL);
+    return 0;
+}
+
+
+DvzResult dvz_annotation_set_placement(
+    DvzAnnotation* annotation, const DvzTextPlacement* placement)
+{
+    if (annotation == NULL || annotation->scene == NULL)
+        return -1;
+    if (placement != NULL && !_text_placement_validate(placement))
+        return -1;
+    annotation->placement = placement != NULL ?
+                                *placement :
+                                (DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement)};
+    annotation->dirty_flags |=
+        DVZ_TEXT_DIRTY_PLACEMENT | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER;
+    annotation->version++;
+    _scene_notify_request_frame(annotation->panel != NULL ? annotation->panel->figure : NULL);
+    return 0;
 }
 
 

@@ -275,22 +275,27 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_graphite_cyan_set_panel_background(plain);
     example_graphite_cyan_set_panel_background(lit);
 
+    DvzTextStyle label_style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
+    label_style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    label_style.size_px = EXAMPLE_PANEL_LABEL_LARGE_SIZE;
+    DvzTextPlacement label_placement = dvz_text_placement();
+    label_placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
+    label_placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
+    label_placement.position[0] = EXAMPLE_PANEL_LABEL_LARGE_X_PX;
+    label_placement.position[1] = EXAMPLE_PANEL_LABEL_LARGE_Y_PX;
+    label_placement.text_anchor[0] = 0.0f;
+    label_placement.text_anchor[1] = 0.0f;
+    label_placement.has_text_anchor = true;
     DvzLabelDesc label = dvz_label_desc();
-    label.style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
-    label.style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
-    label.style.size_px = EXAMPLE_PANEL_LABEL_LARGE_SIZE;
-    label.placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
-    label.placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
-    label.placement.position[0] = EXAMPLE_PANEL_LABEL_LARGE_X_PX;
-    label.placement.position[1] = EXAMPLE_PANEL_LABEL_LARGE_Y_PX;
-    label.placement.text_anchor[0] = 0.0f;
-    label.placement.text_anchor[1] = 0.0f;
-    label.placement.has_text_anchor = true;
     label.text = "plain depth";
-    if (dvz_annotation_label(plain, &label) == NULL)
+    DvzAnnotation* annotation = dvz_annotation_label(plain, &label);
+    if (annotation == NULL || dvz_annotation_set_style(annotation, &label_style) != 0 ||
+        dvz_annotation_set_placement(annotation, &label_placement) != 0)
         return false;
     label.text = "EDL resolve";
-    if (dvz_annotation_label(lit, &label) == NULL)
+    annotation = dvz_annotation_label(lit, &label);
+    if (annotation == NULL || dvz_annotation_set_style(annotation, &label_style) != 0 ||
+        dvz_annotation_set_placement(annotation, &label_placement) != 0)
         return false;
 
     if (!_set_camera(plain) || !_set_camera(lit))

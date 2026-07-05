@@ -1579,8 +1579,6 @@ struct DvzAnnotationDesc
     uint32_t flags;
     DvzAnnotationKind kind;
     const char* text;
-    DvzTextStyle style;
-    DvzTextPlacement placement;
     uint32_t annotation_flags;
 };
 typedef struct DvzAnnotationDesc DvzAnnotationDesc;
@@ -1591,8 +1589,6 @@ struct DvzLabelDesc
     uint32_t struct_size;
     uint32_t flags;
     const char* text;
-    DvzTextStyle style;
-    DvzTextPlacement placement;
     uint32_t label_flags;
 };
 typedef struct DvzLabelDesc DvzLabelDesc;

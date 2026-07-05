@@ -102,9 +102,9 @@ placement.depth_test = false;
 
 DvzAnnotation* readout = dvz_annotation_label(
     panel, &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc),
-               .text = "peak",
-               .style = style,
-               .placement = placement});
+               .text = "peak"});
+dvz_annotation_set_style(readout, &style);
+dvz_annotation_set_placement(readout, &placement);
 ```
 
 The annotation object is retained by the panel. Destroy it with `dvz_annotation_destroy()` when the

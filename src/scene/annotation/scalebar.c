@@ -988,8 +988,6 @@ DvzScaleBar* dvz_scale_bar(DvzPanel* panel, const DvzScaleBarDesc* desc)
         panel, &(DvzAnnotationDesc){
                    DVZ_STRUCT_INIT_FIELDS(DvzAnnotationDesc),
                    .kind = DVZ_ANNOTATION_SCALEBAR,
-                   .style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle)},
-                   .placement = {DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement)},
                    .annotation_flags = desc->scalebar_flags});
     if (annotation == NULL)
         return NULL;

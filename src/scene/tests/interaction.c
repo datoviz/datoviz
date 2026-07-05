@@ -369,8 +369,20 @@ int test_scene_text_annotation_descriptor_abi_rejects_invalid_structs(
     AT_EXPECTED_ERROR_STRICT(suite, dvz_annotation_label(panel, &label_desc) == NULL);
 
     label_desc = dvz_label_desc();
-    label_desc.style.flags = 1;
+    label_desc.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_annotation_label(panel, &label_desc) == NULL);
+
+    label_desc = dvz_label_desc();
+    DvzAnnotation* annotation = dvz_annotation_label(panel, &label_desc);
+    ANN(annotation);
+    text_style = dvz_text_style();
+    text_style.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_annotation_set_style(annotation, &text_style) < 0);
+
+    text_placement = dvz_text_placement();
+    text_placement.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_annotation_set_placement(annotation, &text_placement) < 0);
 
     DvzScaleBarDesc scalebar_desc = dvz_scale_bar_desc();
     scalebar_desc.struct_size = 0;
@@ -1859,25 +1871,26 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     DvzAnnotation* annotation = dvz_annotation_label(
-        panel,
-        &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc),
-            .text = "peak",
-            .style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .font = font,
-                .size_px = 12.0f,
-                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-            },
-            .placement = {DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
-                .mode = DVZ_TEXT_PLACEMENT_SCREEN,
-                .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
-            },
-        });
+        panel, &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc), .text = "peak"});
     ANN(annotation);
+    AT(dvz_annotation_set_style(
+           annotation,
+           &(DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+               .font = font,
+               .size_px = 12.0f,
+               .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+           }) == 0);
+    AT(dvz_annotation_set_placement(
+           annotation,
+           &(DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
+               .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+               .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+           }) == 0);
     AT(annotation->kind == DVZ_ANNOTATION_LABEL);
     AT(strcmp(annotation->text, "peak") == 0);
     AT(annotation->style.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
     AT(annotation->dirty_flags == DVZ_TEXT_DIRTY_ALL);
-    AT(annotation->version == 1);
+    AT(annotation->version == 3);
 
     annotation->dirty_flags = DVZ_TEXT_DIRTY_NONE;
     dvz_annotation_set_format(annotation, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 3, .suffix = " ms"});
@@ -1885,7 +1898,7 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
     AT(strcmp(annotation->format.suffix, " ms") == 0);
     AT(annotation->dirty_flags ==
        (DVZ_TEXT_DIRTY_STRING | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER));
-    AT(annotation->version == 2);
+    AT(annotation->version == 4);
 
     dvz_annotation_destroy(annotation);
     dvz_font_destroy(font);
@@ -3882,21 +3895,22 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     AT(!glyph->visible);
 
     DvzAnnotation* annotation = dvz_annotation_label(
-        panel,
-        &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc),
-            .text = "A",
-            .style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 8.0f,
-                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
-                .color = {255, 255, 255, 255},
-            },
-            .placement = {DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
-                .mode = DVZ_TEXT_PLACEMENT_SCREEN,
-                .anchor = DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT,
-                .offset = {-4.0f, -4.0f},
-            },
-        });
+        panel, &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc), .text = "A"});
     ANN(annotation);
+    AT(dvz_annotation_set_style(
+           annotation,
+           &(DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+               .size_px = 8.0f,
+               .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+               .color = {255, 255, 255, 255},
+           }) == 0);
+    AT(dvz_annotation_set_placement(
+           annotation,
+           &(DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
+               .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+               .anchor = DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT,
+               .offset = {-4.0f, -4.0f},
+           }) == 0);
     _scene_prepare_text_visuals(figure);
     ANN(annotation->visual);
     AT(annotation->visual->type == DVZ_VISUAL_TYPE_GLYPH);
@@ -4031,20 +4045,21 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
     AT(second_min_x > first_max_x + 0.5f);
 
     DvzAnnotation* annotation = dvz_annotation_label(
-        panel,
-        &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc),
-            .text = "A",
-            .style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 14.0f,
-                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-            },
-            .placement = {DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
-                .mode = DVZ_TEXT_PLACEMENT_SCREEN,
-                .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
-                .offset = {4.0f, 4.0f},
-            },
-        });
+        panel, &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc), .text = "A"});
     ANN(annotation);
+    AT(dvz_annotation_set_style(
+           annotation,
+           &(DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+               .size_px = 14.0f,
+               .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+           }) == 0);
+    AT(dvz_annotation_set_placement(
+           annotation,
+           &(DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
+               .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+               .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
+               .offset = {4.0f, 4.0f},
+           }) == 0);
     _scene_prepare_text_visuals(figure);
     ANN(annotation->visual);
     AT(annotation->visual->type == DVZ_VISUAL_TYPE_GLYPH);

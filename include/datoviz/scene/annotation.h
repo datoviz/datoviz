@@ -82,6 +82,28 @@ DVZ_EXPORT DvzAnnotation* dvz_annotation_label(DvzPanel* panel, const DvzLabelDe
 
 
 /**
+ * Set the style of a retained annotation.
+ *
+ * @param annotation the annotation
+ * @param style text style, or NULL for defaults
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT DvzResult dvz_annotation_set_style(
+    DvzAnnotation* annotation, const DvzTextStyle* style);
+
+
+/**
+ * Set the placement policy of a retained annotation.
+ *
+ * @param annotation the annotation
+ * @param placement text placement, or NULL for defaults
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT DvzResult dvz_annotation_set_placement(
+    DvzAnnotation* annotation, const DvzTextPlacement* placement);
+
+
+/**
  * Create a retained scale bar attached to a panel.
  *
  * `DvzScaleBar` is a typed alias for the retained annotation object returned here. Pass NULL for

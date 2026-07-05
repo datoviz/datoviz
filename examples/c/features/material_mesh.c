@@ -129,18 +129,21 @@ static bool _add_material_label(DvzPanel* panel, const char* label)
 
     DvzLabelDesc desc = dvz_label_desc();
     desc.text = label;
-    desc.style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
-    desc.style.size_px = LABEL_SIZE;
-    desc.style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
-    desc.style.color[3] = 255u;
-    desc.placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
-    desc.placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
-    desc.placement.position[0] = 20.0f;
-    desc.placement.position[1] = 20.0f;
-    desc.placement.text_anchor[0] = 0.0f;
-    desc.placement.text_anchor[1] = 0.0f;
-    desc.placement.has_text_anchor = true;
-    return dvz_annotation_label(panel, &desc) != NULL;
+    DvzTextStyle style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
+    style.size_px = LABEL_SIZE;
+    style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    style.color[3] = 255u;
+    DvzTextPlacement placement = dvz_text_placement();
+    placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
+    placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
+    placement.position[0] = 20.0f;
+    placement.position[1] = 20.0f;
+    placement.text_anchor[0] = 0.0f;
+    placement.text_anchor[1] = 0.0f;
+    placement.has_text_anchor = true;
+    DvzAnnotation* annotation = dvz_annotation_label(panel, &desc);
+    return annotation != NULL && dvz_annotation_set_style(annotation, &style) == 0 &&
+           dvz_annotation_set_placement(annotation, &placement) == 0;
 }
 
 

@@ -175,12 +175,17 @@ static DvzAnnotation* _add_readout(DvzPanel* panel, const vec3 position)
     if (n <= 0 || (size_t)n >= sizeof(label))
         return NULL;
 
-    return dvz_annotation_label(
-        panel, &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc),
-                   .text = label,
-                   .style = style,
-                   .placement = placement,
-               });
+    DvzAnnotation* annotation = dvz_annotation_label(
+        panel, &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc), .text = label});
+    if (annotation == NULL)
+        return NULL;
+    if (dvz_annotation_set_style(annotation, &style) != 0 ||
+        dvz_annotation_set_placement(annotation, &placement) != 0)
+    {
+        dvz_annotation_destroy(annotation);
+        return NULL;
+    }
+    return annotation;
 }
 
 

@@ -218,12 +218,21 @@ static DvzAnnotation* _guide_label_create(DvzPanel* panel, const char* text)
 
     DvzLabelDesc label_desc = dvz_label_desc();
     label_desc.text = text;
-    label_desc.placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
-    label_desc.placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
-    label_desc.placement.text_anchor[0] = 0.5f;
-    label_desc.placement.text_anchor[1] = 0.5f;
-    label_desc.placement.has_text_anchor = true;
-    return dvz_annotation_label(panel, &label_desc);
+    DvzAnnotation* label = dvz_annotation_label(panel, &label_desc);
+    if (label == NULL)
+        return NULL;
+    DvzTextPlacement placement = dvz_text_placement();
+    placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
+    placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
+    placement.text_anchor[0] = 0.5f;
+    placement.text_anchor[1] = 0.5f;
+    placement.has_text_anchor = true;
+    if (dvz_annotation_set_placement(label, &placement) != 0)
+    {
+        dvz_annotation_destroy(label);
+        return NULL;
+    }
+    return label;
 }
 
 

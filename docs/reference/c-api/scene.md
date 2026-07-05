@@ -18,14 +18,14 @@ Common workflows:
 - [Configure cameras](../../how-to/configure-cameras.md)
 - [Pick and probe](../../how-to/pick-and-probe.md)
 
-Functions: 386
+Functions: 388
 
 ## Symbol Groups
 
 | Group | Functions | Headers |
 | --- | ---: | --- |
 | [Anim](#anim) | 13 | `include/datoviz/scene/animation.h` |
-| [Annotation](#annotation) | 6 | `include/datoviz/scene/annotation.h` |
+| [Annotation](#annotation) | 8 | `include/datoviz/scene/annotation.h` |
 | [Arcball](#arcball) | 1 | `include/datoviz/scene/arcball.h` |
 | [Axis](#axis) | 13 | `include/datoviz/scene.h` |
 | [Band](#band) | 6 | `include/datoviz/scene/plot.h` |
@@ -98,6 +98,8 @@ Functions: 386
     | [`dvz_annotation_id()`](#dvz_annotation_id) | `include/datoviz/scene/annotation.h` |
     | [`dvz_annotation_label()`](#dvz_annotation_label) | `include/datoviz/scene/annotation.h` |
     | [`dvz_annotation_set_format()`](#dvz_annotation_set_format) | `include/datoviz/scene/annotation.h` |
+    | [`dvz_annotation_set_placement()`](#dvz_annotation_set_placement) | `include/datoviz/scene/annotation.h` |
+    | [`dvz_annotation_set_style()`](#dvz_annotation_set_style) | `include/datoviz/scene/annotation.h` |
 
     ### Arcball
 
@@ -1002,7 +1004,7 @@ Also destroys typed annotation aliases such as `DvzScaleBar` after casting to `D
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/annotation.h`:175._
+_Declared in `include/datoviz/scene/annotation.h`:197._
 
 ### `dvz_annotation_id()`
 
@@ -1062,7 +1064,49 @@ Override formatting policy on an annotation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/annotation.h`:184._
+_Declared in `include/datoviz/scene/annotation.h`:206._
+
+### `dvz_annotation_set_placement()`
+
+```c title="dvz_annotation_set_placement"
+DvzResult dvz_annotation_set_placement(
+    DvzAnnotation * annotation,
+    const DvzTextPlacement * placement
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on validation error |
+| `annotation` | `DvzAnnotation *` | the annotation |
+| `placement` | `const DvzTextPlacement *` | text placement, or NULL for defaults |
+
+Set the placement policy of a retained annotation.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene/annotation.h`:102._
+
+### `dvz_annotation_set_style()`
+
+```c title="dvz_annotation_set_style"
+DvzResult dvz_annotation_set_style(
+    DvzAnnotation * annotation,
+    const DvzTextStyle * style
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on validation error |
+| `annotation` | `DvzAnnotation *` | the annotation |
+| `style` | `const DvzTextStyle *` | text style, or NULL for defaults |
+
+Set the style of a retained annotation.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene/annotation.h`:91._
 
 ## Arcball
 
@@ -6579,7 +6623,7 @@ the default descriptor. Destroy it with `dvz_annotation_destroy((DvzAnnotation*)
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/annotation.h`:94._
+_Declared in `include/datoviz/scene/annotation.h`:116._
 
 ### `dvz_scale_bar_desc()`
 
@@ -6618,7 +6662,7 @@ Set the panel anchor of a retained scale bar.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/annotation.h`:114._
+_Declared in `include/datoviz/scene/annotation.h`:136._
 
 ### `dvz_scale_bar_set_dimension()`
 
@@ -6639,7 +6683,7 @@ Set the data dimension measured by a retained scale bar.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/annotation.h`:104._
+_Declared in `include/datoviz/scene/annotation.h`:126._
 
 ### `dvz_scale_bar_set_duration_units()`
 
@@ -6660,7 +6704,7 @@ Attach duration units to a retained scale bar.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/annotation.h`:134._
+_Declared in `include/datoviz/scene/annotation.h`:156._
 
 ### `dvz_scale_bar_set_format()`
 
@@ -6681,7 +6725,7 @@ Override formatting policy on a retained scale bar.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/annotation.h`:165._
+_Declared in `include/datoviz/scene/annotation.h`:187._
 
 ### `dvz_scale_bar_set_label_style()`
 
@@ -6702,7 +6746,7 @@ Set the label style of a retained scale bar.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/annotation.h`:144._
+_Declared in `include/datoviz/scene/annotation.h`:166._
 
 ### `dvz_scale_bar_set_placement()`
 
@@ -6723,7 +6767,7 @@ Set the label placement policy of a retained scale bar.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/annotation.h`:154._
+_Declared in `include/datoviz/scene/annotation.h`:176._
 
 ### `dvz_scale_bar_set_units()`
 
@@ -6744,7 +6788,7 @@ Attach numeric units to a retained scale bar.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/annotation.h`:124._
+_Declared in `include/datoviz/scene/annotation.h`:146._
 
 ### `dvz_scale_category()`
 
