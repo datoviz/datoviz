@@ -1067,6 +1067,24 @@ static bool _view_size_desc_active(const DvzViewSizeDesc* desc)
 
 
 
+static DvzViewSizeDesc _view_desc_size_desc(const DvzViewDesc* desc)
+{
+    DvzViewSizeDesc size = {DVZ_STRUCT_INIT_FIELDS(DvzViewSizeDesc)};
+    if (desc == NULL)
+        return size;
+    size.policy = desc->size_policy;
+    size.width = desc->size_width;
+    size.height = desc->size_height;
+    size.reference_dpi = desc->size_reference_dpi;
+    size.requested_device_scale = desc->size_requested_device_scale;
+    size.monitor_dpi_x_override = desc->size_monitor_dpi_x_override;
+    size.monitor_dpi_y_override = desc->size_monitor_dpi_y_override;
+    size.strict_framebuffer_size = desc->size_strict_framebuffer_size;
+    return size;
+}
+
+
+
 static DvzViewSizeDesc _view_size_desc(
     DvzViewSizePolicy policy, double width, double height, double reference_dpi)
 {
@@ -4069,7 +4087,6 @@ DvzViewDesc dvz_view_desc(DvzViewKind kind)
 {
     DvzViewDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzViewDesc)};
     desc.kind = kind;
-    desc.size = (DvzViewSizeDesc){DVZ_STRUCT_INIT_FIELDS(DvzViewSizeDesc)};
     desc.device_scale = 1.0f;
     desc.user_scale = 1.0f;
     desc.render_scale = 1.0f;
@@ -4097,11 +4114,15 @@ static void _view_desc_resolve(
     desc.user_scale = _view_valid_scale(desc.user_scale);
     desc.render_scale = _view_valid_scale(desc.render_scale);
 
-    if (_view_size_desc_active(&desc.size))
+    DvzViewSizeDesc size = _view_desc_size_desc(&desc);
+    if (_view_size_desc_active(&size))
     {
-        if (desc.size.requested_device_scale <= 0.0 || !isfinite(desc.size.requested_device_scale))
-            desc.size.requested_device_scale = desc.device_scale;
-        DvzResolvedViewSize resolved = dvz_view_size_resolve(&desc.size, desc.kind);
+        if (size.requested_device_scale <= 0.0 || !isfinite(size.requested_device_scale))
+        {
+            size.requested_device_scale = desc.device_scale;
+            desc.size_requested_device_scale = size.requested_device_scale;
+        }
+        DvzResolvedViewSize resolved = dvz_view_size_resolve(&size, desc.kind);
         desc.logical_width = resolved.host_logical_width;
         desc.logical_height = resolved.host_logical_height;
         desc.framebuffer_width = resolved.framebuffer_width;
@@ -4144,7 +4165,7 @@ static void _view_apply_desc_state(DvzView* win, const DvzViewDesc* desc)
 {
     ANN(win);
     ANN(desc);
-    win->requested_size = desc->size;
+    win->requested_size = _view_desc_size_desc(desc);
     win->user_scale = _view_valid_scale(desc->user_scale);
     win->render_scale = _view_valid_scale(desc->render_scale);
     _view_update_size_state(
@@ -4164,7 +4185,7 @@ static void _view_apply_desc_scales(DvzView* win, const DvzViewDesc* desc)
 {
     ANN(win);
     ANN(desc);
-    win->requested_size = desc->size;
+    win->requested_size = _view_desc_size_desc(desc);
     win->user_scale = _view_valid_scale(desc->user_scale);
     win->render_scale = _view_valid_scale(desc->render_scale);
 }

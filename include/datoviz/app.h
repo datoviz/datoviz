@@ -240,7 +240,14 @@ struct DvzViewDesc
     uint32_t flags;
     DvzViewKind kind;
 
-    DvzViewSizeDesc size;
+    DvzViewSizePolicy size_policy;
+    double size_width;
+    double size_height;
+    double size_reference_dpi;
+    double size_requested_device_scale;
+    double size_monitor_dpi_x_override;
+    double size_monitor_dpi_y_override;
+    bool size_strict_framebuffer_size;
 
     uint32_t logical_width;
     uint32_t logical_height;

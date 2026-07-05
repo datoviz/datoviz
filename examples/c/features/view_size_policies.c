@@ -190,7 +190,14 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_GLFW);
-    desc.size = size;
+    desc.size_policy = size.policy;
+    desc.size_width = size.width;
+    desc.size_height = size.height;
+    desc.size_reference_dpi = size.reference_dpi;
+    desc.size_requested_device_scale = size.requested_device_scale;
+    desc.size_monitor_dpi_x_override = size.monitor_dpi_x_override;
+    desc.size_monitor_dpi_y_override = size.monitor_dpi_y_override;
+    desc.size_strict_framebuffer_size = size.strict_framebuffer_size;
     desc.title = "View Size Policies";
     DvzView* view = dvz_view(app, figure, &desc);
     EXAMPLE_CHECK(view != NULL, "dvz_view() failed");

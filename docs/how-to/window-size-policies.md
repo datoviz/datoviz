@@ -25,7 +25,11 @@ Use `DvzViewSizeDesc` when you need explicit control over those spaces.
 
 ```c
 DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_GLFW);
-desc.size = dvz_view_size_desc_reference_px(1280.0, 720.0, 96.0);
+DvzViewSizeDesc size = dvz_view_size_desc_reference_px(1280.0, 720.0, 96.0);
+desc.size_policy = size.policy;
+desc.size_width = size.width;
+desc.size_height = size.height;
+desc.size_reference_dpi = size.reference_dpi;
 desc.title = "reference-sized view";
 
 DvzView* view = dvz_view(app, figure, &desc);
