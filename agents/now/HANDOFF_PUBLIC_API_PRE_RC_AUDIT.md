@@ -366,6 +366,16 @@ Completed checkpoints:
      `just test scene/fields`, `just test scene/text-atlas`, `just ctypes-smoke`,
      `just docs-api-check`, `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`,
      and `git diff --check`.
+34. `4172b38bd` `api: const borrowed visual scale binding`
+   - Changed `dvz_visual_set_scale()` to take `const DvzScale*`, matching its borrowed bind-only
+     public contract.
+   - Updated generated C API docs.
+   - Exported symbol delta: no exported functions were added or removed; pointer constness changed
+     at the C source/API level without changing the dynamic symbol set.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `just build`,
+     `just test scene/fields`, `just ctypes-smoke`, `just docs-api-check`,
+     `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`, and
+     `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -625,21 +635,19 @@ Apply this especially to `dvz_visual_set_data_range()` and text batch setters.
 ### 8. Tighten Constness And Borrowed Ownership
 
 Status: sampled-field bind-only constness and text-atlas borrowed-field constness completed by
-`ed1f2a289`. Scale binding, symbol-set binding, and borrowed descriptor getter replacement remain
-open.
+`ed1f2a289`; scale binding constness completed by `4172b38bd`. Symbol-set binding and borrowed
+descriptor getter replacement remain open.
 
 Bind-only APIs accept mutable resources, and descriptor getters expose borrowed internals.
 
 References:
 
 - `include/datoviz/scene/field.h`: `dvz_sampled_field_get_desc()`
-- `include/datoviz/scene/scale.h`: `dvz_visual_set_scale()`
 - `include/datoviz/scene.h`: symbol-set bindings and `dvz_scene_buffer_get_desc()`
 
 Preferred fix:
 
-- Use `const DvzScale*` and `const DvzSymbolSet*` for bind-only resource arguments when ownership
-  is not transferred.
+- Use `const DvzSymbolSet*` for bind-only resource arguments when ownership is not transferred.
 - Replace borrowed descriptor getters with copy-out APIs such as
   `bool dvz_sampled_field_info(const DvzSampledField*, DvzSampledFieldDesc* out)` and
   `bool dvz_scene_buffer_info(const DvzSceneBuffer*, DvzSceneBufferDesc* out)`.
