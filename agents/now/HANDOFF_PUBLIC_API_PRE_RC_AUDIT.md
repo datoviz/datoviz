@@ -268,6 +268,16 @@ Completed checkpoints:
      then rerun serially for `app`; both attempts hung in the GLFW-backed
      `gui/config_inherits_app_font_defaults` process after earlier checks had passed, so the stuck
      sessions were terminated instead of used as pass/fail evidence.
+25. `52e38e358` `api: normalize jpeg decode byte arguments`
+   - Reordered `dvz_load_jpeg()` from `(size, bytes, width, height)` to
+     `(bytes, size_bytes, width, height)`, matching `dvz_load_png()` and the byte-buffer API
+     convention.
+   - Updated internal callers, file I/O tests, generated raw `ctypes`, and generated C API docs.
+   - Exported symbol delta: no exported functions were added or removed; `dvz_load_jpeg()` ABI
+     signature changed before RC1.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `just ctypes-smoke`,
+     `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`, `just test fileio`,
+     `just build`, `just spec-check`, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -566,6 +576,9 @@ Preferred fix:
 
 
 ### 10. Clean Support-Header Leakage
+
+Status: `dvz_load_jpeg()` byte-buffer argument order normalized by `52e38e358`; other support-header
+leakage remains open.
 
 Public support headers leak unprefixed macros, mutable TU-local buffers, test resources, and
 inconsistent byte-buffer signatures.
