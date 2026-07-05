@@ -97,7 +97,9 @@ They supersede earlier agent-facing wording when there is a conflict.
 13. Prefer short, readable public page slugs. When rewriting or moving task pages, simplify verbose
     filenames and URLs where it improves the site, for example `how-to/multiple-panels/` rather than
     `how-to/create-multiple-panels/`. Update `mkdocs.yml`, cross-links, generated references, and
-    redirects or compatibility aliases as needed so existing links do not silently break.
+    redirects or compatibility aliases as needed so existing links do not silently break. Check that
+    the slug, page title, and navigation label describe the same task; they need not be identical,
+    but they should not drift into different wording or scope.
 14. If an example is minimal, say why it is minimal. If it is advanced, say what prior concepts the
     reader should know before using it.
 
