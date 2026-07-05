@@ -97,7 +97,7 @@ Raw Python binding policy lives in `spec/bindings/`. User-facing raw binding doc
 Python support in v0.4 is low-level and binding-oriented. Use:
 
 1. `datoviz.raw` for exact generated `ctypes` access;
-2. top-level `import datoviz as dvz` only for the planned array-aware facade;
+2. top-level `import datoviz as dvz` only for the planned array-aware Python API;
 3. `datoviz._ctypes` only as generated implementation detail.
 
 Format Python with Ruff using the project `pyproject.toml` settings:

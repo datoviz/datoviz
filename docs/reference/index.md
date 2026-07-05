@@ -14,7 +14,7 @@ support, and links to minimal examples.
 | Page | Use it for |
 | --- | --- |
 | [C API](c-api/index.md) | Generated public C reference, grouped by scene, visuals, app/runtime, and types. |
-| [Python direct-engine facade](python-direct-engine.md) | C-shaped top-level Python calls with NumPy array adaptation and RGBA capture. |
+| [Python with NumPy arrays](python-direct-engine.md) | Low-level Datoviz scene calls from Python, with NumPy array uploads and RGBA capture. |
 | [Python raw ctypes](ctypes.md) | Low-level generated Python binding scope and usage. |
 | [Visual families](visual-families/index.md) | Family status, attributes, backend support, and canonical examples. |
 

@@ -6,19 +6,20 @@ Create the basic structure used by most Datoviz visualizations.
 
 ## Task Workflow
 
-Start with a scene, add one figure, create a panel, add at least one visual, then choose how to show
-or save the result. This page uses a small point example so you can see the main pieces without
-extra plotting features.
+Start by creating the scene structure: one scene, one figure, one panel, and at least one visual.
+Then attach data arrays to the visual attributes, add the visual to the panel, create a window or
+offscreen target, and run or capture the result. This page uses a small point example so you can see
+the main pieces without extra plotting features.
 
-Use the same object model from C and Python. In Python, prefer the top-level direct-engine facade
-with C-shaped names:
+Use the same object model from C and Python. In Python, import the main `datoviz` package:
 
 ```python
 import datoviz as dvz
 ```
 
-That facade adapts NumPy arrays for declared dense-data calls. Use `datoviz.raw` only when you need
-exact generated `ctypes` pointer/count behavior.
+The Python calls use the same `dvz_*` function names as the C examples, but they accept NumPy arrays
+for common visual-data uploads. Use `datoviz.raw` only when you need exact generated `ctypes`
+pointer/count behavior.
 
 | Object | Role | Created by |
 | --- | --- | --- |
@@ -30,7 +31,8 @@ exact generated `ctypes` pointer/count behavior.
 | Adornment | Extra visual context such as axes, labels, colorbars, legends, or scale bars. | Panel/adornment helpers. |
 | App and view | The part that opens a window, renders frames, or captures an image. | `dvz_app()`, `dvz_view_window()`, or offscreen view helpers. |
 
-Build the scene first, then decide whether to show it in a window or render it offscreen.
+Build the scene first, upload visual data, attach the visual to a panel, then decide whether to show
+the result in a window or render it offscreen.
 
 Basic checklist:
 
@@ -144,8 +146,8 @@ must remain valid until rendering has stopped.
 
 In C, keep CPU arrays alive until the corresponding `dvz_visual_set_data()` call has returned.
 After the call returns, Datoviz has stored the data needed for rendering. In Python, pass
-C-contiguous NumPy arrays with the dtype and shape required by the visual attribute; the
-direct-engine facade infers the item count for declared dense-data uploads.
+C-contiguous NumPy arrays with the dtype and shape required by the visual attribute; the main
+`datoviz` package infers the item count for supported visual-data uploads.
 
 Uploading data does not make it visible. A visual appears only after `dvz_panel_add_visual()`
 attaches it to a panel.
@@ -155,10 +157,11 @@ attaches it to a panel.
 Use a small number of visuals, each with many items. Add another visual when the data needs a
 different visual family, style model, panel, transform, or update pattern.
 
-Datoviz is designed for batching. Prefer a small number of visuals with many items in each visual:
-one point visual with one million points is the intended shape; one million point visuals with one
-item each is not. Group similar elements by visual family, attribute layout, material, and update
-cadence so the GPU can draw large batches efficiently.
+Datoviz is designed for batching. Prefer one visual that contains many related items over many
+separate visuals that each contain a few items. For example, if 100 points belong to the same
+dataset and use the same point styling, put them in one point visual with 100 positions, colors, and
+diameters. Create separate visuals when the elements represent different visual families, styles,
+materials, panels, transforms, or update schedules.
 
 ## Common Mistakes
 

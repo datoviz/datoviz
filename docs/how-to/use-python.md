@@ -4,15 +4,15 @@ Use the current low-level Python binding without assuming a v0.3 plotting API.
 
 ## Task Workflow
 
-Use Python for smoke tests, integration experiments, and direct-engine calls where the v0.4 binding
-exposes the needed C surface. Prefer the top-level `datoviz` facade for normal Python use because it
-keeps C-shaped `dvz_*` names while adapting declared NumPy array arguments.
+Use Python for smoke tests, integration experiments, and low-level v0.4 scene code. Prefer
+`import datoviz as dvz` for normal Python use: it follows the same `dvz_*` function names as the C
+examples and accepts NumPy arrays for supported visual-data uploads.
 
 Choose the import surface first:
 
 | Need | Import |
 | --- | --- |
-| Direct-engine calls with NumPy array adaptation. | `import datoviz as dvz` |
+| Scene and visual calls with NumPy array adaptation. | `import datoviz as dvz` |
 | Exact generated `ctypes` signatures, pointers, counts, and ABI behavior. | `import datoviz.raw as raw` |
 | High-level object-oriented plotting. | Use the external GSP/VisPy2 layer when available. |
 
@@ -40,10 +40,10 @@ dvz.dvz_panel_add_visual(panel, points, None)
 Adapt the C examples one call at a time. Keep NumPy array dtype and shape matched to the C
 attribute contract.
 
-The top-level `datoviz` module uses the generated array-aware facade for C-shaped `dvz_*` names.
-Use `datoviz.raw` only when you need the exact generated `ctypes` layer. Calls that are not covered
-by facade policy remain raw-shaped passthroughs, so consult the C and raw ctypes references when a
-call still expects explicit pointer/count arguments.
+The top-level `datoviz` module accepts NumPy arrays for the calls covered by the binding policy. Use
+`datoviz.raw` only when you need the exact generated `ctypes` layer. Calls that are not covered by
+the policy may still expect explicit pointer/count arguments, so consult the C and raw ctypes
+references when needed.
 
 Destroy owner handles with the same C lifecycle calls:
 
@@ -73,7 +73,7 @@ When porting a C example:
 
 1. keep the same `dvz_*` call order;
 2. convert each dense attribute to the C dtype and shape before upload;
-3. use the top-level facade first;
+3. use `import datoviz as dvz` first;
 4. switch only the calls that need exact pointer/count behavior to `datoviz.raw`;
 5. keep explicit destroy calls for owner handles.
 
@@ -89,7 +89,7 @@ When porting a C example:
 
 ## See Also
 
-- [Python direct-engine facade](../reference/python-direct-engine.md)
+- [Python with NumPy arrays](../reference/python-direct-engine.md)
 - [Use Python raw ctypes](use-raw-ctypes.md)
 - [Use from C or C++](c-integration.md)
 - [Choose a visual family](choose-a-visual-family.md)

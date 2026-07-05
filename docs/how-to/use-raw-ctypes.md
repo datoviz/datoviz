@@ -1,8 +1,7 @@
 # Use Python Raw ctypes
 
 Call the Datoviz shared library directly from Python when you need the low-level binding surface.
-For normal direct-engine Python calls with NumPy array adaptation, use `import datoviz as dvz`
-instead.
+For ordinary Python scene code with NumPy array adaptation, use `import datoviz as dvz` instead.
 
 ## Task Workflow
 
@@ -10,7 +9,7 @@ Use raw ctypes when you need exact generated signatures, explicit pointer/count 
 types, ABI behavior, or binding-generation diagnostics. Load `datoviz.raw`, pass C-compatible
 storage, and keep ownership identical to the C API.
 
-For ordinary visual data uploads from NumPy, prefer the top-level array-aware facade:
+For ordinary visual data uploads from NumPy, prefer the main `datoviz` package:
 
 ```python
 import datoviz as dvz
@@ -64,7 +63,8 @@ raw.dvz_visual_set_data(
 ## Important Details
 
 Python raw `ctypes` is not the high-level plotting layer. It is useful for smoke tests, integration
-glue, and binding development. It preserves C-shaped names and C ownership rules.
+glue, and binding development. It uses the same `dvz_*` function names and explicit ownership rules
+as the C API.
 
 The raw binding does not infer NumPy dtype, shape, contiguity, string encoding, byte sizes, or item
 counts. Convert those values before the call.

@@ -6,25 +6,26 @@ The Python raw `ctypes` layer exposes the v0.4 C engine to Python as directly as
 useful for low-level integration, smoke tests, backend work, and automation that needs exact access
 to `libdatoviz`.
 
-It is not the v0.3 Python plotting API, not a compatibility layer, and not the recommended
-direct-engine Python import. High-level plotting and object-oriented Python workflows belong above
-Datoviz, currently in the GSP/VisPy2 layer.
+It is not the v0.3 Python plotting API, not a compatibility layer, and not the recommended Python
+import for ordinary scene code. High-level plotting and object-oriented Python workflows belong
+above Datoviz, currently in the GSP/VisPy2 layer.
 
 | Use this page when | Use another page when |
 | --- | --- |
-| You need exact generated `ctypes` signatures, pointers, callbacks, or ABI behavior. | You want normal direct-engine Python calls with NumPy arrays. Use `import datoviz as dvz`. |
+| You need exact generated `ctypes` signatures, pointers, callbacks, or ABI behavior. | You want ordinary Python scene calls with NumPy arrays. Use `import datoviz as dvz`. |
 | You are debugging binding generation, package loading, or C/Python lifetime rules. | You want a high-level plotting API. Use the GSP/VisPy2 layer when available. |
 
 
 ## Import Surface
 
-For normal direct-engine Python use, prefer the array-aware top-level facade:
+For ordinary Python scene code, prefer the main `datoviz` package:
 
 ```python
 import datoviz as dvz
 ```
 
-The facade preserves C names and accepts NumPy arrays for policy-declared data arguments:
+The main package uses the same `dvz_*` function names as the C examples and accepts NumPy arrays for
+supported visual-data uploads:
 
 ```python
 dvz.dvz_visual_set_data(points, "position", positions)
@@ -96,20 +97,20 @@ typedefs, and raw-binding availability. Skipped or opaque symbols should point b
 source-controlled binding policy where possible.
 
 
-## Facade Versus Raw
+## Main Package Versus Raw
 
-The top-level facade and raw module intentionally share C-shaped names:
+The main `datoviz` package and `datoviz.raw` intentionally share the same `dvz_*` function names:
 
 | Need | Import |
 | --- | --- |
-| Pass NumPy arrays to declared data uploads or capture RGBA arrays | `import datoviz as dvz`; see [Python direct-engine facade](python-direct-engine.md) |
+| Pass NumPy arrays to supported data uploads or capture RGBA arrays | `import datoviz as dvz`; see [Python with NumPy arrays](python-direct-engine.md) |
 | Match exact `ctypes` signatures, pointers, and counts | `import datoviz.raw as raw` |
 | Debug generated FFI implementation internals | `datoviz._ctypes`, rarely and not in docs examples |
 
-The facade only adapts policy-declared pointer/count, pointer/byte-size, and string relationships.
-Unannotated calls remain raw-shaped passthroughs.
+The main package adapts only the pointer/count, pointer/byte-size, and string relationships listed
+in the binding policy. Unannotated calls may still require raw-style arguments.
 
-For example, the facade call:
+For example, this main-package call:
 
 ```python
 dvz.dvz_visual_set_data(points, "position", positions)
@@ -178,7 +179,7 @@ finally:
 ```
 
 Callback and host-helper behavior is still experimental. Thin Python helpers may exist for event
-loop and callback ergonomics, but they do not replace the raw C-shaped API.
+loop and callback ergonomics, but they do not replace the exact raw API.
 
 
 ## Examples

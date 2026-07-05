@@ -67,22 +67,34 @@ They supersede earlier agent-facing wording when there is a conflict.
    words, but do not oversimplify into vague phrases such as "the thing being drawn." For example,
    explain that a panel is the drawing area inside a figure, and that a visual is a renderable
    collection such as points, lines, an image, a mesh, or text labels.
-5. Do not make broad claims that are only approximately true. Say "most public functions use
+5. Avoid compressed implementation labels in beginner-facing prose. Do not pack import location,
+   engine layer, binding implementation, and naming convention into one noun phrase. Say what the
+   user should do and why, for example: "In Python, use `import datoviz as dvz`; these calls use the
+   same `dvz_*` function names as the C examples and accept NumPy arrays for supported visual-data
+   uploads."
+6. Do not make broad claims that are only approximately true. Say "most public functions use
    `dvz_...` names" rather than "every function follows one convention" unless verified.
-6. Keep Quickstart and first-user pages short and structured. Move side topics such as offscreen
+7. Keep Quickstart and first-user pages short and structured. Move side topics such as offscreen
    capture, raw `ctypes`, CMake integration, and lifecycle edge cases to focused How-To or
    Reference pages.
-7. The AI-assisted workflow page must be simple. Its main prompt should tell the coding assistant
+8. The AI-assisted workflow page must be simple. Its main prompt should tell the coding assistant
    to browse `datoviz.org` and write the requested Datoviz v0.4 example. Do not require users to
    manually assemble a context bundle of several pages unless they want better precision.
-8. Write installation instructions as decision paths by audience and operating system: Python user,
+9. Write installation instructions as decision paths by audience and operating system: Python user,
    C/C++ user, source build, macOS, Linux, Windows/WSL, native Windows. Be explicit about what is
    currently public, what is pre-release, and what is not yet published.
-9. Generated examples need more explanation, not less. Each public example should explain:
+10. Generated examples need more explanation, not less. Each public example should explain:
    what the example demonstrates, what visual result to expect, which data attributes matter, which
    user interaction applies, and where to go next. Code comments in examples should describe intent
    and important choices, not merely restate the function name.
-10. If an example is minimal, say why it is minimal. If it is advanced, say what prior concepts the
+11. When describing the usual scene workflow, include the whole user-visible sequence: create the
+    scene/figure/panel, create a visual, attach data arrays to visual attributes, add the visual to a
+    panel, create a window or offscreen target, then run the app or capture the frame.
+12. Explain visual granularity with realistic examples. Do not rely on extreme comparisons such as
+    one million one-item visuals. Say that semantically linked elements of the same visual family
+    should usually be grouped into one visual, for example 100 related points in one point visual
+    with 100 positions, colors, and sizes.
+13. If an example is minimal, say why it is minimal. If it is advanced, say what prior concepts the
     reader should know before using it.
 
 

@@ -1,22 +1,22 @@
-# Python Direct-Engine Facade
+# Python With NumPy Arrays
 
-Status: supported low-level Python entry point for direct Datoviz engine use.
+Status: supported low-level Python entry point for Datoviz scene code.
 
-Use this page when you want C-shaped Datoviz calls from Python with NumPy array adaptation. This is
-not the legacy v0.3 Python plotting API and not a high-level object model. GSP/VisPy2 owns
-Pythonic plotting and scientific workflow APIs above Datoviz.
+Use this page when you want to write Datoviz scene code from Python and pass NumPy arrays to visual
+data calls. This is not the legacy v0.3 Python plotting API and not a high-level object model.
+GSP/VisPy2 owns Pythonic plotting and scientific workflow APIs above Datoviz.
 
 | Need | Import |
 | --- | --- |
-| Direct-engine calls with NumPy arrays. | `import datoviz as dvz` |
+| Scene and visual calls with NumPy arrays. | `import datoviz as dvz` |
 | Exact pointer/count `ctypes` ABI calls. | `import datoviz.raw as raw` |
 | High-level plotting, notebooks, or OO scene objects. | GSP/VisPy2, when available. |
 
 
-## Retained Scene Basics
+## Scene Basics
 
-The top-level package preserves C names. Create and destroy owner handles with the same lifecycle as
-C:
+The Python package uses the same `dvz_*` function names as the C examples. Create and destroy owner
+handles with the same lifecycle as C:
 
 ```python
 import datoviz as dvz
@@ -68,8 +68,8 @@ raw C function. For slice updates after a full allocation, use:
 dvz.dvz_visual_set_data_range(points, "position", first_item, positions_chunk)
 ```
 
-The facade may copy non-contiguous arrays for the duration of the call. Prefer preparing arrays with
-`np.asarray(data, dtype=..., order="C")` for predictable behavior.
+The Python package may copy non-contiguous arrays for the duration of the call. Prefer preparing
+arrays with `np.asarray(data, dtype=..., order="C")` for predictable behavior.
 
 
 ## Offscreen RGBA Capture
@@ -101,13 +101,13 @@ scientific linear-float readback.
 
 ## Example
 
-A complete direct-engine smoke example lives at:
+A complete Python smoke example lives at:
 
 ```text
 examples/python/direct/offscreen_point.py
 ```
 
-It creates a retained point visual with `dvz_visual_set_data_many()`, renders an offscreen frame, and
+It creates a point visual with `dvz_visual_set_data_many()`, renders an offscreen frame, and
 captures RGBA memory with `dvz_view_capture_rgba()`.
 
 
