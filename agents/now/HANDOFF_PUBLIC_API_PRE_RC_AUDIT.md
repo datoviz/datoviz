@@ -134,6 +134,17 @@ Completed checkpoints:
      `python3 tools/build_api_c.py --check`, `just build`, `just test axis`,
      `just test scene/scene-graph`, `just spec-check`, stale-reference scan, and
      `git diff --check`.
+13. `26adba228` `api: flatten graph edge tessellation style`
+   - Replaced nested `DvzBezierTessellationDesc tessellation` in `DvzGraphEdgeStyle` with scalar
+     `tessellation_segment_count` and `tessellation_tolerance` fields.
+   - Kept graph internals on the existing `DvzBezierTessellationDesc` representation for path
+     lowering.
+   - Exported symbol delta: no exported functions were added or removed; `DvzGraphEdgeStyle` ABI
+     layout changed.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, `just build`, `just test scene/scene-graph`,
+     `just example-c composites/graph --png`, `just spec-check`, stale-reference scan, and
+     `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -141,7 +152,7 @@ Current working-tree noise to leave untouched unless explicitly approved in the 
 - untracked `paper/paper.pdf`.
 
 Next recommended checkpoint: continue the descriptor-flattening campaign with annotation/label text
-style and placement, or a smaller low-risk style case such as `DvzSelectionVisualStyle`.
+style and placement, `DvzSelectionVisualStyle`, or app/view/font defaults.
 
 
 ## Maintainer Decisions
