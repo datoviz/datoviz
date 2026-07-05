@@ -1,10 +1,10 @@
-# GSP Texture2D Mesh Integration Plan
+# GSP Texture2D Field-Sampling Integration Plan
 
 Status: proposal for near-term v0.4-dev work. Updated: 2026-07-05.
 
 Purpose: record the Datoviz-side changes needed for GSP to advertise strict unlit RGBA8
-Texture2D mesh rendering without using private Datoviz APIs or reintroducing legacy texture
-wrappers.
+Texture2D mesh rendering, and use that pressure to promote a general field-slot sampling API before
+v0.4 RC.
 
 
 ## Boundary
@@ -16,14 +16,14 @@ surface that a GSP adapter can call:
 GSP Texture2D resource + MeshVisual UVs
   -> Datoviz mesh visual
   -> "texcoords" dense attribute
-  -> "texture" sampled-field slot
+  -> "texture" sampled-field slot + slot sampling state
   -> material + sampler state
   -> scene -> DRP2 -> native/WebGPU runtime
 ```
 
 Do not add GSP-specific object types, backend-native texture handles, shader names, or old
 `dvz_visual_set_texture_*()` public wrappers. The public texture binding path stays
-`DvzSampledField` plus `dvz_visual_set_field(mesh, "texture", field)`.
+`DvzSampledField` plus `dvz_visual_set_field(visual, slot_name, field)`.
 
 
 ## Current Datoviz Surface
@@ -36,8 +36,8 @@ Do not add GSP-specific object types, backend-native texture handles, shader nam
 | Mesh texture binding | `dvz_visual_set_field(mesh, "texture", field)` | usable |
 | Unlit material | `DvzMaterialDesc.model = DVZ_MATERIAL_MODEL_UNLIT`; `dvz_visual_set_material()` | usable |
 | Color/data role | `DvzSampledFieldDesc.color_role` | usable with `DVZ_COLOR_ROLE_LINEAR_COLOR` |
-| Image sampler state | `dvz_image_set_sampling(image, DvzImageSampling)` | image-only |
-| Mesh texture sampler state | internal `image_nearest_sampler` plumbing exists, but no public mesh setter and retained textured mesh emission currently always creates a linear sampler | blocker |
+| Image sampler state | `dvz_image_set_sampling(image, DvzImageSampling)` | too image-specific for the long-term API |
+| Mesh texture sampler state | internal `image_nearest_sampler` plumbing exists, but no public field-slot setter and retained textured mesh emission currently always creates a linear sampler | blocker |
 
 
 ## Required GSP Semantics
@@ -58,53 +58,127 @@ surface for an adapter to request them explicitly and prove them with fixtures.
 
 ## Public API Direction
 
-Add one mesh-specific retained-state setter:
+Add a general field-slot sampling descriptor and setter:
 
 ```c
-DvzResult dvz_mesh_set_texture_sampling(DvzVisual* visual, DvzImageSampling sampling);
+typedef enum
+{
+    DVZ_FIELD_FILTER_LINEAR = 0,
+    DVZ_FIELD_FILTER_NEAREST,
+} DvzFieldFilter;
+
+typedef enum
+{
+    DVZ_FIELD_ADDRESS_CLAMP_TO_EDGE = 0,
+    DVZ_FIELD_ADDRESS_REPEAT,
+    DVZ_FIELD_ADDRESS_MIRROR_REPEAT,
+} DvzFieldAddressMode;
+
+typedef enum
+{
+    DVZ_FIELD_MIPMAP_NONE = 0,
+} DvzFieldMipmapMode;
+
+typedef struct DvzFieldSamplingDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzFieldFilter min_filter;
+    DvzFieldFilter mag_filter;
+    DvzFieldAddressMode address_u;
+    DvzFieldAddressMode address_v;
+    DvzFieldAddressMode address_w;
+    DvzFieldMipmapMode mipmap_mode;
+} DvzFieldSamplingDesc;
+
+DvzFieldSamplingDesc dvz_field_sampling_desc(void);
+
+DvzResult dvz_visual_set_field_sampling(
+    DvzVisual* visual, const char* slot_name, const DvzFieldSamplingDesc* desc);
 ```
 
 Rules:
 
-1. Accept only mesh visuals; return `DVZ_ERROR` and log a deterministic diagnostic for other
-   families.
-2. Reuse the existing `DvzImageSampling` enum. Do not add `DvzTextureSampling` unless texture
-   sampler state grows beyond linear/nearest filtering.
-3. Default remains `DVZ_IMAGE_SAMPLING_LINEAR` to preserve current textured-mesh examples and
-   showcase appearance.
-4. `DVZ_IMAGE_SAMPLING_NEAREST` selects nearest minification and magnification for the mesh
-   `"texture"` slot.
-5. The function mutates retained visual state before frame-plan emission, just like
-   `dvz_image_set_sampling()`.
-6. It does not create, own, replace, or update the sampled field. Field lifetime and upload remain
-   governed by the sampled-field API.
+1. Sampling is retained state on a visual slot, not on `DvzSampledField`.
+2. The same sampled field may be bound to multiple visuals or slots with different sampling.
+3. `desc == NULL` restores that visual slot's family default.
+4. The setter may be called before or after `dvz_visual_set_field()`; validation of the pair happens
+   when the slot is resolved for frame-plan emission.
+5. Unknown slots, unsupported family/slot combinations, invalid enum values, and illegal
+   format/semantic/sampling combinations return `DVZ_ERROR` with deterministic diagnostics.
+6. The first implementation may support only clamp-to-edge and no mipmaps in native/WebGPU runtime
+   emission, but the public descriptor should make those defaults explicit and mechanically
+   inspectable.
+7. `dvz_image_set_sampling()` should be removed before RC or reimplemented as a private migration
+   helper. Public examples should use `dvz_visual_set_field_sampling(image, "field", &desc)`.
 
-This shape matches v0.4 public API conventions: object-level retained-state mutator,
-`dvz_<object>_set_<property>()`, `DvzResult` return, no nested public descriptor, and no backend
-handles in user code.
+This shape matches v0.4 public API conventions: a flat public `Desc`, a by-value descriptor
+initializer, an object-level retained-state mutator, `DvzResult` return, and no backend handles in
+user code. It is an intentional pre-RC break that avoids a family-specific setter pileup.
+
+
+## Why Slot-Level, Not Field-Level
+
+`DvzSampledField` is the data resource: format, semantic, color role, dimensions, and bytes.
+Sampling is how a particular draw path uses that data.
+
+A field-level sampler would make this valid reuse impossible:
+
+```text
+same RGBA8 field
+  -> image "field" slot, linear preview
+  -> mesh "texture" slot, nearest GSP conformance fixture
+  -> query/sample path, exact texel lookup
+```
+
+The correct ownership point is therefore:
+
+```text
+(DvzVisual*, slot_name) owns sampling state
+DvzSampledField owns data state
+```
+
+That also matches the existing named-slot model already used by `dvz_visual_set_field()`,
+`dvz_visual_set_scale()`, and future material-map slots.
+
+
+## Family/Slot Defaults
+
+| Visual slot | Default | Allowed first-slice overrides | Notes |
+| --- | --- | --- | --- |
+| `image:"field"` | linear, clamp, no mipmaps | nearest or linear | Replaces `dvz_image_set_sampling()`. |
+| `mesh:"texture"` | linear, clamp, no mipmaps | nearest or linear | GSP uses nearest. Existing visual examples keep linear unless changed. |
+| `labels:"field"` | nearest, clamp, no mipmaps | none or nearest only | Integer labels must not linearly filter. |
+| `glyph:"field"` | linear or current atlas default, clamp, no mipmaps | family-owned | Text/glyph quality should not be changed by GSP mesh needs. |
+| `volume:"field"` | profile-owned | format/semantic dependent | Scalar volumes may allow linear; labels/data profiles may require nearest. |
 
 
 ## Internal Implementation Plan
 
-1. Add the public declaration next to `dvz_mesh_set_geometry()` in `include/datoviz/scene.h`.
-2. Implement it in `src/scene/visuals/mesh/api.c` using the same mutation guard and version bump
-   pattern as `dvz_image_set_sampling()`.
-3. Reuse the existing family-state field that already lowers into
-   `DvzFramePlanRenderVisual.image_nearest_sampler` for textured meshes.
-4. In `src/scene/runtime/render_emit_prepare.c`, make the textured-mesh branch choose the same
-   nearest or linear sampler path that the image branch already uses, instead of always creating
-   `_sampler_img` with linear filtering.
-5. Keep DRP2 sampler creation on clamp-to-edge defaults unless a focused test proves otherwise. Do
-   not add public wrap-mode or mipmap controls for this GSP slice.
-6. Keep shader slots and field slot vocabulary unchanged: mesh texture remains `"texture"`.
-7. Keep material evaluation unchanged; GSP can select `DVZ_MATERIAL_MODEL_UNLIT` through the
+1. Add `DvzFieldFilter`, `DvzFieldAddressMode`, `DvzFieldMipmapMode`, and
+   `DvzFieldSamplingDesc` in the scene public type/enums headers.
+2. Add `dvz_field_sampling_desc()` and `dvz_visual_set_field_sampling()` to the public scene
+   surface, with `dvz_ffi_field_sampling_desc()` only if raw bindings need an out-pointer helper.
+3. Replace the image-only retained sampler field with a per-visual slot-sampling map keyed by
+   stable field slot names. Keep the first storage simple because current visuals have few slots.
+4. Move validation into the visual registry or field-binding layer so each family/slot declares
+   default sampling and allowed overrides.
+5. Lower resolved slot sampling into frame-plan metadata. Replace `image_nearest_sampler` with a
+   small resolved sampling record rather than a boolean.
+6. In `src/scene/runtime/render_emit_prepare.c`, create or reuse sampler objects from the resolved
+   sampling descriptor for both image and textured mesh branches.
+7. Preserve DRP2 clamp-to-edge/no-mipmap defaults where runtime support is currently narrow, but
+   do not hide those choices from scene validation.
+8. Keep shader slots and field slot vocabulary unchanged: mesh texture remains `"texture"`.
+9. Keep material evaluation unchanged; GSP can select `DVZ_MATERIAL_MODEL_UNLIT` through the
    existing material API.
+10. Update public examples and generated docs away from `dvz_image_set_sampling()`.
 
 
 ## Adapter Guidance For GSP
 
-Once the Datoviz sampler setter exists, the GSP Datoviz adapter should lower a strict Texture2D mesh
-as follows:
+Once slot-level sampling exists, the GSP Datoviz adapter should lower a strict Texture2D mesh as
+follows:
 
 1. Upload `Texture2D.image` as `DVZ_FIELD_FORMAT_RGBA8_UNORM`,
    `DVZ_FIELD_SEMANTIC_COLOR`, and `DVZ_COLOR_ROLE_LINEAR_COLOR`.
@@ -115,7 +189,9 @@ as follows:
    constant `(0, 0, 1)` is acceptable for planar unlit GSP fixtures.
 5. Set a material descriptor with `model = DVZ_MATERIAL_MODEL_UNLIT`, base color factor
    `(1, 1, 1, 1)`, and opacity `1`.
-6. Call `dvz_mesh_set_texture_sampling(mesh, DVZ_IMAGE_SAMPLING_NEAREST)`.
+6. Initialize `DvzFieldSamplingDesc` with nearest minification, nearest magnification,
+   clamp-to-edge address modes, and no mipmaps.
+7. Call `dvz_visual_set_field_sampling(mesh, "texture", &sampling)`.
 
 `DVZ_COLOR_ROLE_DATA` is not the right role for a direct RGBA color sampled field because Datoviz
 color fields require `srgb_color` or `linear_color`. `linear_color` is the generic Datoviz role
@@ -127,14 +203,18 @@ that lets the GSP adapter avoid sRGB decode for unmanaged RGBA8 bytes.
 Add focused tests before advertising this path to GSP:
 
 1. API state tests:
-   - `dvz_mesh_set_texture_sampling()` accepts mesh visuals;
-   - rejects non-mesh visuals;
+   - `dvz_visual_set_field_sampling()` accepts `image:"field"` and `mesh:"texture"`;
+   - rejects unknown slots and unsupported family/slot pairs;
    - rejects invalid enum values;
+   - rejects linear filtering for integer label fields;
+   - `NULL` restores the family/slot default;
    - bumps retained state so a later frame plan observes the change.
 2. DRP2/scene emission tests:
+   - image with default sampling emits the same sampler behavior as before the API break;
+   - image with nearest slot sampling emits a nearest sampler;
    - textured mesh with default sampling emits a linear sampler;
-   - textured mesh with nearest sampling emits a nearest sampler;
-   - image sampling behavior remains unchanged.
+   - textured mesh with nearest slot sampling emits a nearest sampler;
+   - labels stay nearest.
 3. Runtime visual fixture:
    - 2x2 RGBA8 texture with four distinct corners;
    - UV samples near texel centers and clamp edges;
@@ -150,12 +230,13 @@ nearest filtering, clamp behavior, orientation, linear color role, and unlit mul
 
 ## Non-Goals
 
-1. No general sampler object or texture object public API for v0.4 RC.
-2. No wrap-mode, mipmap, LOD, anisotropy, or border-color API in this slice.
-3. No PBR material texture map expansion.
-4. No RGB, float, compressed, external-file, or atlas resource contract for GSP.
-5. No public shader-slot, bind-group, DRP2 id, Vulkan, or WebGPU handle exposure.
-6. No source compatibility alias for removed v0.3 texture helpers.
+1. No standalone public sampler object with independent lifetime for v0.4 RC.
+2. No texture object public API separate from sampled fields.
+3. No LOD bias, anisotropy, comparison sampler, or border-color API in this slice.
+4. No PBR material texture map expansion.
+5. No RGB, float, compressed, external-file, or atlas resource contract for GSP.
+6. No public shader-slot, bind-group, DRP2 id, Vulkan, or WebGPU handle exposure.
+7. No source compatibility alias for removed v0.3 texture helpers.
 
 
 ## Open Risks
@@ -164,7 +245,8 @@ nearest filtering, clamp behavior, orientation, linear color role, and unlit mul
 | --- | --- |
 | Exact screenshot bytes may still differ because final display/capture is sRGB RGBA8 | Use the color-management conformance tolerance policy; keep GSP's unmanaged contract at the adapter/resource level. |
 | Mesh textured descriptor currently requires normals | Keep the requirement for now; GSP can synthesize normals for unlit meshes. Revisit only if this becomes an ergonomic blocker for ordinary Datoviz users. |
-| `DvzImageSampling` name is image-specific | Reuse it for RC because it already expresses the exact filter choice and avoids a second enum. Rename only in a future broader sampler API. |
+| This breaks `dvz_image_set_sampling()` public examples and bindings | Accept the pre-RC break; migrate examples/docs/bindings in the same implementation branch. |
+| A descriptor with address and mipmap fields is broader than current runtime emission | Keep validation honest: unsupported descriptor values fail until DRP2/native/WebGPU support exists. |
 | Existing textured examples may expect smooth sampling | Preserve linear as the default; GSP must opt into nearest. |
 
 

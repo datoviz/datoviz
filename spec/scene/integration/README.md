@@ -33,8 +33,8 @@ threads, high-DPI windows, or custom user-provided visual families.
     contract.
 14. [WASM_WEBGPU_PARITY_PLAN.md](WASM_WEBGPU_PARITY_PLAN.md): implementation plan for broad
     native Vulkan and WASM/WebGPU scene parity.
-15. [GSP_TEXTURE2D_MESH_PLAN.md](GSP_TEXTURE2D_MESH_PLAN.md): Datoviz-side plan for GSP strict
-    Texture2D mesh sampling and unlit RGBA8 semantics.
+15. [GSP_TEXTURE2D_MESH_PLAN.md](GSP_TEXTURE2D_MESH_PLAN.md): Datoviz-side plan for generic
+    field-slot sampling needed by GSP strict Texture2D meshes.
 16. [future](future/README.md): Android, iOS, and touch pressure notes.
 17. [napari](napari/README.md): informative napari adapter guidance and historical PoC notes.
 
