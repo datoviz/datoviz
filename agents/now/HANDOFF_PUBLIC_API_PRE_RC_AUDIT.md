@@ -459,8 +459,10 @@ Next recommended checkpoints, in safe execution order:
    or specs.
 2. Run the full public mutator naming audit under the stricter
    `dvz_<object>_set_<property>()` convention recorded in `spec/api/PUBLIC_API_CONVENTIONS.md`.
-   Rename graph/polygon mutators and any other obvious retained-state mutators before RC where the
-   result is clearer and not mechanically absurd.
+   Rename graph/polygon mutators and any other obvious retained-state mutators before RC. For the
+   polygon aggregate, replace public `DvzPolygonSet`/`dvz_polygon_set_*` with
+   `DvzPolygons`/`dvz_polygons_*`; use `dvz_polygons_add_region()` for append/create and
+   `dvz_polygons_set_region_*()` for retained region mutators.
 3. Rename public `dvz_geom_*` functions to the single `dvz_geometry_*` naming family.
 4. Split stable `window.h` from backend SPI so ordinary window users do not include backend
    registration, GLFW hooks, wrap-surface helpers, or Vulkan surface details.
@@ -503,6 +505,13 @@ Use these defaults unless the code audit finds a stronger local reason:
     plot, text, scale, annotation, visual-family, scene/app, and runtime-facing APIs before RC;
     keep non-mutating accessors, constructors/destructors, descriptor/style initializers,
     predicates, and true action verbs outside the forced setter pattern.
+    The approved polygon naming decision is `DvzPolygons` with public `dvz_polygons_*` functions,
+    not `DvzPolygonSet`, `DvzPolygonLayer`, `DvzPolygonLot`, or `DvzPolygonBunch`. This avoids the
+    mechanically bad `dvz_polygon_set_set_*` shape while staying consistent with existing plural
+    aggregate types such as `DvzImages`, `DvzBufferViews`, `DvzQueues`, `DvzSlots`, and
+    `DvzCommands`. `DvzSymbolSet` is the only comparable public noun collision found so far; it
+    does not currently create `*_set_set_*` mutators and should be left alone unless a later audit
+    finds a concrete public naming problem.
 13. Use `dvz_geometry_*` as the single public geometry naming family. Rename current
     `dvz_geom_*` constructors/update helpers before RC and do not keep compatibility aliases.
 14. Keep stable app/window-facing APIs backend-neutral. Put backend registration, GLFW hooks,
@@ -830,8 +839,12 @@ generated ctypes, generated docs if applicable, and examples in sync.
 2. **Stable scene naming cleanup**
    - Completed: collapse 2D view APIs.
    - Completed: normalize scale-bar spelling.
-   - Approved: normalize retained-state mutators to `dvz_<object>_set_<property>()`; start with
-     graph/polygon and audit the rest of the public scene surface.
+   - Approved: normalize retained-state mutators to `dvz_<object>_set_<property>()`.
+   - Approved: rename public `DvzPolygonSet`/`dvz_polygon_set_*` to
+     `DvzPolygons`/`dvz_polygons_*`, with `dvz_polygons_add_region()` for creation and
+     `dvz_polygons_set_region_*()` for retained region mutation.
+   - Approved: audit graph mutators and then the rest of the public scene surface for the same
+     naming rule.
    - Approved: rename public `dvz_geom_*` functions to `dvz_geometry_*`.
    - Completed: change `dvz_sampled_field_destroy()` to `void`.
    - Validation: scene tests, examples that use affected APIs, `just ctypes-check`.

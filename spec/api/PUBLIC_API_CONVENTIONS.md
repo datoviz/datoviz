@@ -39,7 +39,8 @@ When a public object has subroles, include the role after `set`:
 
 ```text
 dvz_polygon_set_fill_color()
-dvz_polygon_set_stroke_width_px()
+dvz_polygons_set_region_fill_color()
+dvz_polygons_set_region_stroke_width_px()
 dvz_graph_set_node_sizes()
 dvz_graph_set_edge_colors()
 ```
@@ -135,7 +136,8 @@ Typed semantic object APIs remain the normal user path:
 ```text
 dvz_polygon_set_geometry()
 dvz_polygon_set_fill_color()
-dvz_polygon_set_region_fill_color()
+dvz_polygons_set_region_geometry()
+dvz_polygons_set_region_fill_color()
 dvz_graph_set_node_sizes()
 dvz_graph_set_edge_colors()
 ```
@@ -315,6 +317,7 @@ Preferred:
 
 ```c
 dvz_polygon_set_stroke_width_px(polygon, 1.0f);
+dvz_polygons_set_region_stroke_width_px(polygons, region_id, 1.0f);
 dvz_graph_set_node_colors(graph, 0, node_count, colors);
 dvz_triangulate_polygon(source, &desc);
 ```
