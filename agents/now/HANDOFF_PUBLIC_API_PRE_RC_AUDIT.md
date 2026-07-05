@@ -334,6 +334,16 @@ Completed checkpoints:
      `just build`, `just test fileio`, `just spec-check`, resource symbol-table check, and
      `git diff --check`.
    - Validation caveat: `just test scene/shaders` selected 0 tests in this tree.
+31. `f7e412563` `api: make sampled field destroy void`
+   - Changed `dvz_sampled_field_destroy()` from returning `bool` to returning `void`, matching the
+     other destroy APIs.
+   - Updated source callers, scene field tests, generated raw `ctypes`, and generated C API docs.
+   - Exported symbol delta: no exported functions were added or removed; the
+     `dvz_sampled_field_destroy()` ABI signature changed before RC1.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `just ctypes-smoke`,
+     `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`,
+     `just docs-api-check`, `just build`, `just test scene/fields`, `just spec-check`, and
+     `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -668,7 +678,6 @@ Preferred fix:
 - Rename `dvz_scalebar_*` to `dvz_scale_bar_*` for consistency with `DvzScaleBar`.
 - Normalize graph and polygon mutators to `*_set_*`, for example `dvz_graph_set_edges()` and
   `dvz_polygon_set_fill_color()`.
-- Make `dvz_sampled_field_destroy()` return `void`, matching other destroy APIs.
 - Document public text batch setters or remove them in favor of `dvz_text_set_items()` plus
   single-item helpers.
 - Decide whether geometry factories should be `dvz_geom_*` or `dvz_geometry_*`, then keep one
@@ -695,7 +704,7 @@ generated ctypes, generated docs if applicable, and examples in sync.
    - Collapse 2D view APIs.
    - Normalize scale-bar spelling.
    - Normalize graph/polygon mutator names.
-   - Change `dvz_sampled_field_destroy()` to `void`.
+   - Completed: change `dvz_sampled_field_destroy()` to `void`.
    - Validation: scene tests, examples that use affected APIs, `just ctypes-check`.
 
 3. **Signature and ownership cleanup**
