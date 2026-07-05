@@ -18,7 +18,7 @@ Common workflows:
 - [vklite overview](../../advanced/vklite.md)
 - [Canvas and stream API](../../advanced/canvas.md)
 
-Functions: 556
+Functions: 554
 
 ## Symbol Groups
 
@@ -73,7 +73,7 @@ Functions: 556
 | [Read](#read) | 5 | `include/datoviz/fileio/fileio.h` |
 | [Rendering](#rendering) | 12 | `include/datoviz/vklite/rendering.h` |
 | [Resample](#resample) | 1 | `include/datoviz/math/anim.h` |
-| [Resource](#resource) | 6 | `include/datoviz/fileio/fileio.h` |
+| [Resource](#resource) | 4 | `include/datoviz/fileio/fileio.h` |
 | [Sampler](#sampler) | 10 | `include/datoviz/vklite/sampler.h` |
 | [Semaphore](#semaphore) | 10 | `include/datoviz/vklite/sync.h` |
 | [Shader](#shader) | 5 | `include/datoviz/vklite/shader.h` |
@@ -780,8 +780,6 @@ Functions: 556
     | [`dvz_resource_font()`](#dvz_resource_font) | `include/datoviz/fileio/fileio.h` |
     | [`dvz_resource_glsl()`](#dvz_resource_glsl) | `include/datoviz/fileio/fileio.h` |
     | [`dvz_resource_shader()`](#dvz_resource_shader) | `include/datoviz/fileio/fileio.h` |
-    | [`dvz_resource_testdata()`](#dvz_resource_testdata) | `include/datoviz/fileio/fileio.h` |
-    | [`dvz_resource_texture()`](#dvz_resource_texture) | `include/datoviz/fileio/fileio.h` |
     | [`dvz_resource_wgsl()`](#dvz_resource_wgsl) | `include/datoviz/fileio/fileio.h` |
 
     ### Sampler
@@ -10481,32 +10479,32 @@ _Declared in `include/datoviz/math/anim.h`:86._
 ```c title="dvz_resource_font"
 const unsigned char * dvz_resource_font(
     const char * name,
-    unsigned long * size
+    DvzSize * size
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `name` | `const char *` |  |
-| `size` | `unsigned long *` |  |
+| `size` | `DvzSize *` |  |
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/fileio/fileio.h`:233._
+_Declared in `include/datoviz/fileio/fileio.h`:228._
 
 ### `dvz_resource_glsl()`
 
 ```c title="dvz_resource_glsl"
 const char * dvz_resource_glsl(
     const char * name,
-    unsigned long * size
+    DvzSize * size
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `name` | `const char *` |  |
-| `size` | `unsigned long *` |  |
+| `size` | `DvzSize *` |  |
 
 Raw ctypes: emitted.
 
@@ -10517,14 +10515,14 @@ _Declared in `include/datoviz/fileio/fileio.h`:223._
 ```c title="dvz_resource_shader"
 const unsigned char * dvz_resource_shader(
     const char * name,
-    unsigned long * size
+    DvzSize * size
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `name` | `const char *` |  |
-| `size` | `unsigned long *` |  |
+| `size` | `DvzSize *` |  |
 
 *********************************************************************************************
 
@@ -10532,55 +10530,19 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/fileio/fileio.h`:215._
 
-### `dvz_resource_testdata()`
-
-```c title="dvz_resource_testdata"
-unsigned char * dvz_resource_testdata(
-    const char * name,
-    unsigned long * size
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `name` | `const char *` |  |
-| `size` | `unsigned long *` |  |
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/fileio/fileio.h`:239._
-
-### `dvz_resource_texture()`
-
-```c title="dvz_resource_texture"
-unsigned char * dvz_resource_texture(
-    const char * name,
-    unsigned long * size
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `name` | `const char *` |  |
-| `size` | `unsigned long *` |  |
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/fileio/fileio.h`:228._
-
 ### `dvz_resource_wgsl()`
 
 ```c title="dvz_resource_wgsl"
 const char * dvz_resource_wgsl(
     const char * name,
-    unsigned long * size
+    DvzSize * size
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `name` | `const char *` |  |
-| `size` | `unsigned long *` |  |
+| `size` | `DvzSize *` |  |
 
 Raw ctypes: emitted.
 

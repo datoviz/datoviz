@@ -212,31 +212,20 @@ DVZ_EXPORT uint8_t* dvz_read_jpeg(const char* filename, uint32_t* width, uint32_
 /*************************************************************************************************/
 
 // Defined in cmake-generated file build/_shaders.c
-DVZ_EXPORT const unsigned char* dvz_resource_shader(const char* name, unsigned long* size);
+DVZ_EXPORT const unsigned char* dvz_resource_shader(const char* name, DvzSize* size);
 
 
 // Defined in cmake-generated file build/_wgsl_shaders.c
-DVZ_EXPORT const char* dvz_resource_wgsl(const char* name, unsigned long* size);
+DVZ_EXPORT const char* dvz_resource_wgsl(const char* name, DvzSize* size);
 
 
 // Defined in cmake-generated file build/_glsl_shaders.c
-DVZ_EXPORT const char* dvz_resource_glsl(const char* name, unsigned long* size);
-
-
-
-// Defined in cmake-generated file build/_textures.c
-DVZ_EXPORT unsigned char* dvz_resource_texture(const char* name, unsigned long* size);
+DVZ_EXPORT const char* dvz_resource_glsl(const char* name, DvzSize* size);
 
 
 
 // Defined in cmake-generated file build/_fonts.c
-DVZ_EXPORT const unsigned char* dvz_resource_font(const char* name, unsigned long* size);
-
-
-
-// Defined in cmake-generated file build/_testdata.c
-// NOTE: only built in the CLI, not in libdatoviz.
-DVZ_EXPORT unsigned char* dvz_resource_testdata(const char* name, unsigned long* size);
+DVZ_EXPORT const unsigned char* dvz_resource_font(const char* name, DvzSize* size);
 
 
 

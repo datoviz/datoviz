@@ -56,7 +56,7 @@
 static const char* _resource_glsl(const char* key)
 {
 #if DVZ_HAS_GLSL_SHADERS
-    unsigned long size = 0;
+    DvzSize size = 0;
     const char* source = dvz_resource_glsl(key, &size);
     if (source != NULL && size > 0)
         return source;
@@ -77,7 +77,7 @@ static const char* _resource_glsl(const char* key)
 static const char* _resource_wgsl(const char* key)
 {
 #if DVZ_HAS_WGSL_SHADERS
-    unsigned long size = 0;
+    DvzSize size = 0;
     const char* source = dvz_resource_wgsl(key, &size);
     if (source != NULL && size > 0)
         return source;
@@ -663,7 +663,7 @@ bool _emit_shader_spirv(
         return _emit_shader(stream, id, stage, NULL, glsl, cfg);
     }
 #if DVZ_HAS_PRECOMPILED_SHADERS
-    unsigned long spv_size = 0;
+    DvzSize spv_size = 0;
     const unsigned char* spv = dvz_resource_shader(spirv_key, &spv_size);
     if (spv != NULL && spv_size > 0)
         return dvz_drp2_stream_create_shader_module_spirv(

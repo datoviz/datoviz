@@ -865,7 +865,7 @@ static void* _text_sdf_load_default_font(DvzSize* out_size)
 {
     ANN(out_size);
 #if defined(DVZ_HAS_EMBEDDED_FONTS) && DVZ_HAS_EMBEDDED_FONTS
-    unsigned long embedded_size = 0;
+    DvzSize embedded_size = 0;
     const unsigned char* embedded = dvz_resource_font("Roboto_Regular", &embedded_size);
     if (embedded != NULL && embedded_size > 0)
     {
