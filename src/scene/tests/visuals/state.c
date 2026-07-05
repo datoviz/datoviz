@@ -1946,7 +1946,7 @@ int test_scene_graph_composite(TstContext* suite, const TstCase* item)
 
     DvzGraphEdgeStyle edge_style = dvz_graph_edge_style();
     edge_style.mode = DVZ_GRAPH_EDGE_MODE_BEZIER;
-    edge_style.tessellation.segment_count = 4;
+    edge_style.tessellation_segment_count = 4;
     AT(dvz_graph_set_edge_style(graph, &edge_style) == 0);
     _scene_prepare_composite_visuals(figure);
     DvzVisual* path_edges = dvz_composite_visual(composite, "edges");

@@ -4777,7 +4777,8 @@ struct DvzGraphEdgeStyle {
     uint32_t struct_size;
     uint32_t flags;
     DvzGraphEdgeMode mode;
-    DvzBezierTessellationDesc tessellation;
+    uint32_t tessellation_segment_count;
+    double tessellation_tolerance;
     DvzSegmentCap start_cap;
     DvzSegmentCap end_cap;
     DvzPathJoin join;

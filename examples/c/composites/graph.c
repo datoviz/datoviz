@@ -449,7 +449,7 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
 
     DvzGraphEdgeStyle edge_style = dvz_graph_edge_style();
     edge_style.mode = DVZ_GRAPH_EDGE_MODE_BEZIER;
-    edge_style.tessellation.segment_count = 22;
+    edge_style.tessellation_segment_count = 22;
     rc = dvz_graph_set_edge_style(graph, &edge_style);
     if (rc != 0)
         return false;
