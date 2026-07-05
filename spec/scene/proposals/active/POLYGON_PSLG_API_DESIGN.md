@@ -180,24 +180,24 @@ Polygon roles should start with `"fill"` and `"stroke"`. Future graph roles may 
 
 ## Polygon Collections
 
-Many-region use cases such as choropleths should use a dedicated scene-owned `DvzPolygonSet`
+Many-region use cases such as choropleths should use a dedicated scene-owned `DvzPolygons`
 semantic object rather than overloading a single-polygon object with ambiguous multi mode. The API
 should distinguish array index from stable user id.
 
 Primary per-region setters:
 
 ```c
-uint32_t polygon_index = dvz_polygon_set_add(polygons, &polygon_desc);
-dvz_polygon_set_region_geometry(polygons, polygon_index, &polygon_desc);
-dvz_polygon_set_region_fill_color(polygons, polygon_index, color);
-dvz_polygon_set_region_stroke_color(polygons, polygon_index, color);
-dvz_polygon_set_region_stroke_width_px(polygons, polygon_index, width);
+uint32_t polygon_index = dvz_polygons_add_region(polygons, &polygon_desc);
+dvz_polygons_set_region_geometry(polygons, polygon_index, &polygon_desc);
+dvz_polygons_set_region_fill_color(polygons, polygon_index, color);
+dvz_polygons_set_region_stroke_color(polygons, polygon_index, color);
+dvz_polygons_set_region_stroke_width_px(polygons, polygon_index, width);
 ```
 
 Optional bulk/range helpers are allowed for large datasets:
 
 ```c
-dvz_polygon_set_region_fill_colors(polygons, first_polygon, polygon_count, colors);
+dvz_polygons_set_region_fill_colors(polygons, first_polygon, polygon_count, colors);
 ```
 
 Bulk helpers are convenience and performance APIs. They should not replace the per-region API as the
@@ -206,7 +206,7 @@ conceptual model.
 If stable semantic ids are needed for picking or external data joins, use a separate id setter:
 
 ```c
-dvz_polygon_set_region_id(polygons, polygon_index, user_id);
+dvz_polygons_set_region_id(polygons, polygon_index, user_id);
 ```
 
 Do not use a single `region_id` argument when the value is only a positional array index.
@@ -252,7 +252,7 @@ Backend policy:
 4. Add a small C example that renders a triangulated polygon through `mesh`.
 5. Add the scene-owned `DvzPolygon` semantic object with geometry and fill/stroke flat setters.
 6. Add `DvzComposite`, `dvz_polygon_composite()`, and `dvz_panel_add_composite()`.
-7. Add `DvzPolygonSet` with per-region and optional range setters.
+7. Add `DvzPolygons` with per-region and optional range setters.
 8. Evaluate CDT for `DvzPslg` after polygon fill and collection rendering are stable.
 
 

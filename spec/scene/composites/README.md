@@ -77,13 +77,13 @@ Current baseline:
 
 1. `DvzPolygonDesc` is the borrowed CPU input for one outer ring plus holes.
 2. `dvz_triangulate_polygon()` produces ordinary `DvzGeometry`.
-3. `DvzPolygon` and `DvzPolygonSet` retain semantic ring/style state.
-4. `dvz_polygon_composite()` and `dvz_polygon_set_composite()` lower to `"fill"` and `"stroke"`.
+3. `DvzPolygon` and `DvzPolygons` retain semantic ring/style state.
+4. `dvz_polygon_composite()` and `dvz_polygons_composite()` lower to `"fill"` and `"stroke"`.
 5. Fill currently uses `mesh`; stroke currently uses `path`.
 
 Implemented v0.4 polish:
 
-1. add stable ids: `dvz_polygon_set_region_id()`, `dvz_polygon_set_region_ids()`, and
+1. add stable ids: `dvz_polygons_set_region_id()`, `dvz_polygons_set_region_ids()`, and
    `dvz_polygon_id()`;
 2. add region visibility and bulk visibility helpers for polygon sets;
 3. add bulk setters for fill colors, stroke colors, and stroke widths;

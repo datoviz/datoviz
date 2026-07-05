@@ -3918,16 +3918,16 @@ typedef struct DvzPolygonDesc DvzPolygonDesc;
 typedef struct DvzPolygonRing DvzPolygonRing;
 ```
 
-#### `DvzPolygonSet`
-
-```c
-typedef struct DvzPolygonSet DvzPolygonSet;
-```
-
 #### `DvzPolygonStyle`
 
 ```c
 typedef struct DvzPolygonStyle DvzPolygonStyle;
+```
+
+#### `DvzPolygons`
+
+```c
+typedef struct DvzPolygons DvzPolygons;
 ```
 
 #### `DvzSegmentCap`
@@ -4880,12 +4880,6 @@ struct DvzPolygonRing {
 };
 ```
 
-#### `DvzPolygonSet`
-
-```c
-typedef struct DvzPolygonSet DvzPolygonSet;
-```
-
 #### `DvzPolygonStyle`
 
 ```c
@@ -4901,6 +4895,12 @@ struct DvzPolygonStyle {
     DvzPathJoin stroke_join;
     float stroke_miter_limit;
 };
+```
+
+#### `DvzPolygons`
+
+```c
+typedef struct DvzPolygons DvzPolygons;
 ```
 
 #### `DvzSsaoDesc`

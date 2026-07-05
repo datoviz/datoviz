@@ -149,6 +149,7 @@ pages:
       - pixel
       - point
       - polygon
+      - polygons
       - primitive
       - sampled
       - segment

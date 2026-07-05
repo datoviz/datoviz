@@ -4172,11 +4172,11 @@ class DvzPolygonDesc(ctypes.Structure):
     pass
 
 
-class DvzPolygonSet(ctypes.Structure):
+class DvzPolygonStyle(ctypes.Structure):
     pass
 
 
-class DvzPolygonStyle(ctypes.Structure):
+class DvzPolygons(ctypes.Structure):
     pass
 
 
@@ -23686,297 +23686,6 @@ else:
 
 
 try:
-    dvz_polygon_set = dvz.dvz_polygon_set
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set')
-else:
-    dvz_polygon_set.__doc__ = """/**
- * Create a scene-owned semantic polygon set object.
- *
- * A polygon set stores several independent polygon regions. Each region has its own rings and
- * style.
- *
- * @param scene the scene
- * @param flags reserved polygon-set flags
- * @return the polygon set, or NULL on allocation failure
- */"""
-    dvz_polygon_set.argtypes = [ctypes.POINTER(DvzScene), ctypes.c_uint32]
-    dvz_polygon_set.restype = ctypes.POINTER(DvzPolygonSet)
-
-
-try:
-    dvz_polygon_set_add = dvz.dvz_polygon_set_add
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_add')
-else:
-    dvz_polygon_set_add.__doc__ = """/**
- * Append one polygon region to a polygon set.
- *
- * @param set the polygon set
- * @param desc borrowed polygon descriptor
- * @return the polygon index, or UINT32_MAX on error
- */"""
-    dvz_polygon_set_add.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.POINTER(DvzPolygonDesc)]
-    dvz_polygon_set_add.restype = ctypes.c_uint32
-
-
-try:
-    dvz_polygon_set_composite = dvz.dvz_polygon_set_composite
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_composite')
-else:
-    dvz_polygon_set_composite.__doc__ = """/**
- * Create a scene-owned composite render view for a polygon set.
- *
- * @param set the polygon set
- * @param flags reserved composite flags
- * @return the composite, or NULL on allocation failure
- */"""
-    dvz_polygon_set_composite.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32]
-    dvz_polygon_set_composite.restype = ctypes.POINTER(DvzComposite)
-
-
-try:
-    dvz_polygon_set_destroy = dvz.dvz_polygon_set_destroy
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_destroy')
-else:
-    dvz_polygon_set_destroy.__doc__ = """/**
- * Destroy a scene-owned polygon set object.
- *
- * @param set the polygon set
- */"""
-    dvz_polygon_set_destroy.argtypes = [ctypes.POINTER(DvzPolygonSet)]
-    dvz_polygon_set_destroy.restype = None
-
-
-try:
-    dvz_polygon_set_region_fill_color = dvz.dvz_polygon_set_region_fill_color
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_fill_color')
-else:
-    dvz_polygon_set_region_fill_color.__doc__ = """/**
- * Set one polygon region's fill color.
- *
- * @param set the polygon set
- * @param polygon_index polygon index
- * @param color RGBA fill color
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_fill_color.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, DvzColor]
-    dvz_polygon_set_region_fill_color.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_fill_colors = dvz.dvz_polygon_set_region_fill_colors
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_fill_colors')
-else:
-    dvz_polygon_set_region_fill_colors.__doc__ = """/**
- * Set a contiguous range of polygon region fill colors.
- *
- * @param set the polygon set
- * @param first_polygon first polygon index
- * @param polygon_count number of regions to update
- * @param colors RGBA fill colors
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_fill_colors.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
-    dvz_polygon_set_region_fill_colors.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_geometry = dvz.dvz_polygon_set_region_geometry
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_geometry')
-else:
-    dvz_polygon_set_region_geometry.__doc__ = """/**
- * Replace one polygon region's rings.
- *
- * @param set the polygon set
- * @param polygon_index polygon index
- * @param desc borrowed polygon descriptor
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_geometry.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.POINTER(DvzPolygonDesc)]
-    dvz_polygon_set_region_geometry.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_id = dvz.dvz_polygon_set_region_id
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_id')
-else:
-    dvz_polygon_set_region_id.__doc__ = """/**
- * Set one polygon region's stable user id.
- *
- * @param set the polygon set
- * @param polygon_index polygon index
- * @param id stable user id
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_id.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_uint64]
-    dvz_polygon_set_region_id.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_ids = dvz.dvz_polygon_set_region_ids
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_ids')
-else:
-    dvz_polygon_set_region_ids.__doc__ = """/**
- * Set a contiguous range of polygon region stable user ids.
- *
- * @param set the polygon set
- * @param first_polygon first polygon index
- * @param polygon_count number of regions to update
- * @param ids borrowed stable user id array
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_ids.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint64)]
-    dvz_polygon_set_region_ids.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_stroke_color = dvz.dvz_polygon_set_region_stroke_color
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_stroke_color')
-else:
-    dvz_polygon_set_region_stroke_color.__doc__ = """/**
- * Set one polygon region's stroke color.
- *
- * @param set the polygon set
- * @param polygon_index polygon index
- * @param color RGBA stroke color
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_stroke_color.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, DvzColor]
-    dvz_polygon_set_region_stroke_color.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_stroke_colors = dvz.dvz_polygon_set_region_stroke_colors
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_stroke_colors')
-else:
-    dvz_polygon_set_region_stroke_colors.__doc__ = """/**
- * Set a contiguous range of polygon region stroke colors.
- *
- * @param set the polygon set
- * @param first_polygon first polygon index
- * @param polygon_count number of regions to update
- * @param colors RGBA stroke colors
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_stroke_colors.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
-    dvz_polygon_set_region_stroke_colors.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_stroke_width_px = dvz.dvz_polygon_set_region_stroke_width_px
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_stroke_width_px')
-else:
-    dvz_polygon_set_region_stroke_width_px.__doc__ = """/**
- * Set one polygon region's stroke width in pixels.
- *
- * @param set the polygon set
- * @param polygon_index polygon index
- * @param width stroke width in pixels
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_stroke_width_px.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_float]
-    dvz_polygon_set_region_stroke_width_px.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_stroke_widths_px = dvz.dvz_polygon_set_region_stroke_widths_px
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_stroke_widths_px')
-else:
-    dvz_polygon_set_region_stroke_widths_px.__doc__ = """/**
- * Set a contiguous range of polygon region stroke widths.
- *
- * @param set the polygon set
- * @param first_polygon first polygon index
- * @param polygon_count number of regions to update
- * @param widths stroke widths in pixels
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_stroke_widths_px.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_float)]
-    dvz_polygon_set_region_stroke_widths_px.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_visibilities = dvz.dvz_polygon_set_region_visibilities
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_visibilities')
-else:
-    dvz_polygon_set_region_visibilities.__doc__ = """/**
- * Set a contiguous range of polygon region visibilities.
- *
- * @param set the polygon set
- * @param first_polygon first polygon index
- * @param polygon_count number of regions to update
- * @param visible borrowed visibility array
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_visibilities.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_bool)]
-    dvz_polygon_set_region_visibilities.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_visible = dvz.dvz_polygon_set_region_visible
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_visible')
-else:
-    dvz_polygon_set_region_visible.__doc__ = """/**
- * Set one polygon region's visibility.
- *
- * @param set the polygon set
- * @param polygon_index polygon index
- * @param visible whether the region should render
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_visible.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_bool]
-    dvz_polygon_set_region_visible.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_stroke_caps = dvz.dvz_polygon_set_stroke_caps
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_stroke_caps')
-else:
-    dvz_polygon_set_stroke_caps.__doc__ = """/**
- * Configure polygon-set stroke endpoint caps.
- *
- * @param set the polygon set
- * @param start_cap cap applied to each ring start
- * @param end_cap cap applied to each ring end
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_stroke_caps.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_int, ctypes.c_int]
-    dvz_polygon_set_stroke_caps.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_stroke_join = dvz.dvz_polygon_set_stroke_join
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_stroke_join')
-else:
-    dvz_polygon_set_stroke_join.__doc__ = """/**
- * Configure polygon-set stroke joins.
- *
- * @param set the polygon set
- * @param join join style
- * @param miter_limit positive finite miter limit
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_stroke_join.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_int, ctypes.c_float]
-    dvz_polygon_set_stroke_join.restype = ctypes.c_int32
-
-
-try:
     dvz_polygon_set_style = dvz.dvz_polygon_set_style
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_polygon_set_style')
@@ -24089,6 +23798,297 @@ else:
  */"""
     dvz_polygon_visible.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_bool]
     dvz_polygon_visible.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons = dvz.dvz_polygons
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons')
+else:
+    dvz_polygons.__doc__ = """/**
+ * Create a scene-owned semantic polygon set object.
+ *
+ * A polygon set stores several independent polygon regions. Each region has its own rings and
+ * style.
+ *
+ * @param scene the scene
+ * @param flags reserved polygon-set flags
+ * @return the polygon set, or NULL on allocation failure
+ */"""
+    dvz_polygons.argtypes = [ctypes.POINTER(DvzScene), ctypes.c_uint32]
+    dvz_polygons.restype = ctypes.POINTER(DvzPolygons)
+
+
+try:
+    dvz_polygons_add_region = dvz.dvz_polygons_add_region
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_add_region')
+else:
+    dvz_polygons_add_region.__doc__ = """/**
+ * Append one polygon region to a polygon set.
+ *
+ * @param set the polygon set
+ * @param desc borrowed polygon descriptor
+ * @return the polygon index, or UINT32_MAX on error
+ */"""
+    dvz_polygons_add_region.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.POINTER(DvzPolygonDesc)]
+    dvz_polygons_add_region.restype = ctypes.c_uint32
+
+
+try:
+    dvz_polygons_composite = dvz.dvz_polygons_composite
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_composite')
+else:
+    dvz_polygons_composite.__doc__ = """/**
+ * Create a scene-owned composite render view for a polygon set.
+ *
+ * @param set the polygon set
+ * @param flags reserved composite flags
+ * @return the composite, or NULL on allocation failure
+ */"""
+    dvz_polygons_composite.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32]
+    dvz_polygons_composite.restype = ctypes.POINTER(DvzComposite)
+
+
+try:
+    dvz_polygons_destroy = dvz.dvz_polygons_destroy
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_destroy')
+else:
+    dvz_polygons_destroy.__doc__ = """/**
+ * Destroy a scene-owned polygon set object.
+ *
+ * @param set the polygon set
+ */"""
+    dvz_polygons_destroy.argtypes = [ctypes.POINTER(DvzPolygons)]
+    dvz_polygons_destroy.restype = None
+
+
+try:
+    dvz_polygons_set_region_fill_color = dvz.dvz_polygons_set_region_fill_color
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_fill_color')
+else:
+    dvz_polygons_set_region_fill_color.__doc__ = """/**
+ * Set one polygon region's fill color.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param color RGBA fill color
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_fill_color.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, DvzColor]
+    dvz_polygons_set_region_fill_color.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_fill_colors = dvz.dvz_polygons_set_region_fill_colors
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_fill_colors')
+else:
+    dvz_polygons_set_region_fill_colors.__doc__ = """/**
+ * Set a contiguous range of polygon region fill colors.
+ *
+ * @param set the polygon set
+ * @param first_polygon first polygon index
+ * @param polygon_count number of regions to update
+ * @param colors RGBA fill colors
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_fill_colors.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
+    dvz_polygons_set_region_fill_colors.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_geometry = dvz.dvz_polygons_set_region_geometry
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_geometry')
+else:
+    dvz_polygons_set_region_geometry.__doc__ = """/**
+ * Replace one polygon region's rings.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param desc borrowed polygon descriptor
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_geometry.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, ctypes.POINTER(DvzPolygonDesc)]
+    dvz_polygons_set_region_geometry.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_id = dvz.dvz_polygons_set_region_id
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_id')
+else:
+    dvz_polygons_set_region_id.__doc__ = """/**
+ * Set one polygon region's stable user id.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param id stable user id
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_id.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, ctypes.c_uint64]
+    dvz_polygons_set_region_id.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_ids = dvz.dvz_polygons_set_region_ids
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_ids')
+else:
+    dvz_polygons_set_region_ids.__doc__ = """/**
+ * Set a contiguous range of polygon region stable user ids.
+ *
+ * @param set the polygon set
+ * @param first_polygon first polygon index
+ * @param polygon_count number of regions to update
+ * @param ids borrowed stable user id array
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_ids.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint64)]
+    dvz_polygons_set_region_ids.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_stroke_color = dvz.dvz_polygons_set_region_stroke_color
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_stroke_color')
+else:
+    dvz_polygons_set_region_stroke_color.__doc__ = """/**
+ * Set one polygon region's stroke color.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param color RGBA stroke color
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_stroke_color.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, DvzColor]
+    dvz_polygons_set_region_stroke_color.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_stroke_colors = dvz.dvz_polygons_set_region_stroke_colors
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_stroke_colors')
+else:
+    dvz_polygons_set_region_stroke_colors.__doc__ = """/**
+ * Set a contiguous range of polygon region stroke colors.
+ *
+ * @param set the polygon set
+ * @param first_polygon first polygon index
+ * @param polygon_count number of regions to update
+ * @param colors RGBA stroke colors
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_stroke_colors.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
+    dvz_polygons_set_region_stroke_colors.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_stroke_width_px = dvz.dvz_polygons_set_region_stroke_width_px
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_stroke_width_px')
+else:
+    dvz_polygons_set_region_stroke_width_px.__doc__ = """/**
+ * Set one polygon region's stroke width in pixels.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param width stroke width in pixels
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_stroke_width_px.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, ctypes.c_float]
+    dvz_polygons_set_region_stroke_width_px.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_stroke_widths_px = dvz.dvz_polygons_set_region_stroke_widths_px
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_stroke_widths_px')
+else:
+    dvz_polygons_set_region_stroke_widths_px.__doc__ = """/**
+ * Set a contiguous range of polygon region stroke widths.
+ *
+ * @param set the polygon set
+ * @param first_polygon first polygon index
+ * @param polygon_count number of regions to update
+ * @param widths stroke widths in pixels
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_stroke_widths_px.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_float)]
+    dvz_polygons_set_region_stroke_widths_px.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_visibilities = dvz.dvz_polygons_set_region_visibilities
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_visibilities')
+else:
+    dvz_polygons_set_region_visibilities.__doc__ = """/**
+ * Set a contiguous range of polygon region visibilities.
+ *
+ * @param set the polygon set
+ * @param first_polygon first polygon index
+ * @param polygon_count number of regions to update
+ * @param visible borrowed visibility array
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_visibilities.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_bool)]
+    dvz_polygons_set_region_visibilities.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_visible = dvz.dvz_polygons_set_region_visible
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_visible')
+else:
+    dvz_polygons_set_region_visible.__doc__ = """/**
+ * Set one polygon region's visibility.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param visible whether the region should render
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_visible.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, ctypes.c_bool]
+    dvz_polygons_set_region_visible.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_stroke_caps = dvz.dvz_polygons_set_stroke_caps
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_stroke_caps')
+else:
+    dvz_polygons_set_stroke_caps.__doc__ = """/**
+ * Configure polygon-set stroke endpoint caps.
+ *
+ * @param set the polygon set
+ * @param start_cap cap applied to each ring start
+ * @param end_cap cap applied to each ring end
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_stroke_caps.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_int, ctypes.c_int]
+    dvz_polygons_set_stroke_caps.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_stroke_join = dvz.dvz_polygons_set_stroke_join
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_stroke_join')
+else:
+    dvz_polygons_set_stroke_join.__doc__ = """/**
+ * Configure polygon-set stroke joins.
+ *
+ * @param set the polygon set
+ * @param join join style
+ * @param miter_limit positive finite miter limit
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_stroke_join.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_int, ctypes.c_float]
+    dvz_polygons_set_stroke_join.restype = ctypes.c_int32
 
 
 try:

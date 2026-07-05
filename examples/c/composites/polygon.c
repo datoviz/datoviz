@@ -163,24 +163,24 @@ static bool _add_polygon_set(DvzScene* scene, DvzPanel* panel)
         {+2.20, +0.82},
     };
 
-    DvzPolygonSet* set = dvz_polygon_set(scene, 0);
+    DvzPolygons* set = dvz_polygons(scene, 0);
     if (set == NULL)
         return false;
 
-    const uint32_t a = dvz_polygon_set_add(
+    const uint32_t a = dvz_polygons_add_region(
         set, &(DvzPolygonDesc){DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
                                .outer = {.xy = left, .count = DVZ_ARRAY_COUNT(left)}});
-    const uint32_t b = dvz_polygon_set_add(
+    const uint32_t b = dvz_polygons_add_region(
         set, &(DvzPolygonDesc){DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
                                .outer = {.xy = middle, .count = DVZ_ARRAY_COUNT(middle)}});
-    const uint32_t c = dvz_polygon_set_add(
+    const uint32_t c = dvz_polygons_add_region(
         set, &(DvzPolygonDesc){DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
                                .outer = {.xy = right, .count = DVZ_ARRAY_COUNT(right)}});
     if (a == UINT32_MAX || b == UINT32_MAX || c == UINT32_MAX)
         return false;
 
     const uint64_t ids[3] = {21, 22, 23};
-    int rc = dvz_polygon_set_region_ids(set, 0, 3, ids);
+    int rc = dvz_polygons_set_region_ids(set, 0, 3, ids);
     if (rc != 0)
         return false;
 
@@ -195,20 +195,20 @@ static bool _add_polygon_set(DvzScene* scene, DvzPanel* panel)
         {26, 74, 54, 255},
     };
     const float widths[3] = {5.0f, 7.0f, 5.0f};
-    rc = dvz_polygon_set_region_fill_colors(set, 0, 3, fill);
+    rc = dvz_polygons_set_region_fill_colors(set, 0, 3, fill);
     if (rc != 0)
         return false;
-    rc = dvz_polygon_set_region_stroke_colors(set, 0, 3, stroke);
+    rc = dvz_polygons_set_region_stroke_colors(set, 0, 3, stroke);
     if (rc != 0)
         return false;
-    rc = dvz_polygon_set_region_stroke_widths_px(set, 0, 3, widths);
+    rc = dvz_polygons_set_region_stroke_widths_px(set, 0, 3, widths);
     if (rc != 0)
         return false;
-    rc = dvz_polygon_set_stroke_join(set, DVZ_PATH_JOIN_BEVEL, 4.0f);
+    rc = dvz_polygons_set_stroke_join(set, DVZ_PATH_JOIN_BEVEL, 4.0f);
     if (rc != 0)
         return false;
 
-    DvzComposite* composite = dvz_polygon_set_composite(set, 0);
+    DvzComposite* composite = dvz_polygons_composite(set, 0);
     if (composite == NULL)
         return false;
 

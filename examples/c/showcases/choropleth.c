@@ -586,7 +586,7 @@ static bool _add_choropleth_polygons(
     ANN(panel);
     ANN(bundle);
 
-    DvzPolygonSet* set = dvz_polygon_set(scene, 0);
+    DvzPolygons* set = dvz_polygons(scene, 0);
     if (set == NULL)
         return false;
 
@@ -595,7 +595,7 @@ static bool _add_choropleth_polygons(
     {
         const ChoroplethRing* ring = &bundle->rings[i];
         const dvec2* xy = (const dvec2*)&bundle->points[ring->point_first];
-        const uint32_t index = dvz_polygon_set_add(
+        const uint32_t index = dvz_polygons_add_region(
             set, &(DvzPolygonDesc){DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
                    .outer = {.xy = xy, .count = ring->point_count}});
         if (index == UINT32_MAX || index != i)
@@ -605,20 +605,20 @@ static bool _add_choropleth_polygons(
         }
     }
 
-    if (ok && dvz_polygon_set_region_ids(set, 0, bundle->ring_count, bundle->ids) != 0)
+    if (ok && dvz_polygons_set_region_ids(set, 0, bundle->ring_count, bundle->ids) != 0)
         ok = false;
-    if (ok && dvz_polygon_set_region_fill_colors(set, 0, bundle->ring_count, bundle->fill) != 0)
+    if (ok && dvz_polygons_set_region_fill_colors(set, 0, bundle->ring_count, bundle->fill) != 0)
         ok = false;
-    if (ok && dvz_polygon_set_region_stroke_colors(set, 0, bundle->ring_count, bundle->stroke) != 0)
+    if (ok && dvz_polygons_set_region_stroke_colors(set, 0, bundle->ring_count, bundle->stroke) != 0)
         ok = false;
-    if (ok && dvz_polygon_set_region_stroke_widths_px(set, 0, bundle->ring_count, bundle->widths) != 0)
+    if (ok && dvz_polygons_set_region_stroke_widths_px(set, 0, bundle->ring_count, bundle->widths) != 0)
         ok = false;
-    if (ok && dvz_polygon_set_stroke_join(set, DVZ_PATH_JOIN_ROUND, 3.0f) != 0)
+    if (ok && dvz_polygons_set_stroke_join(set, DVZ_PATH_JOIN_ROUND, 3.0f) != 0)
         ok = false;
 
     if (ok)
     {
-        DvzComposite* composite = dvz_polygon_set_composite(set, 0);
+        DvzComposite* composite = dvz_polygons_composite(set, 0);
         ok = composite != NULL &&
              dvz_panel_add_composite(
                  panel, composite,

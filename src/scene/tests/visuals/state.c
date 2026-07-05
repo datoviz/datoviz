@@ -1690,7 +1690,7 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
-    DvzPolygonSet* set = dvz_polygon_set(scene, 0);
+    DvzPolygons* set = dvz_polygons(scene, 0);
     ANN(set);
     const dvec2 left[4] = {
         {0.0, 0.0},
@@ -1704,13 +1704,13 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
         {3.0, 1.0},
         {2.0, 1.0},
     };
-    const uint32_t left_index = dvz_polygon_set_add(
+    const uint32_t left_index = dvz_polygons_add_region(
         set,
         &(DvzPolygonDesc){
             DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
             .outer = {.xy = left, .count = 4},
         });
-    const uint32_t right_index = dvz_polygon_set_add(
+    const uint32_t right_index = dvz_polygons_add_region(
         set,
         &(DvzPolygonDesc){
             DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
@@ -1721,18 +1721,18 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
 
     const DvzColor red = {255, 0, 0, 255};
     const DvzColor green = {0, 255, 0, 255};
-    AT(dvz_polygon_set_region_fill_color(set, left_index, red) == 0);
-    AT(dvz_polygon_set_region_fill_color(set, right_index, green) == 0);
-    AT(dvz_polygon_set_region_stroke_width_px(set, left_index, 2.0f) == 0);
-    AT(dvz_polygon_set_region_stroke_width_px(set, right_index, 4.0f) == 0);
+    AT(dvz_polygons_set_region_fill_color(set, left_index, red) == 0);
+    AT(dvz_polygons_set_region_fill_color(set, right_index, green) == 0);
+    AT(dvz_polygons_set_region_stroke_width_px(set, left_index, 2.0f) == 0);
+    AT(dvz_polygons_set_region_stroke_width_px(set, right_index, 4.0f) == 0);
     const uint64_t ids[2] = {101, 102};
-    AT(dvz_polygon_set_region_ids(set, 0, 2, ids) == 0);
+    AT(dvz_polygons_set_region_ids(set, 0, 2, ids) == 0);
     AT(set->polygons[left_index].user_id == 101);
     AT(set->polygons[right_index].user_id == 102);
-    AT(dvz_polygon_set_stroke_caps(set, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_TRIANGLE_OUT) == 0);
-    AT(dvz_polygon_set_stroke_join(set, DVZ_PATH_JOIN_MITER, 5.0f) == 0);
+    AT(dvz_polygons_set_stroke_caps(set, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_TRIANGLE_OUT) == 0);
+    AT(dvz_polygons_set_stroke_join(set, DVZ_PATH_JOIN_MITER, 5.0f) == 0);
 
-    DvzComposite* composite = dvz_polygon_set_composite(set, 0);
+    DvzComposite* composite = dvz_polygons_composite(set, 0);
     ANN(composite);
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
     attach.z_layer = 3;
@@ -1790,7 +1790,7 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     }
     AT(fill_position_version > 0);
     AT(fill_color_version > 0);
-    AT(dvz_polygon_set_region_stroke_width_px(set, right_index, 7.0f) == 0);
+    AT(dvz_polygons_set_region_stroke_width_px(set, right_index, 7.0f) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(stroke, "stroke_width_px", &stroke_width_view) == 0);
     widths = stroke_width_view.data;
@@ -1809,7 +1809,7 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     }
 
     const DvzColor blue = {0, 0, 255, 255};
-    AT(dvz_polygon_set_region_fill_color(set, right_index, blue) == 0);
+    AT(dvz_polygons_set_region_fill_color(set, right_index, blue) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(fill, "color", &color_view) == 0);
     colors = color_view.data;
@@ -1820,9 +1820,9 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     const DvzColor bulk_fill[2] = {{11, 22, 33, 255}, {44, 55, 66, 255}};
     const DvzColor bulk_stroke[2] = {{77, 88, 99, 255}, {111, 122, 133, 255}};
     const float bulk_widths[2] = {1.5f, 2.5f};
-    AT(dvz_polygon_set_region_fill_colors(set, 0, 2, bulk_fill) == 0);
-    AT(dvz_polygon_set_region_stroke_colors(set, 0, 2, bulk_stroke) == 0);
-    AT(dvz_polygon_set_region_stroke_widths_px(set, 0, 2, bulk_widths) == 0);
+    AT(dvz_polygons_set_region_fill_colors(set, 0, 2, bulk_fill) == 0);
+    AT(dvz_polygons_set_region_stroke_colors(set, 0, 2, bulk_stroke) == 0);
+    AT(dvz_polygons_set_region_stroke_widths_px(set, 0, 2, bulk_widths) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(fill, "color", &color_view) == 0);
     colors = color_view.data;
@@ -1834,13 +1834,13 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     AC(widths[5], bulk_widths[1], EPS);
 
     const bool one_visible[2] = {true, false};
-    AT(dvz_polygon_set_region_visibilities(set, 0, 2, one_visible) == 0);
+    AT(dvz_polygons_set_region_visibilities(set, 0, 2, one_visible) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(fill, "position", &position_view) == 0);
     AT(position_view.item_count == 4);
     AT(dvz_visual_data(stroke, "position", &stroke_position_view) == 0);
     AT(stroke_position_view.item_count == 5);
-    AT(dvz_polygon_set_region_visible(set, left_index, false) == 0);
+    AT(dvz_polygons_set_region_visible(set, left_index, false) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(!fill->visible);
     AT(!stroke->visible);

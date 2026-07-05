@@ -452,12 +452,10 @@ known at this checkpoint.
 
 Next recommended checkpoints, in safe execution order:
 
-1. Run the full public mutator naming audit under the stricter
+1. Continue the full public mutator naming audit under the stricter
    `dvz_<object>_set_<property>()` convention recorded in `spec/api/PUBLIC_API_CONVENTIONS.md`.
-   Rename graph/polygon mutators and any other obvious retained-state mutators before RC. For the
-   polygon aggregate, replace public `DvzPolygonSet`/`dvz_polygon_set_*` with
-   `DvzPolygons`/`dvz_polygons_*`; use `dvz_polygons_add_region()` for append/create and
-   `dvz_polygons_set_region_*()` for retained region mutators.
+   The polygon aggregate rename is complete. Next audit graph, singular polygon, plot, text, and
+   any other obvious retained-state mutators before RC.
 2. Rename public `dvz_geom_*` functions to the single `dvz_geometry_*` naming family.
 3. Split stable `window.h` from backend SPI so ordinary window users do not include backend
    registration, GLFW hooks, wrap-surface helpers, or Vulkan surface details.
@@ -833,7 +831,7 @@ generated ctypes, generated docs if applicable, and examples in sync.
    - Completed: collapse 2D view APIs.
    - Completed: normalize scale-bar spelling.
    - Approved: normalize retained-state mutators to `dvz_<object>_set_<property>()`.
-   - Approved: rename public `DvzPolygonSet`/`dvz_polygon_set_*` to
+   - Completed: rename public `DvzPolygonSet`/`dvz_polygon_set_*` to
      `DvzPolygons`/`dvz_polygons_*`, with `dvz_polygons_add_region()` for creation and
      `dvz_polygons_set_region_*()` for retained region mutation.
    - Approved: audit graph mutators and then the rest of the public scene surface for the same

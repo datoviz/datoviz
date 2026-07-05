@@ -3246,7 +3246,7 @@ DVZ_EXPORT DvzComposite* dvz_polygon_composite(DvzPolygon* polygon, uint32_t fla
  * @param flags reserved polygon-set flags
  * @return the polygon set, or NULL on allocation failure
  */
-DVZ_EXPORT DvzPolygonSet* dvz_polygon_set(DvzScene* scene, uint32_t flags);
+DVZ_EXPORT DvzPolygons* dvz_polygons(DvzScene* scene, uint32_t flags);
 
 
 /**
@@ -3254,7 +3254,7 @@ DVZ_EXPORT DvzPolygonSet* dvz_polygon_set(DvzScene* scene, uint32_t flags);
  *
  * @param set the polygon set
  */
-DVZ_EXPORT void dvz_polygon_set_destroy(DvzPolygonSet* set);
+DVZ_EXPORT void dvz_polygons_destroy(DvzPolygons* set);
 
 
 /**
@@ -3264,7 +3264,7 @@ DVZ_EXPORT void dvz_polygon_set_destroy(DvzPolygonSet* set);
  * @param desc borrowed polygon descriptor
  * @return the polygon index, or UINT32_MAX on error
  */
-DVZ_EXPORT uint32_t dvz_polygon_set_add(DvzPolygonSet* set, const DvzPolygonDesc* desc);
+DVZ_EXPORT uint32_t dvz_polygons_add_region(DvzPolygons* set, const DvzPolygonDesc* desc);
 
 
 /**
@@ -3275,8 +3275,8 @@ DVZ_EXPORT uint32_t dvz_polygon_set_add(DvzPolygonSet* set, const DvzPolygonDesc
  * @param desc borrowed polygon descriptor
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_set_region_geometry(
-    DvzPolygonSet* set, uint32_t polygon_index, const DvzPolygonDesc* desc);
+DVZ_EXPORT DvzResult dvz_polygons_set_region_geometry(
+    DvzPolygons* set, uint32_t polygon_index, const DvzPolygonDesc* desc);
 
 
 /**
@@ -3288,7 +3288,7 @@ DVZ_EXPORT DvzResult dvz_polygon_set_region_geometry(
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_polygon_set_region_id(DvzPolygonSet* set, uint32_t polygon_index, uint64_t id);
+dvz_polygons_set_region_id(DvzPolygons* set, uint32_t polygon_index, uint64_t id);
 
 
 /**
@@ -3300,8 +3300,8 @@ dvz_polygon_set_region_id(DvzPolygonSet* set, uint32_t polygon_index, uint64_t i
  * @param ids borrowed stable user id array
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_set_region_ids(
-    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const uint64_t* ids);
+DVZ_EXPORT DvzResult dvz_polygons_set_region_ids(
+    DvzPolygons* set, uint32_t first_polygon, uint32_t polygon_count, const uint64_t* ids);
 
 
 /**
@@ -3313,7 +3313,7 @@ DVZ_EXPORT DvzResult dvz_polygon_set_region_ids(
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_polygon_set_region_visible(DvzPolygonSet* set, uint32_t polygon_index, bool visible);
+dvz_polygons_set_region_visible(DvzPolygons* set, uint32_t polygon_index, bool visible);
 
 
 /**
@@ -3325,8 +3325,8 @@ dvz_polygon_set_region_visible(DvzPolygonSet* set, uint32_t polygon_index, bool 
  * @param visible borrowed visibility array
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_set_region_visibilities(
-    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const bool* visible);
+DVZ_EXPORT DvzResult dvz_polygons_set_region_visibilities(
+    DvzPolygons* set, uint32_t first_polygon, uint32_t polygon_count, const bool* visible);
 
 
 /**
@@ -3337,8 +3337,8 @@ DVZ_EXPORT DvzResult dvz_polygon_set_region_visibilities(
  * @param color RGBA fill color
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_set_region_fill_color(
-    DvzPolygonSet* set, uint32_t polygon_index, const DvzColor color);
+DVZ_EXPORT DvzResult dvz_polygons_set_region_fill_color(
+    DvzPolygons* set, uint32_t polygon_index, const DvzColor color);
 
 
 /**
@@ -3350,8 +3350,8 @@ DVZ_EXPORT DvzResult dvz_polygon_set_region_fill_color(
  * @param colors RGBA fill colors
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_set_region_fill_colors(
-    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const DvzColor* colors);
+DVZ_EXPORT DvzResult dvz_polygons_set_region_fill_colors(
+    DvzPolygons* set, uint32_t first_polygon, uint32_t polygon_count, const DvzColor* colors);
 
 
 /**
@@ -3362,8 +3362,8 @@ DVZ_EXPORT DvzResult dvz_polygon_set_region_fill_colors(
  * @param color RGBA stroke color
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_set_region_stroke_color(
-    DvzPolygonSet* set, uint32_t polygon_index, const DvzColor color);
+DVZ_EXPORT DvzResult dvz_polygons_set_region_stroke_color(
+    DvzPolygons* set, uint32_t polygon_index, const DvzColor color);
 
 
 /**
@@ -3375,8 +3375,8 @@ DVZ_EXPORT DvzResult dvz_polygon_set_region_stroke_color(
  * @param colors RGBA stroke colors
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_set_region_stroke_colors(
-    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const DvzColor* colors);
+DVZ_EXPORT DvzResult dvz_polygons_set_region_stroke_colors(
+    DvzPolygons* set, uint32_t first_polygon, uint32_t polygon_count, const DvzColor* colors);
 
 
 /**
@@ -3388,7 +3388,7 @@ DVZ_EXPORT DvzResult dvz_polygon_set_region_stroke_colors(
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_polygon_set_region_stroke_width_px(DvzPolygonSet* set, uint32_t polygon_index, float width);
+dvz_polygons_set_region_stroke_width_px(DvzPolygons* set, uint32_t polygon_index, float width);
 
 
 /**
@@ -3400,8 +3400,8 @@ dvz_polygon_set_region_stroke_width_px(DvzPolygonSet* set, uint32_t polygon_inde
  * @param widths stroke widths in pixels
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_set_region_stroke_widths_px(
-    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const float* widths);
+DVZ_EXPORT DvzResult dvz_polygons_set_region_stroke_widths_px(
+    DvzPolygons* set, uint32_t first_polygon, uint32_t polygon_count, const float* widths);
 
 
 /**
@@ -3413,7 +3413,7 @@ DVZ_EXPORT DvzResult dvz_polygon_set_region_stroke_widths_px(
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_polygon_set_stroke_caps(DvzPolygonSet* set, DvzSegmentCap start_cap, DvzSegmentCap end_cap);
+dvz_polygons_set_stroke_caps(DvzPolygons* set, DvzSegmentCap start_cap, DvzSegmentCap end_cap);
 
 
 /**
@@ -3425,7 +3425,7 @@ dvz_polygon_set_stroke_caps(DvzPolygonSet* set, DvzSegmentCap start_cap, DvzSegm
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_polygon_set_stroke_join(DvzPolygonSet* set, DvzPathJoin join, float miter_limit);
+dvz_polygons_set_stroke_join(DvzPolygons* set, DvzPathJoin join, float miter_limit);
 
 
 /**
@@ -3435,7 +3435,7 @@ dvz_polygon_set_stroke_join(DvzPolygonSet* set, DvzPathJoin join, float miter_li
  * @param flags reserved composite flags
  * @return the composite, or NULL on allocation failure
  */
-DVZ_EXPORT DvzComposite* dvz_polygon_set_composite(DvzPolygonSet* set, uint32_t flags);
+DVZ_EXPORT DvzComposite* dvz_polygons_composite(DvzPolygons* set, uint32_t flags);
 
 
 /**

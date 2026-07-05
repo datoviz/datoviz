@@ -148,7 +148,7 @@ typedef enum
 
 
 typedef struct DvzPolygonStoredRing DvzPolygonStoredRing;
-typedef struct DvzPolygonSetItem DvzPolygonSetItem;
+typedef struct DvzPolygonsItem DvzPolygonsItem;
 typedef struct DvzGraphNode DvzGraphNode;
 typedef struct DvzGraphEdgeRecord DvzGraphEdgeRecord;
 typedef struct DvzCompositeVisual DvzCompositeVisual;
@@ -183,7 +183,7 @@ struct DvzPolygon
 
 
 
-struct DvzPolygonSetItem
+struct DvzPolygonsItem
 {
     bool active;
     DvzPolygonStoredRing outer;
@@ -199,12 +199,12 @@ struct DvzPolygonSetItem
 
 
 
-struct DvzPolygonSet
+struct DvzPolygons
 {
     DvzScene* scene;
     uint32_t flags;
     bool active;
-    DvzPolygonSetItem* polygons;
+    DvzPolygonsItem* polygons;
     uint32_t polygon_count;
     uint32_t polygon_capacity;
     DvzSegmentCap stroke_cap_start;
@@ -2107,7 +2107,7 @@ struct DvzScene
     DvzPolygon polygons[DVZ_SCENE_MAX_POLYGONS];
 
     uint32_t polygon_set_count;
-    DvzPolygonSet polygon_sets[DVZ_SCENE_MAX_POLYGON_SETS];
+    DvzPolygons polygon_sets[DVZ_SCENE_MAX_POLYGON_SETS];
 
     uint32_t graph_count;
     DvzGraph graphs[DVZ_SCENE_MAX_GRAPHS];

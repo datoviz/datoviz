@@ -41,7 +41,8 @@ Functions: 206
 | [Phong](#phong) | 1 | `include/datoviz/scene.h` |
 | [Pixel](#pixel) | 1 | `include/datoviz/scene.h` |
 | [Point](#point) | 3 | `include/datoviz/scene.h` |
-| [Polygon](#polygon) | 33 | `include/datoviz/geom.h`, `include/datoviz/scene.h` |
+| [Polygon](#polygon) | 16 | `include/datoviz/geom.h`, `include/datoviz/scene.h` |
+| [Polygons](#polygons) | 17 | `include/datoviz/scene.h` |
 | [Primitive](#primitive) | 1 | `include/datoviz/scene.h` |
 | [Segment](#segment) | 2 | `include/datoviz/scene.h` |
 | [Sphere](#sphere) | 2 | `include/datoviz/scene.h` |
@@ -240,23 +241,6 @@ Functions: 206
     | [`dvz_polygon_hole()`](#dvz_polygon_hole) | `include/datoviz/scene.h` |
     | [`dvz_polygon_id()`](#dvz_polygon_id) | `include/datoviz/scene.h` |
     | [`dvz_polygon_outer()`](#dvz_polygon_outer) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set()`](#dvz_polygon_set) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_add()`](#dvz_polygon_set_add) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_composite()`](#dvz_polygon_set_composite) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_destroy()`](#dvz_polygon_set_destroy) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_region_fill_color()`](#dvz_polygon_set_region_fill_color) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_region_fill_colors()`](#dvz_polygon_set_region_fill_colors) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_region_geometry()`](#dvz_polygon_set_region_geometry) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_region_id()`](#dvz_polygon_set_region_id) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_region_ids()`](#dvz_polygon_set_region_ids) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_region_stroke_color()`](#dvz_polygon_set_region_stroke_color) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_region_stroke_colors()`](#dvz_polygon_set_region_stroke_colors) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_region_stroke_width_px()`](#dvz_polygon_set_region_stroke_width_px) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_region_stroke_widths_px()`](#dvz_polygon_set_region_stroke_widths_px) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_region_visibilities()`](#dvz_polygon_set_region_visibilities) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_region_visible()`](#dvz_polygon_set_region_visible) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_stroke_caps()`](#dvz_polygon_set_stroke_caps) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_stroke_join()`](#dvz_polygon_set_stroke_join) | `include/datoviz/scene.h` |
     | [`dvz_polygon_set_style()`](#dvz_polygon_set_style) | `include/datoviz/scene.h` |
     | [`dvz_polygon_stroke_caps()`](#dvz_polygon_stroke_caps) | `include/datoviz/scene.h` |
     | [`dvz_polygon_stroke_color()`](#dvz_polygon_stroke_color) | `include/datoviz/scene.h` |
@@ -264,6 +248,28 @@ Functions: 206
     | [`dvz_polygon_stroke_width_px()`](#dvz_polygon_stroke_width_px) | `include/datoviz/scene.h` |
     | [`dvz_polygon_style()`](#dvz_polygon_style) | `include/datoviz/scene.h` |
     | [`dvz_polygon_visible()`](#dvz_polygon_visible) | `include/datoviz/scene.h` |
+
+    ### Polygons
+
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_polygons()`](#dvz_polygons) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_add_region()`](#dvz_polygons_add_region) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_composite()`](#dvz_polygons_composite) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_destroy()`](#dvz_polygons_destroy) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_fill_color()`](#dvz_polygons_set_region_fill_color) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_fill_colors()`](#dvz_polygons_set_region_fill_colors) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_geometry()`](#dvz_polygons_set_region_geometry) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_id()`](#dvz_polygons_set_region_id) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_ids()`](#dvz_polygons_set_region_ids) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_stroke_color()`](#dvz_polygons_set_region_stroke_color) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_stroke_colors()`](#dvz_polygons_set_region_stroke_colors) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_stroke_width_px()`](#dvz_polygons_set_region_stroke_width_px) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_stroke_widths_px()`](#dvz_polygons_set_region_stroke_widths_px) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_visibilities()`](#dvz_polygons_set_region_visibilities) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_visible()`](#dvz_polygons_set_region_visible) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_stroke_caps()`](#dvz_polygons_set_stroke_caps) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_stroke_join()`](#dvz_polygons_set_stroke_join) | `include/datoviz/scene.h` |
 
     ### Primitive
 
@@ -2398,399 +2404,6 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:3123._
 
-### `dvz_polygon_set()`
-
-```c title="dvz_polygon_set"
-DvzPolygonSet * dvz_polygon_set(
-    DvzScene * scene,
-    uint32_t flags
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzPolygonSet *` | the polygon set, or NULL on allocation failure |
-| `scene` | `DvzScene *` | the scene |
-| `flags` | `uint32_t` | reserved polygon-set flags |
-
-Create a scene-owned semantic polygon set object.
-
-A polygon set stores several independent polygon regions. Each region has its own rings and
-style.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3249._
-
-### `dvz_polygon_set_add()`
-
-```c title="dvz_polygon_set_add"
-uint32_t dvz_polygon_set_add(
-    DvzPolygonSet * set,
-    const DvzPolygonDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `uint32_t` | the polygon index, or UINT32_MAX on error |
-| `set` | `DvzPolygonSet *` | the polygon set |
-| `desc` | `const DvzPolygonDesc *` | borrowed polygon descriptor |
-
-Append one polygon region to a polygon set.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3267._
-
-### `dvz_polygon_set_composite()`
-
-```c title="dvz_polygon_set_composite"
-DvzComposite * dvz_polygon_set_composite(
-    DvzPolygonSet * set,
-    uint32_t flags
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzComposite *` | the composite, or NULL on allocation failure |
-| `set` | `DvzPolygonSet *` | the polygon set |
-| `flags` | `uint32_t` | reserved composite flags |
-
-Create a scene-owned composite render view for a polygon set.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3438._
-
-### `dvz_polygon_set_destroy()`
-
-```c title="dvz_polygon_set_destroy"
-void dvz_polygon_set_destroy(
-    DvzPolygonSet * set
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `set` | `DvzPolygonSet *` | the polygon set |
-
-Destroy a scene-owned polygon set object.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3257._
-
-### `dvz_polygon_set_region_fill_color()`
-
-```c title="dvz_polygon_set_region_fill_color"
-DvzResult dvz_polygon_set_region_fill_color(
-    DvzPolygonSet * set,
-    uint32_t polygon_index,
-    const DvzColor color
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `set` | `DvzPolygonSet *` | the polygon set |
-| `polygon_index` | `uint32_t` | polygon index |
-| `color` | `const DvzColor` | RGBA fill color |
-
-Set one polygon region's fill color.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3340._
-
-### `dvz_polygon_set_region_fill_colors()`
-
-```c title="dvz_polygon_set_region_fill_colors"
-DvzResult dvz_polygon_set_region_fill_colors(
-    DvzPolygonSet * set,
-    uint32_t first_polygon,
-    uint32_t polygon_count,
-    const DvzColor * colors
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `set` | `DvzPolygonSet *` | the polygon set |
-| `first_polygon` | `uint32_t` | first polygon index |
-| `polygon_count` | `uint32_t` | number of regions to update |
-| `colors` | `const DvzColor *` | RGBA fill colors |
-
-Set a contiguous range of polygon region fill colors.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3353._
-
-### `dvz_polygon_set_region_geometry()`
-
-```c title="dvz_polygon_set_region_geometry"
-DvzResult dvz_polygon_set_region_geometry(
-    DvzPolygonSet * set,
-    uint32_t polygon_index,
-    const DvzPolygonDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `set` | `DvzPolygonSet *` | the polygon set |
-| `polygon_index` | `uint32_t` | polygon index |
-| `desc` | `const DvzPolygonDesc *` | borrowed polygon descriptor |
-
-Replace one polygon region's rings.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3278._
-
-### `dvz_polygon_set_region_id()`
-
-```c title="dvz_polygon_set_region_id"
-DvzResult dvz_polygon_set_region_id(
-    DvzPolygonSet * set,
-    uint32_t polygon_index,
-    uint64_t id
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `set` | `DvzPolygonSet *` | the polygon set |
-| `polygon_index` | `uint32_t` | polygon index |
-| `id` | `uint64_t` | stable user id |
-
-Set one polygon region's stable user id.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3291._
-
-### `dvz_polygon_set_region_ids()`
-
-```c title="dvz_polygon_set_region_ids"
-DvzResult dvz_polygon_set_region_ids(
-    DvzPolygonSet * set,
-    uint32_t first_polygon,
-    uint32_t polygon_count,
-    const uint64_t * ids
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `set` | `DvzPolygonSet *` | the polygon set |
-| `first_polygon` | `uint32_t` | first polygon index |
-| `polygon_count` | `uint32_t` | number of regions to update |
-| `ids` | `const uint64_t *` | borrowed stable user id array |
-
-Set a contiguous range of polygon region stable user ids.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3303._
-
-### `dvz_polygon_set_region_stroke_color()`
-
-```c title="dvz_polygon_set_region_stroke_color"
-DvzResult dvz_polygon_set_region_stroke_color(
-    DvzPolygonSet * set,
-    uint32_t polygon_index,
-    const DvzColor color
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `set` | `DvzPolygonSet *` | the polygon set |
-| `polygon_index` | `uint32_t` | polygon index |
-| `color` | `const DvzColor` | RGBA stroke color |
-
-Set one polygon region's stroke color.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3365._
-
-### `dvz_polygon_set_region_stroke_colors()`
-
-```c title="dvz_polygon_set_region_stroke_colors"
-DvzResult dvz_polygon_set_region_stroke_colors(
-    DvzPolygonSet * set,
-    uint32_t first_polygon,
-    uint32_t polygon_count,
-    const DvzColor * colors
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `set` | `DvzPolygonSet *` | the polygon set |
-| `first_polygon` | `uint32_t` | first polygon index |
-| `polygon_count` | `uint32_t` | number of regions to update |
-| `colors` | `const DvzColor *` | RGBA stroke colors |
-
-Set a contiguous range of polygon region stroke colors.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3378._
-
-### `dvz_polygon_set_region_stroke_width_px()`
-
-```c title="dvz_polygon_set_region_stroke_width_px"
-DvzResult dvz_polygon_set_region_stroke_width_px(
-    DvzPolygonSet * set,
-    uint32_t polygon_index,
-    float width
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `set` | `DvzPolygonSet *` | the polygon set |
-| `polygon_index` | `uint32_t` | polygon index |
-| `width` | `float` | stroke width in pixels |
-
-Set one polygon region's stroke width in pixels.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3391._
-
-### `dvz_polygon_set_region_stroke_widths_px()`
-
-```c title="dvz_polygon_set_region_stroke_widths_px"
-DvzResult dvz_polygon_set_region_stroke_widths_px(
-    DvzPolygonSet * set,
-    uint32_t first_polygon,
-    uint32_t polygon_count,
-    const float * widths
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `set` | `DvzPolygonSet *` | the polygon set |
-| `first_polygon` | `uint32_t` | first polygon index |
-| `polygon_count` | `uint32_t` | number of regions to update |
-| `widths` | `const float *` | stroke widths in pixels |
-
-Set a contiguous range of polygon region stroke widths.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3403._
-
-### `dvz_polygon_set_region_visibilities()`
-
-```c title="dvz_polygon_set_region_visibilities"
-DvzResult dvz_polygon_set_region_visibilities(
-    DvzPolygonSet * set,
-    uint32_t first_polygon,
-    uint32_t polygon_count,
-    const _Bool * visible
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `set` | `DvzPolygonSet *` | the polygon set |
-| `first_polygon` | `uint32_t` | first polygon index |
-| `polygon_count` | `uint32_t` | number of regions to update |
-| `visible` | `const _Bool *` | borrowed visibility array |
-
-Set a contiguous range of polygon region visibilities.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3328._
-
-### `dvz_polygon_set_region_visible()`
-
-```c title="dvz_polygon_set_region_visible"
-DvzResult dvz_polygon_set_region_visible(
-    DvzPolygonSet * set,
-    uint32_t polygon_index,
-    _Bool visible
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `set` | `DvzPolygonSet *` | the polygon set |
-| `polygon_index` | `uint32_t` | polygon index |
-| `visible` | `_Bool` | whether the region should render |
-
-Set one polygon region's visibility.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3316._
-
-### `dvz_polygon_set_stroke_caps()`
-
-```c title="dvz_polygon_set_stroke_caps"
-DvzResult dvz_polygon_set_stroke_caps(
-    DvzPolygonSet * set,
-    DvzSegmentCap start_cap,
-    DvzSegmentCap end_cap
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `set` | `DvzPolygonSet *` | the polygon set |
-| `start_cap` | `DvzSegmentCap` | cap applied to each ring start |
-| `end_cap` | `DvzSegmentCap` | cap applied to each ring end |
-
-Configure polygon-set stroke endpoint caps.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3416._
-
-### `dvz_polygon_set_stroke_join()`
-
-```c title="dvz_polygon_set_stroke_join"
-DvzResult dvz_polygon_set_stroke_join(
-    DvzPolygonSet * set,
-    DvzPathJoin join,
-    float miter_limit
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `set` | `DvzPolygonSet *` | the polygon set |
-| `join` | `DvzPathJoin` | join style |
-| `miter_limit` | `float` | positive finite miter limit |
-
-Configure polygon-set stroke joins.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3428._
-
 ### `dvz_polygon_set_style()`
 
 ```c title="dvz_polygon_set_style"
@@ -2939,6 +2552,401 @@ Set polygon visibility.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:3159._
+
+## Polygons
+
+### `dvz_polygons()`
+
+```c title="dvz_polygons"
+DvzPolygons * dvz_polygons(
+    DvzScene * scene,
+    uint32_t flags
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzPolygons *` | the polygon set, or NULL on allocation failure |
+| `scene` | `DvzScene *` | the scene |
+| `flags` | `uint32_t` | reserved polygon-set flags |
+
+Create a scene-owned semantic polygon set object.
+
+A polygon set stores several independent polygon regions. Each region has its own rings and
+style.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3249._
+
+### `dvz_polygons_add_region()`
+
+```c title="dvz_polygons_add_region"
+uint32_t dvz_polygons_add_region(
+    DvzPolygons * set,
+    const DvzPolygonDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `uint32_t` | the polygon index, or UINT32_MAX on error |
+| `set` | `DvzPolygons *` | the polygon set |
+| `desc` | `const DvzPolygonDesc *` | borrowed polygon descriptor |
+
+Append one polygon region to a polygon set.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3267._
+
+### `dvz_polygons_composite()`
+
+```c title="dvz_polygons_composite"
+DvzComposite * dvz_polygons_composite(
+    DvzPolygons * set,
+    uint32_t flags
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzComposite *` | the composite, or NULL on allocation failure |
+| `set` | `DvzPolygons *` | the polygon set |
+| `flags` | `uint32_t` | reserved composite flags |
+
+Create a scene-owned composite render view for a polygon set.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3438._
+
+### `dvz_polygons_destroy()`
+
+```c title="dvz_polygons_destroy"
+void dvz_polygons_destroy(
+    DvzPolygons * set
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `set` | `DvzPolygons *` | the polygon set |
+
+Destroy a scene-owned polygon set object.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3257._
+
+### `dvz_polygons_set_region_fill_color()`
+
+```c title="dvz_polygons_set_region_fill_color"
+DvzResult dvz_polygons_set_region_fill_color(
+    DvzPolygons * set,
+    uint32_t polygon_index,
+    const DvzColor color
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `set` | `DvzPolygons *` | the polygon set |
+| `polygon_index` | `uint32_t` | polygon index |
+| `color` | `const DvzColor` | RGBA fill color |
+
+Set one polygon region's fill color.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3340._
+
+### `dvz_polygons_set_region_fill_colors()`
+
+```c title="dvz_polygons_set_region_fill_colors"
+DvzResult dvz_polygons_set_region_fill_colors(
+    DvzPolygons * set,
+    uint32_t first_polygon,
+    uint32_t polygon_count,
+    const DvzColor * colors
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `set` | `DvzPolygons *` | the polygon set |
+| `first_polygon` | `uint32_t` | first polygon index |
+| `polygon_count` | `uint32_t` | number of regions to update |
+| `colors` | `const DvzColor *` | RGBA fill colors |
+
+Set a contiguous range of polygon region fill colors.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3353._
+
+### `dvz_polygons_set_region_geometry()`
+
+```c title="dvz_polygons_set_region_geometry"
+DvzResult dvz_polygons_set_region_geometry(
+    DvzPolygons * set,
+    uint32_t polygon_index,
+    const DvzPolygonDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `set` | `DvzPolygons *` | the polygon set |
+| `polygon_index` | `uint32_t` | polygon index |
+| `desc` | `const DvzPolygonDesc *` | borrowed polygon descriptor |
+
+Replace one polygon region's rings.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3278._
+
+### `dvz_polygons_set_region_id()`
+
+```c title="dvz_polygons_set_region_id"
+DvzResult dvz_polygons_set_region_id(
+    DvzPolygons * set,
+    uint32_t polygon_index,
+    uint64_t id
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `set` | `DvzPolygons *` | the polygon set |
+| `polygon_index` | `uint32_t` | polygon index |
+| `id` | `uint64_t` | stable user id |
+
+Set one polygon region's stable user id.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3291._
+
+### `dvz_polygons_set_region_ids()`
+
+```c title="dvz_polygons_set_region_ids"
+DvzResult dvz_polygons_set_region_ids(
+    DvzPolygons * set,
+    uint32_t first_polygon,
+    uint32_t polygon_count,
+    const uint64_t * ids
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `set` | `DvzPolygons *` | the polygon set |
+| `first_polygon` | `uint32_t` | first polygon index |
+| `polygon_count` | `uint32_t` | number of regions to update |
+| `ids` | `const uint64_t *` | borrowed stable user id array |
+
+Set a contiguous range of polygon region stable user ids.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3303._
+
+### `dvz_polygons_set_region_stroke_color()`
+
+```c title="dvz_polygons_set_region_stroke_color"
+DvzResult dvz_polygons_set_region_stroke_color(
+    DvzPolygons * set,
+    uint32_t polygon_index,
+    const DvzColor color
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `set` | `DvzPolygons *` | the polygon set |
+| `polygon_index` | `uint32_t` | polygon index |
+| `color` | `const DvzColor` | RGBA stroke color |
+
+Set one polygon region's stroke color.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3365._
+
+### `dvz_polygons_set_region_stroke_colors()`
+
+```c title="dvz_polygons_set_region_stroke_colors"
+DvzResult dvz_polygons_set_region_stroke_colors(
+    DvzPolygons * set,
+    uint32_t first_polygon,
+    uint32_t polygon_count,
+    const DvzColor * colors
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `set` | `DvzPolygons *` | the polygon set |
+| `first_polygon` | `uint32_t` | first polygon index |
+| `polygon_count` | `uint32_t` | number of regions to update |
+| `colors` | `const DvzColor *` | RGBA stroke colors |
+
+Set a contiguous range of polygon region stroke colors.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3378._
+
+### `dvz_polygons_set_region_stroke_width_px()`
+
+```c title="dvz_polygons_set_region_stroke_width_px"
+DvzResult dvz_polygons_set_region_stroke_width_px(
+    DvzPolygons * set,
+    uint32_t polygon_index,
+    float width
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `set` | `DvzPolygons *` | the polygon set |
+| `polygon_index` | `uint32_t` | polygon index |
+| `width` | `float` | stroke width in pixels |
+
+Set one polygon region's stroke width in pixels.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3391._
+
+### `dvz_polygons_set_region_stroke_widths_px()`
+
+```c title="dvz_polygons_set_region_stroke_widths_px"
+DvzResult dvz_polygons_set_region_stroke_widths_px(
+    DvzPolygons * set,
+    uint32_t first_polygon,
+    uint32_t polygon_count,
+    const float * widths
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `set` | `DvzPolygons *` | the polygon set |
+| `first_polygon` | `uint32_t` | first polygon index |
+| `polygon_count` | `uint32_t` | number of regions to update |
+| `widths` | `const float *` | stroke widths in pixels |
+
+Set a contiguous range of polygon region stroke widths.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3403._
+
+### `dvz_polygons_set_region_visibilities()`
+
+```c title="dvz_polygons_set_region_visibilities"
+DvzResult dvz_polygons_set_region_visibilities(
+    DvzPolygons * set,
+    uint32_t first_polygon,
+    uint32_t polygon_count,
+    const _Bool * visible
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `set` | `DvzPolygons *` | the polygon set |
+| `first_polygon` | `uint32_t` | first polygon index |
+| `polygon_count` | `uint32_t` | number of regions to update |
+| `visible` | `const _Bool *` | borrowed visibility array |
+
+Set a contiguous range of polygon region visibilities.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3328._
+
+### `dvz_polygons_set_region_visible()`
+
+```c title="dvz_polygons_set_region_visible"
+DvzResult dvz_polygons_set_region_visible(
+    DvzPolygons * set,
+    uint32_t polygon_index,
+    _Bool visible
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `set` | `DvzPolygons *` | the polygon set |
+| `polygon_index` | `uint32_t` | polygon index |
+| `visible` | `_Bool` | whether the region should render |
+
+Set one polygon region's visibility.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3316._
+
+### `dvz_polygons_set_stroke_caps()`
+
+```c title="dvz_polygons_set_stroke_caps"
+DvzResult dvz_polygons_set_stroke_caps(
+    DvzPolygons * set,
+    DvzSegmentCap start_cap,
+    DvzSegmentCap end_cap
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `set` | `DvzPolygons *` | the polygon set |
+| `start_cap` | `DvzSegmentCap` | cap applied to each ring start |
+| `end_cap` | `DvzSegmentCap` | cap applied to each ring end |
+
+Configure polygon-set stroke endpoint caps.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3416._
+
+### `dvz_polygons_set_stroke_join()`
+
+```c title="dvz_polygons_set_stroke_join"
+DvzResult dvz_polygons_set_stroke_join(
+    DvzPolygons * set,
+    DvzPathJoin join,
+    float miter_limit
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `set` | `DvzPolygons *` | the polygon set |
+| `join` | `DvzPathJoin` | join style |
+| `miter_limit` | `float` | positive finite miter limit |
+
+Configure polygon-set stroke joins.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3428._
 
 ## Primitive
 
