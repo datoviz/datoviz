@@ -16,6 +16,30 @@ the v0.4 API is internally consistent before RC1, even if that means broad sourc
 examples, docs, tests, raw `ctypes`, and public C headers.
 
 
+## Execution Authorization
+
+Approved branch: `api/pre-rc-cleanup`, created from current `v0.4-dev`.
+
+Approved workflow:
+
+1. Make local checkpoint commits by coherent API wave.
+2. Push the branch when checkpoint validation passes.
+3. Do not push directly to `v0.4-dev`.
+4. Do not add compatibility aliases by default. Add a temporary source alias only if it prevents a
+   short-lived build dead end, does not preserve ABI, and is removed in the same campaign.
+5. Leave existing dirty `data` submodule state and untracked `paper/paper.pdf` unstaged and
+   untouched unless the maintainer explicitly approves those paths in the current turn.
+
+Expected implementation shape: roughly 8-11 checkpoint commits. Prefer smaller commits when a wave
+changes public headers, generated bindings, generated C reference, examples, and tests together.
+
+Use `spec/api/status.yml` as the API tiering source of truth. Do not create a second stable,
+advanced, experimental, or internal classification table in agent notes, docs, or binding policy.
+
+Before and after each major wave, record an exported-header/symbol delta. Removed ABI is allowed,
+but it must be deliberate and visible in the wave notes or commit message.
+
+
 ## Maintainer Decisions
 
 Use these defaults unless the code audit finds a stronger local reason:
