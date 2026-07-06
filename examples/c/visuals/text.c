@@ -72,13 +72,13 @@ typedef struct TextVisualState
 /*************************************************************************************************/
 
 /**
- * Return the scale from the design-space text layout to the current panel.
+ * Return the uniform font scale from the design-space text layout to the current panel.
  *
  * @param logical_width current logical panel width
  * @param logical_height current logical panel height
  * @return uniform layout scale
  */
-static float _layout_scale(uint32_t logical_width, uint32_t logical_height)
+static float _font_scale(uint32_t logical_width, uint32_t logical_height)
 {
     if (logical_width == 0 || logical_height == 0)
         return 1.0f;
@@ -109,9 +109,9 @@ static bool _set_text_items(
     if (state->logical_width == logical_width && state->logical_height == logical_height)
         return true;
 
-    const float scale = _layout_scale(logical_width, logical_height);
-    const float x0 = 0.5f * ((float)logical_width - (float)WIDTH * scale);
-    const float y0 = 0.5f * ((float)logical_height - (float)HEIGHT * scale);
+    const float sx = (float)logical_width / (float)WIDTH;
+    const float sy = (float)logical_height / (float)HEIGHT;
+    const float scale = _font_scale(logical_width, logical_height);
 
     const char* strings[TEXT_COUNT] = {
         "Retained text",       "semantic strings, panel anchored",
@@ -136,7 +136,7 @@ static bool _set_text_items(
         DvzColor color = example_graphite_cyan_color(roles[i]);
         items[i] = (DvzTextItem){DVZ_STRUCT_INIT_FIELDS(DvzTextItem),
             .string = strings[i],
-            .position = {x0 + x[i] * scale, y0 + y[i] * scale, 0.0},
+            .position = {x[i] * sx, y[i] * sy, 0.0},
             .anchor = {0.0f, 0.5f},
             .size_px = sizes[i] * scale,
             .color = color,
