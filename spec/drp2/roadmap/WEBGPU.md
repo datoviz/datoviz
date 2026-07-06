@@ -69,6 +69,21 @@ Promotion of a deferred command must update DRP2 specs, schemas, native validati
 execution, fixtures, lifecycle rules, and capability reporting together.
 
 
+## Browser Presentation Policy
+
+Browser WebGPU may use a runtime-private presentation layer without changing DRP2 semantics.
+
+DRP2 `texture_id: 0` remains the portable canvas/presentation attachment token. The WebGPU runtime
+may internally redirect that attachment to an owned offscreen color texture, then run a backend-local
+present pass that draws the last completed color texture into the browser canvas. This is an
+implementation detail of the browser runtime, not a new DRP2 command or resource lifetime.
+
+This policy lets the browser keep displaying the last completed frame while the canvas backing store
+is resized and the next scene frame is emitted. It must not leak browser canvas textures, WebGPU
+context objects, or presentation-helper textures into portable DRP2 streams, fixtures, or public
+headers.
+
+
 ## Strategic Backlog
 
 1. capability schema for precision, formats, alignment, row pitch, memory budgets, and unsupported
