@@ -2910,7 +2910,7 @@ _Bool dvz_drp2_stream_write_buffer_bytes(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the call succeeded (true on size==0 no-op even though no |
+| return | `_Bool` | whether the call succeeded (true on size==0 no-op even though no command was recorded) |
 | `stream` | `DvzDrp2CommandStream *` | the command stream |
 | `buffer_id` | `uint64_t` | the destination buffer id |
 | `offset` | `uint64_t` | byte offset within the buffer |
@@ -2928,8 +2928,6 @@ if the stream is later serialized to JSON.
 
 size==0 is a valid WebGPU-shaped no-op: returns true without recording a
 command and does not retain `data` (which may legitimately be NULL).
-
-command was recorded)
 
 _Declared in `include/datoviz/drp2/stream.h`:758._
 

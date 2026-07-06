@@ -173,25 +173,42 @@ def doc_parts(raw: str | None) -> tuple[str, dict[str, str], str]:
     text: list[str] = []
     params: dict[str, str] = {}
     ret = ""
+    current_field: tuple[str, str] | None = None
     for line in clean_doc(raw):
         if not line:
             if text and text[-1]:
                 text.append("")
+            current_field = None
             continue
         param_match = PARAM_RE.match(line)
         if param_match:
-            params[param_match.group("name")] = param_match.group("doc").strip()
+            name = param_match.group("name")
+            params[name] = param_match.group("doc").strip()
+            current_field = ("param", name)
             continue
         return_match = RETURN_RE.match(line)
         if return_match:
             ret = return_match.group("doc").strip()
+            current_field = ("return", "")
             continue
         if line.startswith("@"):
+            current_field = None
+            continue
+        if current_field is not None:
+            kind, name = current_field
+            if kind == "param":
+                params[name] = " ".join(part for part in (params.get(name, ""), line) if part)
+            else:
+                ret = " ".join(part for part in (ret, line) if part)
             continue
         text.append(line)
     while text and not text[-1]:
         text.pop()
     return "\n".join(text), params, ret
+
+
+def table_cell(text: str) -> str:
+    return str(text).replace("|", "\\|").replace("\n", "<br>")
 
 
 def type_name(type_info: dict | None) -> str:
@@ -276,11 +293,11 @@ def format_function(fn: dict, names: set[str]) -> list[str]:
     if ret_doc or fn.get("parameters"):
         lines.extend(["| Field | Type | Description |", "| --- | --- | --- |"])
         if ret_doc:
-            lines.append(f"| return | `{type_name(fn.get('result'))}` | {ret_doc} |")
+            lines.append(f"| return | `{table_cell(type_name(fn.get('result')))}` | {table_cell(ret_doc)} |")
         for arg in fn.get("parameters") or []:
             name = str(arg.get("name", ""))
             lines.append(
-                f"| `{name}` | `{type_name(arg.get('type'))}` | {param_docs.get(name, '')} |"
+                f"| `{name}` | `{table_cell(type_name(arg.get('type')))}` | {table_cell(param_docs.get(name, ''))} |"
             )
         lines.append("")
     if doc:

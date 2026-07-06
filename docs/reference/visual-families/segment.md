@@ -27,7 +27,7 @@ direction fields or arrows, or [Primitive](primitive.md) for raw GPU line topolo
 ## Data Model
 
 Create with `dvz_segment(scene, flags)`. Upload one item per endpoint pair. Caps are visual-wide in
-the first slice.
+v0.4.
 
 ## Attributes
 
@@ -42,7 +42,7 @@ Picking and retained data are item-based: one segment item corresponds to one st
 
 ## Backend Notes
 
-Native and WebGPU paths are active. First-slice caps include none, round, triangle-in,
+Native and WebGPU paths are active. v0.4 caps include none, round, triangle-in,
 triangle-out, square, and butt. Dashes and per-item cap attributes are deferred.
 
 ## Canonical Example

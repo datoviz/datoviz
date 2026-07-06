@@ -394,12 +394,10 @@ int dvz_app_render_once(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `int` | 0 on success, DVZ_CANVAS_FRAME_WAIT_SURFACE if any surface is unavailable, or negative on |
+| return | `int` | 0 on success, DVZ_CANVAS_FRAME_WAIT_SURFACE if any surface is unavailable, or negative on error |
 | `app` | `DvzApp *` | the app |
 
 Render one frame for every view without polling any Datoviz-owned event loop.
-
-error
 
 _Declared in `include/datoviz/app.h`:1086._
 
@@ -728,12 +726,10 @@ int dvz_canvas_frame(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `int` | DVZ_CANVAS_FRAME_READY when a frame is ready, DVZ_CANVAS_FRAME_WAIT_SURFACE when the |
+| return | `int` | DVZ_CANVAS_FRAME_READY when a frame is ready, DVZ_CANVAS_FRAME_WAIT_SURFACE when the surface is unavailable, or a negative error code when acquisition fails |
 | `canvas` | `DvzCanvas *` | canvas handle |
 
 Acquire a new frame, refresh swapchain-backed metadata, and run the draw callback.
-
-surface is unavailable, or a negative error code when acquisition fails
 
 _Declared in `include/datoviz/canvas.h`:194._
 
@@ -2136,14 +2132,12 @@ int dvz_stream_attach_sink(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `int` | 0 on success or -1 if the backend is invalid, the stream is running, |
+| return | `int` | 0 on success or -1 if the backend is invalid, the stream is running, the backend probe fails, or the backend creation fails |
 | `stream` | `DvzStream *` | target stream |
 | `backend` | `const DvzStreamSinkBackend *` | sink backend descriptor with callbacks |
 | `config` | `const void *` | backend-specific configuration passed through to the backend |
 
 Attach a backend sink to a stream before it starts streaming.
-
-the backend probe fails, or the backend creation fails
 
 _Declared in `include/datoviz/stream.h`:71._
 
@@ -2376,13 +2370,11 @@ int dvz_stream_start(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `int` | 0 on success or -1 if the stream is already running, lacks a frame, |
+| return | `int` | 0 on success or -1 if the stream is already running, lacks a frame, or a sink fails to start |
 | `stream` | `DvzStream *` | stream to start |
 | `frame` | `const DvzStreamFrame *` | description of the frame image and synchronization data (required) |
 
 Start the stream by providing a frame description and launching every sink.
-
-or a sink fails to start
 
 _Declared in `include/datoviz/stream.h`:96._
 
@@ -2468,14 +2460,12 @@ DvzVideoSinkConfig dvz_video_sink_config(void);
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `DvzVideoSinkConfig` | a sink config whose encoder uses `dvz_video_encoder_config()` and null |
+| return | `DvzVideoSinkConfig` | a sink config whose encoder uses `dvz_video_encoder_config()` and null bitstream |
 
 Return the default video sink configuration that wraps the encoder defaults.
 
 The nested encoder leaves width, height, and FPS unresolved so canvas/stream attachment can
 inherit the active stream geometry and cadence.
-
-bitstream
 
 _Declared in `include/datoviz/video.h`:135._
 
@@ -3155,7 +3145,7 @@ int dvz_view_render_once(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `int` | DVZ_CANVAS_FRAME_READY after a submitted frame, DVZ_CANVAS_FRAME_WAIT_SURFACE while the |
+| return | `int` | DVZ_CANVAS_FRAME_READY after a submitted frame, DVZ_CANVAS_FRAME_WAIT_SURFACE while the surface is unavailable, after a disabled-view no-op, or a negative error code |
 | `view` | `DvzView *` | the view |
 
 Render one frame for a single view without polling any Datoviz-owned event loop.
@@ -3163,8 +3153,6 @@ Render one frame for a single view without polling any Datoviz-owned event loop.
 This is the primary hosted-loop primitive for Qt, SDL, Tk, IPython, and other integrations where
 the caller owns scheduling. Returns the dvz_canvas_frame() status when no frame was submitted.
 Disabled views are skipped and return DVZ_CANVAS_FRAME_READY without submitting.
-
-surface is unavailable, after a disabled-view no-op, or a negative error code
 
 _Declared in `include/datoviz/app.h`:1076._
 

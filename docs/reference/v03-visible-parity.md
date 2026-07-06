@@ -1,8 +1,9 @@
 # v0.3 Visible Parity
 
 This audit classifies visible v0.3-era capabilities for the v0.4 release candidate. It does not
-promise source or ABI compatibility with v0.3. The active v0.4 API is the C scene/app path plus raw
-`ctypes`; high-level Python plotting belongs above Datoviz in GSP/VisPy2.
+promise source or ABI compatibility with v0.3. The active v0.4 API is the C scene/app path, the
+Python `import datoviz as dvz` path with NumPy array uploads, and the lower-level `datoviz.raw`
+binding for exact C calls. High-level Python plotting belongs above Datoviz in GSP/VisPy2.
 
 Status values:
 

@@ -39,7 +39,7 @@ binding a scale.
 
 ## Picking And Probing
 
-Point visuals expose retained dense attributes for CPU-side bounds and first-slice picking. Pick
+Point visuals expose retained dense attributes for CPU-side bounds and v0.4 picking. Pick
 results identify the source item, not the generated quad vertices.
 
 ## Backend Notes

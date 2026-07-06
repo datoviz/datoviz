@@ -1679,7 +1679,7 @@ symbol id) attributes. Optional `item_state` (uint32_t DvzItemStateKind bitfield
 retained hover and selection styling.
 `position` is the center of the screen-space marker bounding box, `diameter_px` is its width and
 height, and positive `angle` rotates counter-clockwise in rendered y-up coordinates. Built-in
-code-SDF shapes include the v0.3 marker vocabulary plus target.
+code-SDF shapes include the standard Datoviz marker vocabulary plus target.
 
 _Declared in `include/datoviz/scene.h`:2718._
 
@@ -1807,7 +1807,7 @@ DvzVisual * dvz_mesh(
 
 Create a mesh visual.
 
-First retained slice: meshes use a triangle-list topology with `position` (vec3), optional
+v0.4 meshes use a triangle-list topology with `position` (vec3), optional
 `color` (RGBA8, defaulting to opaque white when omitted), optional `normal` (vec3), optional
 `texcoords` (vec2), optional `instance_transform` (mat4, one per instance), and optional
 `"index"` buffer bindings for indexed draws. Binding an RGBA8 2D sampled field to the
@@ -2781,7 +2781,7 @@ DvzVisual * dvz_segment(
 
 Create a segment visual.
 
-First-slice segment visuals render independent endpoint pairs as analytic screen-space
+v0.4 segment visuals render independent endpoint pairs as analytic screen-space
 stroked line segments. Dense attributes are `position_start` (vec3), `position_end` (vec3),
 `color` (RGBA8), and `stroke_width_px` (float width in pixels). Segment caps default to butt at
 both ends.
@@ -3257,7 +3257,7 @@ DvzResult dvz_vector_set_style(
 
 Configure vector styling.
 
-The first slice supports visual-wide scale, anchor, endpoint caps, and path join settings.
+v0.4 supports visual-wide scale, anchor, endpoint caps, and path join settings.
 Passing NULL restores the defaults.
 
 _Declared in `include/datoviz/scene.h`:2817._
@@ -3478,7 +3478,7 @@ Return the retained visual-space bounding box of one visual.
 
 The box is computed from CPU-retained dense visual attributes and family-specific geometry state.
 It does not require an emitted frame or a live graphics backend. Buffer-backed attributes do not
-expose CPU-side bounds in this first slice.
+expose CPU-side bounds in the current v0.4 path.
 
 _Declared in `include/datoviz/scene.h`:2087._
 
@@ -3537,7 +3537,7 @@ Return a read-only view of retained dense visual attribute data.
 
 Attribute aliases are resolved with the same storage-name rules as dvz_visual_set_data().
 Buffer-backed, field-backed, metadata-only, and missing attributes do not expose dense data
-through this first-slice view.
+through this dense-data view.
 
 _Declared in `include/datoviz/scene.h`:2033._
 
@@ -3732,7 +3732,7 @@ DvzResult dvz_visual_set_attr_buffer(
 
 Bind a scene-owned buffer to a per-item visual attribute.
 
-This is the C-level groundwork for externally produced GPU attributes. The first slice supports
+This is the C-level groundwork for externally produced GPU attributes. v0.4 currently supports
 planar vertex attributes only: the scene buffer stride must match the attribute item size, and
 the attribute source must remain `DVZ_VISUAL_ATTR_SOURCE_PER_ITEM`.
 
@@ -3838,8 +3838,8 @@ DvzResult dvz_visual_set_buffer(
 
 Bind a scene-owned buffer to a named visual slot.
 
-First retained slice: primitive and mesh visuals accept the `"index"` slot. The bound scene
-buffer must advertise `DVZ_SCENE_BUFFER_USAGE_INDEX`.
+v0.4 primitive and mesh visuals accept the `"index"` slot. The bound scene buffer must advertise
+`DVZ_SCENE_BUFFER_USAGE_INDEX`.
 
 _Declared in `include/datoviz/scene.h`:2347._
 
@@ -3858,13 +3858,13 @@ DvzResult dvz_visual_set_data(
 | --- | --- | --- |
 | return | `DvzResult` | 0 on success, -1 on error |
 | `visual` | `DvzVisual *` | the visual |
-| `attr_name` | `const char *` | attribute name (family-specific, e.g. "position", "color") |
+| `attr_name` | `const char *` | attribute name (family-specific, e.g. "position", "color") The payload is copied before this function returns. The caller keeps ownership of `data` and may release or reuse it immediately after a successful or failed call. |
 | `data` | `const void *` | packed data array borrowed for the duration of the call |
 | `item_count` | `uint32_t` | number of items |
 
 Write attribute data to a visual.
 
-First-slice visual families currently accept:
+v0.4 visual families currently accept:
 
 | Visual family | Attributes |
 | --- | --- |
@@ -3877,15 +3877,12 @@ First-slice visual families currently accept:
 | primitive | `"position"` (vec3f), `"color"` (RGBA8), primitive-only `"normal"` (vec3f) |
 | path | `"position"` (vec3f), `"color"` (RGBA8), optional `"stroke_width_px"` (float pixels) |
 | mesh | `"position"` (vec3f), optional `"color"` (RGBA8), optional `"normal"` (vec3f), optional `"texcoords"` (vec2f), optional `"instance_transform"` (mat4f, one per instance) |
-| image | legacy `"position"` (vec3f) + `"texcoords"` (vec2f) corner vertices, or per-item `"position"` (vec3f) + `"extent"` (vec2f) with optional `"tex_rect"` (vec4f) and `"anchor"` (vec2f) |
+| image | corner-vertex `"position"` (vec3f) + `"texcoords"` (vec2f), or per-item `"position"` (vec3f) + `"extent"` (vec2f) with optional `"tex_rect"` (vec4f) and `"anchor"` (vec2f) |
 | text | string attribute `"text"` plus per-string `"position"` (vec3f pixels), optional `"anchor"` (vec2f), `"size"` (float pixels), `"color"` (RGBA8), `"angle"` (float radians, positive counter-clockwise in rendered y-up coordinates) |
 | glyph | `"position"` (vec3f anchor), `"bounds"` (vec4f local pixel bounds), `"texcoords"` (vec4f atlas UV bounds), `"color"` (RGBA8), `"angle"` (float radians, positive counter-clockwise in rendered y-up coordinates) |
 
 All configured attributes on one visual must use the same item_count. Retained mutation is legal
 after frame artifact creation; changes are reflected only in later artifacts.
-
-The payload is copied before this function returns. The caller keeps ownership of `data` and may
-release or reuse it immediately after a successful or failed call.
 
 Related: [`dvz_visual_set_data_many()`](#dvz_visual_set_data_many), [`dvz_visual_set_data_range()`](#dvz_visual_set_data_range).
 
@@ -3904,7 +3901,7 @@ DvzResult dvz_visual_set_data_many(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | `DvzResult` | 0 on success, -1 on error |
-| `visual` | `DvzVisual *` | the visual |
+| `visual` | `DvzVisual *` | the visual Every payload referenced by `updates` is copied before this function returns. The caller keeps ownership of update descriptors and payload pointers and may release or reuse them immediately after a successful or failed call. |
 | `updates` | `const DvzVisualDataUpdate *` | attribute update descriptors borrowed for the duration of the call |
 | `update_count` | `uint32_t` | number of update descriptors |
 
@@ -3916,10 +3913,6 @@ attribute payload is replaced. Every update in the batch must use the same item_
 existing dense per-item attribute with a different item_count must also be included in the batch.
 Retained mutation is legal after frame artifact creation; changes are reflected only in later
 artifacts.
-
-Every payload referenced by `updates` is copied before this function returns. The caller keeps
-ownership of update descriptors and payload pointers and may release or reuse them immediately
-after a successful or failed call.
 
 Related: [`dvz_visual_set_data()`](#dvz_visual_set_data).
 
@@ -3941,7 +3934,7 @@ DvzResult dvz_visual_set_data_range(
 | --- | --- | --- |
 | return | `DvzResult` | 0 on success, -1 on error |
 | `visual` | `DvzVisual *` | the visual |
-| `attr_name` | `const char *` | attribute name |
+| `attr_name` | `const char *` | attribute name The payload is copied before this function returns. The caller keeps ownership of `data` and may release or reuse it immediately after a successful or failed call. |
 | `first_item` | `uint32_t` | index of the first item to update |
 | `data` | `const void *` | packed array of item_count items borrowed for the duration of the call |
 | `item_count` | `uint32_t` | number of items to update |
@@ -3952,9 +3945,6 @@ The attribute must already be fully allocated by a prior
 dvz_visual_set_data() call. Only the items in
 [first_item, first_item + item_count) are uploaded on the next emit. Retained mutation is legal
 after frame artifact creation; changes are reflected only in later artifacts.
-
-The payload is copied before this function returns. The caller keeps ownership of `data` and may
-release or reuse it immediately after a successful or failed call.
 
 Related: [`dvz_visual_set_data()`](#dvz_visual_set_data).
 
@@ -4027,8 +4017,8 @@ DvzResult dvz_visual_set_field(
 Bind a scene-owned sampled field to a named visual slot.
 
 Image, glyph, and labels visuals accept the `"field"` slot and require a 2D field. Mesh visuals
-accept the `"texture"` slot for a first-slice RGBA8 2D texture. Volume visuals accept the
-`"field"` slot and require a 3D field. Labels visuals additionally require
+accept the `"texture"` slot for a v0.4 RGBA8 2D texture. Volume visuals accept the `"field"` slot
+and require a 3D field. Labels visuals additionally require
 `DVZ_FIELD_SEMANTIC_LABEL`.
 
 _Declared in `include/datoviz/scene/field.h`:307._

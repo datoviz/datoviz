@@ -3685,7 +3685,7 @@ DvzResult dvz_labels_set_slice_axis(
 | `visual` | `DvzVisual *` | the labels visual |
 | `axis` | `DvzVolumeAxis` | slice axis |
 
-Set the first-slice axis for a 3D labels visual.
+Set the slice axis for a 3D labels visual.
 
 _Declared in `include/datoviz/scene.h`:3678._
 
@@ -3704,7 +3704,7 @@ DvzResult dvz_labels_set_slice_position(
 | `visual` | `DvzVisual *` | the labels visual |
 | `position` | `double` | normalized slice position in [0, 1] |
 
-Set the first-slice position for a 3D labels visual.
+Set the slice position for a 3D labels visual.
 
 _Declared in `include/datoviz/scene.h`:3688._
 
@@ -4319,13 +4319,9 @@ DvzResult dvz_panel_add_visual(
 | return | `DvzResult` | 0 on success, -1 on error |
 | `panel` | `DvzPanel *` | the panel |
 | `visual` | `DvzVisual *` | the visual |
-| `desc` | `const DvzVisualAttachDesc *` | per-visual attachment options (z_layer, controller_mode, coord_space, clip_rect, |
+| `desc` | `const DvzVisualAttachDesc *` | per-visual attachment options (z_layer, controller_mode, coord_space, clip_rect, viewport_rect); pass NULL for defaults (z_layer=0, controller_mode=DVZ_CONTROLLER_APPLY, coord_space=DVZ_VISUAL_COORD_DATA, clip_rect=DVZ_VISUAL_CLIP_AUTO, viewport_rect=DVZ_VISUAL_VIEWPORT_AUTO) |
 
 Add a visual to a panel.
-
-viewport_rect); pass NULL for defaults (z_layer=0,
-controller_mode=DVZ_CONTROLLER_APPLY, coord_space=DVZ_VISUAL_COORD_DATA,
-clip_rect=DVZ_VISUAL_CLIP_AUTO, viewport_rect=DVZ_VISUAL_VIEWPORT_AUTO)
 
 _Declared in `include/datoviz/scene.h`:1102._
 
@@ -4422,7 +4418,7 @@ DvzResult dvz_panel_bind_controller(
 
 Bind a scene-owned controller to one panel.
 
-Fly controllers must be bound to DVZ_DIM_MASK_XYZ in this first slice.
+Fly controllers must be bound to DVZ_DIM_MASK_XYZ in v0.4.
 
 _Declared in `include/datoviz/scene.h`:1026._
 
@@ -6590,7 +6586,7 @@ DvzSceneBuffer * dvz_scene_buffer(
 
 Create a reusable scene-owned buffer resource.
 
-First retained slice: visuals bind these buffers through `dvz_visual_set_buffer()`.
+v0.4 visuals bind these buffers through `dvz_visual_set_buffer()`.
 The initial supported slot is primitive `"index"` buffers. `stride` is the byte stride
 of one item in the uploaded payload (for example `sizeof(DvzIndex)` for 32-bit index buffers,
 or `sizeof(uint16_t)` for 16-bit).
@@ -6686,14 +6682,11 @@ DvzResult dvz_scene_buffer_set_data(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on error |
-| `buffer` | `DvzSceneBuffer *` | the buffer |
+| `buffer` | `DvzSceneBuffer *` | the buffer The payload is copied before this function returns. The caller keeps ownership of `data` and may release or reuse it immediately after a successful or failed call. |
 | `data` | `const void *` | the packed byte payload borrowed for the duration of the call |
 | `byte_size` | `uint64_t` | the payload size in bytes |
 
 Replace the full payload of a scene-owned buffer resource.
-
-The payload is copied before this function returns. The caller keeps ownership of `data` and may
-release or reuse it immediately after a successful or failed call.
 
 _Declared in `include/datoviz/scene.h`:2223._
 
@@ -6810,7 +6803,7 @@ DvzResult dvz_scene_compute_set_buffer(
 
 Bind a scene buffer to one compute shader binding.
 
-The buffer must advertise `DVZ_SCENE_BUFFER_USAGE_STORAGE`. The first slice supports storage
+The buffer must advertise `DVZ_SCENE_BUFFER_USAGE_STORAGE`. v0.4 currently supports storage
 buffers only. Ranges are passed through to the DRP2 bind group.
 
 _Declared in `include/datoviz/scene.h`:2308._

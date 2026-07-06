@@ -36,7 +36,7 @@ Create with `dvz_labels(scene, flags)`. Bind an integer sampled field with
 | --- | --- |
 | Required | sampled field bound to `"field"`, categorical scale bound to `"labels"`, and placement attributes |
 | Placement forms | `position` plus `extent` for retained items; `anchor` and `tex_rect` are optional |
-| Optional | opacity; transparent background label ID; selected label ID; hidden label IDs; boundary rendering; fallback-color seed; first-slice 3D slice axis/position; alpha mode; depth test; transform |
+| Optional | opacity; transparent background label ID; selected label ID; hidden label IDs; boundary rendering; fallback-color seed; 3D slice axis/position; alpha mode; depth test; transform |
 
 ## Picking And Probing
 

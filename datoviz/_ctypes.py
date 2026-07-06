@@ -21092,7 +21092,7 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_labels_set_slice_axis')
 else:
     dvz_labels_set_slice_axis.__doc__ = """/**
- * Set the first-slice axis for a 3D labels visual.
+ * Set the slice axis for a 3D labels visual.
  *
  * @param visual the labels visual
  * @param axis slice axis
@@ -21108,7 +21108,7 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_labels_set_slice_position')
 else:
     dvz_labels_set_slice_position.__doc__ = """/**
- * Set the first-slice position for a 3D labels visual.
+ * Set the slice position for a 3D labels visual.
  *
  * @param visual the labels visual
  * @param position normalized slice position in [0, 1]
@@ -21379,7 +21379,7 @@ else:
  * retained hover and selection styling.
  * `position` is the center of the screen-space marker bounding box, `diameter_px` is its width and
  * height, and positive `angle` rotates counter-clockwise in rendered y-up coordinates. Built-in
- * code-SDF shapes include the v0.3 marker vocabulary plus target.
+ * code-SDF shapes include the standard Datoviz marker vocabulary plus target.
  *
  * @param scene the scene
  * @param flags variant flags
@@ -21506,7 +21506,7 @@ else:
     dvz_mesh.__doc__ = """/**
  * Create a mesh visual.
  *
- * First retained slice: meshes use a triangle-list topology with `position` (vec3), optional
+ * v0.4 meshes use a triangle-list topology with `position` (vec3), optional
  * `color` (RGBA8, defaulting to opaque white when omitted), optional `normal` (vec3), optional
  * `texcoords` (vec2), optional `instance_transform` (mat4, one per instance), and optional
  * `"index"` buffer bindings for indexed draws. Binding an RGBA8 2D sampled field to the
@@ -21952,7 +21952,7 @@ else:
     dvz_panel_bind_controller.__doc__ = """/**
  * Bind a scene-owned controller to one panel.
  *
- * Fly controllers must be bound to DVZ_DIM_MASK_XYZ in this first slice.
+ * Fly controllers must be bound to DVZ_DIM_MASK_XYZ in v0.4.
  *
  * @param panel the panel
  * @param controller the scene-owned controller
@@ -25592,7 +25592,7 @@ else:
     dvz_scene_buffer.__doc__ = """/**
  * Create a reusable scene-owned buffer resource.
  *
- * First retained slice: visuals bind these buffers through `dvz_visual_set_buffer()`.
+ * v0.4 visuals bind these buffers through `dvz_visual_set_buffer()`.
  * The initial supported slot is primitive `"index"` buffers. `stride` is the byte stride
  * of one item in the uploaded payload (for example `sizeof(DvzIndex)` for 32-bit index buffers,
  * or `sizeof(uint16_t)` for 16-bit).
@@ -25774,7 +25774,7 @@ else:
     dvz_scene_compute_set_buffer.__doc__ = """/**
  * Bind a scene buffer to one compute shader binding.
  *
- * The buffer must advertise `DVZ_SCENE_BUFFER_USAGE_STORAGE`. The first slice supports storage
+ * The buffer must advertise `DVZ_SCENE_BUFFER_USAGE_STORAGE`. v0.4 currently supports storage
  * buffers only. Ranges are passed through to the DRP2 bind group.
  *
  * @param compute the compute pass
@@ -26168,7 +26168,7 @@ else:
     dvz_segment.__doc__ = """/**
  * Create a segment visual.
  *
- * First-slice segment visuals render independent endpoint pairs as analytic screen-space
+ * v0.4 segment visuals render independent endpoint pairs as analytic screen-space
  * stroked line segments. Dense attributes are `position_start` (vec3), `position_end` (vec3),
  * `color` (RGBA8), and `stroke_width_px` (float width in pixels). Segment caps default to butt at
  * both ends.
@@ -29238,7 +29238,7 @@ else:
     dvz_vector_set_style.__doc__ = """/**
  * Configure vector styling.
  *
- * The first slice supports visual-wide scale, anchor, endpoint caps, and path join settings.
+ * v0.4 supports visual-wide scale, anchor, endpoint caps, and path join settings.
  * Passing NULL restores the defaults.
  *
  * @param visual the vector visual
@@ -30585,7 +30585,7 @@ else:
  *
  * The box is computed from CPU-retained dense visual attributes and family-specific geometry state.
  * It does not require an emitted frame or a live graphics backend. Buffer-backed attributes do not
- * expose CPU-side bounds in this first slice.
+ * expose CPU-side bounds in the current v0.4 path.
  *
  * @param visual the visual
  * @param out output bounding box
@@ -30635,7 +30635,7 @@ else:
  *
  * Attribute aliases are resolved with the same storage-name rules as dvz_visual_set_data().
  * Buffer-backed, field-backed, metadata-only, and missing attributes do not expose dense data
- * through this first-slice view.
+ * through this dense-data view.
  *
  * @param visual the visual
  * @param attr_name attribute name
@@ -30801,7 +30801,7 @@ else:
     dvz_visual_set_attr_buffer.__doc__ = """/**
  * Bind a scene-owned buffer to a per-item visual attribute.
  *
- * This is the C-level groundwork for externally produced GPU attributes. The first slice supports
+ * This is the C-level groundwork for externally produced GPU attributes. v0.4 currently supports
  * planar vertex attributes only: the scene buffer stride must match the attribute item size, and
  * the attribute source must remain `DVZ_VISUAL_ATTR_SOURCE_PER_ITEM`.
  *
@@ -30893,8 +30893,8 @@ else:
     dvz_visual_set_buffer.__doc__ = """/**
  * Bind a scene-owned buffer to a named visual slot.
  *
- * First retained slice: primitive and mesh visuals accept the `"index"` slot. The bound scene
- * buffer must advertise `DVZ_SCENE_BUFFER_USAGE_INDEX`.
+ * v0.4 primitive and mesh visuals accept the `"index"` slot. The bound scene buffer must advertise
+ * `DVZ_SCENE_BUFFER_USAGE_INDEX`.
  *
  * @param visual the visual
  * @param slot_name the semantic slot name
@@ -30913,7 +30913,7 @@ else:
     dvz_visual_set_data.__doc__ = """/**
  * Write attribute data to a visual.
  *
- * First-slice visual families currently accept:
+ * v0.4 visual families currently accept:
  *
  * | Visual family | Attributes |
  * | --- | --- |
@@ -30926,7 +30926,7 @@ else:
  * | primitive | `"position"` (vec3f), `"color"` (RGBA8), primitive-only `"normal"` (vec3f) |
  * | path | `"position"` (vec3f), `"color"` (RGBA8), optional `"stroke_width_px"` (float pixels) |
  * | mesh | `"position"` (vec3f), optional `"color"` (RGBA8), optional `"normal"` (vec3f), optional `"texcoords"` (vec2f), optional `"instance_transform"` (mat4f, one per instance) |
- * | image | legacy `"position"` (vec3f) + `"texcoords"` (vec2f) corner vertices, or per-item `"position"` (vec3f) + `"extent"` (vec2f) with optional `"tex_rect"` (vec4f) and `"anchor"` (vec2f) |
+ * | image | corner-vertex `"position"` (vec3f) + `"texcoords"` (vec2f), or per-item `"position"` (vec3f) + `"extent"` (vec2f) with optional `"tex_rect"` (vec4f) and `"anchor"` (vec2f) |
  * | text | string attribute `"text"` plus per-string `"position"` (vec3f pixels), optional `"anchor"` (vec2f), `"size"` (float pixels), `"color"` (RGBA8), `"angle"` (float radians, positive counter-clockwise in rendered y-up coordinates) |
  * | glyph | `"position"` (vec3f anchor), `"bounds"` (vec4f local pixel bounds), `"texcoords"` (vec4f atlas UV bounds), `"color"` (RGBA8), `"angle"` (float radians, positive counter-clockwise in rendered y-up coordinates) |
  *
@@ -31051,8 +31051,8 @@ else:
  * Bind a scene-owned sampled field to a named visual slot.
  *
  * Image, glyph, and labels visuals accept the `"field"` slot and require a 2D field. Mesh visuals
- * accept the `"texture"` slot for a first-slice RGBA8 2D texture. Volume visuals accept the
- * `"field"` slot and require a 3D field. Labels visuals additionally require
+ * accept the `"texture"` slot for a v0.4 RGBA8 2D texture. Volume visuals accept the `"field"` slot
+ * and require a 3D field. Labels visuals additionally require
  * `DVZ_FIELD_SEMANTIC_LABEL`.
  *
  * @param visual the visual

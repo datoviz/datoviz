@@ -7,7 +7,7 @@ support, and links to minimal examples.
 
 | Page | Use it for |
 | --- | --- |
-| [Citation](citation.md) | Software citation guidance, v0.4 DOI placeholders, and scholarly citation status. |
+| [Citation](citation.md) | Software citation guidance, v0.4 DOI status, and scholarly citation status. |
 
 ## API
 
@@ -47,5 +47,6 @@ support, and links to minimal examples.
 | [WebGPU subset](webgpu-subset.md) | Experimental browser/WASM support and parity limits. |
 | [Compute and graphics](compute-graphics.md) | Narrow experimental compute-to-render slice. |
 
-Advanced command-stream and lower-layer runtime material is under
-[Advanced](../advanced/vklite.md), not the primary Reference path.
+Generated C signatures for frame-plan and DRP2 functions stay in the C API reference for exact
+lookup. Conceptual command-stream and lower-layer runtime guidance is under
+[Advanced](../advanced/vklite.md), not the primary user path.

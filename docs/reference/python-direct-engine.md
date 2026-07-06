@@ -35,6 +35,10 @@ Use `datoviz.raw` only when a call needs exact `ctypes` pointer behavior. The ge
 implementation modules, such as `datoviz._ctypes` and `datoviz._array_facade`, are not public import
 surfaces.
 
+Quickstart pages may use `dvz.run(scene, figure, title=...)` for brevity. That helper creates the
+app/window, runs it, and then performs the matching cleanup. In longer examples, prefer the explicit
+app/view calls shown below so ownership and capture steps are visible.
+
 
 ## Dense Visual Data
 

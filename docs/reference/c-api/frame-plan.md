@@ -497,7 +497,7 @@ DvzFramePlanPacketResult * dvz_frame_plan_emitter_emit_drp2_packets(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `DvzFramePlanPacketResult *` | an owned packet result, or NULL on allocation failure; destroy with |
+| return | `DvzFramePlanPacketResult *` | an owned packet result, or NULL on allocation failure; destroy with dvz_frame_plan_packet_result_destroy() |
 | `emitter` | `DvzFramePlanEmitter *` | the persistent FramePlan-to-DRP2 emitter |
 | `plan` | `const DvzFramePlan *` | the FramePlan |
 | `caps` | `const DvzCapabilitySnapshot *` | the capability snapshot |
@@ -508,8 +508,6 @@ Emit split setup/update/frame DRP2 binary packets from a FramePlan.
 
 This native boundary emits the packet stream consumed by the current runtime paths. JSON export
 remains separate fixture/debug output and is not used here.
-
-dvz_frame_plan_packet_result_destroy()
 
 _Declared in `include/datoviz/scene/frame_packets.h`:70._
 

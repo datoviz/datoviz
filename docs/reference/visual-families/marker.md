@@ -27,7 +27,7 @@ Use [Point](point.md) for simple circular marks, [Pixel](pixel.md) for square ce
 ## Data Model
 
 Create with `dvz_marker(scene, flags)`. Upload one item per marker. Built-in code-SDF shapes cover
-the v0.3 marker vocabulary plus target symbols. `position` is the center of the marker's
+the standard Datoviz marker vocabulary plus target symbols. `position` is the center of the marker's
 screen-space bounding box, and `diameter_px` is that box's width and height in pixels.
 
 ## Attributes

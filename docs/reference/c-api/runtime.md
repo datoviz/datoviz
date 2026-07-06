@@ -6498,11 +6498,9 @@ void dvz_graphics_blend(
 | --- | --- | --- |
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
 | `constants` | `vec4` | the blending constants |
-| `flags` | `DvzGraphicsFlags` | indicate whether the blend constants are fixed or dynamic state set in the |
+| `flags` | `DvzGraphicsFlags` | indicate whether the blend constants are fixed or dynamic state set in the command buffer |
 
 Set the blending constants for the pipeline.
-
-command buffer
 
 _Declared in `include/datoviz/vklite/graphics.h`:369._
 
@@ -6848,12 +6846,10 @@ void dvz_graphics_multisampling(
 | --- | --- | --- |
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
 | `samples` | `VkSampleCountFlagBits` | the number of samples |
-| `min_sample_shading` | `float` | if >0, enable sample shading and set the minimum fraction of sample |
+| `min_sample_shading` | `float` | if >0, enable sample shading and set the minimum fraction of sample shading |
 | `alpha_coverage` | `_Bool` | alpha channel is used for relative sample coverage |
 
 Set multisampling.
-
-shading
 
 _Declared in `include/datoviz/vklite/graphics.h`:424._
 
@@ -7079,7 +7075,7 @@ void dvz_graphics_vertex_binding(
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
 | `binding` | `uint32_t` | the binding index |
 | `stride` | `DvzSize` | the stride in the vertex buffer, in bytes |
-| `input_rate` | `VkVertexInputRate` | the vertex input rate, VK_VERTEX_INPUT_RATE_VERTEX|INSTANCE |
+| `input_rate` | `VkVertexInputRate` | the vertex input rate, VK_VERTEX_INPUT_RATE_VERTEX\|INSTANCE |
 
 Set the vertex binding.
 
@@ -8487,15 +8483,13 @@ uint8_t * dvz_load_png(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `uint8_t *` | owned RGB8 pixel buffer allocated with the Datoviz allocator, or NULL on failure; free |
+| return | `uint8_t *` | owned RGB8 pixel buffer allocated with the Datoviz allocator, or NULL on failure; free with dvz_memory_free() |
 | `bytes` | `const void *` | PNG byte buffer |
 | `size_bytes` | `DvzSize` | size of the PNG byte buffer in bytes |
 | `width` | `uint32_t *` |  |
 | `height` | `uint32_t *` |  |
 
 Decode a PNG image from memory into tightly packed RGB8 pixels.
-
-with dvz_memory_free()
 
 _Declared in `include/datoviz/fileio/fileio.h`:172._
 
@@ -8519,11 +8513,9 @@ int dvz_make_png(
 | `height` | `uint32_t` | height of the image |
 | `rgb` | `const uint8_t *` | pointer to tightly packed sRGB RGB8 pixels |
 | `size` | `DvzSize *` | pointer to a variable that will contain the size of the buffer |
-| `out` | `void **` | pointer to an owned PNG byte buffer allocated with the Datoviz allocator; free with |
+| `out` | `void **` | pointer to an owned PNG byte buffer allocated with the Datoviz allocator; free with dvz_memory_free() |
 
 Compress an sRGB RGB8 image to PNG and write it to a memory buffer.
-
-dvz_memory_free()
 
 _Declared in `include/datoviz/fileio/fileio.h`:157._
 
@@ -9314,13 +9306,11 @@ void * dvz_read_file(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `void *` | owned byte buffer allocated with the Datoviz allocator, or NULL on failure; free with |
+| return | `void *` | owned byte buffer allocated with the Datoviz allocator, or NULL on failure; free with dvz_memory_free() |
 | `filename` | `const char *` | path of the file to open |
 | `size` | `DvzSize *` |  |
 
 Read a binary file.
-
-dvz_memory_free()
 
 _Declared in `include/datoviz/fileio/fileio.h`:54._
 
