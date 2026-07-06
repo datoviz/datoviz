@@ -9,6 +9,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const modulePath = resolve(root, "build-wasm-scene/wasm/datoviz_wasm_scene.mjs");
 const browserWrapperPath = resolve(root, "web/wasm/scene.js");
 const browserSessionPath = resolve(root, "web/wasm/session.js");
+const wasmInputBridgePath = resolve(root, "src/wasm/scene_api_input.c");
 const output2dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_point_pixel_marker_segment_path_primitive_image_mesh_panzoom.json");
 const output3dPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scene_sphere_textured_mesh3d_arcball.json");
 const outputScenarioPath = resolve(root, "build-wasm-scene/wasm/wasm_api_scenario_timer_animation.json");
@@ -373,6 +374,7 @@ function emitIncrementalPacketStream(Module, scene, figure, label) {
 async function expectBrowserWrapperPacketRuntime() {
   const source = await readFile(browserWrapperPath, "utf8");
   const sessionSource = await readFile(browserSessionPath, "utf8");
+  const inputBridgeSource = await readFile(wasmInputBridgePath, "utf8");
   const renderInitial = source.match(/async renderInitial\(\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
   const renderIncremental = source.match(/async renderIncremental\(\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
   const recoverRuntime = source.match(/async recoverRuntime\(\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
@@ -444,6 +446,11 @@ async function expectBrowserWrapperPacketRuntime() {
       source.includes("next.logicalWidth") &&
       source.includes("next.framebufferWidth"),
     "browser wrapper does not separate logical and framebuffer resize dimensions",
+  );
+  requireOk(
+    inputBridgeSource.includes("DVZ_SCENARIO_EVENT_RESIZE") &&
+      inputBridgeSource.includes("scene->scenario_spec.event(&scene->scenario_ctx"),
+    "WASM resize bridge does not forward scenario resize events",
   );
   requireOk(sessionSource.includes("this.renderQueue"), "WASM session does not serialize renders");
   requireOk(

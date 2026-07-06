@@ -79,6 +79,22 @@ int dvz_wasm_api_resize(
     _emit_resize(
         scene, logical_width, logical_height, framebuffer_width, framebuffer_height,
         scene->device_scale);
+    if (scene->scenario_active && scene->scenario_spec.event != NULL)
+    {
+        const float scale = scene->device_scale > 0.0f ? scene->device_scale : 1.0f;
+        const DvzScenarioEvent event = {
+            .kind = DVZ_SCENARIO_EVENT_RESIZE,
+            .content.resize = {
+                .framebuffer_width = framebuffer_width,
+                .framebuffer_height = framebuffer_height,
+                .window_width = logical_width,
+                .window_height = logical_height,
+                .content_scale_x = scale,
+                .content_scale_y = scale,
+            },
+        };
+        scene->scenario_spec.event(&scene->scenario_ctx, &event, scene->scenario_user);
+    }
     return 0;
 }
 
