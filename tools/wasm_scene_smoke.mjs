@@ -375,6 +375,10 @@ async function expectBrowserWrapperPacketRuntime() {
   const sessionSource = await readFile(browserSessionPath, "utf8");
   const renderInitial = source.match(/async renderInitial\(\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
   const renderIncremental = source.match(/async renderIncremental\(\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
+  const scenarioPointer =
+    source.match(/scenarioPointer\(type, event\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
+  const scenarioWheel =
+    source.match(/scenarioWheel\(event\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
   const attachResizeObserver =
     source.match(/attachResizeObserver\(onChange\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
   requireOk(renderInitial.includes("this.emitPackets()"), "renderInitial does not emit packets");
@@ -418,6 +422,11 @@ async function expectBrowserWrapperPacketRuntime() {
   requireOk(
     !attachResizeObserver.includes("this.resize()"),
     "ResizeObserver mutates WASM scene outside the render queue",
+  );
+  requireOk(
+    !scenarioPointer.includes("_canvasPoint(event, true)") &&
+      !scenarioWheel.includes("_canvasPoint(event, true)"),
+    "scenario pointer events are pre-scaled before C figure-coordinate conversion",
   );
   requireOk(sessionSource.includes("this.renderQueue"), "WASM session does not serialize renders");
   requireOk(
