@@ -10,11 +10,11 @@
 <span>Pixel Selection</span>
 </nav>
 
-Pixel hover and click selection.
+Selection_pixel queries and selects individual cells in a pixel grid.
 
 ## What To Look For
 
-This page isolates `selection pixel`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The 40x24 grid uploads position, color, and pixel_size_px arrays generated from a smooth scalar field. Move the cursor over the live panel to query a pixel item; hover scales the square, click toggles a persistent warning-color tint, and clicking the background clears selection. This is useful for heatmaps and rasters where each rendered cell may correspond to a sample, sensor, or bin.
 
 No external data is needed; the example generates its data.
 

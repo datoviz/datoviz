@@ -10,11 +10,11 @@
 <span>Turntable Controller</span>
 </nav>
 
-Constrained turntable controller around a small 3D mesh.
+This example shows world-up orbiting with a turntable controller.
 
 ## What To Look For
 
-This page isolates `controller turntable`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The lit cube and XZ grid provide a stable reference frame while the controller orbits around a fixed pivot without rolling the camera. In the live preview, drag around the object and compare the upright grid with an arcball view; the turntable pattern is useful for inspecting surfaces, meshes, and laboratory-coordinate 3D data where "up" should stay up.
 
 No external data is needed; the example generates its data.
 

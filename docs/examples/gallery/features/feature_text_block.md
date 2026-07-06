@@ -10,11 +10,11 @@
 <span>Text Block</span>
 </nav>
 
-Compact text block with stable screen placement.
+Text_block renders a multiline text object at a stable screen position.
 
 ## What To Look For
 
-This page isolates `text block`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The text object keeps style, layout, placement, and the whole paragraph string together. The example uses an MSDF atlas renderer, explicit text size, line height, line gap, and a top-left screen placement inside the panel. Text blocks are useful for annotations, compact notes, and status messages that should remain legible independent of data coordinates.
 
 No external data is needed; the example generates its data.
 

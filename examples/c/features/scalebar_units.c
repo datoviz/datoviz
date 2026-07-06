@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* scalebar_units - retained scale bar with a custom time-unit string.
+/* scalebar_units uses duration units for a scale bar on a time-series panel.
+ *
+ * What to look for: the path visual uploads 96 time samples whose X positions span 0 to 250 and
+ * whose Y positions form a waveform. The scale bar uses the built-in duration unit ladder, and
+ * the panzoom controller keeps Y fixed so horizontal navigation changes the visible time span.
+ * This is useful for signal, electrophysiology, or video-aligned plots where the reader needs a
+ * time interval cue rather than a distance cue.
  *
  * Scenario: scalebar_units
  * Style: features, graphite_cyan, 1280x720 window target

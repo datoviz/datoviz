@@ -10,11 +10,11 @@
 <span>Builtin Shapes 2D</span>
 </nav>
 
-Builtin 2D geometry builders rendered through meshes.
+This example shows built-in 2D geometry rendered as meshes.
 
 ## What To Look For
 
-This page isolates `builtin shapes 2d`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The panel uses equal-aspect data coordinates, then uploads generated geometry for a plane, disc, sector, regular polygon, star, and a triangulated polygon with a hole. Each shape becomes a mesh visual attached in data space. In the live preview, pan and zoom while checking that circles stay round and the polygon hole remains open. These builders are useful for annotations, regions of interest, and custom 2D glyphs without hand-writing triangles.
 
 No external data is needed; the example generates its data.
 

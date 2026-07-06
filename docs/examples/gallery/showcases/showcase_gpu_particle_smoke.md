@@ -10,11 +10,13 @@
 <span>GPU Particle Smoke</span>
 </nav>
 
-Scene API compute-to-graphics particle smoke showcase.
+This example uses scene compute buffers to animate particle smoke.
 
 ## What To Look For
 
-This showcase shows a composed GPU Particle Smoke scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
+Particle position, velocity, age, color, and size data live in scene buffers that are consumed by both a compute pass and a blended point visual. The compute shader advances the plume each frame, and pointer movement adds a local swirl force; compare the dense translucent point cloud with the small source region at the bottom of the scene.
+
+This experimental workflow is useful for simulations where GPU-updated arrays should feed a render pass without a CPU round trip.
 
 Useful tags for this example: `compute`, `simulation`, `particles`, `point`.
 

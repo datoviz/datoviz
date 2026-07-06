@@ -10,11 +10,13 @@
 <span>Offscreen Capture</span>
 </nav>
 
-Render an exact-pixel offscreen view once and write a PNG.
+This example renders a point scene offscreen and writes one PNG.
 
 ## What To Look For
 
-This page focuses on `offscreen capture`. Use it when you need to control how Datoviz opens, captures, records, or exports a scene, not only what the scene draws.
+Four point positions, colors, and pixel diameters are uploaded once, then an offscreen view is created at the requested 1920x1080 output size. The code checks the framebuffer dimensions before calling render-once and PNG capture, so the saved image should match the requested pixel size exactly.
+
+This is the runtime path to copy for reproducible batch figures, tests, and documentation captures that should not depend on an onscreen window.
 
 No external data is needed; the example generates its data.
 

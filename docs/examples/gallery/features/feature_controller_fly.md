@@ -10,11 +10,11 @@
 <span>Fly Controller</span>
 </nav>
 
-Fly controller with deterministic camera translation.
+This example shows fly-style camera navigation through a 3D scene.
 
 ## What To Look For
 
-This page isolates `controller fly`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The same colored cube and reference grid used by the controller examples are shown with a fly controller instead of an orbit controller. In the live preview, compare the camera motion with arcball or turntable behavior: fly navigation translates the viewpoint through the scene, which is useful for volume interiors, large 3D datasets, and walkthrough-style exploration.
 
 No external data is needed; the example generates its data.
 

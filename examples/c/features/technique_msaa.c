@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* msaa - side-by-side multisample antialiasing on slanted 3D cube silhouettes.
+/* msaa compares single-sample rendering with 8x multisample antialiasing.
+ *
+ * What to look for: both panels draw the same translated cube cluster with linked arcball
+ * controls, but only the right panel enables an MSAA descriptor with sample_count set to 8. Inspect
+ * diagonal cube edges and small silhouettes in the screenshot or live preview; MSAA is useful when
+ * scientific meshes or glyphs need smoother boundaries without changing their geometry.
  *
  * Scenario: feature.msaa
  * Style: features, graphite_cyan, 1280x720 window target

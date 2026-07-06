@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* guide_spans - retained horizontal and vertical guide spans in panel data coordinates.
+/* guide_spans - This example shows movable guide spans for highlighting data ranges.
  *
  * Scenario: feature.guide_spans
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,12 @@
  * Build:  just example-c features/guide_spans
  * Run:    ./build/examples/c/features/guide_spans --live
  * Smoke:  ./build/examples/c/features/guide_spans --png
+ *
+ * What to look for: the point visual uploads position, color, and diameter_px arrays, while the
+ * panel adds vertical and horizontal spans in data coordinates. Pointer events update each span's
+ * range around the current cursor data position. In the live preview, compare the shaded spans with
+ * nearby markers and ticks; spans are useful for highlighting windows of time, thresholds, or
+ * regions selected for closer analysis.
  */
 
 

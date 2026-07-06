@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* overlay_card - screen-space data readout over a simple panel visual.
+/* overlay_card places a screen-space readout card above a simple data trace.
+ *
+ * What to look for: the background path uploads position, color, and stroke_width_px arrays in
+ * view coordinates, and a highlighted point marks the sample being described. The overlay card is
+ * anchored to the panel's top-right corner with explicit padding, width, text size, and text
+ * renderer. This pattern is useful for lightweight status readouts that should stay readable while
+ * the underlying data view changes.
  *
  * Scenario: feature.overlay_card
  * Style: features, graphite_cyan, 1280x720 window target

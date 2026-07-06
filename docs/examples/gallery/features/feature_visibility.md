@@ -10,11 +10,11 @@
 <span>Visual Visibility</span>
 </nav>
 
-Visual visibility toggled by a scene timer.
+Visibility toggles one visual on and off without changing its data arrays.
 
 ## What To Look For
 
-This page isolates `visibility`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+Three separate point visuals are created so the middle red point can use dvz_visual_set_visible() independently from the always-visible side points. A scene timer flips that visual every 0.25 seconds. In the recorded or live preview, compare the stable side points with the blinking center point; visual-level visibility is useful for layers, quality-control overlays, and temporarily hiding derived results.
 
 No external data is needed; the example generates its data.
 

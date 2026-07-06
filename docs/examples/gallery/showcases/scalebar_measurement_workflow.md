@@ -10,11 +10,13 @@
 <span>Scale Bar Measurement Workflow</span>
 </nav>
 
-Scale-aware overview, detail, and 3D measurement workflow.
+This example compares scale bars across overview, detail, and 3D views.
 
 ## What To Look For
 
-This showcase shows a composed Scale Bar Measurement Workflow scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
+The overview and detail panels use synthetic microscopy-like RGBA textures, zoom boxes, point markers, labels, and independent scale bars, while the 3D panel shows a small rotating specimen cloud with its own measurement cue. Compare the scale labels and view extents: the same visual language explains both image pixels and scene-space geometry.
+
+This workflow is useful for scientific figures where readers must understand physical size while moving between context, zoomed detail, and a 3D measurement.
 
 Useful tags for this example: `workflow`, `scale-bar`, `measurement`, `synthetic`.
 

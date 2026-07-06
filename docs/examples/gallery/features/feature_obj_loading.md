@@ -10,11 +10,11 @@
 <span>OBJ Loading</span>
 </nav>
 
-Wavefront OBJ mesh loading through geom/fileio helpers.
+Obj_loading loads a Wavefront OBJ fixture and displays it as a mesh.
 
 ## What To Look For
 
-This page isolates `obj loading`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The example writes a compact OBJ file, loads it through dvz_geometry_obj(), assigns one mesh color, then uploads the geometry into a lit mesh visual. In the live preview, rotate the low-poly object with the arcball controller and compare its faceted silhouette with the source fixture's vertices and faces. OBJ loading is useful when scientific geometry comes from external meshing or modeling tools.
 
 No external data is needed; the example generates its data.
 

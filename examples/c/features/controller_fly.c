@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* controller_fly - fly controller with deterministic camera translation.
+/* controller_fly - This example shows fly-style camera navigation through a 3D scene.
  *
  * Scenario: feature.controller_fly
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,12 @@
  * Build:  just example-c features/controller_fly
  * Run:    ./build/examples/c/features/controller_fly --live
  * Smoke:  ./build/examples/c/features/controller_fly --png
+ *
+ * What to look for: the same colored cube and reference grid used by the controller examples are
+ * shown with a fly controller instead of an orbit controller. In the live preview, compare the
+ * camera motion with arcball or turntable behavior: fly navigation translates the viewpoint
+ * through the scene, which is useful for volume interiors, large 3D datasets, and walkthrough-style
+ * exploration.
  */
 
 

@@ -10,11 +10,11 @@
 <span>Panel Grid</span>
 </nav>
 
-Four grid-owned panels with clipped panel-local content.
+Panel_grid arranges four independent panels in a 2x2 figure grid.
 
 ## What To Look For
 
-This page isolates `panel grid`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+Each panel has its own border, background, and small point visual with position, color, and diameter_px arrays. The same point pattern is repeated with a different accent color in each grid cell, so compare how gutters, margins, and panel-local clipping keep the plots separated. Grid panels are useful for small multiples and side-by-side scientific comparisons.
 
 No external data is needed; the example generates its data.
 

@@ -265,6 +265,7 @@ class Example:
     status: str
     tags: tuple[str, ...]
     summary: str
+    description: tuple[str, ...]
     primary: str
     data: dict
     dataset: dict
@@ -375,6 +376,7 @@ def normalize_summary(text: str) -> str:
     text = re.sub(r"\s+", " ", text).strip()
     if not text:
         return "Current C-first Datoviz example."
+    text = re.sub(r"^(what to look for|what this shows):\s*", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\bsmallest runner-backed retained scene\b", "smallest scene", text)
     text = re.sub(r"\bretained\s+", "", text)
     if text and text[0].islower():
@@ -382,23 +384,49 @@ def normalize_summary(text: str) -> str:
     return text
 
 
-def extract_c_summary(path: Path) -> str:
+def extract_c_description(path: Path) -> tuple[str, tuple[str, ...]]:
     if not path.exists():
-        return ""
+        return "", ()
     content = path.read_text(encoding="utf8", errors="replace")
     for match in re.finditer(r"/\*(.*?)\*/", content, flags=re.DOTALL):
         block = match.group(1)
         if "Copyright" in block or "SPDX-License" in block:
             continue
         lines = [re.sub(r"^\s*\*\s?", "", line).strip() for line in block.splitlines()]
-        lines = [line for line in lines if line]
+        while lines and not lines[0]:
+            lines.pop(0)
+        while lines and not lines[-1]:
+            lines.pop()
         if not lines:
             continue
         first = lines[0]
         if " - " in first:
-            return normalize_summary(first.split(" - ", 1)[1])
-        return normalize_summary(first)
-    return ""
+            first = first.split(" - ", 1)[1]
+
+        paragraphs: list[str] = []
+        current: list[str] = []
+        for raw in lines[1:]:
+            if not raw:
+                if current:
+                    paragraphs.append(normalize_summary(" ".join(current)))
+                    current = []
+                continue
+            if re.match(r"^(Scenario|Style|Build|Run|Smoke|Video|Data|Dataset):\s", raw):
+                if current:
+                    paragraphs.append(normalize_summary(" ".join(current)))
+                    current = []
+                continue
+            current.append(raw)
+        if current:
+            paragraphs.append(normalize_summary(" ".join(current)))
+
+        return normalize_summary(first), tuple(paragraph for paragraph in paragraphs if paragraph)
+    return "", ()
+
+
+def extract_c_summary(path: Path) -> str:
+    summary, _ = extract_c_description(path)
+    return summary
 
 
 def collect_examples(manifest: dict) -> list[Example]:
@@ -422,6 +450,7 @@ def collect_examples(manifest: dict) -> list[Example]:
         tags = entry.get("tags")
         if tags is None:
             tags = entry.get("features", [])
+        summary, description = extract_c_description(ROOT / source)
         example = Example(
             id=str(entry["id"]),
             title=str(entry.get("title", entry["id"])),
@@ -432,7 +461,8 @@ def collect_examples(manifest: dict) -> list[Example]:
             validation=str(entry.get("validation", "")),
             status=status_from_entry(entry),
             tags=tuple(str(tag) for tag in tags),
-            summary=extract_c_summary(ROOT / source),
+            summary=summary,
+            description=description,
             primary=str(
                 entry.get("primary_visual")
                 or entry.get("primary_feature")
@@ -648,7 +678,10 @@ def render_preview(
 def render_example_explanation(example: Example) -> list[str]:
     focus = primary_focus(example)
     lines = ["## What To Look For", ""]
-    if example.lane == "visuals":
+    if example.description:
+        for paragraph in example.description:
+            lines.extend([paragraph, ""])
+    elif example.lane == "visuals":
         lines.extend(
             [
                 (

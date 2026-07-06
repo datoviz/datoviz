@@ -10,11 +10,11 @@
 <span>View Size Policies</span>
 </nav>
 
-Explicit canvas/window/framebuffer size policy selection.
+View_size_policies demonstrates how requested view size policies resolve to real view sizes.
 
 ## What To Look For
 
-This page isolates `view size policy`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+Pass --policy pixel, host, reference, or physical to choose framebuffer pixels, host logical pixels, reference-DPI canvas pixels, or physical millimeters. The example prints the resolved canvas, host-logical, framebuffer, scale, and physical sizes, then renders a small point visual with position, color, and diameter_px arrays. This is useful when figures need reproducible screenshot dimensions across HiDPI monitors and different host toolkits.
 
 Useful tags for this example: `view-size`, `framebuffer`, `window`.
 

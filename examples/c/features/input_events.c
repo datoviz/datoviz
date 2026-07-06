@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* input_events - live native keyboard, pointer, wheel, and resize event logging.
+/* input_events - This example shows native keyboard, pointer, wheel, and resize events.
  *
  * Scenario: feature.input_events
  * Style: features, native app
@@ -12,6 +12,12 @@
  * Build:  just example-c features/input_events
  * Run:    ./build/examples/c/features/input_events
  * Smoke:  ./build/examples/c/features/input_events --synthetic
+ *
+ * What to look for: the native app registers input callbacks and prints event details for pointer
+ * movement, button presses, scrolling, keyboard input, and window resize. The synthetic smoke path
+ * exercises the same event-handling code without requiring manual interaction. Run it live and
+ * compare terminal output with your mouse and keyboard actions; event logging is useful when
+ * building custom picking, navigation, or analysis controls.
  */
 
 

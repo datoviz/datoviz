@@ -10,11 +10,11 @@
 <span>Colorbar</span>
 </nav>
 
-Deterministic scalar image with one continuous colorbar.
+This example shows a scalar image and a continuous colorbar.
 
 ## What To Look For
 
-This page isolates `colorbar`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+A 192 by 144 float field is uploaded as an R32 sampled field, and the image visual maps those scalar samples through a continuous scale with domain 0 to 1. The same scale is passed to the vertical colorbar on the right. Compare image colors with the ramp and tick labels; this is the standard pattern for making heat maps, microscopy images, or simulation fields interpretable by exposing the numeric meaning of color.
 
 Useful tags for this example: `colorbar`, `scalar-field`, `image`, `capture`.
 

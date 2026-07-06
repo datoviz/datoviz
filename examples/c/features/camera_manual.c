@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* camera_manual - explicit perspective-camera setup with eye, target, up, and clip planes.
+/* camera_manual - This example shows explicit perspective-camera setup for a 3D scene.
  *
  * Scenario: feature.camera_manual
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,12 @@
  * Build:  just example-c features/camera_manual
  * Run:    ./build/examples/c/features/camera_manual --live
  * Smoke:  ./build/examples/c/features/camera_manual --png
+ *
+ * What to look for: the camera descriptor sets eye, target, up, field of view, and near/far clip
+ * planes before the panel renders a lit cube on a reference grid. Compare the cube's perspective
+ * with the grid orientation and how much of the scene is visible. Manual camera setup is useful
+ * when screenshots, reproducible views, or analysis layouts need a known viewpoint instead of an
+ * interaction-derived one.
  */
 
 

@@ -94,6 +94,7 @@ nav:
     - Quickstart: 'start/quickstart.md'
     - Choose your layer: 'start/choose-your-layer.md'
     - AI-assisted workflow: 'start/ai-workflow.md'
+    - AI agents: 'ai-agents.md'
   - Examples:
     - Overview: 'examples/index.md'
     - Showcases: 'examples/showcases.md'

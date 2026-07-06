@@ -4,9 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* marker - retained marker visual with deterministic symbol, fill, stroke, size, and angle
- * variation. The top row is a triangle compass probe: angle is mathematical counter-clockwise and
- * triangle diameter_px is the screen-space bounding-box diameter.
+/* marker - This example compares marker symbols, sizes, strokes, fills, and rotations.
+ *
+ * What to look for: each row reuses position, symbol, color, size, edge color, and angle arrays to
+ * show how screen-space markers encode categories and selected points. The top row is a triangle
+ * compass probe: angle is mathematical counter-clockwise, and triangle diameter_px is the
+ * screen-space bounding-box diameter.
  *
  * Scenario: visual.marker
  * Style: visuals, graphite_cyan, 1280x720 window target

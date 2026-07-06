@@ -10,11 +10,11 @@
 <span>Polygon Composite</span>
 </nav>
 
-Clean semantic polygon and polygon-set composites.
+This example compares one holed polygon with a multi-region polygon set.
 
 ## What To Look For
 
-This example focuses on `polygon`. Read it from top to bottom: create data, create a scene, add visuals, then run or capture the result.
+The left shape uses outer and hole coordinate rings plus fill, stroke, width, join, and ID settings; the right shape uses three regions with per-region IDs and styles. Compare the transparent fills, hole, and beveled versus rounded joins to see how polygon composites support maps, masks, regions of interest, and segmented spatial data.
 
 Useful tags for this example: `composite`, `polygon`, `polygon-set`, `holes`.
 

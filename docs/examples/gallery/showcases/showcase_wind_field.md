@@ -10,11 +10,13 @@
 <span>Wind Field</span>
 </nav>
 
-Synthetic weather-like scalar and vector field showcase.
+This example combines a synthetic wind-speed field with vectors and streamlines.
 
 ## What To Look For
 
-This showcase shows a composed Wind Field scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
+The sampled field stores wind speed over a kilometer-scale domain, vectors show local direction and magnitude, streamlines trace the flow, and a fixed probe plus colorbar report speed in m/s. During live playback, compare how the image, vector glyphs, and paths update together from the same procedural wind model.
+
+This workflow is useful for geophysical or fluid-like data where scalar magnitude and direction need to be read in one coordinated panel.
 
 Useful tags for this example: `scientific`, `synthetic`, `scalar-field`, `vector-field`.
 

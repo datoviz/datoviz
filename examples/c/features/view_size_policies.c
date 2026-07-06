@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* view_size_policies - explicit canvas/window/framebuffer size policy selection.
+/* view_size_policies demonstrates how requested view size policies resolve to real view sizes.
+ *
+ * What to look for: pass --policy pixel, host, reference, or physical to choose framebuffer pixels,
+ * host logical pixels, reference-DPI canvas pixels, or physical millimeters. The example prints
+ * the resolved canvas, host-logical, framebuffer, scale, and physical sizes, then renders a small
+ * point visual with position, color, and diameter_px arrays. This is useful when figures need
+ * reproducible screenshot dimensions across HiDPI monitors and different host toolkits.
  *
  * Scenario: feature.view_size_policies
  * Style: features, graphite_cyan

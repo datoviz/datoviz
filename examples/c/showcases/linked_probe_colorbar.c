@@ -4,7 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* linked_probe_colorbar - linked image panels with one probe readout and shared colorbar.
+/* linked_probe_colorbar - This example links two image panels with a probe readout and colorbar.
+ *
+ * What to look for: the source and derived images are generated from two FIELD_WIDTH x
+ * FIELD_HEIGHT float arrays and share one continuous scale. Moving the probe updates markers in
+ * both panels, queues a source-panel pixel query, and refreshes the readout with the raw and
+ * derived values; compare the same probe location across both images and the shared colorbar.
+ *
+ * This workflow is useful for inspecting transformed measurements while preserving a visible link
+ * to the original sampled field.
  *
  * Scenario: linked_panels_probe_colorbar
  * Style: showcase workflow, graphite_cyan, 1280x720 window target

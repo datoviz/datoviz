@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* transparency_order - source-over, WBOIT, and depth-peel transparency on overlapping cubes.
+/* transparency_order compares three transparency techniques on the same overlapping cubes.
+ *
+ * What to look for: each panel draws two translucent cube meshes with the same geometry,
+ * transforms, material settings, and face alpha values, but changes the alpha mode between
+ * source-over blending, weighted order-independent transparency, and depth peeling. Rotate the
+ * linked panels and compare how back faces and overlapping colors are resolved. This helps choose
+ * a transparency mode for volumes, nested surfaces, or uncertain 3D regions.
  *
  * Scenario: feature.transparency_order
  * Style: features, graphite_cyan, 1280x720 window target

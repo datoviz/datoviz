@@ -10,11 +10,11 @@
 <span>Orientation Gizmo</span>
 </nav>
 
-Panel-attached orientation axes following the panel's rendered orientation.
+Orientation_gizmo adds a small orientation widget to a 3D panel.
 
 ## What To Look For
 
-This page isolates `orientation gizmo`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The main scene is a lit cube controlled by an arcball, and the orientation gizmo is placed in the panel's bottom-right corner with a fixed screen size. Rotate the live cube and compare the cube faces with the gizmo axes; the widget helps users keep track of 3D orientation when inspecting volumes, meshes, or spatial point clouds.
 
 No external data is needed; the example generates its data.
 

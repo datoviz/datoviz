@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* edl - Eye-Dome Lighting applied to a dense retained point cloud.
+/* edl compares a dense 3D point cloud with and without Eye-Dome Lighting.
+ *
+ * What to look for: both panels upload the same depth-rich point cloud with position, color, and
+ * size arrays, but only the right panel enables EDL. In live mode, use the GUI to adjust EDL
+ * radius, strength, depth scale, and arcball state while both views stay linked. EDL is useful for
+ * point clouds because it strengthens local depth discontinuities without changing the underlying
+ * point data.
  *
  * Scenario: feature.edl
  * Style: features, graphite_cyan, 1280x720 window target

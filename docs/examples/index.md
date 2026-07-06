@@ -22,7 +22,7 @@ Selected composed examples are shown below.
 
 `prototype` `showcases`
 
-Local Allen mouse brain RGBA volume and occluded slice.
+This example renders a prepared Allen mouse brain volume with a visible slice.
 
 </div>
 
@@ -34,7 +34,7 @@ Local Allen mouse brain RGBA volume and occluded slice.
 
 `supported` `showcases`
 
-RCSB PDB protein structure rendered as clustered spheres.
+This example renders a prepared PDB structure as colored sphere impostors.
 
 </div>
 
@@ -46,7 +46,7 @@ RCSB PDB protein structure rendered as clustered spheres.
 
 `supported` `showcases`
 
-RESEPI RGB LiDAR dense point cloud.
+This example renders a prepared RGB LiDAR point cloud with direct colors.
 
 </div>
 
@@ -58,7 +58,7 @@ RESEPI RGB LiDAR dense point cloud.
 
 `supported` `showcases`
 
-Generated height-field mesh with a derived wireframe overlay.
+This example turns a generated height field into a lit mesh and wireframe.
 
 </div>
 
@@ -70,7 +70,7 @@ Generated height-field mesh with a derived wireframe overlay.
 
 `supported` `showcases`
 
-UV textured planet mesh via dvz_mesh + sampled fields.
+This example maps real planetary textures onto an indexed sphere mesh.
 
 </div>
 
@@ -82,7 +82,7 @@ UV textured planet mesh via dvz_mesh + sampled fields.
 
 `supported` `showcases`
 
-Synthetic weather-like scalar and vector field showcase.
+This example combines a synthetic wind-speed field with vectors and streamlines.
 
 </div>
 
@@ -94,7 +94,7 @@ Synthetic weather-like scalar and vector field showcase.
 
 `experimental` `showcases`
 
-Scene API compute-to-graphics particle smoke showcase.
+This example uses scene compute buffers to animate particle smoke.
 
 </div>
 
@@ -106,7 +106,7 @@ Scene API compute-to-graphics particle smoke showcase.
 
 `supported` `showcases`
 
-Histogram, guide annotations, stacked traces, and error bands.
+This example composes common scientific plot elements in one figure.
 
 </div>
 
@@ -118,7 +118,7 @@ Histogram, guide annotations, stacked traces, and error bands.
 
 `supported` `showcases`
 
-Scale-aware overview, detail, and 3D measurement workflow.
+This example compares scale bars across overview, detail, and 3D views.
 
 </div>
 
@@ -130,7 +130,7 @@ _Screenshot not required for this example._
 
 `supported` `showcases`
 
-Linked temporal panels with a spanning summary panel.
+This example builds linked time-series panels with shared axes behavior.
 
 </div>
 
@@ -142,7 +142,7 @@ Linked temporal panels with a spanning summary panel.
 
 `supported` `showcases`
 
-Linked image panels with one probe readout and shared colorbar.
+This example links two image panels with a probe readout and colorbar.
 
 </div>
 
@@ -154,7 +154,7 @@ Linked image panels with one probe readout and shared colorbar.
 
 `supported` `showcases`
 
-Contiguous U.S. state population-density choropleth.
+This example renders contiguous U.S. population density as polygon-set data.
 
 </div>
 
@@ -178,7 +178,7 @@ Selected visual and composite examples are shown below.
 
 `supported` `visuals`
 
-Deterministic 2D point visual baseline.
+This example renders a 2D scatter plot with per-point color and diameter.
 
 </div>
 
@@ -190,7 +190,7 @@ Deterministic 2D point visual baseline.
 
 `supported` `visuals`
 
-Deterministic pixel visual baseline.
+This example renders a regular grid of independent screen-aligned pixels.
 
 </div>
 
@@ -202,7 +202,7 @@ Deterministic pixel visual baseline.
 
 `supported` `visuals`
 
-Marker visual with deterministic symbol, fill, stroke, size, and angle
+This example compares marker symbols, sizes, strokes, fills, and rotations.
 
 </div>
 
@@ -214,7 +214,7 @@ Marker visual with deterministic symbol, fill, stroke, size, and angle
 
 `experimental` `visuals`
 
-Gaussian splat visual with deterministic screen-space ellipses.
+This experimental example renders Gaussian splats as translucent ellipses.
 
 </div>
 
@@ -232,7 +232,7 @@ Gaussian splat visual with deterministic screen-space ellipses.
 
 `supported` `visuals`
 
-Segment visual with independent endpoint-pair strokes and visual-wide cap bands.
+This example draws independent line segments with different cap styles.
 
 </div>
 
@@ -244,7 +244,7 @@ Segment visual with independent endpoint-pair strokes and visual-wide cap bands.
 
 `supported` `visuals`
 
-Deterministic multi-signal path visual.
+This example draws several continuous signals with one path visual.
 
 </div>
 
@@ -256,7 +256,7 @@ Deterministic multi-signal path visual.
 
 `supported` `visuals`
 
-Straight and curved vector visual example.
+This example compares straight vector arrows with curved vector paths.
 
 </div>
 
@@ -268,7 +268,7 @@ Straight and curved vector visual example.
 
 `supported` `visuals`
 
-Line and triangle topologies rendered with the primitive visual.
+This example compares basic primitive topologies.
 
 </div>
 
@@ -286,7 +286,7 @@ Line and triangle topologies rendered with the primitive visual.
 
 `supported` `visuals`
 
-Deterministic scalar sampled field rendered with the image visual.
+This example displays a generated scalar field as a 2D image.
 
 </div>
 
@@ -298,7 +298,7 @@ Deterministic scalar sampled field rendered with the image visual.
 
 `supported` `visuals`
 
-Semantic text objects lowered to glyph visuals.
+This example places semantic text items in panel coordinates.
 
 </div>
 
@@ -310,7 +310,7 @@ Semantic text objects lowered to glyph visuals.
 
 `experimental` `visuals`
 
-Low-level font atlas glyph quads, distinct from semantic text.
+This example renders text by submitting low-level glyph atlas quads directly.
 
 </div>
 
@@ -322,7 +322,7 @@ Low-level font atlas glyph quads, distinct from semantic text.
 
 `supported` `visuals`
 
-Labels visual with a small deterministic integer sampled field.
+This example turns an integer sampled field into categorical image labels.
 
 </div>
 
@@ -340,7 +340,7 @@ Labels visual with a small deterministic integer sampled field.
 
 `supported` `visuals`
 
-Lit indexed cube mesh.
+This example renders a lit indexed cube mesh in a 3D scene.
 
 </div>
 
@@ -352,7 +352,7 @@ Lit indexed cube mesh.
 
 `supported` `visuals`
 
-Deterministic 3D impostor-sphere cluster with depth, radius, and color variation.
+This example displays a 3D cluster of raycast impostor spheres.
 
 </div>
 
@@ -364,7 +364,7 @@ Deterministic 3D impostor-sphere cluster with depth, radius, and color variation
 
 `supported` `visuals`
 
-Deterministic gyroid scalar field rendered with the volume visual.
+This example volume-renders a generated 3D gyroid scalar field.
 
 </div>
 
@@ -382,7 +382,7 @@ Deterministic gyroid scalar field rendered with the volume visual.
 
 `supported` `composites`
 
-Clean semantic polygon and polygon-set composites.
+This example compares one holed polygon with a multi-region polygon set.
 
 </div>
 
@@ -394,7 +394,7 @@ Clean semantic polygon and polygon-set composites.
 
 `supported` `composites`
 
-Deterministic brain-connectivity graph composite.
+This example builds a small brain-connectivity graph composite.
 
 </div>
 
@@ -418,7 +418,7 @@ Selected isolated feature examples are shown below.
 
 `supported` `features`
 
-Four grid-owned panels with clipped panel-local content.
+Panel_grid arranges four independent panels in a 2x2 figure grid.
 
 </div>
 
@@ -430,7 +430,7 @@ Four grid-owned panels with clipped panel-local content.
 
 `supported` `features`
 
-Multiple independent panels with panel-local panzoom controllers.
+Panel_multi shows two panels with independent data, domains, and panzoom state.
 
 </div>
 
@@ -442,7 +442,7 @@ Multiple independent panels with panel-local panzoom controllers.
 
 `supported` `features`
 
-Two panels linked on X panzoom extent with independent Y panzoom state.
+Panel_linked links the X panzoom extent of two stacked signal panels.
 
 </div>
 
@@ -460,7 +460,7 @@ Two panels linked on X panzoom extent with independent Y panzoom state.
 
 `supported` `features`
 
-Axis titles and tick-label placement with plot margins.
+This example shows axis titles and tick-label layout around a plotting panel.
 
 </div>
 
@@ -472,7 +472,7 @@ Axis titles and tick-label placement with plot margins.
 
 `supported` `features`
 
-Deterministic scalar image with one continuous colorbar.
+This example shows a scalar image and a continuous colorbar.
 
 </div>
 
@@ -484,7 +484,7 @@ Deterministic scalar image with one continuous colorbar.
 
 `supported` `features`
 
-Minimal scale bar attached to one 2D panel.
+Scalebar attaches a metric length scale bar to a 2D panel.
 
 </div>
 
@@ -496,7 +496,7 @@ Minimal scale bar attached to one 2D panel.
 
 `supported` `features`
 
-Point visual with scalar float colors and one color scale.
+This example shows scalar point values mapped through a custom colormap.
 
 </div>
 
@@ -514,7 +514,7 @@ Point visual with scalar float colors and one color scale.
 
 `supported` `features`
 
-Arcball controller attached to a small 3D mesh.
+This example shows an arcball controller rotating a 3D view.
 
 </div>
 
@@ -526,7 +526,7 @@ Arcball controller attached to a small 3D mesh.
 
 `supported` `features`
 
-Fly controller with deterministic camera translation.
+This example shows fly-style camera navigation through a 3D scene.
 
 </div>
 
@@ -538,7 +538,7 @@ Fly controller with deterministic camera translation.
 
 `supported` `features`
 
-Constrained turntable controller around a small 3D mesh.
+This example shows world-up orbiting with a turntable controller.
 
 </div>
 
@@ -556,7 +556,7 @@ Constrained turntable controller around a small 3D mesh.
 
 `supported` `features`
 
-One scene-owned sampled field reused by two image visuals.
+Sampled_field_update reuses one sampled scalar field in two image visuals while updating patches.
 
 </div>
 
@@ -568,7 +568,7 @@ One scene-owned sampled field reused by two image visuals.
 
 `supported` `features`
 
-CPU contour extraction rendered as segment overlays.
+This example shows contour isolines over a scalar field.
 
 </div>
 
@@ -580,7 +580,7 @@ CPU contour extraction rendered as segment overlays.
 
 `supported` `features`
 
-Marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
+Marker_symbols compares several ways to define marker glyphs in one symbol set.
 
 </div>
 
@@ -598,7 +598,7 @@ Marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 
 `supported` `features`
 
-Compare lit sphere clusters with different material and light settings.
+Lighting compares the same sphere cluster under three material and light configurations.
 
 </div>
 
@@ -610,7 +610,7 @@ Compare lit sphere clusters with different material and light settings.
 
 `supported` `features`
 
-Minimal UV textured mesh with a procedural RGBA8 texture.
+Mesh_texture maps a scene-owned RGBA8 sampled field onto a UV sphere mesh.
 
 </div>
 
@@ -622,7 +622,7 @@ Minimal UV textured mesh with a procedural RGBA8 texture.
 
 `supported` `features`
 
-Screen-space ambient occlusion on normal-producing mesh geometry.
+Ssao compares a sphere cluster with and without screen-space ambient occlusion.
 
 </div>
 
@@ -634,7 +634,7 @@ Screen-space ambient occlusion on normal-producing mesh geometry.
 
 `supported` `features`
 
-Depth-dependent fading applied to a regular 3D sphere lattice.
+Depth_cue compares a plain 3D sphere lattice with depth-dependent fading.
 
 </div>
 
@@ -652,7 +652,7 @@ Depth-dependent fading applied to a regular 3D sphere lattice.
 
 `supported` `features`
 
-Track-backed visual transform animation.
+This example shows scene animation tracks driving a cube and camera.
 
 </div>
 
@@ -664,7 +664,7 @@ Track-backed visual transform animation.
 
 `supported` `features`
 
-Portable scenario updating point data on runner frames.
+Timer_animation updates point attributes every runner frame from scenario time.
 
 </div>
 
@@ -676,7 +676,7 @@ Portable scenario updating point data on runner frames.
 
 `supported` `features`
 
-Scalar image pixel-query proof with a live probe marker.
+This example shows probing a scalar image at a marked data position.
 
 </div>
 
@@ -688,7 +688,7 @@ Scalar image pixel-query proof with a live probe marker.
 
 `supported` `features`
 
-Sphere hover and click selection.
+Selection_sphere queries and selects individual raycast spheres in a 3D cluster.
 
 </div>
 
@@ -712,7 +712,7 @@ _Screenshot not required for this example._
 
 `supported` `runtime`
 
-Direct GLFW app path without the scenario runner.
+This example opens a native GLFW window for a small point scene.
 
 </div>
 
@@ -724,7 +724,7 @@ _Screenshot not required for this example._
 
 `supported` `runtime`
 
-One app driving two native GLFW windows.
+This example drives two independent native GLFW windows from one Datoviz app.
 
 </div>
 
@@ -742,7 +742,7 @@ One app driving two native GLFW windows.
 
 `supported` `runtime`
 
-Render an exact-pixel offscreen view once and write a PNG.
+This example renders a point scene offscreen and writes one PNG.
 
 </div>
 
@@ -754,7 +754,7 @@ _Screenshot not required for this example._
 
 `experimental` `runtime`
 
-Write a bounded offscreen animation with the app capture API.
+This example records a bounded offscreen point animation to video.
 
 </div>
 
@@ -772,7 +772,7 @@ _Screenshot not required for this example._
 
 `experimental` `runtime`
 
-Record an offscreen app view and replay it into a second offscreen view.
+This example records an offscreen frame to DVZR and replays it into a new view.
 
 </div>
 

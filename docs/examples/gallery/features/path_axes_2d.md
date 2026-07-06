@@ -10,11 +10,11 @@
 <span>Path With 2D Axes</span>
 </nav>
 
-Deterministic path with 2D axes and tick labels.
+This example shows a 2D data path with axes, ticks, and grid lines.
 
 ## What To Look For
 
-This page isolates `axes 2d`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The path visual receives arrays for data-space position, color, and linewidth, then the panel domains map x from 0 to 10 and y from -2 to 2. The x and y axes add grid lines and labels ("time (s)" and "signal"). Compare the curve against the tick marks and grid spacing; the example shows how data coordinates, styled axes, and a line visual combine into a basic quantitative plot.
 
 No external data is needed; the example generates its data.
 

@@ -10,11 +10,11 @@
 <span>Picking</span>
 </nav>
 
-Unified marker hover and selection proof.
+Picking demonstrates item-level marker hover and click selection.
 
 ## What To Look For
 
-This page isolates `picking`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The marker grid uploads position, color, diameter_px, angle, and shape arrays, including several deliberately overlapping markers near the center. Move the cursor to query the frontmost marker item; hover scales the item, click toggles a persistent warning-color tint, and clicking the background clears selection. Current marker queries use marker-family bounds rather than exact SDF shape discard, which is enough to demonstrate interactive item picking.
 
 No external data is needed; the example generates its data.
 

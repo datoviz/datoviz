@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* material_mesh - retained mesh visuals with explicit material parameters.
+/* material_mesh compares cube meshes rendered with different material models and parameters.
+ *
+ * What to look for: all three panels use the same colored cube geometry, while the material
+ * descriptors change between matte Phong, glossy Phong, and a standard rim-lit material. The
+ * linked arcball controllers keep rotations synchronized, so compare the same face and edge in
+ * each panel to see how ambient, diffuse, specular, shininess, roughness, and rim strength affect
+ * 3D mesh readability.
  *
  * Scenario: feature.material_mesh
  * Style: features, graphite_cyan, 1280x720 window target

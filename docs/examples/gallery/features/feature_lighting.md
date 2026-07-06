@@ -10,11 +10,11 @@
 <span>Lighting</span>
 </nav>
 
-Compare lit sphere clusters with different material and light settings.
+Lighting compares the same sphere cluster under three material and light configurations.
 
 ## What To Look For
 
-This page isolates `lighting`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+Each panel uploads the same sphere position, radius, and color arrays, but changes the material light_direction, roughness, specular, and rim_strength values. Rotate any panel in the live preview and the linked arcball controllers keep the views aligned, making it easier to compare matte lighting, glossy highlights, and rim emphasis on identical data.
 
 No external data is needed; the example generates its data.
 

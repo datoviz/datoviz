@@ -4,21 +4,18 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* raw_triangle_drp2 - triangle rendered via a hand-written DRP2 command stream.
+/* raw_triangle_drp2 - This example renders one triangle from a hand-written DRP2 command stream.
  *
  * Scenario: advanced_raw_triangle_drp2
  * Style: advanced, native-only, low-level DRP2/vklite, 1920x1080 output target
  *
- * DRP2 (Datoviz Rendering Protocol 2) is the backend-agnostic IR that sits
- * between the scene layer and the GPU.  This example bypasses both DvzScene
- * and DvzCanvas, constructs a DRP2 command stream from scratch, executes it
- * with the vklite runtime, downloads the pixels, and saves a PNG.
+ * What to look for: every buffer, shader module, texture, command encoder, render pass, pipeline,
+ * draw, copy, and submit object is assigned an explicit DRP2 id. The vertex data is three
+ * position/color records, the pipeline declares that layout through DvzDrp2RenderPipelineDesc, and
+ * the rendered texture is copied to a readback buffer before the PNG is written.
  *
- * Vertex layout is declared explicitly via DvzDrp2RenderPipelineDesc.
- *
- * It is intentionally verbose: the goal is to show every step of the
- * protocol so that developers of other scientific-visualization libraries can
- * understand how DRP2 works and experiment with it directly.
+ * This is intentionally verbose. It is useful for renderer and library authors who want to inspect
+ * the protocol layer between retained scenes and the native vklite backend.
  *
  * Build:  just example-c advanced/raw_triangle_drp2
  * Run:    ./build/examples/c/advanced/raw_triangle_drp2

@@ -10,11 +10,11 @@
 <span>GUI Controls</span>
 </nav>
 
-Curated Datoviz GUI controls mutating one point visual.
+This example shows Datoviz GUI controls updating a point visual.
 
 ## What To Look For
 
-This page isolates `gui controls`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+Five point positions are fixed, while GUI sliders and color editors update the color and diameter_px arrays and the Visible checkbox toggles the visual. The extra synthetic data, effects, volume, and diagnostics controls exercise common widget types without changing the plotted points. Compare controls that visibly affect the markers with mock controls that only update state; this is useful for building analysis panels where some widgets drive data uploads and others configure future processing.
 
 No external data is needed; the example generates its data.
 

@@ -47,6 +47,10 @@ hide:
 A native rendering engine for large scientific scenes: retained visuals, precise interaction,
 replayable command streams, and a Vulkan-first runtime with low-level Python integration.
 
+Datoviz is the engine layer in the GSP/VisPy2 direction. The high-level plotting layer is still work
+in progress; today you can use Datoviz directly from C or through the documented Python `ctypes`
+API.
+
 <div class="dvz-public-actions" markdown="1">
 [View Examples](../examples/showcases.md){ .md-button .md-button--primary }
 [Read the Docs](../start/what-is-datoviz.md){ .md-button }
@@ -145,8 +149,8 @@ backend work, and exact control over retained GPU resources.
 
 ## Python Boundary
 
-Datoviz v0.4 owns raw/generated low-level bindings. High-level plotting belongs to GSP/VisPy2, with
-Datoviz as a backend.
+Datoviz v0.4 owns raw/generated low-level bindings and documented NumPy array uploads. High-level
+plotting belongs to GSP/VisPy2, with Datoviz as a backend when that layer is ready.
 
 </div>
 

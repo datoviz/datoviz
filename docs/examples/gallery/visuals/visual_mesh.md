@@ -10,11 +10,11 @@
 <span>Mesh</span>
 </nav>
 
-Lit indexed cube mesh.
+This example renders a lit indexed cube mesh in a 3D scene.
 
 ## What To Look For
 
-This page isolates the Mesh visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
+The cube geometry supplies vertices, indices, normals, and per-face colors to the mesh visual through dvz_mesh_set_geometry(). Rotate the live view or compare the screenshot faces to see how indexed geometry, lighting normals, and an arcball camera make a compact 3D object readable.
 
 Useful tags for this example: `mesh`, `indexed-geometry`, `arcball`, `capture`.
 

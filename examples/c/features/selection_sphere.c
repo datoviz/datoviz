@@ -4,14 +4,16 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* selection_sphere - retained sphere hover and click selection.
+/* selection_sphere queries and selects individual raycast spheres in a 3D cluster.
+ *
+ * What to look for: the sphere visual uploads position, radius, and color arrays for a compact
+ * depth-rich cluster with lighting enabled. Move the cursor over the live panel to query the
+ * frontmost sphere item; hover scales it, click toggles a warning-color selection tint, and
+ * clicking empty space clears selection. Rotate with the arcball controller to see why depth-aware
+ * picking matters for overlapping 3D scientific markers.
  *
  * Scenario: feature.selection_sphere
  * Style: features, graphite_cyan, 1280x720 window target
- *
- * Move the cursor over the sphere cluster to query the frontmost sphere item. Hover and selection
- * are rendered by the retained item-state API. Click a sphere to toggle selection; click the
- * background to clear it. Drag to rotate the 3D scene with the arcball controller.
  *
  * Build:  just example-c features/selection_sphere
  * Run:    ./build/examples/c/features/selection_sphere --live

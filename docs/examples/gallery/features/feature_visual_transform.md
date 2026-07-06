@@ -10,11 +10,11 @@
 <span>Visual Transform</span>
 </nav>
 
-Visual-local affine transform on point visuals.
+Visual_transform compares raw point data with a visual-local affine transform.
 
 ## What To Look For
 
-This page isolates `visual transform`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+Both panels upload the same five point positions, colors, and diameter_px values, but the right visual also receives a transform matrix with translation, shear, and non-uniform scale. Pan or zoom each panel and compare the unchanged data pattern on the left with the transformed copy on the right. Visual transforms are useful for positioning repeated glyph groups or derived overlays without rewriting every data point.
 
 No external data is needed; the example generates its data.
 

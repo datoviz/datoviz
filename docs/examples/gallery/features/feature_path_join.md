@@ -10,11 +10,11 @@
 <span>Path Join</span>
 </nav>
 
-Acute stroked path joins for visual regression inspection.
+Path_join compares miter, round, and bevel joins on difficult stroked paths.
 
 ## What To Look For
 
-This page isolates `path join`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The three columns use the same acute V, zigzag, open star, and closed star subpaths, with per-vertex position, color, and stroke_width_px arrays. Compare the corners where thick translucent strokes turn sharply; join style controls whether paths form pointed, rounded, or clipped corners. This matters for trajectories, outlines, and network edges with tight bends.
 
 No external data is needed; the example generates its data.
 

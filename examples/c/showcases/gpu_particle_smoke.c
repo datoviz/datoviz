@@ -4,7 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* gpu_particle_smoke - scene API compute-to-graphics particle smoke showcase.
+/* gpu_particle_smoke - This example uses scene compute buffers to animate particle smoke.
+ *
+ * What to look for: particle position, velocity, age, color, and size data live in scene buffers
+ * that are consumed by both a compute pass and a blended point visual. The compute shader advances
+ * the plume each frame, and pointer movement adds a local swirl force; compare the dense translucent
+ * point cloud with the small source region at the bottom of the scene.
+ *
+ * This experimental workflow is useful for simulations where GPU-updated arrays should feed a
+ * render pass without a CPU round trip.
  *
  * Scenario: showcase_gpu_particle_smoke
  * Style: showcase, graphite_cyan, 1280x720 window target, experimental scene compute

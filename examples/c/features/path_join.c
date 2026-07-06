@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* path_join - acute stroked path joins for visual regression inspection.
+/* path_join compares miter, round, and bevel joins on difficult stroked paths.
+ *
+ * What to look for: the three columns use the same acute V, zigzag, open star, and closed star
+ * subpaths, with per-vertex position, color, and stroke_width_px arrays. Compare the corners where
+ * thick translucent strokes turn sharply; join style controls whether paths form pointed, rounded,
+ * or clipped corners. This matters for trajectories, outlines, and network edges with tight bends.
  *
  * Scenario: feature_path_join
  * Style: features, graphite_cyan, 1280x720 window target

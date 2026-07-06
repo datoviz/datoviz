@@ -43,6 +43,10 @@ wasm-scene-build:
     @just _wasm-scene-build-mode build-wasm-scene Release RELEASE
 #
 
+wasm-scene-build-if-needed:
+    @python3 tools/ensure_wasm_scene_build.py
+#
+
 wasm-scene-build-debug:
     @just _wasm-scene-build-mode build-wasm-scene-debug Debug DEBUG \
         "-O0 -g3 -fno-omit-frame-pointer" \

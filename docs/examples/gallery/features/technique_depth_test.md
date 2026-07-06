@@ -10,11 +10,11 @@
 <span>Depth Test Toggle</span>
 </nav>
 
-Side-by-side visual depth-test toggle with overlapping 3D points.
+Depth_test compares overlapping 3D points with depth testing enabled and disabled.
 
 ## What To Look For
 
-This page isolates `depth test`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+Both panels upload the same eight large point sprites at the corners of a small 3D cube, with matching position, color, and diameter_px arrays. The left visual keeps depth testing enabled, while the right visual disables it so later points can overdraw nearer points. Rotate the linked arcball views and compare which colors appear in front; depth testing controls whether 3D marker order follows geometry or draw order.
 
 No external data is needed; the example generates its data.
 

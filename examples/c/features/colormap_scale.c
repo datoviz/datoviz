@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* colormap_scale - point visual with scalar float colors and one retained color scale.
+/* colormap_scale - This example shows scalar point values mapped through a custom colormap.
  *
  * Scenario: feature.colormap_scale
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,12 @@
  * Build:  just example-c features/colormap_scale
  * Run:    ./build/examples/c/features/colormap_scale --live
  * Smoke:  ./build/examples/c/features/colormap_scale --png
+ *
+ * What to look for: five point positions are paired with a float color-value array instead of
+ * precomputed RGBA colors. The point visual marks its color attribute as scalar F32, binds it to a
+ * continuous scale with a custom colormap, and uploads diameter_px separately. Compare the marker
+ * colors from low to high values; scalar scales keep data values separate from display colors,
+ * which is useful when the same measurement should drive a visual encoding and a legend.
  */
 
 

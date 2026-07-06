@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* panel_single - one explicit panel rectangle with panel chrome and one visual.
+/* panel_single creates one explicit panel rectangle inside a figure.
+ *
+ * What to look for: the panel is placed with normalized x, y, width, and height values instead of
+ * filling the whole figure. A border and background frame a five-point visual whose position,
+ * color, and diameter_px arrays form a compact pattern. This is useful when an application needs
+ * precise room for labels, controls, or multiple manually arranged views.
  *
  * Scenario: feature.panel_single
  * Style: features, graphite_cyan, 1280x720 window target

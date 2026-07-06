@@ -10,11 +10,11 @@
 <span>JSON Export</span>
 </nav>
 
-Scene JSON serialization diagnostic.
+Json_export writes a scene to a compact JSON diagnostic file.
 
 ## What To Look For
 
-This page isolates `json export`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The live view is intentionally small, with three point items whose position, color, and diameter_px arrays are uploaded before the scene is serialized. The useful output is also the generated json_export.json file: it should contain the figure/panel/visual structure rather than just pixels. This helps beginners see that Datoviz scenes keep inspectable state that can be exported for debugging or tooling.
 
 No external data is needed; the example generates its data.
 

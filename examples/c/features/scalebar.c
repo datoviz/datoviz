@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* scalebar - minimal retained scale bar attached to one 2D panel.
+/* scalebar attaches a retained metric length scale bar to a 2D panel.
+ *
+ * What to look for: five data-space points mark a simple ruler from 0 to 8 along X, while the
+ * scale bar is anchored near the bottom-left of the panel and uses built-in metric length units.
+ * Pan or zoom the live view and compare the bar label and tick length with the point spacing. A
+ * scale bar gives readers physical context without requiring full axes.
  *
  * Scenario: scale_bar
  * Style: features, graphite_cyan, 1280x720 window target

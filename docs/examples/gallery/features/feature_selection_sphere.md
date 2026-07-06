@@ -10,11 +10,11 @@
 <span>Sphere Selection</span>
 </nav>
 
-Sphere hover and click selection.
+Selection_sphere queries and selects individual raycast spheres in a 3D cluster.
 
 ## What To Look For
 
-This page isolates `selection sphere`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The sphere visual uploads position, radius, and color arrays for a compact depth-rich cluster with lighting enabled. Move the cursor over the live panel to query the frontmost sphere item; hover scales it, click toggles a warning-color selection tint, and clicking empty space clears selection. Rotate with the arcball controller to see why depth-aware picking matters for overlapping 3D scientific markers.
 
 No external data is needed; the example generates its data.
 

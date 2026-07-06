@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* path - deterministic multi-signal retained path visual.
+/* path - This example draws several continuous signals with one retained path visual.
+ *
+ * What to look for: positions hold the sampled curves, colors and widths vary per sample, and the
+ * subpaths array separates the three traces. Compare the rounded caps and joins across the lines
+ * to see why paths are useful for time series, trajectories, contours, and other ordered
+ * scientific measurements.
  *
  * Scenario: visual.path
  * Style: visuals, graphite_cyan, 1280x720 window target

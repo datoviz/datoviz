@@ -10,11 +10,11 @@
 <span>Volume</span>
 </nav>
 
-Deterministic gyroid scalar field rendered with the volume visual.
+This example volume-renders a generated 3D gyroid scalar field.
 
 ## What To Look For
 
-This page isolates the Volume visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
+The FIELD_SIZE cubed data array is attached as a 3D sampled field, with color and alpha scales controlling which values remain visible. Compare the rotating volume with the boundary box to understand the data bounds, transfer-function opacity, and maximum-intensity projection style used for volumetric microscopy, simulation, or tomography data.
 
 Useful tags for this example: `sampled-field`, `volume`, `transfer-function`, `boundary-box`.
 

@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* json_export - retained scene JSON serialization diagnostic.
+/* json_export writes a retained scene to a compact JSON diagnostic file.
+ *
+ * What to look for: the live view is intentionally small, with three point items whose position,
+ * color, and diameter_px arrays are uploaded before the scene is serialized. The useful output is
+ * also the generated json_export.json file: it should contain the figure/panel/visual structure
+ * rather than just pixels. This helps beginners see that Datoviz scenes keep inspectable state that
+ * can be exported for debugging or tooling.
  *
  * Scenario: feature.json_export
  * Style: features, graphite_cyan, 1280x720 window target

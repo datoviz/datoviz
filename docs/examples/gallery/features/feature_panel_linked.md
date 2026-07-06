@@ -10,11 +10,11 @@
 <span>Linked Panels</span>
 </nav>
 
-Two panels linked on X panzoom extent with independent Y panzoom state.
+Panel_linked links the X panzoom extent of two stacked signal panels.
 
 ## What To Look For
 
-This page isolates `linked panels`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+Both panels plot deterministic path data over the same X domain but use different Y domains and independent Y panzoom controllers. In the live preview, pan or zoom horizontally in either panel and the other follows; vertical zoom remains separate. This is useful for comparing related time series or spectra that share one coordinate axis but require different amplitude scales.
 
 No external data is needed; the example generates its data.
 

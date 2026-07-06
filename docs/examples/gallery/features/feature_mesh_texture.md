@@ -10,11 +10,11 @@
 <span>Textured Mesh</span>
 </nav>
 
-Minimal UV textured mesh with a procedural RGBA8 texture.
+Mesh_texture maps a scene-owned RGBA8 sampled field onto a UV sphere mesh.
 
 ## What To Look For
 
-This page isolates `mesh texture`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The texture pixels are generated as a 1024x512 color field, attached to the mesh as the "texture" field, and combined with the sphere geometry's UV coordinates. Rotate the live sphere with the arcball controller and check that longitude waves wrap cleanly while the poles avoid radial artifacts. Textures are useful for scientific surfaces, maps, and instrument images that belong on geometry instead of in a flat panel.
 
 No external data is needed; the example generates its data.
 

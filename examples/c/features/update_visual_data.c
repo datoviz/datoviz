@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* update_visual_data - retained point visual with full data replacement.
+/* update_visual_data replaces all arrays on one retained point visual.
+ *
+ * What to look for: the initial upload draws seven small gray points in a line. After one second,
+ * the example replaces the full position, color, and diameter_px arrays with a colored arc of
+ * larger points. This shows the simple full-data update path, which is useful when the whole
+ * dataset changes but the same visual, panel attachment, and style should remain in place.
  *
  * Scenario: feature.update_visual_data
  * Style: features, graphite_cyan, 1280x720 window target

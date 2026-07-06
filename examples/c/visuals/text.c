@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* text - retained semantic text objects lowered to glyph visuals.
+/* text - This example places retained semantic text items in panel coordinates.
+ *
+ * What to look for: each text item provides a string, x/y screen position, font size, angle, and
+ * color role, then the text system lowers it to atlas glyphs. Compare the headline, smaller
+ * annotations, and rotated label to see how titles, units, and short scientific notes can be added
+ * without managing glyph quads manually.
  *
  * Scenario: visual.text
  * Style: visuals, graphite_cyan, 1280x720 window target

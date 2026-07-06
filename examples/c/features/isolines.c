@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* isolines - CPU contour extraction rendered as retained segment overlays.
+/* isolines - This example shows contour isolines over a scalar field.
  *
  * Scenario: feature_isolines
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,12 @@
  * Build:  just example-c features/isolines
  * Run:    ./build/examples/c/features/isolines --live
  * Smoke:  ./build/examples/c/features/isolines --png
+ *
+ * What to look for: the scalar field is sampled on a regular grid, and CPU contour extraction turns
+ * selected levels into segment start/end arrays with colors and widths. The retained segment visual
+ * overlays those isolines on the same normalized data domain. Compare the spacing and shape of the
+ * contours with the underlying field pattern; isolines are useful for reading levels, gradients,
+ * and boundaries in topography, density maps, and simulation output.
  */
 
 

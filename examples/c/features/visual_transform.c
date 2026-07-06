@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* visual_transform - retained visual-local affine transform on point visuals.
+/* visual_transform compares raw point data with a visual-local affine transform.
+ *
+ * What to look for: both panels upload the same five point positions, colors, and diameter_px
+ * values, but the right visual also receives a transform matrix with translation, shear, and
+ * non-uniform scale. Pan or zoom each panel and compare the unchanged data pattern on the left
+ * with the transformed copy on the right. Visual transforms are useful for positioning repeated
+ * glyph groups or derived overlays without rewriting every data point.
  *
  * Scenario: feature.visual_transform
  * Style: features, graphite_cyan, 1280x720 window target

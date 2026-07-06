@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* polygon - clean semantic polygon and polygon-set composites.
+/* polygon - This example compares one holed polygon with a multi-region polygon set.
+ *
+ * What to look for: the left shape uses outer and hole coordinate rings plus fill, stroke, width,
+ * join, and ID settings; the right shape uses three regions with per-region IDs and styles.
+ * Compare the transparent fills, hole, and beveled versus rounded joins to see how polygon
+ * composites support maps, masks, regions of interest, and segmented spatial data.
  *
  * Scenario: composite_polygon
  * Style: feature composite, graphite_cyan, 1280x720 window target

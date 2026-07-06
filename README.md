@@ -8,6 +8,11 @@ scientific scenes. In Python, use `import datoviz as dvz` and pass NumPy arrays 
 data uploads. For native applications, use the C scene/app API. Datoviz also provides native
 desktop rendering through Vulkan and an experimental browser path through WebGPU/WASM.
 
+Datoviz v0.4 is the lower-level rendering engine in the broader GSP/VisPy2 direction. GSP/VisPy2 is
+the intended high-level plotting layer, but it is still work in progress. Until that layer is ready,
+Python users can call Datoviz directly through the documented `ctypes` API: `import datoviz as dvz`
+for supported NumPy array uploads, or `datoviz.raw` for exact generated signatures.
+
 
 ## Install
 
@@ -99,7 +104,7 @@ dvz.run(scene, figure, title="Scatter plot")
 | Native application or C/C++ integration | C scene/app API |
 | Exact low-level C binding access from Python | `datoviz.raw` generated `ctypes` layer |
 | Browser rendering for supported examples | experimental WebGPU/WASM subset |
-| High-level scientific plotting | VisPy2/GSP when that layer is available |
+| High-level scientific plotting | GSP/VisPy2 when that layer is available |
 
 Datoviz v0.4 is the lower-level rendering engine used when you need explicit control over scenes,
 visuals, data uploads, windows, and captures. For high-level plotting functions such as `scatter()`

@@ -10,11 +10,13 @@
 <span>GLFW App</span>
 </nav>
 
-Direct GLFW app path without the scenario runner.
+This example opens a native GLFW window for a small point scene.
 
 ## What To Look For
 
-This page focuses on `app glfw`. Use it when you need to control how Datoviz opens, captures, records, or exports a scene, not only what the scene draws.
+The scene creates one figure, one full-panel view, and one point visual with explicit position, color, and diameter arrays. The live preview should show six differently sized points on the graphite/cyan background, and panzoom interaction should work because the view binds a controller after the GLFW window is created.
+
+Use this as the beginner native-app template when you want Datoviz to own the GLFW lifecycle directly instead of running through the portable scenario runner.
 
 No external data is needed; the example generates its data.
 

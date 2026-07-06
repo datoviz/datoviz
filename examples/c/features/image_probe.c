@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* image_probe - scalar image pixel-query proof with a live probe marker.
+/* image_probe - This example shows probing a scalar image at a marked data position.
  *
  * Scenario: image_probe
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,12 @@
  * Build:  just example-c features/image_probe
  * Run:    ./build/examples/c/features/image_probe --live
  * Smoke:  ./build/examples/c/features/image_probe --png
+ *
+ * What to look for: a synthetic microscopy-like float field is uploaded as an R32 sampled image and
+ * mapped through a scalar color scale. The image visual enables pixel-query capability, and segment
+ * plus point visuals draw a crosshair and dot at the probe location. Move the probe in the live
+ * preview and compare the marker with bright and dim image regions; this is useful for inspecting
+ * raw scalar values behind a heat map or image without changing the displayed field.
  */
 
 

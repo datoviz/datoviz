@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* vector - retained straight and curved vector visual example.
+/* vector - This example compares straight vector arrows with curved vector paths.
+ *
+ * What to look for: the straight field uses position, vector, color, and width arrays, while the
+ * curved traces use sampled positions, colors, widths, and subpaths. Compare the gridded arrows
+ * with the arcing streamlines to see how direction, magnitude, and flow structure can be shown in
+ * fluid, gradient, or displacement data.
  *
  * Scenario: visual.vector
  * Style: visuals, graphite_cyan, 1280x720 window target

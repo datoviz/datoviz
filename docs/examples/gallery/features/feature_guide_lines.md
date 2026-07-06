@@ -10,11 +10,11 @@
 <span>Guide Lines</span>
 </nav>
 
-Horizontal and vertical guide lines in panel data coordinates.
+This example shows movable horizontal and vertical guide lines.
 
 ## What To Look For
 
-This page isolates `guide lines`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+A path visual uploads position, color, and linewidth arrays for a signal, and the panel adds one horizontal and one vertical guide line in data coordinates. Pointer events are converted from screen position to panel data coordinates, then update the guide values. Move the cursor in the live preview and compare the crossing guides with the curve and axis ticks; this is useful for reading approximate x/y values or marking events on a plot.
 
 No external data is needed; the example generates its data.
 

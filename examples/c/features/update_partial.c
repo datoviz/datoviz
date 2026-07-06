@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* update_partial - point visual with one retained data-range update.
+/* update_partial moves only part of a retained point visual's position array.
+ *
+ * What to look for: the visual initially uploads six points with position, color, and diameter_px
+ * arrays. After one second, dvz_visual_set_data_range() replaces only two position items, moving
+ * the middle pair upward while colors and diameters stay unchanged. Partial updates are useful
+ * when a large dataset changes locally and reuploading every item would waste time.
  *
  * Scenario: feature.update_partial
  * Style: features, graphite_cyan, 1280x720 window target

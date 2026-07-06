@@ -20,7 +20,7 @@ Each card links to a detail page with preview media, source code, and example me
 
 `supported` `visuals`<br><span>`point`, `panzoom`, `capture`</span>
 
-Deterministic 2D point visual baseline.
+This example renders a 2D scatter plot with per-point color and diameter.
 
 </div>
 
@@ -32,7 +32,7 @@ Deterministic 2D point visual baseline.
 
 `supported` `visuals`<br><span>`pixel`, `panzoom`, `capture`</span>
 
-Deterministic pixel visual baseline.
+This example renders a regular grid of independent screen-aligned pixels.
 
 </div>
 
@@ -44,7 +44,7 @@ Deterministic pixel visual baseline.
 
 `supported` `visuals`<br><span>`marker`, `panzoom`, `capture`</span>
 
-Marker visual with deterministic symbol, fill, stroke, size, and angle
+This example compares marker symbols, sizes, strokes, fills, and rotations.
 
 </div>
 
@@ -56,7 +56,7 @@ Marker visual with deterministic symbol, fill, stroke, size, and angle
 
 `experimental` `visuals`<br><span>`splat`, `panzoom`, `capture`</span>
 
-Gaussian splat visual with deterministic screen-space ellipses.
+This experimental example renders Gaussian splats as translucent ellipses.
 
 </div>
 
@@ -74,7 +74,7 @@ Gaussian splat visual with deterministic screen-space ellipses.
 
 `supported` `visuals`<br><span>`segment`, `panzoom`, `capture`</span>
 
-Segment visual with independent endpoint-pair strokes and visual-wide cap bands.
+This example draws independent line segments with different cap styles.
 
 </div>
 
@@ -86,7 +86,7 @@ Segment visual with independent endpoint-pair strokes and visual-wide cap bands.
 
 `supported` `visuals`<br><span>`path`, `capture`</span>
 
-Deterministic multi-signal path visual.
+This example draws several continuous signals with one path visual.
 
 </div>
 
@@ -98,7 +98,7 @@ Deterministic multi-signal path visual.
 
 `supported` `visuals`<br><span>`vector`, `path`, `panzoom`, `capture`</span>
 
-Straight and curved vector visual example.
+This example compares straight vector arrows with curved vector paths.
 
 </div>
 
@@ -110,7 +110,7 @@ Straight and curved vector visual example.
 
 `supported` `visuals`<br><span>`primitive`, `capture`</span>
 
-Line and triangle topologies rendered with the primitive visual.
+This example compares basic primitive topologies.
 
 </div>
 
@@ -128,7 +128,7 @@ Line and triangle topologies rendered with the primitive visual.
 
 `supported` `visuals`<br><span>`image`, `sampled-field`, `capture`</span>
 
-Deterministic scalar sampled field rendered with the image visual.
+This example displays a generated scalar field as a 2D image.
 
 </div>
 
@@ -140,7 +140,7 @@ Deterministic scalar sampled field rendered with the image visual.
 
 `supported` `visuals`<br><span>`text`, `capture`</span>
 
-Semantic text objects lowered to glyph visuals.
+This example places semantic text items in panel coordinates.
 
 </div>
 
@@ -152,7 +152,7 @@ Semantic text objects lowered to glyph visuals.
 
 `experimental` `visuals`<br><span>`glyph`, `font-atlas`, `texture-atlas`, `sdf`, `capture`</span>
 
-Low-level font atlas glyph quads, distinct from semantic text.
+This example renders text by submitting low-level glyph atlas quads directly.
 
 </div>
 
@@ -164,7 +164,7 @@ Low-level font atlas glyph quads, distinct from semantic text.
 
 `supported` `visuals`<br><span>`labels`, `categorical-scale`, `panzoom`, `capture`</span>
 
-Labels visual with a small deterministic integer sampled field.
+This example turns an integer sampled field into categorical image labels.
 
 </div>
 
@@ -182,7 +182,7 @@ Labels visual with a small deterministic integer sampled field.
 
 `supported` `visuals`<br><span>`mesh`, `indexed-geometry`, `arcball`, `capture`</span>
 
-Lit indexed cube mesh.
+This example renders a lit indexed cube mesh in a 3D scene.
 
 </div>
 
@@ -194,7 +194,7 @@ Lit indexed cube mesh.
 
 `supported` `visuals`<br><span>`sphere`, `arcball`, `capture`</span>
 
-Deterministic 3D impostor-sphere cluster with depth, radius, and color variation.
+This example displays a 3D cluster of raycast impostor spheres.
 
 </div>
 
@@ -206,7 +206,7 @@ Deterministic 3D impostor-sphere cluster with depth, radius, and color variation
 
 `supported` `visuals`<br><span>`sampled-field`, `volume`, `transfer-function`, `boundary-box`, `arcball`, ...</span>
 
-Deterministic gyroid scalar field rendered with the volume visual.
+This example volume-renders a generated 3D gyroid scalar field.
 
 </div>
 
@@ -224,7 +224,7 @@ Deterministic gyroid scalar field rendered with the volume visual.
 
 `supported` `composites`<br><span>`composite`, `polygon`, `polygon-set`, `holes`, `panzoom`</span>
 
-Clean semantic polygon and polygon-set composites.
+This example compares one holed polygon with a multi-region polygon set.
 
 </div>
 
@@ -236,7 +236,7 @@ Clean semantic polygon and polygon-set composites.
 
 `supported` `composites`<br><span>`composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom`</span>
 
-Deterministic brain-connectivity graph composite.
+This example builds a small brain-connectivity graph composite.
 
 </div>
 

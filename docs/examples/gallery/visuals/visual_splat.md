@@ -10,11 +10,11 @@
 <span>Splat</span>
 </nav>
 
-Gaussian splat visual with deterministic screen-space ellipses.
+This experimental example renders Gaussian splats as translucent ellipses.
 
 ## What To Look For
 
-This page isolates the Splat visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
+Positions place each splat, colors set the tint, sigma gives the two screen-space ellipse radii, and angles rotate the ellipses. Compare overlapping areas and the soft footprint shape to see how uncertain samples, local point spread, or projected density can be shown without drawing hard-edged markers.
 
 Useful tags for this example: `splat`, `panzoom`, `capture`.
 

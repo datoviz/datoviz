@@ -3,6 +3,11 @@
 Datoviz is a GPU-powered visualization engine for scientific data. It helps you build fast,
 interactive 2D and 3D views when ordinary plotting tools become too slow or too limited.
 
+Datoviz v0.4 is the lower-level rendering engine in the broader GSP/VisPy2 direction. GSP/VisPy2 is
+the intended high-level plotting layer, but it is still work in progress. In the meantime, Python
+users can use Datoviz directly through the documented `ctypes` API: `import datoviz as dvz` for
+supported NumPy array uploads, or `datoviz.raw` when exact generated signatures are needed.
+
 Use Datoviz when you want to explore many points, images, meshes, volumes, annotations, or custom
 scientific scenes, either on the desktop with Vulkan, using C or Python bindings, or in the browser
 with experimental WebGPU support.
@@ -28,6 +33,10 @@ with experimental WebGPU support.
 <a class="dvz-nav-card" href="how-to/create-a-scene/">
 <strong>How-To Guides</strong>
 <span>Learn focused tasks such as adding axes, colorbars, interaction, and offscreen output.</span>
+</a>
+<a class="dvz-nav-card" href="ai-agents/">
+<strong>AI Agents</strong>
+<span>Give coding assistants the right Datoviz entry point and API-checking workflow.</span>
 </a>
 <a class="dvz-nav-card" href="reference/">
 <strong>Reference</strong>

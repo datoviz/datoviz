@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* axes_2d - deterministic path with retained 2D axes and tick labels.
+/* axes_2d - This example shows a 2D data path with retained axes, ticks, and grid lines.
  *
  * Scenario: path_axes_2d
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,12 @@
  * Build:  just example-c features/axes_2d
  * Run:    ./build/examples/c/features/axes_2d --live
  * Smoke:  ./build/examples/c/features/axes_2d --png
+ *
+ * What to look for: the path visual receives arrays for data-space position, color, and
+ * linewidth, then the panel domains map x from 0 to 10 and y from -2 to 2. The x and y axes add
+ * grid lines and labels ("time (s)" and "signal"). Compare the curve against the tick marks and
+ * grid spacing; the example shows how data coordinates, styled axes, and a retained line visual
+ * combine into a basic quantitative plot.
  */
 
 

@@ -4,13 +4,19 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* gui_cimgui - raw cimgui calls inside a Datoviz GUI callback.
+/* gui_cimgui - This example shows raw cimgui widgets controlling a Datoviz visual.
  *
  * Scenario: feature.gui_cimgui
  * Style: features, native GUI/app
  *
  * Build:  just example-c features/gui_cimgui
  * Run:    ./build/examples/c/features/gui_cimgui
+ *
+ * What to look for: four point positions and colors are uploaded once, while the GUI slider
+ * rewrites the diameter_px attribute for all points. The raw cimgui window also displays a small
+ * status table and can open the Dear ImGui demo. Move the diameter slider and compare the live
+ * marker sizes with the unchanged positions and colors; this demonstrates how advanced users can
+ * mix direct imgui calls with retained Datoviz data updates.
  */
 
 

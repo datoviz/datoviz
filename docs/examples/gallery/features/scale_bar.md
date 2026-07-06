@@ -10,11 +10,11 @@
 <span>Scale Bar</span>
 </nav>
 
-Minimal scale bar attached to one 2D panel.
+Scalebar attaches a metric length scale bar to a 2D panel.
 
 ## What To Look For
 
-This page isolates `scale bar`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+Five data-space points mark a simple ruler from 0 to 8 along X, while the scale bar is anchored near the bottom-left of the panel and uses built-in metric length units. Pan or zoom the live view and compare the bar label and tick length with the point spacing. A scale bar gives readers physical context without requiring full axes.
 
 No external data is needed; the example generates its data.
 

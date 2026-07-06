@@ -20,7 +20,7 @@ _Screenshot not required for this example._
 
 `supported` `runtime`
 
-Direct GLFW app path without the scenario runner.
+This example opens a native GLFW window for a small point scene.
 
 </div>
 
@@ -32,7 +32,7 @@ _Screenshot not required for this example._
 
 `supported` `runtime`
 
-One app driving two native GLFW windows.
+This example drives two independent native GLFW windows from one Datoviz app.
 
 </div>
 
@@ -50,7 +50,7 @@ One app driving two native GLFW windows.
 
 `supported` `runtime`
 
-Render an exact-pixel offscreen view once and write a PNG.
+This example renders a point scene offscreen and writes one PNG.
 
 </div>
 
@@ -62,7 +62,7 @@ _Screenshot not required for this example._
 
 `experimental` `runtime`<br><span>`app-capture`, `video`, `animation`</span>
 
-Write a bounded offscreen animation with the app capture API.
+This example records a bounded offscreen point animation to video.
 
 </div>
 
@@ -80,7 +80,7 @@ _Screenshot not required for this example._
 
 `experimental` `runtime`
 
-Record an offscreen app view and replay it into a second offscreen view.
+This example records an offscreen frame to DVZR and replays it into a new view.
 
 </div>
 

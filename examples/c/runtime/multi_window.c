@@ -4,7 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* multi_window - one app driving two native GLFW windows.
+/* multi_window - This example drives two independent native GLFW windows from one Datoviz app.
+ *
+ * What to look for: the overview and detail figures each get their own point-position,
+ * point-color, and point-diameter arrays, then the same app presents them in two positioned
+ * windows. Compare the two live windows rather than one screenshot: they prove that separate
+ * figures and views can share a process while keeping their own scene content.
+ *
+ * This workflow is useful for scientific tools that need a coarse overview beside a focused
+ * detail view without starting a second renderer.
  *
  * Scenario: feature.multi_window
  * Style: runtime, native app, multi-window

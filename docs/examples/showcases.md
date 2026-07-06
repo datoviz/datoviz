@@ -20,7 +20,7 @@ Each card links to a detail page with preview media, source code, and example me
 
 `prototype` `showcases`<br><span>`scientific`, `real-data`, `volume`, `volume-slice`, `volume-occlusion`, ...</span>
 
-Local Allen mouse brain RGBA volume and occluded slice.
+This example renders a prepared Allen mouse brain volume with a visible slice.
 
 </div>
 
@@ -32,7 +32,7 @@ Local Allen mouse brain RGBA volume and occluded slice.
 
 `experimental` `showcases`<br><span>`compute`, `simulation`, `particles`, `point`, `alpha-blending`, ...</span>
 
-Scene API compute-to-graphics particle smoke showcase.
+This example uses scene compute buffers to animate particle smoke.
 
 </div>
 
@@ -44,7 +44,7 @@ _Screenshot not required for this example._
 
 `supported` `showcases`<br><span>`workflow`, `linked-panels`, `axes`, `panzoom`, `synthetic`</span>
 
-Linked temporal panels with a spanning summary panel.
+This example builds linked time-series panels with shared axes behavior.
 
 </div>
 
@@ -56,7 +56,7 @@ Linked temporal panels with a spanning summary panel.
 
 `supported` `showcases`<br><span>`workflow`, `image`, `sampled-field`, `pixel-query`, `linked-panzoom`, ...</span>
 
-Linked image panels with one probe readout and shared colorbar.
+This example links two image panels with a probe readout and colorbar.
 
 </div>
 
@@ -68,7 +68,7 @@ Linked image panels with one probe readout and shared colorbar.
 
 `supported` `showcases`<br><span>`real-data`, `pixel`, `dense-point-cloud`, `direct-color`, `eye-dome-lighting`, ...</span>
 
-RESEPI RGB LiDAR dense point cloud.
+This example renders a prepared RGB LiDAR point cloud with direct colors.
 
 </div>
 
@@ -80,7 +80,7 @@ RESEPI RGB LiDAR dense point cloud.
 
 `supported` `showcases`<br><span>`scientific`, `real-data`, `molecular`, `sphere`, `arcball`</span>
 
-RCSB PDB protein structure rendered as clustered spheres.
+This example renders a prepared PDB structure as colored sphere impostors.
 
 </div>
 
@@ -92,7 +92,7 @@ RCSB PDB protein structure rendered as clustered spheres.
 
 `supported` `showcases`<br><span>`workflow`, `scale-bar`, `measurement`, `synthetic`</span>
 
-Scale-aware overview, detail, and 3D measurement workflow.
+This example compares scale bars across overview, detail, and 3D views.
 
 </div>
 
@@ -104,7 +104,7 @@ Scale-aware overview, detail, and 3D measurement workflow.
 
 `supported` `showcases`<br><span>`workflow`, `scientific`, `histogram`, `guide-lines`, `guide-spans`, ...</span>
 
-Histogram, guide annotations, stacked traces, and error bands.
+This example composes common scientific plot elements in one figure.
 
 </div>
 
@@ -116,7 +116,7 @@ Histogram, guide annotations, stacked traces, and error bands.
 
 `supported` `showcases`<br><span>`scientific`, `synthetic`, `surface-grid`, `mesh`, `wireframe`, ...</span>
 
-Generated height-field mesh with a derived wireframe overlay.
+This example turns a generated height field into a lit mesh and wireframe.
 
 </div>
 
@@ -128,7 +128,7 @@ Generated height-field mesh with a derived wireframe overlay.
 
 `supported` `showcases`<br><span>`real-data`, `mesh`, `sampled-field`, `texture`, `arcball`, ...</span>
 
-UV textured planet mesh via dvz_mesh + sampled fields.
+This example maps real planetary textures onto an indexed sphere mesh.
 
 </div>
 
@@ -140,7 +140,7 @@ UV textured planet mesh via dvz_mesh + sampled fields.
 
 `supported` `showcases`<br><span>`scientific`, `real-data`, `geo`, `composite`, `polygon-set`, ...</span>
 
-Contiguous U.S. state population-density choropleth.
+This example renders contiguous U.S. population density as polygon-set data.
 
 </div>
 
@@ -152,7 +152,7 @@ Contiguous U.S. state population-density choropleth.
 
 `supported` `showcases`<br><span>`scientific`, `synthetic`, `scalar-field`, `vector-field`, `wind-field`, ...</span>
 
-Synthetic weather-like scalar and vector field showcase.
+This example combines a synthetic wind-speed field with vectors and streamlines.
 
 </div>
 

@@ -4,7 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* embedding_atlas - interactive prepared AI embedding atlas.
+/* embedding_atlas - This example explores a prepared two-dimensional embedding atlas.
+ *
+ * What to look for: the prepared cache provides XY coordinates, cluster ids, point colors, and
+ * diameters for up to 200000 points. Hover and selection queries drive the overlay readout, so the
+ * live preview should make clusters visible as colored point neighborhoods rather than as a static
+ * scatter image.
+ *
+ * This workflow is useful for inspecting generated embeddings or dimensionality-reduction outputs.
+ * There is no runtime fallback; generate the prepared cache before running the example.
  *
  * Scenario: showcase_embedding_atlas
  * Style: showcase, graphite_cyan, 1280x720 window target

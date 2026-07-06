@@ -10,11 +10,11 @@
 <span>Depth Cue</span>
 </nav>
 
-Depth-dependent fading applied to a regular 3D sphere lattice.
+Depth_cue compares a plain 3D sphere lattice with depth-dependent fading.
 
 ## What To Look For
 
-This page isolates `depth cue`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+Both panels upload the same 3x3x3 sphere position, color, and radius arrays, but only the right panel applies a depth-cue descriptor to the visual. In live mode, use the GUI to change cue mode, depth metric, falloff, near/far depth, strength, density, and background color while the linked arcball keeps both views aligned. Depth cueing helps dense 3D plots read as depth instead of a flat pile of symbols.
 
 No external data is needed; the example generates its data.
 

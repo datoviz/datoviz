@@ -10,11 +10,11 @@
 <span>Partial Data Update</span>
 </nav>
 
-Point visual with one data-range update.
+Update_partial moves only part of a point visual's position array.
 
 ## What To Look For
 
-This page isolates `update partial`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The visual initially uploads six points with position, color, and diameter_px arrays. After one second, dvz_visual_set_data_range() replaces only two position items, moving the middle pair upward while colors and diameters stay unchanged. Partial updates are useful when a large dataset changes locally and reuploading every item would waste time.
 
 No external data is needed; the example generates its data.
 

@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* mesh - retained lit indexed cube mesh.
+/* mesh - This example renders a lit indexed cube mesh in a 3D scene.
+ *
+ * What to look for: the cube geometry supplies vertices, indices, normals, and per-face colors to
+ * the mesh visual through dvz_mesh_set_geometry(). Rotate the live view or compare the screenshot
+ * faces to see how indexed geometry, lighting normals, and an arcball camera make a compact 3D
+ * object readable.
  *
  * Scenario: visual.mesh
  * Style: visuals, graphite_cyan, 1280x720 window target

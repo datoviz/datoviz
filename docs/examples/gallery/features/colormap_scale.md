@@ -10,11 +10,11 @@
 <span>Scalar Color Scale</span>
 </nav>
 
-Point visual with scalar float colors and one color scale.
+This example shows scalar point values mapped through a custom colormap.
 
 ## What To Look For
 
-This page isolates `colormap scale`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+Five point positions are paired with a float color-value array instead of precomputed RGBA colors. The point visual marks its color attribute as scalar F32, binds it to a continuous scale with a custom colormap, and uploads diameter_px separately. Compare the marker colors from low to high values; scalar scales keep data values separate from display colors, which is useful when the same measurement should drive a visual encoding and a legend.
 
 No external data is needed; the example generates its data.
 

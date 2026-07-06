@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* visibility - retained visual visibility toggled by a scene timer.
+/* visibility toggles one retained visual on and off without changing its data arrays.
+ *
+ * What to look for: three separate point visuals are created so the middle red point can use
+ * dvz_visual_set_visible() independently from the always-visible side points. A scene timer flips
+ * that visual every 0.25 seconds. In the recorded or live preview, compare the stable side points
+ * with the blinking center point; visual-level visibility is useful for layers, quality-control
+ * overlays, and temporarily hiding derived results.
  *
  * Scenario: feature.visibility
  * Style: features, graphite_cyan, 1280x720 window target

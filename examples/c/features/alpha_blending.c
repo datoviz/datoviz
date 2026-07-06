@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* alpha_blending - retained primitive visual using per-vertex alpha and source-over blending.
+/* alpha_blending - This example shows translucent triangles composited in draw order.
  *
  * Scenario: feature.alpha_blending
  * Style: features, graphite_cyan, 1280x720 window target
@@ -13,8 +13,11 @@
  * Run:    ./build/examples/c/features/alpha_blending --live
  * Smoke:  ./build/examples/c/features/alpha_blending --png
  *
- * The primitive visual uses RGBA vertex colors and DVZ_ALPHA_BLENDED so triangle overlaps mix with
- * the graphite-cyan panel background and with each other.
+ * What to look for: three triangle groups share one primitive visual, with position and normal
+ * arrays defining the geometry and RGBA vertex colors defining both hue and alpha. Compare the
+ * overlap regions with the non-overlapping corners: DVZ_ALPHA_BLENDED lets the colors mix with
+ * each other and with the panel background, which is useful when scientific overlays, confidence
+ * regions, or segmented masks need to remain readable above other data.
  */
 
 

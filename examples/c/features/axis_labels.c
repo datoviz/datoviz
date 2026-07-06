@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* axis_labels - retained axis titles and tick-label placement with plot margins.
+/* axis_labels - This example shows axis titles and tick-label layout around a plotting panel.
  *
  * Scenario: feature.axis_labels
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,12 @@
  * Build:  just example-c features/axis_labels
  * Run:    ./build/examples/c/features/axis_labels --live
  * Smoke:  ./build/examples/c/features/axis_labels --png
+ *
+ * What to look for: the panel has explicit x and y domains, matching tick policies, grid lines,
+ * and labels for "sample offset (ms)" and "normalized response". The example is intentionally
+ * sparse so the screenshot highlights margins, label offsets, and tick-label readability. This is
+ * useful when preparing plots where the axes carry units and must leave enough room for readable
+ * scientific labels.
  */
 
 

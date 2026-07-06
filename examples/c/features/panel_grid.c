@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* panel_grid - four grid-owned panels with clipped panel-local content.
+/* panel_grid arranges four independent panels in a 2x2 figure grid.
+ *
+ * What to look for: each panel has its own border, background, and small point visual with
+ * position, color, and diameter_px arrays. The same point pattern is repeated with a different
+ * accent color in each grid cell, so compare how gutters, margins, and panel-local clipping keep
+ * the plots separated. Grid panels are useful for small multiples and side-by-side scientific
+ * comparisons.
  *
  * Scenario: feature.panel_grid
  * Style: features, graphite_cyan, 1280x720 window target

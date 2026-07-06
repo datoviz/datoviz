@@ -10,11 +10,11 @@
 <span>Vector</span>
 </nav>
 
-Straight and curved vector visual example.
+This example compares straight vector arrows with curved vector paths.
 
 ## What To Look For
 
-This page isolates the Vector visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
+The straight field uses position, vector, color, and width arrays, while the curved traces use sampled positions, colors, widths, and subpaths. Compare the gridded arrows with the arcing streamlines to see how direction, magnitude, and flow structure can be shown in fluid, gradient, or displacement data.
 
 Useful tags for this example: `vector`, `path`, `panzoom`, `capture`.
 

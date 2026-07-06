@@ -10,11 +10,13 @@
 <span>Linked Panels With Axes</span>
 </nav>
 
-Linked temporal panels with a spanning summary panel.
+This example builds linked time-series panels with shared axes behavior.
 
 ## What To Look For
 
-This showcase shows a composed Linked Panels With Axes scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
+The left column combines a synthetic signal trace, an event-raster panel, and residual points, while the right panel summarizes the same time range. The important arrays are the path samples, event segments, residual points, shaded bands, and cursor lines; compare the panels to see that they use different y domains while their x navigation remains linked.
+
+This workflow is useful for scientific dashboards where traces, events, and summary statistics must stay aligned during panzoom interaction.
 
 Useful tags for this example: `workflow`, `linked-panels`, `axes`, `panzoom`.
 

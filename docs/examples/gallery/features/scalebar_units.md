@@ -10,11 +10,11 @@
 <span>Scale Bar Units</span>
 </nav>
 
-Scale bar with a custom time-unit string.
+Scalebar_units uses duration units for a scale bar on a time-series panel.
 
 ## What To Look For
 
-This page isolates `scalebar units`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The path visual uploads 96 time samples whose X positions span 0 to 250 and whose Y positions form a waveform. The scale bar uses the built-in duration unit ladder, and the panzoom controller keeps Y fixed so horizontal navigation changes the visible time span. This is useful for signal, electrophysiology, or video-aligned plots where the reader needs a time interval cue rather than a distance cue.
 
 No external data is needed; the example generates its data.
 

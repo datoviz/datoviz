@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* text_block - compact retained text block with stable screen placement.
+/* text_block renders a retained multiline text object at a stable screen position.
+ *
+ * What to look for: the text object keeps style, layout, placement, and the whole paragraph string
+ * together. The example uses an MSDF atlas renderer, explicit text size, line height, line gap,
+ * and a top-left screen placement inside the panel. Text blocks are useful for annotations,
+ * compact notes, and status messages that should remain legible independent of data coordinates.
  *
  * Scenario: feature.text_block
  * Style: features, graphite_cyan, 1280x720 window target

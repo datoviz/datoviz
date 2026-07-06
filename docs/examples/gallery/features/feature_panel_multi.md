@@ -10,11 +10,11 @@
 <span>Multiple Panels</span>
 </nav>
 
-Multiple independent panels with panel-local panzoom controllers.
+Panel_multi shows two panels with independent data, domains, and panzoom state.
 
 ## What To Look For
 
-This page isolates `multi panel`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The left panel uploads a point ring with position, color, and diameter_px arrays, while the right panel uploads a stroked path with position, color, and stroke_width_px arrays. Each panel has its own controller and initial pan/zoom, so interact with one panel and confirm the other does not move. Independent panels are useful when different measurements share a figure but not a coordinate frame.
 
 No external data is needed; the example generates its data.
 

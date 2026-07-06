@@ -10,11 +10,11 @@
 <span>Categorical Legend</span>
 </nav>
 
-Tentative categorical legend proof.
+Legend_categorical shows how one categorical scale drives both marker colors and a legend.
 
 ## What To Look For
 
-This page isolates `legend categorical`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+Five category IDs are assigned labels, colors, and marker shapes, then the marker visual uploads matching position, color, diameter_px, angle, and shape arrays. Compare the marker cloud with the right-side legend entries: the legend is useful because it explains categorical groups without requiring readers to decode colors or shapes from the data alone.
 
 Useful tags for this example: `categorical-scale`, `legend`, `marker`, `capture`.
 

@@ -4,7 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* offscreen_capture - render an exact-pixel offscreen view once and write a PNG.
+/* offscreen_capture - This example renders a retained point scene offscreen and writes one PNG.
+ *
+ * What to look for: four point positions, colors, and pixel diameters are uploaded once, then an
+ * offscreen view is created at the requested 1920x1080 output size. The code checks the framebuffer
+ * dimensions before calling render-once and PNG capture, so the saved image should match the
+ * requested pixel size exactly.
+ *
+ * This is the runtime path to copy for reproducible batch figures, tests, and documentation
+ * captures that should not depend on an onscreen window.
  *
  * Scenario: feature.offscreen_capture
  * Style: runtime, graphite_cyan, 1920x1080 output target

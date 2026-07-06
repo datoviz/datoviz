@@ -10,11 +10,11 @@
 <span>Screen-Space Ambient Occlusion</span>
 </nav>
 
-Screen-space ambient occlusion on normal-producing mesh geometry.
+Ssao compares a sphere cluster with and without screen-space ambient occlusion.
 
 ## What To Look For
 
-This page isolates `ssao`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+Both panels upload the same lit sphere position, radius, and color arrays, while the right panel applies SSAO with blur and tunable radius, strength, bias, power, visibility, sample count, and debug settings. In live mode, use the GUI and linked arcball to inspect contact shadows between nearby spheres. SSAO helps reveal local shape and separation in crowded 3D scientific scenes.
 
 No external data is needed; the example generates its data.
 

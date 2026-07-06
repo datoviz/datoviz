@@ -4,7 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* surface_grid - generated height-field mesh with a derived wireframe overlay.
+/* surface_grid - This example turns a generated height field into a lit mesh and wireframe.
+ *
+ * What to look for: SURFACE_ROWS by SURFACE_COLS height and color arrays are converted to
+ * geometry, rendered as a material mesh, and reused to derive unique edges for the segment
+ * wireframe. In the preview, compare the smooth shaded surface with the overlaid grid lines while
+ * rotating the arcball camera.
+ *
+ * This workflow is useful for scientific surfaces where the same gridded data should support both
+ * shape perception and explicit mesh topology.
  *
  * Scenario: showcase_surface_grid
  * Style: showcase, graphite_cyan, 1280x720 window target

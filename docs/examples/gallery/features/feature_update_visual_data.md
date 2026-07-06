@@ -10,11 +10,11 @@
 <span>Visual Data Update</span>
 </nav>
 
-Point visual with full data replacement.
+Update_visual_data replaces all arrays on one point visual.
 
 ## What To Look For
 
-This page isolates `update visual data`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The initial upload draws seven small gray points in a line. After one second, the example replaces the full position, color, and diameter_px arrays with a colored arc of larger points. This shows the simple full-data update path, which is useful when the whole dataset changes but the same visual, panel attachment, and style should remain in place.
 
 No external data is needed; the example generates its data.
 

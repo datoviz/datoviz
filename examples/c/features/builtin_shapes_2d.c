@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* builtin_shapes_2d - builtin 2D geometry builders rendered through retained meshes.
+/* builtin_shapes_2d - This example shows built-in 2D geometry rendered as retained meshes.
  *
  * Scenario: feature_builtin_shapes_2d
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,12 @@
  * Build:  just example-c features/builtin_shapes_2d
  * Run:    ./build/examples/c/features/builtin_shapes_2d --live
  * Smoke:  ./build/examples/c/features/builtin_shapes_2d --png
+ *
+ * What to look for: the panel uses equal-aspect data coordinates, then uploads generated geometry
+ * for a plane, disc, sector, regular polygon, star, and a triangulated polygon with a hole. Each
+ * shape becomes a mesh visual attached in data space. In the live preview, pan and zoom while
+ * checking that circles stay round and the polygon hole remains open. These builders are useful
+ * for annotations, regions of interest, and custom 2D glyphs without hand-writing triangles.
  */
 
 

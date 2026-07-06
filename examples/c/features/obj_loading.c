@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* obj_loading - Wavefront OBJ mesh loading through geom/fileio helpers.
+/* obj_loading loads a Wavefront OBJ fixture and displays it as a retained mesh.
+ *
+ * What to look for: the example writes a compact OBJ file, loads it through dvz_geometry_obj(),
+ * assigns one mesh color, then uploads the geometry into a lit mesh visual. In the live preview,
+ * rotate the low-poly object with the arcball controller and compare its faceted silhouette with
+ * the source fixture's vertices and faces. OBJ loading is useful when scientific geometry comes
+ * from external meshing or modeling tools.
  *
  * Scenario: feature_obj_loading
  * Style: features, graphite_cyan, 1280x720 window target

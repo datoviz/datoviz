@@ -4,7 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* synthetic_mouse - animated textured mouse mesh with trajectory and skeleton trails.
+/* synthetic_mouse - This example animates a prepared textured mouse mesh with motion overlays.
+ *
+ * What to look for: the prepared binary contains mesh vertices, indices, texture pixels, per-frame
+ * keypoints, skeleton edges, and trajectory data. During playback, compare the textured body with
+ * the skeleton segments, fading skeleton trail, and trajectory path to understand how mesh and
+ * line/point overlays can share one time base.
+ *
+ * This workflow is useful for validating animal-pose or motion-capture visualizations after data
+ * has been converted into a compact prepared bundle.
  *
  * Scenario: showcase_synthetic_mouse
  * Style: showcase, graphite_cyan, 1280x720 window target

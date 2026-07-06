@@ -10,11 +10,11 @@
 <span>Bezier Curve Path</span>
 </nav>
 
-Tessellated cubic Bezier curve rendered as a path.
+This example shows a cubic Bezier curve tessellated into a path.
 
 ## What To Look For
 
-This page isolates `bezier curve path`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+Four control points define the curve. The tessellated path uploads position, color, and linewidth arrays, while faint segment guides connect the control polygon and markers show the endpoints and handles. Compare the smooth rendered curve with the straight guide segments; this is useful for drawing fitted trajectories, contours, or model curves while still exposing the control data that shaped them.
 
 No external data is needed; the example generates its data.
 

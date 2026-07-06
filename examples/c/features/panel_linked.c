@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* panel_linked - two panels linked on X panzoom extent with independent Y panzoom state.
+/* panel_linked links the X panzoom extent of two stacked signal panels.
+ *
+ * What to look for: both panels plot deterministic path data over the same X domain but use
+ * different Y domains and independent Y panzoom controllers. In the live preview, pan or zoom
+ * horizontally in either panel and the other follows; vertical zoom remains separate. This is
+ * useful for comparing related time series or spectra that share one coordinate axis but require
+ * different amplitude scales.
  *
  * Scenario: feature.panel_linked
  * Style: features, graphite_cyan, 1280x720 window target

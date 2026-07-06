@@ -10,11 +10,11 @@
 <span>Label Probe</span>
 </nav>
 
-Categorical labels query proof with deterministic label-id readout.
+Probe_labels queries categorical label IDs from a generated label image.
 
 ## What To Look For
 
-This page isolates `probe labels`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+A 256x192 R32_SINT sampled field stores category IDs for cortex, fiber, nucleus, vessel, and island regions, and a categorical scale maps those IDs to colors and labels. Move the live probe marker across the panel; the frame callback queries the label visual and prints the current label ID, name, and data position. This is useful for segmentation maps, classified microscopy images, and other categorical rasters where users need values under the cursor.
 
 No external data is needed; the example generates its data.
 

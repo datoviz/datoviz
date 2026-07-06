@@ -10,11 +10,11 @@
 <span>Guide Spans</span>
 </nav>
 
-Horizontal and vertical guide spans in panel data coordinates.
+This example shows movable guide spans for highlighting data ranges.
 
 ## What To Look For
 
-This page isolates `guide spans`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The point visual uploads position, color, and diameter_px arrays, while the panel adds vertical and horizontal spans in data coordinates. Pointer events update each span's range around the current cursor data position. In the live preview, compare the shaded spans with nearby markers and ticks; spans are useful for highlighting windows of time, thresholds, or regions selected for closer analysis.
 
 No external data is needed; the example generates its data.
 

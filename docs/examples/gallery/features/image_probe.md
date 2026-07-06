@@ -10,11 +10,11 @@
 <span>Image Probe</span>
 </nav>
 
-Scalar image pixel-query proof with a live probe marker.
+This example shows probing a scalar image at a marked data position.
 
 ## What To Look For
 
-This page isolates `image probe`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+A synthetic microscopy-like float field is uploaded as an R32 sampled image and mapped through a scalar color scale. The image visual enables pixel-query capability, and segment plus point visuals draw a crosshair and dot at the probe location. Move the probe in the live preview and compare the marker with bright and dim image regions; this is useful for inspecting raw scalar values behind a heat map or image without changing the displayed field.
 
 No external data is needed; the example generates its data.
 

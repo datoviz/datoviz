@@ -10,11 +10,11 @@
 <span>Axis Labels</span>
 </nav>
 
-Axis titles and tick-label placement with plot margins.
+This example shows axis titles and tick-label layout around a plotting panel.
 
 ## What To Look For
 
-This page isolates `axis labels`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The panel has explicit x and y domains, matching tick policies, grid lines, and labels for "sample offset (ms)" and "normalized response". The example is intentionally sparse so the screenshot highlights margins, label offsets, and tick-label readability. This is useful when preparing plots where the axes carry units and must leave enough room for readable scientific labels.
 
 No external data is needed; the example generates its data.
 

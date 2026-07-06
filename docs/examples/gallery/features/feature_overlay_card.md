@@ -10,11 +10,11 @@
 <span>Overlay Card</span>
 </nav>
 
-Screen-space data readout over a simple panel visual.
+Overlay_card places a screen-space readout card above a simple data trace.
 
 ## What To Look For
 
-This page isolates `overlay card`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The background path uploads position, color, and stroke_width_px arrays in view coordinates, and a highlighted point marks the sample being described. The overlay card is anchored to the panel's top-right corner with explicit padding, width, text size, and text renderer. This pattern is useful for lightweight status readouts that should stay readable while the underlying data view changes.
 
 No external data is needed; the example generates its data.
 

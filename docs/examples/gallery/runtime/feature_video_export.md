@@ -10,11 +10,13 @@
 <span>Video Export</span>
 </nav>
 
-Write a bounded offscreen animation with the app capture API.
+This example records a bounded offscreen point animation to video.
 
 ## What To Look For
 
-This page focuses on `video export`. Use it when you need to control how Datoviz opens, captures, records, or exports a scene, not only what the scene draws.
+A row of tick points stays fixed while one larger point moves through a sinusoidal path; each frame updates the position, color, and diameter arrays before rendering. The default path writes video_export.mp4 through the app capture API, while --png renders a single smoke frame for quick validation.
+
+This runtime workflow is useful for scientific animations where the scene data is updated in a deterministic loop and the output location can be controlled with DVZ_CAPTURE_DIR and DVZ_CAPTURE_BASENAME.
 
 Useful tags for this example: `app-capture`, `video`, `animation`.
 

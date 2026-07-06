@@ -10,11 +10,11 @@
 <span>Builtin Shapes 3D</span>
 </nav>
 
-Builtin 3D geometry builders rendered through meshes.
+This example shows built-in 3D geometry rendered as lit meshes.
 
 ## What To Look For
 
-This page isolates `builtin shapes 3d`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The scene uses geometry builders for common solids such as a cube, sphere, cylinder, cone, capsule, and arrow-like shapes, then uploads each result to a mesh with a Phong material. Some Z-axis builders are transformed so their local axis follows scene +Y. Compare the lighting, normals, and orientation of each shape; these primitives are useful for reference objects, probes, direction markers, and simple 3D scientific diagrams.
 
 No external data is needed; the example generates its data.
 

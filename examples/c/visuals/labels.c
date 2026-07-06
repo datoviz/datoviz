@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* labels - retained labels visual with a small deterministic integer sampled field.
+/* labels - This example turns an integer sampled field into categorical image labels.
+ *
+ * What to look for: the labels array stores category IDs, and the category scale assigns each ID a
+ * name and color. The visual also uses position and texcoord corners, opacity, and a boundary
+ * setting; compare adjacent regions to see how segmented scientific data can be reviewed without
+ * losing the discrete class boundaries.
  *
  * Scenario: visual.labels
  * Style: visuals, graphite_cyan, 1280x720 window target

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* animation_tracks - retained track-backed visual transform animation.
+/* animation_tracks - This example shows scene animation tracks driving a cube and camera.
  *
  * Scenario: feature.animation_tracks
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,13 @@
  * Build:  just example-c features/animation_tracks
  * Run:    ./build/examples/c/features/animation_tracks --live
  * Smoke:  ./build/examples/c/features/animation_tracks --png
+ *
+ * What to look for: the cube keeps its mesh geometry and material, while a rotation track updates
+ * its visual transform every frame. A closed Catmull-Rom keyframe track moves the camera eye
+ * around the cube and a constant track keeps the target at the origin. In the live preview, compare
+ * the cube's local spin with the slower camera flyover; user interaction pauses the camera motion
+ * so the object can still be inspected. Tracks are useful for repeatable animations, scripted
+ * camera paths, and deterministic movie captures.
  */
 
 

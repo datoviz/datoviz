@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* datetime_axis - compact data coordinates with retained UTC datetime labels.
+/* datetime_axis - This example shows UTC datetime labels on a numeric data axis.
  *
  * Scenario: datetime_axis
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,12 @@
  * Build:  just example-c features/datetime_axis
  * Run:    ./build/examples/c/features/datetime_axis --live
  * Smoke:  ./build/examples/c/features/datetime_axis --png
+ *
+ * What to look for: the path visual uploads position, color, and linewidth arrays in compact
+ * numeric coordinates from 0 to 8. The x axis is then configured with datetime metadata and a UTC
+ * range, so the tick labels display times while the visual data stays simple. Compare the curve's
+ * x positions with the formatted time labels; this is useful for time-series data where rendering
+ * should remain numeric but the plot must communicate real dates or times.
  */
 
 

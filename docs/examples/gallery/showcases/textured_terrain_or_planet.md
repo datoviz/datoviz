@@ -10,11 +10,15 @@
 <span>Textured Planets</span>
 </nav>
 
-UV textured planet mesh via dvz_mesh + sampled fields.
+This example maps real planetary textures onto an indexed sphere mesh.
 
 ## What To Look For
 
-This showcase shows a composed Textured Planets scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
+Dvz_geometry_sphere() creates positions, normals, UVs, and indices; the mesh visual receives that geometry plus an RGBA8 sampled field bound to the mesh texture slot. Compare the lit Earth or Mars sphere with the faint star shell and turntable/arcball interaction to see how texture, material, and camera controls work together.
+
+The example uses real texture files from the data submodule when available. Earth has a generated fallback for local development; Mars requires its real texture file and is unavailable when that file is missing.
+
+DVZR: ./build/examples/c/showcases/textured_planet --dvzr 60
 
 Useful tags for this example: `real-data`, `mesh`, `sampled-field`, `texture`.
 

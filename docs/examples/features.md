@@ -20,7 +20,7 @@ Each card links to a detail page with preview media, source code, and example me
 
 `supported` `features`
 
-Smallest scene with one point visual.
+This example shows the smallest scene with a point visual.
 
 </div>
 
@@ -32,7 +32,7 @@ Smallest scene with one point visual.
 
 `supported` `features`
 
-Interactive 3D RGB-axis proof of the Datoviz scene coordinate convention.
+This example shows the Datoviz 3D coordinate convention.
 
 </div>
 
@@ -44,7 +44,7 @@ Interactive 3D RGB-axis proof of the Datoviz scene coordinate convention.
 
 `supported` `features`
 
-One explicit panel rectangle with panel chrome and one visual.
+Panel_single creates one explicit panel rectangle inside a figure.
 
 </div>
 
@@ -56,7 +56,7 @@ One explicit panel rectangle with panel chrome and one visual.
 
 `supported` `features`
 
-Four grid-owned panels with clipped panel-local content.
+Panel_grid arranges four independent panels in a 2x2 figure grid.
 
 </div>
 
@@ -68,7 +68,7 @@ Four grid-owned panels with clipped panel-local content.
 
 `supported` `features`
 
-Multiple independent panels with panel-local panzoom controllers.
+Panel_multi shows two panels with independent data, domains, and panzoom state.
 
 </div>
 
@@ -80,7 +80,7 @@ Multiple independent panels with panel-local panzoom controllers.
 
 `supported` `features`
 
-Two panels linked on X panzoom extent with independent Y panzoom state.
+Panel_linked links the X panzoom extent of two stacked signal panels.
 
 </div>
 
@@ -92,7 +92,7 @@ Two panels linked on X panzoom extent with independent Y panzoom state.
 
 `supported` `features`
 
-Panel-owned 2D view framing with equal aspect.
+Panel_view2d compares a regular 2D panel with one that keeps equal data aspect.
 
 </div>
 
@@ -104,7 +104,7 @@ Panel-owned 2D view framing with equal aspect.
 
 `supported` `features`
 
-Fixed graphite-cyan panel background behind a simple visual.
+Panel_background shows a custom panel background behind a foreground primitive.
 
 </div>
 
@@ -116,7 +116,7 @@ Fixed graphite-cyan panel background behind a simple visual.
 
 `supported` `features`
 
-Screen-space marker, path, and axis scaling controlled by a GUI slider.
+User_scale shows how one user-scale value affects screen-space visual sizes and axes.
 
 </div>
 
@@ -128,7 +128,7 @@ _Screenshot not required for this example._
 
 `supported` `features`<br><span>`view-size`, `framebuffer`, `window`</span>
 
-Explicit canvas/window/framebuffer size policy selection.
+View_size_policies demonstrates how requested view size policies resolve to real view sizes.
 
 </div>
 
@@ -140,7 +140,7 @@ Explicit canvas/window/framebuffer size policy selection.
 
 `supported` `features`
 
-Visual-local affine transform on point visuals.
+Visual_transform compares raw point data with a visual-local affine transform.
 
 </div>
 
@@ -152,7 +152,7 @@ Visual-local affine transform on point visuals.
 
 `supported` `features`
 
-Visual visibility toggled by a scene timer.
+Visibility toggles one visual on and off without changing its data arrays.
 
 </div>
 
@@ -170,7 +170,7 @@ Visual visibility toggled by a scene timer.
 
 `supported` `features`
 
-Explicit perspective-camera setup with eye, target, up, and clip planes.
+This example shows explicit perspective-camera setup for a 3D scene.
 
 </div>
 
@@ -182,7 +182,7 @@ _Screenshot not required for this example._
 
 `supported` `features`
 
-Bind a panzoom controller to one panel with a simple 2D visual.
+Panzoom binds a 2D panzoom controller to a point visual in data coordinates.
 
 </div>
 
@@ -194,7 +194,7 @@ Bind a panzoom controller to one panel with a simple 2D visual.
 
 `supported` `features`
 
-Arcball controller attached to a small 3D mesh.
+This example shows an arcball controller rotating a 3D view.
 
 </div>
 
@@ -206,7 +206,7 @@ Arcball controller attached to a small 3D mesh.
 
 `supported` `features`
 
-Constrained turntable controller around a small 3D mesh.
+This example shows world-up orbiting with a turntable controller.
 
 </div>
 
@@ -218,7 +218,7 @@ Constrained turntable controller around a small 3D mesh.
 
 `supported` `features`
 
-Fly controller with deterministic camera translation.
+This example shows fly-style camera navigation through a 3D scene.
 
 </div>
 
@@ -230,7 +230,7 @@ Fly controller with deterministic camera translation.
 
 `supported` `features`
 
-Panel-attached orientation axes following the panel's rendered orientation.
+Orientation_gizmo adds a small orientation widget to a 3D panel.
 
 </div>
 
@@ -242,7 +242,7 @@ Panel-attached orientation axes following the panel's rendered orientation.
 
 `supported` `features`
 
-Plane-oriented reference grid in an arcball 3D scene.
+Reference_grid adds a ground-plane reference grid to a 3D scene.
 
 </div>
 
@@ -260,7 +260,7 @@ Plane-oriented reference grid in an arcball 3D scene.
 
 `supported` `features`
 
-Axis titles and tick-label placement with plot margins.
+This example shows axis titles and tick-label layout around a plotting panel.
 
 </div>
 
@@ -272,7 +272,7 @@ Axis titles and tick-label placement with plot margins.
 
 `supported` `features`
 
-Deterministic path with 2D axes and tick labels.
+This example shows a 2D data path with axes, ticks, and grid lines.
 
 </div>
 
@@ -284,7 +284,7 @@ Deterministic path with 2D axes and tick labels.
 
 `supported` `features`
 
-Horizontal and vertical guide lines in panel data coordinates.
+This example shows movable horizontal and vertical guide lines.
 
 </div>
 
@@ -296,7 +296,7 @@ Horizontal and vertical guide lines in panel data coordinates.
 
 `supported` `features`
 
-Horizontal and vertical guide spans in panel data coordinates.
+This example shows movable guide spans for highlighting data ranges.
 
 </div>
 
@@ -308,7 +308,7 @@ Horizontal and vertical guide spans in panel data coordinates.
 
 `supported` `features`
 
-Bars and uncertainty band plot helpers.
+This example shows bars and an uncertainty band in one 2D panel.
 
 </div>
 
@@ -320,7 +320,7 @@ Bars and uncertainty band plot helpers.
 
 `supported` `features`
 
-Minimal scale bar attached to one 2D panel.
+Scalebar attaches a metric length scale bar to a 2D panel.
 
 </div>
 
@@ -332,7 +332,7 @@ Minimal scale bar attached to one 2D panel.
 
 `supported` `features`
 
-Scale bar with a custom time-unit string.
+Scalebar_units uses duration units for a scale bar on a time-series panel.
 
 </div>
 
@@ -344,7 +344,7 @@ Scale bar with a custom time-unit string.
 
 `supported` `features`<br><span>`colorbar`, `scalar-field`, `image`, `capture`</span>
 
-Deterministic scalar image with one continuous colorbar.
+This example shows a scalar image and a continuous colorbar.
 
 </div>
 
@@ -356,7 +356,7 @@ Deterministic scalar image with one continuous colorbar.
 
 `supported` `features`
 
-Point visual with scalar float colors and one color scale.
+This example shows scalar point values mapped through a custom colormap.
 
 </div>
 
@@ -368,7 +368,7 @@ Point visual with scalar float colors and one color scale.
 
 `experimental` `features`<br><span>`categorical-scale`, `legend`, `marker`, `capture`</span>
 
-Tentative categorical legend proof.
+Legend_categorical shows how one categorical scale drives both marker colors and a legend.
 
 </div>
 
@@ -380,7 +380,7 @@ Tentative categorical legend proof.
 
 `supported` `features`
 
-Label annotation anchored to data.
+This example shows a text annotation anchored to one data point.
 
 </div>
 
@@ -392,7 +392,7 @@ Label annotation anchored to data.
 
 `supported` `features`
 
-Compact text block with stable screen placement.
+Text_block renders a multiline text object at a stable screen position.
 
 </div>
 
@@ -404,7 +404,7 @@ Compact text block with stable screen placement.
 
 `supported` `features`
 
-Screen-space data readout over a simple panel visual.
+Overlay_card places a screen-space readout card above a simple data trace.
 
 </div>
 
@@ -416,7 +416,7 @@ Screen-space data readout over a simple panel visual.
 
 `supported` `features`
 
-Categorical labels query proof with deterministic label-id readout.
+Probe_labels queries categorical label IDs from a generated label image.
 
 </div>
 
@@ -434,7 +434,7 @@ Categorical labels query proof with deterministic label-id readout.
 
 `supported` `features`
 
-Builtin 2D geometry builders rendered through meshes.
+This example shows built-in 2D geometry rendered as meshes.
 
 </div>
 
@@ -446,7 +446,7 @@ Builtin 2D geometry builders rendered through meshes.
 
 `supported` `features`
 
-Builtin 3D geometry builders rendered through meshes.
+This example shows built-in 3D geometry rendered as lit meshes.
 
 </div>
 
@@ -458,7 +458,7 @@ Builtin 3D geometry builders rendered through meshes.
 
 `supported` `features`<br><span>`marker`, `symbol-set`, `bitmap-symbol`, `distance-field-symbol`, `svg-path-symbol`</span>
 
-Marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
+Marker_symbols compares several ways to define marker glyphs in one symbol set.
 
 </div>
 
@@ -470,7 +470,7 @@ Marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 
 `supported` `features`
 
-Tessellated cubic Bezier curve rendered as a path.
+This example shows a cubic Bezier curve tessellated into a path.
 
 </div>
 
@@ -482,7 +482,7 @@ Tessellated cubic Bezier curve rendered as a path.
 
 `supported` `features`
 
-Acute stroked path joins for visual regression inspection.
+Path_join compares miter, round, and bevel joins on difficult stroked paths.
 
 </div>
 
@@ -494,7 +494,7 @@ Acute stroked path joins for visual regression inspection.
 
 `supported` `features`
 
-Wavefront OBJ mesh loading through geom/fileio helpers.
+Obj_loading loads a Wavefront OBJ fixture and displays it as a mesh.
 
 </div>
 
@@ -512,7 +512,7 @@ Wavefront OBJ mesh loading through geom/fileio helpers.
 
 `supported` `features`
 
-One scene-owned sampled field reused by two image visuals.
+Sampled_field_update reuses one sampled scalar field in two image visuals while updating patches.
 
 </div>
 
@@ -524,7 +524,7 @@ One scene-owned sampled field reused by two image visuals.
 
 `supported` `features`
 
-CPU contour extraction rendered as segment overlays.
+This example shows contour isolines over a scalar field.
 
 </div>
 
@@ -536,7 +536,7 @@ CPU contour extraction rendered as segment overlays.
 
 `supported` `features`<br><span>`axes`, `datetime`, `time-series`</span>
 
-Compact data coordinates with UTC datetime labels.
+This example shows UTC datetime labels on a numeric data axis.
 
 </div>
 
@@ -548,7 +548,7 @@ Compact data coordinates with UTC datetime labels.
 
 `supported` `features`
 
-Scalar image pixel-query proof with a live probe marker.
+This example shows probing a scalar image at a marked data position.
 
 </div>
 
@@ -566,7 +566,7 @@ Scalar image pixel-query proof with a live probe marker.
 
 `supported` `features`
 
-Compare lit sphere clusters with different material and light settings.
+Lighting compares the same sphere cluster under three material and light configurations.
 
 </div>
 
@@ -578,7 +578,7 @@ Compare lit sphere clusters with different material and light settings.
 
 `supported` `features`
 
-Minimal UV textured mesh with a procedural RGBA8 texture.
+Mesh_texture maps a scene-owned RGBA8 sampled field onto a UV sphere mesh.
 
 </div>
 
@@ -590,7 +590,7 @@ Minimal UV textured mesh with a procedural RGBA8 texture.
 
 `supported` `features`
 
-Mesh visuals with explicit material parameters.
+Material_mesh compares cube meshes rendered with different material models and parameters.
 
 </div>
 
@@ -602,7 +602,7 @@ Mesh visuals with explicit material parameters.
 
 `experimental` `features`
 
-Side-by-side volume occluder attenuation on an embedded slice.
+Volume_occlusion compares a volume slice with and without attenuation by the surrounding volume.
 
 </div>
 
@@ -614,7 +614,7 @@ Side-by-side volume occluder attenuation on an embedded slice.
 
 `supported` `features`
 
-Screen-space ambient occlusion on normal-producing mesh geometry.
+Ssao compares a sphere cluster with and without screen-space ambient occlusion.
 
 </div>
 
@@ -626,7 +626,7 @@ Screen-space ambient occlusion on normal-producing mesh geometry.
 
 `supported` `features`
 
-Depth-dependent fading applied to a regular 3D sphere lattice.
+Depth_cue compares a plain 3D sphere lattice with depth-dependent fading.
 
 </div>
 
@@ -638,7 +638,7 @@ Depth-dependent fading applied to a regular 3D sphere lattice.
 
 `supported` `features`
 
-Side-by-side multisample antialiasing on slanted 3D cube silhouettes.
+Msaa compares single-sample rendering with 8x multisample antialiasing.
 
 </div>
 
@@ -650,7 +650,7 @@ Side-by-side multisample antialiasing on slanted 3D cube silhouettes.
 
 `supported` `features`
 
-Source-over, WBOIT, and depth-peel transparency on overlapping cubes.
+Transparency_order compares three transparency techniques on the same overlapping cubes.
 
 </div>
 
@@ -662,7 +662,7 @@ Source-over, WBOIT, and depth-peel transparency on overlapping cubes.
 
 `supported` `features`
 
-Primitive visual using per-vertex alpha and source-over blending.
+This example shows translucent triangles composited in draw order.
 
 </div>
 
@@ -674,7 +674,7 @@ Primitive visual using per-vertex alpha and source-over blending.
 
 `supported` `features`
 
-Side-by-side visual depth-test toggle with overlapping 3D points.
+Depth_test compares overlapping 3D points with depth testing enabled and disabled.
 
 </div>
 
@@ -686,7 +686,7 @@ Side-by-side visual depth-test toggle with overlapping 3D points.
 
 `diagnostic` `features`<br><span>`diagnostic`, `bounds`, `overlay`, `point`, `sphere`</span>
 
-Diagnostic visual bounds in 2D and 3D panels.
+This example shows diagnostic bounds overlays for 2D and 3D visuals.
 
 </div>
 
@@ -704,7 +704,7 @@ _Screenshot not required for this example._
 
 `supported` `features`
 
-Unified marker hover and selection proof.
+Picking demonstrates item-level marker hover and click selection.
 
 </div>
 
@@ -716,7 +716,7 @@ Unified marker hover and selection proof.
 
 `supported` `features`
 
-Pixel hover and click selection.
+Selection_pixel queries and selects individual cells in a pixel grid.
 
 </div>
 
@@ -728,7 +728,7 @@ Pixel hover and click selection.
 
 `supported` `features`
 
-Sphere hover and click selection.
+Selection_sphere queries and selects individual raycast spheres in a 3D cluster.
 
 </div>
 
@@ -740,7 +740,7 @@ Sphere hover and click selection.
 
 `supported` `features`
 
-Instanced mesh hover and click selection.
+Selection_mesh_instances queries and selects individual instances of one mesh visual.
 
 </div>
 
@@ -758,7 +758,7 @@ Instanced mesh hover and click selection.
 
 `supported` `features`
 
-Track-backed visual transform animation.
+This example shows scene animation tracks driving a cube and camera.
 
 </div>
 
@@ -770,7 +770,7 @@ Track-backed visual transform animation.
 
 `supported` `features`
 
-Portable scenario updating point data on runner frames.
+Timer_animation updates point attributes every runner frame from scenario time.
 
 </div>
 
@@ -782,7 +782,7 @@ Portable scenario updating point data on runner frames.
 
 `experimental` `features`<br><span>`scene-compute`, `storage-buffer`, `point`</span>
 
-Scene compute pass with independent circular point motion.
+This example shows a compute pass updating point positions.
 
 </div>
 
@@ -794,7 +794,7 @@ Scene compute pass with independent circular point motion.
 
 `supported` `features`
 
-Point visual with one data-range update.
+Update_partial moves only part of a point visual's position array.
 
 </div>
 
@@ -806,7 +806,7 @@ Point visual with one data-range update.
 
 `supported` `features`
 
-Point visual with full data replacement.
+Update_visual_data replaces all arrays on one point visual.
 
 </div>
 
@@ -824,7 +824,7 @@ _Screenshot not required for this example._
 
 `supported` `features`
 
-Curated Datoviz GUI controls mutating one point visual.
+This example shows Datoviz GUI controls updating a point visual.
 
 </div>
 
@@ -836,7 +836,7 @@ _Screenshot not required for this example._
 
 `supported` `features`
 
-Dockable Dear ImGui window containing a live Datoviz render target.
+This example shows a Datoviz render viewport embedded inside a GUI window.
 
 </div>
 
@@ -848,7 +848,7 @@ _Screenshot not required for this example._
 
 `supported` `features`
 
-Raw cimgui calls inside a Datoviz GUI callback.
+This example shows raw cimgui widgets controlling a Datoviz visual.
 
 </div>
 
@@ -866,7 +866,7 @@ _Screenshot not required for this example._
 
 `supported` `features`
 
-Live native keyboard, pointer, wheel, and resize event logging.
+This example shows native keyboard, pointer, wheel, and resize events.
 
 </div>
 
@@ -878,7 +878,7 @@ _Screenshot not required for this example._
 
 `experimental` `features`
 
-Scene JSON serialization diagnostic.
+Json_export writes a scene to a compact JSON diagnostic file.
 
 </div>
 
@@ -896,7 +896,7 @@ Scene JSON serialization diagnostic.
 
 `experimental` `features`
 
-Eye-Dome Lighting applied to a dense point cloud.
+Edl compares a dense 3D point cloud with and without Eye-Dome Lighting.
 
 </div>
 

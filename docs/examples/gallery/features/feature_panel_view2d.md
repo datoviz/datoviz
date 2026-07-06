@@ -10,11 +10,11 @@
 <span>Panel View 2D</span>
 </nav>
 
-Panel-owned 2D view framing with equal aspect.
+Panel_view2d compares a regular 2D panel with one that keeps equal data aspect.
 
 ## What To Look For
 
-This page isolates `panel view2d`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+Both panels draw the same unit circle path and styled X/Y axes. The left panel uses a direct [-1, 1] domain, while the right panel configures an equal-aspect view and verifies matching data units per pixel in X and Y. Compare the circle shape and grid spacing; equal aspect is essential when distance, angle, or shape should not be visually distorted.
 
 No external data is needed; the example generates its data.
 

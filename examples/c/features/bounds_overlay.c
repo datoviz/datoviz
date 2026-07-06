@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* bounds_overlay - diagnostic retained visual bounds in 2D and 3D panels.
+/* bounds_overlay - This example shows diagnostic bounds overlays for 2D and 3D visuals.
  *
  * Scenario: feature_bounds_overlay
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,12 @@
  * Build:  just example-c features/bounds_overlay
  * Run:    ./build/examples/c/features/bounds_overlay --live
  * Smoke:  ./build/examples/c/features/bounds_overlay --png
+ *
+ * What to look for: the left panel contains a point cloud with position, color, and diameter
+ * arrays, while the right panel contains sphere centers, colors, and radii. Bounds visibility is
+ * enabled on both panels so the overlay reveals the data extent used by layout and interaction.
+ * Compare how the 2D point ring and the 3D sphere cluster are boxed; this helps debug unexpected
+ * clipping, wrong coordinate ranges, or visuals that are attached to the wrong space.
  */
 
 

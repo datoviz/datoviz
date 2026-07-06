@@ -4,14 +4,16 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* selection_mesh_instances - retained instanced mesh hover and click selection.
+/* selection_mesh_instances queries and selects individual instances of one retained mesh visual.
+ *
+ * What to look for: a single cube geometry is reused with an instance_transform array for a
+ * 6x4x2 field of differently placed, scaled, and rotated cubes. Move the cursor over the live 3D
+ * panel to query the frontmost mesh instance; hover scales the item, click toggles a persistent
+ * warning-color tint, and clicking the background clears selection. Drag with the arcball
+ * controller to confirm selection follows the instanced mesh in 3D.
  *
  * Scenario: feature.selection_mesh_instances
  * Style: features, graphite_cyan, 1280x720 window target
- *
- * Move the cursor over the cube field to query the frontmost mesh instance. Hover and selection
- * are rendered by the retained item-state API. Click a cube to toggle selection; click the
- * background to clear it. Drag to rotate the 3D scene with the arcball controller.
  *
  * Build:  just example-c features/selection_mesh_instances
  * Run:    ./build/examples/c/features/selection_mesh_instances --live

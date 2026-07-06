@@ -10,11 +10,11 @@
 <span>Panel Background</span>
 </nav>
 
-Fixed graphite-cyan panel background behind a simple visual.
+Panel_background shows a custom panel background behind a foreground primitive.
 
 ## What To Look For
 
-This page isolates `panel background`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The panel rectangle is explicitly inset inside the figure and receives a linear-gradient background before a triangle-list primitive uploads position, color, and normal arrays. Compare the gradient panel area with the surrounding figure space; styled backgrounds are useful for separating dense scientific plots, dark-field images, or instrument overlays from the rest of a figure.
 
 No external data is needed; the example generates its data.
 

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* coordinate_system - interactive 3D RGB-axis proof of the Datoviz scene coordinate convention.
+/* coordinate_system - This example shows the Datoviz 3D coordinate convention.
  *
  * Scenario: feature.coordinate_system
  * Style: features, graphite_cyan, 1280x720 window target
@@ -13,8 +13,11 @@
  * Run:    ./build/examples/c/features/coordinate_system --live
  * Smoke:  ./build/examples/c/features/coordinate_system --png
  *
- * X is red, Y is green, and Z is blue. The live example binds a turntable controller so the
- * axis triad and reference grid can be inspected with the mouse.
+ * What to look for: the axis triad uses red for X, green for Y, and blue for Z, with labels and a
+ * reference grid providing orientation cues. The live example binds a turntable controller, so the
+ * axes can be inspected from different viewpoints while the world-up direction remains legible.
+ * This is useful when checking imported coordinates, camera setup, and the sign or orientation of
+ * 3D scientific data.
  */
 
 

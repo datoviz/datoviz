@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* bezier_curve_path - tessellated cubic Bezier curve rendered as a retained path.
+/* bezier_curve_path - This example shows a cubic Bezier curve tessellated into a retained path.
  *
  * Scenario: feature.bezier_curve_path
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,12 @@
  * Build:  just example-c features/bezier_curve_path
  * Run:    ./build/examples/c/features/bezier_curve_path --live
  * Smoke:  ./build/examples/c/features/bezier_curve_path --png
+ *
+ * What to look for: four control points define the curve. The tessellated path uploads position,
+ * color, and linewidth arrays, while faint segment guides connect the control polygon and markers
+ * show the endpoints and handles. Compare the smooth rendered curve with the straight guide
+ * segments; this is useful for drawing fitted trajectories, contours, or model curves while still
+ * exposing the control data that shaped them.
  */
 
 

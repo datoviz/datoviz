@@ -10,11 +10,11 @@
 <span>Coordinate System</span>
 </nav>
 
-Interactive 3D RGB-axis proof of the Datoviz scene coordinate convention.
+This example shows the Datoviz 3D coordinate convention.
 
 ## What To Look For
 
-This page isolates `coordinate system`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The axis triad uses red for X, green for Y, and blue for Z, with labels and a reference grid providing orientation cues. The live example binds a turntable controller, so the axes can be inspected from different viewpoints while the world-up direction remains legible. This is useful when checking imported coordinates, camera setup, and the sign or orientation of 3D scientific data.
 
 No external data is needed; the example generates its data.
 

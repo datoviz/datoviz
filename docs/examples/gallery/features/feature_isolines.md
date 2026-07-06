@@ -10,11 +10,11 @@
 <span>Isolines</span>
 </nav>
 
-CPU contour extraction rendered as segment overlays.
+This example shows contour isolines over a scalar field.
 
 ## What To Look For
 
-This page isolates `isolines`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The scalar field is sampled on a regular grid, and CPU contour extraction turns selected levels into segment start/end arrays with colors and widths. The segment visual overlays those isolines on the same normalized data domain. Compare the spacing and shape of the contours with the underlying field pattern; isolines are useful for reading levels, gradients, and boundaries in topography, density maps, and simulation output.
 
 No external data is needed; the example generates its data.
 

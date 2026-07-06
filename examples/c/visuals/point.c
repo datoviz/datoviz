@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* point - deterministic retained 2D point visual baseline.
+/* point - This example renders a 2D scatter plot with per-point color and diameter.
+ *
+ * What to look for: generated positions place the samples, scalar values are mapped through a
+ * color scale, and diameters vary each point's screen-space size. Compare dense and sparse parts
+ * of the cloud to see how a beginner scatter plot can show location, magnitude, and emphasis with
+ * three simple arrays.
  *
  * Scenario: visual.point / point_2d
  * Style: visuals, graphite_cyan, 1280x720 window target

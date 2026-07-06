@@ -10,11 +10,11 @@
 <span>Raw cimgui GUI</span>
 </nav>
 
-Raw cimgui calls inside a Datoviz GUI callback.
+This example shows raw cimgui widgets controlling a Datoviz visual.
 
 ## What To Look For
 
-This page isolates `gui cimgui`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+Four point positions and colors are uploaded once, while the GUI slider rewrites the diameter_px attribute for all points. The raw cimgui window also displays a small status table and can open the Dear ImGui demo. Move the diameter slider and compare the live marker sizes with the unchanged positions and colors; this demonstrates how advanced users can mix direct imgui calls with Datoviz data updates.
 
 No external data is needed; the example generates its data.
 

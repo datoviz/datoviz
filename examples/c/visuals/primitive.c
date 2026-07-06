@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* primitive - line and triangle topologies rendered with the retained primitive visual.
+/* primitive - This example compares basic retained primitive topologies.
+ *
+ * What to look for: each primitive supplies positions, colors, and group IDs, then chooses a line
+ * or triangle topology. Compare the separate shapes in the screenshot to see how the same compact
+ * vertex attributes can describe reference marks, outlines, filled triangles, or custom simple
+ * geometry before using a higher-level visual.
  *
  * Scenario: visual.primitive
  * Style: visuals, graphite_cyan, 1280x720 window target

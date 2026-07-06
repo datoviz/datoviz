@@ -4,7 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* scientific_plotting - histogram, guide annotations, stacked traces, and error bands.
+/* scientific_plotting - This example composes common scientific plot elements in one figure.
+ *
+ * What to look for: the layout combines an autocorrelogram-style histogram, guide spans, a mean
+ * trace with an uncertainty band, and 32 stacked traces generated from deterministic arrays. In the
+ * screenshot, compare how axes, text labels, bands, paths, primitives, and segments work together
+ * without each panel becoming a separate application.
+ *
+ * This workflow is useful when a paper-style diagnostic figure needs multiple coordinated visual
+ * encodings but the data can still be prepared as simple numeric arrays.
  *
  * Scenario: scientific_plotting_workflow
  * Style: showcase workflow, graphite_cyan, 1280x720 window target

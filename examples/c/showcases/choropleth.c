@@ -4,7 +4,16 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* choropleth - contiguous U.S. state population-density choropleth.
+/* choropleth - This example renders contiguous U.S. population density as polygon-set data.
+ *
+ * What to look for: prepared Census boundaries are loaded as flat point, ring, fill-color,
+ * stroke-color, stroke-width, and id arrays, then colored by log10 resident population density.
+ * Compare the state shapes with the vertical colorbar labeled in people per square kilometer; the
+ * topology is ring-based and interior holes are not preserved.
+ *
+ * This workflow is useful for map-like scientific figures where real tabular values must be joined
+ * to prepared geometry before rendering. Run the preparation command if the promoted data bundle is
+ * not present.
  *
  * Scenario: us_state_choropleth
  * Style: showcase scientific, polygon-set, 1280x720 window target

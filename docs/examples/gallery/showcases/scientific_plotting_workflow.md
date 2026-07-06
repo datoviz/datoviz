@@ -10,11 +10,13 @@
 <span>Scientific Plotting Workflow</span>
 </nav>
 
-Histogram, guide annotations, stacked traces, and error bands.
+This example composes common scientific plot elements in one figure.
 
 ## What To Look For
 
-This showcase shows a composed Scientific Plotting Workflow scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
+The layout combines an autocorrelogram-style histogram, guide spans, a mean trace with an uncertainty band, and 32 stacked traces generated from deterministic arrays. In the screenshot, compare how axes, text labels, bands, paths, primitives, and segments work together without each panel becoming a separate application.
+
+This workflow is useful when a paper-style diagnostic figure needs multiple coordinated visual encodings but the data can still be prepared as simple numeric arrays.
 
 Useful tags for this example: `workflow`, `scientific`, `histogram`, `guide-lines`.
 

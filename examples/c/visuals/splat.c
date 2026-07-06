@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* splat - retained Gaussian splat visual with deterministic screen-space ellipses.
+/* splat - This experimental example renders Gaussian splats as translucent ellipses.
+ *
+ * What to look for: positions place each splat, colors set the tint, sigma gives the two
+ * screen-space ellipse radii, and angles rotate the ellipses. Compare overlapping areas and the
+ * soft footprint shape to see how uncertain samples, local point spread, or projected density can
+ * be shown without drawing hard-edged markers.
  *
  * Scenario: visual.splat
  * Style: visuals, graphite_cyan, 1280x720 window target

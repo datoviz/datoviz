@@ -10,11 +10,11 @@
 <span>Sphere</span>
 </nav>
 
-Deterministic 3D impostor-sphere cluster with depth, radius, and color variation.
+This example displays a 3D cluster of raycast impostor spheres.
 
 ## What To Look For
 
-This page isolates the Sphere visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
+Positions locate the sphere centers, radii control physical size, and colors distinguish groups inside the cluster. Compare overlap, depth ordering, and highlights while rotating the live view to see why impostor spheres are useful for atoms, particles, cells, and other many-object 3D scientific data.
 
 Useful tags for this example: `sphere`, `arcball`, `capture`.
 

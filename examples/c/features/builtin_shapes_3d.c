@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* builtin_shapes_3d - builtin 3D geometry builders rendered through retained meshes.
+/* builtin_shapes_3d - This example shows built-in 3D geometry rendered as lit meshes.
  *
  * Scenario: feature_builtin_shapes_3d
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,12 @@
  * Build:  just example-c features/builtin_shapes_3d
  * Run:    ./build/examples/c/features/builtin_shapes_3d --live
  * Smoke:  ./build/examples/c/features/builtin_shapes_3d --png
+ *
+ * What to look for: the scene uses geometry builders for common solids such as a cube, sphere,
+ * cylinder, cone, capsule, and arrow-like shapes, then uploads each result to a retained mesh with
+ * a Phong material. Some Z-axis builders are transformed so their local axis follows scene +Y.
+ * Compare the lighting, normals, and orientation of each shape; these primitives are useful for
+ * reference objects, probes, direction markers, and simple 3D scientific diagrams.
  */
 
 

@@ -10,11 +10,11 @@
 <span>Single Panel</span>
 </nav>
 
-One explicit panel rectangle with panel chrome and one visual.
+Panel_single creates one explicit panel rectangle inside a figure.
 
 ## What To Look For
 
-This page isolates `panel single`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The panel is placed with normalized x, y, width, and height values instead of filling the whole figure. A border and background frame a five-point visual whose position, color, and diameter_px arrays form a compact pattern. This is useful when an application needs precise room for labels, controls, or multiple manually arranged views.
 
 No external data is needed; the example generates its data.
 

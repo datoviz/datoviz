@@ -10,11 +10,11 @@
 <span>Bars And Bands</span>
 </nav>
 
-Bars and uncertainty band plot helpers.
+This example shows bars and an uncertainty band in one 2D panel.
 
 ## What To Look For
 
-This page isolates `bars bands`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The bar helper uses start, end, and value arrays so each bar has an explicit interval on the x axis. The band helper uses x, lower, upper, and center arrays to draw an envelope plus a central trend line. Compare the discrete bars with the continuous band and its bounds; the combination is useful for showing sampled measurements together with a model, confidence interval, or expected range.
 
 No external data is needed; the example generates its data.
 

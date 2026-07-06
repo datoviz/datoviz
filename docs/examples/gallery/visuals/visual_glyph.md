@@ -10,11 +10,11 @@
 <span>Font Atlas Glyphs</span>
 </nav>
 
-Low-level font atlas glyph quads, distinct from semantic text.
+This example renders text by submitting low-level glyph atlas quads directly.
 
 ## What To Look For
 
-This page isolates the Font Atlas Glyphs visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
+Each visible character in "Datoviz Atlas cafe" is built from explicit positions, bounds, texture coordinates, colors, and angles instead of a semantic text object. Compare the accented character, baseline spacing, and per-glyph coloring to understand how the atlas visual exposes the pieces that higher-level text layout normally hides.
 
 Useful tags for this example: `glyph`, `font-atlas`, `texture-atlas`, `sdf`.
 

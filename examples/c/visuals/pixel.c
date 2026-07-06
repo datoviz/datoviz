@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* pixel - deterministic retained pixel visual baseline.
+/* pixel - This example renders a regular grid of independent screen-aligned pixels.
+ *
+ * What to look for: the positions array lays out the grid, scalar values drive the color scale,
+ * and sizes vary the square footprint of each sample. Compare the colored wave pattern with the
+ * changing pixel sizes to see how sparse detector samples or binned point data can remain visible
+ * without becoming a resampled image.
  *
  * Scenario: visual.pixel
  * Style: visuals, graphite_cyan, 1280x720 window target

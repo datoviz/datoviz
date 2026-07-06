@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* sampled_field_update - one scene-owned sampled field reused by two image visuals.
+/* sampled_field_update reuses one sampled scalar field in two image visuals while updating patches.
+ *
+ * What to look for: both panels sample the same R32_FLOAT field and the same moving highlighted
+ * patch, but each panel applies a different continuous color scale. Every few frames the previous
+ * 12x12 patch is restored and a new region is uploaded with dvz_sampled_field_update_region().
+ * Compare the two panels during live playback; shared fields are useful when several views need
+ * different color treatments of the same changing image data.
  *
  * Scenario: feature.sampled_field_update
  * Style: features, graphite_cyan, 1280x720 window target

@@ -10,11 +10,11 @@
 <span>Panzoom</span>
 </nav>
 
-Bind a panzoom controller to one panel with a simple 2D visual.
+Panzoom binds a 2D panzoom controller to a point visual in data coordinates.
 
 ## What To Look For
 
-This page isolates `controller panzoom`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+A 64-point ring uploads position, color, and diameter_px arrays inside a [-1, 1] X/Y data domain. In the live preview, drag to pan and scroll or gesture to zoom; the point sizes remain screen-space while their positions move through the panel's data transform. Panzoom is the basic interaction for exploring larger 2D scientific datasets.
 
 No external data is needed; the example generates its data.
 

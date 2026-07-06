@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* marker_symbols - marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
+/* marker_symbols compares several ways to define marker glyphs in one symbol set.
+ *
+ * What to look for: each row uses the same marker attributes, including position, color,
+ * diameter_px, angle, and symbol, but the symbol IDs come from built-in shapes, procedural bitmap
+ * images, SDF images, MSDF images, or SVG paths when available. Compare edge sharpness and shape
+ * detail across rows; custom symbols are useful when scientific categories need domain-specific
+ * marks instead of generic discs.
  *
  * Scenario: feature.marker_symbols
  * Style: features, graphite_cyan, 1280x720 window target

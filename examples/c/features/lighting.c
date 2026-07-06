@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* lighting - compare lit sphere clusters with different material and light settings.
+/* lighting compares the same sphere cluster under three material and light configurations.
+ *
+ * What to look for: each panel uploads the same sphere position, radius, and color arrays, but
+ * changes the material light_direction, roughness, specular, and rim_strength values. Rotate any
+ * panel in the live preview and the linked arcball controllers keep the views aligned, making it
+ * easier to compare matte lighting, glossy highlights, and rim emphasis on identical data.
  *
  * Scenario: feature.lighting
  * Style: features, graphite_cyan, 1280x720 window target
@@ -186,22 +191,17 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (ctx->figure == NULL)
         return false;
 
-    DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 3);
-    if (grid == NULL)
-        return false;
-    if (dvz_grid_set_margins(
-            grid, &(DvzPanelReserve){
-                      .left_px = 34.0f, .right_px = 34.0f, .top_px = 40.0f, .bottom_px = 40.0f}) != DVZ_OK)
-        return false;
-    if (dvz_grid_set_gutter(grid, 24.0f, 0.0f) != DVZ_OK)
-        return false;
-
     DvzCameraDesc camera = example_default_3d_camera_desc(1.0f);
     DvzController* controllers[3] = {0};
     const char* labels[3] = {"Matte key light", "Glossy side light", "Rim highlight"};
+    const DvzPanelDesc panel_descs[3] = {
+        {.x = 0.0000f, .y = 0.0f, .width = 0.3340f, .height = 1.0f},
+        {.x = 0.3330f, .y = 0.0f, .width = 0.3340f, .height = 1.0f},
+        {.x = 0.6660f, .y = 0.0f, .width = 0.3340f, .height = 1.0f},
+    };
     for (uint32_t i = 0; i < 3u; i++)
     {
-        DvzPanel* panel = dvz_grid_panel(grid, 0, i);
+        DvzPanel* panel = dvz_panel(ctx->figure, &panel_descs[i]);
         if (panel == NULL)
             return false;
         example_graphite_cyan_set_panel_background(panel);

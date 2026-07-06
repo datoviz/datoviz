@@ -10,11 +10,11 @@
 <span>Labels</span>
 </nav>
 
-Labels visual with a small deterministic integer sampled field.
+This example turns an integer sampled field into categorical image labels.
 
 ## What To Look For
 
-This page isolates the Labels visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
+The labels array stores category IDs, and the category scale assigns each ID a name and color. The visual also uses position and texcoord corners, opacity, and a boundary setting; compare adjacent regions to see how segmented scientific data can be reviewed without losing the discrete class boundaries.
 
 Useful tags for this example: `labels`, `categorical-scale`, `panzoom`, `capture`.
 

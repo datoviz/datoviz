@@ -10,11 +10,11 @@
 <span>Text</span>
 </nav>
 
-Semantic text objects lowered to glyph visuals.
+This example places semantic text items in panel coordinates.
 
 ## What To Look For
 
-This page isolates the Text visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
+Each text item provides a string, x/y screen position, font size, angle, and color role, then the text system lowers it to atlas glyphs. Compare the headline, smaller annotations, and rotated label to see how titles, units, and short scientific notes can be added without managing glyph quads manually.
 
 Useful tags for this example: `text`, `capture`.
 

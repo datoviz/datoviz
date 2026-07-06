@@ -10,11 +10,11 @@
 <span>Sampled Field Update</span>
 </nav>
 
-One scene-owned sampled field reused by two image visuals.
+Sampled_field_update reuses one sampled scalar field in two image visuals while updating patches.
 
 ## What To Look For
 
-This page isolates `sampled field update`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+Both panels sample the same R32_FLOAT field and the same moving highlighted patch, but each panel applies a different continuous color scale. Every few frames the previous 12x12 patch is restored and a new region is uploaded with dvz_sampled_field_update_region(). Compare the two panels during live playback; shared fields are useful when several views need different color treatments of the same changing image data.
 
 No external data is needed; the example generates its data.
 

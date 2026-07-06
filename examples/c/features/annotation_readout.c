@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* annotation_readout - retained label annotation anchored to data.
+/* annotation_readout - This example shows a retained text annotation anchored to one data point.
  *
  * Scenario: annotation_readout
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,12 @@
  * Build:  just example-c features/annotation_readout
  * Run:    ./build/examples/c/features/annotation_readout --live
  * Smoke:  ./build/examples/c/features/annotation_readout --png
+ *
+ * What to look for: the point visual uploads position, color, and diameter_px arrays for a small
+ * signal-like scatter plot. One highlighted sample is paired with a label annotation at the same
+ * data coordinate, using placement settings to keep the text offset from the marker. Compare the
+ * emphasized marker with the muted neighbors and the label placement relative to the axes; this is
+ * the pattern used for callouts, readouts, and selected observations in scientific plots.
  */
 
 

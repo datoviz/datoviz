@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* colorbar - deterministic scalar image with one retained continuous colorbar.
+/* colorbar - This example shows a scalar image and a retained continuous colorbar.
  *
  * Scenario: feature.colorbar
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,12 @@
  * Build:  just example-c features/colorbar
  * Run:    ./build/examples/c/features/colorbar --live
  * Smoke:  ./build/examples/c/features/colorbar --png
+ *
+ * What to look for: a 192 by 144 float field is uploaded as an R32 sampled field, and the image
+ * visual maps those scalar samples through a continuous scale with domain 0 to 1. The same scale
+ * is passed to the vertical colorbar on the right. Compare image colors with the ramp and tick
+ * labels; this is the standard pattern for making heat maps, microscopy images, or simulation
+ * fields interpretable by exposing the numeric meaning of color.
  */
 
 

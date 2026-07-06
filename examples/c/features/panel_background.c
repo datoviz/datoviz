@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* panel_background - fixed graphite-cyan panel background behind a simple visual.
+/* panel_background shows a custom panel background behind a foreground primitive.
+ *
+ * What to look for: the panel rectangle is explicitly inset inside the figure and receives a
+ * linear-gradient background before a triangle-list primitive uploads position, color, and normal
+ * arrays. Compare the gradient panel area with the surrounding figure space; styled backgrounds
+ * are useful for separating dense scientific plots, dark-field images, or instrument overlays from
+ * the rest of a figure.
  *
  * Scenario: feature.panel_background
  * Style: features, graphite_cyan, 1280x720 window target

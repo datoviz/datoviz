@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* guide_lines - retained horizontal and vertical guide lines in panel data coordinates.
+/* guide_lines - This example shows movable horizontal and vertical guide lines.
  *
  * Scenario: feature.guide_lines
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,12 @@
  * Build:  just example-c features/guide_lines
  * Run:    ./build/examples/c/features/guide_lines --live
  * Smoke:  ./build/examples/c/features/guide_lines --png
+ *
+ * What to look for: a path visual uploads position, color, and linewidth arrays for a signal, and
+ * the panel adds one horizontal and one vertical guide line in data coordinates. Pointer events are
+ * converted from screen position to panel data coordinates, then update the guide values. Move the
+ * cursor in the live preview and compare the crossing guides with the curve and axis ticks; this is
+ * useful for reading approximate x/y values or marking events on a plot.
  */
 
 

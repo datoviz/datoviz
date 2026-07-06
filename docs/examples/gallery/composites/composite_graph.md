@@ -10,11 +10,11 @@
 <span>Graph Composite</span>
 </nav>
 
-Deterministic brain-connectivity graph composite.
+This example builds a small brain-connectivity graph composite.
 
 ## What To Look For
 
-This example focuses on `graph`. Read it from top to bottom: create data, create a scene, add visuals, then run or capture the result.
+Node arrays provide positions, semantic IDs, community colors, and sizes; edge arrays provide endpoints, IDs, colors, widths, and optional Bezier controls. Compare node clusters, thicker bridge edges, and curved links to see how a graph composite can turn relationship tables into a readable scientific network.
 
 Useful tags for this example: `composite`, `graph`, `marker-nodes`, `bezier-edges`.
 

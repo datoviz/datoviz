@@ -10,11 +10,15 @@
 <span>Raw Triangle DRP2</span>
 </nav>
 
-Triangle rendered via a hand-written DRP2 command stream.
+This example renders one triangle from a hand-written DRP2 command stream.
 
 ## What To Look For
 
-This advanced example focuses on `advanced raw triangle drp2`. Use it after you understand the basic scene, panel, visual, data-upload, and app workflow.
+Every buffer, shader module, texture, command encoder, render pass, pipeline, draw, copy, and submit object is assigned an explicit DRP2 id. The vertex data is three position/color records, the pipeline declares that layout through DvzDrp2RenderPipelineDesc, and the rendered texture is copied to a readback buffer before the PNG is written.
+
+This is intentionally verbose. It is useful for renderer and library authors who want to inspect the protocol layer between scenes and the native vklite backend.
+
+Raw_triangle_drp2.png
 
 Useful tags for this example: `advanced`, `drp2`, `vklite`, `low-level`.
 

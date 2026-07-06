@@ -10,11 +10,11 @@
 <span>Pixel</span>
 </nav>
 
-Deterministic pixel visual baseline.
+This example renders a regular grid of independent screen-aligned pixels.
 
 ## What To Look For
 
-This page isolates the Pixel visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
+The positions array lays out the grid, scalar values drive the color scale, and sizes vary the square footprint of each sample. Compare the colored wave pattern with the changing pixel sizes to see how sparse detector samples or binned point data can remain visible without becoming a resampled image.
 
 Useful tags for this example: `pixel`, `panzoom`, `capture`.
 

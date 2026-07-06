@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* volume_occlusion - side-by-side volume occluder attenuation on an embedded slice.
+/* volume_occlusion compares a volume slice with and without attenuation by the surrounding volume.
+ *
+ * What to look for: both panels share the same 32x32x32 R8 scalar field, colormap, alpha stops,
+ * bounds, opacity, and ray-march step count. Each panel draws a composited volume plus a slice, but
+ * only the right panel marks the volume as an occluder and enables slice attenuation. Compare the
+ * embedded slice where dense shell and knot structures overlap it; occlusion helps relate slices
+ * to their 3D context instead of making them look detached.
  *
  * Scenario: feature_volume_occlusion
  * Style: features, graphite_cyan, 1280x720 window target

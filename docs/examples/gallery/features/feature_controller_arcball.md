@@ -10,11 +10,11 @@
 <span>Arcball Controller</span>
 </nav>
 
-Arcball controller attached to a small 3D mesh.
+This example shows an arcball controller rotating a 3D view.
 
 ## What To Look For
 
-This page isolates `controller arcball`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+A colored cube mesh and XZ reference grid make rotation easy to see, and the controller is bound to all three dimensions of the panel. In the live preview, drag the mouse and compare how the cube can roll freely with the view. Arcball interaction is useful for unconstrained inspection of 3D data, where seeing an object from arbitrary orientations matters more than preserving a fixed world-up direction.
 
 No external data is needed; the example generates its data.
 

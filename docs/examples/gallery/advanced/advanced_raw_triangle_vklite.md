@@ -10,11 +10,19 @@
 <span>Raw Triangle Vklite</span>
 </nav>
 
-Vklite draw commands into DvzCanvas.
+This example draws one RGB triangle with manual vklite commands.
 
 ## What To Look For
 
-This advanced example focuses on `advanced raw triangle vklite`. Use it after you understand the basic scene, panel, visual, data-upload, and app workflow.
+The triangle is not a scene visual. The example compiles the inline GLSL shaders, declares the vec2 position plus vec3 color vertex layout, uploads three vertices to a vertex buffer, and records the draw into the command buffer provided by DvzCanvas. The saved PNG should show a red/green/blue triangle over a dark clear color.
+
+This low-level workflow is useful when you need custom Vulkan drawing but still want Datoviz to handle the offscreen canvas, frame image, submission, and PNG capture plumbing.
+
+Usage: ./raw_triangle_vklite
+
+Render one frame, save raw_triangle_vklite.png.
+
+NOTE: this example intentionally uses an offscreen canvas. Hosted onscreen integration is shown separately in external_surface_glfw.c.
 
 Useful tags for this example: `advanced`, `vklite`, `canvas`, `low-level`.
 

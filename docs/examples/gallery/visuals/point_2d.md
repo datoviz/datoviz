@@ -10,11 +10,11 @@
 <span>Point</span>
 </nav>
 
-Deterministic 2D point visual baseline.
+This example renders a 2D scatter plot with per-point color and diameter.
 
 ## What To Look For
 
-This page isolates the Point visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
+Generated positions place the samples, scalar values are mapped through a color scale, and diameters vary each point's screen-space size. Compare dense and sparse parts of the cloud to see how a beginner scatter plot can show location, magnitude, and emphasis with three simple arrays.
 
 Useful tags for this example: `point`, `panzoom`, `capture`.
 

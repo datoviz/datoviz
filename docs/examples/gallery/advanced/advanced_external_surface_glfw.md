@@ -10,11 +10,13 @@
 <span>External Surface GLFW</span>
 </nav>
 
-Host-owned GLFW loop using Datoviz hosted rendering.
+This example embeds a Datoviz view inside a host-owned GLFW surface.
 
 ## What To Look For
 
-This advanced example focuses on `advanced external surface glfw`. Use it after you understand the basic scene, panel, visual, data-upload, and app workflow.
+GLFW is only a surrogate for an external toolkit. The host asks Datoviz for a Vulkan instance, creates the VkSurfaceKHR itself, forwards framebuffer size, content scale, pointer, wheel, and key events, and calls dvz_view_render_once() from its own loop. The scene is deliberately small: three points with panzoom interaction make it easy to verify that hosted input and resize metadata reach Datoviz.
+
+This workflow is useful when a scientific application already owns its native event loop and wants Datoviz to render into a provided Vulkan surface.
 
 Useful tags for this example: `advanced`, `external-surface`, `glfw`, `host-integration`.
 

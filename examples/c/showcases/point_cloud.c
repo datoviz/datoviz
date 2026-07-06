@@ -4,7 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* point_cloud - RESEPI RGB LiDAR dense point cloud.
+/* point_cloud - This example renders a prepared RGB LiDAR point cloud with direct colors.
+ *
+ * What to look for: the prepared binary stores point positions, RGBA colors, and per-point pixel
+ * sizes after preprocessing the upstream LAZ source. The preview should read as a dense colored
+ * spatial scan, and the fly-style view is the interaction to use when inspecting depth and
+ * structure.
+ *
+ * This workflow is useful for large measured point clouds where the expensive decoding and
+ * normalization happen before the gallery example runs. Generate the prepared cache before running.
  *
  * Scenario: point_cloud
  * Style: showcase, graphite_cyan, 1280x720 window target

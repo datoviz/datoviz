@@ -10,11 +10,11 @@
 <span>Compute Buffer Animation</span>
 </nav>
 
-Scene compute pass with independent circular point motion.
+This example shows a compute pass updating point positions.
 
 ## What To Look For
 
-This page isolates `scene compute buffer`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The point visual reads its position attribute from a scene buffer that is also bound as read-write storage for a compute shader. Static color and diameter_px arrays define the appearance, while per-frame parameters update time and the shader writes new x/y coordinates. Compare the moving markers with their stable colors and sizes; this demonstrates a useful compute-to-render pattern for particle systems, simulations, and iterative GPU analyses.
 
 Useful tags for this example: `scene-compute`, `storage-buffer`, `point`.
 

@@ -10,11 +10,11 @@
 <span>Alpha Blending</span>
 </nav>
 
-Primitive visual using per-vertex alpha and source-over blending.
+This example shows translucent triangles composited in draw order.
 
 ## What To Look For
 
-This page isolates `alpha blending`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+Three triangle groups share one primitive visual, with position and normal arrays defining the geometry and RGBA vertex colors defining both hue and alpha. Compare the overlap regions with the non-overlapping corners: DVZ_ALPHA_BLENDED lets the colors mix with each other and with the panel background, which is useful when scientific overlays, confidence regions, or segmented masks need to remain readable above other data.
 
 No external data is needed; the example generates its data.
 

@@ -4,7 +4,16 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* protein - RCSB PDB protein structure rendered as clustered spheres.
+/* protein - This example renders a prepared PDB structure as colored sphere impostors.
+ *
+ * What to look for: the protein bundle supplies atom positions, element-style colors, and radii;
+ * the example scales those radii and renders the atoms as spheres with an arcball/spin view. In the
+ * preview, compare atom size and color clusters rather than expecting bonds: the visual focus is
+ * the dense molecular surface produced from per-atom arrays.
+ *
+ * This workflow is useful when a scientific viewer needs to turn prepared molecular coordinates
+ * into an interactive 3D point/sphere representation. The repository fallback is 1UBQ; other PDB
+ * ids must be prepared before running.
  *
  * Scenario: protein_arcball_viewer
  * Style: showcase scientific, graphite_cyan, 1280x720 window target

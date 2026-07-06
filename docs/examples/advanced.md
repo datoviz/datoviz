@@ -20,7 +20,7 @@ _Screenshot not required for this example._
 
 `experimental` `advanced`<br><span>`advanced`, `external-surface`, `glfw`, `host-integration`</span>
 
-Host-owned GLFW loop using Datoviz hosted rendering.
+This example embeds a Datoviz view inside a host-owned GLFW surface.
 
 </div>
 
@@ -32,7 +32,7 @@ _Screenshot not required for this example._
 
 `experimental` `advanced`<br><span>`advanced`, `drp2`, `vklite`, `low-level`</span>
 
-Triangle rendered via a hand-written DRP2 command stream.
+This example renders one triangle from a hand-written DRP2 command stream.
 
 </div>
 
@@ -44,7 +44,7 @@ _Screenshot not required for this example._
 
 `experimental` `advanced`<br><span>`advanced`, `vklite`, `canvas`, `low-level`</span>
 
-Vklite draw commands into DvzCanvas.
+This example draws one RGB triangle with manual vklite commands.
 
 </div>
 

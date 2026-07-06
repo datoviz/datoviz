@@ -10,11 +10,11 @@
 <span>Segment</span>
 </nav>
 
-Segment visual with independent endpoint-pair strokes and visual-wide cap bands.
+This example draws independent line segments with different cap styles.
 
 ## What To Look For
 
-This page isolates the Segment visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
+Start and end position arrays define each segment, while color and width arrays encode per-segment styling. The three horizontal bands reuse the same data with different cap settings, making it easy to compare butt, square, and round endpoints for uncertainty bars, links, ticks, and measurement overlays.
 
 Useful tags for this example: `segment`, `panzoom`, `capture`.
 

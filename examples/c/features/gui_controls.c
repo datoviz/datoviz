@@ -4,13 +4,20 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* gui_controls - curated Datoviz GUI controls mutating one retained point visual.
+/* gui_controls - This example shows Datoviz GUI controls updating a retained point visual.
  *
  * Scenario: feature.gui_controls
  * Style: features, native GUI/app
  *
  * Build:  just example-c features/gui_controls
  * Run:    ./build/examples/c/features/gui_controls
+ *
+ * What to look for: five point positions are fixed, while GUI sliders and color editors update the
+ * color and diameter_px arrays and the Visible checkbox toggles the visual. The extra synthetic
+ * data, effects, volume, and diagnostics controls exercise common widget types without changing
+ * the plotted points. Compare controls that visibly affect the markers with mock controls that only
+ * update state; this is useful for building analysis panels where some widgets drive data uploads
+ * and others configure future processing.
  */
 
 

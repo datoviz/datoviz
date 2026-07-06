@@ -4,7 +4,16 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* brain_volume - local Allen mouse brain RGBA volume and occluded slice.
+/* brain_volume - This example renders a prepared Allen mouse brain volume with a visible slice.
+ *
+ * What to look for: the loader reads the prepared compressed NumPy RGBA volume, downsamples it,
+ * derives scalar voxels for occlusion, and binds the same 3D sampled field to a composite volume and
+ * a slice visual. Compare the translucent context volume with the sharper slice plane while using
+ * the arcball camera.
+ *
+ * This workflow is useful for volume-data previews where a slice should stay spatially embedded in
+ * the 3D anatomy. The prepared data-submodule file must exist, or it must be generated with the
+ * preparation command.
  *
  * Scenario: brain_volume
  * Style: showcase, graphite_cyan, 1280x720 window target

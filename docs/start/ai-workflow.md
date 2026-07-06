@@ -3,21 +3,28 @@
 You can ask a coding assistant to write Datoviz examples for you. The simplest approach is to send
 the assistant to the documentation site and describe what you want to see.
 
+For agents, the canonical public entry point is [AI Agents Start Here](../ai-agents.md). Use that
+page when you want the assistant to follow the API-checking workflow rather than guessing from
+memory.
+
 
 ## Start With This Prompt
 
 Copy this prompt and replace the task with your own visualization:
 
 ```text
-Use https://datoviz.org/ to write a Datoviz v0.4 example.
+Use https://datoviz.org/ai-agents/ and the linked Datoviz v0.4 documentation to write my example.
 
 Task: create a scatter plot of 10,000 points, colored by a scalar value, with pan and zoom.
 
-Use the current Datoviz v0.4 API documented on the website.
 Prefer Python with `import datoviz as dvz` unless I ask for C.
-If you are unsure which function or attribute name to use, say which documentation page you checked
-and what is still unclear.
-Return a complete example I can run.
+Start by finding the closest working example on datoviz.org.
+Then check the API reference before using each Datoviz function.
+Make sure every function exists and that the signature, enum names, visual attribute names, and
+array shapes/counts match the current documentation.
+If a Python helper does not support the needed array upload, use the documented raw `ctypes` path or
+switch to C and explain why.
+Return a complete runnable example, then list the Datoviz pages and examples you used.
 ```
 
 For C code, change the language line:
@@ -48,6 +55,7 @@ same public pages you would use:
 - [Examples](../examples/index.md) for working visual and feature examples.
 - [How-To Guides](../how-to/create-a-scene.md) for focused tasks.
 - [Reference](../reference/index.md) for exact visual names, attribute names, and feature status.
+- [AI Agents Start Here](../ai-agents.md) for the full agent workflow and verification checklist.
 
 For Python, the normal v0.4 starting point is:
 
@@ -56,7 +64,9 @@ import datoviz as dvz
 ```
 
 Datoviz v0.4 starts from scenes, visuals, and explicit data arrays. For high-level plotting helpers
-such as `scatter()` or `imshow()`, use VisPy2/GSP when that layer is available.
+such as `scatter()` or `imshow()`, use GSP/VisPy2 when that layer is available. That layer is still
+work in progress; in the meantime, use the Datoviz `ctypes` API directly through the documented
+Python entry points.
 
 
 ## A Useful Follow-Up

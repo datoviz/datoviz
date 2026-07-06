@@ -4,6 +4,12 @@ Datoviz is a visualization engine for scientific data. It is useful when you nee
 interactive scenes directly: point clouds, images, meshes, volumes, annotations, linked panels, or
 offscreen screenshots.
 
+Datoviz fits into a larger Python visualization direction around GSP/VisPy2. The intended split is:
+GSP/VisPy2 provides high-level scientific plotting, while Datoviz provides the lower-level rendering
+engine that can draw and update large scenes. GSP/VisPy2 is still work in progress, so Datoviz v0.4
+also exposes direct Python access through generated `ctypes` bindings. Use `import datoviz as dvz`
+for documented NumPy array uploads, or `datoviz.raw` when you need exact generated C signatures.
+
 The main idea is simple: build a scene from reusable visual objects, attach your data arrays to
 those visuals, then show the scene in a window or render it to an image.
 
@@ -36,8 +42,8 @@ Use Datoviz directly when you want to:
 - write Python examples that pass NumPy arrays to the current v0.4 API.
 
 For high-level scientific plotting functions such as `scatter()`, `plot()`, or `imshow()`, use
-VisPy2/GSP when that layer is available. Datoviz v0.4 is the lower-level rendering engine that such
-interfaces can build on.
+GSP/VisPy2 when that layer is available. Until then, use Datoviz directly when you are comfortable
+building scenes from visuals and data arrays.
 
 
 ## Where To Start

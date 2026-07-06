@@ -4,7 +4,16 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* video_export - write a bounded offscreen animation with the app capture API.
+/* video_export - This example records a bounded offscreen point animation to video.
+ *
+ * What to look for: a row of tick points stays fixed while one larger point moves through a
+ * sinusoidal path; each frame updates the retained position, color, and diameter arrays before
+ * rendering. The default path writes video_export.mp4 through the app capture API, while --png
+ * renders a single smoke frame for quick validation.
+ *
+ * This runtime workflow is useful for scientific animations where the scene data is updated in a
+ * deterministic loop and the output location can be controlled with DVZ_CAPTURE_DIR and
+ * DVZ_CAPTURE_BASENAME.
  *
  * Scenario: runtime.video_export
  * Style: runtime, graphite_cyan, 1920x1080 output target

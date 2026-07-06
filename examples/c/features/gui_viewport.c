@@ -4,13 +4,19 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* gui_viewport - dockable Dear ImGui window containing a live Datoviz render target.
+/* gui_viewport - This example shows a Datoviz render viewport embedded inside a GUI window.
  *
  * Scenario: feature.gui_viewport
  * Style: features, native GUI/app
  *
  * Build:  just example-c features/gui_viewport
  * Run:    ./build/examples/c/features/gui_viewport
+ *
+ * What to look for: the application hosts a GUI window while a separate Datoviz figure renders a
+ * small point scene at a fixed source size. The viewport presents that live render target inside
+ * the GUI instead of as the whole native window. Compare the embedded plot area with the surrounding
+ * controls; this layout is useful for tools where plots, parameter widgets, and diagnostics need to
+ * share the same application surface.
  */
 
 

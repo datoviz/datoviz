@@ -12,6 +12,8 @@ For normalized examples, positions often already live in `[-1, +1]` view coordin
 maps, fields, and measurement-style overlays, prefer data coordinates plus an explicit panel
 domain.
 
+![3D coordinate system example with red, green, and blue arrows](../assets/gallery/v0.4/features/feature_coordinate_system.webp)
+
 | Space | Use when | API hook |
 | --- | --- | --- |
 | `DVZ_VISUAL_COORD_DATA` | Positions are scientific or application data values. | This is the default when `dvz_panel_add_visual()` receives `NULL`; set panel domains when data has non-default ranges. |

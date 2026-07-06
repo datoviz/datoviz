@@ -78,8 +78,11 @@ They supersede earlier agent-facing wording when there is a conflict.
    capture, raw `ctypes`, CMake integration, and lifecycle edge cases to focused How-To or
    Reference pages.
 8. The AI-assisted workflow page must be simple. Its main prompt should tell the coding assistant
-   to browse `datoviz.org` and write the requested Datoviz v0.4 example. Do not require users to
-   manually assemble a context bundle of several pages unless they want better precision.
+   to browse `datoviz.org` and write the requested Datoviz v0.4 example. The canonical public
+   entry point for agents is `/ai-agents/`. The prompt must tell agents to inspect examples, check
+   the API reference, and verify every function name, signature, enum, attribute name, and array
+   shape they use. Do not require users to manually assemble a context bundle of several pages
+   unless they want better precision.
 9. Write installation instructions as decision paths by audience and operating system: Python user,
    C/C++ user, source build, macOS, Linux, Windows/WSL, native Windows. Be explicit about what is
    currently public, what is pre-release, and what is not yet published.
@@ -87,11 +90,12 @@ They supersede earlier agent-facing wording when there is a conflict.
    what the example demonstrates, what visual result to expect, which data attributes matter, which
    user interaction applies, and where to go next. Code comments in examples should describe intent
    and important choices, not merely restate the function name.
-11. Generated "About This Example" sections must be example-specific. Do not use generic category
-    prose such as "this focused feature example demonstrates..." unless it is immediately followed
-    by concrete details from that example. Prefer manifest-backed fields such as `explains`,
-    `look_for`, `data_attributes`, `interaction`, and `next_steps`. If rich metadata is missing,
-    use one short useful fallback sentence rather than a generic paragraph.
+11. Generated `What To Look For` sections must be example-specific and should come from the public
+    source example's top block comment. Do not use generic category prose such as "this focused
+    feature example demonstrates..." as the first paragraph. Each top block comment should explain
+    what the example demonstrates, what to inspect visually, which data arrays or attributes matter,
+    and which interaction applies. Generator fallbacks are only safety nets for missing comments,
+    not the normal public copy.
 12. When describing the usual scene workflow, include the whole user-visible sequence: create the
     scene/figure/panel, create a visual, attach data arrays to visual attributes, add the visual to a
     panel, create a window or offscreen target, then run the app or capture the frame.
@@ -118,6 +122,9 @@ They supersede earlier agent-facing wording when there is a conflict.
     example should either appear in one of those batches or have an explicit deferment/status reason;
     do not rely on a manifest row alone. Screenshot capture and media checks should default to the
     reviewed public batch set, with explicit opt-in for unreviewed examples.
+19. Do not ask users to run an extra WebGPU/WASM build step before serving the docs. `just serve`
+    should run a fast preflight that rebuilds `build-wasm-scene/wasm/datoviz_wasm_scene.mjs` only
+    when it is missing or stale.
 
 
 ## Current State
@@ -149,15 +156,18 @@ Active source chain:
    tools/build_gallery_webp.py
    tools/check_example_manifests.py
    tools/mkdocs_hooks.py
+   tools/ensure_wasm_scene_build.py
    examples/webgpu/live_examples.js
    examples/webgpu/live.js
    ```
 
 6. Gallery WebP assets are generated into `build/gallery-webp/v0.4` and injected into the built site
    as `assets/gallery/v0.4`.
-7. Source screenshots and some data assets live in the `data` submodule. Treat `data` as a stop-sign
+7. `just serve` depends on `docs-assets` and `wasm-scene-build-if-needed`; the latter should be a
+   no-op when the WASM scene module and its build stamp are current.
+8. Source screenshots and some data assets live in the `data` submodule. Treat `data` as a stop-sign
    path for staging/committing unless explicitly approved.
-8. `docs/assets~` contains reference imagery only; it is not the generated public gallery asset
+9. `docs/assets~` contains reference imagery only; it is not the generated public gallery asset
    tree.
 
 Unrelated or stop-sign working-tree state may exist, including `data` and untracked paper artifacts.
@@ -299,9 +309,8 @@ repository hygiene.
 4. `docs/reference/api_c.md` exists in the working tree but is neither in nav nor `not_in_nav`.
    It is stale generated material and should be excluded, removed, or regenerated before it is ever
    surfaced.
-5. `examples/c/MANIFEST.yaml` and `docs/examples/examples.json` contain 110 examples, while
-   `docs/examples/gallery/**/*.md` contains 109 generated detail pages. The missing detail page is
-   `docs/examples/gallery/features/feature_camera_manual.md`.
+5. The generated public C gallery currently contains 107 examples and 107 generated detail pages.
+   Experimental examples outside reviewed public batches should not appear on the website.
 
 ### Main Findings
 
@@ -322,16 +331,17 @@ repository hygiene.
 6. **Generated API language:** generated C API pages leak `WIP` and `legacy path` wording from
    public header comments. The generated C API table formatting also mishandles multiline return
    descriptions.
-7. **Gallery generation drift:** generated overview pages and the WebGPU matrix are stale relative
-   to the manifest because `feature_camera_manual` is missing from generated detail output.
-8. **Gallery metadata gap:** `docs/examples/examples.json` lacks WebGPU status, route, requirement,
+7. **Gallery generation drift:** generated overview pages and the WebGPU matrix can become stale if
+   `tools/build_gallery.py`, `tools/build_examples_manifest.py`, and `tools/build_capabilities.py`
+   are not rerun after manifest or source-comment changes.
+8. **Gallery metadata gap:** `docs/examples/examples.json` may lack WebGPU status, route, requirement,
    media, and data fields even though the manifest has that information.
 9. **WebGPU registry:** current `webgpu-live` rows are internally aligned: 66 manifest live entries,
    66 `examples/webgpu/live_examples.js` entries, and no route-id mismatch found. However live route
    JS does not carry manifest requirement metadata for route-level diagnostics.
-10. **Media posture:** generated public pages still expose `_Media pending._` on 22 detail pages and
-    multiple overview cards. `build/gallery-webp/v0.4` is empty in this checkout, and media checks
-    fail because screenshots are missing or not at the expected resolution.
+10. **Media posture:** public gallery pages should not expose `_Media pending._` for promoted
+    examples. `python3 tools/check_gallery_media.py --ignore-cache` should pass for reviewed public
+    screenshots; cache staleness can be expected after comment-only source edits.
 11. **Data submodule:** source screenshots and stale/orphan media are in `data/gallery/v0.4`.
     Do not stage `data` changes or generated WebP/binary outputs without explicit approval.
 12. **Public/private tone:** generated example pages and visual-family pages expose

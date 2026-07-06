@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* depth_test - side-by-side visual depth-test toggle with overlapping 3D points.
+/* depth_test compares overlapping 3D points with depth testing enabled and disabled.
+ *
+ * What to look for: both panels upload the same eight large point sprites at the corners of a
+ * small 3D cube, with matching position, color, and diameter_px arrays. The left visual keeps
+ * depth testing enabled, while the right visual disables it so later points can overdraw nearer
+ * points. Rotate the linked arcball views and compare which colors appear in front; depth testing
+ * controls whether 3D marker order follows geometry or draw order.
  *
  * Scenario: feature.depth_test
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,9 +18,6 @@
  * Build:  just example-c features/technique_depth_test
  * Run:    ./build/examples/c/features/technique_depth_test --live
  * Smoke:  ./build/examples/c/features/technique_depth_test --png
- *
- * One panel keeps depth testing enabled. The other disables depth testing on the same retained
- * point visual, so later far points overdraw nearer points.
  */
 
 

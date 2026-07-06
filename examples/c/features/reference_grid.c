@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* reference_grid - plane-oriented reference grid in an arcball 3D scene.
+/* reference_grid adds a ground-plane reference grid to a 3D scene.
+ *
+ * What to look for: the grid is attached to the XZ plane, shifted downward on Y, and configured
+ * with fixed size, spacing, and major-line cadence. Use the turntable controller in the live
+ * preview and compare object orientation against the grid plane. Reference grids are useful for
+ * judging scale, height, and horizontal position in sparse 3D scientific views.
  *
  * Scenario: feature.reference_grid
  * Style: features, graphite_cyan, 1280x720 window target

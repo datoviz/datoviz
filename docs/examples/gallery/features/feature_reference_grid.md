@@ -10,11 +10,11 @@
 <span>Reference Grid</span>
 </nav>
 
-Plane-oriented reference grid in an arcball 3D scene.
+Reference_grid adds a ground-plane reference grid to a 3D scene.
 
 ## What To Look For
 
-This page isolates `reference grid`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The grid is attached to the XZ plane, shifted downward on Y, and configured with fixed size, spacing, and major-line cadence. Use the turntable controller in the live preview and compare object orientation against the grid plane. Reference grids are useful for judging scale, height, and horizontal position in sparse 3D scientific views.
 
 No external data is needed; the example generates its data.
 

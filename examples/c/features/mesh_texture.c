@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* mesh_texture - minimal UV textured mesh with a procedural RGBA8 texture.
+/* mesh_texture maps a scene-owned RGBA8 sampled field onto a UV sphere mesh.
+ *
+ * What to look for: the texture pixels are generated as a 1024x512 color field, attached to the
+ * mesh as the "texture" field, and combined with the sphere geometry's UV coordinates. Rotate the
+ * live sphere with the arcball controller and check that longitude waves wrap cleanly while the
+ * poles avoid radial artifacts. Textures are useful for scientific surfaces, maps, and instrument
+ * images that belong on geometry instead of in a flat panel.
  *
  * Scenario: feature.mesh_texture
  * Style: features, graphite_cyan, 1280x720 window target

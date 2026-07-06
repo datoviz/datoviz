@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* panel_multi - multiple independent panels with panel-local panzoom controllers.
+/* panel_multi shows two panels with independent data, domains, and panzoom state.
+ *
+ * What to look for: the left panel uploads a point ring with position, color, and diameter_px
+ * arrays, while the right panel uploads a stroked path with position, color, and stroke_width_px
+ * arrays. Each panel has its own controller and initial pan/zoom, so interact with one panel and
+ * confirm the other does not move. Independent panels are useful when different measurements share
+ * a figure but not a coordinate frame.
  *
  * Scenario: feature.panel_multi
  * Style: features, graphite_cyan, 1280x720 window target

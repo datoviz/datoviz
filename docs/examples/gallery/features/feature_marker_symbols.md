@@ -10,11 +10,11 @@
 <span>Marker Symbols</span>
 </nav>
 
-Marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
+Marker_symbols compares several ways to define marker glyphs in one symbol set.
 
 ## What To Look For
 
-This page isolates `marker symbols`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+Each row uses the same marker attributes, including position, color, diameter_px, angle, and symbol, but the symbol IDs come from built-in shapes, procedural bitmap images, SDF images, MSDF images, or SVG paths when available. Compare edge sharpness and shape detail across rows; custom symbols are useful when scientific categories need domain-specific marks instead of generic discs.
 
 Useful tags for this example: `marker`, `symbol-set`, `bitmap-symbol`, `distance-field-symbol`.
 

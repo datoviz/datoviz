@@ -10,11 +10,11 @@
 <span>Bounds Overlay</span>
 </nav>
 
-Diagnostic visual bounds in 2D and 3D panels.
+This example shows diagnostic bounds overlays for 2D and 3D visuals.
 
 ## What To Look For
 
-This page isolates `bounds overlay`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The left panel contains a point cloud with position, color, and diameter arrays, while the right panel contains sphere centers, colors, and radii. Bounds visibility is enabled on both panels so the overlay reveals the data extent used by layout and interaction. Compare how the 2D point ring and the 3D sphere cluster are boxed; this helps debug unexpected clipping, wrong coordinate ranges, or visuals that are attached to the wrong space.
 
 Useful tags for this example: `diagnostic`, `bounds`, `overlay`, `point`.
 

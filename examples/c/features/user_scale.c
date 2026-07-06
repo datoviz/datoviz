@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* user_scale - screen-space marker, path, and axis scaling controlled by a GUI slider.
+/* user_scale shows how one user-scale value affects screen-space visual sizes and axes.
+ *
+ * What to look for: the panel combines a data-space path, outlined markers, axes, and panzoom.
+ * The path uploads position, color, and stroke_width_px arrays, while the markers upload position,
+ * color, diameter_px, angle, and symbol arrays. In live mode, move the GUI scale slider and compare
+ * marker diameters, stroke widths, text, and axis styling while data coordinates stay fixed. User
+ * scale is useful for HiDPI displays, screenshots, and accessibility-sized scientific figures.
  *
  * Scenario: feature.user_scale
  * Style: features, graphite_cyan, 1280x720 window target

@@ -4,7 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* lipid_brain_atlas - section/channel lipid intensity showcase.
+/* lipid_brain_atlas - This example plays through prepared lipid-atlas image sections and channels.
+ *
+ * What to look for: the compact cache stores section ids, channel m/z values, and float image
+ * frames. The sampled field updates one section/channel frame at a time, the colorbar title follows
+ * the active m/z value, and the readout names the current prepared-data source; compare successive
+ * frames to see how the spatial intensity pattern changes.
+ *
+ * This workflow is useful for validating large image-stack pipelines with a small prepared bundle.
+ * The example does not synthesize missing data at runtime; run the preparation command first.
  *
  * Scenario: showcase_lipid_brain_atlas
  * Style: showcase, graphite_cyan, 1280x720 window target

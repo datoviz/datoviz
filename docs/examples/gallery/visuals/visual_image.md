@@ -10,11 +10,11 @@
 <span>Image</span>
 </nav>
 
-Deterministic scalar sampled field rendered with the image visual.
+This example displays a generated scalar field as a 2D image.
 
 ## What To Look For
 
-This page isolates the Image visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
+The FIELD_WIDTH by FIELD_HEIGHT value array is attached as a sampled field, while four corner positions and texture coordinates place it on a panel. The colormap scale maps values from 0 to 1, so compare the smooth bands and local extrema in the image to see how dense measurements such as microscopy tiles, detector frames, or model grids become a texture-backed visual.
 
 Useful tags for this example: `image`, `sampled-field`, `capture`.
 

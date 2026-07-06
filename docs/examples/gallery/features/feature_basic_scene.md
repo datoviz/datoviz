@@ -10,11 +10,11 @@
 <span>Basic Scene</span>
 </nav>
 
-Smallest scene with one point visual.
+This example shows the smallest scene with a point visual.
 
 ## What To Look For
 
-This page isolates `scene`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+A scene owns one figure, one full panel, and one point visual. The point visual uploads position, color, and diameter_px arrays for three markers, then disables depth testing for a flat 2D preview. This is the baseline pattern for beginner examples: create the scene objects, upload attribute arrays, style the visual, and attach it to a panel.
 
 No external data is needed; the example generates its data.
 

@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* timer_animation - portable scenario updating retained point data on runner frames.
+/* timer_animation updates point attributes every runner frame from scenario time.
+ *
+ * What to look for: the same retained point visual receives new position, color, and diameter_px
+ * arrays on each frame. The eight points slide along a sine wave, pulse in size, and cycle through
+ * palette colors without recreating the visual. This is useful for simulations, live instruments,
+ * and time-dependent analyses where the data values change but the visualization object remains
+ * the same.
  *
  * Scenario: feature.timer_animation
  * Style: features, graphite_cyan, 1280x720 window target

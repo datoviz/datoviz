@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* volume - deterministic gyroid scalar field rendered with the retained volume visual.
+/* volume - This example volume-renders a generated 3D gyroid scalar field.
+ *
+ * What to look for: the FIELD_SIZE cubed data array is attached as a 3D sampled field, with color
+ * and alpha scales controlling which values remain visible. Compare the rotating volume with the
+ * boundary box to understand the data bounds, transfer-function opacity, and maximum-intensity
+ * projection style used for volumetric microscopy, simulation, or tomography data.
  *
  * Scenario: visual.volume
  * Style: visuals, graphite_cyan, 1280x720 window target

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* basic_scene - smallest runner-backed retained scene with one point visual.
+/* basic_scene - This example shows the smallest retained scene with a point visual.
  *
  * Scenario: feature.basic_scene
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,11 @@
  * Build:  just example-c features/basic_scene
  * Run:    ./build/examples/c/features/basic_scene --live
  * Smoke:  ./build/examples/c/features/basic_scene --png
+ *
+ * What to look for: a scene owns one figure, one full panel, and one point visual. The point visual
+ * uploads position, color, and diameter_px arrays for three markers, then disables depth testing
+ * for a flat 2D preview. This is the baseline pattern for beginner examples: create the scene
+ * objects, upload attribute arrays, style the visual, and attach it to a panel.
  */
 
 

@@ -4,17 +4,19 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* controller_turntable - constrained turntable controller around a small 3D mesh.
+/* controller_turntable - This example shows world-up orbiting with a turntable controller.
  *
  * Scenario: feature.controller_turntable
  * Style: features, graphite_cyan, 1280x720 window target
- * Intent: demonstrate stable world-up orbit around a fixed pivot, with pitch/distance clamps and
- * no roll. The opening view is shared with other controller examples, but the interaction model is
- * the upright object-inspection pattern.
  *
  * Build:  just example-c features/controller_turntable
  * Run:    ./build/examples/c/features/controller_turntable --live
  * Smoke:  ./build/examples/c/features/controller_turntable --png
+ *
+ * What to look for: the lit cube and XZ grid provide a stable reference frame while the controller
+ * orbits around a fixed pivot without rolling the camera. In the live preview, drag around the
+ * object and compare the upright grid with an arcball view; the turntable pattern is useful for
+ * inspecting surfaces, meshes, and laboratory-coordinate 3D data where "up" should stay up.
  */
 
 

@@ -208,7 +208,7 @@ docs-assets:
     @python3 tools/build_gallery_webp.py --require-image-dir --quiet-missing
 #
 
-serve: docs-assets
+serve: docs-assets wasm-scene-build-if-needed
     #!/usr/bin/env bash
     set -euo pipefail
 

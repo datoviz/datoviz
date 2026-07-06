@@ -4,17 +4,16 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* picking - unified retained marker hover and selection proof.
+/* picking demonstrates item-level marker hover and click selection.
+ *
+ * What to look for: the marker grid uploads position, color, diameter_px, angle, and shape arrays,
+ * including several deliberately overlapping markers near the center. Move the cursor to query the
+ * frontmost marker item; hover scales the item, click toggles a persistent warning-color tint, and
+ * clicking the background clears selection. Current marker queries use marker-family bounds rather
+ * than exact SDF shape discard, which is enough to demonstrate interactive item picking.
  *
  * Scenario: feature_picking
  * Style: features, graphite_cyan, 1280x720 window target
- *
- * Opens a GLFW window showing mixed marker shapes. Move the cursor over the panel to query the
- * frontmost marker item. Hover and selection are rendered by the retained item-state API. Click a
- * marker to toggle persistent selection; click the background to clear it.
- *
- * Current marker queries prove item/frontmost picking. They use the marker family's query bounds;
- * exact SDF shape-discard picking is a later precision improvement.
  *
  * Build:  just example-c features/picking
  * Run:    ./build/examples/c/features/picking --live

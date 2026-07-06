@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* glyph - low-level font atlas glyph quads, distinct from retained semantic text.
+/* glyph - This example renders text by submitting low-level glyph atlas quads directly.
+ *
+ * What to look for: each visible character in "Datoviz Atlas cafe" is built from explicit
+ * positions, bounds, texture coordinates, colors, and angles instead of a semantic text object.
+ * Compare the accented character, baseline spacing, and per-glyph coloring to understand how the
+ * atlas visual exposes the pieces that higher-level text layout normally hides.
  *
  * Scenario: visual.glyph
  * Style: visuals, graphite_cyan, 1280x720 window target

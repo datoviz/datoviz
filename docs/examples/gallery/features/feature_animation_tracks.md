@@ -10,11 +10,11 @@
 <span>Animation Tracks</span>
 </nav>
 
-Track-backed visual transform animation.
+This example shows scene animation tracks driving a cube and camera.
 
 ## What To Look For
 
-This page isolates `animation tracks`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The cube keeps its mesh geometry and material, while a rotation track updates its visual transform every frame. A closed Catmull-Rom keyframe track moves the camera eye around the cube and a constant track keeps the target at the origin. In the live preview, compare the cube's local spin with the slower camera flyover; user interaction pauses the camera motion so the object can still be inspected. Tracks are useful for repeatable animations, scripted camera paths, and deterministic movie captures.
 
 No external data is needed; the example generates its data.
 

@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* ssao - screen-space ambient occlusion on normal-producing mesh geometry.
+/* ssao compares a sphere cluster with and without screen-space ambient occlusion.
+ *
+ * What to look for: both panels upload the same lit sphere position, radius, and color arrays,
+ * while the right panel applies SSAO with blur and tunable radius, strength, bias, power,
+ * visibility, sample count, and debug settings. In live mode, use the GUI and linked arcball to
+ * inspect contact shadows between nearby spheres. SSAO helps reveal local shape and separation in
+ * crowded 3D scientific scenes.
  *
  * Scenario: feature.ssao
  * Style: features, graphite_cyan, 1280x720 window target

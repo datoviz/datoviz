@@ -4,7 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* panel_linked_axes - linked temporal panels with a spanning summary panel.
+/* panel_linked_axes - This example builds linked time-series panels with shared axes behavior.
+ *
+ * What to look for: the left column combines a synthetic signal trace, an event-raster panel, and
+ * residual points, while the right panel summarizes the same time range. The important arrays are
+ * the path samples, event segments, residual points, shaded bands, and cursor lines; compare the
+ * panels to see that they use different y domains while their x navigation remains linked.
+ *
+ * This workflow is useful for scientific dashboards where traces, events, and summary statistics
+ * must stay aligned during panzoom interaction.
  *
  * Scenario: linked_panels_axes_panzoom
  * Style: showcase workflow, graphite_cyan, 1280x720 window target

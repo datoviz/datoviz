@@ -10,11 +10,11 @@
 <span>Manual Camera</span>
 </nav>
 
-Explicit perspective-camera setup with eye, target, up, and clip planes.
+This example shows explicit perspective-camera setup for a 3D scene.
 
 ## What To Look For
 
-This page isolates `camera manual`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The camera descriptor sets eye, target, up, field of view, and near/far clip planes before the panel renders a lit cube on a reference grid. Compare the cube's perspective with the grid orientation and how much of the scene is visible. Manual camera setup is useful when screenshots, reproducible views, or analysis layouts need a known viewpoint instead of an interaction-derived one.
 
 No external data is needed; the example generates its data.
 

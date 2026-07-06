@@ -10,11 +10,11 @@
 <span>Primitive</span>
 </nav>
 
-Line and triangle topologies rendered with the primitive visual.
+This example compares basic primitive topologies.
 
 ## What To Look For
 
-This page isolates the Primitive visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
+Each primitive supplies positions, colors, and group IDs, then chooses a line or triangle topology. Compare the separate shapes in the screenshot to see how the same compact vertex attributes can describe reference marks, outlines, filled triangles, or custom simple geometry before using a higher-level visual.
 
 Useful tags for this example: `primitive`, `capture`.
 

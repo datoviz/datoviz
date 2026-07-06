@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* graph - deterministic brain-connectivity graph composite.
+/* graph - This example builds a small brain-connectivity graph composite.
+ *
+ * What to look for: node arrays provide positions, semantic IDs, community colors, and sizes;
+ * edge arrays provide endpoints, IDs, colors, widths, and optional Bezier controls. Compare node
+ * clusters, thicker bridge edges, and curved links to see how a graph composite can turn
+ * relationship tables into a readable scientific network.
  *
  * Scenario: composite_graph
  * Style: feature composite, graphite_cyan, 1280x720 window target

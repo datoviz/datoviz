@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* legend_categorical - tentative retained categorical legend proof.
+/* legend_categorical shows how one categorical scale drives both marker colors and a legend.
+ *
+ * What to look for: five category IDs are assigned labels, colors, and marker shapes, then the
+ * marker visual uploads matching position, color, diameter_px, angle, and shape arrays. Compare
+ * the marker cloud with the right-side legend entries: the legend is useful because it explains
+ * categorical groups without requiring readers to decode colors or shapes from the data alone.
  *
  * Scenario: feature.legend_categorical
  * Style: features, graphite_cyan, 1280x720 window target

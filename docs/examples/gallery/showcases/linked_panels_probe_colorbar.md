@@ -10,11 +10,13 @@
 <span>Linked Probe With Colorbar</span>
 </nav>
 
-Linked image panels with one probe readout and shared colorbar.
+This example links two image panels with a probe readout and colorbar.
 
 ## What To Look For
 
-This showcase shows a composed Linked Probe With Colorbar scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
+The source and derived images are generated from two FIELD_WIDTH x FIELD_HEIGHT float arrays and share one continuous scale. Moving the probe updates markers in both panels, queues a source-panel pixel query, and refreshes the readout with the raw and derived values; compare the same probe location across both images and the shared colorbar.
+
+This workflow is useful for inspecting transformed measurements while preserving a visible link to the original sampled field.
 
 Useful tags for this example: `workflow`, `image`, `sampled-field`, `pixel-query`.
 

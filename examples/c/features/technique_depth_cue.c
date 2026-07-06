@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* depth_cue - depth-dependent fading applied to a regular 3D sphere lattice.
+/* depth_cue compares a plain 3D sphere lattice with depth-dependent fading.
+ *
+ * What to look for: both panels upload the same 3x3x3 sphere position, color, and radius arrays,
+ * but only the right panel applies a depth-cue descriptor to the visual. In live mode, use the GUI
+ * to change cue mode, depth metric, falloff, near/far depth, strength, density, and background
+ * color while the linked arcball keeps both views aligned. Depth cueing helps dense 3D plots read
+ * as depth instead of a flat pile of symbols.
  *
  * Scenario: feature.depth_cue
  * Style: features, graphite_cyan, 1280x720 window target

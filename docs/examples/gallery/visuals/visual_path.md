@@ -10,11 +10,11 @@
 <span>Path</span>
 </nav>
 
-Deterministic multi-signal path visual.
+This example draws several continuous signals with one path visual.
 
 ## What To Look For
 
-This page isolates the Path visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
+Positions hold the sampled curves, colors and widths vary per sample, and the subpaths array separates the three traces. Compare the rounded caps and joins across the lines to see why paths are useful for time series, trajectories, contours, and other ordered scientific measurements.
 
 Useful tags for this example: `path`, `capture`.
 

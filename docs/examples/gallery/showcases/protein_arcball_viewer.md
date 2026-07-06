@@ -10,11 +10,19 @@
 <span>Protein</span>
 </nav>
 
-RCSB PDB protein structure rendered as clustered spheres.
+This example renders a prepared PDB structure as colored sphere impostors.
 
 ## What To Look For
 
-This showcase shows a composed Protein scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
+The protein bundle supplies atom positions, element-style colors, and radii; the example scales those radii and renders the atoms as spheres with an arcball/spin view. In the preview, compare atom size and color clusters rather than expecting bonds: the visual focus is the dense molecular surface produced from per-atom arrays.
+
+This workflow is useful when a scientific viewer needs to turn prepared molecular coordinates into an interactive 3D point/sphere representation. The repository fallback is 1UBQ; other PDB ids must be prepared before running.
+
+Data/examples/proteins/1ubq/prepared, generated from RCSB PDB 1UBQ. Source: https://files.rcsb.org/download/{PDB_ID}.pdb Terms: RCSB PDB data usage policy applies. Prepare: python tools/data/prepare_protein_arcball.py 1UBQ --regenerate python tools/preprocess_protein.py 6M0J
+
+Options: --spin, --debug, [bundle-path], [frame-count] Debug: DVZ_EXAMPLE_DEBUG=gui enables post-processing diagnostics
+
+The full interactive GUI workbench lives in examples/c/lab/protein_viewer.c.
 
 Useful tags for this example: `scientific`, `real-data`, `molecular`, `sphere`.
 

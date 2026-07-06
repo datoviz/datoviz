@@ -10,11 +10,11 @@
 <span>Input Events</span>
 </nav>
 
-Live native keyboard, pointer, wheel, and resize event logging.
+This example shows native keyboard, pointer, wheel, and resize events.
 
 ## What To Look For
 
-This page isolates `input events`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The native app registers input callbacks and prints event details for pointer movement, button presses, scrolling, keyboard input, and window resize. The synthetic smoke path exercises the same event-handling code without requiring manual interaction. Run it live and compare terminal output with your mouse and keyboard actions; event logging is useful when building custom picking, navigation, or analysis controls.
 
 No external data is needed; the example generates its data.
 

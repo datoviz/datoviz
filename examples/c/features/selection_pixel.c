@@ -4,14 +4,16 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* selection_pixel - retained pixel hover and click selection.
+/* selection_pixel queries and selects individual cells in a retained pixel grid.
+ *
+ * What to look for: the 40x24 grid uploads position, color, and pixel_size_px arrays generated
+ * from a smooth scalar field. Move the cursor over the live panel to query a pixel item; hover
+ * scales the square, click toggles a persistent warning-color tint, and clicking the background
+ * clears selection. This is useful for heatmaps and rasters where each rendered cell may
+ * correspond to a sample, sensor, or bin.
  *
  * Scenario: feature.selection_pixel
  * Style: features, graphite_cyan, 1280x720 window target
- *
- * Move the cursor over the pixel field to query the frontmost pixel item. Hover and selection are
- * rendered by the retained item-state API. Click a pixel to toggle selection; click the background
- * to clear it.
  *
  * Build:  just example-c features/selection_pixel
  * Run:    ./build/examples/c/features/selection_pixel --live

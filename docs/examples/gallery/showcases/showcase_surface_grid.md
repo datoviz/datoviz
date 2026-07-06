@@ -10,11 +10,13 @@
 <span>Surface Grid</span>
 </nav>
 
-Generated height-field mesh with a derived wireframe overlay.
+This example turns a generated height field into a lit mesh and wireframe.
 
 ## What To Look For
 
-This showcase shows a composed Surface Grid scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
+SURFACE_ROWS by SURFACE_COLS height and color arrays are converted to geometry, rendered as a material mesh, and reused to derive unique edges for the segment wireframe. In the preview, compare the smooth shaded surface with the overlaid grid lines while rotating the arcball camera.
+
+This workflow is useful for scientific surfaces where the same gridded data should support both shape perception and explicit mesh topology.
 
 Useful tags for this example: `scientific`, `synthetic`, `surface-grid`, `mesh`.
 

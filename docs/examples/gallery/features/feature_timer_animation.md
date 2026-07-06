@@ -10,11 +10,11 @@
 <span>Timer Animation</span>
 </nav>
 
-Portable scenario updating point data on runner frames.
+Timer_animation updates point attributes every runner frame from scenario time.
 
 ## What To Look For
 
-This page isolates `timer animation`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The same point visual receives new position, color, and diameter_px arrays on each frame. The eight points slide along a sine wave, pulse in size, and cycle through palette colors without recreating the visual. This is useful for simulations, live instruments, and time-dependent analyses where the data values change but the visualization object remains the same.
 
 No external data is needed; the example generates its data.
 

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* controller_arcball - arcball controller attached to a small 3D mesh.
+/* controller_arcball - This example shows an arcball controller rotating a 3D view.
  *
  * Scenario: feature.controller_arcball
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,12 @@
  * Build:  just example-c features/controller_arcball
  * Run:    ./build/examples/c/features/controller_arcball --live
  * Smoke:  ./build/examples/c/features/controller_arcball --png
+ *
+ * What to look for: a colored cube mesh and XZ reference grid make rotation easy to see, and the
+ * controller is bound to all three dimensions of the panel. In the live preview, drag the mouse
+ * and compare how the cube can roll freely with the view. Arcball interaction is useful for
+ * unconstrained inspection of 3D data, where seeing an object from arbitrary orientations matters
+ * more than preserving a fixed world-up direction.
  */
 
 

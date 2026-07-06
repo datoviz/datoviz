@@ -4,7 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* app_glfw - direct GLFW app path without the scenario runner.
+/* app_glfw - This example opens a native GLFW window for a small retained point scene.
+ *
+ * What to look for: the scene creates one figure, one full-panel view, and one point visual with
+ * explicit position, color, and diameter arrays. The live preview should show six differently
+ * sized points on the graphite/cyan background, and panzoom interaction should work because the
+ * view binds a controller after the GLFW window is created.
+ *
+ * Use this as the beginner native-app template when you want Datoviz to own the GLFW lifecycle
+ * directly instead of running through the portable scenario runner.
  *
  * Scenario: feature.app_glfw
  * Style: runtime, native app

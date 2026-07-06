@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* bars_bands - retained bars and uncertainty band plot helpers.
+/* bars_bands - This example shows bars and an uncertainty band in one 2D panel.
  *
  * Scenario: feature.bars_bands
  * Style: features, graphite_cyan, 1280x720 window target
@@ -12,6 +12,12 @@
  * Build:  just example-c features/bars_bands
  * Run:    ./build/examples/c/features/bars_bands --live
  * Smoke:  ./build/examples/c/features/bars_bands --png
+ *
+ * What to look for: the bar helper uses start, end, and value arrays so each bar has an explicit
+ * interval on the x axis. The band helper uses x, lower, upper, and center arrays to draw an
+ * envelope plus a central trend line. Compare the discrete bars with the continuous band and its
+ * bounds; the combination is useful for showing sampled measurements together with a model,
+ * confidence interval, or expected range.
  */
 
 

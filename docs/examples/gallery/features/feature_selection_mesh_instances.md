@@ -10,11 +10,11 @@
 <span>Mesh Instance Selection</span>
 </nav>
 
-Instanced mesh hover and click selection.
+Selection_mesh_instances queries and selects individual instances of one mesh visual.
 
 ## What To Look For
 
-This page isolates `selection mesh instances`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+A single cube geometry is reused with an instance_transform array for a 6x4x2 field of differently placed, scaled, and rotated cubes. Move the cursor over the live 3D panel to query the frontmost mesh instance; hover scales the item, click toggles a persistent warning-color tint, and clicking the background clears selection. Drag with the arcball controller to confirm selection follows the instanced mesh in 3D.
 
 No external data is needed; the example generates its data.
 

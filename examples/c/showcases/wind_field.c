@@ -4,7 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* wind_field - synthetic weather-like scalar and vector field showcase.
+/* wind_field - This example combines a synthetic wind-speed field with vectors and streamlines.
+ *
+ * What to look for: the sampled field stores wind speed over a kilometer-scale domain, vectors show
+ * local direction and magnitude, streamlines trace the flow, and a fixed probe plus colorbar report
+ * speed in m/s. During live playback, compare how the image, vector glyphs, and paths update
+ * together from the same procedural wind model.
+ *
+ * This workflow is useful for geophysical or fluid-like data where scalar magnitude and direction
+ * need to be read in one coordinated panel.
  *
  * Scenario: showcase_wind_field
  * Style: showcase, graphite_cyan, 1280x720 window target

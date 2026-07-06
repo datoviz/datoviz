@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* panel_view2d - panel-owned 2D view framing with equal aspect.
+/* panel_view2d compares a regular 2D panel with one that keeps equal data aspect.
+ *
+ * What to look for: both panels draw the same unit circle path and styled X/Y axes. The left panel
+ * uses a direct [-1, 1] domain, while the right panel configures an equal-aspect view and verifies
+ * matching data units per pixel in X and Y. Compare the circle shape and grid spacing; equal
+ * aspect is essential when distance, angle, or shape should not be visually distorted.
  *
  * Scenario: feature.panel_view2d
  * Style: features, graphite_cyan, 1280x720 window target

@@ -10,11 +10,15 @@
 <span>U.S. State Choropleth</span>
 </nav>
 
-Contiguous U.S. state population-density choropleth.
+This example renders contiguous U.S. population density as polygon-set data.
 
 ## What To Look For
 
-This showcase shows a composed U.S. State Choropleth scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
+Prepared Census boundaries are loaded as flat point, ring, fill-color, stroke-color, stroke-width, and id arrays, then colored by log10 resident population density. Compare the state shapes with the vertical colorbar labeled in people per square kilometer; the topology is ring-based and interior holes are not preserved.
+
+This workflow is useful for map-like scientific figures where real tabular values must be joined to prepared geometry before rendering. Run the preparation command if the promoted data bundle is not present.
+
+Population estimates, prepared into flat polygon-set arrays. Source: https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx Terms: U.S. Census Bureau public data; cite the Census Bureau as source. Prepare: python tools/data/prepare_us_state_choropleth.py Promote: python tools/data/prepare_us_state_choropleth.py --output data/examples/us_state_choropleth
 
 Useful tags for this example: `scientific`, `real-data`, `geo`, `composite`.
 

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* compute_buffer_animation - scene compute pass with independent circular point motion.
+/* compute_buffer_animation - This example shows a compute pass updating point positions.
  *
  * Scenario: feature.compute_buffer_animation
  * Style: features, graphite_cyan, 1280x720 window target, experimental scene compute
@@ -12,6 +12,12 @@
  * Build:  just example-c features/compute_buffer_animation
  * Run:    ./build/examples/c/features/compute_buffer_animation --live
  * Smoke:  ./build/examples/c/features/compute_buffer_animation --png
+ *
+ * What to look for: the point visual reads its position attribute from a scene buffer that is also
+ * bound as read-write storage for a compute shader. Static color and diameter_px arrays define the
+ * appearance, while per-frame parameters update time and the shader writes new x/y coordinates.
+ * Compare the moving markers with their stable colors and sizes; this demonstrates a useful
+ * compute-to-render pattern for particle systems, simulations, and iterative GPU analyses.
  */
 
 

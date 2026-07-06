@@ -10,11 +10,11 @@
 <span>Annotation Readout</span>
 </nav>
 
-Label annotation anchored to data.
+This example shows a text annotation anchored to one data point.
 
 ## What To Look For
 
-This page isolates `annotation readout`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
+The point visual uploads position, color, and diameter_px arrays for a small signal-like scatter plot. One highlighted sample is paired with a label annotation at the same data coordinate, using placement settings to keep the text offset from the marker. Compare the emphasized marker with the muted neighbors and the label placement relative to the axes; this is the pattern used for callouts, readouts, and selected observations in scientific plots.
 
 No external data is needed; the example generates its data.
 

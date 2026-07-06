@@ -10,11 +10,17 @@
 <span>Point Cloud</span>
 </nav>
 
-RESEPI RGB LiDAR dense point cloud.
+This example renders a prepared RGB LiDAR point cloud with direct colors.
 
 ## What To Look For
 
-This showcase shows a composed Point Cloud scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
+The prepared binary stores point positions, RGBA colors, and per-point pixel sizes after preprocessing the upstream LAZ source. The preview should read as a dense colored spatial scan, and the fly-style view is the interaction to use when inspecting depth and structure.
+
+This workflow is useful for large measured point clouds where the expensive decoding and normalization happen before the gallery example runs. Generate the prepared cache before running.
+
+Real data is loaded from `.cache/datoviz/examples/point_cloud/prepared/point_cloud.bin`. Generate it from the upstream LAZ source with:
+
+Python tools/data/prepare_point_cloud.py --force
 
 Useful tags for this example: `real-data`, `pixel`, `dense-point-cloud`, `direct-color`.
 

@@ -10,11 +10,13 @@
 <span>Multi Window</span>
 </nav>
 
-One app driving two native GLFW windows.
+This example drives two independent native GLFW windows from one Datoviz app.
 
 ## What To Look For
 
-This page focuses on `multi window`. Use it when you need to control how Datoviz opens, captures, records, or exports a scene, not only what the scene draws.
+The overview and detail figures each get their own point-position, point-color, and point-diameter arrays, then the same app presents them in two positioned windows. Compare the two live windows rather than one screenshot: they prove that separate figures and views can share a process while keeping their own scene content.
+
+This workflow is useful for scientific tools that need a coarse overview beside a focused detail view without starting a second renderer.
 
 No external data is needed; the example generates its data.
 

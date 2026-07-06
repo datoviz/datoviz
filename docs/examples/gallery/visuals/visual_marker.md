@@ -10,11 +10,11 @@
 <span>Marker</span>
 </nav>
 
-Marker visual with deterministic symbol, fill, stroke, size, and angle
+This example compares marker symbols, sizes, strokes, fills, and rotations.
 
 ## What To Look For
 
-This page isolates the Marker visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
+Each row reuses position, symbol, color, size, edge color, and angle arrays to show how screen-space markers encode categories and selected points. The top row is a triangle compass probe: angle is mathematical counter-clockwise, and triangle diameter_px is the screen-space bounding-box diameter.
 
 Useful tags for this example: `marker`, `panzoom`, `capture`.
 
