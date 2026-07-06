@@ -118,7 +118,7 @@ and unsubscribe before destroying that state or the view.
 ## See Also
 
 - [Use panzoom](use-panzoom.md)
-- [Pick items](pick-and-probe.md)
+- [Pick items](pick-items.md)
 - [Embed in Qt](embed-in-qt.md)
 
 ??? example "Related examples"

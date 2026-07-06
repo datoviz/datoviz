@@ -101,7 +101,7 @@ Do not assume every visual family supports every target kind, value kind, or res
 
 ## See Also
 
-- [Pick items](../how-to/pick-and-probe.md)
+- [Pick items](../how-to/pick-items.md)
 - [Probe fields](../how-to/probe-fields.md)
 - [WebGPU subset](webgpu-subset.md)
 - [C scene API](c-api/scene.md)

@@ -135,7 +135,7 @@ style are stable.
 
 ## See Also
 
-- [Pick items](pick-and-probe.md)
+- [Pick items](pick-items.md)
 - [Probe image or field values](probe-fields.md)
 - [Add colorbars, scale bars, and legends](adornments.md)
 

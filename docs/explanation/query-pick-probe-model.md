@@ -36,7 +36,7 @@ promoted slice.
 
 See also:
 
-- [Pick items](../how-to/pick-and-probe.md)
+- [Pick items](../how-to/pick-items.md)
 - [Probe fields](../how-to/probe-fields.md)
 - [Queries reference](../reference/queries.md)
 - [WebGPU subset](../reference/webgpu-subset.md)

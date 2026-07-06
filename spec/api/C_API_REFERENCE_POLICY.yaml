@@ -50,8 +50,8 @@ pages:
         href: ../../how-to/create-multiple-panels.md
       - label: Configure cameras
         href: ../../how-to/configure-cameras.md
-      - label: Pick and probe
-        href: ../../how-to/pick-and-probe.md
+      - label: Pick items
+        href: ../../how-to/pick-items.md
     headers:
       - include/datoviz/scene.h
       - include/datoviz/scene/**

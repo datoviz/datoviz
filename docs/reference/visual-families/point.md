@@ -60,5 +60,5 @@ Depth testing is a visual option; the example disables it for a 2D panzoom panel
 ## See Also
 
 [Choose a visual family](../../how-to/choose-a-visual-family.md),
-[use panzoom](../../how-to/use-panzoom.md), [pick and probe](../../how-to/pick-and-probe.md),
+[use panzoom](../../how-to/use-panzoom.md), [pick items](../../how-to/pick-items.md),
 [Pixel](pixel.md), [Marker](marker.md), [Sphere](sphere.md).

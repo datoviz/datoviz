@@ -16,7 +16,7 @@ Common workflows:
 - [Create a scene](../../how-to/create-a-scene.md)
 - [Create multiple panels](../../how-to/create-multiple-panels.md)
 - [Configure cameras](../../how-to/configure-cameras.md)
-- [Pick and probe](../../how-to/pick-and-probe.md)
+- [Pick items](../../how-to/pick-items.md)
 
 Functions: 388
 

@@ -100,7 +100,7 @@ centers.
 ## See Also
 
 - [Use sampled fields and textures](use-sampled-fields.md)
-- [Pick items](pick-and-probe.md)
+- [Pick items](pick-items.md)
 - [Add text, labels, and annotations](add-annotations.md)
 
 ??? example "Related examples"

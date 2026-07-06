@@ -123,7 +123,7 @@ visual data.
 
 ## See Also
 
-- [Pick items](pick-and-probe.md)
+- [Pick items](pick-items.md)
 - [Update visual data](update-visual-data.md)
 - [Control depth, blending, and transparency](rendering-techniques.md)
 
