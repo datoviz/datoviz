@@ -1,14 +1,15 @@
 # Deploy WebGPU Examples to the Browser
 
-Use generated WebGPU live routes for portable browser examples.
+Use the website's live WebGPU routes to run supported Datoviz examples in a browser.
 
-The browser route is an experimental deployment surface for examples that already run through the
-shared scene -> DRP2 -> WASM/WebGPU path. It is not a separate JavaScript renderer.
+This page is for testing or deploying examples that are already marked as browser-supported. It is
+not the starting point for writing a new visualization; start with the native or Python example
+first, then check whether the same example has browser support.
 
 ## Task Workflow
 
-Start from an example marked `webgpu-live` in `examples/c/MANIFEST.yaml`. Build the docs/site
-artifacts, then open the generated route `examples/webgpu/live.html?id=<example-id>`.
+Start from an example whose gallery page says `Browser support: Live in browser`. Serve the docs
+site over HTTP, then open the generated route:
 
 ## Minimal Route
 
@@ -16,13 +17,12 @@ artifacts, then open the generated route `examples/webgpu/live.html?id=<example-
 examples/webgpu/live.html?id=feature_basic_scene
 ```
 
-The route hosts the WebGPU runtime, WASM bridge, canvas, and scenario data. If the `id` is unknown,
-the live route fails through `examples/webgpu/live_examples.js`.
+If the `id` is unknown, the page shows a route error instead of silently choosing another example.
 
 
-## Build And Smoke
+## Build And Check Locally
 
-Use the narrow WebGPU validation loop before treating a route as deployable:
+Use the WebGPU validation loop before treating a route as deployable:
 
 ```sh
 just wasm-scene-build
@@ -40,7 +40,7 @@ http://localhost:8000/examples/webgpu/live.html?id=feature_basic_scene
 The exact port depends on the local `just serve` invocation.
 
 
-## Source Of Truth
+## Where Browser Support Comes From
 
 | File | Role |
 | --- | --- |
@@ -50,15 +50,15 @@ The exact port depends on the local `just serve` invocation.
 | `tools/wasm_scene_smoke.mjs` | Checks WASM scene packet and scenario coverage. |
 | `tools/webgpu_browser_smoke.mjs` | Exercises selected browser routes. |
 
-Browser glue should mount and run the canonical scenario. Do not reimplement scene behavior,
-animation, picking, selection, query/probe, or data semantics in JavaScript.
+The browser page should run the same supported example behavior. Do not reimplement animation,
+picking, selection, query/probe, or data semantics in page-specific JavaScript.
 
 
 ## Status Values
 
 | Status | Meaning |
 | --- | --- |
-| `webgpu-live` | Public live route exists for the promoted subset; browser/adapter visual proof is recorded separately. |
+| `webgpu-live` | Public live route exists for the promoted browser subset. |
 | `webgpu-planned` | Intended browser route, but not promoted yet. |
 | `webgpu-deferred` | Browser support is intentionally postponed. |
 | `native-only` | Native/runtime feature should link to native validation or static media instead. |
@@ -66,8 +66,8 @@ animation, picking, selection, query/probe, or data semantics in JavaScript.
 Only `webgpu-live` examples should be linked as live browser routes. Other statuses need fallback
 links, screenshots, videos, or native instructions.
 
-A live route is not the same as adapter-specific proof. For release evidence, pair the manifest
-status with `just webgpu-browser-smoke` output or a recorded manual browser/adapter result.
+A live route is not the same as proof on every browser and GPU. For release evidence, pair the
+manifest status with `just webgpu-browser-smoke` output or a recorded manual browser result.
 
 
 ## Deployment Notes
@@ -94,9 +94,8 @@ route so it owns its own document, scripts, canvas, query parameters, permission
 - Copying GLFW input code into browser examples.
 - Moving browser runtime JavaScript into handwritten How-To pages.
 - Opening live routes through `file://` instead of a local or deployed HTTP server.
-- Registering a live route without updating the manifest status and smoke coverage.
-- Treating WebGPU parity as full native Vulkan parity rather than the documented experimental
-  subset.
+- Registering a live route without updating the manifest status and browser smoke coverage.
+- Treating browser support as full native feature parity.
 
 ## See Also
 

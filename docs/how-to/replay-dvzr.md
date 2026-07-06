@@ -1,16 +1,18 @@
-# Record and Replay Frame Streams
+# Record and Replay Datoviz Frames
 
-Use DVZR frame streams for reproducible rendering and portability checks.
+Use Datoviz recordings when you need to capture rendered frames and replay them later for debugging
+or release checks. This is an advanced diagnostic workflow; for ordinary visualization code, start
+with [Create a scene](create-a-scene.md), [Open an interactive window](create-a-window.md), or
+[Render offscreen](render-offscreen.md).
 
 ## Task Workflow
 
-Record the command stream emitted by an app view, then replay it through the same runtime boundary.
-Use this when debugging frame execution, backend portability, or a regression that happens after the
-scene has already lowered to DRP2. For ordinary plotting or scene authoring, start from the scene
-and visual examples instead.
+Record frames from an app view, keep the generated `*.dvzr/` directory, then replay it in another
+view. Use this after you have already checked that the scene, visual data, panel attachment, and
+controller setup are correct.
 
-DVZR recordings are directories, not single files. Keep the whole `*.dvzr/` directory together with
-the runtime, platform, and asset assumptions used to create it.
+DVZR recordings are directories, not single files. Keep the whole directory together with the
+Datoviz commit, platform, GPU/backend, dimensions, and command used to create it.
 
 ## Choose The Replay Path
 
@@ -18,8 +20,8 @@ the runtime, platform, and asset assumptions used to create it.
 | --- | --- |
 | Record an offscreen or GLFW app view and replay it in another app view | `dvz_view_record_start()` and `dvz_view_replay_start()` |
 | Replay a saved recording into a live native window | the same app replay calls on a window-backed view |
-| Execute a recording directly against a DRP2 runtime | `dvz_drp2_recording_open()` plus `dvz_drp2_recording_execute_*()` |
-| Build or inspect hand-written DRP2 command streams | `examples/c/advanced/raw_triangle_drp2.c` |
+| Work directly with lower-level recording streams | `dvz_drp2_recording_open()` plus `dvz_drp2_recording_execute_*()` |
+| Inspect a low-level command-stream example | `examples/c/advanced/raw_triangle_drp2.c` |
 
 ## Minimal Call Sequence
 
@@ -76,10 +78,10 @@ Standalone replay tools may exist in the lab tree during development, but lab ex
 of the public release proof. Public code should start from the runtime recording example and the app
 replay functions above.
 
-## Lower-Level DRP2 Recording
+## Advanced Recording API
 
-Use the DRP2 recording API when you already have a `DvzDrp2CommandStream` or are writing backend
-tests. This bypasses scene and app-view convenience plumbing.
+Use the lower-level recording API only when you already have a command stream or are writing backend
+tests. This bypasses the app-view recording helpers above.
 
 ```c
 DvzDrp2RecordingInfo info = dvz_drp2_recording_info();
@@ -100,16 +102,17 @@ For multi-frame streams, open a `DvzDrp2Recorder`, append timestamped streams wi
 
 ## Important Details
 
-DVZR is a frame-stream/runtime concern. Use ordinary scene examples for application code unless the
-task is replay, validation, or backend debugging.
+DVZR is a diagnostic format, not editable scene source. Use ordinary scene examples for application
+code unless the task is replay, validation, or backend debugging.
 
 Replay depends on the recorded command surface and runtime capabilities. A recording made against
 one branch, backend, device capability set, or asset layout may not replay meaningfully elsewhere.
 When saving a recording as evidence, record the commit, platform, backend, dimensions, and command
 that produced it.
 
-The portable part of a recording is the DRP2 command stream and payload blobs. Development-only raw
-fallback command records may be ABI-local and should not be treated as long-term public artifacts.
+The portable part of a recording is the command stream and payload data. Development-only fallback
+records may be local to one branch or runtime version and should not be treated as long-term public
+artifacts.
 
 DVZR is useful after you have isolated the problem to frame execution. If the question is "did I
 attach the right visual, scale, controller, or callback?", debug the retained scene first.
@@ -118,7 +121,7 @@ attach the right visual, scale, controller, or callback?", debug the retained sc
 
 - Treating a replay stream as editable scene source.
 - Recording with hidden local asset paths.
-- Debugging high-level visual behavior through DRP2 before checking the scene example.
+- Debugging visual behavior through a recording before checking the scene example.
 - Keeping only one file from a `*.dvzr/` recording directory.
 - Replaying old recordings after changing the command schema or runtime assumptions without noting
   the source commit.
@@ -128,7 +131,7 @@ attach the right visual, scale, controller, or callback?", debug the retained sc
 - [Debug rendering output](debug-rendering.md)
 - [Deploy WebGPU examples to the browser](deploy-to-web.md)
 - [Profile rendering performance](profile-performance.md)
-- [DRP2 reference](../reference/drp2/index.md)
+- [Advanced DRP2 reference](../reference/drp2/index.md)
 - [DRP2 C API](../reference/c-api/drp2.md)
 
 ??? example "Related examples"
