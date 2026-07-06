@@ -1,15 +1,15 @@
 # Embed in Qt
 
-Integrate Datoviz with a host UI toolkit without creating a parallel renderer.
+Integrate Datoviz with a Qt application that owns the window and event loop.
 
-Qt hosting is optional. It exercises the external host-window contract without adding Qt as a
-dependency of `libdatoviz`.
+Qt hosting is an advanced native-integration path. The base Datoviz library does not depend on Qt;
+Qt support is built or supplied only when the host application needs it.
 
 ## Task Workflow
 
-Keep Datoviz responsible for GPU rendering and let the host toolkit own the application shell,
-menus, and widgets. Use the external-surface or viewport integration path closest to the platform
-you target.
+Let Qt own the application shell, menus, widgets, and native window. Let Datoviz render the figure
+inside the hosted view. Use the external-surface or viewport integration path closest to the
+platform you target.
 
 ## Minimal Workflow
 
@@ -39,14 +39,14 @@ window in a Qt Widgets layout and lets widget callbacks mutate retained scene da
 
 | Owner | Responsibilities |
 | --- | --- |
-| Qt | Native window, event loop, `QSurface::VulkanSurface`, `VkSurfaceKHR`, widget state, and repaint scheduling. |
-| Datoviz | Vulkan instance, GPU context, DRP2 runtime, canvas, swapchain wrapper, scene emission, and rendering. |
+| Qt | Native window, event loop, widget state, and repaint scheduling. |
+| Datoviz | Graphics context, scene state, hosted view, and rendering. |
 
 Qt adopts the Datoviz-created Vulkan instance with `QVulkanInstance::setVkInstance()`. Qt does not
 own that instance; Datoviz destroys it when `dvz_app_destroy()` runs.
 
-The Qt surface is borrowed by Datoviz. The hosted adapter passes `owned_by_datoviz = false`, so
-Datoviz must not destroy the `VkSurfaceKHR`.
+The Qt surface is borrowed by Datoviz. Qt remains responsible for creating and destroying the
+surface; Datoviz renders into it while it is available.
 
 
 ## Event Forwarding
@@ -75,8 +75,8 @@ Before Qt destroys or recreates the native surface, release Datoviz's presentati
    present swapchain.
 
 The Qt adapter handles `QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed`. A warning that the
-canvas surface is unavailable during this cleanup pass is expected; Vulkan validation errors are
-not expected.
+surface is unavailable during this cleanup pass is expected; graphics validation errors are not
+expected.
 
 
 ## PyQt Hosting
@@ -100,8 +100,8 @@ Treat that as an environment limitation, not as a Datoviz rendering failure.
 
 ## Important Details
 
-Qt embedding is a host-integration task. Do not create a second Vulkan wrapper or presentation
-stack; adapt the existing runtime/view boundary.
+Qt embedding is a host-integration task. Do not create a second rendering stack; adapt the existing
+Datoviz hosted view path.
 
 Qt and Datoviz must agree on Vulkan instance extensions before the Datoviz app is created. Query
 Qt's required extensions first, then pass them into Datoviz app creation.
@@ -110,7 +110,7 @@ Qt's required extensions first, then pass them into Datoviz app creation.
 
 - Letting both Qt and Datoviz own the same native graphics handle.
 - Handling resize in the UI but not notifying the Datoviz view.
-- Copying internal runtime code instead of using public integration surfaces.
+- Copying Datoviz implementation code instead of using public integration surfaces.
 - Destroying or recreating the Qt surface without giving Datoviz a cleanup render pass.
 - Rendering directly from arbitrary widget callbacks instead of scheduling a frame.
 - Treating PyQt import success as proof that the required Vulkan hosting API is available.

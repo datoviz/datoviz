@@ -6,7 +6,6 @@ Update retained scene state over time without rebuilding the scene.
 
 - Visual attributes change every frame, such as positions, colors, sizes, or visibility.
 - A visual or camera should follow a repeatable transform path.
-- A GPU compute pass writes data consumed by rendering.
 - You need bounded, deterministic frames for screenshots, smoke tests, or video export.
 
 Keep the scene hierarchy stable. Create figures, panels, visuals, buffers, and controllers once;
@@ -19,7 +18,6 @@ then update only the state that changes.
 | CPU-updated visual attributes | Per-frame update or `dvz_anim_timer()` | [Timer Animation](../examples/gallery/features/feature_timer_animation.md) |
 | Repeatable visual transform | Track plus `dvz_anim_visual_transform()` | [Animation Tracks](../examples/gallery/features/feature_animation_tracks.md) |
 | Repeatable camera motion | Track plus `dvz_anim_camera_motion()` | [Animation Tracks](../examples/gallery/features/feature_animation_tracks.md) |
-| GPU-written render data | Scene compute and storage/scene buffers | [Compute Buffer Animation](../examples/gallery/features/feature_compute_buffer_animation.md) |
 | Video or deterministic capture | Bounded frame loop and capture path | [Export videos](video-export.md) |
 
 ## Minimal Retained Update
@@ -61,9 +59,8 @@ timer_desc.user_data = state;
 Use `DVZ_TIMER_CATCH_UP` when missed interval ticks must be emitted after a long frame. Set
 `max_catch_up` to bound the number of callbacks emitted on one rendered frame.
 
-Run the app normally after registering the animation. The canonical portable example uses the same
-retained-update idea through the scenario runner frame callback so native and WebGPU routes share
-the same scene semantics.
+Run the app normally after registering the animation. The canonical example uses the same retained
+update idea in native and browser routes.
 
 ## Track-Based Motion
 
@@ -100,15 +97,22 @@ from frame time or frame index. Avoid wall-clock-only state when the output must
 dvz_app_run(app, frame_count);
 ```
 
-## Backend Status
+## Browser Support
 
-The timer and track animation examples are portable scenarios with live WebGPU routes. Compute
-buffer animation is experimental because it exercises scene compute, storage buffers, and
-compute-to-render synchronization, but it also has live WebGPU coverage in the current gallery.
-
-Native app callbacks and browser callbacks are not identical host APIs. Keep reusable animation
-logic in state-update functions, then call those functions from the native timer, scenario frame
+The timer and track animation examples have live WebGPU routes in the current gallery. Native app
+callbacks and browser callbacks are not the same host API, so keep reusable animation logic in
+ordinary state-update functions and call those functions from the native timer, scenario frame
 callback, or browser host path.
+
+## Advanced Compute Animation
+
+Use scene compute only when data should be written by a GPU compute pass and then consumed by
+rendering. This is not the default path for simple motion; most animations should update visual
+attributes or transforms.
+
+The [Compute Buffer Animation](../examples/gallery/features/feature_compute_buffer_animation.md)
+example is experimental because it exercises scene compute, storage buffers, and compute-to-render
+synchronization.
 
 ## Canonical Examples
 

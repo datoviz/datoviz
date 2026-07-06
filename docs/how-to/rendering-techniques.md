@@ -9,7 +9,7 @@ cues.
 - A visual has meaningful alpha values and must blend with the scene.
 - Dense or translucent geometry looks wrong because draw order matters.
 - Depth variation is hard to read and needs depth cueing, SSAO, or another depth technique.
-- A WebGPU target needs a status check before using a native rendering technique.
+- A browser target needs a status check before using an advanced rendering technique.
 
 ## Minimal Sequence
 
@@ -51,8 +51,8 @@ interact:
 - Transparent visuals should usually keep depth testing enabled so opaque geometry can occlude them.
 - `DVZ_ALPHA_BLENDED` does not sort your data for you; overlapping transparent objects may still
   need a different technique.
-- `DVZ_ALPHA_WBOIT` and `DVZ_ALPHA_DEPTH_PEEL` ask the scene planner for specialized transparency
-  passes. Check backend support before relying on them in browser examples.
+- `DVZ_ALPHA_WBOIT` and `DVZ_ALPHA_DEPTH_PEEL` use specialized transparency passes. Check browser
+  support before relying on them in WebGPU examples.
 - Text, labels, images, and some annotation helpers may configure alpha blending internally because
   their pixels naturally include transparent coverage.
 
@@ -88,16 +88,15 @@ targets, and semantic RGB colors are passed through unchanged in shaders. Alpha 
 dvz_figure_set_color_pipeline(figure, DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND);
 ```
 
-The setting is figure-wide for app and offscreen rendering. It should be selected before rendering
-the first frame so the runtime shader and pipeline caches are built for the intended mode. Direct
-FramePlan callers can set `DvzFramePlanEmitConfig.color_pipeline` explicitly.
+The setting is figure-wide for app and offscreen rendering. Select it before rendering the first
+frame so Datoviz prepares the intended rendering path.
 
-## Backend Status
+## Browser Support
 
-The native Vulkan path is the reference path for the advanced transparency techniques. In the
-current WebGPU/WASM slice, depth testing and basic alpha blending have live coverage, while depth
-cueing, WBOIT, and depth peeling are marked deferred in the example matrix. Treat deferred WebGPU
-techniques as native-only until the corresponding gallery page advertises a live route.
+The native path is the reference path for advanced transparency techniques. In the current browser
+subset, depth testing and basic alpha blending have live coverage, while depth cueing, WBOIT, and
+depth peeling are marked deferred in the example matrix. Treat deferred browser techniques as
+native-only until the corresponding gallery page advertises a live route.
 
 ## Canonical Examples
 

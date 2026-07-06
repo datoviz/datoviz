@@ -108,10 +108,10 @@ Use `dvz_axis_set_style()` when the default tick, text, or grid styling does not
 Avoid drawing custom axis lines unless the retained axis helper cannot express the intended
 annotation.
 
-## Backend Status
+## Browser Support
 
-The 2D axes and axis-label examples have live WebGPU routes. They require the `axes` and `text`
-browser capabilities, and panzoom examples also require the `panzoom` route support.
+The 2D axes and axis-label examples have live WebGPU routes. Check the generated example page when
+browser support matters, especially if the scene also uses panzoom or text-heavy annotations.
 
 ## Canonical Examples
 
@@ -131,8 +131,8 @@ browser capabilities, and panzoom examples also require the `panzoom` route supp
 - Axes are panel-owned adornments. Do not share one `DvzAxis` across panels.
 - The active retained axis path supports finite linear X/Y panel domains. Use separate 3D reference
   helpers for 3D orientation.
-- Axis labels are rendered through the scene text pipeline, so text capability matters for browser
-  routes.
+- Axis labels use the same text support as other Datoviz labels, so browser routes need text
+  support.
 - Grid lines belong to the axis state. Keep them subtle enough that they do not dominate the data.
 - When using colorbars, scale bars, or legends, keep each adornment synchronized with the same data
   range, units, and panel layout policy.
