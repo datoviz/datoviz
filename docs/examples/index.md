@@ -664,7 +664,7 @@ This example shows scene animation tracks driving a cube and camera.
 
 `supported` `features`
 
-Timer_animation updates point attributes every runner frame from scenario time.
+Timer_animation updates point attributes every frame from scenario time.
 
 </div>
 

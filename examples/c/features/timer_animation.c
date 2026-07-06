@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* timer_animation updates point attributes every runner frame from scenario time.
+/* timer_animation updates point attributes every frame from scenario time.
  *
  * What to look for: the same retained point visual receives new position, color, and diameter_px
  * arrays on each frame. The eight points slide along a sine wave, pulse in size, and cycle through
@@ -50,8 +50,8 @@ DvzScenarioSpec dvz_example_timer_animation_scenario(void);
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  EXAMPLE_WINDOW_WIDTH
-#define HEIGHT EXAMPLE_WINDOW_HEIGHT
+#define WIDTH       EXAMPLE_WINDOW_WIDTH
+#define HEIGHT      EXAMPLE_WINDOW_HEIGHT
 #define POINT_COUNT 8u
 
 static const float TAU = 6.28318530718f;
@@ -146,8 +146,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (ctx == NULL || out_user == NULL)
         return false;
 
-    TimerAnimationState* state =
-        (TimerAnimationState*)dvz_calloc(1, sizeof(TimerAnimationState));
+    TimerAnimationState* state = (TimerAnimationState*)dvz_calloc(1, sizeof(TimerAnimationState));
     if (state == NULL)
         return false;
 
@@ -188,7 +187,7 @@ error:
 
 
 /**
- * Advance the timer-animation scenario for one runner frame.
+ * Advance the timer-animation scenario for one frame.
  *
  * @param ctx scenario context
  * @param user scenario state

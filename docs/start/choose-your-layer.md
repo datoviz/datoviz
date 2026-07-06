@@ -54,16 +54,6 @@ Most public C examples follow the same visible sequence:
 6. run the app or capture a frame.
 
 
-## Python Raw `ctypes`
-
-Choose raw `ctypes` only when you need direct access to generated C bindings from Python. This is a
-low-level integration path. It is useful for binding checks, tests that compare Python calls with
-the C API, and advanced code that needs the generated signatures directly.
-
-For ordinary Python examples, prefer `import datoviz as dvz` unless a page specifically asks for
-`datoviz.raw`.
-
-
 ## WebGPU In The Browser
 
 Some examples have live browser routes using the experimental WebGPU/WASM subset. Use these routes

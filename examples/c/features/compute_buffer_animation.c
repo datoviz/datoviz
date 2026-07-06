@@ -40,8 +40,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  EXAMPLE_WINDOW_WIDTH
-#define HEIGHT EXAMPLE_WINDOW_HEIGHT
+#define WIDTH          EXAMPLE_WINDOW_WIDTH
+#define HEIGHT         EXAMPLE_WINDOW_HEIGHT
 #define POINT_COUNT    6u
 #define WORKGROUP_SIZE 1u
 
@@ -157,8 +157,7 @@ static bool _upload_compute_params(ComputeBufferAnimationState* state, double t)
     state->params[1] = COMPUTE_ANGULAR_SPEED;
     state->params[2] = (float)POINT_COUNT;
     state->params[3] = 0.0f;
-    return dvz_scene_buffer_set_data(state->param, state->params, sizeof(state->params)) ==
-           DVZ_OK;
+    return dvz_scene_buffer_set_data(state->param, state->params, sizeof(state->params)) == DVZ_OK;
 }
 
 
@@ -200,8 +199,7 @@ static bool _add_compute_points(
     state->params[2] = (float)POINT_COUNT;
     state->params[3] = 0.0f;
     DvzSceneBuffer* param = _scene_buffer(
-        scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(vec4), state->params,
-        sizeof(state->params));
+        scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(vec4), state->params, sizeof(state->params));
     DvzSceneBuffer* phase = _scene_buffer(
         scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(float), phases, sizeof(phases));
     if (position == NULL || param == NULL || phase == NULL)
@@ -302,7 +300,7 @@ error:
 
 
 /**
- * Advance the scene-compute-buffer scenario for one runner frame.
+ * Advance the scene-compute-buffer scenario for one frame.
  *
  * @param ctx scenario context
  * @param user scenario state

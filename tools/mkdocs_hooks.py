@@ -17,7 +17,7 @@ from mkdocs.structure.files import File
 CURDIR = Path(__file__).parent
 ROOT = CURDIR.parent
 ROOT_DOCS = ('ARCHITECTURE', 'BUILD', 'CONTRIBUTING', 'MAINTAINERS')
-GALLERY_NAV_TITLE = 'Generated Gallery'
+GALLERY_NAV_TITLE = 'Individual Examples'
 GALLERY_NAV_LANES = (
     ('start', 'Start'),
     ('showcases', 'Showcases'),

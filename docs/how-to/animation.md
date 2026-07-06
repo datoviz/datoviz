@@ -119,7 +119,7 @@ synchronization.
 ![Timer Animation](../assets/gallery/v0.4/features/feature_timer_animation.webp)
 
 - [Timer Animation](../examples/gallery/features/feature_timer_animation.md) - retained point data
-  updated on runner frames. Source: `examples/c/features/timer_animation.c`.
+  updated on frames. Source: `examples/c/features/timer_animation.c`.
 - [Animation Tracks](../examples/gallery/features/feature_animation_tracks.md) - retained visual
   transform and camera motion tracks. Source: `examples/c/features/animation_tracks.c`.
 - [Compute Buffer Animation](../examples/gallery/features/feature_compute_buffer_animation.md) -

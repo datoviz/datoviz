@@ -138,7 +138,7 @@ pip install -e .
 ```
 
 
-## macOS Notes
+### macOS Notes
 
 Install Apple's command-line tools and the Homebrew packages used by the build:
 
@@ -151,7 +151,7 @@ Datoviz uses Vulkan through MoltenVK on macOS. The source build prepares the run
 the examples and tests.
 
 
-## Linux Notes
+### Linux Notes
 
 Ubuntu 24.04 is the easiest Linux path.
 
@@ -169,7 +169,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
 Linux desktop examples need a Vulkan-capable GPU and working graphics drivers.
 
 
-## Windows Notes
+### Windows Notes
 
 For the fewest surprises during v0.4 testing, use WSL2 with Ubuntu 24.04:
 
@@ -193,13 +193,7 @@ Native Windows Python wheels are part of the v0.4 packaging path. During RC test
 package command from the release notes.
 
 
-## Check Your Install
-
-For Python, run:
-
-```sh
-python -c "import datoviz as dvz; print('datoviz import ok')"
-```
+### Check Your Install
 
 For a source checkout, run a small test target:
 
@@ -214,7 +208,7 @@ direnv exec . just test scene
 ```
 
 
-## Run One Example
+### Run One Example
 
 From a source checkout, build and open the quickstart scatter plot:
 

@@ -3,7 +3,7 @@
 Start here if you are new to Datoviz v0.4.
 
 Datoviz helps you build interactive 2D and 3D scientific visualizations when you need more direct
-control than a plotting library gives. The usual workflow is concrete: create a scene, add a figure
+control than a plotting library gives. The usual workflow is typically: create a scene, add a figure
 and panel, upload data arrays to a visual, then show the result in a window or render it offscreen.
 
 ## Recommended Path
