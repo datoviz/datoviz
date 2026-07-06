@@ -14,7 +14,7 @@ This example places semantic text items in panel coordinates.
 
 ## What To Look For
 
-Each text item provides a string, x/y screen position, font size, angle, and color role, then the text system lowers it to atlas glyphs. Compare the headline, smaller annotations, and rotated label to see how titles, units, and short scientific notes can be added without managing glyph quads manually.
+Each text item provides a string, x/y screen position, font size, angle, and color role, then the text system lowers it to atlas glyphs. Compare the headline and smaller annotations to see how titles, units, and short scientific notes can be added without managing glyph quads manually.
 
 Useful tags for this example: `text`, `capture`.
 
