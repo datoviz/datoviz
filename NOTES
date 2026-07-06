@@ -19,6 +19,8 @@ GALLERY
 
 EXAMPLES
 
+- could be possibly have a python version of most of the code examples on the website (in the tab C/Python)? could the conversion be done automatically in most cases? wdyt?
+
 - scientific plotting
   - bg color appears purple, not expected
   - "bi-side refractory" is partially clipped at the top
@@ -43,6 +45,16 @@ EXAMPLES
 
 - textured planet
   - the "What To Look For" section looks badly formatted
+
+- bounds overlay
+  - there is a regression with the bounding boxes for the spheres, which are bigger and now go beyond the bounding box
+
+- input events
+  - crash when quitting
+
+- gui viewport
+  - crash when quitting
+
 
 
 
