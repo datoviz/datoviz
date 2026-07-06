@@ -12,15 +12,15 @@
 
 UV textured planet mesh via dvz_mesh + sampled fields.
 
-## What This Shows
+## What To Look For
 
-UV textured planet mesh via dvz_mesh + sampled fields.
+This showcase shows a composed Textured Planets scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
 
-Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+Useful tags for this example: `real-data`, `mesh`, `sampled-field`, `texture`.
 
 This example uses real source data. Check the source, license, and preparation command before redistributing it.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=textured_terrain_or_planet` when WebGPU is available.
 
 ## Preview
 

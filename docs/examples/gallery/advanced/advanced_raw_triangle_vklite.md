@@ -12,13 +12,15 @@
 
 Vklite draw commands into DvzCanvas.
 
-## What This Shows
+## What To Look For
 
-Vklite draw commands into DvzCanvas.
+This advanced example focuses on `advanced raw triangle vklite`. Use it after you understand the basic scene, panel, visual, data-upload, and app workflow.
 
-Use it after you understand the basic scene, panel, and visual workflow. It may rely on lower-level integration patterns than ordinary visualization code.
+Useful tags for this example: `advanced`, `vklite`, `canvas`, `low-level`.
 
 No external data is needed; the example generates its data.
+
+Browser support note: raw vklite command recording is a native runtime example.
 
 ## Preview
 

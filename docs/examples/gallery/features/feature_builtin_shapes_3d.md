@@ -12,15 +12,13 @@
 
 Builtin 3D geometry builders rendered through meshes.
 
-## What This Shows
+## What To Look For
 
-Builtin 3D geometry builders rendered through meshes.
-
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+This page isolates `builtin shapes 3d`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=feature_builtin_shapes_3d` when WebGPU is available.
 
 ## Preview
 

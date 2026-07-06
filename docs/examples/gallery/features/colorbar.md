@@ -12,15 +12,15 @@
 
 Deterministic scalar image with one continuous colorbar.
 
-## What This Shows
+## What To Look For
 
-Deterministic scalar image with one continuous colorbar.
+This page isolates `colorbar`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+Useful tags for this example: `colorbar`, `scalar-field`, `image`, `capture`.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=colorbar` when WebGPU is available.
 
 ## Preview
 

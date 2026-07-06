@@ -12,15 +12,15 @@
 
 Scene API compute-to-graphics particle smoke showcase.
 
-## What This Shows
+## What To Look For
 
-Scene API compute-to-graphics particle smoke showcase.
+This showcase shows a composed GPU Particle Smoke scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
 
-Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+Useful tags for this example: `compute`, `simulation`, `particles`, `point`.
 
 No downloaded dataset is needed; the example simulates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=showcase_gpu_particle_smoke` when WebGPU is available.
 
 ## Preview
 

@@ -12,15 +12,15 @@
 
 Scale-aware overview, detail, and 3D measurement workflow.
 
-## What This Shows
+## What To Look For
 
-Scale-aware overview, detail, and 3D measurement workflow.
+This showcase shows a composed Scale Bar Measurement Workflow scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
 
-Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+Useful tags for this example: `workflow`, `scale-bar`, `measurement`, `synthetic`.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=scalebar_measurement_workflow` when WebGPU is available.
 
 ## Preview
 

@@ -12,15 +12,13 @@
 
 Portable scenario updating point data on runner frames.
 
-## What This Shows
+## What To Look For
 
-Portable scenario updating point data on runner frames.
-
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+This page isolates `timer animation`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=feature_timer_animation` when WebGPU is available.
 
 ## Preview
 

@@ -12,11 +12,9 @@
 
 Side-by-side volume occluder attenuation on an embedded slice.
 
-## What This Shows
+## What To Look For
 
-Side-by-side volume occluder attenuation on an embedded slice.
-
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+This page isolates `volume occlusion`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
 No external data is needed; the example generates its data.
 

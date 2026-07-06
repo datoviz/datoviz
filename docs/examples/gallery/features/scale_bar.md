@@ -12,15 +12,13 @@
 
 Minimal scale bar attached to one 2D panel.
 
-## What This Shows
+## What To Look For
 
-Minimal scale bar attached to one 2D panel.
-
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+This page isolates `scale bar`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=scale_bar` when WebGPU is available.
 
 ## Preview
 

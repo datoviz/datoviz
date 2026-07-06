@@ -12,11 +12,9 @@
 
 Visual-local affine transform on point visuals.
 
-## What This Shows
+## What To Look For
 
-Visual-local affine transform on point visuals.
-
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+This page isolates `visual transform`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
 No external data is needed; the example generates its data.
 

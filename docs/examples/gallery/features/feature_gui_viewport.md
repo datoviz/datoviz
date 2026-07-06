@@ -12,15 +12,15 @@
 
 Dockable Dear ImGui window containing a live Datoviz render target.
 
-## What This Shows
+## What To Look For
 
-Dockable Dear ImGui window containing a live Datoviz render target.
-
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+This page isolates `gui viewport`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
 No external data is needed; the example generates its data.
 
-The example includes interaction; try using the mouse or keyboard while it runs.
+Try the interaction in the preview and compare it with the `gui viewport` source code.
+
+Browser support note: dockable GUI viewports require native ImGui and an offscreen native source view.
 
 ## Preview
 

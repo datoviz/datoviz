@@ -12,17 +12,17 @@
 
 Linked image panels with one probe readout and shared colorbar.
 
-## What This Shows
+## What To Look For
 
-Linked image panels with one probe readout and shared colorbar.
+This showcase shows a composed Linked Probe With Colorbar scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
 
-Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+Useful tags for this example: `workflow`, `image`, `sampled-field`, `pixel-query`.
 
 No external data is needed; the example generates its data.
 
-The example includes interaction; try using the mouse or keyboard while it runs.
+Try the interaction in the preview and compare it with the `linked panels probe colorbar` source code.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=linked_panels_probe_colorbar` when WebGPU is available.
 
 ## Preview
 

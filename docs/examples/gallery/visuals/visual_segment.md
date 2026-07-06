@@ -12,15 +12,15 @@
 
 Segment visual with independent endpoint-pair strokes and visual-wide cap bands.
 
-## What This Shows
+## What To Look For
 
-Segment visual with independent endpoint-pair strokes and visual-wide cap bands.
+This page isolates the Segment visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
 
-Use it to inspect the visual-family setup, the data arrays attached to the visual, and the rendered result before adding the same visual to a larger scene.
+Useful tags for this example: `segment`, `panzoom`, `capture`.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=visual_segment` when WebGPU is available.
 
 ## Preview
 

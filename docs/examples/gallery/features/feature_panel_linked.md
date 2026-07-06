@@ -12,17 +12,15 @@
 
 Two panels linked on X panzoom extent with independent Y panzoom state.
 
-## What This Shows
+## What To Look For
 
-Two panels linked on X panzoom extent with independent Y panzoom state.
-
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+This page isolates `linked panels`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
 No external data is needed; the example generates its data.
 
-The example includes interaction; try using the mouse or keyboard while it runs.
+Try the interaction in the preview and compare it with the `linked panels` source code.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=feature_panel_linked` when WebGPU is available.
 
 ## Preview
 

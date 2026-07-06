@@ -12,15 +12,15 @@
 
 RCSB PDB protein structure rendered as clustered spheres.
 
-## What This Shows
+## What To Look For
 
-RCSB PDB protein structure rendered as clustered spheres.
+This showcase shows a composed Protein scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
 
-Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+Useful tags for this example: `scientific`, `real-data`, `molecular`, `sphere`.
 
 This example uses real source data. Check the source, license, and preparation command before redistributing it.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=protein_arcball_viewer` when WebGPU is available.
 
 ## Preview
 

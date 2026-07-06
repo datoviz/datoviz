@@ -12,15 +12,15 @@
 
 Generated height-field mesh with a derived wireframe overlay.
 
-## What This Shows
+## What To Look For
 
-Generated height-field mesh with a derived wireframe overlay.
+This showcase shows a composed Surface Grid scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
 
-Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+Useful tags for this example: `scientific`, `synthetic`, `surface-grid`, `mesh`.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=showcase_surface_grid` when WebGPU is available.
 
 ## Preview
 

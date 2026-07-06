@@ -12,15 +12,15 @@
 
 Line and triangle topologies rendered with the primitive visual.
 
-## What This Shows
+## What To Look For
 
-Line and triangle topologies rendered with the primitive visual.
+This page isolates the Primitive visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
 
-Use it to inspect the visual-family setup, the data arrays attached to the visual, and the rendered result before adding the same visual to a larger scene.
+Useful tags for this example: `primitive`, `capture`.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=visual_primitive` when WebGPU is available.
 
 ## Preview
 

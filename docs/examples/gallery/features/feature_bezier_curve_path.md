@@ -12,11 +12,9 @@
 
 Tessellated cubic Bezier curve rendered as a path.
 
-## What This Shows
+## What To Look For
 
-Tessellated cubic Bezier curve rendered as a path.
-
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+This page isolates `bezier curve path`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
 No external data is needed; the example generates its data.
 

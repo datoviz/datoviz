@@ -12,13 +12,15 @@
 
 Gaussian splat visual with deterministic screen-space ellipses.
 
-## What This Shows
+## What To Look For
 
-Gaussian splat visual with deterministic screen-space ellipses.
+This page isolates the Splat visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
 
-Use it to inspect the visual-family setup, the data arrays attached to the visual, and the rendered result before adding the same visual to a larger scene.
+Useful tags for this example: `splat`, `panzoom`, `capture`.
 
 No external data is needed; the example generates its data.
+
+Browser support note: splat rendering is experimental and outside the RC browser subset.
 
 ## Preview
 

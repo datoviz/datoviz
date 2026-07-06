@@ -12,11 +12,9 @@
 
 Acute stroked path joins for visual regression inspection.
 
-## What This Shows
+## What To Look For
 
-Acute stroked path joins for visual regression inspection.
-
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+This page isolates `path join`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
 No external data is needed; the example generates its data.
 

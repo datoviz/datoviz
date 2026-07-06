@@ -12,15 +12,15 @@
 
 Deterministic pixel visual baseline.
 
-## What This Shows
+## What To Look For
 
-Deterministic pixel visual baseline.
+This page isolates the Pixel visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
 
-Use it to inspect the visual-family setup, the data arrays attached to the visual, and the rendered result before adding the same visual to a larger scene.
+Useful tags for this example: `pixel`, `panzoom`, `capture`.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=visual_pixel` when WebGPU is available.
 
 ## Preview
 

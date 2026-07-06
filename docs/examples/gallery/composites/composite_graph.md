@@ -12,11 +12,11 @@
 
 Deterministic brain-connectivity graph composite.
 
-## What This Shows
+## What To Look For
 
-Deterministic brain-connectivity graph composite.
+This example focuses on `graph`. Read it from top to bottom: create data, create a scene, add visuals, then run or capture the result.
 
-Read it from top to bottom: create data, create a scene, add visuals, then run or capture the result.
+Useful tags for this example: `composite`, `graph`, `marker-nodes`, `bezier-edges`.
 
 No external data is needed; the example generates its data.
 

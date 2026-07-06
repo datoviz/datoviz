@@ -12,15 +12,15 @@
 
 Direct GLFW app path without the scenario runner.
 
-## What This Shows
+## What To Look For
 
-Direct GLFW app path without the scenario runner.
-
-Use it when you need to control how Datoviz presents, captures, records, or exports a scene, not only what the scene draws.
+This page focuses on `app glfw`. Use it when you need to control how Datoviz opens, captures, records, or exports a scene, not only what the scene draws.
 
 No external data is needed; the example generates its data.
 
-The example includes interaction; try using the mouse or keyboard while it runs.
+Try the interaction in the preview and compare it with the `app glfw` source code.
+
+Browser support note: direct GLFW app lifecycle is native-only.
 
 ## Preview
 

@@ -265,6 +265,7 @@ class Example:
     status: str
     tags: tuple[str, ...]
     summary: str
+    primary: str
     data: dict
     dataset: dict
     encoding: dict
@@ -432,6 +433,13 @@ def collect_examples(manifest: dict) -> list[Example]:
             status=status_from_entry(entry),
             tags=tuple(str(tag) for tag in tags),
             summary=extract_c_summary(ROOT / source),
+            primary=str(
+                entry.get("primary_visual")
+                or entry.get("primary_feature")
+                or entry.get("primary_runtime")
+                or entry.get("primary_composite")
+                or entry.get("id")
+            ),
             data=entry.get("data") or {},
             dataset=entry.get("dataset") or {},
             encoding=entry.get("encoding") or {},
@@ -540,6 +548,33 @@ def data_requirement_text(example: Example) -> str:
     return ""
 
 
+def human_label(value: str) -> str:
+    return re.sub(r"[-_]+", " ", value).strip()
+
+
+def primary_focus(example: Example) -> str:
+    focus = human_label(example.primary)
+    if not focus:
+        return example.title
+    return focus
+
+
+def interaction_text(example: Example) -> str:
+    tags = set(example.tags)
+    focus = primary_focus(example)
+    if "panzoom" in tags or "controller-panzoom" in tags:
+        return "Try dragging and scrolling in the preview to check the pan and zoom behavior."
+    if "arcball" in tags or "controller-arcball" in tags:
+        return "Try rotating the scene in the preview to check the 3D arcball interaction."
+    if "turntable" in tags or "controller-turntable" in tags:
+        return "Try rotating the view horizontally to check the turntable controller."
+    if "fly" in tags or "controller-fly" in tags:
+        return "Try the keyboard and mouse controls in the preview to check the fly controller."
+    if "picking" in tags or "selection" in tags:
+        return "Try clicking or selecting items in the preview to check the interaction result."
+    return f"Try the interaction in the preview and compare it with the `{focus}` source code."
+
+
 def media_block(
     page_path: str | Path,
     example: Example,
@@ -609,15 +644,15 @@ def render_preview(
 
 
 def render_example_explanation(example: Example) -> list[str]:
-    lines = ["## What This Shows", ""]
-    lines.extend([f"{example.summary.rstrip('.')}.", ""])
+    focus = primary_focus(example)
+    lines = ["## What To Look For", ""]
     if example.lane == "visuals":
         lines.extend(
             [
                 (
-                    "Use it to inspect the visual-family setup, the data arrays attached to the "
-                    "visual, and the rendered result before adding the same visual to a larger "
-                    "scene."
+                    f"This page isolates the {example.title} visual family. Look at the arrays "
+                    "uploaded to its visual attributes, then compare those arrays with the preview "
+                    "image before using the same visual in a larger scene."
                 ),
                 "",
             ]
@@ -626,8 +661,9 @@ def render_example_explanation(example: Example) -> list[str]:
         lines.extend(
             [
                 (
-                    "Use it to see the feature in isolation before combining the same pattern with "
-                    "other visuals, panels, controllers, or annotations."
+                    f"This page isolates `{focus}`. Use it to find the small set of calls that "
+                    "enable the feature before combining the same pattern with other visuals, "
+                    "panels, controllers, or annotations."
                 ),
                 "",
             ]
@@ -636,8 +672,8 @@ def render_example_explanation(example: Example) -> list[str]:
         lines.extend(
             [
                 (
-                    "Use it when you need to control how Datoviz presents, captures, records, or "
-                    "exports a scene, not only what the scene draws."
+                    f"This page focuses on `{focus}`. Use it when you need to control how Datoviz "
+                    "opens, captures, records, or exports a scene, not only what the scene draws."
                 ),
                 "",
             ]
@@ -646,8 +682,9 @@ def render_example_explanation(example: Example) -> list[str]:
         lines.extend(
             [
                 (
+                    f"This showcase shows a composed {example.title} scene. "
                     "Use it as a reference for composition and visual design, then follow the "
-                    "smaller examples for individual building blocks."
+                    "smaller visual and feature examples for individual parts."
                 ),
                 "",
             ]
@@ -656,8 +693,8 @@ def render_example_explanation(example: Example) -> list[str]:
         lines.extend(
             [
                 (
-                    "Use it after you understand the basic scene, panel, and visual workflow. It "
-                    "may rely on lower-level integration patterns than ordinary visualization code."
+                    f"This advanced example focuses on `{focus}`. Use it after you understand the "
+                    "basic scene, panel, visual, data-upload, and app workflow."
                 ),
                 "",
             ]
@@ -666,21 +703,27 @@ def render_example_explanation(example: Example) -> list[str]:
         lines.extend(
             [
                 (
-                    "Read it from top to bottom: create data, create a scene, add visuals, then run "
-                    "or capture the result."
+                    f"This example focuses on `{focus}`. Read it from top to bottom: create data, "
+                    "create a scene, add visuals, then run or capture the result."
                 ),
                 "",
             ]
         )
 
+    if example.tags:
+        tags = ", ".join(f"`{tag}`" for tag in example.tags[:4])
+        lines.extend([f"Useful tags for this example: {tags}.", ""])
     if example.data:
         data_text = data_requirement_text(example)
         if data_text:
             lines.extend([data_text, ""])
     if "interaction" in example.validation:
-        lines.extend(["The example includes interaction; try using the mouse or keyboard while it runs.", ""])
+        lines.extend([interaction_text(example), ""])
     if example.webgpu_status == "webgpu-live":
-        lines.extend(["A live WebGPU version is available in the browser preview when supported.", ""])
+        route = example.webgpu_route or "the WebGPU live route"
+        lines.extend([f"The browser preview uses `{route}` when WebGPU is available.", ""])
+    elif example.webgpu_reason:
+        lines.extend([f"Browser support note: {example.webgpu_reason}.", ""])
     return lines
 
 
@@ -1027,7 +1070,7 @@ def render_index(
     lines.append('<div class="grid cards" markdown="1">')
     lines.append("")
     for example in showcase_examples:
-        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False, show_status=False))
+        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False))
     lines.append("</div>")
     lines.extend(["", f"[Browse all {len(showcase_examples)} showcases](showcases.md).", ""])
 
@@ -1043,7 +1086,7 @@ def render_index(
         lines.append('<div class="grid cards" markdown="1">')
         lines.append("")
         for example in group_examples:
-            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False, show_status=False))
+            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False))
         lines.append("</div>")
         lines.append("")
 
@@ -1061,7 +1104,7 @@ def render_index(
         lines.append('<div class="grid cards" markdown="1">')
         lines.append("")
         for example in group_examples:
-            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False, show_status=False))
+            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False))
         lines.append("</div>")
         lines.append("")
     lines.extend(
@@ -1088,7 +1131,7 @@ def render_index(
         lines.append('<div class="grid cards" markdown="1">')
         lines.append("")
         for example in group_examples:
-            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False, show_status=False))
+            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False))
         lines.append("</div>")
         lines.append("")
     lines.extend([f"[Browse all {len(runtime_examples)} runtime examples](runtime.md).", ""])

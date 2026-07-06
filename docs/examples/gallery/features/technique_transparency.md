@@ -12,11 +12,9 @@
 
 Source-over, WBOIT, and depth-peel transparency on overlapping cubes.
 
-## What This Shows
+## What To Look For
 
-Source-over, WBOIT, and depth-peel transparency on overlapping cubes.
-
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+This page isolates `transparency order`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
 No external data is needed; the example generates its data.
 

@@ -12,15 +12,15 @@
 
 Contiguous U.S. state population-density choropleth.
 
-## What This Shows
+## What To Look For
 
-Contiguous U.S. state population-density choropleth.
+This showcase shows a composed U.S. State Choropleth scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
 
-Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+Useful tags for this example: `scientific`, `real-data`, `geo`, `composite`.
 
 This example expects prepared data. Use the preparation command below if the data is missing.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=us_state_choropleth` when WebGPU is available.
 
 ## Preview
 

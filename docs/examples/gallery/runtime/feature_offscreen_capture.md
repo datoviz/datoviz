@@ -12,13 +12,13 @@
 
 Render an exact-pixel offscreen view once and write a PNG.
 
-## What This Shows
+## What To Look For
 
-Render an exact-pixel offscreen view once and write a PNG.
-
-Use it when you need to control how Datoviz presents, captures, records, or exports a scene, not only what the scene draws.
+This page focuses on `offscreen capture`. Use it when you need to control how Datoviz opens, captures, records, or exports a scene, not only what the scene draws.
 
 No external data is needed; the example generates its data.
+
+Browser support note: writes a native offscreen PNG through the app capture path.
 
 ## Preview
 

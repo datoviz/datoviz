@@ -12,15 +12,15 @@
 
 Screen-space marker, path, and axis scaling controlled by a GUI slider.
 
-## What This Shows
+## What To Look For
 
-Screen-space marker, path, and axis scaling controlled by a GUI slider.
-
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+This page isolates `user scale`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
 No external data is needed; the example generates its data.
 
-The example includes interaction; try using the mouse or keyboard while it runs.
+Try the interaction in the preview and compare it with the `user scale` source code.
+
+Browser support note: the user-scale control is a native ImGui slider on a Datoviz app view.
 
 ## Preview
 

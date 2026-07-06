@@ -12,11 +12,9 @@
 
 Quickstart scatter plot: 10 000 random colored points with pan/zoom.
 
-## What This Shows
+## What To Look For
 
-Quickstart scatter plot: 10 000 random colored points with pan/zoom.
-
-Read it from top to bottom: create data, create a scene, add visuals, then run or capture the result.
+This example focuses on `start scatter`. Read it from top to bottom: create data, create a scene, add visuals, then run or capture the result.
 
 No external data is needed; the example generates its data.
 

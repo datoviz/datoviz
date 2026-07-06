@@ -12,13 +12,15 @@
 
 RESEPI RGB LiDAR dense point cloud.
 
-## What This Shows
+## What To Look For
 
-RESEPI RGB LiDAR dense point cloud.
+This showcase shows a composed Point Cloud scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
 
-Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+Useful tags for this example: `real-data`, `pixel`, `dense-point-cloud`, `direct-color`.
 
 This example expects prepared data. Use the preparation command below if the data is missing.
+
+Browser support note: the public point-cloud showcase depends on large prepared data, native GUI controls, and EDL-style rendering.
 
 ## Preview
 

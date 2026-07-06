@@ -12,15 +12,15 @@
 
 Deterministic 3D impostor-sphere cluster with depth, radius, and color variation.
 
-## What This Shows
+## What To Look For
 
-Deterministic 3D impostor-sphere cluster with depth, radius, and color variation.
+This page isolates the Sphere visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
 
-Use it to inspect the visual-family setup, the data arrays attached to the visual, and the rendered result before adding the same visual to a larger scene.
+Useful tags for this example: `sphere`, `arcball`, `capture`.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=sphere_impostor` when WebGPU is available.
 
 ## Preview
 

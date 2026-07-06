@@ -12,11 +12,11 @@
 
 Diagnostic visual bounds in 2D and 3D panels.
 
-## What This Shows
+## What To Look For
 
-Diagnostic visual bounds in 2D and 3D panels.
+This page isolates `bounds overlay`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+Useful tags for this example: `diagnostic`, `bounds`, `overlay`, `point`.
 
 No external data is needed; the example generates its data.
 

@@ -12,13 +12,15 @@
 
 Host-owned GLFW loop using Datoviz hosted rendering.
 
-## What This Shows
+## What To Look For
 
-Host-owned GLFW loop using Datoviz hosted rendering.
+This advanced example focuses on `advanced external surface glfw`. Use it after you understand the basic scene, panel, visual, data-upload, and app workflow.
 
-Use it after you understand the basic scene, panel, and visual workflow. It may rely on lower-level integration patterns than ordinary visualization code.
+Useful tags for this example: `advanced`, `external-surface`, `glfw`, `host-integration`.
 
 No external data is needed; the example generates its data.
+
+Browser support note: external Vulkan surfaces are native host-integration objects.
 
 ## Preview
 

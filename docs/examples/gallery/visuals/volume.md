@@ -12,11 +12,11 @@
 
 Deterministic gyroid scalar field rendered with the volume visual.
 
-## What This Shows
+## What To Look For
 
-Deterministic gyroid scalar field rendered with the volume visual.
+This page isolates the Volume visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
 
-Use it to inspect the visual-family setup, the data arrays attached to the visual, and the rendered result before adding the same visual to a larger scene.
+Useful tags for this example: `sampled-field`, `volume`, `transfer-function`, `boundary-box`.
 
 No external data is needed; the example generates its data.
 

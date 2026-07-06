@@ -12,15 +12,15 @@
 
 Histogram, guide annotations, stacked traces, and error bands.
 
-## What This Shows
+## What To Look For
 
-Histogram, guide annotations, stacked traces, and error bands.
+This showcase shows a composed Scientific Plotting Workflow scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
 
-Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+Useful tags for this example: `workflow`, `scientific`, `histogram`, `guide-lines`.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=scientific_plotting_workflow` when WebGPU is available.
 
 ## Preview
 

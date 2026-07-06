@@ -12,15 +12,15 @@
 
 Scene compute pass with independent circular point motion.
 
-## What This Shows
+## What To Look For
 
-Scene compute pass with independent circular point motion.
+This page isolates `scene compute buffer`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+Useful tags for this example: `scene-compute`, `storage-buffer`, `point`.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=feature_compute_buffer_animation` when WebGPU is available.
 
 ## Preview
 

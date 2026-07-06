@@ -12,15 +12,15 @@
 
 Low-level font atlas glyph quads, distinct from semantic text.
 
-## What This Shows
+## What To Look For
 
-Low-level font atlas glyph quads, distinct from semantic text.
+This page isolates the Font Atlas Glyphs visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
 
-Use it to inspect the visual-family setup, the data arrays attached to the visual, and the rendered result before adding the same visual to a larger scene.
+Useful tags for this example: `glyph`, `font-atlas`, `texture-atlas`, `sdf`.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=visual_glyph` when WebGPU is available.
 
 ## Preview
 

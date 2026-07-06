@@ -12,13 +12,15 @@
 
 Triangle rendered via a hand-written DRP2 command stream.
 
-## What This Shows
+## What To Look For
 
-Triangle rendered via a hand-written DRP2 command stream.
+This advanced example focuses on `advanced raw triangle drp2`. Use it after you understand the basic scene, panel, visual, data-upload, and app workflow.
 
-Use it after you understand the basic scene, panel, and visual workflow. It may rely on lower-level integration patterns than ordinary visualization code.
+Useful tags for this example: `advanced`, `drp2`, `vklite`, `low-level`.
 
 No external data is needed; the example generates its data.
+
+Browser support note: hand-written DRP2 native execution is a low-level runtime example.
 
 ## Preview
 

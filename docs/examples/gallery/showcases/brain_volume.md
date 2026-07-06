@@ -12,11 +12,11 @@
 
 Local Allen mouse brain RGBA volume and occluded slice.
 
-## What This Shows
+## What To Look For
 
-Local Allen mouse brain RGBA volume and occluded slice.
+This showcase shows a composed Allen Mouse Brain scene. Use it as a reference for composition and visual design, then follow the smaller visual and feature examples for individual parts.
 
-Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+Useful tags for this example: `scientific`, `real-data`, `volume`, `volume-slice`.
 
 This example expects prepared data. Use the preparation command below if the data is missing.
 

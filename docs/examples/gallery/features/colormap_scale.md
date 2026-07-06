@@ -12,15 +12,13 @@
 
 Point visual with scalar float colors and one color scale.
 
-## What This Shows
+## What To Look For
 
-Point visual with scalar float colors and one color scale.
-
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+This page isolates `colormap scale`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=colormap_scale` when WebGPU is available.
 
 ## Preview
 

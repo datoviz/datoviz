@@ -12,15 +12,13 @@
 
 Plane-oriented reference grid in an arcball 3D scene.
 
-## What This Shows
+## What To Look For
 
-Plane-oriented reference grid in an arcball 3D scene.
-
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+This page isolates `reference grid`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
 No external data is needed; the example generates its data.
 
-The example includes interaction; try using the mouse or keyboard while it runs.
+Try the interaction in the preview and compare it with the `reference grid` source code.
 
 ## Preview
 

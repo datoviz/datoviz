@@ -12,15 +12,15 @@
 
 Clean semantic polygon and polygon-set composites.
 
-## What This Shows
+## What To Look For
 
-Clean semantic polygon and polygon-set composites.
+This example focuses on `polygon`. Read it from top to bottom: create data, create a scene, add visuals, then run or capture the result.
 
-Read it from top to bottom: create data, create a scene, add visuals, then run or capture the result.
+Useful tags for this example: `composite`, `polygon`, `polygon-set`, `holes`.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=composite_polygon` when WebGPU is available.
 
 ## Preview
 

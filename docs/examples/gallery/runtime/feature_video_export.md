@@ -12,13 +12,15 @@
 
 Write a bounded offscreen animation with the app capture API.
 
-## What This Shows
+## What To Look For
 
-Write a bounded offscreen animation with the app capture API.
+This page focuses on `video export`. Use it when you need to control how Datoviz opens, captures, records, or exports a scene, not only what the scene draws.
 
-Use it when you need to control how Datoviz presents, captures, records, or exports a scene, not only what the scene draws.
+Useful tags for this example: `app-capture`, `video`, `animation`.
 
 No external data is needed; the example generates its data.
+
+Browser support note: video export uses native capture backends in v0.4.
 
 ## Preview
 

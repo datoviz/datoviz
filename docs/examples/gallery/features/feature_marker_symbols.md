@@ -12,13 +12,15 @@
 
 Marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 
-## What This Shows
+## What To Look For
 
-Marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
+This page isolates `marker symbols`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+Useful tags for this example: `marker`, `symbol-set`, `bitmap-symbol`, `distance-field-symbol`.
 
 No external data is needed; the example generates its data.
+
+Browser support note: marker symbol-set and mixed atlas encoding parity are not in the RC WebGPU path yet.
 
 ## Preview
 

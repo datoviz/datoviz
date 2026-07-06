@@ -12,15 +12,15 @@
 
 Curated Datoviz GUI controls mutating one point visual.
 
-## What This Shows
+## What To Look For
 
-Curated Datoviz GUI controls mutating one point visual.
-
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+This page isolates `gui controls`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
 No external data is needed; the example generates its data.
 
-The example includes interaction; try using the mouse or keyboard while it runs.
+Try the interaction in the preview and compare it with the `gui controls` source code.
+
+Browser support note: Datoviz GUI controls require the native ImGui/GLFW app path.
 
 ## Preview
 

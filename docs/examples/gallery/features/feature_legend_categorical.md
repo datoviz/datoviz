@@ -12,15 +12,15 @@
 
 Tentative categorical legend proof.
 
-## What This Shows
+## What To Look For
 
-Tentative categorical legend proof.
+This page isolates `legend categorical`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+Useful tags for this example: `categorical-scale`, `legend`, `marker`, `capture`.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=feature_legend_categorical` when WebGPU is available.
 
 ## Preview
 

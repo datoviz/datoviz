@@ -12,15 +12,13 @@
 
 Smallest scene with one point visual.
 
-## What This Shows
+## What To Look For
 
-Smallest scene with one point visual.
-
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+This page isolates `scene`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=feature_basic_scene` when WebGPU is available.
 
 ## Preview
 

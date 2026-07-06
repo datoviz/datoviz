@@ -12,15 +12,15 @@
 
 One app driving two native GLFW windows.
 
-## What This Shows
+## What To Look For
 
-One app driving two native GLFW windows.
-
-Use it when you need to control how Datoviz presents, captures, records, or exports a scene, not only what the scene draws.
+This page focuses on `multi window`. Use it when you need to control how Datoviz opens, captures, records, or exports a scene, not only what the scene draws.
 
 No external data is needed; the example generates its data.
 
-The example includes interaction; try using the mouse or keyboard while it runs.
+Try the interaction in the preview and compare it with the `multi window` source code.
+
+Browser support note: multiple native GLFW windows are native-only.
 
 ## Preview
 

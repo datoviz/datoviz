@@ -12,13 +12,13 @@
 
 Record an offscreen app view and replay it into a second offscreen view.
 
-## What This Shows
+## What To Look For
 
-Record an offscreen app view and replay it into a second offscreen view.
-
-Use it when you need to control how Datoviz presents, captures, records, or exports a scene, not only what the scene draws.
+This page focuses on `record replay`. Use it when you need to control how Datoviz opens, captures, records, or exports a scene, not only what the scene draws.
 
 No external data is needed; the example generates its data.
+
+Browser support note: DVZR app recording and replay use native runtime capture plumbing.
 
 ## Preview
 

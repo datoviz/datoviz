@@ -12,15 +12,13 @@
 
 Fixed graphite-cyan panel background behind a simple visual.
 
-## What This Shows
+## What To Look For
 
-Fixed graphite-cyan panel background behind a simple visual.
-
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+This page isolates `panel background`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=panel_background` when WebGPU is available.
 
 ## Preview
 

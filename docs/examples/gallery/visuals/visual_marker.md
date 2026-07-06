@@ -12,15 +12,15 @@
 
 Marker visual with deterministic symbol, fill, stroke, size, and angle
 
-## What This Shows
+## What To Look For
 
-Marker visual with deterministic symbol, fill, stroke, size, and angle.
+This page isolates the Marker visual family. Look at the arrays uploaded to its visual attributes, then compare those arrays with the preview image before using the same visual in a larger scene.
 
-Use it to inspect the visual-family setup, the data arrays attached to the visual, and the rendered result before adding the same visual to a larger scene.
+Useful tags for this example: `marker`, `panzoom`, `capture`.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=visual_marker` when WebGPU is available.
 
 ## Preview
 

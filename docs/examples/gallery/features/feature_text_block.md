@@ -12,15 +12,13 @@
 
 Compact text block with stable screen placement.
 
-## What This Shows
+## What To Look For
 
-Compact text block with stable screen placement.
-
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+This page isolates `text block`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=feature_text_block` when WebGPU is available.
 
 ## Preview
 

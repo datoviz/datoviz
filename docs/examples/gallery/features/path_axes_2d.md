@@ -12,15 +12,13 @@
 
 Deterministic path with 2D axes and tick labels.
 
-## What This Shows
+## What To Look For
 
-Deterministic path with 2D axes and tick labels.
-
-Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+This page isolates `axes 2d`. Use it to find the small set of calls that enable the feature before combining the same pattern with other visuals, panels, controllers, or annotations.
 
 No external data is needed; the example generates its data.
 
-A live WebGPU version is available in the browser preview when supported.
+The browser preview uses `examples/webgpu/live.html?id=path_axes_2d` when WebGPU is available.
 
 ## Preview
 
