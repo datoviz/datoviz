@@ -7,9 +7,9 @@
 /* text - This example places retained semantic text items in panel coordinates.
  *
  * What to look for: each text item provides a string, x/y screen position, font size, angle, and
- * color role, then the text system lowers it to atlas glyphs. Compare the headline and smaller
- * annotations to see how titles, units, and short scientific notes can be added without managing
- * glyph quads manually.
+ * color role, then the text system lowers it to atlas glyphs. Compare the headline, smaller
+ * annotations, and rotated label to see how titles, units, and short scientific notes can be added
+ * without managing glyph quads manually.
  *
  * Scenario: visual.text
  * Style: visuals, graphite_cyan, 1280x720 window target
@@ -42,7 +42,7 @@
 
 #define WIDTH  EXAMPLE_WINDOW_WIDTH
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
-#define TEXT_COUNT 4u
+#define TEXT_COUNT 5u
 
 
 
@@ -116,16 +116,18 @@ static bool _set_text_items(
     const char* strings[TEXT_COUNT] = {
         "Retained text",       "semantic strings, panel anchored",
         "MSDF atlas renderer", "screen placement in logical pixels",
+        "rotated label",
     };
-    const float x[TEXT_COUNT] = {128.0f, 132.0f, 134.0f, 136.0f};
-    const float y[TEXT_COUNT] = {180.0f, 310.0f, 415.0f, 510.0f};
-    const float sizes[TEXT_COUNT] = {60.0f, 34.0f, 28.0f, 22.0f};
-    const float angles[TEXT_COUNT] = {0.0f, 0.0f, 0.0f, 0.0f};
+    const float x[TEXT_COUNT] = {128.0f, 132.0f, 134.0f, 136.0f, 845.0f};
+    const float y[TEXT_COUNT] = {180.0f, 310.0f, 415.0f, 510.0f, 585.0f};
+    const float sizes[TEXT_COUNT] = {60.0f, 34.0f, 28.0f, 22.0f, 26.0f};
+    const float angles[TEXT_COUNT] = {0.0f, 0.0f, 0.0f, 0.0f, -0.34f};
     const ExampleStyleColorRole roles[TEXT_COUNT] = {
         EXAMPLE_STYLE_COLOR_TEXT,
         EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
         EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
         EXAMPLE_STYLE_COLOR_MINOR_TICK,
+        EXAMPLE_STYLE_COLOR_WARNING,
     };
 
     DvzTextItem items[TEXT_COUNT] = {0};
