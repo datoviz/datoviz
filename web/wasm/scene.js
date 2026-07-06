@@ -418,6 +418,9 @@ export class DatovizWasmScene {
     for (const cleanup of this._cleanup.splice(0).reverse()) {
       cleanup();
     }
+    if (this.runtime !== null) {
+      this.runtime.destroy();
+    }
     this.runtime = null;
     this.figure = 0;
     if (this.scene !== 0) {
@@ -962,6 +965,9 @@ export class DatovizWasmScene {
   async renderInitial() {
     this._requireAlive();
     const packetSet = this.emitPackets();
+    if (this.runtime !== null) {
+      this.runtime.destroy();
+    }
     this.runtime = new Drp2WebGpuRuntime(this.gpu.device, this.gpu.context, this.gpu.format, {
       canvas: this.canvas,
       capabilities: this.gpu.capabilities,
@@ -974,6 +980,24 @@ export class DatovizWasmScene {
       this.scenarioPostFrame();
     }
     return stream;
+  }
+
+  async recoverRuntime() {
+    this._requireAlive();
+    requireOk(
+      typeof this.Module._dvz_wasm_api_runtime_reset === "function",
+      "WASM module is stale or missing runtime reset export; run `just wasm-scene-smoke` and hard-refresh",
+    );
+    if (this.runtime !== null) {
+      this.runtime.destroy();
+      this.runtime = null;
+    }
+    this._runtimeExecution = Promise.resolve();
+    this._requireStatus(
+      this.Module._dvz_wasm_api_runtime_reset(this.scene),
+      "dvz_wasm_api_runtime_reset failed",
+    );
+    return await this.renderInitial();
   }
 
   async renderIncremental() {

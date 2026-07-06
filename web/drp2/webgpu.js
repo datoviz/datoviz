@@ -2324,6 +2324,17 @@ export class Drp2WebGpuRuntime {
     this.packetFrameIndex = null;
   }
 
+  destroy() {
+    destroyExecutionState(this.state);
+    this.state = createExecutionState(this.canvas);
+    this.stream = null;
+    this.setupCommands = [];
+    this.frameCommands = [];
+    this.frames = [];
+    this.packetResourceVersion = null;
+    this.packetFrameIndex = null;
+  }
+
   async load(stream, options = {}) {
     this.stream = stream;
     this.options = { ...this.options, ...options };

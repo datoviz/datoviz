@@ -174,6 +174,19 @@ int dvz_wasm_api_emit_packets(uint32_t scene_handle, uint32_t figure_handle)
 
 
 EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_runtime_reset(uint32_t scene_handle)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    if (scene == NULL || scene->scene == NULL)
+        return -1;
+    _clear_payload(scene);
+    if (!_scene_runtime_emitter_reset(scene->scene))
+        return _fail(scene, "WASM runtime emitter reset failed");
+    return 0;
+}
+
+
+EMSCRIPTEN_KEEPALIVE
 int dvz_wasm_api_release_packets(uint32_t scene_handle)
 {
     DvzWasmApiScene* scene = _scene(scene_handle);

@@ -104,7 +104,7 @@ export class WasmSceneSession {
   }
 
   async recoverAfterRenderError(error, options = {}) {
-    if (this.recovering || this.demo === null) {
+    if (this.recovering || this.demo === null || this.scene === null) {
       throw error;
     }
     this.recovering = true;
@@ -112,16 +112,11 @@ export class WasmSceneSession {
       this.demo.animate === true && this.animationFrame !== 0
     );
     try {
-      this.status(`Recovering ${this.demo.label ?? this.demo.id ?? "WASM scene"}`);
+      this.status(`Recovering WebGPU runtime for ${this.demo.label ?? this.demo.id ?? "WASM scene"}`);
       this.stopAnimationLoop();
-      if (this.scene !== null) {
-        this.scene.destroy();
-        this.scene = null;
-        this.onScene(null);
-      }
-      await this._createScene();
-      await this.render();
-      this._attachSceneEvents();
+      const stream = await this.scene.recoverRuntime();
+      this.stats(`${stream.commands.length} commands`);
+      this.status(`Rendered ${this.demo?.label ?? "WASM scene"}`);
       if (restartAnimation) {
         this.startAnimationLoop();
       }

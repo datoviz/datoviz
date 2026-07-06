@@ -375,12 +375,17 @@ async function expectBrowserWrapperPacketRuntime() {
   const sessionSource = await readFile(browserSessionPath, "utf8");
   const renderInitial = source.match(/async renderInitial\(\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
   const renderIncremental = source.match(/async renderIncremental\(\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
+  const recoverRuntime = source.match(/async recoverRuntime\(\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
   const scenarioPointer =
     source.match(/scenarioPointer\(type, event\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
   const scenarioWheel =
     source.match(/scenarioWheel\(event\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
   const attachResizeObserver =
     source.match(/attachResizeObserver\(onChange\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
+  const recoverAfterRenderError = sessionSource.slice(
+    sessionSource.indexOf("async recoverAfterRenderError"),
+    sessionSource.indexOf("\n  requestRender()"),
+  );
   requireOk(renderInitial.includes("this.emitPackets()"), "renderInitial does not emit packets");
   requireOk(renderInitial.includes("executePacketSet"), "renderInitial does not execute packet sets");
   requireOk(renderIncremental.includes("this.emitPackets()"), "renderIncremental does not emit packets");
@@ -419,6 +424,12 @@ async function expectBrowserWrapperPacketRuntime() {
   requireOk(source.includes("wasm_frame_artifact"), "browser wrapper does not tag frame artifact packet sets");
   requireOk(source.includes("artifact_spans_copied: true"), "browser wrapper does not mark copied artifact spans");
   requireOk(source.includes("artifact_released = true"), "browser wrapper does not release frame artifacts");
+  requireOk(source.includes("_dvz_wasm_api_runtime_reset"), "browser wrapper cannot reset the WASM runtime emitter");
+  requireOk(
+    recoverRuntime.includes("this.runtime.destroy()") &&
+      recoverRuntime.includes("this.renderInitial()"),
+    "browser wrapper runtime recovery does not rebuild only the WebGPU runtime",
+  );
   requireOk(
     !attachResizeObserver.includes("this.resize()"),
     "ResizeObserver mutates WASM scene outside the render queue",
@@ -438,6 +449,16 @@ async function expectBrowserWrapperPacketRuntime() {
   requireOk(
     sessionSource.includes("recoverAfterRenderError"),
     "WASM session cannot recover a desynchronized WebGPU runtime",
+  );
+  requireOk(
+    recoverAfterRenderError.includes("this.scene.recoverRuntime()"),
+    "WASM session recovery does not preserve the existing C scene",
+  );
+  requireOk(
+    !recoverAfterRenderError.includes("this.scene.destroy()") &&
+      !recoverAfterRenderError.includes("this._createScene()") &&
+      !recoverAfterRenderError.includes("this.onScene(null)"),
+    "WASM session recovery recreates the C scene and resets controller state",
   );
   requireOk(
     sessionSource.includes("this.gpu = this.scene.gpu"),
@@ -3808,6 +3829,21 @@ try {
       expectReleasedPackets(
         Module, scene, "generic 2D split packet reload",
         splitReload.resourceVersion, splitReload.frameIndex);
+      expectStatus(
+        Module._dvz_wasm_api_runtime_reset(scene),
+        0,
+        "api runtime emitter reset",
+      );
+      const resetReload = emitPacketStream(Module, scene, figure, "generic 2D runtime reset reload");
+      requireOk(
+        resetReload.setup.commandCount > 0 &&
+          resetReload.update.commandCount > 0 &&
+          resetReload.frame.commandCount > 0,
+        "generic 2D runtime reset reload missing full setup/update/frame packets",
+      );
+      expectReleasedPackets(
+        Module, scene, "generic 2D runtime reset reload",
+        resetReload.resourceVersion, resetReload.frameIndex);
     } finally {
       Module._free(largerImagePtr);
     }
