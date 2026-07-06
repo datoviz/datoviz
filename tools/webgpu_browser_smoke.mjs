@@ -513,9 +513,13 @@ async function smokeWasmPage(page, baseUrl, path, expectedStatus, screenshotPath
   requireOk(typeof packetLifecycle === 'object', `${path}: packet lifecycle failed: ${packetLifecycle}`);
   const resizeLifecycle = await page.evaluate(`(async () => {
     const scene = window.__datovizWasmScene;
+    const session = window.__datovizWasmSession;
     const canvas = document.querySelector("#viewport");
     if (scene === undefined || scene === null || scene.scene === 0 || scene.runtime === null) {
       return "missing live scene";
+    }
+    if (session === undefined || session === null) {
+      return "missing live session";
     }
     const before = {
       width: canvas.width,
@@ -531,12 +535,12 @@ async function smokeWasmPage(page, baseUrl, path, expectedStatus, screenshotPath
     if (canvas.width === before.width && canvas.height === before.height) {
       return "canvas framebuffer size did not change";
     }
-    const packetSet = scene.emitPackets();
-    await scene.runtime.executePacketSet(packetSet);
-    if (scene.runtime.stream?.name !== "drp2_packet_set") {
+    await session.render();
+    const afterScene = window.__datovizWasmScene;
+    if (afterScene?.runtime?.stream?.name !== "drp2_packet_set") {
       return "resize render left packet runtime";
     }
-    if (scene.runtime.packetFrameIndex <= before.frame_index) {
+    if (afterScene.runtime.packetFrameIndex <= before.frame_index) {
       return "resize packet frame index did not advance";
     }
     return {
@@ -544,8 +548,8 @@ async function smokeWasmPage(page, baseUrl, path, expectedStatus, screenshotPath
       after: {
         width: canvas.width,
         height: canvas.height,
-        resource_version: scene.runtime.packetResourceVersion,
-        frame_index: scene.runtime.packetFrameIndex,
+        resource_version: afterScene.runtime.packetResourceVersion,
+        frame_index: afterScene.runtime.packetFrameIndex,
       },
     };
   })()`);

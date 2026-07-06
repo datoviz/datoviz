@@ -1,4 +1,4 @@
-const configuredCanvasContexts = new WeakSet();
+const configuredCanvasContexts = new WeakMap();
 
 function supportedTextureFormats(canvasFormat) {
   const formats = [
@@ -51,7 +51,13 @@ export function resizeCanvasToDisplaySize(canvas, device, context, format) {
   const width = Math.max(1, Math.floor(canvas.clientWidth * scale));
   const height = Math.max(1, Math.floor(canvas.clientHeight * scale));
   const resized = canvas.width !== width || canvas.height !== height;
-  const needsConfigure = resized || !configuredCanvasContexts.has(context);
+  const configured = configuredCanvasContexts.get(context) ?? null;
+  const needsConfigure = (
+    resized ||
+    configured === null ||
+    configured.device !== device ||
+    configured.format !== format
+  );
   if (!needsConfigure) {
     return false;
   }
@@ -64,7 +70,7 @@ export function resizeCanvasToDisplaySize(canvas, device, context, format) {
     format,
     alphaMode: "opaque",
   });
-  configuredCanvasContexts.add(context);
+  configuredCanvasContexts.set(context, { device, format });
   return resized;
 }
 

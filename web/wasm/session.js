@@ -6,6 +6,10 @@ function messageCallback(callback) {
   return typeof callback === "function" ? callback : noop;
 }
 
+function sceneCallback(callback) {
+  return typeof callback === "function" ? callback : noop;
+}
+
 export class WasmSceneSession {
   static async create(options = {}) {
     const session = new WasmSceneSession(options);
@@ -21,10 +25,13 @@ export class WasmSceneSession {
     this.gpu = options.gpu ?? null;
     this.status = messageCallback(options.status);
     this.stats = messageCallback(options.stats);
+    this.onScene = sceneCallback(options.onScene);
     this.scene = null;
     this.demo = null;
     this.rendering = false;
     this.pending = false;
+    this.recovering = false;
+    this.renderQueue = Promise.resolve();
     this.animationFrame = 0;
     this.animationStartTime = null;
     this.lastAnimationTime = null;
@@ -41,27 +48,49 @@ export class WasmSceneSession {
 
     this.demo = demo;
     this.status(`Loading ${demo.label ?? demo.id ?? "WASM scene"}`);
-    const createOptions = this.gpu !== null ? { gpu: this.gpu } : {};
-    if (typeof demo.scenarioId === "string") {
-      this.scene = await DatovizWasmScene.createScenario(this.canvas, demo.scenarioId, createOptions);
-    } else {
-      this.scene = await DatovizWasmScene.create(this.canvas, createOptions);
-      await demo.build(this.scene);
-    }
+    await this._createScene();
     await this.render();
-
-    const requestRender = () => {
-      this.requestRender();
-    };
-    this.scene.attachControllerInput(requestRender);
-    this.scene.attachResizeObserver(requestRender);
+    this._attachSceneEvents();
     if (demo.animate === true) {
       this.startAnimationLoop();
     }
     return this.scene;
   }
 
+  async _createScene() {
+    if (this.demo === null) {
+      return null;
+    }
+    const createOptions = this.gpu !== null ? { gpu: this.gpu } : {};
+    if (typeof this.demo.scenarioId === "string") {
+      this.scene = await DatovizWasmScene.createScenario(this.canvas, this.demo.scenarioId, createOptions);
+    } else {
+      this.scene = await DatovizWasmScene.create(this.canvas, createOptions);
+      await this.demo.build(this.scene);
+    }
+    this.gpu = this.scene.gpu;
+    this.onScene(this.scene);
+    return this.scene;
+  }
+
+  _attachSceneEvents() {
+    if (this.scene === null) {
+      return;
+    }
+    const requestRender = () => {
+      this.requestRender();
+    };
+    this.scene.attachControllerInput(requestRender);
+    this.scene.attachResizeObserver(requestRender);
+  }
+
   async render() {
+    const execute = this.renderQueue.then(async () => await this._renderNow());
+    this.renderQueue = execute.catch(() => {});
+    return await execute;
+  }
+
+  async _renderNow() {
     if (this.scene === null) {
       return null;
     }
@@ -72,6 +101,33 @@ export class WasmSceneSession {
     this.stats(`${stream.commands.length} commands`);
     this.status(`Rendered ${this.demo?.label ?? "WASM scene"}`);
     return stream;
+  }
+
+  async recoverAfterRenderError(error, options = {}) {
+    if (this.recovering || this.demo === null) {
+      throw error;
+    }
+    this.recovering = true;
+    const restartAnimation = options.restartAnimation ?? (
+      this.demo.animate === true && this.animationFrame !== 0
+    );
+    try {
+      this.status(`Recovering ${this.demo.label ?? this.demo.id ?? "WASM scene"}`);
+      this.stopAnimationLoop();
+      if (this.scene !== null) {
+        this.scene.destroy();
+        this.scene = null;
+        this.onScene(null);
+      }
+      await this._createScene();
+      await this.render();
+      this._attachSceneEvents();
+      if (restartAnimation) {
+        this.startAnimationLoop();
+      }
+    } finally {
+      this.recovering = false;
+    }
   }
 
   requestRender() {
@@ -87,7 +143,12 @@ export class WasmSceneSession {
           await this.render();
         } while (this.pending);
       } catch (error) {
-        this.status(error instanceof Error ? error.message : String(error), true);
+        try {
+          await this.recoverAfterRenderError(error);
+        } catch (recoveryError) {
+          const message = recoveryError instanceof Error ? recoveryError.message : String(recoveryError);
+          this.status(message, true);
+        }
       } finally {
         this.rendering = false;
       }
@@ -122,7 +183,12 @@ export class WasmSceneSession {
           this.animationFrame = requestAnimationFrame(tick);
         } catch (error) {
           this.animationFrame = 0;
-          this.status(error instanceof Error ? error.message : String(error), true);
+          try {
+            await this.recoverAfterRenderError(error, { restartAnimation: true });
+          } catch (recoveryError) {
+            const message = recoveryError instanceof Error ? recoveryError.message : String(recoveryError);
+            this.status(message, true);
+          }
         }
       })();
     };
@@ -142,10 +208,12 @@ export class WasmSceneSession {
     this.stopAnimationLoop();
     this.rendering = false;
     this.pending = false;
+    this.recovering = false;
     if (this.scene !== null) {
       this.scene.destroy();
       this.scene = null;
     }
+    this.onScene(null);
     this.demo = null;
   }
 }

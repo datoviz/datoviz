@@ -62,10 +62,12 @@ async function loadDemo(id) {
     canvas,
     status: setStatus,
     stats: setStats,
+    onScene(scene) {
+      window.__datovizWasmScene = scene;
+    },
   });
   window.__datovizWasmSession = session;
   await session.load(demo);
-  window.__datovizWasmScene = session.scene;
   const url = new URL(window.location.href);
   url.searchParams.set("demo", demo.id);
   window.history.replaceState(null, "", url);

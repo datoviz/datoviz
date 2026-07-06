@@ -43,10 +43,12 @@ async function loadLiveExample(id) {
     canvas,
     status: setStatus,
     stats: setStats,
+    onScene(scene) {
+      window.__datovizWasmScene = scene;
+    },
   });
   window.__datovizWasmSession = session;
   await session.load(demo);
-  window.__datovizWasmScene = session.scene;
 }
 
 window.addEventListener("pagehide", () => {
