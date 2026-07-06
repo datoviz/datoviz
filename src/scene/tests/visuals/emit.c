@@ -691,7 +691,7 @@ int test_scene_glyph_emit_glsl(TstContext* suite, const TstCase* item)
     DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
-    AT(_stream_has_render_pipeline_label(stream, "_pipe_glyphg"));
+    AT(_stream_has_render_pipeline_label_part(stream, "_pipe_glyphg"));
 
     uint64_t position_buffer_id = 0;
     uint64_t bounds_buffer_id = 0;

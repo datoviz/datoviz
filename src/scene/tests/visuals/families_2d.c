@@ -1009,7 +1009,7 @@ int test_scene_point_style_emits_glsl_and_wgsl(TstContext* suite, const TstCase*
     DvzDrp2CommandStream* glsl_stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(glsl_stream);
-    AT(_stream_has_render_pipeline_label(
+    AT(_stream_has_render_pipeline_label_part(
         glsl_stream, "_pipe_point_styleg_coverage_blend_depth"));
 
     bool found_material_bg = false;
@@ -1033,7 +1033,7 @@ int test_scene_point_style_emits_glsl_and_wgsl(TstContext* suite, const TstCase*
     DvzDrp2CommandStream* wgsl_stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(wgsl_stream);
-    AT(_stream_has_render_pipeline_label(
+    AT(_stream_has_render_pipeline_label_part(
         wgsl_stream, "_pipe_point_stylew_coverage_blend_depth"));
     char* json = dvz_drp2_stream_json(wgsl_stream, "scene_point_style_wgsl_from_c");
     ANN(json);
@@ -1083,8 +1083,8 @@ int test_scene_point_filled_no_stroke_uses_fill_shader(TstContext* suite, const 
     DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
-    AT(_stream_has_render_pipeline_label(stream, "_pipe_pointg_coverage_blend_depth"));
-    AT(!_stream_has_render_pipeline_label(stream, "_pipe_point_styleg_coverage_blend_depth"));
+    AT(_stream_has_render_pipeline_label_part(stream, "_pipe_pointg_coverage_blend_depth"));
+    AT(!_stream_has_render_pipeline_label_part(stream, "_pipe_point_styleg_coverage_blend_depth"));
 
     bool found_material_bg = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
@@ -1303,10 +1303,10 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
-    AT(_stream_has_render_pipeline_label(stream, "_pipe_markerg_coverage_blend_depth"));
-    AT(_stream_has_render_pipeline_label(
+    AT(_stream_has_render_pipeline_label_part(stream, "_pipe_markerg_coverage_blend_depth"));
+    AT(_stream_has_render_pipeline_label_part(
         stream, "_pipe_marker_bitmapg_coverage_blend_depth"));
-    AT(_stream_has_render_pipeline_label(
+    AT(_stream_has_render_pipeline_label_part(
         stream, "_pipe_marker_distanceg_coverage_blend_depth"));
 
     bool found_pipeline = false;

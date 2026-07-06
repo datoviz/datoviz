@@ -2580,8 +2580,8 @@ int test_scene_pixel_depth_cue_toggle_switches_pipeline(TstContext* suite, const
     DvzDrp2CommandStream* cue_stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(cue_stream);
-    AT(_stream_has_render_pipeline_label(cue_stream, "_pipe_pixel_cueg_depth"));
-    AT(!_stream_has_render_pipeline_label(cue_stream, "_pipe_pixelg_depth"));
+    AT(_stream_has_render_pipeline_label_part(cue_stream, "_pipe_pixel_cueg_depth"));
+    AT(!_stream_has_render_pipeline_label_part(cue_stream, "_pipe_pixelg_depth"));
     _test_scene_stream_destroy(cue_stream);
 
     AT(dvz_visual_set_depth_cue(pixel, NULL) == 0);
@@ -2589,8 +2589,8 @@ int test_scene_pixel_depth_cue_toggle_switches_pipeline(TstContext* suite, const
     DvzDrp2CommandStream* plain_stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(plain_stream);
-    AT(_stream_has_render_pipeline_label(plain_stream, "_pipe_pixelg_depth"));
-    AT(!_stream_has_render_pipeline_label(plain_stream, "_pipe_pixel_cueg_depth"));
+    AT(_stream_has_render_pipeline_label_part(plain_stream, "_pipe_pixelg_depth"));
+    AT(!_stream_has_render_pipeline_label_part(plain_stream, "_pipe_pixel_cueg_depth"));
 
     _test_scene_stream_destroy(plain_stream);
     dvz_scene_destroy(scene);
