@@ -37,6 +37,7 @@ EXAMPLES
 
 - Eye-Dome Lighting
   - this one should be with the feature technique examples no?
+  - need to tweak the params
 
 - i would like to show a qt example in the gallery, to show a code example, would that be possible? wdyt?
 
@@ -54,6 +55,18 @@ EXAMPLES
 
 - gui viewport
   - crash when quitting
+
+- mesh materials
+  - mouse wheel to zoom only works in first panel
+
+- ssao
+  - the spheres are too big
+
+- point cloud
+  - the fly direction should either be always on the horizontal plane (compared to the scene shown which is a landscape with a natural ground plane) or follow the camera direction, and currently it does neither
+
+
+
 
 
 
