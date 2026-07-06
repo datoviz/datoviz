@@ -373,6 +373,8 @@ async function expectBrowserWrapperPacketRuntime() {
   const source = await readFile(browserWrapperPath, "utf8");
   const renderInitial = source.match(/async renderInitial\(\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
   const renderIncremental = source.match(/async renderIncremental\(\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
+  const attachResizeObserver =
+    source.match(/attachResizeObserver\(onChange\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
   requireOk(renderInitial.includes("this.emitPackets()"), "renderInitial does not emit packets");
   requireOk(renderInitial.includes("executePacketSet"), "renderInitial does not execute packet sets");
   requireOk(renderIncremental.includes("this.emitPackets()"), "renderIncremental does not emit packets");
@@ -411,6 +413,10 @@ async function expectBrowserWrapperPacketRuntime() {
   requireOk(source.includes("wasm_frame_artifact"), "browser wrapper does not tag frame artifact packet sets");
   requireOk(source.includes("artifact_spans_copied: true"), "browser wrapper does not mark copied artifact spans");
   requireOk(source.includes("artifact_released = true"), "browser wrapper does not release frame artifacts");
+  requireOk(
+    !attachResizeObserver.includes("this.resize()"),
+    "ResizeObserver mutates WASM scene outside the render queue",
+  );
 }
 
 function expectNoLegacyDirectAbi(Module) {

@@ -685,7 +685,6 @@ export class DatovizWasmScene {
       lastWidth = width;
       lastHeight = height;
       lastScale = scale;
-      this.resize();
       onChange();
     });
     observer.observe(observed);

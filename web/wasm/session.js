@@ -65,6 +65,7 @@ export class WasmSceneSession {
     if (this.scene === null) {
       return null;
     }
+    this.scene.resize();
     const stream = this.scene.runtime === null
       ? await this.scene.renderInitial()
       : await this.scene.renderIncremental();

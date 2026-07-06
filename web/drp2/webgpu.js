@@ -1846,6 +1846,30 @@ function retireSubmittedRefs(record) {
 
 
 
+function releaseRefSet(refs, field) {
+  for (const objectRecord of refs) {
+    objectRecord[field] = Math.max(0, objectRecord[field] - 1);
+  }
+}
+
+
+
+function discardLocalExecutionRefs(encoderRefs, commandBuffers) {
+  for (const refs of encoderRefs.values()) {
+    releaseRefSet(refs, "openRefs");
+  }
+  encoderRefs.clear();
+
+  for (const record of commandBuffers.values()) {
+    if (!record.submitted) {
+      releaseRefSet(record.refs, "recordedRefs");
+    }
+  }
+  commandBuffers.clear();
+}
+
+
+
 function destroyBrowserCanvasDepth(state) {
   const depth = state.browserCanvasDepth;
   if (depth?.texture !== undefined && typeof depth.texture.destroy === "function") {
@@ -2374,33 +2398,34 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
     validateStreamCapabilities(commands, capabilities, canvasFormat, state);
   }
 
-  for (const [commandIndex, command] of commands.entries()) {
-    try {
-      if (enforceHandshake) {
-        if (command.cmd === "HelloRenderer") {
-          if (sessionState !== "initial") {
-            throw new Error("handshake already started");
+  try {
+    for (const [commandIndex, command] of commands.entries()) {
+      try {
+        if (enforceHandshake) {
+          if (command.cmd === "HelloRenderer") {
+            if (sessionState !== "initial") {
+              throw new Error("handshake already started");
+            }
+            if (command.version?.major !== 2) {
+              throw new Error(`unsupported DRP2 version ${command.version?.major ?? "unknown"}`);
+            }
+            sessionState = "hello";
+          } else if (command.cmd === "RendererHelloReply") {
+            if (sessionState !== "hello") {
+              throw new Error("handshake reply without pending hello");
+            }
+            sessionState = command.status === "ok" ? "ready" : "failed";
+          } else if (command.cmd === "Error") {
+            if (sessionState === "initial") {
+              throw new Error("diagnostic Error before handshake");
+            }
+          } else if (sessionState === "failed") {
+            throw new Error("handshake failed before active command");
+          } else if (sessionState !== "ready") {
+            throw new Error("handshake is not ready");
           }
-          if (command.version?.major !== 2) {
-            throw new Error(`unsupported DRP2 version ${command.version?.major ?? "unknown"}`);
-          }
-          sessionState = "hello";
-        } else if (command.cmd === "RendererHelloReply") {
-          if (sessionState !== "hello") {
-            throw new Error("handshake reply without pending hello");
-          }
-          sessionState = command.status === "ok" ? "ready" : "failed";
-        } else if (command.cmd === "Error") {
-          if (sessionState === "initial") {
-            throw new Error("diagnostic Error before handshake");
-          }
-        } else if (sessionState === "failed") {
-          throw new Error("handshake failed before active command");
-        } else if (sessionState !== "ready") {
-          throw new Error("handshake is not ready");
         }
-      }
-      switch (command.cmd) {
+        switch (command.cmd) {
       case "HelloRenderer":
       case "RendererHelloReply":
         break;
@@ -3403,6 +3428,11 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
       throw wrapDrp2WebGpuError(commandIndex, command, error);
     }
   }
+  } catch (error) {
+    discardLocalExecutionRefs(encoderRefs, commandBuffers);
+    throw error;
+  }
+  discardLocalExecutionRefs(encoderRefs, commandBuffers);
 
   return { readbacks: readbackReplies, state };
 }

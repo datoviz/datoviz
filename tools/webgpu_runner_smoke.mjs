@@ -666,7 +666,7 @@ async function smokeDemoPath(WebGpuDemoSession) {
   );
 }
 
-async function smokePacketSessionValidation(Drp2WebGpuRuntime) {
+async function smokePacketSessionValidation(Drp2WebGpuRuntime, executeDrp2Stream) {
   const arena = new Uint8Array([1, 2, 3, 4, 0, 0, 0, 0]);
   const decoded = decodeDrp2Packet(writeBufferPacket(), arena);
   if (
@@ -747,6 +747,29 @@ async function smokePacketSessionValidation(Drp2WebGpuRuntime) {
     () => realistic.executePacketSet(bufferPacketSet(1, 1)),
     'stale DRP2 packet resource_version',
   );
+
+  const cleanupRuntime = new Drp2WebGpuRuntime(device, context, 'bgra8unorm', { canvas: fakeCanvas });
+  await cleanupRuntime.load({ commands: [texture(5000, 'rgba8unorm')] });
+  cleanupRuntime.frameCommands = [
+    { cmd: 'BeginCommandEncoder', id: 20 },
+    renderPass([colorAttachment(5000)]),
+    { cmd: 'SetPipeline', pass_id: 21, pipeline_id: 999 },
+  ];
+  await expectAsyncFailure(
+    () => cleanupRuntime.render(),
+    'unknown render pipeline 999',
+  );
+  const failedStats = cleanupRuntime.resourceStats();
+  if (failedStats.refs.open !== 0 || failedStats.refs.recorded !== 0) {
+    throw new Error(`failed render leaked local execution refs: ${JSON.stringify(failedStats.refs)}`);
+  }
+  const replacement = { commands: [texture(5000, 'rgba8unorm')] };
+  await executeDrp2Stream(device, context, 'bgra8unorm', replacement, {
+    canvas: fakeCanvas,
+    commands: replacement.commands,
+    replaceExistingResources: true,
+    state: cleanupRuntime.state,
+  });
 }
 
 async function main() {
@@ -760,7 +783,7 @@ async function main() {
     return;
   }
 
-  await smokePacketSessionValidation(Drp2WebGpuRuntime);
+  await smokePacketSessionValidation(Drp2WebGpuRuntime, executeDrp2Stream);
 
   const manifest = await loadJson('examples/webgpu/fixture_manifest.json');
   for (const entry of manifest.positive) {
