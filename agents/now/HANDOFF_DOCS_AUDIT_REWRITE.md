@@ -110,6 +110,10 @@ They supersede earlier agent-facing wording when there is a conflict.
     but they should not drift into different wording or scope.
 16. If an example is minimal, say why it is minimal. If it is advanced, say what prior concepts the
     reader should know before using it.
+17. Treat gallery screenshots and live examples as related but separate outputs. Generated gallery
+    screenshots should follow the current manifest/example screenshot size, currently 1280x720 unless
+    an example explicitly overrides it. Browser live examples may remain responsive or use a
+    different viewport when that is better for interaction.
 
 
 ## Current State
