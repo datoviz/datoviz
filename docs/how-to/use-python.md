@@ -90,7 +90,7 @@ When porting a C example:
 - Importing generated implementation modules such as `datoviz._ctypes` directly.
 - Treating Python object lifetime as a substitute for `dvz_app_destroy()` and
   `dvz_scene_destroy()`.
-- Adding placeholder Python tabs when a Python path is not implemented.
+- Adding empty Python tabs when a Python path is not implemented.
 
 ## See Also
 

@@ -11,24 +11,21 @@ desktop rendering through Vulkan and an experimental browser path through WebGPU
 
 ## Install
 
-For the v0.4 pre-RC documentation, build Datoviz from source unless the release notes name a v0.4
-package command for your platform. The current stable PyPI package may still be the v0.3 line.
-
-After v0.4 packages are published, the normal Python install command is expected to be:
+After v0.4 packages are published on PyPI, the normal Python install command is:
 
 ```sh
 pip install datoviz
 ```
 
-During release-candidate testing, use the exact command from the release notes. If the package is
+During release-candidate testing, use the exact command from the release notes. If an RC is
 published as a pre-release, that command may require `--pre` or an explicit version, for example:
 
 ```sh
 pip install --pre datoviz
 ```
 
-For C/C++ integration, local development, or platform validation, build from source as described
-below.
+Before v0.4 packages are available for your platform, or when you need C/C++ integration and local
+validation, build from source as described below.
 
 
 ## Build From Source

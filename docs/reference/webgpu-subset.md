@@ -85,7 +85,8 @@ Keep these facts separate:
 | A specific adapter renders correctly | Manual or CI evidence for that browser/GPU/driver combination. |
 
 If a browser route fails, record the adapter, browser version, operating system, and diagnostic
-message. Do not silently relabel an example as native-only unless the manifest status is changed.
+message. Do not silently relabel an example as native-only unless the public browser-support status
+is changed at the example source.
 
 
 ## Validation

@@ -587,7 +587,7 @@ def media_block(
         return f"![{example.title}]({image_url(page_path, example, image_url_base, image_format)})"
     if not example.screenshot_expected:
         return "_Screenshot not required for this example._"
-    return "_Media pending._"
+    return "_Screenshot source has not been generated for this example yet._"
 
 
 def render_source_tabs(example: Example) -> list[str]:

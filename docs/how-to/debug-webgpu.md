@@ -10,7 +10,7 @@ availability, then compare against the native example or generated screenshot.
 ## Minimal Checklist
 
 ```text
-manifest status -> live route -> browser WebGPU support -> console errors -> native baseline
+example browser status -> live route -> browser WebGPU support -> console errors -> native baseline
 ```
 
 Use the standalone route before debugging an iframe embedded in a gallery page.

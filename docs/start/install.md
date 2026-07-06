@@ -2,17 +2,13 @@
 
 These instructions target Datoviz v0.4.
 
-For the v0.4 pre-RC documentation, build Datoviz from source unless the release notes name a v0.4
-package command for your platform. The current stable PyPI package may still be the v0.3 line and
-should not be used for these v0.4 docs.
-
-After v0.4 packages are published, the normal Python install command is expected to be:
+After v0.4 packages are published on PyPI, the normal Python install command is:
 
 ```sh
 pip install datoviz
 ```
 
-During the release-candidate phase, use the exact command from the release notes. If the package is
+During the release-candidate phase, use the exact command from the release notes. If an RC is
 published as a pre-release, that command may temporarily need `--pre` or an explicit version, for
 example:
 
@@ -35,8 +31,8 @@ pip install --pre datoviz
 
 ## Python Package
 
-Use this section after v0.4 packages or release-candidate artifacts are available. Until then, use
-[Build from source](#build-from-source).
+Use this section after v0.4 packages or release-candidate artifacts are available for your platform.
+Until then, use [Build from source](#build-from-source).
 
 Create a virtual environment first. This keeps Datoviz and its Python dependencies separate from your
 system Python.
