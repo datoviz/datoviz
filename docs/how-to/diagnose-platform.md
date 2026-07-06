@@ -1,21 +1,33 @@
 # Diagnose Build and Platform Issues
 
-Separate install, build, runtime, and backend failures.
+Separate install, build, rendering, and browser-support failures.
 
 ## Task Workflow
 
-Check the platform support reference, build a minimal example, run an offscreen smoke test when
-possible, then test interactive or WebGPU paths separately.
+Start with the smallest path that should work on your machine. Check that Datoviz imports or builds,
+run a minimal native example, then test offscreen rendering, native windows, and WebGPU browser
+routes separately.
 
 ## Minimal Checklist
 
+For a source checkout, first make sure the project builds:
+
 ```sh
 just build
-just test
-git diff --check
 ```
 
-For documentation-only changes, `git diff --check` is the required final hygiene check.
+Then run one small native example:
+
+```sh
+just example-c start/scatter
+./build/examples/c/start/scatter --live
+```
+
+For a Python package, start with an import check:
+
+```sh
+python -c "import datoviz as dvz; print('datoviz import ok')"
+```
 
 
 ## Important Details
@@ -23,11 +35,15 @@ For documentation-only changes, `git diff --check` is the required final hygiene
 Native window, offscreen rendering, video export, and browser WebGPU exercise different platform
 layers. Verify the narrowest failing layer before changing code.
 
+Use offscreen rendering when a machine has a GPU runtime but no visible desktop session. Use WebGPU
+diagnostics when a native example works but a browser route does not.
+
 ## Common Mistakes
 
 - Debugging a browser adapter issue through native Vulkan logs.
-- Treating generated runtime binaries or downloaded SDK payloads as source changes.
-- Ignoring dirty submodules or generated files when preparing commits.
+- Assuming that offscreen rendering is CPU-only.
+- Assuming that a working native window means browser WebGPU will also work.
+- Testing a complex showcase before confirming that a minimal point example renders.
 
 ## See Also
 

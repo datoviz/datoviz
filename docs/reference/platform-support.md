@@ -15,11 +15,8 @@ classification.
 
 ## Browser/WebGPU
 
-The browser path is experimental. It runs promoted live routes through:
-
-```text
-C/WASM scene state -> scene frame artifact -> DRP2 packets -> browser WebGPU runtime
-```
+The browser path is experimental. It runs selected gallery examples in WebGPU-capable browsers
+through public live routes.
 
 Requirements:
 
@@ -61,7 +58,7 @@ Use [Build options](build-options.md) for the CMake switches that enable or disa
 - WebGPU is not native Vulkan parity.
 - GUI/native input examples do not automatically apply to browser routes.
 - Optional providers must fail with clear diagnostics without breaking core imports/builds.
-- Generated runtime binaries and SDK payloads are not source files and should not be committed.
+- Generated runtime binaries and SDK payloads are not part of the public source documentation.
 
 ## See Also
 

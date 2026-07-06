@@ -45,10 +45,11 @@ Pass `0` to run until the user closes the window; pass a positive frame count fo
 
 ## Build Integration
 
-The public v0.4 package is not published yet. For pre-RC testing, build Datoviz from source and use
-the repository examples or `just c-integration-smoke` as the validation path.
+For the v0.4 pre-RC documentation, build Datoviz from source unless the release notes name a v0.4
+package command for your platform. Use the repository examples or `just c-integration-smoke` to
+check a local C integration.
 
-After v0.4 release-candidate wheels are published, `datoviz-config` will print the include path,
+When a v0.4 package provides C/C++ integration files, `datoviz-config` prints the include path,
 library path, and CMake package directory from the active Python environment:
 
 ```sh
@@ -68,8 +69,8 @@ add_executable(my_datoviz_app main.c)
 target_link_libraries(my_datoviz_app PRIVATE datoviz::datoviz)
 ```
 
-After installing a v0.4 wheel, point CMake at the wheel package directory when it is not on the
-normal prefix path:
+After installing a v0.4 package, point CMake at the package directory when it is not on the normal
+prefix path:
 
 ```sh
 cmake -S . -B build -Ddatoviz_DIR="$(datoviz-config --cmake-dir)"
