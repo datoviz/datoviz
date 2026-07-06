@@ -4563,7 +4563,7 @@ class DvzInputEventContent(ctypes.Union):
 DvzAnimPhaseCallback = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzAnimation), ctypes.c_float, ctypes.c_float, ctypes.c_void_p)
 
 
-DvzAnimTimerCallback = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzAnimation), ctypes.c_double, ctypes.c_double, ctypes.c_ulong, ctypes.c_void_p)
+DvzAnimTimerCallback = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzAnimation), ctypes.c_double, ctypes.c_double, ctypes.c_ulonglong, ctypes.c_void_p)
 
 
 DvzCanvasDraw = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzCanvas), ctypes.POINTER(DvzStreamFrame), ctypes.c_void_p)
@@ -5646,7 +5646,7 @@ DvzQueryResult._fields_ = [
     ('value_kind', ctypes.c_int),
     ('scalar', ctypes.c_double),
     ('vector', (ctypes.c_double * 4)),
-    ('category_id', ctypes.c_long),
+    ('category_id', ctypes.c_longlong),
     ('label', (ctypes.c_char * 128)),
     ('unit', (ctypes.c_char * 32)),
     ('scale', ctypes.POINTER(DvzScale)),
@@ -5777,10 +5777,10 @@ DvzLabelDesc._fields_ = [
 
 DvzLabelsState._fields_ = [
     ('opacity', ctypes.c_float),
-    ('background_id', ctypes.c_long),
+    ('background_id', ctypes.c_longlong),
     ('selected_enabled', ctypes.c_bool),
-    ('selected_id', ctypes.c_long),
-    ('hidden_ids', (ctypes.c_long * 256)),
+    ('selected_id', ctypes.c_longlong),
+    ('hidden_ids', (ctypes.c_longlong * 256)),
     ('hidden_count', ctypes.c_uint32),
     ('boundary_enabled', ctypes.c_bool),
     ('boundary_width_px', ctypes.c_float),
@@ -6071,7 +6071,7 @@ DvzSampledFieldDesc._fields_ = [
 
 
 DvzScaleCategory._fields_ = [
-    ('category_id', ctypes.c_long),
+    ('category_id', ctypes.c_longlong),
     ('order', ctypes.c_uint32),
     ('label', ctypes.c_char_p),
     ('color', DvzColor),
@@ -6759,7 +6759,7 @@ else:
  * @returns allocation size in bytes
  */"""
     dvz_allocation_size.argtypes = [ctypes.POINTER(DvzAllocation)]
-    dvz_allocation_size.restype = ctypes.c_ulong
+    dvz_allocation_size.restype = ctypes.c_ulonglong
 
 
 try:
@@ -6798,7 +6798,7 @@ else:
  * @param size number of bytes to copy
  * @return 0 on success, -1 on failure
  */"""
-    dvz_allocator_copy_from.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulong, ctypes.c_void_p, ctypes.c_ulong]
+    dvz_allocator_copy_from.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulonglong, ctypes.c_void_p, ctypes.c_ulonglong]
     dvz_allocator_copy_from.restype = ctypes.c_int
 
 
@@ -6817,7 +6817,7 @@ else:
  * @param size number of bytes to copy
  * @return 0 on success, -1 on failure
  */"""
-    dvz_allocator_copy_to.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulong, ctypes.c_void_p, ctypes.c_ulong]
+    dvz_allocator_copy_to.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulonglong, ctypes.c_void_p, ctypes.c_ulonglong]
     dvz_allocator_copy_to.restype = ctypes.c_int
 
 
@@ -6951,7 +6951,7 @@ else:
  * @param size the number of bytes to flush
  * @returns 0 on success, -1 on failure
  */"""
-    dvz_allocator_flush.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulong, ctypes.c_ulong]
+    dvz_allocator_flush.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulonglong, ctypes.c_ulonglong]
     dvz_allocator_flush.restype = ctypes.c_int
 
 
@@ -7062,7 +7062,7 @@ else:
  * @param size the number of bytes to invalidate
  * @returns 0 on success, -1 on failure
  */"""
-    dvz_allocator_invalidate.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulong, ctypes.c_ulong]
+    dvz_allocator_invalidate.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulonglong, ctypes.c_ulonglong]
     dvz_allocator_invalidate.restype = ctypes.c_int
 
 
@@ -8104,7 +8104,7 @@ else:
  * @param t1 timestamp corresponding to data1, in microseconds since Unix epoch UTC
  * @return DVZ_OK if the mapping was updated, DVZ_ERROR otherwise
  */"""
-    dvz_axis_set_datetime_range.argtypes = [ctypes.POINTER(DvzAxis), ctypes.c_double, ctypes.c_double, ctypes.c_long, ctypes.c_long]
+    dvz_axis_set_datetime_range.argtypes = [ctypes.POINTER(DvzAxis), ctypes.c_double, ctypes.c_double, ctypes.c_longlong, ctypes.c_longlong]
     dvz_axis_set_datetime_range.restype = ctypes.c_int32
 
 
@@ -8402,7 +8402,7 @@ else:
  * @param src the source access
  * @param dst the destination access
  */"""
-    dvz_barrier_buffer_access.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
+    dvz_barrier_buffer_access.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
     dvz_barrier_buffer_access.restype = None
 
 
@@ -8434,7 +8434,7 @@ else:
  * @param src the source stages
  * @param dst the destination stages
  */"""
-    dvz_barrier_buffer_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
+    dvz_barrier_buffer_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
     dvz_barrier_buffer_stage.restype = None
 
 
@@ -8450,7 +8450,7 @@ else:
  * @param src the source access
  * @param dst the destination access
  */"""
-    dvz_barrier_image_access.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
+    dvz_barrier_image_access.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
     dvz_barrier_image_access.restype = None
 
 
@@ -8545,7 +8545,7 @@ else:
  * @param src the source stages
  * @param dst the destination stages
  */"""
-    dvz_barrier_image_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
+    dvz_barrier_image_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
     dvz_barrier_image_stage.restype = None
 
 
@@ -8561,7 +8561,7 @@ else:
  * @param src the source access
  * @param dst the destination access
  */"""
-    dvz_barrier_memory_access.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
+    dvz_barrier_memory_access.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
     dvz_barrier_memory_access.restype = None
 
 
@@ -8577,7 +8577,7 @@ else:
  * @param src the source stages
  * @param dst the destination stages
  */"""
-    dvz_barrier_memory_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
+    dvz_barrier_memory_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
     dvz_barrier_memory_stage.restype = None
 
 
@@ -8612,7 +8612,7 @@ else:
  * @param size the size
  * @returns the buffer barrier
  */"""
-    dvz_barriers_buffer.argtypes = [ctypes.POINTER(DvzBarriers), ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
+    dvz_barriers_buffer.argtypes = [ctypes.POINTER(DvzBarriers), ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
     dvz_barriers_buffer.restype = ctypes.c_void_p
 
 
@@ -16275,8 +16275,8 @@ else:
     dvz_frame_plan_emitter_emit_drp2_packets.__doc__ = """/**
  * Emit split setup/update/frame DRP2 binary packets from a FramePlan.
  *
- * This native boundary is the first step toward the break-compatible WebGPU/WASM runtime path. JSON
- * export remains separate fixture/debug output and is not used here.
+ * This native boundary emits the packet stream consumed by the current runtime paths. JSON export
+ * remains separate fixture/debug output and is not used here.
  *
  * @param emitter the persistent FramePlan-to-DRP2 emitter
  * @param plan the FramePlan
@@ -19267,9 +19267,9 @@ else:
     dvz_image.__doc__ = """/**
  * Create an image visual.
  *
- * First-slice scope: one sampled 2D texture per visual. The legacy path accepts `position`
- * (vec3, 4 corner vertices in triangle-strip order) and `texcoords` (vec2, matching UVs).
- * The retained per-item path accepts one anchor `position` and `extent` per image item, with
+ * The current image path supports one sampled 2D texture per visual. The quad-corner form accepts
+ * `position` (vec3, 4 corner vertices in triangle-strip order) and `texcoords` (vec2, matching
+ * UVs). The retained per-item form accepts one anchor `position` and `extent` per image item, with
  * optional `tex_rect` atlas rectangles and per-item `anchor`. Bind texture data with a scene-owned
  * sampled field via `dvz_visual_set_field()`.
  *
@@ -20072,7 +20072,7 @@ else:
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_event.argtypes = [ctypes.POINTER(DvzInputRouter), DvzInputCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_event.restype = ctypes.c_ulong
+    _dvz_input_subscribe_event.restype = ctypes.c_ulonglong
     def dvz_input_subscribe_event(router, callback, user_data):
         callback = _callback_coerce(DvzInputCallback, callback)
         subscription_id = _dvz_input_subscribe_event(router, callback, user_data)
@@ -20093,7 +20093,7 @@ else:
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_keyboard.argtypes = [ctypes.POINTER(DvzInputRouter), DvzKeyboardCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_keyboard.restype = ctypes.c_ulong
+    _dvz_input_subscribe_keyboard.restype = ctypes.c_ulonglong
     def dvz_input_subscribe_keyboard(router, callback, user_data):
         callback = _callback_coerce(DvzKeyboardCallback, callback)
         subscription_id = _dvz_input_subscribe_keyboard(router, callback, user_data)
@@ -20119,7 +20119,7 @@ else:
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_pointer.argtypes = [ctypes.POINTER(DvzInputRouter), DvzPointerCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_pointer.restype = ctypes.c_ulong
+    _dvz_input_subscribe_pointer.restype = ctypes.c_ulonglong
     def dvz_input_subscribe_pointer(router, callback, user_data):
         callback = _callback_coerce(DvzPointerCallback, callback)
         subscription_id = _dvz_input_subscribe_pointer(router, callback, user_data)
@@ -20140,7 +20140,7 @@ else:
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_resize.argtypes = [ctypes.POINTER(DvzInputRouter), DvzResizeCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_resize.restype = ctypes.c_ulong
+    _dvz_input_subscribe_resize.restype = ctypes.c_ulonglong
     def dvz_input_subscribe_resize(router, callback, user_data):
         callback = _callback_coerce(DvzResizeCallback, callback)
         subscription_id = _dvz_input_subscribe_resize(router, callback, user_data)
@@ -20161,7 +20161,7 @@ else:
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_scale.argtypes = [ctypes.POINTER(DvzInputRouter), DvzScaleCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_scale.restype = ctypes.c_ulong
+    _dvz_input_subscribe_scale.restype = ctypes.c_ulonglong
     def dvz_input_subscribe_scale(router, callback, user_data):
         callback = _callback_coerce(DvzScaleCallback, callback)
         subscription_id = _dvz_input_subscribe_scale(router, callback, user_data)
@@ -20194,7 +20194,7 @@ else:
  * Returns true when a callback was removed and false when @p id is `DVZ_CALLBACK_ID_NONE` or is not
  * currently registered on this router.
  */"""
-    _dvz_input_unsubscribe.argtypes = [ctypes.POINTER(DvzInputRouter), ctypes.c_ulong]
+    _dvz_input_unsubscribe.argtypes = [ctypes.POINTER(DvzInputRouter), ctypes.c_ulonglong]
     _dvz_input_unsubscribe.restype = ctypes.c_bool
     def dvz_input_unsubscribe(router, id):
         ok = _dvz_input_unsubscribe(router, id)
@@ -20999,7 +20999,7 @@ else:
  * @param label_id background label ID
  * @return 0 on success, -1 on error
  */"""
-    dvz_labels_set_background.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_long]
+    dvz_labels_set_background.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_longlong]
     dvz_labels_set_background.restype = ctypes.c_int32
 
 
@@ -21082,7 +21082,7 @@ else:
  * @param label_id selected label ID
  * @return 0 on success, -1 on error
  */"""
-    dvz_labels_set_selected.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_long]
+    dvz_labels_set_selected.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_longlong]
     dvz_labels_set_selected.restype = ctypes.c_int32
 
 
@@ -21222,7 +21222,7 @@ else:
  * @param id category id to highlight
  * @return DVZ_OK when the highlight state was accepted, DVZ_ERROR on error
  */"""
-    dvz_legend_set_highlight.argtypes = [ctypes.POINTER(DvzLegend), ctypes.c_long]
+    dvz_legend_set_highlight.argtypes = [ctypes.POINTER(DvzLegend), ctypes.c_longlong]
     dvz_legend_set_highlight.restype = ctypes.c_int32
 
 
@@ -21915,7 +21915,7 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_panel_axis')
 else:
     dvz_panel_axis.__doc__ = """/**
- * Return a panel-owned axis, creating its WIP geometry visual on first use.
+ * Return a panel-owned axis, creating its geometry visual on first use.
  *
  * @param panel the panel
  * @param dim axis dimension
@@ -22659,7 +22659,7 @@ else:
     dvz_panel_set_domain.__doc__ = """/**
  * Set a panel data domain for one axis dimension.
  *
- * The first WIP axis slice supports finite linear X/Y domains. Domain endpoints are ordered, not
+ * Axis support currently covers finite linear X/Y domains. Domain endpoints are ordered, not
  * sorted: reversed domains such as `min=10, max=0` are legal and reverse the data-to-visual
  * mapping. Axis geometry is derived from this domain and the panel panzoom extent during frame
  * emission.
@@ -27296,7 +27296,7 @@ else:
  * @param value the value to signal, if using a timeline semaphore
  * @param stage the stage in the queue's execution that depends on that wait.
  */"""
-    dvz_submit_signal.argtypes = [ctypes.POINTER(DvzSubmit), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_ulong]
+    dvz_submit_signal.argtypes = [ctypes.POINTER(DvzSubmit), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_ulonglong]
     dvz_submit_signal.restype = None
 
 
@@ -27331,7 +27331,7 @@ else:
  * @param value the value to wait on, if using a timeline semaphore
  * @param stage the stage in the queue's execution that depends on that wait.
  */"""
-    dvz_submit_wait.argtypes = [ctypes.POINTER(DvzSubmit), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_ulong]
+    dvz_submit_wait.argtypes = [ctypes.POINTER(DvzSubmit), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_ulonglong]
     dvz_submit_wait.restype = None
 
 
@@ -31225,7 +31225,7 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_visual_set_shader_desc')
 else:
     dvz_visual_set_shader_desc.__doc__ = """/**
- * Set the future visual shader descriptor.
+ * Set the visual shader descriptor.
  *
  * v0.4 accepts only NULL or `DVZ_VISUAL_SHADER_NONE`. Custom visual families and built-in shader
  * replacement are reserved for future releases and return -1.
@@ -31335,7 +31335,7 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_visual_shader_desc')
 else:
     dvz_visual_shader_desc.__doc__ = """/**
- * Return the default future visual shader descriptor.
+ * Return the default visual shader descriptor.
  *
  * v0.4 accepts only `DVZ_VISUAL_SHADER_NONE`; custom visual families and built-in shader
  * replacement are reserved for future releases.

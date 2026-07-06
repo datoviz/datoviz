@@ -56,8 +56,8 @@ typedef enum
 /**
  * Emit split setup/update/frame DRP2 binary packets from a FramePlan.
  *
- * This native boundary is the first step toward the break-compatible WebGPU/WASM runtime path. JSON
- * export remains separate fixture/debug output and is not used here.
+ * This native boundary emits the packet stream consumed by the current runtime paths. JSON export
+ * remains separate fixture/debug output and is not used here.
  *
  * @param emitter the persistent FramePlan-to-DRP2 emitter
  * @param plan the FramePlan

@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import ast
 import fnmatch
 import json
 import re
@@ -22,8 +21,6 @@ POLICY_PATH = ROOT / "spec/api/C_API_REFERENCE_POLICY.yaml"
 STATUS_PATH = ROOT / "spec/api/status.yml"
 DOCS_ROOT = ROOT / "docs"
 SUMMARY_PATH = ROOT / "build/docs/c-api-reference-summary.json"
-CTYPES_PATH = ROOT / "datoviz/_ctypes.py"
-
 PARAM_RE = re.compile(r"^@param\s+(?P<name>\w+)\s*(?P<doc>.*)$")
 RETURN_RE = re.compile(r"^@returns?\s+(?P<doc>.*)$")
 
@@ -41,13 +38,6 @@ class PagePolicy:
     prefixes: tuple[str, ...]
 
 
-@dataclass(frozen=True)
-class RawCtypesStatus:
-    emitted: frozenset[str]
-    skipped: frozenset[str]
-    ffi_wrappers: dict[str, str]
-
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--api", type=Path, default=API_PATH)
@@ -60,67 +50,6 @@ def parse_args() -> argparse.Namespace:
         help="validate classification without writing generated Markdown",
     )
     return parser.parse_args()
-
-
-def generated_list(path: Path, name: str) -> list[str]:
-    if not path.exists():
-        return []
-    module = ast.parse(path.read_text(encoding="utf8"))
-    for node in module.body:
-        if not isinstance(node, ast.Assign) or len(node.targets) != 1:
-            continue
-        target = node.targets[0]
-        if isinstance(target, ast.Name) and target.id == name:
-            value = ast.literal_eval(node.value)
-            if isinstance(value, list) and all(isinstance(item, str) for item in value):
-                return value
-    return []
-
-
-def load_raw_ctypes_status(path: Path = CTYPES_PATH) -> RawCtypesStatus:
-    skipped = frozenset(generated_list(path, "_SKIPPED_FUNCTIONS"))
-    emitted: set[str] = set()
-    if path.exists():
-        module = ast.parse(path.read_text(encoding="utf8"))
-        for node in module.body:
-            if not isinstance(node, ast.Try) or not node.body:
-                continue
-            first = node.body[0]
-            if not isinstance(first, ast.Assign) or len(first.targets) != 1:
-                continue
-            target = first.targets[0]
-            if isinstance(target, ast.Name) and target.id.startswith("dvz_"):
-                emitted.add(target.id)
-            continue
-        if isinstance(node, ast.FunctionDef) and node.name.startswith("dvz_"):
-            emitted.add(node.name)
-    ffi_wrappers = {
-        "dvz_geometry_arrow_desc": "dvz_ffi_geometry_arrow_desc",
-        "dvz_geometry_cone_desc": "dvz_ffi_geometry_cone_desc",
-        "dvz_geometry_cube_desc": "dvz_ffi_geometry_cube_desc",
-        "dvz_geometry_cylinder_desc": "dvz_ffi_geometry_cylinder_desc",
-        "dvz_geometry_disc_desc": "dvz_ffi_geometry_disc_desc",
-        "dvz_geometry_plane_desc": "dvz_ffi_geometry_plane_desc",
-        "dvz_geometry_regular_polygon_desc": "dvz_ffi_geometry_regular_polygon_desc",
-        "dvz_geometry_sector_desc": "dvz_ffi_geometry_sector_desc",
-        "dvz_geometry_sphere_desc": "dvz_ffi_geometry_sphere_desc",
-        "dvz_geometry_star_desc": "dvz_ffi_geometry_star_desc",
-        "dvz_geometry_surface_grid_desc": "dvz_ffi_geometry_surface_grid_desc",
-        "dvz_geometry_torus_desc": "dvz_ffi_geometry_torus_desc",
-        "dvz_polygon_desc": "dvz_ffi_polygon_desc",
-        "dvz_field_geometry": "dvz_ffi_field_geometry",
-        "dvz_reference_grid_desc": "dvz_ffi_reference_grid_desc",
-        "dvz_visual_transform_desc": "dvz_ffi_visual_transform_desc",
-        "dvz_panel_background_desc": "dvz_ffi_panel_background_desc",
-        "dvz_material_desc": "dvz_ffi_material_desc",
-        "dvz_phong_material_desc": "dvz_ffi_phong_material_desc",
-        "dvz_standard_material_desc": "dvz_ffi_standard_material_desc",
-        "dvz_depth_cue_desc": "dvz_ffi_depth_cue_desc",
-        "dvz_scale_bar_desc": "dvz_ffi_scale_bar_desc",
-        "dvz_overlay_card_style": "dvz_ffi_overlay_card_style",
-        "dvz_overlay_card_desc": "dvz_ffi_overlay_card_desc",
-    }
-    return RawCtypesStatus(frozenset(emitted), skipped, ffi_wrappers)
 
 
 def load_json(path: Path) -> dict:
@@ -332,20 +261,7 @@ def related_functions(fn: dict, names: set[str]) -> list[str]:
     return sorted(set(related))
 
 
-def raw_ctypes_line(name: str, status: RawCtypesStatus) -> str:
-    if name in status.emitted:
-        return "Raw ctypes: emitted."
-    wrapper = status.ffi_wrappers.get(name)
-    if wrapper:
-        if wrapper in status.emitted:
-            return f"Raw ctypes: available through `{wrapper}()`."
-        return f"Raw ctypes: canonical by-value return; FFI wrapper `{wrapper}()` is declared."
-    if name in status.skipped:
-        return "Raw ctypes: skipped by binding policy."
-    return "Raw ctypes: not emitted by the current generated binding."
-
-
-def format_function(fn: dict, names: set[str], raw_status: RawCtypesStatus) -> list[str]:
+def format_function(fn: dict, names: set[str]) -> list[str]:
     doc, param_docs, ret_doc = doc_parts(fn.get("doc"))
     header = header_of(fn)
     lines = [f"### `{fn['name']}()`", ""]
@@ -373,7 +289,6 @@ def format_function(fn: dict, names: set[str], raw_status: RawCtypesStatus) -> l
     if related:
         links = ", ".join(f"[`{name}()`](#{symbol_anchor(name)})" for name in related)
         lines.extend([f"Related: {links}.", ""])
-    lines.extend([raw_ctypes_line(str(fn["name"]), raw_status), ""])
     if header:
         line = (fn.get("location") or {}).get("line")
         location = f"`{header}`"
@@ -453,7 +368,7 @@ def render_symbol_groups(grouped: dict[str, list[dict]]) -> list[str]:
     return lines
 
 
-def render_page(page: PagePolicy, functions: list[dict], raw_status: RawCtypesStatus) -> None:
+def render_page(page: PagePolicy, functions: list[dict]) -> None:
     lines = generated_header(page.title, page.summary)
     lines.extend(render_page_intro(page, functions))
 
@@ -466,7 +381,7 @@ def render_page(page: PagePolicy, functions: list[dict], raw_status: RawCtypesSt
     for group in sorted(grouped):
         lines.extend([f"## {group}", ""])
         for fn in sorted(grouped[group], key=lambda item: item["name"]):
-            lines.extend(format_function(fn, names, raw_status))
+            lines.extend(format_function(fn, names))
 
     page.output.parent.mkdir(parents=True, exist_ok=True)
     page.output.write_text("\n".join(lines).rstrip() + "\n", encoding="utf8")
@@ -600,7 +515,6 @@ def main() -> int:
     api = load_json(args.api)
     status_entries = load_status_entries(args.status)
     pages, types_policy, hidden_headers = load_policy(args.policy, status_entries)
-    raw_status = load_raw_ctypes_status()
 
     functions, missing_functions = validate_classification(
         "functions", api.get("functions", []), pages, hidden_headers
@@ -632,9 +546,7 @@ def main() -> int:
 
     if not args.check:
         for page in pages:
-            render_page(
-                page, sorted(functions.get(page.key, []), key=lambda item: item["name"]), raw_status
-            )
+            render_page(page, sorted(functions.get(page.key, []), key=lambda item: item["name"]))
         render_types(types_policy, pages, records, enums, typedefs)
         write_summary(args.summary, pages, functions, records, enums, typedefs)
 

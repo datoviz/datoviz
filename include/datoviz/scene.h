@@ -1078,7 +1078,7 @@ DVZ_EXPORT DvzVisualTransformDesc dvz_visual_transform_desc(void);
 
 
 /**
- * Return the default future visual shader descriptor.
+ * Return the default visual shader descriptor.
  *
  * v0.4 accepts only `DVZ_VISUAL_SHADER_NONE`; custom visual families and built-in shader
  * replacement are reserved for future releases.
@@ -1350,7 +1350,7 @@ DVZ_EXPORT bool dvz_panel_bounds_visible(const DvzPanel* panel);
 /**
  * Set a panel data domain for one axis dimension.
  *
- * The first WIP axis slice supports finite linear X/Y domains. Domain endpoints are ordered, not
+ * Axis support currently covers finite linear X/Y domains. Domain endpoints are ordered, not
  * sorted: reversed domains such as `min=10, max=0` are legal and reverse the data-to-visual
  * mapping. Axis geometry is derived from this domain and the panel panzoom extent during frame
  * emission.
@@ -1468,7 +1468,7 @@ dvz_panel_visible_domain(DvzPanel* panel, DvzDim dim, double* out_min, double* o
 
 
 /**
- * Return a panel-owned axis, creating its WIP geometry visual on first use.
+ * Return a panel-owned axis, creating its geometry visual on first use.
  *
  * @param panel the panel
  * @param dim axis dimension
@@ -1838,7 +1838,7 @@ dvz_visual_set_transform_desc(DvzVisual* visual, const DvzVisualTransformDesc* d
 
 
 /**
- * Set the future visual shader descriptor.
+ * Set the visual shader descriptor.
  *
  * v0.4 accepts only NULL or `DVZ_VISUAL_SHADER_NONE`. Custom visual families and built-in shader
  * replacement are reserved for future releases and return -1.
@@ -3553,9 +3553,9 @@ DVZ_EXPORT DvzResult dvz_path_set_subpaths(
 /**
  * Create an image visual.
  *
- * First-slice scope: one sampled 2D texture per visual. The legacy path accepts `position`
- * (vec3, 4 corner vertices in triangle-strip order) and `texcoords` (vec2, matching UVs).
- * The retained per-item path accepts one anchor `position` and `extent` per image item, with
+ * The current image path supports one sampled 2D texture per visual. The quad-corner form accepts
+ * `position` (vec3, 4 corner vertices in triangle-strip order) and `texcoords` (vec2, matching
+ * UVs). The retained per-item form accepts one anchor `position` and `extent` per image item, with
  * optional `tex_rect` atlas rectangles and per-item `anchor`. Bind texture data with a scene-owned
  * sampled field via `dvz_visual_set_field()`.
  *
