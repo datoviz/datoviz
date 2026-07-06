@@ -25,7 +25,7 @@ Live examples use this route shape:
 examples/webgpu/live.html?id=<example-id>
 ```
 
-For the current public manifest:
+For the generated public gallery:
 
 | Browser status | Count | Meaning |
 | --- | ---: | --- |
