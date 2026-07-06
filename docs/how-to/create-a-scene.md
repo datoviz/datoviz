@@ -75,24 +75,20 @@ Basic checklist:
     diameter_px = np.asarray([42.0, 58.0, 42.0], dtype=np.float32, order="C")
 
     scene = dvz.dvz_scene()
-    app = None
-    try:
-        figure = dvz.dvz_figure(scene, width, height, 0)
-        panel = dvz.dvz_panel_full(figure)
+    figure = dvz.dvz_figure(scene, width, height, 0)
+    panel = dvz.dvz_panel_full(figure)
 
-        visual = dvz.dvz_point(scene, 0)
-        dvz.dvz_visual_set_data(visual, "position", positions)
-        dvz.dvz_visual_set_data(visual, "color", colors)
-        dvz.dvz_visual_set_data(visual, "diameter_px", diameter_px)
-        dvz.dvz_panel_add_visual(panel, visual, None)
+    visual = dvz.dvz_point(scene, 0)
+    dvz.dvz_visual_set_data(visual, "position", positions)
+    dvz.dvz_visual_set_data(visual, "color", colors)
+    dvz.dvz_visual_set_data(visual, "diameter_px", diameter_px)
+    dvz.dvz_panel_add_visual(panel, visual, None)
 
-        app = dvz.dvz_app(scene)
-        dvz.dvz_view_window(app, figure, width, height, "Datoviz")
-        dvz.dvz_app_run(app, 0)
-    finally:
-        if app is not None:
-            dvz.dvz_app_destroy(app)
-        dvz.dvz_scene_destroy(scene)
+    app = dvz.dvz_app(scene)
+    dvz.dvz_view_window(app, figure, width, height, "Datoviz")
+    dvz.dvz_app_run(app, 0)
+    dvz.dvz_app_destroy(app)
+    dvz.dvz_scene_destroy(scene)
     ```
 
 === "C"

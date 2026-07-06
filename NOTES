@@ -62,8 +62,69 @@ DOCUMENTATION
 
 
 
+HOW TO
+
+- create a scene:
+
+    ---> 37 dvz.dvz_view_window(app, figure, width, height, "Datoviz")
+     38 dvz.dvz_app_run(app, 0)
+     39 dvz.dvz_app_destroy(app)
+
+    ArgumentError: argument 5: TypeError: wrong type
+
+- 3D navigation
+  - this page is too light, please put more content, explanations, code examples, functionality etc
+
+- video export
+  - nvenc needs to be documented no? what about documenting recording a live example rather than just offscreen render? both should be clearly distinguished and properly documented.
+
+- record replay
+  - you need to explain what this is about, drp2, what this acronym is about, json stream etc, explain in simple terms, with references to more advanced details for experienced users. as is, it seems a bit obscure.
+
+- c integration
+  - this page is weird because it has many details that are not directly relevant to c/c++ integration but more generaly with the scene/visual workflow etc
+
+- deploy to web
+  - i don't understand this page. is this for existing examples that are ported to webgpu? that's not very useful for users no? users have their own C or Python code and they may want to export to WebGPU. I guess this page should explain them how to do that? with a few words on how it works, the caveats, experimental nature of this path etc.
+
+- debug rendering, debug webgpu, diagnose platform
+  - these are way too short and concise to be useful, either expand considerably, or delete
 
 
+
+REFERENCE
+
+- c api overview page
+  - this presents highly advanced and obscure information about Scene Frame Artifacts, i don't understand what this is doing here
+
+- scene c api ref page
+  - categories just use the first word, like "sampled" but in this example it is actually "sampled field"
+  - "Declared in include/datoviz/scene/field.h:227" => could this link directly to the corresponding line/page on github? using the commit hash the generated api was generated from (so we need to keep track of that)
+  - the description of each function should come BEFORE the signature, no?
+
+- stale functions
+  - i want you to inspect all functions that are not actively used in the code base and that could be removed, for example dvz_circular* but there may be many more. how could we proceed to find all these functions?
+
+- ctypes vs raw
+  - i find the whole framing of the distinction between the two very confusing. Is it the case that we ONLY have ctypes bindings, but we have automatic nice numpy wrappers for functions accepting arrays? if so, that does not deserve an actual distinction. we need to review all occurrences in the documentation where this distinction is being made and make it much clearer and just say there is 1 python binding, and the nice numpy wrapped versions for the few functions that accept numpy arrays as parameters can be replaced by the raw non-numpy versions, that's it. tell me your plan to review agressively the entire documentation and fix it everywhere, in all places and instances in the entire documentation
+
+- controllers
+  - Orbit camera: does this one still exist? if not, it should be removed
+
+
+
+ADVANCED
+
+- why datoviz
+  - you should explain what is drp2, how it relates to webgpu, what is webgpu, etc. Do not assume readers already have the required context and knowledge.
+
+- i feel like there's quite some duplication in the pages in this section, which could be considerably shortened and tightened, many pages could be merged and made drastically shorter. wdyt?
+
+
+
+CHECK
+
+- ipython integration
 
 
 
