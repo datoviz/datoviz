@@ -6,6 +6,7 @@
 import ast
 import os
 import shutil
+import sys
 from pathlib import Path
 
 from mkdocs.structure.files import File
@@ -16,6 +17,16 @@ from mkdocs.structure.files import File
 CURDIR = Path(__file__).parent
 ROOT = CURDIR.parent
 ROOT_DOCS = ('ARCHITECTURE', 'BUILD', 'CONTRIBUTING', 'MAINTAINERS')
+GALLERY_NAV_TITLE = 'Generated Gallery'
+GALLERY_NAV_LANES = (
+    ('start', 'Start'),
+    ('showcases', 'Showcases'),
+    ('visuals', 'Visuals'),
+    ('composites', 'Composites'),
+    ('features', 'Features'),
+    ('runtime', 'Runtime & Capture'),
+    ('advanced', 'Advanced'),
+)
 
 
 # Util functions
@@ -128,8 +139,47 @@ def add_generated_tree(files, config, src, dst_prefix, label='asset'):
     return files
 
 
+def find_named_nav_section(nav, title):
+    for item in nav or []:
+        if isinstance(item, dict) and title in item:
+            section = item[title]
+            return section if isinstance(section, list) else None
+    return None
+
+
+def build_gallery_nav():
+    if str(CURDIR) not in sys.path:
+        sys.path.insert(0, str(CURDIR))
+
+    from build_gallery import collect_examples, load_manifest, ordered_lane_examples
+
+    manifest = load_manifest(ROOT / 'examples/c/MANIFEST.yaml')
+    examples = collect_examples(manifest)
+    lanes = []
+    for lane, label in GALLERY_NAV_LANES:
+        lane_examples = ordered_lane_examples(examples, lane)
+        if not lane_examples:
+            continue
+        pages = [{example.title: f"examples/{example.page_path}"} for example in lane_examples]
+        lanes.append({label: pages})
+    return {GALLERY_NAV_TITLE: lanes}
+
+
 # Hooks
 # -------------------------------------------------------------------------------------------------
+
+
+def on_config(config):
+    examples_nav = find_named_nav_section(config.get('nav'), 'Examples')
+    if examples_nav is None:
+        return config
+    if find_named_nav_section(examples_nav, GALLERY_NAV_TITLE) is not None:
+        return config
+    try:
+        examples_nav.append(build_gallery_nav())
+    except Exception as exc:
+        print(f"mkdocs: gallery nav generation failed: {exc}")
+    return config
 
 
 def on_page_markdown(markdown, page, config, files):

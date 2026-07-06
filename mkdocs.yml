@@ -235,7 +235,6 @@ not_in_nav: |
   blog/*
   discussions/*
   landing/*
-  examples/gallery/*
   examples/webgpu/COMPAT.md
   gallery/*
   guide/*

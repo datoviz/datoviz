@@ -113,6 +113,12 @@ capability diagnostics against the same streams used by native runtime execution
 browser gallery example by reimplementing its scene, visual state, animation, picking, selection,
 query/probe, or data semantics in JavaScript.
 
+WebGPU browser resize/recovery guardrail: the C/WASM scene is durable user state; browser WebGPU
+runtime objects and presentation textures are disposable. Browser resize and runtime recovery must
+reset the WebGPU runtime plus retained scene emitter, replay setup packets, and preserve
+camera/controller/scenario state. Do not recreate the C scenario for transient browser resize or
+runtime errors.
+
 Marker triangle status: the GSP visual-QA finding is resolved in Datoviz. Triangle markers use
 centered screen-space bounding-box semantics, bbox-normalized triangle vertices, and
 counter-clockwise rendered y-up angles; keep marker docs, examples, native shaders, and WebGPU

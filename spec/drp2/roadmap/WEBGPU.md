@@ -84,6 +84,29 @@ context objects, or presentation-helper textures into portable DRP2 streams, fix
 headers.
 
 
+## Browser Resize And Recovery
+
+The browser WASM path has two different lifetimes. C/WASM scene state is durable user state:
+figures, panels, visuals, cameras, controllers, scenario state, query state, and retained payload
+identity. Browser WebGPU runtime state is disposable backend state: GPU buffers, GPU textures, bind
+groups, pipelines, presentation caches, and canvas context configuration.
+
+Resize and transient browser validation/device/runtime errors must not recreate the C/WASM scene.
+Recovery resets browser GPU objects and calls the WASM runtime-reset ABI. That reset clears the
+retained scene emitter and marks retained payloads dirty, so the next packet emission is a full
+setup/update/frame replay for the fresh WebGPU runtime while preserving camera, controller, and
+scenario state.
+
+The browser bridge must keep CSS logical dimensions separate from framebuffer dimensions. Figure,
+controller, and input resize events use logical window pixels plus content scale. DRP2 target
+extent and WebGPU presentation textures use framebuffer pixels. `ResizeObserver` should only
+schedule serialized rendering; C scene resize and runtime execution stay inside the session render
+queue.
+
+Full C scene destruction is reserved for explicit session teardown or loading a different demo, not
+for resize recovery.
+
+
 ## Strategic Backlog
 
 1. capability schema for precision, formats, alignment, row pitch, memory budgets, and unsupported
