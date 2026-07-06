@@ -1,4 +1,4 @@
-# Use Python Raw ctypes
+# Use raw ctypes from Python
 
 Use `datoviz.raw` when Python code needs to call the exported C API almost exactly as C would. This
 is an advanced integration path. For ordinary Python scene code with NumPy array adaptation, use
@@ -22,7 +22,7 @@ Use raw only when the exact C call shape matters:
 import datoviz.raw as raw
 ```
 
-## Minimal Call Sequence
+## Smallest Handle Check
 
 ```python
 import datoviz.raw as raw
@@ -34,11 +34,12 @@ panel = raw.dvz_panel_full(figure)
 raw.dvz_scene_destroy(scene)
 ```
 
-Use the reference binding page for exact symbol names, pointer/count calls, callback types, and
-opaque handle behavior.
+This is only a handle-creation check. Use the reference binding page for exact symbol names,
+pointer/count calls, callback types, and opaque handle behavior.
 
 For visual attribute uploads, raw calls require explicit byte strings, pointers, and item counts.
-The next fragment assumes you already created a `points` visual with `raw.dvz_point(scene, 0)`:
+This fragment creates the visual it uploads into, but omits the window/app code so the pointer
+handling stays visible:
 
 ```python
 import ctypes
@@ -51,7 +52,10 @@ positions = np.array(
 colors = np.array(
     [[255, 80, 80, 255], [80, 255, 160, 255], [80, 160, 255, 255]], dtype=np.uint8
 )
+diameters = np.full(positions.shape[0], 8.0, dtype=np.float32)
 
+scene = raw.dvz_scene()
+points = raw.dvz_point(scene, 0)
 raw.dvz_visual_set_data(
     points,
     b"position",
@@ -64,11 +68,19 @@ raw.dvz_visual_set_data(
     colors.ctypes.data_as(ctypes.c_void_p),
     colors.shape[0],
 )
+raw.dvz_visual_set_data(
+    points,
+    b"diameter_px",
+    diameters.ctypes.data_as(ctypes.c_void_p),
+    diameters.shape[0],
+)
+
+raw.dvz_scene_destroy(scene)
 ```
 
 ## Important Details
 
-Python raw `ctypes` is useful for integration checks, binding development, and cases where the exact
+Python raw `ctypes` is useful for integration checks, low-level debugging, and cases where the exact
 C call shape matters. It uses the same `dvz_*` function names and explicit destroy calls as the C
 API.
 

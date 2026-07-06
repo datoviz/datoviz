@@ -108,9 +108,8 @@ Visual transforms belong to the visual, not to one panel attachment. If the same
 to multiple panels, the retained transform affects all of those attachments. Create a separate
 visual when two panels need different object transforms.
 
-The future descriptor path, `dvz_visual_set_transform_desc()`, accepts only `NULL` or
-`DVZ_VISUAL_TRANSFORM_NONE` in v0.4. Use `dvz_visual_set_transform()` for the supported affine
-visual-local transform.
+In v0.4, use `dvz_visual_set_transform()` for the supported affine visual-local transform. Other
+transform-description helpers are not part of the public task workflow on this page.
 
 For animated or frequently changing placement, update the retained transform instead of uploading
 new positions every frame when the vertex data itself is unchanged.
@@ -124,7 +123,8 @@ new positions every frame when the vertex data itself is unchanged.
 - Expecting `dvz_view_set_user_scale()` to change data coordinates or camera distance.
 - Expecting `DvzScale` color/label mappings to scale geometry.
 - Sharing one transformed visual between panels that need different local transforms.
-- Expecting WebGPU parity for every native transform example; check the manifest status.
+- Expecting WebGPU parity for every native transform example; check the generated example page or
+  [WebGPU subset](../reference/webgpu-subset.md) status before relying on browser support.
 
 ## See Also
 

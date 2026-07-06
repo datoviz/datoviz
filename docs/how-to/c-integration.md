@@ -16,7 +16,11 @@ The basic workflow is the same as in the examples:
 If you are writing C++, call the same C API from your C++ code. You can wrap Datoviz pointers in
 your own classes, but keep the same creation and destruction order shown here.
 
-## Minimal Call Sequence
+## Core Call Sequence Fragment
+
+This fragment shows the C calls that connect a visual to a window. It assumes that `positions`,
+`colors`, `diameters`, and `n` were prepared earlier. For a complete runnable program, use
+`examples/c/start/scatter.c`.
 
 ```c
 #include "datoviz/app.h"
@@ -25,6 +29,7 @@ your own classes, but keep the same creation and destruction order shown here.
 DvzScene* scene = dvz_scene();
 DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
 DvzPanel* panel = dvz_panel_full(figure);
+DvzApp* app = NULL;
 
 DvzVisual* points = dvz_point(scene, 0);
 DvzVisualDataUpdate updates[] = {
@@ -33,15 +38,17 @@ DvzVisualDataUpdate updates[] = {
     {.attr_name = "diameter_px", .data = diameters, .item_count = n},
 };
 if (dvz_visual_set_data_many(points, updates, 3) != 0)
-    return -1;
+    goto cleanup;
 if (dvz_panel_add_visual(panel, points, NULL) != 0)
-    return -1;
+    goto cleanup;
 
-DvzApp* app = dvz_app(scene);
+app = dvz_app(scene);
 dvz_view_window(app, figure, 800, 600, "Datoviz");
 dvz_app_run(app, 0);
 
-dvz_app_destroy(app);
+cleanup:
+if (app != NULL)
+    dvz_app_destroy(app);
 dvz_scene_destroy(scene);
 ```
 
@@ -50,9 +57,9 @@ Pass `0` to run until the user closes the window; pass a positive frame count fo
 
 ## Choose A Build Path
 
-For the v0.4 pre-RC documentation, build Datoviz from source unless the release notes name a v0.4
-package command for your platform. Use the repository examples or `just c-integration-smoke` to
-check a local C integration.
+If a v0.4 package is available for your platform, use the installed-package path. If not, build
+Datoviz from source and link against that local build. Use the repository examples or
+`just c-integration-smoke` to check a local C integration.
 
 After a v0.4 package provides C/C++ integration files, you have two main choices.
 

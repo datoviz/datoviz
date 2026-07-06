@@ -11,22 +11,32 @@ Use this path for exact-size native rendering, automated checks, documentation i
 renders where a visible window would be fragile or unnecessary. To save the rendered frame as a PNG,
 see [Save screenshots](capture-an-image.md).
 
-## Minimal Call Sequence
+## Core Offscreen Fragment
+
+This fragment assumes the scene, figure, panel, and visuals already exist. It shows the offscreen
+view step and uses a cleanup path so failed size checks or render calls still destroy the app.
 
 ```c
 DvzApp* app = dvz_app(scene);
 DvzView* view = dvz_view_offscreen(app, figure, width, height);
+int rc = -1;
+if (view == NULL)
+    goto cleanup;
 
 uint32_t framebuffer_width = 0;
 uint32_t framebuffer_height = 0;
 dvz_view_framebuffer_size(view, &framebuffer_width, &framebuffer_height);
 if (framebuffer_width != width || framebuffer_height != height)
-    return -1;
+    goto cleanup;
 
 if (dvz_view_render_once(view) != DVZ_CANVAS_FRAME_READY)
-    return -1;
+    goto cleanup;
 
+rc = 0;
+
+cleanup:
 dvz_app_destroy(app);
+return rc;
 ```
 
 Create the scene, figure, panel, and visuals before `dvz_view_offscreen()`. Render at least one

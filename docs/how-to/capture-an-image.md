@@ -13,20 +13,28 @@ one frame before capture so the framebuffer contains the current scene.
 If you only need to render without opening a window, start with [Render offscreen](render-offscreen.md).
 This page focuses on writing the rendered frame to an image file.
 
-## Minimal Call Sequence
+## Core Capture Fragment
+
+This fragment assumes the scene, figure, panel, and visuals already exist. It renders one offscreen
+frame, writes a PNG, and keeps one cleanup path for success and failure.
 
 ```c
 DvzApp* app = dvz_app(scene);
 DvzView* view = dvz_view_offscreen(app, figure, width, height);
+int rc = -1;
 if (view == NULL)
-    return -1;
+    goto cleanup;
 
 if (dvz_view_render_once(view) != DVZ_CANVAS_FRAME_READY)
-    return -1;
+    goto cleanup;
 if (dvz_view_capture_png(view, "output.png") != 0)
-    return -1;
+    goto cleanup;
 
+rc = 0;
+
+cleanup:
 dvz_app_destroy(app);
+return rc;
 ```
 
 For one-shot offscreen capture, prefer `dvz_view_render_once()` over an open-ended app loop. The
