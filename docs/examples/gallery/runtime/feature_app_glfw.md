@@ -18,7 +18,7 @@ This page focuses on `app glfw`. Use it when you need to control how Datoviz ope
 
 No external data is needed; the example generates its data.
 
-Try the interaction in the preview and compare it with the `app glfw` source code.
+Read the source code section to see how `app glfw` is configured in a native example.
 
 Browser support note: direct GLFW app lifecycle is native-only.
 

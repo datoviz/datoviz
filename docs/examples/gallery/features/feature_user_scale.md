@@ -59,6 +59,6 @@ Browser support note: the user-scale control is a native ImGui slider on a Datov
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../panel_background">Previous: Panel Background</a> · <a href="../feature_visual_transform">Next: Visual Transform</a>
+<a href="../panel_background">Previous: Panel Background</a> · <a href="../feature_view_size_policies">Next: View Size Policies</a>
 </div>
 </nav>

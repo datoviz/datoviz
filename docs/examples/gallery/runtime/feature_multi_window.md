@@ -18,7 +18,7 @@ This page focuses on `multi window`. Use it when you need to control how Datoviz
 
 No external data is needed; the example generates its data.
 
-Try the interaction in the preview and compare it with the `multi window` source code.
+Read the source code section to see how `multi window` is configured in a native example.
 
 Browser support note: multiple native GLFW windows are native-only.
 

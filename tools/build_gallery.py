@@ -559,9 +559,11 @@ def primary_focus(example: Example) -> str:
     return focus
 
 
-def interaction_text(example: Example) -> str:
+def interaction_text(example: Example, has_preview: bool) -> str:
     tags = set(example.tags)
     focus = primary_focus(example)
+    if not has_preview:
+        return f"Read the source code section to see how `{focus}` is configured in a native example."
     if "panzoom" in tags or "controller-panzoom" in tags:
         return "Try dragging and scrolling in the preview to check the pan and zoom behavior."
     if "arcball" in tags or "controller-arcball" in tags:
@@ -718,7 +720,8 @@ def render_example_explanation(example: Example) -> list[str]:
         if data_text:
             lines.extend([data_text, ""])
     if "interaction" in example.validation:
-        lines.extend([interaction_text(example), ""])
+        has_preview = example.screenshot_expected or example.webgpu_status == "webgpu-live"
+        lines.extend([interaction_text(example, has_preview), ""])
     if example.webgpu_status == "webgpu-live":
         route = example.webgpu_route or "the WebGPU live route"
         lines.extend([f"The browser preview uses `{route}` when WebGPU is available.", ""])

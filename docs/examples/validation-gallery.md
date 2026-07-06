@@ -8,8 +8,8 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Reviewed public C examples generated for the website: 105
-- Examples declaring screenshot validation: 90
+- Reviewed public C examples generated for the website: 107
+- Examples declaring screenshot validation: 91
 - Examples that should have video or motion evidence: 5
 
 ## Commands
@@ -90,6 +90,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [Builtin Shapes 3D](gallery/features/feature_builtin_shapes_3d.md) | [`examples/c/features/builtin_shapes_3d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_3d.c) | `supported` | `smoke+screenshot` |
 | [OBJ Loading](gallery/features/feature_obj_loading.md) | [`examples/c/features/obj_loading.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/obj_loading.c) | `supported` | `smoke+screenshot` |
 | [Label Probe](gallery/features/feature_probe_labels.md) | [`examples/c/features/probe_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/probe_labels.c) | `supported` | `smoke+readback+screenshot` |
+| [Datetime Axis](gallery/features/feature_datetime_axis.md) | [`examples/c/features/datetime_axis.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/datetime_axis.c) | `supported` | `smoke+screenshot` |
 | [Timer Animation](gallery/features/feature_timer_animation.md) | [`examples/c/features/timer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/timer_animation.c) | `supported` | `smoke+screenshot` |
 | [Marker Symbols](gallery/features/feature_marker_symbols.md) | [`examples/c/features/marker_symbols.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/marker_symbols.c) | `supported` | `smoke+screenshot` |
 | [Categorical Legend](gallery/features/feature_legend_categorical.md) | [`examples/c/features/legend_categorical.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/legend_categorical.c) | `experimental` | `smoke+screenshot` |

@@ -3,11 +3,11 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 105,
+  "example_count": 107,
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 67,
+    "feature": 69,
     "runtime": 5,
     "showcase": 12,
     "start": 1,
@@ -17,7 +17,7 @@
     "diagnostic": 1,
     "experimental": 13,
     "prototype": 1,
-    "supported": 90
+    "supported": 92
   },
   "capabilities": {
     "composites": {
@@ -113,7 +113,7 @@
         ]
       },
       "synthetic": {
-        "count": 99,
+        "count": 101,
         "examples": [
           {
             "id": "feature_basic_scene",
@@ -436,6 +436,14 @@
             "page": "gallery/features/feature_input_events.md"
           },
           {
+            "id": "feature_view_size_policies",
+            "title": "View Size Policies",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/view_size_policies.c",
+            "page": "gallery/features/feature_view_size_policies.md"
+          },
+          {
             "id": "feature_record_replay",
             "title": "Record Replay",
             "category": "runtime",
@@ -690,6 +698,14 @@
             "status": "supported",
             "source": "examples/c/features/probe_labels.c",
             "page": "gallery/features/feature_probe_labels.md"
+          },
+          {
+            "id": "feature_datetime_axis",
+            "title": "Datetime Axis",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/datetime_axis.c",
+            "page": "gallery/features/feature_datetime_axis.md"
           },
           {
             "id": "feature_timer_animation",
@@ -1142,6 +1158,19 @@
             "status": "supported",
             "source": "examples/c/features/coordinate_system.c",
             "page": "gallery/features/feature_coordinate_system.md"
+          }
+        ]
+      },
+      "datetime-axis": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_datetime_axis",
+            "title": "Datetime Axis",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/datetime_axis.c",
+            "page": "gallery/features/feature_datetime_axis.md"
           }
         ]
       },
@@ -1743,6 +1772,19 @@
           }
         ]
       },
+      "view-size-policy": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_view_size_policies",
+            "title": "View Size Policies",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/view_size_policies.c",
+            "page": "gallery/features/feature_view_size_policies.md"
+          }
+        ]
+      },
       "visibility": {
         "count": 1,
         "examples": [
@@ -1981,7 +2023,7 @@
         ]
       },
       "axes": {
-        "count": 1,
+        "count": 2,
         "examples": [
           {
             "id": "linked_panels_axes_panzoom",
@@ -1990,6 +2032,14 @@
             "status": "supported",
             "source": "examples/c/showcases/panel_linked_axes.c",
             "page": "gallery/showcases/linked_panels_axes_panzoom.md"
+          },
+          {
+            "id": "feature_datetime_axis",
+            "title": "Datetime Axis",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/datetime_axis.c",
+            "page": "gallery/features/feature_datetime_axis.md"
           }
         ]
       },
@@ -2360,6 +2410,19 @@
           }
         ]
       },
+      "datetime": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_datetime_axis",
+            "title": "Datetime Axis",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/datetime_axis.c",
+            "page": "gallery/features/feature_datetime_axis.md"
+          }
+        ]
+      },
       "dense-point-cloud": {
         "count": 1,
         "examples": [
@@ -2474,6 +2537,19 @@
             "status": "experimental",
             "source": "examples/c/visuals/glyph.c",
             "page": "gallery/visuals/visual_glyph.md"
+          }
+        ]
+      },
+      "framebuffer": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_view_size_policies",
+            "title": "View Size Policies",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/view_size_policies.c",
+            "page": "gallery/features/feature_view_size_policies.md"
           }
         ]
       },
@@ -3494,6 +3570,19 @@
           }
         ]
       },
+      "time-series": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_datetime_axis",
+            "title": "Datetime Axis",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/datetime_axis.c",
+            "page": "gallery/features/feature_datetime_axis.md"
+          }
+        ]
+      },
       "transfer-function": {
         "count": 1,
         "examples": [
@@ -3556,6 +3645,19 @@
             "status": "experimental",
             "source": "examples/c/runtime/video_export.c",
             "page": "gallery/runtime/feature_video_export.md"
+          }
+        ]
+      },
+      "view-size": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_view_size_policies",
+            "title": "View Size Policies",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/view_size_policies.c",
+            "page": "gallery/features/feature_view_size_policies.md"
           }
         ]
       },
@@ -3637,6 +3739,19 @@
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
             "page": "gallery/showcases/showcase_wind_field.md"
+          }
+        ]
+      },
+      "window": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_view_size_policies",
+            "title": "View Size Policies",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/view_size_policies.c",
+            "page": "gallery/features/feature_view_size_policies.md"
           }
         ]
       },

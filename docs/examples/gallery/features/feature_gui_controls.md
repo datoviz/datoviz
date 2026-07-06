@@ -18,7 +18,7 @@ This page isolates `gui controls`. Use it to find the small set of calls that en
 
 No external data is needed; the example generates its data.
 
-Try the interaction in the preview and compare it with the `gui controls` source code.
+Read the source code section to see how `gui controls` is configured in a native example.
 
 Browser support note: Datoviz GUI controls require the native ImGui/GLFW app path.
 

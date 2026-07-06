@@ -4,7 +4,7 @@
 
 Browse isolated examples for layout, navigation, adornments, rendering, interaction, animation, and diagnostics.
 
-Coverage: 67 feature examples (61 supported, 5 experimental, 1 diagnostic).
+Coverage: 69 feature examples (63 supported, 5 experimental, 1 diagnostic).
 
 Each card links to a detail page with preview media, source code, and example metadata.
 
@@ -117,6 +117,18 @@ Fixed graphite-cyan panel background behind a simple visual.
 `supported` `features`
 
 Screen-space marker, path, and axis scaling controlled by a GUI slider.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [View Size Policies](gallery/features/feature_view_size_policies.md)
+
+_Screenshot not required for this example._
+
+`supported` `features`<br><span>`view-size`, `framebuffer`, `window`</span>
+
+Explicit canvas/window/framebuffer size policy selection.
 
 </div>
 
@@ -513,6 +525,18 @@ One scene-owned sampled field reused by two image visuals.
 `supported` `features`
 
 CPU contour extraction rendered as segment overlays.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Datetime Axis](gallery/features/feature_datetime_axis.md)
+
+[![Datetime Axis](../assets/gallery/v0.4/features/feature_datetime_axis.webp)](gallery/features/feature_datetime_axis.md)
+
+`supported` `features`<br><span>`axes`, `datetime`, `time-series`</span>
+
+Compact data coordinates with UTC datetime labels.
 
 </div>
 

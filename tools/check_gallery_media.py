@@ -23,6 +23,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--id", action="append", default=[], help="example id; repeat or comma-separate")
     parser.add_argument("--lane", action="append", default=[], help="gallery lane")
     parser.add_argument(
+        "--include-unreviewed",
+        action="store_true",
+        help="also check public-lane examples that are not listed in a manifest review batch",
+    )
+    parser.add_argument(
         "--ignore-cache",
         action="store_true",
         help="only check that PNGs exist and are nonblank",
@@ -38,6 +43,7 @@ def parse_args() -> argparse.Namespace:
 def selected_examples(args: argparse.Namespace) -> list[capture_gallery.CaptureExample]:
     manifest = capture_gallery.load_manifest(args.manifest)
     examples = capture_gallery.collect_examples(manifest)
+    reviewed_ids = capture_gallery.reviewed_example_ids(manifest)
     ids = capture_gallery.split_values(args.id)
     lanes = capture_gallery.split_values(args.lane)
     selected = []
@@ -45,6 +51,8 @@ def selected_examples(args: argparse.Namespace) -> list[capture_gallery.CaptureE
         if ids and example.id not in ids:
             continue
         if lanes and example.lane not in lanes:
+            continue
+        if not ids and not args.include_unreviewed and example.id not in reviewed_ids:
             continue
         if not ids and not lanes and "screenshot" not in example.validation:
             continue

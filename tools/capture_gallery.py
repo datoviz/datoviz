@@ -242,7 +242,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--all-screenshot",
         action="store_true",
-        help="capture every public manifest entry declaring screenshot validation",
+        help="capture every reviewed public manifest entry declaring screenshot validation",
+    )
+    parser.add_argument(
+        "--include-unreviewed",
+        action="store_true",
+        help="include public-lane examples that are not listed in a manifest review batch",
     )
     parser.add_argument("--list", action="store_true", help="list matching captures without running")
     parser.add_argument("--dry-run", action="store_true", help="print commands without running")
@@ -276,6 +281,19 @@ def load_manifest(path: Path) -> dict:
     if not isinstance(manifest.get("examples"), list):
         raise ValueError(f"{path} does not contain an examples list")
     return manifest
+
+
+def reviewed_example_ids(manifest: dict) -> set[str]:
+    """Return example IDs approved for public website generation."""
+    batches = manifest.get("batches") or {}
+    if not isinstance(batches, dict):
+        return set()
+    ids: set[str] = set()
+    for batch_ids in batches.values():
+        if batch_ids is None:
+            continue
+        ids.update(str(example_id) for example_id in batch_ids)
+    return ids
 
 
 def parse_capture_size(value: object, fallback: tuple[int, int]) -> tuple[int, int]:
@@ -343,7 +361,13 @@ def collect_examples(manifest: dict) -> list[CaptureExample]:
     return examples
 
 
-def matches_filter(example: CaptureExample, ids: set[str], lanes: set[str], args: argparse.Namespace) -> bool:
+def matches_filter(
+    example: CaptureExample,
+    ids: set[str],
+    lanes: set[str],
+    reviewed_ids: set[str],
+    args: argparse.Namespace,
+) -> bool:
     selected = False
     if ids:
         selected = example.id in ids
@@ -353,6 +377,8 @@ def matches_filter(example: CaptureExample, ids: set[str], lanes: set[str], args
         selected = selected or example.id in LANDING_IDS
     if args.all_screenshot:
         selected = selected or "screenshot" in example.validation
+    if selected and not ids and not args.include_unreviewed and example.id not in reviewed_ids:
+        return False
     return selected
 
 
@@ -651,11 +677,12 @@ def main() -> int:
     try:
         manifest = load_manifest(args.manifest)
         examples = collect_examples(manifest)
+        reviewed_ids = reviewed_example_ids(manifest)
     except (OSError, ValueError, yaml.YAMLError) as exc:
         print(str(exc), file=sys.stderr)
         return 2
 
-    selected = [example for example in examples if matches_filter(example, ids, lanes, args)]
+    selected = [example for example in examples if matches_filter(example, ids, lanes, reviewed_ids, args)]
     selected.sort(key=lambda item: (item.lane, item.id))
     if not selected:
         print("No matching gallery examples.", file=sys.stderr)

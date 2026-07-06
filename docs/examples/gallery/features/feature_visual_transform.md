@@ -54,6 +54,6 @@ No external data is needed; the example generates its data.
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_user_scale">Previous: User Scale</a> · <a href="../feature_visibility">Next: Visual Visibility</a>
+<a href="../feature_view_size_policies">Previous: View Size Policies</a> · <a href="../feature_visibility">Next: Visual Visibility</a>
 </div>
 </nav>

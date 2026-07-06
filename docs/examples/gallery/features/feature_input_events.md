@@ -18,7 +18,7 @@ This page isolates `input events`. Use it to find the small set of calls that en
 
 No external data is needed; the example generates its data.
 
-Try the interaction in the preview and compare it with the `input events` source code.
+Read the source code section to see how `input events` is configured in a native example.
 
 Browser support note: demonstrates native hosted event injection APIs.
 

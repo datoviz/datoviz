@@ -2,11 +2,11 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 105,
+  "count": 107,
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 67,
+    "feature": 69,
     "runtime": 5,
     "showcase": 12,
     "start": 1,
@@ -16,7 +16,7 @@
     "diagnostic": 1,
     "experimental": 13,
     "prototype": 1,
-    "supported": 90
+    "supported": 92
   },
   "examples": [
     {
@@ -1847,6 +1847,54 @@
       "primary_feature": "input-events"
     },
     {
+      "id": "feature_view_size_policies",
+      "title": "View Size Policies",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/view_size_policies.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/view_size_policies.c",
+      "page": "gallery/features/feature_view_size_policies.md",
+      "summary": "Explicit canvas/window/framebuffer size policy selection.",
+      "validation": "smoke+interaction",
+      "build_command": "just example-c features/view_size_policies",
+      "smoke_command": "./build/examples/c/features/view_size_policies --png",
+      "tags": [
+        "view-size",
+        "framebuffer",
+        "window"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/features/feature_view_size_policies.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_view_size_policies.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
+      "webgpu_requirements": [
+        "native-view",
+        "view-size-policy"
+      ],
+      "webgpu_reason": "demonstrates native window, framebuffer, and physical-size policies",
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "native-view",
+          "view-size-policy"
+        ],
+        "reason": "demonstrates native window, framebuffer, and physical-size policies"
+      },
+      "primary_feature": "view-size-policy"
+    },
+    {
       "id": "feature_record_replay",
       "title": "Record Replay",
       "category": "runtime",
@@ -3385,6 +3433,56 @@
         ]
       },
       "primary_feature": "probe-labels"
+    },
+    {
+      "id": "feature_datetime_axis",
+      "title": "Datetime Axis",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/datetime_axis.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/datetime_axis.c",
+      "page": "gallery/features/feature_datetime_axis.md",
+      "summary": "Compact data coordinates with UTC datetime labels.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/datetime_axis",
+      "smoke_command": "./build/examples/c/features/datetime_axis --png",
+      "tags": [
+        "axes",
+        "datetime",
+        "time-series"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_datetime_axis.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_datetime_axis.webp"
+        }
+      },
+      "webgpu_status": "webgpu-deferred",
+      "webgpu_status_label": "Deferred",
+      "webgpu_requirements": [
+        "axes",
+        "text",
+        "datetime"
+      ],
+      "webgpu_reason": "datetime formatting is outside the RC browser subset",
+      "webgpu": {
+        "status": "webgpu-deferred",
+        "requirements": [
+          "axes",
+          "text",
+          "datetime"
+        ],
+        "reason": "datetime formatting is outside the RC browser subset"
+      },
+      "primary_feature": "datetime-axis"
     },
     {
       "id": "feature_timer_animation",

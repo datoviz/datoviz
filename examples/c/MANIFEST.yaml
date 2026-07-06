@@ -135,6 +135,7 @@ batches:
     - feature_panel_multi
     - feature_panel_linked
     - feature_panel_view2d
+    - feature_view_size_policies
 
   review-03-panels-backgrounds:
     - panel_background
@@ -145,6 +146,7 @@ batches:
   review-04-axes-scales:
     - path_axes_2d
     - feature_axis_labels
+    - feature_datetime_axis
     - scale_bar
     - scalebar_units
     - colorbar

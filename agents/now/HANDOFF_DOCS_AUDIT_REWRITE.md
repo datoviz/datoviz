@@ -114,6 +114,10 @@ They supersede earlier agent-facing wording when there is a conflict.
     screenshots should follow the current manifest/example screenshot size, currently 1280x720 unless
     an example explicitly overrides it. Browser live examples may remain responsive or use a
     different viewport when that is better for interaction.
+18. Public gallery visibility is controlled by the manifest review `batches`. A required public
+    example should either appear in one of those batches or have an explicit deferment/status reason;
+    do not rely on a manifest row alone. Screenshot capture and media checks should default to the
+    reviewed public batch set, with explicit opt-in for unreviewed examples.
 
 
 ## Current State

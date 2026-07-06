@@ -18,7 +18,7 @@ This page isolates `gui viewport`. Use it to find the small set of calls that en
 
 No external data is needed; the example generates its data.
 
-Try the interaction in the preview and compare it with the `gui viewport` source code.
+Read the source code section to see how `gui viewport` is configured in a native example.
 
 Browser support note: dockable GUI viewports require native ImGui and an offscreen native source view.
 

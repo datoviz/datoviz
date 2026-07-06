@@ -18,7 +18,7 @@ This page isolates `gui cimgui`. Use it to find the small set of calls that enab
 
 No external data is needed; the example generates its data.
 
-Try the interaction in the preview and compare it with the `gui cimgui` source code.
+Read the source code section to see how `gui cimgui` is configured in a native example.
 
 Browser support note: raw cimgui access requires the native ImGui app path.
 

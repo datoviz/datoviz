@@ -67,6 +67,6 @@ The browser preview uses `examples/webgpu/live.html?id=feature_isolines` when We
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_sampled_field_update">Previous: Sampled Field Update</a> · <a href="../image_probe">Next: Image Probe</a>
+<a href="../feature_sampled_field_update">Previous: Sampled Field Update</a> · <a href="../feature_datetime_axis">Next: Datetime Axis</a>
 </div>
 </nav>
