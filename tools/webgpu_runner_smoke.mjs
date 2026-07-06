@@ -68,6 +68,7 @@ globalThis.atob = (value) => Buffer.from(value, 'base64').toString('binary');
 globalThis.btoa = (value) => Buffer.from(value, 'binary').toString('base64');
 
 let createdBufferCount = 0;
+let queueSubmitCount = 0;
 let observedViewports = [];
 let observedScissors = [];
 
@@ -97,7 +98,9 @@ const device = {
   queue: {
     writeBuffer() {},
     writeTexture() {},
-    submit() {},
+    submit() {
+      queueSubmitCount++;
+    },
     async onSubmittedWorkDone() {},
   },
   createBuffer(desc = {}) {
@@ -602,6 +605,64 @@ async function smokeBrowserCanvasDepthCache(Drp2WebGpuRuntime) {
     firstStats,
     'browser canvas depth cache changed across retained renders',
   );
+}
+
+async function smokeBrowserPresentResizeRetention(Drp2WebGpuRuntime) {
+  fakeCanvas.width = 640;
+  fakeCanvas.height = 480;
+  fakeCanvas.clientWidth = 640;
+  fakeCanvas.clientHeight = 480;
+  const runtime = new Drp2WebGpuRuntime(device, context, 'rgba8unorm', {
+    canvas: fakeCanvas,
+    requireExplicitBindGroupLayouts: true,
+    requireExplicitPipelineMetadata: true,
+  });
+  await runtime.load({
+    commands: [
+      ...header,
+      ...triangleShaders,
+      renderPipeline([{ format: 'rgba8unorm', write_mask: ['all'] }]),
+      { cmd: 'BeginCommandEncoder', id: 20 },
+      renderPass([colorAttachment(0)]),
+      { cmd: 'SetPipeline', pass_id: 21, pipeline_id: 10 },
+      { cmd: 'Draw', pass_id: 21, vertex_count: 3, instance_count: 1 },
+      { cmd: 'EndRenderPass', pass_id: 21 },
+      { cmd: 'FinishCommandEncoder', encoder_id: 20, command_buffer_id: 22 },
+      { cmd: 'QueueSubmit', command_buffer_id: 22 },
+    ],
+  });
+
+  const beforeFirstRender = queueSubmitCount;
+  await runtime.render();
+  const firstStats = runtime.resourceStats();
+  if (firstStats.browserPresentTextures !== 1) {
+    throw new Error(`browser present cache expected one texture, got ${firstStats.browserPresentTextures}`);
+  }
+  if (queueSubmitCount - beforeFirstRender !== 2) {
+    throw new Error(`browser present first frame expected 2 submits, got ${queueSubmitCount - beforeFirstRender}`);
+  }
+
+  fakeCanvas.width = 800;
+  fakeCanvas.height = 360;
+  fakeCanvas.clientWidth = 800;
+  fakeCanvas.clientHeight = 360;
+  const beforeResizeRender = queueSubmitCount;
+  await runtime.render();
+  const resizeStats = runtime.resourceStats();
+  if (resizeStats.browserPresentTextures !== 1) {
+    throw new Error(`browser present resize kept ${resizeStats.browserPresentTextures} textures after present`);
+  }
+  if (queueSubmitCount - beforeResizeRender !== 3) {
+    throw new Error(
+      `browser present resize expected stale+scene+present submits, got ` +
+        `${queueSubmitCount - beforeResizeRender}`,
+    );
+  }
+
+  fakeCanvas.width = 640;
+  fakeCanvas.height = 480;
+  fakeCanvas.clientWidth = 640;
+  fakeCanvas.clientHeight = 480;
 }
 
 async function smokeStreamPathsOnly(Drp2WebGpuRuntime, executeDrp2Stream, paths) {
@@ -1110,6 +1171,7 @@ async function main() {
 
   await smokeRepeatedRuntimeFrames(Drp2WebGpuRuntime);
   await smokeBrowserCanvasDepthCache(Drp2WebGpuRuntime);
+  await smokeBrowserPresentResizeRetention(Drp2WebGpuRuntime);
   await smokeDemoPath(WebGpuDemoSession);
 
   console.log(

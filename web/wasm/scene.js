@@ -675,16 +675,6 @@ export class DatovizWasmScene {
     let lastWidth = this.canvas.clientWidth;
     let lastHeight = this.canvas.clientHeight;
     let lastScale = Math.max(1, window.devicePixelRatio || 1);
-    let resizeTimer = 0;
-    const scheduleChange = () => {
-      if (resizeTimer !== 0) {
-        clearTimeout(resizeTimer);
-      }
-      resizeTimer = setTimeout(() => {
-        resizeTimer = 0;
-        onChange();
-      }, 120);
-    };
     const observer = new ResizeObserver(() => {
       const width = this.canvas.clientWidth;
       const height = this.canvas.clientHeight;
@@ -695,16 +685,10 @@ export class DatovizWasmScene {
       lastWidth = width;
       lastHeight = height;
       lastScale = scale;
-      scheduleChange();
+      onChange();
     });
     observer.observe(observed);
-    const detach = () => {
-      if (resizeTimer !== 0) {
-        clearTimeout(resizeTimer);
-        resizeTimer = 0;
-      }
-      observer.disconnect();
-    };
+    const detach = () => observer.disconnect();
     this._cleanup.push(detach);
     return detach;
   }

@@ -419,10 +419,6 @@ async function expectBrowserWrapperPacketRuntime() {
     !attachResizeObserver.includes("this.resize()"),
     "ResizeObserver mutates WASM scene outside the render queue",
   );
-  requireOk(
-    attachResizeObserver.includes("setTimeout") && attachResizeObserver.includes("clearTimeout"),
-    "ResizeObserver does not debounce framebuffer resize renders",
-  );
   requireOk(sessionSource.includes("this.renderQueue"), "WASM session does not serialize renders");
   requireOk(
     sessionSource.includes("recoverAfterRenderError"),

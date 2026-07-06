@@ -770,7 +770,8 @@ function assertNoBrowserErrors(page, label) {
 function isKnownHeadlessWebGpuInstanceLoss(status) {
   const text = String(status);
   return text.includes('A valid external Instance reference no longer exists') ||
-         text.includes('Instance dropped in popErrorScope');
+         text.includes('Instance dropped in popErrorScope') ||
+         text.includes('Instance dropped error in getCompilationInfo');
 }
 
 async function main() {

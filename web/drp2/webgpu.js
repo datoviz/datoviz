@@ -1518,11 +1518,15 @@ function makeDepthStencilAttachment(device, state, textures, command) {
 
 
 
-function makeColorAttachment(context, textures, attachment) {
+function makeColorAttachment(device, state, canvasFormat, textures, attachment, label = undefined) {
   const textureView = isBrowserCanvasTextureId(attachment.texture_id)
-    ? context.getCurrentTexture().createView()
+    ? browserPresentTexture(device, state, attachmentExtent(state, attachment), canvasFormat, label)
+        .createView()
     : required(textures.get(attachment.texture_id), `unknown texture ${attachment.texture_id}`)
         .createView();
+  if (isBrowserCanvasTextureId(attachment.texture_id)) {
+    state.browserPresent.pending = true;
+  }
   return {
     view: textureView,
     loadOp: mapLoadOp(attachment.load_op),
@@ -1533,7 +1537,7 @@ function makeColorAttachment(context, textures, attachment) {
 
 
 
-function beginRenderPass(device, context, state, textures, encoders, command) {
+function beginRenderPass(device, state, canvasFormat, textures, encoders, command) {
   const encoder = required(
     encoders.get(command.encoder_id),
     `unknown command encoder ${command.encoder_id}`,
@@ -1543,7 +1547,7 @@ function beginRenderPass(device, context, state, textures, encoders, command) {
   return encoder.beginRenderPass({
     label: command.label,
     colorAttachments: attachments.map((attachment) =>
-      makeColorAttachment(context, textures, attachment),
+      makeColorAttachment(device, state, canvasFormat, textures, attachment, command.label),
     ),
     depthStencilAttachment: makeDepthStencilAttachment(device, state, textures, command),
   });
@@ -1894,7 +1898,186 @@ function destroyBrowserPresentState(state) {
   }
   destroyBrowserPresentTexture(state.browserPresent?.current);
   destroyBrowserPresentTexture(state.browserPresent?.previous);
-  state.browserPresent = { current: null, previous: null };
+  state.browserPresent = {
+    current: null,
+    previous: null,
+    pending: false,
+    resources: null,
+  };
+}
+
+
+
+const BROWSER_PRESENT_SHADER = `
+struct VertexOut {
+  @builtin(position) position: vec4f,
+  @location(0) uv: vec2f,
+};
+
+@group(0) @binding(0) var source_texture: texture_2d<f32>;
+@group(0) @binding(1) var source_sampler: sampler;
+
+@vertex
+fn vs_main(@builtin(vertex_index) vertex_index: u32) -> VertexOut {
+  var positions = array<vec2f, 3>(
+    vec2f(-1.0, -1.0),
+    vec2f(3.0, -1.0),
+    vec2f(-1.0, 3.0),
+  );
+  var uvs = array<vec2f, 3>(
+    vec2f(0.0, 1.0),
+    vec2f(2.0, 1.0),
+    vec2f(0.0, -1.0),
+  );
+  var out: VertexOut;
+  out.position = vec4f(positions[vertex_index], 0.0, 1.0);
+  out.uv = uvs[vertex_index];
+  return out;
+}
+
+@fragment
+fn fs_main(in: VertexOut) -> @location(0) vec4f {
+  return textureSample(source_texture, source_sampler, in.uv);
+}
+`;
+
+
+
+function browserPresentResources(device, state, canvasFormat) {
+  const present = required(state.browserPresent, "browser presentation state is missing");
+  const resources = present.resources;
+  if (resources !== null && resources.canvasFormat === canvasFormat) {
+    return resources;
+  }
+
+  const module = device.createShaderModule({
+    label: "browser-present-shader",
+    code: BROWSER_PRESENT_SHADER,
+  });
+  const bindGroupLayout = device.createBindGroupLayout({
+    label: "browser-present-bind-group-layout",
+    entries: [
+      {
+        binding: 0,
+        visibility: GPUShaderStage.FRAGMENT,
+        texture: { sampleType: "float" },
+      },
+      {
+        binding: 1,
+        visibility: GPUShaderStage.FRAGMENT,
+        sampler: { type: "filtering" },
+      },
+    ],
+  });
+  const pipelineLayout = device.createPipelineLayout({
+    label: "browser-present-pipeline-layout",
+    bindGroupLayouts: [bindGroupLayout],
+  });
+  const pipeline = device.createRenderPipeline({
+    label: "browser-present-pipeline",
+    layout: pipelineLayout,
+    vertex: {
+      module,
+      entryPoint: "vs_main",
+    },
+    fragment: {
+      module,
+      entryPoint: "fs_main",
+      targets: [{ format: canvasFormat }],
+    },
+    primitive: {
+      topology: "triangle-list",
+    },
+  });
+  const sampler = device.createSampler({
+    label: "browser-present-sampler",
+    magFilter: "linear",
+    minFilter: "linear",
+    addressModeU: "clamp-to-edge",
+    addressModeV: "clamp-to-edge",
+  });
+  present.resources = { canvasFormat, bindGroupLayout, pipeline, sampler };
+  return present.resources;
+}
+
+
+
+async function browserPresentRecordToCanvas(device, context, canvasFormat, state, record) {
+  if (record === null || record === undefined) {
+    return false;
+  }
+  const resources = browserPresentResources(device, state, canvasFormat);
+  const bindGroup = device.createBindGroup({
+    label: "browser-present-bind-group",
+    layout: resources.bindGroupLayout,
+    entries: [
+      {
+        binding: 0,
+        resource: record.texture.createView(),
+      },
+      {
+        binding: 1,
+        resource: resources.sampler,
+      },
+    ],
+  });
+  const encoder = device.createCommandEncoder({ label: "browser-present-encoder" });
+  const pass = encoder.beginRenderPass({
+    label: "browser-present-pass",
+    colorAttachments: [
+      {
+        view: context.getCurrentTexture().createView(),
+        loadOp: "clear",
+        storeOp: "store",
+        clearValue: { r: 0, g: 0, b: 0, a: 1 },
+      },
+    ],
+  });
+  pass.setPipeline(resources.pipeline);
+  pass.setBindGroup(0, bindGroup, []);
+  pass.draw(3, 1, 0, 0);
+  pass.end();
+  device.queue.submit([encoder.finish()]);
+  if (typeof device.queue.onSubmittedWorkDone === "function") {
+    await device.queue.onSubmittedWorkDone();
+  }
+
+  const extent = canvasExtent(state);
+  if (
+    record === state.browserPresent.current &&
+    record.width === extent.width &&
+    record.height === extent.height
+  ) {
+    destroyBrowserPresentTexture(state.browserPresent.previous);
+    state.browserPresent.previous = null;
+  }
+  return true;
+}
+
+
+
+async function browserPresentStaleFrameIfNeeded(device, context, canvasFormat, state) {
+  const present = state.browserPresent;
+  const current = present?.current ?? null;
+  if (current === null) {
+    return false;
+  }
+  const extent = canvasExtent(state);
+  if (current.width === extent.width && current.height === extent.height && current.format === canvasFormat) {
+    return false;
+  }
+  return await browserPresentRecordToCanvas(device, context, canvasFormat, state, current);
+}
+
+
+
+async function browserPresentPendingFrame(device, context, canvasFormat, state) {
+  const present = state.browserPresent;
+  if (present?.pending !== true || present.current === null) {
+    return false;
+  }
+  present.pending = false;
+  return await browserPresentRecordToCanvas(device, context, canvasFormat, state, present.current);
 }
 
 
@@ -1947,6 +2130,7 @@ function browserPresentTexture(device, state, extent, format, label = undefined)
     usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
   });
   present.current = { texture, width, height, format };
+  present.pending = true;
   return texture;
 }
 
@@ -1981,7 +2165,12 @@ function createExecutionState(canvas = null) {
     shaders: new Map(),
     pipelines: new Map(),
     browserCanvasDepth: null,
-    browserPresent: { current: null, previous: null },
+    browserPresent: {
+      current: null,
+      previous: null,
+      pending: false,
+      resources: null,
+    },
   };
 }
 
@@ -2817,6 +3006,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         break;
 
       case "BeginRenderPass": {
+        await browserPresentStaleFrameIfNeeded(device, context, canvasFormat, state);
         const attachmentFormats = renderPassAttachmentFormats(state, canvasFormat, command);
         for (const attachment of required(
           command.color_attachments,
@@ -2845,7 +3035,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           depthStencilFormat: attachmentFormats.depthStencilFormat,
           vertexBuffers: new Set(),
           hasIndexBuffer: false,
-          pass: beginRenderPass(device, context, state, textures, encoders, command),
+          pass: beginRenderPass(device, state, canvasFormat, textures, encoders, command),
         });
         break;
       }
@@ -3393,6 +3583,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
             retireSubmittedRefs(record);
           }
         }
+        await browserPresentPendingFrame(device, context, canvasFormat, state);
         for (const readback of readbacks) {
           const bufferRecord = requireLiveRecord(state, readback.buffer_id, "buffer");
           requireUsage(bufferRecord, "MAP_READ");
