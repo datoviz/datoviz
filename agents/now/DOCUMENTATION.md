@@ -1,6 +1,6 @@
 # Datoviz v0.4 Documentation Plan
 
-Status: active documentation roadmap. Updated: 2026-07-05.
+Status: active documentation roadmap. Updated: 2026-07-06.
 
 
 ## Next Steps (agent-ready, in priority order)
@@ -16,10 +16,17 @@ Extends `showcases/textured_planet.c` and `showcases/wind_field.c`.
 Output: 1600×900 PNG hero screenshot.
 
 ### 2. Public documentation audit and rewrite
-Use [HANDOFF_DOCS_AUDIT_REWRITE.md](HANDOFF_DOCS_AUDIT_REWRITE.md). The MkDocs navigation
-restructure has landed; remaining work is public-site audit, release/install posture, first-user
-journey, gallery generation, snippet quality, WebGPU status, reference/status polish, and final
-strict-build validation.
+Use [HANDOFF_DOCS_AUDIT_REWRITE.md](HANDOFF_DOCS_AUDIT_REWRITE.md). The source/docs rewrite pass has
+landed in checkpoint commits: navigation, first-user pages, gallery generator tone, How-To snippet
+quality, slug cleanup, WebGPU status wording, generated C API wording/formatting, and Python binding
+reference checks are reconciled.
+
+Current remaining blocker: gallery source media in the `data` submodule. `tools/check_gallery_media.py`
+still reports invalid dimensions for most `data/gallery/v0.4/**/*.png` source screenshots and a
+missing `data/gallery/v0.4/features/feature_datetime_axis.png`. Do not stage or commit `data`
+without explicit maintainer approval in the current turn. If approved, regenerate or resize source
+PNGs to the manifest default 1280x720, rebuild WebP assets, rerun media checks, and commit the
+submodule pointer only after inspecting the staged set.
 
 ### 3. Quickstart + AI-assisted workflow pages
 Keep the active start path concise:
