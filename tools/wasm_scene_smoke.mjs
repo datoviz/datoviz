@@ -619,6 +619,27 @@ function expectDepthPipeline(pipeline, label, writeEnabled = true, compare = "le
   );
 }
 
+function expectSphereImpostorShaderContract(stream, pipeline, label) {
+  const shaders = new Map(commandsOf(stream, "CreateShaderModule").map((shader) => [shader.id, shader]));
+  const vertex = shaders.get(pipeline.vertex_shader_module_id);
+  const fragment = shaders.get(pipeline.fragment_shader_module_id);
+  requireOk(vertex?.stage === "VERTEX", `${label}: missing sphere vertex shader module`);
+  requireOk(fragment?.stage === "FRAGMENT", `${label}: missing sphere fragment shader module`);
+  requireOk(
+    vertex.code.includes("@location(1) center_view") &&
+      vertex.code.includes("@location(2) radius") &&
+      !vertex.code.includes("@location(2) normal"),
+    `${label}: sphere vertex shader should pass impostor center/radius, not interpolated normals`,
+  );
+  requireOk(
+    fragment.code.includes("@builtin(frag_depth)") &&
+      fragment.code.includes("fn raycast_sphere") &&
+      fragment.code.includes("normal_view") &&
+      fragment.code.includes("evaluate_scene_material"),
+    `${label}: sphere fragment shader should reconstruct and shade the impostor surface`,
+  );
+}
+
 function expectCanvasRenderPass(
   stream,
   label,
@@ -1542,6 +1563,7 @@ function expectLightingScenarioStreamShape(stream, label) {
     (pipeline) => pipeline.builtin_pipeline === "scene.sphere",
   );
   expectDepthPipeline(sphere, `${label} sphere`);
+  expectSphereImpostorShaderContract(stream, sphere, `${label} sphere`);
   requireOk(
     sphere.bind_group_layout_ids.length >= 2,
     `${label}: expected material bind group layout on sphere pipeline`,
@@ -1578,6 +1600,7 @@ function expectProteinScenarioStreamShape(stream, label) {
     (pipeline) => pipeline.builtin_pipeline === "scene.sphere",
   );
   expectDepthPipeline(sphere, `${label} sphere`);
+  expectSphereImpostorShaderContract(stream, sphere, `${label} sphere`);
   requireOk(
     sphere.bind_group_layout_ids.length >= 2,
     `${label}: expected material bind group layout on protein sphere pipeline`,
@@ -1831,6 +1854,7 @@ function expect3DSceneStreamShape(stream, label) {
     `${label} sphere: unexpected vertex attributes`,
   );
   expectDepthPipeline(spherePipeline, `${label} sphere`);
+  expectSphereImpostorShaderContract(stream, spherePipeline, `${label} sphere`);
   const meshPipeline = expectPipeline(
     stream,
     `${label} mesh`,

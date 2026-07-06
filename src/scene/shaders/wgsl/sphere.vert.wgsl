@@ -1,5 +1,4 @@
 #include "common.wgsl"
-#include "camera.wgsl"
 
 struct VertexIn {
     @location(0) position: vec3f,
@@ -10,11 +9,10 @@ struct VertexIn {
 struct VertexOut {
     @builtin(position) position: vec4f,
     @location(0) color: vec4f,
-    @location(1) coord: vec2f,
-    @location(2) normal: vec3f,
-    @location(3) world_position: vec3f,
-    @location(4) camera_position: vec3f,
-    @location(5) depth: f32,
+    @location(1) center_view: vec4f,
+    @location(2) radius: f32,
+    @location(3) sprite_scale: f32,
+    @location(4) coord: vec2f,
 }
 
 fn transform_radius(radius: f32) -> f32 {
@@ -39,7 +37,7 @@ fn quad_corner(vertex_id: u32) -> vec2f {
 @vertex
 fn main(@builtin(vertex_index) vertex_id: u32, input: VertexIn) -> VertexOut {
     let corner = quad_corner(vertex_id);
-    let world = mvp.model * vec4f(input.position, 1.0);
+    let center_view = mvp.view * mvp.model * vec4f(input.position, 1.0);
     let center = transform(input.position);
     let radius = max(transform_radius(input.radius), 1e-6);
     let inv_w = 1.0 / max(abs(center.w), 1e-6);
@@ -56,22 +54,13 @@ fn main(@builtin(vertex_index) vertex_id: u32, input: VertexIn) -> VertexOut {
         3.0 / max(viewport.rect.z, 1.0),
         3.0 / max(viewport.rect.w, 1.0),
     );
-    let sprite_scale = padded_radius_px / max(radius_px, 1e-6);
-    let coord = corner * sprite_scale;
-    let edge = max(1.0 - dot(coord, coord), 0.0);
-    let normal = normalize(vec3f(coord, sqrt(edge)));
 
     var output: VertexOut;
     output.position = vec4f(center.xy + corner * ndc_radius * center.w, center.zw);
     output.color = input.color;
-    output.coord = coord;
-    output.normal = mat3x3f(
-        mvp.model[0].xyz,
-        mvp.model[1].xyz,
-        mvp.model[2].xyz
-    ) * normal;
-    output.world_position = world.xyz + normal * radius;
-    output.camera_position = camera_position_from_view();
-    output.depth = center.z / max(abs(center.w), 1e-6);
+    output.center_view = center_view;
+    output.radius = radius;
+    output.sprite_scale = padded_radius_px / max(radius_px, 1e-6);
+    output.coord = corner * output.sprite_scale;
     return output;
 }
