@@ -3,8 +3,9 @@
 Status: supported low-level Python entry point for Datoviz scene code.
 
 Use this page when you want to write Datoviz scene code from Python and pass NumPy arrays to visual
-data calls. This is not the legacy v0.3 Python plotting API and not a high-level object model.
-GSP/VisPy2 owns Pythonic plotting and scientific workflow APIs above Datoviz.
+data calls. The Python package keeps the same `dvz_*` function names as the C examples while
+adapting supported visual-data uploads to NumPy arrays. For high-level plotting functions such as
+`scatter()` or `imshow()`, use VisPy2/GSP when that layer is available.
 
 | Need | Import |
 | --- | --- |
