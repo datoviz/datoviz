@@ -136,16 +136,18 @@ bool _remember(DvzWasmApiScene* scene, void* wrapper)
     scene->wrappers[scene->wrapper_count++] = wrapper;
     return true;
 }
-void _emit_resize(DvzWasmApiScene* scene, uint32_t width, uint32_t height, float device_scale)
+void _emit_resize(
+    DvzWasmApiScene* scene, uint32_t logical_width, uint32_t logical_height,
+    uint32_t framebuffer_width, uint32_t framebuffer_height, float device_scale)
 {
     if (scene == NULL || scene->router == NULL)
         return;
 
     DvzInputResizeEvent resize = {
-        .framebuffer_width = width,
-        .framebuffer_height = height,
-        .window_width = device_scale > 0.0f ? (uint32_t)((float)width / device_scale) : width,
-        .window_height = device_scale > 0.0f ? (uint32_t)((float)height / device_scale) : height,
+        .framebuffer_width = framebuffer_width,
+        .framebuffer_height = framebuffer_height,
+        .window_width = logical_width,
+        .window_height = logical_height,
         .content_scale_x = device_scale > 0.0f ? device_scale : 1.0f,
         .content_scale_y = device_scale > 0.0f ? device_scale : 1.0f,
     };

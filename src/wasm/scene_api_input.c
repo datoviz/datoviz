@@ -22,8 +22,8 @@ static void _wasm_input_window_size(DvzWasmApiScene* scene, float* out_width, fl
 {
     ANN(out_width);
     ANN(out_height);
-    *out_width = scene != NULL ? (float)scene->width : 0.0f;
-    *out_height = scene != NULL ? (float)scene->height : 0.0f;
+    *out_width = scene != NULL ? (float)scene->logical_width : 0.0f;
+    *out_height = scene != NULL ? (float)scene->logical_height : 0.0f;
     if (scene == NULL)
         return;
 
@@ -47,31 +47,38 @@ static void _wasm_input_window_size(DvzWasmApiScene* scene, float* out_width, fl
 
 EMSCRIPTEN_KEEPALIVE
 int dvz_wasm_api_resize(
-    uint32_t scene_handle, uint32_t figure_handle, uint32_t width, uint32_t height,
+    uint32_t scene_handle, uint32_t figure_handle, uint32_t logical_width,
+    uint32_t logical_height, uint32_t framebuffer_width, uint32_t framebuffer_height,
     float device_scale)
 {
     DvzWasmApiScene* scene = _scene(scene_handle);
     DvzWasmApiFigure* figure = _figure(figure_handle);
     if (scene == NULL || figure == NULL || figure->owner != scene || figure->figure == NULL ||
-        width == 0 || height == 0)
+        logical_width == 0 || logical_height == 0 || framebuffer_width == 0 ||
+        framebuffer_height == 0)
     {
         return _fail(scene, "invalid WASM resize request");
     }
     _clear_payload(scene);
-    scene->width = width;
-    scene->height = height;
+    scene->logical_width = logical_width;
+    scene->logical_height = logical_height;
+    scene->width = framebuffer_width;
+    scene->height = framebuffer_height;
+    scene->device_scale = device_scale > 0.0f ? device_scale : 1.0f;
     if (scene->scenario_active)
     {
-        scene->scenario_ctx.logical_width = width;
-        scene->scenario_ctx.logical_height = height;
-        scene->scenario_ctx.framebuffer_width = width;
-        scene->scenario_ctx.framebuffer_height = height;
-        scene->scenario_ctx.device_scale = device_scale > 0.0f ? device_scale : 1.0f;
-        scene->scenario_ctx.width = width;
-        scene->scenario_ctx.height = height;
+        scene->scenario_ctx.logical_width = logical_width;
+        scene->scenario_ctx.logical_height = logical_height;
+        scene->scenario_ctx.framebuffer_width = framebuffer_width;
+        scene->scenario_ctx.framebuffer_height = framebuffer_height;
+        scene->scenario_ctx.device_scale = scene->device_scale;
+        scene->scenario_ctx.width = logical_width;
+        scene->scenario_ctx.height = logical_height;
     }
-    dvz_figure_resize(figure->figure, width, height);
-    _emit_resize(scene, width, height, device_scale);
+    dvz_figure_resize(figure->figure, logical_width, logical_height);
+    _emit_resize(
+        scene, logical_width, logical_height, framebuffer_width, framebuffer_height,
+        scene->device_scale);
     return 0;
 }
 

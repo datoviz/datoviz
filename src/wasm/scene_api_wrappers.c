@@ -34,6 +34,9 @@ uint32_t dvz_wasm_api_scene(uint32_t width, uint32_t height)
     scene->caps = _wasm_capability_snapshot();
     scene->width = width;
     scene->height = height;
+    scene->logical_width = width;
+    scene->logical_height = height;
+    scene->device_scale = 1.0f;
     scene->color_format = DVZ_FORMAT_R8G8B8A8_UNORM;
     scene->scene = dvz_scene();
     scene->router = dvz_input_router();
@@ -105,8 +108,8 @@ uint32_t dvz_wasm_api_figure(uint32_t scene_handle, uint32_t width, uint32_t hei
         free(figure);
         return _fail_handle(scene, "WASM figure creation failed");
     }
-    scene->width = width;
-    scene->height = height;
+    scene->logical_width = width;
+    scene->logical_height = height;
     return _handle(figure);
 }
 

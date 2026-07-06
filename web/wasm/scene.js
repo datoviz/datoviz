@@ -87,6 +87,14 @@ function positiveInteger(value, fallback) {
   return Number.isFinite(value) && value > 0 ? Math.floor(value) : fallback;
 }
 
+function canvasLogicalSize(canvas) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    width: positiveInteger(canvas.clientWidth, positiveInteger(rect.width, canvas.width)),
+    height: positiveInteger(canvas.clientHeight, positiveInteger(rect.height, canvas.height)),
+  };
+}
+
 function browserCapabilityArgs(capabilities = {}) {
   const sampleCounts = Array.isArray(capabilities.supported_sample_counts)
     ? capabilities.supported_sample_counts.filter((value) => Number.isFinite(value) && value > 0)
@@ -300,6 +308,7 @@ export class DatovizWasmScene {
 
     const gpu = options.gpu ?? await initWebGPU(canvas);
     resizeWebGpuCanvas(canvas, gpu.device, gpu.context, gpu.format);
+    const logical = canvasLogicalSize(canvas);
     const scene = Module._dvz_wasm_api_scene(canvas.width, canvas.height);
     requireOk(scene !== 0, "dvz_wasm_api_scene failed");
     const formatStatus = Module._dvz_wasm_api_set_canvas_format(scene, canvasFormatCode(gpu.format));
@@ -320,7 +329,7 @@ export class DatovizWasmScene {
     if (capsStatus !== 0) {
       throw new Error(diagnosticMessage(Module, scene, "scene rejected browser capabilities"));
     }
-    const figure = Module._dvz_wasm_api_figure(scene, canvas.width, canvas.height);
+    const figure = Module._dvz_wasm_api_figure(scene, logical.width, logical.height);
     if (figure === 0) {
       throw new Error(diagnosticMessage(Module, scene, "dvz_wasm_api_figure failed"));
     }
@@ -402,6 +411,7 @@ export class DatovizWasmScene {
     this.scenario = null;
     this._cleanup = [];
     this._runtimeExecution = Promise.resolve();
+    this._lastResize = null;
   }
 
   destroy() {
@@ -516,12 +526,41 @@ export class DatovizWasmScene {
 
   resize() {
     this._requireAlive();
-    resizeWebGpuCanvas(this.canvas, this.gpu.device, this.gpu.context, this.gpu.format);
+    const resized = resizeWebGpuCanvas(this.canvas, this.gpu.device, this.gpu.context, this.gpu.format);
+    const logical = canvasLogicalSize(this.canvas);
     const scale = Math.max(1, window.devicePixelRatio || 1);
+    const next = {
+      logicalWidth: logical.width,
+      logicalHeight: logical.height,
+      framebufferWidth: this.canvas.width,
+      framebufferHeight: this.canvas.height,
+      scale,
+    };
+    if (
+      !resized &&
+      this._lastResize !== null &&
+      this._lastResize.logicalWidth === next.logicalWidth &&
+      this._lastResize.logicalHeight === next.logicalHeight &&
+      this._lastResize.framebufferWidth === next.framebufferWidth &&
+      this._lastResize.framebufferHeight === next.framebufferHeight &&
+      this._lastResize.scale === next.scale
+    ) {
+      return false;
+    }
+    this._lastResize = next;
     this._requireStatus(
-      this.Module._dvz_wasm_api_resize(this.scene, this.figure, this.canvas.width, this.canvas.height, scale),
+      this.Module._dvz_wasm_api_resize(
+        this.scene,
+        this.figure,
+        next.logicalWidth,
+        next.logicalHeight,
+        next.framebufferWidth,
+        next.framebufferHeight,
+        scale,
+      ),
       "dvz_wasm_api_resize failed",
     );
+    return true;
   }
 
   pointer(type, event) {

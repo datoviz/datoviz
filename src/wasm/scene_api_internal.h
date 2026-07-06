@@ -156,6 +156,9 @@ struct DvzWasmApiScene
     uint32_t wrapper_count;
     uint32_t width;
     uint32_t height;
+    uint32_t logical_width;
+    uint32_t logical_height;
+    float device_scale;
     uint32_t color_format;
     bool scenario_active;
 };
@@ -218,4 +221,6 @@ int _fail(DvzWasmApiScene* scene, const char* diagnostic);
 uint32_t _fail_handle(DvzWasmApiScene* scene, const char* diagnostic);
 int _fail_upload(DvzWasmApiScene* scene, const char* kind, const char* attr, uint32_t item_count);
 bool _remember(DvzWasmApiScene* scene, void* wrapper);
-void _emit_resize(DvzWasmApiScene* scene, uint32_t width, uint32_t height, float device_scale);
+void _emit_resize(
+    DvzWasmApiScene* scene, uint32_t logical_width, uint32_t logical_height,
+    uint32_t framebuffer_width, uint32_t framebuffer_height, float device_scale);

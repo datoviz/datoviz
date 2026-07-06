@@ -428,6 +428,12 @@ async function expectBrowserWrapperPacketRuntime() {
       !scenarioWheel.includes("_canvasPoint(event, true)"),
     "scenario pointer events are pre-scaled before C figure-coordinate conversion",
   );
+  requireOk(
+    source.includes("canvasLogicalSize") &&
+      source.includes("next.logicalWidth") &&
+      source.includes("next.framebufferWidth"),
+    "browser wrapper does not separate logical and framebuffer resize dimensions",
+  );
   requireOk(sessionSource.includes("this.renderQueue"), "WASM session does not serialize renders");
   requireOk(
     sessionSource.includes("recoverAfterRenderError"),
@@ -2222,7 +2228,15 @@ try {
     }
 
     expectStatus(
-      Module._dvz_wasm_api_resize(diagnosticScene, 0, smokeSize, smokeSize, 1),
+      Module._dvz_wasm_api_resize(
+        diagnosticScene,
+        0,
+        smokeSize,
+        smokeSize,
+        smokeSize,
+        smokeSize,
+        1,
+      ),
       -1,
       "invalid resize",
     );
@@ -3807,7 +3821,19 @@ try {
       interactive.payload !== initial.payload && interactive.size !== initial.size,
       "generic 2D interactive payload did not replace initial payload",
     );
-    expectStatus(Module._dvz_wasm_api_resize(scene, figure, smokeSize * 2, smokeSize + 8, 2), 0, "api resize");
+    expectStatus(
+      Module._dvz_wasm_api_resize(
+        scene,
+        figure,
+        smokeSize * 2,
+        smokeSize + 8,
+        smokeSize * 4,
+        (smokeSize + 8) * 2,
+        2,
+      ),
+      0,
+      "api resize",
+    );
     expectNoPayload(Module, scene, "resize invalidates 2D payload");
     const resized = emitStream(Module, scene, figure, "generic 2D resized");
     expect2DUpdateStreamShape(resized.stream, "generic 2D resized", 5, { allowSetupCommands: true });
