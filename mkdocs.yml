@@ -4,6 +4,10 @@ repo_url: https://github.com/datoviz/datoviz
 docs_dir: docs
 watch:
   - build/gallery-webp/v0.4
+  - build-wasm-scene/wasm
+  - examples/webgpu
+  - web/drp2
+  - web/wasm
 site_description: 'Datoviz v0.4: C-first GPU rendering engine for scientific visualization'
 site_author: Cyrille Rossant
 exclude_docs: |

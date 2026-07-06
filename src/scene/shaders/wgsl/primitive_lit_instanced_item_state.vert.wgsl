@@ -150,7 +150,7 @@ fn main(input: VertexIn) -> VertexOut {
     var output: VertexOut;
     output.position = clip;
     output.color = apply_item_state_color(input.color, input.item_state);
-    output.normal = transpose(inverse(mat3x3f(
+    output.normal = transpose(dvz_inverse_mat3x3f(mat3x3f(
         model[0].xyz,
         model[1].xyz,
         model[2].xyz,
