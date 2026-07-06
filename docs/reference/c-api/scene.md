@@ -14,7 +14,7 @@ Use this page when you are writing retained scene/app code and already know the 
 Common workflows:
 
 - [Create a scene](../../how-to/create-a-scene.md)
-- [Create multiple panels](../../how-to/create-multiple-panels.md)
+- [Create multiple panels](../../how-to/multiple-panels.md)
 - [Configure cameras](../../how-to/configure-cameras.md)
 - [Pick items](../../how-to/pick-items.md)
 

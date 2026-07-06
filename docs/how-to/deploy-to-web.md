@@ -100,7 +100,7 @@ route so it owns its own document, scripts, canvas, query parameters, permission
 ## See Also
 
 - [Diagnose WebGPU support](debug-webgpu.md)
-- [Record and replay frame streams](replay-dvzr.md)
+- [Record and replay frame streams](record-replay.md)
 - [Debug rendering output](debug-rendering.md)
 - [WebGPU subset](../reference/webgpu-subset.md)
 

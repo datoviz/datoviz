@@ -87,7 +87,7 @@ categorical scale and legend when the numbers name classes rather than ordered m
 - [Add colorbars, scale bars, and legends](adornments.md)
 - [Probe image or field values](probe-fields.md)
 - [Update visual data](update-visual-data.md)
-- [Control depth, blending, and transparency](rendering-techniques.md)
+- [Control depth, blending, and transparency](depth-blending.md)
 
 ??? example "Related examples"
 

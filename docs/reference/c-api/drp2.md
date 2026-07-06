@@ -13,7 +13,7 @@ Use this page for advanced command-stream and packet work. Ordinary scene code s
 
 Common workflows:
 
-- [Replay frame streams](../../how-to/replay-dvzr.md)
+- [Replay frame streams](../../how-to/record-replay.md)
 - [Debug rendering](../../how-to/debug-rendering.md)
 - [DRP2 overview](../drp2/index.md)
 

@@ -79,5 +79,5 @@ resized by the window manager or scaled by the display.
 ## See Also
 
 - [Render offscreen](render-offscreen.md)
-- [Save screenshots](capture-an-image.md)
+- [Save screenshots](screenshots.md)
 - [Create a window](create-a-window.md)

@@ -54,7 +54,7 @@ useful distance in the dataset.
 
 - [Configure cameras](configure-cameras.md)
 - [Use lighting and materials](lighting-and-materials.md)
-- [Control depth, blending, and transparency](rendering-techniques.md)
+- [Control depth, blending, and transparency](depth-blending.md)
 
 ??? example "Related examples"
 

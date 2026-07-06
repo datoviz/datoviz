@@ -117,7 +117,7 @@ nav:
       - Map scalar values with colormaps: 'how-to/use-colormaps.md'
       - Use sampled fields and textures: 'how-to/use-sampled-fields.md'
     - Layout:
-      - Create multiple panels: 'how-to/create-multiple-panels.md'
+      - Create multiple panels: 'how-to/multiple-panels.md'
       - Link panels and controllers: 'how-to/link-panels.md'
       - Add axes: 'how-to/axes.md'
       - Add colorbars, scale bars, and legends: 'how-to/adornments.md'
@@ -132,12 +132,12 @@ nav:
     - Rendering:
       - Configure cameras: 'how-to/configure-cameras.md'
       - Use lighting and materials: 'how-to/lighting-and-materials.md'
-      - Control depth, blending, and transparency: 'how-to/rendering-techniques.md'
+      - Control depth, blending, and transparency: 'how-to/depth-blending.md'
       - Profile rendering performance: 'how-to/profile-performance.md'
     - Output:
-      - Save screenshots: 'how-to/capture-an-image.md'
+      - Save screenshots: 'how-to/screenshots.md'
       - Export videos: 'how-to/video-export.md'
-      - Record and replay frame streams: 'how-to/replay-dvzr.md'
+      - Record and replay frame streams: 'how-to/record-replay.md'
     - Integration:
       - Use from C or C++: 'how-to/c-integration.md'
       - Use from Python: 'how-to/use-python.md'
@@ -238,6 +238,10 @@ not_in_nav: |
   visuals/*
   start/first-c-program.md
   start/what-is-datoviz.md
+  how-to/capture-an-image.md
+  how-to/create-multiple-panels.md
+  how-to/rendering-techniques.md
+  how-to/replay-dvzr.md
   releases/*
   tutorials/index.md
   tutorials/first-scene.md

@@ -47,7 +47,7 @@ pages:
       - label: Create a scene
         href: ../../how-to/create-a-scene.md
       - label: Create multiple panels
-        href: ../../how-to/create-multiple-panels.md
+        href: ../../how-to/multiple-panels.md
       - label: Configure cameras
         href: ../../how-to/configure-cameras.md
       - label: Pick items
@@ -178,7 +178,7 @@ pages:
       - label: Handle input events
         href: ../../how-to/input-events.md
       - label: Save screenshots
-        href: ../../how-to/capture-an-image.md
+        href: ../../how-to/screenshots.md
     headers:
       - include/datoviz/app.h
       - include/datoviz/app_interop.h
@@ -216,7 +216,7 @@ pages:
     audience: Use this page for advanced command-stream and packet work. Ordinary scene code should start from the Scene API.
     workflows:
       - label: Replay frame streams
-        href: ../../how-to/replay-dvzr.md
+        href: ../../how-to/record-replay.md
       - label: Debug rendering
         href: ../../how-to/debug-rendering.md
       - label: DRP2 overview

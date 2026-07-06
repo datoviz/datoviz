@@ -11,7 +11,7 @@ Primitive: screen-space Gaussian quads.
 [![Splat](../../assets/gallery/v0.4/visuals/visual_splat.webp)](../../examples/gallery/visuals/visual_splat.md)
 
 - Example: [Splat](../../examples/gallery/visuals/visual_splat.md)
-- How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [control depth, blending, and transparency](../../how-to/rendering-techniques.md)
+- How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [control depth, blending, and transparency](../../how-to/depth-blending.md)
 - Related: [Point](point.md), [Sphere](sphere.md), [Mesh](mesh.md)
 
 ## Use When
@@ -62,4 +62,4 @@ as a first example.
 ## See Also
 
 [Choose a visual family](../../how-to/choose-a-visual-family.md),
-[rendering techniques](../../how-to/rendering-techniques.md), [Point](point.md), [Sphere](sphere.md).
+[rendering techniques](../../how-to/depth-blending.md), [Point](point.md), [Sphere](sphere.md).

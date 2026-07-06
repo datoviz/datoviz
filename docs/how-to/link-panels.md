@@ -81,7 +81,7 @@ format.
 
 ## See Also
 
-- [Create multiple panels](create-multiple-panels.md)
+- [Create multiple panels](multiple-panels.md)
 - [Use panzoom](use-panzoom.md)
 - [Controllers reference](../reference/controllers.md)
 - [Add axes](axes.md)

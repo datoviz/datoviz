@@ -128,7 +128,7 @@ When a lit surface looks flat, black, inverted, or unexpectedly glossy, check in
 ## See Also
 
 - [Configure cameras](configure-cameras.md)
-- [Control depth, blending, and transparency](rendering-techniques.md)
+- [Control depth, blending, and transparency](depth-blending.md)
 - [Use sampled fields and textures](use-sampled-fields.md)
 
 ??? example "Related examples"

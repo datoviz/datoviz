@@ -178,7 +178,7 @@ materials, panels, transforms, or update schedules.
 - [Render offscreen](render-offscreen.md)
 - [Add visuals to a panel](add-a-visual.md)
 - [Use from Python](use-python.md)
-- [Create multiple panels](create-multiple-panels.md)
+- [Create multiple panels](multiple-panels.md)
 - [Scene model](../explanation/scene-model.md)
 
 ??? example "Related examples"

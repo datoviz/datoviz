@@ -9,7 +9,7 @@ instead of a visible window view, then render one frame or a bounded sequence of
 
 Use this path for exact-size native rendering, automated checks, documentation images, and batch
 renders where a visible window would be fragile or unnecessary. To save the rendered frame as a PNG,
-see [Save screenshots](capture-an-image.md).
+see [Save screenshots](screenshots.md).
 
 ## Core Offscreen Fragment
 
@@ -105,7 +105,7 @@ window, but it can still fail on machines without the required GPU/device capabi
 
 ## See Also
 
-- [Save screenshots](capture-an-image.md)
+- [Save screenshots](screenshots.md)
 - [Export videos](video-export.md)
 - [Debug rendering output](debug-rendering.md)
 

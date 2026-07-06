@@ -76,6 +76,6 @@ See also:
 
 - [Frame lifecycle](../explanation/frame-lifecycle.md)
 - [GPU resource ownership](../explanation/gpu-resource-ownership.md)
-- [Save screenshots](../how-to/capture-an-image.md)
+- [Save screenshots](../how-to/screenshots.md)
 - [Export videos](../how-to/video-export.md)
 - [vklite](vklite.md)

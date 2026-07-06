@@ -125,8 +125,8 @@ project explicitly stores them as documentation assets.
 ## See Also
 
 - [Animate a scene](animation.md)
-- [Save screenshots](capture-an-image.md)
-- [Record and replay frame streams](replay-dvzr.md)
+- [Save screenshots](screenshots.md)
+- [Record and replay frame streams](record-replay.md)
 
 ??? example "Related examples"
 

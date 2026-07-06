@@ -197,7 +197,7 @@ how-to/
     use-colormaps.md
     use-sampled-fields.md
   Layout/
-    create-multiple-panels.md
+    multiple-panels.md
     link-panels.md
     axes.md
     adornments.md
@@ -212,12 +212,12 @@ how-to/
   Rendering/
     configure-cameras.md
     lighting-and-materials.md
-    rendering-techniques.md
+    depth-blending.md
     profile-performance.md
   Output/
-    capture-an-image.md
+    screenshots.md
     video-export.md
-    replay-dvzr.md
+    record-replay.md
   Integration/
     c-integration.md
     use-python.md

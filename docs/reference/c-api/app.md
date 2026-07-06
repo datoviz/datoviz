@@ -16,7 +16,7 @@ Common workflows:
 - [Open an interactive window](../../how-to/create-a-window.md)
 - [Render offscreen](../../how-to/render-offscreen.md)
 - [Handle input events](../../how-to/input-events.md)
-- [Save screenshots](../../how-to/capture-an-image.md)
+- [Save screenshots](../../how-to/screenshots.md)
 
 Functions: 206
 

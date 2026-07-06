@@ -72,5 +72,5 @@ Durable DRP2 authority lives under `spec/drp2/`:
 
 - [WebGPU subset](../webgpu-subset.md)
 - [Compute and graphics](../compute-graphics.md)
-- [Record and replay frame streams](../../how-to/replay-dvzr.md)
+- [Record and replay frame streams](../../how-to/record-replay.md)
 - [Adding a DRP2 command](../../contributors/adding-a-drp2-command.md)

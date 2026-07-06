@@ -125,7 +125,7 @@ visual data.
 
 - [Pick items](pick-items.md)
 - [Update visual data](update-visual-data.md)
-- [Control depth, blending, and transparency](rendering-techniques.md)
+- [Control depth, blending, and transparency](depth-blending.md)
 
 ??? example "Related examples"
 
