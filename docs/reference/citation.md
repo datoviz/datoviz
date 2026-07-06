@@ -49,15 +49,16 @@ commit used.
 After the final release, use wording like:
 
 ```text
-Interactive scientific visualization was implemented with Datoviz v0.4.0, a C-first
-GPU rendering engine using a retained scene API and a Vulkan-based native runtime.
+Interactive scientific visualization was implemented with Datoviz v0.4.0, a GPU-powered
+visualization engine for large scientific datasets.
 ```
 
-Before then, replace `v0.4.0` with the exact commit, development version, or RC tag used.
+Before then, replace `v0.4.0` with the exact commit, development version, or release-candidate tag
+used.
 
-If you use an experimental backend or low-level interface, name it explicitly, for
-example the WebGPU/WASM subset, DRP2 command streams, or generated `datoviz.raw`
-bindings.
+If your result depends on an experimental backend or low-level interface, name it explicitly. For
+example, mention the WebGPU/WASM subset or the generated `datoviz.raw` bindings when those details
+matter for reproducibility.
 
 
 ## Journal Paper

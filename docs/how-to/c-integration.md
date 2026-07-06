@@ -1,15 +1,20 @@
 # Use from C or C++
 
-Build native applications against the Datoviz C API.
+Use this page when you want to put a Datoviz scene inside a native C or C++ program. This is the
+right path for desktop tools, acquisition software, simulation viewers, or any application that
+needs its own native build system.
 
-## Task Workflow
+The basic workflow is the same as in the examples:
 
-Use this path when your application owns the native event loop, render window, offscreen capture, or
-host integration and needs direct access to the v0.4 engine.
+1. prepare the arrays you want to draw;
+2. create a scene, figure, and panel;
+3. create a visual and attach arrays to its attributes;
+4. add the visual to the panel;
+5. open a window or render offscreen;
+6. run the app or capture a frame.
 
-Include only public headers, link `libdatoviz`, create the scene hierarchy before running the app,
-and keep ownership rules explicit. In C++, wrap Datoviz pointers in your own RAII types only when
-the wrapper preserves the same C ownership and destruction order.
+If you are writing C++, call the same C API from your C++ code. You can wrap Datoviz pointers in
+your own classes, but keep the same creation and destruction order shown here.
 
 ## Minimal Call Sequence
 
@@ -43,14 +48,19 @@ dvz_scene_destroy(scene);
 Create and populate figures, panels, visuals, controllers, and callbacks before `dvz_app_run()`.
 Pass `0` to run until the user closes the window; pass a positive frame count for smoke tests.
 
-## Build Integration
+## Choose A Build Path
 
 For the v0.4 pre-RC documentation, build Datoviz from source unless the release notes name a v0.4
 package command for your platform. Use the repository examples or `just c-integration-smoke` to
 check a local C integration.
 
-When a v0.4 package provides C/C++ integration files, `datoviz-config` prints the include path,
-library path, and CMake package directory from the active Python environment:
+After a v0.4 package provides C/C++ integration files, you have two main choices.
+
+### Installed package
+
+Use this path when Datoviz has been installed into the environment where you build your
+application. A small helper named `datoviz-config` can print the include path, library path, and
+CMake package directory from the active Python environment:
 
 ```sh
 cc main.c $(datoviz-config --cflags --libs) -o my_datoviz_app
@@ -60,7 +70,7 @@ cc main.c $(datoviz-config --cflags --libs) -o my_datoviz_app
 This path is intended for GCC-compatible shells on Linux, macOS, and MSYS2/MinGW. On Windows with
 MSVC, use CMake instead of `datoviz-config`; the script does not emit `/I` or `/LIBPATH:` flags.
 
-Installed CMake consumers should use the exported Datoviz package:
+For CMake projects, use the exported Datoviz package:
 
 ```cmake
 find_package(datoviz CONFIG REQUIRED)
@@ -77,7 +87,10 @@ cmake -S . -B build -Ddatoviz_DIR="$(datoviz-config --cmake-dir)"
 cmake --build build
 ```
 
-Datoviz can also be embedded with CMake `FetchContent` when source integration is preferred:
+### Source checkout
+
+Use this path when packages are not available yet, when you need the current development branch, or
+when you want Datoviz to be built as part of your project. CMake `FetchContent` is one option:
 
 ```cmake
 include(FetchContent)
@@ -106,20 +119,21 @@ the `just c-integration-smoke` validation target.
 
 ## Important Details
 
-The C API is the primary v0.4 surface. Public headers live in `include/datoviz/`; implementation
-details live under `src/` and should not be included by applications.
+The public headers live in `include/datoviz/`. Application code should include those headers only;
+files under `src/` are implementation files and can change without public compatibility promises.
 
-Scene-owned objects such as figures, panels, visuals, controllers, and retained scene resources are
-destroyed with the scene unless a specific API says otherwise. The app owns runtime presentation
-state and should be destroyed before the scene it was created from.
+Figures, panels, visuals, and controllers are destroyed with the scene unless a specific API says
+otherwise. Destroy the app before destroying the scene it was created from.
 
-For fixed-size updates, keep the same visual and replace only changed attributes. Recreating visuals
-inside frame callbacks defeats the retained scene model and usually makes performance worse.
+For repeated updates, keep the same visual and replace only the attributes that changed. For
+example, if 100 points move each frame, keep one point visual with 100 positions and update its
+`position` attribute. Creating a new visual for every point or every frame is usually harder to
+manage and slower.
 
 Use `dvz_visual_set_data_many()` when changing dense per-item attributes together, especially when
 the item count changes. It validates the batch before replacing existing visual payloads.
 
-If a host toolkit drives the event loop, call the hosted rendering primitive for that integration
+If another toolkit drives the event loop, such as Qt, use the hosted rendering path for that toolkit
 instead of entering `dvz_app_run()`. The Qt/PyQt guide and hosted examples show that pattern.
 
 ## Common Mistakes

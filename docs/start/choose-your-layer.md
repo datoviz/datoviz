@@ -52,8 +52,8 @@ Most public C examples follow the same visible sequence:
 ## Python Raw `ctypes`
 
 Choose raw `ctypes` only when you need direct access to generated C bindings from Python. This is a
-low-level integration path. It is useful for binding checks, exact ABI tests, and advanced code that
-needs the generated signatures directly.
+low-level integration path. It is useful for binding checks, tests that compare Python calls with
+the C API, and advanced code that needs the generated signatures directly.
 
 For ordinary Python examples, prefer `import datoviz as dvz` unless a page specifically asks for
 `datoviz.raw`.
@@ -69,8 +69,8 @@ planned, deferred, or native-only.
 
 ## Advanced Runtime Layers
 
-Use DRP2/DVZR, vklite, canvas, and stream APIs when you are working on render streams, replay,
-backend portability, embedding, or Datoviz itself. These layers are documented under
+Use the advanced runtime pages when you are working on Datoviz internals, backend portability,
+render replay, or specialized embedding. These pages are documented under
 [Advanced](../advanced/webgpu-renderer.md) and are secondary to the user-facing scene API.
 
 

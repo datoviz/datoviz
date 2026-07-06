@@ -12,10 +12,9 @@ license: MIT
 repository-code: "https://github.com/datoviz/datoviz"
 url: "https://datoviz.org/"
 abstract: >
-  Datoviz is a C-first GPU rendering engine for scientific visualization. The current
-  v0.4 development branch provides a retained scene API, DRP2 command streams, a native
-  Vulkan/vklite runtime, generated low-level Python bindings, an array-aware direct-engine
-  Python facade, and an experimental WebGPU/WASM browser subset.
+  Datoviz is a GPU-powered visualization engine for large scientific datasets. The current
+  v0.4 development branch provides Python and C APIs for interactive native visualization,
+  offscreen rendering, visual examples, and an experimental WebGPU/WASM browser subset.
 keywords:
   - scientific visualization
   - GPU rendering
