@@ -1880,6 +1880,25 @@ function destroyBrowserCanvasDepth(state) {
 
 
 
+function destroyBrowserPresentTexture(record) {
+  if (record?.texture !== undefined && typeof record.texture.destroy === "function") {
+    record.texture.destroy();
+  }
+}
+
+
+
+function destroyBrowserPresentState(state) {
+  if (state === null || state === undefined) {
+    return;
+  }
+  destroyBrowserPresentTexture(state.browserPresent?.current);
+  destroyBrowserPresentTexture(state.browserPresent?.previous);
+  state.browserPresent = { current: null, previous: null };
+}
+
+
+
 function browserCanvasDepthTexture(device, state, extent, label = undefined) {
   const width = required(extent.width, "browser depth extent needs width");
   const height = required(extent.height, "browser depth extent needs height");
@@ -1905,11 +1924,40 @@ function browserCanvasDepthTexture(device, state, extent, label = undefined) {
 
 
 
+function browserPresentTexture(device, state, extent, format, label = undefined) {
+  const width = required(extent.width, "browser present extent needs width");
+  const height = required(extent.height, "browser present extent needs height");
+  const present = required(state.browserPresent, "browser presentation state is missing");
+  const current = present.current;
+  if (
+    current !== null &&
+    current.width === width &&
+    current.height === height &&
+    current.format === format
+  ) {
+    return current.texture;
+  }
+
+  destroyBrowserPresentTexture(present.previous);
+  present.previous = current;
+  const texture = device.createTexture({
+    label: label === undefined ? "browser-present-color" : `${label}:browser-present-color`,
+    size: { width, height },
+    format,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+  });
+  present.current = { texture, width, height, format };
+  return texture;
+}
+
+
+
 function destroyExecutionState(state) {
   if (state === null || state === undefined) {
     return;
   }
   destroyBrowserCanvasDepth(state);
+  destroyBrowserPresentState(state);
   for (const record of state.objects.values()) {
     if (!record.destroyed && typeof record.object.destroy === "function") {
       record.object.destroy();
@@ -1933,6 +1981,7 @@ function createExecutionState(canvas = null) {
     shaders: new Map(),
     pipelines: new Map(),
     browserCanvasDepth: null,
+    browserPresent: { current: null, previous: null },
   };
 }
 
@@ -1965,6 +2014,9 @@ function resourceStats(state) {
     shaders: state.shaders.size,
     pipelines: state.pipelines.size,
     browserCanvasDepthTextures: state.browserCanvasDepth === null ? 0 : 1,
+    browserPresentTextures:
+      (state.browserPresent?.current === null ? 0 : 1) +
+      (state.browserPresent?.previous === null ? 0 : 1),
     byKind,
     refs: {
       open: openRefs,
