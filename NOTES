@@ -1,0 +1,69 @@
+GALLERY
+
+- what do "prototype" and "supported" tags mean?
+
+- some screenshots are missing and we need to bring them back:
+  - Linked Panels With Axes
+  - feature panzoom
+  - picking
+  - GUI examples: how to capture screenshots for those?
+
+- navigation controllers
+  - it would be nice to have small animations instead of static screenshots here, to show the interactivity patterns. But more generally there are some examples, like animations, but not only, where we would like little animations like 5 to 10 or 20 different frames. also for video export example. with control of which is shown at each frame, and the frame rate. could be animated webp or something else, not sure which is best. How could we possibly proceed?
+
+- in gallery page, .class h3 sometimes takes too much vertical spacing if the title is too long, because of ¶ character, and it breaks the alignment with the other cards
+
+- in showcases, i would group examples between 2D (or mostly 2D) first, and 3D ones second. We need to control the order of the examples shown in the various gallery pages so that it's always the same order
+
+
+
+EXAMPLES
+
+- scientific plotting
+  - bg color appears purple, not expected
+  - "bi-side refractory" is partially clipped at the top
+  - its position moves with panzoom in an unexpected way: when panning, it should follow the exact same translation as the rest of the figure, which is not the case
+
+- isolines
+  - the initial camera position is wrong, it displays the surface from below
+
+- image visual
+  - we have a scalar image example but we currently miss an rgb or rgba image example. wdyt?
+
+- Multisample Antialiasing
+  - the screenshot is broken (missing left panel)
+
+- Eye-Dome Lighting
+  - this one should be with the feature technique examples no?
+
+- i would like to show a qt example in the gallery, to show a code example, would that be possible? wdyt?
+
+- start scatter plot
+  - datoviz or example should come with easy to use random functions, instead of generating random numbers manually like this!
+
+- textured planet
+  - the "What To Look For" section looks badly formatted
+
+
+
+DOCUMENTATION
+
+- there are many instances of the "scene-owned" term: how is that useful from the user point of view? do we really need this precision?
+
+- can we not have "Screenshot not required for this example" when a screenshot is missing? perhaps we could have a mock image in that case? to avoid breaking the layout of the grid of examples? wdyt?
+
+- i think webgpu matrix should not be in the gallery but in advanced
+
+- in all examples, things like "python tools/data/prepare_brain_volume.py" should be in code markdown markup rather than just text like prose. Similarly, the URLs should be enclosed in markdown link tags. or this paragraph is badly formatted on the website for ex in the protein example: "Data/examples/proteins/1ubq/prepared, generated from RCSB PDB 1UBQ. Source: https://files.rcsb.org/download/{PDB_ID}.pdb Terms: RCSB PDB data usage policy applies. Prepare: python tools/data/prepare_protein_arcball.py 1UBQ --regenerate python tools/preprocess_protein.py 6M0J"
+
+- the "What To Look For section could be BELOW the screenshot/live part, no?
+
+- i don't quite like the generated parts in the "What To Look For" section, i just want ad-hoc custom text, anything that is generated belongs better in a table, perhaps at the bottom of each example page
+
+
+
+
+
+
+
+
