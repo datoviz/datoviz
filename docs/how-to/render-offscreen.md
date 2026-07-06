@@ -1,14 +1,15 @@
-# Render Offscreen and Capture
+# Render Offscreen
 
-Render without opening a window, then save a PNG.
+Render a scene without opening a visible window.
 
 ## Task Workflow
 
 Use the normal scene, figure, panel, and visual setup. At the view step, create an offscreen view
-instead of a GLFW view, render one frame into its framebuffer, then capture the last rendered frame.
+instead of a visible window view, then render one frame or a bounded sequence of frames.
 
-Use this path for exact-size native screenshots, CI smoke tests, documentation images, and batch
-renders where a visible window would be fragile or unnecessary.
+Use this path for exact-size native rendering, automated checks, documentation images, and batch
+renders where a visible window would be fragile or unnecessary. To save the rendered frame as a PNG,
+see [Save screenshots](capture-an-image.md).
 
 ## Minimal Call Sequence
 
@@ -25,16 +26,13 @@ if (framebuffer_width != width || framebuffer_height != height)
 if (dvz_view_render_once(view) != DVZ_CANVAS_FRAME_READY)
     return -1;
 
-if (dvz_view_capture_png(view, "output.png") != 0)
-    return -1;
-
 dvz_app_destroy(app);
 ```
 
-Create the scene, figure, panel, and visuals before `dvz_view_offscreen()`. Capture only after a
-submitted frame; `dvz_view_capture_png()` writes the previous rendered framebuffer.
+Create the scene, figure, panel, and visuals before `dvz_view_offscreen()`. Render at least one
+frame before reading pixels or saving a screenshot from the view.
 
-## Static Captures
+## Static Offscreen Frames
 
 For static scenes, one call to `dvz_view_render_once()` is enough. This is the path used by
 `examples/c/runtime/offscreen_capture.c`: build the retained scene, create an offscreen view,
@@ -47,10 +45,10 @@ just example-c runtime/offscreen_capture
 
 The example writes `offscreen_capture.png` next to the executable and reports the exact pixel size.
 
-## Multi-Frame Captures
+## Multi-Frame Rendering
 
-For animated or incremental captures, update retained scene data before each render and capture
-after each successful frame.
+For animated or incremental output, update retained scene data before each render. Save screenshots
+or video only after each successful frame.
 
 ```c
 for (uint32_t frame = 0; frame < frame_count; frame++)
@@ -83,16 +81,16 @@ state, random seeds, and color-scale ranges deterministic.
 PNG capture is an sRGB RGBA8 screenshot/export path. It is not a scientific linear-float readback;
 use explicit data/readback paths when the output is numeric evidence rather than a visual snapshot.
 
-An offscreen view still needs a native GPU/runtime context. It avoids opening a user-facing window,
-but it can still fail on machines without a usable Vulkan backend or required device capabilities.
+An offscreen view still needs a usable native graphics runtime. It avoids opening a user-facing
+window, but it can still fail on machines without the required GPU/device capabilities.
 
 ## Common Mistakes
 
-- Capturing before running a frame.
+- Reading pixels or capturing before running a frame.
 - Requesting a very large framebuffer without checking GPU limits.
 - Assuming offscreen rendering means CPU-only rendering.
 - Letting documentation or test screenshots depend on wall-clock animation state.
-- Using offscreen capture as a substitute for WebGPU browser screenshots; browser examples use a
+- Using offscreen rendering as a substitute for WebGPU browser screenshots; browser examples use a
   separate route.
 
 ## See Also

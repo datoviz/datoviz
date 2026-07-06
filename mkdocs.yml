@@ -106,7 +106,7 @@ nav:
     - Core Workflow:
       - Create a scene: 'how-to/create-a-scene.md'
       - Open an interactive window: 'how-to/create-a-window.md'
-      - Render offscreen and capture: 'how-to/render-offscreen.md'
+      - Render offscreen: 'how-to/render-offscreen.md'
       - Add visuals to a panel: 'how-to/add-a-visual.md'
       - Update visual data: 'how-to/update-visual-data.md'
       - Animate a scene: 'how-to/animation.md'

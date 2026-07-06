@@ -175,7 +175,7 @@ materials, panels, transforms, or update schedules.
 ## See Also
 
 - [Open an interactive window](create-a-window.md)
-- [Render offscreen and capture](render-offscreen.md)
+- [Render offscreen](render-offscreen.md)
 - [Add visuals to a panel](add-a-visual.md)
 - [Use from Python](use-python.md)
 - [Create multiple panels](create-multiple-panels.md)

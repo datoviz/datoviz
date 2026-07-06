@@ -20,9 +20,8 @@ offscreen video, and `--frames` lets you choose the frame count:
 ./build/examples/c/runtime/video_export --frames 240
 ```
 
-Scenario-backed gallery examples can also be recorded by the native scenario runner with
-`--video N` or `--offscreen-record N`, but that is gallery infrastructure rather than the primary
-application API.
+Some repository examples also accept command-line capture flags for documentation and release
+checks. Application code should use the app capture API shown below.
 
 
 ## Minimal Capture Sequence
@@ -79,7 +78,7 @@ Update retained scene data before rendering the frame that should contain the up
 | --- | --- |
 | `DVZ_VIDEO_CAPTURE_CPU_READBACK` | Portable offscreen path; reads screenshot pixels and encodes them on the CPU. |
 | `auto` video mode | Lets Datoviz choose the configured video path. |
-| external video mode | Use only when the environment and backend support the external encoder path. |
+| external video mode | Use only when the environment supports the external encoder path. |
 
 CPU video capture uses the same sRGB RGBA8 screenshot pixel contract as PNG capture. It is a movie
 of rendered frames, not a scientific linear-float export.
@@ -111,8 +110,8 @@ fixed for reproducible output.
 Call `dvz_view_capture_stop()` before destroying the app or scene. This closes the encoder and
 finalizes the output file.
 
-Choose output directories intentionally. Generated videos should stay out of source control unless
-the release or docs pipeline explicitly expects that artifact.
+Choose output directories intentionally. Treat encoded videos as generated outputs unless your
+project explicitly stores them as documentation assets.
 
 ## Common Mistakes
 
@@ -121,7 +120,7 @@ the release or docs pipeline explicitly expects that artifact.
 - Assuming browser WebGPU live routes can export native video directly.
 - Forgetting to stop capture before destroying the view or app.
 - Leaving output paths implicit, then looking for the video in the wrong working directory.
-- Treating encoded videos as source files instead of generated artifacts.
+- Treating encoded videos as hand-written source assets.
 
 ## See Also
 

@@ -29,7 +29,7 @@ camera/domain mismatch, or a technique state such as depth or blending hiding ge
 
 ## See Also
 
-- [Render offscreen and capture](render-offscreen.md)
+- [Render offscreen](render-offscreen.md)
 - [Control depth, blending, and transparency](rendering-techniques.md)
 - [Diagnose build and platform issues](diagnose-platform.md)
 

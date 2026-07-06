@@ -140,7 +140,7 @@ Reproducer:
 ## See Also
 
 - [Update visual data](update-visual-data.md)
-- [Render offscreen and capture](render-offscreen.md)
+- [Render offscreen](render-offscreen.md)
 - [Performance model](../explanation/performance-model.md)
 - [Diagnose build and platform issues](diagnose-platform.md)
 

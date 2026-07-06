@@ -10,6 +10,9 @@ exports. It captures the rendered framebuffer, not a scientific linear-float dat
 Use offscreen rendering for deterministic screenshots. For interactive workflows, render at least
 one frame before capture so the framebuffer contains the current scene.
 
+If you only need to render without opening a window, start with [Render offscreen](render-offscreen.md).
+This page focuses on writing the rendered frame to an image file.
+
 ## Minimal Call Sequence
 
 ```c
@@ -81,14 +84,14 @@ output path, or failed readback should fail loudly.
 
 - Capturing before a frame is rendered.
 - Saving relative to an unexpected working directory.
-- Treating generated screenshots as source files unless the docs pipeline expects them.
+- Treating generated screenshots as hand-written source assets.
 - Assuming GLFW window dimensions are the same as framebuffer pixels on high-DPI displays.
 - Using PNG screenshots when the application needs linear floating-point data.
 - Ignoring a failed offscreen view or capture call.
 
 ## See Also
 
-- [Render offscreen and capture](render-offscreen.md)
+- [Render offscreen](render-offscreen.md)
 - [Export videos](video-export.md)
 - [Debug rendering output](debug-rendering.md)
 
