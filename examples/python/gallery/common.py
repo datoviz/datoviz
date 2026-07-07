@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ctypes
+import time
 
 import datoviz as dvz
 import numpy as np
@@ -119,6 +120,37 @@ def run_with_view(scene, figure, title: str, configure_view):
         configure_view(view)
         dvz.dvz_app_run(app, 0)
     finally:
+        dvz.dvz_app_destroy(app)
+        dvz.dvz_scene_destroy(scene)
+
+
+def run_with_frame_callback(scene, figure, title: str, on_frame, configure_view=None):
+    app = dvz.dvz_app(scene)
+    if not app:
+        raise RuntimeError("dvz_app() failed")
+    callback_set = False
+    try:
+        view = dvz.dvz_view_window(app, figure, WIDTH, HEIGHT, title.encode())
+        if not view:
+            raise RuntimeError("dvz_view_window() failed")
+        if configure_view is not None:
+            configure_view(view)
+
+        state = {"index": 0, "start": time.monotonic()}
+
+        def frame_callback(view_arg, _user_data):
+            frame_index = state["index"]
+            elapsed = time.monotonic() - state["start"]
+            on_frame(view_arg, frame_index, elapsed)
+            state["index"] = frame_index + 1
+
+        if dvz.dvz_view_set_frame_callback(view, frame_callback, None) != 0:
+            raise RuntimeError("dvz_view_set_frame_callback() failed")
+        callback_set = True
+        dvz.dvz_app_run(app, 0)
+    finally:
+        if callback_set:
+            dvz.dvz_view_set_frame_callback(view, None, None)
         dvz.dvz_app_destroy(app)
         dvz.dvz_scene_destroy(scene)
 
