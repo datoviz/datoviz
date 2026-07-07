@@ -12,14 +12,6 @@
 
 Obj_loading loads a Wavefront OBJ fixture and displays it as a mesh.
 
-## What To Look For
-
-The example writes a compact OBJ file, loads it through dvz_geometry_obj(), assigns one mesh color, then uploads the geometry into a lit mesh visual. In the live preview, rotate the low-poly object with the arcball controller and compare its faceted silhouette with the source fixture's vertices and faces. OBJ loading is useful when scientific geometry comes from external meshing or modeling tools.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_obj_loading` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_obj_loading` when
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_obj_loading">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The example writes a compact OBJ file, loads it through dvz_geometry_obj(), assigns one mesh color, then uploads the geometry into a lit mesh visual. In the live preview, rotate the low-poly object with the arcball controller and compare its faceted silhouette with the source fixture's vertices and faces. OBJ loading is useful when scientific geometry comes from external meshing or modeling tools.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_obj_loading` when
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_obj_loading"><code>examples/webgpu/live.html?id=feature_obj_loading</code></a>
     - Browser capability tags: `mesh`, `controller`, `arcball`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

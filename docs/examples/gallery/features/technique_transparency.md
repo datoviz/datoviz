@@ -12,15 +12,13 @@
 
 Transparency_order compares three transparency techniques on the same overlapping cubes.
 
-## What To Look For
-
-Each panel draws two translucent cube meshes with the same geometry, transforms, material settings, and face alpha values, but changes the alpha mode between source-over blending, weighted order-independent transparency, and depth peeling. Rotate the linked panels and compare how back faces and overlapping colors are resolved. This helps choose a transparency mode for volumes, nested surfaces, or uncertain 3D regions.
-
-No external data is needed; the example generates its data.
-
 ## Preview
 
 ![Transparency Order](../../../assets/gallery/v0.4/features/technique_transparency.webp)
+
+## What To Look For
+
+Each panel draws two translucent cube meshes with the same geometry, transforms, material settings, and face alpha values, but changes the alpha mode between source-over blending, weighted order-independent transparency, and depth peeling. Rotate the linked panels and compare how back faces and overlapping colors are resolved. This helps choose a transparency mode for volumes, nested surfaces, or uncertain 3D regions.
 
 ## Source
 
@@ -38,6 +36,7 @@ No external data is needed; the example generates its data.
     - Source: [`examples/c/features/technique_transparency.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_transparency.c)
     - Browser support: Deferred
     - Browser capability tags: `wboit`, `depth-peeling`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

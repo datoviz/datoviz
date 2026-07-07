@@ -12,15 +12,13 @@
 
 Panel_view2d compares a regular 2D panel with one that keeps equal data aspect.
 
-## What To Look For
-
-Both panels draw the same unit circle path and styled X/Y axes. The left panel uses a direct [-1, 1] domain, while the right panel configures an equal-aspect view and verifies matching data units per pixel in X and Y. Compare the circle shape and grid spacing; equal aspect is essential when distance, angle, or shape should not be visually distorted.
-
-No external data is needed; the example generates its data.
-
 ## Preview
 
 ![Panel View 2D](../../../assets/gallery/v0.4/features/feature_panel_view2d.webp)
+
+## What To Look For
+
+Both panels draw the same unit circle path and styled X/Y axes. The left panel uses a direct [-1, 1] domain, while the right panel configures an equal-aspect view and verifies matching data units per pixel in X and Y. Compare the circle shape and grid spacing; equal aspect is essential when distance, angle, or shape should not be visually distorted.
 
 ## Source
 
@@ -38,6 +36,7 @@ No external data is needed; the example generates its data.
     - Source: [`examples/c/features/panel_view2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_view2d.c)
     - Browser support: Planned
     - Browser capability tags: `panel-view`, `panzoom`, `point`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

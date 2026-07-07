@@ -12,18 +12,6 @@
 
 This example uses scene compute buffers to animate particle smoke.
 
-## What To Look For
-
-Particle position, velocity, age, color, and size data live in scene buffers that are consumed by both a compute pass and a blended point visual. The compute shader advances the plume each frame, and pointer movement adds a local swirl force; compare the dense translucent point cloud with the small source region at the bottom of the scene.
-
-This experimental workflow is useful for simulations where GPU-updated arrays should feed a render pass without a CPU round trip.
-
-Useful tags for this example: `compute`, `simulation`, `particles`, `point`.
-
-No downloaded dataset is needed; the example simulates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=showcase_gpu_particle_smoke` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -37,6 +25,12 @@ The browser preview uses `examples/webgpu/live.html?id=showcase_gpu_particle_smo
     </div>
 
     <a href="../../../webgpu/live.html?id=showcase_gpu_particle_smoke">Open the live WebGPU example</a>.
+
+## What To Look For
+
+Particle position, velocity, age, color, and size data live in scene buffers that are consumed by both a compute pass and a blended point visual. The compute shader advances the plume each frame, and pointer movement adds a local swirl force; compare the dense translucent point cloud with the small source region at the bottom of the scene.
+
+This experimental workflow is useful for simulations where GPU-updated arrays should feed a render pass without a CPU round trip.
 
 ## Source
 
@@ -56,6 +50,7 @@ The browser preview uses `examples/webgpu/live.html?id=showcase_gpu_particle_smo
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcase_gpu_particle_smoke"><code>examples/webgpu/live.html?id=showcase_gpu_particle_smoke</code></a>
     - Browser capability tags: `scene-buffers`, `storage-buffers`, `scene-compute`, `point`, `alpha-blending`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -75,6 +70,6 @@ The browser preview uses `examples/webgpu/live.html?id=showcase_gpu_particle_smo
 <a href="../../../showcases">Showcases</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../textured_terrain_or_planet">Previous: Textured Planets</a>
+<a href="../showcase_wind_field">Previous: Wind Field</a> · <a href="../brain_volume">Next: Allen Mouse Brain</a>
 </div>
 </nav>

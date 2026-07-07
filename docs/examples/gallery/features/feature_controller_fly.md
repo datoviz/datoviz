@@ -12,16 +12,6 @@
 
 This example shows fly-style camera navigation through a 3D scene.
 
-## What To Look For
-
-The same colored cube and reference grid used by the controller examples are shown with a fly controller instead of an orbit controller. In the live preview, compare the camera motion with arcball or turntable behavior: fly navigation translates the viewpoint through the scene, which is useful for volume interiors, large 3D datasets, and walkthrough-style exploration.
-
-No external data is needed; the example generates its data.
-
-Try the interaction in the preview and compare it with the `controller fly` source code.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_controller_fly` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_controller_fly` w
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_controller_fly">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The same colored cube and reference grid used by the controller examples are shown with a fly controller instead of an orbit controller. In the live preview, compare the camera motion with arcball or turntable behavior: fly navigation translates the viewpoint through the scene, which is useful for volume interiors, large 3D datasets, and walkthrough-style exploration.
 
 ## Source
 
@@ -53,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_controller_fly` w
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_controller_fly"><code>examples/webgpu/live.html?id=feature_controller_fly</code></a>
     - Browser capability tags: `controller`, `fly`, `mesh`
+    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 

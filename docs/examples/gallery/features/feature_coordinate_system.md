@@ -12,15 +12,13 @@
 
 This example shows the Datoviz 3D coordinate convention.
 
-## What To Look For
-
-The axis triad uses red for X, green for Y, and blue for Z, with labels and a reference grid providing orientation cues. The live example binds a turntable controller, so the axes can be inspected from different viewpoints while the world-up direction remains legible. This is useful when checking imported coordinates, camera setup, and the sign or orientation of 3D scientific data.
-
-No external data is needed; the example generates its data.
-
 ## Preview
 
 ![Coordinate System](../../../assets/gallery/v0.4/features/feature_coordinate_system.webp)
+
+## What To Look For
+
+The axis triad uses red for X, green for Y, and blue for Z, with labels and a reference grid providing orientation cues. The live example binds a turntable controller, so the axes can be inspected from different viewpoints while the world-up direction remains legible. This is useful when checking imported coordinates, camera setup, and the sign or orientation of 3D scientific data.
 
 ## Source
 
@@ -38,6 +36,7 @@ No external data is needed; the example generates its data.
     - Source: [`examples/c/features/coordinate_system.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/coordinate_system.c)
     - Browser support: Planned
     - Browser capability tags: `mesh`, `reference-grid`, `text`, `controller`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

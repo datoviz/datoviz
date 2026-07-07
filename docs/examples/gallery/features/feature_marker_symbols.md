@@ -12,19 +12,13 @@
 
 Marker_symbols compares several ways to define marker glyphs in one symbol set.
 
-## What To Look For
-
-Each row uses the same marker attributes, including position, color, diameter_px, angle, and symbol, but the symbol IDs come from built-in shapes, procedural bitmap images, SDF images, MSDF images, or SVG paths when available. Compare edge sharpness and shape detail across rows; custom symbols are useful when scientific categories need domain-specific marks instead of generic discs.
-
-Useful tags for this example: `marker`, `symbol-set`, `bitmap-symbol`, `distance-field-symbol`.
-
-No external data is needed; the example generates its data.
-
-Browser support note: marker symbol-set and mixed atlas encoding parity are not in the RC WebGPU path yet.
-
 ## Preview
 
 ![Marker Symbols](../../../assets/gallery/v0.4/features/feature_marker_symbols.webp)
+
+## What To Look For
+
+Each row uses the same marker attributes, including position, color, diameter_px, angle, and symbol, but the symbol IDs come from built-in shapes, procedural bitmap images, SDF images, MSDF images, or SVG paths when available. Compare edge sharpness and shape detail across rows; custom symbols are useful when scientific categories need domain-specific marks instead of generic discs.
 
 ## Source
 
@@ -43,6 +37,7 @@ Browser support note: marker symbol-set and mixed atlas encoding parity are not 
     - Browser support: Deferred
     - Browser note: marker symbol-set and mixed atlas encoding parity are not in the RC WebGPU path yet
     - Browser capability tags: `marker`, `symbol-set`, `glyph-atlas`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

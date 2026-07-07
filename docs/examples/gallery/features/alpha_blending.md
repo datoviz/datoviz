@@ -12,14 +12,6 @@
 
 This example shows translucent triangles composited in draw order.
 
-## What To Look For
-
-Three triangle groups share one primitive visual, with position and normal arrays defining the geometry and RGBA vertex colors defining both hue and alpha. Compare the overlap regions with the non-overlapping corners: DVZ_ALPHA_BLENDED lets the colors mix with each other and with the panel background, which is useful when scientific overlays, confidence regions, or segmented masks need to remain readable above other data.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=alpha_blending` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=alpha_blending` when WebG
     </div>
 
     <a href="../../../webgpu/live.html?id=alpha_blending">Open the live WebGPU example</a>.
+
+## What To Look For
+
+Three triangle groups share one primitive visual, with position and normal arrays defining the geometry and RGBA vertex colors defining both hue and alpha. Compare the overlap regions with the non-overlapping corners: DVZ_ALPHA_BLENDED lets the colors mix with each other and with the panel background, which is useful when scientific overlays, confidence regions, or segmented masks need to remain readable above other data.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=alpha_blending` when WebG
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=alpha_blending"><code>examples/webgpu/live.html?id=alpha_blending</code></a>
     - Browser capability tags: `alpha-blending`, `primitive`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

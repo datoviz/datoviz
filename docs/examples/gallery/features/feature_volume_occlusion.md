@@ -12,15 +12,13 @@
 
 Volume_occlusion compares a volume slice with and without attenuation by the surrounding volume.
 
-## What To Look For
-
-Both panels share the same 32x32x32 R8 scalar field, colormap, alpha stops, bounds, opacity, and ray-march step count. Each panel draws a composited volume plus a slice, but only the right panel marks the volume as an occluder and enables slice attenuation. Compare the embedded slice where dense shell and knot structures overlap it; occlusion helps relate slices to their 3D context instead of making them look detached.
-
-No external data is needed; the example generates its data.
-
 ## Preview
 
 ![Volume Occlusion](../../../assets/gallery/v0.4/features/feature_volume_occlusion.webp)
+
+## What To Look For
+
+Both panels share the same 32x32x32 R8 scalar field, colormap, alpha stops, bounds, opacity, and ray-march step count. Each panel draws a composited volume plus a slice, but only the right panel marks the volume as an occluder and enables slice attenuation. Compare the embedded slice where dense shell and knot structures overlap it; occlusion helps relate slices to their 3D context instead of making them look detached.
 
 ## Source
 
@@ -39,6 +37,7 @@ No external data is needed; the example generates its data.
     - Source: [`examples/c/features/volume_occlusion.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/volume_occlusion.c)
     - Browser support: Deferred
     - Browser capability tags: `volume`, `scene-occlusion`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

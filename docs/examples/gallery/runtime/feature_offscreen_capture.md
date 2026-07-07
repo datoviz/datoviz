@@ -12,19 +12,15 @@
 
 This example renders a point scene offscreen and writes one PNG.
 
+## Preview
+
+![Offscreen Capture](../../../assets/gallery/v0.4/runtime/feature_offscreen_capture.webp)
+
 ## What To Look For
 
 Four point positions, colors, and pixel diameters are uploaded once, then an offscreen view is created at the requested 1920x1080 output size. The code checks the framebuffer dimensions before calling render-once and PNG capture, so the saved image should match the requested pixel size exactly.
 
 This is the runtime path to copy for reproducible batch figures, tests, and documentation captures that should not depend on an onscreen window.
-
-No external data is needed; the example generates its data.
-
-Browser support note: writes a native offscreen PNG through the app capture path.
-
-## Preview
-
-![Offscreen Capture](../../../assets/gallery/v0.4/runtime/feature_offscreen_capture.webp)
 
 ## Source
 
@@ -43,6 +39,7 @@ Browser support note: writes a native offscreen PNG through the app capture path
     - Browser support: Native only
     - Browser note: writes a native offscreen PNG through the app capture path
     - Browser capability tags: `native-capture`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

@@ -12,16 +12,6 @@
 
 This example renders text by submitting low-level glyph atlas quads directly.
 
-## What To Look For
-
-Each visible character in "Datoviz Atlas cafe" is built from explicit positions, bounds, texture coordinates, colors, and angles instead of a semantic text object. Compare the accented character, baseline spacing, and per-glyph coloring to understand how the atlas visual exposes the pieces that higher-level text layout normally hides.
-
-Useful tags for this example: `glyph`, `font-atlas`, `texture-atlas`, `sdf`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=visual_glyph` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=visual_glyph` when WebGPU
     </div>
 
     <a href="../../../webgpu/live.html?id=visual_glyph">Open the live WebGPU example</a>.
+
+## What To Look For
+
+Each visible character in "Datoviz Atlas cafe" is built from explicit positions, bounds, texture coordinates, colors, and angles instead of a semantic text object. Compare the accented character, baseline spacing, and per-glyph coloring to understand how the atlas visual exposes the pieces that higher-level text layout normally hides.
 
 ## Source
 
@@ -55,6 +49,7 @@ The browser preview uses `examples/webgpu/live.html?id=visual_glyph` when WebGPU
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_glyph"><code>examples/webgpu/live.html?id=visual_glyph</code></a>
     - Browser capability tags: `glyph`, `glyph-atlas`, `sdf`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

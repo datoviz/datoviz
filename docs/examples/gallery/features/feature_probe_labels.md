@@ -12,15 +12,13 @@
 
 Probe_labels queries categorical label IDs from a generated label image.
 
-## What To Look For
-
-A 256x192 R32_SINT sampled field stores category IDs for cortex, fiber, nucleus, vessel, and island regions, and a categorical scale maps those IDs to colors and labels. Move the live probe marker across the panel; the frame callback queries the label visual and prints the current label ID, name, and data position. This is useful for segmentation maps, classified microscopy images, and other categorical rasters where users need values under the cursor.
-
-No external data is needed; the example generates its data.
-
 ## Preview
 
 ![Label Probe](../../../assets/gallery/v0.4/features/feature_probe_labels.webp)
+
+## What To Look For
+
+A 256x192 R32_SINT sampled field stores category IDs for cortex, fiber, nucleus, vessel, and island regions, and a categorical scale maps those IDs to colors and labels. Move the live probe marker across the panel; the frame callback queries the label visual and prints the current label ID, name, and data position. This is useful for segmentation maps, classified microscopy images, and other categorical rasters where users need values under the cursor.
 
 ## Source
 
@@ -38,6 +36,7 @@ No external data is needed; the example generates its data.
     - Source: [`examples/c/features/probe_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/probe_labels.c)
     - Browser support: Planned
     - Browser capability tags: `labels`, `query-readback`, `panzoom`
+    - Validation: `smoke+readback+screenshot`
 
     ### Data
 

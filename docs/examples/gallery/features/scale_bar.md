@@ -12,14 +12,6 @@
 
 Scalebar attaches a metric length scale bar to a 2D panel.
 
-## What To Look For
-
-Five data-space points mark a simple ruler from 0 to 8 along X, while the scale bar is anchored near the bottom-left of the panel and uses built-in metric length units. Pan or zoom the live view and compare the bar label and tick length with the point spacing. A scale bar gives readers physical context without requiring full axes.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=scale_bar` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=scale_bar` when WebGPU is
     </div>
 
     <a href="../../../webgpu/live.html?id=scale_bar">Open the live WebGPU example</a>.
+
+## What To Look For
+
+Five data-space points mark a simple ruler from 0 to 8 along X, while the scale bar is anchored near the bottom-left of the panel and uses built-in metric length units. Pan or zoom the live view and compare the bar label and tick length with the point spacing. A scale bar gives readers physical context without requiring full axes.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=scale_bar` when WebGPU is
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=scale_bar"><code>examples/webgpu/live.html?id=scale_bar</code></a>
     - Browser capability tags: `scale-bar`, `text`, `panzoom`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

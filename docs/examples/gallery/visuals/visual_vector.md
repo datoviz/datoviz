@@ -12,16 +12,6 @@
 
 This example compares straight vector arrows with curved vector paths.
 
-## What To Look For
-
-The straight field uses position, vector, color, and width arrays, while the curved traces use sampled positions, colors, widths, and subpaths. Compare the gridded arrows with the arcing streamlines to see how direction, magnitude, and flow structure can be shown in fluid, gradient, or displacement data.
-
-Useful tags for this example: `vector`, `path`, `panzoom`, `capture`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=visual_vector` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=visual_vector` when WebGP
     </div>
 
     <a href="../../../webgpu/live.html?id=visual_vector">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The straight field uses position, vector, color, and width arrays, while the curved traces use sampled positions, colors, widths, and subpaths. Compare the gridded arrows with the arcing streamlines to see how direction, magnitude, and flow structure can be shown in fluid, gradient, or displacement data.
 
 ## Source
 
@@ -54,6 +48,7 @@ The browser preview uses `examples/webgpu/live.html?id=visual_vector` when WebGP
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_vector"><code>examples/webgpu/live.html?id=visual_vector</code></a>
     - Browser capability tags: `vector`, `path`, `panzoom`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

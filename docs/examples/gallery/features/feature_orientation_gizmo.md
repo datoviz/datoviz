@@ -12,17 +12,13 @@
 
 Orientation_gizmo adds a small orientation widget to a 3D panel.
 
-## What To Look For
-
-The main scene is a lit cube controlled by an arcball, and the orientation gizmo is placed in the panel's bottom-right corner with a fixed screen size. Rotate the live cube and compare the cube faces with the gizmo axes; the widget helps users keep track of 3D orientation when inspecting volumes, meshes, or spatial point clouds.
-
-No external data is needed; the example generates its data.
-
-Try the interaction in the preview and compare it with the `orientation gizmo` source code.
-
 ## Preview
 
 ![Orientation Gizmo](../../../assets/gallery/v0.4/features/feature_orientation_gizmo.webp)
+
+## What To Look For
+
+The main scene is a lit cube controlled by an arcball, and the orientation gizmo is placed in the panel's bottom-right corner with a fixed screen size. Rotate the live cube and compare the cube faces with the gizmo axes; the widget helps users keep track of 3D orientation when inspecting volumes, meshes, or spatial point clouds.
 
 ## Source
 
@@ -40,6 +36,7 @@ Try the interaction in the preview and compare it with the `orientation gizmo` s
     - Source: [`examples/c/features/orientation_gizmo.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/orientation_gizmo.c)
     - Browser support: Planned
     - Browser capability tags: `orientation-gizmo`, `overlay`, `mesh`, `controller`
+    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 

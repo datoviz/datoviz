@@ -12,16 +12,6 @@
 
 This example draws independent line segments with different cap styles.
 
-## What To Look For
-
-Start and end position arrays define each segment, while color and width arrays encode per-segment styling. The three horizontal bands reuse the same data with different cap settings, making it easy to compare butt, square, and round endpoints for uncertainty bars, links, ticks, and measurement overlays.
-
-Useful tags for this example: `segment`, `panzoom`, `capture`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=visual_segment` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=visual_segment` when WebG
     </div>
 
     <a href="../../../webgpu/live.html?id=visual_segment">Open the live WebGPU example</a>.
+
+## What To Look For
+
+Start and end position arrays define each segment, while color and width arrays encode per-segment styling. The three horizontal bands reuse the same data with different cap settings, making it easy to compare butt, square, and round endpoints for uncertainty bars, links, ticks, and measurement overlays.
 
 ## Source
 
@@ -54,6 +48,7 @@ The browser preview uses `examples/webgpu/live.html?id=visual_segment` when WebG
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_segment"><code>examples/webgpu/live.html?id=visual_segment</code></a>
     - Browser capability tags: `segment`, `panzoom`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

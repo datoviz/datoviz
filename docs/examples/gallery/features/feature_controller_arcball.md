@@ -12,17 +12,13 @@
 
 This example shows an arcball controller rotating a 3D view.
 
-## What To Look For
-
-A colored cube mesh and XZ reference grid make rotation easy to see, and the controller is bound to all three dimensions of the panel. In the live preview, drag the mouse and compare how the cube can roll freely with the view. Arcball interaction is useful for unconstrained inspection of 3D data, where seeing an object from arbitrary orientations matters more than preserving a fixed world-up direction.
-
-No external data is needed; the example generates its data.
-
-Try the interaction in the preview and compare it with the `controller arcball` source code.
-
 ## Preview
 
 ![Arcball Controller](../../../assets/gallery/v0.4/features/feature_controller_arcball.webp)
+
+## What To Look For
+
+A colored cube mesh and XZ reference grid make rotation easy to see, and the controller is bound to all three dimensions of the panel. In the live preview, drag the mouse and compare how the cube can roll freely with the view. Arcball interaction is useful for unconstrained inspection of 3D data, where seeing an object from arbitrary orientations matters more than preserving a fixed world-up direction.
 
 ## Source
 
@@ -40,6 +36,7 @@ Try the interaction in the preview and compare it with the `controller arcball` 
     - Source: [`examples/c/features/controller_arcball.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_arcball.c)
     - Browser support: Planned
     - Browser capability tags: `controller`, `arcball`, `mesh`
+    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 

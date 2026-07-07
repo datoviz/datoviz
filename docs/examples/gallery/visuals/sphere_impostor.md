@@ -12,16 +12,6 @@
 
 This example displays a 3D cluster of raycast impostor spheres.
 
-## What To Look For
-
-Positions locate the sphere centers, radii control physical size, and colors distinguish groups inside the cluster. Compare overlap, depth ordering, and highlights while rotating the live view to see why impostor spheres are useful for atoms, particles, cells, and other many-object 3D scientific data.
-
-Useful tags for this example: `sphere`, `arcball`, `capture`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=sphere_impostor` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=sphere_impostor` when Web
     </div>
 
     <a href="../../../webgpu/live.html?id=sphere_impostor">Open the live WebGPU example</a>.
+
+## What To Look For
+
+Positions locate the sphere centers, radii control physical size, and colors distinguish groups inside the cluster. Compare overlap, depth ordering, and highlights while rotating the live view to see why impostor spheres are useful for atoms, particles, cells, and other many-object 3D scientific data.
 
 ## Source
 
@@ -54,6 +48,7 @@ The browser preview uses `examples/webgpu/live.html?id=sphere_impostor` when Web
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=sphere_impostor"><code>examples/webgpu/live.html?id=sphere_impostor</code></a>
     - Browser capability tags: `sphere`, `arcball`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

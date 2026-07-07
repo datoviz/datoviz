@@ -12,19 +12,13 @@
 
 This experimental example renders Gaussian splats as translucent ellipses.
 
-## What To Look For
-
-Positions place each splat, colors set the tint, sigma gives the two screen-space ellipse radii, and angles rotate the ellipses. Compare overlapping areas and the soft footprint shape to see how uncertain samples, local point spread, or projected density can be shown without drawing hard-edged markers.
-
-Useful tags for this example: `splat`, `panzoom`, `capture`.
-
-No external data is needed; the example generates its data.
-
-Browser support note: splat rendering is experimental and outside the RC browser subset.
-
 ## Preview
 
 ![Splat](../../../assets/gallery/v0.4/visuals/visual_splat.webp)
+
+## What To Look For
+
+Positions place each splat, colors set the tint, sigma gives the two screen-space ellipse radii, and angles rotate the ellipses. Compare overlapping areas and the soft footprint shape to see how uncertain samples, local point spread, or projected density can be shown without drawing hard-edged markers.
 
 ## Source
 
@@ -45,6 +39,7 @@ Browser support note: splat rendering is experimental and outside the RC browser
     - Browser support: Deferred
     - Browser note: splat rendering is experimental and outside the RC browser subset
     - Browser capability tags: `splat`, `alpha-blending`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

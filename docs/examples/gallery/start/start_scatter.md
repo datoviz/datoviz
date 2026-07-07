@@ -12,12 +12,6 @@
 
 Quickstart scatter plot: 10 000 random colored points with pan/zoom.
 
-## What To Look For
-
-This example focuses on `start scatter`. Read it from top to bottom: create data, create a scene, add visuals, then run or capture the result.
-
-No external data is needed; the example generates its data.
-
 ## Preview
 
 ![Scatter Plot](../../../assets/gallery/v0.4/start/start_scatter.webp)
@@ -37,6 +31,7 @@ No external data is needed; the example generates its data.
     - Lane: `start`
     - Source: [`examples/c/start/scatter.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/start/scatter.c)
     - Browser support: Deferred
+    - Validation: `smoke+screenshot`
 
     ### Data
 

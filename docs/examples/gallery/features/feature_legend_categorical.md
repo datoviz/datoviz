@@ -12,16 +12,6 @@
 
 Legend_categorical shows how one categorical scale drives both marker colors and a legend.
 
-## What To Look For
-
-Five category IDs are assigned labels, colors, and marker shapes, then the marker visual uploads matching position, color, diameter_px, angle, and shape arrays. Compare the marker cloud with the right-side legend entries: the legend is useful because it explains categorical groups without requiring readers to decode colors or shapes from the data alone.
-
-Useful tags for this example: `categorical-scale`, `legend`, `marker`, `capture`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_legend_categorical` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_legend_categorica
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_legend_categorical">Open the live WebGPU example</a>.
+
+## What To Look For
+
+Five category IDs are assigned labels, colors, and marker shapes, then the marker visual uploads matching position, color, diameter_px, angle, and shape arrays. Compare the marker cloud with the right-side legend entries: the legend is useful because it explains categorical groups without requiring readers to decode colors or shapes from the data alone.
 
 ## Source
 
@@ -54,6 +48,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_legend_categorica
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_legend_categorical"><code>examples/webgpu/live.html?id=feature_legend_categorical</code></a>
     - Browser capability tags: `legend`, `categorical-scale`, `marker`, `text`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

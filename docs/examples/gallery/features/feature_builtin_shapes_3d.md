@@ -12,14 +12,6 @@
 
 This example shows built-in 3D geometry rendered as lit meshes.
 
-## What To Look For
-
-The scene uses geometry builders for common solids such as a cube, sphere, cylinder, cone, capsule, and arrow-like shapes, then uploads each result to a mesh with a Phong material. Some Z-axis builders are transformed so their local axis follows scene +Y. Compare the lighting, normals, and orientation of each shape; these primitives are useful for reference objects, probes, direction markers, and simple 3D scientific diagrams.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_builtin_shapes_3d` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_builtin_shapes_3d
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_builtin_shapes_3d">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The scene uses geometry builders for common solids such as a cube, sphere, cylinder, cone, capsule, and arrow-like shapes, then uploads each result to a mesh with a Phong material. Some Z-axis builders are transformed so their local axis follows scene +Y. Compare the lighting, normals, and orientation of each shape; these primitives are useful for reference objects, probes, direction markers, and simple 3D scientific diagrams.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_builtin_shapes_3d
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_builtin_shapes_3d"><code>examples/webgpu/live.html?id=feature_builtin_shapes_3d</code></a>
     - Browser capability tags: `mesh`, `controller`, `arcball`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

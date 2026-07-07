@@ -12,16 +12,6 @@
 
 Panzoom binds a 2D panzoom controller to a point visual in data coordinates.
 
-## What To Look For
-
-A 64-point ring uploads position, color, and diameter_px arrays inside a [-1, 1] X/Y data domain. In the live preview, drag to pan and scroll or gesture to zoom; the point sizes remain screen-space while their positions move through the panel's data transform. Panzoom is the basic interaction for exploring larger 2D scientific datasets.
-
-No external data is needed; the example generates its data.
-
-Try the interaction in the preview and compare it with the `controller panzoom` source code.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_panzoom` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_panzoom` when Web
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_panzoom">Open the live WebGPU example</a>.
+
+## What To Look For
+
+A 64-point ring uploads position, color, and diameter_px arrays inside a [-1, 1] X/Y data domain. In the live preview, drag to pan and scroll or gesture to zoom; the point sizes remain screen-space while their positions move through the panel's data transform. Panzoom is the basic interaction for exploring larger 2D scientific datasets.
 
 ## Source
 
@@ -53,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_panzoom` when Web
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panzoom"><code>examples/webgpu/live.html?id=feature_panzoom</code></a>
     - Browser capability tags: `controller`, `panzoom`, `point`
+    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 

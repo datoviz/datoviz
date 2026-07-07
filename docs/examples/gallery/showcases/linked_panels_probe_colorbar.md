@@ -12,20 +12,6 @@
 
 This example links two image panels with a probe readout and colorbar.
 
-## What To Look For
-
-The source and derived images are generated from two FIELD_WIDTH x FIELD_HEIGHT float arrays and share one continuous scale. Moving the probe updates markers in both panels, queues a source-panel pixel query, and refreshes the readout with the raw and derived values; compare the same probe location across both images and the shared colorbar.
-
-This workflow is useful for inspecting transformed measurements while preserving a visible link to the original sampled field.
-
-Useful tags for this example: `workflow`, `image`, `sampled-field`, `pixel-query`.
-
-No external data is needed; the example generates its data.
-
-Try the interaction in the preview and compare it with the `linked panels probe colorbar` source code.
-
-The browser preview uses `examples/webgpu/live.html?id=linked_panels_probe_colorbar` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -39,6 +25,12 @@ The browser preview uses `examples/webgpu/live.html?id=linked_panels_probe_color
     </div>
 
     <a href="../../../webgpu/live.html?id=linked_panels_probe_colorbar">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The source and derived images are generated from two FIELD_WIDTH x FIELD_HEIGHT float arrays and share one continuous scale. Moving the probe updates markers in both panels, queues a source-panel pixel query, and refreshes the readout with the raw and derived values; compare the same probe location across both images and the shared colorbar.
+
+This workflow is useful for inspecting transformed measurements while preserving a visible link to the original sampled field.
 
 ## Source
 
@@ -57,6 +49,7 @@ The browser preview uses `examples/webgpu/live.html?id=linked_panels_probe_color
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=linked_panels_probe_colorbar"><code>examples/webgpu/live.html?id=linked_panels_probe_colorbar</code></a>
     - Browser capability tags: `panel-grid`, `linked-panels`, `image`, `colorbar`, `query-readback`, `readout`
+    - Validation: `smoke+readback+interaction+screenshot`
 
     ### Tags
 

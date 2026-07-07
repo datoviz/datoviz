@@ -12,21 +12,15 @@
 
 This example embeds a Datoviz view inside a host-owned GLFW surface.
 
+## Preview
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for External Surface GLFW"><span>No screenshot</span></div>
+
 ## What To Look For
 
 GLFW is only a surrogate for an external toolkit. The host asks Datoviz for a Vulkan instance, creates the VkSurfaceKHR itself, forwards framebuffer size, content scale, pointer, wheel, and key events, and calls dvz_view_render_once() from its own loop. The scene is deliberately small: three points with panzoom interaction make it easy to verify that hosted input and resize metadata reach Datoviz.
 
 This workflow is useful when a scientific application already owns its native event loop and wants Datoviz to render into a provided Vulkan surface.
-
-Useful tags for this example: `advanced`, `external-surface`, `glfw`, `host-integration`.
-
-No external data is needed; the example generates its data.
-
-Browser support note: external Vulkan surfaces are native host-integration objects.
-
-## Preview
-
-_Screenshot not required for this example._
 
 ## Source
 
@@ -46,6 +40,7 @@ _Screenshot not required for this example._
     - Browser support: Native only
     - Browser note: external Vulkan surfaces are native host-integration objects
     - Browser capability tags: `native-view`, `external-surface`, `glfw`
+    - Validation: `native-smoke`
 
     ### Tags
 

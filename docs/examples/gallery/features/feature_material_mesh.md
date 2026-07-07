@@ -12,14 +12,6 @@
 
 Material_mesh compares cube meshes rendered with different material models and parameters.
 
-## What To Look For
-
-All three panels use the same colored cube geometry, while the material descriptors change between matte Phong, glossy Phong, and a standard rim-lit material. The linked arcball controllers keep rotations synchronized, so compare the same face and edge in each panel to see how ambient, diffuse, specular, shininess, roughness, and rim strength affect 3D mesh readability.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_material_mesh` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_material_mesh` wh
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_material_mesh">Open the live WebGPU example</a>.
+
+## What To Look For
+
+All three panels use the same colored cube geometry, while the material descriptors change between matte Phong, glossy Phong, and a standard rim-lit material. The linked arcball controllers keep rotations synchronized, so compare the same face and edge in each panel to see how ambient, diffuse, specular, shininess, roughness, and rim strength affect 3D mesh readability.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_material_mesh` wh
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_material_mesh"><code>examples/webgpu/live.html?id=feature_material_mesh</code></a>
     - Browser capability tags: `mesh`, `material`, `lighting`, `arcball`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

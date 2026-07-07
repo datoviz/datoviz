@@ -12,6 +12,10 @@
 
 This example renders a prepared Allen mouse brain volume with a visible slice.
 
+## Preview
+
+![Allen Mouse Brain](../../../assets/gallery/v0.4/showcases/brain_volume.webp)
+
 ## What To Look For
 
 The loader reads the prepared compressed NumPy RGBA volume, downsamples it, derives scalar voxels for occlusion, and binds the same 3D sampled field to a composite volume and a slice visual. Compare the translucent context volume with the sharper slice plane while using the arcball camera.
@@ -19,30 +23,6 @@ The loader reads the prepared compressed NumPy RGBA volume, downsamples it, deri
 This workflow is useful for volume-data previews where a slice should stay spatially embedded in the 3D anatomy. The prepared data-submodule file must exist, or it must be generated with the preparation command.
 
 Prepare: python tools/data/prepare_brain_volume.py
-
-Useful tags for this example: `scientific`, `real-data`, `volume`, `volume-slice`.
-
-This example expects prepared data. Use the preparation command below if the data is missing.
-
-## Preview
-
-![Allen Mouse Brain](../../../assets/gallery/v0.4/showcases/brain_volume.webp)
-
-## Data Requirements
-
-This example expects prepared data. Use the preparation command below if the data is missing.
-
-- Dataset: Allen mouse brain RGBA volume
-- Source: Allen Mouse Brain Common Coordinate Framework average template, annotation volume, structure graph, and selected structure meshes
-- Source URL: http://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/; https://alleninstitute.org/legal/terms-of-use
-
-Preparation command:
-
-```sh
-python tools/data/prepare_brain_volume.py
-```
-
-License note: Allen Institute Terms of Use apply; public use must follow Allen Institute citation requirements.
 
 ## Source
 
@@ -61,6 +41,7 @@ License note: Allen Institute Terms of Use apply; public use must follow Allen I
     - Source: [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c)
     - Browser support: Planned
     - Browser capability tags: `volume`, `texture-3d`, `arcball`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -93,6 +74,6 @@ License note: Allen Institute Terms of Use apply; public use must follow Allen I
 <a href="../../../showcases">Showcases</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../showcase_wind_field">Previous: Wind Field</a> · <a href="../protein_arcball_viewer">Next: Protein</a>
+<a href="../showcase_gpu_particle_smoke">Previous: GPU Particle Smoke</a> · <a href="../protein_arcball_viewer">Next: Protein</a>
 </div>
 </nav>

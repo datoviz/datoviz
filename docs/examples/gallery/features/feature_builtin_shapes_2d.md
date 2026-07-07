@@ -12,14 +12,6 @@
 
 This example shows built-in 2D geometry rendered as meshes.
 
-## What To Look For
-
-The panel uses equal-aspect data coordinates, then uploads generated geometry for a plane, disc, sector, regular polygon, star, and a triangulated polygon with a hole. Each shape becomes a mesh visual attached in data space. In the live preview, pan and zoom while checking that circles stay round and the polygon hole remains open. These builders are useful for annotations, regions of interest, and custom 2D glyphs without hand-writing triangles.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_builtin_shapes_2d` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_builtin_shapes_2d
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_builtin_shapes_2d">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The panel uses equal-aspect data coordinates, then uploads generated geometry for a plane, disc, sector, regular polygon, star, and a triangulated polygon with a hole. Each shape becomes a mesh visual attached in data space. In the live preview, pan and zoom while checking that circles stay round and the polygon hole remains open. These builders are useful for annotations, regions of interest, and custom 2D glyphs without hand-writing triangles.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_builtin_shapes_2d
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_builtin_shapes_2d"><code>examples/webgpu/live.html?id=feature_builtin_shapes_2d</code></a>
     - Browser capability tags: `mesh`, `controller`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

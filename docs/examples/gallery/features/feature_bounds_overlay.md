@@ -12,17 +12,13 @@
 
 This example shows diagnostic bounds overlays for 2D and 3D visuals.
 
-## What To Look For
-
-The left panel contains a point cloud with position, color, and diameter arrays, while the right panel contains sphere centers, colors, and radii. Bounds visibility is enabled on both panels so the overlay reveals the data extent used by layout and interaction. Compare how the 2D point ring and the 3D sphere cluster are boxed; this helps debug unexpected clipping, wrong coordinate ranges, or visuals that are attached to the wrong space.
-
-Useful tags for this example: `diagnostic`, `bounds`, `overlay`, `point`.
-
-No external data is needed; the example generates its data.
-
 ## Preview
 
 ![Bounds Overlay](../../../assets/gallery/v0.4/features/feature_bounds_overlay.webp)
+
+## What To Look For
+
+The left panel contains a point cloud with position, color, and diameter arrays, while the right panel contains sphere centers, colors, and radii. Bounds visibility is enabled on both panels so the overlay reveals the data extent used by layout and interaction. Compare how the 2D point ring and the 3D sphere cluster are boxed; this helps debug unexpected clipping, wrong coordinate ranges, or visuals that are attached to the wrong space.
 
 ## Source
 
@@ -41,6 +37,7 @@ No external data is needed; the example generates its data.
     - Source: [`examples/c/features/bounds_overlay.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bounds_overlay.c)
     - Browser support: Planned
     - Browser capability tags: `bounds-overlay`, `point`, `sphere`, `overlay`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

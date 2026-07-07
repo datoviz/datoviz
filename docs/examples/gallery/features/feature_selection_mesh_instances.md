@@ -12,16 +12,6 @@
 
 Selection_mesh_instances queries and selects individual instances of one mesh visual.
 
-## What To Look For
-
-A single cube geometry is reused with an instance_transform array for a 6x4x2 field of differently placed, scaled, and rotated cubes. Move the cursor over the live 3D panel to query the frontmost mesh instance; hover scales the item, click toggles a persistent warning-color tint, and clicking the background clears selection. Drag with the arcball controller to confirm selection follows the instanced mesh in 3D.
-
-No external data is needed; the example generates its data.
-
-Try the interaction in the preview and compare it with the `selection mesh instances` source code.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_selection_mesh_instances` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_selection_mesh_in
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_selection_mesh_instances">Open the live WebGPU example</a>.
+
+## What To Look For
+
+A single cube geometry is reused with an instance_transform array for a 6x4x2 field of differently placed, scaled, and rotated cubes. Move the cursor over the live 3D panel to query the frontmost mesh instance; hover scales the item, click toggles a persistent warning-color tint, and clicking the background clears selection. Drag with the arcball controller to confirm selection follows the instanced mesh in 3D.
 
 ## Source
 
@@ -53,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_selection_mesh_in
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_selection_mesh_instances"><code>examples/webgpu/live.html?id=feature_selection_mesh_instances</code></a>
     - Browser capability tags: `mesh`, `arcball`, `query-readback`, `frame-callbacks`
+    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 

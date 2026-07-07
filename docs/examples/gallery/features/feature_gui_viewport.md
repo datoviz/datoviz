@@ -12,19 +12,13 @@
 
 This example shows a Datoviz render viewport embedded inside a GUI window.
 
-## What To Look For
-
-The application hosts a GUI window while a separate Datoviz figure renders a small point scene at a fixed source size. The viewport presents that live render target inside the GUI instead of as the whole native window. Compare the embedded plot area with the surrounding controls; this layout is useful for tools where plots, parameter widgets, and diagnostics need to share the same application surface.
-
-No external data is needed; the example generates its data.
-
-Try the interaction in the preview and compare it with the `gui viewport` source code.
-
-Browser support note: dockable GUI viewports require native ImGui and an offscreen native source view.
-
 ## Preview
 
 ![GUI Viewport](../../../assets/gallery/v0.4/features/feature_gui_viewport.webp)
+
+## What To Look For
+
+The application hosts a GUI window while a separate Datoviz figure renders a small point scene at a fixed source size. The viewport presents that live render target inside the GUI instead of as the whole native window. Compare the embedded plot area with the surrounding controls; this layout is useful for tools where plots, parameter widgets, and diagnostics need to share the same application surface.
 
 ## Source
 
@@ -43,6 +37,7 @@ Browser support note: dockable GUI viewports require native ImGui and an offscre
     - Browser support: Native only
     - Browser note: dockable GUI viewports require native ImGui and an offscreen native source view
     - Browser capability tags: `gui`, `native-view`
+    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 

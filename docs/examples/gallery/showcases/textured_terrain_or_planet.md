@@ -12,20 +12,6 @@
 
 This example maps real planetary textures onto an indexed sphere mesh.
 
-## What To Look For
-
-Dvz_geometry_sphere() creates positions, normals, UVs, and indices; the mesh visual receives that geometry plus an RGBA8 sampled field bound to the mesh texture slot. Compare the lit Earth or Mars sphere with the faint star shell and turntable/arcball interaction to see how texture, material, and camera controls work together.
-
-The example uses real texture files from the data submodule when available. Earth has a generated fallback for local development; Mars requires its real texture file and is unavailable when that file is missing.
-
-DVZR: ./build/examples/c/showcases/textured_planet --dvzr 60
-
-Useful tags for this example: `real-data`, `mesh`, `sampled-field`, `texture`.
-
-This example uses real source data. Check the source, license, and preparation command before redistributing it.
-
-The browser preview uses `examples/webgpu/live.html?id=textured_terrain_or_planet` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -40,21 +26,11 @@ The browser preview uses `examples/webgpu/live.html?id=textured_terrain_or_plane
 
     <a href="../../../webgpu/live.html?id=textured_terrain_or_planet">Open the live WebGPU example</a>.
 
-## Data Requirements
+## What To Look For
 
-This example uses real source data. Check the source, license, and preparation command before redistributing it.
+`dvz_geometry_sphere()` creates positions, normals, UVs, and indices; the mesh visual receives that geometry plus an RGBA8 sampled field bound to the mesh texture slot. Compare the lit Earth or Mars sphere with the faint star shell and the turntable/arcball interaction to see how texture, material, and camera controls work together.
 
-- Dataset: NASA Earth and Mars equirectangular texture maps
-- Source: data/assets/textures/world.200412.3x5400x2700.jpg; data/assets/textures/earth.jpg; data/assets/textures/mars_viking_mdim21.jpg
-- Source URL: https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/; https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m
-
-Preparation command:
-
-```sh
-none; committed JPEG texture maps are loaded directly from data/assets/textures
-```
-
-License note: NASA media usage guidelines and USGS/NASA public-domain source-data terms apply; acknowledge NASA, NASA Ames, JPL, and USGS as source where relevant.
+The example uses real texture files from the data submodule when available. Earth has a generated fallback for local development; Mars requires its real texture file and is unavailable when that file is missing.
 
 ## Source
 
@@ -73,6 +49,7 @@ License note: NASA media usage guidelines and USGS/NASA public-domain source-dat
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=textured_terrain_or_planet"><code>examples/webgpu/live.html?id=textured_terrain_or_planet</code></a>
     - Browser capability tags: `mesh`, `sampled-field`, `texture`, `arcball`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -104,6 +81,6 @@ License note: NASA media usage guidelines and USGS/NASA public-domain source-dat
 <a href="../../../showcases">Showcases</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../showcase_surface_grid">Previous: Surface Grid</a> · <a href="../showcase_gpu_particle_smoke">Next: GPU Particle Smoke</a>
+<a href="../showcase_surface_grid">Previous: Surface Grid</a>
 </div>
 </nav>

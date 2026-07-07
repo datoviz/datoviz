@@ -12,14 +12,6 @@
 
 Update_partial moves only part of a point visual's position array.
 
-## What To Look For
-
-The visual initially uploads six points with position, color, and diameter_px arrays. After one second, dvz_visual_set_data_range() replaces only two position items, moving the middle pair upward while colors and diameters stay unchanged. Partial updates are useful when a large dataset changes locally and reuploading every item would waste time.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=update_partial` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=update_partial` when WebG
     </div>
 
     <a href="../../../webgpu/live.html?id=update_partial">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The visual initially uploads six points with position, color, and diameter_px arrays. After one second, dvz_visual_set_data_range() replaces only two position items, moving the middle pair upward while colors and diameters stay unchanged. Partial updates are useful when a large dataset changes locally and reuploading every item would waste time.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=update_partial` when WebG
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=update_partial"><code>examples/webgpu/live.html?id=update_partial</code></a>
     - Browser capability tags: `buffer-update`, `point`, `frame-callbacks`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

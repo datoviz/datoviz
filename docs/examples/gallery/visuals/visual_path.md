@@ -12,16 +12,6 @@
 
 This example draws several continuous signals with one path visual.
 
-## What To Look For
-
-Positions hold the sampled curves, colors and widths vary per sample, and the subpaths array separates the three traces. Compare the rounded caps and joins across the lines to see why paths are useful for time series, trajectories, contours, and other ordered scientific measurements.
-
-Useful tags for this example: `path`, `capture`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=visual_path` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=visual_path` when WebGPU 
     </div>
 
     <a href="../../../webgpu/live.html?id=visual_path">Open the live WebGPU example</a>.
+
+## What To Look For
+
+Positions hold the sampled curves, colors and widths vary per sample, and the subpaths array separates the three traces. Compare the rounded caps and joins across the lines to see why paths are useful for time series, trajectories, contours, and other ordered scientific measurements.
 
 ## Source
 
@@ -54,6 +48,7 @@ The browser preview uses `examples/webgpu/live.html?id=visual_path` when WebGPU 
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_path"><code>examples/webgpu/live.html?id=visual_path</code></a>
     - Browser capability tags: `path`, `panzoom`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

@@ -12,14 +12,6 @@
 
 This example shows movable guide spans for highlighting data ranges.
 
-## What To Look For
-
-The point visual uploads position, color, and diameter_px arrays, while the panel adds vertical and horizontal spans in data coordinates. Pointer events update each span's range around the current cursor data position. In the live preview, compare the shaded spans with nearby markers and ticks; spans are useful for highlighting windows of time, thresholds, or regions selected for closer analysis.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_guide_spans` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_guide_spans` when
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_guide_spans">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The point visual uploads position, color, and diameter_px arrays, while the panel adds vertical and horizontal spans in data coordinates. Pointer events update each span's range around the current cursor data position. In the live preview, compare the shaded spans with nearby markers and ticks; spans are useful for highlighting windows of time, thresholds, or regions selected for closer analysis.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_guide_spans` when
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_guide_spans"><code>examples/webgpu/live.html?id=feature_guide_spans</code></a>
     - Browser capability tags: `primitive`, `overlay`, `panzoom`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

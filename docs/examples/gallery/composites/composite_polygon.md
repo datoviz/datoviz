@@ -12,16 +12,6 @@
 
 This example compares one holed polygon with a multi-region polygon set.
 
-## What To Look For
-
-The left shape uses outer and hole coordinate rings plus fill, stroke, width, join, and ID settings; the right shape uses three regions with per-region IDs and styles. Compare the transparent fills, hole, and beveled versus rounded joins to see how polygon composites support maps, masks, regions of interest, and segmented spatial data.
-
-Useful tags for this example: `composite`, `polygon`, `polygon-set`, `holes`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=composite_polygon` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=composite_polygon` when W
     </div>
 
     <a href="../../../webgpu/live.html?id=composite_polygon">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The left shape uses outer and hole coordinate rings plus fill, stroke, width, join, and ID settings; the right shape uses three regions with per-region IDs and styles. Compare the transparent fills, hole, and beveled versus rounded joins to see how polygon composites support maps, masks, regions of interest, and segmented spatial data.
 
 ## Source
 
@@ -53,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=composite_polygon` when W
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=composite_polygon"><code>examples/webgpu/live.html?id=composite_polygon</code></a>
     - Browser capability tags: `composite`, `polygon-set`, `primitive`, `segment`, `panzoom`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

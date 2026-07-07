@@ -12,21 +12,15 @@
 
 This example drives two independent native GLFW windows from one Datoviz app.
 
+## Preview
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Multi Window"><span>No screenshot</span></div>
+
 ## What To Look For
 
 The overview and detail figures each get their own point-position, point-color, and point-diameter arrays, then the same app presents them in two positioned windows. Compare the two live windows rather than one screenshot: they prove that separate figures and views can share a process while keeping their own scene content.
 
 This workflow is useful for scientific tools that need a coarse overview beside a focused detail view without starting a second renderer.
-
-No external data is needed; the example generates its data.
-
-Read the source code section to see how `multi window` is configured in a native example.
-
-Browser support note: multiple native GLFW windows are native-only.
-
-## Preview
-
-_Screenshot not required for this example._
 
 ## Source
 
@@ -45,6 +39,7 @@ _Screenshot not required for this example._
     - Browser support: Native only
     - Browser note: multiple native GLFW windows are native-only
     - Browser capability tags: `native-view`, `multi-window`
+    - Validation: `smoke+interaction`
 
     ### Data
 

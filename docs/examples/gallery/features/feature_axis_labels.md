@@ -12,14 +12,6 @@
 
 This example shows axis titles and tick-label layout around a plotting panel.
 
-## What To Look For
-
-The panel has explicit x and y domains, matching tick policies, grid lines, and labels for "sample offset (ms)" and "normalized response". The example is intentionally sparse so the screenshot highlights margins, label offsets, and tick-label readability. This is useful when preparing plots where the axes carry units and must leave enough room for readable scientific labels.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_axis_labels` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_axis_labels` when
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_axis_labels">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The panel has explicit x and y domains, matching tick policies, grid lines, and labels for "sample offset (ms)" and "normalized response". The example is intentionally sparse so the screenshot highlights margins, label offsets, and tick-label readability. This is useful when preparing plots where the axes carry units and must leave enough room for readable scientific labels.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_axis_labels` when
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_axis_labels"><code>examples/webgpu/live.html?id=feature_axis_labels</code></a>
     - Browser capability tags: `axes`, `text`, `labels`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

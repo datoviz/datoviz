@@ -12,16 +12,6 @@
 
 This example shows a scalar image and a continuous colorbar.
 
-## What To Look For
-
-A 192 by 144 float field is uploaded as an R32 sampled field, and the image visual maps those scalar samples through a continuous scale with domain 0 to 1. The same scale is passed to the vertical colorbar on the right. Compare image colors with the ramp and tick labels; this is the standard pattern for making heat maps, microscopy images, or simulation fields interpretable by exposing the numeric meaning of color.
-
-Useful tags for this example: `colorbar`, `scalar-field`, `image`, `capture`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=colorbar` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=colorbar` when WebGPU is 
     </div>
 
     <a href="../../../webgpu/live.html?id=colorbar">Open the live WebGPU example</a>.
+
+## What To Look For
+
+A 192 by 144 float field is uploaded as an R32 sampled field, and the image visual maps those scalar samples through a continuous scale with domain 0 to 1. The same scale is passed to the vertical colorbar on the right. Compare image colors with the ramp and tick labels; this is the standard pattern for making heat maps, microscopy images, or simulation fields interpretable by exposing the numeric meaning of color.
 
 ## Source
 
@@ -53,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=colorbar` when WebGPU is 
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=colorbar"><code>examples/webgpu/live.html?id=colorbar</code></a>
     - Browser capability tags: `colorbar`, `image`, `sampled-field`, `text`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

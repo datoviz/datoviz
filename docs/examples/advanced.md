@@ -16,7 +16,7 @@ Each card links to a detail page with preview media, source code, and example me
 
 ### [External Surface GLFW](gallery/advanced/advanced_external_surface_glfw.md)
 
-_Screenshot not required for this example._
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for External Surface GLFW"><span>No screenshot</span></div>
 
 `experimental` `advanced`<br><span>`advanced`, `external-surface`, `glfw`, `host-integration`</span>
 
@@ -28,7 +28,7 @@ This example embeds a Datoviz view inside a host-owned GLFW surface.
 
 ### [Raw Triangle DRP2](gallery/advanced/advanced_raw_triangle_drp2.md)
 
-_Screenshot not required for this example._
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Raw Triangle DRP2"><span>No screenshot</span></div>
 
 `experimental` `advanced`<br><span>`advanced`, `drp2`, `vklite`, `low-level`</span>
 
@@ -40,7 +40,7 @@ This example renders one triangle from a hand-written DRP2 command stream.
 
 ### [Raw Triangle Vklite](gallery/advanced/advanced_raw_triangle_vklite.md)
 
-_Screenshot not required for this example._
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Raw Triangle Vklite"><span>No screenshot</span></div>
 
 `experimental` `advanced`<br><span>`advanced`, `vklite`, `canvas`, `low-level`</span>
 

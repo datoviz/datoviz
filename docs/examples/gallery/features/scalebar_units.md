@@ -12,14 +12,6 @@
 
 Scalebar_units uses duration units for a scale bar on a time-series panel.
 
-## What To Look For
-
-The path visual uploads 96 time samples whose X positions span 0 to 250 and whose Y positions form a waveform. The scale bar uses the built-in duration unit ladder, and the panzoom controller keeps Y fixed so horizontal navigation changes the visible time span. This is useful for signal, electrophysiology, or video-aligned plots where the reader needs a time interval cue rather than a distance cue.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=scalebar_units` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=scalebar_units` when WebG
     </div>
 
     <a href="../../../webgpu/live.html?id=scalebar_units">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The path visual uploads 96 time samples whose X positions span 0 to 250 and whose Y positions form a waveform. The scale bar uses the built-in duration unit ladder, and the panzoom controller keeps Y fixed so horizontal navigation changes the visible time span. This is useful for signal, electrophysiology, or video-aligned plots where the reader needs a time interval cue rather than a distance cue.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=scalebar_units` when WebG
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=scalebar_units"><code>examples/webgpu/live.html?id=scalebar_units</code></a>
     - Browser capability tags: `scale-bar`, `text`, `panzoom`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

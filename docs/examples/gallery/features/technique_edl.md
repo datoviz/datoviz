@@ -12,15 +12,13 @@
 
 Edl compares a dense 3D point cloud with and without Eye-Dome Lighting.
 
-## What To Look For
-
-Both panels upload the same depth-rich point cloud with position, color, and size arrays, but only the right panel enables EDL. In live mode, use the GUI to adjust EDL radius, strength, depth scale, and arcball state while both views stay linked. EDL is useful for point clouds because it strengthens local depth discontinuities without changing the underlying point data.
-
-No external data is needed; the example generates its data.
-
 ## Preview
 
 ![Eye-Dome Lighting](../../../assets/gallery/v0.4/features/technique_edl.webp)
+
+## What To Look For
+
+Both panels upload the same depth-rich point cloud with position, color, and size arrays, but only the right panel enables EDL. In live mode, use the GUI to adjust EDL radius, strength, depth scale, and arcball state while both views stay linked. EDL is useful for point clouds because it strengthens local depth discontinuities without changing the underlying point data.
 
 ## Source
 
@@ -39,6 +37,7 @@ No external data is needed; the example generates its data.
     - Source: [`examples/c/features/technique_edl.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_edl.c)
     - Browser support: Deferred
     - Browser capability tags: `depth-postprocess`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

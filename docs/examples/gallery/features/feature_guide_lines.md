@@ -12,14 +12,6 @@
 
 This example shows movable horizontal and vertical guide lines.
 
-## What To Look For
-
-A path visual uploads position, color, and linewidth arrays for a signal, and the panel adds one horizontal and one vertical guide line in data coordinates. Pointer events are converted from screen position to panel data coordinates, then update the guide values. Move the cursor in the live preview and compare the crossing guides with the curve and axis ticks; this is useful for reading approximate x/y values or marking events on a plot.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_guide_lines` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_guide_lines` when
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_guide_lines">Open the live WebGPU example</a>.
+
+## What To Look For
+
+A path visual uploads position, color, and linewidth arrays for a signal, and the panel adds one horizontal and one vertical guide line in data coordinates. Pointer events are converted from screen position to panel data coordinates, then update the guide values. Move the cursor in the live preview and compare the crossing guides with the curve and axis ticks; this is useful for reading approximate x/y values or marking events on a plot.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_guide_lines` when
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_guide_lines"><code>examples/webgpu/live.html?id=feature_guide_lines</code></a>
     - Browser capability tags: `segment`, `overlay`, `panzoom`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

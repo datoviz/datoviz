@@ -12,20 +12,6 @@
 
 This example renders contiguous U.S. population density as polygon-set data.
 
-## What To Look For
-
-Prepared Census boundaries are loaded as flat point, ring, fill-color, stroke-color, stroke-width, and id arrays, then colored by log10 resident population density. Compare the state shapes with the vertical colorbar labeled in people per square kilometer; the topology is ring-based and interior holes are not preserved.
-
-This workflow is useful for map-like scientific figures where real tabular values must be joined to prepared geometry before rendering. Run the preparation command if the promoted data bundle is not present.
-
-Population estimates, prepared into flat polygon-set arrays. Source: https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx Terms: U.S. Census Bureau public data; cite the Census Bureau as source. Prepare: python tools/data/prepare_us_state_choropleth.py Promote: python tools/data/prepare_us_state_choropleth.py --output data/examples/us_state_choropleth
-
-Useful tags for this example: `scientific`, `real-data`, `geo`, `composite`.
-
-This example expects prepared data. Use the preparation command below if the data is missing.
-
-The browser preview uses `examples/webgpu/live.html?id=us_state_choropleth` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -40,21 +26,13 @@ The browser preview uses `examples/webgpu/live.html?id=us_state_choropleth` when
 
     <a href="../../../webgpu/live.html?id=us_state_choropleth">Open the live WebGPU example</a>.
 
-## Data Requirements
+## What To Look For
 
-This example expects prepared data. Use the preparation command below if the data is missing.
+Prepared Census boundaries are loaded as flat point, ring, fill-color, stroke-color, stroke-width, and id arrays, then colored by log10 resident population density. Compare the state shapes with the vertical colorbar labeled in people per square kilometer; the topology is ring-based and interior holes are not preserved.
 
-- Dataset: Contiguous U.S. state population density
-- Source: U.S. Census Bureau 2024 cartographic state boundaries and Vintage 2025 state population estimates
-- Source URL: https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip; https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx
+This workflow is useful for map-like scientific figures where real tabular values must be joined to prepared geometry before rendering. Run the preparation command if the promoted data bundle is not present.
 
-Preparation command:
-
-```sh
-python tools/data/prepare_us_state_choropleth.py
-```
-
-License note: U.S. Census Bureau public data; cite the Census Bureau as source.
+Population estimates, prepared into flat polygon-set arrays. Source: https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx Terms: U.S. Census Bureau public data; cite the Census Bureau as source. Prepare: python tools/data/prepare_us_state_choropleth.py Promote: python tools/data/prepare_us_state_choropleth.py --output data/examples/us_state_choropleth
 
 ## Source
 
@@ -73,6 +51,7 @@ License note: U.S. Census Bureau public data; cite the Census Bureau as source.
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=us_state_choropleth"><code>examples/webgpu/live.html?id=us_state_choropleth</code></a>
     - Browser capability tags: `composite`, `polygon-set`, `colorbar`, `panzoom`
+    - Validation: `smoke+screenshot+manual`
 
     ### Tags
 

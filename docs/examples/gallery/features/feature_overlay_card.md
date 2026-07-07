@@ -12,14 +12,6 @@
 
 Overlay_card places a screen-space readout card above a simple data trace.
 
-## What To Look For
-
-The background path uploads position, color, and stroke_width_px arrays in view coordinates, and a highlighted point marks the sample being described. The overlay card is anchored to the panel's top-right corner with explicit padding, width, text size, and text renderer. This pattern is useful for lightweight status readouts that should stay readable while the underlying data view changes.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_overlay_card` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_overlay_card` whe
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_overlay_card">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The background path uploads position, color, and stroke_width_px arrays in view coordinates, and a highlighted point marks the sample being described. The overlay card is anchored to the panel's top-right corner with explicit padding, width, text size, and text renderer. This pattern is useful for lightweight status readouts that should stay readable while the underlying data view changes.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_overlay_card` whe
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_overlay_card"><code>examples/webgpu/live.html?id=feature_overlay_card</code></a>
     - Browser capability tags: `overlay`, `text`, `primitive`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

@@ -12,16 +12,6 @@
 
 This example renders a regular grid of independent screen-aligned pixels.
 
-## What To Look For
-
-The positions array lays out the grid, scalar values drive the color scale, and sizes vary the square footprint of each sample. Compare the colored wave pattern with the changing pixel sizes to see how sparse detector samples or binned point data can remain visible without becoming a resampled image.
-
-Useful tags for this example: `pixel`, `panzoom`, `capture`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=visual_pixel` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=visual_pixel` when WebGPU
     </div>
 
     <a href="../../../webgpu/live.html?id=visual_pixel">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The positions array lays out the grid, scalar values drive the color scale, and sizes vary the square footprint of each sample. Compare the colored wave pattern with the changing pixel sizes to see how sparse detector samples or binned point data can remain visible without becoming a resampled image.
 
 ## Source
 
@@ -54,6 +48,7 @@ The browser preview uses `examples/webgpu/live.html?id=visual_pixel` when WebGPU
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_pixel"><code>examples/webgpu/live.html?id=visual_pixel</code></a>
     - Browser capability tags: `pixel`, `panzoom`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

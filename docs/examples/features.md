@@ -124,7 +124,7 @@ User_scale shows how one user-scale value affects screen-space visual sizes and 
 
 **[View Size Policies](gallery/features/feature_view_size_policies.md)**
 
-_Screenshot not required for this example._
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for View Size Policies"><span>No screenshot</span></div>
 
 `features`<br><span>`view-size`, `framebuffer`, `window`</span>
 
@@ -862,7 +862,7 @@ This example shows raw cimgui widgets controlling a Datoviz visual.
 
 **[Input Events](gallery/features/feature_input_events.md)**
 
-_Screenshot not required for this example._
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Input Events"><span>No screenshot</span></div>
 
 `features`
 
@@ -874,7 +874,7 @@ This example shows native keyboard, pointer, wheel, and resize events.
 
 **[JSON Export](gallery/features/feature_json_export.md)**
 
-_Screenshot not required for this example._
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for JSON Export"><span>No screenshot</span></div>
 
 `experimental` `features`
 

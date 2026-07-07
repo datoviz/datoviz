@@ -12,14 +12,6 @@
 
 Update_visual_data replaces all arrays on one point visual.
 
-## What To Look For
-
-The initial upload draws seven small gray points in a line. After one second, the example replaces the full position, color, and diameter_px arrays with a colored arc of larger points. This shows the simple full-data update path, which is useful when the whole dataset changes but the same visual, panel attachment, and style should remain in place.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_update_visual_data` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_update_visual_dat
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_update_visual_data">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The initial upload draws seven small gray points in a line. After one second, the example replaces the full position, color, and diameter_px arrays with a colored arc of larger points. This shows the simple full-data update path, which is useful when the whole dataset changes but the same visual, panel attachment, and style should remain in place.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_update_visual_dat
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_update_visual_data"><code>examples/webgpu/live.html?id=feature_update_visual_data</code></a>
     - Browser capability tags: `buffer-update`, `visual-update`, `point`, `frame-callbacks`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

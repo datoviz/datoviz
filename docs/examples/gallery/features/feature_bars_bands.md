@@ -12,14 +12,6 @@
 
 This example shows bars and an uncertainty band in one 2D panel.
 
-## What To Look For
-
-The bar helper uses start, end, and value arrays so each bar has an explicit interval on the x axis. The band helper uses x, lower, upper, and center arrays to draw an envelope plus a central trend line. Compare the discrete bars with the continuous band and its bounds; the combination is useful for showing sampled measurements together with a model, confidence interval, or expected range.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_bars_bands` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_bars_bands` when 
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_bars_bands">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The bar helper uses start, end, and value arrays so each bar has an explicit interval on the x axis. The band helper uses x, lower, upper, and center arrays to draw an envelope plus a central trend line. Compare the discrete bars with the continuous band and its bounds; the combination is useful for showing sampled measurements together with a model, confidence interval, or expected range.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_bars_bands` when 
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_bars_bands"><code>examples/webgpu/live.html?id=feature_bars_bands</code></a>
     - Browser capability tags: `primitive`, `segment`, `axes`, `panzoom`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

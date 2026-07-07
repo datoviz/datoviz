@@ -12,21 +12,15 @@
 
 This example opens a native GLFW window for a small point scene.
 
+## Preview
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for GLFW App"><span>No screenshot</span></div>
+
 ## What To Look For
 
 The scene creates one figure, one full-panel view, and one point visual with explicit position, color, and diameter arrays. The live preview should show six differently sized points on the graphite/cyan background, and panzoom interaction should work because the view binds a controller after the GLFW window is created.
 
 Use this as the beginner native-app template when you want Datoviz to own the GLFW lifecycle directly instead of running through the portable scenario runner.
-
-No external data is needed; the example generates its data.
-
-Read the source code section to see how `app glfw` is configured in a native example.
-
-Browser support note: direct GLFW app lifecycle is native-only.
-
-## Preview
-
-_Screenshot not required for this example._
 
 ## Source
 
@@ -45,6 +39,7 @@ _Screenshot not required for this example._
     - Browser support: Native only
     - Browser note: direct GLFW app lifecycle is native-only
     - Browser capability tags: `native-view`
+    - Validation: `smoke+interaction`
 
     ### Data
 

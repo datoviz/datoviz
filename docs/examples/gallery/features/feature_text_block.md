@@ -12,14 +12,6 @@
 
 Text_block renders a multiline text object at a stable screen position.
 
-## What To Look For
-
-The text object keeps style, layout, placement, and the whole paragraph string together. The example uses an MSDF atlas renderer, explicit text size, line height, line gap, and a top-left screen placement inside the panel. Text blocks are useful for annotations, compact notes, and status messages that should remain legible independent of data coordinates.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_text_block` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_text_block` when 
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_text_block">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The text object keeps style, layout, placement, and the whole paragraph string together. The example uses an MSDF atlas renderer, explicit text size, line height, line gap, and a top-left screen placement inside the panel. Text blocks are useful for annotations, compact notes, and status messages that should remain legible independent of data coordinates.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_text_block` when 
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_text_block"><code>examples/webgpu/live.html?id=feature_text_block</code></a>
     - Browser capability tags: `text`, `glyph-atlas`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

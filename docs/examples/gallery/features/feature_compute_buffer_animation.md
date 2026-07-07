@@ -12,16 +12,6 @@
 
 This example shows a compute pass updating point positions.
 
-## What To Look For
-
-The point visual reads its position attribute from a scene buffer that is also bound as read-write storage for a compute shader. Static color and diameter_px arrays define the appearance, while per-frame parameters update time and the shader writes new x/y coordinates. Compare the moving markers with their stable colors and sizes; this demonstrates a useful compute-to-render pattern for particle systems, simulations, and iterative GPU analyses.
-
-Useful tags for this example: `scene-compute`, `storage-buffer`, `point`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_compute_buffer_animation` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_compute_buffer_an
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_compute_buffer_animation">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The point visual reads its position attribute from a scene buffer that is also bound as read-write storage for a compute shader. Static color and diameter_px arrays define the appearance, while per-frame parameters update time and the shader writes new x/y coordinates. Compare the moving markers with their stable colors and sizes; this demonstrates a useful compute-to-render pattern for particle systems, simulations, and iterative GPU analyses.
 
 ## Source
 
@@ -54,6 +48,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_compute_buffer_an
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_compute_buffer_animation"><code>examples/webgpu/live.html?id=feature_compute_buffer_animation</code></a>
     - Browser capability tags: `scene-buffers`, `storage-buffers`, `scene-compute`, `continuous-frames`, `point`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

@@ -12,17 +12,13 @@
 
 This example shows explicit perspective-camera setup for a 3D scene.
 
-## What To Look For
-
-The camera descriptor sets eye, target, up, field of view, and near/far clip planes before the panel renders a lit cube on a reference grid. Compare the cube's perspective with the grid orientation and how much of the scene is visible. Manual camera setup is useful when screenshots, reproducible views, or analysis layouts need a known viewpoint instead of an interaction-derived one.
-
-No external data is needed; the example generates its data.
-
-Try the interaction in the preview and compare it with the `camera manual` source code.
-
 ## Preview
 
 ![Manual Camera](../../../assets/gallery/v0.4/features/feature_camera_manual.webp)
+
+## What To Look For
+
+The camera descriptor sets eye, target, up, field of view, and near/far clip planes before the panel renders a lit cube on a reference grid. Compare the cube's perspective with the grid orientation and how much of the scene is visible. Manual camera setup is useful when screenshots, reproducible views, or analysis layouts need a known viewpoint instead of an interaction-derived one.
 
 ## Source
 
@@ -40,6 +36,7 @@ Try the interaction in the preview and compare it with the `camera manual` sourc
     - Source: [`examples/c/features/camera_manual.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/camera_manual.c)
     - Browser support: Planned
     - Browser capability tags: `camera`, `mesh`, `controller`, `arcball`
+    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 

@@ -12,16 +12,6 @@
 
 Panel_multi shows two panels with independent data, domains, and panzoom state.
 
-## What To Look For
-
-The left panel uploads a point ring with position, color, and diameter_px arrays, while the right panel uploads a stroked path with position, color, and stroke_width_px arrays. Each panel has its own controller and initial pan/zoom, so interact with one panel and confirm the other does not move. Independent panels are useful when different measurements share a figure but not a coordinate frame.
-
-No external data is needed; the example generates its data.
-
-Try the interaction in the preview and compare it with the `multi panel` source code.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_panel_multi` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_panel_multi` when
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_panel_multi">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The left panel uploads a point ring with position, color, and diameter_px arrays, while the right panel uploads a stroked path with position, color, and stroke_width_px arrays. Each panel has its own controller and initial pan/zoom, so interact with one panel and confirm the other does not move. Independent panels are useful when different measurements share a figure but not a coordinate frame.
 
 ## Source
 
@@ -53,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_panel_multi` when
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panel_multi"><code>examples/webgpu/live.html?id=feature_panel_multi</code></a>
     - Browser capability tags: `panel-grid`, `multi-panel`, `panzoom`, `point`
+    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 

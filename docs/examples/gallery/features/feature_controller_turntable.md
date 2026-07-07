@@ -12,16 +12,6 @@
 
 This example shows world-up orbiting with a turntable controller.
 
-## What To Look For
-
-The lit cube and XZ grid provide a stable reference frame while the controller orbits around a fixed pivot without rolling the camera. In the live preview, drag around the object and compare the upright grid with an arcball view; the turntable pattern is useful for inspecting surfaces, meshes, and laboratory-coordinate 3D data where "up" should stay up.
-
-No external data is needed; the example generates its data.
-
-Try the interaction in the preview and compare it with the `controller turntable` source code.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_controller_turntable` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_controller_turnta
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_controller_turntable">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The lit cube and XZ grid provide a stable reference frame while the controller orbits around a fixed pivot without rolling the camera. In the live preview, drag around the object and compare the upright grid with an arcball view; the turntable pattern is useful for inspecting surfaces, meshes, and laboratory-coordinate 3D data where "up" should stay up.
 
 ## Source
 
@@ -53,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_controller_turnta
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_controller_turntable"><code>examples/webgpu/live.html?id=feature_controller_turntable</code></a>
     - Browser capability tags: `controller`, `turntable`, `mesh`
+    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 

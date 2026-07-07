@@ -12,6 +12,10 @@
 
 This example renders one triangle from a hand-written DRP2 command stream.
 
+## Preview
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Raw Triangle DRP2"><span>No screenshot</span></div>
+
 ## What To Look For
 
 Every buffer, shader module, texture, command encoder, render pass, pipeline, draw, copy, and submit object is assigned an explicit DRP2 id. The vertex data is three position/color records, the pipeline declares that layout through DvzDrp2RenderPipelineDesc, and the rendered texture is copied to a readback buffer before the PNG is written.
@@ -19,16 +23,6 @@ Every buffer, shader module, texture, command encoder, render pass, pipeline, dr
 This is intentionally verbose. It is useful for renderer and library authors who want to inspect the protocol layer between scenes and the native vklite backend.
 
 Raw_triangle_drp2.png
-
-Useful tags for this example: `advanced`, `drp2`, `vklite`, `low-level`.
-
-No external data is needed; the example generates its data.
-
-Browser support note: hand-written DRP2 native execution is a low-level runtime example.
-
-## Preview
-
-_Screenshot not required for this example._
 
 ## Source
 
@@ -48,6 +42,7 @@ _Screenshot not required for this example._
     - Browser support: Native only
     - Browser note: hand-written DRP2 native execution is a low-level runtime example
     - Browser capability tags: `drp2`, `vklite`
+    - Validation: `smoke+png`
 
     ### Tags
 

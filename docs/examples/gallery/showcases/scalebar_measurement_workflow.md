@@ -12,18 +12,6 @@
 
 This example compares scale bars across overview, detail, and 3D views.
 
-## What To Look For
-
-The overview and detail panels use synthetic microscopy-like RGBA textures, zoom boxes, point markers, labels, and independent scale bars, while the 3D panel shows a small rotating specimen cloud with its own measurement cue. Compare the scale labels and view extents: the same visual language explains both image pixels and scene-space geometry.
-
-This workflow is useful for scientific figures where readers must understand physical size while moving between context, zoomed detail, and a 3D measurement.
-
-Useful tags for this example: `workflow`, `scale-bar`, `measurement`, `synthetic`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=scalebar_measurement_workflow` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -37,6 +25,12 @@ The browser preview uses `examples/webgpu/live.html?id=scalebar_measurement_work
     </div>
 
     <a href="../../../webgpu/live.html?id=scalebar_measurement_workflow">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The overview and detail panels use synthetic microscopy-like RGBA textures, zoom boxes, point markers, labels, and independent scale bars, while the 3D panel shows a small rotating specimen cloud with its own measurement cue. Compare the scale labels and view extents: the same visual language explains both image pixels and scene-space geometry.
+
+This workflow is useful for scientific figures where readers must understand physical size while moving between context, zoomed detail, and a 3D measurement.
 
 ## Source
 
@@ -55,6 +49,7 @@ The browser preview uses `examples/webgpu/live.html?id=scalebar_measurement_work
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=scalebar_measurement_workflow"><code>examples/webgpu/live.html?id=scalebar_measurement_workflow</code></a>
     - Browser capability tags: `scale-bar`, `text`, `panel-grid`, `mesh`, `panzoom`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

@@ -12,14 +12,6 @@
 
 This example shows contour isolines over a scalar field.
 
-## What To Look For
-
-The scalar field is sampled on a regular grid, and CPU contour extraction turns selected levels into segment start/end arrays with colors and widths. The segment visual overlays those isolines on the same normalized data domain. Compare the spacing and shape of the contours with the underlying field pattern; isolines are useful for reading levels, gradients, and boundaries in topography, density maps, and simulation output.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_isolines` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_isolines` when We
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_isolines">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The scalar field is sampled on a regular grid, and CPU contour extraction turns selected levels into segment start/end arrays with colors and widths. The segment visual overlays those isolines on the same normalized data domain. Compare the spacing and shape of the contours with the underlying field pattern; isolines are useful for reading levels, gradients, and boundaries in topography, density maps, and simulation output.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_isolines` when We
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_isolines"><code>examples/webgpu/live.html?id=feature_isolines</code></a>
     - Browser capability tags: `mesh`, `segment`, `controller`, `arcball`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

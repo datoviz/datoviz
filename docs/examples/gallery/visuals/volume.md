@@ -12,17 +12,13 @@
 
 This example volume-renders a generated 3D gyroid scalar field.
 
-## What To Look For
-
-The FIELD_SIZE cubed data array is attached as a 3D sampled field, with color and alpha scales controlling which values remain visible. Compare the rotating volume with the boundary box to understand the data bounds, transfer-function opacity, and maximum-intensity projection style used for volumetric microscopy, simulation, or tomography data.
-
-Useful tags for this example: `sampled-field`, `volume`, `transfer-function`, `boundary-box`.
-
-No external data is needed; the example generates its data.
-
 ## Preview
 
 ![Volume](../../../assets/gallery/v0.4/visuals/volume.webp)
+
+## What To Look For
+
+The FIELD_SIZE cubed data array is attached as a 3D sampled field, with color and alpha scales controlling which values remain visible. Compare the rotating volume with the boundary box to understand the data bounds, transfer-function opacity, and maximum-intensity projection style used for volumetric microscopy, simulation, or tomography data.
 
 ## Source
 
@@ -41,6 +37,7 @@ No external data is needed; the example generates its data.
     - Reference: [Volume visual family](../../../reference/visual-families/volume.md)
     - Browser support: Planned
     - Browser capability tags: `volume`, `sampled-field`, `texture-3d`, `arcball`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

@@ -12,15 +12,13 @@
 
 Path_join compares miter, round, and bevel joins on difficult stroked paths.
 
-## What To Look For
-
-The three columns use the same acute V, zigzag, open star, and closed star subpaths, with per-vertex position, color, and stroke_width_px arrays. Compare the corners where thick translucent strokes turn sharply; join style controls whether paths form pointed, rounded, or clipped corners. This matters for trajectories, outlines, and network edges with tight bends.
-
-No external data is needed; the example generates its data.
-
 ## Preview
 
 ![Path Join](../../../assets/gallery/v0.4/features/feature_path_join.webp)
+
+## What To Look For
+
+The three columns use the same acute V, zigzag, open star, and closed star subpaths, with per-vertex position, color, and stroke_width_px arrays. Compare the corners where thick translucent strokes turn sharply; join style controls whether paths form pointed, rounded, or clipped corners. This matters for trajectories, outlines, and network edges with tight bends.
 
 ## Source
 
@@ -38,6 +36,7 @@ No external data is needed; the example generates its data.
     - Source: [`examples/c/features/path_join.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/path_join.c)
     - Browser support: Planned
     - Browser capability tags: `path`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

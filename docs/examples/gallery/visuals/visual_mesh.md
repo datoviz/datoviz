@@ -12,16 +12,6 @@
 
 This example renders a lit indexed cube mesh in a 3D scene.
 
-## What To Look For
-
-The cube geometry supplies vertices, indices, normals, and per-face colors to the mesh visual through dvz_mesh_set_geometry(). Rotate the live view or compare the screenshot faces to see how indexed geometry, lighting normals, and an arcball camera make a compact 3D object readable.
-
-Useful tags for this example: `mesh`, `indexed-geometry`, `arcball`, `capture`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=visual_mesh` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=visual_mesh` when WebGPU 
     </div>
 
     <a href="../../../webgpu/live.html?id=visual_mesh">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The cube geometry supplies vertices, indices, normals, and per-face colors to the mesh visual through dvz_mesh_set_geometry(). Rotate the live view or compare the screenshot faces to see how indexed geometry, lighting normals, and an arcball camera make a compact 3D object readable.
 
 ## Source
 
@@ -54,6 +48,7 @@ The browser preview uses `examples/webgpu/live.html?id=visual_mesh` when WebGPU 
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_mesh"><code>examples/webgpu/live.html?id=visual_mesh</code></a>
     - Browser capability tags: `mesh`, `indexed-geometry`, `arcball`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

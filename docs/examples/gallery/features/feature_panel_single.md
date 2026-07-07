@@ -12,14 +12,6 @@
 
 Panel_single creates one explicit panel rectangle inside a figure.
 
-## What To Look For
-
-The panel is placed with normalized x, y, width, and height values instead of filling the whole figure. A border and background frame a five-point visual whose position, color, and diameter_px arrays form a compact pattern. This is useful when an application needs precise room for labels, controls, or multiple manually arranged views.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_panel_single` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_panel_single` whe
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_panel_single">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The panel is placed with normalized x, y, width, and height values instead of filling the whole figure. A border and background frame a five-point visual whose position, color, and diameter_px arrays form a compact pattern. This is useful when an application needs precise room for labels, controls, or multiple manually arranged views.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_panel_single` whe
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panel_single"><code>examples/webgpu/live.html?id=feature_panel_single</code></a>
     - Browser capability tags: `panel`, `point`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

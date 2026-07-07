@@ -12,16 +12,6 @@
 
 Panel_linked links the X panzoom extent of two stacked signal panels.
 
-## What To Look For
-
-Both panels plot deterministic path data over the same X domain but use different Y domains and independent Y panzoom controllers. In the live preview, pan or zoom horizontally in either panel and the other follows; vertical zoom remains separate. This is useful for comparing related time series or spectra that share one coordinate axis but require different amplitude scales.
-
-No external data is needed; the example generates its data.
-
-Try the interaction in the preview and compare it with the `linked panels` source code.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_panel_linked` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_panel_linked` whe
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_panel_linked">Open the live WebGPU example</a>.
+
+## What To Look For
+
+Both panels plot deterministic path data over the same X domain but use different Y domains and independent Y panzoom controllers. In the live preview, pan or zoom horizontally in either panel and the other follows; vertical zoom remains separate. This is useful for comparing related time series or spectra that share one coordinate axis but require different amplitude scales.
 
 ## Source
 
@@ -53,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_panel_linked` whe
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panel_linked"><code>examples/webgpu/live.html?id=feature_panel_linked</code></a>
     - Browser capability tags: `panel-grid`, `linked-panels`, `panzoom`, `point`
+    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 

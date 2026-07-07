@@ -12,14 +12,6 @@
 
 Lighting compares the same sphere cluster under three material and light configurations.
 
-## What To Look For
-
-Each panel uploads the same sphere position, radius, and color arrays, but changes the material light_direction, roughness, specular, and rim_strength values. Rotate any panel in the live preview and the linked arcball controllers keep the views aligned, making it easier to compare matte lighting, glossy highlights, and rim emphasis on identical data.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_lighting` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_lighting` when We
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_lighting">Open the live WebGPU example</a>.
+
+## What To Look For
+
+Each panel uploads the same sphere position, radius, and color arrays, but changes the material light_direction, roughness, specular, and rim_strength values. Rotate any panel in the live preview and the linked arcball controllers keep the views aligned, making it easier to compare matte lighting, glossy highlights, and rim emphasis on identical data.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_lighting` when We
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_lighting"><code>examples/webgpu/live.html?id=feature_lighting</code></a>
     - Browser capability tags: `sphere`, `material`, `lighting`, `arcball`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

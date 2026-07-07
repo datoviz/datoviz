@@ -12,15 +12,13 @@
 
 Visual_transform compares raw point data with a visual-local affine transform.
 
-## What To Look For
-
-Both panels upload the same five point positions, colors, and diameter_px values, but the right visual also receives a transform matrix with translation, shear, and non-uniform scale. Pan or zoom each panel and compare the unchanged data pattern on the left with the transformed copy on the right. Visual transforms are useful for positioning repeated glyph groups or derived overlays without rewriting every data point.
-
-No external data is needed; the example generates its data.
-
 ## Preview
 
 ![Visual Transform](../../../assets/gallery/v0.4/features/feature_visual_transform.webp)
+
+## What To Look For
+
+Both panels upload the same five point positions, colors, and diameter_px values, but the right visual also receives a transform matrix with translation, shear, and non-uniform scale. Pan or zoom each panel and compare the unchanged data pattern on the left with the transformed copy on the right. Visual transforms are useful for positioning repeated glyph groups or derived overlays without rewriting every data point.
 
 ## Source
 
@@ -38,6 +36,7 @@ No external data is needed; the example generates its data.
     - Source: [`examples/c/features/visual_transform.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visual_transform.c)
     - Browser support: Planned
     - Browser capability tags: `visual-transform`, `mesh`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

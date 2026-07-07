@@ -12,18 +12,6 @@
 
 This example composes common scientific plot elements in one figure.
 
-## What To Look For
-
-The layout combines an autocorrelogram-style histogram, guide spans, a mean trace with an uncertainty band, and 32 stacked traces generated from deterministic arrays. In the screenshot, compare how axes, text labels, bands, paths, primitives, and segments work together without each panel becoming a separate application.
-
-This workflow is useful when a paper-style diagnostic figure needs multiple coordinated visual encodings but the data can still be prepared as simple numeric arrays.
-
-Useful tags for this example: `workflow`, `scientific`, `histogram`, `guide-lines`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=scientific_plotting_workflow` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -37,6 +25,12 @@ The browser preview uses `examples/webgpu/live.html?id=scientific_plotting_workf
     </div>
 
     <a href="../../../webgpu/live.html?id=scientific_plotting_workflow">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The layout combines an autocorrelogram-style histogram, guide spans, a mean trace with an uncertainty band, and 32 stacked traces generated from deterministic arrays. In the screenshot, compare how axes, text labels, bands, paths, primitives, and segments work together without each panel becoming a separate application.
+
+This workflow is useful when a paper-style diagnostic figure needs multiple coordinated visual encodings but the data can still be prepared as simple numeric arrays.
 
 ## Source
 
@@ -55,6 +49,7 @@ The browser preview uses `examples/webgpu/live.html?id=scientific_plotting_workf
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=scientific_plotting_workflow"><code>examples/webgpu/live.html?id=scientific_plotting_workflow</code></a>
     - Browser capability tags: `axes`, `primitive`, `segment`, `path`, `text`, `panzoom`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

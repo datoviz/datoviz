@@ -12,14 +12,6 @@
 
 Panel_grid arranges four independent panels in a 2x2 figure grid.
 
-## What To Look For
-
-Each panel has its own border, background, and small point visual with position, color, and diameter_px arrays. The same point pattern is repeated with a different accent color in each grid cell, so compare how gutters, margins, and panel-local clipping keep the plots separated. Grid panels are useful for small multiples and side-by-side scientific comparisons.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_panel_grid` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_panel_grid` when 
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_panel_grid">Open the live WebGPU example</a>.
+
+## What To Look For
+
+Each panel has its own border, background, and small point visual with position, color, and diameter_px arrays. The same point pattern is repeated with a different accent color in each grid cell, so compare how gutters, margins, and panel-local clipping keep the plots separated. Grid panels are useful for small multiples and side-by-side scientific comparisons.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_panel_grid` when 
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panel_grid"><code>examples/webgpu/live.html?id=feature_panel_grid</code></a>
     - Browser capability tags: `panel-grid`, `point`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

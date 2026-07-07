@@ -12,15 +12,13 @@
 
 Ssao compares a sphere cluster with and without screen-space ambient occlusion.
 
-## What To Look For
-
-Both panels upload the same lit sphere position, radius, and color arrays, while the right panel applies SSAO with blur and tunable radius, strength, bias, power, visibility, sample count, and debug settings. In live mode, use the GUI and linked arcball to inspect contact shadows between nearby spheres. SSAO helps reveal local shape and separation in crowded 3D scientific scenes.
-
-No external data is needed; the example generates its data.
-
 ## Preview
 
 ![Screen-Space Ambient Occlusion](../../../assets/gallery/v0.4/features/technique_ssao.webp)
+
+## What To Look For
+
+Both panels upload the same lit sphere position, radius, and color arrays, while the right panel applies SSAO with blur and tunable radius, strength, bias, power, visibility, sample count, and debug settings. In live mode, use the GUI and linked arcball to inspect contact shadows between nearby spheres. SSAO helps reveal local shape and separation in crowded 3D scientific scenes.
 
 ## Source
 
@@ -38,6 +36,7 @@ No external data is needed; the example generates its data.
     - Source: [`examples/c/features/technique_ssao.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_ssao.c)
     - Browser support: Deferred
     - Browser capability tags: `gbuffer`, `depth-postprocess`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

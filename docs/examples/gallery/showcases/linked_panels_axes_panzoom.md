@@ -12,20 +12,6 @@
 
 This example builds linked time-series panels with shared axes behavior.
 
-## What To Look For
-
-The left column combines a synthetic signal trace, an event-raster panel, and residual points, while the right panel summarizes the same time range. The important arrays are the path samples, event segments, residual points, shaded bands, and cursor lines; compare the panels to see that they use different y domains while their x navigation remains linked.
-
-This workflow is useful for scientific dashboards where traces, events, and summary statistics must stay aligned during panzoom interaction.
-
-Useful tags for this example: `workflow`, `linked-panels`, `axes`, `panzoom`.
-
-No external data is needed; the example generates its data.
-
-Try dragging and scrolling in the preview to check the pan and zoom behavior.
-
-The browser preview uses `examples/webgpu/live.html?id=linked_panels_axes_panzoom` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -39,6 +25,12 @@ The browser preview uses `examples/webgpu/live.html?id=linked_panels_axes_panzoo
     </div>
 
     <a href="../../../webgpu/live.html?id=linked_panels_axes_panzoom">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The left column combines a synthetic signal trace, an event-raster panel, and residual points, while the right panel summarizes the same time range. The important arrays are the path samples, event segments, residual points, shaded bands, and cursor lines; compare the panels to see that they use different y domains while their x navigation remains linked.
+
+This workflow is useful for scientific dashboards where traces, events, and summary statistics must stay aligned during panzoom interaction.
 
 ## Source
 
@@ -57,6 +49,7 @@ The browser preview uses `examples/webgpu/live.html?id=linked_panels_axes_panzoo
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=linked_panels_axes_panzoom"><code>examples/webgpu/live.html?id=linked_panels_axes_panzoom</code></a>
     - Browser capability tags: `panel-grid`, `linked-panels`, `axes`, `panzoom`, `path`
+    - Validation: `smoke+interaction+screenshot`
 
     ### Tags
 

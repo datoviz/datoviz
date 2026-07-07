@@ -12,19 +12,13 @@
 
 This example shows Datoviz GUI controls updating a point visual.
 
-## What To Look For
-
-Five point positions are fixed, while GUI sliders and color editors update the color and diameter_px arrays and the Visible checkbox toggles the visual. The extra synthetic data, effects, volume, and diagnostics controls exercise common widget types without changing the plotted points. Compare controls that visibly affect the markers with mock controls that only update state; this is useful for building analysis panels where some widgets drive data uploads and others configure future processing.
-
-No external data is needed; the example generates its data.
-
-Try the interaction in the preview and compare it with the `gui controls` source code.
-
-Browser support note: Datoviz GUI controls require the native ImGui/GLFW app path.
-
 ## Preview
 
 ![GUI Controls](../../../assets/gallery/v0.4/features/feature_gui_controls.webp)
+
+## What To Look For
+
+Five point positions are fixed, while GUI sliders and color editors update the color and diameter_px arrays and the Visible checkbox toggles the visual. The extra synthetic data, effects, volume, and diagnostics controls exercise common widget types without changing the plotted points. Compare controls that visibly affect the markers with mock controls that only update state; this is useful for building analysis panels where some widgets drive data uploads and others configure future processing.
 
 ## Source
 
@@ -43,6 +37,7 @@ Browser support note: Datoviz GUI controls require the native ImGui/GLFW app pat
     - Browser support: Native only
     - Browser note: Datoviz GUI controls require the native ImGui/GLFW app path
     - Browser capability tags: `gui`
+    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 

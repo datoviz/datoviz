@@ -12,14 +12,6 @@
 
 Depth_test compares overlapping 3D points with depth testing enabled and disabled.
 
-## What To Look For
-
-Both panels upload the same eight large point sprites at the corners of a small 3D cube, with matching position, color, and diameter_px arrays. The left visual keeps depth testing enabled, while the right visual disables it so later points can overdraw nearer points. Rotate the linked arcball views and compare which colors appear in front; depth testing controls whether 3D marker order follows geometry or draw order.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=technique_depth_test` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=technique_depth_test` whe
     </div>
 
     <a href="../../../webgpu/live.html?id=technique_depth_test">Open the live WebGPU example</a>.
+
+## What To Look For
+
+Both panels upload the same eight large point sprites at the corners of a small 3D cube, with matching position, color, and diameter_px arrays. The left visual keeps depth testing enabled, while the right visual disables it so later points can overdraw nearer points. Rotate the linked arcball views and compare which colors appear in front; depth testing controls whether 3D marker order follows geometry or draw order.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=technique_depth_test` whe
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=technique_depth_test"><code>examples/webgpu/live.html?id=technique_depth_test</code></a>
     - Browser capability tags: `depth-test`, `point`, `controller`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

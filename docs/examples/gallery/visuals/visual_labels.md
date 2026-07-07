@@ -12,16 +12,6 @@
 
 This example turns an integer sampled field into categorical image labels.
 
-## What To Look For
-
-The labels array stores category IDs, and the category scale assigns each ID a name and color. The visual also uses position and texcoord corners, opacity, and a boundary setting; compare adjacent regions to see how segmented scientific data can be reviewed without losing the discrete class boundaries.
-
-Useful tags for this example: `labels`, `categorical-scale`, `panzoom`, `capture`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=visual_labels` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=visual_labels` when WebGP
     </div>
 
     <a href="../../../webgpu/live.html?id=visual_labels">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The labels array stores category IDs, and the category scale assigns each ID a name and color. The visual also uses position and texcoord corners, opacity, and a boundary setting; compare adjacent regions to see how segmented scientific data can be reviewed without losing the discrete class boundaries.
 
 ## Source
 
@@ -54,6 +48,7 @@ The browser preview uses `examples/webgpu/live.html?id=visual_labels` when WebGP
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_labels"><code>examples/webgpu/live.html?id=visual_labels</code></a>
     - Browser capability tags: `labels`, `categorical-scale`, `panzoom`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

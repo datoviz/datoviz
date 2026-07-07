@@ -12,21 +12,13 @@
 
 View_size_policies demonstrates how requested view size policies resolve to real view sizes.
 
+## Preview
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for View Size Policies"><span>No screenshot</span></div>
+
 ## What To Look For
 
 Pass --policy pixel, host, reference, or physical to choose framebuffer pixels, host logical pixels, reference-DPI canvas pixels, or physical millimeters. The example prints the resolved canvas, host-logical, framebuffer, scale, and physical sizes, then renders a small point visual with position, color, and diameter_px arrays. This is useful when figures need reproducible screenshot dimensions across HiDPI monitors and different host toolkits.
-
-Useful tags for this example: `view-size`, `framebuffer`, `window`.
-
-No external data is needed; the example generates its data.
-
-Read the source code section to see how `view size policy` is configured in a native example.
-
-Browser support note: demonstrates native window, framebuffer, and physical-size policies.
-
-## Preview
-
-_Screenshot not required for this example._
 
 ## Source
 
@@ -45,6 +37,7 @@ _Screenshot not required for this example._
     - Browser support: Native only
     - Browser note: demonstrates native window, framebuffer, and physical-size policies
     - Browser capability tags: `native-view`, `view-size-policy`
+    - Validation: `smoke+interaction`
 
     ### Tags
 

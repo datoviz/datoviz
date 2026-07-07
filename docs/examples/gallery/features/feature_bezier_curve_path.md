@@ -12,15 +12,13 @@
 
 This example shows a cubic Bezier curve tessellated into a path.
 
-## What To Look For
-
-Four control points define the curve. The tessellated path uploads position, color, and linewidth arrays, while faint segment guides connect the control polygon and markers show the endpoints and handles. Compare the smooth rendered curve with the straight guide segments; this is useful for drawing fitted trajectories, contours, or model curves while still exposing the control data that shaped them.
-
-No external data is needed; the example generates its data.
-
 ## Preview
 
 ![Bezier Curve Path](../../../assets/gallery/v0.4/features/feature_bezier_curve_path.webp)
+
+## What To Look For
+
+Four control points define the curve. The tessellated path uploads position, color, and linewidth arrays, while faint segment guides connect the control polygon and markers show the endpoints and handles. Compare the smooth rendered curve with the straight guide segments; this is useful for drawing fitted trajectories, contours, or model curves while still exposing the control data that shaped them.
 
 ## Source
 
@@ -38,6 +36,7 @@ No external data is needed; the example generates its data.
     - Source: [`examples/c/features/bezier_curve_path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bezier_curve_path.c)
     - Browser support: Planned
     - Browser capability tags: `path`, `segment`, `marker`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

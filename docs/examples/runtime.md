@@ -16,7 +16,7 @@ Each card links to a detail page with preview media, source code, and example me
 
 ### [GLFW App](gallery/runtime/feature_app_glfw.md)
 
-_Screenshot not required for this example._
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for GLFW App"><span>No screenshot</span></div>
 
 `runtime`
 
@@ -28,7 +28,7 @@ This example opens a native GLFW window for a small point scene.
 
 ### [Multi Window](gallery/runtime/feature_multi_window.md)
 
-_Screenshot not required for this example._
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Multi Window"><span>No screenshot</span></div>
 
 `runtime`
 
@@ -58,7 +58,7 @@ This example renders a point scene offscreen and writes one PNG.
 
 ### [Video Export](gallery/runtime/feature_video_export.md)
 
-_Screenshot not required for this example._
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Video Export"><span>No screenshot</span></div>
 
 `experimental` `runtime`<br><span>`app-capture`, `video`, `animation`</span>
 
@@ -76,7 +76,7 @@ This example records a bounded offscreen point animation to video.
 
 ### [Record Replay](gallery/runtime/feature_record_replay.md)
 
-_Screenshot not required for this example._
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Record Replay"><span>No screenshot</span></div>
 
 `experimental` `runtime`
 

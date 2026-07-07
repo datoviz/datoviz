@@ -12,21 +12,15 @@
 
 This example records a bounded offscreen point animation to video.
 
+## Preview
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Video Export"><span>No screenshot</span></div>
+
 ## What To Look For
 
 A row of tick points stays fixed while one larger point moves through a sinusoidal path; each frame updates the position, color, and diameter arrays before rendering. The default path writes video_export.mp4 through the app capture API, while --png renders a single smoke frame for quick validation.
 
 This runtime workflow is useful for scientific animations where the scene data is updated in a deterministic loop and the output location can be controlled with DVZ_CAPTURE_DIR and DVZ_CAPTURE_BASENAME.
-
-Useful tags for this example: `app-capture`, `video`, `animation`.
-
-No external data is needed; the example generates its data.
-
-Browser support note: video export uses native capture backends in v0.4.
-
-## Preview
-
-_Screenshot not required for this example._
 
 ## Source
 
@@ -46,6 +40,7 @@ _Screenshot not required for this example._
     - Browser support: Native only
     - Browser note: video export uses native capture backends in v0.4
     - Browser capability tags: `native-capture`
+    - Validation: `smoke+optional-video`
 
     ### Tags
 

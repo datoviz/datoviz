@@ -12,16 +12,6 @@
 
 Selection_sphere queries and selects individual raycast spheres in a 3D cluster.
 
-## What To Look For
-
-The sphere visual uploads position, radius, and color arrays for a compact depth-rich cluster with lighting enabled. Move the cursor over the live panel to query the frontmost sphere item; hover scales it, click toggles a warning-color selection tint, and clicking empty space clears selection. Rotate with the arcball controller to see why depth-aware picking matters for overlapping 3D scientific markers.
-
-No external data is needed; the example generates its data.
-
-Try the interaction in the preview and compare it with the `selection sphere` source code.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_selection_sphere` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_selection_sphere`
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_selection_sphere">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The sphere visual uploads position, radius, and color arrays for a compact depth-rich cluster with lighting enabled. Move the cursor over the live panel to query the frontmost sphere item; hover scales it, click toggles a warning-color selection tint, and clicking empty space clears selection. Rotate with the arcball controller to see why depth-aware picking matters for overlapping 3D scientific markers.
 
 ## Source
 
@@ -53,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_selection_sphere`
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_selection_sphere"><code>examples/webgpu/live.html?id=feature_selection_sphere</code></a>
     - Browser capability tags: `sphere`, `arcball`, `query-readback`, `frame-callbacks`
+    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 

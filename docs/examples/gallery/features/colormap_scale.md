@@ -12,14 +12,6 @@
 
 This example shows scalar point values mapped through a custom colormap.
 
-## What To Look For
-
-Five point positions are paired with a float color-value array instead of precomputed RGBA colors. The point visual marks its color attribute as scalar F32, binds it to a continuous scale with a custom colormap, and uploads diameter_px separately. Compare the marker colors from low to high values; scalar scales keep data values separate from display colors, which is useful when the same measurement should drive a visual encoding and a legend.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=colormap_scale` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=colormap_scale` when WebG
     </div>
 
     <a href="../../../webgpu/live.html?id=colormap_scale">Open the live WebGPU example</a>.
+
+## What To Look For
+
+Five point positions are paired with a float color-value array instead of precomputed RGBA colors. The point visual marks its color attribute as scalar F32, binds it to a continuous scale with a custom colormap, and uploads diameter_px separately. Compare the marker colors from low to high values; scalar scales keep data values separate from display colors, which is useful when the same measurement should drive a visual encoding and a legend.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=colormap_scale` when WebG
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=colormap_scale"><code>examples/webgpu/live.html?id=colormap_scale</code></a>
     - Browser capability tags: `colormap`, `point`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

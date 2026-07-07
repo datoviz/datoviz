@@ -12,17 +12,13 @@
 
 This example builds a small brain-connectivity graph composite.
 
-## What To Look For
-
-Node arrays provide positions, semantic IDs, community colors, and sizes; edge arrays provide endpoints, IDs, colors, widths, and optional Bezier controls. Compare node clusters, thicker bridge edges, and curved links to see how a graph composite can turn relationship tables into a readable scientific network.
-
-Useful tags for this example: `composite`, `graph`, `marker-nodes`, `bezier-edges`.
-
-No external data is needed; the example generates its data.
-
 ## Preview
 
 ![Graph Composite](../../../assets/gallery/v0.4/composites/composite_graph.webp)
+
+## What To Look For
+
+Node arrays provide positions, semantic IDs, community colors, and sizes; edge arrays provide endpoints, IDs, colors, widths, and optional Bezier controls. Compare node clusters, thicker bridge edges, and curved links to see how a graph composite can turn relationship tables into a readable scientific network.
 
 ## Source
 
@@ -40,6 +36,7 @@ No external data is needed; the example generates its data.
     - Source: [`examples/c/composites/graph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/graph.c)
     - Browser support: Planned
     - Browser capability tags: `composite`, `marker`, `bezier-edges`, `path`, `panzoom`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

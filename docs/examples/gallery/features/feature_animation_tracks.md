@@ -12,16 +12,6 @@
 
 This example shows scene animation tracks driving a cube and camera.
 
-## What To Look For
-
-The cube keeps its mesh geometry and material, while a rotation track updates its visual transform every frame. A closed Catmull-Rom keyframe track moves the camera eye around the cube and a constant track keeps the target at the origin. In the live preview, compare the cube's local spin with the slower camera flyover; user interaction pauses the camera motion so the object can still be inspected. Tracks are useful for repeatable animations, scripted camera paths, and deterministic movie captures.
-
-No external data is needed; the example generates its data.
-
-Try the interaction in the preview and compare it with the `animation tracks` source code.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_animation_tracks` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_animation_tracks`
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_animation_tracks">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The cube keeps its mesh geometry and material, while a rotation track updates its visual transform every frame. A closed Catmull-Rom keyframe track moves the camera eye around the cube and a constant track keeps the target at the origin. In the live preview, compare the cube's local spin with the slower camera flyover; user interaction pauses the camera motion so the object can still be inspected. Tracks are useful for repeatable animations, scripted camera paths, and deterministic movie captures.
 
 ## Source
 
@@ -53,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_animation_tracks`
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_animation_tracks"><code>examples/webgpu/live.html?id=feature_animation_tracks</code></a>
     - Browser capability tags: `mesh`, `frame-callbacks`, `controller`, `arcball`
+    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 

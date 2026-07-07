@@ -12,16 +12,6 @@
 
 This example displays a generated scalar field as a 2D image.
 
-## What To Look For
-
-The FIELD_WIDTH by FIELD_HEIGHT value array is attached as a sampled field, while four corner positions and texture coordinates place it on a panel. The colormap scale maps values from 0 to 1, so compare the smooth bands and local extrema in the image to see how dense measurements such as microscopy tiles, detector frames, or model grids become a texture-backed visual.
-
-Useful tags for this example: `image`, `sampled-field`, `capture`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=visual_image` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=visual_image` when WebGPU
     </div>
 
     <a href="../../../webgpu/live.html?id=visual_image">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The FIELD_WIDTH by FIELD_HEIGHT value array is attached as a sampled field, while four corner positions and texture coordinates place it on a panel. The colormap scale maps values from 0 to 1, so compare the smooth bands and local extrema in the image to see how dense measurements such as microscopy tiles, detector frames, or model grids become a texture-backed visual.
 
 ## Source
 
@@ -54,6 +48,7 @@ The browser preview uses `examples/webgpu/live.html?id=visual_image` when WebGPU
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_image"><code>examples/webgpu/live.html?id=visual_image</code></a>
     - Browser capability tags: `image`, `sampled-field`, `panzoom`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

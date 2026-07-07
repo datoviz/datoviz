@@ -12,14 +12,6 @@
 
 Panel_background shows a custom panel background behind a foreground primitive.
 
-## What To Look For
-
-The panel rectangle is explicitly inset inside the figure and receives a linear-gradient background before a triangle-list primitive uploads position, color, and normal arrays. Compare the gradient panel area with the surrounding figure space; styled backgrounds are useful for separating dense scientific plots, dark-field images, or instrument overlays from the rest of a figure.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=panel_background` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=panel_background` when We
     </div>
 
     <a href="../../../webgpu/live.html?id=panel_background">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The panel rectangle is explicitly inset inside the figure and receives a linear-gradient background before a triangle-list primitive uploads position, color, and normal arrays. Compare the gradient panel area with the surrounding figure space; styled backgrounds are useful for separating dense scientific plots, dark-field images, or instrument overlays from the rest of a figure.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=panel_background` when We
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=panel_background"><code>examples/webgpu/live.html?id=panel_background</code></a>
     - Browser capability tags: `panel-background`, `primitive`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

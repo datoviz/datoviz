@@ -12,14 +12,6 @@
 
 Sampled_field_update reuses one sampled scalar field in two image visuals while updating patches.
 
-## What To Look For
-
-Both panels sample the same R32_FLOAT field and the same moving highlighted patch, but each panel applies a different continuous color scale. Every few frames the previous 12x12 patch is restored and a new region is uploaded with dvz_sampled_field_update_region(). Compare the two panels during live playback; shared fields are useful when several views need different color treatments of the same changing image data.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_sampled_field_update` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_sampled_field_upd
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_sampled_field_update">Open the live WebGPU example</a>.
+
+## What To Look For
+
+Both panels sample the same R32_FLOAT field and the same moving highlighted patch, but each panel applies a different continuous color scale. Every few frames the previous 12x12 patch is restored and a new region is uploaded with dvz_sampled_field_update_region(). Compare the two panels during live playback; shared fields are useful when several views need different color treatments of the same changing image data.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_sampled_field_upd
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_sampled_field_update"><code>examples/webgpu/live.html?id=feature_sampled_field_update</code></a>
     - Browser capability tags: `sampled-field`, `image`, `frame-callbacks`, `colormap`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

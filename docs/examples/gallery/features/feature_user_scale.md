@@ -12,19 +12,13 @@
 
 User_scale shows how one user-scale value affects screen-space visual sizes and axes.
 
-## What To Look For
-
-The panel combines a data-space path, outlined markers, axes, and panzoom. The path uploads position, color, and stroke_width_px arrays, while the markers upload position, color, diameter_px, angle, and symbol arrays. In live mode, move the GUI scale slider and compare marker diameters, stroke widths, text, and axis styling while data coordinates stay fixed. User scale is useful for HiDPI displays, screenshots, and accessibility-sized scientific figures.
-
-No external data is needed; the example generates its data.
-
-Try the interaction in the preview and compare it with the `user scale` source code.
-
-Browser support note: the user-scale control is a native ImGui slider on a Datoviz app view.
-
 ## Preview
 
 ![User Scale](../../../assets/gallery/v0.4/features/feature_user_scale.webp)
+
+## What To Look For
+
+The panel combines a data-space path, outlined markers, axes, and panzoom. The path uploads position, color, and stroke_width_px arrays, while the markers upload position, color, diameter_px, angle, and symbol arrays. In live mode, move the GUI scale slider and compare marker diameters, stroke widths, text, and axis styling while data coordinates stay fixed. User scale is useful for HiDPI displays, screenshots, and accessibility-sized scientific figures.
 
 ## Source
 
@@ -43,6 +37,7 @@ Browser support note: the user-scale control is a native ImGui slider on a Datov
     - Browser support: Native only
     - Browser note: the user-scale control is a native ImGui slider on a Datoviz app view
     - Browser capability tags: `marker`, `panzoom`, `path`, `gui`
+    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 

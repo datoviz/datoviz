@@ -12,16 +12,6 @@
 
 Selection_pixel queries and selects individual cells in a pixel grid.
 
-## What To Look For
-
-The 40x24 grid uploads position, color, and pixel_size_px arrays generated from a smooth scalar field. Move the cursor over the live panel to query a pixel item; hover scales the square, click toggles a persistent warning-color tint, and clicking the background clears selection. This is useful for heatmaps and rasters where each rendered cell may correspond to a sample, sensor, or bin.
-
-No external data is needed; the example generates its data.
-
-Try the interaction in the preview and compare it with the `selection pixel` source code.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_selection_pixel` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_selection_pixel` 
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_selection_pixel">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The 40x24 grid uploads position, color, and pixel_size_px arrays generated from a smooth scalar field. Move the cursor over the live panel to query a pixel item; hover scales the square, click toggles a persistent warning-color tint, and clicking the background clears selection. This is useful for heatmaps and rasters where each rendered cell may correspond to a sample, sensor, or bin.
 
 ## Source
 
@@ -53,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_selection_pixel` 
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_selection_pixel"><code>examples/webgpu/live.html?id=feature_selection_pixel</code></a>
     - Browser capability tags: `pixel`, `controller`, `panzoom`, `query-readback`, `frame-callbacks`
+    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 

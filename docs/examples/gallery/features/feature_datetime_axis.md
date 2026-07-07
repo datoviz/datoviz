@@ -12,19 +12,13 @@
 
 This example shows UTC datetime labels on a numeric data axis.
 
-## What To Look For
-
-The path visual uploads position, color, and linewidth arrays in compact numeric coordinates from 0 to 8. The x axis is then configured with datetime metadata and a UTC range, so the tick labels display times while the visual data stays simple. Compare the curve's x positions with the formatted time labels; this is useful for time-series data where rendering should remain numeric but the plot must communicate real dates or times.
-
-Useful tags for this example: `axes`, `datetime`, `time-series`.
-
-No external data is needed; the example generates its data.
-
-Browser support note: datetime formatting is outside the RC browser subset.
-
 ## Preview
 
 ![Datetime Axis](../../../assets/gallery/v0.4/features/feature_datetime_axis.webp)
+
+## What To Look For
+
+The path visual uploads position, color, and linewidth arrays in compact numeric coordinates from 0 to 8. The x axis is then configured with datetime metadata and a UTC range, so the tick labels display times while the visual data stays simple. Compare the curve's x positions with the formatted time labels; this is useful for time-series data where rendering should remain numeric but the plot must communicate real dates or times.
 
 ## Source
 
@@ -43,6 +37,7 @@ Browser support note: datetime formatting is outside the RC browser subset.
     - Browser support: Deferred
     - Browser note: datetime formatting is outside the RC browser subset
     - Browser capability tags: `axes`, `text`, `datetime`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

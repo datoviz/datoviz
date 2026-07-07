@@ -12,19 +12,15 @@
 
 This example records an offscreen frame to DVZR and replays it into a new view.
 
+## Preview
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Record Replay"><span>No screenshot</span></div>
+
 ## What To Look For
 
 The recorded scene is a five-point visual with explicit position, color, and diameter arrays. The program writes the DVZR recording plus two PNGs, one captured from the original offscreen view and one captured from the replay view; compare those images to verify that the replay path reproduces the same rendered frame.
 
 This experimental workflow is useful when you need portable visual evidence or regression artifacts without keeping the original app process alive.
-
-No external data is needed; the example generates its data.
-
-Browser support note: DVZR app recording and replay use native runtime capture plumbing.
-
-## Preview
-
-_Screenshot not required for this example._
 
 ## Source
 
@@ -44,6 +40,7 @@ _Screenshot not required for this example._
     - Browser support: Native only
     - Browser note: DVZR app recording and replay use native runtime capture plumbing
     - Browser capability tags: `native-capture`
+    - Validation: `smoke+capture`
 
     ### Data
 

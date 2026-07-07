@@ -106,7 +106,6 @@ nav:
     - Features: 'examples/features.md'
     - Runtime & Capture: 'examples/runtime.md'
     - Advanced: 'examples/advanced.md'
-    - WebGPU matrix: 'examples/webgpu-matrix.md'
   - How-To:
     - Core Workflow:
       - Create a scene: 'how-to/create-a-scene.md'
@@ -215,6 +214,7 @@ nav:
       - vklite: 'advanced/vklite.md'
       - Canvas and stream API: 'advanced/canvas.md'
       - WebGPU renderer: 'advanced/webgpu-renderer.md'
+      - WebGPU matrix: 'examples/webgpu-matrix.md'
     - Contributors:
       - Build and test: 'contributors/build-and-test.md'
       - Coding style: 'contributors/coding-style.md'

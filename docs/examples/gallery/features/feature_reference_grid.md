@@ -12,17 +12,13 @@
 
 Reference_grid adds a ground-plane reference grid to a 3D scene.
 
-## What To Look For
-
-The grid is attached to the XZ plane, shifted downward on Y, and configured with fixed size, spacing, and major-line cadence. Use the turntable controller in the live preview and compare object orientation against the grid plane. Reference grids are useful for judging scale, height, and horizontal position in sparse 3D scientific views.
-
-No external data is needed; the example generates its data.
-
-Try the interaction in the preview and compare it with the `reference grid` source code.
-
 ## Preview
 
 ![Reference Grid](../../../assets/gallery/v0.4/features/feature_reference_grid.webp)
+
+## What To Look For
+
+The grid is attached to the XZ plane, shifted downward on Y, and configured with fixed size, spacing, and major-line cadence. Use the turntable controller in the live preview and compare object orientation against the grid plane. Reference grids are useful for judging scale, height, and horizontal position in sparse 3D scientific views.
 
 ## Source
 
@@ -40,6 +36,7 @@ Try the interaction in the preview and compare it with the `reference grid` sour
     - Source: [`examples/c/features/reference_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/reference_grid.c)
     - Browser support: Planned
     - Browser capability tags: `reference-grid`, `segment`, `controller`
+    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 

@@ -12,14 +12,6 @@
 
 Timer_animation updates point attributes every frame from scenario time.
 
-## What To Look For
-
-The same point visual receives new position, color, and diameter_px arrays on each frame. The eight points slide along a sine wave, pulse in size, and cycle through palette colors without recreating the visual. This is useful for simulations, live instruments, and time-dependent analyses where the data values change but the visualization object remains the same.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_timer_animation` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_timer_animation` 
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_timer_animation">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The same point visual receives new position, color, and diameter_px arrays on each frame. The eight points slide along a sine wave, pulse in size, and cycle through palette colors without recreating the visual. This is useful for simulations, live instruments, and time-dependent analyses where the data values change but the visualization object remains the same.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_timer_animation` 
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_timer_animation"><code>examples/webgpu/live.html?id=feature_timer_animation</code></a>
     - Browser capability tags: `point`, `frame-callbacks`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

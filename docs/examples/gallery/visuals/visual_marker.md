@@ -12,16 +12,6 @@
 
 This example compares marker symbols, sizes, strokes, fills, and rotations.
 
-## What To Look For
-
-Each row reuses position, symbol, color, size, edge color, and angle arrays to show how screen-space markers encode categories and selected points. The top row is a triangle compass probe: angle is mathematical counter-clockwise, and triangle diameter_px is the screen-space bounding-box diameter.
-
-Useful tags for this example: `marker`, `panzoom`, `capture`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=visual_marker` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=visual_marker` when WebGP
     </div>
 
     <a href="../../../webgpu/live.html?id=visual_marker">Open the live WebGPU example</a>.
+
+## What To Look For
+
+Each row reuses position, symbol, color, size, edge color, and angle arrays to show how screen-space markers encode categories and selected points. The top row is a triangle compass probe: angle is mathematical counter-clockwise, and triangle diameter_px is the screen-space bounding-box diameter.
 
 ## Source
 
@@ -54,6 +48,7 @@ The browser preview uses `examples/webgpu/live.html?id=visual_marker` when WebGP
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_marker"><code>examples/webgpu/live.html?id=visual_marker</code></a>
     - Browser capability tags: `marker`, `panzoom`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

@@ -12,16 +12,6 @@
 
 This example compares basic primitive topologies.
 
-## What To Look For
-
-Each primitive supplies positions, colors, and group IDs, then chooses a line or triangle topology. Compare the separate shapes in the screenshot to see how the same compact vertex attributes can describe reference marks, outlines, filled triangles, or custom simple geometry before using a higher-level visual.
-
-Useful tags for this example: `primitive`, `capture`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=visual_primitive` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=visual_primitive` when We
     </div>
 
     <a href="../../../webgpu/live.html?id=visual_primitive">Open the live WebGPU example</a>.
+
+## What To Look For
+
+Each primitive supplies positions, colors, and group IDs, then chooses a line or triangle topology. Compare the separate shapes in the screenshot to see how the same compact vertex attributes can describe reference marks, outlines, filled triangles, or custom simple geometry before using a higher-level visual.
 
 ## Source
 
@@ -54,6 +48,7 @@ The browser preview uses `examples/webgpu/live.html?id=visual_primitive` when We
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_primitive"><code>examples/webgpu/live.html?id=visual_primitive</code></a>
     - Browser capability tags: `primitive`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

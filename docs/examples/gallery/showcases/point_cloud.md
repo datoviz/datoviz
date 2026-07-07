@@ -12,6 +12,10 @@
 
 This example renders a prepared RGB LiDAR point cloud with direct colors.
 
+## Preview
+
+![Point Cloud](../../../assets/gallery/v0.4/showcases/point_cloud.webp)
+
 ## What To Look For
 
 The prepared binary stores point positions, RGBA colors, and per-point pixel sizes after preprocessing the upstream LAZ source. The preview should read as a dense colored spatial scan, and the fly-style view is the interaction to use when inspecting depth and structure.
@@ -21,31 +25,6 @@ This workflow is useful for large measured point clouds where the expensive deco
 Real data is loaded from `.cache/datoviz/examples/point_cloud/prepared/point_cloud.bin`. Generate it from the upstream LAZ source with:
 
 Python tools/data/prepare_point_cloud.py --force
-
-Useful tags for this example: `real-data`, `pixel`, `dense-point-cloud`, `direct-color`.
-
-This example expects prepared data. Use the preparation command below if the data is missing.
-
-Browser support note: the public point-cloud showcase depends on large prepared data, native GUI controls, and EDL-style rendering.
-
-## Preview
-
-![Point Cloud](../../../assets/gallery/v0.4/showcases/point_cloud.webp)
-
-## Data Requirements
-
-This example expects prepared data. Use the preparation command below if the data is missing.
-
-- Dataset: RESEPI GENM2X colorized benchmark point cloud
-- Source: https://lidarpayload.com/sample-data/
-
-Preparation command:
-
-```sh
-python tools/data/prepare_point_cloud.py --force
-```
-
-License note: Public RESEPI sample data; usage follows the source site's terms
 
 ## Source
 
@@ -64,6 +43,7 @@ License note: Public RESEPI sample data; usage follows the source site's terms
     - Browser support: Deferred
     - Browser note: the public point-cloud showcase depends on large prepared data, native GUI controls, and EDL-style rendering
     - Browser capability tags: `pixel`, `dense-point-cloud`, `depth-postprocess`, `gui`, `fly`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

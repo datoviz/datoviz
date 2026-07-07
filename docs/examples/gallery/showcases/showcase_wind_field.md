@@ -12,18 +12,6 @@
 
 This example combines a synthetic wind-speed field with vectors and streamlines.
 
-## What To Look For
-
-The sampled field stores wind speed over a kilometer-scale domain, vectors show local direction and magnitude, streamlines trace the flow, and a fixed probe plus colorbar report speed in m/s. During live playback, compare how the image, vector glyphs, and paths update together from the same procedural wind model.
-
-This workflow is useful for geophysical or fluid-like data where scalar magnitude and direction need to be read in one coordinated panel.
-
-Useful tags for this example: `scientific`, `synthetic`, `scalar-field`, `vector-field`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=showcase_wind_field` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -37,6 +25,12 @@ The browser preview uses `examples/webgpu/live.html?id=showcase_wind_field` when
     </div>
 
     <a href="../../../webgpu/live.html?id=showcase_wind_field">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The sampled field stores wind speed over a kilometer-scale domain, vectors show local direction and magnitude, streamlines trace the flow, and a fixed probe plus colorbar report speed in m/s. During live playback, compare how the image, vector glyphs, and paths update together from the same procedural wind model.
+
+This workflow is useful for geophysical or fluid-like data where scalar magnitude and direction need to be read in one coordinated panel.
 
 ## Source
 
@@ -55,6 +49,7 @@ The browser preview uses `examples/webgpu/live.html?id=showcase_wind_field` when
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcase_wind_field"><code>examples/webgpu/live.html?id=showcase_wind_field</code></a>
     - Browser capability tags: `image`, `vector`, `path`, `colorbar`, `panzoom`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -74,6 +69,6 @@ The browser preview uses `examples/webgpu/live.html?id=showcase_wind_field` when
 <a href="../../../showcases">Showcases</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../us_state_choropleth">Previous: U.S. State Choropleth</a> · <a href="../brain_volume">Next: Allen Mouse Brain</a>
+<a href="../us_state_choropleth">Previous: U.S. State Choropleth</a> · <a href="../showcase_gpu_particle_smoke">Next: GPU Particle Smoke</a>
 </div>
 </nav>

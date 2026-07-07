@@ -12,14 +12,6 @@
 
 This example shows a text annotation anchored to one data point.
 
-## What To Look For
-
-The point visual uploads position, color, and diameter_px arrays for a small signal-like scatter plot. One highlighted sample is paired with a label annotation at the same data coordinate, using placement settings to keep the text offset from the marker. Compare the emphasized marker with the muted neighbors and the label placement relative to the axes; this is the pattern used for callouts, readouts, and selected observations in scientific plots.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=annotation_readout` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=annotation_readout` when 
     </div>
 
     <a href="../../../webgpu/live.html?id=annotation_readout">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The point visual uploads position, color, and diameter_px arrays for a small signal-like scatter plot. One highlighted sample is paired with a label annotation at the same data coordinate, using placement settings to keep the text offset from the marker. Compare the emphasized marker with the muted neighbors and the label placement relative to the axes; this is the pattern used for callouts, readouts, and selected observations in scientific plots.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=annotation_readout` when 
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=annotation_readout"><code>examples/webgpu/live.html?id=annotation_readout</code></a>
     - Browser capability tags: `annotation`, `readout`, `text`, `point`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

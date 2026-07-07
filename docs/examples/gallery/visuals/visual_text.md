@@ -12,16 +12,6 @@
 
 This example places semantic text items in panel coordinates.
 
-## What To Look For
-
-Each text item provides a string, x/y screen position, font size, angle, and color role, then the text system lowers it to atlas glyphs. Compare the headline, smaller annotations, and rotated label to see how titles, units, and short scientific notes can be added without managing glyph quads manually.
-
-Useful tags for this example: `text`, `capture`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=visual_text` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=visual_text` when WebGPU 
     </div>
 
     <a href="../../../webgpu/live.html?id=visual_text">Open the live WebGPU example</a>.
+
+## What To Look For
+
+Each text item provides a string, x/y screen position, font size, angle, and color role, then the text system lowers it to atlas glyphs. Compare the headline, smaller annotations, and rotated label to see how titles, units, and short scientific notes can be added without managing glyph quads manually.
 
 ## Source
 
@@ -54,6 +48,7 @@ The browser preview uses `examples/webgpu/live.html?id=visual_text` when WebGPU 
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_text"><code>examples/webgpu/live.html?id=visual_text</code></a>
     - Browser capability tags: `text`, `glyph-atlas`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

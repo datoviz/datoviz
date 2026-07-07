@@ -12,19 +12,13 @@
 
 This example shows native keyboard, pointer, wheel, and resize events.
 
+## Preview
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Input Events"><span>No screenshot</span></div>
+
 ## What To Look For
 
 The native app registers input callbacks and prints event details for pointer movement, button presses, scrolling, keyboard input, and window resize. The synthetic smoke path exercises the same event-handling code without requiring manual interaction. Run it live and compare terminal output with your mouse and keyboard actions; event logging is useful when building custom picking, navigation, or analysis controls.
-
-No external data is needed; the example generates its data.
-
-Read the source code section to see how `input events` is configured in a native example.
-
-Browser support note: demonstrates native hosted event injection APIs.
-
-## Preview
-
-_Screenshot not required for this example._
 
 ## Source
 
@@ -43,6 +37,7 @@ _Screenshot not required for this example._
     - Browser support: Native only
     - Browser note: demonstrates native hosted event injection APIs
     - Browser capability tags: `native-view`, `input-events`
+    - Validation: `smoke+interaction`
 
     ### Data
 

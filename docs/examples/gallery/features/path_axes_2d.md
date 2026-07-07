@@ -12,14 +12,6 @@
 
 This example shows a 2D data path with axes, ticks, and grid lines.
 
-## What To Look For
-
-The path visual receives arrays for data-space position, color, and linewidth, then the panel domains map x from 0 to 10 and y from -2 to 2. The x and y axes add grid lines and labels ("time (s)" and "signal"). Compare the curve against the tick marks and grid spacing; the example shows how data coordinates, styled axes, and a line visual combine into a basic quantitative plot.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=path_axes_2d` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -33,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=path_axes_2d` when WebGPU
     </div>
 
     <a href="../../../webgpu/live.html?id=path_axes_2d">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The path visual receives arrays for data-space position, color, and linewidth, then the panel domains map x from 0 to 10 and y from -2 to 2. The x and y axes add grid lines and labels ("time (s)" and "signal"). Compare the curve against the tick marks and grid spacing; the example shows how data coordinates, styled axes, and a line visual combine into a basic quantitative plot.
 
 ## Source
 
@@ -51,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=path_axes_2d` when WebGPU
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=path_axes_2d"><code>examples/webgpu/live.html?id=path_axes_2d</code></a>
     - Browser capability tags: `path`, `axes`, `text`, `panzoom`
+    - Validation: `smoke+screenshot`
 
     ### Data
 

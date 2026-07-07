@@ -12,19 +12,13 @@
 
 This example shows raw cimgui widgets controlling a Datoviz visual.
 
-## What To Look For
-
-Four point positions and colors are uploaded once, while the GUI slider rewrites the diameter_px attribute for all points. The raw cimgui window also displays a small status table and can open the Dear ImGui demo. Move the diameter slider and compare the live marker sizes with the unchanged positions and colors; this demonstrates how advanced users can mix direct imgui calls with Datoviz data updates.
-
-No external data is needed; the example generates its data.
-
-Try the interaction in the preview and compare it with the `gui cimgui` source code.
-
-Browser support note: raw cimgui access requires the native ImGui app path.
-
 ## Preview
 
 ![Raw cimgui GUI](../../../assets/gallery/v0.4/features/feature_gui_cimgui.webp)
+
+## What To Look For
+
+Four point positions and colors are uploaded once, while the GUI slider rewrites the diameter_px attribute for all points. The raw cimgui window also displays a small status table and can open the Dear ImGui demo. Move the diameter slider and compare the live marker sizes with the unchanged positions and colors; this demonstrates how advanced users can mix direct imgui calls with Datoviz data updates.
 
 ## Source
 
@@ -43,6 +37,7 @@ Browser support note: raw cimgui access requires the native ImGui app path.
     - Browser support: Native only
     - Browser note: raw cimgui access requires the native ImGui app path
     - Browser capability tags: `gui`
+    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 

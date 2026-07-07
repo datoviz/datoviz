@@ -12,16 +12,6 @@
 
 Picking demonstrates item-level marker hover and click selection.
 
-## What To Look For
-
-The marker grid uploads position, color, diameter_px, angle, and shape arrays, including several deliberately overlapping markers near the center. Move the cursor to query the frontmost marker item; hover scales the item, click toggles a persistent warning-color tint, and clicking the background clears selection. Current marker queries use marker-family bounds rather than exact SDF shape discard, which is enough to demonstrate interactive item picking.
-
-No external data is needed; the example generates its data.
-
-Try the interaction in the preview and compare it with the `picking` source code.
-
-The browser preview uses `examples/webgpu/live.html?id=feature_picking` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=feature_picking` when Web
     </div>
 
     <a href="../../../webgpu/live.html?id=feature_picking">Open the live WebGPU example</a>.
+
+## What To Look For
+
+The marker grid uploads position, color, diameter_px, angle, and shape arrays, including several deliberately overlapping markers near the center. Move the cursor to query the frontmost marker item; hover scales the item, click toggles a persistent warning-color tint, and clicking the background clears selection. Current marker queries use marker-family bounds rather than exact SDF shape discard, which is enough to demonstrate interactive item picking.
 
 ## Source
 
@@ -53,6 +47,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_picking` when Web
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_picking"><code>examples/webgpu/live.html?id=feature_picking</code></a>
     - Browser capability tags: `marker`, `panzoom`, `query-readback`, `frame-callbacks`
+    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 

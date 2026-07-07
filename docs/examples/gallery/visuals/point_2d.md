@@ -12,16 +12,6 @@
 
 This example renders a 2D scatter plot with per-point color and diameter.
 
-## What To Look For
-
-Generated positions place the samples, scalar values are mapped through a color scale, and diameters vary each point's screen-space size. Compare dense and sparse parts of the cloud to see how a beginner scatter plot can show location, magnitude, and emphasis with three simple arrays.
-
-Useful tags for this example: `point`, `panzoom`, `capture`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=point_2d` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -35,6 +25,10 @@ The browser preview uses `examples/webgpu/live.html?id=point_2d` when WebGPU is 
     </div>
 
     <a href="../../../webgpu/live.html?id=point_2d">Open the live WebGPU example</a>.
+
+## What To Look For
+
+Generated positions place the samples, scalar values are mapped through a color scale, and diameters vary each point's screen-space size. Compare dense and sparse parts of the cloud to see how a beginner scatter plot can show location, magnitude, and emphasis with three simple arrays.
 
 ## Source
 
@@ -54,6 +48,7 @@ The browser preview uses `examples/webgpu/live.html?id=point_2d` when WebGPU is 
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=point_2d"><code>examples/webgpu/live.html?id=point_2d</code></a>
     - Browser capability tags: `point`, `panzoom`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 

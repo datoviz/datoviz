@@ -12,17 +12,13 @@
 
 Json_export writes a scene to a compact JSON diagnostic file.
 
+## Preview
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for JSON Export"><span>No screenshot</span></div>
+
 ## What To Look For
 
 The live view is intentionally small, with three point items whose position, color, and diameter_px arrays are uploaded before the scene is serialized. The useful output is also the generated json_export.json file: it should contain the figure/panel/visual structure rather than just pixels. This helps beginners see that Datoviz scenes keep inspectable state that can be exported for debugging or tooling.
-
-No external data is needed; the example generates its data.
-
-Browser support note: scene JSON is a native diagnostic/fixture surface, not a live browser route.
-
-## Preview
-
-_Screenshot not required for this example._
 
 ## Source
 
@@ -42,6 +38,7 @@ _Screenshot not required for this example._
     - Browser support: Native only
     - Browser note: scene JSON is a native diagnostic/fixture surface, not a live browser route
     - Browser capability tags: `diagnostics`
+    - Validation: `smoke+stdout`
 
     ### Data
 

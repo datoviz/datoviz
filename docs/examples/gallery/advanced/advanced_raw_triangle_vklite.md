@@ -12,6 +12,10 @@
 
 This example draws one RGB triangle with manual vklite commands.
 
+## Preview
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Raw Triangle Vklite"><span>No screenshot</span></div>
+
 ## What To Look For
 
 The triangle is not a scene visual. The example compiles the inline GLSL shaders, declares the vec2 position plus vec3 color vertex layout, uploads three vertices to a vertex buffer, and records the draw into the command buffer provided by DvzCanvas. The saved PNG should show a red/green/blue triangle over a dark clear color.
@@ -23,16 +27,6 @@ Usage: ./raw_triangle_vklite
 Render one frame, save raw_triangle_vklite.png.
 
 NOTE: this example intentionally uses an offscreen canvas. Hosted onscreen integration is shown separately in external_surface_glfw.c.
-
-Useful tags for this example: `advanced`, `vklite`, `canvas`, `low-level`.
-
-No external data is needed; the example generates its data.
-
-Browser support note: raw vklite command recording is a native runtime example.
-
-## Preview
-
-_Screenshot not required for this example._
 
 ## Source
 
@@ -52,6 +46,7 @@ _Screenshot not required for this example._
     - Browser support: Native only
     - Browser note: raw vklite command recording is a native runtime example
     - Browser capability tags: `vklite`, `canvas`
+    - Validation: `smoke+png`
 
     ### Tags
 

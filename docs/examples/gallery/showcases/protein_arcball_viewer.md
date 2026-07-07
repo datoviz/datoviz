@@ -12,24 +12,6 @@
 
 This example renders a prepared PDB structure as colored sphere impostors.
 
-## What To Look For
-
-The protein bundle supplies atom positions, element-style colors, and radii; the example scales those radii and renders the atoms as spheres with an arcball/spin view. In the preview, compare atom size and color clusters rather than expecting bonds: the visual focus is the dense molecular surface produced from per-atom arrays.
-
-This workflow is useful when a scientific viewer needs to turn prepared molecular coordinates into an interactive 3D point/sphere representation. The repository fallback is 1UBQ; other PDB ids must be prepared before running.
-
-Data/examples/proteins/1ubq/prepared, generated from RCSB PDB 1UBQ. Source: https://files.rcsb.org/download/{PDB_ID}.pdb Terms: RCSB PDB data usage policy applies. Prepare: python tools/data/prepare_protein_arcball.py 1UBQ --regenerate python tools/preprocess_protein.py 6M0J
-
-Options: --spin, --debug, [bundle-path], [frame-count] Debug: DVZ_EXAMPLE_DEBUG=gui enables post-processing diagnostics
-
-The full interactive GUI workbench lives in examples/c/lab/protein_viewer.c.
-
-Useful tags for this example: `scientific`, `real-data`, `molecular`, `sphere`.
-
-This example uses real source data. Check the source, license, and preparation command before redistributing it.
-
-The browser preview uses `examples/webgpu/live.html?id=protein_arcball_viewer` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -44,21 +26,17 @@ The browser preview uses `examples/webgpu/live.html?id=protein_arcball_viewer` w
 
     <a href="../../../webgpu/live.html?id=protein_arcball_viewer">Open the live WebGPU example</a>.
 
-## Data Requirements
+## What To Look For
 
-This example uses real source data. Check the source, license, and preparation command before redistributing it.
+The protein bundle supplies atom positions, element-style colors, and radii; the example scales those radii and renders the atoms as spheres with an arcball/spin view. In the preview, compare atom size and color clusters rather than expecting bonds: the visual focus is the dense molecular surface produced from per-atom arrays.
 
-- Dataset: RCSB PDB protein structure
-- Source: https://files.rcsb.org/download/{pdb_id}.pdb
-- Source URL: https://www.wwpdb.org/about/usage-policies
+This workflow is useful when a scientific viewer needs to turn prepared molecular coordinates into an interactive 3D point/sphere representation. The repository fallback is 1UBQ; other PDB ids must be prepared before running.
 
-Preparation command:
+Data/examples/proteins/1ubq/prepared, generated from RCSB PDB 1UBQ. Source: https://files.rcsb.org/download/{PDB_ID}.pdb Terms: RCSB PDB data usage policy applies. Prepare: python tools/data/prepare_protein_arcball.py 1UBQ --regenerate python tools/preprocess_protein.py 6M0J
 
-```sh
-python tools/data/prepare_protein_arcball.py 1UBQ --regenerate
-```
+Options: --spin, --debug, [bundle-path], [frame-count] Debug: DVZ_EXAMPLE_DEBUG=gui enables post-processing diagnostics
 
-License note: PDB archive coordinate files are available under CC0 1.0; attribute original structure authors where possible.
+The full interactive GUI workbench lives in examples/c/lab/protein_viewer.c.
 
 ## Source
 
@@ -77,6 +55,7 @@ License note: PDB archive coordinate files are available under CC0 1.0; attribut
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=protein_arcball_viewer"><code>examples/webgpu/live.html?id=protein_arcball_viewer</code></a>
     - Browser capability tags: `sphere`, `arcball`, `material`, `real-data`
+    - Validation: `smoke+screenshot+manual`
 
     ### Tags
 

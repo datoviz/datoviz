@@ -12,18 +12,6 @@
 
 This example turns a generated height field into a lit mesh and wireframe.
 
-## What To Look For
-
-SURFACE_ROWS by SURFACE_COLS height and color arrays are converted to geometry, rendered as a material mesh, and reused to derive unique edges for the segment wireframe. In the preview, compare the smooth shaded surface with the overlaid grid lines while rotating the arcball camera.
-
-This workflow is useful for scientific surfaces where the same gridded data should support both shape perception and explicit mesh topology.
-
-Useful tags for this example: `scientific`, `synthetic`, `surface-grid`, `mesh`.
-
-No external data is needed; the example generates its data.
-
-The browser preview uses `examples/webgpu/live.html?id=showcase_surface_grid` when WebGPU is available.
-
 ## Preview
 
 === "Screenshot"
@@ -37,6 +25,12 @@ The browser preview uses `examples/webgpu/live.html?id=showcase_surface_grid` wh
     </div>
 
     <a href="../../../webgpu/live.html?id=showcase_surface_grid">Open the live WebGPU example</a>.
+
+## What To Look For
+
+SURFACE_ROWS by SURFACE_COLS height and color arrays are converted to geometry, rendered as a material mesh, and reused to derive unique edges for the segment wireframe. In the preview, compare the smooth shaded surface with the overlaid grid lines while rotating the arcball camera.
+
+This workflow is useful for scientific surfaces where the same gridded data should support both shape perception and explicit mesh topology.
 
 ## Source
 
@@ -55,6 +49,7 @@ The browser preview uses `examples/webgpu/live.html?id=showcase_surface_grid` wh
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcase_surface_grid"><code>examples/webgpu/live.html?id=showcase_surface_grid</code></a>
     - Browser capability tags: `mesh`, `segment`, `arcball`
+    - Validation: `smoke+screenshot`
 
     ### Tags
 
