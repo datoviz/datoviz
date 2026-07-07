@@ -49,7 +49,6 @@ The browser preview uses `examples/webgpu/live.html?id=visual_text` when WebGPU 
     - ID: `visual_text`
     - Category: `visual`
     - Lane: `visuals`
-    - Status: `supported`
     - Source: [`examples/c/visuals/text.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/text.c)
     - Reference: [Text visual family](../../../reference/visual-families/text.md)
     - Browser support: Live in browser

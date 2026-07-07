@@ -49,7 +49,6 @@ The browser preview uses `examples/webgpu/live.html?id=composite_polygon` when W
     - ID: `composite_polygon`
     - Category: `composite`
     - Lane: `composites`
-    - Status: `supported`
     - Source: [`examples/c/composites/polygon.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/polygon.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=composite_polygon"><code>examples/webgpu/live.html?id=composite_polygon</code></a>

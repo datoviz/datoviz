@@ -51,7 +51,6 @@ The browser preview uses `examples/webgpu/live.html?id=showcase_surface_grid` wh
     - ID: `showcase_surface_grid`
     - Category: `showcase`
     - Lane: `showcases`
-    - Status: `supported`
     - Source: [`examples/c/showcases/surface_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/surface_grid.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcase_surface_grid"><code>examples/webgpu/live.html?id=showcase_surface_grid</code></a>

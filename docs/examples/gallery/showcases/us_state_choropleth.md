@@ -69,7 +69,6 @@ License note: U.S. Census Bureau public data; cite the Census Bureau as source.
     - ID: `us_state_choropleth`
     - Category: `showcase`
     - Lane: `showcases`
-    - Status: `supported`
     - Source: [`examples/c/showcases/choropleth.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/choropleth.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=us_state_choropleth"><code>examples/webgpu/live.html?id=us_state_choropleth</code></a>

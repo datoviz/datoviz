@@ -47,7 +47,6 @@ The browser preview uses `examples/webgpu/live.html?id=image_probe` when WebGPU 
     - ID: `image_probe`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/image_probe.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/image_probe.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=image_probe"><code>examples/webgpu/live.html?id=image_probe</code></a>

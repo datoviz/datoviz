@@ -39,7 +39,6 @@ _Screenshot not required for this example._
     - ID: `feature_gui_viewport`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/gui_viewport.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_viewport.c)
     - Browser support: Native only
     - Browser note: dockable GUI viewports require native ImGui and an offscreen native source view

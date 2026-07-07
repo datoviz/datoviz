@@ -37,7 +37,6 @@ No external data is needed; the example generates its data.
     - ID: `composite_graph`
     - Category: `composite`
     - Lane: `composites`
-    - Status: `supported`
     - Source: [`examples/c/composites/graph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/graph.c)
     - Browser support: Planned
     - Browser capability tags: `composite`, `marker`, `bezier-edges`, `path`, `panzoom`

@@ -41,7 +41,6 @@ _Screenshot not required for this example._
     - ID: `feature_app_glfw`
     - Category: `runtime`
     - Lane: `runtime`
-    - Status: `supported`
     - Source: [`examples/c/runtime/app_glfw.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/app_glfw.c)
     - Browser support: Native only
     - Browser note: direct GLFW app lifecycle is native-only

@@ -47,7 +47,6 @@ The browser preview uses `examples/webgpu/live.html?id=feature_update_visual_dat
     - ID: `feature_update_visual_data`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/update_visual_data.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_visual_data.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_update_visual_data"><code>examples/webgpu/live.html?id=feature_update_visual_data</code></a>

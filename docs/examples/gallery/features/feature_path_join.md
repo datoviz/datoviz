@@ -35,7 +35,6 @@ No external data is needed; the example generates its data.
     - ID: `feature_path_join`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/path_join.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/path_join.c)
     - Browser support: Planned
     - Browser capability tags: `path`

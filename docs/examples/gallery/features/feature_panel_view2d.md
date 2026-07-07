@@ -35,7 +35,6 @@ No external data is needed; the example generates its data.
     - ID: `feature_panel_view2d`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/panel_view2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_view2d.c)
     - Browser support: Planned
     - Browser capability tags: `panel-view`, `panzoom`, `point`

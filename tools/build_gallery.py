@@ -23,6 +23,7 @@ DEFAULT_IMAGE_FORMAT = "webp"
 SOURCE_BASE_URL = "https://github.com/datoviz/datoviz/blob/v0.4-dev"
 PUBLIC_LANES = ("start", "visuals", "features", "runtime", "composites", "showcases", "advanced")
 STATUS_ORDER = ("supported", "experimental", "prototype", "advanced/unstable", "deferred")
+DEFAULT_STATUS = "supported"
 PYTHON_SOURCE_BY_ID = {}
 
 # Semantic ordering for the examples index page.
@@ -802,9 +803,10 @@ def render_example_details(example: Example, page_path: str | Path) -> list[str]
         f"- ID: `{example.id}`",
         f"- Category: `{example.category}`",
         f"- Lane: `{example.lane}`",
-        f"- Status: `{example.status}`",
         f"- Source: [`{example.source}`]({source_url(example)})",
     ]
+    if example.status != DEFAULT_STATUS:
+        metadata.insert(3, f"- Status: `{example.status}`")
     visual_reference = VISUAL_REFERENCE_BY_ID.get(example.id)
     if visual_reference is not None:
         metadata.append(
@@ -857,7 +859,8 @@ def render_card(
         if len(example.tags) > 5:
             tags += ", ..."
         tag_line = f"<br><span>{tags}</span>" if tags else ""
-    meta_line = f"`{example.status}` `{example.lane}`{tag_line}" if show_status else tag_line
+    status = f"`{example.status}` " if show_status and example.status != DEFAULT_STATUS else ""
+    meta_line = f"{status}`{example.lane}`{tag_line}" if show_status else tag_line
     meta_block = f"\n{meta_line}\n" if meta_line else ""
     return f"""\
 <div class="card" markdown="1">

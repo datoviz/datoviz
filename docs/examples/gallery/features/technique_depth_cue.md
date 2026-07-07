@@ -35,7 +35,6 @@ No external data is needed; the example generates its data.
     - ID: `technique_depth_cue`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/technique_depth_cue.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_depth_cue.c)
     - Browser support: Deferred
     - Browser capability tags: `depth-cue`

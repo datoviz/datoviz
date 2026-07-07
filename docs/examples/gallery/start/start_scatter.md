@@ -35,7 +35,6 @@ No external data is needed; the example generates its data.
     - ID: `start_scatter`
     - Category: `start`
     - Lane: `start`
-    - Status: `supported`
     - Source: [`examples/c/start/scatter.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/start/scatter.c)
     - Browser support: Deferred
 

@@ -37,7 +37,6 @@ Try the interaction in the preview and compare it with the `reference grid` sour
     - ID: `feature_reference_grid`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/reference_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/reference_grid.c)
     - Browser support: Planned
     - Browser capability tags: `reference-grid`, `segment`, `controller`

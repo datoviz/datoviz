@@ -53,7 +53,6 @@ The browser preview uses `examples/webgpu/live.html?id=linked_panels_axes_panzoo
     - ID: `linked_panels_axes_panzoom`
     - Category: `showcase`
     - Lane: `showcases`
-    - Status: `supported`
     - Source: [`examples/c/showcases/panel_linked_axes.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/panel_linked_axes.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=linked_panels_axes_panzoom"><code>examples/webgpu/live.html?id=linked_panels_axes_panzoom</code></a>

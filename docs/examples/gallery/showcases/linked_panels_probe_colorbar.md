@@ -53,7 +53,6 @@ The browser preview uses `examples/webgpu/live.html?id=linked_panels_probe_color
     - ID: `linked_panels_probe_colorbar`
     - Category: `showcase`
     - Lane: `showcases`
-    - Status: `supported`
     - Source: [`examples/c/showcases/linked_probe_colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=linked_panels_probe_colorbar"><code>examples/webgpu/live.html?id=linked_panels_probe_colorbar</code></a>

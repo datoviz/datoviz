@@ -35,7 +35,6 @@ No external data is needed; the example generates its data.
     - ID: `technique_transparency`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/technique_transparency.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_transparency.c)
     - Browser support: Deferred
     - Browser capability tags: `wboit`, `depth-peeling`

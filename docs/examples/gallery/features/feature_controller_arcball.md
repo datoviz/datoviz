@@ -37,7 +37,6 @@ Try the interaction in the preview and compare it with the `controller arcball` 
     - ID: `feature_controller_arcball`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/controller_arcball.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_arcball.c)
     - Browser support: Planned
     - Browser capability tags: `controller`, `arcball`, `mesh`

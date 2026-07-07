@@ -49,7 +49,6 @@ The browser preview uses `examples/webgpu/live.html?id=feature_animation_tracks`
     - ID: `feature_animation_tracks`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/animation_tracks.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/animation_tracks.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_animation_tracks"><code>examples/webgpu/live.html?id=feature_animation_tracks</code></a>

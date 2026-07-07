@@ -49,7 +49,6 @@ The browser preview uses `examples/webgpu/live.html?id=feature_panel_linked` whe
     - ID: `feature_panel_linked`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/panel_linked.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_linked.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panel_linked"><code>examples/webgpu/live.html?id=feature_panel_linked</code></a>

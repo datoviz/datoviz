@@ -18,7 +18,7 @@ Each card links to a detail page with preview media, source code, and example me
 
 _Screenshot not required for this example._
 
-`supported` `runtime`
+`runtime`
 
 This example opens a native GLFW window for a small point scene.
 
@@ -30,7 +30,7 @@ This example opens a native GLFW window for a small point scene.
 
 _Screenshot not required for this example._
 
-`supported` `runtime`
+`runtime`
 
 This example drives two independent native GLFW windows from one Datoviz app.
 
@@ -48,7 +48,7 @@ This example drives two independent native GLFW windows from one Datoviz app.
 
 [![Offscreen Capture](../assets/gallery/v0.4/runtime/feature_offscreen_capture.webp)](gallery/runtime/feature_offscreen_capture.md)
 
-`supported` `runtime`
+`runtime`
 
 This example renders a point scene offscreen and writes one PNG.
 

@@ -47,7 +47,6 @@ The browser preview uses `examples/webgpu/live.html?id=feature_guide_spans` when
     - ID: `feature_guide_spans`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/guide_spans.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/guide_spans.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_guide_spans"><code>examples/webgpu/live.html?id=feature_guide_spans</code></a>

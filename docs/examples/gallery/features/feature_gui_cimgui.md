@@ -39,7 +39,6 @@ _Screenshot not required for this example._
     - ID: `feature_gui_cimgui`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/gui_cimgui.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_cimgui.c)
     - Browser support: Native only
     - Browser note: raw cimgui access requires the native ImGui app path

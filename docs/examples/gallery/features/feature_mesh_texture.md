@@ -37,7 +37,6 @@ Try the interaction in the preview and compare it with the `mesh texture` source
     - ID: `feature_mesh_texture`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/mesh_texture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/mesh_texture.c)
     - Browser support: Planned
     - Browser capability tags: `mesh`, `sampled-field`, `texture`, `arcball`, `material`

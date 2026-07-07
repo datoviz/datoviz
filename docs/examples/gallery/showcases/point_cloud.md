@@ -60,7 +60,6 @@ License note: Public RESEPI sample data; usage follows the source site's terms
     - ID: `point_cloud`
     - Category: `showcase`
     - Lane: `showcases`
-    - Status: `supported`
     - Source: [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c)
     - Browser support: Deferred
     - Browser note: the public point-cloud showcase depends on large prepared data, native GUI controls, and EDL-style rendering

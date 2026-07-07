@@ -37,7 +37,6 @@ No external data is needed; the example generates its data.
     - ID: `volume`
     - Category: `visual`
     - Lane: `visuals`
-    - Status: `supported`
     - Source: [`examples/c/visuals/volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/volume.c)
     - Reference: [Volume visual family](../../../reference/visual-families/volume.md)
     - Browser support: Planned

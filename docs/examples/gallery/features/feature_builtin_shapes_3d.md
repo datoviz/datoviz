@@ -47,7 +47,6 @@ The browser preview uses `examples/webgpu/live.html?id=feature_builtin_shapes_3d
     - ID: `feature_builtin_shapes_3d`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/builtin_shapes_3d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_3d.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_builtin_shapes_3d"><code>examples/webgpu/live.html?id=feature_builtin_shapes_3d</code></a>

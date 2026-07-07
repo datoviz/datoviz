@@ -47,7 +47,6 @@ The browser preview uses `examples/webgpu/live.html?id=feature_material_mesh` wh
     - ID: `feature_material_mesh`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/material_mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/material_mesh.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_material_mesh"><code>examples/webgpu/live.html?id=feature_material_mesh</code></a>

@@ -47,7 +47,6 @@ The browser preview uses `examples/webgpu/live.html?id=feature_isolines` when We
     - ID: `feature_isolines`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/isolines.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/isolines.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_isolines"><code>examples/webgpu/live.html?id=feature_isolines</code></a>

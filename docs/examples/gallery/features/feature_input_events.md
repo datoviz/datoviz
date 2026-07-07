@@ -39,7 +39,6 @@ _Screenshot not required for this example._
     - ID: `feature_input_events`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/input_events.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/input_events.c)
     - Browser support: Native only
     - Browser note: demonstrates native hosted event injection APIs

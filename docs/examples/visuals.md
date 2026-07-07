@@ -18,7 +18,7 @@ Each card links to a detail page with preview media, source code, and example me
 
 [![Point](../assets/gallery/v0.4/visuals/point_2d.webp)](gallery/visuals/point_2d.md)
 
-`supported` `visuals`<br><span>`point`, `panzoom`, `capture`</span>
+`visuals`<br><span>`point`, `panzoom`, `capture`</span>
 
 This example renders a 2D scatter plot with per-point color and diameter.
 
@@ -30,7 +30,7 @@ This example renders a 2D scatter plot with per-point color and diameter.
 
 [![Pixel](../assets/gallery/v0.4/visuals/visual_pixel.webp)](gallery/visuals/visual_pixel.md)
 
-`supported` `visuals`<br><span>`pixel`, `panzoom`, `capture`</span>
+`visuals`<br><span>`pixel`, `panzoom`, `capture`</span>
 
 This example renders a regular grid of independent screen-aligned pixels.
 
@@ -42,7 +42,7 @@ This example renders a regular grid of independent screen-aligned pixels.
 
 [![Marker](../assets/gallery/v0.4/visuals/visual_marker.webp)](gallery/visuals/visual_marker.md)
 
-`supported` `visuals`<br><span>`marker`, `panzoom`, `capture`</span>
+`visuals`<br><span>`marker`, `panzoom`, `capture`</span>
 
 This example compares marker symbols, sizes, strokes, fills, and rotations.
 
@@ -72,7 +72,7 @@ This experimental example renders Gaussian splats as translucent ellipses.
 
 [![Segment](../assets/gallery/v0.4/visuals/visual_segment.webp)](gallery/visuals/visual_segment.md)
 
-`supported` `visuals`<br><span>`segment`, `panzoom`, `capture`</span>
+`visuals`<br><span>`segment`, `panzoom`, `capture`</span>
 
 This example draws independent line segments with different cap styles.
 
@@ -84,7 +84,7 @@ This example draws independent line segments with different cap styles.
 
 [![Path](../assets/gallery/v0.4/visuals/visual_path.webp)](gallery/visuals/visual_path.md)
 
-`supported` `visuals`<br><span>`path`, `capture`</span>
+`visuals`<br><span>`path`, `capture`</span>
 
 This example draws several continuous signals with one path visual.
 
@@ -96,7 +96,7 @@ This example draws several continuous signals with one path visual.
 
 [![Vector](../assets/gallery/v0.4/visuals/visual_vector.webp)](gallery/visuals/visual_vector.md)
 
-`supported` `visuals`<br><span>`vector`, `path`, `panzoom`, `capture`</span>
+`visuals`<br><span>`vector`, `path`, `panzoom`, `capture`</span>
 
 This example compares straight vector arrows with curved vector paths.
 
@@ -108,7 +108,7 @@ This example compares straight vector arrows with curved vector paths.
 
 [![Primitive](../assets/gallery/v0.4/visuals/visual_primitive.webp)](gallery/visuals/visual_primitive.md)
 
-`supported` `visuals`<br><span>`primitive`, `capture`</span>
+`visuals`<br><span>`primitive`, `capture`</span>
 
 This example compares basic primitive topologies.
 
@@ -126,7 +126,7 @@ This example compares basic primitive topologies.
 
 [![Image](../assets/gallery/v0.4/visuals/visual_image.webp)](gallery/visuals/visual_image.md)
 
-`supported` `visuals`<br><span>`image`, `sampled-field`, `capture`</span>
+`visuals`<br><span>`image`, `sampled-field`, `capture`</span>
 
 This example displays a generated scalar field as a 2D image.
 
@@ -138,7 +138,7 @@ This example displays a generated scalar field as a 2D image.
 
 [![Text](../assets/gallery/v0.4/visuals/visual_text.webp)](gallery/visuals/visual_text.md)
 
-`supported` `visuals`<br><span>`text`, `capture`</span>
+`visuals`<br><span>`text`, `capture`</span>
 
 This example places semantic text items in panel coordinates.
 
@@ -162,7 +162,7 @@ This example renders text by submitting low-level glyph atlas quads directly.
 
 [![Labels](../assets/gallery/v0.4/visuals/visual_labels.webp)](gallery/visuals/visual_labels.md)
 
-`supported` `visuals`<br><span>`labels`, `categorical-scale`, `panzoom`, `capture`</span>
+`visuals`<br><span>`labels`, `categorical-scale`, `panzoom`, `capture`</span>
 
 This example turns an integer sampled field into categorical image labels.
 
@@ -180,7 +180,7 @@ This example turns an integer sampled field into categorical image labels.
 
 [![Mesh](../assets/gallery/v0.4/visuals/visual_mesh.webp)](gallery/visuals/visual_mesh.md)
 
-`supported` `visuals`<br><span>`mesh`, `indexed-geometry`, `arcball`, `capture`</span>
+`visuals`<br><span>`mesh`, `indexed-geometry`, `arcball`, `capture`</span>
 
 This example renders a lit indexed cube mesh in a 3D scene.
 
@@ -192,7 +192,7 @@ This example renders a lit indexed cube mesh in a 3D scene.
 
 [![Sphere](../assets/gallery/v0.4/visuals/sphere_impostor.webp)](gallery/visuals/sphere_impostor.md)
 
-`supported` `visuals`<br><span>`sphere`, `arcball`, `capture`</span>
+`visuals`<br><span>`sphere`, `arcball`, `capture`</span>
 
 This example displays a 3D cluster of raycast impostor spheres.
 
@@ -204,7 +204,7 @@ This example displays a 3D cluster of raycast impostor spheres.
 
 [![Volume](../assets/gallery/v0.4/visuals/volume.webp)](gallery/visuals/volume.md)
 
-`supported` `visuals`<br><span>`sampled-field`, `volume`, `transfer-function`, `boundary-box`, `arcball`, ...</span>
+`visuals`<br><span>`sampled-field`, `volume`, `transfer-function`, `boundary-box`, `arcball`, ...</span>
 
 This example volume-renders a generated 3D gyroid scalar field.
 
@@ -222,7 +222,7 @@ This example volume-renders a generated 3D gyroid scalar field.
 
 [![Polygon Composite](../assets/gallery/v0.4/composites/composite_polygon.webp)](gallery/composites/composite_polygon.md)
 
-`supported` `composites`<br><span>`composite`, `polygon`, `polygon-set`, `holes`, `panzoom`</span>
+`composites`<br><span>`composite`, `polygon`, `polygon-set`, `holes`, `panzoom`</span>
 
 This example compares one holed polygon with a multi-region polygon set.
 
@@ -234,7 +234,7 @@ This example compares one holed polygon with a multi-region polygon set.
 
 [![Graph Composite](../assets/gallery/v0.4/composites/composite_graph.webp)](gallery/composites/composite_graph.md)
 
-`supported` `composites`<br><span>`composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom`</span>
+`composites`<br><span>`composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom`</span>
 
 This example builds a small brain-connectivity graph composite.
 

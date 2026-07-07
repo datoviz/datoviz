@@ -37,7 +37,6 @@ Try the interaction in the preview and compare it with the `camera manual` sourc
     - ID: `feature_camera_manual`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/camera_manual.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/camera_manual.c)
     - Browser support: Planned
     - Browser capability tags: `camera`, `mesh`, `controller`, `arcball`

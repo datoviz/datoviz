@@ -32,7 +32,7 @@ This example renders a prepared Allen mouse brain volume with a visible slice.
 
 [![Protein](../assets/gallery/v0.4/showcases/protein_arcball_viewer.webp)](gallery/showcases/protein_arcball_viewer.md)
 
-`supported` `showcases`
+`showcases`
 
 This example renders a prepared PDB structure as colored sphere impostors.
 
@@ -44,7 +44,7 @@ This example renders a prepared PDB structure as colored sphere impostors.
 
 [![Point Cloud](../assets/gallery/v0.4/showcases/point_cloud.webp)](gallery/showcases/point_cloud.md)
 
-`supported` `showcases`
+`showcases`
 
 This example renders a prepared RGB LiDAR point cloud with direct colors.
 
@@ -56,7 +56,7 @@ This example renders a prepared RGB LiDAR point cloud with direct colors.
 
 [![Surface Grid](../assets/gallery/v0.4/showcases/showcase_surface_grid.webp)](gallery/showcases/showcase_surface_grid.md)
 
-`supported` `showcases`
+`showcases`
 
 This example turns a generated height field into a lit mesh and wireframe.
 
@@ -68,7 +68,7 @@ This example turns a generated height field into a lit mesh and wireframe.
 
 [![Textured Planets](../assets/gallery/v0.4/showcases/textured_terrain_or_planet.webp)](gallery/showcases/textured_terrain_or_planet.md)
 
-`supported` `showcases`
+`showcases`
 
 This example maps real planetary textures onto an indexed sphere mesh.
 
@@ -80,7 +80,7 @@ This example maps real planetary textures onto an indexed sphere mesh.
 
 [![Wind Field](../assets/gallery/v0.4/showcases/showcase_wind_field.webp)](gallery/showcases/showcase_wind_field.md)
 
-`supported` `showcases`
+`showcases`
 
 This example combines a synthetic wind-speed field with vectors and streamlines.
 
@@ -104,7 +104,7 @@ This example uses scene compute buffers to animate particle smoke.
 
 [![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/scientific_plotting_workflow.webp)](gallery/showcases/scientific_plotting_workflow.md)
 
-`supported` `showcases`
+`showcases`
 
 This example composes common scientific plot elements in one figure.
 
@@ -116,7 +116,7 @@ This example composes common scientific plot elements in one figure.
 
 [![Scale Bar Measurement Workflow](../assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp)](gallery/showcases/scalebar_measurement_workflow.md)
 
-`supported` `showcases`
+`showcases`
 
 This example compares scale bars across overview, detail, and 3D views.
 
@@ -128,7 +128,7 @@ This example compares scale bars across overview, detail, and 3D views.
 
 _Screenshot not required for this example._
 
-`supported` `showcases`
+`showcases`
 
 This example builds linked time-series panels with shared axes behavior.
 
@@ -140,7 +140,7 @@ This example builds linked time-series panels with shared axes behavior.
 
 [![Linked Probe With Colorbar](../assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp)](gallery/showcases/linked_panels_probe_colorbar.md)
 
-`supported` `showcases`
+`showcases`
 
 This example links two image panels with a probe readout and colorbar.
 
@@ -152,7 +152,7 @@ This example links two image panels with a probe readout and colorbar.
 
 [![U.S. State Choropleth](../assets/gallery/v0.4/showcases/us_state_choropleth.webp)](gallery/showcases/us_state_choropleth.md)
 
-`supported` `showcases`
+`showcases`
 
 This example renders contiguous U.S. population density as polygon-set data.
 
@@ -176,7 +176,7 @@ Selected visual and composite examples are shown below.
 
 [![Point](../assets/gallery/v0.4/visuals/point_2d.webp)](gallery/visuals/point_2d.md)
 
-`supported` `visuals`
+`visuals`
 
 This example renders a 2D scatter plot with per-point color and diameter.
 
@@ -188,7 +188,7 @@ This example renders a 2D scatter plot with per-point color and diameter.
 
 [![Pixel](../assets/gallery/v0.4/visuals/visual_pixel.webp)](gallery/visuals/visual_pixel.md)
 
-`supported` `visuals`
+`visuals`
 
 This example renders a regular grid of independent screen-aligned pixels.
 
@@ -200,7 +200,7 @@ This example renders a regular grid of independent screen-aligned pixels.
 
 [![Marker](../assets/gallery/v0.4/visuals/visual_marker.webp)](gallery/visuals/visual_marker.md)
 
-`supported` `visuals`
+`visuals`
 
 This example compares marker symbols, sizes, strokes, fills, and rotations.
 
@@ -230,7 +230,7 @@ This experimental example renders Gaussian splats as translucent ellipses.
 
 [![Segment](../assets/gallery/v0.4/visuals/visual_segment.webp)](gallery/visuals/visual_segment.md)
 
-`supported` `visuals`
+`visuals`
 
 This example draws independent line segments with different cap styles.
 
@@ -242,7 +242,7 @@ This example draws independent line segments with different cap styles.
 
 [![Path](../assets/gallery/v0.4/visuals/visual_path.webp)](gallery/visuals/visual_path.md)
 
-`supported` `visuals`
+`visuals`
 
 This example draws several continuous signals with one path visual.
 
@@ -254,7 +254,7 @@ This example draws several continuous signals with one path visual.
 
 [![Vector](../assets/gallery/v0.4/visuals/visual_vector.webp)](gallery/visuals/visual_vector.md)
 
-`supported` `visuals`
+`visuals`
 
 This example compares straight vector arrows with curved vector paths.
 
@@ -266,7 +266,7 @@ This example compares straight vector arrows with curved vector paths.
 
 [![Primitive](../assets/gallery/v0.4/visuals/visual_primitive.webp)](gallery/visuals/visual_primitive.md)
 
-`supported` `visuals`
+`visuals`
 
 This example compares basic primitive topologies.
 
@@ -284,7 +284,7 @@ This example compares basic primitive topologies.
 
 [![Image](../assets/gallery/v0.4/visuals/visual_image.webp)](gallery/visuals/visual_image.md)
 
-`supported` `visuals`
+`visuals`
 
 This example displays a generated scalar field as a 2D image.
 
@@ -296,7 +296,7 @@ This example displays a generated scalar field as a 2D image.
 
 [![Text](../assets/gallery/v0.4/visuals/visual_text.webp)](gallery/visuals/visual_text.md)
 
-`supported` `visuals`
+`visuals`
 
 This example places semantic text items in panel coordinates.
 
@@ -320,7 +320,7 @@ This example renders text by submitting low-level glyph atlas quads directly.
 
 [![Labels](../assets/gallery/v0.4/visuals/visual_labels.webp)](gallery/visuals/visual_labels.md)
 
-`supported` `visuals`
+`visuals`
 
 This example turns an integer sampled field into categorical image labels.
 
@@ -338,7 +338,7 @@ This example turns an integer sampled field into categorical image labels.
 
 [![Mesh](../assets/gallery/v0.4/visuals/visual_mesh.webp)](gallery/visuals/visual_mesh.md)
 
-`supported` `visuals`
+`visuals`
 
 This example renders a lit indexed cube mesh in a 3D scene.
 
@@ -350,7 +350,7 @@ This example renders a lit indexed cube mesh in a 3D scene.
 
 [![Sphere](../assets/gallery/v0.4/visuals/sphere_impostor.webp)](gallery/visuals/sphere_impostor.md)
 
-`supported` `visuals`
+`visuals`
 
 This example displays a 3D cluster of raycast impostor spheres.
 
@@ -362,7 +362,7 @@ This example displays a 3D cluster of raycast impostor spheres.
 
 [![Volume](../assets/gallery/v0.4/visuals/volume.webp)](gallery/visuals/volume.md)
 
-`supported` `visuals`
+`visuals`
 
 This example volume-renders a generated 3D gyroid scalar field.
 
@@ -380,7 +380,7 @@ This example volume-renders a generated 3D gyroid scalar field.
 
 [![Polygon Composite](../assets/gallery/v0.4/composites/composite_polygon.webp)](gallery/composites/composite_polygon.md)
 
-`supported` `composites`
+`composites`
 
 This example compares one holed polygon with a multi-region polygon set.
 
@@ -392,7 +392,7 @@ This example compares one holed polygon with a multi-region polygon set.
 
 [![Graph Composite](../assets/gallery/v0.4/composites/composite_graph.webp)](gallery/composites/composite_graph.md)
 
-`supported` `composites`
+`composites`
 
 This example builds a small brain-connectivity graph composite.
 
@@ -416,7 +416,7 @@ Selected isolated feature examples are shown below.
 
 [![Panel Grid](../assets/gallery/v0.4/features/feature_panel_grid.webp)](gallery/features/feature_panel_grid.md)
 
-`supported` `features`
+`features`
 
 Panel_grid arranges four independent panels in a 2x2 figure grid.
 
@@ -428,7 +428,7 @@ Panel_grid arranges four independent panels in a 2x2 figure grid.
 
 [![Multiple Panels](../assets/gallery/v0.4/features/feature_panel_multi.webp)](gallery/features/feature_panel_multi.md)
 
-`supported` `features`
+`features`
 
 Panel_multi shows two panels with independent data, domains, and panzoom state.
 
@@ -440,7 +440,7 @@ Panel_multi shows two panels with independent data, domains, and panzoom state.
 
 [![Linked Panels](../assets/gallery/v0.4/features/feature_panel_linked.webp)](gallery/features/feature_panel_linked.md)
 
-`supported` `features`
+`features`
 
 Panel_linked links the X panzoom extent of two stacked signal panels.
 
@@ -458,7 +458,7 @@ Panel_linked links the X panzoom extent of two stacked signal panels.
 
 [![Axis Labels](../assets/gallery/v0.4/features/feature_axis_labels.webp)](gallery/features/feature_axis_labels.md)
 
-`supported` `features`
+`features`
 
 This example shows axis titles and tick-label layout around a plotting panel.
 
@@ -470,7 +470,7 @@ This example shows axis titles and tick-label layout around a plotting panel.
 
 [![Colorbar](../assets/gallery/v0.4/features/colorbar.webp)](gallery/features/colorbar.md)
 
-`supported` `features`
+`features`
 
 This example shows a scalar image and a continuous colorbar.
 
@@ -482,7 +482,7 @@ This example shows a scalar image and a continuous colorbar.
 
 [![Scale Bar](../assets/gallery/v0.4/features/scale_bar.webp)](gallery/features/scale_bar.md)
 
-`supported` `features`
+`features`
 
 Scalebar attaches a metric length scale bar to a 2D panel.
 
@@ -494,7 +494,7 @@ Scalebar attaches a metric length scale bar to a 2D panel.
 
 [![Scalar Color Scale](../assets/gallery/v0.4/features/colormap_scale.webp)](gallery/features/colormap_scale.md)
 
-`supported` `features`
+`features`
 
 This example shows scalar point values mapped through a custom colormap.
 
@@ -512,7 +512,7 @@ This example shows scalar point values mapped through a custom colormap.
 
 [![Arcball Controller](../assets/gallery/v0.4/features/feature_controller_arcball.webp)](gallery/features/feature_controller_arcball.md)
 
-`supported` `features`
+`features`
 
 This example shows an arcball controller rotating a 3D view.
 
@@ -524,7 +524,7 @@ This example shows an arcball controller rotating a 3D view.
 
 [![Fly Controller](../assets/gallery/v0.4/features/feature_controller_fly.webp)](gallery/features/feature_controller_fly.md)
 
-`supported` `features`
+`features`
 
 This example shows fly-style camera navigation through a 3D scene.
 
@@ -536,7 +536,7 @@ This example shows fly-style camera navigation through a 3D scene.
 
 [![Turntable Controller](../assets/gallery/v0.4/features/feature_controller_turntable.webp)](gallery/features/feature_controller_turntable.md)
 
-`supported` `features`
+`features`
 
 This example shows world-up orbiting with a turntable controller.
 
@@ -554,7 +554,7 @@ This example shows world-up orbiting with a turntable controller.
 
 [![Sampled Field Update](../assets/gallery/v0.4/features/feature_sampled_field_update.webp)](gallery/features/feature_sampled_field_update.md)
 
-`supported` `features`
+`features`
 
 Sampled_field_update reuses one sampled scalar field in two image visuals while updating patches.
 
@@ -566,7 +566,7 @@ Sampled_field_update reuses one sampled scalar field in two image visuals while 
 
 [![Isolines](../assets/gallery/v0.4/features/feature_isolines.webp)](gallery/features/feature_isolines.md)
 
-`supported` `features`
+`features`
 
 This example shows contour isolines over a scalar field.
 
@@ -578,7 +578,7 @@ This example shows contour isolines over a scalar field.
 
 [![Marker Symbols](../assets/gallery/v0.4/features/feature_marker_symbols.webp)](gallery/features/feature_marker_symbols.md)
 
-`supported` `features`
+`features`
 
 Marker_symbols compares several ways to define marker glyphs in one symbol set.
 
@@ -596,7 +596,7 @@ Marker_symbols compares several ways to define marker glyphs in one symbol set.
 
 [![Lighting](../assets/gallery/v0.4/features/feature_lighting.webp)](gallery/features/feature_lighting.md)
 
-`supported` `features`
+`features`
 
 Lighting compares the same sphere cluster under three material and light configurations.
 
@@ -608,7 +608,7 @@ Lighting compares the same sphere cluster under three material and light configu
 
 [![Textured Mesh](../assets/gallery/v0.4/features/feature_mesh_texture.webp)](gallery/features/feature_mesh_texture.md)
 
-`supported` `features`
+`features`
 
 Mesh_texture maps a scene-owned RGBA8 sampled field onto a UV sphere mesh.
 
@@ -620,7 +620,7 @@ Mesh_texture maps a scene-owned RGBA8 sampled field onto a UV sphere mesh.
 
 [![Screen-Space Ambient Occlusion](../assets/gallery/v0.4/features/technique_ssao.webp)](gallery/features/technique_ssao.md)
 
-`supported` `features`
+`features`
 
 Ssao compares a sphere cluster with and without screen-space ambient occlusion.
 
@@ -632,7 +632,7 @@ Ssao compares a sphere cluster with and without screen-space ambient occlusion.
 
 [![Depth Cue](../assets/gallery/v0.4/features/technique_depth_cue.webp)](gallery/features/technique_depth_cue.md)
 
-`supported` `features`
+`features`
 
 Depth_cue compares a plain 3D sphere lattice with depth-dependent fading.
 
@@ -650,7 +650,7 @@ Depth_cue compares a plain 3D sphere lattice with depth-dependent fading.
 
 [![Animation Tracks](../assets/gallery/v0.4/features/feature_animation_tracks.webp)](gallery/features/feature_animation_tracks.md)
 
-`supported` `features`
+`features`
 
 This example shows scene animation tracks driving a cube and camera.
 
@@ -662,7 +662,7 @@ This example shows scene animation tracks driving a cube and camera.
 
 [![Timer Animation](../assets/gallery/v0.4/features/feature_timer_animation.webp)](gallery/features/feature_timer_animation.md)
 
-`supported` `features`
+`features`
 
 Timer_animation updates point attributes every frame from scenario time.
 
@@ -674,7 +674,7 @@ Timer_animation updates point attributes every frame from scenario time.
 
 [![Image Probe](../assets/gallery/v0.4/features/image_probe.webp)](gallery/features/image_probe.md)
 
-`supported` `features`
+`features`
 
 This example shows probing a scalar image at a marked data position.
 
@@ -686,7 +686,7 @@ This example shows probing a scalar image at a marked data position.
 
 [![Sphere Selection](../assets/gallery/v0.4/features/feature_selection_sphere.webp)](gallery/features/feature_selection_sphere.md)
 
-`supported` `features`
+`features`
 
 Selection_sphere queries and selects individual raycast spheres in a 3D cluster.
 
@@ -710,7 +710,7 @@ Selected windowing, capture, recording, and export examples are shown below.
 
 _Screenshot not required for this example._
 
-`supported` `runtime`
+`runtime`
 
 This example opens a native GLFW window for a small point scene.
 
@@ -722,7 +722,7 @@ This example opens a native GLFW window for a small point scene.
 
 _Screenshot not required for this example._
 
-`supported` `runtime`
+`runtime`
 
 This example drives two independent native GLFW windows from one Datoviz app.
 
@@ -740,7 +740,7 @@ This example drives two independent native GLFW windows from one Datoviz app.
 
 [![Offscreen Capture](../assets/gallery/v0.4/runtime/feature_offscreen_capture.webp)](gallery/runtime/feature_offscreen_capture.md)
 
-`supported` `runtime`
+`runtime`
 
 This example renders a point scene offscreen and writes one PNG.
 

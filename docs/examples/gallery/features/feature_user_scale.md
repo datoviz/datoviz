@@ -39,7 +39,6 @@ Browser support note: the user-scale control is a native ImGui slider on a Datov
     - ID: `feature_user_scale`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/user_scale.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/user_scale.c)
     - Browser support: Native only
     - Browser note: the user-scale control is a native ImGui slider on a Datoviz app view

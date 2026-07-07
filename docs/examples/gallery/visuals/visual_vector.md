@@ -49,7 +49,6 @@ The browser preview uses `examples/webgpu/live.html?id=visual_vector` when WebGP
     - ID: `visual_vector`
     - Category: `visual`
     - Lane: `visuals`
-    - Status: `supported`
     - Source: [`examples/c/visuals/vector.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/vector.c)
     - Reference: [Vector visual family](../../../reference/visual-families/vector.md)
     - Browser support: Live in browser

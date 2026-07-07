@@ -41,7 +41,6 @@ _Screenshot not required for this example._
     - ID: `feature_multi_window`
     - Category: `runtime`
     - Lane: `runtime`
-    - Status: `supported`
     - Source: [`examples/c/runtime/multi_window.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/multi_window.c)
     - Browser support: Native only
     - Browser note: multiple native GLFW windows are native-only

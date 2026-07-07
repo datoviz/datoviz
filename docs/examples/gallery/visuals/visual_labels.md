@@ -49,7 +49,6 @@ The browser preview uses `examples/webgpu/live.html?id=visual_labels` when WebGP
     - ID: `visual_labels`
     - Category: `visual`
     - Lane: `visuals`
-    - Status: `supported`
     - Source: [`examples/c/visuals/labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/labels.c)
     - Reference: [Labels visual family](../../../reference/visual-families/labels.md)
     - Browser support: Live in browser

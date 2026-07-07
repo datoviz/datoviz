@@ -39,7 +39,6 @@ Browser support note: writes a native offscreen PNG through the app capture path
     - ID: `feature_offscreen_capture`
     - Category: `runtime`
     - Lane: `runtime`
-    - Status: `supported`
     - Source: [`examples/c/runtime/offscreen_capture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/offscreen_capture.c)
     - Browser support: Native only
     - Browser note: writes a native offscreen PNG through the app capture path

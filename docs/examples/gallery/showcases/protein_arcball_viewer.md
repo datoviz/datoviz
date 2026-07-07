@@ -73,7 +73,6 @@ License note: PDB archive coordinate files are available under CC0 1.0; attribut
     - ID: `protein_arcball_viewer`
     - Category: `showcase`
     - Lane: `showcases`
-    - Status: `supported`
     - Source: [`examples/c/showcases/protein.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/protein.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=protein_arcball_viewer"><code>examples/webgpu/live.html?id=protein_arcball_viewer</code></a>

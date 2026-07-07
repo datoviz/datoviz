@@ -35,7 +35,6 @@ No external data is needed; the example generates its data.
     - ID: `feature_coordinate_system`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/coordinate_system.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/coordinate_system.c)
     - Browser support: Planned
     - Browser capability tags: `mesh`, `reference-grid`, `text`, `controller`

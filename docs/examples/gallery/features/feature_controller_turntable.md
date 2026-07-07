@@ -49,7 +49,6 @@ The browser preview uses `examples/webgpu/live.html?id=feature_controller_turnta
     - ID: `feature_controller_turntable`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/controller_turntable.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_turntable.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_controller_turntable"><code>examples/webgpu/live.html?id=feature_controller_turntable</code></a>

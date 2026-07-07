@@ -39,7 +39,6 @@ _Screenshot not required for this example._
     - ID: `feature_gui_controls`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/gui_controls.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_controls.c)
     - Browser support: Native only
     - Browser note: Datoviz GUI controls require the native ImGui/GLFW app path

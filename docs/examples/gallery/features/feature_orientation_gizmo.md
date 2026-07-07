@@ -37,7 +37,6 @@ Try the interaction in the preview and compare it with the `orientation gizmo` s
     - ID: `feature_orientation_gizmo`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/orientation_gizmo.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/orientation_gizmo.c)
     - Browser support: Planned
     - Browser capability tags: `orientation-gizmo`, `overlay`, `mesh`, `controller`

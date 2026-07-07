@@ -47,7 +47,6 @@ The browser preview uses `examples/webgpu/live.html?id=feature_obj_loading` when
     - ID: `feature_obj_loading`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/obj_loading.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/obj_loading.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_obj_loading"><code>examples/webgpu/live.html?id=feature_obj_loading</code></a>

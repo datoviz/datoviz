@@ -42,7 +42,7 @@ This example uses scene compute buffers to animate particle smoke.
 
 _Screenshot not required for this example._
 
-`supported` `showcases`<br><span>`workflow`, `linked-panels`, `axes`, `panzoom`, `synthetic`</span>
+`showcases`<br><span>`workflow`, `linked-panels`, `axes`, `panzoom`, `synthetic`</span>
 
 This example builds linked time-series panels with shared axes behavior.
 
@@ -54,7 +54,7 @@ This example builds linked time-series panels with shared axes behavior.
 
 [![Linked Probe With Colorbar](../assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp)](gallery/showcases/linked_panels_probe_colorbar.md)
 
-`supported` `showcases`<br><span>`workflow`, `image`, `sampled-field`, `pixel-query`, `linked-panzoom`, ...</span>
+`showcases`<br><span>`workflow`, `image`, `sampled-field`, `pixel-query`, `linked-panzoom`, ...</span>
 
 This example links two image panels with a probe readout and colorbar.
 
@@ -66,7 +66,7 @@ This example links two image panels with a probe readout and colorbar.
 
 [![Point Cloud](../assets/gallery/v0.4/showcases/point_cloud.webp)](gallery/showcases/point_cloud.md)
 
-`supported` `showcases`<br><span>`real-data`, `pixel`, `dense-point-cloud`, `direct-color`, `eye-dome-lighting`, ...</span>
+`showcases`<br><span>`real-data`, `pixel`, `dense-point-cloud`, `direct-color`, `eye-dome-lighting`, ...</span>
 
 This example renders a prepared RGB LiDAR point cloud with direct colors.
 
@@ -78,7 +78,7 @@ This example renders a prepared RGB LiDAR point cloud with direct colors.
 
 [![Protein](../assets/gallery/v0.4/showcases/protein_arcball_viewer.webp)](gallery/showcases/protein_arcball_viewer.md)
 
-`supported` `showcases`<br><span>`scientific`, `real-data`, `molecular`, `sphere`, `arcball`</span>
+`showcases`<br><span>`scientific`, `real-data`, `molecular`, `sphere`, `arcball`</span>
 
 This example renders a prepared PDB structure as colored sphere impostors.
 
@@ -90,7 +90,7 @@ This example renders a prepared PDB structure as colored sphere impostors.
 
 [![Scale Bar Measurement Workflow](../assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp)](gallery/showcases/scalebar_measurement_workflow.md)
 
-`supported` `showcases`<br><span>`workflow`, `scale-bar`, `measurement`, `synthetic`</span>
+`showcases`<br><span>`workflow`, `scale-bar`, `measurement`, `synthetic`</span>
 
 This example compares scale bars across overview, detail, and 3D views.
 
@@ -102,7 +102,7 @@ This example compares scale bars across overview, detail, and 3D views.
 
 [![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/scientific_plotting_workflow.webp)](gallery/showcases/scientific_plotting_workflow.md)
 
-`supported` `showcases`<br><span>`workflow`, `scientific`, `histogram`, `guide-lines`, `guide-spans`, ...</span>
+`showcases`<br><span>`workflow`, `scientific`, `histogram`, `guide-lines`, `guide-spans`, ...</span>
 
 This example composes common scientific plot elements in one figure.
 
@@ -114,7 +114,7 @@ This example composes common scientific plot elements in one figure.
 
 [![Surface Grid](../assets/gallery/v0.4/showcases/showcase_surface_grid.webp)](gallery/showcases/showcase_surface_grid.md)
 
-`supported` `showcases`<br><span>`scientific`, `synthetic`, `surface-grid`, `mesh`, `wireframe`, ...</span>
+`showcases`<br><span>`scientific`, `synthetic`, `surface-grid`, `mesh`, `wireframe`, ...</span>
 
 This example turns a generated height field into a lit mesh and wireframe.
 
@@ -126,7 +126,7 @@ This example turns a generated height field into a lit mesh and wireframe.
 
 [![Textured Planets](../assets/gallery/v0.4/showcases/textured_terrain_or_planet.webp)](gallery/showcases/textured_terrain_or_planet.md)
 
-`supported` `showcases`<br><span>`real-data`, `mesh`, `sampled-field`, `texture`, `arcball`, ...</span>
+`showcases`<br><span>`real-data`, `mesh`, `sampled-field`, `texture`, `arcball`, ...</span>
 
 This example maps real planetary textures onto an indexed sphere mesh.
 
@@ -138,7 +138,7 @@ This example maps real planetary textures onto an indexed sphere mesh.
 
 [![U.S. State Choropleth](../assets/gallery/v0.4/showcases/us_state_choropleth.webp)](gallery/showcases/us_state_choropleth.md)
 
-`supported` `showcases`<br><span>`scientific`, `real-data`, `geo`, `composite`, `polygon-set`, ...</span>
+`showcases`<br><span>`scientific`, `real-data`, `geo`, `composite`, `polygon-set`, ...</span>
 
 This example renders contiguous U.S. population density as polygon-set data.
 
@@ -150,7 +150,7 @@ This example renders contiguous U.S. population density as polygon-set data.
 
 [![Wind Field](../assets/gallery/v0.4/showcases/showcase_wind_field.webp)](gallery/showcases/showcase_wind_field.md)
 
-`supported` `showcases`<br><span>`scientific`, `synthetic`, `scalar-field`, `vector-field`, `wind-field`, ...</span>
+`showcases`<br><span>`scientific`, `synthetic`, `scalar-field`, `vector-field`, `wind-field`, ...</span>
 
 This example combines a synthetic wind-speed field with vectors and streamlines.
 

@@ -47,7 +47,6 @@ The browser preview uses `examples/webgpu/live.html?id=feature_visibility` when 
     - ID: `feature_visibility`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/visibility.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visibility.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_visibility"><code>examples/webgpu/live.html?id=feature_visibility</code></a>

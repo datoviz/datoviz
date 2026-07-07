@@ -47,7 +47,6 @@ The browser preview uses `examples/webgpu/live.html?id=feature_axis_labels` when
     - ID: `feature_axis_labels`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/axis_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axis_labels.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_axis_labels"><code>examples/webgpu/live.html?id=feature_axis_labels</code></a>

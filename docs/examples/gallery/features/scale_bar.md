@@ -47,7 +47,6 @@ The browser preview uses `examples/webgpu/live.html?id=scale_bar` when WebGPU is
     - ID: `scale_bar`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/scalebar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=scale_bar"><code>examples/webgpu/live.html?id=scale_bar</code></a>

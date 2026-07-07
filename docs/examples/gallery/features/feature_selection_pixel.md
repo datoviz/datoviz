@@ -49,7 +49,6 @@ The browser preview uses `examples/webgpu/live.html?id=feature_selection_pixel` 
     - ID: `feature_selection_pixel`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/selection_pixel.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_pixel.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_selection_pixel"><code>examples/webgpu/live.html?id=feature_selection_pixel</code></a>

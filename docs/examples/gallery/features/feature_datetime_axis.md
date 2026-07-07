@@ -39,7 +39,6 @@ Browser support note: datetime formatting is outside the RC browser subset.
     - ID: `feature_datetime_axis`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/datetime_axis.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/datetime_axis.c)
     - Browser support: Deferred
     - Browser note: datetime formatting is outside the RC browser subset

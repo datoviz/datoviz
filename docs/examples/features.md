@@ -18,7 +18,7 @@ Each card links to a detail page with preview media, source code, and example me
 
 [![Basic Scene](../assets/gallery/v0.4/features/feature_basic_scene.webp)](gallery/features/feature_basic_scene.md)
 
-`supported` `features`
+`features`
 
 This example shows the smallest scene with a point visual.
 
@@ -30,7 +30,7 @@ This example shows the smallest scene with a point visual.
 
 [![Coordinate System](../assets/gallery/v0.4/features/feature_coordinate_system.webp)](gallery/features/feature_coordinate_system.md)
 
-`supported` `features`
+`features`
 
 This example shows the Datoviz 3D coordinate convention.
 
@@ -42,7 +42,7 @@ This example shows the Datoviz 3D coordinate convention.
 
 [![Single Panel](../assets/gallery/v0.4/features/feature_panel_single.webp)](gallery/features/feature_panel_single.md)
 
-`supported` `features`
+`features`
 
 Panel_single creates one explicit panel rectangle inside a figure.
 
@@ -54,7 +54,7 @@ Panel_single creates one explicit panel rectangle inside a figure.
 
 [![Panel Grid](../assets/gallery/v0.4/features/feature_panel_grid.webp)](gallery/features/feature_panel_grid.md)
 
-`supported` `features`
+`features`
 
 Panel_grid arranges four independent panels in a 2x2 figure grid.
 
@@ -66,7 +66,7 @@ Panel_grid arranges four independent panels in a 2x2 figure grid.
 
 [![Multiple Panels](../assets/gallery/v0.4/features/feature_panel_multi.webp)](gallery/features/feature_panel_multi.md)
 
-`supported` `features`
+`features`
 
 Panel_multi shows two panels with independent data, domains, and panzoom state.
 
@@ -78,7 +78,7 @@ Panel_multi shows two panels with independent data, domains, and panzoom state.
 
 [![Linked Panels](../assets/gallery/v0.4/features/feature_panel_linked.webp)](gallery/features/feature_panel_linked.md)
 
-`supported` `features`
+`features`
 
 Panel_linked links the X panzoom extent of two stacked signal panels.
 
@@ -90,7 +90,7 @@ Panel_linked links the X panzoom extent of two stacked signal panels.
 
 [![Panel View 2D](../assets/gallery/v0.4/features/feature_panel_view2d.webp)](gallery/features/feature_panel_view2d.md)
 
-`supported` `features`
+`features`
 
 Panel_view2d compares a regular 2D panel with one that keeps equal data aspect.
 
@@ -102,7 +102,7 @@ Panel_view2d compares a regular 2D panel with one that keeps equal data aspect.
 
 [![Panel Background](../assets/gallery/v0.4/features/panel_background.webp)](gallery/features/panel_background.md)
 
-`supported` `features`
+`features`
 
 Panel_background shows a custom panel background behind a foreground primitive.
 
@@ -114,7 +114,7 @@ Panel_background shows a custom panel background behind a foreground primitive.
 
 [![User Scale](../assets/gallery/v0.4/features/feature_user_scale.webp)](gallery/features/feature_user_scale.md)
 
-`supported` `features`
+`features`
 
 User_scale shows how one user-scale value affects screen-space visual sizes and axes.
 
@@ -126,7 +126,7 @@ User_scale shows how one user-scale value affects screen-space visual sizes and 
 
 _Screenshot not required for this example._
 
-`supported` `features`<br><span>`view-size`, `framebuffer`, `window`</span>
+`features`<br><span>`view-size`, `framebuffer`, `window`</span>
 
 View_size_policies demonstrates how requested view size policies resolve to real view sizes.
 
@@ -138,7 +138,7 @@ View_size_policies demonstrates how requested view size policies resolve to real
 
 [![Visual Transform](../assets/gallery/v0.4/features/feature_visual_transform.webp)](gallery/features/feature_visual_transform.md)
 
-`supported` `features`
+`features`
 
 Visual_transform compares raw point data with a visual-local affine transform.
 
@@ -150,7 +150,7 @@ Visual_transform compares raw point data with a visual-local affine transform.
 
 [![Visual Visibility](../assets/gallery/v0.4/features/feature_visibility.webp)](gallery/features/feature_visibility.md)
 
-`supported` `features`
+`features`
 
 Visibility toggles one visual on and off without changing its data arrays.
 
@@ -168,7 +168,7 @@ Visibility toggles one visual on and off without changing its data arrays.
 
 [![Manual Camera](../assets/gallery/v0.4/features/feature_camera_manual.webp)](gallery/features/feature_camera_manual.md)
 
-`supported` `features`
+`features`
 
 This example shows explicit perspective-camera setup for a 3D scene.
 
@@ -180,7 +180,7 @@ This example shows explicit perspective-camera setup for a 3D scene.
 
 _Screenshot not required for this example._
 
-`supported` `features`
+`features`
 
 Panzoom binds a 2D panzoom controller to a point visual in data coordinates.
 
@@ -192,7 +192,7 @@ Panzoom binds a 2D panzoom controller to a point visual in data coordinates.
 
 [![Arcball Controller](../assets/gallery/v0.4/features/feature_controller_arcball.webp)](gallery/features/feature_controller_arcball.md)
 
-`supported` `features`
+`features`
 
 This example shows an arcball controller rotating a 3D view.
 
@@ -204,7 +204,7 @@ This example shows an arcball controller rotating a 3D view.
 
 [![Turntable Controller](../assets/gallery/v0.4/features/feature_controller_turntable.webp)](gallery/features/feature_controller_turntable.md)
 
-`supported` `features`
+`features`
 
 This example shows world-up orbiting with a turntable controller.
 
@@ -216,7 +216,7 @@ This example shows world-up orbiting with a turntable controller.
 
 [![Fly Controller](../assets/gallery/v0.4/features/feature_controller_fly.webp)](gallery/features/feature_controller_fly.md)
 
-`supported` `features`
+`features`
 
 This example shows fly-style camera navigation through a 3D scene.
 
@@ -228,7 +228,7 @@ This example shows fly-style camera navigation through a 3D scene.
 
 [![Orientation Gizmo](../assets/gallery/v0.4/features/feature_orientation_gizmo.webp)](gallery/features/feature_orientation_gizmo.md)
 
-`supported` `features`
+`features`
 
 Orientation_gizmo adds a small orientation widget to a 3D panel.
 
@@ -240,7 +240,7 @@ Orientation_gizmo adds a small orientation widget to a 3D panel.
 
 [![Reference Grid](../assets/gallery/v0.4/features/feature_reference_grid.webp)](gallery/features/feature_reference_grid.md)
 
-`supported` `features`
+`features`
 
 Reference_grid adds a ground-plane reference grid to a 3D scene.
 
@@ -258,7 +258,7 @@ Reference_grid adds a ground-plane reference grid to a 3D scene.
 
 [![Axis Labels](../assets/gallery/v0.4/features/feature_axis_labels.webp)](gallery/features/feature_axis_labels.md)
 
-`supported` `features`
+`features`
 
 This example shows axis titles and tick-label layout around a plotting panel.
 
@@ -270,7 +270,7 @@ This example shows axis titles and tick-label layout around a plotting panel.
 
 [![Path With 2D Axes](../assets/gallery/v0.4/features/path_axes_2d.webp)](gallery/features/path_axes_2d.md)
 
-`supported` `features`
+`features`
 
 This example shows a 2D data path with axes, ticks, and grid lines.
 
@@ -282,7 +282,7 @@ This example shows a 2D data path with axes, ticks, and grid lines.
 
 [![Guide Lines](../assets/gallery/v0.4/features/feature_guide_lines.webp)](gallery/features/feature_guide_lines.md)
 
-`supported` `features`
+`features`
 
 This example shows movable horizontal and vertical guide lines.
 
@@ -294,7 +294,7 @@ This example shows movable horizontal and vertical guide lines.
 
 [![Guide Spans](../assets/gallery/v0.4/features/feature_guide_spans.webp)](gallery/features/feature_guide_spans.md)
 
-`supported` `features`
+`features`
 
 This example shows movable guide spans for highlighting data ranges.
 
@@ -306,7 +306,7 @@ This example shows movable guide spans for highlighting data ranges.
 
 [![Bars And Bands](../assets/gallery/v0.4/features/feature_bars_bands.webp)](gallery/features/feature_bars_bands.md)
 
-`supported` `features`
+`features`
 
 This example shows bars and an uncertainty band in one 2D panel.
 
@@ -318,7 +318,7 @@ This example shows bars and an uncertainty band in one 2D panel.
 
 [![Scale Bar](../assets/gallery/v0.4/features/scale_bar.webp)](gallery/features/scale_bar.md)
 
-`supported` `features`
+`features`
 
 Scalebar attaches a metric length scale bar to a 2D panel.
 
@@ -330,7 +330,7 @@ Scalebar attaches a metric length scale bar to a 2D panel.
 
 [![Scale Bar Units](../assets/gallery/v0.4/features/scalebar_units.webp)](gallery/features/scalebar_units.md)
 
-`supported` `features`
+`features`
 
 Scalebar_units uses duration units for a scale bar on a time-series panel.
 
@@ -342,7 +342,7 @@ Scalebar_units uses duration units for a scale bar on a time-series panel.
 
 [![Colorbar](../assets/gallery/v0.4/features/colorbar.webp)](gallery/features/colorbar.md)
 
-`supported` `features`<br><span>`colorbar`, `scalar-field`, `image`, `capture`</span>
+`features`<br><span>`colorbar`, `scalar-field`, `image`, `capture`</span>
 
 This example shows a scalar image and a continuous colorbar.
 
@@ -354,7 +354,7 @@ This example shows a scalar image and a continuous colorbar.
 
 [![Scalar Color Scale](../assets/gallery/v0.4/features/colormap_scale.webp)](gallery/features/colormap_scale.md)
 
-`supported` `features`
+`features`
 
 This example shows scalar point values mapped through a custom colormap.
 
@@ -378,7 +378,7 @@ Legend_categorical shows how one categorical scale drives both marker colors and
 
 [![Annotation Readout](../assets/gallery/v0.4/features/annotation_readout.webp)](gallery/features/annotation_readout.md)
 
-`supported` `features`
+`features`
 
 This example shows a text annotation anchored to one data point.
 
@@ -390,7 +390,7 @@ This example shows a text annotation anchored to one data point.
 
 [![Text Block](../assets/gallery/v0.4/features/feature_text_block.webp)](gallery/features/feature_text_block.md)
 
-`supported` `features`
+`features`
 
 Text_block renders a multiline text object at a stable screen position.
 
@@ -402,7 +402,7 @@ Text_block renders a multiline text object at a stable screen position.
 
 [![Overlay Card](../assets/gallery/v0.4/features/feature_overlay_card.webp)](gallery/features/feature_overlay_card.md)
 
-`supported` `features`
+`features`
 
 Overlay_card places a screen-space readout card above a simple data trace.
 
@@ -414,7 +414,7 @@ Overlay_card places a screen-space readout card above a simple data trace.
 
 [![Label Probe](../assets/gallery/v0.4/features/feature_probe_labels.webp)](gallery/features/feature_probe_labels.md)
 
-`supported` `features`
+`features`
 
 Probe_labels queries categorical label IDs from a generated label image.
 
@@ -432,7 +432,7 @@ Probe_labels queries categorical label IDs from a generated label image.
 
 [![Builtin Shapes 2D](../assets/gallery/v0.4/features/feature_builtin_shapes_2d.webp)](gallery/features/feature_builtin_shapes_2d.md)
 
-`supported` `features`
+`features`
 
 This example shows built-in 2D geometry rendered as meshes.
 
@@ -444,7 +444,7 @@ This example shows built-in 2D geometry rendered as meshes.
 
 [![Builtin Shapes 3D](../assets/gallery/v0.4/features/feature_builtin_shapes_3d.webp)](gallery/features/feature_builtin_shapes_3d.md)
 
-`supported` `features`
+`features`
 
 This example shows built-in 3D geometry rendered as lit meshes.
 
@@ -456,7 +456,7 @@ This example shows built-in 3D geometry rendered as lit meshes.
 
 [![Marker Symbols](../assets/gallery/v0.4/features/feature_marker_symbols.webp)](gallery/features/feature_marker_symbols.md)
 
-`supported` `features`<br><span>`marker`, `symbol-set`, `bitmap-symbol`, `distance-field-symbol`, `svg-path-symbol`</span>
+`features`<br><span>`marker`, `symbol-set`, `bitmap-symbol`, `distance-field-symbol`, `svg-path-symbol`</span>
 
 Marker_symbols compares several ways to define marker glyphs in one symbol set.
 
@@ -468,7 +468,7 @@ Marker_symbols compares several ways to define marker glyphs in one symbol set.
 
 [![Bezier Curve Path](../assets/gallery/v0.4/features/feature_bezier_curve_path.webp)](gallery/features/feature_bezier_curve_path.md)
 
-`supported` `features`
+`features`
 
 This example shows a cubic Bezier curve tessellated into a path.
 
@@ -480,7 +480,7 @@ This example shows a cubic Bezier curve tessellated into a path.
 
 [![Path Join](../assets/gallery/v0.4/features/feature_path_join.webp)](gallery/features/feature_path_join.md)
 
-`supported` `features`
+`features`
 
 Path_join compares miter, round, and bevel joins on difficult stroked paths.
 
@@ -492,7 +492,7 @@ Path_join compares miter, round, and bevel joins on difficult stroked paths.
 
 [![OBJ Loading](../assets/gallery/v0.4/features/feature_obj_loading.webp)](gallery/features/feature_obj_loading.md)
 
-`supported` `features`
+`features`
 
 Obj_loading loads a Wavefront OBJ fixture and displays it as a mesh.
 
@@ -510,7 +510,7 @@ Obj_loading loads a Wavefront OBJ fixture and displays it as a mesh.
 
 [![Sampled Field Update](../assets/gallery/v0.4/features/feature_sampled_field_update.webp)](gallery/features/feature_sampled_field_update.md)
 
-`supported` `features`
+`features`
 
 Sampled_field_update reuses one sampled scalar field in two image visuals while updating patches.
 
@@ -522,7 +522,7 @@ Sampled_field_update reuses one sampled scalar field in two image visuals while 
 
 [![Isolines](../assets/gallery/v0.4/features/feature_isolines.webp)](gallery/features/feature_isolines.md)
 
-`supported` `features`
+`features`
 
 This example shows contour isolines over a scalar field.
 
@@ -534,7 +534,7 @@ This example shows contour isolines over a scalar field.
 
 [![Datetime Axis](../assets/gallery/v0.4/features/feature_datetime_axis.webp)](gallery/features/feature_datetime_axis.md)
 
-`supported` `features`<br><span>`axes`, `datetime`, `time-series`</span>
+`features`<br><span>`axes`, `datetime`, `time-series`</span>
 
 This example shows UTC datetime labels on a numeric data axis.
 
@@ -546,7 +546,7 @@ This example shows UTC datetime labels on a numeric data axis.
 
 [![Image Probe](../assets/gallery/v0.4/features/image_probe.webp)](gallery/features/image_probe.md)
 
-`supported` `features`
+`features`
 
 This example shows probing a scalar image at a marked data position.
 
@@ -564,7 +564,7 @@ This example shows probing a scalar image at a marked data position.
 
 [![Lighting](../assets/gallery/v0.4/features/feature_lighting.webp)](gallery/features/feature_lighting.md)
 
-`supported` `features`
+`features`
 
 Lighting compares the same sphere cluster under three material and light configurations.
 
@@ -576,7 +576,7 @@ Lighting compares the same sphere cluster under three material and light configu
 
 [![Textured Mesh](../assets/gallery/v0.4/features/feature_mesh_texture.webp)](gallery/features/feature_mesh_texture.md)
 
-`supported` `features`
+`features`
 
 Mesh_texture maps a scene-owned RGBA8 sampled field onto a UV sphere mesh.
 
@@ -588,7 +588,7 @@ Mesh_texture maps a scene-owned RGBA8 sampled field onto a UV sphere mesh.
 
 [![Mesh Materials](../assets/gallery/v0.4/features/feature_material_mesh.webp)](gallery/features/feature_material_mesh.md)
 
-`supported` `features`
+`features`
 
 Material_mesh compares cube meshes rendered with different material models and parameters.
 
@@ -612,7 +612,7 @@ Volume_occlusion compares a volume slice with and without attenuation by the sur
 
 [![Screen-Space Ambient Occlusion](../assets/gallery/v0.4/features/technique_ssao.webp)](gallery/features/technique_ssao.md)
 
-`supported` `features`
+`features`
 
 Ssao compares a sphere cluster with and without screen-space ambient occlusion.
 
@@ -624,7 +624,7 @@ Ssao compares a sphere cluster with and without screen-space ambient occlusion.
 
 [![Depth Cue](../assets/gallery/v0.4/features/technique_depth_cue.webp)](gallery/features/technique_depth_cue.md)
 
-`supported` `features`
+`features`
 
 Depth_cue compares a plain 3D sphere lattice with depth-dependent fading.
 
@@ -636,7 +636,7 @@ Depth_cue compares a plain 3D sphere lattice with depth-dependent fading.
 
 [![Multisample Antialiasing](../assets/gallery/v0.4/features/technique_msaa.webp)](gallery/features/technique_msaa.md)
 
-`supported` `features`
+`features`
 
 Msaa compares single-sample rendering with 8x multisample antialiasing.
 
@@ -648,7 +648,7 @@ Msaa compares single-sample rendering with 8x multisample antialiasing.
 
 [![Transparency Order](../assets/gallery/v0.4/features/technique_transparency.webp)](gallery/features/technique_transparency.md)
 
-`supported` `features`
+`features`
 
 Transparency_order compares three transparency techniques on the same overlapping cubes.
 
@@ -660,7 +660,7 @@ Transparency_order compares three transparency techniques on the same overlappin
 
 [![Alpha Blending](../assets/gallery/v0.4/features/alpha_blending.webp)](gallery/features/alpha_blending.md)
 
-`supported` `features`
+`features`
 
 This example shows translucent triangles composited in draw order.
 
@@ -672,7 +672,7 @@ This example shows translucent triangles composited in draw order.
 
 [![Depth Test Toggle](../assets/gallery/v0.4/features/technique_depth_test.webp)](gallery/features/technique_depth_test.md)
 
-`supported` `features`
+`features`
 
 Depth_test compares overlapping 3D points with depth testing enabled and disabled.
 
@@ -702,7 +702,7 @@ This example shows diagnostic bounds overlays for 2D and 3D visuals.
 
 _Screenshot not required for this example._
 
-`supported` `features`
+`features`
 
 Picking demonstrates item-level marker hover and click selection.
 
@@ -714,7 +714,7 @@ Picking demonstrates item-level marker hover and click selection.
 
 [![Pixel Selection](../assets/gallery/v0.4/features/feature_selection_pixel.webp)](gallery/features/feature_selection_pixel.md)
 
-`supported` `features`
+`features`
 
 Selection_pixel queries and selects individual cells in a pixel grid.
 
@@ -726,7 +726,7 @@ Selection_pixel queries and selects individual cells in a pixel grid.
 
 [![Sphere Selection](../assets/gallery/v0.4/features/feature_selection_sphere.webp)](gallery/features/feature_selection_sphere.md)
 
-`supported` `features`
+`features`
 
 Selection_sphere queries and selects individual raycast spheres in a 3D cluster.
 
@@ -738,7 +738,7 @@ Selection_sphere queries and selects individual raycast spheres in a 3D cluster.
 
 [![Mesh Instance Selection](../assets/gallery/v0.4/features/feature_selection_mesh_instances.webp)](gallery/features/feature_selection_mesh_instances.md)
 
-`supported` `features`
+`features`
 
 Selection_mesh_instances queries and selects individual instances of one mesh visual.
 
@@ -756,7 +756,7 @@ Selection_mesh_instances queries and selects individual instances of one mesh vi
 
 [![Animation Tracks](../assets/gallery/v0.4/features/feature_animation_tracks.webp)](gallery/features/feature_animation_tracks.md)
 
-`supported` `features`
+`features`
 
 This example shows scene animation tracks driving a cube and camera.
 
@@ -768,7 +768,7 @@ This example shows scene animation tracks driving a cube and camera.
 
 [![Timer Animation](../assets/gallery/v0.4/features/feature_timer_animation.webp)](gallery/features/feature_timer_animation.md)
 
-`supported` `features`
+`features`
 
 Timer_animation updates point attributes every frame from scenario time.
 
@@ -792,7 +792,7 @@ This example shows a compute pass updating point positions.
 
 [![Partial Data Update](../assets/gallery/v0.4/features/update_partial.webp)](gallery/features/update_partial.md)
 
-`supported` `features`
+`features`
 
 Update_partial moves only part of a point visual's position array.
 
@@ -804,7 +804,7 @@ Update_partial moves only part of a point visual's position array.
 
 [![Visual Data Update](../assets/gallery/v0.4/features/feature_update_visual_data.webp)](gallery/features/feature_update_visual_data.md)
 
-`supported` `features`
+`features`
 
 Update_visual_data replaces all arrays on one point visual.
 
@@ -822,7 +822,7 @@ Update_visual_data replaces all arrays on one point visual.
 
 _Screenshot not required for this example._
 
-`supported` `features`
+`features`
 
 This example shows Datoviz GUI controls updating a point visual.
 
@@ -834,7 +834,7 @@ This example shows Datoviz GUI controls updating a point visual.
 
 _Screenshot not required for this example._
 
-`supported` `features`
+`features`
 
 This example shows a Datoviz render viewport embedded inside a GUI window.
 
@@ -846,7 +846,7 @@ This example shows a Datoviz render viewport embedded inside a GUI window.
 
 _Screenshot not required for this example._
 
-`supported` `features`
+`features`
 
 This example shows raw cimgui widgets controlling a Datoviz visual.
 
@@ -864,7 +864,7 @@ This example shows raw cimgui widgets controlling a Datoviz visual.
 
 _Screenshot not required for this example._
 
-`supported` `features`
+`features`
 
 This example shows native keyboard, pointer, wheel, and resize events.
 

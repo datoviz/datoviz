@@ -47,7 +47,6 @@ The browser preview uses `examples/webgpu/live.html?id=colormap_scale` when WebG
     - ID: `colormap_scale`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/colormap_scale.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/colormap_scale.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=colormap_scale"><code>examples/webgpu/live.html?id=colormap_scale</code></a>

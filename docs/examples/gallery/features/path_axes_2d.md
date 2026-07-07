@@ -47,7 +47,6 @@ The browser preview uses `examples/webgpu/live.html?id=path_axes_2d` when WebGPU
     - ID: `path_axes_2d`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/axes_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axes_2d.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=path_axes_2d"><code>examples/webgpu/live.html?id=path_axes_2d</code></a>

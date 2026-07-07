@@ -35,7 +35,6 @@ No external data is needed; the example generates its data.
     - ID: `feature_probe_labels`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/probe_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/probe_labels.c)
     - Browser support: Planned
     - Browser capability tags: `labels`, `query-readback`, `panzoom`

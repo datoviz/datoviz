@@ -47,7 +47,6 @@ The browser preview uses `examples/webgpu/live.html?id=update_partial` when WebG
     - ID: `update_partial`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/update_partial.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_partial.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=update_partial"><code>examples/webgpu/live.html?id=update_partial</code></a>

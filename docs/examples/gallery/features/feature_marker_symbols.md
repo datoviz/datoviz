@@ -39,7 +39,6 @@ Browser support note: marker symbol-set and mixed atlas encoding parity are not 
     - ID: `feature_marker_symbols`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/marker_symbols.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/marker_symbols.c)
     - Browser support: Deferred
     - Browser note: marker symbol-set and mixed atlas encoding parity are not in the RC WebGPU path yet

@@ -69,7 +69,6 @@ License note: NASA media usage guidelines and USGS/NASA public-domain source-dat
     - ID: `textured_terrain_or_planet`
     - Category: `showcase`
     - Lane: `showcases`
-    - Status: `supported`
     - Source: [`examples/c/showcases/textured_planet.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=textured_terrain_or_planet"><code>examples/webgpu/live.html?id=textured_terrain_or_planet</code></a>

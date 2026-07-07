@@ -49,7 +49,6 @@ The browser preview uses `examples/webgpu/live.html?id=point_2d` when WebGPU is 
     - ID: `point_2d`
     - Category: `visual`
     - Lane: `visuals`
-    - Status: `supported`
     - Source: [`examples/c/visuals/point.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/point.c)
     - Reference: [Point visual family](../../../reference/visual-families/point.md)
     - Browser support: Live in browser

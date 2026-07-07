@@ -47,7 +47,6 @@ The browser preview uses `examples/webgpu/live.html?id=feature_timer_animation` 
     - ID: `feature_timer_animation`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/timer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/timer_animation.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_timer_animation"><code>examples/webgpu/live.html?id=feature_timer_animation</code></a>

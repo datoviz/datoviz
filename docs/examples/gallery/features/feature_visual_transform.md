@@ -35,7 +35,6 @@ No external data is needed; the example generates its data.
     - ID: `feature_visual_transform`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/visual_transform.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visual_transform.c)
     - Browser support: Planned
     - Browser capability tags: `visual-transform`, `mesh`

@@ -47,7 +47,6 @@ The browser preview uses `examples/webgpu/live.html?id=technique_depth_test` whe
     - ID: `technique_depth_test`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/technique_depth_test.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_depth_test.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=technique_depth_test"><code>examples/webgpu/live.html?id=technique_depth_test</code></a>

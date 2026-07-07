@@ -51,7 +51,6 @@ The browser preview uses `examples/webgpu/live.html?id=scientific_plotting_workf
     - ID: `scientific_plotting_workflow`
     - Category: `showcase`
     - Lane: `showcases`
-    - Status: `supported`
     - Source: [`examples/c/showcases/scientific_plotting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scientific_plotting.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=scientific_plotting_workflow"><code>examples/webgpu/live.html?id=scientific_plotting_workflow</code></a>

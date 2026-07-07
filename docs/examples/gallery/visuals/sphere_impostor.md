@@ -49,7 +49,6 @@ The browser preview uses `examples/webgpu/live.html?id=sphere_impostor` when Web
     - ID: `sphere_impostor`
     - Category: `visual`
     - Lane: `visuals`
-    - Status: `supported`
     - Source: [`examples/c/visuals/sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/sphere.c)
     - Reference: [Sphere visual family](../../../reference/visual-families/sphere.md)
     - Browser support: Live in browser

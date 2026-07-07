@@ -49,7 +49,6 @@ The browser preview uses `examples/webgpu/live.html?id=visual_primitive` when We
     - ID: `visual_primitive`
     - Category: `visual`
     - Lane: `visuals`
-    - Status: `supported`
     - Source: [`examples/c/visuals/primitive.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/primitive.c)
     - Reference: [Primitive visual family](../../../reference/visual-families/primitive.md)
     - Browser support: Live in browser

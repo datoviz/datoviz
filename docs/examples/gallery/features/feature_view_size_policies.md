@@ -41,7 +41,6 @@ _Screenshot not required for this example._
     - ID: `feature_view_size_policies`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/view_size_policies.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/view_size_policies.c)
     - Browser support: Native only
     - Browser note: demonstrates native window, framebuffer, and physical-size policies

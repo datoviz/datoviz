@@ -49,7 +49,6 @@ The browser preview uses `examples/webgpu/live.html?id=visual_mesh` when WebGPU 
     - ID: `visual_mesh`
     - Category: `visual`
     - Lane: `visuals`
-    - Status: `supported`
     - Source: [`examples/c/visuals/mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/mesh.c)
     - Reference: [Mesh visual family](../../../reference/visual-families/mesh.md)
     - Browser support: Live in browser

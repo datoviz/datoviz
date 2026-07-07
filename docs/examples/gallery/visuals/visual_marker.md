@@ -49,7 +49,6 @@ The browser preview uses `examples/webgpu/live.html?id=visual_marker` when WebGP
     - ID: `visual_marker`
     - Category: `visual`
     - Lane: `visuals`
-    - Status: `supported`
     - Source: [`examples/c/visuals/marker.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/marker.c)
     - Reference: [Marker visual family](../../../reference/visual-families/marker.md)
     - Browser support: Live in browser

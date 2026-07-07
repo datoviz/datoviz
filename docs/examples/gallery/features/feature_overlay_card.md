@@ -47,7 +47,6 @@ The browser preview uses `examples/webgpu/live.html?id=feature_overlay_card` whe
     - ID: `feature_overlay_card`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
     - Source: [`examples/c/features/overlay_card.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/overlay_card.c)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_overlay_card"><code>examples/webgpu/live.html?id=feature_overlay_card</code></a>
