@@ -30,7 +30,7 @@ adapter.
 
 ## See Also
 
-- [Deploy WebGPU examples to the browser](deploy-to-web.md)
+- [Deploy Datoviz scenes to the web](deploy-to-web.md)
 - [Debug rendering output](debug-rendering.md)
 - [Diagnose build and platform issues](diagnose-platform.md)
 

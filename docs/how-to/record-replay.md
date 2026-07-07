@@ -112,7 +112,7 @@ attach the right visual, scale, controller, or callback?", debug the retained sc
 ## See Also
 
 - [Debug rendering output](debug-rendering.md)
-- [Deploy WebGPU examples to the browser](deploy-to-web.md)
+- [Deploy Datoviz scenes to the web](deploy-to-web.md)
 - [Profile rendering performance](profile-performance.md)
 - [Advanced DRP2 reference](../reference/drp2/index.md)
 - [DRP2 C API](../reference/c-api/drp2.md)

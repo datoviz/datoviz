@@ -97,4 +97,4 @@ See also:
 
 - [WebGPU subset](../reference/webgpu-subset.md)
 - [Compute and graphics](../reference/compute-graphics.md)
-- [Deploy WebGPU examples to the browser](../how-to/deploy-to-web.md)
+- [Deploy Datoviz scenes to the web](../how-to/deploy-to-web.md)

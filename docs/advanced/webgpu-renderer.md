@@ -72,5 +72,5 @@ See also:
 
 - [Portability and WebGPU](../explanation/portability-webgpu.md)
 - [WebGPU subset](../reference/webgpu-subset.md)
-- [Deploy WebGPU examples to the browser](../how-to/deploy-to-web.md)
+- [Deploy Datoviz scenes to the web](../how-to/deploy-to-web.md)
 - [DRP2](../reference/drp2/index.md)

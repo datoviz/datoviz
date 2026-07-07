@@ -113,6 +113,6 @@ context.
 ## See Also
 
 - [WebGPU matrix](../examples/webgpu-matrix.md)
-- [Deploy WebGPU examples to the browser](../how-to/deploy-to-web.md)
+- [Deploy Datoviz scenes to the web](../how-to/deploy-to-web.md)
 - [Diagnose WebGPU support](../how-to/debug-webgpu.md)
 - [Feature status](feature-status.md)
