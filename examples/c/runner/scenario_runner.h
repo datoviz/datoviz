@@ -265,6 +265,7 @@ typedef struct DvzRunnerConfig
     bool print_progress;
     bool pace_wall_time;
     bool preview_mode;
+    bool preview_sequence;
     uint64_t preview_frame_index;
     uint64_t preview_frame_count;
     double preview_fps;
@@ -302,8 +303,8 @@ double dvz_scenario_preview_time_scale(const DvzScenarioContext* ctx);
 /**
  * Return the deterministic preview time for the selected preview frame.
  *
- * The gallery animation tool captures one frame per process. Simulation-style examples should use
- * this time instead of accumulated runner time when `ctx->preview_mode` is enabled.
+ * One-shot preview captures use this time to make one frame independent from accumulated runner
+ * time. Persistent preview sequences update the preview frame index before each rendered frame.
  *
  * @param ctx scenario context
  * @return preview time in seconds

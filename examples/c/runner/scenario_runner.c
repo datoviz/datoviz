@@ -352,6 +352,10 @@ static void _print_progress(uint32_t completed, uint32_t total)
 }
 
 
+static bool _runner_png_sequence_path(
+    const DvzAppCaptureConfig* capture, uint32_t frame, char* out, size_t out_size, bool display);
+
+
 
 static DvzScenarioPointerType _scenario_pointer_type(DvzPointerEventType type)
 {
@@ -611,6 +615,7 @@ static void _print_usage(const DvzScenarioSpec* spec)
     fprintf(stdout, "  --dvzr N               record a DVZR stream offscreen\n");
     fprintf(stdout, "  --preview              enable deterministic gallery preview motion\n");
     fprintf(stdout, "  --preview-frame N      preview frame index for one-frame captures\n");
+    fprintf(stdout, "  --preview-sequence     capture preview frames from one persistent run\n");
     fprintf(stdout, "  --preview-frames N     total preview frame count\n");
     fprintf(stdout, "  --preview-fps FPS      preview frame rate for deterministic frame timing\n");
     fprintf(stdout, "  --preview-time-scale S multiply preview time without changing playback FPS\n");
@@ -649,6 +654,7 @@ DvzRunnerConfig dvz_runner_config(const DvzScenarioSpec* spec)
         .print_progress = true,
         .pace_wall_time = false,
         .preview_mode = false,
+        .preview_sequence = false,
         .preview_frame_index = 0,
         .preview_frame_count = 0,
         .preview_fps = 0.0,
@@ -684,6 +690,30 @@ bool dvz_runner_capture_path(
         rc = dvz_snprintf(out, out_size, "%s%s%s", directory, basename, extension);
     else
         rc = dvz_snprintf(out, out_size, "%s/%s%s", directory, basename, extension);
+
+    return rc >= 0 && (size_t)rc < out_size;
+}
+
+
+static bool _runner_png_sequence_path(
+    const DvzAppCaptureConfig* capture, uint32_t frame, char* out, size_t out_size, bool display)
+{
+    if (capture == NULL || out == NULL || out_size == 0)
+        return false;
+
+    const char* directory =
+        capture->directory != NULL && capture->directory[0] != '\0' ? capture->directory : ".";
+    const char* basename =
+        capture->basename != NULL && capture->basename[0] != '\0' ? capture->basename : "frame";
+
+    int rc = 0;
+    const size_t dir_len = strlen(directory);
+    if (strcmp(directory, ".") == 0)
+        rc = dvz_snprintf(out, out_size, "%s%s_%04u.png", display ? "./" : "", basename, frame);
+    else if (dir_len > 0 && directory[dir_len - 1] == '/')
+        rc = dvz_snprintf(out, out_size, "%s%s_%04u.png", directory, basename, frame);
+    else
+        rc = dvz_snprintf(out, out_size, "%s/%s_%04u.png", directory, basename, frame);
 
     return rc >= 0 && (size_t)rc < out_size;
 }
@@ -814,6 +844,21 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     resolved.height = resolved.logical_height;
     if (resolved.fps <= 0)
         resolved.fps = spec->fps > 0 ? spec->fps : 60.0;
+    if (resolved.preview_sequence)
+    {
+        resolved.preview_mode = true;
+        if (resolved.capture_kind == DVZ_RUNNER_CAPTURE_NONE)
+            resolved.capture_kind = DVZ_RUNNER_CAPTURE_PNG;
+        if (resolved.capture_kind != DVZ_RUNNER_CAPTURE_PNG)
+        {
+            fprintf(stderr, "scenario_runner: --preview-sequence requires PNG capture\n");
+            goto cleanup;
+        }
+        if (resolved.preview_frame_count == 0)
+            resolved.preview_frame_count =
+                resolved.frame_count != 0 ? resolved.frame_count : RUNNER_DEFAULT_FRAMES;
+        resolved.frame_count = resolved.preview_frame_count;
+    }
     if (resolved.preview_mode && resolved.preview_frame_count == 0)
         resolved.preview_frame_count = resolved.frame_count != 0 ? resolved.frame_count : 1;
     if (resolved.preview_mode && resolved.preview_fps <= 0.0)
@@ -969,7 +1014,7 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
         fprintf(stdout, "scenario_runner: showing GLFW view and recording offscreen view\n");
     }
 
-    if (resolved.frame_count > 0 && resolved.print_progress)
+    if (!resolved.preview_sequence && resolved.frame_count > 0 && resolved.print_progress)
     {
         view_frame_state.progress.frame_count = resolved.frame_count;
     }
@@ -981,7 +1026,7 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
         dvz_view_set_frame_callback(capture_view, _view_frame, &view_frame_state);
     }
 
-    if (resolved.capture_kind != DVZ_RUNNER_CAPTURE_NONE)
+    if (resolved.capture_kind != DVZ_RUNNER_CAPTURE_NONE && !resolved.preview_sequence)
     {
         char path[RUNNER_PATH_SIZE] = {0};
         if (!dvz_runner_capture_path(
@@ -1001,10 +1046,42 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
         }
         capture_started = true;
     }
+    else if (resolved.preview_sequence && resolved.capture_kind == DVZ_RUNNER_CAPTURE_PNG)
+    {
+        char path[RUNNER_PATH_SIZE] = {0};
+        if (!_runner_png_sequence_path(&resolved.capture, 0, path, sizeof(path), true))
+        {
+            fprintf(stderr, "scenario_runner: PNG sequence path is too long\n");
+            goto cleanup;
+        }
+        fprintf(stdout, "scenario_runner: PNG sequence output path: %s ...\n", path);
+    }
 
     if (resolved.frame_count > 0 && resolved.print_progress)
         _print_progress(0, resolved.frame_count);
-    if (resolved.pace_wall_time)
+    if (resolved.preview_sequence)
+    {
+        for (uint32_t frame = 0; frame < resolved.frame_count; frame++)
+        {
+            ctx.preview_frame_index = frame;
+            dvz_app_run(app, 1);
+            char path[RUNNER_PATH_SIZE] = {0};
+            if (!_runner_png_sequence_path(&resolved.capture, frame, path, sizeof(path), false))
+            {
+                fprintf(stderr, "scenario_runner: PNG sequence path is too long\n");
+                goto cleanup;
+            }
+            if (dvz_view_capture_png(capture_view, path) != 0)
+            {
+                fprintf(stderr, "scenario_runner: failed to write PNG sequence frame: %s\n", path);
+                goto cleanup;
+            }
+            dvz_fprintf(stdout, "datoviz: saved %s\n", path);
+            if (resolved.print_progress)
+                _print_progress(frame + 1, resolved.frame_count);
+        }
+    }
+    else if (resolved.pace_wall_time)
         _run_paced(app, resolved.frame_count, resolved.fps);
     else
         dvz_app_run(app, resolved.frame_count);
@@ -1088,6 +1165,13 @@ int dvz_scenario_run_native_cli(const DvzScenarioSpec* spec, int argc, char** ar
         else if (strcmp(arg, "--preview") == 0)
         {
             config.preview_mode = true;
+        }
+        else if (strcmp(arg, "--preview-sequence") == 0)
+        {
+            config.preview_mode = true;
+            config.preview_sequence = true;
+            config.presentation = DVZ_RUNNER_PRESENT_OFFSCREEN;
+            config.capture_kind = DVZ_RUNNER_CAPTURE_PNG;
         }
         else if (strcmp(arg, "--preview-frame") == 0 && i + 1 < argc)
         {

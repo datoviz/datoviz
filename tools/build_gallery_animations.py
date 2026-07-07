@@ -136,16 +136,15 @@ def frame_path(frame_dir: Path, frame: int) -> Path:
     return frame_dir / f"frame_{frame:04d}.png"
 
 
-def capture_frame(preview: AnimatedPreview, frame_dir: Path, frame: int) -> None:
+def capture_sequence(preview: AnimatedPreview, frame_dir: Path) -> None:
     frame_dir.mkdir(parents=True, exist_ok=True)
     env = os.environ.copy()
     env["DVZ_CAPTURE_DIR"] = str(frame_dir)
-    env["DVZ_CAPTURE_BASENAME"] = f"frame_{frame:04d}"
+    env["DVZ_CAPTURE_BASENAME"] = "frame"
     cmd = [
         str(preview.executable),
         "--preview",
-        "--preview-frame",
-        str(frame),
+        "--preview-sequence",
         "--preview-frames",
         str(preview.frames),
         "--preview-fps",
@@ -201,8 +200,7 @@ def generate_preview(
 
     if frame_dir.exists():
         shutil.rmtree(frame_dir)
-    for frame in range(preview.frames):
-        capture_frame(preview, frame_dir, frame)
+    capture_sequence(preview, frame_dir)
     encode_webp(preview, frame_dir, output_path, quality)
     if not keep_frames:
         shutil.rmtree(frame_dir)
