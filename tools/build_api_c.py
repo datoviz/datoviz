@@ -291,7 +291,7 @@ def format_function(fn: dict, names: set[str]) -> list[str]:
         lines.extend([doc, ""])
     lines.extend(
         [
-            f"```c title=\"{fn['name']}\"",
+            "```c",
             c_signature(fn),
             "```",
             "",

@@ -302,7 +302,7 @@ Create an app bound to a scene.
 Allocates a GPU context, a DRP2 runtime, and a window host.  Returns NULL when no suitable
 GPU is available.
 
-```c title="dvz_app"
+```c
 DvzApp * dvz_app(
     DvzScene * scene
 );
@@ -322,7 +322,7 @@ Return the default app capture configuration.
 The returned config enables no capture by default. When enabled, outputs are written in the
 current directory with basename "capture" at 60 FPS using the automatic video backend.
 
-```c title="dvz_app_capture_config"
+```c
 DvzAppCaptureConfig dvz_app_capture_config(void);
 ```
 
@@ -341,7 +341,7 @@ Return an app capture configuration derived from environment variables.
 Optional overrides are `DVZ_CAPTURE_DIR`, `DVZ_CAPTURE_BASENAME`, `DVZ_CAPTURE_FPS`,
 `DVZ_CAPTURE_VIDEO_BACKEND`, and `DVZ_CAPTURE_VIDEO_MODE` (`auto`, `external`, `cpu`).
 
-```c title="dvz_app_capture_config_from_env"
+```c
 DvzAppCaptureConfig dvz_app_capture_config_from_env(
     const char * basename
 );
@@ -358,7 +358,7 @@ _Declared in `include/datoviz/app.h`:784._
 
 Return the default app configuration.
 
-```c title="dvz_app_config"
+```c
 DvzAppConfig dvz_app_config(void);
 ```
 
@@ -372,7 +372,7 @@ _Declared in `include/datoviz/app.h`:276._
 
 Destroy the app and all owned resources (canvases, windows, runtime, GPU context).
 
-```c title="dvz_app_destroy"
+```c
 void dvz_app_destroy(
     DvzApp * app
 );
@@ -388,7 +388,7 @@ _Declared in `include/datoviz/app.h`:334._
 
 Render one frame for every view without polling any Datoviz-owned event loop.
 
-```c title="dvz_app_render_once"
+```c
 int dvz_app_render_once(
     DvzApp * app
 );
@@ -405,7 +405,7 @@ _Declared in `include/datoviz/app.h`:1086._
 
 Return an empty app resource bundle.
 
-```c title="dvz_app_resources"
+```c
 DvzAppResources dvz_app_resources(void);
 ```
 
@@ -424,7 +424,7 @@ the app scheduler: on-demand mode waits for resize/input/request-frame invalidat
 continuous mode renders active windows until the configured exit policy or dvz_app_stop() stops
 the loop.
 
-```c title="dvz_app_run"
+```c
 void dvz_app_run(
     DvzApp * app,
     uint32_t frame_count
@@ -442,7 +442,7 @@ _Declared in `include/datoviz/app.h`:1100._
 
 Return whether an app stop has been requested.
 
-```c title="dvz_app_should_stop"
+```c
 _Bool dvz_app_should_stop(
     const DvzApp * app
 );
@@ -459,7 +459,7 @@ _Declared in `include/datoviz/app.h`:352._
 
 Request that a running app loop stops at the next scheduler checkpoint.
 
-```c title="dvz_app_stop"
+```c
 DvzResult dvz_app_stop(
     DvzApp * app
 );
@@ -479,7 +479,7 @@ Return the Vulkan instance owned by the app.
 Hosted integrations use this borrowed handle to create their native VkSurfaceKHR after passing
 required instance extensions to dvz_app_with_config().
 
-```c title="dvz_app_vk_instance"
+```c
 VkInstance dvz_app_vk_instance(
     DvzApp * app
 );
@@ -499,7 +499,7 @@ Create an app bound to a scene with explicit host integration requirements.
 Use this entry point when an external UI toolkit owns the native window and requires Vulkan
 instance extensions before Datoviz creates its GPU context.
 
-```c title="dvz_app_with_config"
+```c
 DvzApp * dvz_app_with_config(
     DvzScene * scene,
     const DvzAppConfig * config
@@ -524,7 +524,7 @@ lifetime and must outlive the app.  When a runtime is provided, a GPU context mu
 provided, and the runtime must have been created from that GPU context's device and allocator.
 App config instance-extension fields only affect app-created GPU contexts.
 
-```c title="dvz_app_with_resources"
+```c
 DvzApp * dvz_app_with_resources(
     DvzScene * scene,
     const DvzAppConfig * config,
@@ -550,7 +550,7 @@ Capture the latest presented canvas frame and write it to a PNG file.
 PNG capture uses the same screenshot/export contract as dvz_canvas_capture_rgba(): sRGB-encoded
 RGBA8 color with straight linear alpha.
 
-```c title="dvz_canvas_capture_png"
+```c
 int dvz_canvas_capture_png(
     DvzCanvas * canvas,
     const char * path
@@ -573,7 +573,7 @@ The returned pixels are screenshot/export pixels: tightly packed RGBA8 with sRGB
 channels and straight linear alpha. Use a dedicated query/readback API for scientific values that
 must remain in linear float or data space.
 
-```c title="dvz_canvas_capture_rgba"
+```c
 int dvz_canvas_capture_rgba(
     DvzCanvas * canvas,
     uint32_t * out_width,
@@ -600,7 +600,7 @@ The returned pixels are screenshot/export pixels: tightly packed RGBA8 with sRGB
 channels and straight linear alpha. Use a dedicated query/readback API for scientific values that
 must remain in linear float or data space.
 
-```c title="dvz_canvas_capture_rgba_into"
+```c
 int dvz_canvas_capture_rgba_into(
     DvzCanvas * canvas,
     uint32_t width,
@@ -625,7 +625,7 @@ _Declared in `include/datoviz/canvas.h`:263._
 
 Return a default canvas configuration used when callers do not override fields.
 
-```c title="dvz_canvas_config"
+```c
 DvzCanvasConfig dvz_canvas_config(void);
 ```
 
@@ -641,7 +641,7 @@ _Declared in `include/datoviz/canvas.h`:144._
 
 Enable or disable the live-image sink attached to the canvas stream.
 
-```c title="dvz_canvas_configure_live_image_sink"
+```c
 int dvz_canvas_configure_live_image_sink(
     DvzCanvas * canvas,
     _Bool enable,
@@ -662,7 +662,7 @@ _Declared in `include/datoviz/canvas.h`:326._
 
 Enable or disable the video sink attached to the canvas stream.
 
-```c title="dvz_canvas_configure_video_sink"
+```c
 int dvz_canvas_configure_video_sink(
     DvzCanvas * canvas,
     _Bool enable,
@@ -683,7 +683,7 @@ _Declared in `include/datoviz/canvas.h`:313._
 
 Allocate a new canvas tied to a window surface and device.
 
-```c title="dvz_canvas_create"
+```c
 DvzCanvas * dvz_canvas_create(
     const DvzCanvasConfig * cfg
 );
@@ -702,7 +702,7 @@ _Declared in `include/datoviz/canvas.h`:162._
 
 Destroy the canvas and any stream resources it owns.
 
-```c title="dvz_canvas_destroy"
+```c
 void dvz_canvas_destroy(
     DvzCanvas * canvas
 );
@@ -720,7 +720,7 @@ _Declared in `include/datoviz/canvas.h`:171._
 
 Acquire a new frame, refresh swapchain-backed metadata, and run the draw callback.
 
-```c title="dvz_canvas_frame"
+```c
 int dvz_canvas_frame(
     DvzCanvas * canvas
 );
@@ -737,7 +737,7 @@ _Declared in `include/datoviz/canvas.h`:194._
 
 Expose the input router owned by the canvas window.
 
-```c title="dvz_canvas_input"
+```c
 DvzInputRouter * dvz_canvas_input(
     DvzCanvas * canvas
 );
@@ -754,7 +754,7 @@ _Declared in `include/datoviz/canvas.h`:245._
 
 Return a default live-image sink configuration.
 
-```c title="dvz_canvas_live_image_sink_config"
+```c
 DvzCanvasLiveImageSinkConfig dvz_canvas_live_image_sink_config(void);
 ```
 
@@ -768,7 +768,7 @@ _Declared in `include/datoviz/canvas.h`:152._
 
 Return the offscreen-mode runtime state for diagnostics.
 
-```c title="dvz_canvas_offscreen_runtime_state"
+```c
 DvzCanvasOffscreenRuntimeState dvz_canvas_offscreen_runtime_state(
     const DvzCanvas * canvas
 );
@@ -785,7 +785,7 @@ _Declared in `include/datoviz/canvas.h`:235._
 
 Return the present-mode runtime state for diagnostics.
 
-```c title="dvz_canvas_present_runtime_state"
+```c
 DvzCanvasPresentRuntimeState dvz_canvas_present_runtime_state(
     const DvzCanvas * canvas
 );
@@ -802,7 +802,7 @@ _Declared in `include/datoviz/canvas.h`:224._
 
 Return the configured render mode for a canvas.
 
-```c title="dvz_canvas_render_mode"
+```c
 DvzCanvasRenderMode dvz_canvas_render_mode(
     const DvzCanvas * canvas
 );
@@ -819,7 +819,7 @@ _Declared in `include/datoviz/canvas.h`:214._
 
 Register a draw callback executed whenever dvz_canvas_frame() succeeds.
 
-```c title="dvz_canvas_set_draw_callback"
+```c
 void dvz_canvas_set_draw_callback(
     DvzCanvas * canvas,
     DvzCanvasDraw callback,
@@ -839,7 +839,7 @@ _Declared in `include/datoviz/canvas.h`:183._
 
 Access the stream underpinning the canvas.
 
-```c title="dvz_canvas_stream"
+```c
 DvzStream * dvz_canvas_stream(
     DvzCanvas * canvas
 );
@@ -856,7 +856,7 @@ _Declared in `include/datoviz/canvas.h`:337._
 
 Submit the current frame to the internal stream and attached sinks.
 
-```c title="dvz_canvas_submit"
+```c
 int dvz_canvas_submit(
     DvzCanvas * canvas
 );
@@ -873,7 +873,7 @@ _Declared in `include/datoviz/canvas.h`:204._
 
 Read the recorded frame timings.
 
-```c title="dvz_canvas_timings"
+```c
 const DvzFrameTiming * dvz_canvas_timings(
     const DvzCanvas * canvas,
     size_t * count
@@ -894,7 +894,7 @@ _Declared in `include/datoviz/canvas.h`:348._
 
 Start an ImGui window.
 
-```c title="dvz_gui_begin"
+```c
 _Bool dvz_gui_begin(
     DvzGui * gui,
     const char * title,
@@ -917,7 +917,7 @@ _Declared in `include/datoviz/gui.h`:165._
 
 Show a button.
 
-```c title="dvz_gui_button"
+```c
 _Bool dvz_gui_button(
     DvzGui * gui,
     const char * label
@@ -936,7 +936,7 @@ _Declared in `include/datoviz/gui.h`:214._
 
 Show a checkbox.
 
-```c title="dvz_gui_checkbox"
+```c
 _Bool dvz_gui_checkbox(
     DvzGui * gui,
     const char * label,
@@ -957,7 +957,7 @@ _Declared in `include/datoviz/gui.h`:226._
 
 Show a collapsible section header.
 
-```c title="dvz_gui_collapsing_header"
+```c
 _Bool dvz_gui_collapsing_header(
     DvzGui * gui,
     const char * label,
@@ -978,7 +978,7 @@ _Declared in `include/datoviz/gui.h`:446._
 
 Show an RGBA color editor using float channels in [0, 1].
 
-```c title="dvz_gui_color_edit4"
+```c
 _Bool dvz_gui_color_edit4(
     DvzGui * gui,
     const char * label,
@@ -1001,7 +1001,7 @@ _Declared in `include/datoviz/gui.h`:398._
 
 Show an RGBA color editor using a DvzColor value.
 
-```c title="dvz_gui_color_edit_dvz"
+```c
 _Bool dvz_gui_color_edit_dvz(
     DvzGui * gui,
     const char * label,
@@ -1024,7 +1024,7 @@ _Declared in `include/datoviz/gui.h`:411._
 
 Show an RGBA color picker using float channels in [0, 1].
 
-```c title="dvz_gui_color_picker4"
+```c
 _Bool dvz_gui_color_picker4(
     DvzGui * gui,
     const char * label,
@@ -1047,7 +1047,7 @@ _Declared in `include/datoviz/gui.h`:424._
 
 Show a dropdown combo.
 
-```c title="dvz_gui_combo"
+```c
 _Bool dvz_gui_combo(
     DvzGui * gui,
     const char * label,
@@ -1072,7 +1072,7 @@ _Declared in `include/datoviz/gui.h`:239._
 
 Return the default GUI overlay configuration.
 
-```c title="dvz_gui_config"
+```c
 DvzGuiConfig dvz_gui_config(void);
 ```
 
@@ -1086,7 +1086,7 @@ _Declared in `include/datoviz/gui.h`:115._
 
 Show Dear ImGui's demo window.
 
-```c title="dvz_gui_demo"
+```c
 void dvz_gui_demo(
     DvzGui * gui,
     _Bool * open
@@ -1104,7 +1104,7 @@ _Declared in `include/datoviz/gui.h`:467._
 
 End the current ImGui window.
 
-```c title="dvz_gui_end"
+```c
 void dvz_gui_end(
     DvzGui * gui
 );
@@ -1120,7 +1120,7 @@ _Declared in `include/datoviz/gui.h`:174._
 
 Pop the current ImGui font.
 
-```c title="dvz_gui_pop_font"
+```c
 void dvz_gui_pop_font(
     DvzGui * gui
 );
@@ -1136,7 +1136,7 @@ _Declared in `include/datoviz/gui.h`:203._
 
 Push the default monospace ImGui font.
 
-```c title="dvz_gui_push_mono"
+```c
 _Bool dvz_gui_push_mono(
     DvzGui * gui
 );
@@ -1153,7 +1153,7 @@ _Declared in `include/datoviz/gui.h`:194._
 
 Show a float min/max range editor.
 
-```c title="dvz_gui_range_float"
+```c
 _Bool dvz_gui_range_float(
     DvzGui * gui,
     const char * label,
@@ -1184,7 +1184,7 @@ _Declared in `include/datoviz/gui.h`:383._
 
 Place the next item on the same line.
 
-```c title="dvz_gui_same_line"
+```c
 void dvz_gui_same_line(
     DvzGui * gui,
     float offset_from_start_x,
@@ -1204,7 +1204,7 @@ _Declared in `include/datoviz/gui.h`:457._
 
 Show a labeled separator.
 
-```c title="dvz_gui_separator_text"
+```c
 void dvz_gui_separator_text(
     DvzGui * gui,
     const char * label
@@ -1222,7 +1222,7 @@ _Declared in `include/datoviz/gui.h`:434._
 
 Show a float slider.
 
-```c title="dvz_gui_slider_float"
+```c
 _Bool dvz_gui_slider_float(
     DvzGui * gui,
     const char * label,
@@ -1247,7 +1247,7 @@ _Declared in `include/datoviz/gui.h`:255._
 
 Show a two-component float slider.
 
-```c title="dvz_gui_slider_float2"
+```c
 _Bool dvz_gui_slider_float2(
     DvzGui * gui,
     const char * label,
@@ -1272,7 +1272,7 @@ _Declared in `include/datoviz/gui.h`:284._
 
 Show a three-component float slider.
 
-```c title="dvz_gui_slider_float3"
+```c
 _Bool dvz_gui_slider_float3(
     DvzGui * gui,
     const char * label,
@@ -1297,7 +1297,7 @@ _Declared in `include/datoviz/gui.h`:299._
 
 Show a four-component float slider.
 
-```c title="dvz_gui_slider_float4"
+```c
 _Bool dvz_gui_slider_float4(
     DvzGui * gui,
     const char * label,
@@ -1322,7 +1322,7 @@ _Declared in `include/datoviz/gui.h`:314._
 
 Show a float slider with an explicit display format.
 
-```c title="dvz_gui_slider_float_format"
+```c
 _Bool dvz_gui_slider_float_format(
     DvzGui * gui,
     const char * label,
@@ -1349,7 +1349,7 @@ _Declared in `include/datoviz/gui.h`:329._
 
 Show an integer slider.
 
-```c title="dvz_gui_slider_int"
+```c
 _Bool dvz_gui_slider_int(
     DvzGui * gui,
     const char * label,
@@ -1374,7 +1374,7 @@ _Declared in `include/datoviz/gui.h`:269._
 
 Show a double range slider with two handles.
 
-```c title="dvz_gui_slider_range_double"
+```c
 _Bool dvz_gui_slider_range_double(
     DvzGui * gui,
     const char * label,
@@ -1403,7 +1403,7 @@ _Declared in `include/datoviz/gui.h`:364._
 
 Show a float range slider with two handles.
 
-```c title="dvz_gui_slider_range_float"
+```c
 _Bool dvz_gui_slider_range_float(
     DvzGui * gui,
     const char * label,
@@ -1432,7 +1432,7 @@ _Declared in `include/datoviz/gui.h`:346._
 
 Show an unformatted text item.
 
-```c title="dvz_gui_text"
+```c
 void dvz_gui_text(
     DvzGui * gui,
     const char * text
@@ -1455,7 +1455,7 @@ supplied figure may contain any scene panels and visuals; the viewport creates a
 offscreen view used to render that figure, then displays the latest source image in an
 ImGui window created by dvz_gui_viewport_window().
 
-```c title="dvz_gui_viewport"
+```c
 DvzGuiViewport * dvz_gui_viewport(
     DvzGui * gui,
     DvzFigure * figure,
@@ -1476,7 +1476,7 @@ _Declared in `include/datoviz/gui.h`:485._
 
 Return the default dockable Datoviz GUI viewport configuration.
 
-```c title="dvz_gui_viewport_config"
+```c
 DvzGuiViewportConfig dvz_gui_viewport_config(void);
 ```
 
@@ -1490,7 +1490,7 @@ _Declared in `include/datoviz/gui.h`:124._
 
 Destroy a dockable ImGui viewport.
 
-```c title="dvz_gui_viewport_destroy"
+```c
 void dvz_gui_viewport_destroy(
     DvzGuiViewport * viewport
 );
@@ -1510,7 +1510,7 @@ This is the advanced path for callers that already own the source view. Most use
 prefer dvz_gui_viewport(), which creates the offscreen source from a figure. The source window
 must use offscreen canvas rendering.
 
-```c title="dvz_gui_viewport_from_window"
+```c
 DvzGuiViewport * dvz_gui_viewport_from_window(
     DvzGui * gui,
     DvzView * source,
@@ -1534,7 +1534,7 @@ Return the input router used by a GUI viewport's offscreen view.
 Pass the returned router to dvz_panel_connect_input() to route input through scene panels
 rendered in the GUI viewport.
 
-```c title="dvz_gui_viewport_input"
+```c
 struct DvzInputRouter * dvz_gui_viewport_input(
     DvzGuiViewport * viewport
 );
@@ -1554,7 +1554,7 @@ Return the last mouse position over a dockable GUI viewport image.
 The position and size are in the viewport source window's logical coordinates. The returned
 state is refreshed by dvz_gui_viewport_window().
 
-```c title="dvz_gui_viewport_mouse"
+```c
 _Bool dvz_gui_viewport_mouse(
     DvzGuiViewport * viewport,
     float[2] out_pos,
@@ -1581,7 +1581,7 @@ Hidden or collapsed viewport windows stop rendering their source figure by defau
 first image is available. Set DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN to keep the source
 rendering continuously.
 
-```c title="dvz_gui_viewport_window"
+```c
 _Bool dvz_gui_viewport_window(
     DvzGuiViewport * viewport,
     const char * title,
@@ -1606,7 +1606,7 @@ _Declared in `include/datoviz/gui.h`:559._
 
 Emit a union input event.
 
-```c title="dvz_input_emit_event"
+```c
 void dvz_input_emit_event(
     DvzInputRouter * router,
     const DvzInputEvent * event
@@ -1624,7 +1624,7 @@ _Declared in `include/datoviz/input/router.h`:243._
 
 Emit a keyboard event. Callbacks run synchronously on the emitting thread.
 
-```c title="dvz_input_emit_keyboard"
+```c
 void dvz_input_emit_keyboard(
     DvzInputRouter * router,
     const DvzKeyboardEvent * event
@@ -1642,7 +1642,7 @@ _Declared in `include/datoviz/input/router.h`:173._
 
 Emit a pointer event. Callbacks run synchronously on the emitting thread.
 
-```c title="dvz_input_emit_pointer"
+```c
 void dvz_input_emit_pointer(
     DvzInputRouter * router,
     const DvzPointerEvent * event
@@ -1660,7 +1660,7 @@ _Declared in `include/datoviz/input/router.h`:156._
 
 Emit a resize event. Callbacks run synchronously on the emitting thread.
 
-```c title="dvz_input_emit_resize"
+```c
 void dvz_input_emit_resize(
     DvzInputRouter * router,
     const DvzInputResizeEvent * event
@@ -1678,7 +1678,7 @@ _Declared in `include/datoviz/input/router.h`:191._
 
 Emit a scale event. Callbacks run synchronously on the emitting thread.
 
-```c title="dvz_input_emit_scale"
+```c
 void dvz_input_emit_scale(
     DvzInputRouter * router,
     const DvzInputScaleEvent * event
@@ -1696,7 +1696,7 @@ _Declared in `include/datoviz/input/router.h`:222._
 
 Create a new router instance.
 
-```c title="dvz_input_router"
+```c
 DvzInputRouter * dvz_input_router(void);
 ```
 
@@ -1706,7 +1706,7 @@ _Declared in `include/datoviz/input/router.h`:115._
 
 Destroy a router.
 
-```c title="dvz_input_router_destroy"
+```c
 void dvz_input_router_destroy(
     DvzInputRouter * router
 );
@@ -1728,7 +1728,7 @@ Useful for late subscribers (e.g. controllers connected after window creation)
 to learn the current window/framebuffer dimensions without waiting for the
 next resize.
 
-```c title="dvz_input_router_last_resize"
+```c
 _Bool dvz_input_router_last_resize(
     const DvzInputRouter * router,
     DvzInputResizeEvent * out
@@ -1750,7 +1750,7 @@ This stream carries pointer, keyboard, resize, and scale events in one callback.
 `DvzPointerGestureHandler` is attached to the router, this stream also receives
 gesture-derived pointer events such as click, double-click, drag-start, drag, and drag-stop.
 
-```c title="dvz_input_subscribe_event"
+```c
 DvzCallbackId dvz_input_subscribe_event(
     DvzInputRouter * router,
     DvzInputCallback callback,
@@ -1771,7 +1771,7 @@ _Declared in `include/datoviz/input/router.h`:236._
 
 Subscribe to keyboard events.
 
-```c title="dvz_input_subscribe_keyboard"
+```c
 DvzCallbackId dvz_input_subscribe_keyboard(
     DvzInputRouter * router,
     DvzKeyboardCallback callback,
@@ -1797,7 +1797,7 @@ directly through `dvz_input_emit_pointer()`. Gesture-derived events such as clic
 drag-start, drag, and drag-stop are emitted on the union input stream; use
 `dvz_input_subscribe_event()` when those higher-level pointer events are needed.
 
-```c title="dvz_input_subscribe_pointer"
+```c
 DvzCallbackId dvz_input_subscribe_pointer(
     DvzInputRouter * router,
     DvzPointerCallback callback,
@@ -1818,7 +1818,7 @@ _Declared in `include/datoviz/input/router.h`:139._
 
 Subscribe to resize events.
 
-```c title="dvz_input_subscribe_resize"
+```c
 DvzCallbackId dvz_input_subscribe_resize(
     DvzInputRouter * router,
     DvzResizeCallback callback,
@@ -1839,7 +1839,7 @@ _Declared in `include/datoviz/input/router.h`:183._
 
 Subscribe to content scale events.
 
-```c title="dvz_input_subscribe_scale"
+```c
 DvzCallbackId dvz_input_subscribe_scale(
     DvzInputRouter * router,
     DvzScaleCallback callback,
@@ -1860,7 +1860,7 @@ _Declared in `include/datoviz/input/router.h`:215._
 
 Return a monotonic timestamp in nanoseconds.
 
-```c title="dvz_input_timestamp_ns"
+```c
 uint64_t dvz_input_timestamp_ns(void);
 ```
 
@@ -1873,7 +1873,7 @@ Unsubscribe from any router callback by subscription id.
 Returns true when a callback was removed and false when @p id is `DVZ_CALLBACK_ID_NONE` or is not
 currently registered on this router.
 
-```c title="dvz_input_unsubscribe"
+```c
 _Bool dvz_input_unsubscribe(
     DvzInputRouter * router,
     DvzCallbackId id
@@ -1893,7 +1893,7 @@ _Declared in `include/datoviz/input/router.h`:149._
 
 Emit a keyboard event on the router.
 
-```c title="dvz_keyboard_emit"
+```c
 void dvz_keyboard_emit(
     DvzInputRouter * router,
     DvzKeyboardEventType type,
@@ -1917,7 +1917,7 @@ _Declared in `include/datoviz/input/keyboard.h`:106._
 
 Return the modifier bit mask for a key.
 
-```c title="dvz_keyboard_modifier_bit"
+```c
 int dvz_keyboard_modifier_bit(
     DvzKeyCode key
 );
@@ -1933,7 +1933,7 @@ _Declared in `include/datoviz/input/keyboard.h`:68._
 
 Create a modifier tracker.
 
-```c title="dvz_keyboard_modifier_state"
+```c
 DvzKeyboardModifierState * dvz_keyboard_modifier_state(void);
 ```
 
@@ -1943,7 +1943,7 @@ _Declared in `include/datoviz/input/keyboard.h`:75._
 
 Destroy a modifier tracker.
 
-```c title="dvz_keyboard_modifier_state_destroy"
+```c
 void dvz_keyboard_modifier_state_destroy(
     DvzKeyboardModifierState * state
 );
@@ -1959,7 +1959,7 @@ _Declared in `include/datoviz/input/keyboard.h`:82._
 
 Return the current modifier mask.
 
-```c title="dvz_keyboard_modifier_state_mods"
+```c
 int dvz_keyboard_modifier_state_mods(
     const DvzKeyboardModifierState * state
 );
@@ -1975,7 +1975,7 @@ _Declared in `include/datoviz/input/keyboard.h`:99._
 
 Update the modifier tracker with a keyboard event.
 
-```c title="dvz_keyboard_modifier_state_update"
+```c
 DvzResult dvz_keyboard_modifier_state_update(
     DvzKeyboardModifierState * state,
     DvzKeyboardEventType type,
@@ -1998,7 +1998,7 @@ _Declared in `include/datoviz/input/keyboard.h`:91._
 
 Translate a backend mouse button identifier into the Datoviz pointer button enum.
 
-```c title="dvz_pointer_button_from_glfw"
+```c
 DvzPointerButton dvz_pointer_button_from_glfw(
     int button
 );
@@ -2014,7 +2014,7 @@ _Declared in `include/datoviz/input/pointer.h`:106._
 
 Emit a normalized pointer event on the router.
 
-```c title="dvz_pointer_emit_position"
+```c
 void dvz_pointer_emit_position(
     DvzInputRouter * router,
     DvzPointerEventType type,
@@ -2050,7 +2050,7 @@ _Declared in `include/datoviz/input/pointer.h`:120._
 
 Emit a wheel event with pixel deltas.
 
-```c title="dvz_pointer_emit_wheel"
+```c
 void dvz_pointer_emit_wheel(
     DvzInputRouter * router,
     float raw_x,
@@ -2090,7 +2090,7 @@ The interpreter listens to raw pointer events and emits gesture-derived pointer 
 router's union input stream. Subscribe with `dvz_input_subscribe_event()` to receive click,
 double-click, drag-start, drag, and drag-stop events.
 
-```c title="dvz_pointer_gesture_handler"
+```c
 DvzPointerGestureHandler * dvz_pointer_gesture_handler(
     DvzInputRouter * router
 );
@@ -2106,7 +2106,7 @@ _Declared in `include/datoviz/input/pointer.h`:144._
 
 Destroy the gesture interpreter.
 
-```c title="dvz_pointer_gesture_handler_destroy"
+```c
 void dvz_pointer_gesture_handler_destroy(
     DvzPointerGestureHandler * handler
 );
@@ -2124,7 +2124,7 @@ _Declared in `include/datoviz/input/pointer.h`:151._
 
 Attach a backend sink to a stream before it starts streaming.
 
-```c title="dvz_stream_attach_sink"
+```c
 int dvz_stream_attach_sink(
     DvzStream * stream,
     const DvzStreamSinkBackend * backend,
@@ -2145,7 +2145,7 @@ _Declared in `include/datoviz/stream.h`:71._
 
 Look up a registered sink backend by name and attach it to the stream.
 
-```c title="dvz_stream_attach_sink_name"
+```c
 int dvz_stream_attach_sink_name(
     DvzStream * stream,
     const char * backend_name,
@@ -2166,7 +2166,7 @@ _Declared in `include/datoviz/stream.h`:84._
 
 Return a default stream configuration (1920×1080 @ 60 FPS, RGBA8).
 
-```c title="dvz_stream_config"
+```c
 DvzStreamConfig dvz_stream_config(void);
 ```
 
@@ -2182,7 +2182,7 @@ _Declared in `include/datoviz/stream.h`:35._
 
 Allocate a stream tied to a Vulkan device and the requested configuration.
 
-```c title="dvz_stream_create"
+```c
 DvzStream * dvz_stream_create(
     DvzDevice * device,
     DvzStreamSinkRegistry * sink_registry,
@@ -2205,7 +2205,7 @@ _Declared in `include/datoviz/stream.h`:47._
 
 Stop the stream, detach sinks, and free the associated resources.
 
-```c title="dvz_stream_destroy"
+```c
 void dvz_stream_destroy(
     DvzStream * stream
 );
@@ -2223,7 +2223,7 @@ _Declared in `include/datoviz/stream.h`:57._
 
 Return the Vulkan device associated with the stream.
 
-```c title="dvz_stream_device"
+```c
 DvzDevice * dvz_stream_device(
     DvzStream * stream
 );
@@ -2240,7 +2240,7 @@ _Declared in `include/datoviz/stream.h`:138._
 
 Return the configuration currently driving the stream.
 
-```c title="dvz_stream_get_config"
+```c
 const DvzStreamConfig * dvz_stream_get_config(
     DvzStream * stream
 );
@@ -2257,7 +2257,7 @@ _Declared in `include/datoviz/stream.h`:148._
 
 Allocate a stream sink registry instance.
 
-```c title="dvz_stream_sink_registry_create"
+```c
 DvzStreamSinkRegistry * dvz_stream_sink_registry_create(void);
 ```
 
@@ -2273,7 +2273,7 @@ _Declared in `include/datoviz/stream.h`:193._
 
 Destroy a stream sink registry and free its internal storage.
 
-```c title="dvz_stream_sink_registry_destroy"
+```c
 void dvz_stream_sink_registry_destroy(
     DvzStreamSinkRegistry * registry
 );
@@ -2291,7 +2291,7 @@ _Declared in `include/datoviz/stream.h`:201._
 
 Find a registered sink backend by name.
 
-```c title="dvz_stream_sink_registry_find"
+```c
 const DvzStreamSinkBackend * dvz_stream_sink_registry_find(
     DvzStreamSinkRegistry * registry,
     const char * name
@@ -2310,7 +2310,7 @@ _Declared in `include/datoviz/stream.h`:170._
 
 Pick a sink backend by name or probe registered backends automatically.
 
-```c title="dvz_stream_sink_registry_pick"
+```c
 const DvzStreamSinkBackend * dvz_stream_sink_registry_pick(
     DvzStreamSinkRegistry * registry,
     const char * name,
@@ -2331,7 +2331,7 @@ _Declared in `include/datoviz/stream.h`:184._
 
 Register a sink backend for later attachment by name or automatic selection.
 
-```c title="dvz_stream_sink_registry_register"
+```c
 void dvz_stream_sink_registry_register(
     DvzStreamSinkRegistry * registry,
     const DvzStreamSinkBackend * backend
@@ -2349,7 +2349,7 @@ _Declared in `include/datoviz/stream.h`:158._
 
 Access the built-in video sink backend that encodes stream frames.
 
-```c title="dvz_stream_sink_video"
+```c
 const DvzStreamSinkBackend * dvz_stream_sink_video(void);
 ```
 
@@ -2363,7 +2363,7 @@ _Declared in `include/datoviz/video.h`:144._
 
 Start the stream by providing a frame description and launching every sink.
 
-```c title="dvz_stream_start"
+```c
 int dvz_stream_start(
     DvzStream * stream,
     const DvzStreamFrame * frame
@@ -2382,7 +2382,7 @@ _Declared in `include/datoviz/stream.h`:96._
 
 Stop the stream and all attached sinks.
 
-```c title="dvz_stream_stop"
+```c
 int dvz_stream_stop(
     DvzStream * stream
 );
@@ -2399,7 +2399,7 @@ _Declared in `include/datoviz/stream.h`:128._
 
 Submit the current frame to all sinks, forwarding the timeline wait value.
 
-```c title="dvz_stream_submit"
+```c
 int dvz_stream_submit(
     DvzStream * stream,
     uint64_t wait_value
@@ -2418,7 +2418,7 @@ _Declared in `include/datoviz/stream.h`:107._
 
 Update the frame description while the stream is running, restarting sinks if needed.
 
-```c title="dvz_stream_update"
+```c
 int dvz_stream_update(
     DvzStream * stream,
     const DvzStreamFrame * frame
@@ -2442,7 +2442,7 @@ Return the encoder configuration used when no overrides are supplied.
 Width, height, and FPS are zero in the returned initializer. Canvas/stream users inherit those
 fields from the stream; standalone encoder creation resolves them to 1080p60.
 
-```c title="dvz_video_encoder_config"
+```c
 DvzVideoEncoderConfig dvz_video_encoder_config(void);
 ```
 
@@ -2459,7 +2459,7 @@ Return the default video sink configuration that wraps the encoder defaults.
 The nested encoder leaves width, height, and FPS unresolved so canvas/stream attachment can
 inherit the active stream geometry and cadence.
 
-```c title="dvz_video_sink_config"
+```c
 DvzVideoSinkConfig dvz_video_sink_config(void);
 ```
 
@@ -2480,7 +2480,7 @@ Descriptor dimensions use the `size_policy` and `size_*` fields.  For offscreen 
 derives the framebuffer size from logical dimensions and device scale.  render_scale is tracked
 separately for future supersampling and does not currently change the framebuffer size.
 
-```c title="dvz_view"
+```c
 DvzView * dvz_view(
     DvzApp * app,
     DvzFigure * figure,
@@ -2501,7 +2501,7 @@ _Declared in `include/datoviz/app.h`:447._
 
 Create, bind, and connect an arcball controller for one panel.
 
-```c title="dvz_view_arcball"
+```c
 DvzArcball * dvz_view_arcball(
     DvzView * view,
     DvzPanel * panel,
@@ -2522,7 +2522,7 @@ _Declared in `include/datoviz/app.h`:721._
 
 Bind a controller to a panel and connect the panel to a view input router.
 
-```c title="dvz_view_bind_controller"
+```c
 DvzResult dvz_view_bind_controller(
     DvzView * view,
     DvzPanel * panel,
@@ -2547,7 +2547,7 @@ Return the underlying DvzCanvas for a window.
 
 Gives access to the full canvas API (capture, video sink, live-image sink, etc.).
 
-```c title="dvz_view_canvas"
+```c
 struct DvzCanvas * dvz_view_canvas(
     DvzView * view
 );
@@ -2567,7 +2567,7 @@ Return the runtime capability snapshot for a live view.
 The snapshot is scene-facing and backend-neutral. It reports the runtime facts used by scene
 planning and query/readback adaptation without exposing Vulkan, canvas, or runtime handles.
 
-```c title="dvz_view_capabilities"
+```c
 _Bool dvz_view_capabilities(
     const DvzView * view,
     DvzCapabilitySnapshot * out
@@ -2590,7 +2590,7 @@ This is a convenience wrapper around dvz_app_capture_config_from_env() and
 dvz_view_capture_start(). If `DVZ_CAPTURE` is unset or disables capture, the function is a
 no-op and returns success.
 
-```c title="dvz_view_capture_from_env"
+```c
 DvzResult dvz_view_capture_from_env(
     DvzView * view,
     const char * basename
@@ -2613,7 +2613,7 @@ Convenience wrapper around dvz_view_canvas() + dvz_canvas_capture_png().
 Call after at least one dvz_app_run() iteration. PNG capture is an sRGB RGBA8 screenshot/export,
 not a scientific linear-float readback.
 
-```c title="dvz_view_capture_png"
+```c
 DvzResult dvz_view_capture_png(
     DvzView * view,
     const char * path
@@ -2636,7 +2636,7 @@ DVZR capture records emitted app DRP2 frame streams, video capture enables the c
 sink, and PNG capture is written when dvz_view_capture_stop() is called after rendering. PNG and
 CPU video capture use sRGB RGBA8 screenshot pixels.
 
-```c title="dvz_view_capture_start"
+```c
 DvzResult dvz_view_capture_start(
     DvzView * view,
     const DvzAppCaptureConfig * config
@@ -2658,7 +2658,7 @@ Stop active captures started by dvz_view_capture_start().
 Video capture is disabled, DVZR recordings are closed, and pending PNG capture is written from
 the last rendered frame as sRGB RGBA8 screenshot pixels.
 
-```c title="dvz_view_capture_stop"
+```c
 DvzResult dvz_view_capture_stop(
     DvzView * view
 );
@@ -2675,7 +2675,7 @@ _Declared in `include/datoviz/app.h`:825._
 
 Connect a panel's bound controllers to a view input router.
 
-```c title="dvz_view_connect_panel"
+```c
 DvzResult dvz_view_connect_panel(
     DvzView * view,
     DvzPanel * panel
@@ -2694,7 +2694,7 @@ _Declared in `include/datoviz/app.h`:684._
 
 Return the default descriptor for one view kind.
 
-```c title="dvz_view_desc"
+```c
 DvzViewDesc dvz_view_desc(
     DvzViewKind kind
 );
@@ -2713,7 +2713,7 @@ _Declared in `include/datoviz/app.h`:366._
 
 Return the current device scale for a view.
 
-```c title="dvz_view_device_scale"
+```c
 float dvz_view_device_scale(
     const DvzView * view
 );
@@ -2730,7 +2730,7 @@ _Declared in `include/datoviz/app.h`:583._
 
 Return the current two-axis device scale for a view.
 
-```c title="dvz_view_device_scale_xy"
+```c
 DvzScaleXY dvz_view_device_scale_xy(
     const DvzView * view
 );
@@ -2747,7 +2747,7 @@ _Declared in `include/datoviz/app.h`:592._
 
 Emit a hosted keyboard event for a view.
 
-```c title="dvz_view_emit_key"
+```c
 DvzResult dvz_view_emit_key(
     DvzView * view,
     DvzKeyboardEventType type,
@@ -2770,7 +2770,7 @@ _Declared in `include/datoviz/app.h`:551._
 
 Emit a hosted pointer position/button event for a view.
 
-```c title="dvz_view_emit_pointer"
+```c
 DvzResult dvz_view_emit_pointer(
     DvzView * view,
     DvzPointerEventType type,
@@ -2804,7 +2804,7 @@ Emit a hosted resize event for a view.
 External UI adapters call this after host resize notifications so Datoviz controllers and figure
 sizing see the host's logical and framebuffer dimensions.
 
-```c title="dvz_view_emit_resize"
+```c
 DvzResult dvz_view_emit_resize(
     DvzView * view,
     uint32_t framebuffer_width,
@@ -2833,7 +2833,7 @@ _Declared in `include/datoviz/app.h`:500._
 
 Emit a hosted pointer wheel event for a view.
 
-```c title="dvz_view_emit_wheel"
+```c
 DvzResult dvz_view_emit_wheel(
     DvzView * view,
     float x,
@@ -2868,7 +2868,7 @@ The caller owns the native event loop and must create the Vulkan surface using t
 extensions passed to dvz_app_with_config().  Datoviz owns only the rendering objects built on
 top of the supplied surface unless surface->owned_by_datoviz is true.
 
-```c title="dvz_view_external_surface"
+```c
 DvzView * dvz_view_external_surface(
     DvzApp * app,
     DvzFigure * figure,
@@ -2889,7 +2889,7 @@ _Declared in `include/datoviz/app_interop.h`:61._
 
 Create, bind, and connect a fly controller for one panel.
 
-```c title="dvz_view_fly"
+```c
 DvzFly * dvz_view_fly(
     DvzView * view,
     DvzPanel * panel,
@@ -2910,7 +2910,7 @@ _Declared in `include/datoviz/app.h`:733._
 
 Return the current framebuffer view size.
 
-```c title="dvz_view_framebuffer_size"
+```c
 void dvz_view_framebuffer_size(
     const DvzView * view,
     uint32_t * out_width,
@@ -2930,7 +2930,7 @@ _Declared in `include/datoviz/app.h`:633._
 
 Attach a Dear ImGui overlay to a GLFW view.
 
-```c title="dvz_view_gui"
+```c
 DvzGui * dvz_view_gui(
     DvzView * view,
     const DvzGuiConfig * config
@@ -2952,7 +2952,7 @@ Return the input router for a view.
 Pass the returned router to dvz_panel_connect_input() to route panel-local input through
 scene-owned controller bindings. Returns NULL when GPU support is absent.
 
-```c title="dvz_view_input"
+```c
 struct DvzInputRouter * dvz_view_input(
     DvzView * view
 );
@@ -2969,7 +2969,7 @@ _Declared in `include/datoviz/app.h`:574._
 
 Return the current logical view size.
 
-```c title="dvz_view_logical_size"
+```c
 void dvz_view_logical_size(
     const DvzView * view,
     uint32_t * out_width,
@@ -2992,7 +2992,7 @@ Create an offscreen view for a figure.
 The figure's panels and visuals are rendered into an offscreen framebuffer of the given size
 on every call to dvz_app_run().
 
-```c title="dvz_view_offscreen"
+```c
 DvzView * dvz_view_offscreen(
     DvzApp * app,
     DvzFigure * figure,
@@ -3015,7 +3015,7 @@ _Declared in `include/datoviz/app.h`:462._
 
 Create, bind, and connect a panzoom controller for one panel.
 
-```c title="dvz_view_panzoom"
+```c
 DvzPanzoom * dvz_view_panzoom(
     DvzView * view,
     DvzPanel * panel,
@@ -3040,7 +3040,7 @@ The callback is queued from any thread and drained near the start of dvz_view_re
 The queue stores the callback pointer and user_data value verbatim; the caller must ensure both
 remain valid until the callback has run.
 
-```c title="dvz_view_post"
+```c
 DvzResult dvz_view_post(
     DvzView * view,
     DvzViewPostCallback callback,
@@ -3065,7 +3065,7 @@ The recording is a `.dvzr` directory written by the DRP2 linear recorder. Frames
 from the app draw path after successful runtime execution. Call
 dvz_view_record_stop() to close the recording before replaying it.
 
-```c title="dvz_view_record_start"
+```c
 DvzResult dvz_view_record_start(
     DvzView * view,
     const char * path
@@ -3084,7 +3084,7 @@ _Declared in `include/datoviz/app.h`:839._
 
 Stop recording emitted scene DRP2 frame streams for a view.
 
-```c title="dvz_view_record_stop"
+```c
 DvzResult dvz_view_record_stop(
     DvzView * view
 );
@@ -3105,7 +3105,7 @@ Clears the request-frame callback, marks the surface temporarily unavailable, an
 render-once step so the present swapchain observes the unavailable surface and releases borrowed
 surface-dependent objects. The host remains responsible for destroying the VkSurfaceKHR.
 
-```c title="dvz_view_release_external_surface"
+```c
 int dvz_view_release_external_surface(
     DvzView * view
 );
@@ -3122,7 +3122,7 @@ _Declared in `include/datoviz/app_interop.h`:90._
 
 Return whether rendering is enabled for a view.
 
-```c title="dvz_view_render_enabled"
+```c
 _Bool dvz_view_render_enabled(
     const DvzView * view
 );
@@ -3143,7 +3143,7 @@ This is the primary hosted-loop primitive for Qt, SDL, Tk, IPython, and other in
 the caller owns scheduling. Returns the dvz_canvas_frame() status when no frame was submitted.
 Disabled views are skipped and return DVZ_CANVAS_FRAME_READY without submitting.
 
-```c title="dvz_view_render_once"
+```c
 int dvz_view_render_once(
     DvzView * view
 );
@@ -3160,7 +3160,7 @@ _Declared in `include/datoviz/app.h`:1076._
 
 Return the current render scale.
 
-```c title="dvz_view_render_scale"
+```c
 float dvz_view_render_scale(
     const DvzView * view
 );
@@ -3177,7 +3177,7 @@ _Declared in `include/datoviz/app.h`:655._
 
 Return the number of frames in the active replay recording.
 
-```c title="dvz_view_replay_frame_count"
+```c
 uint32_t dvz_view_replay_frame_count(
     const DvzView * view
 );
@@ -3196,7 +3196,7 @@ Enable or disable replay looping.
 
 Looping resets the app DRP2 runtime before replay starts from frame zero again.
 
-```c title="dvz_view_replay_set_loop"
+```c
 DvzResult dvz_view_replay_set_loop(
     DvzView * view,
     _Bool loop
@@ -3215,7 +3215,7 @@ _Declared in `include/datoviz/app.h`:904._
 
 Enable or disable timestamp-paced replay.
 
-```c title="dvz_view_replay_set_paced"
+```c
 DvzResult dvz_view_replay_set_paced(
     DvzView * view,
     _Bool paced
@@ -3236,7 +3236,7 @@ Set replay speed multiplier.
 
 Values below or equal to zero are ignored. A value of 2 plays twice as fast.
 
-```c title="dvz_view_replay_set_speed"
+```c
 DvzResult dvz_view_replay_set_speed(
     DvzView * view,
     double speed
@@ -3258,7 +3258,7 @@ Start live replay of a DRP2 recording in a view.
 The replay path executes recorded DRP2 frame streams directly. App recordings render into the
 current view frame by attaching that borrowed frame under the recording's target id.
 
-```c title="dvz_view_replay_start"
+```c
 DvzResult dvz_view_replay_start(
     DvzView * view,
     const char * path
@@ -3277,7 +3277,7 @@ _Declared in `include/datoviz/app.h`:861._
 
 Stop live replay and release the loaded recording.
 
-```c title="dvz_view_replay_stop"
+```c
 DvzResult dvz_view_replay_stop(
     DvzView * view
 );
@@ -3297,7 +3297,7 @@ Request that the host schedules another frame for a view.
 Hosted UI adapters should map the registered callback to their native repaint primitive, for
 example QWindow::requestUpdate(), QWidget::update(), an SDL wakeup, or a Tk idle callback.
 
-```c title="dvz_view_request_frame"
+```c
 DvzResult dvz_view_request_frame(
     DvzView * view
 );
@@ -3317,7 +3317,7 @@ Resize a view's logical and framebuffer extent.
 Intended for offscreen or externally-hosted windows whose size is controlled by another UI
 toolkit. GLFW windows should normally be resized by the platform window itself.
 
-```c title="dvz_view_resize"
+```c
 DvzResult dvz_view_resize(
     DvzView * view,
     uint32_t width,
@@ -3342,7 +3342,7 @@ This is intended for hosted/offscreen views displayed in a higher-DPI container.
 logical dimensions while the canvas renders into framebuffer dimensions derived from the device
 scale.
 
-```c title="dvz_view_resize_scaled"
+```c
 DvzResult dvz_view_resize_scaled(
     DvzView * view,
     uint32_t logical_width,
@@ -3368,7 +3368,7 @@ Resize a view with distinct logical dimensions and per-axis device scale.
 This is intended for hosted/offscreen views displayed in a container whose X and Y device scales
 differ. Most callers should use `dvz_view_resize_scaled()` when the scale is uniform.
 
-```c title="dvz_view_resize_scaled_xy"
+```c
 DvzResult dvz_view_resize_scaled_xy(
     DvzView * view,
     uint32_t logical_width,
@@ -3393,7 +3393,7 @@ _Declared in `include/datoviz/app.h`:960._
 
 Return the current resolved view size contract.
 
-```c title="dvz_view_resolved_size"
+```c
 DvzResolvedViewSize dvz_view_resolved_size(
     const DvzView * view
 );
@@ -3414,7 +3414,7 @@ The callback runs after the scene frame artifact has been emitted, executed, req
 has completed, and the artifact-owned stream snapshot has been destroyed. Scene mutations from
 the callback are therefore allowed and become visible on the next frame.
 
-```c title="dvz_view_set_frame_callback"
+```c
 DvzResult dvz_view_set_frame_callback(
     DvzView * view,
     DvzViewFrameCallback callback,
@@ -3438,7 +3438,7 @@ Register a GUI callback called while building each ImGui frame.
 The callback is applied only after `dvz_view_gui()` has created the overlay. Calling this before
 overlay creation is a no-op in v0.4.
 
-```c title="dvz_view_set_gui_callback"
+```c
 DvzResult dvz_view_set_gui_callback(
     DvzView * view,
     DvzGuiCallback callback,
@@ -3462,7 +3462,7 @@ Enable or disable rendering for a view.
 Disabled windows remain owned by the app but dvz_view_render_once() skips them. This is
 intended for hosted/offscreen integrations such as hidden dock tabs.
 
-```c title="dvz_view_set_render_enabled"
+```c
 DvzResult dvz_view_set_render_enabled(
     DvzView * view,
     _Bool enabled
@@ -3484,7 +3484,7 @@ Register a callback invoked whenever Datoviz requests another frame.
 This is a passive scheduling signal: it does not change dvz_app_run() behavior and does not
 render by itself. The host remains responsible for calling dvz_view_render_once().
 
-```c title="dvz_view_set_request_frame_callback"
+```c
 DvzResult dvz_view_set_request_frame_callback(
     DvzView * view,
     DvzViewRequestFrameCallback callback,
@@ -3505,7 +3505,7 @@ _Declared in `include/datoviz/app.h`:1039._
 
 Set the user scale for UI-like scene quantities.
 
-```c title="dvz_view_set_user_scale"
+```c
 DvzResult dvz_view_set_user_scale(
     DvzView * view,
     float scale
@@ -3524,7 +3524,7 @@ _Declared in `include/datoviz/app.h`:674._
 
 Return the current view size in an explicit size space.
 
-```c title="dvz_view_size"
+```c
 DvzExtent dvz_view_size(
     const DvzView * view,
     DvzSizeSpace space
@@ -3543,7 +3543,7 @@ _Declared in `include/datoviz/app.h`:602._
 
 Return a framebuffer-exact size request.
 
-```c title="dvz_view_size_desc_framebuffer_px"
+```c
 DvzViewSizeDesc dvz_view_size_desc_framebuffer_px(
     uint32_t width,
     uint32_t height
@@ -3562,7 +3562,7 @@ _Declared in `include/datoviz/app.h`:377._
 
 Return a host-window logical-pixel size request.
 
-```c title="dvz_view_size_desc_host_logical_px"
+```c
 DvzViewSizeDesc dvz_view_size_desc_host_logical_px(
     uint32_t width,
     uint32_t height
@@ -3583,7 +3583,7 @@ Return a physical-millimeter size request.
 
 The canvas/reference extent is derived from the physical target and reference_dpi.
 
-```c title="dvz_view_size_desc_physical_mm"
+```c
 DvzViewSizeDesc dvz_view_size_desc_physical_mm(
     double width_mm,
     double height_mm,
@@ -3608,7 +3608,7 @@ Reference pixels are CSS-like canvas units.  A reference-pixel canvas targets a 
 of width/reference_dpi by height/reference_dpi inches when live-window physical metrics are
 available.
 
-```c title="dvz_view_size_desc_reference_px"
+```c
 DvzViewSizeDesc dvz_view_size_desc_reference_px(
     double width,
     double height,
@@ -3632,7 +3632,7 @@ Resolve a size descriptor without creating a view.
 This deterministic resolver uses descriptor overrides only.  Live-window backend metrics may
 refine the final resolved size after view creation; query that with dvz_view_resolved_size().
 
-```c title="dvz_view_size_resolve"
+```c
 DvzResolvedViewSize dvz_view_size_resolve(
     const DvzViewSizeDesc * desc,
     DvzViewKind kind
@@ -3651,7 +3651,7 @@ _Declared in `include/datoviz/app.h`:431._
 
 Create, bind, and connect a turntable controller for one panel.
 
-```c title="dvz_view_turntable"
+```c
 DvzTurntable * dvz_view_turntable(
     DvzView * view,
     DvzPanel * panel,
@@ -3676,7 +3676,7 @@ Use this when the host toolkit recreates or resizes its native surface.  A NULL 
 accepted to mark the surface temporarily unavailable; rendering then returns
 DVZ_CANVAS_FRAME_WAIT_SURFACE until a valid surface is supplied again.
 
-```c title="dvz_view_update_external_surface"
+```c
 DvzResult dvz_view_update_external_surface(
     DvzView * view,
     const DvzWindowExternalSurfaceInfo * surface
@@ -3695,7 +3695,7 @@ _Declared in `include/datoviz/app_interop.h`:76._
 
 Return the current user scale for UI-like scene quantities.
 
-```c title="dvz_view_user_scale"
+```c
 float dvz_view_user_scale(
     const DvzView * view
 );
@@ -3716,7 +3716,7 @@ This function is safe to call from another thread. It requests scheduler attenti
 executing user-posted callbacks immediately; posted callbacks are drained on the view owner
 thread by dvz_view_render_once().
 
-```c title="dvz_view_wake"
+```c
 DvzResult dvz_view_wake(
     DvzView * view
 );
@@ -3739,7 +3739,7 @@ dvz_app_run(app, 0) drives rendering until the user closes the window.
 Uses the configured native window backend. Returns NULL when the backend is unavailable, no
 display is available, or window creation fails.
 
-```c title="dvz_view_window"
+```c
 DvzView * dvz_view_window(
     DvzApp * app,
     DvzFigure * figure,
@@ -3766,7 +3766,7 @@ _Declared in `include/datoviz/app.h`:481._
 
 Emit a resize event and refresh the cached surface state.
 
-```c title="dvz_window_backend_emit_resize"
+```c
 void dvz_window_backend_emit_resize(
     DvzWindow * window,
     uint32_t framebuffer_width,
@@ -3794,7 +3794,7 @@ _Declared in `include/datoviz/window/backend.h`:296._
 
 Emit a content scale event.
 
-```c title="dvz_window_backend_emit_scale"
+```c
 void dvz_window_backend_emit_scale(
     DvzWindow * window,
     float content_scale_x,
@@ -3814,7 +3814,7 @@ _Declared in `include/datoviz/window/backend.h`:310._
 
 Retrieve the backend-specific handle stored with the window.
 
-```c title="dvz_window_backend_handle"
+```c
 void * dvz_window_backend_handle(
     const DvzWindow * window
 );
@@ -3831,7 +3831,7 @@ _Declared in `include/datoviz/window/backend.h`:166._
 
 Retrieve backend payload associated with the window.
 
-```c title="dvz_window_backend_payload"
+```c
 void * dvz_window_backend_payload(
     const DvzWindow * window
 );
@@ -3848,7 +3848,7 @@ _Declared in `include/datoviz/window/backend.h`:186._
 
 Access the router attached to the window.
 
-```c title="dvz_window_backend_router"
+```c
 DvzInputRouter * dvz_window_backend_router(
     DvzWindow * window
 );
@@ -3865,7 +3865,7 @@ _Declared in `include/datoviz/window/backend.h`:136._
 
 Store a backend-specific handle on the window.
 
-```c title="dvz_window_backend_set_handle"
+```c
 void dvz_window_backend_set_handle(
     DvzWindow * window,
     void * handle
@@ -3883,7 +3883,7 @@ _Declared in `include/datoviz/window/backend.h`:156._
 
 Store additional backend data on the window.
 
-```c title="dvz_window_backend_set_payload"
+```c
 void dvz_window_backend_set_payload(
     DvzWindow * window,
     void * payload
@@ -3901,7 +3901,7 @@ _Declared in `include/datoviz/window/backend.h`:176._
 
 Access the surface description for mutation.
 
-```c title="dvz_window_backend_surface"
+```c
 DvzWindowSurface * dvz_window_backend_surface(
     DvzWindow * window
 );
@@ -3918,7 +3918,7 @@ _Declared in `include/datoviz/window/backend.h`:146._
 
 Return the backend currently serving the window.
 
-```c title="dvz_window_backend_type"
+```c
 DvzBackend dvz_window_backend_type(
     const DvzWindow * window
 );
@@ -3935,7 +3935,7 @@ _Declared in `include/datoviz/window.h`:204._
 
 Return the default configuration used when callers pass NULL.
 
-```c title="dvz_window_config"
+```c
 DvzWindowConfig dvz_window_config(void);
 ```
 
@@ -3951,7 +3951,7 @@ _Declared in `include/datoviz/window.h`:113._
 
 Create a window using the preferred backend.
 
-```c title="dvz_window_create"
+```c
 DvzWindow * dvz_window_create(
     DvzWindowHost * host,
     DvzBackend backend,
@@ -3974,7 +3974,7 @@ _Declared in `include/datoviz/window.h`:125._
 
 Destroy a window and free backend resources.
 
-```c title="dvz_window_destroy"
+```c
 void dvz_window_destroy(
     DvzWindow * window
 );
@@ -3992,7 +3992,7 @@ _Declared in `include/datoviz/window.h`:135._
 
 Return a default external-surface descriptor.
 
-```c title="dvz_window_external_surface_info"
+```c
 DvzWindowExternalSurfaceInfo dvz_window_external_surface_info(void);
 ```
 
@@ -4006,7 +4006,7 @@ _Declared in `include/datoviz/window/backend.h`:127._
 
 Check whether a pending frame has yet to be processed.
 
-```c title="dvz_window_frame_pending"
+```c
 _Bool dvz_window_frame_pending(
     const DvzWindow * window
 );
@@ -4023,7 +4023,7 @@ _Declared in `include/datoviz/window.h`:194._
 
 Initialize GLFW so instance extensions can be queried before a window exists.
 
-```c title="dvz_window_glfw_init"
+```c
 _Bool dvz_window_glfw_init(void);
 ```
 
@@ -4040,7 +4040,7 @@ Register raw GLFW input callbacks for integrations that must see events before D
 These callbacks are only used by GLFW windows. A callback returning true consumes the event and
 prevents the corresponding Datoviz pointer/keyboard event from being emitted.
 
-```c title="dvz_window_glfw_set_input_callbacks"
+```c
 void dvz_window_glfw_set_input_callbacks(
     DvzWindow * window,
     const DvzWindowGlfwInputCallbacks * callbacks,
@@ -4060,7 +4060,7 @@ _Declared in `include/datoviz/window/backend.h`:208._
 
 Create a window host that stores available backends and owned windows.
 
-```c title="dvz_window_host"
+```c
 DvzWindowHost * dvz_window_host(void);
 ```
 
@@ -4074,7 +4074,7 @@ _Declared in `include/datoviz/window.h`:44._
 
 Destroy a window host and all windows associated with it.
 
-```c title="dvz_window_host_destroy"
+```c
 void dvz_window_host_destroy(
     DvzWindowHost * host
 );
@@ -4090,7 +4090,7 @@ _Declared in `include/datoviz/window.h`:53._
 
 Poll every registered backend for events.
 
-```c title="dvz_window_host_poll"
+```c
 void dvz_window_host_poll(
     DvzWindowHost * host
 );
@@ -4106,7 +4106,7 @@ _Declared in `include/datoviz/window.h`:73._
 
 Register a backend so it can be used during window creation.
 
-```c title="dvz_window_host_register_backend"
+```c
 void dvz_window_host_register_backend(
     DvzWindowHost * host,
     const DvzWindowBackend * backend
@@ -4124,7 +4124,7 @@ _Declared in `include/datoviz/window.h`:63._
 
 Request a frame for the given window.
 
-```c title="dvz_window_host_request_frame"
+```c
 void dvz_window_host_request_frame(
     DvzWindowHost * host,
     DvzWindow * window
@@ -4142,7 +4142,7 @@ _Declared in `include/datoviz/window.h`:100._
 
 Query the required Vulkan instance extension count for a backend.
 
-```c title="dvz_window_host_required_extension_count"
+```c
 uint32_t dvz_window_host_required_extension_count(
     DvzWindowHost * host,
     DvzBackend backend
@@ -4161,7 +4161,7 @@ _Declared in `include/datoviz/window/backend.h`:267._
 
 Query backend-required Vulkan instance extension names.
 
-```c title="dvz_window_host_required_extensions"
+```c
 int dvz_window_host_required_extensions(
     DvzWindowHost * host,
     DvzBackend backend,
@@ -4184,7 +4184,7 @@ _Declared in `include/datoviz/window/backend.h`:280._
 
 Wait for backend events, blocking until an event is available when supported.
 
-```c title="dvz_window_host_wait"
+```c
 void dvz_window_host_wait(
     DvzWindowHost * host
 );
@@ -4200,7 +4200,7 @@ _Declared in `include/datoviz/window.h`:81._
 
 Wait for backend events with a timeout.
 
-```c title="dvz_window_host_wait_timeout"
+```c
 void dvz_window_host_wait_timeout(
     DvzWindowHost * host,
     double seconds
@@ -4218,7 +4218,7 @@ _Declared in `include/datoviz/window.h`:90._
 
 Return the cached logical/native/surface metrics for the window.
 
-```c title="dvz_window_metrics"
+```c
 const DvzWindowMetrics * dvz_window_metrics(
     const DvzWindow * window
 );
@@ -4235,7 +4235,7 @@ _Declared in `include/datoviz/window.h`:154._
 
 Register the GLFW backend on the host.
 
-```c title="dvz_window_register_glfw_backend"
+```c
 void dvz_window_register_glfw_backend(
     DvzWindowHost * host
 );
@@ -4251,7 +4251,7 @@ _Declared in `include/datoviz/window/backend.h`:332._
 
 Register the built-in headless backend on the host.
 
-```c title="dvz_window_register_headless_backend"
+```c
 void dvz_window_register_headless_backend(
     DvzWindowHost * host
 );
@@ -4267,7 +4267,7 @@ _Declared in `include/datoviz/window/backend.h`:323._
 
 Register the Qt backend on the host (if provided by downstream code).
 
-```c title="dvz_window_register_qt_backend"
+```c
 void dvz_window_register_qt_backend(
     DvzWindowHost * host
 );
@@ -4283,7 +4283,7 @@ _Declared in `include/datoviz/window/backend.h`:350._
 
 Register the built-in wrap backend on the host.
 
-```c title="dvz_window_register_wrap_backend"
+```c
 void dvz_window_register_wrap_backend(
     DvzWindowHost * host
 );
@@ -4299,7 +4299,7 @@ _Declared in `include/datoviz/window/backend.h`:341._
 
 Retrieve the router used to emit input events for the window.
 
-```c title="dvz_window_router"
+```c
 DvzInputRouter * dvz_window_router(
     DvzWindow * window
 );
@@ -4316,7 +4316,7 @@ _Declared in `include/datoviz/window.h`:164._
 
 Store an opaque user data pointer on the window.
 
-```c title="dvz_window_set_user_data"
+```c
 void dvz_window_set_user_data(
     DvzWindow * window,
     void * user_data
@@ -4336,7 +4336,7 @@ Return whether the window has been requested to close by the user or OS.
 
 Returns false for backends that have no interactive close signal (headless, offscreen).
 
-```c title="dvz_window_should_close"
+```c
 _Bool dvz_window_should_close(
     const DvzWindow * window
 );
@@ -4353,7 +4353,7 @@ _Declared in `include/datoviz/window.h`:216._
 
 Return the cached surface information for the window.
 
-```c title="dvz_window_surface"
+```c
 const DvzWindowSurface * dvz_window_surface(
     const DvzWindow * window
 );
@@ -4370,7 +4370,7 @@ _Declared in `include/datoviz/window.h`:145._
 
 Read the user data pointer previously stored on a window.
 
-```c title="dvz_window_user_data"
+```c
 void * dvz_window_user_data(
     const DvzWindow * window
 );
@@ -4387,7 +4387,7 @@ _Declared in `include/datoviz/window.h`:184._
 
 Attach an externally-created Vulkan surface to a wrap window.
 
-```c title="dvz_window_wrap_attach_surface"
+```c
 int dvz_window_wrap_attach_surface(
     DvzWindow * window,
     const DvzWindowExternalSurfaceInfo * info
@@ -4406,7 +4406,7 @@ _Declared in `include/datoviz/window/backend.h`:234._
 
 Detach the external Vulkan surface from a wrap window.
 
-```c title="dvz_window_wrap_detach_surface"
+```c
 void dvz_window_wrap_detach_surface(
     DvzWindow * window
 );
@@ -4422,7 +4422,7 @@ _Declared in `include/datoviz/window/backend.h`:255._
 
 Configure the required Vulkan instance extensions for the wrap backend.
 
-```c title="dvz_window_wrap_set_required_extensions"
+```c
 int dvz_window_wrap_set_required_extensions(
     DvzWindowHost * host,
     uint32_t count,
@@ -4443,7 +4443,7 @@ _Declared in `include/datoviz/window/backend.h`:222._
 
 Update the externally-managed Vulkan surface associated with a wrap window.
 
-```c title="dvz_window_wrap_update_surface"
+```c
 int dvz_window_wrap_update_surface(
     DvzWindow * window,
     const DvzWindowExternalSurfaceInfo * info
