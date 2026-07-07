@@ -249,7 +249,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .attr_alias_public = "diameter_px", .attr_alias_storage = "size",
      .init_state = _scene_visual_init_point_style, .upload_material_params = true,
      .sync_point_style_material = true, .validate_attr = _scene_marker_visual_validate_attr,
-     .after_attr_set = _scene_marker_visual_after_attr_set},
+     .after_attr_set = _scene_marker_visual_after_attr_set,
+     .attr_storage_name = _scene_marker_visual_attr_storage_name},
     {VISUAL_OPS(
          DVZ_VISUAL_TYPE_SEGMENT, "segment", _scene_segment_visual_lowering,
          _scene_segment_visual_bounds, _scene_segment_visual_bind_desc,
@@ -352,6 +353,7 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .attrs = GLYPH_ATTRS, .attr_count = DVZ_ARRAY_COUNT(GLYPH_ATTRS),
      .expected_attrs = "position, bounds, texcoords, color, angle, plus a bound 2D field",
      .upload_position_topology = true, .panel_clip_rect = true,
+     .data_coord_uses_plot_clip_rect = true,
      .sampled_field_texture_upload = true},
     {VISUAL_OPS(
          DVZ_VISUAL_TYPE_TEXT, "text", _scene_text_visual_lowering,

@@ -58,5 +58,7 @@ bool _scene_marker_visual_validate_attr(
 bool _scene_marker_visual_after_attr_set(
     DvzVisual* visual, const char* attr_name, uint32_t item_count);
 
+const char* _scene_marker_visual_attr_storage_name(const char* attr_name);
+
 bool _scene_marker_symbol_atlas_page(
     DvzVisual* visual, const DvzSymbolAtlasPage** out_page, DvzSymbolSourceKind* out_kind);

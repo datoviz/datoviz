@@ -317,6 +317,20 @@ bool _scene_visual_desc_is_stroke(DvzSceneVisualDescKind kind)
 
 
 /**
+ * Return whether a visual descriptor uses analytic coverage blending in normal opaque passes.
+ *
+ * @param kind the visual descriptor kind
+ * @return whether the descriptor uses coverage blending
+ */
+bool _scene_visual_desc_uses_coverage_blend(DvzSceneVisualDescKind kind)
+{
+    return _scene_visual_desc_is_stroke(kind) || kind == DVZ_SCENE_VISUAL_DESC_POINT ||
+           kind == DVZ_SCENE_VISUAL_DESC_MARKER;
+}
+
+
+
+/**
  * Resolve the backend-specific point-like visual lowering policy.
  *
  * @param kind the point-like visual family

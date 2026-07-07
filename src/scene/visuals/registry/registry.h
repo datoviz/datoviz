@@ -76,6 +76,7 @@ typedef bool (*DvzVisualFamilyValidateAttrFn)(
     const DvzVisual* visual, const char* attr_name, const void* data, uint32_t item_count);
 typedef bool (*DvzVisualFamilyAfterAttrFn)(
     DvzVisual* visual, const char* attr_name, uint32_t item_count);
+typedef const char* (*DvzVisualFamilyAttrStorageNameFn)(const char* attr_name);
 
 struct DvzVisualFamilyOps
 {
@@ -106,10 +107,12 @@ struct DvzVisualFamilyOps
     DvzVisualFamilyResetFn reset_state;
     DvzVisualFamilyValidateAttrFn validate_attr;
     DvzVisualFamilyAfterAttrFn after_attr_set;
+    DvzVisualFamilyAttrStorageNameFn attr_storage_name;
     bool upload_position_topology;
     bool upload_material_params;
     bool skip_visual_uploads;
     bool panel_clip_rect;
+    bool data_coord_uses_plot_clip_rect;
     bool sampled_field_texture_upload;
     bool supports_scale;
     bool supports_scalar_color_scale;

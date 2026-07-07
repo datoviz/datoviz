@@ -360,7 +360,9 @@ static DvzFramePlanClipRect _scene_visual_clip_rect(
     DvzFramePlanClipRect explicit_clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PLOT;
     if (_scene_visual_explicit_clip_rect(attach, &explicit_clip_rect))
         return explicit_clip_rect;
-    if (visual->type == DVZ_VISUAL_TYPE_GLYPH && attach->coord_space == DVZ_VISUAL_COORD_DATA)
+    if (
+        visual->ops != NULL && visual->ops->data_coord_uses_plot_clip_rect &&
+        attach->coord_space == DVZ_VISUAL_COORD_DATA)
         return DVZ_FRAME_PLAN_CLIP_RECT_PLOT;
     if (visual->ops != NULL && visual->ops->panel_clip_rect)
     {

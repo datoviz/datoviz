@@ -1,8 +1,3 @@
 # Current transitional scene visual-boundary violations.
 # Each line is path:line:kind:source and must be removed as migration slices land.
 # Descriptor-kind entries use path:visual-desc-kind:TOKEN:count.
-src/scene/render_contract/draw.c:visual-desc-kind:DVZ_SCENE_VISUAL_DESC_MARKER:1
-src/scene/render_contract/draw.c:visual-desc-kind:DVZ_SCENE_VISUAL_DESC_POINT:1
-src/scene/scene_emit/panel.c:363:visual-enum:if (visual->type == DVZ_VISUAL_TYPE_GLYPH && attach->coord_space == DVZ_VISUAL_COORD_DATA)
-src/scene/scene_emit/upload_support.c:422:visual-enum:(visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL);
-src/scene/visuals/family.c:44:visual-enum:if (type == DVZ_VISUAL_TYPE_MARKER && strcmp(name, "symbol") == 0)

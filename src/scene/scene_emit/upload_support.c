@@ -28,6 +28,7 @@
 #include "_visual_internal.h"
 #include "core/panel_layout_internal.h"
 #include "domain/buffer_internal.h"
+#include "registry/registry.h"
 #include "scene_emit/visual_lowering.h"
 #include "datoviz/scene/scale.h"
 #include "datoviz/drp2/runtime.h"
@@ -419,7 +420,7 @@ static bool _scene_attr_needs_scalar_color_upload(
     ANN(attr);
     return strcmp(attr->name, "color") == 0 &&
            attr->format == DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32 &&
-           (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL);
+           visual->ops != NULL && visual->ops->supports_scalar_color_scale;
 }
 
 

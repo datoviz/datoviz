@@ -77,6 +77,8 @@ bool _scene_visual_desc_is_path(DvzSceneVisualDescKind kind);
 
 bool _scene_visual_desc_is_stroke(DvzSceneVisualDescKind kind);
 
+bool _scene_visual_desc_uses_coverage_blend(DvzSceneVisualDescKind kind);
+
 const char* _scene_visual_desc_kind_name(DvzSceneVisualDescKind kind);
 
 DvzVisualType _scene_visual_desc_default_type(DvzSceneVisualDescKind kind);

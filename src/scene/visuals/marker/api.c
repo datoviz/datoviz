@@ -528,6 +528,21 @@ DvzVisual* dvz_marker(DvzScene* scene, uint32_t flags)
 }
 
 
+
+/**
+ * Return the retained storage name for a public marker attribute name.
+ *
+ * @param attr_name public attribute name
+ * @return retained storage name
+ */
+const char* _scene_marker_visual_attr_storage_name(const char* attr_name)
+{
+    ANN(attr_name);
+    return strcmp(attr_name, "symbol") == 0 ? "shape" : attr_name;
+}
+
+
+
 /**
  * Create a scene-owned reusable symbol set.
  *

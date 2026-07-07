@@ -41,9 +41,9 @@ const char* _visual_family_attr_storage_name(DvzVisualType type, const char* nam
     ANN(name);
     if (strcmp(name, "size") == 0)
         return "size";
-    if (type == DVZ_VISUAL_TYPE_MARKER && strcmp(name, "symbol") == 0)
-        return "shape";
     const DvzVisualFamilyOps* ops = _scene_visual_family_ops(type);
+    if (ops != NULL && ops->attr_storage_name != NULL)
+        name = ops->attr_storage_name(name);
     if (ops != NULL && ops->attr_alias_public != NULL && ops->attr_alias_storage != NULL &&
         strcmp(ops->attr_alias_public, name) == 0)
         return ops->attr_alias_storage;
