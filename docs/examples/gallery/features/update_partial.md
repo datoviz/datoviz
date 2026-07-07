@@ -38,12 +38,19 @@ The visual initially uploads six points with position, color, and diameter_px ar
     --8<-- "examples/c/features/update_partial.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/update_partial.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `update_partial`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/update_partial.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_partial.c)
+    - Python source: [`examples/python/gallery/features/update_partial.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/update_partial.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=update_partial"><code>examples/webgpu/live.html?id=update_partial</code></a>
     - Browser capability tags: `buffer-update`, `point`, `frame-callbacks`

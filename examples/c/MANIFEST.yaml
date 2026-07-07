@@ -1474,6 +1474,9 @@ examples:
     primary_feature: update-partial
     lane: features
     source: examples/c/features/update_partial.c
+    python:
+      source: examples/python/gallery/features/update_partial.py
+      status: direct-engine
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -1494,6 +1497,9 @@ examples:
     primary_feature: update-visual-data
     lane: features
     source: examples/c/features/update_visual_data.c
+    python:
+      source: examples/python/gallery/features/update_visual_data.py
+      status: direct-engine
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -1514,6 +1520,9 @@ examples:
     primary_feature: visibility
     lane: features
     source: examples/c/features/visibility.c
+    python:
+      source: examples/python/gallery/features/visibility.py
+      status: direct-engine
     validation: smoke+screenshot
     data:
       kind: synthetic

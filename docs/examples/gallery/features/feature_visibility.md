@@ -38,12 +38,19 @@ Three separate point visuals are created so the middle red point can use dvz_vis
     --8<-- "examples/c/features/visibility.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/visibility.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_visibility`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/visibility.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visibility.c)
+    - Python source: [`examples/python/gallery/features/visibility.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/visibility.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_visibility"><code>examples/webgpu/live.html?id=feature_visibility</code></a>
     - Browser capability tags: `visual-visibility`, `point`, `frame-callbacks`

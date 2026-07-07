@@ -143,6 +143,7 @@ def run_with_frame_callback(scene, figure, title: str, on_frame, configure_view=
             elapsed = time.monotonic() - state["start"]
             on_frame(view_arg, frame_index, elapsed)
             state["index"] = frame_index + 1
+            dvz.dvz_view_request_frame(view_arg)
 
         if dvz.dvz_view_set_frame_callback(view, frame_callback, None) != 0:
             raise RuntimeError("dvz_view_set_frame_callback() failed")

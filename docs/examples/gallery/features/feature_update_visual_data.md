@@ -38,12 +38,19 @@ The initial upload draws seven small gray points in a line. After one second, th
     --8<-- "examples/c/features/update_visual_data.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/update_visual_data.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_update_visual_data`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/update_visual_data.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_visual_data.c)
+    - Python source: [`examples/python/gallery/features/update_visual_data.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/update_visual_data.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_update_visual_data"><code>examples/webgpu/live.html?id=feature_update_visual_data</code></a>
     - Browser capability tags: `buffer-update`, `visual-update`, `point`, `frame-callbacks`
