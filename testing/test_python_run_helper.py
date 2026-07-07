@@ -83,6 +83,11 @@ class TerminalInteractiveShell:
         self.enabled.append(name)
 
 
+class _NeverReadyContext:
+    def input_is_ready(self):
+        return False
+
+
 def _install_raw(monkeypatch, datoviz):
     raw = _Raw()
     monkeypatch.setitem(sys.modules, 'datoviz.raw', raw)
@@ -178,3 +183,10 @@ def test_live_session_closes_when_native_window_requests_close(monkeypatch):
         ('window_host_destroy', raw.window_host),
     ]
     assert ('scene_destroy', 'scene') not in raw.calls
+
+
+def test_inputhook_returns_when_no_live_sessions():
+    dvz_run = importlib.import_module('datoviz.run')
+
+    dvz_run._close_live_runs()
+    dvz_run._datoviz_inputhook(_NeverReadyContext())

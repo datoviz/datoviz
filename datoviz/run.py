@@ -126,9 +126,11 @@ def _datoviz_inputhook(context) -> None:
     while not context.input_is_ready():
         now = time.monotonic()
         active = [session for session in list(_LIVE_RUNS) if session.running]
+        if not active:
+            return
         for session in active:
             session._inputhook_tick(now)
-        time.sleep(0.005 if active else 0.05)
+        time.sleep(0.005)
 
 
 def _enable_ipython_inputhook(shell: Any | None) -> bool:
