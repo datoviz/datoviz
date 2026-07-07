@@ -57,6 +57,15 @@ body {
     color: #f0f6fc;
 }
 
+.md-typeset .grid.cards > .card h3 {
+    margin-bottom: 0.45rem;
+    line-height: 1.25;
+}
+
+.md-typeset .grid.cards > .card h3 .headerlink {
+    display: none;
+}
+
 .md-typeset .admonition,
 .md-typeset details {
     background-color: #10161f;
