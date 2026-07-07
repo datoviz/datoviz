@@ -2626,6 +2626,11 @@ examples:
     lane: showcases
     source: examples/c/showcases/gpu_particle_smoke.c
     validation: smoke+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 36
+        fps: 12
     data:
       kind: simulated
     webgpu:

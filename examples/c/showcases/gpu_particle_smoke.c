@@ -407,7 +407,13 @@ static DvzColor _particle_color(float life, float lane)
 
 
 static void
-_init_particles(vec3* positions, vec3* velocities, float* ages, DvzColor* colors, float* sizes)
+_init_particles(
+    vec3* positions,
+    vec3* velocities,
+    float* ages,
+    DvzColor* colors,
+    float* sizes,
+    float time)
 {
     ANN(positions);
     ANN(velocities);
@@ -423,13 +429,15 @@ _init_particles(vec3* positions, vec3* velocities, float* ages, DvzColor* colors
         const float life = _hash01(i * 7u + 4u);
         const float vertical = powf(life, 0.78f);
         const float width = 0.045f + 0.26f * vertical;
-        const float plume = 0.12f * sinf(4.2f * vertical + 0.00011f * (float)i);
+        const float plume = 0.12f * sinf(4.2f * vertical + 0.00011f * (float)i + 0.54f * time) +
+                            0.035f * sinf(1.7f * time + TAU * lane);
         const float x = plume + width * r * cosf(a);
         const float y = -1.04f + 1.72f * vertical + 0.045f * r * sinf(a);
         positions[i][0] = x;
         positions[i][1] = y;
         positions[i][2] = 0.0f;
-        velocities[i][0] = 0.04f * cosf(a) - 0.03f * x;
+        velocities[i][0] =
+            0.04f * cosf(a + 0.31f * time) - 0.03f * x + 0.03f * sinf(1.1f * time + TAU * lane);
         velocities[i][1] = 0.34f + 0.16f * lane;
         velocities[i][2] = 0.0f;
         ages[i] = SMOKE_LIFETIME * life;
@@ -438,6 +446,14 @@ _init_particles(vec3* positions, vec3* velocities, float* ages, DvzColor* colors
             (SMOKE_SIZE_MIN + (SMOKE_SIZE_MAX - SMOKE_SIZE_MIN) * _smoothstepf(0.0f, 1.0f, life)) *
             (0.74f + 0.28f * lane);
     }
+}
+
+
+static float _preview_sim_time(const DvzScenarioContext* ctx)
+{
+    if (ctx == NULL || !ctx->preview_mode)
+        return 0.0f;
+    return (float)(dvz_scenario_preview_time(ctx) * SIM_SPEED);
 }
 
 
@@ -536,10 +552,15 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user_data)
         return;
 
     float wall_dt = (float)ctx->dt;
+    if (ctx->preview_mode)
+        wall_dt = (float)dvz_scenario_preview_dt(ctx);
     if (wall_dt <= 0.0f)
         wall_dt = 1.0f / 60.0f;
     const float sim_dt = _clampf(wall_dt, 0.0f, SIM_MAX_DT) * SIM_SPEED;
-    state->sim_time += sim_dt;
+    if (ctx->preview_mode)
+        state->sim_time = _preview_sim_time(ctx);
+    else
+        state->sim_time += sim_dt;
     if (state->mouse_valid)
     {
         const float decay = powf(MOUSE_VELOCITY_DECAY, _clampf(wall_dt, 0.0f, 0.10f));
@@ -595,7 +616,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(
         positions != NULL && velocities != NULL && ages != NULL && colors != NULL && sizes != NULL,
         "gpu_particle_smoke: allocation failed");
-    _init_particles(positions, velocities, ages, colors, sizes);
+    const float initial_time = _preview_sim_time(ctx);
+    _init_particles(positions, velocities, ages, colors, sizes, initial_time);
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
@@ -625,7 +647,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             color_buffer != NULL && size_buffer != NULL && param_buffer != NULL,
         "dvz_scene_buffer() failed");
     state->params = param_buffer;
-    state->sim_time = 0.0f;
+    state->sim_time = initial_time;
     vec4 params[3] = {0};
     _params_for_state(state, 0.0f, params);
     EXAMPLE_CHECK(
