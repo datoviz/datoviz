@@ -38,6 +38,12 @@ Positions hold the sampled curves, colors and widths vary per sample, and the su
     --8<-- "examples/c/visuals/path.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/visuals/path.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `visual_path`
@@ -45,6 +51,7 @@ Positions hold the sampled curves, colors and widths vary per sample, and the su
     - Lane: `visuals`
     - Source: [`examples/c/visuals/path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/path.c)
     - Reference: [Path visual family](../../../reference/visual-families/path.md)
+    - Python source: [`examples/python/gallery/visuals/path.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/path.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_path"><code>examples/webgpu/live.html?id=visual_path</code></a>
     - Browser capability tags: `path`, `panzoom`

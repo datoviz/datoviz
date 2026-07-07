@@ -38,6 +38,12 @@ Positions locate the sphere centers, radii control physical size, and colors dis
     --8<-- "examples/c/visuals/sphere.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/visuals/sphere.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `sphere_impostor`
@@ -45,6 +51,7 @@ Positions locate the sphere centers, radii control physical size, and colors dis
     - Lane: `visuals`
     - Source: [`examples/c/visuals/sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/sphere.c)
     - Reference: [Sphere visual family](../../../reference/visual-families/sphere.md)
+    - Python source: [`examples/python/gallery/visuals/sphere.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/sphere.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=sphere_impostor"><code>examples/webgpu/live.html?id=sphere_impostor</code></a>
     - Browser capability tags: `sphere`, `arcball`

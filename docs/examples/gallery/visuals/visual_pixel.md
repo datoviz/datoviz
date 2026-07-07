@@ -38,6 +38,12 @@ The positions array lays out the grid, scalar values drive the color scale, and 
     --8<-- "examples/c/visuals/pixel.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/visuals/pixel.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `visual_pixel`
@@ -45,6 +51,7 @@ The positions array lays out the grid, scalar values drive the color scale, and 
     - Lane: `visuals`
     - Source: [`examples/c/visuals/pixel.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/pixel.c)
     - Reference: [Pixel visual family](../../../reference/visual-families/pixel.md)
+    - Python source: [`examples/python/gallery/visuals/pixel.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/pixel.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_pixel"><code>examples/webgpu/live.html?id=visual_pixel</code></a>
     - Browser capability tags: `pixel`, `panzoom`

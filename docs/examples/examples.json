@@ -60,7 +60,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=feature_basic_scene",
       "webgpu_site_route": "/examples/webgpu/live.html?id=feature_basic_scene",
-      "primary_feature": "scene"
+      "primary_feature": "scene",
+      "python_source": "examples/python/gallery/features/basic_scene.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/basic_scene.py",
+      "python_status": "manual"
     },
     {
       "id": "feature_panel_single",
@@ -297,7 +300,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=path_axes_2d",
       "webgpu_site_route": "/examples/webgpu/live.html?id=path_axes_2d",
-      "primary_feature": "axes-2d"
+      "primary_feature": "axes-2d",
+      "python_source": "examples/python/gallery/features/axes_2d.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/axes_2d.py",
+      "python_status": "manual"
     },
     {
       "id": "feature_coordinate_system",
@@ -3730,7 +3736,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=point_2d",
       "webgpu_site_route": "/examples/webgpu/live.html?id=point_2d",
-      "primary_visual": "point"
+      "primary_visual": "point",
+      "python_source": "examples/python/gallery/visuals/point.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/point.py",
+      "python_status": "manual"
     },
     {
       "id": "visual_pixel",
@@ -3779,7 +3788,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=visual_pixel",
       "webgpu_site_route": "/examples/webgpu/live.html?id=visual_pixel",
-      "primary_visual": "pixel"
+      "primary_visual": "pixel",
+      "python_source": "examples/python/gallery/visuals/pixel.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/pixel.py",
+      "python_status": "manual"
     },
     {
       "id": "visual_marker",
@@ -3828,7 +3840,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=visual_marker",
       "webgpu_site_route": "/examples/webgpu/live.html?id=visual_marker",
-      "primary_visual": "marker"
+      "primary_visual": "marker",
+      "python_source": "examples/python/gallery/visuals/marker.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/marker.py",
+      "python_status": "manual"
     },
     {
       "id": "visual_primitive",
@@ -3874,7 +3889,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=visual_primitive",
       "webgpu_site_route": "/examples/webgpu/live.html?id=visual_primitive",
-      "primary_visual": "primitive"
+      "primary_visual": "primitive",
+      "python_source": "examples/python/gallery/visuals/primitive.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/primitive.py",
+      "python_status": "manual"
     },
     {
       "id": "visual_segment",
@@ -3923,7 +3941,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=visual_segment",
       "webgpu_site_route": "/examples/webgpu/live.html?id=visual_segment",
-      "primary_visual": "segment"
+      "primary_visual": "segment",
+      "python_source": "examples/python/gallery/visuals/segment.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/segment.py",
+      "python_status": "manual"
     },
     {
       "id": "visual_vector",
@@ -4023,7 +4044,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=visual_path",
       "webgpu_site_route": "/examples/webgpu/live.html?id=visual_path",
-      "primary_visual": "path"
+      "primary_visual": "path",
+      "python_source": "examples/python/gallery/visuals/path.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/path.py",
+      "python_status": "manual"
     },
     {
       "id": "visual_image",
@@ -4179,7 +4203,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=visual_mesh",
       "webgpu_site_route": "/examples/webgpu/live.html?id=visual_mesh",
-      "primary_visual": "mesh"
+      "primary_visual": "mesh",
+      "python_source": "examples/python/gallery/visuals/mesh.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/mesh.py",
+      "python_status": "manual"
     },
     {
       "id": "sphere_impostor",
@@ -4228,7 +4255,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=sphere_impostor",
       "webgpu_site_route": "/examples/webgpu/live.html?id=sphere_impostor",
-      "primary_visual": "sphere"
+      "primary_visual": "sphere",
+      "python_source": "examples/python/gallery/visuals/sphere.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/sphere.py",
+      "python_status": "manual"
     },
     {
       "id": "visual_splat",
@@ -5333,7 +5363,10 @@
       "webgpu_requirements": [],
       "webgpu": {
         "status": "webgpu-deferred"
-      }
+      },
+      "python_source": "examples/python/gallery/start/scatter.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/start/scatter.py",
+      "python_status": "manual"
     }
   ]
 }

@@ -284,6 +284,9 @@ examples:
     primary_feature: scene
     lane: features
     source: examples/c/features/basic_scene.c
+    python:
+      status: manual
+      source: examples/python/gallery/features/basic_scene.py
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -378,6 +381,9 @@ examples:
     primary_feature: axes-2d
     lane: features
     source: examples/c/features/axes_2d.c
+    python:
+      status: manual
+      source: examples/python/gallery/features/axes_2d.py
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -1890,6 +1896,9 @@ examples:
     primary_visual: point
     lane: visuals
     source: examples/c/visuals/point.c
+    python:
+      status: manual
+      source: examples/python/gallery/visuals/point.py
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -1916,6 +1925,9 @@ examples:
     primary_visual: pixel
     lane: visuals
     source: examples/c/visuals/pixel.c
+    python:
+      status: manual
+      source: examples/python/gallery/visuals/pixel.py
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -1941,6 +1953,9 @@ examples:
     primary_visual: marker
     lane: visuals
     source: examples/c/visuals/marker.c
+    python:
+      status: manual
+      source: examples/python/gallery/visuals/marker.py
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -1966,6 +1981,9 @@ examples:
     primary_visual: primitive
     lane: visuals
     source: examples/c/visuals/primitive.c
+    python:
+      status: manual
+      source: examples/python/gallery/visuals/primitive.py
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -1989,6 +2007,9 @@ examples:
     primary_visual: segment
     lane: visuals
     source: examples/c/visuals/segment.c
+    python:
+      status: manual
+      source: examples/python/gallery/visuals/segment.py
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -2041,6 +2062,9 @@ examples:
     primary_visual: path
     lane: visuals
     source: examples/c/visuals/path.c
+    python:
+      status: manual
+      source: examples/python/gallery/visuals/path.py
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -2119,6 +2143,9 @@ examples:
     primary_visual: mesh
     lane: visuals
     source: examples/c/visuals/mesh.c
+    python:
+      status: manual
+      source: examples/python/gallery/visuals/mesh.py
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -2146,6 +2173,9 @@ examples:
     primary_visual: sphere
     lane: visuals
     source: examples/c/visuals/sphere.c
+    python:
+      status: manual
+      source: examples/python/gallery/visuals/sphere.py
     validation: smoke+screenshot
     data:
       kind: synthetic
@@ -2909,6 +2939,9 @@ examples:
     title: Scatter Plot
     lane: start
     source: examples/c/start/scatter.c
+    python:
+      status: manual
+      source: examples/python/gallery/start/scatter.py
     validation: smoke+screenshot
     data:
       kind: synthetic

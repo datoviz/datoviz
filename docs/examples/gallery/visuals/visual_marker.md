@@ -38,6 +38,12 @@ Each row reuses position, symbol, color, size, edge color, and angle arrays to s
     --8<-- "examples/c/visuals/marker.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/visuals/marker.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `visual_marker`
@@ -45,6 +51,7 @@ Each row reuses position, symbol, color, size, edge color, and angle arrays to s
     - Lane: `visuals`
     - Source: [`examples/c/visuals/marker.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/marker.c)
     - Reference: [Marker visual family](../../../reference/visual-families/marker.md)
+    - Python source: [`examples/python/gallery/visuals/marker.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/marker.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_marker"><code>examples/webgpu/live.html?id=visual_marker</code></a>
     - Browser capability tags: `marker`, `panzoom`

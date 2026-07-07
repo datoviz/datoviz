@@ -38,12 +38,19 @@ The path visual receives arrays for data-space position, color, and linewidth, t
     --8<-- "examples/c/features/axes_2d.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/axes_2d.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `path_axes_2d`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/axes_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axes_2d.c)
+    - Python source: [`examples/python/gallery/features/axes_2d.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/axes_2d.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=path_axes_2d"><code>examples/webgpu/live.html?id=path_axes_2d</code></a>
     - Browser capability tags: `path`, `axes`, `text`, `panzoom`

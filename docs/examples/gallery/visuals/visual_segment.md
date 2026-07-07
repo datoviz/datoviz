@@ -38,6 +38,12 @@ Start and end position arrays define each segment, while color and width arrays 
     --8<-- "examples/c/visuals/segment.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/visuals/segment.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `visual_segment`
@@ -45,6 +51,7 @@ Start and end position arrays define each segment, while color and width arrays 
     - Lane: `visuals`
     - Source: [`examples/c/visuals/segment.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/segment.c)
     - Reference: [Segment visual family](../../../reference/visual-families/segment.md)
+    - Python source: [`examples/python/gallery/visuals/segment.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/segment.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_segment"><code>examples/webgpu/live.html?id=visual_segment</code></a>
     - Browser capability tags: `segment`, `panzoom`

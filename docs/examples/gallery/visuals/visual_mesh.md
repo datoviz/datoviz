@@ -38,6 +38,12 @@ The cube geometry supplies vertices, indices, normals, and per-face colors to th
     --8<-- "examples/c/visuals/mesh.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/visuals/mesh.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `visual_mesh`
@@ -45,6 +51,7 @@ The cube geometry supplies vertices, indices, normals, and per-face colors to th
     - Lane: `visuals`
     - Source: [`examples/c/visuals/mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/mesh.c)
     - Reference: [Mesh visual family](../../../reference/visual-families/mesh.md)
+    - Python source: [`examples/python/gallery/visuals/mesh.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/mesh.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_mesh"><code>examples/webgpu/live.html?id=visual_mesh</code></a>
     - Browser capability tags: `mesh`, `indexed-geometry`, `arcball`

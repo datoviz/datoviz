@@ -38,6 +38,12 @@ Generated positions place the samples, scalar values are mapped through a color 
     --8<-- "examples/c/visuals/point.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/visuals/point.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `point_2d`
@@ -45,6 +51,7 @@ Generated positions place the samples, scalar values are mapped through a color 
     - Lane: `visuals`
     - Source: [`examples/c/visuals/point.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/point.c)
     - Reference: [Point visual family](../../../reference/visual-families/point.md)
+    - Python source: [`examples/python/gallery/visuals/point.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/point.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=point_2d"><code>examples/webgpu/live.html?id=point_2d</code></a>
     - Browser capability tags: `point`, `panzoom`

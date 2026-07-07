@@ -38,12 +38,19 @@ A scene owns one figure, one full panel, and one point visual. The point visual 
     --8<-- "examples/c/features/basic_scene.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/basic_scene.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_basic_scene`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/basic_scene.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/basic_scene.c)
+    - Python source: [`examples/python/gallery/features/basic_scene.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/basic_scene.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_basic_scene"><code>examples/webgpu/live.html?id=feature_basic_scene</code></a>
     - Browser capability tags: `point`

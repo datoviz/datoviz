@@ -38,6 +38,12 @@ Each primitive supplies positions, colors, and group IDs, then chooses a line or
     --8<-- "examples/c/visuals/primitive.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/visuals/primitive.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `visual_primitive`
@@ -45,6 +51,7 @@ Each primitive supplies positions, colors, and group IDs, then chooses a line or
     - Lane: `visuals`
     - Source: [`examples/c/visuals/primitive.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/primitive.c)
     - Reference: [Primitive visual family](../../../reference/visual-families/primitive.md)
+    - Python source: [`examples/python/gallery/visuals/primitive.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/primitive.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_primitive"><code>examples/webgpu/live.html?id=visual_primitive</code></a>
     - Browser capability tags: `primitive`

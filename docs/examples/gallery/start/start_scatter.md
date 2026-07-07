@@ -24,12 +24,19 @@ Quickstart scatter plot: 10 000 random colored points with pan/zoom.
     --8<-- "examples/c/start/scatter.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/start/scatter.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `start_scatter`
     - Category: `start`
     - Lane: `start`
     - Source: [`examples/c/start/scatter.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/start/scatter.c)
+    - Python source: [`examples/python/gallery/start/scatter.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/start/scatter.py)
     - Browser support: Deferred
     - Validation: `smoke+screenshot`
 
