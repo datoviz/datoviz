@@ -46,6 +46,7 @@
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "example_tuner.h"
 #include "runner/scenario_runner.h"
 
 
@@ -94,6 +95,7 @@ typedef struct AllenMouseBrainVolume
 typedef struct BrainVolumeState
 {
     AllenMouseBrainVolume volume_data;
+    ExampleTuner tuner;
 } BrainVolumeState;
 
 
@@ -902,6 +904,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     BrainVolumeState* state = (BrainVolumeState*)dvz_calloc(1, sizeof(*state));
     if (state == NULL)
         return false;
+    state->tuner = example_tuner("Allen brain view");
     if (out_user != NULL)
         *out_user = state;
 
@@ -955,6 +958,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     camera_desc.projection.far_clip = 100.0f;
     DvzResult camera_rc = dvz_panel_set_camera_desc(panel, &camera_desc);
     EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc() failed");
+    DvzCamera* camera = dvz_panel_camera(panel);
+    EXAMPLE_CHECK(camera != NULL, "dvz_panel_camera() failed");
 
     DvzSampledField* field = dvz_sampled_field(
         ctx->scene, &(DvzSampledFieldDesc){
@@ -1038,11 +1043,30 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(
         dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) == 0,
         "dvz_scenario_bind_controller() failed");
-    dvz_arcball_set(arcball, (vec3){-0.42f, +0.26f, -0.16f});
+    vec3 arcball_angles = {-0.42f, +0.26f, -0.16f};
+    vec2 arcball_pan = {0.0f, 0.0f};
+    dvz_arcball_set(arcball, arcball_angles);
+    example_tuner_camera_ref(&state->tuner, "Camera", panel, camera, &camera_desc);
+    example_tuner_arcball(
+        &state->tuner, "Arcball", arcball, arcball_angles, 1.0f, arcball_pan);
 
     ok = true;
 cleanup:
     return ok;
+}
+
+
+
+static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    (void)app;
+    BrainVolumeState* state = (BrainVolumeState*)user;
+    if (
+        ctx == NULL || ctx->presentation != DVZ_RUNNER_PRESENT_GLFW || state == NULL ||
+        view == NULL)
+        return true;
+
+    return example_tuner_attach(&state->tuner, view);
 }
 
 
@@ -1059,6 +1083,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
     BrainVolumeState* state = (BrainVolumeState*)user;
     if (state == NULL)
         return;
+    example_tuner_detach(&state->tuner);
     _allen_mouse_brain_destroy(&state->volume_data);
     dvz_free(state);
 }
@@ -1089,6 +1114,20 @@ static DvzScenarioSpec _brain_volume_scenario(void)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+static bool _cli_wants_live_gui(int argc, char** argv)
+{
+    for (int i = 1; i < argc; i++)
+    {
+        if (argv[i] == NULL)
+            continue;
+        if (strcmp(argv[i], "--live") == 0 || strcmp(argv[i], "--live-record") == 0)
+            return true;
+    }
+    return false;
+}
+
+
+
 /**
  * Run the brain volume showcase through the native scenario runner.
  *
@@ -1099,5 +1138,7 @@ static DvzScenarioSpec _brain_volume_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = _brain_volume_scenario();
+    if (_cli_wants_live_gui(argc, argv))
+        spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
