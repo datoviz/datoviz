@@ -41,10 +41,6 @@ EXTERN_C_ON
 
 DVZ_EXPORT DvzThread* dvz_thread(DvzThreadCallback callback, void* user_data);
 
-DVZ_EXPORT void dvz_thread_lock(DvzThread* thread);
-
-DVZ_EXPORT void dvz_thread_unlock(DvzThread* thread);
-
 DVZ_EXPORT void dvz_thread_join(DvzThread* thread);
 
 

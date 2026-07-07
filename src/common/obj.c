@@ -157,16 +157,6 @@ void* dvz_container_alloc(DvzContainer* container)
 
 
 
-void* dvz_container_get(DvzContainer* container, uint32_t idx)
-{
-    ANN(container);
-    ANN(container->items);
-    ASSERT(idx < container->capacity);
-    return container->items[idx];
-}
-
-
-
 void dvz_container_iter(DvzContainerIterator* iterator)
 {
     ANN(iterator);
@@ -208,32 +198,6 @@ DvzContainerIterator dvz_container_iterator(DvzContainer* container)
     iterator.container = container;
     dvz_container_iter(&iterator);
     return iterator;
-}
-
-
-
-void* dvz_container_get_created(DvzContainer* container, uint32_t idx)
-{
-    ANN(container);
-    ANN(container->items);
-    DvzContainerIterator iter = dvz_container_iterator(container);
-    DvzObject* obj = NULL;
-    uint32_t n = 0;
-    while (iter.item != NULL)
-    {
-        // WARNING: we assume that every item in the container is a struct for which the first item
-        // is a DvzObject.
-        obj = (DvzObject*)iter.item;
-        ANN(obj);
-        if (dvz_obj_is_created(obj))
-        {
-            if (n == idx)
-                return obj;
-            n++;
-        }
-        dvz_container_iter(&iter);
-    }
-    return NULL;
 }
 
 

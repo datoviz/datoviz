@@ -187,46 +187,6 @@ static double easeInOutBounce(double t)
 
 
 /*************************************************************************************************/
-/*  Util functions                                                                               */
-/*************************************************************************************************/
-
-static void orthonormal_basis(vec3 axis, vec3 u, vec3 v, vec3 w)
-{
-    // Construct an orthonormal basis around an axis vector.
-    // from: https://stackoverflow.com/a/7753446/1595060
-
-    if (glm_vec3_norm(axis) < DVZ_EPSILON)
-    {
-        log_error(
-            "norm of input vector {%f, %f, %f} is too small to compute an orthonormal basis.",
-            axis[0], axis[1], axis[2]);
-        return;
-    }
-
-    // Let's call a your unit vector.
-    vec3 a = {0};
-    glm_normalize_to(axis, a);
-
-    // Call u0 = (1,0,0).
-    vec3 u0 = {1, 0, 0};
-
-    // If dot(u0,a) ~= 0, then take u0 = (0,1,0).
-    if (fabs(a[0]) < DVZ_EPSILON)
-    {
-        u0[0] = 0;
-        u0[1] = 1;
-    }
-
-    // Then, v = a ^ u0
-    glm_vec3_crossn(a, u0, v);
-
-    // and w = a ^ v.
-    glm_vec3_crossn(a, v, w);
-}
-
-
-
-/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 

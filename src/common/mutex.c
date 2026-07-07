@@ -102,14 +102,6 @@ int dvz_cond_wait(DvzCond* cond, DvzMutex* mutex)
 
 
 
-int dvz_cond_timedwait(DvzCond* cond, DvzMutex* mutex, struct timespec* wait)
-{
-    ANN(cond);
-    return pthread_cond_timedwait(cond, mutex, wait);
-}
-
-
-
 void dvz_cond_destroy(DvzCond* cond)
 {
     ANN(cond);

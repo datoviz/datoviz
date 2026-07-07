@@ -81,16 +81,6 @@ DVZ_EXPORT void dvz_fixture_offscreen_destroy(DvzFixtureOffscreen* fixture);
 
 
 /**
- * Get the parent GPU fixture.
- *
- * @param fixture the offscreen fixture
- * @return borrowed GPU fixture
- */
-DVZ_EXPORT DvzFixtureGpu* dvz_fixture_offscreen_gpu(DvzFixtureOffscreen* fixture);
-
-
-
-/**
  * Get the slots helper owned by the fixture.
  *
  * @param fixture the offscreen fixture
@@ -193,19 +183,6 @@ DVZ_EXPORT DvzImages* dvz_fixture_offscreen_depth(DvzFixtureOffscreen* fixture);
  * @return borrowed depth image-view wrapper
  */
 DVZ_EXPORT DvzImageViews* dvz_fixture_offscreen_depth_view(DvzFixtureOffscreen* fixture);
-
-
-
-/**
- * Transition an image with a one-shot command recorded by the fixture.
- *
- * @param fixture the offscreen fixture
- * @param img the image to transition
- * @param access destination access flags
- * @param layout destination layout
- */
-DVZ_EXPORT void dvz_fixture_offscreen_transition(
-    DvzFixtureOffscreen* fixture, DvzImages* img, VkAccessFlags2 access, VkImageLayout layout);
 
 
 

@@ -1766,17 +1766,6 @@ bool dvz_canvas_swapchain_present_mode(const DvzCanvas* canvas, VkPresentModeKHR
 
 
 
-bool dvz_canvas_swapchain_handles_dirty(const DvzCanvas* canvas)
-{
-    if (!canvas || !canvas->swapchain || !canvas->swapchain->active_slot)
-    {
-        return false;
-    }
-    return canvas->swapchain->active_slot->handles_dirty;
-}
-
-
-
 void dvz_canvas_swapchain_handles_refreshed(DvzCanvas* canvas)
 {
     if (!canvas || !canvas->swapchain || !canvas->swapchain->active_slot)

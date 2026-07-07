@@ -218,20 +218,6 @@ void dvz_fixture_offscreen_destroy(DvzFixtureOffscreen* fixture)
 
 
 /**
- * Get the parent GPU fixture.
- *
- * @param fixture the offscreen fixture
- * @return borrowed GPU fixture
- */
-DvzFixtureGpu* dvz_fixture_offscreen_gpu(DvzFixtureOffscreen* fixture)
-{
-    ANN(fixture);
-    return fixture->gpu;
-}
-
-
-
-/**
  * Get the slots helper owned by the fixture.
  *
  * @param fixture the offscreen fixture
@@ -403,38 +389,6 @@ DvzImageViews* dvz_fixture_offscreen_depth_view(DvzFixtureOffscreen* fixture)
 {
     ANN(fixture);
     return &fixture->depth_view;
-}
-
-
-
-/**
- * Transition an image with a one-shot command recorded by the fixture.
- *
- * @param fixture the offscreen fixture
- * @param img the image to transition
- * @param access destination access flags
- * @param layout destination layout
- */
-void dvz_fixture_offscreen_transition(
-    DvzFixtureOffscreen* fixture, DvzImages* img, VkAccessFlags2 access, VkImageLayout layout)
-{
-    ANN(fixture);
-    ANN(img);
-
-    DvzCommands* cmds = fixture->cmds;
-    DvzBarriers* barriers = &fixture->barriers;
-
-    dvz_cmd_reset(cmds);
-    dvz_cmd_begin(cmds);
-
-    DvzBarrierImage* bimg = dvz_barriers_image(barriers, dvz_image_handle(img, 0));
-    ANN(bimg);
-    dvz_barrier_image_stage(bimg, VK_PIPELINE_STAGE_2_NONE, VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT);
-    dvz_barrier_image_access(bimg, 0, access);
-    dvz_barrier_image_layout(bimg, 0, layout);
-    dvz_cmd_barriers(cmds, barriers);
-    dvz_cmd_end(cmds);
-    dvz_cmd_submit(cmds);
 }
 
 

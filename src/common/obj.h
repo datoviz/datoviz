@@ -237,17 +237,6 @@ void* dvz_container_alloc(DvzContainer* container);
 
 
 /**
- * Return the object at a given index.
- *
- * @param container the container
- * @param idx the index of the object within the container
- * @param returns a pointer to the object at the specified index
- */
-void* dvz_container_get(DvzContainer* container, uint32_t idx);
-
-
-
-/**
  * Continue an already-started loop iteration on a container.
  *
  * @param container the container
@@ -264,17 +253,6 @@ void dvz_container_iter(DvzContainerIterator* iterator);
  * @returns a pointer to the first object
  */
 DvzContainerIterator dvz_container_iterator(DvzContainer* container);
-
-
-
-/**
- * Return the n-th created object.
- *
- * @param container the container
- * @param idx the index of the object within the container
- * @param returns a pointer to the created object at the specified index
- */
-void* dvz_container_get_created(DvzContainer* container, uint32_t idx);
 
 
 
