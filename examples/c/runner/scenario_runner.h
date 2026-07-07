@@ -215,6 +215,7 @@ struct DvzScenarioContext
     bool preview_mode;
     uint64_t preview_frame_index;
     uint64_t preview_frame_count;
+    uint32_t preview_sample_stride;
     double preview_fps;
     double preview_time_scale;
 
@@ -268,6 +269,7 @@ typedef struct DvzRunnerConfig
     bool preview_sequence;
     uint64_t preview_frame_index;
     uint64_t preview_frame_count;
+    uint32_t preview_sample_stride;
     double preview_fps;
     double preview_time_scale;
 } DvzRunnerConfig;
