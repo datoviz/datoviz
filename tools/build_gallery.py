@@ -1218,7 +1218,6 @@ def render_features_page(
                     image_dir,
                     image_url_base,
                     image_format,
-                    title_heading=False,
                 )
             )
         lines.append("</div>")
@@ -1236,7 +1235,6 @@ def render_features_page(
                     image_dir,
                     image_url_base,
                     image_format,
-                    title_heading=False,
                 )
             )
         lines.append("</div>")
