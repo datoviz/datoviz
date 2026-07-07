@@ -235,6 +235,9 @@ int test_drp2_runtime_vklite_reallocates_object_table_safely(TstContext* suite, 
 
 int test_drp2_runtime_vklite_draws_render_pass(TstContext* suite, const TstCase* item);
 
+int test_drp2_runtime_vklite_render_area_independent_from_viewport(
+    TstContext* suite, const TstCase* item);
+
 int test_drp2_runtime_vklite_draws_named_depth_render_pass(TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_vklite_draws_msaa_resolve_render_pass(TstContext* suite, const TstCase* item);

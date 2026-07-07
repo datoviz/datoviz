@@ -1328,6 +1328,80 @@ int test_drp2_runtime_vklite_draws_render_pass(TstContext* suite, const TstCase*
 }
 
 
+
+int test_drp2_runtime_vklite_render_area_independent_from_viewport(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = drp2_test_vklite_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
+        return 0;
+    ANN(ctx);
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    static const uint8_t magenta[16] = {
+        255, 0, 255, 255, 255, 0, 255, 255,
+        255, 0, 255, 255, 255, 0, 255, 255,
+    };
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 4, 2, 2,
+        DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_DST |
+            DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
+    AT(dvz_drp2_stream_write_texture_2d_borrowed(stream, 4, 0, 2, 2, 8, 2, magenta));
+    AT(dvz_drp2_stream_create_buffer(
+        stream, 5, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 10));
+    DvzDrp2RenderPassDesc desc = dvz_drp2_render_pass_desc();
+    desc.id = 11;
+    desc.encoder_id = 10;
+    desc.render_area_px[2] = 2;
+    desc.render_area_px[3] = 2;
+    desc.viewport_px[0] = 1.0f;
+    desc.viewport_px[2] = 1.0f;
+    desc.viewport_px[3] = 2.0f;
+    desc.scissor_px[0] = 1.0f;
+    desc.scissor_px[2] = 1.0f;
+    desc.scissor_px[3] = 2.0f;
+    desc.color_attachments[0].texture_id = 4;
+    desc.color_attachments[0].load_op = DVZ_DRP2_ATTACHMENT_LOAD_CLEAR;
+    desc.color_attachments[0].store_op = DVZ_DRP2_ATTACHMENT_STORE_STORE;
+    desc.color_attachments[0].access = DVZ_DRP2_ATTACHMENT_ACCESS_WRITE;
+    desc.color_attachments[0].clear = true;
+    desc.color_attachments[0].clear_color[0] = 1.0f;
+    desc.color_attachments[0].clear_color[3] = 1.0f;
+    AT(dvz_drp2_stream_begin_render_pass_desc(stream, &desc));
+    AT(dvz_drp2_stream_end_render_pass(stream, 11));
+    AT(dvz_drp2_stream_copy_texture_to_buffer(stream, 10, 4, 5, 0, 2, 2, 8, 2));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 10, 12));
+    AT(dvz_drp2_stream_queue_submit(stream, 12, 13));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    uint8_t downloaded[16] = {0};
+    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 5, 0, 16, downloaded));
+    for (uint32_t i = 0; i < sizeof(downloaded); i += 4)
+    {
+        AT(downloaded[i + 0] == 255);
+        AT(downloaded[i + 1] == 0);
+        AT(downloaded[i + 2] == 0);
+        AT(downloaded[i + 3] == 255);
+    }
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
 int test_drp2_runtime_vklite_draws_named_depth_render_pass(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

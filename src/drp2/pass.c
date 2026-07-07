@@ -163,6 +163,64 @@ static void _render_area_from_framebuffer_rect(
 }
 
 
+static void _render_area_from_pixel_rect(
+    uint32_t target_width, uint32_t target_height, const uint32_t rect[4], uint32_t* out_x,
+    uint32_t* out_y, uint32_t* out_width, uint32_t* out_height)
+{
+    ANN(rect);
+    ANN(out_x);
+    ANN(out_y);
+    ANN(out_width);
+    ANN(out_height);
+
+    uint32_t x = rect[0];
+    uint32_t y = rect[1];
+    uint32_t width = rect[2];
+    uint32_t height = rect[3];
+    if (width == 0 || height == 0)
+    {
+        x = 0;
+        y = 0;
+        width = target_width;
+        height = target_height;
+    }
+    if (x > target_width)
+        x = target_width;
+    if (y > target_height)
+        y = target_height;
+    if (width > target_width - x)
+        width = target_width - x;
+    if (height > target_height - y)
+        height = target_height - y;
+
+    *out_x = x;
+    *out_y = y;
+    *out_width = width;
+    *out_height = height;
+}
+
+
+
+static void _framebuffer_rect_or_render_area(
+    const float rect[4], uint32_t render_x, uint32_t render_y, uint32_t render_width,
+    uint32_t render_height, float out[4])
+{
+    ANN(rect);
+    ANN(out);
+    out[0] = rect[0];
+    out[1] = rect[1];
+    out[2] = rect[2];
+    out[3] = rect[3];
+    if (out[2] <= 0.0f || out[3] <= 0.0f)
+    {
+        out[0] = (float)render_x;
+        out[1] = (float)render_y;
+        out[2] = (float)render_width;
+        out[3] = (float)render_height;
+    }
+}
+
+
 /**
  * Convert DRP2 depth attachment access to vklite texture access.
  *
@@ -614,21 +672,60 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
     pass->color_target_count = color_count;
     for (uint32_t i = 0; i < color_count; i++)
         pass->color_target_ids[i] = targets[i]->id;
+    uint32_t render_area_x = 0;
+    uint32_t render_area_y = 0;
+    uint32_t render_area_width = target->width;
+    uint32_t render_area_height = target->height;
     uint32_t viewport_x = 0;
     uint32_t viewport_y = 0;
     uint32_t viewport_width = target->width;
     uint32_t viewport_height = target->height;
-    _render_area_from_viewport(
-        target->width, target->height, command->u.begin_render_pass.viewport, &viewport_x,
-        &viewport_y, &viewport_width, &viewport_height);
+    uint32_t scissor_x = 0;
+    uint32_t scissor_y = 0;
+    uint32_t scissor_width = target->width;
+    uint32_t scissor_height = target->height;
+    if (command->u.begin_render_pass.has_explicit_rects)
+    {
+        _render_area_from_pixel_rect(
+            target->width, target->height, command->u.begin_render_pass.render_area_px,
+            &render_area_x, &render_area_y, &render_area_width, &render_area_height);
+        float viewport_rect[4] = {0};
+        float scissor_rect[4] = {0};
+        _framebuffer_rect_or_render_area(
+            command->u.begin_render_pass.viewport_px, render_area_x, render_area_y,
+            render_area_width, render_area_height, viewport_rect);
+        _framebuffer_rect_or_render_area(
+            command->u.begin_render_pass.scissor_px, render_area_x, render_area_y,
+            render_area_width, render_area_height, scissor_rect);
+        _render_area_from_framebuffer_rect(
+            target->width, target->height, viewport_rect, &viewport_x, &viewport_y,
+            &viewport_width, &viewport_height);
+        _render_area_from_framebuffer_rect(
+            target->width, target->height, scissor_rect, &scissor_x, &scissor_y,
+            &scissor_width, &scissor_height);
+    }
+    else
+    {
+        _render_area_from_viewport(
+            target->width, target->height, command->u.begin_render_pass.viewport, &viewport_x,
+            &viewport_y, &viewport_width, &viewport_height);
+        render_area_x = viewport_x;
+        render_area_y = viewport_y;
+        render_area_width = viewport_width;
+        render_area_height = viewport_height;
+        scissor_x = viewport_x;
+        scissor_y = viewport_y;
+        scissor_width = viewport_width;
+        scissor_height = viewport_height;
+    }
     pass->viewport_x = (float)viewport_x;
     pass->viewport_y = (float)viewport_y;
     pass->viewport_width = (float)viewport_width;
     pass->viewport_height = (float)viewport_height;
-    pass->scissor_x = (float)viewport_x;
-    pass->scissor_y = (float)viewport_y;
-    pass->scissor_width = (float)viewport_width;
-    pass->scissor_height = (float)viewport_height;
+    pass->scissor_x = (float)scissor_x;
+    pass->scissor_y = (float)scissor_y;
+    pass->scissor_width = (float)scissor_width;
+    pass->scissor_height = (float)scissor_height;
 
     DvzRendering* rendering = dvz_rendering_create_wrapper();
     if (rendering == NULL)
@@ -637,10 +734,10 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
     pass->rendering = rendering;
     Drp2VkliteObject* transient_depth_owner = NULL;
 
-    int32_t render_x = viewport_x <= (uint32_t)INT32_MAX ? (int32_t)viewport_x : INT32_MAX;
-    int32_t render_y = viewport_y <= (uint32_t)INT32_MAX ? (int32_t)viewport_y : INT32_MAX;
+    int32_t render_x = render_area_x <= (uint32_t)INT32_MAX ? (int32_t)render_area_x : INT32_MAX;
+    int32_t render_y = render_area_y <= (uint32_t)INT32_MAX ? (int32_t)render_area_y : INT32_MAX;
     dvz_rendering(rendering);
-    dvz_rendering_area(rendering, render_x, render_y, viewport_width, viewport_height);
+    dvz_rendering_area(rendering, render_x, render_y, render_area_width, render_area_height);
     for (uint32_t i = 0; i < color_count; i++)
     {
         const DvzDrp2ColorAttachment* attachment =

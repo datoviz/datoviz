@@ -203,6 +203,7 @@ int test_drp2(TstSuite* suite)
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_creates_render_pipeline);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_reallocates_object_table_safely);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_draws_render_pass);
+    TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_render_area_independent_from_viewport);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_draws_named_depth_render_pass);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_draws_msaa_resolve_render_pass);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_draws_rg32uint_readback);
