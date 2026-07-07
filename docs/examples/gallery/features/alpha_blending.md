@@ -38,12 +38,19 @@ Three triangle groups share one primitive visual, with position and normal array
     --8<-- "examples/c/features/alpha_blending.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/alpha_blending.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `alpha_blending`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/alpha_blending.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/alpha_blending.c)
+    - Python source: [`examples/python/gallery/features/alpha_blending.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/alpha_blending.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=alpha_blending"><code>examples/webgpu/live.html?id=alpha_blending</code></a>
     - Browser capability tags: `alpha-blending`, `primitive`
