@@ -28,12 +28,19 @@ A 256x192 R32_SINT sampled field stores category IDs for cortex, fiber, nucleus,
     --8<-- "examples/c/features/probe_labels.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/probe_labels.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_probe_labels`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/probe_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/probe_labels.c)
+    - Python source: [`examples/python/gallery/features/probe_labels.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/probe_labels.py)
     - Browser support: Planned
     - Browser capability tags: `labels`, `query-readback`, `panzoom`
     - Validation: `smoke+readback+screenshot`

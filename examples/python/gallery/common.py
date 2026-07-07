@@ -42,6 +42,25 @@ def continuous_scale(scene, name: bytes = b"python_gallery_scale"):
     return scale
 
 
+def categorical_scale(scene, categories, label: bytes = b"categories"):
+    desc = dvz.dvz_scale_desc()
+    desc.kind = dvz.DVZ_SCALE_CATEGORICAL
+    desc.label = label
+    scale = dvz.dvz_scale(scene, ctypes.byref(desc))
+    if not scale:
+        raise RuntimeError("dvz_scale() failed")
+
+    c_categories = (dvz.DvzScaleCategory * len(categories))()
+    for i, (category_id, name, color) in enumerate(categories):
+        c_categories[i].category_id = int(category_id)
+        c_categories[i].order = i
+        c_categories[i].label = name.encode() if isinstance(name, str) else name
+        c_categories[i].color = color
+    if dvz.dvz_scale_set_categories(scale, c_categories, len(c_categories)) != 0:
+        raise RuntimeError("dvz_scale_set_categories() failed")
+    return scale
+
+
 def image_quad():
     positions = np.array(
         [

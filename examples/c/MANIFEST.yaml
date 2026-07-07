@@ -1851,6 +1851,9 @@ examples:
     primary_feature: probe-labels
     lane: features
     source: examples/c/features/probe_labels.c
+    python:
+      source: examples/python/gallery/features/probe_labels.py
+      status: direct-engine
     validation: smoke+readback+screenshot
     data:
       kind: synthetic
