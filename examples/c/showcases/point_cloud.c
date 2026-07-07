@@ -43,6 +43,7 @@
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "example_tuner.h"
 #include "runner/scenario_runner.h"
 
 
@@ -102,6 +103,8 @@ typedef struct PointCloudData
 typedef struct PointCloudState
 {
     PointCloudData data;
+    ExampleTuner tuner;
+    DvzExampleGuiEdlControls edl;
 } PointCloudState;
 
 
@@ -291,6 +294,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (out_user != NULL)
         *out_user = state;
+    state->tuner = example_tuner("Point cloud settings");
 
     EXAMPLE_CHECK(_load_data(&state->data), "point-cloud data setup failed");
     dvz_fprintf(stderr, "point_cloud: %u points (prepared real data)\n", state->data.count);
@@ -321,15 +325,15 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzCamera* camera = dvz_panel_camera(panel);
     EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc() failed");
     EXAMPLE_CHECK(camera != NULL, "dvz_panel_set_camera_desc() failed");
-    (void)camera;
 
-    DvzEdlDesc edl = {
-        DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc),
+    state->edl = (DvzExampleGuiEdlControls){
+        .enabled = true,
         .radius = 1.8f,
         .strength = 34.0f,
         .depth_scale = 1.0f,
     };
-    (void)dvz_panel_set_edl(panel, &edl);
+    example_tuner_camera_ref(&state->tuner, "Camera", panel, camera, &camera_desc);
+    example_tuner_edl(&state->tuner, "EDL", panel, &state->edl);
 
     DvzVisual* pixels = dvz_pixel(ctx->scene, 0);
     EXAMPLE_CHECK(pixels != NULL, "dvz_pixel() failed");
@@ -364,6 +368,19 @@ cleanup:
 }
 
 
+static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    (void)app;
+    PointCloudState* state = (PointCloudState*)user;
+    if (
+        ctx == NULL || ctx->presentation != DVZ_RUNNER_PRESENT_GLFW || state == NULL ||
+        view == NULL)
+        return true;
+
+    return example_tuner_attach(&state->tuner, view);
+}
+
+
 
 /**
  * Destroy the point-cloud showcase scenario state.
@@ -377,6 +394,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
     PointCloudState* state = (PointCloudState*)user;
     if (state == NULL)
         return;
+    example_tuner_detach(&state->tuner);
     _free_data(&state->data);
     dvz_free(state);
 }
@@ -417,5 +435,7 @@ static DvzScenarioSpec _point_cloud_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = _point_cloud_scenario();
+    if (example_cli_wants_live_gui(argc, argv))
+        spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
