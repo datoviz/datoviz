@@ -26,6 +26,10 @@ if(TARGET datoviz_app)
     target_sources(datoviz_example_support PRIVATE example_debug.c)
 endif()
 
+if(TARGET datoviz_app AND TARGET datoviz_gui)
+    target_sources(datoviz_example_support PRIVATE example_tuner.c)
+endif()
+
 target_include_directories(datoviz_example_support
     PRIVATE
     ${PROJECT_SOURCE_DIR}/include
