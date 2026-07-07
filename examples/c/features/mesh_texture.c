@@ -36,6 +36,7 @@
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "example_tuner.h"
 #include "runner/scenario_runner.h"
 
 
@@ -60,6 +61,10 @@ static const float TAU = 6.28318530718f;
 typedef struct MeshTextureState
 {
     DvzGeometry* geometry;
+    DvzVisual* visual;
+    DvzMaterialDesc material;
+    DvzArcball* arcball;
+    ExampleTuner tuner;
 } MeshTextureState;
 
 
@@ -142,7 +147,12 @@ static DvzSampledField* _add_texture(
  * @return true on success
  */
 static bool _add_textured_mesh(
-    DvzScene* scene, DvzPanel* panel, DvzSampledField* texture, DvzGeometry** out_geometry)
+    DvzScene* scene,
+    DvzPanel* panel,
+    DvzSampledField* texture,
+    DvzMaterialDesc* material,
+    DvzGeometry** out_geometry,
+    DvzVisual** out_visual)
 {
     DvzGeometry* sphere = dvz_geometry_sphere(&(DvzGeometrySphereDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
@@ -165,12 +175,15 @@ static bool _add_textured_mesh(
     if (out_geometry != NULL)
         *out_geometry = NULL;
 
-    DvzMaterialDesc material = example_default_phong_material_desc();
-    if (dvz_visual_set_material(visual, &material) != 0)
+    if (dvz_visual_set_material(visual, material) != 0)
         return false;
     if (dvz_visual_set_field(visual, "texture", texture) != DVZ_OK)
         return false;
-    return dvz_panel_add_visual(panel, visual, NULL) == 0;
+    if (dvz_panel_add_visual(panel, visual, NULL) != 0)
+        return false;
+    if (out_visual != NULL)
+        *out_visual = visual;
+    return true;
 }
 
 
@@ -198,6 +211,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (out_user != NULL)
         *out_user = state;
+    state->tuner = example_tuner("Textured mesh settings");
+    state->material = example_default_phong_material_desc();
 
     uint8_t pixels[TEXTURE_WIDTH * TEXTURE_HEIGHT * 4] = {0};
 
@@ -212,21 +227,46 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    if (example_set_default_3d_camera(panel, 1.0f) == NULL)
+    DvzCameraDesc camera = example_default_3d_camera_desc(1.0f);
+    if (dvz_panel_set_camera_desc(panel, &camera) != 0)
         return false;
 
     DvzSampledField* texture = _add_texture(ctx->scene, pixels);
     if (texture == NULL)
         return false;
-    if (!_add_textured_mesh(ctx->scene, panel, texture, &state->geometry))
+    if (!_add_textured_mesh(
+            ctx->scene, panel, texture, &state->material, &state->geometry, &state->visual))
         return false;
 
     DvzController* controller = dvz_arcball(ctx->scene, NULL);
     if (controller == NULL)
         return false;
+    state->arcball = dvz_controller_arcball(controller);
+    if (state->arcball == NULL)
+        return false;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
+
+    vec3 arcball_angles = {0.0f, 0.0f, 0.0f};
+    vec2 arcball_pan = {0.0f, 0.0f};
+    example_tuner_camera(&state->tuner, "Camera", panel, &camera);
+    example_tuner_arcball(
+        &state->tuner, "Arcball", state->arcball, arcball_angles, 1.0f, arcball_pan);
+    example_tuner_material(&state->tuner, "Material", state->visual, &state->material);
     return true;
+}
+
+
+static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    (void)app;
+    MeshTextureState* state = (MeshTextureState*)user;
+    if (
+        ctx == NULL || ctx->presentation != DVZ_RUNNER_PRESENT_GLFW || state == NULL ||
+        view == NULL)
+        return true;
+
+    return example_tuner_attach(&state->tuner, view);
 }
 
 
@@ -243,6 +283,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
     MeshTextureState* state = (MeshTextureState*)user;
     if (state == NULL)
         return;
+    example_tuner_detach(&state->tuner);
     if (state->geometry != NULL)
         dvz_geometry_destroy(state->geometry);
     dvz_free(state);
@@ -284,5 +325,7 @@ static DvzScenarioSpec _mesh_texture_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = _mesh_texture_scenario();
+    if (example_cli_wants_live_gui(argc, argv))
+        spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
