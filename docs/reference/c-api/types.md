@@ -743,6 +743,18 @@ typedef struct DvzPanelAxes2DDesc DvzPanelAxes2DDesc;
 typedef struct DvzPanelBackgroundDesc DvzPanelBackgroundDesc;
 ```
 
+#### `DvzPanelBackgroundGradient`
+
+```c
+typedef struct DvzPanelBackgroundGradient DvzPanelBackgroundGradient;
+```
+
+#### `DvzPanelBackgroundImage`
+
+```c
+typedef struct DvzPanelBackgroundImage DvzPanelBackgroundImage;
+```
+
 #### `DvzPanelBackgroundType`
 
 ```c
@@ -2908,8 +2920,29 @@ struct DvzPanelBackgroundDesc {
     uint32_t flags;
     DvzPanelBackgroundType type;
     float[4] color;
-    struct (unnamed struct at include/datoviz/scene/types.h:339:5) gradient;
-    struct (unnamed struct at include/datoviz/scene/types.h:347:5) image;
+    DvzPanelBackgroundGradient gradient;
+    DvzPanelBackgroundImage image;
+};
+```
+
+#### `DvzPanelBackgroundGradient`
+
+```c
+struct DvzPanelBackgroundGradient {
+    float[2] start;
+    float[2] end;
+    float[4] color0;
+    float[4] color1;
+};
+```
+
+#### `DvzPanelBackgroundImage`
+
+```c
+struct DvzPanelBackgroundImage {
+    const void * rgba;
+    uint32_t width;
+    uint32_t height;
 };
 ```
 
