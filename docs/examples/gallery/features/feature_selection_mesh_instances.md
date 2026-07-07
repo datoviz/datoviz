@@ -38,12 +38,19 @@ A single cube geometry is reused with an instance_transform array for a 6x4x2 fi
     --8<-- "examples/c/features/selection_mesh_instances.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/selection_mesh_instances.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_selection_mesh_instances`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/selection_mesh_instances.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_mesh_instances.c)
+    - Python source: [`examples/python/gallery/features/selection_mesh_instances.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/selection_mesh_instances.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_selection_mesh_instances"><code>examples/webgpu/live.html?id=feature_selection_mesh_instances</code></a>
     - Browser capability tags: `mesh`, `arcball`, `query-readback`, `frame-callbacks`

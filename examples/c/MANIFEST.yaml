@@ -1747,6 +1747,9 @@ examples:
     primary_feature: selection-mesh-instances
     lane: features
     source: examples/c/features/selection_mesh_instances.c
+    python:
+      source: examples/python/gallery/features/selection_mesh_instances.py
+      status: direct-engine
     validation: smoke+interaction+screenshot
     data:
       kind: synthetic

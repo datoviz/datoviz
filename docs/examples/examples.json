@@ -3284,7 +3284,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=feature_selection_mesh_instances",
       "webgpu_site_route": "/examples/webgpu/live.html?id=feature_selection_mesh_instances",
-      "primary_feature": "selection-mesh-instances"
+      "primary_feature": "selection-mesh-instances",
+      "python_source": "examples/python/gallery/features/selection_mesh_instances.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/selection_mesh_instances.py",
+      "python_status": "direct-engine"
     },
     {
       "id": "feature_isolines",

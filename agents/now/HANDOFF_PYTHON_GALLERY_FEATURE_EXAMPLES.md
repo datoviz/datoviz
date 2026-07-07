@@ -21,11 +21,12 @@ Recent checkpoint commits landed:
 8. `24e6e2eb8` Add Python image probe gallery example.
 9. `33e77c2de` Add Python picking gallery example.
 10. `3949ab6b4` Add Python pixel selection gallery example.
+11. `abe407e67` Add Python sphere selection gallery example.
 
 Current uncommitted checkpoint in this working tree:
 
-1. Added `examples/python/gallery/features/selection_sphere.py`.
-2. Added `feature_selection_sphere.python.source` / `direct-engine` in
+1. Added `examples/python/gallery/features/selection_mesh_instances.py`.
+2. Added `feature_selection_mesh_instances.python.source` / `direct-engine` in
    `examples/c/MANIFEST.yaml` and
    regenerated gallery metadata.
 
@@ -55,18 +56,23 @@ python3 - <<'PY'
 ... construct selection_sphere scene, scan a small offscreen panel grid for one item query hit,
     apply hover and selection ...
 PY
+python3 - <<'PY'
+... construct selection_mesh_instances scene, scan a small offscreen panel grid for one item query
+    hit, apply hover and selection ...
+PY
 ```
 
 These returned `image_probe offscreen query smoke: 1 True` and
 `picking offscreen query smoke: 1 True 57`, and
 `selection_pixel offscreen query smoke: 1 True 480`, and
-`selection_sphere offscreen query smoke: 1 True 18`. Live window and screenshot validation were not
-run for the earlier checkpoint notes.
+`selection_sphere offscreen query smoke: 1 True 18`, and
+`selection_mesh_instances offscreen query smoke: 1 True 30`. Live window and screenshot validation
+were not run for the earlier checkpoint notes.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-07:
 
-- v0.4-required feature examples: 29 of 64 have Python entries; 35 remain missing.
-- all v0.4-required public examples: 41 of 95 have Python entries; 54 remain missing.
+- v0.4-required feature examples: 30 of 64 have Python entries; 34 remain missing.
+- all v0.4-required public examples: 42 of 95 have Python entries; 53 remain missing.
 - `feature_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -76,15 +82,18 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
 - `feature_selection_pixel` is committed: it has
   `examples/python/gallery/features/selection_pixel.py` and a matching `python.source` manifest
   entry.
-- `feature_selection_sphere` is done in the current working tree: it has
+- `feature_selection_sphere` is committed: it has
   `examples/python/gallery/features/selection_sphere.py` and a matching `python.source` manifest
   entry.
+- `feature_selection_mesh_instances` is done in the current working tree: it has
+  `examples/python/gallery/features/selection_mesh_instances.py` and a matching `python.source`
+  manifest entry.
 
 
 ## Preferred Next Commit
 
 Continue the event/query/selection helper batch using the helper path created for `image_probe`.
-Next target `feature_selection_mesh_instances`, then `feature_probe_labels`.
+Next target `feature_probe_labels`.
 
 Implementation shape:
 
@@ -120,7 +129,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python sphere selection gallery example
+examples: add Python mesh instance selection gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -192,7 +201,7 @@ Current missing `v0.4_required` feature examples with no `python.source` entry:
 `feature_gui_viewport`, `feature_gui_cimgui`, `feature_animation_tracks`, `technique_ssao`,
 `technique_msaa`, `technique_depth_cue`, `technique_transparency`, `feature_input_events`,
 `feature_view_size_policies`, `feature_bezier_curve_path`, `feature_path_join`, `scale_bar`,
-`scalebar_units`, `annotation_readout`, `feature_selection_mesh_instances`, `feature_isolines`,
+`scalebar_units`, `annotation_readout`, `feature_isolines`,
 `feature_builtin_shapes_2d`, `feature_builtin_shapes_3d`, `feature_obj_loading`,
 `feature_probe_labels`, `feature_datetime_axis`, and `feature_marker_symbols`.
 
