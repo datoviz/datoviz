@@ -23,12 +23,12 @@ Recent checkpoint commits landed:
 10. `3949ab6b4` Add Python pixel selection gallery example.
 11. `abe407e67` Add Python sphere selection gallery example.
 12. `db53aca76` Add Python mesh instance selection gallery example.
+13. `5198da3e5` Add Python label probe gallery example.
 
 Current uncommitted checkpoint in this working tree:
 
-1. Added `examples/python/gallery/features/probe_labels.py`.
-2. Added a reusable categorical scale helper in `examples/python/gallery/common.py`.
-3. Added `feature_probe_labels.python.source` / `direct-engine` in `examples/c/MANIFEST.yaml` and
+1. Added `examples/python/gallery/features/marker_symbols.py`.
+2. Added `feature_marker_symbols.python.source` / `direct-engine` in `examples/c/MANIFEST.yaml` and
    regenerated gallery metadata.
 
 The last validation loop was:
@@ -64,6 +64,10 @@ PY
 python3 - <<'PY'
 ... construct probe_labels scene, queue one offscreen segment query, verify categorical readback ...
 PY
+python3 - <<'PY'
+... construct marker_symbols scene, register built-in/bitmap/SDF/MSDF/SVG symbols, run one
+    offscreen frame ...
+PY
 ```
 
 These returned `image_probe offscreen query smoke: 1 True` and
@@ -71,13 +75,14 @@ These returned `image_probe offscreen query smoke: 1 True` and
 `selection_pixel offscreen query smoke: 1 True 480`, and
 `selection_sphere offscreen query smoke: 1 True 18`, and
 `selection_mesh_instances offscreen query smoke: 1 True 30`, and
-`probe_labels offscreen query smoke: 1 True 31`. Live window and screenshot validation were not run
-for the earlier checkpoint notes.
+`probe_labels offscreen query smoke: 1 True 31`, and
+`marker_symbols offscreen smoke: OK`. Live window and screenshot validation were not run for the
+earlier checkpoint notes.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-07:
 
-- v0.4-required feature examples: 31 of 64 have Python entries; 33 remain missing.
-- all v0.4-required public examples: 43 of 95 have Python entries; 52 remain missing.
+- v0.4-required feature examples: 32 of 64 have Python entries; 32 remain missing.
+- all v0.4-required public examples: 44 of 95 have Python entries; 51 remain missing.
 - `feature_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -93,14 +98,17 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
 - `feature_selection_mesh_instances` is committed: it has
   `examples/python/gallery/features/selection_mesh_instances.py` and a matching `python.source`
   manifest entry.
-- `feature_probe_labels` is done in the current working tree: it has
+- `feature_probe_labels` is committed: it has
   `examples/python/gallery/features/probe_labels.py` and a matching `python.source` manifest entry.
+- `feature_marker_symbols` is done in the current working tree: it has
+  `examples/python/gallery/features/marker_symbols.py` and a matching `python.source` manifest
+  entry.
 
 
 ## Preferred Next Commit
 
-The event/query/selection helper batch is complete for the planned feature examples. Next target
-the geometry and symbol helper batch, starting with `feature_marker_symbols` or
+The event/query/selection helper batch is complete for the planned feature examples. The geometry
+and symbol helper batch has started with `feature_marker_symbols`; next target
 `feature_builtin_shapes_2d`.
 
 Implementation shape:
@@ -137,7 +145,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python label probe gallery example
+examples: add Python marker symbols gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -211,7 +219,7 @@ Current missing `v0.4_required` feature examples with no `python.source` entry:
 `feature_view_size_policies`, `feature_bezier_curve_path`, `feature_path_join`, `scale_bar`,
 `scalebar_units`, `annotation_readout`, `feature_isolines`,
 `feature_builtin_shapes_2d`, `feature_builtin_shapes_3d`, `feature_obj_loading`,
-`feature_datetime_axis`, and `feature_marker_symbols`.
+and `feature_datetime_axis`.
 
 
 ## Per-Example Checklist

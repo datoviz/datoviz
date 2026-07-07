@@ -28,12 +28,19 @@ Each row uses the same marker attributes, including position, color, diameter_px
     --8<-- "examples/c/features/marker_symbols.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/marker_symbols.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_marker_symbols`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/marker_symbols.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/marker_symbols.c)
+    - Python source: [`examples/python/gallery/features/marker_symbols.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/marker_symbols.py)
     - Browser support: Deferred
     - Browser note: marker symbol-set and mixed atlas encoding parity are not in the RC WebGPU path yet
     - Browser capability tags: `marker`, `symbol-set`, `glyph-atlas`

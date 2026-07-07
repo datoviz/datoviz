@@ -1920,6 +1920,9 @@ examples:
     primary_feature: marker-symbols
     lane: features
     source: examples/c/features/marker_symbols.c
+    python:
+      source: examples/python/gallery/features/marker_symbols.py
+      status: direct-engine
     validation: smoke+screenshot
     data:
       kind: synthetic
