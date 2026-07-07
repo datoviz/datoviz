@@ -143,6 +143,20 @@ bool example_arg_value_prefix(int argc, char** argv, const char* prefix, const c
 
 
 /**
+ * Return whether native live mode should install example GUI helpers.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return whether live GLFW GUI helpers are useful
+ */
+bool example_cli_wants_live_gui(int argc, char** argv)
+{
+    return example_arg_has(argc, argv, "--live") || example_arg_has(argc, argv, "--live-record");
+}
+
+
+
+/**
  * Build an output path next to the example executable.
  *
  * When DVZ_CAPTURE_DIR and DVZ_CAPTURE_BASENAME are set, the requested basename is replaced

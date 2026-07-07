@@ -109,6 +109,8 @@ bool example_arg_value(int argc, char** argv, const char* name, const char** out
 
 bool example_arg_value_prefix(int argc, char** argv, const char* prefix, const char** out);
 
+bool example_cli_wants_live_gui(int argc, char** argv);
+
 void example_outpath(const char* exe, const char* name, char* out, size_t size);
 
 bool example_recording_path(int argc, char** argv, const char* default_path, char* out, size_t size);

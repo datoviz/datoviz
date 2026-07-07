@@ -30,7 +30,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "_alloc.h"
 #include "datoviz/gui.h"
@@ -468,20 +467,6 @@ static DvzScenarioSpec _ssao_scenario(void)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-static bool _cli_wants_live_gui(int argc, char** argv)
-{
-    for (int i = 1; i < argc; i++)
-    {
-        if (argv[i] == NULL)
-            continue;
-        if (strcmp(argv[i], "--live") == 0 || strcmp(argv[i], "--live-record") == 0)
-            return true;
-    }
-    return false;
-}
-
-
-
 /**
  * Run the SSAO feature example through the native scenario runner.
  *
@@ -492,7 +477,7 @@ static bool _cli_wants_live_gui(int argc, char** argv)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = _ssao_scenario();
-    if (_cli_wants_live_gui(argc, argv))
+    if (example_cli_wants_live_gui(argc, argv))
         spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
