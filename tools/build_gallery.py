@@ -26,26 +26,27 @@ STATUS_ORDER = ("supported", "experimental", "prototype", "advanced/unstable", "
 DEFAULT_STATUS = "supported"
 PYTHON_SOURCE_BY_ID = {}
 
-# Semantic ordering for the examples index page.
-# Items not listed fall to the end in their natural order.
-
-INDEX_SHOWCASE_ORDER = (
-    "brain_volume",               # flagship neuro volume
-    "showcase_lipid_brain_atlas", # neuro atlas
-    "showcase_embedding_atlas",   # high-dim data
-    "showcase_synthetic_mouse",   # neuro anatomy
-    "protein_arcball_viewer",     # molecular 3D
-    "point_cloud",                # 3D scatter
-    "showcase_surface_grid",      # 3D surface
-    "textured_terrain_or_planet", # textured mesh
-    "showcase_wind_field",        # vector field
-    "showcase_gpu_particle_smoke",# GPU compute
-    "scientific_plotting_workflow",
-    "scalebar_measurement_workflow",
-    "linked_panels_axes_panzoom",
-    "linked_panels_probe_colorbar",
-    "us_state_choropleth",
+# Editorial showcase groups. The 2D/3D split describes the primary gallery
+# presentation, not a strict mathematical classification.
+SHOWCASE_GROUPS = (
+    ("2D", [
+        "scientific_plotting_workflow",
+        "linked_panels_axes_panzoom",
+        "linked_panels_probe_colorbar",
+        "scalebar_measurement_workflow",
+        "us_state_choropleth",
+        "showcase_wind_field",
+    ]),
+    ("3D", [
+        "brain_volume",
+        "protein_arcball_viewer",
+        "point_cloud",
+        "showcase_surface_grid",
+        "textured_terrain_or_planet",
+        "showcase_gpu_particle_smoke",
+    ]),
 )
+SHOWCASE_ORDER = tuple(id_ for _, ids in SHOWCASE_GROUPS for id_ in ids)
 
 # Visuals grouped by dimensionality; each tuple is (subheading, [ids]).
 INDEX_VISUAL_GROUPS = (
@@ -229,11 +230,6 @@ CATEGORY_TO_LANE = {
 LANE_TO_CATEGORY = {lane: category for category, lane in CATEGORY_TO_LANE.items()}
 
 PAGE_CONFIG = {
-    "showcases.md": {
-        "title": "Showcases",
-        "lanes": ("showcases",),
-        "intro": "Browse composed scenes demonstrating scientific workflows, real data, and polished demos.",
-    },
     "advanced.md": {
         "title": "Advanced Examples",
         "lanes": ("advanced",),
@@ -480,6 +476,25 @@ def collect_examples(manifest: dict) -> list[Example]:
         )
         examples.append(example)
     return examples
+
+
+def validate_showcase_groups(examples: list[Example]) -> None:
+    expected = {example.id for example in examples if example.lane == "showcases"}
+    listed: list[str] = []
+    for _, group_ids in SHOWCASE_GROUPS:
+        listed.extend(group_ids)
+
+    duplicates = sorted({id_ for id_ in listed if listed.count(id_) > 1})
+    if duplicates:
+        raise ValueError(f"Duplicate showcase IDs in SHOWCASE_GROUPS: {', '.join(duplicates)}")
+
+    listed_set = set(listed)
+    missing = sorted(expected - listed_set)
+    extra = sorted(listed_set - expected)
+    if missing:
+        raise ValueError(f"Missing showcase IDs in SHOWCASE_GROUPS: {', '.join(missing)}")
+    if extra:
+        raise ValueError(f"Unknown showcase IDs in SHOWCASE_GROUPS: {', '.join(extra)}")
 
 
 def status_counts(examples: list[Example]) -> str:
@@ -925,7 +940,7 @@ def ordered_lane_examples(examples: list[Example], lane: str) -> list[Example]:
         )
         return ordered
     if lane == "showcases":
-        return semantic_sort(lane_examples, INDEX_SHOWCASE_ORDER)
+        return semantic_sort(lane_examples, SHOWCASE_ORDER)
     return sorted(lane_examples, key=lambda e: e.title.lower())
 
 
@@ -1068,6 +1083,37 @@ def render_gallery_page(
     write_text(docs_dir / filename, "\n".join(lines))
 
 
+def render_showcases_page(
+    examples: list[Example],
+    docs_dir: Path,
+    image_dir: Path,
+    image_url_base: str,
+    image_format: str = DEFAULT_IMAGE_FORMAT,
+) -> None:
+    showcase_examples = [example for example in examples if example.lane == "showcases"]
+    by_id = {example.id: example for example in showcase_examples}
+    page_path = docs_site_path(docs_dir, "showcases.md")
+    lines = generated_header("Showcases")
+    lines.extend(
+        render_page_intro(
+            "Browse composed scenes demonstrating scientific workflows, real data, and polished demos.",
+            f"Coverage: {len(showcase_examples)} examples ({status_counts(showcase_examples)}).",
+        )
+    )
+    for group_label, group_ids in SHOWCASE_GROUPS:
+        group_examples = [by_id[id_] for id_ in group_ids if id_ in by_id]
+        if not group_examples:
+            continue
+        lines.extend([f"## {group_label}", ""])
+        lines.append('<div class="grid cards" markdown="1">')
+        lines.append("")
+        for example in group_examples:
+            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
+        lines.append("</div>")
+        lines.append("")
+    write_text(docs_dir / "showcases.md", "\n".join(lines))
+
+
 def render_index(
     examples: list[Example],
     docs_dir: Path,
@@ -1076,7 +1122,7 @@ def render_index(
     image_format: str = DEFAULT_IMAGE_FORMAT,
 ) -> None:
     by_lane = {lane: [e for e in examples if e.lane == lane] for lane in PUBLIC_LANES}
-    showcase_examples = semantic_sort(by_lane["showcases"], INDEX_SHOWCASE_ORDER)
+    showcase_examples = semantic_sort(by_lane["showcases"], SHOWCASE_ORDER)
     visual_examples = by_lane["visuals"]
     composite_examples = by_lane["composites"]
     feature_examples = by_lane["features"]
@@ -1439,8 +1485,10 @@ def main() -> int:
     args = parse_args()
     manifest = load_manifest(args.manifest)
     examples = collect_examples(manifest)
+    validate_showcase_groups(examples)
     clean_generated_pages(args.docs_dir)
     render_index(examples, args.docs_dir, args.image_dir, args.image_url_base, args.image_format)
+    render_showcases_page(examples, args.docs_dir, args.image_dir, args.image_url_base, args.image_format)
     for filename, config in PAGE_CONFIG.items():
         render_gallery_page(
             filename,

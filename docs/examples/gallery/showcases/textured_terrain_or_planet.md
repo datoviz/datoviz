@@ -104,6 +104,6 @@ License note: NASA media usage guidelines and USGS/NASA public-domain source-dat
 <a href="../../../showcases">Showcases</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../showcase_surface_grid">Previous: Surface Grid</a> · <a href="../showcase_wind_field">Next: Wind Field</a>
+<a href="../showcase_surface_grid">Previous: Surface Grid</a> · <a href="../showcase_gpu_particle_smoke">Next: GPU Particle Smoke</a>
 </div>
 </nav>

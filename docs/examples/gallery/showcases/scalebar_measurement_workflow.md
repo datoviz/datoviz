@@ -74,6 +74,6 @@ The browser preview uses `examples/webgpu/live.html?id=scalebar_measurement_work
 <a href="../../../showcases">Showcases</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../scientific_plotting_workflow">Previous: Scientific Plotting Workflow</a> · <a href="../linked_panels_axes_panzoom">Next: Linked Panels With Axes</a>
+<a href="../linked_panels_probe_colorbar">Previous: Linked Probe With Colorbar</a> · <a href="../us_state_choropleth">Next: U.S. State Choropleth</a>
 </div>
 </nav>

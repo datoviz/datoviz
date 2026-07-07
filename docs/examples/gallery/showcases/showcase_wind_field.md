@@ -74,6 +74,6 @@ The browser preview uses `examples/webgpu/live.html?id=showcase_wind_field` when
 <a href="../../../showcases">Showcases</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../textured_terrain_or_planet">Previous: Textured Planets</a> · <a href="../showcase_gpu_particle_smoke">Next: GPU Particle Smoke</a>
+<a href="../us_state_choropleth">Previous: U.S. State Choropleth</a> · <a href="../brain_volume">Next: Allen Mouse Brain</a>
 </div>
 </nav>

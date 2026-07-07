@@ -74,6 +74,6 @@ The browser preview uses `examples/webgpu/live.html?id=scientific_plotting_workf
 <a href="../../../showcases">Showcases</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../showcase_gpu_particle_smoke">Previous: GPU Particle Smoke</a> · <a href="../scalebar_measurement_workflow">Next: Scale Bar Measurement Workflow</a>
+<a href="../linked_panels_axes_panzoom">Next: Linked Panels With Axes</a>
 </div>
 </nav>

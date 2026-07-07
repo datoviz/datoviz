@@ -16,6 +16,78 @@ Selected composed examples are shown below.
 
 <div class="card" markdown="1">
 
+### [Scientific Plotting Workflow](gallery/showcases/scientific_plotting_workflow.md)
+
+[![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/scientific_plotting_workflow.webp)](gallery/showcases/scientific_plotting_workflow.md)
+
+`showcases`
+
+This example composes common scientific plot elements in one figure.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Linked Panels With Axes](gallery/showcases/linked_panels_axes_panzoom.md)
+
+_Screenshot not required for this example._
+
+`showcases`
+
+This example builds linked time-series panels with shared axes behavior.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Linked Probe With Colorbar](gallery/showcases/linked_panels_probe_colorbar.md)
+
+[![Linked Probe With Colorbar](../assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp)](gallery/showcases/linked_panels_probe_colorbar.md)
+
+`showcases`
+
+This example links two image panels with a probe readout and colorbar.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Scale Bar Measurement Workflow](gallery/showcases/scalebar_measurement_workflow.md)
+
+[![Scale Bar Measurement Workflow](../assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp)](gallery/showcases/scalebar_measurement_workflow.md)
+
+`showcases`
+
+This example compares scale bars across overview, detail, and 3D views.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [U.S. State Choropleth](gallery/showcases/us_state_choropleth.md)
+
+[![U.S. State Choropleth](../assets/gallery/v0.4/showcases/us_state_choropleth.webp)](gallery/showcases/us_state_choropleth.md)
+
+`showcases`
+
+This example renders contiguous U.S. population density as polygon-set data.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Wind Field](gallery/showcases/showcase_wind_field.md)
+
+[![Wind Field](../assets/gallery/v0.4/showcases/showcase_wind_field.webp)](gallery/showcases/showcase_wind_field.md)
+
+`showcases`
+
+This example combines a synthetic wind-speed field with vectors and streamlines.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Allen Mouse Brain](gallery/showcases/brain_volume.md)
 
 [![Allen Mouse Brain](../assets/gallery/v0.4/showcases/brain_volume.webp)](gallery/showcases/brain_volume.md)
@@ -76,18 +148,6 @@ This example maps real planetary textures onto an indexed sphere mesh.
 
 <div class="card" markdown="1">
 
-### [Wind Field](gallery/showcases/showcase_wind_field.md)
-
-[![Wind Field](../assets/gallery/v0.4/showcases/showcase_wind_field.webp)](gallery/showcases/showcase_wind_field.md)
-
-`showcases`
-
-This example combines a synthetic wind-speed field with vectors and streamlines.
-
-</div>
-
-<div class="card" markdown="1">
-
 ### [GPU Particle Smoke](gallery/showcases/showcase_gpu_particle_smoke.md)
 
 [![GPU Particle Smoke](../assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp)](gallery/showcases/showcase_gpu_particle_smoke.md)
@@ -95,66 +155,6 @@ This example combines a synthetic wind-speed field with vectors and streamlines.
 `experimental` `showcases`
 
 This example uses scene compute buffers to animate particle smoke.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Scientific Plotting Workflow](gallery/showcases/scientific_plotting_workflow.md)
-
-[![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/scientific_plotting_workflow.webp)](gallery/showcases/scientific_plotting_workflow.md)
-
-`showcases`
-
-This example composes common scientific plot elements in one figure.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Scale Bar Measurement Workflow](gallery/showcases/scalebar_measurement_workflow.md)
-
-[![Scale Bar Measurement Workflow](../assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp)](gallery/showcases/scalebar_measurement_workflow.md)
-
-`showcases`
-
-This example compares scale bars across overview, detail, and 3D views.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Linked Panels With Axes](gallery/showcases/linked_panels_axes_panzoom.md)
-
-_Screenshot not required for this example._
-
-`showcases`
-
-This example builds linked time-series panels with shared axes behavior.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Linked Probe With Colorbar](gallery/showcases/linked_panels_probe_colorbar.md)
-
-[![Linked Probe With Colorbar](../assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp)](gallery/showcases/linked_panels_probe_colorbar.md)
-
-`showcases`
-
-This example links two image panels with a probe readout and colorbar.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [U.S. State Choropleth](gallery/showcases/us_state_choropleth.md)
-
-[![U.S. State Choropleth](../assets/gallery/v0.4/showcases/us_state_choropleth.webp)](gallery/showcases/us_state_choropleth.md)
-
-`showcases`
-
-This example renders contiguous U.S. population density as polygon-set data.
 
 </div>
 

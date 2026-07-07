@@ -93,6 +93,6 @@ License note: Allen Institute Terms of Use apply; public use must follow Allen I
 <a href="../../../showcases">Showcases</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../protein_arcball_viewer">Next: Protein</a>
+<a href="../showcase_wind_field">Previous: Wind Field</a> · <a href="../protein_arcball_viewer">Next: Protein</a>
 </div>
 </nav>

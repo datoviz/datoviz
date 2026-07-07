@@ -76,6 +76,6 @@ The browser preview uses `examples/webgpu/live.html?id=linked_panels_axes_panzoo
 <a href="../../../showcases">Showcases</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../scalebar_measurement_workflow">Previous: Scale Bar Measurement Workflow</a> · <a href="../linked_panels_probe_colorbar">Next: Linked Probe With Colorbar</a>
+<a href="../scientific_plotting_workflow">Previous: Scientific Plotting Workflow</a> · <a href="../linked_panels_probe_colorbar">Next: Linked Probe With Colorbar</a>
 </div>
 </nav>

@@ -76,6 +76,6 @@ The browser preview uses `examples/webgpu/live.html?id=linked_panels_probe_color
 <a href="../../../showcases">Showcases</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../linked_panels_axes_panzoom">Previous: Linked Panels With Axes</a> · <a href="../us_state_choropleth">Next: U.S. State Choropleth</a>
+<a href="../linked_panels_axes_panzoom">Previous: Linked Panels With Axes</a> · <a href="../scalebar_measurement_workflow">Next: Scale Bar Measurement Workflow</a>
 </div>
 </nav>

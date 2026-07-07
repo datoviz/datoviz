@@ -117,6 +117,6 @@ License note: U.S. Census Bureau public data; cite the Census Bureau as source.
 <a href="../../../showcases">Showcases</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../linked_panels_probe_colorbar">Previous: Linked Probe With Colorbar</a>
+<a href="../scalebar_measurement_workflow">Previous: Scale Bar Measurement Workflow</a> · <a href="../showcase_wind_field">Next: Wind Field</a>
 </div>
 </nav>

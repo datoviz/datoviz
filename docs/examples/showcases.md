@@ -8,31 +8,19 @@ Coverage: 12 examples (10 supported, 1 experimental, 1 prototype).
 
 Each card links to a detail page with preview media, source code, and example metadata.
 
-## Showcases
+## 2D
 
 <div class="grid cards" markdown="1">
 
 <div class="card" markdown="1">
 
-### [Allen Mouse Brain](gallery/showcases/brain_volume.md)
+### [Scientific Plotting Workflow](gallery/showcases/scientific_plotting_workflow.md)
 
-[![Allen Mouse Brain](../assets/gallery/v0.4/showcases/brain_volume.webp)](gallery/showcases/brain_volume.md)
+[![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/scientific_plotting_workflow.webp)](gallery/showcases/scientific_plotting_workflow.md)
 
-`prototype` `showcases`<br><span>`scientific`, `real-data`, `volume`, `volume-slice`, `volume-occlusion`, ...</span>
+`showcases`<br><span>`workflow`, `scientific`, `histogram`, `guide-lines`, `guide-spans`, ...</span>
 
-This example renders a prepared Allen mouse brain volume with a visible slice.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [GPU Particle Smoke](gallery/showcases/showcase_gpu_particle_smoke.md)
-
-[![GPU Particle Smoke](../assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp)](gallery/showcases/showcase_gpu_particle_smoke.md)
-
-`experimental` `showcases`<br><span>`compute`, `simulation`, `particles`, `point`, `alpha-blending`, ...</span>
-
-This example uses scene compute buffers to animate particle smoke.
+This example composes common scientific plot elements in one figure.
 
 </div>
 
@@ -62,13 +50,55 @@ This example links two image panels with a probe readout and colorbar.
 
 <div class="card" markdown="1">
 
-### [Point Cloud](gallery/showcases/point_cloud.md)
+### [Scale Bar Measurement Workflow](gallery/showcases/scalebar_measurement_workflow.md)
 
-[![Point Cloud](../assets/gallery/v0.4/showcases/point_cloud.webp)](gallery/showcases/point_cloud.md)
+[![Scale Bar Measurement Workflow](../assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp)](gallery/showcases/scalebar_measurement_workflow.md)
 
-`showcases`<br><span>`real-data`, `pixel`, `dense-point-cloud`, `direct-color`, `eye-dome-lighting`, ...</span>
+`showcases`<br><span>`workflow`, `scale-bar`, `measurement`, `synthetic`</span>
 
-This example renders a prepared RGB LiDAR point cloud with direct colors.
+This example compares scale bars across overview, detail, and 3D views.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [U.S. State Choropleth](gallery/showcases/us_state_choropleth.md)
+
+[![U.S. State Choropleth](../assets/gallery/v0.4/showcases/us_state_choropleth.webp)](gallery/showcases/us_state_choropleth.md)
+
+`showcases`<br><span>`scientific`, `real-data`, `geo`, `composite`, `polygon-set`, ...</span>
+
+This example renders contiguous U.S. population density as polygon-set data.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Wind Field](gallery/showcases/showcase_wind_field.md)
+
+[![Wind Field](../assets/gallery/v0.4/showcases/showcase_wind_field.webp)](gallery/showcases/showcase_wind_field.md)
+
+`showcases`<br><span>`scientific`, `synthetic`, `scalar-field`, `vector-field`, `wind-field`, ...</span>
+
+This example combines a synthetic wind-speed field with vectors and streamlines.
+
+</div>
+
+</div>
+
+## 3D
+
+<div class="grid cards" markdown="1">
+
+<div class="card" markdown="1">
+
+### [Allen Mouse Brain](gallery/showcases/brain_volume.md)
+
+[![Allen Mouse Brain](../assets/gallery/v0.4/showcases/brain_volume.webp)](gallery/showcases/brain_volume.md)
+
+`prototype` `showcases`<br><span>`scientific`, `real-data`, `volume`, `volume-slice`, `volume-occlusion`, ...</span>
+
+This example renders a prepared Allen mouse brain volume with a visible slice.
 
 </div>
 
@@ -86,25 +116,13 @@ This example renders a prepared PDB structure as colored sphere impostors.
 
 <div class="card" markdown="1">
 
-### [Scale Bar Measurement Workflow](gallery/showcases/scalebar_measurement_workflow.md)
+### [Point Cloud](gallery/showcases/point_cloud.md)
 
-[![Scale Bar Measurement Workflow](../assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp)](gallery/showcases/scalebar_measurement_workflow.md)
+[![Point Cloud](../assets/gallery/v0.4/showcases/point_cloud.webp)](gallery/showcases/point_cloud.md)
 
-`showcases`<br><span>`workflow`, `scale-bar`, `measurement`, `synthetic`</span>
+`showcases`<br><span>`real-data`, `pixel`, `dense-point-cloud`, `direct-color`, `eye-dome-lighting`, ...</span>
 
-This example compares scale bars across overview, detail, and 3D views.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Scientific Plotting Workflow](gallery/showcases/scientific_plotting_workflow.md)
-
-[![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/scientific_plotting_workflow.webp)](gallery/showcases/scientific_plotting_workflow.md)
-
-`showcases`<br><span>`workflow`, `scientific`, `histogram`, `guide-lines`, `guide-spans`, ...</span>
-
-This example composes common scientific plot elements in one figure.
+This example renders a prepared RGB LiDAR point cloud with direct colors.
 
 </div>
 
@@ -134,25 +152,13 @@ This example maps real planetary textures onto an indexed sphere mesh.
 
 <div class="card" markdown="1">
 
-### [U.S. State Choropleth](gallery/showcases/us_state_choropleth.md)
+### [GPU Particle Smoke](gallery/showcases/showcase_gpu_particle_smoke.md)
 
-[![U.S. State Choropleth](../assets/gallery/v0.4/showcases/us_state_choropleth.webp)](gallery/showcases/us_state_choropleth.md)
+[![GPU Particle Smoke](../assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp)](gallery/showcases/showcase_gpu_particle_smoke.md)
 
-`showcases`<br><span>`scientific`, `real-data`, `geo`, `composite`, `polygon-set`, ...</span>
+`experimental` `showcases`<br><span>`compute`, `simulation`, `particles`, `point`, `alpha-blending`, ...</span>
 
-This example renders contiguous U.S. population density as polygon-set data.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Wind Field](gallery/showcases/showcase_wind_field.md)
-
-[![Wind Field](../assets/gallery/v0.4/showcases/showcase_wind_field.webp)](gallery/showcases/showcase_wind_field.md)
-
-`showcases`<br><span>`scientific`, `synthetic`, `scalar-field`, `vector-field`, `wind-field`, ...</span>
-
-This example combines a synthetic wind-speed field with vectors and streamlines.
+This example uses scene compute buffers to animate particle smoke.
 
 </div>
 

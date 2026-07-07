@@ -75,6 +75,6 @@ The browser preview uses `examples/webgpu/live.html?id=showcase_gpu_particle_smo
 <a href="../../../showcases">Showcases</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../showcase_wind_field">Previous: Wind Field</a> · <a href="../scientific_plotting_workflow">Next: Scientific Plotting Workflow</a>
+<a href="../textured_terrain_or_planet">Previous: Textured Planets</a>
 </div>
 </nav>
