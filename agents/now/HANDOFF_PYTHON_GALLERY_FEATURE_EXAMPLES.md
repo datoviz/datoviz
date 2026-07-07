@@ -24,12 +24,13 @@ Recent checkpoint commits landed:
 11. `abe407e67` Add Python sphere selection gallery example.
 12. `db53aca76` Add Python mesh instance selection gallery example.
 13. `5198da3e5` Add Python label probe gallery example.
+14. `c334f04a6` Add Python marker symbols gallery example.
 
 Current uncommitted checkpoint in this working tree:
 
-1. Added `examples/python/gallery/features/marker_symbols.py`.
-2. Added `feature_marker_symbols.python.source` / `direct-engine` in `examples/c/MANIFEST.yaml` and
-   regenerated gallery metadata.
+1. Added `examples/python/gallery/features/builtin_shapes_2d.py`.
+2. Added `feature_builtin_shapes_2d.python.source` / `direct-engine` in `examples/c/MANIFEST.yaml`
+   and regenerated gallery metadata.
 
 The last validation loop was:
 
@@ -68,6 +69,10 @@ python3 - <<'PY'
 ... construct marker_symbols scene, register built-in/bitmap/SDF/MSDF/SVG symbols, run one
     offscreen frame ...
 PY
+python3 - <<'PY'
+... construct builtin_shapes_2d scene, upload built-in geometry and an indexed holed polygon,
+    render one offscreen frame ...
+PY
 ```
 
 These returned `image_probe offscreen query smoke: 1 True` and
@@ -76,13 +81,13 @@ These returned `image_probe offscreen query smoke: 1 True` and
 `selection_sphere offscreen query smoke: 1 True 18`, and
 `selection_mesh_instances offscreen query smoke: 1 True 30`, and
 `probe_labels offscreen query smoke: 1 True 31`, and
-`marker_symbols offscreen smoke: OK`. Live window and screenshot validation were not run for the
-earlier checkpoint notes.
+`marker_symbols offscreen smoke: OK`, and `builtin_shapes_2d offscreen smoke: OK`. Live window and
+screenshot validation were not run for the earlier checkpoint notes.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-07:
 
-- v0.4-required feature examples: 32 of 64 have Python entries; 32 remain missing.
-- all v0.4-required public examples: 44 of 95 have Python entries; 51 remain missing.
+- v0.4-required feature examples: 33 of 64 have Python entries; 31 remain missing.
+- all v0.4-required public examples: 45 of 95 have Python entries; 50 remain missing.
 - `feature_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -100,21 +105,24 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   manifest entry.
 - `feature_probe_labels` is committed: it has
   `examples/python/gallery/features/probe_labels.py` and a matching `python.source` manifest entry.
-- `feature_marker_symbols` is done in the current working tree: it has
+- `feature_marker_symbols` is committed: it has
   `examples/python/gallery/features/marker_symbols.py` and a matching `python.source` manifest
+  entry.
+- `feature_builtin_shapes_2d` is done in the current working tree: it has
+  `examples/python/gallery/features/builtin_shapes_2d.py` and a matching `python.source` manifest
   entry.
 
 
 ## Preferred Next Commit
 
 The event/query/selection helper batch is complete for the planned feature examples. The geometry
-and symbol helper batch has started with `feature_marker_symbols`; next target
-`feature_builtin_shapes_2d`.
+and symbol helper batch has started with `feature_marker_symbols` and `feature_builtin_shapes_2d`;
+next target `feature_builtin_shapes_3d`.
 
 Implementation shape:
 
-1. Read `examples/c/features/image_probe.c`, the relevant query/selection C examples, and existing
-   Python gallery helpers before adding new Python support.
+1. Read the target C feature example and existing Python gallery helpers before adding new Python
+   support.
 2. Add the minimal shared helpers in `examples/python/gallery/common.py` only when at least two
    examples need them.
 3. Keep examples as direct `dvz_*` usage. Do not add high-level plotting wrappers, query wrappers,
@@ -145,7 +153,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python marker symbols gallery example
+examples: add Python builtin shapes 2D gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -218,8 +226,7 @@ Current missing `v0.4_required` feature examples with no `python.source` entry:
 `technique_msaa`, `technique_depth_cue`, `technique_transparency`, `feature_input_events`,
 `feature_view_size_policies`, `feature_bezier_curve_path`, `feature_path_join`, `scale_bar`,
 `scalebar_units`, `annotation_readout`, `feature_isolines`,
-`feature_builtin_shapes_2d`, `feature_builtin_shapes_3d`, `feature_obj_loading`,
-and `feature_datetime_axis`.
+`feature_builtin_shapes_3d`, `feature_obj_loading`, and `feature_datetime_axis`.
 
 
 ## Per-Example Checklist

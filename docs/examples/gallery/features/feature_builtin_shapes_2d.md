@@ -38,12 +38,19 @@ The panel uses equal-aspect data coordinates, then uploads generated geometry fo
     --8<-- "examples/c/features/builtin_shapes_2d.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/builtin_shapes_2d.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_builtin_shapes_2d`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/builtin_shapes_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_2d.c)
+    - Python source: [`examples/python/gallery/features/builtin_shapes_2d.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/builtin_shapes_2d.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_builtin_shapes_2d"><code>examples/webgpu/live.html?id=feature_builtin_shapes_2d</code></a>
     - Browser capability tags: `mesh`, `controller`
