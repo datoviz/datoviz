@@ -204,25 +204,10 @@ nav:
       - WebGPU subset: 'reference/webgpu-subset.md'
       - Compute and graphics: 'reference/compute-graphics.md'
   - Advanced:
-    - Architecture:
-      - Why Datoviz: 'explanation/why-datoviz.md'
-      - Scene model: 'explanation/scene-model.md'
-      - Performance model: 'explanation/performance-model.md'
-      - Portability and WebGPU: 'explanation/portability-webgpu.md'
-    - Runtime layers:
-      - DRP2 internals: 'reference/drp2/index.md'
-      - vklite: 'advanced/vklite.md'
-      - Canvas and stream API: 'advanced/canvas.md'
-      - WebGPU renderer: 'advanced/webgpu-renderer.md'
-      - WebGPU matrix: 'examples/webgpu-matrix.md'
-    - Contributors:
-      - Build and test: 'contributors/build-and-test.md'
-      - Coding style: 'contributors/coding-style.md'
-      - Adding examples: 'contributors/adding-examples.md'
-      - Adding a visual: 'contributors/adding-a-visual.md'
-      - Docs authoring: 'contributors/docs-authoring.md'
-      - AI agents: 'contributors/ai-agents.md'
-      - Agent quickstart: 'contributors/agent-quickstart.md'
+    - Runtime internals: 'advanced/runtime-internals.md'
+    - DRP2 command streams: 'reference/drp2/index.md'
+    - WebGPU/WASM runtime: 'reference/webgpu-subset.md'
+    - Record/replay diagnostics: 'how-to/record-replay.md'
     - Release maintainers:
       - Release process: 'contributors/release-process.md'
       - Release flight checklist: 'contributors/release-flight-checklist.md'

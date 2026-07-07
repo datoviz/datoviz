@@ -1,39 +1,39 @@
 # DRP2
 
-DRP2 is the Datoviz Rendering Protocol v2: the backend-agnostic command-stream boundary between
-scene semantics and runtime execution.
+DRP2 is Datoviz Rendering Protocol v2: the backend-neutral command stream between scene planning
+and runtime execution.
 
 ```text
-scene frame plans -> DRP2 command streams -> vklite/WebGPU runtime
+scene frame artifact -> DRP2 packets -> runtime
 ```
 
-DRP2 is an advanced/unstable contributor and backend-author surface. Ordinary users should usually
-work through scene, visual, app, and example APIs.
+Status: advanced/unstable. Ordinary visualization code should use scene, visual, app, and example
+APIs.
 
 ## What DRP2 Owns
 
 | Area | Role |
 | --- | --- |
-| Command stream | Typed backend-neutral setup, update, frame, copy, render, compute, and submit commands. |
-| Validation | Schema and semantic checks for command order, object lifetimes, pass state, formats, capabilities, and malformed streams. |
-| Fixtures | Canonical positive and negative traces used by native and WebGPU validation. |
-| Packets | Binary setup/update/frame packet transport for the WASM/WebGPU runtime path. |
-| Recording/replay | DVZR/debug workflows for inspecting or replaying command streams. |
-| Capabilities | Runtime feature/format support used by scene planning and backend diagnostics. |
+| Commands | Typed setup, update, frame, copy, render, compute, and submit operations. |
+| Validation | Command order, lifetimes, pass state, formats, capabilities, and malformed streams. |
+| Fixtures | Positive and negative traces shared by native and WebGPU validation. |
+| Packets | Binary setup/update/frame transport plus payload arenas. |
+| Recording | DVZR/debug capture and replay workflows. |
+| Capabilities | Runtime feature and format reporting. |
 
 DRP2 does not own scene semantics, visual-family APIs, panel layout, controller behavior, or user
 interaction policy.
 
-## Active Contract
+## Current Surface
 
 | Topic | Status |
 | --- | --- |
-| Native C command streams | Active implementation slice. |
-| Fixture validation | Active through `just drp2-fixtures` and related WebGPU preflight tools. |
-| vklite runtime execution | Active for the runtime subset used by scene/app paths. |
-| WebGPU runner | Experimental but active for the committed fixture subset. |
-| Compute commands and `ResourceBarrier` | Active narrow compute-to-render slice. |
-| Full output conformance | Deferred beyond the initial v0.4 contract. |
+| Native command streams | active |
+| Fixture validation | active |
+| `vklite` execution | active for scene/app runtime subset |
+| WebGPU execution | experimental fixture and promoted live-route subset |
+| Compute and `ResourceBarrier` | narrow experimental compute-to-render slice |
+| Full output conformance | deferred |
 
 ## Validation
 
@@ -70,6 +70,7 @@ Durable DRP2 authority lives under `spec/drp2/`:
 
 ## See Also
 
+- [Runtime internals](../../advanced/runtime-internals.md)
 - [WebGPU subset](../webgpu-subset.md)
 - [Compute and graphics](../compute-graphics.md)
 - [Record and replay frame streams](../../how-to/record-replay.md)

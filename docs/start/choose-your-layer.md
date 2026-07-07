@@ -66,7 +66,7 @@ planned, deferred, or native-only.
 
 Use the advanced runtime pages when you are working on Datoviz internals, backend portability,
 render replay, or specialized embedding. These pages are documented under
-[Advanced](../advanced/webgpu-renderer.md) and are secondary to the user-facing scene API.
+[Runtime internals](../advanced/runtime-internals.md) and are secondary to the user-facing scene API.
 
 
 ## High-Level Plotting

@@ -16,45 +16,32 @@ Datoviz commit, platform, GPU/backend, dimensions, and command used to create it
 
 ## What Is Being Recorded?
 
-Record/replay does not save a video and it does not save your scene objects. It saves the rendering
-instructions that Datoviz sent to the runtime for each frame, then feeds those instructions back to a
-runtime later.
-
-In simple terms:
+Record/replay does not save a video or scene objects. It saves the DRP2 commands and payload bytes
+sent to the runtime for each frame, then feeds them back to a runtime later.
 
 ```text
-your scene -> DRP2 command stream -> native runtime -> pixels
-                         |
-                         v
-                    DVZR recording
+scene -> DRP2 commands -> runtime -> pixels
+                   |
+                   v
+              DVZR recording
 ```
 
-DRP2 means **Datoviz Rendering Protocol v2**. It is the backend-neutral command language between
-the scene layer and the renderer. A DRP2 stream contains operations such as "create this buffer",
-"upload these bytes", "bind this pipeline", and "draw these vertices". DVZR means **Datoviz DRP
-Recording**: a directory that stores timestamped DRP2 stream records plus any payload bytes needed
-for replay.
-
-The app-level API hides most of this. You call `dvz_view_record_start()`, render one or more frames,
-stop recording, then call `dvz_view_replay_start()` on another view. The lower-level DRP2 names only
-matter when you inspect the recording or write runtime tests.
+The app-level API hides the command stream. Call `dvz_view_record_start()`, render one or more
+frames, stop recording, then call `dvz_view_replay_start()` on another view.
 
 A current `*.dvzr/` directory contains `manifest.json`, `stream.jsonl`, and optional `blobs/`
-payload files. `stream.jsonl` is a JSON Lines debug/recording view of the command stream. Runtime
-hot paths, especially browser/WebGPU packet transport, use typed DRP2 packets rather than JSON; JSON
-is mainly for recordings, fixtures, and inspection.
+payload files. `stream.jsonl` is a JSON Lines debug/recording view. Runtime hot paths use typed
+packets, not JSON.
 
-For deeper details, start with the [Advanced DRP2 reference](../reference/drp2/index.md). The
-durable design notes live in `spec/drp2/`, especially `spec/drp2/PACKETS.md`,
-`spec/drp2/fixtures/FORMAT.md`, and `spec/drp2/recording/DVZR_PLAYER.md`.
+For command-stream details, use the [DRP2 reference](../reference/drp2/index.md).
 
-## Choose The Replay Path
+## Replay Path
 
 | Need | Use |
 | --- | --- |
 | Record an offscreen or GLFW app view and replay it in another app view | `dvz_view_record_start()` and `dvz_view_replay_start()` |
 | Replay a saved recording into a live native window | the same app replay calls on a window-backed view |
-| Inspect lower-level command-stream recording | [Advanced DRP2 reference](../reference/drp2/index.md) |
+| Inspect lower-level command streams | [DRP2 reference](../reference/drp2/index.md) |
 
 ## App-Level Recording Fragment
 
@@ -113,9 +100,7 @@ Public code should start from the runtime recording example and the app replay f
 
 Use lower-level recording functions only when you already work with Datoviz command streams or are
 writing backend tests. Those APIs bypass the app-view helpers above, so they are documented in the
-[Advanced DRP2 reference](../reference/drp2/index.md) and the generated
-[DRP2 C API](../reference/c-api/drp2.md).
-
+[DRP2 reference](../reference/drp2/index.md) and the generated [DRP2 C API](../reference/c-api/drp2.md).
 
 ## Important Details
 
@@ -131,8 +116,8 @@ The portable part of a recording is the command stream and payload data. Develop
 records may be local to one branch or runtime version and should not be treated as long-term public
 artifacts.
 
-DVZR is useful after you have isolated the problem to frame execution. If the question is "did I
-attach the right visual, scale, controller, or callback?", debug the retained scene first.
+Use DVZR after isolating a problem to frame execution. For visual attachment, scale, controller, or
+callback bugs, debug the retained scene first.
 
 ## Common Mistakes
 

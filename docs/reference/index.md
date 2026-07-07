@@ -49,4 +49,4 @@ support, and links to minimal examples.
 
 Generated C signatures for frame-plan and DRP2 functions stay in the C API reference for exact
 lookup. Conceptual command-stream and lower-layer runtime guidance is under
-[Advanced](../advanced/vklite.md), not the primary user path.
+[Runtime internals](../advanced/runtime-internals.md), not the primary user path.

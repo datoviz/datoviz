@@ -37,5 +37,5 @@ external ownership.
 See [Feature status](feature-status.md) for the detailed table.
 
 DRP2 and lower runtime layers are documented for backend authors and contributors under
-[Advanced](../advanced/vklite.md). Most users should start with the scene/app API or the Python
-NumPy-array interface.
+[Runtime internals](../advanced/runtime-internals.md). Most users should start with the scene/app API
+or the Python NumPy-array interface.
