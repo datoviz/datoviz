@@ -1,16 +1,17 @@
-# Python With NumPy Arrays
+# Python Binding With NumPy Arrays
 
-Status: supported low-level Python entry point for Datoviz scene code.
+Status: supported Python binding call form for Datoviz scene code.
 
 Use this page when you want to write Datoviz scene code from Python and pass NumPy arrays to visual
-data calls. The Python package keeps the same `dvz_*` function names as the C examples while
-adapting supported visual-data uploads to NumPy arrays. For high-level plotting functions such as
-`scatter()` or `imshow()`, use VisPy2/GSP when that layer is available.
+data calls. Datoviz has one generated `ctypes` binding. The top-level `datoviz` package keeps the
+same `dvz_*` function names as the C examples and adds policy-declared NumPy adaptation for selected
+array arguments. For high-level plotting functions such as `scatter()` or `imshow()`, use
+VisPy2/GSP when that layer is available.
 
 | Need | Import |
 | --- | --- |
-| Scene and visual calls with NumPy arrays. | `import datoviz as dvz` |
-| Exact pointer/count `ctypes` ABI calls. | `import datoviz.raw as raw` |
+| Normal Python binding calls with NumPy arrays. | `import datoviz as dvz` |
+| The same binding with exact pointers, counts, bytes, or callbacks. | `import datoviz.raw as raw` |
 | High-level plotting, notebooks, or OO scene objects. | GSP/VisPy2, when available. |
 
 
@@ -31,7 +32,7 @@ panel = dvz.dvz_panel_full(figure)
 dvz.dvz_scene_destroy(scene)
 ```
 
-Use `datoviz.raw` only when a call needs exact `ctypes` pointer behavior. The generated
+Use `datoviz.raw` only when a call needs the exact C-shaped `ctypes` arguments. The generated
 implementation modules, such as `datoviz._ctypes` and `datoviz._array_facade`, are not public import
 surfaces.
 
@@ -131,7 +132,7 @@ captures RGBA memory with `dvz_view_capture_rgba()`.
 
 ## See Also
 
-- [Python raw ctypes](ctypes.md)
+- [Python binding exact call form](ctypes.md)
 - [Visual attributes](visual-attributes.md)
 - [Objects and lifetimes](objects-and-lifetimes.md)
 - [Feature status](feature-status.md)

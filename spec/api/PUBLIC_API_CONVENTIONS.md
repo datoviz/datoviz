@@ -22,7 +22,7 @@ Public functions use `dvz_<object>_<action>()` for object-level actions.
 The v0.4 public ABI uses three deliberate C namespaces:
 
 1. `dvz_*` is the canonical C API.
-2. `dvz_ffi_*` is the foreign-function-interface helper ABI for raw `ctypes`, WASM, and other
+2. `dvz_ffi_*` is the foreign-function-interface helper ABI for `datoviz.raw`, WASM, and other
    runtimes that need pointer-oriented call shapes.
 3. `dvz_wasm_*` is the browser/session-specific WASM ABI.
 
@@ -115,7 +115,7 @@ DvzGeometryCubeDesc desc = dvz_geometry_cube_desc();
 ```
 
 Do not replace these canonical C APIs solely for FFI convenience. Add `dvz_ffi_*` out-pointer
-wrappers when raw bindings or WASM need pointer-based ABI.
+wrappers when `datoviz.raw` or WASM need pointer-based ABI.
 
 
 ## Visuals, Semantic Objects, And Composites

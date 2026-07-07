@@ -25,13 +25,13 @@ Completed themes:
 2. moved internal object/container plumbing out of the ordinary public surface;
 3. collapsed old scene aliases and compatibility wrappers;
 4. normalized public naming, spelling, and argument ordering;
-5. tightened ownership, constness, pointer lifetimes, and raw `ctypes` owned-return policy;
+5. tightened ownership, constness, pointer lifetimes, and `datoviz.raw` owned-return policy;
 6. made stable app-facing names backend-neutral, with GLFW-specific details treated as backend or
    interop surface;
 7. classified DRP2/vklite protocol escape hatches as advanced/unstable where they remain public;
 8. converted stable fallible mutators to `DvzResult` where appropriate;
 9. flattened or split noisy nested public descriptors where the stable C/ABI/FFI surface benefited;
-10. regenerated raw `ctypes`, generated C reference output, examples, and status/spec docs in the
+10. regenerated Python binding, generated C reference output, examples, and status/spec docs in the
     same checkpoint waves as public API breaks.
 
 
@@ -44,8 +44,8 @@ the merged public API:
 2. `symbols.map` and exported `DVZ_EXPORT` ABI;
 3. `spec/api/status.yml` and public status docs;
 4. generated C reference pages under `docs/reference/c-api/`;
-5. `datoviz/_ctypes.py`, `spec/bindings/ctypes.yml`, and raw binding docs;
-6. top-level array-aware facade wrappers and smoke tests;
+5. `datoviz/_ctypes.py`, `spec/bindings/ctypes.yml`, and Python binding docs;
+6. top-level NumPy-adaptation wrappers and smoke tests;
 7. public C examples, gallery metadata, and WebGPU live-route examples;
 8. GSP/VisPy2 boundary language in public docs and specs.
 
@@ -69,7 +69,7 @@ Use these defaults unless a newer spec explicitly supersedes them:
    counts/sizes; byte-buffer APIs as `bytes, size_bytes`.
 3. Use `DvzResult` for ordinary fallible Datoviz APIs, `bool` for predicates, raw integer returns
    for non-error counts/status values, and Vulkan-native result codes only in Vulkan escape hatches.
-4. Keep `datoviz.raw` exact to the exported ABI, but avoid known raw-binding traps such as owned
+4. Keep `datoviz.raw` exact to the exported ABI, but avoid known exact-call traps such as owned
    `char*` returns bound as `c_char_p`.
 5. Do not add new descriptor-like public structs nested by value inside other public descriptors.
    Prefer minimal creation descriptors plus setters for secondary style, layout, formatting,

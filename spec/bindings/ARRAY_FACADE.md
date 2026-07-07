@@ -1,10 +1,11 @@
-# Array-Aware Python Facade
+# Python Binding NumPy Adaptation
 
-Status: active v0.4 Python binding direction; first generated facade slice landed.
+Status: active v0.4 Python binding direction; first generated NumPy-adaptation slice landed.
 
-This note records the intended Python API layer above the exact generated `ctypes` binding. The goal
-is to make Datoviz usable from Python with normal NumPy arrays while preserving the C-shaped
-Datoviz API and leaving high-level plotting to GSP/VisPy2.
+This note records the NumPy-adapted call form of the generated Python binding. Datoviz has one
+`ctypes` binding. The goal is to make the normal `import datoviz as dvz` call form usable with
+NumPy arrays while preserving the C-shaped Datoviz API and leaving high-level plotting to
+GSP/VisPy2.
 
 Related RC-lane GSP backend readiness work lives in
 [`../api/GSP_BACKEND_READINESS.md`](../api/GSP_BACKEND_READINESS.md), especially the
@@ -22,13 +23,13 @@ The recommended direct-engine Python import should be:
 import datoviz as dvz
 ```
 
-The top-level `datoviz` package should expose an array-aware facade over the C API:
+The top-level `datoviz` package should expose the normal Python call form over the C API:
 
 1. preserve `dvz_*` function names;
 2. accept NumPy arrays and compatible Python buffer objects for known data arguments;
 3. infer pointer/count or pointer/byte-size arguments only where binding policy declares the
    relationship;
-4. pass through unsupported or unannotated calls to the exact raw binding shape;
+4. pass through unsupported or unannotated calls to the exact `datoviz.raw` call shape;
 5. avoid prefixless aliases, object-oriented scene wrappers, and plotting functions.
 
 The exact generated binding remains available as:
@@ -38,10 +39,10 @@ import datoviz.raw as raw
 ```
 
 `datoviz.raw` is for ABI validation, debugging, generator tests, advanced FFI work, and any call
-site that needs exact `ctypes` behavior. The top-level facade is the normal Python entry point for
+site that needs exact `ctypes` arguments. The top-level package is the normal Python entry point for
 direct Datoviz engine use.
 
-Generated Python documentation examples should target this top-level facade, not raw `ctypes`, when
+Generated Python documentation examples should target the top-level package, not `datoviz.raw`, when
 they are derived from canonical C examples. See
 [EXAMPLE_PYTHON_GENERATION.md](EXAMPLE_PYTHON_GENERATION.md).
 
@@ -52,12 +53,12 @@ Datoviz v0.4 is C-first, but that should not imply that Python users must manual
 `ctypes.cast()` boilerplate for common array uploads. Scientists already have NumPy arrays. They
 should be able to pass those arrays directly to Datoviz functions whose C contracts are known.
 
-The facade should improve argument adaptation, not rename or remodel the API. Keeping `dvz_*` names
+The top-level package should improve argument adaptation, not rename or remodel the API. Keeping `dvz_*` names
 has several benefits:
 
 1. C and Python examples map almost mechanically.
 2. Headers, generated references, search results, and AI-assisted translations use the same names.
-3. The Python facade remains visibly a direct engine API, not a half-designed plotting API.
+3. The Python binding remains visibly a direct engine API, not a half-designed plotting API.
 4. Names such as `scatter`, `imshow`, `Figure`, and Pythonic visual objects remain available for
    GSP/VisPy2 or a future explicitly designed high-level layer.
 
@@ -66,12 +67,12 @@ has several benefits:
 
 ```text
 datoviz
-  Recommended direct-engine Python API.
+  Recommended direct-engine Python binding call form.
   Same dvz_* names as C.
   Accepts arrays for policy-declared pointer/count and pointer/byte-size argument groups.
 
 datoviz.raw
-  Exact generated ctypes binding.
+  Exact generated ctypes call form.
   Requires explicit bytes, pointers, counts, and ctypes-compatible arguments.
 
 GSP/VisPy2
@@ -140,7 +141,7 @@ raw.dvz_visual_set_data(
 ## Generation Strategy
 
 Do not hand-write wrappers for the whole API. Generate the facade from the same extracted metadata
-used by the raw binding, plus source-controlled binding policy for ambiguous pointer relationships:
+used by the generated binding, plus source-controlled binding policy for ambiguous pointer relationships:
 
 ```text
 C public headers
@@ -148,9 +149,9 @@ C public headers
         v
 build/bindings/datoviz_api.json
         |
-        +--> datoviz/_ctypes.py         exact raw binding
+        +--> datoviz/_ctypes.py         generated ctypes implementation
         |
-        +--> datoviz/_array_facade.py   array-aware facade
+        +--> datoviz/_array_facade.py   generated NumPy adaptation
 ```
 
 The generator should consume policy declarations from `spec/bindings/ctypes.yml` or a sibling
@@ -200,14 +201,14 @@ For annotated functions, generated wrappers should:
 6. raise clear Python exceptions for unsupported dtype, shape, contiguity, or lifetime contracts;
 7. return the raw function result without inventing ownership semantics.
 
-For unannotated functions, the facade should expose the raw function directly or use a generated
+For unannotated functions, the top-level package should expose the raw function directly or use a generated
 trivial passthrough. This keeps the top-level namespace broad without pretending every pointer is
 safe to adapt.
 
 
 ## Non-Goals
 
-The array-aware facade must not provide:
+The NumPy-adapted call form must not provide:
 
 1. prefixless aliases such as `scene()` or `visual_set_data()`;
 2. Python scene, figure, panel, visual, or plot classes;
@@ -221,8 +222,8 @@ The array-aware facade must not provide:
 
 The first implementation slice should include focused tests for:
 
-1. importing `datoviz` and `datoviz.raw` with distinct documented roles;
-2. preserving `dvz_*` names in the top-level facade;
+1. importing `datoviz` and `datoviz.raw` with clear documented roles;
+2. preserving `dvz_*` names in the top-level package;
 3. Python `str` conversion for declared string arguments;
 4. NumPy array conversion for pointer/count groups;
 5. NumPy array conversion for pointer/byte-size groups;
@@ -243,16 +244,16 @@ just ctypes-render-smoke
 
 ## Documentation Consequences
 
-Public docs should stop presenting Python support as only raw `ctypes`. The accurate distinction is:
+Public docs should not present Python support as two competing bindings. The accurate model is:
 
 1. `datoviz` is the recommended direct-engine Python API and accepts NumPy arrays for declared data
    arguments;
-2. `datoviz.raw` is the exact `ctypes` layer;
+2. `datoviz.raw` is the exact `ctypes` call form of the same generated binding;
 3. neither layer is a high-level plotting API;
 4. high-level Python scientific visualization belongs in GSP/VisPy2.
 
 Raw examples may remain for ABI and low-level integration proof. User-facing Python examples should
-prefer the top-level array-aware facade once it exists.
+prefer the top-level package.
 
 Mechanically generated Python tabs for C examples should use the facade and policy described here;
 the example-generation policy is recorded in

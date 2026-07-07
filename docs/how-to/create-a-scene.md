@@ -17,9 +17,9 @@ Use the same object model from C and Python. In Python, import the main `datoviz
 import datoviz as dvz
 ```
 
-The Python calls use the same `dvz_*` function names as the C examples, but they accept NumPy arrays
-for common visual-data uploads. Use `datoviz.raw` only when you need exact generated `ctypes`
-pointer/count behavior.
+The Python calls use the same `dvz_*` function names as the C examples and accept NumPy arrays for
+common visual-data uploads. Use `datoviz.raw` only when you need the exact C-shaped pointer/count
+call form of the same generated binding.
 
 | Object | Role | Created by |
 | --- | --- | --- |

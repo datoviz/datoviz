@@ -35,7 +35,8 @@ Contributors docs remain as a subsection of Advanced or a separate tab, not a to
 
 ## Primary Audience
 
-Python scientists waiting for VisPy2, using datoviz now via raw ctypes with AI assistance.
+Python scientists waiting for VisPy2, using Datoviz now through the generated Python binding with AI
+assistance.
 They know NumPy, they know matplotlib, they are not C developers but can follow C examples.
 
 Secondary audiences in priority order:

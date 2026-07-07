@@ -14,8 +14,8 @@ support, and links to minimal examples.
 | Page | Use it for |
 | --- | --- |
 | [C API](c-api/index.md) | Generated public C reference, grouped by scene, visuals, app/runtime, and types. |
-| [Python with NumPy arrays](python-direct-engine.md) | Low-level Datoviz scene calls from Python, with NumPy array uploads and RGBA capture. |
-| [Python raw ctypes](ctypes.md) | Low-level generated Python binding scope and usage. |
+| [Python binding with NumPy arrays](python-direct-engine.md) | Datoviz scene calls from Python, with NumPy array uploads and RGBA capture. |
+| [Python binding exact call form](ctypes.md) | Explicit pointer/count calls through `datoviz.raw`. |
 | [Visual families](visual-families/index.md) | Family status, attributes, backend support, and canonical examples. |
 
 ## Scene Contracts

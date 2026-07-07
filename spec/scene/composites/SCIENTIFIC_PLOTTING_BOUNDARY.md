@@ -8,7 +8,7 @@ plotting layer for common scientific plotting features.
 First-slice implementation details are tracked in
 [`SCIENTIFIC_PLOTTING_IMPLEMENTATION.md`](SCIENTIFIC_PLOTTING_IMPLEMENTATION.md).
 
-Datoviz should provide rendering-native building blocks that are useful from C, raw bindings, GSP,
+Datoviz should provide rendering-native building blocks that are useful from C, the Python binding, GSP,
 and VisPy2. GSP/VisPy2 should own the high-level plotting grammar, statistical policy, and Python
 data adaptation.
 

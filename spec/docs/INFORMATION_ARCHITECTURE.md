@@ -6,7 +6,7 @@ with a first-class executable example catalog.
 The public documentation should make one positioning point immediately clear: Datoviz is the
 engine layer. Most scientific users should eventually use VisPy2/GSP for high-level plotting.
 Datoviz documentation is for native application developers, backend authors, advanced users of the
-C/raw-binding surface, and contributors.
+C/Python binding surface, and contributors.
 
 `mkdocs.yml` is the source of truth for the concrete public navigation. This document records the
 intent behind each section. If a page is moved, added, or removed in `mkdocs.yml`, update this file
@@ -19,7 +19,7 @@ in the same change.
 | --- | --- | --- |
 | Native application developer | Embed Datoviz, open windows, render offscreen, capture frames | tutorials, how-to, runtime reference |
 | Backend or adapter developer | Use Datoviz under GSP, VisPy2, hosted UIs, or WebGPU | explanations, reference, contributor docs |
-| Advanced scientific developer | Use the C API or raw `ctypes` directly | examples, how-to, C reference |
+| Advanced scientific developer | Use the C API or `datoviz.raw` exact calls directly | examples, how-to, C reference |
 | Contributor or coding agent | Modify visuals, scene, DRP2, runtime, docs, or tests | contributor docs, architecture explanations |
 | Scientific end user | Plot data productively | redirected to VisPy2/GSP when high-level plotting is wanted |
 
@@ -151,7 +151,7 @@ start/
 
 1. use VisPy2/GSP for high-level scientific plotting;
 2. use Datoviz C APIs for low-level rendering, embedding, native apps, and backend integration;
-3. use raw `ctypes` only for low-level Python integration and smoke tests;
+3. use `datoviz.raw` exact calls only for low-level Python integration and smoke tests;
 4. use DRP2/DVZR for command-stream portability and replay.
 
 
@@ -252,8 +252,8 @@ task does not need every section:
 7. see-also links to related how-to, reference, explanation, or example pages.
 
 Do not add `<!-- TODO: Python -->` markers or expose the old v0.3 Pythonic plotting API as current
-v0.4 API. Python how-to pages should document the active top-level array-aware facade and exact
-`datoviz.raw` layer boundaries.
+v0.4 API. Python how-to pages should document the active top-level NumPy-adapted call form and
+`datoviz.raw` exact-call boundaries.
 
 
 ## Reference

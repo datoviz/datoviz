@@ -16,7 +16,7 @@ surface should make native events easy to consume without recreating the v0.3 pl
 
 ## Non-Goals
 
-1. Do not make the raw binding a high-level plotting API.
+1. Do not make `datoviz.raw` a high-level plotting API.
 2. Do not run long user code inside C-dispatched callbacks.
 3. Do not make scene, view, canvas, or Vulkan mutation generally thread-safe.
 4. Do not require notebooks or Python consoles to enter `dvz_app_run(app, 0)`.
@@ -80,7 +80,7 @@ function-pointer parameters as `ctypes.c_void_p`. This unblocks APIs such as:
 4. `dvz_view_set_request_frame_callback()`
 5. `dvz_view_post()`
 
-The generated/raw Python layer must keep callback objects alive until the matching token-based
+The generated Python binding must keep callback objects alive until the matching token-based
 unsubscribe, clear, or destroy path runs. A small registry keyed by returned subscription id is
 sufficient for the first slice.
 
@@ -109,7 +109,7 @@ The adapter registers `dvz_view_set_request_frame_callback()` so Datoviz invalid
 `asyncio.Event`. On-demand mode waits for invalidation. Continuous mode uses an async timer and still
 honors explicit frame requests.
 
-The blocking C loop remains available as the raw path:
+The blocking C loop remains available through `datoviz.raw`:
 
 ```python
 dvz.dvz_app_run(app, 0)

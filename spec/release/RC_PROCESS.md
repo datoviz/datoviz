@@ -10,7 +10,7 @@ Exit criteria:
 
 1. RC1 tag and notes exist;
 2. build/test/spec validation is recorded;
-3. feature table, visible parity table, known gaps, raw `ctypes` scope, and WebGPU/WASM scope are
+3. feature table, visible parity table, known gaps, Python binding scope, and WebGPU/WASM scope are
    published or linked;
 4. release examples are documented enough for early testers;
 5. public headers, ownership rules, and lower-layer support labels have been reviewed.

@@ -1,8 +1,8 @@
-# Datoviz, Raw ctypes, GSP, and VisPy2 Scope
+# Datoviz, Python Binding, GSP, and VisPy2 Scope
 
 Status: normative v0.4 API and documentation positioning.
 
-This document records the v0.4 ownership split between Datoviz, raw generated Python bindings, GSP,
+This document records the v0.4 ownership split between Datoviz, the generated Python binding, GSP,
 and VisPy2. It exists so release notes, public documentation, examples, and future binding work do
 not accidentally recreate the v0.3 Python API inside the Datoviz repository. The complementary
 backend strategy and capability-extension model lives in
@@ -21,7 +21,7 @@ Datoviz v0.4 owns the native renderer/runtime foundation:
 4. native Vulkan and experimental WebGPU/WASM backend work;
 5. native interaction, cameras/controllers, animation, picking/probing, selection, capture, and
    performance-oriented examples;
-6. raw generated `ctypes` bindings that honestly mirror the intended v0.4 C surface.
+6. one generated `ctypes` binding that honestly mirrors the intended v0.4 C surface.
 
 GSP owns the backend-independent scientific-visualization rendering representation:
 
@@ -54,7 +54,7 @@ The cleaner split is:
 
 ```text
 Datoviz
-  C renderer/runtime, scene/app, DRP2, native interaction, raw ctypes
+  C renderer/runtime, scene/app, DRP2, native interaction, Python binding
 
 GSP
   backend-independent visual rendering representation
@@ -92,7 +92,8 @@ not yet portable through GSP.
 Datoviz documentation should be C-first and renderer-focused:
 
 1. full C getting-started guide, tutorials, examples, visual reference, and advanced runtime topics;
-2. raw `ctypes` documentation as a low-level integration and backend-author surface;
+2. Python binding documentation, including `datoviz.raw` exact calls for low-level integration and
+   backend authors;
 3. a clear "which API should I use?" page;
 4. a Datoviz-as-GSP-backend page once the adapter is public;
 5. links to GSP/VisPy2 for Pythonic plotting and high-level scientific workflows.
@@ -102,7 +103,7 @@ short positioning notes and bridge documentation, but Pythonic tutorials, plotti
 notebook workflows, backend-comparison examples, and high-level interaction docs should live with
 VisPy2/GSP.
 
-The raw `ctypes` documentation should set expectations explicitly:
+The `datoviz.raw` exact-call documentation should set expectations explicitly:
 
 1. it mirrors the C API;
 2. object ownership follows the C API;
@@ -115,12 +116,14 @@ The raw `ctypes` documentation should set expectations explicitly:
 When users ask a coding agent for Python code, Datoviz documentation should make the intended layer
 unambiguous:
 
-1. use `datoviz.raw` only when the user wants direct low-level access to the C engine;
-2. preserve exact `dvz_*`, `Dvz*`, and `DVZ_*` names in raw examples;
-3. keep raw examples close to the C ownership model and destroy rules;
-4. use narrow host helpers only for callback and event-loop ergonomics;
-5. route high-level plotting, notebook workflows, and Pythonic scene objects to VisPy2/GSP;
-6. do not invent `datoviz.scatter()`, `datoviz.imshow()`, or v0.3-style object APIs inside
+1. use `import datoviz as dvz` for ordinary Python binding calls;
+2. use `datoviz.raw` only when the user wants exact pointers, counts, bytes, callbacks, or ABI
+   debugging;
+3. preserve exact `dvz_*`, `Dvz*`, and `DVZ_*` names in Python examples;
+4. keep `datoviz.raw` examples close to the C ownership model and destroy rules;
+5. use narrow host helpers only for callback and event-loop ergonomics;
+6. route high-level plotting, notebook workflows, and Pythonic scene objects to VisPy2/GSP;
+7. do not invent `datoviz.scatter()`, `datoviz.imshow()`, or v0.3-style object APIs inside
    Datoviz v0.4 examples.
 
 If a future thin Python scene helper is introduced, it must be documented as a specific supported
@@ -188,7 +191,7 @@ Datoviz v0.4 may be released before GSP/VisPy2 is ready, as long as the public m
 
 1. v0.4 is the native C renderer/runtime foundation;
 2. the v0.3-style high-level Python object-oriented API is not part of Datoviz v0.4;
-3. raw `ctypes` is included for low-level integration and backend work;
+3. the generated Python binding is included for low-level integration and backend work;
 4. the Pythonic scientific visualization API is expected to live in GSP/VisPy2;
 5. GSP/VisPy2 follows on its own release timeline.
 

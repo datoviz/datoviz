@@ -110,7 +110,7 @@ Datoviz should keep query as the public mechanism and avoid reviving separate pu
 
 ## 4. Required Datoviz readiness targets
 
-Datoviz v0.4 is considered minimally GSP-ready when the following are possible through public C API calls and a raw ctypes wrapper.
+Datoviz v0.4 is considered minimally GSP-ready when the following are possible through public C API calls and the generated Python binding.
 
 ### 4.1 Runtime and capability readiness
 

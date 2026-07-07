@@ -47,7 +47,7 @@ The public scene API must also satisfy the WASM portability contract in
 anonymous unions, layout-dependent handle casts, native platform types, and signatures that make
 generated bindings depend on native pointer width.
 
-Python binds to the C API through an auto-generated raw ctypes binding layer
+Python binds to the C API through an auto-generated `ctypes` binding
 (`datoviz/_ctypes.py`), produced by the v0.4 libclang API extraction pipeline. That low-level binding
 surface is in Datoviz v0.4 scope and must honestly reflect the public C API. High-level
 object-oriented plotting or Python-first convenience wrappers belong to the external GSP/VisPy2

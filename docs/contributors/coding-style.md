@@ -88,16 +88,17 @@ Important generated surfaces:
 | example metadata JSON | `python3 tools/build_examples_manifest.py` |
 | generated C API docs | documented docs build scripts |
 
-Raw Python binding policy lives in `spec/bindings/`. User-facing raw binding docs live in
-`docs/reference/ctypes.md`.
+Python binding policy lives in `spec/bindings/`. User-facing exact-call docs for `datoviz.raw` live
+in `docs/reference/ctypes.md`.
 
 
 ## Python Code
 
-Python support in v0.4 is low-level and binding-oriented. Use:
+Python support in v0.4 is low-level and binding-oriented. Datoviz has one generated `ctypes`
+binding. Use:
 
-1. `datoviz.raw` for exact generated `ctypes` access;
-2. top-level `import datoviz as dvz` only for the planned array-aware Python API;
+1. top-level `import datoviz as dvz` for normal calls and policy-declared NumPy adaptation;
+2. `datoviz.raw` for exact pointers, counts, bytes, callbacks, and ABI debugging;
 3. `datoviz._ctypes` only as generated implementation detail.
 
 Format Python with Ruff using the project `pyproject.toml` settings:

@@ -10,8 +10,8 @@ and panel, upload data arrays to a visual, then show the result in a window or r
 
 1. [Install Datoviz](install.md) for your platform and language.
 2. [Run the quickstart](quickstart.md) to create a first scatter plot.
-3. [Choose your layer](choose-your-layer.md) if you are deciding between C, Python, WebGPU, raw
-   `ctypes`, or higher-level plotting tools.
+3. [Choose your layer](choose-your-layer.md) if you are deciding between C, Python, WebGPU,
+   `datoviz.raw` exact calls, or higher-level plotting tools.
 4. [Use AI-assisted workflow](ai-workflow.md) if you want a coding assistant to write a small
    Datoviz example from the public documentation.
 

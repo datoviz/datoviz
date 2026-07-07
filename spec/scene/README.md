@@ -14,7 +14,7 @@ The scene layer should remain pure high-level logic:
 
 - Status: active specification with multiple implementation slices in `src/scene`.
 - Implementation priority: prove the declared v0.4 surface for RC1, especially release examples,
-  WebGPU/WASM experimental scope, raw bindings, API/status labeling, and v0.3 visible parity.
+  WebGPU/WASM experimental scope, Python binding, API/status labeling, and v0.3 visible parity.
 - Primary constraint: do not let scene design leak backend details into its public API.
 
 Current source implementation is intentionally smaller than this spec. It includes scene, figure,

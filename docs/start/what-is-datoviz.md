@@ -7,8 +7,9 @@ offscreen screenshots.
 Datoviz fits into a larger Python visualization direction around GSP/VisPy2. The intended split is:
 GSP/VisPy2 provides high-level scientific plotting, while Datoviz provides the lower-level rendering
 engine that can draw and update large scenes. GSP/VisPy2 is still work in progress, so Datoviz v0.4
-also exposes direct Python access through generated `ctypes` bindings. Use `import datoviz as dvz`
-for documented NumPy array uploads, or `datoviz.raw` when you need exact generated C signatures.
+also exposes direct Python access through one generated `ctypes` binding. Use
+`import datoviz as dvz` for the normal call form with documented NumPy array adaptation, and use
+`datoviz.raw` only when you need the exact C-shaped pointers, counts, bytes, or callbacks.
 
 The main idea is simple: build a scene from reusable visual objects, attach your data arrays to
 those visuals, then show the scene in a window or render it to an image.

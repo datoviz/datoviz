@@ -34,7 +34,7 @@ Avoid native-only surfaces in the code you want to publish to the browser:
 - custom native resource ownership that the WASM scene host cannot recreate;
 - assumptions that browser input, timing, filesystem access, or readback are synchronous.
 
-Raw Python `ctypes` code is a native API surface in v0.4. It is useful for developing and validating
+Python `ctypes` code is a native API surface in v0.4. It is useful for developing and validating
 the scene, but it is not uploaded unchanged into the browser. To publish that visualization today,
 move the scene construction into a portable C scene/scenario or use a Datoviz-provided live route
 that already does this.

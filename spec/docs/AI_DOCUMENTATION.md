@@ -22,7 +22,7 @@ surface rather than old Pythonic Datoviz APIs or invented plotting shortcuts.
 Documentation should make these choices explicit:
 
 1. ask for Datoviz C code when using the v0.4 engine directly;
-2. ask for raw `ctypes` only when low-level Python binding access is intended;
+2. ask for `datoviz.raw` only when exact pointer/count Python binding access is intended;
 3. ask for VisPy2/GSP when high-level scientific plotting is intended;
 4. start from a named minimal example whenever possible;
 5. preserve Datoviz ownership and destroy rules;
@@ -54,11 +54,11 @@ The pack should cover two user workflows:
 
 1. C-first Datoviz development through the public headers, scene/app examples, and documented
    build/run commands;
-2. low-level Python use through the exact generated `datoviz.raw` `ctypes` layer, with explicit
-   NumPy buffer, dtype, contiguity, and lifetime rules.
+2. low-level Python use through the generated binding, including `datoviz.raw` for exact pointers,
+   counts, bytes, callbacks, and explicit NumPy buffer lifetime rules.
 
 Do not make this pack the home of exhaustive API reference. It should link to generated C reference
-pages, generated raw-binding reference pages, feature/status tables, examples, known issues, and
+pages, generated Python binding reference pages, feature/status tables, examples, known issues, and
 source specs.
 
 Suggested deliverables:
@@ -75,10 +75,10 @@ Suggested deliverables:
 
 The pack should also state the main routing boundaries:
 
-1. Datoviz v0.4 owns the C engine, scene/app path, raw/generated Python binding surface,
+1. Datoviz v0.4 owns the C engine, scene/app path, generated Python binding surface,
    offscreen/raster capture, and experimental backend slices;
 2. high-level object-oriented Python plotting belongs to VisPy2/GSP;
-3. raw `ctypes` is not a plotting API;
+3. `datoviz.raw` exact calls are not a plotting API;
 4. old v0.3 Pythonic examples are not current Datoviz v0.4 guidance.
 
 The skill artifact should be short and portable. It should tell coding agents where to start, which
@@ -90,7 +90,8 @@ forking the instructions.
 The skill should instruct agents to:
 
 1. prefer public `include/datoviz/` headers and current `examples/c/` files for C code;
-2. prefer `datoviz.raw` for exact low-level Python bindings;
+2. prefer `import datoviz as dvz` for normal Python binding calls and `datoviz.raw` only for exact
+   low-level pointers/counts;
 3. keep NumPy arrays alive while C code may read from them;
 4. check dtype, shape, alignment, and contiguity before passing array memory through `ctypes`;
 5. preserve documented ownership, callback, readback, and destroy-order rules;
@@ -107,11 +108,11 @@ cover:
 4. add a mesh or textured mesh;
 5. render offscreen and capture a raster image;
 6. load `datoviz.raw` and check ABI/layout;
-7. pass a NumPy array safely through raw `ctypes`;
+7. pass a NumPy array safely through `datoviz.raw`;
 8. clean up objects in the documented order.
 
 If the public website publishes an `llms.txt` or similar LLM-readable index, it should point to this
-support pack, the feature/status page, the public C API reference, raw binding docs, examples, known
+support pack, the feature/status page, the public C API reference, Python binding docs, examples, known
 issues, and release notes. Treat that index as a curated navigation aid, not as a replacement for
 normal docs, sitemaps, or reference generation. Keep the index generated or checklist-reviewed
 during release preparation so it does not outlive moved pages.
@@ -135,7 +136,7 @@ visualization prompts:
 | Add point, image, mesh, volume, or text content | public scene visual/object API | custom shaders |
 | Debug generated scene code | scene validation and diagnostics | backend-only error strings |
 | Replay or test renderer protocol behavior | DRP2/DVZR | scene examples as protocol specs |
-| Use Datoviz from Python at low level | `datoviz.raw` or narrow host helpers | invented plotting APIs |
+| Use Datoviz from Python at low level | `import datoviz as dvz`, `datoviz.raw` for exact calls, or narrow host helpers | invented plotting APIs |
 | Use Pythonic scientific plotting | VisPy2/GSP | Datoviz v0.3-style APIs |
 
 Pages should state this routing directly. If a feature is advanced, backend-specific, or unstable,
@@ -336,7 +337,7 @@ reference/objects-and-lifetimes.md
 context, choose the right examples, avoid known anti-patterns, and validate changes.
 
 The planned user-facing AI support pack should add an `ai/` section to the public navigation when
-the C examples, raw binding docs, and feature/status pages are ready enough to link from it. Until
+the C examples, Python binding docs, and feature/status pages are ready enough to link from it. Until
 then, keep this section as a spec reminder rather than publishing placeholder pages.
 
 Canonical AI-facing contracts are split as follows:
@@ -354,7 +355,7 @@ Canonical AI-facing contracts are split as follows:
 1. Inventing high-level plotting functions such as `plot()`, `scatter()`, or `imshow()` in Datoviz
    v0.4 examples.
 2. Using old v0.3 Pythonic APIs as if they are the current surface.
-3. Treating raw `ctypes` as a high-level Python API.
+3. Treating `datoviz.raw` as a high-level Python API.
 4. Copying implementation plans into public user docs.
 5. Writing showcase examples before minimal examples exist.
 6. Duplicating detailed API facts across many prose pages instead of linking to reference pages.

@@ -158,7 +158,7 @@ That also matches the existing named-slot model already used by `dvz_visual_set_
 1. Add `DvzFieldFilter`, `DvzFieldAddressMode`, `DvzFieldMipmapMode`, and
    `DvzFieldSamplingDesc` in the scene public type/enums headers.
 2. Add `dvz_field_sampling_desc()` and `dvz_visual_set_field_sampling()` to the public scene
-   surface, with `dvz_ffi_field_sampling_desc()` only if raw bindings need an out-pointer helper.
+   surface, with `dvz_ffi_field_sampling_desc()` only if `datoviz.raw` needs an out-pointer helper.
 3. Replace the image-only retained sampler field with a per-visual slot-sampling map keyed by
    stable field slot names. Keep the first storage simple because current visuals have few slots.
 4. Move validation into the visual registry or field-binding layer so each family/slot declares

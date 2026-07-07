@@ -1,7 +1,7 @@
 # Datoviz And vispy2 Example Suite Organization
 
 > **Status:** planning
-> **Scope:** Datoviz v0.4 C examples, raw Python examples, vispy2 GSP/plot examples, fixtures,
+> **Scope:** Datoviz v0.4 C examples, Python binding examples, vispy2 GSP/plot examples, fixtures,
 > showcases, lab material, and temporary legacy examples
 > **Goal:** keep examples discoverable by purpose and API layer while sharing scenario IDs
 
@@ -15,7 +15,7 @@ This document defines repository ownership and layout. Release staging lives in
 
 - Split examples by purpose first, then by API layer.
 - Keep C examples as canonical native engine/API examples.
-- Keep raw Python examples in this repository as thin Datoviz binding examples.
+- Keep Python binding examples in this repository as thin Datoviz binding examples.
 - Keep GSP and plot examples in vispy2, where Python-native workflows belong.
 - Separate public examples from fixtures, tests, lab workbenches, and temporary legacy material.
 - Share stable scenario IDs across repositories.
@@ -23,7 +23,7 @@ This document defines repository ownership and layout. Release staging lives in
 
 ## Repository Ownership
 
-- Datoviz owns C public API examples, raw Python binding examples, engine fixtures, native
+- Datoviz owns C public API examples, Python binding examples, engine fixtures, native
   showcases, and generated DRP2/DVZR/WebGPU fixtures. Regression coverage belongs in tests;
   stress, diagnostics, and prototypes belong in `examples/c/lab/` until promoted. It should not
   become the main high-level Python gallery once GSP/plot are active.
@@ -31,7 +31,7 @@ This document defines repository ownership and layout. Release staging lives in
   notebooks, napari/Qt/dashboard integrations, and NumPy/pandas/xarray/SciPy workflows. It should
   not own native engine conformance examples or low-level runtime fixtures.
 
-Raw Python in Datoviz should stay close to the Datoviz API. If an example needs rich Python object
+Python binding examples in Datoviz should stay close to the Datoviz API. If an example needs rich Python object
 ownership, plotting conveniences, notebooks, or ecosystem data loading, it belongs in vispy2.
 
 
@@ -39,7 +39,7 @@ ownership, plotting conveniences, notebooks, or ecosystem data loading, it belon
 
 - C, in `examples/c/`: canonical public engine/scene/app examples, gallery showcases, flat lab
   material, and a temporary legacy archive.
-- Raw Python, in `examples/python/`: thin binding smoke/parity examples that load the library,
+- Python binding, in `examples/python/`: thin binding smoke/parity examples that load the library,
   create scenes, upload data, render offscreen/windowed, pick/probe/update/capture.
 - GSP, in vispy2: object-oriented scene programming, retained visuals, callbacks, selections,
   linked scene state, and Pythonic animation/update patterns.
@@ -225,12 +225,12 @@ nonblank image, alt text, and a reachable source example.
 1. Assign scenario IDs to existing examples and specs.
 2. Move or index examples into the lane layout without changing unrelated source behavior.
 3. Add metadata manifests for high-value examples first.
-4. Keep raw Python examples thin in Datoviz.
+4. Keep Python binding examples thin in Datoviz.
 5. Mirror only selected scenarios into vispy2 GSP/plot once those layers are ready.
 6. Promote deterministic smoke/regression examples into CI gradually.
 
 
-## Initial Raw Python Scope
+## Initial Python Binding Scope
 
 Start with small, direct examples: hello scene, offscreen capture, bounded window, points, image,
 volume slice, mesh, point picking, image probing, partial update, resize, and capture. These should

@@ -13,13 +13,13 @@ Current slice update, 2026-06-01:
 2. `DvzInteropBufferExport` now carries a descriptor version, Vulkan usage, DRP2 usage, flags,
    and a Vulkan device UUID validity bit plus UUID bytes for CUDA/Vulkan device matching.
 3. `tools/bindings/ctypes_cupy_smoke.py` is the first Linux/NVIDIA-only Python smoke scaffold; it
-   now validates that CuPy and the generated advanced raw ctypes symbols are available.
+   now validates that CuPy and the generated advanced Python binding symbols are available.
 4. `spec/bindings/ctypes.yml` includes the memory interop header, forced descriptor layouts, and
    the buffer-level export helper in the raw smoke symbol set.
 5. `tools/bindings/cuda_interop_bridge.c` is the optional Linux CUDA Runtime bridge used by the
    smoke. It imports opaque-FD external memory and timeline semaphore FDs, maps a device pointer,
    exposes wait/signal calls, and owns cleanup.
-6. `dvz_interop_gpu_ctx()` creates the advanced exportable GPU context used by raw Python smoke
+6. `dvz_interop_gpu_ctx()` creates the advanced exportable GPU context used by Python binding smoke
    setup. This remains binding substrate, not the final high-level Python API.
 7. `tools/bindings/ctypes_cupy_smoke.py --export-only` now creates a Vulkan-owned
    vertex/storage buffer, exports memory and timeline semaphore FDs, and closes them without

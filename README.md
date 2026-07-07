@@ -10,8 +10,10 @@ desktop rendering through Vulkan and an experimental browser path through WebGPU
 
 Datoviz v0.4 is the lower-level rendering engine in the broader GSP/VisPy2 direction. GSP/VisPy2 is
 the intended high-level plotting layer, but it is still work in progress. Until that layer is ready,
-Python users can call Datoviz directly through the documented `ctypes` API: `import datoviz as dvz`
-for supported NumPy array uploads, or `datoviz.raw` for exact generated signatures.
+Python users can call Datoviz directly through one generated `ctypes` binding. Use
+`import datoviz as dvz` for the normal call form with documented NumPy array adaptation; use
+`datoviz.raw` only when a call must spell out the exact C-shaped pointers, counts, bytes, or
+callbacks.
 
 
 ## Install
@@ -100,9 +102,9 @@ dvz.run(scene, figure, title="Scatter plot")
 
 | Need | Use |
 | --- | --- |
-| Python code with NumPy arrays and Datoviz visuals | `import datoviz as dvz` |
+| Python code with Datoviz visuals and NumPy arrays | `import datoviz as dvz` |
 | Native application or C/C++ integration | C scene/app API |
-| Exact low-level C binding access from Python | `datoviz.raw` generated `ctypes` layer |
+| Exact pointer/count call form of the Python binding | `datoviz.raw` |
 | Browser rendering for supported examples | experimental WebGPU/WASM subset |
 | High-level scientific plotting | GSP/VisPy2 when that layer is available |
 
@@ -119,7 +121,7 @@ See [Choose your layer](https://datoviz.org/start/choose-your-layer/) for more d
 - [Quickstart](https://datoviz.org/start/quickstart/)
 - [Examples](https://datoviz.org/examples/)
 - [C API reference](https://datoviz.org/reference/c-api/)
-- [Python raw ctypes](https://datoviz.org/reference/ctypes/)
+- [Python binding exact call form](https://datoviz.org/reference/ctypes/)
 - [WebGPU subset](https://datoviz.org/reference/webgpu-subset/)
 - [Citation](https://datoviz.org/reference/citation/)
 - [Contributing](CONTRIBUTING.md)

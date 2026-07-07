@@ -7,7 +7,7 @@ instructions belong in the install docs. Low-level implementation notes live nex
 
 ## Current Policy
 
-Datoviz v0.4 wheels include the Python package, the generated raw `ctypes` binding, public C
+Datoviz v0.4 wheels include the Python package, the generated `ctypes` binding, public C
 headers, CMake package files, and the platform native Datoviz runtime library.
 
 The Python layer loads Datoviz through `ctypes`, so the wheel is independent of the Python C ABI.
@@ -299,7 +299,7 @@ DATOVIZ_MANYLINUX_IMAGE=rossant/datoviz_manylinux:latest just wheel-manylinux-do
 ```
 
 The container script installs the missing RPM packages, builds Datoviz with
-`DVZ_ENABLE_SHADERC=ON`, regenerates raw `ctypes` and the array facade, builds the release wheel
+`DVZ_ENABLE_SHADERC=ON`, regenerates the Python binding and NumPy-adaptation module, builds the release wheel
 through the v0.4 backend, runs auditwheel inspection, and executes the installed-wheel
 shaderc/CMake consumer smoke. Output wheels are written to `wheelhouse/` and must not be committed.
 Set `DATOVIZ_MANYLINUX_GENERATE_CTYPES=0` only when intentionally checking an already generated

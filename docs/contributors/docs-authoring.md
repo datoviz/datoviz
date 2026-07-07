@@ -15,7 +15,7 @@ Use this routing before adding or moving content:
 | documentation architecture and policy | `spec/docs/` |
 | scene, visual, runtime, and interaction semantics | `spec/scene/` |
 | DRP2 command and fixture contracts | `spec/drp2/` |
-| raw binding and Python facade boundaries | `spec/bindings/`, `spec/api/` |
+| Python binding and `datoviz.raw` exact-call boundaries | `spec/bindings/`, `spec/api/` |
 | current execution status and work queues | `agents/` |
 | generated API/reference output | generated docs path, never hand-edited |
 

@@ -25,7 +25,7 @@ Evaluate these options:
 Constraints:
 
 1. Datoviz v0.4 does not preserve v0.3 API compatibility.
-2. Scene API must remain backend-neutral and compatible with raw ctypes and future WASM/WebGPU.
+2. Scene API must remain backend-neutral and compatible with `datoviz.raw` exact calls and future WASM/WebGPU.
 3. Scene query results must return scene-visible identity, not backend identity.
 4. Datoviz should not embed GSP or depend on GSP.
 5. Public API added before RC1 is hard to reverse.

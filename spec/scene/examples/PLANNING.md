@@ -121,7 +121,7 @@ The main remaining polish, promotion, or feature gaps are:
 6. large-data policies for ring buffers, visible ranges, LOD, sparse updates, and long live loops;
 7. scene-level custom material/compute resources for Mandelbrot, Gray-Scott, particles, and custom
    postprocess work;
-8. deterministic gallery capture conventions, asset/cache helpers, and raw binding smoke coverage.
+8. deterministic gallery capture conventions, asset/cache helpers, and Python binding smoke coverage.
 
 
 ## v0.4 Required Set

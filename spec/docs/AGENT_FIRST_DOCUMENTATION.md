@@ -57,8 +57,8 @@ The v0.4 public docs should expose these agent-facing entry points:
 4. feature/status and known-gap pages with explicit status labels;
 5. example indexes generated from manifest metadata;
 6. Matplotlib-to-Datoviz task guidance;
-7. Python facade docs for `import datoviz as dvz`;
-8. raw `datoviz.raw` docs for exact `ctypes` use.
+7. Python binding docs for `import datoviz as dvz`;
+8. `datoviz.raw` docs for exact `ctypes` calls.
 
 The public message should be direct:
 
@@ -81,7 +81,7 @@ Recommended sections:
 4. examples index and manifest;
 5. visual families reference;
 6. feature status and known gaps;
-7. Python facade and raw binding docs;
+7. Python binding and `datoviz.raw` exact-call docs;
 8. ownership and lifetime rules;
 9. Matplotlib translation guidance;
 10. release notes and unsupported/deferred features.
@@ -133,7 +133,7 @@ Recommended release phasing:
 
 | Release point | Required agent-first docs |
 | --- | --- |
-| RC1 | homepage positioning, agent quickstart draft, feature/status table, known gaps, Python facade scope. |
+| RC1 | homepage positioning, agent quickstart draft, feature/status table, known gaps, Python binding scope. |
 | RC2 | example metadata cleanup, generated Python example tabs where available, Matplotlib translation guide. |
 | Final | `llms.txt`, capability JSON or equivalent, polished example search, final known-gap table. |
 

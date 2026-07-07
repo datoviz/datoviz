@@ -24,7 +24,7 @@ Before the final switch, expose v0.4 through a preview target such as `v04.datov
 
 The current public website still serves the v0.3-era documentation and remains useful to existing
 users. The v0.4 branch is rebuilding the project surface around the C engine, retained scene API,
-DRP2, Vulkan/vklite/canvas runtime, raw `ctypes`, and experimental WebGPU/WASM. Publishing the v0.4
+DRP2, Vulkan/vklite/canvas runtime, Python binding, and experimental WebGPU/WASM. Publishing the v0.4
 landing page too early would make the public root attractive but less useful than the existing site.
 
 The v0.4 website work should therefore be developed as a previewable release asset. Switch the
@@ -40,7 +40,7 @@ paths give early testers a complete enough entry point.
    `external/GSP`.
 4. Known limitations are visible from the landing page and docs navigation.
 5. Gallery/showcase pages have real deterministic media for the front-page card set.
-6. Raw `ctypes`, top-level Python facade scope, DRP2, and WebGPU/WASM scope are documented.
+6. Python binding, `datoviz.raw` exact-call scope, DRP2, and WebGPU/WASM scope are documented.
 7. Current public URLs either keep working or redirect to a useful replacement/archive page.
 8. The release notes or status page clearly identify v0.4 as RC, prerelease, or final.
 

@@ -35,7 +35,7 @@ These choices are already approved:
    `Advanced` or another secondary path.
 4. Lead the landing page and quickstart with Python direct-engine code, then C.
 5. Keep generated examples and reference material C-first where C is the executable source of truth,
-   with Python direct-engine or raw `ctypes` guidance where policy supports it.
+   with Python direct-engine or `datoviz.raw` exact-call guidance where policy supports it.
 6. Do not let promoted public examples ship with generic `_Media pending._`; generate media or show
    a concrete reason/status.
 7. Keep WebGPU live examples isolated in iframe routes such as:
@@ -75,7 +75,7 @@ They supersede earlier agent-facing wording when there is a conflict.
 6. Do not make broad claims that are only approximately true. Say "most public functions use
    `dvz_...` names" rather than "every function follows one convention" unless verified.
 7. Keep Quickstart and first-user pages short and structured. Move side topics such as offscreen
-   capture, raw `ctypes`, CMake integration, and lifecycle edge cases to focused How-To or
+   capture, `datoviz.raw` exact calls, CMake integration, and lifecycle edge cases to focused How-To or
    Reference pages.
 8. The AI-assisted workflow page must be simple. Its main prompt should tell the coding assistant
    to browse `datoviz.org` and write the requested Datoviz v0.4 example. The canonical public
@@ -396,7 +396,7 @@ Use this direction for broad rewriting:
    and WebP dry run. Commit source changes only; do not commit `data` or binary WebP output unless
    explicitly approved.
 5. **How-to/snippet checkpoint:** make partial snippets visibly partial or complete; fix Python,
-   raw `ctypes`, direct-engine, and visual-family examples against the active API.
+   `datoviz.raw` exact calls, direct-engine, and visual-family examples against the active API.
 6. **Reference/API checkpoint:** fix source comments and C API generator formatting, regenerate API
    docs, reconcile feature/status/project/parity pages, and run `just docs-api-check` if generation
    is touched.
@@ -460,7 +460,7 @@ Verify or close these current leads:
 2. **First-user journey:** decide whether to merge, re-nav, or keep unlisted
    `docs/start/what-is-datoviz.md`, `docs/start/choose-your-layer.md`, and
    `docs/start/first-c-program.md`.
-3. **Snippet correctness:** check README, homepage, quickstart, Python how-to, raw `ctypes`,
+3. **Snippet correctness:** check README, homepage, quickstart, Python how-to, `datoviz.raw`,
    direct-engine docs, and reference pages for stale `"diameter"` vs `"diameter_px"`, undefined
    variables, old wrappers, and partial snippets presented as runnable.
 4. **Generated reference language:** search public docs and generated references for `WIP`,

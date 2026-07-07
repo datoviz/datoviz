@@ -167,7 +167,7 @@ Placement resolution order:
    bitmap and atlas-backed layout paths.
 7. Keep axes, legends, colorbars, scale bars, and readouts on the same batched semantic path.
 8. Treat generic `DvzVisual*` text construction as internal or advanced/unstable in docs.
-9. Update raw `ctypes` generation and the array-aware Python facade policy so string arrays,
+9. Update Python binding generation and NumPy-adaptation policy so string arrays,
    positions, colors, and sizes map cleanly.
 
 

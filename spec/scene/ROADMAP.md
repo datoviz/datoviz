@@ -15,7 +15,7 @@ RC1 work should stay focused on:
 2. v0.3 visible capability audit with fix/defer/external disposition;
 3. public API/status labels;
 4. compact example proof with validation notes;
-5. retained textured mesh, raw `ctypes`, text, axes, labels, colorbars, scale bars, queries, and
+5. retained textured mesh, Python binding, text, axes, labels, colorbars, scale bars, queries, and
    app/offscreen paths kept in validation;
 6. experimental compute+graphics proof with explicit DRP2 synchronization and a C-first gallery
    target.

@@ -6,8 +6,9 @@ control.
 
 The high-level plotting layer for the broader GSP/VisPy2 project is still work in progress. Datoviz
 v0.4 is the rendering engine underneath that direction. Today, Python users who want to use Datoviz
-directly should use the documented `ctypes`-based paths: `import datoviz as dvz` for supported NumPy
-array uploads, or `datoviz.raw` for exact generated signatures.
+directly use one generated `ctypes` binding: `import datoviz as dvz` is the normal call form with
+documented NumPy array adaptation, and `datoviz.raw` is the exact pointer/count call form for the
+same binding.
 
 Most users should start with the Python or C scene API. Lower-level runtime layers are useful for
 embedding, backend work, and contributors, but they are not the shortest path to a first
@@ -18,7 +19,7 @@ visualization.
 | Write Python code with NumPy arrays | `import datoviz as dvz` | supported for documented calls |
 | Build a native C or C++ application | C `scene` and `app` APIs | supported by feature |
 | Render without a window, capture images, or integrate a native view | C `scene` and `app` APIs | supported by feature |
-| Call the C API from Python with exact generated signatures | `datoviz.raw` / raw `ctypes` | low-level supported path |
+| Call the Python binding with explicit pointers and counts | `datoviz.raw` | low-level exact call form |
 | Run selected examples in the browser | WebGPU/WASM example routes | experimental subset |
 | Work on advanced rendering, replay, or backend portability | Advanced rendering/runtime APIs | advanced/unstable |
 | Use high-level scientific plotting | GSP/VisPy2 when available | external WIP layer |
@@ -33,7 +34,7 @@ arrays to visual attributes:
 import datoviz as dvz
 ```
 
-This path keeps the same `dvz_*` function names as the C examples, but adapts supported data-upload
+This path keeps the same `dvz_*` function names as the C examples and adapts supported data-upload
 calls so you can pass NumPy arrays directly. It is the best starting point for scientists who are
 comfortable with Python but need lower-level rendering control than a plotting library gives.
 

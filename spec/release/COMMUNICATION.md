@@ -12,7 +12,7 @@ Refine these messages for release notes, README, website, blog, and social posts
 2. The main user model is retained scene rendering with GPU-backed visuals and interaction.
 3. Lower layers are available for advanced users who need DRP2, Vulkan runtime, canvas, stream,
    offscreen, video, or backend integration.
-4. Python raw bindings expose the C API; high-level object-oriented plotting belongs to
+4. The generated Python binding exposes the C API; high-level object-oriented plotting belongs to
    VisPy2/GSP.
 5. v0.4 prioritizes architecture, performance, and release proof over long-term API lock-in; v0.5
    may still break API where needed.

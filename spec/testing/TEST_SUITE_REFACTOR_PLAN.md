@@ -57,7 +57,7 @@ Use runner tags, groups, `just` recipes, or CTest labels to expose these lanes e
 5. `render-smoke`: small deterministic offscreen scene/app renders.
 6. `render-conformance`: image or pixel-region assertions with named expectations and tolerances.
 7. `webgpu-portability`: WebGPU fixture preflight, runner smoke, and WASM-emitted fixture checks.
-8. `bindings-smoke`: generated raw `ctypes`, ABI facts, and low-level Python helper smoke.
+8. `bindings-smoke`: generated Python binding, ABI facts, and low-level Python helper smoke.
 9. `architecture-lint`: source guards and policy checks.
 10. `release-proof`: the compact validation set required for RC notes.
 11. `slow-churn`: repeated-frame, resize, recreate, long-run resource, and failure-injection loops.

@@ -1,21 +1,22 @@
-# Raw Python Host Helper Layer
+# Python Host Helper Layer
 
-This note documents the intended Python helper layer that sits beside the generated raw `ctypes`
-surface. It is intentionally narrow: helpers make callbacks and hosted event loops easier to use,
+This note documents the intended Python helper layer that sits beside the generated `ctypes`
+binding. It is intentionally narrow: helpers make callbacks and hosted event loops easier to use,
 but they do not form a plotting API and they do not replace the C object model.
 
 
 ## Decision
 
-The generated C-shaped binding should live under `datoviz.raw` and should be imported explicitly:
+The exact C-shaped call form should live under `datoviz.raw` and should be imported explicitly when
+that shape is needed:
 
 ```python
 import datoviz.raw as dvz
 ```
 
-The `datoviz` top-level package is therefore free to expose a small curated helper surface, but it
-must not promise that `import datoviz as dvz` is the raw binding. Raw examples and low-level tests
-should use `datoviz.raw` whenever they need exact C symbol names.
+The `datoviz` top-level package remains the normal binding import with `dvz_*` names and
+policy-declared NumPy adaptation. Raw examples and low-level tests should use `datoviz.raw`
+whenever they need exact pointers, counts, bytes, or callbacks.
 
 Python hosting helpers should live under a clearly separate namespace, currently proposed as
 `datoviz.host`. The helper layer adapts existing raw handles to Python callback and event-loop
@@ -32,17 +33,17 @@ The intended namespace split is:
 
 ```text
 datoviz
-  Top-level direct-engine Python API. Planned to preserve dvz_* names while accepting NumPy arrays
+  Top-level direct-engine Python binding. Preserves dvz_* names while accepting NumPy arrays
   for policy-declared data arguments.
 
 datoviz.raw
-  Generated ctypes binding. Exact dvz_*, Dvz*, and DVZ_* names.
+  Exact generated ctypes call form. Exact dvz_*, Dvz*, and DVZ_* names.
 
 datoviz.host
   Thin Python-hosted integration helpers for callbacks, asyncio, and frame waking.
 ```
 
-This keeps raw Datoviz raw while still allowing ergonomic Python integration:
+This keeps the exact call form available while still allowing ergonomic Python integration:
 
 ```python
 import datoviz.raw as dvz
@@ -205,7 +206,7 @@ callback_id = dvz.dvz_input_subscribe_pointer(router, callback, None)
 dvz.dvz_input_unsubscribe(router, callback_id)
 ```
 
-The generated raw layer should:
+The generated exact-call layer should:
 
 1. emit `ctypes.CFUNCTYPE` definitions for callback typedefs;
 2. set function `argtypes` to those callback typedefs;
@@ -214,8 +215,8 @@ The generated raw layer should:
 5. release keepalive entries on matching unsubscribe, setter clear, or global clear paths when the
    policy describes that relationship.
 
-The host layer is optional ergonomics above those raw functions. It copies event structs, handles
-async dispatch, and centralizes cleanup, but it should not be required for direct raw `ctypes` use.
+The host layer is optional ergonomics above those exact calls. It copies event structs, handles
+async dispatch, and centralizes cleanup, but it should not be required for direct `datoviz.raw` use.
 
 
 ## Callback Lifetime
@@ -254,11 +255,11 @@ The host layer must not provide:
 
 1. Python scene, visual, figure, panel, or plotting objects;
 2. prefixless aliases for raw C symbols;
-3. array-aware data upload APIs;
+3. additional array-aware data upload APIs;
 4. high-level scientific visualization workflows;
 5. compatibility with the v0.3 Python object model.
 
-Array-aware data adaptation belongs in the top-level facade described in
+Array-aware data adaptation belongs in the top-level binding call form described in
 [ARRAY_FACADE.md](ARRAY_FACADE.md). High-level scientific workflows belong above Datoviz, currently
 in GSP/VisPy2 or application-specific code.
 

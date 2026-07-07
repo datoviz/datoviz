@@ -7,7 +7,7 @@ Matplotlib-oriented publication export.
 ## Summary
 
 Datoviz v0.4 should be released as the low-level rendering engine: the C library,
-the public C API, and raw/generated Python `ctypes` bindings. It should not ship a
+the public C API, and one generated Python `ctypes` binding. It should not ship a
 replacement for the v0.3 Python object-oriented API.
 
 The higher-level Python object model should live in GSP. The user-facing plotting
@@ -22,8 +22,9 @@ and vector export.
 Datoviz v0.4 is the engine release. Its Python scope is intentionally narrow:
 
 1. package and load the Datoviz shared library,
-2. expose raw/generated `ctypes` bindings for the public C API,
-3. keep low-level smoke examples that prove the bindings work,
+2. expose the generated `ctypes` binding for the public C API, with `datoviz.raw` as its exact
+   pointer/count call form,
+3. keep low-level smoke examples that prove the binding works,
 4. avoid committing to a v0.3-style Python object-oriented API in the Datoviz
    repository.
 
@@ -176,7 +177,7 @@ The core promise is complementary rather than competitive:
 The v0.3 Python object-oriented API should be documented as not being part of the
 Datoviz v0.4 release scope. The migration message should be:
 
-1. use Datoviz v0.4 raw `ctypes` bindings for low-level engine access,
+1. use Datoviz v0.4's generated Python binding for low-level engine access,
 2. use GSP/VisPy2 for the future Python object-oriented and plotting APIs,
 3. use the Datoviz backend for interactive and high-throughput GPU rendering,
 4. use the Matplotlib backend for publication-oriented PDF/SVG export.

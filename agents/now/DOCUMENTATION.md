@@ -77,7 +77,7 @@ on release documentation gates.
 5. Scene API and semantics: [../../spec/scene/](../../spec/scene/).
 6. DRP2 commands, schemas, fixtures, and runtime contracts: [../../spec/drp2/](../../spec/drp2/).
 7. Documentation IA, example coverage, and AI-friendly docs rules: [../../spec/docs/](../../spec/docs/).
-8. Python binding import layers and array-aware facade:
+8. Python binding import surface and NumPy adaptation:
    [../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md).
 9. Release readiness, RC process, communication, and gallery outreach:
    [../../spec/release/](../../spec/release/).
@@ -97,8 +97,8 @@ guide as current Datoviz documentation.
 6. RC and final release notes.
 7. Example/gallery index with screenshots or captured artifacts where appropriate.
 8. Generated C reference or complete API reference outline.
-9. Python binding documentation covering top-level array-aware direct-engine use and exact
-   `datoviz.raw` `ctypes` use.
+9. Python binding documentation covering top-level NumPy-adapted direct-engine use and exact
+   `datoviz.raw` calls.
 10. WebGPU/WASM experimental-scope documentation.
 11. Compute+graphics experimental-scope documentation, including the portable DRP2 subset, native
     synchronization boundary, and optional CUDA SDK example status.
@@ -119,8 +119,8 @@ Required:
 2. public surface/status table;
 3. ownership and destroy-rule notes for public objects;
 4. callback, polling, and readback lifetime notes;
-5. Python binding scope, including the planned top-level array-aware facade and exact
-   `datoviz.raw` layer;
+5. Python binding scope, including the top-level NumPy-adapted call form and exact `datoviz.raw`
+   call form;
 6. WebGPU/WASM experimental scope and known gaps;
 7. compute+graphics experimental scope and CUDA/CuPy boundary;
 8. WebGPU live-example matrix with requirement tags for compute, request/query/readback,
@@ -133,9 +133,9 @@ Required:
    scope.
 
 The Python binding scope page may land before the generated API reference is complete. For RC1, it
-needs to define the intended `import datoviz as dvz` array-aware facade, exact `datoviz.raw` import
+needs to define the intended `import datoviz as dvz` NumPy-adapted call form, exact `datoviz.raw` import
 style, generated-binding status, ownership and callback lifetime rules, validation commands, and
-the boundary with GSP/VisPy2. Do not hand-maintain exhaustive C or raw binding symbol catalogs in
+the boundary with GSP/VisPy2. Do not hand-maintain exhaustive C or Python binding symbol catalogs in
 prose.
 
 
@@ -145,7 +145,7 @@ Required:
 
 1. documentation structure mostly final;
 2. generated C reference or complete outline;
-3. usable Python binding docs for the top-level facade and raw `ctypes`;
+3. usable Python binding docs for top-level NumPy-adapted calls and `datoviz.raw` exact calls;
 4. release examples with captured artifacts;
 5. render-conformance or fixture result linked;
 6. known issues updated from RC1 feedback.
@@ -153,8 +153,8 @@ Required:
    whether the visualization would be useful to the dataset authors.
 8. gallery media generation path documented for screenshots, animated GIFs, or short videos.
 
-The generated C/raw API outline should come from parsed public headers. The first candidate source
-is `build/bindings/datoviz_api.json`, produced by the raw-binding API extraction pipeline.
+The generated C/Python API outline should come from parsed public headers. The first candidate
+source is `build/bindings/datoviz_api.json`, produced by the binding API extraction pipeline.
 
 
 ## Final Gate

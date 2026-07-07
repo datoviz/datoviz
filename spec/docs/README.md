@@ -9,7 +9,7 @@ the MkDocs navigation changes, update these specs to match it instead of treatin
 as authoritative.
 
 Datoviz v0.4 documentation is C-engine-first. It documents the low-level renderer/runtime,
-native scene/app layer, raw generated `ctypes` bindings, backend portability surface, and
+native scene/app layer, generated Python binding, backend portability surface, and
 contributor workflow. It does not recreate the v0.3 Pythonic plotting documentation. High-level
 scientific plotting belongs to VisPy2/GSP, with Datoviz as one rendering backend.
 
@@ -78,7 +78,7 @@ Do not create a v0.3-to-v0.4 migration guide for the old Pythonic Datoviz API. I
 layer boundary:
 
 1. use VisPy2/GSP for high-level scientific plotting;
-2. use Datoviz v0.4 for the C engine, low-level runtime, raw bindings, and backend work;
+2. use Datoviz v0.4 for the C engine, low-level runtime, Python binding, and backend work;
 3. treat old Datoviz Python plotting APIs as outside the v0.4 Datoviz documentation scope.
 
 

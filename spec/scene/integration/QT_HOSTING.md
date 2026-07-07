@@ -83,7 +83,7 @@ ownership and would create a second presentation path.
 
 ## PyQt Binding Problem
 
-PyQt can in principle follow the same hosted contract as native Qt, but a direct raw `ctypes`
+PyQt can in principle follow the same hosted contract as native Qt, but a direct `datoviz.raw`
 binding has an awkward boundary:
 
 1. Python needs the Datoviz-created `VkInstance` so Qt can adopt it.

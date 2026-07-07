@@ -57,7 +57,7 @@ Before then, replace `v0.4.0` with the exact commit, development version, or rel
 used.
 
 If your result depends on an experimental backend or low-level interface, name it explicitly. For
-example, mention the WebGPU/WASM subset or the generated `datoviz.raw` bindings when those details
+example, mention the WebGPU/WASM subset or generated Python binding when those details
 matter for reproducibility.
 
 

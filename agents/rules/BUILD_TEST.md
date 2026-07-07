@@ -36,7 +36,7 @@ direnv exec . just test [filter]
 
 ## Python Binding Freshness
 
-Datoviz's raw Python ctypes files are generated local artifacts. Before running Python-facing
+Datoviz's generated Python binding files are local artifacts. Before running Python-facing
 validation, GSP integration checks, packaging smoke tests, or release checks after public API work,
 make the local binding match the headers:
 
@@ -53,7 +53,7 @@ Run this whenever a task touches:
 - `tools/bindings/**`
 - generated facade behavior or Python packaging paths that import `datoviz._ctypes`
 
-`just ctypes-check` includes the raw binding freshness check, array facade check, binding policy
+`just ctypes-check` includes the binding freshness check, NumPy-adaptation check, binding policy
 validation, and C ABI layout validation. If it fails, regenerate with `just ctypes`, fix the
 header/policy/generator mismatch, and rerun the check before reporting success.
 

@@ -219,7 +219,7 @@ metadata.
 `argtypes`/`restype` declarations for signatures the current raw generator can represent. The
 output is never edited by hand.
 
-The raw binding pipeline is documented in `spec/bindings/README.md`; high-level Python plotting
+The Python binding pipeline is documented in `spec/bindings/README.md`; high-level Python plotting
 ergonomics remain outside Datoviz v0.4.
 
 

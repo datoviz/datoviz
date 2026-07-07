@@ -5,8 +5,8 @@ Datoviz v0.4 owns the rendering engine. GSP/VisPy2 owns high-level scientific pl
 ## Boundary
 
 This boundary is intentional. Datoviz should provide a predictable C engine, retained scene model,
-visual families, runtime execution, offscreen capture, embedding hooks, raw/generated low-level
-bindings, DRP2 streams, fixtures, and portability experiments. It should not grow a parallel
+visual families, runtime execution, offscreen capture, embedding hooks, generated Python binding,
+DRP2 streams, fixtures, and portability experiments. It should not grow a parallel
 high-level Python plotting API inside the v0.4 docs.
 
 ## When to Use Datoviz
@@ -29,9 +29,9 @@ status labels. Higher-level libraries can build friendlier plotting APIs on top 
 engine documentation to promise behavior it does not own.
 
 When writing docs or examples, make the layer explicit. If a page describes C scene/app use,
-Datoviz owns it. If a page describes raw `ctypes`, it is a low-level supported binding surface. If a
-page describes high-level plotting convenience, it belongs outside the Datoviz v0.4 public docs
-unless it is explicitly marked as GSP/VisPy2 scope.
+Datoviz owns it. If a page describes `datoviz.raw`, it is documenting the exact pointer/count call
+form of the same Python binding. If a page describes high-level plotting convenience, it belongs
+outside the Datoviz v0.4 public docs unless it is explicitly marked as GSP/VisPy2 scope.
 
 See also:
 

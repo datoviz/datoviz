@@ -1,14 +1,14 @@
 # Async Callback Follow-Up
 
 This note captures the next validation and polish steps after the first async callback slice landed.
-The C post/wake primitive, raw `ctypes` callback generation, and thin Python async helpers exist; the
+The C post/wake primitive, `datoviz.raw` callback generation, and thin Python async helpers exist; the
 next work should prove the user-facing shape in real interactive Python contexts.
 
 
 ## Goals
 
 1. Validate the new helper surface in plain Python, IPython terminals, and notebooks.
-2. Keep examples small and raw-binding-oriented rather than rebuilding a plotting API.
+2. Keep examples small and exact-call-oriented rather than rebuilding a plotting API.
 3. Tighten naming and lifecycle behavior before broader users depend on it.
 
 

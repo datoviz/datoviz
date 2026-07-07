@@ -36,15 +36,16 @@ The highest-value pre-RC changes are:
 
 The current branch is closer to this plan than the original draft assumed:
 
-- The public Python direction is already `import datoviz as dvz` with C-shaped `dvz_*` names,
-  backed by generated `datoviz.raw` exact `ctypes` bindings and a generated array-aware facade.
+- The public Python direction is already one generated `ctypes` binding with C-shaped `dvz_*`
+  names: `import datoviz as dvz` for policy-declared NumPy adaptation, and `datoviz.raw` for exact
+  pointers, counts, bytes, and callbacks.
   Do not add prefixless aliases such as `capture_rgba()` or `visual_set_data_many()`.
 - `dvz_visual_set_data_many()` and `dvz_visual_set_data_range()` already exist in the C API.
-  `dvz_visual_set_data_range()` is already array-adapted in the top-level Python facade. The
-  top-level `dvz_visual_set_data_many()` facade now accepts mappings or iterables of
+  `dvz_visual_set_data_range()` is already array-adapted in the top-level Python package. The
+  top-level `dvz_visual_set_data_many()` wrapper now accepts mappings or iterables of
   `(attr_name, array)` pairs and lowers them to `DvzVisualDataUpdate[]` for the raw call.
 - Canvas-level memory capture already exists in C:
-  `dvz_canvas_capture_rgba_into()` and `dvz_canvas_capture_rgba()`. The top-level Python facade now
+  `dvz_canvas_capture_rgba_into()` and `dvz_canvas_capture_rgba()`. The top-level Python package now
   exposes `dvz_view_capture_rgba(view)`, which reaches the canvas through `dvz_view_canvas()`, uses
   `dvz_canvas_capture_rgba_into()`, and returns a copied NumPy RGBA8 array without temporary files
   or Datoviz-owned memory lifetime hazards.
@@ -61,7 +62,7 @@ The current branch is closer to this plan than the original draft assumed:
   external-surface views, request-frame callbacks, and Qt bridge proof. Treat further GUI hosting
   as validation/documentation unless a specific missing primitive is found.
 
-Revised pre-RC posture: make small Python facade/documentation additions around the existing C
+Revised pre-RC posture: make small Python binding/documentation additions around the existing C
 surface. Avoid broad C API expansion before RC1 except for an alpha-preserving PNG-memory helper if
 needed.
 
@@ -71,11 +72,11 @@ needed.
 Completed in the current RC lane:
 
 1. `dvz.dvz_visual_set_data_many(visual, updates)` accepts mappings and `(attr_name, array)`
-   iterables in the top-level facade, validates item counts before mutation, and preserves raw
+   iterables in the top-level package, validates item counts before mutation, and preserves raw
    descriptor-array passthrough when `update_count` is supplied.
 2. `dvz.dvz_view_capture_rgba(view)` returns Python-owned NumPy RGBA8 memory shaped
    `(framebuffer_height, framebuffer_width, 4)` with top-row-first rows.
-3. `docs/reference/python-direct-engine.md` documents the direct-engine facade, dense data updates,
+3. `docs/reference/python-direct-engine.md` documents the direct-engine Python binding, dense data updates,
    offscreen RGBA capture, and the GSP/VisPy2 boundary.
 4. `examples/python/direct/offscreen_point.py` and `tools/bindings/ctypes_render_smoke.py` cover the
    direct facade offscreen point/capture path where native runtime support is available.
@@ -86,7 +87,7 @@ Completed in the current RC lane:
 7. View2D/domain readback uses ordered endpoints, including reversed finite domains. Axis/grid
    generation uses explicit internal sorted intervals only where numeric low/high bounds are needed.
 8. `DvzAxisTicks`, `dvz_axis_set_ticks()`, and `dvz_axis_clear_ticks()` provide exact explicit
-   tick positions and optional copied labels. The top-level Python facade accepts NumPy-compatible
+   tick positions and optional copied labels. The top-level Python package accepts NumPy-compatible
    values and Python labels.
 9. Query target scopes now distinguish deferred guide and all-rendered requests:
    `DVZ_SCENE_TARGET_GUIDE` and `DVZ_SCENE_TARGET_ALL_RENDERED` return
@@ -123,7 +124,7 @@ Remaining work is optional for RC unless a downstream GSP integration finds a co
 
 1. Add `dvz_view_capture_png_bytes(view)` only if alpha-preserving PNG bytes are required before
    RC; otherwise defer and keep RGBA memory as the stable backend target.
-2. Keep direct Python facade validation in release evidence: `testing/test_array_facade.py`,
+2. Keep direct Python binding validation in release evidence: `testing/test_array_facade.py`,
    `tools/bindings/ctypes_render_smoke.py`, and the adjacent-panel scissor test.
 3. Add deeper family-specific docs only when needed by a real GSP lowering path, especially image
    upload/update convenience and semantic text update examples.
@@ -228,7 +229,7 @@ dvz.dvz_visual_set_data(visual, "color", colors)
 dvz.dvz_visual_set_data(visual, "diameter_px", diameters)
 ```
 
-The Python facade should accept NumPy arrays directly and infer pointer, dtype, shape, and item count from policy declarations.
+The top-level Python package should accept NumPy arrays directly and infer pointer, dtype, shape, and item count from policy declarations.
 
 Required attributes for the initial Matplotlib subset:
 
@@ -354,7 +355,7 @@ Interactive Matplotlib and future VisPy2/GSP workflows may update slices of larg
 
 ### Required Datoviz addition
 
-The current top-level facade already exposes this C-shaped convenience:
+The current top-level package already exposes this C-shaped convenience:
 
 ```python
 dvz.dvz_visual_set_data_range(
@@ -667,8 +668,8 @@ rgba = dvz.capture_rgba(scene, figure, 800, 600)
 
 Completed RC-lane implementation:
 
-1. Keep the existing generated/raw binding split: `datoviz.raw` exact `ctypes`, top-level
-   `datoviz` array-aware `dvz_*` facade.
+1. Keep the existing generated binding model: top-level `datoviz` for NumPy-adapted `dvz_*` calls,
+   and `datoviz.raw` for exact `ctypes` calls.
 2. `dvz.dvz_visual_set_data_many(visual, {"attr": array, ...})` validates arrays, constructs
    `DvzVisualDataUpdate[]`, keeps temporaries alive through the raw call, and raises deterministic
    Python exceptions on validation failure.
@@ -677,7 +678,7 @@ Completed RC-lane implementation:
 4. Focused tests cover `set_data_many`, `set_data_range`, and capture memory;
    `tools/bindings/ctypes_render_smoke.py` runs raw and direct offscreen smoke examples when runtime
    support is available.
-5. `docs/reference/python-direct-engine.md` documents the facade, dense data updates, and RGBA
+5. `docs/reference/python-direct-engine.md` documents the Python binding, dense data updates, and RGBA
    capture, with cross-links from status/reference pages.
 6. `docs/reference/coordinate-systems.md` and `docs/reference/visual-attributes.md` document
    logical-pixel, framebuffer-pixel, screen-space attribute, panel clipping, and capture semantics.

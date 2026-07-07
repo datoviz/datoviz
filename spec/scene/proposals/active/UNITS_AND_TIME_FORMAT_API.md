@@ -486,7 +486,7 @@ Preferred v0.4 decisions:
 
 1. Use **microseconds since Unix epoch UTC** for `DvzTimestamp`.
    This is precise enough for absolute datetime axes and works cleanly across C, Python, WASM/JS,
-   serialization, and raw binding smoke tests. Nanosecond-resolution data should be plotted as
+   serialization, and Python binding smoke tests. Nanosecond-resolution data should be plotted as
    compact relative numeric coordinates with duration units unless a future API explicitly promotes
    nanosecond timestamps.
 2. Ship **UTC-only timezone support** in v0.4.

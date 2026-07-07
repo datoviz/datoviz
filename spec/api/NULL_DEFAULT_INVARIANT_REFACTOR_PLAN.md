@@ -101,7 +101,7 @@ DvzFontDefaults fonts = _view_gui_font_defaults(view);
 ```
 
 2. Pass the resolved fonts separately to the internal GUI creation code.
-3. Update generated docs and raw binding snapshots after the struct change.
+3. Update generated docs and Python binding snapshots after the struct change.
 4. Replace examples that do not customize GUI options with `dvz_view_gui(view, NULL)`.
 5. Add a test proving `NULL` and `dvz_gui_config()` behave the same when app fonts are customized.
 

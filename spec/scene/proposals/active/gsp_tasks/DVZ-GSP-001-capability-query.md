@@ -16,7 +16,7 @@ preferably from `DvzView` because the active runtime reuse and render target are
 | `src/scene/frame_plan/capabilities.c` | default snapshot and ABI validation |
 | `src/scene/query/policy.c` | query profile consumption |
 | `src/app/tests/test_app.c` or `src/scene/tests/app.c` | native/offscreen validation |
-| `testing/test_ctypes_raw_smoke.py` and `tools/bindings/ctypes_render_smoke.py` | raw ctypes smoke coverage |
+| `testing/test_ctypes_raw_smoke.py` and `tools/bindings/ctypes_render_smoke.py` | Python binding smoke coverage |
 
 ## Non-Goals
 

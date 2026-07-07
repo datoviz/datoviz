@@ -14,8 +14,9 @@ The active stack is:
 scene -> drp2 -> vklite/canvas/stream -> app
 ```
 
-Native scene, app/offscreen rendering, DRP2 command emission, raw `ctypes`, the proposed
-array-aware Python facade, retained textured mesh, text, axes, colorbars, labels, scale bars,
+Native scene, app/offscreen rendering, DRP2 command emission, the generated Python binding
+(`datoviz` with NumPy adaptation plus `datoviz.raw` exact calls), retained textured mesh, text,
+axes, colorbars, labels, scale bars,
 picking/query first slices, and the WebGPU fixture runner are active v0.4 surfaces. The WASM
 point/panzoom scene bridge is also active as the first experimental browser scene slice. Treat them
 as real implementation, not scaffolding.
@@ -34,7 +35,7 @@ as real implementation, not scaffolding.
    DRP2 viewport/scissor semantics.
 7. Use [../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md) and
    [../../spec/bindings/CTYPES_POLICY.md](../../spec/bindings/CTYPES_POLICY.md) before changing the
-   top-level Python package, raw-binding generation, FFI helpers, or NumPy/array argument
+   top-level Python package, exact-call binding generation, FFI helpers, or NumPy/array argument
    adaptation.
 8. Use [HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md](HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md) as the completed
    pre-RC API cleanup record before changing public headers, exported API, generated C reference,

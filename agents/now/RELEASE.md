@@ -32,7 +32,7 @@ Required before feature freeze:
 3. WebGPU/WASM has an honest experimental RC subset broad enough to host most non-desktop scene
    examples live on the website, including core visuals, animation/frame callbacks,
    compute-to-render particles, and a narrow request/query/readback slice.
-4. Raw `ctypes` generation and smoke tests work for the intended public C surface.
+4. Python binding generation and smoke tests work for the intended public C surface.
 5. v0.3 visible capability gaps are fixed, active experimental, explicitly deferred, or
    external/GSP-owned.
 6. Core examples compile and exercise the release feature set.
@@ -214,7 +214,7 @@ Exit criteria:
 2. ABI/layout smoke checks pass.
 3. Raw examples cover the supported low-level Python path.
 4. The docs state that high-level Python plotting is GSP/VisPy2 scope and distinguish the planned
-   top-level array-aware facade from exact `datoviz.raw` access.
+   top-level NumPy-adapted call form from exact `datoviz.raw` access.
 5. C API docs continue to state that `dvz_figure_emit()` and `dvz_figure_emit_ex()` are gone and
    that `DvzSceneFrameArtifact` is the scene emission product.
 
@@ -224,7 +224,7 @@ Exit criteria:
 
 1. RC1 tag and notes exist.
 2. Build/test/spec validation is recorded.
-3. Feature table, visible parity table, known gaps, raw `ctypes` scope, and WebGPU/WASM scope are
+3. Feature table, visible parity table, known gaps, Python binding scope, and WebGPU/WASM scope are
    published or linked.
 4. Release examples are documented enough for early testers.
 5. Required RC note fields from

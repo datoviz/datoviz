@@ -18,8 +18,8 @@ external ownership.
 | Area | Status | Reference |
 | --- | --- | --- |
 | Native C scene/app path | supported, with feature-specific gaps | [C API](c-api/index.md), [Feature status](feature-status.md) |
-| Python with NumPy arrays | supported | [Python with NumPy arrays](python-direct-engine.md) |
-| Python raw `ctypes` binding | supported | [Python raw ctypes](ctypes.md) |
+| Python binding with NumPy arrays | supported | [Python binding with NumPy arrays](python-direct-engine.md) |
+| Python binding exact call form | supported | [Python binding exact call form](ctypes.md) |
 | Retained visual families | supported/experimental by family | [Visual families](visual-families/index.md) |
 | Offscreen and GLFW app presentation | supported/experimental | [Platform support](platform-support.md) |
 | Scene compute shaders | experimental | [Compute and graphics](compute-graphics.md) |

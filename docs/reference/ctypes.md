@@ -1,10 +1,11 @@
-# Python Raw `ctypes` Binding
+# Python Binding Exact Call Form
 
-Status: supported low-level Python binding.
+Status: supported exact call form of the generated Python binding.
 
-The Python raw `ctypes` layer exposes the v0.4 C engine to Python as directly as possible. It is
-useful for low-level integration, smoke tests, backend work, and automation that needs exact access
-to `libdatoviz`.
+Datoviz has one generated `ctypes` binding. The normal import is `import datoviz as dvz`, which
+keeps the C `dvz_*` names and adds policy-declared NumPy adaptation for selected array arguments.
+`datoviz.raw` is the exact call form of the same binding: use it when you need to pass explicit
+bytes, pointers, counts, byte sizes, callbacks, or other C-shaped arguments yourself.
 
 It is not the v0.3 Python plotting API, not a compatibility layer, and not the recommended Python
 import for ordinary scene code. High-level plotting and object-oriented Python workflows belong
@@ -12,7 +13,7 @@ above Datoviz, currently in the GSP/VisPy2 layer.
 
 | Use this page when | Use another page when |
 | --- | --- |
-| You need exact generated `ctypes` signatures, pointers, callbacks, or ABI behavior. | You want ordinary Python scene calls with NumPy arrays. Use `import datoviz as dvz`. |
+| You need to spell out pointers, counts, callbacks, or ABI-sensitive arguments yourself. | You want ordinary Python scene calls with NumPy arrays. Use `import datoviz as dvz`. |
 | You are debugging binding generation, package loading, or C/Python lifetime rules. | You want a high-level plotting API. Use the GSP/VisPy2 layer when available. |
 
 
@@ -31,26 +32,26 @@ supported visual-data uploads:
 dvz.dvz_visual_set_data(points, "position", positions)
 ```
 
-Use the explicit raw module when exact `ctypes` behavior is required:
+Use the explicit exact-call module when exact `ctypes` arguments are required:
 
 ```python
 import datoviz.raw as raw
 ```
 
-The raw module preserves C names:
+The exact-call module preserves C names:
 
 ```python
 scene = raw.dvz_scene()
 raw.dvz_scene_destroy(scene)
 ```
 
-Do not treat these as part of the raw-binding contract:
+Do not treat these as part of the Python binding contract:
 
 ```python
 scene = dvz.scene()
 ```
 
-`datoviz.raw` is the public raw binding module. `datoviz._ctypes` is generated implementation
+`datoviz.raw` is the public exact-call module. `datoviz._ctypes` is generated implementation
 detail and should not be imported directly in examples or documentation. `datoviz._array_facade` is
 also generated implementation detail; use `import datoviz as dvz` instead.
 
@@ -75,26 +76,26 @@ just ctypes
 The extraction and generation tools live under `tools/bindings/`. Binding policy lives under
 `spec/bindings/`.
 
-The generated raw module tracks the exported C ABI: `DVZ_EXPORT` declarations only. Installed
-headers may contain declarations that are not emitted by `libdatoviz`; those are not raw-binding
-entry points unless they become exported ABI.
+The generated exact-call module tracks the exported C ABI: `DVZ_EXPORT` declarations only. Installed
+headers may contain declarations that are not emitted by `libdatoviz`; those are not binding entry
+points unless they become exported ABI.
 
 
 ## API Reference Generation
 
-This page defines the raw-binding scope, import style, ownership expectations, and validation. It is
+This page defines exact-call scope, import style, ownership expectations, and validation. It is
 not the exhaustive symbol catalog.
 
-The exhaustive C, facade, and raw-binding symbol references are generated from parsed public headers
-rather than maintained by hand. The generated outline starts from:
+The exhaustive C and Python binding symbol references are generated from parsed public headers rather
+than maintained by hand. The generated outline starts from:
 
 ```text
 build/bindings/datoviz_api.json
 ```
 
 The generated reference covers public C symbols, headers, structs, enums, constants, callback
-typedefs, and raw-binding availability. Skipped or opaque symbols should point back to
-source-controlled binding policy where possible.
+typedefs, and binding availability. Skipped or opaque symbols should point back to source-controlled
+binding policy where possible.
 
 
 ## Main Package Versus Raw
@@ -103,12 +104,12 @@ The main `datoviz` package and `datoviz.raw` intentionally share the same `dvz_*
 
 | Need | Import |
 | --- | --- |
-| Pass NumPy arrays to supported data uploads or capture RGBA arrays | `import datoviz as dvz`; see [Python with NumPy arrays](python-direct-engine.md) |
-| Match exact `ctypes` signatures, pointers, and counts | `import datoviz.raw as raw` |
+| Pass NumPy arrays to supported data uploads or capture RGBA arrays | `import datoviz as dvz`; see [Python binding with NumPy arrays](python-direct-engine.md) |
+| Spell out exact `ctypes` pointers, counts, bytes, and callbacks | `import datoviz.raw as raw` |
 | Debug generated FFI implementation internals | `datoviz._ctypes`, rarely and not in docs examples |
 
 The main package adapts only the pointer/count, pointer/byte-size, and string relationships listed
-in the binding policy. Unannotated calls may still require raw-style arguments.
+in the binding policy. Unannotated calls may still require exact C-shaped arguments.
 
 For example, this main-package call:
 
@@ -116,7 +117,7 @@ For example, this main-package call:
 dvz.dvz_visual_set_data(points, "position", positions)
 ```
 
-maps to explicit raw pointer and count arguments:
+maps to explicit pointer and count arguments:
 
 ```python
 import ctypes
@@ -135,30 +136,30 @@ raw.dvz_visual_set_data(
 )
 ```
 
-Keep `positions` alive until the raw call has returned. If a function documents borrowed storage
+Keep `positions` alive until the `datoviz.raw` call has returned. If a function documents borrowed storage
 rather than copied storage, keep the array alive for the documented borrowed lifetime.
 
 
 ## Naming And Types
 
-The raw binding keeps exact C names:
+The exact call form keeps C names:
 
-| C surface | Raw Python surface |
+| C surface | Exact Python surface |
 | --- | --- |
 | `dvz_*` functions | `raw.dvz_*` functions |
 | `Dvz*` structs and handles | generated `ctypes` classes or pointer-like handles |
 | `DVZ_*` constants and enum values | generated constants or enum-compatible values |
 | callback typedefs | generated `ctypes.CFUNCTYPE` types where supported |
 
-The first raw layer is intentionally conservative. Opaque handles remain opaque, verified records
+The exact call form is intentionally conservative. Opaque handles remain opaque, verified records
 may get `ctypes.Structure` or `ctypes.Union` layouts, and layout-sensitive records may remain opaque
 until the generator has an explicit alignment policy.
 
 
 ## Ownership And Lifetime
 
-Follow the C API ownership rules. A raw Python handle does not turn a C object into a Python-owned
-object with automatic semantic cleanup.
+Follow the C API ownership rules. A Python binding handle does not turn a C object into a
+Python-owned object with automatic semantic cleanup.
 
 Use these rules unless a specific function documents a narrower contract:
 
@@ -182,7 +183,7 @@ finally:
 ```
 
 Callback and host-helper behavior is still experimental. Thin Python helpers may exist for event
-loop and callback ergonomics, but they do not replace the exact raw API.
+loop and callback ergonomics, but they do not replace the exact-call API.
 
 
 ## Examples
@@ -192,7 +193,7 @@ Raw examples are intentionally small:
 | Example | Purpose |
 | --- | --- |
 | `examples/python/raw/lifecycle.py` | import, timer call, scene create/destroy |
-| `examples/python/raw/offscreen_point.py` | offscreen point render through raw handles |
+| `examples/python/raw/offscreen_point.py` | offscreen point render through exact-call handles |
 | `examples/python/raw/async_click.py` | callback and host-helper smoke path |
 
 These examples are low-level integration proof. They should not grow into Pythonic plotting
@@ -212,7 +213,7 @@ just ctypes-render-smoke
 just ctypes-package-smoke
 ```
 
-The full raw-binding validation path is:
+The full binding validation path is:
 
 ```sh
 just bindings

@@ -366,7 +366,7 @@ The DRP2 CUDA smoke
 shape: a Vulkan-owned exportable vertex buffer is imported into CUDA, filled by CUDA, synchronized
 through an external timeline semaphore, registered through
 `dvz_drp2_runtime_register_external_buffer()`, drawn by the vklite runtime, and checked by texture
-readback. The raw Python smoke mirrors this route for CuPy through the internal
+readback. The Python binding smoke mirrors this route for CuPy through the internal
 `tools/bindings/cupy_interop_runtime.py` owner: it imports the Vulkan-owned buffer via the CUDA
 bridge, wraps it as `cupy.cuda.UnownedMemory`, writes positions inside `cuda_write()`, waits on the
 CUDA-ready timeline value from Vulkan, renders through DRP2, and verifies a readback pixel. This

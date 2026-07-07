@@ -4,16 +4,16 @@ Create Datoviz scenes from Python and upload NumPy arrays to visual attributes.
 
 ## Task Workflow
 
-Use the main Python package when you want the current v0.4 scene workflow from Python. It follows
-the same `dvz_*` function names as the C examples and accepts NumPy arrays for supported
-visual-data uploads.
+Use the main Python package when you want the current v0.4 scene workflow from Python. Datoviz has
+one generated `ctypes` binding. The top-level package follows the same `dvz_*` function names as the
+C examples and accepts NumPy arrays for supported visual-data uploads.
 
 Choose the import surface first:
 
 | Need | Import |
 | --- | --- |
-| Scene and visual calls with NumPy array adaptation. | `import datoviz as dvz` |
-| Exact generated `ctypes` signatures, pointers, and counts. | `import datoviz.raw as raw` |
+| Normal binding calls with NumPy array adaptation. | `import datoviz as dvz` |
+| The same binding with explicit pointers, counts, bytes, or callbacks. | `import datoviz.raw as raw` |
 | High-level object-oriented plotting. | Use the external GSP/VisPy2 layer when available. |
 
 ## Minimal Call Sequence
@@ -46,8 +46,8 @@ Adapt the C examples one call at a time. Keep NumPy array dtype and shape matche
 attribute contract.
 
 The top-level `datoviz` module accepts NumPy arrays for the calls covered by the binding policy. Use
-`datoviz.raw` only when you need the exact generated `ctypes` layer. Calls that are not covered by
-the policy may still expect explicit pointer/count arguments, so consult the C and raw ctypes
+`datoviz.raw` only when you need the exact C-shaped call form. Calls that are not covered by
+the policy may still expect explicit pointer/count arguments, so consult the C and Python binding
 references when needed.
 
 Destroy owner handles with the same C lifecycle calls:
@@ -71,8 +71,9 @@ Use NumPy arrays with explicit dtype, shape, and layout. For dense visual attrib
 dimension is the item count. Common examples include `float32` positions shaped `(n, 3)`, `uint8`
 RGBA colors shaped `(n, 4)`, and `float32` diameters shaped `(n,)`.
 
-The facade may copy non-contiguous arrays during the call. For predictable performance and raw
-pointer compatibility, pass C-contiguous arrays yourself with `np.asarray(data, dtype=..., order="C")`.
+The top-level package may copy non-contiguous arrays during the call. For predictable performance
+and exact pointer compatibility, pass C-contiguous arrays yourself with
+`np.asarray(data, dtype=..., order="C")`.
 
 When porting a C example:
 
@@ -85,7 +86,7 @@ When porting a C example:
 ## Common Mistakes
 
 - Passing default `float64` NumPy arrays where the C API expects `float32`.
-- Passing non-contiguous arrays to raw pointer calls.
+- Passing non-contiguous arrays to exact pointer calls.
 - Expecting `datoviz` to provide high-level plotting functions such as `scatter()` or `imshow()`.
 - Importing generated implementation modules such as `datoviz._ctypes` directly.
 - Treating Python object lifetime as a substitute for `dvz_app_destroy()` and
@@ -94,14 +95,14 @@ When porting a C example:
 
 ## See Also
 
-- [Python with NumPy arrays](../reference/python-direct-engine.md)
-- [Use Python raw ctypes](use-raw-ctypes.md)
+- [Python binding with NumPy arrays](../reference/python-direct-engine.md)
+- [Use the exact Python binding call form](use-raw-ctypes.md)
 - [Use from C or C++](c-integration.md)
 - [Choose a visual family](choose-a-visual-family.md)
-- [Python raw ctypes reference](../reference/ctypes.md)
+- [Python binding exact call form](../reference/ctypes.md)
 
 ??? example "Related examples"
 
     - Start page: [Quickstart](../start/quickstart.md)
-    - Reference: [Python raw ctypes](../reference/ctypes.md)
+    - Reference: [Python binding exact call form](../reference/ctypes.md)
     - [Scatter Plot](../examples/gallery/start/start_scatter.md) - Source: `examples/c/start/scatter.c`

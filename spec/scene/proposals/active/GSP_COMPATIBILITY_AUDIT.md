@@ -6,7 +6,7 @@ Status: active audit for `gsp-compat-prep`.
 ## Executive Summary
 
 Datoviz v0.4 is close to a viable GSP backend target. The scene/app path, retained visual model,
-FramePlan artifact emission, raw ctypes generation, offscreen capture, dense visual updates,
+FramePlan artifact emission, Python binding generation, offscreen capture, dense visual updates,
 sampled fields, scene buffers, and unified panel query API already match the GSP direction.
 
 The initial Datoviz-side blockers before an RC1-compatible GSP adapter were narrow and API-shaped:
@@ -14,7 +14,7 @@ The initial Datoviz-side blockers before an RC1-compatible GSP adapter were narr
 1. expose a public live runtime/view capability query;
 2. expose or explicitly document stable object identity and protocol-id mapping rules;
 3. harden/document query support per visual family and query target;
-4. extend raw ctypes policy/smokes to include the GSP-critical scene/query/capability path;
+4. extend Python binding policy/smokes to include the GSP-critical scene/query/capability path;
 5. publish a visual-family mapping table usable by adapter authors without private source reads.
 
 Most transform, resource, offscreen, and first-slice visual mapping needs are already satisfiable by
@@ -66,7 +66,7 @@ records can stay post-RC1 unless the first adapter needs them.
 | Query status vocabulary | `DvzQueryStatus` distinguishes hit, miss, outside, stale, unsupported, GPU, readback, decode failures | `include/datoviz/scene/enums.h` | Matches GSP readiness requirement. |
 | Broad GPU query implementation | point, pixel, marker, sphere, segment/path/stroke, primitive, mesh, image, labels, volume query files | `src/scene/query/`, `src/scene/visuals/*/query.c`, `src/scene/tests/query.c` | Several families are active; payload completeness varies. |
 | Offscreen raster capture | `dvz_view_offscreen()`, `dvz_view_render_once()`, `dvz_view_capture_png()` | `include/datoviz/app.h`, `src/app/app.c`, `examples/c/runtime/offscreen_capture.c` | PNG capture is sRGB RGBA8, matching current release policy. |
-| Raw ctypes generation | `datoviz.raw`, `tools/bindings/ctypes_smoke.py`, `tools/bindings/ctypes_render_smoke.py` | `spec/bindings/README.md`, `spec/bindings/ctypes.yml`, `testing/test_ctypes_raw_smoke.py` | Exact raw layer exists; GSP-specific smoke coverage should be added. |
+| Python binding generation | `datoviz`, `datoviz.raw`, `tools/bindings/ctypes_smoke.py`, `tools/bindings/ctypes_render_smoke.py` | `spec/bindings/README.md`, `spec/bindings/ctypes.yml`, `testing/test_ctypes_raw_smoke.py` | Top-level NumPy adaptation and exact `datoviz.raw` calls exist; GSP-specific smoke coverage should be added. |
 | WASM-friendly scene API policy | Opaque handles, POD descriptors/results, fixed-width ids/counts, backend-neutral scene headers | `spec/scene/api/WASM_PORTABILITY.md`, public scene headers | GSP work should follow the existing policy. |
 
 
@@ -93,7 +93,7 @@ longer open RC1 blockers.
 |---|---|---|
 | High-level Python object model | Maintain GSP scene/session/layer objects and translate to Datoviz public C calls | Public handles and stable ids |
 | Protocol ID registry | Keep GSP ids in adapter maps unless Datoviz adds explicit user ids | Public Datoviz object id getters or stable mapping hooks |
-| NumPy dtype/shape validation | Validate arrays before calling raw ctypes or Datoviz top-level facade | `dvz_visual_set_data*`, sampled fields, scene buffers |
+| NumPy dtype/shape validation | Validate arrays before calling Datoviz top-level NumPy adaptation or `datoviz.raw` | `dvz_visual_set_data*`, sampled fields, scene buffers |
 | Nonlinear transforms/projections | Apply unsupported nonlinear or projection transforms in GSP/producer code before upload for v0.4; ordinary 2D panel mapping should upload DATA coordinates and attach with `DVZ_VISUAL_COORD_DATA` | Datoviz DATA/VIEW/PANEL coordinates and matrix transforms |
 | Vector export | Route to Matplotlib/reference backend for early GSP | Datoviz raster capture only |
 | JSON/protocol serialization | Keep in GSP; local Datoviz path should use pointers/buffers | Public C ABI |
@@ -129,7 +129,7 @@ longer open RC1 blockers.
 
 ## Recommended GSP-Side Task List
 
-1. Build the first `gsp-backend-datoviz` adapter around public C/raw ctypes only.
+1. Build the first `gsp-backend-datoviz` adapter around public C and the generated Python binding only.
 2. Maintain a protocol-id to Datoviz-handle/id registry in the adapter until Datoviz resolves user-id policy.
 3. Implement point and image layer mapping first; defer mesh, volume, and text until the Datoviz visual-family table marks the exact payloads supported.
 4. Keep NumPy/memoryview upload paths direct through `dvz_visual_set_data*`, `dvz_sampled_field_*`, and `dvz_scene_buffer_set_data()`.
@@ -156,8 +156,8 @@ Specs:
 | `spec/drp2/CAPABILITIES.md` | backend-neutral runtime snapshot requirements |
 | `spec/scene/api/API_IMPLEMENTATION_READINESS.md` | current implementation readiness summary |
 | `spec/scene/api/WASM_PORTABILITY.md` | public API portability constraints |
-| `spec/bindings/README.md` | raw ctypes architecture |
-| `spec/bindings/ctypes.yml` | raw ctypes policy and smoke scope |
+| `spec/bindings/README.md` | Python binding architecture |
+| `spec/bindings/ctypes.yml` | Python binding policy and smoke scope |
 
 Public headers:
 
@@ -188,9 +188,9 @@ Source and tests:
 | `src/scene/core/panel_view.c` | panel domain/view extent resolution |
 | `src/scene/tests/query.c` | query status/profile/family coverage, point-over-image-style dual query coverage |
 | `src/scene/tests/app.c` | offscreen render/query/capture behavior |
-| `testing/test_ctypes_raw_smoke.py` | raw ctypes smoke entry points |
-| `tools/bindings/ctypes_smoke.py` | generated raw import/layout smoke scope |
-| `tools/bindings/ctypes_render_smoke.py` | offscreen raw ctypes smoke path |
+| `testing/test_ctypes_raw_smoke.py` | Python binding smoke entry points |
+| `tools/bindings/ctypes_smoke.py` | generated binding import/layout smoke scope |
+| `tools/bindings/ctypes_render_smoke.py` | offscreen Python binding smoke path |
 | `examples/c/runtime/offscreen_capture.c` | public offscreen render/capture example |
 | `examples/c/features/update_visual_data.c` | public partial visual update example |
 | `examples/c/visuals/*.c` | per-family public usage examples |

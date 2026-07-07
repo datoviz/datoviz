@@ -1,14 +1,14 @@
-# Use raw ctypes from Python
+# Use the Exact Python Binding Call Form
 
-Use `datoviz.raw` when Python code needs to call the exported C API almost exactly as C would. This
-is an advanced integration path. For ordinary Python scene code with NumPy array adaptation, use
-`import datoviz as dvz` instead.
+Use `datoviz.raw` when Python code needs to call the generated `ctypes` binding almost exactly as C
+would. This is an advanced integration path for the same Python binding. For ordinary scene code
+with NumPy array adaptation, use `import datoviz as dvz` instead.
 
 ## Task Workflow
 
-Use raw ctypes when you need exact generated signatures, explicit pointer/count arguments, callback
-types, or binding diagnostics. Load `datoviz.raw`, pass C-compatible storage, and follow the same
-destroy order as the C API.
+Use the exact call form when you need generated signatures, explicit pointer/count arguments,
+callback types, or binding diagnostics. Load `datoviz.raw`, pass C-compatible storage, and follow
+the same destroy order as the C API.
 
 For ordinary visual data uploads from NumPy, prefer the main `datoviz` package:
 
@@ -16,7 +16,7 @@ For ordinary visual data uploads from NumPy, prefer the main `datoviz` package:
 import datoviz as dvz
 ```
 
-Use raw only when the exact C call shape matters:
+Use `datoviz.raw` only when the exact C call shape matters:
 
 ```python
 import datoviz.raw as raw
@@ -80,18 +80,18 @@ raw.dvz_scene_destroy(scene)
 
 ## Important Details
 
-Python raw `ctypes` is useful for integration checks, low-level debugging, and cases where the exact
-C call shape matters. It uses the same `dvz_*` function names and explicit destroy calls as the C
-API.
+The exact `ctypes` call form is useful for integration checks, low-level debugging, and cases where
+the exact C call shape matters. It uses the same `dvz_*` function names and explicit destroy calls
+as the C API.
 
-The raw binding does not infer NumPy dtype, shape, contiguity, string encoding, byte sizes, or item
+`datoviz.raw` does not infer NumPy dtype, shape, contiguity, string encoding, byte sizes, or item
 counts. Convert those values before the call.
 
 Keep Python arrays, ctypes arrays, callback objects, and any other storage passed by pointer alive
 for the whole C lifetime documented by the function. Many visual data uploads copy before returning,
 but borrowed-storage APIs and callbacks may require a longer lifetime.
 
-Destroy owner handles explicitly. A raw Python handle is not a Python object with semantic cleanup:
+Destroy owner handles explicitly. A Python binding handle is not a Python object with semantic cleanup:
 
 ```python
 app = raw.dvz_app(scene)
@@ -117,11 +117,11 @@ detail behind the public `datoviz.raw` module.
 
 - [Use from Python](use-python.md)
 - [Use from C or C++](c-integration.md)
-- [Python raw ctypes reference](../reference/ctypes.md)
+- [Python binding exact call form](../reference/ctypes.md)
 - [Diagnose build and platform issues](diagnose-platform.md)
 
 ??? example "Related examples"
 
-    - Reference: [Python raw ctypes](../reference/ctypes.md)
+    - Reference: [Python binding exact call form](../reference/ctypes.md)
     - Start page: [Quickstart](../start/quickstart.md)
     - Source: `examples/c/start/scatter.c`

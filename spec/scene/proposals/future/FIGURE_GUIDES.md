@@ -31,7 +31,7 @@ This proposal is deliberately future-scoped. It should not block Datoviz v0.4 fe
 Figure-level guides are **not required for v0.4**.
 
 The v0.4 release is already near feature freeze and should prioritize WebGPU/WASM scope, retained
-textured mesh, raw ctypes bindings, visible parity audit, API/status cleanup, and release example
+textured mesh, Python binding, visible parity audit, API/status cleanup, and release example
 proof. Existing v0.4 linked-panel examples may use panel-local synchronized bands or lines to show
 shared domains, but they should not introduce a new public figure-guide API.
 

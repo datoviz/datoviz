@@ -1,10 +1,10 @@
-# C Example To Python Facade Generation
+# C Example To Python Binding Generation
 
 Status: proposed v0.4 documentation and example-generation direction.
 
 This note records the intended path for generating Python examples from the canonical C examples.
-It sits beside the raw `ctypes` and array-aware facade specs because the generated Python examples
-depend on both layers: exact C symbol metadata and policy-declared NumPy argument adaptation.
+It sits beside the binding architecture and NumPy-adaptation specs because generated Python examples
+need both exact C symbol metadata and policy-declared NumPy argument adaptation.
 
 
 ## Goal
@@ -18,18 +18,18 @@ The preferred documentation shape is:
 C | Python
 ```
 
-where `Python` means the top-level array-aware facade:
+where `Python` means the top-level NumPy-adapted binding call form:
 
 ```python
 import datoviz as dvz
 ```
 
-The facade is implemented over the generated raw `ctypes` binding, so generated Python examples
-still exercise the same low-level C ABI path while avoiding raw pointer/count boilerplate in
+The top-level package is implemented over the generated `ctypes` binding, so generated Python
+examples still exercise the same low-level C ABI path while avoiding pointer/count boilerplate in
 user-facing documentation.
 
 Gallery and example pages should expose only these two public language tabs: `C` and `Python`.
-Raw `ctypes` snippets may appear in binding internals, ABI validation, debugging, or advanced FFI
+`datoviz.raw` snippets may appear in binding internals, ABI validation, debugging, or advanced FFI
 reference pages, but they are not a separate gallery/example path.
 
 
@@ -40,7 +40,7 @@ The source of truth should be:
 ```text
 examples/c/<lane>/<name>.c          canonical runnable C example
 examples/c/<lane>/<name>.dvzpy.yml  optional conversion hints
-generated/examples/python/<name>.py generated Python facade example
+generated/examples/python/<name>.py generated Python binding example
 ```
 
 The generated Python file should be treated as build or documentation output. It should not carry
@@ -59,15 +59,15 @@ The example generator should consume three inputs:
 2. `build/bindings/datoviz_api.json` for function, enum, record, and typedef facts;
 3. binding and example policy from `spec/bindings/ctypes.yml` and optional `.dvzpy.yml` sidecars.
 
-The generated Python should preserve `dvz_*` names and rely on the array-aware facade for declared
+The generated Python should preserve `dvz_*` names and rely on top-level NumPy adaptation for declared
 string, pointer/count, and pointer/byte-size adaptation.
 
 The generator should fail with a specific diagnostic when it cannot translate a construct safely.
 It should not silently invent pointer ownership, array shape, callback lifetime, or vectorization
 semantics.
 
-The generator should treat the array-aware facade as the only user-facing Python target. It may use
-raw binding metadata and raw binding validation internally, but generated example code should import
+The generator should treat the top-level package as the only user-facing Python target. It may use
+binding metadata and exact-call validation internally, but generated example code should import
 `datoviz as dvz` unless the output is explicitly for a binding-internals page.
 
 
@@ -175,7 +175,7 @@ Recommended workflow:
 1. write or update the canonical C example;
 2. run the example Python generator;
 3. if generation fails, add the smallest useful `.dvzpy.yml` hint;
-4. regenerate the Python facade example;
+4. regenerate the Python binding example;
 5. validate the C example and generated Python example through their narrow smoke commands.
 
 Agents should not paste full Python examples into C comments. If co-located hints are ever needed,
@@ -192,13 +192,13 @@ C | Python
 ```
 
 For gallery and example pages, these are the only allowed public language tabs. The `Python` tab is
-the generated array-aware facade example and should import:
+the generated NumPy-adapted binding example and should import:
 
 ```python
 import datoviz as dvz
 ```
 
-Raw `ctypes` code is an implementation layer below that facade. It should not appear as a third
+`datoviz.raw` is the exact call form for the same generated binding. It should not appear as a third
 gallery/example tab. Low-level binding documentation may still show `datoviz.raw` snippets when the
 page is specifically about ABI validation, debugging, or advanced FFI usage.
 
@@ -213,8 +213,8 @@ The first implementation slice should validate:
 
 1. sidecar schema parsing;
 2. generated Python imports through `import datoviz as dvz`;
-3. array dtype, shape, contiguity, and lifetime behavior through the array facade;
-4. expansion of `DvzVisualDataUpdate` arrays into facade calls or a policy-backed wrapper;
+3. array dtype, shape, contiguity, and lifetime behavior through top-level NumPy adaptation;
+4. expansion of `DvzVisualDataUpdate` arrays into top-level calls or a policy-backed wrapper;
 5. faithful Python-loop fallback for unsupported vectorization;
 6. docs-tab generation from the C and generated Python outputs;
 7. per-example status reporting: `generated`, `generated-with-hints`, `manual`, or `unsupported`.

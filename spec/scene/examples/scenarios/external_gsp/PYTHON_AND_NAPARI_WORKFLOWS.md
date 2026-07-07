@@ -17,7 +17,7 @@ layers.
 2. renderer and visual fixtures;
 3. deterministic screenshot/readback examples;
 4. DRP2, DVZR, WebGPU, and hosted-runtime fixtures;
-5. minimal raw `ctypes` smoke examples.
+5. minimal Python binding smoke examples.
 
 
 ## Own Above Datoviz

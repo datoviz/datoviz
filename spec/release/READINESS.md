@@ -15,7 +15,7 @@ before feature freeze:
 1. native scene/app path covers the declared visual and interaction subset;
 2. retained textured mesh has deterministic example or fixture proof;
 3. WebGPU/WASM has an honest experimental subset with unsupported-feature diagnostics;
-4. raw `ctypes` generation and smoke tests work for the intended public C surface;
+4. Python binding generation and smoke tests work for the intended public C surface;
 5. v0.3 visible capability gaps are fixed, explicitly deferred, or external/GSP-owned;
 6. core examples compile and exercise the release feature set.
 
@@ -86,7 +86,7 @@ Documentation and examples:
 1. feature/status table published;
 2. known issues and unsupported variants published;
 3. C API reference generated or outlined;
-4. raw `ctypes` and WebGPU/WASM scope documented;
+4. Python binding and WebGPU/WASM scope documented;
 5. every public visual or feature has a minimal example or explicit status;
 6. gallery media is generated from current code;
 7. data licenses, dependencies, and attribution are listed.

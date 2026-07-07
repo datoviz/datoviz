@@ -1,22 +1,23 @@
-# Raw ctypes Bindings
+# Python Binding Architecture
 
-This document is the source of truth for the Datoviz v0.4 raw Python binding
-architecture. The binding is a low-level FFI surface over `libdatoviz`, not a Pythonic
-plotting API and not a compatibility layer for the v0.3 Python package.
+This document is the source of truth for the Datoviz v0.4 Python binding architecture. Datoviz has
+one generated `ctypes` binding over `libdatoviz`. The top-level `datoviz` package is the normal
+call form and adds policy-declared NumPy adaptation for selected array arguments. `datoviz.raw` is
+the exact C-shaped call form of the same binding.
 
 High-level Python plotting, object-oriented convenience APIs, and scientific workflow sugar belong
-above Datoviz, currently in the GSP/VisPy2 layer. Datoviz v0.4 owns the C engine and a generated raw
+above Datoviz, currently in the GSP/VisPy2 layer. Datoviz v0.4 owns the C engine and the generated
 binding that honestly exposes that C engine to Python.
 
 This boundary is also an AI-facing contract: coding agents should not infer a Python plotting API
-from the existence of raw bindings. Generated Python examples must use `datoviz.raw` for low-level
-FFI or route high-level plotting requests to GSP/VisPy2.
+from the existence of the binding. Generated Python examples should use `import datoviz as dvz`
+unless they are specifically demonstrating exact pointer/count FFI through `datoviz.raw`.
 
 
 ## Goals
 
 1. Generate a pure Python `ctypes` binding from the v0.4 public C API.
-2. Keep the raw binding close enough to C that C examples, headers, docs, and Python calls map
+2. Keep the binding close enough to C that C examples, headers, docs, and Python calls map
    directly to the same symbols.
 3. Make the extracted C API metadata inspectable, diffable, and reusable by tests, docs, and future
    generators.
@@ -28,7 +29,7 @@ FFI or route high-level plotting requests to GSP/VisPy2.
 ## Non-Goals
 
 1. Do not recreate the v0.3 object-oriented Python plotting API inside Datoviz.
-2. Do not optimize the raw layer for short Python names at the cost of C traceability.
+2. Do not optimize the Python surface for short names at the cost of C traceability.
 3. Do not bake NumPy convenience conversion into every generated pointer signature.
 4. Do not make the generated Python file the only source of API metadata.
 
@@ -73,8 +74,8 @@ tools/bindings/
 spec/bindings/
   README.md               # this binding architecture and policy
   ctypes.yml              # machine-readable binding policy, later
-  ARRAY_FACADE.md         # array-aware top-level Python facade plan
-  EXAMPLE_PYTHON_GENERATION.md  # C example -> Python facade documentation plan
+  ARRAY_FACADE.md         # top-level NumPy-adaptation plan
+  EXAMPLE_PYTHON_GENERATION.md  # C example -> Python binding documentation plan
   API_JSON_SCHEMA.md      # JSON schema notes, later
 
 build/bindings/
@@ -84,9 +85,9 @@ build/bindings/
 
 datoviz/
   __init__.py             # documented array-aware package entry point
-  raw.py                  # explicit public raw API module
+  raw.py                  # exact pointer/count call form
   _ctypes.py              # generated implementation, do not edit by hand
-  _array_facade.py        # generated array-aware facade
+  _array_facade.py        # generated NumPy adaptation
 ```
 
 The old v0.3-style names `parse_headers.py`, `build_ctypes.py`, and `headers.json` are not part of
@@ -107,7 +108,7 @@ just ctypes-check    # validate generated ctypes against C ABI facts
 just ctypes-smoke    # import/load/create-destroy smoke
 just ctypes-render-smoke    # offscreen render/capture smoke, skips without runtime support
 just ctypes-package-smoke   # editable and wheel install smoke
-just bindings        # run the full raw-binding workflow
+just bindings        # run the full binding workflow
 ```
 
 
@@ -144,10 +145,10 @@ insufficient.
 as whether a pointer becomes `ctypes.c_void_p`, `ctypes.c_char_p`, `ctypes.POINTER(T)`, or a helper
 wrapper.
 
-The generated raw `ctypes` surface tracks the exported shared-library ABI, not every declaration
+The generated exact `ctypes` surface tracks the exported shared-library ABI, not every declaration
 that appears in installed headers. A declaration without `DVZ_EXPORT` may be public source-level
-documentation or an inline/support declaration, but it is not a raw-binding function until it is an
-exported ABI symbol.
+documentation or an inline/support declaration, but it is not a callable binding function until it
+is an exported ABI symbol.
 
 Binding-specific policy belongs in `spec/bindings/ctypes.yml` or an equivalent source-controlled
 manifest. That manifest can describe decisions that are not safely inferable from C syntax:
@@ -168,16 +169,22 @@ The policy layer should mark the ownership rule and the emitter should choose a 
 
 ## Python Import Surface
 
-The documented import style for the raw v0.4 binding is:
+The documented normal Python import is:
 
 ```python
-import datoviz.raw as dvz
+import datoviz as dvz
 
 scene = dvz.dvz_scene()
 dvz.dvz_scene_destroy(scene)
 ```
 
-`datoviz/raw.py` is the explicit public raw module:
+Use `datoviz.raw` only for the exact pointer/count call form:
+
+```python
+import datoviz.raw as raw
+```
+
+`datoviz/raw.py` is the explicit public exact-call module:
 
 ```python
 from ._ctypes import *  # noqa
@@ -186,22 +193,21 @@ from ._ctypes import *  # noqa
 `datoviz/_ctypes.py` is generated and private. It should not be documented as the preferred import
 path and should not be edited by hand.
 
-The raw-binding roles are:
+The binding roles are:
 
-1. `datoviz.raw`: stable explicit raw binding module;
-2. `datoviz.__init__`: documented package entry point;
+1. `datoviz.__init__`: documented package entry point with policy-declared NumPy adaptation;
+2. `datoviz.raw`: exact C-shaped call form for explicit pointers, counts, bytes, and callbacks;
 3. `datoviz._ctypes`: generated implementation detail.
 
-The top-level package should not promise that `import datoviz as dvz` is the exact raw binding.
-Instead, the intended top-level direction is an array-aware facade that preserves `dvz_*` names while
-accepting NumPy arrays for policy-declared data arguments. See
+The top-level package should not promise Pythonic plotting objects or prefixless aliases. It
+preserves `dvz_*` names while accepting NumPy arrays for policy-declared data arguments. See
 [ARRAY_FACADE.md](ARRAY_FACADE.md).
 
 
 ## Naming Policy
 
-The raw binding preserves exact C symbol names. Do not remove the `dvz_` prefix in the generated raw
-API.
+The Python binding preserves exact C symbol names. Do not remove the `dvz_` prefix in either the
+top-level call form or `datoviz.raw`.
 
 This is canonical:
 
@@ -210,7 +216,7 @@ dvz.dvz_scene()
 dvz.dvz_scene_destroy(scene)
 ```
 
-This is not part of the raw-binding contract:
+This is not part of the binding contract:
 
 ```python
 dvz.scene()
@@ -225,13 +231,13 @@ Keeping exact names is preferred because:
 4. Many C names only make sense with their namespace intact, such as `dvz_grid_panel`,
    `dvz_panel_axis`, and `dvz_axis_style`.
 
-Prefixless aliases are not part of either the raw binding or the proposed array-aware facade. They
-should not drive generation policy.
+Prefixless aliases are not part of either the top-level call form or `datoviz.raw`. They should not
+drive generation policy.
 
 
 ## Type Mapping Policy
 
-The first generated raw layer should be conservative:
+The exact call form should be conservative:
 
 1. opaque `Dvz*` handles become empty `ctypes.Structure` classes passed by pointer;
 2. concrete structs and unions become `ctypes.Structure` or `ctypes.Union` with verified layout;
@@ -242,23 +248,22 @@ The first generated raw layer should be conservative:
 6. owned `char*` returns require explicit ownership policy and a matching destroy function;
 7. callbacks require generated `ctypes.CFUNCTYPE` definitions and documented lifetime rules.
 
-When a canonical C API returns a public record by value and the raw binding cannot safely express
+When a canonical C API returns a public record by value and `datoviz.raw` cannot safely express
 that layout yet, prefer a `dvz_ffi_*` out-pointer helper over changing the canonical `dvz_*` API.
 The generated C reference should distinguish "emitted", "skipped by policy", and "available through
 `dvz_ffi_*`" states.
 
 For RC1, do not add `dvz_ffi_*` wrappers for every skipped by-value return. Add wrappers only when a
-raw `ctypes`, WASM, or release example needs that exact initializer. The current geometry and
+`datoviz.raw`, WASM, or release example needs that exact initializer. The current geometry and
 reference-grid wrappers cover the first release-facing set.
 
-NumPy support should be added as thin helpers around the raw layer, not as the default treatment for
-every pointer argument. The raw layer should remain faithful and predictable before becoming
-ergonomic.
+NumPy support belongs only where binding policy declares a pointer/count or pointer/byte-size
+relationship. It should not become the default treatment for every pointer argument.
 
 
 ## Validation
 
-Raw binding work is not complete until the generated binding is checked against the C build.
+Binding work is not complete until the generated binding is checked against the C build.
 
 Required validation should include:
 
@@ -276,19 +281,19 @@ The current generator emits `_fields_` only for layout-safe records it can valid
 Records that depend on cglm vector/matrix alignment are intentionally kept opaque until the raw
 binding has an explicit aligned-structure policy.
 
-For RC1, keep cglm-aligned records opaque in raw `ctypes`. Use pointer-based APIs or targeted
+For RC1, keep cglm-aligned records opaque in `datoviz.raw`. Use pointer-based APIs or targeted
 `dvz_ffi_*` helpers instead of attempting a broad aligned-record mapping late in the release cycle.
 
 
 ## Examples
 
-Keep raw Python examples small and close to the generated C surface:
+Keep `datoviz.raw` examples small and close to the generated C surface:
 
 1. `examples/python/raw/lifecycle.py` proves import, timer calls, and scene create/destroy.
-2. `examples/python/raw/offscreen_point.py` builds a tiny point scene with raw `ctypes` arrays,
+2. `examples/python/raw/offscreen_point.py` builds a tiny point scene with explicit `ctypes` arrays,
    renders offscreen when a runtime is available, and verifies PNG capture.
 
-These examples are low-level integration proof, not a Pythonic plotting API.
+These examples are low-level integration proof of the exact call form, not a Pythonic plotting API.
 
 
 ## Migration From v0.3 Tooling
@@ -307,6 +312,6 @@ For v0.4, keep the two-stage architecture but use the active `tools/bindings/` i
 4. move generated JSON under `build/bindings/`;
 5. keep source-controlled policy under `spec/bindings/`;
 6. keep `datoviz/_ctypes.py` as generated output;
-7. add `datoviz/raw.py` as the explicit public raw module;
-8. make `import datoviz.raw as dvz` the documented raw import;
-9. preserve exact `dvz_*`, `Dvz*`, and `DVZ_*` names in the raw surface.
+7. add `datoviz/raw.py` as the explicit exact-call module;
+8. make `import datoviz as dvz` the documented normal import;
+9. preserve exact `dvz_*`, `Dvz*`, and `DVZ_*` names in the Python surface.

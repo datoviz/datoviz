@@ -31,7 +31,7 @@ Pre-RC1 execution order:
 6. Keep the v0.3 visible parity audit and public API/status disposition table reconciled before
    RC1: specifically re-check `docs/reference/feature-status.md`,
    `docs/reference/project-status.md`, `docs/reference/v03-visible-parity.md`, generated C API
-   docs, raw `ctypes` docs/policy, and the GSP/VisPy2 boundary language for contradictions.
+   docs, Python binding docs/policy, and the GSP/VisPy2 boundary language for contradictions.
 7. Polish the WebGPU/WASM story: supported live routes, experimental scope, diagnostics, and
    non-parity boundaries.
 8. Proofread the public docs, gallery pages, generated matrices, screenshots, and example metadata.
@@ -63,10 +63,10 @@ Blockers:
 | Compute+graphics experimental path | DRP2 `ResourceBarrier`, FramePlan scene compute lowering, WebGPU fixture parity, and the C `gpu_particle_smoke` showcase are active. CPU command-generation proof passed on 2026-06-04. Native Vulkan compute+graphics proof passed on 2026-06-17: `test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes`, `test_vklite_compute_1`, `test_technique_compute_graphics`, and `examples/c/showcases/gpu_particle_smoke.c --png` with artifact `build/release-evidence/gpu_particle_smoke.png`. | Keep the slice classified as experimental in the feature/status table: native proof exists, but this is a narrow scene-compute/DRP2 interop path, not a general compute framework. |
 | Qt/PyQt hosted path | Native Qt hosting and the optional `datoviz_qtbridge` provider are active. On 2026-06-18, `DVZ_CMAKE_ARGS="-DDVZ_ENABLE_QT_BRIDGE=ON" just build`, `./build/examples/qt/hosted_qt_smoke 120`, `./build/examples/qt/hosted_qt_widgets --smoke-ms 1000`, `DATOVIZ_QTBRIDGE_LIBRARY=build/qtbridge/libdatoviz_qtbridge.so uv run --isolated --with PyQt6 python -m datoviz.qt`, and the hosted PyQt smoke passed after updating the example to pass `DvzColor` to the raw background-color API. The isolated probe reported bridge Qt 6.11.1 and PyQt Qt 6.11.0; the system PyQt6 package in this shell lacks `QVulkanInstance` and is not a valid PyQt hosting proof. Public docs classify this as `supported, optional provider`. | Keep packaging/install diagnostics explicit for missing bridge, unsupported PyQt/PySide bindings, and Qt runtime mismatches; retain optional wheel checks with `--qt-probe optional`. |
 | v0.3 visible parity audit | Public table landed in `docs/reference/v03-visible-parity.md`, classifying visible v0.3-era capabilities as fixed, experimental, deferred, or external/GSP without preserving old APIs. | Keep it reconciled with feature/status docs, installed headers, generated C reference, and known gaps before RC1. |
-| Public API/status cleanup | Completed and merged to `v0.4-dev` by the July 2026 pre-RC campaign. The cleanup removed unused legacy/internal public APIs, collapsed transitional aliases, normalized naming and argument ordering, tightened ownership/constness, made stable app-facing names backend-neutral, classified DRP2/vklite protocol escape hatches as advanced/unstable, kept raw `ctypes` exact while fixing known ownership traps, and converted stable fallible mutators to `DvzResult` where appropriate. | Keep generated C reference, raw `ctypes` docs/policy, public status docs, and examples reconciled before RC1. |
+| Public API/status cleanup | Completed and merged to `v0.4-dev` by the July 2026 pre-RC campaign. The cleanup removed unused legacy/internal public APIs, collapsed transitional aliases, normalized naming and argument ordering, tightened ownership/constness, made stable app-facing names backend-neutral, classified DRP2/vklite protocol escape hatches as advanced/unstable, kept `datoviz.raw` exact while fixing known ownership traps, and converted stable fallible mutators to `DvzResult` where appropriate. | Keep generated C reference, Python binding docs/policy, public status docs, and examples reconciled before RC1. |
 | Release example proof | Partial for the full RC, but the 2026-06-09 `EXAMPLES_NOTES.md` ledger is closed: source/gallery polish, `showcases/surface_grid`, `features/bounds_overlay`, runtime/readability fixes, scenario-helper audit, comment metadata audit, and builtin-shapes parity audit are resolved with native smoke or explicit audit evidence. | Continue broader release proof outside `EXAMPLES_NOTES.md`: visible parity table, API disposition, and any additional focused native evidence where the environment supports Vulkan. |
 
-Closed first slices that should stay in validation: frame artifact scene emission, raw `ctypes`,
+Closed first slices that should stay in validation: frame artifact scene emission, Python binding,
 retained textured mesh, retained DATA-coordinate visual attachments, color management, text, 2D
 axes/ticks, colorbars, labels/readouts, scale bars, app/offscreen rendering, broad item/sample query
 paths, scene visual-boundary checks, WebGPU fixture runner, and WASM frame artifact packet scene
@@ -75,9 +75,9 @@ formats, or screenshot/readback encoding, use
 [`../../spec/scene/implementation/COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md`](../../spec/scene/implementation/COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md)
 as the color-management audit checklist.
 
-New Python binding direction: keep `datoviz.raw` as the exact generated `ctypes` layer, and make
-top-level `import datoviz as dvz` the planned array-aware facade that preserves `dvz_*` names while
-accepting NumPy arrays for policy-declared data arguments. Source of truth:
+Python binding direction: Datoviz has one generated `ctypes` binding. Use top-level
+`import datoviz as dvz` for the normal `dvz_*` call form with policy-declared NumPy adaptation; use
+`datoviz.raw` only for exact pointers, counts, bytes, callbacks, and ABI debugging. Source of truth:
 [../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md).
 
 GSP backend RC lane: the readiness checklist for making Datoviz a stable GSP/Matplotlib rendering
@@ -113,8 +113,8 @@ alpha-preserving PNG bytes can be deferred.
    repeated-frame, or churn bugs.
 6. **Qt/PyQt provider:** optional Qt bridge shared library, dynamic Python loader, binding
    diagnostics, and hosted PyQt smoke proof.
-7. **Docs inventory:** public header inventory, ownership notes, raw `ctypes` scope, array-aware
-   Python facade scope, WebGPU/WASM scope, known issues, and GSP/VisPy2 boundary.
+7. **Docs inventory:** public header inventory, ownership notes, Python binding scope,
+   `datoviz.raw` exact-call scope, WebGPU/WASM scope, known issues, and GSP/VisPy2 boundary.
 
 Current runtime/WebGPU guardrail: keep texture-backed scene visuals on typed visual/draw-contract
 DRP2 streams. Do not restore legacy texture-render shortcuts; WebGPU parity work should validate

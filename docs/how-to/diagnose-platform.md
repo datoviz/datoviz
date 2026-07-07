@@ -117,7 +117,7 @@ For an installed package or local Python environment:
 python -c "import datoviz as dvz; print('datoviz import ok')"
 ```
 
-If raw bindings are involved, also check the raw layer:
+If exact Python binding calls are involved, also check `datoviz.raw`:
 
 ```sh
 python -c "import datoviz.raw as raw; print('raw import ok')"
@@ -195,7 +195,7 @@ the package was installed.
 | Symptom | Likely layer | First action |
 | --- | --- | --- |
 | `just build` fails. | Build configuration or dependency. | Read the first CMake/compiler error and detected `DVZ_*` options. |
-| Python import fails. | Package install, shared library load, or ABI. | Check package path, architecture, and raw import. |
+| Python import fails. | Package install, shared library load, or ABI. | Check package path, architecture, and `datoviz.raw` import. |
 | Native example starts but frame is blank. | Scene/rendering state. | Use [Debug rendering output](debug-rendering.md). |
 | Native visible window fails, offscreen works. | Window system or presentation. | Check GLFW/window backend and resize/presentation diagnostics. |
 | Offscreen fails too. | Graphics runtime or command execution. | Check Vulkan runtime/driver and DRP2/runtime diagnostics. |

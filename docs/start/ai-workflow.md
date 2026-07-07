@@ -22,8 +22,8 @@ Start by finding the closest working example on datoviz.org.
 Then check the API reference before using each Datoviz function.
 Make sure every function exists and that the signature, enum names, visual attribute names, and
 array shapes/counts match the current documentation.
-If a Python helper does not support the needed array upload, use the documented raw `ctypes` path or
-switch to C and explain why.
+If a Python call does not support the needed array upload, use `datoviz.raw` with explicit
+pointers/counts or switch to C and explain why.
 Return a complete runnable example, then list the Datoviz pages and examples you used.
 ```
 
@@ -65,8 +65,8 @@ import datoviz as dvz
 
 Datoviz v0.4 starts from scenes, visuals, and explicit data arrays. For high-level plotting helpers
 such as `scatter()` or `imshow()`, use GSP/VisPy2 when that layer is available. That layer is still
-work in progress; in the meantime, use the Datoviz `ctypes` API directly through the documented
-Python entry points.
+work in progress; in the meantime, use the generated Datoviz Python binding directly through the
+documented Python entry points.
 
 
 ## A Useful Follow-Up
