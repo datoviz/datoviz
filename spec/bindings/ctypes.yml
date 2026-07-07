@@ -337,6 +337,11 @@ skipped_functions:
         Device configuration contains Vulkan feature-chain state and is advanced runtime setup.
         Do not add a Python wrapper unless a concrete supported Python device-configuration
         workflow requires one.
+    dvz_drp2_render_pass_desc:
+      disposition: intentional-skip
+      reason: >
+        Advanced DRP2 descriptor default returns a record by value. Raw Python can construct the
+        generated DvzDrp2RenderPassDesc layout directly when this low-level protocol path is needed.
     dvz_field_geometry:
       disposition: ffi-helper
       helper: dvz_ffi_field_geometry
@@ -429,6 +434,7 @@ skipped_functions:
     - dvz_cmd_rendering_default
     - dvz_depth_cue_desc
     - dvz_device_config
+    - dvz_drp2_render_pass_desc
     - dvz_field_geometry
     - dvz_gpu_ctx_config
     - dvz_material_desc
