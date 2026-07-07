@@ -28,12 +28,19 @@ A colored cube mesh and XZ reference grid make rotation easy to see, and the con
     --8<-- "examples/c/features/controller_arcball.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/controller_arcball.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_controller_arcball`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/controller_arcball.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_arcball.c)
+    - Python source: [`examples/python/gallery/features/controller_arcball.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/controller_arcball.py)
     - Browser support: Planned
     - Browser capability tags: `controller`, `arcball`, `mesh`
     - Validation: `smoke+interaction+screenshot`

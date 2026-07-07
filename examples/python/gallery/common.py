@@ -135,6 +135,58 @@ def bind_panzoom(view, scene, panel, dims):
     return controller, panzoom
 
 
+def manual_camera(panel):
+    camera = dvz.dvz_camera_desc()
+    camera.view.eye[:] = (1.55, -2.00, 1.45)
+    camera.view.target[:] = (0.0, 0.0, 0.0)
+    camera.view.up[:] = (0.0, 0.0, 1.0)
+    camera.projection.fov_y = 0.66
+    camera.projection.near_clip = 0.05
+    camera.projection.far_clip = 100.0
+    if dvz.dvz_panel_set_camera_desc(panel, ctypes.byref(camera)) != 0:
+        raise RuntimeError("dvz_panel_set_camera_desc() failed")
+    return camera
+
+
+def add_cube_mesh(scene, panel, size: float = 1.25):
+    h = 0.5 * size
+    positions = np.array(
+        [
+            [-h, -h, -h],
+            [+h, -h, -h],
+            [+h, +h, -h],
+            [-h, +h, -h],
+            [-h, -h, +h],
+            [+h, -h, +h],
+            [+h, +h, +h],
+            [-h, +h, +h],
+        ],
+        dtype=np.float32,
+    )
+    colors = color_array(CYAN, GREEN, YELLOW, RED, BLUE, CYAN, GREEN, WHITE)
+    indices = np.array(
+        [
+            0, 1, 2, 2, 3, 0,
+            4, 6, 5, 6, 4, 7,
+            0, 4, 5, 5, 1, 0,
+            1, 5, 6, 6, 2, 1,
+            2, 6, 7, 7, 3, 2,
+            3, 7, 4, 4, 0, 3,
+        ],
+        dtype=np.uint32,
+    )
+
+    mesh = dvz.dvz_mesh(scene, 0)
+    if not mesh:
+        raise RuntimeError("dvz_mesh() failed")
+    if dvz.dvz_visual_set_data_many(mesh, {"position": positions, "color": colors}) != 0:
+        raise RuntimeError("dvz_visual_set_data_many() failed")
+    if dvz.dvz_visual_set_index_data(mesh, indices) != 0:
+        raise RuntimeError("dvz_visual_set_index_data() failed")
+    add_visual(panel, mesh)
+    return mesh
+
+
 def set_filled_point_style(visual):
     style = dvz.dvz_point_style_desc()
     style.aspect = dvz.DVZ_SHAPE_ASPECT_FILLED

@@ -28,12 +28,19 @@ The camera descriptor sets eye, target, up, field of view, and near/far clip pla
     --8<-- "examples/c/features/camera_manual.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/camera_manual.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_camera_manual`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/camera_manual.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/camera_manual.c)
+    - Python source: [`examples/python/gallery/features/camera_manual.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/camera_manual.py)
     - Browser support: Planned
     - Browser capability tags: `camera`, `mesh`, `controller`, `arcball`
     - Validation: `smoke+interaction+screenshot`

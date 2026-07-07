@@ -512,6 +512,9 @@ examples:
     primary_feature: controller-arcball
     lane: features
     source: examples/c/features/controller_arcball.c
+    python:
+      source: examples/python/gallery/features/controller_arcball.py
+      status: direct-engine
     validation: smoke+interaction+screenshot
     media:
       preview:
@@ -535,6 +538,9 @@ examples:
     primary_feature: camera-manual
     lane: features
     source: examples/c/features/camera_manual.c
+    python:
+      source: examples/python/gallery/features/camera_manual.py
+      status: direct-engine
     validation: smoke+interaction+screenshot
     data:
       kind: synthetic
@@ -638,6 +644,9 @@ examples:
     primary_feature: controller-turntable
     lane: features
     source: examples/c/features/controller_turntable.c
+    python:
+      source: examples/python/gallery/features/controller_turntable.py
+      status: direct-engine
     validation: smoke+interaction+screenshot
     media:
       preview:
