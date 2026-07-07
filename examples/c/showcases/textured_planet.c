@@ -775,10 +775,9 @@ cleanup:
 #ifndef DVZ_EXAMPLE_NO_MAIN
 static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
 {
-    (void)ctx;
     (void)app;
     TexturedPlanetState* state = (TexturedPlanetState*)user;
-    if (state == NULL || view == NULL)
+    if (state == NULL || view == NULL || ctx == NULL || ctx->presentation != DVZ_RUNNER_PRESENT_GLFW)
         return true;
 
     DvzGui* gui = dvz_view_gui(view, NULL);
