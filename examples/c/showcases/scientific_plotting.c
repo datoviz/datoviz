@@ -335,7 +335,7 @@ static bool _add_autocorrelogram(DvzScene* scene, DvzPanel* panel)
     style.color[2] = text.b;
     style.color[3] = text.a;
     placement.position[0] = 0.0f;
-    placement.position[1] = 118.0f;
+    placement.position[1] = 112.0f;
     placement.position[2] = 0.0f;
     placement.offset[0] = 0.0f;
     placement.offset[1] = 0.0f;

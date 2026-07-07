@@ -1228,6 +1228,13 @@ int test_scene_text_many_labels_render_plan(TstContext* suite, const TstCase* it
 
 int test_scene_text_panzoom_glyph_anchor_coordinates(TstContext* suite, const TstCase* item);
 
+int test_scene_data_annotation_uses_data_controller_policy(TstContext* suite, const TstCase* item);
+
+int test_scene_data_annotation_panzoom_matches_data_visual(TstContext* suite, const TstCase* item);
+
+int test_scene_data_annotation_glyph_draw_uses_plot_viewport(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_text_attach_mode_change_regenerates_glyphs(TstContext* suite, const TstCase* item);
 
 int test_scene_text_block_parse_markup(TstContext* suite, const TstCase* item);

@@ -390,13 +390,13 @@ static DvzFramePlanViewportRect _scene_visual_viewport_rect(
     DvzFramePlanViewportRect explicit_viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PLOT;
     if (_scene_visual_explicit_viewport_rect(attach, &explicit_viewport_rect))
         return explicit_viewport_rect;
-    if (visual->ops != NULL && visual->ops->panel_clip_rect)
-    {
-        return DVZ_FRAME_PLAN_VIEWPORT_PANEL;
-    }
     if (attach->coord_space == DVZ_VISUAL_COORD_DATA || attach->coord_space == DVZ_VISUAL_COORD_VIEW)
     {
         return DVZ_FRAME_PLAN_VIEWPORT_PLOT;
+    }
+    if (visual->ops != NULL && visual->ops->panel_clip_rect)
+    {
+        return DVZ_FRAME_PLAN_VIEWPORT_PANEL;
     }
     return DVZ_FRAME_PLAN_VIEWPORT_PANEL;
 }

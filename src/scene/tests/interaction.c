@@ -29,6 +29,7 @@
 #include "core/generated_visual_policy.h"
 #include "annotation/prepare_internal.h"
 #include "datoviz/input.h"
+#include "datoviz/math/_cglm.h"
 #include "interaction/internal.h"
 #include "plot/internal.h"
 #include "query/internal.h"
@@ -37,6 +38,7 @@
 #include "core/units_internal.h"
 #include "datoviz/scene.h"
 #include "helpers.h"
+#include "shaders/_scene_shader_abi.h"
 #include "text/internal.h"
 #include "text/text_internal.h"
 #include "test_scene.h"
@@ -96,6 +98,135 @@ _interaction_panel_attach(const DvzPanel* panel, const DvzVisual* visual)
             return &panel->visuals[i];
     }
     return NULL;
+}
+
+
+static void _interaction_mvp_transform_point(DvzMVP* mvp, const float position[3], vec4 out)
+{
+    ANN(mvp);
+    ANN(position);
+    ANN(out);
+    vec4 p = {position[0], position[1], position[2], 1.0f};
+    vec4 model = {0};
+    vec4 view = {0};
+    glm_mat4_mulv(mvp->model, p, model);
+    glm_mat4_mulv(mvp->view, model, view);
+    glm_mat4_mulv(mvp->proj, view, out);
+}
+
+
+static bool _interaction_viewport_uniform_matches(
+    const DvzSceneViewportUniform* viewport, const DvzRect* rect)
+{
+    ANN(viewport);
+    ANN(rect);
+    return fabsf(viewport->x - rect->x) < 1e-6f && fabsf(viewport->y - rect->y) < 1e-6f &&
+           fabsf(viewport->width - rect->width) < 1e-6f &&
+           fabsf(viewport->height - rect->height) < 1e-6f;
+}
+
+
+static bool _interaction_stream_buffer_viewport(
+    const DvzDrp2CommandStream* stream, uint64_t buffer_id, DvzSceneViewportUniform* out)
+{
+    ANN(stream);
+    ANN(out);
+    bool found = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (
+            cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_WRITE_BUFFER ||
+            cmd->u.write_buffer.buffer_id != buffer_id ||
+            cmd->u.write_buffer.size != sizeof(DvzSceneViewportUniform))
+        {
+            continue;
+        }
+        const DvzSceneViewportUniform* viewport =
+            (const DvzSceneViewportUniform*)cmd->u.write_buffer.data_raw;
+        ANN(viewport);
+        *out = *viewport;
+        found = true;
+    }
+    return found;
+}
+
+
+static bool _interaction_stream_common_bind_group_viewport_buffer(
+    const DvzDrp2CommandStream* stream, uint64_t bind_group_id, uint64_t* out_buffer_id)
+{
+    ANN(stream);
+    ANN(out_buffer_id);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (
+            cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_CREATE_BIND_GROUP ||
+            cmd->u.create_bind_group.id != bind_group_id)
+        {
+            continue;
+        }
+        for (uint32_t j = 0; j < cmd->u.create_bind_group.entry_count; j++)
+        {
+            const DvzDrp2BindGroupEntry* entry = &cmd->u.create_bind_group.entries[j];
+            if (
+                entry->binding == DVZ_SCENE_SHADER_BINDING_COMMON_VIEWPORT &&
+                entry->binding_type == DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER &&
+                entry->resource_kind == DVZ_DRP2_BINDING_RESOURCE_BUFFER &&
+                entry->size == sizeof(DvzSceneViewportUniform))
+            {
+                *out_buffer_id = entry->resource_id;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+static bool _interaction_stream_glyph_draw_uses_plot_viewport(
+    const DvzDrp2CommandStream* stream, const DvzRect* plot_rect)
+{
+    ANN(stream);
+    ANN(plot_rect);
+    uint64_t active_pipeline_id = 0;
+    uint64_t active_bg_set0 = 0;
+    bool saw_glyph_draw = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL)
+            continue;
+        if (cmd->type == DVZ_DRP2_COMMAND_SET_PIPELINE)
+        {
+            active_pipeline_id = cmd->u.set_pipeline.pipeline_id;
+            active_bg_set0 = 0;
+        }
+        else if (
+            cmd->type == DVZ_DRP2_COMMAND_SET_BIND_GROUP &&
+            cmd->u.set_bind_group.slot == DVZ_SCENE_SHADER_SET_COMMON)
+        {
+            active_bg_set0 = cmd->u.set_bind_group.bind_group_id;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_DRAW || cmd->type == DVZ_DRP2_COMMAND_DRAW_INDEXED)
+        {
+            const char* pipeline_label = dvz_drp2_stream_label(stream, active_pipeline_id);
+            if (pipeline_label == NULL || strstr(pipeline_label, "glyph") == NULL)
+                continue;
+
+            saw_glyph_draw = true;
+            uint64_t viewport_buffer_id = 0;
+            DvzSceneViewportUniform viewport = {0};
+            if (!_interaction_stream_common_bind_group_viewport_buffer(
+                    stream, active_bg_set0, &viewport_buffer_id))
+                return false;
+            if (!_interaction_stream_buffer_viewport(stream, viewport_buffer_id, &viewport))
+                return false;
+            if (!_interaction_viewport_uniform_matches(&viewport, plot_rect))
+                return false;
+        }
+    }
+    return saw_glyph_draw;
 }
 
 
@@ -3520,7 +3651,7 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
         if (panel->visuals[i].visual == text->visual)
         {
             found_data_attach = true;
-            AT(panel->visuals[i].controller_mode == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL);
+            AT(panel->visuals[i].controller_mode == DVZ_CONTROLLER_APPLY);
             AT(panel->visuals[i].coord_space == DVZ_VISUAL_COORD_DATA);
         }
     }
@@ -4468,6 +4599,269 @@ int test_scene_text_panzoom_glyph_anchor_coordinates(TstContext* suite, const Ts
 
 
 /**
+ * Verify retained DATA annotations use the same controller policy as ordinary DATA visuals.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_data_annotation_uses_data_controller_policy(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -1.0, +1.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.0, +1.0) == 0);
+    DvzController* controller = dvz_panzoom(scene, NULL);
+    ANN(controller);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY) == 0);
+
+    DvzVisual* points = dvz_point(scene, 0);
+    ANN(points);
+    AT(dvz_panel_add_visual(panel, points, NULL) == 0);
+    const DvzPanelAttach* point_attach = _interaction_panel_attach(panel, points);
+    ANN(point_attach);
+    AT(point_attach->controller_mode == DVZ_CONTROLLER_APPLY);
+    AT(point_attach->coord_space == DVZ_VISUAL_COORD_DATA);
+
+    DvzAnnotation* annotation = dvz_annotation_label(
+        panel, &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc), .text = "A"});
+    ANN(annotation);
+    AT(dvz_annotation_set_style(
+           annotation,
+           &(DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+               .size_px = 16.0f,
+               .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+               .color = {255, 255, 255, 255},
+           }) == 0);
+    AT(dvz_annotation_set_placement(
+           annotation,
+           &(DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
+               .mode = DVZ_TEXT_PLACEMENT_DATA,
+               .position = {0.25, -0.125, 0.0},
+               .offset = {8.0f, -6.0f},
+               .text_anchor = {0.5f, 0.5f},
+               .has_text_anchor = true,
+           }) == 0);
+
+    _scene_prepare_text_visuals(figure);
+    ANN(annotation->visual);
+    const DvzPanelAttach* annotation_attach = _interaction_panel_attach(panel, annotation->visual);
+    ANN(annotation_attach);
+    AT(annotation_attach->controller_mode == point_attach->controller_mode);
+    AT(annotation_attach->coord_space == point_attach->coord_space);
+    AT(annotation_attach->clip_rect == DVZ_VISUAL_CLIP_AUTO ||
+       annotation_attach->clip_rect == DVZ_VISUAL_CLIP_PLOT);
+
+    DvzVisualDataView position_view = {0};
+    AT(dvz_visual_data(annotation->visual, "position", &position_view) == 0);
+    AT(position_view.item_count > 0);
+    const float* glyph_positions = (const float*)position_view.data;
+    ANN(glyph_positions);
+    AC(glyph_positions[0], 0.25f, 1e-6f);
+    AC(glyph_positions[1], -0.125f, 1e-6f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Verify DATA text anchors translate exactly like ordinary DATA visuals under panzoom.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_data_annotation_panzoom_matches_data_visual(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+    AT(dvz_panel_set_reserve(
+           panel,
+           &(DvzPanelReserve){
+               .left_px = 80.0f, .right_px = 40.0f, .top_px = 20.0f, .bottom_px = 30.0f}) ==
+       DVZ_OK);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -50.0, +50.0) == DVZ_OK);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 0.0, 120.0) == DVZ_OK);
+
+    DvzController* controller = dvz_panzoom(scene, NULL);
+    ANN(controller);
+    DvzPanzoom* panzoom = dvz_controller_panzoom(controller);
+    ANN(panzoom);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY) == 0);
+
+    DvzVisual* point = dvz_point(scene, 0);
+    ANN(point);
+    const float point_position[1][3] = {{0.0f, 112.0f, 0.0f}};
+    AT(dvz_visual_set_data(point, "position", point_position, 1) == 0);
+    AT(dvz_panel_add_visual(panel, point, NULL) == 0);
+
+    DvzAnnotation* annotation = dvz_annotation_label(
+        panel, &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc), .text = "bi-side refractory"});
+    ANN(annotation);
+    AT(dvz_annotation_set_style(
+           annotation,
+           &(DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+               .size_px = 24.0f,
+               .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+               .color = {255, 255, 255, 255},
+           }) == 0);
+    AT(dvz_annotation_set_placement(
+           annotation,
+           &(DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
+               .mode = DVZ_TEXT_PLACEMENT_DATA,
+               .position = {0.0, 112.0, 0.0},
+               .text_anchor = {0.5f, 0.5f},
+               .has_text_anchor = true,
+           }) == 0);
+    _scene_prepare_text_visuals(figure);
+    ANN(annotation->visual);
+
+    const DvzPanelAttach* point_attach = _interaction_panel_attach(panel, point);
+    const DvzPanelAttach* text_attach = _interaction_panel_attach(panel, annotation->visual);
+    ANN(point_attach);
+    ANN(text_attach);
+
+    DvzVisualDataView glyph_position_view = {0};
+    AT(dvz_visual_data(annotation->visual, "position", &glyph_position_view) == 0);
+    AT(glyph_position_view.item_count > 0);
+    const float* glyph_position = (const float*)glyph_position_view.data;
+    ANN(glyph_position);
+
+    DvzRect plot = {0};
+    AT(dvz_panel_plot_rect_px(panel, &plot));
+
+    DvzMVP point_before = {0};
+    DvzMVP text_before = {0};
+    AT(_scene_panel_attachment_mvp(panel, point, point_attach, NULL, &point_before));
+    AT(_scene_panel_attachment_mvp(panel, annotation->visual, text_attach, NULL, &text_before));
+    vec4 point_clip_before = {0};
+    vec4 text_clip_before = {0};
+    _interaction_mvp_transform_point(&point_before, point_position[0], point_clip_before);
+    _interaction_mvp_transform_point(&text_before, glyph_position, text_clip_before);
+
+    AT(dvz_panzoom_pan(panzoom, (vec2){0.35f, 0.0f}) == DVZ_OK);
+
+    DvzMVP point_after = {0};
+    DvzMVP text_after = {0};
+    AT(_scene_panel_attachment_mvp(panel, point, point_attach, NULL, &point_after));
+    AT(_scene_panel_attachment_mvp(panel, annotation->visual, text_attach, NULL, &text_after));
+    vec4 point_clip_after = {0};
+    vec4 text_clip_after = {0};
+    _interaction_mvp_transform_point(&point_after, point_position[0], point_clip_after);
+    _interaction_mvp_transform_point(&text_after, glyph_position, text_clip_after);
+
+    float point_x_before = plot.x + 0.5f * (point_clip_before[0] / point_clip_before[3] + 1.0f) *
+                                        plot.width;
+    float point_x_after = plot.x + 0.5f * (point_clip_after[0] / point_clip_after[3] + 1.0f) *
+                                       plot.width;
+    float text_x_before = plot.x + 0.5f * (text_clip_before[0] / text_clip_before[3] + 1.0f) *
+                                       plot.width;
+    float text_x_after = plot.x + 0.5f * (text_clip_after[0] / text_clip_after[3] + 1.0f) *
+                                      plot.width;
+    AC(text_x_after - text_x_before, point_x_after - point_x_before, 1e-5f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify emitted DATA annotation glyph draws bind the plot viewport uniform.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_data_annotation_glyph_draw_uses_plot_viewport(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+    AT(dvz_panel_set_reserve(
+           panel,
+           &(DvzPanelReserve){
+               .left_px = 80.0f, .right_px = 40.0f, .top_px = 20.0f, .bottom_px = 30.0f}) ==
+       DVZ_OK);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -50.0, +50.0) == DVZ_OK);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 0.0, 120.0) == DVZ_OK);
+
+    DvzController* controller = dvz_panzoom(scene, NULL);
+    ANN(controller);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY) == 0);
+
+    DvzAnnotation* annotation = dvz_annotation_label(
+        panel, &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc), .text = "bi-side refractory"});
+    ANN(annotation);
+    AT(dvz_annotation_set_style(
+           annotation,
+           &(DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+               .size_px = 24.0f,
+               .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+               .color = {255, 255, 255, 255},
+           }) == 0);
+    AT(dvz_annotation_set_placement(
+           annotation,
+           &(DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
+               .mode = DVZ_TEXT_PLACEMENT_DATA,
+               .position = {0.0, 112.0, 0.0},
+               .text_anchor = {0.5f, 0.5f},
+               .has_text_anchor = true,
+           }) == 0);
+
+    DvzRect plot = {0};
+    AT(dvz_panel_plot_rect_px(panel, &plot));
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.shader_format_glsl = true;
+    caps.supports_color_blending = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 800;
+    cfg.target_height = 400;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+    AT(_interaction_stream_glyph_draw_uses_plot_viewport(stream, &plot));
+
+    _test_scene_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Verify text realization regenerates anchors when attachment controller mode changes.
  *
  * @param suite the active test suite
@@ -4864,6 +5258,9 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_text_font_atlas_missing_glyph_fallback);
     TST_CASE(test_scene_text_many_labels_render_plan);
     TST_CASE(test_scene_text_panzoom_glyph_anchor_coordinates);
+    TST_CASE(test_scene_data_annotation_uses_data_controller_policy);
+    TST_CASE(test_scene_data_annotation_panzoom_matches_data_visual);
+    TST_CASE(test_scene_data_annotation_glyph_draw_uses_plot_viewport);
     TST_CASE(test_scene_text_attach_mode_change_regenerates_glyphs);
     TST_CASE(test_scene_text_block_parse_markup);
     TST_CASE(test_scene_text_block_measure);
