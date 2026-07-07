@@ -54,6 +54,7 @@
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "example_tuner.h"
 #include "runner/scenario_runner.h"
 
 
@@ -96,6 +97,9 @@ typedef struct ProteinState
     DvzAnimation* sphere_animation;
     DvzAnimation* selection_animation;
     DvzAnimation* crosshair_animation;
+    DvzMaterialDesc sphere_material;
+    DvzExampleGuiSsaoControls ssao;
+    ExampleTuner tuner;
 } ProteinState;
 
 
@@ -515,6 +519,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (out_user != NULL)
         *out_user = state;
+    state->tuner = example_tuner("Protein settings");
 
     char bundle_path[1024] = {0};
     EXAMPLE_CHECK(
@@ -545,6 +550,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     camera_desc.projection.far_clip = 100.0f;
     EXAMPLE_CHECK(
         dvz_panel_set_camera_desc(panel, &camera_desc) == 0, "dvz_panel_set_camera_desc() failed");
+    DvzCamera* camera = dvz_panel_camera(panel);
+    EXAMPLE_CHECK(camera != NULL, "dvz_panel_camera() failed");
 
     DvzVisual* spheres = dvz_sphere(ctx->scene, DVZ_SPHERE_FLAGS_LIGHTING);
     DvzVisual* selection = dvz_sphere(ctx->scene, DVZ_SPHERE_FLAGS_LIGHTING);
@@ -558,16 +565,16 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         dvz_sphere_set_mode(selection, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0,
         "dvz_sphere_set_mode(selection) failed");
 
-    DvzMaterialDesc material = dvz_material_desc();
-    material.model = DVZ_MATERIAL_MODEL_STANDARD;
-    material.light_direction[0] = 0.25f;
-    material.light_direction[1] = 0.65f;
-    material.light_direction[2] = 0.72f;
-    material.standard.roughness = 0.36f;
-    material.standard.specular = 0.68f;
-    material.standard.rim_strength = 0.12f;
-    (void)dvz_visual_set_material(spheres, &material);
-    (void)dvz_visual_set_material(selection, &material);
+    state->sphere_material = dvz_material_desc();
+    state->sphere_material.model = DVZ_MATERIAL_MODEL_STANDARD;
+    state->sphere_material.light_direction[0] = 0.25f;
+    state->sphere_material.light_direction[1] = 0.65f;
+    state->sphere_material.light_direction[2] = 0.72f;
+    state->sphere_material.standard.roughness = 0.36f;
+    state->sphere_material.standard.specular = 0.68f;
+    state->sphere_material.standard.rim_strength = 0.12f;
+    (void)dvz_visual_set_material(spheres, &state->sphere_material);
+    (void)dvz_visual_set_material(selection, &state->sphere_material);
 
     DvzVisualDataUpdate sphere_updates[] = {
         {.attr_name = "position",
@@ -595,20 +602,24 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         "selection upload failed");
 
 #ifndef DVZ_EXAMPLE_NO_MAIN
-    DvzSsaoDesc ssao_desc = {
-        DVZ_STRUCT_INIT_FIELDS(DvzSsaoDesc),
+    state->ssao = (DvzExampleGuiSsaoControls){
+        .enabled = true,
         .radius = 0.72f,
         .strength = 1.82f,
         .bias = 0.007f,
         .power = 2.45f,
         .min_visibility = 0.42f,
+        .samples = 16.0f,
+        .min_samples = 4.0f,
+        .max_samples = 32.0f,
+        .blur = true,
         .blur_radius = 5.0f,
+        .blur_radius_max = 12.0f,
         .blur_depth_sigma = 0.65f,
         .blur_normal_sigma = 0.35f,
-        .sample_count = 16,
-        .blur_enabled = true,
+        .show_blur_sigmas = true,
     };
-    (void)dvz_panel_set_ssao(panel, &ssao_desc);
+    example_tuner_ssao(&state->tuner, "SSAO", panel, &state->ssao);
 #endif
 
     DvzController* arcball_controller = dvz_arcball(ctx->scene, NULL);
@@ -618,7 +629,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(
         dvz_scenario_bind_controller(ctx, panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
         "dvz_scenario_bind_controller() failed");
-    dvz_arcball_initial(arcball, (vec3){+0.790430f, -0.651732f, +0.810104f});
+    vec3 arcball_angles = {+0.790430f, -0.651732f, +0.810104f};
+    vec2 arcball_pan = {0.0f, 0.0f};
+    dvz_arcball_initial(arcball, arcball_angles);
+    example_tuner_camera_ref(&state->tuner, "Camera", panel, camera, &camera_desc);
+    example_tuner_arcball(
+        &state->tuner, "Arcball", arcball, arcball_angles, 1.0f, arcball_pan);
+    example_tuner_material(&state->tuner, "Atom material", spheres, &state->sphere_material);
 
     DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
     rotation_desc.axis[1] = 1.0f;
@@ -669,6 +686,19 @@ cleanup:
 }
 
 
+static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    (void)app;
+    ProteinState* state = (ProteinState*)user;
+    if (
+        ctx == NULL || ctx->presentation != DVZ_RUNNER_PRESENT_GLFW || state == NULL ||
+        view == NULL)
+        return true;
+
+    return example_tuner_attach(&state->tuner, view);
+}
+
+
 
 /**
  * Destroy the protein gallery showcase state.
@@ -683,6 +713,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
     if (state == NULL)
         return;
 
+    example_tuner_detach(&state->tuner);
     dvz_track_destroy(state->crosshair_rotation);
     dvz_track_destroy(state->selection_rotation);
     dvz_track_destroy(state->sphere_rotation);
@@ -724,6 +755,8 @@ DvzScenarioSpec dvz_showcase_protein_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = dvz_showcase_protein_scenario();
+    if (example_cli_wants_live_gui(argc, argv))
+        spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
 #endif
