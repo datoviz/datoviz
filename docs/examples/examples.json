@@ -4369,7 +4369,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=visual_text",
       "webgpu_site_route": "/examples/webgpu/live.html?id=visual_text",
-      "primary_visual": "text"
+      "primary_visual": "text",
+      "python_source": "examples/python/gallery/visuals/text.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/text.py",
+      "python_status": "manual"
     },
     {
       "id": "visual_glyph",

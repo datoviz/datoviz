@@ -2241,6 +2241,9 @@ examples:
     primary_visual: text
     lane: visuals
     source: examples/c/visuals/text.c
+    python:
+      status: manual
+      source: examples/python/gallery/visuals/text.py
     validation: smoke+screenshot
     data:
       kind: synthetic

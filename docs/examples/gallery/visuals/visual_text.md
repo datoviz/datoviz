@@ -38,6 +38,12 @@ Each text item provides a string, x/y screen position, font size, angle, and col
     --8<-- "examples/c/visuals/text.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/visuals/text.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `visual_text`
@@ -45,6 +51,7 @@ Each text item provides a string, x/y screen position, font size, angle, and col
     - Lane: `visuals`
     - Source: [`examples/c/visuals/text.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/text.c)
     - Reference: [Text visual family](../../../reference/visual-families/text.md)
+    - Python source: [`examples/python/gallery/visuals/text.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/text.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_text"><code>examples/webgpu/live.html?id=visual_text</code></a>
     - Browser capability tags: `text`, `glyph-atlas`
