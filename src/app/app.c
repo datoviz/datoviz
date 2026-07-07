@@ -1732,6 +1732,20 @@ static bool _app_should_exit(DvzApp* app)
 
 
 /**
+ * Disconnect all current figure panels from their input router before the view router is destroyed.
+ *
+ * @param win the view
+ */
+static void _view_disconnect_figure_panels(DvzView* win)
+{
+    if (win == NULL || win->figure == NULL)
+        return;
+    for (uint32_t i = 0; i < win->figure->panel_count; i++)
+        (void)dvz_panel_connect_input(&win->figure->panels[i], NULL);
+}
+
+
+/**
  * Release runtime resources for one closed interactive view.
  *
  * @param win view to close
@@ -1739,6 +1753,7 @@ static bool _app_should_exit(DvzApp* app)
 static void _view_close_runtime_resources(DvzView* win)
 {
     ANN(win);
+    _view_disconnect_figure_panels(win);
     if (win->app != NULL && win->app->gpu_ctx != NULL)
     {
         DvzDevice* device = dvz_gpu_ctx_device(win->app->gpu_ctx);
@@ -4018,6 +4033,7 @@ void dvz_app_destroy(DvzApp* app)
     for (uint32_t i = 0; i < app->view_count; i++)
     {
         DvzView* win = &app->views[i];
+        _view_disconnect_figure_panels(win);
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
         if (win->gui != NULL)
         {

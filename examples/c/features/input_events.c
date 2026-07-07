@@ -485,8 +485,8 @@ static void _subscribe_events(DvzInputRouter* router, InputEventsState* state)
  */
 static void _unsubscribe_events(DvzInputRouter* router, InputEventsState* state)
 {
-    ANN(router);
-    ANN(state);
+    if (router == NULL || state == NULL || state->input_subscription_id == DVZ_CALLBACK_ID_NONE)
+        return;
     dvz_input_unsubscribe(router, state->input_subscription_id);
     state->input_subscription_id = DVZ_CALLBACK_ID_NONE;
 }
@@ -645,7 +645,7 @@ static int _run_live(int argc, char** argv)
         stdout,
         "input_events: move/click/scroll/resize/type in the window; close it to exit\n");
     dvz_app_run(app, example_frame_count_any(argc, argv));
-    _unsubscribe_events(router, &state);
+    _unsubscribe_events(dvz_view_input(view), &state);
     ret = 0;
 
 cleanup:

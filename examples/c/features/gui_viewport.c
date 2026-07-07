@@ -128,7 +128,10 @@ int main(int argc, char** argv)
     int ret = 1;
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
+    DvzView* host_view = NULL;
+    DvzPanel* source_panel = NULL;
     DvzGuiViewport* viewport = NULL;
+    bool host_alive = false;
 
     scene = dvz_scene();
     EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
@@ -137,7 +140,7 @@ int main(int argc, char** argv)
     DvzFigure* host_figure = dvz_figure(scene, HOST_WIDTH, HOST_HEIGHT, 0);
     EXAMPLE_CHECK(source_figure != NULL && host_figure != NULL, "dvz_figure() failed");
 
-    DvzPanel* source_panel = dvz_panel_full(source_figure);
+    source_panel = dvz_panel_full(source_figure);
     DvzPanel* host_panel = dvz_panel_full(host_figure);
     EXAMPLE_CHECK(source_panel != NULL && host_panel != NULL, "dvz_panel_full() failed");
     example_graphite_cyan_set_panel_background(source_panel);
@@ -173,7 +176,7 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* host_view = dvz_view_window(app, host_figure, HOST_WIDTH, HOST_HEIGHT, "gui_viewport");
+    host_view = dvz_view_window(app, host_figure, HOST_WIDTH, HOST_HEIGHT, "gui_viewport");
     EXAMPLE_CHECK(host_view != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     DvzGui* gui = dvz_view_gui(host_view, NULL);
@@ -199,7 +202,12 @@ int main(int argc, char** argv)
     ret = 0;
 
 cleanup:
-    if (viewport != NULL)
+    host_alive = host_view != NULL && dvz_view_canvas(host_view) != NULL;
+    if (host_alive)
+        (void)dvz_view_set_gui_callback(host_view, NULL, NULL);
+    if (source_panel != NULL && viewport != NULL && host_alive)
+        (void)dvz_panel_connect_input(source_panel, NULL);
+    if (viewport != NULL && host_alive)
         dvz_gui_viewport_destroy(viewport);
     if (app != NULL)
         dvz_app_destroy(app);
