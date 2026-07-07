@@ -176,13 +176,12 @@ labels. Here, `dvz_point` creates one point visual for all 10,000 points. Each
 `dvz_panel_add_visual` attaches the visual to the panel so it will be drawn.
 
 **Run** - `dvz.run(scene, figure)` opens the window in the Python example. In a regular Python
-script, it blocks until the window closes and then destroys the app and scene. In terminal IPython,
+script, it blocks until the window closes and then releases the app/window resources. In terminal IPython,
 it returns a live-session handle and keeps the native window responsive while the prompt is waiting
 for input; call `session.close()` if you assigned the return value and want to close it explicitly.
-Closing the native window also closes the session and releases the quickstart scene. Recreate the
-scene to reopen it, or use explicit app/view calls for workflows that need to keep scene ownership
-separate from window lifetime. The C example uses the longer app/view calls directly because C does
-not have the same quickstart helper.
+Closing the native window also closes the session. The retained `scene` and `figure` remain owned by
+your Python code, so you can call `dvz.run(scene, figure)` again to reopen the same visualization.
+Destroy the scene explicitly with `dvz.dvz_scene_destroy(scene)` when you are done with it.
 
 
 ## Next steps

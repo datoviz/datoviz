@@ -75,7 +75,7 @@ class RunSession:
         self.running = False
 
     def close(self) -> None:
-        """Destroy the live app and scene owned by this session."""
+        """Destroy the live app/window resources owned by this session."""
 
         if self._closed:
             return
@@ -87,10 +87,8 @@ class RunSession:
         if self.window_host:
             self._raw.dvz_window_host_destroy(self.window_host)
             self.window_host = None
-        if self.scene:
-            self._raw.dvz_scene_destroy(self.scene)
-            self.scene = None
         self.view = None
+        self.scene = None
         self._closed = True
 
     def should_close(self) -> bool:
@@ -202,6 +200,7 @@ def run(scene, figure, width=800, height=600, title='Datoviz', blocking: bool | 
 
     In terminal IPython, the default is nonblocking: the prompt remains usable and a live-session
     handle is returned. In regular Python scripts, the default remains the blocking app loop.
+    The scene and figure are borrowed and remain owned by the caller.
     """
 
     from . import raw as _raw
@@ -227,7 +226,6 @@ def run(scene, figure, width=800, height=600, title='Datoviz', blocking: bool | 
         raise RuntimeError('dvz_view_window() failed')
     _raw.dvz_app_run(app, 0)
     _raw.dvz_app_destroy(app)
-    _raw.dvz_scene_destroy(scene)
     return None
 
 

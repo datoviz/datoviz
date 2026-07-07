@@ -122,7 +122,8 @@ def test_run_blocks_and_cleans_up_outside_ipython(monkeypatch):
 
     assert result is None
     assert ('app_run', raw.app, 0) in raw.calls
-    assert raw.calls[-2:] == [('app_destroy', raw.app), ('scene_destroy', 'scene')]
+    assert raw.calls[-1] == ('app_destroy', raw.app)
+    assert ('scene_destroy', 'scene') not in raw.calls
 
 
 def test_run_returns_live_session_in_terminal_ipython(monkeypatch):
@@ -149,11 +150,11 @@ def test_run_returns_live_session_in_terminal_ipython(monkeypatch):
     ]
 
     session.close()
-    assert raw.calls[-3:] == [
+    assert raw.calls[-2:] == [
         ('app_destroy', raw.app),
         ('window_host_destroy', raw.window_host),
-        ('scene_destroy', 'scene'),
     ]
+    assert ('scene_destroy', 'scene') not in raw.calls
 
 
 def test_run_can_be_forced_blocking_in_terminal_ipython(monkeypatch):
@@ -166,6 +167,22 @@ def test_run_can_be_forced_blocking_in_terminal_ipython(monkeypatch):
 
     assert result is None
     assert ('app_run', raw.app, 0) in raw.calls
+    assert ('scene_destroy', 'scene') not in raw.calls
+
+
+def test_run_can_reopen_borrowed_scene_after_blocking_close(monkeypatch):
+    import datoviz
+
+    raw = _install_raw(monkeypatch, datoviz)
+    monkeypatch.delattr(builtins, 'get_ipython', raising=False)
+
+    datoviz.run('scene', 'figure', 320, 240, 'Title')
+    datoviz.run('scene', 'figure', 320, 240, 'Title')
+
+    assert [call[0] for call in raw.calls].count('app') == 2
+    assert [call[0] for call in raw.calls].count('app_run') == 2
+    assert [call[0] for call in raw.calls].count('app_destroy') == 2
+    assert ('scene_destroy', 'scene') not in raw.calls
 
 
 def test_live_session_closes_when_native_window_requests_close(monkeypatch):
@@ -194,8 +211,8 @@ def test_live_session_closes_when_native_window_requests_close(monkeypatch):
     assert session.render_once() is None
     assert not session.running
     assert any(call[0] == 'window_should_close' for call in raw.calls)
-    assert raw.calls[-3:] == [
+    assert raw.calls[-2:] == [
         ('app_destroy', raw.app),
         ('window_host_destroy', raw.window_host),
-        ('scene_destroy', 'scene'),
     ]
+    assert ('scene_destroy', 'scene') not in raw.calls

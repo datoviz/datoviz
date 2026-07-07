@@ -36,13 +36,13 @@ Use `datoviz.raw` only when a call needs the exact C-shaped `ctypes` arguments. 
 implementation modules, such as `datoviz._ctypes` and `datoviz._array_facade`, are not public import
 surfaces.
 
-Quickstart pages may use `dvz.run(scene, figure, title=...)` for brevity. In regular Python scripts,
-that helper creates the app/window, runs it, and then performs the matching cleanup. In terminal
-IPython, it returns a live-session handle so the prompt remains usable; call `session.close()` for
-explicit cleanup. Closing the native window has the same ownership meaning for this helper: the
-session is done and its app/window resources and scene are released. Build a new scene to reopen the
-quickstart view; use the explicit app/view calls shown below when a longer workflow needs to keep
-scene ownership separate from window lifetime.
+Quickstart pages may use `dvz.run(scene, figure, title=...)` for brevity. The helper borrows the
+retained `scene` and `figure`; it owns only the app/window resources it creates. In regular Python
+scripts, it blocks until the window closes and then releases those runtime resources. In terminal
+IPython, it returns a live-session handle so the prompt remains usable; native window close and
+`session.close()` both close the session while leaving the retained scene alive. Call
+`dvz.run(scene, figure)` again to reopen the same visualization, and call
+`dvz.dvz_scene_destroy(scene)` when you are done with the retained scene.
 
 
 ## Dense Visual Data
