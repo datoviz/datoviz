@@ -944,6 +944,18 @@ static bool _scene_panel_dispatch_pointer_controller(
     float w = 0.0f;
     float h = 0.0f;
     _scene_panel_pixel_rect(panel, &x, &y, &w, &h);
+    float plot_x = x;
+    float plot_y = y;
+    float plot_w = w;
+    float plot_h = h;
+    _scene_panel_plot_pixel_rect(panel, &plot_x, &plot_y, &plot_w, &plot_h);
+    if (plot_w <= 0.0f || plot_h <= 0.0f)
+    {
+        plot_x = x;
+        plot_y = y;
+        plot_w = w;
+        plot_h = h;
+    }
 
     bool consumed = false;
     bool links_propagated = false;
@@ -967,7 +979,7 @@ static bool _scene_panel_dispatch_pointer_controller(
             panzoom->flags |= DVZ_PANZOOM_FLAGS_FIXED_X;
         if ((dims & DVZ_DIM_MASK_Y) == 0)
             panzoom->flags |= DVZ_PANZOOM_FLAGS_FIXED_Y;
-        dvz_panzoom_viewport(panzoom, x, y, w, h);
+        dvz_panzoom_viewport(panzoom, plot_x, plot_y, plot_w, plot_h);
         const bool transient_interaction =
             ev->type == DVZ_POINTER_EVENT_WHEEL || ev->type == DVZ_POINTER_EVENT_DOUBLE_CLICK;
         if (transient_interaction)

@@ -556,6 +556,78 @@ int test_panzoom_panel_input_uses_hidpi_figure_coordinates(TstContext* suite, co
 
 
 /**
+ * Ensure panzoom panel input normalizes drags against the plot viewport, not outer panel chrome.
+ *
+ * @param suite test suite
+ * @param item test case
+ * @return 0 on success
+ */
+int test_panzoom_panel_input_uses_plot_viewport_with_reserve(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    AT(dvz_panel_set_reserve(
+           panel,
+           &(DvzPanelReserve){
+               .left_px = 80.0f, .right_px = 40.0f, .top_px = 20.0f, .bottom_px = 30.0f}) ==
+       DVZ_OK);
+
+    DvzController* controller = dvz_panzoom(scene, NULL);
+    ANN(controller);
+    DvzPanzoom* panzoom = dvz_controller_panzoom(controller);
+    ANN(panzoom);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY) == 0);
+
+    DvzInputRouter* router = dvz_input_router();
+    ANN(router);
+    AT(dvz_panel_connect_input(panel, router) == 0);
+
+    DvzRect plot = {0};
+    AT(dvz_panel_plot_rect_px(panel, &plot));
+    DvzPanzoom* expected = _dvz_panzoom(plot.width, plot.height, 0);
+    ANN(expected);
+    AT(dvz_panzoom_viewport(expected, plot.x, plot.y, plot.width, plot.height) == DVZ_OK);
+
+    DvzInputEvent drag = {
+        .type = DVZ_INPUT_EVENT_POINTER,
+        .content.pointer =
+            {
+                .type = DVZ_POINTER_EVENT_DRAG,
+                .button = DVZ_POINTER_BUTTON_LEFT,
+                .pos = {240.0f, 120.0f},
+                .content.d =
+                    {
+                        .shift = {68.0f, -35.0f},
+                        .press_pos = {172.0f, 155.0f},
+                        .last_pos = {172.0f, 155.0f},
+                        .is_press_valid = true,
+                    },
+            },
+    };
+    AT(dvz_panzoom_pointer(expected, &drag.content.pointer));
+    dvz_input_emit_event(router, &drag);
+
+    AC(panzoom->pan[0], expected->pan[0], 1e-6f);
+    AC(panzoom->pan[1], expected->pan[1], 1e-6f);
+    AC(panzoom->zoom[0], expected->zoom[0], 1e-6f);
+    AC(panzoom->zoom[1], expected->zoom[1], 1e-6f);
+
+    dvz_panzoom_destroy(expected);
+    dvz_input_router_destroy(router);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Ensure pointer events carry enough window-size context without a prior resize event.
  *
  * @param suite test suite
@@ -2168,6 +2240,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_shared_panzoom_xy_visible_domains);
     TST_CASE(test_figure_window_to_layout_coordinates);
     TST_CASE(test_panzoom_panel_input_uses_hidpi_figure_coordinates);
+    TST_CASE(test_panzoom_panel_input_uses_plot_viewport_with_reserve);
     TST_CASE(test_panzoom_panel_input_uses_event_window_size_without_resize);
     TST_CASE(test_split_panzoom_x_y_bindings);
 
