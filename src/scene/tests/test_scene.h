@@ -229,6 +229,8 @@ int test_arcball_scene_binding_uses_panel_input(TstContext* suite, const TstCase
 int test_arcball_panel_input_uses_hidpi_figure_coordinates(
     TstContext* suite, const TstCase* item);
 
+int test_arcball_linked_panel_wheel_targets_each_panel(TstContext* suite, const TstCase* item);
+
 int test_controller_link_arcball_rotation_only_keeps_target_centered(
     TstContext* suite, const TstCase* item);
 

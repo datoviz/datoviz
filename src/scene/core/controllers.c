@@ -706,6 +706,8 @@ static void _scene_controller_links_propagate_from(DvzController* source)
     if (!_scene_controller_link_endpoint_valid(source))
         return;
     DvzScene* scene = source->scene;
+    DvzController* mutated_controllers[DVZ_SCENE_MAX_CONTROLLER_LINKS] = {0};
+    uint32_t mutated_count = 0;
     for (uint32_t i = 0; i < scene->controller_link_count; i++)
     {
         DvzControllerLink* link = &scene->controller_links[i];
@@ -718,7 +720,32 @@ static void _scene_controller_links_propagate_from(DvzController* source)
         }
         DvzController* mutated = _scene_controller_link_apply(link);
         if (mutated != NULL)
+        {
             _scene_notify_controller_figures(mutated);
+            if (!_scene_controller_seen(mutated_controllers, mutated_count, mutated))
+                mutated_controllers[mutated_count++] = mutated;
+        }
+    }
+
+    for (uint32_t mi = 0; mi < mutated_count; mi++)
+    {
+        DvzController* fanout = mutated_controllers[mi];
+        if (fanout == NULL || fanout == source)
+            continue;
+        for (uint32_t i = 0; i < scene->controller_link_count; i++)
+        {
+            DvzControllerLink* link = &scene->controller_links[i];
+            if (!link->active)
+                continue;
+            if (link->source != fanout && (link->mode != DVZ_CONTROLLER_LINK_TWO_WAY ||
+                                           link->target != fanout))
+            {
+                continue;
+            }
+            DvzController* mutated = _scene_controller_link_apply(link);
+            if (mutated != NULL)
+                _scene_notify_controller_figures(mutated);
+        }
     }
 }
 
@@ -922,6 +949,8 @@ static bool _scene_panel_dispatch_pointer_controller(
     bool links_propagated = false;
     DvzPanzoom* transient_panzoom_interaction = NULL;
     bool old_panzoom_interacting = false;
+    DvzArcball* transient_arcball_interaction = NULL;
+    bool old_arcball_interacting = false;
     switch (controller->type)
     {
     case DVZ_CONTROLLER_TYPE_PANZOOM:
@@ -968,6 +997,14 @@ static bool _scene_panel_dispatch_pointer_controller(
         DvzPointerEvent local = {0};
         _scene_panel_local_pointer(ev, x, y, &local);
         dvz_arcball_resize(arcball, w, h);
+        const bool transient_interaction =
+            ev->type == DVZ_POINTER_EVENT_WHEEL || ev->type == DVZ_POINTER_EVENT_DOUBLE_CLICK;
+        if (transient_interaction)
+        {
+            old_arcball_interacting = arcball->interacting;
+            arcball->interacting = true;
+            transient_arcball_interaction = arcball;
+        }
         if (panel->camera != NULL)
         {
             DvzMVP camera_mvp = {0};
@@ -982,6 +1019,8 @@ static bool _scene_panel_dispatch_pointer_controller(
             _dvz_arcball_clear_view(arcball);
         }
         consumed = dvz_arcball_pointer(arcball, &local);
+        if (transient_interaction && consumed)
+            arcball->interacting = true;
         if (consumed)
         {
             _scene_controller_links_propagate_from(controller);
@@ -1047,6 +1086,8 @@ static bool _scene_panel_dispatch_pointer_controller(
     }
     if (transient_panzoom_interaction != NULL)
         transient_panzoom_interaction->interacting = old_panzoom_interacting;
+    if (transient_arcball_interaction != NULL)
+        transient_arcball_interaction->interacting = old_arcball_interacting;
     return consumed;
 }
 

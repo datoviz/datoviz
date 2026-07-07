@@ -783,6 +783,75 @@ int test_arcball_panel_input_uses_hidpi_figure_coordinates(TstContext* suite, co
 }
 
 
+int test_arcball_linked_panel_wheel_targets_each_panel(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 900, 300, 0);
+    ANN(figure);
+
+    DvzPanel* panels[3] = {
+        dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f / 3.0f, 1.0f}),
+        dvz_panel(figure, &(DvzPanelDesc){1.0f / 3.0f, 0.0f, 1.0f / 3.0f, 1.0f}),
+        dvz_panel(figure, &(DvzPanelDesc){2.0f / 3.0f, 0.0f, 1.0f / 3.0f, 1.0f}),
+    };
+    DvzController* controllers[3] = {0};
+    DvzArcball* arcballs[3] = {0};
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        ANN(panels[i]);
+        controllers[i] = dvz_arcball(scene, NULL);
+        ANN(controllers[i]);
+        arcballs[i] = dvz_controller_arcball(controllers[i]);
+        ANN(arcballs[i]);
+        AT(dvz_panel_bind_controller(panels[i], controllers[i], DVZ_DIM_MASK_XYZ) == 0);
+    }
+    for (uint32_t i = 1; i < 3; i++)
+    {
+        DvzControllerLink* link = dvz_controller_link(
+            scene, controllers[0], controllers[i],
+            DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM,
+            DVZ_CONTROLLER_LINK_TWO_WAY);
+        ANN(link);
+    }
+
+    DvzInputRouter* router = dvz_input_router();
+    ANN(router);
+    for (uint32_t i = 0; i < 3; i++)
+        AT(dvz_panel_connect_input(panels[i], router) == 0);
+
+    DvzInputEvent wheel = {
+        .type = DVZ_INPUT_EVENT_POINTER,
+        .content.pointer =
+            {
+                .type = DVZ_POINTER_EVENT_WHEEL,
+                .content.w.dir = {0.0f, 1.0f},
+                .pos = {450.0f, 150.0f},
+            },
+    };
+    dvz_input_emit_event(router, &wheel);
+    AT(arcballs[0]->zoom > 1.0f);
+    AC(arcballs[1]->zoom, arcballs[0]->zoom, 1e-6f);
+    AC(arcballs[2]->zoom, arcballs[0]->zoom, 1e-6f);
+
+    for (uint32_t i = 0; i < 3; i++)
+        AT(dvz_arcball_reset(arcballs[i]) == DVZ_OK);
+
+    wheel.content.pointer.pos[0] = 750.0f;
+    dvz_input_emit_event(router, &wheel);
+    AT(arcballs[0]->zoom > 1.0f);
+    AC(arcballs[1]->zoom, arcballs[0]->zoom, 1e-6f);
+    AC(arcballs[2]->zoom, arcballs[0]->zoom, 1e-6f);
+
+    dvz_input_router_destroy(router);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 /**
  * Ensure a rotation-only arcball link follows drag and release without copying pan or zoom.
  *
@@ -2114,6 +2183,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_arcball_double_click_resets);
     TST_CASE(test_arcball_scene_binding_uses_panel_input);
     TST_CASE(test_arcball_panel_input_uses_hidpi_figure_coordinates);
+    TST_CASE(test_arcball_linked_panel_wheel_targets_each_panel);
     TST_CASE(test_controller_link_arcball_rotation_only_keeps_target_centered);
     TST_CASE(test_controller_link_arcball_bidirectional_does_not_accumulate_drag);
     TST_CASE(test_orientation_gizmo_create_place_resize_and_visibility);
