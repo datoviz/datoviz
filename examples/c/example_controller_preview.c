@@ -15,6 +15,7 @@
 #include "example_controller_preview.h"
 
 #include "datoviz/controller/arcball.h"
+#include "datoviz/controller/fly.h"
 #include "datoviz/controller/panzoom.h"
 #include "datoviz/controller/turntable.h"
 
@@ -56,15 +57,27 @@ void example_preview_arcball(
     if (arcball == NULL || desc == NULL)
         return;
 
-    const float theta = EXAMPLE_PREVIEW_TAU * _preview_phase(frame_index, frame_count);
-    vec3 angles = {
-        desc->base_angles[0] + desc->amplitude[0] * sinf(theta),
-        desc->base_angles[1] + desc->amplitude[1] * cosf(theta),
-        desc->base_angles[2] + desc->amplitude[2] * sinf(theta + 0.72f),
-    };
+    vec3 angles = {0};
+    example_preview_arcball_angles(frame_index, frame_count, desc, angles);
     (void)dvz_arcball_set(arcball, angles);
     if (desc->zoom > 0.0f)
         (void)dvz_arcball_zoom(arcball, desc->zoom);
+}
+
+
+void example_preview_arcball_angles(
+    uint64_t frame_index,
+    uint64_t frame_count,
+    const ExamplePreviewArcballDesc* desc,
+    vec3 out_angles)
+{
+    if (desc == NULL || out_angles == NULL)
+        return;
+
+    const float theta = EXAMPLE_PREVIEW_TAU * _preview_phase(frame_index, frame_count);
+    out_angles[0] = desc->base_angles[0] + desc->amplitude[0] * sinf(theta);
+    out_angles[1] = desc->base_angles[1] + desc->amplitude[1] * cosf(theta);
+    out_angles[2] = desc->base_angles[2] + desc->amplitude[2] * sinf(theta + 0.72f);
 }
 
 
@@ -81,7 +94,7 @@ void example_preview_turntable(
     const float theta = EXAMPLE_PREVIEW_TAU * phase;
     (void)dvz_turntable_reset(turntable);
     (void)dvz_turntable_orbit(
-        turntable, desc->yaw_amplitude * phase, desc->pitch_amplitude * sinf(theta));
+        turntable, desc->yaw_amplitude * sinf(theta), desc->pitch_amplitude * cosf(theta));
     if (desc->distance_delta != 0.0f)
         (void)dvz_turntable_dolly(turntable, desc->distance_delta * (0.5f - 0.5f * cosf(theta)));
     (void)dvz_turntable_apply_camera(turntable);
@@ -109,4 +122,24 @@ void example_preview_panzoom(
     };
     (void)dvz_panzoom_pan(panzoom, pan);
     (void)dvz_panzoom_zoom(panzoom, zoom);
+}
+
+
+void example_preview_fly(
+    DvzFly* fly,
+    uint64_t frame_index,
+    uint64_t frame_count,
+    const ExamplePreviewFlyDesc* desc)
+{
+    if (fly == NULL || desc == NULL)
+        return;
+
+    const float theta = EXAMPLE_PREVIEW_TAU * _preview_phase(frame_index, frame_count);
+    (void)dvz_fly_reset(fly);
+    (void)dvz_fly_rotate(
+        fly, desc->yaw_amplitude * sinf(theta + 0.45f), desc->pitch_amplitude * cosf(theta));
+    (void)dvz_fly_move_forward(fly, desc->forward_amplitude * sinf(theta));
+    (void)dvz_fly_move_right(fly, desc->right_amplitude * cosf(theta));
+    (void)dvz_fly_move_up(fly, desc->up_amplitude * sinf(theta + 1.20f));
+    (void)dvz_fly_apply_camera(fly);
 }

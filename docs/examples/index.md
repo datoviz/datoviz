@@ -520,6 +520,18 @@ This example shows scalar point values mapped through a custom colormap.
 
 <div class="card" markdown="1">
 
+**[Panzoom](gallery/features/feature_panzoom.md)**
+
+[![Panzoom](../assets/gallery/v0.4/features/feature_panzoom.webp)](gallery/features/feature_panzoom.md)
+
+`features`
+
+Panzoom binds a 2D panzoom controller to a point visual in data coordinates.
+
+</div>
+
+<div class="card" markdown="1">
+
 **[Arcball Controller](gallery/features/feature_controller_arcball.md)**
 
 [![Arcball Controller](../assets/gallery/v0.4/features/feature_controller_arcball.webp)](gallery/features/feature_controller_arcball.md)

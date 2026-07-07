@@ -25,6 +25,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzArcball DvzArcball;
+typedef struct DvzFly DvzFly;
 typedef struct DvzPanzoom DvzPanzoom;
 typedef struct DvzTurntable DvzTurntable;
 
@@ -59,6 +60,16 @@ typedef struct ExamplePreviewPanzoomDesc
 } ExamplePreviewPanzoomDesc;
 
 
+typedef struct ExamplePreviewFlyDesc
+{
+    float forward_amplitude;
+    float right_amplitude;
+    float up_amplitude;
+    float yaw_amplitude;
+    float pitch_amplitude;
+} ExamplePreviewFlyDesc;
+
+
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
@@ -69,6 +80,12 @@ void example_preview_arcball(
     uint64_t frame_index,
     uint64_t frame_count,
     const ExamplePreviewArcballDesc* desc);
+
+void example_preview_arcball_angles(
+    uint64_t frame_index,
+    uint64_t frame_count,
+    const ExamplePreviewArcballDesc* desc,
+    vec3 out_angles);
 
 void example_preview_turntable(
     DvzTurntable* turntable,
@@ -81,3 +98,9 @@ void example_preview_panzoom(
     uint64_t frame_index,
     uint64_t frame_count,
     const ExamplePreviewPanzoomDesc* desc);
+
+void example_preview_fly(
+    DvzFly* fly,
+    uint64_t frame_index,
+    uint64_t frame_count,
+    const ExamplePreviewFlyDesc* desc);

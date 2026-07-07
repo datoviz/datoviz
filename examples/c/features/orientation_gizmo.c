@@ -33,6 +33,7 @@
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
+#include "example_controller_preview.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -54,6 +55,7 @@
 typedef struct OrientationGizmoState
 {
     DvzGeometry* geometry;
+    DvzArcball* arcball;
 } OrientationGizmoState;
 
 
@@ -134,6 +136,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzController* controller = dvz_arcball(ctx->scene, NULL);
     if (controller == NULL)
         return false;
+    DvzArcball* arcball = dvz_controller_arcball(controller);
+    if (arcball == NULL)
+        return false;
+    state->arcball = arcball;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
 
@@ -141,6 +147,28 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     gizmo.placement = dvz_placement_panel_corner(
         DVZ_HORIZONTAL_ANCHOR_RIGHT, DVZ_VERTICAL_ANCHOR_BOTTOM, 150, 150, -18, -18);
     return dvz_orientation_gizmo(panel, &gizmo) != NULL;
+}
+
+
+/**
+ * Apply deterministic preview motion for generated gallery media.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    if (ctx == NULL || !ctx->preview_mode || user == NULL)
+        return;
+
+    OrientationGizmoState* state = (OrientationGizmoState*)user;
+    ExamplePreviewArcballDesc desc = {
+        .base_angles = {+0.38f, -0.22f, +0.12f},
+        .amplitude = {+0.42f, +0.28f, +0.32f},
+        .zoom = 1.0f,
+    };
+    example_preview_arcball(
+        state->arcball, ctx->preview_frame_index, ctx->preview_frame_count, &desc);
 }
 
 
@@ -177,7 +205,10 @@ static DvzScenarioSpec _orientation_gizmo_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER |
+                        DVZ_SCENARIO_REQ_ARCBALL,
         .init = _scenario_init,
+        .frame = _scenario_frame,
         .destroy = _scenario_destroy,
     };
 }

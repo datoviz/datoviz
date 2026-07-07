@@ -210,6 +210,7 @@ INDEX_FEATURE_GROUPS = (
         "colormap_scale",
     ]),
     ("Navigation", [
+        "feature_panzoom",
         "feature_controller_arcball",
         "feature_controller_fly",
         "feature_controller_turntable",

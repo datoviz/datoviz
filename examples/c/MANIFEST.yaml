@@ -561,6 +561,11 @@ examples:
     lane: features
     source: examples/c/features/orientation_gizmo.c
     validation: smoke+interaction+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 24
+        fps: 12
     data:
       kind: synthetic
     webgpu:
@@ -626,6 +631,11 @@ examples:
     lane: features
     source: examples/c/features/controller_fly.c
     validation: smoke+interaction+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 24
+        fps: 12
     data:
       kind: synthetic
     webgpu:
