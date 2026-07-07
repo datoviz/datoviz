@@ -887,6 +887,7 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
     ANN(depth);
     AT(msaa_color->format == 0);
     AT(msaa_color->sample_count == 4);
+    AT(msaa_color->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC);
     AT(depth->sample_count == 4);
 
     const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, 0);
@@ -932,10 +933,12 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
             if (label != NULL && strcmp(label, "fig0_p0.msaa.color") == 0)
             {
                 msaa_texture_id = cmd->u.create_texture.id;
-                found_msaa_texture = cmd->u.create_texture.sample_count == 4 &&
-                                     cmd->u.create_texture.format == DVZ_FORMAT_B8G8R8A8_UNORM &&
-                                     (cmd->u.create_texture.usage &
-                                      DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0;
+                found_msaa_texture =
+                    cmd->u.create_texture.sample_count == 4 &&
+                    cmd->u.create_texture.format == DVZ_FORMAT_B8G8R8A8_UNORM &&
+                    (cmd->u.create_texture.usage &
+                     DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0 &&
+                    (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_COPY_SRC) != 0;
             }
             if (label != NULL && strcmp(label, "fig0_p0.depth") == 0)
             {
@@ -1044,6 +1047,7 @@ int test_scene_msaa_mixed_plain_panel_resolve_region(TstContext* suite, const Ts
     AT(validation.ok);
 
     uint64_t msaa_texture_id = 0;
+    bool found_msaa_texture = false;
     bool found_left_plain_pass = false;
     bool found_right_msaa_pass = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
@@ -1054,7 +1058,11 @@ int test_scene_msaa_mixed_plain_panel_resolve_region(TstContext* suite, const Ts
         {
             const char* label = dvz_drp2_stream_label(stream, cmd->u.create_texture.id);
             if (label != NULL && strcmp(label, "fig0_p1.msaa.color") == 0)
+            {
                 msaa_texture_id = cmd->u.create_texture.id;
+                found_msaa_texture =
+                    (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_COPY_SRC) != 0;
+            }
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         {
@@ -1099,6 +1107,7 @@ int test_scene_msaa_mixed_plain_panel_resolve_region(TstContext* suite, const Ts
                  right_msaa_rect);
         }
     }
+    AT(found_msaa_texture);
     AT(found_left_plain_pass);
     AT(found_right_msaa_pass);
 

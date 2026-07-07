@@ -219,6 +219,13 @@ struct Drp2VkliteObject
     DvzDrp2BindGroupEntry bind_group_entries[DVZ_DRP2_MAX_BINDINGS];
     uint32_t color_target_count;
     uint64_t color_target_ids[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
+    uint32_t deferred_resolve_count;
+    uint64_t deferred_resolve_src_ids[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
+    uint64_t deferred_resolve_dst_ids[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
+    uint32_t deferred_resolve_x[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
+    uint32_t deferred_resolve_y[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
+    uint32_t deferred_resolve_width[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
+    uint32_t deferred_resolve_height[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
     uint32_t usage;
     uint32_t format;
     uint32_t width;

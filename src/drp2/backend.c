@@ -408,6 +408,11 @@ bool _vklite_attach_frame_target(
     object->width = frame->extent.width;
     object->height = frame->extent.height;
     object->format = (uint32_t)frame->color_format;
+    object->usage = DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT;
+    if ((frame->usage & DVZ_STREAM_FRAME_USAGE_COPY_SRC) != 0)
+        object->usage |= DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
+    if ((frame->usage & DVZ_STREAM_FRAME_USAGE_COPY_DST) != 0)
+        object->usage |= DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
     object->sample_count = 1;
     object->borrowed_frame_target = true;
     object->destroyed = false;

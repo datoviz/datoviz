@@ -13,35 +13,31 @@ Immediate runtime troubleshooting task:
 investigation plan for the macOS terminal-IPython hosted window close hang. Handle this before
 returning to broader RC stabilization if the user's next pickup is Python/IPython runtime work.
 
-Next critical path: fix DRP2 render-pass area semantics before RC stabilization, then close RC1
-release notes, source bundle/checksum, artifact inspection, publication rehearsal, and final public
-status/documentation reconciliation.
+Next critical path: close RC1 release notes, source bundle/checksum, artifact inspection,
+publication rehearsal, and final public status/documentation reconciliation.
 
-Imminent runtime refactor: [HANDOFF_DRP2_RENDER_PASS_SEMANTICS.md](HANDOFF_DRP2_RENDER_PASS_SEMANTICS.md)
-records the required DRP2 cleanup. `BeginRenderPass.viewport` currently conflates attachment render
-area, draw viewport, and draw scissor; this exposed magenta uninitialized frame/gutter pixels in
-multi-panel examples such as `scientific_plotting_workflow`. API/ABI breakage is acceptable in this
-lane if it yields a clean descriptor-based render-pass command model.
+Completed runtime cleanup to keep in validation: DRP2 render-pass begin commands now carry explicit
+render area, viewport, and scissor rectangles, scene emission initializes full targets before panel
+passes, and mixed plain/MSAA panels use an explicit-region resolve path so panel resolves do not
+clobber earlier framebuffer contents.
 
 Pre-RC1 execution order:
 
-1. Complete the DRP2 render-pass semantics refactor and validate multi-panel frame clears,
-   sRGB intermediate presentation, DRP2 fixtures, native runtime, and WebGPU parity as needed.
-2. Run the v0.4 Git history cleanup if it is still desired before stable RC refs exist.
-3. Keep the now-green wheel matrix in release evidence and inspect downloaded artifacts before
+1. Run the v0.4 Git history cleanup if it is still desired before stable RC refs exist.
+2. Keep the now-green wheel matrix in release evidence and inspect downloaded artifacts before
    upload.
-4. Prepare the RC1 source bundle, release notes, tag, and publication rehearsal.
-5. Install, inspect, and smoke-test the built wheels, including native dependencies and the CMake
+3. Prepare the RC1 source bundle, release notes, tag, and publication rehearsal.
+4. Install, inspect, and smoke-test the built wheels, including native dependencies and the CMake
    consumer check.
-6. Keep the v0.3 visible parity audit and public API/status disposition table reconciled before
+5. Keep the v0.3 visible parity audit and public API/status disposition table reconciled before
    RC1: specifically re-check `docs/reference/feature-status.md`,
    `docs/reference/project-status.md`, `docs/reference/v03-visible-parity.md`, generated C API
    docs, Python binding docs/policy, and the GSP/VisPy2 boundary language for contradictions.
-7. Polish the WebGPU/WASM story: supported live routes, experimental scope, diagnostics, and
+6. Polish the WebGPU/WASM story: supported live routes, experimental scope, diagnostics, and
    non-parity boundaries.
-8. Proofread the public docs, gallery pages, generated matrices, screenshots, and example metadata.
-9. Cut RC1 only after final validation and release notes are recorded.
-10. Keep the narrow retained visual item-range slice in validation: the point-first
+7. Proofread the public docs, gallery pages, generated matrices, screenshots, and example metadata.
+8. Cut RC1 only after final validation and release notes are recorded.
+9. Keep the narrow retained visual item-range slice in validation: the point-first
    `dvz_visual_set_item_range()` / clear/get API is active, with broader attribute views, scalar
    GPU mappings, modifiers, compaction, sorting, indirect draw, and additional visual families
    deferred unless a concrete RC blocker appears.

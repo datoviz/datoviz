@@ -242,7 +242,8 @@ bool _scene_technique_emit_blended_frame_graph(
         dvz_strlcpy(msaa_color.id, msaa_color_id, sizeof(msaa_color.id));
         msaa_color.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
         msaa_color.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
-        msaa_color.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT;
+        msaa_color.usage_flags =
+            DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT | DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC;
         msaa_color.sample_count = sample_count;
         msaa_color.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
         if (!_scene_frame_graph_resource_once(plan, &msaa_color))

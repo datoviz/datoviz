@@ -535,7 +535,11 @@ bool dvz_drp2_runtime_attach_frame_target(
     object->depth = 1;
     object->format = (uint32_t)frame->color_format;
     object->sample_count = 1;
-    object->usage = DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
+    object->usage = DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT;
+    if ((frame->usage & DVZ_STREAM_FRAME_USAGE_COPY_SRC) != 0)
+        object->usage |= DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
+    if ((frame->usage & DVZ_STREAM_FRAME_USAGE_COPY_DST) != 0)
+        object->usage |= DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
     return true;
 #else
     (void)runtime;

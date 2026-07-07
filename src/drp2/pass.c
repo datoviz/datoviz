@@ -718,6 +718,36 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
         scissor_width = viewport_width;
         scissor_height = viewport_height;
     }
+    bool deferred_resolves[DVZ_DRP2_MAX_COLOR_ATTACHMENTS] = {0};
+    pass->deferred_resolve_count = 0;
+    for (uint32_t i = 0; i < color_count; i++)
+    {
+        const DvzDrp2ColorAttachment* attachment =
+            command->u.begin_render_pass.color_attachment_count > 0
+                ? &command->u.begin_render_pass.color_attachments[i]
+                : NULL;
+        uint32_t resolve_mode =
+            attachment != NULL && attachment->resolve_mode != 0 ?
+                attachment->resolve_mode :
+                (uint32_t)VK_RESOLVE_MODE_AVERAGE_BIT;
+        bool can_defer_resolve =
+            resolves[i] != NULL &&
+            (targets[i]->usage & DVZ_DRP2_TEXTURE_USAGE_COPY_SRC) != 0 &&
+            (resolves[i]->usage & DVZ_DRP2_TEXTURE_USAGE_COPY_DST) != 0;
+        if (can_defer_resolve && resolves[i]->borrowed_frame_target &&
+            command->u.begin_render_pass.has_explicit_rects &&
+            resolve_mode == (uint32_t)VK_RESOLVE_MODE_AVERAGE_BIT)
+        {
+            uint32_t index = pass->deferred_resolve_count++;
+            deferred_resolves[i] = true;
+            pass->deferred_resolve_src_ids[index] = targets[i]->id;
+            pass->deferred_resolve_dst_ids[index] = resolves[i]->id;
+            pass->deferred_resolve_x[index] = render_area_x;
+            pass->deferred_resolve_y[index] = render_area_y;
+            pass->deferred_resolve_width[index] = render_area_width;
+            pass->deferred_resolve_height[index] = render_area_height;
+        }
+    }
     pass->viewport_x = (float)viewport_x;
     pass->viewport_y = (float)viewport_y;
     pass->viewport_width = (float)viewport_width;
@@ -758,7 +788,7 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
             .color.float32 = {clear_color[0], clear_color[1], clear_color[2], clear_color[3]}};
         DvzAttachment* catt = dvz_rendering_color(rendering, i);
         dvz_attachment_image(catt, target_views[i], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-        if (resolve_views[i] != VK_NULL_HANDLE)
+        if (resolve_views[i] != VK_NULL_HANDLE && !deferred_resolves[i])
         {
             VkResolveModeFlagBits resolve_mode =
                 attachment != NULL && attachment->resolve_mode != 0 ?
@@ -922,24 +952,20 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
 
     for (uint32_t i = 0; i < color_count; i++)
     {
-        if (!targets[i]->borrowed_frame_target)
-        {
-            const DvzDrp2ColorAttachment* attachment =
-                command->u.begin_render_pass.color_attachment_count > 0
-                    ? &command->u.begin_render_pass.color_attachments[i]
-                    : NULL;
-            DvzDrp2AttachmentAccess access =
-                attachment != NULL ? attachment->access : DVZ_DRP2_ATTACHMENT_ACCESS_WRITE;
-            DvzDrp2AttachmentLoadOp load_op =
-                attachment != NULL ? attachment->load_op :
-                                     (command->u.begin_render_pass.clear ?
-                                          DVZ_DRP2_ATTACHMENT_LOAD_CLEAR :
-                                          DVZ_DRP2_ATTACHMENT_LOAD_LOAD);
-            access = _attachment_effective_access(access, load_op);
-            _vklite_transition_image_access(
-                cmds, targets[i], _color_texture_access(access));
-        }
-        if (resolves[i] != NULL)
+        const DvzDrp2ColorAttachment* attachment =
+            command->u.begin_render_pass.color_attachment_count > 0
+                ? &command->u.begin_render_pass.color_attachments[i]
+                : NULL;
+        DvzDrp2AttachmentAccess access =
+            attachment != NULL ? attachment->access : DVZ_DRP2_ATTACHMENT_ACCESS_WRITE;
+        DvzDrp2AttachmentLoadOp load_op =
+            attachment != NULL ? attachment->load_op :
+                                 (command->u.begin_render_pass.clear ?
+                                      DVZ_DRP2_ATTACHMENT_LOAD_CLEAR :
+                                      DVZ_DRP2_ATTACHMENT_LOAD_LOAD);
+        access = _attachment_effective_access(access, load_op);
+        _vklite_transition_image_access(cmds, targets[i], _color_texture_access(access));
+        if (resolves[i] != NULL && !deferred_resolves[i])
         {
             _vklite_transition_image_access(
                 cmds, resolves[i], DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT_WRITE);
@@ -1389,6 +1415,51 @@ DvzDrp2ValidationResult _vklite_resource_barrier(
 }
 
 
+static bool _vklite_resolve_deferred_color_regions(Drp2VkliteState* state, Drp2VkliteObject* pass)
+{
+    ANN(state);
+    ANN(pass);
+    ANN(pass->commands);
+
+    for (uint32_t i = 0; i < pass->deferred_resolve_count; i++)
+    {
+        Drp2VkliteObject* src = _vklite_find(state, pass->deferred_resolve_src_ids[i]);
+        Drp2VkliteObject* dst = _vklite_find(state, pass->deferred_resolve_dst_ids[i]);
+        if (src == NULL || src->images == NULL || dst == NULL || dst->images == NULL)
+            return false;
+
+        _vklite_transition_image_access(pass->commands, src, DRP2_TEXTURE_ACCESS_TRANSFER_READ);
+        _vklite_transition_image_access(pass->commands, dst, DRP2_TEXTURE_ACCESS_TRANSFER_WRITE);
+
+        VkImageResolve2 region = {.sType = VK_STRUCTURE_TYPE_IMAGE_RESOLVE_2};
+        region.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.srcSubresource.layerCount = 1;
+        region.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.dstSubresource.layerCount = 1;
+        region.srcOffset.x = (int32_t)pass->deferred_resolve_x[i];
+        region.srcOffset.y = (int32_t)pass->deferred_resolve_y[i];
+        region.dstOffset.x = (int32_t)pass->deferred_resolve_x[i];
+        region.dstOffset.y = (int32_t)pass->deferred_resolve_y[i];
+        region.extent.width = pass->deferred_resolve_width[i];
+        region.extent.height = pass->deferred_resolve_height[i];
+        region.extent.depth = 1;
+
+        VkResolveImageInfo2 info = {.sType = VK_STRUCTURE_TYPE_RESOLVE_IMAGE_INFO_2};
+        info.srcImage = dvz_image_handle(src->images, 0);
+        info.srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        info.dstImage = dvz_image_handle(dst->images, 0);
+        info.dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        info.regionCount = 1;
+        info.pRegions = &region;
+        vkCmdResolveImage2(dvz_commands_handle(pass->commands), &info);
+
+        _vklite_transition_image_access(pass->commands, dst, DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT_WRITE);
+    }
+    return true;
+}
+
+
+
 /**
  * End and submit a vklite dynamic-rendering pass.
  *
@@ -1406,6 +1477,11 @@ _vklite_end_render_pass(Drp2VkliteState* state, uint64_t pass_id, uint32_t comma
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     dvz_cmd_rendering_end(pass->commands);
+    if (!_vklite_resolve_deferred_color_regions(state, pass))
+    {
+        _vklite_destroy_object_slot(state, pass);
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
     if (!pass->borrowed_commands)
     {
         DvzDrp2ValidationResult result =
