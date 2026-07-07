@@ -97,24 +97,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzCameraDesc camera = example_controller_camera_desc();
     if (dvz_panel_set_camera_desc(panel, &camera) != 0)
         return false;
-    DvzReferenceGridDesc grid = dvz_reference_grid_desc();
-    grid.plane = DVZ_REFERENCE_GRID_XZ;
-    grid.origin[1] = EXAMPLE_CONTROLLER_GRID_ORIGIN_Y;
-    grid.size[0] = EXAMPLE_XZ_REFERENCE_GRID_SIZE;
-    grid.size[1] = EXAMPLE_XZ_REFERENCE_GRID_SIZE;
-    grid.spacing = EXAMPLE_XZ_REFERENCE_GRID_SPACING;
-    grid.major_every = EXAMPLE_XZ_REFERENCE_GRID_MAJOR_EVERY;
-    grid.minor_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
-    grid.minor_color.a = EXAMPLE_XZ_REFERENCE_GRID_MINOR_ALPHA;
-    grid.major_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_MINOR_TICK);
-    grid.major_color.a = EXAMPLE_XZ_REFERENCE_GRID_MAJOR_ALPHA;
-    grid.axis_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
-    grid.axis_color.a = EXAMPLE_XZ_REFERENCE_GRID_AXIS_ALPHA;
-    grid.minor_width_px = EXAMPLE_XZ_REFERENCE_GRID_MINOR_WIDTH;
-    grid.major_width_px = EXAMPLE_XZ_REFERENCE_GRID_MAJOR_WIDTH;
-    grid.axis_width_px = EXAMPLE_XZ_REFERENCE_GRID_AXIS_WIDTH;
-    grid.depth_test = true;
-    if (dvz_reference_grid(panel, &grid) == NULL)
+    if (!example_add_graphite_cyan_xz_reference_grid(
+            panel, EXAMPLE_CONTROLLER_GRID_ORIGIN_Y, true))
         return false;
     if (!example_add_graphite_cyan_cube_mesh(
             ctx->scene, panel, EXAMPLE_CONTROLLER_CUBE_SIZE, NULL, &state->geometry))

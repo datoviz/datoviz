@@ -112,6 +112,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     if (!_set_manual_camera(panel))
         return false;
+    if (!example_add_graphite_cyan_xz_reference_grid(panel, -0.625f, true))
+        return false;
     if (!example_add_graphite_cyan_cube_mesh(ctx->scene, panel, 1.25, NULL, NULL))
         return false;
 

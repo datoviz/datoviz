@@ -148,6 +148,9 @@ bool example_configure_equal_aspect_panel(
 
 bool example_configure_compact_grid(DvzGrid* grid, float gutter_x_px, float gutter_y_px);
 
+bool example_add_graphite_cyan_xz_reference_grid(
+    DvzPanel* panel, float origin_y, bool depth_test);
+
 bool example_visual_set_rgba8_field(
     DvzScene* scene,
     DvzVisual* visual,

@@ -625,6 +625,41 @@ bool example_configure_compact_grid(DvzGrid* grid, float gutter_x_px, float gutt
 
 
 /**
+ * Add the shared graphite-cyan XZ reference grid used by 3D cube examples.
+ *
+ * @param panel target panel
+ * @param origin_y world-space Y coordinate of the grid plane
+ * @param depth_test whether grid segments should be depth-tested
+ * @return true when the reference grid was added
+ */
+bool example_add_graphite_cyan_xz_reference_grid(
+    DvzPanel* panel, float origin_y, bool depth_test)
+{
+    if (panel == NULL)
+        return false;
+
+    DvzReferenceGridDesc grid = dvz_reference_grid_desc();
+    grid.plane = DVZ_REFERENCE_GRID_XZ;
+    grid.origin[1] = origin_y;
+    grid.size[0] = EXAMPLE_XZ_REFERENCE_GRID_SIZE;
+    grid.size[1] = EXAMPLE_XZ_REFERENCE_GRID_SIZE;
+    grid.spacing = EXAMPLE_XZ_REFERENCE_GRID_SPACING;
+    grid.major_every = EXAMPLE_XZ_REFERENCE_GRID_MAJOR_EVERY;
+    grid.minor_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
+    grid.minor_color.a = EXAMPLE_XZ_REFERENCE_GRID_MINOR_ALPHA;
+    grid.major_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_MINOR_TICK);
+    grid.major_color.a = EXAMPLE_XZ_REFERENCE_GRID_MAJOR_ALPHA;
+    grid.axis_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
+    grid.axis_color.a = EXAMPLE_XZ_REFERENCE_GRID_AXIS_ALPHA;
+    grid.minor_width_px = EXAMPLE_XZ_REFERENCE_GRID_MINOR_WIDTH;
+    grid.major_width_px = EXAMPLE_XZ_REFERENCE_GRID_MAJOR_WIDTH;
+    grid.axis_width_px = EXAMPLE_XZ_REFERENCE_GRID_AXIS_WIDTH;
+    grid.depth_test = depth_test;
+    return dvz_reference_grid(panel, &grid) != NULL;
+}
+
+
+/**
  * Create a mesh visual backed by one graphite-cyan colored cube geometry.
  *
  * @param scene scene owning the visual

@@ -95,6 +95,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     if (example_set_default_3d_camera(panel, 1.0f) == NULL)
         return false;
+    if (!example_add_graphite_cyan_xz_reference_grid(panel, -0.59f, true))
+        return false;
     if (!example_add_graphite_cyan_cube_mesh(ctx->scene, panel, 1.18, NULL, &state->geometry))
         return false;
 
