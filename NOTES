@@ -65,6 +65,8 @@ EXAMPLES
 - point cloud
   - the fly direction should either be always on the horizontal plane (compared to the scene shown which is a landscape with a natural ground plane) or follow the camera direction, and currently it does neither
 
+- allen brain
+  - make a gui so that i can tweak the initial default parameters
 
 
 
