@@ -43,4 +43,4 @@ See also:
 
 - [Retained resources](retained-resources.md)
 - [Frame lifecycle](frame-lifecycle.md)
-- [Performance model](performance-model.md)
+- [Profile rendering performance](../how-to/profile-performance.md)

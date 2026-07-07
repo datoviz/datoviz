@@ -35,6 +35,6 @@ outside the Datoviz v0.4 public docs unless it is explicitly marked as GSP/VisPy
 
 See also:
 
-- [Why Datoviz?](why-datoviz.md)
+- [What is Datoviz?](../start/what-is-datoviz.md)
 - [Choose your layer](../start/choose-your-layer.md)
 - [Feature status](../reference/feature-status.md)

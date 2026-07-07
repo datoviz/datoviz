@@ -78,10 +78,10 @@ Expose only durable architecture and lower-layer pages:
 ```yaml
 - Internals:
   - Architecture:
-    - Why Datoviz
-    - Scene model
-    - Performance model
-    - Portability and WebGPU
+    - What is Datoviz?
+    - Scene building blocks
+    - Profile rendering performance
+    - WebGPU subset
   - Lower Layers:
     - vklite
     - Canvas and stream API

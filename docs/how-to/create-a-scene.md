@@ -175,7 +175,7 @@ materials, panels, transforms, or update schedules.
 - [Add visuals to a panel](add-a-visual.md)
 - [Use from Python](use-python.md)
 - [Create multiple panels](multiple-panels.md)
-- [Scene model](../explanation/scene-model.md)
+- [Scene building blocks](../explanation/figure-panel-visual-model.md)
 
 ??? example "Related examples"
 

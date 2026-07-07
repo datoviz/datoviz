@@ -14,7 +14,7 @@ Use this page for advanced runtime, fixture, or WASM/WebGPU integration work. Or
 Common workflows:
 
 - [DRP2 command streams](../../advanced/drp2-command-streams.md)
-- [WebGPU portability](../../explanation/portability-webgpu.md)
+- [WebGPU subset](../webgpu-subset.md)
 
 Functions: 41
 

@@ -1,44 +1,81 @@
-# Figures, Panels, and Visuals
+# Scene Building Blocks
 
-The figure-panel-visual hierarchy is the user-facing shape of a Datoviz scene.
+Most Datoviz programs use the same small set of building blocks. You do not need to know graphics
+terms before using them.
 
-## Figures
 
-Figures answer "where does this scene render?" They define the render target size and contain one
-or more panels. The same figure may be used by an interactive view, an offscreen capture path, or an
-embedding provider, depending on which runtime surface is active.
+## Scene
+
+A scene is the whole visualization. It owns the figures, panels, visuals, controllers, and data that
+belong together.
+
+Create one scene for one visualization workflow. Destroy it after any window, offscreen render, or
+capture using it has finished.
+
+
+## Figure
+
+A figure is the output image area. It has a pixel size, such as 800 by 600.
+
+A figure can be shown in a window, rendered offscreen, or embedded in a supported host application.
+
 
 ## Panels
 
-Panels answer "which region and coordinate domain does this content use?" A panel has a viewport,
-a data domain, optional camera or panzoom state, and attached scene objects. Most layout decisions,
-such as single-view figures, grids, linked panels, overlays, and annotation panels, are expressed by
-panel placement and controller/domain sharing.
+A panel is a drawing region inside a figure. A simple figure has one full-size panel. A multi-panel
+figure can place several panels next to each other.
+
+Panels are where visuals are attached. They also hold view settings such as 2D pan and zoom or a 3D
+camera.
+
 
 ## Visuals
 
-Visuals answer "what homogeneous batch should be drawn?" A point cloud should usually be one point
-visual with many point items. A set of trajectories should usually be one path or segment visual
-when they share rendering state. Split visuals when family, material, panel attachment, transform,
-lifetime, visibility, or update cadence genuinely differs.
+A visual is one kind of thing to draw. Examples are points, markers, line segments, paths, images,
+meshes, text, labels, and spheres.
 
-## Sampled Resources
+A visual usually contains many items. For example, a point cloud should normally be one point visual
+with many point positions, not one visual per point.
 
-Fields and sampled resources answer "what data can be sampled?" Images, volumes, color-mapped
-fields, textures, and lookup tables should be represented as retained resources with explicit roles
-rather than as hidden backend state.
+Use separate visuals when the data needs a different visual type, a different panel, a different
+style, or a different update pattern.
 
-## Adornments and Overlays
 
-Adornments answer "what semantic context surrounds the data?" Axes, ticks, labels, colorbars,
-legends, scale bars, and readouts are not separate renderer paths. They are scene-level objects that
-lower to visuals and share the same coordinate, invalidation, and frame-planning rules.
+## Data Arrays
 
-Overlays should be treated as panel or figure content with clear coordinate ownership. Pixel-space
-UI-like overlays should stay explicit so they do not get confused with data-coordinate visuals.
+Data arrays provide the values that visuals draw. Common arrays include positions, colors, sizes,
+image pixels, mesh vertices, and text strings.
+
+After you attach arrays to a visual, attach the visual to a panel. Uploading data alone does not make
+the visual appear.
+
+
+## Views
+
+A view is where a figure is rendered. It can be an interactive window, an offscreen target for image
+capture, or a supported embedded host.
+
+
+## Adornments
+
+Adornments are visual context around your data: axes, ticks, labels, colorbars, scale bars, legends,
+and readouts. They are part of the scene, not a separate drawing system.
+
+
+## Typical Order
+
+Most examples follow this order:
+
+1. create a scene;
+2. create a figure;
+3. create one or more panels;
+4. create visuals;
+5. set visual data arrays;
+6. attach visuals to panels;
+7. open a window or capture an image.
 
 See also:
 
-- [Scene model](scene-model.md)
 - [Coordinate systems](coordinate-systems.md)
-- [Performance model](performance-model.md)
+- [Create a scene](../how-to/create-a-scene.md)
+- [Profile rendering performance](../how-to/profile-performance.md)

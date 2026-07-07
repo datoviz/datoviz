@@ -44,7 +44,7 @@ extend DRP2/runtime support, or remain explicitly outside the release surface.
 
 See also:
 
-- [Scene model](scene-model.md)
+- [Scene building blocks](figure-panel-visual-model.md)
 - [Scene to runtime boundary](scene-to-runtime-boundary.md)
 - [Frame lifecycle](frame-lifecycle.md)
-- [Portability and WebGPU](portability-webgpu.md)
+- [WebGPU subset](../reference/webgpu-subset.md)

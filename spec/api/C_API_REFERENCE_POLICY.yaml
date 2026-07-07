@@ -28,8 +28,8 @@ pages:
     workflows:
       - label: DRP2 command streams
         href: ../../advanced/drp2-command-streams.md
-      - label: WebGPU portability
-        href: ../../explanation/portability-webgpu.md
+      - label: WebGPU subset
+        href: ../webgpu-subset.md
     headers:
       - include/datoviz/scene/frame_plan.h
       - include/datoviz/scene/frame_packets.h
