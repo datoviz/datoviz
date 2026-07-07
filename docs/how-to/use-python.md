@@ -59,6 +59,11 @@ dvz.dvz_app_destroy(app)
 dvz.dvz_scene_destroy(scene)
 ```
 
+For terminal IPython, use `session = dvz.run(scene, figure)`. The prompt remains usable while the
+native window stays responsive, so you can update NumPy arrays, upload them with
+`dvz_visual_set_data_range()`, and call `session.request_frame()`. See
+[Use from terminal IPython](use-ipython.md).
+
 ## Important Details
 
 The v0.4 Python surface is close to the C API. It is meant for explicit scene, panel, visual, and
@@ -96,6 +101,7 @@ When porting a C example:
 ## See Also
 
 - [Python binding with NumPy arrays](../reference/python-direct-engine.md)
+- [Use from terminal IPython](use-ipython.md)
 - [Use the exact Python binding call form](use-raw-ctypes.md)
 - [Use from C or C++](c-integration.md)
 - [Choose a visual family](choose-a-visual-family.md)

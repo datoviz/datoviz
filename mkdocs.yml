@@ -145,6 +145,7 @@ nav:
     - Integration:
       - Use from C or C++: 'how-to/c-integration.md'
       - Use from Python: 'how-to/use-python.md'
+      - Use from terminal IPython: 'how-to/use-ipython.md'
       - Use raw ctypes: 'how-to/use-raw-ctypes.md'
       - Choose window size: 'how-to/window-size.md'
       - Embed in Qt: 'how-to/embed-in-qt.md'

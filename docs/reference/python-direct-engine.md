@@ -42,7 +42,8 @@ scripts, it blocks until the window closes and then releases those runtime resou
 IPython, it returns a live-session handle so the prompt remains usable; native window close and
 `session.close()` both close the session while leaving the retained scene alive. Call
 `dvz.run(scene, figure)` again to reopen the same visualization, and call
-`dvz.dvz_scene_destroy(scene)` when you are done with the retained scene.
+`dvz.dvz_scene_destroy(scene)` when you are done with the retained scene. See
+[Use from terminal IPython](../how-to/use-ipython.md) for prompt-side live updates.
 
 
 ## Dense Visual Data
