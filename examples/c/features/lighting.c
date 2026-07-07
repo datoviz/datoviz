@@ -28,9 +28,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "_alloc.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "example_tuner.h"
 #include "runner/scenario_runner.h"
 
 
@@ -43,6 +45,20 @@
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define SPHERE_COUNT 9u
 #define LABEL_SIZE   18.0f
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct LightingState
+{
+    DvzVisual* visuals[3];
+    DvzMaterialDesc materials[3];
+    DvzArcball* arcball;
+    ExampleTuner tuner;
+} LightingState;
 
 
 
@@ -63,10 +79,12 @@ DvzScenarioSpec dvz_example_lighting_scenario(void);
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
- * @param variant material/light variant index
+ * @param material material descriptor
+ * @param out_visual optional output visual pointer
  * @return true on success
  */
-static bool _add_lit_spheres(DvzScene* scene, DvzPanel* panel, uint32_t variant)
+static bool _add_lit_spheres(
+    DvzScene* scene, DvzPanel* panel, const DvzMaterialDesc* material, DvzVisual** out_visual)
 {
     vec3 positions[SPHERE_COUNT] = {
         {-0.56f, -0.20f, -0.20f}, {-0.29f, -0.20f, +0.05f}, {+0.00f, -0.20f, +0.18f},
@@ -94,35 +112,7 @@ static bool _add_lit_spheres(DvzScene* scene, DvzPanel* panel, uint32_t variant)
     if (dvz_sphere_set_mode(visual, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0)
         return false;
 
-    DvzMaterialDesc material = dvz_standard_material_desc();
-    if (variant == 0u)
-    {
-        material.light_direction[0] = +0.34f;
-        material.light_direction[1] = +0.46f;
-        material.light_direction[2] = +0.82f;
-        material.standard.roughness = 0.86f;
-        material.standard.specular = 0.12f;
-        material.standard.rim_strength = 0.05f;
-    }
-    else if (variant == 1u)
-    {
-        material.light_direction[0] = +0.12f;
-        material.light_direction[1] = +0.70f;
-        material.light_direction[2] = +0.62f;
-        material.standard.roughness = 0.42f;
-        material.standard.specular = 0.60f;
-        material.standard.rim_strength = 0.18f;
-    }
-    else
-    {
-        material.light_direction[0] = +0.62f;
-        material.light_direction[1] = +0.18f;
-        material.light_direction[2] = +0.76f;
-        material.standard.roughness = 0.24f;
-        material.standard.specular = 0.78f;
-        material.standard.rim_strength = 0.42f;
-    }
-    if (dvz_visual_set_material(visual, &material) != 0)
+    if (dvz_visual_set_material(visual, material) != 0)
         return false;
 
     DvzVisualDataUpdate updates[] = {
@@ -132,7 +122,11 @@ static bool _add_lit_spheres(DvzScene* scene, DvzPanel* panel, uint32_t variant)
     };
     if (dvz_visual_set_data_many(visual, updates, 3) != 0)
         return false;
-    return dvz_panel_add_visual(panel, visual, NULL) == 0;
+    if (dvz_panel_add_visual(panel, visual, NULL) != 0)
+        return false;
+    if (out_visual != NULL)
+        *out_visual = visual;
+    return true;
 }
 
 
@@ -187,13 +181,45 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (out_user != NULL)
         *out_user = NULL;
 
+    LightingState* state = (LightingState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = state;
+    state->tuner = example_tuner("Lighting settings");
+
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
         return false;
 
+    state->materials[0] = dvz_standard_material_desc();
+    state->materials[0].light_direction[0] = +0.34f;
+    state->materials[0].light_direction[1] = +0.46f;
+    state->materials[0].light_direction[2] = +0.82f;
+    state->materials[0].standard.roughness = 0.86f;
+    state->materials[0].standard.specular = 0.12f;
+    state->materials[0].standard.rim_strength = 0.05f;
+
+    state->materials[1] = dvz_standard_material_desc();
+    state->materials[1].light_direction[0] = +0.12f;
+    state->materials[1].light_direction[1] = +0.70f;
+    state->materials[1].light_direction[2] = +0.62f;
+    state->materials[1].standard.roughness = 0.42f;
+    state->materials[1].standard.specular = 0.60f;
+    state->materials[1].standard.rim_strength = 0.18f;
+
+    state->materials[2] = dvz_standard_material_desc();
+    state->materials[2].light_direction[0] = +0.62f;
+    state->materials[2].light_direction[1] = +0.18f;
+    state->materials[2].light_direction[2] = +0.76f;
+    state->materials[2].standard.roughness = 0.24f;
+    state->materials[2].standard.specular = 0.78f;
+    state->materials[2].standard.rim_strength = 0.42f;
+
     DvzCameraDesc camera = example_default_3d_camera_desc(1.0f);
     DvzController* controllers[3] = {0};
     const char* labels[3] = {"Matte key light", "Glossy side light", "Rim highlight"};
+    DvzPanel* panels[3] = {0};
     const DvzPanelDesc panel_descs[3] = {
         {.x = 0.0000f, .y = 0.0f, .width = 0.3340f, .height = 1.0f},
         {.x = 0.3330f, .y = 0.0f, .width = 0.3340f, .height = 1.0f},
@@ -204,12 +230,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         DvzPanel* panel = dvz_panel(ctx->figure, &panel_descs[i]);
         if (panel == NULL)
             return false;
+        panels[i] = panel;
         example_graphite_cyan_set_panel_background(panel);
         if (!_add_lighting_label(panel, labels[i]))
             return false;
         if (dvz_panel_set_camera_desc(panel, &camera) != 0)
             return false;
-        if (!_add_lit_spheres(ctx->scene, panel, i))
+        if (!_add_lit_spheres(ctx->scene, panel, &state->materials[i], &state->visuals[i]))
             return false;
 
         DvzController* controller = dvz_arcball(ctx->scene, NULL);
@@ -221,6 +248,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
             return false;
         // dvz_arcball_set(arcball, (vec3){+0.46f, -0.12f, +0.18f});
+        if (i == 0u)
+            state->arcball = arcball;
         controllers[i] = controller;
     }
     for (uint32_t i = 1; i < 3u; i++)
@@ -231,7 +260,40 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
                 DVZ_CONTROLLER_LINK_TWO_WAY) == NULL)
             return false;
     }
+
+    vec3 arcball_angles = {0.0f, 0.0f, 0.0f};
+    vec2 arcball_pan = {0.0f, 0.0f};
+    example_tuner_arcball(
+        &state->tuner, "Arcball", state->arcball, arcball_angles, 1.0f, arcball_pan);
+    for (uint32_t i = 0; i < 3u; i++)
+    {
+        example_tuner_camera(&state->tuner, labels[i], panels[i], &camera);
+        example_tuner_material(&state->tuner, labels[i], state->visuals[i], &state->materials[i]);
+    }
     return true;
+}
+
+
+static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    (void)app;
+    LightingState* state = (LightingState*)user;
+    if (
+        ctx == NULL || ctx->presentation != DVZ_RUNNER_PRESENT_GLFW || state == NULL ||
+        view == NULL)
+        return true;
+
+    return example_tuner_attach(&state->tuner, view);
+}
+
+
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    LightingState* state = (LightingState*)user;
+    if (state != NULL)
+        example_tuner_detach(&state->tuner);
+    dvz_free(state);
 }
 
 
@@ -250,6 +312,7 @@ DvzScenarioSpec dvz_example_lighting_scenario(void)
         .height = HEIGHT,
         .fps = 60.0,
         .init = _scenario_init,
+        .destroy = _scenario_destroy,
     };
 }
 
@@ -270,6 +333,8 @@ DvzScenarioSpec dvz_example_lighting_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = dvz_example_lighting_scenario();
+    if (example_cli_wants_live_gui(argc, argv))
+        spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
 #endif
