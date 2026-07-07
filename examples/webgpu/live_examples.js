@@ -315,6 +315,11 @@ export const LIVE_EXAMPLES = [
     scenarioId: "visual_image",
   },
   {
+    id: "visual_image_rgba",
+    label: "RGBA Image",
+    scenarioId: "visual_image_rgba",
+  },
+  {
     id: "visual_mesh",
     label: "Mesh",
     scenarioId: "visual_mesh",

@@ -68,6 +68,6 @@ Each text item provides a string, x/y screen position, font size, angle, and col
 <a href="../../../visuals">Visuals & Composites</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../visual_image">Previous: Image</a> · <a href="../visual_glyph">Next: Font Atlas Glyphs</a>
+<a href="../visual_image_rgba">Previous: RGBA Image</a> · <a href="../visual_glyph">Next: Font Atlas Glyphs</a>
 </div>
 </nav>

@@ -71,6 +71,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/wind_field.c
     ${PROJECT_SOURCE_DIR}/examples/c/visuals/glyph.c
     ${PROJECT_SOURCE_DIR}/examples/c/visuals/image.c
+    ${PROJECT_SOURCE_DIR}/examples/c/visuals/image_rgba.c
     ${PROJECT_SOURCE_DIR}/examples/c/visuals/labels.c
     ${PROJECT_SOURCE_DIR}/examples/c/visuals/marker.c
     ${PROJECT_SOURCE_DIR}/examples/c/visuals/mesh.c

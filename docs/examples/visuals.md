@@ -4,7 +4,7 @@
 
 Browse one focused example per visual family or composite.
 
-Coverage: 15 visual families and 2 composites.
+Coverage: 16 visual families and 2 composites.
 
 Each card links to a detail page with preview media, source code, and example metadata.
 
@@ -129,6 +129,18 @@ This example compares basic primitive topologies.
 `visuals`<br><span>`image`, `sampled-field`, `capture`</span>
 
 This example displays a generated scalar field as a 2D image.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [RGBA Image](gallery/visuals/visual_image_rgba.md)
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for RGBA Image"><span>Screenshot pending</span></div>
+
+`visuals`<br><span>`image`, `sampled-field`, `rgba8`, `alpha-blending`, `capture`</span>
+
+This example displays a generated RGBA image as a 2D sampled field.
 
 </div>
 

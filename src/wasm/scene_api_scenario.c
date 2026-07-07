@@ -75,6 +75,7 @@ DvzScenarioSpec dvz_showcase_us_state_choropleth_scenario(void);
 DvzScenarioSpec dvz_showcase_wind_field_scenario(void);
 DvzScenarioSpec dvz_visual_glyph_scenario(void);
 DvzScenarioSpec dvz_visual_image_scenario(void);
+DvzScenarioSpec dvz_visual_image_rgba_scenario(void);
 DvzScenarioSpec dvz_visual_labels_scenario(void);
 DvzScenarioSpec dvz_visual_marker_scenario(void);
 DvzScenarioSpec dvz_visual_mesh_scenario(void);
@@ -206,66 +207,68 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
     case 34:
         return dvz_visual_image_scenario();
     case 35:
-        return dvz_visual_mesh_scenario();
+        return dvz_visual_image_rgba_scenario();
     case 36:
-        return dvz_visual_sphere_scenario();
+        return dvz_visual_mesh_scenario();
     case 37:
-        return dvz_visual_text_scenario();
+        return dvz_visual_sphere_scenario();
     case 38:
-        return dvz_visual_glyph_scenario();
+        return dvz_visual_text_scenario();
     case 39:
-        return dvz_visual_labels_scenario();
+        return dvz_visual_glyph_scenario();
     case 40:
-        return dvz_example_panel_multi_scenario();
+        return dvz_visual_labels_scenario();
     case 41:
-        return dvz_example_panel_linked_scenario();
+        return dvz_example_panel_multi_scenario();
     case 42:
-        return dvz_example_text_block_scenario();
+        return dvz_example_panel_linked_scenario();
     case 43:
-        return dvz_example_overlay_card_scenario();
+        return dvz_example_text_block_scenario();
     case 44:
-        return dvz_example_guide_lines_scenario();
+        return dvz_example_overlay_card_scenario();
     case 45:
-        return dvz_example_guide_spans_scenario();
+        return dvz_example_guide_lines_scenario();
     case 46:
-        return dvz_example_bars_bands_scenario();
+        return dvz_example_guide_spans_scenario();
     case 47:
-        return dvz_example_controller_fly_scenario();
+        return dvz_example_bars_bands_scenario();
     case 48:
-        return dvz_example_controller_turntable_scenario();
+        return dvz_example_controller_fly_scenario();
     case 49:
-        return dvz_example_sampled_field_update_scenario();
+        return dvz_example_controller_turntable_scenario();
     case 50:
-        return dvz_example_colormap_scale_scenario();
+        return dvz_example_sampled_field_update_scenario();
     case 51:
-        return dvz_example_panel_background_scenario();
+        return dvz_example_colormap_scale_scenario();
     case 52:
-        return dvz_composite_polygon_scenario();
+        return dvz_example_panel_background_scenario();
     case 53:
-        return dvz_showcase_linked_panel_axes_scenario();
+        return dvz_composite_polygon_scenario();
     case 54:
-        return dvz_showcase_scalebar_measurement_scenario();
+        return dvz_showcase_linked_panel_axes_scenario();
     case 55:
-        return dvz_showcase_surface_grid_scenario();
+        return dvz_showcase_scalebar_measurement_scenario();
     case 56:
-        return dvz_showcase_us_state_choropleth_scenario();
+        return dvz_showcase_surface_grid_scenario();
     case 57:
-        return dvz_example_update_partial_scenario();
+        return dvz_showcase_us_state_choropleth_scenario();
     case 58:
-        return dvz_example_update_visual_data_scenario();
+        return dvz_example_update_partial_scenario();
     case 59:
-        return dvz_example_visibility_scenario();
+        return dvz_example_update_visual_data_scenario();
     case 60:
-        return dvz_example_depth_test_scenario();
+        return dvz_example_visibility_scenario();
     case 61:
-        return dvz_example_alpha_blending_scenario();
+        return dvz_example_depth_test_scenario();
     case 62:
-        return dvz_example_material_mesh_scenario();
+        return dvz_example_alpha_blending_scenario();
     case 63:
-        return dvz_example_lighting_scenario();
+        return dvz_example_material_mesh_scenario();
     case 64:
-        return dvz_showcase_textured_planet_scenario();
+        return dvz_example_lighting_scenario();
     case 65:
+        return dvz_showcase_textured_planet_scenario();
+    case 66:
         return dvz_showcase_protein_scenario();
     default:
         return (DvzScenarioSpec){0};

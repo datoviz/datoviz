@@ -68,6 +68,6 @@ The FIELD_WIDTH by FIELD_HEIGHT value array is attached as a sampled field, whil
 <a href="../../../visuals">Visuals & Composites</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../visual_primitive">Previous: Primitive</a> · <a href="../visual_text">Next: Text</a>
+<a href="../visual_primitive">Previous: Primitive</a> · <a href="../visual_image_rgba">Next: RGBA Image</a>
 </div>
 </nav>

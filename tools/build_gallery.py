@@ -69,7 +69,7 @@ SHOWCASE_ORDER = tuple(id_ for _, ids in SHOWCASE_GROUPS for id_ in ids)
 INDEX_VISUAL_GROUPS = (
     ("0D — point-like", ["point_2d", "visual_pixel", "visual_marker", "visual_splat"]),
     ("1D — line-like",  ["visual_segment", "visual_path", "visual_vector", "visual_primitive"]),
-    ("2D — planar",     ["visual_image", "visual_text", "visual_glyph", "visual_labels"]),
+    ("2D — planar",     ["visual_image", "visual_image_rgba", "visual_text", "visual_glyph", "visual_labels"]),
     ("3D — volumetric", ["visual_mesh", "sphere_impostor", "volume"]),
     ("Composites",      ["composite_polygon", "composite_graph"]),
 )
@@ -84,6 +84,7 @@ VISUAL_REFERENCE_BY_ID = {
     "visual_vector": "vector",
     "visual_primitive": "primitive",
     "visual_image": "image",
+    "visual_image_rgba": "image",
     "visual_text": "text",
     "visual_glyph": "glyph",
     "visual_labels": "labels",
@@ -1318,7 +1319,7 @@ def render_visuals_page(
     visual_groups = (
         ("0D — point-like", ["point_2d", "visual_pixel", "visual_marker", "visual_splat"]),
         ("1D — line-like",  ["visual_segment", "visual_path", "visual_vector", "visual_primitive"]),
-        ("2D — planar",     ["visual_image", "visual_text", "visual_glyph", "visual_labels"]),
+        ("2D — planar",     ["visual_image", "visual_image_rgba", "visual_text", "visual_glyph", "visual_labels"]),
         ("3D — volumetric", ["visual_mesh", "sphere_impostor", "volume"]),
         ("Composites",      ["composite_polygon", "composite_graph"]),
     )

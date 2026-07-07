@@ -4,7 +4,7 @@
 
 Browse the generated Datoviz v0.4 example gallery.
 
-Coverage: 12 showcases, 17 visuals and composites, 69 feature examples, 5 runtime examples, and 4 advanced examples.
+Coverage: 12 showcases, 18 visuals and composites, 69 feature examples, 5 runtime examples, and 4 advanced examples.
 
 Each card links to a detail page with preview media, source code, and example metadata.
 
@@ -292,6 +292,18 @@ This example displays a generated scalar field as a 2D image.
 
 <div class="card" markdown="1">
 
+**[RGBA Image](gallery/visuals/visual_image_rgba.md)**
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for RGBA Image"><span>Screenshot pending</span></div>
+
+`visuals`
+
+This example displays a generated RGBA image as a 2D sampled field.
+
+</div>
+
+<div class="card" markdown="1">
+
 **[Text](gallery/visuals/visual_text.md)**
 
 [![Text](../assets/gallery/v0.4/visuals/visual_text.webp)](gallery/visuals/visual_text.md)
@@ -400,7 +412,7 @@ This example builds a small brain-connectivity graph composite.
 
 </div>
 
-[Browse all 17 visuals and composites](visuals.md).
+[Browse all 18 visuals and composites](visuals.md).
 
 ## Features
 

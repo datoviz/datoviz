@@ -27,8 +27,9 @@ integer categorical label fields, or [Volume](volume.md) for 3D sampled fields.
 ## Data Model
 
 Create with `dvz_image(scene, flags)`. Bind a `DvzSampledField` with
-`dvz_visual_set_field(image, "field", field)`. The canonical example uploads four corner positions,
-four texture coordinates, a scalar 2D field, and a color scale.
+`dvz_visual_set_field(image, "field", field)`. The scalar example uploads four corner positions,
+four texture coordinates, an `R32_FLOAT` 2D field, and a color scale. The RGBA example uploads the
+same placement data with a direct `RGBA8_UNORM` color field.
 
 Set texture filtering with `dvz_image_set_sampling(image, DVZ_IMAGE_SAMPLING_LINEAR)` or
 `dvz_image_set_sampling(image, DVZ_IMAGE_SAMPLING_NEAREST)`. Linear sampling is the default; nearest
@@ -60,6 +61,14 @@ fields explicitly with `dvz_visual_set_field()`.
 | Gallery | [Image](../../examples/gallery/visuals/visual_image.md) |
 | Build | `just example-c visuals/image` |
 | Smoke | `./build/examples/c/visuals/image --png` |
+| Validation | `smoke+screenshot` |
+
+| Field | Value |
+| --- | --- |
+| Source | `examples/c/visuals/image_rgba.c` |
+| Gallery | [RGBA Image](../../examples/gallery/visuals/visual_image_rgba.md) |
+| Build | `just example-c visuals/image_rgba` |
+| Smoke | `./build/examples/c/visuals/image_rgba --png` |
 | Validation | `smoke+screenshot` |
 
 ## See Also

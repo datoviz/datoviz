@@ -8,8 +8,8 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Reviewed public C examples generated for the website: 108
-- Examples declaring screenshot validation: 97
+- Reviewed public C examples generated for the website: 109
+- Examples declaring screenshot validation: 98
 - Examples that should have video or motion evidence: 5
 
 ## Commands
@@ -108,6 +108,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [Vector](gallery/visuals/visual_vector.md) | [`examples/c/visuals/vector.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/vector.c) | `supported` | `smoke+screenshot` |
 | [Path](gallery/visuals/visual_path.md) | [`examples/c/visuals/path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/path.c) | `supported` | `smoke+screenshot` |
 | [Image](gallery/visuals/visual_image.md) | [`examples/c/visuals/image.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/image.c) | `supported` | `smoke+screenshot` |
+| [RGBA Image](gallery/visuals/visual_image_rgba.md) | [`examples/c/visuals/image_rgba.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/image_rgba.c) | `supported` | `smoke+screenshot` |
 | [Mesh](gallery/visuals/visual_mesh.md) | [`examples/c/visuals/mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/mesh.c) | `supported` | `smoke+screenshot` |
 | [Sphere](gallery/visuals/sphere_impostor.md) | [`examples/c/visuals/sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/sphere.c) | `supported` | `smoke+screenshot` |
 | [Splat](gallery/visuals/visual_splat.md) | [`examples/c/visuals/splat.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/splat.c) | `experimental` | `smoke+screenshot` |

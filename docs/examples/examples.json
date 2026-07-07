@@ -2,7 +2,7 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 108,
+  "count": 109,
   "categories": {
     "advanced": 4,
     "composite": 2,
@@ -10,13 +10,13 @@
     "runtime": 5,
     "showcase": 12,
     "start": 1,
-    "visual": 15
+    "visual": 16
   },
   "statuses": {
     "diagnostic": 1,
     "experimental": 13,
     "prototype": 1,
-    "supported": 93
+    "supported": 94
   },
   "examples": [
     {
@@ -4074,6 +4074,59 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=visual_image",
       "webgpu_site_route": "/examples/webgpu/live.html?id=visual_image",
+      "primary_visual": "image"
+    },
+    {
+      "id": "visual_image_rgba",
+      "title": "RGBA Image",
+      "category": "visual",
+      "lane": "visuals",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/visuals/image_rgba.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/image_rgba.c",
+      "page": "gallery/visuals/visual_image_rgba.md",
+      "summary": "This example displays a generated RGBA image as a 2D sampled field.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c visuals/image_rgba",
+      "smoke_command": "./build/examples/c/visuals/image_rgba --png",
+      "tags": [
+        "image",
+        "sampled-field",
+        "rgba8",
+        "alpha-blending",
+        "capture"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "pending",
+          "source": "data/gallery/v0.4/visuals/visual_image_rgba.png",
+          "site_asset": "/assets/gallery/v0.4/visuals/visual_image_rgba.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
+      "webgpu_requirements": [
+        "image",
+        "sampled-field",
+        "alpha-blending"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=visual_image_rgba",
+        "requirements": [
+          "image",
+          "sampled-field",
+          "alpha-blending"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=visual_image_rgba",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_image_rgba",
       "primary_visual": "image"
     },
     {

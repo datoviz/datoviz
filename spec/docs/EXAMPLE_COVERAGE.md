@@ -148,6 +148,7 @@ not the old gallery page that may currently occupy a similar slot.
 | `visual.path` | `examples/c/visuals/path.c` | `ready-now` | Continuous deterministic signals with clear stroke styling. | Teaches ordered path data, path breaks, width, and color. Avoid axes unless implementing `feature.axes_2d`. |
 | `visual.vector` | `examples/c/visuals/vector.c` | `ready-now` | A small quiver or flow field where direction, length, and optional arrowheads are readable. | Teaches vector anchors, vector values, scale, and color. Avoid wind-field showcase polish and animation. |
 | `visual.image` | `examples/c/visuals/image.c` | `ready-now` | A scalar 2D field filling most of the panel, with enough structure to see orientation and sampling. | Teaches image or 2D sampled-field upload. Put colorbar and probing in feature examples. |
+| `visual.image_rgba` | `examples/c/visuals/image_rgba.c` | `ready-now` | A direct RGBA8 color image filling most of the panel, with visible alpha blending against the background. | Teaches color sampled-field upload. Keep scalar colormap mapping in `visual.image`. |
 | `visual.mesh` | `examples/c/visuals/mesh.c` | `ready-now` | A simple indexed 3D surface with readable shape, normals or flat colors, and a stable camera pose. | Teaches vertices, indices, mesh creation, and basic 3D viewing. Put texture in `feature.mesh_texture`. |
 | `visual.sphere` | `examples/c/visuals/sphere.c` | `ready-now` | A small 3D cluster of impostor spheres with depth, radius, and color variation visible. | Teaches sphere centers, radii, colors, and depth behavior. Avoid molecule-showcase semantics. |
 | `visual.volume` | `examples/c/visuals/volume.c` | `ready-now` | A compact 3D volume rendering or slice stack with clear internal structure and deterministic transfer defaults. | Teaches 3D sampled-field or volume visual setup. Avoid full medical-viewer controls. |
@@ -177,7 +178,7 @@ Current implementation seeds:
 | `visual.segment` | `examples/c/visuals/segment.c`, `docs/gallery/visuals/segment.md` | Current C example is the source of truth; keep paths and vectors separate. |
 | `visual.path` | `examples/c/visuals/path.c`, `docs/gallery/visuals/path.md` | Current C example is the source of truth; axes belong in `feature.axes_2d`. |
 | `visual.vector` | `examples/c/visuals/vector.c`, `examples/c/showcases/wind_field.c` | Current C examples cover straight/curved vectors and a composed wind-field proof. |
-| `visual.image` | `examples/c/visuals/image.c`, `examples/c/features/image_probe.c` | Current image baseline is separate from probing and colorbar/readout behavior. |
+| `visual.image` | `examples/c/visuals/image.c`, `examples/c/visuals/image_rgba.c`, `examples/c/features/image_probe.c` | Current scalar and RGBA image baselines are separate from probing and colorbar/readout behavior. |
 | `visual.mesh` | `examples/c/visuals/mesh.c`, `docs/gallery/visuals/mesh.md` | Current C example is the source of truth; textured mesh is a separate feature/showcase proof. |
 | `visual.sphere` | `examples/c/visuals/sphere.c`, `examples/c/showcases/protein.c` | Current sphere baseline is separate from molecule/protein scientific material. |
 | `visual.volume` | `examples/c/visuals/volume.c`, `examples/c/showcases/brain_volume.c` | Current volume baseline is separate from full brain/medical composition. |

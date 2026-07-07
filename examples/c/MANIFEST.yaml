@@ -233,6 +233,7 @@ batches:
 
   review-16-images-fields:
     - visual_image
+    - visual_image_rgba
     - feature_sampled_field_update
     - feature_isolines
     - volume
@@ -2079,6 +2080,34 @@ examples:
     tags:
       - image
       - sampled-field
+      - capture
+
+  - id: visual_image_rgba
+    title: RGBA Image
+    stage: v0.4_required
+    category: visual
+    primary_visual: image
+    lane: visuals
+    source: examples/c/visuals/image_rgba.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    webgpu:
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=visual_image_rgba
+      requirements:
+        - image
+        - sampled-field
+        - alpha-blending
+    agent_copy_safe: true
+    gallery:
+      card: small
+      status_label: supported
+    tags:
+      - image
+      - sampled-field
+      - rgba8
+      - alpha-blending
       - capture
 
   - id: visual_mesh

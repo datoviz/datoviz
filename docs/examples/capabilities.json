@@ -3,7 +3,7 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 108,
+  "example_count": 109,
   "categories": {
     "advanced": 4,
     "composite": 2,
@@ -11,13 +11,13 @@
     "runtime": 5,
     "showcase": 12,
     "start": 1,
-    "visual": 15
+    "visual": 16
   },
   "statuses": {
     "diagnostic": 1,
     "experimental": 13,
     "prototype": 1,
-    "supported": 93
+    "supported": 94
   },
   "capabilities": {
     "composites": {
@@ -113,7 +113,7 @@
         ]
       },
       "synthetic": {
-        "count": 102,
+        "count": 103,
         "examples": [
           {
             "id": "feature_basic_scene",
@@ -802,6 +802,14 @@
             "status": "supported",
             "source": "examples/c/visuals/image.c",
             "page": "gallery/visuals/visual_image.md"
+          },
+          {
+            "id": "visual_image_rgba",
+            "title": "RGBA Image",
+            "category": "visual",
+            "status": "supported",
+            "source": "examples/c/visuals/image_rgba.c",
+            "page": "gallery/visuals/visual_image_rgba.md"
           },
           {
             "id": "visual_mesh",
@@ -1939,8 +1947,16 @@
         ]
       },
       "alpha-blending": {
-        "count": 1,
+        "count": 2,
         "examples": [
+          {
+            "id": "visual_image_rgba",
+            "title": "RGBA Image",
+            "category": "visual",
+            "status": "supported",
+            "source": "examples/c/visuals/image_rgba.c",
+            "page": "gallery/visuals/visual_image_rgba.md"
+          },
           {
             "id": "showcase_gpu_particle_smoke",
             "title": "GPU Particle Smoke",
@@ -2125,7 +2141,7 @@
         ]
       },
       "capture": {
-        "count": 23,
+        "count": 24,
         "examples": [
           {
             "id": "colorbar",
@@ -2206,6 +2222,14 @@
             "status": "supported",
             "source": "examples/c/visuals/image.c",
             "page": "gallery/visuals/visual_image.md"
+          },
+          {
+            "id": "visual_image_rgba",
+            "title": "RGBA Image",
+            "category": "visual",
+            "status": "supported",
+            "source": "examples/c/visuals/image_rgba.c",
+            "page": "gallery/visuals/visual_image_rgba.md"
           },
           {
             "id": "visual_mesh",
@@ -2716,7 +2740,7 @@
         ]
       },
       "image": {
-        "count": 3,
+        "count": 4,
         "examples": [
           {
             "id": "linked_panels_probe_colorbar",
@@ -2741,6 +2765,14 @@
             "status": "supported",
             "source": "examples/c/visuals/image.c",
             "page": "gallery/visuals/visual_image.md"
+          },
+          {
+            "id": "visual_image_rgba",
+            "title": "RGBA Image",
+            "category": "visual",
+            "status": "supported",
+            "source": "examples/c/visuals/image_rgba.c",
+            "page": "gallery/visuals/visual_image_rgba.md"
           }
         ]
       },
@@ -3295,8 +3327,21 @@
           }
         ]
       },
+      "rgba8": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "visual_image_rgba",
+            "title": "RGBA Image",
+            "category": "visual",
+            "status": "supported",
+            "source": "examples/c/visuals/image_rgba.c",
+            "page": "gallery/visuals/visual_image_rgba.md"
+          }
+        ]
+      },
       "sampled-field": {
-        "count": 4,
+        "count": 5,
         "examples": [
           {
             "id": "linked_panels_probe_colorbar",
@@ -3313,6 +3358,14 @@
             "status": "supported",
             "source": "examples/c/visuals/image.c",
             "page": "gallery/visuals/visual_image.md"
+          },
+          {
+            "id": "visual_image_rgba",
+            "title": "RGBA Image",
+            "category": "visual",
+            "status": "supported",
+            "source": "examples/c/visuals/image_rgba.c",
+            "page": "gallery/visuals/visual_image_rgba.md"
           },
           {
             "id": "volume",
@@ -3905,7 +3958,7 @@
         ]
       },
       "image": {
-        "count": 1,
+        "count": 2,
         "examples": [
           {
             "id": "visual_image",
@@ -3914,6 +3967,14 @@
             "status": "supported",
             "source": "examples/c/visuals/image.c",
             "page": "gallery/visuals/visual_image.md"
+          },
+          {
+            "id": "visual_image_rgba",
+            "title": "RGBA Image",
+            "category": "visual",
+            "status": "supported",
+            "source": "examples/c/visuals/image_rgba.c",
+            "page": "gallery/visuals/visual_image_rgba.md"
           }
         ]
       },
