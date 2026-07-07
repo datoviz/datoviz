@@ -38,12 +38,19 @@ The point visual uploads position, color, and diameter_px arrays, while the pane
     --8<-- "examples/c/features/guide_spans.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/guide_spans.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_guide_spans`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/guide_spans.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/guide_spans.c)
+    - Python source: [`examples/python/gallery/features/guide_spans.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/guide_spans.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_guide_spans"><code>examples/webgpu/live.html?id=feature_guide_spans</code></a>
     - Browser capability tags: `primitive`, `overlay`, `panzoom`

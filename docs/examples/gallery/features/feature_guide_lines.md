@@ -38,12 +38,19 @@ A path visual uploads position, color, and linewidth arrays for a signal, and th
     --8<-- "examples/c/features/guide_lines.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/guide_lines.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_guide_lines`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/guide_lines.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/guide_lines.c)
+    - Python source: [`examples/python/gallery/features/guide_lines.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/guide_lines.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_guide_lines"><code>examples/webgpu/live.html?id=feature_guide_lines</code></a>
     - Browser capability tags: `segment`, `overlay`, `panzoom`
