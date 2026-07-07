@@ -1049,6 +1049,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_tuner_camera_ref(&state->tuner, "Camera", panel, camera, &camera_desc);
     example_tuner_arcball(
         &state->tuner, "Arcball", arcball, arcball_angles, 1.0f, arcball_pan);
+    example_tuner_volume(&state->tuner, "3D volume", volume_3d, NULL);
+    example_tuner_volume(&state->tuner, "Slice", volume_slice, NULL);
 
     ok = true;
 cleanup:
