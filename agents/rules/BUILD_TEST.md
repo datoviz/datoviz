@@ -87,6 +87,11 @@ build-local WebP derivatives under `build/gallery-webp/v0.4/`. Do not stage or c
 submodule media or generated WebP files unless the user explicitly approves those exact payloads in
 the current turn.
 
+Use `just gallery-refresh` for a full local media/docs refresh. It must capture PNG screenshots,
+convert static WebPs, regenerate animated WebPs, rebuild generated gallery docs/manifests, run the
+gallery media checks, and run `git diff --check`. Use `just check-gallery-media-pipeline` after
+changing gallery media tooling or manifest preview metadata.
+
 Animated gallery previews use manifest metadata:
 
 ```yaml
@@ -103,12 +108,14 @@ Generate selected previews with:
 python3 tools/build_gallery_animations.py --id <example_id> --force
 ```
 
-The animation tool captures each frame by launching the example once with `--preview`,
-`--preview-frame N`, `--preview-frames M`, and `--png`, then encodes the PNG sequence with
-`img2webp`. For animated examples whose motion depends on elapsed simulation state rather than a
-controller preview descriptor, add an explicit preview-mode path that derives deterministic state
-from `ctx->preview_frame_index` and `ctx->preview_frame_count`; otherwise every captured frame may
-start from the same initial state and produce a static animated WebP.
+The static WebP converter must not overwrite examples with `kind: animated-webp`; those WebP paths
+are owned by `tools/build_gallery_animations.py`. The animation tool captures a deterministic PNG
+sequence by launching the example with `--preview`, `--preview-sequence`, `--preview-frames M`, and
+`--png`, then encodes the PNG sequence with `img2webp`. For animated examples whose motion depends
+on elapsed simulation state rather than a controller preview descriptor, add an explicit
+preview-mode path that derives deterministic state from `ctx->preview_frame_index` and
+`ctx->preview_frame_count`; otherwise every captured frame may start from the same initial state and
+produce a static animated WebP.
 
 
 ## CMake Pattern

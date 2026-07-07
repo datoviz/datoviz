@@ -123,6 +123,9 @@ gallery-capture *args: build
 [positional-arguments]
 gallery-refresh *args: build
     @python3 tools/capture_gallery.py --all-screenshot --cache --jobs auto "$@"
+    @python3 tools/build_gallery_webp.py
+    @python3 tools/build_gallery_animations.py
+    @python3 tools/check_gallery_media_pipeline.py
     @python tools/build_gallery.py
     @python3 tools/build_examples_manifest.py
     @python3 tools/build_capabilities.py
@@ -150,6 +153,16 @@ gallery-webp-build *args:
     @just gallery-webp "$@"
 
 
+# Generate build-local animated WebP previews for gallery examples.
+[positional-arguments]
+gallery-animations *args:
+    @python3 tools/build_gallery_animations.py "$@"
+
+[positional-arguments]
+check-gallery-media-pipeline *args:
+    @python3 tools/check_gallery_media_pipeline.py "$@"
+
+
 # Capture screenshots for the Start Here / Get Started documentation pages.
 capture-start: build
     @python3 tools/capture_gallery.py --lane start
@@ -169,6 +182,8 @@ gallery-capture-landing: capture-landing
 gallery:
     @echo "Generating build-local gallery WebP assets..."
     @python3 tools/build_gallery_webp.py
+    @python3 tools/build_gallery_animations.py
+    @python3 tools/check_gallery_media_pipeline.py
     @echo "Generating the gallery Markdown files..."
     @python tools/build_gallery.py
     @echo "Generating the public examples manifest..."

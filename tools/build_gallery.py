@@ -11,17 +11,17 @@ from dataclasses import dataclass
 from pathlib import Path
 from textwrap import dedent
 
-import yaml
+import gallery_media
 
 
-ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_MANIFEST = ROOT / "examples/c/MANIFEST.yaml"
+ROOT = gallery_media.ROOT
+DEFAULT_MANIFEST = gallery_media.DEFAULT_MANIFEST
 DEFAULT_DOCS_DIR = ROOT / "docs/examples"
 DEFAULT_IMAGE_DIR = ROOT / "data/gallery/v0.4"
 DEFAULT_IMAGE_URL_BASE = "/assets/gallery/v0.4"
 DEFAULT_IMAGE_FORMAT = "webp"
 SOURCE_BASE_URL = "https://github.com/datoviz/datoviz/blob/v0.4-dev"
-PUBLIC_LANES = ("start", "visuals", "features", "runtime", "composites", "showcases", "advanced")
+PUBLIC_LANES = gallery_media.DOC_LANES
 STATUS_ORDER = ("supported", "experimental", "prototype", "advanced/unstable", "deferred")
 DEFAULT_STATUS = "supported"
 SOURCE_LANGUAGE_BY_SUFFIX = {
@@ -239,16 +239,8 @@ INDEX_FEATURE_GROUPS = (
     ]),
 )
 
-CATEGORY_TO_LANE = {
-    "visual": "visuals",
-    "feature": "features",
-    "runtime": "runtime",
-    "composite": "composites",
-    "showcase": "showcases",
-    "advanced": "advanced",
-}
-
-LANE_TO_CATEGORY = {lane: category for category, lane in CATEGORY_TO_LANE.items()}
+CATEGORY_TO_LANE = gallery_media.CATEGORY_TO_LANE
+LANE_TO_CATEGORY = gallery_media.LANE_TO_CATEGORY
 
 PAGE_CONFIG = {
     "advanced.md": {
@@ -371,24 +363,12 @@ def parse_args() -> argparse.Namespace:
 
 
 def load_manifest(path: Path) -> dict:
-    with path.open("r", encoding="utf8") as f:
-        manifest = yaml.safe_load(f) or {}
-    if not isinstance(manifest.get("examples"), list):
-        raise ValueError(f"{path} does not contain an examples list")
-    return manifest
+    return gallery_media.load_manifest(path)
 
 
 def reviewed_example_ids(manifest: dict) -> set[str]:
     """Return example IDs that are approved for public website generation."""
-    batches = manifest.get("batches") or {}
-    if not isinstance(batches, dict):
-        return set()
-    ids: set[str] = set()
-    for batch_ids in batches.values():
-        if batch_ids is None:
-            continue
-        ids.update(str(id_) for id_ in batch_ids)
-    return ids
+    return gallery_media.reviewed_example_ids(manifest)
 
 
 def status_from_entry(entry: dict) -> str:
@@ -577,13 +557,8 @@ def collect_examples(manifest: dict) -> list[Example]:
         id_ = str(entry["id"])
         if reviewed_ids and id_ not in reviewed_ids:
             continue
-        raw_category = entry.get("category")
-        if raw_category is not None:
-            category = str(raw_category)
-            lane = CATEGORY_TO_LANE.get(category, category)
-        else:
-            lane = str(entry.get("lane", ""))
-            category = LANE_TO_CATEGORY.get(lane, lane)
+        lane = gallery_media.lane_for_entry(entry)
+        category = gallery_media.category_for_entry(entry)
         stage = str(entry.get("stage", ""))
         source = str(entry.get("source", ""))
         if lane not in PUBLIC_LANES or stage == "lab" or not source:

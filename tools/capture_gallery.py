@@ -19,13 +19,15 @@ from struct import unpack
 
 import yaml
 
+import gallery_media
 
-ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_MANIFEST = ROOT / "examples/c/MANIFEST.yaml"
+
+ROOT = gallery_media.ROOT
+DEFAULT_MANIFEST = gallery_media.DEFAULT_MANIFEST
 DEFAULT_BUILD_DIR = ROOT / "build"
 DEFAULT_IMAGE_DIR = ROOT / "data/gallery/v0.4"
 DEFAULT_CACHE_DIR = ROOT / "build/gallery-cache/native"
-PUBLIC_LANES = ("start", "visuals", "features", "runtime", "composites", "showcases")
+PUBLIC_LANES = gallery_media.MEDIA_LANES
 GLOBAL_FINGERPRINT_PATHS = (
     ROOT / "CMakeLists.txt",
     ROOT / "examples/c/CMakeLists.txt",
@@ -41,13 +43,7 @@ SHARED_EXAMPLE_PATHS = (
     ROOT / "examples/c/example_style.h",
     ROOT / "examples/c/runner",
 )
-CATEGORY_TO_LANE = {
-    "visual": "visuals",
-    "feature": "features",
-    "runtime": "runtime",
-    "composite": "composites",
-    "showcase": "showcases",
-}
+CATEGORY_TO_LANE = gallery_media.CATEGORY_TO_LANE
 LANDING_IDS = (
     "point_cloud",
     "protein_arcball_viewer",
@@ -77,12 +73,7 @@ class CaptureExample:
 
 
 def split_values(values: list[str]) -> set[str]:
-    return {
-        part.strip()
-        for value in values
-        for part in value.split(",")
-        if part.strip()
-    }
+    return gallery_media.split_values(values)
 
 
 def parse_jobs(value: str) -> int:
@@ -276,24 +267,12 @@ def parse_args() -> argparse.Namespace:
 
 
 def load_manifest(path: Path) -> dict:
-    with path.open("r", encoding="utf8") as f:
-        manifest = yaml.safe_load(f) or {}
-    if not isinstance(manifest.get("examples"), list):
-        raise ValueError(f"{path} does not contain an examples list")
-    return manifest
+    return gallery_media.load_manifest(path)
 
 
 def reviewed_example_ids(manifest: dict) -> set[str]:
     """Return example IDs approved for public website generation."""
-    batches = manifest.get("batches") or {}
-    if not isinstance(batches, dict):
-        return set()
-    ids: set[str] = set()
-    for batch_ids in batches.values():
-        if batch_ids is None:
-            continue
-        ids.update(str(example_id) for example_id in batch_ids)
-    return ids
+    return gallery_media.reviewed_example_ids(manifest)
 
 
 def parse_capture_size(value: object, fallback: tuple[int, int]) -> tuple[int, int]:
@@ -316,11 +295,7 @@ def parse_capture_size(value: object, fallback: tuple[int, int]) -> tuple[int, i
 
 
 def entry_lane(entry: dict) -> str:
-    raw_category = entry.get("category")
-    if raw_category is not None:
-        category = str(raw_category)
-        return CATEGORY_TO_LANE.get(category, category)
-    return str(entry.get("lane", ""))
+    return gallery_media.lane_for_entry(entry)
 
 
 def collect_examples(manifest: dict) -> list[CaptureExample]:
@@ -402,11 +377,11 @@ def apply_runtime_env(env: dict[str, str]) -> None:
 
 
 def output_path(example: CaptureExample, image_dir: Path) -> Path:
-    return image_dir / example.lane / f"{example.id}.png"
+    return gallery_media.gallery_png_path(example, image_dir)
 
 
 def executable_path(example: CaptureExample, build_dir: Path) -> Path:
-    return build_dir / "examples" / "c" / example.rel_executable
+    return gallery_media.source_executable_path(example.source, build_dir / "examples" / "c")
 
 
 def png_is_nonblank(path: Path, expected_size: tuple[int, int]) -> tuple[bool, str]:

@@ -10,9 +10,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import build_gallery
+import gallery_media
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = gallery_media.ROOT
 DEFAULT_OUTPUT_DIR = ROOT / "build/gallery-webp/v0.4"
 DEFAULT_QUALITY = 90
 
@@ -22,12 +23,13 @@ class GalleryWebPResult:
     converted: int = 0
     skipped: int = 0
     missing: int = 0
+    animated_skipped: int = 0
     selected: int = 0
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--manifest", type=Path, default=build_gallery.DEFAULT_MANIFEST)
+    parser.add_argument("--manifest", type=Path, default=gallery_media.DEFAULT_MANIFEST)
     parser.add_argument("--image-dir", type=Path, default=build_gallery.DEFAULT_IMAGE_DIR)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--quality", type=int, default=DEFAULT_QUALITY)
@@ -50,14 +52,15 @@ def parse_args() -> argparse.Namespace:
 
 
 def split_values(values: list[str]) -> set[str]:
-    out: set[str] = set()
-    for value in values:
-        out.update(part.strip() for part in value.split(",") if part.strip())
-    return out
+    return gallery_media.split_values(values)
 
 
 def output_path(example: build_gallery.Example, output_dir: Path) -> Path:
-    return output_dir / example.lane / f"{example.id}.webp"
+    return gallery_media.gallery_webp_path(example, output_dir)
+
+
+def animated_preview_keys(manifest_data: dict) -> set[tuple[str, str]]:
+    return gallery_media.animated_preview_keys(manifest_data)
 
 
 def needs_update(png: Path, webp: Path, force: bool) -> bool:
@@ -69,7 +72,7 @@ def needs_update(png: Path, webp: Path, force: bool) -> bool:
 def prune_stale_webp(output_dir: Path, examples: list[build_gallery.Example]) -> int:
     valid = {(example.lane, example.id) for example in examples}
     removed = 0
-    for lane in build_gallery.PUBLIC_LANES:
+    for lane in gallery_media.MEDIA_LANES:
         lane_dir = output_dir / lane
         if not lane_dir.exists():
             continue
@@ -81,9 +84,34 @@ def prune_stale_webp(output_dir: Path, examples: list[build_gallery.Example]) ->
     return removed
 
 
+def select_static_examples(
+    examples: list[build_gallery.Example],
+    animated_keys: set[tuple[str, str]],
+    ids: set[str],
+    lanes: set[str],
+) -> tuple[list[build_gallery.Example], int]:
+    selected: list[build_gallery.Example] = []
+    animated_skipped = 0
+    for example in examples:
+        if "screenshot" not in example.validation:
+            continue
+        if example.lane not in gallery_media.MEDIA_LANES:
+            continue
+        if ids and example.id not in ids:
+            continue
+        if lanes and example.lane not in lanes:
+            continue
+        if (example.lane, example.id) in animated_keys:
+            animated_skipped += 1
+            continue
+        selected.append(example)
+    selected.sort(key=lambda item: (item.lane, item.id))
+    return selected, animated_skipped
+
+
 def generate_gallery_webp(
     *,
-    manifest: Path = build_gallery.DEFAULT_MANIFEST,
+    manifest: Path = gallery_media.DEFAULT_MANIFEST,
     image_dir: Path = build_gallery.DEFAULT_IMAGE_DIR,
     output_dir: Path = DEFAULT_OUTPUT_DIR,
     quality: int = DEFAULT_QUALITY,
@@ -109,32 +137,31 @@ def generate_gallery_webp(
         print("cwebp not found; install the WebP tools package or rerun with --dry-run")
         return 2, GalleryWebPResult()
 
-    manifest_data = build_gallery.load_manifest(manifest)
-    examples = build_gallery.collect_examples(manifest_data)
+    manifest_data = gallery_media.load_manifest(manifest)
+    all_examples = build_gallery.collect_examples(manifest_data)
+    animated_keys = animated_preview_keys(manifest_data)
     ids = ids or set()
     lanes = lanes or set()
-    selected = []
-    for example in examples:
-        if "screenshot" not in example.validation:
-            continue
-        if ids and example.id not in ids:
-            continue
-        if lanes and example.lane not in lanes:
-            continue
-        selected.append(example)
-    selected.sort(key=lambda item: (item.lane, item.id))
-    examples = selected
+    examples, animated_skipped = select_static_examples(all_examples, animated_keys, ids, lanes)
     if not examples:
+        if animated_skipped:
+            print("No static WebP conversions; animated previews are owned by build_gallery_animations.py")
+            return 0, GalleryWebPResult(animated_skipped=animated_skipped, selected=animated_skipped)
         print("No matching gallery examples.")
         return 1, GalleryWebPResult()
     can_prune = prune_stale and not dry_run and not ids and not lanes
-    removed = prune_stale_webp(output_dir, examples) if can_prune else 0
+    valid_for_prune = [
+        example
+        for example in all_examples
+        if "screenshot" in example.validation and example.lane in gallery_media.MEDIA_LANES
+    ]
+    removed = prune_stale_webp(output_dir, valid_for_prune) if can_prune else 0
 
     converted = 0
     skipped = 0
     missing = 0
     for example in examples:
-        png = image_dir / example.lane / f"{example.id}.png"
+        png = gallery_media.gallery_png_path(example, image_dir)
         webp = output_path(example, output_dir)
         if not png.exists():
             missing += 1
@@ -160,10 +187,14 @@ def generate_gallery_webp(
         converted=converted,
         skipped=skipped,
         missing=missing,
+        animated_skipped=animated_skipped,
         selected=len(examples),
     )
     action = "would_convert" if dry_run else "converted"
-    print(f"gallery webp: {action}={converted} skipped={skipped} missing={missing}")
+    print(
+        f"gallery webp: {action}={converted} skipped={skipped} "
+        f"animated_skipped={animated_skipped} missing={missing}"
+    )
     if removed:
         print(f"gallery webp: removed_stale={removed}")
     if missing and strict:

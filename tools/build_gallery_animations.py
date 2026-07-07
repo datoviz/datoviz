@@ -10,12 +10,10 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-import yaml
-
-import build_gallery
+import gallery_media
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = gallery_media.ROOT
 DEFAULT_FRAME_DIR = ROOT / "build/gallery-frames/v0.4"
 DEFAULT_OUTPUT_DIR = ROOT / "build/gallery-webp/v0.4"
 DEFAULT_BUILD_EXAMPLES_DIR = ROOT / "build/examples/c"
@@ -49,7 +47,7 @@ class AnimatedPreview:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--manifest", type=Path, default=build_gallery.DEFAULT_MANIFEST)
+    parser.add_argument("--manifest", type=Path, default=gallery_media.DEFAULT_MANIFEST)
     parser.add_argument("--build-examples-dir", type=Path, default=DEFAULT_BUILD_EXAMPLES_DIR)
     parser.add_argument("--frame-dir", type=Path, default=DEFAULT_FRAME_DIR)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
@@ -63,22 +61,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def split_values(values: list[str]) -> set[str]:
-    out: set[str] = set()
-    for value in values:
-        out.update(part.strip() for part in value.split(",") if part.strip())
-    return out
-
-
-def _lane_for_entry(entry: dict) -> str:
-    raw_category = entry.get("category")
-    if raw_category is not None:
-        return build_gallery.CATEGORY_TO_LANE.get(str(raw_category), str(raw_category))
-    return str(entry.get("lane", ""))
-
-
-def _executable_for_source(source: str, build_examples_dir: Path) -> Path:
-    rel = Path(source).relative_to("examples/c").with_suffix("")
-    return build_examples_dir / rel
+    return gallery_media.split_values(values)
 
 
 def collect_previews(
@@ -87,24 +70,23 @@ def collect_previews(
     ids: set[str],
     lanes: set[str],
 ) -> list[AnimatedPreview]:
-    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf8"))
+    manifest = gallery_media.load_manifest(manifest_path)
     previews: list[AnimatedPreview] = []
     for entry in manifest.get("examples", []):
         id_ = str(entry.get("id", ""))
         source = str(entry.get("source", ""))
-        lane = _lane_for_entry(entry)
+        lane = gallery_media.lane_for_entry(entry)
         if not id_ or not source.startswith("examples/c/"):
             continue
-        if lane not in build_gallery.PUBLIC_LANES:
+        if lane not in gallery_media.MEDIA_LANES:
             continue
         if ids and id_ not in ids:
             continue
         if lanes and lane not in lanes:
             continue
 
-        media = entry.get("media") or {}
-        preview = media.get("preview") or {}
-        if str(preview.get("kind", "")) != "animated-webp":
+        preview = gallery_media.preview_metadata(entry)
+        if preview.get("kind") != gallery_media.ANIMATED_WEBP_KIND:
             continue
 
         frames = int(preview.get("frames", DEFAULT_FRAMES))
@@ -125,7 +107,7 @@ def collect_previews(
                 title=str(entry.get("title", id_)),
                 lane=lane,
                 source=source,
-                executable=_executable_for_source(source, build_examples_dir),
+                executable=gallery_media.source_executable_path(source, build_examples_dir),
                 frames=frames,
                 fps=fps,
                 sample_stride=sample_stride,
