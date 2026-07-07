@@ -354,6 +354,73 @@ def dvz_sampled_field_from_array(
     return field
 
 
+def _field_region_tuple(value, name, *, default_z=None):
+    if value is None:
+        raise ValueError(f'{name} must not be None')
+    items = tuple(int(v) for v in value)
+    if len(items) == 2 and default_z is not None:
+        items = (items[0], items[1], default_z)
+    if len(items) != 3:
+        raise ValueError(f'{name} must contain 2 or 3 values')
+    return items
+
+
+def dvz_sampled_field_update_from_array(
+    field,
+    array,
+    *,
+    offset=(0, 0, 0),
+    extent=None,
+    format=None,
+    semantic=None,
+    color_role=None,
+    dim=None,
+):
+    """Update a sampled-field subregion from a NumPy-compatible patch array.
+
+    The patch array uses the same inferred layouts as ``dvz_sampled_field_from_array``.
+    ``offset`` is expressed in sample coordinates as ``(x, y)`` or ``(x, y, z)``.
+    When provided, ``extent`` must match the array-derived ``(width, height, depth)``.
+    The payload is copied by Datoviz before return.
+    """
+    data = np.asarray(array)
+    if data.ndim == 0:
+        raise ValueError('array must be at least two-dimensional')
+    if not data.flags.c_contiguous:
+        data = np.ascontiguousarray(data)
+
+    layout = _sampled_field_layout(data, format, semantic, color_role, dim)
+    region_extent = (layout['width'], layout['height'], layout['depth'])
+    if extent is not None:
+        explicit_extent = _field_region_tuple(extent, 'extent', default_z=1)
+        if explicit_extent != region_extent:
+            raise ValueError(
+                f'extent {explicit_extent} does not match array-derived extent {region_extent}'
+            )
+
+    x, y, z = _field_region_tuple(offset, 'offset', default_z=0)
+    if x < 0 or y < 0 or z < 0:
+        raise ValueError('offset values must be non-negative')
+
+    region = _raw.DvzFieldRegion()
+    region.x = x
+    region.y = y
+    region.z = z
+    region.width = region_extent[0]
+    region.height = region_extent[1]
+    region.depth = region_extent[2]
+
+    view = _raw.dvz_field_data_view()
+    view.data = ctypes.c_void_p(data.ctypes.data)
+    view.bytes_per_row = layout['bytes_per_row']
+    view.rows_per_image = layout['rows_per_image']
+
+    rc = _raw.dvz_sampled_field_update_region(field, region, ctypes.byref(view))
+    if rc != 0:
+        raise RuntimeError(f'dvz_sampled_field_update_region() failed with code {rc}')
+    return field
+
+
 def dvz_axis_set_ticks(axis, values, labels=None):
     _ticks_ptr, _ticks_keepalive = _axis_ticks_arg(values, labels)
     _keepalive = (_ticks_keepalive,)

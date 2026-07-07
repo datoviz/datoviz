@@ -88,11 +88,22 @@ def fake_facade(monkeypatch):
             ('rows_per_image', ctypes.c_uint64),
         ]
 
+    class DvzFieldRegion(ctypes.Structure):
+        _fields_ = [
+            ('x', ctypes.c_uint32),
+            ('y', ctypes.c_uint32),
+            ('z', ctypes.c_uint32),
+            ('width', ctypes.c_uint32),
+            ('height', ctypes.c_uint32),
+            ('depth', ctypes.c_uint32),
+        ]
+
     raw.DvzAxisTicks = DvzAxisTicks
     raw.DvzColorbarTicks = DvzColorbarTicks
     raw.DvzVisualDataUpdate = DvzVisualDataUpdate
     raw.DvzSampledFieldDesc = DvzSampledFieldDesc
     raw.DvzFieldDataView = DvzFieldDataView
+    raw.DvzFieldRegion = DvzFieldRegion
     raw.DVZ_FIELD_DIM_2D = 0
     raw.DVZ_FIELD_DIM_3D = 1
     raw.DVZ_FIELD_FORMAT_R8_UNORM = 0
@@ -194,6 +205,21 @@ def fake_facade(monkeypatch):
     sampled_field_set_data.__doc__ = 'sampled field set data'
     sampled_field_set_data.calls = sampled_field_set_data_calls
     raw.dvz_sampled_field_set_data = sampled_field_set_data
+    sampled_field_update_region_calls = []
+
+    def sampled_field_update_region(field, region, view):
+        sampled_field_update_region_calls.append((field, region, view))
+        return 0
+
+    sampled_field_update_region.argtypes = [
+        ctypes.c_void_p,
+        DvzFieldRegion,
+        ctypes.POINTER(DvzFieldDataView),
+    ]
+    sampled_field_update_region.restype = ctypes.c_int
+    sampled_field_update_region.__doc__ = 'sampled field update region'
+    sampled_field_update_region.calls = sampled_field_update_region_calls
+    raw.dvz_sampled_field_update_region = sampled_field_update_region
     raw.__all__ = [
         name for name in vars(raw) if name.startswith(('dvz_', 'Dvz', 'DVZ_'))
     ]
@@ -622,6 +648,51 @@ def test_sampled_field_rejects_unsupported_shape_without_raw_call(fake_facade):
         facade.dvz_sampled_field_from_array(ctypes.c_void_p(24), np.zeros((3, 4), np.float64))
 
     assert raw.dvz_sampled_field.calls == []
+
+
+def test_sampled_field_update_from_array_builds_region_and_view(fake_facade):
+    raw, facade = fake_facade
+    patch = np.arange(12 * 12, dtype=np.float32).reshape(12, 12)
+    field = ctypes.c_void_p(31)
+
+    assert facade.dvz_sampled_field_update_from_array(field, patch, offset=(4, 5)) is field
+
+    field_arg, region, view_ptr = raw.dvz_sampled_field_update_region.calls[-1]
+    view = view_ptr._obj
+    assert field_arg is field
+    assert (region.x, region.y, region.z) == (4, 5, 0)
+    assert (region.width, region.height, region.depth) == (12, 12, 1)
+    assert view.data == patch.ctypes.data
+    assert view.bytes_per_row == patch.strides[0]
+    assert view.rows_per_image == 0
+
+
+def test_sampled_field_update_from_non_contiguous_array_copies_patch(fake_facade):
+    raw, facade = fake_facade
+    patch = np.arange(8 * 6, dtype=np.float32).reshape(6, 8)[:, ::2]
+
+    facade.dvz_sampled_field_update_from_array(ctypes.c_void_p(32), patch, offset=(1, 2, 0))
+
+    _, region, view_ptr = raw.dvz_sampled_field_update_region.calls[-1]
+    view = view_ptr._obj
+    assert (region.width, region.height, region.depth) == (4, 6, 1)
+    assert view.data != patch.ctypes.data
+    uploaded = np.ctypeslib.as_array((ctypes.c_float * patch.size).from_address(view.data))
+    np.testing.assert_array_equal(uploaded.reshape(patch.shape), np.ascontiguousarray(patch))
+
+
+def test_sampled_field_update_rejects_mismatched_extent_without_raw_call(fake_facade):
+    raw, facade = fake_facade
+
+    with pytest.raises(ValueError, match='does not match array-derived extent'):
+        facade.dvz_sampled_field_update_from_array(
+            ctypes.c_void_p(33),
+            np.zeros((3, 4), dtype=np.float32),
+            offset=(0, 0),
+            extent=(5, 3),
+        )
+
+    assert raw.dvz_sampled_field_update_region.calls == []
 
 
 def test_top_level_datoviz_resolves_facade_lazily(fake_facade):
