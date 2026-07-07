@@ -110,6 +110,8 @@ pages:
       - vline
       - vspan
       - world
+    group_labels:
+      sampled: Sampled Field
 
   visuals:
     title: Visuals And Composites API

@@ -57,7 +57,7 @@ Functions: 388
 | [Placement](#placement) | 3 | `include/datoviz/scene.h` |
 | [Query](#query) | 1 | `include/datoviz/scene/interaction.h` |
 | [Reference](#reference) | 4 | `include/datoviz/scene.h` |
-| [Sampled](#sampled) | 9 | `include/datoviz/scene/field.h` |
+| [Sampled Field](#sampled-field) | 9 | `include/datoviz/scene/field.h` |
 | [Scale](#scale) | 24 | `include/datoviz/scene/annotation.h`, `include/datoviz/scene/scale.h` |
 | [Scene](#scene) | 35 | 3 headers |
 | [Selection](#selection) | 9 | `include/datoviz/scene/interaction.h` |
@@ -496,7 +496,7 @@ Functions: 388
     | [`dvz_reference_grid_destroy()`](#dvz_reference_grid_destroy) | `include/datoviz/scene.h` |
     | [`dvz_reference_grid_set_visible()`](#dvz_reference_grid_set_visible) | `include/datoviz/scene.h` |
 
-    ### Sampled
+    ### Sampled Field
 
     | Function | Header |
     | --- | --- |
@@ -5877,7 +5877,7 @@ Set reference-grid visibility.
 
 _Declared in `include/datoviz/scene.h`:1004._
 
-## Sampled
+## Sampled Field
 
 ### `dvz_sampled_field()`
 

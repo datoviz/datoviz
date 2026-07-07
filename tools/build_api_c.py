@@ -36,6 +36,7 @@ class PagePolicy:
     workflows: tuple[tuple[str, str], ...]
     headers: tuple[str, ...]
     prefixes: tuple[str, ...]
+    group_labels: dict[str, str]
 
 
 def parse_args() -> argparse.Namespace:
@@ -112,6 +113,10 @@ def load_policy(path: Path, status_entries: list[dict]) -> tuple[list[PagePolicy
                 ),
                 headers=tuple(str(item) for item in entry.get("headers", ())),
                 prefixes=tuple(str(item) for item in entry.get("prefixes", ())),
+                group_labels={
+                    str(prefix): str(label)
+                    for prefix, label in (entry.get("group_labels") or {}).items()
+                },
             )
         )
     return pages, raw.get("types") or {}, tuple(str(item) for item in raw.get("hidden_headers", ()))
@@ -315,8 +320,10 @@ def format_function(fn: dict, names: set[str]) -> list[str]:
     return lines
 
 
-def object_group(name: str) -> str:
+def object_group(name: str, group_labels: dict[str, str] | None = None) -> str:
     prefix = symbol_prefix(name)
+    if group_labels and prefix in group_labels:
+        return group_labels[prefix]
     return prefix.replace("_", " ").title()
 
 
@@ -391,7 +398,7 @@ def render_page(page: PagePolicy, functions: list[dict]) -> None:
 
     grouped: dict[str, list[dict]] = defaultdict(list)
     for fn in functions:
-        grouped[object_group(str(fn["name"]))].append(fn)
+        grouped[object_group(str(fn["name"]), page.group_labels)].append(fn)
     lines.extend(render_symbol_groups(grouped))
 
     names = {str(fn["name"]) for fn in functions}
