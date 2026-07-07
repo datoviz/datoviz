@@ -1837,6 +1837,9 @@ examples:
     primary_feature: obj-loading
     lane: features
     source: examples/c/features/obj_loading.c
+    python:
+      source: examples/python/gallery/features/obj_loading.py
+      status: direct-engine
     validation: smoke+screenshot
     data:
       kind: synthetic
