@@ -18,6 +18,16 @@
 #include "datoviz/controller/panzoom.h"
 #include "datoviz/controller/turntable.h"
 
+#include <math.h>
+
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define EXAMPLE_PREVIEW_TAU 6.28318530718f
+
 
 
 /*************************************************************************************************/
@@ -28,14 +38,7 @@ static float _preview_phase(uint64_t frame_index, uint64_t frame_count)
 {
     if (frame_count <= 1)
         return 0.0f;
-    return (float)frame_index / (float)(frame_count - 1);
-}
-
-
-static float _preview_ease(float phase)
-{
-    const float x = phase < 0.0f ? 0.0f : phase > 1.0f ? 1.0f : phase;
-    return x * x * (3.0f - 2.0f * x);
+    return (float)(frame_index % frame_count) / (float)frame_count;
 }
 
 
@@ -53,11 +56,11 @@ void example_preview_arcball(
     if (arcball == NULL || desc == NULL)
         return;
 
-    const float phase = _preview_ease(_preview_phase(frame_index, frame_count));
+    const float theta = EXAMPLE_PREVIEW_TAU * _preview_phase(frame_index, frame_count);
     vec3 angles = {
-        desc->base_angles[0] + desc->amplitude[0] * phase,
-        desc->base_angles[1] + desc->amplitude[1] * phase,
-        desc->base_angles[2] + desc->amplitude[2] * phase,
+        desc->base_angles[0] + desc->amplitude[0] * sinf(theta),
+        desc->base_angles[1] + desc->amplitude[1] * cosf(theta),
+        desc->base_angles[2] + desc->amplitude[2] * sinf(theta + 0.72f),
     };
     (void)dvz_arcball_set(arcball, angles);
     if (desc->zoom > 0.0f)
@@ -74,12 +77,13 @@ void example_preview_turntable(
     if (turntable == NULL || desc == NULL)
         return;
 
-    const float phase = _preview_ease(_preview_phase(frame_index, frame_count));
+    const float phase = _preview_phase(frame_index, frame_count);
+    const float theta = EXAMPLE_PREVIEW_TAU * phase;
     (void)dvz_turntable_reset(turntable);
     (void)dvz_turntable_orbit(
-        turntable, desc->yaw_amplitude * phase, desc->pitch_amplitude * phase);
+        turntable, desc->yaw_amplitude * phase, desc->pitch_amplitude * sinf(theta));
     if (desc->distance_delta != 0.0f)
-        (void)dvz_turntable_dolly(turntable, desc->distance_delta * phase);
+        (void)dvz_turntable_dolly(turntable, desc->distance_delta * (0.5f - 0.5f * cosf(theta)));
     (void)dvz_turntable_apply_camera(turntable);
 }
 
@@ -93,14 +97,15 @@ void example_preview_panzoom(
     if (panzoom == NULL || desc == NULL)
         return;
 
-    const float phase = _preview_ease(_preview_phase(frame_index, frame_count));
+    const float theta = EXAMPLE_PREVIEW_TAU * _preview_phase(frame_index, frame_count);
+    const float zoom_phase = 0.5f - 0.5f * cosf(theta);
     vec2 pan = {
-        desc->base_pan[0] + desc->pan_amplitude[0] * phase,
-        desc->base_pan[1] + desc->pan_amplitude[1] * phase,
+        desc->base_pan[0] + desc->pan_amplitude[0] * sinf(theta),
+        desc->base_pan[1] + desc->pan_amplitude[1] * cosf(theta),
     };
     vec2 zoom = {
-        desc->base_zoom[0] + desc->zoom_amplitude[0] * phase,
-        desc->base_zoom[1] + desc->zoom_amplitude[1] * phase,
+        desc->base_zoom[0] + desc->zoom_amplitude[0] * zoom_phase,
+        desc->base_zoom[1] + desc->zoom_amplitude[1] * zoom_phase,
     };
     (void)dvz_panzoom_pan(panzoom, pan);
     (void)dvz_panzoom_zoom(panzoom, zoom);

@@ -519,7 +519,7 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 16
+        frames: 24
         fps: 12
     data:
       kind: synthetic
@@ -651,7 +651,7 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 16
+        frames: 24
         fps: 12
     data:
       kind: synthetic
@@ -1587,7 +1587,7 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 16
+        frames: 24
         fps: 12
     data:
       kind: synthetic
