@@ -198,11 +198,11 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
 
     ControllerFlyState* state = (ControllerFlyState*)user;
     ExamplePreviewFlyDesc desc = {
-        .forward_amplitude = +0.22f,
-        .right_amplitude = +0.16f,
-        .up_amplitude = +0.05f,
-        .yaw_amplitude = +0.08f,
-        .pitch_amplitude = +0.045f,
+        .forward_amplitude = +0.20f,
+        .right_amplitude = 0.0f,
+        .up_amplitude = 0.0f,
+        .yaw_amplitude = 0.0f,
+        .pitch_amplitude = 0.0f,
     };
     (void)dvz_fly_set_camera(state->fly, state->camera);
     example_preview_fly(state->fly, ctx->preview_frame_index, ctx->preview_frame_count, &desc);
