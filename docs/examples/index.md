@@ -796,7 +796,7 @@ This example renders a point scene offscreen and writes one PNG.
 
 `experimental` `runtime`
 
-This example records a bounded offscreen point animation to video.
+This example records a deterministic offscreen point animation to video.
 
 </div>
 

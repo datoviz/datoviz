@@ -1864,7 +1864,7 @@ examples:
       status: native-only
       requirements:
         - native-capture
-      reason: video export uses native capture backends in v0.4
+      reason: video export uses native app/canvas capture backends, including CPU readback and optional external/NVENC paths
     agent_copy_safe: true
     gallery:
       card: small
@@ -1873,6 +1873,7 @@ examples:
       - app-capture
       - video
       - animation
+      - offscreen
 
   - id: point_2d
     title: Point

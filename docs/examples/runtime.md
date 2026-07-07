@@ -60,9 +60,9 @@ This example renders a point scene offscreen and writes one PNG.
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Video Export"><span>No screenshot</span></div>
 
-`experimental` `runtime`<br><span>`app-capture`, `video`, `animation`</span>
+`experimental` `runtime`<br><span>`app-capture`, `video`, `animation`, `offscreen`</span>
 
-This example records a bounded offscreen point animation to video.
+This example records a deterministic offscreen point animation to video.
 
 </div>
 

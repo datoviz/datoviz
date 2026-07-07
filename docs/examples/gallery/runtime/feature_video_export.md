@@ -10,7 +10,7 @@
 <span>Video Export</span>
 </nav>
 
-This example records a bounded offscreen point animation to video.
+This example records a deterministic offscreen point animation to video.
 
 ## Preview
 
@@ -20,7 +20,7 @@ This example records a bounded offscreen point animation to video.
 
 A row of tick points stays fixed while one larger point moves through a sinusoidal path; each frame updates the position, color, and diameter arrays before rendering. The default path writes video_export.mp4 through the app capture API, while --png renders a single smoke frame for quick validation.
 
-This runtime workflow is useful for scientific animations where the scene data is updated in a deterministic loop and the output location can be controlled with DVZ_CAPTURE_DIR and DVZ_CAPTURE_BASENAME.
+This runtime workflow is the reproducible offscreen video-export path: the scene data is updated in a deterministic loop, frames are captured from an offscreen view, and the output location can be controlled with DVZ_CAPTURE_DIR and DVZ_CAPTURE_BASENAME. Live window recording uses the same capture API on a window-backed view, but it is documented separately because window size, controller input, and wall-clock timing can affect the result.
 
 ## Source
 
@@ -38,13 +38,13 @@ This runtime workflow is useful for scientific animations where the scene data i
     - Status: `experimental`
     - Source: [`examples/c/runtime/video_export.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/video_export.c)
     - Browser support: Native only
-    - Browser note: video export uses native capture backends in v0.4
+    - Browser note: video export uses native app/canvas capture backends, including CPU readback and optional external/NVENC paths
     - Browser capability tags: `native-capture`
     - Validation: `smoke+optional-video`
 
     ### Tags
 
-    `app-capture`, `video`, `animation`
+    `app-capture`, `video`, `animation`, `offscreen`
 
     ### Data
 

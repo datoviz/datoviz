@@ -4,16 +4,18 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* video_export - This example records a bounded offscreen point animation to video.
+/* video_export - This example records a deterministic offscreen point animation to video.
  *
  * What to look for: a row of tick points stays fixed while one larger point moves through a
  * sinusoidal path; each frame updates the retained position, color, and diameter arrays before
  * rendering. The default path writes video_export.mp4 through the app capture API, while --png
  * renders a single smoke frame for quick validation.
  *
- * This runtime workflow is useful for scientific animations where the scene data is updated in a
- * deterministic loop and the output location can be controlled with DVZ_CAPTURE_DIR and
- * DVZ_CAPTURE_BASENAME.
+ * This runtime workflow is the reproducible offscreen video-export path: the scene data is updated
+ * in a deterministic loop, frames are captured from an offscreen view, and the output location can
+ * be controlled with DVZ_CAPTURE_DIR and DVZ_CAPTURE_BASENAME. Live window recording uses the same
+ * capture API on a window-backed view, but it is documented separately because window size,
+ * controller input, and wall-clock timing can affect the result.
  *
  * Scenario: runtime.video_export
  * Style: runtime, graphite_cyan, 1920x1080 output target

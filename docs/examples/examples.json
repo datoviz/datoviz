@@ -3645,14 +3645,15 @@
       "source": "examples/c/runtime/video_export.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/video_export.c",
       "page": "gallery/runtime/feature_video_export.md",
-      "summary": "This example records a bounded offscreen point animation to video.",
+      "summary": "This example records a deterministic offscreen point animation to video.",
       "validation": "smoke+optional-video",
       "build_command": "just example-c runtime/video_export",
       "smoke_command": "./build/examples/c/runtime/video_export --png",
       "tags": [
         "app-capture",
         "video",
-        "animation"
+        "animation",
+        "offscreen"
       ],
       "data": {
         "kind": "synthetic"
@@ -3671,13 +3672,13 @@
       "webgpu_requirements": [
         "native-capture"
       ],
-      "webgpu_reason": "video export uses native capture backends in v0.4",
+      "webgpu_reason": "video export uses native app/canvas capture backends, including CPU readback and optional external/NVENC paths",
       "webgpu": {
         "status": "native-only",
         "requirements": [
           "native-capture"
         ],
-        "reason": "video export uses native capture backends in v0.4"
+        "reason": "video export uses native app/canvas capture backends, including CPU readback and optional external/NVENC paths"
       },
       "primary_runtime": "video-export"
     },

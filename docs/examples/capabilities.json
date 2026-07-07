@@ -2895,6 +2895,19 @@
           }
         ]
       },
+      "offscreen": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_video_export",
+            "title": "Video Export",
+            "category": "runtime",
+            "status": "experimental",
+            "source": "examples/c/runtime/video_export.c",
+            "page": "gallery/runtime/feature_video_export.md"
+          }
+        ]
+      },
       "overlay": {
         "count": 1,
         "examples": [

@@ -8,4 +8,4 @@ scene-level retained capabilities belong in `../features/`.
 - `multi_window.c`: one app driving two native GLFW windows.
 - `offscreen_capture.c`: direct offscreen render-once PNG capture.
 - `record_replay.c`: experimental DVZR app recording and live replay.
-- `video_export.c`: direct offscreen MP4 export with `dvz_view_capture_start()`/stop.
+- `video_export.c`: deterministic offscreen MP4 export with `dvz_view_capture_start()`/stop.
