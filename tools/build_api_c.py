@@ -287,6 +287,8 @@ def format_function(fn: dict, names: set[str]) -> list[str]:
     doc, param_docs, ret_doc = doc_parts(fn.get("doc"))
     header = header_of(fn)
     lines = [f"### `{fn['name']}()`", ""]
+    if doc:
+        lines.extend([doc, ""])
     lines.extend(
         [
             f"```c title=\"{fn['name']}\"",
@@ -305,8 +307,6 @@ def format_function(fn: dict, names: set[str]) -> list[str]:
                 f"| `{name}` | `{table_cell(type_name(arg.get('type')))}` | {table_cell(param_docs.get(name, ''))} |"
             )
         lines.append("")
-    if doc:
-        lines.extend([doc, ""])
     related = related_functions(fn, names)
     if related:
         links = ", ".join(f"[`{name}()`](#{symbol_anchor(name)})" for name in related)

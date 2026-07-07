@@ -15,7 +15,8 @@ Common workflows:
 
 - [Debug rendering](../../how-to/debug-rendering.md)
 - [Profile performance](../../how-to/profile-performance.md)
-- [Runtime internals](../../advanced/runtime-internals.md)
+- [vklite overview](../../advanced/vklite.md)
+- [Canvas and stream API](../../advanced/canvas.md)
 
 Functions: 554
 
@@ -962,6 +963,13 @@ Functions: 554
 
 ### `dvz_allocation_create()`
 
+Allocate an empty allocation wrapper.
+
+Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+fill them through allocator create/import helpers, destroy the owning Vulkan
+resource before discarding them, and free only if this wrapper came from
+dvz_allocation_create().
+
 ```c title="dvz_allocation_create"
 DvzAllocation * dvz_allocation_create(void);
 ```
@@ -970,16 +978,11 @@ DvzAllocation * dvz_allocation_create(void);
 | --- | --- | --- |
 | return | `DvzAllocation *` | allocated allocation wrapper, or NULL on allocation failure |
 
-Allocate an empty allocation wrapper.
-
-Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
-fill them through allocator create/import helpers, destroy the owning Vulkan
-resource before discarding them, and free only if this wrapper came from
-dvz_allocation_create().
-
 _Declared in `include/datoviz/vk/memory.h`:97._
 
 ### `dvz_allocation_flags()`
+
+Return the allocation policy flags currently associated with an allocation.
 
 ```c title="dvz_allocation_flags"
 DvzAllocationFlags dvz_allocation_flags(
@@ -992,11 +995,11 @@ DvzAllocationFlags dvz_allocation_flags(
 | return | `DvzAllocationFlags` | allocation policy flags |
 | `alloc` | `DvzAllocation *` | the allocation |
 
-Return the allocation policy flags currently associated with an allocation.
-
 _Declared in `include/datoviz/vk/memory.h`:136._
 
 ### `dvz_allocation_flags_contains()`
+
+Test whether a flag set contains all requested allocation policy flags.
 
 ```c title="dvz_allocation_flags_contains"
 _Bool dvz_allocation_flags_contains(
@@ -1011,11 +1014,11 @@ _Bool dvz_allocation_flags_contains(
 | `flags` | `DvzAllocationFlags` | flag set to test |
 | `test` | `DvzAllocationFlags` | flags that must all be present |
 
-Test whether a flag set contains all requested allocation policy flags.
-
 _Declared in `include/datoviz/vk/memory.h`:147._
 
 ### `dvz_allocation_free()`
+
+Free an allocation wrapper allocated by dvz_allocation_create().
 
 ```c title="dvz_allocation_free"
 void dvz_allocation_free(
@@ -1027,11 +1030,11 @@ void dvz_allocation_free(
 | --- | --- | --- |
 | `alloc` | `DvzAllocation *` | allocation wrapper to free |
 
-Free an allocation wrapper allocated by dvz_allocation_create().
-
 _Declared in `include/datoviz/vk/memory.h`:106._
 
 ### `dvz_allocation_mapped()`
+
+Return the mapped pointer currently associated with an allocation.
 
 ```c title="dvz_allocation_mapped"
 void * dvz_allocation_mapped(
@@ -1044,11 +1047,15 @@ void * dvz_allocation_mapped(
 | return | `void *` | mapped pointer or NULL |
 | `alloc` | `DvzAllocation *` | the allocation |
 
-Return the mapped pointer currently associated with an allocation.
-
 _Declared in `include/datoviz/vk/memory.h`:126._
 
 ### `dvz_allocation_memory()`
+
+Return the Vulkan device-memory handle backing an allocation.
+
+This is an advanced interop helper for external-memory workflows. Regular Datoviz callers
+should prefer the allocator/map/copy helpers in `memory.h` instead of depending on raw memory
+handles.
 
 ```c title="dvz_allocation_memory"
 VkDeviceMemory dvz_allocation_memory(
@@ -1061,15 +1068,11 @@ VkDeviceMemory dvz_allocation_memory(
 | return | `VkDeviceMemory` | Vulkan device memory handle |
 | `alloc` | `DvzAllocation *` | the allocation |
 
-Return the Vulkan device-memory handle backing an allocation.
-
-This is an advanced interop helper for external-memory workflows. Regular Datoviz callers
-should prefer the allocator/map/copy helpers in `memory.h` instead of depending on raw memory
-handles.
-
 _Declared in `include/datoviz/vk/memory_interop.h`:267._
 
 ### `dvz_allocation_set_flags()`
+
+Update the allocation policy flags used by higher-level wrappers.
 
 ```c title="dvz_allocation_set_flags"
 void dvz_allocation_set_flags(
@@ -1083,11 +1086,11 @@ void dvz_allocation_set_flags(
 | `alloc` | `DvzAllocation *` | the allocation |
 | `flags` | `DvzAllocationFlags` | allocation policy flags |
 
-Update the allocation policy flags used by higher-level wrappers.
-
 _Declared in `include/datoviz/vk/memory.h`:157._
 
 ### `dvz_allocation_size()`
+
+Return the allocation size, in bytes.
 
 ```c title="dvz_allocation_size"
 VkDeviceSize dvz_allocation_size(
@@ -1100,13 +1103,16 @@ VkDeviceSize dvz_allocation_size(
 | return | `VkDeviceSize` | allocation size in bytes |
 | `alloc` | `DvzAllocation *` | the allocation |
 
-Return the allocation size, in bytes.
-
 _Declared in `include/datoviz/vk/memory.h`:167._
 
 ## Allocator
 
 ### `dvz_allocator_buffer()`
+
+Allocate and create a Vulkan buffer.
+
+The input create-info struct is treated as caller-owned configuration and is
+not retained or mutated after this call returns.
 
 ```c title="dvz_allocator_buffer"
 int dvz_allocator_buffer(
@@ -1126,14 +1132,11 @@ int dvz_allocator_buffer(
 | `alloc` | `DvzAllocation *` |  |
 | `vk_buffer` | `VkBuffer *` |  |
 
-Allocate and create a Vulkan buffer.
-
-The input create-info struct is treated as caller-owned configuration and is
-not retained or mutated after this call returns.
-
 _Declared in `include/datoviz/vk/memory.h`:200._
 
 ### `dvz_allocator_copy_from()`
+
+Copy memory from an allocation into host memory.
 
 ```c title="dvz_allocator_copy_from"
 int dvz_allocator_copy_from(
@@ -1154,11 +1157,11 @@ int dvz_allocator_copy_from(
 | `data` | `void *` | destination host pointer |
 | `size` | `VkDeviceSize` | number of bytes to copy |
 
-Copy memory from an allocation into host memory.
-
 _Declared in `include/datoviz/vk/memory.h`:296._
 
 ### `dvz_allocator_copy_to()`
+
+Copy host memory into an allocation.
 
 ```c title="dvz_allocator_copy_to"
 int dvz_allocator_copy_to(
@@ -1179,11 +1182,15 @@ int dvz_allocator_copy_to(
 | `data` | `const void *` | source host pointer |
 | `size` | `VkDeviceSize` | number of bytes to copy |
 
-Copy host memory into an allocation.
-
 _Declared in `include/datoviz/vk/memory.h`:280._
 
 ### `dvz_allocator_create()`
+
+Allocate an empty allocator wrapper.
+
+Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+initialize with dvz_device_allocator(), destroy with dvz_allocator_destroy(),
+and free only if this wrapper came from dvz_allocator_create().
 
 ```c title="dvz_allocator_create"
 DvzVma * dvz_allocator_create(void);
@@ -1193,17 +1200,13 @@ DvzVma * dvz_allocator_create(void);
 | --- | --- | --- |
 | return | `DvzVma *` | allocated allocator wrapper, or NULL on allocation failure |
 
-Allocate an empty allocator wrapper.
-
-Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
-initialize with dvz_device_allocator(), destroy with dvz_allocator_destroy(),
-and free only if this wrapper came from dvz_allocator_create().
-
 Related: [`dvz_allocator_destroy()`](#dvz_allocator_destroy).
 
 _Declared in `include/datoviz/vk/memory.h`:74._
 
 ### `dvz_allocator_destroy()`
+
+Destroy an allocator.
 
 ```c title="dvz_allocator_destroy"
 void dvz_allocator_destroy(
@@ -1215,13 +1218,13 @@ void dvz_allocator_destroy(
 | --- | --- | --- |
 | `allocator` | `DvzVma *` | the allocator. |
 
-Destroy an allocator.
-
 Related: [`dvz_allocator_create()`](#dvz_allocator_create).
 
 _Declared in `include/datoviz/vk/memory.h`:330._
 
 ### `dvz_allocator_destroy_buffer()`
+
+Destroy a buffer allocation.
 
 ```c title="dvz_allocator_destroy_buffer"
 void dvz_allocator_destroy_buffer(
@@ -1237,11 +1240,11 @@ void dvz_allocator_destroy_buffer(
 | `alloc` | `DvzAllocation *` | the allocation |
 | `vk_buffer` | `VkBuffer` | the buffer |
 
-Destroy a buffer allocation.
-
 _Declared in `include/datoviz/vk/memory.h`:309._
 
 ### `dvz_allocator_destroy_image()`
+
+Destroy a image allocation.
 
 ```c title="dvz_allocator_destroy_image"
 void dvz_allocator_destroy_image(
@@ -1257,11 +1260,11 @@ void dvz_allocator_destroy_image(
 | `alloc` | `DvzAllocation *` | the allocation |
 | `vk_image` | `VkImage` | the image |
 
-Destroy a image allocation.
-
 _Declared in `include/datoviz/vk/memory.h`:321._
 
 ### `dvz_allocator_device()`
+
+Return the device associated with an allocator.
 
 ```c title="dvz_allocator_device"
 DvzDevice * dvz_allocator_device(
@@ -1274,11 +1277,14 @@ DvzDevice * dvz_allocator_device(
 | return | `DvzDevice *` | associated device, or NULL if unset |
 | `allocator` | `DvzVma *` | the allocator |
 
-Return the device associated with an allocator.
-
 _Declared in `include/datoviz/vk/memory.h`:116._
 
 ### `dvz_allocator_export()`
+
+Export an allocation for another GPU API.
+
+This function is part of the advanced external-memory interop surface. It is intended for
+specialized paths such as video/interop plumbing rather than ordinary Datoviz allocation use.
 
 ```c title="dvz_allocator_export"
 int dvz_allocator_export(
@@ -1294,14 +1300,14 @@ int dvz_allocator_export(
 | `alloc` | `DvzAllocation *` | the allocation |
 | `handle` | `int *` |  |
 
-Export an allocation for another GPU API.
-
-This function is part of the advanced external-memory interop surface. It is intended for
-specialized paths such as video/interop plumbing rather than ordinary Datoviz allocation use.
-
 _Declared in `include/datoviz/vk/memory_interop.h`:190._
 
 ### `dvz_allocator_external()`
+
+Return the external-handle type configured on an allocator.
+
+This helper belongs to the narrower external-memory interop surface rather than the stable
+allocation path.
 
 ```c title="dvz_allocator_external"
 VkExternalMemoryHandleTypeFlagsKHR dvz_allocator_external(
@@ -1314,14 +1320,11 @@ VkExternalMemoryHandleTypeFlagsKHR dvz_allocator_external(
 | return | `VkExternalMemoryHandleTypeFlagsKHR` | external memory handle type flags (0 when disabled) |
 | `allocator` | `DvzVma *` | the allocator |
 
-Return the external-handle type configured on an allocator.
-
-This helper belongs to the narrower external-memory interop surface rather than the stable
-allocation path.
-
 _Declared in `include/datoviz/vk/memory_interop.h`:176._
 
 ### `dvz_allocator_flush()`
+
+Flush mapped memory ranges so GPU sees the latest CPU writes.
 
 ```c title="dvz_allocator_flush"
 int dvz_allocator_flush(
@@ -1340,11 +1343,11 @@ int dvz_allocator_flush(
 | `offset` | `VkDeviceSize` | the byte offset within the allocation |
 | `size` | `VkDeviceSize` | the number of bytes to flush |
 
-Flush mapped memory ranges so GPU sees the latest CPU writes.
-
 _Declared in `include/datoviz/vk/memory.h`:253._
 
 ### `dvz_allocator_free()`
+
+Free an allocator wrapper allocated by dvz_allocator_create().
 
 ```c title="dvz_allocator_free"
 void dvz_allocator_free(
@@ -1356,11 +1359,14 @@ void dvz_allocator_free(
 | --- | --- | --- |
 | `allocator` | `DvzVma *` | allocator wrapper to free |
 
-Free an allocator wrapper allocated by dvz_allocator_create().
-
 _Declared in `include/datoviz/vk/memory.h`:83._
 
 ### `dvz_allocator_image()`
+
+Allocate and create a Vulkan image.
+
+The input create-info struct is treated as caller-owned configuration and is
+not retained or mutated after this call returns.
 
 ```c title="dvz_allocator_image"
 int dvz_allocator_image(
@@ -1380,14 +1386,24 @@ int dvz_allocator_image(
 | `alloc` | `DvzAllocation *` |  |
 | `vk_image` | `VkImage *` |  |
 
-Allocate and create a Vulkan image.
-
-The input create-info struct is treated as caller-owned configuration and is
-not retained or mutated after this call returns.
-
 _Declared in `include/datoviz/vk/memory.h`:218._
 
 ### `dvz_allocator_import_buffer()`
+
+Import an external GPU data pointer to a Vulkan buffer.
+
+This function belongs to the advanced external-memory interop surface, not the stable
+low-level allocation path.
+
+This declaration remains intentionally public even though the active branch currently exercises
+import paths only narrowly; future allocator-interop hardening is expected to build on this
+surface rather than reintroducing private entry points.
+
+!!! warning
+This CUDA/CuPy-owned pointer -> Vulkan import direction remains experimental on the current
+branch. It is unreliable in practice and should not be treated as a stable v0.4 contract.
+Prefer the opposite direction: create/export Vulkan memory first, then import the external
+memory handle into CUDA/CuPy.
 
 ```c title="dvz_allocator_import_buffer"
 int dvz_allocator_import_buffer(
@@ -1409,24 +1425,18 @@ int dvz_allocator_import_buffer(
 | `alloc` | `DvzAllocation *` |  |
 | `vk_buffer` | `VkBuffer *` |  |
 
-Import an external GPU data pointer to a Vulkan buffer.
+_Declared in `include/datoviz/vk/memory_interop.h`:294._
+
+### `dvz_allocator_import_image()`
+
+Import an external GPU data pointer to a Vulkan image.
 
 This function belongs to the advanced external-memory interop surface, not the stable
 low-level allocation path.
 
-This declaration remains intentionally public even though the active branch currently exercises
-import paths only narrowly; future allocator-interop hardening is expected to build on this
-surface rather than reintroducing private entry points.
-
-!!! warning
-This CUDA/CuPy-owned pointer -> Vulkan import direction remains experimental on the current
-branch. It is unreliable in practice and should not be treated as a stable v0.4 contract.
-Prefer the opposite direction: create/export Vulkan memory first, then import the external
-memory handle into CUDA/CuPy.
-
-_Declared in `include/datoviz/vk/memory_interop.h`:294._
-
-### `dvz_allocator_import_image()`
+This declaration remains intentionally public even though the active branch does not yet rely on
+image import broadly; future allocator-interop hardening is expected to build on this surface
+rather than reintroducing private entry points.
 
 ```c title="dvz_allocator_import_image"
 int dvz_allocator_import_image(
@@ -1448,18 +1458,11 @@ int dvz_allocator_import_image(
 | `alloc` | `DvzAllocation *` |  |
 | `vk_image` | `VkImage *` |  |
 
-Import an external GPU data pointer to a Vulkan image.
-
-This function belongs to the advanced external-memory interop surface, not the stable
-low-level allocation path.
-
-This declaration remains intentionally public even though the active branch does not yet rely on
-image import broadly; future allocator-interop hardening is expected to build on this surface
-rather than reintroducing private entry points.
-
 _Declared in `include/datoviz/vk/memory_interop.h`:317._
 
 ### `dvz_allocator_invalidate()`
+
+Invalidate mapped memory ranges so the CPU sees the latest GPU writes.
 
 ```c title="dvz_allocator_invalidate"
 int dvz_allocator_invalidate(
@@ -1478,11 +1481,11 @@ int dvz_allocator_invalidate(
 | `offset` | `VkDeviceSize` | the byte offset within the allocation |
 | `size` | `VkDeviceSize` | the number of bytes to invalidate |
 
-Invalidate mapped memory ranges so the CPU sees the latest GPU writes.
-
 _Declared in `include/datoviz/vk/memory.h`:266._
 
 ### `dvz_allocator_map()`
+
+Map an allocation.
 
 ```c title="dvz_allocator_map"
 void * dvz_allocator_map(
@@ -1497,11 +1500,11 @@ void * dvz_allocator_map(
 | `allocator` | `DvzVma *` | the allocator |
 | `alloc` | `DvzAllocation *` | the allocation |
 
-Map an allocation.
-
 _Declared in `include/datoviz/vk/memory.h`:230._
 
 ### `dvz_allocator_unmap()`
+
+Unmap the allocation.
 
 ```c title="dvz_allocator_unmap"
 void dvz_allocator_unmap(
@@ -1515,13 +1518,13 @@ void dvz_allocator_unmap(
 | `allocator` | `DvzVma *` | the allocator |
 | `alloc` | `DvzAllocation *` | the allocation |
 
-Unmap the allocation.
-
 _Declared in `include/datoviz/vk/memory.h`:240._
 
 ## Arcball
 
 ### `dvz_arcball_angles()`
+
+Read current Euler angles.
 
 ```c title="dvz_arcball_angles"
 void dvz_arcball_angles(
@@ -1535,11 +1538,11 @@ void dvz_arcball_angles(
 | `arcball` | `DvzArcball *` |  |
 | `out_angles` | `vec3` |  |
 
-Read current Euler angles.
-
 _Declared in `include/datoviz/controller/arcball.h`:215._
 
 ### `dvz_arcball_connect()`
+
+Subscribe the arcball to an input router.
 
 ```c title="dvz_arcball_connect"
 DvzResult dvz_arcball_connect(
@@ -1554,11 +1557,11 @@ DvzResult dvz_arcball_connect(
 | `arcball` | `DvzArcball *` | arcball controller |
 | `router` | `DvzInputRouter *` | input router |
 
-Subscribe the arcball to an input router.
-
 _Declared in `include/datoviz/controller/arcball.h`:286._
 
 ### `dvz_arcball_constrain()`
+
+Set a rotation constraint axis.
 
 ```c title="dvz_arcball_constrain"
 DvzResult dvz_arcball_constrain(
@@ -1573,11 +1576,11 @@ DvzResult dvz_arcball_constrain(
 | `arcball` | `DvzArcball *` | arcball controller |
 | `axis` | `vec3` | rotation constraint axis |
 
-Set a rotation constraint axis.
-
 _Declared in `include/datoviz/controller/arcball.h`:208._
 
 ### `dvz_arcball_create()`
+
+Create a standalone arcball controller.
 
 ```c title="dvz_arcball_create"
 DvzArcball * dvz_arcball_create(
@@ -1589,8 +1592,6 @@ DvzArcball * dvz_arcball_create(
 | --- | --- | --- |
 | return | `DvzArcball *` | the controller, or NULL on allocation failure |
 | `desc` | `const DvzArcballDesc *` | arcball descriptor, or NULL for defaults |
-
-Create a standalone arcball controller.
 
 Related: [`dvz_arcball_destroy()`](#dvz_arcball_destroy).
 
@@ -1606,6 +1607,8 @@ _Declared in `include/datoviz/controller/arcball.h`:92._
 
 ### `dvz_arcball_destroy()`
 
+Destroy the arcball.
+
 ```c title="dvz_arcball_destroy"
 void dvz_arcball_destroy(
     DvzArcball * arcball
@@ -1616,13 +1619,13 @@ void dvz_arcball_destroy(
 | --- | --- | --- |
 | `arcball` | `DvzArcball *` |  |
 
-Destroy the arcball.
-
 Related: [`dvz_arcball_create()`](#dvz_arcball_create).
 
 _Declared in `include/datoviz/controller/arcball.h`:304._
 
 ### `dvz_arcball_disconnect()`
+
+Unsubscribe the arcball from a router.
 
 ```c title="dvz_arcball_disconnect"
 DvzResult dvz_arcball_disconnect(
@@ -1637,11 +1640,11 @@ DvzResult dvz_arcball_disconnect(
 | `arcball` | `DvzArcball *` | arcball controller |
 | `router` | `DvzInputRouter *` | input router |
 
-Unsubscribe the arcball from a router.
-
 _Declared in `include/datoviz/controller/arcball.h`:297._
 
 ### `dvz_arcball_end()`
+
+Commit the in-flight rotation into the accumulated matrix (call at drag stop).
 
 ```c title="dvz_arcball_end"
 DvzResult dvz_arcball_end(
@@ -1654,11 +1657,11 @@ DvzResult dvz_arcball_end(
 | return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on validation error |
 | `arcball` | `DvzArcball *` | arcball controller |
 
-Commit the in-flight rotation into the accumulated matrix (call at drag stop).
-
 _Declared in `include/datoviz/controller/arcball.h`:250._
 
 ### `dvz_arcball_initial()`
+
+Set the initial Euler angles and reset.
 
 ```c title="dvz_arcball_initial"
 DvzResult dvz_arcball_initial(
@@ -1673,11 +1676,11 @@ DvzResult dvz_arcball_initial(
 | `arcball` | `DvzArcball *` | arcball controller |
 | `angles` | `vec3` | initial Euler angles |
 
-Set the initial Euler angles and reset.
-
 _Declared in `include/datoviz/controller/arcball.h`:113._
 
 ### `dvz_arcball_is_interacting()`
+
+Return whether the pointer is currently interacting with the arcball.
 
 ```c title="dvz_arcball_is_interacting"
 _Bool dvz_arcball_is_interacting(
@@ -1690,11 +1693,13 @@ _Bool dvz_arcball_is_interacting(
 | return | `_Bool` | true while the user is pressing or dragging the arcball |
 | `arcball` | `DvzArcball *` |  |
 
-Return whether the pointer is currently interacting with the arcball.
-
 _Declared in `include/datoviz/controller/arcball.h`:266._
 
 ### `dvz_arcball_model()`
+
+Compute the model matrix (accumulated × in-flight rotation).
+
+Arcball pan and zoom are camera view state and are not included here.
 
 ```c title="dvz_arcball_model"
 DvzResult dvz_arcball_model(
@@ -1709,13 +1714,12 @@ DvzResult dvz_arcball_model(
 | `arcball` | `DvzArcball *` | arcball controller |
 | `model` | `mat4` | output model matrix |
 
-Compute the model matrix (accumulated × in-flight rotation).
-
-Arcball pan and zoom are camera view state and are not included here.
-
 _Declared in `include/datoviz/controller/arcball.h`:240._
 
 ### `dvz_arcball_mvp()`
+
+Fill the MVP struct from the current arcball state.
+Rotation is applied to the model matrix; pan and zoom are applied to view.
 
 ```c title="dvz_arcball_mvp"
 void dvz_arcball_mvp(
@@ -1729,12 +1733,11 @@ void dvz_arcball_mvp(
 | `arcball` | `DvzArcball *` |  |
 | `mvp` | `DvzMVP *` |  |
 
-Fill the MVP struct from the current arcball state.
-Rotation is applied to the model matrix; pan and zoom are applied to view.
-
 _Declared in `include/datoviz/controller/arcball.h`:258._
 
 ### `dvz_arcball_pan()`
+
+Set the camera view-plane pan offset.
 
 ```c title="dvz_arcball_pan"
 DvzResult dvz_arcball_pan(
@@ -1749,11 +1752,11 @@ DvzResult dvz_arcball_pan(
 | `arcball` | `DvzArcball *` | arcball controller |
 | `pan` | `vec2` | panel-plane pan offset |
 
-Set the camera view-plane pan offset.
-
 _Declared in `include/datoviz/controller/arcball.h`:165._
 
 ### `dvz_arcball_pan_shift()`
+
+Apply an incremental panel-plane pan shift in pixels.
 
 ```c title="dvz_arcball_pan_shift"
 DvzResult dvz_arcball_pan_shift(
@@ -1768,11 +1771,11 @@ DvzResult dvz_arcball_pan_shift(
 | `arcball` | `DvzArcball *` | arcball controller |
 | `shift_px` | `vec2` | shift in viewport pixels |
 
-Apply an incremental panel-plane pan shift in pixels.
-
 _Declared in `include/datoviz/controller/arcball.h`:185._
 
 ### `dvz_arcball_pointer()`
+
+Process a pointer event and update arcball state.
 
 ```c title="dvz_arcball_pointer"
 _Bool dvz_arcball_pointer(
@@ -1787,11 +1790,11 @@ _Bool dvz_arcball_pointer(
 | `arcball` | `DvzArcball *` |  |
 | `ev` | `const DvzPointerEvent *` |  |
 
-Process a pointer event and update arcball state.
-
 _Declared in `include/datoviz/controller/arcball.h`:275._
 
 ### `dvz_arcball_reset()`
+
+Reset to the initial orientation.
 
 ```c title="dvz_arcball_reset"
 DvzResult dvz_arcball_reset(
@@ -1804,11 +1807,11 @@ DvzResult dvz_arcball_reset(
 | return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on validation error |
 | `arcball` | `DvzArcball *` | arcball controller |
 
-Reset to the initial orientation.
-
 _Declared in `include/datoviz/controller/arcball.h`:123._
 
 ### `dvz_arcball_resize()`
+
+Update the viewport size (call on window resize).
 
 ```c title="dvz_arcball_resize"
 DvzResult dvz_arcball_resize(
@@ -1825,11 +1828,11 @@ DvzResult dvz_arcball_resize(
 | `width` | `float` | viewport width in pixels |
 | `height` | `float` | viewport height in pixels |
 
-Update the viewport size (call on window resize).
-
 _Declared in `include/datoviz/controller/arcball.h`:197._
 
 ### `dvz_arcball_rotate()`
+
+Apply an in-flight rotation from two NDC screen positions.
 
 ```c title="dvz_arcball_rotate"
 DvzResult dvz_arcball_rotate(
@@ -1846,11 +1849,11 @@ DvzResult dvz_arcball_rotate(
 | `cur_pos` | `vec2` | current pointer position in normalized device coordinates |
 | `last_pos` | `vec2` | previous pointer position in normalized device coordinates |
 
-Apply an in-flight rotation from two NDC screen positions.
-
 _Declared in `include/datoviz/controller/arcball.h`:227._
 
 ### `dvz_arcball_rotate_axis()`
+
+Apply an incremental rotation around an axis to the accumulated orientation.
 
 ```c title="dvz_arcball_rotate_axis"
 DvzResult dvz_arcball_rotate_axis(
@@ -1867,11 +1870,11 @@ DvzResult dvz_arcball_rotate_axis(
 | `angle` | `float` | rotation angle in radians |
 | `axis` | `vec3` | rotation axis |
 
-Apply an incremental rotation around an axis to the accumulated orientation.
-
 _Declared in `include/datoviz/controller/arcball.h`:145._
 
 ### `dvz_arcball_set()`
+
+Set the orientation directly from Euler angles.
 
 ```c title="dvz_arcball_set"
 DvzResult dvz_arcball_set(
@@ -1886,11 +1889,11 @@ DvzResult dvz_arcball_set(
 | `arcball` | `DvzArcball *` | arcball controller |
 | `angles` | `vec3` | Euler angles |
 
-Set the orientation directly from Euler angles.
-
 _Declared in `include/datoviz/controller/arcball.h`:134._
 
 ### `dvz_arcball_state()`
+
+Copy the current arcball state.
 
 ```c title="dvz_arcball_state"
 _Bool dvz_arcball_state(
@@ -1905,11 +1908,11 @@ _Bool dvz_arcball_state(
 | `arcball` | `const DvzArcball *` | arcball controller |
 | `out` | `DvzArcballState *` | target state snapshot |
 
-Copy the current arcball state.
-
 _Declared in `include/datoviz/controller/arcball.h`:175._
 
 ### `dvz_arcball_zoom()`
+
+Set the camera dolly factor.
 
 ```c title="dvz_arcball_zoom"
 DvzResult dvz_arcball_zoom(
@@ -1924,13 +1927,13 @@ DvzResult dvz_arcball_zoom(
 | `arcball` | `DvzArcball *` | arcball controller |
 | `zoom` | `float` | uniform zoom factor |
 
-Set the camera dolly factor.
-
 _Declared in `include/datoviz/controller/arcball.h`:155._
 
 ## Attachment
 
 ### `dvz_attachment_clear()`
+
+Set the attachment clear value.
 
 ```c title="dvz_attachment_clear"
 void dvz_attachment_clear(
@@ -1944,11 +1947,11 @@ void dvz_attachment_clear(
 | `attachment` | `DvzAttachment *` | the attachment |
 | `clear` | `VkClearValue` | the clear value |
 
-Set the attachment clear value.
-
 _Declared in `include/datoviz/vklite/rendering.h`:92._
 
 ### `dvz_attachment_image()`
+
+Set the attachment image view and layout.
 
 ```c title="dvz_attachment_image"
 void dvz_attachment_image(
@@ -1964,11 +1967,11 @@ void dvz_attachment_image(
 | `view` | `VkImageView` | the image view |
 | `layout` | `VkImageLayout` | the image layout |
 
-Set the attachment image view and layout.
-
 _Declared in `include/datoviz/vklite/rendering.h`:57._
 
 ### `dvz_attachment_ops()`
+
+Set the attachment load and store operations.
 
 ```c title="dvz_attachment_ops"
 void dvz_attachment_ops(
@@ -1984,11 +1987,11 @@ void dvz_attachment_ops(
 | `load` | `VkAttachmentLoadOp` | the load operation |
 | `store` | `VkAttachmentStoreOp` | the store operation |
 
-Set the attachment load and store operations.
-
 _Declared in `include/datoviz/vklite/rendering.h`:82._
 
 ### `dvz_attachment_resolve()`
+
+When using multisampling, set the resolve mod and image view.
 
 ```c title="dvz_attachment_resolve"
 void dvz_attachment_resolve(
@@ -2006,13 +2009,13 @@ void dvz_attachment_resolve(
 | `view` | `VkImageView` | the resolve image view |
 | `layout` | `VkImageLayout` | the resolve image layout |
 
-When using multisampling, set the resolve mod and image view.
-
 _Declared in `include/datoviz/vklite/rendering.h`:69._
 
 ## Barrier
 
 ### `dvz_barrier_buffer_access()`
+
+Set the barrier access.
 
 ```c title="dvz_barrier_buffer_access"
 void dvz_barrier_buffer_access(
@@ -2028,11 +2031,11 @@ void dvz_barrier_buffer_access(
 | `src` | `VkAccessFlags2` | the source access |
 | `dst` | `VkAccessFlags2` | the destination access |
 
-Set the barrier access.
-
 _Declared in `include/datoviz/vklite/sync.h`:186._
 
 ### `dvz_barrier_buffer_queue()`
+
+Set the queue family transfer.
 
 ```c title="dvz_barrier_buffer_queue"
 void dvz_barrier_buffer_queue(
@@ -2048,11 +2051,11 @@ void dvz_barrier_buffer_queue(
 | `src` | `uint32_t` | the source queue family index |
 | `dst` | `uint32_t` | the destination queue family index |
 
-Set the queue family transfer.
-
 _Declared in `include/datoviz/vklite/sync.h`:198._
 
 ### `dvz_barrier_buffer_stage()`
+
+Set the barrier stages.
 
 ```c title="dvz_barrier_buffer_stage"
 void dvz_barrier_buffer_stage(
@@ -2068,11 +2071,11 @@ void dvz_barrier_buffer_stage(
 | `src` | `VkPipelineStageFlags2` | the source stages |
 | `dst` | `VkPipelineStageFlags2` | the destination stages |
 
-Set the barrier stages.
-
 _Declared in `include/datoviz/vklite/sync.h`:174._
 
 ### `dvz_barrier_image_access()`
+
+Set the barrier access.
 
 ```c title="dvz_barrier_image_access"
 void dvz_barrier_image_access(
@@ -2088,11 +2091,11 @@ void dvz_barrier_image_access(
 | `src` | `VkAccessFlags2` | the source access |
 | `dst` | `VkAccessFlags2` | the destination access |
 
-Set the barrier access.
-
 _Declared in `include/datoviz/vklite/sync.h`:226._
 
 ### `dvz_barrier_image_aspect()`
+
+Set the barrier image aspect flags.
 
 ```c title="dvz_barrier_image_aspect"
 void dvz_barrier_image_aspect(
@@ -2106,11 +2109,11 @@ void dvz_barrier_image_aspect(
 | `bimg` | `DvzBarrierImage *` | the image barrier |
 | `aspect` | `VkImageAspectFlags` | the image aspect flags |
 
-Set the barrier image aspect flags.
-
 _Declared in `include/datoviz/vklite/sync.h`:261._
 
 ### `dvz_barrier_image_layers()`
+
+Set the array layers of an image barrier.
 
 ```c title="dvz_barrier_image_layers"
 void dvz_barrier_image_layers(
@@ -2126,11 +2129,11 @@ void dvz_barrier_image_layers(
 | `base` | `uint32_t` | the base array layer index |
 | `count` | `uint32_t` | the number of array layers |
 
-Set the array layers of an image barrier.
-
 _Declared in `include/datoviz/vklite/sync.h`:285._
 
 ### `dvz_barrier_image_layout()`
+
+Set the image layout change.
 
 ```c title="dvz_barrier_image_layout"
 void dvz_barrier_image_layout(
@@ -2146,11 +2149,11 @@ void dvz_barrier_image_layout(
 | `old` | `VkImageLayout` | the old image layout |
 | `new_layout` | `VkImageLayout` | the new image layout |
 
-Set the image layout change.
-
 _Declared in `include/datoviz/vklite/sync.h`:238._
 
 ### `dvz_barrier_image_mip()`
+
+Set the MIP images of an image barrier.
 
 ```c title="dvz_barrier_image_mip"
 void dvz_barrier_image_mip(
@@ -2166,11 +2169,11 @@ void dvz_barrier_image_mip(
 | `base` | `uint32_t` | the base index |
 | `count` | `uint32_t` | the number of MIP images |
 
-Set the MIP images of an image barrier.
-
 _Declared in `include/datoviz/vklite/sync.h`:273._
 
 ### `dvz_barrier_image_queue()`
+
+Set the queue family transfer.
 
 ```c title="dvz_barrier_image_queue"
 void dvz_barrier_image_queue(
@@ -2186,11 +2189,11 @@ void dvz_barrier_image_queue(
 | `src` | `uint32_t` | the source queue family index |
 | `dst` | `uint32_t` | the destination queue family index |
 
-Set the queue family transfer.
-
 _Declared in `include/datoviz/vklite/sync.h`:250._
 
 ### `dvz_barrier_image_stage()`
+
+Set the barrier stages.
 
 ```c title="dvz_barrier_image_stage"
 void dvz_barrier_image_stage(
@@ -2206,11 +2209,11 @@ void dvz_barrier_image_stage(
 | `src` | `VkPipelineStageFlags2` | the source stages |
 | `dst` | `VkPipelineStageFlags2` | the destination stages |
 
-Set the barrier stages.
-
 _Declared in `include/datoviz/vklite/sync.h`:214._
 
 ### `dvz_barrier_memory_access()`
+
+Set the barrier access.
 
 ```c title="dvz_barrier_memory_access"
 void dvz_barrier_memory_access(
@@ -2226,11 +2229,11 @@ void dvz_barrier_memory_access(
 | `src` | `VkAccessFlags2` | the source access |
 | `dst` | `VkAccessFlags2` | the destination access |
 
-Set the barrier access.
-
 _Declared in `include/datoviz/vklite/sync.h`:159._
 
 ### `dvz_barrier_memory_stage()`
+
+Set the barrier stages.
 
 ```c title="dvz_barrier_memory_stage"
 void dvz_barrier_memory_stage(
@@ -2246,13 +2249,13 @@ void dvz_barrier_memory_stage(
 | `src` | `VkPipelineStageFlags2` | the source stages |
 | `dst` | `VkPipelineStageFlags2` | the destination stages |
 
-Set the barrier stages.
-
 _Declared in `include/datoviz/vklite/sync.h`:146._
 
 ## Barriers
 
 ### `dvz_barriers()`
+
+Create a set of barriers.
 
 ```c title="dvz_barriers"
 void dvz_barriers(
@@ -2264,11 +2267,14 @@ void dvz_barriers(
 | --- | --- | --- |
 | `barriers` | `DvzBarriers *` | the set of barriers |
 
-Create a set of barriers.
-
 _Declared in `include/datoviz/vklite/sync.h`:299._
 
 ### `dvz_barriers_buffer()`
+
+Add a buffer barrier to a set of barriers
+
+Each barrier kind has capacity `DVZ_MAX_BARRIERS`. Returns NULL when the buffer-barrier capacity
+is exhausted.
 
 ```c title="dvz_barriers_buffer"
 DvzBarrierBuffer * dvz_barriers_buffer(
@@ -2287,14 +2293,11 @@ DvzBarrierBuffer * dvz_barriers_buffer(
 | `offset` | `VkDeviceSize` | the offset |
 | `size` | `VkDeviceSize` | the size |
 
-Add a buffer barrier to a set of barriers
-
-Each barrier kind has capacity `DVZ_MAX_BARRIERS`. Returns NULL when the buffer-barrier capacity
-is exhausted.
-
 _Declared in `include/datoviz/vklite/sync.h`:338._
 
 ### `dvz_barriers_buffer_count()`
+
+Return the number of recorded buffer barriers in a barrier set.
 
 ```c title="dvz_barriers_buffer_count"
 uint32_t dvz_barriers_buffer_count(
@@ -2307,11 +2310,11 @@ uint32_t dvz_barriers_buffer_count(
 | return | `uint32_t` | the buffer-barrier count |
 | `barriers` | `DvzBarriers *` | the barrier set |
 
-Return the number of recorded buffer barriers in a barrier set.
-
 _Declared in `include/datoviz/vklite/sync.h`:383._
 
 ### `dvz_barriers_capacity()`
+
+Return the maximum number of barriers supported per barrier type.
 
 ```c title="dvz_barriers_capacity"
 uint32_t dvz_barriers_capacity(
@@ -2324,11 +2327,11 @@ uint32_t dvz_barriers_capacity(
 | return | `uint32_t` | the barrier capacity |
 | `barriers` | `DvzBarriers *` | the barrier set |
 
-Return the maximum number of barriers supported per barrier type.
-
 _Declared in `include/datoviz/vklite/sync.h`:413._
 
 ### `dvz_barriers_dependency_flags()`
+
+Return the dependency flags configured on a barrier set.
 
 ```c title="dvz_barriers_dependency_flags"
 VkDependencyFlags dvz_barriers_dependency_flags(
@@ -2341,11 +2344,11 @@ VkDependencyFlags dvz_barriers_dependency_flags(
 | return | `VkDependencyFlags` | the dependency flags |
 | `barriers` | `DvzBarriers *` | the barrier set |
 
-Return the dependency flags configured on a barrier set.
-
 _Declared in `include/datoviz/vklite/sync.h`:403._
 
 ### `dvz_barriers_flags()`
+
+Set the dependency flags of a set of barriers
 
 ```c title="dvz_barriers_flags"
 void dvz_barriers_flags(
@@ -2359,11 +2362,14 @@ void dvz_barriers_flags(
 | `barriers` | `DvzBarriers *` | the set of barriers |
 | `flags` | `VkDependencyFlags` | the dependency flags |
 
-Set the dependency flags of a set of barriers
-
 _Declared in `include/datoviz/vklite/sync.h`:309._
 
 ### `dvz_barriers_image()`
+
+Add an image barrier to a set of barriers
+
+Each barrier kind has capacity `DVZ_MAX_BARRIERS`. Returns NULL when the image-barrier capacity
+is exhausted.
 
 ```c title="dvz_barriers_image"
 DvzBarrierImage * dvz_barriers_image(
@@ -2378,14 +2384,11 @@ DvzBarrierImage * dvz_barriers_image(
 | `barriers` | `DvzBarriers *` | the set of barriers |
 | `img` | `VkImage` | an image |
 
-Add an image barrier to a set of barriers
-
-Each barrier kind has capacity `DVZ_MAX_BARRIERS`. Returns NULL when the image-barrier capacity
-is exhausted.
-
 _Declared in `include/datoviz/vklite/sync.h`:353._
 
 ### `dvz_barriers_image_count()`
+
+Return the number of recorded image barriers in a barrier set.
 
 ```c title="dvz_barriers_image_count"
 uint32_t dvz_barriers_image_count(
@@ -2398,11 +2401,14 @@ uint32_t dvz_barriers_image_count(
 | return | `uint32_t` | the image-barrier count |
 | `barriers` | `DvzBarriers *` | the barrier set |
 
-Return the number of recorded image barriers in a barrier set.
-
 _Declared in `include/datoviz/vklite/sync.h`:393._
 
 ### `dvz_barriers_memory()`
+
+Add a memory barrier to a set of barriers
+
+Each barrier kind has capacity `DVZ_MAX_BARRIERS`. Returns NULL when the memory-barrier capacity
+is exhausted.
 
 ```c title="dvz_barriers_memory"
 DvzBarrierMemory * dvz_barriers_memory(
@@ -2415,14 +2421,11 @@ DvzBarrierMemory * dvz_barriers_memory(
 | return | `DvzBarrierMemory *` | the memory barrier |
 | `barriers` | `DvzBarriers *` | the set of barriers |
 
-Add a memory barrier to a set of barriers
-
-Each barrier kind has capacity `DVZ_MAX_BARRIERS`. Returns NULL when the memory-barrier capacity
-is exhausted.
-
 _Declared in `include/datoviz/vklite/sync.h`:322._
 
 ### `dvz_barriers_memory_count()`
+
+Return the number of recorded memory barriers in a barrier set.
 
 ```c title="dvz_barriers_memory_count"
 uint32_t dvz_barriers_memory_count(
@@ -2435,13 +2438,13 @@ uint32_t dvz_barriers_memory_count(
 | return | `uint32_t` | the memory-barrier count |
 | `barriers` | `DvzBarriers *` | the barrier set |
 
-Return the number of recorded memory barriers in a barrier set.
-
 _Declared in `include/datoviz/vklite/sync.h`:373._
 
 ## Box
 
 ### `dvz_box()`
+
+Create a box.
 
 ```c title="dvz_box"
 DvzBox dvz_box(
@@ -2464,11 +2467,11 @@ DvzBox dvz_box(
 | `zmin` | `double` | minimum z value |
 | `zmax` | `double` | maximum z value |
 
-Create a box.
-
 _Declared in `include/datoviz/math/box.h`:88._
 
 ### `dvz_box_aspect()`
+
+Return the aspect ratio of a box.
 
 ```c title="dvz_box_aspect"
 double dvz_box_aspect(
@@ -2481,11 +2484,11 @@ double dvz_box_aspect(
 | return | `double` | the aspect ratio width/height |
 | `box` | `DvzBox` | the box |
 
-Return the aspect ratio of a box.
-
 _Declared in `include/datoviz/math/box.h`:98._
 
 ### `dvz_box_center()`
+
+Return the box center.
 
 ```c title="dvz_box_center"
 void dvz_box_center(
@@ -2499,11 +2502,14 @@ void dvz_box_center(
 | `box` | `DvzBox` | the box |
 | `center` | `dvec3` |  |
 
-Return the box center.
-
 _Declared in `include/datoviz/math/box.h`:108._
 
 ### `dvz_box_extent()`
+
+Return the extent of a box, in the same coordinate system, depending on the target viewport
+aspect ratio. `DVZ_BOX_EXTENT_DEFAULT` returns the input box unchanged. `EXPAND` preserves the
+center and grows the smaller axis so the returned box contains the input. `CONTRACT` preserves
+the center and shrinks the larger axis so the returned box is contained by the input.
 
 ```c title="dvz_box_extent"
 DvzBox dvz_box_extent(
@@ -2522,14 +2528,11 @@ DvzBox dvz_box_extent(
 | `height` | `float` | the viewport height |
 | `strategy` | `DvzBoxExtentStrategy` | indicates how the extent box should be computed |
 
-Return the extent of a box, in the same coordinate system, depending on the target viewport
-aspect ratio. `DVZ_BOX_EXTENT_DEFAULT` returns the input box unchanged. `EXPAND` preserves the
-center and grows the smaller axis so the returned box contains the input. `CONTRACT` preserves
-the center and shrinks the larger axis so the returned box is contained by the input.
-
 _Declared in `include/datoviz/math/box.h`:125._
 
 ### `dvz_box_inverse()`
+
+Perform an inverse transformation of a position from a target box to a source box.
 
 ```c title="dvz_box_inverse"
 void dvz_box_inverse(
@@ -2547,11 +2550,11 @@ void dvz_box_inverse(
 | `pos` | `const vec3` | the position in the target box |
 | `out` | `dvec3 *` |  |
 
-Perform an inverse transformation of a position from a target box to a source box.
-
 _Declared in `include/datoviz/math/box.h`:208._
 
 ### `dvz_box_merge()`
+
+Merge a number of boxes into a single box.
 
 ```c title="dvz_box_merge"
 DvzBox dvz_box_merge(
@@ -2568,11 +2571,11 @@ DvzBox dvz_box_merge(
 | `boxes` | `const DvzBox *` | the boxes to merge |
 | `strategy` | `DvzBoxMergeStrategy` | the merge strategy |
 
-Merge a number of boxes into a single box.
-
 _Declared in `include/datoviz/math/box.h`:138._
 
 ### `dvz_box_normalize_1D()`
+
+Normalize 1D input positions into a target box.
 
 ```c title="dvz_box_normalize_1D"
 void dvz_box_normalize_1D(
@@ -2594,11 +2597,11 @@ void dvz_box_normalize_1D(
 | `pos` | `const double *` | the positions to normalize (double precision) |
 | `out` | `vec3 *` |  |
 
-Normalize 1D input positions into a target box.
-
 _Declared in `include/datoviz/math/box.h`:153._
 
 ### `dvz_box_normalize_2D()`
+
+Normalize 2D input positions into a target box.
 
 ```c title="dvz_box_normalize_2D"
 void dvz_box_normalize_2D(
@@ -2618,11 +2621,11 @@ void dvz_box_normalize_2D(
 | `pos` | `dvec2 *` | the positions to normalize (double precision) |
 | `out` | `vec3 *` |  |
 
-Normalize 2D input positions into a target box.
-
 _Declared in `include/datoviz/math/box.h`:168._
 
 ### `dvz_box_normalize_3D()`
+
+Normalize 3D input positions into a target box.
 
 ```c title="dvz_box_normalize_3D"
 void dvz_box_normalize_3D(
@@ -2642,11 +2645,11 @@ void dvz_box_normalize_3D(
 | `pos` | `dvec3 *` | the positions to normalize (double precision) |
 | `out` | `vec3 *` |  |
 
-Normalize 3D input positions into a target box.
-
 _Declared in `include/datoviz/math/box.h`:196._
 
 ### `dvz_box_normalize_polygon()`
+
+Normalize 2D input positions into a target box, using dvec2* as output format.
 
 ```c title="dvz_box_normalize_polygon"
 void dvz_box_normalize_polygon(
@@ -2666,13 +2669,17 @@ void dvz_box_normalize_polygon(
 | `pos` | `dvec2 *` | the positions to normalize (double precision) |
 | `out` | `dvec2 *` |  |
 
-Normalize 2D input positions into a target box, using dvec2* as output format.
-
 _Declared in `include/datoviz/math/box.h`:181._
 
 ## Buffer
 
 ### `dvz_buffer()`
+
+Initialize a GPU buffer.
+
+This prepares the wrapper for configuration. Call dvz_buffer_create() once
+after setting the desired size, usage, and allocation flags. Recreating a
+live buffer requires dvz_buffer_destroy() first.
 
 ```c title="dvz_buffer"
 void dvz_buffer(
@@ -2688,15 +2695,11 @@ void dvz_buffer(
 | `allocator` | `DvzVma *` | the Datoviz allocator |
 | `buffer` | `DvzBuffer *` |  |
 
-Initialize a GPU buffer.
-
-This prepares the wrapper for configuration. Call dvz_buffer_create() once
-after setting the desired size, usage, and allocation flags. Recreating a
-live buffer requires dvz_buffer_destroy() first.
-
 _Declared in `include/datoviz/vklite/buffers.h`:97._
 
 ### `dvz_buffer_allocated_size()`
+
+Return the current allocated size of a buffer, in bytes.
 
 ```c title="dvz_buffer_allocated_size"
 DvzSize dvz_buffer_allocated_size(
@@ -2709,11 +2712,14 @@ DvzSize dvz_buffer_allocated_size(
 | return | `DvzSize` | allocated size in bytes |
 | `buffer` | `DvzBuffer *` | the buffer |
 
-Return the current allocated size of a buffer, in bytes.
-
 _Declared in `include/datoviz/vklite/buffers.h`:82._
 
 ### `dvz_buffer_create()`
+
+Create the buffer after it has been set.
+
+This function creates the wrapped Vulkan buffer exactly once per live
+wrapper. Call dvz_buffer_destroy() before attempting to create it again.
 
 ```c title="dvz_buffer_create"
 int dvz_buffer_create(
@@ -2726,16 +2732,18 @@ int dvz_buffer_create(
 | return | `int` | 0 on success, non-zero on Vulkan or Datoviz state failure |
 | `buffer` | `DvzBuffer *` | the buffer |
 
-Create the buffer after it has been set.
-
-This function creates the wrapped Vulkan buffer exactly once per live
-wrapper. Call dvz_buffer_destroy() before attempting to create it again.
-
 Related: [`dvz_buffer_destroy()`](#dvz_buffer_destroy).
 
 _Declared in `include/datoviz/vklite/buffers.h`:140._
 
 ### `dvz_buffer_create_wrapper()`
+
+Allocate an empty buffer wrapper.
+
+Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+initialize with dvz_buffer(), configure, call dvz_buffer_create() once, then
+destroy before any recreate and free only if this wrapper came from
+dvz_buffer_create_wrapper().
 
 ```c title="dvz_buffer_create_wrapper"
 DvzBuffer * dvz_buffer_create_wrapper(void);
@@ -2745,16 +2753,14 @@ DvzBuffer * dvz_buffer_create_wrapper(void);
 | --- | --- | --- |
 | return | `DvzBuffer *` | allocated buffer wrapper, or NULL on allocation failure |
 
-Allocate an empty buffer wrapper.
-
-Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
-initialize with dvz_buffer(), configure, call dvz_buffer_create() once, then
-destroy before any recreate and free only if this wrapper came from
-dvz_buffer_create_wrapper().
-
 _Declared in `include/datoviz/vklite/buffers.h`:63._
 
 ### `dvz_buffer_destroy()`
+
+Destroy a buffer.
+
+This releases the wrapped Vulkan buffer and returns the wrapper to a reusable
+initialized state.
 
 ```c title="dvz_buffer_destroy"
 void dvz_buffer_destroy(
@@ -2766,16 +2772,17 @@ void dvz_buffer_destroy(
 | --- | --- | --- |
 | `buffer` | `DvzBuffer *` | the buffer |
 
-Destroy a buffer.
-
-This releases the wrapped Vulkan buffer and returns the wrapper to a reusable
-initialized state.
-
 Related: [`dvz_buffer_create()`](#dvz_buffer_create).
 
 _Declared in `include/datoviz/vklite/buffers.h`:238._
 
 ### `dvz_buffer_download()`
+
+Download a buffer data to the CPU.
+
+!!! important
+This function does **not** use any GPU synchronization primitive: this is the responsibility
+of the caller.
 
 ```c title="dvz_buffer_download"
 void dvz_buffer_download(
@@ -2793,15 +2800,11 @@ void dvz_buffer_download(
 | `size` | `DvzSize` | the size of the region to download, in bytes |
 | `data` | `void *` |  |
 
-Download a buffer data to the CPU.
-
-!!! important
-This function does **not** use any GPU synchronization primitive: this is the responsibility
-of the caller.
-
 _Declared in `include/datoviz/vklite/buffers.h`:226._
 
 ### `dvz_buffer_flags()`
+
+Set the allocation policy flags used when the buffer creates its memory.
 
 ```c title="dvz_buffer_flags"
 void dvz_buffer_flags(
@@ -2815,11 +2818,11 @@ void dvz_buffer_flags(
 | `buffer` | `DvzBuffer *` | the buffer |
 | `flags` | `DvzAllocationFlags` | the flags |
 
-Set the allocation policy flags used when the buffer creates its memory.
-
 _Declared in `include/datoviz/vklite/buffers.h`:127._
 
 ### `dvz_buffer_free()`
+
+Free a buffer wrapper allocated by dvz_buffer_create_wrapper().
 
 ```c title="dvz_buffer_free"
 void dvz_buffer_free(
@@ -2831,11 +2834,11 @@ void dvz_buffer_free(
 | --- | --- | --- |
 | `buffer` | `DvzBuffer *` | buffer wrapper to free |
 
-Free a buffer wrapper allocated by dvz_buffer_create_wrapper().
-
 _Declared in `include/datoviz/vklite/buffers.h`:72._
 
 ### `dvz_buffer_handle()`
+
+Return a Vulkan handle to a buffer.
 
 ```c title="dvz_buffer_handle"
 VkBuffer dvz_buffer_handle(
@@ -2848,11 +2851,11 @@ VkBuffer dvz_buffer_handle(
 | return | `VkBuffer` | the Vulkan buffer handle |
 | `buffer` | `DvzBuffer *` | the buffer |
 
-Return a Vulkan handle to a buffer.
-
 _Declared in `include/datoviz/vklite/buffers.h`:150._
 
 ### `dvz_buffer_map()`
+
+Memmap a GPU buffer.
 
 ```c title="dvz_buffer_map"
 int dvz_buffer_map(
@@ -2865,11 +2868,15 @@ int dvz_buffer_map(
 | return | `int` | 0 on success, non-zero on Vulkan or Datoviz state failure |
 | `buffer` | `DvzBuffer *` | the buffer |
 
-Memmap a GPU buffer.
-
 _Declared in `include/datoviz/vklite/buffers.h`:184._
 
 ### `dvz_buffer_resize()`
+
+Resize a buffer.
+
+The requested logical size is updated only on a valid buffer. This helper does not preserve
+existing contents, remap host pointers, or recreate a live Vulkan buffer; destroy and create the
+buffer again after changing size. Shrinking follows the same recreate contract as growing.
 
 ```c title="dvz_buffer_resize"
 void dvz_buffer_resize(
@@ -2883,15 +2890,11 @@ void dvz_buffer_resize(
 | `buffer` | `DvzBuffer *` | the buffer |
 | `size` | `DvzSize` | the new buffer size, in bytes |
 
-Resize a buffer.
-
-The requested logical size is updated only on a valid buffer. This helper does not preserve
-existing contents, remap host pointers, or recreate a live Vulkan buffer; destroy and create the
-buffer again after changing size. Shrinking follows the same recreate contract as growing.
-
 _Declared in `include/datoviz/vklite/buffers.h`:174._
 
 ### `dvz_buffer_size()`
+
+Set the buffer size.
 
 ```c title="dvz_buffer_size"
 void dvz_buffer_size(
@@ -2905,11 +2908,11 @@ void dvz_buffer_size(
 | `buffer` | `DvzBuffer *` | the buffer |
 | `size` | `DvzSize` | the buffer size, in bytes |
 
-Set the buffer size.
-
 _Declared in `include/datoviz/vklite/buffers.h`:107._
 
 ### `dvz_buffer_size_value()`
+
+Return the requested logical size of a buffer, in bytes.
 
 ```c title="dvz_buffer_size_value"
 DvzSize dvz_buffer_size_value(
@@ -2922,11 +2925,11 @@ DvzSize dvz_buffer_size_value(
 | return | `DvzSize` | requested size in bytes |
 | `buffer` | `DvzBuffer *` | the buffer |
 
-Return the requested logical size of a buffer, in bytes.
-
 _Declared in `include/datoviz/vklite/buffers.h`:160._
 
 ### `dvz_buffer_unmap()`
+
+Unmap a GPU buffer.
 
 ```c title="dvz_buffer_unmap"
 void dvz_buffer_unmap(
@@ -2938,11 +2941,15 @@ void dvz_buffer_unmap(
 | --- | --- | --- |
 | `buffer` | `DvzBuffer *` |  |
 
-Unmap a GPU buffer.
-
 _Declared in `include/datoviz/vklite/buffers.h`:193._
 
 ### `dvz_buffer_upload()`
+
+Upload data to a GPU buffer.
+
+!!! important
+This function does **not** use any GPU synchronization primitive: this is the responsibility
+of the caller.
 
 ```c title="dvz_buffer_upload"
 void dvz_buffer_upload(
@@ -2960,15 +2967,11 @@ void dvz_buffer_upload(
 | `size` | `DvzSize` | the buffer size, in bytes |
 | `data` | `const void *` | the data to upload |
 
-Upload data to a GPU buffer.
-
-!!! important
-This function does **not** use any GPU synchronization primitive: this is the responsibility
-of the caller.
-
 _Declared in `include/datoviz/vklite/buffers.h`:210._
 
 ### `dvz_buffer_usage()`
+
+Set the buffer usage.
 
 ```c title="dvz_buffer_usage"
 void dvz_buffer_usage(
@@ -2982,11 +2985,11 @@ void dvz_buffer_usage(
 | `buffer` | `DvzBuffer *` | the buffer |
 | `usage` | `VkBufferUsageFlags` | the buffer usage |
 
-Set the buffer usage.
-
 _Declared in `include/datoviz/vklite/buffers.h`:117._
 
 ### `dvz_buffer_views()`
+
+Create buffer views on an existing GPU buffer.
 
 ```c title="dvz_buffer_views"
 void dvz_buffer_views(
@@ -3008,11 +3011,11 @@ void dvz_buffer_views(
 | `alignment` | `DvzSize` | the alignment requirement for the view offsets |
 | `views` | `DvzBufferViews *` |  |
 
-Create buffer views on an existing GPU buffer.
-
 _Declared in `include/datoviz/vklite/buffers.h`:261._
 
 ### `dvz_buffer_views_aligned_size()`
+
+Return the aligned stride in bytes between successive views.
 
 ```c title="dvz_buffer_views_aligned_size"
 DvzSize dvz_buffer_views_aligned_size(
@@ -3025,11 +3028,11 @@ DvzSize dvz_buffer_views_aligned_size(
 | return | `DvzSize` | the aligned stride in bytes, or 0 when no alignment was requested |
 | `views` | `DvzBufferViews *` | the buffer views |
 
-Return the aligned stride in bytes between successive views.
-
 _Declared in `include/datoviz/vklite/buffers.h`:293._
 
 ### `dvz_buffer_views_count()`
+
+Return the number of logical views configured in a buffer-views wrapper.
 
 ```c title="dvz_buffer_views_count"
 uint32_t dvz_buffer_views_count(
@@ -3042,11 +3045,11 @@ uint32_t dvz_buffer_views_count(
 | return | `uint32_t` | the number of configured views |
 | `views` | `DvzBufferViews *` | the buffer views |
 
-Return the number of logical views configured in a buffer-views wrapper.
-
 _Declared in `include/datoviz/vklite/buffers.h`:273._
 
 ### `dvz_buffer_views_create()`
+
+Allocate an empty buffer-views wrapper.
 
 ```c title="dvz_buffer_views_create"
 DvzBufferViews * dvz_buffer_views_create(void);
@@ -3056,11 +3059,11 @@ DvzBufferViews * dvz_buffer_views_create(void);
 | --- | --- | --- |
 | return | `DvzBufferViews *` | allocated buffer-views wrapper, or NULL on allocation failure |
 
-Allocate an empty buffer-views wrapper.
-
 _Declared in `include/datoviz/vklite/buffers.h`:247._
 
 ### `dvz_buffer_views_free()`
+
+Free a buffer-views wrapper allocated by dvz_buffer_views_create().
 
 ```c title="dvz_buffer_views_free"
 void dvz_buffer_views_free(
@@ -3072,11 +3075,11 @@ void dvz_buffer_views_free(
 | --- | --- | --- |
 | `views` | `DvzBufferViews *` | buffer-views wrapper to free |
 
-Free a buffer-views wrapper allocated by dvz_buffer_views_create().
-
 _Declared in `include/datoviz/vklite/buffers.h`:313._
 
 ### `dvz_buffer_views_offset()`
+
+Return the byte offset of a configured view.
 
 ```c title="dvz_buffer_views_offset"
 DvzSize dvz_buffer_views_offset(
@@ -3091,11 +3094,11 @@ DvzSize dvz_buffer_views_offset(
 | `views` | `DvzBufferViews *` | the buffer views |
 | `idx` | `uint32_t` | the logical view index |
 
-Return the byte offset of a configured view.
-
 _Declared in `include/datoviz/vklite/buffers.h`:304._
 
 ### `dvz_buffer_views_size()`
+
+Return the size in bytes of each configured logical view.
 
 ```c title="dvz_buffer_views_size"
 DvzSize dvz_buffer_views_size(
@@ -3108,13 +3111,13 @@ DvzSize dvz_buffer_views_size(
 | return | `DvzSize` | the logical view size in bytes |
 | `views` | `DvzBufferViews *` | the buffer views |
 
-Return the size in bytes of each configured logical view.
-
 _Declared in `include/datoviz/vklite/buffers.h`:283._
 
 ## Camera
 
 ### `dvz_camera_create()`
+
+Create a standalone camera.
 
 ```c title="dvz_camera_create"
 DvzCamera * dvz_camera_create(
@@ -3127,13 +3130,13 @@ DvzCamera * dvz_camera_create(
 | return | `DvzCamera *` | the camera, or NULL on allocation failure |
 | `desc` | `const DvzCameraDesc *` | the camera descriptor, or NULL for defaults |
 
-Create a standalone camera.
-
 Related: [`dvz_camera_destroy()`](#dvz_camera_destroy).
 
 _Declared in `include/datoviz/controller/camera.h`:133._
 
 ### `dvz_camera_desc()`
+
+Return a default perspective camera descriptor.
 
 ```c title="dvz_camera_desc"
 DvzCameraDesc dvz_camera_desc(void);
@@ -3143,11 +3146,14 @@ DvzCameraDesc dvz_camera_desc(void);
 | --- | --- | --- |
 | return | `DvzCameraDesc` | the camera descriptor |
 
-Return a default perspective camera descriptor.
-
 _Declared in `include/datoviz/controller/camera.h`:123._
 
 ### `dvz_camera_destroy()`
+
+Destroy a camera.
+
+Use only with standalone cameras returned by `dvz_camera_create()`. Panel-owned cameras returned
+by `dvz_panel_set_camera_desc()` or `dvz_panel_camera()` are destroyed with their owning panel/scene.
 
 ```c title="dvz_camera_destroy"
 void dvz_camera_destroy(
@@ -3159,16 +3165,13 @@ void dvz_camera_destroy(
 | --- | --- | --- |
 | `camera` | `DvzCamera *` | the camera |
 
-Destroy a camera.
-
-Use only with standalone cameras returned by `dvz_camera_create()`. Panel-owned cameras returned
-by `dvz_panel_set_camera_desc()` or `dvz_panel_camera()` are destroyed with their owning panel/scene.
-
 Related: [`dvz_camera_create()`](#dvz_camera_create).
 
 _Declared in `include/datoviz/controller/camera.h`:263._
 
 ### `dvz_camera_get_orthographic_bounds()`
+
+Return explicit orthographic projection bounds.
 
 ```c title="dvz_camera_get_orthographic_bounds"
 DvzResult dvz_camera_get_orthographic_bounds(
@@ -3193,11 +3196,11 @@ DvzResult dvz_camera_get_orthographic_bounds(
 | `out_near` | `float *` | output near clipping plane |
 | `out_far` | `float *` | output far clipping plane |
 
-Return explicit orthographic projection bounds.
-
 _Declared in `include/datoviz/controller/camera.h`:227._
 
 ### `dvz_camera_get_projection()`
+
+Return camera projection parameters.
 
 ```c title="dvz_camera_get_projection"
 void dvz_camera_get_projection(
@@ -3211,11 +3214,11 @@ void dvz_camera_get_projection(
 | `camera` | `const DvzCamera *` | the camera |
 | `out` | `DvzCameraProjection *` | output camera projection |
 
-Return camera projection parameters.
-
 _Declared in `include/datoviz/controller/camera.h`:163._
 
 ### `dvz_camera_get_view()`
+
+Return a camera view transform.
 
 ```c title="dvz_camera_get_view"
 void dvz_camera_get_view(
@@ -3229,11 +3232,11 @@ void dvz_camera_get_view(
 | `camera` | `const DvzCamera *` | the camera |
 | `out` | `DvzCameraView *` | output camera view |
 
-Return a camera view transform.
-
 _Declared in `include/datoviz/controller/camera.h`:154._
 
 ### `dvz_camera_mvp()`
+
+Fill the view and projection matrices of an MVP struct from the camera state.
 
 ```c title="dvz_camera_mvp"
 void dvz_camera_mvp(
@@ -3247,11 +3250,11 @@ void dvz_camera_mvp(
 | `camera` | `DvzCamera *` | the camera |
 | `mvp` | `DvzMVP *` | the MVP to update |
 
-Fill the view and projection matrices of an MVP struct from the camera state.
-
 _Declared in `include/datoviz/controller/camera.h`:251._
 
 ### `dvz_camera_projection()`
+
+Return a default perspective camera projection.
 
 ```c title="dvz_camera_projection"
 DvzCameraProjection dvz_camera_projection(void);
@@ -3261,11 +3264,11 @@ DvzCameraProjection dvz_camera_projection(void);
 | --- | --- | --- |
 | return | `DvzCameraProjection` | the camera projection |
 
-Return a default perspective camera projection.
-
 _Declared in `include/datoviz/controller/camera.h`:114._
 
 ### `dvz_camera_resize()`
+
+Update the camera viewport size.
 
 ```c title="dvz_camera_resize"
 DvzResult dvz_camera_resize(
@@ -3282,11 +3285,11 @@ DvzResult dvz_camera_resize(
 | `width` | `float` | viewport width in pixels |
 | `height` | `float` | viewport height in pixels |
 
-Update the camera viewport size.
-
 _Declared in `include/datoviz/controller/camera.h`:241._
 
 ### `dvz_camera_set_orthographic()`
+
+Set orthographic projection parameters.
 
 ```c title="dvz_camera_set_orthographic"
 DvzResult dvz_camera_set_orthographic(
@@ -3305,11 +3308,14 @@ DvzResult dvz_camera_set_orthographic(
 | `near` | `float` | near clipping plane |
 | `far` | `float` | far clipping plane |
 
-Set orthographic projection parameters.
-
 _Declared in `include/datoviz/controller/camera.h`:190._
 
 ### `dvz_camera_set_orthographic_bounds()`
+
+Set explicit orthographic projection bounds.
+
+This preserves the bounds exactly as supplied, including reversed left/right or bottom/top
+pairs. Unlike `dvz_camera_set_orthographic()`, these bounds are not rewritten on resize.
 
 ```c title="dvz_camera_set_orthographic_bounds"
 DvzResult dvz_camera_set_orthographic_bounds(
@@ -3334,14 +3340,11 @@ DvzResult dvz_camera_set_orthographic_bounds(
 | `near` | `float` | near clipping plane |
 | `far` | `float` | far clipping plane |
 
-Set explicit orthographic projection bounds.
-
-This preserves the bounds exactly as supplied, including reversed left/right or bottom/top
-pairs. Unlike `dvz_camera_set_orthographic()`, these bounds are not rewritten on resize.
-
 _Declared in `include/datoviz/controller/camera.h`:210._
 
 ### `dvz_camera_set_perspective()`
+
+Set perspective projection parameters.
 
 ```c title="dvz_camera_set_perspective"
 DvzResult dvz_camera_set_perspective(
@@ -3360,11 +3363,11 @@ DvzResult dvz_camera_set_perspective(
 | `near` | `float` | near clipping plane |
 | `far` | `float` | far clipping plane |
 
-Set perspective projection parameters.
-
 _Declared in `include/datoviz/controller/camera.h`:176._
 
 ### `dvz_camera_set_view()`
+
+Set a camera view transform.
 
 ```c title="dvz_camera_set_view"
 DvzResult dvz_camera_set_view(
@@ -3379,11 +3382,11 @@ DvzResult dvz_camera_set_view(
 | `camera` | `DvzCamera *` | the camera |
 | `view` | `const DvzCameraView *` | the camera view |
 
-Set a camera view transform.
-
 _Declared in `include/datoviz/controller/camera.h`:144._
 
 ### `dvz_camera_view()`
+
+Return a default camera view.
 
 ```c title="dvz_camera_view"
 DvzCameraView dvz_camera_view(void);
@@ -3393,13 +3396,13 @@ DvzCameraView dvz_camera_view(void);
 | --- | --- | --- |
 | return | `DvzCameraView` | the camera view |
 
-Return a default camera view.
-
 _Declared in `include/datoviz/controller/camera.h`:105._
 
 ## Circular
 
 ### `dvz_circular_2D()`
+
+Generate a 2D circular motion.
 
 ```c title="dvz_circular_2D"
 void dvz_circular_2D(
@@ -3419,11 +3422,11 @@ void dvz_circular_2D(
 | `t` | `float` | the normalized value |
 | `out` | `vec2` |  |
 
-Generate a 2D circular motion.
-
 _Declared in `include/datoviz/math/anim.h`:110._
 
 ### `dvz_circular_3D()`
+
+Generate a 3D circular motion.
 
 ```c title="dvz_circular_3D"
 void dvz_circular_3D(
@@ -3443,13 +3446,13 @@ void dvz_circular_3D(
 | `t` | `float` | the normalized value (1 = full circle) |
 | `out` | `vec3` |  |
 
-Generate a 3D circular motion.
-
 _Declared in `include/datoviz/math/anim.h`:123._
 
 ## Cmd
 
 ### `dvz_cmd_barriers()`
+
+Record a set of barriers in a command buffer.
 
 ```c title="dvz_cmd_barriers"
 void dvz_cmd_barriers(
@@ -3463,11 +3466,11 @@ void dvz_cmd_barriers(
 | `cmds` | `DvzCommands *` | the command buffers |
 | `barriers` | `DvzBarriers *` | the set of barriers |
 
-Record a set of barriers in a command buffer.
-
 _Declared in `include/datoviz/vklite/sync.h`:363._
 
 ### `dvz_cmd_begin()`
+
+Start recording a command buffer.
 
 ```c title="dvz_cmd_begin"
 void dvz_cmd_begin(
@@ -3479,11 +3482,11 @@ void dvz_cmd_begin(
 | --- | --- | --- |
 | `cmds` | `DvzCommands *` | the set of command buffers |
 
-Start recording a command buffer.
-
 _Declared in `include/datoviz/vklite/commands.h`:159._
 
 ### `dvz_cmd_begin_result()`
+
+Start recording a command buffer.
 
 ```c title="dvz_cmd_begin_result"
 int dvz_cmd_begin_result(
@@ -3496,11 +3499,11 @@ int dvz_cmd_begin_result(
 | return | `int` | 0 on success, non-zero on Vulkan or state failure |
 | `cmds` | `DvzCommands *` | the set of command buffers |
 
-Start recording a command buffer.
-
 _Declared in `include/datoviz/vklite/commands.h`:150._
 
 ### `dvz_cmd_bind_compute()`
+
+Bind a compute pipeline.
 
 ```c title="dvz_cmd_bind_compute"
 void dvz_cmd_bind_compute(
@@ -3514,11 +3517,11 @@ void dvz_cmd_bind_compute(
 | `cmds` | `DvzCommands *` | the set of command buffers to record |
 | `compute` | `DvzCompute *` | the compute pipeline |
 
-Bind a compute pipeline.
-
 _Declared in `include/datoviz/vklite/compute.h`:178._
 
 ### `dvz_cmd_bind_descriptors()`
+
+Bind descriptors in a command buffer.
 
 ```c title="dvz_cmd_bind_descriptors"
 void dvz_cmd_bind_descriptors(
@@ -3542,11 +3545,11 @@ void dvz_cmd_bind_descriptors(
 | `dynamic_count` | `uint32_t` | the number of dynamic uniforms |
 | `dynamic_idxs` | `uint32_t *` | the indices of the dynamic uniforms |
 
-Bind descriptors in a command buffer.
-
 _Declared in `include/datoviz/vklite/descriptors.h`:146._
 
 ### `dvz_cmd_bind_graphics()`
+
+Bind a graphics pipeline.
 
 ```c title="dvz_cmd_bind_graphics"
 void dvz_cmd_bind_graphics(
@@ -3560,11 +3563,11 @@ void dvz_cmd_bind_graphics(
 | `cmds` | `DvzCommands *` | the set of command buffers to record |
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
 
-Bind a graphics pipeline.
-
 _Declared in `include/datoviz/vklite/graphics.h`:510._
 
 ### `dvz_cmd_bind_index_buffer()`
+
+Bind an index buffer.
 
 ```c title="dvz_cmd_bind_index_buffer"
 void dvz_cmd_bind_index_buffer(
@@ -3582,11 +3585,11 @@ void dvz_cmd_bind_index_buffer(
 | `offset` | `DvzSize` | the offset within the index buffer |
 | `index_type` | `VkIndexType` | the Vulkan index type |
 
-Bind an index buffer.
-
 _Declared in `include/datoviz/vklite/buffers.h`:341._
 
 ### `dvz_cmd_bind_vertex_buffers()`
+
+Bind vertex buffers before recording draw commands.
 
 ```c title="dvz_cmd_bind_vertex_buffers"
 void dvz_cmd_bind_vertex_buffers(
@@ -3606,11 +3609,11 @@ void dvz_cmd_bind_vertex_buffers(
 | `buffers` | `DvzBuffer *` | the "binding_count" buffers to bind |
 | `offsets` | `DvzSize *` | the offsets within each buffer |
 
-Bind vertex buffers before recording draw commands.
-
 _Declared in `include/datoviz/vklite/buffers.h`:326._
 
 ### `dvz_cmd_blit_destination()`
+
+Define the destination of a blit operation.
 
 ```c title="dvz_cmd_blit_destination"
 void dvz_cmd_blit_destination(
@@ -3638,11 +3641,11 @@ void dvz_cmd_blit_destination(
 | `y1` | `int32_t` | the destination offset y |
 | `z1` | `int32_t` | the destination offset z |
 
-Define the destination of a blit operation.
-
 _Declared in `include/datoviz/vklite/images.h`:625._
 
 ### `dvz_cmd_blit_filter()`
+
+Set the filter of a blit operation.
 
 ```c title="dvz_cmd_blit_filter"
 void dvz_cmd_blit_filter(
@@ -3656,11 +3659,11 @@ void dvz_cmd_blit_filter(
 | `blit` | `DvzImageBlit *` | the blit structure |
 | `filter` | `VkFilter` | the filter |
 
-Set the filter of a blit operation.
-
 _Declared in `include/datoviz/vklite/images.h`:637._
 
 ### `dvz_cmd_blit_image()`
+
+End an image blit operation.
 
 ```c title="dvz_cmd_blit_image"
 void dvz_cmd_blit_image(
@@ -3674,11 +3677,11 @@ void dvz_cmd_blit_image(
 | `cmds` | `DvzCommands *` |  |
 | `blit` | `DvzImageBlit *` | the blit structure |
 
-End an image blit operation.
-
 _Declared in `include/datoviz/vklite/images.h`:646._
 
 ### `dvz_cmd_blit_source()`
+
+Define the source of a blit operation.
 
 ```c title="dvz_cmd_blit_source"
 void dvz_cmd_blit_source(
@@ -3706,11 +3709,11 @@ void dvz_cmd_blit_source(
 | `y1` | `int32_t` | the source offset y |
 | `z1` | `int32_t` | the source offset z |
 
-Define the source of a blit operation.
-
 _Declared in `include/datoviz/vklite/images.h`:606._
 
 ### `dvz_cmd_copy_buffer_to_image()`
+
+Copy a GPU buffer to a GPU image.
 
 ```c title="dvz_cmd_copy_buffer_to_image"
 void dvz_cmd_copy_buffer_to_image(
@@ -3732,11 +3735,11 @@ void dvz_cmd_copy_buffer_to_image(
 | `layout` | `VkImageLayout` | the image layout |
 | `region` | `DvzImageRegion *` | the image region |
 
-Copy a GPU buffer to a GPU image.
-
 _Declared in `include/datoviz/vklite/images.h`:528._
 
 ### `dvz_cmd_copy_destination()`
+
+Define the destination of an image copy operation.
 
 ```c title="dvz_cmd_copy_destination"
 void dvz_cmd_copy_destination(
@@ -3758,11 +3761,11 @@ void dvz_cmd_copy_destination(
 | `y` | `int32_t` | the destination offset y |
 | `z` | `int32_t` | the destination offset z |
 
-Define the destination of an image copy operation.
-
 _Declared in `include/datoviz/vklite/images.h`:579._
 
 ### `dvz_cmd_copy_image()`
+
+End an image copy operation.
 
 ```c title="dvz_cmd_copy_image"
 void dvz_cmd_copy_image(
@@ -3776,11 +3779,11 @@ void dvz_cmd_copy_image(
 | `cmds` | `DvzCommands *` |  |
 | `copy` | `DvzImageCopy *` | the copy structure |
 
-End an image copy operation.
-
 _Declared in `include/datoviz/vklite/images.h`:589._
 
 ### `dvz_cmd_copy_image_to_buffer()`
+
+Copy a GPU image to a GPU buffer.
 
 ```c title="dvz_cmd_copy_image_to_buffer"
 void dvz_cmd_copy_image_to_buffer(
@@ -3802,11 +3805,11 @@ void dvz_cmd_copy_image_to_buffer(
 | `buffer` | `VkBuffer` | the buffer |
 | `offset` | `DvzSize` |  |
 
-Copy a GPU image to a GPU buffer.
-
 _Declared in `include/datoviz/vklite/images.h`:544._
 
 ### `dvz_cmd_copy_source()`
+
+Define the source of an image copy operation.
 
 ```c title="dvz_cmd_copy_source"
 void dvz_cmd_copy_source(
@@ -3834,11 +3837,11 @@ void dvz_cmd_copy_source(
 | `height` | `uint32_t` | the height |
 | `depth` | `uint32_t` | the depth |
 
-Define the source of an image copy operation.
-
 _Declared in `include/datoviz/vklite/images.h`:563._
 
 ### `dvz_cmd_dispatch()`
+
+Dispatch a compute task.
 
 ```c title="dvz_cmd_dispatch"
 void dvz_cmd_dispatch(
@@ -3856,11 +3859,11 @@ void dvz_cmd_dispatch(
 | `ny` | `uint32_t` | the number of local workgroups to dispatch in the Y dimension |
 | `nz` | `uint32_t` | the number of local workgroups to dispatch in the Z dimension |
 
-Dispatch a compute task.
-
 _Declared in `include/datoviz/vklite/compute.h`:190._
 
 ### `dvz_cmd_draw()`
+
+Direct draw.
 
 ```c title="dvz_cmd_draw"
 void dvz_cmd_draw(
@@ -3880,11 +3883,11 @@ void dvz_cmd_draw(
 | `first_instance` | `uint32_t` |  |
 | `instance_count` | `uint32_t` |  |
 
-Direct draw.
-
 _Declared in `include/datoviz/vklite/rendering.h`:275._
 
 ### `dvz_cmd_draw_indexed()`
+
+Direct indexed draw.
 
 ```c title="dvz_cmd_draw_indexed"
 void dvz_cmd_draw_indexed(
@@ -3906,11 +3909,11 @@ void dvz_cmd_draw_indexed(
 | `first_instance` | `uint32_t` |  |
 | `instance_count` | `uint32_t` |  |
 
-Direct indexed draw.
-
 _Declared in `include/datoviz/vklite/rendering.h`:289._
 
 ### `dvz_cmd_draw_indexed_indirect()`
+
+Indirect indexed draw.
 
 ```c title="dvz_cmd_draw_indexed_indirect"
 void dvz_cmd_draw_indexed_indirect(
@@ -3930,11 +3933,11 @@ void dvz_cmd_draw_indexed_indirect(
 | `draw_count` | `uint32_t` |  |
 | `stride` | `DvzSize` |  |
 
-Indirect indexed draw.
-
 _Declared in `include/datoviz/vklite/rendering.h`:312._
 
 ### `dvz_cmd_draw_indirect()`
+
+Indirect draw.
 
 ```c title="dvz_cmd_draw_indirect"
 void dvz_cmd_draw_indirect(
@@ -3954,11 +3957,11 @@ void dvz_cmd_draw_indirect(
 | `draw_count` | `uint32_t` |  |
 | `stride` | `DvzSize` |  |
 
-Indirect draw.
-
 _Declared in `include/datoviz/vklite/rendering.h`:301._
 
 ### `dvz_cmd_end()`
+
+Stop recording a command buffer.
 
 ```c title="dvz_cmd_end"
 void dvz_cmd_end(
@@ -3970,11 +3973,11 @@ void dvz_cmd_end(
 | --- | --- | --- |
 | `cmds` | `DvzCommands *` | the set of command buffers |
 
-Stop recording a command buffer.
-
 _Declared in `include/datoviz/vklite/commands.h`:178._
 
 ### `dvz_cmd_end_result()`
+
+Stop recording a command buffer.
 
 ```c title="dvz_cmd_end_result"
 int dvz_cmd_end_result(
@@ -3987,11 +3990,15 @@ int dvz_cmd_end_result(
 | return | `int` | 0 on success, non-zero on Vulkan or state failure |
 | `cmds` | `DvzCommands *` | the set of command buffers |
 
-Stop recording a command buffer.
-
 _Declared in `include/datoviz/vklite/commands.h`:169._
 
 ### `dvz_cmd_release()`
+
+Release the command buffers back to the Vulkan command pool.
+
+The wrapper itself remains alive; call dvz_commands_destroy() to also
+tear down the underlying pool and dvz_commands_free() to reclaim the heap
+wrapper allocation.
 
 ```c title="dvz_cmd_release"
 void dvz_cmd_release(
@@ -4003,15 +4010,11 @@ void dvz_cmd_release(
 | --- | --- | --- |
 | `cmds` | `DvzCommands *` | the set of command buffers |
 
-Release the command buffers back to the Vulkan command pool.
-
-The wrapper itself remains alive; call dvz_commands_destroy() to also
-tear down the underlying pool and dvz_commands_free() to reclaim the heap
-wrapper allocation.
-
 _Declared in `include/datoviz/vklite/commands.h`:200._
 
 ### `dvz_cmd_rendering_begin()`
+
+Begin a rendering.
 
 ```c title="dvz_cmd_rendering_begin"
 void dvz_cmd_rendering_begin(
@@ -4025,11 +4028,11 @@ void dvz_cmd_rendering_begin(
 | `cmds` | `DvzCommands *` | the command buffers |
 | `rendering` | `DvzRendering *` | the rendering |
 
-Begin a rendering.
-
 _Declared in `include/datoviz/vklite/rendering.h`:226._
 
 ### `dvz_cmd_rendering_default()`
+
+Set up a default rendering.
 
 ```c title="dvz_cmd_rendering_default"
 void dvz_cmd_rendering_default(
@@ -4051,11 +4054,11 @@ void dvz_cmd_rendering_default(
 | `clear_value` | `VkClearValue` | the clear value |
 | `rendering` | `DvzRendering *` | the rendering |
 
-Set up a default rendering.
-
 _Declared in `include/datoviz/vklite/rendering.h`:240._
 
 ### `dvz_cmd_rendering_end()`
+
+End a rendering.
 
 ```c title="dvz_cmd_rendering_end"
 void dvz_cmd_rendering_end(
@@ -4067,11 +4070,11 @@ void dvz_cmd_rendering_end(
 | --- | --- | --- |
 | `cmds` | `DvzCommands *` | the command buffers |
 
-End a rendering.
-
 _Declared in `include/datoviz/vklite/rendering.h`:251._
 
 ### `dvz_cmd_reset()`
+
+Reset a command buffer.
 
 ```c title="dvz_cmd_reset"
 void dvz_cmd_reset(
@@ -4083,11 +4086,13 @@ void dvz_cmd_reset(
 | --- | --- | --- |
 | `cmds` | `DvzCommands *` | the set of command buffers |
 
-Reset a command buffer.
-
 _Declared in `include/datoviz/vklite/commands.h`:187._
 
 ### `dvz_cmd_submit()`
+
+Submit a command buffer on its queue.
+
+This function blocks the queue so it is not optimal.
 
 ```c title="dvz_cmd_submit"
 void dvz_cmd_submit(
@@ -4099,13 +4104,13 @@ void dvz_cmd_submit(
 | --- | --- | --- |
 | `cmds` | `DvzCommands *` | the set of command buffers |
 
-Submit a command buffer on its queue.
-
-This function blocks the queue so it is not optimal.
-
 _Declared in `include/datoviz/vklite/commands.h`:223._
 
 ### `dvz_cmd_submit_result()`
+
+Submit a command buffer on its queue.
+
+This function blocks the queue so it is not optimal.
 
 ```c title="dvz_cmd_submit_result"
 int dvz_cmd_submit_result(
@@ -4118,15 +4123,13 @@ int dvz_cmd_submit_result(
 | return | `int` | 0 on success, non-zero on Vulkan or state failure |
 | `cmds` | `DvzCommands *` | the set of command buffers |
 
-Submit a command buffer on its queue.
-
-This function blocks the queue so it is not optimal.
-
 _Declared in `include/datoviz/vklite/commands.h`:212._
 
 ## Command
 
 ### `dvz_command_buffer_alloc()`
+
+Allocate a single primary command buffer from the device command pool of a queue family.
 
 ```c title="dvz_command_buffer_alloc"
 VkCommandBuffer dvz_command_buffer_alloc(
@@ -4141,11 +4144,11 @@ VkCommandBuffer dvz_command_buffer_alloc(
 | `device` | `DvzDevice *` | the device |
 | `queue_family` | `uint32_t` | queue family index used to select the command pool |
 
-Allocate a single primary command buffer from the device command pool of a queue family.
-
 _Declared in `include/datoviz/vklite/commands.h`:98._
 
 ### `dvz_command_buffer_free()`
+
+Free a single command buffer from the device command pool of a queue family.
 
 ```c title="dvz_command_buffer_free"
 void dvz_command_buffer_free(
@@ -4161,13 +4164,16 @@ void dvz_command_buffer_free(
 | `queue_family` | `uint32_t` | queue family index used to select the command pool |
 | `cmd` | `VkCommandBuffer` | command buffer to free |
 
-Free a single command buffer from the device command pool of a queue family.
-
 _Declared in `include/datoviz/vklite/commands.h`:110._
 
 ## Commands
 
 ### `dvz_commands()`
+
+Create a set of command buffers.
+
+The status is INIT when the command buffers are initialized, and CREATED when they are filled.
+Reinitializing a live wrapper requires dvz_commands_destroy() first.
 
 ```c title="dvz_commands"
 void dvz_commands(
@@ -4185,14 +4191,11 @@ void dvz_commands(
 | `count` | `uint32_t` | the number of command buffers to create |
 | `cmds` | `DvzCommands *` |  |
 
-Create a set of command buffers.
-
-The status is INIT when the command buffers are initialized, and CREATED when they are filled.
-Reinitializing a live wrapper requires dvz_commands_destroy() first.
-
 _Declared in `include/datoviz/vklite/commands.h`:87._
 
 ### `dvz_commands_count()`
+
+Return the number of command buffers managed by a wrapper.
 
 ```c title="dvz_commands_count"
 uint32_t dvz_commands_count(
@@ -4205,11 +4208,16 @@ uint32_t dvz_commands_count(
 | return | `uint32_t` | the command-buffer count |
 | `cmds` | `DvzCommands *` | the set of command buffers |
 
-Return the number of command buffers managed by a wrapper.
-
 _Declared in `include/datoviz/vklite/commands.h`:130._
 
 ### `dvz_commands_create_wrapper()`
+
+Allocate an empty commands wrapper.
+
+Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+initialize with dvz_commands(), record or wrap existing command buffers,
+destroy when done, and free only if this wrapper came from
+dvz_commands_create_wrapper().
 
 ```c title="dvz_commands_create_wrapper"
 DvzCommands * dvz_commands_create_wrapper(void);
@@ -4219,16 +4227,11 @@ DvzCommands * dvz_commands_create_wrapper(void);
 | --- | --- | --- |
 | return | `DvzCommands *` | allocated commands wrapper, or NULL on allocation failure |
 
-Allocate an empty commands wrapper.
-
-Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
-initialize with dvz_commands(), record or wrap existing command buffers,
-destroy when done, and free only if this wrapper came from
-dvz_commands_create_wrapper().
-
 _Declared in `include/datoviz/vklite/commands.h`:62._
 
 ### `dvz_commands_current()`
+
+Set the current command buffer index.
 
 ```c title="dvz_commands_current"
 void dvz_commands_current(
@@ -4242,11 +4245,14 @@ void dvz_commands_current(
 | `cmds` | `DvzCommands *` | the set of command buffers |
 | `current` | `uint32_t` | the current command buffer index |
 
-Set the current command buffer index.
-
 _Declared in `include/datoviz/vklite/commands.h`:140._
 
 ### `dvz_commands_destroy()`
+
+Destroy a set of command buffers.
+
+This releases the wrapped Vulkan command buffers and returns the wrapper to
+a reusable initialized state.
 
 ```c title="dvz_commands_destroy"
 void dvz_commands_destroy(
@@ -4258,14 +4264,11 @@ void dvz_commands_destroy(
 | --- | --- | --- |
 | `cmds` | `DvzCommands *` | the set of command buffers |
 
-Destroy a set of command buffers.
-
-This releases the wrapped Vulkan command buffers and returns the wrapper to
-a reusable initialized state.
-
 _Declared in `include/datoviz/vklite/commands.h`:235._
 
 ### `dvz_commands_free()`
+
+Free a commands wrapper allocated by dvz_commands_create_wrapper().
 
 ```c title="dvz_commands_free"
 void dvz_commands_free(
@@ -4277,11 +4280,11 @@ void dvz_commands_free(
 | --- | --- | --- |
 | `cmds` | `DvzCommands *` | commands wrapper to free |
 
-Free a commands wrapper allocated by dvz_commands_create_wrapper().
-
 _Declared in `include/datoviz/vklite/commands.h`:71._
 
 ### `dvz_commands_handle()`
+
+Return the Vulkan handle of the currently-selected command buffers.
 
 ```c title="dvz_commands_handle"
 VkCommandBuffer dvz_commands_handle(
@@ -4294,11 +4297,15 @@ VkCommandBuffer dvz_commands_handle(
 | return | `VkCommandBuffer` | the command buffer Vulkan handle |
 | `cmds` | `DvzCommands *` | the set of command buffers |
 
-Return the Vulkan handle of the currently-selected command buffers.
-
 _Declared in `include/datoviz/vklite/commands.h`:120._
 
 ### `dvz_commands_wrap()`
+
+Wrap an existing Vulkan command buffer in a DvzCommands struct.
+
+The wrapped command buffer remains externally owned. This helper is intended for command buffers
+whose owner grants recording-control operations such as begin, end, or reset. Queue submission is
+not supported for wrappers created by this function because no queue is supplied.
 
 ```c title="dvz_commands_wrap"
 void dvz_commands_wrap(
@@ -4314,15 +4321,15 @@ void dvz_commands_wrap(
 | `vk_cmd` | `VkCommandBuffer` | the Vulkan command buffer |
 | `cmds` | `DvzCommands *` |  |
 
-Wrap an existing Vulkan command buffer in a DvzCommands struct.
-
-The wrapped command buffer remains externally owned. This helper is intended for command buffers
-whose owner grants recording-control operations such as begin, end, or reset. Queue submission is
-not supported for wrappers created by this function because no queue is supplied.
-
 _Declared in `include/datoviz/vklite/commands.h`:250._
 
 ### `dvz_commands_wrap_borrowed_recording()`
+
+Wrap an externally-owned Vulkan command buffer that is already recording.
+
+The returned wrapper may be passed to vklite command-recording helpers only. Calls that would
+begin, end, reset, submit, or destroy the borrowed command buffer are rejected before touching
+Vulkan.
 
 ```c title="dvz_commands_wrap_borrowed_recording"
 void dvz_commands_wrap_borrowed_recording(
@@ -4338,17 +4345,16 @@ void dvz_commands_wrap_borrowed_recording(
 | `vk_cmd` | `VkCommandBuffer` | the borrowed recording Vulkan command buffer |
 | `cmds` | `DvzCommands *` |  |
 
-Wrap an externally-owned Vulkan command buffer that is already recording.
-
-The returned wrapper may be passed to vklite command-recording helpers only. Calls that would
-begin, end, reset, submit, or destroy the borrowed command buffer are rejected before touching
-Vulkan.
-
 _Declared in `include/datoviz/vklite/commands.h`:265._
 
 ## Compile
 
 ### `dvz_compile_glsl()`
+
+Compile a GLSL source string to SPIR-V using shaderc (lazy-loaded).
+
+The returned buffer is heap-allocated and must be freed with dvz_memory_free().
+Returns NULL if shaderc is unavailable or compilation fails.
 
 ```c title="dvz_compile_glsl"
 uint32_t * dvz_compile_glsl(
@@ -4365,16 +4371,17 @@ uint32_t * dvz_compile_glsl(
 | `glsl` | `const char *` | null-terminated GLSL source string |
 | `out_size` | `uint64_t *` | receives the byte size of the returned SPIR-V buffer |
 
-Compile a GLSL source string to SPIR-V using shaderc (lazy-loaded).
-
-The returned buffer is heap-allocated and must be freed with dvz_memory_free().
-Returns NULL if shaderc is unavailable or compilation fails.
-
 _Declared in `include/datoviz/vk/gpu_ctx.h`:273._
 
 ## Compute
 
 ### `dvz_compute()`
+
+Initialize a compute pipeline.
+
+This prepares the wrapper for configuration. Call dvz_compute_create() once
+after setting the shader module and pipeline layout. Recreating a live
+compute pipeline requires dvz_compute_destroy() first.
 
 ```c title="dvz_compute"
 void dvz_compute(
@@ -4388,15 +4395,14 @@ void dvz_compute(
 | `device` | `DvzDevice *` | the device |
 | `compute` | `DvzCompute *` |  |
 
-Initialize a compute pipeline.
-
-This prepares the wrapper for configuration. Call dvz_compute_create() once
-after setting the shader module and pipeline layout. Recreating a live
-compute pipeline requires dvz_compute_destroy() first.
-
 _Declared in `include/datoviz/vklite/compute.h`:80._
 
 ### `dvz_compute_create()`
+
+Create a compute pipeline after it has been set up.
+
+This function creates the wrapped Vulkan pipeline exactly once per live
+wrapper. Call dvz_compute_destroy() before attempting to create it again.
 
 ```c title="dvz_compute_create"
 int dvz_compute_create(
@@ -4409,16 +4415,18 @@ int dvz_compute_create(
 | return | `int` | the creation result code |
 | `compute` | `DvzCompute *` | the compute pipeline |
 
-Create a compute pipeline after it has been set up.
-
-This function creates the wrapped Vulkan pipeline exactly once per live
-wrapper. Call dvz_compute_destroy() before attempting to create it again.
-
 Related: [`dvz_compute_destroy()`](#dvz_compute_destroy).
 
 _Declared in `include/datoviz/vklite/compute.h`:127._
 
 ### `dvz_compute_create_wrapper()`
+
+Allocate an empty compute wrapper.
+
+Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+initialize with dvz_compute(), configure, call dvz_compute_create() once,
+then destroy before any recreate and free only if this wrapper came from
+dvz_compute_create_wrapper().
 
 ```c title="dvz_compute_create_wrapper"
 DvzCompute * dvz_compute_create_wrapper(void);
@@ -4428,16 +4436,14 @@ DvzCompute * dvz_compute_create_wrapper(void);
 | --- | --- | --- |
 | return | `DvzCompute *` | allocated compute wrapper, or NULL on allocation failure |
 
-Allocate an empty compute wrapper.
-
-Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
-initialize with dvz_compute(), configure, call dvz_compute_create() once,
-then destroy before any recreate and free only if this wrapper came from
-dvz_compute_create_wrapper().
-
 _Declared in `include/datoviz/vklite/compute.h`:66._
 
 ### `dvz_compute_destroy()`
+
+Destroy a compute pipeline.
+
+This releases the wrapped Vulkan pipeline and returns the wrapper to a
+reusable initialized state.
 
 ```c title="dvz_compute_destroy"
 void dvz_compute_destroy(
@@ -4449,16 +4455,13 @@ void dvz_compute_destroy(
 | --- | --- | --- |
 | `compute` | `DvzCompute *` | the compute pipeline |
 
-Destroy a compute pipeline.
-
-This releases the wrapped Vulkan pipeline and returns the wrapper to a
-reusable initialized state.
-
 Related: [`dvz_compute_create()`](#dvz_compute_create).
 
 _Declared in `include/datoviz/vklite/compute.h`:159._
 
 ### `dvz_compute_free()`
+
+Free a compute wrapper allocated by dvz_compute_create_wrapper().
 
 ```c title="dvz_compute_free"
 void dvz_compute_free(
@@ -4470,11 +4473,11 @@ void dvz_compute_free(
 | --- | --- | --- |
 | `compute` | `DvzCompute *` | compute wrapper to free |
 
-Free a compute wrapper allocated by dvz_compute_create_wrapper().
-
 _Declared in `include/datoviz/vklite/compute.h`:168._
 
 ### `dvz_compute_handle()`
+
+Return the Vulkan pipeline handle owned by a compute wrapper.
 
 ```c title="dvz_compute_handle"
 VkPipeline dvz_compute_handle(
@@ -4487,11 +4490,11 @@ VkPipeline dvz_compute_handle(
 | return | `VkPipeline` | the Vulkan pipeline handle or VK_NULL_HANDLE |
 | `compute` | `DvzCompute *` | the compute pipeline |
 
-Return the Vulkan pipeline handle owned by a compute wrapper.
-
 _Declared in `include/datoviz/vklite/compute.h`:137._
 
 ### `dvz_compute_layout()`
+
+Set the pipeline layout.
 
 ```c title="dvz_compute_layout"
 void dvz_compute_layout(
@@ -4505,11 +4508,11 @@ void dvz_compute_layout(
 | `compute` | `DvzCompute *` | the compute pipeline |
 | `layout` | `VkPipelineLayout` | the pipeline layout |
 
-Set the pipeline layout.
-
 _Declared in `include/datoviz/vklite/compute.h`:100._
 
 ### `dvz_compute_layout_handle()`
+
+Return the pipeline layout bound to a compute wrapper.
 
 ```c title="dvz_compute_layout_handle"
 VkPipelineLayout dvz_compute_layout_handle(
@@ -4522,11 +4525,11 @@ VkPipelineLayout dvz_compute_layout_handle(
 | return | `VkPipelineLayout` | the pipeline layout handle or VK_NULL_HANDLE |
 | `compute` | `DvzCompute *` | the compute pipeline |
 
-Return the pipeline layout bound to a compute wrapper.
-
 _Declared in `include/datoviz/vklite/compute.h`:147._
 
 ### `dvz_compute_shader()`
+
+Set the shader module.
 
 ```c title="dvz_compute_shader"
 void dvz_compute_shader(
@@ -4540,11 +4543,11 @@ void dvz_compute_shader(
 | `compute` | `DvzCompute *` | the compute pipeline |
 | `module` | `VkShaderModule` |  |
 
-Set the shader module.
-
 _Declared in `include/datoviz/vklite/compute.h`:90._
 
 ### `dvz_compute_spec()`
+
+Set a specialization constant.
 
 ```c title="dvz_compute_spec"
 void dvz_compute_spec(
@@ -4564,13 +4567,20 @@ void dvz_compute_spec(
 | `size` | `DvzSize` | the size of the specialization constant value |
 | `data` | `void *` | the value of the constant |
 
-Set a specialization constant.
-
 _Declared in `include/datoviz/vklite/compute.h`:114._
 
 ## Descriptors
 
 ### `dvz_descriptors()`
+
+Initialize and allocate descriptors.
+
+This is a one-shot pool-backed allocation helper. The wrapper does not own the descriptor pool
+and does not provide an independent Vulkan destroy entry point. Descriptor sets remain valid
+only while the parent device/pool stays alive, and callers must not allocate into the same
+wrapper twice without discarding it and starting from a fresh wrapper. This
+intentionally differs from the heavier create/destroy/free wrappers used for
+buffers, images, pipelines, and samplers.
 
 ```c title="dvz_descriptors"
 void dvz_descriptors(
@@ -4584,18 +4594,11 @@ void dvz_descriptors(
 | `slots` | `DvzSlots *` | the slots |
 | `descriptors` | `DvzDescriptors *` |  |
 
-Initialize and allocate descriptors.
-
-This is a one-shot pool-backed allocation helper. The wrapper does not own the descriptor pool
-and does not provide an independent Vulkan destroy entry point. Descriptor sets remain valid
-only while the parent device/pool stays alive, and callers must not allocate into the same
-wrapper twice without discarding it and starting from a fresh wrapper. This
-intentionally differs from the heavier create/destroy/free wrappers used for
-buffers, images, pipelines, and samplers.
-
 _Declared in `include/datoviz/vklite/descriptors.h`:76._
 
 ### `dvz_descriptors_buffer()`
+
+Bind a buffer.
 
 ```c title="dvz_descriptors_buffer"
 void dvz_descriptors_buffer(
@@ -4619,11 +4622,15 @@ void dvz_descriptors_buffer(
 | `offset` | `DvzSize` | the offset, in bytes |
 | `size` | `DvzSize` | the size, in bytes |
 
-Bind a buffer.
-
 _Declared in `include/datoviz/vklite/descriptors.h`:112._
 
 ### `dvz_descriptors_create_wrapper()`
+
+Allocate an empty descriptor wrapper.
+
+This wrapper is intentionally lightweight: it refers to descriptor sets allocated from the
+device-owned descriptor pool rather than owning an independent Vulkan object with a separate
+destroy path.
 
 ```c title="dvz_descriptors_create_wrapper"
 DvzDescriptors * dvz_descriptors_create_wrapper(void);
@@ -4633,15 +4640,14 @@ DvzDescriptors * dvz_descriptors_create_wrapper(void);
 | --- | --- | --- |
 | return | `DvzDescriptors *` | allocated descriptor wrapper, or NULL on allocation failure |
 
-Allocate an empty descriptor wrapper.
-
-This wrapper is intentionally lightweight: it refers to descriptor sets allocated from the
-device-owned descriptor pool rather than owning an independent Vulkan object with a separate
-destroy path.
-
 _Declared in `include/datoviz/vklite/descriptors.h`:59._
 
 ### `dvz_descriptors_free()`
+
+Free a descriptor wrapper allocated by dvz_descriptors_create().
+
+This releases the CPU-side wrapper and returns its Vulkan descriptor sets to the parent
+device-owned descriptor pool. The wrapper must be freed before the parent device is destroyed.
 
 ```c title="dvz_descriptors_free"
 void dvz_descriptors_free(
@@ -4653,14 +4659,11 @@ void dvz_descriptors_free(
 | --- | --- | --- |
 | `descriptors` | `DvzDescriptors *` | descriptor wrapper to free |
 
-Free a descriptor wrapper allocated by dvz_descriptors_create().
-
-This releases the CPU-side wrapper and returns its Vulkan descriptor sets to the parent
-device-owned descriptor pool. The wrapper must be freed before the parent device is destroyed.
-
 _Declared in `include/datoviz/vklite/descriptors.h`:160._
 
 ### `dvz_descriptors_handle()`
+
+Return a Vulkan descriptor-set handle by set index.
 
 ```c title="dvz_descriptors_handle"
 VkDescriptorSet dvz_descriptors_handle(
@@ -4675,11 +4678,11 @@ VkDescriptorSet dvz_descriptors_handle(
 | `descriptors` | `DvzDescriptors *` | the descriptors |
 | `set` | `uint32_t` | the descriptor set index |
 
-Return a Vulkan descriptor-set handle by set index.
-
 _Declared in `include/datoviz/vklite/descriptors.h`:97._
 
 ### `dvz_descriptors_image()`
+
+Bind an image.
 
 ```c title="dvz_descriptors_image"
 void dvz_descriptors_image(
@@ -4703,11 +4706,11 @@ void dvz_descriptors_image(
 | `view` | `VkImageView` | the image view |
 | `sampler` | `VkSampler` | the sampler |
 
-Bind an image.
-
 _Declared in `include/datoviz/vklite/descriptors.h`:129._
 
 ### `dvz_descriptors_set_count()`
+
+Return the number of descriptor sets allocated by the wrapper.
 
 ```c title="dvz_descriptors_set_count"
 uint32_t dvz_descriptors_set_count(
@@ -4720,13 +4723,18 @@ uint32_t dvz_descriptors_set_count(
 | return | `uint32_t` | the descriptor set count |
 | `descriptors` | `DvzDescriptors *` | the descriptors |
 
-Return the number of descriptor sets allocated by the wrapper.
-
 _Declared in `include/datoviz/vklite/descriptors.h`:86._
 
 ## Device
 
 ### `dvz_device_allocator()`
+
+Create an allocator for the stable low-level Datoviz allocation path.
+
+This is the main allocator entry point for regular buffer/image allocation workflows.
+External-memory interop remains a narrower advanced path documented in
+`datoviz/vk/memory_interop.h`. Reinitializing a live allocator requires
+dvz_allocator_destroy() first.
 
 ```c title="dvz_device_allocator"
 int dvz_device_allocator(
@@ -4742,16 +4750,11 @@ int dvz_device_allocator(
 | `export_handle_type` | `VkExternalMemoryHandleTypeFlagsKHR` | if exporting created allocations, the external memory handle type |
 | `allocator` | `DvzVma *` |  |
 
-Create an allocator for the stable low-level Datoviz allocation path.
-
-This is the main allocator entry point for regular buffer/image allocation workflows.
-External-memory interop remains a narrower advanced path documented in
-`datoviz/vk/memory_interop.h`. Reinitializing a live allocator requires
-dvz_allocator_destroy() first.
-
 _Declared in `include/datoviz/vk/memory.h`:183._
 
 ### `dvz_device_command_pool()`
+
+Return the command pool associated to a queue family index.
 
 ```c title="dvz_device_command_pool"
 VkCommandPool dvz_device_command_pool(
@@ -4766,11 +4769,11 @@ VkCommandPool dvz_device_command_pool(
 | `device` | `DvzDevice *` | the device |
 | `queue_family` | `uint32_t` | the queue family index |
 
-Return the command pool associated to a queue family index.
-
 _Declared in `include/datoviz/vk/device.h`:236._
 
 ### `dvz_device_config()`
+
+Return default configuration values for creating a device.
 
 ```c title="dvz_device_config"
 DvzDeviceConfig dvz_device_config(
@@ -4783,13 +4786,13 @@ DvzDeviceConfig dvz_device_config(
 | return | `DvzDeviceConfig` | the default device configuration |
 | `instance` | `DvzInstance *` | the source instance |
 
-Return default configuration values for creating a device.
-
 Related: [`dvz_device_create()`](#dvz_device_create).
 
 _Declared in `include/datoviz/vk/device.h`:84._
 
 ### `dvz_device_config_enable_canvas_extensions()`
+
+Toggle canvas extension requests on a device configuration.
 
 ```c title="dvz_device_config_enable_canvas_extensions"
 void dvz_device_config_enable_canvas_extensions(
@@ -4803,11 +4806,11 @@ void dvz_device_config_enable_canvas_extensions(
 | `cfg` | `DvzDeviceConfig *` | the device configuration |
 | `enabled` | `_Bool` | whether canvas extensions should be requested |
 
-Toggle canvas extension requests on a device configuration.
-
 _Declared in `include/datoviz/vk/device.h`:130._
 
 ### `dvz_device_config_request_extension()`
+
+Add an extension request to a device configuration.
 
 ```c title="dvz_device_config_request_extension"
 _Bool dvz_device_config_request_extension(
@@ -4822,11 +4825,11 @@ _Bool dvz_device_config_request_extension(
 | `cfg` | `DvzDeviceConfig *` | the device configuration |
 | `extension` | `const char *` | the extension name |
 
-Add an extension request to a device configuration.
-
 _Declared in `include/datoviz/vk/device.h`:120._
 
 ### `dvz_device_config_request_queue()`
+
+Add a queue request to a device configuration.
 
 ```c title="dvz_device_config_request_queue"
 _Bool dvz_device_config_request_queue(
@@ -4843,11 +4846,11 @@ _Bool dvz_device_config_request_queue(
 | `family` | `uint32_t` | the queue family index |
 | `count` | `uint32_t` | the number of queues requested |
 
-Add a queue request to a device configuration.
-
 _Declared in `include/datoviz/vk/device.h`:108._
 
 ### `dvz_device_config_set_features10()`
+
+Copy Vulkan 1.0 features into a device configuration.
 
 ```c title="dvz_device_config_set_features10"
 void dvz_device_config_set_features10(
@@ -4861,11 +4864,11 @@ void dvz_device_config_set_features10(
 | `cfg` | `DvzDeviceConfig *` | the device configuration |
 | `features` | `const VkPhysicalDeviceFeatures *` | the Vulkan 1.0 feature struct |
 
-Copy Vulkan 1.0 features into a device configuration.
-
 _Declared in `include/datoviz/vk/device.h`:141._
 
 ### `dvz_device_config_set_features11()`
+
+Copy Vulkan 1.1 features into a device configuration.
 
 ```c title="dvz_device_config_set_features11"
 void dvz_device_config_set_features11(
@@ -4879,11 +4882,11 @@ void dvz_device_config_set_features11(
 | `cfg` | `DvzDeviceConfig *` | the device configuration |
 | `features` | `const VkPhysicalDeviceVulkan11Features *` | the Vulkan 1.1 feature struct |
 
-Copy Vulkan 1.1 features into a device configuration.
-
 _Declared in `include/datoviz/vk/device.h`:151._
 
 ### `dvz_device_config_set_features12()`
+
+Copy Vulkan 1.2 features into a device configuration.
 
 ```c title="dvz_device_config_set_features12"
 void dvz_device_config_set_features12(
@@ -4897,11 +4900,11 @@ void dvz_device_config_set_features12(
 | `cfg` | `DvzDeviceConfig *` | the device configuration |
 | `features` | `const VkPhysicalDeviceVulkan12Features *` | the Vulkan 1.2 feature struct |
 
-Copy Vulkan 1.2 features into a device configuration.
-
 _Declared in `include/datoviz/vk/device.h`:162._
 
 ### `dvz_device_config_set_features13()`
+
+Copy Vulkan 1.3 features into a device configuration.
 
 ```c title="dvz_device_config_set_features13"
 void dvz_device_config_set_features13(
@@ -4915,11 +4918,11 @@ void dvz_device_config_set_features13(
 | `cfg` | `DvzDeviceConfig *` | the device configuration |
 | `features` | `const VkPhysicalDeviceVulkan13Features *` | the Vulkan 1.3 feature struct |
 
-Copy Vulkan 1.3 features into a device configuration.
-
 _Declared in `include/datoviz/vk/device.h`:173._
 
 ### `dvz_device_config_set_gpu_index()`
+
+Select the GPU index used for device creation.
 
 ```c title="dvz_device_config_set_gpu_index"
 _Bool dvz_device_config_set_gpu_index(
@@ -4934,11 +4937,11 @@ _Bool dvz_device_config_set_gpu_index(
 | `cfg` | `DvzDeviceConfig *` | the device configuration |
 | `gpu_index` | `uint32_t` | the selected GPU index in the instance |
 
-Select the GPU index used for device creation.
-
 _Declared in `include/datoviz/vk/device.h`:95._
 
 ### `dvz_device_create()`
+
+Create and initialize a heap-allocated device from a configuration.
 
 ```c title="dvz_device_create"
 DvzDevice * dvz_device_create(
@@ -4951,13 +4954,13 @@ DvzDevice * dvz_device_create(
 | return | `DvzDevice *` | a created device on success, `NULL` on failure |
 | `cfg` | `const DvzDeviceConfig *` | the device configuration |
 
-Create and initialize a heap-allocated device from a configuration.
-
 Related: [`dvz_device_destroy()`](#dvz_device_destroy).
 
 _Declared in `include/datoviz/vk/device.h`:184._
 
 ### `dvz_device_descriptor_pool()`
+
+Return the descriptor pool associated to a device.
 
 ```c title="dvz_device_descriptor_pool"
 VkDescriptorPool dvz_device_descriptor_pool(
@@ -4970,11 +4973,11 @@ VkDescriptorPool dvz_device_descriptor_pool(
 | return | `VkDescriptorPool` | the Vulkan descriptor pool |
 | `device` | `DvzDevice *` | the device |
 
-Return the descriptor pool associated to a device.
-
 _Declared in `include/datoviz/vk/device.h`:246._
 
 ### `dvz_device_destroy()`
+
+Destroy a device.
 
 ```c title="dvz_device_destroy"
 void dvz_device_destroy(
@@ -4986,13 +4989,13 @@ void dvz_device_destroy(
 | --- | --- | --- |
 | `device` | `DvzDevice *` |  |
 
-Destroy a device.
-
 Related: [`dvz_device_create()`](#dvz_device_create).
 
 _Declared in `include/datoviz/vk/device.h`:264._
 
 ### `dvz_device_features10()`
+
+Return the Vulkan 1.0 feature set enabled on this device.
 
 ```c title="dvz_device_features10"
 const VkPhysicalDeviceFeatures * dvz_device_features10(
@@ -5005,11 +5008,11 @@ const VkPhysicalDeviceFeatures * dvz_device_features10(
 | return | `const VkPhysicalDeviceFeatures *` | immutable pointer to enabled Vulkan 1.0 features |
 | `device` | `DvzDevice *` | the device |
 
-Return the Vulkan 1.0 feature set enabled on this device.
-
 _Declared in `include/datoviz/vk/device.h`:214._
 
 ### `dvz_device_handle()`
+
+Get the Vulkan VkDevice handle of a device.
 
 ```c title="dvz_device_handle"
 VkDevice dvz_device_handle(
@@ -5022,11 +5025,11 @@ VkDevice dvz_device_handle(
 | return | `VkDevice` | the Vulkan VkDevice handle |
 | `device` | `DvzDevice *` | the device |
 
-Get the Vulkan VkDevice handle of a device.
-
 _Declared in `include/datoviz/vk/device.h`:194._
 
 ### `dvz_device_has_extension()`
+
+Return whether a device was created with support for a given extension or not.
 
 ```c title="dvz_device_has_extension"
 _Bool dvz_device_has_extension(
@@ -5041,11 +5044,11 @@ _Bool dvz_device_has_extension(
 | `device` | `DvzDevice *` | the device |
 | `extension` | `const char *` | the extension name |
 
-Return whether a device was created with support for a given extension or not.
-
 _Declared in `include/datoviz/vk/device.h`:275._
 
 ### `dvz_device_physical_device()`
+
+Return the Vulkan physical device used by this logical device.
 
 ```c title="dvz_device_physical_device"
 VkPhysicalDevice dvz_device_physical_device(
@@ -5058,11 +5061,11 @@ VkPhysicalDevice dvz_device_physical_device(
 | return | `VkPhysicalDevice` | the Vulkan physical device handle |
 | `device` | `DvzDevice *` | the device |
 
-Return the Vulkan physical device used by this logical device.
-
 _Declared in `include/datoviz/vk/device.h`:204._
 
 ### `dvz_device_queue()`
+
+Retrieve a queue from a role.
 
 ```c title="dvz_device_queue"
 DvzQueue * dvz_device_queue(
@@ -5077,11 +5080,11 @@ DvzQueue * dvz_device_queue(
 | `device` | `DvzDevice *` | the device |
 | `role` | `DvzQueueRole` | the role |
 
-Retrieve a queue from a role.
-
 _Declared in `include/datoviz/vk/device.h`:225._
 
 ### `dvz_device_wait()`
+
+Wait until the device is ready. Inefficient.
 
 ```c title="dvz_device_wait"
 void dvz_device_wait(
@@ -5092,8 +5095,6 @@ void dvz_device_wait(
 | Field | Type | Description |
 | --- | --- | --- |
 | `device` | `DvzDevice *` | the device |
-
-Wait until the device is ready. Inefficient.
 
 _Declared in `include/datoviz/vk/device.h`:255._
 
@@ -5307,6 +5308,8 @@ _Declared in `include/datoviz/math/vec.h`:50._
 
 ### `dvz_easing()`
 
+Apply an easing function to a normalized value.
+
 ```c title="dvz_easing"
 double dvz_easing(
     DvzEasing easing,
@@ -5320,13 +5323,13 @@ double dvz_easing(
 | `easing` | `DvzEasing` | the easing mode |
 | `t` | `double` | the normalized value |
 
-Apply an easing function to a normalized value.
-
 _Declared in `include/datoviz/math/anim.h`:97._
 
 ## Error
 
 ### `dvz_error_set_callback()`
+
+Register an error callback.
 
 ```c title="dvz_error_set_callback"
 DvzResult dvz_error_set_callback(
@@ -5341,13 +5344,13 @@ DvzResult dvz_error_set_callback(
 | `cb` | `DvzErrorCallback` | the error callback |
 | `user_data` | `void *` | opaque pointer passed to the callback |
 
-Register an error callback.
-
 _Declared in `include/datoviz/common/functions.h`:57._
 
 ## Fence
 
 ### `dvz_fence()`
+
+Initialize a fence (CPU-GPU synchronization).
 
 ```c title="dvz_fence"
 void dvz_fence(
@@ -5363,11 +5366,11 @@ void dvz_fence(
 | `signaled` | `_Bool` | whether the fence is created in the signaled state or not |
 | `fence` | `DvzFence *` |  |
 
-Initialize a fence (CPU-GPU synchronization).
-
 _Declared in `include/datoviz/vklite/sync.h`:428._
 
 ### `dvz_fence_create_wrapper()`
+
+Allocate an empty fence wrapper.
 
 ```c title="dvz_fence_create_wrapper"
 DvzFence * dvz_fence_create_wrapper(void);
@@ -5377,11 +5380,11 @@ DvzFence * dvz_fence_create_wrapper(void);
 | --- | --- | --- |
 | return | `DvzFence *` | allocated fence wrapper, or NULL on allocation failure |
 
-Allocate an empty fence wrapper.
-
 _Declared in `include/datoviz/vklite/sync.h`:88._
 
 ### `dvz_fence_destroy()`
+
+Destroy fence.
 
 ```c title="dvz_fence_destroy"
 void dvz_fence_destroy(
@@ -5393,11 +5396,11 @@ void dvz_fence_destroy(
 | --- | --- | --- |
 | `fence` | `DvzFence *` | the fence |
 
-Destroy fence.
-
 _Declared in `include/datoviz/vklite/sync.h`:475._
 
 ### `dvz_fence_free()`
+
+Free a fence wrapper allocated by dvz_fence_create_wrapper().
 
 ```c title="dvz_fence_free"
 void dvz_fence_free(
@@ -5409,11 +5412,11 @@ void dvz_fence_free(
 | --- | --- | --- |
 | `fence` | `DvzFence *` | fence wrapper to free |
 
-Free a fence wrapper allocated by dvz_fence_create_wrapper().
-
 _Declared in `include/datoviz/vklite/sync.h`:97._
 
 ### `dvz_fence_handle()`
+
+Return the Vulkan fence handle owned by a fence wrapper.
 
 ```c title="dvz_fence_handle"
 VkFence dvz_fence_handle(
@@ -5426,11 +5429,11 @@ VkFence dvz_fence_handle(
 | return | `VkFence` | the Vulkan fence handle or VK_NULL_HANDLE |
 | `fence` | `DvzFence *` | the fence |
 
-Return the Vulkan fence handle owned by a fence wrapper.
-
 _Declared in `include/datoviz/vklite/sync.h`:448._
 
 ### `dvz_fence_ready()`
+
+Return whether a fence is ready.
 
 ```c title="dvz_fence_ready"
 _Bool dvz_fence_ready(
@@ -5442,11 +5445,11 @@ _Bool dvz_fence_ready(
 | --- | --- | --- |
 | `fence` | `DvzFence *` | the fence |
 
-Return whether a fence is ready.
-
 _Declared in `include/datoviz/vklite/sync.h`:457._
 
 ### `dvz_fence_reset()`
+
+Rset the state of a fence.
 
 ```c title="dvz_fence_reset"
 void dvz_fence_reset(
@@ -5458,11 +5461,11 @@ void dvz_fence_reset(
 | --- | --- | --- |
 | `fence` | `DvzFence *` | the fence |
 
-Rset the state of a fence.
-
 _Declared in `include/datoviz/vklite/sync.h`:466._
 
 ### `dvz_fence_wait()`
+
+Wait on the GPU until a fence is signaled.
 
 ```c title="dvz_fence_wait"
 _Bool dvz_fence_wait(
@@ -5475,13 +5478,13 @@ _Bool dvz_fence_wait(
 | return | `_Bool` | whether the fence was signaled successfully |
 | `fence` | `DvzFence *` | the fence |
 
-Wait on the GPU until a fence is signaled.
-
 _Declared in `include/datoviz/vklite/sync.h`:438._
 
 ## File
 
 ### `dvz_file_size()`
+
+Return the size of a file.
 
 ```c title="dvz_file_size"
 DvzSize dvz_file_size(
@@ -5494,13 +5497,13 @@ DvzSize dvz_file_size(
 | return | `DvzSize` | the size of the file |
 | `filename` | `const char *` | path of the file |
 
-Return the size of a file.
-
 _Declared in `include/datoviz/fileio/fileio.h`:42._
 
 ## Fly
 
 ### `dvz_fly_apply_camera()`
+
+Apply the current fly pose to the attached camera.
 
 ```c title="dvz_fly_apply_camera"
 DvzResult dvz_fly_apply_camera(
@@ -5513,11 +5516,11 @@ DvzResult dvz_fly_apply_camera(
 | return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on validation error |
 | `fly` | `DvzFly *` | the fly controller |
 
-Apply the current fly pose to the attached camera.
-
 _Declared in `include/datoviz/controller/fly.h`:346._
 
 ### `dvz_fly_clear_pivot()`
+
+Clear the optional orbit pivot.
 
 ```c title="dvz_fly_clear_pivot"
 DvzResult dvz_fly_clear_pivot(
@@ -5530,11 +5533,11 @@ DvzResult dvz_fly_clear_pivot(
 | return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on validation error |
 | `fly` | `DvzFly *` | the fly controller |
 
-Clear the optional orbit pivot.
-
 _Declared in `include/datoviz/controller/fly.h`:293._
 
 ### `dvz_fly_connect()`
+
+Subscribe the fly controller to an input router.
 
 ```c title="dvz_fly_connect"
 DvzResult dvz_fly_connect(
@@ -5549,11 +5552,11 @@ DvzResult dvz_fly_connect(
 | `fly` | `DvzFly *` | the fly controller |
 | `router` | `DvzInputRouter *` | input router |
 
-Subscribe the fly controller to an input router.
-
 _Declared in `include/datoviz/controller/fly.h`:390._
 
 ### `dvz_fly_create()`
+
+Create a standalone fly camera controller.
 
 ```c title="dvz_fly_create"
 DvzFly * dvz_fly_create(
@@ -5566,13 +5569,13 @@ DvzFly * dvz_fly_create(
 | return | `DvzFly *` | the controller, or NULL on allocation failure |
 | `desc` | `const DvzFlyDesc *` | fly descriptor, or NULL for defaults |
 
-Create a standalone fly camera controller.
-
 Related: [`dvz_fly_destroy()`](#dvz_fly_destroy).
 
 _Declared in `include/datoviz/controller/fly.h`:113._
 
 ### `dvz_fly_desc()`
+
+Return a default fly-controller descriptor.
 
 ```c title="dvz_fly_desc"
 DvzFlyDesc dvz_fly_desc(void);
@@ -5582,11 +5585,11 @@ DvzFlyDesc dvz_fly_desc(void);
 | --- | --- | --- |
 | return | `DvzFlyDesc` | the fly descriptor |
 
-Return a default fly-controller descriptor.
-
 _Declared in `include/datoviz/controller/fly.h`:103._
 
 ### `dvz_fly_destroy()`
+
+Destroy a fly controller.
 
 ```c title="dvz_fly_destroy"
 void dvz_fly_destroy(
@@ -5598,13 +5601,13 @@ void dvz_fly_destroy(
 | --- | --- | --- |
 | `fly` | `DvzFly *` | the fly controller |
 
-Destroy a fly controller.
-
 Related: [`dvz_fly_create()`](#dvz_fly_create).
 
 _Declared in `include/datoviz/controller/fly.h`:410._
 
 ### `dvz_fly_disconnect()`
+
+Unsubscribe the fly controller from an input router.
 
 ```c title="dvz_fly_disconnect"
 DvzResult dvz_fly_disconnect(
@@ -5619,11 +5622,11 @@ DvzResult dvz_fly_disconnect(
 | `fly` | `DvzFly *` | the fly controller |
 | `router` | `DvzInputRouter *` | input router |
 
-Unsubscribe the fly controller from an input router.
-
 _Declared in `include/datoviz/controller/fly.h`:401._
 
 ### `dvz_fly_get_position()`
+
+Return the current position.
 
 ```c title="dvz_fly_get_position"
 void dvz_fly_get_position(
@@ -5637,11 +5640,11 @@ void dvz_fly_get_position(
 | `fly` | `const DvzFly *` | the fly controller |
 | `out_pos` | `vec3` | output position |
 
-Return the current position.
-
 _Declared in `include/datoviz/controller/fly.h`:252._
 
 ### `dvz_fly_get_target()`
+
+Return the current look-at target.
 
 ```c title="dvz_fly_get_target"
 void dvz_fly_get_target(
@@ -5655,11 +5658,11 @@ void dvz_fly_get_target(
 | `fly` | `const DvzFly *` | the fly controller |
 | `out_target` | `vec3` | output target |
 
-Return the current look-at target.
-
 _Declared in `include/datoviz/controller/fly.h`:262._
 
 ### `dvz_fly_get_up()`
+
+Return the current up vector.
 
 ```c title="dvz_fly_get_up"
 void dvz_fly_get_up(
@@ -5673,11 +5676,11 @@ void dvz_fly_get_up(
 | `fly` | `const DvzFly *` | the fly controller |
 | `out_up` | `vec3` | output up vector |
 
-Return the current up vector.
-
 _Declared in `include/datoviz/controller/fly.h`:272._
 
 ### `dvz_fly_has_pivot()`
+
+Return whether an orbit pivot is set.
 
 ```c title="dvz_fly_has_pivot"
 _Bool dvz_fly_has_pivot(
@@ -5690,11 +5693,11 @@ _Bool dvz_fly_has_pivot(
 | return | `_Bool` | whether the fly controller has a pivot |
 | `fly` | `const DvzFly *` | the fly controller |
 
-Return whether an orbit pivot is set.
-
 _Declared in `include/datoviz/controller/fly.h`:303._
 
 ### `dvz_fly_initial()`
+
+Set the initial pose from angles and reset.
 
 ```c title="dvz_fly_initial"
 DvzResult dvz_fly_initial(
@@ -5715,11 +5718,11 @@ DvzResult dvz_fly_initial(
 | `pitch` | `float` | initial pitch angle in radians |
 | `roll` | `float` | initial roll angle in radians |
 
-Set the initial pose from angles and reset.
-
 _Declared in `include/datoviz/controller/fly.h`:163._
 
 ### `dvz_fly_initial_lookat()`
+
+Set the initial pose from a look-at point and reset.
 
 ```c title="dvz_fly_initial_lookat"
 DvzResult dvz_fly_initial_lookat(
@@ -5736,11 +5739,11 @@ DvzResult dvz_fly_initial_lookat(
 | `position` | `vec3` | initial camera position |
 | `target` | `vec3` | initial look-at target |
 
-Set the initial pose from a look-at point and reset.
-
 _Declared in `include/datoviz/controller/fly.h`:175._
 
 ### `dvz_fly_keyboard()`
+
+Process a keyboard event.
 
 ```c title="dvz_fly_keyboard"
 _Bool dvz_fly_keyboard(
@@ -5755,11 +5758,11 @@ _Bool dvz_fly_keyboard(
 | `fly` | `DvzFly *` | the fly controller |
 | `ev` | `const DvzKeyboardEvent *` | keyboard event |
 
-Process a keyboard event.
-
 _Declared in `include/datoviz/controller/fly.h`:379._
 
 ### `dvz_fly_look_at_pivot()`
+
+Reorient the camera toward the active pivot without moving the eye.
 
 ```c title="dvz_fly_look_at_pivot"
 DvzResult dvz_fly_look_at_pivot(
@@ -5772,11 +5775,11 @@ DvzResult dvz_fly_look_at_pivot(
 | return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on validation error |
 | `fly` | `DvzFly *` | the fly controller |
 
-Reorient the camera toward the active pivot without moving the eye.
-
 _Declared in `include/datoviz/controller/fly.h`:313._
 
 ### `dvz_fly_move_forward()`
+
+Move forward along the active movement direction.
 
 ```c title="dvz_fly_move_forward"
 DvzResult dvz_fly_move_forward(
@@ -5791,11 +5794,11 @@ DvzResult dvz_fly_move_forward(
 | `fly` | `DvzFly *` | the fly controller |
 | `amount` | `float` | movement amount in world units |
 
-Move forward along the active movement direction.
-
 _Declared in `include/datoviz/controller/fly.h`:197._
 
 ### `dvz_fly_move_right()`
+
+Move right relative to the active movement direction.
 
 ```c title="dvz_fly_move_right"
 DvzResult dvz_fly_move_right(
@@ -5810,11 +5813,11 @@ DvzResult dvz_fly_move_right(
 | `fly` | `DvzFly *` | the fly controller |
 | `amount` | `float` | movement amount in world units |
 
-Move right relative to the active movement direction.
-
 _Declared in `include/datoviz/controller/fly.h`:208._
 
 ### `dvz_fly_move_up()`
+
+Move up along the fly controller's world-up direction.
 
 ```c title="dvz_fly_move_up"
 DvzResult dvz_fly_move_up(
@@ -5829,11 +5832,11 @@ DvzResult dvz_fly_move_up(
 | `fly` | `DvzFly *` | the fly controller |
 | `amount` | `float` | movement amount in world units |
 
-Move up along the fly controller's world-up direction.
-
 _Declared in `include/datoviz/controller/fly.h`:219._
 
 ### `dvz_fly_orbit()`
+
+Orbit the camera around the active pivot.
 
 ```c title="dvz_fly_orbit"
 DvzResult dvz_fly_orbit(
@@ -5850,11 +5853,11 @@ DvzResult dvz_fly_orbit(
 | `yaw_delta` | `float` | yaw delta in radians |
 | `pitch_delta` | `float` | pitch delta in radians |
 
-Orbit the camera around the active pivot.
-
 _Declared in `include/datoviz/controller/fly.h`:325._
 
 ### `dvz_fly_pivot()`
+
+Set or move the optional orbit pivot while preserving the camera eye.
 
 ```c title="dvz_fly_pivot"
 DvzResult dvz_fly_pivot(
@@ -5869,11 +5872,11 @@ DvzResult dvz_fly_pivot(
 | `fly` | `DvzFly *` | the fly controller |
 | `pivot` | `vec3` | new world-space pivot point |
 
-Set or move the optional orbit pivot while preserving the camera eye.
-
 _Declared in `include/datoviz/controller/fly.h`:283._
 
 ### `dvz_fly_pointer()`
+
+Process a pointer event.
 
 ```c title="dvz_fly_pointer"
 _Bool dvz_fly_pointer(
@@ -5888,11 +5891,11 @@ _Bool dvz_fly_pointer(
 | `fly` | `DvzFly *` | the fly controller |
 | `ev` | `const DvzPointerEvent *` | pointer event |
 
-Process a pointer event.
-
 _Declared in `include/datoviz/controller/fly.h`:368._
 
 ### `dvz_fly_reset()`
+
+Reset a fly controller to its initial pose.
 
 ```c title="dvz_fly_reset"
 DvzResult dvz_fly_reset(
@@ -5905,11 +5908,11 @@ DvzResult dvz_fly_reset(
 | return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on validation error |
 | `fly` | `DvzFly *` | the fly controller |
 
-Reset a fly controller to its initial pose.
-
 _Declared in `include/datoviz/controller/fly.h`:123._
 
 ### `dvz_fly_resize()`
+
+Update the viewport size.
 
 ```c title="dvz_fly_resize"
 DvzResult dvz_fly_resize(
@@ -5926,11 +5929,11 @@ DvzResult dvz_fly_resize(
 | `width` | `float` | viewport width in pixels |
 | `height` | `float` | viewport height in pixels |
 
-Update the viewport size.
-
 _Declared in `include/datoviz/controller/fly.h`:149._
 
 ### `dvz_fly_roll()`
+
+Roll the fly camera around its view direction.
 
 ```c title="dvz_fly_roll"
 DvzResult dvz_fly_roll(
@@ -5945,11 +5948,11 @@ DvzResult dvz_fly_roll(
 | `fly` | `DvzFly *` | the fly controller |
 | `dx` | `float` | roll delta in radians |
 
-Roll the fly camera around its view direction.
-
 _Declared in `include/datoviz/controller/fly.h`:242._
 
 ### `dvz_fly_rotate()`
+
+Rotate the fly view direction.
 
 ```c title="dvz_fly_rotate"
 DvzResult dvz_fly_rotate(
@@ -5966,11 +5969,11 @@ DvzResult dvz_fly_rotate(
 | `dx` | `float` | yaw delta in radians |
 | `dy` | `float` | pitch delta in radians |
 
-Rotate the fly view direction.
-
 _Declared in `include/datoviz/controller/fly.h`:231._
 
 ### `dvz_fly_set_camera()`
+
+Attach a camera updated by this fly controller.
 
 ```c title="dvz_fly_set_camera"
 DvzResult dvz_fly_set_camera(
@@ -5985,11 +5988,11 @@ DvzResult dvz_fly_set_camera(
 | `fly` | `DvzFly *` | the fly controller |
 | `camera` | `DvzCamera *` | the camera to update, or NULL |
 
-Attach a camera updated by this fly controller.
-
 _Declared in `include/datoviz/controller/fly.h`:336._
 
 ### `dvz_fly_set_mode()`
+
+Set the movement mode.
 
 ```c title="dvz_fly_set_mode"
 DvzResult dvz_fly_set_mode(
@@ -6004,11 +6007,11 @@ DvzResult dvz_fly_set_mode(
 | `fly` | `DvzFly *` | the fly controller |
 | `mode` | `DvzFlyMode` | movement mode |
 
-Set the movement mode.
-
 _Declared in `include/datoviz/controller/fly.h`:186._
 
 ### `dvz_fly_update()`
+
+Advance held-key movement.
 
 ```c title="dvz_fly_update"
 DvzResult dvz_fly_update(
@@ -6023,11 +6026,11 @@ DvzResult dvz_fly_update(
 | `fly` | `DvzFly *` | the fly controller |
 | `dt` | `double` | elapsed time in seconds |
 
-Advance held-key movement.
-
 _Declared in `include/datoviz/controller/fly.h`:357._
 
 ### `dvz_fly_viewport()`
+
+Update the viewport rectangle in window coordinates.
 
 ```c title="dvz_fly_viewport"
 DvzResult dvz_fly_viewport(
@@ -6048,13 +6051,16 @@ DvzResult dvz_fly_viewport(
 | `width` | `float` | viewport width in window pixels |
 | `height` | `float` | viewport height in window pixels |
 
-Update the viewport rectangle in window coordinates.
-
 _Declared in `include/datoviz/controller/fly.h`:137._
 
 ## Font
 
 ### `dvz_font_defaults()`
+
+Return Datoviz's shared default font policy.
+
+The returned descriptors use borrowed static strings. Runtime consumers build their own backend
+font objects from this policy; ImGui fonts and scene text atlas fonts are not shared.
 
 ```c title="dvz_font_defaults"
 DvzFontDefaults dvz_font_defaults(void);
@@ -6064,14 +6070,11 @@ DvzFontDefaults dvz_font_defaults(void);
 | --- | --- | --- |
 | return | `DvzFontDefaults` | default font policy |
 
-Return Datoviz's shared default font policy.
-
-The returned descriptors use borrowed static strings. Runtime consumers build their own backend
-font objects from this policy; ImGui fonts and scene text atlas fonts are not shared.
-
 _Declared in `include/datoviz/font.h`:86._
 
 ### `dvz_font_desc()`
+
+Return an empty font descriptor.
 
 ```c title="dvz_font_desc"
 DvzFontDesc dvz_font_desc(void);
@@ -6081,13 +6084,13 @@ DvzFontDesc dvz_font_desc(void);
 | --- | --- | --- |
 | return | `DvzFontDesc` | default font descriptor |
 
-Return an empty font descriptor.
-
 _Declared in `include/datoviz/font.h`:75._
 
 ## Gpu
 
 ### `dvz_gpu_ctx()`
+
+Create an owned GPU context from a configuration.
 
 ```c title="dvz_gpu_ctx"
 DvzGpuCtx * dvz_gpu_ctx(
@@ -6100,11 +6103,11 @@ DvzGpuCtx * dvz_gpu_ctx(
 | return | `DvzGpuCtx *` | allocated GPU context, or NULL on failure |
 | `cfg` | `const DvzGpuCtxConfig *` | the GPU-context configuration |
 
-Create an owned GPU context from a configuration.
-
 _Declared in `include/datoviz/vk/gpu_ctx.h`:173._
 
 ### `dvz_gpu_ctx_alloc()`
+
+Return the allocator owned by a GPU context.
 
 ```c title="dvz_gpu_ctx_alloc"
 DvzVma * dvz_gpu_ctx_alloc(
@@ -6117,11 +6120,11 @@ DvzVma * dvz_gpu_ctx_alloc(
 | return | `DvzVma *` | borrowed allocator |
 | `ctx` | `DvzGpuCtx *` | the GPU context |
 
-Return the allocator owned by a GPU context.
-
 _Declared in `include/datoviz/vk/gpu_ctx.h`:224._
 
 ### `dvz_gpu_ctx_config()`
+
+Return the default GPU-context configuration.
 
 ```c title="dvz_gpu_ctx_config"
 DvzGpuCtxConfig dvz_gpu_ctx_config(void);
@@ -6131,11 +6134,11 @@ DvzGpuCtxConfig dvz_gpu_ctx_config(void);
 | --- | --- | --- |
 | return | `DvzGpuCtxConfig` | the default configuration |
 
-Return the default GPU-context configuration.
-
 _Declared in `include/datoviz/vk/gpu_ctx.h`:76._
 
 ### `dvz_gpu_ctx_config_add_instance_extension()`
+
+Request an additional Vulkan instance extension for a GPU-context configuration.
 
 ```c title="dvz_gpu_ctx_config_add_instance_extension"
 void dvz_gpu_ctx_config_add_instance_extension(
@@ -6149,11 +6152,11 @@ void dvz_gpu_ctx_config_add_instance_extension(
 | `cfg` | `DvzGpuCtxConfig *` | the GPU-context configuration |
 | `extension` | `const char *` | null-terminated extension name (must outlive the config) |
 
-Request an additional Vulkan instance extension for a GPU-context configuration.
-
 _Declared in `include/datoviz/vk/gpu_ctx.h`:151._
 
 ### `dvz_gpu_ctx_config_alloc()`
+
+Select the allocator external-memory export policy for a GPU-context configuration.
 
 ```c title="dvz_gpu_ctx_config_alloc"
 void dvz_gpu_ctx_config_alloc(
@@ -6167,11 +6170,13 @@ void dvz_gpu_ctx_config_alloc(
 | `cfg` | `DvzGpuCtxConfig *` | the GPU-context configuration |
 | `export_handle_type` | `VkExternalMemoryHandleTypeFlagsKHR` | external memory export flags |
 
-Select the allocator external-memory export policy for a GPU-context configuration.
-
 _Declared in `include/datoviz/vk/gpu_ctx.h`:108._
 
 ### `dvz_gpu_ctx_config_enable_canvas_extensions()`
+
+Enable or disable canvas (swapchain/surface) device extensions for a GPU-context configuration.
+
+Must be set before dvz_gpu_ctx() is called.  Required when creating present canvases.
 
 ```c title="dvz_gpu_ctx_config_enable_canvas_extensions"
 void dvz_gpu_ctx_config_enable_canvas_extensions(
@@ -6185,13 +6190,11 @@ void dvz_gpu_ctx_config_enable_canvas_extensions(
 | `cfg` | `DvzGpuCtxConfig *` | the GPU-context configuration |
 | `enable` | `_Bool` | whether canvas extensions should be enabled on the device |
 
-Enable or disable canvas (swapchain/surface) device extensions for a GPU-context configuration.
-
-Must be set before dvz_gpu_ctx() is called.  Required when creating present canvases.
-
 _Declared in `include/datoviz/vk/gpu_ctx.h`:163._
 
 ### `dvz_gpu_ctx_config_features10()`
+
+Copy Vulkan 1.0 features into a GPU-context configuration.
 
 ```c title="dvz_gpu_ctx_config_features10"
 void dvz_gpu_ctx_config_features10(
@@ -6205,11 +6208,11 @@ void dvz_gpu_ctx_config_features10(
 | `cfg` | `DvzGpuCtxConfig *` | the GPU-context configuration |
 | `features` | `const VkPhysicalDeviceFeatures *` | the Vulkan 1.0 feature struct |
 
-Copy Vulkan 1.0 features into a GPU-context configuration.
-
 _Declared in `include/datoviz/vk/gpu_ctx.h`:119._
 
 ### `dvz_gpu_ctx_config_features12()`
+
+Copy Vulkan 1.2 features into a GPU-context configuration.
 
 ```c title="dvz_gpu_ctx_config_features12"
 void dvz_gpu_ctx_config_features12(
@@ -6223,11 +6226,11 @@ void dvz_gpu_ctx_config_features12(
 | `cfg` | `DvzGpuCtxConfig *` | the GPU-context configuration |
 | `features` | `const VkPhysicalDeviceVulkan12Features *` | the Vulkan 1.2 feature struct |
 
-Copy Vulkan 1.2 features into a GPU-context configuration.
-
 _Declared in `include/datoviz/vk/gpu_ctx.h`:128._
 
 ### `dvz_gpu_ctx_config_features13()`
+
+Copy Vulkan 1.3 features into a GPU-context configuration.
 
 ```c title="dvz_gpu_ctx_config_features13"
 void dvz_gpu_ctx_config_features13(
@@ -6241,11 +6244,11 @@ void dvz_gpu_ctx_config_features13(
 | `cfg` | `DvzGpuCtxConfig *` | the GPU-context configuration |
 | `features` | `const VkPhysicalDeviceVulkan13Features *` | the Vulkan 1.3 feature struct |
 
-Copy Vulkan 1.3 features into a GPU-context configuration.
-
 _Declared in `include/datoviz/vk/gpu_ctx.h`:139._
 
 ### `dvz_gpu_ctx_config_gpu()`
+
+Select the GPU index to use for a GPU-context configuration.
 
 ```c title="dvz_gpu_ctx_config_gpu"
 void dvz_gpu_ctx_config_gpu(
@@ -6259,11 +6262,11 @@ void dvz_gpu_ctx_config_gpu(
 | `cfg` | `DvzGpuCtxConfig *` | the GPU-context configuration |
 | `gpu_index` | `uint32_t` | the selected GPU index |
 
-Select the GPU index to use for a GPU-context configuration.
-
 _Declared in `include/datoviz/vk/gpu_ctx.h`:97._
 
 ### `dvz_gpu_ctx_config_validation()`
+
+Toggle instance validation for a GPU-context configuration.
 
 ```c title="dvz_gpu_ctx_config_validation"
 void dvz_gpu_ctx_config_validation(
@@ -6277,11 +6280,11 @@ void dvz_gpu_ctx_config_validation(
 | `cfg` | `DvzGpuCtxConfig *` | the GPU-context configuration |
 | `enable_validation` | `_Bool` | whether validation should be enabled |
 
-Toggle instance validation for a GPU-context configuration.
-
 _Declared in `include/datoviz/vk/gpu_ctx.h`:87._
 
 ### `dvz_gpu_ctx_destroy()`
+
+Destroy a GPU context and all owned runtime objects.
 
 ```c title="dvz_gpu_ctx_destroy"
 void dvz_gpu_ctx_destroy(
@@ -6293,11 +6296,11 @@ void dvz_gpu_ctx_destroy(
 | --- | --- | --- |
 | `ctx` | `DvzGpuCtx *` | the GPU context |
 
-Destroy a GPU context and all owned runtime objects.
-
 _Declared in `include/datoviz/vk/gpu_ctx.h`:254._
 
 ### `dvz_gpu_ctx_device()`
+
+Return the device owned by a GPU context.
 
 ```c title="dvz_gpu_ctx_device"
 DvzDevice * dvz_gpu_ctx_device(
@@ -6310,11 +6313,11 @@ DvzDevice * dvz_gpu_ctx_device(
 | return | `DvzDevice *` | borrowed device |
 | `ctx` | `DvzGpuCtx *` | the GPU context |
 
-Return the device owned by a GPU context.
-
 _Declared in `include/datoviz/vk/gpu_ctx.h`:214._
 
 ### `dvz_gpu_ctx_error_count()`
+
+Return the validation error count associated with a GPU context.
 
 ```c title="dvz_gpu_ctx_error_count"
 uint32_t dvz_gpu_ctx_error_count(
@@ -6327,11 +6330,11 @@ uint32_t dvz_gpu_ctx_error_count(
 | return | `uint32_t` | the validation error count |
 | `ctx` | `DvzGpuCtx *` | the GPU context |
 
-Return the validation error count associated with a GPU context.
-
 _Declared in `include/datoviz/vk/gpu_ctx.h`:245._
 
 ### `dvz_gpu_ctx_gpu_index()`
+
+Return the selected GPU index of a GPU context.
 
 ```c title="dvz_gpu_ctx_gpu_index"
 uint32_t dvz_gpu_ctx_gpu_index(
@@ -6344,11 +6347,11 @@ uint32_t dvz_gpu_ctx_gpu_index(
 | return | `uint32_t` | the selected GPU index, or UINT32_MAX when unavailable |
 | `ctx` | `DvzGpuCtx *` | the GPU context |
 
-Return the selected GPU index of a GPU context.
-
 _Declared in `include/datoviz/vk/gpu_ctx.h`:193._
 
 ### `dvz_gpu_ctx_gpu_info()`
+
+Return the selected GPU descriptor of a GPU context.
 
 ```c title="dvz_gpu_ctx_gpu_info"
 _Bool dvz_gpu_ctx_gpu_info(
@@ -6363,11 +6366,11 @@ _Bool dvz_gpu_ctx_gpu_info(
 | `ctx` | `DvzGpuCtx *` | the GPU context |
 | `out_info` | `DvzGpuInfo *` |  |
 
-Return the selected GPU descriptor of a GPU context.
-
 _Declared in `include/datoviz/vk/gpu_ctx.h`:204._
 
 ### `dvz_gpu_ctx_instance()`
+
+Return the instance owned by a GPU context.
 
 ```c title="dvz_gpu_ctx_instance"
 DvzInstance * dvz_gpu_ctx_instance(
@@ -6380,11 +6383,11 @@ DvzInstance * dvz_gpu_ctx_instance(
 | return | `DvzInstance *` | borrowed instance |
 | `ctx` | `DvzGpuCtx *` | the GPU context |
 
-Return the instance owned by a GPU context.
-
 _Declared in `include/datoviz/vk/gpu_ctx.h`:183._
 
 ### `dvz_gpu_ctx_queue()`
+
+Return a queue owned by the GPU-context device.
 
 ```c title="dvz_gpu_ctx_queue"
 DvzQueue * dvz_gpu_ctx_queue(
@@ -6399,13 +6402,17 @@ DvzQueue * dvz_gpu_ctx_queue(
 | `ctx` | `DvzGpuCtx *` | the GPU context |
 | `role` | `DvzQueueRole` | the requested queue role |
 
-Return a queue owned by the GPU-context device.
-
 _Declared in `include/datoviz/vk/gpu_ctx.h`:235._
 
 ## Graphics
 
 ### `dvz_graphics()`
+
+Initialize a graphics pipeline.
+
+This prepares the wrapper for configuration. Call dvz_graphics_create() once
+after setting shaders, layout, and fixed-function state. Recreating a live
+graphics pipeline requires dvz_graphics_destroy() first.
 
 ```c title="dvz_graphics"
 void dvz_graphics(
@@ -6419,15 +6426,11 @@ void dvz_graphics(
 | `device` | `DvzDevice *` | the device |
 | `graphics` | `DvzGraphics *` |  |
 
-Initialize a graphics pipeline.
-
-This prepares the wrapper for configuration. Call dvz_graphics_create() once
-after setting shaders, layout, and fixed-function state. Recreating a live
-graphics pipeline requires dvz_graphics_destroy() first.
-
 _Declared in `include/datoviz/vklite/graphics.h`:100._
 
 ### `dvz_graphics_attachment_color()`
+
+Declare the format of a color attachment.
 
 ```c title="dvz_graphics_attachment_color"
 void dvz_graphics_attachment_color(
@@ -6443,11 +6446,11 @@ void dvz_graphics_attachment_color(
 | `idx` | `uint32_t` | the color attachment index |
 | `format` | `VkFormat` | the format |
 
-Declare the format of a color attachment.
-
 _Declared in `include/datoviz/vklite/graphics.h`:140._
 
 ### `dvz_graphics_attachment_depth()`
+
+Declare the format of a depth attachment.
 
 ```c title="dvz_graphics_attachment_depth"
 void dvz_graphics_attachment_depth(
@@ -6461,11 +6464,11 @@ void dvz_graphics_attachment_depth(
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
 | `format` | `VkFormat` | the format |
 
-Declare the format of a depth attachment.
-
 _Declared in `include/datoviz/vklite/graphics.h`:150._
 
 ### `dvz_graphics_attachment_stencil()`
+
+Declare the format of a stencil attachment.
 
 ```c title="dvz_graphics_attachment_stencil"
 void dvz_graphics_attachment_stencil(
@@ -6479,11 +6482,11 @@ void dvz_graphics_attachment_stencil(
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
 | `format` | `VkFormat` | the format |
 
-Declare the format of a stencil attachment.
-
 _Declared in `include/datoviz/vklite/graphics.h`:160._
 
 ### `dvz_graphics_blend()`
+
+Set the blending constants for the pipeline.
 
 ```c title="dvz_graphics_blend"
 void dvz_graphics_blend(
@@ -6499,11 +6502,11 @@ void dvz_graphics_blend(
 | `constants` | `vec4` | the blending constants |
 | `flags` | `DvzGraphicsFlags` | indicate whether the blend constants are fixed or dynamic state set in the command buffer |
 
-Set the blending constants for the pipeline.
-
 _Declared in `include/datoviz/vklite/graphics.h`:369._
 
 ### `dvz_graphics_blend_alpha()`
+
+Set the alpha blending parameters of a color attachment.
 
 ```c title="dvz_graphics_blend_alpha"
 void dvz_graphics_blend_alpha(
@@ -6523,11 +6526,11 @@ void dvz_graphics_blend_alpha(
 | `dst` | `VkBlendFactor` | the destination alpha blend factor |
 | `op` | `VkBlendOp` | the alpha blend operation |
 
-Set the alpha blending parameters of a color attachment.
-
 _Declared in `include/datoviz/vklite/graphics.h`:398._
 
 ### `dvz_graphics_blend_color()`
+
+Set the color blending parameters of a color attachment.
 
 ```c title="dvz_graphics_blend_color"
 void dvz_graphics_blend_color(
@@ -6549,11 +6552,11 @@ void dvz_graphics_blend_color(
 | `op` | `VkBlendOp` | the color blend operation |
 | `mask` | `VkColorComponentFlags` | the color write mask |
 
-Set the color blending parameters of a color attachment.
-
 _Declared in `include/datoviz/vklite/graphics.h`:383._
 
 ### `dvz_graphics_color_attachment_count()`
+
+Return the number of configured color attachments on a graphics wrapper.
 
 ```c title="dvz_graphics_color_attachment_count"
 uint32_t dvz_graphics_color_attachment_count(
@@ -6566,11 +6569,11 @@ uint32_t dvz_graphics_color_attachment_count(
 | return | `uint32_t` | the color-attachment count |
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
 
-Return the number of configured color attachments on a graphics wrapper.
-
 _Declared in `include/datoviz/vklite/graphics.h`:479._
 
 ### `dvz_graphics_color_write_mask()`
+
+Set the color write mask of a color attachment.
 
 ```c title="dvz_graphics_color_write_mask"
 void dvz_graphics_color_write_mask(
@@ -6586,11 +6589,14 @@ void dvz_graphics_color_write_mask(
 | `idx` | `uint32_t` | the attachment index |
 | `mask` | `VkColorComponentFlags` | the color write mask |
 
-Set the color write mask of a color attachment.
-
 _Declared in `include/datoviz/vklite/graphics.h`:411._
 
 ### `dvz_graphics_create()`
+
+Create a graphics pipeline after it has been set up.
+
+This function creates the wrapped Vulkan pipeline exactly once per live
+wrapper. Call dvz_graphics_destroy() before attempting to create it again.
 
 ```c title="dvz_graphics_create"
 int dvz_graphics_create(
@@ -6603,16 +6609,18 @@ int dvz_graphics_create(
 | return | `int` | the creation result code |
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
 
-Create a graphics pipeline after it has been set up.
-
-This function creates the wrapped Vulkan pipeline exactly once per live
-wrapper. Call dvz_graphics_destroy() before attempting to create it again.
-
 Related: [`dvz_graphics_destroy()`](#dvz_graphics_destroy).
 
 _Declared in `include/datoviz/vklite/graphics.h`:439._
 
 ### `dvz_graphics_create_wrapper()`
+
+Allocate an empty graphics wrapper.
+
+Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+initialize with dvz_graphics(), configure, call dvz_graphics_create() once,
+then destroy before any recreate and free only if this wrapper came from
+dvz_graphics_create_wrapper().
 
 ```c title="dvz_graphics_create_wrapper"
 DvzGraphics * dvz_graphics_create_wrapper(void);
@@ -6622,16 +6630,11 @@ DvzGraphics * dvz_graphics_create_wrapper(void);
 | --- | --- | --- |
 | return | `DvzGraphics *` | allocated graphics wrapper, or NULL on allocation failure |
 
-Allocate an empty graphics wrapper.
-
-Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
-initialize with dvz_graphics(), configure, call dvz_graphics_create() once,
-then destroy before any recreate and free only if this wrapper came from
-dvz_graphics_create_wrapper().
-
 _Declared in `include/datoviz/vklite/graphics.h`:86._
 
 ### `dvz_graphics_cull_mode()`
+
+Set the graphics cull mode.
 
 ```c title="dvz_graphics_cull_mode"
 void dvz_graphics_cull_mode(
@@ -6647,11 +6650,11 @@ void dvz_graphics_cull_mode(
 | `cull_mode` | `VkCullModeFlags` | the cull mode |
 | `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
-Set the graphics cull mode.
-
 _Declared in `include/datoviz/vklite/graphics.h`:246._
 
 ### `dvz_graphics_depth()`
+
+Set the depth test.
 
 ```c title="dvz_graphics_depth"
 void dvz_graphics_depth(
@@ -6671,11 +6674,11 @@ void dvz_graphics_depth(
 | `compare` | `VkCompareOp` | depth compare operation |
 | `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
-Set the depth test.
-
 _Declared in `include/datoviz/vklite/graphics.h`:272._
 
 ### `dvz_graphics_depth_bias()`
+
+Enable or disable the depth bias.
 
 ```c title="dvz_graphics_depth_bias"
 void dvz_graphics_depth_bias(
@@ -6695,11 +6698,11 @@ void dvz_graphics_depth_bias(
 | `slope_factor` | `float` | the depth bias slope factor |
 | `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
-Enable or disable the depth bias.
-
 _Declared in `include/datoviz/vklite/graphics.h`:300._
 
 ### `dvz_graphics_depth_bounds()`
+
+Set the depth bounds.
 
 ```c title="dvz_graphics_depth_bounds"
 void dvz_graphics_depth_bounds(
@@ -6717,11 +6720,14 @@ void dvz_graphics_depth_bounds(
 | `max` | `float` | the maximum depth bound |
 | `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
-Set the depth bounds.
-
 _Declared in `include/datoviz/vklite/graphics.h`:287._
 
 ### `dvz_graphics_destroy()`
+
+Destroy a graphics pipeline.
+
+This releases the wrapped Vulkan pipeline and returns the wrapper to a
+reusable initialized state.
 
 ```c title="dvz_graphics_destroy"
 void dvz_graphics_destroy(
@@ -6733,16 +6739,13 @@ void dvz_graphics_destroy(
 | --- | --- | --- |
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
 
-Destroy a graphics pipeline.
-
-This releases the wrapped Vulkan pipeline and returns the wrapper to a
-reusable initialized state.
-
 Related: [`dvz_graphics_create()`](#dvz_graphics_create).
 
 _Declared in `include/datoviz/vklite/graphics.h`:491._
 
 ### `dvz_graphics_free()`
+
+Free a graphics wrapper allocated by dvz_graphics_create_wrapper().
 
 ```c title="dvz_graphics_free"
 void dvz_graphics_free(
@@ -6754,11 +6757,11 @@ void dvz_graphics_free(
 | --- | --- | --- |
 | `graphics` | `DvzGraphics *` | graphics wrapper to free |
 
-Free a graphics wrapper allocated by dvz_graphics_create_wrapper().
-
 _Declared in `include/datoviz/vklite/graphics.h`:500._
 
 ### `dvz_graphics_front_face()`
+
+Set the graphics front face.
 
 ```c title="dvz_graphics_front_face"
 void dvz_graphics_front_face(
@@ -6774,11 +6777,11 @@ void dvz_graphics_front_face(
 | `front_face` | `VkFrontFace` | the front face |
 | `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
-Set the graphics front face.
-
 _Declared in `include/datoviz/vklite/graphics.h`:259._
 
 ### `dvz_graphics_handle()`
+
+Return the Vulkan pipeline handle owned by a graphics wrapper.
 
 ```c title="dvz_graphics_handle"
 VkPipeline dvz_graphics_handle(
@@ -6791,11 +6794,11 @@ VkPipeline dvz_graphics_handle(
 | return | `VkPipeline` | the Vulkan pipeline handle or VK_NULL_HANDLE |
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
 
-Return the Vulkan pipeline handle owned by a graphics wrapper.
-
 _Declared in `include/datoviz/vklite/graphics.h`:449._
 
 ### `dvz_graphics_layout()`
+
+Set the pipeline layout.
 
 ```c title="dvz_graphics_layout"
 void dvz_graphics_layout(
@@ -6809,11 +6812,11 @@ void dvz_graphics_layout(
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
 | `layout` | `VkPipelineLayout` | the pipeline layout |
 
-Set the pipeline layout.
-
 _Declared in `include/datoviz/vklite/graphics.h`:197._
 
 ### `dvz_graphics_layout_handle()`
+
+Return the pipeline layout bound to a graphics wrapper.
 
 ```c title="dvz_graphics_layout_handle"
 VkPipelineLayout dvz_graphics_layout_handle(
@@ -6826,11 +6829,11 @@ VkPipelineLayout dvz_graphics_layout_handle(
 | return | `VkPipelineLayout` | the pipeline layout handle or VK_NULL_HANDLE |
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
 
-Return the pipeline layout bound to a graphics wrapper.
-
 _Declared in `include/datoviz/vklite/graphics.h`:459._
 
 ### `dvz_graphics_multisampling()`
+
+Set multisampling.
 
 ```c title="dvz_graphics_multisampling"
 void dvz_graphics_multisampling(
@@ -6848,11 +6851,11 @@ void dvz_graphics_multisampling(
 | `min_sample_shading` | `float` | if >0, enable sample shading and set the minimum fraction of sample shading |
 | `alpha_coverage` | `_Bool` | alpha channel is used for relative sample coverage |
 
-Set multisampling.
-
 _Declared in `include/datoviz/vklite/graphics.h`:424._
 
 ### `dvz_graphics_polygon_mode()`
+
+Set the graphics polygon mode.
 
 ```c title="dvz_graphics_polygon_mode"
 void dvz_graphics_polygon_mode(
@@ -6868,11 +6871,11 @@ void dvz_graphics_polygon_mode(
 | `polygon_mode` | `VkPolygonMode` | the polygon mode |
 | `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
-Set the graphics polygon mode.
-
 _Declared in `include/datoviz/vklite/graphics.h`:233._
 
 ### `dvz_graphics_primitive()`
+
+Set the graphics pipeline primitive topology
 
 ```c title="dvz_graphics_primitive"
 void dvz_graphics_primitive(
@@ -6888,11 +6891,12 @@ void dvz_graphics_primitive(
 | `topology` | `VkPrimitiveTopology` | the primitive topology |
 | `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
-Set the graphics pipeline primitive topology
-
 _Declared in `include/datoviz/vklite/graphics.h`:209._
 
 ### `dvz_graphics_primitive_restart()`
+
+Set whether a special index value (when using indexed rendering) allows to restart the
+primitive.
 
 ```c title="dvz_graphics_primitive_restart"
 void dvz_graphics_primitive_restart(
@@ -6906,12 +6910,11 @@ void dvz_graphics_primitive_restart(
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
 | `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
-Set whether a special index value (when using indexed rendering) allows to restart the
-primitive.
-
 _Declared in `include/datoviz/vklite/graphics.h`:221._
 
 ### `dvz_graphics_scissor()`
+
+Set the scissor.
 
 ```c title="dvz_graphics_scissor"
 void dvz_graphics_scissor(
@@ -6933,11 +6936,11 @@ void dvz_graphics_scissor(
 | `height` | `uint32_t` | the height |
 | `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
-Set the scissor.
-
 _Declared in `include/datoviz/vklite/graphics.h`:337._
 
 ### `dvz_graphics_shader()`
+
+Set the path to a shader for a graphics pipeline.
 
 ```c title="dvz_graphics_shader"
 void dvz_graphics_shader(
@@ -6953,11 +6956,11 @@ void dvz_graphics_shader(
 | `stage` | `VkShaderStageFlagBits` | the shader stage |
 | `shader` | `VkShaderModule` | the shader module |
 
-Set the path to a shader for a graphics pipeline.
-
 _Declared in `include/datoviz/vklite/graphics.h`:112._
 
 ### `dvz_graphics_shader_count()`
+
+Return the number of configured shader stages on a graphics wrapper.
 
 ```c title="dvz_graphics_shader_count"
 uint32_t dvz_graphics_shader_count(
@@ -6970,11 +6973,11 @@ uint32_t dvz_graphics_shader_count(
 | return | `uint32_t` | the shader-stage count |
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
 
-Return the number of configured shader stages on a graphics wrapper.
-
 _Declared in `include/datoviz/vklite/graphics.h`:469._
 
 ### `dvz_graphics_spec()`
+
+Set a specialization constant.
 
 ```c title="dvz_graphics_spec"
 void dvz_graphics_spec(
@@ -6996,11 +6999,11 @@ void dvz_graphics_spec(
 | `size` | `DvzSize` | the size of the specialization constant value |
 | `data` | `void *` | the value of the constant |
 
-Set a specialization constant.
-
 _Declared in `include/datoviz/vklite/graphics.h`:126._
 
 ### `dvz_graphics_stencil()`
+
+Set the stencil test.
 
 ```c title="dvz_graphics_stencil"
 void dvz_graphics_stencil(
@@ -7030,11 +7033,11 @@ void dvz_graphics_stencil(
 | `reference` | `uint32_t` | stencil reference value |
 | `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
-Set the stencil test.
-
 _Declared in `include/datoviz/vklite/graphics.h`:320._
 
 ### `dvz_graphics_vertex_attr()`
+
+Add a vertex attribute.
 
 ```c title="dvz_graphics_vertex_attr"
 void dvz_graphics_vertex_attr(
@@ -7054,11 +7057,11 @@ void dvz_graphics_vertex_attr(
 | `format` | `VkFormat` | the format |
 | `offset` | `DvzSize` | the offset, in bytes |
 
-Add a vertex attribute.
-
 _Declared in `include/datoviz/vklite/graphics.h`:186._
 
 ### `dvz_graphics_vertex_binding()`
+
+Set the vertex binding.
 
 ```c title="dvz_graphics_vertex_binding"
 void dvz_graphics_vertex_binding(
@@ -7076,11 +7079,11 @@ void dvz_graphics_vertex_binding(
 | `stride` | `DvzSize` | the stride in the vertex buffer, in bytes |
 | `input_rate` | `VkVertexInputRate` | the vertex input rate, VK_VERTEX_INPUT_RATE_VERTEX\|INSTANCE |
 
-Set the vertex binding.
-
 _Declared in `include/datoviz/vklite/graphics.h`:172._
 
 ### `dvz_graphics_viewport()`
+
+Set the viewport.
 
 ```c title="dvz_graphics_viewport"
 void dvz_graphics_viewport(
@@ -7106,13 +7109,13 @@ void dvz_graphics_viewport(
 | `max_depth` | `float` | the maximum depth |
 | `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
-Set the viewport.
-
 _Declared in `include/datoviz/vklite/graphics.h`:355._
 
 ## Image
 
 ### `dvz_image_blit()`
+
+Reset an image-blit wrapper to its default state.
 
 ```c title="dvz_image_blit"
 void dvz_image_blit(
@@ -7124,11 +7127,11 @@ void dvz_image_blit(
 | --- | --- | --- |
 | `blit` | `DvzImageBlit *` | the image-blit wrapper |
 
-Reset an image-blit wrapper to its default state.
-
 _Declared in `include/datoviz/vklite/images.h`:505._
 
 ### `dvz_image_blit_create()`
+
+Allocate an empty image-blit wrapper.
 
 ```c title="dvz_image_blit_create"
 DvzImageBlit * dvz_image_blit_create(void);
@@ -7138,11 +7141,11 @@ DvzImageBlit * dvz_image_blit_create(void);
 | --- | --- | --- |
 | return | `DvzImageBlit *` | allocated image-blit wrapper, or NULL on allocation failure |
 
-Allocate an empty image-blit wrapper.
-
 _Declared in `include/datoviz/vklite/images.h`:496._
 
 ### `dvz_image_blit_free()`
+
+Free an image-blit wrapper allocated by dvz_image_blit_create().
 
 ```c title="dvz_image_blit_free"
 void dvz_image_blit_free(
@@ -7154,11 +7157,11 @@ void dvz_image_blit_free(
 | --- | --- | --- |
 | `blit` | `DvzImageBlit *` | image-blit wrapper to free |
 
-Free an image-blit wrapper allocated by dvz_image_blit_create().
-
 _Declared in `include/datoviz/vklite/images.h`:514._
 
 ### `dvz_image_copy()`
+
+Reset an image-copy wrapper to its default state.
 
 ```c title="dvz_image_copy"
 void dvz_image_copy(
@@ -7170,11 +7173,11 @@ void dvz_image_copy(
 | --- | --- | --- |
 | `copy` | `DvzImageCopy *` | the image-copy wrapper |
 
-Reset an image-copy wrapper to its default state.
-
 _Declared in `include/datoviz/vklite/images.h`:478._
 
 ### `dvz_image_copy_create()`
+
+Allocate an empty image-copy wrapper.
 
 ```c title="dvz_image_copy_create"
 DvzImageCopy * dvz_image_copy_create(void);
@@ -7184,11 +7187,11 @@ DvzImageCopy * dvz_image_copy_create(void);
 | --- | --- | --- |
 | return | `DvzImageCopy *` | allocated image-copy wrapper, or NULL on allocation failure |
 
-Allocate an empty image-copy wrapper.
-
 _Declared in `include/datoviz/vklite/images.h`:469._
 
 ### `dvz_image_copy_free()`
+
+Free an image-copy wrapper allocated by dvz_image_copy_create().
 
 ```c title="dvz_image_copy_free"
 void dvz_image_copy_free(
@@ -7200,11 +7203,11 @@ void dvz_image_copy_free(
 | --- | --- | --- |
 | `copy` | `DvzImageCopy *` | image-copy wrapper to free |
 
-Free an image-copy wrapper allocated by dvz_image_copy_create().
-
 _Declared in `include/datoviz/vklite/images.h`:487._
 
 ### `dvz_image_handle()`
+
+Return the Vulkan handle of an image.
 
 ```c title="dvz_image_handle"
 VkImage dvz_image_handle(
@@ -7219,11 +7222,11 @@ VkImage dvz_image_handle(
 | `img` | `DvzImages *` | the images |
 | `idx` | `uint32_t` | the image index |
 
-Return the Vulkan handle of an image.
-
 _Declared in `include/datoviz/vklite/images.h`:230._
 
 ### `dvz_image_region()`
+
+Initialize an image region.
 
 ```c title="dvz_image_region"
 void dvz_image_region(
@@ -7235,11 +7238,11 @@ void dvz_image_region(
 | --- | --- | --- |
 | `region` | `DvzImageRegion *` | the image region |
 
-Initialize an image region.
-
 _Declared in `include/datoviz/vklite/images.h`:399._
 
 ### `dvz_image_region_aspect()`
+
+Set the image region aspect.
 
 ```c title="dvz_image_region_aspect"
 void dvz_image_region_aspect(
@@ -7253,11 +7256,11 @@ void dvz_image_region_aspect(
 | `region` | `DvzImageRegion *` | the image region |
 | `aspect` | `VkImageAspectFlags` | the aspect mask |
 
-Set the image region aspect.
-
 _Declared in `include/datoviz/vklite/images.h`:434._
 
 ### `dvz_image_region_extent()`
+
+Set the image region extent.
 
 ```c title="dvz_image_region_extent"
 void dvz_image_region_extent(
@@ -7275,11 +7278,11 @@ void dvz_image_region_extent(
 | `h` | `uint32_t` | the height |
 | `d` | `uint32_t` | the depth |
 
-Set the image region extent.
-
 _Declared in `include/datoviz/vklite/images.h`:424._
 
 ### `dvz_image_region_layers()`
+
+Set the array layers of the image region.
 
 ```c title="dvz_image_region_layers"
 void dvz_image_region_layers(
@@ -7295,11 +7298,11 @@ void dvz_image_region_layers(
 | `base_layer` | `uint32_t` | the base layer |
 | `layer_count` | `uint32_t` | the number of layers |
 
-Set the array layers of the image region.
-
 _Declared in `include/datoviz/vklite/images.h`:456._
 
 ### `dvz_image_region_mip()`
+
+Set the MIP level of the image region.
 
 ```c title="dvz_image_region_mip"
 void dvz_image_region_mip(
@@ -7313,11 +7316,11 @@ void dvz_image_region_mip(
 | `region` | `DvzImageRegion *` | the image region |
 | `mip` | `uint32_t` | the MIP level |
 
-Set the MIP level of the image region.
-
 _Declared in `include/datoviz/vklite/images.h`:444._
 
 ### `dvz_image_region_offset()`
+
+Set the image region offset.
 
 ```c title="dvz_image_region_offset"
 void dvz_image_region_offset(
@@ -7335,11 +7338,15 @@ void dvz_image_region_offset(
 | `y` | `int32_t` | offset y |
 | `z` | `int32_t` | offset z |
 
-Set the image region offset.
-
 _Declared in `include/datoviz/vklite/images.h`:411._
 
 ### `dvz_image_views()`
+
+Initialize image views for an existing images wrapper.
+
+This prepares the wrapper for configuration. Call dvz_image_views_create()
+once after setting the desired view type, aspect, and subresource range.
+Recreating live image views requires dvz_image_views_destroy() first.
 
 ```c title="dvz_image_views"
 void dvz_image_views(
@@ -7353,15 +7360,11 @@ void dvz_image_views(
 | `img` | `DvzImages *` | the images |
 | `views` | `DvzImageViews *` |  |
 
-Initialize image views for an existing images wrapper.
-
-This prepares the wrapper for configuration. Call dvz_image_views_create()
-once after setting the desired view type, aspect, and subresource range.
-Recreating live image views requires dvz_image_views_destroy() first.
-
 _Declared in `include/datoviz/vklite/images.h`:297._
 
 ### `dvz_image_views_aspect()`
+
+Set the image views aspect.
 
 ```c title="dvz_image_views_aspect"
 void dvz_image_views_aspect(
@@ -7375,11 +7378,11 @@ void dvz_image_views_aspect(
 | `views` | `DvzImageViews *` | the image views |
 | `aspect` | `VkImageAspectFlags` | the aspect |
 
-Set the image views aspect.
-
 _Declared in `include/datoviz/vklite/images.h`:317._
 
 ### `dvz_image_views_count()`
+
+Return the number of image views owned by a views wrapper.
 
 ```c title="dvz_image_views_count"
 uint32_t dvz_image_views_count(
@@ -7392,11 +7395,15 @@ uint32_t dvz_image_views_count(
 | return | `uint32_t` | the image-view count |
 | `views` | `DvzImageViews *` | the image views |
 
-Return the number of image views owned by a views wrapper.
-
 _Declared in `include/datoviz/vklite/images.h`:374._
 
 ### `dvz_image_views_create()`
+
+Create image views.
+
+This function creates the wrapped Vulkan image views exactly once per live
+wrapper. Call dvz_image_views_destroy() before attempting to create them
+again.
 
 ```c title="dvz_image_views_create"
 int dvz_image_views_create(
@@ -7409,17 +7416,18 @@ int dvz_image_views_create(
 | return | `int` | 0 on success, non-zero on Vulkan or Datoviz state failure |
 | `views` | `DvzImageViews *` | the image views |
 
-Create image views.
-
-This function creates the wrapped Vulkan image views exactly once per live
-wrapper. Call dvz_image_views_destroy() before attempting to create them
-again.
-
 Related: [`dvz_image_views_destroy()`](#dvz_image_views_destroy).
 
 _Declared in `include/datoviz/vklite/images.h`:353._
 
 ### `dvz_image_views_create_wrapper()`
+
+Allocate an empty image-view wrapper.
+
+Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+initialize with dvz_image_views(), configure, call dvz_image_views_create()
+once, then destroy before any recreate and free only if this wrapper came
+from dvz_image_views_create_wrapper().
 
 ```c title="dvz_image_views_create_wrapper"
 DvzImageViews * dvz_image_views_create_wrapper(void);
@@ -7429,16 +7437,14 @@ DvzImageViews * dvz_image_views_create_wrapper(void);
 | --- | --- | --- |
 | return | `DvzImageViews *` | allocated image-view wrapper, or NULL on allocation failure |
 
-Allocate an empty image-view wrapper.
-
-Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
-initialize with dvz_image_views(), configure, call dvz_image_views_create()
-once, then destroy before any recreate and free only if this wrapper came
-from dvz_image_views_create_wrapper().
-
 _Declared in `include/datoviz/vklite/images.h`:89._
 
 ### `dvz_image_views_destroy()`
+
+Destroy image views.
+
+This releases the wrapped Vulkan image views and returns the wrapper to a
+reusable initialized state.
 
 ```c title="dvz_image_views_destroy"
 void dvz_image_views_destroy(
@@ -7450,16 +7456,13 @@ void dvz_image_views_destroy(
 | --- | --- | --- |
 | `views` | `DvzImageViews *` | the image views |
 
-Destroy image views.
-
-This releases the wrapped Vulkan image views and returns the wrapper to a
-reusable initialized state.
-
 Related: [`dvz_image_views_create()`](#dvz_image_views_create).
 
 _Declared in `include/datoviz/vklite/images.h`:386._
 
 ### `dvz_image_views_free()`
+
+Free an image-view wrapper allocated by dvz_image_views_create_wrapper().
 
 ```c title="dvz_image_views_free"
 void dvz_image_views_free(
@@ -7471,11 +7474,11 @@ void dvz_image_views_free(
 | --- | --- | --- |
 | `views` | `DvzImageViews *` | image-view wrapper to free |
 
-Free an image-view wrapper allocated by dvz_image_views_create_wrapper().
-
 _Declared in `include/datoviz/vklite/images.h`:98._
 
 ### `dvz_image_views_handle()`
+
+Return the Vulkan handle of an image view.
 
 ```c title="dvz_image_views_handle"
 VkImageView dvz_image_views_handle(
@@ -7490,11 +7493,11 @@ VkImageView dvz_image_views_handle(
 | `views` | `DvzImageViews *` | the image views |
 | `idx` | `uint32_t` | the image view index |
 
-Return the Vulkan handle of an image view.
-
 _Declared in `include/datoviz/vklite/images.h`:364._
 
 ### `dvz_image_views_layers()`
+
+Set the array layers for the views.
 
 ```c title="dvz_image_views_layers"
 void dvz_image_views_layers(
@@ -7510,11 +7513,11 @@ void dvz_image_views_layers(
 | `base` | `uint32_t` | the array layer base |
 | `count` | `uint32_t` | the array layer count |
 
-Set the array layers for the views.
-
 _Declared in `include/datoviz/vklite/images.h`:339._
 
 ### `dvz_image_views_mip()`
+
+Set the MIP levels for the views.
 
 ```c title="dvz_image_views_mip"
 void dvz_image_views_mip(
@@ -7530,11 +7533,11 @@ void dvz_image_views_mip(
 | `base` | `uint32_t` | the mip level base |
 | `count` | `uint32_t` | the mip level count |
 
-Set the MIP levels for the views.
-
 _Declared in `include/datoviz/vklite/images.h`:328._
 
 ### `dvz_image_views_type()`
+
+Set the image views type.
 
 ```c title="dvz_image_views_type"
 void dvz_image_views_type(
@@ -7548,13 +7551,17 @@ void dvz_image_views_type(
 | `views` | `DvzImageViews *` | the image views |
 | `type` | `VkImageViewType` | the view type |
 
-Set the image views type.
-
 _Declared in `include/datoviz/vklite/images.h`:307._
 
 ## Images
 
 ### `dvz_images()`
+
+Initialize a set of GPU images.
+
+This prepares the wrapper for configuration. Call dvz_images_create() once
+after setting the desired format, size, usage, and allocation policy.
+Recreating a live image set requires dvz_images_destroy() first.
 
 ```c title="dvz_images"
 void dvz_images(
@@ -7574,15 +7581,11 @@ void dvz_images(
 | `count` | `uint32_t` | the number of images |
 | `images` | `DvzImages *` |  |
 
-Initialize a set of GPU images.
-
-This prepares the wrapper for configuration. Call dvz_images_create() once
-after setting the desired format, size, usage, and allocation policy.
-Recreating a live image set requires dvz_images_destroy() first.
-
 _Declared in `include/datoviz/vklite/images.h`:113._
 
 ### `dvz_images_alloc_flags()`
+
+Set the allocator policy flags used when the images create their memory.
 
 ```c title="dvz_images_alloc_flags"
 void dvz_images_alloc_flags(
@@ -7596,11 +7599,11 @@ void dvz_images_alloc_flags(
 | `img` | `DvzImages *` |  |
 | `flags` | `DvzAllocationFlags` | the flags |
 
-Set the allocator policy flags used when the images create their memory.
-
 _Declared in `include/datoviz/vklite/images.h`:166._
 
 ### `dvz_images_count()`
+
+Return the number of images wrapped by an images object.
 
 ```c title="dvz_images_count"
 uint32_t dvz_images_count(
@@ -7613,11 +7616,14 @@ uint32_t dvz_images_count(
 | return | `uint32_t` | the image count |
 | `img` | `DvzImages *` | the images |
 
-Return the number of images wrapped by an images object.
-
 _Declared in `include/datoviz/vklite/images.h`:240._
 
 ### `dvz_images_create()`
+
+Create the images after they have been set up.
+
+This function creates the wrapped Vulkan images exactly once per live
+wrapper. Call dvz_images_destroy() before attempting to create them again.
 
 ```c title="dvz_images_create"
 int dvz_images_create(
@@ -7630,16 +7636,18 @@ int dvz_images_create(
 | return | `int` | 0 on success, non-zero on Vulkan or Datoviz state failure |
 | `img` | `DvzImages *` |  |
 
-Create the images after they have been set up.
-
-This function creates the wrapped Vulkan images exactly once per live
-wrapper. Call dvz_images_destroy() before attempting to create them again.
-
 Related: [`dvz_images_destroy()`](#dvz_images_destroy).
 
 _Declared in `include/datoviz/vklite/images.h`:219._
 
 ### `dvz_images_create_wrapper()`
+
+Allocate an empty images wrapper.
+
+Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+initialize with dvz_images(), configure, call dvz_images_create() once, then
+destroy before any recreate and free only if this wrapper came from
+dvz_images_create_wrapper().
 
 ```c title="dvz_images_create_wrapper"
 DvzImages * dvz_images_create_wrapper(void);
@@ -7649,16 +7657,14 @@ DvzImages * dvz_images_create_wrapper(void);
 | --- | --- | --- |
 | return | `DvzImages *` | allocated images wrapper, or NULL on allocation failure |
 
-Allocate an empty images wrapper.
-
-Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
-initialize with dvz_images(), configure, call dvz_images_create() once, then
-destroy before any recreate and free only if this wrapper came from
-dvz_images_create_wrapper().
-
 _Declared in `include/datoviz/vklite/images.h`:66._
 
 ### `dvz_images_destroy()`
+
+Destroy images.
+
+This releases Datoviz-owned Vulkan images and returns the wrapper to a reusable initialized
+state. Images installed with `dvz_images_wrap()` are borrowed and are not destroyed.
 
 ```c title="dvz_images_destroy"
 void dvz_images_destroy(
@@ -7670,16 +7676,13 @@ void dvz_images_destroy(
 | --- | --- | --- |
 | `img` | `DvzImages *` |  |
 
-Destroy images.
-
-This releases Datoviz-owned Vulkan images and returns the wrapper to a reusable initialized
-state. Images installed with `dvz_images_wrap()` are borrowed and are not destroyed.
-
 Related: [`dvz_images_create()`](#dvz_images_create).
 
 _Declared in `include/datoviz/vklite/images.h`:262._
 
 ### `dvz_images_flags()`
+
+Set the image creation flags.
 
 ```c title="dvz_images_flags"
 void dvz_images_flags(
@@ -7693,11 +7696,11 @@ void dvz_images_flags(
 | `img` | `DvzImages *` |  |
 | `flags` | `VkImageCreateFlags` | the flags |
 
-Set the image creation flags.
-
 _Declared in `include/datoviz/vklite/images.h`:176._
 
 ### `dvz_images_format()`
+
+Set the images format.
 
 ```c title="dvz_images_format"
 void dvz_images_format(
@@ -7711,11 +7714,11 @@ void dvz_images_format(
 | `img` | `DvzImages *` |  |
 | `format` | `VkFormat` | the image format |
 
-Set the images format.
-
 _Declared in `include/datoviz/vklite/images.h`:124._
 
 ### `dvz_images_format_value()`
+
+Return the configured image format for an images object.
 
 ```c title="dvz_images_format_value"
 VkFormat dvz_images_format_value(
@@ -7728,11 +7731,11 @@ VkFormat dvz_images_format_value(
 | return | `VkFormat` | the Vulkan image format |
 | `img` | `DvzImages *` | the images |
 
-Return the configured image format for an images object.
-
 _Declared in `include/datoviz/vklite/images.h`:250._
 
 ### `dvz_images_free()`
+
+Free an images wrapper allocated by dvz_images_create_wrapper().
 
 ```c title="dvz_images_free"
 void dvz_images_free(
@@ -7744,11 +7747,11 @@ void dvz_images_free(
 | --- | --- | --- |
 | `img` | `DvzImages *` | images wrapper to free |
 
-Free an images wrapper allocated by dvz_images_create_wrapper().
-
 _Declared in `include/datoviz/vklite/images.h`:75._
 
 ### `dvz_images_layers()`
+
+Set the number of array layers.
 
 ```c title="dvz_images_layers"
 void dvz_images_layers(
@@ -7762,11 +7765,11 @@ void dvz_images_layers(
 | `img` | `DvzImages *` |  |
 | `layers` | `uint32_t` | the number of array layers |
 
-Set the number of array layers.
-
 _Declared in `include/datoviz/vklite/images.h`:206._
 
 ### `dvz_images_mip()`
+
+Set the number of mip levels.
 
 ```c title="dvz_images_mip"
 void dvz_images_mip(
@@ -7780,11 +7783,11 @@ void dvz_images_mip(
 | `img` | `DvzImages *` |  |
 | `mip` | `uint32_t` | the number of mip levels |
 
-Set the number of mip levels.
-
 _Declared in `include/datoviz/vklite/images.h`:186._
 
 ### `dvz_images_samples()`
+
+Set the number of MSAA samples.
 
 ```c title="dvz_images_samples"
 void dvz_images_samples(
@@ -7798,11 +7801,11 @@ void dvz_images_samples(
 | `img` | `DvzImages *` |  |
 | `samples` | `VkSampleCountFlags` | the Vulkan samples flags |
 
-Set the number of MSAA samples.
-
 _Declared in `include/datoviz/vklite/images.h`:196._
 
 ### `dvz_images_size()`
+
+Set the images shape.
 
 ```c title="dvz_images_size"
 void dvz_images_size(
@@ -7820,11 +7823,11 @@ void dvz_images_size(
 | `height` | `uint32_t` | the image height, in pixels |
 | `depth` | `uint32_t` | the image depth, in pixels |
 
-Set the images shape.
-
 _Declared in `include/datoviz/vklite/images.h`:136._
 
 ### `dvz_images_tiling()`
+
+Set the images tiling.
 
 ```c title="dvz_images_tiling"
 void dvz_images_tiling(
@@ -7838,11 +7841,11 @@ void dvz_images_tiling(
 | `img` | `DvzImages *` |  |
 | `tiling` | `VkImageTiling` | the image tiling |
 
-Set the images tiling.
-
 _Declared in `include/datoviz/vklite/images.h`:146._
 
 ### `dvz_images_usage()`
+
+Set the images usage.
 
 ```c title="dvz_images_usage"
 void dvz_images_usage(
@@ -7856,11 +7859,14 @@ void dvz_images_usage(
 | `img` | `DvzImages *` |  |
 | `usage` | `VkImageUsageFlags` | the image usage |
 
-Set the images usage.
-
 _Declared in `include/datoviz/vklite/images.h`:156._
 
 ### `dvz_images_wrap()`
+
+Wrap an existing Vulkan image into a DvzImages struct.
+
+The Vulkan image remains externally owned. Datoviz records the handle for view creation,
+transitions, and descriptor binding according to later calls, but does not destroy the image.
 
 ```c title="dvz_images_wrap"
 void dvz_images_wrap(
@@ -7880,16 +7886,13 @@ void dvz_images_wrap(
 | `vk_image` | `VkImage` | the Vulkan image handle |
 | `img` | `DvzImages *` |  |
 
-Wrap an existing Vulkan image into a DvzImages struct.
-
-The Vulkan image remains externally owned. Datoviz records the handle for view creation,
-transitions, and descriptor binding according to later calls, but does not destroy the image.
-
 _Declared in `include/datoviz/vklite/images.h`:278._
 
 ## Instance
 
 ### `dvz_instance_config()`
+
+Return default configuration values for creating an instance.
 
 ```c title="dvz_instance_config"
 DvzInstanceConfig dvz_instance_config(void);
@@ -7899,13 +7902,13 @@ DvzInstanceConfig dvz_instance_config(void);
 | --- | --- | --- |
 | return | `DvzInstanceConfig` | the default instance configuration |
 
-Return default configuration values for creating an instance.
-
 Related: [`dvz_instance_create()`](#dvz_instance_create).
 
 _Declared in `include/datoviz/vk/instance.h`:87._
 
 ### `dvz_instance_config_request_extension()`
+
+Add an instance extension request to a configuration.
 
 ```c title="dvz_instance_config_request_extension"
 _Bool dvz_instance_config_request_extension(
@@ -7920,11 +7923,11 @@ _Bool dvz_instance_config_request_extension(
 | `cfg` | `DvzInstanceConfig *` | the instance configuration |
 | `extension` | `const char *` | the extension name |
 
-Add an instance extension request to a configuration.
-
 _Declared in `include/datoviz/vk/instance.h`:110._
 
 ### `dvz_instance_config_request_layer()`
+
+Add an instance layer request to a configuration.
 
 ```c title="dvz_instance_config_request_layer"
 _Bool dvz_instance_config_request_layer(
@@ -7939,11 +7942,11 @@ _Bool dvz_instance_config_request_layer(
 | `cfg` | `DvzInstanceConfig *` | the instance configuration |
 | `layer` | `const char *` | the layer name |
 
-Add an instance layer request to a configuration.
-
 _Declared in `include/datoviz/vk/instance.h`:98._
 
 ### `dvz_instance_create()`
+
+Create and initialize a heap-allocated instance from a configuration.
 
 ```c title="dvz_instance_create"
 DvzInstance * dvz_instance_create(
@@ -7956,13 +7959,13 @@ DvzInstance * dvz_instance_create(
 | return | `DvzInstance *` | a created instance on success, `NULL` on failure |
 | `cfg` | `const DvzInstanceConfig *` | the instance configuration |
 
-Create and initialize a heap-allocated instance from a configuration.
-
 Related: [`dvz_instance_destroy()`](#dvz_instance_destroy).
 
 _Declared in `include/datoviz/vk/instance.h`:120._
 
 ### `dvz_instance_destroy()`
+
+Destroy the instance.
 
 ```c title="dvz_instance_destroy"
 void dvz_instance_destroy(
@@ -7974,13 +7977,13 @@ void dvz_instance_destroy(
 | --- | --- | --- |
 | `instance` | `DvzInstance *` | the instance |
 
-Destroy the instance.
-
 Related: [`dvz_instance_create()`](#dvz_instance_create).
 
 _Declared in `include/datoviz/vk/instance.h`:139._
 
 ### `dvz_instance_error_count()`
+
+Return the validation error counter accumulated by an instance.
 
 ```c title="dvz_instance_error_count"
 uint32_t dvz_instance_error_count(
@@ -7993,11 +7996,11 @@ uint32_t dvz_instance_error_count(
 | return | `uint32_t` | the number of validation errors reported through the debug callback |
 | `instance` | `DvzInstance *` | the instance |
 
-Return the validation error counter accumulated by an instance.
-
 _Declared in `include/datoviz/vk/instance.h`:149._
 
 ### `dvz_instance_gpu_count()`
+
+Return the number of detected physical GPUs.
 
 ```c title="dvz_instance_gpu_count"
 uint32_t dvz_instance_gpu_count(
@@ -8010,11 +8013,11 @@ uint32_t dvz_instance_gpu_count(
 | return | `uint32_t` | the number of detected GPUs |
 | `instance` | `DvzInstance *` | the instance |
 
-Return the number of detected physical GPUs.
-
 _Declared in `include/datoviz/vk/gpu.h`:66._
 
 ### `dvz_instance_gpu_handle()`
+
+Resolve the Vulkan physical device handle for a selected GPU index.
 
 ```c title="dvz_instance_gpu_handle"
 _Bool dvz_instance_gpu_handle(
@@ -8031,11 +8034,11 @@ _Bool dvz_instance_gpu_handle(
 | `gpu_index` | `uint32_t` | selected GPU index |
 | `out_pdevice` | `VkPhysicalDevice *` |  |
 
-Resolve the Vulkan physical device handle for a selected GPU index.
-
 _Declared in `include/datoviz/vk/gpu.h`:91._
 
 ### `dvz_instance_gpu_info()`
+
+Return a GPU descriptor snapshot for a given GPU index.
 
 ```c title="dvz_instance_gpu_info"
 _Bool dvz_instance_gpu_info(
@@ -8052,11 +8055,15 @@ _Bool dvz_instance_gpu_info(
 | `gpu_index` | `uint32_t` | selected GPU index in the instance |
 | `out_info` | `DvzGpuInfo *` |  |
 
-Return a GPU descriptor snapshot for a given GPU index.
-
 _Declared in `include/datoviz/vk/gpu.h`:79._
 
 ### `dvz_instance_gpu_queue_caps()`
+
+Query a GPU queue-family capability snapshot from an instance.
+
+Together with DvzQueues, this forms the public low-level queue-planning surface used before
+device creation. Callers should treat the result as a capability snapshot, not as owned runtime
+state.
 
 ```c title="dvz_instance_gpu_queue_caps"
 _Bool dvz_instance_gpu_queue_caps(
@@ -8073,15 +8080,11 @@ _Bool dvz_instance_gpu_queue_caps(
 | `gpu_index` | `uint32_t` | selected GPU index in the instance |
 | `out_caps` | `DvzQueueCaps *` |  |
 
-Query a GPU queue-family capability snapshot from an instance.
-
-Together with DvzQueues, this forms the public low-level queue-planning surface used before
-device creation. Callers should treat the result as a capability snapshot, not as owned runtime
-state.
-
 _Declared in `include/datoviz/vk/queues.h`:134._
 
 ### `dvz_instance_handle()`
+
+Return the native VkInstance for a DvzInstance.
 
 ```c title="dvz_instance_handle"
 VkInstance dvz_instance_handle(
@@ -8094,11 +8097,11 @@ VkInstance dvz_instance_handle(
 | return | `VkInstance` | the Vulkan instance |
 | `instance` | `DvzInstance *` | the Datoviz instance |
 
-Return the native VkInstance for a DvzInstance.
-
 _Declared in `include/datoviz/vk/instance.h`:130._
 
 ### `dvz_instance_has_extension()`
+
+Returns whether an instance extension is supported on the system?
 
 ```c title="dvz_instance_has_extension"
 _Bool dvz_instance_has_extension(
@@ -8113,11 +8116,11 @@ _Bool dvz_instance_has_extension(
 | `instance` | `DvzInstance *` | the instance |
 | `extension` | `const char *` | the extension name |
 
-Returns whether an instance extension is supported on the system?
-
 _Declared in `include/datoviz/vk/instance.h`:227._
 
 ### `dvz_instance_has_layer()`
+
+Returns whether an instance layer is supported on the system?
 
 ```c title="dvz_instance_has_layer"
 _Bool dvz_instance_has_layer(
@@ -8132,11 +8135,11 @@ _Bool dvz_instance_has_layer(
 | `instance` | `DvzInstance *` | the instance |
 | `layer` | `const char *` | the layer name |
 
-Returns whether an instance layer is supported on the system?
-
 _Declared in `include/datoviz/vk/instance.h`:188._
 
 ### `dvz_instance_probe_extensions()`
+
+Probe instance extensions.
 
 ```c title="dvz_instance_probe_extensions"
 void dvz_instance_probe_extensions(
@@ -8148,11 +8151,11 @@ void dvz_instance_probe_extensions(
 | --- | --- | --- |
 | `instance` | `DvzInstance *` | the instance |
 
-Probe instance extensions.
-
 _Declared in `include/datoviz/vk/instance.h`:201._
 
 ### `dvz_instance_probe_layers()`
+
+Probe instance layers.
 
 ```c title="dvz_instance_probe_layers"
 void dvz_instance_probe_layers(
@@ -8164,11 +8167,15 @@ void dvz_instance_probe_layers(
 | --- | --- | --- |
 | `instance` | `DvzInstance *` | the instance |
 
-Probe instance layers.
-
 _Declared in `include/datoviz/vk/instance.h`:162._
 
 ### `dvz_instance_supported_extensions()`
+
+Get the supported extensions before creating an instance.
+
+The returned string array is borrowed instance-owned storage. It remains valid until the next
+extension probe on the same instance or instance destruction. Callers must not mutate or free the
+array or strings.
 
 ```c title="dvz_instance_supported_extensions"
 char ** dvz_instance_supported_extensions(
@@ -8183,15 +8190,15 @@ char ** dvz_instance_supported_extensions(
 | `instance` | `DvzInstance *` | the instance |
 | `count` | `uint32_t *` |  |
 
-Get the supported extensions before creating an instance.
-
-The returned string array is borrowed instance-owned storage. It remains valid until the next
-extension probe on the same instance or instance destruction. Callers must not mutate or free the
-array or strings.
-
 _Declared in `include/datoviz/vk/instance.h`:216._
 
 ### `dvz_instance_supported_layers()`
+
+Get the supported layers before creating an instance.
+
+The returned string array is borrowed instance-owned storage. It remains valid until the next
+layer probe on the same instance or instance destruction. Callers must not mutate or free the
+array or strings.
 
 ```c title="dvz_instance_supported_layers"
 char ** dvz_instance_supported_layers(
@@ -8206,17 +8213,17 @@ char ** dvz_instance_supported_layers(
 | `instance` | `DvzInstance *` | the instance |
 | `count` | `uint32_t *` |  |
 
-Get the supported layers before creating an instance.
-
-The returned string array is borrowed instance-owned storage. It remains valid until the next
-layer probe on the same instance or instance destruction. Callers must not mutate or free the
-array or strings.
-
 _Declared in `include/datoviz/vk/instance.h`:177._
 
 ## Interop
 
 ### `dvz_interop_buffer_export()`
+
+Export a Vulkan-owned buffer allocation and package external interop metadata.
+
+This helper transfers ownership of `out->memory_handle` to the caller on success. The optional
+`semaphore_handle` is copied into the descriptor as metadata; ownership of that handle remains
+defined by the call site that exported it.
 
 ```c title="dvz_interop_buffer_export"
 int dvz_interop_buffer_export(
@@ -8245,15 +8252,11 @@ int dvz_interop_buffer_export(
 | `semaphore_value` | `uint64_t` | timeline semaphore value associated with the export |
 | `out` | `DvzInteropBufferExport *` |  |
 
-Export a Vulkan-owned buffer allocation and package external interop metadata.
-
-This helper transfers ownership of `out->memory_handle` to the caller on success. The optional
-`semaphore_handle` is copied into the descriptor as metadata; ownership of that handle remains
-defined by the call site that exported it.
-
 _Declared in `include/datoviz/vk/memory_interop.h`:211._
 
 ### `dvz_interop_buffer_export_config()`
+
+Return a default interop buffer export configuration.
 
 ```c title="dvz_interop_buffer_export_config"
 DvzInteropBufferExportConfig dvz_interop_buffer_export_config(void);
@@ -8263,11 +8266,17 @@ DvzInteropBufferExportConfig dvz_interop_buffer_export_config(void);
 | --- | --- | --- |
 | return | `DvzInteropBufferExportConfig` | default export configuration |
 
-Return a default interop buffer export configuration.
-
 _Declared in `include/datoviz/vk/memory_interop.h`:104._
 
 ### `dvz_interop_buffer_export_from_buffer()`
+
+Export a vklite buffer and package external interop metadata.
+
+This is the preferred public helper for CUDA/CuPy import of Datoviz/Vulkan-owned buffers. It
+avoids exposing private `DvzBuffer` allocation internals to examples and bindings. On success,
+ownership of `out->memory_handle` transfers to the caller. If `config->semaphore` is non-NULL,
+this function also exports a semaphore handle and transfers `out->semaphore_handle` ownership to
+the caller.
 
 ```c title="dvz_interop_buffer_export_from_buffer"
 int dvz_interop_buffer_export_from_buffer(
@@ -8284,17 +8293,15 @@ int dvz_interop_buffer_export_from_buffer(
 | `config` | `const DvzInteropBufferExportConfig *` | logical export range and optional timeline semaphore metadata |
 | `out` | `DvzInteropBufferExport *` |  |
 
-Export a vklite buffer and package external interop metadata.
-
-This is the preferred public helper for CUDA/CuPy import of Datoviz/Vulkan-owned buffers. It
-avoids exposing private `DvzBuffer` allocation internals to examples and bindings. On success,
-ownership of `out->memory_handle` transfers to the caller. If `config->semaphore` is non-NULL,
-this function also exports a semaphore handle and transfers `out->semaphore_handle` ownership to
-the caller.
-
 _Declared in `include/datoviz/vk/memory_interop.h`:232._
 
 ### `dvz_interop_buffer_wait_timeline()`
+
+Wait on a timeline semaphore before Vulkan reads an interop buffer as vertex input.
+
+This helper is the explicit Vulkan-side synchronization point for CUDA/CuPy writes into a
+Vulkan-owned exported buffer. It submits a short barrier command on the main queue that waits for
+`semaphore` to reach `value`, then makes external writes visible to vertex-attribute reads.
 
 ```c title="dvz_interop_buffer_wait_timeline"
 _Bool dvz_interop_buffer_wait_timeline(
@@ -8315,15 +8322,16 @@ _Bool dvz_interop_buffer_wait_timeline(
 | `semaphore` | `DvzSemaphore *` | timeline semaphore signaled by the external API |
 | `value` | `uint64_t` | timeline value to wait on |
 
-Wait on a timeline semaphore before Vulkan reads an interop buffer as vertex input.
-
-This helper is the explicit Vulkan-side synchronization point for CUDA/CuPy writes into a
-Vulkan-owned exported buffer. It submits a short barrier command on the main queue that waits for
-`semaphore` to reach `value`, then makes external writes visible to vertex-attribute reads.
-
 _Declared in `include/datoviz/vk/memory_interop.h`:252._
 
 ### `dvz_interop_gpu_ctx()`
+
+Create an advanced GPU context for Vulkan-owned CUDA/CuPy interop buffers.
+
+This helper is binding substrate, not the final high-level Python API. It creates a Datoviz GPU
+context whose allocator exports Vulkan memory with `memory_handle_type`, and whose device has the
+external-memory, external-semaphore, and timeline-semaphore support needed by the Linux/NVIDIA
+CuPy smoke. Destroy the returned context with dvz_gpu_ctx_destroy().
 
 ```c title="dvz_interop_gpu_ctx"
 DvzGpuCtx * dvz_interop_gpu_ctx(
@@ -8338,16 +8346,16 @@ DvzGpuCtx * dvz_interop_gpu_ctx(
 | `gpu_index` | `uint32_t` | Vulkan physical-device index to use |
 | `memory_handle_type` | `VkExternalMemoryHandleTypeFlagsKHR` | external memory handle type for exported allocations |
 
-Create an advanced GPU context for Vulkan-owned CUDA/CuPy interop buffers.
-
-This helper is binding substrate, not the final high-level Python API. It creates a Datoviz GPU
-context whose allocator exports Vulkan memory with `memory_handle_type`, and whose device has the
-external-memory, external-semaphore, and timeline-semaphore support needed by the Linux/NVIDIA
-CuPy smoke. Destroy the returned context with dvz_gpu_ctx_destroy().
-
 _Declared in `include/datoviz/vk/memory_interop.h`:141._
 
 ### `dvz_interop_gpu_ctx_ex()`
+
+Create an advanced GPU context for CUDA/CuPy interop that also supports presentation.
+
+This is the configurable variant of dvz_interop_gpu_ctx(). It keeps the same external-memory
+allocator policy and timeline-semaphore setup, then optionally adds caller-provided Vulkan
+instance extensions and canvas/swapchain device extensions. Use it when a borrowed interop GPU
+context must also back a visible GLFW or hosted-surface canvas.
 
 ```c title="dvz_interop_gpu_ctx_ex"
 DvzGpuCtx * dvz_interop_gpu_ctx_ex(
@@ -8368,18 +8376,13 @@ DvzGpuCtx * dvz_interop_gpu_ctx_ex(
 | `instance_extensions` | `const char *const *` | extension-name array, or NULL when count is zero |
 | `enable_canvas_extensions` | `_Bool` | whether swapchain/surface device extensions should be requested |
 
-Create an advanced GPU context for CUDA/CuPy interop that also supports presentation.
-
-This is the configurable variant of dvz_interop_gpu_ctx(). It keeps the same external-memory
-allocator policy and timeline-semaphore setup, then optionally adds caller-provided Vulkan
-instance extensions and canvas/swapchain device extensions. Use it when a borrowed interop GPU
-context must also back a visible GLFW or hosted-surface canvas.
-
 _Declared in `include/datoviz/vk/memory_interop.h`:160._
 
 ## Interpolate
 
 ### `dvz_interpolate()`
+
+Make a linear interpolation between two scalar value.
 
 ```c title="dvz_interpolate"
 float dvz_interpolate(
@@ -8396,11 +8399,11 @@ float dvz_interpolate(
 | `p1` | `float` | the second value |
 | `t` | `float` | the normalized value |
 
-Make a linear interpolation between two scalar value.
-
 _Declared in `include/datoviz/math/anim.h`:135._
 
 ### `dvz_interpolate_2D()`
+
+Make a linear interpolation between two 2D points.
 
 ```c title="dvz_interpolate_2D"
 void dvz_interpolate_2D(
@@ -8418,11 +8421,11 @@ void dvz_interpolate_2D(
 | `t` | `float` | the normalized value |
 | `out` | `vec2` |  |
 
-Make a linear interpolation between two 2D points.
-
 _Declared in `include/datoviz/math/anim.h`:147._
 
 ### `dvz_interpolate_3D()`
+
+Make a linear interpolation between two 3D points.
 
 ```c title="dvz_interpolate_3D"
 void dvz_interpolate_3D(
@@ -8440,13 +8443,13 @@ void dvz_interpolate_3D(
 | `t` | `float` | the normalized value |
 | `out` | `vec3` |  |
 
-Make a linear interpolation between two 3D points.
-
 _Declared in `include/datoviz/math/anim.h`:159._
 
 ## Load
 
 ### `dvz_load_jpeg()`
+
+Decode a JPEG image from memory into tightly packed RGBA8 pixels.
 
 ```c title="dvz_load_jpeg"
 uint8_t * dvz_load_jpeg(
@@ -8465,11 +8468,11 @@ uint8_t * dvz_load_jpeg(
 | `width` | `uint32_t *` |  |
 | `height` | `uint32_t *` |  |
 
-Decode a JPEG image from memory into tightly packed RGBA8 pixels.
-
 _Declared in `include/datoviz/fileio/fileio.h`:192._
 
 ### `dvz_load_png()`
+
+Decode a PNG image from memory into tightly packed RGB8 pixels.
 
 ```c title="dvz_load_png"
 uint8_t * dvz_load_png(
@@ -8488,13 +8491,13 @@ uint8_t * dvz_load_png(
 | `width` | `uint32_t *` |  |
 | `height` | `uint32_t *` |  |
 
-Decode a PNG image from memory into tightly packed RGB8 pixels.
-
 _Declared in `include/datoviz/fileio/fileio.h`:172._
 
 ## Make
 
 ### `dvz_make_png()`
+
+Compress an sRGB RGB8 image to PNG and write it to a memory buffer.
 
 ```c title="dvz_make_png"
 int dvz_make_png(
@@ -8514,13 +8517,13 @@ int dvz_make_png(
 | `size` | `DvzSize *` | pointer to a variable that will contain the size of the buffer |
 | `out` | `void **` | pointer to an owned PNG byte buffer allocated with the Datoviz allocator; free with dvz_memory_free() |
 
-Compress an sRGB RGB8 image to PNG and write it to a memory buffer.
-
 _Declared in `include/datoviz/fileio/fileio.h`:157._
 
 ## Mean
 
 ### `dvz_mean()`
+
+Compute the mean of an array of double values.
 
 ```c title="dvz_mean"
 double dvz_mean(
@@ -8535,13 +8538,16 @@ double dvz_mean(
 | `n` | `uint32_t` | the number of values |
 | `values` | `const double *` | an array of double numbers |
 
-Compute the mean of an array of double values.
-
 _Declared in `include/datoviz/math/stats.h`:40._
 
 ## Memory
 
 ### `dvz_memory_free()`
+
+Release memory returned by Datoviz public APIs.
+
+Use this function for owned buffers returned through public API calls such as file loading,
+shader compilation, screenshots, and readbacks. Passing NULL is allowed.
 
 ```c title="dvz_memory_free"
 void dvz_memory_free(
@@ -8553,16 +8559,13 @@ void dvz_memory_free(
 | --- | --- | --- |
 | `pointer` | `void *` | pointer returned by a Datoviz public API, or NULL |
 
-Release memory returned by Datoviz public APIs.
-
-Use this function for owned buffers returned through public API calls such as file loading,
-shader compilation, screenshots, and readbacks. Passing NULL is allowed.
-
 _Declared in `include/datoviz/common/functions.h`:68._
 
 ## Min
 
 ### `dvz_min_max()`
+
+Compute the min and max of an array of float values.
 
 ```c title="dvz_min_max"
 void dvz_min_max(
@@ -8578,13 +8581,13 @@ void dvz_min_max(
 | `values` | `const float *` | an array of float numbers |
 | `out_min_max` | `vec2` | the min and max |
 
-Compute the min and max of an array of float values.
-
 _Declared in `include/datoviz/math/stats.h`:51._
 
 ## Normalize
 
 ### `dvz_normalize_bytes()`
+
+Normalize the array.
 
 ```c title="dvz_normalize_bytes"
 void dvz_normalize_bytes(
@@ -8602,13 +8605,14 @@ void dvz_normalize_bytes(
 | `values` | `float *` | an array of float numbers |
 | `out` | `uint8_t *` | the out uint8 array |
 
-Normalize the array.
-
 _Declared in `include/datoviz/math/stats.h`:63._
 
 ## Panzoom
 
 ### `dvz_panzoom_connect()`
+
+Subscribe the panzoom to an input router.
+The panzoom pointer callback will be registered; call dvz_panzoom_disconnect() to remove it.
 
 ```c title="dvz_panzoom_connect"
 DvzResult dvz_panzoom_connect(
@@ -8623,12 +8627,11 @@ DvzResult dvz_panzoom_connect(
 | `pz` | `DvzPanzoom *` | panzoom controller |
 | `router` | `DvzInputRouter *` | input router |
 
-Subscribe the panzoom to an input router.
-The panzoom pointer callback will be registered; call dvz_panzoom_disconnect() to remove it.
-
 _Declared in `include/datoviz/controller/panzoom.h`:302._
 
 ### `dvz_panzoom_create()`
+
+Create a standalone panzoom controller.
 
 ```c title="dvz_panzoom_create"
 DvzPanzoom * dvz_panzoom_create(
@@ -8640,8 +8643,6 @@ DvzPanzoom * dvz_panzoom_create(
 | --- | --- | --- |
 | return | `DvzPanzoom *` | the controller, or NULL on allocation failure |
 | `desc` | `const DvzPanzoomDesc *` | panzoom descriptor, or NULL for defaults |
-
-Create a standalone panzoom controller.
 
 Related: [`dvz_panzoom_destroy()`](#dvz_panzoom_destroy).
 
@@ -8657,6 +8658,8 @@ _Declared in `include/datoviz/controller/panzoom.h`:125._
 
 ### `dvz_panzoom_destroy()`
 
+Destroy the panzoom.
+
 ```c title="dvz_panzoom_destroy"
 void dvz_panzoom_destroy(
     DvzPanzoom * pz
@@ -8667,13 +8670,13 @@ void dvz_panzoom_destroy(
 | --- | --- | --- |
 | `pz` | `DvzPanzoom *` |  |
 
-Destroy the panzoom.
-
 Related: [`dvz_panzoom_create()`](#dvz_panzoom_create).
 
 _Declared in `include/datoviz/controller/panzoom.h`:320._
 
 ### `dvz_panzoom_disconnect()`
+
+Unsubscribe the panzoom from a router.
 
 ```c title="dvz_panzoom_disconnect"
 DvzResult dvz_panzoom_disconnect(
@@ -8688,11 +8691,11 @@ DvzResult dvz_panzoom_disconnect(
 | `pz` | `DvzPanzoom *` | panzoom controller |
 | `router` | `DvzInputRouter *` | input router |
 
-Unsubscribe the panzoom from a router.
-
 _Declared in `include/datoviz/controller/panzoom.h`:313._
 
 ### `dvz_panzoom_end()`
+
+Commit the current pan/zoom as the new drag baseline (call at drag stop).
 
 ```c title="dvz_panzoom_end"
 DvzResult dvz_panzoom_end(
@@ -8705,11 +8708,11 @@ DvzResult dvz_panzoom_end(
 | return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on validation error |
 | `pz` | `DvzPanzoom *` | panzoom controller |
 
-Commit the current pan/zoom as the new drag baseline (call at drag stop).
-
 _Declared in `include/datoviz/controller/panzoom.h`:270._
 
 ### `dvz_panzoom_extent()`
+
+Return the visible extent in visual coordinates.
 
 ```c title="dvz_panzoom_extent"
 _Bool dvz_panzoom_extent(
@@ -8724,11 +8727,12 @@ _Bool dvz_panzoom_extent(
 | `pz` | `const DvzPanzoom *` | the panzoom controller |
 | `out` | `float[4]` | extent as xmin, xmax, ymin, ymax |
 
-Return the visible extent in visual coordinates.
-
 _Declared in `include/datoviz/controller/panzoom.h`:214._
 
 ### `dvz_panzoom_mvp()`
+
+Fill the view and proj matrices of an MVP struct from the current panzoom state.
+The model matrix is left untouched.
 
 ```c title="dvz_panzoom_mvp"
 void dvz_panzoom_mvp(
@@ -8742,12 +8746,11 @@ void dvz_panzoom_mvp(
 | `pz` | `DvzPanzoom *` |  |
 | `mvp` | `DvzMVP *` |  |
 
-Fill the view and proj matrices of an MVP struct from the current panzoom state.
-The model matrix is left untouched.
-
 _Declared in `include/datoviz/controller/panzoom.h`:278._
 
 ### `dvz_panzoom_pan()`
+
+Set the pan offset in NDC.
 
 ```c title="dvz_panzoom_pan"
 DvzResult dvz_panzoom_pan(
@@ -8762,11 +8765,11 @@ DvzResult dvz_panzoom_pan(
 | `pz` | `DvzPanzoom *` | panzoom controller |
 | `pan` | `vec2` | pan offset |
 
-Set the pan offset in NDC.
-
 _Declared in `include/datoviz/controller/panzoom.h`:182._
 
 ### `dvz_panzoom_pan_shift()`
+
+Apply a pan shift (pixel delta).
 
 ```c title="dvz_panzoom_pan_shift"
 DvzResult dvz_panzoom_pan_shift(
@@ -8783,11 +8786,11 @@ DvzResult dvz_panzoom_pan_shift(
 | `shift_px` | `vec2` | shift in viewport pixels |
 | `center_px` | `vec2` | pointer center in viewport pixels |
 
-Apply a pan shift (pixel delta).
-
 _Declared in `include/datoviz/controller/panzoom.h`:236._
 
 ### `dvz_panzoom_pointer()`
+
+Process a pointer event and update panzoom state.
 
 ```c title="dvz_panzoom_pointer"
 _Bool dvz_panzoom_pointer(
@@ -8802,11 +8805,11 @@ _Bool dvz_panzoom_pointer(
 | `pz` | `DvzPanzoom *` |  |
 | `ev` | `const DvzPointerEvent *` |  |
 
-Process a pointer event and update panzoom state.
-
 _Declared in `include/datoviz/controller/panzoom.h`:290._
 
 ### `dvz_panzoom_reset()`
+
+Reset to the identity transform.
 
 ```c title="dvz_panzoom_reset"
 DvzResult dvz_panzoom_reset(
@@ -8819,11 +8822,11 @@ DvzResult dvz_panzoom_reset(
 | return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on validation error |
 | `pz` | `DvzPanzoom *` | panzoom controller |
 
-Reset to the identity transform.
-
 _Declared in `include/datoviz/controller/panzoom.h`:145._
 
 ### `dvz_panzoom_resize()`
+
+Update the viewport size (call on window resize).
 
 ```c title="dvz_panzoom_resize"
 DvzResult dvz_panzoom_resize(
@@ -8839,8 +8842,6 @@ DvzResult dvz_panzoom_resize(
 | `pz` | `DvzPanzoom *` | panzoom controller |
 | `width` | `float` | viewport width in pixels |
 | `height` | `float` | viewport height in pixels |
-
-Update the viewport size (call on window resize).
 
 _Declared in `include/datoviz/controller/panzoom.h`:157._
 
@@ -8864,6 +8865,8 @@ _Declared in `include/datoviz/controller/panzoom.h`:280._
 
 ### `dvz_panzoom_state()`
 
+Copy the current panzoom state.
+
 ```c title="dvz_panzoom_state"
 _Bool dvz_panzoom_state(
     const DvzPanzoom * pz,
@@ -8877,11 +8880,11 @@ _Bool dvz_panzoom_state(
 | `pz` | `const DvzPanzoom *` | the panzoom controller |
 | `out` | `DvzPanzoomState *` | target state snapshot |
 
-Copy the current panzoom state.
-
 _Declared in `include/datoviz/controller/panzoom.h`:224._
 
 ### `dvz_panzoom_viewport()`
+
+Update the viewport rectangle in window coordinates.
 
 ```c title="dvz_panzoom_viewport"
 DvzResult dvz_panzoom_viewport(
@@ -8902,11 +8905,11 @@ DvzResult dvz_panzoom_viewport(
 | `width` | `float` | viewport width in window pixels |
 | `height` | `float` | viewport height in window pixels |
 
-Update the viewport rectangle in window coordinates.
-
 _Declared in `include/datoviz/controller/panzoom.h`:171._
 
 ### `dvz_panzoom_zoom()`
+
+Set the zoom factors.
 
 ```c title="dvz_panzoom_zoom"
 DvzResult dvz_panzoom_zoom(
@@ -8921,11 +8924,11 @@ DvzResult dvz_panzoom_zoom(
 | `pz` | `DvzPanzoom *` | panzoom controller |
 | `zoom` | `vec2` | zoom factors |
 
-Set the zoom factors.
-
 _Declared in `include/datoviz/controller/panzoom.h`:193._
 
 ### `dvz_panzoom_zoom_limits()`
+
+Set zoom limits.
 
 ```c title="dvz_panzoom_zoom_limits"
 _Bool dvz_panzoom_zoom_limits(
@@ -8942,11 +8945,11 @@ _Bool dvz_panzoom_zoom_limits(
 | `min_zoom` | `vec2` | minimum zoom factors |
 | `max_zoom` | `vec2` | maximum zoom factors |
 
-Set zoom limits.
-
 _Declared in `include/datoviz/controller/panzoom.h`:204._
 
 ### `dvz_panzoom_zoom_shift()`
+
+Apply a zoom shift driven by right-drag (pixel delta + anchor).
 
 ```c title="dvz_panzoom_zoom_shift"
 DvzResult dvz_panzoom_zoom_shift(
@@ -8963,11 +8966,11 @@ DvzResult dvz_panzoom_zoom_shift(
 | `shift_px` | `vec2` | shift in viewport pixels |
 | `center_px` | `vec2` | zoom anchor in viewport pixels |
 
-Apply a zoom shift driven by right-drag (pixel delta + anchor).
-
 _Declared in `include/datoviz/controller/panzoom.h`:248._
 
 ### `dvz_panzoom_zoom_wheel()`
+
+Apply a wheel zoom.
 
 ```c title="dvz_panzoom_zoom_wheel"
 DvzResult dvz_panzoom_zoom_wheel(
@@ -8984,13 +8987,13 @@ DvzResult dvz_panzoom_zoom_wheel(
 | `dir` | `vec2` | wheel direction |
 | `center_px` | `vec2` | zoom anchor in viewport pixels |
 
-Apply a wheel zoom.
-
 _Declared in `include/datoviz/controller/panzoom.h`:260._
 
 ## Parse
 
 ### `dvz_parse_npy()`
+
+Read a NumPy NPY file from memory.
 
 ```c title="dvz_parse_npy"
 void * dvz_parse_npy(
@@ -9005,19 +9008,17 @@ void * dvz_parse_npy(
 | `bytes` | `const void *` | the contents of the NPY file |
 | `size_bytes` | `DvzSize` | size of the file in bytes |
 
-Read a NumPy NPY file from memory.
-
 _Declared in `include/datoviz/fileio/fileio.h`:76._
 
 ## Prng
 
 ### `dvz_prng()`
 
+*********************************************************************************************
+
 ```c title="dvz_prng"
 DvzPrng * dvz_prng(void);
 ```
-
-*********************************************************************************************
 
 _Declared in `include/datoviz/math/prng.h`:38._
 
@@ -9053,6 +9054,8 @@ _Declared in `include/datoviz/math/prng.h`:42._
 
 ### `dvz_queue_family()`
 
+Return the queue family of a queue.
+
 ```c title="dvz_queue_family"
 uint32_t dvz_queue_family(
     DvzQueue * queue
@@ -9064,11 +9067,14 @@ uint32_t dvz_queue_family(
 | return | `uint32_t` | the queue family index |
 | `queue` | `DvzQueue *` | the queue |
 
-Return the queue family of a queue.
-
 _Declared in `include/datoviz/vk/queues.h`:191._
 
 ### `dvz_queue_from_role()`
+
+Get a queue for a role from a queue-selection plan or device-owned queue table.
+
+The returned queue may be a dedicated queue for the role, or the main queue when that queue
+intentionally satisfies the requested role.
 
 ```c title="dvz_queue_from_role"
 DvzQueue * dvz_queue_from_role(
@@ -9083,14 +9089,11 @@ DvzQueue * dvz_queue_from_role(
 | `queues` | `DvzQueues *` | the queues |
 | `role` | `DvzQueueRole` | the role |
 
-Get a queue for a role from a queue-selection plan or device-owned queue table.
-
-The returned queue may be a dedicated queue for the role, or the main queue when that queue
-intentionally satisfies the requested role.
-
 _Declared in `include/datoviz/vk/queues.h`:171._
 
 ### `dvz_queue_handle()`
+
+Return the Vulkan handle of a queue.
 
 ```c title="dvz_queue_handle"
 VkQueue dvz_queue_handle(
@@ -9103,11 +9106,11 @@ VkQueue dvz_queue_handle(
 | return | `VkQueue` | the queue Vulkan handle |
 | `queue` | `DvzQueue *` | the queue |
 
-Return the Vulkan handle of a queue.
-
 _Declared in `include/datoviz/vk/queues.h`:201._
 
 ### `dvz_queue_index()`
+
+Return the queue index of a queue.
 
 ```c title="dvz_queue_index"
 uint32_t dvz_queue_index(
@@ -9120,11 +9123,11 @@ uint32_t dvz_queue_index(
 | return | `uint32_t` | the queue index |
 | `queue` | `DvzQueue *` | the queue |
 
-Return the queue index of a queue.
-
 _Declared in `include/datoviz/vk/queues.h`:181._
 
 ### `dvz_queue_supports()`
+
+Returns whether a queue supports a given role.
 
 ```c title="dvz_queue_supports"
 _Bool dvz_queue_supports(
@@ -9138,11 +9141,11 @@ _Bool dvz_queue_supports(
 | `queue` | `DvzQueue *` | a queue |
 | `role` | `DvzQueueRole` | a queue role |
 
-Returns whether a queue supports a given role.
-
 _Declared in `include/datoviz/vk/queues.h`:220._
 
 ### `dvz_queue_wait()`
+
+Wait for a queue to be idle. Inefficient.
 
 ```c title="dvz_queue_wait"
 void dvz_queue_wait(
@@ -9154,13 +9157,17 @@ void dvz_queue_wait(
 | --- | --- | --- |
 | `queue` | `DvzQueue *` | the queue |
 
-Wait for a queue to be idle. Inefficient.
-
 _Declared in `include/datoviz/vk/queues.h`:210._
 
 ## Queues
 
 ### `dvz_queues()`
+
+Choose a logical-device queue plan from a capability snapshot.
+
+This function is part of the intentional public low-level queue-planning API. It does not create
+Vulkan queues by itself; it selects family/role assignments that higher-level device setup then
+requests explicitly.
 
 ```c title="dvz_queues"
 void dvz_queues(
@@ -9174,15 +9181,11 @@ void dvz_queues(
 | `qc` | `DvzQueueCaps *` | the queue caps |
 | `queues` | `DvzQueues *` |  |
 
-Choose a logical-device queue plan from a capability snapshot.
-
-This function is part of the intentional public low-level queue-planning API. It does not create
-Vulkan queues by itself; it selects family/role assignments that higher-level device setup then
-requests explicitly.
-
 _Declared in `include/datoviz/vk/queues.h`:148._
 
 ### `dvz_queues_show()`
+
+Show the queues.
 
 ```c title="dvz_queues_show"
 void dvz_queues_show(
@@ -9194,13 +9197,13 @@ void dvz_queues_show(
 | --- | --- | --- |
 | `queues` | `DvzQueues *` | the queues |
 
-Show the queues.
-
 _Declared in `include/datoviz/vk/queues.h`:157._
 
 ## Rand
 
 ### `dvz_rand_byte()`
+
+Return a random integer number between 0 and 255.
 
 ```c title="dvz_rand_byte"
 uint8_t dvz_rand_byte(void);
@@ -9210,11 +9213,11 @@ uint8_t dvz_rand_byte(void);
 | --- | --- | --- |
 | return | `uint8_t` | random number |
 
-Return a random integer number between 0 and 255.
-
 _Declared in `include/datoviz/math/rand.h`:37._
 
 ### `dvz_rand_double()`
+
+Return a random floating-point number between 0 and 1.
 
 ```c title="dvz_rand_double"
 double dvz_rand_double(void);
@@ -9224,11 +9227,11 @@ double dvz_rand_double(void);
 | --- | --- | --- |
 | return | `double` | random number |
 
-Return a random floating-point number between 0 and 1.
-
 _Declared in `include/datoviz/math/rand.h`:64._
 
 ### `dvz_rand_float()`
+
+Return a random floating-point number between 0 and 1.
 
 ```c title="dvz_rand_float"
 float dvz_rand_float(void);
@@ -9238,11 +9241,11 @@ float dvz_rand_float(void);
 | --- | --- | --- |
 | return | `float` | random number |
 
-Return a random floating-point number between 0 and 1.
-
 _Declared in `include/datoviz/math/rand.h`:55._
 
 ### `dvz_rand_int()`
+
+Return a random integer number.
 
 ```c title="dvz_rand_int"
 int dvz_rand_int(void);
@@ -9252,11 +9255,11 @@ int dvz_rand_int(void);
 | --- | --- | --- |
 | return | `int` | random number |
 
-Return a random integer number.
-
 _Declared in `include/datoviz/math/rand.h`:46._
 
 ### `dvz_rand_normal()`
+
+Return a random normal floating-point number.
 
 ```c title="dvz_rand_normal"
 double dvz_rand_normal(void);
@@ -9266,13 +9269,13 @@ double dvz_rand_normal(void);
 | --- | --- | --- |
 | return | `double` | random number |
 
-Return a random normal floating-point number.
-
 _Declared in `include/datoviz/math/rand.h`:73._
 
 ## Range
 
 ### `dvz_range()`
+
+Compute the range of an array of double values.
 
 ```c title="dvz_range"
 void dvz_range(
@@ -9288,13 +9291,13 @@ void dvz_range(
 | `values` | `const double *` | an array of double numbers |
 | `min_max` | `dvec2` |  |
 
-Compute the range of an array of double values.
-
 _Declared in `include/datoviz/math/stats.h`:74._
 
 ## Read
 
 ### `dvz_read_file()`
+
+Read a binary file.
 
 ```c title="dvz_read_file"
 void * dvz_read_file(
@@ -9309,11 +9312,11 @@ void * dvz_read_file(
 | `filename` | `const char *` | path of the file to open |
 | `size` | `DvzSize *` |  |
 
-Read a binary file.
-
 _Declared in `include/datoviz/fileio/fileio.h`:54._
 
 ### `dvz_read_gz()`
+
+Read a compressed GZIP file.
 
 ```c title="dvz_read_gz"
 char * dvz_read_gz(
@@ -9328,11 +9331,11 @@ char * dvz_read_gz(
 | `filename` | `const char *` | path of the GZIP compressed file to open |
 | `size` | `DvzSize *` |  |
 
-Read a compressed GZIP file.
-
 _Declared in `include/datoviz/fileio/fileio.h`:87._
 
 ### `dvz_read_jpeg()`
+
+Read and decode a JPEG image file into tightly packed RGBA8 pixels.
 
 ```c title="dvz_read_jpeg"
 uint8_t * dvz_read_jpeg(
@@ -9349,11 +9352,11 @@ uint8_t * dvz_read_jpeg(
 | `width` | `uint32_t *` |  |
 | `height` | `uint32_t *` |  |
 
-Read and decode a JPEG image file into tightly packed RGBA8 pixels.
-
 _Declared in `include/datoviz/fileio/fileio.h`:206._
 
 ### `dvz_read_npy()`
+
+Read a NumPy NPY file.
 
 ```c title="dvz_read_npy"
 void * dvz_read_npy(
@@ -9368,11 +9371,11 @@ void * dvz_read_npy(
 | `filename` | `const char *` | path of the file to open |
 | `size` | `DvzSize *` |  |
 
-Read a NumPy NPY file.
-
 _Declared in `include/datoviz/fileio/fileio.h`:65._
 
 ### `dvz_read_ppm()`
+
+Read a PPM image file.
 
 ```c title="dvz_read_ppm"
 uint8_t * dvz_read_ppm(
@@ -9389,13 +9392,16 @@ uint8_t * dvz_read_ppm(
 | `width` | `uint32_t *` |  |
 | `height` | `uint32_t *` |  |
 
-Read a PPM image file.
-
 _Declared in `include/datoviz/fileio/fileio.h`:129._
 
 ## Rendering
 
 ### `dvz_rendering()`
+
+Initialize or reset a rendering wrapper.
+
+Reinitialization clears any previously configured attachment state so callers can safely reuse
+the wrapper across recording passes without relying on direct struct mutation.
 
 ```c title="dvz_rendering"
 void dvz_rendering(
@@ -9407,14 +9413,11 @@ void dvz_rendering(
 | --- | --- | --- |
 | `rendering` | `DvzRendering *` | the rendering |
 
-Initialize or reset a rendering wrapper.
-
-Reinitialization clears any previously configured attachment state so callers can safely reuse
-the wrapper across recording passes without relying on direct struct mutation.
-
 _Declared in `include/datoviz/vklite/rendering.h`:121._
 
 ### `dvz_rendering_area()`
+
+Set a rendering area.
 
 ```c title="dvz_rendering_area"
 void dvz_rendering_area(
@@ -9434,11 +9437,11 @@ void dvz_rendering_area(
 | `width` | `uint32_t` | the width |
 | `height` | `uint32_t` | the height |
 
-Set a rendering area.
-
 _Declared in `include/datoviz/vklite/rendering.h`:135._
 
 ### `dvz_rendering_color()`
+
+Return a color attachment of a rendering.
 
 ```c title="dvz_rendering_color"
 DvzAttachment * dvz_rendering_color(
@@ -9453,11 +9456,11 @@ DvzAttachment * dvz_rendering_color(
 | `rendering` | `DvzRendering *` | the rendering |
 | `idx` | `uint32_t` | the color attachment index |
 
-Return a color attachment of a rendering.
-
 _Declared in `include/datoviz/vklite/rendering.h`:196._
 
 ### `dvz_rendering_color_count()`
+
+Return the number of configured color attachments.
 
 ```c title="dvz_rendering_color_count"
 uint32_t dvz_rendering_color_count(
@@ -9470,11 +9473,15 @@ uint32_t dvz_rendering_color_count(
 | return | `uint32_t` | the color attachment count |
 | `rendering` | `DvzRendering *` | the rendering |
 
-Return the number of configured color attachments.
-
 _Declared in `include/datoviz/vklite/rendering.h`:155._
 
 ### `dvz_rendering_create_wrapper()`
+
+Allocate an empty rendering wrapper.
+
+DvzRendering is intentionally opaque. It owns a coupled rendering-state bundle whose attachment
+arrays and cached Vulkan structs are kept consistent through the public API rather than direct
+field mutation.
 
 ```c title="dvz_rendering_create_wrapper"
 DvzRendering * dvz_rendering_create_wrapper(void);
@@ -9484,15 +9491,11 @@ DvzRendering * dvz_rendering_create_wrapper(void);
 | --- | --- | --- |
 | return | `DvzRendering *` | allocated rendering wrapper, or NULL on allocation failure |
 
-Allocate an empty rendering wrapper.
-
-DvzRendering is intentionally opaque. It owns a coupled rendering-state bundle whose attachment
-arrays and cached Vulkan structs are kept consistent through the public API rather than direct
-field mutation.
-
 _Declared in `include/datoviz/vklite/rendering.h`:109._
 
 ### `dvz_rendering_depth()`
+
+Return the depth attachment of a rendering.
 
 ```c title="dvz_rendering_depth"
 DvzAttachment * dvz_rendering_depth(
@@ -9505,11 +9508,11 @@ DvzAttachment * dvz_rendering_depth(
 | return | `DvzAttachment *` | the attachment |
 | `rendering` | `DvzRendering *` | the rendering |
 
-Return the depth attachment of a rendering.
-
 _Declared in `include/datoviz/vklite/rendering.h`:206._
 
 ### `dvz_rendering_free()`
+
+Free a rendering wrapper allocated by dvz_rendering_create().
 
 ```c title="dvz_rendering_free"
 void dvz_rendering_free(
@@ -9521,11 +9524,11 @@ void dvz_rendering_free(
 | --- | --- | --- |
 | `rendering` | `DvzRendering *` | rendering wrapper to free |
 
-Free a rendering wrapper allocated by dvz_rendering_create().
-
 _Declared in `include/datoviz/vklite/rendering.h`:260._
 
 ### `dvz_rendering_has_depth()`
+
+Return whether a depth attachment is configured.
 
 ```c title="dvz_rendering_has_depth"
 _Bool dvz_rendering_has_depth(
@@ -9538,11 +9541,11 @@ _Bool dvz_rendering_has_depth(
 | return | `_Bool` | true when a depth attachment is configured |
 | `rendering` | `DvzRendering *` | the rendering |
 
-Return whether a depth attachment is configured.
-
 _Declared in `include/datoviz/vklite/rendering.h`:175._
 
 ### `dvz_rendering_has_stencil()`
+
+Return whether a stencil attachment is configured.
 
 ```c title="dvz_rendering_has_stencil"
 _Bool dvz_rendering_has_stencil(
@@ -9555,11 +9558,11 @@ _Bool dvz_rendering_has_stencil(
 | return | `_Bool` | true when a stencil attachment is configured |
 | `rendering` | `DvzRendering *` | the rendering |
 
-Return whether a stencil attachment is configured.
-
 _Declared in `include/datoviz/vklite/rendering.h`:185._
 
 ### `dvz_rendering_layer_count()`
+
+Return the configured layer count.
 
 ```c title="dvz_rendering_layer_count"
 uint32_t dvz_rendering_layer_count(
@@ -9572,11 +9575,11 @@ uint32_t dvz_rendering_layer_count(
 | return | `uint32_t` | the layer count |
 | `rendering` | `DvzRendering *` | the rendering |
 
-Return the configured layer count.
-
 _Declared in `include/datoviz/vklite/rendering.h`:165._
 
 ### `dvz_rendering_layers()`
+
+Set the number of layers in a rendering.
 
 ```c title="dvz_rendering_layers"
 void dvz_rendering_layers(
@@ -9590,11 +9593,11 @@ void dvz_rendering_layers(
 | `rendering` | `DvzRendering *` | the rendering |
 | `count` | `uint32_t` | the number of layers |
 
-Set the number of layers in a rendering.
-
 _Declared in `include/datoviz/vklite/rendering.h`:145._
 
 ### `dvz_rendering_stencil()`
+
+Return the stencil attachment of a rendering.
 
 ```c title="dvz_rendering_stencil"
 DvzAttachment * dvz_rendering_stencil(
@@ -9607,13 +9610,13 @@ DvzAttachment * dvz_rendering_stencil(
 | return | `DvzAttachment *` | the attachment |
 | `rendering` | `DvzRendering *` | the rendering |
 
-Return the stencil attachment of a rendering.
-
 _Declared in `include/datoviz/vklite/rendering.h`:216._
 
 ## Resample
 
 ### `dvz_resample()`
+
+Normalize a value in an interval.
 
 ```c title="dvz_resample"
 double dvz_resample(
@@ -9629,8 +9632,6 @@ double dvz_resample(
 | `t0` | `double` | the interval start |
 | `t1` | `double` | the interval end |
 | `t` | `double` | the value within the interval |
-
-Normalize a value in an interval.
 
 _Declared in `include/datoviz/math/anim.h`:86._
 
@@ -9670,6 +9671,8 @@ _Declared in `include/datoviz/fileio/fileio.h`:223._
 
 ### `dvz_resource_shader()`
 
+*********************************************************************************************
+
 ```c title="dvz_resource_shader"
 const unsigned char * dvz_resource_shader(
     const char * name,
@@ -9681,8 +9684,6 @@ const unsigned char * dvz_resource_shader(
 | --- | --- | --- |
 | `name` | `const char *` |  |
 | `size` | `DvzSize *` |  |
-
-*********************************************************************************************
 
 _Declared in `include/datoviz/fileio/fileio.h`:215._
 
@@ -9706,6 +9707,12 @@ _Declared in `include/datoviz/fileio/fileio.h`:219._
 
 ### `dvz_sampler()`
 
+Initialize a texture sampler.
+
+This prepares the wrapper for configuration. Call dvz_sampler_create() once
+after setting filter and address-mode state. Recreating a live sampler
+requires dvz_sampler_destroy() first.
+
 ```c title="dvz_sampler"
 void dvz_sampler(
     DvzDevice * device,
@@ -9718,15 +9725,11 @@ void dvz_sampler(
 | `device` | `DvzDevice *` | the device |
 | `sampler` | `DvzSampler *` | the sampler object to create |
 
-Initialize a texture sampler.
-
-This prepares the wrapper for configuration. Call dvz_sampler_create() once
-after setting filter and address-mode state. Recreating a live sampler
-requires dvz_sampler_destroy() first.
-
 _Declared in `include/datoviz/vklite/sampler.h`:82._
 
 ### `dvz_sampler_address_mode()`
+
+Set the sampler address mode
 
 ```c title="dvz_sampler_address_mode"
 void dvz_sampler_address_mode(
@@ -9742,11 +9745,11 @@ void dvz_sampler_address_mode(
 | `axis` | `DvzSamplerAxis` | the sampler axis |
 | `address_mode` | `VkSamplerAddressMode` | the address mode |
 
-Set the sampler address mode
-
 _Declared in `include/datoviz/vklite/sampler.h`:113._
 
 ### `dvz_sampler_anisotropy()`
+
+Set the anisotropy.
 
 ```c title="dvz_sampler_anisotropy"
 void dvz_sampler_anisotropy(
@@ -9760,11 +9763,14 @@ void dvz_sampler_anisotropy(
 | `sampler` | `DvzSampler *` | the sampler |
 | `anisotropy` | `float` | anisotropy |
 
-Set the anisotropy.
-
 _Declared in `include/datoviz/vklite/sampler.h`:124._
 
 ### `dvz_sampler_create()`
+
+Create the sampler after it has been set up.
+
+This function creates the wrapped Vulkan sampler exactly once per live
+wrapper. Call dvz_sampler_destroy() before attempting to create it again.
 
 ```c title="dvz_sampler_create"
 int dvz_sampler_create(
@@ -9777,16 +9783,18 @@ int dvz_sampler_create(
 | return | `int` | the creation result code |
 | `sampler` | `DvzSampler *` | the sampler |
 
-Create the sampler after it has been set up.
-
-This function creates the wrapped Vulkan sampler exactly once per live
-wrapper. Call dvz_sampler_destroy() before attempting to create it again.
-
 Related: [`dvz_sampler_destroy()`](#dvz_sampler_destroy).
 
 _Declared in `include/datoviz/vklite/sampler.h`:137._
 
 ### `dvz_sampler_create_wrapper()`
+
+Allocate an empty sampler wrapper.
+
+Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+initialize with dvz_sampler(), configure, call dvz_sampler_create() once,
+then destroy before any recreate and free only if this wrapper came from
+dvz_sampler_create_wrapper().
 
 ```c title="dvz_sampler_create_wrapper"
 DvzSampler * dvz_sampler_create_wrapper(void);
@@ -9796,16 +9804,14 @@ DvzSampler * dvz_sampler_create_wrapper(void);
 | --- | --- | --- |
 | return | `DvzSampler *` | allocated sampler wrapper, or NULL on allocation failure |
 
-Allocate an empty sampler wrapper.
-
-Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
-initialize with dvz_sampler(), configure, call dvz_sampler_create() once,
-then destroy before any recreate and free only if this wrapper came from
-dvz_sampler_create_wrapper().
-
 _Declared in `include/datoviz/vklite/sampler.h`:68._
 
 ### `dvz_sampler_destroy()`
+
+Destroy a sampler.
+
+This releases the wrapped Vulkan sampler and returns the wrapper to a
+reusable initialized state.
 
 ```c title="dvz_sampler_destroy"
 void dvz_sampler_destroy(
@@ -9817,16 +9823,13 @@ void dvz_sampler_destroy(
 | --- | --- | --- |
 | `sampler` | `DvzSampler *` | the sampler |
 
-Destroy a sampler.
-
-This releases the wrapped Vulkan sampler and returns the wrapper to a
-reusable initialized state.
-
 Related: [`dvz_sampler_create()`](#dvz_sampler_create).
 
 _Declared in `include/datoviz/vklite/sampler.h`:149._
 
 ### `dvz_sampler_free()`
+
+Free a sampler wrapper allocated by dvz_sampler_create_wrapper().
 
 ```c title="dvz_sampler_free"
 void dvz_sampler_free(
@@ -9838,11 +9841,11 @@ void dvz_sampler_free(
 | --- | --- | --- |
 | `sampler` | `DvzSampler *` | sampler wrapper to free |
 
-Free a sampler wrapper allocated by dvz_sampler_create_wrapper().
-
 _Declared in `include/datoviz/vklite/sampler.h`:168._
 
 ### `dvz_sampler_handle()`
+
+Return the Vulkan sampler handle.
 
 ```c title="dvz_sampler_handle"
 VkSampler dvz_sampler_handle(
@@ -9855,11 +9858,11 @@ VkSampler dvz_sampler_handle(
 | return | `VkSampler` | wrapped Vulkan sampler handle |
 | `sampler` | `DvzSampler *` | sampler wrapper |
 
-Return the Vulkan sampler handle.
-
 _Declared in `include/datoviz/vklite/sampler.h`:159._
 
 ### `dvz_sampler_mag_filter()`
+
+Set the sampler mag filter.
 
 ```c title="dvz_sampler_mag_filter"
 void dvz_sampler_mag_filter(
@@ -9873,11 +9876,11 @@ void dvz_sampler_mag_filter(
 | `sampler` | `DvzSampler *` | the sampler |
 | `filter` | `VkFilter` | the filter |
 
-Set the sampler mag filter.
-
 _Declared in `include/datoviz/vklite/sampler.h`:102._
 
 ### `dvz_sampler_min_filter()`
+
+Set the sampler min filter.
 
 ```c title="dvz_sampler_min_filter"
 void dvz_sampler_min_filter(
@@ -9891,13 +9894,13 @@ void dvz_sampler_min_filter(
 | `sampler` | `DvzSampler *` | the sampler |
 | `filter` | `VkFilter` | the filter |
 
-Set the sampler min filter.
-
 _Declared in `include/datoviz/vklite/sampler.h`:92._
 
 ## Semaphore
 
 ### `dvz_semaphore()`
+
+Initialize a semaphore (GPU-GPU synchronization).
 
 ```c title="dvz_semaphore"
 void dvz_semaphore(
@@ -9911,11 +9914,11 @@ void dvz_semaphore(
 | `device` | `DvzDevice *` | the device |
 | `semaphore` | `DvzSemaphore *` |  |
 
-Initialize a semaphore (GPU-GPU synchronization).
-
 _Declared in `include/datoviz/vklite/sync.h`:489._
 
 ### `dvz_semaphore_create_wrapper()`
+
+Allocate an empty semaphore wrapper.
 
 ```c title="dvz_semaphore_create_wrapper"
 DvzSemaphore * dvz_semaphore_create_wrapper(void);
@@ -9925,11 +9928,11 @@ DvzSemaphore * dvz_semaphore_create_wrapper(void);
 | --- | --- | --- |
 | return | `DvzSemaphore *` | allocated semaphore wrapper, or NULL on allocation failure |
 
-Allocate an empty semaphore wrapper.
-
 _Declared in `include/datoviz/vklite/sync.h`:106._
 
 ### `dvz_semaphore_destroy()`
+
+Destroy semaphore.
 
 ```c title="dvz_semaphore_destroy"
 void dvz_semaphore_destroy(
@@ -9941,11 +9944,11 @@ void dvz_semaphore_destroy(
 | --- | --- | --- |
 | `semaphore` | `DvzSemaphore *` | the semaphore |
 
-Destroy semaphore.
-
 _Declared in `include/datoviz/vklite/sync.h`:564._
 
 ### `dvz_semaphore_export_fd()`
+
+Export a semaphore as a Unix file descriptor.
 
 ```c title="dvz_semaphore_export_fd"
 int dvz_semaphore_export_fd(
@@ -9960,11 +9963,11 @@ int dvz_semaphore_export_fd(
 | `semaphore` | `DvzSemaphore *` | semaphore to export |
 | `handle_type` | `VkExternalSemaphoreHandleTypeFlags` | external handle type requested by the caller |
 
-Export a semaphore as a Unix file descriptor.
-
 _Declared in `include/datoviz/vklite/sync.h`:555._
 
 ### `dvz_semaphore_free()`
+
+Free a semaphore wrapper allocated by dvz_semaphore_create_wrapper().
 
 ```c title="dvz_semaphore_free"
 void dvz_semaphore_free(
@@ -9976,11 +9979,11 @@ void dvz_semaphore_free(
 | --- | --- | --- |
 | `semaphore` | `DvzSemaphore *` | semaphore wrapper to free |
 
-Free a semaphore wrapper allocated by dvz_semaphore_create_wrapper().
-
 _Declared in `include/datoviz/vklite/sync.h`:115._
 
 ### `dvz_semaphore_handle()`
+
+Return the Vulkan semaphore handle owned by a semaphore wrapper.
 
 ```c title="dvz_semaphore_handle"
 VkSemaphore dvz_semaphore_handle(
@@ -9993,11 +9996,11 @@ VkSemaphore dvz_semaphore_handle(
 | return | `VkSemaphore` | the Vulkan semaphore handle or VK_NULL_HANDLE |
 | `semaphore` | `DvzSemaphore *` | the semaphore |
 
-Return the Vulkan semaphore handle owned by a semaphore wrapper.
-
 _Declared in `include/datoviz/vklite/sync.h`:543._
 
 ### `dvz_semaphore_query()`
+
+Retrieve the current value of a timeline semaphore.
 
 ```c title="dvz_semaphore_query"
 uint64_t dvz_semaphore_query(
@@ -10010,11 +10013,11 @@ uint64_t dvz_semaphore_query(
 | return | `uint64_t` | the value |
 | `semaphore` | `DvzSemaphore *` |  |
 
-Retrieve the current value of a timeline semaphore.
-
 _Declared in `include/datoviz/vklite/sync.h`:533._
 
 ### `dvz_semaphore_signal()`
+
+Signal a timeline semaphore from the CPU.
 
 ```c title="dvz_semaphore_signal"
 void dvz_semaphore_signal(
@@ -10028,11 +10031,11 @@ void dvz_semaphore_signal(
 | `semaphore` | `DvzSemaphore *` |  |
 | `value` | `uint64_t` | the value |
 
-Signal a timeline semaphore from the CPU.
-
 _Declared in `include/datoviz/vklite/sync.h`:513._
 
 ### `dvz_semaphore_timeline()`
+
+Initialize a timeline semaphore (GPU-GPU synchronization).
 
 ```c title="dvz_semaphore_timeline"
 void dvz_semaphore_timeline(
@@ -10050,11 +10053,11 @@ void dvz_semaphore_timeline(
 | `semaphore` | `DvzSemaphore *` |  |
 | `handle_type` | `VkExternalSemaphoreHandleTypeFlags` | external semaphore handle type required for export (0 when unused) |
 
-Initialize a timeline semaphore (GPU-GPU synchronization).
-
 _Declared in `include/datoviz/vklite/sync.h`:501._
 
 ### `dvz_semaphore_wait()`
+
+Wait a timeline semaphore on the CPU.
 
 ```c title="dvz_semaphore_wait"
 void dvz_semaphore_wait(
@@ -10068,13 +10071,16 @@ void dvz_semaphore_wait(
 | `semaphore` | `DvzSemaphore *` |  |
 | `value` | `uint64_t` | the value |
 
-Wait a timeline semaphore on the CPU.
-
 _Declared in `include/datoviz/vklite/sync.h`:523._
 
 ## Shader
 
 ### `dvz_shader()`
+
+Create a shader module.
+
+This function creates the wrapped Vulkan shader module exactly once per live
+wrapper. Call dvz_shader_destroy() before attempting to create it again.
 
 ```c title="dvz_shader"
 int dvz_shader(
@@ -10093,14 +10099,15 @@ int dvz_shader(
 | `buffer` | `const uint32_t *` | the buffer with the SPIR-V bytecode |
 | `shader` | `DvzShader *` |  |
 
-Create a shader module.
-
-This function creates the wrapped Vulkan shader module exactly once per live
-wrapper. Call dvz_shader_destroy() before attempting to create it again.
-
 _Declared in `include/datoviz/vklite/shader.h`:71._
 
 ### `dvz_shader_create_wrapper()`
+
+Allocate an empty shader wrapper.
+
+Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+call dvz_shader() once per live wrapper, destroy before any recreate, and
+free only if this wrapper came from dvz_shader_create_wrapper().
 
 ```c title="dvz_shader_create_wrapper"
 DvzShader * dvz_shader_create_wrapper(void);
@@ -10110,15 +10117,14 @@ DvzShader * dvz_shader_create_wrapper(void);
 | --- | --- | --- |
 | return | `DvzShader *` | allocated shader wrapper, or NULL on allocation failure |
 
-Allocate an empty shader wrapper.
-
-Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
-call dvz_shader() once per live wrapper, destroy before any recreate, and
-free only if this wrapper came from dvz_shader_create_wrapper().
-
 _Declared in `include/datoviz/vklite/shader.h`:54._
 
 ### `dvz_shader_destroy()`
+
+Destroy a shader module.
+
+This releases the wrapped Vulkan shader module and returns the wrapper to a
+reusable initialized state.
 
 ```c title="dvz_shader_destroy"
 void dvz_shader_destroy(
@@ -10130,14 +10136,11 @@ void dvz_shader_destroy(
 | --- | --- | --- |
 | `shader` | `DvzShader *` | the shader module |
 
-Destroy a shader module.
-
-This releases the wrapped Vulkan shader module and returns the wrapper to a
-reusable initialized state.
-
 _Declared in `include/datoviz/vklite/shader.h`:93._
 
 ### `dvz_shader_free()`
+
+Free a shader wrapper allocated by dvz_shader_create_wrapper().
 
 ```c title="dvz_shader_free"
 void dvz_shader_free(
@@ -10149,11 +10152,11 @@ void dvz_shader_free(
 | --- | --- | --- |
 | `shader` | `DvzShader *` | shader wrapper to free |
 
-Free a shader wrapper allocated by dvz_shader_create_wrapper().
-
 _Declared in `include/datoviz/vklite/shader.h`:102._
 
 ### `dvz_shader_handle()`
+
+Return the shader Vulkan handle.
 
 ```c title="dvz_shader_handle"
 VkShaderModule dvz_shader_handle(
@@ -10166,13 +10169,17 @@ VkShaderModule dvz_shader_handle(
 | return | `VkShaderModule` | the shader module handle |
 | `shader` | `DvzShader *` | the shader |
 
-Return the shader Vulkan handle.
-
 _Declared in `include/datoviz/vklite/shader.h`:81._
 
 ## Slots
 
 ### `dvz_slots()`
+
+Initialize pipeline slots (aka Vulkan descriptor set layout).
+
+This prepares the wrapper for configuration. Call dvz_slots_create() once
+after declaring bindings and push-constant ranges. Recreating live slots
+requires dvz_slots_destroy() first.
 
 ```c title="dvz_slots"
 void dvz_slots(
@@ -10186,15 +10193,11 @@ void dvz_slots(
 | `device` | `DvzDevice *` | the device |
 | `slots` | `DvzSlots *` |  |
 
-Initialize pipeline slots (aka Vulkan descriptor set layout).
-
-This prepares the wrapper for configuration. Call dvz_slots_create() once
-after declaring bindings and push-constant ranges. Recreating live slots
-requires dvz_slots_destroy() first.
-
 _Declared in `include/datoviz/vklite/slots.h`:79._
 
 ### `dvz_slots_binding()`
+
+Set the slots descriptor.
 
 ```c title="dvz_slots_binding"
 void dvz_slots_binding(
@@ -10216,11 +10219,11 @@ void dvz_slots_binding(
 | `stages` | `VkShaderStageFlags` | the shader stages to enable |
 | `type` | `VkDescriptorType` | the descriptor type for that slot |
 
-Set the slots descriptor.
-
 _Declared in `include/datoviz/vklite/slots.h`:93._
 
 ### `dvz_slots_binding_count()`
+
+Return the number of bindings configured for a descriptor set.
 
 ```c title="dvz_slots_binding_count"
 uint32_t dvz_slots_binding_count(
@@ -10235,11 +10238,14 @@ uint32_t dvz_slots_binding_count(
 | `slots` | `DvzSlots *` | the slots |
 | `set` | `uint32_t` | the descriptor-set index |
 
-Return the number of bindings configured for a descriptor set.
-
 _Declared in `include/datoviz/vklite/slots.h`:179._
 
 ### `dvz_slots_combined_pipeline_layout()`
+
+Create a pipeline layout that combines two existing descriptor set layouts.
+
+The resulting pipeline layout covers set 0 (from layout0) and set 1 (from layout1).
+The returned VkPipelineLayout must be destroyed by the caller with vkDestroyPipelineLayout.
 
 ```c title="dvz_slots_combined_pipeline_layout"
 VkPipelineLayout dvz_slots_combined_pipeline_layout(
@@ -10256,14 +10262,15 @@ VkPipelineLayout dvz_slots_combined_pipeline_layout(
 | `layout0` | `VkDescriptorSetLayout` | descriptor set layout for set 0 |
 | `layout1` | `VkDescriptorSetLayout` | descriptor set layout for set 1 |
 
-Create a pipeline layout that combines two existing descriptor set layouts.
-
-The resulting pipeline layout covers set 0 (from layout0) and set 1 (from layout1).
-The returned VkPipelineLayout must be destroyed by the caller with vkDestroyPipelineLayout.
-
 _Declared in `include/datoviz/vklite/slots.h`:147._
 
 ### `dvz_slots_create()`
+
+Create the slots after they have been set up.
+
+This function creates the wrapped Vulkan descriptor-set layouts and pipeline
+layout exactly once per live wrapper. Call dvz_slots_destroy() before
+attempting to create them again.
 
 ```c title="dvz_slots_create"
 int dvz_slots_create(
@@ -10276,17 +10283,18 @@ int dvz_slots_create(
 | return | `int` | 0 on success, non-zero on Vulkan or Datoviz state failure |
 | `slots` | `DvzSlots *` | the slots |
 
-Create the slots after they have been set up.
-
-This function creates the wrapped Vulkan descriptor-set layouts and pipeline
-layout exactly once per live wrapper. Call dvz_slots_destroy() before
-attempting to create them again.
-
 Related: [`dvz_slots_destroy()`](#dvz_slots_destroy).
 
 _Declared in `include/datoviz/vklite/slots.h`:122._
 
 ### `dvz_slots_create_wrapper()`
+
+Allocate an empty slots wrapper.
+
+Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+initialize with dvz_slots(), configure, call dvz_slots_create() once, then
+destroy before any recreate and free only if this wrapper came from
+dvz_slots_create_wrapper().
 
 ```c title="dvz_slots_create_wrapper"
 DvzSlots * dvz_slots_create_wrapper(void);
@@ -10296,16 +10304,11 @@ DvzSlots * dvz_slots_create_wrapper(void);
 | --- | --- | --- |
 | return | `DvzSlots *` | allocated slots wrapper, or NULL on allocation failure |
 
-Allocate an empty slots wrapper.
-
-Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
-initialize with dvz_slots(), configure, call dvz_slots_create() once, then
-destroy before any recreate and free only if this wrapper came from
-dvz_slots_create_wrapper().
-
 _Declared in `include/datoviz/vklite/slots.h`:65._
 
 ### `dvz_slots_descriptor_type()`
+
+Return the descriptor type configured for a slot binding.
 
 ```c title="dvz_slots_descriptor_type"
 VkDescriptorType dvz_slots_descriptor_type(
@@ -10322,11 +10325,14 @@ VkDescriptorType dvz_slots_descriptor_type(
 | `set` | `uint32_t` | the descriptor-set index |
 | `binding` | `uint32_t` | the binding index within the set |
 
-Return the descriptor type configured for a slot binding.
-
 _Declared in `include/datoviz/vklite/slots.h`:201._
 
 ### `dvz_slots_destroy()`
+
+Destroy the slots.
+
+This releases the wrapped Vulkan layouts and returns the wrapper to a
+reusable initialized state.
 
 ```c title="dvz_slots_destroy"
 void dvz_slots_destroy(
@@ -10338,16 +10344,13 @@ void dvz_slots_destroy(
 | --- | --- | --- |
 | `slots` | `DvzSlots *` | the slots |
 
-Destroy the slots.
-
-This releases the wrapped Vulkan layouts and returns the wrapper to a
-reusable initialized state.
-
 Related: [`dvz_slots_create()`](#dvz_slots_create).
 
 _Declared in `include/datoviz/vklite/slots.h`:224._
 
 ### `dvz_slots_device()`
+
+Return the device that owns a slots wrapper.
 
 ```c title="dvz_slots_device"
 DvzDevice * dvz_slots_device(
@@ -10360,11 +10363,11 @@ DvzDevice * dvz_slots_device(
 | return | `DvzDevice *` | the owning device |
 | `slots` | `DvzSlots *` | the slots |
 
-Return the device that owns a slots wrapper.
-
 _Declared in `include/datoviz/vklite/slots.h`:158._
 
 ### `dvz_slots_free()`
+
+Free a slots wrapper allocated by dvz_slots_create_wrapper().
 
 ```c title="dvz_slots_free"
 void dvz_slots_free(
@@ -10376,11 +10379,11 @@ void dvz_slots_free(
 | --- | --- | --- |
 | `slots` | `DvzSlots *` | slots wrapper to free |
 
-Free a slots wrapper allocated by dvz_slots_create_wrapper().
-
 _Declared in `include/datoviz/vklite/slots.h`:233._
 
 ### `dvz_slots_handle()`
+
+Return the pipeline layout Vulkan handle.
 
 ```c title="dvz_slots_handle"
 VkPipelineLayout dvz_slots_handle(
@@ -10393,11 +10396,11 @@ VkPipelineLayout dvz_slots_handle(
 | return | `VkPipelineLayout` | the pipeline layout |
 | `slots` | `DvzSlots *` | the slots |
 
-Return the pipeline layout Vulkan handle.
-
 _Declared in `include/datoviz/vklite/slots.h`:132._
 
 ### `dvz_slots_push()`
+
+Set up push constants.
 
 ```c title="dvz_slots_push"
 void dvz_slots_push(
@@ -10415,11 +10418,11 @@ void dvz_slots_push(
 | `offset` | `DvzSize` | the push constant offset, in bytes |
 | `size` | `DvzSize` | the push constant size, in bytes |
 
-Set up push constants.
-
 _Declared in `include/datoviz/vklite/slots.h`:108._
 
 ### `dvz_slots_push_count()`
+
+Return the number of configured push-constant ranges.
 
 ```c title="dvz_slots_push_count"
 uint32_t dvz_slots_push_count(
@@ -10432,11 +10435,11 @@ uint32_t dvz_slots_push_count(
 | return | `uint32_t` | the push-constant range count |
 | `slots` | `DvzSlots *` | the slots |
 
-Return the number of configured push-constant ranges.
-
 _Declared in `include/datoviz/vklite/slots.h`:189._
 
 ### `dvz_slots_set_count()`
+
+Return the number of descriptor sets configured on a slots wrapper.
 
 ```c title="dvz_slots_set_count"
 uint32_t dvz_slots_set_count(
@@ -10449,11 +10452,11 @@ uint32_t dvz_slots_set_count(
 | return | `uint32_t` | the descriptor-set count |
 | `slots` | `DvzSlots *` | the slots |
 
-Return the number of descriptor sets configured on a slots wrapper.
-
 _Declared in `include/datoviz/vklite/slots.h`:168._
 
 ### `dvz_slots_set_layout()`
+
+Return the descriptor-set layout handle for a set.
 
 ```c title="dvz_slots_set_layout"
 VkDescriptorSetLayout dvz_slots_set_layout(
@@ -10468,13 +10471,13 @@ VkDescriptorSetLayout dvz_slots_set_layout(
 | `slots` | `DvzSlots *` | the slots |
 | `set` | `uint32_t` | the descriptor-set index |
 
-Return the descriptor-set layout handle for a set.
-
 _Declared in `include/datoviz/vklite/slots.h`:212._
 
 ## Submit
 
 ### `dvz_submit()`
+
+Initialize or reset a submission.
 
 ```c title="dvz_submit"
 void dvz_submit(
@@ -10486,11 +10489,14 @@ void dvz_submit(
 | --- | --- | --- |
 | `submit` | `DvzSubmit *` | the submission |
 
-Initialize or reset a submission.
-
 _Declared in `include/datoviz/vklite/sync.h`:578._
 
 ### `dvz_submit_command()`
+
+Add a command buffer to the submission.
+
+A submission stores at most `DVZ_MAX_COMMANDS` command buffers. Extra command buffers are ignored
+after logging an error.
 
 ```c title="dvz_submit_command"
 void dvz_submit_command(
@@ -10504,14 +10510,11 @@ void dvz_submit_command(
 | `submit` | `DvzSubmit *` | the submission |
 | `cmd` | `VkCommandBuffer` | the command buffer |
 
-Add a command buffer to the submission.
-
-A submission stores at most `DVZ_MAX_COMMANDS` command buffers. Extra command buffers are ignored
-after logging an error.
-
 _Declared in `include/datoviz/vklite/sync.h`:623._
 
 ### `dvz_submit_command_count()`
+
+Return the number of command buffers configured on a submission.
 
 ```c title="dvz_submit_command_count"
 uint32_t dvz_submit_command_count(
@@ -10524,11 +10527,11 @@ uint32_t dvz_submit_command_count(
 | return | `uint32_t` | the command-buffer count |
 | `submit` | `DvzSubmit *` | the submission |
 
-Return the number of command buffers configured on a submission.
-
 _Declared in `include/datoviz/vklite/sync.h`:653._
 
 ### `dvz_submit_create_wrapper()`
+
+Allocate an empty submit wrapper.
 
 ```c title="dvz_submit_create_wrapper"
 DvzSubmit * dvz_submit_create_wrapper(void);
@@ -10538,11 +10541,11 @@ DvzSubmit * dvz_submit_create_wrapper(void);
 | --- | --- | --- |
 | return | `DvzSubmit *` | allocated submit wrapper, or NULL on allocation failure |
 
-Allocate an empty submit wrapper.
-
 _Declared in `include/datoviz/vklite/sync.h`:124._
 
 ### `dvz_submit_free()`
+
+Free a submit wrapper allocated by dvz_submit_create_wrapper().
 
 ```c title="dvz_submit_free"
 void dvz_submit_free(
@@ -10554,11 +10557,11 @@ void dvz_submit_free(
 | --- | --- | --- |
 | `submit` | `DvzSubmit *` | submit wrapper to free |
 
-Free a submit wrapper allocated by dvz_submit_create_wrapper().
-
 _Declared in `include/datoviz/vklite/sync.h`:133._
 
 ### `dvz_submit_is_empty()`
+
+Return whether a submission has no recorded waits, signals, or command buffers.
 
 ```c title="dvz_submit_is_empty"
 _Bool dvz_submit_is_empty(
@@ -10571,11 +10574,11 @@ _Bool dvz_submit_is_empty(
 | return | `_Bool` | true when the submission is empty |
 | `submit` | `DvzSubmit *` | the submission |
 
-Return whether a submission has no recorded waits, signals, or command buffers.
-
 _Declared in `include/datoviz/vklite/sync.h`:663._
 
 ### `dvz_submit_send()`
+
+Send a submission to a queue.
 
 ```c title="dvz_submit_send"
 int32_t dvz_submit_send(
@@ -10592,11 +10595,14 @@ int32_t dvz_submit_send(
 | `queue` | `VkQueue` | the queue |
 | `fence` | `VkFence` | the fence that is signaled once all commands have completed |
 
-Send a submission to a queue.
-
 _Declared in `include/datoviz/vklite/sync.h`:675._
 
 ### `dvz_submit_signal()`
+
+Add a semaphore to signal.
+
+A submission stores at most `DVZ_MAX_SEMAPHORES` signal semaphores. Extra signals are ignored
+after logging an error.
 
 ```c title="dvz_submit_signal"
 void dvz_submit_signal(
@@ -10614,14 +10620,11 @@ void dvz_submit_signal(
 | `value` | `uint64_t` | the value to signal, if using a timeline semaphore |
 | `stage` | `VkPipelineStageFlags2` | the stage in the queue's execution that depends on that wait. |
 
-Add a semaphore to signal.
-
-A submission stores at most `DVZ_MAX_SEMAPHORES` signal semaphores. Extra signals are ignored
-after logging an error.
-
 _Declared in `include/datoviz/vklite/sync.h`:609._
 
 ### `dvz_submit_signal_count()`
+
+Return the number of signal semaphores configured on a submission.
 
 ```c title="dvz_submit_signal_count"
 uint32_t dvz_submit_signal_count(
@@ -10634,11 +10637,14 @@ uint32_t dvz_submit_signal_count(
 | return | `uint32_t` | the signal-semaphore count |
 | `submit` | `DvzSubmit *` | the submission |
 
-Return the number of signal semaphores configured on a submission.
-
 _Declared in `include/datoviz/vklite/sync.h`:643._
 
 ### `dvz_submit_wait()`
+
+Add a semaphore to wait on.
+
+A submission stores at most `DVZ_MAX_SEMAPHORES` wait semaphores. Extra waits are ignored after
+logging an error.
 
 ```c title="dvz_submit_wait"
 void dvz_submit_wait(
@@ -10656,14 +10662,11 @@ void dvz_submit_wait(
 | `value` | `uint64_t` | the value to wait on, if using a timeline semaphore |
 | `stage` | `VkPipelineStageFlags2` | the stage in the queue's execution that depends on that wait. |
 
-Add a semaphore to wait on.
-
-A submission stores at most `DVZ_MAX_SEMAPHORES` wait semaphores. Extra waits are ignored after
-logging an error.
-
 _Declared in `include/datoviz/vklite/sync.h`:593._
 
 ### `dvz_submit_wait_count()`
+
+Return the number of wait semaphores configured on a submission.
 
 ```c title="dvz_submit_wait_count"
 uint32_t dvz_submit_wait_count(
@@ -10676,13 +10679,13 @@ uint32_t dvz_submit_wait_count(
 | return | `uint32_t` | the wait-semaphore count |
 | `submit` | `DvzSubmit *` | the submission |
 
-Return the number of wait semaphores configured on a submission.
-
 _Declared in `include/datoviz/vklite/sync.h`:633._
 
 ## Surface
 
 ### `dvz_surface_capabilities()`
+
+Return the cached surface capabilities snapshot.
 
 ```c title="dvz_surface_capabilities"
 VkSurfaceCapabilitiesKHR dvz_surface_capabilities(
@@ -10695,11 +10698,11 @@ VkSurfaceCapabilitiesKHR dvz_surface_capabilities(
 | return | `VkSurfaceCapabilitiesKHR` | cached capabilities value |
 | `surface` | `const DvzSurface *` | surface wrapper |
 
-Return the cached surface capabilities snapshot.
-
 _Declared in `include/datoviz/vklite/surface.h`:140._
 
 ### `dvz_surface_create_wrapper()`
+
+Allocate an empty surface wrapper.
 
 ```c title="dvz_surface_create_wrapper"
 DvzSurface * dvz_surface_create_wrapper(void);
@@ -10709,11 +10712,11 @@ DvzSurface * dvz_surface_create_wrapper(void);
 | --- | --- | --- |
 | return | `DvzSurface *` | allocated surface wrapper, or NULL on allocation failure |
 
-Allocate an empty surface wrapper.
-
 _Declared in `include/datoviz/vklite/surface.h`:50._
 
 ### `dvz_surface_destroy()`
+
+Destroy a surface wrapper cache.
 
 ```c title="dvz_surface_destroy"
 void dvz_surface_destroy(
@@ -10725,11 +10728,11 @@ void dvz_surface_destroy(
 | --- | --- | --- |
 | `surface` | `DvzSurface *` | surface wrapper to destroy |
 
-Destroy a surface wrapper cache.
-
 _Declared in `include/datoviz/vklite/surface.h`:236._
 
 ### `dvz_surface_extent()`
+
+Return the current cached extent resolved during refresh.
 
 ```c title="dvz_surface_extent"
 VkExtent2D dvz_surface_extent(
@@ -10742,11 +10745,11 @@ VkExtent2D dvz_surface_extent(
 | return | `VkExtent2D` | cached surface extent |
 | `surface` | `const DvzSurface *` | surface wrapper |
 
-Return the current cached extent resolved during refresh.
-
 _Declared in `include/datoviz/vklite/surface.h`:227._
 
 ### `dvz_surface_format()`
+
+Fetch a cached supported format by index.
 
 ```c title="dvz_surface_format"
 _Bool dvz_surface_format(
@@ -10763,11 +10766,11 @@ _Bool dvz_surface_format(
 | `format_idx` | `uint32_t` | format index in the cached list |
 | `format` | `VkSurfaceFormatKHR *` |  |
 
-Fetch a cached supported format by index.
-
 _Declared in `include/datoviz/vklite/surface.h`:163._
 
 ### `dvz_surface_format_count()`
+
+Return the number of cached supported surface formats.
 
 ```c title="dvz_surface_format_count"
 uint32_t dvz_surface_format_count(
@@ -10780,11 +10783,11 @@ uint32_t dvz_surface_format_count(
 | return | `uint32_t` | number of cached formats |
 | `surface` | `const DvzSurface *` | surface wrapper |
 
-Return the number of cached supported surface formats.
-
 _Declared in `include/datoviz/vklite/surface.h`:150._
 
 ### `dvz_surface_free()`
+
+Free a surface wrapper allocated by dvz_surface_create().
 
 ```c title="dvz_surface_free"
 void dvz_surface_free(
@@ -10796,11 +10799,11 @@ void dvz_surface_free(
 | --- | --- | --- |
 | `surface` | `DvzSurface *` | surface wrapper to free |
 
-Free a surface wrapper allocated by dvz_surface_create().
-
 _Declared in `include/datoviz/vklite/surface.h`:245._
 
 ### `dvz_surface_handle()`
+
+Return the wrapped native Vulkan surface handle.
 
 ```c title="dvz_surface_handle"
 VkSurfaceKHR dvz_surface_handle(
@@ -10813,11 +10816,11 @@ VkSurfaceKHR dvz_surface_handle(
 | return | `VkSurfaceKHR` | wrapped VkSurfaceKHR handle or VK_NULL_HANDLE |
 | `surface` | `const DvzSurface *` | surface wrapper |
 
-Return the wrapped native Vulkan surface handle.
-
 _Declared in `include/datoviz/vklite/surface.h`:130._
 
 ### `dvz_surface_has_present_mode()`
+
+Return whether a present mode is supported by the cached list.
 
 ```c title="dvz_surface_has_present_mode"
 _Bool dvz_surface_has_present_mode(
@@ -10832,11 +10835,11 @@ _Bool dvz_surface_has_present_mode(
 | `surface` | `const DvzSurface *` | surface wrapper |
 | `mode` | `VkPresentModeKHR` | present mode to query |
 
-Return whether a present mode is supported by the cached list.
-
 _Declared in `include/datoviz/vklite/surface.h`:207._
 
 ### `dvz_surface_init_from_device()`
+
+Initialize a surface wrapper from a logical device.
 
 ```c title="dvz_surface_init_from_device"
 _Bool dvz_surface_init_from_device(
@@ -10853,11 +10856,11 @@ _Bool dvz_surface_init_from_device(
 | `device` | `DvzDevice *` | logical device used to resolve its physical GPU |
 | `queue_family` | `uint32_t` | queue family used for present support queries |
 
-Initialize a surface wrapper from a logical device.
-
 _Declared in `include/datoviz/vklite/surface.h`:77._
 
 ### `dvz_surface_init_from_instance()`
+
+Initialize a surface wrapper from instance + GPU index selection.
 
 ```c title="dvz_surface_init_from_instance"
 _Bool dvz_surface_init_from_instance(
@@ -10876,11 +10879,11 @@ _Bool dvz_surface_init_from_instance(
 | `gpu_index` | `uint32_t` | selected GPU index in the instance |
 | `queue_family` | `uint32_t` | queue family used for present support queries |
 
-Initialize a surface wrapper from instance + GPU index selection.
-
 _Declared in `include/datoviz/vklite/surface.h`:63._
 
 ### `dvz_surface_preferred_format()`
+
+Return the preferred surface format selected during refresh.
 
 ```c title="dvz_surface_preferred_format"
 VkSurfaceFormatKHR dvz_surface_preferred_format(
@@ -10893,11 +10896,11 @@ VkSurfaceFormatKHR dvz_surface_preferred_format(
 | return | `VkSurfaceFormatKHR` | preferred cached format |
 | `surface` | `const DvzSurface *` | surface wrapper |
 
-Return the preferred surface format selected during refresh.
-
 _Declared in `include/datoviz/vklite/surface.h`:173._
 
 ### `dvz_surface_preferred_present_mode()`
+
+Return the preferred present mode selected during refresh.
 
 ```c title="dvz_surface_preferred_present_mode"
 VkPresentModeKHR dvz_surface_preferred_present_mode(
@@ -10910,11 +10913,11 @@ VkPresentModeKHR dvz_surface_preferred_present_mode(
 | return | `VkPresentModeKHR` | preferred cached present mode |
 | `surface` | `const DvzSurface *` | surface wrapper |
 
-Return the preferred present mode selected during refresh.
-
 _Declared in `include/datoviz/vklite/surface.h`:217._
 
 ### `dvz_surface_present_mode()`
+
+Fetch a cached supported present mode by index.
 
 ```c title="dvz_surface_present_mode"
 _Bool dvz_surface_present_mode(
@@ -10931,11 +10934,11 @@ _Bool dvz_surface_present_mode(
 | `mode_idx` | `uint32_t` | present mode index in the cached list |
 | `mode` | `VkPresentModeKHR *` |  |
 
-Fetch a cached supported present mode by index.
-
 _Declared in `include/datoviz/vklite/surface.h`:196._
 
 ### `dvz_surface_present_mode_count()`
+
+Return the number of cached supported present modes.
 
 ```c title="dvz_surface_present_mode_count"
 uint32_t dvz_surface_present_mode_count(
@@ -10948,11 +10951,11 @@ uint32_t dvz_surface_present_mode_count(
 | return | `uint32_t` | number of cached present modes |
 | `surface` | `const DvzSurface *` | surface wrapper |
 
-Return the number of cached supported present modes.
-
 _Declared in `include/datoviz/vklite/surface.h`:183._
 
 ### `dvz_surface_ready()`
+
+Return whether the surface wrapper currently has a valid cached state.
 
 ```c title="dvz_surface_ready"
 _Bool dvz_surface_ready(
@@ -10965,11 +10968,11 @@ _Bool dvz_surface_ready(
 | return | `_Bool` | true when the wrapper is ready for swapchain queries |
 | `surface` | `const DvzSurface *` | surface wrapper |
 
-Return whether the surface wrapper currently has a valid cached state.
-
 _Declared in `include/datoviz/vklite/surface.h`:120._
 
 ### `dvz_surface_refresh()`
+
+Refresh cached capabilities, formats, and present modes.
 
 ```c title="dvz_surface_refresh"
 _Bool dvz_surface_refresh(
@@ -10982,11 +10985,11 @@ _Bool dvz_surface_refresh(
 | return | `_Bool` | true when refresh succeeds |
 | `surface` | `DvzSurface *` | surface wrapper to refresh |
 
-Refresh cached capabilities, formats, and present modes.
-
 _Declared in `include/datoviz/vklite/surface.h`:110._
 
 ### `dvz_surface_set_extent_hint()`
+
+Update the extent hint used when a wrapped surface reports variable extent.
 
 ```c title="dvz_surface_set_extent_hint"
 void dvz_surface_set_extent_hint(
@@ -11000,11 +11003,11 @@ void dvz_surface_set_extent_hint(
 | `surface` | `DvzSurface *` | surface wrapper to update |
 | `extent_hint` | `const VkExtent2D *` | optional extent override, NULL clears the hint |
 
-Update the extent hint used when a wrapped surface reports variable extent.
-
 _Declared in `include/datoviz/vklite/surface.h`:100._
 
 ### `dvz_surface_wrap_native()`
+
+Attach a native surface created by the window module to a surface wrapper.
 
 ```c title="dvz_surface_wrap_native"
 _Bool dvz_surface_wrap_native(
@@ -11021,13 +11024,13 @@ _Bool dvz_surface_wrap_native(
 | `surface_khr` | `VkSurfaceKHR` | native Vulkan surface handle owned by the window module |
 | `extent_hint` | `const VkExtent2D *` | optional extent used when the surface reports variable extent |
 
-Attach a native surface created by the window module to a surface wrapper.
-
 _Declared in `include/datoviz/vklite/surface.h`:89._
 
 ## Swapchain
 
 ### `dvz_swapchain_acquire()`
+
+Acquire the next image index from the swapchain.
 
 ```c title="dvz_swapchain_acquire"
 DvzPresentStatus dvz_swapchain_acquire(
@@ -11046,11 +11049,11 @@ DvzPresentStatus dvz_swapchain_acquire(
 | `timeout_ns` | `uint64_t` | timeout value passed to Vulkan acquire call |
 | `image_idx` | `uint32_t *` |  |
 
-Acquire the next image index from the swapchain.
-
 _Declared in `include/datoviz/vklite/swapchain.h`:247._
 
 ### `dvz_swapchain_color_space()`
+
+Return the resolved color space from the latest recreate.
 
 ```c title="dvz_swapchain_color_space"
 VkColorSpaceKHR dvz_swapchain_color_space(
@@ -11063,11 +11066,11 @@ VkColorSpaceKHR dvz_swapchain_color_space(
 | return | `VkColorSpaceKHR` | resolved color space |
 | `swapchain` | `const DvzSwapchain *` | swapchain wrapper |
 
-Return the resolved color space from the latest recreate.
-
 _Declared in `include/datoviz/vklite/swapchain.h`:166._
 
 ### `dvz_swapchain_config()`
+
+Set swapchain creation parameters.
 
 ```c title="dvz_swapchain_config"
 _Bool dvz_swapchain_config(
@@ -11082,11 +11085,11 @@ _Bool dvz_swapchain_config(
 | `swapchain` | `DvzSwapchain *` | swapchain wrapper to configure |
 | `config` | `DvzSwapchainConfig` | desired swapchain configuration |
 
-Set swapchain creation parameters.
-
 _Declared in `include/datoviz/vklite/swapchain.h`:116._
 
 ### `dvz_swapchain_create_wrapper()`
+
+Allocate an empty swapchain wrapper.
 
 ```c title="dvz_swapchain_create_wrapper"
 DvzSwapchain * dvz_swapchain_create_wrapper(void);
@@ -11096,11 +11099,11 @@ DvzSwapchain * dvz_swapchain_create_wrapper(void);
 | --- | --- | --- |
 | return | `DvzSwapchain *` | allocated swapchain wrapper, or NULL on allocation failure |
 
-Allocate an empty swapchain wrapper.
-
 _Declared in `include/datoviz/vklite/swapchain.h`:79._
 
 ### `dvz_swapchain_destroy()`
+
+Destroy swapchain resources owned by vklite.
 
 ```c title="dvz_swapchain_destroy"
 void dvz_swapchain_destroy(
@@ -11112,11 +11115,11 @@ void dvz_swapchain_destroy(
 | --- | --- | --- |
 | `swapchain` | `DvzSwapchain *` | swapchain wrapper to destroy |
 
-Destroy swapchain resources owned by vklite.
-
 _Declared in `include/datoviz/vklite/swapchain.h`:271._
 
 ### `dvz_swapchain_device()`
+
+Bind or override the Vulkan logical device used by swapchain create/destroy/acquire paths.
 
 ```c title="dvz_swapchain_device"
 _Bool dvz_swapchain_device(
@@ -11131,11 +11134,11 @@ _Bool dvz_swapchain_device(
 | `swapchain` | `DvzSwapchain *` | swapchain wrapper to configure |
 | `device` | `VkDevice` | logical device used to issue swapchain API calls |
 
-Bind or override the Vulkan logical device used by swapchain create/destroy/acquire paths.
-
 _Declared in `include/datoviz/vklite/swapchain.h`:105._
 
 ### `dvz_swapchain_extent()`
+
+Return the current swapchain extent from the latest recreate.
 
 ```c title="dvz_swapchain_extent"
 VkExtent2D dvz_swapchain_extent(
@@ -11148,11 +11151,11 @@ VkExtent2D dvz_swapchain_extent(
 | return | `VkExtent2D` | current resolved extent |
 | `swapchain` | `const DvzSwapchain *` | swapchain wrapper |
 
-Return the current swapchain extent from the latest recreate.
-
 _Declared in `include/datoviz/vklite/swapchain.h`:196._
 
 ### `dvz_swapchain_free()`
+
+Free a swapchain wrapper allocated by dvz_swapchain_create().
 
 ```c title="dvz_swapchain_free"
 void dvz_swapchain_free(
@@ -11164,11 +11167,11 @@ void dvz_swapchain_free(
 | --- | --- | --- |
 | `swapchain` | `DvzSwapchain *` | swapchain wrapper to free |
 
-Free a swapchain wrapper allocated by dvz_swapchain_create().
-
 _Declared in `include/datoviz/vklite/swapchain.h`:280._
 
 ### `dvz_swapchain_get_config()`
+
+Return the currently configured swapchain creation parameters.
 
 ```c title="dvz_swapchain_get_config"
 DvzSwapchainConfig dvz_swapchain_get_config(
@@ -11181,11 +11184,11 @@ DvzSwapchainConfig dvz_swapchain_get_config(
 | return | `DvzSwapchainConfig` | currently stored config |
 | `swapchain` | `const DvzSwapchain *` | swapchain wrapper |
 
-Return the currently configured swapchain creation parameters.
-
 _Declared in `include/datoviz/vklite/swapchain.h`:186._
 
 ### `dvz_swapchain_handle()`
+
+Return the wrapped Vulkan swapchain handle.
 
 ```c title="dvz_swapchain_handle"
 VkSwapchainKHR dvz_swapchain_handle(
@@ -11198,11 +11201,11 @@ VkSwapchainKHR dvz_swapchain_handle(
 | return | `VkSwapchainKHR` | wrapped VkSwapchainKHR handle or VK_NULL_HANDLE |
 | `swapchain` | `const DvzSwapchain *` | swapchain wrapper |
 
-Return the wrapped Vulkan swapchain handle.
-
 _Declared in `include/datoviz/vklite/swapchain.h`:136._
 
 ### `dvz_swapchain_image()`
+
+Fetch a swapchain image handle by index.
 
 ```c title="dvz_swapchain_image"
 _Bool dvz_swapchain_image(
@@ -11219,11 +11222,11 @@ _Bool dvz_swapchain_image(
 | `image_idx` | `uint32_t` | image index |
 | `image` | `VkImage *` |  |
 
-Fetch a swapchain image handle by index.
-
 _Declared in `include/datoviz/vklite/swapchain.h`:209._
 
 ### `dvz_swapchain_image_count()`
+
+Return the number of swapchain images in the current recreation state.
 
 ```c title="dvz_swapchain_image_count"
 uint32_t dvz_swapchain_image_count(
@@ -11236,11 +11239,11 @@ uint32_t dvz_swapchain_image_count(
 | return | `uint32_t` | swapchain image count |
 | `swapchain` | `const DvzSwapchain *` | swapchain wrapper |
 
-Return the number of swapchain images in the current recreation state.
-
 _Declared in `include/datoviz/vklite/swapchain.h`:146._
 
 ### `dvz_swapchain_image_format()`
+
+Return the resolved image format from the latest recreate.
 
 ```c title="dvz_swapchain_image_format"
 VkFormat dvz_swapchain_image_format(
@@ -11253,11 +11256,11 @@ VkFormat dvz_swapchain_image_format(
 | return | `VkFormat` | resolved image format |
 | `swapchain` | `const DvzSwapchain *` | swapchain wrapper |
 
-Return the resolved image format from the latest recreate.
-
 _Declared in `include/datoviz/vklite/swapchain.h`:156._
 
 ### `dvz_swapchain_image_view()`
+
+Fetch a swapchain image view handle by index.
 
 ```c title="dvz_swapchain_image_view"
 _Bool dvz_swapchain_image_view(
@@ -11274,11 +11277,11 @@ _Bool dvz_swapchain_image_view(
 | `image_idx` | `uint32_t` | image index |
 | `image_view` | `VkImageView *` |  |
 
-Fetch a swapchain image view handle by index.
-
 _Declared in `include/datoviz/vklite/swapchain.h`:222._
 
 ### `dvz_swapchain_init_from_device()`
+
+Initialize a swapchain wrapper from a logical device and surface.
 
 ```c title="dvz_swapchain_init_from_device"
 _Bool dvz_swapchain_init_from_device(
@@ -11295,11 +11298,11 @@ _Bool dvz_swapchain_init_from_device(
 | `device` | `DvzDevice *` | logical device used to resolve the physical GPU |
 | `surface` | `DvzSurface *` | surface wrapper used for capability and extent data |
 
-Initialize a swapchain wrapper from a logical device and surface.
-
 _Declared in `include/datoviz/vklite/swapchain.h`:93._
 
 ### `dvz_swapchain_present()`
+
+Present a previously rendered image.
 
 ```c title="dvz_swapchain_present"
 DvzPresentStatus dvz_swapchain_present(
@@ -11318,11 +11321,11 @@ DvzPresentStatus dvz_swapchain_present(
 | `image_idx` | `uint32_t` | image index to present |
 | `render_finished` | `VkSemaphore` | semaphore waited before presentation |
 
-Present a previously rendered image.
-
 _Declared in `include/datoviz/vklite/swapchain.h`:261._
 
 ### `dvz_swapchain_present_mode()`
+
+Return the resolved present mode from the latest recreate.
 
 ```c title="dvz_swapchain_present_mode"
 VkPresentModeKHR dvz_swapchain_present_mode(
@@ -11335,11 +11338,11 @@ VkPresentModeKHR dvz_swapchain_present_mode(
 | return | `VkPresentModeKHR` | resolved present mode |
 | `swapchain` | `const DvzSwapchain *` | swapchain wrapper |
 
-Return the resolved present mode from the latest recreate.
-
 _Declared in `include/datoviz/vklite/swapchain.h`:176._
 
 ### `dvz_swapchain_ready()`
+
+Return whether the swapchain wrapper currently owns valid Vulkan resources.
 
 ```c title="dvz_swapchain_ready"
 _Bool dvz_swapchain_ready(
@@ -11352,11 +11355,11 @@ _Bool dvz_swapchain_ready(
 | return | `_Bool` | true when swapchain resources are ready for acquire/present |
 | `swapchain` | `const DvzSwapchain *` | swapchain wrapper |
 
-Return whether the swapchain wrapper currently owns valid Vulkan resources.
-
 _Declared in `include/datoviz/vklite/swapchain.h`:126._
 
 ### `dvz_swapchain_recreate()`
+
+Recreate swapchain images and image views for a new extent.
 
 ```c title="dvz_swapchain_recreate"
 DvzPresentStatus dvz_swapchain_recreate(
@@ -11371,13 +11374,13 @@ DvzPresentStatus dvz_swapchain_recreate(
 | `swapchain` | `DvzSwapchain *` | swapchain wrapper to recreate |
 | `size` | `uvec2` | target extent as {width, height} |
 
-Recreate swapchain images and image views for a new extent.
-
 _Declared in `include/datoviz/vklite/swapchain.h`:234._
 
 ## Time
 
 ### `dvz_time_monotonic_ns()`
+
+Return a monotonic timestamp in nanoseconds.
 
 ```c title="dvz_time_monotonic_ns"
 uint64_t dvz_time_monotonic_ns(void);
@@ -11387,13 +11390,13 @@ uint64_t dvz_time_monotonic_ns(void);
 | --- | --- | --- |
 | return | `uint64_t` | monotonic timestamp in nanoseconds |
 
-Return a monotonic timestamp in nanoseconds.
-
 _Declared in `include/datoviz/common/functions.h`:76._
 
 ## Turntable
 
 ### `dvz_turntable_apply_camera()`
+
+Apply the turntable pose to the attached camera.
 
 ```c title="dvz_turntable_apply_camera"
 DvzResult dvz_turntable_apply_camera(
@@ -11406,11 +11409,11 @@ DvzResult dvz_turntable_apply_camera(
 | return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on validation error |
 | `turntable` | `DvzTurntable *` | the turntable controller |
 
-Apply the turntable pose to the attached camera.
-
 _Declared in `include/datoviz/controller/turntable.h`:211._
 
 ### `dvz_turntable_connect()`
+
+Subscribe the turntable to an input router.
 
 ```c title="dvz_turntable_connect"
 DvzResult dvz_turntable_connect(
@@ -11425,11 +11428,11 @@ DvzResult dvz_turntable_connect(
 | `turntable` | `DvzTurntable *` | the turntable controller |
 | `router` | `DvzInputRouter *` | input router |
 
-Subscribe the turntable to an input router.
-
 _Declared in `include/datoviz/controller/turntable.h`:233._
 
 ### `dvz_turntable_create()`
+
+Create a standalone turntable controller.
 
 ```c title="dvz_turntable_create"
 DvzTurntable * dvz_turntable_create(
@@ -11442,13 +11445,13 @@ DvzTurntable * dvz_turntable_create(
 | return | `DvzTurntable *` | the controller, or NULL on allocation failure |
 | `desc` | `const DvzTurntableDesc *` | descriptor, or NULL for defaults |
 
-Create a standalone turntable controller.
-
 Related: [`dvz_turntable_destroy()`](#dvz_turntable_destroy).
 
 _Declared in `include/datoviz/controller/turntable.h`:105._
 
 ### `dvz_turntable_desc()`
+
+Return a default turntable descriptor.
 
 ```c title="dvz_turntable_desc"
 DvzTurntableDesc dvz_turntable_desc(void);
@@ -11458,11 +11461,11 @@ DvzTurntableDesc dvz_turntable_desc(void);
 | --- | --- | --- |
 | return | `DvzTurntableDesc` | the turntable descriptor |
 
-Return a default turntable descriptor.
-
 _Declared in `include/datoviz/controller/turntable.h`:95._
 
 ### `dvz_turntable_destroy()`
+
+Destroy a turntable controller.
 
 ```c title="dvz_turntable_destroy"
 void dvz_turntable_destroy(
@@ -11474,13 +11477,13 @@ void dvz_turntable_destroy(
 | --- | --- | --- |
 | `turntable` | `DvzTurntable *` | the turntable controller |
 
-Destroy a turntable controller.
-
 Related: [`dvz_turntable_create()`](#dvz_turntable_create).
 
 _Declared in `include/datoviz/controller/turntable.h`:253._
 
 ### `dvz_turntable_disconnect()`
+
+Unsubscribe the turntable from an input router.
 
 ```c title="dvz_turntable_disconnect"
 DvzResult dvz_turntable_disconnect(
@@ -11495,11 +11498,11 @@ DvzResult dvz_turntable_disconnect(
 | `turntable` | `DvzTurntable *` | the turntable controller |
 | `router` | `DvzInputRouter *` | input router |
 
-Unsubscribe the turntable from an input router.
-
 _Declared in `include/datoviz/controller/turntable.h`:244._
 
 ### `dvz_turntable_dolly()`
+
+Dolly toward or away from the pivot.
 
 ```c title="dvz_turntable_dolly"
 DvzResult dvz_turntable_dolly(
@@ -11514,11 +11517,11 @@ DvzResult dvz_turntable_dolly(
 | `turntable` | `DvzTurntable *` | the turntable controller |
 | `amount` | `float` | distance delta |
 
-Dolly toward or away from the pivot.
-
 _Declared in `include/datoviz/controller/turntable.h`:177._
 
 ### `dvz_turntable_orbit()`
+
+Orbit around the pivot.
 
 ```c title="dvz_turntable_orbit"
 DvzResult dvz_turntable_orbit(
@@ -11535,11 +11538,11 @@ DvzResult dvz_turntable_orbit(
 | `yaw_delta` | `float` | yaw delta in radians |
 | `pitch_delta` | `float` | pitch delta in radians |
 
-Orbit around the pivot.
-
 _Declared in `include/datoviz/controller/turntable.h`:166._
 
 ### `dvz_turntable_pan()`
+
+Pan the pivot in the current view plane.
 
 ```c title="dvz_turntable_pan"
 DvzResult dvz_turntable_pan(
@@ -11556,11 +11559,11 @@ DvzResult dvz_turntable_pan(
 | `right_amount` | `float` | right-axis pan amount |
 | `up_amount` | `float` | up-axis pan amount |
 
-Pan the pivot in the current view plane.
-
 _Declared in `include/datoviz/controller/turntable.h`:190._
 
 ### `dvz_turntable_pivot()`
+
+Set the pivot while preserving the current camera eye.
 
 ```c title="dvz_turntable_pivot"
 DvzResult dvz_turntable_pivot(
@@ -11575,11 +11578,11 @@ DvzResult dvz_turntable_pivot(
 | `turntable` | `DvzTurntable *` | the turntable controller |
 | `pivot` | `vec3` | new world-space pivot |
 
-Set the pivot while preserving the current camera eye.
-
 _Declared in `include/datoviz/controller/turntable.h`:153._
 
 ### `dvz_turntable_pointer()`
+
+Process a pointer event.
 
 ```c title="dvz_turntable_pointer"
 _Bool dvz_turntable_pointer(
@@ -11594,11 +11597,11 @@ _Bool dvz_turntable_pointer(
 | `turntable` | `DvzTurntable *` | the turntable controller |
 | `ev` | `const DvzPointerEvent *` | pointer event |
 
-Process a pointer event.
-
 _Declared in `include/datoviz/controller/turntable.h`:222._
 
 ### `dvz_turntable_reset()`
+
+Reset a turntable to its initial pose.
 
 ```c title="dvz_turntable_reset"
 DvzResult dvz_turntable_reset(
@@ -11611,11 +11614,11 @@ DvzResult dvz_turntable_reset(
 | return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on validation error |
 | `turntable` | `DvzTurntable *` | the turntable controller |
 
-Reset a turntable to its initial pose.
-
 _Declared in `include/datoviz/controller/turntable.h`:115._
 
 ### `dvz_turntable_resize()`
+
+Update the viewport size.
 
 ```c title="dvz_turntable_resize"
 DvzResult dvz_turntable_resize(
@@ -11632,11 +11635,11 @@ DvzResult dvz_turntable_resize(
 | `width` | `float` | viewport width in pixels |
 | `height` | `float` | viewport height in pixels |
 
-Update the viewport size.
-
 _Declared in `include/datoviz/controller/turntable.h`:142._
 
 ### `dvz_turntable_set_camera()`
+
+Attach a camera updated by this turntable.
 
 ```c title="dvz_turntable_set_camera"
 DvzResult dvz_turntable_set_camera(
@@ -11651,11 +11654,11 @@ DvzResult dvz_turntable_set_camera(
 | `turntable` | `DvzTurntable *` | the turntable controller |
 | `camera` | `DvzCamera *` | the camera to update, or NULL |
 
-Attach a camera updated by this turntable.
-
 _Declared in `include/datoviz/controller/turntable.h`:201._
 
 ### `dvz_turntable_viewport()`
+
+Update the viewport rectangle in window coordinates.
 
 ```c title="dvz_turntable_viewport"
 DvzResult dvz_turntable_viewport(
@@ -11676,13 +11679,13 @@ DvzResult dvz_turntable_viewport(
 | `width` | `float` | viewport width in window pixels |
 | `height` | `float` | viewport height in window pixels |
 
-Update the viewport rectangle in window coordinates.
-
 _Declared in `include/datoviz/controller/turntable.h`:130._
 
 ## Vec2
 
 ### `dvz_vec2_copy()`
+
+*********************************************************************************************
 
 ```c title="dvz_vec2_copy"
 void dvz_vec2_copy(
@@ -11695,8 +11698,6 @@ void dvz_vec2_copy(
 | --- | --- | --- |
 | `a` | `const vec2` |  |
 | `b` | `vec2` |  |
-
-*********************************************************************************************
 
 _Declared in `include/datoviz/math/vec.h`:34._
 
@@ -11738,6 +11739,8 @@ _Declared in `include/datoviz/math/vec.h`:38._
 
 ### `dvz_version()`
 
+Return the current version string.
+
 ```c title="dvz_version"
 const char * dvz_version(void);
 ```
@@ -11746,13 +11749,13 @@ const char * dvz_version(void);
 | --- | --- | --- |
 | return | `const char *` | the version string |
 
-Return the current version string.
-
 _Declared in `include/datoviz/common/version.h`:69._
 
 ## Write
 
 ### `dvz_write_bytes()`
+
+Save a binary file.
 
 ```c title="dvz_write_bytes"
 int dvz_write_bytes(
@@ -11770,11 +11773,11 @@ int dvz_write_bytes(
 | `size` | `DvzSize` | size of the buffer |
 | `bytes` | `const uint8_t *` | buffer |
 
-Save a binary file.
-
 _Declared in `include/datoviz/fileio/fileio.h`:100._
 
 ### `dvz_write_png()`
+
+Save an sRGB RGBA8 image to a PNG file.
 
 ```c title="dvz_write_png"
 int dvz_write_png(
@@ -11792,11 +11795,11 @@ int dvz_write_png(
 | `height` | `uint32_t` | height of the image |
 | `rgba` | `const uint8_t *` | pointer to tightly packed sRGB RGBA8 pixels with straight linear alpha |
 
-Save an sRGB RGBA8 image to a PNG file.
-
 _Declared in `include/datoviz/fileio/fileio.h`:142._
 
 ### `dvz_write_ppm()`
+
+Save an image to a PPM file (short ASCII header and flat binary RGB values).
 
 ```c title="dvz_write_ppm"
 int dvz_write_ppm(
@@ -11813,7 +11816,5 @@ int dvz_write_ppm(
 | `width` | `uint32_t` | width of the image |
 | `height` | `uint32_t` | height of the image |
 | `image` | `const uint8_t *` | pointer to an array of 24-bit RGB values |
-
-Save an image to a PPM file (short ASCII header and flat binary RGB values).
 
 _Declared in `include/datoviz/fileio/fileio.h`:117._

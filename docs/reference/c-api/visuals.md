@@ -429,6 +429,8 @@ Functions: 206
 
 ### `dvz_bezier_tessellation_desc()`
 
+Return a default Bezier tessellation descriptor.
+
 ```c title="dvz_bezier_tessellation_desc"
 DvzBezierTessellationDesc dvz_bezier_tessellation_desc(void);
 ```
@@ -437,13 +439,13 @@ DvzBezierTessellationDesc dvz_bezier_tessellation_desc(void);
 | --- | --- | --- |
 | return | `DvzBezierTessellationDesc` | initialized Bezier tessellation descriptor |
 
-Return a default Bezier tessellation descriptor.
-
 _Declared in `include/datoviz/geom.h`:421._
 
 ## Composite
 
 ### `dvz_composite_destroy()`
+
+Destroy a scene-owned composite render view.
 
 ```c title="dvz_composite_destroy"
 void dvz_composite_destroy(
@@ -455,11 +457,13 @@ void dvz_composite_destroy(
 | --- | --- | --- |
 | `composite` | `DvzComposite *` | the composite |
 
-Destroy a scene-owned composite render view.
-
 _Declared in `include/datoviz/scene.h`:3460._
 
 ### `dvz_composite_visual()`
+
+Return a generated visual by role name.
+
+Polygon composites currently expose "fill" and "stroke" roles.
 
 ```c title="dvz_composite_visual"
 DvzVisual * dvz_composite_visual(
@@ -474,13 +478,11 @@ DvzVisual * dvz_composite_visual(
 | `composite` | `DvzComposite *` | the composite |
 | `role` | `const char *` | role name |
 
-Return a generated visual by role name.
-
-Polygon composites currently expose "fill" and "stroke" roles.
-
 _Declared in `include/datoviz/scene.h`:3491._
 
 ### `dvz_composite_visual_at()`
+
+Return a generated visual by role index.
 
 ```c title="dvz_composite_visual_at"
 DvzVisual * dvz_composite_visual_at(
@@ -495,11 +497,11 @@ DvzVisual * dvz_composite_visual_at(
 | `composite` | `DvzComposite *` | the composite |
 | `index` | `uint32_t` | role index |
 
-Return a generated visual by role index.
-
 _Declared in `include/datoviz/scene.h`:3479._
 
 ### `dvz_composite_visual_count()`
+
+Return the number of generated visuals owned by a composite.
 
 ```c title="dvz_composite_visual_count"
 uint32_t dvz_composite_visual_count(
@@ -512,13 +514,13 @@ uint32_t dvz_composite_visual_count(
 | return | `uint32_t` | generated visual count |
 | `composite` | `const DvzComposite *` | the composite |
 
-Return the number of generated visuals owned by a composite.
-
 _Declared in `include/datoviz/scene.h`:3469._
 
 ## Depth
 
 ### `dvz_depth_cue_desc()`
+
+Return default depth-cue options.
 
 ```c title="dvz_depth_cue_desc"
 DvzDepthCueDesc dvz_depth_cue_desc(void);
@@ -528,13 +530,13 @@ DvzDepthCueDesc dvz_depth_cue_desc(void);
 | --- | --- | --- |
 | return | `DvzDepthCueDesc` | depth-cue descriptor |
 
-Return default depth-cue options.
-
 _Declared in `include/datoviz/scene.h`:2443._
 
 ## Edl
 
 ### `dvz_edl_desc()`
+
+Return default Eye-Dome Lighting options.
 
 ```c title="dvz_edl_desc"
 DvzEdlDesc dvz_edl_desc(void);
@@ -544,13 +546,13 @@ DvzEdlDesc dvz_edl_desc(void);
 | --- | --- | --- |
 | return | `DvzEdlDesc` | EDL descriptor |
 
-Return default Eye-Dome Lighting options.
-
 _Declared in `include/datoviz/scene.h`:1232._
 
 ## Geometry
 
 ### `dvz_geometry()`
+
+Allocate a geometry object with owned vertex and index buffers.
 
 ```c title="dvz_geometry"
 DvzGeometry * dvz_geometry(
@@ -565,11 +567,11 @@ DvzGeometry * dvz_geometry(
 | `vertex_count` | `uint32_t` | number of vertices |
 | `index_count` | `uint32_t` | number of indices |
 
-Allocate a geometry object with owned vertex and index buffers.
-
 _Declared in `include/datoviz/geom.h`:47._
 
 ### `dvz_geometry_arrow()`
+
+Create an indexed Z-axis arrow geometry.
 
 ```c title="dvz_geometry_arrow"
 DvzGeometry * dvz_geometry_arrow(
@@ -582,11 +584,11 @@ DvzGeometry * dvz_geometry_arrow(
 | return | `DvzGeometry *` | the new geometry, or NULL on failure |
 | `desc` | `const DvzGeometryArrowDesc *` | optional arrow descriptor |
 
-Create an indexed Z-axis arrow geometry.
-
 _Declared in `include/datoviz/geom.h`:375._
 
 ### `dvz_geometry_arrow_desc()`
+
+Return a default arrow geometry descriptor.
 
 ```c title="dvz_geometry_arrow_desc"
 DvzGeometryArrowDesc dvz_geometry_arrow_desc(void);
@@ -596,13 +598,13 @@ DvzGeometryArrowDesc dvz_geometry_arrow_desc(void);
 | --- | --- | --- |
 | return | `DvzGeometryArrowDesc` | initialized arrow descriptor |
 
-Return a default arrow geometry descriptor.
-
 Related: [`dvz_geometry_arrow()`](#dvz_geometry_arrow).
 
 _Declared in `include/datoviz/geom.h`:366._
 
 ### `dvz_geometry_bounds()`
+
+Compute the bounds of a geometry object's positions.
 
 ```c title="dvz_geometry_bounds"
 DvzGeometryBounds dvz_geometry_bounds(
@@ -615,11 +617,11 @@ DvzGeometryBounds dvz_geometry_bounds(
 | return | `DvzGeometryBounds` | the geometry bounds, or an empty zero bounds when no vertices exist |
 | `geometry` | `const DvzGeometry *` | the geometry |
 
-Compute the bounds of a geometry object's positions.
-
 _Declared in `include/datoviz/geom.h`:76._
 
 ### `dvz_geometry_compute_normals()`
+
+Recompute smooth vertex normals from triangle indices.
 
 ```c title="dvz_geometry_compute_normals"
 DvzResult dvz_geometry_compute_normals(
@@ -632,11 +634,11 @@ DvzResult dvz_geometry_compute_normals(
 | return | `DvzResult` | 0 on success, -1 on invalid input |
 | `geometry` | `DvzGeometry *` | the geometry |
 
-Recompute smooth vertex normals from triangle indices.
-
 _Declared in `include/datoviz/geom.h`:86._
 
 ### `dvz_geometry_cone()`
+
+Create an indexed Z-axis cone geometry.
 
 ```c title="dvz_geometry_cone"
 DvzGeometry * dvz_geometry_cone(
@@ -649,11 +651,11 @@ DvzGeometry * dvz_geometry_cone(
 | return | `DvzGeometry *` | the new geometry, or NULL on failure |
 | `desc` | `const DvzGeometryConeDesc *` | optional cone descriptor |
 
-Create an indexed Z-axis cone geometry.
-
 _Declared in `include/datoviz/geom.h`:341._
 
 ### `dvz_geometry_cone_desc()`
+
+Return a default cone geometry descriptor.
 
 ```c title="dvz_geometry_cone_desc"
 DvzGeometryConeDesc dvz_geometry_cone_desc(void);
@@ -663,13 +665,13 @@ DvzGeometryConeDesc dvz_geometry_cone_desc(void);
 | --- | --- | --- |
 | return | `DvzGeometryConeDesc` | initialized cone descriptor |
 
-Return a default cone geometry descriptor.
-
 Related: [`dvz_geometry_cone()`](#dvz_geometry_cone).
 
 _Declared in `include/datoviz/geom.h`:332._
 
 ### `dvz_geometry_contours()`
+
+Extract contour line segments from indexed triangle geometry and per-vertex scalar values.
 
 ```c title="dvz_geometry_contours"
 DvzGeometryContours * dvz_geometry_contours(
@@ -690,11 +692,11 @@ DvzGeometryContours * dvz_geometry_contours(
 | `levels` | `const double *` | contour levels |
 | `level_count` | `uint32_t` | number of contour levels |
 
-Extract contour line segments from indexed triangle geometry and per-vertex scalar values.
-
 _Declared in `include/datoviz/geom.h`:142._
 
 ### `dvz_geometry_contours_destroy()`
+
+Destroy extracted contour segments.
 
 ```c title="dvz_geometry_contours_destroy"
 void dvz_geometry_contours_destroy(
@@ -706,11 +708,11 @@ void dvz_geometry_contours_destroy(
 | --- | --- | --- |
 | `contours` | `DvzGeometryContours *` | the contour segment list |
 
-Destroy extracted contour segments.
-
 _Declared in `include/datoviz/geom.h`:153._
 
 ### `dvz_geometry_cube()`
+
+Create an indexed cube geometry.
 
 ```c title="dvz_geometry_cube"
 DvzGeometry * dvz_geometry_cube(
@@ -723,11 +725,11 @@ DvzGeometry * dvz_geometry_cube(
 | return | `DvzGeometry *` | the new geometry, or NULL on failure |
 | `desc` | `const DvzGeometryCubeDesc *` | optional cube descriptor |
 
-Create an indexed cube geometry.
-
 _Declared in `include/datoviz/geom.h`:171._
 
 ### `dvz_geometry_cube_desc()`
+
+Return a default cube geometry descriptor.
 
 ```c title="dvz_geometry_cube_desc"
 DvzGeometryCubeDesc dvz_geometry_cube_desc(void);
@@ -737,13 +739,13 @@ DvzGeometryCubeDesc dvz_geometry_cube_desc(void);
 | --- | --- | --- |
 | return | `DvzGeometryCubeDesc` | initialized cube descriptor |
 
-Return a default cube geometry descriptor.
-
 Related: [`dvz_geometry_cube()`](#dvz_geometry_cube).
 
 _Declared in `include/datoviz/geom.h`:162._
 
 ### `dvz_geometry_cylinder()`
+
+Create an indexed Z-axis cylinder geometry.
 
 ```c title="dvz_geometry_cylinder"
 DvzGeometry * dvz_geometry_cylinder(
@@ -756,11 +758,11 @@ DvzGeometry * dvz_geometry_cylinder(
 | return | `DvzGeometry *` | the new geometry, or NULL on failure |
 | `desc` | `const DvzGeometryCylinderDesc *` | optional cylinder descriptor |
 
-Create an indexed Z-axis cylinder geometry.
-
 _Declared in `include/datoviz/geom.h`:324._
 
 ### `dvz_geometry_cylinder_desc()`
+
+Return a default cylinder geometry descriptor.
 
 ```c title="dvz_geometry_cylinder_desc"
 DvzGeometryCylinderDesc dvz_geometry_cylinder_desc(void);
@@ -770,13 +772,13 @@ DvzGeometryCylinderDesc dvz_geometry_cylinder_desc(void);
 | --- | --- | --- |
 | return | `DvzGeometryCylinderDesc` | initialized cylinder descriptor |
 
-Return a default cylinder geometry descriptor.
-
 Related: [`dvz_geometry_cylinder()`](#dvz_geometry_cylinder).
 
 _Declared in `include/datoviz/geom.h`:315._
 
 ### `dvz_geometry_destroy()`
+
+Destroy a geometry object.
 
 ```c title="dvz_geometry_destroy"
 void dvz_geometry_destroy(
@@ -788,11 +790,11 @@ void dvz_geometry_destroy(
 | --- | --- | --- |
 | `geometry` | `DvzGeometry *` | the geometry |
 
-Destroy a geometry object.
-
 _Declared in `include/datoviz/geom.h`:66._
 
 ### `dvz_geometry_disc()`
+
+Create an indexed XY disc geometry.
 
 ```c title="dvz_geometry_disc"
 DvzGeometry * dvz_geometry_disc(
@@ -805,11 +807,11 @@ DvzGeometry * dvz_geometry_disc(
 | return | `DvzGeometry *` | the new geometry, or NULL on failure |
 | `desc` | `const DvzGeometryDiscDesc *` | optional disc descriptor |
 
-Create an indexed XY disc geometry.
-
 _Declared in `include/datoviz/geom.h`:256._
 
 ### `dvz_geometry_disc_desc()`
+
+Return a default disc geometry descriptor.
 
 ```c title="dvz_geometry_disc_desc"
 DvzGeometryDiscDesc dvz_geometry_disc_desc(void);
@@ -819,13 +821,13 @@ DvzGeometryDiscDesc dvz_geometry_disc_desc(void);
 | --- | --- | --- |
 | return | `DvzGeometryDiscDesc` | initialized disc descriptor |
 
-Return a default disc geometry descriptor.
-
 Related: [`dvz_geometry_disc()`](#dvz_geometry_disc).
 
 _Declared in `include/datoviz/geom.h`:247._
 
 ### `dvz_geometry_edges()`
+
+Derive a unique edge list from indexed triangle geometry.
 
 ```c title="dvz_geometry_edges"
 DvzGeometryEdges * dvz_geometry_edges(
@@ -838,11 +840,11 @@ DvzGeometryEdges * dvz_geometry_edges(
 | return | `DvzGeometryEdges *` | the derived edge list, or NULL on invalid input or allocation failure |
 | `geometry` | `const DvzGeometry *` | the geometry |
 
-Derive a unique edge list from indexed triangle geometry.
-
 _Declared in `include/datoviz/geom.h`:119._
 
 ### `dvz_geometry_edges_destroy()`
+
+Destroy a derived geometry edge list.
 
 ```c title="dvz_geometry_edges_destroy"
 void dvz_geometry_edges_destroy(
@@ -854,11 +856,11 @@ void dvz_geometry_edges_destroy(
 | --- | --- | --- |
 | `edges` | `DvzGeometryEdges *` | the edge list |
 
-Destroy a derived geometry edge list.
-
 _Declared in `include/datoviz/geom.h`:128._
 
 ### `dvz_geometry_merge()`
+
+Merge several geometry objects into one indexed geometry.
 
 ```c title="dvz_geometry_merge"
 DvzGeometry * dvz_geometry_merge(
@@ -873,11 +875,14 @@ DvzGeometry * dvz_geometry_merge(
 | `count` | `uint32_t` | number of input geometries |
 | `geometries` | `const DvzGeometry *const *` | input geometry array |
 
-Merge several geometry objects into one indexed geometry.
-
 _Declared in `include/datoviz/geom.h`:109._
 
 ### `dvz_geometry_obj()`
+
+Load a Wavefront OBJ mesh as indexed geometry.
+
+The first loader slice supports `v`, `vn`, and polygonal `f` records. Faces are triangulated as
+fans and texture coordinates/materials are ignored.
 
 ```c title="dvz_geometry_obj"
 DvzGeometry * dvz_geometry_obj(
@@ -892,14 +897,11 @@ DvzGeometry * dvz_geometry_obj(
 | `filename` | `const char *` | OBJ file path |
 | `desc` | `const DvzGeometryObjDesc *` | optional loader descriptor |
 
-Load a Wavefront OBJ mesh as indexed geometry.
-
-The first loader slice supports `v`, `vn`, and polygonal `f` records. Faces are triangulated as
-fans and texture coordinates/materials are ignored.
-
 _Declared in `include/datoviz/geom.h`:396._
 
 ### `dvz_geometry_obj_desc()`
+
+Return a default Wavefront OBJ geometry loader descriptor.
 
 ```c title="dvz_geometry_obj_desc"
 DvzGeometryObjDesc dvz_geometry_obj_desc(void);
@@ -909,13 +911,13 @@ DvzGeometryObjDesc dvz_geometry_obj_desc(void);
 | --- | --- | --- |
 | return | `DvzGeometryObjDesc` | initialized OBJ loader descriptor |
 
-Return a default Wavefront OBJ geometry loader descriptor.
-
 Related: [`dvz_geometry_obj()`](#dvz_geometry_obj).
 
 _Declared in `include/datoviz/geom.h`:383._
 
 ### `dvz_geometry_plane()`
+
+Create an indexed XY plane geometry.
 
 ```c title="dvz_geometry_plane"
 DvzGeometry * dvz_geometry_plane(
@@ -928,11 +930,11 @@ DvzGeometry * dvz_geometry_plane(
 | return | `DvzGeometry *` | the new geometry, or NULL on failure |
 | `desc` | `const DvzGeometryPlaneDesc *` | optional plane descriptor |
 
-Create an indexed XY plane geometry.
-
 _Declared in `include/datoviz/geom.h`:189._
 
 ### `dvz_geometry_plane_desc()`
+
+Return a default plane geometry descriptor.
 
 ```c title="dvz_geometry_plane_desc"
 DvzGeometryPlaneDesc dvz_geometry_plane_desc(void);
@@ -942,13 +944,13 @@ DvzGeometryPlaneDesc dvz_geometry_plane_desc(void);
 | --- | --- | --- |
 | return | `DvzGeometryPlaneDesc` | initialized plane descriptor |
 
-Return a default plane geometry descriptor.
-
 Related: [`dvz_geometry_plane()`](#dvz_geometry_plane).
 
 _Declared in `include/datoviz/geom.h`:180._
 
 ### `dvz_geometry_regular_polygon()`
+
+Create an indexed XY regular-polygon geometry.
 
 ```c title="dvz_geometry_regular_polygon"
 DvzGeometry * dvz_geometry_regular_polygon(
@@ -961,11 +963,11 @@ DvzGeometry * dvz_geometry_regular_polygon(
 | return | `DvzGeometry *` | the new geometry, or NULL on failure |
 | `desc` | `const DvzGeometryRegularPolygonDesc *` | optional regular-polygon descriptor |
 
-Create an indexed XY regular-polygon geometry.
-
 _Declared in `include/datoviz/geom.h`:290._
 
 ### `dvz_geometry_regular_polygon_desc()`
+
+Return a default regular-polygon geometry descriptor.
 
 ```c title="dvz_geometry_regular_polygon_desc"
 DvzGeometryRegularPolygonDesc dvz_geometry_regular_polygon_desc(void);
@@ -975,13 +977,13 @@ DvzGeometryRegularPolygonDesc dvz_geometry_regular_polygon_desc(void);
 | --- | --- | --- |
 | return | `DvzGeometryRegularPolygonDesc` | initialized regular-polygon descriptor |
 
-Return a default regular-polygon geometry descriptor.
-
 Related: [`dvz_geometry_regular_polygon()`](#dvz_geometry_regular_polygon).
 
 _Declared in `include/datoviz/geom.h`:281._
 
 ### `dvz_geometry_reset()`
+
+Free all buffers owned by a geometry object and reset it to an empty state.
 
 ```c title="dvz_geometry_reset"
 DvzResult dvz_geometry_reset(
@@ -994,11 +996,11 @@ DvzResult dvz_geometry_reset(
 | return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on validation error |
 | `geometry` | `DvzGeometry *` | the geometry |
 
-Free all buffers owned by a geometry object and reset it to an empty state.
-
 _Declared in `include/datoviz/geom.h`:57._
 
 ### `dvz_geometry_sector()`
+
+Create an indexed XY sector geometry.
 
 ```c title="dvz_geometry_sector"
 DvzGeometry * dvz_geometry_sector(
@@ -1011,11 +1013,11 @@ DvzGeometry * dvz_geometry_sector(
 | return | `DvzGeometry *` | the new geometry, or NULL on failure |
 | `desc` | `const DvzGeometrySectorDesc *` | optional sector descriptor |
 
-Create an indexed XY sector geometry.
-
 _Declared in `include/datoviz/geom.h`:273._
 
 ### `dvz_geometry_sector_desc()`
+
+Return a default sector geometry descriptor.
 
 ```c title="dvz_geometry_sector_desc"
 DvzGeometrySectorDesc dvz_geometry_sector_desc(void);
@@ -1025,13 +1027,13 @@ DvzGeometrySectorDesc dvz_geometry_sector_desc(void);
 | --- | --- | --- |
 | return | `DvzGeometrySectorDesc` | initialized sector descriptor |
 
-Return a default sector geometry descriptor.
-
 Related: [`dvz_geometry_sector()`](#dvz_geometry_sector).
 
 _Declared in `include/datoviz/geom.h`:264._
 
 ### `dvz_geometry_sphere()`
+
+Create an indexed UV-sphere geometry.
 
 ```c title="dvz_geometry_sphere"
 DvzGeometry * dvz_geometry_sphere(
@@ -1044,11 +1046,11 @@ DvzGeometry * dvz_geometry_sphere(
 | return | `DvzGeometry *` | the new geometry, or NULL on failure |
 | `desc` | `const DvzGeometrySphereDesc *` | optional sphere descriptor |
 
-Create an indexed UV-sphere geometry.
-
 _Declared in `include/datoviz/geom.h`:207._
 
 ### `dvz_geometry_sphere_desc()`
+
+Return a default sphere geometry descriptor.
 
 ```c title="dvz_geometry_sphere_desc"
 DvzGeometrySphereDesc dvz_geometry_sphere_desc(void);
@@ -1058,13 +1060,13 @@ DvzGeometrySphereDesc dvz_geometry_sphere_desc(void);
 | --- | --- | --- |
 | return | `DvzGeometrySphereDesc` | initialized sphere descriptor |
 
-Return a default sphere geometry descriptor.
-
 Related: [`dvz_geometry_sphere()`](#dvz_geometry_sphere).
 
 _Declared in `include/datoviz/geom.h`:198._
 
 ### `dvz_geometry_star()`
+
+Create an indexed XY star geometry.
 
 ```c title="dvz_geometry_star"
 DvzGeometry * dvz_geometry_star(
@@ -1077,11 +1079,11 @@ DvzGeometry * dvz_geometry_star(
 | return | `DvzGeometry *` | the new geometry, or NULL on failure |
 | `desc` | `const DvzGeometryStarDesc *` | optional star descriptor |
 
-Create an indexed XY star geometry.
-
 _Declared in `include/datoviz/geom.h`:307._
 
 ### `dvz_geometry_star_desc()`
+
+Return a default star geometry descriptor.
 
 ```c title="dvz_geometry_star_desc"
 DvzGeometryStarDesc dvz_geometry_star_desc(void);
@@ -1091,13 +1093,13 @@ DvzGeometryStarDesc dvz_geometry_star_desc(void);
 | --- | --- | --- |
 | return | `DvzGeometryStarDesc` | initialized star descriptor |
 
-Return a default star geometry descriptor.
-
 Related: [`dvz_geometry_star()`](#dvz_geometry_star).
 
 _Declared in `include/datoviz/geom.h`:298._
 
 ### `dvz_geometry_surface_grid()`
+
+Create an indexed structured surface-grid geometry.
 
 ```c title="dvz_geometry_surface_grid"
 DvzGeometry * dvz_geometry_surface_grid(
@@ -1110,11 +1112,11 @@ DvzGeometry * dvz_geometry_surface_grid(
 | return | `DvzGeometry *` | the new geometry, or NULL on failure |
 | `desc` | `const DvzGeometrySurfaceGridDesc *` | surface-grid descriptor |
 
-Create an indexed structured surface-grid geometry.
-
 _Declared in `include/datoviz/geom.h`:225._
 
 ### `dvz_geometry_surface_grid_desc()`
+
+Return a default surface-grid geometry descriptor.
 
 ```c title="dvz_geometry_surface_grid_desc"
 DvzGeometrySurfaceGridDesc dvz_geometry_surface_grid_desc(void);
@@ -1124,13 +1126,13 @@ DvzGeometrySurfaceGridDesc dvz_geometry_surface_grid_desc(void);
 | --- | --- | --- |
 | return | `DvzGeometrySurfaceGridDesc` | initialized surface-grid descriptor |
 
-Return a default surface-grid geometry descriptor.
-
 Related: [`dvz_geometry_surface_grid()`](#dvz_geometry_surface_grid).
 
 _Declared in `include/datoviz/geom.h`:216._
 
 ### `dvz_geometry_surface_grid_update_heights()`
+
+Update the heights of an existing structured surface-grid geometry.
 
 ```c title="dvz_geometry_surface_grid_update_heights"
 DvzResult dvz_geometry_surface_grid_update_heights(
@@ -1147,11 +1149,11 @@ DvzResult dvz_geometry_surface_grid_update_heights(
 | `heights` | `const double *` | row-major height values |
 | `count` | `uint32_t` | number of height values |
 
-Update the heights of an existing structured surface-grid geometry.
-
 _Declared in `include/datoviz/geom.h`:238._
 
 ### `dvz_geometry_torus()`
+
+Create an indexed torus geometry around the Z axis.
 
 ```c title="dvz_geometry_torus"
 DvzGeometry * dvz_geometry_torus(
@@ -1164,11 +1166,11 @@ DvzGeometry * dvz_geometry_torus(
 | return | `DvzGeometry *` | the new geometry, or NULL on failure |
 | `desc` | `const DvzGeometryTorusDesc *` | optional torus descriptor |
 
-Create an indexed torus geometry around the Z axis.
-
 _Declared in `include/datoviz/geom.h`:358._
 
 ### `dvz_geometry_torus_desc()`
+
+Return a default torus geometry descriptor.
 
 ```c title="dvz_geometry_torus_desc"
 DvzGeometryTorusDesc dvz_geometry_torus_desc(void);
@@ -1178,13 +1180,13 @@ DvzGeometryTorusDesc dvz_geometry_torus_desc(void);
 | --- | --- | --- |
 | return | `DvzGeometryTorusDesc` | initialized torus descriptor |
 
-Return a default torus geometry descriptor.
-
 Related: [`dvz_geometry_torus()`](#dvz_geometry_torus).
 
 _Declared in `include/datoviz/geom.h`:349._
 
 ### `dvz_geometry_transform()`
+
+Apply an affine transform to positions and normals in place.
 
 ```c title="dvz_geometry_transform"
 DvzResult dvz_geometry_transform(
@@ -1199,13 +1201,17 @@ DvzResult dvz_geometry_transform(
 | `geometry` | `DvzGeometry *` | the geometry |
 | `transform` | `dmat4` | affine transform matrix |
 
-Apply an affine transform to positions and normals in place.
-
 _Declared in `include/datoviz/geom.h`:97._
 
 ## Glyph
 
 ### `dvz_glyph()`
+
+Create a glyph visual.
+
+Renders atlas-backed glyph quads with `position` (vec3 anchor), `bounds` (vec4 local pixel
+bounds), `texcoords` (vec4 atlas UV bounds), `color` (RGBA8), `angle` (float radians), and a
+bound 2D sampled field. Positive `angle` rotates counter-clockwise in rendered y-up coordinates.
 
 ```c title="dvz_glyph"
 DvzVisual * dvz_glyph(
@@ -1220,15 +1226,14 @@ DvzVisual * dvz_glyph(
 | `scene` | `DvzScene *` | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-Create a glyph visual.
-
-Renders atlas-backed glyph quads with `position` (vec3 anchor), `bounds` (vec4 local pixel
-bounds), `texcoords` (vec4 atlas UV bounds), `color` (RGBA8), `angle` (float radians), and a
-bound 2D sampled field. Positive `angle` rotates counter-clockwise in rendered y-up coordinates.
-
 _Declared in `include/datoviz/scene.h`:3711._
 
 ### `dvz_glyph_set_atlas()`
+
+Bind a font atlas to a glyph visual.
+
+This configures the atlas sampled field, distance-field encoding, and distance range used by
+the glyph shader. The atlas remains owned by the font's scene and must outlive the glyph visual.
 
 ```c title="dvz_glyph_set_atlas"
 DvzResult dvz_glyph_set_atlas(
@@ -1243,16 +1248,17 @@ DvzResult dvz_glyph_set_atlas(
 | `visual` | `DvzVisual *` | the glyph visual |
 | `atlas` | `const DvzTextAtlas *` | the text atlas |
 
-Bind a font atlas to a glyph visual.
-
-This configures the atlas sampled field, distance-field encoding, and distance range used by
-the glyph shader. The atlas remains owned by the font's scene and must outlive the glyph visual.
-
 _Declared in `include/datoviz/scene.h`:3724._
 
 ## Graph
 
 ### `dvz_graph()`
+
+Create a scene-owned semantic graph object.
+
+A graph stores user-provided node positions and indexed edges. Layout algorithms are intentionally
+external to the first public API slice and can update node positions through
+`dvz_graph_set_node_positions()`.
 
 ```c title="dvz_graph"
 DvzGraph * dvz_graph(
@@ -1267,15 +1273,13 @@ DvzGraph * dvz_graph(
 | `scene` | `DvzScene *` | the scene |
 | `flags` | `uint32_t` | reserved graph flags |
 
-Create a scene-owned semantic graph object.
-
-A graph stores user-provided node positions and indexed edges. Layout algorithms are intentionally
-external to the first public API slice and can update node positions through
-`dvz_graph_set_node_positions()`.
-
 _Declared in `include/datoviz/scene.h`:2891._
 
 ### `dvz_graph_composite()`
+
+Create a scene-owned composite render view for a graph.
+
+Graph composites expose `"edges"` and `"nodes"` roles.
 
 ```c title="dvz_graph_composite"
 DvzComposite * dvz_graph_composite(
@@ -1290,13 +1294,11 @@ DvzComposite * dvz_graph_composite(
 | `graph` | `DvzGraph *` | the source graph |
 | `flags` | `uint32_t` | reserved composite flags |
 
-Create a scene-owned composite render view for a graph.
-
-Graph composites expose `"edges"` and `"nodes"` roles.
-
 _Declared in `include/datoviz/scene.h`:3088._
 
 ### `dvz_graph_destroy()`
+
+Destroy a scene-owned graph object.
 
 ```c title="dvz_graph_destroy"
 void dvz_graph_destroy(
@@ -1308,11 +1310,11 @@ void dvz_graph_destroy(
 | --- | --- | --- |
 | `graph` | `DvzGraph *` | the graph |
 
-Destroy a scene-owned graph object.
-
 _Declared in `include/datoviz/scene.h`:2899._
 
 ### `dvz_graph_edge_style()`
+
+Return the default graph edge style descriptor.
 
 ```c title="dvz_graph_edge_style"
 DvzGraphEdgeStyle dvz_graph_edge_style(void);
@@ -1322,11 +1324,11 @@ DvzGraphEdgeStyle dvz_graph_edge_style(void);
 | --- | --- | --- |
 | return | `DvzGraphEdgeStyle` | default graph edge style |
 
-Return the default graph edge style descriptor.
-
 _Declared in `include/datoviz/scene.h`:2907._
 
 ### `dvz_graph_set_edge_colors()`
+
+Set a range of graph edge colors.
 
 ```c title="dvz_graph_set_edge_colors"
 DvzResult dvz_graph_set_edge_colors(
@@ -1345,11 +1347,13 @@ DvzResult dvz_graph_set_edge_colors(
 | `edge_count` | `uint32_t` | number of edges |
 | `colors` | `const DvzColor *` | borrowed RGBA colors |
 
-Set a range of graph edge colors.
-
 _Declared in `include/datoviz/scene.h`:3061._
 
 ### `dvz_graph_set_edge_controls()`
+
+Configure explicit cubic Bezier control points for graph edges.
+
+If omitted, Bezier mode derives gentle XY control points from each edge's endpoints.
 
 ```c title="dvz_graph_set_edge_controls"
 DvzResult dvz_graph_set_edge_controls(
@@ -1370,13 +1374,13 @@ DvzResult dvz_graph_set_edge_controls(
 | `control0` | `const dvec3 *` | borrowed first control point array |
 | `control1` | `const dvec3 *` | borrowed second control point array |
 
-Configure explicit cubic Bezier control points for graph edges.
-
-If omitted, Bezier mode derives gentle XY control points from each edge's endpoints.
-
 _Declared in `include/datoviz/scene.h`:3018._
 
 ### `dvz_graph_set_edge_count()`
+
+Replace the graph edge array and reset edge style defaults.
+
+Edge endpoints are left at their default values until `dvz_graph_set_edge_endpoints()` is called.
 
 ```c title="dvz_graph_set_edge_count"
 DvzResult dvz_graph_set_edge_count(
@@ -1391,13 +1395,13 @@ DvzResult dvz_graph_set_edge_count(
 | `graph` | `DvzGraph *` | the graph |
 | `edge_count` | `uint32_t` | number of edges |
 
-Replace the graph edge array and reset edge style defaults.
-
-Edge endpoints are left at their default values until `dvz_graph_set_edge_endpoints()` is called.
-
 _Declared in `include/datoviz/scene.h`:2945._
 
 ### `dvz_graph_set_edge_endpoints()`
+
+Update graph edge endpoints.
+
+Edge endpoints reference node indices in the current graph node array.
 
 ```c title="dvz_graph_set_edge_endpoints"
 DvzResult dvz_graph_set_edge_endpoints(
@@ -1416,13 +1420,11 @@ DvzResult dvz_graph_set_edge_endpoints(
 | `edge_count` | `uint32_t` | number of edges |
 | `endpoints` | `const uint32_t *` | borrowed packed endpoint array: source0, target0, source1, target1, ... |
 
-Update graph edge endpoints.
-
-Edge endpoints reference node indices in the current graph node array.
-
 _Declared in `include/datoviz/scene.h`:2960._
 
 ### `dvz_graph_set_edge_ids()`
+
+Set stable graph edge user ids.
 
 ```c title="dvz_graph_set_edge_ids"
 DvzResult dvz_graph_set_edge_ids(
@@ -1441,11 +1443,15 @@ DvzResult dvz_graph_set_edge_ids(
 | `edge_count` | `uint32_t` | number of edges |
 | `ids` | `const uint64_t *` | borrowed user-id array |
 
-Set stable graph edge user ids.
-
 _Declared in `include/datoviz/scene.h`:2988._
 
 ### `dvz_graph_set_edge_style()`
+
+Configure graph edge rendering.
+
+`DVZ_GRAPH_EDGE_MODE_SEGMENT` lowers edges to fast independent segment visuals.
+`DVZ_GRAPH_EDGE_MODE_PATH` lowers straight edges to high-quality path strokes.
+`DVZ_GRAPH_EDGE_MODE_BEZIER` lowers edges to tessellated cubic Bezier path strokes.
 
 ```c title="dvz_graph_set_edge_style"
 DvzResult dvz_graph_set_edge_style(
@@ -1460,15 +1466,11 @@ DvzResult dvz_graph_set_edge_style(
 | `graph` | `DvzGraph *` | the graph |
 | `style` | `const DvzGraphEdgeStyle *` | edge style descriptor |
 
-Configure graph edge rendering.
-
-`DVZ_GRAPH_EDGE_MODE_SEGMENT` lowers edges to fast independent segment visuals.
-`DVZ_GRAPH_EDGE_MODE_PATH` lowers straight edges to high-quality path strokes.
-`DVZ_GRAPH_EDGE_MODE_BEZIER` lowers edges to tessellated cubic Bezier path strokes.
-
 _Declared in `include/datoviz/scene.h`:3003._
 
 ### `dvz_graph_set_edge_widths()`
+
+Set a range of graph edge stroke widths in pixels.
 
 ```c title="dvz_graph_set_edge_widths"
 DvzResult dvz_graph_set_edge_widths(
@@ -1487,11 +1489,11 @@ DvzResult dvz_graph_set_edge_widths(
 | `edge_count` | `uint32_t` | number of edges |
 | `widths` | `const float *` | borrowed edge widths |
 
-Set a range of graph edge stroke widths in pixels.
-
 _Declared in `include/datoviz/scene.h`:3075._
 
 ### `dvz_graph_set_node_colors()`
+
+Set a range of graph node colors.
 
 ```c title="dvz_graph_set_node_colors"
 DvzResult dvz_graph_set_node_colors(
@@ -1510,11 +1512,14 @@ DvzResult dvz_graph_set_node_colors(
 | `node_count` | `uint32_t` | number of nodes |
 | `colors` | `const DvzColor *` | borrowed RGBA colors |
 
-Set a range of graph node colors.
-
 _Declared in `include/datoviz/scene.h`:3033._
 
 ### `dvz_graph_set_node_count()`
+
+Replace the graph node array and reset node style defaults.
+
+Existing edges are discarded because their endpoints may no longer be valid. Call
+`dvz_graph_set_node_positions()` after this function to set or update semantic node positions.
 
 ```c title="dvz_graph_set_node_count"
 DvzResult dvz_graph_set_node_count(
@@ -1529,14 +1534,11 @@ DvzResult dvz_graph_set_node_count(
 | `graph` | `DvzGraph *` | the graph |
 | `node_count` | `uint32_t` | number of nodes |
 
-Replace the graph node array and reset node style defaults.
-
-Existing edges are discarded because their endpoints may no longer be valid. Call
-`dvz_graph_set_node_positions()` after this function to set or update semantic node positions.
-
 _Declared in `include/datoviz/scene.h`:2920._
 
 ### `dvz_graph_set_node_ids()`
+
+Set stable graph node user ids.
 
 ```c title="dvz_graph_set_node_ids"
 DvzResult dvz_graph_set_node_ids(
@@ -1555,11 +1557,11 @@ DvzResult dvz_graph_set_node_ids(
 | `node_count` | `uint32_t` | number of nodes |
 | `ids` | `const uint64_t *` | borrowed user-id array |
 
-Set stable graph node user ids.
-
 _Declared in `include/datoviz/scene.h`:2974._
 
 ### `dvz_graph_set_node_positions()`
+
+Update graph node positions without changing node styles or edges.
 
 ```c title="dvz_graph_set_node_positions"
 DvzResult dvz_graph_set_node_positions(
@@ -1578,11 +1580,11 @@ DvzResult dvz_graph_set_node_positions(
 | `node_count` | `uint32_t` | number of node positions to update |
 | `positions` | `const dvec3 *` | borrowed node positions |
 
-Update graph node positions without changing node styles or edges.
-
 _Declared in `include/datoviz/scene.h`:2932._
 
 ### `dvz_graph_set_node_sizes()`
+
+Set a range of graph node sizes in pixels.
 
 ```c title="dvz_graph_set_node_sizes"
 DvzResult dvz_graph_set_node_sizes(
@@ -1601,13 +1603,19 @@ DvzResult dvz_graph_set_node_sizes(
 | `node_count` | `uint32_t` | number of nodes |
 | `sizes` | `const float *` | borrowed node sizes |
 
-Set a range of graph node sizes in pixels.
-
 _Declared in `include/datoviz/scene.h`:3047._
 
 ## Image
 
 ### `dvz_image()`
+
+Create an image visual.
+
+The current image path supports one sampled 2D texture per visual. The quad-corner form accepts
+`position` (vec3, 4 corner vertices in triangle-strip order) and `texcoords` (vec2, matching
+UVs). The retained per-item form accepts one anchor `position` and `extent` per image item, with
+optional `tex_rect` atlas rectangles and per-item `anchor`. Bind texture data with a scene-owned
+sampled field via `dvz_visual_set_field()`.
 
 ```c title="dvz_image"
 DvzVisual * dvz_image(
@@ -1622,17 +1630,14 @@ DvzVisual * dvz_image(
 | `scene` | `DvzScene *` | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-Create an image visual.
-
-The current image path supports one sampled 2D texture per visual. The quad-corner form accepts
-`position` (vec3, 4 corner vertices in triangle-strip order) and `texcoords` (vec2, matching
-UVs). The retained per-item form accepts one anchor `position` and `extent` per image item, with
-optional `tex_rect` atlas rectangles and per-item `anchor`. Bind texture data with a scene-owned
-sampled field via `dvz_visual_set_field()`.
-
 _Declared in `include/datoviz/scene.h`:3566._
 
 ### `dvz_image_set_sampling()`
+
+Set the sampler filter mode for an image visual.
+
+`DVZ_IMAGE_SAMPLING_LINEAR` is the default. `DVZ_IMAGE_SAMPLING_NEAREST` emits a nearest
+minification and magnification sampler for pixel-exact image rendering.
 
 ```c title="dvz_image_set_sampling"
 DvzResult dvz_image_set_sampling(
@@ -1647,16 +1652,21 @@ DvzResult dvz_image_set_sampling(
 | `visual` | `DvzVisual *` | the image visual |
 | `sampling` | `DvzImageSampling` | the image sampler filter mode |
 
-Set the sampler filter mode for an image visual.
-
-`DVZ_IMAGE_SAMPLING_LINEAR` is the default. `DVZ_IMAGE_SAMPLING_NEAREST` emits a nearest
-minification and magnification sampler for pixel-exact image rendering.
-
 _Declared in `include/datoviz/scene.h`:3579._
 
 ## Marker
 
 ### `dvz_marker()`
+
+Create a marker visual.
+
+Renders screen-space code-SDF marker sprites with dense `position` (vec3), `color` (RGBA8),
+`diameter_px` (float in pixels), `angle` (float radians), and `shape`/`symbol` (uint32_t built-in
+symbol id) attributes. Optional `item_state` (uint32_t DvzItemStateKind bitfield) supports
+retained hover and selection styling.
+`position` is the center of the screen-space marker bounding box, `diameter_px` is its width and
+height, and positive `angle` rotates counter-clockwise in rendered y-up coordinates. Built-in
+code-SDF shapes include the standard Datoviz marker vocabulary plus target.
 
 ```c title="dvz_marker"
 DvzVisual * dvz_marker(
@@ -1671,19 +1681,15 @@ DvzVisual * dvz_marker(
 | `scene` | `DvzScene *` | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-Create a marker visual.
-
-Renders screen-space code-SDF marker sprites with dense `position` (vec3), `color` (RGBA8),
-`diameter_px` (float in pixels), `angle` (float radians), and `shape`/`symbol` (uint32_t built-in
-symbol id) attributes. Optional `item_state` (uint32_t DvzItemStateKind bitfield) supports
-retained hover and selection styling.
-`position` is the center of the screen-space marker bounding box, `diameter_px` is its width and
-height, and positive `angle` rotates counter-clockwise in rendered y-up coordinates. Built-in
-code-SDF shapes include the standard Datoviz marker vocabulary plus target.
-
 _Declared in `include/datoviz/scene.h`:2718._
 
 ### `dvz_marker_set_style()`
+
+Configure marker fill/stroke styling.
+
+Pass NULL to restore the default filled/no-stroke style. The aspect is exclusive:
+`DVZ_SHAPE_ASPECT_FILLED` draws only the fill, `DVZ_SHAPE_ASPECT_STROKE` draws only the edge,
+and `DVZ_SHAPE_ASPECT_OUTLINE` draws the fill with an edge.
 
 ```c title="dvz_marker_set_style"
 DvzResult dvz_marker_set_style(
@@ -1698,15 +1704,14 @@ DvzResult dvz_marker_set_style(
 | `visual` | `DvzVisual *` | the marker visual |
 | `style` | `const DvzMarkerStyle *` | the marker style descriptor, or NULL to restore defaults |
 
-Configure marker fill/stroke styling.
-
-Pass NULL to restore the default filled/no-stroke style. The aspect is exclusive:
-`DVZ_SHAPE_ASPECT_FILLED` draws only the fill, `DVZ_SHAPE_ASPECT_STROKE` draws only the edge,
-and `DVZ_SHAPE_ASPECT_OUTLINE` draws the fill with an edge.
-
 _Declared in `include/datoviz/scene.h`:2651._
 
 ### `dvz_marker_set_symbol()`
+
+Set every existing marker item to one built-in symbol.
+
+This convenience writes the marker's dense `"shape"`/`"symbol"` attribute and requires an
+existing dense item count, usually from `"position"`.
 
 ```c title="dvz_marker_set_symbol"
 DvzResult dvz_marker_set_symbol(
@@ -1721,14 +1726,14 @@ DvzResult dvz_marker_set_symbol(
 | `visual` | `DvzVisual *` | the marker visual |
 | `builtin` | `DvzSymbolBuiltin` | the built-in symbol |
 
-Set every existing marker item to one built-in symbol.
-
-This convenience writes the marker's dense `"shape"`/`"symbol"` attribute and requires an
-existing dense item count, usually from `"position"`.
-
 _Declared in `include/datoviz/scene.h`:2625._
 
 ### `dvz_marker_set_symbols()`
+
+Bind a reusable symbol set to a marker visual.
+
+Marker visuals accept built-in code-SDF ids and homogeneous bitmap/SDF/MSDF symbol arrays. Mixed
+built-in/texture-backed or mixed-encoding arrays are rejected for now.
 
 ```c title="dvz_marker_set_symbols"
 DvzResult dvz_marker_set_symbols(
@@ -1743,14 +1748,15 @@ DvzResult dvz_marker_set_symbols(
 | `visual` | `DvzVisual *` | the marker visual |
 | `symbols` | `const DvzSymbolSet *` | the symbol set, or NULL to clear the binding |
 
-Bind a reusable symbol set to a marker visual.
-
-Marker visuals accept built-in code-SDF ids and homogeneous bitmap/SDF/MSDF symbol arrays. Mixed
-built-in/texture-backed or mixed-encoding arrays are rejected for now.
-
 _Declared in `include/datoviz/scene.h`:2612._
 
 ### `dvz_marker_style()`
+
+Return default marker styling.
+
+The default marker style renders filled markers with no stroke. The `color` visual attribute
+remains the fill color; `edge_color` and `stroke_width_px` apply when the aspect is
+`DVZ_SHAPE_ASPECT_STROKE` or `DVZ_SHAPE_ASPECT_OUTLINE`.
 
 ```c title="dvz_marker_style"
 DvzMarkerStyle dvz_marker_style(void);
@@ -1760,17 +1766,17 @@ DvzMarkerStyle dvz_marker_style(void);
 | --- | --- | --- |
 | return | `DvzMarkerStyle` | default marker style descriptor |
 
-Return default marker styling.
-
-The default marker style renders filled markers with no stroke. The `color` visual attribute
-remains the fill color; `edge_color` and `stroke_width_px` apply when the aspect is
-`DVZ_SHAPE_ASPECT_STROKE` or `DVZ_SHAPE_ASPECT_OUTLINE`.
-
 _Declared in `include/datoviz/scene.h`:2637._
 
 ## Material
 
 ### `dvz_material_desc()`
+
+Return default visual material options.
+
+The default material is the fast Phong model with opaque alpha, full opacity, a white base-color
+factor, light direction `(-0.45, 0.35, 0.82)`, ambient `0.24`, diffuse `0.82`, specular
+`0.24`, and shininess `26`.
 
 ```c title="dvz_material_desc"
 DvzMaterialDesc dvz_material_desc(void);
@@ -1780,17 +1786,19 @@ DvzMaterialDesc dvz_material_desc(void);
 | --- | --- | --- |
 | return | `DvzMaterialDesc` | default material descriptor |
 
-Return default visual material options.
-
-The default material is the fast Phong model with opaque alpha, full opacity, a white base-color
-factor, light direction `(-0.45, 0.35, 0.82)`, ambient `0.24`, diffuse `0.82`, specular
-`0.24`, and shininess `26`.
-
 _Declared in `include/datoviz/scene.h`:2398._
 
 ## Mesh
 
 ### `dvz_mesh()`
+
+Create a mesh visual.
+
+v0.4 meshes use a triangle-list topology with `position` (vec3), optional
+`color` (RGBA8, defaulting to opaque white when omitted), optional `normal` (vec3), optional
+`texcoords` (vec2), optional `instance_transform` (mat4, one per instance), and optional
+`"index"` buffer bindings for indexed draws. Binding an RGBA8 2D sampled field to the
+`"texture"` slot enables the first retained textured-mesh shader path.
 
 ```c title="dvz_mesh"
 DvzVisual * dvz_mesh(
@@ -1805,17 +1813,14 @@ DvzVisual * dvz_mesh(
 | `scene` | `DvzScene *` | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-Create a mesh visual.
-
-v0.4 meshes use a triangle-list topology with `position` (vec3), optional
-`color` (RGBA8, defaulting to opaque white when omitted), optional `normal` (vec3), optional
-`texcoords` (vec2), optional `instance_transform` (mat4, one per instance), and optional
-`"index"` buffer bindings for indexed draws. Binding an RGBA8 2D sampled field to the
-`"texture"` slot enables the first retained textured-mesh shader path.
-
 _Declared in `include/datoviz/scene.h`:2864._
 
 ### `dvz_mesh_set_geometry()`
+
+Upload a CPU geometry object into a mesh visual.
+
+Geometry positions, colors, normals, texture coordinates, and optional triangle indices are
+copied into the visual's retained attribute and index buffers.
 
 ```c title="dvz_mesh_set_geometry"
 DvzResult dvz_mesh_set_geometry(
@@ -1830,16 +1835,13 @@ DvzResult dvz_mesh_set_geometry(
 | `visual` | `DvzVisual *` | the mesh visual |
 | `geometry` | `const DvzGeometry *` | the CPU geometry object |
 
-Upload a CPU geometry object into a mesh visual.
-
-Geometry positions, colors, normals, texture coordinates, and optional triangle indices are
-copied into the visual's retained attribute and index buffers.
-
 _Declared in `include/datoviz/scene.h`:2877._
 
 ## Msaa
 
 ### `dvz_msaa_desc()`
+
+Return default panel MSAA options.
 
 ```c title="dvz_msaa_desc"
 DvzMsaaDesc dvz_msaa_desc(void);
@@ -1849,13 +1851,17 @@ DvzMsaaDesc dvz_msaa_desc(void);
 | --- | --- | --- |
 | return | `DvzMsaaDesc` | MSAA descriptor with 4x samples and alpha-to-coverage enabled |
 
-Return default panel MSAA options.
-
 _Declared in `include/datoviz/scene.h`:577._
 
 ## Path
 
 ### `dvz_path()`
+
+Create a path visual.
+
+A path accepts `position` (vec3), `color` (RGBA8), and optional per-point `stroke_width_px`
+(float, pixels). Without `stroke_width_px`, paths use the primitive line-strip pipeline. With
+`stroke_width_px`, paths use the scene.path screen-space stroke pipeline.
 
 ```c title="dvz_path"
 DvzVisual * dvz_path(
@@ -1870,15 +1876,14 @@ DvzVisual * dvz_path(
 | `scene` | `DvzScene *` | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-Create a path visual.
-
-A path accepts `position` (vec3), `color` (RGBA8), and optional per-point `stroke_width_px`
-(float, pixels). Without `stroke_width_px`, paths use the primitive line-strip pipeline. With
-`stroke_width_px`, paths use the scene.path screen-space stroke pipeline.
-
 _Declared in `include/datoviz/scene.h`:3505._
 
 ### `dvz_path_set_caps()`
+
+Configure caps applied to each open subpath endpoint.
+
+Arrow caps, dashes, per-item cap attributes, and closed subpaths are deferred. Supported first
+slice caps are none, round, triangle-in, triangle-out, square, and butt.
 
 ```c title="dvz_path_set_caps"
 DvzResult dvz_path_set_caps(
@@ -1895,14 +1900,14 @@ DvzResult dvz_path_set_caps(
 | `start_cap` | `DvzSegmentCap` | cap applied to each open subpath start |
 | `end_cap` | `DvzSegmentCap` | cap applied to each open subpath end |
 
-Configure caps applied to each open subpath endpoint.
-
-Arrow caps, dashes, per-item cap attributes, and closed subpaths are deferred. Supported first
-slice caps are none, round, triangle-in, triangle-out, square, and butt.
-
 _Declared in `include/datoviz/scene.h`:3520._
 
 ### `dvz_path_set_join()`
+
+Configure the join style and miter limit for stroked path corners.
+
+`DVZ_PATH_JOIN_MITER` falls back to bevel when the miter length exceeds `miter_limit` times
+the local stroke width. Round and bevel joins ignore the limit.
 
 ```c title="dvz_path_set_join"
 DvzResult dvz_path_set_join(
@@ -1919,14 +1924,14 @@ DvzResult dvz_path_set_join(
 | `join` | `DvzPathJoin` | the path join style |
 | `miter_limit` | `float` | positive finite miter limit |
 
-Configure the join style and miter limit for stroked path corners.
-
-`DVZ_PATH_JOIN_MITER` falls back to bevel when the miter length exceeds `miter_limit` times
-the local stroke width. Round and bevel joins ignore the limit.
-
 _Declared in `include/datoviz/scene.h`:3535._
 
 ### `dvz_path_set_subpaths()`
+
+Set explicit subpath lengths for a path visual.
+
+When unset, all points belong to one open subpath. Lengths are consumed in order and must sum to
+the path position count at emission time.
 
 ```c title="dvz_path_set_subpaths"
 DvzResult dvz_path_set_subpaths(
@@ -1943,16 +1948,16 @@ DvzResult dvz_path_set_subpaths(
 | `subpath_count` | `uint32_t` | number of subpaths |
 | `lengths` | `const uint32_t *` | point count for each subpath |
 
-Set explicit subpath lengths for a path visual.
-
-When unset, all points belong to one open subpath. Lengths are consumed in order and must sum to
-the path position count at emission time.
-
 _Declared in `include/datoviz/scene.h`:3549._
 
 ## Phong
 
 ### `dvz_phong_material_desc()`
+
+Return default Phong visual material options.
+
+The descriptor uses `DVZ_MATERIAL_MODEL_PHONG` with the same defaults as
+`dvz_material_desc()`.
 
 ```c title="dvz_phong_material_desc"
 DvzMaterialDesc dvz_phong_material_desc(void);
@@ -1962,16 +1967,17 @@ DvzMaterialDesc dvz_phong_material_desc(void);
 | --- | --- | --- |
 | return | `DvzMaterialDesc` | default Phong material descriptor |
 
-Return default Phong visual material options.
-
-The descriptor uses `DVZ_MATERIAL_MODEL_PHONG` with the same defaults as
-`dvz_material_desc()`.
-
 _Declared in `include/datoviz/scene.h`:2409._
 
 ## Pixel
 
 ### `dvz_pixel()`
+
+Create a pixel visual.
+
+Renders screen-space square sprites with `position` (vec3), `color` (RGBA8),
+`pixel_size_px` (float, in pixels), and optional `item_state` (uint32_t DvzItemStateKind
+bitfield). WGSL/WebGPU emission lowers each item to an instanced quad.
 
 ```c title="dvz_pixel"
 DvzVisual * dvz_pixel(
@@ -1986,17 +1992,18 @@ DvzVisual * dvz_pixel(
 | `scene` | `DvzScene *` | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-Create a pixel visual.
-
-Renders screen-space square sprites with `position` (vec3), `color` (RGBA8),
-`pixel_size_px` (float, in pixels), and optional `item_state` (uint32_t DvzItemStateKind
-bitfield). WGSL/WebGPU emission lowers each item to an instanced quad.
-
 _Declared in `include/datoviz/scene.h`:2700._
 
 ## Point
 
 ### `dvz_point()`
+
+Create a point visual.
+
+Renders screen-space antialiased circular sprites with `position` (vec3), `color` (RGBA8),
+`diameter_px` (float, in pixels), and optional `item_state` (uint32_t DvzItemStateKind bitfield).
+`dvz_point_set_style()` controls optional edge styling with `edge_color`,
+`stroke_width_px`, and a filled/stroke/outline aspect.
 
 ```c title="dvz_point"
 DvzVisual * dvz_point(
@@ -2011,16 +2018,15 @@ DvzVisual * dvz_point(
 | `scene` | `DvzScene *` | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-Create a point visual.
-
-Renders screen-space antialiased circular sprites with `position` (vec3), `color` (RGBA8),
-`diameter_px` (float, in pixels), and optional `item_state` (uint32_t DvzItemStateKind bitfield).
-`dvz_point_set_style()` controls optional edge styling with `edge_color`,
-`stroke_width_px`, and a filled/stroke/outline aspect.
-
 _Declared in `include/datoviz/scene.h`:2671._
 
 ### `dvz_point_set_style()`
+
+Configure circular point fill/stroke styling.
+
+Pass NULL to restore the default filled/no-stroke style. The aspect is exclusive:
+`DVZ_SHAPE_ASPECT_FILLED` draws only the fill, `DVZ_SHAPE_ASPECT_STROKE` draws only the edge,
+and `DVZ_SHAPE_ASPECT_OUTLINE` draws the fill with an edge.
 
 ```c title="dvz_point_set_style"
 DvzResult dvz_point_set_style(
@@ -2035,15 +2041,15 @@ DvzResult dvz_point_set_style(
 | `visual` | `DvzVisual *` | the point visual |
 | `desc` | `const DvzPointStyleDesc *` | the point style descriptor, or NULL to restore defaults |
 
-Configure circular point fill/stroke styling.
-
-Pass NULL to restore the default filled/no-stroke style. The aspect is exclusive:
-`DVZ_SHAPE_ASPECT_FILLED` draws only the fill, `DVZ_SHAPE_ASPECT_STROKE` draws only the edge,
-and `DVZ_SHAPE_ASPECT_OUTLINE` draws the fill with an edge.
-
 _Declared in `include/datoviz/scene.h`:2484._
 
 ### `dvz_point_style_desc()`
+
+Return default point styling.
+
+The default point style renders filled circular points with no stroke. The `color` visual
+attribute remains the fill color; `edge_color` and `stroke_width_px` apply when the aspect is
+`DVZ_SHAPE_ASPECT_STROKE` or `DVZ_SHAPE_ASPECT_OUTLINE`.
 
 ```c title="dvz_point_style_desc"
 DvzPointStyleDesc dvz_point_style_desc(void);
@@ -2053,17 +2059,15 @@ DvzPointStyleDesc dvz_point_style_desc(void);
 | --- | --- | --- |
 | return | `DvzPointStyleDesc` | default point style descriptor |
 
-Return default point styling.
-
-The default point style renders filled circular points with no stroke. The `color` visual
-attribute remains the fill color; `edge_color` and `stroke_width_px` apply when the aspect is
-`DVZ_SHAPE_ASPECT_STROKE` or `DVZ_SHAPE_ASPECT_OUTLINE`.
-
 _Declared in `include/datoviz/scene.h`:2470._
 
 ## Polygon
 
 ### `dvz_polygon()`
+
+Create a scene-owned semantic polygon object.
+
+A polygon represents one filled region with one outer ring and optional hole rings.
 
 ```c title="dvz_polygon"
 DvzPolygon * dvz_polygon(
@@ -2078,13 +2082,11 @@ DvzPolygon * dvz_polygon(
 | `scene` | `DvzScene *` | the scene |
 | `flags` | `uint32_t` | reserved polygon flags |
 
-Create a scene-owned semantic polygon object.
-
-A polygon represents one filled region with one outer ring and optional hole rings.
-
 _Declared in `include/datoviz/scene.h`:3100._
 
 ### `dvz_polygon_composite()`
+
+Create a scene-owned composite render view for a polygon.
 
 ```c title="dvz_polygon_composite"
 DvzComposite * dvz_polygon_composite(
@@ -2099,11 +2101,11 @@ DvzComposite * dvz_polygon_composite(
 | `polygon` | `DvzPolygon *` | the source polygon |
 | `flags` | `uint32_t` | reserved composite flags |
 
-Create a scene-owned composite render view for a polygon.
-
 _Declared in `include/datoviz/scene.h`:3250._
 
 ### `dvz_polygon_desc()`
+
+Return a default polygon descriptor.
 
 ```c title="dvz_polygon_desc"
 DvzPolygonDesc dvz_polygon_desc(void);
@@ -2113,13 +2115,13 @@ DvzPolygonDesc dvz_polygon_desc(void);
 | --- | --- | --- |
 | return | `DvzPolygonDesc` | initialized polygon descriptor |
 
-Return a default polygon descriptor.
-
 Related: [`dvz_polygon()`](#dvz_polygon).
 
 _Declared in `include/datoviz/geom.h`:405._
 
 ### `dvz_polygon_destroy()`
+
+Destroy a scene-owned polygon object and release its copied ring data.
 
 ```c title="dvz_polygon_destroy"
 void dvz_polygon_destroy(
@@ -2131,11 +2133,11 @@ void dvz_polygon_destroy(
 | --- | --- | --- |
 | `polygon` | `DvzPolygon *` | the polygon |
 
-Destroy a scene-owned polygon object and release its copied ring data.
-
 _Declared in `include/datoviz/scene.h`:3108._
 
 ### `dvz_polygon_set_fill_color()`
+
+Set the polygon fill color.
 
 ```c title="dvz_polygon_set_fill_color"
 DvzResult dvz_polygon_set_fill_color(
@@ -2150,11 +2152,11 @@ DvzResult dvz_polygon_set_fill_color(
 | `polygon` | `DvzPolygon *` | the polygon |
 | `color` | `const DvzColor` | RGBA fill color |
 
-Set the polygon fill color.
-
 _Declared in `include/datoviz/scene.h`:3196._
 
 ### `dvz_polygon_set_geometry()`
+
+Replace all polygon rings from a borrowed descriptor.
 
 ```c title="dvz_polygon_set_geometry"
 DvzResult dvz_polygon_set_geometry(
@@ -2169,11 +2171,14 @@ DvzResult dvz_polygon_set_geometry(
 | `polygon` | `DvzPolygon *` | the polygon |
 | `desc` | `const DvzPolygonDesc *` | borrowed polygon descriptor |
 
-Replace all polygon rings from a borrowed descriptor.
-
 _Declared in `include/datoviz/scene.h`:3126._
 
 ### `dvz_polygon_set_hole()`
+
+Append or replace one polygon hole ring.
+
+Passing hole_index equal to the current hole count appends a new hole. Passing a smaller index
+replaces that hole.
 
 ```c title="dvz_polygon_set_hole"
 DvzResult dvz_polygon_set_hole(
@@ -2192,14 +2197,11 @@ DvzResult dvz_polygon_set_hole(
 | `xy` | `const dvec2 *` | borrowed XY vertex array |
 | `count` | `uint32_t` | number of hole ring vertices |
 
-Append or replace one polygon hole ring.
-
-Passing hole_index equal to the current hole count appends a new hole. Passing a smaller index
-replaces that hole.
-
 _Declared in `include/datoviz/scene.h`:3153._
 
 ### `dvz_polygon_set_id()`
+
+Set the stable user id associated with a polygon.
 
 ```c title="dvz_polygon_set_id"
 DvzResult dvz_polygon_set_id(
@@ -2214,11 +2216,11 @@ DvzResult dvz_polygon_set_id(
 | `polygon` | `DvzPolygon *` | the polygon |
 | `id` | `uint64_t` | stable user id |
 
-Set the stable user id associated with a polygon.
-
 _Declared in `include/datoviz/scene.h`:3163._
 
 ### `dvz_polygon_set_outer()`
+
+Replace the polygon outer ring while preserving existing holes.
 
 ```c title="dvz_polygon_set_outer"
 DvzResult dvz_polygon_set_outer(
@@ -2235,11 +2237,11 @@ DvzResult dvz_polygon_set_outer(
 | `xy` | `const dvec2 *` | borrowed XY vertex array |
 | `count` | `uint32_t` | number of outer ring vertices |
 
-Replace the polygon outer ring while preserving existing holes.
-
 _Declared in `include/datoviz/scene.h`:3137._
 
 ### `dvz_polygon_set_stroke_caps()`
+
+Configure polygon stroke endpoint caps.
 
 ```c title="dvz_polygon_set_stroke_caps"
 DvzResult dvz_polygon_set_stroke_caps(
@@ -2256,11 +2258,11 @@ DvzResult dvz_polygon_set_stroke_caps(
 | `start_cap` | `DvzSegmentCap` | cap applied to each ring start |
 | `end_cap` | `DvzSegmentCap` | cap applied to each ring end |
 
-Configure polygon stroke endpoint caps.
-
 _Declared in `include/datoviz/scene.h`:3228._
 
 ### `dvz_polygon_set_stroke_color()`
+
+Set the polygon stroke color.
 
 ```c title="dvz_polygon_set_stroke_color"
 DvzResult dvz_polygon_set_stroke_color(
@@ -2275,11 +2277,11 @@ DvzResult dvz_polygon_set_stroke_color(
 | `polygon` | `DvzPolygon *` | the polygon |
 | `color` | `const DvzColor` | RGBA stroke color |
 
-Set the polygon stroke color.
-
 _Declared in `include/datoviz/scene.h`:3206._
 
 ### `dvz_polygon_set_stroke_join()`
+
+Configure polygon stroke joins.
 
 ```c title="dvz_polygon_set_stroke_join"
 DvzResult dvz_polygon_set_stroke_join(
@@ -2296,11 +2298,11 @@ DvzResult dvz_polygon_set_stroke_join(
 | `join` | `DvzPathJoin` | join style |
 | `miter_limit` | `float` | positive finite miter limit |
 
-Configure polygon stroke joins.
-
 _Declared in `include/datoviz/scene.h`:3240._
 
 ### `dvz_polygon_set_stroke_width_px()`
+
+Set the polygon stroke width in pixels.
 
 ```c title="dvz_polygon_set_stroke_width_px"
 DvzResult dvz_polygon_set_stroke_width_px(
@@ -2315,11 +2317,14 @@ DvzResult dvz_polygon_set_stroke_width_px(
 | `polygon` | `DvzPolygon *` | the polygon |
 | `width` | `float` | stroke width in pixels |
 
-Set the polygon stroke width in pixels.
-
 _Declared in `include/datoviz/scene.h`:3216._
 
 ### `dvz_polygon_set_style()`
+
+Apply polygon render style.
+
+Flat style setters remain the primary API for common updates. This descriptor is a convenience
+for applying defaults or several style fields atomically.
 
 ```c title="dvz_polygon_set_style"
 DvzResult dvz_polygon_set_style(
@@ -2334,14 +2339,11 @@ DvzResult dvz_polygon_set_style(
 | `polygon` | `DvzPolygon *` | the polygon |
 | `style` | `const DvzPolygonStyle *` | polygon style descriptor |
 
-Apply polygon render style.
-
-Flat style setters remain the primary API for common updates. This descriptor is a convenience
-for applying defaults or several style fields atomically.
-
 _Declared in `include/datoviz/scene.h`:3186._
 
 ### `dvz_polygon_set_visible()`
+
+Set polygon visibility.
 
 ```c title="dvz_polygon_set_visible"
 DvzResult dvz_polygon_set_visible(
@@ -2356,11 +2358,11 @@ DvzResult dvz_polygon_set_visible(
 | `polygon` | `DvzPolygon *` | the polygon |
 | `visible` | `_Bool` | whether the polygon should render |
 
-Set polygon visibility.
-
 _Declared in `include/datoviz/scene.h`:3173._
 
 ### `dvz_polygon_style()`
+
+Return the default polygon style descriptor.
 
 ```c title="dvz_polygon_style"
 DvzPolygonStyle dvz_polygon_style(void);
@@ -2370,13 +2372,16 @@ DvzPolygonStyle dvz_polygon_style(void);
 | --- | --- | --- |
 | return | `DvzPolygonStyle` | default polygon style |
 
-Return the default polygon style descriptor.
-
 _Declared in `include/datoviz/scene.h`:3116._
 
 ## Polygons
 
 ### `dvz_polygons()`
+
+Create a scene-owned semantic polygon set object.
+
+A polygon set stores several independent polygon regions. Each region has its own rings and
+style.
 
 ```c title="dvz_polygons"
 DvzPolygons * dvz_polygons(
@@ -2391,14 +2396,11 @@ DvzPolygons * dvz_polygons(
 | `scene` | `DvzScene *` | the scene |
 | `flags` | `uint32_t` | reserved polygon-set flags |
 
-Create a scene-owned semantic polygon set object.
-
-A polygon set stores several independent polygon regions. Each region has its own rings and
-style.
-
 _Declared in `include/datoviz/scene.h`:3263._
 
 ### `dvz_polygons_add_region()`
+
+Append one polygon region to a polygon set.
 
 ```c title="dvz_polygons_add_region"
 uint32_t dvz_polygons_add_region(
@@ -2413,11 +2415,11 @@ uint32_t dvz_polygons_add_region(
 | `set` | `DvzPolygons *` | the polygon set |
 | `desc` | `const DvzPolygonDesc *` | borrowed polygon descriptor |
 
-Append one polygon region to a polygon set.
-
 _Declared in `include/datoviz/scene.h`:3281._
 
 ### `dvz_polygons_composite()`
+
+Create a scene-owned composite render view for a polygon set.
 
 ```c title="dvz_polygons_composite"
 DvzComposite * dvz_polygons_composite(
@@ -2432,11 +2434,11 @@ DvzComposite * dvz_polygons_composite(
 | `set` | `DvzPolygons *` | the polygon set |
 | `flags` | `uint32_t` | reserved composite flags |
 
-Create a scene-owned composite render view for a polygon set.
-
 _Declared in `include/datoviz/scene.h`:3452._
 
 ### `dvz_polygons_destroy()`
+
+Destroy a scene-owned polygon set object.
 
 ```c title="dvz_polygons_destroy"
 void dvz_polygons_destroy(
@@ -2448,11 +2450,11 @@ void dvz_polygons_destroy(
 | --- | --- | --- |
 | `set` | `DvzPolygons *` | the polygon set |
 
-Destroy a scene-owned polygon set object.
-
 _Declared in `include/datoviz/scene.h`:3271._
 
 ### `dvz_polygons_set_region_fill_color()`
+
+Set one polygon region's fill color.
 
 ```c title="dvz_polygons_set_region_fill_color"
 DvzResult dvz_polygons_set_region_fill_color(
@@ -2469,11 +2471,11 @@ DvzResult dvz_polygons_set_region_fill_color(
 | `polygon_index` | `uint32_t` | polygon index |
 | `color` | `const DvzColor` | RGBA fill color |
 
-Set one polygon region's fill color.
-
 _Declared in `include/datoviz/scene.h`:3354._
 
 ### `dvz_polygons_set_region_fill_colors()`
+
+Set a contiguous range of polygon region fill colors.
 
 ```c title="dvz_polygons_set_region_fill_colors"
 DvzResult dvz_polygons_set_region_fill_colors(
@@ -2492,11 +2494,11 @@ DvzResult dvz_polygons_set_region_fill_colors(
 | `polygon_count` | `uint32_t` | number of regions to update |
 | `colors` | `const DvzColor *` | RGBA fill colors |
 
-Set a contiguous range of polygon region fill colors.
-
 _Declared in `include/datoviz/scene.h`:3367._
 
 ### `dvz_polygons_set_region_geometry()`
+
+Replace one polygon region's rings.
 
 ```c title="dvz_polygons_set_region_geometry"
 DvzResult dvz_polygons_set_region_geometry(
@@ -2513,11 +2515,11 @@ DvzResult dvz_polygons_set_region_geometry(
 | `polygon_index` | `uint32_t` | polygon index |
 | `desc` | `const DvzPolygonDesc *` | borrowed polygon descriptor |
 
-Replace one polygon region's rings.
-
 _Declared in `include/datoviz/scene.h`:3292._
 
 ### `dvz_polygons_set_region_id()`
+
+Set one polygon region's stable user id.
 
 ```c title="dvz_polygons_set_region_id"
 DvzResult dvz_polygons_set_region_id(
@@ -2534,11 +2536,11 @@ DvzResult dvz_polygons_set_region_id(
 | `polygon_index` | `uint32_t` | polygon index |
 | `id` | `uint64_t` | stable user id |
 
-Set one polygon region's stable user id.
-
 _Declared in `include/datoviz/scene.h`:3305._
 
 ### `dvz_polygons_set_region_ids()`
+
+Set a contiguous range of polygon region stable user ids.
 
 ```c title="dvz_polygons_set_region_ids"
 DvzResult dvz_polygons_set_region_ids(
@@ -2557,11 +2559,11 @@ DvzResult dvz_polygons_set_region_ids(
 | `polygon_count` | `uint32_t` | number of regions to update |
 | `ids` | `const uint64_t *` | borrowed stable user id array |
 
-Set a contiguous range of polygon region stable user ids.
-
 _Declared in `include/datoviz/scene.h`:3317._
 
 ### `dvz_polygons_set_region_stroke_color()`
+
+Set one polygon region's stroke color.
 
 ```c title="dvz_polygons_set_region_stroke_color"
 DvzResult dvz_polygons_set_region_stroke_color(
@@ -2578,11 +2580,11 @@ DvzResult dvz_polygons_set_region_stroke_color(
 | `polygon_index` | `uint32_t` | polygon index |
 | `color` | `const DvzColor` | RGBA stroke color |
 
-Set one polygon region's stroke color.
-
 _Declared in `include/datoviz/scene.h`:3379._
 
 ### `dvz_polygons_set_region_stroke_colors()`
+
+Set a contiguous range of polygon region stroke colors.
 
 ```c title="dvz_polygons_set_region_stroke_colors"
 DvzResult dvz_polygons_set_region_stroke_colors(
@@ -2601,11 +2603,11 @@ DvzResult dvz_polygons_set_region_stroke_colors(
 | `polygon_count` | `uint32_t` | number of regions to update |
 | `colors` | `const DvzColor *` | RGBA stroke colors |
 
-Set a contiguous range of polygon region stroke colors.
-
 _Declared in `include/datoviz/scene.h`:3392._
 
 ### `dvz_polygons_set_region_stroke_width_px()`
+
+Set one polygon region's stroke width in pixels.
 
 ```c title="dvz_polygons_set_region_stroke_width_px"
 DvzResult dvz_polygons_set_region_stroke_width_px(
@@ -2622,11 +2624,11 @@ DvzResult dvz_polygons_set_region_stroke_width_px(
 | `polygon_index` | `uint32_t` | polygon index |
 | `width` | `float` | stroke width in pixels |
 
-Set one polygon region's stroke width in pixels.
-
 _Declared in `include/datoviz/scene.h`:3405._
 
 ### `dvz_polygons_set_region_stroke_widths_px()`
+
+Set a contiguous range of polygon region stroke widths.
 
 ```c title="dvz_polygons_set_region_stroke_widths_px"
 DvzResult dvz_polygons_set_region_stroke_widths_px(
@@ -2645,11 +2647,11 @@ DvzResult dvz_polygons_set_region_stroke_widths_px(
 | `polygon_count` | `uint32_t` | number of regions to update |
 | `widths` | `const float *` | stroke widths in pixels |
 
-Set a contiguous range of polygon region stroke widths.
-
 _Declared in `include/datoviz/scene.h`:3417._
 
 ### `dvz_polygons_set_region_visibilities()`
+
+Set a contiguous range of polygon region visibilities.
 
 ```c title="dvz_polygons_set_region_visibilities"
 DvzResult dvz_polygons_set_region_visibilities(
@@ -2668,11 +2670,11 @@ DvzResult dvz_polygons_set_region_visibilities(
 | `polygon_count` | `uint32_t` | number of regions to update |
 | `visible` | `const _Bool *` | borrowed visibility array |
 
-Set a contiguous range of polygon region visibilities.
-
 _Declared in `include/datoviz/scene.h`:3342._
 
 ### `dvz_polygons_set_region_visible()`
+
+Set one polygon region's visibility.
 
 ```c title="dvz_polygons_set_region_visible"
 DvzResult dvz_polygons_set_region_visible(
@@ -2689,11 +2691,11 @@ DvzResult dvz_polygons_set_region_visible(
 | `polygon_index` | `uint32_t` | polygon index |
 | `visible` | `_Bool` | whether the region should render |
 
-Set one polygon region's visibility.
-
 _Declared in `include/datoviz/scene.h`:3330._
 
 ### `dvz_polygons_set_stroke_caps()`
+
+Configure polygon-set stroke endpoint caps.
 
 ```c title="dvz_polygons_set_stroke_caps"
 DvzResult dvz_polygons_set_stroke_caps(
@@ -2710,11 +2712,11 @@ DvzResult dvz_polygons_set_stroke_caps(
 | `start_cap` | `DvzSegmentCap` | cap applied to each ring start |
 | `end_cap` | `DvzSegmentCap` | cap applied to each ring end |
 
-Configure polygon-set stroke endpoint caps.
-
 _Declared in `include/datoviz/scene.h`:3430._
 
 ### `dvz_polygons_set_stroke_join()`
+
+Configure polygon-set stroke joins.
 
 ```c title="dvz_polygons_set_stroke_join"
 DvzResult dvz_polygons_set_stroke_join(
@@ -2731,13 +2733,17 @@ DvzResult dvz_polygons_set_stroke_join(
 | `join` | `DvzPathJoin` | join style |
 | `miter_limit` | `float` | positive finite miter limit |
 
-Configure polygon-set stroke joins.
-
 _Declared in `include/datoviz/scene.h`:3442._
 
 ## Primitive
 
 ### `dvz_primitive()`
+
+Create a primitive visual.
+
+Renders raw GPU primitives (point lists, line lists/strips, triangle lists/strips) with
+built-in shaders. Accepts `position` (vec3) and `color` (RGBA8), plus optional `normal`
+(vec3) and optional `"index"` buffer bindings for indexed draws.
 
 ```c title="dvz_primitive"
 DvzVisual * dvz_primitive(
@@ -2754,17 +2760,18 @@ DvzVisual * dvz_primitive(
 | `topology` | `DvzPrimitiveTopology` | primitive topology, fixed at construction time |
 | `flags` | `uint32_t` | variant flags |
 
-Create a primitive visual.
-
-Renders raw GPU primitives (point lists, line lists/strips, triangle lists/strips) with
-built-in shaders. Accepts `position` (vec3) and `color` (RGBA8), plus optional `normal`
-(vec3) and optional `"index"` buffer bindings for indexed draws.
-
 _Declared in `include/datoviz/scene.h`:2847._
 
 ## Segment
 
 ### `dvz_segment()`
+
+Create a segment visual.
+
+v0.4 segment visuals render independent endpoint pairs as analytic screen-space
+stroked line segments. Dense attributes are `position_start` (vec3), `position_end` (vec3),
+`color` (RGBA8), and `stroke_width_px` (float width in pixels). Segment caps default to butt at
+both ends.
 
 ```c title="dvz_segment"
 DvzVisual * dvz_segment(
@@ -2779,16 +2786,14 @@ DvzVisual * dvz_segment(
 | `scene` | `DvzScene *` | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-Create a segment visual.
-
-v0.4 segment visuals render independent endpoint pairs as analytic screen-space
-stroked line segments. Dense attributes are `position_start` (vec3), `position_end` (vec3),
-`color` (RGBA8), and `stroke_width_px` (float width in pixels). Segment caps default to butt at
-both ends.
-
 _Declared in `include/datoviz/scene.h`:2761._
 
 ### `dvz_segment_set_caps()`
+
+Configure segment endpoint caps.
+
+Arrow caps, dashes, scalar color, and per-item cap attributes are deferred. Supported first
+slice caps are none, round, triangle-in, triangle-out, square, and butt.
 
 ```c title="dvz_segment_set_caps"
 DvzResult dvz_segment_set_caps(
@@ -2805,16 +2810,17 @@ DvzResult dvz_segment_set_caps(
 | `start_cap` | `DvzSegmentCap` | cap applied to `position_start` |
 | `end_cap` | `DvzSegmentCap` | cap applied to `position_end` |
 
-Configure segment endpoint caps.
-
-Arrow caps, dashes, scalar color, and per-item cap attributes are deferred. Supported first
-slice caps are none, round, triangle-in, triangle-out, square, and butt.
-
 _Declared in `include/datoviz/scene.h`:2776._
 
 ## Sphere
 
 ### `dvz_sphere()`
+
+Create a sphere impostor visual.
+
+Sphere visuals render one analytic 3D sphere per item from `position` (vec3 center), `color`
+(RGBA8), and `radius` (float). The GLSL backend reconstructs the sphere surface in the
+fragment shader, writes sphere-surface depth, and uses analytic antialiasing at the silhouette.
 
 ```c title="dvz_sphere"
 DvzVisual * dvz_sphere(
@@ -2829,15 +2835,15 @@ DvzVisual * dvz_sphere(
 | `scene` | `DvzScene *` | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-Create a sphere impostor visual.
-
-Sphere visuals render one analytic 3D sphere per item from `position` (vec3 center), `color`
-(RGBA8), and `radius` (float). The GLSL backend reconstructs the sphere surface in the
-fragment shader, writes sphere-surface depth, and uses analytic antialiasing at the silhouette.
-
 _Declared in `include/datoviz/scene.h`:2732._
 
 ### `dvz_sphere_set_mode()`
+
+Set the sphere impostor rendering mode.
+
+`DVZ_SPHERE_MODE_FAST_IMPOSTOR` uses the cheap point-coordinate sphere reconstruction.
+`DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR` intersects the camera ray with the sphere in the fragment
+shader for more accurate surface position, normal, and depth.
 
 ```c title="dvz_sphere_set_mode"
 DvzResult dvz_sphere_set_mode(
@@ -2852,17 +2858,18 @@ DvzResult dvz_sphere_set_mode(
 | `visual` | `DvzVisual *` | the sphere visual |
 | `mode` | `DvzSphereMode` | the rendering mode |
 
-Set the sphere impostor rendering mode.
-
-`DVZ_SPHERE_MODE_FAST_IMPOSTOR` uses the cheap point-coordinate sphere reconstruction.
-`DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR` intersects the camera ray with the sphere in the fragment
-shader for more accurate surface position, normal, and depth.
-
 _Declared in `include/datoviz/scene.h`:2746._
 
 ## Splat
 
 ### `dvz_splat()`
+
+Create a Gaussian splat visual.
+
+Renders one screen-facing Gaussian footprint per item with `position` (vec3), `color` (RGBA8),
+`sigma` (vec2, screen pixels), and `angle` (float radians). The first implementation uses
+center depth, depth test on, depth writes off through alpha blending, and no sorting or
+projected 3D covariance.
 
 ```c title="dvz_splat"
 DvzVisual * dvz_splat(
@@ -2877,18 +2884,13 @@ DvzVisual * dvz_splat(
 | `scene` | `DvzScene *` | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-Create a Gaussian splat visual.
-
-Renders one screen-facing Gaussian footprint per item with `position` (vec3), `color` (RGBA8),
-`sigma` (vec2, screen pixels), and `angle` (float radians). The first implementation uses
-center depth, depth test on, depth writes off through alpha blending, and no sorting or
-projected 3D covariance.
-
 _Declared in `include/datoviz/scene.h`:2686._
 
 ## Ssao
 
 ### `dvz_ssao_desc()`
+
+Return default screen-space ambient occlusion options.
 
 ```c title="dvz_ssao_desc"
 DvzSsaoDesc dvz_ssao_desc(void);
@@ -2898,13 +2900,17 @@ DvzSsaoDesc dvz_ssao_desc(void);
 | --- | --- | --- |
 | return | `DvzSsaoDesc` | SSAO descriptor |
 
-Return default screen-space ambient occlusion options.
-
 _Declared in `include/datoviz/scene.h`:1267._
 
 ## Standard
 
 ### `dvz_standard_material_desc()`
+
+Return default standard visual material options.
+
+The descriptor uses `DVZ_MATERIAL_MODEL_STANDARD` with opaque alpha, full opacity, a white
+base-color factor, light direction `(-0.45, 0.35, 0.82)`, roughness `0.62`, specular `0.34`,
+metallic `0`, no emissive contribution, and rim contribution `0.10`.
 
 ```c title="dvz_standard_material_desc"
 DvzMaterialDesc dvz_standard_material_desc(void);
@@ -2914,17 +2920,16 @@ DvzMaterialDesc dvz_standard_material_desc(void);
 | --- | --- | --- |
 | return | `DvzMaterialDesc` | default standard material descriptor |
 
-Return default standard visual material options.
-
-The descriptor uses `DVZ_MATERIAL_MODEL_STANDARD` with opaque alpha, full opacity, a white
-base-color factor, light direction `(-0.45, 0.35, 0.82)`, roughness `0.62`, specular `0.34`,
-metallic `0`, no emissive contribution, and rim contribution `0.10`.
-
 _Declared in `include/datoviz/scene.h`:2421._
 
 ## Symbol
 
 ### `dvz_symbol_bitmap()`
+
+Register an RGBA bitmap symbol source in one symbol set.
+
+The payload is copied into scene-owned storage. Homogeneous bitmap marker symbol arrays render
+through a scene-owned atlas texture.
 
 ```c title="dvz_symbol_bitmap"
 DvzSymbolId dvz_symbol_bitmap(
@@ -2947,14 +2952,14 @@ DvzSymbolId dvz_symbol_bitmap(
 | `height` | `uint32_t` | source height in pixels |
 | `desc` | `const DvzSymbolImageDesc *` | optional image source options |
 
-Register an RGBA bitmap symbol source in one symbol set.
-
-The payload is copied into scene-owned storage. Homogeneous bitmap marker symbol arrays render
-through a scene-owned atlas texture.
-
 _Declared in `include/datoviz/scene.h`:2539._
 
 ### `dvz_symbol_builtin()`
+
+Register or return a built-in symbol id in one symbol set.
+
+Built-in symbol ids are stable within the set and currently match the corresponding
+`DvzMarkerShape` values so marker `shape` and `symbol` data can share one retained path.
 
 ```c title="dvz_symbol_builtin"
 DvzSymbolId dvz_symbol_builtin(
@@ -2969,14 +2974,14 @@ DvzSymbolId dvz_symbol_builtin(
 | `symbols` | `DvzSymbolSet *` | the symbol set |
 | `builtin` | `DvzSymbolBuiltin` | the built-in symbol |
 
-Register or return a built-in symbol id in one symbol set.
-
-Built-in symbol ids are stable within the set and currently match the corresponding
-`DvzMarkerShape` values so marker `shape` and `symbol` data can share one retained path.
-
 _Declared in `include/datoviz/scene.h`:2511._
 
 ### `dvz_symbol_image_desc()`
+
+Return default image-backed symbol source options.
+
+The default row stride is tightly packed. `distance_range_px` is used by SDF/MSDF sources and is
+ignored for bitmap sources.
 
 ```c title="dvz_symbol_image_desc"
 DvzSymbolImageDesc dvz_symbol_image_desc(void);
@@ -2986,14 +2991,14 @@ DvzSymbolImageDesc dvz_symbol_image_desc(void);
 | --- | --- | --- |
 | return | `DvzSymbolImageDesc` | default symbol image descriptor |
 
-Return default image-backed symbol source options.
-
-The default row stride is tightly packed. `distance_range_px` is used by SDF/MSDF sources and is
-ignored for bitmap sources.
-
 _Declared in `include/datoviz/scene.h`:2522._
 
 ### `dvz_symbol_msdf()`
+
+Register an RGB MSDF symbol source in one symbol set.
+
+The payload is copied into scene-owned storage. `desc->distance_range_px` describes the encoded
+distance-field range in source pixels when nonzero.
 
 ```c title="dvz_symbol_msdf"
 DvzSymbolId dvz_symbol_msdf(
@@ -3016,14 +3021,14 @@ DvzSymbolId dvz_symbol_msdf(
 | `height` | `uint32_t` | source height in pixels |
 | `desc` | `const DvzSymbolImageDesc *` | optional image source options |
 
-Register an RGB MSDF symbol source in one symbol set.
-
-The payload is copied into scene-owned storage. `desc->distance_range_px` describes the encoded
-distance-field range in source pixels when nonzero.
-
 _Declared in `include/datoviz/scene.h`:2577._
 
 ### `dvz_symbol_sdf()`
+
+Register a single-channel SDF symbol source in one symbol set.
+
+The payload is copied into scene-owned storage. `desc->distance_range_px` describes the encoded
+distance-field range in source pixels when nonzero.
 
 ```c title="dvz_symbol_sdf"
 DvzSymbolId dvz_symbol_sdf(
@@ -3046,14 +3051,15 @@ DvzSymbolId dvz_symbol_sdf(
 | `height` | `uint32_t` | source height in pixels |
 | `desc` | `const DvzSymbolImageDesc *` | optional image source options |
 
-Register a single-channel SDF symbol source in one symbol set.
-
-The payload is copied into scene-owned storage. `desc->distance_range_px` describes the encoded
-distance-field range in source pixels when nonzero.
-
 _Declared in `include/datoviz/scene.h`:2558._
 
 ### `dvz_symbol_set()`
+
+Create a scene-owned reusable symbol set.
+
+Built-in code-SDF symbols are marker-renderable today. Bitmap, SDF, and MSDF source payloads are
+retained by the same object model; SVG-path import and atlas-backed marker rendering are later
+parity slices.
 
 ```c title="dvz_symbol_set"
 DvzSymbolSet * dvz_symbol_set(
@@ -3068,15 +3074,15 @@ DvzSymbolSet * dvz_symbol_set(
 | `scene` | `DvzScene *` | the scene |
 | `flags` | `uint32_t` | reserved flags |
 
-Create a scene-owned reusable symbol set.
-
-Built-in code-SDF symbols are marker-renderable today. Bitmap, SDF, and MSDF source payloads are
-retained by the same object model; SVG-path import and atlas-backed marker rendering are later
-parity slices.
-
 _Declared in `include/datoviz/scene.h`:2498._
 
 ### `dvz_symbol_svg_path()`
+
+Generate and register an MSDF symbol source from an SVG path string.
+
+The generated payload is copied into scene-owned storage through `dvz_symbol_msdf()`.
+`desc->distance_range_px` controls the generated distance-field pixel range when nonzero. This
+function returns `DVZ_SYMBOL_ID_INVALID` if Datoviz was built without msdfgen SVG support.
 
 ```c title="dvz_symbol_svg_path"
 DvzSymbolId dvz_symbol_svg_path(
@@ -3099,17 +3105,13 @@ DvzSymbolId dvz_symbol_svg_path(
 | `height` | `uint32_t` | generated atlas source height in pixels |
 | `desc` | `const DvzSymbolImageDesc *` | optional image source options |
 
-Generate and register an MSDF symbol source from an SVG path string.
-
-The generated payload is copied into scene-owned storage through `dvz_symbol_msdf()`.
-`desc->distance_range_px` controls the generated distance-field pixel range when nonzero. This
-function returns `DVZ_SYMBOL_ID_INVALID` if Datoviz was built without msdfgen SVG support.
-
 _Declared in `include/datoviz/scene.h`:2597._
 
 ## Tessellate
 
 ### `dvz_tessellate_cubic_bezier()`
+
+Tessellate a cubic Bezier curve into an owned point path.
 
 ```c title="dvz_tessellate_cubic_bezier"
 DvzTessellatedPath * dvz_tessellate_cubic_bezier(
@@ -3130,11 +3132,11 @@ DvzTessellatedPath * dvz_tessellate_cubic_bezier(
 | `p3` | `const dvec3` | second endpoint |
 | `desc` | `const DvzBezierTessellationDesc *` | optional tessellation descriptor |
 
-Tessellate a cubic Bezier curve into an owned point path.
-
 _Declared in `include/datoviz/geom.h`:458._
 
 ### `dvz_tessellate_quadratic_bezier()`
+
+Tessellate a quadratic Bezier curve into an owned point path.
 
 ```c title="dvz_tessellate_quadratic_bezier"
 DvzTessellatedPath * dvz_tessellate_quadratic_bezier(
@@ -3153,13 +3155,13 @@ DvzTessellatedPath * dvz_tessellate_quadratic_bezier(
 | `p2` | `const dvec3` | second endpoint |
 | `desc` | `const DvzBezierTessellationDesc *` | optional tessellation descriptor |
 
-Tessellate a quadratic Bezier curve into an owned point path.
-
 _Declared in `include/datoviz/geom.h`:444._
 
 ## Tessellated
 
 ### `dvz_tessellated_path_destroy()`
+
+Destroy a tessellated path.
 
 ```c title="dvz_tessellated_path_destroy"
 void dvz_tessellated_path_destroy(
@@ -3171,13 +3173,13 @@ void dvz_tessellated_path_destroy(
 | --- | --- | --- |
 | `path` | `DvzTessellatedPath *` | tessellated path |
 
-Destroy a tessellated path.
-
 _Declared in `include/datoviz/geom.h`:468._
 
 ## Triangulate
 
 ### `dvz_triangulate_polygon()`
+
+Triangulate a polygon with optional holes into indexed XY mesh geometry.
 
 ```c title="dvz_triangulate_polygon"
 DvzGeometry * dvz_triangulate_polygon(
@@ -3192,13 +3194,13 @@ DvzGeometry * dvz_triangulate_polygon(
 | `polygon` | `const DvzPolygonDesc *` | borrowed polygon descriptor |
 | `desc` | `const DvzTriangulationDesc *` | optional triangulation descriptor |
 
-Triangulate a polygon with optional holes into indexed XY mesh geometry.
-
 _Declared in `include/datoviz/geom.h`:432._
 
 ## Triangulation
 
 ### `dvz_triangulation_desc()`
+
+Return a default triangulation descriptor.
 
 ```c title="dvz_triangulation_desc"
 DvzTriangulationDesc dvz_triangulation_desc(void);
@@ -3208,13 +3210,20 @@ DvzTriangulationDesc dvz_triangulation_desc(void);
 | --- | --- | --- |
 | return | `DvzTriangulationDesc` | initialized triangulation descriptor |
 
-Return a default triangulation descriptor.
-
 _Declared in `include/datoviz/geom.h`:413._
 
 ## Vector
 
 ### `dvz_vector()`
+
+Create a vector visual.
+
+Straight vector items accept dense `position` (vec3 tail/anchor), `vector` (vec3 displacement),
+`color` (RGBA8), and `stroke_width_px` (float pixels). The first native lowering renders each item
+through the scene segment stroke pipeline with source item identity preserved.
+
+Curved mode omits `vector`; `position`, `color`, and `stroke_width_px` are then interpreted as
+path points, optionally grouped by dvz_vector_set_subpaths().
 
 ```c title="dvz_vector"
 DvzVisual * dvz_vector(
@@ -3229,18 +3238,14 @@ DvzVisual * dvz_vector(
 | `scene` | `DvzScene *` | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-Create a vector visual.
-
-Straight vector items accept dense `position` (vec3 tail/anchor), `vector` (vec3 displacement),
-`color` (RGBA8), and `stroke_width_px` (float pixels). The first native lowering renders each item
-through the scene segment stroke pipeline with source item identity preserved.
-
-Curved mode omits `vector`; `position`, `color`, and `stroke_width_px` are then interpreted as
-path points, optionally grouped by dvz_vector_set_subpaths().
-
 _Declared in `include/datoviz/scene.h`:2804._
 
 ### `dvz_vector_set_style()`
+
+Configure vector styling.
+
+v0.4 supports visual-wide scale, anchor, endpoint caps, and path join settings.
+Passing NULL restores the defaults.
 
 ```c title="dvz_vector_set_style"
 DvzResult dvz_vector_set_style(
@@ -3255,14 +3260,14 @@ DvzResult dvz_vector_set_style(
 | `visual` | `DvzVisual *` | the vector visual |
 | `style` | `const DvzVectorStyle *` | style descriptor, or NULL for defaults |
 
-Configure vector styling.
-
-v0.4 supports visual-wide scale, anchor, endpoint caps, and path join settings.
-Passing NULL restores the defaults.
-
 _Declared in `include/datoviz/scene.h`:2817._
 
 ### `dvz_vector_set_subpaths()`
+
+Set explicit curved-vector subpath lengths for a vector visual.
+
+When unset in curved mode, all points belong to one open vector path. Lengths are consumed in
+order and must sum to the vector visual's path-point count at emission time.
 
 ```c title="dvz_vector_set_subpaths"
 DvzResult dvz_vector_set_subpaths(
@@ -3279,14 +3284,14 @@ DvzResult dvz_vector_set_subpaths(
 | `subpath_count` | `uint32_t` | number of subpaths |
 | `lengths` | `const uint32_t *` | point count for each subpath |
 
-Set explicit curved-vector subpath lengths for a vector visual.
-
-When unset in curved mode, all points belong to one open vector path. Lengths are consumed in
-order and must sum to the vector visual's path-point count at emission time.
-
 _Declared in `include/datoviz/scene.h`:2831._
 
 ### `dvz_vector_style()`
+
+Return default vector styling.
+
+The default style renders a tail-anchored vector with a triangular end cap. `scale` multiplies
+each dense `vector` attribute before endpoint derivation.
 
 ```c title="dvz_vector_style"
 DvzVectorStyle dvz_vector_style(void);
@@ -3296,16 +3301,13 @@ DvzVectorStyle dvz_vector_style(void);
 | --- | --- | --- |
 | return | `DvzVectorStyle` | default vector style descriptor |
 
-Return default vector styling.
-
-The default style renders a tail-anchored vector with a triangular end cap. `scale` multiplies
-each dense `vector` attribute before endpoint derivation.
-
 _Declared in `include/datoviz/scene.h`:2787._
 
 ## Visual
 
 ### `dvz_visual_alpha_mode()`
+
+Return the visual alpha handling mode.
 
 ```c title="dvz_visual_alpha_mode"
 DvzAlphaMode dvz_visual_alpha_mode(
@@ -3318,11 +3320,11 @@ DvzAlphaMode dvz_visual_alpha_mode(
 | return | `DvzAlphaMode` | the alpha handling mode |
 | `visual` | `const DvzVisual *` | the visual |
 
-Return the visual alpha handling mode.
-
 _Declared in `include/datoviz/scene.h`:1823._
 
 ### `dvz_visual_attach_desc()`
+
+Return the default visual attachment descriptor.
 
 ```c title="dvz_visual_attach_desc"
 DvzVisualAttachDesc dvz_visual_attach_desc(void);
@@ -3332,11 +3334,11 @@ DvzVisualAttachDesc dvz_visual_attach_desc(void);
 | --- | --- | --- |
 | return | `DvzVisualAttachDesc` | default visual attachment descriptor |
 
-Return the default visual attachment descriptor.
-
 _Declared in `include/datoviz/scene.h`:1066._
 
 ### `dvz_visual_attr_count()`
+
+Return the number of public attributes accepted by a visual family.
 
 ```c title="dvz_visual_attr_count"
 uint32_t dvz_visual_attr_count(
@@ -3349,11 +3351,13 @@ uint32_t dvz_visual_attr_count(
 | return | `uint32_t` | the number of supported public attributes, or 0 when visual is NULL |
 | `visual` | `const DvzVisual *` | the visual |
 
-Return the number of public attributes accepted by a visual family.
-
 _Declared in `include/datoviz/scene.h`:1698._
 
 ### `dvz_visual_attr_format()`
+
+Return the effective storage format for a visual attribute.
+
+Missing attributes return the family default format.
 
 ```c title="dvz_visual_attr_format"
 DvzVisualAttrFormat dvz_visual_attr_format(
@@ -3368,13 +3372,14 @@ DvzVisualAttrFormat dvz_visual_attr_format(
 | `visual` | `const DvzVisual *` | the visual |
 | `attr_name` | `const char *` | attribute name |
 
-Return the effective storage format for a visual attribute.
-
-Missing attributes return the family default format.
-
 _Declared in `include/datoviz/scene.h`:1982._
 
 ### `dvz_visual_attr_info()`
+
+Copy public metadata for one visual attribute.
+
+The returned `name` pointer is owned by Datoviz and remains valid for the process lifetime.
+`source_mask` uses `(1u << DvzVisualAttrSource)` bits.
 
 ```c title="dvz_visual_attr_info"
 DvzResult dvz_visual_attr_info(
@@ -3391,14 +3396,13 @@ DvzResult dvz_visual_attr_info(
 | `index` | `uint32_t` | attribute index in [0, `dvz_visual_attr_count()`) |
 | `out` | `DvzVisualAttrInfo *` | output attribute metadata |
 
-Copy public metadata for one visual attribute.
-
-The returned `name` pointer is owned by Datoviz and remains valid for the process lifetime.
-`source_mask` uses `(1u << DvzVisualAttrSource)` bits.
-
 _Declared in `include/datoviz/scene.h`:1713._
 
 ### `dvz_visual_attr_mutability()`
+
+Return the expected update frequency for a visual attribute.
+
+Missing attributes default to `DVZ_VISUAL_ATTR_MUTABILITY_DYNAMIC`.
 
 ```c title="dvz_visual_attr_mutability"
 DvzVisualAttrMutability dvz_visual_attr_mutability(
@@ -3413,13 +3417,13 @@ DvzVisualAttrMutability dvz_visual_attr_mutability(
 | `visual` | `const DvzVisual *` | the visual |
 | `attr_name` | `const char *` | attribute name |
 
-Return the expected update frequency for a visual attribute.
-
-Missing attributes default to `DVZ_VISUAL_ATTR_MUTABILITY_DYNAMIC`.
-
 _Declared in `include/datoviz/scene.h`:1950._
 
 ### `dvz_visual_attr_source()`
+
+Return the semantic source for a visual attribute.
+
+Missing attributes default to `DVZ_VISUAL_ATTR_SOURCE_PER_ITEM`.
 
 ```c title="dvz_visual_attr_source"
 DvzVisualAttrSource dvz_visual_attr_source(
@@ -3434,13 +3438,11 @@ DvzVisualAttrSource dvz_visual_attr_source(
 | `visual` | `const DvzVisual *` | the visual |
 | `attr_name` | `const char *` | attribute name |
 
-Return the semantic source for a visual attribute.
-
-Missing attributes default to `DVZ_VISUAL_ATTR_SOURCE_PER_ITEM`.
-
 _Declared in `include/datoviz/scene.h`:1922._
 
 ### `dvz_visual_attr_supported()`
+
+Return whether a visual accepts one public attribute name.
 
 ```c title="dvz_visual_attr_supported"
 _Bool dvz_visual_attr_supported(
@@ -3455,11 +3457,15 @@ _Bool dvz_visual_attr_supported(
 | `visual` | `const DvzVisual *` | the visual |
 | `attr_name` | `const char *` | public attribute name |
 
-Return whether a visual accepts one public attribute name.
-
 _Declared in `include/datoviz/scene.h`:1723._
 
 ### `dvz_visual_bounds()`
+
+Return the retained visual-space bounding box of one visual.
+
+The box is computed from CPU-retained dense visual attributes and family-specific geometry state.
+It does not require an emitted frame or a live graphics backend. Buffer-backed attributes do not
+expose CPU-side bounds in the current v0.4 path.
 
 ```c title="dvz_visual_bounds"
 DvzResult dvz_visual_bounds(
@@ -3474,15 +3480,11 @@ DvzResult dvz_visual_bounds(
 | `visual` | `const DvzVisual *` | the visual |
 | `out` | `DvzBounds *` | output bounding box |
 
-Return the retained visual-space bounding box of one visual.
-
-The box is computed from CPU-retained dense visual attributes and family-specific geometry state.
-It does not require an emitted frame or a live graphics backend. Buffer-backed attributes do not
-expose CPU-side bounds in the current v0.4 path.
-
 _Declared in `include/datoviz/scene.h`:2087._
 
 ### `dvz_visual_clear_item_range()`
+
+Clear the active logical item range and restore full visual participation.
 
 ```c title="dvz_visual_clear_item_range"
 DvzResult dvz_visual_clear_item_range(
@@ -3495,11 +3497,11 @@ DvzResult dvz_visual_clear_item_range(
 | return | `DvzResult` | DVZ_OK if the item range was cleared, DVZ_ERROR otherwise |
 | `visual` | `DvzVisual *` | the visual |
 
-Clear the active logical item range and restore full visual participation.
-
 _Declared in `include/datoviz/scene.h`:2060._
 
 ### `dvz_visual_clear_transform()`
+
+Clear the retained visual-local transform back to identity.
 
 ```c title="dvz_visual_clear_transform"
 DvzResult dvz_visual_clear_transform(
@@ -3512,11 +3514,15 @@ DvzResult dvz_visual_clear_transform(
 | return | `DvzResult` | 0 on success, -1 on error |
 | `visual` | `DvzVisual *` | the visual |
 
-Clear the retained visual-local transform back to identity.
-
 _Declared in `include/datoviz/scene.h`:1893._
 
 ### `dvz_visual_data()`
+
+Return a read-only view of retained dense visual attribute data.
+
+Attribute aliases are resolved with the same storage-name rules as dvz_visual_set_data().
+Buffer-backed, field-backed, metadata-only, and missing attributes do not expose dense data
+through this dense-data view.
 
 ```c title="dvz_visual_data"
 DvzResult dvz_visual_data(
@@ -3533,15 +3539,11 @@ DvzResult dvz_visual_data(
 | `attr_name` | `const char *` | attribute name |
 | `out` | `DvzVisualDataView *` | output data view |
 
-Return a read-only view of retained dense visual attribute data.
-
-Attribute aliases are resolved with the same storage-name rules as dvz_visual_set_data().
-Buffer-backed, field-backed, metadata-only, and missing attributes do not expose dense data
-through this dense-data view.
-
 _Declared in `include/datoviz/scene.h`:2033._
 
 ### `dvz_visual_depth_test()`
+
+Return whether depth testing is enabled for the visual.
 
 ```c title="dvz_visual_depth_test"
 _Bool dvz_visual_depth_test(
@@ -3554,11 +3556,11 @@ _Bool dvz_visual_depth_test(
 | return | `_Bool` | whether depth testing is enabled |
 | `visual` | `const DvzVisual *` | the visual |
 
-Return whether depth testing is enabled for the visual.
-
 _Declared in `include/datoviz/scene.h`:1769._
 
 ### `dvz_visual_destroy()`
+
+Destroy a visual.
 
 ```c title="dvz_visual_destroy"
 void dvz_visual_destroy(
@@ -3570,11 +3572,11 @@ void dvz_visual_destroy(
 | --- | --- | --- |
 | `visual` | `DvzVisual *` | the visual |
 
-Destroy a visual.
-
 _Declared in `include/datoviz/scene.h`:1662._
 
 ### `dvz_visual_family()`
+
+Return the family of a visual.
 
 ```c title="dvz_visual_family"
 DvzSceneVisualFamily dvz_visual_family(
@@ -3587,11 +3589,11 @@ DvzSceneVisualFamily dvz_visual_family(
 | return | `DvzSceneVisualFamily` | the visual family, or DVZ_SCENE_VISUAL_FAMILY_NONE when visual is NULL |
 | `visual` | `const DvzVisual *` | the visual |
 
-Return the family of a visual.
-
 _Declared in `include/datoviz/scene.h`:1680._
 
 ### `dvz_visual_family_name()`
+
+Return the stable public name of a visual family.
 
 ```c title="dvz_visual_family_name"
 const char * dvz_visual_family_name(
@@ -3604,11 +3606,14 @@ const char * dvz_visual_family_name(
 | return | `const char *` | the family name, or "none" for unknown/none |
 | `family` | `DvzSceneVisualFamily` | the visual family |
 
-Return the stable public name of a visual family.
-
 _Declared in `include/datoviz/scene.h`:1689._
 
 ### `dvz_visual_get_item_range()`
+
+Return the effective logical item range for a retained visual.
+
+When no explicit range is active, this returns the full effective range. This first API does not
+distinguish an explicitly full active range from a cleared range.
 
 ```c title="dvz_visual_get_item_range"
 _Bool dvz_visual_get_item_range(
@@ -3623,14 +3628,13 @@ _Bool dvz_visual_get_item_range(
 | `visual` | `const DvzVisual *` | the visual |
 | `out` | `DvzItemRange *` | output item range |
 
-Return the effective logical item range for a retained visual.
-
-When no explicit range is active, this returns the full effective range. This first API does not
-distinguish an explicitly full active range from a cleared range.
-
 _Declared in `include/datoviz/scene.h`:2073._
 
 ### `dvz_visual_get_transform()`
+
+Copy the retained visual-local transform.
+
+When no transform is retained, this writes identity to `out`.
 
 ```c title="dvz_visual_get_transform"
 DvzResult dvz_visual_get_transform(
@@ -3645,13 +3649,11 @@ DvzResult dvz_visual_get_transform(
 | `visual` | `const DvzVisual *` | the visual |
 | `out` | `mat4` | output local model transform |
 
-Copy the retained visual-local transform.
-
-When no transform is retained, this writes identity to `out`.
-
 _Declared in `include/datoviz/scene.h`:1884._
 
 ### `dvz_visual_has_transform()`
+
+Return whether a visual has a retained local transform.
 
 ```c title="dvz_visual_has_transform"
 _Bool dvz_visual_has_transform(
@@ -3664,11 +3666,11 @@ _Bool dvz_visual_has_transform(
 | return | `_Bool` | whether a non-default local transform is retained |
 | `visual` | `const DvzVisual *` | the visual |
 
-Return whether a visual has a retained local transform.
-
 _Declared in `include/datoviz/scene.h`:1872._
 
 ### `dvz_visual_id()`
+
+Return the scene-local identity of a visual.
 
 ```c title="dvz_visual_id"
 DvzId dvz_visual_id(
@@ -3681,11 +3683,16 @@ DvzId dvz_visual_id(
 | return | `DvzId` | the scene-local identity, or DVZ_ID_NONE when visual is NULL |
 | `visual` | `const DvzVisual *` | the visual |
 
-Return the scene-local identity of a visual.
-
 _Declared in `include/datoviz/scene.h`:1671._
 
 ### `dvz_visual_set_alpha_mode()`
+
+Set the visual alpha handling mode.
+
+This controls which transparency path the scene planner should use for the visual. Use
+DVZ_ALPHA_BLENDED for ordinary source-over alpha blending, DVZ_ALPHA_WBOIT for weighted
+blended order-independent transparency, and DVZ_ALPHA_DEPTH_PEEL for the depth-peeling
+order-independent transparency path.
 
 ```c title="dvz_visual_set_alpha_mode"
 DvzResult dvz_visual_set_alpha_mode(
@@ -3700,16 +3707,19 @@ DvzResult dvz_visual_set_alpha_mode(
 | `visual` | `DvzVisual *` | the visual |
 | `mode` | `DvzAlphaMode` | the alpha handling mode |
 
-Set the visual alpha handling mode.
-
-This controls which transparency path the scene planner should use for the visual. Use
-DVZ_ALPHA_BLENDED for ordinary source-over alpha blending, DVZ_ALPHA_WBOIT for weighted
-blended order-independent transparency, and DVZ_ALPHA_DEPTH_PEEL for the depth-peeling
-order-independent transparency path.
-
 _Declared in `include/datoviz/scene.h`:1784._
 
 ### `dvz_visual_set_attr_buffer()`
+
+Bind a scene-owned buffer to a per-item visual attribute.
+
+This is the C-level groundwork for externally produced GPU attributes. v0.4 currently supports
+planar vertex attributes only: the scene buffer stride must match the attribute item size, and
+the attribute source must remain `DVZ_VISUAL_ATTR_SOURCE_PER_ITEM`.
+
+If the bound scene buffer has CPU data, the scene emits normal buffer upload commands. If it has
+no CPU data, the scene registers the resource label for a live runtime to satisfy separately and
+emits no CPU upload for that attribute.
 
 ```c title="dvz_visual_set_attr_buffer"
 DvzResult dvz_visual_set_attr_buffer(
@@ -3730,19 +3740,18 @@ DvzResult dvz_visual_set_attr_buffer(
 | `byte_offset` | `uint64_t` | byte offset into the buffer |
 | `item_count` | `uint32_t` | number of attribute items |
 
-Bind a scene-owned buffer to a per-item visual attribute.
-
-This is the C-level groundwork for externally produced GPU attributes. v0.4 currently supports
-planar vertex attributes only: the scene buffer stride must match the attribute item size, and
-the attribute source must remain `DVZ_VISUAL_ATTR_SOURCE_PER_ITEM`.
-
-If the bound scene buffer has CPU data, the scene emits normal buffer upload commands. If it has
-no CPU data, the scene registers the resource label for a live runtime to satisfy separately and
-emits no CPU upload for that attribute.
-
 _Declared in `include/datoviz/scene.h`:2384._
 
 ### `dvz_visual_set_attr_format()`
+
+Declare the storage format for a visual attribute.
+
+The format changes the payload type accepted by `dvz_visual_set_data()` for that attribute.
+It must be set before dense data or an external buffer is attached. Missing attributes use the
+family default format; point and pixel `"color"` default to `DVZ_VISUAL_ATTR_FORMAT_RGBA_U8`.
+
+`DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32` is currently defined for point and pixel `"color"` and
+requires a continuous scale bound to the semantic `"color"` slot.
 
 ```c title="dvz_visual_set_attr_format"
 DvzResult dvz_visual_set_attr_format(
@@ -3759,18 +3768,14 @@ DvzResult dvz_visual_set_attr_format(
 | `attr_name` | `const char *` | attribute name |
 | `format` | `DvzVisualAttrFormat` | requested attribute storage format |
 
-Declare the storage format for a visual attribute.
-
-The format changes the payload type accepted by `dvz_visual_set_data()` for that attribute.
-It must be set before dense data or an external buffer is attached. Missing attributes use the
-family default format; point and pixel `"color"` default to `DVZ_VISUAL_ATTR_FORMAT_RGBA_U8`.
-
-`DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32` is currently defined for point and pixel `"color"` and
-requires a continuous scale bound to the semantic `"color"` slot.
-
 _Declared in `include/datoviz/scene.h`:1968._
 
 ### `dvz_visual_set_attr_mutability()`
+
+Declare the expected update frequency for a visual attribute.
+
+The hint is advisory and does not change ownership. It should be set before attaching data when
+callers know that an attribute is static or updated every frame.
 
 ```c title="dvz_visual_set_attr_mutability"
 DvzResult dvz_visual_set_attr_mutability(
@@ -3787,14 +3792,15 @@ DvzResult dvz_visual_set_attr_mutability(
 | `attr_name` | `const char *` | attribute name |
 | `mutability` | `DvzVisualAttrMutability` | the expected update frequency |
 
-Declare the expected update frequency for a visual attribute.
-
-The hint is advisory and does not change ownership. It should be set before attaching data when
-callers know that an attribute is static or updated every frame.
-
 _Declared in `include/datoviz/scene.h`:1936._
 
 ### `dvz_visual_set_attr_source()`
+
+Declare the semantic source for a visual attribute.
+
+This metadata is used by scene planning and future external-buffer lowering. The active dense
+data path remains `DVZ_VISUAL_ATTR_SOURCE_PER_ITEM`; non-per-item sources may be declared only
+before dense data is attached to the attribute.
 
 ```c title="dvz_visual_set_attr_source"
 DvzResult dvz_visual_set_attr_source(
@@ -3811,15 +3817,14 @@ DvzResult dvz_visual_set_attr_source(
 | `attr_name` | `const char *` | attribute name |
 | `source` | `DvzVisualAttrSource` | the semantic attribute source |
 
-Declare the semantic source for a visual attribute.
-
-This metadata is used by scene planning and future external-buffer lowering. The active dense
-data path remains `DVZ_VISUAL_ATTR_SOURCE_PER_ITEM`; non-per-item sources may be declared only
-before dense data is attached to the attribute.
-
 _Declared in `include/datoviz/scene.h`:1908._
 
 ### `dvz_visual_set_buffer()`
+
+Bind a scene-owned buffer to a named visual slot.
+
+v0.4 primitive and mesh visuals accept the `"index"` slot. The bound scene buffer must advertise
+`DVZ_SCENE_BUFFER_USAGE_INDEX`.
 
 ```c title="dvz_visual_set_buffer"
 DvzResult dvz_visual_set_buffer(
@@ -3836,31 +3841,9 @@ DvzResult dvz_visual_set_buffer(
 | `slot_name` | `const char *` | the semantic slot name |
 | `buffer` | `DvzSceneBuffer *` | the buffer, or NULL to clear the binding |
 
-Bind a scene-owned buffer to a named visual slot.
-
-v0.4 primitive and mesh visuals accept the `"index"` slot. The bound scene buffer must advertise
-`DVZ_SCENE_BUFFER_USAGE_INDEX`.
-
 _Declared in `include/datoviz/scene.h`:2347._
 
 ### `dvz_visual_set_data()`
-
-```c title="dvz_visual_set_data"
-DvzResult dvz_visual_set_data(
-    DvzVisual * visual,
-    const char * attr_name,
-    const void * data,
-    uint32_t item_count
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `visual` | `DvzVisual *` | the visual |
-| `attr_name` | `const char *` | attribute name (family-specific, e.g. "position", "color") The payload is copied before this function returns. The caller keeps ownership of `data` and may release or reuse it immediately after a successful or failed call. |
-| `data` | `const void *` | packed data array borrowed for the duration of the call |
-| `item_count` | `uint32_t` | number of items |
 
 Write attribute data to a visual.
 
@@ -3884,11 +3867,37 @@ v0.4 visual families currently accept:
 All configured attributes on one visual must use the same item_count. Retained mutation is legal
 after frame artifact creation; changes are reflected only in later artifacts.
 
+```c title="dvz_visual_set_data"
+DvzResult dvz_visual_set_data(
+    DvzVisual * visual,
+    const char * attr_name,
+    const void * data,
+    uint32_t item_count
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `visual` | `DvzVisual *` | the visual |
+| `attr_name` | `const char *` | attribute name (family-specific, e.g. "position", "color") The payload is copied before this function returns. The caller keeps ownership of `data` and may release or reuse it immediately after a successful or failed call. |
+| `data` | `const void *` | packed data array borrowed for the duration of the call |
+| `item_count` | `uint32_t` | number of items |
+
 Related: [`dvz_visual_set_data_many()`](#dvz_visual_set_data_many), [`dvz_visual_set_data_range()`](#dvz_visual_set_data_range).
 
 _Declared in `include/datoviz/scene.h`:2017._
 
 ### `dvz_visual_set_data_many()`
+
+Atomically replace several dense visual attribute payloads.
+
+This is the preferred API when changing the item count of a visual with several per-item
+attributes, such as point position/color/size. All updates are validated before any existing
+attribute payload is replaced. Every update in the batch must use the same item_count, and any
+existing dense per-item attribute with a different item_count must also be included in the batch.
+Retained mutation is legal after frame artifact creation; changes are reflected only in later
+artifacts.
 
 ```c title="dvz_visual_set_data_many"
 DvzResult dvz_visual_set_data_many(
@@ -3905,20 +3914,18 @@ DvzResult dvz_visual_set_data_many(
 | `updates` | `const DvzVisualDataUpdate *` | attribute update descriptors borrowed for the duration of the call |
 | `update_count` | `uint32_t` | number of update descriptors |
 
-Atomically replace several dense visual attribute payloads.
-
-This is the preferred API when changing the item count of a visual with several per-item
-attributes, such as point position/color/size. All updates are validated before any existing
-attribute payload is replaced. Every update in the batch must use the same item_count, and any
-existing dense per-item attribute with a different item_count must also be included in the batch.
-Retained mutation is legal after frame artifact creation; changes are reflected only in later
-artifacts.
-
 Related: [`dvz_visual_set_data()`](#dvz_visual_set_data).
 
 _Declared in `include/datoviz/scene.h`:2153._
 
 ### `dvz_visual_set_data_range()`
+
+Write a contiguous sub-range of attribute data to a visual.
+
+The attribute must already be fully allocated by a prior
+dvz_visual_set_data() call. Only the items in
+[first_item, first_item + item_count) are uploaded on the next emit. Retained mutation is legal
+after frame artifact creation; changes are reflected only in later artifacts.
 
 ```c title="dvz_visual_set_data_range"
 DvzResult dvz_visual_set_data_range(
@@ -3939,18 +3946,18 @@ DvzResult dvz_visual_set_data_range(
 | `data` | `const void *` | packed array of item_count items borrowed for the duration of the call |
 | `item_count` | `uint32_t` | number of items to update |
 
-Write a contiguous sub-range of attribute data to a visual.
-
-The attribute must already be fully allocated by a prior
-dvz_visual_set_data() call. Only the items in
-[first_item, first_item + item_count) are uploaded on the next emit. Retained mutation is legal
-after frame artifact creation; changes are reflected only in later artifacts.
-
 Related: [`dvz_visual_set_data()`](#dvz_visual_set_data).
 
 _Declared in `include/datoviz/scene.h`:2175._
 
 ### `dvz_visual_set_depth_cue()`
+
+Configure depth cueing for a point, pixel, primitive, mesh, or sphere visual.
+
+Primitive/mesh/sphere visuals use depth cueing through the material shader path. Point/pixel
+visuals use the same cue parameters without lighting. The `near_depth` and `far_depth` values
+are interpreted in the descriptor metric, where lower values are closer. The default metric is
+normalized clip depth after the visual's scene transform. Pass NULL to disable depth cueing.
 
 ```c title="dvz_visual_set_depth_cue"
 DvzResult dvz_visual_set_depth_cue(
@@ -3965,16 +3972,15 @@ DvzResult dvz_visual_set_depth_cue(
 | `visual` | `DvzVisual *` | the visual |
 | `desc` | `const DvzDepthCueDesc *` | the depth-cue descriptor, or NULL to disable depth cueing |
 
-Configure depth cueing for a point, pixel, primitive, mesh, or sphere visual.
-
-Primitive/mesh/sphere visuals use depth cueing through the material shader path. Point/pixel
-visuals use the same cue parameters without lighting. The `near_depth` and `far_depth` values
-are interpreted in the descriptor metric, where lower values are closer. The default metric is
-normalized clip depth after the visual's scene transform. Pass NULL to disable depth cueing.
-
 _Declared in `include/datoviz/scene.h`:2458._
 
 ### `dvz_visual_set_depth_test()`
+
+Enable or disable depth testing for the visual.
+
+Depth-tested opaque visuals write and test against scene depth. Transparent visuals use depth
+testing to decide whether transparent fragments are occluded by previously rendered opaque
+geometry. Disabling it is primarily useful for diagnostics and overlays.
 
 ```c title="dvz_visual_set_depth_test"
 DvzResult dvz_visual_set_depth_test(
@@ -3989,15 +3995,16 @@ DvzResult dvz_visual_set_depth_test(
 | `visual` | `DvzVisual *` | the visual |
 | `enabled` | `_Bool` | true to depth-test, false to ignore scene depth |
 
-Enable or disable depth testing for the visual.
-
-Depth-tested opaque visuals write and test against scene depth. Transparent visuals use depth
-testing to decide whether transparent fragments are occluded by previously rendered opaque
-geometry. Disabling it is primarily useful for diagnostics and overlays.
-
 _Declared in `include/datoviz/scene.h`:1760._
 
 ### `dvz_visual_set_field()`
+
+Bind a scene-owned sampled field to a named visual slot.
+
+Image, glyph, and labels visuals accept the `"field"` slot and require a 2D field. Mesh visuals
+accept the `"texture"` slot for a v0.4 RGBA8 2D texture. Volume visuals accept the `"field"` slot
+and require a 3D field. Labels visuals additionally require
+`DVZ_FIELD_SEMANTIC_LABEL`.
 
 ```c title="dvz_visual_set_field"
 DvzResult dvz_visual_set_field(
@@ -4014,16 +4021,15 @@ DvzResult dvz_visual_set_field(
 | `slot_name` | `const char *` | the semantic slot name |
 | `field` | `const DvzSampledField *` | the field, or NULL to clear the binding |
 
-Bind a scene-owned sampled field to a named visual slot.
-
-Image, glyph, and labels visuals accept the `"field"` slot and require a 2D field. Mesh visuals
-accept the `"texture"` slot for a v0.4 RGBA8 2D texture. Volume visuals accept the `"field"` slot
-and require a 3D field. Labels visuals additionally require
-`DVZ_FIELD_SEMANTIC_LABEL`.
-
 _Declared in `include/datoviz/scene/field.h`:307._
 
 ### `dvz_visual_set_index_data()`
+
+Replace a visual's index buffer with copied 32-bit index data.
+
+This convenience path creates a scene-owned index buffer, copies the index payload into it, and
+binds it to the visual's `"index"` slot. Use `dvz_scene_buffer()` plus
+`dvz_visual_set_buffer()` instead when the index buffer must be shared across several visuals.
 
 ```c title="dvz_visual_set_index_data"
 DvzResult dvz_visual_set_index_data(
@@ -4040,15 +4046,16 @@ DvzResult dvz_visual_set_index_data(
 | `indices` | `const DvzIndex *` | index array |
 | `index_count` | `uint32_t` | number of indices |
 
-Replace a visual's index buffer with copied 32-bit index data.
-
-This convenience path creates a scene-owned index buffer, copies the index payload into it, and
-binds it to the visual's `"index"` slot. Use `dvz_scene_buffer()` plus
-`dvz_visual_set_buffer()` instead when the index buffer must be shared across several visuals.
-
 _Declared in `include/datoviz/scene.h`:2363._
 
 ### `dvz_visual_set_item_range()`
+
+Set the active logical item range for a retained visual.
+
+The active range is expressed in logical item units:
+[first_item, first_item + item_count). Changing it affects draw/query/export contribution
+planning only; it does not upload or rewrite attribute buffers. The point visual is the first
+supported family for this v0.4 slice.
 
 ```c title="dvz_visual_set_item_range"
 DvzResult dvz_visual_set_item_range(
@@ -4065,16 +4072,14 @@ DvzResult dvz_visual_set_item_range(
 | `first_item` | `uint32_t` | first logical item in the active range |
 | `item_count` | `uint32_t` | number of logical items in the active range; zero is valid |
 
-Set the active logical item range for a retained visual.
-
-The active range is expressed in logical item units:
-[first_item, first_item + item_count). Changing it affects draw/query/export contribution
-planning only; it does not upload or rewrite attribute buffers. The point visual is the first
-supported family for this v0.4 slice.
-
 _Declared in `include/datoviz/scene.h`:2051._
 
 ### `dvz_visual_set_link_keys()`
+
+Bind per-item link keys for a visual on one link channel.
+
+`link_keys` must contain `item_count` entries and must not be NULL unless `item_count` is zero.
+The keys are copied before return. Passing zero entries clears the binding for this channel.
 
 ```c title="dvz_visual_set_link_keys"
 DvzResult dvz_visual_set_link_keys(
@@ -4093,14 +4098,15 @@ DvzResult dvz_visual_set_link_keys(
 | `link_keys` | `const uint64_t *` | array of link keys |
 | `item_count` | `uint32_t` | number of keys |
 
-Bind per-item link keys for a visual on one link channel.
-
-`link_keys` must contain `item_count` entries and must not be NULL unless `item_count` is zero.
-The keys are copied before return. Passing zero entries clears the binding for this channel.
-
 _Declared in `include/datoviz/scene/interaction.h`:133._
 
 ### `dvz_visual_set_material()`
+
+Set the shared material parameters for a primitive, mesh, or sphere visual.
+
+The Phong model maps directly to the current material shader payload. The standard model is
+retained in the scene material state and lowered to the current shader payload until the standard
+shader path is broadened. Pass NULL to restore default material parameters.
 
 ```c title="dvz_visual_set_material"
 DvzResult dvz_visual_set_material(
@@ -4115,15 +4121,11 @@ DvzResult dvz_visual_set_material(
 | `visual` | `DvzVisual *` | the visual |
 | `desc` | `const DvzMaterialDesc *` | the material descriptor, or NULL to restore defaults |
 
-Set the shared material parameters for a primitive, mesh, or sphere visual.
-
-The Phong model maps directly to the current material shader payload. The standard model is
-retained in the scene material state and lowered to the current shader payload until the standard
-shader path is broadened. Pass NULL to restore default material parameters.
-
 _Declared in `include/datoviz/scene.h`:2435._
 
 ### `dvz_visual_set_query_capabilities()`
+
+Declare the query capabilities exposed by a visual.
 
 ```c title="dvz_visual_set_query_capabilities"
 DvzResult dvz_visual_set_query_capabilities(
@@ -4138,11 +4140,17 @@ DvzResult dvz_visual_set_query_capabilities(
 | `visual` | `DvzVisual *` | the visual |
 | `capabilities` | `uint32_t` | bitwise OR of DvzQueryCapabilityFlag values |
 
-Declare the query capabilities exposed by a visual.
-
 _Declared in `include/datoviz/scene/interaction.h`:118._
 
 ### `dvz_visual_set_scale()`
+
+Bind a scene-owned scale to a named visual slot.
+
+Visual scale slots are semantic attribute names. Point and pixel visuals accept the `"color"`
+slot with a continuous scale when their `"color"` attribute format is
+`DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32`. Image and volume visuals use `"color"` for continuous
+sampled fields. Labels visuals and label-volume render modes use `"labels"` with a categorical
+scale.
 
 ```c title="dvz_visual_set_scale"
 DvzResult dvz_visual_set_scale(
@@ -4159,17 +4167,11 @@ DvzResult dvz_visual_set_scale(
 | `slot_name` | `const char *` | the semantic slot name |
 | `scale` | `const DvzScale *` | the scale, or NULL to clear the binding |
 
-Bind a scene-owned scale to a named visual slot.
-
-Visual scale slots are semantic attribute names. Point and pixel visuals accept the `"color"`
-slot with a continuous scale when their `"color"` attribute format is
-`DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32`. Image and volume visuals use `"color"` for continuous
-sampled fields. Labels visuals and label-volume render modes use `"labels"` with a categorical
-scale.
-
 _Declared in `include/datoviz/scene/scale.h`:732._
 
 ### `dvz_visual_set_scene_occluded()`
+
+Mark a visual as sampling panel scene occlusion.
 
 ```c title="dvz_visual_set_scene_occluded"
 DvzResult dvz_visual_set_scene_occluded(
@@ -4184,11 +4186,11 @@ DvzResult dvz_visual_set_scene_occluded(
 | `visual` | `DvzVisual *` | the visual |
 | `enabled` | `_Bool` | whether the visual should be attenuated by scene occlusion |
 
-Mark a visual as sampling panel scene occlusion.
-
 _Declared in `include/datoviz/scene.h`:1814._
 
 ### `dvz_visual_set_scene_occluder()`
+
+Mark a visual as contributing front depth to panel scene occlusion.
 
 ```c title="dvz_visual_set_scene_occluder"
 DvzResult dvz_visual_set_scene_occluder(
@@ -4203,11 +4205,14 @@ DvzResult dvz_visual_set_scene_occluder(
 | `visual` | `DvzVisual *` | the visual |
 | `enabled` | `_Bool` | whether the visual should act as a scene occluder |
 
-Mark a visual as contributing front depth to panel scene occlusion.
-
 _Declared in `include/datoviz/scene.h`:1804._
 
 ### `dvz_visual_set_shader_desc()`
+
+Set the visual shader descriptor.
+
+v0.4 accepts only NULL or `DVZ_VISUAL_SHADER_NONE`. Custom visual families and built-in shader
+replacement are reserved for future releases and return -1.
 
 ```c title="dvz_visual_set_shader_desc"
 DvzResult dvz_visual_set_shader_desc(
@@ -4222,14 +4227,14 @@ DvzResult dvz_visual_set_shader_desc(
 | `visual` | `DvzVisual *` | the visual |
 | `desc` | `const DvzVisualShaderDesc *` | shader descriptor, or NULL to clear the future shader slot |
 
-Set the visual shader descriptor.
-
-v0.4 accepts only NULL or `DVZ_VISUAL_SHADER_NONE`. Custom visual families and built-in shader
-replacement are reserved for future releases and return -1.
-
 _Declared in `include/datoviz/scene.h`:1850._
 
 ### `dvz_visual_set_strings()`
+
+Write variable-length string data to a visual.
+
+Text visuals accept the `"text"` string attribute. The item count must match any configured
+per-item dense attributes.
 
 ```c title="dvz_visual_set_strings"
 DvzResult dvz_visual_set_strings(
@@ -4248,14 +4253,14 @@ DvzResult dvz_visual_set_strings(
 | `strings` | `const char *const *` | string array |
 | `item_count` | `uint32_t` | number of strings |
 
-Write variable-length string data to a visual.
-
-Text visuals accept the `"text"` string attribute. The item count must match any configured
-per-item dense attributes.
-
 _Declared in `include/datoviz/scene.h`:2130._
 
 ### `dvz_visual_set_transform()`
+
+Set the retained visual-local transform.
+
+The transform is stored on the visual and applies to every panel attachment before panel
+controller/view transforms.
 
 ```c title="dvz_visual_set_transform"
 DvzResult dvz_visual_set_transform(
@@ -4270,14 +4275,14 @@ DvzResult dvz_visual_set_transform(
 | `visual` | `DvzVisual *` | the visual |
 | `transform` | `mat4` | local model transform |
 
-Set the retained visual-local transform.
-
-The transform is stored on the visual and applies to every panel attachment before panel
-controller/view transforms.
-
 _Declared in `include/datoviz/scene.h`:1863._
 
 ### `dvz_visual_set_transform_desc()`
+
+Set the future scene-managed visual transform descriptor.
+
+v0.4 accepts only NULL or `DVZ_VISUAL_TRANSFORM_NONE`. Scene-managed nonlinear/custom transforms
+are reserved for future releases and return -1.
 
 ```c title="dvz_visual_set_transform_desc"
 DvzResult dvz_visual_set_transform_desc(
@@ -4292,16 +4297,13 @@ DvzResult dvz_visual_set_transform_desc(
 | `visual` | `DvzVisual *` | the visual |
 | `desc` | `const DvzVisualTransformDesc *` | transform descriptor, or NULL to clear the future transform slot |
 
-Set the future scene-managed visual transform descriptor.
-
-v0.4 accepts only NULL or `DVZ_VISUAL_TRANSFORM_NONE`. Scene-managed nonlinear/custom transforms
-are reserved for future releases and return -1.
-
 Related: [`dvz_visual_set_transform()`](#dvz_visual_set_transform).
 
 _Declared in `include/datoviz/scene.h`:1837._
 
 ### `dvz_visual_set_visible()`
+
+Set visual visibility.
 
 ```c title="dvz_visual_set_visible"
 DvzResult dvz_visual_set_visible(
@@ -4316,11 +4318,11 @@ DvzResult dvz_visual_set_visible(
 | `visual` | `DvzVisual *` | the visual |
 | `visible` | `_Bool` | true to show, false to hide |
 
-Set visual visibility.
-
 _Declared in `include/datoviz/scene.h`:1746._
 
 ### `dvz_visual_set_volume_occluded()`
+
+Mark a visual as embedded in the panel volume occluder.
 
 ```c title="dvz_visual_set_volume_occluded"
 DvzResult dvz_visual_set_volume_occluded(
@@ -4335,11 +4337,14 @@ DvzResult dvz_visual_set_volume_occluded(
 | `visual` | `DvzVisual *` | the visual |
 | `enabled` | `_Bool` | whether the visual should sample panel volume occlusion |
 
-Mark a visual as embedded in the panel volume occluder.
-
 _Declared in `include/datoviz/scene.h`:1794._
 
 ### `dvz_visual_shader_desc()`
+
+Return the default visual shader descriptor.
+
+v0.4 accepts only `DVZ_VISUAL_SHADER_NONE`; custom visual families and built-in shader
+replacement are reserved for future releases.
 
 ```c title="dvz_visual_shader_desc"
 DvzVisualShaderDesc dvz_visual_shader_desc(void);
@@ -4349,14 +4354,14 @@ DvzVisualShaderDesc dvz_visual_shader_desc(void);
 | --- | --- | --- |
 | return | `DvzVisualShaderDesc` | default visual shader descriptor |
 
-Return the default visual shader descriptor.
-
-v0.4 accepts only `DVZ_VISUAL_SHADER_NONE`; custom visual families and built-in shader
-replacement are reserved for future releases.
-
 _Declared in `include/datoviz/scene.h`:1088._
 
 ### `dvz_visual_transform_desc()`
+
+Return the default future visual transform descriptor.
+
+v0.4 accepts only `DVZ_VISUAL_TRANSFORM_NONE` through the descriptor path. Use
+dvz_visual_set_transform() for the supported affine visual-local transform.
 
 ```c title="dvz_visual_transform_desc"
 DvzVisualTransformDesc dvz_visual_transform_desc(void);
@@ -4366,14 +4371,14 @@ DvzVisualTransformDesc dvz_visual_transform_desc(void);
 | --- | --- | --- |
 | return | `DvzVisualTransformDesc` | default visual transform descriptor |
 
-Return the default future visual transform descriptor.
-
-v0.4 accepts only `DVZ_VISUAL_TRANSFORM_NONE` through the descriptor path. Use
-dvz_visual_set_transform() for the supported affine visual-local transform.
-
 _Declared in `include/datoviz/scene.h`:1077._
 
 ### `dvz_visual_validate()`
+
+Validate retained visual-local state.
+
+This checks that stored attributes are supported by the visual family and that retained attribute
+metadata is internally consistent.
 
 ```c title="dvz_visual_validate"
 _Bool dvz_visual_validate(
@@ -4388,16 +4393,17 @@ _Bool dvz_visual_validate(
 | `visual` | `const DvzVisual *` | the visual |
 | `report` | `DvzDiagnosticReport *` | output diagnostic report (nullable) |
 
-Validate retained visual-local state.
-
-This checks that stored attributes are supported by the visual family and that retained attribute
-metadata is internally consistent.
-
 _Declared in `include/datoviz/scene.h`:1736._
 
 ## Volume
 
 ### `dvz_volume()`
+
+Create a volume visual.
+
+Volume visuals retain a 3D sampled field bound through
+`dvz_visual_set_field(volume, "field", field)`. The native runtime renders a box proxy and
+supports full-volume composite rendering by default, plus slice and MIP modes.
 
 ```c title="dvz_volume"
 DvzVisual * dvz_volume(
@@ -4412,15 +4418,11 @@ DvzVisual * dvz_volume(
 | `scene` | `DvzScene *` | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-Create a volume visual.
-
-Volume visuals retain a 3D sampled field bound through
-`dvz_visual_set_field(volume, "field", field)`. The native runtime renders a box proxy and
-supports full-volume composite rendering by default, plus slice and MIP modes.
-
 _Declared in `include/datoviz/scene.h`:3738._
 
 ### `dvz_volume_clear_clipping()`
+
+Disable all clipping on a volume visual.
 
 ```c title="dvz_volume_clear_clipping"
 DvzResult dvz_volume_clear_clipping(
@@ -4433,11 +4435,11 @@ DvzResult dvz_volume_clear_clipping(
 | return | `DvzResult` | 0 on success, -1 on error |
 | `visual` | `DvzVisual *` | the volume visual |
 
-Disable all clipping on a volume visual.
-
 _Declared in `include/datoviz/scene.h`:3899._
 
 ### `dvz_volume_clear_clipping_plane()`
+
+Disable arbitrary plane clipping on a volume visual.
 
 ```c title="dvz_volume_clear_clipping_plane"
 DvzResult dvz_volume_clear_clipping_plane(
@@ -4450,11 +4452,11 @@ DvzResult dvz_volume_clear_clipping_plane(
 | return | `DvzResult` | 0 on success, -1 on error |
 | `visual` | `DvzVisual *` | the volume visual |
 
-Disable arbitrary plane clipping on a volume visual.
-
 _Declared in `include/datoviz/scene.h`:3890._
 
 ### `dvz_volume_occlusion_desc()`
+
+Return default volume-occlusion options.
 
 ```c title="dvz_volume_occlusion_desc"
 DvzVolumeOcclusionDesc dvz_volume_occlusion_desc(void);
@@ -4464,11 +4466,11 @@ DvzVolumeOcclusionDesc dvz_volume_occlusion_desc(void);
 | --- | --- | --- |
 | return | `DvzVolumeOcclusionDesc` | volume-occlusion descriptor |
 
-Return default volume-occlusion options.
-
 _Declared in `include/datoviz/scene.h`:1290._
 
 ### `dvz_volume_set_alpha_stops()`
+
+Set piecewise-linear opacity stops for scalar volume transfer.
 
 ```c title="dvz_volume_set_alpha_stops"
 DvzResult dvz_volume_set_alpha_stops(
@@ -4485,11 +4487,15 @@ DvzResult dvz_volume_set_alpha_stops(
 | `stops` | `const DvzVolumeAlphaStop *` | alpha stops sorted or unsorted by position |
 | `count` | `uint32_t` | number of stops, at most 8 |
 
-Set piecewise-linear opacity stops for scalar volume transfer.
-
 _Declared in `include/datoviz/scene.h`:3852._
 
 ### `dvz_volume_set_axis_mapping()`
+
+Set the mapping from normalized volume coordinates to texture UVW coordinates.
+
+`axis_order[i]` selects the normalized volume coordinate used for texture axis `i`.
+`axis_flip[i]` flips texture axis `i` after reordering. Pass NULL for `axis_flip` to disable
+all flips.
 
 ```c title="dvz_volume_set_axis_mapping"
 DvzResult dvz_volume_set_axis_mapping(
@@ -4506,15 +4512,14 @@ DvzResult dvz_volume_set_axis_mapping(
 | `axis_order` | `const uint32_t[3]` | texture-axis source order, a permutation of 0, 1, 2 |
 | `axis_flip` | `const _Bool[3]` | optional per-texture-axis flips |
 
-Set the mapping from normalized volume coordinates to texture UVW coordinates.
-
-`axis_order[i]` selects the normalized volume coordinate used for texture axis `i`.
-`axis_flip[i]` flips texture axis `i` after reordering. Pass NULL for `axis_flip` to disable
-all flips.
-
 _Declared in `include/datoviz/scene.h`:3829._
 
 ### `dvz_volume_set_bounds()`
+
+Set the object-space volume proxy bounds.
+
+The bounds control the rendered box geometry while preserving normalized UVW texture sampling.
+They are useful for displaying anisotropic volumes in their physical aspect ratio.
 
 ```c title="dvz_volume_set_bounds"
 DvzResult dvz_volume_set_bounds(
@@ -4531,14 +4536,11 @@ DvzResult dvz_volume_set_bounds(
 | `bounds_min` | `const double[3]` | minimum object-space coordinate |
 | `bounds_max` | `const double[3]` | maximum object-space coordinate |
 
-Set the object-space volume proxy bounds.
-
-The bounds control the rendered box geometry while preserving normalized UVW texture sampling.
-They are useful for displaying anisotropic volumes in their physical aspect ratio.
-
 _Declared in `include/datoviz/scene.h`:3814._
 
 ### `dvz_volume_set_clipping_box()`
+
+Enable axis-aligned clipping on a volume visual.
 
 ```c title="dvz_volume_set_clipping_box"
 DvzResult dvz_volume_set_clipping_box(
@@ -4555,11 +4557,14 @@ DvzResult dvz_volume_set_clipping_box(
 | `clip_min` | `const double[3]` | minimum normalized clip coordinate |
 | `clip_max` | `const double[3]` | maximum normalized clip coordinate |
 
-Enable axis-aligned clipping on a volume visual.
-
 _Declared in `include/datoviz/scene.h`:3865._
 
 ### `dvz_volume_set_clipping_plane()`
+
+Enable arbitrary plane clipping on a volume visual.
+
+The plane is defined in normalized volume coordinates. Voxels for which
+`dot(normal, uvw - point)` has the selected sign are kept.
 
 ```c title="dvz_volume_set_clipping_plane"
 DvzResult dvz_volume_set_clipping_plane(
@@ -4578,14 +4583,11 @@ DvzResult dvz_volume_set_clipping_plane(
 | `normal` | `const double[3]` | non-zero clipping plane normal |
 | `keep_positive` | `_Bool` | whether to keep the positive side of the plane |
 
-Enable arbitrary plane clipping on a volume visual.
-
-The plane is defined in normalized volume coordinates. Voxels for which
-`dot(normal, uvw - point)` has the selected sign are kept.
-
 _Declared in `include/datoviz/scene.h`:3880._
 
 ### `dvz_volume_set_opacity()`
+
+Set the global opacity multiplier on a volume visual.
 
 ```c title="dvz_volume_set_opacity"
 DvzResult dvz_volume_set_opacity(
@@ -4600,11 +4602,11 @@ DvzResult dvz_volume_set_opacity(
 | `visual` | `DvzVisual *` | the volume visual |
 | `opacity` | `float` | opacity multiplier in [0, 1] |
 
-Set the global opacity multiplier on a volume visual.
-
 _Declared in `include/datoviz/scene.h`:3748._
 
 ### `dvz_volume_set_render_mode()`
+
+Set the volume render mode.
 
 ```c title="dvz_volume_set_render_mode"
 DvzResult dvz_volume_set_render_mode(
@@ -4619,11 +4621,11 @@ DvzResult dvz_volume_set_render_mode(
 | `visual` | `DvzVisual *` | the volume visual |
 | `mode` | `DvzVolumeRenderMode` | the render mode |
 
-Set the volume render mode.
-
 _Declared in `include/datoviz/scene.h`:3769._
 
 ### `dvz_volume_set_sampling()`
+
+Set the texture sampling mode on a volume visual.
 
 ```c title="dvz_volume_set_sampling"
 DvzResult dvz_volume_set_sampling(
@@ -4638,11 +4640,11 @@ DvzResult dvz_volume_set_sampling(
 | `visual` | `DvzVisual *` | the volume visual |
 | `sampling` | `DvzVolumeSamplingMode` | the sampling mode |
 
-Set the texture sampling mode on a volume visual.
-
 _Declared in `include/datoviz/scene.h`:3759._
 
 ### `dvz_volume_set_slice_axis()`
+
+Set the volume slice axis.
 
 ```c title="dvz_volume_set_slice_axis"
 DvzResult dvz_volume_set_slice_axis(
@@ -4657,11 +4659,11 @@ DvzResult dvz_volume_set_slice_axis(
 | `visual` | `DvzVisual *` | the volume visual |
 | `axis` | `DvzVolumeAxis` | axis normal for slicing planes (X/Y/Z) |
 
-Set the volume slice axis.
-
 _Declared in `include/datoviz/scene.h`:3779._
 
 ### `dvz_volume_set_slice_position()`
+
+Set the normalized volume slice position.
 
 ```c title="dvz_volume_set_slice_position"
 DvzResult dvz_volume_set_slice_position(
@@ -4676,11 +4678,11 @@ DvzResult dvz_volume_set_slice_position(
 | `visual` | `DvzVisual *` | the volume visual |
 | `position` | `double` | slice position in [0, 1], where 0 is the minimum axis coordinate |
 
-Set the normalized volume slice position.
-
 _Declared in `include/datoviz/scene.h`:3789._
 
 ### `dvz_volume_set_step_count()`
+
+Set the volume raymarch step count used by MIP and composite rendering.
 
 ```c title="dvz_volume_set_step_count"
 DvzResult dvz_volume_set_step_count(
@@ -4695,11 +4697,11 @@ DvzResult dvz_volume_set_step_count(
 | `visual` | `DvzVisual *` | the volume visual |
 | `step_count` | `uint32_t` | number of raymarch samples |
 
-Set the volume raymarch step count used by MIP and composite rendering.
-
 _Declared in `include/datoviz/scene.h`:3799._
 
 ### `dvz_volume_set_value_range()`
+
+Set the scalar value range used before transfer texture lookup.
 
 ```c title="dvz_volume_set_value_range"
 DvzResult dvz_volume_set_value_range(
@@ -4716,11 +4718,11 @@ DvzResult dvz_volume_set_value_range(
 | `min` | `double` | minimum scalar value mapped to 0 |
 | `max` | `double` | maximum scalar value mapped to 1 |
 
-Set the scalar value range used before transfer texture lookup.
-
 _Declared in `include/datoviz/scene.h`:3841._
 
 ### `dvz_volume_state()`
+
+Return the retained volume state for inspection.
 
 ```c title="dvz_volume_state"
 const DvzVolumeState * dvz_volume_state(
@@ -4732,7 +4734,5 @@ const DvzVolumeState * dvz_volume_state(
 | --- | --- | --- |
 | return | `const DvzVolumeState *` | the volume state, or NULL on error |
 | `visual` | `const DvzVisual *` | the volume visual |
-
-Return the retained volume state for inspection.
 
 _Declared in `include/datoviz/scene.h`:3908._
