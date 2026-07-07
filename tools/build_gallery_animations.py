@@ -1,0 +1,233 @@
+#!/usr/bin/env python3
+"""Generate build-local animated WebP previews for gallery examples."""
+
+from __future__ import annotations
+
+import argparse
+import os
+import shutil
+import subprocess
+from dataclasses import dataclass
+from pathlib import Path
+
+import yaml
+
+import build_gallery
+
+
+ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_FRAME_DIR = ROOT / "build/gallery-frames/v0.4"
+DEFAULT_OUTPUT_DIR = ROOT / "build/gallery-webp/v0.4"
+DEFAULT_BUILD_EXAMPLES_DIR = ROOT / "build/examples/c"
+DEFAULT_SIZE = "1280x720"
+DEFAULT_FRAMES = 16
+DEFAULT_FPS = 12
+
+
+@dataclass(frozen=True)
+class AnimatedPreview:
+    id: str
+    title: str
+    lane: str
+    source: str
+    executable: Path
+    frames: int
+    fps: int
+    size: str
+
+    @property
+    def frame_dir(self) -> Path:
+        return DEFAULT_FRAME_DIR / self.lane / self.id
+
+    @property
+    def output_path(self) -> Path:
+        return DEFAULT_OUTPUT_DIR / self.lane / f"{self.id}.webp"
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--manifest", type=Path, default=build_gallery.DEFAULT_MANIFEST)
+    parser.add_argument("--build-examples-dir", type=Path, default=DEFAULT_BUILD_EXAMPLES_DIR)
+    parser.add_argument("--frame-dir", type=Path, default=DEFAULT_FRAME_DIR)
+    parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument("--id", action="append", default=[], help="example id; repeat or comma-separate")
+    parser.add_argument("--lane", action="append", default=[], help="gallery lane")
+    parser.add_argument("--dry-run", action="store_true", help="list work without rendering frames")
+    parser.add_argument("--keep-frames", action="store_true", help="keep temporary PNG frame sequences")
+    parser.add_argument("--force", action="store_true", help="regenerate outputs even when present")
+    return parser.parse_args()
+
+
+def split_values(values: list[str]) -> set[str]:
+    out: set[str] = set()
+    for value in values:
+        out.update(part.strip() for part in value.split(",") if part.strip())
+    return out
+
+
+def _lane_for_entry(entry: dict) -> str:
+    raw_category = entry.get("category")
+    if raw_category is not None:
+        return build_gallery.CATEGORY_TO_LANE.get(str(raw_category), str(raw_category))
+    return str(entry.get("lane", ""))
+
+
+def _executable_for_source(source: str, build_examples_dir: Path) -> Path:
+    rel = Path(source).relative_to("examples/c").with_suffix("")
+    return build_examples_dir / rel
+
+
+def collect_previews(
+    manifest_path: Path,
+    build_examples_dir: Path,
+    ids: set[str],
+    lanes: set[str],
+) -> list[AnimatedPreview]:
+    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf8"))
+    previews: list[AnimatedPreview] = []
+    for entry in manifest.get("examples", []):
+        id_ = str(entry.get("id", ""))
+        source = str(entry.get("source", ""))
+        lane = _lane_for_entry(entry)
+        if not id_ or not source.startswith("examples/c/"):
+            continue
+        if lane not in build_gallery.PUBLIC_LANES:
+            continue
+        if ids and id_ not in ids:
+            continue
+        if lanes and lane not in lanes:
+            continue
+
+        media = entry.get("media") or {}
+        preview = media.get("preview") or {}
+        if str(preview.get("kind", "")) != "animated-webp":
+            continue
+
+        frames = int(preview.get("frames", DEFAULT_FRAMES))
+        fps = int(preview.get("fps", DEFAULT_FPS))
+        size = str(preview.get("size", entry.get("capture", {}).get("size", DEFAULT_SIZE)))
+        if frames <= 0 or fps <= 0:
+            raise ValueError(f"{id_}: media.preview frames and fps must be positive")
+
+        previews.append(
+            AnimatedPreview(
+                id=id_,
+                title=str(entry.get("title", id_)),
+                lane=lane,
+                source=source,
+                executable=_executable_for_source(source, build_examples_dir),
+                frames=frames,
+                fps=fps,
+                size=size,
+            )
+        )
+    previews.sort(key=lambda item: (item.lane, item.id))
+    return previews
+
+
+def frame_path(frame_dir: Path, frame: int) -> Path:
+    return frame_dir / f"frame_{frame:04d}.png"
+
+
+def capture_frame(preview: AnimatedPreview, frame_dir: Path, frame: int) -> None:
+    frame_dir.mkdir(parents=True, exist_ok=True)
+    env = os.environ.copy()
+    env["DVZ_CAPTURE_DIR"] = str(frame_dir)
+    env["DVZ_CAPTURE_BASENAME"] = f"frame_{frame:04d}"
+    cmd = [
+        str(preview.executable),
+        "--preview",
+        "--preview-frame",
+        str(frame),
+        "--preview-frames",
+        str(preview.frames),
+        "--png",
+        "--size",
+        preview.size,
+    ]
+    subprocess.run(cmd, cwd=ROOT, env=env, check=True)
+
+
+def encode_webp(preview: AnimatedPreview, frame_dir: Path, output_path: Path) -> None:
+    img2webp = shutil.which("img2webp")
+    if img2webp is None:
+        raise RuntimeError("img2webp not found; install the WebP tools package")
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    delay_ms = max(1, int(round(1000.0 / preview.fps)))
+    cmd = [img2webp, "-loop", "0"]
+    for frame in range(preview.frames):
+        png = frame_path(frame_dir, frame)
+        if not png.exists():
+            raise FileNotFoundError(png)
+        cmd.extend(["-d", str(delay_ms), str(png)])
+    cmd.extend(["-o", str(output_path)])
+    subprocess.run(cmd, cwd=ROOT, check=True)
+
+
+def generate_preview(
+    preview: AnimatedPreview,
+    frame_root: Path,
+    output_root: Path,
+    dry_run: bool,
+    keep_frames: bool,
+    force: bool,
+) -> bool:
+    frame_dir = frame_root / preview.lane / preview.id
+    output_path = output_root / preview.lane / f"{preview.id}.webp"
+    rel_out = output_path.relative_to(ROOT) if output_path.is_relative_to(ROOT) else output_path
+    if dry_run:
+        action = "would replace" if output_path.exists() else "would animate"
+        print(
+            f"{action}: {preview.id} frames={preview.frames} fps={preview.fps} "
+            f"size={preview.size} -> {rel_out}"
+        )
+        return True
+    if output_path.exists() and not force:
+        print(f"skip existing: {preview.id} -> {rel_out}")
+        return False
+    if not preview.executable.exists():
+        raise FileNotFoundError(f"example executable not found: {preview.executable}")
+
+    if frame_dir.exists():
+        shutil.rmtree(frame_dir)
+    for frame in range(preview.frames):
+        capture_frame(preview, frame_dir, frame)
+    encode_webp(preview, frame_dir, output_path)
+    if not keep_frames:
+        shutil.rmtree(frame_dir)
+    print(f"animated webp: {preview.id} -> {rel_out}")
+    return True
+
+
+def main() -> int:
+    args = parse_args()
+    ids = split_values(args.id)
+    lanes = split_values(args.lane)
+    try:
+        previews = collect_previews(args.manifest, args.build_examples_dir, ids, lanes)
+        if not previews:
+            print("No matching animated WebP previews.")
+            return 1
+
+        generated = 0
+        for preview in previews:
+            if generate_preview(
+                preview,
+                args.frame_dir,
+                args.output_dir,
+                args.dry_run,
+                args.keep_frames,
+                args.force,
+            ):
+                generated += 1
+        action = "would_generate" if args.dry_run else "generated"
+        print(f"gallery animations: {action}={generated} selected={len(previews)}")
+        return 0
+    except (FileNotFoundError, RuntimeError, ValueError, subprocess.CalledProcessError) as e:
+        print(f"gallery animations: {e}")
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
