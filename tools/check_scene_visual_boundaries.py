@@ -144,14 +144,12 @@ def _visual_desc_count_entry(key: tuple[str, str, str], count: int) -> str:
     return f"{rel}:{kind}:{token}:{count}"
 
 
-def _violations(root: Path, allowlist: Allowlist) -> list[str]:
-    failures: list[str] = []
+def _exact_violations(root: Path) -> list[str]:
+    entries: list[str] = []
     for path in _iter_generic_sources(root):
         for line_no, line in enumerate(path.read_text(encoding="utf8").splitlines(), start=1):
             if VISUAL_ENUM_RE.search(line):
-                entry = _entry(path, line_no, "visual-enum", line, root)
-                if entry not in allowlist.exact:
-                    failures.append(entry)
+                entries.append(_entry(path, line_no, "visual-enum", line, root))
 
     scene_root = root / "src/scene"
     for path in sorted(scene_root.rglob("*")):
@@ -172,9 +170,19 @@ def _violations(root: Path, allowlist: Allowlist) -> list[str]:
             family_name = match.group(1).split("/", 1)[0]
             if family_name not in VISUAL_FAMILY_NAMES:
                 continue
-            entry = _entry(path, line_no, "private-include", line, root)
-            if entry not in allowlist.exact:
-                failures.append(entry)
+            entries.append(_entry(path, line_no, "private-include", line, root))
+    return entries
+
+
+def _violations(root: Path, allowlist: Allowlist) -> list[str]:
+    failures: list[str] = []
+    exact_entries = set(_exact_violations(root))
+    for entry in sorted(exact_entries):
+        if entry not in allowlist.exact:
+            failures.append(entry)
+    for entry in sorted(allowlist.exact):
+        if entry not in exact_entries:
+            failures.append(f"{entry}:stale-allowlist")
 
     desc_counts = _visual_desc_counts(root)
     for key, count in sorted(desc_counts.items()):
@@ -205,9 +213,7 @@ def main() -> int:
     allowlist_path = args.allowlist.resolve()
 
     if args.update_allowlist:
-        entries = [
-            entry for entry in _violations(root, Allowlist()) if ":visual-desc-kind:" not in entry
-        ]
+        entries = _exact_violations(root)
         entries.extend(
             _visual_desc_count_entry(key, count)
             for key, count in sorted(_visual_desc_counts(root).items())
