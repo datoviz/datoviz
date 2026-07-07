@@ -2637,6 +2637,7 @@ examples:
         kind: animated-webp
         frames: 36
         fps: 12
+        time_scale: 10
     data:
       kind: simulated
     webgpu:

@@ -613,6 +613,7 @@ static void _print_usage(const DvzScenarioSpec* spec)
     fprintf(stdout, "  --preview-frame N      preview frame index for one-frame captures\n");
     fprintf(stdout, "  --preview-frames N     total preview frame count\n");
     fprintf(stdout, "  --preview-fps FPS      preview frame rate for deterministic frame timing\n");
+    fprintf(stdout, "  --preview-time-scale S multiply preview time without changing playback FPS\n");
     fprintf(stdout, "size and scale:\n");
     fprintf(stdout, "  --size WxH             exact framebuffer/output pixels\n");
     fprintf(stdout, "  --logical-size WxH     logical layout size in pixels\n");
@@ -651,6 +652,7 @@ DvzRunnerConfig dvz_runner_config(const DvzScenarioSpec* spec)
         .preview_frame_index = 0,
         .preview_frame_count = 0,
         .preview_fps = 0.0,
+        .preview_time_scale = 0.0,
     };
     config.capture.flags = DVZ_APP_CAPTURE_NONE;
     return config;
@@ -696,18 +698,28 @@ double dvz_scenario_preview_fps(const DvzScenarioContext* ctx)
 
 
 
+double dvz_scenario_preview_time_scale(const DvzScenarioContext* ctx)
+{
+    if (ctx == NULL || ctx->preview_time_scale <= 0.0)
+        return 1.0;
+    return ctx->preview_time_scale;
+}
+
+
+
 double dvz_scenario_preview_time(const DvzScenarioContext* ctx)
 {
     if (ctx == NULL)
         return 0.0;
-    return (double)ctx->preview_frame_index / dvz_scenario_preview_fps(ctx);
+    return (double)ctx->preview_frame_index * dvz_scenario_preview_time_scale(ctx) /
+           dvz_scenario_preview_fps(ctx);
 }
 
 
 
 double dvz_scenario_preview_dt(const DvzScenarioContext* ctx)
 {
-    return 1.0 / dvz_scenario_preview_fps(ctx);
+    return dvz_scenario_preview_time_scale(ctx) / dvz_scenario_preview_fps(ctx);
 }
 
 
@@ -806,6 +818,8 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
         resolved.preview_frame_count = resolved.frame_count != 0 ? resolved.frame_count : 1;
     if (resolved.preview_mode && resolved.preview_fps <= 0.0)
         resolved.preview_fps = resolved.fps;
+    if (resolved.preview_mode && resolved.preview_time_scale <= 0.0)
+        resolved.preview_time_scale = 1.0;
     resolved.capture.flags = _capture_flags(resolved.capture_kind);
     if (resolved.capture.fps <= 0)
         resolved.capture.fps = resolved.fps;
@@ -826,6 +840,7 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     ctx.preview_frame_index = resolved.preview_frame_index;
     ctx.preview_frame_count = resolved.preview_frame_count;
     ctx.preview_fps = resolved.preview_fps;
+    ctx.preview_time_scale = resolved.preview_time_scale;
 
     scene = dvz_scene();
     if (scene == NULL)
@@ -1103,6 +1118,16 @@ int dvz_scenario_run_native_cli(const DvzScenarioSpec* spec, int argc, char** ar
                 return -1;
             }
             config.preview_fps = (double)fps;
+        }
+        else if (strcmp(arg, "--preview-time-scale") == 0 && i + 1 < argc)
+        {
+            float scale = 0.0f;
+            if (!_parse_float(argv[++i], &scale))
+            {
+                fprintf(stderr, "scenario_runner: invalid --preview-time-scale value\n");
+                return -1;
+            }
+            config.preview_time_scale = (double)scale;
         }
         else if (strcmp(arg, "--size") == 0 && i + 1 < argc)
         {

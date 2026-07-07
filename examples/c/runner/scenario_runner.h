@@ -216,6 +216,7 @@ struct DvzScenarioContext
     uint64_t preview_frame_index;
     uint64_t preview_frame_count;
     double preview_fps;
+    double preview_time_scale;
 
     DvzScenarioControllerBinding controller_bindings[DVZ_SCENARIO_MAX_CONTROLLER_BINDINGS];
     uint32_t controller_binding_count;
@@ -267,6 +268,7 @@ typedef struct DvzRunnerConfig
     uint64_t preview_frame_index;
     uint64_t preview_frame_count;
     double preview_fps;
+    double preview_time_scale;
 } DvzRunnerConfig;
 
 
@@ -288,6 +290,14 @@ bool dvz_runner_capture_path(
  * @return positive preview frame rate, or 60 Hz when unavailable
  */
 double dvz_scenario_preview_fps(const DvzScenarioContext* ctx);
+
+/**
+ * Return the deterministic preview time scale.
+ *
+ * @param ctx scenario context
+ * @return positive preview time scale, or 1 when unavailable
+ */
+double dvz_scenario_preview_time_scale(const DvzScenarioContext* ctx);
 
 /**
  * Return the deterministic preview time for the selected preview frame.

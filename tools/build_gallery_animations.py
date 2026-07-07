@@ -34,6 +34,7 @@ class AnimatedPreview:
     executable: Path
     frames: int
     fps: int
+    time_scale: float
     size: str
 
     @property
@@ -107,9 +108,12 @@ def collect_previews(
 
         frames = int(preview.get("frames", DEFAULT_FRAMES))
         fps = int(preview.get("fps", DEFAULT_FPS))
+        time_scale = float(preview.get("time_scale", 1.0))
         size = str(preview.get("size", entry.get("capture", {}).get("size", DEFAULT_SIZE)))
         if frames <= 0 or fps <= 0:
             raise ValueError(f"{id_}: media.preview frames and fps must be positive")
+        if time_scale <= 0.0:
+            raise ValueError(f"{id_}: media.preview time_scale must be positive")
 
         previews.append(
             AnimatedPreview(
@@ -120,6 +124,7 @@ def collect_previews(
                 executable=_executable_for_source(source, build_examples_dir),
                 frames=frames,
                 fps=fps,
+                time_scale=time_scale,
                 size=size,
             )
         )
@@ -145,6 +150,8 @@ def capture_frame(preview: AnimatedPreview, frame_dir: Path, frame: int) -> None
         str(preview.frames),
         "--preview-fps",
         str(preview.fps),
+        "--preview-time-scale",
+        f"{preview.time_scale:g}",
         "--png",
         "--size",
         preview.size,
@@ -186,7 +193,7 @@ def generate_preview(
         action = "would replace" if output_path.exists() else "would animate"
         print(
             f"{action}: {preview.id} frames={preview.frames} fps={preview.fps} "
-            f"size={preview.size} -> {rel_out}"
+            f"time_scale={preview.time_scale:g} size={preview.size} -> {rel_out}"
         )
         return True
     if not preview.executable.exists():
