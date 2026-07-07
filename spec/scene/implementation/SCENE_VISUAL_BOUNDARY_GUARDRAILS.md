@@ -122,6 +122,46 @@ and do not duplicate completed source-split work. Those items are secondary to t
 guardrails in this phase.
 
 
+## Bounds Local-Transform Contract
+
+The current bounds path still has one important transitional exception: generic
+`src/scene/visuals/bounds.c` knows that sphere bounds already resolve local-transform semantics.
+This exception exists to preserve correct sphere and bounds-overlay behavior. Sphere impostor bounds
+are not a normal transformed AABB: the sphere family transforms item centers and scales radii by the
+maximum local-transform axis length, matching shader-side impostor behavior. Applying the generic
+AABB-corner transform afterward would double-apply or distort those bounds and can regress the
+generated bounds overlay.
+
+The long-term fix is not to keep a concrete `DVZ_VISUAL_TYPE_SPHERE` branch in generic bounds code.
+Instead, the visual-family registry should expose a neutral bounds contract, such as:
+
+```c
+bool bounds_resolve_local_transform;
+```
+
+or an equivalent named policy field/callback on `DvzVisualFamilyOps`. Generic bounds code should
+then apply its default local-transform AABB step only when the family contract says the reducer
+returned pre-transform bounds. Sphere would opt out because its family reducer already returns
+local-transform-aware bounds. Future impostor, billboard, glyph, splat, vector, or custom-shader
+families can make the same decision through the registry contract without adding another generic
+family branch.
+
+This refactor must be behavior-preserving and should not be bundled with unrelated bounds-overlay
+changes. Before removing the temporary allowlist entry for the sphere branch, validate at least:
+
+```sh
+just test scene/scene-graph/visual_bounds_family_reducers
+just test scene/scene-graph/panel_visual_bounds_sphere_local_transform_screen
+just test scene/scene-graph/panel_bounds_overlay_sphere_wire_padding
+just test scene/scene-graph/panel_bounds_overlay_sphere_multi_radius_bounds
+just spec-check
+git diff --check
+```
+
+If these tests expose a behavioral change, keep the explicit allowlist entry and defer the registry
+contract until the sphere overlay path can be hardened separately.
+
+
 ## Boundary Rules
 
 Generic code may use these things:
