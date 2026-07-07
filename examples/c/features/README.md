@@ -22,11 +22,11 @@ techniques. App lifecycle, capture, recording, replay, and media export examples
 - `gui_cimgui.c`: raw `datoviz/imgui.h` access for cimgui tables and tabs.
 - `animation_tracks.c`: retained track-backed visual transform animation.
 - `compute_buffer_animation.c`: experimental scene compute pass writing a render-consumed buffer.
-- `edl.c`: focused Eye-Dome Lighting panel technique proof.
-- `ssao.c`: focused screen-space ambient occlusion technique proof.
-- `msaa.c`: panel multisample antialiasing comparison.
-- `depth_cue.c`: retained visual depth-cue parameter proof.
-- `transparency_order.c`: alpha blending, WBOIT, and depth-peeling ordering comparison.
+- `technique_edl.c`: focused Eye-Dome Lighting panel technique proof.
+- `technique_ssao.c`: focused screen-space ambient occlusion technique proof.
+- `technique_msaa.c`: panel multisample antialiasing comparison.
+- `technique_depth_cue.c`: retained visual depth-cue parameter proof.
+- `technique_transparency.c`: alpha blending, WBOIT, and depth-peeling ordering comparison.
 - `volume_occlusion.c`: volume-backed scene occlusion for embedded visuals.
 - `guide_lines.c`: retained horizontal and vertical guide lines with updates.
 - `guide_spans.c`: retained interval guide spans with fill and outline styling.

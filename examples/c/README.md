@@ -18,8 +18,9 @@ material.
 | `legacy/` | Temporary archive of older examples that are not built by default. Promote or delete from here deliberately. |
 
 Shared helpers live directly in this directory (`example_common.*`, `example_style.*`,
-`example_gui_controls.*`). There is intentionally no `tools/`, `regression/`, or `stress/` example
-lane in the active C tree: tests own regressions, and lab owns temporary diagnostics/stress work.
+`example_gui_controls.*`, `example_tuner.*`). There is intentionally no `tools/`, `regression/`, or
+`stress/` example lane in the active C tree: tests own regressions, and lab owns temporary
+diagnostics/stress work.
 Use manifest tags, not folders, for `workflow`, `scientific`, `real-data`, `simulated`,
 `interactive`, `offscreen`, `technique`, and domain labels. Runtime examples are for hosting and
 output behavior; scene-level capabilities stay in `features/`.
