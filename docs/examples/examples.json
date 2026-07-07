@@ -869,7 +869,7 @@
       "source": "examples/c/features/mesh_texture.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/mesh_texture.c",
       "page": "gallery/features/feature_mesh_texture.md",
-      "summary": "Mesh_texture maps a scene-owned RGBA8 sampled field onto a UV sphere mesh.",
+      "summary": "Mesh_texture maps an RGBA8 sampled field onto a UV sphere mesh.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/mesh_texture",
       "smoke_command": "./build/examples/c/features/mesh_texture --png",

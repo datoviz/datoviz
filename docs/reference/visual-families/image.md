@@ -26,9 +26,9 @@ integer categorical label fields, or [Volume](volume.md) for 3D sampled fields.
 
 ## Data Model
 
-Create with `dvz_image(scene, flags)`. Bind a scene-owned `DvzSampledField` with
-`dvz_visual_set_field(image, "field", field)`. The canonical example uploads four corner
-positions, four texture coordinates, a scalar 2D field, and a color scale.
+Create with `dvz_image(scene, flags)`. Bind a `DvzSampledField` with
+`dvz_visual_set_field(image, "field", field)`. The canonical example uploads four corner positions,
+four texture coordinates, a scalar 2D field, and a color scale.
 
 Set texture filtering with `dvz_image_set_sampling(image, DVZ_IMAGE_SAMPLING_LINEAR)` or
 `dvz_image_set_sampling(image, DVZ_IMAGE_SAMPLING_NEAREST)`. Linear sampling is the default; nearest
@@ -49,8 +49,8 @@ positions to image coordinates and sampled field values.
 
 ## Backend Notes
 
-Native and WebGPU paths are active for 2D sampled fields. Public examples should bind scene-owned
-sampled fields explicitly with `dvz_visual_set_field()`.
+Native and WebGPU paths are active for 2D sampled fields. Public examples should bind sampled
+fields explicitly with `dvz_visual_set_field()`.
 
 ## Canonical Example
 

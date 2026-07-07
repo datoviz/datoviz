@@ -610,7 +610,7 @@ Lighting compares the same sphere cluster under three material and light configu
 
 `features`
 
-Mesh_texture maps a scene-owned RGBA8 sampled field onto a UV sphere mesh.
+Mesh_texture maps an RGBA8 sampled field onto a UV sphere mesh.
 
 </div>
 

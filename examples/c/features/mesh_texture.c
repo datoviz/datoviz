@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* mesh_texture maps a scene-owned RGBA8 sampled field onto a UV sphere mesh.
+/* mesh_texture maps an RGBA8 sampled field onto a UV sphere mesh.
  *
  * What to look for: the texture pixels are generated as a 1024x512 color field, attached to the
  * mesh as the "texture" field, and combined with the sphere geometry's UV coordinates. Rotate the
@@ -102,7 +102,7 @@ static void _fill_texture(uint8_t pixels[TEXTURE_WIDTH * TEXTURE_HEIGHT * 4])
 
 
 /**
- * Create a scene-owned texture field.
+ * Create a texture field.
  *
  * @param scene scene owning the field
  * @param pixels texture pixels

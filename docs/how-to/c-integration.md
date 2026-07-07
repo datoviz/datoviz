@@ -146,7 +146,7 @@ instead of entering `dvz_app_run()`. The Qt/PyQt guide and hosted examples show 
 ## Common Mistakes
 
 - Including private headers from `src/`.
-- Destroying scene-owned objects manually unless the API grants that ownership.
+- Destroying scene objects manually unless the API grants that ownership.
 - Destroying the scene before `dvz_app_destroy()`.
 - Creating one visual per item instead of one batched visual with many items.
 - Changing one dense attribute's item count without updating the other dense attributes.

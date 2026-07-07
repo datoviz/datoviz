@@ -138,7 +138,7 @@ dvz_visual_set_field(mesh, "texture", texture);
 Images and volumes are not just dense point clouds. Preserve grid dimensions, value range, and
 texture format so filtering, colormapping, and probing remain meaningful.
 
-The sampled field is scene-owned. Keep the pointer for updates, but bind it to visuals with
+Keep the sampled-field pointer for updates, and bind it to visuals with
 `dvz_visual_set_field()`. If the values change without changing dimensions, call
 `dvz_sampled_field_set_data()` again or use `dvz_sampled_field_update_region()` for a subregion.
 If the dimensions change, call `dvz_sampled_field_resize()` so bound visuals can reallocate the

@@ -12,8 +12,8 @@ panel with the axes that should respond to interaction.
 
 ## Minimal Call Sequence
 
-When you already have a live app view, use the view helper. It creates the scene-owned controller,
-binds it to the panel, and connects it to the view input router:
+When you already have a live app view, use the view helper. It creates the controller, binds it to
+the panel, and connects it to the view input router:
 
 ```c
 dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
@@ -92,8 +92,7 @@ links.
 ## Important Details
 
 Panzoom is a 2D controller. Use 3D controllers for orbit, turntable, fly, or arcball navigation.
-Controller objects are scene-owned. When the scene is destroyed, its controllers are destroyed with
-it.
+Controllers live with the scene that created them.
 
 `dvz_view_panzoom()` always binds both X and Y dimensions. Use `dvz_panzoom()` plus
 `dvz_view_bind_controller()` when you need one-axis binding, shared controllers, or custom link

@@ -18,9 +18,9 @@ Use controllers for standard navigation before adding raw input callbacks.
 
 ## Binding And Linking
 
-Controllers are scene-owned opaque handles. Panels bind controllers per dimension. Sharing one
-controller handle links every bound part of that controller state; use separate controllers when
-panels should navigate independently.
+Controllers are opaque handles that panels bind per dimension. Sharing one controller handle links
+every bound part of that controller state; use separate controllers when panels should navigate
+independently.
 
 Examples:
 
