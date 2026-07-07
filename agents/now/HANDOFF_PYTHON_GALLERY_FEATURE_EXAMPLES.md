@@ -28,15 +28,14 @@ Recent checkpoint commits landed:
 15. `787cb7a72` Add Python builtin shapes 2D gallery example.
 16. `9b49aba61` Add Python builtin shapes 3D gallery example.
 17. `512f618e7` Add Python OBJ loading gallery example.
+18. `e838f224e` Add Python isolines gallery example.
 
-Current uncommitted checkpoint in this working tree:
+No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
+next planned checkpoint is `feature_text_block`.
 
-1. Added `examples/python/gallery/features/isolines.py`.
-2. Added `feature_isolines.python.source` / `direct-engine` in `examples/c/MANIFEST.yaml` and
-   regenerated gallery metadata.
-3. Known parity caveat: the C OBJ and 3D shape examples apply a Phong material, but Python
-   `DvzMaterialDesc` has no generated fields in the current binding, so these Python examples use
-   mesh geometry colors without calling `dvz_visual_set_material()`.
+Known parity caveat from the geometry batch: the C OBJ and 3D shape examples apply a Phong
+material, but Python `DvzMaterialDesc` has no generated fields in the current binding, so these
+Python examples use mesh geometry colors without calling `dvz_visual_set_material()`.
 
 The last validation loop was:
 
@@ -136,7 +135,7 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   entry.
 - `feature_obj_loading` is committed: it has
   `examples/python/gallery/features/obj_loading.py` and a matching `python.source` manifest entry.
-- `feature_isolines` is done in the current working tree: it has
+- `feature_isolines` is committed: it has
   `examples/python/gallery/features/isolines.py` and a matching `python.source` manifest entry.
 
 
@@ -181,7 +180,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python isolines gallery example
+examples: add Python text block gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
