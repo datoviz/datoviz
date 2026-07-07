@@ -63,6 +63,16 @@ typedef enum DvzGuiViewportFlags
 
 
 
+typedef enum DvzGuiDockSlot
+{
+    DVZ_GUI_DOCK_SLOT_LEFT,
+    DVZ_GUI_DOCK_SLOT_RIGHT,
+    DVZ_GUI_DOCK_SLOT_TOP,
+    DVZ_GUI_DOCK_SLOT_BOTTOM,
+} DvzGuiDockSlot;
+
+
+
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
@@ -163,6 +173,48 @@ dvz_view_set_gui_callback(
  * @return whether the window body is visible
  */
 DVZ_EXPORT bool dvz_gui_begin(DvzGui* gui, const char* title, bool* open, int flags);
+
+
+
+/**
+ * Dock an ImGui window into the default full-view dockspace the first time it is shown.
+ *
+ * Call before dvz_gui_begin() with the same title. The request is applied only once per title, so
+ * user-driven docking changes are not overwritten on later frames.
+ *
+ * @param gui the GUI overlay
+ * @param title the window title
+ * @param slot side of the full-view dockspace
+ * @param size_px initial docked size in logical pixels along the split axis, or 0 for default
+ * @return DVZ_OK if the request was accepted, DVZ_ERROR otherwise
+ */
+DVZ_EXPORT DvzResult
+dvz_gui_dock_window_once(DvzGui* gui, const char* title, DvzGuiDockSlot slot, float size_px);
+
+
+
+/**
+ * Return whether the current ImGui window is docked.
+ *
+ * Call between dvz_gui_begin() and dvz_gui_end().
+ *
+ * @param gui the GUI overlay
+ * @return whether the current ImGui window is docked
+ */
+DVZ_EXPORT bool dvz_gui_current_window_docked(DvzGui* gui);
+
+
+
+/**
+ * Return the current ImGui window rectangle in host-window logical pixels.
+ *
+ * Call between dvz_gui_begin() and dvz_gui_end().
+ *
+ * @param gui the GUI overlay
+ * @param out output rectangle
+ * @return whether the rectangle was written
+ */
+DVZ_EXPORT bool dvz_gui_current_window_rect(DvzGui* gui, DvzRect* out);
 
 
 

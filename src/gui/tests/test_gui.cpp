@@ -291,6 +291,10 @@ static int test_gui_widget_wrapper_symbols(TstContext* suite, const TstCase* ite
     void (*separator_text)(DvzGui*, const char*) = dvz_gui_separator_text;
     bool (*collapsing_header)(DvzGui*, const char*, int) = dvz_gui_collapsing_header;
     void (*same_line)(DvzGui*, float, float) = dvz_gui_same_line;
+    DvzResult (*dock_window_once)(DvzGui*, const char*, DvzGuiDockSlot, float) =
+        dvz_gui_dock_window_once;
+    bool (*current_window_docked)(DvzGui*) = dvz_gui_current_window_docked;
+    bool (*current_window_rect)(DvzGui*, DvzRect*) = dvz_gui_current_window_rect;
 
     AT(slider_int != NULL);
     AT(slider_float2 != NULL);
@@ -305,6 +309,9 @@ static int test_gui_widget_wrapper_symbols(TstContext* suite, const TstCase* ite
     AT(separator_text != NULL);
     AT(collapsing_header != NULL);
     AT(same_line != NULL);
+    AT(dock_window_once != NULL);
+    AT(current_window_docked != NULL);
+    AT(current_window_rect != NULL);
     return 0;
 }
 

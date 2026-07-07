@@ -36,6 +36,7 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "imgui.h"
+#include "imgui_internal.h"
 #include "gui_fonts.inc"
 
 
@@ -52,6 +53,8 @@
 #define DVZ_GUI_VIEWPORT_DEFAULT_RESIZE_DELAY_FRAMES 2u
 #define DVZ_GUI_VIEWPORT_RETIRED_TEXTURE_CAPACITY 64u
 #define DVZ_GUI_DEFAULT_WINDOW_WIDTH 200u
+#define DVZ_GUI_DEFAULT_DOCK_RATIO 0.25f
+#define DVZ_GUI_MAX_DOCKED_WINDOWS 64u
 #define DVZ_GUI_CONFIG_KNOWN_FLAGS 0u
 #define DVZ_GUI_VIEWPORT_CONFIG_KNOWN_FLAGS 0u
 #define DVZ_FONT_DEFAULTS_KNOWN_FLAGS 0u
@@ -111,6 +114,11 @@ struct DvzGui
     void* callback_user_data;
     DvzGuiViewport* viewports;
     DvzGuiViewport* keyboard_viewport;
+    ImGuiID dockspace_id;
+    ImGuiID dockspace_main_id;
+    ImGuiID dock_nodes[4];
+    ImGuiID docked_window_hashes[DVZ_GUI_MAX_DOCKED_WINDOWS];
+    uint32_t docked_window_hash_count;
     ImFont* font_regular;
     ImFont* font_mono;
     VkFormat color_format;
@@ -210,6 +218,128 @@ static void _gui_set_current(DvzGui* gui)
     ANN(gui);
     ANN(gui->context);
     ImGui::SetCurrentContext(gui->context);
+}
+
+
+
+static int _gui_dock_slot_index(DvzGuiDockSlot slot)
+{
+    switch (slot)
+    {
+    case DVZ_GUI_DOCK_SLOT_LEFT:
+        return 0;
+    case DVZ_GUI_DOCK_SLOT_RIGHT:
+        return 1;
+    case DVZ_GUI_DOCK_SLOT_TOP:
+        return 2;
+    case DVZ_GUI_DOCK_SLOT_BOTTOM:
+        return 3;
+    default:
+        return -1;
+    }
+}
+
+
+
+static ImGuiDir _gui_dock_slot_dir(DvzGuiDockSlot slot)
+{
+    switch (slot)
+    {
+    case DVZ_GUI_DOCK_SLOT_RIGHT:
+        return ImGuiDir_Right;
+    case DVZ_GUI_DOCK_SLOT_TOP:
+        return ImGuiDir_Up;
+    case DVZ_GUI_DOCK_SLOT_BOTTOM:
+        return ImGuiDir_Down;
+    case DVZ_GUI_DOCK_SLOT_LEFT:
+    default:
+        return ImGuiDir_Left;
+    }
+}
+
+
+
+static float _gui_dock_slot_ratio(DvzGuiDockSlot slot, float size_px, ImVec2 viewport_size)
+{
+    const float axis =
+        (slot == DVZ_GUI_DOCK_SLOT_LEFT || slot == DVZ_GUI_DOCK_SLOT_RIGHT) ? viewport_size.x :
+                                                                              viewport_size.y;
+    float ratio = DVZ_GUI_DEFAULT_DOCK_RATIO;
+    if (size_px > 0.0f && isfinite(size_px) && axis > 0.0f)
+        ratio = size_px / axis;
+    if (ratio < 0.05f)
+        ratio = 0.05f;
+    if (ratio > 0.9f)
+        ratio = 0.9f;
+    return ratio;
+}
+
+
+
+static bool _gui_dock_window_hash_seen(const DvzGui* gui, ImGuiID hash)
+{
+    ANN(gui);
+    for (uint32_t i = 0; i < gui->docked_window_hash_count; i++)
+    {
+        if (gui->docked_window_hashes[i] == hash)
+            return true;
+    }
+    return false;
+}
+
+
+
+static bool _gui_dock_window_hash_add(DvzGui* gui, ImGuiID hash)
+{
+    ANN(gui);
+    if (_gui_dock_window_hash_seen(gui, hash))
+        return true;
+    if (gui->docked_window_hash_count >= DVZ_GUI_MAX_DOCKED_WINDOWS)
+        return false;
+    gui->docked_window_hashes[gui->docked_window_hash_count++] = hash;
+    return true;
+}
+
+
+
+static ImGuiID _gui_dock_node_for_slot(DvzGui* gui, DvzGuiDockSlot slot, float size_px)
+{
+    ANN(gui);
+    const int index = _gui_dock_slot_index(slot);
+    if (index < 0)
+        return 0;
+
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    if (viewport == NULL)
+        return 0;
+
+    if (gui->dockspace_id == 0)
+        gui->dockspace_id = ImGui::GetID("DatovizDockSpace");
+
+    if (gui->dockspace_main_id == 0)
+    {
+        ImGui::DockBuilderRemoveNode(gui->dockspace_id);
+        ImGui::DockBuilderAddNode(
+            gui->dockspace_id,
+            ImGuiDockNodeFlags_DockSpace | ImGuiDockNodeFlags_PassthruCentralNode);
+        ImGui::DockBuilderSetNodePos(gui->dockspace_id, viewport->Pos);
+        ImGui::DockBuilderSetNodeSize(gui->dockspace_id, viewport->Size);
+        gui->dockspace_main_id = gui->dockspace_id;
+    }
+
+    if (gui->dock_nodes[index] == 0)
+    {
+        ImGuiID dock_id = 0;
+        ImGuiID main_id = 0;
+        ImGui::DockBuilderSplitNode(
+            gui->dockspace_main_id, _gui_dock_slot_dir(slot),
+            _gui_dock_slot_ratio(slot, size_px, viewport->Size), &dock_id, &main_id);
+        gui->dock_nodes[index] = dock_id;
+        gui->dockspace_main_id = main_id;
+        ImGui::DockBuilderFinish(gui->dockspace_id);
+    }
+
+    return gui->dock_nodes[index];
 }
 
 
@@ -1073,7 +1203,7 @@ static bool _gui_update_followup_frame_state(DvzGui* gui)
 
     ImGuiIO& io = ImGui::GetIO();
     bool active_item = ImGui::IsAnyItemActive() || io.WantTextInput;
-    bool open_popup = ImGui::IsPopupOpen(NULL, ImGuiPopupFlags_AnyPopup);
+    bool open_popup = ImGui::IsPopupOpen((const char*)NULL, ImGuiPopupFlags_AnyPopup);
     bool request_frame = active_item != gui->had_active_item || open_popup != gui->had_open_popup;
 
     gui->had_active_item = active_item;
@@ -1283,7 +1413,8 @@ static void _gui_submit_dockspace(DvzGui* gui)
     if ((gui->config.gui_flags & DVZ_GUI_FLAGS_DOCKSPACE) == 0)
         return;
     ImGuiDockNodeFlags flags = ImGuiDockNodeFlags_PassthruCentralNode;
-    ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), flags);
+    gui->dockspace_id = ImGui::GetID("DatovizDockSpace");
+    ImGui::DockSpaceOverViewport(gui->dockspace_id, ImGui::GetMainViewport(), flags);
 }
 
 
@@ -1695,6 +1826,58 @@ bool dvz_gui_begin(DvzGui* gui, const char* title, bool* open, int flags)
             ImVec2((float)gui->config.default_window_width, 0.0f), ImGuiCond_FirstUseEver);
     }
     return ImGui::Begin(title, open, flags);
+}
+
+
+
+DvzResult dvz_gui_dock_window_once(
+    DvzGui* gui, const char* title, DvzGuiDockSlot slot, float size_px)
+{
+    if (gui == NULL || title == NULL || title[0] == '\0')
+        return DVZ_ERROR;
+    if ((gui->config.gui_flags & DVZ_GUI_FLAGS_DOCKSPACE) == 0)
+        return DVZ_ERROR;
+
+    _gui_set_current(gui);
+    const ImGuiID hash = ImHashStr(title);
+    if (_gui_dock_window_hash_seen(gui, hash))
+        return DVZ_OK;
+
+    const ImGuiID dock_id = _gui_dock_node_for_slot(gui, slot, size_px);
+    if (dock_id == 0)
+        return DVZ_ERROR;
+
+    ImGui::DockBuilderDockWindow(title, dock_id);
+    ImGui::SetNextWindowDockID(dock_id, ImGuiCond_FirstUseEver);
+    if (!_gui_dock_window_hash_add(gui, hash))
+        return DVZ_ERROR;
+    return DVZ_OK;
+}
+
+
+
+bool dvz_gui_current_window_docked(DvzGui* gui)
+{
+    if (gui == NULL)
+        return false;
+    _gui_set_current(gui);
+    return ImGui::IsWindowDocked();
+}
+
+
+
+bool dvz_gui_current_window_rect(DvzGui* gui, DvzRect* out)
+{
+    if (gui == NULL || out == NULL)
+        return false;
+    _gui_set_current(gui);
+    const ImVec2 pos = ImGui::GetWindowPos();
+    const ImVec2 size = ImGui::GetWindowSize();
+    out->x = pos.x;
+    out->y = pos.y;
+    out->width = size.x;
+    out->height = size.y;
+    return true;
 }
 
 
