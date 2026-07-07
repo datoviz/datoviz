@@ -29,6 +29,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
@@ -36,6 +37,7 @@
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "example_tuner.h"
 #include "runner/scenario_runner.h"
 
 
@@ -58,6 +60,13 @@ DvzScenarioSpec dvz_example_isolines_scenario(void);
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+typedef struct IsolinesState
+{
+    ExampleTuner tuner;
+} IsolinesState;
+
+
 
 /**
  * Assign scalar-field heights and vertex colors to a surface grid geometry.
@@ -219,6 +228,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (out_user != NULL)
         *out_user = NULL;
 
+    IsolinesState* state = (IsolinesState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    state->tuner = example_tuner("Isolines view");
+    if (out_user != NULL)
+        *out_user = state;
+
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
         return false;
@@ -269,7 +285,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
-    dvz_arcball_set(arcball, (vec3){+0.55f, 0.0f, -0.25f});
+    vec3 arcball_angles = {+0.58f, -0.12f, +0.26f};
+    vec2 arcball_pan = {0.0f, 0.0f};
+    dvz_arcball_set(arcball, arcball_angles);
+    example_tuner_arcball(&state->tuner, "Arcball", arcball, arcball_angles, 1.0f, arcball_pan);
     return true;
 
 error:
@@ -277,6 +296,31 @@ error:
     if (geometry != NULL)
         dvz_geometry_destroy(geometry);
     return false;
+}
+
+
+
+static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    (void)app;
+    IsolinesState* state = (IsolinesState*)user;
+    if (
+        ctx == NULL || ctx->presentation != DVZ_RUNNER_PRESENT_GLFW || state == NULL ||
+        view == NULL)
+        return true;
+
+    return example_tuner_attach(&state->tuner, view);
+}
+
+
+
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    IsolinesState* state = (IsolinesState*)user;
+    if (state != NULL)
+        example_tuner_detach(&state->tuner);
+    dvz_free(user);
 }
 
 
@@ -297,6 +341,7 @@ DvzScenarioSpec dvz_example_isolines_scenario(void)
         .requirements =
             DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_ARCBALL,
         .init = _scenario_init,
+        .destroy = _scenario_destroy,
     };
 }
 
@@ -307,6 +352,20 @@ DvzScenarioSpec dvz_example_isolines_scenario(void)
 /*************************************************************************************************/
 
 #ifndef DVZ_EXAMPLE_NO_MAIN
+static bool _cli_wants_live_gui(int argc, char** argv)
+{
+    for (int i = 1; i < argc; i++)
+    {
+        if (argv[i] == NULL)
+            continue;
+        if (strcmp(argv[i], "--live") == 0 || strcmp(argv[i], "--live-record") == 0)
+            return true;
+    }
+    return false;
+}
+
+
+
 /**
  * Run the isolines feature example through the native scenario runner.
  *
@@ -317,6 +376,8 @@ DvzScenarioSpec dvz_example_isolines_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = dvz_example_isolines_scenario();
+    if (_cli_wants_live_gui(argc, argv))
+        spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
 #endif
