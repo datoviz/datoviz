@@ -56,6 +56,8 @@ int test_fly_pitch_clamp_and_reset(TstContext* suite, const TstCase* item);
 
 int test_fly_free_and_plane_movement(TstContext* suite, const TstCase* item);
 
+int test_fly_plane_movement_uses_world_up(TstContext* suite, const TstCase* item);
+
 int test_fly_set_mode(TstContext* suite, const TstCase* item);
 
 int test_fly_keyboard_arrows_update(TstContext* suite, const TstCase* item);

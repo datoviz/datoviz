@@ -202,6 +202,43 @@ int test_fly_free_and_plane_movement(TstContext* suite, const TstCase* item)
 
 
 
+int test_fly_plane_movement_uses_world_up(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzFlyDesc desc = dvz_fly_desc();
+    desc.mode = DVZ_FLY_MODE_PLANE;
+    desc.initial_view.eye[0] = 0.791911f;
+    desc.initial_view.eye[1] = 0.472144f;
+    desc.initial_view.eye[2] = -0.891266f;
+    desc.initial_view.target[0] = 0.207716f;
+    desc.initial_view.target[1] = 0.133955f;
+    desc.initial_view.target[2] = -0.153469f;
+    desc.initial_view.up[0] = 0.0f;
+    desc.initial_view.up[1] = 1.0f;
+    desc.initial_view.up[2] = 0.0f;
+
+    DvzFly* fly = _dvz_fly(&desc);
+    ANN(fly);
+
+    vec3 before = {0};
+    vec3 after = {0};
+    dvz_fly_get_position(fly, before);
+    AT(dvz_fly_move_forward(fly, 1.0f) == DVZ_OK);
+    dvz_fly_get_position(fly, after);
+
+    vec3 delta = {0};
+    glm_vec3_sub(after, before, delta);
+    AC(glm_vec3_dot(delta, desc.initial_view.up), 0.0f, 1e-5f);
+    AT(fabsf(delta[0]) > 0.1f || fabsf(delta[2]) > 0.1f);
+
+    dvz_fly_destroy(fly);
+    return 0;
+}
+
+
+
 int test_fly_set_mode(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -875,6 +912,7 @@ int test_scene_fly(TstSuite* suite)
     TST_CASE(test_fly_lookat_initialization);
     TST_CASE(test_fly_pitch_clamp_and_reset);
     TST_CASE(test_fly_free_and_plane_movement);
+    TST_CASE(test_fly_plane_movement_uses_world_up);
     TST_CASE(test_fly_set_mode);
     TST_CASE(test_fly_keyboard_arrows_update);
     TST_CASE(test_fly_wasd_and_arrows_equivalent);

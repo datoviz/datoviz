@@ -346,6 +346,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     fly_desc.mode = DVZ_FLY_MODE_PLANE;
     fly_desc.controller_flags = DVZ_FLY_FLAGS_FIXED_UP | DVZ_FLY_FLAGS_DISABLE_ROLL;
     fly_desc.initial_view = camera_desc.view;
+    fly_desc.initial_view.up[0] = 0.0f;
+    fly_desc.initial_view.up[1] = 1.0f;
+    fly_desc.initial_view.up[2] = 0.0f;
     DvzController* controller = dvz_fly(ctx->scene, &fly_desc);
     EXAMPLE_CHECK(controller != NULL, "dvz_fly() failed");
     DvzFly* fly = dvz_controller_fly(controller);
