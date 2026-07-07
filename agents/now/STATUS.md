@@ -8,6 +8,11 @@ history, not in agent archives.
 
 ## Current Pickup
 
+Immediate runtime troubleshooting task:
+[HANDOFF_IPYTHON_RUN_CLOSE_HANG.md](HANDOFF_IPYTHON_RUN_CLOSE_HANG.md) records the active
+investigation plan for the macOS terminal-IPython hosted window close hang. Handle this before
+returning to broader RC stabilization if the user's next pickup is Python/IPython runtime work.
+
 Next critical path: fix DRP2 render-pass area semantics before RC stabilization, then close RC1
 release notes, source bundle/checksum, artifact inspection, publication rehearsal, and final public
 status/documentation reconciliation.
