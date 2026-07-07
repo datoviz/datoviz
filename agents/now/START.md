@@ -29,14 +29,17 @@ as real implementation, not scaffolding.
 4. Use [../../spec/scene/README.md](../../spec/scene/README.md) before changing scene semantics.
 5. Use [../../spec/drp2/README.md](../../spec/drp2/README.md) before changing DRP2 commands,
    schemas, fixtures, or scene DRP2 emission.
-6. Use [../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md) and
+6. Use [HANDOFF_DRP2_RENDER_PASS_SEMANTICS.md](HANDOFF_DRP2_RENDER_PASS_SEMANTICS.md) before
+   changing render-pass begin commands, target clears, panel render areas, final sRGB encode, or
+   DRP2 viewport/scissor semantics.
+7. Use [../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md) and
    [../../spec/bindings/CTYPES_POLICY.md](../../spec/bindings/CTYPES_POLICY.md) before changing the
    top-level Python package, raw-binding generation, FFI helpers, or NumPy/array argument
    adaptation.
-7. Use [HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md](HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md) as the completed
+8. Use [HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md](HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md) as the completed
    pre-RC API cleanup record before changing public headers, exported API, generated C reference,
    generated `ctypes`, or public examples.
-8. Use [../../plans/AXIS_GUIDE_VIEWPORT_REFACTOR_PLAN.md](../../plans/AXIS_GUIDE_VIEWPORT_REFACTOR_PLAN.md)
+9. Use [../../plans/AXIS_GUIDE_VIEWPORT_REFACTOR_PLAN.md](../../plans/AXIS_GUIDE_VIEWPORT_REFACTOR_PLAN.md)
    before changing 2D axes, grid lines, guides, View2D domains, aspect ratio, or plot/panel
    viewport behavior. Keep generated/adornment visual routing semantic and attachment-driven; do
    not reintroduce frame-plan pointer scans over axis, guide, colorbar, legend, panel chrome,

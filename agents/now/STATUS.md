@@ -1,6 +1,6 @@
 # Datoviz v0.4 Status
 
-Status: active RC preparation. Updated: 2026-07-05.
+Status: active RC preparation. Updated: 2026-07-07.
 
 Keep this file short. Durable behavior belongs in `spec/`; completed history belongs in git
 history, not in agent archives.
@@ -8,26 +8,35 @@ history, not in agent archives.
 
 ## Current Pickup
 
-Next critical path: close RC1 release notes, source bundle/checksum, artifact inspection,
-publication rehearsal, and final public status/documentation reconciliation.
+Next critical path: fix DRP2 render-pass area semantics before RC stabilization, then close RC1
+release notes, source bundle/checksum, artifact inspection, publication rehearsal, and final public
+status/documentation reconciliation.
+
+Imminent runtime refactor: [HANDOFF_DRP2_RENDER_PASS_SEMANTICS.md](HANDOFF_DRP2_RENDER_PASS_SEMANTICS.md)
+records the required DRP2 cleanup. `BeginRenderPass.viewport` currently conflates attachment render
+area, draw viewport, and draw scissor; this exposed magenta uninitialized frame/gutter pixels in
+multi-panel examples such as `scientific_plotting_workflow`. API/ABI breakage is acceptable in this
+lane if it yields a clean descriptor-based render-pass command model.
 
 Pre-RC1 execution order:
 
-1. Run the v0.4 Git history cleanup if it is still desired before stable RC refs exist.
-2. Keep the now-green wheel matrix in release evidence and inspect downloaded artifacts before
+1. Complete the DRP2 render-pass semantics refactor and validate multi-panel frame clears,
+   sRGB intermediate presentation, DRP2 fixtures, native runtime, and WebGPU parity as needed.
+2. Run the v0.4 Git history cleanup if it is still desired before stable RC refs exist.
+3. Keep the now-green wheel matrix in release evidence and inspect downloaded artifacts before
    upload.
-3. Prepare the RC1 source bundle, release notes, tag, and publication rehearsal.
-4. Install, inspect, and smoke-test the built wheels, including native dependencies and the CMake
+4. Prepare the RC1 source bundle, release notes, tag, and publication rehearsal.
+5. Install, inspect, and smoke-test the built wheels, including native dependencies and the CMake
    consumer check.
-5. Keep the v0.3 visible parity audit and public API/status disposition table reconciled before
+6. Keep the v0.3 visible parity audit and public API/status disposition table reconciled before
    RC1: specifically re-check `docs/reference/feature-status.md`,
    `docs/reference/project-status.md`, `docs/reference/v03-visible-parity.md`, generated C API
    docs, raw `ctypes` docs/policy, and the GSP/VisPy2 boundary language for contradictions.
-6. Polish the WebGPU/WASM story: supported live routes, experimental scope, diagnostics, and
+7. Polish the WebGPU/WASM story: supported live routes, experimental scope, diagnostics, and
    non-parity boundaries.
-7. Proofread the public docs, gallery pages, generated matrices, screenshots, and example metadata.
-8. Cut RC1 only after final validation and release notes are recorded.
-9. Keep the narrow retained visual item-range slice in validation: the point-first
+8. Proofread the public docs, gallery pages, generated matrices, screenshots, and example metadata.
+9. Cut RC1 only after final validation and release notes are recorded.
+10. Keep the narrow retained visual item-range slice in validation: the point-first
    `dvz_visual_set_item_range()` / clear/get API is active, with broader attribute views, scalar
    GPU mappings, modifiers, compaction, sorting, indirect draw, and additional visual families
    deferred unless a concrete RC blocker appears.
