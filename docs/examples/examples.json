@@ -108,7 +108,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=feature_panel_single",
       "webgpu_site_route": "/examples/webgpu/live.html?id=feature_panel_single",
-      "primary_feature": "panel-single"
+      "primary_feature": "panel-single",
+      "python_source": "examples/python/gallery/features/panel_single.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_single.py",
+      "python_status": "manual"
     },
     {
       "id": "feature_panel_grid",
@@ -153,7 +156,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=feature_panel_grid",
       "webgpu_site_route": "/examples/webgpu/live.html?id=feature_panel_grid",
-      "primary_feature": "panel-grid"
+      "primary_feature": "panel-grid",
+      "python_source": "examples/python/gallery/features/panel_grid.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_grid.py",
+      "python_status": "manual"
     },
     {
       "id": "feature_panel_multi",
@@ -202,7 +208,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=feature_panel_multi",
       "webgpu_site_route": "/examples/webgpu/live.html?id=feature_panel_multi",
-      "primary_feature": "multi-panel"
+      "primary_feature": "multi-panel",
+      "python_source": "examples/python/gallery/features/panel_multi.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_multi.py",
+      "python_status": "manual"
     },
     {
       "id": "feature_panel_linked",
@@ -2580,7 +2589,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=colormap_scale",
       "webgpu_site_route": "/examples/webgpu/live.html?id=colormap_scale",
-      "primary_feature": "colormap-scale"
+      "primary_feature": "colormap-scale",
+      "python_source": "examples/python/gallery/features/colormap_scale.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/colormap_scale.py",
+      "python_status": "manual"
     },
     {
       "id": "annotation_readout",
@@ -3996,7 +4008,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=visual_vector",
       "webgpu_site_route": "/examples/webgpu/live.html?id=visual_vector",
-      "primary_visual": "vector"
+      "primary_visual": "vector",
+      "python_source": "examples/python/gallery/visuals/vector.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/vector.py",
+      "python_status": "manual"
     },
     {
       "id": "visual_path",

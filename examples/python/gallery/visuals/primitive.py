@@ -7,7 +7,7 @@ import numpy as np
 
 import datoviz as dvz
 
-from examples.python.gallery import _common as ex
+from examples.python.gallery import common as ex
 
 
 def main() -> None:

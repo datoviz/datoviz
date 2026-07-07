@@ -38,12 +38,19 @@ Five point positions are paired with a float color-value array instead of precom
     --8<-- "examples/c/features/colormap_scale.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/colormap_scale.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `colormap_scale`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/colormap_scale.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/colormap_scale.c)
+    - Python source: [`examples/python/gallery/features/colormap_scale.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/colormap_scale.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=colormap_scale"><code>examples/webgpu/live.html?id=colormap_scale</code></a>
     - Browser capability tags: `colormap`, `point`

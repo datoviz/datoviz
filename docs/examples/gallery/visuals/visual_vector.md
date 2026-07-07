@@ -38,6 +38,12 @@ The straight field uses position, vector, color, and width arrays, while the cur
     --8<-- "examples/c/visuals/vector.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/visuals/vector.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `visual_vector`
@@ -45,6 +51,7 @@ The straight field uses position, vector, color, and width arrays, while the cur
     - Lane: `visuals`
     - Source: [`examples/c/visuals/vector.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/vector.c)
     - Reference: [Vector visual family](../../../reference/visual-families/vector.md)
+    - Python source: [`examples/python/gallery/visuals/vector.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/vector.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_vector"><code>examples/webgpu/live.html?id=visual_vector</code></a>
     - Browser capability tags: `vector`, `path`, `panzoom`

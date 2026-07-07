@@ -38,12 +38,19 @@ The panel is placed with normalized x, y, width, and height values instead of fi
     --8<-- "examples/c/features/panel_single.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/panel_single.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_panel_single`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/panel_single.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_single.c)
+    - Python source: [`examples/python/gallery/features/panel_single.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_single.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panel_single"><code>examples/webgpu/live.html?id=feature_panel_single</code></a>
     - Browser capability tags: `panel`, `point`

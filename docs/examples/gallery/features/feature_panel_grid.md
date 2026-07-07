@@ -38,12 +38,19 @@ Each panel has its own border, background, and small point visual with position,
     --8<-- "examples/c/features/panel_grid.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/panel_grid.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_panel_grid`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/panel_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_grid.c)
+    - Python source: [`examples/python/gallery/features/panel_grid.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_grid.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panel_grid"><code>examples/webgpu/live.html?id=feature_panel_grid</code></a>
     - Browser capability tags: `panel-grid`, `point`
