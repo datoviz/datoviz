@@ -1548,6 +1548,19 @@ DVZ_GRID_SIZE_WEIGHT = DvzGridSizeMode.DVZ_GRID_SIZE_WEIGHT
 DVZ_GRID_SIZE_FIXED_PX = DvzGridSizeMode.DVZ_GRID_SIZE_FIXED_PX
 
 
+class DvzGuiDockSlot(CtypesEnum):
+    DVZ_GUI_DOCK_SLOT_LEFT = 0
+    DVZ_GUI_DOCK_SLOT_RIGHT = 1
+    DVZ_GUI_DOCK_SLOT_TOP = 2
+    DVZ_GUI_DOCK_SLOT_BOTTOM = 3
+
+
+DVZ_GUI_DOCK_SLOT_LEFT = DvzGuiDockSlot.DVZ_GUI_DOCK_SLOT_LEFT
+DVZ_GUI_DOCK_SLOT_RIGHT = DvzGuiDockSlot.DVZ_GUI_DOCK_SLOT_RIGHT
+DVZ_GUI_DOCK_SLOT_TOP = DvzGuiDockSlot.DVZ_GUI_DOCK_SLOT_TOP
+DVZ_GUI_DOCK_SLOT_BOTTOM = DvzGuiDockSlot.DVZ_GUI_DOCK_SLOT_BOTTOM
+
+
 class DvzGuiFlags(CtypesEnum):
     DVZ_GUI_FLAGS_NONE = 0
     DVZ_GUI_FLAGS_DOCKING = 1
@@ -15203,6 +15216,22 @@ else:
 
 
 try:
+    dvz_figure_get_reserve = dvz.dvz_figure_get_reserve
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_figure_get_reserve')
+else:
+    dvz_figure_get_reserve.__doc__ = """/**
+ * Return one figure's current content-area reservation.
+ *
+ * @param figure the figure
+ * @param out output pixel reservation
+ * @return whether the reservation was written
+ */"""
+    dvz_figure_get_reserve.argtypes = [ctypes.POINTER(DvzFigure), ctypes.POINTER(DvzPanelReserve)]
+    dvz_figure_get_reserve.restype = ctypes.c_bool
+
+
+try:
     dvz_figure_grid = dvz.dvz_figure_grid
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_figure_grid')
@@ -15319,6 +15348,25 @@ else:
  */"""
     dvz_figure_set_color_pipeline.argtypes = [ctypes.POINTER(DvzFigure), ctypes.c_int]
     dvz_figure_set_color_pipeline.restype = ctypes.c_int32
+
+
+try:
+    dvz_figure_set_reserve = dvz.dvz_figure_set_reserve
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_figure_set_reserve')
+else:
+    dvz_figure_set_reserve.__doc__ = """/**
+ * Set a fixed logical-pixel reservation around one figure's content area.
+ *
+ * Panels and grids resolve inside the remaining content rectangle. Pass NULL to reset every side
+ * to zero.
+ *
+ * @param figure the figure
+ * @param reserve pixel reservation descriptor, or NULL for zero reserve
+ * @return DVZ_OK if the reservation was accepted, DVZ_ERROR otherwise
+ */"""
+    dvz_figure_set_reserve.argtypes = [ctypes.POINTER(DvzFigure), ctypes.POINTER(DvzPanelReserve)]
+    dvz_figure_set_reserve.restype = ctypes.c_int32
 
 
 try:
@@ -18382,7 +18430,7 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_grid_resolve')
 else:
     dvz_grid_resolve.__doc__ = """/**
- * Resolve one grid cell into a normalized figure-space panel rectangle.
+ * Resolve one grid cell into a normalized figure-content panel rectangle.
  *
  * @param grid the grid
  * @param width figure width in logical pixels
@@ -18620,6 +18668,41 @@ else:
 
 
 try:
+    dvz_gui_current_window_docked = dvz.dvz_gui_current_window_docked
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_gui_current_window_docked')
+else:
+    dvz_gui_current_window_docked.__doc__ = """/**
+ * Return whether the current ImGui window is docked.
+ *
+ * Call between dvz_gui_begin() and dvz_gui_end().
+ *
+ * @param gui the GUI overlay
+ * @return whether the current ImGui window is docked
+ */"""
+    dvz_gui_current_window_docked.argtypes = [ctypes.POINTER(DvzGui)]
+    dvz_gui_current_window_docked.restype = ctypes.c_bool
+
+
+try:
+    dvz_gui_current_window_rect = dvz.dvz_gui_current_window_rect
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_gui_current_window_rect')
+else:
+    dvz_gui_current_window_rect.__doc__ = """/**
+ * Return the current ImGui window rectangle in host-window logical pixels.
+ *
+ * Call between dvz_gui_begin() and dvz_gui_end().
+ *
+ * @param gui the GUI overlay
+ * @param out output rectangle
+ * @return whether the rectangle was written
+ */"""
+    dvz_gui_current_window_rect.argtypes = [ctypes.POINTER(DvzGui), ctypes.POINTER(DvzRect)]
+    dvz_gui_current_window_rect.restype = ctypes.c_bool
+
+
+try:
     dvz_gui_demo = dvz.dvz_gui_demo
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_gui_demo')
@@ -18632,6 +18715,27 @@ else:
  */"""
     dvz_gui_demo.argtypes = [ctypes.POINTER(DvzGui), ctypes.POINTER(ctypes.c_bool)]
     dvz_gui_demo.restype = None
+
+
+try:
+    dvz_gui_dock_window_once = dvz.dvz_gui_dock_window_once
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_gui_dock_window_once')
+else:
+    dvz_gui_dock_window_once.__doc__ = """/**
+ * Dock an ImGui window into the default full-view dockspace the first time it is shown.
+ *
+ * Call before dvz_gui_begin() with the same title. The request is applied only once per title, so
+ * user-driven docking changes are not overwritten on later frames.
+ *
+ * @param gui the GUI overlay
+ * @param title the window title
+ * @param slot side of the full-view dockspace
+ * @param size_px initial docked size in logical pixels along the split axis, or 0 for default
+ * @return DVZ_OK if the request was accepted, DVZ_ERROR otherwise
+ */"""
+    dvz_gui_dock_window_once.argtypes = [ctypes.POINTER(DvzGui), ctypes.c_char_p, ctypes.c_int, ctypes.c_float]
+    dvz_gui_dock_window_once.restype = ctypes.c_int32
 
 
 try:
@@ -22600,13 +22704,13 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_panel_set_desc')
 else:
     dvz_panel_set_desc.__doc__ = """/**
- * Update a panel rectangle in normalized figure coordinates.
+ * Update a panel rectangle in normalized figure-content coordinates.
  *
  * Changing the descriptor updates panel viewport/scissor state on the next emit and marks
  * layout-dependent adornments dirty.
  *
  * @param panel the panel
- * @param desc panel position and size in normalized [0, 1] figure coordinates
+ * @param desc panel position and size in normalized [0, 1] figure-content coordinates
  * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panel_set_desc.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzPanelDesc)]
@@ -32145,7 +32249,7 @@ else:
     dvz_write_ppm.restype = ctypes.c_int
 
 
-_GENERATED_FUNCTION_COUNT = 1521
+_GENERATED_FUNCTION_COUNT = 1526
 _SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_depth_cue_desc', 'dvz_device_config', 'dvz_field_geometry', 'dvz_gpu_ctx_config', 'dvz_material_desc', 'dvz_overlay_card_desc', 'dvz_overlay_card_style', 'dvz_phong_material_desc', 'dvz_polygon_desc', 'dvz_reference_grid_desc', 'dvz_scale_bar_desc', 'dvz_standard_material_desc', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
 _DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzDataDomain', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2TextureDesc', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFlyDesc', 'DvzFontDefaults', 'DvzFontDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanEmitConfig', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzMsaaDesc', 'DvzOrientationGizmoDesc', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBackgroundGradient', 'DvzPanelBackgroundImage', 'DvzPanelBackgroundDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTextPlacement', 'DvzTextStyle', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewDesc', 'DvzViewSizeDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
 __all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]
