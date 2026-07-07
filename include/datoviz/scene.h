@@ -188,6 +188,29 @@ dvz_figure_size(const DvzFigure* figure, uint32_t* out_width, uint32_t* out_heig
 
 
 /**
+ * Set a fixed logical-pixel reservation around one figure's content area.
+ *
+ * Panels and grids resolve inside the remaining content rectangle. Pass NULL to reset every side
+ * to zero.
+ *
+ * @param figure the figure
+ * @param reserve pixel reservation descriptor, or NULL for zero reserve
+ * @return DVZ_OK if the reservation was accepted, DVZ_ERROR otherwise
+ */
+DVZ_EXPORT DvzResult dvz_figure_set_reserve(DvzFigure* figure, const DvzPanelReserve* reserve);
+
+
+/**
+ * Return one figure's current content-area reservation.
+ *
+ * @param figure the figure
+ * @param out output pixel reservation
+ * @return whether the reservation was written
+ */
+DVZ_EXPORT bool dvz_figure_get_reserve(const DvzFigure* figure, DvzPanelReserve* out);
+
+
+/**
  * Convert a host-window logical pointer position to figure layout coordinates.
  *
  * Raw input events keep backend/window logical coordinates. Scene, panel, and query helpers use
@@ -308,7 +331,7 @@ dvz_grid_set_row_size(DvzGrid* grid, uint32_t row, DvzGridSizeMode mode, float v
 
 
 /**
- * Resolve one grid cell into a normalized figure-space panel rectangle.
+ * Resolve one grid cell into a normalized figure-content panel rectangle.
  *
  * @param grid the grid
  * @param width figure width in logical pixels
@@ -605,13 +628,13 @@ DVZ_EXPORT DvzId dvz_panel_id(const DvzPanel* panel);
 
 
 /**
- * Update a panel rectangle in normalized figure coordinates.
+ * Update a panel rectangle in normalized figure-content coordinates.
  *
  * Changing the descriptor updates panel viewport/scissor state on the next emit and marks
  * layout-dependent adornments dirty.
  *
  * @param panel the panel
- * @param desc panel position and size in normalized [0, 1] figure coordinates
+ * @param desc panel position and size in normalized [0, 1] figure-content coordinates
  * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_panel_set_desc(DvzPanel* panel, const DvzPanelDesc* desc);

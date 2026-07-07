@@ -90,6 +90,31 @@ static bool _font_defaults_validate(const DvzFontDefaults* defaults)
 
 
 
+static bool _figure_reserve_valid(const DvzFigure* figure, const DvzPanelReserve* reserve)
+{
+    if (figure == NULL || reserve == NULL)
+        return false;
+    if (
+        !isfinite(reserve->left_px) || !isfinite(reserve->right_px) ||
+        !isfinite(reserve->top_px) || !isfinite(reserve->bottom_px))
+    {
+        return false;
+    }
+    if (
+        reserve->left_px < 0.0f || reserve->right_px < 0.0f || reserve->top_px < 0.0f ||
+        reserve->bottom_px < 0.0f)
+    {
+        return false;
+    }
+    if (figure->width > 0 && reserve->left_px + reserve->right_px >= (float)figure->width)
+        return false;
+    if (figure->height > 0 && reserve->top_px + reserve->bottom_px >= (float)figure->height)
+        return false;
+    return true;
+}
+
+
+
 static bool _scene_occlusion_desc_validate(const DvzSceneOcclusionDesc* desc)
 {
     if (desc == NULL)
@@ -518,6 +543,7 @@ DvzResult dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t height)
     figure->width = width;
     figure->height = height;
     (void)_scene_figure_resolve_layouts(figure);
+    (void)_scene_figure_resolve_panel_descs(figure);
     for (uint32_t i = 0; i < figure->panel_count; i++)
     {
         DvzPanel* panel = &figure->panels[i];
@@ -550,6 +576,37 @@ void dvz_figure_size(const DvzFigure* figure, uint32_t* out_width, uint32_t* out
         *out_width = figure->width;
     if (out_height != NULL)
         *out_height = figure->height;
+}
+
+
+DvzResult dvz_figure_set_reserve(DvzFigure* figure, const DvzPanelReserve* reserve)
+{
+    if (figure == NULL)
+        return DVZ_ERROR;
+    DvzPanelReserve next = reserve != NULL ? *reserve : (DvzPanelReserve){0};
+    if (!_figure_reserve_valid(figure, &next))
+        return DVZ_ERROR;
+    if (
+        figure->reserve.left_px == next.left_px && figure->reserve.right_px == next.right_px &&
+        figure->reserve.top_px == next.top_px && figure->reserve.bottom_px == next.bottom_px)
+    {
+        return DVZ_OK;
+    }
+
+    figure->reserve = next;
+    (void)_scene_figure_resolve_layouts(figure);
+    (void)_scene_figure_resolve_panel_descs(figure);
+    _scene_notify_request_frame(figure);
+    return DVZ_OK;
+}
+
+
+bool dvz_figure_get_reserve(const DvzFigure* figure, DvzPanelReserve* out)
+{
+    if (figure == NULL || out == NULL)
+        return false;
+    *out = figure->reserve;
+    return true;
 }
 
 
@@ -738,7 +795,8 @@ DvzPanel* dvz_panel(DvzFigure* figure, const DvzPanelDesc* desc)
     DvzPanel* panel       = &figure->panels[figure->panel_count++];
     panel->figure         = figure;
     panel->id             = _scene_next_id(figure->scene);
-    panel->desc           = panel_desc;
+    panel->content_desc   = panel_desc;
+    panel->desc           = _scene_figure_content_desc(figure, panel_desc);
     panel->grid           = NULL;
     panel->grid_cell      = (DvzGridCell){0};
     panel->base_reserve   = (DvzPanelReserve){0};
@@ -781,10 +839,10 @@ DvzId dvz_panel_id(const DvzPanel* panel)
 
 
 /**
- * Update a panel rectangle in normalized figure coordinates.
+ * Update a panel rectangle in normalized figure-content coordinates.
  *
  * @param panel the panel
- * @param desc panel position and size in normalized [0, 1] figure coordinates
+ * @param desc panel position and size in normalized [0, 1] figure-content coordinates
  * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DvzResult dvz_panel_set_desc(DvzPanel* panel, const DvzPanelDesc* desc)

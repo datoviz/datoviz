@@ -478,6 +478,8 @@ typedef struct DvzPanelFrameResolved
 bool _scene_panel_frame_snapshot(const DvzPanel* panel, DvzPanelFrameResolved* out);
 
 bool _scene_figure_resolve_layouts(DvzFigure* figure);
+bool _scene_figure_resolve_panel_descs(DvzFigure* figure);
+DvzPanelDesc _scene_figure_content_desc(const DvzFigure* figure, DvzPanelDesc desc);
 
 void _scene_panel_set_axis_reserve(DvzPanel* panel, const DvzPanelReserve* reserve);
 
@@ -1935,7 +1937,8 @@ struct DvzPanel
 {
     DvzFigure*  figure;
     DvzId       id;
-    DvzPanelDesc desc; /* normalized position and size */
+    DvzPanelDesc desc; /* normalized full-figure render position and size */
+    DvzPanelDesc content_desc; /* normalized position and size inside figure content rect */
     DvzGrid* grid;     /* optional owner grid for retained layout */
     DvzGridCell grid_cell;
     DvzSceneTechniqueState techniques;
@@ -2053,6 +2056,7 @@ struct DvzFigure
     float      render_scale;
     float      user_scale;
     DvzColorPipeline color_pipeline;
+    DvzPanelReserve reserve;
 
     uint32_t   panel_count;
     DvzPanel   panels[DVZ_SCENE_MAX_PANELS];

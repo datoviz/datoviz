@@ -440,22 +440,98 @@ static bool _panel_desc_equal(DvzPanelDesc a, DvzPanelDesc b)
 
 
 
+/**
+ * Resolve a content-relative panel descriptor to full-figure normalized coordinates.
+ *
+ * @param figure figure
+ * @param desc normalized descriptor in the figure content rectangle
+ * @return normalized descriptor in the full figure rectangle
+ */
+DvzPanelDesc _scene_figure_content_desc(const DvzFigure* figure, DvzPanelDesc desc)
+{
+    if (figure == NULL || figure->width == 0 || figure->height == 0)
+        return desc;
+
+    DvzPanelReserve reserve = figure->reserve;
+    if (
+        reserve.left_px < 0.0f || reserve.right_px < 0.0f || reserve.top_px < 0.0f ||
+        reserve.bottom_px < 0.0f)
+    {
+        reserve = (DvzPanelReserve){0};
+    }
+
+    const float figure_width = (float)figure->width;
+    const float figure_height = (float)figure->height;
+    float content_width = figure_width - reserve.left_px - reserve.right_px;
+    float content_height = figure_height - reserve.top_px - reserve.bottom_px;
+    if (content_width <= 0.0f || content_height <= 0.0f)
+    {
+        reserve = (DvzPanelReserve){0};
+        content_width = figure_width;
+        content_height = figure_height;
+    }
+
+    return (DvzPanelDesc){
+        .x = (reserve.left_px + desc.x * content_width) / figure_width,
+        .y = (reserve.top_px + desc.y * content_height) / figure_height,
+        .width = desc.width * content_width / figure_width,
+        .height = desc.height * content_height / figure_height,
+    };
+}
+
+
+
+
+/**
+ * Return the figure content size in logical pixels.
+ *
+ * @param figure figure
+ * @param out_width content width
+ * @param out_height content height
+ */
+static void _scene_figure_content_size(
+    const DvzFigure* figure, uint32_t* out_width, uint32_t* out_height)
+{
+    ANN(out_width);
+    ANN(out_height);
+    if (figure == NULL)
+    {
+        *out_width = 0;
+        *out_height = 0;
+        return;
+    }
+
+    const float width = (float)figure->width;
+    const float height = (float)figure->height;
+    const float reserve_x = figure->reserve.left_px + figure->reserve.right_px;
+    const float reserve_y = figure->reserve.top_px + figure->reserve.bottom_px;
+    const float content_width = width > reserve_x ? width - reserve_x : width;
+    const float content_height = height > reserve_y ? height - reserve_y : height;
+    *out_width = content_width > 1.0f ? (uint32_t)(content_width + 0.5f) : figure->width;
+    *out_height = content_height > 1.0f ? (uint32_t)(content_height + 0.5f) : figure->height;
+}
+
+
 
 /**
  * Update a panel descriptor without changing grid ownership.
  *
  * @param panel the panel
- * @param desc the new descriptor
+ * @param desc new descriptor in normalized figure-content coordinates
  * @return whether the descriptor was accepted
  */
 bool _scene_panel_set_desc_internal(DvzPanel* panel, DvzPanelDesc desc)
 {
     if (panel == NULL || !_panel_desc_valid(desc))
         return false;
-    if (_panel_desc_equal(panel->desc, desc))
+    DvzPanelDesc render_desc = _scene_figure_content_desc(panel->figure, desc);
+    if (!_panel_desc_valid(render_desc))
+        return false;
+    if (_panel_desc_equal(panel->content_desc, desc) && _panel_desc_equal(panel->desc, render_desc))
         return true;
 
-    panel->desc = desc;
+    panel->content_desc = desc;
+    panel->desc = render_desc;
     if (panel->camera != NULL)
     {
         float panel_width = 0.0f;
@@ -549,6 +625,9 @@ bool _scene_figure_resolve_layouts(DvzFigure* figure)
 {
     if (figure == NULL)
         return false;
+    uint32_t content_width = 0;
+    uint32_t content_height = 0;
+    _scene_figure_content_size(figure, &content_width, &content_height);
     bool ok = true;
     for (uint32_t gi = 0; gi < figure->grid_count; gi++)
     {
@@ -564,7 +643,7 @@ bool _scene_figure_resolve_layouts(DvzFigure* figure)
 
             DvzPanelDesc desc = {0};
             if (!dvz_grid_resolve(
-                    grid, figure->width, figure->height, attachment->cell, &desc) ||
+                    grid, content_width, content_height, attachment->cell, &desc) ||
                 !_scene_panel_set_desc_internal(panel, desc))
             {
                 ok = false;
@@ -576,6 +655,30 @@ bool _scene_figure_resolve_layouts(DvzFigure* figure)
     return ok;
 }
 
+
+
+
+/**
+ * Recompute all panel render descriptors from their content descriptors.
+ *
+ * @param figure the figure
+ * @return whether every active panel descriptor was accepted
+ */
+bool _scene_figure_resolve_panel_descs(DvzFigure* figure)
+{
+    if (figure == NULL)
+        return false;
+    bool ok = true;
+    for (uint32_t i = 0; i < figure->panel_count; i++)
+    {
+        DvzPanel* panel = &figure->panels[i];
+        if (panel->figure != figure)
+            continue;
+        if (!_scene_panel_set_desc_internal(panel, panel->content_desc))
+            ok = false;
+    }
+    return ok;
+}
 
 
 
@@ -601,7 +704,10 @@ DvzPanel* dvz_grid_panel_span(
         .col_span = col_span,
     };
     DvzPanelDesc desc = {0};
-    if (!dvz_grid_resolve(grid, grid->figure->width, grid->figure->height, cell, &desc))
+    uint32_t content_width = 0;
+    uint32_t content_height = 0;
+    _scene_figure_content_size(grid->figure, &content_width, &content_height);
+    if (!dvz_grid_resolve(grid, content_width, content_height, cell, &desc))
         return NULL;
 
     DvzPanel* panel = dvz_panel(grid->figure, &desc);

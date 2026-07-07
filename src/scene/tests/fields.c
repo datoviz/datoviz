@@ -46,6 +46,7 @@
 
 int test_scene_mesh_visual_binds_texture_field(TstContext* suite, const TstCase* item);
 int test_scene_colorbar_left_title_uses_content_lane(TstContext* suite, const TstCase* item);
+int test_scene_figure_reserve_resolves_content_layout(TstContext* suite, const TstCase* item);
 
 
 /**
@@ -548,6 +549,65 @@ int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* it
         (invalid = dvz_legend(
              panel, scale, &(DvzLegendDesc){DVZ_STRUCT_INIT_FIELDS(DvzLegendDesc), .anchor = DVZ_SCENE_ANCHOR_PANEL_CENTER})) == NULL);
     AT(invalid == NULL);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_figure_reserve_resolves_content_layout(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 1000, 500, 0);
+    ANN(figure);
+
+    DvzPanel* full = dvz_panel_full(figure);
+    ANN(full);
+    AT(fabsf(full->desc.x) < 1e-6f);
+    AT(fabsf(full->desc.width - 1.0f) < 1e-6f);
+
+    DvzPanelReserve reserve = {.left_px = 250.0f, .top_px = 50.0f};
+    AT(dvz_figure_set_reserve(figure, &reserve) == DVZ_OK);
+
+    DvzPanelReserve actual = {0};
+    AT(dvz_figure_get_reserve(figure, &actual));
+    AT(fabsf(actual.left_px - 250.0f) < 1e-6f);
+    AT(fabsf(actual.top_px - 50.0f) < 1e-6f);
+
+    AT(fabsf(full->content_desc.x) < 1e-6f);
+    AT(fabsf(full->content_desc.width - 1.0f) < 1e-6f);
+    AT(fabsf(full->desc.x - 0.25f) < 1e-6f);
+    AT(fabsf(full->desc.y - 0.1f) < 1e-6f);
+    AT(fabsf(full->desc.width - 0.75f) < 1e-6f);
+    AT(fabsf(full->desc.height - 0.9f) < 1e-6f);
+
+    DvzGrid* grid = dvz_figure_grid(figure, 1, 2);
+    ANN(grid);
+    DvzPanel* left = dvz_grid_panel(grid, 0, 0);
+    DvzPanel* right = dvz_grid_panel(grid, 0, 1);
+    ANN(left);
+    ANN(right);
+    AT(fabsf(left->content_desc.x) < 1e-6f);
+    AT(fabsf(left->content_desc.width - 0.5f) < 1e-6f);
+    AT(fabsf(left->desc.x - 0.25f) < 1e-6f);
+    AT(fabsf(left->desc.width - 0.375f) < 1e-6f);
+    AT(fabsf(right->content_desc.x - 0.5f) < 1e-6f);
+    AT(fabsf(right->desc.x - 0.625f) < 1e-6f);
+    AT(fabsf(right->desc.width - 0.375f) < 1e-6f);
+
+    AT(dvz_figure_set_reserve(figure, NULL) == DVZ_OK);
+    AT(fabsf(full->desc.x) < 1e-6f);
+    AT(fabsf(full->desc.y) < 1e-6f);
+    AT(fabsf(full->desc.width - 1.0f) < 1e-6f);
+    AT(fabsf(full->desc.height - 1.0f) < 1e-6f);
+    AT(fabsf(left->desc.x) < 1e-6f);
+    AT(fabsf(left->desc.width - 0.5f) < 1e-6f);
+
+    AT(dvz_figure_set_reserve(figure, &(DvzPanelReserve){.left_px = 1000.0f}) == DVZ_ERROR);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -4776,6 +4836,7 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_scale_colormap_colorbar_core);
     TST_CASE(test_scene_categorical_scale_entries);
     TST_CASE(test_scene_placement_helpers);
+    TST_CASE(test_scene_figure_reserve_resolves_content_layout);
     TST_CASE(test_scene_legend_lifecycle_and_reserve);
     TST_CASE(test_scene_legend_prepare_visuals);
     TST_CASE(test_scene_legend_emit_stream_contains_derived_visuals);
