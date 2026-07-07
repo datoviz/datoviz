@@ -25,7 +25,7 @@ input to be double precision.
 ## Controllers and Domains
 
 Controllers change transforms, not the original data. Panzoom changes the visible 2D domain.
-Arcball, fly, turntable, and orbit controllers change view or camera state for 3D panels. Linked
+Arcball, fly, and turntable controllers change view or camera state for 3D panels. Linked
 panels should share controller or domain state explicitly.
 
 ## Projection Scope

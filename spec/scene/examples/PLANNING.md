@@ -164,7 +164,7 @@ material second. Keep each file narrow: one feature or runtime path, determinist
 unrelated GUI or domain polish, and smoke/screenshot validation once runnable.
 
 Focused examples now cover the first release slice of retained scenes, panels, axes, sampled fields,
-text, overlays, panzoom/arcball/fly/turntable/orbit controllers, textured/material mesh, lighting,
+text, overlays, panzoom/arcball/fly/turntable controllers, textured/material mesh, lighting,
 GUI controls/viewports/raw cimgui, retained visual updates/transforms, visibility,
 picking/probing/selection, animation through scenario frames and retained tracks, marker symbols,
 color scales, colorbars, scale bars, alpha/depth toggles, EDL, SSAO, MSAA, depth cue,

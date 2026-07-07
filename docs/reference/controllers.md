@@ -12,7 +12,6 @@ own backend resources.
 | Arcball | Object inspection around a pivot. | Panel-local or shared. | `DVZ_DIM_MASK_XYZ`. | Live for promoted 3D routes. |
 | Fly | Free camera navigation. | Panel-local. | `DVZ_DIM_MASK_XYZ`. | Live where the example route is promoted. |
 | Turntable | Constrained 3D rotation. | Panel-local. | `DVZ_DIM_MASK_XYZ`. | Live where the example route is promoted. |
-| Orbit camera | Camera orbit around a target. | Panel-local. | `DVZ_DIM_MASK_XYZ`. | Live where the example route is promoted. |
 
 Use controllers for standard navigation before adding raw input callbacks.
 

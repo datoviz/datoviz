@@ -6,7 +6,7 @@ techniques. App lifecycle, capture, recording, replay, and media export examples
 `../runtime/`.
 
 - `axes_2d.c`: retained numeric axes and tick labels.
-- `coordinate_system.c`: interactive 3D RGB-axis proof with an orbit camera and reference grid.
+- `coordinate_system.c`: interactive 3D RGB-axis proof with a camera controller and reference grid.
 - `axis_labels.c`: retained axis titles and tick-label placement with plot margins.
 - `sampled_field_update.c`: 2D sampled field reused by two image visuals and updated by subregion.
 - `text_block.c`: multiline retained semantic text with explicit line spacing.

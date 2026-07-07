@@ -20,7 +20,7 @@ Status values:
 | Frame callbacks and timer animation | fixed | callback/timer examples and portable scenario frame callbacks | Browser/WASM support is limited to the promoted experimental subset. |
 | Multi-panel figures, linked panels, and panel backgrounds | fixed | panel grid/multi/link/background examples | Dense dashboards and high-level layout authoring remain above the core renderer. |
 | Panzoom controller | fixed | `dvz_panzoom()` and panzoom examples | Native path is supported; WebGPU follows the promoted live-route subset. |
-| Arcball, fly, turntable, and orbit controllers | fixed | controller examples | Native path is release-facing; browser parity is experimental. |
+| Arcball, fly, and turntable controllers | fixed | controller examples | Native path is release-facing; browser parity is experimental. |
 | 2D axes, ticks, labels, and plot-like scientific composition | fixed | axes, axis-label, scientific-plotting, and linked-panel examples | Scene-managed nonlinear/geographic transforms are deferred; CPU pre-projection is the supported pattern. |
 | Text blocks and annotations | fixed | semantic text, glyph lowering, annotation/readout examples | Complex shaping, glyph/text picking, and broader world/data placement remain deferred. |
 | Color maps, scales, colorbars, and categorical legends | fixed | sampled-field, colorbar, colormap-scale, and legend examples | First release slice is active; richer shared layout and query payloads remain follow-up work. |

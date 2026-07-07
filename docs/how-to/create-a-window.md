@@ -54,8 +54,8 @@ view so the controller is connected to the live input path.
 dvz_view_panzoom(view, panel, NULL);
 ```
 
-Use 3D controller helpers for 3D panels, such as arcball, turntable, fly, or orbit camera. Input
-callbacks and GUI overlays should also be registered before `dvz_app_run()`.
+Use 3D controller helpers for 3D panels, such as arcball, turntable, or fly. Input callbacks and
+GUI overlays should also be registered before `dvz_app_run()`.
 
 ## Backend Status
 

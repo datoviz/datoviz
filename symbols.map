@@ -261,7 +261,6 @@ dvz_controller_destroy
 dvz_controller_fly
 dvz_controller_link
 dvz_controller_link_destroy
-dvz_controller_orbit_camera
 dvz_controller_panzoom
 dvz_controller_turntable
 dvz_controller_type
@@ -867,20 +866,6 @@ dvz_mock_range
 dvz_mock_uniform
 dvz_msaa_desc
 dvz_normalize_bytes
-dvz_orbit_camera
-dvz_orbit_camera_apply_camera
-dvz_orbit_camera_create
-dvz_orbit_camera_desc
-dvz_orbit_camera_destroy
-dvz_orbit_camera_get_distance
-dvz_orbit_camera_get_pivot
-dvz_orbit_camera_get_view
-dvz_orbit_camera_is_interacting
-dvz_orbit_camera_pivot
-dvz_orbit_camera_pointer
-dvz_orbit_camera_resize
-dvz_orbit_camera_set_camera
-dvz_orbit_camera_viewport
 dvz_orientation_gizmo
 dvz_orientation_gizmo_desc
 dvz_orientation_gizmo_destroy
@@ -1326,7 +1311,6 @@ dvz_view_gui
 dvz_view_input
 dvz_view_logical_size
 dvz_view_offscreen
-dvz_view_orbit_camera
 dvz_view_panzoom
 dvz_view_post
 dvz_view_record_start

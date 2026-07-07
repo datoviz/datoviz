@@ -391,7 +391,7 @@ Optional: add a hold/reset cycle later. First keep the animation simple.
 
 ### Camera and panel
 
-Use a dark panel background and a 3D camera/arcball or orbit camera, following existing showcase style.
+Use a dark panel background and a 3D camera with arcball or turntable navigation, following existing showcase style.
 
 Recommended setup:
 

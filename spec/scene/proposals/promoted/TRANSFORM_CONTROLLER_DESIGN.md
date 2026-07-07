@@ -48,7 +48,7 @@ The active model is:
 
 1. `panzoom_2d` for 2D panel navigation;
 2. `arcball_model` for object/model rotation;
-3. `camera_orbit` for camera motion around an explicit target;
+3. turntable or fly-pivot navigation for camera motion around an explicit target;
 4. `camera_fly` for free 3D camera navigation;
 5. `camera_fps` for yaw/pitch movement with application-defined ground or lift constraints.
 

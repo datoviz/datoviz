@@ -12,7 +12,7 @@ Camera setup answers different questions than controller selection:
 
 | Question | Page |
 | --- | --- |
-| Which interaction model should the user get: arcball, turntable, orbit, or fly? | [Use 3D controllers](3d-navigation.md) |
+| Which interaction model should the user get: arcball, turntable, or fly? | [Use 3D controllers](3d-navigation.md) |
 | Where is the eye, what is it looking at, what is up, and how is depth projected? | This page |
 
 A camera descriptor defines the initial view and projection:
@@ -46,8 +46,8 @@ camera.far = 100.0f;
 dvz_panel_set_camera_desc(panel, &camera);
 ```
 
-Attach a controller after setting the camera when the example needs interactive navigation. Orbit,
-turntable, and fly descriptors commonly reuse the same target, eye, or up convention. Arcball is
+Attach a controller after setting the camera when the example needs interactive navigation.
+Turntable and fly descriptors commonly reuse the same target, eye, or up convention. Arcball is
 primarily object-inspection state, but it still depends on a clear view convention for predictable
 drag axes and lighting.
 

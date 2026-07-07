@@ -67,7 +67,7 @@ Controllers mutate transforms and visible domains, not source data:
 | Controller | Coordinate effect |
 | --- | --- |
 | Panzoom | Changes the visible 2D panel/domain extent. |
-| Arcball/orbit/turntable/fly | Changes 3D camera or view state. |
+| Arcball/turntable/fly | Changes 3D camera or view state. |
 | Linked controllers | Share explicit controller/domain state between panels. |
 
 If no controller is bound, a panel uses its configured or fitted domain.

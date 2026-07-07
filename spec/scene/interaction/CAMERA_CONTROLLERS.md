@@ -1,7 +1,8 @@
 # Camera Controllers
 
 This document defines durable scene semantics for 3D camera/navigation controller families:
-fly-style navigation, fly pivot gestures, and turntable orbit navigation.
+fly-style navigation, fly pivot gestures, and turntable orbit navigation. A separate orbit-camera
+controller is deferred for v0.4.
 
 General controller ownership, binding, event routing, and typed state rules are defined in
 [CONTROLLERS.md](CONTROLLERS.md) and
@@ -122,24 +123,6 @@ pivot_distance = length(pivot - position)
 ```
 
 This avoids surprising camera jumps when a user selects a new point or object.
-
-## Orbit Camera Semantics
-
-Orbit-camera navigation is camera-state orbit around an explicit pivot. It uses an attached
-`DvzCamera` as the authoritative view state: input updates the camera eye, target, up vector, and
-distance around the pivot, then the panel uses that camera for view/projection matrices.
-
-Orbit-camera and turntable examples may start from the same view and look similar in simple scenes.
-Their intended interaction contracts differ:
-
-1. orbit camera is camera-centric: the camera pose is primary and the pivot is the current orbit
-   target;
-2. turntable is stable-up and object/pivot-centric: yaw, pitch/elevation, and distance describe an
-   upright inspection rig around a fixed pivot;
-3. orbit camera is the better default when an existing camera pose should be preserved and then
-   navigated around a chosen target;
-4. turntable is the better default when world up, no roll, and predictable pitch/distance clamps
-   are part of the user-facing contract.
 
 ## Turntable Controller Semantics
 

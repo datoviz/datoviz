@@ -520,7 +520,7 @@ The future GSP Datoviz backend should be able to implement the following mapping
 | resource buffer | `DvzSceneBuffer` |
 | attribute data | `dvz_visual_set_data_many`, `dvz_visual_set_data_range`, `dvz_visual_set_attr_buffer` |
 | transform: panel domain | `dvz_panel_set_domain`, panel view APIs |
-| transform: controller | panzoom/arcball/turntable/fly/orbit APIs |
+| transform: controller | panzoom/arcball/turntable/fly APIs |
 | scalar colormap | `DvzScale`, `DvzColormap`, sampled field or color mapping path |
 | query request | `dvz_panel_query` or equivalent |
 | query completion | `dvz_scene_poll_query` or equivalent |

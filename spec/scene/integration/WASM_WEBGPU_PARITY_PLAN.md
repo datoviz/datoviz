@@ -168,7 +168,7 @@ techniques.
 | Annotations/layout | current/rc-target | promote composed showcases |
 | Query/readback | current narrow slice | keep picking/selection/probe evidence; defer full query parity |
 | Compute | compact proof and particle route current | keep particle budget/evidence current |
-| Controllers | panzoom/arcball/fly/turntable/orbit examples current | keep broader native controller parity deferred |
+| Controllers | panzoom/arcball/fly/turntable examples current | keep broader native controller parity deferred |
 | Volume/splat/postprocess | deferred | keep diagnostics explicit; do not expand before RC unless required |
 
 

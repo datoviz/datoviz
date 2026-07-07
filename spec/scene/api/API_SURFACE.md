@@ -224,16 +224,17 @@ The effective world transform for controller-attached visuals is:
 clip = projection * view * controller_model * visual_local_model * position
 ```
 
-For orbit camera, `controller_model` remains identity and the camera effect is in `view`. For
-object/model arcball, the camera view remains stable and the arcball contribution is model-space.
-Fixed overlays skip panel/controller model participation as before, but still apply their retained
-visual-local transform.
+For turntable and fly camera motion, `controller_model` remains identity and the camera effect is in
+`view`. For object/model arcball, the camera view remains stable and the arcball contribution is
+model-space. Fixed overlays skip panel/controller model participation as before, but still apply
+their retained visual-local transform.
 
 Examples should use these concepts intentionally:
 
 1. use visual-local transforms for object spin, object placement, and per-visual presentation;
 2. use object/model arcball when user input should manipulate model state under a fixed camera;
-3. use orbit camera when user input should inspect a stable scene from different viewpoints;
+3. use turntable or fly pivot gestures when user input should inspect a stable scene from different
+   viewpoints;
 4. avoid baking controller motion into vertex attributes or field payloads.
 
 Inspection APIs should copy state out, never expose mutable internal pointers. This keeps bindings
