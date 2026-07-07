@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import atexit
 import ctypes
+import os
+import sys
 import time
 from typing import Any
 
@@ -11,12 +13,37 @@ from typing import Any
 _LIVE_RUNS = set()
 _INPUTHOOK_REGISTERED = False
 _ATEXIT_REGISTERED = False
+_LIBRARY_DEBUGGED = False
+_INPUTHOOK_EMPTY_DEBUGGED = False
+
+
+def _debug(stage: str) -> None:
+    if os.environ.get('DVZ_PYTHON_RUN_DEBUG') != '1':
+        return
+    sys.stderr.write(f'datoviz.run {stage}\n')
+    sys.stderr.flush()
+
+
+def _debug_library() -> None:
+    global _LIBRARY_DEBUGGED
+    if _LIBRARY_DEBUGGED or os.environ.get('DVZ_PYTHON_RUN_DEBUG') != '1':
+        return
+    try:
+        from . import _ctypes
+    except Exception as exc:
+        _debug(f'library:error {exc!r}')
+        _LIBRARY_DEBUGGED = True
+        return
+    path = getattr(getattr(_ctypes, 'dvz', None), '_name', '<unknown>')
+    _debug(f'library:{path}')
+    _LIBRARY_DEBUGGED = True
 
 
 class RunSession:
     """Live session returned by nonblocking ``datoviz.run()`` calls."""
 
     def __init__(self, raw, scene, app, view, *, window_host=None, fps: float = 60.0):
+        global _INPUTHOOK_EMPTY_DEBUGGED
         self._raw = raw
         self.scene = scene
         self.app = app
@@ -27,6 +54,7 @@ class RunSession:
         self._closed = False
         self._last_tick = 0.0
         _LIVE_RUNS.add(self)
+        _INPUTHOOK_EMPTY_DEBUGGED = False
 
     def __repr__(self) -> str:
         state = 'closed' if self._closed else ('running' if self.running else 'stopped')
@@ -45,9 +73,13 @@ class RunSession:
         if self._closed or not self.running:
             return None
         self._poll()
+        _debug('should_exit:begin')
         if self.should_close():
+            _debug('should_exit:end true')
+            self._reap_closed_views()
             self.close()
             return None
+        _debug('should_exit:end false')
         return self._raw.dvz_app_render_once(self.app)
 
     def stop(self) -> None:
@@ -63,10 +95,14 @@ class RunSession:
         self.running = False
         _LIVE_RUNS.discard(self)
         if self.app:
+            _debug('app_destroy:begin')
             self._raw.dvz_app_destroy(self.app)
+            _debug('app_destroy:end')
             self.app = None
         if self.window_host:
+            _debug('window_host_destroy:begin')
             self._raw.dvz_window_host_destroy(self.window_host)
+            _debug('window_host_destroy:end')
             self.window_host = None
         self.view = None
         self.scene = None
@@ -81,7 +117,17 @@ class RunSession:
 
     def _poll(self) -> None:
         if self.window_host:
+            _debug('poll:begin')
             self._raw.dvz_window_host_poll(self.window_host)
+            _debug('poll:end')
+
+    def _reap_closed_views(self) -> bool:
+        if self.app is None:
+            return False
+        _debug('reap_closed_views:begin')
+        reaped = bool(self._raw.dvz_app_reap_closed_views(self.app))
+        _debug(f'reap_closed_views:end {int(reaped)}')
+        return reaped
 
     def _inputhook_tick(self, now: float) -> None:
         if self._closed or not self.running:
@@ -123,14 +169,22 @@ def _is_terminal_ipython(shell: Any | None) -> bool:
 
 
 def _datoviz_inputhook(context) -> None:
+    global _INPUTHOOK_EMPTY_DEBUGGED
+    had_active = False
     while not context.input_is_ready():
         now = time.monotonic()
         active = [session for session in list(_LIVE_RUNS) if session.running]
         if not active:
+            if not _INPUTHOOK_EMPTY_DEBUGGED:
+                _debug('inputhook_return:no_active_sessions')
+                _INPUTHOOK_EMPTY_DEBUGGED = True
             return
+        had_active = True
         for session in active:
             session._inputhook_tick(now)
         time.sleep(0.005)
+    if had_active:
+        _debug('inputhook_return:input_ready')
 
 
 def _enable_ipython_inputhook(shell: Any | None) -> bool:
@@ -152,6 +206,7 @@ def _enable_ipython_inputhook(shell: Any | None) -> bool:
 
 
 def _make_nonblocking_session(raw, scene, figure, width, height, title_bytes) -> RunSession:
+    _debug_library()
     window_host = raw.dvz_window_host()
     if not window_host:
         raise RuntimeError('dvz_window_host() failed')

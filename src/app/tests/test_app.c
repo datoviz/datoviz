@@ -489,6 +489,34 @@ static int test_app_should_exit_reflects_stop_request(TstContext* suite, const T
 }
 
 
+/**
+ * Public hosted-loop close cleanup is a safe no-op when no views are closed.
+ */
+static int test_app_reap_closed_views_noops_without_closed_views(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzAppConfig config = _test_app_resource_config();
+    DvzApp* app = dvz_app_with_resources(scene, &config, NULL);
+    if (app == NULL)
+    {
+        dvz_scene_destroy(scene);
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+
+    AT(!dvz_app_reap_closed_views(app));
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 /**
  * Reject a borrowed runtime when no matching GPU context is provided.
@@ -1444,6 +1472,7 @@ int test_app(TstSuite* suite)
     TST_CASE(test_app_capture_config_env);
     TST_APP_GPU_CASE(test_app_resources_owned_defaults);
     TST_APP_GPU_CASE(test_app_should_exit_reflects_stop_request);
+    TST_APP_GPU_CASE(test_app_reap_closed_views_noops_without_closed_views);
     TST_CASE(test_app_resources_reject_runtime_without_gpu);
     TST_APP_GPU_CASE(test_app_resources_reject_incompatible_runtime);
     TST_APP_GPU_CASE(test_app_resources_borrow_gpu_ctx);

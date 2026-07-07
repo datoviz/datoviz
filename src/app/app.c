@@ -1799,16 +1799,22 @@ static void _view_close_runtime_resources(DvzView* win)
  * Destroy native windows that have received a close request.
  *
  * @param app app to inspect
+ * @return whether any views were reaped
  */
-static void _app_reap_closed_views(DvzApp* app)
+static bool _app_reap_closed_views(DvzApp* app)
 {
     ANN(app);
+    bool reaped = false;
     for (uint32_t i = 0; i < app->view_count; i++)
     {
         DvzView* win = &app->views[i];
         if (_view_close_requested(win))
+        {
             _view_close_runtime_resources(win);
+            reaped = true;
+        }
     }
+    return reaped;
 }
 
 
@@ -4108,6 +4114,23 @@ bool dvz_app_should_exit(DvzApp* app)
     return _app_should_exit(app);
 #else
     return true;
+#endif
+}
+
+
+/**
+ * Destroy native windows that have received a close request.
+ *
+ * @param app app to inspect
+ * @return whether any views were reaped
+ */
+bool dvz_app_reap_closed_views(DvzApp* app)
+{
+    ANN(app);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    return _app_reap_closed_views(app);
+#else
+    return false;
 #endif
 }
 

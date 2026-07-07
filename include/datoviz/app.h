@@ -356,13 +356,27 @@ DVZ_EXPORT bool dvz_app_should_stop(const DvzApp* app);
  * Return whether the app's interactive loop should exit.
  *
  * Hosted integrations that drive the app with `dvz_app_render_once()` should poll their window
- * host, call this function, and destroy or replace the hosted app when it returns true. This mirrors
- * the exit-policy check used by `dvz_app_run(app, 0)`.
+ * host, call this function, reap closed views with `dvz_app_reap_closed_views()` when it returns
+ * true, and destroy or replace the hosted app. This mirrors the exit-policy check used by
+ * `dvz_app_run(app, 0)`.
  *
  * @param app app to inspect
  * @return whether the app should exit according to stop requests and window-close policy
  */
 DVZ_EXPORT bool dvz_app_should_exit(DvzApp* app);
+
+
+/**
+ * Destroy native windows that have received a close request.
+ *
+ * Hosted integrations should call this after polling the window host and observing
+ * `dvz_app_should_exit(app)`. The function runs the same per-view close cleanup used by
+ * `dvz_app_run(app, 0)`.
+ *
+ * @param app app to inspect
+ * @return whether any views were reaped
+ */
+DVZ_EXPORT bool dvz_app_reap_closed_views(DvzApp* app);
 
 
 

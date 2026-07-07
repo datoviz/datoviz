@@ -783,10 +783,28 @@ static void _glfw_destroy(DvzWindowBackend* backend, DvzWindow* window)
     }
     GLFWwindow* handle = (GLFWwindow*)dvz_window_backend_handle(window);
     if (handle != NULL)
+    {
+#if defined(__APPLE__)
+        glfwSetWindowShouldClose(handle, GLFW_TRUE);
+        glfwHideWindow(handle);
+        if (_glfw_state.initialized)
+        {
+            glfwPollEvents();
+            glfwWaitEventsTimeout(0.001);
+        }
+#endif
         glfwDestroyWindow(handle);
+        if (_glfw_state.initialized)
+        {
+            glfwPollEvents();
+#if defined(__APPLE__)
+            for (uint32_t i = 0; i < 4; i++)
+                glfwWaitEventsTimeout(0.001);
+#endif
+        }
+    }
     if (_glfw_state.window_count > 0)
         _glfw_state.window_count--;
-    _glfw_shutdown();
 }
 
 
@@ -986,5 +1004,16 @@ DVZ_EXPORT bool dvz_window_glfw_init(void)
 #else
     log_warn("GLFW backend disabled, cannot initialize");
     return false;
+#endif
+}
+
+
+/**
+ * Terminate GLFW when no GLFW windows remain.
+ */
+void _dvz_window_glfw_shutdown(void)
+{
+#if DVZ_HAS_GLFW
+    _glfw_shutdown();
 #endif
 }

@@ -696,6 +696,8 @@ void dvz_window_host_destroy(DvzWindowHost* host)
     if (host == NULL)
         return;
     _window_host_clear_windows(host);
+    dvz_window_host_poll(host);
+    _dvz_window_glfw_shutdown();
     _window_wrap_state_clear(host);
     dvz_free(host->windows);
     dvz_free(host->backends);

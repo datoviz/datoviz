@@ -46,6 +46,10 @@ class _Raw(types.ModuleType):
         self.calls.append(('app_render_once', app))
         return 0
 
+    def dvz_app_reap_closed_views(self, app):
+        self.calls.append(('app_reap_closed_views', app))
+        return True
+
     def dvz_view_request_frame(self, view):
         self.calls.append(('view_request_frame', view))
         return 0
@@ -177,12 +181,37 @@ def test_live_session_closes_when_native_window_requests_close(monkeypatch):
 
     assert session.render_once() is None
     assert not session.running
-    assert ('app_should_exit', raw.app) in raw.calls
-    assert raw.calls[-2:] == [
+    assert raw.calls[-5:] == [
+        ('window_host_poll', raw.window_host),
+        ('app_should_exit', raw.app),
+        ('app_reap_closed_views', raw.app),
         ('app_destroy', raw.app),
         ('window_host_destroy', raw.window_host),
     ]
     assert ('scene_destroy', 'scene') not in raw.calls
+
+
+def test_inputhook_reaps_and_returns_once_session_closes(monkeypatch):
+    dvz_run = importlib.import_module('datoviz.run')
+    raw = _Raw()
+    dvz_run._close_live_runs()
+    session = dvz_run.RunSession(
+        raw, 'scene', raw.app, raw.view, window_host=raw.window_host, fps=0
+    )
+    raw.should_close = True
+
+    monkeypatch.setattr(dvz_run.time, 'sleep', lambda seconds: None)
+    dvz_run._datoviz_inputhook(_NeverReadyContext())
+
+    assert session._closed
+    assert not session.running
+    assert raw.calls[-5:] == [
+        ('window_host_poll', raw.window_host),
+        ('app_should_exit', raw.app),
+        ('app_reap_closed_views', raw.app),
+        ('app_destroy', raw.app),
+        ('window_host_destroy', raw.window_host),
+    ]
 
 
 def test_inputhook_returns_when_no_live_sessions():

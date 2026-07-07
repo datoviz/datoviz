@@ -7570,6 +7570,25 @@ else:
 
 
 try:
+    dvz_app_reap_closed_views = dvz.dvz_app_reap_closed_views
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_app_reap_closed_views')
+else:
+    dvz_app_reap_closed_views.__doc__ = """/**
+ * Destroy native windows that have received a close request.
+ *
+ * Hosted integrations should call this after polling the window host and observing
+ * `dvz_app_should_exit(app)`. The function runs the same per-view close cleanup used by
+ * `dvz_app_run(app, 0)`.
+ *
+ * @param app app to inspect
+ * @return whether any views were reaped
+ */"""
+    dvz_app_reap_closed_views.argtypes = [ctypes.POINTER(DvzApp)]
+    dvz_app_reap_closed_views.restype = ctypes.c_bool
+
+
+try:
     dvz_app_render_once = dvz.dvz_app_render_once
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_app_render_once')
@@ -7628,8 +7647,9 @@ else:
  * Return whether the app's interactive loop should exit.
  *
  * Hosted integrations that drive the app with `dvz_app_render_once()` should poll their window
- * host, call this function, and destroy or replace the hosted app when it returns true. This mirrors
- * the exit-policy check used by `dvz_app_run(app, 0)`.
+ * host, call this function, reap closed views with `dvz_app_reap_closed_views()` when it returns
+ * true, and destroy or replace the hosted app. This mirrors the exit-policy check used by
+ * `dvz_app_run(app, 0)`.
  *
  * @param app app to inspect
  * @return whether the app should exit according to stop requests and window-close policy
@@ -32269,7 +32289,7 @@ else:
     dvz_write_ppm.restype = ctypes.c_int
 
 
-_GENERATED_FUNCTION_COUNT = 1527
+_GENERATED_FUNCTION_COUNT = 1528
 _SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_depth_cue_desc', 'dvz_device_config', 'dvz_drp2_render_pass_desc', 'dvz_field_geometry', 'dvz_gpu_ctx_config', 'dvz_material_desc', 'dvz_overlay_card_desc', 'dvz_overlay_card_style', 'dvz_phong_material_desc', 'dvz_polygon_desc', 'dvz_reference_grid_desc', 'dvz_scale_bar_desc', 'dvz_standard_material_desc', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
 _DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzDataDomain', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2TextureDesc', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFlyDesc', 'DvzFontDefaults', 'DvzFontDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanEmitConfig', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzMsaaDesc', 'DvzOrientationGizmoDesc', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBackgroundGradient', 'DvzPanelBackgroundImage', 'DvzPanelBackgroundDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTextPlacement', 'DvzTextStyle', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewDesc', 'DvzViewSizeDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
 __all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]

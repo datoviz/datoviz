@@ -46,9 +46,11 @@ dvz_app_capture_config
 dvz_app_capture_config_from_env
 dvz_app_config
 dvz_app_destroy
+dvz_app_reap_closed_views
 dvz_app_render_once
 dvz_app_resources
 dvz_app_run
+dvz_app_should_exit
 dvz_app_should_stop
 dvz_app_stop
 dvz_app_vk_instance
