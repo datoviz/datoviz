@@ -40,6 +40,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "datoviz/controller/fly.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
@@ -61,6 +62,8 @@
 #define POINT_CLOUD_MAX_POINTS 8000000u
 
 #define CACHE_POINT_CLOUD_PATH ".cache/datoviz/examples/point_cloud/prepared/point_cloud.bin"
+
+static const float TAU = 6.28318530718f;
 
 
 
@@ -103,6 +106,9 @@ typedef struct PointCloudData
 typedef struct PointCloudState
 {
     PointCloudData data;
+    DvzCamera* camera;
+    DvzFly* fly;
+    DvzCameraView base_view;
     ExampleTuner tuner;
     DvzExampleGuiEdlControls edl;
 } PointCloudState;
@@ -326,6 +332,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzCamera* camera = dvz_panel_camera(panel);
     EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc() failed");
     EXAMPLE_CHECK(camera != NULL, "dvz_panel_set_camera_desc() failed");
+    state->camera = camera;
+    state->base_view = camera_desc.view;
 
     state->edl = (DvzExampleGuiEdlControls){
         .enabled = true,
@@ -358,6 +366,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(controller != NULL, "dvz_fly() failed");
     DvzFly* fly = dvz_controller_fly(controller);
     EXAMPLE_CHECK(fly != NULL, "failed to create or bind fly controller");
+    state->fly = fly;
     EXAMPLE_CHECK(
         dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) == 0,
         "dvz_scenario_bind_controller() failed");
@@ -367,6 +376,41 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 cleanup:
     return ok;
 }
+
+
+/**
+ * Orbit the camera eye on a horizontal circle for generated gallery media.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    PointCloudState* state = (PointCloudState*)user;
+    if (
+        ctx == NULL || !ctx->preview_mode || state == NULL || state->camera == NULL ||
+        state->fly == NULL)
+    {
+        return;
+    }
+
+    const uint64_t count = ctx->preview_frame_count > 0 ? ctx->preview_frame_count : 1;
+    const uint64_t stride = ctx->preview_sample_stride > 0 ? ctx->preview_sample_stride : 1;
+    const uint64_t logical_index = ctx->preview_frame_index / stride;
+    const float phase = (float)(logical_index % count) / (float)count;
+    const float theta = TAU * phase;
+
+    (void)dvz_fly_set_camera(state->fly, state->camera);
+    (void)dvz_fly_reset(state->fly);
+    vec3 pivot = {
+        state->base_view.target[0],
+        state->base_view.target[1],
+        state->base_view.target[2],
+    };
+    (void)dvz_fly_pivot(state->fly, pivot);
+    (void)dvz_fly_orbit(state->fly, theta, 0.0f);
+}
+
 
 
 static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
@@ -415,7 +459,9 @@ static DvzScenarioSpec _point_cloud_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
+        .frame = _scenario_frame,
         .destroy = _scenario_destroy,
     };
 }

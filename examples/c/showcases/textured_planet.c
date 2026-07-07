@@ -668,6 +668,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         *out_user = state;
     state->planet_index = PLANET_EARTH;
     _state_reset_controls(state);
+    if (ctx->preview_mode)
+        state->spin_speed = 1.05f;
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");

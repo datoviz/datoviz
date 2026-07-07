@@ -32,6 +32,7 @@
 /*************************************************************************************************/
 
 #include <ctype.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -73,6 +74,8 @@
 #define MOUSE_BRAIN_DEPTH 528
 #define BRAIN_SCALAR_TISSUE_FLOOR 32u
 
+static const double TAU = 6.28318530718;
+
 
 
 /*************************************************************************************************/
@@ -95,6 +98,8 @@ typedef struct AllenMouseBrainVolume
 typedef struct BrainVolumeState
 {
     AllenMouseBrainVolume volume_data;
+    DvzVisual* volume_3d;
+    DvzVisual* volume_slice;
     ExampleTuner tuner;
 } BrainVolumeState;
 
@@ -984,6 +989,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzVisual* volume_3d = dvz_volume(ctx->scene, 0);
     DvzVisual* volume_slice = dvz_volume(ctx->scene, 0);
     EXAMPLE_CHECK(volume_3d != NULL && volume_slice != NULL, "dvz_volume() failed");
+    state->volume_3d = volume_3d;
+    state->volume_slice = volume_slice;
     ok = dvz_visual_set_field(volume_3d, "field", field) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_visual_set_field(volume_3d) failed");
 
@@ -1060,6 +1067,35 @@ cleanup:
 
 
 
+/**
+ * Sweep the embedded slice plane for generated gallery media.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    BrainVolumeState* state = (BrainVolumeState*)user;
+    if (
+        ctx == NULL || !ctx->preview_mode || state == NULL || state->volume_3d == NULL ||
+        state->volume_slice == NULL)
+    {
+        return;
+    }
+
+    const uint64_t count = ctx->preview_frame_count > 0 ? ctx->preview_frame_count : 1;
+    const float phase = (float)(ctx->preview_frame_index % count) / (float)count;
+    const double slice_position = 0.22 + 0.56 * (0.5 - 0.5 * cos(TAU * (double)phase));
+    double clip_min[3] = {0.0, 0.0, 0.0};
+    double clip_max[3] = {1.0, 1.0, 1.0};
+    clip_max[(uint32_t)DEFAULT_AXIS] = slice_position;
+
+    (void)dvz_volume_set_clipping_box(state->volume_3d, clip_min, clip_max);
+    (void)dvz_volume_set_slice_position(state->volume_slice, slice_position);
+}
+
+
+
 static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
 {
     (void)app;
@@ -1106,7 +1142,9 @@ static DvzScenarioSpec _brain_volume_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
+        .frame = _scenario_frame,
         .destroy = _scenario_destroy,
     };
 }

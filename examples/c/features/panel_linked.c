@@ -30,6 +30,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
@@ -55,6 +56,18 @@ DvzScenarioSpec dvz_example_panel_linked_scenario(void);
 #define PATH_COUNT 128u
 
 static const float TAU = 6.28318530718f;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct PanelLinkedState
+{
+    DvzPanzoom* top_x;
+    DvzPanzoom* bottom_x;
+} PanelLinkedState;
 
 
 
@@ -195,10 +208,21 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
 
     DvzPanzoom* top_x_panzoom = dvz_controller_panzoom(top_x);
+    DvzPanzoom* bottom_x_panzoom = dvz_controller_panzoom(bottom_x);
     DvzPanzoom* top_y_panzoom = dvz_controller_panzoom(top_y);
     DvzPanzoom* bottom_y_panzoom = dvz_controller_panzoom(bottom_y);
-    if (top_x_panzoom == NULL || top_y_panzoom == NULL || bottom_y_panzoom == NULL)
+    if (
+        top_x_panzoom == NULL || bottom_x_panzoom == NULL || top_y_panzoom == NULL ||
+        bottom_y_panzoom == NULL)
         return false;
+
+    PanelLinkedState* state = (PanelLinkedState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    state->top_x = top_x_panzoom;
+    state->bottom_x = bottom_x_panzoom;
+    if (out_user != NULL)
+        *out_user = state;
 
     dvz_panzoom_zoom(top_x_panzoom, (vec2){1.80f, 1.0f});
     dvz_panzoom_pan(top_x_panzoom, (vec2){+0.22f, 0.0f});
@@ -221,6 +245,51 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
 
 /**
+ * Apply deterministic linked-X panning for generated gallery media.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    PanelLinkedState* state = (PanelLinkedState*)user;
+    if (ctx == NULL || !ctx->preview_mode || state == NULL)
+        return;
+
+    const uint64_t count = ctx->preview_frame_count > 0 ? ctx->preview_frame_count : 1;
+    const float phase = (float)(ctx->preview_frame_index % count) / (float)count;
+    const float theta = TAU * phase;
+    vec2 pan = {+0.22f + 0.22f * sinf(theta), 0.0f};
+    vec2 zoom = {1.80f, 1.0f};
+    if (state->top_x != NULL)
+    {
+        dvz_panzoom_zoom(state->top_x, zoom);
+        dvz_panzoom_pan(state->top_x, pan);
+    }
+    if (state->bottom_x != NULL)
+    {
+        dvz_panzoom_zoom(state->bottom_x, zoom);
+        dvz_panzoom_pan(state->bottom_x, pan);
+    }
+}
+
+
+
+/**
+ * Destroy the linked-panel scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    dvz_free(user);
+}
+
+
+
+/**
  * Return the linked-panel scenario specification.
  *
  * @return scenario specification
@@ -234,8 +303,10 @@ DvzScenarioSpec dvz_example_panel_linked_scenario(void)
         .height = HEIGHT,
         .fps = 60.0,
         .requirements = DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER |
-                        DVZ_SCENARIO_REQ_PANZOOM,
+                        DVZ_SCENARIO_REQ_PANZOOM | DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
+        .frame = _scenario_frame,
+        .destroy = _scenario_destroy,
     };
 }
 

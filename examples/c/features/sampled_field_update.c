@@ -435,8 +435,11 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
     if (ctx == NULL || state == NULL || state->field == NULL)
         return;
 
-    const uint32_t frame_index = (uint32_t)ctx->frame_index + 1u;
-    if (frame_index % UPDATE_STRIDE != 0)
+    const uint32_t frame_index =
+        ctx->preview_mode ? (uint32_t)ctx->preview_frame_index + 1u
+                          : (uint32_t)ctx->frame_index + 1u;
+    const uint32_t update_stride = ctx->preview_mode ? 1u : UPDATE_STRIDE;
+    if (frame_index % update_stride != 0)
         return;
 
     float patch[PATCH_SIZE * PATCH_SIZE] = {0};
@@ -446,7 +449,9 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
 
     state->patch_index = (state->patch_index + 1u) % PATCH_COUNT;
     _patch_position(state->patch_index, &state->patch_x, &state->patch_y);
-    _fill_highlight_patch(patch, (float)frame_index * 0.12f);
+    const float phase = ctx->preview_mode ? (float)(TAU * dvz_scenario_preview_time(ctx))
+                                          : (float)frame_index * 0.12f;
+    _fill_highlight_patch(patch, phase);
     (void)_update_patch(state->field, state->patch_x, state->patch_y, patch);
 }
 

@@ -374,6 +374,11 @@ examples:
       source: examples/python/gallery/features/panel_linked.py
       status: direct-engine
     validation: smoke+interaction+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 72
+        fps: 24
     data:
       kind: synthetic
     webgpu:
@@ -459,6 +464,11 @@ examples:
       source: examples/python/gallery/features/sampled_field_update.py
       status: direct-engine
     validation: smoke+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 72
+        fps: 24
     data:
       kind: synthetic
     webgpu:
@@ -745,6 +755,11 @@ examples:
     lane: features
     source: examples/c/features/user_scale.c
     validation: smoke+interaction+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 72
+        fps: 24
     data:
       kind: synthetic
     portability: native-only
@@ -836,6 +851,12 @@ examples:
     lane: features
     source: examples/c/features/animation_tracks.c
     validation: smoke+interaction+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 72
+        fps: 24
+        sample_stride: 3
     data:
       kind: synthetic
     portability: portable-scenario
@@ -857,6 +878,11 @@ examples:
     lane: features
     source: examples/c/features/compute_buffer_animation.c
     validation: smoke+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 72
+        fps: 24
     data:
       kind: synthetic
     portability: portable-scenario
@@ -1265,6 +1291,11 @@ examples:
     lane: showcases
     source: examples/c/showcases/panel_linked_axes.c
     validation: smoke+interaction+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 72
+        fps: 24
     data:
       kind: synthetic
     webgpu:
@@ -1493,6 +1524,11 @@ examples:
       source: examples/python/gallery/features/update_partial.py
       status: direct-engine
     validation: smoke+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 72
+        fps: 24
     data:
       kind: synthetic
     webgpu:
@@ -1516,6 +1552,11 @@ examples:
       source: examples/python/gallery/features/update_visual_data.py
       status: direct-engine
     validation: smoke+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 72
+        fps: 24
     data:
       kind: synthetic
     webgpu:
@@ -1914,6 +1955,11 @@ examples:
       source: examples/python/gallery/features/timer_animation.py
       status: direct-engine
     validation: smoke+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 72
+        fps: 24
     data:
       kind: synthetic
     portability: portable-scenario
@@ -2588,6 +2634,12 @@ examples:
     lane: showcases
     source: examples/c/showcases/protein.c
     validation: smoke+screenshot+manual
+    media:
+      preview:
+        kind: animated-webp
+        frames: 72
+        fps: 24
+        sample_stride: 2
     data:
       kind: real
     webgpu:
@@ -2634,6 +2686,11 @@ examples:
     lane: showcases
     source: examples/c/showcases/wind_field.c
     validation: smoke+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 72
+        fps: 24
     data:
       kind: synthetic
     webgpu:
@@ -2853,6 +2910,11 @@ examples:
     lane: showcases
     source: examples/c/showcases/brain_volume.c
     validation: smoke+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 72
+        fps: 24
     data:
       kind: prepared
     webgpu:
@@ -2895,6 +2957,12 @@ examples:
     lane: showcases
     source: examples/c/showcases/point_cloud.c
     validation: smoke+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 72
+        fps: 24
+        sample_stride: 2
     data:
       kind: prepared
     webgpu:
@@ -2933,6 +3001,12 @@ examples:
     lane: showcases
     source: examples/c/showcases/textured_planet.c
     validation: smoke+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 72
+        fps: 24
+        sample_stride: 2
     data:
       kind: real
     webgpu:

@@ -198,7 +198,8 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
         return;
 
     TimerAnimationState* state = (TimerAnimationState*)user;
-    _fill_timer_points(state, ctx->time);
+    const double time = ctx->preview_mode ? dvz_scenario_preview_time(ctx) : ctx->time;
+    _fill_timer_points(state, time);
     (void)_upload_timer_points(state);
 }
 

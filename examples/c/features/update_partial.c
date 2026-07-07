@@ -195,7 +195,8 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
         return;
 
     UpdatePartialState* state = (UpdatePartialState*)user;
-    if (!state->updated && ctx->time >= 1.0)
+    const double time = ctx->preview_mode ? dvz_scenario_preview_time(ctx) : ctx->time;
+    if (!state->updated && time >= 1.0)
         state->updated = _upload_partial_positions(state->point);
 }
 

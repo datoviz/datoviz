@@ -678,6 +678,16 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         state->crosshair_animation, arcball_controller, DVZ_ANIM_INTERACTION_PAUSE, 0.0);
     dvz_anim_set_speed(state->crosshair_animation, ROTATION_SPEED_RAD_PER_SEC);
     dvz_anim_stop(state->crosshair_animation);
+    if (ctx->preview_mode)
+    {
+        const float preview_speed = 1.15f;
+        dvz_anim_set_speed(state->sphere_animation, preview_speed);
+        dvz_anim_set_speed(state->selection_animation, preview_speed);
+        dvz_anim_set_speed(state->crosshair_animation, preview_speed);
+        dvz_anim_start(state->sphere_animation, 0.0);
+        dvz_anim_start(state->selection_animation, 0.0);
+        dvz_anim_start(state->crosshair_animation, 0.0);
+    }
 
     dvz_fprintf(
         stderr, "loaded %" PRIu32 " atoms from %s\n", state->atoms.count, state->atoms.path);

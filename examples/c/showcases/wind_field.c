@@ -1073,11 +1073,16 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user_data)
     if (ctx == NULL || state == NULL)
         return;
 
-    const uint32_t frame_index = (uint32_t)ctx->frame_index + 1u;
-    if (frame_index % ANIMATION_STRIDE != 0)
+    const uint32_t frame_index =
+        ctx->preview_mode ? (uint32_t)ctx->preview_frame_index + 1u
+                          : (uint32_t)ctx->frame_index + 1u;
+    const uint32_t update_stride = ctx->preview_mode ? 1u : ANIMATION_STRIDE;
+    if (frame_index % update_stride != 0)
         return;
 
-    const float time_s = (float)frame_index / ANIMATION_FPS;
+    const float time_s =
+        ctx->preview_mode ? (float)dvz_scenario_preview_time(ctx)
+                          : (float)frame_index / ANIMATION_FPS;
     if (!_update_wind_image(state, time_s))
         return;
     if (!_update_streamlines(state, time_s))

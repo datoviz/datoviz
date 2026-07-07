@@ -309,7 +309,8 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
 {
     if (ctx == NULL || user == NULL)
         return;
-    (void)_upload_compute_params((ComputeBufferAnimationState*)user, ctx->time);
+    const double time = ctx->preview_mode ? dvz_scenario_preview_time(ctx) : ctx->time;
+    (void)_upload_compute_params((ComputeBufferAnimationState*)user, time);
 }
 
 

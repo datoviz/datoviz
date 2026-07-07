@@ -31,6 +31,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
@@ -63,6 +64,18 @@ DvzScenarioSpec dvz_showcase_linked_panel_axes_scenario(void);
 #define CURSOR_COUNT      BAND_COUNT
 
 static const float TAU = 6.28318530718f;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct LinkedAxesState
+{
+    DvzPanzoom* left_x[3];
+    uint32_t left_x_count;
+} LinkedAxesState;
 
 #define LINKED_AXES_CHECK(condition, message)                                                    \
     do                                                                                            \
@@ -622,7 +635,11 @@ static bool _add_summary_panel(DvzScene* scene, DvzPanel* panel)
  * @return true when controllers and input routing are ready
  */
 static bool _bind_linked_panzooms(
-    DvzScenarioContext* ctx, DvzPanel** left, uint32_t left_count, DvzPanel* summary)
+    DvzScenarioContext* ctx,
+    DvzPanel** left,
+    uint32_t left_count,
+    DvzPanel* summary,
+    LinkedAxesState* state)
 {
     ANN(ctx);
     ANN(left);
@@ -639,13 +656,16 @@ static bool _bind_linked_panzooms(
         DvzController* y = dvz_panzoom(ctx->scene, NULL);
         if (left[i] == NULL || x == NULL || y == NULL)
             return false;
+        DvzPanzoom* x_panzoom = dvz_controller_panzoom(x);
         DvzPanzoom* y_panzoom = dvz_controller_panzoom(y);
         if (
-            y_panzoom == NULL ||
+            x_panzoom == NULL || y_panzoom == NULL ||
             !dvz_panzoom_zoom_limits(y_panzoom, (vec2){1.0f, 1.0f}, (vec2){1.0f, 1.0f}))
         {
             return false;
         }
+        if (state != NULL && state->left_x_count < DVZ_ARRAY_COUNT(state->left_x))
+            state->left_x[state->left_x_count++] = x_panzoom;
         if (dvz_scenario_bind_controller(ctx, left[i], x, DVZ_DIM_MASK_X) != 0)
             return false;
         if (dvz_scenario_bind_controller(ctx, left[i], y, DVZ_DIM_MASK_Y) != 0)
@@ -810,10 +830,60 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     LINKED_AXES_CHECK(ok, "_add_axes(summary) failed");
 
     DvzPanel* left[] = {signal, events, residuals};
-    ok = _bind_linked_panzooms(ctx, left, 3, summary);
-    LINKED_AXES_CHECK(ok, "_bind_linked_panzooms() failed");
+    LinkedAxesState* state = (LinkedAxesState*)dvz_calloc(1, sizeof(*state));
+    LINKED_AXES_CHECK(state != NULL, "linked axes state allocation failed");
+    ok = _bind_linked_panzooms(ctx, left, 3, summary, state);
+    if (!ok)
+    {
+        dvz_free(state);
+        return false;
+    }
+    if (out_user != NULL)
+        *out_user = state;
 
     return true;
+}
+
+
+
+/**
+ * Apply deterministic shared-X panning for generated gallery media.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    LinkedAxesState* state = (LinkedAxesState*)user;
+    if (ctx == NULL || !ctx->preview_mode || state == NULL)
+        return;
+
+    const uint64_t count = ctx->preview_frame_count > 0 ? ctx->preview_frame_count : 1;
+    const float phase = (float)(ctx->preview_frame_index % count) / (float)count;
+    const float theta = TAU * phase;
+    vec2 pan = {0.26f * sinf(theta), 0.0f};
+    vec2 zoom = {1.36f, 1.0f};
+    for (uint32_t i = 0; i < state->left_x_count; i++)
+    {
+        if (state->left_x[i] == NULL)
+            continue;
+        dvz_panzoom_zoom(state->left_x[i], zoom);
+        dvz_panzoom_pan(state->left_x[i], pan);
+    }
+}
+
+
+
+/**
+ * Destroy the linked axes scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    dvz_free(user);
 }
 
 
@@ -832,8 +902,11 @@ DvzScenarioSpec dvz_showcase_linked_panel_axes_scenario(void)
         .height = HEIGHT,
         .fps = 60.0,
         .requirements = DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_TEXT_VISUAL |
-                        DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_PANZOOM,
+                        DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_PANZOOM |
+                        DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
+        .frame = _scenario_frame,
+        .destroy = _scenario_destroy,
     };
 }
 

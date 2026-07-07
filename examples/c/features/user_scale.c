@@ -336,6 +336,26 @@ static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView*
 
 
 /**
+ * Animate the user scale for generated gallery media.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    UserScaleState* state = (UserScaleState*)user;
+    if (ctx == NULL || !ctx->preview_mode || state == NULL || state->view == NULL)
+        return;
+
+    const uint64_t count = ctx->preview_frame_count > 0 ? ctx->preview_frame_count : 1;
+    const float phase = (float)(ctx->preview_frame_index % count) / (float)count;
+    state->user_scale = 1.35f + 0.55f * sinf(TAU * phase);
+    (void)dvz_view_set_user_scale(state->view, state->user_scale);
+}
+
+
+
+/**
  * Destroy the user-scale feature state.
  *
  * @param ctx scenario context
@@ -363,8 +383,10 @@ DvzScenarioSpec dvz_example_user_scale_scenario(void)
         .height = HEIGHT,
         .fps = 60.0,
         .requirements = DVZ_SCENARIO_REQ_MARKER_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER |
-                        DVZ_SCENARIO_REQ_PANZOOM | DVZ_SCENARIO_REQ_NATIVE_VIEW,
+                        DVZ_SCENARIO_REQ_PANZOOM | DVZ_SCENARIO_REQ_NATIVE_VIEW |
+                        DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
+        .frame = _scenario_frame,
         .native_view = _scenario_native_view,
         .destroy = _scenario_destroy,
     };
