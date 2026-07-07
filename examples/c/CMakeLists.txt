@@ -13,6 +13,7 @@ endif()
 
 add_library(datoviz_example_support STATIC
     example_common.c
+    example_random.c
     example_style.c
     runner/scenario_runner.c
 )

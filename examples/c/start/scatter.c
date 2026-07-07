@@ -26,6 +26,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/scene.h"
+#include "example_random.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -54,23 +55,6 @@ DvzScenarioSpec dvz_start_scatter_scenario(void);
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-static uint32_t _rng_next(uint32_t* state)
-{
-    ANN(state);
-
-    uint32_t value = *state;
-    value ^= value << 13;
-    value ^= value >> 17;
-    value ^= value << 5;
-    *state = value;
-    return value;
-}
-
-static float _randf(uint32_t* state)
-{
-    return (float)(_rng_next(state) >> 8) / (float)0x01000000u;
-}
-
 static void _fill_scatter(
     vec3* positions, DvzColor* colors, float* diameters)
 {
@@ -78,19 +62,19 @@ static void _fill_scatter(
     ANN(colors);
     ANN(diameters);
 
-    uint32_t rng = SEED;
+    ExampleRandom rng = example_random(SEED);
     for (uint32_t i = 0; i < POINT_COUNT; i++)
     {
-        positions[i][0] = 2.0f * _randf(&rng) - 1.0f;
-        positions[i][1] = 2.0f * _randf(&rng) - 1.0f;
+        positions[i][0] = example_random_range_f32(&rng, -1.0f, +1.0f);
+        positions[i][1] = example_random_range_f32(&rng, -1.0f, +1.0f);
         positions[i][2] = 0.0f;
 
-        colors[i].r = (uint8_t)(_randf(&rng) * 255);
-        colors[i].g = (uint8_t)(_randf(&rng) * 255);
-        colors[i].b = (uint8_t)(_randf(&rng) * 255);
+        colors[i].r = example_random_u8(&rng);
+        colors[i].g = example_random_u8(&rng);
+        colors[i].b = example_random_u8(&rng);
         colors[i].a = 200;
 
-        diameters[i] = 4.0f + 8.0f * _randf(&rng);
+        diameters[i] = example_random_range_f32(&rng, 4.0f, 12.0f);
     }
 }
 
