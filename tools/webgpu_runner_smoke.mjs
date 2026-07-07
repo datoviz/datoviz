@@ -892,6 +892,8 @@ async function main() {
         id: 2,
         encoder_id: 1,
         color_attachments: [{ texture_id: 0 }],
+        viewport: { x: 0, y: 1, width: 2, height: 3, min_depth: 0, max_depth: 1 },
+        scissor: { x: 0, y: 1, width: 2, height: 3 },
       },
       {
         cmd: 'SetViewport',
@@ -912,22 +914,30 @@ async function main() {
     ],
   }, { canvas: fakeCanvas });
   if (
-    observedViewports.length !== 1 ||
-    observedViewports[0].x !== 1 ||
-    observedViewports[0].y !== 2 ||
-    observedViewports[0].width !== 4 ||
-    observedViewports[0].height !== 5 ||
-    observedViewports[0].minDepth !== 0.25 ||
-    observedViewports[0].maxDepth !== 0.75
+    observedViewports.length !== 2 ||
+    observedViewports[0].x !== 0 ||
+    observedViewports[0].y !== 1 ||
+    observedViewports[0].width !== 2 ||
+    observedViewports[0].height !== 3 ||
+    observedViewports[1].x !== 1 ||
+    observedViewports[1].y !== 2 ||
+    observedViewports[1].width !== 4 ||
+    observedViewports[1].height !== 5 ||
+    observedViewports[1].minDepth !== 0.25 ||
+    observedViewports[1].maxDepth !== 0.75
   ) {
     throw new Error(`SetViewport arguments were not forwarded: ${JSON.stringify(observedViewports)}`);
   }
   if (
-    observedScissors.length !== 1 ||
-    observedScissors[0].x !== 2 ||
-    observedScissors[0].y !== 3 ||
-    observedScissors[0].width !== 5 ||
-    observedScissors[0].height !== 6
+    observedScissors.length !== 2 ||
+    observedScissors[0].x !== 0 ||
+    observedScissors[0].y !== 1 ||
+    observedScissors[0].width !== 2 ||
+    observedScissors[0].height !== 3 ||
+    observedScissors[1].x !== 2 ||
+    observedScissors[1].y !== 3 ||
+    observedScissors[1].width !== 5 ||
+    observedScissors[1].height !== 6
   ) {
     throw new Error(`SetScissor arguments were not forwarded: ${JSON.stringify(observedScissors)}`);
   }

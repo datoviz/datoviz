@@ -107,6 +107,12 @@
         },
         "height": {
           "type": "number"
+        },
+        "min_depth": {
+          "type": "number"
+        },
+        "max_depth": {
+          "type": "number"
         }
       },
       "required": [

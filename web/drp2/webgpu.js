@@ -1499,6 +1499,28 @@ function renderPassExtent(state, command) {
 }
 
 
+function applyInitialRenderPassState(pass, command) {
+  if (command.viewport !== undefined) {
+    pass.setViewport(
+      command.viewport.x,
+      command.viewport.y,
+      command.viewport.width,
+      command.viewport.height,
+      command.viewport.min_depth ?? 0,
+      command.viewport.max_depth ?? 1,
+    );
+  }
+  if (command.scissor !== undefined) {
+    pass.setScissorRect(
+      command.scissor.x,
+      command.scissor.y,
+      command.scissor.width,
+      command.scissor.height,
+    );
+  }
+}
+
+
 
 function makeDepthStencilAttachment(device, state, textures, command) {
   const attachment = command.depth_stencil_attachment;
@@ -1544,13 +1566,15 @@ function beginRenderPass(device, state, canvasFormat, textures, encoders, comman
   );
   const attachments = required(command.color_attachments, "BeginRenderPass needs color_attachments");
 
-  return encoder.beginRenderPass({
+  const pass = encoder.beginRenderPass({
     label: command.label,
     colorAttachments: attachments.map((attachment) =>
       makeColorAttachment(device, state, canvasFormat, textures, attachment, command.label),
     ),
     depthStencilAttachment: makeDepthStencilAttachment(device, state, textures, command),
   });
+  applyInitialRenderPassState(pass, command);
+  return pass;
 }
 
 
