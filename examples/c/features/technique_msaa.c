@@ -29,9 +29,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "_alloc.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "example_tuner.h"
 #include "runner/scenario_runner.h"
 
 
@@ -43,6 +45,20 @@
 #define WIDTH  EXAMPLE_WINDOW_WIDTH
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define CUBE_COUNT 4u
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct MsaaDemoState
+{
+    DvzPanel* multisample_panel;
+    DvzArcball* arcball;
+    DvzExampleGuiMsaaControls msaa;
+    ExampleTuner tuner;
+} MsaaDemoState;
 
 
 
@@ -163,6 +179,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (out_user != NULL)
         *out_user = NULL;
 
+    MsaaDemoState* state = (MsaaDemoState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = state;
+    state->tuner = example_tuner("MSAA settings");
+
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
         return false;
@@ -181,6 +204,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzPanel* multisample = dvz_grid_panel(grid, 0, 1);
     if (single == NULL || multisample == NULL)
         return false;
+    state->multisample_panel = multisample;
     example_graphite_cyan_set_panel_background(single);
     example_graphite_cyan_set_panel_background(multisample);
 
@@ -218,14 +242,48 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM,
             DVZ_CONTROLLER_LINK_TWO_WAY) == NULL)
         return false;
+    state->arcball = dvz_controller_arcball(single_controller);
+    if (state->arcball == NULL)
+        return false;
     if (!_add_cube_cluster(ctx->scene, single) || !_add_cube_cluster(ctx->scene, multisample))
         return false;
 
-    DvzMsaaDesc msaa = dvz_msaa_desc();
-    msaa.enabled = true;
-    msaa.sample_count = 8u;
-    msaa.alpha_to_coverage = false;
-    return dvz_panel_set_msaa(multisample, &msaa) == DVZ_OK;
+    state->msaa = (DvzExampleGuiMsaaControls){
+        .enabled = true,
+        .alpha_to_coverage = false,
+        .samples = 8.0f,
+        .min_samples = 2.0f,
+        .max_samples = 16.0f,
+    };
+    vec3 arcball_angles = {+0.58f, -0.24f, +0.18f};
+    vec2 arcball_pan = {0.0f, 0.0f};
+    example_tuner_msaa(&state->tuner, "MSAA", state->multisample_panel, &state->msaa);
+    example_tuner_arcball(
+        &state->tuner, "Arcball", state->arcball, arcball_angles, 1.0f, arcball_pan);
+    return true;
+}
+
+
+static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    (void)app;
+    MsaaDemoState* state = (MsaaDemoState*)user;
+    if (
+        ctx == NULL || ctx->presentation != DVZ_RUNNER_PRESENT_GLFW || state == NULL ||
+        view == NULL)
+        return true;
+
+    return example_tuner_attach(&state->tuner, view);
+}
+
+
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    MsaaDemoState* state = (MsaaDemoState*)user;
+    if (state != NULL)
+        example_tuner_detach(&state->tuner);
+    dvz_free(state);
 }
 
 
@@ -246,6 +304,7 @@ static DvzScenarioSpec _msaa_scenario(void)
         .requirements = DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER |
                         DVZ_SCENARIO_REQ_ARCBALL,
         .init = _scenario_init,
+        .destroy = _scenario_destroy,
     };
 }
 
@@ -265,5 +324,7 @@ static DvzScenarioSpec _msaa_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = _msaa_scenario();
+    if (example_cli_wants_live_gui(argc, argv))
+        spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
