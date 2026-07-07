@@ -1904,7 +1904,7 @@
       "source": "examples/c/runtime/record_replay.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/record_replay.c",
       "page": "gallery/runtime/feature_record_replay.md",
-      "summary": "This example records an offscreen frame to DVZR and replays it into a new view.",
+      "summary": "This example records the DRP2 frame stream from an offscreen view and replays it",
       "validation": "smoke+capture",
       "build_command": "just example-c runtime/record_replay",
       "smoke_command": "./build/examples/c/runtime/record_replay --png",

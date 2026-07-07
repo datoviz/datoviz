@@ -74,7 +74,7 @@ This example records a deterministic offscreen point animation to video.
 
 `experimental` `runtime`
 
-This example records an offscreen frame to DVZR and replays it into a new view.
+This example records the DRP2 frame stream from an offscreen view and replays it
 
 </div>
 

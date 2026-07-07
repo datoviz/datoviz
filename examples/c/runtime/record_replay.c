@@ -4,15 +4,17 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* record_replay - This example records an offscreen frame to DVZR and replays it into a new view.
+/* record_replay - This example records the DRP2 frame stream from an offscreen view and replays it
+ * from a DVZR recording.
  *
  * What to look for: the recorded scene is a five-point visual with explicit position, color, and
- * diameter arrays. The program writes the DVZR recording plus two PNGs, one captured from the
- * original offscreen view and one captured from the replay view; compare those images to verify
- * that the replay path reproduces the same rendered frame.
+ * diameter arrays. The app records the backend-neutral rendering commands produced for the frame,
+ * not a video or editable scene file. It writes the DVZR recording plus two PNGs, one captured from
+ * the original offscreen view and one captured from the replay view; compare those images to verify
+ * that replaying the command stream reproduces the same rendered frame.
  *
- * This experimental workflow is useful when you need portable visual evidence or regression
- * artifacts without keeping the original app process alive.
+ * This experimental workflow is useful when you need visual regression artifacts or a compact trace
+ * for renderer debugging without keeping the original app process alive.
  *
  * Scenario: feature.record_replay
  * Style: runtime, native app

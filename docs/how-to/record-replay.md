@@ -14,6 +14,40 @@ controller setup are correct.
 DVZR recordings are directories, not single files. Keep the whole directory together with the
 Datoviz commit, platform, GPU/backend, dimensions, and command used to create it.
 
+## What Is Being Recorded?
+
+Record/replay does not save a video and it does not save your scene objects. It saves the rendering
+instructions that Datoviz sent to the runtime for each frame, then feeds those instructions back to a
+runtime later.
+
+In simple terms:
+
+```text
+your scene -> DRP2 command stream -> native runtime -> pixels
+                         |
+                         v
+                    DVZR recording
+```
+
+DRP2 means **Datoviz Rendering Protocol v2**. It is the backend-neutral command language between
+the scene layer and the renderer. A DRP2 stream contains operations such as "create this buffer",
+"upload these bytes", "bind this pipeline", and "draw these vertices". DVZR means **Datoviz DRP
+Recording**: a directory that stores timestamped DRP2 stream records plus any payload bytes needed
+for replay.
+
+The app-level API hides most of this. You call `dvz_view_record_start()`, render one or more frames,
+stop recording, then call `dvz_view_replay_start()` on another view. The lower-level DRP2 names only
+matter when you inspect the recording or write runtime tests.
+
+A current `*.dvzr/` directory contains `manifest.json`, `stream.jsonl`, and optional `blobs/`
+payload files. `stream.jsonl` is a JSON Lines debug/recording view of the command stream. Runtime
+hot paths, especially browser/WebGPU packet transport, use typed DRP2 packets rather than JSON; JSON
+is mainly for recordings, fixtures, and inspection.
+
+For deeper details, start with the [Advanced DRP2 reference](../reference/drp2/index.md). The
+durable design notes live in `spec/drp2/`, especially `spec/drp2/PACKETS.md`,
+`spec/drp2/fixtures/FORMAT.md`, and `spec/drp2/recording/DVZR_PLAYER.md`.
+
 ## Choose The Replay Path
 
 | Need | Use |

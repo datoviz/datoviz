@@ -10,7 +10,7 @@
 <span>Record Replay</span>
 </nav>
 
-This example records an offscreen frame to DVZR and replays it into a new view.
+This example records the DRP2 frame stream from an offscreen view and replays it
 
 ## Preview
 
@@ -18,9 +18,9 @@ This example records an offscreen frame to DVZR and replays it into a new view.
 
 ## What To Look For
 
-The recorded scene is a five-point visual with explicit position, color, and diameter arrays. The program writes the DVZR recording plus two PNGs, one captured from the original offscreen view and one captured from the replay view; compare those images to verify that the replay path reproduces the same rendered frame.
+The recorded scene is a five-point visual with explicit position, color, and diameter arrays. The app records the backend-neutral rendering commands produced for the frame, not a video or editable scene file. It writes the DVZR recording plus two PNGs, one captured from the original offscreen view and one captured from the replay view; compare those images to verify that replaying the command stream reproduces the same rendered frame.
 
-This experimental workflow is useful when you need portable visual evidence or regression artifacts without keeping the original app process alive.
+This experimental workflow is useful when you need visual regression artifacts or a compact trace for renderer debugging without keeping the original app process alive.
 
 ## Source
 
