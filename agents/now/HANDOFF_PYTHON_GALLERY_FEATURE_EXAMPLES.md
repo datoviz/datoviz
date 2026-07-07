@@ -19,13 +19,13 @@ Recent checkpoint commits landed:
 6. `6382cc00` Add Python bars and bands gallery example.
 7. `d2621425e` Add Python guide gallery examples.
 8. `24e6e2eb8` Add Python image probe gallery example.
+9. `33e77c2de` Add Python picking gallery example.
 
 Current uncommitted checkpoint in this working tree:
 
-1. Added `examples/python/gallery/features/picking.py`.
-2. Extended reusable Python gallery input/query helpers in `examples/python/gallery/common.py` with
-   union input-event subscription plus item hover/selection helpers.
-3. Added `feature_picking.python.source` / `direct-engine` in `examples/c/MANIFEST.yaml` and
+1. Added `examples/python/gallery/features/selection_pixel.py`.
+2. Added `feature_selection_pixel.python.source` / `direct-engine` in
+   `examples/c/MANIFEST.yaml` and
    regenerated gallery metadata.
 
 The last validation loop was:
@@ -47,29 +47,36 @@ PY
 python3 - <<'PY'
 ... construct picking scene, queue one offscreen item query, apply hover and selection ...
 PY
+python3 - <<'PY'
+... construct selection_pixel scene, queue one offscreen item query, apply hover and selection ...
+PY
 ```
 
 These returned `image_probe offscreen query smoke: 1 True` and
-`picking offscreen query smoke: 1 True 57`. Live window and screenshot validation were not run for
-the earlier checkpoint notes.
+`picking offscreen query smoke: 1 True 57`, and
+`selection_pixel offscreen query smoke: 1 True 480`. Live window and screenshot validation were not
+run for the earlier checkpoint notes.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-07:
 
-- v0.4-required feature examples: 27 of 64 have Python entries; 37 remain missing.
-- all v0.4-required public examples: 39 of 95 have Python entries; 56 remain missing.
+- v0.4-required feature examples: 28 of 64 have Python entries; 36 remain missing.
+- all v0.4-required public examples: 40 of 95 have Python entries; 55 remain missing.
 - `feature_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
   matching `python.source` manifest entry.
-- `feature_picking` is done in the current working tree: it has
-  `examples/python/gallery/features/picking.py` and a matching `python.source` manifest entry.
+- `feature_picking` is committed: it has `examples/python/gallery/features/picking.py` and a
+  matching `python.source` manifest entry.
+- `feature_selection_pixel` is done in the current working tree: it has
+  `examples/python/gallery/features/selection_pixel.py` and a matching `python.source` manifest
+  entry.
 
 
 ## Preferred Next Commit
 
 Continue the event/query/selection helper batch using the helper path created for `image_probe`.
-Next target `feature_selection_pixel`, then `feature_selection_sphere`,
-`feature_selection_mesh_instances`, and `feature_probe_labels`.
+Next target `feature_selection_sphere`, then `feature_selection_mesh_instances`, and
+`feature_probe_labels`.
 
 Implementation shape:
 
@@ -105,7 +112,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python picking gallery example
+examples: add Python pixel selection gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -177,8 +184,8 @@ Current missing `v0.4_required` feature examples with no `python.source` entry:
 `feature_gui_viewport`, `feature_gui_cimgui`, `feature_animation_tracks`, `technique_ssao`,
 `technique_msaa`, `technique_depth_cue`, `technique_transparency`, `feature_input_events`,
 `feature_view_size_policies`, `feature_bezier_curve_path`, `feature_path_join`, `scale_bar`,
-`scalebar_units`, `annotation_readout`, `feature_selection_pixel`,
-`feature_selection_sphere`, `feature_selection_mesh_instances`, `feature_isolines`,
+`scalebar_units`, `annotation_readout`, `feature_selection_sphere`,
+`feature_selection_mesh_instances`, `feature_isolines`,
 `feature_builtin_shapes_2d`, `feature_builtin_shapes_3d`, `feature_obj_loading`,
 `feature_probe_labels`, `feature_datetime_axis`, and `feature_marker_symbols`.
 

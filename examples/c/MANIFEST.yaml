@@ -1698,6 +1698,9 @@ examples:
     primary_feature: selection-pixel
     lane: features
     source: examples/c/features/selection_pixel.c
+    python:
+      source: examples/python/gallery/features/selection_pixel.py
+      status: direct-engine
     validation: smoke+interaction+screenshot
     data:
       kind: synthetic
