@@ -18,13 +18,13 @@ The application hosts a GUI window while a separate Datoviz figure renders a sma
 
 No external data is needed; the example generates its data.
 
-Read the source code section to see how `gui viewport` is configured in a native example.
+Try the interaction in the preview and compare it with the `gui viewport` source code.
 
 Browser support note: dockable GUI viewports require native ImGui and an offscreen native source view.
 
 ## Preview
 
-_Screenshot not required for this example._
+![GUI Viewport](../../../assets/gallery/v0.4/features/feature_gui_viewport.webp)
 
 ## Source
 

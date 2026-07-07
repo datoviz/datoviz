@@ -18,13 +18,13 @@ Four point positions and colors are uploaded once, while the GUI slider rewrites
 
 No external data is needed; the example generates its data.
 
-Read the source code section to see how `gui cimgui` is configured in a native example.
+Try the interaction in the preview and compare it with the `gui cimgui` source code.
 
 Browser support note: raw cimgui access requires the native ImGui app path.
 
 ## Preview
 
-_Screenshot not required for this example._
+![Raw cimgui GUI](../../../assets/gallery/v0.4/features/feature_gui_cimgui.webp)
 
 ## Source
 

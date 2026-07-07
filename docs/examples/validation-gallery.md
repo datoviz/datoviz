@@ -9,7 +9,7 @@ generated in Vulkan-capable environments and should not be committed accidentall
 ## Evidence Counts
 
 - Reviewed public C examples generated for the website: 107
-- Examples declaring screenshot validation: 91
+- Examples declaring screenshot validation: 97
 - Examples that should have video or motion evidence: 5
 
 ## Commands
@@ -51,6 +51,9 @@ and should be committed through that submodule, not copied into the main reposit
 | [Mesh Materials](gallery/features/feature_material_mesh.md) | [`examples/c/features/material_mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/material_mesh.c) | `supported` | `smoke+screenshot` |
 | [Lighting](gallery/features/feature_lighting.md) | [`examples/c/features/lighting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/lighting.c) | `supported` | `smoke+screenshot` |
 | [User Scale](gallery/features/feature_user_scale.md) | [`examples/c/features/user_scale.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/user_scale.c) | `supported` | `smoke+interaction+screenshot` |
+| [GUI Controls](gallery/features/feature_gui_controls.md) | [`examples/c/features/gui_controls.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_controls.c) | `supported` | `smoke+interaction+screenshot` |
+| [GUI Viewport](gallery/features/feature_gui_viewport.md) | [`examples/c/features/gui_viewport.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_viewport.c) | `supported` | `smoke+interaction+screenshot` |
+| [Raw cimgui GUI](gallery/features/feature_gui_cimgui.md) | [`examples/c/features/gui_cimgui.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_cimgui.c) | `supported` | `smoke+interaction+screenshot` |
 | [Animation Tracks](gallery/features/feature_animation_tracks.md) | [`examples/c/features/animation_tracks.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/animation_tracks.c) | `supported` | `smoke+interaction+screenshot` |
 | [Compute Buffer Animation](gallery/features/feature_compute_buffer_animation.md) | [`examples/c/features/compute_buffer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/compute_buffer_animation.c) | `experimental` | `smoke+screenshot` |
 | [Eye-Dome Lighting](gallery/features/technique_edl.md) | [`examples/c/features/technique_edl.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_edl.c) | `experimental` | `smoke+screenshot` |
@@ -67,6 +70,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [Panel View 2D](gallery/features/feature_panel_view2d.md) | [`examples/c/features/panel_view2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_view2d.c) | `supported` | `smoke+screenshot` |
 | [Bezier Curve Path](gallery/features/feature_bezier_curve_path.md) | [`examples/c/features/bezier_curve_path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bezier_curve_path.c) | `supported` | `smoke+screenshot` |
 | [Path Join](gallery/features/feature_path_join.md) | [`examples/c/features/path_join.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/path_join.c) | `supported` | `smoke+screenshot` |
+| [Linked Panels With Axes](gallery/showcases/linked_panels_axes_panzoom.md) | [`examples/c/showcases/panel_linked_axes.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/panel_linked_axes.c) | `supported` | `smoke+interaction+screenshot` |
 | [Linked Probe With Colorbar](gallery/showcases/linked_panels_probe_colorbar.md) | [`examples/c/showcases/linked_probe_colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c) | `supported` | `smoke+readback+interaction+screenshot` |
 | [Scientific Plotting Workflow](gallery/showcases/scientific_plotting_workflow.md) | [`examples/c/showcases/scientific_plotting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scientific_plotting.c) | `supported` | `smoke+screenshot` |
 | [Scale Bar](gallery/features/scale_bar.md) | [`examples/c/features/scalebar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar.c) | `supported` | `smoke+screenshot` |
@@ -81,7 +85,9 @@ and should be committed through that submodule, not copied into the main reposit
 | [Depth Test Toggle](gallery/features/technique_depth_test.md) | [`examples/c/features/technique_depth_test.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_depth_test.c) | `supported` | `smoke+screenshot` |
 | [Alpha Blending](gallery/features/alpha_blending.md) | [`examples/c/features/alpha_blending.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/alpha_blending.c) | `supported` | `smoke+screenshot` |
 | [Panel Background](gallery/features/panel_background.md) | [`examples/c/features/panel_background.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_background.c) | `supported` | `smoke+screenshot` |
+| [Panzoom](gallery/features/feature_panzoom.md) | [`examples/c/features/panzoom.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panzoom.c) | `supported` | `smoke+interaction+screenshot` |
 | [Image Probe](gallery/features/image_probe.md) | [`examples/c/features/image_probe.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/image_probe.c) | `supported` | `smoke+readback+screenshot` |
+| [Picking](gallery/features/feature_picking.md) | [`examples/c/features/picking.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/picking.c) | `supported` | `smoke+interaction+screenshot` |
 | [Pixel Selection](gallery/features/feature_selection_pixel.md) | [`examples/c/features/selection_pixel.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_pixel.c) | `supported` | `smoke+interaction+screenshot` |
 | [Sphere Selection](gallery/features/feature_selection_sphere.md) | [`examples/c/features/selection_sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_sphere.c) | `supported` | `smoke+interaction+screenshot` |
 | [Mesh Instance Selection](gallery/features/feature_selection_mesh_instances.md) | [`examples/c/features/selection_mesh_instances.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_mesh_instances.c) | `supported` | `smoke+interaction+screenshot` |

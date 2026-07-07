@@ -26,7 +26,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_panzoom` when Web
 
 === "Screenshot"
 
-    _Screenshot not required for this example._
+    ![Panzoom](../../../assets/gallery/v0.4/features/feature_panzoom.webp)
 
 === "Live WebGPU"
 

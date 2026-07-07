@@ -711,6 +711,7 @@ examples:
     capture:
       mode: native-app
       args: ["--png"]
+      size: 2560x1440
       reason: native GUI examples capture the composed GLFW/ImGui view through app PNG capture
     data:
       kind: synthetic
@@ -733,6 +734,7 @@ examples:
     capture:
       mode: native-app
       args: ["--png"]
+      size: 2560x1440
       reason: native GUI examples capture the composed GLFW/ImGui view through app PNG capture
     data:
       kind: synthetic
@@ -756,6 +758,7 @@ examples:
     capture:
       mode: native-app
       args: ["--png"]
+      size: 2560x1440
       reason: native GUI examples capture the composed GLFW/ImGui view through app PNG capture
     data:
       kind: synthetic

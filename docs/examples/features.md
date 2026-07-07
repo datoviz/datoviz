@@ -178,7 +178,7 @@ This example shows explicit perspective-camera setup for a 3D scene.
 
 ### [Panzoom](gallery/features/feature_panzoom.md)
 
-_Screenshot not required for this example._
+[![Panzoom](../assets/gallery/v0.4/features/feature_panzoom.webp)](gallery/features/feature_panzoom.md)
 
 `features`
 
@@ -700,7 +700,7 @@ This example shows diagnostic bounds overlays for 2D and 3D visuals.
 
 ### [Picking](gallery/features/feature_picking.md)
 
-_Screenshot not required for this example._
+[![Picking](../assets/gallery/v0.4/features/feature_picking.webp)](gallery/features/feature_picking.md)
 
 `features`
 
@@ -820,7 +820,7 @@ Update_visual_data replaces all arrays on one point visual.
 
 ### [GUI Controls](gallery/features/feature_gui_controls.md)
 
-_Screenshot not required for this example._
+[![GUI Controls](../assets/gallery/v0.4/features/feature_gui_controls.webp)](gallery/features/feature_gui_controls.md)
 
 `features`
 
@@ -832,7 +832,7 @@ This example shows Datoviz GUI controls updating a point visual.
 
 ### [GUI Viewport](gallery/features/feature_gui_viewport.md)
 
-_Screenshot not required for this example._
+[![GUI Viewport](../assets/gallery/v0.4/features/feature_gui_viewport.webp)](gallery/features/feature_gui_viewport.md)
 
 `features`
 
@@ -844,7 +844,7 @@ This example shows a Datoviz render viewport embedded inside a GUI window.
 
 ### [Raw cimgui GUI](gallery/features/feature_gui_cimgui.md)
 
-_Screenshot not required for this example._
+[![Raw cimgui GUI](../assets/gallery/v0.4/features/feature_gui_cimgui.webp)](gallery/features/feature_gui_cimgui.md)
 
 `features`
 

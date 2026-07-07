@@ -30,7 +30,7 @@ This example composes common scientific plot elements in one figure.
 
 ### [Linked Panels With Axes](gallery/showcases/linked_panels_axes_panzoom.md)
 
-_Screenshot not required for this example._
+[![Linked Panels With Axes](../assets/gallery/v0.4/showcases/linked_panels_axes_panzoom.webp)](gallery/showcases/linked_panels_axes_panzoom.md)
 
 `showcases`
 

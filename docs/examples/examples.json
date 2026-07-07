@@ -1064,7 +1064,7 @@
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_controls.c",
       "page": "gallery/features/feature_gui_controls.md",
       "summary": "This example shows Datoviz GUI controls updating a point visual.",
-      "validation": "smoke+interaction",
+      "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/gui_controls",
       "smoke_command": "./build/examples/c/features/gui_controls --png",
       "tags": [],
@@ -1074,8 +1074,8 @@
       "data_kind": "synthetic",
       "media": {
         "screenshot": {
-          "expected": false,
-          "status": "not-required",
+          "expected": true,
+          "status": "available",
           "source": "data/gallery/v0.4/features/feature_gui_controls.png",
           "site_asset": "/assets/gallery/v0.4/features/feature_gui_controls.webp"
         }
@@ -1106,7 +1106,7 @@
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_viewport.c",
       "page": "gallery/features/feature_gui_viewport.md",
       "summary": "This example shows a Datoviz render viewport embedded inside a GUI window.",
-      "validation": "smoke+interaction",
+      "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/gui_viewport",
       "smoke_command": "./build/examples/c/features/gui_viewport --png",
       "tags": [],
@@ -1116,8 +1116,8 @@
       "data_kind": "synthetic",
       "media": {
         "screenshot": {
-          "expected": false,
-          "status": "not-required",
+          "expected": true,
+          "status": "available",
           "source": "data/gallery/v0.4/features/feature_gui_viewport.png",
           "site_asset": "/assets/gallery/v0.4/features/feature_gui_viewport.webp"
         }
@@ -1150,7 +1150,7 @@
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_cimgui.c",
       "page": "gallery/features/feature_gui_cimgui.md",
       "summary": "This example shows raw cimgui widgets controlling a Datoviz visual.",
-      "validation": "smoke+interaction",
+      "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/gui_cimgui",
       "smoke_command": "./build/examples/c/features/gui_cimgui --png",
       "tags": [],
@@ -1160,8 +1160,8 @@
       "data_kind": "synthetic",
       "media": {
         "screenshot": {
-          "expected": false,
-          "status": "not-required",
+          "expected": true,
+          "status": "available",
           "source": "data/gallery/v0.4/features/feature_gui_cimgui.png",
           "site_asset": "/assets/gallery/v0.4/features/feature_gui_cimgui.webp"
         }
@@ -2159,7 +2159,7 @@
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/panel_linked_axes.c",
       "page": "gallery/showcases/linked_panels_axes_panzoom.md",
       "summary": "This example builds linked time-series panels with shared axes behavior.",
-      "validation": "smoke+interaction",
+      "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c showcases/panel_linked_axes",
       "smoke_command": "./build/examples/c/showcases/panel_linked_axes --png",
       "tags": [
@@ -2175,8 +2175,8 @@
       "data_kind": "synthetic",
       "media": {
         "screenshot": {
-          "expected": false,
-          "status": "not-required",
+          "expected": true,
+          "status": "available",
           "source": "data/gallery/v0.4/showcases/linked_panels_axes_panzoom.png",
           "site_asset": "/assets/gallery/v0.4/showcases/linked_panels_axes_panzoom.webp"
         }
@@ -2920,7 +2920,7 @@
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panzoom.c",
       "page": "gallery/features/feature_panzoom.md",
       "summary": "Panzoom binds a 2D panzoom controller to a point visual in data coordinates.",
-      "validation": "smoke+interaction",
+      "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/panzoom",
       "smoke_command": "./build/examples/c/features/panzoom --png",
       "tags": [],
@@ -2930,8 +2930,8 @@
       "data_kind": "synthetic",
       "media": {
         "screenshot": {
-          "expected": false,
-          "status": "not-required",
+          "expected": true,
+          "status": "available",
           "source": "data/gallery/v0.4/features/feature_panzoom.png",
           "site_asset": "/assets/gallery/v0.4/features/feature_panzoom.webp"
         }
@@ -3015,7 +3015,7 @@
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/picking.c",
       "page": "gallery/features/feature_picking.md",
       "summary": "Picking demonstrates item-level marker hover and click selection.",
-      "validation": "smoke+interaction",
+      "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/picking",
       "smoke_command": "./build/examples/c/features/picking --png",
       "tags": [],
@@ -3025,8 +3025,8 @@
       "data_kind": "synthetic",
       "media": {
         "screenshot": {
-          "expected": false,
-          "status": "not-required",
+          "expected": true,
+          "status": "available",
           "source": "data/gallery/v0.4/features/feature_picking.png",
           "site_asset": "/assets/gallery/v0.4/features/feature_picking.webp"
         }

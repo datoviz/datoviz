@@ -26,7 +26,7 @@ The browser preview uses `examples/webgpu/live.html?id=feature_picking` when Web
 
 === "Screenshot"
 
-    _Screenshot not required for this example._
+    ![Picking](../../../assets/gallery/v0.4/features/feature_picking.webp)
 
 === "Live WebGPU"
 

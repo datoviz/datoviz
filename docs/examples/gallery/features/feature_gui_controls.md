@@ -18,13 +18,13 @@ Five point positions are fixed, while GUI sliders and color editors update the c
 
 No external data is needed; the example generates its data.
 
-Read the source code section to see how `gui controls` is configured in a native example.
+Try the interaction in the preview and compare it with the `gui controls` source code.
 
 Browser support note: Datoviz GUI controls require the native ImGui/GLFW app path.
 
 ## Preview
 
-_Screenshot not required for this example._
+![GUI Controls](../../../assets/gallery/v0.4/features/feature_gui_controls.webp)
 
 ## Source
 
