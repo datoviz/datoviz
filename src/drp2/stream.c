@@ -1746,6 +1746,70 @@ bool dvz_drp2_stream_begin_command_encoder(DvzDrp2CommandStream* stream, uint64_
 
 
 
+DvzDrp2RenderPassDesc dvz_drp2_render_pass_desc(void)
+{
+    DvzDrp2RenderPassDesc desc = {
+        .struct_size = sizeof(DvzDrp2RenderPassDesc),
+        .color_attachment_count = 1,
+        .depth_load_op = DVZ_DRP2_ATTACHMENT_LOAD_LOAD,
+        .depth_store_op = DVZ_DRP2_ATTACHMENT_STORE_STORE,
+        .depth_access = DVZ_DRP2_ATTACHMENT_ACCESS_READ_WRITE,
+        .clear_depth = 1.0f,
+    };
+    desc.color_attachments[0].load_op = DVZ_DRP2_ATTACHMENT_LOAD_LOAD;
+    desc.color_attachments[0].store_op = DVZ_DRP2_ATTACHMENT_STORE_STORE;
+    desc.color_attachments[0].access = DVZ_DRP2_ATTACHMENT_ACCESS_WRITE;
+    return desc;
+}
+
+
+
+bool dvz_drp2_stream_begin_render_pass_desc(
+    DvzDrp2CommandStream* stream, const DvzDrp2RenderPassDesc* desc)
+{
+    if (desc == NULL || desc->struct_size != sizeof(DvzDrp2RenderPassDesc) ||
+        desc->color_attachment_count == 0 ||
+        desc->color_attachment_count > DVZ_DRP2_MAX_COLOR_ATTACHMENTS)
+    {
+        return false;
+    }
+
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS);
+    if (command == NULL)
+        return false;
+    command->u.begin_render_pass.id = desc->id;
+    command->u.begin_render_pass.encoder_id = desc->encoder_id;
+    command->u.begin_render_pass.texture_id = desc->color_attachments[0].texture_id;
+    command->u.begin_render_pass.color_attachment_count = desc->color_attachment_count;
+    for (uint32_t i = 0; i < desc->color_attachment_count; i++)
+        command->u.begin_render_pass.color_attachments[i] = desc->color_attachments[i];
+    command->u.begin_render_pass.has_depth_attachment = desc->has_depth_attachment;
+    command->u.begin_render_pass.depth_texture_id = desc->depth_texture_id;
+    command->u.begin_render_pass.depth_load_op = desc->depth_load_op;
+    command->u.begin_render_pass.depth_store_op = desc->depth_store_op;
+    command->u.begin_render_pass.depth_access = desc->depth_access;
+    command->u.begin_render_pass.depth_ops_explicit = desc->depth_ops_explicit;
+    command->u.begin_render_pass.clear_depth = desc->clear_depth;
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        command->u.begin_render_pass.clear_color[i] =
+            desc->color_attachments[0].clear_color[i];
+        command->u.begin_render_pass.render_area_px[i] = desc->render_area_px[i];
+        command->u.begin_render_pass.viewport_px[i] = desc->viewport_px[i];
+        command->u.begin_render_pass.scissor_px[i] = desc->scissor_px[i];
+    }
+    command->u.begin_render_pass.viewport[0] = 0.0f;
+    command->u.begin_render_pass.viewport[1] = 0.0f;
+    command->u.begin_render_pass.viewport[2] = 1.0f;
+    command->u.begin_render_pass.viewport[3] = 1.0f;
+    command->u.begin_render_pass.has_explicit_rects = true;
+    command->u.begin_render_pass.clear =
+        desc->color_attachments[0].load_op == DVZ_DRP2_ATTACHMENT_LOAD_CLEAR;
+    return true;
+}
+
+
+
 /**
  * Append a BeginRenderPass command with one color texture attachment.
  *

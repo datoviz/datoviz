@@ -1425,14 +1425,28 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
             pass->depth_attachment_format = _effective_depth_format();
         }
     }
-    pass->viewport_x = command->u.begin_render_pass.viewport[0];
-    pass->viewport_y = command->u.begin_render_pass.viewport[1];
-    pass->viewport_width = command->u.begin_render_pass.viewport[2];
-    pass->viewport_height = command->u.begin_render_pass.viewport[3];
-    pass->scissor_x = command->u.begin_render_pass.viewport[0];
-    pass->scissor_y = command->u.begin_render_pass.viewport[1];
-    pass->scissor_width = command->u.begin_render_pass.viewport[2];
-    pass->scissor_height = command->u.begin_render_pass.viewport[3];
+    if (command->u.begin_render_pass.has_explicit_rects)
+    {
+        pass->viewport_x = command->u.begin_render_pass.viewport_px[0];
+        pass->viewport_y = command->u.begin_render_pass.viewport_px[1];
+        pass->viewport_width = command->u.begin_render_pass.viewport_px[2];
+        pass->viewport_height = command->u.begin_render_pass.viewport_px[3];
+        pass->scissor_x = command->u.begin_render_pass.scissor_px[0];
+        pass->scissor_y = command->u.begin_render_pass.scissor_px[1];
+        pass->scissor_width = command->u.begin_render_pass.scissor_px[2];
+        pass->scissor_height = command->u.begin_render_pass.scissor_px[3];
+    }
+    else
+    {
+        pass->viewport_x = command->u.begin_render_pass.viewport[0];
+        pass->viewport_y = command->u.begin_render_pass.viewport[1];
+        pass->viewport_width = command->u.begin_render_pass.viewport[2];
+        pass->viewport_height = command->u.begin_render_pass.viewport[3];
+        pass->scissor_x = command->u.begin_render_pass.viewport[0];
+        pass->scissor_y = command->u.begin_render_pass.viewport[1];
+        pass->scissor_width = command->u.begin_render_pass.viewport[2];
+        pass->scissor_height = command->u.begin_render_pass.viewport[3];
+    }
     pass->pipeline_id = encoder->render_pipeline_id;
     pass->bound_vertex_mask = encoder->render_bound_vertex_mask;
     pass->index_buffer_bound = encoder->render_index_buffer_bound;

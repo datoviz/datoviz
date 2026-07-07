@@ -1024,6 +1024,31 @@ static void _json_append_command(
                 (double)clear_color[3]);
         }
         _json_append(builder, " ]");
+        if (command->u.begin_render_pass.has_explicit_rects)
+        {
+            _json_append(
+                builder,
+                ", \"render_area\": { \"x\": %" PRIu32 ", \"y\": %" PRIu32
+                ", \"width\": %" PRIu32 ", \"height\": %" PRIu32 " }",
+                command->u.begin_render_pass.render_area_px[0],
+                command->u.begin_render_pass.render_area_px[1],
+                command->u.begin_render_pass.render_area_px[2],
+                command->u.begin_render_pass.render_area_px[3]);
+            _json_append(
+                builder,
+                ", \"viewport\": { \"x\": %g, \"y\": %g, \"width\": %g, \"height\": %g }",
+                (double)command->u.begin_render_pass.viewport_px[0],
+                (double)command->u.begin_render_pass.viewport_px[1],
+                (double)command->u.begin_render_pass.viewport_px[2],
+                (double)command->u.begin_render_pass.viewport_px[3]);
+            _json_append(
+                builder,
+                ", \"scissor\": { \"x\": %g, \"y\": %g, \"width\": %g, \"height\": %g }",
+                (double)command->u.begin_render_pass.scissor_px[0],
+                (double)command->u.begin_render_pass.scissor_px[1],
+                (double)command->u.begin_render_pass.scissor_px[2],
+                (double)command->u.begin_render_pass.scissor_px[3]);
+        }
         if (command->u.begin_render_pass.has_depth_attachment)
         {
             _json_append(

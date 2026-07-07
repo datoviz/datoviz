@@ -895,6 +895,29 @@ DVZ_EXPORT bool dvz_drp2_stream_write_texture_3d_borrowed(
 DVZ_EXPORT bool dvz_drp2_stream_begin_command_encoder(DvzDrp2CommandStream* stream, uint64_t id);
 
 
+/**
+ * Return the default BeginRenderPass descriptor.
+ *
+ * The descriptor starts with one color attachment slot available to fill. Rectangle fields use
+ * framebuffer pixels. A zero width or height for render area, viewport, or scissor means "use the
+ * full first color attachment" at execution time.
+ *
+ * @return initialized descriptor
+ */
+DVZ_EXPORT DvzDrp2RenderPassDesc dvz_drp2_render_pass_desc(void);
+
+
+/**
+ * Append a BeginRenderPass command from an explicit descriptor.
+ *
+ * @param stream the command stream
+ * @param desc render-pass descriptor
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_desc(
+    DvzDrp2CommandStream* stream, const DvzDrp2RenderPassDesc* desc);
+
+
 
 /**
  * Append a BeginRenderPass command with one color texture attachment.

@@ -59,6 +59,64 @@ int test_drp2_begin_render_pass_clear_color_stored(TstContext* suite, const TstC
 
 
 
+int test_drp2_begin_render_pass_descriptor_rects(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    DvzDrp2RenderPassDesc desc = dvz_drp2_render_pass_desc();
+    desc.id = 11;
+    desc.encoder_id = 10;
+    desc.render_area_px[0] = 0;
+    desc.render_area_px[1] = 0;
+    desc.render_area_px[2] = 640;
+    desc.render_area_px[3] = 480;
+    desc.viewport_px[0] = 32.0f;
+    desc.viewport_px[1] = 48.0f;
+    desc.viewport_px[2] = 256.0f;
+    desc.viewport_px[3] = 192.0f;
+    desc.scissor_px[0] = 40.0f;
+    desc.scissor_px[1] = 56.0f;
+    desc.scissor_px[2] = 120.0f;
+    desc.scissor_px[3] = 88.0f;
+    desc.color_attachments[0].texture_id = 9;
+    desc.color_attachments[0].load_op = DVZ_DRP2_ATTACHMENT_LOAD_CLEAR;
+    desc.color_attachments[0].store_op = DVZ_DRP2_ATTACHMENT_STORE_STORE;
+    desc.color_attachments[0].access = DVZ_DRP2_ATTACHMENT_ACCESS_WRITE;
+    desc.color_attachments[0].clear = true;
+    desc.color_attachments[0].clear_color[0] = 0.1f;
+    desc.color_attachments[0].clear_color[1] = 0.2f;
+    desc.color_attachments[0].clear_color[2] = 0.3f;
+    desc.color_attachments[0].clear_color[3] = 1.0f;
+
+    AT(dvz_drp2_stream_begin_render_pass_desc(stream, &desc));
+    const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, 0);
+    ANN(cmd);
+    AT(cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS);
+    AT(cmd->u.begin_render_pass.has_explicit_rects);
+    AT(cmd->u.begin_render_pass.render_area_px[2] == 640);
+    AT(cmd->u.begin_render_pass.render_area_px[3] == 480);
+    AC(cmd->u.begin_render_pass.viewport_px[0], 32.0f, 1e-6f);
+    AC(cmd->u.begin_render_pass.viewport_px[2], 256.0f, 1e-6f);
+    AC(cmd->u.begin_render_pass.scissor_px[1], 56.0f, 1e-6f);
+    AC(cmd->u.begin_render_pass.scissor_px[3], 88.0f, 1e-6f);
+
+    char* json = dvz_drp2_stream_json(stream, "render_pass_descriptor_rects");
+    ANN(json);
+    AT(strstr(json, "\"render_area\"") != NULL);
+    AT(strstr(json, "\"viewport\"") != NULL);
+    AT(strstr(json, "\"scissor\"") != NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 int test_drp2_begin_render_pass_multi_color_attachments(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

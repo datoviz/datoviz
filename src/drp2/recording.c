@@ -1064,7 +1064,13 @@ static bool _recording_write_begin_render_pass(
             ",\"depth_ops_explicit\":%u,\"clear_depth\":%.9g,"
             "\"clear_color0\":%.9g,\"clear_color1\":%.9g,\"clear_color2\":%.9g,"
             "\"clear_color3\":%.9g,\"viewport0\":%.9g,\"viewport1\":%.9g,"
-            "\"viewport2\":%.9g,\"viewport3\":%.9g,\"clear\":%u",
+            "\"viewport2\":%.9g,\"viewport3\":%.9g,\"has_explicit_rects\":%u,"
+            "\"render_area_x\":%" PRIu32 ",\"render_area_y\":%" PRIu32
+            ",\"render_area_width\":%" PRIu32 ",\"render_area_height\":%" PRIu32
+            ",\"viewport_px_x\":%.9g,\"viewport_px_y\":%.9g,"
+            "\"viewport_px_width\":%.9g,\"viewport_px_height\":%.9g,"
+            "\"scissor_px_x\":%.9g,\"scissor_px_y\":%.9g,"
+            "\"scissor_px_width\":%.9g,\"scissor_px_height\":%.9g,\"clear\":%u",
             index, (int)command->type, command->u.begin_render_pass.id,
             command->u.begin_render_pass.encoder_id, command->u.begin_render_pass.texture_id,
             command->u.begin_render_pass.color_attachment_count,
@@ -1083,6 +1089,19 @@ static bool _recording_write_begin_render_pass(
             (double)command->u.begin_render_pass.viewport[1],
             (double)command->u.begin_render_pass.viewport[2],
             (double)command->u.begin_render_pass.viewport[3],
+            command->u.begin_render_pass.has_explicit_rects ? 1u : 0u,
+            command->u.begin_render_pass.render_area_px[0],
+            command->u.begin_render_pass.render_area_px[1],
+            command->u.begin_render_pass.render_area_px[2],
+            command->u.begin_render_pass.render_area_px[3],
+            (double)command->u.begin_render_pass.viewport_px[0],
+            (double)command->u.begin_render_pass.viewport_px[1],
+            (double)command->u.begin_render_pass.viewport_px[2],
+            (double)command->u.begin_render_pass.viewport_px[3],
+            (double)command->u.begin_render_pass.scissor_px[0],
+            (double)command->u.begin_render_pass.scissor_px[1],
+            (double)command->u.begin_render_pass.scissor_px[2],
+            (double)command->u.begin_render_pass.scissor_px[3],
             command->u.begin_render_pass.clear ? 1u : 0u) <= 0)
         return false;
 
@@ -2336,6 +2355,32 @@ static bool _recording_read_begin_render_pass(const char* line, DvzDrp2Command* 
         command->u.begin_render_pass.depth_access = (DvzDrp2AttachmentAccess)depth_access;
     (void)_recording_line_bool(
         line, "\"depth_ops_explicit\":", &command->u.begin_render_pass.depth_ops_explicit);
+    (void)_recording_line_bool(
+        line, "\"has_explicit_rects\":", &command->u.begin_render_pass.has_explicit_rects);
+    (void)_recording_line_u32(
+        line, "\"render_area_x\":", &command->u.begin_render_pass.render_area_px[0]);
+    (void)_recording_line_u32(
+        line, "\"render_area_y\":", &command->u.begin_render_pass.render_area_px[1]);
+    (void)_recording_line_u32(
+        line, "\"render_area_width\":", &command->u.begin_render_pass.render_area_px[2]);
+    (void)_recording_line_u32(
+        line, "\"render_area_height\":", &command->u.begin_render_pass.render_area_px[3]);
+    (void)_recording_line_float(
+        line, "\"viewport_px_x\":", &command->u.begin_render_pass.viewport_px[0]);
+    (void)_recording_line_float(
+        line, "\"viewport_px_y\":", &command->u.begin_render_pass.viewport_px[1]);
+    (void)_recording_line_float(
+        line, "\"viewport_px_width\":", &command->u.begin_render_pass.viewport_px[2]);
+    (void)_recording_line_float(
+        line, "\"viewport_px_height\":", &command->u.begin_render_pass.viewport_px[3]);
+    (void)_recording_line_float(
+        line, "\"scissor_px_x\":", &command->u.begin_render_pass.scissor_px[0]);
+    (void)_recording_line_float(
+        line, "\"scissor_px_y\":", &command->u.begin_render_pass.scissor_px[1]);
+    (void)_recording_line_float(
+        line, "\"scissor_px_width\":", &command->u.begin_render_pass.scissor_px[2]);
+    (void)_recording_line_float(
+        line, "\"scissor_px_height\":", &command->u.begin_render_pass.scissor_px[3]);
 
     for (uint32_t i = 0; i < DVZ_DRP2_MAX_COLOR_ATTACHMENTS; i++)
     {

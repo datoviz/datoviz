@@ -40,6 +40,7 @@ typedef struct DvzDrp2BindGroupEntry DvzDrp2BindGroupEntry;
 typedef struct DvzDrp2ColorAttachment DvzDrp2ColorAttachment;
 typedef struct DvzDrp2ColorTarget DvzDrp2ColorTarget;
 typedef struct DvzDrp2TextureDesc DvzDrp2TextureDesc;
+typedef struct DvzDrp2RenderPassDesc DvzDrp2RenderPassDesc;
 typedef struct DvzDrp2RenderPipelineDesc DvzDrp2RenderPipelineDesc;
 
 
@@ -109,6 +110,27 @@ struct DvzDrp2TextureDesc
     uint32_t usage;
     uint32_t sample_count;
     DvzDrp2ColorRole color_role;
+};
+
+
+struct DvzDrp2RenderPassDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    uint64_t id;
+    uint64_t encoder_id;
+    uint32_t render_area_px[4]; /* x, y, width, height; zero width/height means full target */
+    float viewport_px[4];       /* x, y, width, height; zero width/height means render area */
+    float scissor_px[4];        /* x, y, width, height; zero width/height means render area */
+    uint32_t color_attachment_count;
+    DvzDrp2ColorAttachment color_attachments[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
+    bool has_depth_attachment;
+    uint64_t depth_texture_id;
+    DvzDrp2AttachmentLoadOp depth_load_op;
+    DvzDrp2AttachmentStoreOp depth_store_op;
+    DvzDrp2AttachmentAccess depth_access;
+    bool depth_ops_explicit;
+    float clear_depth;
 };
 
 

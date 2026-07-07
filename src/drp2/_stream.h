@@ -211,6 +211,10 @@ struct DvzDrp2Command
             float clear_depth;
             float clear_color[4]; /* RGBA clear values; {0,0,0,0} = transparent black */
             float viewport[4];    /* normalized x, y, width, height in [0,1] target space */
+            bool has_explicit_rects;
+            uint32_t render_area_px[4]; /* x, y, width, height; zero width/height = full target */
+            float viewport_px[4];       /* x, y, width, height; zero width/height = render area */
+            float scissor_px[4];        /* x, y, width, height; zero width/height = render area */
             bool clear;
         } begin_render_pass;
         struct

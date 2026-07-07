@@ -112,6 +112,7 @@ int test_drp2(TstSuite* suite)
 
     TST_GROUP("render-pass");
     TST_CASE(test_drp2_begin_render_pass_clear_color_stored);
+    TST_CASE(test_drp2_begin_render_pass_descriptor_rects);
     TST_CASE(test_drp2_begin_render_pass_multi_color_attachments);
     TST_CASE(test_drp2_begin_render_pass_attachment_ops);
     TST_CASE(test_drp2_begin_render_pass_attachment_ops_validation);

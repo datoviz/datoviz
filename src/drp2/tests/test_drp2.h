@@ -278,6 +278,8 @@ int test_drp2_wboit_accumulation_resolve_stream(TstContext* suite, const TstCase
 
 int test_drp2_begin_render_pass_clear_color_stored(TstContext* suite, const TstCase* item);
 
+int test_drp2_begin_render_pass_descriptor_rects(TstContext* suite, const TstCase* item);
+
 int test_drp2_begin_render_pass_multi_color_attachments(TstContext* suite, const TstCase* item);
 
 int test_drp2_begin_render_pass_attachment_ops(TstContext* suite, const TstCase* item);
