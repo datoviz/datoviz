@@ -33,6 +33,7 @@
 #define RUNNER_PATH_SIZE      1024u
 #define RUNNER_PROGRESS_WIDTH 32u
 #define RUNNER_NS_PER_SEC     1000000000ull
+#define RUNNER_SEQUENCE_CAPTURE_MAX_ATTEMPTS 4u
 
 
 
@@ -719,6 +720,35 @@ static bool _runner_png_sequence_path(
 }
 
 
+static bool _runner_capture_png_sequence_frame(
+    DvzApp* app, DvzView* view, const DvzAppCaptureConfig* capture, uint32_t frame)
+{
+    ANN(app);
+    ANN(view);
+    ANN(capture);
+
+    char path[RUNNER_PATH_SIZE] = {0};
+    if (!_runner_png_sequence_path(capture, frame, path, sizeof(path), false))
+    {
+        fprintf(stderr, "scenario_runner: PNG sequence path is too long\n");
+        return false;
+    }
+
+    for (uint32_t attempt = 0; attempt < RUNNER_SEQUENCE_CAPTURE_MAX_ATTEMPTS; attempt++)
+    {
+        dvz_app_run(app, 1);
+        if (dvz_view_capture_png(view, path) == 0)
+        {
+            dvz_fprintf(stdout, "datoviz: saved %s\n", path);
+            return true;
+        }
+    }
+
+    fprintf(stderr, "scenario_runner: failed to write PNG sequence frame: %s\n", path);
+    return false;
+}
+
+
 double dvz_scenario_preview_fps(const DvzScenarioContext* ctx)
 {
     if (ctx == NULL || ctx->preview_fps <= 0.0)
@@ -1064,19 +1094,8 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
         for (uint32_t frame = 0; frame < resolved.frame_count; frame++)
         {
             ctx.preview_frame_index = frame;
-            dvz_app_run(app, 1);
-            char path[RUNNER_PATH_SIZE] = {0};
-            if (!_runner_png_sequence_path(&resolved.capture, frame, path, sizeof(path), false))
-            {
-                fprintf(stderr, "scenario_runner: PNG sequence path is too long\n");
+            if (!_runner_capture_png_sequence_frame(app, capture_view, &resolved.capture, frame))
                 goto cleanup;
-            }
-            if (dvz_view_capture_png(capture_view, path) != 0)
-            {
-                fprintf(stderr, "scenario_runner: failed to write PNG sequence frame: %s\n", path);
-                goto cleanup;
-            }
-            dvz_fprintf(stdout, "datoviz: saved %s\n", path);
             if (resolved.print_progress)
                 _print_progress(frame + 1, resolved.frame_count);
         }
