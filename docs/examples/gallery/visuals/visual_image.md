@@ -38,6 +38,12 @@ The FIELD_WIDTH by FIELD_HEIGHT value array is attached as a sampled field, whil
     --8<-- "examples/c/visuals/image.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/visuals/image.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `visual_image`
@@ -45,6 +51,7 @@ The FIELD_WIDTH by FIELD_HEIGHT value array is attached as a sampled field, whil
     - Lane: `visuals`
     - Source: [`examples/c/visuals/image.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/image.c)
     - Reference: [Image visual family](../../../reference/visual-families/image.md)
+    - Python source: [`examples/python/gallery/visuals/image.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/image.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_image"><code>examples/webgpu/live.html?id=visual_image</code></a>
     - Browser capability tags: `image`, `sampled-field`, `panzoom`

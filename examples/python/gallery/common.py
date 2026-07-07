@@ -5,6 +5,7 @@ from __future__ import annotations
 import ctypes
 
 import datoviz as dvz
+import numpy as np
 
 
 WIDTH = 1280
@@ -21,9 +22,59 @@ WHITE = dvz.DvzColor(255, 255, 255, 255)
 
 
 def color_array(*colors):
-    import numpy as np
-
     return np.array([[c.r, c.g, c.b, c.a] for c in colors], dtype=np.uint8)
+
+
+def continuous_scale(scene, name: bytes = b"python_gallery_scale"):
+    colors = (dvz.DvzColor * 4)(BG, CYAN, GREEN, YELLOW)
+    colormap = dvz.dvz_colormap_custom(scene, name, colors, 4)
+    if not colormap:
+        raise RuntimeError("dvz_colormap_custom() failed")
+
+    desc = dvz.dvz_scale_desc()
+    desc.kind = dvz.DVZ_SCALE_CONTINUOUS
+    scale = dvz.dvz_scale(scene, ctypes.byref(desc))
+    if not scale:
+        raise RuntimeError("dvz_scale() failed")
+    dvz.dvz_scale_set_domain(scale, 0.0, 1.0)
+    dvz.dvz_scale_set_colormap(scale, colormap)
+    return scale
+
+
+def image_quad():
+    positions = np.array(
+        [
+            [-0.88, -0.66, 0.0],
+            [-0.88, +0.66, 0.0],
+            [+0.88, -0.66, 0.0],
+            [+0.88, +0.66, 0.0],
+        ],
+        dtype=np.float32,
+    )
+    texcoords = np.array(
+        [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]],
+        dtype=np.float32,
+    )
+    return positions, texcoords
+
+
+def add_image(scene, panel, field, scale=None, alpha=False):
+    image = dvz.dvz_image(scene, 0)
+    if not image:
+        raise RuntimeError("dvz_image() failed")
+
+    positions, texcoords = image_quad()
+    dvz.dvz_visual_set_data(image, "position", positions)
+    dvz.dvz_visual_set_data(image, "texcoords", texcoords)
+    if scale is not None:
+        dvz.dvz_visual_set_scale(image, b"color", scale)
+    if dvz.dvz_visual_set_field(image, b"field", field) != 0:
+        raise RuntimeError("dvz_visual_set_field() failed")
+    dvz.dvz_visual_set_depth_test(image, False)
+    if alpha:
+        dvz.dvz_visual_set_alpha_mode(image, dvz.DVZ_ALPHA_BLENDED)
+    add_visual(panel, image)
+    return image
 
 
 def scene_panel(width: int = WIDTH, height: int = HEIGHT):

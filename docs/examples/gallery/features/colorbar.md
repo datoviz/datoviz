@@ -38,12 +38,19 @@ A 192 by 144 float field is uploaded as an R32 sampled field, and the image visu
     --8<-- "examples/c/features/colorbar.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/colorbar.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `colorbar`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/colorbar.c)
+    - Python source: [`examples/python/gallery/features/colorbar.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/colorbar.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=colorbar"><code>examples/webgpu/live.html?id=colorbar</code></a>
     - Browser capability tags: `colorbar`, `image`, `sampled-field`, `text`

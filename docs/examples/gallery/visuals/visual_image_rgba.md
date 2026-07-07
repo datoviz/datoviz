@@ -38,6 +38,12 @@ The FIELD_WIDTH by FIELD_HEIGHT RGBA8 array is attached directly as a color samp
     --8<-- "examples/c/visuals/image_rgba.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/visuals/image_rgba.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `visual_image_rgba`
@@ -45,6 +51,7 @@ The FIELD_WIDTH by FIELD_HEIGHT RGBA8 array is attached directly as a color samp
     - Lane: `visuals`
     - Source: [`examples/c/visuals/image_rgba.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/image_rgba.c)
     - Reference: [RGBA Image visual family](../../../reference/visual-families/image.md)
+    - Python source: [`examples/python/gallery/visuals/image_rgba.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/image_rgba.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_image_rgba"><code>examples/webgpu/live.html?id=visual_image_rgba</code></a>
     - Browser capability tags: `image`, `sampled-field`, `alpha-blending`
