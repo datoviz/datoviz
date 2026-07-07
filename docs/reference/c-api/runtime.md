@@ -17,7 +17,7 @@ Common workflows:
 - [Profile performance](../../how-to/profile-performance.md)
 - [Runtime internals](../../advanced/runtime-internals.md)
 
-Functions: 554
+Functions: 543
 
 ## Symbol Groups
 
@@ -32,7 +32,6 @@ Functions: 554
 | [Box](#box) | 10 | `include/datoviz/math/box.h` |
 | [Buffer](#buffer) | 23 | `include/datoviz/vklite/buffers.h` |
 | [Camera](#camera) | 14 | `include/datoviz/controller/camera.h` |
-| [Circular](#circular) | 2 | `include/datoviz/math/anim.h` |
 | [Cmd](#cmd) | 31 | 8 headers |
 | [Command](#command) | 2 | `include/datoviz/vklite/commands.h` |
 | [Commands](#commands) | 9 | `include/datoviz/vklite/commands.h` |
@@ -55,7 +54,6 @@ Functions: 554
 | [Images](#images) | 17 | `include/datoviz/vklite/images.h` |
 | [Instance](#instance) | 17 | 3 headers |
 | [Interop](#interop) | 6 | `include/datoviz/vk/memory_interop.h` |
-| [Interpolate](#interpolate) | 3 | `include/datoviz/math/anim.h` |
 | [Load](#load) | 2 | `include/datoviz/fileio/fileio.h` |
 | [Make](#make) | 1 | `include/datoviz/fileio/fileio.h` |
 | [Mean](#mean) | 1 | `include/datoviz/math/stats.h` |
@@ -67,11 +65,9 @@ Functions: 554
 | [Prng](#prng) | 3 | `include/datoviz/math/prng.h` |
 | [Queue](#queue) | 6 | `include/datoviz/vk/queues.h` |
 | [Queues](#queues) | 2 | `include/datoviz/vk/queues.h` |
-| [Rand](#rand) | 5 | `include/datoviz/math/rand.h` |
 | [Range](#range) | 1 | `include/datoviz/math/stats.h` |
 | [Read](#read) | 5 | `include/datoviz/fileio/fileio.h` |
 | [Rendering](#rendering) | 12 | `include/datoviz/vklite/rendering.h` |
-| [Resample](#resample) | 1 | `include/datoviz/math/anim.h` |
 | [Resource](#resource) | 4 | `include/datoviz/fileio/fileio.h` |
 | [Sampler](#sampler) | 10 | `include/datoviz/vklite/sampler.h` |
 | [Semaphore](#semaphore) | 10 | `include/datoviz/vklite/sync.h` |
@@ -254,13 +250,6 @@ Functions: 554
     | [`dvz_camera_set_perspective()`](#dvz_camera_set_perspective) | `include/datoviz/controller/camera.h` |
     | [`dvz_camera_set_view()`](#dvz_camera_set_view) | `include/datoviz/controller/camera.h` |
     | [`dvz_camera_view()`](#dvz_camera_view) | `include/datoviz/controller/camera.h` |
-
-    ### Circular
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_circular_2D()`](#dvz_circular_2d) | `include/datoviz/math/anim.h` |
-    | [`dvz_circular_3D()`](#dvz_circular_3d) | `include/datoviz/math/anim.h` |
 
     ### Cmd
 
@@ -621,14 +610,6 @@ Functions: 554
     | [`dvz_interop_gpu_ctx()`](#dvz_interop_gpu_ctx) | `include/datoviz/vk/memory_interop.h` |
     | [`dvz_interop_gpu_ctx_ex()`](#dvz_interop_gpu_ctx_ex) | `include/datoviz/vk/memory_interop.h` |
 
-    ### Interpolate
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_interpolate()`](#dvz_interpolate) | `include/datoviz/math/anim.h` |
-    | [`dvz_interpolate_2D()`](#dvz_interpolate_2d) | `include/datoviz/math/anim.h` |
-    | [`dvz_interpolate_3D()`](#dvz_interpolate_3d) | `include/datoviz/math/anim.h` |
-
     ### Load
 
     | Function | Header |
@@ -723,16 +704,6 @@ Functions: 554
     | [`dvz_queues()`](#dvz_queues) | `include/datoviz/vk/queues.h` |
     | [`dvz_queues_show()`](#dvz_queues_show) | `include/datoviz/vk/queues.h` |
 
-    ### Rand
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_rand_byte()`](#dvz_rand_byte) | `include/datoviz/math/rand.h` |
-    | [`dvz_rand_double()`](#dvz_rand_double) | `include/datoviz/math/rand.h` |
-    | [`dvz_rand_float()`](#dvz_rand_float) | `include/datoviz/math/rand.h` |
-    | [`dvz_rand_int()`](#dvz_rand_int) | `include/datoviz/math/rand.h` |
-    | [`dvz_rand_normal()`](#dvz_rand_normal) | `include/datoviz/math/rand.h` |
-
     ### Range
 
     | Function | Header |
@@ -765,12 +736,6 @@ Functions: 554
     | [`dvz_rendering_layer_count()`](#dvz_rendering_layer_count) | `include/datoviz/vklite/rendering.h` |
     | [`dvz_rendering_layers()`](#dvz_rendering_layers) | `include/datoviz/vklite/rendering.h` |
     | [`dvz_rendering_stencil()`](#dvz_rendering_stencil) | `include/datoviz/vklite/rendering.h` |
-
-    ### Resample
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_resample()`](#dvz_resample) | `include/datoviz/math/anim.h` |
 
     ### Resource
 
@@ -3397,56 +3362,6 @@ DvzCameraView dvz_camera_view(void);
 
 _Declared in `include/datoviz/controller/camera.h`:105._
 
-## Circular
-
-### `dvz_circular_2D()`
-
-Generate a 2D circular motion.
-
-```c
-void dvz_circular_2D(
-    vec2 center,
-    float radius,
-    float angle,
-    float t,
-    vec2 out
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `center` | `vec2` | the circle center |
-| `radius` | `float` | the circle radius |
-| `angle` | `float` | the initial angle |
-| `t` | `float` | the normalized value |
-| `out` | `vec2` |  |
-
-_Declared in `include/datoviz/math/anim.h`:110._
-
-### `dvz_circular_3D()`
-
-Generate a 3D circular motion.
-
-```c
-void dvz_circular_3D(
-    vec3 pos_init,
-    vec3 center,
-    vec3 axis,
-    float t,
-    vec3 out
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `pos_init` | `vec3` | the initial position |
-| `center` | `vec3` | the center position |
-| `axis` | `vec3` | the axis around which to rotate |
-| `t` | `float` | the normalized value (1 = full circle) |
-| `out` | `vec3` |  |
-
-_Declared in `include/datoviz/math/anim.h`:123._
-
 ## Cmd
 
 ### `dvz_cmd_barriers()`
@@ -5322,7 +5237,7 @@ double dvz_easing(
 | `easing` | `DvzEasing` | the easing mode |
 | `t` | `double` | the normalized value |
 
-_Declared in `include/datoviz/math/anim.h`:97._
+_Declared in `include/datoviz/math/anim.h`:85._
 
 ## Error
 
@@ -8377,73 +8292,6 @@ DvzGpuCtx * dvz_interop_gpu_ctx_ex(
 
 _Declared in `include/datoviz/vk/memory_interop.h`:160._
 
-## Interpolate
-
-### `dvz_interpolate()`
-
-Make a linear interpolation between two scalar value.
-
-```c
-float dvz_interpolate(
-    float p0,
-    float p1,
-    float t
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `float` | the interpolated value |
-| `p0` | `float` | the first value |
-| `p1` | `float` | the second value |
-| `t` | `float` | the normalized value |
-
-_Declared in `include/datoviz/math/anim.h`:135._
-
-### `dvz_interpolate_2D()`
-
-Make a linear interpolation between two 2D points.
-
-```c
-void dvz_interpolate_2D(
-    vec2 p0,
-    vec2 p1,
-    float t,
-    vec2 out
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `p0` | `vec2` | the first point |
-| `p1` | `vec2` | the second point |
-| `t` | `float` | the normalized value |
-| `out` | `vec2` |  |
-
-_Declared in `include/datoviz/math/anim.h`:147._
-
-### `dvz_interpolate_3D()`
-
-Make a linear interpolation between two 3D points.
-
-```c
-void dvz_interpolate_3D(
-    vec3 p0,
-    vec3 p1,
-    float t,
-    vec3 out
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `p0` | `vec3` | the first point |
-| `p1` | `vec3` | the second point |
-| `t` | `float` | the normalized value |
-| `out` | `vec3` |  |
-
-_Declared in `include/datoviz/math/anim.h`:159._
-
 ## Load
 
 ### `dvz_load_jpeg()`
@@ -9198,78 +9046,6 @@ void dvz_queues_show(
 
 _Declared in `include/datoviz/vk/queues.h`:157._
 
-## Rand
-
-### `dvz_rand_byte()`
-
-Return a random integer number between 0 and 255.
-
-```c
-uint8_t dvz_rand_byte(void);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `uint8_t` | random number |
-
-_Declared in `include/datoviz/math/rand.h`:37._
-
-### `dvz_rand_double()`
-
-Return a random floating-point number between 0 and 1.
-
-```c
-double dvz_rand_double(void);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `double` | random number |
-
-_Declared in `include/datoviz/math/rand.h`:64._
-
-### `dvz_rand_float()`
-
-Return a random floating-point number between 0 and 1.
-
-```c
-float dvz_rand_float(void);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `float` | random number |
-
-_Declared in `include/datoviz/math/rand.h`:55._
-
-### `dvz_rand_int()`
-
-Return a random integer number.
-
-```c
-int dvz_rand_int(void);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `int` | random number |
-
-_Declared in `include/datoviz/math/rand.h`:46._
-
-### `dvz_rand_normal()`
-
-Return a random normal floating-point number.
-
-```c
-double dvz_rand_normal(void);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `double` | random number |
-
-_Declared in `include/datoviz/math/rand.h`:73._
-
 ## Range
 
 ### `dvz_range()`
@@ -9610,29 +9386,6 @@ DvzAttachment * dvz_rendering_stencil(
 | `rendering` | `DvzRendering *` | the rendering |
 
 _Declared in `include/datoviz/vklite/rendering.h`:216._
-
-## Resample
-
-### `dvz_resample()`
-
-Normalize a value in an interval.
-
-```c
-double dvz_resample(
-    double t0,
-    double t1,
-    double t
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `double` | the normalized value between 0 and 1 |
-| `t0` | `double` | the interval start |
-| `t1` | `double` | the interval end |
-| `t` | `double` | the value within the interval |
-
-_Declared in `include/datoviz/math/anim.h`:86._
 
 ## Resource
 

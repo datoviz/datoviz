@@ -17,13 +17,13 @@ Common workflows:
 - [Debug rendering](../../how-to/debug-rendering.md)
 - [DRP2 command streams](../../advanced/drp2-command-streams.md)
 
-Functions: 132
+Functions: 131
 
 ## Symbol Groups
 
 | Group | Functions | Headers |
 | --- | ---: | --- |
-| [Drp2](#drp2) | 132 | 4 headers |
+| [Drp2](#drp2) | 131 | 4 headers |
 
 ??? info "Grouped symbol index"
 
@@ -132,7 +132,6 @@ Functions: 132
     | [`dvz_drp2_stream_payload_ptr()`](#dvz_drp2_stream_payload_ptr) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_payload_size()`](#dvz_drp2_stream_payload_size) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_pipeline_set_bind_group_layout()`](#dvz_drp2_stream_pipeline_set_bind_group_layout) | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_pipeline_set_bind_group_layout2()`](#dvz_drp2_stream_pipeline_set_bind_group_layout2) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_pipeline_set_bind_group_layouts()`](#dvz_drp2_stream_pipeline_set_bind_group_layouts) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_pipeline_set_builtin_identity()`](#dvz_drp2_stream_pipeline_set_builtin_identity) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_pipeline_set_color_blend()`](#dvz_drp2_stream_pipeline_set_color_blend) | `include/datoviz/drp2/stream.h` |
@@ -857,7 +856,7 @@ _Bool dvz_drp2_stream_begin_command_encoder(
 | `stream` | `DvzDrp2CommandStream *` | the command stream |
 | `id` | `uint64_t` | the encoder id |
 
-_Declared in `include/datoviz/drp2/stream.h`:907._
+_Declared in `include/datoviz/drp2/stream.h`:895._
 
 ### `dvz_drp2_stream_begin_compute_pass()`
 
@@ -878,7 +877,7 @@ _Bool dvz_drp2_stream_begin_compute_pass(
 | `id` | `uint64_t` | the compute pass id |
 | `encoder_id` | `uint64_t` | the encoder id |
 
-_Declared in `include/datoviz/drp2/stream.h`:1087._
+_Declared in `include/datoviz/drp2/stream.h`:1075._
 
 ### `dvz_drp2_stream_begin_render_pass()`
 
@@ -901,7 +900,7 @@ _Bool dvz_drp2_stream_begin_render_pass(
 | `encoder_id` | `uint64_t` | the encoder id |
 | `texture_id` | `uint64_t` | the color attachment texture id |
 
-_Declared in `include/datoviz/drp2/stream.h`:920._
+_Declared in `include/datoviz/drp2/stream.h`:908._
 
 ### `dvz_drp2_stream_begin_render_pass_add_color_attachment()`
 
@@ -930,7 +929,7 @@ _Bool dvz_drp2_stream_begin_render_pass_add_color_attachment(
 | `a` | `float` | clear color alpha channel |
 | `clear` | `_Bool` | whether to clear this attachment at render-pass begin |
 
-_Declared in `include/datoviz/drp2/stream.h`:983._
+_Declared in `include/datoviz/drp2/stream.h`:971._
 
 ### `dvz_drp2_stream_begin_render_pass_clear()`
 
@@ -961,7 +960,7 @@ _Bool dvz_drp2_stream_begin_render_pass_clear(
 | `b` | `float` | blue clear value [0, 1] |
 | `a` | `float` | alpha clear value [0, 1] |
 
-_Declared in `include/datoviz/drp2/stream.h`:938._
+_Declared in `include/datoviz/drp2/stream.h`:926._
 
 ### `dvz_drp2_stream_begin_render_pass_region_clear()`
 
@@ -1007,7 +1006,7 @@ _Bool dvz_drp2_stream_begin_render_pass_region_clear(
 | `height` | `float` | normalized height in attachment space [0, 1] |
 | `clear` | `_Bool` | whether to clear the target at render-pass begin |
 
-_Declared in `include/datoviz/drp2/stream.h`:966._
+_Declared in `include/datoviz/drp2/stream.h`:954._
 
 ### `dvz_drp2_stream_begin_render_pass_set_color_attachment_access()`
 
@@ -1028,7 +1027,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_color_attachment_access(
 | `attachment_index` | `uint32_t` | the color attachment index |
 | `access` | `DvzDrp2AttachmentAccess` | the attachment access intent |
 
-_Declared in `include/datoviz/drp2/stream.h`:1010._
+_Declared in `include/datoviz/drp2/stream.h`:998._
 
 ### `dvz_drp2_stream_begin_render_pass_set_color_attachment_ops()`
 
@@ -1051,7 +1050,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
 | `load_op` | `DvzDrp2AttachmentLoadOp` | the attachment load operation |
 | `store_op` | `DvzDrp2AttachmentStoreOp` | the attachment store operation |
 
-_Declared in `include/datoviz/drp2/stream.h`:997._
+_Declared in `include/datoviz/drp2/stream.h`:985._
 
 ### `dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve()`
 
@@ -1074,7 +1073,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve(
 | `resolve_texture_id` | `uint64_t` | the single-sample resolve texture id, or 0 to disable resolve |
 | `resolve_mode` | `uint32_t` | backend-native resolve mode, with 0 treated as average |
 
-_Declared in `include/datoviz/drp2/stream.h`:1023._
+_Declared in `include/datoviz/drp2/stream.h`:1011._
 
 ### `dvz_drp2_stream_begin_render_pass_set_depth()`
 
@@ -1094,7 +1093,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_depth(
 | `stream` | `DvzDrp2CommandStream *` | the command stream |
 | `clear_depth` | `float` | the depth clear value used when the pass clears attachments |
 
-_Declared in `include/datoviz/drp2/stream.h`:1037._
+_Declared in `include/datoviz/drp2/stream.h`:1025._
 
 ### `dvz_drp2_stream_begin_render_pass_set_depth_access()`
 
@@ -1113,7 +1112,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_depth_access(
 | `stream` | `DvzDrp2CommandStream *` | the command stream |
 | `access` | `DvzDrp2AttachmentAccess` | the depth attachment access intent |
 
-_Declared in `include/datoviz/drp2/stream.h`:1074._
+_Declared in `include/datoviz/drp2/stream.h`:1062._
 
 ### `dvz_drp2_stream_begin_render_pass_set_depth_ops()`
 
@@ -1134,7 +1133,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_depth_ops(
 | `load_op` | `DvzDrp2AttachmentLoadOp` | the depth attachment load operation |
 | `store_op` | `DvzDrp2AttachmentStoreOp` | the depth attachment store operation |
 
-_Declared in `include/datoviz/drp2/stream.h`:1062._
+_Declared in `include/datoviz/drp2/stream.h`:1050._
 
 ### `dvz_drp2_stream_begin_render_pass_set_depth_texture()`
 
@@ -1157,7 +1156,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_depth_texture(
 | `depth_texture_id` | `uint64_t` | the depth attachment texture id, or 0 for transient depth |
 | `clear_depth` | `float` | the depth clear value used when the pass clears attachments |
 
-_Declared in `include/datoviz/drp2/stream.h`:1050._
+_Declared in `include/datoviz/drp2/stream.h`:1038._
 
 ### `dvz_drp2_stream_copy_buffer_to_buffer()`
 
@@ -1186,7 +1185,7 @@ _Bool dvz_drp2_stream_copy_buffer_to_buffer(
 | `dst_offset` | `uint64_t` | the destination byte offset |
 | `size` | `uint64_t` | the copied byte size |
 
-_Declared in `include/datoviz/drp2/stream.h`:1306._
+_Declared in `include/datoviz/drp2/stream.h`:1294._
 
 ### `dvz_drp2_stream_copy_buffer_to_texture()`
 
@@ -1219,7 +1218,7 @@ _Bool dvz_drp2_stream_copy_buffer_to_texture(
 | `bytes_per_row` | `uint32_t` | the source bytes per row |
 | `rows_per_image` | `uint32_t` | the source rows per image |
 
-_Declared in `include/datoviz/drp2/stream.h`:1326._
+_Declared in `include/datoviz/drp2/stream.h`:1314._
 
 ### `dvz_drp2_stream_copy_texture_to_buffer()`
 
@@ -1252,7 +1251,7 @@ _Bool dvz_drp2_stream_copy_texture_to_buffer(
 | `bytes_per_row` | `uint32_t` | the destination bytes per row |
 | `rows_per_image` | `uint32_t` | the destination rows per image |
 
-_Declared in `include/datoviz/drp2/stream.h`:1347._
+_Declared in `include/datoviz/drp2/stream.h`:1335._
 
 ### `dvz_drp2_stream_copy_texture_to_texture()`
 
@@ -1279,7 +1278,7 @@ _Bool dvz_drp2_stream_copy_texture_to_texture(
 | `width` | `uint32_t` | the copy width in pixels |
 | `height` | `uint32_t` | the copy height in pixels |
 
-_Declared in `include/datoviz/drp2/stream.h`:1365._
+_Declared in `include/datoviz/drp2/stream.h`:1353._
 
 ### `dvz_drp2_stream_count()`
 
@@ -1324,7 +1323,7 @@ _Bool dvz_drp2_stream_create_bind_group_entries(
 | `entry_count` | `uint32_t` | number of entries |
 | `entries` | `const DvzDrp2BindGroupEntry *` | bind-group resource entries |
 
-_Declared in `include/datoviz/drp2/stream.h`:692._
+_Declared in `include/datoviz/drp2/stream.h`:680._
 
 ### `dvz_drp2_stream_create_bind_group_layout_entries()`
 
@@ -1350,7 +1349,7 @@ _Bool dvz_drp2_stream_create_bind_group_layout_entries(
 | `entry_count` | `uint32_t` | number of entries |
 | `entries` | `const DvzDrp2BindGroupLayoutEntry *` | bind-group layout entries |
 
-_Declared in `include/datoviz/drp2/stream.h`:624._
+_Declared in `include/datoviz/drp2/stream.h`:612._
 
 ### `dvz_drp2_stream_create_buffer()`
 
@@ -1394,7 +1393,7 @@ _Bool dvz_drp2_stream_create_compute_pipeline(
 | `id` | `uint64_t` | the pipeline id |
 | `compute_shader_module_id` | `uint64_t` | the compute shader module id |
 
-_Declared in `include/datoviz/drp2/stream.h`:520._
+_Declared in `include/datoviz/drp2/stream.h`:508._
 
 ### `dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout()`
 
@@ -1417,7 +1416,7 @@ _Bool dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout(
 | `compute_shader_module_id` | `uint64_t` | the compute shader module id |
 | `bind_group_layout_id` | `uint64_t` | the bind-group layout id for slot 0 |
 
-_Declared in `include/datoviz/drp2/stream.h`:534._
+_Declared in `include/datoviz/drp2/stream.h`:522._
 
 ### `dvz_drp2_stream_create_render_pipeline()`
 
@@ -1460,7 +1459,7 @@ _Bool dvz_drp2_stream_create_sampler(
 | `stream` | `DvzDrp2CommandStream *` | the command stream |
 | `id` | `uint64_t` | the sampler id |
 
-_Declared in `include/datoviz/drp2/stream.h`:559._
+_Declared in `include/datoviz/drp2/stream.h`:547._
 
 ### `dvz_drp2_stream_create_sampler_filter()`
 
@@ -1483,7 +1482,7 @@ _Bool dvz_drp2_stream_create_sampler_filter(
 | `mag_filter` | `DvzDrp2FilterMode` | magnification filter |
 | `min_filter` | `DvzDrp2FilterMode` | minification filter |
 
-_Declared in `include/datoviz/drp2/stream.h`:571._
+_Declared in `include/datoviz/drp2/stream.h`:559._
 
 ### `dvz_drp2_stream_create_shader_module()`
 
@@ -1585,7 +1584,7 @@ _Bool dvz_drp2_stream_create_storage_bind_group(
 | `buffer1_id` | `uint64_t` | the second storage buffer id |
 | `buffer_size` | `uint64_t` | the bound range size for each buffer |
 
-_Declared in `include/datoviz/drp2/stream.h`:657._
+_Declared in `include/datoviz/drp2/stream.h`:645._
 
 ### `dvz_drp2_stream_create_storage_bind_group_layout()`
 
@@ -1604,7 +1603,7 @@ _Bool dvz_drp2_stream_create_storage_bind_group_layout(
 | `stream` | `DvzDrp2CommandStream *` | the command stream |
 | `id` | `uint64_t` | the bind-group layout id |
 
-_Declared in `include/datoviz/drp2/stream.h`:597._
+_Declared in `include/datoviz/drp2/stream.h`:585._
 
 ### `dvz_drp2_stream_create_texture()`
 
@@ -1777,7 +1776,7 @@ _Bool dvz_drp2_stream_create_texture_sampler_bind_group(
 | `texture_id` | `uint64_t` | the sampled texture id |
 | `sampler_id` | `uint64_t` | the sampler id |
 
-_Declared in `include/datoviz/drp2/stream.h`:640._
+_Declared in `include/datoviz/drp2/stream.h`:628._
 
 ### `dvz_drp2_stream_create_texture_sampler_bind_group_layout()`
 
@@ -1796,7 +1795,7 @@ _Bool dvz_drp2_stream_create_texture_sampler_bind_group_layout(
 | `stream` | `DvzDrp2CommandStream *` | the command stream |
 | `id` | `uint64_t` | the bind-group layout id |
 
-_Declared in `include/datoviz/drp2/stream.h`:585._
+_Declared in `include/datoviz/drp2/stream.h`:573._
 
 ### `dvz_drp2_stream_create_uniform_bind_group()`
 
@@ -1823,7 +1822,7 @@ _Bool dvz_drp2_stream_create_uniform_bind_group(
 | `offset` | `uint64_t` | byte offset into the buffer for this sub-allocation |
 | `size` | `uint64_t` | bound range size in bytes |
 
-_Declared in `include/datoviz/drp2/stream.h`:674._
+_Declared in `include/datoviz/drp2/stream.h`:662._
 
 ### `dvz_drp2_stream_create_uniform_bind_group_layout()`
 
@@ -1842,7 +1841,7 @@ _Bool dvz_drp2_stream_create_uniform_bind_group_layout(
 | `stream` | `DvzDrp2CommandStream *` | the command stream |
 | `id` | `uint64_t` | the bind-group layout id |
 
-_Declared in `include/datoviz/drp2/stream.h`:609._
+_Declared in `include/datoviz/drp2/stream.h`:597._
 
 ### `dvz_drp2_stream_destroy()`
 
@@ -1877,7 +1876,7 @@ _Bool dvz_drp2_stream_destroy_bind_group(
 | `stream` | `DvzDrp2CommandStream *` | the command stream |
 | `bind_group_id` | `uint64_t` | the bind-group id |
 
-_Declared in `include/datoviz/drp2/stream.h`:718._
+_Declared in `include/datoviz/drp2/stream.h`:706._
 
 ### `dvz_drp2_stream_destroy_bind_group_layout()`
 
@@ -1896,7 +1895,7 @@ _Bool dvz_drp2_stream_destroy_bind_group_layout(
 | `stream` | `DvzDrp2CommandStream *` | the command stream |
 | `bind_group_layout_id` | `uint64_t` | the bind-group layout id |
 
-_Declared in `include/datoviz/drp2/stream.h`:705._
+_Declared in `include/datoviz/drp2/stream.h`:693._
 
 ### `dvz_drp2_stream_destroy_buffer()`
 
@@ -1934,7 +1933,7 @@ _Bool dvz_drp2_stream_destroy_compute_pipeline(
 | `stream` | `DvzDrp2CommandStream *` | the command stream |
 | `compute_pipeline_id` | `uint64_t` | the compute pipeline id |
 
-_Declared in `include/datoviz/drp2/stream.h`:547._
+_Declared in `include/datoviz/drp2/stream.h`:535._
 
 ### `dvz_drp2_stream_destroy_render_pipeline()`
 
@@ -1953,7 +1952,7 @@ _Bool dvz_drp2_stream_destroy_render_pipeline(
 | `stream` | `DvzDrp2CommandStream *` | the command stream |
 | `render_pipeline_id` | `uint64_t` | the render pipeline id |
 
-_Declared in `include/datoviz/drp2/stream.h`:508._
+_Declared in `include/datoviz/drp2/stream.h`:496._
 
 ### `dvz_drp2_stream_destroy_shader_module()`
 
@@ -2016,7 +2015,7 @@ _Bool dvz_drp2_stream_dispatch_workgroups(
 | `y` | `uint32_t` | the y workgroup count |
 | `z` | `uint32_t` | the z workgroup count |
 
-_Declared in `include/datoviz/drp2/stream.h`:1255._
+_Declared in `include/datoviz/drp2/stream.h`:1243._
 
 ### `dvz_drp2_stream_draw()`
 
@@ -2043,7 +2042,7 @@ _Bool dvz_drp2_stream_draw(
 | `first_vertex` | `uint32_t` | the first vertex |
 | `first_instance` | `uint32_t` | the first instance |
 
-_Declared in `include/datoviz/drp2/stream.h`:1210._
+_Declared in `include/datoviz/drp2/stream.h`:1198._
 
 ### `dvz_drp2_stream_draw_indexed()`
 
@@ -2072,7 +2071,7 @@ _Bool dvz_drp2_stream_draw_indexed(
 | `base_vertex` | `int32_t` | the base vertex |
 | `first_instance` | `uint32_t` | the first instance |
 
-_Declared in `include/datoviz/drp2/stream.h`:1228._
+_Declared in `include/datoviz/drp2/stream.h`:1216._
 
 ### `dvz_drp2_stream_end_compute_pass()`
 
@@ -2091,7 +2090,7 @@ _Bool dvz_drp2_stream_end_compute_pass(
 | `stream` | `DvzDrp2CommandStream *` | the command stream |
 | `pass_id` | `uint64_t` | the compute pass id |
 
-_Declared in `include/datoviz/drp2/stream.h`:1267._
+_Declared in `include/datoviz/drp2/stream.h`:1255._
 
 ### `dvz_drp2_stream_end_render_pass()`
 
@@ -2110,7 +2109,7 @@ _Bool dvz_drp2_stream_end_render_pass(
 | `stream` | `DvzDrp2CommandStream *` | the command stream |
 | `pass_id` | `uint64_t` | the pass id |
 
-_Declared in `include/datoviz/drp2/stream.h`:1241._
+_Declared in `include/datoviz/drp2/stream.h`:1229._
 
 ### `dvz_drp2_stream_finish_command_encoder()`
 
@@ -2131,7 +2130,7 @@ _Bool dvz_drp2_stream_finish_command_encoder(
 | `encoder_id` | `uint64_t` | the encoder id |
 | `command_buffer_id` | `uint64_t` | the command buffer id |
 
-_Declared in `include/datoviz/drp2/stream.h`:1379._
+_Declared in `include/datoviz/drp2/stream.h`:1367._
 
 ### `dvz_drp2_stream_get()`
 
@@ -2188,7 +2187,7 @@ char * dvz_drp2_stream_json(
 | `stream` | `const DvzDrp2CommandStream *` | the command stream |
 | `name` | `const char *` | the fixture name |
 
-_Declared in `include/datoviz/drp2/stream.h`:1422._
+_Declared in `include/datoviz/drp2/stream.h`:1410._
 
 ### `dvz_drp2_stream_json_destroy()`
 
@@ -2204,7 +2203,7 @@ void dvz_drp2_stream_json_destroy(
 | --- | --- | --- |
 | `json` | `char *` | the JSON string |
 
-_Declared in `include/datoviz/drp2/stream.h`:1489._
+_Declared in `include/datoviz/drp2/stream.h`:1477._
 
 ### `dvz_drp2_stream_json_payload_refs()`
 
@@ -2228,7 +2227,7 @@ char * dvz_drp2_stream_json_payload_refs(
 | `stream` | `const DvzDrp2CommandStream *` | the command stream |
 | `name` | `const char *` | the fixture name |
 
-_Declared in `include/datoviz/drp2/stream.h`:1438._
+_Declared in `include/datoviz/drp2/stream.h`:1426._
 
 ### `dvz_drp2_stream_label()`
 
@@ -2285,7 +2284,7 @@ uint32_t dvz_drp2_stream_payload_command_index(
 | `stream` | `const DvzDrp2CommandStream *` | the command stream |
 | `payload_index` | `uint32_t` | the payload index |
 
-_Declared in `include/datoviz/drp2/stream.h`:1458._
+_Declared in `include/datoviz/drp2/stream.h`:1446._
 
 ### `dvz_drp2_stream_payload_count()`
 
@@ -2302,7 +2301,7 @@ uint32_t dvz_drp2_stream_payload_count(
 | return | `uint32_t` | the number of raw payload spans |
 | `stream` | `const DvzDrp2CommandStream *` | the command stream |
 
-_Declared in `include/datoviz/drp2/stream.h`:1447._
+_Declared in `include/datoviz/drp2/stream.h`:1435._
 
 ### `dvz_drp2_stream_payload_ptr()`
 
@@ -2321,7 +2320,7 @@ const void * dvz_drp2_stream_payload_ptr(
 | `stream` | `const DvzDrp2CommandStream *` | the command stream |
 | `payload_index` | `uint32_t` | the payload index |
 
-_Declared in `include/datoviz/drp2/stream.h`:1469._
+_Declared in `include/datoviz/drp2/stream.h`:1457._
 
 ### `dvz_drp2_stream_payload_size()`
 
@@ -2340,7 +2339,7 @@ uint64_t dvz_drp2_stream_payload_size(
 | `stream` | `const DvzDrp2CommandStream *` | the command stream |
 | `payload_index` | `uint32_t` | the payload index |
 
-_Declared in `include/datoviz/drp2/stream.h`:1480._
+_Declared in `include/datoviz/drp2/stream.h`:1468._
 
 ### `dvz_drp2_stream_pipeline_set_bind_group_layout()`
 
@@ -2364,26 +2363,6 @@ _Bool dvz_drp2_stream_pipeline_set_bind_group_layout(
 
 _Declared in `include/datoviz/drp2/stream.h`:388._
 
-### `dvz_drp2_stream_pipeline_set_bind_group_layout2()`
-
-Attach a second bind-group layout (descriptor set 1) to the most recently appended
-CreateRenderPipeline command.
-
-```c
-_Bool dvz_drp2_stream_pipeline_set_bind_group_layout2(
-    DvzDrp2CommandStream * stream,
-    uint64_t bind_group_layout_id2
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `_Bool` | whether the most recent command was a CreateRenderPipeline and was updated |
-| `stream` | `DvzDrp2CommandStream *` | the command stream |
-| `bind_group_layout_id2` | `uint64_t` | the second bind-group layout id (0 = none) |
-
-_Declared in `include/datoviz/drp2/stream.h`:401._
-
 ### `dvz_drp2_stream_pipeline_set_bind_group_layouts()`
 
 Attach an ordered bind-group layout array to the most recent CreateRenderPipeline command.
@@ -2403,7 +2382,7 @@ _Bool dvz_drp2_stream_pipeline_set_bind_group_layouts(
 | `count` | `uint32_t` | the number of bind-group layout ids |
 | `bind_group_layout_ids` | `const uint64_t *` | ordered bind-group layout ids, one per slot |
 
-_Declared in `include/datoviz/drp2/stream.h`:413._
+_Declared in `include/datoviz/drp2/stream.h`:401._
 
 ### `dvz_drp2_stream_pipeline_set_builtin_identity()`
 
@@ -2426,7 +2405,7 @@ _Bool dvz_drp2_stream_pipeline_set_builtin_identity(
 | `pipeline` | `const char *` | stable built-in pipeline id |
 | `version` | `uint32_t` | built-in pipeline contract version |
 
-_Declared in `include/datoviz/drp2/stream.h`:494._
+_Declared in `include/datoviz/drp2/stream.h`:482._
 
 ### `dvz_drp2_stream_pipeline_set_color_blend()`
 
@@ -2459,7 +2438,7 @@ _Bool dvz_drp2_stream_pipeline_set_color_blend(
 | `alpha_op` | `DvzBlendOp` | alpha blend operation |
 | `color_write_mask` | `DvzColorMask` | color component write mask |
 
-_Declared in `include/datoviz/drp2/stream.h`:479._
+_Declared in `include/datoviz/drp2/stream.h`:467._
 
 ### `dvz_drp2_stream_pipeline_set_color_target()`
 
@@ -2480,7 +2459,7 @@ _Bool dvz_drp2_stream_pipeline_set_color_target(
 | `idx` | `uint32_t` | the color target index |
 | `format` | `DvzFormat` | texture format token |
 
-_Declared in `include/datoviz/drp2/stream.h`:461._
+_Declared in `include/datoviz/drp2/stream.h`:449._
 
 ### `dvz_drp2_stream_pipeline_set_depth_state()`
 
@@ -2501,7 +2480,7 @@ _Bool dvz_drp2_stream_pipeline_set_depth_state(
 | `depth_write_enabled` | `_Bool` | whether depth writes are enabled |
 | `depth_compare_op` | `DvzCompareOp` | depth compare operation |
 
-_Declared in `include/datoviz/drp2/stream.h`:425._
+_Declared in `include/datoviz/drp2/stream.h`:413._
 
 ### `dvz_drp2_stream_pipeline_set_multisampling()`
 
@@ -2522,7 +2501,7 @@ _Bool dvz_drp2_stream_pipeline_set_multisampling(
 | `sample_count` | `uint32_t` | raster sample count, with 0 treated as 1 |
 | `alpha_to_coverage_enabled` | `_Bool` | whether alpha-to-coverage is enabled |
 
-_Declared in `include/datoviz/drp2/stream.h`:449._
+_Declared in `include/datoviz/drp2/stream.h`:437._
 
 ### `dvz_drp2_stream_pipeline_set_raster_state()`
 
@@ -2543,7 +2522,7 @@ _Bool dvz_drp2_stream_pipeline_set_raster_state(
 | `cull_mode` | `DvzCullMode` | face culling mode |
 | `front_face` | `DvzFrontFace` | front-face winding |
 
-_Declared in `include/datoviz/drp2/stream.h`:437._
+_Declared in `include/datoviz/drp2/stream.h`:425._
 
 ### `dvz_drp2_stream_queue_submit()`
 
@@ -2564,7 +2543,7 @@ _Bool dvz_drp2_stream_queue_submit(
 | `command_buffer_id` | `uint64_t` | the command buffer id |
 | `submission_id` | `uint64_t` | the submission id |
 
-_Declared in `include/datoviz/drp2/stream.h`:1392._
+_Declared in `include/datoviz/drp2/stream.h`:1380._
 
 ### `dvz_drp2_stream_queue_submit_readback()`
 
@@ -2591,7 +2570,7 @@ _Bool dvz_drp2_stream_queue_submit_readback(
 | `offset` | `uint64_t` | the readback byte offset |
 | `size` | `uint64_t` | the readback byte size |
 
-_Declared in `include/datoviz/drp2/stream.h`:1408._
+_Declared in `include/datoviz/drp2/stream.h`:1396._
 
 ### `dvz_drp2_stream_renderer_hello_reply()`
 
@@ -2646,7 +2625,7 @@ _Bool dvz_drp2_stream_resource_barrier(
 | `offset` | `uint64_t` | the first byte in the synchronized range |
 | `size` | `uint64_t` | the synchronized byte size, or 0 for the rest of the buffer |
 
-_Declared in `include/datoviz/drp2/stream.h`:1287._
+_Declared in `include/datoviz/drp2/stream.h`:1275._
 
 ### `dvz_drp2_stream_set_bind_group()`
 
@@ -2669,7 +2648,7 @@ _Bool dvz_drp2_stream_set_bind_group(
 | `slot` | `uint32_t` | the bind-group slot |
 | `bind_group_id` | `uint64_t` | the bind-group id |
 
-_Declared in `include/datoviz/drp2/stream.h`:1146._
+_Declared in `include/datoviz/drp2/stream.h`:1134._
 
 ### `dvz_drp2_stream_set_bind_group_dynamic()`
 
@@ -2696,7 +2675,7 @@ _Bool dvz_drp2_stream_set_bind_group_dynamic(
 | `dynamic_offset_count` | `uint32_t` | number of dynamic offsets |
 | `dynamic_offsets` | `const uint64_t *` | dynamic offsets consumed in layout-entry order |
 
-_Declared in `include/datoviz/drp2/stream.h`:1161._
+_Declared in `include/datoviz/drp2/stream.h`:1149._
 
 ### `dvz_drp2_stream_set_index_buffer()`
 
@@ -2721,7 +2700,7 @@ _Bool dvz_drp2_stream_set_index_buffer(
 | `index_format` | `const char *` | the index format token |
 | `offset` | `uint64_t` | the byte offset |
 
-_Declared in `include/datoviz/drp2/stream.h`:1193._
+_Declared in `include/datoviz/drp2/stream.h`:1181._
 
 ### `dvz_drp2_stream_set_label()`
 
@@ -2765,7 +2744,7 @@ _Bool dvz_drp2_stream_set_pipeline(
 | `pass_id` | `uint64_t` | the pass id |
 | `pipeline_id` | `uint64_t` | the pipeline id |
 
-_Declared in `include/datoviz/drp2/stream.h`:1133._
+_Declared in `include/datoviz/drp2/stream.h`:1121._
 
 ### `dvz_drp2_stream_set_scissor()`
 
@@ -2792,7 +2771,7 @@ _Bool dvz_drp2_stream_set_scissor(
 | `width` | `float` | normalized width in attachment space [0, 1] |
 | `height` | `float` | normalized height in attachment space [0, 1] |
 
-_Declared in `include/datoviz/drp2/stream.h`:1119._
+_Declared in `include/datoviz/drp2/stream.h`:1107._
 
 ### `dvz_drp2_stream_set_vertex_buffer()`
 
@@ -2817,7 +2796,7 @@ _Bool dvz_drp2_stream_set_vertex_buffer(
 | `buffer_id` | `uint64_t` | the buffer id |
 | `offset` | `uint64_t` | the byte offset |
 
-_Declared in `include/datoviz/drp2/stream.h`:1177._
+_Declared in `include/datoviz/drp2/stream.h`:1165._
 
 ### `dvz_drp2_stream_set_viewport()`
 
@@ -2844,7 +2823,7 @@ _Bool dvz_drp2_stream_set_viewport(
 | `width` | `float` | normalized width in attachment space [0, 1] |
 | `height` | `float` | normalized height in attachment space [0, 1] |
 
-_Declared in `include/datoviz/drp2/stream.h`:1103._
+_Declared in `include/datoviz/drp2/stream.h`:1091._
 
 ### `dvz_drp2_stream_shader_set_builtin_identity()`
 
@@ -2894,7 +2873,7 @@ _Bool dvz_drp2_stream_write_buffer_base64(
 | `size` | `uint64_t` | the payload size in bytes |
 | `data_base64` | `const char *` | base64-encoded payload |
 
-_Declared in `include/datoviz/drp2/stream.h`:732._
+_Declared in `include/datoviz/drp2/stream.h`:720._
 
 ### `dvz_drp2_stream_write_buffer_bytes()`
 
@@ -2929,7 +2908,7 @@ _Bool dvz_drp2_stream_write_buffer_bytes(
 | `size` | `uint64_t` | number of bytes to write (0 is a valid no-op) |
 | `data` | `const void *` | raw source bytes (must be non-NULL when size>0) |
 
-_Declared in `include/datoviz/drp2/stream.h`:758._
+_Declared in `include/datoviz/drp2/stream.h`:746._
 
 ### `dvz_drp2_stream_write_texture_2d_base64()`
 
@@ -2960,7 +2939,7 @@ _Bool dvz_drp2_stream_write_texture_2d_base64(
 | `rows_per_image` | `uint32_t` | the source rows per image |
 | `data_base64` | `const char *` | base64-encoded payload |
 
-_Declared in `include/datoviz/drp2/stream.h`:777._
+_Declared in `include/datoviz/drp2/stream.h`:765._
 
 ### `dvz_drp2_stream_write_texture_2d_borrowed()`
 
@@ -2995,7 +2974,7 @@ _Bool dvz_drp2_stream_write_texture_2d_borrowed(
 | `rows_per_image` | `uint32_t` | the source rows per image |
 | `data` | `const void *` | raw pixel bytes (must remain valid until the stream executes) |
 
-_Declared in `include/datoviz/drp2/stream.h`:799._
+_Declared in `include/datoviz/drp2/stream.h`:787._
 
 ### `dvz_drp2_stream_write_texture_2d_region_base64()`
 
@@ -3030,7 +3009,7 @@ _Bool dvz_drp2_stream_write_texture_2d_region_base64(
 | `rows_per_image` | `uint32_t` | the source rows per image |
 | `data_base64` | `const char *` | base64-encoded payload |
 
-_Declared in `include/datoviz/drp2/stream.h`:842._
+_Declared in `include/datoviz/drp2/stream.h`:830._
 
 ### `dvz_drp2_stream_write_texture_2d_region_borrowed()`
 
@@ -3067,7 +3046,7 @@ _Bool dvz_drp2_stream_write_texture_2d_region_borrowed(
 | `rows_per_image` | `uint32_t` | the source rows per image |
 | `data` | `const void *` | raw pixel bytes (must remain valid until the stream executes) |
 
-_Declared in `include/datoviz/drp2/stream.h`:821._
+_Declared in `include/datoviz/drp2/stream.h`:809._
 
 ### `dvz_drp2_stream_write_texture_3d_base64()`
 
@@ -3106,7 +3085,7 @@ _Bool dvz_drp2_stream_write_texture_3d_base64(
 | `rows_per_image` | `uint32_t` | the source rows per image |
 | `data_base64` | `const char *` | base64-encoded payload |
 
-_Declared in `include/datoviz/drp2/stream.h`:866._
+_Declared in `include/datoviz/drp2/stream.h`:854._
 
 ### `dvz_drp2_stream_write_texture_3d_borrowed()`
 
@@ -3147,7 +3126,7 @@ _Bool dvz_drp2_stream_write_texture_3d_borrowed(
 | `rows_per_image` | `uint32_t` | the source rows per image |
 | `data` | `const void *` | raw pixel bytes (must remain valid until the stream executes) |
 
-_Declared in `include/datoviz/drp2/stream.h`:892._
+_Declared in `include/datoviz/drp2/stream.h`:880._
 
 ### `dvz_drp2_texture_desc()`
 

@@ -18,7 +18,7 @@ Common workflows:
 - [Handle input events](../../how-to/input-events.md)
 - [Save screenshots](../../how-to/screenshots.md)
 
-Functions: 206
+Functions: 205
 
 ## Symbol Groups
 
@@ -33,7 +33,7 @@ Functions: 206
 | [Stream](#stream) | 17 | `include/datoviz/stream.h`, `include/datoviz/video.h` |
 | [Video](#video) | 2 | `include/datoviz/video.h` |
 | [View](#view) | 59 | 3 headers |
-| [Window](#window) | 39 | `include/datoviz/window.h`, `include/datoviz/window/backend.h` |
+| [Window](#window) | 38 | `include/datoviz/window.h`, `include/datoviz/window/backend.h` |
 
 ??? info "Grouped symbol index"
 
@@ -281,7 +281,6 @@ Functions: 206
     | [`dvz_window_metrics()`](#dvz_window_metrics) | `include/datoviz/window.h` |
     | [`dvz_window_register_glfw_backend()`](#dvz_window_register_glfw_backend) | `include/datoviz/window/backend.h` |
     | [`dvz_window_register_headless_backend()`](#dvz_window_register_headless_backend) | `include/datoviz/window/backend.h` |
-    | [`dvz_window_register_qt_backend()`](#dvz_window_register_qt_backend) | `include/datoviz/window/backend.h` |
     | [`dvz_window_register_wrap_backend()`](#dvz_window_register_wrap_backend) | `include/datoviz/window/backend.h` |
     | [`dvz_window_router()`](#dvz_window_router) | `include/datoviz/window.h` |
     | [`dvz_window_set_user_data()`](#dvz_window_set_user_data) | `include/datoviz/window.h` |
@@ -4262,22 +4261,6 @@ void dvz_window_register_headless_backend(
 | `host` | `DvzWindowHost *` | host that should expose the headless backend |
 
 _Declared in `include/datoviz/window/backend.h`:323._
-
-### `dvz_window_register_qt_backend()`
-
-Register the Qt backend on the host (if provided by downstream code).
-
-```c
-void dvz_window_register_qt_backend(
-    DvzWindowHost * host
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `host` | `DvzWindowHost *` | host that should expose the Qt backend |
-
-_Declared in `include/datoviz/window/backend.h`:350._
 
 ### `dvz_window_register_wrap_backend()`
 
