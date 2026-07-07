@@ -54,7 +54,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lane", action="append", default=[], help="gallery lane")
     parser.add_argument("--dry-run", action="store_true", help="list work without rendering frames")
     parser.add_argument("--keep-frames", action="store_true", help="keep temporary PNG frame sequences")
-    parser.add_argument("--force", action="store_true", help="regenerate outputs even when present")
+    parser.add_argument("--force", action="store_true", help="accepted for parity with other media tools")
     return parser.parse_args()
 
 
@@ -183,9 +183,6 @@ def generate_preview(
             f"size={preview.size} -> {rel_out}"
         )
         return True
-    if output_path.exists() and not force:
-        print(f"skip existing: {preview.id} -> {rel_out}")
-        return False
     if not preview.executable.exists():
         raise FileNotFoundError(f"example executable not found: {preview.executable}")
 
