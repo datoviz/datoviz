@@ -14,7 +14,7 @@ Each card links to a detail page with preview media, source code, and example me
 
 <div class="card" markdown="1">
 
-### [Basic Scene](gallery/features/feature_basic_scene.md)
+**[Basic Scene](gallery/features/feature_basic_scene.md)**
 
 [![Basic Scene](../assets/gallery/v0.4/features/feature_basic_scene.webp)](gallery/features/feature_basic_scene.md)
 
@@ -26,7 +26,7 @@ This example shows the smallest scene with a point visual.
 
 <div class="card" markdown="1">
 
-### [Coordinate System](gallery/features/feature_coordinate_system.md)
+**[Coordinate System](gallery/features/feature_coordinate_system.md)**
 
 [![Coordinate System](../assets/gallery/v0.4/features/feature_coordinate_system.webp)](gallery/features/feature_coordinate_system.md)
 
@@ -38,7 +38,7 @@ This example shows the Datoviz 3D coordinate convention.
 
 <div class="card" markdown="1">
 
-### [Single Panel](gallery/features/feature_panel_single.md)
+**[Single Panel](gallery/features/feature_panel_single.md)**
 
 [![Single Panel](../assets/gallery/v0.4/features/feature_panel_single.webp)](gallery/features/feature_panel_single.md)
 
@@ -50,7 +50,7 @@ Panel_single creates one explicit panel rectangle inside a figure.
 
 <div class="card" markdown="1">
 
-### [Panel Grid](gallery/features/feature_panel_grid.md)
+**[Panel Grid](gallery/features/feature_panel_grid.md)**
 
 [![Panel Grid](../assets/gallery/v0.4/features/feature_panel_grid.webp)](gallery/features/feature_panel_grid.md)
 
@@ -62,7 +62,7 @@ Panel_grid arranges four independent panels in a 2x2 figure grid.
 
 <div class="card" markdown="1">
 
-### [Multiple Panels](gallery/features/feature_panel_multi.md)
+**[Multiple Panels](gallery/features/feature_panel_multi.md)**
 
 [![Multiple Panels](../assets/gallery/v0.4/features/feature_panel_multi.webp)](gallery/features/feature_panel_multi.md)
 
@@ -74,7 +74,7 @@ Panel_multi shows two panels with independent data, domains, and panzoom state.
 
 <div class="card" markdown="1">
 
-### [Linked Panels](gallery/features/feature_panel_linked.md)
+**[Linked Panels](gallery/features/feature_panel_linked.md)**
 
 [![Linked Panels](../assets/gallery/v0.4/features/feature_panel_linked.webp)](gallery/features/feature_panel_linked.md)
 
@@ -86,7 +86,7 @@ Panel_linked links the X panzoom extent of two stacked signal panels.
 
 <div class="card" markdown="1">
 
-### [Panel View 2D](gallery/features/feature_panel_view2d.md)
+**[Panel View 2D](gallery/features/feature_panel_view2d.md)**
 
 [![Panel View 2D](../assets/gallery/v0.4/features/feature_panel_view2d.webp)](gallery/features/feature_panel_view2d.md)
 
@@ -98,7 +98,7 @@ Panel_view2d compares a regular 2D panel with one that keeps equal data aspect.
 
 <div class="card" markdown="1">
 
-### [Panel Background](gallery/features/panel_background.md)
+**[Panel Background](gallery/features/panel_background.md)**
 
 [![Panel Background](../assets/gallery/v0.4/features/panel_background.webp)](gallery/features/panel_background.md)
 
@@ -110,7 +110,7 @@ Panel_background shows a custom panel background behind a foreground primitive.
 
 <div class="card" markdown="1">
 
-### [User Scale](gallery/features/feature_user_scale.md)
+**[User Scale](gallery/features/feature_user_scale.md)**
 
 [![User Scale](../assets/gallery/v0.4/features/feature_user_scale.webp)](gallery/features/feature_user_scale.md)
 
@@ -122,7 +122,7 @@ User_scale shows how one user-scale value affects screen-space visual sizes and 
 
 <div class="card" markdown="1">
 
-### [View Size Policies](gallery/features/feature_view_size_policies.md)
+**[View Size Policies](gallery/features/feature_view_size_policies.md)**
 
 _Screenshot not required for this example._
 
@@ -134,7 +134,7 @@ View_size_policies demonstrates how requested view size policies resolve to real
 
 <div class="card" markdown="1">
 
-### [Visual Transform](gallery/features/feature_visual_transform.md)
+**[Visual Transform](gallery/features/feature_visual_transform.md)**
 
 [![Visual Transform](../assets/gallery/v0.4/features/feature_visual_transform.webp)](gallery/features/feature_visual_transform.md)
 
@@ -146,7 +146,7 @@ Visual_transform compares raw point data with a visual-local affine transform.
 
 <div class="card" markdown="1">
 
-### [Visual Visibility](gallery/features/feature_visibility.md)
+**[Visual Visibility](gallery/features/feature_visibility.md)**
 
 [![Visual Visibility](../assets/gallery/v0.4/features/feature_visibility.webp)](gallery/features/feature_visibility.md)
 
@@ -164,7 +164,7 @@ Visibility toggles one visual on and off without changing its data arrays.
 
 <div class="card" markdown="1">
 
-### [Manual Camera](gallery/features/feature_camera_manual.md)
+**[Manual Camera](gallery/features/feature_camera_manual.md)**
 
 [![Manual Camera](../assets/gallery/v0.4/features/feature_camera_manual.webp)](gallery/features/feature_camera_manual.md)
 
@@ -176,7 +176,7 @@ This example shows explicit perspective-camera setup for a 3D scene.
 
 <div class="card" markdown="1">
 
-### [Panzoom](gallery/features/feature_panzoom.md)
+**[Panzoom](gallery/features/feature_panzoom.md)**
 
 [![Panzoom](../assets/gallery/v0.4/features/feature_panzoom.webp)](gallery/features/feature_panzoom.md)
 
@@ -188,7 +188,7 @@ Panzoom binds a 2D panzoom controller to a point visual in data coordinates.
 
 <div class="card" markdown="1">
 
-### [Arcball Controller](gallery/features/feature_controller_arcball.md)
+**[Arcball Controller](gallery/features/feature_controller_arcball.md)**
 
 [![Arcball Controller](../assets/gallery/v0.4/features/feature_controller_arcball.webp)](gallery/features/feature_controller_arcball.md)
 
@@ -200,7 +200,7 @@ This example shows an arcball controller rotating a 3D view.
 
 <div class="card" markdown="1">
 
-### [Turntable Controller](gallery/features/feature_controller_turntable.md)
+**[Turntable Controller](gallery/features/feature_controller_turntable.md)**
 
 [![Turntable Controller](../assets/gallery/v0.4/features/feature_controller_turntable.webp)](gallery/features/feature_controller_turntable.md)
 
@@ -212,7 +212,7 @@ This example shows world-up orbiting with a turntable controller.
 
 <div class="card" markdown="1">
 
-### [Fly Controller](gallery/features/feature_controller_fly.md)
+**[Fly Controller](gallery/features/feature_controller_fly.md)**
 
 [![Fly Controller](../assets/gallery/v0.4/features/feature_controller_fly.webp)](gallery/features/feature_controller_fly.md)
 
@@ -224,7 +224,7 @@ This example shows fly-style camera navigation through a 3D scene.
 
 <div class="card" markdown="1">
 
-### [Orientation Gizmo](gallery/features/feature_orientation_gizmo.md)
+**[Orientation Gizmo](gallery/features/feature_orientation_gizmo.md)**
 
 [![Orientation Gizmo](../assets/gallery/v0.4/features/feature_orientation_gizmo.webp)](gallery/features/feature_orientation_gizmo.md)
 
@@ -236,7 +236,7 @@ Orientation_gizmo adds a small orientation widget to a 3D panel.
 
 <div class="card" markdown="1">
 
-### [Reference Grid](gallery/features/feature_reference_grid.md)
+**[Reference Grid](gallery/features/feature_reference_grid.md)**
 
 [![Reference Grid](../assets/gallery/v0.4/features/feature_reference_grid.webp)](gallery/features/feature_reference_grid.md)
 
@@ -254,7 +254,7 @@ Reference_grid adds a ground-plane reference grid to a 3D scene.
 
 <div class="card" markdown="1">
 
-### [Axis Labels](gallery/features/feature_axis_labels.md)
+**[Axis Labels](gallery/features/feature_axis_labels.md)**
 
 [![Axis Labels](../assets/gallery/v0.4/features/feature_axis_labels.webp)](gallery/features/feature_axis_labels.md)
 
@@ -266,7 +266,7 @@ This example shows axis titles and tick-label layout around a plotting panel.
 
 <div class="card" markdown="1">
 
-### [Path With 2D Axes](gallery/features/path_axes_2d.md)
+**[Path With 2D Axes](gallery/features/path_axes_2d.md)**
 
 [![Path With 2D Axes](../assets/gallery/v0.4/features/path_axes_2d.webp)](gallery/features/path_axes_2d.md)
 
@@ -278,7 +278,7 @@ This example shows a 2D data path with axes, ticks, and grid lines.
 
 <div class="card" markdown="1">
 
-### [Guide Lines](gallery/features/feature_guide_lines.md)
+**[Guide Lines](gallery/features/feature_guide_lines.md)**
 
 [![Guide Lines](../assets/gallery/v0.4/features/feature_guide_lines.webp)](gallery/features/feature_guide_lines.md)
 
@@ -290,7 +290,7 @@ This example shows movable horizontal and vertical guide lines.
 
 <div class="card" markdown="1">
 
-### [Guide Spans](gallery/features/feature_guide_spans.md)
+**[Guide Spans](gallery/features/feature_guide_spans.md)**
 
 [![Guide Spans](../assets/gallery/v0.4/features/feature_guide_spans.webp)](gallery/features/feature_guide_spans.md)
 
@@ -302,7 +302,7 @@ This example shows movable guide spans for highlighting data ranges.
 
 <div class="card" markdown="1">
 
-### [Bars And Bands](gallery/features/feature_bars_bands.md)
+**[Bars And Bands](gallery/features/feature_bars_bands.md)**
 
 [![Bars And Bands](../assets/gallery/v0.4/features/feature_bars_bands.webp)](gallery/features/feature_bars_bands.md)
 
@@ -314,7 +314,7 @@ This example shows bars and an uncertainty band in one 2D panel.
 
 <div class="card" markdown="1">
 
-### [Scale Bar](gallery/features/scale_bar.md)
+**[Scale Bar](gallery/features/scale_bar.md)**
 
 [![Scale Bar](../assets/gallery/v0.4/features/scale_bar.webp)](gallery/features/scale_bar.md)
 
@@ -326,7 +326,7 @@ Scalebar attaches a metric length scale bar to a 2D panel.
 
 <div class="card" markdown="1">
 
-### [Scale Bar Units](gallery/features/scalebar_units.md)
+**[Scale Bar Units](gallery/features/scalebar_units.md)**
 
 [![Scale Bar Units](../assets/gallery/v0.4/features/scalebar_units.webp)](gallery/features/scalebar_units.md)
 
@@ -338,7 +338,7 @@ Scalebar_units uses duration units for a scale bar on a time-series panel.
 
 <div class="card" markdown="1">
 
-### [Colorbar](gallery/features/colorbar.md)
+**[Colorbar](gallery/features/colorbar.md)**
 
 [![Colorbar](../assets/gallery/v0.4/features/colorbar.webp)](gallery/features/colorbar.md)
 
@@ -350,7 +350,7 @@ This example shows a scalar image and a continuous colorbar.
 
 <div class="card" markdown="1">
 
-### [Scalar Color Scale](gallery/features/colormap_scale.md)
+**[Scalar Color Scale](gallery/features/colormap_scale.md)**
 
 [![Scalar Color Scale](../assets/gallery/v0.4/features/colormap_scale.webp)](gallery/features/colormap_scale.md)
 
@@ -362,7 +362,7 @@ This example shows scalar point values mapped through a custom colormap.
 
 <div class="card" markdown="1">
 
-### [Categorical Legend](gallery/features/feature_legend_categorical.md)
+**[Categorical Legend](gallery/features/feature_legend_categorical.md)**
 
 [![Categorical Legend](../assets/gallery/v0.4/features/feature_legend_categorical.webp)](gallery/features/feature_legend_categorical.md)
 
@@ -374,7 +374,7 @@ Legend_categorical shows how one categorical scale drives both marker colors and
 
 <div class="card" markdown="1">
 
-### [Annotation Readout](gallery/features/annotation_readout.md)
+**[Annotation Readout](gallery/features/annotation_readout.md)**
 
 [![Annotation Readout](../assets/gallery/v0.4/features/annotation_readout.webp)](gallery/features/annotation_readout.md)
 
@@ -386,7 +386,7 @@ This example shows a text annotation anchored to one data point.
 
 <div class="card" markdown="1">
 
-### [Text Block](gallery/features/feature_text_block.md)
+**[Text Block](gallery/features/feature_text_block.md)**
 
 [![Text Block](../assets/gallery/v0.4/features/feature_text_block.webp)](gallery/features/feature_text_block.md)
 
@@ -398,7 +398,7 @@ Text_block renders a multiline text object at a stable screen position.
 
 <div class="card" markdown="1">
 
-### [Overlay Card](gallery/features/feature_overlay_card.md)
+**[Overlay Card](gallery/features/feature_overlay_card.md)**
 
 [![Overlay Card](../assets/gallery/v0.4/features/feature_overlay_card.webp)](gallery/features/feature_overlay_card.md)
 
@@ -410,7 +410,7 @@ Overlay_card places a screen-space readout card above a simple data trace.
 
 <div class="card" markdown="1">
 
-### [Label Probe](gallery/features/feature_probe_labels.md)
+**[Label Probe](gallery/features/feature_probe_labels.md)**
 
 [![Label Probe](../assets/gallery/v0.4/features/feature_probe_labels.webp)](gallery/features/feature_probe_labels.md)
 
@@ -428,7 +428,7 @@ Probe_labels queries categorical label IDs from a generated label image.
 
 <div class="card" markdown="1">
 
-### [Builtin Shapes 2D](gallery/features/feature_builtin_shapes_2d.md)
+**[Builtin Shapes 2D](gallery/features/feature_builtin_shapes_2d.md)**
 
 [![Builtin Shapes 2D](../assets/gallery/v0.4/features/feature_builtin_shapes_2d.webp)](gallery/features/feature_builtin_shapes_2d.md)
 
@@ -440,7 +440,7 @@ This example shows built-in 2D geometry rendered as meshes.
 
 <div class="card" markdown="1">
 
-### [Builtin Shapes 3D](gallery/features/feature_builtin_shapes_3d.md)
+**[Builtin Shapes 3D](gallery/features/feature_builtin_shapes_3d.md)**
 
 [![Builtin Shapes 3D](../assets/gallery/v0.4/features/feature_builtin_shapes_3d.webp)](gallery/features/feature_builtin_shapes_3d.md)
 
@@ -452,7 +452,7 @@ This example shows built-in 3D geometry rendered as lit meshes.
 
 <div class="card" markdown="1">
 
-### [Marker Symbols](gallery/features/feature_marker_symbols.md)
+**[Marker Symbols](gallery/features/feature_marker_symbols.md)**
 
 [![Marker Symbols](../assets/gallery/v0.4/features/feature_marker_symbols.webp)](gallery/features/feature_marker_symbols.md)
 
@@ -464,7 +464,7 @@ Marker_symbols compares several ways to define marker glyphs in one symbol set.
 
 <div class="card" markdown="1">
 
-### [Bezier Curve Path](gallery/features/feature_bezier_curve_path.md)
+**[Bezier Curve Path](gallery/features/feature_bezier_curve_path.md)**
 
 [![Bezier Curve Path](../assets/gallery/v0.4/features/feature_bezier_curve_path.webp)](gallery/features/feature_bezier_curve_path.md)
 
@@ -476,7 +476,7 @@ This example shows a cubic Bezier curve tessellated into a path.
 
 <div class="card" markdown="1">
 
-### [Path Join](gallery/features/feature_path_join.md)
+**[Path Join](gallery/features/feature_path_join.md)**
 
 [![Path Join](../assets/gallery/v0.4/features/feature_path_join.webp)](gallery/features/feature_path_join.md)
 
@@ -488,7 +488,7 @@ Path_join compares miter, round, and bevel joins on difficult stroked paths.
 
 <div class="card" markdown="1">
 
-### [OBJ Loading](gallery/features/feature_obj_loading.md)
+**[OBJ Loading](gallery/features/feature_obj_loading.md)**
 
 [![OBJ Loading](../assets/gallery/v0.4/features/feature_obj_loading.webp)](gallery/features/feature_obj_loading.md)
 
@@ -506,7 +506,7 @@ Obj_loading loads a Wavefront OBJ fixture and displays it as a mesh.
 
 <div class="card" markdown="1">
 
-### [Sampled Field Update](gallery/features/feature_sampled_field_update.md)
+**[Sampled Field Update](gallery/features/feature_sampled_field_update.md)**
 
 [![Sampled Field Update](../assets/gallery/v0.4/features/feature_sampled_field_update.webp)](gallery/features/feature_sampled_field_update.md)
 
@@ -518,7 +518,7 @@ Sampled_field_update reuses one sampled scalar field in two image visuals while 
 
 <div class="card" markdown="1">
 
-### [Isolines](gallery/features/feature_isolines.md)
+**[Isolines](gallery/features/feature_isolines.md)**
 
 [![Isolines](../assets/gallery/v0.4/features/feature_isolines.webp)](gallery/features/feature_isolines.md)
 
@@ -530,7 +530,7 @@ This example shows contour isolines over a scalar field.
 
 <div class="card" markdown="1">
 
-### [Datetime Axis](gallery/features/feature_datetime_axis.md)
+**[Datetime Axis](gallery/features/feature_datetime_axis.md)**
 
 [![Datetime Axis](../assets/gallery/v0.4/features/feature_datetime_axis.webp)](gallery/features/feature_datetime_axis.md)
 
@@ -542,7 +542,7 @@ This example shows UTC datetime labels on a numeric data axis.
 
 <div class="card" markdown="1">
 
-### [Image Probe](gallery/features/image_probe.md)
+**[Image Probe](gallery/features/image_probe.md)**
 
 [![Image Probe](../assets/gallery/v0.4/features/image_probe.webp)](gallery/features/image_probe.md)
 
@@ -560,7 +560,7 @@ This example shows probing a scalar image at a marked data position.
 
 <div class="card" markdown="1">
 
-### [Lighting](gallery/features/feature_lighting.md)
+**[Lighting](gallery/features/feature_lighting.md)**
 
 [![Lighting](../assets/gallery/v0.4/features/feature_lighting.webp)](gallery/features/feature_lighting.md)
 
@@ -572,7 +572,7 @@ Lighting compares the same sphere cluster under three material and light configu
 
 <div class="card" markdown="1">
 
-### [Textured Mesh](gallery/features/feature_mesh_texture.md)
+**[Textured Mesh](gallery/features/feature_mesh_texture.md)**
 
 [![Textured Mesh](../assets/gallery/v0.4/features/feature_mesh_texture.webp)](gallery/features/feature_mesh_texture.md)
 
@@ -584,7 +584,7 @@ Mesh_texture maps an RGBA8 sampled field onto a UV sphere mesh.
 
 <div class="card" markdown="1">
 
-### [Mesh Materials](gallery/features/feature_material_mesh.md)
+**[Mesh Materials](gallery/features/feature_material_mesh.md)**
 
 [![Mesh Materials](../assets/gallery/v0.4/features/feature_material_mesh.webp)](gallery/features/feature_material_mesh.md)
 
@@ -596,7 +596,7 @@ Material_mesh compares cube meshes rendered with different material models and p
 
 <div class="card" markdown="1">
 
-### [Volume Occlusion](gallery/features/feature_volume_occlusion.md)
+**[Volume Occlusion](gallery/features/feature_volume_occlusion.md)**
 
 [![Volume Occlusion](../assets/gallery/v0.4/features/feature_volume_occlusion.webp)](gallery/features/feature_volume_occlusion.md)
 
@@ -608,7 +608,7 @@ Volume_occlusion compares a volume slice with and without attenuation by the sur
 
 <div class="card" markdown="1">
 
-### [Screen-Space Ambient Occlusion](gallery/features/technique_ssao.md)
+**[Screen-Space Ambient Occlusion](gallery/features/technique_ssao.md)**
 
 [![Screen-Space Ambient Occlusion](../assets/gallery/v0.4/features/technique_ssao.webp)](gallery/features/technique_ssao.md)
 
@@ -620,7 +620,7 @@ Ssao compares a sphere cluster with and without screen-space ambient occlusion.
 
 <div class="card" markdown="1">
 
-### [Depth Cue](gallery/features/technique_depth_cue.md)
+**[Depth Cue](gallery/features/technique_depth_cue.md)**
 
 [![Depth Cue](../assets/gallery/v0.4/features/technique_depth_cue.webp)](gallery/features/technique_depth_cue.md)
 
@@ -632,7 +632,7 @@ Depth_cue compares a plain 3D sphere lattice with depth-dependent fading.
 
 <div class="card" markdown="1">
 
-### [Multisample Antialiasing](gallery/features/technique_msaa.md)
+**[Multisample Antialiasing](gallery/features/technique_msaa.md)**
 
 [![Multisample Antialiasing](../assets/gallery/v0.4/features/technique_msaa.webp)](gallery/features/technique_msaa.md)
 
@@ -644,7 +644,7 @@ Msaa compares single-sample rendering with 8x multisample antialiasing.
 
 <div class="card" markdown="1">
 
-### [Transparency Order](gallery/features/technique_transparency.md)
+**[Transparency Order](gallery/features/technique_transparency.md)**
 
 [![Transparency Order](../assets/gallery/v0.4/features/technique_transparency.webp)](gallery/features/technique_transparency.md)
 
@@ -656,7 +656,7 @@ Transparency_order compares three transparency techniques on the same overlappin
 
 <div class="card" markdown="1">
 
-### [Alpha Blending](gallery/features/alpha_blending.md)
+**[Alpha Blending](gallery/features/alpha_blending.md)**
 
 [![Alpha Blending](../assets/gallery/v0.4/features/alpha_blending.webp)](gallery/features/alpha_blending.md)
 
@@ -668,7 +668,7 @@ This example shows translucent triangles composited in draw order.
 
 <div class="card" markdown="1">
 
-### [Depth Test Toggle](gallery/features/technique_depth_test.md)
+**[Depth Test Toggle](gallery/features/technique_depth_test.md)**
 
 [![Depth Test Toggle](../assets/gallery/v0.4/features/technique_depth_test.webp)](gallery/features/technique_depth_test.md)
 
@@ -680,7 +680,7 @@ Depth_test compares overlapping 3D points with depth testing enabled and disable
 
 <div class="card" markdown="1">
 
-### [Bounds Overlay](gallery/features/feature_bounds_overlay.md)
+**[Bounds Overlay](gallery/features/feature_bounds_overlay.md)**
 
 [![Bounds Overlay](../assets/gallery/v0.4/features/feature_bounds_overlay.webp)](gallery/features/feature_bounds_overlay.md)
 
@@ -698,7 +698,7 @@ This example shows diagnostic bounds overlays for 2D and 3D visuals.
 
 <div class="card" markdown="1">
 
-### [Picking](gallery/features/feature_picking.md)
+**[Picking](gallery/features/feature_picking.md)**
 
 [![Picking](../assets/gallery/v0.4/features/feature_picking.webp)](gallery/features/feature_picking.md)
 
@@ -710,7 +710,7 @@ Picking demonstrates item-level marker hover and click selection.
 
 <div class="card" markdown="1">
 
-### [Pixel Selection](gallery/features/feature_selection_pixel.md)
+**[Pixel Selection](gallery/features/feature_selection_pixel.md)**
 
 [![Pixel Selection](../assets/gallery/v0.4/features/feature_selection_pixel.webp)](gallery/features/feature_selection_pixel.md)
 
@@ -722,7 +722,7 @@ Selection_pixel queries and selects individual cells in a pixel grid.
 
 <div class="card" markdown="1">
 
-### [Sphere Selection](gallery/features/feature_selection_sphere.md)
+**[Sphere Selection](gallery/features/feature_selection_sphere.md)**
 
 [![Sphere Selection](../assets/gallery/v0.4/features/feature_selection_sphere.webp)](gallery/features/feature_selection_sphere.md)
 
@@ -734,7 +734,7 @@ Selection_sphere queries and selects individual raycast spheres in a 3D cluster.
 
 <div class="card" markdown="1">
 
-### [Mesh Instance Selection](gallery/features/feature_selection_mesh_instances.md)
+**[Mesh Instance Selection](gallery/features/feature_selection_mesh_instances.md)**
 
 [![Mesh Instance Selection](../assets/gallery/v0.4/features/feature_selection_mesh_instances.webp)](gallery/features/feature_selection_mesh_instances.md)
 
@@ -752,7 +752,7 @@ Selection_mesh_instances queries and selects individual instances of one mesh vi
 
 <div class="card" markdown="1">
 
-### [Animation Tracks](gallery/features/feature_animation_tracks.md)
+**[Animation Tracks](gallery/features/feature_animation_tracks.md)**
 
 [![Animation Tracks](../assets/gallery/v0.4/features/feature_animation_tracks.webp)](gallery/features/feature_animation_tracks.md)
 
@@ -764,7 +764,7 @@ This example shows scene animation tracks driving a cube and camera.
 
 <div class="card" markdown="1">
 
-### [Timer Animation](gallery/features/feature_timer_animation.md)
+**[Timer Animation](gallery/features/feature_timer_animation.md)**
 
 [![Timer Animation](../assets/gallery/v0.4/features/feature_timer_animation.webp)](gallery/features/feature_timer_animation.md)
 
@@ -776,7 +776,7 @@ Timer_animation updates point attributes every frame from scenario time.
 
 <div class="card" markdown="1">
 
-### [Compute Buffer Animation](gallery/features/feature_compute_buffer_animation.md)
+**[Compute Buffer Animation](gallery/features/feature_compute_buffer_animation.md)**
 
 [![Compute Buffer Animation](../assets/gallery/v0.4/features/feature_compute_buffer_animation.webp)](gallery/features/feature_compute_buffer_animation.md)
 
@@ -788,7 +788,7 @@ This example shows a compute pass updating point positions.
 
 <div class="card" markdown="1">
 
-### [Partial Data Update](gallery/features/update_partial.md)
+**[Partial Data Update](gallery/features/update_partial.md)**
 
 [![Partial Data Update](../assets/gallery/v0.4/features/update_partial.webp)](gallery/features/update_partial.md)
 
@@ -800,7 +800,7 @@ Update_partial moves only part of a point visual's position array.
 
 <div class="card" markdown="1">
 
-### [Visual Data Update](gallery/features/feature_update_visual_data.md)
+**[Visual Data Update](gallery/features/feature_update_visual_data.md)**
 
 [![Visual Data Update](../assets/gallery/v0.4/features/feature_update_visual_data.webp)](gallery/features/feature_update_visual_data.md)
 
@@ -818,7 +818,7 @@ Update_visual_data replaces all arrays on one point visual.
 
 <div class="card" markdown="1">
 
-### [GUI Controls](gallery/features/feature_gui_controls.md)
+**[GUI Controls](gallery/features/feature_gui_controls.md)**
 
 [![GUI Controls](../assets/gallery/v0.4/features/feature_gui_controls.webp)](gallery/features/feature_gui_controls.md)
 
@@ -830,7 +830,7 @@ This example shows Datoviz GUI controls updating a point visual.
 
 <div class="card" markdown="1">
 
-### [GUI Viewport](gallery/features/feature_gui_viewport.md)
+**[GUI Viewport](gallery/features/feature_gui_viewport.md)**
 
 [![GUI Viewport](../assets/gallery/v0.4/features/feature_gui_viewport.webp)](gallery/features/feature_gui_viewport.md)
 
@@ -842,7 +842,7 @@ This example shows a Datoviz render viewport embedded inside a GUI window.
 
 <div class="card" markdown="1">
 
-### [Raw cimgui GUI](gallery/features/feature_gui_cimgui.md)
+**[Raw cimgui GUI](gallery/features/feature_gui_cimgui.md)**
 
 [![Raw cimgui GUI](../assets/gallery/v0.4/features/feature_gui_cimgui.webp)](gallery/features/feature_gui_cimgui.md)
 
@@ -860,7 +860,7 @@ This example shows raw cimgui widgets controlling a Datoviz visual.
 
 <div class="card" markdown="1">
 
-### [Input Events](gallery/features/feature_input_events.md)
+**[Input Events](gallery/features/feature_input_events.md)**
 
 _Screenshot not required for this example._
 
@@ -872,7 +872,7 @@ This example shows native keyboard, pointer, wheel, and resize events.
 
 <div class="card" markdown="1">
 
-### [JSON Export](gallery/features/feature_json_export.md)
+**[JSON Export](gallery/features/feature_json_export.md)**
 
 _Screenshot not required for this example._
 
@@ -890,7 +890,7 @@ Json_export writes a scene to a compact JSON diagnostic file.
 
 <div class="card" markdown="1">
 
-### [Eye-Dome Lighting](gallery/features/technique_edl.md)
+**[Eye-Dome Lighting](gallery/features/technique_edl.md)**
 
 [![Eye-Dome Lighting](../assets/gallery/v0.4/features/technique_edl.webp)](gallery/features/technique_edl.md)
 

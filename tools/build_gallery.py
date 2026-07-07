@@ -867,6 +867,7 @@ def render_card(
     image_format: str = DEFAULT_IMAGE_FORMAT,
     show_tags: bool = True,
     show_status: bool = True,
+    title_heading: bool = True,
 ) -> str:
     page = Path(example.page_path)
     href = page.as_posix()
@@ -882,10 +883,15 @@ def render_card(
     status = f"`{example.status}` " if show_status and example.status != DEFAULT_STATUS else ""
     meta_line = f"{status}`{example.lane}`{tag_line}" if show_status else tag_line
     meta_block = f"\n{meta_line}\n" if meta_line else ""
+    title = (
+        f"### [{example.title}]({href})"
+        if title_heading
+        else f"**[{example.title}]({href})**"
+    )
     return f"""\
 <div class="card" markdown="1">
 
-### [{example.title}]({href})
+{title}
 
 {media}
 {meta_block}
@@ -1294,7 +1300,16 @@ def render_features_page(
         lines.append('<div class="grid cards" markdown="1">')
         lines.append("")
         for example in group_examples:
-            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
+            lines.append(
+                render_card(
+                    example,
+                    page_path,
+                    image_dir,
+                    image_url_base,
+                    image_format,
+                    title_heading=False,
+                )
+            )
         lines.append("</div>")
         lines.append("")
     ungrouped = [e for e in feature_examples if e.id not in grouped_ids]
@@ -1303,7 +1318,16 @@ def render_features_page(
         lines.append('<div class="grid cards" markdown="1">')
         lines.append("")
         for example in sorted(ungrouped, key=lambda e: e.title.lower()):
-            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
+            lines.append(
+                render_card(
+                    example,
+                    page_path,
+                    image_dir,
+                    image_url_base,
+                    image_format,
+                    title_heading=False,
+                )
+            )
         lines.append("</div>")
         lines.append("")
     write_text(docs_dir / "features.md", "\n".join(lines))
