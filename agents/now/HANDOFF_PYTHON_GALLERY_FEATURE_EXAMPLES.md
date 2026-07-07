@@ -27,11 +27,12 @@ Recent checkpoint commits landed:
 14. `c334f04a6` Add Python marker symbols gallery example.
 15. `787cb7a72` Add Python builtin shapes 2D gallery example.
 16. `9b49aba61` Add Python builtin shapes 3D gallery example.
+17. `512f618e7` Add Python OBJ loading gallery example.
 
 Current uncommitted checkpoint in this working tree:
 
-1. Added `examples/python/gallery/features/obj_loading.py`.
-2. Added `feature_obj_loading.python.source` / `direct-engine` in `examples/c/MANIFEST.yaml` and
+1. Added `examples/python/gallery/features/isolines.py`.
+2. Added `feature_isolines.python.source` / `direct-engine` in `examples/c/MANIFEST.yaml` and
    regenerated gallery metadata.
 3. Known parity caveat: the C OBJ and 3D shape examples apply a Phong material, but Python
    `DvzMaterialDesc` has no generated fields in the current binding, so these Python examples use
@@ -86,6 +87,10 @@ python3 - <<'PY'
 ... write compact OBJ fixture, load it with dvz_geometry_obj, bind arcball, render one offscreen
     frame ...
 PY
+python3 - <<'PY'
+... construct surface-grid heights/colors, extract contour segments, bind arcball, render one
+    offscreen frame ...
+PY
 ```
 
 These returned `image_probe offscreen query smoke: 1 True` and
@@ -95,13 +100,14 @@ These returned `image_probe offscreen query smoke: 1 True` and
 `selection_mesh_instances offscreen query smoke: 1 True 30`, and
 `probe_labels offscreen query smoke: 1 True 31`, and
 `marker_symbols offscreen smoke: OK`, and `builtin_shapes_2d offscreen smoke: OK`, and
-`builtin_shapes_3d offscreen smoke: OK`, and `obj_loading offscreen smoke: OK`. Live window and
-screenshot validation were not run for the earlier checkpoint notes.
+`builtin_shapes_3d offscreen smoke: OK`, and `obj_loading offscreen smoke: OK`, and
+`isolines offscreen smoke: OK`. Live window and screenshot validation were not run for the earlier
+checkpoint notes.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-07:
 
-- v0.4-required feature examples: 35 of 64 have Python entries; 29 remain missing.
-- all v0.4-required public examples: 47 of 95 have Python entries; 48 remain missing.
+- v0.4-required feature examples: 36 of 64 have Python entries; 28 remain missing.
+- all v0.4-required public examples: 48 of 95 have Python entries; 47 remain missing.
 - `feature_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -128,15 +134,18 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
 - `feature_builtin_shapes_3d` is committed: it has
   `examples/python/gallery/features/builtin_shapes_3d.py` and a matching `python.source` manifest
   entry.
-- `feature_obj_loading` is done in the current working tree: it has
+- `feature_obj_loading` is committed: it has
   `examples/python/gallery/features/obj_loading.py` and a matching `python.source` manifest entry.
+- `feature_isolines` is done in the current working tree: it has
+  `examples/python/gallery/features/isolines.py` and a matching `python.source` manifest entry.
 
 
 ## Preferred Next Commit
 
 The event/query/selection helper batch is complete for the planned feature examples. The geometry
 and symbol helper batch has `feature_marker_symbols`, `feature_builtin_shapes_2d`, and
-`feature_builtin_shapes_3d`, and `feature_obj_loading`; next target `feature_isolines`.
+`feature_builtin_shapes_3d`, `feature_obj_loading`, and `feature_isolines`; next target the
+text/annotation batch, starting with `feature_text_block`.
 
 Implementation shape:
 
@@ -172,7 +181,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python OBJ loading gallery example
+examples: add Python isolines gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -244,8 +253,7 @@ Current missing `v0.4_required` feature examples with no `python.source` entry:
 `feature_gui_viewport`, `feature_gui_cimgui`, `feature_animation_tracks`, `technique_ssao`,
 `technique_msaa`, `technique_depth_cue`, `technique_transparency`, `feature_input_events`,
 `feature_view_size_policies`, `feature_bezier_curve_path`, `feature_path_join`, `scale_bar`,
-`scalebar_units`, `annotation_readout`, `feature_isolines`,
-and `feature_datetime_axis`.
+`scalebar_units`, `annotation_readout`, and `feature_datetime_axis`.
 
 
 ## Per-Example Checklist

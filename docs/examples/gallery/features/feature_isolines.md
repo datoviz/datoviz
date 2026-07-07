@@ -38,12 +38,19 @@ The scalar field is sampled on a regular grid, and CPU contour extraction turns 
     --8<-- "examples/c/features/isolines.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/isolines.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_isolines`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/isolines.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/isolines.c)
+    - Python source: [`examples/python/gallery/features/isolines.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/isolines.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_isolines"><code>examples/webgpu/live.html?id=feature_isolines</code></a>
     - Browser capability tags: `mesh`, `segment`, `controller`, `arcball`
