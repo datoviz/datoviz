@@ -170,7 +170,7 @@ def run_with_input_callbacks(
         raise RuntimeError("dvz_app() failed")
     view = None
     router = None
-    pointer_subscription = 0
+    input_subscription = 0
     frame_callback_set = False
     try:
         view = dvz.dvz_view_window(app, figure, WIDTH, HEIGHT, title.encode())
@@ -184,15 +184,16 @@ def run_with_input_callbacks(
             if not router:
                 raise RuntimeError("dvz_view_input() failed")
 
-            def pointer_callback(_router, event_ptr, _user_data):
-                on_pointer(event_ptr.contents)
+            def input_callback(_router, event_ptr, _user_data):
+                event = event_ptr.contents
+                if event.type != dvz.DVZ_INPUT_EVENT_POINTER:
+                    return
+                on_pointer(event.content.pointer)
                 dvz.dvz_view_request_frame(view)
 
-            pointer_subscription = dvz.dvz_input_subscribe_pointer(
-                router, pointer_callback, None
-            )
-            if pointer_subscription == 0:
-                raise RuntimeError("dvz_input_subscribe_pointer() failed")
+            input_subscription = dvz.dvz_input_subscribe_event(router, input_callback, None)
+            if input_subscription == 0:
+                raise RuntimeError("dvz_input_subscribe_event() failed")
 
         if on_frame is not None:
             state = {"index": 0, "start": time.monotonic()}
@@ -210,8 +211,8 @@ def run_with_input_callbacks(
 
         dvz.dvz_app_run(app, 0)
     finally:
-        if pointer_subscription and router:
-            dvz.dvz_input_unsubscribe(router, pointer_subscription)
+        if input_subscription and router:
+            dvz.dvz_input_unsubscribe(router, input_subscription)
         if frame_callback_set and view:
             dvz.dvz_view_set_frame_callback(view, None, None)
         dvz.dvz_app_destroy(app)
@@ -257,6 +258,50 @@ def poll_queries(scene):
         if not dvz.dvz_scene_poll_query(scene, ctypes.byref(result)):
             break
         yield result
+
+
+def create_item_selection(scene, tint=YELLOW):
+    desc = dvz.dvz_selection_desc()
+    desc.mode = dvz.DVZ_SELECT_TOGGLE
+    desc.target = dvz.DVZ_SCENE_TARGET_ITEM
+    selection = dvz.dvz_selection(scene, ctypes.byref(desc))
+    if not selection:
+        raise RuntimeError("dvz_selection() failed")
+
+    style = dvz.dvz_selection_visual_style()
+    style.selected_visual_flags = dvz.DVZ_ITEM_STATE_VISUAL_TINT
+    style.selected_tint = tint
+    style.selected_tint_mix = 1.0
+    style.unselected_visual_flags = dvz.DVZ_ITEM_STATE_VISUAL_NONE
+    if dvz.dvz_selection_set_visual_style(selection, ctypes.byref(style)) != 0:
+        raise RuntimeError("dvz_selection_set_visual_style() failed")
+    return selection
+
+
+def create_item_hover(scene, scale: float):
+    desc = dvz.dvz_hover_desc()
+    desc.target = dvz.DVZ_SCENE_TARGET_ITEM
+    desc.hit_policy = dvz.DVZ_QUERY_HIT_FRONTMOST
+    hover = dvz.dvz_hover(scene, ctypes.byref(desc))
+    if not hover:
+        raise RuntimeError("dvz_hover() failed")
+
+    style = dvz.dvz_item_state_visual_style()
+    style.visual_flags = dvz.DVZ_ITEM_STATE_VISUAL_SCALE
+    style.scale = float(scale)
+    if dvz.dvz_hover_set_visual_style(hover, ctypes.byref(style)) != 0:
+        raise RuntimeError("dvz_hover_set_visual_style() failed")
+    return hover
+
+
+def query_item_hit(query, visual_family, item_count: int) -> bool:
+    return (
+        query.status == dvz.DVZ_QUERY_STATUS_HIT
+        and bool(query.hit)
+        and query.visual_family == visual_family
+        and query.resolved_target == dvz.DVZ_SCENE_TARGET_ITEM
+        and query.resolved_id < item_count
+    )
 
 
 def bind_panzoom(view, scene, panel, dims):

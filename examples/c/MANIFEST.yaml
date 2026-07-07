@@ -1674,6 +1674,9 @@ examples:
     primary_feature: picking
     lane: features
     source: examples/c/features/picking.c
+    python:
+      source: examples/python/gallery/features/picking.py
+      status: direct-engine
     validation: smoke+interaction+screenshot
     data:
       kind: synthetic
