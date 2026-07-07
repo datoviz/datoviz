@@ -1973,6 +1973,42 @@ static int canvas_capture_copy_to_staging(
 
 
 /**
+ * Return whether a Vulkan format stores 8-bit color channels as BGRA in memory.
+ *
+ * @param format image format
+ * @return true when capture readback must swap red and blue channels for RGBA output
+ */
+static bool canvas_capture_format_is_bgra(VkFormat format)
+{
+    return (
+        format == VK_FORMAT_B8G8R8A8_UNORM || format == VK_FORMAT_B8G8R8A8_SRGB ||
+        format == VK_FORMAT_B8G8R8A8_SNORM || format == VK_FORMAT_B8G8R8A8_UINT ||
+        format == VK_FORMAT_B8G8R8A8_SINT);
+}
+
+
+
+/**
+ * Convert tightly packed BGRA8 bytes to RGBA8 in place.
+ *
+ * @param rgba capture buffer
+ * @param pixel_count number of pixels in the buffer
+ */
+static void canvas_capture_bgra_to_rgba_in_place(uint8_t* rgba, size_t pixel_count)
+{
+    ANN(rgba);
+    for (size_t i = 0; i < pixel_count; i++)
+    {
+        uint8_t* px = rgba + 4 * i;
+        const uint8_t b = px[0];
+        px[0] = px[2];
+        px[2] = b;
+    }
+}
+
+
+
+/**
  * Capture the latest presented canvas frame into caller-managed RGBA storage.
  *
  * @param canvas canvas whose latest presented slot should be captured
@@ -2014,6 +2050,8 @@ int dvz_canvas_swapchain_capture_rgba_into(
     }
 
     dvz_buffer_download(staging, 0, expected_size, out_rgba);
+    if (canvas_capture_format_is_bgra(state->frame_format))
+        canvas_capture_bgra_to_rgba_in_place(out_rgba, (size_t)width * (size_t)height);
 
     dvz_buffer_destroy(staging);
     dvz_buffer_free(staging);

@@ -216,6 +216,11 @@ INDEX_FEATURE_GROUPS = (
         "image_probe",
         "feature_selection_sphere",
     ]),
+    ("GUI", [
+        "feature_gui_controls",
+        "feature_gui_viewport",
+        "feature_gui_cimgui",
+    ]),
 )
 
 CATEGORY_TO_LANE = {

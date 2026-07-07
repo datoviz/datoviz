@@ -694,6 +694,48 @@ Selection_sphere queries and selects individual raycast spheres in a 3D cluster.
 
 </div>
 
+#### GUI
+
+<div class="grid cards" markdown="1">
+
+<div class="card" markdown="1">
+
+### [GUI Controls](gallery/features/feature_gui_controls.md)
+
+[![GUI Controls](../assets/gallery/v0.4/features/feature_gui_controls.webp)](gallery/features/feature_gui_controls.md)
+
+`features`
+
+This example shows Datoviz GUI controls updating a point visual.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [GUI Viewport](gallery/features/feature_gui_viewport.md)
+
+[![GUI Viewport](../assets/gallery/v0.4/features/feature_gui_viewport.webp)](gallery/features/feature_gui_viewport.md)
+
+`features`
+
+This example shows a Datoviz render viewport embedded inside a GUI window.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Raw cimgui GUI](gallery/features/feature_gui_cimgui.md)
+
+[![Raw cimgui GUI](../assets/gallery/v0.4/features/feature_gui_cimgui.webp)](gallery/features/feature_gui_cimgui.md)
+
+`features`
+
+This example shows raw cimgui widgets controlling a Datoviz visual.
+
+</div>
+
+</div>
+
 [Browse all 69 feature examples](features.md) — controllers, adornments, interaction, animation, rendering, and more.
 
 ## Runtime & Capture
