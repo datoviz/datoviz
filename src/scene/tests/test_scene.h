@@ -896,12 +896,18 @@ int test_scene_visual_bounds_mesh_instance_transform(TstContext* suite, const Ts
 
 int test_scene_panel_visual_bounds_and_union(TstContext* suite, const TstCase* item);
 
+int test_scene_panel_visual_bounds_sphere_local_transform_screen(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_panel_bounds_overlay_visual(TstContext* suite, const TstCase* item);
 
 int test_scene_panel_bounds_overlay_visual_panzoom_padding(
     TstContext* suite, const TstCase* item);
 
-int test_scene_panel_bounds_overlay_sphere_exact_radius_bounds(
+int test_scene_panel_bounds_overlay_sphere_wire_padding(
+    TstContext* suite, const TstCase* item);
+
+int test_scene_panel_bounds_overlay_sphere_multi_radius_bounds(
     TstContext* suite, const TstCase* item);
 
 int test_scene_panel_bounds_overlay_emit_runtime(TstContext* suite, const TstCase* item);

@@ -22,6 +22,52 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
+/**
+ * Return the coordinate extents of a generated bounds-overlay segment visual.
+ *
+ * @param overlay bounds overlay visual
+ * @param out_min output minimum per dimension
+ * @param out_max output maximum per dimension
+ * @return whether extents were available
+ */
+static bool _scene_visuals_overlay_extents(
+    const DvzVisual* overlay, float out_min[3], float out_max[3])
+{
+    ANN(overlay);
+    ANN(out_min);
+    ANN(out_max);
+
+    int start_idx = _attr_index(overlay, "position_start");
+    int end_idx = _attr_index(overlay, "position_end");
+    if (start_idx < 0 || end_idx < 0)
+        return false;
+    if (overlay->attrs[start_idx].data == NULL || overlay->attrs[end_idx].data == NULL)
+        return false;
+    if (overlay->attrs[start_idx].item_count != overlay->attrs[end_idx].item_count)
+        return false;
+
+    const float* starts = (const float*)overlay->attrs[start_idx].data;
+    const float* ends = (const float*)overlay->attrs[end_idx].data;
+    for (uint32_t dim = 0; dim < 3; dim++)
+    {
+        out_min[dim] = +FLT_MAX;
+        out_max[dim] = -FLT_MAX;
+    }
+    for (uint32_t i = 0; i < overlay->attrs[start_idx].item_count; i++)
+    {
+        for (uint32_t dim = 0; dim < 3; dim++)
+        {
+            out_min[dim] = fminf(out_min[dim], starts[3 * i + dim]);
+            out_min[dim] = fminf(out_min[dim], ends[3 * i + dim]);
+            out_max[dim] = fmaxf(out_max[dim], starts[3 * i + dim]);
+            out_max[dim] = fmaxf(out_max[dim], ends[3 * i + dim]);
+        }
+    }
+    return true;
+}
+
+
+
 int test_scene_visual_attach_default_coord_space(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -801,6 +847,20 @@ int test_scene_visual_bounds_family_reducers(TstContext* suite, const TstCase* i
     AT(dvz_visual_bounds(sphere, &bounds) == 0);
     AT(_scene_visuals_bounds_expect(&bounds, 3, -0.5, -3.0, -0.5, +5.0, +1.0, +4.0) == 0);
 
+    uint32_t sphere_item_state[2] = {DVZ_ITEM_STATE_NONE, DVZ_ITEM_STATE_HOVERED};
+    AT(dvz_visual_set_data(sphere, "item_state", sphere_item_state, 2) == 0);
+    _visual_family_state(sphere)->item_state_style_params.hovered[0] =
+        (float)DVZ_ITEM_STATE_VISUAL_SCALE;
+    _visual_family_state(sphere)->item_state_style_params.hovered[3] = 1.5f;
+    AT(dvz_visual_bounds(sphere, &bounds) == 0);
+    AT(_scene_visuals_bounds_expect(&bounds, 3, -0.5, -4.0, -1.0, +6.0, +2.0, +5.0) == 0);
+
+    mat4 sphere_transform = GLM_MAT4_IDENTITY_INIT;
+    glm_scale(sphere_transform, (vec3){2.0f, 1.0f, 0.5f});
+    AT(dvz_visual_set_transform(sphere, sphere_transform) == 0);
+    AT(dvz_visual_bounds(sphere, &bounds) == 0);
+    AT(_scene_visuals_bounds_expect(&bounds, 3, -1.0, -7.0, -5.0, +12.0, +5.0, +7.0) == 0);
+
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
     vec3 image_pos[2] = {{0.0f, 0.0f, 0.0f}, {4.0f, 2.0f, 1.0f}};
@@ -918,6 +978,52 @@ int test_scene_panel_visual_bounds_and_union(TstContext* suite, const TstCase* i
     DvzVisual* unattached = dvz_point(scene, 0);
     ANN(unattached);
     AT(dvz_panel_visual_bounds(panel, unattached, DVZ_BOUNDS_SPACE_VISUAL, &bounds) == -1);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify screen-space bounds do not apply a retained local transform twice.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_panel_visual_bounds_sphere_local_transform_screen(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 200, 200, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzVisual* sphere = dvz_sphere(scene, 0);
+    ANN(sphere);
+    vec3 position[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor color[1] = {{255, 255, 255, 255}};
+    float radius[1] = {0.25f};
+    AT(dvz_visual_set_data(sphere, "position", position, 1) == 0);
+    AT(dvz_visual_set_data(sphere, "color", color, 1) == 0);
+    AT(dvz_visual_set_data(sphere, "radius", radius, 1) == 0);
+
+    mat4 transform = GLM_MAT4_IDENTITY_INIT;
+    glm_translate(transform, (vec3){0.5f, 0.0f, 0.0f});
+    AT(dvz_visual_set_transform(sphere, transform) == 0);
+    AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
+
+    DvzBounds bounds = {0};
+    AT(dvz_visual_bounds(sphere, &bounds) == 0);
+    AT(_scene_visuals_bounds_expect(&bounds, 3, +0.25, -0.25, -0.25, +0.75, +0.25, +0.25) == 0);
+
+    AT(dvz_panel_visual_bounds(panel, sphere, DVZ_BOUNDS_SPACE_SCREEN, &bounds) == 0);
+    AT(_scene_visuals_bounds_expect(&bounds, 2, 125.0, 75.0, 0.0, 175.0, 125.0, 0.0) == 0);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -1123,13 +1229,13 @@ int test_scene_panel_bounds_overlay_visual_panzoom_padding(TstContext* suite, co
 
 
 /**
- * Verify sphere overlays use exact radius-expanded visual bounds.
+ * Verify sphere visual bounds stay exact while the wire overlay uses conservative padding.
  *
  * @param suite the active test suite
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_panel_bounds_overlay_sphere_exact_radius_bounds(
+int test_scene_panel_bounds_overlay_sphere_wire_padding(
     TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -1147,14 +1253,19 @@ int test_scene_panel_bounds_overlay_sphere_exact_radius_bounds(
     vec3 position[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor color[1] = {{255, 255, 255, 255}};
     float radius[1] = {0.25f};
+    uint32_t item_state[1] = {DVZ_ITEM_STATE_HOVERED};
     AT(dvz_visual_set_data(sphere, "position", position, 1) == 0);
     AT(dvz_visual_set_data(sphere, "color", color, 1) == 0);
     AT(dvz_visual_set_data(sphere, "radius", radius, 1) == 0);
+    AT(dvz_visual_set_data(sphere, "item_state", item_state, 1) == 0);
+    _visual_family_state(sphere)->item_state_style_params.hovered[0] =
+        (float)DVZ_ITEM_STATE_VISUAL_SCALE;
+    _visual_family_state(sphere)->item_state_style_params.hovered[3] = 2.0f;
     AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
 
     DvzBounds bounds = {0};
     AT(dvz_visual_bounds(sphere, &bounds) == 0);
-    AT(_scene_visuals_bounds_expect(&bounds, 3, -0.25, -0.25, -0.25, +0.25, +0.25, +0.25) == 0);
+    AT(_scene_visuals_bounds_expect(&bounds, 3, -0.5, -0.5, -0.5, +0.5, +0.5, +0.5) == 0);
 
     AT(dvz_panel_set_bounds_visible(panel, true) == 0);
     _scene_prepare_bounds_visuals(figure);
@@ -1163,26 +1274,70 @@ int test_scene_panel_bounds_overlay_sphere_exact_radius_bounds(
     ANN(overlay_attach);
     AT(overlay_attach->coord_space == DVZ_VISUAL_COORD_DATA);
 
-    int start_idx = _attr_index(panel->bounds_visual, "position_start");
-    int end_idx = _attr_index(panel->bounds_visual, "position_end");
-    AT(start_idx >= 0);
-    AT(end_idx >= 0);
-    const float* starts = (const float*)panel->bounds_visual->attrs[start_idx].data;
-    const float* ends = (const float*)panel->bounds_visual->attrs[end_idx].data;
-    ANN(starts);
-    ANN(ends);
+    float min_extent[3] = {0};
+    float max_extent[3] = {0};
+    AT(_scene_visuals_overlay_extents(panel->bounds_visual, min_extent, max_extent));
+    const float pad = (sqrtf(3.0f) - 1.0f) * 0.5f;
+    AC(min_extent[0], -0.5f - pad, 1e-6);
+    AC(min_extent[1], -0.5f - pad, 1e-6);
+    AC(min_extent[2], -0.5f - pad, 1e-6);
+    AC(max_extent[0], +0.5f + pad, 1e-6);
+    AC(max_extent[1], +0.5f + pad, 1e-6);
+    AC(max_extent[2], +0.5f + pad, 1e-6);
 
-    float min_x = +FLT_MAX;
-    float max_x = -FLT_MAX;
-    for (uint32_t i = 0; i < panel->bounds_visual->attrs[start_idx].item_count; i++)
-    {
-        min_x = fminf(min_x, starts[3 * i + 0]);
-        min_x = fminf(min_x, ends[3 * i + 0]);
-        max_x = fmaxf(max_x, starts[3 * i + 0]);
-        max_x = fmaxf(max_x, ends[3 * i + 0]);
-    }
-    AC(min_x, -0.25f, 1e-6);
-    AC(max_x, +0.25f, 1e-6);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify a multi-item sphere overlay uses exact bounds plus max-radius wire padding.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_panel_bounds_overlay_sphere_multi_radius_bounds(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 200, 200, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzVisual* sphere = dvz_sphere(scene, 0);
+    ANN(sphere);
+    vec3 position[2] = {{-1.0f, +2.0f, 0.0f}, {+4.0f, -3.0f, +2.0f}};
+    DvzColor color[2] = {{255, 255, 255, 255}, {180, 220, 255, 255}};
+    float radius[2] = {0.5f, 1.25f};
+    AT(dvz_visual_set_data(sphere, "position", position, 2) == 0);
+    AT(dvz_visual_set_data(sphere, "color", color, 2) == 0);
+    AT(dvz_visual_set_data(sphere, "radius", radius, 2) == 0);
+    AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
+
+    DvzBounds bounds = {0};
+    AT(dvz_visual_bounds(sphere, &bounds) == 0);
+    AT(_scene_visuals_bounds_expect(&bounds, 3, -1.5, -4.25, -0.5, +5.25, +2.5, +3.25) == 0);
+
+    AT(dvz_panel_set_bounds_visible(panel, true) == 0);
+    _scene_prepare_bounds_visuals(figure);
+    ANN(panel->bounds_visual);
+
+    float min_extent[3] = {0};
+    float max_extent[3] = {0};
+    AT(_scene_visuals_overlay_extents(panel->bounds_visual, min_extent, max_extent));
+    const float pad = (sqrtf(3.0f) - 1.0f) * 1.25f;
+    AC(min_extent[0], -1.5f - pad, 1e-6);
+    AC(min_extent[1], -4.25f - pad, 1e-6);
+    AC(min_extent[2], -0.5f - pad, 1e-6);
+    AC(max_extent[0], +5.25f + pad, 1e-6);
+    AC(max_extent[1], +2.5f + pad, 1e-6);
+    AC(max_extent[2], +3.25f + pad, 1e-6);
 
     dvz_scene_destroy(scene);
     return 0;

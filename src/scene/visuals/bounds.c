@@ -245,6 +245,9 @@ static int _bounds_overlay_source_bounds(const DvzVisual* visual, DvzBounds* out
     ANN(out);
     if (dvz_visual_bounds(visual, out) != 0)
         return -1;
+    const DvzVisualFamilyOps* ops = _scene_visual_family_ops(visual->type);
+    if (ops != NULL && ops->expand_overlay_bounds != NULL)
+        ops->expand_overlay_bounds(visual, out);
     return 0;
 }
 
@@ -507,6 +510,24 @@ static bool _bounds_project_screen(
     DvzMVP mvp = {0};
     if (!_scene_panel_attachment_mvp(panel, attach->visual, attach, NULL, &mvp))
         return false;
+    if (attach->visual->has_local_transform)
+    {
+        mat4 local = GLM_MAT4_IDENTITY_INIT;
+        for (uint32_t col = 0; col < 4; col++)
+        {
+            for (uint32_t row = 0; row < 4; row++)
+                local[col][row] = attach->visual->local_transform[col][row];
+        }
+        const float det = glm_mat4_det(local);
+        if (fabsf(det) > FLT_EPSILON)
+        {
+            mat4 inv_local = GLM_MAT4_IDENTITY_INIT;
+            mat4 model = GLM_MAT4_IDENTITY_INIT;
+            glm_mat4_inv(local, inv_local);
+            glm_mat4_mul(mvp.model, inv_local, model);
+            glm_mat4_copy(model, mvp.model);
+        }
+    }
 
     for (uint32_t x = 0; x < 2; x++)
     {
@@ -811,6 +832,8 @@ static void _bounds_apply_visual_transform(const DvzVisual* visual, DvzBounds* b
     ANN(visual);
     ANN(bounds);
     if (!bounds->valid || !visual->has_local_transform)
+        return;
+    if (visual->type == DVZ_VISUAL_TYPE_SPHERE)
         return;
 
     DvzBounds transformed = {0};

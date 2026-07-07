@@ -339,6 +339,7 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .supports_depth_cue = true, .attrs = SPHERE_ATTRS,
      .attr_count = DVZ_ARRAY_COUNT(SPHERE_ATTRS),
      .expected_attrs = "position, color, radius, item_state",
+     .expand_overlay_bounds = _scene_sphere_visual_expand_overlay_bounds,
      .attr_alias_public = "radius", .attr_alias_storage = "size", .upload_position_topology = true,
      .upload_material_params = true},
     {VISUAL_OPS(
