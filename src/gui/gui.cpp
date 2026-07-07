@@ -318,10 +318,16 @@ static ImGuiID _gui_dock_node_for_slot(DvzGui* gui, DvzGuiDockSlot slot, float s
 
     if (gui->dockspace_main_id == 0)
     {
-        ImGui::DockBuilderRemoveNode(gui->dockspace_id);
-        ImGui::DockBuilderAddNode(
-            gui->dockspace_id,
-            ImGuiDockNodeFlags_DockSpace | ImGuiDockNodeFlags_PassthruCentralNode);
+        if (ImGui::DockBuilderGetNode(gui->dockspace_id) == NULL)
+        {
+            ImGui::DockBuilderAddNode(
+                gui->dockspace_id,
+                ImGuiDockNodeFlags_DockSpace | ImGuiDockNodeFlags_PassthruCentralNode);
+        }
+        else
+        {
+            ImGui::DockBuilderRemoveNodeChildNodes(gui->dockspace_id);
+        }
         ImGui::DockBuilderSetNodePos(gui->dockspace_id, viewport->Pos);
         ImGui::DockBuilderSetNodeSize(gui->dockspace_id, viewport->Size);
         gui->dockspace_main_id = gui->dockspace_id;
