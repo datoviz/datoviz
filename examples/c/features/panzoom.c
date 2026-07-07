@@ -30,7 +30,9 @@
 #include <stdint.h>
 
 #include "_assertions.h"
+#include "_alloc.h"
 #include "datoviz/scene.h"
+#include "example_controller_preview.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -53,6 +55,17 @@ DvzScenarioSpec dvz_example_panzoom_scenario(void);
 #define POINT_COUNT 64u
 
 static const float TAU = 6.28318530718f;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct PanzoomState
+{
+    DvzPanzoom* panzoom;
+} PanzoomState;
 
 
 
@@ -155,6 +168,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (out_user != NULL)
         *out_user = NULL;
 
+    PanzoomState* state = (PanzoomState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = state;
+
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
         return false;
@@ -178,8 +197,49 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (controller == NULL)
         return false;
     DvzPanzoom* panzoom = dvz_controller_panzoom(controller);
-    return panzoom != NULL &&
-           dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XY) == 0;
+    if (panzoom == NULL)
+        return false;
+    state->panzoom = panzoom;
+    return dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XY) == 0;
+}
+
+
+/**
+ * Apply deterministic preview motion for generated gallery media.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    if (ctx == NULL || !ctx->preview_mode || user == NULL)
+        return;
+
+    PanzoomState* state = (PanzoomState*)user;
+    ExamplePreviewPanzoomDesc desc = {
+        .base_pan = {0.0f, 0.0f},
+        .pan_amplitude = {-0.18f, +0.12f},
+        .base_zoom = {1.0f, 1.0f},
+        .zoom_amplitude = {0.55f, 0.55f},
+    };
+    example_preview_panzoom(
+        state->panzoom, ctx->preview_frame_index, ctx->preview_frame_count, &desc);
+}
+
+
+/**
+ * Destroy the panzoom attachment feature scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    PanzoomState* state = (PanzoomState*)user;
+    if (state == NULL)
+        return;
+    dvz_free(state);
 }
 
 
@@ -198,8 +258,10 @@ DvzScenarioSpec dvz_example_panzoom_scenario(void)
         .height = HEIGHT,
         .fps = 60.0,
         .requirements = DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER |
-                        DVZ_SCENARIO_REQ_PANZOOM,
+                        DVZ_SCENARIO_REQ_PANZOOM | DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
+        .frame = _scenario_frame,
+        .destroy = _scenario_destroy,
     };
 }
 

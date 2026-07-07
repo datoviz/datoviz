@@ -33,6 +33,7 @@
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
+#include "example_controller_preview.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -62,6 +63,8 @@ DvzScenarioSpec dvz_example_controller_turntable_scenario(void);
 typedef struct ControllerTurntableState
 {
     DvzGeometry* geometry;
+    DvzTurntable* turntable;
+    DvzCamera* camera;
 } ControllerTurntableState;
 
 
@@ -137,6 +140,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzCameraDesc camera = example_controller_camera_desc();
     if (dvz_panel_set_camera_desc(panel, &camera) != 0)
         return false;
+    state->camera = dvz_panel_camera(panel);
+    if (state->camera == NULL)
+        return false;
     DvzReferenceGridDesc grid = dvz_reference_grid_desc();
     grid.plane = DVZ_REFERENCE_GRID_XZ;
     grid.origin[1] = EXAMPLE_CONTROLLER_GRID_ORIGIN_Y;
@@ -173,9 +179,33 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzTurntable* turntable = dvz_controller_turntable(controller);
     if (turntable == NULL)
         return false;
+    state->turntable = turntable;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
     return true;
+}
+
+
+/**
+ * Apply deterministic preview motion for generated gallery media.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    if (ctx == NULL || !ctx->preview_mode || user == NULL)
+        return;
+
+    ControllerTurntableState* state = (ControllerTurntableState*)user;
+    ExamplePreviewTurntableDesc desc = {
+        .yaw_amplitude = +0.74f,
+        .pitch_amplitude = +0.20f,
+        .distance_delta = 0.0f,
+    };
+    (void)dvz_turntable_set_camera(state->turntable, state->camera);
+    example_preview_turntable(
+        state->turntable, ctx->preview_frame_index, ctx->preview_frame_count, &desc);
 }
 
 
@@ -212,8 +242,10 @@ DvzScenarioSpec dvz_example_controller_turntable_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
-        .requirements = DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER,
+        .requirements = DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER |
+                        DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
+        .frame = _scenario_frame,
         .destroy = _scenario_destroy,
     };
 }

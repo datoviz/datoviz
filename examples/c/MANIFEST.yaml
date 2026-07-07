@@ -636,6 +636,11 @@ examples:
     lane: features
     source: examples/c/features/controller_turntable.c
     validation: smoke+interaction+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 16
+        fps: 12
     data:
       kind: synthetic
     webgpu:
@@ -1558,6 +1563,11 @@ examples:
     lane: features
     source: examples/c/features/panzoom.c
     validation: smoke+interaction+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 16
+        fps: 12
     data:
       kind: synthetic
     webgpu:

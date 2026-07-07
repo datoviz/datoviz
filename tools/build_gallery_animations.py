@@ -22,6 +22,7 @@ DEFAULT_BUILD_EXAMPLES_DIR = ROOT / "build/examples/c"
 DEFAULT_SIZE = "1280x720"
 DEFAULT_FRAMES = 16
 DEFAULT_FPS = 12
+DEFAULT_QUALITY = 90
 
 
 @dataclass(frozen=True)
@@ -54,6 +55,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lane", action="append", default=[], help="gallery lane")
     parser.add_argument("--dry-run", action="store_true", help="list work without rendering frames")
     parser.add_argument("--keep-frames", action="store_true", help="keep temporary PNG frame sequences")
+    parser.add_argument("--quality", type=int, default=DEFAULT_QUALITY, help="lossy WebP quality")
     parser.add_argument("--force", action="store_true", help="accepted for parity with other media tools")
     return parser.parse_args()
 
@@ -148,7 +150,8 @@ def capture_frame(preview: AnimatedPreview, frame_dir: Path, frame: int) -> None
     subprocess.run(cmd, cwd=ROOT, env=env, check=True)
 
 
-def encode_webp(preview: AnimatedPreview, frame_dir: Path, output_path: Path) -> None:
+def encode_webp(
+    preview: AnimatedPreview, frame_dir: Path, output_path: Path, quality: int) -> None:
     img2webp = shutil.which("img2webp")
     if img2webp is None:
         raise RuntimeError("img2webp not found; install the WebP tools package")
@@ -160,7 +163,7 @@ def encode_webp(preview: AnimatedPreview, frame_dir: Path, output_path: Path) ->
         png = frame_path(frame_dir, frame)
         if not png.exists():
             raise FileNotFoundError(png)
-        cmd.extend(["-d", str(delay_ms), str(png)])
+        cmd.extend(["-d", str(delay_ms), "-lossy", "-q", str(quality), str(png)])
     cmd.extend(["-o", str(output_path)])
     subprocess.run(cmd, cwd=ROOT, check=True)
 
@@ -171,6 +174,7 @@ def generate_preview(
     output_root: Path,
     dry_run: bool,
     keep_frames: bool,
+    quality: int,
     force: bool,
 ) -> bool:
     frame_dir = frame_root / preview.lane / preview.id
@@ -190,7 +194,7 @@ def generate_preview(
         shutil.rmtree(frame_dir)
     for frame in range(preview.frames):
         capture_frame(preview, frame_dir, frame)
-    encode_webp(preview, frame_dir, output_path)
+    encode_webp(preview, frame_dir, output_path, quality)
     if not keep_frames:
         shutil.rmtree(frame_dir)
     print(f"animated webp: {preview.id} -> {rel_out}")
@@ -203,6 +207,8 @@ def main() -> int:
     lanes = split_values(args.lane)
     try:
         previews = collect_previews(args.manifest, args.build_examples_dir, ids, lanes)
+        if not 0 <= args.quality <= 100:
+            raise ValueError("--quality must be between 0 and 100")
         if not previews:
             print("No matching animated WebP previews.")
             return 1
@@ -215,6 +221,7 @@ def main() -> int:
                 args.output_dir,
                 args.dry_run,
                 args.keep_frames,
+                args.quality,
                 args.force,
             ):
                 generated += 1
