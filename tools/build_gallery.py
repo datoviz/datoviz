@@ -172,11 +172,9 @@ RUNTIME_PAGE_GROUPS = (
         "feature_app_glfw",
         "feature_multi_window",
     ]),
-    ("Capture & Export", [
+    ("Capture, Export & Replay", [
         "feature_offscreen_capture",
         "feature_video_export",
-    ]),
-    ("Recording & Replay", [
         "feature_record_replay",
     ]),
 )

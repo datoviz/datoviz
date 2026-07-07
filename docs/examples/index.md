@@ -772,7 +772,7 @@ This example drives two independent native GLFW windows from one Datoviz app.
 
 </div>
 
-### Capture & Export
+### Capture, Export & Replay
 
 <div class="grid cards" markdown="1">
 
@@ -799,12 +799,6 @@ This example renders a point scene offscreen and writes one PNG.
 This example records a bounded offscreen point animation to video.
 
 </div>
-
-</div>
-
-### Recording & Replay
-
-<div class="grid cards" markdown="1">
 
 <div class="card" markdown="1">
 
