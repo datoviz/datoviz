@@ -199,8 +199,8 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
 
     ControllerTurntableState* state = (ControllerTurntableState*)user;
     ExamplePreviewTurntableDesc desc = {
-        .yaw_amplitude = +0.30f,
-        .pitch_amplitude = +0.12f,
+        .yaw_amplitude = +0.14f,
+        .pitch_amplitude = +0.055f,
         .distance_delta = 0.0f,
     };
     (void)dvz_turntable_set_camera(state->turntable, state->camera);
