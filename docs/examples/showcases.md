@@ -84,6 +84,18 @@ This example combines a synthetic wind-speed field with vectors and streamlines.
 
 </div>
 
+<div class="card" markdown="1">
+
+### [GPU Particle Smoke](gallery/showcases/showcase_gpu_particle_smoke.md)
+
+[![GPU Particle Smoke](../assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp)](gallery/showcases/showcase_gpu_particle_smoke.md)
+
+`experimental` `showcases`<br><span>`compute`, `simulation`, `particles`, `point`, `alpha-blending`, ...</span>
+
+This example uses scene compute buffers to animate particle smoke.
+
+</div>
+
 </div>
 
 ## 3D
@@ -147,18 +159,6 @@ This example turns a generated height field into a lit mesh and wireframe.
 `showcases`<br><span>`real-data`, `mesh`, `sampled-field`, `texture`, `arcball`, ...</span>
 
 This example maps real planetary textures onto an indexed sphere mesh.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [GPU Particle Smoke](gallery/showcases/showcase_gpu_particle_smoke.md)
-
-[![GPU Particle Smoke](../assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp)](gallery/showcases/showcase_gpu_particle_smoke.md)
-
-`experimental` `showcases`<br><span>`compute`, `simulation`, `particles`, `point`, `alpha-blending`, ...</span>
-
-This example uses scene compute buffers to animate particle smoke.
 
 </div>
 

@@ -36,6 +36,7 @@ SHOWCASE_GROUPS = (
         "scalebar_measurement_workflow",
         "us_state_choropleth",
         "showcase_wind_field",
+        "showcase_gpu_particle_smoke",
     ]),
     ("3D", [
         "brain_volume",
@@ -43,7 +44,6 @@ SHOWCASE_GROUPS = (
         "point_cloud",
         "showcase_surface_grid",
         "textured_terrain_or_planet",
-        "showcase_gpu_particle_smoke",
     ]),
 )
 SHOWCASE_ORDER = tuple(id_ for _, ids in SHOWCASE_GROUPS for id_ in ids)
@@ -1166,7 +1166,17 @@ def render_index(
     lines.append('<div class="grid cards" markdown="1">')
     lines.append("")
     for example in showcase_examples:
-        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False))
+        lines.append(
+            render_card(
+                example,
+                page_path,
+                image_dir,
+                image_url_base,
+                image_format,
+                show_tags=False,
+                title_heading=False,
+            )
+        )
     lines.append("</div>")
     lines.extend(["", f"[Browse all {len(showcase_examples)} showcases](showcases.md).", ""])
 
@@ -1178,11 +1188,21 @@ def render_index(
         group_examples = [by_id[id_] for id_ in group_ids if id_ in by_id]
         if not group_examples:
             continue
-        lines.extend([f"#### {group_label}", ""])
+        lines.extend([f"### {group_label}", ""])
         lines.append('<div class="grid cards" markdown="1">')
         lines.append("")
         for example in group_examples:
-            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False))
+            lines.append(
+                render_card(
+                    example,
+                    page_path,
+                    image_dir,
+                    image_url_base,
+                    image_format,
+                    show_tags=False,
+                    title_heading=False,
+                )
+            )
         lines.append("</div>")
         lines.append("")
 
@@ -1196,11 +1216,21 @@ def render_index(
         group_examples = [by_id[id_] for id_ in group_ids if id_ in by_id]
         if not group_examples:
             continue
-        lines.extend([f"#### {group_label}", ""])
+        lines.extend([f"### {group_label}", ""])
         lines.append('<div class="grid cards" markdown="1">')
         lines.append("")
         for example in group_examples:
-            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False))
+            lines.append(
+                render_card(
+                    example,
+                    page_path,
+                    image_dir,
+                    image_url_base,
+                    image_format,
+                    show_tags=False,
+                    title_heading=False,
+                )
+            )
         lines.append("</div>")
         lines.append("")
     lines.extend(
@@ -1223,11 +1253,21 @@ def render_index(
         group_examples = [by_id[id_] for id_ in group_ids if id_ in by_id]
         if not group_examples:
             continue
-        lines.extend([f"#### {group_label}", ""])
+        lines.extend([f"### {group_label}", ""])
         lines.append('<div class="grid cards" markdown="1">')
         lines.append("")
         for example in group_examples:
-            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False))
+            lines.append(
+                render_card(
+                    example,
+                    page_path,
+                    image_dir,
+                    image_url_base,
+                    image_format,
+                    show_tags=False,
+                    title_heading=False,
+                )
+            )
         lines.append("</div>")
         lines.append("")
     lines.extend([f"[Browse all {len(runtime_examples)} runtime examples](runtime.md).", ""])
