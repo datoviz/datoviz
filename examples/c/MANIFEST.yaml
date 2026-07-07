@@ -455,6 +455,9 @@ examples:
     primary_feature: sampled-field-update
     lane: features
     source: examples/c/features/sampled_field_update.c
+    python:
+      source: examples/python/gallery/features/sampled_field_update.py
+      status: direct-engine
     validation: smoke+screenshot
     data:
       kind: synthetic

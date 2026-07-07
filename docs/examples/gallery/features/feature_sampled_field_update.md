@@ -38,12 +38,19 @@ Both panels sample the same R32_FLOAT field and the same moving highlighted patc
     --8<-- "examples/c/features/sampled_field_update.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/sampled_field_update.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_sampled_field_update`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/sampled_field_update.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_update.c)
+    - Python source: [`examples/python/gallery/features/sampled_field_update.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/sampled_field_update.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_sampled_field_update"><code>examples/webgpu/live.html?id=feature_sampled_field_update</code></a>
     - Browser capability tags: `sampled-field`, `image`, `frame-callbacks`, `colormap`
