@@ -174,7 +174,6 @@ or portable C scenario.
 - [Record and replay frame streams](record-replay.md)
 - [Debug rendering output](debug-rendering.md)
 - [WebGPU subset](../reference/webgpu-subset.md)
-- [Adding examples](../contributors/adding-examples.md)
 
 ??? example "Related examples"
 

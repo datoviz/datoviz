@@ -335,24 +335,11 @@ Current MkDocs navigation:
 
 ```text
 Advanced/
-  Architecture/
-    why-datoviz.md
-    scene-model.md
-    performance-model.md
-    portability-webgpu.md
   Runtime layers/
     reference/drp2/index.md
     advanced/vklite.md
     advanced/canvas.md
     advanced/webgpu-renderer.md
-  Contributors/
-    contributors/build-and-test.md
-    contributors/coding-style.md
-    contributors/adding-examples.md
-    contributors/adding-a-visual.md
-    contributors/docs-authoring.md
-    contributors/ai-agents.md
-    contributors/agent-quickstart.md
   Release maintainers/
     releases/index.md
     releases/v0.4.0rc1.md
@@ -364,25 +351,20 @@ Advanced/
 
 Explanation pages should answer why the system is shaped as it is. They should be explicit about
 boundaries so contributors and coding agents do not create parallel renderers, presentation layers,
-or runtime contracts.
+or runtime contracts. The retained explanation pages that are intentionally reachable by link but
+omitted from navigation are listed in `mkdocs.yml` `not_in_nav`; consolidate or delete them in a
+dedicated explanation cleanup pass.
 
 
 ## Contributors
 
 Purpose: document how humans and agents change Datoviz safely.
 
-Current MkDocs navigation exposes contributor pages under `Advanced`, not as a top-level public tab:
+Current MkDocs navigation exposes release-maintainer pages under `Advanced`, not a general
+contributor section:
 
 ```text
 Advanced/
-  Contributors/
-    build-and-test.md
-    coding-style.md
-    adding-examples.md
-    adding-a-visual.md
-    docs-authoring.md
-    ai-agents.md
-    agent-quickstart.md
   Release maintainers/
     release-process.md
     release-flight-checklist.md

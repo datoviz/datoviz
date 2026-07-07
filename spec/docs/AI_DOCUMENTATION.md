@@ -320,21 +320,22 @@ clear source-of-truth boundaries:
 
 ## AI-Relevant Pages
 
-The current MkDocs navigation includes these AI-relevant and agent-oriented pages:
+The current MkDocs navigation includes these AI-relevant user-facing pages:
 
 ```text
-contributors/ai-agents.md
-contributors/agent-quickstart.md
-contributors/docs-authoring.md
-contributors/adding-examples.md
-contributors/example-selection-by-capability.md
+ai-agents.md
+start/ai-workflow.md
 start/choose-your-layer.md
 reference/feature-status.md
 reference/objects-and-lifetimes.md
 ```
 
-`contributors/ai-agents.md` should be concise and operational. It should explain how to gather
-context, choose the right examples, avoid known anti-patterns, and validate changes.
+`ai-agents.md` should be concise and operational. It should explain how to gather context, choose
+the right examples, avoid known anti-patterns, and validate generated code.
+
+Repository contributor procedures belong in `AGENTS.md`, `agents/rules/`, active `agents/now/`
+handoffs, and durable `spec/` policy. Do not publish duplicate contributor quickstarts in `docs/`
+unless they are intentionally part of the public navigation.
 
 The planned user-facing AI support pack should add an `ai/` section to the public navigation when
 the C examples, Python binding docs, and feature/status pages are ready enough to link from it. Until

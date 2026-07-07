@@ -225,6 +225,7 @@ not_in_nav: |
   guide/*
   tasks/*
   visuals/*
+  examples/webgpu-matrix.md
   start/first-c-program.md
   start/what-is-datoviz.md
   how-to/capture-an-image.md
@@ -237,6 +238,10 @@ not_in_nav: |
   reference/api_c.md
   explanation/index.md
   explanation/architecture.md
+  explanation/performance-model.md
+  explanation/portability-webgpu.md
+  explanation/scene-model.md
+  explanation/why-datoviz.md
   explanation/figure-panel-visual-model.md
   explanation/coordinate-systems.md
   explanation/interaction-model.md
