@@ -66,9 +66,45 @@ def fake_facade(monkeypatch):
             ('item_count', ctypes.c_uint32),
         ]
 
+    class DvzSampledFieldDesc(ctypes.Structure):
+        _fields_ = [
+            ('struct_size', ctypes.c_uint32),
+            ('flags', ctypes.c_uint32),
+            ('dim', ctypes.c_int),
+            ('format', ctypes.c_int),
+            ('semantic', ctypes.c_int),
+            ('color_role', ctypes.c_int),
+            ('width', ctypes.c_uint32),
+            ('height', ctypes.c_uint32),
+            ('depth', ctypes.c_uint32),
+        ]
+
+    class DvzFieldDataView(ctypes.Structure):
+        _fields_ = [
+            ('struct_size', ctypes.c_uint32),
+            ('flags', ctypes.c_uint32),
+            ('data', ctypes.c_void_p),
+            ('bytes_per_row', ctypes.c_uint64),
+            ('rows_per_image', ctypes.c_uint64),
+        ]
+
     raw.DvzAxisTicks = DvzAxisTicks
     raw.DvzColorbarTicks = DvzColorbarTicks
     raw.DvzVisualDataUpdate = DvzVisualDataUpdate
+    raw.DvzSampledFieldDesc = DvzSampledFieldDesc
+    raw.DvzFieldDataView = DvzFieldDataView
+    raw.DVZ_FIELD_DIM_2D = 0
+    raw.DVZ_FIELD_DIM_3D = 1
+    raw.DVZ_FIELD_FORMAT_R8_UNORM = 0
+    raw.DVZ_FIELD_FORMAT_R32_UINT = 9
+    raw.DVZ_FIELD_FORMAT_R32_FLOAT = 11
+    raw.DVZ_FIELD_FORMAT_RGBA8_UNORM = 22
+    raw.DVZ_FIELD_SEMANTIC_SCALAR = 1
+    raw.DVZ_FIELD_SEMANTIC_COLOR = 4
+    raw.DVZ_FIELD_SEMANTIC_LABEL = 5
+    raw.DVZ_COLOR_ROLE_NONE = 0
+    raw.DVZ_COLOR_ROLE_SRGB_COLOR = 1
+    raw.DVZ_COLOR_ROLE_DATA = 3
     raw.dvz_axis_set_ticks = _raw_function(
         [ctypes.c_void_p, ctypes.POINTER(DvzAxisTicks)], ctypes.c_bool
     )
@@ -130,6 +166,34 @@ def fake_facade(monkeypatch):
             ctypes.c_size_t,
         ]
     )
+
+    def sampled_field_desc():
+        desc = DvzSampledFieldDesc()
+        desc.struct_size = ctypes.sizeof(DvzSampledFieldDesc)
+        return desc
+
+    def field_data_view():
+        view = DvzFieldDataView()
+        view.struct_size = ctypes.sizeof(DvzFieldDataView)
+        return view
+
+    raw.dvz_sampled_field_desc = sampled_field_desc
+    raw.dvz_field_data_view = field_data_view
+    raw.dvz_sampled_field = _raw_function(
+        [ctypes.c_void_p, ctypes.POINTER(DvzSampledFieldDesc)],
+        ctypes.c_void_p,
+    )
+    sampled_field_set_data_calls = []
+
+    def sampled_field_set_data(field, view):
+        sampled_field_set_data_calls.append((field, view))
+        return 0
+
+    sampled_field_set_data.argtypes = [ctypes.c_void_p, ctypes.POINTER(DvzFieldDataView)]
+    sampled_field_set_data.restype = ctypes.c_int
+    sampled_field_set_data.__doc__ = 'sampled field set data'
+    sampled_field_set_data.calls = sampled_field_set_data_calls
+    raw.dvz_sampled_field_set_data = sampled_field_set_data
     raw.__all__ = [
         name for name in vars(raw) if name.startswith(('dvz_', 'Dvz', 'DVZ_'))
     ]
@@ -489,6 +553,75 @@ def test_view_capture_rgba_raises_on_capture_failure(fake_facade):
 
     with pytest.raises(RuntimeError, match='code -7'):
         facade.dvz_view_capture_rgba(ctypes.c_void_p(13))
+
+
+def test_sampled_field_from_rgba_array_infers_desc_and_upload_view(fake_facade):
+    raw, facade = fake_facade
+    rgba = np.arange(3 * 4 * 4, dtype=np.uint8).reshape(3, 4, 4)
+
+    assert facade.dvz_sampled_field_from_array(ctypes.c_void_p(21), rgba) == 17
+
+    scene, desc_ptr = raw.dvz_sampled_field.calls[-1]
+    desc = desc_ptr._obj
+    assert scene.value == 21
+    assert desc.dim == raw.DVZ_FIELD_DIM_2D
+    assert desc.format == raw.DVZ_FIELD_FORMAT_RGBA8_UNORM
+    assert desc.semantic == raw.DVZ_FIELD_SEMANTIC_COLOR
+    assert desc.color_role == raw.DVZ_COLOR_ROLE_SRGB_COLOR
+    assert (desc.width, desc.height, desc.depth) == (4, 3, 1)
+
+    field, view_ptr = raw.dvz_sampled_field_set_data.calls[-1]
+    view = view_ptr._obj
+    assert field == 17
+    assert view.data == rgba.ctypes.data
+    assert view.bytes_per_row == rgba.strides[0]
+    assert view.rows_per_image == 0
+
+
+def test_sampled_field_from_scalar_3d_array_uses_volume_layout(fake_facade):
+    raw, facade = fake_facade
+    volume = np.zeros((5, 3, 4), dtype=np.float32)
+
+    facade.dvz_sampled_field_from_array(ctypes.c_void_p(22), volume)
+
+    _, desc_ptr = raw.dvz_sampled_field.calls[-1]
+    desc = desc_ptr._obj
+    assert desc.dim == raw.DVZ_FIELD_DIM_3D
+    assert desc.format == raw.DVZ_FIELD_FORMAT_R32_FLOAT
+    assert desc.semantic == raw.DVZ_FIELD_SEMANTIC_SCALAR
+    assert desc.color_role == raw.DVZ_COLOR_ROLE_DATA
+    assert (desc.width, desc.height, desc.depth) == (4, 3, 5)
+
+    _, view_ptr = raw.dvz_sampled_field_set_data.calls[-1]
+    view = view_ptr._obj
+    assert view.bytes_per_row == volume.strides[1]
+    assert view.rows_per_image == 3
+
+
+def test_sampled_field_from_non_contiguous_array_copies_before_upload(fake_facade):
+    raw, facade = fake_facade
+    data = np.arange(24, dtype=np.float32).reshape(3, 8)[:, ::2]
+
+    facade.dvz_sampled_field_from_array(ctypes.c_void_p(23), data)
+
+    _, desc_ptr = raw.dvz_sampled_field.calls[-1]
+    desc = desc_ptr._obj
+    assert (desc.width, desc.height, desc.depth) == (4, 3, 1)
+
+    _, view_ptr = raw.dvz_sampled_field_set_data.calls[-1]
+    view = view_ptr._obj
+    assert view.data != data.ctypes.data
+    uploaded = np.ctypeslib.as_array((ctypes.c_float * data.size).from_address(view.data))
+    np.testing.assert_array_equal(uploaded.reshape(data.shape), np.ascontiguousarray(data))
+
+
+def test_sampled_field_rejects_unsupported_shape_without_raw_call(fake_facade):
+    raw, facade = fake_facade
+
+    with pytest.raises(ValueError, match='unsupported sampled-field dtype/shape'):
+        facade.dvz_sampled_field_from_array(ctypes.c_void_p(24), np.zeros((3, 4), np.float64))
+
+    assert raw.dvz_sampled_field.calls == []
 
 
 def test_top_level_datoviz_resolves_facade_lazily(fake_facade):

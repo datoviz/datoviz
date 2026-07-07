@@ -243,6 +243,133 @@ def dvz_view_capture_rgba(view):
     return rgba
 
 
+def _sampled_field_layout(array, field_format, semantic, color_role, dim):
+    if array.ndim == 2:
+        inferred_dim = _raw.DVZ_FIELD_DIM_2D
+        height, width = array.shape
+        depth = 1
+        channels = 1
+        bytes_per_row = array.strides[0]
+        rows_per_image = 0
+    elif (
+        array.ndim == 3
+        and array.shape[2] in (1, 2, 4)
+        and array.dtype == np.uint8
+        and (dim in (None, _raw.DVZ_FIELD_DIM_2D))
+    ):
+        inferred_dim = _raw.DVZ_FIELD_DIM_2D
+        height, width, channels = array.shape
+        depth = 1
+        bytes_per_row = array.strides[0]
+        rows_per_image = 0
+    elif array.ndim == 3:
+        inferred_dim = _raw.DVZ_FIELD_DIM_3D
+        depth, height, width = array.shape
+        channels = 1
+        bytes_per_row = array.strides[1]
+        rows_per_image = height
+    else:
+        raise ValueError(
+            'array must have shape (height, width), (height, width, channels), '
+            'or (depth, height, width)'
+        )
+
+    if dim is not None and dim != inferred_dim:
+        raise ValueError('dim override is incompatible with array shape')
+    if width <= 0 or height <= 0 or depth <= 0:
+        raise ValueError('array dimensions must be non-empty')
+
+    if field_format is None:
+        if channels == 4 and array.dtype == np.uint8:
+            field_format = _raw.DVZ_FIELD_FORMAT_RGBA8_UNORM
+        elif channels == 1 and array.dtype == np.uint8:
+            field_format = _raw.DVZ_FIELD_FORMAT_R8_UNORM
+        elif channels == 1 and array.dtype == np.uint32:
+            field_format = _raw.DVZ_FIELD_FORMAT_R32_UINT
+        elif channels == 1 and array.dtype == np.float32:
+            field_format = _raw.DVZ_FIELD_FORMAT_R32_FLOAT
+        else:
+            raise ValueError(
+                f'unsupported sampled-field dtype/shape: {array.dtype}, {array.shape}; '
+                'pass format=... for an explicit field format'
+            )
+
+    if semantic is None:
+        if field_format == _raw.DVZ_FIELD_FORMAT_RGBA8_UNORM:
+            semantic = _raw.DVZ_FIELD_SEMANTIC_COLOR
+        elif field_format == _raw.DVZ_FIELD_FORMAT_R32_UINT:
+            semantic = _raw.DVZ_FIELD_SEMANTIC_LABEL
+        else:
+            semantic = _raw.DVZ_FIELD_SEMANTIC_SCALAR
+
+    if color_role is None:
+        if semantic == _raw.DVZ_FIELD_SEMANTIC_COLOR:
+            color_role = _raw.DVZ_COLOR_ROLE_SRGB_COLOR
+        elif semantic == _raw.DVZ_FIELD_SEMANTIC_SCALAR:
+            color_role = _raw.DVZ_COLOR_ROLE_DATA
+        else:
+            color_role = _raw.DVZ_COLOR_ROLE_NONE
+
+    return {
+        'dim': inferred_dim,
+        'format': field_format,
+        'semantic': semantic,
+        'color_role': color_role,
+        'width': int(width),
+        'height': int(height),
+        'depth': int(depth),
+        'bytes_per_row': int(bytes_per_row),
+        'rows_per_image': int(rows_per_image),
+    }
+
+
+def dvz_sampled_field_from_array(
+    scene,
+    array,
+    *,
+    format=None,
+    semantic=None,
+    color_role=None,
+    dim=None,
+):
+    """Create a scene-owned sampled field and upload a NumPy-compatible array.
+
+    Supported inferred inputs are RGBA8 2D arrays shaped ``(height, width, 4)``,
+    scalar 2D arrays shaped ``(height, width)``, and scalar 3D arrays shaped
+    ``(depth, height, width)``. The payload is copied by Datoviz before return.
+    """
+    data = np.asarray(array)
+    if data.ndim == 0:
+        raise ValueError('array must be at least two-dimensional')
+    if not data.flags.c_contiguous:
+        data = np.ascontiguousarray(data)
+
+    layout = _sampled_field_layout(data, format, semantic, color_role, dim)
+
+    desc = _raw.dvz_sampled_field_desc()
+    desc.dim = layout['dim']
+    desc.format = layout['format']
+    desc.semantic = layout['semantic']
+    desc.color_role = layout['color_role']
+    desc.width = layout['width']
+    desc.height = layout['height']
+    desc.depth = layout['depth']
+
+    field = _raw.dvz_sampled_field(scene, ctypes.byref(desc))
+    if not field:
+        raise RuntimeError('dvz_sampled_field() failed')
+
+    view = _raw.dvz_field_data_view()
+    view.data = ctypes.c_void_p(data.ctypes.data)
+    view.bytes_per_row = layout['bytes_per_row']
+    view.rows_per_image = layout['rows_per_image']
+
+    rc = _raw.dvz_sampled_field_set_data(field, ctypes.byref(view))
+    if rc != 0:
+        raise RuntimeError(f'dvz_sampled_field_set_data() failed with code {rc}')
+    return field
+
+
 '''
 
 
