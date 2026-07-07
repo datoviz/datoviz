@@ -30,12 +30,14 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/fileio.h"
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "example_tuner.h"
 #include "runner/scenario_runner.h"
 
 
@@ -50,6 +52,20 @@ DvzScenarioSpec dvz_example_obj_loading_scenario(void);
 #define WIDTH  EXAMPLE_WINDOW_WIDTH
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define OBJ_PATH "feature_obj_loading_tmp.obj"
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct ObjLoadingState
+{
+    DvzVisual* visual;
+    DvzMaterialDesc material;
+    DvzArcball* arcball;
+    ExampleTuner tuner;
+} ObjLoadingState;
 
 
 
@@ -175,9 +191,16 @@ static bool _write_obj_fixture(void)
  * @param scene scene owning the visual
  * @param panel target panel
  * @param geometry geometry to upload
+ * @param material material descriptor
+ * @param out_visual optional output visual pointer
  * @return true when the mesh was added
  */
-static bool _add_obj_mesh(DvzScene* scene, DvzPanel* panel, DvzGeometry* geometry)
+static bool _add_obj_mesh(
+    DvzScene* scene,
+    DvzPanel* panel,
+    DvzGeometry* geometry,
+    DvzMaterialDesc* material,
+    DvzVisual** out_visual)
 {
     ANN(scene);
     ANN(panel);
@@ -190,10 +213,11 @@ static bool _add_obj_mesh(DvzScene* scene, DvzPanel* panel, DvzGeometry* geometr
         dvz_geometry_destroy(geometry);
         return false;
     }
-    DvzMaterialDesc material = example_default_phong_material_desc();
-    const bool ok = dvz_visual_set_material(mesh, &material) == 0 &&
+    const bool ok = dvz_visual_set_material(mesh, material) == 0 &&
                     dvz_mesh_set_geometry(mesh, geometry) == 0 &&
                     dvz_panel_add_visual(panel, mesh, NULL) == 0;
+    if (ok && out_visual != NULL)
+        *out_visual = mesh;
     dvz_geometry_destroy(geometry);
     return ok;
 }
@@ -217,6 +241,14 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (out_user != NULL)
         *out_user = NULL;
+
+    ObjLoadingState* state = (ObjLoadingState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = state;
+    state->tuner = example_tuner("OBJ loading settings");
+    state->material = example_default_phong_material_desc();
 
     if (!_write_obj_fixture())
         return false;
@@ -243,12 +275,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     }
     example_graphite_cyan_set_panel_background(panel);
 
-    if (example_set_default_3d_camera(panel, 1.0f) == NULL)
+    DvzCameraDesc camera = example_default_3d_camera_desc(1.0f);
+    if (dvz_panel_set_camera_desc(panel, &camera) != 0)
     {
         dvz_geometry_destroy(geometry);
         return false;
     }
-    if (!_add_obj_mesh(ctx->scene, panel, geometry))
+    if (!_add_obj_mesh(ctx->scene, panel, geometry, &state->material, &state->visual))
         return false;
 
     DvzController* controller = dvz_arcball(ctx->scene, NULL);
@@ -260,7 +293,38 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
     dvz_arcball_set(arcball, (vec3){0.0f, 0.0f, 0.0f});
+    state->arcball = arcball;
+
+    vec3 arcball_angles = {0.0f, 0.0f, 0.0f};
+    vec2 arcball_pan = {0.0f, 0.0f};
+    example_tuner_camera(&state->tuner, "Camera", panel, &camera);
+    example_tuner_arcball(
+        &state->tuner, "Arcball", state->arcball, arcball_angles, 1.0f, arcball_pan);
+    example_tuner_material(&state->tuner, "Material", state->visual, &state->material);
     return true;
+}
+
+
+static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    (void)app;
+    ObjLoadingState* state = (ObjLoadingState*)user;
+    if (
+        ctx == NULL || ctx->presentation != DVZ_RUNNER_PRESENT_GLFW || state == NULL ||
+        view == NULL)
+        return true;
+
+    return example_tuner_attach(&state->tuner, view);
+}
+
+
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    ObjLoadingState* state = (ObjLoadingState*)user;
+    if (state != NULL)
+        example_tuner_detach(&state->tuner);
+    dvz_free(state);
 }
 
 
@@ -281,6 +345,7 @@ DvzScenarioSpec dvz_example_obj_loading_scenario(void)
         .requirements =
             DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_ARCBALL,
         .init = _scenario_init,
+        .destroy = _scenario_destroy,
     };
 }
 
@@ -301,6 +366,8 @@ DvzScenarioSpec dvz_example_obj_loading_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = dvz_example_obj_loading_scenario();
+    if (example_cli_wants_live_gui(argc, argv))
+        spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
 #endif
