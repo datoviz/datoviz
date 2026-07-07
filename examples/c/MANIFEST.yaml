@@ -1561,6 +1561,9 @@ examples:
     primary_feature: panel-background
     lane: features
     source: examples/c/features/panel_background.c
+    python:
+      source: examples/python/gallery/features/panel_background.py
+      status: direct-engine
     validation: smoke+screenshot
     data:
       kind: synthetic

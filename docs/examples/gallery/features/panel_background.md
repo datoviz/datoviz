@@ -38,12 +38,19 @@ The panel rectangle is explicitly inset inside the figure and receives a linear-
     --8<-- "examples/c/features/panel_background.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/panel_background.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `panel_background`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/panel_background.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_background.c)
+    - Python source: [`examples/python/gallery/features/panel_background.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_background.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=panel_background"><code>examples/webgpu/live.html?id=panel_background</code></a>
     - Browser capability tags: `panel-background`, `primitive`
