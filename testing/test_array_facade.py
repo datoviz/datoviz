@@ -112,6 +112,10 @@ def fake_facade(monkeypatch):
     raw.dvz_text_set_angles = _raw_function(
         [ctypes.c_void_p, ctypes.POINTER(ctypes.c_float), ctypes.c_uint32]
     )
+    raw.dvz_view_window = _raw_function(
+        [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_char_p],
+        ctypes.c_void_p,
+    )
     raw.dvz_view_canvas = _raw_function([ctypes.c_void_p], ctypes.c_void_p)
     raw.dvz_view_framebuffer_size = _raw_function(
         [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)],
@@ -176,6 +180,19 @@ def test_visual_set_data_encodes_string_and_infers_shape0(fake_facade):
     assert attr_name == b'position'
     assert pointer.value == data.ctypes.data
     assert item_count == 3
+
+
+def test_view_window_encodes_title(fake_facade):
+    raw, facade = fake_facade
+
+    assert facade.dvz_view_window(ctypes.c_void_p(1), ctypes.c_void_p(2), 320, 240, 'Datoviz') == 17
+
+    app, figure, width, height, title = raw.dvz_view_window.calls[-1]
+    assert app.value == 1
+    assert figure.value == 2
+    assert width == 320
+    assert height == 240
+    assert title == b'Datoviz'
 
 
 def test_visual_set_data_range_infers_count_after_first_item(fake_facade):

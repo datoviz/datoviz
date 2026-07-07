@@ -353,6 +353,17 @@ dvz_text_set_sizes.argtypes = getattr(_raw.dvz_text_set_sizes, "argtypes", None)
 dvz_text_set_sizes.restype = getattr(_raw.dvz_text_set_sizes, "restype", None)
 
 
+def dvz_view_window(app, figure, width, height, title):
+    _title_bytes = _encode_string(title, 'title')
+    _keepalive = (_title_bytes,)
+    return _raw.dvz_view_window(app, figure, width, height, _title_bytes)
+
+
+dvz_view_window.__doc__ = getattr(_raw.dvz_view_window, "__doc__", None)
+dvz_view_window.argtypes = getattr(_raw.dvz_view_window, "argtypes", None)
+dvz_view_window.restype = getattr(_raw.dvz_view_window, "restype", None)
+
+
 def dvz_visual_set_data(visual, attr_name, data, item_count=None):
     _attr_name_bytes = _encode_string(attr_name, 'attr_name')
     _data_ptr, _data_array = _array_arg(data, 'data', _raw.dvz_visual_set_data, 2, None)
@@ -409,7 +420,7 @@ dvz_visual_set_index_data.argtypes = getattr(_raw.dvz_visual_set_index_data, "ar
 dvz_visual_set_index_data.restype = getattr(_raw.dvz_visual_set_index_data, "restype", None)
 
 
-_ARRAY_FACADE_FUNCTIONS = ['dvz_axis_set_ticks', 'dvz_colorbar_set_ticks', 'dvz_scene_buffer_set_data', 'dvz_text_set_anchors', 'dvz_text_set_angles', 'dvz_text_set_colors', 'dvz_text_set_items', 'dvz_text_set_offsets', 'dvz_text_set_positions', 'dvz_text_set_sizes', 'dvz_visual_set_data', 'dvz_visual_set_data_many', 'dvz_visual_set_data_range', 'dvz_visual_set_index_data']
+_ARRAY_FACADE_FUNCTIONS = ['dvz_axis_set_ticks', 'dvz_colorbar_set_ticks', 'dvz_scene_buffer_set_data', 'dvz_text_set_anchors', 'dvz_text_set_angles', 'dvz_text_set_colors', 'dvz_text_set_items', 'dvz_text_set_offsets', 'dvz_text_set_positions', 'dvz_text_set_sizes', 'dvz_view_window', 'dvz_visual_set_data', 'dvz_visual_set_data_many', 'dvz_visual_set_data_range', 'dvz_visual_set_index_data']
 
 for _name in getattr(_raw, "__all__", dir(_raw)):
     if _name not in globals():

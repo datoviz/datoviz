@@ -181,6 +181,10 @@ array_facade:
   dvz_colorbar_set_ticks:
     special: colorbar_ticks
 
+  dvz_view_window:
+    strings:
+      - title
+
   dvz_text_set_items:
     groups:
       - pointer_arg: items
