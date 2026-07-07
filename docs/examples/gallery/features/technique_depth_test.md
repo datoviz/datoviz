@@ -38,12 +38,19 @@ Both panels upload the same eight large point sprites at the corners of a small 
     --8<-- "examples/c/features/technique_depth_test.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/technique_depth_test.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `technique_depth_test`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/technique_depth_test.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_depth_test.c)
+    - Python source: [`examples/python/gallery/features/technique_depth_test.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/technique_depth_test.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=technique_depth_test"><code>examples/webgpu/live.html?id=technique_depth_test</code></a>
     - Browser capability tags: `depth-test`, `point`, `controller`

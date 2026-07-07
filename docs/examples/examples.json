@@ -2863,7 +2863,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=technique_depth_test",
       "webgpu_site_route": "/examples/webgpu/live.html?id=technique_depth_test",
-      "primary_feature": "depth-test"
+      "primary_feature": "depth-test",
+      "python_source": "examples/python/gallery/features/technique_depth_test.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/technique_depth_test.py",
+      "python_status": "direct-engine"
     },
     {
       "id": "alpha_blending",

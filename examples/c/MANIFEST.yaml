@@ -1545,6 +1545,9 @@ examples:
     primary_feature: depth-test
     lane: features
     source: examples/c/features/technique_depth_test.c
+    python:
+      source: examples/python/gallery/features/technique_depth_test.py
+      status: direct-engine
     validation: smoke+screenshot
     data:
       kind: synthetic
