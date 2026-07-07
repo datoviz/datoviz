@@ -80,6 +80,37 @@ CPU-only paths, Vulkan validation layers, and representative live smoke loops su
 and fall back to focused tests.
 
 
+## Gallery Media
+
+Static gallery screenshots are captured as PNGs under `data/gallery/v0.4/` and converted to
+build-local WebP derivatives under `build/gallery-webp/v0.4/`. Do not stage or commit `data`
+submodule media or generated WebP files unless the user explicitly approves those exact payloads in
+the current turn.
+
+Animated gallery previews use manifest metadata:
+
+```yaml
+media:
+  preview:
+    kind: animated-webp
+    frames: 24
+    fps: 12
+```
+
+Generate selected previews with:
+
+```sh
+python3 tools/build_gallery_animations.py --id <example_id> --force
+```
+
+The animation tool captures each frame by launching the example once with `--preview`,
+`--preview-frame N`, `--preview-frames M`, and `--png`, then encodes the PNG sequence with
+`img2webp`. For animated examples whose motion depends on elapsed simulation state rather than a
+controller preview descriptor, add an explicit preview-mode path that derives deterministic state
+from `ctx->preview_frame_index` and `ctx->preview_frame_count`; otherwise every captured frame may
+start from the same initial state and produce a static animated WebP.
+
+
 ## CMake Pattern
 
 Modules build as object libraries. New modules should follow the existing pattern:
