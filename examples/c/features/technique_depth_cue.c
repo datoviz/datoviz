@@ -31,10 +31,10 @@
 #include <stdio.h>
 
 #include "_alloc.h"
-#include "datoviz/gui.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "example_tuner.h"
 #include "runner/scenario_runner.h"
 
 
@@ -61,14 +61,9 @@ typedef struct DepthCueDemoState
 {
     DvzVisual* cued_sphere;
     bool enabled;
-    int mode;
-    int metric;
-    int falloff;
-    float near_depth;
-    float far_depth;
-    float strength;
-    float density;
-    float background_color[4];
+    DvzDepthCueDesc cue;
+    DvzArcball* arcball;
+    ExampleTuner tuner;
 } DepthCueDemoState;
 
 
@@ -83,17 +78,18 @@ static void _reset_depth_cue_controls(DepthCueDemoState* state)
         return;
 
     state->enabled = true;
-    state->mode = 0;
-    state->metric = 1;
-    state->falloff = 0;
-    state->near_depth = 3.80f;
-    state->far_depth = 5.80f;
-    state->strength = 1.0f;
-    state->density = 0.45f;
-    state->background_color[0] = 0.035f;
-    state->background_color[1] = 0.047f;
-    state->background_color[2] = 0.067f;
-    state->background_color[3] = 1.0f;
+    state->cue = dvz_depth_cue_desc();
+    state->cue.mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND;
+    state->cue.metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE;
+    state->cue.falloff = DVZ_DEPTH_CUE_FALLOFF_LINEAR;
+    state->cue.near_depth = 3.80f;
+    state->cue.far_depth = 5.80f;
+    state->cue.strength = 1.0f;
+    state->cue.density = 0.45f;
+    state->cue.background_color[0] = 0.035f;
+    state->cue.background_color[1] = 0.047f;
+    state->cue.background_color[2] = 0.067f;
+    state->cue.background_color[3] = 1.0f;
 }
 
 
@@ -103,19 +99,7 @@ static DvzDepthCueDesc _depth_cue_desc_from_controls(const DepthCueDemoState* st
     DvzDepthCueDesc cue = dvz_depth_cue_desc();
     if (state == NULL)
         return cue;
-
-    cue.mode = (DvzDepthCueMode)(state->mode + 1);
-    cue.metric = (DvzDepthCueMetric)state->metric;
-    cue.falloff = (DvzDepthCueFalloff)state->falloff;
-    cue.near_depth = state->near_depth;
-    cue.far_depth = state->far_depth;
-    cue.strength = state->strength;
-    cue.density = state->density;
-    cue.background_color[0] = state->background_color[0];
-    cue.background_color[1] = state->background_color[1];
-    cue.background_color[2] = state->background_color[2];
-    cue.background_color[3] = state->background_color[3];
-    return cue;
+    return state->cue;
 }
 
 
@@ -131,40 +115,18 @@ static void _apply_depth_cue(DepthCueDemoState* state)
         return;
     }
 
-    if (state->near_depth < CUE_DISTANCE_MIN)
-        state->near_depth = CUE_DISTANCE_MIN;
-    if (state->near_depth > CUE_DISTANCE_MAX - CUE_DISTANCE_EPS)
-        state->near_depth = CUE_DISTANCE_MAX - CUE_DISTANCE_EPS;
-    if (state->far_depth > CUE_DISTANCE_MAX)
-        state->far_depth = CUE_DISTANCE_MAX;
-    if (state->far_depth <= state->near_depth + CUE_DISTANCE_EPS)
-        state->far_depth = state->near_depth + CUE_DISTANCE_EPS;
+    if (state->cue.near_depth < CUE_DISTANCE_MIN)
+        state->cue.near_depth = CUE_DISTANCE_MIN;
+    if (state->cue.near_depth > CUE_DISTANCE_MAX - CUE_DISTANCE_EPS)
+        state->cue.near_depth = CUE_DISTANCE_MAX - CUE_DISTANCE_EPS;
+    if (state->cue.far_depth > CUE_DISTANCE_MAX)
+        state->cue.far_depth = CUE_DISTANCE_MAX;
+    if (state->cue.far_depth <= state->cue.near_depth + CUE_DISTANCE_EPS)
+        state->cue.far_depth = state->cue.near_depth + CUE_DISTANCE_EPS;
 
     DvzDepthCueDesc cue = _depth_cue_desc_from_controls(state);
     if (dvz_visual_set_depth_cue(state->cued_sphere, &cue) != 0)
         dvz_fprintf(stderr, "technique_depth_cue: dvz_visual_set_depth_cue() failed\n");
-}
-
-
-
-static void _print_settings(const DepthCueDemoState* state)
-{
-    if (state == NULL)
-        return;
-
-    dvz_fprintf(stderr, "technique_depth_cue settings:\n");
-    dvz_fprintf(stderr, "enabled = %s;\n", state->enabled ? "true" : "false");
-    dvz_fprintf(stderr, "cue.mode = %d;\n", state->mode + 1);
-    dvz_fprintf(stderr, "cue.metric = %d;\n", state->metric);
-    dvz_fprintf(stderr, "cue.falloff = %d;\n", state->falloff);
-    dvz_fprintf(stderr, "cue.near_depth = %.6ff;\n", state->near_depth);
-    dvz_fprintf(stderr, "cue.far_depth = %.6ff;\n", state->far_depth);
-    dvz_fprintf(stderr, "cue.strength = %.6ff;\n", state->strength);
-    dvz_fprintf(stderr, "cue.density = %.6ff;\n", state->density);
-    dvz_fprintf(
-        stderr, "cue.background_color = {%.6ff, %.6ff, %.6ff, %.6ff};\n",
-        state->background_color[0], state->background_color[1], state->background_color[2],
-        state->background_color[3]);
 }
 
 
@@ -277,6 +239,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     _reset_depth_cue_controls(state);
     if (out_user != NULL)
         *out_user = state;
+    state->tuner = example_tuner("Depth cue settings");
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
@@ -333,54 +296,22 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM,
             DVZ_CONTROLLER_LINK_TWO_WAY) == NULL)
         return false;
+    state->arcball = dvz_controller_arcball(plain_controller);
+    if (state->arcball == NULL)
+        return false;
 
     DvzDepthCueDesc cue = _depth_cue_desc_from_controls(state);
-    return _add_sphere_lattice(ctx->scene, plain, NULL, NULL) &&
-           _add_sphere_lattice(ctx->scene, cued, &cue, &state->cued_sphere);
-}
+    if (!_add_sphere_lattice(ctx->scene, plain, NULL, NULL) ||
+        !_add_sphere_lattice(ctx->scene, cued, &cue, &state->cued_sphere))
+        return false;
 
-
-
-static void _depth_cue_gui(DvzGui* gui, DvzView* view, void* user_data)
-{
-    (void)view;
-    DepthCueDemoState* state = (DepthCueDemoState*)user_data;
-    if (gui == NULL || state == NULL)
-        return;
-
-    if (dvz_gui_begin(gui, "Depth cue settings", NULL, 0))
-    {
-        bool changed = false;
-        static const char* const mode_items[] = {"Fade to background", "Desaturate", "Darken"};
-        static const char* const metric_items[] = {"Clip depth", "Eye distance", "World distance"};
-        static const char* const falloff_items[] = {"Linear", "Exponential"};
-
-        changed |= dvz_gui_checkbox(gui, "Enable depth cue", &state->enabled);
-        changed |= dvz_gui_combo(gui, "Mode", &state->mode, mode_items, 3);
-        changed |= dvz_gui_combo(gui, "Metric", &state->metric, metric_items, 3);
-        changed |= dvz_gui_combo(gui, "Falloff", &state->falloff, falloff_items, 2);
-        changed |= dvz_gui_slider_float(
-            gui, "Near depth", &state->near_depth, CUE_DISTANCE_MIN, CUE_DISTANCE_MAX);
-        changed |= dvz_gui_slider_float(
-            gui, "Far depth", &state->far_depth, CUE_DISTANCE_MIN, CUE_DISTANCE_MAX);
-        changed |= dvz_gui_slider_float(gui, "Strength", &state->strength, 0.0f, 1.0f);
-        if (state->falloff == DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL)
-            changed |= dvz_gui_slider_float(gui, "Density", &state->density, 0.01f, 3.0f);
-        if (state->mode == 0)
-            changed |= dvz_gui_color_edit4(gui, "Background", state->background_color, 0);
-
-        if (changed)
-            _apply_depth_cue(state);
-        if (dvz_gui_button(gui, "Reset"))
-        {
-            _reset_depth_cue_controls(state);
-            _apply_depth_cue(state);
-        }
-        dvz_gui_same_line(gui, 0.0f, 8.0f);
-        if (dvz_gui_button(gui, "Print settings"))
-            _print_settings(state);
-    }
-    dvz_gui_end(gui);
+    vec3 arcball_angles = {+0.48f, -0.18f, +0.20f};
+    vec2 arcball_pan = {0.0f, 0.0f};
+    example_tuner_arcball(
+        &state->tuner, "Arcball", state->arcball, arcball_angles, 1.0f, arcball_pan);
+    example_tuner_depth_cue(
+        &state->tuner, "Depth cue", state->cued_sphere, &state->enabled, &state->cue);
+    return true;
 }
 
 
@@ -395,11 +326,7 @@ _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void*
         view == NULL)
         return true;
 
-    DvzGui* gui = dvz_view_gui(view, NULL);
-    if (gui == NULL)
-        return true;
-    dvz_view_set_gui_callback(view, _depth_cue_gui, state);
-    return true;
+    return example_tuner_attach(&state->tuner, view);
 }
 
 
@@ -407,7 +334,10 @@ _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void*
 static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 {
     (void)ctx;
-    dvz_free(user);
+    DepthCueDemoState* state = (DepthCueDemoState*)user;
+    if (state != NULL)
+        example_tuner_detach(&state->tuner);
+    dvz_free(state);
 }
 
 
