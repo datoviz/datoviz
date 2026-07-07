@@ -1814,6 +1814,9 @@ examples:
     primary_feature: builtin-shapes-3d
     lane: features
     source: examples/c/features/builtin_shapes_3d.c
+    python:
+      source: examples/python/gallery/features/builtin_shapes_3d.py
+      status: direct-engine
     validation: smoke+screenshot
     data:
       kind: synthetic

@@ -38,12 +38,19 @@ The scene uses geometry builders for common solids such as a cube, sphere, cylin
     --8<-- "examples/c/features/builtin_shapes_3d.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/builtin_shapes_3d.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_builtin_shapes_3d`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/builtin_shapes_3d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_3d.c)
+    - Python source: [`examples/python/gallery/features/builtin_shapes_3d.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/builtin_shapes_3d.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_builtin_shapes_3d"><code>examples/webgpu/live.html?id=feature_builtin_shapes_3d</code></a>
     - Browser capability tags: `mesh`, `controller`, `arcball`

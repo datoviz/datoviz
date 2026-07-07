@@ -25,12 +25,16 @@ Recent checkpoint commits landed:
 12. `db53aca76` Add Python mesh instance selection gallery example.
 13. `5198da3e5` Add Python label probe gallery example.
 14. `c334f04a6` Add Python marker symbols gallery example.
+15. `787cb7a72` Add Python builtin shapes 2D gallery example.
 
 Current uncommitted checkpoint in this working tree:
 
-1. Added `examples/python/gallery/features/builtin_shapes_2d.py`.
-2. Added `feature_builtin_shapes_2d.python.source` / `direct-engine` in `examples/c/MANIFEST.yaml`
+1. Added `examples/python/gallery/features/builtin_shapes_3d.py`.
+2. Added `feature_builtin_shapes_3d.python.source` / `direct-engine` in `examples/c/MANIFEST.yaml`
    and regenerated gallery metadata.
+3. Known parity caveat: the C example applies a Phong material, but Python `DvzMaterialDesc` has no
+   generated fields in the current binding, so the Python example uses mesh geometry colors without
+   calling `dvz_visual_set_material()`.
 
 The last validation loop was:
 
@@ -73,6 +77,10 @@ python3 - <<'PY'
 ... construct builtin_shapes_2d scene, upload built-in geometry and an indexed holed polygon,
     render one offscreen frame ...
 PY
+python3 - <<'PY'
+... construct builtin_shapes_3d scene, upload built-in cube/sphere/cylinder/cone/torus/arrow
+    geometry, bind arcball, render one offscreen frame ...
+PY
 ```
 
 These returned `image_probe offscreen query smoke: 1 True` and
@@ -81,13 +89,14 @@ These returned `image_probe offscreen query smoke: 1 True` and
 `selection_sphere offscreen query smoke: 1 True 18`, and
 `selection_mesh_instances offscreen query smoke: 1 True 30`, and
 `probe_labels offscreen query smoke: 1 True 31`, and
-`marker_symbols offscreen smoke: OK`, and `builtin_shapes_2d offscreen smoke: OK`. Live window and
-screenshot validation were not run for the earlier checkpoint notes.
+`marker_symbols offscreen smoke: OK`, and `builtin_shapes_2d offscreen smoke: OK`, and
+`builtin_shapes_3d offscreen smoke: OK`. Live window and screenshot validation were not run for the
+earlier checkpoint notes.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-07:
 
-- v0.4-required feature examples: 33 of 64 have Python entries; 31 remain missing.
-- all v0.4-required public examples: 45 of 95 have Python entries; 50 remain missing.
+- v0.4-required feature examples: 34 of 64 have Python entries; 30 remain missing.
+- all v0.4-required public examples: 46 of 95 have Python entries; 49 remain missing.
 - `feature_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -108,16 +117,19 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
 - `feature_marker_symbols` is committed: it has
   `examples/python/gallery/features/marker_symbols.py` and a matching `python.source` manifest
   entry.
-- `feature_builtin_shapes_2d` is done in the current working tree: it has
+- `feature_builtin_shapes_2d` is committed: it has
   `examples/python/gallery/features/builtin_shapes_2d.py` and a matching `python.source` manifest
+  entry.
+- `feature_builtin_shapes_3d` is done in the current working tree: it has
+  `examples/python/gallery/features/builtin_shapes_3d.py` and a matching `python.source` manifest
   entry.
 
 
 ## Preferred Next Commit
 
 The event/query/selection helper batch is complete for the planned feature examples. The geometry
-and symbol helper batch has started with `feature_marker_symbols` and `feature_builtin_shapes_2d`;
-next target `feature_builtin_shapes_3d`.
+and symbol helper batch has `feature_marker_symbols`, `feature_builtin_shapes_2d`, and
+`feature_builtin_shapes_3d`; next target `feature_obj_loading`, then `feature_isolines`.
 
 Implementation shape:
 
@@ -153,7 +165,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python builtin shapes 2D gallery example
+examples: add Python builtin shapes 3D gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -226,7 +238,7 @@ Current missing `v0.4_required` feature examples with no `python.source` entry:
 `technique_msaa`, `technique_depth_cue`, `technique_transparency`, `feature_input_events`,
 `feature_view_size_policies`, `feature_bezier_curve_path`, `feature_path_join`, `scale_bar`,
 `scalebar_units`, `annotation_readout`, `feature_isolines`,
-`feature_builtin_shapes_3d`, `feature_obj_loading`, and `feature_datetime_axis`.
+`feature_obj_loading`, and `feature_datetime_axis`.
 
 
 ## Per-Example Checklist
