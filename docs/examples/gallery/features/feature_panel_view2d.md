@@ -28,12 +28,19 @@ Both panels draw the same unit circle path and styled X/Y axes. The left panel u
     --8<-- "examples/c/features/panel_view2d.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/panel_view2d.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_panel_view2d`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/panel_view2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_view2d.c)
+    - Python source: [`examples/python/gallery/features/panel_view2d.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_view2d.py)
     - Browser support: Planned
     - Browser capability tags: `panel-view`, `panzoom`, `point`
     - Validation: `smoke+screenshot`

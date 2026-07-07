@@ -1184,6 +1184,9 @@ examples:
     primary_feature: panel-view2d
     lane: features
     source: examples/c/features/panel_view2d.c
+    python:
+      source: examples/python/gallery/features/panel_view2d.py
+      status: direct-engine
     validation: smoke+screenshot
     data:
       kind: synthetic
