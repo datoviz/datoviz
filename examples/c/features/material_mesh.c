@@ -35,6 +35,7 @@
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "example_tuner.h"
 #include "runner/scenario_runner.h"
 
 
@@ -56,6 +57,10 @@
 typedef struct MaterialMeshState
 {
     DvzGeometry* geometry;
+    DvzVisual* visuals[3];
+    DvzMaterialDesc materials[3];
+    DvzArcball* arcball;
+    ExampleTuner tuner;
 } MaterialMeshState;
 
 
@@ -82,7 +87,11 @@ DvzScenarioSpec dvz_example_material_mesh_scenario(void);
  * @return true on success
  */
 static bool _add_material_cube(
-    DvzScene* scene, DvzPanel* panel, const DvzMaterialDesc* material, DvzGeometry** out_geometry)
+    DvzScene* scene,
+    DvzPanel* panel,
+    const DvzMaterialDesc* material,
+    DvzGeometry** out_geometry,
+    DvzVisual** out_visual)
 {
     const ExampleStyleColorRole face_roles[DVZ_GEOM_CUBE_FACE_COUNT] = {
         EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
@@ -117,7 +126,11 @@ static bool _add_material_cube(
         *out_geometry = NULL;
     if (dvz_visual_set_material(visual, material) != 0)
         return false;
-    return dvz_panel_add_visual(panel, visual, NULL) == 0;
+    if (dvz_panel_add_visual(panel, visual, NULL) != 0)
+        return false;
+    if (out_visual != NULL)
+        *out_visual = visual;
+    return true;
 }
 
 
@@ -177,6 +190,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (out_user != NULL)
         *out_user = state;
+    state->tuner = example_tuner("Material mesh settings");
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
@@ -193,37 +207,39 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
 
     DvzCameraDesc camera = example_default_3d_camera_desc(1.0f);
-    DvzMaterialDesc matte = dvz_phong_material_desc();
-    matte.phong.ambient = 0.34f;
-    matte.phong.diffuse = 0.84f;
-    matte.phong.specular = 0.02f;
-    matte.phong.shininess = 8.0f;
+    state->materials[0] = dvz_phong_material_desc();
+    state->materials[0].phong.ambient = 0.34f;
+    state->materials[0].phong.diffuse = 0.84f;
+    state->materials[0].phong.specular = 0.02f;
+    state->materials[0].phong.shininess = 8.0f;
 
-    DvzMaterialDesc glossy = dvz_phong_material_desc();
-    glossy.phong.ambient = 0.18f;
-    glossy.phong.diffuse = 0.70f;
-    glossy.phong.specular = 0.48f;
-    glossy.phong.shininess = 58.0f;
+    state->materials[1] = dvz_phong_material_desc();
+    state->materials[1].phong.ambient = 0.18f;
+    state->materials[1].phong.diffuse = 0.70f;
+    state->materials[1].phong.specular = 0.48f;
+    state->materials[1].phong.shininess = 58.0f;
 
-    DvzMaterialDesc rim = dvz_standard_material_desc();
-    rim.standard.roughness = 0.42f;
-    rim.standard.specular = 0.46f;
-    rim.standard.rim_strength = 0.30f;
+    state->materials[2] = dvz_standard_material_desc();
+    state->materials[2].standard.roughness = 0.42f;
+    state->materials[2].standard.specular = 0.46f;
+    state->materials[2].standard.rim_strength = 0.30f;
 
-    const DvzMaterialDesc* materials[3] = {&matte, &glossy, &rim};
     const char* labels[3] = {"Matte Phong", "Glossy Phong", "Standard rim"};
     DvzController* controllers[3] = {0};
+    DvzPanel* panels[3] = {0};
     for (uint32_t i = 0; i < 3u; i++)
     {
         DvzPanel* panel = dvz_grid_panel(grid, 0, i);
         if (panel == NULL)
             return false;
+        panels[i] = panel;
         example_graphite_cyan_set_panel_background(panel);
         if (!_add_material_label(panel, labels[i]))
             return false;
         if (dvz_panel_set_camera_desc(panel, &camera) != 0)
             return false;
-        if (!_add_material_cube(ctx->scene, panel, materials[i], &state->geometry))
+        if (!_add_material_cube(
+                ctx->scene, panel, &state->materials[i], &state->geometry, &state->visuals[i]))
             return false;
 
         DvzController* controller = dvz_arcball(ctx->scene, NULL);
@@ -235,6 +251,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
             return false;
         dvz_arcball_set(arcball, (vec3){+0.58f, -0.14f, +0.26f});
+        if (i == 0u)
+            state->arcball = arcball;
         controllers[i] = controller;
     }
     for (uint32_t i = 1; i < 3u; i++)
@@ -245,7 +263,30 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
                 DVZ_CONTROLLER_LINK_TWO_WAY) == NULL)
             return false;
     }
+
+    vec3 arcball_angles = {+0.58f, -0.14f, +0.26f};
+    vec2 arcball_pan = {0.0f, 0.0f};
+    example_tuner_arcball(
+        &state->tuner, "Arcball", state->arcball, arcball_angles, 1.0f, arcball_pan);
+    for (uint32_t i = 0; i < 3u; i++)
+    {
+        example_tuner_camera(&state->tuner, labels[i], panels[i], &camera);
+        example_tuner_material(&state->tuner, labels[i], state->visuals[i], &state->materials[i]);
+    }
     return true;
+}
+
+
+static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    (void)app;
+    MaterialMeshState* state = (MaterialMeshState*)user;
+    if (
+        ctx == NULL || ctx->presentation != DVZ_RUNNER_PRESENT_GLFW || state == NULL ||
+        view == NULL)
+        return true;
+
+    return example_tuner_attach(&state->tuner, view);
 }
 
 
@@ -262,6 +303,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
     MaterialMeshState* state = (MaterialMeshState*)user;
     if (state == NULL)
         return;
+    example_tuner_detach(&state->tuner);
     if (state->geometry != NULL)
         dvz_geometry_destroy(state->geometry);
     dvz_free(state);
@@ -304,6 +346,8 @@ DvzScenarioSpec dvz_example_material_mesh_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = dvz_example_material_mesh_scenario();
+    if (example_cli_wants_live_gui(argc, argv))
+        spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
 #endif
