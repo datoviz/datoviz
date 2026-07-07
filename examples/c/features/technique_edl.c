@@ -34,11 +34,10 @@
 #include <string.h>
 
 #include "_alloc.h"
-#include "datoviz/gui.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
-#include "example_gui_controls.h"
 #include "example_style.h"
+#include "example_tuner.h"
 #include "runner/scenario_runner.h"
 
 
@@ -63,90 +62,9 @@ typedef struct EdlDemoState
 {
     DvzPanel* lit_panel;
     DvzArcball* arcball;
+    ExampleTuner tuner;
     DvzExampleGuiEdlControls edl;
-    vec3 arcball_angles;
-    vec2 arcball_pan;
-    float arcball_zoom;
 } EdlDemoState;
-
-
-
-static DvzEdlDesc _edl_desc_from_controls(const DvzExampleGuiEdlControls* controls)
-{
-    DvzEdlDesc edl = dvz_edl_desc();
-    if (controls == NULL)
-        return edl;
-
-    edl.radius = controls->radius;
-    edl.strength = controls->strength;
-    edl.depth_scale = controls->depth_scale;
-    return edl;
-}
-
-
-
-static void _apply_edl(EdlDemoState* state)
-{
-    if (state == NULL || state->lit_panel == NULL)
-        return;
-
-    if (!state->edl.enabled)
-    {
-        (void)dvz_panel_set_edl(state->lit_panel, NULL);
-        return;
-    }
-
-    DvzEdlDesc edl = _edl_desc_from_controls(&state->edl);
-    (void)dvz_panel_set_edl(state->lit_panel, &edl);
-}
-
-
-
-static void _apply_arcball(EdlDemoState* state)
-{
-    if (state == NULL || state->arcball == NULL)
-        return;
-
-    dvz_arcball_set(state->arcball, state->arcball_angles);
-    dvz_arcball_zoom(state->arcball, state->arcball_zoom);
-    dvz_arcball_pan(state->arcball, state->arcball_pan);
-}
-
-
-
-static void _sync_arcball_controls(EdlDemoState* state)
-{
-    if (state == NULL || state->arcball == NULL)
-        return;
-
-    dvz_arcball_angles(state->arcball, state->arcball_angles);
-    DvzArcballState arcball = {0};
-    if (dvz_arcball_state(state->arcball, &arcball))
-    {
-        state->arcball_zoom = arcball.zoom;
-        state->arcball_pan[0] = arcball.pan[0];
-        state->arcball_pan[1] = arcball.pan[1];
-    }
-}
-
-
-
-static void _print_settings(const EdlDemoState* state)
-{
-    if (state == NULL)
-        return;
-
-    dvz_fprintf(stderr, "technique_edl settings:\n");
-    dvz_fprintf(stderr, "dvz_arcball_set(arcball, (vec3){%+.6ff, %+.6ff, %+.6ff});\n",
-            state->arcball_angles[0], state->arcball_angles[1], state->arcball_angles[2]);
-    dvz_fprintf(stderr, "dvz_arcball_zoom(arcball, %.6ff);\n", state->arcball_zoom);
-    dvz_fprintf(stderr, "dvz_arcball_pan(arcball, (vec2){%+.6ff, %+.6ff});\n",
-            state->arcball_pan[0], state->arcball_pan[1]);
-    dvz_fprintf(stderr, "edl.radius = %.6ff;\n", state->edl.radius);
-    dvz_fprintf(stderr, "edl.strength = %.6ff;\n", state->edl.strength);
-    dvz_fprintf(stderr, "edl.depth_scale = %.6ff;\n", state->edl.depth_scale);
-}
-
 
 
 
@@ -245,6 +163,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (out_user != NULL)
         *out_user = state;
+    state->tuner = example_tuner("EDL calibration");
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
@@ -294,12 +213,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (example_set_default_3d_camera(plain, 1.0f) == NULL ||
         example_set_default_3d_camera(lit, 1.0f) == NULL)
         return false;
-    state->arcball_angles[0] = +0.616f;
-    state->arcball_angles[1] = -0.403f;
-    state->arcball_angles[2] = +0.339f;
-    state->arcball_zoom = 1.0f;
-    DvzController* plain_controller = _bind_arcball(ctx, plain, state->arcball_angles);
-    DvzController* lit_controller = _bind_arcball(ctx, lit, state->arcball_angles);
+    vec3 arcball_angles = {+0.616f, -0.403f, +0.339f};
+    vec2 arcball_pan = {0.0f, 0.0f};
+    DvzController* plain_controller = _bind_arcball(ctx, plain, arcball_angles);
+    DvzController* lit_controller = _bind_arcball(ctx, lit, arcball_angles);
     if (plain_controller == NULL || lit_controller == NULL)
         return false;
     state->arcball = dvz_controller_arcball(plain_controller);
@@ -320,54 +237,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         .strength = 112.941f,
         .depth_scale = 1.361f,
     };
-    _apply_edl(state);
+    example_tuner_edl(&state->tuner, "Lighting", state->lit_panel, &state->edl);
+    example_tuner_arcball(
+        &state->tuner, "Arcball", state->arcball, arcball_angles, 1.0f, arcball_pan);
     return true;
-}
-
-
-
-static void _edl_gui(DvzGui* gui, DvzView* view, void* user_data)
-{
-    (void)view;
-    EdlDemoState* state = (EdlDemoState*)user_data;
-    if (gui == NULL || state == NULL)
-        return;
-
-    if (dvz_gui_begin(gui, "EDL calibration", NULL, 0))
-    {
-        dvz_gui_separator_text(gui, "Lighting");
-        if (example_gui_edl(gui, &state->edl))
-            _apply_edl(state);
-
-        dvz_gui_separator_text(gui, "Arcball");
-        _sync_arcball_controls(state);
-        bool arcball_changed = false;
-        arcball_changed |=
-            dvz_gui_slider_float3(gui, "Angles", state->arcball_angles, -3.14159f, +3.14159f);
-        arcball_changed |= dvz_gui_slider_float(gui, "Zoom", &state->arcball_zoom, 0.20f, 4.0f);
-        arcball_changed |=
-            dvz_gui_slider_float2(gui, "Pan", state->arcball_pan, -2.0f, +2.0f);
-        if (arcball_changed)
-            _apply_arcball(state);
-
-        if (dvz_gui_button(gui, "Reset arcball"))
-        {
-            state->arcball_angles[0] = +0.616f;
-            state->arcball_angles[1] = -0.403f;
-            state->arcball_angles[2] = +0.339f;
-            state->arcball_zoom = 1.0f;
-            state->arcball_pan[0] = 0.0f;
-            state->arcball_pan[1] = 0.0f;
-            _apply_arcball(state);
-        }
-        dvz_gui_same_line(gui, 0.0f, 8.0f);
-        if (dvz_gui_button(gui, "Print settings"))
-        {
-            _sync_arcball_controls(state);
-            _print_settings(state);
-        }
-    }
-    dvz_gui_end(gui);
 }
 
 
@@ -381,11 +254,7 @@ static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView*
         view == NULL)
         return true;
 
-    DvzGui* gui = dvz_view_gui(view, NULL);
-    if (gui == NULL)
-        return true;
-    dvz_view_set_gui_callback(view, _edl_gui, state);
-    return true;
+    return example_tuner_attach(&state->tuner, view);
 }
 
 
@@ -393,6 +262,9 @@ static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView*
 static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 {
     (void)ctx;
+    EdlDemoState* state = (EdlDemoState*)user;
+    if (state != NULL)
+        example_tuner_detach(&state->tuner);
     dvz_free(user);
 }
 
