@@ -22,7 +22,9 @@ The loader reads the prepared compressed NumPy RGBA volume, downsamples it, deri
 
 This workflow is useful for volume-data previews where a slice should stay spatially embedded in the 3D anatomy. The prepared data-submodule file must exist, or it must be generated with the preparation command.
 
-Prepare: python tools/data/prepare_brain_volume.py
+Data: data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz
+
+Prepare: `python tools/data/prepare_brain_volume.py`
 
 ## Source
 
@@ -59,11 +61,11 @@ Prepare: python tools/data/prepare_brain_volume.py
     | --- | --- |
     | `name` | Allen mouse brain RGBA volume |
     | `source` | Allen Mouse Brain Common Coordinate Framework average template, annotation volume, structure graph, and selected structure meshes |
-    | `source_url` | http://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/; https://alleninstitute.org/legal/terms-of-use |
+    | `source_url` | [http://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/](http://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/); [https://alleninstitute.org/legal/terms-of-use](https://alleninstitute.org/legal/terms-of-use) |
     | `license` | Allen Institute Terms of Use apply; public use must follow Allen Institute citation requirements. |
     | `citation` | Allen Mouse Brain Common Coordinate Framework / Allen Brain Atlas; cite Allen Institute source material and CCF references. |
     | `prepared_source` | data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz |
-    | `preprocessing` | python tools/data/prepare_brain_volume.py |
+    | `preprocessing` | `python tools/data/prepare_brain_volume.py` |
     | `provenance` | Prepared from Allen CCF anatomical and annotation volumes plus selected structure meshes into a compact RGBA volume consumed by the C showcase. The committed file is a prepared data-submodule artifact; upstream Allen terms remain the source license boundary. |
 
 

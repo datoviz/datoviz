@@ -379,8 +379,77 @@ def normalize_summary(text: str) -> str:
     text = re.sub(r"^(what to look for|what this shows):\s*", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\bsmallest runner-backed retained scene\b", "smallest scene", text)
     text = re.sub(r"\bretained\s+", "", text)
+    if re.match(r"python(?:3(?:\.\d+)?)?\s+", text):
+        return text
     if text and text[0].islower():
         text = text[0].upper() + text[1:]
+    return text
+
+
+URL_RE = re.compile(r"(?<!\]\()https?://[^\s<>)|]+")
+COMMAND_START_RE = re.compile(r"(?<!`)\bpython(?:3(?:\.\d+)?)?\s+", flags=re.IGNORECASE)
+COMMAND_LABEL_RE = re.compile(
+    r"\s+(?:Data|Source|Terms|Prepare|Promote|Build|Run|Smoke|Options|Debug):"
+)
+
+
+def _outside_code_span(text: str, index: int) -> bool:
+    return text[:index].count("`") % 2 == 0
+
+
+def markdown_links(text: str) -> str:
+    """Wrap raw URLs in Markdown links."""
+
+    def replace(match: re.Match[str]) -> str:
+        if not _outside_code_span(text, match.start()):
+            return match.group(0)
+        url = match.group(0)
+        trailing = ""
+        while url and url[-1] in ".,;":
+            trailing = url[-1] + trailing
+            url = url[:-1]
+        return f"[{url}]({url}){trailing}"
+
+    return URL_RE.sub(replace, text)
+
+
+def markdown_python_commands(text: str) -> str:
+    """Wrap raw Python command invocations in inline code spans."""
+    matches = [
+        match
+        for match in COMMAND_START_RE.finditer(text)
+        if _outside_code_span(text, match.start())
+    ]
+    if not matches:
+        return text
+
+    chunks: list[str] = []
+    cursor = 0
+    for i, match in enumerate(matches):
+        start = match.start()
+        if start < cursor:
+            continue
+        next_start = matches[i + 1].start() if i + 1 < len(matches) else len(text)
+        label = COMMAND_LABEL_RE.search(text, match.end())
+        end = min(next_start, label.start() if label else len(text))
+        command = text[start:end].rstrip()
+        trailing = text[start + len(command):end]
+        while command and command[-1] in ".,;":
+            trailing = command[-1] + trailing
+            command = command[:-1]
+        chunks.append(text[cursor:start])
+        chunks.append(f"`{command}`")
+        chunks.append(trailing)
+        cursor = end
+    chunks.append(text[cursor:])
+    return "".join(chunks)
+
+
+def format_markdown_inline(value: object) -> str:
+    """Format manifest/comment prose for generated Markdown pages."""
+    text = str(value)
+    text = markdown_links(text)
+    text = markdown_python_commands(text)
     return text
 
 
@@ -406,32 +475,38 @@ def extract_c_description(path: Path) -> tuple[str, tuple[str, ...]]:
         paragraphs: list[str] = []
         current: list[str] = []
         in_editorial = False
+        skip_labels = ("Scenario", "Style", "Build", "Run", "Smoke", "DVZR", "Video")
+        metadata_labels = ("Data", "Source", "Terms", "Prepare", "Promote", "Options", "Debug")
+
+        def flush_current() -> None:
+            nonlocal current
+            if current:
+                paragraphs.append(format_markdown_inline(normalize_summary(" ".join(current))))
+                current = []
+
         for raw in lines[1:]:
             if not raw:
-                if current:
-                    paragraphs.append(normalize_summary(" ".join(current)))
-                    current = []
+                flush_current()
                 continue
             editorial = re.match(r"^(What to look for|What this shows):\s*(.*)$", raw, re.IGNORECASE)
             if editorial:
-                if current:
-                    paragraphs.append(normalize_summary(" ".join(current)))
-                    current = []
+                flush_current()
                 in_editorial = True
                 first_line = editorial.group(2).strip()
                 if first_line:
                     current.append(first_line)
                 continue
-            if re.match(r"^(Scenario|Style|Build|Run|Smoke|DVZR|Video|Data|Dataset):\s", raw):
-                if current:
-                    paragraphs.append(normalize_summary(" ".join(current)))
-                    current = []
+            if re.match(rf"^({'|'.join(skip_labels)}):\s", raw):
+                flush_current()
+                continue
+            if re.match(rf"^({'|'.join(metadata_labels)}):\s", raw):
+                flush_current()
+                current.append(raw)
                 continue
             if not in_editorial:
                 continue
             current.append(raw)
-        if current:
-            paragraphs.append(normalize_summary(" ".join(current)))
+        flush_current()
 
         return normalize_summary(first), tuple(paragraph for paragraph in paragraphs if paragraph)
     return "", ()
@@ -681,7 +756,7 @@ def append_detail_table(lines: list[str], title: str, values: dict) -> None:
         return
     lines.extend([f"### {title}", "", "| Field | Value |", "| --- | --- |"])
     for key, value in values.items():
-        lines.append(f"| `{key}` | {value} |")
+        lines.append(f"| `{key}` | {format_markdown_inline(value)} |")
     lines.append("")
 
 

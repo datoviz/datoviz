@@ -32,7 +32,15 @@ Prepared Census boundaries are loaded as flat point, ring, fill-color, stroke-co
 
 This workflow is useful for map-like scientific figures where real tabular values must be joined to prepared geometry before rendering. Run the preparation command if the promoted data bundle is not present.
 
-Population estimates, prepared into flat polygon-set arrays. Source: https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx Terms: U.S. Census Bureau public data; cite the Census Bureau as source. Prepare: python tools/data/prepare_us_state_choropleth.py Promote: python tools/data/prepare_us_state_choropleth.py --output data/examples/us_state_choropleth
+Data: U.S. Census Bureau 2024 cartographic state boundaries and Vintage 2025 resident population estimates, prepared into flat polygon-set arrays.
+
+Source: [https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip](https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip) [https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx](https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx)
+
+Terms: U.S. Census Bureau public data; cite the Census Bureau as source.
+
+Prepare: `python tools/data/prepare_us_state_choropleth.py`
+
+Promote: `python tools/data/prepare_us_state_choropleth.py --output data/examples/us_state_choropleth`
 
 ## Source
 
@@ -69,14 +77,14 @@ Population estimates, prepared into flat polygon-set arrays. Source: https://www
     | --- | --- |
     | `name` | Contiguous U.S. state population density |
     | `source` | U.S. Census Bureau 2024 cartographic state boundaries and Vintage 2025 state population estimates |
-    | `source_url` | https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip; https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx |
-    | `boundary_source` | https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip |
-    | `population_source` | https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx |
+    | `source_url` | [https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip](https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip); [https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx](https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx) |
+    | `boundary_source` | [https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip](https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip) |
+    | `population_source` | [https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx](https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx) |
     | `license` | U.S. Census Bureau public data; cite the Census Bureau as source. |
     | `citation` | U.S. Census Bureau, 2024 Cartographic Boundary File, States, 1:20m; U.S. Census Bureau, Vintage 2025 state resident population estimates. |
     | `fallback_prepared_path` | .cache/datoviz/examples/us_state_choropleth/prepared |
     | `promoted_prepared_path` | data/examples/us_state_choropleth/prepared |
-    | `preprocessing` | python tools/data/prepare_us_state_choropleth.py |
+    | `preprocessing` | `python tools/data/prepare_us_state_choropleth.py` |
     | `prepared_layout` | flat typed arrays plus metadata.tsv |
     | `provenance` | Prepared from Census boundary and population files by filtering to the 48 contiguous states, projecting rings with a spherical Albers equal-area transform, and encoding log10 resident population density from 2025 population estimates and Census ALAND values. |
 

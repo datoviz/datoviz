@@ -67,7 +67,7 @@ The example uses real texture files from the data submodule when available. Eart
     | --- | --- |
     | `name` | NASA Earth and Mars equirectangular texture maps |
     | `source` | data/assets/textures/world.200412.3x5400x2700.jpg; data/assets/textures/earth.jpg; data/assets/textures/mars_viking_mdim21.jpg |
-    | `source_url` | https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/; https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m |
+    | `source_url` | [https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/](https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/); [https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m](https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m) |
     | `license` | NASA media usage guidelines and USGS/NASA public-domain source-data terms apply; acknowledge NASA, NASA Ames, JPL, and USGS as source where relevant. |
     | `citation` | NASA Blue Marble Next Generation; USGS Astrogeology Mars Viking Colorized Global Mosaic 232m / Mars Digital Image Model 2.1. |
     | `preprocessing` | none; committed JPEG texture maps are loaded directly from data/assets/textures |

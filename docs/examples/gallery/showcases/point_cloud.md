@@ -24,7 +24,7 @@ This workflow is useful for large measured point clouds where the expensive deco
 
 Real data is loaded from `.cache/datoviz/examples/point_cloud/prepared/point_cloud.bin`. Generate it from the upstream LAZ source with:
 
-Python tools/data/prepare_point_cloud.py --force
+`python tools/data/prepare_point_cloud.py --force`
 
 ## Source
 
@@ -60,9 +60,9 @@ Python tools/data/prepare_point_cloud.py --force
     | Field | Value |
     | --- | --- |
     | `name` | RESEPI GENM2X colorized benchmark point cloud |
-    | `source` | https://lidarpayload.com/sample-data/ |
+    | `source` | [https://lidarpayload.com/sample-data/](https://lidarpayload.com/sample-data/) |
     | `license` | Public RESEPI sample data; usage follows the source site's terms |
-    | `preprocessing` | python tools/data/prepare_point_cloud.py --force |
+    | `preprocessing` | `python tools/data/prepare_point_cloud.py --force` |
     | `cache_prepared_path` | .cache/datoviz/examples/point_cloud/prepared |
 
 
