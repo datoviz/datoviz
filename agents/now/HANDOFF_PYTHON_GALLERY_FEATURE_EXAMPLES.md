@@ -1,6 +1,6 @@
 # Python Gallery Feature Examples Handoff
 
-Status: active example-proof lane. Created: 2026-07-07.
+Status: active example-proof lane. Created: 2026-07-07. Updated: 2026-07-07.
 
 This handoff continues the Python gallery example lane for v0.4-required examples. The goal is one
 clear top-level Python entry per public v0.4 example wherever the direct `datoviz` binding can
@@ -16,6 +16,8 @@ Recent checkpoint commits landed:
 3. `96a332244` Add Python visual transform gallery example.
 4. `a4be48e2b` Add Python depth test gallery example.
 5. `292f8fa50` Add Python panel View2D gallery example.
+6. `6382cc00` Add Python bars and bands gallery example.
+7. `d2621425e` Add Python guide gallery examples.
 
 The last validation loop was:
 
@@ -27,38 +29,46 @@ python3 -m py_compile $(find examples/python/gallery -name '*.py' -print)
 git diff --check
 ```
 
-Live window and screenshot validation were not run.
+Live window and screenshot validation were not run for the earlier checkpoint notes.
 
-Last known ledger for v0.4-required examples: 22 have Python entries, 42 remain missing. Recompute
-from `examples/c/MANIFEST.yaml` before the next batch, because this count is moving quickly.
+Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-07:
+
+- v0.4-required feature examples: 25 of 64 have Python entries; 39 remain missing.
+- all v0.4-required public examples: 37 of 95 have Python entries; 58 remain missing.
+- `feature_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
+  matching `python.source` manifest entry.
 
 
 ## Preferred Next Commit
 
-Start with `feature_bars_bands`. It is the best next example because the missing Python support is
-specific and reusable: array adaptation for multi-array plot setters.
+Start the event/query/selection helper batch. Prefer `image_probe` first because it creates the
+smallest reusable shape for request/query readback, deterministic probe inputs, and
+windowless/offscreen-safe scenario structure. Then use the same helper path for
+`feature_picking`, `feature_selection_pixel`, `feature_selection_sphere`,
+`feature_selection_mesh_instances`, and `feature_probe_labels`.
 
 Implementation shape:
 
-1. Read `spec/bindings/ARRAY_FACADE.md`, `spec/bindings/CTYPES_POLICY.md`, and the current
-   `spec/bindings/ctypes.yml` array facade policy.
-2. Add explicit array facade policy, and generator support if needed, for:
-   - `dvz_bars_set_intervals(DvzBars*, starts, ends, values, count)`;
-   - `dvz_band_set_bounds(DvzBand*, x, lower, upper, count)`;
-   - `dvz_band_set_center(DvzBand*, x, y, count)`.
-3. Keep all three APIs as direct `dvz_*` calls. Do not add Python object wrappers, plotting
-   aliases, or feature-specific helper functions unless the existing gallery common helpers already
-   establish that pattern.
-4. Regenerate and validate local bindings:
+1. Read `examples/c/features/image_probe.c`, the relevant query/selection C examples, and existing
+   Python gallery helpers before adding new Python support.
+2. Add the minimal shared helpers in `examples/python/gallery/common.py` only when at least two
+   examples need them.
+3. Keep examples as direct `dvz_*` usage. Do not add high-level plotting wrappers, query wrappers,
+   or browser/WebGPU behavior in Python.
+4. If a public binding gap blocks direct engine usage, first read `spec/bindings/ARRAY_FACADE.md`,
+   `spec/bindings/CTYPES_POLICY.md`, and `spec/bindings/ctypes.yml`; then add the narrowest facade
+   policy or generator support needed.
+5. After public headers, exported API, binding policy, or binding generator changes, regenerate and
+   validate local bindings:
 
    ```sh
    just ctypes
    just ctypes-check
    ```
 
-5. Add `examples/python/gallery/features/bars_bands.py` and the matching manifest `python.source`
-   entry for `feature_bars_bands`.
-6. Validate with the standard narrow loop:
+6. Add Python gallery files and matching manifest `python.source` entries for each converted
+   example.
+7. Validate with the standard narrow loop:
 
    ```sh
    python3 tools/build_gallery.py
@@ -71,15 +81,14 @@ Implementation shape:
 Suggested checkpoint commit:
 
 ```text
-bindings: add plot array facades for Python gallery
-examples: add Python bars and bands gallery example
+examples: add Python image probe gallery example
 ```
 
-Use one commit if the facade and example are small; split them if generator changes or binding
-regeneration noise makes review clearer.
+Use one commit for helper plus example when small. Split binding facade/generator changes from
+example additions if regenerated files make review clearer.
 
 
-## Batch Order After Bars/Bands
+## Remaining Batch Order
 
 Work in small helper-first batches. Each batch should add the minimal reusable Python support, then
 convert the examples that immediately need it.
@@ -131,6 +140,24 @@ convert the examples that immediately need it.
    Preferred shape: only convert when the data contract, preparation command, and manifest are
    already clear. Do not silently synthesize fallback data for examples that declare prepared or
    external datasets.
+
+
+## Missing Required Feature Entries
+
+Current missing `v0.4_required` feature examples with no `python.source` entry:
+
+`feature_coordinate_system`, `feature_axis_labels`, `feature_text_block`,
+`feature_overlay_card`, `feature_orientation_gizmo`, `feature_reference_grid`,
+`feature_bounds_overlay`, `feature_controller_fly`, `feature_mesh_texture`,
+`feature_material_mesh`, `feature_lighting`, `feature_user_scale`, `feature_gui_controls`,
+`feature_gui_viewport`, `feature_gui_cimgui`, `feature_animation_tracks`, `technique_ssao`,
+`technique_msaa`, `technique_depth_cue`, `technique_transparency`, `feature_input_events`,
+`feature_view_size_policies`, `feature_bezier_curve_path`, `feature_path_join`, `scale_bar`,
+`scalebar_units`, `annotation_readout`, `image_probe`, `feature_picking`,
+`feature_selection_pixel`, `feature_selection_sphere`, `feature_selection_mesh_instances`,
+`feature_isolines`, `feature_builtin_shapes_2d`, `feature_builtin_shapes_3d`,
+`feature_obj_loading`, `feature_probe_labels`, `feature_datetime_axis`, and
+`feature_marker_symbols`.
 
 
 ## Per-Example Checklist
