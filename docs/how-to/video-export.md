@@ -127,8 +127,15 @@ interop but easier to validate across machines.
 
 ## NVENC
 
-NVENC is an optional advanced backend for NVIDIA systems. It is not required for the canonical
-offscreen video example.
+NVENC is NVIDIA's hardware video encoder. In Datoviz, the NVENC path is an optional advanced
+backend for NVIDIA systems that can encode rendered frames on the GPU through external
+memory/semaphore interop. The point is to avoid the usual GPU-to-CPU readback and CPU-to-encoder
+upload used by portable capture, so large or high-frame-rate videos can be much faster and involve
+zero or few extra copies when the Vulkan, CUDA, and NVENC interop path is available.
+
+This speedup only exists with the right hardware, driver, and build configuration. Without proper
+NVIDIA/NVENC support, use the CPU-readback path. NVENC is not required for the canonical offscreen
+video example.
 
 Use NVENC only with the external capture mode:
 
