@@ -116,6 +116,9 @@ layout_records:
     - DvzCameraView
     - DvzCameraProjection
     - DvzCameraDesc
+    - DvzPanelBackgroundGradient
+    - DvzPanelBackgroundImage
+    - DvzPanelBackgroundDesc
     - DvzPanelView2DDesc
     - DvzPanelView3DDesc
     - DvzTextItem
@@ -312,12 +315,6 @@ skipped_functions:
       helper: dvz_ffi_overlay_card_style
       reason: >
         User-facing overlay-card style default is available through the pointer-output FFI helper.
-    dvz_panel_background_desc:
-      disposition: ffi-helper
-      helper: dvz_ffi_panel_background_desc
-      reason: >
-        User-facing panel-background descriptor default is available through the pointer-output FFI
-        helper.
     dvz_phong_material_desc:
       disposition: ffi-helper
       helper: dvz_ffi_phong_material_desc
@@ -388,7 +385,6 @@ skipped_functions:
     - dvz_material_desc
     - dvz_overlay_card_desc
     - dvz_overlay_card_style
-    - dvz_panel_background_desc
     - dvz_phong_material_desc
     - dvz_polygon_desc
     - dvz_reference_grid_desc

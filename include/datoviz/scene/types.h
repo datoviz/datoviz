@@ -329,27 +329,33 @@ typedef enum
 } DvzPanelBackgroundType;
 
 
+struct DvzPanelBackgroundGradient
+{
+    float start[2]; /* panel-local coordinates in [0, 1] */
+    float end[2];   /* panel-local coordinates in [0, 1] */
+    float color0[4];
+    float color1[4];
+};
+typedef struct DvzPanelBackgroundGradient DvzPanelBackgroundGradient;
+
+
+struct DvzPanelBackgroundImage
+{
+    const void* rgba; /* tightly packed RGBA8 pixels */
+    uint32_t width;
+    uint32_t height;
+};
+typedef struct DvzPanelBackgroundImage DvzPanelBackgroundImage;
+
+
 struct DvzPanelBackgroundDesc
 {
     uint32_t struct_size;
     uint32_t flags;
     DvzPanelBackgroundType type;
     float color[4]; /* RGBA in [0, 1], used by DVZ_PANEL_BACKGROUND_COLOR */
-
-    struct
-    {
-        float start[2]; /* panel-local coordinates in [0, 1] */
-        float end[2];   /* panel-local coordinates in [0, 1] */
-        float color0[4];
-        float color1[4];
-    } gradient;
-
-    struct
-    {
-        const void* rgba; /* tightly packed RGBA8 pixels */
-        uint32_t width;
-        uint32_t height;
-    } image;
+    DvzPanelBackgroundGradient gradient;
+    DvzPanelBackgroundImage image;
 };
 typedef struct DvzPanelBackgroundDesc DvzPanelBackgroundDesc;
 
