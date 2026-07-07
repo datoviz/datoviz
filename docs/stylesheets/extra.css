@@ -116,6 +116,27 @@ img[alt*=gpuopen] {
     background: #05070a;
 }
 
+.dvz-gallery-placeholder {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    min-height: 9rem;
+    border: 1px dashed rgba(139, 148, 158, 0.42);
+    border-radius: 6px;
+    background: #10161f;
+    color: var(--md-default-fg-color--light);
+}
+
+.dvz-gallery-placeholder span {
+    padding: 0.35rem 0.55rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
 .dvz-example-breadcrumbs,
 .dvz-example-nav__trail,
 .dvz-example-nav__siblings {
