@@ -9,10 +9,10 @@
  * Scenario: textured_terrain_or_planet
  * Style: showcase, graphite_cyan, 1280x720 window target
  *
- * What to look for: dvz_geometry_sphere() creates positions, normals, UVs, and indices; the mesh
+ * What to look for: `dvz_geometry_sphere()` creates positions, normals, UVs, and indices; the mesh
  * visual receives that geometry plus an RGBA8 sampled field bound to the mesh texture slot. Compare
- * the lit Earth or Mars sphere with the faint star shell and turntable/arcball interaction to see
- * how texture, material, and camera controls work together.
+ * the lit Earth or Mars sphere with the faint star shell and the turntable/arcball interaction to
+ * see how texture, material, and camera controls work together.
  *
  * The example uses real texture files from the data submodule when available. Earth has a generated
  * fallback for local development; Mars requires its real texture file and is unavailable when that
