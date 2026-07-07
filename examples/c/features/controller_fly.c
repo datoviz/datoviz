@@ -198,9 +198,9 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
 
     ControllerFlyState* state = (ControllerFlyState*)user;
     ExamplePreviewFlyDesc desc = {
-        .forward_amplitude = +0.20f,
-        .right_amplitude = 0.0f,
-        .up_amplitude = 0.0f,
+        .forward_amplitude = +0.08f,
+        .right_amplitude = +0.08f,
+        .up_amplitude = +0.025f,
         .yaw_amplitude = 0.0f,
         .pitch_amplitude = 0.0f,
     };
