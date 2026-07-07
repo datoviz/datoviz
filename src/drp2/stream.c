@@ -828,31 +828,6 @@ bool dvz_drp2_stream_pipeline_set_bind_group_layout(
 
 
 
-bool dvz_drp2_stream_pipeline_set_bind_group_layout2(
-    DvzDrp2CommandStream* stream, uint64_t bind_group_layout_id2)
-{
-    ANN(stream);
-    if (stream->count == 0)
-        return false;
-    DvzDrp2Command* command = &stream->commands[stream->count - 1];
-    if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
-        return false;
-    if (command->u.create_render_pipeline.bind_group_layout_count < 1)
-        command->u.create_render_pipeline.bind_group_layout_count = 1;
-    if (bind_group_layout_id2 != 0)
-    {
-        command->u.create_render_pipeline.bind_group_layout_count = 2;
-        command->u.create_render_pipeline.bind_group_layout_ids[1] = bind_group_layout_id2;
-    }
-    else if (command->u.create_render_pipeline.bind_group_layout_count == 2)
-    {
-        command->u.create_render_pipeline.bind_group_layout_count = 1;
-        command->u.create_render_pipeline.bind_group_layout_ids[1] = 0;
-    }
-    return true;
-}
-
-
 bool dvz_drp2_stream_pipeline_set_bind_group_layouts(
     DvzDrp2CommandStream* stream, uint32_t count, const uint64_t* bind_group_layout_ids)
 {

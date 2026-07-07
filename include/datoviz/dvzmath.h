@@ -28,7 +28,6 @@
 #include "math/arithm.h"
 #include "math/box.h"
 #include "math/prng.h"
-#include "math/rand.h"
 #include "math/stats.h"
 #include "math/types.h"
 #include "math/vec.h"

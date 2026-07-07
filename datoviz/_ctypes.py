@@ -9980,42 +9980,6 @@ else:
 
 
 try:
-    dvz_circular_2D = dvz.dvz_circular_2D
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_circular_2D')
-else:
-    dvz_circular_2D.__doc__ = """/**
- * Generate a 2D circular motion.
- *
- * @param center the circle center
- * @param radius the circle radius
- * @param angle the initial angle
- * @param t the normalized value
- * @param[out] out the 2D position
- */"""
-    dvz_circular_2D.argtypes = [(ctypes.c_float * 2), ctypes.c_float, ctypes.c_float, ctypes.c_float, (ctypes.c_float * 2)]
-    dvz_circular_2D.restype = None
-
-
-try:
-    dvz_circular_3D = dvz.dvz_circular_3D
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_circular_3D')
-else:
-    dvz_circular_3D.__doc__ = """/**
- * Generate a 3D circular motion.
- *
- * @param pos_init the initial position
- * @param center the center position
- * @param axis the axis around which to rotate
- * @param t the normalized value (1 = full circle)
- * @param[out] out the 3D position
- */"""
-    dvz_circular_3D.argtypes = [(ctypes.c_float * 3), (ctypes.c_float * 3), (ctypes.c_float * 3), ctypes.c_float, (ctypes.c_float * 3)]
-    dvz_circular_3D.restype = None
-
-
-try:
     dvz_cmd_barriers = dvz.dvz_cmd_barriers
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_cmd_barriers')
@@ -13860,23 +13824,6 @@ else:
  */"""
     dvz_drp2_stream_pipeline_set_bind_group_layout.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64]
     dvz_drp2_stream_pipeline_set_bind_group_layout.restype = ctypes.c_bool
-
-
-try:
-    dvz_drp2_stream_pipeline_set_bind_group_layout2 = dvz.dvz_drp2_stream_pipeline_set_bind_group_layout2
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_drp2_stream_pipeline_set_bind_group_layout2')
-else:
-    dvz_drp2_stream_pipeline_set_bind_group_layout2.__doc__ = """/**
- * Attach a second bind-group layout (descriptor set 1) to the most recently appended
- * CreateRenderPipeline command.
- *
- * @param stream the command stream
- * @param bind_group_layout_id2 the second bind-group layout id (0 = none)
- * @return whether the most recent command was a CreateRenderPipeline and was updated
- */"""
-    dvz_drp2_stream_pipeline_set_bind_group_layout2.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64]
-    dvz_drp2_stream_pipeline_set_bind_group_layout2.restype = ctypes.c_bool
 
 
 try:
@@ -20725,57 +20672,6 @@ else:
 
 
 try:
-    dvz_interpolate = dvz.dvz_interpolate
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_interpolate')
-else:
-    dvz_interpolate.__doc__ = """/**
- * Make a linear interpolation between two scalar value.
- *
- * @param p0 the first value
- * @param p1 the second value
- * @param t the normalized value
- * @returns the interpolated value
- */"""
-    dvz_interpolate.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.c_float]
-    dvz_interpolate.restype = ctypes.c_float
-
-
-try:
-    dvz_interpolate_2D = dvz.dvz_interpolate_2D
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_interpolate_2D')
-else:
-    dvz_interpolate_2D.__doc__ = """/**
- * Make a linear interpolation between two 2D points.
- *
- * @param p0 the first point
- * @param p1 the second point
- * @param t the normalized value
- * @param[out] out the interpolated point
- */"""
-    dvz_interpolate_2D.argtypes = [(ctypes.c_float * 2), (ctypes.c_float * 2), ctypes.c_float, (ctypes.c_float * 2)]
-    dvz_interpolate_2D.restype = None
-
-
-try:
-    dvz_interpolate_3D = dvz.dvz_interpolate_3D
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_interpolate_3D')
-else:
-    dvz_interpolate_3D.__doc__ = """/**
- * Make a linear interpolation between two 3D points.
- *
- * @param p0 the first point
- * @param p1 the second point
- * @param t the normalized value
- * @param[out] out the interpolated point
- */"""
-    dvz_interpolate_3D.argtypes = [(ctypes.c_float * 3), (ctypes.c_float * 3), ctypes.c_float, (ctypes.c_float * 3)]
-    dvz_interpolate_3D.restype = None
-
-
-try:
     dvz_item_interaction = dvz.dvz_item_interaction
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_item_interaction')
@@ -24392,76 +24288,6 @@ else:
 
 
 try:
-    dvz_rand_byte = dvz.dvz_rand_byte
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_rand_byte')
-else:
-    dvz_rand_byte.__doc__ = """/**
- * Return a random integer number between 0 and 255.
- *
- * @returns random number
- */"""
-    dvz_rand_byte.argtypes = []
-    dvz_rand_byte.restype = ctypes.c_uint8
-
-
-try:
-    dvz_rand_double = dvz.dvz_rand_double
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_rand_double')
-else:
-    dvz_rand_double.__doc__ = """/**
- * Return a random floating-point number between 0 and 1.
- *
- * @returns random number
- */"""
-    dvz_rand_double.argtypes = []
-    dvz_rand_double.restype = ctypes.c_double
-
-
-try:
-    dvz_rand_float = dvz.dvz_rand_float
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_rand_float')
-else:
-    dvz_rand_float.__doc__ = """/**
- * Return a random floating-point number between 0 and 1.
- *
- * @returns random number
- */"""
-    dvz_rand_float.argtypes = []
-    dvz_rand_float.restype = ctypes.c_float
-
-
-try:
-    dvz_rand_int = dvz.dvz_rand_int
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_rand_int')
-else:
-    dvz_rand_int.__doc__ = """/**
- * Return a random integer number.
- *
- * @returns random number
- */"""
-    dvz_rand_int.argtypes = []
-    dvz_rand_int.restype = ctypes.c_int
-
-
-try:
-    dvz_rand_normal = dvz.dvz_rand_normal
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_rand_normal')
-else:
-    dvz_rand_normal.__doc__ = """/**
- * Return a random normal floating-point number.
- *
- * @returns random number
- */"""
-    dvz_rand_normal.argtypes = []
-    dvz_rand_normal.restype = ctypes.c_double
-
-
-try:
     dvz_range = dvz.dvz_range
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_range')
@@ -24796,23 +24622,6 @@ else:
  */"""
     dvz_rendering_stencil.argtypes = [ctypes.POINTER(DvzRendering)]
     dvz_rendering_stencil.restype = ctypes.c_void_p
-
-
-try:
-    dvz_resample = dvz.dvz_resample
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_resample')
-else:
-    dvz_resample.__doc__ = """/**
- * Normalize a value in an interval.
- *
- * @param t0 the interval start
- * @param t1 the interval end
- * @param t the value within the interval
- * @returns the normalized value between 0 and 1
- */"""
-    dvz_resample.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
-    dvz_resample.restype = ctypes.c_double
 
 
 try:
@@ -32066,20 +31875,6 @@ else:
 
 
 try:
-    dvz_window_register_qt_backend = dvz.dvz_window_register_qt_backend
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_window_register_qt_backend')
-else:
-    dvz_window_register_qt_backend.__doc__ = """/**
- * Register the Qt backend on the host (if provided by downstream code).
- *
- * @param host host that should expose the Qt backend
- */"""
-    dvz_window_register_qt_backend.argtypes = [ctypes.POINTER(DvzWindowHost)]
-    dvz_window_register_qt_backend.restype = None
-
-
-try:
     dvz_window_register_wrap_backend = dvz.dvz_window_register_wrap_backend
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_window_register_wrap_backend')
@@ -32284,7 +32079,7 @@ else:
     dvz_write_ppm.restype = ctypes.c_int
 
 
-_GENERATED_FUNCTION_COUNT = 1532
+_GENERATED_FUNCTION_COUNT = 1519
 _SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_depth_cue_desc', 'dvz_device_config', 'dvz_field_geometry', 'dvz_gpu_ctx_config', 'dvz_material_desc', 'dvz_overlay_card_desc', 'dvz_overlay_card_style', 'dvz_panel_background_desc', 'dvz_phong_material_desc', 'dvz_polygon_desc', 'dvz_reference_grid_desc', 'dvz_scale_bar_desc', 'dvz_standard_material_desc', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
 _DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzDataDomain', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2TextureDesc', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFlyDesc', 'DvzFontDefaults', 'DvzFontDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanEmitConfig', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzMsaaDesc', 'DvzOrientationGizmoDesc', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTextPlacement', 'DvzTextStyle', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewDesc', 'DvzViewSizeDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
 __all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]

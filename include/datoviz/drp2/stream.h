@@ -391,18 +391,6 @@ DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_bind_group_layout(
 
 
 /**
- * Attach a second bind-group layout (descriptor set 1) to the most recently appended
- * CreateRenderPipeline command.
- *
- * @param stream the command stream
- * @param bind_group_layout_id2 the second bind-group layout id (0 = none)
- * @return whether the most recent command was a CreateRenderPipeline and was updated
- */
-DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_bind_group_layout2(
-    DvzDrp2CommandStream* stream, uint64_t bind_group_layout_id2);
-
-
-/**
  * Attach an ordered bind-group layout array to the most recent CreateRenderPipeline command.
  *
  * @param stream the command stream

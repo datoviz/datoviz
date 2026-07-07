@@ -16,9 +16,6 @@
 #include <math.h>
 
 #include "_log.h"
-#include "cglm/types.h"
-#include "cglm/vec2.h"
-#include "cglm/vec3.h"
 #include "datoviz/math/anim.h"
 #include "datoviz/math/types.h"
 
@@ -335,49 +332,3 @@ double dvz_easing(DvzEasing easing, double t)
     log_warn("easing %d is not implemented", (int)easing);
     return t;
 }
-
-
-
-// Resample from [t0, t1] to [0, 1].
-double dvz_resample(double t0, double t1, double t) { return (t - t0) / (t1 - t0); }
-
-
-
-void dvz_circular_2D(vec2 center, float radius, float angle, float t, vec2 out)
-{
-    float a = DVZ_2PI * t + angle;
-    vec2 u = {cos(a), sin(a)};
-    out[0] = center[0] + radius * u[0];
-    out[1] = center[1] + radius * u[1];
-}
-
-
-
-void dvz_circular_3D(vec3 pos_init, vec3 center, vec3 axis, float t, vec3 out)
-{
-    float angle = 2 * DVZ_PI * t;
-
-    vec3 a = {0};
-    glm_normalize_to(axis, a);
-
-    vec3 rel = {0};
-    glm_vec3_sub(pos_init, center, rel); // relative position from center
-
-    glm_vec3_copy(rel, out);
-    glm_vec3_rotate(out, angle, a); // rotate in-place
-
-    glm_vec3_add(out, center, out); // translate back
-}
-
-
-
-// interpolation between p0 and p1, t in [0, 1]
-float dvz_interpolate(float p0, float p1, float t) { return p0 + p1 * t; }
-
-
-
-void dvz_interpolate_2D(vec2 p0, vec2 p1, float t, vec2 out) { glm_vec2_lerp(p0, p1, t, out); }
-
-
-
-void dvz_interpolate_3D(vec3 p0, vec3 p1, float t, vec3 out) { glm_vec3_lerp(p0, p1, t, out); }

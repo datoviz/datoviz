@@ -342,13 +342,4 @@ DVZ_EXPORT void dvz_window_register_wrap_backend(DvzWindowHost* host);
 
 
 
-/**
- * Register the Qt backend on the host (if provided by downstream code).
- *
- * @param host host that should expose the Qt backend
- */
-DVZ_EXPORT void dvz_window_register_qt_backend(DvzWindowHost* host);
-
-
-
 EXTERN_C_OFF

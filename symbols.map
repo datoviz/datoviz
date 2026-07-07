@@ -180,8 +180,6 @@ dvz_canvas_submit
 dvz_canvas_timings
 dvz_capability_snapshot
 dvz_capability_snapshot_copy
-dvz_circular_2D
-dvz_circular_3D
 dvz_cmd_barriers
 dvz_cmd_begin
 dvz_cmd_begin_result
@@ -410,7 +408,6 @@ dvz_drp2_stream_payload_count
 dvz_drp2_stream_payload_ptr
 dvz_drp2_stream_payload_size
 dvz_drp2_stream_pipeline_set_bind_group_layout
-dvz_drp2_stream_pipeline_set_bind_group_layout2
 dvz_drp2_stream_pipeline_set_bind_group_layouts
 dvz_drp2_stream_pipeline_set_builtin_identity
 dvz_drp2_stream_pipeline_set_color_blend
@@ -803,9 +800,6 @@ dvz_interop_buffer_export_from_buffer
 dvz_interop_buffer_wait_timeline
 dvz_interop_gpu_ctx
 dvz_interop_gpu_ctx_ex
-dvz_interpolate
-dvz_interpolate_2D
-dvz_interpolate_3D
 dvz_item_interaction
 dvz_item_interaction_desc
 dvz_item_interaction_destroy
@@ -992,11 +986,6 @@ dvz_queue_supports
 dvz_queue_wait
 dvz_queues
 dvz_queues_show
-dvz_rand_byte
-dvz_rand_double
-dvz_rand_float
-dvz_rand_int
-dvz_rand_normal
 dvz_range
 dvz_reference_grid
 dvz_reference_grid_desc
@@ -1014,7 +1003,6 @@ dvz_rendering_has_stencil
 dvz_rendering_layer_count
 dvz_rendering_layers
 dvz_rendering_stencil
-dvz_resample
 dvz_sampled_field
 dvz_sampled_field_desc
 dvz_sampled_field_destroy
@@ -1401,7 +1389,6 @@ dvz_window_host_wait
 dvz_window_host_wait_timeout
 dvz_window_register_glfw_backend
 dvz_window_register_headless_backend
-dvz_window_register_qt_backend
 dvz_window_register_wrap_backend
 dvz_window_router
 dvz_window_set_user_data
