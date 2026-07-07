@@ -46,7 +46,7 @@ ctypes-facade-smoke:
 #
 
 ctypes-python-smoke:
-    @PYTHONPATH=. {{bindings_python}} -m pytest -q testing/test_python_async_helpers.py testing/test_ctypes_raw_smoke.py testing/test_array_facade.py
+    @PYTHONPATH=. {{bindings_python}} -m pytest -q testing/test_python_async_helpers.py testing/test_python_run_helper.py testing/test_ctypes_raw_smoke.py testing/test_array_facade.py
 #
 
 ctypes-render-smoke:

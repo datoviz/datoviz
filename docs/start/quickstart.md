@@ -52,8 +52,8 @@ upload the arrays to one point visual, then open the window.
     # panel before it becomes part of the figure.
     dvz.dvz_panel_add_visual(panel, visual, None)
 
-    # Open a window, render the figure, and keep the app running until the user
-    # closes the window.
+    # Open a window. In a regular Python script this blocks until the user closes
+    # the window. In terminal IPython, the prompt returns with the window live.
     dvz.run(scene, figure, title="Scatter plot")
     ```
 
@@ -175,8 +175,14 @@ labels. Here, `dvz_point` creates one point visual for all 10,000 points. Each
 **Panel attachment** - Data upload prepares the visual, but it does not place it in the figure.
 `dvz_panel_add_visual` attaches the visual to the panel so it will be drawn.
 
-**Run** - `dvz.run(scene, figure)` opens the window in the Python example. The C example uses the
-longer app/view calls directly because C does not have the same quickstart helper.
+**Run** - `dvz.run(scene, figure)` opens the window in the Python example. In a regular Python
+script, it blocks until the window closes and then destroys the app and scene. In terminal IPython,
+it returns a live-session handle and keeps the native window responsive while the prompt is waiting
+for input; call `session.close()` if you assigned the return value and want to close it explicitly.
+Closing the native window also closes the session and releases the quickstart scene. Recreate the
+scene to reopen it, or use explicit app/view calls for workflows that need to keep scene ownership
+separate from window lifetime. The C example uses the longer app/view calls directly because C does
+not have the same quickstart helper.
 
 
 ## Next steps
