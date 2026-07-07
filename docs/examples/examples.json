@@ -2,9 +2,9 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 107,
+  "count": 108,
   "categories": {
-    "advanced": 3,
+    "advanced": 4,
     "composite": 2,
     "feature": 69,
     "runtime": 5,
@@ -16,7 +16,7 @@
     "diagnostic": 1,
     "experimental": 13,
     "prototype": 1,
-    "supported": 92
+    "supported": 93
   },
   "examples": [
     {
@@ -5192,6 +5192,60 @@
           "glfw"
         ],
         "reason": "external Vulkan surfaces are native host-integration objects"
+      }
+    },
+    {
+      "id": "advanced_qt_hosting",
+      "title": "Qt Hosting",
+      "category": "advanced",
+      "lane": "advanced",
+      "stage": "v0.4_optional_provider",
+      "status": "supported",
+      "source": "examples/qt/hosted_qt_widgets.cpp",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/qt/hosted_qt_widgets.cpp",
+      "page": "gallery/advanced/advanced_qt_hosting.md",
+      "summary": "Live Qt Widgets host around a Datoviz Vulkan scene.",
+      "validation": "optional-native-smoke",
+      "build_command": "DVZ_CMAKE_ARGS=\"-DDVZ_ENABLE_QT_BRIDGE=ON\" just build",
+      "smoke_command": "./build/examples/qt/hosted_qt_widgets --smoke-ms 1000",
+      "tags": [
+        "advanced",
+        "qt",
+        "pyqt",
+        "optional-provider",
+        "external-surface",
+        "host-integration"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/advanced/advanced_qt_hosting.png",
+          "site_asset": "/assets/gallery/v0.4/advanced/advanced_qt_hosting.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
+      "webgpu_requirements": [
+        "native-view",
+        "external-surface",
+        "qt",
+        "optional-provider"
+      ],
+      "webgpu_reason": "Qt and PyQt hosting use native toolkit windows and an optional bridge provider",
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "native-view",
+          "external-surface",
+          "qt",
+          "optional-provider"
+        ],
+        "reason": "Qt and PyQt hosting use native toolkit windows and an optional bridge provider"
       }
     },
     {

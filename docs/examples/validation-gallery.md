@@ -8,7 +8,7 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Reviewed public C examples generated for the website: 107
+- Reviewed public C examples generated for the website: 108
 - Examples declaring screenshot validation: 97
 - Examples that should have video or motion evidence: 5
 

@@ -3,9 +3,9 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 107,
+  "example_count": 108,
   "categories": {
-    "advanced": 3,
+    "advanced": 4,
     "composite": 2,
     "feature": 69,
     "runtime": 5,
@@ -17,7 +17,7 @@
     "diagnostic": 1,
     "experimental": 13,
     "prototype": 1,
-    "supported": 92
+    "supported": 93
   },
   "capabilities": {
     "composites": {
@@ -113,7 +113,7 @@
         ]
       },
       "synthetic": {
-        "count": 101,
+        "count": 102,
         "examples": [
           {
             "id": "feature_basic_scene",
@@ -914,6 +914,14 @@
             "status": "experimental",
             "source": "examples/c/advanced/external_surface_glfw.c",
             "page": "gallery/advanced/advanced_external_surface_glfw.md"
+          },
+          {
+            "id": "advanced_qt_hosting",
+            "title": "Qt Hosting",
+            "category": "advanced",
+            "status": "supported",
+            "source": "examples/qt/hosted_qt_widgets.cpp",
+            "page": "gallery/advanced/advanced_qt_hosting.md"
           },
           {
             "id": "start_scatter",
@@ -1894,7 +1902,7 @@
     },
     "tags": {
       "advanced": {
-        "count": 3,
+        "count": 4,
         "examples": [
           {
             "id": "advanced_raw_triangle_vklite",
@@ -1919,6 +1927,14 @@
             "status": "experimental",
             "source": "examples/c/advanced/external_surface_glfw.c",
             "page": "gallery/advanced/advanced_external_surface_glfw.md"
+          },
+          {
+            "id": "advanced_qt_hosting",
+            "title": "Qt Hosting",
+            "category": "advanced",
+            "status": "supported",
+            "source": "examples/qt/hosted_qt_widgets.cpp",
+            "page": "gallery/advanced/advanced_qt_hosting.md"
           }
         ]
       },
@@ -2489,7 +2505,7 @@
         ]
       },
       "external-surface": {
-        "count": 1,
+        "count": 2,
         "examples": [
           {
             "id": "advanced_external_surface_glfw",
@@ -2498,6 +2514,14 @@
             "status": "experimental",
             "source": "examples/c/advanced/external_surface_glfw.c",
             "page": "gallery/advanced/advanced_external_surface_glfw.md"
+          },
+          {
+            "id": "advanced_qt_hosting",
+            "title": "Qt Hosting",
+            "category": "advanced",
+            "status": "supported",
+            "source": "examples/qt/hosted_qt_widgets.cpp",
+            "page": "gallery/advanced/advanced_qt_hosting.md"
           }
         ]
       },
@@ -2671,7 +2695,7 @@
         ]
       },
       "host-integration": {
-        "count": 1,
+        "count": 2,
         "examples": [
           {
             "id": "advanced_external_surface_glfw",
@@ -2680,6 +2704,14 @@
             "status": "experimental",
             "source": "examples/c/advanced/external_surface_glfw.c",
             "page": "gallery/advanced/advanced_external_surface_glfw.md"
+          },
+          {
+            "id": "advanced_qt_hosting",
+            "title": "Qt Hosting",
+            "category": "advanced",
+            "status": "supported",
+            "source": "examples/qt/hosted_qt_widgets.cpp",
+            "page": "gallery/advanced/advanced_qt_hosting.md"
           }
         ]
       },
@@ -2905,6 +2937,19 @@
             "status": "experimental",
             "source": "examples/c/runtime/video_export.c",
             "page": "gallery/runtime/feature_video_export.md"
+          }
+        ]
+      },
+      "optional-provider": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "advanced_qt_hosting",
+            "title": "Qt Hosting",
+            "category": "advanced",
+            "status": "supported",
+            "source": "examples/qt/hosted_qt_widgets.cpp",
+            "page": "gallery/advanced/advanced_qt_hosting.md"
           }
         ]
       },
@@ -3163,6 +3208,32 @@
             "status": "supported",
             "source": "examples/c/visuals/primitive.c",
             "page": "gallery/visuals/visual_primitive.md"
+          }
+        ]
+      },
+      "pyqt": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "advanced_qt_hosting",
+            "title": "Qt Hosting",
+            "category": "advanced",
+            "status": "supported",
+            "source": "examples/qt/hosted_qt_widgets.cpp",
+            "page": "gallery/advanced/advanced_qt_hosting.md"
+          }
+        ]
+      },
+      "qt": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "advanced_qt_hosting",
+            "title": "Qt Hosting",
+            "category": "advanced",
+            "status": "supported",
+            "source": "examples/qt/hosted_qt_widgets.cpp",
+            "page": "gallery/advanced/advanced_qt_hosting.md"
           }
         ]
       },

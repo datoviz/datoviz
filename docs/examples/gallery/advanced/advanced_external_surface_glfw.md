@@ -60,6 +60,6 @@ This workflow is useful when a scientific application already owns its native ev
 <a href="../../../advanced">Advanced Examples</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../advanced_raw_triangle_drp2">Next: Raw Triangle DRP2</a>
+<a href="../advanced_qt_hosting">Next: Qt Hosting</a>
 </div>
 </nav>

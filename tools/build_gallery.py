@@ -25,6 +25,23 @@ PUBLIC_LANES = ("start", "visuals", "features", "runtime", "composites", "showca
 STATUS_ORDER = ("supported", "experimental", "prototype", "advanced/unstable", "deferred")
 DEFAULT_STATUS = "supported"
 PYTHON_SOURCE_BY_ID = {}
+SOURCE_LANGUAGE_BY_SUFFIX = {
+    ".c": ("C", "c"),
+    ".h": ("C", "c"),
+    ".cpp": ("C++", "cpp"),
+    ".cc": ("C++", "cpp"),
+    ".cxx": ("C++", "cpp"),
+    ".hpp": ("C++", "cpp"),
+    ".py": ("Python", "python"),
+    ".js": ("JavaScript", "javascript"),
+    ".mjs": ("JavaScript", "javascript"),
+}
+SOURCE_LABEL_BY_LANGUAGE = {
+    "c": "C",
+    "cpp": "C++",
+    "python": "Python",
+    "javascript": "JavaScript",
+}
 
 # Editorial showcase groups. The 2D/3D split describes the primary gallery
 # presentation, not a strict mathematical classification.
@@ -254,6 +271,13 @@ PAGE_CONFIG = {
 
 
 @dataclass(frozen=True)
+class SourceTab:
+    label: str
+    language: str
+    path: str
+
+
+@dataclass(frozen=True)
 class Example:
     id: str
     title: str
@@ -272,6 +296,9 @@ class Example:
     encoding: dict
     webgpu: dict
     agent_copy_safe: bool | None
+    source_label: str
+    source_language: str
+    extra_sources: tuple[SourceTab, ...]
     python_source: str | None
 
     @property
@@ -280,6 +307,8 @@ class Example:
 
     @property
     def rel_executable(self) -> str:
+        if not self.source.startswith("examples/c/"):
+            raise ValueError(f"{self.source} is not a C example source")
         rel = Path(self.source).relative_to("examples/c")
         return rel.with_suffix("").as_posix()
 
@@ -453,6 +482,28 @@ def format_markdown_inline(value: object) -> str:
     return text
 
 
+def infer_source_language(path: str) -> tuple[str, str]:
+    suffix = Path(path).suffix.lower()
+    return SOURCE_LANGUAGE_BY_SUFFIX.get(suffix, ("Source", "text"))
+
+
+def source_language_label(language: str, path: str) -> str:
+    if language in SOURCE_LABEL_BY_LANGUAGE:
+        return SOURCE_LABEL_BY_LANGUAGE[language]
+    inferred_label, _ = infer_source_language(path)
+    return inferred_label
+
+
+def normalize_source_tab(raw: dict) -> SourceTab:
+    path = str(raw.get("path") or raw.get("source") or "")
+    if not path:
+        raise ValueError("extra_sources entries must declare path or source")
+    inferred_label, inferred_language = infer_source_language(path)
+    language = str(raw.get("language") or inferred_language)
+    label = str(raw.get("label") or source_language_label(language, path) or inferred_label)
+    return SourceTab(label=label, language=language, path=path)
+
+
 def extract_c_description(path: Path) -> tuple[str, tuple[str, ...]]:
     if not path.exists():
         return "", ()
@@ -535,6 +586,14 @@ def collect_examples(manifest: dict) -> list[Example]:
         source = str(entry.get("source", ""))
         if lane not in PUBLIC_LANES or stage == "lab" or not source:
             continue
+        inferred_source_label, inferred_source_language = infer_source_language(source)
+        source_language = str(entry.get("source_language") or inferred_source_language)
+        source_label = str(
+            entry.get("source_label")
+            or source_language_label(source_language, source)
+            or inferred_source_label
+        )
+        extra_sources = tuple(normalize_source_tab(raw) for raw in entry.get("extra_sources") or [])
         tags = entry.get("tags")
         if tags is None:
             tags = entry.get("features", [])
@@ -563,6 +622,9 @@ def collect_examples(manifest: dict) -> list[Example]:
             encoding=entry.get("encoding") or {},
             webgpu=entry.get("webgpu") or {},
             agent_copy_safe=entry.get("agent_copy_safe"),
+            source_label=source_label,
+            source_language=source_language,
+            extra_sources=extra_sources,
             python_source=PYTHON_SOURCE_BY_ID.get(id_),
         )
         examples.append(example)
@@ -612,6 +674,10 @@ def lane_title(lane: str) -> str:
 
 def source_url(example: Example) -> str:
     return f"{SOURCE_BASE_URL}/{example.source}"
+
+
+def source_path_url(source_path: str) -> str:
+    return f"{SOURCE_BASE_URL}/{source_path}"
 
 
 def site_relative_url(page_path: str | Path, target: str) -> str:
@@ -690,9 +756,18 @@ def media_block(
 
 def render_source_tabs(example: Example) -> list[str]:
     lines = ["## Source", ""]
-    lines.extend(['=== "C"', "", "    ```c"])
-    lines.append(f'    --8<-- "{example.source}"')
-    lines.extend(["    ```", ""])
+    tabs = [
+        SourceTab(
+            label=example.source_label,
+            language=example.source_language,
+            path=example.source,
+        ),
+        *example.extra_sources,
+    ]
+    for tab in tabs:
+        lines.extend([f'=== "{tab.label}"', "", f"    ```{tab.language}"])
+        lines.append(f'    --8<-- "{tab.path}"')
+        lines.extend(["    ```", ""])
 
     if example.python_source is not None and example.python_source_path is not None:
         lines.extend(['=== "Python"', "", "    ```python"])
@@ -779,6 +854,10 @@ def render_example_details(example: Example, page_path: str | Path) -> list[str]
     if example.python_source is not None:
         metadata.append(
             f"- Python source: [`{example.python_source}`]({SOURCE_BASE_URL}/{example.python_source})",
+        )
+    for tab in example.extra_sources:
+        metadata.append(
+            f"- {tab.label} source: [`{tab.path}`]({source_path_url(tab.path)})",
         )
     if example.webgpu:
         metadata.append(f"- Browser support: {webgpu_status_label(example.webgpu_status)}")

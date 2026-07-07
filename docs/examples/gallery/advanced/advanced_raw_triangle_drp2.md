@@ -62,6 +62,6 @@ Raw_triangle_drp2.png
 <a href="../../../advanced">Advanced Examples</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../advanced_external_surface_glfw">Previous: External Surface GLFW</a> · <a href="../advanced_raw_triangle_vklite">Next: Raw Triangle Vklite</a>
+<a href="../advanced_qt_hosting">Previous: Qt Hosting</a> · <a href="../advanced_raw_triangle_vklite">Next: Raw Triangle Vklite</a>
 </div>
 </nav>

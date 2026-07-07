@@ -19,6 +19,8 @@ taxonomy:
     primary_feature: required for feature examples
     primary_runtime: required for runtime examples
     primary_composite: required for composite examples
+    source_language: optional fenced-code language for the primary source
+    extra_sources: optional additional code tabs with label, language, and path
     tags: searchable labels for docs, agents, and gallery filters
     data.kind: synthetic | simulated | generated | real | prepared
     capture.mode: scenario by default; custom requires capture.reason
@@ -48,6 +50,8 @@ folders:
     - examples/c/composites
     - examples/c/showcases
     - examples/c/advanced
+    - examples/qt
+    - examples/python/qt
   non_public:
     - examples/c/lab
     - examples/c/legacy
@@ -267,6 +271,7 @@ batches:
   review-22-advanced-runtime:
     - advanced_raw_triangle_vklite
     - advanced_external_surface_glfw
+    - advanced_qt_hosting
 
 examples:
   - id: feature_basic_scene
@@ -2833,6 +2838,40 @@ examples:
       - advanced
       - external-surface
       - glfw
+      - host-integration
+
+  - id: advanced_qt_hosting
+    title: Qt Hosting
+    stage: v0.4_optional_provider
+    category: advanced
+    lane: advanced
+    source: examples/qt/hosted_qt_widgets.cpp
+    source_language: cpp
+    extra_sources:
+      - label: PyQt
+        language: python
+        path: examples/python/qt/hosted_pyqt.py
+    validation: optional-native-smoke
+    build_command: DVZ_CMAKE_ARGS="-DDVZ_ENABLE_QT_BRIDGE=ON" just build
+    smoke_command: ./build/examples/qt/hosted_qt_widgets --smoke-ms 1000
+    data:
+      kind: synthetic
+    portability: native-only
+    webgpu:
+      status: native-only
+      requirements:
+        - native-view
+        - external-surface
+        - qt
+        - optional-provider
+      reason: Qt and PyQt hosting use native toolkit windows and an optional bridge provider
+    agent_copy_safe: false
+    tags:
+      - advanced
+      - qt
+      - pyqt
+      - optional-provider
+      - external-surface
       - host-integration
 
   - id: start_scatter

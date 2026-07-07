@@ -71,6 +71,12 @@ def _webgpu_fields(example: build_gallery.Example) -> dict[str, Any]:
 
 
 def _json_example(example: build_gallery.Example, entry: dict[str, Any]) -> dict[str, Any]:
+    build_command = str(entry["build_command"]) if entry.get("build_command") else ""
+    smoke_command = str(entry["smoke_command"]) if entry.get("smoke_command") else ""
+    if example.source.startswith("examples/c/"):
+        build_command = build_command or f"just example-c {example.rel_executable}"
+        smoke_command = smoke_command or f"./build/examples/c/{example.rel_executable} --png"
+
     item: dict[str, Any] = {
         "id": example.id,
         "title": example.title,
@@ -83,13 +89,19 @@ def _json_example(example: build_gallery.Example, entry: dict[str, Any]) -> dict
         "page": example.page_path,
         "summary": example.summary,
         "validation": example.validation,
-        "build_command": f"just example-c {example.rel_executable}",
-        "smoke_command": f"./build/examples/c/{example.rel_executable} --png",
-        "tags": list(example.tags),
-        "data": example.data,
-        "data_kind": str(example.data.get("kind", "")),
-        "media": _media_fields(example),
     }
+    if build_command:
+        item["build_command"] = build_command
+    if smoke_command:
+        item["smoke_command"] = smoke_command
+    item.update(
+        {
+            "tags": list(example.tags),
+            "data": example.data,
+            "data_kind": str(example.data.get("kind", "")),
+            "media": _media_fields(example),
+        }
+    )
     item.update(_webgpu_fields(example))
     item.update(_primary_fields(entry))
     if example.dataset:

@@ -123,5 +123,6 @@ Qt's required extensions first, then pass them into Datoviz app creation.
 
 ??? example "Related examples"
 
+    - [Qt Hosting](../examples/gallery/advanced/advanced_qt_hosting.md) - Source: `examples/qt/hosted_qt_widgets.cpp`
     - [External Surface GLFW](../examples/gallery/advanced/advanced_external_surface_glfw.md) - Source: `examples/c/advanced/external_surface_glfw.c`
     - [GUI Viewport](../examples/gallery/features/feature_gui_viewport.md) - Source: `examples/c/features/gui_viewport.c`

@@ -4,7 +4,7 @@
 
 Browse advanced runtime and host-integration examples. These are useful after you are comfortable with ordinary scene code.
 
-Coverage: 3 examples (3 experimental).
+Coverage: 4 examples (1 supported, 3 experimental).
 
 Each card links to a detail page with preview media, source code, and example metadata.
 
@@ -21,6 +21,18 @@ Each card links to a detail page with preview media, source code, and example me
 `experimental` `advanced`<br><span>`advanced`, `external-surface`, `glfw`, `host-integration`</span>
 
 This example embeds a Datoviz view inside a host-owned GLFW surface.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Qt Hosting](gallery/advanced/advanced_qt_hosting.md)
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Qt Hosting"><span>No screenshot</span></div>
+
+`advanced`<br><span>`advanced`, `qt`, `pyqt`, `optional-provider`, `external-surface`, ...</span>
+
+Live Qt Widgets host around a Datoviz Vulkan scene.
 
 </div>
 
