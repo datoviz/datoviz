@@ -81,6 +81,21 @@ void example_preview_arcball_angles(
 }
 
 
+/**
+ * Return the shared arcball preview motion for cube-based controller examples.
+ *
+ * @return arcball preview descriptor
+ */
+ExamplePreviewArcballDesc example_preview_arcball_cube_desc(void)
+{
+    return (ExamplePreviewArcballDesc){
+        .base_angles = {+0.38f, -0.22f, +0.12f},
+        .amplitude = {+0.38f, +0.24f, +0.28f},
+        .zoom = 1.0f,
+    };
+}
+
+
 void example_preview_turntable(
     DvzTurntable* turntable,
     uint64_t frame_index,
@@ -98,6 +113,21 @@ void example_preview_turntable(
     if (desc->distance_delta != 0.0f)
         (void)dvz_turntable_dolly(turntable, desc->distance_delta * (0.5f - 0.5f * cosf(theta)));
     (void)dvz_turntable_apply_camera(turntable);
+}
+
+
+/**
+ * Return the shared turntable preview motion for cube-based controller examples.
+ *
+ * @return turntable preview descriptor
+ */
+ExamplePreviewTurntableDesc example_preview_turntable_cube_desc(void)
+{
+    return (ExamplePreviewTurntableDesc){
+        .yaw_amplitude = +0.32f,
+        .pitch_amplitude = +0.18f,
+        .distance_delta = 0.0f,
+    };
 }
 
 
@@ -142,4 +172,21 @@ void example_preview_fly(
     (void)dvz_fly_move_right(fly, desc->right_amplitude * cosf(theta));
     (void)dvz_fly_move_up(fly, desc->up_amplitude * sinf(theta + 1.20f));
     (void)dvz_fly_apply_camera(fly);
+}
+
+
+/**
+ * Return the shared fly preview motion for cube-based controller examples.
+ *
+ * @return fly preview descriptor
+ */
+ExamplePreviewFlyDesc example_preview_fly_cube_desc(void)
+{
+    return (ExamplePreviewFlyDesc){
+        .forward_amplitude = +0.10f,
+        .right_amplitude = +0.10f,
+        .up_amplitude = +0.035f,
+        .yaw_amplitude = +0.10f,
+        .pitch_amplitude = +0.045f,
+    };
 }

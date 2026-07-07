@@ -129,11 +129,7 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
         return;
 
     OrientationGizmoState* state = (OrientationGizmoState*)user;
-    ExamplePreviewArcballDesc desc = {
-        .base_angles = {+0.38f, -0.22f, +0.12f},
-        .amplitude = {+0.42f, +0.28f, +0.32f},
-        .zoom = 1.0f,
-    };
+    ExamplePreviewArcballDesc desc = example_preview_arcball_cube_desc();
     example_preview_arcball(
         state->arcball, ctx->preview_frame_index, ctx->preview_frame_count, &desc);
 }

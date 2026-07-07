@@ -87,11 +87,15 @@ void example_preview_arcball_angles(
     const ExamplePreviewArcballDesc* desc,
     vec3 out_angles);
 
+ExamplePreviewArcballDesc example_preview_arcball_cube_desc(void);
+
 void example_preview_turntable(
     DvzTurntable* turntable,
     uint64_t frame_index,
     uint64_t frame_count,
     const ExamplePreviewTurntableDesc* desc);
+
+ExamplePreviewTurntableDesc example_preview_turntable_cube_desc(void);
 
 void example_preview_panzoom(
     DvzPanzoom* panzoom,
@@ -104,3 +108,5 @@ void example_preview_fly(
     uint64_t frame_index,
     uint64_t frame_count,
     const ExamplePreviewFlyDesc* desc);
+
+ExamplePreviewFlyDesc example_preview_fly_cube_desc(void);
