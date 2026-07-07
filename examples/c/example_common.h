@@ -119,6 +119,12 @@ uint32_t example_frame_count(int argc, char** argv);
 
 uint32_t example_frame_count_any(int argc, char** argv);
 
+uint32_t example_frame_count_any_or_default(int argc, char** argv, uint32_t default_frame_count);
+
+bool example_png_capture_requested(int argc, char** argv);
+
+bool example_png_capture_config(const char* basename, DvzAppCaptureConfig* out);
+
 bool example_run_with_capture(
     DvzApp* app, DvzView* view, uint32_t frame_count, const DvzAppCaptureConfig* capture);
 

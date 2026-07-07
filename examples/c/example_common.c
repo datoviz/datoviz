@@ -297,6 +297,59 @@ uint32_t example_frame_count_any(int argc, char** argv)
 
 
 /**
+ * Parse the first numeric command-line argument, falling back to a bounded default.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @param default_frame_count fallback when no numeric argument is present
+ * @return requested frame count, or the fallback
+ */
+uint32_t example_frame_count_any_or_default(
+    int argc, char** argv, uint32_t default_frame_count)
+{
+    const uint32_t parsed = example_frame_count_any(argc, argv);
+    return parsed > 0 ? parsed : default_frame_count;
+}
+
+
+
+/**
+ * Return whether a native app example should write one PNG capture.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return true when --png is present
+ */
+bool example_png_capture_requested(int argc, char** argv)
+{
+    return example_arg_has(argc, argv, "--png");
+}
+
+
+
+/**
+ * Build a PNG-only app capture configuration using gallery capture environment overrides.
+ *
+ * @param basename fallback output basename
+ * @param out capture config output
+ * @return true when the output was filled
+ */
+#ifndef DVZ_EXAMPLE_NO_APP
+bool example_png_capture_config(const char* basename, DvzAppCaptureConfig* out)
+{
+    if (out == NULL)
+        return false;
+
+    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env(basename);
+    capture.flags = DVZ_APP_CAPTURE_PNG;
+    *out = capture;
+    return true;
+}
+#endif
+
+
+
+/**
  * Bind or refresh an RGBA8 sampled field on a visual.
  *
  * @param scene scene owning the sampled field

@@ -707,7 +707,11 @@ examples:
     primary_feature: gui-controls
     lane: features
     source: examples/c/features/gui_controls.c
-    validation: smoke+interaction
+    validation: smoke+interaction+screenshot
+    capture:
+      mode: native-app
+      args: ["--png"]
+      reason: native GUI examples capture the composed GLFW/ImGui view through app PNG capture
     data:
       kind: synthetic
     portability: native-only
@@ -725,7 +729,11 @@ examples:
     primary_feature: gui-viewport
     lane: features
     source: examples/c/features/gui_viewport.c
-    validation: smoke+interaction
+    validation: smoke+interaction+screenshot
+    capture:
+      mode: native-app
+      args: ["--png"]
+      reason: native GUI examples capture the composed GLFW/ImGui view through app PNG capture
     data:
       kind: synthetic
     portability: native-only
@@ -744,7 +752,11 @@ examples:
     primary_feature: gui-cimgui
     lane: features
     source: examples/c/features/gui_cimgui.c
-    validation: smoke+interaction
+    validation: smoke+interaction+screenshot
+    capture:
+      mode: native-app
+      args: ["--png"]
+      reason: native GUI examples capture the composed GLFW/ImGui view through app PNG capture
     data:
       kind: synthetic
     portability: native-only
@@ -1176,7 +1188,7 @@ examples:
     category: showcase
     lane: showcases
     source: examples/c/showcases/panel_linked_axes.c
-    validation: smoke+interaction
+    validation: smoke+interaction+screenshot
     data:
       kind: synthetic
     webgpu:
@@ -1511,7 +1523,7 @@ examples:
     primary_feature: controller-panzoom
     lane: features
     source: examples/c/features/panzoom.c
-    validation: smoke+interaction
+    validation: smoke+interaction+screenshot
     data:
       kind: synthetic
     webgpu:
@@ -1551,7 +1563,7 @@ examples:
     primary_feature: picking
     lane: features
     source: examples/c/features/picking.c
-    validation: smoke+interaction
+    validation: smoke+interaction+screenshot
     data:
       kind: synthetic
     portability: portable-scenario

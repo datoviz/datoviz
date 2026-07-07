@@ -198,7 +198,21 @@ int main(int argc, char** argv)
         "dvz_panel_connect_input() failed");
 
     dvz_view_set_gui_callback(host_view, _gui_viewport_callback, &state);
-    dvz_app_run(app, example_frame_count(argc, argv));
+    if (example_png_capture_requested(argc, argv))
+    {
+        DvzAppCaptureConfig capture = {0};
+        EXAMPLE_CHECK(
+            example_png_capture_config("feature_gui_viewport", &capture),
+            "failed to configure PNG capture");
+        EXAMPLE_CHECK(
+            example_run_with_capture(
+                app, host_view, example_frame_count_any_or_default(argc, argv, 4), &capture),
+            "PNG capture failed");
+    }
+    else
+    {
+        dvz_app_run(app, example_frame_count(argc, argv));
+    }
     ret = 0;
 
 cleanup:

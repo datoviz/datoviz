@@ -291,7 +291,21 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
     dvz_view_set_gui_callback(view, _gui_controls_callback, &state);
 
-    dvz_app_run(app, example_frame_count(argc, argv));
+    if (example_png_capture_requested(argc, argv))
+    {
+        DvzAppCaptureConfig capture = {0};
+        EXAMPLE_CHECK(
+            example_png_capture_config("feature_gui_controls", &capture),
+            "failed to configure PNG capture");
+        EXAMPLE_CHECK(
+            example_run_with_capture(
+                app, view, example_frame_count_any_or_default(argc, argv, 4), &capture),
+            "PNG capture failed");
+    }
+    else
+    {
+        dvz_app_run(app, example_frame_count(argc, argv));
+    }
     ret = 0;
 
 cleanup:
