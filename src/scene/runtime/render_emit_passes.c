@@ -66,6 +66,64 @@ static uint32_t _render_pass_color_target_format(
 }
 
 
+static uint32_t _rect_u32(float value)
+{
+    return value > 0.0f ? (uint32_t)(value + 0.5f) : 0;
+}
+
+
+
+static bool _stream_begin_render_pass_panel_rect(
+    DvzDrp2CommandStream* stream, const DvzFramePlanEmitConfig* cfg, uint64_t pass_id,
+    uint64_t encoder_id, uint64_t texture_id, const float clear_color[4],
+    const DvzPanelDesc* region, bool clear, bool clear_full_target)
+{
+    ANN(stream);
+    ANN(clear_color);
+    ANN(region);
+
+    uint32_t target_width = 0;
+    uint32_t target_height = 0;
+    _emit_target_extent(cfg, &target_width, &target_height);
+    DvzPanelDesc rect = _render_desc_framebuffer_rect(region, cfg);
+
+    DvzDrp2RenderPassDesc desc = dvz_drp2_render_pass_desc();
+    desc.id = pass_id;
+    desc.encoder_id = encoder_id;
+    if (clear_full_target)
+    {
+        desc.render_area_px[2] = target_width;
+        desc.render_area_px[3] = target_height;
+    }
+    else
+    {
+        desc.render_area_px[0] = _rect_u32(rect.x);
+        desc.render_area_px[1] = _rect_u32(rect.y);
+        desc.render_area_px[2] = _rect_u32(rect.width);
+        desc.render_area_px[3] = _rect_u32(rect.height);
+    }
+    desc.viewport_px[0] = rect.x;
+    desc.viewport_px[1] = rect.y;
+    desc.viewport_px[2] = rect.width;
+    desc.viewport_px[3] = rect.height;
+    desc.scissor_px[0] = rect.x;
+    desc.scissor_px[1] = rect.y;
+    desc.scissor_px[2] = rect.width;
+    desc.scissor_px[3] = rect.height;
+    desc.color_attachments[0].texture_id = texture_id;
+    desc.color_attachments[0].load_op =
+        clear ? DVZ_DRP2_ATTACHMENT_LOAD_CLEAR : DVZ_DRP2_ATTACHMENT_LOAD_LOAD;
+    desc.color_attachments[0].store_op = DVZ_DRP2_ATTACHMENT_STORE_STORE;
+    desc.color_attachments[0].access = DVZ_DRP2_ATTACHMENT_ACCESS_WRITE;
+    desc.color_attachments[0].clear = clear;
+    desc.color_attachments[0].clear_color[0] = clear_color[0];
+    desc.color_attachments[0].clear_color[1] = clear_color[1];
+    desc.color_attachments[0].clear_color[2] = clear_color[2];
+    desc.color_attachments[0].clear_color[3] = clear_color[3];
+    return dvz_drp2_stream_begin_render_pass_desc(stream, &desc);
+}
+
+
 
 /**
  * Return G-buffer targets associated with a panel id.
@@ -267,17 +325,16 @@ static bool _emitter_emit_graph_unordered_plain_render(
 
     if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE)
     {
-        ok = dvz_drp2_stream_begin_render_pass_region_clear(
-            stream, pass_id, encoder_id, color_id, clear_color[0], clear_color[1], clear_color[2],
-            clear_color[3], 0.0f, 0.0f, 1.0f, 1.0f, clear);
+        ok = _stream_begin_render_pass_panel_rect(
+            stream, cfg, pass_id, encoder_id, color_id, clear_color, &render->u.render.desc,
+            clear, clear);
     }
     else
     {
         clear = false;
-        ok = dvz_drp2_stream_begin_render_pass_region_clear(
-            stream, pass_id, encoder_id, color_id, clear_color[0], clear_color[1], clear_color[2],
-            clear_color[3], render->u.render.desc.x, render->u.render.desc.y,
-            render->u.render.desc.width, render->u.render.desc.height, false);
+        ok = _stream_begin_render_pass_panel_rect(
+            stream, cfg, pass_id, encoder_id, color_id, clear_color, &render->u.render.desc,
+            false, false);
     }
 
     bool needs_depth = _scene_render_needs_depth(emitter, render);
@@ -1033,11 +1090,10 @@ bool _emitter_emit_scene_graph_renders(
             _label_render_pass_contract(stream, pass_id, render);
             const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
             bool has_draws = batch != NULL;
-            ok = ok && dvz_drp2_stream_begin_render_pass_region_clear(
-                           stream, pass_id, encoder_id, target_id, cr, cg, cb, ca,
-                           render->u.render.desc.x, render->u.render.desc.y,
-                           render->u.render.desc.width, render->u.render.desc.height,
-                           clear_final);
+            ok = ok &&
+                 _stream_begin_render_pass_panel_rect(
+                     stream, cfg, pass_id, encoder_id, target_id, clear_color,
+                     &render->u.render.desc, clear_final, clear_final);
             ok = ok && _stream_apply_graph_color_ops(stream, graph_pass, scene_color_id, graph_targets);
             if (ok && graph_depth_id != 0)
                 ok = _stream_apply_graph_depth(stream, graph_pass, graph_depth_id);
@@ -1126,10 +1182,9 @@ bool _emitter_emit_scene_graph_renders(
                 graph_pass, 0, scene_color_id, &graph_targets, scene_color_id);
             const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
             bool has_draws = batch != NULL;
-            ok = dvz_drp2_stream_begin_render_pass_region_clear(
-                stream, pass_id, encoder_id, target_id, cr, cg, cb, ca, render->u.render.desc.x,
-                render->u.render.desc.y, render->u.render.desc.width, render->u.render.desc.height,
-                false);
+            ok = _stream_begin_render_pass_panel_rect(
+                stream, cfg, pass_id, encoder_id, target_id, clear_color, &render->u.render.desc,
+                false, false);
             ok = ok && _stream_apply_graph_color_ops(stream, graph_pass, scene_color_id, &graph_targets);
             if (ok && graph_depth_id != 0)
                 ok = _stream_apply_graph_depth(stream, graph_pass, graph_depth_id);

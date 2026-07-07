@@ -1347,6 +1347,7 @@ int test_scene_multiple_panels_multiple_point_visuals_emit(TstContext* suite, co
     AT(_stream_set_vertex_buffer_count(stream1) == 6);
     AT(_stream_draw_count(stream1) == 2);
     uint32_t begin_render_pass_count = 0;
+    uint32_t clear_begin_render_pass_count = 0;
     uint32_t viewport_count = 0;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream1); i++)
     {
@@ -1355,11 +1356,22 @@ int test_scene_multiple_panels_multiple_point_visuals_emit(TstContext* suite, co
             continue;
         if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         {
-            AC(cmd->u.begin_render_pass.viewport[0], 0.0f, 1e-6f);
-            AC(cmd->u.begin_render_pass.viewport[1], 0.0f, 1e-6f);
-            AC(cmd->u.begin_render_pass.viewport[2], 1.0f, 1e-6f);
-            AC(cmd->u.begin_render_pass.viewport[3], 1.0f, 1e-6f);
-            AT(cmd->u.begin_render_pass.clear);
+            if (cmd->u.begin_render_pass.has_explicit_rects)
+            {
+                AT(cmd->u.begin_render_pass.render_area_px[0] == 0);
+                AT(cmd->u.begin_render_pass.render_area_px[1] == 0);
+                AT(cmd->u.begin_render_pass.render_area_px[2] > 0);
+                AT(cmd->u.begin_render_pass.render_area_px[3] > 0);
+            }
+            else
+            {
+                AC(cmd->u.begin_render_pass.viewport[0], 0.0f, 1e-6f);
+                AC(cmd->u.begin_render_pass.viewport[1], 0.0f, 1e-6f);
+                AC(cmd->u.begin_render_pass.viewport[2], 1.0f, 1e-6f);
+                AC(cmd->u.begin_render_pass.viewport[3], 1.0f, 1e-6f);
+            }
+            if (cmd->u.begin_render_pass.clear)
+                clear_begin_render_pass_count++;
             begin_render_pass_count++;
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_SET_VIEWPORT)
@@ -1381,7 +1393,8 @@ int test_scene_multiple_panels_multiple_point_visuals_emit(TstContext* suite, co
             viewport_count++;
         }
     }
-    AT(begin_render_pass_count == 1);
+    AT(begin_render_pass_count >= 1);
+    AT(clear_begin_render_pass_count >= 1);
     AT(viewport_count == 2);
     _test_scene_stream_destroy(stream1);
 

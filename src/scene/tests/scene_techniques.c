@@ -1058,23 +1058,45 @@ int test_scene_msaa_mixed_plain_panel_resolve_region(TstContext* suite, const Ts
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         {
+            bool left_plain_rect = false;
+            bool right_msaa_rect = false;
+            if (cmd->u.begin_render_pass.has_explicit_rects)
+            {
+                left_plain_rect =
+                    cmd->u.begin_render_pass.viewport_px[0] == 0.0f &&
+                    cmd->u.begin_render_pass.viewport_px[1] == 0.0f &&
+                    cmd->u.begin_render_pass.viewport_px[2] == 64.0f &&
+                    cmd->u.begin_render_pass.viewport_px[3] == 64.0f;
+                right_msaa_rect =
+                    cmd->u.begin_render_pass.viewport_px[0] == 64.0f &&
+                    cmd->u.begin_render_pass.viewport_px[1] == 0.0f &&
+                    cmd->u.begin_render_pass.viewport_px[2] == 64.0f &&
+                    cmd->u.begin_render_pass.viewport_px[3] == 64.0f;
+            }
+            else
+            {
+                left_plain_rect =
+                    cmd->u.begin_render_pass.viewport[0] == 0.0f &&
+                    cmd->u.begin_render_pass.viewport[1] == 0.0f &&
+                    cmd->u.begin_render_pass.viewport[2] == 1.0f &&
+                    cmd->u.begin_render_pass.viewport[3] == 1.0f;
+                right_msaa_rect =
+                    cmd->u.begin_render_pass.viewport[0] == 0.5f &&
+                    cmd->u.begin_render_pass.viewport[1] == 0.0f &&
+                    cmd->u.begin_render_pass.viewport[2] == 0.5f &&
+                    cmd->u.begin_render_pass.viewport[3] == 1.0f;
+            }
             found_left_plain_pass =
                 found_left_plain_pass ||
                 (cmd->u.begin_render_pass.texture_id != 0 &&
                  cmd->u.begin_render_pass.texture_id != msaa_texture_id &&
-                 cmd->u.begin_render_pass.viewport[0] == 0.0f &&
-                 cmd->u.begin_render_pass.viewport[1] == 0.0f &&
-                 cmd->u.begin_render_pass.viewport[2] == 1.0f &&
-                 cmd->u.begin_render_pass.viewport[3] == 1.0f);
+                 left_plain_rect);
             found_right_msaa_pass =
                 found_right_msaa_pass ||
                 (msaa_texture_id != 0 &&
                  cmd->u.begin_render_pass.texture_id == msaa_texture_id &&
                  cmd->u.begin_render_pass.color_attachments[0].resolve_texture_id != 0 &&
-                 cmd->u.begin_render_pass.viewport[0] == 0.5f &&
-                 cmd->u.begin_render_pass.viewport[1] == 0.0f &&
-                 cmd->u.begin_render_pass.viewport[2] == 0.5f &&
-                 cmd->u.begin_render_pass.viewport[3] == 1.0f);
+                 right_msaa_rect);
         }
     }
     AT(found_left_plain_pass);
