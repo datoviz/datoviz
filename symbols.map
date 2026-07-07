@@ -366,7 +366,6 @@ dvz_drp2_stream_create_compute_pipeline
 dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout
 dvz_drp2_render_pipeline_desc
 dvz_drp2_stream_create_render_pipeline
-dvz_drp2_stream_create_render_pipeline_with_bind_group_layout
 dvz_drp2_stream_create_sampler
 dvz_drp2_stream_create_sampler_filter
 dvz_drp2_stream_create_shader_module
@@ -447,7 +446,6 @@ dvz_dvec4
 dvz_dvec4_copy
 dvz_easing
 dvz_edl_desc
-dvz_error_callback
 dvz_fence
 dvz_fence_create_wrapper
 dvz_fence_destroy
@@ -852,18 +850,6 @@ dvz_mean
 dvz_mesh
 dvz_mesh_set_geometry
 dvz_min_max
-dvz_mock_band
-dvz_mock_circle
-dvz_mock_color
-dvz_mock_fixed
-dvz_mock_full
-dvz_mock_line
-dvz_mock_linspace
-dvz_mock_monochrome
-dvz_mock_pos_2D
-dvz_mock_pos_3D
-dvz_mock_range
-dvz_mock_uniform
 dvz_msaa_desc
 dvz_normalize_bytes
 dvz_orientation_gizmo
@@ -901,11 +887,9 @@ dvz_panel_connect_input
 dvz_panel_controller
 dvz_panel_destroy
 dvz_panel_full
-dvz_panel_get_layout_reserve
 dvz_panel_get_padding
 dvz_panel_get_reserve
 dvz_panel_inner_rect_px
-dvz_panel_layout_reserve
 dvz_panel_plot_rect_px
 dvz_panel_set_background
 dvz_panel_set_background_color
@@ -915,7 +899,6 @@ dvz_panel_set_camera_desc
 dvz_panel_set_desc
 dvz_panel_set_domain
 dvz_panel_set_edl
-dvz_panel_set_layout_reserve
 dvz_panel_set_msaa
 dvz_panel_set_padding
 dvz_panel_set_reserve
@@ -923,7 +906,6 @@ dvz_panel_set_scene_occlusion
 dvz_panel_set_ssao
 dvz_panel_set_view2d
 dvz_panel_set_volume_occluder
-dvz_panel_view2d
 dvz_panel_view2d_extent
 dvz_panel_visible_domain
 dvz_panel_visual_bounds
@@ -1061,12 +1043,6 @@ dvz_scale_set_domain
 dvz_scale_set_format
 dvz_scale_set_view_range
 dvz_scale_update_categories
-dvz_scalebar
-dvz_scalebar_desc
-dvz_scalebar_set_anchor
-dvz_scalebar_set_dimension
-dvz_scalebar_set_duration_units
-dvz_scalebar_set_units
 dvz_scene
 dvz_scene_buffer
 dvz_scene_buffer_desc
@@ -1306,7 +1282,6 @@ dvz_view_emit_wheel
 dvz_view_external_surface
 dvz_view_fly
 dvz_view_framebuffer_size
-dvz_view_glfw
 dvz_view_gui
 dvz_view_input
 dvz_view_logical_size
@@ -1376,8 +1351,6 @@ dvz_visual_set_scene_occluded
 dvz_visual_set_scene_occluder
 dvz_visual_set_shader_desc
 dvz_visual_set_strings
-dvz_visual_set_texture_r32f
-dvz_visual_set_texture_rgba8
 dvz_visual_set_transform
 dvz_visual_set_transform_desc
 dvz_visual_set_visible
