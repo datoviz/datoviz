@@ -609,6 +609,9 @@ static void _print_usage(const DvzScenarioSpec* spec)
     fprintf(stdout, "  --offscreen-record N   record unpaced offscreen video\n");
     fprintf(stdout, "  --png                  write one offscreen PNG\n");
     fprintf(stdout, "  --dvzr N               record a DVZR stream offscreen\n");
+    fprintf(stdout, "  --preview              enable deterministic gallery preview motion\n");
+    fprintf(stdout, "  --preview-frame N      preview frame index for one-frame captures\n");
+    fprintf(stdout, "  --preview-frames N     total preview frame count\n");
     fprintf(stdout, "size and scale:\n");
     fprintf(stdout, "  --size WxH             exact framebuffer/output pixels\n");
     fprintf(stdout, "  --logical-size WxH     logical layout size in pixels\n");
@@ -643,6 +646,9 @@ DvzRunnerConfig dvz_runner_config(const DvzScenarioSpec* spec)
         .capture = dvz_app_capture_config_from_env(basename),
         .print_progress = true,
         .pace_wall_time = false,
+        .preview_mode = false,
+        .preview_frame_index = 0,
+        .preview_frame_count = 0,
     };
     config.capture.flags = DVZ_APP_CAPTURE_NONE;
     return config;
@@ -770,6 +776,8 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     resolved.height = resolved.logical_height;
     if (resolved.fps <= 0)
         resolved.fps = spec->fps > 0 ? spec->fps : 60.0;
+    if (resolved.preview_mode && resolved.preview_frame_count == 0)
+        resolved.preview_frame_count = resolved.frame_count != 0 ? resolved.frame_count : 1;
     resolved.capture.flags = _capture_flags(resolved.capture_kind);
     if (resolved.capture.fps <= 0)
         resolved.capture.fps = resolved.fps;
@@ -786,6 +794,9 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     ctx.presentation = resolved.presentation;
     ctx.width = resolved.logical_width;
     ctx.height = resolved.logical_height;
+    ctx.preview_mode = resolved.preview_mode;
+    ctx.preview_frame_index = resolved.preview_frame_index;
+    ctx.preview_frame_count = resolved.preview_frame_count;
 
     scene = dvz_scene();
     if (scene == NULL)
@@ -1029,6 +1040,30 @@ int dvz_scenario_run_native_cli(const DvzScenarioSpec* spec, int argc, char** ar
             config.presentation = DVZ_RUNNER_PRESENT_OFFSCREEN;
             config.capture_kind = DVZ_RUNNER_CAPTURE_DVZR;
             config.frame_count = _frames_after(argc, argv, i, RUNNER_DEFAULT_FRAMES);
+        }
+        else if (strcmp(arg, "--preview") == 0)
+        {
+            config.preview_mode = true;
+        }
+        else if (strcmp(arg, "--preview-frame") == 0 && i + 1 < argc)
+        {
+            uint32_t frame = 0;
+            if (!_parse_u32(argv[++i], &frame))
+            {
+                fprintf(stderr, "scenario_runner: invalid --preview-frame value\n");
+                return -1;
+            }
+            config.preview_frame_index = frame;
+        }
+        else if (strcmp(arg, "--preview-frames") == 0 && i + 1 < argc)
+        {
+            uint32_t frame_count = 0;
+            if (!_parse_u32(argv[++i], &frame_count))
+            {
+                fprintf(stderr, "scenario_runner: invalid --preview-frames value\n");
+                return -1;
+            }
+            config.preview_frame_count = frame_count;
         }
         else if (strcmp(arg, "--size") == 0 && i + 1 < argc)
         {

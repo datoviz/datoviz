@@ -34,6 +34,7 @@
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
+#include "example_controller_preview.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -55,6 +56,7 @@
 typedef struct ControllerArcballState
 {
     DvzGeometry* geometry;
+    DvzArcball* arcball;
 } ControllerArcballState;
 
 
@@ -159,9 +161,32 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzArcball* arcball = dvz_controller_arcball(controller);
     if (arcball == NULL)
         return false;
+    state->arcball = arcball;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
     return true;
+}
+
+
+/**
+ * Apply deterministic preview motion for generated gallery media.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    if (ctx == NULL || !ctx->preview_mode || user == NULL)
+        return;
+
+    ControllerArcballState* state = (ControllerArcballState*)user;
+    ExamplePreviewArcballDesc desc = {
+        .base_angles = {+0.38f, -0.22f, +0.12f},
+        .amplitude = {+0.42f, +0.28f, +0.32f},
+        .zoom = 1.0f,
+    };
+    example_preview_arcball(
+        state->arcball, ctx->preview_frame_index, ctx->preview_frame_count, &desc);
 }
 
 
@@ -198,7 +223,9 @@ static DvzScenarioSpec _controller_arcball_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_ARCBALL,
         .init = _scenario_init,
+        .frame = _scenario_frame,
         .destroy = _scenario_destroy,
     };
 }

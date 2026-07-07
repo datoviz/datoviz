@@ -212,6 +212,9 @@ struct DvzScenarioContext
     double time;
     double dt;
     uint64_t frame_index;
+    bool preview_mode;
+    uint64_t preview_frame_index;
+    uint64_t preview_frame_count;
 
     DvzScenarioControllerBinding controller_bindings[DVZ_SCENARIO_MAX_CONTROLLER_BINDINGS];
     uint32_t controller_binding_count;
@@ -259,6 +262,9 @@ typedef struct DvzRunnerConfig
     DvzAppCaptureConfig capture;
     bool print_progress;
     bool pace_wall_time;
+    bool preview_mode;
+    uint64_t preview_frame_index;
+    uint64_t preview_frame_count;
 } DvzRunnerConfig;
 
 
