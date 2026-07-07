@@ -162,3 +162,10 @@ DvzVisual* example_graphite_cyan_cube_mesh(
     double size,
     const ExampleStyleColorRole face_roles[6],
     DvzGeometry** out_geometry);
+
+bool example_add_graphite_cyan_cube_mesh(
+    DvzScene* scene,
+    DvzPanel* panel,
+    double size,
+    const ExampleStyleColorRole face_roles[6],
+    DvzGeometry** out_geometry);

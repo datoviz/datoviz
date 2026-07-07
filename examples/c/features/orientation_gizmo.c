@@ -61,41 +61,6 @@ typedef struct OrientationGizmoState
 
 
 /*************************************************************************************************/
-/*  Helpers                                                                                      */
-/*************************************************************************************************/
-
-/**
- * Add one lit cube mesh so the linked orientation gizmo has a visible reference frame.
- *
- * @param scene scene owning the visual
- * @param panel panel receiving the visual
- * @param out_geometry geometry handle for cleanup on failure before upload completes
- * @return true on success
- */
-static bool _add_mesh(DvzScene* scene, DvzPanel* panel, DvzGeometry** out_geometry)
-{
-    const ExampleStyleColorRole face_roles[6] = {
-        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
-        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
-        EXAMPLE_STYLE_COLOR_WARNING,
-        EXAMPLE_STYLE_COLOR_ERROR,
-        EXAMPLE_STYLE_COLOR_TEXT,
-        EXAMPLE_STYLE_COLOR_MINOR_TICK,
-    };
-    DvzVisual* visual = example_graphite_cyan_cube_mesh(scene, 1.18, face_roles, out_geometry);
-    if (visual == NULL)
-        return false;
-
-    DvzMaterialDesc material = example_default_phong_material_desc();
-    if (dvz_visual_set_material(visual, &material) != 0)
-        return false;
-
-    return dvz_panel_add_visual(panel, visual, NULL) == 0;
-}
-
-
-
-/*************************************************************************************************/
 /*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
@@ -130,7 +95,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     if (example_set_default_3d_camera(panel, 1.0f) == NULL)
         return false;
-    if (!_add_mesh(ctx->scene, panel, &state->geometry))
+    if (!example_add_graphite_cyan_cube_mesh(ctx->scene, panel, 1.18, NULL, &state->geometry))
         return false;
 
     DvzController* controller = dvz_arcball(ctx->scene, NULL);

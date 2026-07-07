@@ -62,42 +62,6 @@ typedef struct ControllerArcballState
 
 
 /*************************************************************************************************/
-/*  Helpers                                                                                      */
-/*************************************************************************************************/
-
-/**
- * Add one lit cube mesh to make arcball rotation visible.
- *
- * @param scene scene owning the visual
- * @param panel panel receiving the visual
- * @param out_geometry geometry handle for cleanup on failure before upload completes
- * @return true on success
- */
-static bool _add_arcball_mesh(DvzScene* scene, DvzPanel* panel, DvzGeometry** out_geometry)
-{
-    const ExampleStyleColorRole face_roles[6] = {
-        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
-        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
-        EXAMPLE_STYLE_COLOR_WARNING,
-        EXAMPLE_STYLE_COLOR_ERROR,
-        EXAMPLE_STYLE_COLOR_TEXT,
-        EXAMPLE_STYLE_COLOR_MINOR_TICK,
-    };
-    DvzVisual* visual = example_graphite_cyan_cube_mesh(
-        scene, EXAMPLE_CONTROLLER_CUBE_SIZE, face_roles, out_geometry);
-    if (visual == NULL)
-        return false;
-
-    DvzMaterialDesc material = example_default_phong_material_desc();
-    if (dvz_visual_set_material(visual, &material) != 0)
-        return false;
-
-    return dvz_panel_add_visual(panel, visual, NULL) == 0;
-}
-
-
-
-/*************************************************************************************************/
 /*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
@@ -152,7 +116,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     grid.depth_test = true;
     if (dvz_reference_grid(panel, &grid) == NULL)
         return false;
-    if (!_add_arcball_mesh(ctx->scene, panel, &state->geometry))
+    if (!example_add_graphite_cyan_cube_mesh(
+            ctx->scene, panel, EXAMPLE_CONTROLLER_CUBE_SIZE, NULL, &state->geometry))
         return false;
 
     DvzController* controller = dvz_arcball(ctx->scene, NULL);

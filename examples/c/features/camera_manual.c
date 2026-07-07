@@ -58,34 +58,6 @@ DvzScenarioSpec dvz_example_camera_manual_scenario(void);
 /*************************************************************************************************/
 
 /**
- * Add one lit cube mesh so the manual camera framing has a visible 3D reference.
- *
- * @param scene scene owning the visual
- * @param panel panel receiving the visual
- * @return true on success
- */
-static bool _add_cube(DvzScene* scene, DvzPanel* panel)
-{
-    const ExampleStyleColorRole face_roles[6] = {
-        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
-        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
-        EXAMPLE_STYLE_COLOR_WARNING,
-        EXAMPLE_STYLE_COLOR_ERROR,
-        EXAMPLE_STYLE_COLOR_TEXT,
-        EXAMPLE_STYLE_COLOR_MINOR_TICK,
-    };
-    DvzVisual* visual = example_graphite_cyan_cube_mesh(scene, 1.25, face_roles, NULL);
-    if (visual == NULL)
-        return false;
-
-    DvzMaterialDesc material = example_default_phong_material_desc();
-    if (dvz_visual_set_material(visual, &material) != 0)
-        return false;
-    return dvz_panel_add_visual(panel, visual, NULL) == 0;
-}
-
-
-/**
  * Configure the panel camera with explicit view and projection fields.
  *
  * @param panel target panel
@@ -140,7 +112,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     if (!_set_manual_camera(panel))
         return false;
-    if (!_add_cube(ctx->scene, panel))
+    if (!example_add_graphite_cyan_cube_mesh(ctx->scene, panel, 1.25, NULL, NULL))
         return false;
 
     DvzController* controller = dvz_arcball(ctx->scene, NULL);

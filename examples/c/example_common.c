@@ -669,3 +669,44 @@ DvzVisual* example_graphite_cyan_cube_mesh(
         *out_geometry = NULL;
     return visual;
 }
+
+
+/**
+ * Add one lit graphite-cyan cube mesh to a panel.
+ *
+ * @param scene scene owning the visual
+ * @param panel panel receiving the visual
+ * @param size cube edge length
+ * @param face_roles optional six graphite-cyan face color roles, or NULL for the standard cube
+ * @param out_geometry geometry handle for cleanup on failure before upload completes
+ * @return true when the cube visual was added
+ */
+bool example_add_graphite_cyan_cube_mesh(
+    DvzScene* scene,
+    DvzPanel* panel,
+    double size,
+    const ExampleStyleColorRole face_roles[6],
+    DvzGeometry** out_geometry)
+{
+    static const ExampleStyleColorRole default_face_roles[6] = {
+        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
+        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+        EXAMPLE_STYLE_COLOR_WARNING,
+        EXAMPLE_STYLE_COLOR_ERROR,
+        EXAMPLE_STYLE_COLOR_TEXT,
+        EXAMPLE_STYLE_COLOR_MINOR_TICK,
+    };
+
+    if (scene == NULL || panel == NULL)
+        return false;
+
+    const ExampleStyleColorRole* roles = face_roles != NULL ? face_roles : default_face_roles;
+    DvzVisual* visual = example_graphite_cyan_cube_mesh(scene, size, roles, out_geometry);
+    if (visual == NULL)
+        return false;
+
+    DvzMaterialDesc material = example_default_phong_material_desc();
+    if (dvz_visual_set_material(visual, &material) != 0)
+        return false;
+    return dvz_panel_add_visual(panel, visual, NULL) == 0;
+}
