@@ -143,6 +143,8 @@ def capture_frame(preview: AnimatedPreview, frame_dir: Path, frame: int) -> None
         str(frame),
         "--preview-frames",
         str(preview.frames),
+        "--preview-fps",
+        str(preview.fps),
         "--png",
         "--size",
         preview.size,

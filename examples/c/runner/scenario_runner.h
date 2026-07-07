@@ -215,6 +215,7 @@ struct DvzScenarioContext
     bool preview_mode;
     uint64_t preview_frame_index;
     uint64_t preview_frame_count;
+    double preview_fps;
 
     DvzScenarioControllerBinding controller_bindings[DVZ_SCENARIO_MAX_CONTROLLER_BINDINGS];
     uint32_t controller_binding_count;
@@ -265,6 +266,7 @@ typedef struct DvzRunnerConfig
     bool preview_mode;
     uint64_t preview_frame_index;
     uint64_t preview_frame_count;
+    double preview_fps;
 } DvzRunnerConfig;
 
 
@@ -278,6 +280,33 @@ DvzRunnerConfig dvz_runner_config(const DvzScenarioSpec* spec);
 bool dvz_runner_capture_path(
     const DvzAppCaptureConfig* capture, DvzRunnerCaptureKind kind, char* out, size_t out_size,
     bool display);
+
+/**
+ * Return the resolved deterministic preview frame rate.
+ *
+ * @param ctx scenario context
+ * @return positive preview frame rate, or 60 Hz when unavailable
+ */
+double dvz_scenario_preview_fps(const DvzScenarioContext* ctx);
+
+/**
+ * Return the deterministic preview time for the selected preview frame.
+ *
+ * The gallery animation tool captures one frame per process. Simulation-style examples should use
+ * this time instead of accumulated runner time when `ctx->preview_mode` is enabled.
+ *
+ * @param ctx scenario context
+ * @return preview time in seconds
+ */
+double dvz_scenario_preview_time(const DvzScenarioContext* ctx);
+
+/**
+ * Return the deterministic frame interval for gallery preview captures.
+ *
+ * @param ctx scenario context
+ * @return preview timestep in seconds
+ */
+double dvz_scenario_preview_dt(const DvzScenarioContext* ctx);
 
 /**
  * Bind a scene-owned controller to a scenario panel and register it for runner input connection.
