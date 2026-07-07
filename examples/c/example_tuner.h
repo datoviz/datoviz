@@ -41,6 +41,11 @@
 #define EXAMPLE_TUNER_MAX_PANZOOMS   8u
 #define EXAMPLE_TUNER_MAX_CAMERAS    8u
 #define EXAMPLE_TUNER_MAX_EDL        8u
+#define EXAMPLE_TUNER_MAX_MSAA       8u
+#define EXAMPLE_TUNER_MAX_SSAO       8u
+#define EXAMPLE_TUNER_MAX_MATERIALS  16u
+#define EXAMPLE_TUNER_MAX_DEPTH_CUES 8u
+#define EXAMPLE_TUNER_MAX_VOLUMES    8u
 
 
 
@@ -117,6 +122,53 @@ typedef struct ExampleTunerEdl
 } ExampleTunerEdl;
 
 
+typedef struct ExampleTunerMsaa
+{
+    const char* name;
+    DvzPanel* panel;
+    DvzExampleGuiMsaaControls* controls;
+    DvzExampleGuiMsaaControls reset_controls;
+} ExampleTunerMsaa;
+
+
+typedef struct ExampleTunerSsao
+{
+    const char* name;
+    DvzPanel* panel;
+    DvzExampleGuiSsaoControls* controls;
+    DvzExampleGuiSsaoControls reset_controls;
+} ExampleTunerSsao;
+
+
+typedef struct ExampleTunerMaterial
+{
+    const char* name;
+    DvzVisual* visual;
+    DvzMaterialDesc* material;
+    DvzMaterialDesc reset_material;
+} ExampleTunerMaterial;
+
+
+typedef struct ExampleTunerDepthCue
+{
+    const char* name;
+    DvzVisual* visual;
+    bool* enabled;
+    bool reset_enabled;
+    DvzDepthCueDesc* desc;
+    DvzDepthCueDesc reset_desc;
+} ExampleTunerDepthCue;
+
+
+typedef struct ExampleTunerVolume
+{
+    const char* name;
+    DvzVisual* visual;
+    DvzVolumeState state;
+    DvzVolumeState reset_state;
+} ExampleTunerVolume;
+
+
 struct ExampleTuner
 {
     const char* name;
@@ -140,6 +192,21 @@ struct ExampleTuner
 
     ExampleTunerEdl edls[EXAMPLE_TUNER_MAX_EDL];
     uint32_t edl_count;
+
+    ExampleTunerMsaa msaas[EXAMPLE_TUNER_MAX_MSAA];
+    uint32_t msaa_count;
+
+    ExampleTunerSsao ssaos[EXAMPLE_TUNER_MAX_SSAO];
+    uint32_t ssao_count;
+
+    ExampleTunerMaterial materials[EXAMPLE_TUNER_MAX_MATERIALS];
+    uint32_t material_count;
+
+    ExampleTunerDepthCue depth_cues[EXAMPLE_TUNER_MAX_DEPTH_CUES];
+    uint32_t depth_cue_count;
+
+    ExampleTunerVolume volumes[EXAMPLE_TUNER_MAX_VOLUMES];
+    uint32_t volume_count;
 };
 
 
@@ -199,6 +266,37 @@ void example_tuner_edl(
     const char* name,
     DvzPanel* panel,
     DvzExampleGuiEdlControls* controls);
+
+void example_tuner_msaa(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzPanel* panel,
+    DvzExampleGuiMsaaControls* controls);
+
+void example_tuner_ssao(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzPanel* panel,
+    DvzExampleGuiSsaoControls* controls);
+
+void example_tuner_material(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzVisual* visual,
+    DvzMaterialDesc* material);
+
+void example_tuner_depth_cue(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzVisual* visual,
+    bool* enabled,
+    DvzDepthCueDesc* desc);
+
+void example_tuner_volume(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzVisual* visual,
+    const DvzVolumeState* defaults);
 
 void example_tuner_sync(ExampleTuner* tuner);
 

@@ -71,6 +71,86 @@ static void _copy_vec3(vec3 dst, const float src[3])
 }
 
 
+/**
+ * Clamp an integer value.
+ *
+ * @param value value
+ * @param min minimum
+ * @param max maximum
+ * @return clamped value
+ */
+static int _clamp_int(int value, int min, int max)
+{
+    if (value < min)
+        return min;
+    if (value > max)
+        return max;
+    return value;
+}
+
+
+
+/**
+ * Clamp a depth-cue descriptor after GUI edits.
+ *
+ * @param desc descriptor edited in place
+ */
+static void _depth_cue_clamp(DvzDepthCueDesc* desc)
+{
+    if (desc == NULL)
+        return;
+
+    if (desc->near_depth < 0.0f)
+        desc->near_depth = 0.0f;
+    if (desc->far_depth <= desc->near_depth + 0.001f)
+        desc->far_depth = desc->near_depth + 0.001f;
+}
+
+
+
+/**
+ * Clamp a volume state after GUI edits.
+ *
+ * @param state state edited in place
+ */
+static void _volume_clamp(DvzVolumeState* state)
+{
+    if (state == NULL)
+        return;
+
+    if (state->step_count < 1u)
+        state->step_count = 1u;
+    if (state->value_max < state->value_min)
+    {
+        const double tmp = state->value_min;
+        state->value_min = state->value_max;
+        state->value_max = tmp;
+    }
+}
+
+
+
+/**
+ * Return conservative volume defaults when no retained state is available.
+ *
+ * @return volume state
+ */
+static DvzVolumeState _volume_state_default(void)
+{
+    DvzVolumeState state = {
+        .opacity = 1.0f,
+        .sampling = DVZ_VOLUME_SAMPLING_LINEAR,
+        .render_mode = DVZ_VOLUME_RENDER_COMPOSITE,
+        .slice_axis = DVZ_VOLUME_AXIS_Z,
+        .slice_position = 0.5,
+        .value_min = 0.0,
+        .value_max = 1.0,
+        .step_count = 64u,
+    };
+    return state;
+}
+
+
 
 /**
  * Apply an EDL control state to its panel.
@@ -208,6 +288,323 @@ static void _edl_print(FILE* fp, const ExampleTunerEdl* state)
     dvz_fprintf(fp, "edl.strength = %.6ff;\n", state->controls->strength);
     dvz_fprintf(fp, "edl.depth_scale = %.6ff;\n", state->controls->depth_scale);
     dvz_fprintf(fp, "(void)dvz_panel_set_edl(panel, &edl);\n");
+}
+
+
+
+/**
+ * Convert MSAA controls to a descriptor.
+ *
+ * @param controls controls
+ * @return MSAA descriptor
+ */
+static DvzMsaaDesc _msaa_desc_from_controls(const DvzExampleGuiMsaaControls* controls)
+{
+    DvzMsaaDesc desc = dvz_msaa_desc();
+    if (controls == NULL)
+        return desc;
+    desc.enabled = controls->enabled;
+    desc.sample_count = (uint32_t)(controls->samples + 0.5f);
+    desc.alpha_to_coverage = controls->alpha_to_coverage;
+    return desc;
+}
+
+
+
+/**
+ * Convert SSAO controls to a descriptor.
+ *
+ * @param controls controls
+ * @return SSAO descriptor
+ */
+static DvzSsaoDesc _ssao_desc_from_controls(const DvzExampleGuiSsaoControls* controls)
+{
+    DvzSsaoDesc desc = dvz_ssao_desc();
+    if (controls == NULL)
+        return desc;
+    desc.radius = controls->radius;
+    desc.strength = controls->strength;
+    desc.bias = controls->bias;
+    desc.power = controls->power;
+    desc.min_visibility = controls->min_visibility;
+    desc.sample_count = (uint32_t)(controls->samples + 0.5f);
+    desc.blur_enabled = controls->blur;
+    desc.blur_radius = controls->blur_radius;
+    desc.blur_depth_sigma = controls->blur_depth_sigma;
+    desc.blur_normal_sigma = controls->blur_normal_sigma;
+    desc.debug_view = controls->debug_view;
+    return desc;
+}
+
+
+
+/**
+ * Apply MSAA controls to their panel.
+ *
+ * @param msaa MSAA component state
+ */
+static void _msaa_apply(ExampleTunerMsaa* msaa)
+{
+    if (msaa == NULL || msaa->panel == NULL || msaa->controls == NULL)
+        return;
+    if (!msaa->controls->enabled)
+    {
+        (void)dvz_panel_set_msaa(msaa->panel, NULL);
+        return;
+    }
+    DvzMsaaDesc desc = _msaa_desc_from_controls(msaa->controls);
+    (void)dvz_panel_set_msaa(msaa->panel, &desc);
+}
+
+
+
+/**
+ * Apply SSAO controls to their panel.
+ *
+ * @param ssao SSAO component state
+ */
+static void _ssao_apply(ExampleTunerSsao* ssao)
+{
+    if (ssao == NULL || ssao->panel == NULL || ssao->controls == NULL)
+        return;
+    if (!ssao->controls->enabled)
+    {
+        (void)dvz_panel_set_ssao(ssao->panel, NULL);
+        return;
+    }
+    DvzSsaoDesc desc = _ssao_desc_from_controls(ssao->controls);
+    (void)dvz_panel_set_ssao(ssao->panel, &desc);
+}
+
+
+
+/**
+ * Apply material controls to their visual.
+ *
+ * @param material material component state
+ */
+static void _material_apply(ExampleTunerMaterial* material)
+{
+    if (material == NULL || material->visual == NULL || material->material == NULL)
+        return;
+    (void)dvz_visual_set_material(material->visual, material->material);
+}
+
+
+
+/**
+ * Apply depth-cue controls to their visual.
+ *
+ * @param cue depth-cue component state
+ */
+static void _depth_cue_apply(ExampleTunerDepthCue* cue)
+{
+    if (cue == NULL || cue->visual == NULL || cue->enabled == NULL || cue->desc == NULL)
+        return;
+    (void)dvz_visual_set_depth_cue(cue->visual, *cue->enabled ? cue->desc : NULL);
+}
+
+
+
+/**
+ * Apply volume controls to their visual.
+ *
+ * @param volume volume component state
+ */
+static void _volume_apply(ExampleTunerVolume* volume)
+{
+    if (volume == NULL || volume->visual == NULL)
+        return;
+
+    (void)dvz_volume_set_render_mode(volume->visual, volume->state.render_mode);
+    (void)dvz_volume_set_sampling(volume->visual, volume->state.sampling);
+    (void)dvz_volume_set_opacity(volume->visual, volume->state.opacity);
+    (void)dvz_volume_set_step_count(volume->visual, volume->state.step_count);
+    (void)dvz_volume_set_value_range(
+        volume->visual, volume->state.value_min, volume->state.value_max);
+    (void)dvz_volume_set_slice_axis(volume->visual, volume->state.slice_axis);
+    (void)dvz_volume_set_slice_position(volume->visual, volume->state.slice_position);
+}
+
+
+
+/**
+ * Dump one MSAA component.
+ *
+ * @param fp output stream
+ * @param state component state
+ */
+static void _msaa_print(FILE* fp, const ExampleTunerMsaa* state)
+{
+    ANN(fp);
+    ANN(state);
+    ANN(state->controls);
+
+    dvz_fprintf(fp, "/* MSAA: %s */\n", _tuner_name(state->name, "msaa"));
+    if (!state->controls->enabled)
+    {
+        dvz_fprintf(fp, "(void)dvz_panel_set_msaa(panel, NULL);\n");
+        return;
+    }
+    dvz_fprintf(fp, "DvzMsaaDesc msaa = dvz_msaa_desc();\n");
+    dvz_fprintf(fp, "msaa.enabled = true;\n");
+    dvz_fprintf(fp, "msaa.sample_count = %uu;\n", (uint32_t)(state->controls->samples + 0.5f));
+    dvz_fprintf(
+        fp, "msaa.alpha_to_coverage = %s;\n",
+        state->controls->alpha_to_coverage ? "true" : "false");
+    dvz_fprintf(fp, "(void)dvz_panel_set_msaa(panel, &msaa);\n");
+}
+
+
+
+/**
+ * Dump one SSAO component.
+ *
+ * @param fp output stream
+ * @param state component state
+ */
+static void _ssao_print(FILE* fp, const ExampleTunerSsao* state)
+{
+    ANN(fp);
+    ANN(state);
+    ANN(state->controls);
+
+    dvz_fprintf(fp, "/* SSAO: %s */\n", _tuner_name(state->name, "ssao"));
+    if (!state->controls->enabled)
+    {
+        dvz_fprintf(fp, "(void)dvz_panel_set_ssao(panel, NULL);\n");
+        return;
+    }
+    dvz_fprintf(fp, "DvzSsaoDesc ssao = dvz_ssao_desc();\n");
+    dvz_fprintf(fp, "ssao.radius = %.6ff;\n", state->controls->radius);
+    dvz_fprintf(fp, "ssao.strength = %.6ff;\n", state->controls->strength);
+    dvz_fprintf(fp, "ssao.bias = %.6ff;\n", state->controls->bias);
+    dvz_fprintf(fp, "ssao.power = %.6ff;\n", state->controls->power);
+    dvz_fprintf(fp, "ssao.min_visibility = %.6ff;\n", state->controls->min_visibility);
+    dvz_fprintf(fp, "ssao.sample_count = %uu;\n", (uint32_t)(state->controls->samples + 0.5f));
+    dvz_fprintf(fp, "ssao.blur_enabled = %s;\n", state->controls->blur ? "true" : "false");
+    dvz_fprintf(fp, "ssao.blur_radius = %.6ff;\n", state->controls->blur_radius);
+    dvz_fprintf(fp, "ssao.blur_depth_sigma = %.6ff;\n", state->controls->blur_depth_sigma);
+    dvz_fprintf(fp, "ssao.blur_normal_sigma = %.6ff;\n", state->controls->blur_normal_sigma);
+    dvz_fprintf(fp, "ssao.debug_view = %s;\n", state->controls->debug_view ? "true" : "false");
+    dvz_fprintf(fp, "(void)dvz_panel_set_ssao(panel, &ssao);\n");
+}
+
+
+
+/**
+ * Dump one material component.
+ *
+ * @param fp output stream
+ * @param state component state
+ */
+static void _material_print(FILE* fp, const ExampleTunerMaterial* state)
+{
+    ANN(fp);
+    ANN(state);
+    ANN(state->material);
+
+    const DvzMaterialDesc* material = state->material;
+    dvz_fprintf(fp, "/* material: %s */\n", _tuner_name(state->name, "material"));
+    dvz_fprintf(fp, "DvzMaterialDesc material = dvz_material_desc();\n");
+    dvz_fprintf(fp, "material.model = %d;\n", (int)material->model);
+    dvz_fprintf(fp, "material.alpha_mode = %d;\n", (int)material->alpha_mode);
+    dvz_fprintf(fp, "material.opacity = %.6ff;\n", material->opacity);
+    dvz_fprintf(
+        fp,
+        "material.base_color_factor[0] = %.6ff; material.base_color_factor[1] = %.6ff; "
+        "material.base_color_factor[2] = %.6ff; material.base_color_factor[3] = %.6ff;\n",
+        material->base_color_factor[0], material->base_color_factor[1],
+        material->base_color_factor[2], material->base_color_factor[3]);
+    dvz_fprintf(
+        fp,
+        "material.light_direction[0] = %+.6ff; material.light_direction[1] = %+.6ff; "
+        "material.light_direction[2] = %+.6ff;\n",
+        material->light_direction[0], material->light_direction[1],
+        material->light_direction[2]);
+    dvz_fprintf(fp, "material.phong.ambient = %.6ff;\n", material->phong.ambient);
+    dvz_fprintf(fp, "material.phong.diffuse = %.6ff;\n", material->phong.diffuse);
+    dvz_fprintf(fp, "material.phong.specular = %.6ff;\n", material->phong.specular);
+    dvz_fprintf(fp, "material.phong.shininess = %.6ff;\n", material->phong.shininess);
+    dvz_fprintf(fp, "material.standard.roughness = %.6ff;\n", material->standard.roughness);
+    dvz_fprintf(fp, "material.standard.specular = %.6ff;\n", material->standard.specular);
+    dvz_fprintf(fp, "material.standard.metallic = %.6ff;\n", material->standard.metallic);
+    dvz_fprintf(
+        fp,
+        "material.standard.emissive[0] = %.6ff; material.standard.emissive[1] = %.6ff; "
+        "material.standard.emissive[2] = %.6ff;\n",
+        material->standard.emissive[0], material->standard.emissive[1],
+        material->standard.emissive[2]);
+    dvz_fprintf(fp, "material.standard.rim_strength = %.6ff;\n", material->standard.rim_strength);
+    if (state->visual != NULL)
+        dvz_fprintf(fp, "(void)dvz_visual_set_material(visual, &material);\n");
+}
+
+
+
+/**
+ * Dump one depth-cue component.
+ *
+ * @param fp output stream
+ * @param state component state
+ */
+static void _depth_cue_print(FILE* fp, const ExampleTunerDepthCue* state)
+{
+    ANN(fp);
+    ANN(state);
+    ANN(state->enabled);
+    ANN(state->desc);
+
+    dvz_fprintf(fp, "/* depth cue: %s */\n", _tuner_name(state->name, "depth_cue"));
+    if (!*state->enabled)
+    {
+        dvz_fprintf(fp, "(void)dvz_visual_set_depth_cue(visual, NULL);\n");
+        return;
+    }
+    const DvzDepthCueDesc* cue = state->desc;
+    dvz_fprintf(fp, "DvzDepthCueDesc cue = dvz_depth_cue_desc();\n");
+    dvz_fprintf(fp, "cue.mode = %d;\n", (int)cue->mode);
+    dvz_fprintf(fp, "cue.metric = %d;\n", (int)cue->metric);
+    dvz_fprintf(fp, "cue.falloff = %d;\n", (int)cue->falloff);
+    dvz_fprintf(fp, "cue.near_depth = %.6ff;\n", cue->near_depth);
+    dvz_fprintf(fp, "cue.far_depth = %.6ff;\n", cue->far_depth);
+    dvz_fprintf(fp, "cue.strength = %.6ff;\n", cue->strength);
+    dvz_fprintf(fp, "cue.density = %.6ff;\n", cue->density);
+    dvz_fprintf(
+        fp,
+        "cue.background_color[0] = %.6ff; cue.background_color[1] = %.6ff; "
+        "cue.background_color[2] = %.6ff; cue.background_color[3] = %.6ff;\n",
+        cue->background_color[0], cue->background_color[1], cue->background_color[2],
+        cue->background_color[3]);
+    dvz_fprintf(fp, "(void)dvz_visual_set_depth_cue(visual, &cue);\n");
+}
+
+
+
+/**
+ * Dump one volume component.
+ *
+ * @param fp output stream
+ * @param state component state
+ */
+static void _volume_print(FILE* fp, const ExampleTunerVolume* state)
+{
+    ANN(fp);
+    ANN(state);
+    const DvzVolumeState* volume = &state->state;
+
+    dvz_fprintf(fp, "/* volume: %s */\n", _tuner_name(state->name, "volume"));
+    dvz_fprintf(fp, "(void)dvz_volume_set_render_mode(volume, %d);\n", (int)volume->render_mode);
+    dvz_fprintf(fp, "(void)dvz_volume_set_sampling(volume, %d);\n", (int)volume->sampling);
+    dvz_fprintf(fp, "(void)dvz_volume_set_opacity(volume, %.6ff);\n", volume->opacity);
+    dvz_fprintf(fp, "(void)dvz_volume_set_step_count(volume, %uu);\n", volume->step_count);
+    dvz_fprintf(
+        fp, "(void)dvz_volume_set_value_range(volume, %.6f, %.6f);\n", volume->value_min,
+        volume->value_max);
+    dvz_fprintf(fp, "(void)dvz_volume_set_slice_axis(volume, %d);\n", (int)volume->slice_axis);
+    dvz_fprintf(
+        fp, "(void)dvz_volume_set_slice_position(volume, %.6f);\n",
+        volume->slice_position);
 }
 
 
@@ -431,6 +828,313 @@ static void _edl_print_cb(FILE* fp, void* user)
     ExampleTunerEdl* state = (ExampleTunerEdl*)user;
     if (state != NULL && state->controls != NULL)
         _edl_print(fp, state);
+}
+
+
+static bool _msaa_gui(DvzGui* gui, void* user)
+{
+    ExampleTunerMsaa* state = (ExampleTunerMsaa*)user;
+    if (gui == NULL || state == NULL || state->controls == NULL)
+        return false;
+    return example_gui_msaa(gui, state->controls);
+}
+
+
+static void _msaa_apply_cb(void* user)
+{
+    _msaa_apply((ExampleTunerMsaa*)user);
+}
+
+
+static void _msaa_reset(void* user)
+{
+    ExampleTunerMsaa* state = (ExampleTunerMsaa*)user;
+    if (state == NULL || state->controls == NULL)
+        return;
+    *state->controls = state->reset_controls;
+    _msaa_apply(state);
+}
+
+
+static void _msaa_print_cb(FILE* fp, void* user)
+{
+    ExampleTunerMsaa* state = (ExampleTunerMsaa*)user;
+    if (state != NULL && state->controls != NULL)
+        _msaa_print(fp, state);
+}
+
+
+static bool _ssao_gui(DvzGui* gui, void* user)
+{
+    ExampleTunerSsao* state = (ExampleTunerSsao*)user;
+    if (gui == NULL || state == NULL || state->controls == NULL)
+        return false;
+    return example_gui_ssao(gui, state->controls);
+}
+
+
+static void _ssao_apply_cb(void* user)
+{
+    _ssao_apply((ExampleTunerSsao*)user);
+}
+
+
+static void _ssao_reset(void* user)
+{
+    ExampleTunerSsao* state = (ExampleTunerSsao*)user;
+    if (state == NULL || state->controls == NULL)
+        return;
+    *state->controls = state->reset_controls;
+    _ssao_apply(state);
+}
+
+
+static void _ssao_print_cb(FILE* fp, void* user)
+{
+    ExampleTunerSsao* state = (ExampleTunerSsao*)user;
+    if (state != NULL && state->controls != NULL)
+        _ssao_print(fp, state);
+}
+
+
+static bool _material_gui(DvzGui* gui, void* user)
+{
+    ExampleTunerMaterial* state = (ExampleTunerMaterial*)user;
+    if (gui == NULL || state == NULL || state->material == NULL)
+        return false;
+
+    static const char* const material_models[] = {"Unlit", "Phong", "Standard"};
+    static const char* const alpha_modes[] = {"Opaque", "Blended", "WBOIT", "Depth peel", "Mask"};
+
+    DvzMaterialDesc* material = state->material;
+    bool changed = false;
+
+    int model = _clamp_int((int)material->model, 0, 2);
+    if (dvz_gui_combo(gui, "Model", &model, material_models, 3))
+    {
+        material->model = (DvzMaterialModel)model;
+        changed = true;
+    }
+
+    int alpha_mode = _clamp_int((int)material->alpha_mode, 0, 4);
+    if (dvz_gui_combo(gui, "Alpha", &alpha_mode, alpha_modes, 5))
+    {
+        material->alpha_mode = (DvzAlphaMode)alpha_mode;
+        changed = true;
+    }
+
+    changed |= dvz_gui_slider_float(gui, "Opacity", &material->opacity, 0.0f, 1.0f);
+    changed |= dvz_gui_color_edit4(gui, "Base color", material->base_color_factor, 0);
+
+    if (material->model != DVZ_MATERIAL_MODEL_UNLIT)
+        changed |=
+            dvz_gui_slider_float3(gui, "Light direction", material->light_direction, -1.0f, +1.0f);
+
+    if (material->model == DVZ_MATERIAL_MODEL_PHONG)
+    {
+        changed |= dvz_gui_slider_float(gui, "Ambient", &material->phong.ambient, 0.0f, 1.0f);
+        changed |= dvz_gui_slider_float(gui, "Diffuse", &material->phong.diffuse, 0.0f, 1.5f);
+        changed |= dvz_gui_slider_float(gui, "Specular", &material->phong.specular, 0.0f, 1.5f);
+        changed |=
+            dvz_gui_slider_float(gui, "Shininess", &material->phong.shininess, 1.0f, 160.0f);
+    }
+    else if (material->model == DVZ_MATERIAL_MODEL_STANDARD)
+    {
+        changed |=
+            dvz_gui_slider_float(gui, "Roughness", &material->standard.roughness, 0.02f, 1.0f);
+        changed |= dvz_gui_slider_float(gui, "Specular", &material->standard.specular, 0.0f, 1.5f);
+        changed |= dvz_gui_slider_float(gui, "Metallic", &material->standard.metallic, 0.0f, 1.0f);
+        changed |=
+            dvz_gui_slider_float3(gui, "Emissive", material->standard.emissive, 0.0f, 4.0f);
+        changed |=
+            dvz_gui_slider_float(gui, "Rim", &material->standard.rim_strength, 0.0f, 1.0f);
+    }
+
+    return changed;
+}
+
+
+static void _material_apply_cb(void* user)
+{
+    _material_apply((ExampleTunerMaterial*)user);
+}
+
+
+static void _material_reset(void* user)
+{
+    ExampleTunerMaterial* state = (ExampleTunerMaterial*)user;
+    if (state == NULL || state->material == NULL)
+        return;
+    *state->material = state->reset_material;
+    _material_apply(state);
+}
+
+
+static void _material_print_cb(FILE* fp, void* user)
+{
+    ExampleTunerMaterial* state = (ExampleTunerMaterial*)user;
+    if (state != NULL && state->material != NULL)
+        _material_print(fp, state);
+}
+
+
+static bool _depth_cue_gui(DvzGui* gui, void* user)
+{
+    ExampleTunerDepthCue* state = (ExampleTunerDepthCue*)user;
+    if (gui == NULL || state == NULL || state->enabled == NULL || state->desc == NULL)
+        return false;
+
+    static const char* const modes[] = {"None", "Fade", "Desaturate", "Darken"};
+    static const char* const metrics[] = {"Clip depth", "Eye distance", "World distance"};
+    static const char* const falloffs[] = {"Linear", "Exponential"};
+
+    DvzDepthCueDesc* cue = state->desc;
+    bool changed = false;
+    changed |= dvz_gui_checkbox(gui, "Enable", state->enabled);
+
+    int mode = _clamp_int((int)cue->mode, 0, 3);
+    if (dvz_gui_combo(gui, "Mode", &mode, modes, 4))
+    {
+        cue->mode = (DvzDepthCueMode)mode;
+        changed = true;
+    }
+
+    int metric = _clamp_int((int)cue->metric, 0, 2);
+    if (dvz_gui_combo(gui, "Metric", &metric, metrics, 3))
+    {
+        cue->metric = (DvzDepthCueMetric)metric;
+        changed = true;
+    }
+
+    int falloff = _clamp_int((int)cue->falloff, 0, 1);
+    if (dvz_gui_combo(gui, "Falloff", &falloff, falloffs, 2))
+    {
+        cue->falloff = (DvzDepthCueFalloff)falloff;
+        changed = true;
+    }
+
+    changed |= dvz_gui_slider_float(gui, "Near depth", &cue->near_depth, 0.0f, 16.0f);
+    changed |= dvz_gui_slider_float(gui, "Far depth", &cue->far_depth, 0.0f, 16.0f);
+    changed |= dvz_gui_slider_float(gui, "Strength", &cue->strength, 0.0f, 1.0f);
+    changed |= dvz_gui_slider_float(gui, "Density", &cue->density, 0.0f, 8.0f);
+    changed |= dvz_gui_color_edit4(gui, "Background", cue->background_color, 0);
+
+    if (changed)
+        _depth_cue_clamp(cue);
+    return changed;
+}
+
+
+static void _depth_cue_apply_cb(void* user)
+{
+    ExampleTunerDepthCue* state = (ExampleTunerDepthCue*)user;
+    if (state != NULL)
+        _depth_cue_clamp(state->desc);
+    _depth_cue_apply(state);
+}
+
+
+static void _depth_cue_reset(void* user)
+{
+    ExampleTunerDepthCue* state = (ExampleTunerDepthCue*)user;
+    if (state == NULL || state->enabled == NULL || state->desc == NULL)
+        return;
+    *state->enabled = state->reset_enabled;
+    *state->desc = state->reset_desc;
+    _depth_cue_apply(state);
+}
+
+
+static void _depth_cue_print_cb(FILE* fp, void* user)
+{
+    ExampleTunerDepthCue* state = (ExampleTunerDepthCue*)user;
+    if (state != NULL && state->enabled != NULL && state->desc != NULL)
+        _depth_cue_print(fp, state);
+}
+
+
+static bool _volume_gui(DvzGui* gui, void* user)
+{
+    ExampleTunerVolume* state = (ExampleTunerVolume*)user;
+    if (gui == NULL || state == NULL)
+        return false;
+
+    static const char* const render_modes[] = {"Slice", "MIP", "Composite"};
+    static const char* const sampling_modes[] = {"Linear", "Nearest"};
+    static const char* const axes[] = {"X", "Y", "Z"};
+
+    DvzVolumeState* volume = &state->state;
+    bool changed = false;
+
+    int render_mode = _clamp_int((int)volume->render_mode, 0, 2);
+    if (dvz_gui_combo(gui, "Render mode", &render_mode, render_modes, 3))
+    {
+        volume->render_mode = (DvzVolumeRenderMode)render_mode;
+        changed = true;
+    }
+
+    int sampling = _clamp_int((int)volume->sampling, 0, 1);
+    if (dvz_gui_combo(gui, "Sampling", &sampling, sampling_modes, 2))
+    {
+        volume->sampling = (DvzVolumeSamplingMode)sampling;
+        changed = true;
+    }
+
+    changed |= dvz_gui_slider_float(gui, "Opacity", &volume->opacity, 0.0f, 1.0f);
+
+    int step_count = (int)volume->step_count;
+    if (dvz_gui_slider_int(gui, "Steps", &step_count, 1, 512))
+    {
+        volume->step_count = (uint32_t)_clamp_int(step_count, 1, 512);
+        changed = true;
+    }
+
+    changed |= dvz_gui_slider_range_double(
+        gui, "Value range", &volume->value_min, &volume->value_max, 0.0, 1.0, "%.3f");
+
+    int axis = _clamp_int((int)volume->slice_axis, 0, 2);
+    if (dvz_gui_combo(gui, "Slice axis", &axis, axes, 3))
+    {
+        volume->slice_axis = (DvzVolumeAxis)axis;
+        changed = true;
+    }
+    float slice_position = (float)volume->slice_position;
+    if (dvz_gui_slider_float(gui, "Slice", &slice_position, 0.0f, 1.0f))
+    {
+        volume->slice_position = slice_position;
+        changed = true;
+    }
+
+    if (changed)
+        _volume_clamp(volume);
+    return changed;
+}
+
+
+static void _volume_apply_cb(void* user)
+{
+    ExampleTunerVolume* state = (ExampleTunerVolume*)user;
+    if (state != NULL)
+        _volume_clamp(&state->state);
+    _volume_apply(state);
+}
+
+
+static void _volume_reset(void* user)
+{
+    ExampleTunerVolume* state = (ExampleTunerVolume*)user;
+    if (state == NULL)
+        return;
+    state->state = state->reset_state;
+    _volume_apply(state);
+}
+
+
+static void _volume_print_cb(FILE* fp, void* user)
+{
+    ExampleTunerVolume* state = (ExampleTunerVolume*)user;
+    if (state != NULL)
+        _volume_print(fp, state);
 }
 
 
@@ -792,7 +1496,8 @@ void example_tuner_edl(
     DvzPanel* panel,
     DvzExampleGuiEdlControls* controls)
 {
-    if (tuner == NULL || panel == NULL || controls == NULL || tuner->edl_count >= EXAMPLE_TUNER_MAX_EDL)
+    if (tuner == NULL || panel == NULL || controls == NULL ||
+        tuner->edl_count >= EXAMPLE_TUNER_MAX_EDL)
         return;
 
     ExampleTunerEdl* state = &tuner->edls[tuner->edl_count++];
@@ -805,6 +1510,172 @@ void example_tuner_edl(
     (void)example_tuner_add_component(
         tuner, _tuner_name(name, "EDL"), state, NULL, _edl_gui, _edl_apply_cb, _edl_reset,
         _edl_print_cb);
+}
+
+
+
+/**
+ * Register an MSAA tuner component.
+ *
+ * @param tuner tuner
+ * @param name component name
+ * @param panel panel receiving MSAA state
+ * @param controls live MSAA controls
+ */
+void example_tuner_msaa(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzPanel* panel,
+    DvzExampleGuiMsaaControls* controls)
+{
+    if (tuner == NULL || panel == NULL || controls == NULL ||
+        tuner->msaa_count >= EXAMPLE_TUNER_MAX_MSAA)
+        return;
+
+    ExampleTunerMsaa* state = &tuner->msaas[tuner->msaa_count++];
+    state->name = name;
+    state->panel = panel;
+    state->controls = controls;
+    state->reset_controls = *controls;
+    _msaa_apply(state);
+
+    (void)example_tuner_add_component(
+        tuner, _tuner_name(name, "MSAA"), state, NULL, _msaa_gui, _msaa_apply_cb, _msaa_reset,
+        _msaa_print_cb);
+}
+
+
+
+/**
+ * Register an SSAO tuner component.
+ *
+ * @param tuner tuner
+ * @param name component name
+ * @param panel panel receiving SSAO state
+ * @param controls live SSAO controls
+ */
+void example_tuner_ssao(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzPanel* panel,
+    DvzExampleGuiSsaoControls* controls)
+{
+    if (tuner == NULL || panel == NULL || controls == NULL ||
+        tuner->ssao_count >= EXAMPLE_TUNER_MAX_SSAO)
+        return;
+
+    ExampleTunerSsao* state = &tuner->ssaos[tuner->ssao_count++];
+    state->name = name;
+    state->panel = panel;
+    state->controls = controls;
+    state->reset_controls = *controls;
+    _ssao_apply(state);
+
+    (void)example_tuner_add_component(
+        tuner, _tuner_name(name, "SSAO"), state, NULL, _ssao_gui, _ssao_apply_cb, _ssao_reset,
+        _ssao_print_cb);
+}
+
+
+
+/**
+ * Register a material tuner component.
+ *
+ * @param tuner tuner
+ * @param name component name
+ * @param visual visual receiving material state
+ * @param material live material descriptor
+ */
+void example_tuner_material(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzVisual* visual,
+    DvzMaterialDesc* material)
+{
+    if (tuner == NULL || visual == NULL || material == NULL ||
+        tuner->material_count >= EXAMPLE_TUNER_MAX_MATERIALS)
+        return;
+
+    ExampleTunerMaterial* state = &tuner->materials[tuner->material_count++];
+    state->name = name;
+    state->visual = visual;
+    state->material = material;
+    state->reset_material = *material;
+    _material_apply(state);
+
+    (void)example_tuner_add_component(
+        tuner, _tuner_name(name, "Material"), state, NULL, _material_gui, _material_apply_cb,
+        _material_reset, _material_print_cb);
+}
+
+
+
+/**
+ * Register a depth-cue tuner component.
+ *
+ * @param tuner tuner
+ * @param name component name
+ * @param visual visual receiving depth-cue state
+ * @param enabled live enable flag
+ * @param desc live depth-cue descriptor
+ */
+void example_tuner_depth_cue(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzVisual* visual,
+    bool* enabled,
+    DvzDepthCueDesc* desc)
+{
+    if (tuner == NULL || visual == NULL || enabled == NULL || desc == NULL ||
+        tuner->depth_cue_count >= EXAMPLE_TUNER_MAX_DEPTH_CUES)
+        return;
+
+    ExampleTunerDepthCue* state = &tuner->depth_cues[tuner->depth_cue_count++];
+    state->name = name;
+    state->visual = visual;
+    state->enabled = enabled;
+    state->reset_enabled = *enabled;
+    state->desc = desc;
+    state->reset_desc = *desc;
+    _depth_cue_clamp(state->desc);
+    _depth_cue_apply(state);
+
+    (void)example_tuner_add_component(
+        tuner, _tuner_name(name, "Depth cue"), state, NULL, _depth_cue_gui, _depth_cue_apply_cb,
+        _depth_cue_reset, _depth_cue_print_cb);
+}
+
+
+
+/**
+ * Register a volume tuner component.
+ *
+ * @param tuner tuner
+ * @param name component name
+ * @param visual volume visual
+ * @param defaults optional volume defaults; NULL snapshots the current visual state
+ */
+void example_tuner_volume(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzVisual* visual,
+    const DvzVolumeState* defaults)
+{
+    if (tuner == NULL || visual == NULL || tuner->volume_count >= EXAMPLE_TUNER_MAX_VOLUMES)
+        return;
+
+    ExampleTunerVolume* state = &tuner->volumes[tuner->volume_count++];
+    state->name = name;
+    state->visual = visual;
+    const DvzVolumeState* current = defaults != NULL ? defaults : dvz_volume_state(visual);
+    state->state = current != NULL ? *current : _volume_state_default();
+    state->reset_state = state->state;
+    _volume_clamp(&state->state);
+    _volume_apply(state);
+
+    (void)example_tuner_add_component(
+        tuner, _tuner_name(name, "Volume"), state, NULL, _volume_gui, _volume_apply_cb,
+        _volume_reset, _volume_print_cb);
 }
 
 
