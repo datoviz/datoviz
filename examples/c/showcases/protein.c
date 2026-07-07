@@ -639,7 +639,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_tuner_material(&state->tuner, "Atom material", spheres, &state->sphere_material);
 
     DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
-    rotation_desc.axis[1] = 1.0f;
+    rotation_desc.axis[2] = 1.0f;
     rotation_desc.speed_rad_per_sec = 1.0f;
 
     state->sphere_rotation = dvz_track_rotation(&rotation_desc);

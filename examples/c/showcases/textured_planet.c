@@ -67,6 +67,8 @@
 
 #define ROTATION_SPEED_RAD_PER_SEC 0.16f
 
+static const float TAU = 6.28318530718f;
+
 #define STAR_COUNT 900
 #define STAR_RADIUS 48.0f
 
@@ -669,7 +671,14 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->planet_index = PLANET_EARTH;
     _state_reset_controls(state);
     if (ctx->preview_mode)
-        state->spin_speed = 1.05f;
+    {
+        const uint64_t count = ctx->preview_frame_count > 0 ? ctx->preview_frame_count : 1;
+        const uint32_t stride = ctx->preview_sample_stride > 0 ? ctx->preview_sample_stride : 1;
+        const double fps = ctx->preview_fps > 0.0 ? ctx->preview_fps : 24.0;
+        const double duration_s = ((double)count * (double)stride) / fps;
+        state->spin_speed =
+            duration_s > 0.0 ? (float)((double)TAU / duration_s) : ROTATION_SPEED_RAD_PER_SEC;
+    }
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");

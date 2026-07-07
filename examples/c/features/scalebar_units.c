@@ -30,6 +30,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/scene.h"
 #include "example_style.h"
@@ -50,6 +51,17 @@ DvzScenarioSpec dvz_example_scalebar_units_scenario(void);
 #define SAMPLE_COUNT 96u
 
 static const float TAU = 6.28318530718f;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct ScaleBarUnitsState
+{
+    DvzPanzoom* panzoom;
+} ScaleBarUnitsState;
 
 
 
@@ -187,7 +199,51 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzPanzoomDesc panzoom_desc = dvz_panzoom_desc();
     panzoom_desc.controller_flags = DVZ_PANZOOM_FLAGS_FIXED_Y;
     DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, &panzoom_desc, DVZ_DIM_MASK_XY);
-    return panzoom != NULL;
+    if (panzoom == NULL)
+        return false;
+
+    ScaleBarUnitsState* state = (ScaleBarUnitsState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    state->panzoom = panzoom;
+    if (out_user != NULL)
+        *out_user = state;
+    return true;
+}
+
+
+
+/**
+ * Animate the visible duration span for generated gallery media.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    ScaleBarUnitsState* state = (ScaleBarUnitsState*)user;
+    if (ctx == NULL || !ctx->preview_mode || state == NULL || state->panzoom == NULL)
+        return;
+
+    const uint64_t count = ctx->preview_frame_count > 0 ? ctx->preview_frame_count : 1;
+    const float phase = (float)(ctx->preview_frame_index % count) / (float)count;
+    const float zoom_x = 1.48f + 0.48f * sinf(TAU * phase);
+    (void)dvz_panzoom_pan(state->panzoom, (vec2){0.0f, 0.0f});
+    (void)dvz_panzoom_zoom(state->panzoom, (vec2){zoom_x, 1.0f});
+}
+
+
+
+/**
+ * Destroy the scale-bar units scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    dvz_free(user);
 }
 
 
@@ -206,8 +262,10 @@ DvzScenarioSpec dvz_example_scalebar_units_scenario(void)
         .height = HEIGHT,
         .fps = 60.0,
         .requirements = DVZ_SCENARIO_REQ_TEXT_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER |
-                        DVZ_SCENARIO_REQ_PANZOOM,
+                        DVZ_SCENARIO_REQ_PANZOOM | DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
+        .frame = _scenario_frame,
+        .destroy = _scenario_destroy,
     };
 }
 

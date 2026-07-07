@@ -1384,6 +1384,11 @@ examples:
     lane: features
     source: examples/c/features/scalebar.c
     validation: smoke+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 72
+        fps: 24
     data:
       kind: synthetic
     webgpu:
@@ -1404,6 +1409,11 @@ examples:
     lane: features
     source: examples/c/features/scalebar_units.c
     validation: smoke+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 72
+        fps: 24
     data:
       kind: synthetic
     webgpu:
@@ -3004,7 +3014,7 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 72
+        frames: 96
         fps: 24
         sample_stride: 2
     data:
