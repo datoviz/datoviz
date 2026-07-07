@@ -19,6 +19,13 @@ Recent checkpoint commits landed:
 6. `6382cc00` Add Python bars and bands gallery example.
 7. `d2621425e` Add Python guide gallery examples.
 
+Current uncommitted checkpoint in this working tree:
+
+1. Added `examples/python/gallery/features/image_probe.py`.
+2. Added reusable Python gallery input/query helpers in `examples/python/gallery/common.py`.
+3. Added `image_probe.python.source` / `direct-engine` in `examples/c/MANIFEST.yaml` and
+   regenerated gallery metadata.
+
 The last validation loop was:
 
 ```sh
@@ -29,22 +36,31 @@ python3 -m py_compile $(find examples/python/gallery -name '*.py' -print)
 git diff --check
 ```
 
-Live window and screenshot validation were not run for the earlier checkpoint notes.
+Additional local validation for the uncommitted `image_probe` checkpoint:
+
+```sh
+python3 - <<'PY'
+... construct image_probe scene, queue one offscreen pixel query, run one offscreen frame ...
+PY
+```
+
+This returned `image_probe offscreen query smoke: 1 True`. Live window and screenshot validation
+were not run for the earlier checkpoint notes.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-07:
 
-- v0.4-required feature examples: 25 of 64 have Python entries; 39 remain missing.
-- all v0.4-required public examples: 37 of 95 have Python entries; 58 remain missing.
+- v0.4-required feature examples: 26 of 64 have Python entries; 38 remain missing.
+- all v0.4-required public examples: 38 of 95 have Python entries; 57 remain missing.
 - `feature_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
+- `image_probe` is done in the current working tree: it has
+  `examples/python/gallery/features/image_probe.py` and a matching `python.source` manifest entry.
 
 
 ## Preferred Next Commit
 
-Start the event/query/selection helper batch. Prefer `image_probe` first because it creates the
-smallest reusable shape for request/query readback, deterministic probe inputs, and
-windowless/offscreen-safe scenario structure. Then use the same helper path for
-`feature_picking`, `feature_selection_pixel`, `feature_selection_sphere`,
+Continue the event/query/selection helper batch using the helper path created for `image_probe`.
+Next target `feature_picking`, then `feature_selection_pixel`, `feature_selection_sphere`,
 `feature_selection_mesh_instances`, and `feature_probe_labels`.
 
 Implementation shape:
@@ -78,14 +94,14 @@ Implementation shape:
    git diff --check
    ```
 
-Suggested checkpoint commit:
+Suggested checkpoint commit for the current working tree:
 
 ```text
 examples: add Python image probe gallery example
 ```
 
-Use one commit for helper plus example when small. Split binding facade/generator changes from
-example additions if regenerated files make review clearer.
+Use one commit for helper plus example. Split binding facade/generator changes from later example
+additions if regenerated files make review clearer.
 
 
 ## Remaining Batch Order
@@ -153,11 +169,10 @@ Current missing `v0.4_required` feature examples with no `python.source` entry:
 `feature_gui_viewport`, `feature_gui_cimgui`, `feature_animation_tracks`, `technique_ssao`,
 `technique_msaa`, `technique_depth_cue`, `technique_transparency`, `feature_input_events`,
 `feature_view_size_policies`, `feature_bezier_curve_path`, `feature_path_join`, `scale_bar`,
-`scalebar_units`, `annotation_readout`, `image_probe`, `feature_picking`,
-`feature_selection_pixel`, `feature_selection_sphere`, `feature_selection_mesh_instances`,
-`feature_isolines`, `feature_builtin_shapes_2d`, `feature_builtin_shapes_3d`,
-`feature_obj_loading`, `feature_probe_labels`, `feature_datetime_axis`, and
-`feature_marker_symbols`.
+`scalebar_units`, `annotation_readout`, `feature_picking`, `feature_selection_pixel`,
+`feature_selection_sphere`, `feature_selection_mesh_instances`, `feature_isolines`,
+`feature_builtin_shapes_2d`, `feature_builtin_shapes_3d`, `feature_obj_loading`,
+`feature_probe_labels`, `feature_datetime_axis`, and `feature_marker_symbols`.
 
 
 ## Per-Example Checklist

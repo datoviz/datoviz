@@ -38,12 +38,19 @@ A synthetic microscopy-like float field is uploaded as an R32 sampled image and 
     --8<-- "examples/c/features/image_probe.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/image_probe.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `image_probe`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/image_probe.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/image_probe.c)
+    - Python source: [`examples/python/gallery/features/image_probe.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/image_probe.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=image_probe"><code>examples/webgpu/live.html?id=image_probe</code></a>
     - Browser capability tags: `image`, `query-readback`, `frame-callbacks`

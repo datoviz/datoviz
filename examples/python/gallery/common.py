@@ -156,6 +156,109 @@ def run_with_frame_callback(scene, figure, title: str, on_frame, configure_view=
         dvz.dvz_scene_destroy(scene)
 
 
+def run_with_input_callbacks(
+    scene,
+    figure,
+    title: str,
+    *,
+    on_pointer=None,
+    on_frame=None,
+    configure_view=None,
+):
+    app = dvz.dvz_app(scene)
+    if not app:
+        raise RuntimeError("dvz_app() failed")
+    view = None
+    router = None
+    pointer_subscription = 0
+    frame_callback_set = False
+    try:
+        view = dvz.dvz_view_window(app, figure, WIDTH, HEIGHT, title.encode())
+        if not view:
+            raise RuntimeError("dvz_view_window() failed")
+        if configure_view is not None:
+            configure_view(view)
+
+        if on_pointer is not None:
+            router = dvz.dvz_view_input(view)
+            if not router:
+                raise RuntimeError("dvz_view_input() failed")
+
+            def pointer_callback(_router, event_ptr, _user_data):
+                on_pointer(event_ptr.contents)
+                dvz.dvz_view_request_frame(view)
+
+            pointer_subscription = dvz.dvz_input_subscribe_pointer(
+                router, pointer_callback, None
+            )
+            if pointer_subscription == 0:
+                raise RuntimeError("dvz_input_subscribe_pointer() failed")
+
+        if on_frame is not None:
+            state = {"index": 0, "start": time.monotonic()}
+
+            def frame_callback(view_arg, _user_data):
+                frame_index = state["index"]
+                elapsed = time.monotonic() - state["start"]
+                on_frame(view_arg, frame_index, elapsed)
+                state["index"] = frame_index + 1
+                dvz.dvz_view_request_frame(view_arg)
+
+            if dvz.dvz_view_set_frame_callback(view, frame_callback, None) != 0:
+                raise RuntimeError("dvz_view_set_frame_callback() failed")
+            frame_callback_set = True
+
+        dvz.dvz_app_run(app, 0)
+    finally:
+        if pointer_subscription and router:
+            dvz.dvz_input_unsubscribe(router, pointer_subscription)
+        if frame_callback_set and view:
+            dvz.dvz_view_set_frame_callback(view, None, None)
+        dvz.dvz_app_destroy(app)
+        dvz.dvz_scene_destroy(scene)
+
+
+def figure_to_panel_px(panel, x: float, y: float):
+    src = (ctypes.c_double * 2)(float(x), float(y))
+    dst = (ctypes.c_double * 2)()
+    ok = dvz.dvz_panel_transform_point(
+        panel,
+        dvz.DVZ_PANEL_COORD_FIGURE_PX,
+        dvz.DVZ_PANEL_COORD_PANEL_PX,
+        src,
+        dst,
+    )
+    if not ok:
+        return None
+    return float(dst[0]), float(dst[1])
+
+
+def panel_px_to_data(panel, x: float, y: float):
+    src = (ctypes.c_double * 2)(float(x), float(y))
+    dst = (ctypes.c_double * 2)()
+    ok = dvz.dvz_panel_position_to_data(panel, dvz.DVZ_PANEL_COORD_PANEL_PX, src, dst)
+    if not ok:
+        return None
+    return float(dst[0]), float(dst[1])
+
+
+def queue_panel_query(panel, x: float, y: float, request_id: int, target, *, hit_policy=None):
+    request = dvz.dvz_query_request()
+    request.request_id = request_id
+    request.target = target
+    if hit_policy is not None:
+        request.hit_policy = hit_policy
+    return dvz.dvz_panel_query_px(panel, float(x), float(y), ctypes.byref(request))
+
+
+def poll_queries(scene):
+    while True:
+        result = dvz.DvzQueryResult()
+        if not dvz.dvz_scene_poll_query(scene, ctypes.byref(result)):
+            break
+        yield result
+
+
 def bind_panzoom(view, scene, panel, dims):
     controller = dvz.dvz_panzoom(scene, None)
     if not controller:

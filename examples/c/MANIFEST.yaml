@@ -1650,6 +1650,9 @@ examples:
     primary_feature: image-probe
     lane: features
     source: examples/c/features/image_probe.c
+    python:
+      source: examples/python/gallery/features/image_probe.py
+      status: direct-engine
     validation: smoke+readback+screenshot
     data:
       kind: synthetic
