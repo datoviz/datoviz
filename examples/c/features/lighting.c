@@ -191,6 +191,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
         return false;
+    example_tuner_figure(&state->tuner, ctx->figure);
 
     state->materials[0] = dvz_standard_material_desc();
     state->materials[0].light_direction[0] = +0.34f;

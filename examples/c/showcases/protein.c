@@ -538,6 +538,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(ctx->figure != NULL && panel != NULL, "scene setup failed");
+    example_tuner_figure(&state->tuner, ctx->figure);
     example_graphite_cyan_set_panel_background(panel);
 
     DvzCameraDesc camera_desc = dvz_camera_desc();

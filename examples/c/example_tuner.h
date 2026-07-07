@@ -46,6 +46,7 @@
 #define EXAMPLE_TUNER_MAX_MATERIALS  16u
 #define EXAMPLE_TUNER_MAX_DEPTH_CUES 8u
 #define EXAMPLE_TUNER_MAX_VOLUMES    8u
+#define EXAMPLE_TUNER_DEFAULT_DOCK_WIDTH_PX 360.0f
 
 
 
@@ -169,14 +170,29 @@ typedef struct ExampleTunerVolume
 } ExampleTunerVolume;
 
 
+typedef struct ExampleTunerLayout
+{
+    bool dock_initially;
+    bool reserve_docked_area;
+    DvzGuiDockSlot dock_slot;
+    float dock_size_px;
+} ExampleTunerLayout;
+
+
 struct ExampleTuner
 {
     const char* name;
     DvzView* view;
+    DvzFigure* figure;
     DvzInputRouter* input;
     DvzCallbackId input_subscription_id;
     bool installed;
     uint32_t screenshot_index;
+    ExampleTunerLayout layout;
+    DvzPanelReserve previous_figure_reserve;
+    DvzPanelReserve applied_figure_reserve;
+    bool has_previous_figure_reserve;
+    bool reserve_applied;
 
     ExampleTunerComponent components[EXAMPLE_TUNER_MAX_COMPONENTS];
     uint32_t component_count;
@@ -218,6 +234,10 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 ExampleTuner example_tuner(const char* name);
+
+void example_tuner_figure(ExampleTuner* tuner, DvzFigure* figure);
+
+void example_tuner_layout(ExampleTuner* tuner, const ExampleTunerLayout* layout);
 
 bool example_tuner_attach(ExampleTuner* tuner, DvzView* view);
 

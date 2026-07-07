@@ -189,6 +189,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
         return false;
+    example_tuner_figure(&state->tuner, ctx->figure);
 
     DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 2);
     if (grid == NULL)

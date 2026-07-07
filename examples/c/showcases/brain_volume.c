@@ -945,6 +945,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
+    example_tuner_figure(&state->tuner, ctx->figure);
 
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");

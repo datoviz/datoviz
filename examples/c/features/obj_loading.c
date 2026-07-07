@@ -267,6 +267,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         dvz_geometry_destroy(geometry);
         return false;
     }
+    example_tuner_figure(&state->tuner, ctx->figure);
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     if (panel == NULL)
     {

@@ -17,6 +17,7 @@
 #include "example_tuner.h"
 
 #include <inttypes.h>
+#include <math.h>
 #include <string.h>
 
 #include "_assertions.h"
@@ -69,6 +70,154 @@ static void _copy_vec3(vec3 dst, const float src[3])
     dst[1] = src != NULL ? src[1] : 0.0f;
     dst[2] = src != NULL ? src[2] : 0.0f;
 }
+
+
+
+static bool _reserve_equal(DvzPanelReserve a, DvzPanelReserve b)
+{
+    return fabsf(a.left_px - b.left_px) < 0.5f && fabsf(a.right_px - b.right_px) < 0.5f &&
+           fabsf(a.top_px - b.top_px) < 0.5f && fabsf(a.bottom_px - b.bottom_px) < 0.5f;
+}
+
+
+
+static ExampleTunerLayout _tuner_default_layout(void)
+{
+    return (ExampleTunerLayout){
+        .dock_initially = true,
+        .reserve_docked_area = true,
+        .dock_slot = DVZ_GUI_DOCK_SLOT_LEFT,
+        .dock_size_px = EXAMPLE_TUNER_DEFAULT_DOCK_WIDTH_PX,
+    };
+}
+
+
+
+static DvzGuiDockSlot _tuner_valid_dock_slot(DvzGuiDockSlot slot)
+{
+    switch (slot)
+    {
+    case DVZ_GUI_DOCK_SLOT_LEFT:
+    case DVZ_GUI_DOCK_SLOT_RIGHT:
+    case DVZ_GUI_DOCK_SLOT_TOP:
+    case DVZ_GUI_DOCK_SLOT_BOTTOM:
+        return slot;
+    default:
+        return DVZ_GUI_DOCK_SLOT_LEFT;
+    }
+}
+
+
+
+static void
+_tuner_clamp_reserve(DvzFigure* figure, DvzPanelReserve* reserve, DvzGuiDockSlot dock_slot)
+{
+    ANN(reserve);
+    if (figure == NULL)
+        return;
+
+    uint32_t width = 0;
+    uint32_t height = 0;
+    dvz_figure_size(figure, &width, &height);
+    if (width > 1 && reserve->left_px + reserve->right_px >= (float)width)
+    {
+        if (dock_slot == DVZ_GUI_DOCK_SLOT_RIGHT)
+        {
+            const float max_right = (float)(width - 1u) - reserve->left_px;
+            reserve->right_px = max_right > 0.0f ? max_right : 0.0f;
+        }
+        else
+        {
+            const float max_left = (float)(width - 1u) - reserve->right_px;
+            reserve->left_px = max_left > 0.0f ? max_left : 0.0f;
+        }
+    }
+    if (height > 1 && reserve->top_px + reserve->bottom_px >= (float)height)
+    {
+        if (dock_slot == DVZ_GUI_DOCK_SLOT_BOTTOM)
+        {
+            const float max_bottom = (float)(height - 1u) - reserve->top_px;
+            reserve->bottom_px = max_bottom > 0.0f ? max_bottom : 0.0f;
+        }
+        else
+        {
+            const float max_top = (float)(height - 1u) - reserve->bottom_px;
+            reserve->top_px = max_top > 0.0f ? max_top : 0.0f;
+        }
+    }
+}
+
+
+
+static void _tuner_snapshot_figure_reserve(ExampleTuner* tuner)
+{
+    ANN(tuner);
+    if (tuner->figure == NULL || tuner->has_previous_figure_reserve)
+        return;
+    tuner->has_previous_figure_reserve =
+        dvz_figure_get_reserve(tuner->figure, &tuner->previous_figure_reserve);
+}
+
+
+
+static void _tuner_restore_figure_reserve(ExampleTuner* tuner)
+{
+    if (tuner == NULL || tuner->figure == NULL || !tuner->has_previous_figure_reserve)
+        return;
+    if (dvz_figure_set_reserve(tuner->figure, &tuner->previous_figure_reserve) == DVZ_OK)
+        tuner->reserve_applied = false;
+}
+
+
+
+static void _tuner_update_figure_reserve(ExampleTuner* tuner, DvzGui* gui)
+{
+    if (tuner == NULL || gui == NULL || tuner->figure == NULL || !tuner->layout.reserve_docked_area)
+        return;
+
+    _tuner_snapshot_figure_reserve(tuner);
+    if (!tuner->has_previous_figure_reserve)
+        return;
+
+    DvzRect rect = {0};
+    const bool docked =
+        dvz_gui_current_window_docked(gui) && dvz_gui_current_window_rect(gui, &rect);
+    const bool has_size = rect.width > 0.0f && rect.height > 0.0f;
+    if (!docked || !has_size)
+    {
+        if (tuner->reserve_applied)
+            _tuner_restore_figure_reserve(tuner);
+        return;
+    }
+
+    DvzPanelReserve next = tuner->previous_figure_reserve;
+    const DvzGuiDockSlot dock_slot = _tuner_valid_dock_slot(tuner->layout.dock_slot);
+    switch (dock_slot)
+    {
+    case DVZ_GUI_DOCK_SLOT_RIGHT:
+        next.right_px += rect.width;
+        break;
+    case DVZ_GUI_DOCK_SLOT_TOP:
+        next.top_px += rect.height;
+        break;
+    case DVZ_GUI_DOCK_SLOT_BOTTOM:
+        next.bottom_px += rect.height;
+        break;
+    case DVZ_GUI_DOCK_SLOT_LEFT:
+    default:
+        next.left_px += rect.width;
+        break;
+    }
+    _tuner_clamp_reserve(tuner->figure, &next, dock_slot);
+
+    if (tuner->reserve_applied && _reserve_equal(tuner->applied_figure_reserve, next))
+        return;
+    if (dvz_figure_set_reserve(tuner->figure, &next) != DVZ_OK)
+        return;
+    tuner->applied_figure_reserve = next;
+    tuner->reserve_applied = true;
+}
+
 
 
 /**
@@ -1183,9 +1332,18 @@ static void _tuner_gui(DvzGui* gui, DvzView* view, void* user_data)
     if (gui == NULL || tuner == NULL)
         return;
 
-    example_tuner_sync(tuner);
-    if (dvz_gui_begin(gui, _tuner_name(tuner->name, "Example settings"), NULL, 0))
+    const char* title = _tuner_name(tuner->name, "Example settings");
+    if (tuner->layout.dock_initially)
     {
+        (void)dvz_gui_dock_window_once(
+            gui, title, _tuner_valid_dock_slot(tuner->layout.dock_slot),
+            tuner->layout.dock_size_px);
+    }
+
+    example_tuner_sync(tuner);
+    if (dvz_gui_begin(gui, title, NULL, 0))
+    {
+        _tuner_update_figure_reserve(tuner, gui);
         for (uint32_t i = 0; i < tuner->component_count; i++)
         {
             ExampleTunerComponent* component = &tuner->components[i];
@@ -1207,6 +1365,10 @@ static void _tuner_gui(DvzGui* gui, DvzView* view, void* user_data)
         dvz_gui_same_line(gui, 0.0f, 8.0f);
         if (dvz_gui_button(gui, "Save PNG"))
             _tuner_screenshot(tuner);
+    }
+    else
+    {
+        _tuner_update_figure_reserve(tuner, gui);
     }
     dvz_gui_end(gui);
 }
@@ -1258,7 +1420,46 @@ _tuner_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, void* use
  */
 ExampleTuner example_tuner(const char* name)
 {
-    return (ExampleTuner){.name = name};
+    return (ExampleTuner){.name = name, .layout = _tuner_default_layout()};
+}
+
+
+
+/**
+ * Register the figure whose content should avoid an initially docked tuner.
+ *
+ * @param tuner tuner
+ * @param figure figure rendered by the native view
+ */
+void example_tuner_figure(ExampleTuner* tuner, DvzFigure* figure)
+{
+    if (tuner == NULL)
+        return;
+    if (tuner->reserve_applied)
+        _tuner_restore_figure_reserve(tuner);
+    tuner->figure = figure;
+    tuner->has_previous_figure_reserve = false;
+    tuner->reserve_applied = false;
+    tuner->previous_figure_reserve = (DvzPanelReserve){0};
+    tuner->applied_figure_reserve = (DvzPanelReserve){0};
+}
+
+
+
+/**
+ * Override the tuner window's default docking and reserve behavior.
+ *
+ * @param tuner tuner
+ * @param layout layout policy, or NULL to restore defaults
+ */
+void example_tuner_layout(ExampleTuner* tuner, const ExampleTunerLayout* layout)
+{
+    if (tuner == NULL)
+        return;
+    tuner->layout = layout != NULL ? *layout : _tuner_default_layout();
+    tuner->layout.dock_slot = _tuner_valid_dock_slot(tuner->layout.dock_slot);
+    if (tuner->layout.dock_size_px <= 0.0f || !isfinite(tuner->layout.dock_size_px))
+        tuner->layout.dock_size_px = EXAMPLE_TUNER_DEFAULT_DOCK_WIDTH_PX;
 }
 
 
@@ -1280,6 +1481,7 @@ bool example_tuner_attach(ExampleTuner* tuner, DvzView* view)
     if (gui == NULL)
         return false;
     dvz_view_set_gui_callback(view, _tuner_gui, tuner);
+    _tuner_snapshot_figure_reserve(tuner);
 
     tuner->input = dvz_view_input(view);
     if (tuner->input != NULL)
@@ -1306,11 +1508,13 @@ void example_tuner_detach(ExampleTuner* tuner)
         dvz_input_unsubscribe(tuner->input, tuner->input_subscription_id);
     if (tuner->view != NULL)
         dvz_view_set_gui_callback(tuner->view, NULL, NULL);
+    _tuner_restore_figure_reserve(tuner);
 
     tuner->input_subscription_id = DVZ_CALLBACK_ID_NONE;
     tuner->input = NULL;
     tuner->view = NULL;
     tuner->installed = false;
+    tuner->has_previous_figure_reserve = false;
 }
 
 
