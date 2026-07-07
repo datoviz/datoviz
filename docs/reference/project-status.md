@@ -30,7 +30,7 @@ external ownership.
 | Built-in shader replacement and hot reload | deferred | [Feature status](feature-status.md) |
 | C FFI helper ABI | supported | [FFI helper API](c-api/ffi.md) |
 | WebGPU/WASM path | experimental | [WebGPU subset](webgpu-subset.md) |
-| DRP2 command stream and fixtures | advanced/unstable | [DRP2](drp2/index.md) |
+| DRP2 command stream and fixtures | advanced/unstable | [DRP2 command streams](../advanced/drp2-command-streams.md) |
 | v0.3 visible capability disposition | fixed/experimental/deferred/external by capability | [v0.3 visible parity](v03-visible-parity.md) |
 | Old Datoviz Python plotting API | external/GSP | [Feature status](feature-status.md) |
 

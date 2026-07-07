@@ -62,4 +62,4 @@ Useful diagnostics while developing:
 - [Debug rendering output](../how-to/debug-rendering.md)
 - [Diagnose WebGPU support](../how-to/debug-webgpu.md)
 - [Diagnose build and platform issues](../how-to/diagnose-platform.md)
-- [DRP2](drp2/index.md)
+- [DRP2 command streams](../advanced/drp2-command-streams.md)

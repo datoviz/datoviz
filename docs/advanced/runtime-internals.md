@@ -35,7 +35,7 @@ scene state -> frame artifact -> DRP2 packets -> runtime -> output
 
 | Task | Page |
 | --- | --- |
-| Change command-stream semantics | [DRP2 internals](../reference/drp2/index.md) |
+| Change command-stream semantics | [DRP2 command streams](drp2-command-streams.md) |
 | Record or replay rendered frames | [Record/replay diagnostics](../how-to/record-replay.md) |
 | Check browser support | [WebGPU subset](../reference/webgpu-subset.md) |
 | Understand WebGPU architecture pressure | [Portability and WebGPU](../explanation/portability-webgpu.md) |

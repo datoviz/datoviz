@@ -15,7 +15,7 @@ Common workflows:
 
 - [Replay frame streams](../../how-to/record-replay.md)
 - [Debug rendering](../../how-to/debug-rendering.md)
-- [DRP2 overview](../drp2/index.md)
+- [DRP2 command streams](../../advanced/drp2-command-streams.md)
 
 Functions: 132
 

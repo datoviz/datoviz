@@ -205,7 +205,7 @@ nav:
       - Compute and graphics: 'reference/compute-graphics.md'
   - Advanced:
     - Runtime internals: 'advanced/runtime-internals.md'
-    - DRP2 command streams: 'reference/drp2/index.md'
+    - DRP2 command streams: 'advanced/drp2-command-streams.md'
     - WebGPU/WASM runtime: 'reference/webgpu-subset.md'
     - Record/replay diagnostics: 'how-to/record-replay.md'
     - Release maintainers:

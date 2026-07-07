@@ -33,7 +33,7 @@ A current `*.dvzr/` directory contains `manifest.json`, `stream.jsonl`, and opti
 payload files. `stream.jsonl` is a JSON Lines debug/recording view. Runtime hot paths use typed
 packets, not JSON.
 
-For command-stream details, use the [DRP2 reference](../reference/drp2/index.md).
+For command-stream details, use [DRP2 command streams](../advanced/drp2-command-streams.md).
 
 ## Replay Path
 
@@ -41,7 +41,7 @@ For command-stream details, use the [DRP2 reference](../reference/drp2/index.md)
 | --- | --- |
 | Record an offscreen or GLFW app view and replay it in another app view | `dvz_view_record_start()` and `dvz_view_replay_start()` |
 | Replay a saved recording into a live native window | the same app replay calls on a window-backed view |
-| Inspect lower-level command streams | [DRP2 reference](../reference/drp2/index.md) |
+| Inspect lower-level command streams | [DRP2 command streams](../advanced/drp2-command-streams.md) |
 
 ## App-Level Recording Fragment
 
@@ -100,7 +100,8 @@ Public code should start from the runtime recording example and the app replay f
 
 Use lower-level recording functions only when you already work with Datoviz command streams or are
 writing backend tests. Those APIs bypass the app-view helpers above, so they are documented in the
-[DRP2 reference](../reference/drp2/index.md) and the generated [DRP2 C API](../reference/c-api/drp2.md).
+[DRP2 command streams](../advanced/drp2-command-streams.md) and the generated
+[DRP2 C API](../reference/c-api/drp2.md).
 
 ## Important Details
 
@@ -133,7 +134,7 @@ callback bugs, debug the retained scene first.
 - [Debug rendering output](debug-rendering.md)
 - [Deploy Datoviz scenes to the web](deploy-to-web.md)
 - [Profile rendering performance](profile-performance.md)
-- [Advanced DRP2 reference](../reference/drp2/index.md)
+- [DRP2 command streams](../advanced/drp2-command-streams.md)
 - [DRP2 C API](../reference/c-api/drp2.md)
 
 ??? example "Related examples"

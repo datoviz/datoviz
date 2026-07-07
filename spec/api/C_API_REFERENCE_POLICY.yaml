@@ -26,8 +26,8 @@ pages:
     summary: FramePlan builders, DRP2 emission helpers, and packet spans used by runtime and WASM integrations.
     audience: Use this page for advanced runtime, fixture, or WASM/WebGPU integration work. Ordinary retained scene code should use scene frame artifacts.
     workflows:
-      - label: DRP2 overview
-        href: ../drp2/index.md
+      - label: DRP2 command streams
+        href: ../../advanced/drp2-command-streams.md
       - label: WebGPU portability
         href: ../../explanation/portability-webgpu.md
     headers:
@@ -221,8 +221,8 @@ pages:
         href: ../../how-to/record-replay.md
       - label: Debug rendering
         href: ../../how-to/debug-rendering.md
-      - label: DRP2 overview
-        href: ../drp2/index.md
+      - label: DRP2 command streams
+        href: ../../advanced/drp2-command-streams.md
     headers:
       - include/datoviz/drp2.h
       - include/datoviz/drp2/**
@@ -239,10 +239,8 @@ pages:
         href: ../../how-to/debug-rendering.md
       - label: Profile performance
         href: ../../how-to/profile-performance.md
-      - label: vklite overview
-        href: ../../advanced/vklite.md
-      - label: Canvas and stream API
-        href: ../../advanced/canvas.md
+      - label: Runtime internals
+        href: ../../advanced/runtime-internals.md
     headers:
       - include/datoviz/common.h
       - include/datoviz/common/**

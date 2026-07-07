@@ -15,8 +15,7 @@ Common workflows:
 
 - [Debug rendering](../../how-to/debug-rendering.md)
 - [Profile performance](../../how-to/profile-performance.md)
-- [vklite overview](../../advanced/vklite.md)
-- [Canvas and stream API](../../advanced/canvas.md)
+- [Runtime internals](../../advanced/runtime-internals.md)
 
 Functions: 554
 
