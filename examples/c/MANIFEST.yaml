@@ -1022,6 +1022,9 @@ examples:
     primary_feature: bars-bands
     lane: features
     source: examples/c/features/bars_bands.c
+    python:
+      source: examples/python/gallery/features/bars_bands.py
+      status: direct-engine
     validation: smoke+screenshot
     data:
       kind: synthetic

@@ -38,12 +38,19 @@ The bar helper uses start, end, and value arrays so each bar has an explicit int
     --8<-- "examples/c/features/bars_bands.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/bars_bands.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_bars_bands`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/bars_bands.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bars_bands.c)
+    - Python source: [`examples/python/gallery/features/bars_bands.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/bars_bands.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_bars_bands"><code>examples/webgpu/live.html?id=feature_bars_bands</code></a>
     - Browser capability tags: `primitive`, `segment`, `axes`, `panzoom`

@@ -69,7 +69,7 @@ def main() -> int:
         'dvz_mesh',
         'dvz_mesh_set_geometry',
         'dvz_visual_set_index_data',
-        'dvz_panel_query',
+        'dvz_panel_query_px',
         'dvz_scene_poll_query',
     ]
     missing = [name for name in required_symbols if not hasattr(dvz, name)]

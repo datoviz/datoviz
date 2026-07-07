@@ -432,6 +432,108 @@ dvz_axis_set_ticks.argtypes = getattr(_raw.dvz_axis_set_ticks, "argtypes", None)
 dvz_axis_set_ticks.restype = getattr(_raw.dvz_axis_set_ticks, "restype", None)
 
 
+def dvz_band_set_bounds(band, x, lower, upper, count=None):
+    _x_ptr, _x_array = _array_arg(x, 'x', _raw.dvz_band_set_bounds, 1, 'float64')
+    if _x_array is not None:
+        _x_count = _shape0_count(_x_array, 'x')
+        if count is None:
+            count = _x_count
+        elif _x_count != int(count):
+            raise ValueError(f'x count {_x_count} does not match count {count}')
+    elif count is None:
+        count = _shape0_count(_x_array, 'x')
+    _lower_ptr, _lower_array = _array_arg(lower, 'lower', _raw.dvz_band_set_bounds, 2, 'float64')
+    if _lower_array is not None:
+        _lower_count = _shape0_count(_lower_array, 'lower')
+        if count is None:
+            count = _lower_count
+        elif _lower_count != int(count):
+            raise ValueError(f'lower count {_lower_count} does not match count {count}')
+    elif count is None:
+        count = _shape0_count(_lower_array, 'lower')
+    _upper_ptr, _upper_array = _array_arg(upper, 'upper', _raw.dvz_band_set_bounds, 3, 'float64')
+    if _upper_array is not None:
+        _upper_count = _shape0_count(_upper_array, 'upper')
+        if count is None:
+            count = _upper_count
+        elif _upper_count != int(count):
+            raise ValueError(f'upper count {_upper_count} does not match count {count}')
+    elif count is None:
+        count = _shape0_count(_upper_array, 'upper')
+    _keepalive = (_x_array, _lower_array, _upper_array,)
+    return _raw.dvz_band_set_bounds(band, _x_ptr, _lower_ptr, _upper_ptr, count)
+
+
+dvz_band_set_bounds.__doc__ = getattr(_raw.dvz_band_set_bounds, "__doc__", None)
+dvz_band_set_bounds.argtypes = getattr(_raw.dvz_band_set_bounds, "argtypes", None)
+dvz_band_set_bounds.restype = getattr(_raw.dvz_band_set_bounds, "restype", None)
+
+
+def dvz_band_set_center(band, x, y, count=None):
+    _x_ptr, _x_array = _array_arg(x, 'x', _raw.dvz_band_set_center, 1, 'float64')
+    if _x_array is not None:
+        _x_count = _shape0_count(_x_array, 'x')
+        if count is None:
+            count = _x_count
+        elif _x_count != int(count):
+            raise ValueError(f'x count {_x_count} does not match count {count}')
+    elif count is None:
+        count = _shape0_count(_x_array, 'x')
+    _y_ptr, _y_array = _array_arg(y, 'y', _raw.dvz_band_set_center, 2, 'float64')
+    if _y_array is not None:
+        _y_count = _shape0_count(_y_array, 'y')
+        if count is None:
+            count = _y_count
+        elif _y_count != int(count):
+            raise ValueError(f'y count {_y_count} does not match count {count}')
+    elif count is None:
+        count = _shape0_count(_y_array, 'y')
+    _keepalive = (_x_array, _y_array,)
+    return _raw.dvz_band_set_center(band, _x_ptr, _y_ptr, count)
+
+
+dvz_band_set_center.__doc__ = getattr(_raw.dvz_band_set_center, "__doc__", None)
+dvz_band_set_center.argtypes = getattr(_raw.dvz_band_set_center, "argtypes", None)
+dvz_band_set_center.restype = getattr(_raw.dvz_band_set_center, "restype", None)
+
+
+def dvz_bars_set_intervals(bars, starts, ends, values, count=None):
+    _starts_ptr, _starts_array = _array_arg(starts, 'starts', _raw.dvz_bars_set_intervals, 1, 'float64')
+    if _starts_array is not None:
+        _starts_count = _shape0_count(_starts_array, 'starts')
+        if count is None:
+            count = _starts_count
+        elif _starts_count != int(count):
+            raise ValueError(f'starts count {_starts_count} does not match count {count}')
+    elif count is None:
+        count = _shape0_count(_starts_array, 'starts')
+    _ends_ptr, _ends_array = _array_arg(ends, 'ends', _raw.dvz_bars_set_intervals, 2, 'float64')
+    if _ends_array is not None:
+        _ends_count = _shape0_count(_ends_array, 'ends')
+        if count is None:
+            count = _ends_count
+        elif _ends_count != int(count):
+            raise ValueError(f'ends count {_ends_count} does not match count {count}')
+    elif count is None:
+        count = _shape0_count(_ends_array, 'ends')
+    _values_ptr, _values_array = _array_arg(values, 'values', _raw.dvz_bars_set_intervals, 3, 'float64')
+    if _values_array is not None:
+        _values_count = _shape0_count(_values_array, 'values')
+        if count is None:
+            count = _values_count
+        elif _values_count != int(count):
+            raise ValueError(f'values count {_values_count} does not match count {count}')
+    elif count is None:
+        count = _shape0_count(_values_array, 'values')
+    _keepalive = (_starts_array, _ends_array, _values_array,)
+    return _raw.dvz_bars_set_intervals(bars, _starts_ptr, _ends_ptr, _values_ptr, count)
+
+
+dvz_bars_set_intervals.__doc__ = getattr(_raw.dvz_bars_set_intervals, "__doc__", None)
+dvz_bars_set_intervals.argtypes = getattr(_raw.dvz_bars_set_intervals, "argtypes", None)
+dvz_bars_set_intervals.restype = getattr(_raw.dvz_bars_set_intervals, "restype", None)
+
+
 def dvz_colorbar_set_ticks(colorbar, values, labels=None):
     _ticks_ptr, _ticks_keepalive = _colorbar_ticks_arg(values, labels)
     _keepalive = (_ticks_keepalive,)
@@ -445,7 +547,13 @@ dvz_colorbar_set_ticks.restype = getattr(_raw.dvz_colorbar_set_ticks, "restype",
 
 def dvz_scene_buffer_set_data(buffer, data, byte_size=None):
     _data_ptr, _data_array = _array_arg(data, 'data', _raw.dvz_scene_buffer_set_data, 1, None)
-    if byte_size is None:
+    if _data_array is not None:
+        _data_size = _nbytes_size(_data_array, 'data')
+        if byte_size is None:
+            byte_size = _data_size
+        elif _data_size != int(byte_size):
+            raise ValueError(f'data byte size {_data_size} does not match byte_size {byte_size}')
+    elif byte_size is None:
         byte_size = _nbytes_size(_data_array, 'data')
     _keepalive = (_data_array,)
     return _raw.dvz_scene_buffer_set_data(buffer, _data_ptr, byte_size)
@@ -458,7 +566,13 @@ dvz_scene_buffer_set_data.restype = getattr(_raw.dvz_scene_buffer_set_data, "res
 
 def dvz_text_set_anchors(text, anchors, item_count=None):
     _anchors_ptr, _anchors_array = _array_arg(anchors, 'anchors', _raw.dvz_text_set_anchors, 1, 'float32')
-    if item_count is None:
+    if _anchors_array is not None:
+        _anchors_count = _shape0_count(_anchors_array, 'anchors')
+        if item_count is None:
+            item_count = _anchors_count
+        elif _anchors_count != int(item_count):
+            raise ValueError(f'anchors count {_anchors_count} does not match item_count {item_count}')
+    elif item_count is None:
         item_count = _shape0_count(_anchors_array, 'anchors')
     _keepalive = (_anchors_array,)
     return _raw.dvz_text_set_anchors(text, _anchors_ptr, item_count)
@@ -471,7 +585,13 @@ dvz_text_set_anchors.restype = getattr(_raw.dvz_text_set_anchors, "restype", Non
 
 def dvz_text_set_angles(text, angles, item_count=None):
     _angles_ptr, _angles_array = _array_arg(angles, 'angles', _raw.dvz_text_set_angles, 1, 'float32')
-    if item_count is None:
+    if _angles_array is not None:
+        _angles_count = _shape0_count(_angles_array, 'angles')
+        if item_count is None:
+            item_count = _angles_count
+        elif _angles_count != int(item_count):
+            raise ValueError(f'angles count {_angles_count} does not match item_count {item_count}')
+    elif item_count is None:
         item_count = _shape0_count(_angles_array, 'angles')
     _keepalive = (_angles_array,)
     return _raw.dvz_text_set_angles(text, _angles_ptr, item_count)
@@ -484,7 +604,13 @@ dvz_text_set_angles.restype = getattr(_raw.dvz_text_set_angles, "restype", None)
 
 def dvz_text_set_colors(text, colors, item_count=None):
     _colors_ptr, _colors_array = _array_arg(colors, 'colors', _raw.dvz_text_set_colors, 1, 'uint8')
-    if item_count is None:
+    if _colors_array is not None:
+        _colors_count = _shape0_count(_colors_array, 'colors')
+        if item_count is None:
+            item_count = _colors_count
+        elif _colors_count != int(item_count):
+            raise ValueError(f'colors count {_colors_count} does not match item_count {item_count}')
+    elif item_count is None:
         item_count = _shape0_count(_colors_array, 'colors')
     _keepalive = (_colors_array,)
     return _raw.dvz_text_set_colors(text, _colors_ptr, item_count)
@@ -497,7 +623,13 @@ dvz_text_set_colors.restype = getattr(_raw.dvz_text_set_colors, "restype", None)
 
 def dvz_text_set_items(text, items, item_count=None):
     _items_ptr, _items_array = _array_arg(items, 'items', _raw.dvz_text_set_items, 1, None)
-    if item_count is None:
+    if _items_array is not None:
+        _items_count = _shape0_count(_items_array, 'items')
+        if item_count is None:
+            item_count = _items_count
+        elif _items_count != int(item_count):
+            raise ValueError(f'items count {_items_count} does not match item_count {item_count}')
+    elif item_count is None:
         item_count = _shape0_count(_items_array, 'items')
     _keepalive = (_items_array,)
     return _raw.dvz_text_set_items(text, _items_ptr, item_count)
@@ -510,7 +642,13 @@ dvz_text_set_items.restype = getattr(_raw.dvz_text_set_items, "restype", None)
 
 def dvz_text_set_offsets(text, offsets, item_count=None):
     _offsets_ptr, _offsets_array = _array_arg(offsets, 'offsets', _raw.dvz_text_set_offsets, 1, 'float32')
-    if item_count is None:
+    if _offsets_array is not None:
+        _offsets_count = _shape0_count(_offsets_array, 'offsets')
+        if item_count is None:
+            item_count = _offsets_count
+        elif _offsets_count != int(item_count):
+            raise ValueError(f'offsets count {_offsets_count} does not match item_count {item_count}')
+    elif item_count is None:
         item_count = _shape0_count(_offsets_array, 'offsets')
     _keepalive = (_offsets_array,)
     return _raw.dvz_text_set_offsets(text, _offsets_ptr, item_count)
@@ -523,7 +661,13 @@ dvz_text_set_offsets.restype = getattr(_raw.dvz_text_set_offsets, "restype", Non
 
 def dvz_text_set_positions(text, positions, item_count=None):
     _positions_ptr, _positions_array = _array_arg(positions, 'positions', _raw.dvz_text_set_positions, 1, 'float64')
-    if item_count is None:
+    if _positions_array is not None:
+        _positions_count = _shape0_count(_positions_array, 'positions')
+        if item_count is None:
+            item_count = _positions_count
+        elif _positions_count != int(item_count):
+            raise ValueError(f'positions count {_positions_count} does not match item_count {item_count}')
+    elif item_count is None:
         item_count = _shape0_count(_positions_array, 'positions')
     _keepalive = (_positions_array,)
     return _raw.dvz_text_set_positions(text, _positions_ptr, item_count)
@@ -536,7 +680,13 @@ dvz_text_set_positions.restype = getattr(_raw.dvz_text_set_positions, "restype",
 
 def dvz_text_set_sizes(text, sizes_px, item_count=None):
     _sizes_px_ptr, _sizes_px_array = _array_arg(sizes_px, 'sizes_px', _raw.dvz_text_set_sizes, 1, 'float32')
-    if item_count is None:
+    if _sizes_px_array is not None:
+        _sizes_px_count = _shape0_count(_sizes_px_array, 'sizes_px')
+        if item_count is None:
+            item_count = _sizes_px_count
+        elif _sizes_px_count != int(item_count):
+            raise ValueError(f'sizes_px count {_sizes_px_count} does not match item_count {item_count}')
+    elif item_count is None:
         item_count = _shape0_count(_sizes_px_array, 'sizes_px')
     _keepalive = (_sizes_px_array,)
     return _raw.dvz_text_set_sizes(text, _sizes_px_ptr, item_count)
@@ -561,7 +711,13 @@ dvz_view_window.restype = getattr(_raw.dvz_view_window, "restype", None)
 def dvz_visual_set_data(visual, attr_name, data, item_count=None):
     _attr_name_bytes = _encode_string(attr_name, 'attr_name')
     _data_ptr, _data_array = _array_arg(data, 'data', _raw.dvz_visual_set_data, 2, None)
-    if item_count is None:
+    if _data_array is not None:
+        _data_count = _shape0_count(_data_array, 'data')
+        if item_count is None:
+            item_count = _data_count
+        elif _data_count != int(item_count):
+            raise ValueError(f'data count {_data_count} does not match item_count {item_count}')
+    elif item_count is None:
         item_count = _shape0_count(_data_array, 'data')
     _keepalive = (_attr_name_bytes, _data_array,)
     return _raw.dvz_visual_set_data(visual, _attr_name_bytes, _data_ptr, item_count)
@@ -590,7 +746,13 @@ dvz_visual_set_data_many.restype = getattr(_raw.dvz_visual_set_data_many, "resty
 def dvz_visual_set_data_range(visual, attr_name, first_item, data, item_count=None):
     _attr_name_bytes = _encode_string(attr_name, 'attr_name')
     _data_ptr, _data_array = _array_arg(data, 'data', _raw.dvz_visual_set_data_range, 3, None)
-    if item_count is None:
+    if _data_array is not None:
+        _data_count = _shape0_count(_data_array, 'data')
+        if item_count is None:
+            item_count = _data_count
+        elif _data_count != int(item_count):
+            raise ValueError(f'data count {_data_count} does not match item_count {item_count}')
+    elif item_count is None:
         item_count = _shape0_count(_data_array, 'data')
     _keepalive = (_attr_name_bytes, _data_array,)
     return _raw.dvz_visual_set_data_range(visual, _attr_name_bytes, first_item, _data_ptr, item_count)
@@ -603,7 +765,13 @@ dvz_visual_set_data_range.restype = getattr(_raw.dvz_visual_set_data_range, "res
 
 def dvz_visual_set_index_data(visual, indices, index_count=None):
     _indices_ptr, _indices_array = _array_arg(indices, 'indices', _raw.dvz_visual_set_index_data, 1, 'uint32')
-    if index_count is None:
+    if _indices_array is not None:
+        _indices_count = _shape0_count(_indices_array, 'indices')
+        if index_count is None:
+            index_count = _indices_count
+        elif _indices_count != int(index_count):
+            raise ValueError(f'indices count {_indices_count} does not match index_count {index_count}')
+    elif index_count is None:
         index_count = _shape0_count(_indices_array, 'indices')
     _keepalive = (_indices_array,)
     return _raw.dvz_visual_set_index_data(visual, _indices_ptr, index_count)
@@ -614,7 +782,7 @@ dvz_visual_set_index_data.argtypes = getattr(_raw.dvz_visual_set_index_data, "ar
 dvz_visual_set_index_data.restype = getattr(_raw.dvz_visual_set_index_data, "restype", None)
 
 
-_ARRAY_FACADE_FUNCTIONS = ['dvz_axis_set_ticks', 'dvz_colorbar_set_ticks', 'dvz_scene_buffer_set_data', 'dvz_text_set_anchors', 'dvz_text_set_angles', 'dvz_text_set_colors', 'dvz_text_set_items', 'dvz_text_set_offsets', 'dvz_text_set_positions', 'dvz_text_set_sizes', 'dvz_view_window', 'dvz_visual_set_data', 'dvz_visual_set_data_many', 'dvz_visual_set_data_range', 'dvz_visual_set_index_data']
+_ARRAY_FACADE_FUNCTIONS = ['dvz_axis_set_ticks', 'dvz_band_set_bounds', 'dvz_band_set_center', 'dvz_bars_set_intervals', 'dvz_colorbar_set_ticks', 'dvz_scene_buffer_set_data', 'dvz_text_set_anchors', 'dvz_text_set_angles', 'dvz_text_set_colors', 'dvz_text_set_items', 'dvz_text_set_offsets', 'dvz_text_set_positions', 'dvz_text_set_sizes', 'dvz_view_window', 'dvz_visual_set_data', 'dvz_visual_set_data_many', 'dvz_visual_set_data_range', 'dvz_visual_set_index_data']
 
 for _name in getattr(_raw, "__all__", dir(_raw)):
     if _name not in globals():

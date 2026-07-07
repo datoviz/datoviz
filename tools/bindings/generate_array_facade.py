@@ -660,12 +660,32 @@ dvz_colorbar_set_ticks.restype = getattr(_raw.dvz_colorbar_set_ticks, "restype",
         if count_arg:
             if group.get('count_from') != 'shape0':
                 raise SystemExit(f'array_facade.{name} only supports count_from: shape0')
-            lines.append(f'    if {count_arg} is None:\n')
+            count_local = f'_{pointer_arg}_count'
+            lines.append(f'    if {array_local} is not None:\n')
+            lines.append(f"        {count_local} = _shape0_count({array_local}, '{pointer_arg}')\n")
+            lines.append(f'        if {count_arg} is None:\n')
+            lines.append(f'            {count_arg} = {count_local}\n')
+            lines.append(f'        elif {count_local} != int({count_arg}):\n')
+            lines.append(
+                f"            raise ValueError(f'{pointer_arg} count {{{count_local}}} does not "
+                f"match {count_arg} {{{count_arg}}}')\n"
+            )
+            lines.append(f'    elif {count_arg} is None:\n')
             lines.append(f"        {count_arg} = _shape0_count({array_local}, '{pointer_arg}')\n")
         elif size_arg:
             if group.get('size_from') != 'nbytes':
                 raise SystemExit(f'array_facade.{name} only supports size_from: nbytes')
-            lines.append(f'    if {size_arg} is None:\n')
+            size_local = f'_{pointer_arg}_size'
+            lines.append(f'    if {array_local} is not None:\n')
+            lines.append(f"        {size_local} = _nbytes_size({array_local}, '{pointer_arg}')\n")
+            lines.append(f'        if {size_arg} is None:\n')
+            lines.append(f'            {size_arg} = {size_local}\n')
+            lines.append(f'        elif {size_local} != int({size_arg}):\n')
+            lines.append(
+                f"            raise ValueError(f'{pointer_arg} byte size {{{size_local}}} does not "
+                f"match {size_arg} {{{size_arg}}}')\n"
+            )
+            lines.append(f'    elif {size_arg} is None:\n')
             lines.append(f"        {size_arg} = _nbytes_size({array_local}, '{pointer_arg}')\n")
         else:
             raise SystemExit(f'array_facade.{name} group {group_idx} lacks count_arg or size_arg')

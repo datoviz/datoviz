@@ -138,6 +138,32 @@ def fake_facade(monkeypatch):
     raw.dvz_visual_set_index_data = _raw_function(
         [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint32), ctypes.c_uint32]
     )
+    raw.dvz_bars_set_intervals = _raw_function(
+        [
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_double),
+            ctypes.POINTER(ctypes.c_double),
+            ctypes.POINTER(ctypes.c_double),
+            ctypes.c_uint32,
+        ]
+    )
+    raw.dvz_band_set_bounds = _raw_function(
+        [
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_double),
+            ctypes.POINTER(ctypes.c_double),
+            ctypes.POINTER(ctypes.c_double),
+            ctypes.c_uint32,
+        ]
+    )
+    raw.dvz_band_set_center = _raw_function(
+        [
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_double),
+            ctypes.POINTER(ctypes.c_double),
+            ctypes.c_uint32,
+        ]
+    )
     raw.dvz_text_set_items = _raw_function(
         [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint32]
     )
@@ -525,6 +551,43 @@ def test_index_data_requires_declared_dtype(fake_facade):
 
     with pytest.raises(ValueError, match='dtype uint32'):
         facade.dvz_visual_set_index_data(ctypes.c_void_p(5), indices.astype(np.uint16))
+
+
+def test_shared_count_array_facade_validates_all_arrays(fake_facade):
+    raw, facade = fake_facade
+    starts = np.array([0.0, 1.0, 2.0], dtype=np.float64)
+    ends = starts + 0.8
+    values = np.array([0.5, 0.9, 0.7], dtype=np.float64)
+
+    facade.dvz_bars_set_intervals(ctypes.c_void_p(19), starts, ends, values)
+
+    bars, starts_ptr, ends_ptr, values_ptr, count = raw.dvz_bars_set_intervals.calls[-1]
+    assert bars.value == 19
+    assert starts_ptr.contents.value == starts[0]
+    assert ends_ptr.contents.value == ends[0]
+    assert values_ptr.contents.value == values[0]
+    assert count == 3
+
+    with pytest.raises(ValueError, match='values count 2 does not match count 3'):
+        facade.dvz_bars_set_intervals(
+            ctypes.c_void_p(19),
+            starts,
+            ends,
+            values[:2],
+        )
+
+    assert len(raw.dvz_bars_set_intervals.calls) == 1
+
+
+def test_plot_array_facade_requires_float64(fake_facade):
+    _raw, facade = fake_facade
+
+    with pytest.raises(ValueError, match='dtype float64'):
+        facade.dvz_band_set_center(
+            ctypes.c_void_p(20),
+            np.array([0.0, 1.0], dtype=np.float32),
+            np.array([0.5, 0.75], dtype=np.float64),
+        )
 
 
 def test_view_capture_rgba_returns_numpy_array(fake_facade):
