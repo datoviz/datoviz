@@ -1723,6 +1723,9 @@ examples:
     primary_feature: selection-sphere
     lane: features
     source: examples/c/features/selection_sphere.c
+    python:
+      source: examples/python/gallery/features/selection_sphere.py
+      status: direct-engine
     validation: smoke+interaction+screenshot
     data:
       kind: synthetic

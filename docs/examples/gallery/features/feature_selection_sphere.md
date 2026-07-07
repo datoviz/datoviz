@@ -38,12 +38,19 @@ The sphere visual uploads position, radius, and color arrays for a compact depth
     --8<-- "examples/c/features/selection_sphere.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/selection_sphere.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_selection_sphere`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/selection_sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_sphere.c)
+    - Python source: [`examples/python/gallery/features/selection_sphere.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/selection_sphere.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_selection_sphere"><code>examples/webgpu/live.html?id=feature_selection_sphere</code></a>
     - Browser capability tags: `sphere`, `arcball`, `query-readback`, `frame-callbacks`
