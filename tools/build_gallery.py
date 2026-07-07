@@ -24,7 +24,6 @@ SOURCE_BASE_URL = "https://github.com/datoviz/datoviz/blob/v0.4-dev"
 PUBLIC_LANES = ("start", "visuals", "features", "runtime", "composites", "showcases", "advanced")
 STATUS_ORDER = ("supported", "experimental", "prototype", "advanced/unstable", "deferred")
 DEFAULT_STATUS = "supported"
-PYTHON_SOURCE_BY_ID = {}
 SOURCE_LANGUAGE_BY_SUFFIX = {
     ".c": ("C", "c"),
     ".h": ("C", "c"),
@@ -301,6 +300,7 @@ class Example:
     source_language: str
     extra_sources: tuple[SourceTab, ...]
     python_source: str | None
+    python_status: str | None
 
     @property
     def source_path(self) -> Path:
@@ -595,6 +595,13 @@ def collect_examples(manifest: dict) -> list[Example]:
             or inferred_source_label
         )
         extra_sources = tuple(normalize_source_tab(raw) for raw in entry.get("extra_sources") or [])
+        python = entry.get("python") or {}
+        python_source = python.get("source")
+        if python_source is not None:
+            python_source = str(python_source)
+        python_status = python.get("status")
+        if python_status is not None:
+            python_status = str(python_status)
         tags = entry.get("tags")
         if tags is None:
             tags = entry.get("features", [])
@@ -626,7 +633,8 @@ def collect_examples(manifest: dict) -> list[Example]:
             source_label=source_label,
             source_language=source_language,
             extra_sources=extra_sources,
-            python_source=PYTHON_SOURCE_BY_ID.get(id_),
+            python_source=python_source,
+            python_status=python_status,
         )
         examples.append(example)
     return examples

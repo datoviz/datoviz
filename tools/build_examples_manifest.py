@@ -111,6 +111,8 @@ def _json_example(example: build_gallery.Example, entry: dict[str, Any]) -> dict
     if example.python_source is not None:
         item["python_source"] = example.python_source
         item["python_source_url"] = f"{build_gallery.SOURCE_BASE_URL}/{example.python_source}"
+    if example.python_status is not None:
+        item["python_status"] = example.python_status
     return item
 
 

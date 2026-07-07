@@ -21,6 +21,8 @@ taxonomy:
     primary_composite: required for composite examples
     source_language: optional fenced-code language for the primary source
     extra_sources: optional additional code tabs with label, language, and path
+    python.source: optional Python source tab path
+    python.status: generated | generated-with-hints | manual | deferred
     tags: searchable labels for docs, agents, and gallery filters
     data.kind: synthetic | simulated | generated | real | prepared
     capture.mode: scenario by default; custom requires capture.reason
