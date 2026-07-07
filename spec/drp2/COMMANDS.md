@@ -797,6 +797,12 @@ Required fields:
 
 Optional fields:
 
+- `render_area`: attachment load/store rectangle in framebuffer pixels. When omitted, the full
+  first color attachment is the render area.
+- `viewport`: initial draw viewport in framebuffer pixels. When omitted, the render area is the
+  initial viewport.
+- `scissor`: initial draw scissor in framebuffer pixels. When omitted, the render area is the
+  initial scissor.
 - `depth_stencil_attachment`: depth/stencil attachment descriptor.
 - `label`: debug label.
 
@@ -823,7 +829,9 @@ Active `2.0` note:
 Pass semantics:
 
 1. the attachment list fixes the framebuffer state for the duration of the pass,
-2. later render-state and draw commands target this pass until `EndRenderPass`.
+2. `render_area` controls attachment load/store and clear scope only,
+3. `viewport` and `scissor` are draw state and must not be inferred as attachment clear scope,
+4. later render-state and draw commands target this pass until `EndRenderPass`.
 
 
 ### `EndRenderPass`
