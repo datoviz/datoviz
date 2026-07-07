@@ -13,25 +13,6 @@ _INPUTHOOK_REGISTERED = False
 _ATEXIT_REGISTERED = False
 
 
-def _view_window(raw, view):
-    """Return the borrowed DvzWindow* from DvzView's private prefix."""
-
-    required = ('DvzApp', 'DvzFigure', 'DvzWindow', 'DvzCanvas')
-    if view is None or not all(hasattr(raw, name) for name in required):
-        return None
-
-    class _DvzViewPrefix(ctypes.Structure):
-        _fields_ = [
-            ('app', ctypes.POINTER(raw.DvzApp)),
-            ('figure', ctypes.POINTER(raw.DvzFigure)),
-            ('kind', ctypes.c_int),
-            ('window', ctypes.POINTER(raw.DvzWindow)),
-            ('canvas', ctypes.POINTER(raw.DvzCanvas)),
-        ]
-
-    return ctypes.cast(view, ctypes.POINTER(_DvzViewPrefix)).contents.window
-
-
 class RunSession:
     """Live session returned by nonblocking ``datoviz.run()`` calls."""
 
@@ -94,12 +75,9 @@ class RunSession:
     def should_close(self) -> bool:
         """Return whether the native window has received a close request."""
 
-        if self._closed or self.view is None:
+        if self._closed or self.app is None:
             return True
-        window = _view_window(self._raw, self.view)
-        if not window:
-            return False
-        return bool(self._raw.dvz_window_should_close(window))
+        return bool(self._raw.dvz_app_should_exit(self.app))
 
     def _poll(self) -> None:
         if self.window_host:

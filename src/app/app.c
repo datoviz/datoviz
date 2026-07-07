@@ -4101,6 +4101,17 @@ bool dvz_app_should_stop(const DvzApp* app)
 }
 
 
+bool dvz_app_should_exit(DvzApp* app)
+{
+    ANN(app);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    return _app_should_exit(app);
+#else
+    return true;
+#endif
+}
+
+
 
 /*************************************************************************************************/
 /*  View management                                                                            */

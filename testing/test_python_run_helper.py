@@ -14,32 +14,6 @@ class _Resources(ctypes.Structure):
     _fields_ = [('window_host', ctypes.py_object)]
 
 
-class _DvzApp(ctypes.Structure):
-    pass
-
-
-class _DvzFigure(ctypes.Structure):
-    pass
-
-
-class _DvzWindow(ctypes.Structure):
-    pass
-
-
-class _DvzCanvas(ctypes.Structure):
-    pass
-
-
-class _DvzViewPrefix(ctypes.Structure):
-    _fields_ = [
-        ('app', ctypes.POINTER(_DvzApp)),
-        ('figure', ctypes.POINTER(_DvzFigure)),
-        ('kind', ctypes.c_int),
-        ('window', ctypes.POINTER(_DvzWindow)),
-        ('canvas', ctypes.POINTER(_DvzCanvas)),
-    ]
-
-
 class _Raw(types.ModuleType):
     def __init__(self):
         super().__init__('datoviz.raw')
@@ -96,6 +70,10 @@ class _Raw(types.ModuleType):
         self.calls.append(('window_should_close', window))
         return self.should_close
 
+    def dvz_app_should_exit(self, app):
+        self.calls.append(('app_should_exit', app))
+        return self.should_close
+
 
 class TerminalInteractiveShell:
     def __init__(self):
@@ -144,8 +122,9 @@ def test_run_returns_live_session_in_terminal_ipython(monkeypatch):
     assert ('view_request_frame', raw.view) in raw.calls
 
     session.render_once()
-    assert raw.calls[-2:] == [
+    assert raw.calls[-3:] == [
         ('window_host_poll', raw.window_host),
+        ('app_should_exit', raw.app),
         ('app_render_once', raw.app),
     ]
 
@@ -188,29 +167,12 @@ def test_run_can_reopen_borrowed_scene_after_blocking_close(monkeypatch):
 def test_live_session_closes_when_native_window_requests_close(monkeypatch):
     dvz_run = importlib.import_module('datoviz.run')
     raw = _Raw()
-    raw.DvzApp = _DvzApp
-    raw.DvzFigure = _DvzFigure
-    raw.DvzWindow = _DvzWindow
-    raw.DvzCanvas = _DvzCanvas
-    app = _DvzApp()
-    figure = _DvzFigure()
-    window = _DvzWindow()
-    canvas = _DvzCanvas()
-    raw.view = ctypes.pointer(
-        _DvzViewPrefix(
-            ctypes.pointer(app),
-            ctypes.pointer(figure),
-            0,
-            ctypes.pointer(window),
-            ctypes.pointer(canvas),
-        )
-    )
     session = dvz_run.RunSession(raw, 'scene', raw.app, raw.view, window_host=raw.window_host)
     raw.should_close = True
 
     assert session.render_once() is None
     assert not session.running
-    assert any(call[0] == 'window_should_close' for call in raw.calls)
+    assert ('app_should_exit', raw.app) in raw.calls
     assert raw.calls[-2:] == [
         ('app_destroy', raw.app),
         ('window_host_destroy', raw.window_host),
