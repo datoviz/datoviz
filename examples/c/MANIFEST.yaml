@@ -370,6 +370,9 @@ examples:
     primary_feature: linked-panels
     lane: features
     source: examples/c/features/panel_linked.c
+    python:
+      source: examples/python/gallery/features/panel_linked.py
+      status: direct-engine
     validation: smoke+interaction+screenshot
     data:
       kind: synthetic
@@ -1565,6 +1568,9 @@ examples:
     primary_feature: controller-panzoom
     lane: features
     source: examples/c/features/panzoom.c
+    python:
+      source: examples/python/gallery/features/panzoom.py
+      status: direct-engine
     validation: smoke+interaction+screenshot
     media:
       preview:

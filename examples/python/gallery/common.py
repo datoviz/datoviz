@@ -108,6 +108,33 @@ def run(scene, figure, title: str):
     dvz.run(scene, figure, WIDTH, HEIGHT, title)
 
 
+def run_with_view(scene, figure, title: str, configure_view):
+    app = dvz.dvz_app(scene)
+    if not app:
+        raise RuntimeError("dvz_app() failed")
+    try:
+        view = dvz.dvz_view_window(app, figure, WIDTH, HEIGHT, title.encode())
+        if not view:
+            raise RuntimeError("dvz_view_window() failed")
+        configure_view(view)
+        dvz.dvz_app_run(app, 0)
+    finally:
+        dvz.dvz_app_destroy(app)
+        dvz.dvz_scene_destroy(scene)
+
+
+def bind_panzoom(view, scene, panel, dims):
+    controller = dvz.dvz_panzoom(scene, None)
+    if not controller:
+        raise RuntimeError("dvz_panzoom() failed")
+    if dvz.dvz_view_bind_controller(view, panel, controller, dims) != 0:
+        raise RuntimeError("dvz_view_bind_controller() failed")
+    panzoom = dvz.dvz_controller_panzoom(controller)
+    if not panzoom:
+        raise RuntimeError("dvz_controller_panzoom() failed")
+    return controller, panzoom
+
+
 def set_filled_point_style(visual):
     style = dvz.dvz_point_style_desc()
     style.aspect = dvz.DVZ_SHAPE_ASPECT_FILLED

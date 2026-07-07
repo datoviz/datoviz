@@ -38,12 +38,19 @@ A 64-point ring uploads position, color, and diameter_px arrays inside a [-1, 1]
     --8<-- "examples/c/features/panzoom.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/panzoom.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `feature_panzoom`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/panzoom.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panzoom.c)
+    - Python source: [`examples/python/gallery/features/panzoom.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panzoom.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panzoom"><code>examples/webgpu/live.html?id=feature_panzoom</code></a>
     - Browser capability tags: `controller`, `panzoom`, `point`
