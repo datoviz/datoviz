@@ -91,6 +91,10 @@ shader-abi-check:
     @python3 tools/check_scene_shader_abi.py
 #
 
-spec-check: shader-abi-check
+scene-visual-boundary-check:
+    @python3 tools/check_scene_visual_boundaries.py
+#
+
+spec-check: shader-abi-check scene-visual-boundary-check
     @python3 tasks/spec_check.py
 #

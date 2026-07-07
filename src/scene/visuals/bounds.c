@@ -833,7 +833,7 @@ static void _bounds_apply_visual_transform(const DvzVisual* visual, DvzBounds* b
     ANN(bounds);
     if (!bounds->valid || !visual->has_local_transform)
         return;
-    if (visual->type == DVZ_VISUAL_TYPE_SPHERE)
+    if (visual->ops != NULL && visual->ops->bounds_resolves_local_transform)
         return;
 
     DvzBounds transformed = {0};

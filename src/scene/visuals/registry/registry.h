@@ -117,6 +117,7 @@ struct DvzVisualFamilyOps
     bool supports_material;
     bool supports_depth_cue;
     bool sync_point_style_material;
+    bool bounds_resolves_local_transform;
 };
 
 

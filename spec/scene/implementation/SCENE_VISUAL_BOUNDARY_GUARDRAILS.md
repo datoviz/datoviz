@@ -133,15 +133,14 @@ AABB-corner transform afterward would double-apply or distort those bounds and c
 generated bounds overlay.
 
 The long-term fix is not to keep a concrete `DVZ_VISUAL_TYPE_SPHERE` branch in generic bounds code.
-Instead, the visual-family registry should expose a neutral bounds contract, such as:
+Instead, the visual-family registry exposes a neutral bounds contract:
 
 ```c
-bool bounds_resolve_local_transform;
+bool bounds_resolves_local_transform;
 ```
 
-or an equivalent named policy field/callback on `DvzVisualFamilyOps`. Generic bounds code should
-then apply its default local-transform AABB step only when the family contract says the reducer
-returned pre-transform bounds. Sphere would opt out because its family reducer already returns
+Generic bounds code applies its default local-transform AABB step only when the family contract says
+the reducer returned pre-transform bounds. Sphere opts out because its family reducer already returns
 local-transform-aware bounds. Future impostor, billboard, glyph, splat, vector, or custom-shader
 families can make the same decision through the registry contract without adding another generic
 family branch.
