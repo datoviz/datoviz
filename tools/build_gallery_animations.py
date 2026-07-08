@@ -123,10 +123,17 @@ def frame_path(frame_dir: Path, frame: int) -> Path:
     return frame_dir / f"frame_{frame:04d}.png"
 
 
+def child_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
 def capture_sequence(preview: AnimatedPreview, frame_dir: Path) -> None:
     frame_dir.mkdir(parents=True, exist_ok=True)
     env = os.environ.copy()
-    env["DVZ_CAPTURE_DIR"] = str(frame_dir)
+    env["DVZ_CAPTURE_DIR"] = child_path(frame_dir)
     env["DVZ_CAPTURE_BASENAME"] = "frame"
     cmd = [
         str(preview.executable),

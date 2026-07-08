@@ -70,6 +70,7 @@
 #define DEFAULT_BUNDLE_PATH        "data/examples/proteins/1ubq/prepared"
 #define ROTATION_SPEED_RAD_PER_SEC 0.18f
 #define DEFAULT_ATOM_SCALE         0.4f
+#define SCENARIO_FPS               60.0
 
 static const float TAU = 6.28318530718f;
 
@@ -669,8 +670,7 @@ static float _rotation_speed(const DvzScenarioContext* ctx)
 
     const uint64_t count = ctx->preview_frame_count;
     const uint32_t stride = ctx->preview_sample_stride > 0 ? ctx->preview_sample_stride : 1;
-    const double fps = ctx->preview_fps > 0.0 ? ctx->preview_fps : 24.0;
-    const double duration_s = ((double)count * (double)stride) / fps;
+    const double duration_s = ((double)count * (double)stride) / SCENARIO_FPS;
     return duration_s > 0.0 ? (float)((double)TAU / duration_s) : ROTATION_SPEED_RAD_PER_SEC;
 }
 
@@ -899,7 +899,7 @@ DvzScenarioSpec dvz_showcase_protein_scenario(void)
         .title = "Protein",
         .width = WIDTH,
         .height = HEIGHT,
-        .fps = 60.0,
+        .fps = SCENARIO_FPS,
         .init = _scenario_init,
         .destroy = _scenario_destroy,
     };

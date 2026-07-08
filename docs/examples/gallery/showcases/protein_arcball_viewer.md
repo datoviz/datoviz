@@ -40,7 +40,7 @@ Terms: RCSB PDB data usage policy applies.
 
 Prepare: `python tools/data/prepare_protein_arcball.py 1UBQ --regenerate` `python tools/preprocess_protein.py 6M0J`
 
-Options: --spin, --debug, [bundle-path], [frame-count]
+Options: [runner options], [frame-count]
 
 Debug: DVZ_EXAMPLE_DEBUG=gui enables post-processing diagnostics
 

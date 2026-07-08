@@ -2647,7 +2647,7 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 72
+        frames: 96
         fps: 24
         sample_stride: 2
     data:
