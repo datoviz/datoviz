@@ -39,7 +39,7 @@ def _primary_fields(entry: dict[str, Any]) -> dict[str, str]:
 
 def _media_fields(example: build_gallery.Example) -> dict[str, Any]:
     screenshot_expected = "screenshot" in example.validation
-    source = build_gallery.source_image_path(example, build_gallery.DEFAULT_IMAGE_DIR)
+    source = build_gallery.DEFAULT_IMAGE_DIR / example.lane / f"{example.id}.png"
     site_asset = f"{build_gallery.DEFAULT_IMAGE_URL_BASE}/{example.lane}/{example.id}.webp"
     status = "available" if screenshot_expected and source.exists() else "pending"
     if not screenshot_expected:

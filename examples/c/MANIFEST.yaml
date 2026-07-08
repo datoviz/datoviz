@@ -278,7 +278,6 @@ batches:
 
 examples:
   - id: features_basic_scene
-    legacy_id: feature_basic_scene
     title: Basic Scene
     stage: v0.4_required
     category: feature
@@ -300,7 +299,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_panel_single
-    legacy_id: feature_panel_single
     title: Single Panel
     stage: v0.4_required
     category: feature
@@ -322,7 +320,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_panel_grid
-    legacy_id: feature_panel_grid
     title: Panel Grid
     stage: v0.4_required
     category: feature
@@ -344,7 +341,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_panel_multi
-    legacy_id: feature_panel_multi
     title: Multiple Panels
     stage: v0.4_required
     category: feature
@@ -368,7 +364,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_panel_linked
-    legacy_id: feature_panel_linked
     title: Linked Panels
     stage: v0.4_required
     category: feature
@@ -397,7 +392,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_axes_2d
-    legacy_id: path_axes_2d
     title: Path With 2D Axes
     stage: v0.4_required
     category: feature
@@ -421,7 +415,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_coordinate_system
-    legacy_id: feature_coordinate_system
     title: Coordinate System
     stage: v0.4_required
     category: feature
@@ -442,7 +435,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_axis_labels
-    legacy_id: feature_axis_labels
     title: Axis Labels
     stage: v0.4_required
     category: feature
@@ -462,7 +454,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_sampled_field_update
-    legacy_id: feature_sampled_field_update
     title: Sampled Field Update
     stage: v0.4_required
     category: feature
@@ -491,7 +482,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_text_block
-    legacy_id: feature_text_block
     title: Text Block
     stage: v0.4_required
     category: feature
@@ -510,7 +500,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_overlay_card
-    legacy_id: feature_overlay_card
     title: Overlay Card
     stage: v0.4_required
     category: feature
@@ -530,7 +519,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_controller_arcball
-    legacy_id: feature_controller_arcball
     title: Arcball Controller
     stage: v0.4_required
     category: feature
@@ -557,7 +545,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_camera_manual
-    legacy_id: feature_camera_manual
     title: Manual Camera
     stage: v0.4_required
     category: feature
@@ -580,7 +567,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_orientation_gizmo
-    legacy_id: feature_orientation_gizmo
     title: Orientation Gizmo
     stage: v0.4_required
     category: feature
@@ -605,7 +591,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_reference_grid
-    legacy_id: feature_reference_grid
     title: Reference Grid
     stage: v0.4_required
     category: feature
@@ -624,7 +609,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_bounds_overlay
-    legacy_id: feature_bounds_overlay
     title: Bounds Overlay
     stage: v0.4_required
     category: feature
@@ -653,7 +637,6 @@ examples:
       - sphere
 
   - id: features_controller_fly
-    legacy_id: feature_controller_fly
     title: Fly Controller
     stage: v0.4_required
     category: feature
@@ -678,7 +661,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_controller_turntable
-    legacy_id: feature_controller_turntable
     title: Turntable Controller
     stage: v0.4_required
     category: feature
@@ -706,7 +688,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_mesh_texture
-    legacy_id: feature_mesh_texture
     title: Textured Mesh
     stage: v0.4_required
     category: feature
@@ -727,7 +708,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_material_mesh
-    legacy_id: feature_material_mesh
     title: Mesh Materials
     stage: v0.4_required
     category: feature
@@ -748,7 +728,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_lighting
-    legacy_id: feature_lighting
     title: Lighting
     stage: v0.4_required
     category: feature
@@ -769,7 +748,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_user_scale
-    legacy_id: feature_user_scale
     title: User Scale
     stage: v0.4_required
     category: feature
@@ -796,7 +774,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_gui_controls
-    legacy_id: feature_gui_controls
     title: GUI Controls
     stage: v0.4_required
     category: feature
@@ -820,7 +797,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_gui_viewport
-    legacy_id: feature_gui_viewport
     title: GUI Viewport
     stage: v0.4_required
     category: feature
@@ -845,7 +821,6 @@ examples:
     agent_copy_safe: false
 
   - id: features_gui_cimgui
-    legacy_id: feature_gui_cimgui
     title: Raw cimgui GUI
     stage: v0.4_required
     category: feature
@@ -869,7 +844,6 @@ examples:
     agent_copy_safe: false
 
   - id: features_animation_tracks
-    legacy_id: feature_animation_tracks
     title: Animation Tracks
     stage: v0.4_required
     category: feature
@@ -897,7 +871,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_compute_buffer_animation
-    legacy_id: feature_compute_buffer_animation
     title: Compute Buffer Animation
     stage: v0.4_experimental
     category: feature
@@ -932,7 +905,6 @@ examples:
       - point
 
   - id: features_technique_edl
-    legacy_id: technique_edl
     title: Eye-Dome Lighting
     stage: v0.4_experimental
     category: feature
@@ -949,7 +921,6 @@ examples:
     agent_copy_safe: false
 
   - id: features_technique_ssao
-    legacy_id: technique_ssao
     title: Screen-Space Ambient Occlusion
     stage: v0.4_required
     category: feature
@@ -967,7 +938,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_technique_msaa
-    legacy_id: technique_msaa
     title: Multisample Antialiasing
     stage: v0.4_required
     category: feature
@@ -984,7 +954,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_technique_depth_cue
-    legacy_id: technique_depth_cue
     title: Depth Cue
     stage: v0.4_required
     category: feature
@@ -1001,7 +970,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_technique_transparency
-    legacy_id: technique_transparency
     title: Transparency Order
     stage: v0.4_required
     category: feature
@@ -1019,7 +987,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_volume_occlusion
-    legacy_id: feature_volume_occlusion
     title: Volume Occlusion
     stage: v0.4_experimental
     category: feature
@@ -1037,7 +1004,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_guide_lines
-    legacy_id: feature_guide_lines
     title: Guide Lines
     stage: v0.4_required
     category: feature
@@ -1060,7 +1026,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_guide_spans
-    legacy_id: feature_guide_spans
     title: Guide Spans
     stage: v0.4_required
     category: feature
@@ -1083,7 +1048,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_bars_bands
-    legacy_id: feature_bars_bands
     title: Bars And Bands
     stage: v0.4_required
     category: feature
@@ -1107,7 +1071,6 @@ examples:
     agent_copy_safe: true
 
   - id: runtime_app_glfw
-    legacy_id: feature_app_glfw
     title: GLFW App
     stage: v0.4_required
     category: runtime
@@ -1126,7 +1089,6 @@ examples:
     agent_copy_safe: true
 
   - id: runtime_multi_window
-    legacy_id: feature_multi_window
     title: Multi Window
     stage: v0.4_required
     category: runtime
@@ -1146,7 +1108,6 @@ examples:
     agent_copy_safe: true
 
   - id: runtime_offscreen_capture
-    legacy_id: feature_offscreen_capture
     title: Offscreen Capture
     stage: v0.4_required
     category: runtime
@@ -1169,7 +1130,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_input_events
-    legacy_id: feature_input_events
     title: Input Events
     stage: v0.4_required
     category: feature
@@ -1189,7 +1149,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_view_size_policies
-    legacy_id: feature_view_size_policies
     title: View Size Policies
     stage: v0.4_required
     category: feature
@@ -1216,7 +1175,6 @@ examples:
       - window
 
   - id: runtime_record_replay
-    legacy_id: feature_record_replay
     title: Record Replay
     stage: v0.4_experimental
     category: runtime
@@ -1235,7 +1193,6 @@ examples:
     agent_copy_safe: false
 
   - id: features_visual_transform
-    legacy_id: feature_visual_transform
     title: Visual Transform
     stage: v0.4_required
     category: feature
@@ -1256,7 +1213,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_panel_view2d
-    legacy_id: feature_panel_view2d
     title: Panel View 2D
     stage: v0.4_required
     category: feature
@@ -1278,7 +1234,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_json_export
-    legacy_id: feature_json_export
     title: JSON Export
     stage: v0.4_experimental
     category: feature
@@ -1296,7 +1251,6 @@ examples:
     agent_copy_safe: false
 
   - id: features_bezier_curve_path
-    legacy_id: feature_bezier_curve_path
     title: Bezier Curve Path
     stage: v0.4_required
     category: feature
@@ -1315,7 +1269,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_path_join
-    legacy_id: feature_path_join
     title: Path Join
     stage: v0.4_required
     category: feature
@@ -1332,7 +1285,6 @@ examples:
     agent_copy_safe: true
 
   - id: showcases_panel_linked_axes
-    legacy_id: linked_panels_axes_panzoom
     title: Linked Panels With Axes
     stage: v0.4_required
     category: showcase
@@ -1364,7 +1316,6 @@ examples:
       - synthetic
 
   - id: showcases_linked_probe_colorbar
-    legacy_id: linked_panels_probe_colorbar
     title: Linked Probe With Colorbar
     stage: v0.4_required
     category: showcase
@@ -1397,7 +1348,6 @@ examples:
       - readout
 
   - id: showcases_scientific_plotting
-    legacy_id: scientific_plotting_workflow
     title: Scientific Plotting Workflow
     stage: v0.4_required
     category: showcase
@@ -1427,7 +1377,6 @@ examples:
       - uncertainty-band
 
   - id: features_scalebar
-    legacy_id: scale_bar
     title: Scale Bar
     stage: v0.4_required
     category: feature
@@ -1452,7 +1401,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_scalebar_units
-    legacy_id: scalebar_units
     title: Scale Bar Units
     stage: v0.4_required
     category: feature
@@ -1477,7 +1425,6 @@ examples:
     agent_copy_safe: true
 
   - id: showcases_scalebar_measurement
-    legacy_id: scalebar_measurement_workflow
     title: Scale Bar Measurement Workflow
     stage: v0.4_required
     category: showcase
@@ -1503,7 +1450,6 @@ examples:
       - synthetic
 
   - id: features_colorbar
-    legacy_id: colorbar
     title: Colorbar
     stage: v0.4_required
     category: feature
@@ -1532,7 +1478,6 @@ examples:
       - capture
 
   - id: features_colormap_scale
-    legacy_id: colormap_scale
     title: Scalar Color Scale
     stage: v0.4_required
     category: feature
@@ -1554,7 +1499,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_annotation_readout
-    legacy_id: annotation_readout
     title: Annotation Readout
     stage: v0.4_required
     category: feature
@@ -1575,7 +1519,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_update_partial
-    legacy_id: update_partial
     title: Partial Data Update
     stage: v0.4_required
     category: feature
@@ -1603,7 +1546,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_update_visual_data
-    legacy_id: feature_update_visual_data
     title: Visual Data Update
     stage: v0.4_required
     category: feature
@@ -1632,7 +1574,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_visibility
-    legacy_id: feature_visibility
     title: Visual Visibility
     stage: v0.4_required
     category: feature
@@ -1655,7 +1596,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_technique_depth_test
-    legacy_id: technique_depth_test
     title: Depth Test Toggle
     stage: v0.4_required
     category: feature
@@ -1678,7 +1618,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_alpha_blending
-    legacy_id: alpha_blending
     title: Alpha Blending
     stage: v0.4_required
     category: feature
@@ -1700,7 +1639,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_panel_background
-    legacy_id: panel_background
     title: Panel Background
     stage: v0.4_required
     category: feature
@@ -1722,7 +1660,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_panzoom
-    legacy_id: feature_panzoom
     title: Panzoom
     stage: v0.4_required
     category: feature
@@ -1750,7 +1687,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_image_probe
-    legacy_id: image_probe
     title: Image Probe
     stage: v0.4_required
     category: feature
@@ -1774,7 +1710,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_picking
-    legacy_id: feature_picking
     title: Picking
     stage: v0.4_required
     category: feature
@@ -1799,7 +1734,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_selection_pixel
-    legacy_id: feature_selection_pixel
     title: Pixel Selection
     stage: v0.4_required
     category: feature
@@ -1825,7 +1759,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_selection_sphere
-    legacy_id: feature_selection_sphere
     title: Sphere Selection
     stage: v0.4_required
     category: feature
@@ -1850,7 +1783,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_selection_mesh_instances
-    legacy_id: feature_selection_mesh_instances
     title: Mesh Instance Selection
     stage: v0.4_required
     category: feature
@@ -1875,7 +1807,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_isolines
-    legacy_id: feature_isolines
     title: Isolines
     stage: v0.4_required
     category: feature
@@ -1900,7 +1831,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_builtin_shapes_2d
-    legacy_id: feature_builtin_shapes_2d
     title: Builtin Shapes 2D
     stage: v0.4_required
     category: feature
@@ -1923,7 +1853,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_builtin_shapes_3d
-    legacy_id: feature_builtin_shapes_3d
     title: Builtin Shapes 3D
     stage: v0.4_required
     category: feature
@@ -1947,7 +1876,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_obj_loading
-    legacy_id: feature_obj_loading
     title: OBJ Loading
     stage: v0.4_required
     category: feature
@@ -1971,7 +1899,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_probe_labels
-    legacy_id: feature_probe_labels
     title: Label Probe
     stage: v0.4_required
     category: feature
@@ -1993,7 +1920,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_datetime_axis
-    legacy_id: feature_datetime_axis
     title: Datetime Axis
     stage: v0.4_required
     category: feature
@@ -2020,7 +1946,6 @@ examples:
       - time-series
 
   - id: features_timer_animation
-    legacy_id: feature_timer_animation
     title: Timer Animation
     stage: v0.4_required
     category: feature
@@ -2048,7 +1973,6 @@ examples:
     agent_copy_safe: true
 
   - id: features_marker_symbols
-    legacy_id: feature_marker_symbols
     title: Marker Symbols
     stage: v0.4_required
     category: feature
@@ -2080,7 +2004,6 @@ examples:
       - svg-path-symbol
 
   - id: features_legend_categorical
-    legacy_id: feature_legend_categorical
     title: Categorical Legend
     stage: v0.4_experimental
     category: feature
@@ -2109,7 +2032,6 @@ examples:
       - capture
 
   - id: runtime_video_export
-    legacy_id: feature_video_export
     title: Video Export
     stage: v0.4_experimental
     category: runtime
@@ -2142,7 +2064,6 @@ examples:
       - offscreen
 
   - id: visuals_point
-    legacy_id: point_2d
     title: Point
     stage: v0.4_required
     category: visual
@@ -2171,7 +2092,6 @@ examples:
       - capture
 
   - id: visuals_pixel
-    legacy_id: visual_pixel
     title: Pixel
     stage: v0.4_required
     category: visual
@@ -2200,7 +2120,6 @@ examples:
       - capture
 
   - id: visuals_marker
-    legacy_id: visual_marker
     title: Marker
     stage: v0.4_required
     category: visual
@@ -2229,7 +2148,6 @@ examples:
       - capture
 
   - id: visuals_primitive
-    legacy_id: visual_primitive
     title: Primitive
     stage: v0.4_required
     category: visual
@@ -2256,7 +2174,6 @@ examples:
       - capture
 
   - id: visuals_segment
-    legacy_id: visual_segment
     title: Segment
     stage: v0.4_required
     category: visual
@@ -2285,7 +2202,6 @@ examples:
       - capture
 
   - id: visuals_vector
-    legacy_id: visual_vector
     title: Vector
     stage: v0.4_required
     category: visual
@@ -2316,7 +2232,6 @@ examples:
       - capture
 
   - id: visuals_path
-    legacy_id: visual_path
     title: Path
     stage: v0.4_required
     category: visual
@@ -2344,7 +2259,6 @@ examples:
       - capture
 
   - id: visuals_image
-    legacy_id: visual_image
     title: Image
     stage: v0.4_required
     category: visual
@@ -2374,7 +2288,6 @@ examples:
       - capture
 
   - id: visuals_image_rgba
-    legacy_id: visual_image_rgba
     title: RGBA Image
     stage: v0.4_required
     category: visual
@@ -2406,7 +2319,6 @@ examples:
       - capture
 
   - id: visuals_mesh
-    legacy_id: visual_mesh
     title: Mesh
     stage: v0.4_required
     category: visual
@@ -2437,7 +2349,6 @@ examples:
       - capture
 
   - id: visuals_sphere
-    legacy_id: sphere_impostor
     title: Sphere
     stage: v0.4_required
     category: visual
@@ -2466,7 +2377,6 @@ examples:
       - capture
 
   - id: visuals_splat
-    legacy_id: visual_splat
     title: Splat
     stage: v0.4_experimental
     category: visual
@@ -2492,7 +2402,6 @@ examples:
       - capture
 
   - id: visuals_text
-    legacy_id: visual_text
     title: Text
     stage: v0.4_required
     category: visual
@@ -2520,7 +2429,6 @@ examples:
       - capture
 
   - id: visuals_glyph
-    legacy_id: visual_glyph
     title: Font Atlas Glyphs
     stage: v0.4_experimental
     category: visual
@@ -2549,7 +2457,6 @@ examples:
       - capture
 
   - id: visuals_labels
-    legacy_id: visual_labels
     title: Labels
     stage: v0.4_required
     category: visual
@@ -2577,7 +2484,6 @@ examples:
       - capture
 
   - id: visuals_volume
-    legacy_id: volume
     title: Volume
     stage: v0.4_required
     category: visual
@@ -2607,7 +2513,6 @@ examples:
       - capture
 
   - id: composites_polygon
-    legacy_id: composite_polygon
     title: Polygon Composite
     stage: v0.4_required
     category: composite
@@ -2638,7 +2543,6 @@ examples:
       - panzoom
 
   - id: composites_graph
-    legacy_id: composite_graph
     title: Graph Composite
     stage: v0.4_required
     category: composite
@@ -2668,7 +2572,6 @@ examples:
       - panzoom
 
   - id: showcases_choropleth
-    legacy_id: us_state_choropleth
     title: U.S. State Choropleth
     stage: v0.4_required
     category: showcase
@@ -2725,7 +2628,6 @@ examples:
       - capture
 
   - id: showcases_protein
-    legacy_id: protein_arcball_viewer
     title: Protein
     stage: v0.4_required
     category: showcase
@@ -2778,7 +2680,6 @@ examples:
       - arcball
 
   - id: showcases_wind_field
-    legacy_id: showcase_wind_field
     title: Wind Field
     stage: v0.4_required
     category: showcase
@@ -2815,7 +2716,6 @@ examples:
       - capture
 
   - id: showcases_gpu_particle_smoke
-    legacy_id: showcase_gpu_particle_smoke
     title: GPU Particle Smoke
     stage: v0.4_required
     category: showcase
@@ -2852,7 +2752,6 @@ examples:
       - capture
 
   - id: showcases_embedding_atlas
-    legacy_id: showcase_embedding_atlas
     title: Embedding Atlas
     stage: v0.4_experimental
     category: showcase
@@ -2891,7 +2790,6 @@ examples:
       - overlay-card
 
   - id: showcases_lipid_brain_atlas
-    legacy_id: showcase_lipid_brain_atlas
     title: Lipid Brain Atlas
     stage: v0.4_experimental
     category: showcase
@@ -2939,7 +2837,6 @@ examples:
       - video
 
   - id: showcases_synthetic_mouse
-    legacy_id: showcase_synthetic_mouse
     title: Synthetic Mouse
     stage: v0.4_experimental
     category: showcase
@@ -2979,7 +2876,6 @@ examples:
       - video
 
   - id: showcases_surface_grid
-    legacy_id: showcase_surface_grid
     title: Surface Grid
     stage: v0.4_required
     category: showcase
@@ -3008,7 +2904,6 @@ examples:
       - arcball
 
   - id: showcases_brain_volume
-    legacy_id: brain_volume
     title: Allen Mouse Brain
     stage: v0.4_required
     category: showcase
@@ -3056,7 +2951,6 @@ examples:
       - capture
 
   - id: showcases_point_cloud
-    legacy_id: point_cloud
     title: Point Cloud
     stage: v0.4_required
     category: showcase
@@ -3101,7 +2995,6 @@ examples:
       - capture
 
   - id: showcases_textured_planet
-    legacy_id: textured_terrain_or_planet
     title: Textured Planets
     stage: v0.4_required
     category: showcase

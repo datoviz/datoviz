@@ -274,7 +274,6 @@ class SourceTab:
 @dataclass(frozen=True)
 class Example:
     id: str
-    legacy_id: str | None
     title: str
     category: str
     lane: str
@@ -586,7 +585,6 @@ def collect_examples(manifest: dict) -> list[Example]:
         summary, description = extract_c_description(ROOT / source)
         example = Example(
             id=str(entry["id"]),
-            legacy_id=str(entry["legacy_id"]) if entry.get("legacy_id") else None,
             title=str(entry.get("title", entry["id"])),
             category=category,
             lane=lane,
@@ -707,14 +705,6 @@ def image_url(
     return site_relative_url(page_path, target)
 
 
-def source_image_path(example: Example, image_dir: Path) -> Path:
-    image = image_dir / example.lane / f"{example.id}.png"
-    if image.exists() or example.legacy_id is None:
-        return image
-    legacy = image_dir / example.lane / f"{example.legacy_id}.png"
-    return legacy if legacy.exists() else image
-
-
 def html_link(href: str, label: str, code: bool = False) -> str:
     content = f"<code>{label}</code>" if code else label
     return f'<a href="{href}">{content}</a>'
@@ -737,7 +727,7 @@ def media_block(
     image_url_base: str,
     image_format: str = DEFAULT_IMAGE_FORMAT,
 ) -> str:
-    image = source_image_path(example, image_dir)
+    image = gallery_media.gallery_png_path(example, image_dir)
     if image.exists():
         return f"![{example.title}]({image_url(page_path, example, image_url_base, image_format)})"
     label = "Screenshot pending" if example.screenshot_expected else "No screenshot"
