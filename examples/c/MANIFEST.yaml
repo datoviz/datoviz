@@ -2637,9 +2637,9 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 96
-        fps: 24
-        sample_stride: 2
+        frames: 72
+        fps: 12
+        sample_stride: 4
     data:
       kind: real
     webgpu:

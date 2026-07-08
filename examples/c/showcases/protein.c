@@ -676,20 +676,99 @@ static float _rotation_speed(const DvzScenarioContext* ctx)
 
 
 
+static bool _normalize_vec3(vec3 v)
+{
+    float norm = sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+    if (norm <= 0.0f || !isfinite(norm))
+        return false;
+    v[0] /= norm;
+    v[1] /= norm;
+    v[2] /= norm;
+    return true;
+}
+
+
+
+static void _cross_vec3(const vec3 a, const vec3 b, vec3 out)
+{
+    out[0] = a[1] * b[2] - a[2] * b[1];
+    out[1] = a[2] * b[0] - a[0] * b[2];
+    out[2] = a[0] * b[1] - a[1] * b[0];
+}
+
+
+
+/**
+ * Compute the visual-space spin axis matching the camera-screen vertical after the initial arcball.
+ *
+ * @param camera_desc camera descriptor defining the screen-up direction
+ * @param arcball_angles initial arcball Euler angles
+ * @param out_axis output normalized visual-space axis
+ * @return whether the axis was computed
+ */
+static bool _preview_spin_axis(
+    const DvzCameraDesc* camera_desc, const vec3 arcball_angles, vec3 out_axis)
+{
+    ANN(camera_desc);
+    ANN(out_axis);
+
+    vec3 forward = {
+        camera_desc->view.target[0] - camera_desc->view.eye[0],
+        camera_desc->view.target[1] - camera_desc->view.eye[1],
+        camera_desc->view.target[2] - camera_desc->view.eye[2],
+    };
+    if (!_normalize_vec3(forward))
+        return false;
+
+    vec3 right = {0};
+    _cross_vec3(forward, camera_desc->view.up, right);
+    if (!_normalize_vec3(right))
+        return false;
+
+    vec3 screen_up = {0};
+    _cross_vec3(right, forward, screen_up);
+    if (!_normalize_vec3(screen_up))
+        return false;
+
+    const float sx = sinf(arcball_angles[0]);
+    const float cx = cosf(arcball_angles[0]);
+    const float sy = sinf(arcball_angles[1]);
+    const float cy = cosf(arcball_angles[1]);
+    const float sz = sinf(arcball_angles[2]);
+    const float cz = cosf(arcball_angles[2]);
+
+    const vec3 arcball_cols[3] = {
+        {cy * cz, sx * sy * cz + cx * sz, sx * sz - cx * sy * cz},
+        {-cy * sz, cx * cz - sx * sy * sz, sx * cz + cx * sy * sz},
+        {sy, -cy * sx, cx * cy},
+    };
+
+    for (uint32_t col = 0; col < 3; col++)
+    {
+        out_axis[col] = arcball_cols[col][0] * screen_up[0] +
+                        arcball_cols[col][1] * screen_up[1] +
+                        arcball_cols[col][2] * screen_up[2];
+    }
+    return _normalize_vec3(out_axis);
+}
+
+
+
 /**
  * Attach one vertical-axis rotation animation to a visual.
  *
  * @param ctx scenario context
  * @param visual target visual
  * @param controller controller that pauses animation while interacting
+ * @param axis visual-space rotation axis
  * @param speed animation speed
  * @param out_track created track
  * @param out_animation created animation
  * @return whether setup succeeded
  */
 static bool _attach_rotation_animation(
-    DvzScenarioContext* ctx, DvzVisual* visual, DvzController* controller, float speed,
-    DvzTrack** out_track, DvzAnimation** out_animation)
+    DvzScenarioContext* ctx, DvzVisual* visual, DvzController* controller, const vec3 axis,
+    float speed, DvzTrack** out_track, DvzAnimation** out_animation)
 {
     ANN(ctx);
     ANN(visual);
@@ -697,7 +776,9 @@ static bool _attach_rotation_animation(
     ANN(out_animation);
 
     DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
-    rotation_desc.axis[1] = 1.0f;
+    rotation_desc.axis[0] = axis[0];
+    rotation_desc.axis[1] = axis[1];
+    rotation_desc.axis[2] = axis[2];
     rotation_desc.speed_rad_per_sec = 1.0f;
 
     DvzTrack* track = dvz_track_rotation(&rotation_desc);
@@ -825,20 +906,25 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_tuner_material(&state->tuner, "Atom material", spheres, &state->sphere_material);
 
     const float rotation_speed = _rotation_speed(ctx);
+    vec3 preview_spin_axis = {0};
+    EXAMPLE_CHECK(
+        _preview_spin_axis(&camera_desc, arcball_angles, preview_spin_axis),
+        "preview spin axis setup failed");
     EXAMPLE_CHECK(
         _attach_rotation_animation(
-            ctx, spheres, arcball_controller, rotation_speed, &state->sphere_rotation,
+            ctx, spheres, arcball_controller, preview_spin_axis, rotation_speed,
+            &state->sphere_rotation,
             &state->sphere_animation),
         "rotation animation setup failed");
     EXAMPLE_CHECK(
         _attach_rotation_animation(
-            ctx, selection, arcball_controller, rotation_speed, &state->selection_rotation,
-            &state->selection_animation),
+            ctx, selection, arcball_controller, preview_spin_axis, rotation_speed,
+            &state->selection_rotation, &state->selection_animation),
         "selection animation setup failed");
     EXAMPLE_CHECK(
         _attach_rotation_animation(
-            ctx, crosshair, arcball_controller, rotation_speed, &state->crosshair_rotation,
-            &state->crosshair_animation),
+            ctx, crosshair, arcball_controller, preview_spin_axis, rotation_speed,
+            &state->crosshair_rotation, &state->crosshair_animation),
         "crosshair animation setup failed");
 
     dvz_fprintf(
