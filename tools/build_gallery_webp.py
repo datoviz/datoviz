@@ -77,7 +77,10 @@ def prune_stale_webp(output_dir: Path, examples: list[build_gallery.Example]) ->
         if not lane_dir.exists():
             continue
         for webp in lane_dir.glob("*.webp"):
-            if (lane, webp.stem) in valid:
+            stem = webp.stem
+            if webp.name.endswith(".poster.webp"):
+                stem = webp.name[: -len(".poster.webp")]
+            if (lane, stem) in valid:
                 continue
             webp.unlink()
             removed += 1

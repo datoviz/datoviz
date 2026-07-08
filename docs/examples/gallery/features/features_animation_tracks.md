@@ -16,7 +16,13 @@ This example shows scene animation tracks driving a cube and camera.
 
 === "Screenshot"
 
-    ![Animation Tracks](../../../assets/gallery/v0.4/features/features_animation_tracks.webp)
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_animation_tracks.poster.webp" alt="Animation Tracks" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/features/features_animation_tracks.poster.webp" aria-label="Animation Tracks preview">
+        <source data-src="../../../../assets/gallery/v0.4/features/features_animation_tracks.mp4" type="video/mp4">
+      </video>
+    </div>
 
 === "Live WebGPU"
 

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import html
 import posixpath
 import re
 import shutil
@@ -288,6 +289,7 @@ class Example:
     data: dict
     dataset: dict
     encoding: dict
+    media: dict
     webgpu: dict
     agent_copy_safe: bool | None
     source_label: str
@@ -605,6 +607,7 @@ def collect_examples(manifest: dict) -> list[Example]:
             data=entry.get("data") or {},
             dataset=entry.get("dataset") or {},
             encoding=entry.get("encoding") or {},
+            media=entry.get("media") or {},
             webgpu=entry.get("webgpu") or {},
             agent_copy_safe=entry.get("agent_copy_safe"),
             source_label=source_label,
@@ -681,7 +684,10 @@ def site_html_relative_url(page_path: str | Path, target: str) -> str:
         return target
     normalized = target.lstrip("/")
     page = Path(page_path)
-    page_dir = page.with_suffix("").as_posix() if page.suffix == ".md" else page.as_posix()
+    if page.name == "index.md":
+        page_dir = page.parent.as_posix()
+    else:
+        page_dir = page.with_suffix("").as_posix() if page.suffix == ".md" else page.as_posix()
     if page_dir in ("", "."):
         return normalized
     return posixpath.relpath(normalized, page_dir)
@@ -705,6 +711,16 @@ def image_url(
     return site_relative_url(page_path, target)
 
 
+def asset_url(
+    page_path: str | Path,
+    example: Example,
+    image_url_base: str,
+    suffix: str,
+) -> str:
+    target = f"{image_url_base.rstrip('/')}/{example.lane}/{example.id}{suffix}"
+    return site_html_relative_url(page_path, target)
+
+
 def html_link(href: str, label: str, code: bool = False) -> str:
     content = f"<code>{label}</code>" if code else label
     return f'<a href="{href}">{content}</a>'
@@ -720,16 +736,63 @@ def webgpu_status_label(status: str) -> str:
     }.get(status, status or "Unclassified")
 
 
+def preferred_preview_media(example: Example) -> str:
+    preview = example.media.get("preview") if isinstance(example.media, dict) else {}
+    if not isinstance(preview, dict):
+        return ""
+    card = preview.get("card") or {}
+    if isinstance(card, dict) and card.get("preferred"):
+        return str(card["preferred"])
+    return str(preview.get("kind", ""))
+
+
+def video_media_block(
+    page_path: str | Path,
+    example: Example,
+    image_url_base: str,
+    href: str = "",
+) -> str:
+    title = html.escape(example.title, quote=True)
+    poster = html.escape(asset_url(page_path, example, image_url_base, ".poster.webp"), quote=True)
+    mp4 = html.escape(asset_url(page_path, example, image_url_base, ".mp4"), quote=True)
+    link = ""
+    if href:
+        link = (
+            f'  <a class="dvz-gallery-media-target" href="{html.escape(href, quote=True)}" '
+            f'aria-label="{title}"></a>'
+        )
+    lines = [
+        '<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">',
+    ]
+    if link:
+        lines.append(link)
+    lines.extend(
+        [
+            f'  <img class="dvz-gallery-poster" src="{poster}" alt="{title}" loading="lazy">',
+            "  <video class=\"dvz-gallery-video\" muted loop playsinline preload=\"none\"",
+            f'         poster="{poster}" aria-label="{title} preview">',
+            f'    <source data-src="{mp4}" type="video/mp4">',
+            "  </video>",
+            "</div>",
+        ]
+    )
+    return "\n".join(lines)
+
+
 def media_block(
     page_path: str | Path,
     example: Example,
     image_dir: Path,
     image_url_base: str,
     image_format: str = DEFAULT_IMAGE_FORMAT,
+    href: str = "",
 ) -> str:
     image = gallery_media.gallery_png_path(example, image_dir)
     if image.exists():
-        return f"![{example.title}]({image_url(page_path, example, image_url_base, image_format)})"
+        if preferred_preview_media(example) == "video-mp4":
+            return video_media_block(page_path, example, image_url_base, href=href)
+        markdown = f"![{example.title}]({image_url(page_path, example, image_url_base, image_format)})"
+        return f"[{markdown}]({href})" if href else markdown
     label = "Screenshot pending" if example.screenshot_expected else "No screenshot"
     modifier = "pending" if example.screenshot_expected else "not-required"
     return (
@@ -880,9 +943,17 @@ def render_card(
 ) -> str:
     page = Path(example.page_path)
     href = page.as_posix()
-    media = media_block(page_path, example, image_dir, image_url_base, image_format)
-    if media.startswith("!["):
-        media = f"[{media}]({href})"
+    media_href = href
+    if preferred_preview_media(example) == "video-mp4":
+        media_href = site_html_relative_url(page_path, f"examples/{example.page_path[:-3]}/")
+    media = media_block(
+        page_path,
+        example,
+        image_dir,
+        image_url_base,
+        image_format,
+        href=media_href,
+    )
     tag_line = ""
     if show_tags:
         tags = ", ".join(f"`{tag}`" for tag in example.tags[:5])

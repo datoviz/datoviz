@@ -14,7 +14,13 @@ This example renders a prepared RGB LiDAR point cloud with direct colors.
 
 ## Preview
 
-![Point Cloud](../../../assets/gallery/v0.4/showcases/showcases_point_cloud.webp)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" alt="Point Cloud" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../../../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" aria-label="Point Cloud preview">
+    <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_point_cloud.mp4" type="video/mp4">
+  </video>
+</div>
 
 ## What To Look For
 

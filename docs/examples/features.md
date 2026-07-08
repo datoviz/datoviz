@@ -766,7 +766,14 @@ Selection_mesh_instances queries and selects individual instances of one mesh vi
 
 ### [Animation Tracks](gallery/features/features_animation_tracks.md)
 
-[![Animation Tracks](../assets/gallery/v0.4/features/features_animation_tracks.webp)](gallery/features/features_animation_tracks.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_animation_tracks" aria-label="Animation Tracks"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_animation_tracks.poster.webp" alt="Animation Tracks" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_animation_tracks.poster.webp" aria-label="Animation Tracks preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_animation_tracks.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 

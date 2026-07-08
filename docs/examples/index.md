@@ -114,7 +114,14 @@ This example renders a prepared Allen mouse brain volume with a visible slice.
 
 **[Protein](gallery/showcases/showcases_protein.md)**
 
-[![Protein](../assets/gallery/v0.4/showcases/showcases_protein.webp)](gallery/showcases/showcases_protein.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_protein" aria-label="Protein"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_protein.poster.webp" alt="Protein" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/showcases/showcases_protein.poster.webp" aria-label="Protein preview">
+    <source data-src="../assets/gallery/v0.4/showcases/showcases_protein.mp4" type="video/mp4">
+  </video>
+</div>
 
 `showcases`
 
@@ -126,7 +133,14 @@ This example renders a prepared PDB structure as colored sphere impostors.
 
 **[Point Cloud](gallery/showcases/showcases_point_cloud.md)**
 
-[![Point Cloud](../assets/gallery/v0.4/showcases/showcases_point_cloud.webp)](gallery/showcases/showcases_point_cloud.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_point_cloud" aria-label="Point Cloud"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" alt="Point Cloud" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" aria-label="Point Cloud preview">
+    <source data-src="../assets/gallery/v0.4/showcases/showcases_point_cloud.mp4" type="video/mp4">
+  </video>
+</div>
 
 `showcases`
 
@@ -150,7 +164,14 @@ This example turns a generated height field into a lit mesh and wireframe.
 
 **[Textured Planets](gallery/showcases/showcases_textured_planet.md)**
 
-[![Textured Planets](../assets/gallery/v0.4/showcases/showcases_textured_planet.webp)](gallery/showcases/showcases_textured_planet.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_textured_planet" aria-label="Textured Planets"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" alt="Textured Planets" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" aria-label="Textured Planets preview">
+    <source data-src="../assets/gallery/v0.4/showcases/showcases_textured_planet.mp4" type="video/mp4">
+  </video>
+</div>
 
 `showcases`
 
@@ -672,7 +693,14 @@ Depth_cue compares a plain 3D sphere lattice with depth-dependent fading.
 
 **[Animation Tracks](gallery/features/features_animation_tracks.md)**
 
-[![Animation Tracks](../assets/gallery/v0.4/features/features_animation_tracks.webp)](gallery/features/features_animation_tracks.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/features/features_animation_tracks" aria-label="Animation Tracks"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/features/features_animation_tracks.poster.webp" alt="Animation Tracks" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/features/features_animation_tracks.poster.webp" aria-label="Animation Tracks preview">
+    <source data-src="../assets/gallery/v0.4/features/features_animation_tracks.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 

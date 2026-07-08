@@ -16,7 +16,13 @@ This example renders a prepared PDB structure as colored sphere impostors.
 
 === "Screenshot"
 
-    ![Protein](../../../assets/gallery/v0.4/showcases/showcases_protein.webp)
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_protein.poster.webp" alt="Protein" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/showcases/showcases_protein.poster.webp" aria-label="Protein preview">
+        <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_protein.mp4" type="video/mp4">
+      </video>
+    </div>
 
 === "Live WebGPU"
 

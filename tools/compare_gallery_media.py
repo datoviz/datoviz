@@ -25,6 +25,7 @@ import gallery_media
 ROOT = gallery_media.ROOT
 DEFAULT_INPUT_DIR = ROOT / "build/gallery-webp/v0.4"
 DEFAULT_OUTPUT_DIR = ROOT / "build/gallery-media-compare/v0.4"
+DEFAULT_SITE_OUTPUT_DIR = ROOT / "build/gallery-webp/v0.4"
 DEFAULT_SIZE = "1024x576"
 DEFAULT_STEP = 2
 DEFAULT_WEBP_QUALITY = 40
@@ -95,6 +96,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--manifest", type=Path, default=gallery_media.DEFAULT_MANIFEST)
     parser.add_argument("--input-dir", type=Path, default=DEFAULT_INPUT_DIR)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument("--site-output-dir", type=Path, default=DEFAULT_SITE_OUTPUT_DIR)
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
     parser.add_argument("--html-report", type=Path, default=DEFAULT_HTML_REPORT)
     parser.add_argument("--id", action="append", default=[], help="example id; repeat or comma-separate")
@@ -111,6 +113,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--no-manifest-card", action="store_true", help="ignore media.preview.card")
     parser.add_argument("--dry-run", action="store_true", help="list selected inputs without encoding")
     parser.add_argument("--force", action="store_true", help="replace existing comparison outputs")
+    parser.add_argument(
+        "--write-site-assets",
+        action="store_true",
+        help="copy preferred MP4 candidates and posters into the build-local gallery asset tree",
+    )
     return parser.parse_args()
 
 
@@ -474,6 +481,39 @@ def budgeted_variants(item: MediaComparison) -> list[MediaVariant]:
     return variants
 
 
+def site_video_keys(manifest_path: Path) -> set[tuple[str, str]]:
+    keys: set[tuple[str, str]] = set()
+    for entry in gallery_media.load_manifest(manifest_path).get("examples", []):
+        preview = gallery_media.preview_metadata(entry)
+        card = preview.get("card") or {}
+        if not isinstance(card, dict) or card.get("preferred") != "video-mp4":
+            continue
+        keys.add(gallery_media.entry_key(entry))
+    return keys
+
+
+def write_site_assets(
+    output_dir: Path,
+    comparisons: list[MediaComparison],
+    manifest_path: Path = gallery_media.DEFAULT_MANIFEST,
+) -> int:
+    copied = 0
+    video_keys = site_video_keys(manifest_path)
+    for item in comparisons:
+        if (item.lane, item.id) not in video_keys:
+            continue
+        mp4 = variant_for(item, "mp4-card")
+        poster = variant_for(item, "poster")
+        for source, target in (
+            (ROOT / mp4.path, output_dir / item.lane / f"{item.id}.mp4"),
+            (ROOT / poster.path, output_dir / item.lane / f"{item.id}.poster.webp"),
+        ):
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, target)
+            copied += 1
+    return copied
+
+
 def lazy_webp_card(report: Path, item: MediaComparison) -> str:
     title = html.escape(item.title)
     poster = variant_for(item, "poster")
@@ -687,6 +727,9 @@ def main() -> int:
         print_report(comparisons)
         write_report(args.report, comparisons)
         write_html_report(args.html_report, comparisons)
+        copied = 0
+        if args.write_site_assets:
+            copied = write_site_assets(args.site_output_dir, comparisons, args.manifest)
         over_budget = sum(
             1
             for item in comparisons
@@ -696,7 +739,7 @@ def main() -> int:
         print(
             f"gallery media compare: compared={len(comparisons)} "
             f"over_budget={over_budget} report={child_path(args.report)} "
-            f"html={child_path(args.html_report)}"
+            f"html={child_path(args.html_report)} site_assets={copied}"
         )
         return 1 if over_budget else 0
     except (OSError, RuntimeError, ValueError, subprocess.CalledProcessError) as exc:

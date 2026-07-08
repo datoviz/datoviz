@@ -137,6 +137,51 @@ img[alt*=gpuopen] {
     letter-spacing: 0.08em;
 }
 
+.dvz-gallery-media {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 4px;
+    background: #05070a;
+}
+
+.dvz-gallery-media:hover {
+    text-decoration: none;
+}
+
+.dvz-gallery-poster,
+.dvz-gallery-video {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.dvz-gallery-media-target {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+}
+
+.dvz-gallery-video {
+    opacity: 0;
+    transition: opacity 0.18s ease;
+}
+
+.dvz-gallery-media.is-ready .dvz-gallery-video {
+    opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dvz-gallery-video {
+        display: none;
+    }
+}
+
 .dvz-example-breadcrumbs,
 .dvz-example-nav__trail,
 .dvz-example-nav__siblings {
