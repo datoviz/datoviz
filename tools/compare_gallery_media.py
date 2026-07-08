@@ -215,6 +215,8 @@ def encode_webm(frame_pattern: str, output: Path, fps: int, crf: int) -> None:
             "-i",
             frame_pattern,
             "-an",
+            "-vf",
+            "format=yuv420p",
             "-c:v",
             "libvpx-vp9",
             "-b:v",
