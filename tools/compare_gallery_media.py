@@ -25,11 +25,11 @@ import gallery_media
 ROOT = gallery_media.ROOT
 DEFAULT_INPUT_DIR = ROOT / "build/gallery-webp/v0.4"
 DEFAULT_OUTPUT_DIR = ROOT / "build/gallery-media-compare/v0.4"
-DEFAULT_SIZE = "640x360"
-DEFAULT_STEP = 4
-DEFAULT_WEBP_QUALITY = 50
-DEFAULT_MP4_CRF = 28
-DEFAULT_WEBM_CRF = 34
+DEFAULT_SIZE = "1024x768"
+DEFAULT_STEP = 2
+DEFAULT_WEBP_QUALITY = 40
+DEFAULT_MP4_CRF = 32
+DEFAULT_WEBM_CRF = 38
 DEFAULT_REPORT = ROOT / "build/gallery-media-compare/report.json"
 DEFAULT_HTML_REPORT = ROOT / "build/gallery-media-compare/index.html"
 
@@ -50,6 +50,34 @@ BUDGETS = {
     "poster": 500_000,
 }
 
+PROFILE_OVERRIDES = {
+    "showcases_point_cloud": {
+        "size": "800x600",
+        "step": 3,
+        "webp_quality": 15,
+        "mp4_crf": 38,
+        "webm_crf": 45,
+    },
+    "showcases_wind_field": {
+        "webp_quality": 25,
+    },
+    "showcases_textured_planet": {
+        "webp_quality": 90,
+        "mp4_crf": 24,
+        "webm_crf": 28,
+    },
+}
+
+
+@dataclass(frozen=True)
+class EncodingProfile:
+    size: str
+    step: int
+    webp_quality: int
+    mp4_crf: int
+    webm_crf: int
+    fps: int = 0
+
 
 @dataclass(frozen=True)
 class MediaVariant:
@@ -69,6 +97,9 @@ class MediaComparison:
     source_bytes: int
     source_frames: int
     source_size: str
+    encoded_size: str
+    encoded_frames: int
+    encoded_fps: int
     variants: list[MediaVariant]
     webp_html_snippet: str
     video_html_snippet: str
@@ -91,6 +122,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--fps", type=int, default=0, help="override output fps; default derives from preview fps")
     parser.add_argument("--webm", action="store_true", help="also encode a VP9 WebM candidate")
     parser.add_argument("--all-animated", action="store_true", help="compare every animated preview")
+    parser.add_argument("--no-profiles", action="store_true", help="ignore built-in per-example profiles")
     parser.add_argument("--dry-run", action="store_true", help="list selected inputs without encoding")
     parser.add_argument("--force", action="store_true", help="replace existing comparison outputs")
     return parser.parse_args()
@@ -126,10 +158,24 @@ def output_base(preview: object, output_dir: Path) -> Path:
     return output_dir / getattr(preview, "lane") / getattr(preview, "id")
 
 
-def output_fps(preview: object, step: int, fps_override: int) -> int:
-    if fps_override > 0:
-        return fps_override
-    return max(1, int(round(getattr(preview, "fps") / step)))
+def profile_for(preview: object, args: argparse.Namespace) -> EncodingProfile:
+    fields = {
+        "size": args.size,
+        "step": args.step,
+        "webp_quality": args.webp_quality,
+        "mp4_crf": args.mp4_crf,
+        "webm_crf": args.webm_crf,
+        "fps": args.fps,
+    }
+    if not args.no_profiles:
+        fields.update(PROFILE_OVERRIDES.get(getattr(preview, "id"), {}))
+    return EncodingProfile(**fields)
+
+
+def output_fps(preview: object, profile: EncodingProfile) -> int:
+    if profile.fps > 0:
+        return profile.fps
+    return max(1, int(round(getattr(preview, "fps") / profile.step)))
 
 
 def selected_previews(args: argparse.Namespace) -> list[object]:
@@ -289,55 +335,38 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
         print(f"missing source: {getattr(preview, 'id')} -> {child_path(source)}")
         return None
 
+    profile = profile_for(preview, args)
     base = output_base(preview, args.output_dir)
     animated_webp = base / f"{getattr(preview, 'id')}.card.webp"
     mp4 = base / f"{getattr(preview, 'id')}.card.mp4"
     webm = base / f"{getattr(preview, 'id')}.card.webm"
     poster = base / f"{getattr(preview, 'id')}.poster.webp"
-    out_fps = output_fps(preview, args.step, args.fps)
+    out_fps = output_fps(preview, profile)
+    encoded_frames = (getattr(preview, "frames") + profile.step - 1) // profile.step
 
     if args.dry_run:
         print(
             f"would compare: {getattr(preview, 'id')} "
-            f"source={child_path(source)} size={args.size} step={args.step} fps={out_fps}"
+            f"source={child_path(source)} size={profile.size} "
+            f"step={profile.step} fps={out_fps}"
         )
         return None
 
-    if not args.force and animated_webp.exists() and mp4.exists() and poster.exists():
-        variants = [
-            variant("animated-webp-card", animated_webp, BUDGETS["animated_webp_card"]),
-            variant("mp4-card", mp4, BUDGETS["video_card"]),
-            variant("poster", poster, BUDGETS["poster"]),
-        ]
-        if args.webm and webm.exists():
-            variants.append(variant("webm-card", webm, BUDGETS["video_card"]))
-        return MediaComparison(
-            id=getattr(preview, "id"),
-            lane=getattr(preview, "lane"),
-            title=getattr(preview, "title"),
-            source_webp=child_path(source),
-            source_bytes=source.stat().st_size,
-            source_frames=getattr(preview, "frames"),
-            source_size=getattr(preview, "size"),
-            variants=variants,
-            webp_html_snippet=webp_html_snippet(preview),
-            video_html_snippet=video_html_snippet(preview),
-        )
-
     with TemporaryDirectory(prefix="dvz-gallery-media-") as tmp:
         frame_root = Path(tmp)
-        frames = coalesce_and_resize(source, frame_root / "frames", args.size)
-        selected = select_frames(frames, args.step)
+        frames = coalesce_and_resize(source, frame_root / "frames", profile.size)
+        selected = select_frames(frames, profile.step)
         selected_dir = frame_root / "selected"
         selected_dir.mkdir()
         for index, frame in enumerate(selected):
             shutil.copyfile(frame, selected_dir / f"frame_{index:04d}.png")
         selected_pattern = str(selected_dir / "frame_%04d.png")
-        encode_webp(selected, animated_webp, out_fps, args.webp_quality)
-        encode_mp4(selected_pattern, mp4, out_fps, args.mp4_crf)
+        encode_webp(selected, animated_webp, out_fps, profile.webp_quality)
+        encode_mp4(selected_pattern, mp4, out_fps, profile.mp4_crf)
         if args.webm:
-            encode_webm(selected_pattern, webm, out_fps, args.webm_crf)
-        encode_poster(selected[0], poster, args.webp_quality)
+            encode_webm(selected_pattern, webm, out_fps, profile.webm_crf)
+        encode_poster(selected[0], poster, profile.webp_quality)
+        encoded_frames = len(selected)
 
     variants = [
         variant("animated-webp-card", animated_webp, BUDGETS["animated_webp_card"]),
@@ -354,6 +383,9 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
         source_bytes=source.stat().st_size,
         source_frames=getattr(preview, "frames"),
         source_size=getattr(preview, "size"),
+        encoded_size=profile.size,
+        encoded_frames=encoded_frames,
+        encoded_fps=out_fps,
         variants=variants,
         webp_html_snippet=webp_html_snippet(preview),
         video_html_snippet=video_html_snippet(preview),
@@ -364,7 +396,8 @@ def print_report(comparisons: list[MediaComparison]) -> None:
     for item in comparisons:
         print(
             f"{item.id}: source={item.source_bytes / 1024:.1f}KB "
-            f"frames={item.source_frames} size={item.source_size}"
+            f"frames={item.source_frames} size={item.source_size} -> "
+            f"{item.encoded_frames} frames {item.encoded_fps}fps {item.encoded_size}"
         )
         for media in item.variants:
             print(
@@ -404,6 +437,13 @@ def variant_for(item: MediaComparison, kind: str) -> MediaVariant:
         if media.kind == kind:
             return media
     raise ValueError(f"{item.id}: missing {kind} variant")
+
+
+def optional_variant_for(item: MediaComparison, kind: str) -> MediaVariant | None:
+    for media in item.variants:
+        if media.kind == kind:
+            return media
+    return None
 
 
 def lazy_webp_card(report: Path, item: MediaComparison) -> str:
@@ -452,46 +492,50 @@ def lazy_video_card(report: Path, item: MediaComparison) -> str:
 
 def write_html_report(path: Path, comparisons: list[MediaComparison]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    rows = []
+    examples = []
+    summary_rows = []
     for item in comparisons:
         title = html.escape(item.title)
-        source_src = html.escape(relative_report_url(path, item.source_webp), quote=True)
-        rows.append(f"<section><h2>{title}</h2>")
-        rows.append(
-            f"<p><code>{html.escape(item.id)}</code> source "
-            f"{item.source_bytes / 1024:.1f} KB, {item.source_frames} frames, "
-            f"{html.escape(item.source_size)}</p>"
-        )
-        rows.append('<div class="grid">')
-        source_alt = html.escape(f"{item.title} source", quote=True)
-        rows.append(
-            '<figure data-compare-lazy><figcaption>source animated WebP</figcaption>'
-            f'<img data-src="{source_src}" alt="{source_alt}" loading="lazy"></figure>'
-        )
-        for media in item.variants:
-            rows.append(
-                "<figure data-compare-lazy>"
-                f"<figcaption>{html.escape(media.kind)} "
-                f"{media.bytes / 1024:.1f} KB "
-                f"<span class=\"{media.status}\">{media.status}</span></figcaption>"
-                f"{media_element(path, media.path, media.kind, item.title)}"
-                "</figure>"
+        examples.append(
+            "\n".join(
+                [
+                    '<section class="integration-example">',
+                    f"<h2>{title}</h2>",
+                    (
+                        f"<p><code>{html.escape(item.id)}</code> source "
+                        f"{item.source_frames} frames at {html.escape(item.source_size)}; "
+                        f"candidate {item.encoded_frames} frames at "
+                        f"{item.encoded_fps} fps within {html.escape(item.encoded_size)}.</p>"
+                    ),
+                    '<div class="integration-row">',
+                    lazy_webp_card(path, item),
+                    lazy_video_card(path, item),
+                    "</div>",
+                    "<details><summary>candidate lazy animated WebP card HTML</summary>",
+                    f"<pre>{html.escape(item.webp_html_snippet)}</pre></details>",
+                    "<details><summary>candidate lazy MP4 video card HTML</summary>",
+                    f"<pre>{html.escape(item.video_html_snippet)}</pre></details>",
+                    "</section>",
+                ]
             )
-        rows.append("</div>")
-        rows.append(
-            "<details><summary>candidate lazy animated WebP card HTML</summary>"
-            f"<pre>{html.escape(item.webp_html_snippet)}</pre></details>"
         )
-        rows.append(
-            "<details><summary>candidate lazy MP4 video card HTML</summary>"
-            f"<pre>{html.escape(item.video_html_snippet)}</pre></details>"
-        )
-        rows.append("</section>")
 
-    integration_cards = []
-    for item in comparisons:
-        integration_cards.append(lazy_webp_card(path, item))
-        integration_cards.append(lazy_video_card(path, item))
+        animated = variant_for(item, "animated-webp-card")
+        video = variant_for(item, "mp4-card")
+        poster = variant_for(item, "poster")
+        webm = optional_variant_for(item, "webm-card")
+        webm_cell = f"<td>{webm.bytes / 1024:.1f} KB</td>" if webm else "<td></td>"
+        summary_rows.append(
+            "<tr>"
+            f"<td><code>{html.escape(item.id)}</code></td>"
+            f"<td>{html.escape(item.encoded_size)}</td>"
+            f"<td>{item.encoded_frames} @ {item.encoded_fps} fps</td>"
+            f"<td class=\"{animated.status}\">{animated.bytes / 1024:.1f} KB</td>"
+            f"<td class=\"{video.status}\">{video.bytes / 1024:.1f} KB</td>"
+            f"<td>{poster.bytes / 1024:.1f} KB</td>"
+            f"{webm_cell}"
+            "</tr>"
+        )
 
     document = "\n".join(
         [
@@ -504,8 +548,7 @@ def write_html_report(path: Path, comparisons: list[MediaComparison]) -> None:
             "<style>",
             "body{font-family:system-ui,sans-serif;margin:2rem;color:#202124;background:#fafafa}",
             "section{margin:0 0 3rem}",
-            ".grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}",
-            ".integration-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin:1rem 0 3rem}",
+            ".integration-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin:1rem 0}",
             ".integration-card{background:white;border:1px solid #ddd;padding:.75rem}",
             ".integration-card h3{font-size:1rem;margin:.1rem 0 .6rem}",
             ".integration-card h3 span{display:block;font-weight:400;color:#5f6368}",
@@ -514,23 +557,28 @@ def write_html_report(path: Path, comparisons: list[MediaComparison]) -> None:
             ".dvz-gallery-poster,.dvz-gallery-animated,.dvz-gallery-video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}",
             ".dvz-gallery-animated,.dvz-gallery-video{opacity:0;transition:opacity .18s ease}",
             ".dvz-gallery-media.is-ready .dvz-gallery-animated,.dvz-gallery-media.is-ready .dvz-gallery-video{opacity:1}",
-            "figure{margin:0;padding:.75rem;background:white;border:1px solid #ddd}",
-            "img,video{display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#111}",
-            "figcaption{font-size:.9rem;margin:0 0 .5rem}",
             ".ok{color:#0a7a2f}.over-budget{color:#b00020}",
             "pre{overflow:auto;padding:1rem;background:#111;color:#f5f5f5}",
+            "table{width:100%;border-collapse:collapse;background:white}",
+            "th,td{text-align:left;border:1px solid #ddd;padding:.45rem;font-size:.9rem}",
+            "@media (max-width:720px){.integration-row{grid-template-columns:1fr}}",
             "@media (prefers-reduced-motion: reduce){.dvz-gallery-animated,.dvz-gallery-video{display:none}}",
             "</style>",
             "</head>",
             "<body>",
             "<h1>Datoviz Gallery Media Comparison</h1>",
             "<p>Generated build-local media. Do not commit these binary outputs.</p>",
-            "<h2>Poster-first lazy integration preview</h2>",
-            "<p>Cards below display posters immediately. Animation/video sources are attached only near the viewport unless reduced motion or Save-Data is active.</p>",
-            '<div class="integration-grid">',
-            *integration_cards,
-            "</div>",
-            *rows,
+            "<p>Each example row shows exactly two candidate integrations: lazy animated WebP and lazy MP4. Posters display immediately; animation/video sources attach only near the viewport unless reduced motion or Save-Data is active.</p>",
+            *examples,
+            "<section>",
+            "<h2>Size Summary</h2>",
+            "<table>",
+            "<thead><tr><th>Example</th><th>Max size</th><th>Frames</th><th>WebP</th><th>MP4</th><th>Poster</th><th>WebM</th></tr></thead>",
+            "<tbody>",
+            *summary_rows,
+            "</tbody>",
+            "</table>",
+            "</section>",
             "<script>",
             "(() => {",
             "  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;",
@@ -556,7 +604,7 @@ def write_html_report(path: Path, comparisons: list[MediaComparison]) -> None:
             "    if (video.dataset.autoplay === '1') video.play().catch(() => {});",
             "  };",
             "  if (!('IntersectionObserver' in window)) {",
-            "    document.querySelectorAll('[data-gallery-lazy], [data-compare-lazy]').forEach(loadCard);",
+            "    document.querySelectorAll('[data-gallery-lazy]').forEach(loadCard);",
             "    return;",
             "  }",
             "  const observer = new IntersectionObserver((entries) => {",
@@ -566,7 +614,7 @@ def write_html_report(path: Path, comparisons: list[MediaComparison]) -> None:
             "      observer.unobserve(entry.target);",
             "    }",
             "  }, { rootMargin: '400px 0px' });",
-            "  document.querySelectorAll('[data-gallery-lazy], [data-compare-lazy]').forEach((card) => observer.observe(card));",
+            "  document.querySelectorAll('[data-gallery-lazy]').forEach((card) => observer.observe(card));",
             "})();",
             "</script>",
             "</body>",
