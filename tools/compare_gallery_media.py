@@ -329,10 +329,10 @@ def video_html_snippet(preview: object) -> str:
     return "\n".join(
         [
             f'<a class="dvz-gallery-media" href="gallery/{lane}/{id_}/">',
+            f'  <img class="dvz-gallery-poster" src="{media_base}.poster.webp" alt="{title}">',
             "  <video muted loop playsinline preload=\"none\"",
             f'         poster="{media_base}.poster.webp" aria-label="{title}">',
             f'    <source data-src="{media_base}.mp4" type="video/mp4">',
-            f'    <img src="{media_base}.poster.webp" alt="{title}">',
             "  </video>",
             "</a>",
         ]
@@ -506,10 +506,10 @@ def lazy_video_card(report: Path, item: MediaComparison) -> str:
             '<article class="integration-card" data-gallery-lazy="video">',
             f"<h3>{title} <span>lazy MP4 video</span></h3>",
             '<a class="dvz-gallery-media" href="#">',
+            f'  <img class="dvz-gallery-poster" src="{poster_src}" alt="{title}">',
             "  <video class=\"dvz-gallery-video\" muted loop playsinline preload=\"none\" data-autoplay=\"1\"",
             f'         poster="{poster_src}" aria-label="{title}">',
             f'    <source data-src="{video_src}" type="video/mp4">',
-            f'    <img src="{poster_src}" alt="{title}">',
             "  </video>",
             "</a>",
             f"<p>{video.bytes / 1024:.1f} KB video, {poster.bytes / 1024:.1f} KB poster</p>",

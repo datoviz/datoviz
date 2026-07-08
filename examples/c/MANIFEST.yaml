@@ -2648,6 +2648,14 @@ examples:
         frames: 72
         fps: 12
         sample_stride: 4
+        card:
+          preferred: video-mp4
+          size: 1024x576
+          sample_step: 1
+          fps: 12
+          webp_quality: 50
+          mp4_crf: 30
+          webm_crf: 34
     data:
       kind: real
     webgpu:
@@ -2975,9 +2983,9 @@ examples:
           preferred: video-mp4
           size: 1024x576
           sample_step: 1
-          fps: 24
+          fps: 12
           webp_quality: 1
-          mp4_crf: 36
+          mp4_crf: 39
           webm_crf: 50
     data:
       kind: prepared
@@ -3022,7 +3030,7 @@ examples:
         kind: animated-webp
         frames: 96
         fps: 24
-        sample_stride: 2
+        sample_stride: 1
         card:
           preferred: video-mp4
           size: 1024x576

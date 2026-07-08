@@ -675,7 +675,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         const uint64_t count = ctx->preview_frame_count > 0 ? ctx->preview_frame_count : 1;
         const uint32_t stride = ctx->preview_sample_stride > 0 ? ctx->preview_sample_stride : 1;
         const double fps = ctx->preview_fps > 0.0 ? ctx->preview_fps : 24.0;
-        const double duration_s = ((double)count * (double)stride) / fps;
+        const uint64_t span = count > 1 ? (count - 1) * (uint64_t)stride : 0;
+        const double duration_s = ((double)span) / fps;
         state->spin_speed =
             duration_s > 0.0 ? (float)((double)TAU / duration_s) : ROTATION_SPEED_RAD_PER_SEC;
     }
