@@ -167,7 +167,7 @@ release-proof lanes remain on track.
 3. [../../spec/scene/examples/PLANNING.md](../../spec/scene/examples/PLANNING.md)
 4. [../../spec/scene/api/API_SURFACE.md](../../spec/scene/api/API_SURFACE.md)
 5. [../../spec/scene/validation/DEFERRED_TRACKER.md](../../spec/scene/validation/DEFERRED_TRACKER.md)
-6. [../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md](../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md)
+6. [../../spec/scene/visuals/BOUNDARY_CONTRACT.md](../../spec/scene/visuals/BOUNDARY_CONTRACT.md)
 7. [../../spec/scene/integration/OPTIONAL_PROVIDERS.md](../../spec/scene/integration/OPTIONAL_PROVIDERS.md)
 8. [../../spec/scene/integration/QT_HOST_BRIDGE.md](../../spec/scene/integration/QT_HOST_BRIDGE.md)
 9. [../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md)

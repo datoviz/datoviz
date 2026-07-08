@@ -128,8 +128,8 @@ Current implementation orientation:
 3. [api/IMPLEMENTATION_NOTES.md](api/IMPLEMENTATION_NOTES.md): C object mapping, app/runtime
    wiring, Python binding architecture, and GPU preparation notes.
 4. [ROADMAP.md](ROADMAP.md): compact backlog, release-proof order, and post-v0.4 direction.
-5. [Scene visual boundary guardrails][scene-visual-boundary-guardrails]: active
-   visual-architecture phase and pointers to retired source-split records.
+5. [Scene visual boundary contract][scene-visual-boundary-contract]: active visual-family
+   architecture guardrails and validation contract.
 6. [implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md](implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md):
    active scene emission artifact refactor plan.
 7. [implementation/SCENE_CODE_SPLIT_ROADMAP.md](implementation/SCENE_CODE_SPLIT_ROADMAP.md):
@@ -221,4 +221,4 @@ Proposals, history, and examples:
 
 [api-pressure-sketches]: examples/scenarios/api_sketches/API_PRESSURE_SKETCHES.md
 [core-release-proofs]: examples/scenarios/v04_required/CORE_RELEASE_PROOFS.md
-[scene-visual-boundary-guardrails]: implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md
+[scene-visual-boundary-contract]: visuals/BOUNDARY_CONTRACT.md

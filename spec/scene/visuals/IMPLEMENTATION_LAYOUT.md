@@ -5,7 +5,7 @@ families into `src/scene/visuals/<family>/`.
 
 For the active long-term visual-boundary architecture, including the visual-family registry,
 generic runtime boundaries, and guardrails against root-level visual switches, read
-[`../implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md).
+[`BOUNDARY_CONTRACT.md`](BOUNDARY_CONTRACT.md).
 
 
 ## Status
@@ -180,8 +180,7 @@ unstaged unless explicitly approved for that commit.
 The stroke-family cache, query-helper, query-geometry, and bounds extractions are complete for the
 current segment/path/vector slice. Keep frame-plan orchestration in `scene_emit/`; only move more
 geometry/cache construction when an extracted file can own a coherent family slice without copying
-dispatch policy. For broader visual-boundary work, use
-[`../implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`](../implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md).
+dispatch policy. For broader visual-boundary rules, use [`BOUNDARY_CONTRACT.md`](BOUNDARY_CONTRACT.md).
 
 Useful next candidates:
 

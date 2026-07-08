@@ -24,20 +24,18 @@ behavior instead of restating it here.
 7. [COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md](COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md):
    landed implementation checklist for explicit texture roles, linear rendering, one final sRGB
    encode, and remaining export/readback audit points.
-8. [SCENE_VISUAL_BOUNDARY_GUARDRAILS.md](SCENE_VISUAL_BOUNDARY_GUARDRAILS.md): active
-   visual-architecture phase for keeping generic scene code registry-driven and confining
-   visual-specific behavior to family folders or explicit shared visual subsystems.
-9. [FRAME_ARTIFACT_REFACTOR_PLAN.md](FRAME_ARTIFACT_REFACTOR_PLAN.md): active plan to make
+8. [FRAME_ARTIFACT_REFACTOR_PLAN.md](FRAME_ARTIFACT_REFACTOR_PLAN.md): active plan to make
    `DvzSceneFrameArtifact` the single scene emission product while preserving DRP2 streams as the
    artifact-owned execution IR.
-10. [PANEL_VIEW_ARCHITECTURE_PLAN.md](PANEL_VIEW_ARCHITECTURE_PLAN.md): active plan for panel 2D
+9. [PANEL_VIEW_ARCHITECTURE_PLAN.md](PANEL_VIEW_ARCHITECTURE_PLAN.md): active plan for panel 2D
    view ownership, release-candidate API naming, and resolver-derived fitted domains.
-11. [PLOT_VIEWPORT_DRAW_CONTRACT_PLAN.md](PLOT_VIEWPORT_DRAW_CONTRACT_PLAN.md): implemented
+10. [PLOT_VIEWPORT_DRAW_CONTRACT_PLAN.md](PLOT_VIEWPORT_DRAW_CONTRACT_PLAN.md): implemented
    native contract for separating per-draw viewport and scissor selection, viewport uniforms, and
    CPU pixel-basis rules for plot-clipped draws.
-12. [SCENE_CODE_SPLIT_ROADMAP.md](SCENE_CODE_SPLIT_ROADMAP.md): retired pointer for the completed
-   broad scene source split; active work moved to `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`.
-13. [SCENE_ARCHITECTURE_COMPLETION_PLAN.md](SCENE_ARCHITECTURE_COMPLETION_PLAN.md): retired pointer
+11. [SCENE_CODE_SPLIT_ROADMAP.md](SCENE_CODE_SPLIT_ROADMAP.md): retired pointer for the completed
+   broad scene source split; durable visual-boundary rules live in
+   [`../visuals/BOUNDARY_CONTRACT.md`](../visuals/BOUNDARY_CONTRACT.md).
+12. [SCENE_ARCHITECTURE_COMPLETION_PLAN.md](SCENE_ARCHITECTURE_COMPLETION_PLAN.md): retired pointer
    for the completed architecture queue.
 
 ## Current priorities
@@ -55,9 +53,9 @@ behavior instead of restating it here.
    screenshot/readback color encoding.
 9. Use `FRAME_ARTIFACT_REFACTOR_PLAN.md` before changing scene emission ownership, WASM packet
    payloads, JSON emission, app/runtime handoff, or `dvz_figure_emit_frame()` semantics.
-10. Use `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md` before adding new root-level visual switches,
-   family-private includes from generic code, or family-specific fields to generic retained visual
-   state.
+10. Use [`../visuals/BOUNDARY_CONTRACT.md`](../visuals/BOUNDARY_CONTRACT.md) before adding new
+   root-level visual switches, family-private includes from generic code, or family-specific fields
+   to generic retained visual state.
 11. Use `PANEL_VIEW_ARCHITECTURE_PLAN.md` before changing panel 2D view API names, panel view code,
    or equal-aspect resolver ownership.
 12. Use `PLOT_VIEWPORT_DRAW_CONTRACT_PLAN.md` before changing runtime viewport/scissor emission,

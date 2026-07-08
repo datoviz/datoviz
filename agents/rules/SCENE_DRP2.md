@@ -72,7 +72,7 @@ descriptor/lowering interface first and add focused tests for that reusable conc
 For scene visual/shader work, read:
 
 1. [../../spec/scene/implementation/VISUAL_SHADER_REFACTOR.md](../../spec/scene/implementation/VISUAL_SHADER_REFACTOR.md)
-2. [../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md](../../spec/scene/implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md)
+2. [../../spec/scene/visuals/BOUNDARY_CONTRACT.md](../../spec/scene/visuals/BOUNDARY_CONTRACT.md)
 3. [../../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md](../../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md)
 
 Run `just shader-abi-check` whenever changing:

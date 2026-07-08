@@ -1,7 +1,7 @@
 # Scene Visual Boundary Contract
 
-Status: active architecture contract. This replaces the completed implementation queue formerly
-tracked in `../implementation/SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`.
+Status: active architecture contract. This replaces the completed visual-boundary implementation
+queue.
 
 The scene visual boundary is closed for v0.4 when generic scene code depends on registry-declared
 visual-family contracts, descriptor metadata, and explicit shared visual subsystems rather than
