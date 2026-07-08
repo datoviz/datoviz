@@ -25,11 +25,12 @@ import gallery_media
 ROOT = gallery_media.ROOT
 DEFAULT_INPUT_DIR = ROOT / "build/gallery-webp/v0.4"
 DEFAULT_OUTPUT_DIR = ROOT / "build/gallery-media-compare/v0.4"
-DEFAULT_SIZE = "1024x768"
+DEFAULT_SIZE = "1024x576"
 DEFAULT_STEP = 2
 DEFAULT_WEBP_QUALITY = 40
 DEFAULT_MP4_CRF = 32
 DEFAULT_WEBM_CRF = 38
+DEFAULT_PREFERRED_KIND = "video-mp4"
 DEFAULT_REPORT = ROOT / "build/gallery-media-compare/report.json"
 DEFAULT_HTML_REPORT = ROOT / "build/gallery-media-compare/index.html"
 
@@ -50,27 +51,10 @@ BUDGETS = {
     "poster": 500_000,
 }
 
-PROFILE_OVERRIDES = {
-    "showcases_point_cloud": {
-        "size": "800x600",
-        "step": 3,
-        "webp_quality": 15,
-        "mp4_crf": 38,
-        "webm_crf": 45,
-    },
-    "showcases_wind_field": {
-        "webp_quality": 25,
-    },
-    "showcases_textured_planet": {
-        "webp_quality": 90,
-        "mp4_crf": 24,
-        "webm_crf": 28,
-    },
-}
-
 
 @dataclass(frozen=True)
 class EncodingProfile:
+    preferred_kind: str
     size: str
     step: int
     webp_quality: int
@@ -100,6 +84,7 @@ class MediaComparison:
     encoded_size: str
     encoded_frames: int
     encoded_fps: int
+    preferred_kind: str
     variants: list[MediaVariant]
     webp_html_snippet: str
     video_html_snippet: str
@@ -120,9 +105,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--mp4-crf", type=int, default=DEFAULT_MP4_CRF)
     parser.add_argument("--webm-crf", type=int, default=DEFAULT_WEBM_CRF)
     parser.add_argument("--fps", type=int, default=0, help="override output fps; default derives from preview fps")
+    parser.add_argument("--preferred-kind", default=DEFAULT_PREFERRED_KIND)
     parser.add_argument("--webm", action="store_true", help="also encode a VP9 WebM candidate")
     parser.add_argument("--all-animated", action="store_true", help="compare every animated preview")
-    parser.add_argument("--no-profiles", action="store_true", help="ignore built-in per-example profiles")
+    parser.add_argument("--no-manifest-card", action="store_true", help="ignore media.preview.card")
     parser.add_argument("--dry-run", action="store_true", help="list selected inputs without encoding")
     parser.add_argument("--force", action="store_true", help="replace existing comparison outputs")
     return parser.parse_args()
@@ -158,8 +144,21 @@ def output_base(preview: object, output_dir: Path) -> Path:
     return output_dir / getattr(preview, "lane") / getattr(preview, "id")
 
 
+def preview_card_metadata(preview: object, manifest_path: Path) -> dict:
+    manifest = gallery_media.load_manifest(manifest_path)
+    preview_key = (getattr(preview, "lane"), getattr(preview, "id"))
+    for entry in manifest.get("examples", []):
+        if gallery_media.entry_key(entry) != preview_key:
+            continue
+        metadata = gallery_media.preview_metadata(entry)
+        card = metadata.get("card") or {}
+        return card if isinstance(card, dict) else {}
+    return {}
+
+
 def profile_for(preview: object, args: argparse.Namespace) -> EncodingProfile:
     fields = {
+        "preferred_kind": args.preferred_kind,
         "size": args.size,
         "step": args.step,
         "webp_quality": args.webp_quality,
@@ -167,8 +166,19 @@ def profile_for(preview: object, args: argparse.Namespace) -> EncodingProfile:
         "webm_crf": args.webm_crf,
         "fps": args.fps,
     }
-    if not args.no_profiles:
-        fields.update(PROFILE_OVERRIDES.get(getattr(preview, "id"), {}))
+    if not args.no_manifest_card:
+        card = preview_card_metadata(preview, args.manifest)
+        fields.update(
+            {
+                "preferred_kind": str(card.get("preferred", fields["preferred_kind"])),
+                "size": str(card.get("size", fields["size"])),
+                "step": int(card.get("sample_step", card.get("step", fields["step"]))),
+                "webp_quality": int(card.get("webp_quality", fields["webp_quality"])),
+                "mp4_crf": int(card.get("mp4_crf", fields["mp4_crf"])),
+                "webm_crf": int(card.get("webm_crf", fields["webm_crf"])),
+                "fps": int(card.get("fps", fields["fps"])),
+            }
+        )
     return EncodingProfile(**fields)
 
 
@@ -348,7 +358,7 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
         print(
             f"would compare: {getattr(preview, 'id')} "
             f"source={child_path(source)} size={profile.size} "
-            f"step={profile.step} fps={out_fps}"
+            f"step={profile.step} fps={out_fps} preferred={profile.preferred_kind}"
         )
         return None
 
@@ -386,6 +396,7 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
         encoded_size=profile.size,
         encoded_frames=encoded_frames,
         encoded_fps=out_fps,
+        preferred_kind=profile.preferred_kind,
         variants=variants,
         webp_html_snippet=webp_html_snippet(preview),
         video_html_snippet=video_html_snippet(preview),
@@ -397,7 +408,8 @@ def print_report(comparisons: list[MediaComparison]) -> None:
         print(
             f"{item.id}: source={item.source_bytes / 1024:.1f}KB "
             f"frames={item.source_frames} size={item.source_size} -> "
-            f"{item.encoded_frames} frames {item.encoded_fps}fps {item.encoded_size}"
+            f"{item.encoded_frames} frames {item.encoded_fps}fps {item.encoded_size} "
+            f"preferred={item.preferred_kind}"
         )
         for media in item.variants:
             print(
@@ -444,6 +456,22 @@ def optional_variant_for(item: MediaComparison, kind: str) -> MediaVariant | Non
         if media.kind == kind:
             return media
     return None
+
+
+def preferred_variant_kind(preferred_kind: str) -> str:
+    return {
+        "animated-webp": "animated-webp-card",
+        "video-mp4": "mp4-card",
+        "video-webm": "webm-card",
+    }.get(preferred_kind, preferred_kind)
+
+
+def budgeted_variants(item: MediaComparison) -> list[MediaVariant]:
+    variants = [variant_for(item, "poster")]
+    preferred = optional_variant_for(item, preferred_variant_kind(item.preferred_kind))
+    if preferred is not None:
+        variants.append(preferred)
+    return variants
 
 
 def lazy_webp_card(report: Path, item: MediaComparison) -> str:
@@ -528,6 +556,7 @@ def write_html_report(path: Path, comparisons: list[MediaComparison]) -> None:
         summary_rows.append(
             "<tr>"
             f"<td><code>{html.escape(item.id)}</code></td>"
+            f"<td>{html.escape(item.preferred_kind)}</td>"
             f"<td>{html.escape(item.encoded_size)}</td>"
             f"<td>{item.encoded_frames} @ {item.encoded_fps} fps</td>"
             f"<td class=\"{animated.status}\">{animated.bytes / 1024:.1f} KB</td>"
@@ -573,7 +602,7 @@ def write_html_report(path: Path, comparisons: list[MediaComparison]) -> None:
             "<section>",
             "<h2>Size Summary</h2>",
             "<table>",
-            "<thead><tr><th>Example</th><th>Max size</th><th>Frames</th><th>WebP</th><th>MP4</th><th>Poster</th><th>WebM</th></tr></thead>",
+            "<thead><tr><th>Example</th><th>Preferred</th><th>Max size</th><th>Frames</th><th>WebP</th><th>MP4</th><th>Poster</th><th>WebM</th></tr></thead>",
             "<tbody>",
             *summary_rows,
             "</tbody>",
@@ -661,7 +690,7 @@ def main() -> int:
         over_budget = sum(
             1
             for item in comparisons
-            for media in item.variants
+            for media in budgeted_variants(item)
             if media.status != "ok"
         )
         print(

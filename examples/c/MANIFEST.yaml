@@ -857,6 +857,14 @@ examples:
         frames: 72
         fps: 24
         sample_stride: 3
+        card:
+          preferred: video-mp4
+          size: 1024x576
+          sample_step: 1
+          fps: 12
+          webp_quality: 50
+          mp4_crf: 24
+          webm_crf: 30
     data:
       kind: synthetic
     portability: portable-scenario
@@ -2963,6 +2971,14 @@ examples:
         frames: 72
         fps: 24
         sample_stride: 2
+        card:
+          preferred: video-mp4
+          size: 1024x576
+          sample_step: 1
+          fps: 24
+          webp_quality: 1
+          mp4_crf: 36
+          webm_crf: 50
     data:
       kind: prepared
     webgpu:
@@ -3007,6 +3023,14 @@ examples:
         frames: 96
         fps: 24
         sample_stride: 2
+        card:
+          preferred: video-mp4
+          size: 1024x576
+          sample_step: 1
+          fps: 24
+          webp_quality: 70
+          mp4_crf: 24
+          webm_crf: 28
     data:
       kind: real
     webgpu:
