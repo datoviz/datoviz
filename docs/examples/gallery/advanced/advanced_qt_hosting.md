@@ -21,7 +21,7 @@ Live Qt Widgets host around a Datoviz Vulkan scene.
 === "C++"
 
     ```cpp
-    --8<-- "examples/qt/hosted_qt_widgets.cpp"
+    --8<-- "examples/qt/qt_hosting.cpp"
     ```
 
 === "PyQt"
@@ -35,7 +35,7 @@ Live Qt Widgets host around a Datoviz Vulkan scene.
     - ID: `advanced_qt_hosting`
     - Category: `advanced`
     - Lane: `advanced`
-    - Source: [`examples/qt/hosted_qt_widgets.cpp`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/qt/hosted_qt_widgets.cpp)
+    - Source: [`examples/qt/qt_hosting.cpp`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/qt/qt_hosting.cpp)
     - PyQt source: [`examples/python/qt/hosted_pyqt.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/qt/hosted_pyqt.py)
     - Browser support: Native only
     - Browser note: Qt and PyQt hosting use native toolkit windows and an optional bridge provider

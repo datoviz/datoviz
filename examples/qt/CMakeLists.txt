@@ -50,20 +50,20 @@ set_property(GLOBAL APPEND PROPERTY DVZ_ALL_TARGETS hosted_qt_smoke)
 dvz_find_qt6_widgets(_dvz_qt_widgets_target)
 
 if(_dvz_qt_widgets_target)
-    add_executable(hosted_qt_widgets hosted_qt_widgets.cpp hosted_qt_adapter.cpp)
+    add_executable(qt_hosting qt_hosting.cpp hosted_qt_adapter.cpp)
 
-    target_link_libraries(hosted_qt_widgets
+    target_link_libraries(qt_hosting
         PRIVATE
         datoviz
         ${_dvz_qt_widgets_target}
     )
 
-    target_include_directories(hosted_qt_widgets
+    target_include_directories(qt_hosting
         PRIVATE
         ${PROJECT_SOURCE_DIR}/include
     )
 
-    set_target_properties(hosted_qt_widgets PROPERTIES
+    set_target_properties(qt_hosting PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
         AUTOMOC OFF
@@ -71,13 +71,13 @@ if(_dvz_qt_widgets_target)
     )
 
     if(APPLE)
-        set_target_properties(hosted_qt_widgets PROPERTIES
+        set_target_properties(qt_hosting PROPERTIES
             BUILD_RPATH  "@executable_path;@loader_path"
             INSTALL_RPATH "@executable_path;@loader_path"
         )
     endif()
 
-    set_property(GLOBAL APPEND PROPERTY DVZ_ALL_TARGETS hosted_qt_widgets)
+    set_property(GLOBAL APPEND PROPERTY DVZ_ALL_TARGETS qt_hosting)
 else()
-    message(STATUS "Qt6 Widgets not found - skipping hosted_qt_widgets")
+    message(STATUS "Qt6 Widgets not found - skipping qt_hosting")
 endif()

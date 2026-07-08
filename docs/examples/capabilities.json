@@ -928,7 +928,7 @@
             "title": "Qt Hosting",
             "category": "advanced",
             "status": "supported",
-            "source": "examples/qt/hosted_qt_widgets.cpp",
+            "source": "examples/qt/qt_hosting.cpp",
             "page": "gallery/advanced/advanced_qt_hosting.md"
           },
           {
@@ -1941,7 +1941,7 @@
             "title": "Qt Hosting",
             "category": "advanced",
             "status": "supported",
-            "source": "examples/qt/hosted_qt_widgets.cpp",
+            "source": "examples/qt/qt_hosting.cpp",
             "page": "gallery/advanced/advanced_qt_hosting.md"
           }
         ]
@@ -2544,7 +2544,7 @@
             "title": "Qt Hosting",
             "category": "advanced",
             "status": "supported",
-            "source": "examples/qt/hosted_qt_widgets.cpp",
+            "source": "examples/qt/qt_hosting.cpp",
             "page": "gallery/advanced/advanced_qt_hosting.md"
           }
         ]
@@ -2734,7 +2734,7 @@
             "title": "Qt Hosting",
             "category": "advanced",
             "status": "supported",
-            "source": "examples/qt/hosted_qt_widgets.cpp",
+            "source": "examples/qt/qt_hosting.cpp",
             "page": "gallery/advanced/advanced_qt_hosting.md"
           }
         ]
@@ -2980,7 +2980,7 @@
             "title": "Qt Hosting",
             "category": "advanced",
             "status": "supported",
-            "source": "examples/qt/hosted_qt_widgets.cpp",
+            "source": "examples/qt/qt_hosting.cpp",
             "page": "gallery/advanced/advanced_qt_hosting.md"
           }
         ]
@@ -3251,7 +3251,7 @@
             "title": "Qt Hosting",
             "category": "advanced",
             "status": "supported",
-            "source": "examples/qt/hosted_qt_widgets.cpp",
+            "source": "examples/qt/qt_hosting.cpp",
             "page": "gallery/advanced/advanced_qt_hosting.md"
           }
         ]
@@ -3264,7 +3264,7 @@
             "title": "Qt Hosting",
             "category": "advanced",
             "status": "supported",
-            "source": "examples/qt/hosted_qt_widgets.cpp",
+            "source": "examples/qt/qt_hosting.cpp",
             "page": "gallery/advanced/advanced_qt_hosting.md"
           }
         ]

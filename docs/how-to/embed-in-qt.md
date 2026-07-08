@@ -28,10 +28,10 @@ The native Qt examples are built only when Qt development packages are available
 ```sh
 just build
 ./build/examples/qt/hosted_qt_smoke 120
-./build/examples/qt/hosted_qt_widgets --smoke-ms 1000
+./build/examples/qt/qt_hosting --smoke-ms 1000
 ```
 
-`hosted_qt_smoke` is the minimal contract smoke. `hosted_qt_widgets` embeds the hosted Datoviz
+`hosted_qt_smoke` is the minimal contract smoke. `qt_hosting` embeds the hosted Datoviz
 window in a Qt Widgets layout and lets widget callbacks mutate retained scene data.
 
 
@@ -123,6 +123,6 @@ Qt's required extensions first, then pass them into Datoviz app creation.
 
 ??? example "Related examples"
 
-    - [Qt Hosting](../examples/gallery/advanced/advanced_qt_hosting.md) - Source: `examples/qt/hosted_qt_widgets.cpp`
+    - [Qt Hosting](../examples/gallery/advanced/advanced_qt_hosting.md) - Source: `examples/qt/qt_hosting.cpp`
     - [External Surface GLFW](../examples/gallery/advanced/advanced_external_surface_glfw.md) - Source: `examples/c/advanced/external_surface_glfw.c`
     - [GUI Viewport](../examples/gallery/features/features_gui_viewport.md) - Source: `examples/c/features/gui_viewport.c`

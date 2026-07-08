@@ -8,10 +8,10 @@ The examples are built only when Qt development packages are found:
 ```bash
 just build
 ./build/examples/qt/hosted_qt_smoke 120
-./build/examples/qt/hosted_qt_widgets
+./build/examples/qt/qt_hosting
 ```
 
-`hosted_qt_smoke` is the minimal contract smoke. `hosted_qt_widgets` embeds the hosted Vulkan window
+`hosted_qt_smoke` is the minimal contract smoke. `qt_hosting` embeds the hosted Vulkan window
 in a normal Qt Widgets layout and lets widget callbacks mutate retained scene data.
 
 ## Ownership contract

@@ -23,7 +23,7 @@ reference checks are reconciled.
 
 Current remaining blocker: gallery source media in the `data` submodule. `tools/check_gallery_media.py`
 still reports invalid dimensions for most `data/gallery/v0.4/**/*.png` source screenshots and a
-missing `data/gallery/v0.4/features/feature_datetime_axis.png`. Do not stage or commit `data`
+missing `data/gallery/v0.4/features/features_datetime_axis.png`. Do not stage or commit `data`
 without explicit maintainer approval in the current turn. If approved, regenerate or resize source
 PNGs to the manifest default 1280x720, rebuild WebP assets, rerun media checks, and commit the
 submodule pointer only after inspecting the staged set.

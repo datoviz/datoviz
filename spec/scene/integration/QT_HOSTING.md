@@ -66,7 +66,7 @@ The in-tree native Qt examples live under `examples/qt/` and should remain optio
 They validate the intended architecture without adding Qt to core Datoviz:
 
 1. `hosted_qt_smoke.cpp` is the minimal host-owned Qt loop smoke.
-2. `hosted_qt_widgets.cpp` embeds a hosted Datoviz Vulkan window inside a normal Qt Widgets layout
+2. `qt_hosting.cpp` embeds a hosted Datoviz Vulkan window inside a normal Qt Widgets layout
    and lets widget callbacks mutate retained scene data.
 3. `hosted_qt_adapter.cpp` is the small adapter layer translating Qt window, surface, input, and
    update events into generic Datoviz hosted-view calls.
@@ -194,7 +194,7 @@ Code changes to the hosted C API or Qt examples should use the narrowest relevan
 ```sh
 just build
 ./build/examples/qt/hosted_qt_smoke 120
-./build/examples/qt/hosted_qt_widgets --smoke-ms 1000
+./build/examples/qt/qt_hosting --smoke-ms 1000
 python -m datoviz.qt
 python examples/python/qt/hosted_pyqt.py --smoke-ms 1000
 just ctypes

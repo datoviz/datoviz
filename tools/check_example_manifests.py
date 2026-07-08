@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_EXAMPLES = ROOT / "docs/examples/examples.json"
 DEFAULT_CAPABILITIES = ROOT / "docs/examples/capabilities.json"
 DEFAULT_MANIFEST = ROOT / "examples/c/MANIFEST.yaml"
+DEFAULT_GALLERY_MEDIA = ROOT / "data/gallery/v0.4"
 PUBLIC_C_DIRS = (
     ROOT / "examples/c/start",
     ROOT / "examples/c/features",
@@ -30,6 +31,7 @@ PUBLIC_C_DIRS = (
 )
 DATA_KINDS = {"synthetic", "simulated", "generated", "real", "prepared"}
 IGNORED_SOURCE_TITLE_CHECKS = {"examples/c/runtime/multi_window.c"}
+GALLERY_MEDIA_SUFFIXES = {".gif", ".jpeg", ".jpg", ".mp4", ".png", ".webm", ".webp"}
 
 
 def parse_args() -> argparse.Namespace:
@@ -37,6 +39,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--examples", type=Path, default=DEFAULT_EXAMPLES)
     parser.add_argument("--capabilities", type=Path, default=DEFAULT_CAPABILITIES)
+    parser.add_argument("--gallery-media", type=Path, default=DEFAULT_GALLERY_MEDIA)
     return parser.parse_args()
 
 
@@ -144,6 +147,58 @@ def _check_manifest_semantics(manifest_path: Path) -> bool:
     return ok
 
 
+def _expected_entry_id(entry: dict[str, Any], source_key: str) -> str | None:
+    lane = entry.get("lane")
+    source = entry.get(source_key)
+    if lane is None or source is None:
+        return None
+    return f"{lane}_{Path(str(source)).stem}"
+
+
+def _check_example_id_paths(manifest_path: Path) -> bool:
+    manifest = build_gallery.load_manifest(manifest_path)
+    ok = True
+    for entry in manifest["examples"]:
+        entry_id = str(entry.get("id", "<missing>"))
+        expected = _expected_entry_id(entry, "source")
+        if expected is not None and entry_id != expected:
+            print(f"{entry_id}: source stem should map to example id {expected!r}")
+            ok = False
+
+        python = entry.get("python") or {}
+        python_entry = {**entry, "source": python.get("source")}
+        expected_python = _expected_entry_id(python_entry, "source")
+        if expected_python is not None and entry_id != expected_python:
+            print(f"{entry_id}: Python source stem should map to example id {expected_python!r}")
+            ok = False
+    return ok
+
+
+def _check_gallery_media_ids(manifest_path: Path, media_root: Path) -> bool:
+    if not media_root.exists():
+        return True
+
+    manifest = build_gallery.load_manifest(manifest_path)
+    by_id = {str(entry["id"]): str(entry["lane"]) for entry in manifest["examples"]}
+    ok = True
+    for path in sorted(media_root.rglob("*")):
+        if not path.is_file() or path.suffix.lower() not in GALLERY_MEDIA_SUFFIXES:
+            continue
+        example_id = path.stem
+        lane = path.parent.name
+        expected_lane = by_id.get(example_id)
+        if expected_lane is None:
+            print(f"gallery media is not named after a manifest id: {path.relative_to(ROOT)}")
+            ok = False
+        elif lane != expected_lane:
+            print(
+                f"gallery media lane mismatch for {example_id}: "
+                f"{path.relative_to(ROOT)} should be under {expected_lane}/"
+            )
+            ok = False
+    return ok
+
+
 def path_to_tool(path: Path) -> str:
     if path.name == "examples.json":
         return "tools/build_examples_manifest.py"
@@ -165,6 +220,8 @@ def main() -> int:
         ),
     ]
     ok = _check_manifest_semantics(args.manifest)
+    ok = _check_example_id_paths(args.manifest) and ok
+    ok = _check_gallery_media_ids(args.manifest, args.gallery_media) and ok
     ok = all(_check_file(path, expected) for path, expected in checks) and ok
     if ok:
         print("generated example manifests are up to date")

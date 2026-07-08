@@ -297,7 +297,7 @@ Bridge implementation changes:
 ```sh
 DVZ_CMAKE_ARGS="-DDVZ_ENABLE_QT_BRIDGE=ON" just build
 ./build/examples/qt/hosted_qt_smoke 120
-./build/examples/qt/hosted_qt_widgets --smoke-ms 1000
+./build/examples/qt/qt_hosting --smoke-ms 1000
 DATOVIZ_QTBRIDGE_LIBRARY=build/qtbridge/libdatoviz_qtbridge.so python -m datoviz.qt
 DATOVIZ_QTBRIDGE_LIBRARY=build/qtbridge/libdatoviz_qtbridge.so \
   python examples/python/qt/hosted_pyqt.py --smoke-ms 1000

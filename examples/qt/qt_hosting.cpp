@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* hosted_qt_widgets - live Qt Widgets host around a Datoviz Vulkan scene.
+/* qt_hosting - live Qt Widgets host around a Datoviz Vulkan scene.
  *
  * Qt owns the event loop and widgets. Datoviz creates the Vulkan instance and renders into a
  * Qt-created VkSurfaceKHR through the hosted view contract.
  *
  * Build:  just build
- * Run:    ./build/examples/qt/hosted_qt_widgets
- * Smoke:  ./build/examples/qt/hosted_qt_widgets --smoke-ms 1000
+ * Run:    ./build/examples/qt/qt_hosting
+ * Smoke:  ./build/examples/qt/qt_hosting --smoke-ms 1000
  */
 
 #include "hosted_qt_adapter.h"
@@ -296,14 +296,14 @@ int main(int argc, char** argv)
     QApplication qt_app(argc, argv);
 
     std::vector<const char*> extensions;
-    if (!dvz_qt_instance_extensions(qt_app, &extensions, "hosted_qt_widgets"))
+    if (!dvz_qt_instance_extensions(qt_app, &extensions, "qt_hosting"))
         return 0;
 
     SceneState scene_state = {};
     DvzScene* scene = _make_scene(&scene_state);
     if (scene == nullptr)
     {
-        std::fprintf(stderr, "hosted_qt_widgets: failed to create scene\n");
+        std::fprintf(stderr, "qt_hosting: failed to create scene\n");
         return 1;
     }
 
@@ -315,7 +315,7 @@ int main(int argc, char** argv)
     DvzApp* app = dvz_app_with_config(scene, &app_cfg);
     if (app == nullptr)
     {
-        std::fprintf(stderr, "hosted_qt_widgets: skipped, Datoviz GPU context creation failed\n");
+        std::fprintf(stderr, "qt_hosting: skipped, Datoviz GPU context creation failed\n");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -323,7 +323,7 @@ int main(int argc, char** argv)
     VkInstance instance = dvz_app_vk_instance(app);
     if (instance == VK_NULL_HANDLE)
     {
-        std::fprintf(stderr, "hosted_qt_widgets: Datoviz returned no Vulkan instance\n");
+        std::fprintf(stderr, "qt_hosting: Datoviz returned no Vulkan instance\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
@@ -334,7 +334,7 @@ int main(int argc, char** argv)
     if (!qt_instance.create())
     {
         std::fprintf(
-            stderr, "hosted_qt_widgets: Qt failed to adopt the Datoviz Vulkan instance (%d)\n",
+            stderr, "qt_hosting: Qt failed to adopt the Datoviz Vulkan instance (%d)\n",
             (int)qt_instance.errorCode());
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
@@ -343,7 +343,7 @@ int main(int argc, char** argv)
 
     DvzQtHostedWindow* view_window = new DvzQtHostedWindow(
         app, scene_state.figure, scene_state.panel, &qt_instance,
-        QStringLiteral("hosted_qt_widgets_view"),
+        QStringLiteral("qt_hosting_view"),
         QSize(EXAMPLE_WINDOW_WIDTH, EXAMPLE_WINDOW_HEIGHT));
     QWidget* view_container = QWidget::createWindowContainer(view_window);
     view_container->setMinimumSize(640, 480);

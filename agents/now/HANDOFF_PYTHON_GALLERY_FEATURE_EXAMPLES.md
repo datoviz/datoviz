@@ -31,7 +31,7 @@ Recent checkpoint commits landed:
 18. `e838f224e` Add Python isolines gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
-next planned checkpoint is `feature_text_block`.
+next planned checkpoint is `features_text_block`.
 
 Known parity caveat from the geometry batch: the C OBJ and 3D shape examples apply a Phong
 material, but Python `DvzMaterialDesc` has no generated fields in the current binding, so these
@@ -107,44 +107,44 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
 
 - v0.4-required feature examples: 36 of 64 have Python entries; 28 remain missing.
 - all v0.4-required public examples: 48 of 95 have Python entries; 47 remain missing.
-- `feature_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
+- `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
   matching `python.source` manifest entry.
-- `feature_picking` is committed: it has `examples/python/gallery/features/picking.py` and a
+- `features_picking` is committed: it has `examples/python/gallery/features/picking.py` and a
   matching `python.source` manifest entry.
-- `feature_selection_pixel` is committed: it has
+- `features_selection_pixel` is committed: it has
   `examples/python/gallery/features/selection_pixel.py` and a matching `python.source` manifest
   entry.
-- `feature_selection_sphere` is committed: it has
+- `features_selection_sphere` is committed: it has
   `examples/python/gallery/features/selection_sphere.py` and a matching `python.source` manifest
   entry.
-- `feature_selection_mesh_instances` is committed: it has
+- `features_selection_mesh_instances` is committed: it has
   `examples/python/gallery/features/selection_mesh_instances.py` and a matching `python.source`
   manifest entry.
-- `feature_probe_labels` is committed: it has
+- `features_probe_labels` is committed: it has
   `examples/python/gallery/features/probe_labels.py` and a matching `python.source` manifest entry.
-- `feature_marker_symbols` is committed: it has
+- `features_marker_symbols` is committed: it has
   `examples/python/gallery/features/marker_symbols.py` and a matching `python.source` manifest
   entry.
-- `feature_builtin_shapes_2d` is committed: it has
+- `features_builtin_shapes_2d` is committed: it has
   `examples/python/gallery/features/builtin_shapes_2d.py` and a matching `python.source` manifest
   entry.
-- `feature_builtin_shapes_3d` is committed: it has
+- `features_builtin_shapes_3d` is committed: it has
   `examples/python/gallery/features/builtin_shapes_3d.py` and a matching `python.source` manifest
   entry.
-- `feature_obj_loading` is committed: it has
+- `features_obj_loading` is committed: it has
   `examples/python/gallery/features/obj_loading.py` and a matching `python.source` manifest entry.
-- `feature_isolines` is committed: it has
+- `features_isolines` is committed: it has
   `examples/python/gallery/features/isolines.py` and a matching `python.source` manifest entry.
 
 
 ## Preferred Next Commit
 
 The event/query/selection helper batch is complete for the planned feature examples. The geometry
-and symbol helper batch has `feature_marker_symbols`, `feature_builtin_shapes_2d`, and
-`feature_builtin_shapes_3d`, `feature_obj_loading`, and `feature_isolines`; next target the
-text/annotation batch, starting with `feature_text_block`.
+and symbol helper batch has `features_marker_symbols`, `features_builtin_shapes_2d`, and
+`features_builtin_shapes_3d`, `features_obj_loading`, and `features_isolines`; next target the
+text/annotation batch, starting with `features_text_block`.
 
 Implementation shape:
 
@@ -194,9 +194,9 @@ convert the examples that immediately need it.
 
 1. **Event, query, and selection helpers**
 
-   Target examples: guide-line/span interaction if needed, `image_probe`, `feature_picking`,
-   `feature_selection_pixel`, `feature_selection_sphere`, `feature_selection_mesh_instances`,
-   `feature_probe_labels`, and `linked_panels_probe_colorbar`.
+   Target examples: guide-line/span interaction if needed, `image_probe`, `features_picking`,
+   `features_selection_pixel`, `features_selection_sphere`, `features_selection_mesh_instances`,
+   `features_probe_labels`, and `showcases_linked_probe_colorbar`.
 
    Preferred shape: small common helpers in `examples/python/gallery/common.py` for frame callback,
    request/query readback, deterministic pick/probe inputs, and windowless/offscreen-safe scenario
@@ -205,8 +205,8 @@ convert the examples that immediately need it.
 
 2. **Geometry and symbol helpers**
 
-   Target examples: `feature_builtin_shapes_2d`, `feature_builtin_shapes_3d`,
-   `feature_marker_symbols`, `feature_obj_loading`, and likely `feature_isolines`.
+   Target examples: `features_builtin_shapes_2d`, `features_builtin_shapes_3d`,
+   `features_marker_symbols`, `features_obj_loading`, and likely `features_isolines`.
 
    Preferred shape: reusable NumPy geometry construction helpers only where the C example already
    depends on generated arrays or built-in geometry. Do not introduce a Python geometry API that
@@ -214,9 +214,9 @@ convert the examples that immediately need it.
 
 3. **Text, annotation, legend, and GUI examples**
 
-   Target examples: `feature_text_block`, `feature_overlay_card`, `annotation_readout`,
-   `feature_legend_categorical`, `feature_gui_controls`, `feature_gui_viewport`, and
-   `feature_gui_cimgui`.
+   Target examples: `features_text_block`, `features_overlay_card`, `features_annotation_readout`,
+   `features_legend_categorical`, `features_gui_controls`, `features_gui_viewport`, and
+   `features_gui_cimgui`.
 
    Preferred shape: thin binding facades for text/annotation data setters where needed, plus compact
    common data builders for repeated label/color arrays. GUI examples may need native-window
@@ -245,14 +245,14 @@ convert the examples that immediately need it.
 
 Current missing `v0.4_required` feature examples with no `python.source` entry:
 
-`feature_coordinate_system`, `feature_axis_labels`, `feature_text_block`,
-`feature_overlay_card`, `feature_orientation_gizmo`, `feature_reference_grid`,
-`feature_bounds_overlay`, `feature_controller_fly`, `feature_mesh_texture`,
-`feature_material_mesh`, `feature_lighting`, `feature_user_scale`, `feature_gui_controls`,
-`feature_gui_viewport`, `feature_gui_cimgui`, `feature_animation_tracks`, `technique_ssao`,
-`technique_msaa`, `technique_depth_cue`, `technique_transparency`, `feature_input_events`,
-`feature_view_size_policies`, `feature_bezier_curve_path`, `feature_path_join`, `scale_bar`,
-`scalebar_units`, `annotation_readout`, and `feature_datetime_axis`.
+`features_coordinate_system`, `features_axis_labels`, `features_text_block`,
+`features_overlay_card`, `features_orientation_gizmo`, `features_reference_grid`,
+`features_bounds_overlay`, `features_controller_fly`, `features_mesh_texture`,
+`features_material_mesh`, `features_lighting`, `features_user_scale`, `features_gui_controls`,
+`features_gui_viewport`, `features_gui_cimgui`, `features_animation_tracks`, `features_technique_ssao`,
+`features_technique_msaa`, `features_technique_depth_cue`, `features_technique_transparency`, `features_input_events`,
+`features_view_size_policies`, `features_bezier_curve_path`, `features_path_join`, `features_scalebar`,
+`features_scalebar_units`, `features_annotation_readout`, and `features_datetime_axis`.
 
 
 ## Per-Example Checklist

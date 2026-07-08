@@ -3125,7 +3125,7 @@ examples:
     stage: v0.4_optional_provider
     category: advanced
     lane: advanced
-    source: examples/qt/hosted_qt_widgets.cpp
+    source: examples/qt/qt_hosting.cpp
     source_language: cpp
     extra_sources:
       - label: PyQt
@@ -3133,7 +3133,7 @@ examples:
         path: examples/python/qt/hosted_pyqt.py
     validation: optional-native-smoke
     build_command: DVZ_CMAKE_ARGS="-DDVZ_ENABLE_QT_BRIDGE=ON" just build
-    smoke_command: ./build/examples/qt/hosted_qt_widgets --smoke-ms 1000
+    smoke_command: ./build/examples/qt/qt_hosting --smoke-ms 1000
     data:
       kind: synthetic
     portability: native-only

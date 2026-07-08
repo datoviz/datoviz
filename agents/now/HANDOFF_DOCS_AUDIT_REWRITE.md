@@ -389,7 +389,7 @@ Use this direction for broad rewriting:
    C integration, build options, citation, and RC note posture. Validation: snippet/source checks
    plus `git diff --check`.
 3. **Gallery generator checkpoint:** manifest/generator/json/template fixes, regenerate gallery
-   Markdown, confirm `feature_camera_manual`, move maintainer metadata, enrich JSON, and rerun
+   Markdown, confirm `features_camera_manual`, move maintainer metadata, enrich JSON, and rerun
    `python3 tools/check_example_manifests.py`.
 4. **Media checkpoint:** decide which missing media can be generated locally and which should be
    explicitly labeled as pending with a concrete reason. Run `python3 tools/check_gallery_media.py`
@@ -468,8 +468,8 @@ Verify or close these current leads:
    comments or generators before regenerating.
 5. **Gallery consistency:** verify manifest rows, `docs/examples/examples.json`, generated detail
    pages, WebGPU matrix, and live route registry agree. Previously missing pages such as
-   `technique_edl`, `feature_multi_window`, `feature_view_size_policies`, and
-   `feature_datetime_axis` now appear to exist, but still verify generator coverage.
+   `features_technique_edl`, `runtime_multi_window`, `features_view_size_policies`, and
+   `features_datetime_axis` now appear to exist, but still verify generator coverage.
 6. **Gallery UX:** surface native/WebGPU status near previews; keep user data prerequisites visible;
    make data wording conditional for synthetic, simulated, generated, prepared, real, and external
    data; move maintainer-only fields out of the primary flow.

@@ -1,5 +1,5 @@
 export const demo = {
   id: "wasm-image-probe",
   label: "WASM image probe",
-  scenarioId: "feature_image_probe",
+  scenarioId: "features_image_probe",
 };
