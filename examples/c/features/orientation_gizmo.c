@@ -11,7 +11,7 @@
  * cube and compare the cube faces with the gizmo axes; the widget helps users keep track of 3D
  * orientation when inspecting volumes, meshes, or spatial point clouds.
  *
- * Scenario: feature.orientation_gizmo
+ * Scenario: features_orientation_gizmo
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/orientation_gizmo
@@ -163,7 +163,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 static DvzScenarioSpec _orientation_gizmo_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_orientation_gizmo",
+        .id = "features_orientation_gizmo",
         .title = "Orientation Gizmo",
         .width = WIDTH,
         .height = HEIGHT,

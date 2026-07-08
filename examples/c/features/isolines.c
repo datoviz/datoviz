@@ -6,7 +6,7 @@
 
 /* isolines - This example shows contour isolines over a scalar field.
  *
- * Scenario: feature_isolines
+ * Scenario: features_isolines
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/isolines
@@ -333,7 +333,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_isolines_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_isolines",
+        .id = "features_isolines",
         .title = "Isolines",
         .width = WIDTH,
         .height = HEIGHT,

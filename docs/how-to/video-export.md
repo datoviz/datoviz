@@ -214,5 +214,5 @@ project explicitly stores them as documentation assets.
 
 ??? example "Related examples"
 
-    - [Video Export](../examples/gallery/runtime/feature_video_export.md) - Source: `examples/c/runtime/video_export.c`
-    - [Timer Animation](../examples/gallery/features/feature_timer_animation.md) - Source: `examples/c/features/timer_animation.c`
+    - [Video Export](../examples/gallery/runtime/runtime_video_export.md) - Source: `examples/c/runtime/video_export.c`
+    - [Timer Animation](../examples/gallery/features/features_timer_animation.md) - Source: `examples/c/features/timer_animation.c`

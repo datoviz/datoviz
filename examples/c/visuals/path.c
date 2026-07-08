@@ -11,7 +11,7 @@
  * to see why paths are useful for time series, trajectories, contours, and other ordered
  * scientific measurements.
  *
- * Scenario: visual.path
+ * Scenario: visuals_path
  * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/path
@@ -213,7 +213,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_visual_path_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "visual_path",
+        .id = "visuals_path",
         .title = "Path",
         .width = WIDTH,
         .height = HEIGHT,

@@ -56,7 +56,7 @@ window.addEventListener("pagehide", () => {
 }, { once: true });
 
 const params = new URLSearchParams(window.location.search);
-const id = params.get("id") ?? "feature_timer_animation";
+const id = params.get("id") ?? "features_timer_animation";
 loadLiveExample(id).catch((error) => {
   setStatus(error instanceof Error ? error.message : String(error), true);
   console.error(error);

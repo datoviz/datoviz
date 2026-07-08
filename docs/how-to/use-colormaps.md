@@ -2,7 +2,7 @@
 
 Convert scalar data into colors and expose the scale to readers.
 
-![Scalar Color Scale](../assets/gallery/v0.4/features/colormap_scale.webp)
+![Scalar Color Scale](../assets/gallery/v0.4/features/features_colormap_scale.webp)
 
 ## Task Workflow
 
@@ -91,6 +91,6 @@ categorical scale and legend when the numbers name classes rather than ordered m
 
 ??? example "Related examples"
 
-    - [Scalar Color Scale](../examples/gallery/features/colormap_scale.md) - Source: `examples/c/features/colormap_scale.c`
-    - [Colorbar](../examples/gallery/features/colorbar.md) - Source: `examples/c/features/colorbar.c`
-    - [Sampled Field Update](../examples/gallery/features/feature_sampled_field_update.md) - Source: `examples/c/features/sampled_field_update.c`
+    - [Scalar Color Scale](../examples/gallery/features/features_colormap_scale.md) - Source: `examples/c/features/colormap_scale.c`
+    - [Colorbar](../examples/gallery/features/features_colorbar.md) - Source: `examples/c/features/colorbar.c`
+    - [Sampled Field Update](../examples/gallery/features/features_sampled_field_update.md) - Source: `examples/c/features/sampled_field_update.c`

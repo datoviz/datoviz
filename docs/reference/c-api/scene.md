@@ -1652,7 +1652,7 @@ DvzResult dvz_colorbar_clear_ticks(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | `DvzResult` | DVZ_OK when the colorbar was updated, DVZ_ERROR on error |
-| `colorbar` | `DvzColorbar *` | the colorbar |
+| `features_colorbar` | `DvzColorbar *` | the colorbar |
 
 _Declared in `include/datoviz/scene/scale.h`:602._
 
@@ -1684,7 +1684,7 @@ void dvz_colorbar_destroy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `colorbar` | `DvzColorbar *` | the colorbar |
+| `features_colorbar` | `DvzColorbar *` | the colorbar |
 
 _Declared in `include/datoviz/scene/scale.h`:530._
 
@@ -1701,7 +1701,7 @@ DvzId dvz_colorbar_id(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | `DvzId` | the scene-local identity, or DVZ_ID_NONE when colorbar is NULL or destroyed |
-| `colorbar` | `const DvzColorbar *` | the colorbar |
+| `features_colorbar` | `const DvzColorbar *` | the colorbar |
 
 _Declared in `include/datoviz/scene/scale.h`:522._
 
@@ -1722,7 +1722,7 @@ DvzResult dvz_colorbar_set_anchor(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | `DvzResult` | DVZ_OK when the anchor was accepted, DVZ_ERROR on error |
-| `colorbar` | `DvzColorbar *` | the colorbar |
+| `features_colorbar` | `DvzColorbar *` | the colorbar |
 | `anchor` | `DvzSceneAnchor` | the panel-edge anchor |
 
 _Declared in `include/datoviz/scene/scale.h`:565._
@@ -1741,7 +1741,7 @@ DvzResult dvz_colorbar_set_format(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | `DvzResult` | DVZ_OK when the format was accepted, DVZ_ERROR on error |
-| `colorbar` | `DvzColorbar *` | the colorbar |
+| `features_colorbar` | `DvzColorbar *` | the colorbar |
 | `format` | `const DvzFormatDesc *` | the format descriptor, or NULL to clear the override |
 
 _Declared in `include/datoviz/scene/scale.h`:540._
@@ -1764,7 +1764,7 @@ DvzResult dvz_colorbar_set_layout(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | `DvzResult` | DVZ_OK when the layout was accepted, DVZ_ERROR on error |
-| `colorbar` | `DvzColorbar *` | the colorbar |
+| `features_colorbar` | `DvzColorbar *` | the colorbar |
 | `desc` | `const DvzColorbarDesc *` | layout descriptor |
 
 _Declared in `include/datoviz/scene/scale.h`:579._
@@ -1783,7 +1783,7 @@ DvzResult dvz_colorbar_set_orientation(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | `DvzResult` | DVZ_OK when the orientation was accepted, DVZ_ERROR on error |
-| `colorbar` | `DvzColorbar *` | the colorbar |
+| `features_colorbar` | `DvzColorbar *` | the colorbar |
 | `orientation` | `DvzColorbarOrientation` | the orientation |
 
 _Declared in `include/datoviz/scene/scale.h`:551._
@@ -1805,7 +1805,7 @@ DvzResult dvz_colorbar_set_ticks(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | `DvzResult` | DVZ_OK when the explicit ticks were stored, DVZ_ERROR on error |
-| `colorbar` | `DvzColorbar *` | the colorbar |
+| `features_colorbar` | `DvzColorbar *` | the colorbar |
 | `ticks` | `const DvzColorbarTicks *` | explicit tick descriptor |
 
 _Declared in `include/datoviz/scene/scale.h`:592._
@@ -1824,7 +1824,7 @@ DvzResult dvz_colorbar_set_title(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | `DvzResult` | DVZ_OK when the title was accepted, DVZ_ERROR on error |
-| `colorbar` | `DvzColorbar *` | the colorbar |
+| `features_colorbar` | `DvzColorbar *` | the colorbar |
 | `title` | `const char *` | the title, or NULL to clear |
 
 _Declared in `include/datoviz/scene/scale.h`:612._
@@ -5458,7 +5458,7 @@ DvzResult dvz_panel_set_volume_occluder(
 | --- | --- | --- |
 | return | `DvzResult` | 0 on success, -1 on validation error |
 | `panel` | `DvzPanel *` | the panel |
-| `volume` | `DvzVisual *` | the volume visual attached to the same panel, or NULL to disable |
+| `visuals_volume` | `DvzVisual *` | the volume visual attached to the same panel, or NULL to disable |
 | `desc` | `const DvzVolumeOcclusionDesc *` | volume occlusion descriptor, or NULL to disable |
 
 _Declared in `include/datoviz/scene.h`:1301._

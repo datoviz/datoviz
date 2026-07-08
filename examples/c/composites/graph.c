@@ -11,7 +11,7 @@
  * clusters, thicker bridge edges, and curved links to see how a graph composite can turn
  * relationship tables into a readable scientific network.
  *
- * Scenario: composite_graph
+ * Scenario: composites_graph
  * Style: feature composite, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c composites/graph
@@ -514,7 +514,7 @@ cleanup:
 static DvzScenarioSpec _graph_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "composite_graph",
+        .id = "composites_graph",
         .title = "Graph Composite",
         .width = WIDTH,
         .height = HEIGHT,

@@ -11,7 +11,7 @@
  * Pan or zoom the live view and compare the bar label and tick length with the point spacing. A
  * scale bar gives readers physical context without requiring full axes.
  *
- * Scenario: scale_bar
+ * Scenario: features_scalebar
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/scalebar
@@ -255,7 +255,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_scalebar_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_scalebar",
+        .id = "features_scalebar",
         .title = "Scale Bar",
         .width = WIDTH,
         .height = HEIGHT,

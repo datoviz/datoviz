@@ -77,7 +77,7 @@ just serve
 Then open the route from the served site, not from `file://`:
 
 ```text
-http://localhost:8000/examples/webgpu/live.html?id=feature_basic_scene
+http://localhost:8000/examples/webgpu/live.html?id=features_basic_scene
 ```
 
 The exact port depends on the local `just serve` invocation. Do not open WebGPU pages through
@@ -177,6 +177,6 @@ or portable C scenario.
 
 ??? example "Related examples"
 
-    - [Basic Scene](../examples/gallery/features/feature_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
-    - [Linked Panels](../examples/gallery/features/feature_panel_linked.md) - Source: `examples/c/features/panel_linked.c`
-    - [Point](../examples/gallery/visuals/point_2d.md) - Source: `examples/c/visuals/point.c`
+    - [Basic Scene](../examples/gallery/features/features_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
+    - [Linked Panels](../examples/gallery/features/features_panel_linked.md) - Source: `examples/c/features/panel_linked.c`
+    - [Point](../examples/gallery/visuals/visuals_point.md) - Source: `examples/c/visuals/point.c`

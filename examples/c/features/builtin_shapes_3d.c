@@ -6,7 +6,7 @@
 
 /* builtin_shapes_3d - This example shows built-in 3D geometry rendered as lit meshes.
  *
- * Scenario: feature_builtin_shapes_3d
+ * Scenario: features_builtin_shapes_3d
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/builtin_shapes_3d
@@ -247,7 +247,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_builtin_shapes_3d_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_builtin_shapes_3d",
+        .id = "features_builtin_shapes_3d",
         .title = "Builtin Shapes 3D",
         .width = WIDTH,
         .height = HEIGHT,

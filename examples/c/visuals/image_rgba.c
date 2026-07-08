@@ -11,7 +11,7 @@
  * translucent band blends with the graphite panel background while the opaque regions keep their
  * source colors.
  *
- * Scenario: visual.image_rgba
+ * Scenario: visuals_image_rgba
  * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/image_rgba
@@ -291,7 +291,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_visual_image_rgba_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "visual_image_rgba",
+        .id = "visuals_image_rgba",
         .title = "RGBA Image",
         .width = WIDTH,
         .height = HEIGHT,

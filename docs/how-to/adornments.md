@@ -2,7 +2,7 @@
 
 Add visual context without turning the adornment into primary data.
 
-![Colorbar](../assets/gallery/v0.4/features/colorbar.webp)
+![Colorbar](../assets/gallery/v0.4/features/features_colorbar.webp)
 
 ## Task Workflow
 
@@ -105,8 +105,8 @@ colorbar.
 
 ??? example "Related examples"
 
-    - [Colorbar](../examples/gallery/features/colorbar.md) - Source: `examples/c/features/colorbar.c`
-    - [Scale Bar](../examples/gallery/features/scale_bar.md) - Source: `examples/c/features/scalebar.c`
-    - [Categorical Legend](../examples/gallery/features/feature_legend_categorical.md) - Source: `examples/c/features/legend_categorical.c`
-    - [Linked Probe With Colorbar](../examples/gallery/showcases/linked_panels_probe_colorbar.md) - Source: `examples/c/showcases/linked_probe_colorbar.c`
-    - [Scale-Aware Measurement Workflow](../examples/gallery/showcases/scalebar_measurement_workflow.md) - Source: `examples/c/showcases/scalebar_measurement.c`
+    - [Colorbar](../examples/gallery/features/features_colorbar.md) - Source: `examples/c/features/colorbar.c`
+    - [Scale Bar](../examples/gallery/features/features_scalebar.md) - Source: `examples/c/features/scalebar.c`
+    - [Categorical Legend](../examples/gallery/features/features_legend_categorical.md) - Source: `examples/c/features/legend_categorical.c`
+    - [Linked Probe With Colorbar](../examples/gallery/showcases/showcases_linked_probe_colorbar.md) - Source: `examples/c/showcases/linked_probe_colorbar.c`
+    - [Scale-Aware Measurement Workflow](../examples/gallery/showcases/showcases_scalebar_measurement.md) - Source: `examples/c/showcases/scalebar_measurement.c`

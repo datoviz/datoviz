@@ -11,7 +11,7 @@
  * rotating the live view to see why impostor spheres are useful for atoms, particles, cells, and
  * other many-object 3D scientific data.
  *
- * Scenario: visual.sphere
+ * Scenario: visuals_sphere
  * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/sphere
@@ -195,7 +195,7 @@ cleanup:
 DvzScenarioSpec dvz_visual_sphere_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "sphere_impostor",
+        .id = "visuals_sphere",
         .title = "Sphere",
         .width = WIDTH,
         .height = HEIGHT,

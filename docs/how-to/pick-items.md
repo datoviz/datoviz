@@ -116,6 +116,6 @@ request from input or frame code, then consume results from the scene polling pa
 
 ??? example "Related examples"
 
-    - [Picking](../examples/gallery/features/feature_picking.md) - Source: `examples/c/features/picking.c`
-    - [Pixel Selection](../examples/gallery/features/feature_selection_pixel.md) - Source: `examples/c/features/selection_pixel.c`
-    - [Label Probe](../examples/gallery/features/feature_probe_labels.md) - Source: `examples/c/features/probe_labels.c`
+    - [Picking](../examples/gallery/features/features_picking.md) - Source: `examples/c/features/picking.c`
+    - [Pixel Selection](../examples/gallery/features/features_selection_pixel.md) - Source: `examples/c/features/selection_pixel.c`
+    - [Label Probe](../examples/gallery/features/features_probe_labels.md) - Source: `examples/c/features/probe_labels.c`

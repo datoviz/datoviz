@@ -6,7 +6,7 @@
 
 /* axis_labels - This example shows axis titles and tick-label layout around a plotting panel.
  *
- * Scenario: feature.axis_labels
+ * Scenario: features_axis_labels
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/axis_labels
@@ -132,7 +132,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_axis_labels_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_axis_labels",
+        .id = "features_axis_labels",
         .title = "Axis Labels",
         .width = WIDTH,
         .height = HEIGHT,

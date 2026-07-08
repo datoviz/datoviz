@@ -5,7 +5,7 @@ belong in `examples/c/composites/`, not in `examples/c/visuals/`, unless a futur
 true visual family.
 
 
-## `composite_polygon`
+## `composites_polygon`
 
 Minimal target: one semantic polygon and one polygon set, with visible fill/stroke roles, one hole,
 per-region colors, stroke width/join controls, and deterministic capture.
@@ -15,7 +15,7 @@ geographic datasets, polygon booleans, and PSLG/constrained triangulation out of
 example.
 
 
-## `composite_graph`
+## `composites_graph`
 
 Minimal target: one deterministic clustered graph with user-provided 2D layout, marker nodes,
 Bezier path edges, stable node/edge ids, per-item styles, and explicit control points on selected

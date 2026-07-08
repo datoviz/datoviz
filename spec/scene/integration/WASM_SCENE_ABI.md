@@ -117,7 +117,7 @@ The scenario ABI is the first bridge from reusable C examples to the browser hos
 5. `dvz_wasm_api_scenario_frame()` is driven by browser `requestAnimationFrame`; it runs the
    scenario frame callback and may coexist with an older emitted artifact because artifact memory is
    immutable until explicit release.
-6. The first promoted scenario is `feature_timer_animation`; broad live-example coverage is still
+6. The first promoted scenario is `features_timer_animation`; broad live-example coverage is still
    an RC target, not current support.
 
 ## Packet, Payload, And Diagnostics Lifetime
@@ -151,7 +151,7 @@ The demo-specific `src/wasm/scene_bridge.c` path has been retired. The generic A
 1. 2D buffer-backed point/pixel positions + marker + styled segment/path + primitive + image +
    low-level atlas glyph + semantic bitmap text + mesh + panzoom;
 2. 3D sphere + textured material mesh + arcball;
-3. one portable C scenario, `feature_timer_animation`, with browser-driven frame callbacks and
+3. one portable C scenario, `features_timer_animation`, with browser-driven frame callbacks and
    retained point updates.
 
 The browser pages and `just wasm-scene-smoke` use the generic `dvz_wasm_api_*` object ABI.
@@ -166,4 +166,4 @@ The browser pages and `just wasm-scene-smoke` use the generic `dvz_wasm_api_*` o
 4. Done: move the browser demos to the JS wrapper and retire the demo-specific bridge.
 5. Done: replace JSON hot-path transport with split binary DRP2 packets and payload arenas.
 6. Done: remove the legacy direct-payload JSON ABI exports.
-7. Done: add the first portable scenario registry/frame ABI for `feature_timer_animation`.
+7. Done: add the first portable scenario registry/frame ABI for `features_timer_animation`.

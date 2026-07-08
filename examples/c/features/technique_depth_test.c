@@ -12,7 +12,7 @@
  * points. Rotate the linked arcball views and compare which colors appear in front; depth testing
  * controls whether 3D marker order follows geometry or draw order.
  *
- * Scenario: feature.depth_test
+ * Scenario: features_technique_depth_test
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/technique_depth_test
@@ -256,7 +256,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_depth_test_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "technique_depth_test",
+        .id = "features_technique_depth_test",
         .title = "Depth Test Toggle",
         .width = WIDTH,
         .height = HEIGHT,

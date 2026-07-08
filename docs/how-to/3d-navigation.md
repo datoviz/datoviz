@@ -2,7 +2,7 @@
 
 Navigate 3D panels with arcball, turntable, or fly controls.
 
-![Arcball Controller](../assets/gallery/v0.4/features/feature_controller_arcball.webp)
+![Arcball Controller](../assets/gallery/v0.4/features/features_controller_arcball.webp)
 
 3D navigation is the combination of a camera, a controller, and scene scale. The camera defines the
 initial eye, target, up vector, projection, and clipping range. The controller turns mouse, wheel,
@@ -260,8 +260,8 @@ Use `--png` for a non-interactive smoke run, then use `--live` to validate the a
 
 ??? example "Related examples"
 
-    - [Arcball Controller](../examples/gallery/features/feature_controller_arcball.md) - Source: `examples/c/features/controller_arcball.c`
-    - [Fly Controller](../examples/gallery/features/feature_controller_fly.md) - Source: `examples/c/features/controller_fly.c`
-    - [Turntable Controller](../examples/gallery/features/feature_controller_turntable.md) - Source: `examples/c/features/controller_turntable.c`
-    - [Orientation Gizmo](../examples/gallery/features/feature_orientation_gizmo.md) - Source: `examples/c/features/orientation_gizmo.c`
-    - [Protein](../examples/gallery/showcases/protein_arcball_viewer.md) - Source: `examples/c/showcases/protein.c`
+    - [Arcball Controller](../examples/gallery/features/features_controller_arcball.md) - Source: `examples/c/features/controller_arcball.c`
+    - [Fly Controller](../examples/gallery/features/features_controller_fly.md) - Source: `examples/c/features/controller_fly.c`
+    - [Turntable Controller](../examples/gallery/features/features_controller_turntable.md) - Source: `examples/c/features/controller_turntable.c`
+    - [Orientation Gizmo](../examples/gallery/features/features_orientation_gizmo.md) - Source: `examples/c/features/orientation_gizmo.c`
+    - [Protein](../examples/gallery/showcases/showcases_protein.md) - Source: `examples/c/showcases/protein.c`

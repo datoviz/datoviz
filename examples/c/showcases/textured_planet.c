@@ -6,7 +6,7 @@
 
 /* textured_planet - This example maps real planetary textures onto an indexed sphere mesh.
  *
- * Scenario: textured_terrain_or_planet
+ * Scenario: showcases_textured_planet
  * Style: showcase, graphite_cyan, 1280x720 window target
  *
  * What to look for: `dvz_geometry_sphere()` creates positions, normals, UVs, and indices; the mesh
@@ -818,7 +818,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_showcase_textured_planet_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "textured_terrain_or_planet",
+        .id = "showcases_textured_planet",
         .title = "Textured Planets",
         .width = WIDTH,
         .height = HEIGHT,

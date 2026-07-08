@@ -12,7 +12,7 @@
  * clicking empty space clears selection. Rotate with the arcball controller to see why depth-aware
  * picking matters for overlapping 3D scientific markers.
  *
- * Scenario: feature.selection_sphere
+ * Scenario: features_selection_sphere
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/selection_sphere
@@ -429,7 +429,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_selection_sphere_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_selection_sphere",
+        .id = "features_selection_sphere",
         .title = "Sphere Selection",
         .width = WIDTH,
         .height = HEIGHT,

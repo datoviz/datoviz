@@ -45,11 +45,11 @@ SHARED_EXAMPLE_PATHS = (
 )
 CATEGORY_TO_LANE = gallery_media.CATEGORY_TO_LANE
 LANDING_IDS = (
-    "point_cloud",
-    "protein_arcball_viewer",
-    "brain_volume",
-    "showcase_wind_field",
-    "us_state_choropleth",
+    "showcases_point_cloud",
+    "showcases_protein",
+    "showcases_brain_volume",
+    "showcases_wind_field",
+    "showcases_choropleth",
 )
 
 

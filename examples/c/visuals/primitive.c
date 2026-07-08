@@ -11,7 +11,7 @@
  * vertex attributes can describe reference marks, outlines, filled triangles, or custom simple
  * geometry before using a higher-level visual.
  *
- * Scenario: visual.primitive
+ * Scenario: visuals_primitive
  * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/primitive
@@ -235,7 +235,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_visual_primitive_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "visual_primitive",
+        .id = "visuals_primitive",
         .title = "Primitive",
         .width = WIDTH,
         .height = HEIGHT,

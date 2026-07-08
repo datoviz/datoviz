@@ -6,7 +6,7 @@
 
 /* bezier_curve_path - This example shows a cubic Bezier curve tessellated into a retained path.
  *
- * Scenario: feature.bezier_curve_path
+ * Scenario: features_bezier_curve_path
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/bezier_curve_path
@@ -256,7 +256,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 static DvzScenarioSpec _bezier_curve_path_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_bezier_curve_path",
+        .id = "features_bezier_curve_path",
         .title = "Bezier Curve Path",
         .width = WIDTH,
         .height = HEIGHT,

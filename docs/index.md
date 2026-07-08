@@ -13,7 +13,7 @@ Use Datoviz when you want to explore many points, images, meshes, volumes, annot
 scientific scenes, either on the desktop with Vulkan, using C or Python bindings, or in the browser
 with experimental WebGPU support.
 
-<a href="examples/gallery/showcases/protein_arcball_viewer/"><img src="assets/gallery/v0.4/showcases/protein_arcball_viewer.webp" alt="Protein Viewer" style="width:100%;border-radius:8px;margin:1.5rem 0 2rem;display:block;"></a>
+<a href="examples/gallery/showcases/showcases_protein/"><img src="assets/gallery/v0.4/showcases/showcases_protein.webp" alt="Protein Viewer" style="width:100%;border-radius:8px;margin:1.5rem 0 2rem;display:block;"></a>
 
 
 ## Start Here

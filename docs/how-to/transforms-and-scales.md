@@ -137,6 +137,6 @@ new positions every frame when the vertex data itself is unchanged.
 
 ??? example "Related examples"
 
-    - [Visual Transform](../examples/gallery/features/feature_visual_transform.md) - Source: `examples/c/features/visual_transform.c`
-    - [User Scale](../examples/gallery/features/feature_user_scale.md) - Source: `examples/c/features/user_scale.c`
-    - [Reference Grid](../examples/gallery/features/feature_reference_grid.md) - Source: `examples/c/features/reference_grid.c`
+    - [Visual Transform](../examples/gallery/features/features_visual_transform.md) - Source: `examples/c/features/visual_transform.c`
+    - [User Scale](../examples/gallery/features/features_user_scale.md) - Source: `examples/c/features/user_scale.c`
+    - [Reference Grid](../examples/gallery/features/features_reference_grid.md) - Source: `examples/c/features/reference_grid.c`

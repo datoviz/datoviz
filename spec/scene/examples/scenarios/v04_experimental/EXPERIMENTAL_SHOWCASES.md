@@ -23,7 +23,7 @@ frame callbacks, fixed-step clocks, and bounded runner export. Public video-expo
 teach the direct app capture API instead of the scenario runner.
 
 
-## `datetime_axis`
+## `features_datetime_axis`
 
 Experimental datetime-axis proof over compact numeric data coordinates and UTC tick labels. The
 current public C entry is `examples/c/features/datetime_axis.c`; keep it visibly experimental until

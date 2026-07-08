@@ -12,7 +12,7 @@
  * the plots separated. Grid panels are useful for small multiples and side-by-side scientific
  * comparisons.
  *
- * Scenario: feature.panel_grid
+ * Scenario: features_panel_grid
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/panel_grid
@@ -182,7 +182,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_panel_grid_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_panel_grid",
+        .id = "features_panel_grid",
         .title = "Panel Grid",
         .width = WIDTH,
         .height = HEIGHT,

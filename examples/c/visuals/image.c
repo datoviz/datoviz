@@ -12,7 +12,7 @@
  * measurements such as microscopy tiles, detector frames, or model grids become a texture-backed
  * visual.
  *
- * Scenario: visual.image
+ * Scenario: visuals_image
  * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/image
@@ -345,7 +345,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_visual_image_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "visual_image",
+        .id = "visuals_image",
         .title = "Image",
         .width = WIDTH,
         .height = HEIGHT,

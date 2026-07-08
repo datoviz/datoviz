@@ -14,7 +14,7 @@
  * This workflow is useful for validating large image-stack pipelines with a small prepared bundle.
  * The example does not synthesize missing data at runtime; run the preparation command first.
  *
- * Scenario: showcase_lipid_brain_atlas
+ * Scenario: showcases_lipid_brain_atlas
  * Style: showcase, graphite_cyan, 1280x720 window target
  *
  * Prepared data is loaded from `.cache/datoviz/examples/lipid_brain_atlas/prepared/`.
@@ -604,7 +604,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 static DvzScenarioSpec _lipid_brain_atlas_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "showcase_lipid_brain_atlas",
+        .id = "showcases_lipid_brain_atlas",
         .title = "Lipid Brain Atlas",
         .width = WIDTH,
         .height = HEIGHT,

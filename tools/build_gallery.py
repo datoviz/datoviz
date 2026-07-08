@@ -46,197 +46,197 @@ SOURCE_LABEL_BY_LANGUAGE = {
 # presentation, not a strict mathematical classification.
 SHOWCASE_GROUPS = (
     ("2D", [
-        "scientific_plotting_workflow",
-        "linked_panels_axes_panzoom",
-        "linked_panels_probe_colorbar",
-        "scalebar_measurement_workflow",
-        "us_state_choropleth",
-        "showcase_wind_field",
-        "showcase_gpu_particle_smoke",
+        "showcases_scientific_plotting",
+        "showcases_panel_linked_axes",
+        "showcases_linked_probe_colorbar",
+        "showcases_scalebar_measurement",
+        "showcases_choropleth",
+        "showcases_wind_field",
+        "showcases_gpu_particle_smoke",
     ]),
     ("3D", [
-        "brain_volume",
-        "protein_arcball_viewer",
-        "point_cloud",
-        "showcase_surface_grid",
-        "textured_terrain_or_planet",
+        "showcases_brain_volume",
+        "showcases_protein",
+        "showcases_point_cloud",
+        "showcases_surface_grid",
+        "showcases_textured_planet",
     ]),
 )
 SHOWCASE_ORDER = tuple(id_ for _, ids in SHOWCASE_GROUPS for id_ in ids)
 
 # Visuals grouped by dimensionality; each tuple is (subheading, [ids]).
 INDEX_VISUAL_GROUPS = (
-    ("0D — point-like", ["point_2d", "visual_pixel", "visual_marker", "visual_splat"]),
-    ("1D — line-like",  ["visual_segment", "visual_path", "visual_vector", "visual_primitive"]),
-    ("2D — planar",     ["visual_image", "visual_image_rgba", "visual_text", "visual_glyph", "visual_labels"]),
-    ("3D — volumetric", ["visual_mesh", "sphere_impostor", "volume"]),
-    ("Composites",      ["composite_polygon", "composite_graph"]),
+    ("0D — point-like", ["visuals_point", "visuals_pixel", "visuals_marker", "visuals_splat"]),
+    ("1D — line-like",  ["visuals_segment", "visuals_path", "visuals_vector", "visuals_primitive"]),
+    ("2D — planar",     ["visuals_image", "visuals_image_rgba", "visuals_text", "visuals_glyph", "visuals_labels"]),
+    ("3D — volumetric", ["visuals_mesh", "visuals_sphere", "visuals_volume"]),
+    ("Composites",      ["composites_polygon", "composites_graph"]),
 )
 
 VISUAL_REFERENCE_BY_ID = {
-    "point_2d": "point",
-    "visual_pixel": "pixel",
-    "visual_marker": "marker",
-    "visual_splat": "splat",
-    "visual_segment": "segment",
-    "visual_path": "path",
-    "visual_vector": "vector",
-    "visual_primitive": "primitive",
-    "visual_image": "image",
-    "visual_image_rgba": "image",
-    "visual_text": "text",
-    "visual_glyph": "glyph",
-    "visual_labels": "labels",
-    "visual_mesh": "mesh",
-    "sphere_impostor": "sphere",
-    "volume": "volume",
+    "visuals_point": "point",
+    "visuals_pixel": "pixel",
+    "visuals_marker": "marker",
+    "visuals_splat": "splat",
+    "visuals_segment": "segment",
+    "visuals_path": "path",
+    "visuals_vector": "vector",
+    "visuals_primitive": "primitive",
+    "visuals_image": "image",
+    "visuals_image_rgba": "image",
+    "visuals_text": "text",
+    "visuals_glyph": "glyph",
+    "visuals_labels": "labels",
+    "visuals_mesh": "mesh",
+    "visuals_sphere": "sphere",
+    "visuals_volume": "visuals_volume",
 }
 
 # Full feature grouping used on the features page — covers all 71 public features.
 FEATURE_PAGE_GROUPS = (
     ("Scene & Layout", [
-        "feature_basic_scene",
-        "feature_coordinate_system",
-        "feature_panel_single",
-        "feature_panel_grid",
-        "feature_panel_multi",
-        "feature_panel_linked",
-        "feature_panel_view2d",
-        "panel_background",
-        "feature_user_scale",
-        "feature_view_size_policies",
-        "feature_visual_transform",
-        "feature_visibility",
+        "features_basic_scene",
+        "features_coordinate_system",
+        "features_panel_single",
+        "features_panel_grid",
+        "features_panel_multi",
+        "features_panel_linked",
+        "features_panel_view2d",
+        "features_panel_background",
+        "features_user_scale",
+        "features_view_size_policies",
+        "features_visual_transform",
+        "features_visibility",
     ]),
     ("Navigation", [
-        "feature_camera_manual",
-        "feature_panzoom",
-        "feature_controller_arcball",
-        "feature_controller_turntable",
-        "feature_controller_fly",
-        "feature_orientation_gizmo",
-        "feature_reference_grid",
+        "features_camera_manual",
+        "features_panzoom",
+        "features_controller_arcball",
+        "features_controller_turntable",
+        "features_controller_fly",
+        "features_orientation_gizmo",
+        "features_reference_grid",
     ]),
     ("Adornments", [
-        "feature_axis_labels",
-        "path_axes_2d",
-        "feature_guide_lines",
-        "feature_guide_spans",
-        "feature_bars_bands",
-        "scale_bar",
-        "scalebar_units",
-        "colorbar",
-        "colormap_scale",
-        "feature_legend_categorical",
-        "annotation_readout",
-        "feature_text_block",
-        "feature_overlay_card",
-        "feature_probe_labels",
+        "features_axis_labels",
+        "features_axes_2d",
+        "features_guide_lines",
+        "features_guide_spans",
+        "features_bars_bands",
+        "features_scalebar",
+        "features_scalebar_units",
+        "features_colorbar",
+        "features_colormap_scale",
+        "features_legend_categorical",
+        "features_annotation_readout",
+        "features_text_block",
+        "features_overlay_card",
+        "features_probe_labels",
     ]),
     ("Shapes & Geometry", [
-        "feature_builtin_shapes_2d",
-        "feature_builtin_shapes_3d",
-        "feature_marker_symbols",
-        "feature_bezier_curve_path",
-        "feature_path_join",
-        "feature_obj_loading",
+        "features_builtin_shapes_2d",
+        "features_builtin_shapes_3d",
+        "features_marker_symbols",
+        "features_bezier_curve_path",
+        "features_path_join",
+        "features_obj_loading",
     ]),
     ("Scientific", [
-        "feature_sampled_field_update",
-        "feature_isolines",
-        "feature_datetime_axis",
-        "image_probe",
+        "features_sampled_field_update",
+        "features_isolines",
+        "features_datetime_axis",
+        "features_image_probe",
     ]),
     ("3D Rendering", [
-        "feature_lighting",
-        "feature_mesh_texture",
-        "feature_material_mesh",
-        "feature_volume_occlusion",
-        "technique_edl",
-        "technique_ssao",
-        "technique_depth_cue",
-        "technique_msaa",
-        "technique_transparency",
-        "alpha_blending",
-        "technique_depth_test",
-        "feature_bounds_overlay",
+        "features_lighting",
+        "features_mesh_texture",
+        "features_material_mesh",
+        "features_volume_occlusion",
+        "features_technique_edl",
+        "features_technique_ssao",
+        "features_technique_depth_cue",
+        "features_technique_msaa",
+        "features_technique_transparency",
+        "features_alpha_blending",
+        "features_technique_depth_test",
+        "features_bounds_overlay",
     ]),
     ("Interaction & Selection", [
-        "feature_picking",
-        "feature_selection_pixel",
-        "feature_selection_sphere",
-        "feature_selection_mesh_instances",
+        "features_picking",
+        "features_selection_pixel",
+        "features_selection_sphere",
+        "features_selection_mesh_instances",
     ]),
     ("Animation & Updates", [
-        "feature_animation_tracks",
-        "feature_timer_animation",
-        "feature_compute_buffer_animation",
-        "update_partial",
-        "feature_update_visual_data",
+        "features_animation_tracks",
+        "features_timer_animation",
+        "features_compute_buffer_animation",
+        "features_update_partial",
+        "features_update_visual_data",
     ]),
     ("GUI", [
-        "feature_gui_controls",
-        "feature_gui_viewport",
-        "feature_gui_cimgui",
+        "features_gui_controls",
+        "features_gui_viewport",
+        "features_gui_cimgui",
     ]),
     ("Input & Diagnostics", [
-        "feature_input_events",
-        "feature_json_export",
+        "features_input_events",
+        "features_json_export",
     ]),
 )
 
 RUNTIME_PAGE_GROUPS = (
     ("Windows & Hosting", [
-        "feature_app_glfw",
-        "feature_multi_window",
+        "runtime_app_glfw",
+        "runtime_multi_window",
     ]),
     ("Capture, Export & Replay", [
-        "feature_offscreen_capture",
-        "feature_video_export",
-        "feature_record_replay",
+        "runtime_offscreen_capture",
+        "runtime_video_export",
+        "runtime_record_replay",
     ]),
 )
 
 # Flagship feature IDs shown on the examples index; the rest are reachable via the full gallery.
 INDEX_FEATURE_GROUPS = (
     ("Layout", [
-        "feature_panel_grid",
-        "feature_panel_multi",
-        "feature_panel_linked",
+        "features_panel_grid",
+        "features_panel_multi",
+        "features_panel_linked",
     ]),
     ("Adornments", [
-        "feature_axis_labels",
-        "colorbar",
-        "scale_bar",
-        "colormap_scale",
+        "features_axis_labels",
+        "features_colorbar",
+        "features_scalebar",
+        "features_colormap_scale",
     ]),
     ("Navigation", [
-        "feature_panzoom",
-        "feature_controller_arcball",
-        "feature_controller_fly",
-        "feature_controller_turntable",
+        "features_panzoom",
+        "features_controller_arcball",
+        "features_controller_fly",
+        "features_controller_turntable",
     ]),
     ("Scientific", [
-        "feature_sampled_field_update",
-        "feature_isolines",
-        "feature_marker_symbols",
+        "features_sampled_field_update",
+        "features_isolines",
+        "features_marker_symbols",
     ]),
     ("3D Rendering", [
-        "feature_lighting",
-        "feature_mesh_texture",
-        "technique_ssao",
-        "technique_depth_cue",
+        "features_lighting",
+        "features_mesh_texture",
+        "features_technique_ssao",
+        "features_technique_depth_cue",
     ]),
     ("Animation & Interaction", [
-        "feature_animation_tracks",
-        "feature_timer_animation",
-        "image_probe",
-        "feature_selection_sphere",
+        "features_animation_tracks",
+        "features_timer_animation",
+        "features_image_probe",
+        "features_selection_sphere",
     ]),
     ("GUI", [
-        "feature_gui_controls",
-        "feature_gui_viewport",
-        "feature_gui_cimgui",
+        "features_gui_controls",
+        "features_gui_viewport",
+        "features_gui_cimgui",
     ]),
 )
 
@@ -274,6 +274,7 @@ class SourceTab:
 @dataclass(frozen=True)
 class Example:
     id: str
+    legacy_id: str | None
     title: str
     category: str
     lane: str
@@ -585,6 +586,7 @@ def collect_examples(manifest: dict) -> list[Example]:
         summary, description = extract_c_description(ROOT / source)
         example = Example(
             id=str(entry["id"]),
+            legacy_id=str(entry["legacy_id"]) if entry.get("legacy_id") else None,
             title=str(entry.get("title", entry["id"])),
             category=category,
             lane=lane,
@@ -705,6 +707,14 @@ def image_url(
     return site_relative_url(page_path, target)
 
 
+def source_image_path(example: Example, image_dir: Path) -> Path:
+    image = image_dir / example.lane / f"{example.id}.png"
+    if image.exists() or example.legacy_id is None:
+        return image
+    legacy = image_dir / example.lane / f"{example.legacy_id}.png"
+    return legacy if legacy.exists() else image
+
+
 def html_link(href: str, label: str, code: bool = False) -> str:
     content = f"<code>{label}</code>" if code else label
     return f'<a href="{href}">{content}</a>'
@@ -727,7 +737,7 @@ def media_block(
     image_url_base: str,
     image_format: str = DEFAULT_IMAGE_FORMAT,
 ) -> str:
-    image = image_dir / example.lane / f"{example.id}.png"
+    image = source_image_path(example, image_dir)
     if image.exists():
         return f"![{example.title}]({image_url(page_path, example, image_url_base, image_format)})"
     label = "Screenshot pending" if example.screenshot_expected else "No screenshot"
@@ -1302,11 +1312,11 @@ def render_visuals_page(
         )
     )
     visual_groups = (
-        ("0D — point-like", ["point_2d", "visual_pixel", "visual_marker", "visual_splat"]),
-        ("1D — line-like",  ["visual_segment", "visual_path", "visual_vector", "visual_primitive"]),
-        ("2D — planar",     ["visual_image", "visual_image_rgba", "visual_text", "visual_glyph", "visual_labels"]),
-        ("3D — volumetric", ["visual_mesh", "sphere_impostor", "volume"]),
-        ("Composites",      ["composite_polygon", "composite_graph"]),
+        ("0D — point-like", ["visuals_point", "visuals_pixel", "visuals_marker", "visuals_splat"]),
+        ("1D — line-like",  ["visuals_segment", "visuals_path", "visuals_vector", "visuals_primitive"]),
+        ("2D — planar",     ["visuals_image", "visuals_image_rgba", "visuals_text", "visuals_glyph", "visuals_labels"]),
+        ("3D — volumetric", ["visuals_mesh", "visuals_sphere", "visuals_volume"]),
+        ("Composites",      ["composites_polygon", "composites_graph"]),
     )
     by_id = {e.id: e for e in examples}
     for group_label, group_ids in visual_groups:

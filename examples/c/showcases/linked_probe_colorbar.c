@@ -14,7 +14,7 @@
  * This workflow is useful for inspecting transformed measurements while preserving a visible link
  * to the original sampled field.
  *
- * Scenario: linked_panels_probe_colorbar
+ * Scenario: showcases_linked_probe_colorbar
  * Style: showcase workflow, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c showcases/linked_probe_colorbar
@@ -922,7 +922,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_showcase_linked_probe_colorbar_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "linked_panels_probe_colorbar",
+        .id = "showcases_linked_probe_colorbar",
         .title = "Linked Probe With Colorbar",
         .width = WIDTH,
         .height = HEIGHT,

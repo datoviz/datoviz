@@ -6,7 +6,7 @@
 
 /* datetime_axis - This example shows UTC datetime labels on a numeric data axis.
  *
- * Scenario: datetime_axis
+ * Scenario: features_datetime_axis
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/datetime_axis
@@ -256,7 +256,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 static DvzScenarioSpec _datetime_axis_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "datetime_axis",
+        .id = "features_datetime_axis",
         .title = "Datetime Axis",
         .width = WIDTH,
         .height = HEIGHT,

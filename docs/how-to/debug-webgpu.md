@@ -51,10 +51,10 @@ just serve
 Open:
 
 ```text
-http://localhost:8000/examples/webgpu/live.html?id=feature_basic_scene
+http://localhost:8000/examples/webgpu/live.html?id=features_basic_scene
 ```
 
-Replace `feature_basic_scene` with the example id from the gallery page or matrix. Do not use
+Replace `features_basic_scene` with the example id from the gallery page or matrix. Do not use
 `file://`; WebGPU and module loading require a proper browser security context.
 
 If the route id is wrong, the page should report a route error. Fix the route id before inspecting
@@ -201,6 +201,6 @@ browser support problem from a Datoviz scene or renderer issue.
 
 ??? example "Related examples"
 
-    - [Basic Scene](../examples/gallery/features/feature_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
+    - [Basic Scene](../examples/gallery/features/features_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
     - Gallery: [WebGPU Matrix](../examples/webgpu-matrix.md)
     - Manifest: `examples/c/MANIFEST.yaml`

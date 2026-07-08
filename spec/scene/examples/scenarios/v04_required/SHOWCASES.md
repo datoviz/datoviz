@@ -9,7 +9,7 @@ These are the examples that should carry the v0.4 public story after the small c
 stable.
 
 
-## `showcase_wind_field`
+## `showcases_wind_field`
 
 Primary 2D showcase. It should look like a real field visualization rather than an API fragment.
 
@@ -19,7 +19,7 @@ colorbar-style scale context, deterministic animation, and screenshot/video capt
 projection, coastline, and real weather-data policy remain v0.5/later.
 
 
-## `showcase_gpu_particle_smoke`
+## `showcases_gpu_particle_smoke`
 
 Experimental compute-to-graphics showcase. It should communicate that scene compute can update a
 large GPU-resident particle state that normal scene point rendering consumes in the same frame.
@@ -30,7 +30,7 @@ styling, bounded smoke run, and deterministic screenshot capture. Keep it marked
 retained scene compute tasks replace the figure-attached convenience API.
 
 
-## `textured_terrain_or_planet`
+## `showcases_textured_planet`
 
 Required retained textured-mesh proof. This can be a bounded terrain patch, a planet-like surface,
 or a narrow Mars/Earth slice, but it must use UVs and real texture sampling.
@@ -44,7 +44,7 @@ Mars DEM terrain analysis, registered orthoimage/DEM preprocessing, slope/hazard
 probes, and GIS cache policy remain outside this v0.4 slice.
 
 
-## `brain_volume`
+## `showcases_brain_volume`
 
 Narrow neuroscience showcase over the current volume, transparency, occlusion, and controller stack.
 
@@ -55,7 +55,7 @@ source material for a later mesh-overlay polish pass. Defer full region picking,
 linked 2D explorer behavior to v0.5.
 
 
-## `point_cloud`
+## `showcases_point_cloud`
 
 Scale/performance showcase for large RGB point clouds with a direct pixel path and lightweight
 depth enhancement.

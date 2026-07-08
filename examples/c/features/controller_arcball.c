@@ -6,7 +6,7 @@
 
 /* controller_arcball - This example shows an arcball controller rotating a 3D view.
  *
- * Scenario: feature.controller_arcball
+ * Scenario: features_controller_arcball
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/controller_arcball
@@ -163,7 +163,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 static DvzScenarioSpec _controller_arcball_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_controller_arcball",
+        .id = "features_controller_arcball",
         .title = "Arcball Controller",
         .width = WIDTH,
         .height = HEIGHT,

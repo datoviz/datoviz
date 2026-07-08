@@ -8,9 +8,9 @@ Primitive: screen-space Gaussian quads.
 
 ## Preview And Links
 
-[![Splat](../../assets/gallery/v0.4/visuals/visual_splat.webp)](../../examples/gallery/visuals/visual_splat.md)
+[![Splat](../../assets/gallery/v0.4/visuals/visuals_splat.webp)](../../examples/gallery/visuals/visuals_splat.md)
 
-- Example: [Splat](../../examples/gallery/visuals/visual_splat.md)
+- Example: [Splat](../../examples/gallery/visuals/visuals_splat.md)
 - How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [control depth, blending, and transparency](../../how-to/depth-blending.md)
 - Related: [Point](point.md), [Sphere](sphere.md), [Mesh](mesh.md)
 
@@ -54,7 +54,7 @@ as a first example.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/splat.c` |
-| Gallery | [Splat](../../examples/gallery/visuals/visual_splat.md) |
+| Gallery | [Splat](../../examples/gallery/visuals/visuals_splat.md) |
 | Build | `just example-c visuals/splat` |
 | Smoke | `./build/examples/c/visuals/splat --png` |
 | Validation | `smoke+screenshot` |

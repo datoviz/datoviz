@@ -17,7 +17,7 @@
  * capture API on a window-backed view, but it is documented separately because window size,
  * controller input, and wall-clock timing can affect the result.
  *
- * Scenario: runtime.video_export
+ * Scenario: runtime_video_export
  * Style: runtime, graphite_cyan, 1920x1080 output target
  *
  * Build:  just example-c runtime/video_export

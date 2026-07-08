@@ -180,11 +180,11 @@ Hosted toolkit or borrowed-surface examples belong in `advanced/`.
 
 Rename technique examples with a `technique_` prefix:
 
-- `technique_edl`;
-- `technique_ssao`;
-- `technique_msaa`;
-- `technique_depth_cue`;
-- possibly `technique_depth_test` and `technique_transparency`.
+- `features_technique_edl`;
+- `features_technique_ssao`;
+- `features_technique_msaa`;
+- `features_technique_depth_cue`;
+- possibly `features_technique_depth_test` and `features_technique_transparency`.
 
 Remove weak `scene_` prefixes when the feature is clearer without them:
 
@@ -195,7 +195,7 @@ Remove weak `scene_` prefixes when the feature is clearer without them:
 Other agreed renames:
 
 - `panzoom` -> `panzoom`;
-- `brain_volume` -> `brain_volume`.
+- `showcases_brain_volume` -> `showcases_brain_volume`.
 
 Merge picking/selection examples into one strong `features/picking.c` with hover and selection
 feedback. Keep tight tests for y-flip and coordinate readback regressions.

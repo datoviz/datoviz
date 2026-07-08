@@ -6,7 +6,7 @@
 
 /* guide_spans - This example shows movable guide spans for highlighting data ranges.
  *
- * Scenario: feature.guide_spans
+ * Scenario: features_guide_spans
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/guide_spans
@@ -273,7 +273,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_guide_spans_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_guide_spans",
+        .id = "features_guide_spans",
         .title = "Guide Spans",
         .width = WIDTH,
         .height = HEIGHT,

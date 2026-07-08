@@ -12,7 +12,7 @@
  * poles avoid radial artifacts. Textures are useful for scientific surfaces, maps, and instrument
  * images that belong on geometry instead of in a flat panel.
  *
- * Scenario: feature.mesh_texture
+ * Scenario: features_mesh_texture
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/mesh_texture
@@ -300,7 +300,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 static DvzScenarioSpec _mesh_texture_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_mesh_texture",
+        .id = "features_mesh_texture",
         .title = "Textured Mesh",
         .width = WIDTH,
         .height = HEIGHT,

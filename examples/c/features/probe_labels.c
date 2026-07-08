@@ -13,7 +13,7 @@
  * classified microscopy images, and other categorical rasters where users need values under the
  * cursor.
  *
- * Scenario: probe_labels
+ * Scenario: features_probe_labels
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/probe_labels
@@ -729,7 +729,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 static DvzScenarioSpec _probe_labels_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_probe_labels",
+        .id = "features_probe_labels",
         .title = "Label Probe",
         .width = WIDTH,
         .height = HEIGHT,

@@ -12,7 +12,7 @@
  * point clouds because it strengthens local depth discontinuities without changing the underlying
  * point data.
  *
- * Scenario: feature.edl
+ * Scenario: features_technique_edl
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/technique_edl
@@ -278,7 +278,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 static DvzScenarioSpec _edl_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "technique_edl",
+        .id = "features_technique_edl",
         .title = "Eye-Dome Lighting",
         .width = WIDTH,
         .height = HEIGHT,

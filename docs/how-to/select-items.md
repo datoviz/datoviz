@@ -6,7 +6,7 @@ Use retained selection for item-level highlighting driven by picking, linked app
 external UI. Keep the semantic selection set in application code when it has meaning beyond the
 rendered visual.
 
-![Sphere Selection](../assets/gallery/v0.4/features/feature_selection_sphere.webp)
+![Sphere Selection](../assets/gallery/v0.4/features/features_selection_sphere.webp)
 
 ## Task Workflow
 
@@ -129,6 +129,6 @@ visual data.
 
 ??? example "Related examples"
 
-    - [Pixel Selection](../examples/gallery/features/feature_selection_pixel.md) - Source: `examples/c/features/selection_pixel.c`
-    - [Sphere Selection](../examples/gallery/features/feature_selection_sphere.md) - Source: `examples/c/features/selection_sphere.c`
-    - [Mesh Instance Selection](../examples/gallery/features/feature_selection_mesh_instances.md) - Source: `examples/c/features/selection_mesh_instances.c`
+    - [Pixel Selection](../examples/gallery/features/features_selection_pixel.md) - Source: `examples/c/features/selection_pixel.c`
+    - [Sphere Selection](../examples/gallery/features/features_selection_sphere.md) - Source: `examples/c/features/selection_sphere.c`
+    - [Mesh Instance Selection](../examples/gallery/features/features_selection_mesh_instances.md) - Source: `examples/c/features/selection_mesh_instances.c`

@@ -8,9 +8,9 @@ Primitive: instanced screen-space quads.
 
 ## Preview And Links
 
-[![Marker](../../assets/gallery/v0.4/visuals/visual_marker.webp)](../../examples/gallery/visuals/visual_marker.md)
+[![Marker](../../assets/gallery/v0.4/visuals/visuals_marker.webp)](../../examples/gallery/visuals/visuals_marker.md)
 
-- Example: [Marker](../../examples/gallery/visuals/visual_marker.md)
+- Example: [Marker](../../examples/gallery/visuals/visuals_marker.md)
 - How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [add visuals to a panel](../../how-to/add-a-visual.md)
 - Related: [Point](point.md), [Pixel](pixel.md), [Glyph](glyph.md), [Text](text.md)
 
@@ -56,7 +56,7 @@ screen diameter_px unless the data is updated.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/marker.c` |
-| Gallery | [Marker](../../examples/gallery/visuals/visual_marker.md) |
+| Gallery | [Marker](../../examples/gallery/visuals/visuals_marker.md) |
 | Build | `just example-c visuals/marker` |
 | Smoke | `./build/examples/c/visuals/marker --png` |
 | Validation | `smoke+screenshot` |

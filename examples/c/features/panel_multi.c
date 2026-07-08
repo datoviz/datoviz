@@ -12,7 +12,7 @@
  * confirm the other does not move. Independent panels are useful when different measurements share
  * a figure but not a coordinate frame.
  *
- * Scenario: feature.panel_multi
+ * Scenario: features_panel_multi
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/panel_multi
@@ -257,7 +257,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_panel_multi_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_panel_multi",
+        .id = "features_panel_multi",
         .title = "Multiple Panels",
         .width = WIDTH,
         .height = HEIGHT,

@@ -32,9 +32,9 @@ just webgpu-browser-smoke
 ```
 
 ```text
-http://localhost:8765/examples/webgpu/live.html?id=feature_timer_animation
-http://localhost:8765/examples/webgpu/live.html?id=feature_picking
-http://localhost:8765/examples/webgpu/live.html?id=image_probe
+http://localhost:8765/examples/webgpu/live.html?id=features_timer_animation
+http://localhost:8765/examples/webgpu/live.html?id=features_picking
+http://localhost:8765/examples/webgpu/live.html?id=features_image_probe
 ```
 
 The broader `examples.html` routes are development samplers for renderer and ABI work. They are not

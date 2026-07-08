@@ -14,7 +14,7 @@
  * This workflow is useful for geophysical or fluid-like data where scalar magnitude and direction
  * need to be read in one coordinated panel.
  *
- * Scenario: showcase_wind_field
+ * Scenario: showcases_wind_field
  * Style: showcase, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c showcases/wind_field
@@ -1185,7 +1185,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_showcase_wind_field_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "showcase_wind_field",
+        .id = "showcases_wind_field",
         .title = "Wind Field",
         .width = WIDTH,
         .height = HEIGHT,

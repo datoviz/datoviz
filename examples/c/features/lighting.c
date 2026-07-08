@@ -11,7 +11,7 @@
  * panel in the live preview and the linked arcball controllers keep the views aligned, making it
  * easier to compare matte lighting, glossy highlights, and rim emphasis on identical data.
  *
- * Scenario: feature.lighting
+ * Scenario: features_lighting
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/lighting
@@ -307,7 +307,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_lighting_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_lighting",
+        .id = "features_lighting",
         .title = "Lighting",
         .width = WIDTH,
         .height = HEIGHT,

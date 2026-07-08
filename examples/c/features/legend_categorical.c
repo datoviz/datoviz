@@ -11,7 +11,7 @@
  * the marker cloud with the right-side legend entries: the legend is useful because it explains
  * categorical groups without requiring readers to decode colors or shapes from the data alone.
  *
- * Scenario: feature.legend_categorical
+ * Scenario: features_legend_categorical
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/legend_categorical
@@ -248,7 +248,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_legend_categorical_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_legend_categorical",
+        .id = "features_legend_categorical",
         .title = "Categorical Legend",
         .width = WIDTH,
         .height = HEIGHT,

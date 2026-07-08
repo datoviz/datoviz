@@ -11,7 +11,7 @@
  * color, and diameter_px arrays form a compact pattern. This is useful when an application needs
  * precise room for labels, controls, or multiple manually arranged views.
  *
- * Scenario: feature.panel_single
+ * Scenario: features_panel_single
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/panel_single
@@ -138,7 +138,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_panel_single_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_panel_single",
+        .id = "features_panel_single",
         .title = "Single Panel",
         .width = WIDTH,
         .height = HEIGHT,

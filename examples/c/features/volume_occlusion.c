@@ -12,7 +12,7 @@
  * embedded slice where dense shell and knot structures overlap it; occlusion helps relate slices
  * to their 3D context instead of making them look detached.
  *
- * Scenario: feature_volume_occlusion
+ * Scenario: features_volume_occlusion
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/volume_occlusion
@@ -345,7 +345,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 static DvzScenarioSpec _volume_occlusion_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_volume_occlusion",
+        .id = "features_volume_occlusion",
         .title = "Volume Occlusion",
         .width = WIDTH,
         .height = HEIGHT,

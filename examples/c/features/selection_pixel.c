@@ -12,7 +12,7 @@
  * clears selection. This is useful for heatmaps and rasters where each rendered cell may
  * correspond to a sample, sensor, or bin.
  *
- * Scenario: feature.selection_pixel
+ * Scenario: features_selection_pixel
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/selection_pixel
@@ -475,7 +475,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_selection_pixel_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_selection_pixel",
+        .id = "features_selection_pixel",
         .title = "Pixel Selection",
         .width = WIDTH,
         .height = HEIGHT,

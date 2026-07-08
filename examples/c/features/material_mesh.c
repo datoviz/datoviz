@@ -12,7 +12,7 @@
  * each panel to see how ambient, diffuse, specular, shininess, roughness, and rim strength affect
  * 3D mesh readability.
  *
- * Scenario: feature.material_mesh
+ * Scenario: features_material_mesh
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/material_mesh
@@ -320,7 +320,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_material_mesh_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_material_mesh",
+        .id = "features_material_mesh",
         .title = "Mesh Materials",
         .width = WIDTH,
         .height = HEIGHT,

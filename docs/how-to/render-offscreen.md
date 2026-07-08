@@ -111,5 +111,5 @@ window, but it can still fail on machines without the required GPU/device capabi
 
 ??? example "Related examples"
 
-    - [Offscreen Capture](../examples/gallery/runtime/feature_offscreen_capture.md) - Source: `examples/c/runtime/offscreen_capture.c`
-    - [Basic Scene](../examples/gallery/features/feature_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
+    - [Offscreen Capture](../examples/gallery/runtime/runtime_offscreen_capture.md) - Source: `examples/c/runtime/offscreen_capture.c`
+    - [Basic Scene](../examples/gallery/features/features_basic_scene.md) - Source: `examples/c/features/basic_scene.c`

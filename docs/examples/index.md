@@ -16,9 +16,9 @@ Selected composed examples are shown below.
 
 <div class="card" markdown="1">
 
-**[Scientific Plotting Workflow](gallery/showcases/scientific_plotting_workflow.md)**
+**[Scientific Plotting Workflow](gallery/showcases/showcases_scientific_plotting.md)**
 
-[![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/scientific_plotting_workflow.webp)](gallery/showcases/scientific_plotting_workflow.md)
+[![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/showcases_scientific_plotting.webp)](gallery/showcases/showcases_scientific_plotting.md)
 
 `showcases`
 
@@ -28,9 +28,9 @@ This example composes common scientific plot elements in one figure.
 
 <div class="card" markdown="1">
 
-**[Linked Panels With Axes](gallery/showcases/linked_panels_axes_panzoom.md)**
+**[Linked Panels With Axes](gallery/showcases/showcases_panel_linked_axes.md)**
 
-[![Linked Panels With Axes](../assets/gallery/v0.4/showcases/linked_panels_axes_panzoom.webp)](gallery/showcases/linked_panels_axes_panzoom.md)
+[![Linked Panels With Axes](../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.webp)](gallery/showcases/showcases_panel_linked_axes.md)
 
 `showcases`
 
@@ -40,9 +40,9 @@ This example builds linked time-series panels with shared axes behavior.
 
 <div class="card" markdown="1">
 
-**[Linked Probe With Colorbar](gallery/showcases/linked_panels_probe_colorbar.md)**
+**[Linked Probe With Colorbar](gallery/showcases/showcases_linked_probe_colorbar.md)**
 
-[![Linked Probe With Colorbar](../assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp)](gallery/showcases/linked_panels_probe_colorbar.md)
+[![Linked Probe With Colorbar](../assets/gallery/v0.4/showcases/showcases_linked_probe_colorbar.webp)](gallery/showcases/showcases_linked_probe_colorbar.md)
 
 `showcases`
 
@@ -52,9 +52,9 @@ This example links two image panels with a probe readout and colorbar.
 
 <div class="card" markdown="1">
 
-**[Scale Bar Measurement Workflow](gallery/showcases/scalebar_measurement_workflow.md)**
+**[Scale Bar Measurement Workflow](gallery/showcases/showcases_scalebar_measurement.md)**
 
-[![Scale Bar Measurement Workflow](../assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp)](gallery/showcases/scalebar_measurement_workflow.md)
+[![Scale Bar Measurement Workflow](../assets/gallery/v0.4/showcases/showcases_scalebar_measurement.webp)](gallery/showcases/showcases_scalebar_measurement.md)
 
 `showcases`
 
@@ -64,9 +64,9 @@ This example compares scale bars across overview, detail, and 3D views.
 
 <div class="card" markdown="1">
 
-**[U.S. State Choropleth](gallery/showcases/us_state_choropleth.md)**
+**[U.S. State Choropleth](gallery/showcases/showcases_choropleth.md)**
 
-[![U.S. State Choropleth](../assets/gallery/v0.4/showcases/us_state_choropleth.webp)](gallery/showcases/us_state_choropleth.md)
+[![U.S. State Choropleth](../assets/gallery/v0.4/showcases/showcases_choropleth.webp)](gallery/showcases/showcases_choropleth.md)
 
 `showcases`
 
@@ -76,9 +76,9 @@ This example renders contiguous U.S. population density as polygon-set data.
 
 <div class="card" markdown="1">
 
-**[Wind Field](gallery/showcases/showcase_wind_field.md)**
+**[Wind Field](gallery/showcases/showcases_wind_field.md)**
 
-[![Wind Field](../assets/gallery/v0.4/showcases/showcase_wind_field.webp)](gallery/showcases/showcase_wind_field.md)
+[![Wind Field](../assets/gallery/v0.4/showcases/showcases_wind_field.webp)](gallery/showcases/showcases_wind_field.md)
 
 `showcases`
 
@@ -88,9 +88,9 @@ This example combines a synthetic wind-speed field with vectors and streamlines.
 
 <div class="card" markdown="1">
 
-**[GPU Particle Smoke](gallery/showcases/showcase_gpu_particle_smoke.md)**
+**[GPU Particle Smoke](gallery/showcases/showcases_gpu_particle_smoke.md)**
 
-[![GPU Particle Smoke](../assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp)](gallery/showcases/showcase_gpu_particle_smoke.md)
+[![GPU Particle Smoke](../assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.webp)](gallery/showcases/showcases_gpu_particle_smoke.md)
 
 `experimental` `showcases`
 
@@ -100,9 +100,9 @@ This example uses scene compute buffers to animate particle smoke.
 
 <div class="card" markdown="1">
 
-**[Allen Mouse Brain](gallery/showcases/brain_volume.md)**
+**[Allen Mouse Brain](gallery/showcases/showcases_brain_volume.md)**
 
-[![Allen Mouse Brain](../assets/gallery/v0.4/showcases/brain_volume.webp)](gallery/showcases/brain_volume.md)
+[![Allen Mouse Brain](../assets/gallery/v0.4/showcases/showcases_brain_volume.webp)](gallery/showcases/showcases_brain_volume.md)
 
 `prototype` `showcases`
 
@@ -112,9 +112,9 @@ This example renders a prepared Allen mouse brain volume with a visible slice.
 
 <div class="card" markdown="1">
 
-**[Protein](gallery/showcases/protein_arcball_viewer.md)**
+**[Protein](gallery/showcases/showcases_protein.md)**
 
-[![Protein](../assets/gallery/v0.4/showcases/protein_arcball_viewer.webp)](gallery/showcases/protein_arcball_viewer.md)
+[![Protein](../assets/gallery/v0.4/showcases/showcases_protein.webp)](gallery/showcases/showcases_protein.md)
 
 `showcases`
 
@@ -124,9 +124,9 @@ This example renders a prepared PDB structure as colored sphere impostors.
 
 <div class="card" markdown="1">
 
-**[Point Cloud](gallery/showcases/point_cloud.md)**
+**[Point Cloud](gallery/showcases/showcases_point_cloud.md)**
 
-[![Point Cloud](../assets/gallery/v0.4/showcases/point_cloud.webp)](gallery/showcases/point_cloud.md)
+[![Point Cloud](../assets/gallery/v0.4/showcases/showcases_point_cloud.webp)](gallery/showcases/showcases_point_cloud.md)
 
 `showcases`
 
@@ -136,9 +136,9 @@ This example renders a prepared RGB LiDAR point cloud with direct colors.
 
 <div class="card" markdown="1">
 
-**[Surface Grid](gallery/showcases/showcase_surface_grid.md)**
+**[Surface Grid](gallery/showcases/showcases_surface_grid.md)**
 
-[![Surface Grid](../assets/gallery/v0.4/showcases/showcase_surface_grid.webp)](gallery/showcases/showcase_surface_grid.md)
+[![Surface Grid](../assets/gallery/v0.4/showcases/showcases_surface_grid.webp)](gallery/showcases/showcases_surface_grid.md)
 
 `showcases`
 
@@ -148,9 +148,9 @@ This example turns a generated height field into a lit mesh and wireframe.
 
 <div class="card" markdown="1">
 
-**[Textured Planets](gallery/showcases/textured_terrain_or_planet.md)**
+**[Textured Planets](gallery/showcases/showcases_textured_planet.md)**
 
-[![Textured Planets](../assets/gallery/v0.4/showcases/textured_terrain_or_planet.webp)](gallery/showcases/textured_terrain_or_planet.md)
+[![Textured Planets](../assets/gallery/v0.4/showcases/showcases_textured_planet.webp)](gallery/showcases/showcases_textured_planet.md)
 
 `showcases`
 
@@ -172,9 +172,9 @@ Selected visual and composite examples are shown below.
 
 <div class="card" markdown="1">
 
-**[Point](gallery/visuals/point_2d.md)**
+**[Point](gallery/visuals/visuals_point.md)**
 
-[![Point](../assets/gallery/v0.4/visuals/point_2d.webp)](gallery/visuals/point_2d.md)
+[![Point](../assets/gallery/v0.4/visuals/visuals_point.webp)](gallery/visuals/visuals_point.md)
 
 `visuals`
 
@@ -184,9 +184,9 @@ This example renders a 2D scatter plot with per-point color and diameter.
 
 <div class="card" markdown="1">
 
-**[Pixel](gallery/visuals/visual_pixel.md)**
+**[Pixel](gallery/visuals/visuals_pixel.md)**
 
-[![Pixel](../assets/gallery/v0.4/visuals/visual_pixel.webp)](gallery/visuals/visual_pixel.md)
+[![Pixel](../assets/gallery/v0.4/visuals/visuals_pixel.webp)](gallery/visuals/visuals_pixel.md)
 
 `visuals`
 
@@ -196,9 +196,9 @@ This example renders a regular grid of independent screen-aligned pixels.
 
 <div class="card" markdown="1">
 
-**[Marker](gallery/visuals/visual_marker.md)**
+**[Marker](gallery/visuals/visuals_marker.md)**
 
-[![Marker](../assets/gallery/v0.4/visuals/visual_marker.webp)](gallery/visuals/visual_marker.md)
+[![Marker](../assets/gallery/v0.4/visuals/visuals_marker.webp)](gallery/visuals/visuals_marker.md)
 
 `visuals`
 
@@ -208,9 +208,9 @@ This example compares marker symbols, sizes, strokes, fills, and rotations.
 
 <div class="card" markdown="1">
 
-**[Splat](gallery/visuals/visual_splat.md)**
+**[Splat](gallery/visuals/visuals_splat.md)**
 
-[![Splat](../assets/gallery/v0.4/visuals/visual_splat.webp)](gallery/visuals/visual_splat.md)
+[![Splat](../assets/gallery/v0.4/visuals/visuals_splat.webp)](gallery/visuals/visuals_splat.md)
 
 `experimental` `visuals`
 
@@ -226,9 +226,9 @@ This experimental example renders Gaussian splats as translucent ellipses.
 
 <div class="card" markdown="1">
 
-**[Segment](gallery/visuals/visual_segment.md)**
+**[Segment](gallery/visuals/visuals_segment.md)**
 
-[![Segment](../assets/gallery/v0.4/visuals/visual_segment.webp)](gallery/visuals/visual_segment.md)
+[![Segment](../assets/gallery/v0.4/visuals/visuals_segment.webp)](gallery/visuals/visuals_segment.md)
 
 `visuals`
 
@@ -238,9 +238,9 @@ This example draws independent line segments with different cap styles.
 
 <div class="card" markdown="1">
 
-**[Path](gallery/visuals/visual_path.md)**
+**[Path](gallery/visuals/visuals_path.md)**
 
-[![Path](../assets/gallery/v0.4/visuals/visual_path.webp)](gallery/visuals/visual_path.md)
+[![Path](../assets/gallery/v0.4/visuals/visuals_path.webp)](gallery/visuals/visuals_path.md)
 
 `visuals`
 
@@ -250,9 +250,9 @@ This example draws several continuous signals with one path visual.
 
 <div class="card" markdown="1">
 
-**[Vector](gallery/visuals/visual_vector.md)**
+**[Vector](gallery/visuals/visuals_vector.md)**
 
-[![Vector](../assets/gallery/v0.4/visuals/visual_vector.webp)](gallery/visuals/visual_vector.md)
+[![Vector](../assets/gallery/v0.4/visuals/visuals_vector.webp)](gallery/visuals/visuals_vector.md)
 
 `visuals`
 
@@ -262,9 +262,9 @@ This example compares straight vector arrows with curved vector paths.
 
 <div class="card" markdown="1">
 
-**[Primitive](gallery/visuals/visual_primitive.md)**
+**[Primitive](gallery/visuals/visuals_primitive.md)**
 
-[![Primitive](../assets/gallery/v0.4/visuals/visual_primitive.webp)](gallery/visuals/visual_primitive.md)
+[![Primitive](../assets/gallery/v0.4/visuals/visuals_primitive.webp)](gallery/visuals/visuals_primitive.md)
 
 `visuals`
 
@@ -280,9 +280,9 @@ This example compares basic primitive topologies.
 
 <div class="card" markdown="1">
 
-**[Image](gallery/visuals/visual_image.md)**
+**[Image](gallery/visuals/visuals_image.md)**
 
-[![Image](../assets/gallery/v0.4/visuals/visual_image.webp)](gallery/visuals/visual_image.md)
+[![Image](../assets/gallery/v0.4/visuals/visuals_image.webp)](gallery/visuals/visuals_image.md)
 
 `visuals`
 
@@ -292,9 +292,9 @@ This example displays a generated scalar field as a 2D image.
 
 <div class="card" markdown="1">
 
-**[RGBA Image](gallery/visuals/visual_image_rgba.md)**
+**[RGBA Image](gallery/visuals/visuals_image_rgba.md)**
 
-<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for RGBA Image"><span>Screenshot pending</span></div>
+[![RGBA Image](../assets/gallery/v0.4/visuals/visuals_image_rgba.webp)](gallery/visuals/visuals_image_rgba.md)
 
 `visuals`
 
@@ -304,9 +304,9 @@ This example displays a generated RGBA image as a 2D sampled field.
 
 <div class="card" markdown="1">
 
-**[Text](gallery/visuals/visual_text.md)**
+**[Text](gallery/visuals/visuals_text.md)**
 
-[![Text](../assets/gallery/v0.4/visuals/visual_text.webp)](gallery/visuals/visual_text.md)
+[![Text](../assets/gallery/v0.4/visuals/visuals_text.webp)](gallery/visuals/visuals_text.md)
 
 `visuals`
 
@@ -316,9 +316,9 @@ This example places semantic text items in panel coordinates.
 
 <div class="card" markdown="1">
 
-**[Font Atlas Glyphs](gallery/visuals/visual_glyph.md)**
+**[Font Atlas Glyphs](gallery/visuals/visuals_glyph.md)**
 
-[![Font Atlas Glyphs](../assets/gallery/v0.4/visuals/visual_glyph.webp)](gallery/visuals/visual_glyph.md)
+[![Font Atlas Glyphs](../assets/gallery/v0.4/visuals/visuals_glyph.webp)](gallery/visuals/visuals_glyph.md)
 
 `experimental` `visuals`
 
@@ -328,9 +328,9 @@ This example renders text by submitting low-level glyph atlas quads directly.
 
 <div class="card" markdown="1">
 
-**[Labels](gallery/visuals/visual_labels.md)**
+**[Labels](gallery/visuals/visuals_labels.md)**
 
-[![Labels](../assets/gallery/v0.4/visuals/visual_labels.webp)](gallery/visuals/visual_labels.md)
+[![Labels](../assets/gallery/v0.4/visuals/visuals_labels.webp)](gallery/visuals/visuals_labels.md)
 
 `visuals`
 
@@ -346,9 +346,9 @@ This example turns an integer sampled field into categorical image labels.
 
 <div class="card" markdown="1">
 
-**[Mesh](gallery/visuals/visual_mesh.md)**
+**[Mesh](gallery/visuals/visuals_mesh.md)**
 
-[![Mesh](../assets/gallery/v0.4/visuals/visual_mesh.webp)](gallery/visuals/visual_mesh.md)
+[![Mesh](../assets/gallery/v0.4/visuals/visuals_mesh.webp)](gallery/visuals/visuals_mesh.md)
 
 `visuals`
 
@@ -358,9 +358,9 @@ This example renders a lit indexed cube mesh in a 3D scene.
 
 <div class="card" markdown="1">
 
-**[Sphere](gallery/visuals/sphere_impostor.md)**
+**[Sphere](gallery/visuals/visuals_sphere.md)**
 
-[![Sphere](../assets/gallery/v0.4/visuals/sphere_impostor.webp)](gallery/visuals/sphere_impostor.md)
+[![Sphere](../assets/gallery/v0.4/visuals/visuals_sphere.webp)](gallery/visuals/visuals_sphere.md)
 
 `visuals`
 
@@ -370,9 +370,9 @@ This example displays a 3D cluster of raycast impostor spheres.
 
 <div class="card" markdown="1">
 
-**[Volume](gallery/visuals/volume.md)**
+**[Volume](gallery/visuals/visuals_volume.md)**
 
-[![Volume](../assets/gallery/v0.4/visuals/volume.webp)](gallery/visuals/volume.md)
+[![Volume](../assets/gallery/v0.4/visuals/visuals_volume.webp)](gallery/visuals/visuals_volume.md)
 
 `visuals`
 
@@ -388,9 +388,9 @@ This example volume-renders a generated 3D gyroid scalar field.
 
 <div class="card" markdown="1">
 
-**[Polygon Composite](gallery/composites/composite_polygon.md)**
+**[Polygon Composite](gallery/composites/composites_polygon.md)**
 
-[![Polygon Composite](../assets/gallery/v0.4/composites/composite_polygon.webp)](gallery/composites/composite_polygon.md)
+[![Polygon Composite](../assets/gallery/v0.4/composites/composites_polygon.webp)](gallery/composites/composites_polygon.md)
 
 `composites`
 
@@ -400,9 +400,9 @@ This example compares one holed polygon with a multi-region polygon set.
 
 <div class="card" markdown="1">
 
-**[Graph Composite](gallery/composites/composite_graph.md)**
+**[Graph Composite](gallery/composites/composites_graph.md)**
 
-[![Graph Composite](../assets/gallery/v0.4/composites/composite_graph.webp)](gallery/composites/composite_graph.md)
+[![Graph Composite](../assets/gallery/v0.4/composites/composites_graph.webp)](gallery/composites/composites_graph.md)
 
 `composites`
 
@@ -424,9 +424,9 @@ Selected isolated feature examples are shown below.
 
 <div class="card" markdown="1">
 
-**[Panel Grid](gallery/features/feature_panel_grid.md)**
+**[Panel Grid](gallery/features/features_panel_grid.md)**
 
-[![Panel Grid](../assets/gallery/v0.4/features/feature_panel_grid.webp)](gallery/features/feature_panel_grid.md)
+[![Panel Grid](../assets/gallery/v0.4/features/features_panel_grid.webp)](gallery/features/features_panel_grid.md)
 
 `features`
 
@@ -436,9 +436,9 @@ Panel_grid arranges four independent panels in a 2x2 figure grid.
 
 <div class="card" markdown="1">
 
-**[Multiple Panels](gallery/features/feature_panel_multi.md)**
+**[Multiple Panels](gallery/features/features_panel_multi.md)**
 
-[![Multiple Panels](../assets/gallery/v0.4/features/feature_panel_multi.webp)](gallery/features/feature_panel_multi.md)
+[![Multiple Panels](../assets/gallery/v0.4/features/features_panel_multi.webp)](gallery/features/features_panel_multi.md)
 
 `features`
 
@@ -448,9 +448,9 @@ Panel_multi shows two panels with independent data, domains, and panzoom state.
 
 <div class="card" markdown="1">
 
-**[Linked Panels](gallery/features/feature_panel_linked.md)**
+**[Linked Panels](gallery/features/features_panel_linked.md)**
 
-[![Linked Panels](../assets/gallery/v0.4/features/feature_panel_linked.webp)](gallery/features/feature_panel_linked.md)
+[![Linked Panels](../assets/gallery/v0.4/features/features_panel_linked.webp)](gallery/features/features_panel_linked.md)
 
 `features`
 
@@ -466,9 +466,9 @@ Panel_linked links the X panzoom extent of two stacked signal panels.
 
 <div class="card" markdown="1">
 
-**[Axis Labels](gallery/features/feature_axis_labels.md)**
+**[Axis Labels](gallery/features/features_axis_labels.md)**
 
-[![Axis Labels](../assets/gallery/v0.4/features/feature_axis_labels.webp)](gallery/features/feature_axis_labels.md)
+[![Axis Labels](../assets/gallery/v0.4/features/features_axis_labels.webp)](gallery/features/features_axis_labels.md)
 
 `features`
 
@@ -478,9 +478,9 @@ This example shows axis titles and tick-label layout around a plotting panel.
 
 <div class="card" markdown="1">
 
-**[Colorbar](gallery/features/colorbar.md)**
+**[Colorbar](gallery/features/features_colorbar.md)**
 
-[![Colorbar](../assets/gallery/v0.4/features/colorbar.webp)](gallery/features/colorbar.md)
+[![Colorbar](../assets/gallery/v0.4/features/features_colorbar.webp)](gallery/features/features_colorbar.md)
 
 `features`
 
@@ -490,9 +490,9 @@ This example shows a scalar image and a continuous colorbar.
 
 <div class="card" markdown="1">
 
-**[Scale Bar](gallery/features/scale_bar.md)**
+**[Scale Bar](gallery/features/features_scalebar.md)**
 
-[![Scale Bar](../assets/gallery/v0.4/features/scale_bar.webp)](gallery/features/scale_bar.md)
+[![Scale Bar](../assets/gallery/v0.4/features/features_scalebar.webp)](gallery/features/features_scalebar.md)
 
 `features`
 
@@ -502,9 +502,9 @@ Scalebar attaches a metric length scale bar to a 2D panel.
 
 <div class="card" markdown="1">
 
-**[Scalar Color Scale](gallery/features/colormap_scale.md)**
+**[Scalar Color Scale](gallery/features/features_colormap_scale.md)**
 
-[![Scalar Color Scale](../assets/gallery/v0.4/features/colormap_scale.webp)](gallery/features/colormap_scale.md)
+[![Scalar Color Scale](../assets/gallery/v0.4/features/features_colormap_scale.webp)](gallery/features/features_colormap_scale.md)
 
 `features`
 
@@ -520,9 +520,9 @@ This example shows scalar point values mapped through a custom colormap.
 
 <div class="card" markdown="1">
 
-**[Panzoom](gallery/features/feature_panzoom.md)**
+**[Panzoom](gallery/features/features_panzoom.md)**
 
-[![Panzoom](../assets/gallery/v0.4/features/feature_panzoom.webp)](gallery/features/feature_panzoom.md)
+[![Panzoom](../assets/gallery/v0.4/features/features_panzoom.webp)](gallery/features/features_panzoom.md)
 
 `features`
 
@@ -532,9 +532,9 @@ Panzoom binds a 2D panzoom controller to a point visual in data coordinates.
 
 <div class="card" markdown="1">
 
-**[Arcball Controller](gallery/features/feature_controller_arcball.md)**
+**[Arcball Controller](gallery/features/features_controller_arcball.md)**
 
-[![Arcball Controller](../assets/gallery/v0.4/features/feature_controller_arcball.webp)](gallery/features/feature_controller_arcball.md)
+[![Arcball Controller](../assets/gallery/v0.4/features/features_controller_arcball.webp)](gallery/features/features_controller_arcball.md)
 
 `features`
 
@@ -544,9 +544,9 @@ This example shows an arcball controller rotating a 3D view.
 
 <div class="card" markdown="1">
 
-**[Fly Controller](gallery/features/feature_controller_fly.md)**
+**[Fly Controller](gallery/features/features_controller_fly.md)**
 
-[![Fly Controller](../assets/gallery/v0.4/features/feature_controller_fly.webp)](gallery/features/feature_controller_fly.md)
+[![Fly Controller](../assets/gallery/v0.4/features/features_controller_fly.webp)](gallery/features/features_controller_fly.md)
 
 `features`
 
@@ -556,9 +556,9 @@ This example shows fly-style camera navigation through a 3D scene.
 
 <div class="card" markdown="1">
 
-**[Turntable Controller](gallery/features/feature_controller_turntable.md)**
+**[Turntable Controller](gallery/features/features_controller_turntable.md)**
 
-[![Turntable Controller](../assets/gallery/v0.4/features/feature_controller_turntable.webp)](gallery/features/feature_controller_turntable.md)
+[![Turntable Controller](../assets/gallery/v0.4/features/features_controller_turntable.webp)](gallery/features/features_controller_turntable.md)
 
 `features`
 
@@ -574,9 +574,9 @@ This example shows world-up orbiting with a turntable controller.
 
 <div class="card" markdown="1">
 
-**[Sampled Field Update](gallery/features/feature_sampled_field_update.md)**
+**[Sampled Field Update](gallery/features/features_sampled_field_update.md)**
 
-[![Sampled Field Update](../assets/gallery/v0.4/features/feature_sampled_field_update.webp)](gallery/features/feature_sampled_field_update.md)
+[![Sampled Field Update](../assets/gallery/v0.4/features/features_sampled_field_update.webp)](gallery/features/features_sampled_field_update.md)
 
 `features`
 
@@ -586,9 +586,9 @@ Sampled_field_update reuses one sampled scalar field in two image visuals while 
 
 <div class="card" markdown="1">
 
-**[Isolines](gallery/features/feature_isolines.md)**
+**[Isolines](gallery/features/features_isolines.md)**
 
-[![Isolines](../assets/gallery/v0.4/features/feature_isolines.webp)](gallery/features/feature_isolines.md)
+[![Isolines](../assets/gallery/v0.4/features/features_isolines.webp)](gallery/features/features_isolines.md)
 
 `features`
 
@@ -598,9 +598,9 @@ This example shows contour isolines over a scalar field.
 
 <div class="card" markdown="1">
 
-**[Marker Symbols](gallery/features/feature_marker_symbols.md)**
+**[Marker Symbols](gallery/features/features_marker_symbols.md)**
 
-[![Marker Symbols](../assets/gallery/v0.4/features/feature_marker_symbols.webp)](gallery/features/feature_marker_symbols.md)
+[![Marker Symbols](../assets/gallery/v0.4/features/features_marker_symbols.webp)](gallery/features/features_marker_symbols.md)
 
 `features`
 
@@ -616,9 +616,9 @@ Marker_symbols compares several ways to define marker glyphs in one symbol set.
 
 <div class="card" markdown="1">
 
-**[Lighting](gallery/features/feature_lighting.md)**
+**[Lighting](gallery/features/features_lighting.md)**
 
-[![Lighting](../assets/gallery/v0.4/features/feature_lighting.webp)](gallery/features/feature_lighting.md)
+[![Lighting](../assets/gallery/v0.4/features/features_lighting.webp)](gallery/features/features_lighting.md)
 
 `features`
 
@@ -628,9 +628,9 @@ Lighting compares the same sphere cluster under three material and light configu
 
 <div class="card" markdown="1">
 
-**[Textured Mesh](gallery/features/feature_mesh_texture.md)**
+**[Textured Mesh](gallery/features/features_mesh_texture.md)**
 
-[![Textured Mesh](../assets/gallery/v0.4/features/feature_mesh_texture.webp)](gallery/features/feature_mesh_texture.md)
+[![Textured Mesh](../assets/gallery/v0.4/features/features_mesh_texture.webp)](gallery/features/features_mesh_texture.md)
 
 `features`
 
@@ -640,9 +640,9 @@ Mesh_texture maps an RGBA8 sampled field onto a UV sphere mesh.
 
 <div class="card" markdown="1">
 
-**[Screen-Space Ambient Occlusion](gallery/features/technique_ssao.md)**
+**[Screen-Space Ambient Occlusion](gallery/features/features_technique_ssao.md)**
 
-[![Screen-Space Ambient Occlusion](../assets/gallery/v0.4/features/technique_ssao.webp)](gallery/features/technique_ssao.md)
+[![Screen-Space Ambient Occlusion](../assets/gallery/v0.4/features/features_technique_ssao.webp)](gallery/features/features_technique_ssao.md)
 
 `features`
 
@@ -652,9 +652,9 @@ Ssao compares a sphere cluster with and without screen-space ambient occlusion.
 
 <div class="card" markdown="1">
 
-**[Depth Cue](gallery/features/technique_depth_cue.md)**
+**[Depth Cue](gallery/features/features_technique_depth_cue.md)**
 
-[![Depth Cue](../assets/gallery/v0.4/features/technique_depth_cue.webp)](gallery/features/technique_depth_cue.md)
+[![Depth Cue](../assets/gallery/v0.4/features/features_technique_depth_cue.webp)](gallery/features/features_technique_depth_cue.md)
 
 `features`
 
@@ -670,9 +670,9 @@ Depth_cue compares a plain 3D sphere lattice with depth-dependent fading.
 
 <div class="card" markdown="1">
 
-**[Animation Tracks](gallery/features/feature_animation_tracks.md)**
+**[Animation Tracks](gallery/features/features_animation_tracks.md)**
 
-[![Animation Tracks](../assets/gallery/v0.4/features/feature_animation_tracks.webp)](gallery/features/feature_animation_tracks.md)
+[![Animation Tracks](../assets/gallery/v0.4/features/features_animation_tracks.webp)](gallery/features/features_animation_tracks.md)
 
 `features`
 
@@ -682,9 +682,9 @@ This example shows scene animation tracks driving a cube and camera.
 
 <div class="card" markdown="1">
 
-**[Timer Animation](gallery/features/feature_timer_animation.md)**
+**[Timer Animation](gallery/features/features_timer_animation.md)**
 
-[![Timer Animation](../assets/gallery/v0.4/features/feature_timer_animation.webp)](gallery/features/feature_timer_animation.md)
+[![Timer Animation](../assets/gallery/v0.4/features/features_timer_animation.webp)](gallery/features/features_timer_animation.md)
 
 `features`
 
@@ -694,9 +694,9 @@ Timer_animation updates point attributes every frame from scenario time.
 
 <div class="card" markdown="1">
 
-**[Image Probe](gallery/features/image_probe.md)**
+**[Image Probe](gallery/features/features_image_probe.md)**
 
-[![Image Probe](../assets/gallery/v0.4/features/image_probe.webp)](gallery/features/image_probe.md)
+[![Image Probe](../assets/gallery/v0.4/features/features_image_probe.webp)](gallery/features/features_image_probe.md)
 
 `features`
 
@@ -706,9 +706,9 @@ This example shows probing a scalar image at a marked data position.
 
 <div class="card" markdown="1">
 
-**[Sphere Selection](gallery/features/feature_selection_sphere.md)**
+**[Sphere Selection](gallery/features/features_selection_sphere.md)**
 
-[![Sphere Selection](../assets/gallery/v0.4/features/feature_selection_sphere.webp)](gallery/features/feature_selection_sphere.md)
+[![Sphere Selection](../assets/gallery/v0.4/features/features_selection_sphere.webp)](gallery/features/features_selection_sphere.md)
 
 `features`
 
@@ -724,9 +724,9 @@ Selection_sphere queries and selects individual raycast spheres in a 3D cluster.
 
 <div class="card" markdown="1">
 
-**[GUI Controls](gallery/features/feature_gui_controls.md)**
+**[GUI Controls](gallery/features/features_gui_controls.md)**
 
-[![GUI Controls](../assets/gallery/v0.4/features/feature_gui_controls.webp)](gallery/features/feature_gui_controls.md)
+[![GUI Controls](../assets/gallery/v0.4/features/features_gui_controls.webp)](gallery/features/features_gui_controls.md)
 
 `features`
 
@@ -736,9 +736,9 @@ This example shows Datoviz GUI controls updating a point visual.
 
 <div class="card" markdown="1">
 
-**[GUI Viewport](gallery/features/feature_gui_viewport.md)**
+**[GUI Viewport](gallery/features/features_gui_viewport.md)**
 
-[![GUI Viewport](../assets/gallery/v0.4/features/feature_gui_viewport.webp)](gallery/features/feature_gui_viewport.md)
+[![GUI Viewport](../assets/gallery/v0.4/features/features_gui_viewport.webp)](gallery/features/features_gui_viewport.md)
 
 `features`
 
@@ -748,9 +748,9 @@ This example shows a Datoviz render viewport embedded inside a GUI window.
 
 <div class="card" markdown="1">
 
-**[Raw cimgui GUI](gallery/features/feature_gui_cimgui.md)**
+**[Raw cimgui GUI](gallery/features/features_gui_cimgui.md)**
 
-[![Raw cimgui GUI](../assets/gallery/v0.4/features/feature_gui_cimgui.webp)](gallery/features/feature_gui_cimgui.md)
+[![Raw cimgui GUI](../assets/gallery/v0.4/features/features_gui_cimgui.webp)](gallery/features/features_gui_cimgui.md)
 
 `features`
 
@@ -772,7 +772,7 @@ Selected windowing, capture, recording, and export examples are shown below.
 
 <div class="card" markdown="1">
 
-**[GLFW App](gallery/runtime/feature_app_glfw.md)**
+**[GLFW App](gallery/runtime/runtime_app_glfw.md)**
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for GLFW App"><span>No screenshot</span></div>
 
@@ -784,7 +784,7 @@ This example opens a native GLFW window for a small point scene.
 
 <div class="card" markdown="1">
 
-**[Multi Window](gallery/runtime/feature_multi_window.md)**
+**[Multi Window](gallery/runtime/runtime_multi_window.md)**
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Multi Window"><span>No screenshot</span></div>
 
@@ -802,9 +802,9 @@ This example drives two independent native GLFW windows from one Datoviz app.
 
 <div class="card" markdown="1">
 
-**[Offscreen Capture](gallery/runtime/feature_offscreen_capture.md)**
+**[Offscreen Capture](gallery/runtime/runtime_offscreen_capture.md)**
 
-[![Offscreen Capture](../assets/gallery/v0.4/runtime/feature_offscreen_capture.webp)](gallery/runtime/feature_offscreen_capture.md)
+[![Offscreen Capture](../assets/gallery/v0.4/runtime/runtime_offscreen_capture.webp)](gallery/runtime/runtime_offscreen_capture.md)
 
 `runtime`
 
@@ -814,7 +814,7 @@ This example renders a point scene offscreen and writes one PNG.
 
 <div class="card" markdown="1">
 
-**[Video Export](gallery/runtime/feature_video_export.md)**
+**[Video Export](gallery/runtime/runtime_video_export.md)**
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Video Export"><span>No screenshot</span></div>
 
@@ -826,7 +826,7 @@ This example records a deterministic offscreen point animation to video.
 
 <div class="card" markdown="1">
 
-**[Record Replay](gallery/runtime/feature_record_replay.md)**
+**[Record Replay](gallery/runtime/runtime_record_replay.md)**
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Record Replay"><span>No screenshot</span></div>
 

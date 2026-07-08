@@ -11,7 +11,7 @@
  * Compare the transparent fills, hole, and beveled versus rounded joins to see how polygon
  * composites support maps, masks, regions of interest, and segmented spatial data.
  *
- * Scenario: composite_polygon
+ * Scenario: composites_polygon
  * Style: feature composite, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c composites/polygon
@@ -259,7 +259,7 @@ cleanup:
 DvzScenarioSpec dvz_composite_polygon_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "composite_polygon",
+        .id = "composites_polygon",
         .title = "Polygon Composite",
         .width = WIDTH,
         .height = HEIGHT,

@@ -14,7 +14,7 @@
  * Use this as the beginner native-app template when you want Datoviz to own the GLFW lifecycle
  * directly instead of running through the portable scenario runner.
  *
- * Scenario: feature.app_glfw
+ * Scenario: runtime_app_glfw
  * Style: runtime, native app
  *
  * Build:  just example-c runtime/app_glfw

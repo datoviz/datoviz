@@ -12,7 +12,7 @@
  * with the transformed copy on the right. Visual transforms are useful for positioning repeated
  * glyph groups or derived overlays without rewriting every data point.
  *
- * Scenario: feature.visual_transform
+ * Scenario: features_visual_transform
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/visual_transform
@@ -217,7 +217,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 static DvzScenarioSpec _visual_transform_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_visual_transform",
+        .id = "features_visual_transform",
         .title = "Visual Transform",
         .width = WIDTH,
         .height = HEIGHT,

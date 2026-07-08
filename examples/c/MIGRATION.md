@@ -7,69 +7,69 @@ source material.
 
 | Scenario ID | Source | Role |
 | --- | --- | --- |
-| `point_2d` | `visuals/point.c` | Minimal visual proof. |
-| `visual_pixel` | `visuals/pixel.c` | Minimal visual proof. |
-| `visual_marker` | `visuals/marker.c` | Minimal visual proof. |
-| `visual_primitive` | `visuals/primitive.c` | Minimal visual proof. |
-| `visual_segment` | `visuals/segment.c` | Minimal visual proof. |
-| `visual_vector` | `visuals/vector.c` | Minimal visual proof. |
-| `visual_path` | `visuals/path.c` | Minimal visual proof. |
-| `visual_image` | `visuals/image.c` | Minimal visual proof. |
-| `visual_mesh` | `visuals/mesh.c` | Minimal visual proof. |
-| `sphere_impostor` | `visuals/sphere.c` | Minimal visual proof. |
-| `visual_text` | `visuals/text.c` | Minimal visual proof. |
-| `visual_labels` | `visuals/labels.c` | Minimal visual proof. |
-| `volume` | `visuals/volume.c` | Minimal visual proof. |
-| `visual_glyph` | `visuals/glyph.c` | Experimental visual proof. |
-| `visual_splat` | `visuals/splat.c` | Experimental visual proof. |
-| `feature_basic_scene` | `features/basic_scene.c` | Feature proof. |
-| `feature_panel_single` | `features/panel_single.c` | Feature proof. |
-| `feature_panel_grid` | `features/panel_grid.c` | Feature proof. |
-| `feature_panel_multi` | `features/panel_multi.c` | Feature proof. |
-| `feature_panel_linked` | `features/panel_linked.c` | Feature proof. |
-| `path_axes_2d` | `features/axes_2d.c` | Feature proof. |
-| `feature_axis_labels` | `features/axis_labels.c` | Feature proof. |
-| `feature_sampled_field_update` | `features/sampled_field_update.c` | Feature proof. |
-| `feature_text_block` | `features/text_block.c` | Feature proof. |
-| `feature_overlay_card` | `features/overlay_card.c` | Feature proof. |
-| `feature_controller_arcball` | `features/controller_arcball.c` | Feature proof. |
-| `feature_controller_fly` | `features/controller_fly.c` | Feature proof. |
-| `feature_controller_turntable` | `features/controller_turntable.c` | Feature proof. |
-| `feature_mesh_texture` | `features/mesh_texture.c` | Feature proof. |
-| `feature_material_mesh` | `features/material_mesh.c` | Feature proof. |
-| `feature_lighting` | `features/lighting.c` | Feature proof. |
-| `feature_datetime_axis` | `features/datetime_axis.c` | Experimental feature proof. |
-| `linked_panels_axes_panzoom` | `showcases/panel_linked_axes.c` | Workflow showcase proof. |
-| `scale_bar` | `features/scalebar.c` | Minimal feature proof. |
-| `scalebar_units` | `features/scalebar_units.c` | Unit-conversion feature proof. |
-| `scalebar_measurement_workflow` | `showcases/scalebar_measurement.c` | Workflow showcase proof. |
-| `colorbar` | `features/colorbar.c` | Feature proof. |
-| `colormap_scale` | `features/colormap_scale.c` | Feature proof. |
-| `annotation_readout` | `features/annotation_readout.c` | Feature proof. |
-| `image_probe` | `features/image_probe.c` | Feature proof. |
-| `feature_update_visual_data` | `features/update_visual_data.c` | Feature proof. |
-| `update_partial` | `features/update_partial.c` | Feature proof. |
-| `feature_visibility` | `features/visibility.c` | Feature proof. |
+| `visuals_point` | `visuals/point.c` | Minimal visual proof. |
+| `visuals_pixel` | `visuals/pixel.c` | Minimal visual proof. |
+| `visuals_marker` | `visuals/marker.c` | Minimal visual proof. |
+| `visuals_primitive` | `visuals/primitive.c` | Minimal visual proof. |
+| `visuals_segment` | `visuals/segment.c` | Minimal visual proof. |
+| `visuals_vector` | `visuals/vector.c` | Minimal visual proof. |
+| `visuals_path` | `visuals/path.c` | Minimal visual proof. |
+| `visuals_image` | `visuals/image.c` | Minimal visual proof. |
+| `visuals_mesh` | `visuals/mesh.c` | Minimal visual proof. |
+| `visuals_sphere` | `visuals/sphere.c` | Minimal visual proof. |
+| `visuals_text` | `visuals/text.c` | Minimal visual proof. |
+| `visuals_labels` | `visuals/labels.c` | Minimal visual proof. |
+| `visuals_volume` | `visuals/volume.c` | Minimal visual proof. |
+| `visuals_glyph` | `visuals/glyph.c` | Experimental visual proof. |
+| `visuals_splat` | `visuals/splat.c` | Experimental visual proof. |
+| `features_basic_scene` | `features/basic_scene.c` | Feature proof. |
+| `features_panel_single` | `features/panel_single.c` | Feature proof. |
+| `features_panel_grid` | `features/panel_grid.c` | Feature proof. |
+| `features_panel_multi` | `features/panel_multi.c` | Feature proof. |
+| `features_panel_linked` | `features/panel_linked.c` | Feature proof. |
+| `features_axes_2d` | `features/axes_2d.c` | Feature proof. |
+| `features_axis_labels` | `features/axis_labels.c` | Feature proof. |
+| `features_sampled_field_update` | `features/sampled_field_update.c` | Feature proof. |
+| `features_text_block` | `features/text_block.c` | Feature proof. |
+| `features_overlay_card` | `features/overlay_card.c` | Feature proof. |
+| `features_controller_arcball` | `features/controller_arcball.c` | Feature proof. |
+| `features_controller_fly` | `features/controller_fly.c` | Feature proof. |
+| `features_controller_turntable` | `features/controller_turntable.c` | Feature proof. |
+| `features_mesh_texture` | `features/mesh_texture.c` | Feature proof. |
+| `features_material_mesh` | `features/material_mesh.c` | Feature proof. |
+| `features_lighting` | `features/lighting.c` | Feature proof. |
+| `features_datetime_axis` | `features/datetime_axis.c` | Experimental feature proof. |
+| `showcases_panel_linked_axes` | `showcases/panel_linked_axes.c` | Workflow showcase proof. |
+| `features_scalebar` | `features/scalebar.c` | Minimal feature proof. |
+| `features_scalebar_units` | `features/scalebar_units.c` | Unit-conversion feature proof. |
+| `showcases_scalebar_measurement` | `showcases/scalebar_measurement.c` | Workflow showcase proof. |
+| `features_colorbar` | `features/colorbar.c` | Feature proof. |
+| `features_colormap_scale` | `features/colormap_scale.c` | Feature proof. |
+| `features_annotation_readout` | `features/annotation_readout.c` | Feature proof. |
+| `features_image_probe` | `features/image_probe.c` | Feature proof. |
+| `features_update_visual_data` | `features/update_visual_data.c` | Feature proof. |
+| `features_update_partial` | `features/update_partial.c` | Feature proof. |
+| `features_visibility` | `features/visibility.c` | Feature proof. |
 | `depth_test` | `features/technique_depth_test.c` | Feature proof. |
-| `alpha_blending` | `features/alpha_blending.c` | Feature proof. |
-| `panel_background` | `features/panel_background.c` | Feature proof. |
+| `features_alpha_blending` | `features/alpha_blending.c` | Feature proof. |
+| `features_panel_background` | `features/panel_background.c` | Feature proof. |
 | `controller_panzoom` | `features/panzoom.c` | Feature proof. |
-| `feature_picking` | `features/picking.c` | Unified picking, hover, and selection proof. |
-| `feature_probe_labels` | `features/probe_labels.c` | Feature proof. |
-| `feature_timer_animation` | `features/timer_animation.c` | Feature proof. |
-| `feature_marker_symbols` | `features/marker_symbols.c` | Feature proof. |
-| `feature_legend_categorical` | `features/legend_categorical.c` | Experimental feature proof. |
-| `feature_video_export` | `runtime/video_export.c` | Experimental runtime proof. |
-| `linked_panels_probe_colorbar` | `showcases/linked_probe_colorbar.c` | Workflow showcase proof. |
-| `composite_polygon` | `composites/polygon.c` | Composite proof. |
-| `composite_graph` | `composites/graph.c` | Composite proof. |
-| `us_state_choropleth` | `showcases/choropleth.c` | Real Census data showcase with provenance. |
-| `protein_arcball_viewer` | `showcases/protein.c` | Real RCSB PDB data showcase with provenance. |
-| `showcase_gpu_particle_smoke` | `showcases/gpu_particle_smoke.c` | Experimental compute showcase. |
-| `showcase_wind_field` | `showcases/wind_field.c` | Gallery/showcase seed. |
-| `brain_volume` | `showcases/brain_volume.c` | Gallery/showcase seed. |
-| `point_cloud` | `showcases/point_cloud.c` | Real RESEPI point-cloud showcase seed. |
-| `textured_terrain_or_planet` | `showcases/textured_planet.c` | Gallery/showcase seed. |
+| `features_picking` | `features/picking.c` | Unified picking, hover, and selection proof. |
+| `features_probe_labels` | `features/probe_labels.c` | Feature proof. |
+| `features_timer_animation` | `features/timer_animation.c` | Feature proof. |
+| `features_marker_symbols` | `features/marker_symbols.c` | Feature proof. |
+| `features_legend_categorical` | `features/legend_categorical.c` | Experimental feature proof. |
+| `runtime_video_export` | `runtime/video_export.c` | Experimental runtime proof. |
+| `showcases_linked_probe_colorbar` | `showcases/linked_probe_colorbar.c` | Workflow showcase proof. |
+| `composites_polygon` | `composites/polygon.c` | Composite proof. |
+| `composites_graph` | `composites/graph.c` | Composite proof. |
+| `showcases_choropleth` | `showcases/choropleth.c` | Real Census data showcase with provenance. |
+| `showcases_protein` | `showcases/protein.c` | Real RCSB PDB data showcase with provenance. |
+| `showcases_gpu_particle_smoke` | `showcases/gpu_particle_smoke.c` | Experimental compute showcase. |
+| `showcases_wind_field` | `showcases/wind_field.c` | Gallery/showcase seed. |
+| `showcases_brain_volume` | `showcases/brain_volume.c` | Gallery/showcase seed. |
+| `showcases_point_cloud` | `showcases/point_cloud.c` | Real RESEPI point-cloud showcase seed. |
+| `showcases_textured_planet` | `showcases/textured_planet.c` | Gallery/showcase seed. |
 
 ## Lab examples kept buildable
 
@@ -116,13 +116,13 @@ exposes a build break that cannot be fixed otherwise.
 
 | Current source | Target source | Keep scenario ID | Metadata tags |
 | --- | --- | --- | --- |
-| `workflows/panel_linked_axes.c` | `showcases/panel_linked_axes.c` | `linked_panels_axes_panzoom` | `workflow`, `linked-panels`, `axes`, `panzoom`, `synthetic` |
-| `workflows/linked_probe_colorbar.c` | `showcases/linked_probe_colorbar.c` | `linked_panels_probe_colorbar` | `workflow`, `image`, `probe`, `colorbar`, `readout`, `synthetic` |
-| `workflows/scalebar_measurement.c` | `showcases/scalebar_measurement.c` | `scalebar_measurement_workflow` | `workflow`, `scale-bar`, `measurement`, `synthetic` |
-| `scientific/choropleth.c` | `showcases/choropleth.c` | `us_state_choropleth` | `scientific`, `real-data`, `geo`, `polygon-set`, `colorbar` |
-| `scientific/protein.c` | `showcases/protein.c` | `protein_arcball_viewer` | `scientific`, `real-data`, `molecular`, `sphere`, `arcball` |
-| `composites/polygon.c` | `composites/polygon.c` | `composite_polygon` | `composite`, `polygon`, `polygon-set`, `holes`, `panzoom` |
-| `composites/graph.c` | `composites/graph.c` | `composite_graph` | `composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom` |
+| `workflows/panel_linked_axes.c` | `showcases/panel_linked_axes.c` | `showcases_panel_linked_axes` | `workflow`, `linked-panels`, `axes`, `panzoom`, `synthetic` |
+| `workflows/linked_probe_colorbar.c` | `showcases/linked_probe_colorbar.c` | `showcases_linked_probe_colorbar` | `workflow`, `image`, `probe`, `features_colorbar`, `readout`, `synthetic` |
+| `workflows/scalebar_measurement.c` | `showcases/scalebar_measurement.c` | `showcases_scalebar_measurement` | `workflow`, `scale-bar`, `measurement`, `synthetic` |
+| `scientific/choropleth.c` | `showcases/choropleth.c` | `showcases_choropleth` | `scientific`, `real-data`, `geo`, `polygon-set`, `features_colorbar` |
+| `scientific/protein.c` | `showcases/protein.c` | `showcases_protein` | `scientific`, `real-data`, `molecular`, `sphere`, `arcball` |
+| `composites/polygon.c` | `composites/polygon.c` | `composites_polygon` | `composite`, `polygon`, `polygon-set`, `holes`, `panzoom` |
+| `composites/graph.c` | `composites/graph.c` | `composites_graph` | `composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom` |
 
 The empty transitional directories and their README files were removed.
 

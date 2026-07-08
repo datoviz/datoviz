@@ -2,7 +2,7 @@
 
 Make 3D surfaces readable with normals, material attributes, and lights.
 
-![Mesh Materials](../assets/gallery/v0.4/features/feature_material_mesh.webp)
+![Mesh Materials](../assets/gallery/v0.4/features/features_material_mesh.webp)
 
 ## Task Workflow
 
@@ -133,6 +133,6 @@ When a lit surface looks flat, black, inverted, or unexpectedly glossy, check in
 
 ??? example "Related examples"
 
-    - [Lighting](../examples/gallery/features/feature_lighting.md) - Source: `examples/c/features/lighting.c`
-    - [Mesh Materials](../examples/gallery/features/feature_material_mesh.md) - Source: `examples/c/features/material_mesh.c`
-    - [Textured Mesh](../examples/gallery/features/feature_mesh_texture.md) - Source: `examples/c/features/mesh_texture.c`
+    - [Lighting](../examples/gallery/features/features_lighting.md) - Source: `examples/c/features/lighting.c`
+    - [Mesh Materials](../examples/gallery/features/features_material_mesh.md) - Source: `examples/c/features/material_mesh.c`
+    - [Textured Mesh](../examples/gallery/features/features_mesh_texture.md) - Source: `examples/c/features/mesh_texture.c`

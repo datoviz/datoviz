@@ -14,7 +14,7 @@
  * This workflow is useful when a paper-style diagnostic figure needs multiple coordinated visual
  * encodings but the data can still be prepared as simple numeric arrays.
  *
- * Scenario: scientific_plotting_workflow
+ * Scenario: showcases_scientific_plotting
  * Style: showcase workflow, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c showcases/scientific_plotting
@@ -578,7 +578,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_showcase_scientific_plotting_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "scientific_plotting_workflow",
+        .id = "showcases_scientific_plotting",
         .title = "Scientific Plotting Workflow",
         .width = WIDTH,
         .height = HEIGHT,

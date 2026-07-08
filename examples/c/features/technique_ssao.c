@@ -12,7 +12,7 @@
  * inspect contact shadows between nearby spheres. SSAO helps reveal local shape and separation in
  * crowded 3D scientific scenes.
  *
- * Scenario: feature.ssao
+ * Scenario: features_technique_ssao
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/technique_ssao
@@ -331,7 +331,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 static DvzScenarioSpec _ssao_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "technique_ssao",
+        .id = "features_technique_ssao",
         .title = "Screen-Space Ambient Occlusion",
         .width = WIDTH,
         .height = HEIGHT,

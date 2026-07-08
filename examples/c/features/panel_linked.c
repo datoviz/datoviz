@@ -12,7 +12,7 @@
  * useful for comparing related time series or spectra that share one coordinate axis but require
  * different amplitude scales.
  *
- * Scenario: feature.panel_linked
+ * Scenario: features_panel_linked
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/panel_linked
@@ -297,7 +297,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_panel_linked_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_panel_linked",
+        .id = "features_panel_linked",
         .title = "Linked Panels",
         .width = WIDTH,
         .height = HEIGHT,

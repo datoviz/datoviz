@@ -49,8 +49,8 @@ As of 2026-06-10:
    debug/fixture-only.
 4. Query/readback is intentionally narrow: point/marker picking, point hover/selection,
    pixel/sphere/mesh selection, and one sampled image probe.
-5. Compute-to-render is proven by `feature_compute_buffer_animation` and the browser
-   `showcase_gpu_particle_smoke` route, which uses a `32k` browser particle budget.
+5. Compute-to-render is proven by `features_compute_buffer_animation` and the browser
+   `showcases_gpu_particle_smoke` route, which uses a `32k` browser particle budget.
 
 Current browser-supported building blocks:
 
@@ -95,7 +95,7 @@ Do not block v0.4 on browser equivalents for:
 
 WebGPU support is good enough for v0.4 RC when:
 
-1. `showcase_gpu_particle_smoke` stays live in browser WebGPU with its documented `32k` particle
+1. `showcases_gpu_particle_smoke` stays live in browser WebGPU with its documented `32k` particle
    budget, or an explicit native/browser compute blocker is recorded in `examples/webgpu/COMPAT.md`;
 2. request/query/readback remains live for picking, selection, and one image probe;
 3. representative live examples exist for every current browser visual family;
@@ -110,7 +110,7 @@ WebGPU support is good enough for v0.4 RC when:
 
 ### 1. Compute Particle Proof
 
-Current: `showcase_gpu_particle_smoke` is the live browser compute particle route at `32k`
+Current: `showcases_gpu_particle_smoke` is the live browser compute particle route at `32k`
 particles. Keep native Vulkan evidence and any known headless WebGPU instance-loss skips recorded
 honestly.
 
@@ -118,9 +118,9 @@ honestly.
 
 Current: standalone browser routes exist for every already-current family:
 
-`point_2d`, `visual_pixel`, `visual_marker`, `visual_primitive`, `visual_segment`, `visual_path`,
-`visual_image`, `visual_mesh`, `sphere_impostor`, `visual_text`, `visual_glyph`, and
-`visual_labels`.
+`visuals_point`, `visuals_pixel`, `visuals_marker`, `visuals_primitive`, `visuals_segment`, `visuals_path`,
+`visuals_image`, `visuals_mesh`, `visuals_sphere`, `visuals_text`, `visuals_glyph`, and
+`visuals_labels`.
 
 Keep these routes in smoke coverage while moving promotion effort to composed examples.
 
@@ -129,10 +129,10 @@ Keep these routes in smoke coverage while moving promotion effort to composed ex
 Current: panel, annotation, and requested controller examples that compose current primitives are
 live:
 
-`feature_panel_single`, `feature_panel_grid`, `feature_panel_multi`, `feature_panel_linked`,
-`feature_panzoom`, `path_axes_2d`, `feature_axis_labels`, `feature_text_block`,
-`feature_overlay_card`, `feature_guide_lines`, `feature_guide_spans`, `feature_bars_bands`,
-`feature_controller_fly`, and `feature_controller_turntable`.
+`features_panel_single`, `features_panel_grid`, `features_panel_multi`, `features_panel_linked`,
+`features_panzoom`, `features_axes_2d`, `features_axis_labels`, `features_text_block`,
+`features_overlay_card`, `features_guide_lines`, `features_guide_spans`, `features_bars_bands`,
+`features_controller_fly`, and `features_controller_turntable`.
 
 Keep these routes in smoke coverage while finishing the remaining composed/data-backed routes.
 
@@ -140,13 +140,13 @@ Keep these routes in smoke coverage while finishing the remaining composed/data-
 
 Current: synthetic composed showcase routes that reuse current primitives are live:
 
-`composite_polygon`, `linked_panels_axes_panzoom`, `scalebar_measurement_workflow`,
-`showcase_surface_grid`, `us_state_choropleth`, `textured_terrain_or_planet`, and
-`protein_arcball_viewer`.
+`composites_polygon`, `showcases_panel_linked_axes`, `showcases_scalebar_measurement`,
+`showcases_surface_grid`, `showcases_choropleth`, `showcases_textured_planet`, and
+`showcases_protein`.
 
 Remaining planned composed/data-backed routes:
 
-`showcase_embedding_atlas` remains planned until prepared data packaging, query/readback, and
+`showcases_embedding_atlas` remains planned until prepared data packaging, query/readback, and
 overlay behavior are stable enough. Do not promote data-backed showcase routes by relying on an
 in-memory simulated fallback; examples that expect prepared/generated data should fail with the
 preparation command when the bundle is absent.

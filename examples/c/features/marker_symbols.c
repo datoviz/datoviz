@@ -12,7 +12,7 @@
  * detail across rows; custom symbols are useful when scientific categories need domain-specific
  * marks instead of generic discs.
  *
- * Scenario: feature.marker_symbols
+ * Scenario: features_marker_symbols
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/marker_symbols
@@ -542,7 +542,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 static DvzScenarioSpec _marker_symbols_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_marker_symbols",
+        .id = "features_marker_symbols",
         .title = "Marker Symbols",
         .width = WIDTH,
         .height = HEIGHT,

@@ -6,7 +6,7 @@
 
 /* basic_scene - This example shows the smallest retained scene with a point visual.
  *
- * Scenario: feature.basic_scene
+ * Scenario: features_basic_scene
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/basic_scene
@@ -119,7 +119,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_basic_scene_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_basic_scene",
+        .id = "features_basic_scene",
         .title = "Basic Scene",
         .width = WIDTH,
         .height = HEIGHT,

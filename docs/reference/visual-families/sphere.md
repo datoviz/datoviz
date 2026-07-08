@@ -8,9 +8,9 @@ Primitive: impostor quads with fragment-shader sphere reconstruction.
 
 ## Preview And Links
 
-[![Sphere](../../assets/gallery/v0.4/visuals/sphere_impostor.webp)](../../examples/gallery/visuals/sphere_impostor.md)
+[![Sphere](../../assets/gallery/v0.4/visuals/visuals_sphere.webp)](../../examples/gallery/visuals/visuals_sphere.md)
 
-- Example: [Sphere](../../examples/gallery/visuals/sphere_impostor.md)
+- Example: [Sphere](../../examples/gallery/visuals/visuals_sphere.md)
 - How-to: [Use 3D controllers](../../how-to/3d-navigation.md), [use lighting and materials](../../how-to/lighting-and-materials.md)
 - Related: [Point](point.md), [Mesh](mesh.md), [Splat](splat.md)
 
@@ -51,7 +51,7 @@ shader and uses analytic antialiasing at silhouettes.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/sphere.c` |
-| Gallery | [Sphere](../../examples/gallery/visuals/sphere_impostor.md) |
+| Gallery | [Sphere](../../examples/gallery/visuals/visuals_sphere.md) |
 | Build | `just example-c visuals/sphere` |
 | Smoke | `./build/examples/c/visuals/sphere --png` |
 | Validation | `smoke+screenshot` |

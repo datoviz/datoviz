@@ -14,7 +14,7 @@
  * This workflow is useful for scientific tools that need a coarse overview beside a focused
  * detail view without starting a second renderer.
  *
- * Scenario: feature.multi_window
+ * Scenario: runtime_multi_window
  * Style: runtime, native app, multi-window
  *
  * Build:  just example-c runtime/multi_window

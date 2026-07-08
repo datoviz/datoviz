@@ -11,7 +11,7 @@
  * changing pixel sizes to see how sparse detector samples or binned point data can remain visible
  * without becoming a resampled image.
  *
- * Scenario: visual.pixel
+ * Scenario: visuals_pixel
  * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/pixel
@@ -261,7 +261,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_visual_pixel_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "visual_pixel",
+        .id = "visuals_pixel",
         .title = "Pixel",
         .width = WIDTH,
         .height = HEIGHT,

@@ -12,7 +12,7 @@
  * and time-dependent analyses where the data values change but the visualization object remains
  * the same.
  *
- * Scenario: feature.timer_animation
+ * Scenario: features_timer_animation
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/timer_animation
@@ -227,7 +227,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_timer_animation_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_timer_animation",
+        .id = "features_timer_animation",
         .title = "Timer Animation",
         .width = WIDTH,
         .height = HEIGHT,

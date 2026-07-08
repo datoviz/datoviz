@@ -11,7 +11,7 @@
  * and a top-left screen placement inside the panel. Text blocks are useful for annotations,
  * compact notes, and status messages that should remain legible independent of data coordinates.
  *
- * Scenario: feature.text_block
+ * Scenario: features_text_block
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/text_block
@@ -145,7 +145,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_text_block_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_text_block",
+        .id = "features_text_block",
         .title = "Text Block",
         .width = WIDTH,
         .height = HEIGHT,

@@ -12,7 +12,7 @@
  * are useful for separating dense scientific plots, dark-field images, or instrument overlays from
  * the rest of a figure.
  *
- * Scenario: feature.panel_background
+ * Scenario: features_panel_background
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/panel_background
@@ -161,7 +161,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_panel_background_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_panel_background",
+        .id = "features_panel_background",
         .title = "Panel Background",
         .width = WIDTH,
         .height = HEIGHT,

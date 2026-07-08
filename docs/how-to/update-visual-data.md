@@ -2,7 +2,7 @@
 
 Change the data shown by an existing visual.
 
-![Visual Data Update](../assets/gallery/v0.4/features/feature_update_visual_data.webp)
+![Visual Data Update](../assets/gallery/v0.4/features/features_update_visual_data.webp)
 
 Use this when the same plot should display new values: a time series advances, a simulation step
 finishes, a slider changes a threshold, or a selection changes the colors of some items. In most
@@ -144,6 +144,6 @@ textures](use-sampled-fields.md).
 
 ??? example "Related examples"
 
-    - [Visual Data Update](../examples/gallery/features/feature_update_visual_data.md) - Source: `examples/c/features/update_visual_data.c`
-    - [Partial Data Update](../examples/gallery/features/update_partial.md) - Source: `examples/c/features/update_partial.c`
-    - [Visual Visibility](../examples/gallery/features/feature_visibility.md) - Source: `examples/c/features/visibility.c`
+    - [Visual Data Update](../examples/gallery/features/features_update_visual_data.md) - Source: `examples/c/features/update_visual_data.c`
+    - [Partial Data Update](../examples/gallery/features/features_update_partial.md) - Source: `examples/c/features/update_partial.c`
+    - [Visual Visibility](../examples/gallery/features/features_visibility.md) - Source: `examples/c/features/visibility.c`

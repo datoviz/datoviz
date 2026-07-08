@@ -15,9 +15,9 @@ then update only the state that changes.
 
 | Goal | Use | Canonical example |
 | --- | --- | --- |
-| CPU-updated visual attributes | Per-frame update or `dvz_anim_timer()` | [Timer Animation](../examples/gallery/features/feature_timer_animation.md) |
-| Repeatable visual transform | Track plus `dvz_anim_visual_transform()` | [Animation Tracks](../examples/gallery/features/feature_animation_tracks.md) |
-| Repeatable camera motion | Track plus `dvz_anim_camera_motion()` | [Animation Tracks](../examples/gallery/features/feature_animation_tracks.md) |
+| CPU-updated visual attributes | Per-frame update or `dvz_anim_timer()` | [Timer Animation](../examples/gallery/features/features_timer_animation.md) |
+| Repeatable visual transform | Track plus `dvz_anim_visual_transform()` | [Animation Tracks](../examples/gallery/features/features_animation_tracks.md) |
+| Repeatable camera motion | Track plus `dvz_anim_camera_motion()` | [Animation Tracks](../examples/gallery/features/features_animation_tracks.md) |
 | Video or deterministic capture | Bounded frame loop and capture path | [Export videos](video-export.md) |
 
 ## Minimal Retained Update
@@ -110,19 +110,19 @@ Use scene compute only when data should be written by a GPU compute pass and the
 rendering. This is not the default path for simple motion; most animations should update visual
 attributes or transforms.
 
-The [Compute Buffer Animation](../examples/gallery/features/feature_compute_buffer_animation.md)
+The [Compute Buffer Animation](../examples/gallery/features/features_compute_buffer_animation.md)
 example is experimental because it exercises scene compute, storage buffers, and compute-to-render
 synchronization.
 
 ## Canonical Examples
 
-![Timer Animation](../assets/gallery/v0.4/features/feature_timer_animation.webp)
+![Timer Animation](../assets/gallery/v0.4/features/features_timer_animation.webp)
 
-- [Timer Animation](../examples/gallery/features/feature_timer_animation.md) - retained point data
+- [Timer Animation](../examples/gallery/features/features_timer_animation.md) - retained point data
   updated on frames. Source: `examples/c/features/timer_animation.c`.
-- [Animation Tracks](../examples/gallery/features/feature_animation_tracks.md) - retained visual
+- [Animation Tracks](../examples/gallery/features/features_animation_tracks.md) - retained visual
   transform and camera motion tracks. Source: `examples/c/features/animation_tracks.c`.
-- [Compute Buffer Animation](../examples/gallery/features/feature_compute_buffer_animation.md) -
+- [Compute Buffer Animation](../examples/gallery/features/features_compute_buffer_animation.md) -
   experimental scene compute pass writing render-consumed data. Source:
   `examples/c/features/compute_buffer_animation.c`.
 

@@ -16,25 +16,25 @@ versions. Runner command expansion should remain evidence-driven and scoped to t
 
 Current fixture proof counts remain the dashboard truth for the low-level runner. The live gallery
 now has 66 promoted routes backed by canonical C examples or portable C scenarios:
-`feature_basic_scene`, `feature_timer_animation`, `feature_builtin_shapes_2d`,
-`feature_builtin_shapes_3d`, `feature_isolines`,
-`feature_animation_tracks`, `feature_compute_buffer_animation`, `feature_obj_loading`,
-`feature_picking`, `feature_selection_pixel`, `feature_selection_sphere`,
-`feature_selection_mesh_instances`, `image_probe`, `colorbar`, `scale_bar`, `scalebar_units`,
-`feature_legend_categorical`, `annotation_readout`, `linked_panels_probe_colorbar`,
-`scientific_plotting_workflow`, `visual_vector`, `showcase_wind_field`,
-`showcase_gpu_particle_smoke`, `feature_panel_single`, `feature_panel_grid`, `feature_panzoom`,
-`path_axes_2d`, `feature_axis_labels`, `feature_panel_multi`, `feature_panel_linked`,
-`feature_text_block`, `feature_overlay_card`, `feature_guide_lines`, `feature_guide_spans`,
-`feature_bars_bands`, `feature_controller_fly`, `feature_controller_turntable`,
-`feature_sampled_field_update`, `colormap_scale`,
-`panel_background`, `composite_polygon`, `linked_panels_axes_panzoom`,
-`scalebar_measurement_workflow`, `showcase_surface_grid`, `us_state_choropleth`,
-`update_partial`, `feature_update_visual_data`, `feature_visibility`,
-`technique_depth_test`, `alpha_blending`, `feature_material_mesh`, `feature_lighting`,
-`textured_terrain_or_planet`, `protein_arcball_viewer`, `point_2d`, `visual_pixel`,
-`visual_marker`, `visual_primitive`, `visual_segment`, `visual_path`, `visual_image`,
-`visual_mesh`, `sphere_impostor`, `visual_text`, `visual_glyph`, and `visual_labels`.
+`features_basic_scene`, `features_timer_animation`, `features_builtin_shapes_2d`,
+`features_builtin_shapes_3d`, `features_isolines`,
+`features_animation_tracks`, `features_compute_buffer_animation`, `features_obj_loading`,
+`features_picking`, `features_selection_pixel`, `features_selection_sphere`,
+`features_selection_mesh_instances`, `features_image_probe`, `features_colorbar`, `features_scalebar`, `features_scalebar_units`,
+`features_legend_categorical`, `features_annotation_readout`, `showcases_linked_probe_colorbar`,
+`showcases_scientific_plotting`, `visuals_vector`, `showcases_wind_field`,
+`showcases_gpu_particle_smoke`, `features_panel_single`, `features_panel_grid`, `features_panzoom`,
+`features_axes_2d`, `features_axis_labels`, `features_panel_multi`, `features_panel_linked`,
+`features_text_block`, `features_overlay_card`, `features_guide_lines`, `features_guide_spans`,
+`features_bars_bands`, `features_controller_fly`, `features_controller_turntable`,
+`features_sampled_field_update`, `features_colormap_scale`,
+`features_panel_background`, `composites_polygon`, `showcases_panel_linked_axes`,
+`showcases_scalebar_measurement`, `showcases_surface_grid`, `showcases_choropleth`,
+`features_update_partial`, `features_update_visual_data`, `features_visibility`,
+`features_technique_depth_test`, `features_alpha_blending`, `features_material_mesh`, `features_lighting`,
+`showcases_textured_planet`, `showcases_protein`, `visuals_point`, `visuals_pixel`,
+`visuals_marker`, `visuals_primitive`, `visuals_segment`, `visuals_path`, `visuals_image`,
+`visuals_mesh`, `visuals_sphere`, `visuals_text`, `visuals_glyph`, and `visuals_labels`.
 
 This list uses public route IDs. When a route ID differs from the compiled C/WASM scenario ID,
 `examples/c/MANIFEST.yaml` records the mapping in `webgpu.scenario_id`.
@@ -58,45 +58,45 @@ and `semantic_color_to_linear` WGSL failures were gone, and live routes were ski
 known headless external WebGPU instance-loss diagnostic at `QueueSubmit`.
 
 Recorded local panel/annotation basics promotion proof on 2026-06-10: `just wasm-scene-build`
-linked `feature_panel_single`, `feature_panel_grid`, `feature_panzoom`, `path_axes_2d`, and
-`feature_axis_labels` into the WASM scenario table; `just wasm-scene-smoke` passed with targeted
+linked `features_panel_single`, `features_panel_grid`, `features_panzoom`, `features_axes_2d`, and
+`features_axis_labels` into the WASM scenario table; `just wasm-scene-smoke` passed with targeted
 stream-shape coverage for panel viewports/scissors, panzoom, path axes, axis primitives, and glyph
 labels; `just webgpu-browser-smoke` exited successfully in this shell with the known headless
-external WebGPU instance-loss skip at `QueueSubmit` for live routes including `feature_panel_grid`,
-`feature_panzoom`, and `feature_axis_labels`; native PNG smokes passed for all five examples.
+external WebGPU instance-loss skip at `QueueSubmit` for live routes including `features_panel_grid`,
+`features_panzoom`, and `features_axis_labels`; native PNG smokes passed for all five examples.
 
 Recorded local standalone visual-family promotion proof on 2026-06-10: targeted native CMake
 builds passed for `visuals/segment`, `visuals/path`, `visuals/image`, `visuals/mesh`,
 `visuals/sphere`, `visuals/text`, `visuals/glyph`, and `visuals/labels`; `just wasm-scene-build`
 and `just wasm-scene-smoke` passed with all standalone visual routes registered in the scenario
 table; `just webgpu-browser-smoke` completed with the known headless external WebGPU instance-loss
-skip at `QueueSubmit` for live routes, including the new `visual_segment` and `visual_labels`
+skip at `QueueSubmit` for live routes, including the new `visuals_segment` and `visuals_labels`
 samples.
 
 Recorded local panel/annotation/controller promotion proof on 2026-06-10: `just wasm-scene-smoke`
-passed with `feature_panel_multi`, `feature_panel_linked`, `feature_text_block`,
-`feature_overlay_card`, `feature_guide_lines`, `feature_guide_spans`, `feature_bars_bands`,
-`feature_controller_fly`, and `feature_controller_turntable` registered in the WASM scenario table
+passed with `features_panel_multi`, `features_panel_linked`, `features_text_block`,
+`features_overlay_card`, `features_guide_lines`, `features_guide_spans`, `features_bars_bands`,
+`features_controller_fly`, and `features_controller_turntable` registered in the WASM scenario table
 and covered by targeted stream-shape checks; `just webgpu-browser-smoke` exited successfully in
 this shell with the known headless external WebGPU instance-loss skip at `QueueSubmit` for the
 promoted routes; native PNG smokes passed for the examples.
 
 Recorded local image/color-scale promotion proof on 2026-06-10: `just wasm-scene-smoke` passed
-with `feature_sampled_field_update`, `feature_colormap_scale`, and `feature_panel_background`
+with `features_sampled_field_update`, `features_colormap_scale`, and `features_panel_background`
 registered in the WASM scenario table and covered by targeted stream-shape checks; `just
 webgpu-browser-smoke` exited successfully in this shell with the known headless external WebGPU
 instance-loss skip at `QueueSubmit` for all three new live routes; native PNG smokes passed for all
 three examples.
 
 Recorded local composed-showcase promotion proof on 2026-06-10: `just wasm-scene-smoke` passed
-with `composite_polygon`, `linked_panels_axes_panzoom`, `scalebar_measurement_workflow`, and
-`showcase_surface_grid` registered in the WASM scenario table and covered by targeted stream-shape
+with `composites_polygon`, `showcases_panel_linked_axes`, `showcases_scalebar_measurement`, and
+`showcases_surface_grid` registered in the WASM scenario table and covered by targeted stream-shape
 checks; `just webgpu-browser-smoke` exited successfully in this shell with the known headless
 external WebGPU instance-loss skip at `QueueSubmit` for all four new live routes; native PNG smokes
 passed for all four examples.
 
 Recorded local data-backed composed-route proof on 2026-06-10: `just wasm-scene-smoke` passed with
-`us_state_choropleth` registered in the WASM scenario table and covered by targeted polygon,
+`showcases_choropleth` registered in the WASM scenario table and covered by targeted polygon,
 colorbar, and label stream-shape checks. The WASM build preloaded the prepared bundle from
 `.cache/datoviz/examples/us_state_choropleth/prepared` into the runtime
 `data/examples/us_state_choropleth/prepared` path; release/gallery builds should prefer the same
@@ -106,7 +106,7 @@ successfully in this shell with the known headless external WebGPU instance-loss
 and loaded `48` regions, `72` rings, and `10983` points.
 
 Recorded local retained-update/visibility promotion proof on 2026-06-10: `just wasm-scene-smoke`
-passed with `feature_update_partial`, `feature_update_visual_data`, and `feature_visibility`
+passed with `features_update_partial`, `features_update_visual_data`, and `features_visibility`
 registered in the WASM scenario table. Targeted checks cover retained `WriteBuffer` updates after
 scenario frame callbacks and visibility-driven draw changes. `just webgpu-browser-smoke` exited
 successfully in this shell with the known headless external WebGPU instance-loss skip at
@@ -114,25 +114,25 @@ successfully in this shell with the known headless external WebGPU instance-loss
 `features/update_partial`, `features/update_visual_data`, and `features/visibility`.
 
 Recorded local depth-test promotion proof on 2026-06-10: `just wasm-scene-smoke` passed with
-`technique_depth_test` registered in the WASM scenario table and covered by targeted point
+`features_technique_depth_test` registered in the WASM scenario table and covered by targeted point
 depth-stencil pipeline checks for depth-enabled and depth-disabled draws. `just
 webgpu-browser-smoke` exited successfully in this shell with the known headless external WebGPU
 instance-loss skip at `QueueSubmit` for the new live route; `just example-c
 features/technique_depth_test --png` passed natively.
 
-Recorded local alpha-blending promotion proof on 2026-06-10: `alpha_blending` registered in the
+Recorded local alpha-blending promotion proof on 2026-06-10: `features_alpha_blending` registered in the
 WASM scenario table and targeted smoke checks now require the primitive pipeline to emit
 source-over color-target blend state. Browser and native evidence is recorded with this checkpoint.
 
 Recorded local material/lighting promotion proof on 2026-06-10: `just wasm-scene-smoke` passed with
-`feature_material_mesh` and `feature_lighting` registered in the WASM scenario table and covered by
+`features_material_mesh` and `features_lighting` registered in the WASM scenario table and covered by
 targeted material-backed mesh/sphere pipeline checks, material bind-group layout checks, and
 multi-panel draw/upload assertions. `just webgpu-browser-smoke` exited successfully in this shell
 with the known headless external WebGPU instance-loss skip at `QueueSubmit` for both new live
 routes; native PNG smokes passed for `features/material_mesh` and `features/lighting`.
 
 Recorded local textured-planets promotion proof on 2026-06-10: `just wasm-scene-smoke` passed with
-`textured_terrain_or_planet` registered in the WASM scenario table and covered by targeted
+`showcases_textured_planet` registered in the WASM scenario table and covered by targeted
 textured mesh, depth pipeline, texture upload, and material bind-group checks. The WASM build
 preloaded `data/assets/textures` when present. `just webgpu-browser-smoke` exited successfully in
 this shell with the known headless external WebGPU instance-loss skip at `QueueSubmit` for the new
@@ -140,7 +140,7 @@ live route; `just example-c showcases/textured_planet --png` passed natively wit
 offscreen warning that the Dear ImGui overlay requires a GLFW window.
 
 Recorded local protein promotion proof on 2026-06-10: `just wasm-scene-smoke` passed with
-`protein_arcball_viewer` registered in the WASM scenario table and covered by targeted sphere
+`showcases_protein` registered in the WASM scenario table and covered by targeted sphere
 material, crosshair segment, draw, and upload checks. The WASM build preloaded the prepared 1UBQ
 bundle from `data/examples/proteins/1ubq/prepared`, and the scenario loaded `602` atoms from that
 path. `just webgpu-browser-smoke` exited successfully in this shell with the known headless
@@ -341,7 +341,7 @@ Current status as of this note:
   web/wasm/scene.js`, `node --check web/wasm/session.js`, `node --check
   tools/wasm_scene_smoke.mjs`, and `node --check tools/webgpu_browser_smoke.mjs` passed; `just
   example-c features/timer_animation` passed and preserved the native scenario runner path; `just
-  wasm-scene-smoke` generated and replayed the `feature_timer_animation` C scenario stream plus the
+  wasm-scene-smoke` generated and replayed the `features_timer_animation` C scenario stream plus the
   existing 2D/3D WASM streams, with WebGPU runner smoke reporting `generated_streams=3`; `just
   webgpu-browser-smoke` rendered 2D and 3D WASM pages, advanced browser-driven frames on the
   `wasm-timer-animation` route, and reported dashboard WASM scene checks `2 pass, 0 fail`.
@@ -473,8 +473,8 @@ Current status as of this note:
   `just example-c showcases/gpu_particle_smoke` passed, and `wasm-scene-smoke` now checks the
   retained particle scenario creates a compute pipeline, dispatches workgroups, and emits a
   compute-to-vertex `ResourceBarrier`.
-- recorded local standalone visual route checkpoint on 2026-06-10: `point_2d`, `visual_pixel`,
-  `visual_marker`, and `visual_primitive` were exported as portable C scenarios, registered as live
+- recorded local standalone visual route checkpoint on 2026-06-10: `visuals_point`, `visuals_pixel`,
+  `visuals_marker`, and `visuals_primitive` were exported as portable C scenarios, registered as live
   routes, and added to `wasm-scene-smoke` scenario registration plus initial render-pipeline/draw
   checks. Full local WASM rebuild remains blocked in this dirty worktree by the unrelated
   `builtin_shapes_2d.c`/`dvz_panzoom_keep_aspect()` header mismatch.

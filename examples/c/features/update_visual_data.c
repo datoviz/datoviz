@@ -11,7 +11,7 @@
  * larger points. This shows the simple full-data update path, which is useful when the whole
  * dataset changes but the same visual, panel attachment, and style should remain in place.
  *
- * Scenario: feature.update_visual_data
+ * Scenario: features_update_visual_data
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/update_visual_data
@@ -236,7 +236,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_update_visual_data_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_update_visual_data",
+        .id = "features_update_visual_data",
         .title = "Visual Data Update",
         .width = WIDTH,
         .height = HEIGHT,

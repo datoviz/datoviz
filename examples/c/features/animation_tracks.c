@@ -6,7 +6,7 @@
 
 /* animation_tracks - This example shows scene animation tracks driving a cube and camera.
  *
- * Scenario: feature.animation_tracks
+ * Scenario: features_animation_tracks
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/animation_tracks
@@ -337,7 +337,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_animation_tracks_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_animation_tracks",
+        .id = "features_animation_tracks",
         .title = "Animation Tracks",
         .width = WIDTH,
         .height = HEIGHT,

@@ -11,7 +11,7 @@
  * point sizes remain screen-space while their positions move through the panel's data transform.
  * Panzoom is the basic interaction for exploring larger 2D scientific datasets.
  *
- * Scenario: feature.panzoom
+ * Scenario: features_panzoom
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/panzoom
@@ -252,7 +252,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_panzoom_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_panzoom",
+        .id = "features_panzoom",
         .title = "Panzoom",
         .width = WIDTH,
         .height = HEIGHT,

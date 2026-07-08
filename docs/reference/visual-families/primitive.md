@@ -8,9 +8,9 @@ Primitive: selected by `DvzPrimitiveTopology` at construction.
 
 ## Preview And Links
 
-[![Primitive](../../assets/gallery/v0.4/visuals/visual_primitive.webp)](../../examples/gallery/visuals/visual_primitive.md)
+[![Primitive](../../assets/gallery/v0.4/visuals/visuals_primitive.webp)](../../examples/gallery/visuals/visuals_primitive.md)
 
-- Example: [Primitive](../../examples/gallery/visuals/visual_primitive.md)
+- Example: [Primitive](../../examples/gallery/visuals/visuals_primitive.md)
 - How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [add visuals to a panel](../../how-to/add-a-visual.md)
 - Related: [Mesh](mesh.md), [Path](path.md), [Segment](segment.md)
 
@@ -52,7 +52,7 @@ triangle list, strip, and fan setup.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/primitive.c` |
-| Gallery | [Primitive](../../examples/gallery/visuals/visual_primitive.md) |
+| Gallery | [Primitive](../../examples/gallery/visuals/visuals_primitive.md) |
 | Build | `just example-c visuals/primitive` |
 | Smoke | `./build/examples/c/visuals/primitive --png` |
 | Validation | `smoke+screenshot` |

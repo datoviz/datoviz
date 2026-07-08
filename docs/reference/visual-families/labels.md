@@ -8,9 +8,9 @@ Primitive: textured quad or retained label item quads.
 
 ## Preview And Links
 
-[![Labels](../../assets/gallery/v0.4/visuals/visual_labels.webp)](../../examples/gallery/visuals/visual_labels.md)
+[![Labels](../../assets/gallery/v0.4/visuals/visuals_labels.webp)](../../examples/gallery/visuals/visuals_labels.md)
 
-- Example: [Labels](../../examples/gallery/visuals/visual_labels.md)
+- Example: [Labels](../../examples/gallery/visuals/visuals_labels.md)
 - How-to: [Add text, labels, and annotations](../../how-to/add-annotations.md), [use sampled fields and textures](../../how-to/use-sampled-fields.md)
 - Related: [Image](image.md), [Text](text.md), [Pixel](pixel.md)
 
@@ -53,7 +53,7 @@ depth testing and enables alpha blending.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/labels.c` |
-| Gallery | [Labels](../../examples/gallery/visuals/visual_labels.md) |
+| Gallery | [Labels](../../examples/gallery/visuals/visuals_labels.md) |
 | Build | `just example-c visuals/labels` |
 | Smoke | `./build/examples/c/visuals/labels --png` |
 | Validation | `smoke+screenshot` |

@@ -139,5 +139,5 @@ callback bugs, debug the retained scene first.
 
 ??? example "Related examples"
 
-    - [Record Replay](../examples/gallery/runtime/feature_record_replay.md) - Source: `examples/c/runtime/record_replay.c`
+    - [Record Replay](../examples/gallery/runtime/runtime_record_replay.md) - Source: `examples/c/runtime/record_replay.c`
     - [Raw Triangle DRP2](../examples/gallery/advanced/advanced_raw_triangle_drp2.md) - Source: `examples/c/advanced/raw_triangle_drp2.c`

@@ -6,7 +6,7 @@
 
 /* bars_bands - This example shows bars and an uncertainty band in one 2D panel.
  *
- * Scenario: feature.bars_bands
+ * Scenario: features_bars_bands
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/bars_bands
@@ -207,7 +207,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_bars_bands_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_bars_bands",
+        .id = "features_bars_bands",
         .title = "Bars And Bands",
         .width = WIDTH,
         .height = HEIGHT,

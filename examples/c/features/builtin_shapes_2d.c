@@ -6,7 +6,7 @@
 
 /* builtin_shapes_2d - This example shows built-in 2D geometry rendered as retained meshes.
  *
- * Scenario: feature_builtin_shapes_2d
+ * Scenario: features_builtin_shapes_2d
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/builtin_shapes_2d
@@ -218,7 +218,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_builtin_shapes_2d_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_builtin_shapes_2d",
+        .id = "features_builtin_shapes_2d",
         .title = "Builtin Shapes 2D",
         .width = WIDTH,
         .height = HEIGHT,

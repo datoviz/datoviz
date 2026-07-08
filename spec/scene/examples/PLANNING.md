@@ -104,7 +104,7 @@ replace canonical live gallery routes.
 
 The active scene stack already covers retained figures and panels, per-panel viewport/scissor,
 offscreen and GLFW presentation, app callbacks, capture, retained resources, sampled fields,
-point/pixel/marker/primitive/mesh/path/image/volume/sphere/text visuals, panzoom/arcball/fly/
+point/pixel/marker/primitive/mesh/path/image/visuals_volume/sphere/text visuals, panzoom/arcball/fly/
 turntable controllers, EDL/SSAO/MSAA/WBOIT/depth-peeling-shaped passes, colorbars, legends,
 annotations, scale bars, and first GPU-backed point/marker/image/labels/volume request paths.
 
@@ -128,31 +128,31 @@ The main remaining polish, promotion, or feature gaps are:
 
 | Scenario | Readiness | Required slice | Decision |
 | --- | --- | --- | --- |
-| `point_2d` | `ready-now` | retained scene, point visual, panzoom/offscreen | Public proof lives in `examples/c/visuals/point.c`. Keep as the smallest retained-scene point visual smoke; `examples/c/lab/point_stress.c` remains non-public stress material. |
-| `path_axes_2d` | `ready-now` | path, rendered text, 2D axes/ticks | Public proof lives in `examples/c/features/axes_2d.c`. |
-| `linked_panels_axes_panzoom` | `ready-now` | grid/layout, linked panzoom, axes | Public proof lives in `examples/c/showcases/panel_linked_axes.c`. |
-| `linked_panels_probe_colorbar` | `ready-now` | image probe, colorbar, annotation/readout, linked state | Public proof lives in `examples/c/showcases/linked_probe_colorbar.c`; focused proofs still cover the parts separately in `image_probe`, `colorbar`, and `annotation_readout`. |
-| `feature_picking` | `ready-now` | marker visual, item pick, hover feedback, selection highlight | Public proof lives in `examples/c/features/picking.c`. |
-| `feature_isolines` | `ready-now` | surface-grid geometry, scalar contours, segment overlay | Public proof lives in `examples/c/features/isolines.c`. |
-| `feature_builtin_shapes_2d` | `ready-now` | 2D geometry builders, polygon with hole | Public proof lives in `examples/c/features/builtin_shapes_2d.c`. |
-| `feature_builtin_shapes_3d` | `ready-now` | cube, sphere, cylinder, cone, torus, arrow builders | Public proof lives in `examples/c/features/builtin_shapes_3d.c`; classic polyhedra remain planned. |
-| `feature_obj_loading` | `ready-now` | Wavefront OBJ file loading into retained mesh | Public proof lives in `examples/c/features/obj_loading.c`; PLY remains planned and glTF is v0.5. |
-| `sphere_impostor` | `ready-now` | sphere visual, lighting/depth | Public proof lives in `examples/c/visuals/sphere.c`; molecule/protein semantics stay in the scientific protein example. |
-| `volume` | `ready-now` | 3D sampled field, slice/render, capture | Public proof lives in `examples/c/visuals/volume.c`. |
-| `scale_bar` | `ready-now` | retained scale bar, label, panzoom/domain updates | Minimal feature proof lives in `examples/c/features/scalebar.c`; unit conversion proof lives in `examples/c/features/scalebar_units.c`; richer overview/detail/3D measurement composition lives in `examples/c/showcases/scalebar_measurement.c`. |
-| `scalebar_units` | `ready-now` | retained scale bar, non-spatial unit conversion | Public proof lives in `examples/c/features/scalebar_units.c`. |
-| `scalebar_measurement_workflow` | `ready-now` | overview/detail/3D measurement composition | Public proof lives in `examples/c/showcases/scalebar_measurement.c`. |
-| `colorbar` | `ready-now` | scalar field, continuous colorbar, range labels | Standalone feature proof lives in `examples/c/features/colorbar.c`; probing stays separate. |
-| `annotation_readout` | `ready-now` | anchored text/readout, highlighted data target | Standalone feature proof lives in `examples/c/features/annotation_readout.c`; query behavior stays separate. |
-| `image_probe` | `ready-now` | scalar sampled image, pixel query, probe marker, stdout readback | Focused public image-query proof lives in `examples/c/features/image_probe.c`; colorbar/readout and broader linked-panel pressure remain separate. |
-| `protein_arcball_viewer` | `ready-now` | real PDB data, sphere impostors, materials, SSAO/MSAA, GUI, arcball | Public proof lives in `examples/c/showcases/protein.c`; defer labels/picking/molecular surface if needed. |
-| `showcase_wind_field` | `ready-now` | image field, vector visual, paths, panzoom, colorbar | Public proof lives in `examples/c/showcases/wind_field.c` using the retained `dvz_vector()` visual plus streamlines. |
-| `showcase_gpu_particle_smoke` | `ready-now` | scene compute, shared storage/vertex buffers, blended points | Public experimental compute-to-graphics showcase lives in `examples/c/showcases/gpu_particle_smoke.c`. |
-| `textured_terrain_or_planet` | `ready-now` | retained textured mesh, UVs, texture sampling, lighting, capture | Required textured-mesh proof lives in `examples/c/showcases/textured_planet.c`: Earth/Mars UV sphere with real sampled textures and procedural fallbacks. Mars DEM terrain analysis remains v0.5/later. |
-| `brain_volume` | `ready-now` | volume, occluded slice composition, arcball | Public proof lives in `examples/c/showcases/brain_volume.c` over the prepared Allen/IBL RGBA volume. The newer atlas-mesh bundle remains source material for a later mesh-overlay polish pass; full atlas explorer is v0.5. |
-| `point_cloud` | `ready-now` | large RGB pixel cloud, direct colors, GUI-tunable EDL, fly camera, capture | Public proof lives in `examples/c/showcases/point_cloud.c`, with required RESEPI raw-LAZ preprocessing through `tools/data/prepare_point_cloud.py`; no synthetic or bundled-NPZ fallback is provided. |
-| `composite_polygon` | `ready-now` | semantic polygon/polygon-set, fill+stroke composite, holes, region styling | Public proof lives in `examples/c/composites/polygon.c`; polygon is not a visual family even if it appears near visual examples. |
-| `composite_graph` | `ready-now` | semantic graph, user-provided layout, nodes+edges composite, stable ids, Bezier edges | Public proof lives in `examples/c/composites/graph.c`. Keep layout user-supplied first; edge-mode comparisons belong in tests or lab examples. |
+| `visuals_point` | `ready-now` | retained scene, point visual, panzoom/offscreen | Public proof lives in `examples/c/visuals/point.c`. Keep as the smallest retained-scene point visual smoke; `examples/c/lab/point_stress.c` remains non-public stress material. |
+| `features_axes_2d` | `ready-now` | path, rendered text, 2D axes/ticks | Public proof lives in `examples/c/features/axes_2d.c`. |
+| `showcases_panel_linked_axes` | `ready-now` | grid/layout, linked panzoom, axes | Public proof lives in `examples/c/showcases/panel_linked_axes.c`. |
+| `showcases_linked_probe_colorbar` | `ready-now` | image probe, colorbar, annotation/readout, linked state | Public proof lives in `examples/c/showcases/linked_probe_colorbar.c`; focused proofs still cover the parts separately in `features_image_probe`, `features_colorbar`, and `features_annotation_readout`. |
+| `features_picking` | `ready-now` | marker visual, item pick, hover feedback, selection highlight | Public proof lives in `examples/c/features/picking.c`. |
+| `features_isolines` | `ready-now` | surface-grid geometry, scalar contours, segment overlay | Public proof lives in `examples/c/features/isolines.c`. |
+| `features_builtin_shapes_2d` | `ready-now` | 2D geometry builders, polygon with hole | Public proof lives in `examples/c/features/builtin_shapes_2d.c`. |
+| `features_builtin_shapes_3d` | `ready-now` | cube, sphere, cylinder, cone, torus, arrow builders | Public proof lives in `examples/c/features/builtin_shapes_3d.c`; classic polyhedra remain planned. |
+| `features_obj_loading` | `ready-now` | Wavefront OBJ file loading into retained mesh | Public proof lives in `examples/c/features/obj_loading.c`; PLY remains planned and glTF is v0.5. |
+| `visuals_sphere` | `ready-now` | sphere visual, lighting/depth | Public proof lives in `examples/c/visuals/sphere.c`; molecule/protein semantics stay in the scientific protein example. |
+| `visuals_volume` | `ready-now` | 3D sampled field, slice/render, capture | Public proof lives in `examples/c/visuals/volume.c`. |
+| `features_scalebar` | `ready-now` | retained scale bar, label, panzoom/domain updates | Minimal feature proof lives in `examples/c/features/scalebar.c`; unit conversion proof lives in `examples/c/features/scalebar_units.c`; richer overview/detail/3D measurement composition lives in `examples/c/showcases/scalebar_measurement.c`. |
+| `features_scalebar_units` | `ready-now` | retained scale bar, non-spatial unit conversion | Public proof lives in `examples/c/features/scalebar_units.c`. |
+| `showcases_scalebar_measurement` | `ready-now` | overview/detail/3D measurement composition | Public proof lives in `examples/c/showcases/scalebar_measurement.c`. |
+| `features_colorbar` | `ready-now` | scalar field, continuous colorbar, range labels | Standalone feature proof lives in `examples/c/features/colorbar.c`; probing stays separate. |
+| `features_annotation_readout` | `ready-now` | anchored text/readout, highlighted data target | Standalone feature proof lives in `examples/c/features/annotation_readout.c`; query behavior stays separate. |
+| `features_image_probe` | `ready-now` | scalar sampled image, pixel query, probe marker, stdout readback | Focused public image-query proof lives in `examples/c/features/image_probe.c`; colorbar/readout and broader linked-panel pressure remain separate. |
+| `showcases_protein` | `ready-now` | real PDB data, sphere impostors, materials, SSAO/MSAA, GUI, arcball | Public proof lives in `examples/c/showcases/protein.c`; defer labels/picking/molecular surface if needed. |
+| `showcases_wind_field` | `ready-now` | image field, vector visual, paths, panzoom, colorbar | Public proof lives in `examples/c/showcases/wind_field.c` using the retained `dvz_vector()` visual plus streamlines. |
+| `showcases_gpu_particle_smoke` | `ready-now` | scene compute, shared storage/vertex buffers, blended points | Public experimental compute-to-graphics showcase lives in `examples/c/showcases/gpu_particle_smoke.c`. |
+| `showcases_textured_planet` | `ready-now` | retained textured mesh, UVs, texture sampling, lighting, capture | Required textured-mesh proof lives in `examples/c/showcases/textured_planet.c`: Earth/Mars UV sphere with real sampled textures and procedural fallbacks. Mars DEM terrain analysis remains v0.5/later. |
+| `showcases_brain_volume` | `ready-now` | volume, occluded slice composition, arcball | Public proof lives in `examples/c/showcases/brain_volume.c` over the prepared Allen/IBL RGBA volume. The newer atlas-mesh bundle remains source material for a later mesh-overlay polish pass; full atlas explorer is v0.5. |
+| `showcases_point_cloud` | `ready-now` | large RGB pixel cloud, direct colors, GUI-tunable EDL, fly camera, capture | Public proof lives in `examples/c/showcases/point_cloud.c`, with required RESEPI raw-LAZ preprocessing through `tools/data/prepare_point_cloud.py`; no synthetic or bundled-NPZ fallback is provided. |
+| `composites_polygon` | `ready-now` | semantic polygon/polygon-set, fill+stroke composite, holes, region styling | Public proof lives in `examples/c/composites/polygon.c`; polygon is not a visual family even if it appears near visual examples. |
+| `composites_graph` | `ready-now` | semantic graph, user-provided layout, nodes+edges composite, stable ids, Bezier edges | Public proof lives in `examples/c/composites/graph.c`. Keep layout user-supplied first; edge-mode comparisons belong in tests or lab examples. |
 
 
 ## v0.4 Short Feature Coverage Queue
@@ -189,7 +189,7 @@ examples are explicitly included in the public v0.4 API. The staged scenario-run
 | --- | --- | --- |
 | `webgpu_browser_subset` | DRP2 WebGPU subset, WGSL, browser runtime | Point, primitive, image, and basic mesh only; visible experimental status. |
 | `gallery_video_capture` | frame callbacks, deterministic scenario capture/video | Use existing scenario-backed examples such as `timer_animation`; keep public video-export code on the direct app-capture API. |
-| `datetime_axis` | UTC datetime tick formatting, data-to-timestamp axis mapping, duration scale bar | Experimental feature proof lives in `examples/c/features/datetime_axis.c`; not a v0.4 release blocker. |
+| `features_datetime_axis` | UTC datetime tick formatting, data-to-timestamp axis mapping, duration scale bar | Experimental feature proof lives in `examples/c/features/datetime_axis.c`; not a v0.4 release blocker. |
 | `splat_cloud` | retained splat visual, blend/depth policy, deterministic capture | Experimental visual proof lives in `examples/c/visuals/splat.c`; not a release blocker. |
 | `cpu_fluid_or_particles` | dynamic image/point/path updates, panzoom, colorbar | CPU-side stretch only; GPU compute remains later. |
 | `dense_streaming_2d` | path/pixel updates, axes/text, linked x panzoom | Pick one DAQ/physiology example if time allows. |
@@ -261,32 +261,32 @@ optional controls for tessellation quality, stroke width, join mode, and overlay
 
 ## Pickup Order
 
-1. `point_2d`
-2. `path_axes_2d`
-3. `linked_panels_axes_panzoom`
-4. `scale_bar`
-5. `scalebar_units`
-6. `scalebar_measurement_workflow`
-7. `colorbar`
-8. `annotation_readout`
-9. `image_probe`
-10. `linked_panels_probe_colorbar`
-11. `feature_picking`
-12. `feature_isolines`
-13. `feature_builtin_shapes_2d`
-14. `feature_builtin_shapes_3d`
-16. `feature_obj_loading`
-17. `volume`
-18. `protein_arcball_viewer`
-19. `showcase_wind_field`
-20. `showcase_gpu_particle_smoke`
-21. `textured_terrain_or_planet`
-22. `composite_polygon`
-23. `composite_graph`
-24. `point_cloud`
-25. `brain_volume`
-26. `feature_controller_arcball`
-27. `feature_mesh_texture`
+1. `visuals_point`
+2. `features_axes_2d`
+3. `showcases_panel_linked_axes`
+4. `features_scalebar`
+5. `features_scalebar_units`
+6. `showcases_scalebar_measurement`
+7. `features_colorbar`
+8. `features_annotation_readout`
+9. `features_image_probe`
+10. `showcases_linked_probe_colorbar`
+11. `features_picking`
+12. `features_isolines`
+13. `features_builtin_shapes_2d`
+14. `features_builtin_shapes_3d`
+16. `features_obj_loading`
+17. `visuals_volume`
+18. `showcases_protein`
+19. `showcases_wind_field`
+20. `showcases_gpu_particle_smoke`
+21. `showcases_textured_planet`
+22. `composites_polygon`
+23. `composites_graph`
+24. `showcases_point_cloud`
+25. `showcases_brain_volume`
+26. `features_controller_arcball`
+27. `features_mesh_texture`
 23. Feature example validation and capture proof from `examples/c/MANIFEST.yaml`
 24. `webgpu_browser_subset`
 

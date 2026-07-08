@@ -161,7 +161,7 @@ def generate_gallery_webp(
     skipped = 0
     missing = 0
     for example in examples:
-        png = gallery_media.gallery_png_path(example, image_dir)
+        png = build_gallery.source_image_path(example, image_dir)
         webp = output_path(example, output_dir)
         if not png.exists():
             missing += 1

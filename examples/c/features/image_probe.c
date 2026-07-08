@@ -6,7 +6,7 @@
 
 /* image_probe - This example shows probing a scalar image at a marked data position.
  *
- * Scenario: image_probe
+ * Scenario: features_image_probe
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/image_probe
@@ -796,7 +796,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_image_probe_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_image_probe",
+        .id = "features_image_probe",
         .title = "Image Probe",
         .width = WIDTH,
         .height = HEIGHT,

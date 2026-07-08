@@ -6,7 +6,7 @@
 
 /* controller_turntable - This example shows world-up orbiting with a turntable controller.
  *
- * Scenario: feature.controller_turntable
+ * Scenario: features_controller_turntable
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/controller_turntable
@@ -182,7 +182,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_controller_turntable_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_controller_turntable",
+        .id = "features_controller_turntable",
         .title = "Turntable Controller",
         .width = WIDTH,
         .height = HEIGHT,

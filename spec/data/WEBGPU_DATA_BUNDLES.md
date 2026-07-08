@@ -56,7 +56,7 @@ only when a bundle is eligible for browser serving:
 ```json
 {
   "schema": "datoviz.example-data.v1",
-  "id": "us_state_choropleth",
+  "id": "showcases_choropleth",
   "status": "committed",
   "web": {
     "version": "sha256-0123456789abcdef",
@@ -100,7 +100,7 @@ implicit preloaded files:
 ```yaml
 webgpu:
   status: webgpu-live
-  route: examples/webgpu/live.html?id=us_state_choropleth
+  route: examples/webgpu/live.html?id=showcases_choropleth
   data_bundles:
     - id: us_state_choropleth
       url: webgpu-data/examples/us_state_choropleth/sha256-0123456789abcdef/manifest.json
@@ -112,12 +112,12 @@ The generated `examples/webgpu/live_examples.js` entry should mirror only the br
 
 ```js
 {
-  id: "us_state_choropleth",
+  id: "showcases_choropleth",
   label: "U.S. State Choropleth",
-  scenarioId: "us_state_choropleth",
+  scenarioId: "showcases_choropleth",
   dataBundles: [
     {
-      id: "us_state_choropleth",
+      id: "showcases_choropleth",
       url: "../../webgpu-data/examples/us_state_choropleth/sha256-0123456789abcdef/manifest.json",
       virtualRoot: "data/examples/us_state_choropleth",
       required: true,
@@ -266,7 +266,7 @@ without the copied bundle.
 
 ## Migration Plan
 
-1. Add `webgpu.data_bundles` metadata for `us_state_choropleth` and `protein_arcball_viewer`.
+1. Add `webgpu.data_bundles` metadata for `showcases_choropleth` and `showcases_protein`.
 2. Add `web/wasm/data_loader.js` and route it through `WasmSceneSession`.
 3. Expose the Emscripten filesystem through the WASM session module.
 4. Teach `tools/build_gallery.py` or `tools/mkdocs_hooks.py` to copy declared web bundles.

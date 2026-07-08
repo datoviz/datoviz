@@ -12,7 +12,7 @@
  * clicking the background clears selection. Current marker queries use marker-family bounds rather
  * than exact SDF shape discard, which is enough to demonstrate interactive item picking.
  *
- * Scenario: feature_picking
+ * Scenario: features_picking
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/picking
@@ -441,7 +441,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_picking_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_picking",
+        .id = "features_picking",
         .title = "Picking",
         .width = WIDTH,
         .height = HEIGHT,

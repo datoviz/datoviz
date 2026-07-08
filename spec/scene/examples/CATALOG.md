@@ -4,46 +4,46 @@ This catalog maps scenario IDs to their owning bundle after the examples reorgan
 find a scenario quickly; use [PLANNING.md](PLANNING.md) for staging decisions and readiness.
 
 As of 2026-06-05, the public C manifest has runnable `v0.4 required` entries for
-`point_2d`, `path_axes_2d`, `linked_panels_axes_panzoom`, `scale_bar`, `scalebar_units`,
-`scalebar_measurement_workflow`, `colorbar`, `annotation_readout`, `image_probe`,
-`feature_picking`, `feature_isolines`, `feature_builtin_shapes_2d`, `feature_builtin_shapes_3d`,
-`feature_obj_loading`,
-`sphere_impostor`, `volume`, `composite_polygon`, `composite_graph`, `protein_arcball_viewer`,
-`showcase_wind_field`, `showcase_gpu_particle_smoke`,
-`textured_terrain_or_planet`, `brain_volume`, `point_cloud`, `us_state_choropleth`, and
-`linked_panels_probe_colorbar`.
+`visuals_point`, `features_axes_2d`, `showcases_panel_linked_axes`, `features_scalebar`, `features_scalebar_units`,
+`showcases_scalebar_measurement`, `features_colorbar`, `features_annotation_readout`, `features_image_probe`,
+`features_picking`, `features_isolines`, `features_builtin_shapes_2d`, `features_builtin_shapes_3d`,
+`features_obj_loading`,
+`visuals_sphere`, `visuals_volume`, `composites_polygon`, `composites_graph`, `showcases_protein`,
+`showcases_wind_field`, `showcases_gpu_particle_smoke`,
+`showcases_textured_planet`, `showcases_brain_volume`, `showcases_point_cloud`, `showcases_choropleth`, and
+`showcases_linked_probe_colorbar`.
 
 | Scenario ID | Stage | Bundle |
 | --- | --- | --- |
-| `point_2d` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
-| `path_axes_2d` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
-| `linked_panels_axes_panzoom` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
-| `linked_panels_probe_colorbar` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
-| `feature_picking` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
-| `feature_isolines` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
-| `feature_builtin_shapes_2d` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
-| `feature_builtin_shapes_3d` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
-| `feature_obj_loading` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
-| `sphere_impostor` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
-| `volume` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
-| `scale_bar` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
-| `scalebar_units` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
-| `scalebar_measurement_workflow` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
-| `colorbar` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
-| `annotation_readout` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
-| `image_probe` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
-| `protein_arcball_viewer` | `v0.4 required` | [scenarios/v04_required/SCIENTIFIC.md](scenarios/v04_required/SCIENTIFIC.md) |
-| `us_state_choropleth` | `v0.4 required` | [scenarios/v04_required/SCIENTIFIC.md](scenarios/v04_required/SCIENTIFIC.md) |
-| `showcase_wind_field` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
-| `showcase_gpu_particle_smoke` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
-| `textured_terrain_or_planet` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
-| `point_cloud` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
-| `brain_volume` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
-| `composite_polygon` | `v0.4 required` | [scenarios/v04_required/COMPOSITES.md](scenarios/v04_required/COMPOSITES.md) |
-| `composite_graph` | `v0.4 required` | [scenarios/v04_required/COMPOSITES.md](scenarios/v04_required/COMPOSITES.md) |
+| `visuals_point` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
+| `features_axes_2d` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
+| `showcases_panel_linked_axes` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
+| `showcases_linked_probe_colorbar` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
+| `features_picking` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
+| `features_isolines` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
+| `features_builtin_shapes_2d` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
+| `features_builtin_shapes_3d` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
+| `features_obj_loading` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
+| `visuals_sphere` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
+| `visuals_volume` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
+| `features_scalebar` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
+| `features_scalebar_units` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
+| `showcases_scalebar_measurement` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
+| `features_colorbar` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
+| `features_annotation_readout` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
+| `features_image_probe` | `v0.4 required` | [scenarios/v04_required/CORE_RELEASE_PROOFS.md](scenarios/v04_required/CORE_RELEASE_PROOFS.md) |
+| `showcases_protein` | `v0.4 required` | [scenarios/v04_required/SCIENTIFIC.md](scenarios/v04_required/SCIENTIFIC.md) |
+| `showcases_choropleth` | `v0.4 required` | [scenarios/v04_required/SCIENTIFIC.md](scenarios/v04_required/SCIENTIFIC.md) |
+| `showcases_wind_field` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
+| `showcases_gpu_particle_smoke` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
+| `showcases_textured_planet` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
+| `showcases_point_cloud` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
+| `showcases_brain_volume` | `v0.4 required` | [scenarios/v04_required/SHOWCASES.md](scenarios/v04_required/SHOWCASES.md) |
+| `composites_polygon` | `v0.4 required` | [scenarios/v04_required/COMPOSITES.md](scenarios/v04_required/COMPOSITES.md) |
+| `composites_graph` | `v0.4 required` | [scenarios/v04_required/COMPOSITES.md](scenarios/v04_required/COMPOSITES.md) |
 | `webgpu_browser_subset` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |
 | `gallery_video_capture` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |
-| `datetime_axis` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |
+| `features_datetime_axis` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |
 | `splat_cloud` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |
 | `cpu_fluid_or_particles` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |
 | `dense_streaming_2d` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |

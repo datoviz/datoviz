@@ -11,7 +11,7 @@
  * compass probe: angle is mathematical counter-clockwise, and triangle diameter_px is the
  * screen-space bounding-box diameter.
  *
- * Scenario: visual.marker
+ * Scenario: visuals_marker
  * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/marker
@@ -302,7 +302,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_visual_marker_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "visual_marker",
+        .id = "visuals_marker",
         .title = "Marker",
         .width = WIDTH,
         .height = HEIGHT,

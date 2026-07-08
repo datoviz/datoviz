@@ -14,7 +14,7 @@
  * This experimental workflow is useful for simulations where GPU-updated arrays should feed a
  * render pass without a CPU round trip.
  *
- * Scenario: showcase_gpu_particle_smoke
+ * Scenario: showcases_gpu_particle_smoke
  * Style: showcase, graphite_cyan, 1280x720 window target, experimental scene compute
  *
  * Build:  just example-c showcases/gpu_particle_smoke
@@ -754,7 +754,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_showcase_gpu_particle_smoke_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "showcase_gpu_particle_smoke",
+        .id = "showcases_gpu_particle_smoke",
         .title = "GPU Particle Smoke",
         .width = WIDTH,
         .height = HEIGHT,

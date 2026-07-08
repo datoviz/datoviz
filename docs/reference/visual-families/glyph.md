@@ -8,9 +8,9 @@ Primitive: atlas-textured quads.
 
 ## Preview And Links
 
-[![Glyph](../../assets/gallery/v0.4/visuals/visual_glyph.webp)](../../examples/gallery/visuals/visual_glyph.md)
+[![Glyph](../../assets/gallery/v0.4/visuals/visuals_glyph.webp)](../../examples/gallery/visuals/visuals_glyph.md)
 
-- Example: [Glyph](../../examples/gallery/visuals/visual_glyph.md)
+- Example: [Glyph](../../examples/gallery/visuals/visuals_glyph.md)
 - How-to: [Add text, labels, and annotations](../../how-to/add-annotations.md), [add visuals to a panel](../../how-to/add-a-visual.md)
 - Related: [Text](text.md), [Labels](labels.md), [Marker](marker.md)
 
@@ -54,7 +54,7 @@ the canonical example is intended for low-level text work rather than as a first
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/glyph.c` |
-| Gallery | [Font Atlas Glyphs](../../examples/gallery/visuals/visual_glyph.md) |
+| Gallery | [Font Atlas Glyphs](../../examples/gallery/visuals/visuals_glyph.md) |
 | Build | `just example-c visuals/glyph` |
 | Smoke | `./build/examples/c/visuals/glyph --png` |
 | Validation | `smoke+screenshot` |

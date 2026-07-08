@@ -12,7 +12,7 @@
  * color while the linked arcball keeps both views aligned. Depth cueing helps dense 3D plots read
  * as depth instead of a flat pile of symbols.
  *
- * Scenario: feature.depth_cue
+ * Scenario: features_technique_depth_cue
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/technique_depth_cue
@@ -351,7 +351,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 static DvzScenarioSpec _depth_cue_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "technique_depth_cue",
+        .id = "features_technique_depth_cue",
         .title = "Depth Cue",
         .width = WIDTH,
         .height = HEIGHT,

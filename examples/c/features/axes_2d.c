@@ -6,7 +6,7 @@
 
 /* axes_2d - This example shows a 2D data path with retained axes, ticks, and grid lines.
  *
- * Scenario: path_axes_2d
+ * Scenario: features_axes_2d
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/axes_2d
@@ -226,7 +226,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_axes_2d_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "path_axes_2d",
+        .id = "features_axes_2d",
         .title = "Path With 2D Axes",
         .width = WIDTH,
         .height = HEIGHT,

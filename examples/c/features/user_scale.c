@@ -12,7 +12,7 @@
  * marker diameters, stroke widths, text, and axis styling while data coordinates stay fixed. User
  * scale is useful for HiDPI displays, screenshots, and accessibility-sized scientific figures.
  *
- * Scenario: feature.user_scale
+ * Scenario: features_user_scale
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/user_scale
@@ -377,7 +377,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_user_scale_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_user_scale",
+        .id = "features_user_scale",
         .title = "User Scale",
         .width = WIDTH,
         .height = HEIGHT,

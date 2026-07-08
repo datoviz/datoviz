@@ -10,7 +10,7 @@ for the public gallery, but the lane promise is real data and attribution rather
 visual impact.
 
 
-## `protein_arcball_viewer`
+## `showcases_protein`
 
 Flagship current-stack 3D scientific example. It should communicate shaded molecular 3D,
 interaction, and multi-pass rendering without waiting for full molecular tooling.
@@ -32,7 +32,7 @@ Source and provenance requirements:
 Defer full ball-and-stick chemistry, labels, picking, and molecular surfaces if needed.
 
 
-## `us_state_choropleth`
+## `showcases_choropleth`
 
 Current-stack geospatial/scientific example for many-region polygon-set rendering, scalar
 colormaps, and publication data provenance.

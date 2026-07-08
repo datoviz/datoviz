@@ -6,7 +6,7 @@
 
 /* guide_lines - This example shows movable horizontal and vertical guide lines.
  *
- * Scenario: feature.guide_lines
+ * Scenario: features_guide_lines
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/guide_lines
@@ -272,7 +272,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_guide_lines_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_guide_lines",
+        .id = "features_guide_lines",
         .title = "Guide Lines",
         .width = WIDTH,
         .height = HEIGHT,

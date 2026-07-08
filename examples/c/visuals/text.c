@@ -11,7 +11,7 @@
  * annotations, and rotated label to see how titles, units, and short scientific notes can be added
  * without managing glyph quads manually.
  *
- * Scenario: visual.text
+ * Scenario: visuals_text
  * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/text
@@ -280,7 +280,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_visual_text_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "visual_text",
+        .id = "visuals_text",
         .title = "Text",
         .width = WIDTH,
         .height = HEIGHT,

@@ -2,7 +2,7 @@
 
 Place readable text in or near a data view.
 
-![Annotation Readout](../assets/gallery/v0.4/features/annotation_readout.webp)
+![Annotation Readout](../assets/gallery/v0.4/features/features_annotation_readout.webp)
 
 ## Task Workflow
 
@@ -141,6 +141,6 @@ style are stable.
 
 ??? example "Related examples"
 
-    - [Text Block](../examples/gallery/features/feature_text_block.md) - Source: `examples/c/features/text_block.c`
-    - [Labels](../examples/gallery/visuals/visual_labels.md) - Source: `examples/c/visuals/labels.c`
-    - [Annotation Readout](../examples/gallery/features/annotation_readout.md) - Source: `examples/c/features/annotation_readout.c`
+    - [Text Block](../examples/gallery/features/features_text_block.md) - Source: `examples/c/features/text_block.c`
+    - [Labels](../examples/gallery/visuals/visuals_labels.md) - Source: `examples/c/visuals/labels.c`
+    - [Annotation Readout](../examples/gallery/features/features_annotation_readout.md) - Source: `examples/c/features/annotation_readout.c`

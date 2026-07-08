@@ -11,7 +11,7 @@
  * faces to see how indexed geometry, lighting normals, and an arcball camera make a compact 3D
  * object readable.
  *
- * Scenario: visual.mesh
+ * Scenario: visuals_mesh
  * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/mesh
@@ -189,7 +189,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_visual_mesh_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "visual_mesh",
+        .id = "visuals_mesh",
         .title = "Mesh",
         .width = WIDTH,
         .height = HEIGHT,

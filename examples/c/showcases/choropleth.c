@@ -15,7 +15,7 @@
  * to prepared geometry before rendering. Run the preparation command if the promoted data bundle is
  * not present.
  *
- * Scenario: us_state_choropleth
+ * Scenario: showcases_choropleth
  * Style: showcase scientific, polygon-set, 1280x720 window target
  *
  * Data:    U.S. Census Bureau 2024 cartographic state boundaries and Vintage 2025 resident
@@ -789,7 +789,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_showcase_us_state_choropleth_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "us_state_choropleth",
+        .id = "showcases_choropleth",
         .title = "U.S. State Choropleth",
         .width = WIDTH,
         .height = HEIGHT,

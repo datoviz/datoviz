@@ -12,7 +12,7 @@
  * linked panels and compare how back faces and overlapping colors are resolved. This helps choose
  * a transparency mode for volumes, nested surfaces, or uncertain 3D regions.
  *
- * Scenario: feature.transparency_order
+ * Scenario: features_technique_transparency
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/technique_transparency
@@ -297,7 +297,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 static DvzScenarioSpec _transparency_order_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "technique_transparency",
+        .id = "features_technique_transparency",
         .title = "Transparency Order",
         .width = WIDTH,
         .height = HEIGHT,

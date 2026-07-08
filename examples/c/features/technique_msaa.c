@@ -11,7 +11,7 @@
  * diagonal cube edges and small silhouettes in the screenshot or live preview; MSAA is useful when
  * scientific meshes or glyphs need smoother boundaries without changing their geometry.
  *
- * Scenario: feature.msaa
+ * Scenario: features_technique_msaa
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/technique_msaa
@@ -297,7 +297,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 static DvzScenarioSpec _msaa_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "technique_msaa",
+        .id = "features_technique_msaa",
         .title = "Multisample Antialiasing",
         .width = WIDTH,
         .height = HEIGHT,

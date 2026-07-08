@@ -11,7 +11,7 @@
  * cap settings, making it easy to compare butt, square, and round endpoints for uncertainty bars,
  * links, ticks, and measurement overlays.
  *
- * Scenario: visual.segment
+ * Scenario: visuals_segment
  * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/segment
@@ -242,7 +242,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_visual_segment_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "visual_segment",
+        .id = "visuals_segment",
         .title = "Segment",
         .width = WIDTH,
         .height = HEIGHT,

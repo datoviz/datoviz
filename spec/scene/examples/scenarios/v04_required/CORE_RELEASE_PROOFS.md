@@ -10,7 +10,7 @@ They replace the old one-file-per-core-example notes for point, axes, linked pan
 sphere impostors, volume, and scale bars.
 
 
-## `point_2d`
+## `visuals_point`
 
 Smallest retained-scene smoke: one full panel, 2D point visual, panzoom or offscreen render, and a
 bounded data upload. It should stay boring and deterministic.
@@ -19,7 +19,7 @@ Minimal target: runnable C example that creates a figure, one panel, a point vis
 positions/colors/sizes, and one screenshot or bounded window loop.
 
 
-## `path_axes_2d`
+## `features_axes_2d`
 
 First axes/text regression target: a path or line-strip visual in data coordinates with linear axes,
 ticks, labels, grid/spines, and panzoom.
@@ -28,7 +28,7 @@ Minimal target: one path over a synthetic curve, generated ticks, rendered label
 that makes axis placement and clipping obvious.
 
 
-## `linked_panels_axes_panzoom`
+## `showcases_panel_linked_axes`
 
 Multi-panel proof for linked controller semantics. The important behavior is shared X or shared
 XY panzoom with independent panel bounds and axis refresh.
@@ -37,7 +37,7 @@ Minimal target: two or three panels with different visual families, synchronized
 axes that update without rebuilding unrelated resources.
 
 
-## `linked_panels_probe_colorbar`
+## `showcases_linked_probe_colorbar`
 
 Main 2D explanatory-object pressure test. It combines shared sampled fields, image probe requests,
 crosshair/readout state, colorbar, and linked panels.
@@ -47,7 +47,7 @@ panels backed by compatible fields, mirrored probe markers, one probe result tha
 readout, and one continuous colorbar with stable scale identity.
 
 
-## `feature_picking`
+## `features_picking`
 
 Marker visual and item-pick proof. Bounding-box GPU picking is acceptable for v0.4; exact SDF
 marker hit testing can follow.
@@ -56,7 +56,7 @@ Minimal target: marker scatter with stable item ids, hover/click pick result, an
 highlight that proves the picked id propagates back into scene styling.
 
 
-## `feature_isolines`
+## `features_isolines`
 
 CPU contour extraction proof using public `geom` helpers.
 
@@ -64,7 +64,7 @@ Minimal target: structured surface grid with scalar values, extracted contour se
 retained segment overlay above the mesh.
 
 
-## `feature_builtin_shapes_2d`
+## `features_builtin_shapes_2d`
 
 Builtin 2D geometry-builder proof.
 
@@ -72,7 +72,7 @@ Minimal target: rectangle, disc, sector, regular polygon, star, and triangulated
 rendered as retained meshes.
 
 
-## `feature_builtin_shapes_3d`
+## `features_builtin_shapes_3d`
 
 Builtin 3D geometry-builder proof.
 
@@ -80,7 +80,7 @@ Minimal target: cube, UV sphere, cylinder, cone, torus, and arrow rendered as re
 single orbiting/arcball camera. Classic polyhedra remain planned.
 
 
-## `feature_obj_loading`
+## `features_obj_loading`
 
 Wavefront OBJ file-loading proof.
 
@@ -88,7 +88,7 @@ Minimal target: a tiny self-contained OBJ mesh loaded through `dvz_geometry_obj(
 retained mesh. PLY remains planned and glTF 2.0 is v0.5 asset-import work.
 
 
-## `sphere_impostor`
+## `visuals_sphere`
 
 Small 3D quality proof for analytic sphere impostors, depth, lighting, and camera interaction.
 
@@ -97,7 +97,7 @@ and one offscreen capture. SSAO/material polish may be shown in a showcase but s
 fixture.
 
 
-## `volume`
+## `visuals_volume`
 
 Combined replacement for the old volume slice and volume offscreen notes. This scenario proves that
 3D sampled fields can be bound, sliced or rendered, colormapped, and captured deterministically.
@@ -106,7 +106,7 @@ Minimal target: one synthetic 3D scalar field, one slice or simple volume mode, 
 controls as constants, and offscreen readback or screenshot validation.
 
 
-## `scale_bar`
+## `features_scalebar`
 
 Narrow proof for retained scale bars in a 2D context.
 
@@ -119,7 +119,7 @@ uses `.unit = "ms"` with `.data_to_unit = 1.0`, proving that scale bars are not 
 spatial axes or meter-based labels.
 
 
-## `colorbar`
+## `features_colorbar`
 
 Focused proof for continuous scalar colorbars. It should show one scalar-colored field or visual and
 one readable colorbar with deterministic range labels.
@@ -130,7 +130,7 @@ Minimal target: one scalar source with an explicit range, one retained colorbar 
 same scale, stable tick/range labels, and no probe callbacks or linked-panel state.
 
 
-## `annotation_readout`
+## `features_annotation_readout`
 
 Focused proof for anchored annotation text or readout labels. It should make the anchor and the
 displayed text obvious without relying on image probing or linked panels.
@@ -141,7 +141,7 @@ Minimal target: one highlighted data target, one retained text/readout annotatio
 that target, and a deterministic smoke path that shows the label within the panel.
 
 
-## `image_probe`
+## `features_image_probe`
 
 Focused public image-query proof for scalar sampled fields. It keeps the source field scalar,
 renders through a custom LUT colormap, and exposes a GPU-backed pixel query with a visible probe
@@ -151,7 +151,7 @@ Current proof: `examples/c/features/image_probe.c`.
 
 Minimal target: one scalar image field, explicit scale/colormap setup, GPU-backed pixel hit/miss
 query, and a crosshair or marker aligned with the queried plot area. Colorbar and textual readout
-coverage stays in `colorbar` and `annotation_readout`.
+coverage stays in `features_colorbar` and `features_annotation_readout`.
 
 
 ## Blockers To Track In Planning

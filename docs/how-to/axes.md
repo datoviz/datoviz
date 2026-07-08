@@ -9,7 +9,7 @@ Add 2D axes, ticks, grid lines, and labels to a panel.
 - A figure needs axis titles, grid lines, or tuned tick density.
 - You need a plotting-style panel rather than a bare scene view.
 
-Use [reference grids](../examples/gallery/features/feature_reference_grid.md) or orientation gizmos
+Use [reference grids](../examples/gallery/features/features_reference_grid.md) or orientation gizmos
 for 3D spatial context. The retained axis helpers described here are for panel-owned 2D X/Y axes.
 
 ## Minimal Sequence
@@ -115,15 +115,15 @@ browser support matters, especially if the scene also uses panzoom or text-heavy
 
 ## Canonical Examples
 
-![Path With 2D Axes](../assets/gallery/v0.4/features/path_axes_2d.webp)
+![Path With 2D Axes](../assets/gallery/v0.4/features/features_axes_2d.webp)
 
-- [Path With 2D Axes](../examples/gallery/features/path_axes_2d.md) - minimal retained 2D axes and
+- [Path With 2D Axes](../examples/gallery/features/features_axes_2d.md) - minimal retained 2D axes and
   tick labels on a path plot. Source: `examples/c/features/axes_2d.c`.
-- [Axis Labels](../examples/gallery/features/feature_axis_labels.md) - axis titles, tick-label
+- [Axis Labels](../examples/gallery/features/features_axis_labels.md) - axis titles, tick-label
   spacing, and plot margins. Source: `examples/c/features/axis_labels.c`.
-- [Linked Panels With Axes](../examples/gallery/showcases/linked_panels_axes_panzoom.md) - linked
+- [Linked Panels With Axes](../examples/gallery/showcases/showcases_panel_linked_axes.md) - linked
   panels, axes, and panzoom coordination. Source: `examples/c/showcases/panel_linked_axes.c`.
-- [Scientific Plotting Workflow](../examples/gallery/showcases/scientific_plotting_workflow.md) -
+- [Scientific Plotting Workflow](../examples/gallery/showcases/showcases_scientific_plotting.md) -
   composed plotting workflow using axes as one part of a larger layout.
 
 ## Important Details

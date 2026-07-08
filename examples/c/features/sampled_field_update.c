@@ -12,7 +12,7 @@
  * Compare the two panels during live playback; shared fields are useful when several views need
  * different color treatments of the same changing image data.
  *
- * Scenario: feature.sampled_field_update
+ * Scenario: features_sampled_field_update
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/sampled_field_update
@@ -479,7 +479,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_sampled_field_update_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_sampled_field_update",
+        .id = "features_sampled_field_update",
         .title = "Sampled Field Update",
         .width = WIDTH,
         .height = HEIGHT,

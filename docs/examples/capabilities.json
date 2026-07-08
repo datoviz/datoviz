@@ -25,12 +25,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "composite_graph",
+            "id": "composites_graph",
             "title": "Graph Composite",
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/graph.c",
-            "page": "gallery/composites/composite_graph.md"
+            "page": "gallery/composites/composites_graph.md"
           }
         ]
       },
@@ -38,12 +38,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "composite_polygon",
+            "id": "composites_polygon",
             "title": "Polygon Composite",
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/polygon.c",
-            "page": "gallery/composites/composite_polygon.md"
+            "page": "gallery/composites/composites_polygon.md"
           }
         ]
       }
@@ -53,28 +53,28 @@
         "count": 3,
         "examples": [
           {
-            "id": "us_state_choropleth",
+            "id": "showcases_choropleth",
             "title": "U.S. State Choropleth",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/us_state_choropleth.md"
+            "page": "gallery/showcases/showcases_choropleth.md"
           },
           {
-            "id": "brain_volume",
+            "id": "showcases_brain_volume",
             "title": "Allen Mouse Brain",
             "category": "showcase",
             "status": "prototype",
             "source": "examples/c/showcases/brain_volume.c",
-            "page": "gallery/showcases/brain_volume.md"
+            "page": "gallery/showcases/showcases_brain_volume.md"
           },
           {
-            "id": "point_cloud",
+            "id": "showcases_point_cloud",
             "title": "Point Cloud",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
-            "page": "gallery/showcases/point_cloud.md"
+            "page": "gallery/showcases/showcases_point_cloud.md"
           }
         ]
       },
@@ -82,20 +82,20 @@
         "count": 2,
         "examples": [
           {
-            "id": "protein_arcball_viewer",
+            "id": "showcases_protein",
             "title": "Protein",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/protein.c",
-            "page": "gallery/showcases/protein_arcball_viewer.md"
+            "page": "gallery/showcases/showcases_protein.md"
           },
           {
-            "id": "textured_terrain_or_planet",
+            "id": "showcases_textured_planet",
             "title": "Textured Planets",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/textured_terrain_or_planet.md"
+            "page": "gallery/showcases/showcases_textured_planet.md"
           }
         ]
       },
@@ -103,12 +103,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "showcase_gpu_particle_smoke",
+            "id": "showcases_gpu_particle_smoke",
             "title": "GPU Particle Smoke",
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/gpu_particle_smoke.c",
-            "page": "gallery/showcases/showcase_gpu_particle_smoke.md"
+            "page": "gallery/showcases/showcases_gpu_particle_smoke.md"
           }
         ]
       },
@@ -116,788 +116,788 @@
         "count": 103,
         "examples": [
           {
-            "id": "feature_basic_scene",
+            "id": "features_basic_scene",
             "title": "Basic Scene",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/basic_scene.c",
-            "page": "gallery/features/feature_basic_scene.md"
+            "page": "gallery/features/features_basic_scene.md"
           },
           {
-            "id": "feature_panel_single",
+            "id": "features_panel_single",
             "title": "Single Panel",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_single.c",
-            "page": "gallery/features/feature_panel_single.md"
+            "page": "gallery/features/features_panel_single.md"
           },
           {
-            "id": "feature_panel_grid",
+            "id": "features_panel_grid",
             "title": "Panel Grid",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_grid.c",
-            "page": "gallery/features/feature_panel_grid.md"
+            "page": "gallery/features/features_panel_grid.md"
           },
           {
-            "id": "feature_panel_multi",
+            "id": "features_panel_multi",
             "title": "Multiple Panels",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_multi.c",
-            "page": "gallery/features/feature_panel_multi.md"
+            "page": "gallery/features/features_panel_multi.md"
           },
           {
-            "id": "feature_panel_linked",
+            "id": "features_panel_linked",
             "title": "Linked Panels",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_linked.c",
-            "page": "gallery/features/feature_panel_linked.md"
+            "page": "gallery/features/features_panel_linked.md"
           },
           {
-            "id": "path_axes_2d",
+            "id": "features_axes_2d",
             "title": "Path With 2D Axes",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/axes_2d.c",
-            "page": "gallery/features/path_axes_2d.md"
+            "page": "gallery/features/features_axes_2d.md"
           },
           {
-            "id": "feature_coordinate_system",
+            "id": "features_coordinate_system",
             "title": "Coordinate System",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/coordinate_system.c",
-            "page": "gallery/features/feature_coordinate_system.md"
+            "page": "gallery/features/features_coordinate_system.md"
           },
           {
-            "id": "feature_axis_labels",
+            "id": "features_axis_labels",
             "title": "Axis Labels",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/axis_labels.c",
-            "page": "gallery/features/feature_axis_labels.md"
+            "page": "gallery/features/features_axis_labels.md"
           },
           {
-            "id": "feature_sampled_field_update",
+            "id": "features_sampled_field_update",
             "title": "Sampled Field Update",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/sampled_field_update.c",
-            "page": "gallery/features/feature_sampled_field_update.md"
+            "page": "gallery/features/features_sampled_field_update.md"
           },
           {
-            "id": "feature_text_block",
+            "id": "features_text_block",
             "title": "Text Block",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/text_block.c",
-            "page": "gallery/features/feature_text_block.md"
+            "page": "gallery/features/features_text_block.md"
           },
           {
-            "id": "feature_overlay_card",
+            "id": "features_overlay_card",
             "title": "Overlay Card",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/overlay_card.c",
-            "page": "gallery/features/feature_overlay_card.md"
+            "page": "gallery/features/features_overlay_card.md"
           },
           {
-            "id": "feature_controller_arcball",
+            "id": "features_controller_arcball",
             "title": "Arcball Controller",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/controller_arcball.c",
-            "page": "gallery/features/feature_controller_arcball.md"
+            "page": "gallery/features/features_controller_arcball.md"
           },
           {
-            "id": "feature_camera_manual",
+            "id": "features_camera_manual",
             "title": "Manual Camera",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/camera_manual.c",
-            "page": "gallery/features/feature_camera_manual.md"
+            "page": "gallery/features/features_camera_manual.md"
           },
           {
-            "id": "feature_orientation_gizmo",
+            "id": "features_orientation_gizmo",
             "title": "Orientation Gizmo",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/orientation_gizmo.c",
-            "page": "gallery/features/feature_orientation_gizmo.md"
+            "page": "gallery/features/features_orientation_gizmo.md"
           },
           {
-            "id": "feature_reference_grid",
+            "id": "features_reference_grid",
             "title": "Reference Grid",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/reference_grid.c",
-            "page": "gallery/features/feature_reference_grid.md"
+            "page": "gallery/features/features_reference_grid.md"
           },
           {
-            "id": "feature_bounds_overlay",
+            "id": "features_bounds_overlay",
             "title": "Bounds Overlay",
             "category": "feature",
             "status": "diagnostic",
             "source": "examples/c/features/bounds_overlay.c",
-            "page": "gallery/features/feature_bounds_overlay.md"
+            "page": "gallery/features/features_bounds_overlay.md"
           },
           {
-            "id": "feature_controller_fly",
+            "id": "features_controller_fly",
             "title": "Fly Controller",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/controller_fly.c",
-            "page": "gallery/features/feature_controller_fly.md"
+            "page": "gallery/features/features_controller_fly.md"
           },
           {
-            "id": "feature_controller_turntable",
+            "id": "features_controller_turntable",
             "title": "Turntable Controller",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/controller_turntable.c",
-            "page": "gallery/features/feature_controller_turntable.md"
+            "page": "gallery/features/features_controller_turntable.md"
           },
           {
-            "id": "feature_mesh_texture",
+            "id": "features_mesh_texture",
             "title": "Textured Mesh",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/mesh_texture.c",
-            "page": "gallery/features/feature_mesh_texture.md"
+            "page": "gallery/features/features_mesh_texture.md"
           },
           {
-            "id": "feature_material_mesh",
+            "id": "features_material_mesh",
             "title": "Mesh Materials",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/material_mesh.c",
-            "page": "gallery/features/feature_material_mesh.md"
+            "page": "gallery/features/features_material_mesh.md"
           },
           {
-            "id": "feature_lighting",
+            "id": "features_lighting",
             "title": "Lighting",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/lighting.c",
-            "page": "gallery/features/feature_lighting.md"
+            "page": "gallery/features/features_lighting.md"
           },
           {
-            "id": "feature_user_scale",
+            "id": "features_user_scale",
             "title": "User Scale",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/user_scale.c",
-            "page": "gallery/features/feature_user_scale.md"
+            "page": "gallery/features/features_user_scale.md"
           },
           {
-            "id": "feature_gui_controls",
+            "id": "features_gui_controls",
             "title": "GUI Controls",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/gui_controls.c",
-            "page": "gallery/features/feature_gui_controls.md"
+            "page": "gallery/features/features_gui_controls.md"
           },
           {
-            "id": "feature_gui_viewport",
+            "id": "features_gui_viewport",
             "title": "GUI Viewport",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/gui_viewport.c",
-            "page": "gallery/features/feature_gui_viewport.md"
+            "page": "gallery/features/features_gui_viewport.md"
           },
           {
-            "id": "feature_gui_cimgui",
+            "id": "features_gui_cimgui",
             "title": "Raw cimgui GUI",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/gui_cimgui.c",
-            "page": "gallery/features/feature_gui_cimgui.md"
+            "page": "gallery/features/features_gui_cimgui.md"
           },
           {
-            "id": "feature_animation_tracks",
+            "id": "features_animation_tracks",
             "title": "Animation Tracks",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/animation_tracks.c",
-            "page": "gallery/features/feature_animation_tracks.md"
+            "page": "gallery/features/features_animation_tracks.md"
           },
           {
-            "id": "feature_compute_buffer_animation",
+            "id": "features_compute_buffer_animation",
             "title": "Compute Buffer Animation",
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/compute_buffer_animation.c",
-            "page": "gallery/features/feature_compute_buffer_animation.md"
+            "page": "gallery/features/features_compute_buffer_animation.md"
           },
           {
-            "id": "technique_edl",
+            "id": "features_technique_edl",
             "title": "Eye-Dome Lighting",
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/technique_edl.c",
-            "page": "gallery/features/technique_edl.md"
+            "page": "gallery/features/features_technique_edl.md"
           },
           {
-            "id": "technique_ssao",
+            "id": "features_technique_ssao",
             "title": "Screen-Space Ambient Occlusion",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_ssao.c",
-            "page": "gallery/features/technique_ssao.md"
+            "page": "gallery/features/features_technique_ssao.md"
           },
           {
-            "id": "technique_msaa",
+            "id": "features_technique_msaa",
             "title": "Multisample Antialiasing",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_msaa.c",
-            "page": "gallery/features/technique_msaa.md"
+            "page": "gallery/features/features_technique_msaa.md"
           },
           {
-            "id": "technique_depth_cue",
+            "id": "features_technique_depth_cue",
             "title": "Depth Cue",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_depth_cue.c",
-            "page": "gallery/features/technique_depth_cue.md"
+            "page": "gallery/features/features_technique_depth_cue.md"
           },
           {
-            "id": "technique_transparency",
+            "id": "features_technique_transparency",
             "title": "Transparency Order",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_transparency.c",
-            "page": "gallery/features/technique_transparency.md"
+            "page": "gallery/features/features_technique_transparency.md"
           },
           {
-            "id": "feature_volume_occlusion",
+            "id": "features_volume_occlusion",
             "title": "Volume Occlusion",
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/volume_occlusion.c",
-            "page": "gallery/features/feature_volume_occlusion.md"
+            "page": "gallery/features/features_volume_occlusion.md"
           },
           {
-            "id": "feature_guide_lines",
+            "id": "features_guide_lines",
             "title": "Guide Lines",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/guide_lines.c",
-            "page": "gallery/features/feature_guide_lines.md"
+            "page": "gallery/features/features_guide_lines.md"
           },
           {
-            "id": "feature_guide_spans",
+            "id": "features_guide_spans",
             "title": "Guide Spans",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/guide_spans.c",
-            "page": "gallery/features/feature_guide_spans.md"
+            "page": "gallery/features/features_guide_spans.md"
           },
           {
-            "id": "feature_bars_bands",
+            "id": "features_bars_bands",
             "title": "Bars And Bands",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/bars_bands.c",
-            "page": "gallery/features/feature_bars_bands.md"
+            "page": "gallery/features/features_bars_bands.md"
           },
           {
-            "id": "feature_app_glfw",
+            "id": "runtime_app_glfw",
             "title": "GLFW App",
             "category": "runtime",
             "status": "supported",
             "source": "examples/c/runtime/app_glfw.c",
-            "page": "gallery/runtime/feature_app_glfw.md"
+            "page": "gallery/runtime/runtime_app_glfw.md"
           },
           {
-            "id": "feature_multi_window",
+            "id": "runtime_multi_window",
             "title": "Multi Window",
             "category": "runtime",
             "status": "supported",
             "source": "examples/c/runtime/multi_window.c",
-            "page": "gallery/runtime/feature_multi_window.md"
+            "page": "gallery/runtime/runtime_multi_window.md"
           },
           {
-            "id": "feature_offscreen_capture",
+            "id": "runtime_offscreen_capture",
             "title": "Offscreen Capture",
             "category": "runtime",
             "status": "supported",
             "source": "examples/c/runtime/offscreen_capture.c",
-            "page": "gallery/runtime/feature_offscreen_capture.md"
+            "page": "gallery/runtime/runtime_offscreen_capture.md"
           },
           {
-            "id": "feature_input_events",
+            "id": "features_input_events",
             "title": "Input Events",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/input_events.c",
-            "page": "gallery/features/feature_input_events.md"
+            "page": "gallery/features/features_input_events.md"
           },
           {
-            "id": "feature_view_size_policies",
+            "id": "features_view_size_policies",
             "title": "View Size Policies",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/view_size_policies.c",
-            "page": "gallery/features/feature_view_size_policies.md"
+            "page": "gallery/features/features_view_size_policies.md"
           },
           {
-            "id": "feature_record_replay",
+            "id": "runtime_record_replay",
             "title": "Record Replay",
             "category": "runtime",
             "status": "experimental",
             "source": "examples/c/runtime/record_replay.c",
-            "page": "gallery/runtime/feature_record_replay.md"
+            "page": "gallery/runtime/runtime_record_replay.md"
           },
           {
-            "id": "feature_visual_transform",
+            "id": "features_visual_transform",
             "title": "Visual Transform",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/visual_transform.c",
-            "page": "gallery/features/feature_visual_transform.md"
+            "page": "gallery/features/features_visual_transform.md"
           },
           {
-            "id": "feature_panel_view2d",
+            "id": "features_panel_view2d",
             "title": "Panel View 2D",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_view2d.c",
-            "page": "gallery/features/feature_panel_view2d.md"
+            "page": "gallery/features/features_panel_view2d.md"
           },
           {
-            "id": "feature_json_export",
+            "id": "features_json_export",
             "title": "JSON Export",
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/json_export.c",
-            "page": "gallery/features/feature_json_export.md"
+            "page": "gallery/features/features_json_export.md"
           },
           {
-            "id": "feature_bezier_curve_path",
+            "id": "features_bezier_curve_path",
             "title": "Bezier Curve Path",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/bezier_curve_path.c",
-            "page": "gallery/features/feature_bezier_curve_path.md"
+            "page": "gallery/features/features_bezier_curve_path.md"
           },
           {
-            "id": "feature_path_join",
+            "id": "features_path_join",
             "title": "Path Join",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/path_join.c",
-            "page": "gallery/features/feature_path_join.md"
+            "page": "gallery/features/features_path_join.md"
           },
           {
-            "id": "linked_panels_axes_panzoom",
+            "id": "showcases_panel_linked_axes",
             "title": "Linked Panels With Axes",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/panel_linked_axes.c",
-            "page": "gallery/showcases/linked_panels_axes_panzoom.md"
+            "page": "gallery/showcases/showcases_panel_linked_axes.md"
           },
           {
-            "id": "linked_panels_probe_colorbar",
+            "id": "showcases_linked_probe_colorbar",
             "title": "Linked Probe With Colorbar",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/linked_probe_colorbar.c",
-            "page": "gallery/showcases/linked_panels_probe_colorbar.md"
+            "page": "gallery/showcases/showcases_linked_probe_colorbar.md"
           },
           {
-            "id": "scientific_plotting_workflow",
+            "id": "showcases_scientific_plotting",
             "title": "Scientific Plotting Workflow",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scientific_plotting.c",
-            "page": "gallery/showcases/scientific_plotting_workflow.md"
+            "page": "gallery/showcases/showcases_scientific_plotting.md"
           },
           {
-            "id": "scale_bar",
+            "id": "features_scalebar",
             "title": "Scale Bar",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/scalebar.c",
-            "page": "gallery/features/scale_bar.md"
+            "page": "gallery/features/features_scalebar.md"
           },
           {
-            "id": "scalebar_units",
+            "id": "features_scalebar_units",
             "title": "Scale Bar Units",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/scalebar_units.c",
-            "page": "gallery/features/scalebar_units.md"
+            "page": "gallery/features/features_scalebar_units.md"
           },
           {
-            "id": "scalebar_measurement_workflow",
+            "id": "showcases_scalebar_measurement",
             "title": "Scale Bar Measurement Workflow",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scalebar_measurement.c",
-            "page": "gallery/showcases/scalebar_measurement_workflow.md"
+            "page": "gallery/showcases/showcases_scalebar_measurement.md"
           },
           {
-            "id": "colorbar",
+            "id": "features_colorbar",
             "title": "Colorbar",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/colorbar.c",
-            "page": "gallery/features/colorbar.md"
+            "page": "gallery/features/features_colorbar.md"
           },
           {
-            "id": "colormap_scale",
+            "id": "features_colormap_scale",
             "title": "Scalar Color Scale",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/colormap_scale.c",
-            "page": "gallery/features/colormap_scale.md"
+            "page": "gallery/features/features_colormap_scale.md"
           },
           {
-            "id": "annotation_readout",
+            "id": "features_annotation_readout",
             "title": "Annotation Readout",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/annotation_readout.c",
-            "page": "gallery/features/annotation_readout.md"
+            "page": "gallery/features/features_annotation_readout.md"
           },
           {
-            "id": "update_partial",
+            "id": "features_update_partial",
             "title": "Partial Data Update",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/update_partial.c",
-            "page": "gallery/features/update_partial.md"
+            "page": "gallery/features/features_update_partial.md"
           },
           {
-            "id": "feature_update_visual_data",
+            "id": "features_update_visual_data",
             "title": "Visual Data Update",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/update_visual_data.c",
-            "page": "gallery/features/feature_update_visual_data.md"
+            "page": "gallery/features/features_update_visual_data.md"
           },
           {
-            "id": "feature_visibility",
+            "id": "features_visibility",
             "title": "Visual Visibility",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/visibility.c",
-            "page": "gallery/features/feature_visibility.md"
+            "page": "gallery/features/features_visibility.md"
           },
           {
-            "id": "technique_depth_test",
+            "id": "features_technique_depth_test",
             "title": "Depth Test Toggle",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_depth_test.c",
-            "page": "gallery/features/technique_depth_test.md"
+            "page": "gallery/features/features_technique_depth_test.md"
           },
           {
-            "id": "alpha_blending",
+            "id": "features_alpha_blending",
             "title": "Alpha Blending",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/alpha_blending.c",
-            "page": "gallery/features/alpha_blending.md"
+            "page": "gallery/features/features_alpha_blending.md"
           },
           {
-            "id": "panel_background",
+            "id": "features_panel_background",
             "title": "Panel Background",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_background.c",
-            "page": "gallery/features/panel_background.md"
+            "page": "gallery/features/features_panel_background.md"
           },
           {
-            "id": "feature_panzoom",
+            "id": "features_panzoom",
             "title": "Panzoom",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panzoom.c",
-            "page": "gallery/features/feature_panzoom.md"
+            "page": "gallery/features/features_panzoom.md"
           },
           {
-            "id": "image_probe",
+            "id": "features_image_probe",
             "title": "Image Probe",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/image_probe.c",
-            "page": "gallery/features/image_probe.md"
+            "page": "gallery/features/features_image_probe.md"
           },
           {
-            "id": "feature_picking",
+            "id": "features_picking",
             "title": "Picking",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/picking.c",
-            "page": "gallery/features/feature_picking.md"
+            "page": "gallery/features/features_picking.md"
           },
           {
-            "id": "feature_selection_pixel",
+            "id": "features_selection_pixel",
             "title": "Pixel Selection",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/selection_pixel.c",
-            "page": "gallery/features/feature_selection_pixel.md"
+            "page": "gallery/features/features_selection_pixel.md"
           },
           {
-            "id": "feature_selection_sphere",
+            "id": "features_selection_sphere",
             "title": "Sphere Selection",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/selection_sphere.c",
-            "page": "gallery/features/feature_selection_sphere.md"
+            "page": "gallery/features/features_selection_sphere.md"
           },
           {
-            "id": "feature_selection_mesh_instances",
+            "id": "features_selection_mesh_instances",
             "title": "Mesh Instance Selection",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/selection_mesh_instances.c",
-            "page": "gallery/features/feature_selection_mesh_instances.md"
+            "page": "gallery/features/features_selection_mesh_instances.md"
           },
           {
-            "id": "feature_isolines",
+            "id": "features_isolines",
             "title": "Isolines",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/isolines.c",
-            "page": "gallery/features/feature_isolines.md"
+            "page": "gallery/features/features_isolines.md"
           },
           {
-            "id": "feature_builtin_shapes_2d",
+            "id": "features_builtin_shapes_2d",
             "title": "Builtin Shapes 2D",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/builtin_shapes_2d.c",
-            "page": "gallery/features/feature_builtin_shapes_2d.md"
+            "page": "gallery/features/features_builtin_shapes_2d.md"
           },
           {
-            "id": "feature_builtin_shapes_3d",
+            "id": "features_builtin_shapes_3d",
             "title": "Builtin Shapes 3D",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/builtin_shapes_3d.c",
-            "page": "gallery/features/feature_builtin_shapes_3d.md"
+            "page": "gallery/features/features_builtin_shapes_3d.md"
           },
           {
-            "id": "feature_obj_loading",
+            "id": "features_obj_loading",
             "title": "OBJ Loading",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/obj_loading.c",
-            "page": "gallery/features/feature_obj_loading.md"
+            "page": "gallery/features/features_obj_loading.md"
           },
           {
-            "id": "feature_probe_labels",
+            "id": "features_probe_labels",
             "title": "Label Probe",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/probe_labels.c",
-            "page": "gallery/features/feature_probe_labels.md"
+            "page": "gallery/features/features_probe_labels.md"
           },
           {
-            "id": "feature_datetime_axis",
+            "id": "features_datetime_axis",
             "title": "Datetime Axis",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/datetime_axis.c",
-            "page": "gallery/features/feature_datetime_axis.md"
+            "page": "gallery/features/features_datetime_axis.md"
           },
           {
-            "id": "feature_timer_animation",
+            "id": "features_timer_animation",
             "title": "Timer Animation",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/timer_animation.c",
-            "page": "gallery/features/feature_timer_animation.md"
+            "page": "gallery/features/features_timer_animation.md"
           },
           {
-            "id": "feature_marker_symbols",
+            "id": "features_marker_symbols",
             "title": "Marker Symbols",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/marker_symbols.c",
-            "page": "gallery/features/feature_marker_symbols.md"
+            "page": "gallery/features/features_marker_symbols.md"
           },
           {
-            "id": "feature_legend_categorical",
+            "id": "features_legend_categorical",
             "title": "Categorical Legend",
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/legend_categorical.c",
-            "page": "gallery/features/feature_legend_categorical.md"
+            "page": "gallery/features/features_legend_categorical.md"
           },
           {
-            "id": "feature_video_export",
+            "id": "runtime_video_export",
             "title": "Video Export",
             "category": "runtime",
             "status": "experimental",
             "source": "examples/c/runtime/video_export.c",
-            "page": "gallery/runtime/feature_video_export.md"
+            "page": "gallery/runtime/runtime_video_export.md"
           },
           {
-            "id": "point_2d",
+            "id": "visuals_point",
             "title": "Point",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/point.c",
-            "page": "gallery/visuals/point_2d.md"
+            "page": "gallery/visuals/visuals_point.md"
           },
           {
-            "id": "visual_pixel",
+            "id": "visuals_pixel",
             "title": "Pixel",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/pixel.c",
-            "page": "gallery/visuals/visual_pixel.md"
+            "page": "gallery/visuals/visuals_pixel.md"
           },
           {
-            "id": "visual_marker",
+            "id": "visuals_marker",
             "title": "Marker",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/marker.c",
-            "page": "gallery/visuals/visual_marker.md"
+            "page": "gallery/visuals/visuals_marker.md"
           },
           {
-            "id": "visual_primitive",
+            "id": "visuals_primitive",
             "title": "Primitive",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/primitive.c",
-            "page": "gallery/visuals/visual_primitive.md"
+            "page": "gallery/visuals/visuals_primitive.md"
           },
           {
-            "id": "visual_segment",
+            "id": "visuals_segment",
             "title": "Segment",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/segment.c",
-            "page": "gallery/visuals/visual_segment.md"
+            "page": "gallery/visuals/visuals_segment.md"
           },
           {
-            "id": "visual_vector",
+            "id": "visuals_vector",
             "title": "Vector",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/vector.c",
-            "page": "gallery/visuals/visual_vector.md"
+            "page": "gallery/visuals/visuals_vector.md"
           },
           {
-            "id": "visual_path",
+            "id": "visuals_path",
             "title": "Path",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/path.c",
-            "page": "gallery/visuals/visual_path.md"
+            "page": "gallery/visuals/visuals_path.md"
           },
           {
-            "id": "visual_image",
+            "id": "visuals_image",
             "title": "Image",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image.c",
-            "page": "gallery/visuals/visual_image.md"
+            "page": "gallery/visuals/visuals_image.md"
           },
           {
-            "id": "visual_image_rgba",
+            "id": "visuals_image_rgba",
             "title": "RGBA Image",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image_rgba.c",
-            "page": "gallery/visuals/visual_image_rgba.md"
+            "page": "gallery/visuals/visuals_image_rgba.md"
           },
           {
-            "id": "visual_mesh",
+            "id": "visuals_mesh",
             "title": "Mesh",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/mesh.c",
-            "page": "gallery/visuals/visual_mesh.md"
+            "page": "gallery/visuals/visuals_mesh.md"
           },
           {
-            "id": "sphere_impostor",
+            "id": "visuals_sphere",
             "title": "Sphere",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/sphere.c",
-            "page": "gallery/visuals/sphere_impostor.md"
+            "page": "gallery/visuals/visuals_sphere.md"
           },
           {
-            "id": "visual_splat",
+            "id": "visuals_splat",
             "title": "Splat",
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/splat.c",
-            "page": "gallery/visuals/visual_splat.md"
+            "page": "gallery/visuals/visuals_splat.md"
           },
           {
-            "id": "visual_text",
+            "id": "visuals_text",
             "title": "Text",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/text.c",
-            "page": "gallery/visuals/visual_text.md"
+            "page": "gallery/visuals/visuals_text.md"
           },
           {
-            "id": "visual_glyph",
+            "id": "visuals_glyph",
             "title": "Font Atlas Glyphs",
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/glyph.c",
-            "page": "gallery/visuals/visual_glyph.md"
+            "page": "gallery/visuals/visuals_glyph.md"
           },
           {
-            "id": "visual_labels",
+            "id": "visuals_labels",
             "title": "Labels",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/labels.c",
-            "page": "gallery/visuals/visual_labels.md"
+            "page": "gallery/visuals/visuals_labels.md"
           },
           {
-            "id": "volume",
+            "id": "visuals_volume",
             "title": "Volume",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
-            "page": "gallery/visuals/volume.md"
+            "page": "gallery/visuals/visuals_volume.md"
           },
           {
-            "id": "composite_polygon",
+            "id": "composites_polygon",
             "title": "Polygon Composite",
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/polygon.c",
-            "page": "gallery/composites/composite_polygon.md"
+            "page": "gallery/composites/composites_polygon.md"
           },
           {
-            "id": "composite_graph",
+            "id": "composites_graph",
             "title": "Graph Composite",
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/graph.c",
-            "page": "gallery/composites/composite_graph.md"
+            "page": "gallery/composites/composites_graph.md"
           },
           {
-            "id": "showcase_wind_field",
+            "id": "showcases_wind_field",
             "title": "Wind Field",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
-            "page": "gallery/showcases/showcase_wind_field.md"
+            "page": "gallery/showcases/showcases_wind_field.md"
           },
           {
-            "id": "showcase_surface_grid",
+            "id": "showcases_surface_grid",
             "title": "Surface Grid",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
-            "page": "gallery/showcases/showcase_surface_grid.md"
+            "page": "gallery/showcases/showcases_surface_grid.md"
           },
           {
             "id": "advanced_raw_triangle_vklite",
@@ -947,12 +947,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "alpha_blending",
+            "id": "features_alpha_blending",
             "title": "Alpha Blending",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/alpha_blending.c",
-            "page": "gallery/features/alpha_blending.md"
+            "page": "gallery/features/features_alpha_blending.md"
           }
         ]
       },
@@ -960,12 +960,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_animation_tracks",
+            "id": "features_animation_tracks",
             "title": "Animation Tracks",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/animation_tracks.c",
-            "page": "gallery/features/feature_animation_tracks.md"
+            "page": "gallery/features/features_animation_tracks.md"
           }
         ]
       },
@@ -973,12 +973,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "annotation_readout",
+            "id": "features_annotation_readout",
             "title": "Annotation Readout",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/annotation_readout.c",
-            "page": "gallery/features/annotation_readout.md"
+            "page": "gallery/features/features_annotation_readout.md"
           }
         ]
       },
@@ -986,12 +986,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "path_axes_2d",
+            "id": "features_axes_2d",
             "title": "Path With 2D Axes",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/axes_2d.c",
-            "page": "gallery/features/path_axes_2d.md"
+            "page": "gallery/features/features_axes_2d.md"
           }
         ]
       },
@@ -999,12 +999,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_axis_labels",
+            "id": "features_axis_labels",
             "title": "Axis Labels",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/axis_labels.c",
-            "page": "gallery/features/feature_axis_labels.md"
+            "page": "gallery/features/features_axis_labels.md"
           }
         ]
       },
@@ -1012,12 +1012,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_bars_bands",
+            "id": "features_bars_bands",
             "title": "Bars And Bands",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/bars_bands.c",
-            "page": "gallery/features/feature_bars_bands.md"
+            "page": "gallery/features/features_bars_bands.md"
           }
         ]
       },
@@ -1025,12 +1025,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_bezier_curve_path",
+            "id": "features_bezier_curve_path",
             "title": "Bezier Curve Path",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/bezier_curve_path.c",
-            "page": "gallery/features/feature_bezier_curve_path.md"
+            "page": "gallery/features/features_bezier_curve_path.md"
           }
         ]
       },
@@ -1038,12 +1038,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_bounds_overlay",
+            "id": "features_bounds_overlay",
             "title": "Bounds Overlay",
             "category": "feature",
             "status": "diagnostic",
             "source": "examples/c/features/bounds_overlay.c",
-            "page": "gallery/features/feature_bounds_overlay.md"
+            "page": "gallery/features/features_bounds_overlay.md"
           }
         ]
       },
@@ -1051,12 +1051,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_builtin_shapes_2d",
+            "id": "features_builtin_shapes_2d",
             "title": "Builtin Shapes 2D",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/builtin_shapes_2d.c",
-            "page": "gallery/features/feature_builtin_shapes_2d.md"
+            "page": "gallery/features/features_builtin_shapes_2d.md"
           }
         ]
       },
@@ -1064,12 +1064,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_builtin_shapes_3d",
+            "id": "features_builtin_shapes_3d",
             "title": "Builtin Shapes 3D",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/builtin_shapes_3d.c",
-            "page": "gallery/features/feature_builtin_shapes_3d.md"
+            "page": "gallery/features/features_builtin_shapes_3d.md"
           }
         ]
       },
@@ -1077,12 +1077,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_camera_manual",
+            "id": "features_camera_manual",
             "title": "Manual Camera",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/camera_manual.c",
-            "page": "gallery/features/feature_camera_manual.md"
+            "page": "gallery/features/features_camera_manual.md"
           }
         ]
       },
@@ -1090,12 +1090,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "colorbar",
+            "id": "features_colorbar",
             "title": "Colorbar",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/colorbar.c",
-            "page": "gallery/features/colorbar.md"
+            "page": "gallery/features/features_colorbar.md"
           }
         ]
       },
@@ -1103,12 +1103,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "colormap_scale",
+            "id": "features_colormap_scale",
             "title": "Scalar Color Scale",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/colormap_scale.c",
-            "page": "gallery/features/colormap_scale.md"
+            "page": "gallery/features/features_colormap_scale.md"
           }
         ]
       },
@@ -1116,12 +1116,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_controller_arcball",
+            "id": "features_controller_arcball",
             "title": "Arcball Controller",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/controller_arcball.c",
-            "page": "gallery/features/feature_controller_arcball.md"
+            "page": "gallery/features/features_controller_arcball.md"
           }
         ]
       },
@@ -1129,12 +1129,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_controller_fly",
+            "id": "features_controller_fly",
             "title": "Fly Controller",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/controller_fly.c",
-            "page": "gallery/features/feature_controller_fly.md"
+            "page": "gallery/features/features_controller_fly.md"
           }
         ]
       },
@@ -1142,12 +1142,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_panzoom",
+            "id": "features_panzoom",
             "title": "Panzoom",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panzoom.c",
-            "page": "gallery/features/feature_panzoom.md"
+            "page": "gallery/features/features_panzoom.md"
           }
         ]
       },
@@ -1155,12 +1155,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_controller_turntable",
+            "id": "features_controller_turntable",
             "title": "Turntable Controller",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/controller_turntable.c",
-            "page": "gallery/features/feature_controller_turntable.md"
+            "page": "gallery/features/features_controller_turntable.md"
           }
         ]
       },
@@ -1168,12 +1168,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_coordinate_system",
+            "id": "features_coordinate_system",
             "title": "Coordinate System",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/coordinate_system.c",
-            "page": "gallery/features/feature_coordinate_system.md"
+            "page": "gallery/features/features_coordinate_system.md"
           }
         ]
       },
@@ -1181,12 +1181,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_datetime_axis",
+            "id": "features_datetime_axis",
             "title": "Datetime Axis",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/datetime_axis.c",
-            "page": "gallery/features/feature_datetime_axis.md"
+            "page": "gallery/features/features_datetime_axis.md"
           }
         ]
       },
@@ -1194,12 +1194,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "technique_depth_cue",
+            "id": "features_technique_depth_cue",
             "title": "Depth Cue",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_depth_cue.c",
-            "page": "gallery/features/technique_depth_cue.md"
+            "page": "gallery/features/features_technique_depth_cue.md"
           }
         ]
       },
@@ -1207,12 +1207,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "technique_depth_test",
+            "id": "features_technique_depth_test",
             "title": "Depth Test Toggle",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_depth_test.c",
-            "page": "gallery/features/technique_depth_test.md"
+            "page": "gallery/features/features_technique_depth_test.md"
           }
         ]
       },
@@ -1220,12 +1220,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "technique_edl",
+            "id": "features_technique_edl",
             "title": "Eye-Dome Lighting",
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/technique_edl.c",
-            "page": "gallery/features/technique_edl.md"
+            "page": "gallery/features/features_technique_edl.md"
           }
         ]
       },
@@ -1233,12 +1233,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_gui_cimgui",
+            "id": "features_gui_cimgui",
             "title": "Raw cimgui GUI",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/gui_cimgui.c",
-            "page": "gallery/features/feature_gui_cimgui.md"
+            "page": "gallery/features/features_gui_cimgui.md"
           }
         ]
       },
@@ -1246,12 +1246,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_gui_controls",
+            "id": "features_gui_controls",
             "title": "GUI Controls",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/gui_controls.c",
-            "page": "gallery/features/feature_gui_controls.md"
+            "page": "gallery/features/features_gui_controls.md"
           }
         ]
       },
@@ -1259,12 +1259,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_gui_viewport",
+            "id": "features_gui_viewport",
             "title": "GUI Viewport",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/gui_viewport.c",
-            "page": "gallery/features/feature_gui_viewport.md"
+            "page": "gallery/features/features_gui_viewport.md"
           }
         ]
       },
@@ -1272,12 +1272,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_guide_lines",
+            "id": "features_guide_lines",
             "title": "Guide Lines",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/guide_lines.c",
-            "page": "gallery/features/feature_guide_lines.md"
+            "page": "gallery/features/features_guide_lines.md"
           }
         ]
       },
@@ -1285,12 +1285,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_guide_spans",
+            "id": "features_guide_spans",
             "title": "Guide Spans",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/guide_spans.c",
-            "page": "gallery/features/feature_guide_spans.md"
+            "page": "gallery/features/features_guide_spans.md"
           }
         ]
       },
@@ -1298,12 +1298,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "image_probe",
+            "id": "features_image_probe",
             "title": "Image Probe",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/image_probe.c",
-            "page": "gallery/features/image_probe.md"
+            "page": "gallery/features/features_image_probe.md"
           }
         ]
       },
@@ -1311,12 +1311,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_input_events",
+            "id": "features_input_events",
             "title": "Input Events",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/input_events.c",
-            "page": "gallery/features/feature_input_events.md"
+            "page": "gallery/features/features_input_events.md"
           }
         ]
       },
@@ -1324,12 +1324,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_isolines",
+            "id": "features_isolines",
             "title": "Isolines",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/isolines.c",
-            "page": "gallery/features/feature_isolines.md"
+            "page": "gallery/features/features_isolines.md"
           }
         ]
       },
@@ -1337,12 +1337,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_json_export",
+            "id": "features_json_export",
             "title": "JSON Export",
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/json_export.c",
-            "page": "gallery/features/feature_json_export.md"
+            "page": "gallery/features/features_json_export.md"
           }
         ]
       },
@@ -1350,12 +1350,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_legend_categorical",
+            "id": "features_legend_categorical",
             "title": "Categorical Legend",
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/legend_categorical.c",
-            "page": "gallery/features/feature_legend_categorical.md"
+            "page": "gallery/features/features_legend_categorical.md"
           }
         ]
       },
@@ -1363,12 +1363,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_lighting",
+            "id": "features_lighting",
             "title": "Lighting",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/lighting.c",
-            "page": "gallery/features/feature_lighting.md"
+            "page": "gallery/features/features_lighting.md"
           }
         ]
       },
@@ -1376,12 +1376,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_panel_linked",
+            "id": "features_panel_linked",
             "title": "Linked Panels",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_linked.c",
-            "page": "gallery/features/feature_panel_linked.md"
+            "page": "gallery/features/features_panel_linked.md"
           }
         ]
       },
@@ -1389,12 +1389,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_marker_symbols",
+            "id": "features_marker_symbols",
             "title": "Marker Symbols",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/marker_symbols.c",
-            "page": "gallery/features/feature_marker_symbols.md"
+            "page": "gallery/features/features_marker_symbols.md"
           }
         ]
       },
@@ -1402,12 +1402,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_material_mesh",
+            "id": "features_material_mesh",
             "title": "Mesh Materials",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/material_mesh.c",
-            "page": "gallery/features/feature_material_mesh.md"
+            "page": "gallery/features/features_material_mesh.md"
           }
         ]
       },
@@ -1415,12 +1415,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_mesh_texture",
+            "id": "features_mesh_texture",
             "title": "Textured Mesh",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/mesh_texture.c",
-            "page": "gallery/features/feature_mesh_texture.md"
+            "page": "gallery/features/features_mesh_texture.md"
           }
         ]
       },
@@ -1428,12 +1428,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "technique_msaa",
+            "id": "features_technique_msaa",
             "title": "Multisample Antialiasing",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_msaa.c",
-            "page": "gallery/features/technique_msaa.md"
+            "page": "gallery/features/features_technique_msaa.md"
           }
         ]
       },
@@ -1441,12 +1441,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_panel_multi",
+            "id": "features_panel_multi",
             "title": "Multiple Panels",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_multi.c",
-            "page": "gallery/features/feature_panel_multi.md"
+            "page": "gallery/features/features_panel_multi.md"
           }
         ]
       },
@@ -1454,12 +1454,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_obj_loading",
+            "id": "features_obj_loading",
             "title": "OBJ Loading",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/obj_loading.c",
-            "page": "gallery/features/feature_obj_loading.md"
+            "page": "gallery/features/features_obj_loading.md"
           }
         ]
       },
@@ -1467,12 +1467,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_orientation_gizmo",
+            "id": "features_orientation_gizmo",
             "title": "Orientation Gizmo",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/orientation_gizmo.c",
-            "page": "gallery/features/feature_orientation_gizmo.md"
+            "page": "gallery/features/features_orientation_gizmo.md"
           }
         ]
       },
@@ -1480,12 +1480,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_overlay_card",
+            "id": "features_overlay_card",
             "title": "Overlay Card",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/overlay_card.c",
-            "page": "gallery/features/feature_overlay_card.md"
+            "page": "gallery/features/features_overlay_card.md"
           }
         ]
       },
@@ -1493,12 +1493,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "panel_background",
+            "id": "features_panel_background",
             "title": "Panel Background",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_background.c",
-            "page": "gallery/features/panel_background.md"
+            "page": "gallery/features/features_panel_background.md"
           }
         ]
       },
@@ -1506,12 +1506,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_panel_grid",
+            "id": "features_panel_grid",
             "title": "Panel Grid",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_grid.c",
-            "page": "gallery/features/feature_panel_grid.md"
+            "page": "gallery/features/features_panel_grid.md"
           }
         ]
       },
@@ -1519,12 +1519,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_panel_single",
+            "id": "features_panel_single",
             "title": "Single Panel",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_single.c",
-            "page": "gallery/features/feature_panel_single.md"
+            "page": "gallery/features/features_panel_single.md"
           }
         ]
       },
@@ -1532,12 +1532,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_panel_view2d",
+            "id": "features_panel_view2d",
             "title": "Panel View 2D",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_view2d.c",
-            "page": "gallery/features/feature_panel_view2d.md"
+            "page": "gallery/features/features_panel_view2d.md"
           }
         ]
       },
@@ -1545,12 +1545,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_path_join",
+            "id": "features_path_join",
             "title": "Path Join",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/path_join.c",
-            "page": "gallery/features/feature_path_join.md"
+            "page": "gallery/features/features_path_join.md"
           }
         ]
       },
@@ -1558,12 +1558,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_picking",
+            "id": "features_picking",
             "title": "Picking",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/picking.c",
-            "page": "gallery/features/feature_picking.md"
+            "page": "gallery/features/features_picking.md"
           }
         ]
       },
@@ -1571,12 +1571,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_probe_labels",
+            "id": "features_probe_labels",
             "title": "Label Probe",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/probe_labels.c",
-            "page": "gallery/features/feature_probe_labels.md"
+            "page": "gallery/features/features_probe_labels.md"
           }
         ]
       },
@@ -1584,12 +1584,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_reference_grid",
+            "id": "features_reference_grid",
             "title": "Reference Grid",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/reference_grid.c",
-            "page": "gallery/features/feature_reference_grid.md"
+            "page": "gallery/features/features_reference_grid.md"
           }
         ]
       },
@@ -1597,12 +1597,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_sampled_field_update",
+            "id": "features_sampled_field_update",
             "title": "Sampled Field Update",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/sampled_field_update.c",
-            "page": "gallery/features/feature_sampled_field_update.md"
+            "page": "gallery/features/features_sampled_field_update.md"
           }
         ]
       },
@@ -1610,12 +1610,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "scale_bar",
+            "id": "features_scalebar",
             "title": "Scale Bar",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/scalebar.c",
-            "page": "gallery/features/scale_bar.md"
+            "page": "gallery/features/features_scalebar.md"
           }
         ]
       },
@@ -1623,12 +1623,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "scalebar_units",
+            "id": "features_scalebar_units",
             "title": "Scale Bar Units",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/scalebar_units.c",
-            "page": "gallery/features/scalebar_units.md"
+            "page": "gallery/features/features_scalebar_units.md"
           }
         ]
       },
@@ -1636,12 +1636,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_basic_scene",
+            "id": "features_basic_scene",
             "title": "Basic Scene",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/basic_scene.c",
-            "page": "gallery/features/feature_basic_scene.md"
+            "page": "gallery/features/features_basic_scene.md"
           }
         ]
       },
@@ -1649,12 +1649,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_compute_buffer_animation",
+            "id": "features_compute_buffer_animation",
             "title": "Compute Buffer Animation",
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/compute_buffer_animation.c",
-            "page": "gallery/features/feature_compute_buffer_animation.md"
+            "page": "gallery/features/features_compute_buffer_animation.md"
           }
         ]
       },
@@ -1662,12 +1662,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_selection_mesh_instances",
+            "id": "features_selection_mesh_instances",
             "title": "Mesh Instance Selection",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/selection_mesh_instances.c",
-            "page": "gallery/features/feature_selection_mesh_instances.md"
+            "page": "gallery/features/features_selection_mesh_instances.md"
           }
         ]
       },
@@ -1675,12 +1675,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_selection_pixel",
+            "id": "features_selection_pixel",
             "title": "Pixel Selection",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/selection_pixel.c",
-            "page": "gallery/features/feature_selection_pixel.md"
+            "page": "gallery/features/features_selection_pixel.md"
           }
         ]
       },
@@ -1688,12 +1688,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_selection_sphere",
+            "id": "features_selection_sphere",
             "title": "Sphere Selection",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/selection_sphere.c",
-            "page": "gallery/features/feature_selection_sphere.md"
+            "page": "gallery/features/features_selection_sphere.md"
           }
         ]
       },
@@ -1701,12 +1701,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "technique_ssao",
+            "id": "features_technique_ssao",
             "title": "Screen-Space Ambient Occlusion",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_ssao.c",
-            "page": "gallery/features/technique_ssao.md"
+            "page": "gallery/features/features_technique_ssao.md"
           }
         ]
       },
@@ -1714,12 +1714,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_text_block",
+            "id": "features_text_block",
             "title": "Text Block",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/text_block.c",
-            "page": "gallery/features/feature_text_block.md"
+            "page": "gallery/features/features_text_block.md"
           }
         ]
       },
@@ -1727,12 +1727,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_timer_animation",
+            "id": "features_timer_animation",
             "title": "Timer Animation",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/timer_animation.c",
-            "page": "gallery/features/feature_timer_animation.md"
+            "page": "gallery/features/features_timer_animation.md"
           }
         ]
       },
@@ -1740,12 +1740,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "technique_transparency",
+            "id": "features_technique_transparency",
             "title": "Transparency Order",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_transparency.c",
-            "page": "gallery/features/technique_transparency.md"
+            "page": "gallery/features/features_technique_transparency.md"
           }
         ]
       },
@@ -1753,12 +1753,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "update_partial",
+            "id": "features_update_partial",
             "title": "Partial Data Update",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/update_partial.c",
-            "page": "gallery/features/update_partial.md"
+            "page": "gallery/features/features_update_partial.md"
           }
         ]
       },
@@ -1766,12 +1766,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_update_visual_data",
+            "id": "features_update_visual_data",
             "title": "Visual Data Update",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/update_visual_data.c",
-            "page": "gallery/features/feature_update_visual_data.md"
+            "page": "gallery/features/features_update_visual_data.md"
           }
         ]
       },
@@ -1779,12 +1779,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_user_scale",
+            "id": "features_user_scale",
             "title": "User Scale",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/user_scale.c",
-            "page": "gallery/features/feature_user_scale.md"
+            "page": "gallery/features/features_user_scale.md"
           }
         ]
       },
@@ -1792,12 +1792,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_view_size_policies",
+            "id": "features_view_size_policies",
             "title": "View Size Policies",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/view_size_policies.c",
-            "page": "gallery/features/feature_view_size_policies.md"
+            "page": "gallery/features/features_view_size_policies.md"
           }
         ]
       },
@@ -1805,12 +1805,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_visibility",
+            "id": "features_visibility",
             "title": "Visual Visibility",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/visibility.c",
-            "page": "gallery/features/feature_visibility.md"
+            "page": "gallery/features/features_visibility.md"
           }
         ]
       },
@@ -1818,12 +1818,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_visual_transform",
+            "id": "features_visual_transform",
             "title": "Visual Transform",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/visual_transform.c",
-            "page": "gallery/features/feature_visual_transform.md"
+            "page": "gallery/features/features_visual_transform.md"
           }
         ]
       },
@@ -1831,12 +1831,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_volume_occlusion",
+            "id": "features_volume_occlusion",
             "title": "Volume Occlusion",
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/volume_occlusion.c",
-            "page": "gallery/features/feature_volume_occlusion.md"
+            "page": "gallery/features/features_volume_occlusion.md"
           }
         ]
       }
@@ -1846,12 +1846,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_app_glfw",
+            "id": "runtime_app_glfw",
             "title": "GLFW App",
             "category": "runtime",
             "status": "supported",
             "source": "examples/c/runtime/app_glfw.c",
-            "page": "gallery/runtime/feature_app_glfw.md"
+            "page": "gallery/runtime/runtime_app_glfw.md"
           }
         ]
       },
@@ -1859,12 +1859,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_multi_window",
+            "id": "runtime_multi_window",
             "title": "Multi Window",
             "category": "runtime",
             "status": "supported",
             "source": "examples/c/runtime/multi_window.c",
-            "page": "gallery/runtime/feature_multi_window.md"
+            "page": "gallery/runtime/runtime_multi_window.md"
           }
         ]
       },
@@ -1872,12 +1872,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_offscreen_capture",
+            "id": "runtime_offscreen_capture",
             "title": "Offscreen Capture",
             "category": "runtime",
             "status": "supported",
             "source": "examples/c/runtime/offscreen_capture.c",
-            "page": "gallery/runtime/feature_offscreen_capture.md"
+            "page": "gallery/runtime/runtime_offscreen_capture.md"
           }
         ]
       },
@@ -1885,12 +1885,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_record_replay",
+            "id": "runtime_record_replay",
             "title": "Record Replay",
             "category": "runtime",
             "status": "experimental",
             "source": "examples/c/runtime/record_replay.c",
-            "page": "gallery/runtime/feature_record_replay.md"
+            "page": "gallery/runtime/runtime_record_replay.md"
           }
         ]
       },
@@ -1898,12 +1898,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_video_export",
+            "id": "runtime_video_export",
             "title": "Video Export",
             "category": "runtime",
             "status": "experimental",
             "source": "examples/c/runtime/video_export.c",
-            "page": "gallery/runtime/feature_video_export.md"
+            "page": "gallery/runtime/runtime_video_export.md"
           }
         ]
       }
@@ -1950,20 +1950,20 @@
         "count": 2,
         "examples": [
           {
-            "id": "visual_image_rgba",
+            "id": "visuals_image_rgba",
             "title": "RGBA Image",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image_rgba.c",
-            "page": "gallery/visuals/visual_image_rgba.md"
+            "page": "gallery/visuals/visuals_image_rgba.md"
           },
           {
-            "id": "showcase_gpu_particle_smoke",
+            "id": "showcases_gpu_particle_smoke",
             "title": "GPU Particle Smoke",
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/gpu_particle_smoke.c",
-            "page": "gallery/showcases/showcase_gpu_particle_smoke.md"
+            "page": "gallery/showcases/showcases_gpu_particle_smoke.md"
           }
         ]
       },
@@ -1971,12 +1971,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_video_export",
+            "id": "runtime_video_export",
             "title": "Video Export",
             "category": "runtime",
             "status": "experimental",
             "source": "examples/c/runtime/video_export.c",
-            "page": "gallery/runtime/feature_video_export.md"
+            "page": "gallery/runtime/runtime_video_export.md"
           }
         ]
       },
@@ -1984,12 +1984,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_video_export",
+            "id": "runtime_video_export",
             "title": "Video Export",
             "category": "runtime",
             "status": "experimental",
             "source": "examples/c/runtime/video_export.c",
-            "page": "gallery/runtime/feature_video_export.md"
+            "page": "gallery/runtime/runtime_video_export.md"
           }
         ]
       },
@@ -1997,60 +1997,60 @@
         "count": 7,
         "examples": [
           {
-            "id": "visual_mesh",
+            "id": "visuals_mesh",
             "title": "Mesh",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/mesh.c",
-            "page": "gallery/visuals/visual_mesh.md"
+            "page": "gallery/visuals/visuals_mesh.md"
           },
           {
-            "id": "sphere_impostor",
+            "id": "visuals_sphere",
             "title": "Sphere",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/sphere.c",
-            "page": "gallery/visuals/sphere_impostor.md"
+            "page": "gallery/visuals/visuals_sphere.md"
           },
           {
-            "id": "volume",
+            "id": "visuals_volume",
             "title": "Volume",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
-            "page": "gallery/visuals/volume.md"
+            "page": "gallery/visuals/visuals_volume.md"
           },
           {
-            "id": "protein_arcball_viewer",
+            "id": "showcases_protein",
             "title": "Protein",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/protein.c",
-            "page": "gallery/showcases/protein_arcball_viewer.md"
+            "page": "gallery/showcases/showcases_protein.md"
           },
           {
-            "id": "showcase_surface_grid",
+            "id": "showcases_surface_grid",
             "title": "Surface Grid",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
-            "page": "gallery/showcases/showcase_surface_grid.md"
+            "page": "gallery/showcases/showcases_surface_grid.md"
           },
           {
-            "id": "brain_volume",
+            "id": "showcases_brain_volume",
             "title": "Allen Mouse Brain",
             "category": "showcase",
             "status": "prototype",
             "source": "examples/c/showcases/brain_volume.c",
-            "page": "gallery/showcases/brain_volume.md"
+            "page": "gallery/showcases/showcases_brain_volume.md"
           },
           {
-            "id": "textured_terrain_or_planet",
+            "id": "showcases_textured_planet",
             "title": "Textured Planets",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/textured_terrain_or_planet.md"
+            "page": "gallery/showcases/showcases_textured_planet.md"
           }
         ]
       },
@@ -2058,20 +2058,20 @@
         "count": 2,
         "examples": [
           {
-            "id": "linked_panels_axes_panzoom",
+            "id": "showcases_panel_linked_axes",
             "title": "Linked Panels With Axes",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/panel_linked_axes.c",
-            "page": "gallery/showcases/linked_panels_axes_panzoom.md"
+            "page": "gallery/showcases/showcases_panel_linked_axes.md"
           },
           {
-            "id": "feature_datetime_axis",
+            "id": "features_datetime_axis",
             "title": "Datetime Axis",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/datetime_axis.c",
-            "page": "gallery/features/feature_datetime_axis.md"
+            "page": "gallery/features/features_datetime_axis.md"
           }
         ]
       },
@@ -2079,12 +2079,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "composite_graph",
+            "id": "composites_graph",
             "title": "Graph Composite",
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/graph.c",
-            "page": "gallery/composites/composite_graph.md"
+            "page": "gallery/composites/composites_graph.md"
           }
         ]
       },
@@ -2092,12 +2092,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_marker_symbols",
+            "id": "features_marker_symbols",
             "title": "Marker Symbols",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/marker_symbols.c",
-            "page": "gallery/features/feature_marker_symbols.md"
+            "page": "gallery/features/features_marker_symbols.md"
           }
         ]
       },
@@ -2105,12 +2105,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "volume",
+            "id": "visuals_volume",
             "title": "Volume",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
-            "page": "gallery/visuals/volume.md"
+            "page": "gallery/visuals/visuals_volume.md"
           }
         ]
       },
@@ -2118,12 +2118,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_bounds_overlay",
+            "id": "features_bounds_overlay",
             "title": "Bounds Overlay",
             "category": "feature",
             "status": "diagnostic",
             "source": "examples/c/features/bounds_overlay.c",
-            "page": "gallery/features/feature_bounds_overlay.md"
+            "page": "gallery/features/features_bounds_overlay.md"
           }
         ]
       },
@@ -2144,196 +2144,196 @@
         "count": 24,
         "examples": [
           {
-            "id": "colorbar",
+            "id": "features_colorbar",
             "title": "Colorbar",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/colorbar.c",
-            "page": "gallery/features/colorbar.md"
+            "page": "gallery/features/features_colorbar.md"
           },
           {
-            "id": "feature_legend_categorical",
+            "id": "features_legend_categorical",
             "title": "Categorical Legend",
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/legend_categorical.c",
-            "page": "gallery/features/feature_legend_categorical.md"
+            "page": "gallery/features/features_legend_categorical.md"
           },
           {
-            "id": "point_2d",
+            "id": "visuals_point",
             "title": "Point",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/point.c",
-            "page": "gallery/visuals/point_2d.md"
+            "page": "gallery/visuals/visuals_point.md"
           },
           {
-            "id": "visual_pixel",
+            "id": "visuals_pixel",
             "title": "Pixel",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/pixel.c",
-            "page": "gallery/visuals/visual_pixel.md"
+            "page": "gallery/visuals/visuals_pixel.md"
           },
           {
-            "id": "visual_marker",
+            "id": "visuals_marker",
             "title": "Marker",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/marker.c",
-            "page": "gallery/visuals/visual_marker.md"
+            "page": "gallery/visuals/visuals_marker.md"
           },
           {
-            "id": "visual_primitive",
+            "id": "visuals_primitive",
             "title": "Primitive",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/primitive.c",
-            "page": "gallery/visuals/visual_primitive.md"
+            "page": "gallery/visuals/visuals_primitive.md"
           },
           {
-            "id": "visual_segment",
+            "id": "visuals_segment",
             "title": "Segment",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/segment.c",
-            "page": "gallery/visuals/visual_segment.md"
+            "page": "gallery/visuals/visuals_segment.md"
           },
           {
-            "id": "visual_vector",
+            "id": "visuals_vector",
             "title": "Vector",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/vector.c",
-            "page": "gallery/visuals/visual_vector.md"
+            "page": "gallery/visuals/visuals_vector.md"
           },
           {
-            "id": "visual_path",
+            "id": "visuals_path",
             "title": "Path",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/path.c",
-            "page": "gallery/visuals/visual_path.md"
+            "page": "gallery/visuals/visuals_path.md"
           },
           {
-            "id": "visual_image",
+            "id": "visuals_image",
             "title": "Image",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image.c",
-            "page": "gallery/visuals/visual_image.md"
+            "page": "gallery/visuals/visuals_image.md"
           },
           {
-            "id": "visual_image_rgba",
+            "id": "visuals_image_rgba",
             "title": "RGBA Image",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image_rgba.c",
-            "page": "gallery/visuals/visual_image_rgba.md"
+            "page": "gallery/visuals/visuals_image_rgba.md"
           },
           {
-            "id": "visual_mesh",
+            "id": "visuals_mesh",
             "title": "Mesh",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/mesh.c",
-            "page": "gallery/visuals/visual_mesh.md"
+            "page": "gallery/visuals/visuals_mesh.md"
           },
           {
-            "id": "sphere_impostor",
+            "id": "visuals_sphere",
             "title": "Sphere",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/sphere.c",
-            "page": "gallery/visuals/sphere_impostor.md"
+            "page": "gallery/visuals/visuals_sphere.md"
           },
           {
-            "id": "visual_splat",
+            "id": "visuals_splat",
             "title": "Splat",
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/splat.c",
-            "page": "gallery/visuals/visual_splat.md"
+            "page": "gallery/visuals/visuals_splat.md"
           },
           {
-            "id": "visual_text",
+            "id": "visuals_text",
             "title": "Text",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/text.c",
-            "page": "gallery/visuals/visual_text.md"
+            "page": "gallery/visuals/visuals_text.md"
           },
           {
-            "id": "visual_glyph",
+            "id": "visuals_glyph",
             "title": "Font Atlas Glyphs",
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/glyph.c",
-            "page": "gallery/visuals/visual_glyph.md"
+            "page": "gallery/visuals/visuals_glyph.md"
           },
           {
-            "id": "visual_labels",
+            "id": "visuals_labels",
             "title": "Labels",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/labels.c",
-            "page": "gallery/visuals/visual_labels.md"
+            "page": "gallery/visuals/visuals_labels.md"
           },
           {
-            "id": "volume",
+            "id": "visuals_volume",
             "title": "Volume",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
-            "page": "gallery/visuals/volume.md"
+            "page": "gallery/visuals/visuals_volume.md"
           },
           {
-            "id": "us_state_choropleth",
+            "id": "showcases_choropleth",
             "title": "U.S. State Choropleth",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/us_state_choropleth.md"
+            "page": "gallery/showcases/showcases_choropleth.md"
           },
           {
-            "id": "showcase_wind_field",
+            "id": "showcases_wind_field",
             "title": "Wind Field",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
-            "page": "gallery/showcases/showcase_wind_field.md"
+            "page": "gallery/showcases/showcases_wind_field.md"
           },
           {
-            "id": "showcase_gpu_particle_smoke",
+            "id": "showcases_gpu_particle_smoke",
             "title": "GPU Particle Smoke",
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/gpu_particle_smoke.c",
-            "page": "gallery/showcases/showcase_gpu_particle_smoke.md"
+            "page": "gallery/showcases/showcases_gpu_particle_smoke.md"
           },
           {
-            "id": "brain_volume",
+            "id": "showcases_brain_volume",
             "title": "Allen Mouse Brain",
             "category": "showcase",
             "status": "prototype",
             "source": "examples/c/showcases/brain_volume.c",
-            "page": "gallery/showcases/brain_volume.md"
+            "page": "gallery/showcases/showcases_brain_volume.md"
           },
           {
-            "id": "point_cloud",
+            "id": "showcases_point_cloud",
             "title": "Point Cloud",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
-            "page": "gallery/showcases/point_cloud.md"
+            "page": "gallery/showcases/showcases_point_cloud.md"
           },
           {
-            "id": "textured_terrain_or_planet",
+            "id": "showcases_textured_planet",
             "title": "Textured Planets",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/textured_terrain_or_planet.md"
+            "page": "gallery/showcases/showcases_textured_planet.md"
           }
         ]
       },
@@ -2341,20 +2341,20 @@
         "count": 2,
         "examples": [
           {
-            "id": "feature_legend_categorical",
+            "id": "features_legend_categorical",
             "title": "Categorical Legend",
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/legend_categorical.c",
-            "page": "gallery/features/feature_legend_categorical.md"
+            "page": "gallery/features/features_legend_categorical.md"
           },
           {
-            "id": "visual_labels",
+            "id": "visuals_labels",
             "title": "Labels",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/labels.c",
-            "page": "gallery/visuals/visual_labels.md"
+            "page": "gallery/visuals/visuals_labels.md"
           }
         ]
       },
@@ -2362,12 +2362,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "us_state_choropleth",
+            "id": "showcases_choropleth",
             "title": "U.S. State Choropleth",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/us_state_choropleth.md"
+            "page": "gallery/showcases/showcases_choropleth.md"
           }
         ]
       },
@@ -2375,36 +2375,36 @@
         "count": 4,
         "examples": [
           {
-            "id": "linked_panels_probe_colorbar",
+            "id": "showcases_linked_probe_colorbar",
             "title": "Linked Probe With Colorbar",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/linked_probe_colorbar.c",
-            "page": "gallery/showcases/linked_panels_probe_colorbar.md"
+            "page": "gallery/showcases/showcases_linked_probe_colorbar.md"
           },
           {
-            "id": "colorbar",
+            "id": "features_colorbar",
             "title": "Colorbar",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/colorbar.c",
-            "page": "gallery/features/colorbar.md"
+            "page": "gallery/features/features_colorbar.md"
           },
           {
-            "id": "us_state_choropleth",
+            "id": "showcases_choropleth",
             "title": "U.S. State Choropleth",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/us_state_choropleth.md"
+            "page": "gallery/showcases/showcases_choropleth.md"
           },
           {
-            "id": "showcase_wind_field",
+            "id": "showcases_wind_field",
             "title": "Wind Field",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
-            "page": "gallery/showcases/showcase_wind_field.md"
+            "page": "gallery/showcases/showcases_wind_field.md"
           }
         ]
       },
@@ -2412,28 +2412,28 @@
         "count": 3,
         "examples": [
           {
-            "id": "composite_polygon",
+            "id": "composites_polygon",
             "title": "Polygon Composite",
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/polygon.c",
-            "page": "gallery/composites/composite_polygon.md"
+            "page": "gallery/composites/composites_polygon.md"
           },
           {
-            "id": "composite_graph",
+            "id": "composites_graph",
             "title": "Graph Composite",
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/graph.c",
-            "page": "gallery/composites/composite_graph.md"
+            "page": "gallery/composites/composites_graph.md"
           },
           {
-            "id": "us_state_choropleth",
+            "id": "showcases_choropleth",
             "title": "U.S. State Choropleth",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/us_state_choropleth.md"
+            "page": "gallery/showcases/showcases_choropleth.md"
           }
         ]
       },
@@ -2441,12 +2441,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "showcase_gpu_particle_smoke",
+            "id": "showcases_gpu_particle_smoke",
             "title": "GPU Particle Smoke",
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/gpu_particle_smoke.c",
-            "page": "gallery/showcases/showcase_gpu_particle_smoke.md"
+            "page": "gallery/showcases/showcases_gpu_particle_smoke.md"
           }
         ]
       },
@@ -2454,12 +2454,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_datetime_axis",
+            "id": "features_datetime_axis",
             "title": "Datetime Axis",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/datetime_axis.c",
-            "page": "gallery/features/feature_datetime_axis.md"
+            "page": "gallery/features/features_datetime_axis.md"
           }
         ]
       },
@@ -2467,12 +2467,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "point_cloud",
+            "id": "showcases_point_cloud",
             "title": "Point Cloud",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
-            "page": "gallery/showcases/point_cloud.md"
+            "page": "gallery/showcases/showcases_point_cloud.md"
           }
         ]
       },
@@ -2480,12 +2480,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_bounds_overlay",
+            "id": "features_bounds_overlay",
             "title": "Bounds Overlay",
             "category": "feature",
             "status": "diagnostic",
             "source": "examples/c/features/bounds_overlay.c",
-            "page": "gallery/features/feature_bounds_overlay.md"
+            "page": "gallery/features/features_bounds_overlay.md"
           }
         ]
       },
@@ -2493,12 +2493,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "point_cloud",
+            "id": "showcases_point_cloud",
             "title": "Point Cloud",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
-            "page": "gallery/showcases/point_cloud.md"
+            "page": "gallery/showcases/showcases_point_cloud.md"
           }
         ]
       },
@@ -2506,12 +2506,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_marker_symbols",
+            "id": "features_marker_symbols",
             "title": "Marker Symbols",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/marker_symbols.c",
-            "page": "gallery/features/feature_marker_symbols.md"
+            "page": "gallery/features/features_marker_symbols.md"
           }
         ]
       },
@@ -2553,12 +2553,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "point_cloud",
+            "id": "showcases_point_cloud",
             "title": "Point Cloud",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
-            "page": "gallery/showcases/point_cloud.md"
+            "page": "gallery/showcases/showcases_point_cloud.md"
           }
         ]
       },
@@ -2566,12 +2566,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "point_cloud",
+            "id": "showcases_point_cloud",
             "title": "Point Cloud",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
-            "page": "gallery/showcases/point_cloud.md"
+            "page": "gallery/showcases/showcases_point_cloud.md"
           }
         ]
       },
@@ -2579,12 +2579,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_glyph",
+            "id": "visuals_glyph",
             "title": "Font Atlas Glyphs",
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/glyph.c",
-            "page": "gallery/visuals/visual_glyph.md"
+            "page": "gallery/visuals/visuals_glyph.md"
           }
         ]
       },
@@ -2592,12 +2592,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_view_size_policies",
+            "id": "features_view_size_policies",
             "title": "View Size Policies",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/view_size_policies.c",
-            "page": "gallery/features/feature_view_size_policies.md"
+            "page": "gallery/features/features_view_size_policies.md"
           }
         ]
       },
@@ -2605,12 +2605,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "us_state_choropleth",
+            "id": "showcases_choropleth",
             "title": "U.S. State Choropleth",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/us_state_choropleth.md"
+            "page": "gallery/showcases/showcases_choropleth.md"
           }
         ]
       },
@@ -2631,12 +2631,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_glyph",
+            "id": "visuals_glyph",
             "title": "Font Atlas Glyphs",
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/glyph.c",
-            "page": "gallery/visuals/visual_glyph.md"
+            "page": "gallery/visuals/visuals_glyph.md"
           }
         ]
       },
@@ -2644,12 +2644,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "composite_graph",
+            "id": "composites_graph",
             "title": "Graph Composite",
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/graph.c",
-            "page": "gallery/composites/composite_graph.md"
+            "page": "gallery/composites/composites_graph.md"
           }
         ]
       },
@@ -2657,12 +2657,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "point_cloud",
+            "id": "showcases_point_cloud",
             "title": "Point Cloud",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
-            "page": "gallery/showcases/point_cloud.md"
+            "page": "gallery/showcases/showcases_point_cloud.md"
           }
         ]
       },
@@ -2670,12 +2670,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "scientific_plotting_workflow",
+            "id": "showcases_scientific_plotting",
             "title": "Scientific Plotting Workflow",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scientific_plotting.c",
-            "page": "gallery/showcases/scientific_plotting_workflow.md"
+            "page": "gallery/showcases/showcases_scientific_plotting.md"
           }
         ]
       },
@@ -2683,12 +2683,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "scientific_plotting_workflow",
+            "id": "showcases_scientific_plotting",
             "title": "Scientific Plotting Workflow",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scientific_plotting.c",
-            "page": "gallery/showcases/scientific_plotting_workflow.md"
+            "page": "gallery/showcases/showcases_scientific_plotting.md"
           }
         ]
       },
@@ -2696,12 +2696,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "scientific_plotting_workflow",
+            "id": "showcases_scientific_plotting",
             "title": "Scientific Plotting Workflow",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scientific_plotting.c",
-            "page": "gallery/showcases/scientific_plotting_workflow.md"
+            "page": "gallery/showcases/showcases_scientific_plotting.md"
           }
         ]
       },
@@ -2709,12 +2709,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "composite_polygon",
+            "id": "composites_polygon",
             "title": "Polygon Composite",
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/polygon.c",
-            "page": "gallery/composites/composite_polygon.md"
+            "page": "gallery/composites/composites_polygon.md"
           }
         ]
       },
@@ -2743,36 +2743,36 @@
         "count": 4,
         "examples": [
           {
-            "id": "linked_panels_probe_colorbar",
+            "id": "showcases_linked_probe_colorbar",
             "title": "Linked Probe With Colorbar",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/linked_probe_colorbar.c",
-            "page": "gallery/showcases/linked_panels_probe_colorbar.md"
+            "page": "gallery/showcases/showcases_linked_probe_colorbar.md"
           },
           {
-            "id": "colorbar",
+            "id": "features_colorbar",
             "title": "Colorbar",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/colorbar.c",
-            "page": "gallery/features/colorbar.md"
+            "page": "gallery/features/features_colorbar.md"
           },
           {
-            "id": "visual_image",
+            "id": "visuals_image",
             "title": "Image",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image.c",
-            "page": "gallery/visuals/visual_image.md"
+            "page": "gallery/visuals/visuals_image.md"
           },
           {
-            "id": "visual_image_rgba",
+            "id": "visuals_image_rgba",
             "title": "RGBA Image",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image_rgba.c",
-            "page": "gallery/visuals/visual_image_rgba.md"
+            "page": "gallery/visuals/visuals_image_rgba.md"
           }
         ]
       },
@@ -2780,12 +2780,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_mesh",
+            "id": "visuals_mesh",
             "title": "Mesh",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/mesh.c",
-            "page": "gallery/visuals/visual_mesh.md"
+            "page": "gallery/visuals/visuals_mesh.md"
           }
         ]
       },
@@ -2793,12 +2793,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_labels",
+            "id": "visuals_labels",
             "title": "Labels",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/labels.c",
-            "page": "gallery/visuals/visual_labels.md"
+            "page": "gallery/visuals/visuals_labels.md"
           }
         ]
       },
@@ -2806,12 +2806,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_legend_categorical",
+            "id": "features_legend_categorical",
             "title": "Categorical Legend",
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/legend_categorical.c",
-            "page": "gallery/features/feature_legend_categorical.md"
+            "page": "gallery/features/features_legend_categorical.md"
           }
         ]
       },
@@ -2819,12 +2819,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "linked_panels_axes_panzoom",
+            "id": "showcases_panel_linked_axes",
             "title": "Linked Panels With Axes",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/panel_linked_axes.c",
-            "page": "gallery/showcases/linked_panels_axes_panzoom.md"
+            "page": "gallery/showcases/showcases_panel_linked_axes.md"
           }
         ]
       },
@@ -2832,12 +2832,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "linked_panels_probe_colorbar",
+            "id": "showcases_linked_probe_colorbar",
             "title": "Linked Probe With Colorbar",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/linked_probe_colorbar.c",
-            "page": "gallery/showcases/linked_panels_probe_colorbar.md"
+            "page": "gallery/showcases/showcases_linked_probe_colorbar.md"
           }
         ]
       },
@@ -2866,28 +2866,28 @@
         "count": 3,
         "examples": [
           {
-            "id": "feature_marker_symbols",
+            "id": "features_marker_symbols",
             "title": "Marker Symbols",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/marker_symbols.c",
-            "page": "gallery/features/feature_marker_symbols.md"
+            "page": "gallery/features/features_marker_symbols.md"
           },
           {
-            "id": "feature_legend_categorical",
+            "id": "features_legend_categorical",
             "title": "Categorical Legend",
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/legend_categorical.c",
-            "page": "gallery/features/feature_legend_categorical.md"
+            "page": "gallery/features/features_legend_categorical.md"
           },
           {
-            "id": "visual_marker",
+            "id": "visuals_marker",
             "title": "Marker",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/marker.c",
-            "page": "gallery/visuals/visual_marker.md"
+            "page": "gallery/visuals/visuals_marker.md"
           }
         ]
       },
@@ -2895,12 +2895,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "composite_graph",
+            "id": "composites_graph",
             "title": "Graph Composite",
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/graph.c",
-            "page": "gallery/composites/composite_graph.md"
+            "page": "gallery/composites/composites_graph.md"
           }
         ]
       },
@@ -2908,12 +2908,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "scalebar_measurement_workflow",
+            "id": "showcases_scalebar_measurement",
             "title": "Scale Bar Measurement Workflow",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scalebar_measurement.c",
-            "page": "gallery/showcases/scalebar_measurement_workflow.md"
+            "page": "gallery/showcases/showcases_scalebar_measurement.md"
           }
         ]
       },
@@ -2921,28 +2921,28 @@
         "count": 3,
         "examples": [
           {
-            "id": "visual_mesh",
+            "id": "visuals_mesh",
             "title": "Mesh",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/mesh.c",
-            "page": "gallery/visuals/visual_mesh.md"
+            "page": "gallery/visuals/visuals_mesh.md"
           },
           {
-            "id": "showcase_surface_grid",
+            "id": "showcases_surface_grid",
             "title": "Surface Grid",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
-            "page": "gallery/showcases/showcase_surface_grid.md"
+            "page": "gallery/showcases/showcases_surface_grid.md"
           },
           {
-            "id": "textured_terrain_or_planet",
+            "id": "showcases_textured_planet",
             "title": "Textured Planets",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/textured_terrain_or_planet.md"
+            "page": "gallery/showcases/showcases_textured_planet.md"
           }
         ]
       },
@@ -2950,12 +2950,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "protein_arcball_viewer",
+            "id": "showcases_protein",
             "title": "Protein",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/protein.c",
-            "page": "gallery/showcases/protein_arcball_viewer.md"
+            "page": "gallery/showcases/showcases_protein.md"
           }
         ]
       },
@@ -2963,12 +2963,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_video_export",
+            "id": "runtime_video_export",
             "title": "Video Export",
             "category": "runtime",
             "status": "experimental",
             "source": "examples/c/runtime/video_export.c",
-            "page": "gallery/runtime/feature_video_export.md"
+            "page": "gallery/runtime/runtime_video_export.md"
           }
         ]
       },
@@ -2989,12 +2989,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_bounds_overlay",
+            "id": "features_bounds_overlay",
             "title": "Bounds Overlay",
             "category": "feature",
             "status": "diagnostic",
             "source": "examples/c/features/bounds_overlay.c",
-            "page": "gallery/features/feature_bounds_overlay.md"
+            "page": "gallery/features/features_bounds_overlay.md"
           }
         ]
       },
@@ -3002,92 +3002,92 @@
         "count": 11,
         "examples": [
           {
-            "id": "linked_panels_axes_panzoom",
+            "id": "showcases_panel_linked_axes",
             "title": "Linked Panels With Axes",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/panel_linked_axes.c",
-            "page": "gallery/showcases/linked_panels_axes_panzoom.md"
+            "page": "gallery/showcases/showcases_panel_linked_axes.md"
           },
           {
-            "id": "point_2d",
+            "id": "visuals_point",
             "title": "Point",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/point.c",
-            "page": "gallery/visuals/point_2d.md"
+            "page": "gallery/visuals/visuals_point.md"
           },
           {
-            "id": "visual_pixel",
+            "id": "visuals_pixel",
             "title": "Pixel",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/pixel.c",
-            "page": "gallery/visuals/visual_pixel.md"
+            "page": "gallery/visuals/visuals_pixel.md"
           },
           {
-            "id": "visual_marker",
+            "id": "visuals_marker",
             "title": "Marker",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/marker.c",
-            "page": "gallery/visuals/visual_marker.md"
+            "page": "gallery/visuals/visuals_marker.md"
           },
           {
-            "id": "visual_segment",
+            "id": "visuals_segment",
             "title": "Segment",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/segment.c",
-            "page": "gallery/visuals/visual_segment.md"
+            "page": "gallery/visuals/visuals_segment.md"
           },
           {
-            "id": "visual_vector",
+            "id": "visuals_vector",
             "title": "Vector",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/vector.c",
-            "page": "gallery/visuals/visual_vector.md"
+            "page": "gallery/visuals/visuals_vector.md"
           },
           {
-            "id": "visual_splat",
+            "id": "visuals_splat",
             "title": "Splat",
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/splat.c",
-            "page": "gallery/visuals/visual_splat.md"
+            "page": "gallery/visuals/visuals_splat.md"
           },
           {
-            "id": "visual_labels",
+            "id": "visuals_labels",
             "title": "Labels",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/labels.c",
-            "page": "gallery/visuals/visual_labels.md"
+            "page": "gallery/visuals/visuals_labels.md"
           },
           {
-            "id": "composite_polygon",
+            "id": "composites_polygon",
             "title": "Polygon Composite",
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/polygon.c",
-            "page": "gallery/composites/composite_polygon.md"
+            "page": "gallery/composites/composites_polygon.md"
           },
           {
-            "id": "composite_graph",
+            "id": "composites_graph",
             "title": "Graph Composite",
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/graph.c",
-            "page": "gallery/composites/composite_graph.md"
+            "page": "gallery/composites/composites_graph.md"
           },
           {
-            "id": "us_state_choropleth",
+            "id": "showcases_choropleth",
             "title": "U.S. State Choropleth",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/us_state_choropleth.md"
+            "page": "gallery/showcases/showcases_choropleth.md"
           }
         ]
       },
@@ -3095,12 +3095,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "showcase_gpu_particle_smoke",
+            "id": "showcases_gpu_particle_smoke",
             "title": "GPU Particle Smoke",
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/gpu_particle_smoke.c",
-            "page": "gallery/showcases/showcase_gpu_particle_smoke.md"
+            "page": "gallery/showcases/showcases_gpu_particle_smoke.md"
           }
         ]
       },
@@ -3108,20 +3108,20 @@
         "count": 2,
         "examples": [
           {
-            "id": "visual_vector",
+            "id": "visuals_vector",
             "title": "Vector",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/vector.c",
-            "page": "gallery/visuals/visual_vector.md"
+            "page": "gallery/visuals/visuals_vector.md"
           },
           {
-            "id": "visual_path",
+            "id": "visuals_path",
             "title": "Path",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/path.c",
-            "page": "gallery/visuals/visual_path.md"
+            "page": "gallery/visuals/visuals_path.md"
           }
         ]
       },
@@ -3129,20 +3129,20 @@
         "count": 2,
         "examples": [
           {
-            "id": "visual_pixel",
+            "id": "visuals_pixel",
             "title": "Pixel",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/pixel.c",
-            "page": "gallery/visuals/visual_pixel.md"
+            "page": "gallery/visuals/visuals_pixel.md"
           },
           {
-            "id": "point_cloud",
+            "id": "showcases_point_cloud",
             "title": "Point Cloud",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
-            "page": "gallery/showcases/point_cloud.md"
+            "page": "gallery/showcases/showcases_point_cloud.md"
           }
         ]
       },
@@ -3150,12 +3150,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "linked_panels_probe_colorbar",
+            "id": "showcases_linked_probe_colorbar",
             "title": "Linked Probe With Colorbar",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/linked_probe_colorbar.c",
-            "page": "gallery/showcases/linked_panels_probe_colorbar.md"
+            "page": "gallery/showcases/showcases_linked_probe_colorbar.md"
           }
         ]
       },
@@ -3163,36 +3163,36 @@
         "count": 4,
         "examples": [
           {
-            "id": "feature_bounds_overlay",
+            "id": "features_bounds_overlay",
             "title": "Bounds Overlay",
             "category": "feature",
             "status": "diagnostic",
             "source": "examples/c/features/bounds_overlay.c",
-            "page": "gallery/features/feature_bounds_overlay.md"
+            "page": "gallery/features/features_bounds_overlay.md"
           },
           {
-            "id": "feature_compute_buffer_animation",
+            "id": "features_compute_buffer_animation",
             "title": "Compute Buffer Animation",
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/compute_buffer_animation.c",
-            "page": "gallery/features/feature_compute_buffer_animation.md"
+            "page": "gallery/features/features_compute_buffer_animation.md"
           },
           {
-            "id": "point_2d",
+            "id": "visuals_point",
             "title": "Point",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/point.c",
-            "page": "gallery/visuals/point_2d.md"
+            "page": "gallery/visuals/visuals_point.md"
           },
           {
-            "id": "showcase_gpu_particle_smoke",
+            "id": "showcases_gpu_particle_smoke",
             "title": "GPU Particle Smoke",
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/gpu_particle_smoke.c",
-            "page": "gallery/showcases/showcase_gpu_particle_smoke.md"
+            "page": "gallery/showcases/showcases_gpu_particle_smoke.md"
           }
         ]
       },
@@ -3200,12 +3200,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "composite_polygon",
+            "id": "composites_polygon",
             "title": "Polygon Composite",
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/polygon.c",
-            "page": "gallery/composites/composite_polygon.md"
+            "page": "gallery/composites/composites_polygon.md"
           }
         ]
       },
@@ -3213,20 +3213,20 @@
         "count": 2,
         "examples": [
           {
-            "id": "composite_polygon",
+            "id": "composites_polygon",
             "title": "Polygon Composite",
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/polygon.c",
-            "page": "gallery/composites/composite_polygon.md"
+            "page": "gallery/composites/composites_polygon.md"
           },
           {
-            "id": "us_state_choropleth",
+            "id": "showcases_choropleth",
             "title": "U.S. State Choropleth",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/us_state_choropleth.md"
+            "page": "gallery/showcases/showcases_choropleth.md"
           }
         ]
       },
@@ -3234,12 +3234,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_primitive",
+            "id": "visuals_primitive",
             "title": "Primitive",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/primitive.c",
-            "page": "gallery/visuals/visual_primitive.md"
+            "page": "gallery/visuals/visuals_primitive.md"
           }
         ]
       },
@@ -3273,12 +3273,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "linked_panels_probe_colorbar",
+            "id": "showcases_linked_probe_colorbar",
             "title": "Linked Probe With Colorbar",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/linked_probe_colorbar.c",
-            "page": "gallery/showcases/linked_panels_probe_colorbar.md"
+            "page": "gallery/showcases/showcases_linked_probe_colorbar.md"
           }
         ]
       },
@@ -3286,44 +3286,44 @@
         "count": 5,
         "examples": [
           {
-            "id": "us_state_choropleth",
+            "id": "showcases_choropleth",
             "title": "U.S. State Choropleth",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/us_state_choropleth.md"
+            "page": "gallery/showcases/showcases_choropleth.md"
           },
           {
-            "id": "protein_arcball_viewer",
+            "id": "showcases_protein",
             "title": "Protein",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/protein.c",
-            "page": "gallery/showcases/protein_arcball_viewer.md"
+            "page": "gallery/showcases/showcases_protein.md"
           },
           {
-            "id": "brain_volume",
+            "id": "showcases_brain_volume",
             "title": "Allen Mouse Brain",
             "category": "showcase",
             "status": "prototype",
             "source": "examples/c/showcases/brain_volume.c",
-            "page": "gallery/showcases/brain_volume.md"
+            "page": "gallery/showcases/showcases_brain_volume.md"
           },
           {
-            "id": "point_cloud",
+            "id": "showcases_point_cloud",
             "title": "Point Cloud",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
-            "page": "gallery/showcases/point_cloud.md"
+            "page": "gallery/showcases/showcases_point_cloud.md"
           },
           {
-            "id": "textured_terrain_or_planet",
+            "id": "showcases_textured_planet",
             "title": "Textured Planets",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/textured_terrain_or_planet.md"
+            "page": "gallery/showcases/showcases_textured_planet.md"
           }
         ]
       },
@@ -3331,12 +3331,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_image_rgba",
+            "id": "visuals_image_rgba",
             "title": "RGBA Image",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image_rgba.c",
-            "page": "gallery/visuals/visual_image_rgba.md"
+            "page": "gallery/visuals/visuals_image_rgba.md"
           }
         ]
       },
@@ -3344,44 +3344,44 @@
         "count": 5,
         "examples": [
           {
-            "id": "linked_panels_probe_colorbar",
+            "id": "showcases_linked_probe_colorbar",
             "title": "Linked Probe With Colorbar",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/linked_probe_colorbar.c",
-            "page": "gallery/showcases/linked_panels_probe_colorbar.md"
+            "page": "gallery/showcases/showcases_linked_probe_colorbar.md"
           },
           {
-            "id": "visual_image",
+            "id": "visuals_image",
             "title": "Image",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image.c",
-            "page": "gallery/visuals/visual_image.md"
+            "page": "gallery/visuals/visuals_image.md"
           },
           {
-            "id": "visual_image_rgba",
+            "id": "visuals_image_rgba",
             "title": "RGBA Image",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image_rgba.c",
-            "page": "gallery/visuals/visual_image_rgba.md"
+            "page": "gallery/visuals/visuals_image_rgba.md"
           },
           {
-            "id": "volume",
+            "id": "visuals_volume",
             "title": "Volume",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
-            "page": "gallery/visuals/volume.md"
+            "page": "gallery/visuals/visuals_volume.md"
           },
           {
-            "id": "textured_terrain_or_planet",
+            "id": "showcases_textured_planet",
             "title": "Textured Planets",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/textured_terrain_or_planet.md"
+            "page": "gallery/showcases/showcases_textured_planet.md"
           }
         ]
       },
@@ -3389,20 +3389,20 @@
         "count": 2,
         "examples": [
           {
-            "id": "colorbar",
+            "id": "features_colorbar",
             "title": "Colorbar",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/colorbar.c",
-            "page": "gallery/features/colorbar.md"
+            "page": "gallery/features/features_colorbar.md"
           },
           {
-            "id": "showcase_wind_field",
+            "id": "showcases_wind_field",
             "title": "Wind Field",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
-            "page": "gallery/showcases/showcase_wind_field.md"
+            "page": "gallery/showcases/showcases_wind_field.md"
           }
         ]
       },
@@ -3410,12 +3410,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "scalebar_measurement_workflow",
+            "id": "showcases_scalebar_measurement",
             "title": "Scale Bar Measurement Workflow",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scalebar_measurement.c",
-            "page": "gallery/showcases/scalebar_measurement_workflow.md"
+            "page": "gallery/showcases/showcases_scalebar_measurement.md"
           }
         ]
       },
@@ -3423,12 +3423,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_compute_buffer_animation",
+            "id": "features_compute_buffer_animation",
             "title": "Compute Buffer Animation",
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/compute_buffer_animation.c",
-            "page": "gallery/features/feature_compute_buffer_animation.md"
+            "page": "gallery/features/features_compute_buffer_animation.md"
           }
         ]
       },
@@ -3436,52 +3436,52 @@
         "count": 6,
         "examples": [
           {
-            "id": "scientific_plotting_workflow",
+            "id": "showcases_scientific_plotting",
             "title": "Scientific Plotting Workflow",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scientific_plotting.c",
-            "page": "gallery/showcases/scientific_plotting_workflow.md"
+            "page": "gallery/showcases/showcases_scientific_plotting.md"
           },
           {
-            "id": "us_state_choropleth",
+            "id": "showcases_choropleth",
             "title": "U.S. State Choropleth",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/us_state_choropleth.md"
+            "page": "gallery/showcases/showcases_choropleth.md"
           },
           {
-            "id": "protein_arcball_viewer",
+            "id": "showcases_protein",
             "title": "Protein",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/protein.c",
-            "page": "gallery/showcases/protein_arcball_viewer.md"
+            "page": "gallery/showcases/showcases_protein.md"
           },
           {
-            "id": "showcase_wind_field",
+            "id": "showcases_wind_field",
             "title": "Wind Field",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
-            "page": "gallery/showcases/showcase_wind_field.md"
+            "page": "gallery/showcases/showcases_wind_field.md"
           },
           {
-            "id": "showcase_surface_grid",
+            "id": "showcases_surface_grid",
             "title": "Surface Grid",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
-            "page": "gallery/showcases/showcase_surface_grid.md"
+            "page": "gallery/showcases/showcases_surface_grid.md"
           },
           {
-            "id": "brain_volume",
+            "id": "showcases_brain_volume",
             "title": "Allen Mouse Brain",
             "category": "showcase",
             "status": "prototype",
             "source": "examples/c/showcases/brain_volume.c",
-            "page": "gallery/showcases/brain_volume.md"
+            "page": "gallery/showcases/showcases_brain_volume.md"
           }
         ]
       },
@@ -3489,12 +3489,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_glyph",
+            "id": "visuals_glyph",
             "title": "Font Atlas Glyphs",
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/glyph.c",
-            "page": "gallery/visuals/visual_glyph.md"
+            "page": "gallery/visuals/visuals_glyph.md"
           }
         ]
       },
@@ -3502,12 +3502,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_segment",
+            "id": "visuals_segment",
             "title": "Segment",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/segment.c",
-            "page": "gallery/visuals/visual_segment.md"
+            "page": "gallery/visuals/visuals_segment.md"
           }
         ]
       },
@@ -3515,12 +3515,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "showcase_gpu_particle_smoke",
+            "id": "showcases_gpu_particle_smoke",
             "title": "GPU Particle Smoke",
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/gpu_particle_smoke.c",
-            "page": "gallery/showcases/showcase_gpu_particle_smoke.md"
+            "page": "gallery/showcases/showcases_gpu_particle_smoke.md"
           }
         ]
       },
@@ -3528,28 +3528,28 @@
         "count": 3,
         "examples": [
           {
-            "id": "feature_bounds_overlay",
+            "id": "features_bounds_overlay",
             "title": "Bounds Overlay",
             "category": "feature",
             "status": "diagnostic",
             "source": "examples/c/features/bounds_overlay.c",
-            "page": "gallery/features/feature_bounds_overlay.md"
+            "page": "gallery/features/features_bounds_overlay.md"
           },
           {
-            "id": "sphere_impostor",
+            "id": "visuals_sphere",
             "title": "Sphere",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/sphere.c",
-            "page": "gallery/visuals/sphere_impostor.md"
+            "page": "gallery/visuals/visuals_sphere.md"
           },
           {
-            "id": "protein_arcball_viewer",
+            "id": "showcases_protein",
             "title": "Protein",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/protein.c",
-            "page": "gallery/showcases/protein_arcball_viewer.md"
+            "page": "gallery/showcases/showcases_protein.md"
           }
         ]
       },
@@ -3557,12 +3557,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_splat",
+            "id": "visuals_splat",
             "title": "Splat",
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/splat.c",
-            "page": "gallery/visuals/visual_splat.md"
+            "page": "gallery/visuals/visuals_splat.md"
           }
         ]
       },
@@ -3570,12 +3570,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "scientific_plotting_workflow",
+            "id": "showcases_scientific_plotting",
             "title": "Scientific Plotting Workflow",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scientific_plotting.c",
-            "page": "gallery/showcases/scientific_plotting_workflow.md"
+            "page": "gallery/showcases/showcases_scientific_plotting.md"
           }
         ]
       },
@@ -3583,12 +3583,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_compute_buffer_animation",
+            "id": "features_compute_buffer_animation",
             "title": "Compute Buffer Animation",
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/compute_buffer_animation.c",
-            "page": "gallery/features/feature_compute_buffer_animation.md"
+            "page": "gallery/features/features_compute_buffer_animation.md"
           }
         ]
       },
@@ -3596,12 +3596,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "showcase_surface_grid",
+            "id": "showcases_surface_grid",
             "title": "Surface Grid",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
-            "page": "gallery/showcases/showcase_surface_grid.md"
+            "page": "gallery/showcases/showcases_surface_grid.md"
           }
         ]
       },
@@ -3609,12 +3609,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_marker_symbols",
+            "id": "features_marker_symbols",
             "title": "Marker Symbols",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/marker_symbols.c",
-            "page": "gallery/features/feature_marker_symbols.md"
+            "page": "gallery/features/features_marker_symbols.md"
           }
         ]
       },
@@ -3622,12 +3622,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_marker_symbols",
+            "id": "features_marker_symbols",
             "title": "Marker Symbols",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/marker_symbols.c",
-            "page": "gallery/features/feature_marker_symbols.md"
+            "page": "gallery/features/features_marker_symbols.md"
           }
         ]
       },
@@ -3635,36 +3635,36 @@
         "count": 4,
         "examples": [
           {
-            "id": "linked_panels_axes_panzoom",
+            "id": "showcases_panel_linked_axes",
             "title": "Linked Panels With Axes",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/panel_linked_axes.c",
-            "page": "gallery/showcases/linked_panels_axes_panzoom.md"
+            "page": "gallery/showcases/showcases_panel_linked_axes.md"
           },
           {
-            "id": "scalebar_measurement_workflow",
+            "id": "showcases_scalebar_measurement",
             "title": "Scale Bar Measurement Workflow",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scalebar_measurement.c",
-            "page": "gallery/showcases/scalebar_measurement_workflow.md"
+            "page": "gallery/showcases/showcases_scalebar_measurement.md"
           },
           {
-            "id": "showcase_wind_field",
+            "id": "showcases_wind_field",
             "title": "Wind Field",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
-            "page": "gallery/showcases/showcase_wind_field.md"
+            "page": "gallery/showcases/showcases_wind_field.md"
           },
           {
-            "id": "showcase_surface_grid",
+            "id": "showcases_surface_grid",
             "title": "Surface Grid",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
-            "page": "gallery/showcases/showcase_surface_grid.md"
+            "page": "gallery/showcases/showcases_surface_grid.md"
           }
         ]
       },
@@ -3672,12 +3672,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_text",
+            "id": "visuals_text",
             "title": "Text",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/text.c",
-            "page": "gallery/visuals/visual_text.md"
+            "page": "gallery/visuals/visuals_text.md"
           }
         ]
       },
@@ -3685,12 +3685,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "textured_terrain_or_planet",
+            "id": "showcases_textured_planet",
             "title": "Textured Planets",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/textured_terrain_or_planet.md"
+            "page": "gallery/showcases/showcases_textured_planet.md"
           }
         ]
       },
@@ -3698,12 +3698,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_glyph",
+            "id": "visuals_glyph",
             "title": "Font Atlas Glyphs",
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/glyph.c",
-            "page": "gallery/visuals/visual_glyph.md"
+            "page": "gallery/visuals/visuals_glyph.md"
           }
         ]
       },
@@ -3711,12 +3711,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_datetime_axis",
+            "id": "features_datetime_axis",
             "title": "Datetime Axis",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/datetime_axis.c",
-            "page": "gallery/features/feature_datetime_axis.md"
+            "page": "gallery/features/features_datetime_axis.md"
           }
         ]
       },
@@ -3724,12 +3724,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "volume",
+            "id": "visuals_volume",
             "title": "Volume",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
-            "page": "gallery/visuals/volume.md"
+            "page": "gallery/visuals/visuals_volume.md"
           }
         ]
       },
@@ -3737,12 +3737,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "scientific_plotting_workflow",
+            "id": "showcases_scientific_plotting",
             "title": "Scientific Plotting Workflow",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scientific_plotting.c",
-            "page": "gallery/showcases/scientific_plotting_workflow.md"
+            "page": "gallery/showcases/showcases_scientific_plotting.md"
           }
         ]
       },
@@ -3750,12 +3750,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_vector",
+            "id": "visuals_vector",
             "title": "Vector",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/vector.c",
-            "page": "gallery/visuals/visual_vector.md"
+            "page": "gallery/visuals/visuals_vector.md"
           }
         ]
       },
@@ -3763,12 +3763,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "showcase_wind_field",
+            "id": "showcases_wind_field",
             "title": "Wind Field",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
-            "page": "gallery/showcases/showcase_wind_field.md"
+            "page": "gallery/showcases/showcases_wind_field.md"
           }
         ]
       },
@@ -3776,12 +3776,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_video_export",
+            "id": "runtime_video_export",
             "title": "Video Export",
             "category": "runtime",
             "status": "experimental",
             "source": "examples/c/runtime/video_export.c",
-            "page": "gallery/runtime/feature_video_export.md"
+            "page": "gallery/runtime/runtime_video_export.md"
           }
         ]
       },
@@ -3789,12 +3789,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_view_size_policies",
+            "id": "features_view_size_policies",
             "title": "View Size Policies",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/view_size_policies.c",
-            "page": "gallery/features/feature_view_size_policies.md"
+            "page": "gallery/features/features_view_size_policies.md"
           }
         ]
       },
@@ -3823,20 +3823,20 @@
         "count": 2,
         "examples": [
           {
-            "id": "volume",
+            "id": "visuals_volume",
             "title": "Volume",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
-            "page": "gallery/visuals/volume.md"
+            "page": "gallery/visuals/visuals_volume.md"
           },
           {
-            "id": "brain_volume",
+            "id": "showcases_brain_volume",
             "title": "Allen Mouse Brain",
             "category": "showcase",
             "status": "prototype",
             "source": "examples/c/showcases/brain_volume.c",
-            "page": "gallery/showcases/brain_volume.md"
+            "page": "gallery/showcases/showcases_brain_volume.md"
           }
         ]
       },
@@ -3844,12 +3844,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "brain_volume",
+            "id": "showcases_brain_volume",
             "title": "Allen Mouse Brain",
             "category": "showcase",
             "status": "prototype",
             "source": "examples/c/showcases/brain_volume.c",
-            "page": "gallery/showcases/brain_volume.md"
+            "page": "gallery/showcases/showcases_brain_volume.md"
           }
         ]
       },
@@ -3857,12 +3857,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "brain_volume",
+            "id": "showcases_brain_volume",
             "title": "Allen Mouse Brain",
             "category": "showcase",
             "status": "prototype",
             "source": "examples/c/showcases/brain_volume.c",
-            "page": "gallery/showcases/brain_volume.md"
+            "page": "gallery/showcases/showcases_brain_volume.md"
           }
         ]
       },
@@ -3870,12 +3870,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "showcase_wind_field",
+            "id": "showcases_wind_field",
             "title": "Wind Field",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
-            "page": "gallery/showcases/showcase_wind_field.md"
+            "page": "gallery/showcases/showcases_wind_field.md"
           }
         ]
       },
@@ -3883,12 +3883,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "feature_view_size_policies",
+            "id": "features_view_size_policies",
             "title": "View Size Policies",
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/view_size_policies.c",
-            "page": "gallery/features/feature_view_size_policies.md"
+            "page": "gallery/features/features_view_size_policies.md"
           }
         ]
       },
@@ -3896,12 +3896,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "showcase_surface_grid",
+            "id": "showcases_surface_grid",
             "title": "Surface Grid",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
-            "page": "gallery/showcases/showcase_surface_grid.md"
+            "page": "gallery/showcases/showcases_surface_grid.md"
           }
         ]
       },
@@ -3909,36 +3909,36 @@
         "count": 4,
         "examples": [
           {
-            "id": "linked_panels_axes_panzoom",
+            "id": "showcases_panel_linked_axes",
             "title": "Linked Panels With Axes",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/panel_linked_axes.c",
-            "page": "gallery/showcases/linked_panels_axes_panzoom.md"
+            "page": "gallery/showcases/showcases_panel_linked_axes.md"
           },
           {
-            "id": "linked_panels_probe_colorbar",
+            "id": "showcases_linked_probe_colorbar",
             "title": "Linked Probe With Colorbar",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/linked_probe_colorbar.c",
-            "page": "gallery/showcases/linked_panels_probe_colorbar.md"
+            "page": "gallery/showcases/showcases_linked_probe_colorbar.md"
           },
           {
-            "id": "scientific_plotting_workflow",
+            "id": "showcases_scientific_plotting",
             "title": "Scientific Plotting Workflow",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scientific_plotting.c",
-            "page": "gallery/showcases/scientific_plotting_workflow.md"
+            "page": "gallery/showcases/showcases_scientific_plotting.md"
           },
           {
-            "id": "scalebar_measurement_workflow",
+            "id": "showcases_scalebar_measurement",
             "title": "Scale Bar Measurement Workflow",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scalebar_measurement.c",
-            "page": "gallery/showcases/scalebar_measurement_workflow.md"
+            "page": "gallery/showcases/showcases_scalebar_measurement.md"
           }
         ]
       }
@@ -3948,12 +3948,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_glyph",
+            "id": "visuals_glyph",
             "title": "Font Atlas Glyphs",
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/glyph.c",
-            "page": "gallery/visuals/visual_glyph.md"
+            "page": "gallery/visuals/visuals_glyph.md"
           }
         ]
       },
@@ -3961,20 +3961,20 @@
         "count": 2,
         "examples": [
           {
-            "id": "visual_image",
+            "id": "visuals_image",
             "title": "Image",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image.c",
-            "page": "gallery/visuals/visual_image.md"
+            "page": "gallery/visuals/visuals_image.md"
           },
           {
-            "id": "visual_image_rgba",
+            "id": "visuals_image_rgba",
             "title": "RGBA Image",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image_rgba.c",
-            "page": "gallery/visuals/visual_image_rgba.md"
+            "page": "gallery/visuals/visuals_image_rgba.md"
           }
         ]
       },
@@ -3982,12 +3982,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_labels",
+            "id": "visuals_labels",
             "title": "Labels",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/labels.c",
-            "page": "gallery/visuals/visual_labels.md"
+            "page": "gallery/visuals/visuals_labels.md"
           }
         ]
       },
@@ -3995,12 +3995,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_marker",
+            "id": "visuals_marker",
             "title": "Marker",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/marker.c",
-            "page": "gallery/visuals/visual_marker.md"
+            "page": "gallery/visuals/visuals_marker.md"
           }
         ]
       },
@@ -4008,12 +4008,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_mesh",
+            "id": "visuals_mesh",
             "title": "Mesh",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/mesh.c",
-            "page": "gallery/visuals/visual_mesh.md"
+            "page": "gallery/visuals/visuals_mesh.md"
           }
         ]
       },
@@ -4021,12 +4021,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_path",
+            "id": "visuals_path",
             "title": "Path",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/path.c",
-            "page": "gallery/visuals/visual_path.md"
+            "page": "gallery/visuals/visuals_path.md"
           }
         ]
       },
@@ -4034,12 +4034,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_pixel",
+            "id": "visuals_pixel",
             "title": "Pixel",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/pixel.c",
-            "page": "gallery/visuals/visual_pixel.md"
+            "page": "gallery/visuals/visuals_pixel.md"
           }
         ]
       },
@@ -4047,12 +4047,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "point_2d",
+            "id": "visuals_point",
             "title": "Point",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/point.c",
-            "page": "gallery/visuals/point_2d.md"
+            "page": "gallery/visuals/visuals_point.md"
           }
         ]
       },
@@ -4060,12 +4060,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_primitive",
+            "id": "visuals_primitive",
             "title": "Primitive",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/primitive.c",
-            "page": "gallery/visuals/visual_primitive.md"
+            "page": "gallery/visuals/visuals_primitive.md"
           }
         ]
       },
@@ -4073,12 +4073,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_segment",
+            "id": "visuals_segment",
             "title": "Segment",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/segment.c",
-            "page": "gallery/visuals/visual_segment.md"
+            "page": "gallery/visuals/visuals_segment.md"
           }
         ]
       },
@@ -4086,12 +4086,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "sphere_impostor",
+            "id": "visuals_sphere",
             "title": "Sphere",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/sphere.c",
-            "page": "gallery/visuals/sphere_impostor.md"
+            "page": "gallery/visuals/visuals_sphere.md"
           }
         ]
       },
@@ -4099,12 +4099,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_splat",
+            "id": "visuals_splat",
             "title": "Splat",
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/splat.c",
-            "page": "gallery/visuals/visual_splat.md"
+            "page": "gallery/visuals/visuals_splat.md"
           }
         ]
       },
@@ -4112,12 +4112,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_text",
+            "id": "visuals_text",
             "title": "Text",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/text.c",
-            "page": "gallery/visuals/visual_text.md"
+            "page": "gallery/visuals/visuals_text.md"
           }
         ]
       },
@@ -4125,12 +4125,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "visual_vector",
+            "id": "visuals_vector",
             "title": "Vector",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/vector.c",
-            "page": "gallery/visuals/visual_vector.md"
+            "page": "gallery/visuals/visuals_vector.md"
           }
         ]
       },
@@ -4138,12 +4138,12 @@
         "count": 1,
         "examples": [
           {
-            "id": "volume",
+            "id": "visuals_volume",
             "title": "Volume",
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
-            "page": "gallery/visuals/volume.md"
+            "page": "gallery/visuals/visuals_volume.md"
           }
         ]
       }

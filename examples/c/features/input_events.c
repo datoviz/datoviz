@@ -6,7 +6,7 @@
 
 /* input_events - This example shows native keyboard, pointer, wheel, and resize events.
  *
- * Scenario: feature.input_events
+ * Scenario: features_input_events
  * Style: features, native app
  *
  * Build:  just example-c features/input_events

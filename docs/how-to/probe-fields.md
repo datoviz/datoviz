@@ -2,7 +2,7 @@
 
 Read the field value under a cursor or selected coordinate.
 
-![Image Probe](../assets/gallery/v0.4/features/image_probe.webp)
+![Image Probe](../assets/gallery/v0.4/features/features_image_probe.webp)
 
 ## Task Workflow
 
@@ -105,6 +105,6 @@ centers.
 
 ??? example "Related examples"
 
-    - [Image Probe](../examples/gallery/features/image_probe.md) - Source: `examples/c/features/image_probe.c`
-    - [Label Probe](../examples/gallery/features/feature_probe_labels.md) - Source: `examples/c/features/probe_labels.c`
-    - [Linked Probe With Colorbar](../examples/gallery/showcases/linked_panels_probe_colorbar.md) - Source: `examples/c/showcases/linked_probe_colorbar.c`
+    - [Image Probe](../examples/gallery/features/features_image_probe.md) - Source: `examples/c/features/image_probe.c`
+    - [Label Probe](../examples/gallery/features/features_probe_labels.md) - Source: `examples/c/features/probe_labels.c`
+    - [Linked Probe With Colorbar](../examples/gallery/showcases/showcases_linked_probe_colorbar.md) - Source: `examples/c/showcases/linked_probe_colorbar.c`

@@ -2,7 +2,7 @@
 
 Create the basic structure used by most Datoviz visualizations.
 
-![Basic Scene](../assets/gallery/v0.4/features/feature_basic_scene.webp)
+![Basic Scene](../assets/gallery/v0.4/features/features_basic_scene.webp)
 
 ## Task Workflow
 
@@ -179,5 +179,5 @@ materials, panels, transforms, or update schedules.
 
 ??? example "Related examples"
 
-    - [Basic Scene](../examples/gallery/features/feature_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
+    - [Basic Scene](../examples/gallery/features/features_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
     - [Scatter Plot](../examples/gallery/start/start_scatter.md) - Source: `examples/c/start/scatter.c`

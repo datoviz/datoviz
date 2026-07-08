@@ -14,9 +14,9 @@ Each card links to a detail page with preview media, source code, and example me
 
 <div class="card" markdown="1">
 
-### [Scientific Plotting Workflow](gallery/showcases/scientific_plotting_workflow.md)
+### [Scientific Plotting Workflow](gallery/showcases/showcases_scientific_plotting.md)
 
-[![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/scientific_plotting_workflow.webp)](gallery/showcases/scientific_plotting_workflow.md)
+[![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/showcases_scientific_plotting.webp)](gallery/showcases/showcases_scientific_plotting.md)
 
 `showcases`<br><span>`workflow`, `scientific`, `histogram`, `guide-lines`, `guide-spans`, ...</span>
 
@@ -26,9 +26,9 @@ This example composes common scientific plot elements in one figure.
 
 <div class="card" markdown="1">
 
-### [Linked Panels With Axes](gallery/showcases/linked_panels_axes_panzoom.md)
+### [Linked Panels With Axes](gallery/showcases/showcases_panel_linked_axes.md)
 
-[![Linked Panels With Axes](../assets/gallery/v0.4/showcases/linked_panels_axes_panzoom.webp)](gallery/showcases/linked_panels_axes_panzoom.md)
+[![Linked Panels With Axes](../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.webp)](gallery/showcases/showcases_panel_linked_axes.md)
 
 `showcases`<br><span>`workflow`, `linked-panels`, `axes`, `panzoom`, `synthetic`</span>
 
@@ -38,9 +38,9 @@ This example builds linked time-series panels with shared axes behavior.
 
 <div class="card" markdown="1">
 
-### [Linked Probe With Colorbar](gallery/showcases/linked_panels_probe_colorbar.md)
+### [Linked Probe With Colorbar](gallery/showcases/showcases_linked_probe_colorbar.md)
 
-[![Linked Probe With Colorbar](../assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp)](gallery/showcases/linked_panels_probe_colorbar.md)
+[![Linked Probe With Colorbar](../assets/gallery/v0.4/showcases/showcases_linked_probe_colorbar.webp)](gallery/showcases/showcases_linked_probe_colorbar.md)
 
 `showcases`<br><span>`workflow`, `image`, `sampled-field`, `pixel-query`, `linked-panzoom`, ...</span>
 
@@ -50,9 +50,9 @@ This example links two image panels with a probe readout and colorbar.
 
 <div class="card" markdown="1">
 
-### [Scale Bar Measurement Workflow](gallery/showcases/scalebar_measurement_workflow.md)
+### [Scale Bar Measurement Workflow](gallery/showcases/showcases_scalebar_measurement.md)
 
-[![Scale Bar Measurement Workflow](../assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp)](gallery/showcases/scalebar_measurement_workflow.md)
+[![Scale Bar Measurement Workflow](../assets/gallery/v0.4/showcases/showcases_scalebar_measurement.webp)](gallery/showcases/showcases_scalebar_measurement.md)
 
 `showcases`<br><span>`workflow`, `scale-bar`, `measurement`, `synthetic`</span>
 
@@ -62,9 +62,9 @@ This example compares scale bars across overview, detail, and 3D views.
 
 <div class="card" markdown="1">
 
-### [U.S. State Choropleth](gallery/showcases/us_state_choropleth.md)
+### [U.S. State Choropleth](gallery/showcases/showcases_choropleth.md)
 
-[![U.S. State Choropleth](../assets/gallery/v0.4/showcases/us_state_choropleth.webp)](gallery/showcases/us_state_choropleth.md)
+[![U.S. State Choropleth](../assets/gallery/v0.4/showcases/showcases_choropleth.webp)](gallery/showcases/showcases_choropleth.md)
 
 `showcases`<br><span>`scientific`, `real-data`, `geo`, `composite`, `polygon-set`, ...</span>
 
@@ -74,9 +74,9 @@ This example renders contiguous U.S. population density as polygon-set data.
 
 <div class="card" markdown="1">
 
-### [Wind Field](gallery/showcases/showcase_wind_field.md)
+### [Wind Field](gallery/showcases/showcases_wind_field.md)
 
-[![Wind Field](../assets/gallery/v0.4/showcases/showcase_wind_field.webp)](gallery/showcases/showcase_wind_field.md)
+[![Wind Field](../assets/gallery/v0.4/showcases/showcases_wind_field.webp)](gallery/showcases/showcases_wind_field.md)
 
 `showcases`<br><span>`scientific`, `synthetic`, `scalar-field`, `vector-field`, `wind-field`, ...</span>
 
@@ -86,9 +86,9 @@ This example combines a synthetic wind-speed field with vectors and streamlines.
 
 <div class="card" markdown="1">
 
-### [GPU Particle Smoke](gallery/showcases/showcase_gpu_particle_smoke.md)
+### [GPU Particle Smoke](gallery/showcases/showcases_gpu_particle_smoke.md)
 
-[![GPU Particle Smoke](../assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp)](gallery/showcases/showcase_gpu_particle_smoke.md)
+[![GPU Particle Smoke](../assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.webp)](gallery/showcases/showcases_gpu_particle_smoke.md)
 
 `experimental` `showcases`<br><span>`compute`, `simulation`, `particles`, `point`, `alpha-blending`, ...</span>
 
@@ -104,9 +104,9 @@ This example uses scene compute buffers to animate particle smoke.
 
 <div class="card" markdown="1">
 
-### [Allen Mouse Brain](gallery/showcases/brain_volume.md)
+### [Allen Mouse Brain](gallery/showcases/showcases_brain_volume.md)
 
-[![Allen Mouse Brain](../assets/gallery/v0.4/showcases/brain_volume.webp)](gallery/showcases/brain_volume.md)
+[![Allen Mouse Brain](../assets/gallery/v0.4/showcases/showcases_brain_volume.webp)](gallery/showcases/showcases_brain_volume.md)
 
 `prototype` `showcases`<br><span>`scientific`, `real-data`, `volume`, `volume-slice`, `volume-occlusion`, ...</span>
 
@@ -116,9 +116,9 @@ This example renders a prepared Allen mouse brain volume with a visible slice.
 
 <div class="card" markdown="1">
 
-### [Protein](gallery/showcases/protein_arcball_viewer.md)
+### [Protein](gallery/showcases/showcases_protein.md)
 
-[![Protein](../assets/gallery/v0.4/showcases/protein_arcball_viewer.webp)](gallery/showcases/protein_arcball_viewer.md)
+[![Protein](../assets/gallery/v0.4/showcases/showcases_protein.webp)](gallery/showcases/showcases_protein.md)
 
 `showcases`<br><span>`scientific`, `real-data`, `molecular`, `sphere`, `arcball`</span>
 
@@ -128,9 +128,9 @@ This example renders a prepared PDB structure as colored sphere impostors.
 
 <div class="card" markdown="1">
 
-### [Point Cloud](gallery/showcases/point_cloud.md)
+### [Point Cloud](gallery/showcases/showcases_point_cloud.md)
 
-[![Point Cloud](../assets/gallery/v0.4/showcases/point_cloud.webp)](gallery/showcases/point_cloud.md)
+[![Point Cloud](../assets/gallery/v0.4/showcases/showcases_point_cloud.webp)](gallery/showcases/showcases_point_cloud.md)
 
 `showcases`<br><span>`real-data`, `pixel`, `dense-point-cloud`, `direct-color`, `eye-dome-lighting`, ...</span>
 
@@ -140,9 +140,9 @@ This example renders a prepared RGB LiDAR point cloud with direct colors.
 
 <div class="card" markdown="1">
 
-### [Surface Grid](gallery/showcases/showcase_surface_grid.md)
+### [Surface Grid](gallery/showcases/showcases_surface_grid.md)
 
-[![Surface Grid](../assets/gallery/v0.4/showcases/showcase_surface_grid.webp)](gallery/showcases/showcase_surface_grid.md)
+[![Surface Grid](../assets/gallery/v0.4/showcases/showcases_surface_grid.webp)](gallery/showcases/showcases_surface_grid.md)
 
 `showcases`<br><span>`scientific`, `synthetic`, `surface-grid`, `mesh`, `wireframe`, ...</span>
 
@@ -152,9 +152,9 @@ This example turns a generated height field into a lit mesh and wireframe.
 
 <div class="card" markdown="1">
 
-### [Textured Planets](gallery/showcases/textured_terrain_or_planet.md)
+### [Textured Planets](gallery/showcases/showcases_textured_planet.md)
 
-[![Textured Planets](../assets/gallery/v0.4/showcases/textured_terrain_or_planet.webp)](gallery/showcases/textured_terrain_or_planet.md)
+[![Textured Planets](../assets/gallery/v0.4/showcases/showcases_textured_planet.webp)](gallery/showcases/showcases_textured_planet.md)
 
 `showcases`<br><span>`real-data`, `mesh`, `sampled-field`, `texture`, `arcball`, ...</span>
 

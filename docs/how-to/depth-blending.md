@@ -100,19 +100,19 @@ native-only until the corresponding gallery page advertises a live route.
 
 ## Canonical Examples
 
-![Depth test toggle](../assets/gallery/v0.4/features/technique_depth_test.webp)
+![Depth test toggle](../assets/gallery/v0.4/features/features_technique_depth_test.webp)
 
-- [Depth Test Toggle](../examples/gallery/features/technique_depth_test.md) - compare overlapping
+- [Depth Test Toggle](../examples/gallery/features/features_technique_depth_test.md) - compare overlapping
   3D points with depth testing on and off. Source:
   `examples/c/features/technique_depth_test.c`.
-- [Alpha Blending](../examples/gallery/features/alpha_blending.md) - ordinary source-over alpha
+- [Alpha Blending](../examples/gallery/features/features_alpha_blending.md) - ordinary source-over alpha
   blending. Source: `examples/c/features/alpha_blending.c`.
-- [Transparency Order](../examples/gallery/features/technique_transparency.md) - compare
+- [Transparency Order](../examples/gallery/features/features_technique_transparency.md) - compare
   source-over, WBOIT, and depth-peel transparency on overlapping cubes. Source:
   `examples/c/features/technique_transparency.c`.
-- [Depth Cue](../examples/gallery/features/technique_depth_cue.md) - depth-dependent fading on a
+- [Depth Cue](../examples/gallery/features/features_technique_depth_cue.md) - depth-dependent fading on a
   3D sphere lattice. Source: `examples/c/features/technique_depth_cue.c`.
-- [Multisample Antialiasing](../examples/gallery/features/technique_msaa.md) - use MSAA for edge
+- [Multisample Antialiasing](../examples/gallery/features/features_technique_msaa.md) - use MSAA for edge
   quality. Source: `examples/c/features/technique_msaa.c`.
 
 

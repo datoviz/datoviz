@@ -12,7 +12,7 @@
  * rather than just pixels. This helps beginners see that Datoviz scenes keep inspectable state that
  * can be exported for debugging or tooling.
  *
- * Scenario: feature.json_export
+ * Scenario: features_json_export
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/json_export
@@ -168,7 +168,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 static DvzScenarioSpec _json_export_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_json_export",
+        .id = "features_json_export",
         .title = "JSON Export",
         .width = WIDTH,
         .height = HEIGHT,

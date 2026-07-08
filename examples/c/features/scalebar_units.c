@@ -12,7 +12,7 @@
  * This is useful for signal, electrophysiology, or video-aligned plots where the reader needs a
  * time interval cue rather than a distance cue.
  *
- * Scenario: scalebar_units
+ * Scenario: features_scalebar_units
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/scalebar_units
@@ -256,7 +256,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_scalebar_units_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_scalebar_units",
+        .id = "features_scalebar_units",
         .title = "Scale Bar Units",
         .width = WIDTH,
         .height = HEIGHT,

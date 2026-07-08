@@ -16,22 +16,22 @@ when they truly need different visual families, materials, transforms, panels, o
 
 | Data shape | Usually use | Reference | Canonical gallery |
 | --- | --- | --- | --- |
-| Dense scatter samples or point clouds | Point | [Point](../reference/visual-families/point.md) | [Point](../examples/gallery/visuals/point_2d.md) |
-| Point samples that need symbolic shapes | Marker | [Marker](../reference/visual-families/marker.md) | [Marker](../examples/gallery/visuals/visual_marker.md) |
-| Screen-aligned sparse raster cells | Pixel | [Pixel](../reference/visual-families/pixel.md) | [Pixel](../examples/gallery/visuals/visual_pixel.md) |
-| Experimental Gaussian footprints | Splat | [Splat](../reference/visual-families/splat.md) | [Splat](../examples/gallery/visuals/visual_splat.md) |
-| Connected polylines, curves, or trajectories | Path | [Path](../reference/visual-families/path.md) | [Path](../examples/gallery/visuals/visual_path.md) |
-| Independent line segments | Segment | [Segment](../reference/visual-families/segment.md) | [Segment](../examples/gallery/visuals/visual_segment.md) |
-| Arrow or vector-field glyphs | Vector | [Vector](../reference/visual-families/vector.md) | [Vector](../examples/gallery/visuals/visual_vector.md) |
-| Simple triangle or line batches | Primitive | [Primitive](../reference/visual-families/primitive.md) | [Primitive](../examples/gallery/visuals/visual_primitive.md) |
-| 2D sampled scalar/color field | Image | [Image](../reference/visual-families/image.md) | [Image](../examples/gallery/visuals/visual_image.md) |
-| Integer label field or segmentation mask | Labels | [Labels](../reference/visual-families/labels.md) | [Labels](../examples/gallery/visuals/visual_labels.md) |
-| 3D sampled scalar field | Volume | [Volume](../reference/visual-families/volume.md) | [Volume](../examples/gallery/visuals/volume.md) |
-| Triangulated surface or textured object | Mesh | [Mesh](../reference/visual-families/mesh.md) | [Mesh](../examples/gallery/visuals/visual_mesh.md) |
-| Many copies of the same 3D object | Mesh with `instance_transform` | [Mesh](../reference/visual-families/mesh.md) | [Mesh Instance Selection](../examples/gallery/features/feature_selection_mesh_instances.md) |
-| 3D balls, atoms, or particles with world-space radius | Sphere | [Sphere](../reference/visual-families/sphere.md) | [Sphere](../examples/gallery/visuals/sphere_impostor.md) |
-| Human-readable retained strings | Text | [Text](../reference/visual-families/text.md) | [Text](../examples/gallery/visuals/visual_text.md) |
-| Low-level font-atlas quads | Glyph | [Glyph](../reference/visual-families/glyph.md) | [Glyph](../examples/gallery/visuals/visual_glyph.md) |
+| Dense scatter samples or point clouds | Point | [Point](../reference/visual-families/point.md) | [Point](../examples/gallery/visuals/visuals_point.md) |
+| Point samples that need symbolic shapes | Marker | [Marker](../reference/visual-families/marker.md) | [Marker](../examples/gallery/visuals/visuals_marker.md) |
+| Screen-aligned sparse raster cells | Pixel | [Pixel](../reference/visual-families/pixel.md) | [Pixel](../examples/gallery/visuals/visuals_pixel.md) |
+| Experimental Gaussian footprints | Splat | [Splat](../reference/visual-families/splat.md) | [Splat](../examples/gallery/visuals/visuals_splat.md) |
+| Connected polylines, curves, or trajectories | Path | [Path](../reference/visual-families/path.md) | [Path](../examples/gallery/visuals/visuals_path.md) |
+| Independent line segments | Segment | [Segment](../reference/visual-families/segment.md) | [Segment](../examples/gallery/visuals/visuals_segment.md) |
+| Arrow or vector-field glyphs | Vector | [Vector](../reference/visual-families/vector.md) | [Vector](../examples/gallery/visuals/visuals_vector.md) |
+| Simple triangle or line batches | Primitive | [Primitive](../reference/visual-families/primitive.md) | [Primitive](../examples/gallery/visuals/visuals_primitive.md) |
+| 2D sampled scalar/color field | Image | [Image](../reference/visual-families/image.md) | [Image](../examples/gallery/visuals/visuals_image.md) |
+| Integer label field or segmentation mask | Labels | [Labels](../reference/visual-families/labels.md) | [Labels](../examples/gallery/visuals/visuals_labels.md) |
+| 3D sampled scalar field | Volume | [Volume](../reference/visual-families/visuals_volume.md) | [Volume](../examples/gallery/visuals/visuals_volume.md) |
+| Triangulated surface or textured object | Mesh | [Mesh](../reference/visual-families/mesh.md) | [Mesh](../examples/gallery/visuals/visuals_mesh.md) |
+| Many copies of the same 3D object | Mesh with `instance_transform` | [Mesh](../reference/visual-families/mesh.md) | [Mesh Instance Selection](../examples/gallery/features/features_selection_mesh_instances.md) |
+| 3D balls, atoms, or particles with world-space radius | Sphere | [Sphere](../reference/visual-families/sphere.md) | [Sphere](../examples/gallery/visuals/visuals_sphere.md) |
+| Human-readable retained strings | Text | [Text](../reference/visual-families/text.md) | [Text](../examples/gallery/visuals/visuals_text.md) |
+| Low-level font-atlas quads | Glyph | [Glyph](../reference/visual-families/glyph.md) | [Glyph](../examples/gallery/visuals/visuals_glyph.md) |
 
 ## Neighboring Choices
 

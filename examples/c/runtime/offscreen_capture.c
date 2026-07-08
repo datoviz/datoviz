@@ -14,7 +14,7 @@
  * This is the runtime path to copy for reproducible batch figures, tests, and documentation
  * captures that should not depend on an onscreen window.
  *
- * Scenario: feature.offscreen_capture
+ * Scenario: runtime_offscreen_capture
  * Style: runtime, graphite_cyan, 1920x1080 output target
  *
  * Build:  just example-c runtime/offscreen_capture

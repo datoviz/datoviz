@@ -14,7 +14,7 @@
  * This workflow is useful for large measured point clouds where the expensive decoding and
  * normalization happen before the gallery example runs. Generate the prepared cache before running.
  *
- * Scenario: point_cloud
+ * Scenario: showcases_point_cloud
  * Style: showcase, graphite_cyan, 1280x720 window target
  *
  * Real data is loaded from `.cache/datoviz/examples/point_cloud/prepared/point_cloud.bin`.
@@ -454,7 +454,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 static DvzScenarioSpec _point_cloud_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "point_cloud",
+        .id = "showcases_point_cloud",
         .title = "Point Cloud",
         .width = WIDTH,
         .height = HEIGHT,

@@ -6,7 +6,7 @@
 
 /* coordinate_system - This example shows the Datoviz 3D coordinate convention.
  *
- * Scenario: feature.coordinate_system
+ * Scenario: features_coordinate_system
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/coordinate_system
@@ -409,7 +409,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_coordinate_system_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_coordinate_system",
+        .id = "features_coordinate_system",
         .title = "Coordinate System",
         .width = WIDTH,
         .height = HEIGHT,

@@ -192,6 +192,7 @@ gallery:
     @python3 tools/build_capabilities.py
 
 check-example-manifests:
+    @python3 tools/check_example_ids.py
     @python3 tools/check_example_manifests.py
 
 

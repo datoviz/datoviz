@@ -2,7 +2,7 @@
 
 Make multiple panels pan, zoom, or probe together.
 
-![Linked Panels](../assets/gallery/v0.4/features/feature_panel_linked.webp)
+![Linked Panels](../assets/gallery/v0.4/features/features_panel_linked.webp)
 
 ## Task Workflow
 
@@ -90,6 +90,6 @@ format.
 
 ??? example "Related examples"
 
-    - [Linked Panels](../examples/gallery/features/feature_panel_linked.md) - Source: `examples/c/features/panel_linked.c`
-    - [Linked Panels With Axes](../examples/gallery/showcases/linked_panels_axes_panzoom.md) - Source: `examples/c/showcases/panel_linked_axes.c`
-    - [Linked Probe With Colorbar](../examples/gallery/showcases/linked_panels_probe_colorbar.md) - Source: `examples/c/showcases/linked_probe_colorbar.c`
+    - [Linked Panels](../examples/gallery/features/features_panel_linked.md) - Source: `examples/c/features/panel_linked.c`
+    - [Linked Panels With Axes](../examples/gallery/showcases/showcases_panel_linked_axes.md) - Source: `examples/c/showcases/panel_linked_axes.c`
+    - [Linked Probe With Colorbar](../examples/gallery/showcases/showcases_linked_probe_colorbar.md) - Source: `examples/c/showcases/linked_probe_colorbar.c`

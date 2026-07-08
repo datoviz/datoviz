@@ -43,7 +43,7 @@ ownership, plotting conveniences, notebooks, or ecosystem data loading, it belon
   create scenes, upload data, render offscreen/windowed, pick/probe/update/capture.
 - GSP, in vispy2: object-oriented scene programming, retained visuals, callbacks, selections,
   linked scene state, and Pythonic animation/update patterns.
-- Plot, in vispy2: task-first scatter/line/image/volume/surface/mesh plots, linked views,
+- Plot, in vispy2: task-first scatter/line/image/visuals_volume/surface/mesh plots, linked views,
   dashboards, scales, annotations, labels, and selections.
 
 

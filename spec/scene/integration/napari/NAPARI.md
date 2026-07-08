@@ -99,7 +99,7 @@ biological imaging workflows and exercise the hardest shared invariants.
 | ------------ | ---------------------- | ------------ |
 | `Image` 2D scalar | `image` visual + scalar `SampledField` + `DvzScale` | Contrast and colormap updates without data upload. |
 | `Image` RGB/RGBA | `image` visual + RGBA sampled field | Correct axis/order/origin handling. |
-| `Image` 3D volume | `volume` visual or sliced `image` | N-D slicing ownership and axis metadata. |
+| `Image` 3D volume | `visuals_volume` visual or sliced `image` | N-D slicing ownership and axis metadata. |
 | `Labels` 2D/3D slice | label field path or image-label variant | Integer ids, categorical colors, nearest sampling. |
 | `Points` | `point` or `marker` visual | Stable point identity, selection, large counts. |
 | `Shapes` | `path`, `primitive`, future polygon visual | Shape identity and edit handles. |

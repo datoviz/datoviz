@@ -6,7 +6,7 @@
 
 /* gui_cimgui - This example shows raw cimgui widgets controlling a Datoviz visual.
  *
- * Scenario: feature.gui_cimgui
+ * Scenario: features_gui_cimgui
  * Style: features, native GUI/app
  *
  * Build:  just example-c features/gui_cimgui

@@ -126,8 +126,8 @@ and unsubscribe before destroying that state or the view.
 
 ??? example "Related examples"
 
-    - [Input Events](../examples/gallery/features/feature_input_events.md) - Source: `examples/c/features/input_events.c`
-    - [Picking](../examples/gallery/features/feature_picking.md) - Source: `examples/c/features/picking.c`
-    - [GUI Controls](../examples/gallery/features/feature_gui_controls.md) - Source: `examples/c/features/gui_controls.c`
-    - [Raw cimgui GUI](../examples/gallery/features/feature_gui_cimgui.md) - Source: `examples/c/features/gui_cimgui.c`
-    - [GUI Viewport](../examples/gallery/features/feature_gui_viewport.md) - Source: `examples/c/features/gui_viewport.c`
+    - [Input Events](../examples/gallery/features/features_input_events.md) - Source: `examples/c/features/input_events.c`
+    - [Picking](../examples/gallery/features/features_picking.md) - Source: `examples/c/features/picking.c`
+    - [GUI Controls](../examples/gallery/features/features_gui_controls.md) - Source: `examples/c/features/gui_controls.c`
+    - [Raw cimgui GUI](../examples/gallery/features/features_gui_cimgui.md) - Source: `examples/c/features/gui_cimgui.c`
+    - [GUI Viewport](../examples/gallery/features/features_gui_viewport.md) - Source: `examples/c/features/gui_viewport.c`

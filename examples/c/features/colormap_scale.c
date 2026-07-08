@@ -6,7 +6,7 @@
 
 /* colormap_scale - This example shows scalar point values mapped through a custom colormap.
  *
- * Scenario: feature.colormap_scale
+ * Scenario: features_colormap_scale
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/colormap_scale
@@ -178,7 +178,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_colormap_scale_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_colormap_scale",
+        .id = "features_colormap_scale",
         .title = "Scalar Color Scale",
         .width = WIDTH,
         .height = HEIGHT,

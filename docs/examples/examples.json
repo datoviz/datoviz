@@ -20,7 +20,7 @@
   },
   "examples": [
     {
-      "id": "feature_basic_scene",
+      "id": "features_basic_scene",
       "title": "Basic Scene",
       "category": "feature",
       "lane": "features",
@@ -28,7 +28,7 @@
       "status": "supported",
       "source": "examples/c/features/basic_scene.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/basic_scene.c",
-      "page": "gallery/features/feature_basic_scene.md",
+      "page": "gallery/features/features_basic_scene.md",
       "summary": "This example shows the smallest scene with a point visual.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/basic_scene",
@@ -43,7 +43,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_basic_scene.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_basic_scene.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_basic_scene.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -53,20 +53,20 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_basic_scene",
+        "route": "examples/webgpu/live.html?id=features_basic_scene",
         "requirements": [
           "point"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_basic_scene",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_basic_scene",
+      "webgpu_route": "examples/webgpu/live.html?id=features_basic_scene",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_basic_scene",
       "primary_feature": "scene",
       "python_source": "examples/python/gallery/features/basic_scene.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/basic_scene.py",
       "python_status": "manual"
     },
     {
-      "id": "feature_panel_single",
+      "id": "features_panel_single",
       "title": "Single Panel",
       "category": "feature",
       "lane": "features",
@@ -74,7 +74,7 @@
       "status": "supported",
       "source": "examples/c/features/panel_single.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_single.c",
-      "page": "gallery/features/feature_panel_single.md",
+      "page": "gallery/features/features_panel_single.md",
       "summary": "Panel_single creates one explicit panel rectangle inside a figure.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/panel_single",
@@ -89,7 +89,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_panel_single.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_panel_single.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_panel_single.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -100,21 +100,21 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_panel_single",
+        "route": "examples/webgpu/live.html?id=features_panel_single",
         "requirements": [
           "panel",
           "point"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_panel_single",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_panel_single",
+      "webgpu_route": "examples/webgpu/live.html?id=features_panel_single",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_panel_single",
       "primary_feature": "panel-single",
       "python_source": "examples/python/gallery/features/panel_single.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_single.py",
       "python_status": "manual"
     },
     {
-      "id": "feature_panel_grid",
+      "id": "features_panel_grid",
       "title": "Panel Grid",
       "category": "feature",
       "lane": "features",
@@ -122,7 +122,7 @@
       "status": "supported",
       "source": "examples/c/features/panel_grid.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_grid.c",
-      "page": "gallery/features/feature_panel_grid.md",
+      "page": "gallery/features/features_panel_grid.md",
       "summary": "Panel_grid arranges four independent panels in a 2x2 figure grid.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/panel_grid",
@@ -137,7 +137,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_panel_grid.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_panel_grid.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_panel_grid.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -148,21 +148,21 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_panel_grid",
+        "route": "examples/webgpu/live.html?id=features_panel_grid",
         "requirements": [
           "panel-grid",
           "point"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_panel_grid",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_panel_grid",
+      "webgpu_route": "examples/webgpu/live.html?id=features_panel_grid",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_panel_grid",
       "primary_feature": "panel-grid",
       "python_source": "examples/python/gallery/features/panel_grid.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_grid.py",
       "python_status": "manual"
     },
     {
-      "id": "feature_panel_multi",
+      "id": "features_panel_multi",
       "title": "Multiple Panels",
       "category": "feature",
       "lane": "features",
@@ -170,7 +170,7 @@
       "status": "supported",
       "source": "examples/c/features/panel_multi.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_multi.c",
-      "page": "gallery/features/feature_panel_multi.md",
+      "page": "gallery/features/features_panel_multi.md",
       "summary": "Panel_multi shows two panels with independent data, domains, and panzoom state.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/panel_multi",
@@ -185,7 +185,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_panel_multi.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_panel_multi.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_panel_multi.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -198,7 +198,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_panel_multi",
+        "route": "examples/webgpu/live.html?id=features_panel_multi",
         "requirements": [
           "panel-grid",
           "multi-panel",
@@ -206,15 +206,15 @@
           "point"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_panel_multi",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_panel_multi",
+      "webgpu_route": "examples/webgpu/live.html?id=features_panel_multi",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_panel_multi",
       "primary_feature": "multi-panel",
       "python_source": "examples/python/gallery/features/panel_multi.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_multi.py",
       "python_status": "manual"
     },
     {
-      "id": "feature_panel_linked",
+      "id": "features_panel_linked",
       "title": "Linked Panels",
       "category": "feature",
       "lane": "features",
@@ -222,7 +222,7 @@
       "status": "supported",
       "source": "examples/c/features/panel_linked.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_linked.c",
-      "page": "gallery/features/feature_panel_linked.md",
+      "page": "gallery/features/features_panel_linked.md",
       "summary": "Panel_linked links the X panzoom extent of two stacked signal panels.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/panel_linked",
@@ -237,7 +237,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_panel_linked.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_panel_linked.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_panel_linked.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -250,7 +250,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_panel_linked",
+        "route": "examples/webgpu/live.html?id=features_panel_linked",
         "requirements": [
           "panel-grid",
           "linked-panels",
@@ -258,15 +258,15 @@
           "point"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_panel_linked",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_panel_linked",
+      "webgpu_route": "examples/webgpu/live.html?id=features_panel_linked",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_panel_linked",
       "primary_feature": "linked-panels",
       "python_source": "examples/python/gallery/features/panel_linked.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_linked.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "path_axes_2d",
+      "id": "features_axes_2d",
       "title": "Path With 2D Axes",
       "category": "feature",
       "lane": "features",
@@ -274,7 +274,7 @@
       "status": "supported",
       "source": "examples/c/features/axes_2d.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axes_2d.c",
-      "page": "gallery/features/path_axes_2d.md",
+      "page": "gallery/features/features_axes_2d.md",
       "summary": "This example shows a 2D data path with axes, ticks, and grid lines.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/axes_2d",
@@ -289,7 +289,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/path_axes_2d.png",
-          "site_asset": "/assets/gallery/v0.4/features/path_axes_2d.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_axes_2d.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -302,7 +302,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=path_axes_2d",
+        "route": "examples/webgpu/live.html?id=features_axes_2d",
         "requirements": [
           "path",
           "axes",
@@ -310,15 +310,15 @@
           "panzoom"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=path_axes_2d",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=path_axes_2d",
+      "webgpu_route": "examples/webgpu/live.html?id=features_axes_2d",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_axes_2d",
       "primary_feature": "axes-2d",
       "python_source": "examples/python/gallery/features/axes_2d.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/axes_2d.py",
       "python_status": "manual"
     },
     {
-      "id": "feature_coordinate_system",
+      "id": "features_coordinate_system",
       "title": "Coordinate System",
       "category": "feature",
       "lane": "features",
@@ -326,7 +326,7 @@
       "status": "supported",
       "source": "examples/c/features/coordinate_system.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/coordinate_system.c",
-      "page": "gallery/features/feature_coordinate_system.md",
+      "page": "gallery/features/features_coordinate_system.md",
       "summary": "This example shows the Datoviz 3D coordinate convention.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/coordinate_system",
@@ -341,7 +341,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_coordinate_system.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_coordinate_system.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_coordinate_system.webp"
         }
       },
       "webgpu_status": "webgpu-planned",
@@ -364,7 +364,7 @@
       "primary_feature": "coordinate-system"
     },
     {
-      "id": "feature_axis_labels",
+      "id": "features_axis_labels",
       "title": "Axis Labels",
       "category": "feature",
       "lane": "features",
@@ -372,7 +372,7 @@
       "status": "supported",
       "source": "examples/c/features/axis_labels.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axis_labels.c",
-      "page": "gallery/features/feature_axis_labels.md",
+      "page": "gallery/features/features_axis_labels.md",
       "summary": "This example shows axis titles and tick-label layout around a plotting panel.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/axis_labels",
@@ -387,7 +387,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_axis_labels.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_axis_labels.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_axis_labels.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -399,19 +399,19 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_axis_labels",
+        "route": "examples/webgpu/live.html?id=features_axis_labels",
         "requirements": [
           "axes",
           "text",
           "labels"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_axis_labels",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_axis_labels",
+      "webgpu_route": "examples/webgpu/live.html?id=features_axis_labels",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_axis_labels",
       "primary_feature": "axis-labels"
     },
     {
-      "id": "feature_sampled_field_update",
+      "id": "features_sampled_field_update",
       "title": "Sampled Field Update",
       "category": "feature",
       "lane": "features",
@@ -419,7 +419,7 @@
       "status": "supported",
       "source": "examples/c/features/sampled_field_update.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_update.c",
-      "page": "gallery/features/feature_sampled_field_update.md",
+      "page": "gallery/features/features_sampled_field_update.md",
       "summary": "Sampled_field_update reuses one sampled scalar field in two image visuals while updating patches.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/sampled_field_update",
@@ -434,7 +434,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_sampled_field_update.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_sampled_field_update.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_sampled_field_update.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -447,7 +447,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_sampled_field_update",
+        "route": "examples/webgpu/live.html?id=features_sampled_field_update",
         "requirements": [
           "sampled-field",
           "image",
@@ -455,15 +455,15 @@
           "colormap"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_sampled_field_update",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_sampled_field_update",
+      "webgpu_route": "examples/webgpu/live.html?id=features_sampled_field_update",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_sampled_field_update",
       "primary_feature": "sampled-field-update",
       "python_source": "examples/python/gallery/features/sampled_field_update.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/sampled_field_update.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_text_block",
+      "id": "features_text_block",
       "title": "Text Block",
       "category": "feature",
       "lane": "features",
@@ -471,7 +471,7 @@
       "status": "supported",
       "source": "examples/c/features/text_block.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/text_block.c",
-      "page": "gallery/features/feature_text_block.md",
+      "page": "gallery/features/features_text_block.md",
       "summary": "Text_block renders a multiline text object at a stable screen position.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/text_block",
@@ -486,7 +486,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_text_block.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_text_block.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_text_block.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -497,18 +497,18 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_text_block",
+        "route": "examples/webgpu/live.html?id=features_text_block",
         "requirements": [
           "text",
           "glyph-atlas"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_text_block",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_text_block",
+      "webgpu_route": "examples/webgpu/live.html?id=features_text_block",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_text_block",
       "primary_feature": "text-block"
     },
     {
-      "id": "feature_overlay_card",
+      "id": "features_overlay_card",
       "title": "Overlay Card",
       "category": "feature",
       "lane": "features",
@@ -516,7 +516,7 @@
       "status": "supported",
       "source": "examples/c/features/overlay_card.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/overlay_card.c",
-      "page": "gallery/features/feature_overlay_card.md",
+      "page": "gallery/features/features_overlay_card.md",
       "summary": "Overlay_card places a screen-space readout card above a simple data trace.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/overlay_card",
@@ -531,7 +531,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_overlay_card.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_overlay_card.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_overlay_card.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -543,19 +543,19 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_overlay_card",
+        "route": "examples/webgpu/live.html?id=features_overlay_card",
         "requirements": [
           "overlay",
           "text",
           "primitive"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_overlay_card",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_overlay_card",
+      "webgpu_route": "examples/webgpu/live.html?id=features_overlay_card",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_overlay_card",
       "primary_feature": "overlay-card"
     },
     {
-      "id": "feature_controller_arcball",
+      "id": "features_controller_arcball",
       "title": "Arcball Controller",
       "category": "feature",
       "lane": "features",
@@ -563,7 +563,7 @@
       "status": "supported",
       "source": "examples/c/features/controller_arcball.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_arcball.c",
-      "page": "gallery/features/feature_controller_arcball.md",
+      "page": "gallery/features/features_controller_arcball.md",
       "summary": "This example shows an arcball controller rotating a 3D view.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/controller_arcball",
@@ -578,7 +578,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_controller_arcball.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_controller_arcball.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_controller_arcball.webp"
         }
       },
       "webgpu_status": "webgpu-planned",
@@ -602,7 +602,7 @@
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_camera_manual",
+      "id": "features_camera_manual",
       "title": "Manual Camera",
       "category": "feature",
       "lane": "features",
@@ -610,7 +610,7 @@
       "status": "supported",
       "source": "examples/c/features/camera_manual.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/camera_manual.c",
-      "page": "gallery/features/feature_camera_manual.md",
+      "page": "gallery/features/features_camera_manual.md",
       "summary": "This example shows explicit perspective-camera setup for a 3D scene.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/camera_manual",
@@ -625,7 +625,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_camera_manual.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_camera_manual.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_camera_manual.webp"
         }
       },
       "webgpu_status": "webgpu-planned",
@@ -651,7 +651,7 @@
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_orientation_gizmo",
+      "id": "features_orientation_gizmo",
       "title": "Orientation Gizmo",
       "category": "feature",
       "lane": "features",
@@ -659,7 +659,7 @@
       "status": "supported",
       "source": "examples/c/features/orientation_gizmo.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/orientation_gizmo.c",
-      "page": "gallery/features/feature_orientation_gizmo.md",
+      "page": "gallery/features/features_orientation_gizmo.md",
       "summary": "Orientation_gizmo adds a small orientation widget to a 3D panel.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/orientation_gizmo",
@@ -674,7 +674,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_orientation_gizmo.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_orientation_gizmo.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_orientation_gizmo.webp"
         }
       },
       "webgpu_status": "webgpu-planned",
@@ -697,7 +697,7 @@
       "primary_feature": "orientation-gizmo"
     },
     {
-      "id": "feature_reference_grid",
+      "id": "features_reference_grid",
       "title": "Reference Grid",
       "category": "feature",
       "lane": "features",
@@ -705,7 +705,7 @@
       "status": "supported",
       "source": "examples/c/features/reference_grid.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/reference_grid.c",
-      "page": "gallery/features/feature_reference_grid.md",
+      "page": "gallery/features/features_reference_grid.md",
       "summary": "Reference_grid adds a ground-plane reference grid to a 3D scene.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/reference_grid",
@@ -720,7 +720,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_reference_grid.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_reference_grid.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_reference_grid.webp"
         }
       },
       "webgpu_status": "webgpu-planned",
@@ -741,7 +741,7 @@
       "primary_feature": "reference-grid"
     },
     {
-      "id": "feature_bounds_overlay",
+      "id": "features_bounds_overlay",
       "title": "Bounds Overlay",
       "category": "feature",
       "lane": "features",
@@ -749,7 +749,7 @@
       "status": "diagnostic",
       "source": "examples/c/features/bounds_overlay.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bounds_overlay.c",
-      "page": "gallery/features/feature_bounds_overlay.md",
+      "page": "gallery/features/features_bounds_overlay.md",
       "summary": "This example shows diagnostic bounds overlays for 2D and 3D visuals.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/bounds_overlay",
@@ -770,7 +770,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_bounds_overlay.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_bounds_overlay.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_bounds_overlay.webp"
         }
       },
       "webgpu_status": "webgpu-planned",
@@ -793,7 +793,7 @@
       "primary_feature": "bounds-overlay"
     },
     {
-      "id": "feature_controller_fly",
+      "id": "features_controller_fly",
       "title": "Fly Controller",
       "category": "feature",
       "lane": "features",
@@ -801,7 +801,7 @@
       "status": "supported",
       "source": "examples/c/features/controller_fly.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_fly.c",
-      "page": "gallery/features/feature_controller_fly.md",
+      "page": "gallery/features/features_controller_fly.md",
       "summary": "This example shows fly-style camera navigation through a 3D scene.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/controller_fly",
@@ -816,7 +816,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_controller_fly.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_controller_fly.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_controller_fly.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -828,19 +828,19 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_controller_fly",
+        "route": "examples/webgpu/live.html?id=features_controller_fly",
         "requirements": [
           "controller",
           "fly",
           "mesh"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_controller_fly",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_controller_fly",
+      "webgpu_route": "examples/webgpu/live.html?id=features_controller_fly",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_controller_fly",
       "primary_feature": "controller-fly"
     },
     {
-      "id": "feature_controller_turntable",
+      "id": "features_controller_turntable",
       "title": "Turntable Controller",
       "category": "feature",
       "lane": "features",
@@ -848,7 +848,7 @@
       "status": "supported",
       "source": "examples/c/features/controller_turntable.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_turntable.c",
-      "page": "gallery/features/feature_controller_turntable.md",
+      "page": "gallery/features/features_controller_turntable.md",
       "summary": "This example shows world-up orbiting with a turntable controller.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/controller_turntable",
@@ -863,7 +863,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_controller_turntable.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_controller_turntable.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_controller_turntable.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -875,22 +875,22 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_controller_turntable",
+        "route": "examples/webgpu/live.html?id=features_controller_turntable",
         "requirements": [
           "controller",
           "turntable",
           "mesh"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_controller_turntable",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_controller_turntable",
+      "webgpu_route": "examples/webgpu/live.html?id=features_controller_turntable",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_controller_turntable",
       "primary_feature": "controller-turntable",
       "python_source": "examples/python/gallery/features/controller_turntable.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/controller_turntable.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_mesh_texture",
+      "id": "features_mesh_texture",
       "title": "Textured Mesh",
       "category": "feature",
       "lane": "features",
@@ -898,7 +898,7 @@
       "status": "supported",
       "source": "examples/c/features/mesh_texture.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/mesh_texture.c",
-      "page": "gallery/features/feature_mesh_texture.md",
+      "page": "gallery/features/features_mesh_texture.md",
       "summary": "Mesh_texture maps an RGBA8 sampled field onto a UV sphere mesh.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/mesh_texture",
@@ -913,7 +913,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_mesh_texture.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_mesh_texture.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_mesh_texture.webp"
         }
       },
       "webgpu_status": "webgpu-planned",
@@ -938,7 +938,7 @@
       "primary_feature": "mesh-texture"
     },
     {
-      "id": "feature_material_mesh",
+      "id": "features_material_mesh",
       "title": "Mesh Materials",
       "category": "feature",
       "lane": "features",
@@ -946,7 +946,7 @@
       "status": "supported",
       "source": "examples/c/features/material_mesh.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/material_mesh.c",
-      "page": "gallery/features/feature_material_mesh.md",
+      "page": "gallery/features/features_material_mesh.md",
       "summary": "Material_mesh compares cube meshes rendered with different material models and parameters.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/material_mesh",
@@ -961,7 +961,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_material_mesh.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_material_mesh.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_material_mesh.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -974,7 +974,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_material_mesh",
+        "route": "examples/webgpu/live.html?id=features_material_mesh",
         "requirements": [
           "mesh",
           "material",
@@ -982,12 +982,12 @@
           "arcball"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_material_mesh",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_material_mesh",
+      "webgpu_route": "examples/webgpu/live.html?id=features_material_mesh",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_material_mesh",
       "primary_feature": "material-mesh"
     },
     {
-      "id": "feature_lighting",
+      "id": "features_lighting",
       "title": "Lighting",
       "category": "feature",
       "lane": "features",
@@ -995,7 +995,7 @@
       "status": "supported",
       "source": "examples/c/features/lighting.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/lighting.c",
-      "page": "gallery/features/feature_lighting.md",
+      "page": "gallery/features/features_lighting.md",
       "summary": "Lighting compares the same sphere cluster under three material and light configurations.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/lighting",
@@ -1010,7 +1010,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_lighting.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_lighting.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_lighting.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -1023,7 +1023,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_lighting",
+        "route": "examples/webgpu/live.html?id=features_lighting",
         "requirements": [
           "sphere",
           "material",
@@ -1031,12 +1031,12 @@
           "arcball"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_lighting",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_lighting",
+      "webgpu_route": "examples/webgpu/live.html?id=features_lighting",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_lighting",
       "primary_feature": "lighting"
     },
     {
-      "id": "feature_user_scale",
+      "id": "features_user_scale",
       "title": "User Scale",
       "category": "feature",
       "lane": "features",
@@ -1044,7 +1044,7 @@
       "status": "supported",
       "source": "examples/c/features/user_scale.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/user_scale.c",
-      "page": "gallery/features/feature_user_scale.md",
+      "page": "gallery/features/features_user_scale.md",
       "summary": "User_scale shows how one user-scale value affects screen-space visual sizes and axes.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/user_scale",
@@ -1059,7 +1059,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_user_scale.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_user_scale.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_user_scale.webp"
         }
       },
       "webgpu_status": "native-only",
@@ -1084,7 +1084,7 @@
       "primary_feature": "user-scale"
     },
     {
-      "id": "feature_gui_controls",
+      "id": "features_gui_controls",
       "title": "GUI Controls",
       "category": "feature",
       "lane": "features",
@@ -1092,7 +1092,7 @@
       "status": "supported",
       "source": "examples/c/features/gui_controls.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_controls.c",
-      "page": "gallery/features/feature_gui_controls.md",
+      "page": "gallery/features/features_gui_controls.md",
       "summary": "This example shows Datoviz GUI controls updating a point visual.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/gui_controls",
@@ -1107,7 +1107,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_gui_controls.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_gui_controls.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_gui_controls.webp"
         }
       },
       "webgpu_status": "native-only",
@@ -1126,7 +1126,7 @@
       "primary_feature": "gui-controls"
     },
     {
-      "id": "feature_gui_viewport",
+      "id": "features_gui_viewport",
       "title": "GUI Viewport",
       "category": "feature",
       "lane": "features",
@@ -1134,7 +1134,7 @@
       "status": "supported",
       "source": "examples/c/features/gui_viewport.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_viewport.c",
-      "page": "gallery/features/feature_gui_viewport.md",
+      "page": "gallery/features/features_gui_viewport.md",
       "summary": "This example shows a Datoviz render viewport embedded inside a GUI window.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/gui_viewport",
@@ -1149,7 +1149,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_gui_viewport.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_gui_viewport.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_gui_viewport.webp"
         }
       },
       "webgpu_status": "native-only",
@@ -1170,7 +1170,7 @@
       "primary_feature": "gui-viewport"
     },
     {
-      "id": "feature_gui_cimgui",
+      "id": "features_gui_cimgui",
       "title": "Raw cimgui GUI",
       "category": "feature",
       "lane": "features",
@@ -1178,7 +1178,7 @@
       "status": "supported",
       "source": "examples/c/features/gui_cimgui.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_cimgui.c",
-      "page": "gallery/features/feature_gui_cimgui.md",
+      "page": "gallery/features/features_gui_cimgui.md",
       "summary": "This example shows raw cimgui widgets controlling a Datoviz visual.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/gui_cimgui",
@@ -1193,7 +1193,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_gui_cimgui.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_gui_cimgui.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_gui_cimgui.webp"
         }
       },
       "webgpu_status": "native-only",
@@ -1212,7 +1212,7 @@
       "primary_feature": "gui-cimgui"
     },
     {
-      "id": "feature_animation_tracks",
+      "id": "features_animation_tracks",
       "title": "Animation Tracks",
       "category": "feature",
       "lane": "features",
@@ -1220,7 +1220,7 @@
       "status": "supported",
       "source": "examples/c/features/animation_tracks.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/animation_tracks.c",
-      "page": "gallery/features/feature_animation_tracks.md",
+      "page": "gallery/features/features_animation_tracks.md",
       "summary": "This example shows scene animation tracks driving a cube and camera.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/animation_tracks",
@@ -1235,7 +1235,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_animation_tracks.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_animation_tracks.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_animation_tracks.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -1248,7 +1248,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_animation_tracks",
+        "route": "examples/webgpu/live.html?id=features_animation_tracks",
         "requirements": [
           "mesh",
           "frame-callbacks",
@@ -1256,12 +1256,12 @@
           "arcball"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_animation_tracks",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_animation_tracks",
+      "webgpu_route": "examples/webgpu/live.html?id=features_animation_tracks",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_animation_tracks",
       "primary_feature": "animation-tracks"
     },
     {
-      "id": "feature_compute_buffer_animation",
+      "id": "features_compute_buffer_animation",
       "title": "Compute Buffer Animation",
       "category": "feature",
       "lane": "features",
@@ -1269,7 +1269,7 @@
       "status": "experimental",
       "source": "examples/c/features/compute_buffer_animation.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/compute_buffer_animation.c",
-      "page": "gallery/features/feature_compute_buffer_animation.md",
+      "page": "gallery/features/features_compute_buffer_animation.md",
       "summary": "This example shows a compute pass updating point positions.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/compute_buffer_animation",
@@ -1288,7 +1288,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_compute_buffer_animation.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_compute_buffer_animation.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_compute_buffer_animation.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -1302,7 +1302,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_compute_buffer_animation",
+        "route": "examples/webgpu/live.html?id=features_compute_buffer_animation",
         "requirements": [
           "scene-buffers",
           "storage-buffers",
@@ -1311,12 +1311,12 @@
           "point"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_compute_buffer_animation",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_compute_buffer_animation",
+      "webgpu_route": "examples/webgpu/live.html?id=features_compute_buffer_animation",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_compute_buffer_animation",
       "primary_feature": "scene-compute-buffer"
     },
     {
-      "id": "technique_edl",
+      "id": "features_technique_edl",
       "title": "Eye-Dome Lighting",
       "category": "feature",
       "lane": "features",
@@ -1324,7 +1324,7 @@
       "status": "experimental",
       "source": "examples/c/features/technique_edl.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_edl.c",
-      "page": "gallery/features/technique_edl.md",
+      "page": "gallery/features/features_technique_edl.md",
       "summary": "Edl compares a dense 3D point cloud with and without Eye-Dome Lighting.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/technique_edl",
@@ -1339,7 +1339,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/technique_edl.png",
-          "site_asset": "/assets/gallery/v0.4/features/technique_edl.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_technique_edl.webp"
         }
       },
       "webgpu_status": "webgpu-deferred",
@@ -1356,7 +1356,7 @@
       "primary_feature": "edl"
     },
     {
-      "id": "technique_ssao",
+      "id": "features_technique_ssao",
       "title": "Screen-Space Ambient Occlusion",
       "category": "feature",
       "lane": "features",
@@ -1364,7 +1364,7 @@
       "status": "supported",
       "source": "examples/c/features/technique_ssao.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_ssao.c",
-      "page": "gallery/features/technique_ssao.md",
+      "page": "gallery/features/features_technique_ssao.md",
       "summary": "Ssao compares a sphere cluster with and without screen-space ambient occlusion.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/technique_ssao",
@@ -1379,7 +1379,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/technique_ssao.png",
-          "site_asset": "/assets/gallery/v0.4/features/technique_ssao.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_technique_ssao.webp"
         }
       },
       "webgpu_status": "webgpu-deferred",
@@ -1398,7 +1398,7 @@
       "primary_feature": "ssao"
     },
     {
-      "id": "technique_msaa",
+      "id": "features_technique_msaa",
       "title": "Multisample Antialiasing",
       "category": "feature",
       "lane": "features",
@@ -1406,7 +1406,7 @@
       "status": "supported",
       "source": "examples/c/features/technique_msaa.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_msaa.c",
-      "page": "gallery/features/technique_msaa.md",
+      "page": "gallery/features/features_technique_msaa.md",
       "summary": "Msaa compares single-sample rendering with 8x multisample antialiasing.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/technique_msaa",
@@ -1421,7 +1421,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/technique_msaa.png",
-          "site_asset": "/assets/gallery/v0.4/features/technique_msaa.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_technique_msaa.webp"
         }
       },
       "webgpu_status": "webgpu-deferred",
@@ -1438,7 +1438,7 @@
       "primary_feature": "msaa"
     },
     {
-      "id": "technique_depth_cue",
+      "id": "features_technique_depth_cue",
       "title": "Depth Cue",
       "category": "feature",
       "lane": "features",
@@ -1446,7 +1446,7 @@
       "status": "supported",
       "source": "examples/c/features/technique_depth_cue.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_depth_cue.c",
-      "page": "gallery/features/technique_depth_cue.md",
+      "page": "gallery/features/features_technique_depth_cue.md",
       "summary": "Depth_cue compares a plain 3D sphere lattice with depth-dependent fading.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/technique_depth_cue",
@@ -1461,7 +1461,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/technique_depth_cue.png",
-          "site_asset": "/assets/gallery/v0.4/features/technique_depth_cue.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_technique_depth_cue.webp"
         }
       },
       "webgpu_status": "webgpu-deferred",
@@ -1478,7 +1478,7 @@
       "primary_feature": "depth-cue"
     },
     {
-      "id": "technique_transparency",
+      "id": "features_technique_transparency",
       "title": "Transparency Order",
       "category": "feature",
       "lane": "features",
@@ -1486,7 +1486,7 @@
       "status": "supported",
       "source": "examples/c/features/technique_transparency.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_transparency.c",
-      "page": "gallery/features/technique_transparency.md",
+      "page": "gallery/features/features_technique_transparency.md",
       "summary": "Transparency_order compares three transparency techniques on the same overlapping cubes.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/technique_transparency",
@@ -1501,7 +1501,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/technique_transparency.png",
-          "site_asset": "/assets/gallery/v0.4/features/technique_transparency.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_technique_transparency.webp"
         }
       },
       "webgpu_status": "webgpu-deferred",
@@ -1520,7 +1520,7 @@
       "primary_feature": "transparency-order"
     },
     {
-      "id": "feature_volume_occlusion",
+      "id": "features_volume_occlusion",
       "title": "Volume Occlusion",
       "category": "feature",
       "lane": "features",
@@ -1528,7 +1528,7 @@
       "status": "experimental",
       "source": "examples/c/features/volume_occlusion.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/volume_occlusion.c",
-      "page": "gallery/features/feature_volume_occlusion.md",
+      "page": "gallery/features/features_volume_occlusion.md",
       "summary": "Volume_occlusion compares a volume slice with and without attenuation by the surrounding volume.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/volume_occlusion",
@@ -1543,7 +1543,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_volume_occlusion.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_volume_occlusion.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_volume_occlusion.webp"
         }
       },
       "webgpu_status": "webgpu-deferred",
@@ -1562,7 +1562,7 @@
       "primary_feature": "volume-occlusion"
     },
     {
-      "id": "feature_guide_lines",
+      "id": "features_guide_lines",
       "title": "Guide Lines",
       "category": "feature",
       "lane": "features",
@@ -1570,7 +1570,7 @@
       "status": "supported",
       "source": "examples/c/features/guide_lines.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/guide_lines.c",
-      "page": "gallery/features/feature_guide_lines.md",
+      "page": "gallery/features/features_guide_lines.md",
       "summary": "This example shows movable horizontal and vertical guide lines.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/guide_lines",
@@ -1585,7 +1585,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_guide_lines.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_guide_lines.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_guide_lines.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -1597,22 +1597,22 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_guide_lines",
+        "route": "examples/webgpu/live.html?id=features_guide_lines",
         "requirements": [
           "segment",
           "overlay",
           "panzoom"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_guide_lines",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_guide_lines",
+      "webgpu_route": "examples/webgpu/live.html?id=features_guide_lines",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_guide_lines",
       "primary_feature": "guide-lines",
       "python_source": "examples/python/gallery/features/guide_lines.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/guide_lines.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_guide_spans",
+      "id": "features_guide_spans",
       "title": "Guide Spans",
       "category": "feature",
       "lane": "features",
@@ -1620,7 +1620,7 @@
       "status": "supported",
       "source": "examples/c/features/guide_spans.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/guide_spans.c",
-      "page": "gallery/features/feature_guide_spans.md",
+      "page": "gallery/features/features_guide_spans.md",
       "summary": "This example shows movable guide spans for highlighting data ranges.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/guide_spans",
@@ -1635,7 +1635,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_guide_spans.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_guide_spans.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_guide_spans.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -1647,22 +1647,22 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_guide_spans",
+        "route": "examples/webgpu/live.html?id=features_guide_spans",
         "requirements": [
           "primitive",
           "overlay",
           "panzoom"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_guide_spans",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_guide_spans",
+      "webgpu_route": "examples/webgpu/live.html?id=features_guide_spans",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_guide_spans",
       "primary_feature": "guide-spans",
       "python_source": "examples/python/gallery/features/guide_spans.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/guide_spans.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_bars_bands",
+      "id": "features_bars_bands",
       "title": "Bars And Bands",
       "category": "feature",
       "lane": "features",
@@ -1670,7 +1670,7 @@
       "status": "supported",
       "source": "examples/c/features/bars_bands.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bars_bands.c",
-      "page": "gallery/features/feature_bars_bands.md",
+      "page": "gallery/features/features_bars_bands.md",
       "summary": "This example shows bars and an uncertainty band in one 2D panel.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/bars_bands",
@@ -1685,7 +1685,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_bars_bands.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_bars_bands.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_bars_bands.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -1698,7 +1698,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_bars_bands",
+        "route": "examples/webgpu/live.html?id=features_bars_bands",
         "requirements": [
           "primitive",
           "segment",
@@ -1706,15 +1706,15 @@
           "panzoom"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_bars_bands",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_bars_bands",
+      "webgpu_route": "examples/webgpu/live.html?id=features_bars_bands",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_bars_bands",
       "primary_feature": "bars-bands",
       "python_source": "examples/python/gallery/features/bars_bands.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/bars_bands.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_app_glfw",
+      "id": "runtime_app_glfw",
       "title": "GLFW App",
       "category": "runtime",
       "lane": "runtime",
@@ -1722,7 +1722,7 @@
       "status": "supported",
       "source": "examples/c/runtime/app_glfw.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/app_glfw.c",
-      "page": "gallery/runtime/feature_app_glfw.md",
+      "page": "gallery/runtime/runtime_app_glfw.md",
       "summary": "This example opens a native GLFW window for a small point scene.",
       "validation": "smoke+interaction",
       "build_command": "just example-c runtime/app_glfw",
@@ -1736,8 +1736,8 @@
         "screenshot": {
           "expected": false,
           "status": "not-required",
-          "source": "data/gallery/v0.4/runtime/feature_app_glfw.png",
-          "site_asset": "/assets/gallery/v0.4/runtime/feature_app_glfw.webp"
+          "source": "data/gallery/v0.4/runtime/runtime_app_glfw.png",
+          "site_asset": "/assets/gallery/v0.4/runtime/runtime_app_glfw.webp"
         }
       },
       "webgpu_status": "native-only",
@@ -1756,7 +1756,7 @@
       "primary_runtime": "app-glfw"
     },
     {
-      "id": "feature_multi_window",
+      "id": "runtime_multi_window",
       "title": "Multi Window",
       "category": "runtime",
       "lane": "runtime",
@@ -1764,7 +1764,7 @@
       "status": "supported",
       "source": "examples/c/runtime/multi_window.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/multi_window.c",
-      "page": "gallery/runtime/feature_multi_window.md",
+      "page": "gallery/runtime/runtime_multi_window.md",
       "summary": "This example drives two independent native GLFW windows from one Datoviz app.",
       "validation": "smoke+interaction",
       "build_command": "just example-c runtime/multi_window",
@@ -1778,8 +1778,8 @@
         "screenshot": {
           "expected": false,
           "status": "not-required",
-          "source": "data/gallery/v0.4/runtime/feature_multi_window.png",
-          "site_asset": "/assets/gallery/v0.4/runtime/feature_multi_window.webp"
+          "source": "data/gallery/v0.4/runtime/runtime_multi_window.png",
+          "site_asset": "/assets/gallery/v0.4/runtime/runtime_multi_window.webp"
         }
       },
       "webgpu_status": "native-only",
@@ -1800,7 +1800,7 @@
       "primary_runtime": "multi-window"
     },
     {
-      "id": "feature_offscreen_capture",
+      "id": "runtime_offscreen_capture",
       "title": "Offscreen Capture",
       "category": "runtime",
       "lane": "runtime",
@@ -1808,7 +1808,7 @@
       "status": "supported",
       "source": "examples/c/runtime/offscreen_capture.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/offscreen_capture.c",
-      "page": "gallery/runtime/feature_offscreen_capture.md",
+      "page": "gallery/runtime/runtime_offscreen_capture.md",
       "summary": "This example renders a point scene offscreen and writes one PNG.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c runtime/offscreen_capture",
@@ -1823,7 +1823,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/runtime/feature_offscreen_capture.png",
-          "site_asset": "/assets/gallery/v0.4/runtime/feature_offscreen_capture.webp"
+          "site_asset": "/assets/gallery/v0.4/runtime/runtime_offscreen_capture.webp"
         }
       },
       "webgpu_status": "native-only",
@@ -1842,7 +1842,7 @@
       "primary_runtime": "offscreen-capture"
     },
     {
-      "id": "feature_input_events",
+      "id": "features_input_events",
       "title": "Input Events",
       "category": "feature",
       "lane": "features",
@@ -1850,7 +1850,7 @@
       "status": "supported",
       "source": "examples/c/features/input_events.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/input_events.c",
-      "page": "gallery/features/feature_input_events.md",
+      "page": "gallery/features/features_input_events.md",
       "summary": "This example shows native keyboard, pointer, wheel, and resize events.",
       "validation": "smoke+interaction",
       "build_command": "just example-c features/input_events",
@@ -1864,8 +1864,8 @@
         "screenshot": {
           "expected": false,
           "status": "not-required",
-          "source": "data/gallery/v0.4/features/feature_input_events.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_input_events.webp"
+          "source": "data/gallery/v0.4/features/features_input_events.png",
+          "site_asset": "/assets/gallery/v0.4/features/features_input_events.webp"
         }
       },
       "webgpu_status": "native-only",
@@ -1886,7 +1886,7 @@
       "primary_feature": "input-events"
     },
     {
-      "id": "feature_view_size_policies",
+      "id": "features_view_size_policies",
       "title": "View Size Policies",
       "category": "feature",
       "lane": "features",
@@ -1894,7 +1894,7 @@
       "status": "supported",
       "source": "examples/c/features/view_size_policies.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/view_size_policies.c",
-      "page": "gallery/features/feature_view_size_policies.md",
+      "page": "gallery/features/features_view_size_policies.md",
       "summary": "View_size_policies demonstrates how requested view size policies resolve to real view sizes.",
       "validation": "smoke+interaction",
       "build_command": "just example-c features/view_size_policies",
@@ -1912,8 +1912,8 @@
         "screenshot": {
           "expected": false,
           "status": "not-required",
-          "source": "data/gallery/v0.4/features/feature_view_size_policies.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_view_size_policies.webp"
+          "source": "data/gallery/v0.4/features/features_view_size_policies.png",
+          "site_asset": "/assets/gallery/v0.4/features/features_view_size_policies.webp"
         }
       },
       "webgpu_status": "native-only",
@@ -1934,7 +1934,7 @@
       "primary_feature": "view-size-policy"
     },
     {
-      "id": "feature_record_replay",
+      "id": "runtime_record_replay",
       "title": "Record Replay",
       "category": "runtime",
       "lane": "runtime",
@@ -1942,7 +1942,7 @@
       "status": "experimental",
       "source": "examples/c/runtime/record_replay.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/record_replay.c",
-      "page": "gallery/runtime/feature_record_replay.md",
+      "page": "gallery/runtime/runtime_record_replay.md",
       "summary": "This example records the DRP2 frame stream from an offscreen view and replays it",
       "validation": "smoke+capture",
       "build_command": "just example-c runtime/record_replay",
@@ -1956,8 +1956,8 @@
         "screenshot": {
           "expected": false,
           "status": "not-required",
-          "source": "data/gallery/v0.4/runtime/feature_record_replay.png",
-          "site_asset": "/assets/gallery/v0.4/runtime/feature_record_replay.webp"
+          "source": "data/gallery/v0.4/runtime/runtime_record_replay.png",
+          "site_asset": "/assets/gallery/v0.4/runtime/runtime_record_replay.webp"
         }
       },
       "webgpu_status": "native-only",
@@ -1976,7 +1976,7 @@
       "primary_runtime": "record-replay"
     },
     {
-      "id": "feature_visual_transform",
+      "id": "features_visual_transform",
       "title": "Visual Transform",
       "category": "feature",
       "lane": "features",
@@ -1984,7 +1984,7 @@
       "status": "supported",
       "source": "examples/c/features/visual_transform.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visual_transform.c",
-      "page": "gallery/features/feature_visual_transform.md",
+      "page": "gallery/features/features_visual_transform.md",
       "summary": "Visual_transform compares raw point data with a visual-local affine transform.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/visual_transform",
@@ -1999,7 +1999,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_visual_transform.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_visual_transform.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_visual_transform.webp"
         }
       },
       "webgpu_status": "webgpu-planned",
@@ -2021,7 +2021,7 @@
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_panel_view2d",
+      "id": "features_panel_view2d",
       "title": "Panel View 2D",
       "category": "feature",
       "lane": "features",
@@ -2029,7 +2029,7 @@
       "status": "supported",
       "source": "examples/c/features/panel_view2d.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_view2d.c",
-      "page": "gallery/features/feature_panel_view2d.md",
+      "page": "gallery/features/features_panel_view2d.md",
       "summary": "Panel_view2d compares a regular 2D panel with one that keeps equal data aspect.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/panel_view2d",
@@ -2044,7 +2044,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_panel_view2d.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_panel_view2d.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_panel_view2d.webp"
         }
       },
       "webgpu_status": "webgpu-planned",
@@ -2068,7 +2068,7 @@
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_json_export",
+      "id": "features_json_export",
       "title": "JSON Export",
       "category": "feature",
       "lane": "features",
@@ -2076,7 +2076,7 @@
       "status": "experimental",
       "source": "examples/c/features/json_export.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/json_export.c",
-      "page": "gallery/features/feature_json_export.md",
+      "page": "gallery/features/features_json_export.md",
       "summary": "Json_export writes a scene to a compact JSON diagnostic file.",
       "validation": "smoke+stdout",
       "build_command": "just example-c features/json_export",
@@ -2090,8 +2090,8 @@
         "screenshot": {
           "expected": false,
           "status": "not-required",
-          "source": "data/gallery/v0.4/features/feature_json_export.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_json_export.webp"
+          "source": "data/gallery/v0.4/features/features_json_export.png",
+          "site_asset": "/assets/gallery/v0.4/features/features_json_export.webp"
         }
       },
       "webgpu_status": "native-only",
@@ -2110,7 +2110,7 @@
       "primary_feature": "json-export"
     },
     {
-      "id": "feature_bezier_curve_path",
+      "id": "features_bezier_curve_path",
       "title": "Bezier Curve Path",
       "category": "feature",
       "lane": "features",
@@ -2118,7 +2118,7 @@
       "status": "supported",
       "source": "examples/c/features/bezier_curve_path.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bezier_curve_path.c",
-      "page": "gallery/features/feature_bezier_curve_path.md",
+      "page": "gallery/features/features_bezier_curve_path.md",
       "summary": "This example shows a cubic Bezier curve tessellated into a path.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/bezier_curve_path",
@@ -2133,7 +2133,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_bezier_curve_path.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_bezier_curve_path.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_bezier_curve_path.webp"
         }
       },
       "webgpu_status": "webgpu-planned",
@@ -2154,7 +2154,7 @@
       "primary_feature": "bezier-curve-path"
     },
     {
-      "id": "feature_path_join",
+      "id": "features_path_join",
       "title": "Path Join",
       "category": "feature",
       "lane": "features",
@@ -2162,7 +2162,7 @@
       "status": "supported",
       "source": "examples/c/features/path_join.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/path_join.c",
-      "page": "gallery/features/feature_path_join.md",
+      "page": "gallery/features/features_path_join.md",
       "summary": "Path_join compares miter, round, and bevel joins on difficult stroked paths.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/path_join",
@@ -2177,7 +2177,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_path_join.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_path_join.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_path_join.webp"
         }
       },
       "webgpu_status": "webgpu-planned",
@@ -2194,7 +2194,7 @@
       "primary_feature": "path-join"
     },
     {
-      "id": "linked_panels_axes_panzoom",
+      "id": "showcases_panel_linked_axes",
       "title": "Linked Panels With Axes",
       "category": "showcase",
       "lane": "showcases",
@@ -2202,7 +2202,7 @@
       "status": "supported",
       "source": "examples/c/showcases/panel_linked_axes.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/panel_linked_axes.c",
-      "page": "gallery/showcases/linked_panels_axes_panzoom.md",
+      "page": "gallery/showcases/showcases_panel_linked_axes.md",
       "summary": "This example builds linked time-series panels with shared axes behavior.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c showcases/panel_linked_axes",
@@ -2223,7 +2223,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/showcases/linked_panels_axes_panzoom.png",
-          "site_asset": "/assets/gallery/v0.4/showcases/linked_panels_axes_panzoom.webp"
+          "site_asset": "/assets/gallery/v0.4/showcases/showcases_panel_linked_axes.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -2237,7 +2237,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=linked_panels_axes_panzoom",
+        "route": "examples/webgpu/live.html?id=showcases_panel_linked_axes",
         "requirements": [
           "panel-grid",
           "linked-panels",
@@ -2246,11 +2246,11 @@
           "path"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=linked_panels_axes_panzoom",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=linked_panels_axes_panzoom"
+      "webgpu_route": "examples/webgpu/live.html?id=showcases_panel_linked_axes",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_panel_linked_axes"
     },
     {
-      "id": "linked_panels_probe_colorbar",
+      "id": "showcases_linked_probe_colorbar",
       "title": "Linked Probe With Colorbar",
       "category": "showcase",
       "lane": "showcases",
@@ -2258,7 +2258,7 @@
       "status": "supported",
       "source": "examples/c/showcases/linked_probe_colorbar.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c",
-      "page": "gallery/showcases/linked_panels_probe_colorbar.md",
+      "page": "gallery/showcases/showcases_linked_probe_colorbar.md",
       "summary": "This example links two image panels with a probe readout and colorbar.",
       "validation": "smoke+readback+interaction+screenshot",
       "build_command": "just example-c showcases/linked_probe_colorbar",
@@ -2281,7 +2281,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/showcases/linked_panels_probe_colorbar.png",
-          "site_asset": "/assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp"
+          "site_asset": "/assets/gallery/v0.4/showcases/showcases_linked_probe_colorbar.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -2296,7 +2296,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=linked_panels_probe_colorbar",
+        "route": "examples/webgpu/live.html?id=showcases_linked_probe_colorbar",
         "requirements": [
           "panel-grid",
           "linked-panels",
@@ -2306,11 +2306,11 @@
           "readout"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=linked_panels_probe_colorbar",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=linked_panels_probe_colorbar"
+      "webgpu_route": "examples/webgpu/live.html?id=showcases_linked_probe_colorbar",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_linked_probe_colorbar"
     },
     {
-      "id": "scientific_plotting_workflow",
+      "id": "showcases_scientific_plotting",
       "title": "Scientific Plotting Workflow",
       "category": "showcase",
       "lane": "showcases",
@@ -2318,7 +2318,7 @@
       "status": "supported",
       "source": "examples/c/showcases/scientific_plotting.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scientific_plotting.c",
-      "page": "gallery/showcases/scientific_plotting_workflow.md",
+      "page": "gallery/showcases/showcases_scientific_plotting.md",
       "summary": "This example composes common scientific plot elements in one figure.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c showcases/scientific_plotting",
@@ -2341,7 +2341,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/showcases/scientific_plotting_workflow.png",
-          "site_asset": "/assets/gallery/v0.4/showcases/scientific_plotting_workflow.webp"
+          "site_asset": "/assets/gallery/v0.4/showcases/showcases_scientific_plotting.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -2356,7 +2356,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=scientific_plotting_workflow",
+        "route": "examples/webgpu/live.html?id=showcases_scientific_plotting",
         "requirements": [
           "axes",
           "primitive",
@@ -2366,11 +2366,11 @@
           "panzoom"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=scientific_plotting_workflow",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=scientific_plotting_workflow"
+      "webgpu_route": "examples/webgpu/live.html?id=showcases_scientific_plotting",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_scientific_plotting"
     },
     {
-      "id": "scale_bar",
+      "id": "features_scalebar",
       "title": "Scale Bar",
       "category": "feature",
       "lane": "features",
@@ -2378,7 +2378,7 @@
       "status": "supported",
       "source": "examples/c/features/scalebar.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar.c",
-      "page": "gallery/features/scale_bar.md",
+      "page": "gallery/features/features_scalebar.md",
       "summary": "Scalebar attaches a metric length scale bar to a 2D panel.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/scalebar",
@@ -2393,7 +2393,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/scale_bar.png",
-          "site_asset": "/assets/gallery/v0.4/features/scale_bar.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_scalebar.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -2405,20 +2405,19 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=scale_bar",
-        "scenario_id": "feature_scalebar",
+        "route": "examples/webgpu/live.html?id=features_scalebar",
         "requirements": [
           "scale-bar",
           "text",
           "panzoom"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=scale_bar",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=scale_bar",
+      "webgpu_route": "examples/webgpu/live.html?id=features_scalebar",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_scalebar",
       "primary_feature": "scale-bar"
     },
     {
-      "id": "scalebar_units",
+      "id": "features_scalebar_units",
       "title": "Scale Bar Units",
       "category": "feature",
       "lane": "features",
@@ -2426,7 +2425,7 @@
       "status": "supported",
       "source": "examples/c/features/scalebar_units.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar_units.c",
-      "page": "gallery/features/scalebar_units.md",
+      "page": "gallery/features/features_scalebar_units.md",
       "summary": "Scalebar_units uses duration units for a scale bar on a time-series panel.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/scalebar_units",
@@ -2441,7 +2440,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/scalebar_units.png",
-          "site_asset": "/assets/gallery/v0.4/features/scalebar_units.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_scalebar_units.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -2453,20 +2452,19 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=scalebar_units",
-        "scenario_id": "feature_scalebar_units",
+        "route": "examples/webgpu/live.html?id=features_scalebar_units",
         "requirements": [
           "scale-bar",
           "text",
           "panzoom"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=scalebar_units",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=scalebar_units",
+      "webgpu_route": "examples/webgpu/live.html?id=features_scalebar_units",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_scalebar_units",
       "primary_feature": "scalebar-units"
     },
     {
-      "id": "scalebar_measurement_workflow",
+      "id": "showcases_scalebar_measurement",
       "title": "Scale Bar Measurement Workflow",
       "category": "showcase",
       "lane": "showcases",
@@ -2474,7 +2472,7 @@
       "status": "supported",
       "source": "examples/c/showcases/scalebar_measurement.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scalebar_measurement.c",
-      "page": "gallery/showcases/scalebar_measurement_workflow.md",
+      "page": "gallery/showcases/showcases_scalebar_measurement.md",
       "summary": "This example compares scale bars across overview, detail, and 3D views.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c showcases/scalebar_measurement",
@@ -2494,7 +2492,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/showcases/scalebar_measurement_workflow.png",
-          "site_asset": "/assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp"
+          "site_asset": "/assets/gallery/v0.4/showcases/showcases_scalebar_measurement.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -2508,7 +2506,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=scalebar_measurement_workflow",
+        "route": "examples/webgpu/live.html?id=showcases_scalebar_measurement",
         "requirements": [
           "scale-bar",
           "text",
@@ -2517,11 +2515,11 @@
           "panzoom"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=scalebar_measurement_workflow",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=scalebar_measurement_workflow"
+      "webgpu_route": "examples/webgpu/live.html?id=showcases_scalebar_measurement",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_scalebar_measurement"
     },
     {
-      "id": "colorbar",
+      "id": "features_colorbar",
       "title": "Colorbar",
       "category": "feature",
       "lane": "features",
@@ -2529,7 +2527,7 @@
       "status": "supported",
       "source": "examples/c/features/colorbar.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/colorbar.c",
-      "page": "gallery/features/colorbar.md",
+      "page": "gallery/features/features_colorbar.md",
       "summary": "This example shows a scalar image and a continuous colorbar.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/colorbar",
@@ -2549,7 +2547,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/colorbar.png",
-          "site_asset": "/assets/gallery/v0.4/features/colorbar.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_colorbar.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -2562,8 +2560,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=colorbar",
-        "scenario_id": "feature_colorbar",
+        "route": "examples/webgpu/live.html?id=features_colorbar",
         "requirements": [
           "colorbar",
           "image",
@@ -2571,15 +2568,15 @@
           "text"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=colorbar",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=colorbar",
+      "webgpu_route": "examples/webgpu/live.html?id=features_colorbar",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_colorbar",
       "primary_feature": "colorbar",
       "python_source": "examples/python/gallery/features/colorbar.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/colorbar.py",
       "python_status": "manual"
     },
     {
-      "id": "colormap_scale",
+      "id": "features_colormap_scale",
       "title": "Scalar Color Scale",
       "category": "feature",
       "lane": "features",
@@ -2587,7 +2584,7 @@
       "status": "supported",
       "source": "examples/c/features/colormap_scale.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/colormap_scale.c",
-      "page": "gallery/features/colormap_scale.md",
+      "page": "gallery/features/features_colormap_scale.md",
       "summary": "This example shows scalar point values mapped through a custom colormap.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/colormap_scale",
@@ -2602,7 +2599,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/colormap_scale.png",
-          "site_asset": "/assets/gallery/v0.4/features/colormap_scale.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_colormap_scale.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -2613,22 +2610,21 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=colormap_scale",
-        "scenario_id": "feature_colormap_scale",
+        "route": "examples/webgpu/live.html?id=features_colormap_scale",
         "requirements": [
           "colormap",
           "point"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=colormap_scale",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=colormap_scale",
+      "webgpu_route": "examples/webgpu/live.html?id=features_colormap_scale",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_colormap_scale",
       "primary_feature": "colormap-scale",
       "python_source": "examples/python/gallery/features/colormap_scale.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/colormap_scale.py",
       "python_status": "manual"
     },
     {
-      "id": "annotation_readout",
+      "id": "features_annotation_readout",
       "title": "Annotation Readout",
       "category": "feature",
       "lane": "features",
@@ -2636,7 +2632,7 @@
       "status": "supported",
       "source": "examples/c/features/annotation_readout.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/annotation_readout.c",
-      "page": "gallery/features/annotation_readout.md",
+      "page": "gallery/features/features_annotation_readout.md",
       "summary": "This example shows a text annotation anchored to one data point.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/annotation_readout",
@@ -2651,7 +2647,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/annotation_readout.png",
-          "site_asset": "/assets/gallery/v0.4/features/annotation_readout.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_annotation_readout.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -2664,8 +2660,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=annotation_readout",
-        "scenario_id": "feature_annotation_readout",
+        "route": "examples/webgpu/live.html?id=features_annotation_readout",
         "requirements": [
           "annotation",
           "readout",
@@ -2673,12 +2668,12 @@
           "point"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=annotation_readout",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=annotation_readout",
+      "webgpu_route": "examples/webgpu/live.html?id=features_annotation_readout",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_annotation_readout",
       "primary_feature": "annotation-readout"
     },
     {
-      "id": "update_partial",
+      "id": "features_update_partial",
       "title": "Partial Data Update",
       "category": "feature",
       "lane": "features",
@@ -2686,7 +2681,7 @@
       "status": "supported",
       "source": "examples/c/features/update_partial.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_partial.c",
-      "page": "gallery/features/update_partial.md",
+      "page": "gallery/features/features_update_partial.md",
       "summary": "Update_partial moves only part of a point visual's position array.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/update_partial",
@@ -2701,7 +2696,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/update_partial.png",
-          "site_asset": "/assets/gallery/v0.4/features/update_partial.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_update_partial.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -2713,23 +2708,22 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=update_partial",
-        "scenario_id": "feature_update_partial",
+        "route": "examples/webgpu/live.html?id=features_update_partial",
         "requirements": [
           "buffer-update",
           "point",
           "frame-callbacks"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=update_partial",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=update_partial",
+      "webgpu_route": "examples/webgpu/live.html?id=features_update_partial",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_update_partial",
       "primary_feature": "update-partial",
       "python_source": "examples/python/gallery/features/update_partial.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/update_partial.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_update_visual_data",
+      "id": "features_update_visual_data",
       "title": "Visual Data Update",
       "category": "feature",
       "lane": "features",
@@ -2737,7 +2731,7 @@
       "status": "supported",
       "source": "examples/c/features/update_visual_data.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_visual_data.c",
-      "page": "gallery/features/feature_update_visual_data.md",
+      "page": "gallery/features/features_update_visual_data.md",
       "summary": "Update_visual_data replaces all arrays on one point visual.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/update_visual_data",
@@ -2752,7 +2746,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_update_visual_data.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_update_visual_data.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_update_visual_data.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -2765,7 +2759,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_update_visual_data",
+        "route": "examples/webgpu/live.html?id=features_update_visual_data",
         "requirements": [
           "buffer-update",
           "visual-update",
@@ -2773,15 +2767,15 @@
           "frame-callbacks"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_update_visual_data",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_update_visual_data",
+      "webgpu_route": "examples/webgpu/live.html?id=features_update_visual_data",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_update_visual_data",
       "primary_feature": "update-visual-data",
       "python_source": "examples/python/gallery/features/update_visual_data.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/update_visual_data.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_visibility",
+      "id": "features_visibility",
       "title": "Visual Visibility",
       "category": "feature",
       "lane": "features",
@@ -2789,7 +2783,7 @@
       "status": "supported",
       "source": "examples/c/features/visibility.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visibility.c",
-      "page": "gallery/features/feature_visibility.md",
+      "page": "gallery/features/features_visibility.md",
       "summary": "Visibility toggles one visual on and off without changing its data arrays.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/visibility",
@@ -2804,7 +2798,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_visibility.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_visibility.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_visibility.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -2816,22 +2810,22 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_visibility",
+        "route": "examples/webgpu/live.html?id=features_visibility",
         "requirements": [
           "visual-visibility",
           "point",
           "frame-callbacks"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_visibility",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_visibility",
+      "webgpu_route": "examples/webgpu/live.html?id=features_visibility",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_visibility",
       "primary_feature": "visibility",
       "python_source": "examples/python/gallery/features/visibility.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/visibility.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "technique_depth_test",
+      "id": "features_technique_depth_test",
       "title": "Depth Test Toggle",
       "category": "feature",
       "lane": "features",
@@ -2839,7 +2833,7 @@
       "status": "supported",
       "source": "examples/c/features/technique_depth_test.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_depth_test.c",
-      "page": "gallery/features/technique_depth_test.md",
+      "page": "gallery/features/features_technique_depth_test.md",
       "summary": "Depth_test compares overlapping 3D points with depth testing enabled and disabled.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/technique_depth_test",
@@ -2854,7 +2848,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/technique_depth_test.png",
-          "site_asset": "/assets/gallery/v0.4/features/technique_depth_test.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_technique_depth_test.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -2866,22 +2860,22 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=technique_depth_test",
+        "route": "examples/webgpu/live.html?id=features_technique_depth_test",
         "requirements": [
           "depth-test",
           "point",
           "controller"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=technique_depth_test",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=technique_depth_test",
+      "webgpu_route": "examples/webgpu/live.html?id=features_technique_depth_test",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_technique_depth_test",
       "primary_feature": "depth-test",
       "python_source": "examples/python/gallery/features/technique_depth_test.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/technique_depth_test.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "alpha_blending",
+      "id": "features_alpha_blending",
       "title": "Alpha Blending",
       "category": "feature",
       "lane": "features",
@@ -2889,7 +2883,7 @@
       "status": "supported",
       "source": "examples/c/features/alpha_blending.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/alpha_blending.c",
-      "page": "gallery/features/alpha_blending.md",
+      "page": "gallery/features/features_alpha_blending.md",
       "summary": "This example shows translucent triangles composited in draw order.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/alpha_blending",
@@ -2904,7 +2898,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/alpha_blending.png",
-          "site_asset": "/assets/gallery/v0.4/features/alpha_blending.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_alpha_blending.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -2915,22 +2909,21 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=alpha_blending",
-        "scenario_id": "feature_alpha_blending",
+        "route": "examples/webgpu/live.html?id=features_alpha_blending",
         "requirements": [
           "alpha-blending",
           "primitive"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=alpha_blending",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=alpha_blending",
+      "webgpu_route": "examples/webgpu/live.html?id=features_alpha_blending",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_alpha_blending",
       "primary_feature": "alpha-blending",
       "python_source": "examples/python/gallery/features/alpha_blending.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/alpha_blending.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "panel_background",
+      "id": "features_panel_background",
       "title": "Panel Background",
       "category": "feature",
       "lane": "features",
@@ -2938,7 +2931,7 @@
       "status": "supported",
       "source": "examples/c/features/panel_background.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_background.c",
-      "page": "gallery/features/panel_background.md",
+      "page": "gallery/features/features_panel_background.md",
       "summary": "Panel_background shows a custom panel background behind a foreground primitive.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/panel_background",
@@ -2953,7 +2946,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/panel_background.png",
-          "site_asset": "/assets/gallery/v0.4/features/panel_background.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_panel_background.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -2964,22 +2957,21 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=panel_background",
-        "scenario_id": "feature_panel_background",
+        "route": "examples/webgpu/live.html?id=features_panel_background",
         "requirements": [
           "panel-background",
           "primitive"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=panel_background",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=panel_background",
+      "webgpu_route": "examples/webgpu/live.html?id=features_panel_background",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_panel_background",
       "primary_feature": "panel-background",
       "python_source": "examples/python/gallery/features/panel_background.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_background.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_panzoom",
+      "id": "features_panzoom",
       "title": "Panzoom",
       "category": "feature",
       "lane": "features",
@@ -2987,7 +2979,7 @@
       "status": "supported",
       "source": "examples/c/features/panzoom.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panzoom.c",
-      "page": "gallery/features/feature_panzoom.md",
+      "page": "gallery/features/features_panzoom.md",
       "summary": "Panzoom binds a 2D panzoom controller to a point visual in data coordinates.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/panzoom",
@@ -3002,7 +2994,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_panzoom.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_panzoom.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_panzoom.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -3014,22 +3006,22 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_panzoom",
+        "route": "examples/webgpu/live.html?id=features_panzoom",
         "requirements": [
           "controller",
           "panzoom",
           "point"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_panzoom",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_panzoom",
+      "webgpu_route": "examples/webgpu/live.html?id=features_panzoom",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_panzoom",
       "primary_feature": "controller-panzoom",
       "python_source": "examples/python/gallery/features/panzoom.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panzoom.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "image_probe",
+      "id": "features_image_probe",
       "title": "Image Probe",
       "category": "feature",
       "lane": "features",
@@ -3037,7 +3029,7 @@
       "status": "supported",
       "source": "examples/c/features/image_probe.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/image_probe.c",
-      "page": "gallery/features/image_probe.md",
+      "page": "gallery/features/features_image_probe.md",
       "summary": "This example shows probing a scalar image at a marked data position.",
       "validation": "smoke+readback+screenshot",
       "build_command": "just example-c features/image_probe",
@@ -3052,7 +3044,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/image_probe.png",
-          "site_asset": "/assets/gallery/v0.4/features/image_probe.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_image_probe.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -3064,23 +3056,22 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=image_probe",
-        "scenario_id": "feature_image_probe",
+        "route": "examples/webgpu/live.html?id=features_image_probe",
         "requirements": [
           "image",
           "query-readback",
           "frame-callbacks"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=image_probe",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=image_probe",
+      "webgpu_route": "examples/webgpu/live.html?id=features_image_probe",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_image_probe",
       "primary_feature": "image-probe",
       "python_source": "examples/python/gallery/features/image_probe.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/image_probe.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_picking",
+      "id": "features_picking",
       "title": "Picking",
       "category": "feature",
       "lane": "features",
@@ -3088,7 +3079,7 @@
       "status": "supported",
       "source": "examples/c/features/picking.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/picking.c",
-      "page": "gallery/features/feature_picking.md",
+      "page": "gallery/features/features_picking.md",
       "summary": "Picking demonstrates item-level marker hover and click selection.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/picking",
@@ -3103,7 +3094,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_picking.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_picking.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_picking.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -3116,7 +3107,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_picking",
+        "route": "examples/webgpu/live.html?id=features_picking",
         "requirements": [
           "marker",
           "panzoom",
@@ -3124,15 +3115,15 @@
           "frame-callbacks"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_picking",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_picking",
+      "webgpu_route": "examples/webgpu/live.html?id=features_picking",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_picking",
       "primary_feature": "picking",
       "python_source": "examples/python/gallery/features/picking.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/picking.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_selection_pixel",
+      "id": "features_selection_pixel",
       "title": "Pixel Selection",
       "category": "feature",
       "lane": "features",
@@ -3140,7 +3131,7 @@
       "status": "supported",
       "source": "examples/c/features/selection_pixel.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_pixel.c",
-      "page": "gallery/features/feature_selection_pixel.md",
+      "page": "gallery/features/features_selection_pixel.md",
       "summary": "Selection_pixel queries and selects individual cells in a pixel grid.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/selection_pixel",
@@ -3155,7 +3146,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_selection_pixel.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_selection_pixel.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_selection_pixel.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -3169,7 +3160,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_selection_pixel",
+        "route": "examples/webgpu/live.html?id=features_selection_pixel",
         "requirements": [
           "pixel",
           "controller",
@@ -3178,15 +3169,15 @@
           "frame-callbacks"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_selection_pixel",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_selection_pixel",
+      "webgpu_route": "examples/webgpu/live.html?id=features_selection_pixel",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_selection_pixel",
       "primary_feature": "selection-pixel",
       "python_source": "examples/python/gallery/features/selection_pixel.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/selection_pixel.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_selection_sphere",
+      "id": "features_selection_sphere",
       "title": "Sphere Selection",
       "category": "feature",
       "lane": "features",
@@ -3194,7 +3185,7 @@
       "status": "supported",
       "source": "examples/c/features/selection_sphere.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_sphere.c",
-      "page": "gallery/features/feature_selection_sphere.md",
+      "page": "gallery/features/features_selection_sphere.md",
       "summary": "Selection_sphere queries and selects individual raycast spheres in a 3D cluster.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/selection_sphere",
@@ -3209,7 +3200,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_selection_sphere.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_selection_sphere.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_selection_sphere.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -3222,7 +3213,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_selection_sphere",
+        "route": "examples/webgpu/live.html?id=features_selection_sphere",
         "requirements": [
           "sphere",
           "arcball",
@@ -3230,15 +3221,15 @@
           "frame-callbacks"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_selection_sphere",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_selection_sphere",
+      "webgpu_route": "examples/webgpu/live.html?id=features_selection_sphere",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_selection_sphere",
       "primary_feature": "selection-sphere",
       "python_source": "examples/python/gallery/features/selection_sphere.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/selection_sphere.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_selection_mesh_instances",
+      "id": "features_selection_mesh_instances",
       "title": "Mesh Instance Selection",
       "category": "feature",
       "lane": "features",
@@ -3246,7 +3237,7 @@
       "status": "supported",
       "source": "examples/c/features/selection_mesh_instances.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_mesh_instances.c",
-      "page": "gallery/features/feature_selection_mesh_instances.md",
+      "page": "gallery/features/features_selection_mesh_instances.md",
       "summary": "Selection_mesh_instances queries and selects individual instances of one mesh visual.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/selection_mesh_instances",
@@ -3261,7 +3252,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_selection_mesh_instances.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_selection_mesh_instances.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_selection_mesh_instances.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -3274,7 +3265,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_selection_mesh_instances",
+        "route": "examples/webgpu/live.html?id=features_selection_mesh_instances",
         "requirements": [
           "mesh",
           "arcball",
@@ -3282,15 +3273,15 @@
           "frame-callbacks"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_selection_mesh_instances",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_selection_mesh_instances",
+      "webgpu_route": "examples/webgpu/live.html?id=features_selection_mesh_instances",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_selection_mesh_instances",
       "primary_feature": "selection-mesh-instances",
       "python_source": "examples/python/gallery/features/selection_mesh_instances.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/selection_mesh_instances.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_isolines",
+      "id": "features_isolines",
       "title": "Isolines",
       "category": "feature",
       "lane": "features",
@@ -3298,7 +3289,7 @@
       "status": "supported",
       "source": "examples/c/features/isolines.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/isolines.c",
-      "page": "gallery/features/feature_isolines.md",
+      "page": "gallery/features/features_isolines.md",
       "summary": "This example shows contour isolines over a scalar field.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/isolines",
@@ -3313,7 +3304,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_isolines.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_isolines.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_isolines.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -3326,7 +3317,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_isolines",
+        "route": "examples/webgpu/live.html?id=features_isolines",
         "requirements": [
           "mesh",
           "segment",
@@ -3334,15 +3325,15 @@
           "arcball"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_isolines",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_isolines",
+      "webgpu_route": "examples/webgpu/live.html?id=features_isolines",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_isolines",
       "primary_feature": "isolines",
       "python_source": "examples/python/gallery/features/isolines.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/isolines.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_builtin_shapes_2d",
+      "id": "features_builtin_shapes_2d",
       "title": "Builtin Shapes 2D",
       "category": "feature",
       "lane": "features",
@@ -3350,7 +3341,7 @@
       "status": "supported",
       "source": "examples/c/features/builtin_shapes_2d.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_2d.c",
-      "page": "gallery/features/feature_builtin_shapes_2d.md",
+      "page": "gallery/features/features_builtin_shapes_2d.md",
       "summary": "This example shows built-in 2D geometry rendered as meshes.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/builtin_shapes_2d",
@@ -3365,7 +3356,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_builtin_shapes_2d.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_builtin_shapes_2d.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_builtin_shapes_2d.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -3376,21 +3367,21 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_builtin_shapes_2d",
+        "route": "examples/webgpu/live.html?id=features_builtin_shapes_2d",
         "requirements": [
           "mesh",
           "controller"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_builtin_shapes_2d",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_builtin_shapes_2d",
+      "webgpu_route": "examples/webgpu/live.html?id=features_builtin_shapes_2d",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_builtin_shapes_2d",
       "primary_feature": "builtin-shapes-2d",
       "python_source": "examples/python/gallery/features/builtin_shapes_2d.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/builtin_shapes_2d.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_builtin_shapes_3d",
+      "id": "features_builtin_shapes_3d",
       "title": "Builtin Shapes 3D",
       "category": "feature",
       "lane": "features",
@@ -3398,7 +3389,7 @@
       "status": "supported",
       "source": "examples/c/features/builtin_shapes_3d.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_3d.c",
-      "page": "gallery/features/feature_builtin_shapes_3d.md",
+      "page": "gallery/features/features_builtin_shapes_3d.md",
       "summary": "This example shows built-in 3D geometry rendered as lit meshes.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/builtin_shapes_3d",
@@ -3413,7 +3404,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_builtin_shapes_3d.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_builtin_shapes_3d.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_builtin_shapes_3d.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -3425,22 +3416,22 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_builtin_shapes_3d",
+        "route": "examples/webgpu/live.html?id=features_builtin_shapes_3d",
         "requirements": [
           "mesh",
           "controller",
           "arcball"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_builtin_shapes_3d",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_builtin_shapes_3d",
+      "webgpu_route": "examples/webgpu/live.html?id=features_builtin_shapes_3d",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_builtin_shapes_3d",
       "primary_feature": "builtin-shapes-3d",
       "python_source": "examples/python/gallery/features/builtin_shapes_3d.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/builtin_shapes_3d.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_obj_loading",
+      "id": "features_obj_loading",
       "title": "OBJ Loading",
       "category": "feature",
       "lane": "features",
@@ -3448,7 +3439,7 @@
       "status": "supported",
       "source": "examples/c/features/obj_loading.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/obj_loading.c",
-      "page": "gallery/features/feature_obj_loading.md",
+      "page": "gallery/features/features_obj_loading.md",
       "summary": "Obj_loading loads a Wavefront OBJ fixture and displays it as a mesh.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/obj_loading",
@@ -3463,7 +3454,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_obj_loading.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_obj_loading.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_obj_loading.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -3475,22 +3466,22 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_obj_loading",
+        "route": "examples/webgpu/live.html?id=features_obj_loading",
         "requirements": [
           "mesh",
           "controller",
           "arcball"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_obj_loading",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_obj_loading",
+      "webgpu_route": "examples/webgpu/live.html?id=features_obj_loading",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_obj_loading",
       "primary_feature": "obj-loading",
       "python_source": "examples/python/gallery/features/obj_loading.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/obj_loading.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_probe_labels",
+      "id": "features_probe_labels",
       "title": "Label Probe",
       "category": "feature",
       "lane": "features",
@@ -3498,7 +3489,7 @@
       "status": "supported",
       "source": "examples/c/features/probe_labels.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/probe_labels.c",
-      "page": "gallery/features/feature_probe_labels.md",
+      "page": "gallery/features/features_probe_labels.md",
       "summary": "Probe_labels queries categorical label IDs from a generated label image.",
       "validation": "smoke+readback+screenshot",
       "build_command": "just example-c features/probe_labels",
@@ -3513,7 +3504,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_probe_labels.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_probe_labels.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_probe_labels.webp"
         }
       },
       "webgpu_status": "webgpu-planned",
@@ -3537,7 +3528,7 @@
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_datetime_axis",
+      "id": "features_datetime_axis",
       "title": "Datetime Axis",
       "category": "feature",
       "lane": "features",
@@ -3545,7 +3536,7 @@
       "status": "supported",
       "source": "examples/c/features/datetime_axis.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/datetime_axis.c",
-      "page": "gallery/features/feature_datetime_axis.md",
+      "page": "gallery/features/features_datetime_axis.md",
       "summary": "This example shows UTC datetime labels on a numeric data axis.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/datetime_axis",
@@ -3564,7 +3555,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_datetime_axis.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_datetime_axis.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_datetime_axis.webp"
         }
       },
       "webgpu_status": "webgpu-deferred",
@@ -3587,7 +3578,7 @@
       "primary_feature": "datetime-axis"
     },
     {
-      "id": "feature_timer_animation",
+      "id": "features_timer_animation",
       "title": "Timer Animation",
       "category": "feature",
       "lane": "features",
@@ -3595,7 +3586,7 @@
       "status": "supported",
       "source": "examples/c/features/timer_animation.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/timer_animation.c",
-      "page": "gallery/features/feature_timer_animation.md",
+      "page": "gallery/features/features_timer_animation.md",
       "summary": "Timer_animation updates point attributes every frame from scenario time.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/timer_animation",
@@ -3610,7 +3601,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_timer_animation.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_timer_animation.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_timer_animation.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -3621,21 +3612,21 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_timer_animation",
+        "route": "examples/webgpu/live.html?id=features_timer_animation",
         "requirements": [
           "point",
           "frame-callbacks"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_timer_animation",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_timer_animation",
+      "webgpu_route": "examples/webgpu/live.html?id=features_timer_animation",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_timer_animation",
       "primary_feature": "timer-animation",
       "python_source": "examples/python/gallery/features/timer_animation.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/timer_animation.py",
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_marker_symbols",
+      "id": "features_marker_symbols",
       "title": "Marker Symbols",
       "category": "feature",
       "lane": "features",
@@ -3643,7 +3634,7 @@
       "status": "supported",
       "source": "examples/c/features/marker_symbols.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/marker_symbols.c",
-      "page": "gallery/features/feature_marker_symbols.md",
+      "page": "gallery/features/features_marker_symbols.md",
       "summary": "Marker_symbols compares several ways to define marker glyphs in one symbol set.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/marker_symbols",
@@ -3664,7 +3655,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_marker_symbols.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_marker_symbols.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_marker_symbols.webp"
         }
       },
       "webgpu_status": "webgpu-deferred",
@@ -3690,7 +3681,7 @@
       "python_status": "direct-engine"
     },
     {
-      "id": "feature_legend_categorical",
+      "id": "features_legend_categorical",
       "title": "Categorical Legend",
       "category": "feature",
       "lane": "features",
@@ -3698,7 +3689,7 @@
       "status": "experimental",
       "source": "examples/c/features/legend_categorical.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/legend_categorical.c",
-      "page": "gallery/features/feature_legend_categorical.md",
+      "page": "gallery/features/features_legend_categorical.md",
       "summary": "Legend_categorical shows how one categorical scale drives both marker colors and a legend.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/legend_categorical",
@@ -3718,7 +3709,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/features/feature_legend_categorical.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_legend_categorical.webp"
+          "site_asset": "/assets/gallery/v0.4/features/features_legend_categorical.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -3731,7 +3722,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=feature_legend_categorical",
+        "route": "examples/webgpu/live.html?id=features_legend_categorical",
         "requirements": [
           "legend",
           "categorical-scale",
@@ -3739,12 +3730,12 @@
           "text"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=feature_legend_categorical",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_legend_categorical",
+      "webgpu_route": "examples/webgpu/live.html?id=features_legend_categorical",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_legend_categorical",
       "primary_feature": "legend-categorical"
     },
     {
-      "id": "feature_video_export",
+      "id": "runtime_video_export",
       "title": "Video Export",
       "category": "runtime",
       "lane": "runtime",
@@ -3752,7 +3743,7 @@
       "status": "experimental",
       "source": "examples/c/runtime/video_export.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/video_export.c",
-      "page": "gallery/runtime/feature_video_export.md",
+      "page": "gallery/runtime/runtime_video_export.md",
       "summary": "This example records a deterministic offscreen point animation to video.",
       "validation": "smoke+optional-video",
       "build_command": "just example-c runtime/video_export",
@@ -3771,8 +3762,8 @@
         "screenshot": {
           "expected": false,
           "status": "not-required",
-          "source": "data/gallery/v0.4/runtime/feature_video_export.png",
-          "site_asset": "/assets/gallery/v0.4/runtime/feature_video_export.webp"
+          "source": "data/gallery/v0.4/runtime/runtime_video_export.png",
+          "site_asset": "/assets/gallery/v0.4/runtime/runtime_video_export.webp"
         }
       },
       "webgpu_status": "native-only",
@@ -3791,7 +3782,7 @@
       "primary_runtime": "video-export"
     },
     {
-      "id": "point_2d",
+      "id": "visuals_point",
       "title": "Point",
       "category": "visual",
       "lane": "visuals",
@@ -3799,7 +3790,7 @@
       "status": "supported",
       "source": "examples/c/visuals/point.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/point.c",
-      "page": "gallery/visuals/point_2d.md",
+      "page": "gallery/visuals/visuals_point.md",
       "summary": "This example renders a 2D scatter plot with per-point color and diameter.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/point",
@@ -3818,7 +3809,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/visuals/point_2d.png",
-          "site_asset": "/assets/gallery/v0.4/visuals/point_2d.webp"
+          "site_asset": "/assets/gallery/v0.4/visuals/visuals_point.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -3829,22 +3820,21 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=point_2d",
-        "scenario_id": "visual_point",
+        "route": "examples/webgpu/live.html?id=visuals_point",
         "requirements": [
           "point",
           "panzoom"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=point_2d",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=point_2d",
+      "webgpu_route": "examples/webgpu/live.html?id=visuals_point",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_point",
       "primary_visual": "point",
       "python_source": "examples/python/gallery/visuals/point.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/point.py",
       "python_status": "manual"
     },
     {
-      "id": "visual_pixel",
+      "id": "visuals_pixel",
       "title": "Pixel",
       "category": "visual",
       "lane": "visuals",
@@ -3852,7 +3842,7 @@
       "status": "supported",
       "source": "examples/c/visuals/pixel.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/pixel.c",
-      "page": "gallery/visuals/visual_pixel.md",
+      "page": "gallery/visuals/visuals_pixel.md",
       "summary": "This example renders a regular grid of independent screen-aligned pixels.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/pixel",
@@ -3871,7 +3861,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/visuals/visual_pixel.png",
-          "site_asset": "/assets/gallery/v0.4/visuals/visual_pixel.webp"
+          "site_asset": "/assets/gallery/v0.4/visuals/visuals_pixel.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -3882,21 +3872,21 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=visual_pixel",
+        "route": "examples/webgpu/live.html?id=visuals_pixel",
         "requirements": [
           "pixel",
           "panzoom"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=visual_pixel",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_pixel",
+      "webgpu_route": "examples/webgpu/live.html?id=visuals_pixel",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_pixel",
       "primary_visual": "pixel",
       "python_source": "examples/python/gallery/visuals/pixel.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/pixel.py",
       "python_status": "manual"
     },
     {
-      "id": "visual_marker",
+      "id": "visuals_marker",
       "title": "Marker",
       "category": "visual",
       "lane": "visuals",
@@ -3904,7 +3894,7 @@
       "status": "supported",
       "source": "examples/c/visuals/marker.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/marker.c",
-      "page": "gallery/visuals/visual_marker.md",
+      "page": "gallery/visuals/visuals_marker.md",
       "summary": "This example compares marker symbols, sizes, strokes, fills, and rotations.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/marker",
@@ -3923,7 +3913,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/visuals/visual_marker.png",
-          "site_asset": "/assets/gallery/v0.4/visuals/visual_marker.webp"
+          "site_asset": "/assets/gallery/v0.4/visuals/visuals_marker.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -3934,21 +3924,21 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=visual_marker",
+        "route": "examples/webgpu/live.html?id=visuals_marker",
         "requirements": [
           "marker",
           "panzoom"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=visual_marker",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_marker",
+      "webgpu_route": "examples/webgpu/live.html?id=visuals_marker",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_marker",
       "primary_visual": "marker",
       "python_source": "examples/python/gallery/visuals/marker.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/marker.py",
       "python_status": "manual"
     },
     {
-      "id": "visual_primitive",
+      "id": "visuals_primitive",
       "title": "Primitive",
       "category": "visual",
       "lane": "visuals",
@@ -3956,7 +3946,7 @@
       "status": "supported",
       "source": "examples/c/visuals/primitive.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/primitive.c",
-      "page": "gallery/visuals/visual_primitive.md",
+      "page": "gallery/visuals/visuals_primitive.md",
       "summary": "This example compares basic primitive topologies.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/primitive",
@@ -3974,7 +3964,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/visuals/visual_primitive.png",
-          "site_asset": "/assets/gallery/v0.4/visuals/visual_primitive.webp"
+          "site_asset": "/assets/gallery/v0.4/visuals/visuals_primitive.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -3984,20 +3974,20 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=visual_primitive",
+        "route": "examples/webgpu/live.html?id=visuals_primitive",
         "requirements": [
           "primitive"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=visual_primitive",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_primitive",
+      "webgpu_route": "examples/webgpu/live.html?id=visuals_primitive",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_primitive",
       "primary_visual": "primitive",
       "python_source": "examples/python/gallery/visuals/primitive.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/primitive.py",
       "python_status": "manual"
     },
     {
-      "id": "visual_segment",
+      "id": "visuals_segment",
       "title": "Segment",
       "category": "visual",
       "lane": "visuals",
@@ -4005,7 +3995,7 @@
       "status": "supported",
       "source": "examples/c/visuals/segment.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/segment.c",
-      "page": "gallery/visuals/visual_segment.md",
+      "page": "gallery/visuals/visuals_segment.md",
       "summary": "This example draws independent line segments with different cap styles.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/segment",
@@ -4024,7 +4014,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/visuals/visual_segment.png",
-          "site_asset": "/assets/gallery/v0.4/visuals/visual_segment.webp"
+          "site_asset": "/assets/gallery/v0.4/visuals/visuals_segment.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -4035,21 +4025,21 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=visual_segment",
+        "route": "examples/webgpu/live.html?id=visuals_segment",
         "requirements": [
           "segment",
           "panzoom"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=visual_segment",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_segment",
+      "webgpu_route": "examples/webgpu/live.html?id=visuals_segment",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_segment",
       "primary_visual": "segment",
       "python_source": "examples/python/gallery/visuals/segment.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/segment.py",
       "python_status": "manual"
     },
     {
-      "id": "visual_vector",
+      "id": "visuals_vector",
       "title": "Vector",
       "category": "visual",
       "lane": "visuals",
@@ -4057,7 +4047,7 @@
       "status": "supported",
       "source": "examples/c/visuals/vector.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/vector.c",
-      "page": "gallery/visuals/visual_vector.md",
+      "page": "gallery/visuals/visuals_vector.md",
       "summary": "This example compares straight vector arrows with curved vector paths.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/vector",
@@ -4077,7 +4067,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/visuals/visual_vector.png",
-          "site_asset": "/assets/gallery/v0.4/visuals/visual_vector.webp"
+          "site_asset": "/assets/gallery/v0.4/visuals/visuals_vector.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -4089,22 +4079,22 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=visual_vector",
+        "route": "examples/webgpu/live.html?id=visuals_vector",
         "requirements": [
           "vector",
           "path",
           "panzoom"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=visual_vector",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_vector",
+      "webgpu_route": "examples/webgpu/live.html?id=visuals_vector",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_vector",
       "primary_visual": "vector",
       "python_source": "examples/python/gallery/visuals/vector.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/vector.py",
       "python_status": "manual"
     },
     {
-      "id": "visual_path",
+      "id": "visuals_path",
       "title": "Path",
       "category": "visual",
       "lane": "visuals",
@@ -4112,7 +4102,7 @@
       "status": "supported",
       "source": "examples/c/visuals/path.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/path.c",
-      "page": "gallery/visuals/visual_path.md",
+      "page": "gallery/visuals/visuals_path.md",
       "summary": "This example draws several continuous signals with one path visual.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/path",
@@ -4130,7 +4120,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/visuals/visual_path.png",
-          "site_asset": "/assets/gallery/v0.4/visuals/visual_path.webp"
+          "site_asset": "/assets/gallery/v0.4/visuals/visuals_path.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -4141,21 +4131,21 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=visual_path",
+        "route": "examples/webgpu/live.html?id=visuals_path",
         "requirements": [
           "path",
           "panzoom"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=visual_path",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_path",
+      "webgpu_route": "examples/webgpu/live.html?id=visuals_path",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_path",
       "primary_visual": "path",
       "python_source": "examples/python/gallery/visuals/path.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/path.py",
       "python_status": "manual"
     },
     {
-      "id": "visual_image",
+      "id": "visuals_image",
       "title": "Image",
       "category": "visual",
       "lane": "visuals",
@@ -4163,7 +4153,7 @@
       "status": "supported",
       "source": "examples/c/visuals/image.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/image.c",
-      "page": "gallery/visuals/visual_image.md",
+      "page": "gallery/visuals/visuals_image.md",
       "summary": "This example displays a generated scalar field as a 2D image.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/image",
@@ -4182,7 +4172,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/visuals/visual_image.png",
-          "site_asset": "/assets/gallery/v0.4/visuals/visual_image.webp"
+          "site_asset": "/assets/gallery/v0.4/visuals/visuals_image.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -4194,22 +4184,22 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=visual_image",
+        "route": "examples/webgpu/live.html?id=visuals_image",
         "requirements": [
           "image",
           "sampled-field",
           "panzoom"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=visual_image",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_image",
+      "webgpu_route": "examples/webgpu/live.html?id=visuals_image",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_image",
       "primary_visual": "image",
       "python_source": "examples/python/gallery/visuals/image.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/image.py",
       "python_status": "manual"
     },
     {
-      "id": "visual_image_rgba",
+      "id": "visuals_image_rgba",
       "title": "RGBA Image",
       "category": "visual",
       "lane": "visuals",
@@ -4217,7 +4207,7 @@
       "status": "supported",
       "source": "examples/c/visuals/image_rgba.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/image_rgba.c",
-      "page": "gallery/visuals/visual_image_rgba.md",
+      "page": "gallery/visuals/visuals_image_rgba.md",
       "summary": "This example displays a generated RGBA image as a 2D sampled field.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/image_rgba",
@@ -4236,9 +4226,9 @@
       "media": {
         "screenshot": {
           "expected": true,
-          "status": "pending",
+          "status": "available",
           "source": "data/gallery/v0.4/visuals/visual_image_rgba.png",
-          "site_asset": "/assets/gallery/v0.4/visuals/visual_image_rgba.webp"
+          "site_asset": "/assets/gallery/v0.4/visuals/visuals_image_rgba.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -4250,22 +4240,22 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=visual_image_rgba",
+        "route": "examples/webgpu/live.html?id=visuals_image_rgba",
         "requirements": [
           "image",
           "sampled-field",
           "alpha-blending"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=visual_image_rgba",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_image_rgba",
+      "webgpu_route": "examples/webgpu/live.html?id=visuals_image_rgba",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_image_rgba",
       "primary_visual": "image",
       "python_source": "examples/python/gallery/visuals/image_rgba.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/image_rgba.py",
       "python_status": "manual"
     },
     {
-      "id": "visual_mesh",
+      "id": "visuals_mesh",
       "title": "Mesh",
       "category": "visual",
       "lane": "visuals",
@@ -4273,7 +4263,7 @@
       "status": "supported",
       "source": "examples/c/visuals/mesh.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/mesh.c",
-      "page": "gallery/visuals/visual_mesh.md",
+      "page": "gallery/visuals/visuals_mesh.md",
       "summary": "This example renders a lit indexed cube mesh in a 3D scene.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/mesh",
@@ -4293,7 +4283,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/visuals/visual_mesh.png",
-          "site_asset": "/assets/gallery/v0.4/visuals/visual_mesh.webp"
+          "site_asset": "/assets/gallery/v0.4/visuals/visuals_mesh.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -4305,22 +4295,22 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=visual_mesh",
+        "route": "examples/webgpu/live.html?id=visuals_mesh",
         "requirements": [
           "mesh",
           "indexed-geometry",
           "arcball"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=visual_mesh",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_mesh",
+      "webgpu_route": "examples/webgpu/live.html?id=visuals_mesh",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_mesh",
       "primary_visual": "mesh",
       "python_source": "examples/python/gallery/visuals/mesh.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/mesh.py",
       "python_status": "manual"
     },
     {
-      "id": "sphere_impostor",
+      "id": "visuals_sphere",
       "title": "Sphere",
       "category": "visual",
       "lane": "visuals",
@@ -4328,7 +4318,7 @@
       "status": "supported",
       "source": "examples/c/visuals/sphere.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/sphere.c",
-      "page": "gallery/visuals/sphere_impostor.md",
+      "page": "gallery/visuals/visuals_sphere.md",
       "summary": "This example displays a 3D cluster of raycast impostor spheres.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/sphere",
@@ -4347,7 +4337,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/visuals/sphere_impostor.png",
-          "site_asset": "/assets/gallery/v0.4/visuals/sphere_impostor.webp"
+          "site_asset": "/assets/gallery/v0.4/visuals/visuals_sphere.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -4358,21 +4348,21 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=sphere_impostor",
+        "route": "examples/webgpu/live.html?id=visuals_sphere",
         "requirements": [
           "sphere",
           "arcball"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=sphere_impostor",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=sphere_impostor",
+      "webgpu_route": "examples/webgpu/live.html?id=visuals_sphere",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_sphere",
       "primary_visual": "sphere",
       "python_source": "examples/python/gallery/visuals/sphere.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/sphere.py",
       "python_status": "manual"
     },
     {
-      "id": "visual_splat",
+      "id": "visuals_splat",
       "title": "Splat",
       "category": "visual",
       "lane": "visuals",
@@ -4380,7 +4370,7 @@
       "status": "experimental",
       "source": "examples/c/visuals/splat.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/splat.c",
-      "page": "gallery/visuals/visual_splat.md",
+      "page": "gallery/visuals/visuals_splat.md",
       "summary": "This experimental example renders Gaussian splats as translucent ellipses.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/splat",
@@ -4399,7 +4389,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/visuals/visual_splat.png",
-          "site_asset": "/assets/gallery/v0.4/visuals/visual_splat.webp"
+          "site_asset": "/assets/gallery/v0.4/visuals/visuals_splat.webp"
         }
       },
       "webgpu_status": "webgpu-deferred",
@@ -4420,7 +4410,7 @@
       "primary_visual": "splat"
     },
     {
-      "id": "visual_text",
+      "id": "visuals_text",
       "title": "Text",
       "category": "visual",
       "lane": "visuals",
@@ -4428,7 +4418,7 @@
       "status": "supported",
       "source": "examples/c/visuals/text.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/text.c",
-      "page": "gallery/visuals/visual_text.md",
+      "page": "gallery/visuals/visuals_text.md",
       "summary": "This example places semantic text items in panel coordinates.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/text",
@@ -4446,7 +4436,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/visuals/visual_text.png",
-          "site_asset": "/assets/gallery/v0.4/visuals/visual_text.webp"
+          "site_asset": "/assets/gallery/v0.4/visuals/visuals_text.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -4457,21 +4447,21 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=visual_text",
+        "route": "examples/webgpu/live.html?id=visuals_text",
         "requirements": [
           "text",
           "glyph-atlas"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=visual_text",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_text",
+      "webgpu_route": "examples/webgpu/live.html?id=visuals_text",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_text",
       "primary_visual": "text",
       "python_source": "examples/python/gallery/visuals/text.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/text.py",
       "python_status": "manual"
     },
     {
-      "id": "visual_glyph",
+      "id": "visuals_glyph",
       "title": "Font Atlas Glyphs",
       "category": "visual",
       "lane": "visuals",
@@ -4479,7 +4469,7 @@
       "status": "experimental",
       "source": "examples/c/visuals/glyph.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/glyph.c",
-      "page": "gallery/visuals/visual_glyph.md",
+      "page": "gallery/visuals/visuals_glyph.md",
       "summary": "This example renders text by submitting low-level glyph atlas quads directly.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/glyph",
@@ -4500,7 +4490,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/visuals/visual_glyph.png",
-          "site_asset": "/assets/gallery/v0.4/visuals/visual_glyph.webp"
+          "site_asset": "/assets/gallery/v0.4/visuals/visuals_glyph.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -4512,19 +4502,19 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=visual_glyph",
+        "route": "examples/webgpu/live.html?id=visuals_glyph",
         "requirements": [
           "glyph",
           "glyph-atlas",
           "sdf"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=visual_glyph",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_glyph",
+      "webgpu_route": "examples/webgpu/live.html?id=visuals_glyph",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_glyph",
       "primary_visual": "glyph"
     },
     {
-      "id": "visual_labels",
+      "id": "visuals_labels",
       "title": "Labels",
       "category": "visual",
       "lane": "visuals",
@@ -4532,7 +4522,7 @@
       "status": "supported",
       "source": "examples/c/visuals/labels.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/labels.c",
-      "page": "gallery/visuals/visual_labels.md",
+      "page": "gallery/visuals/visuals_labels.md",
       "summary": "This example turns an integer sampled field into categorical image labels.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/labels",
@@ -4552,7 +4542,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/visuals/visual_labels.png",
-          "site_asset": "/assets/gallery/v0.4/visuals/visual_labels.webp"
+          "site_asset": "/assets/gallery/v0.4/visuals/visuals_labels.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -4564,19 +4554,19 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=visual_labels",
+        "route": "examples/webgpu/live.html?id=visuals_labels",
         "requirements": [
           "labels",
           "categorical-scale",
           "panzoom"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=visual_labels",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_labels",
+      "webgpu_route": "examples/webgpu/live.html?id=visuals_labels",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_labels",
       "primary_visual": "labels"
     },
     {
-      "id": "volume",
+      "id": "visuals_volume",
       "title": "Volume",
       "category": "visual",
       "lane": "visuals",
@@ -4584,7 +4574,7 @@
       "status": "supported",
       "source": "examples/c/visuals/volume.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/volume.c",
-      "page": "gallery/visuals/volume.md",
+      "page": "gallery/visuals/visuals_volume.md",
       "summary": "This example volume-renders a generated 3D gyroid scalar field.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/volume",
@@ -4606,7 +4596,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/visuals/volume.png",
-          "site_asset": "/assets/gallery/v0.4/visuals/volume.webp"
+          "site_asset": "/assets/gallery/v0.4/visuals/visuals_volume.webp"
         }
       },
       "webgpu_status": "webgpu-planned",
@@ -4629,7 +4619,7 @@
       "primary_visual": "volume"
     },
     {
-      "id": "composite_polygon",
+      "id": "composites_polygon",
       "title": "Polygon Composite",
       "category": "composite",
       "lane": "composites",
@@ -4637,7 +4627,7 @@
       "status": "supported",
       "source": "examples/c/composites/polygon.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/polygon.c",
-      "page": "gallery/composites/composite_polygon.md",
+      "page": "gallery/composites/composites_polygon.md",
       "summary": "This example compares one holed polygon with a multi-region polygon set.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c composites/polygon",
@@ -4658,7 +4648,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/composites/composite_polygon.png",
-          "site_asset": "/assets/gallery/v0.4/composites/composite_polygon.webp"
+          "site_asset": "/assets/gallery/v0.4/composites/composites_polygon.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -4672,7 +4662,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=composite_polygon",
+        "route": "examples/webgpu/live.html?id=composites_polygon",
         "requirements": [
           "composite",
           "polygon-set",
@@ -4681,12 +4671,12 @@
           "panzoom"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=composite_polygon",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=composite_polygon",
+      "webgpu_route": "examples/webgpu/live.html?id=composites_polygon",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=composites_polygon",
       "primary_composite": "polygon"
     },
     {
-      "id": "composite_graph",
+      "id": "composites_graph",
       "title": "Graph Composite",
       "category": "composite",
       "lane": "composites",
@@ -4694,7 +4684,7 @@
       "status": "supported",
       "source": "examples/c/composites/graph.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/graph.c",
-      "page": "gallery/composites/composite_graph.md",
+      "page": "gallery/composites/composites_graph.md",
       "summary": "This example builds a small brain-connectivity graph composite.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c composites/graph",
@@ -4715,7 +4705,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/composites/composite_graph.png",
-          "site_asset": "/assets/gallery/v0.4/composites/composite_graph.webp"
+          "site_asset": "/assets/gallery/v0.4/composites/composites_graph.webp"
         }
       },
       "webgpu_status": "webgpu-planned",
@@ -4740,7 +4730,7 @@
       "primary_composite": "graph"
     },
     {
-      "id": "us_state_choropleth",
+      "id": "showcases_choropleth",
       "title": "U.S. State Choropleth",
       "category": "showcase",
       "lane": "showcases",
@@ -4748,7 +4738,7 @@
       "status": "supported",
       "source": "examples/c/showcases/choropleth.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/choropleth.c",
-      "page": "gallery/showcases/us_state_choropleth.md",
+      "page": "gallery/showcases/showcases_choropleth.md",
       "summary": "This example renders contiguous U.S. population density as polygon-set data.",
       "validation": "smoke+screenshot+manual",
       "build_command": "just example-c showcases/choropleth",
@@ -4773,7 +4763,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/showcases/us_state_choropleth.png",
-          "site_asset": "/assets/gallery/v0.4/showcases/us_state_choropleth.webp"
+          "site_asset": "/assets/gallery/v0.4/showcases/showcases_choropleth.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -4786,7 +4776,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=us_state_choropleth",
+        "route": "examples/webgpu/live.html?id=showcases_choropleth",
         "requirements": [
           "composite",
           "polygon-set",
@@ -4794,8 +4784,8 @@
           "panzoom"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=us_state_choropleth",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=us_state_choropleth",
+      "webgpu_route": "examples/webgpu/live.html?id=showcases_choropleth",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_choropleth",
       "dataset": {
         "name": "Contiguous U.S. state population density",
         "source": "U.S. Census Bureau 2024 cartographic state boundaries and Vintage 2025 state population estimates",
@@ -4817,7 +4807,7 @@
       }
     },
     {
-      "id": "protein_arcball_viewer",
+      "id": "showcases_protein",
       "title": "Protein",
       "category": "showcase",
       "lane": "showcases",
@@ -4825,7 +4815,7 @@
       "status": "supported",
       "source": "examples/c/showcases/protein.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/protein.c",
-      "page": "gallery/showcases/protein_arcball_viewer.md",
+      "page": "gallery/showcases/showcases_protein.md",
       "summary": "This example renders a prepared PDB structure as colored sphere impostors.",
       "validation": "smoke+screenshot+manual",
       "build_command": "just example-c showcases/protein",
@@ -4846,7 +4836,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/showcases/protein_arcball_viewer.png",
-          "site_asset": "/assets/gallery/v0.4/showcases/protein_arcball_viewer.webp"
+          "site_asset": "/assets/gallery/v0.4/showcases/showcases_protein.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -4859,7 +4849,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=protein_arcball_viewer",
+        "route": "examples/webgpu/live.html?id=showcases_protein",
         "requirements": [
           "sphere",
           "arcball",
@@ -4867,8 +4857,8 @@
           "real-data"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=protein_arcball_viewer",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=protein_arcball_viewer",
+      "webgpu_route": "examples/webgpu/live.html?id=showcases_protein",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_protein",
       "dataset": {
         "name": "RCSB PDB protein structure",
         "source": "https://files.rcsb.org/download/{pdb_id}.pdb",
@@ -4888,7 +4878,7 @@
       }
     },
     {
-      "id": "showcase_wind_field",
+      "id": "showcases_wind_field",
       "title": "Wind Field",
       "category": "showcase",
       "lane": "showcases",
@@ -4896,7 +4886,7 @@
       "status": "supported",
       "source": "examples/c/showcases/wind_field.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/wind_field.c",
-      "page": "gallery/showcases/showcase_wind_field.md",
+      "page": "gallery/showcases/showcases_wind_field.md",
       "summary": "This example combines a synthetic wind-speed field with vectors and streamlines.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c showcases/wind_field",
@@ -4919,7 +4909,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/showcases/showcase_wind_field.png",
-          "site_asset": "/assets/gallery/v0.4/showcases/showcase_wind_field.webp"
+          "site_asset": "/assets/gallery/v0.4/showcases/showcases_wind_field.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -4940,13 +4930,13 @@
           "colorbar",
           "panzoom"
         ],
-        "route": "examples/webgpu/live.html?id=showcase_wind_field"
+        "route": "examples/webgpu/live.html?id=showcases_wind_field"
       },
-      "webgpu_route": "examples/webgpu/live.html?id=showcase_wind_field",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=showcase_wind_field"
+      "webgpu_route": "examples/webgpu/live.html?id=showcases_wind_field",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_wind_field"
     },
     {
-      "id": "showcase_gpu_particle_smoke",
+      "id": "showcases_gpu_particle_smoke",
       "title": "GPU Particle Smoke",
       "category": "showcase",
       "lane": "showcases",
@@ -4954,7 +4944,7 @@
       "status": "experimental",
       "source": "examples/c/showcases/gpu_particle_smoke.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c",
-      "page": "gallery/showcases/showcase_gpu_particle_smoke.md",
+      "page": "gallery/showcases/showcases_gpu_particle_smoke.md",
       "summary": "This example uses scene compute buffers to animate particle smoke.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c showcases/gpu_particle_smoke",
@@ -4976,7 +4966,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/showcases/showcase_gpu_particle_smoke.png",
-          "site_asset": "/assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp"
+          "site_asset": "/assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -4990,7 +4980,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=showcase_gpu_particle_smoke",
+        "route": "examples/webgpu/live.html?id=showcases_gpu_particle_smoke",
         "requirements": [
           "scene-buffers",
           "storage-buffers",
@@ -4999,11 +4989,11 @@
           "alpha-blending"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=showcase_gpu_particle_smoke",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=showcase_gpu_particle_smoke"
+      "webgpu_route": "examples/webgpu/live.html?id=showcases_gpu_particle_smoke",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_gpu_particle_smoke"
     },
     {
-      "id": "showcase_surface_grid",
+      "id": "showcases_surface_grid",
       "title": "Surface Grid",
       "category": "showcase",
       "lane": "showcases",
@@ -5011,7 +5001,7 @@
       "status": "supported",
       "source": "examples/c/showcases/surface_grid.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/surface_grid.c",
-      "page": "gallery/showcases/showcase_surface_grid.md",
+      "page": "gallery/showcases/showcases_surface_grid.md",
       "summary": "This example turns a generated height field into a lit mesh and wireframe.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c showcases/surface_grid",
@@ -5033,7 +5023,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/showcases/showcase_surface_grid.png",
-          "site_asset": "/assets/gallery/v0.4/showcases/showcase_surface_grid.webp"
+          "site_asset": "/assets/gallery/v0.4/showcases/showcases_surface_grid.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -5045,18 +5035,18 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=showcase_surface_grid",
+        "route": "examples/webgpu/live.html?id=showcases_surface_grid",
         "requirements": [
           "mesh",
           "segment",
           "arcball"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=showcase_surface_grid",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=showcase_surface_grid"
+      "webgpu_route": "examples/webgpu/live.html?id=showcases_surface_grid",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_surface_grid"
     },
     {
-      "id": "brain_volume",
+      "id": "showcases_brain_volume",
       "title": "Allen Mouse Brain",
       "category": "showcase",
       "lane": "showcases",
@@ -5064,7 +5054,7 @@
       "status": "prototype",
       "source": "examples/c/showcases/brain_volume.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c",
-      "page": "gallery/showcases/brain_volume.md",
+      "page": "gallery/showcases/showcases_brain_volume.md",
       "summary": "This example renders a prepared Allen mouse brain volume with a visible slice.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c showcases/brain_volume",
@@ -5087,7 +5077,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/showcases/brain_volume.png",
-          "site_asset": "/assets/gallery/v0.4/showcases/brain_volume.webp"
+          "site_asset": "/assets/gallery/v0.4/showcases/showcases_brain_volume.webp"
         }
       },
       "webgpu_status": "webgpu-planned",
@@ -5117,7 +5107,7 @@
       }
     },
     {
-      "id": "point_cloud",
+      "id": "showcases_point_cloud",
       "title": "Point Cloud",
       "category": "showcase",
       "lane": "showcases",
@@ -5125,7 +5115,7 @@
       "status": "supported",
       "source": "examples/c/showcases/point_cloud.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c",
-      "page": "gallery/showcases/point_cloud.md",
+      "page": "gallery/showcases/showcases_point_cloud.md",
       "summary": "This example renders a prepared RGB LiDAR point cloud with direct colors.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c showcases/point_cloud",
@@ -5149,7 +5139,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/showcases/point_cloud.png",
-          "site_asset": "/assets/gallery/v0.4/showcases/point_cloud.webp"
+          "site_asset": "/assets/gallery/v0.4/showcases/showcases_point_cloud.webp"
         }
       },
       "webgpu_status": "webgpu-deferred",
@@ -5182,7 +5172,7 @@
       }
     },
     {
-      "id": "textured_terrain_or_planet",
+      "id": "showcases_textured_planet",
       "title": "Textured Planets",
       "category": "showcase",
       "lane": "showcases",
@@ -5190,7 +5180,7 @@
       "status": "supported",
       "source": "examples/c/showcases/textured_planet.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet.c",
-      "page": "gallery/showcases/textured_terrain_or_planet.md",
+      "page": "gallery/showcases/showcases_textured_planet.md",
       "summary": "This example maps real planetary textures onto an indexed sphere mesh.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c showcases/textured_planet",
@@ -5212,7 +5202,7 @@
           "expected": true,
           "status": "available",
           "source": "data/gallery/v0.4/showcases/textured_terrain_or_planet.png",
-          "site_asset": "/assets/gallery/v0.4/showcases/textured_terrain_or_planet.webp"
+          "site_asset": "/assets/gallery/v0.4/showcases/showcases_textured_planet.webp"
         }
       },
       "webgpu_status": "webgpu-live",
@@ -5225,7 +5215,7 @@
       ],
       "webgpu": {
         "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=textured_terrain_or_planet",
+        "route": "examples/webgpu/live.html?id=showcases_textured_planet",
         "requirements": [
           "mesh",
           "sampled-field",
@@ -5233,8 +5223,8 @@
           "arcball"
         ]
       },
-      "webgpu_route": "examples/webgpu/live.html?id=textured_terrain_or_planet",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=textured_terrain_or_planet",
+      "webgpu_route": "examples/webgpu/live.html?id=showcases_textured_planet",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_textured_planet",
       "dataset": {
         "name": "NASA Earth and Mars equirectangular texture maps",
         "source": "data/assets/textures/world.200412.3x5400x2700.jpg; data/assets/textures/earth.jpg; data/assets/textures/mars_viking_mdim21.jpg",

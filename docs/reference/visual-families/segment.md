@@ -8,9 +8,9 @@ Primitive: expanded screen-space stroked segments.
 
 ## Preview And Links
 
-[![Segment](../../assets/gallery/v0.4/visuals/visual_segment.webp)](../../examples/gallery/visuals/visual_segment.md)
+[![Segment](../../assets/gallery/v0.4/visuals/visuals_segment.webp)](../../examples/gallery/visuals/visuals_segment.md)
 
-- Example: [Segment](../../examples/gallery/visuals/visual_segment.md)
+- Example: [Segment](../../examples/gallery/visuals/visuals_segment.md)
 - How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [add visuals to a panel](../../how-to/add-a-visual.md)
 - Related: [Path](path.md), [Vector](vector.md), [Primitive](primitive.md)
 
@@ -50,7 +50,7 @@ triangle-out, square, and butt. Dashes and per-item cap attributes are deferred.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/segment.c` |
-| Gallery | [Segment](../../examples/gallery/visuals/visual_segment.md) |
+| Gallery | [Segment](../../examples/gallery/visuals/visuals_segment.md) |
 | Build | `just example-c visuals/segment` |
 | Smoke | `./build/examples/c/visuals/segment --png` |
 | Validation | `smoke+screenshot` |

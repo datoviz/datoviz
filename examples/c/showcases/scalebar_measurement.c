@@ -14,7 +14,7 @@
  * This workflow is useful for scientific figures where readers must understand physical size while
  * moving between context, zoomed detail, and a 3D measurement.
  *
- * Scenario: scalebar_measurement_workflow
+ * Scenario: showcases_scalebar_measurement
  * Style: showcase workflow, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c showcases/scalebar_measurement
@@ -680,7 +680,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_showcase_scalebar_measurement_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "scalebar_measurement_workflow",
+        .id = "showcases_scalebar_measurement",
         .title = "Scale Bar Measurement Workflow",
         .width = WIDTH,
         .height = HEIGHT,

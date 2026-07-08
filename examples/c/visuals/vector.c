@@ -11,7 +11,7 @@
  * with the arcing streamlines to see how direction, magnitude, and flow structure can be shown in
  * fluid, gradient, or displacement data.
  *
- * Scenario: visual.vector
+ * Scenario: visuals_vector
  * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/vector
@@ -334,7 +334,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_visual_vector_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "visual_vector",
+        .id = "visuals_vector",
         .title = "Vector",
         .width = WIDTH,
         .height = HEIGHT,

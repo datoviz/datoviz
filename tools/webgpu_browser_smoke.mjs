@@ -581,7 +581,7 @@ async function smokeAnimatedWasmPage(
   path,
   expectedStatus,
   screenshotPath,
-  expectedScenarioId = 'feature_timer_animation',
+  expectedScenarioId = 'features_timer_animation',
 ) {
   await page.navigate(`${baseUrl}${path}`);
   requireOk(
@@ -808,7 +808,7 @@ async function main() {
       wasmBasic = await smokeAnimatedWasmPage(
         page,
         baseUrl,
-        '/examples/webgpu/live.html?id=feature_timer_animation',
+        '/examples/webgpu/live.html?id=features_timer_animation',
         'Rendered Timer Animation',
         join(artifactsDir, 'webgpu_live_timer_animation.png'),
       );
@@ -822,7 +822,7 @@ async function main() {
       wasmColorbar = await smokeWasmPage(
         page,
         baseUrl,
-        '/examples/webgpu/live.html?id=colorbar',
+        '/examples/webgpu/live.html?id=features_colorbar',
         'Rendered Colorbar',
         join(artifactsDir, 'webgpu_live_colorbar.png'),
       );
@@ -836,7 +836,7 @@ async function main() {
       wasmScalebar = await smokeWasmPage(
         page,
         baseUrl,
-        '/examples/webgpu/live.html?id=scale_bar',
+        '/examples/webgpu/live.html?id=features_scalebar',
         'Rendered Scale Bar',
         join(artifactsDir, 'webgpu_live_scale_bar.png'),
       );
@@ -850,7 +850,7 @@ async function main() {
       wasmScalebarUnits = await smokeWasmPage(
         page,
         baseUrl,
-        '/examples/webgpu/live.html?id=scalebar_units',
+        '/examples/webgpu/live.html?id=features_scalebar_units',
         'Rendered Scale Bar Units',
         join(artifactsDir, 'webgpu_live_scalebar_units.png'),
       );
@@ -866,7 +866,7 @@ async function main() {
       wasmLegend = await smokeWasmPage(
         page,
         baseUrl,
-        '/examples/webgpu/live.html?id=feature_legend_categorical',
+        '/examples/webgpu/live.html?id=features_legend_categorical',
         'Rendered Categorical Legend',
         join(artifactsDir, 'webgpu_live_legend_categorical.png'),
       );
@@ -880,7 +880,7 @@ async function main() {
       wasmReadout = await smokeWasmPage(
         page,
         baseUrl,
-        '/examples/webgpu/live.html?id=annotation_readout',
+        '/examples/webgpu/live.html?id=features_annotation_readout',
         'Rendered Annotation Readout',
         join(artifactsDir, 'webgpu_live_annotation_readout.png'),
       );
@@ -895,9 +895,9 @@ async function main() {
         page,
         baseUrl,
         {
-          path: '/examples/webgpu/live.html?id=feature_picking',
+          path: '/examples/webgpu/live.html?id=features_picking',
           label: 'Picking',
-          scenarioId: 'feature_picking',
+          scenarioId: 'features_picking',
           pressAfterResolve: true,
         },
         join(artifactsDir, 'webgpu_live_picking.png'),
@@ -913,9 +913,9 @@ async function main() {
         page,
         baseUrl,
         {
-          path: '/examples/webgpu/live.html?id=linked_panels_probe_colorbar',
+          path: '/examples/webgpu/live.html?id=showcases_linked_probe_colorbar',
           label: 'Linked Probe With Colorbar',
-          scenarioId: 'linked_panels_probe_colorbar',
+          scenarioId: 'showcases_linked_probe_colorbar',
           pointerX: 0.25,
           pointerY: 0.52,
         },
@@ -931,7 +931,7 @@ async function main() {
       wasmScientific = await smokeWasmPage(
         page,
         baseUrl,
-        '/examples/webgpu/live.html?id=scientific_plotting_workflow',
+        '/examples/webgpu/live.html?id=showcases_scientific_plotting',
         'Rendered Scientific Plotting Workflow',
         join(artifactsDir, 'webgpu_live_scientific_plotting.png'),
       );
@@ -945,7 +945,7 @@ async function main() {
       wasmVector = await smokeWasmPage(
         page,
         baseUrl,
-        '/examples/webgpu/live.html?id=visual_vector',
+        '/examples/webgpu/live.html?id=visuals_vector',
         'Rendered Vector',
         join(artifactsDir, 'webgpu_live_vector.png'),
       );
@@ -959,7 +959,7 @@ async function main() {
       wasmSegment = await smokeWasmPage(
         page,
         baseUrl,
-        '/examples/webgpu/live.html?id=visual_segment',
+        '/examples/webgpu/live.html?id=visuals_segment',
         'Rendered Segment',
         join(artifactsDir, 'webgpu_live_visual_segment.png'),
       );
@@ -973,7 +973,7 @@ async function main() {
       wasmLabels = await smokeWasmPage(
         page,
         baseUrl,
-        '/examples/webgpu/live.html?id=visual_labels',
+        '/examples/webgpu/live.html?id=visuals_labels',
         'Rendered Labels',
         join(artifactsDir, 'webgpu_live_visual_labels.png'),
       );
@@ -987,7 +987,7 @@ async function main() {
       wasmWindField = await smokeWasmPage(
         page,
         baseUrl,
-        '/examples/webgpu/live.html?id=showcase_wind_field',
+        '/examples/webgpu/live.html?id=showcases_wind_field',
         'Rendered Wind Field',
         join(artifactsDir, 'webgpu_live_wind_field.png'),
       );
@@ -1001,7 +1001,7 @@ async function main() {
       wasmIsolines = await smokeWasmPage(
         page,
         baseUrl,
-        '/examples/webgpu/live.html?id=feature_isolines',
+        '/examples/webgpu/live.html?id=features_isolines',
         'Rendered Isolines',
         join(artifactsDir, 'webgpu_live_isolines.png'),
       );
@@ -1015,10 +1015,10 @@ async function main() {
       wasmParticleSmoke = await smokeAnimatedWasmPage(
         page,
         baseUrl,
-        '/examples/webgpu/live.html?id=showcase_gpu_particle_smoke',
+        '/examples/webgpu/live.html?id=showcases_gpu_particle_smoke',
         'Rendered GPU Particle Smoke',
         join(artifactsDir, 'webgpu_live_gpu_particle_smoke.png'),
-        'showcase_gpu_particle_smoke',
+        'showcases_gpu_particle_smoke',
       );
     } catch (error) {
       if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
@@ -1030,7 +1030,7 @@ async function main() {
       wasmPanelGrid = await smokeWasmPage(
         page,
         baseUrl,
-        '/examples/webgpu/live.html?id=feature_panel_grid',
+        '/examples/webgpu/live.html?id=features_panel_grid',
         'Rendered Panel Grid',
         join(artifactsDir, 'webgpu_live_panel_grid.png'),
       );
@@ -1044,7 +1044,7 @@ async function main() {
       wasmPanzoom = await smokeWasmPage(
         page,
         baseUrl,
-        '/examples/webgpu/live.html?id=feature_panzoom',
+        '/examples/webgpu/live.html?id=features_panzoom',
         'Rendered Panzoom',
         join(artifactsDir, 'webgpu_live_panzoom.png'),
       );
@@ -1058,7 +1058,7 @@ async function main() {
       wasmAxisLabels = await smokeWasmPage(
         page,
         baseUrl,
-        '/examples/webgpu/live.html?id=feature_axis_labels',
+        '/examples/webgpu/live.html?id=features_axis_labels',
         'Rendered Axis Labels',
         join(artifactsDir, 'webgpu_live_axis_labels.png'),
       );
@@ -1069,65 +1069,65 @@ async function main() {
       console.log(skipLine(`WebGPU live axis-labels smoke: headless WebGPU instance loss (${error.message})`));
     }
     const promotedLiveRoutes = [
-      ['feature_panel_multi', 'Multiple Panels', 'webgpu_live_panel_multi.png', 'multi-panel'],
-      ['feature_panel_linked', 'Linked Panels', 'webgpu_live_panel_linked.png', 'linked-panel'],
-      ['feature_text_block', 'Text Block', 'webgpu_live_text_block.png', 'text-block'],
-      ['feature_overlay_card', 'Overlay Card', 'webgpu_live_overlay_card.png', 'overlay-card'],
-      ['feature_guide_lines', 'Guide Lines', 'webgpu_live_guide_lines.png', 'guide-lines'],
-      ['feature_guide_spans', 'Guide Spans', 'webgpu_live_guide_spans.png', 'guide-spans'],
-      ['feature_bars_bands', 'Bars And Bands', 'webgpu_live_bars_bands.png', 'bars-bands'],
-      ['feature_controller_fly', 'Fly Controller', 'webgpu_live_controller_fly.png', 'fly-controller'],
+      ['features_panel_multi', 'Multiple Panels', 'webgpu_live_panel_multi.png', 'multi-panel'],
+      ['features_panel_linked', 'Linked Panels', 'webgpu_live_panel_linked.png', 'linked-panel'],
+      ['features_text_block', 'Text Block', 'webgpu_live_text_block.png', 'text-block'],
+      ['features_overlay_card', 'Overlay Card', 'webgpu_live_overlay_card.png', 'overlay-card'],
+      ['features_guide_lines', 'Guide Lines', 'webgpu_live_guide_lines.png', 'guide-lines'],
+      ['features_guide_spans', 'Guide Spans', 'webgpu_live_guide_spans.png', 'guide-spans'],
+      ['features_bars_bands', 'Bars And Bands', 'webgpu_live_bars_bands.png', 'bars-bands'],
+      ['features_controller_fly', 'Fly Controller', 'webgpu_live_controller_fly.png', 'fly-controller'],
       [
-        'feature_controller_turntable',
+        'features_controller_turntable',
         'Turntable Controller',
         'webgpu_live_controller_turntable.png',
         'turntable-controller',
       ],
       [
-        'feature_sampled_field_update',
+        'features_sampled_field_update',
         'Sampled Field Update',
         'webgpu_live_sampled_field_update.png',
         'sampled-field-update',
       ],
-      ['colormap_scale', 'Scalar Color Scale', 'webgpu_live_colormap_scale.png', 'colormap-scale'],
-      ['panel_background', 'Panel Background', 'webgpu_live_panel_background.png', 'panel-background'],
-      ['composite_polygon', 'Polygon Composite', 'webgpu_live_composite_polygon.png', 'composite-polygon'],
+      ['features_colormap_scale', 'Scalar Color Scale', 'webgpu_live_colormap_scale.png', 'colormap-scale'],
+      ['features_panel_background', 'Panel Background', 'webgpu_live_panel_background.png', 'panel-background'],
+      ['composites_polygon', 'Polygon Composite', 'webgpu_live_composite_polygon.png', 'composite-polygon'],
       [
-        'linked_panels_axes_panzoom',
+        'showcases_panel_linked_axes',
         'Linked Panels With Axes',
         'webgpu_live_linked_panels_axes.png',
         'linked-panels-axes',
       ],
       [
-        'scalebar_measurement_workflow',
+        'showcases_scalebar_measurement',
         'Scale Bar Measurement Workflow',
         'webgpu_live_scalebar_measurement.png',
         'scalebar-measurement',
       ],
-      ['showcase_surface_grid', 'Surface Grid', 'webgpu_live_surface_grid.png', 'surface-grid'],
+      ['showcases_surface_grid', 'Surface Grid', 'webgpu_live_surface_grid.png', 'surface-grid'],
       [
-        'us_state_choropleth',
+        'showcases_choropleth',
         'U.S. State Choropleth',
         'webgpu_live_us_state_choropleth.png',
         'us-state-choropleth',
       ],
-      ['technique_depth_test', 'Depth Test Toggle', 'webgpu_live_depth_test.png', 'depth-test'],
-      ['alpha_blending', 'Alpha Blending', 'webgpu_live_alpha_blending.png', 'alpha-blending'],
+      ['features_technique_depth_test', 'Depth Test Toggle', 'webgpu_live_depth_test.png', 'depth-test'],
+      ['features_alpha_blending', 'Alpha Blending', 'webgpu_live_alpha_blending.png', 'alpha-blending'],
       [
-        'feature_material_mesh',
+        'features_material_mesh',
         'Mesh Materials',
         'webgpu_live_material_mesh.png',
         'material-mesh',
       ],
-      ['feature_lighting', 'Lighting', 'webgpu_live_lighting.png', 'lighting'],
+      ['features_lighting', 'Lighting', 'webgpu_live_lighting.png', 'lighting'],
       [
-        'textured_terrain_or_planet',
+        'showcases_textured_planet',
         'Textured Planets',
         'webgpu_live_textured_planets.png',
         'textured-planets',
       ],
       [
-        'protein_arcball_viewer',
+        'showcases_protein',
         'Protein',
         'webgpu_live_protein.png',
         'protein',
@@ -1153,25 +1153,25 @@ async function main() {
 
     const promotedAnimatedRoutes = [
       [
-        'update_partial',
+        'features_update_partial',
         'Partial Data Update',
         'webgpu_live_update_partial.png',
         'partial-update',
-        'feature_update_partial',
+        'features_update_partial',
       ],
       [
-        'feature_update_visual_data',
+        'features_update_visual_data',
         'Visual Data Update',
         'webgpu_live_update_visual_data.png',
         'visual-data-update',
-        'feature_update_visual_data',
+        'features_update_visual_data',
       ],
       [
-        'feature_visibility',
+        'features_visibility',
         'Visual Visibility',
         'webgpu_live_visibility.png',
         'visibility',
-        'feature_visibility',
+        'features_visibility',
       ],
     ];
     for (const [id, label, filename, shortLabel, scenarioId] of promotedAnimatedRoutes) {

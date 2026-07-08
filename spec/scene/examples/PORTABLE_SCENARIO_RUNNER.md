@@ -14,17 +14,17 @@ Current implementation checkpoint:
 1. `examples/c/runner/` contains the native GLFW/offscreen/capture runner.
 2. `DvzScenarioSpec.requirements` and runner-side requirement diagnostics are active in example
    support code.
-3. `basic_scene`, `timer_animation`, `video_export`, `picking`, and `image_probe` carry
+3. `basic_scene`, `timer_animation`, `video_export`, `picking`, and `features_image_probe` carry
    first-slice requirement metadata in code and
    `examples/c/MANIFEST.yaml`.
 4. Portable event and post-frame callbacks are active in the native runner; `picking` is the
-   unified item-picking, hover, and selection proof on that bridge. `image_probe` proves the same
+   unified item-picking, hover, and selection proof on that bridge. `features_image_probe` proves the same
    bridge for sampled image pixel queries.
-5. The WASM scenario host can drive `feature_timer_animation`, deliver browser pointer/wheel events
+5. The WASM scenario host can drive `features_timer_animation`, deliver browser pointer/wheel events
    to active scenario `event` callbacks, and report unsupported scenario requirements
    deterministically.
 6. Browser-side query/readback packet emission and WebGPU readback plumbing exist for
-   `feature_picking` and `feature_image_probe`. `wasm-picking` and `wasm-image-probe` are
+   `features_picking` and `features_image_probe`. `wasm-picking` and `wasm-image-probe` are
    browser-live.
 
 Current native escape hatches to retire or classify:

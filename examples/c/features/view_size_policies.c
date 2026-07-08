@@ -12,7 +12,7 @@
  * point visual with position, color, and diameter_px arrays. This is useful when figures need
  * reproducible screenshot dimensions across HiDPI monitors and different host toolkits.
  *
- * Scenario: feature.view_size_policies
+ * Scenario: features_view_size_policies
  * Style: features, graphite_cyan
  *
  * Build:  just example-c features/view_size_policies

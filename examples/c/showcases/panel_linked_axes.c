@@ -14,7 +14,7 @@
  * This workflow is useful for scientific dashboards where traces, events, and summary statistics
  * must stay aligned during panzoom interaction.
  *
- * Scenario: linked_panels_axes_panzoom
+ * Scenario: showcases_panel_linked_axes
  * Style: showcase workflow, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c showcases/panel_linked_axes
@@ -896,7 +896,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_showcase_linked_panel_axes_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "linked_panels_axes_panzoom",
+        .id = "showcases_panel_linked_axes",
         .title = "Linked Panels With Axes",
         .width = WIDTH,
         .height = HEIGHT,

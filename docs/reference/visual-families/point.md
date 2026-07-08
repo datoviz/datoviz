@@ -8,9 +8,9 @@ Primitive: instanced screen-space quads.
 
 ## Preview And Links
 
-[![Point](../../assets/gallery/v0.4/visuals/point_2d.webp)](../../examples/gallery/visuals/point_2d.md)
+[![Point](../../assets/gallery/v0.4/visuals/visuals_point.webp)](../../examples/gallery/visuals/visuals_point.md)
 
-- Example: [Point](../../examples/gallery/visuals/point_2d.md)
+- Example: [Point](../../examples/gallery/visuals/visuals_point.md)
 - How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [add visuals to a panel](../../how-to/add-a-visual.md)
 - Related: [Pixel](pixel.md), [Marker](marker.md), [Sphere](sphere.md), [Splat](splat.md)
 
@@ -52,7 +52,7 @@ Depth testing is a visual option; the example disables it for a 2D panzoom panel
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/point.c` |
-| Gallery | [Point](../../examples/gallery/visuals/point_2d.md) |
+| Gallery | [Point](../../examples/gallery/visuals/visuals_point.md) |
 | Build | `just example-c visuals/point` |
 | Smoke | `./build/examples/c/visuals/point --png` |
 | Validation | `smoke+screenshot` |

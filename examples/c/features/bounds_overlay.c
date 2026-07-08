@@ -6,7 +6,7 @@
 
 /* bounds_overlay - This example shows diagnostic bounds overlays for 2D and 3D visuals.
  *
- * Scenario: feature_bounds_overlay
+ * Scenario: features_bounds_overlay
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/bounds_overlay
@@ -257,7 +257,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 static DvzScenarioSpec _bounds_overlay_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_bounds_overlay",
+        .id = "features_bounds_overlay",
         .title = "Bounds Overlay",
         .width = WIDTH,
         .height = HEIGHT,

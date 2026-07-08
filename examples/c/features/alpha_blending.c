@@ -6,7 +6,7 @@
 
 /* alpha_blending - This example shows translucent triangles composited in draw order.
  *
- * Scenario: feature.alpha_blending
+ * Scenario: features_alpha_blending
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/alpha_blending
@@ -169,7 +169,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_alpha_blending_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_alpha_blending",
+        .id = "features_alpha_blending",
         .title = "Alpha Blending",
         .width = WIDTH,
         .height = HEIGHT,

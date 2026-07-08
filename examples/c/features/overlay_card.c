@@ -12,7 +12,7 @@
  * renderer. This pattern is useful for lightweight status readouts that should stay readable while
  * the underlying data view changes.
  *
- * Scenario: feature.overlay_card
+ * Scenario: features_overlay_card
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/overlay_card
@@ -202,7 +202,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_overlay_card_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_overlay_card",
+        .id = "features_overlay_card",
         .title = "Overlay Card",
         .width = WIDTH,
         .height = HEIGHT,

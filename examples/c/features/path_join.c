@@ -11,7 +11,7 @@
  * thick translucent strokes turn sharply; join style controls whether paths form pointed, rounded,
  * or clipped corners. This matters for trajectories, outlines, and network edges with tight bends.
  *
- * Scenario: feature_path_join
+ * Scenario: features_path_join
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/path_join
@@ -352,7 +352,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_path_join_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_path_join",
+        .id = "features_path_join",
         .title = "Path Join",
         .width = WIDTH,
         .height = HEIGHT,

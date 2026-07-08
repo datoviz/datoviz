@@ -12,7 +12,7 @@
  * warning-color tint, and clicking the background clears selection. Drag with the arcball
  * controller to confirm selection follows the instanced mesh in 3D.
  *
- * Scenario: feature.selection_mesh_instances
+ * Scenario: features_selection_mesh_instances
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/selection_mesh_instances
@@ -531,7 +531,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_selection_mesh_instances_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_selection_mesh_instances",
+        .id = "features_selection_mesh_instances",
         .title = "Mesh Instance Selection",
         .width = WIDTH,
         .height = HEIGHT,

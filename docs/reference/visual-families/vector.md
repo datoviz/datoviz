@@ -8,9 +8,9 @@ Primitive: screen-space stroked segments or paths.
 
 ## Preview And Links
 
-[![Vector](../../assets/gallery/v0.4/visuals/visual_vector.webp)](../../examples/gallery/visuals/visual_vector.md)
+[![Vector](../../assets/gallery/v0.4/visuals/visuals_vector.webp)](../../examples/gallery/visuals/visuals_vector.md)
 
-- Example: [Vector](../../examples/gallery/visuals/visual_vector.md)
+- Example: [Vector](../../examples/gallery/visuals/visuals_vector.md)
 - How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [add visuals to a panel](../../how-to/add-a-visual.md)
 - Related: [Segment](segment.md), [Path](path.md), [Primitive](primitive.md)
 
@@ -53,7 +53,7 @@ vectors.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/vector.c` |
-| Gallery | [Vector](../../examples/gallery/visuals/visual_vector.md) |
+| Gallery | [Vector](../../examples/gallery/visuals/visuals_vector.md) |
 | Build | `just example-c visuals/vector` |
 | Smoke | `./build/examples/c/visuals/vector --png` |
 | Validation | `smoke+screenshot` |

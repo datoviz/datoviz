@@ -2,7 +2,7 @@
 
 Split a figure into coordinated viewports.
 
-![Multiple Panels](../assets/gallery/v0.4/features/feature_panel_multi.webp)
+![Multiple Panels](../assets/gallery/v0.4/features/features_panel_multi.webp)
 
 ## Task Workflow
 
@@ -154,6 +154,6 @@ the panels. Prefer keeping the grid alive for ordinary retained layouts.
 
 ??? example "Related examples"
 
-    - [Panel Grid](../examples/gallery/features/feature_panel_grid.md) - Source: `examples/c/features/panel_grid.c`
-    - [Multiple Panels](../examples/gallery/features/feature_panel_multi.md) - Source: `examples/c/features/panel_multi.c`
-    - [Linked Panels](../examples/gallery/features/feature_panel_linked.md) - Source: `examples/c/features/panel_linked.c`
+    - [Panel Grid](../examples/gallery/features/features_panel_grid.md) - Source: `examples/c/features/panel_grid.c`
+    - [Multiple Panels](../examples/gallery/features/features_panel_multi.md) - Source: `examples/c/features/panel_multi.c`
+    - [Linked Panels](../examples/gallery/features/features_panel_linked.md) - Source: `examples/c/features/panel_linked.c`

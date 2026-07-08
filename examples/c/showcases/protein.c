@@ -15,7 +15,7 @@
  * into an interactive 3D point/sphere representation. The repository fallback is 1UBQ; other PDB
  * ids must be prepared before running.
  *
- * Scenario: protein_arcball_viewer
+ * Scenario: showcases_protein
  * Style: showcase scientific, graphite_cyan, 1280x720 window target
  *
  * Data:    RCSB PDB structure data. The default cache target is 6M0J; the repository fallback is
@@ -895,7 +895,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_showcase_protein_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "protein_arcball_viewer",
+        .id = "showcases_protein",
         .title = "Protein",
         .width = WIDTH,
         .height = HEIGHT,

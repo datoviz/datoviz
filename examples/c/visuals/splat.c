@@ -11,7 +11,7 @@
  * soft footprint shape to see how uncertain samples, local point spread, or projected density can
  * be shown without drawing hard-edged markers.
  *
- * Scenario: visual.splat
+ * Scenario: visuals_splat
  * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/splat
@@ -178,7 +178,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 static DvzScenarioSpec _splat_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "visual_splat",
+        .id = "visuals_splat",
         .title = "Splat",
         .width = WIDTH,
         .height = HEIGHT,

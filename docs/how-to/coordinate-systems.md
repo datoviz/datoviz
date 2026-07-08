@@ -12,7 +12,7 @@ For normalized examples, positions often already live in `[-1, +1]` view coordin
 maps, fields, and measurement-style overlays, prefer data coordinates plus an explicit panel
 domain.
 
-![3D coordinate system example with red, green, and blue arrows](../assets/gallery/v0.4/features/feature_coordinate_system.webp)
+![3D coordinate system example with red, green, and blue arrows](../assets/gallery/v0.4/features/features_coordinate_system.webp)
 
 | Space | Use when | API hook |
 | --- | --- | --- |
@@ -140,6 +140,6 @@ path as rendering.
 
 ??? example "Related examples"
 
-    - [Coordinate System](../examples/gallery/features/feature_coordinate_system.md) - Source: `examples/c/features/coordinate_system.c`
-    - [Panel View 2D](../examples/gallery/features/feature_panel_view2d.md) - Source: `examples/c/features/panel_view2d.c`
-    - [User Scale](../examples/gallery/features/feature_user_scale.md) - Source: `examples/c/features/user_scale.c`
+    - [Coordinate System](../examples/gallery/features/features_coordinate_system.md) - Source: `examples/c/features/coordinate_system.c`
+    - [Panel View 2D](../examples/gallery/features/features_panel_view2d.md) - Source: `examples/c/features/panel_view2d.c`
+    - [User Scale](../examples/gallery/features/features_user_scale.md) - Source: `examples/c/features/user_scale.c`

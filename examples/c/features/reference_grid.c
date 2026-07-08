@@ -11,7 +11,7 @@
  * preview and compare object orientation against the grid plane. Reference grids are useful for
  * judging scale, height, and horizontal position in sparse 3D scientific views.
  *
- * Scenario: feature.reference_grid
+ * Scenario: features_reference_grid
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/reference_grid
@@ -101,7 +101,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 static DvzScenarioSpec _reference_grid_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_reference_grid",
+        .id = "features_reference_grid",
         .title = "Reference Grid",
         .width = WIDTH,
         .height = HEIGHT,

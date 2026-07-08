@@ -8,9 +8,9 @@ Primitive: generated glyph quads.
 
 ## Preview And Links
 
-[![Text](../../assets/gallery/v0.4/visuals/visual_text.webp)](../../examples/gallery/visuals/visual_text.md)
+[![Text](../../assets/gallery/v0.4/visuals/visuals_text.webp)](../../examples/gallery/visuals/visuals_text.md)
 
-- Example: [Text](../../examples/gallery/visuals/visual_text.md)
+- Example: [Text](../../examples/gallery/visuals/visuals_text.md)
 - How-to: [Add text, labels, and annotations](../../how-to/add-annotations.md), [add visuals to a panel](../../how-to/add-a-visual.md)
 - Related: [Glyph](glyph.md), [Labels](labels.md), [Marker](marker.md)
 
@@ -54,7 +54,7 @@ glyph atlas rendering.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/text.c` |
-| Gallery | [Text](../../examples/gallery/visuals/visual_text.md) |
+| Gallery | [Text](../../examples/gallery/visuals/visuals_text.md) |
 | Build | `just example-c visuals/text` |
 | Smoke | `./build/examples/c/visuals/text --png` |
 | Validation | `smoke+screenshot` |

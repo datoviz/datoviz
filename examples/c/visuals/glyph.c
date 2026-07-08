@@ -11,7 +11,7 @@
  * Compare the accented character, baseline spacing, and per-glyph coloring to understand how the
  * atlas visual exposes the pieces that higher-level text layout normally hides.
  *
- * Scenario: visual.glyph
+ * Scenario: visuals_glyph
  * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/glyph
@@ -349,7 +349,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_visual_glyph_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "visual_glyph",
+        .id = "visuals_glyph",
         .title = "Font Atlas Glyphs",
         .width = WIDTH,
         .height = HEIGHT,

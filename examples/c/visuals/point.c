@@ -11,7 +11,7 @@
  * of the cloud to see how a beginner scatter plot can show location, magnitude, and emphasis with
  * three simple arrays.
  *
- * Scenario: visual.point / point_2d
+ * Scenario: visuals_point
  * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/point
@@ -270,7 +270,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_visual_point_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "visual_point",
+        .id = "visuals_point",
         .title = "Point",
         .width = WIDTH,
         .height = HEIGHT,

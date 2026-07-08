@@ -117,6 +117,6 @@ topology.
 
 ??? example "Related examples"
 
-    - [Panzoom](../examples/gallery/features/feature_panzoom.md) - Source: `examples/c/features/panzoom.c`
-    - [Linked Panels](../examples/gallery/features/feature_panel_linked.md) - Source: `examples/c/features/panel_linked.c`
-    - [Panel View 2D](../examples/gallery/features/feature_panel_view2d.md) - Source: `examples/c/features/panel_view2d.c`
+    - [Panzoom](../examples/gallery/features/features_panzoom.md) - Source: `examples/c/features/panzoom.c`
+    - [Linked Panels](../examples/gallery/features/features_panel_linked.md) - Source: `examples/c/features/panel_linked.c`
+    - [Panel View 2D](../examples/gallery/features/features_panel_view2d.md) - Source: `examples/c/features/panel_view2d.c`

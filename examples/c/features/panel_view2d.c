@@ -11,7 +11,7 @@
  * matching data units per pixel in X and Y. Compare the circle shape and grid spacing; equal
  * aspect is essential when distance, angle, or shape should not be visually distorted.
  *
- * Scenario: feature.panel_view2d
+ * Scenario: features_panel_view2d
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/panel_view2d
@@ -243,7 +243,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 static DvzScenarioSpec _panel_view2d_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_panel_view2d",
+        .id = "features_panel_view2d",
         .title = "Panel View 2D",
         .width = WIDTH,
         .height = HEIGHT,

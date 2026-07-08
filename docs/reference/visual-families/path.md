@@ -8,9 +8,9 @@ Primitive: line strip or expanded screen-space stroke geometry.
 
 ## Preview And Links
 
-[![Path](../../assets/gallery/v0.4/visuals/visual_path.webp)](../../examples/gallery/visuals/visual_path.md)
+[![Path](../../assets/gallery/v0.4/visuals/visuals_path.webp)](../../examples/gallery/visuals/visuals_path.md)
 
-- Example: [Path](../../examples/gallery/visuals/visual_path.md)
+- Example: [Path](../../examples/gallery/visuals/visuals_path.md)
 - How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [add visuals to a panel](../../how-to/add-a-visual.md)
 - Related: [Segment](segment.md), [Vector](vector.md), [Primitive](primitive.md)
 
@@ -52,7 +52,7 @@ attributes are deferred.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/path.c` |
-| Gallery | [Path](../../examples/gallery/visuals/visual_path.md) |
+| Gallery | [Path](../../examples/gallery/visuals/visuals_path.md) |
 | Build | `just example-c visuals/path` |
 | Smoke | `./build/examples/c/visuals/path --png` |
 | Validation | `smoke+screenshot` |

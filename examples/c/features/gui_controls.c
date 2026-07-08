@@ -6,7 +6,7 @@
 
 /* gui_controls - This example shows Datoviz GUI controls updating a retained point visual.
  *
- * Scenario: feature.gui_controls
+ * Scenario: features_gui_controls
  * Style: features, native GUI/app
  *
  * Build:  just example-c features/gui_controls

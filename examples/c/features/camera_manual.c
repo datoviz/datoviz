@@ -6,7 +6,7 @@
 
 /* camera_manual - This example shows explicit perspective-camera setup for a 3D scene.
  *
- * Scenario: feature.camera_manual
+ * Scenario: features_camera_manual
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/camera_manual
@@ -132,7 +132,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_camera_manual_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_camera_manual",
+        .id = "features_camera_manual",
         .title = "Manual Camera",
         .width = WIDTH,
         .height = HEIGHT,

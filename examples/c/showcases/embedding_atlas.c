@@ -14,7 +14,7 @@
  * This workflow is useful for inspecting generated embeddings or dimensionality-reduction outputs.
  * There is no runtime fallback; generate the prepared cache before running the example.
  *
- * Scenario: showcase_embedding_atlas
+ * Scenario: showcases_embedding_atlas
  * Style: showcase, graphite_cyan, 1280x720 window target
  *
  * Prepared data is loaded from `.cache/datoviz/examples/embedding_atlas/prepared/`.
@@ -642,7 +642,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 static DvzScenarioSpec _embedding_atlas_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "showcase_embedding_atlas",
+        .id = "showcases_embedding_atlas",
         .title = "Embedding Atlas",
         .width = WIDTH,
         .height = HEIGHT,

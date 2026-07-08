@@ -12,7 +12,7 @@
  * the source fixture's vertices and faces. OBJ loading is useful when scientific geometry comes
  * from external meshing or modeling tools.
  *
- * Scenario: feature_obj_loading
+ * Scenario: features_obj_loading
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/obj_loading
@@ -338,7 +338,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_obj_loading_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_obj_loading",
+        .id = "features_obj_loading",
         .title = "OBJ Loading",
         .width = WIDTH,
         .height = HEIGHT,

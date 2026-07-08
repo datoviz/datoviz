@@ -16,7 +16,7 @@
  * This experimental workflow is useful when you need visual regression artifacts or a compact trace
  * for renderer debugging without keeping the original app process alive.
  *
- * Scenario: feature.record_replay
+ * Scenario: runtime_record_replay
  * Style: runtime, native app
  *
  * Build:  just example-c runtime/record_replay

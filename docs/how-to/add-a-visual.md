@@ -3,7 +3,7 @@
 Add a visual when you want a panel to draw a dataset: points, lines, an image, a mesh, text labels,
 or another visual family.
 
-![Point](../assets/gallery/v0.4/visuals/point_2d.webp)
+![Point](../assets/gallery/v0.4/visuals/visuals_point.webp)
 
 ## Task Workflow
 
@@ -253,7 +253,7 @@ or update schedules.
 
 ??? example "Related examples"
 
-    - [Point](../examples/gallery/visuals/point_2d.md) - Source: `examples/c/visuals/point.c`
-    - [Marker](../examples/gallery/visuals/visual_marker.md) - Source: `examples/c/visuals/marker.c`
-    - [Mesh](../examples/gallery/visuals/visual_mesh.md) - Source: `examples/c/visuals/mesh.c`
-    - [Mesh Instance Selection](../examples/gallery/features/feature_selection_mesh_instances.md) - Source: `examples/c/features/selection_mesh_instances.c`
+    - [Point](../examples/gallery/visuals/visuals_point.md) - Source: `examples/c/visuals/point.c`
+    - [Marker](../examples/gallery/visuals/visuals_marker.md) - Source: `examples/c/visuals/marker.c`
+    - [Mesh](../examples/gallery/visuals/visuals_mesh.md) - Source: `examples/c/visuals/mesh.c`
+    - [Mesh Instance Selection](../examples/gallery/features/features_selection_mesh_instances.md) - Source: `examples/c/features/selection_mesh_instances.c`

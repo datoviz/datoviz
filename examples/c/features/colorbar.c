@@ -6,7 +6,7 @@
 
 /* colorbar - This example shows a scalar image and a retained continuous colorbar.
  *
- * Scenario: feature.colorbar
+ * Scenario: features_colorbar
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/colorbar
@@ -331,7 +331,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_colorbar_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_colorbar",
+        .id = "features_colorbar",
         .title = "Colorbar",
         .width = WIDTH,
         .height = HEIGHT,

@@ -6,7 +6,7 @@
 
 /* compute_buffer_animation - This example shows a compute pass updating point positions.
  *
- * Scenario: feature.compute_buffer_animation
+ * Scenario: features_compute_buffer_animation
  * Style: features, graphite_cyan, 1280x720 window target, experimental scene compute
  *
  * Build:  just example-c features/compute_buffer_animation
@@ -337,7 +337,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_compute_buffer_animation_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_compute_buffer_animation",
+        .id = "features_compute_buffer_animation",
         .title = "Compute Buffer Animation",
         .width = WIDTH,
         .height = HEIGHT,

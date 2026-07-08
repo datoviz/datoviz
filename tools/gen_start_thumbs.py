@@ -27,50 +27,50 @@ THUMBS: list[tuple[str, str, tuple[int, int, int, int]]] = [
 
     # 0D
     # pixel: 5x zoom into center patch — individual dots clearly visible
-    ("v_pixel",   "visuals/visual_pixel.png",      (680,  510,  920,  690)),
+    ("v_pixel",   "visuals/visuals_pixel.png",      (680,  510,  920,  690)),
     # point: spiral galaxy content=(36,134,1504,1072) — tight 4:3
-    ("v_point",   "visuals/point_2d.png",           ( 20,   35, 1520, 1160)),
+    ("v_point",   "visuals/visuals_point.png",           ( 20,   35, 1520, 1160)),
     # marker: cols 1-3 (x=152-622), rows 1-2 (y=297-624) — 6 symbols, large
-    ("v_marker",  "visuals/visual_marker.png",      (130,  270,  650,  660)),
+    ("v_marker",  "visuals/visuals_marker.png",      (130,  270,  650,  660)),
 
     # 1D
     # segment: 2x zoom into center cluster
-    ("v_segment", "visuals/visual_segment.png",     (350,  250,  950,  700)),
+    ("v_segment", "visuals/visuals_segment.png",     (350,  250,  950,  700)),
     # path: 3 wavy lines content=(100,275,1499,932) — center zoom to 4:3
-    ("v_path",    "visuals/visual_path.png",        (303,  230, 1296,  975)),
+    ("v_path",    "visuals/visuals_path.png",        (303,  230, 1296,  975)),
     # vector: 4x zoom into center field
-    ("v_vector",  "visuals/visual_vector.png",      (600,  450, 1000,  750)),
+    ("v_vector",  "visuals/visuals_vector.png",      (600,  450, 1000,  750)),
 
     # 2D
     # image: blue texture — trim dark border
-    ("v_image",   "visuals/visual_image.png",       (100,  100, 1500, 1100)),
+    ("v_image",   "visuals/visuals_image.png",       (100,  100, 1500, 1100)),
     # glyph: tight crop on the text
-    ("v_glyph",   "visuals/visual_glyph.png",       ( 50,  282,  850,  882)),
+    ("v_glyph",   "visuals/visuals_glyph.png",       ( 50,  282,  850,  882)),
     # text: content=(134,183,1263,745) — left text block
-    ("v_text",    "visuals/visual_text.png",        (100,  155,  920,  770)),
+    ("v_text",    "visuals/visuals_text.png",        (100,  155,  920,  770)),
     # primitive: colorful triangles content=(33,108,1535,1151) — tight 4:3
-    ("v_primitive","visuals/visual_primitive.png",  ( 50,   75, 1550, 1200)),
+    ("v_primitive","visuals/visuals_primitive.png",  ( 50,   75, 1550, 1200)),
 
     # 3D
     # mesh: cube content=(362,82,1256,1078) — keep whole shape
-    ("v_mesh",    "visuals/visual_mesh.png",        (150,   20, 1350,  920)),
+    ("v_mesh",    "visuals/visuals_mesh.png",        (150,   20, 1350,  920)),
     # volume: sphere content=(268,1,1365,1199) — keep whole shape
-    ("v_volume",  "visuals/volume.png",             (200,   50, 1400,  950)),
+    ("v_volume",  "visuals/visuals_volume.png",             (200,   50, 1400,  950)),
     # sphere: 2x zoom into central cluster
-    ("v_sphere",  "visuals/sphere_impostor.png",    (500,  325, 1100,  775)),
+    ("v_sphere",  "visuals/visuals_sphere.png",    (500,  325, 1100,  775)),
     # splat: 2x zoom into central swirl
-    ("v_splat",   "visuals/visual_splat.png",       (527,  395, 1127,  845)),
+    ("v_splat",   "visuals/visuals_splat.png",       (527,  395, 1127,  845)),
 
     # ── "I want to…" grid ─────────────────────────────────────────────────────
-    ("f_panzoom",  "features/path_axes_2d.png",               (200,  100, 1400, 1000)),
-    ("f_arcball",  "features/feature_controller_arcball.png", (200,  150, 1400, 1050)),
-    ("f_colorbar", "features/colorbar.png",                   ( 50,  100, 1550, 1225)),
-    ("f_axes",     "features/feature_axis_labels.png",        (150,   60, 1350,  960)),
+    ("f_panzoom",  "features/features_axes_2d.png",               (200,  100, 1400, 1000)),
+    ("f_arcball",  "features/features_controller_arcball.png", (200,  150, 1400, 1050)),
+    ("f_colorbar", "features/features_colorbar.png",                   ( 50,  100, 1550, 1225)),
+    ("f_axes",     "features/features_axis_labels.png",        (150,   60, 1350,  960)),
     # pick: selection_sphere — shows highlighted spheres in 3D scene
-    ("f_pick",     "features/feature_selection_sphere.png",   (200,  100, 1400, 1000)),
+    ("f_pick",     "features/features_selection_sphere.png",   (200,  100, 1400, 1000)),
     # panels: 4-panel grid
-    ("f_panels",   "features/feature_panel_grid.png",         (100,   75, 1500, 1125)),
-    ("f_realtime", "features/feature_timer_animation.png",    ( 50,  300, 1450, 1125)),
+    ("f_panels",   "features/features_panel_grid.png",         (100,   75, 1500, 1125)),
+    ("f_realtime", "features/features_timer_animation.png",    ( 50,  300, 1450, 1125)),
     ("f_capture",  "start/start_scatter.png",                 (200,  150, 1400, 1050)),
 ]
 

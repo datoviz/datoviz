@@ -11,7 +11,7 @@
  * setting; compare adjacent regions to see how segmented scientific data can be reviewed without
  * losing the discrete class boundaries.
  *
- * Scenario: visual.labels
+ * Scenario: visuals_labels
  * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/labels
@@ -336,7 +336,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_visual_labels_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "visual_labels",
+        .id = "visuals_labels",
         .title = "Labels",
         .width = WIDTH,
         .height = HEIGHT,

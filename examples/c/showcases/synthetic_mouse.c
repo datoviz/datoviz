@@ -14,7 +14,7 @@
  * This workflow is useful for validating animal-pose or motion-capture visualizations after data
  * has been converted into a compact prepared bundle.
  *
- * Scenario: showcase_synthetic_mouse
+ * Scenario: showcases_synthetic_mouse
  * Style: showcase, graphite_cyan, 1280x720 window target
  *
  * Prepared data is loaded from `.cache/datoviz/examples/synthetic_mouse/prepared/`.
@@ -775,7 +775,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 static DvzScenarioSpec _synthetic_mouse_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "showcase_synthetic_mouse",
+        .id = "showcases_synthetic_mouse",
         .title = "Synthetic Mouse",
         .width = WIDTH,
         .height = HEIGHT,

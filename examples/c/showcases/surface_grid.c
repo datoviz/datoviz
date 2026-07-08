@@ -14,7 +14,7 @@
  * This workflow is useful for scientific surfaces where the same gridded data should support both
  * shape perception and explicit mesh topology.
  *
- * Scenario: showcase_surface_grid
+ * Scenario: showcases_surface_grid
  * Style: showcase, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c showcases/surface_grid
@@ -337,7 +337,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_showcase_surface_grid_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "showcase_surface_grid",
+        .id = "showcases_surface_grid",
         .title = "Surface Grid",
         .width = WIDTH,
         .height = HEIGHT,

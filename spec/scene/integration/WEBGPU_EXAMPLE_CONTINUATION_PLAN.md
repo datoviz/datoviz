@@ -18,31 +18,31 @@ native validation.
 
 The live WebGPU gallery now covers:
 
-1. `feature_basic_scene`
-2. `feature_timer_animation`
-3. `feature_builtin_shapes_2d`
-4. `feature_builtin_shapes_3d`
-5. `feature_isolines`
-7. `feature_animation_tracks`
-8. `feature_obj_loading`
-9. `feature_picking`
-10. `feature_selection_pixel`
-11. `feature_selection_sphere`
-12. `feature_selection_mesh_instances`
-13. `feature_compute_buffer_animation`
-14. `image_probe`
-15. `colorbar`
-16. `scale_bar`
-17. `scalebar_units`
-18. `feature_legend_categorical`
-19. `annotation_readout`
-20. `linked_panels_probe_colorbar`
-21. `scientific_plotting_workflow`
-22. `visual_vector`
-23. `showcase_wind_field`
+1. `features_basic_scene`
+2. `features_timer_animation`
+3. `features_builtin_shapes_2d`
+4. `features_builtin_shapes_3d`
+5. `features_isolines`
+7. `features_animation_tracks`
+8. `features_obj_loading`
+9. `features_picking`
+10. `features_selection_pixel`
+11. `features_selection_sphere`
+12. `features_selection_mesh_instances`
+13. `features_compute_buffer_animation`
+14. `features_image_probe`
+15. `features_colorbar`
+16. `features_scalebar`
+17. `features_scalebar_units`
+18. `features_legend_categorical`
+19. `features_annotation_readout`
+20. `showcases_linked_probe_colorbar`
+21. `showcases_scientific_plotting`
+22. `visuals_vector`
+23. `showcases_wind_field`
 
 The next active handoff is not in this completed file. Use `agents/now/STATUS.md`: promote
-`showcase_gpu_particle_smoke` as the browser compute particle proof, then work through planned
+`showcases_gpu_particle_smoke` as the browser compute particle proof, then work through planned
 example clusters that reuse already-current primitives.
 
 
@@ -61,13 +61,13 @@ example clusters that reuse already-current primitives.
 
 2. Promote sphere selection.
 
-   Re-enable `feature_selection_sphere` in the WASM scenario registry, add the live gallery route,
+   Re-enable `features_selection_sphere` in the WASM scenario registry, add the live gallery route,
    and add a direct WASM smoke that creates the scenario, queues a pointer query, emits query
    packets, and verifies active readback.
 
 3. Promote mesh instance selection.
 
-   Make `feature_selection_mesh_instances` WASM-safe without creating a second web path, re-enable
+   Make `features_selection_mesh_instances` WASM-safe without creating a second web path, re-enable
    it in the WASM scenario registry, add the live gallery route, and add direct query-packet smoke.
 
 4. Implement WebGPU scene compute.
@@ -78,7 +78,7 @@ example clusters that reuse already-current primitives.
 
 5. Promote compute buffer animation.
 
-   Add `feature_compute_buffer_animation` to the WASM scenario registry, add the live gallery route,
+   Add `features_compute_buffer_animation` to the WASM scenario registry, add the live gallery route,
    and add smoke evidence for compute dispatch and visible point-buffer updates.
 
 6. Update tracking docs.
@@ -105,8 +105,8 @@ For each promotion:
 ## Preferred Order
 
 1. Sphere picking shader.
-2. `feature_selection_sphere` promotion.
+2. `features_selection_sphere` promotion.
 3. Lit instanced primitive/mesh shader.
-4. `feature_selection_mesh_instances` promotion.
+4. `features_selection_mesh_instances` promotion.
 5. Scene compute runtime.
-6. `feature_compute_buffer_animation` promotion.
+6. `features_compute_buffer_animation` promotion.

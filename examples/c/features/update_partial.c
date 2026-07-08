@@ -11,7 +11,7 @@
  * the middle pair upward while colors and diameters stay unchanged. Partial updates are useful
  * when a large dataset changes locally and reuploading every item would waste time.
  *
- * Scenario: feature.update_partial
+ * Scenario: features_update_partial
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/update_partial
@@ -224,7 +224,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_update_partial_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_update_partial",
+        .id = "features_update_partial",
         .title = "Partial Data Update",
         .width = WIDTH,
         .height = HEIGHT,

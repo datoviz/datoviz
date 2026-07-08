@@ -6,7 +6,7 @@
 
 /* gui_viewport - This example shows a Datoviz render viewport embedded inside a GUI window.
  *
- * Scenario: feature.gui_viewport
+ * Scenario: features_gui_viewport
  * Style: features, native GUI/app
  *
  * Build:  just example-c features/gui_viewport

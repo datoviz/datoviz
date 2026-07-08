@@ -11,7 +11,7 @@
  * boundary box to understand the data bounds, transfer-function opacity, and maximum-intensity
  * projection style used for volumetric microscopy, simulation, or tomography data.
  *
- * Scenario: visual.volume
+ * Scenario: visuals_volume
  * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/volume
@@ -483,7 +483,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 static DvzScenarioSpec _volume_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "volume",
+        .id = "visuals_volume",
         .title = "Volume",
         .width = WIDTH,
         .height = HEIGHT,

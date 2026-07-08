@@ -6,7 +6,7 @@
 
 /* controller_fly - This example shows fly-style camera navigation through a 3D scene.
  *
- * Scenario: feature.controller_fly
+ * Scenario: features_controller_fly
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/controller_fly
@@ -180,7 +180,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_controller_fly_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_controller_fly",
+        .id = "features_controller_fly",
         .title = "Fly Controller",
         .width = WIDTH,
         .height = HEIGHT,

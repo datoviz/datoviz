@@ -15,7 +15,7 @@
  * the 3D anatomy. The prepared data-submodule file must exist, or it must be generated with the
  * preparation command.
  *
- * Scenario: brain_volume
+ * Scenario: showcases_brain_volume
  * Style: showcase, graphite_cyan, 1280x720 window target
  *
  * Build:   just example-c showcases/brain_volume
@@ -1137,7 +1137,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 static DvzScenarioSpec _brain_volume_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "brain_volume",
+        .id = "showcases_brain_volume",
         .title = "Allen Mouse Brain",
         .width = WIDTH,
         .height = HEIGHT,

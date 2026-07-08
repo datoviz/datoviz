@@ -2342,73 +2342,73 @@ try {
 
   requireOk(Module._dvz_wasm_api_scenario_count() >= 3, "expected gallery-live WASM scenarios");
   const expectedScenarioIds = [
-    "feature_basic_scene",
-    "feature_timer_animation",
-    "feature_builtin_shapes_2d",
-    "feature_builtin_shapes_3d",
-    "feature_isolines",
-    "feature_animation_tracks",
-    "feature_obj_loading",
-    "feature_picking",
-    "feature_selection_pixel",
-    "feature_selection_sphere",
-    "feature_selection_mesh_instances",
-    "feature_compute_buffer_animation",
-    "feature_image_probe",
-    "feature_colorbar",
-    "feature_scalebar",
-    "feature_scalebar_units",
-    "feature_legend_categorical",
-    "feature_annotation_readout",
-    "linked_panels_probe_colorbar",
-    "scientific_plotting_workflow",
-    "visual_vector",
-    "showcase_wind_field",
-    "showcase_gpu_particle_smoke",
-    "feature_panel_single",
-    "feature_panel_grid",
-    "feature_panzoom",
-    "path_axes_2d",
-    "feature_axis_labels",
-    "visual_point",
-    "visual_pixel",
-    "visual_marker",
-    "visual_primitive",
-    "visual_segment",
-    "visual_path",
-    "visual_image",
-    "visual_image_rgba",
-    "visual_mesh",
-    "sphere_impostor",
-    "visual_text",
-    "visual_glyph",
-    "visual_labels",
-    "feature_panel_multi",
-    "feature_panel_linked",
-    "feature_text_block",
-    "feature_overlay_card",
-    "feature_guide_lines",
-    "feature_guide_spans",
-    "feature_bars_bands",
-    "feature_controller_fly",
-    "feature_controller_turntable",
-    "feature_sampled_field_update",
-    "feature_colormap_scale",
-    "feature_panel_background",
-    "composite_polygon",
-    "linked_panels_axes_panzoom",
-    "scalebar_measurement_workflow",
-    "showcase_surface_grid",
-    "us_state_choropleth",
-    "feature_update_partial",
-    "feature_update_visual_data",
-    "feature_visibility",
-    "technique_depth_test",
-    "feature_alpha_blending",
-    "feature_material_mesh",
-    "feature_lighting",
-    "textured_terrain_or_planet",
-    "protein_arcball_viewer",
+    "features_basic_scene",
+    "features_timer_animation",
+    "features_builtin_shapes_2d",
+    "features_builtin_shapes_3d",
+    "features_isolines",
+    "features_animation_tracks",
+    "features_obj_loading",
+    "features_picking",
+    "features_selection_pixel",
+    "features_selection_sphere",
+    "features_selection_mesh_instances",
+    "features_compute_buffer_animation",
+    "features_image_probe",
+    "features_colorbar",
+    "features_scalebar",
+    "features_scalebar_units",
+    "features_legend_categorical",
+    "features_annotation_readout",
+    "showcases_linked_probe_colorbar",
+    "showcases_scientific_plotting",
+    "visuals_vector",
+    "showcases_wind_field",
+    "showcases_gpu_particle_smoke",
+    "features_panel_single",
+    "features_panel_grid",
+    "features_panzoom",
+    "features_axes_2d",
+    "features_axis_labels",
+    "visuals_point",
+    "visuals_pixel",
+    "visuals_marker",
+    "visuals_primitive",
+    "visuals_segment",
+    "visuals_path",
+    "visuals_image",
+    "visuals_image_rgba",
+    "visuals_mesh",
+    "visuals_sphere",
+    "visuals_text",
+    "visuals_glyph",
+    "visuals_labels",
+    "features_panel_multi",
+    "features_panel_linked",
+    "features_text_block",
+    "features_overlay_card",
+    "features_guide_lines",
+    "features_guide_spans",
+    "features_bars_bands",
+    "features_controller_fly",
+    "features_controller_turntable",
+    "features_sampled_field_update",
+    "features_colormap_scale",
+    "features_panel_background",
+    "composites_polygon",
+    "showcases_panel_linked_axes",
+    "showcases_scalebar_measurement",
+    "showcases_surface_grid",
+    "showcases_choropleth",
+    "features_update_partial",
+    "features_update_visual_data",
+    "features_visibility",
+    "features_technique_depth_test",
+    "features_alpha_blending",
+    "features_material_mesh",
+    "features_lighting",
+    "showcases_textured_planet",
+    "showcases_protein",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -2416,17 +2416,17 @@ try {
     const id = Module.UTF8ToString(ptr);
     requireOk(id === expectedScenarioIds[i], `unexpected scenario ${i} id ${id}`);
     if (
-      id === "feature_picking" ||
-      id === "feature_selection_sphere" ||
-      id === "feature_selection_mesh_instances" ||
-      id === "feature_image_probe"
+      id === "features_picking" ||
+      id === "features_selection_sphere" ||
+      id === "features_selection_mesh_instances" ||
+      id === "features_image_probe"
     ) {
       requireOk(
         (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 8)) !== 0,
         `${id} did not declare query readback`,
       );
     }
-    if (id === "feature_compute_buffer_animation" || id === "showcase_gpu_particle_smoke") {
+    if (id === "features_compute_buffer_animation" || id === "showcases_gpu_particle_smoke") {
       requireOk(
         (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 5)) !== 0,
         `${id} did not declare scene buffers`,
@@ -2439,7 +2439,7 @@ try {
         (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 7)) !== 0,
         `${id} did not declare scene compute`,
       );
-      if (id === "feature_compute_buffer_animation") {
+      if (id === "features_compute_buffer_animation") {
         requireOk(
           (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 16)) !== 0,
           `${id} did not declare continuous frames`,
@@ -2447,11 +2447,11 @@ try {
       }
     }
   }
-  const timerScenarioIndex = scenarioIndex(Module, "feature_timer_animation");
+  const timerScenarioIndex = scenarioIndex(Module, "features_timer_animation");
   const scenarioIdPtr = Module._dvz_wasm_api_scenario_id(timerScenarioIndex);
   requireOk(scenarioIdPtr !== 0, "WASM scenario 0 has no id");
   const scenarioId = Module.UTF8ToString(scenarioIdPtr);
-  requireOk(scenarioId === "feature_timer_animation", `unexpected scenario id ${scenarioId}`);
+  requireOk(scenarioId === "features_timer_animation", `unexpected scenario id ${scenarioId}`);
   const scenarioTitlePtr = Module._dvz_wasm_api_scenario_title(timerScenarioIndex);
   requireOk(scenarioTitlePtr !== 0, "WASM scenario 0 has no title");
   requireOk(
@@ -2592,7 +2592,7 @@ try {
     Module._dvz_wasm_api_scene_destroy(animationScene);
   }
 
-  const colorbarIndex = scenarioIndex(Module, "feature_colorbar");
+  const colorbarIndex = scenarioIndex(Module, "features_colorbar");
   const colorbarWidth = Module._dvz_wasm_api_scenario_width(colorbarIndex);
   const colorbarHeight = Module._dvz_wasm_api_scenario_height(colorbarIndex);
   const colorbarScene = Module._dvz_wasm_api_scene(colorbarWidth, colorbarHeight);
@@ -2619,7 +2619,7 @@ try {
     Module._dvz_wasm_api_scene_destroy(colorbarScene);
   }
 
-  const scalebarIndex = scenarioIndex(Module, "feature_scalebar");
+  const scalebarIndex = scenarioIndex(Module, "features_scalebar");
   const scalebarWidth = Module._dvz_wasm_api_scenario_width(scalebarIndex);
   const scalebarHeight = Module._dvz_wasm_api_scenario_height(scalebarIndex);
   const scalebarScene = Module._dvz_wasm_api_scene(scalebarWidth, scalebarHeight);
@@ -2646,7 +2646,7 @@ try {
     Module._dvz_wasm_api_scene_destroy(scalebarScene);
   }
 
-  const scalebarUnitsIndex = scenarioIndex(Module, "feature_scalebar_units");
+  const scalebarUnitsIndex = scenarioIndex(Module, "features_scalebar_units");
   const scalebarUnitsWidth = Module._dvz_wasm_api_scenario_width(scalebarUnitsIndex);
   const scalebarUnitsHeight = Module._dvz_wasm_api_scenario_height(scalebarUnitsIndex);
   const scalebarUnitsScene = Module._dvz_wasm_api_scene(scalebarUnitsWidth, scalebarUnitsHeight);
@@ -2676,7 +2676,7 @@ try {
     Module._dvz_wasm_api_scene_destroy(scalebarUnitsScene);
   }
 
-  const legendIndex = scenarioIndex(Module, "feature_legend_categorical");
+  const legendIndex = scenarioIndex(Module, "features_legend_categorical");
   const legendWidth = Module._dvz_wasm_api_scenario_width(legendIndex);
   const legendHeight = Module._dvz_wasm_api_scenario_height(legendIndex);
   const legendScene = Module._dvz_wasm_api_scene(legendWidth, legendHeight);
@@ -2703,7 +2703,7 @@ try {
     Module._dvz_wasm_api_scene_destroy(legendScene);
   }
 
-  const readoutIndex = scenarioIndex(Module, "feature_annotation_readout");
+  const readoutIndex = scenarioIndex(Module, "features_annotation_readout");
   const readoutWidth = Module._dvz_wasm_api_scenario_width(readoutIndex);
   const readoutHeight = Module._dvz_wasm_api_scenario_height(readoutIndex);
   const readoutScene = Module._dvz_wasm_api_scene(readoutWidth, readoutHeight);
@@ -2733,7 +2733,7 @@ try {
     Module._dvz_wasm_api_scene_destroy(readoutScene);
   }
 
-  const linkedProbeIndex = scenarioIndex(Module, "linked_panels_probe_colorbar");
+  const linkedProbeIndex = scenarioIndex(Module, "showcases_linked_probe_colorbar");
   const linkedProbeWidth = Module._dvz_wasm_api_scenario_width(linkedProbeIndex);
   const linkedProbeHeight = Module._dvz_wasm_api_scenario_height(linkedProbeIndex);
   const linkedProbeScene = Module._dvz_wasm_api_scene(linkedProbeWidth, linkedProbeHeight);
@@ -2792,7 +2792,7 @@ try {
     Module._dvz_wasm_api_scene_destroy(linkedProbeScene);
   }
 
-  const scientificIndex = scenarioIndex(Module, "scientific_plotting_workflow");
+  const scientificIndex = scenarioIndex(Module, "showcases_scientific_plotting");
   const scientificWidth = Module._dvz_wasm_api_scenario_width(scientificIndex);
   const scientificHeight = Module._dvz_wasm_api_scenario_height(scientificIndex);
   const scientificScene = Module._dvz_wasm_api_scene(scientificWidth, scientificHeight);
@@ -2822,7 +2822,7 @@ try {
     Module._dvz_wasm_api_scene_destroy(scientificScene);
   }
 
-  const vectorIndex = scenarioIndex(Module, "visual_vector");
+  const vectorIndex = scenarioIndex(Module, "visuals_vector");
   const vectorWidth = Module._dvz_wasm_api_scenario_width(vectorIndex);
   const vectorHeight = Module._dvz_wasm_api_scenario_height(vectorIndex);
   const vectorScene = Module._dvz_wasm_api_scene(vectorWidth, vectorHeight);
@@ -2850,7 +2850,7 @@ try {
     Module._dvz_wasm_api_scene_destroy(vectorScene);
   }
 
-  const windFieldIndex = scenarioIndex(Module, "showcase_wind_field");
+  const windFieldIndex = scenarioIndex(Module, "showcases_wind_field");
   const windFieldWidth = Module._dvz_wasm_api_scenario_width(windFieldIndex);
   const windFieldHeight = Module._dvz_wasm_api_scenario_height(windFieldIndex);
   const windFieldScene = Module._dvz_wasm_api_scene(windFieldWidth, windFieldHeight);
@@ -2879,7 +2879,7 @@ try {
     Module._dvz_wasm_api_scene_destroy(windFieldScene);
   }
 
-  const isolinesIndex = scenarioIndex(Module, "feature_isolines");
+  const isolinesIndex = scenarioIndex(Module, "features_isolines");
   const isolinesWidth = Module._dvz_wasm_api_scenario_width(isolinesIndex);
   const isolinesHeight = Module._dvz_wasm_api_scenario_height(isolinesIndex);
   const isolinesScene = Module._dvz_wasm_api_scene(isolinesWidth, isolinesHeight);
@@ -2967,7 +2967,7 @@ try {
     Module._dvz_wasm_api_scene_destroy(pixelSelectionScene);
   }
 
-  const sphereSelectionIndex = scenarioIndex(Module, "feature_selection_sphere");
+  const sphereSelectionIndex = scenarioIndex(Module, "features_selection_sphere");
   const sphereSelectionScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
   requireOk(sphereSelectionScene !== 0, "sphere selection scenario scene creation failed");
   try {
@@ -3033,7 +3033,7 @@ try {
     Module._dvz_wasm_api_scene_destroy(sphereSelectionScene);
   }
 
-  const meshSelectionIndex = scenarioIndex(Module, "feature_selection_mesh_instances");
+  const meshSelectionIndex = scenarioIndex(Module, "features_selection_mesh_instances");
   const meshSelectionScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
   requireOk(meshSelectionScene !== 0, "mesh selection scenario scene creation failed");
   try {
@@ -3099,7 +3099,7 @@ try {
     Module._dvz_wasm_api_scene_destroy(meshSelectionScene);
   }
 
-  const computeAnimationIndex = scenarioIndex(Module, "feature_compute_buffer_animation");
+  const computeAnimationIndex = scenarioIndex(Module, "features_compute_buffer_animation");
   const computeAnimationScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
   requireOk(computeAnimationScene !== 0, "compute animation scenario scene creation failed");
   try {
@@ -3156,7 +3156,7 @@ try {
     Module._dvz_wasm_api_scene_destroy(computeAnimationScene);
   }
 
-  const particleIndex = scenarioIndex(Module, "showcase_gpu_particle_smoke");
+  const particleIndex = scenarioIndex(Module, "showcases_gpu_particle_smoke");
   const particleScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
   requireOk(particleScene !== 0, "particle smoke scenario scene creation failed");
   try {
@@ -3213,12 +3213,12 @@ try {
 
   const panelAndAxesScenarios = [
     [
-      "feature_panel_single",
+      "features_panel_single",
       "single-panel",
       (stream, label) => expectPanelScenarioStreamShape(stream, label),
     ],
     [
-      "feature_panel_grid",
+      "features_panel_grid",
       "panel-grid",
       (stream, label) => expectPanelScenarioStreamShape(stream, label, {
         minViewports: 4,
@@ -3226,22 +3226,22 @@ try {
       }),
     ],
     [
-      "feature_panzoom",
+      "features_panzoom",
       "panzoom",
       (stream, label) => expectPanzoomScenarioStreamShape(stream, label),
     ],
     [
-      "path_axes_2d",
+      "features_axes_2d",
       "path axes",
       (stream, label) => expectAxes2DScenarioStreamShape(stream, label),
     ],
     [
-      "feature_axis_labels",
+      "features_axis_labels",
       "axis labels",
       (stream, label) => expectAxisLabelsScenarioStreamShape(stream, label),
     ],
     [
-      "feature_panel_multi",
+      "features_panel_multi",
       "multi-panel",
       (stream, label) => expectPanelScenarioStreamShape(stream, label, {
         minViewports: 2,
@@ -3249,127 +3249,127 @@ try {
       }),
     ],
     [
-      "feature_panel_linked",
+      "features_panel_linked",
       "linked-panel",
       (stream, label) => expectLinkedPanelScenarioStreamShape(stream, label),
     ],
     [
-      "feature_text_block",
+      "features_text_block",
       "text block",
       (stream, label) => expectTextBlockScenarioStreamShape(stream, label),
     ],
     [
-      "feature_overlay_card",
+      "features_overlay_card",
       "overlay card",
       (stream, label) => expectOverlayCardScenarioStreamShape(stream, label),
     ],
     [
-      "feature_guide_lines",
+      "features_guide_lines",
       "guide lines",
       (stream, label) => expectGuideLineScenarioStreamShape(stream, label),
     ],
     [
-      "feature_guide_spans",
+      "features_guide_spans",
       "guide spans",
       (stream, label) => expectGuideSpanScenarioStreamShape(stream, label),
     ],
     [
-      "feature_bars_bands",
+      "features_bars_bands",
       "bars bands",
       (stream, label) => expectBarsBandsScenarioStreamShape(stream, label),
     ],
     [
-      "feature_controller_fly",
+      "features_controller_fly",
       "fly controller",
       (stream, label) => expectControllerMeshScenarioStreamShape(stream, label),
     ],
     [
-      "feature_controller_turntable",
+      "features_controller_turntable",
       "turntable controller",
       (stream, label) => expectControllerMeshScenarioStreamShape(stream, label),
     ],
     [
-      "feature_sampled_field_update",
+      "features_sampled_field_update",
       "sampled field update",
       (stream, label) => expectSampledField2DScenarioStreamShape(stream, label),
     ],
     [
-      "feature_colormap_scale",
+      "features_colormap_scale",
       "colormap scale",
       (stream, label) => expectColormapScaleScenarioStreamShape(stream, label),
     ],
     [
-      "feature_panel_background",
+      "features_panel_background",
       "panel background",
       (stream, label) => expectPanelBackgroundScenarioStreamShape(stream, label),
     ],
     [
-      "composite_polygon",
+      "composites_polygon",
       "polygon composite",
       (stream, label) => expectCompositePolygonScenarioStreamShape(stream, label),
     ],
     [
-      "linked_panels_axes_panzoom",
+      "showcases_panel_linked_axes",
       "linked panels axes",
       (stream, label) => expectLinkedPanelsAxesScenarioStreamShape(stream, label),
     ],
     [
-      "scalebar_measurement_workflow",
+      "showcases_scalebar_measurement",
       "scalebar measurement workflow",
       (stream, label) => expectScalebarMeasurementScenarioStreamShape(stream, label),
     ],
     [
-      "showcase_surface_grid",
+      "showcases_surface_grid",
       "surface grid",
       (stream, label) => expectSurfaceGridScenarioStreamShape(stream, label),
     ],
     [
-      "us_state_choropleth",
+      "showcases_choropleth",
       "us state choropleth",
       (stream, label) => expectChoroplethScenarioStreamShape(stream, label),
     ],
     [
-      "feature_update_partial",
+      "features_update_partial",
       "partial update",
       (stream, label) => expectPointUpdateScenarioStreamShape(stream, label),
     ],
     [
-      "feature_update_visual_data",
+      "features_update_visual_data",
       "visual data update",
       (stream, label) => expectPointUpdateScenarioStreamShape(stream, label),
     ],
     [
-      "feature_visibility",
+      "features_visibility",
       "visual visibility",
       (stream, label) => expectVisibilityScenarioStreamShape(stream, label),
     ],
     [
-      "technique_depth_test",
+      "features_technique_depth_test",
       "depth test",
       (stream, label) => expectDepthTestScenarioStreamShape(stream, label),
     ],
     [
-      "feature_alpha_blending",
+      "features_alpha_blending",
       "alpha blending",
       (stream, label) => expectAlphaBlendingScenarioStreamShape(stream, label),
     ],
     [
-      "feature_material_mesh",
+      "features_material_mesh",
       "material mesh",
       (stream, label) => expectMaterialMeshScenarioStreamShape(stream, label),
     ],
     [
-      "feature_lighting",
+      "features_lighting",
       "lighting",
       (stream, label) => expectLightingScenarioStreamShape(stream, label),
     ],
     [
-      "textured_terrain_or_planet",
+      "showcases_textured_planet",
       "textured planets",
       (stream, label) => expectTexturedPlanetScenarioStreamShape(stream, label),
     ],
     [
-      "protein_arcball_viewer",
+      "showcases_protein",
       "protein",
       (stream, label) => expectProteinScenarioStreamShape(stream, label),
     ],
@@ -3400,16 +3400,16 @@ try {
       const initial = emitStream(Module, scene, figure, `${label} initial`);
       expectShape(initial.stream, `${label} initial`);
       if (
-        id === "feature_update_partial" ||
-        id === "feature_update_visual_data" ||
-        id === "feature_visibility"
+        id === "features_update_partial" ||
+        id === "features_update_visual_data" ||
+        id === "features_visibility"
       ) {
         expectStatus(
           Module._dvz_wasm_api_scenario_frame(scene, 1.1, 1 / 60),
           0,
           `${label} scenario update frame`,
         );
-        if (id === "feature_visibility") {
+        if (id === "features_visibility") {
           const visibleFrame = emitStream(Module, scene, figure, `${label} visible frame`);
           requireOk(
             commandsOf(visibleFrame.stream, "Draw").length >= 3,
@@ -3433,19 +3433,19 @@ try {
   }
 
   const standaloneVisuals = [
-    ["visual_point", "point visual"],
-    ["visual_pixel", "pixel visual"],
-    ["visual_marker", "marker visual"],
-    ["visual_primitive", "primitive visual"],
-    ["visual_segment", "segment visual"],
-    ["visual_path", "path visual"],
-    ["visual_image", "image visual"],
-    ["visual_image_rgba", "RGBA image visual"],
-    ["visual_mesh", "mesh visual"],
-    ["sphere_impostor", "sphere visual"],
-    ["visual_text", "text visual"],
-    ["visual_glyph", "glyph visual"],
-    ["visual_labels", "labels visual"],
+    ["visuals_point", "point visual"],
+    ["visuals_pixel", "pixel visual"],
+    ["visuals_marker", "marker visual"],
+    ["visuals_primitive", "primitive visual"],
+    ["visuals_segment", "segment visual"],
+    ["visuals_path", "path visual"],
+    ["visuals_image", "image visual"],
+    ["visuals_image_rgba", "RGBA image visual"],
+    ["visuals_mesh", "mesh visual"],
+    ["visuals_sphere", "sphere visual"],
+    ["visuals_text", "text visual"],
+    ["visuals_glyph", "glyph visual"],
+    ["visuals_labels", "labels visual"],
   ];
   for (const [id, label] of standaloneVisuals) {
     const index = scenarioIndex(Module, id);

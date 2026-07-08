@@ -33,7 +33,7 @@ showcase, real data bundle, video export, Qt embed, or browser iframe.
 | Native runtime renders. | `./build/examples/c/features/basic_scene` |
 | Offscreen rendering works. | `./build/examples/c/runtime/offscreen_capture` |
 | Python package imports. | `python -c "import datoviz as dvz; print('datoviz import ok')"` |
-| Browser WebGPU route works. | `http://localhost:8000/examples/webgpu/live.html?id=feature_basic_scene` |
+| Browser WebGPU route works. | `http://localhost:8000/examples/webgpu/live.html?id=features_basic_scene` |
 | Qt/PyQt hosting works. | Qt bridge build and PyQt smoke for the optional provider. |
 
 Stop at the first failing layer and debug that layer. For example, do not inspect WebGPU adapter
@@ -150,7 +150,7 @@ just serve
 Open:
 
 ```text
-http://localhost:8000/examples/webgpu/live.html?id=feature_basic_scene
+http://localhost:8000/examples/webgpu/live.html?id=features_basic_scene
 ```
 
 If native examples work but this route fails, use [Diagnose WebGPU support](debug-webgpu.md). Do not
@@ -250,4 +250,4 @@ the first missing dependency, failed device creation, or missing asset.
     - Start page: [Install](../start/install.md)
     - Reference: [Platform support](../reference/platform-support.md)
     - Reference: [Build options](../reference/build-options.md)
-    - [Offscreen Capture](../examples/gallery/runtime/feature_offscreen_capture.md) - Source: `examples/c/runtime/offscreen_capture.c`
+    - [Offscreen Capture](../examples/gallery/runtime/runtime_offscreen_capture.md) - Source: `examples/c/runtime/offscreen_capture.c`

@@ -12,7 +12,7 @@
  * with the blinking center point; visual-level visibility is useful for layers, quality-control
  * overlays, and temporarily hiding derived results.
  *
- * Scenario: feature.visibility
+ * Scenario: features_visibility
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/visibility
@@ -243,7 +243,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 DvzScenarioSpec dvz_example_visibility_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_visibility",
+        .id = "features_visibility",
         .title = "Visual Visibility",
         .width = WIDTH,
         .height = HEIGHT,

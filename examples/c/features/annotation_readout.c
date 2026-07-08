@@ -6,7 +6,7 @@
 
 /* annotation_readout - This example shows a retained text annotation anchored to one data point.
  *
- * Scenario: annotation_readout
+ * Scenario: features_annotation_readout
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/annotation_readout
@@ -251,7 +251,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 DvzScenarioSpec dvz_example_annotation_readout_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_annotation_readout",
+        .id = "features_annotation_readout",
         .title = "Annotation Readout",
         .width = WIDTH,
         .height = HEIGHT,
