@@ -1,6 +1,6 @@
 # Python Gallery Feature Examples Handoff
 
-Status: active example-proof lane. Created: 2026-07-07. Updated: 2026-07-07.
+Status: active example-proof lane. Created: 2026-07-07. Updated: 2026-07-08.
 
 This handoff continues the Python gallery example lane for v0.4-required examples. The goal is one
 clear top-level Python entry per public v0.4 example wherever the direct `datoviz` binding can
@@ -29,9 +29,10 @@ Recent checkpoint commits landed:
 16. `9b49aba61` Add Python builtin shapes 3D gallery example.
 17. `512f618e7` Add Python OBJ loading gallery example.
 18. `e838f224e` Add Python isolines gallery example.
+19. `c75166cc4` Add Python text block gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
-next planned checkpoint is `features_text_block`.
+next planned checkpoint is `features_overlay_card`.
 
 Known parity caveat from the geometry batch: the C OBJ and 3D shape examples apply a Phong
 material, but Python `DvzMaterialDesc` has no generated fields in the current binding, so these
@@ -90,6 +91,9 @@ python3 - <<'PY'
 ... construct surface-grid heights/colors, extract contour segments, bind arcball, render one
     offscreen frame ...
 PY
+python3 - <<'PY'
+... construct retained text block, render one offscreen frame ...
+PY
 ```
 
 These returned `image_probe offscreen query smoke: 1 True` and
@@ -100,13 +104,13 @@ These returned `image_probe offscreen query smoke: 1 True` and
 `probe_labels offscreen query smoke: 1 True 31`, and
 `marker_symbols offscreen smoke: OK`, and `builtin_shapes_2d offscreen smoke: OK`, and
 `builtin_shapes_3d offscreen smoke: OK`, and `obj_loading offscreen smoke: OK`, and
-`isolines offscreen smoke: OK`. Live window and screenshot validation were not run for the earlier
-checkpoint notes.
+`isolines offscreen smoke: OK`, and `text_block offscreen smoke: OK`. Live window and screenshot
+validation were not run for the earlier checkpoint notes.
 
-Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-07:
+Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-08:
 
-- v0.4-required feature examples: 36 of 64 have Python entries; 28 remain missing.
-- all v0.4-required public examples: 48 of 95 have Python entries; 47 remain missing.
+- v0.4-required feature examples: 37 of 64 have Python entries; 27 remain missing.
+- all v0.4-required public examples: 49 of 95 have Python entries; 46 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -137,6 +141,8 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   `examples/python/gallery/features/obj_loading.py` and a matching `python.source` manifest entry.
 - `features_isolines` is committed: it has
   `examples/python/gallery/features/isolines.py` and a matching `python.source` manifest entry.
+- `features_text_block` is committed: it has
+  `examples/python/gallery/features/text_block.py` and a matching `python.source` manifest entry.
 
 
 ## Preferred Next Commit
@@ -144,7 +150,7 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
 The event/query/selection helper batch is complete for the planned feature examples. The geometry
 and symbol helper batch has `features_marker_symbols`, `features_builtin_shapes_2d`, and
 `features_builtin_shapes_3d`, `features_obj_loading`, and `features_isolines`; next target the
-text/annotation batch, starting with `features_text_block`.
+text/annotation batch, continuing with `features_overlay_card`.
 
 Implementation shape:
 
@@ -180,7 +186,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python text block gallery example
+examples: add Python overlay card gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -245,14 +251,15 @@ convert the examples that immediately need it.
 
 Current missing `v0.4_required` feature examples with no `python.source` entry:
 
-`features_coordinate_system`, `features_axis_labels`, `features_text_block`,
-`features_overlay_card`, `features_orientation_gizmo`, `features_reference_grid`,
-`features_bounds_overlay`, `features_controller_fly`, `features_mesh_texture`,
-`features_material_mesh`, `features_lighting`, `features_user_scale`, `features_gui_controls`,
-`features_gui_viewport`, `features_gui_cimgui`, `features_animation_tracks`, `features_technique_ssao`,
-`features_technique_msaa`, `features_technique_depth_cue`, `features_technique_transparency`, `features_input_events`,
-`features_view_size_policies`, `features_bezier_curve_path`, `features_path_join`, `features_scalebar`,
-`features_scalebar_units`, `features_annotation_readout`, and `features_datetime_axis`.
+`features_coordinate_system`, `features_axis_labels`, `features_overlay_card`,
+`features_orientation_gizmo`, `features_reference_grid`, `features_bounds_overlay`,
+`features_controller_fly`, `features_mesh_texture`, `features_material_mesh`,
+`features_lighting`, `features_user_scale`, `features_gui_controls`, `features_gui_viewport`,
+`features_gui_cimgui`, `features_animation_tracks`, `features_technique_ssao`,
+`features_technique_msaa`, `features_technique_depth_cue`, `features_technique_transparency`,
+`features_input_events`, `features_view_size_policies`, `features_bezier_curve_path`,
+`features_path_join`, `features_scalebar`, `features_scalebar_units`,
+`features_annotation_readout`, and `features_datetime_axis`.
 
 
 ## Per-Example Checklist
