@@ -38,12 +38,19 @@ The background path uploads position, color, and stroke_width_px arrays in view 
     --8<-- "examples/c/features/overlay_card.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/overlay_card.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_overlay_card`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/overlay_card.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/overlay_card.c)
+    - Python source: [`examples/python/gallery/features/overlay_card.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/overlay_card.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_overlay_card"><code>examples/webgpu/live.html?id=features_overlay_card</code></a>
     - Browser capability tags: `overlay`, `text`, `primitive`

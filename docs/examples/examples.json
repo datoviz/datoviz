@@ -555,7 +555,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=features_overlay_card",
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_overlay_card",
-      "primary_feature": "overlay-card"
+      "primary_feature": "overlay-card",
+      "python_source": "examples/python/gallery/features/overlay_card.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/overlay_card.py",
+      "python_status": "direct-engine"
     },
     {
       "id": "features_controller_arcball",
