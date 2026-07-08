@@ -70,7 +70,8 @@ class MediaComparison:
     source_frames: int
     source_size: str
     variants: list[MediaVariant]
-    html_snippet: str
+    webp_html_snippet: str
+    video_html_snippet: str
 
 
 def parse_args() -> argparse.Namespace:
@@ -249,22 +250,33 @@ def variant(kind: str, path: Path, budget: int) -> MediaVariant:
     )
 
 
-def html_snippet(preview: object, include_webm: bool) -> str:
+def webp_html_snippet(preview: object) -> str:
     lane = getattr(preview, "lane")
     id_ = getattr(preview, "id")
     title = getattr(preview, "title")
     media_base = f"/assets/gallery/v0.4/{lane}/{id_}"
-    sources = []
-    if include_webm:
-        sources.append(f'    <source src="{media_base}.webm" type="video/webm">')
-    sources.append(f'    <source src="{media_base}.mp4" type="video/mp4">')
     return "\n".join(
         [
             f'<a class="dvz-gallery-media" href="gallery/{lane}/{id_}/">',
-            "  <video autoplay muted loop playsinline preload=\"metadata\"",
+            f'  <img class="dvz-gallery-poster" src="{media_base}.poster.webp" alt="{title}">',
+            f'  <img class="dvz-gallery-animated" data-src="{media_base}.webp" alt="" aria-hidden="true">',
+            "</a>",
+        ]
+    )
+
+
+def video_html_snippet(preview: object) -> str:
+    lane = getattr(preview, "lane")
+    id_ = getattr(preview, "id")
+    title = getattr(preview, "title")
+    media_base = f"/assets/gallery/v0.4/{lane}/{id_}"
+    return "\n".join(
+        [
+            f'<a class="dvz-gallery-media" href="gallery/{lane}/{id_}/">',
+            "  <video muted loop playsinline preload=\"none\"",
             f'         poster="{media_base}.poster.webp" aria-label="{title}">',
-            *sources,
-            f'    <img src="{media_base}.webp" alt="{title}">',
+            f'    <source data-src="{media_base}.mp4" type="video/mp4">',
+            f'    <img src="{media_base}.poster.webp" alt="{title}">',
             "  </video>",
             "</a>",
         ]
@@ -308,7 +320,8 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
             source_frames=getattr(preview, "frames"),
             source_size=getattr(preview, "size"),
             variants=variants,
-            html_snippet=html_snippet(preview, args.webm),
+            webp_html_snippet=webp_html_snippet(preview),
+            video_html_snippet=video_html_snippet(preview),
         )
 
     with TemporaryDirectory(prefix="dvz-gallery-media-") as tmp:
@@ -342,7 +355,8 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
         source_frames=getattr(preview, "frames"),
         source_size=getattr(preview, "size"),
         variants=variants,
-        html_snippet=html_snippet(preview, args.webm),
+        webp_html_snippet=webp_html_snippet(preview),
+        video_html_snippet=video_html_snippet(preview),
     )
 
 
@@ -379,10 +393,61 @@ def media_element(report: Path, path: str, kind: str, title: str) -> str:
     if kind in {"mp4-card", "webm-card"}:
         media_type = "video/mp4" if kind == "mp4-card" else "video/webm"
         return (
-            f'<video autoplay muted loop playsinline controls preload="metadata">'
-            f'<source src="{src}" type="{media_type}"></video>'
+            f'<video muted loop playsinline controls preload="none">'
+            f'<source data-src="{src}" type="{media_type}"></video>'
         )
-    return f'<img src="{src}" alt="{alt}" loading="lazy">'
+    return f'<img data-src="{src}" alt="{alt}" loading="lazy">'
+
+
+def variant_for(item: MediaComparison, kind: str) -> MediaVariant:
+    for media in item.variants:
+        if media.kind == kind:
+            return media
+    raise ValueError(f"{item.id}: missing {kind} variant")
+
+
+def lazy_webp_card(report: Path, item: MediaComparison) -> str:
+    title = html.escape(item.title)
+    poster = variant_for(item, "poster")
+    animated = variant_for(item, "animated-webp-card")
+    poster_src = html.escape(relative_report_url(report, poster.path), quote=True)
+    animated_src = html.escape(relative_report_url(report, animated.path), quote=True)
+    return "\n".join(
+        [
+            '<article class="integration-card" data-gallery-lazy="webp">',
+            f"<h3>{title} <span>lazy animated WebP</span></h3>",
+            '<a class="dvz-gallery-media" href="#">',
+            f'  <img class="dvz-gallery-poster" src="{poster_src}" alt="{title}">',
+            "  <img class=\"dvz-gallery-animated\"",
+            f'       data-src="{animated_src}" alt="" aria-hidden="true">',
+            "</a>",
+            f"<p>{animated.bytes / 1024:.1f} KB animation, {poster.bytes / 1024:.1f} KB poster</p>",
+            "</article>",
+        ]
+    )
+
+
+def lazy_video_card(report: Path, item: MediaComparison) -> str:
+    title = html.escape(item.title)
+    poster = variant_for(item, "poster")
+    video = variant_for(item, "mp4-card")
+    poster_src = html.escape(relative_report_url(report, poster.path), quote=True)
+    video_src = html.escape(relative_report_url(report, video.path), quote=True)
+    return "\n".join(
+        [
+            '<article class="integration-card" data-gallery-lazy="video">',
+            f"<h3>{title} <span>lazy MP4 video</span></h3>",
+            '<a class="dvz-gallery-media" href="#">',
+            "  <video class=\"dvz-gallery-video\" muted loop playsinline preload=\"none\" data-autoplay=\"1\"",
+            f'         poster="{poster_src}" aria-label="{title}">',
+            f'    <source data-src="{video_src}" type="video/mp4">',
+            f'    <img src="{poster_src}" alt="{title}">',
+            "  </video>",
+            "</a>",
+            f"<p>{video.bytes / 1024:.1f} KB video, {poster.bytes / 1024:.1f} KB poster</p>",
+            "</article>",
+        ]
+    )
 
 
 def write_html_report(path: Path, comparisons: list[MediaComparison]) -> None:
@@ -398,13 +463,14 @@ def write_html_report(path: Path, comparisons: list[MediaComparison]) -> None:
             f"{html.escape(item.source_size)}</p>"
         )
         rows.append('<div class="grid">')
+        source_alt = html.escape(f"{item.title} source", quote=True)
         rows.append(
-            '<figure><figcaption>source animated WebP</figcaption>'
-            f'<img src="{source_src}" alt="{title} source" loading="lazy"></figure>'
+            '<figure data-compare-lazy><figcaption>source animated WebP</figcaption>'
+            f'<img data-src="{source_src}" alt="{source_alt}" loading="lazy"></figure>'
         )
         for media in item.variants:
             rows.append(
-                "<figure>"
+                "<figure data-compare-lazy>"
                 f"<figcaption>{html.escape(media.kind)} "
                 f"{media.bytes / 1024:.1f} KB "
                 f"<span class=\"{media.status}\">{media.status}</span></figcaption>"
@@ -413,10 +479,19 @@ def write_html_report(path: Path, comparisons: list[MediaComparison]) -> None:
             )
         rows.append("</div>")
         rows.append(
-            "<details><summary>candidate video card HTML</summary>"
-            f"<pre>{html.escape(item.html_snippet)}</pre></details>"
+            "<details><summary>candidate lazy animated WebP card HTML</summary>"
+            f"<pre>{html.escape(item.webp_html_snippet)}</pre></details>"
+        )
+        rows.append(
+            "<details><summary>candidate lazy MP4 video card HTML</summary>"
+            f"<pre>{html.escape(item.video_html_snippet)}</pre></details>"
         )
         rows.append("</section>")
+
+    integration_cards = []
+    for item in comparisons:
+        integration_cards.append(lazy_webp_card(path, item))
+        integration_cards.append(lazy_video_card(path, item))
 
     document = "\n".join(
         [
@@ -430,17 +505,70 @@ def write_html_report(path: Path, comparisons: list[MediaComparison]) -> None:
             "body{font-family:system-ui,sans-serif;margin:2rem;color:#202124;background:#fafafa}",
             "section{margin:0 0 3rem}",
             ".grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}",
+            ".integration-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin:1rem 0 3rem}",
+            ".integration-card{background:white;border:1px solid #ddd;padding:.75rem}",
+            ".integration-card h3{font-size:1rem;margin:.1rem 0 .6rem}",
+            ".integration-card h3 span{display:block;font-weight:400;color:#5f6368}",
+            ".integration-card p{font-size:.85rem;margin:.5rem 0 0}",
+            ".dvz-gallery-media{display:block;position:relative;overflow:hidden;background:#111;aspect-ratio:16/9}",
+            ".dvz-gallery-poster,.dvz-gallery-animated,.dvz-gallery-video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}",
+            ".dvz-gallery-animated,.dvz-gallery-video{opacity:0;transition:opacity .18s ease}",
+            ".dvz-gallery-media.is-ready .dvz-gallery-animated,.dvz-gallery-media.is-ready .dvz-gallery-video{opacity:1}",
             "figure{margin:0;padding:.75rem;background:white;border:1px solid #ddd}",
             "img,video{display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#111}",
             "figcaption{font-size:.9rem;margin:0 0 .5rem}",
             ".ok{color:#0a7a2f}.over-budget{color:#b00020}",
             "pre{overflow:auto;padding:1rem;background:#111;color:#f5f5f5}",
+            "@media (prefers-reduced-motion: reduce){.dvz-gallery-animated,.dvz-gallery-video{display:none}}",
             "</style>",
             "</head>",
             "<body>",
             "<h1>Datoviz Gallery Media Comparison</h1>",
             "<p>Generated build-local media. Do not commit these binary outputs.</p>",
+            "<h2>Poster-first lazy integration preview</h2>",
+            "<p>Cards below display posters immediately. Animation/video sources are attached only near the viewport unless reduced motion or Save-Data is active.</p>",
+            '<div class="integration-grid">',
+            *integration_cards,
+            "</div>",
             *rows,
+            "<script>",
+            "(() => {",
+            "  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;",
+            "  const saveData = navigator.connection && navigator.connection.saveData;",
+            "  if (reduceMotion || saveData) return;",
+            "  const ready = (el) => el.closest('.dvz-gallery-media')?.classList.add('is-ready');",
+            "  const loadCard = (card) => {",
+            "    if (card.dataset.loaded === '1') return;",
+            "    card.dataset.loaded = '1';",
+            "    const img = card.querySelector('img[data-src]');",
+            "    if (img) {",
+            "      img.addEventListener('load', () => ready(img), { once: true });",
+            "      img.src = img.dataset.src;",
+            "      return;",
+            "    }",
+            "    const video = card.querySelector('video.dvz-gallery-video');",
+            "    if (!video) return;",
+            "    for (const source of video.querySelectorAll('source[data-src]')) {",
+            "      source.src = source.dataset.src;",
+            "    }",
+            "    video.addEventListener('canplay', () => ready(video), { once: true });",
+            "    video.load();",
+            "    if (video.dataset.autoplay === '1') video.play().catch(() => {});",
+            "  };",
+            "  if (!('IntersectionObserver' in window)) {",
+            "    document.querySelectorAll('[data-gallery-lazy], [data-compare-lazy]').forEach(loadCard);",
+            "    return;",
+            "  }",
+            "  const observer = new IntersectionObserver((entries) => {",
+            "    for (const entry of entries) {",
+            "      if (!entry.isIntersecting) continue;",
+            "      loadCard(entry.target);",
+            "      observer.unobserve(entry.target);",
+            "    }",
+            "  }, { rootMargin: '400px 0px' });",
+            "  document.querySelectorAll('[data-gallery-lazy], [data-compare-lazy]').forEach((card) => observer.observe(card));",
+            "})();",
+            "</script>",
             "</body>",
             "</html>",
         ]
