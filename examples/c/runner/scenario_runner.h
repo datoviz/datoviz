@@ -18,16 +18,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#ifndef DVZ_EXAMPLE_NO_APP
 #include "datoviz/app.h"
-#else
-typedef struct DvzApp DvzApp;
-typedef struct DvzView DvzView;
-typedef struct DvzAppCaptureConfig
-{
-    uint32_t unused;
-} DvzAppCaptureConfig;
-#endif
 
 
 
@@ -292,7 +283,16 @@ bool dvz_runner_capture_path(
  * @param ctx scenario context
  * @return positive preview frame rate, or 60 Hz when unavailable
  */
+#ifdef DVZ_EXAMPLE_NO_APP
+static inline double dvz_scenario_preview_fps(const DvzScenarioContext* ctx)
+{
+    if (ctx == NULL || ctx->preview_fps <= 0.0)
+        return 60.0;
+    return ctx->preview_fps;
+}
+#else
 double dvz_scenario_preview_fps(const DvzScenarioContext* ctx);
+#endif
 
 /**
  * Return the deterministic preview time scale.
@@ -300,7 +300,16 @@ double dvz_scenario_preview_fps(const DvzScenarioContext* ctx);
  * @param ctx scenario context
  * @return positive preview time scale, or 1 when unavailable
  */
+#ifdef DVZ_EXAMPLE_NO_APP
+static inline double dvz_scenario_preview_time_scale(const DvzScenarioContext* ctx)
+{
+    if (ctx == NULL || ctx->preview_time_scale <= 0.0)
+        return 1.0;
+    return ctx->preview_time_scale;
+}
+#else
 double dvz_scenario_preview_time_scale(const DvzScenarioContext* ctx);
+#endif
 
 /**
  * Return the deterministic preview time for the selected preview frame.
@@ -311,7 +320,17 @@ double dvz_scenario_preview_time_scale(const DvzScenarioContext* ctx);
  * @param ctx scenario context
  * @return preview time in seconds
  */
+#ifdef DVZ_EXAMPLE_NO_APP
+static inline double dvz_scenario_preview_time(const DvzScenarioContext* ctx)
+{
+    if (ctx == NULL)
+        return 0.0;
+    return (double)ctx->preview_frame_index * dvz_scenario_preview_time_scale(ctx) /
+           dvz_scenario_preview_fps(ctx);
+}
+#else
 double dvz_scenario_preview_time(const DvzScenarioContext* ctx);
+#endif
 
 /**
  * Return the deterministic frame interval for gallery preview captures.
@@ -319,7 +338,14 @@ double dvz_scenario_preview_time(const DvzScenarioContext* ctx);
  * @param ctx scenario context
  * @return preview timestep in seconds
  */
+#ifdef DVZ_EXAMPLE_NO_APP
+static inline double dvz_scenario_preview_dt(const DvzScenarioContext* ctx)
+{
+    return dvz_scenario_preview_time_scale(ctx) / dvz_scenario_preview_fps(ctx);
+}
+#else
 double dvz_scenario_preview_dt(const DvzScenarioContext* ctx);
+#endif
 
 /**
  * Bind a scene-owned controller to a scenario panel and register it for runner input connection.

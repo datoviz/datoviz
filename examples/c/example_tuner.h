@@ -233,6 +233,206 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+#ifdef DVZ_EXAMPLE_NO_APP
+
+static inline ExampleTuner example_tuner(const char* name)
+{
+    return (ExampleTuner){.name = name};
+}
+
+static inline void example_tuner_figure(ExampleTuner* tuner, DvzFigure* figure)
+{
+    (void)tuner;
+    (void)figure;
+}
+
+static inline void example_tuner_layout(ExampleTuner* tuner, const ExampleTunerLayout* layout)
+{
+    (void)tuner;
+    (void)layout;
+}
+
+static inline bool example_tuner_attach(ExampleTuner* tuner, DvzView* view)
+{
+    (void)tuner;
+    (void)view;
+    return false;
+}
+
+static inline void example_tuner_detach(ExampleTuner* tuner)
+{
+    (void)tuner;
+}
+
+static inline bool example_tuner_add_component(
+    ExampleTuner* tuner,
+    const char* title,
+    void* user,
+    ExampleTunerSyncFn sync,
+    ExampleTunerGuiFn gui,
+    ExampleTunerApplyFn apply,
+    ExampleTunerResetFn reset,
+    ExampleTunerPrintFn print_c)
+{
+    (void)tuner;
+    (void)title;
+    (void)user;
+    (void)sync;
+    (void)gui;
+    (void)apply;
+    (void)reset;
+    (void)print_c;
+    return false;
+}
+
+static inline void example_tuner_arcball(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzArcball* arcball,
+    const float reset_angles[3],
+    float reset_zoom,
+    const float reset_pan[2])
+{
+    (void)tuner;
+    (void)name;
+    (void)arcball;
+    (void)reset_angles;
+    (void)reset_zoom;
+    (void)reset_pan;
+}
+
+static inline void example_tuner_panzoom(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzPanzoom* panzoom,
+    const float reset_pan[2],
+    const float reset_zoom[2])
+{
+    (void)tuner;
+    (void)name;
+    (void)panzoom;
+    (void)reset_pan;
+    (void)reset_zoom;
+}
+
+static inline void example_tuner_camera(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzPanel* panel,
+    const DvzCameraDesc* camera_desc)
+{
+    (void)tuner;
+    (void)name;
+    (void)panel;
+    (void)camera_desc;
+}
+
+static inline void example_tuner_camera_ref(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzPanel* panel,
+    DvzCamera* camera,
+    const DvzCameraDesc* camera_desc)
+{
+    (void)tuner;
+    (void)name;
+    (void)panel;
+    (void)camera;
+    (void)camera_desc;
+}
+
+static inline void example_tuner_edl(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzPanel* panel,
+    DvzExampleGuiEdlControls* controls)
+{
+    (void)tuner;
+    (void)name;
+    (void)panel;
+    (void)controls;
+}
+
+static inline void example_tuner_msaa(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzPanel* panel,
+    DvzExampleGuiMsaaControls* controls)
+{
+    (void)tuner;
+    (void)name;
+    (void)panel;
+    (void)controls;
+}
+
+static inline void example_tuner_ssao(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzPanel* panel,
+    DvzExampleGuiSsaoControls* controls)
+{
+    (void)tuner;
+    (void)name;
+    (void)panel;
+    (void)controls;
+}
+
+static inline void example_tuner_material(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzVisual* visual,
+    DvzMaterialDesc* material)
+{
+    (void)tuner;
+    (void)name;
+    (void)visual;
+    (void)material;
+}
+
+static inline void example_tuner_depth_cue(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzVisual* visual,
+    bool* enabled,
+    DvzDepthCueDesc* desc)
+{
+    (void)tuner;
+    (void)name;
+    (void)visual;
+    (void)enabled;
+    (void)desc;
+}
+
+static inline void example_tuner_volume(
+    ExampleTuner* tuner,
+    const char* name,
+    DvzVisual* visual,
+    const DvzVolumeState* defaults)
+{
+    (void)tuner;
+    (void)name;
+    (void)visual;
+    (void)defaults;
+}
+
+static inline void example_tuner_sync(ExampleTuner* tuner)
+{
+    (void)tuner;
+}
+
+static inline void example_tuner_reset(ExampleTuner* tuner)
+{
+    (void)tuner;
+}
+
+static inline void example_tuner_print_c(ExampleTuner* tuner, FILE* fp)
+{
+    (void)tuner;
+    (void)fp;
+}
+
+#else
+
 ExampleTuner example_tuner(const char* name);
 
 void example_tuner_figure(ExampleTuner* tuner, DvzFigure* figure);
@@ -323,5 +523,7 @@ void example_tuner_sync(ExampleTuner* tuner);
 void example_tuner_reset(ExampleTuner* tuner);
 
 void example_tuner_print_c(ExampleTuner* tuner, FILE* fp);
+
+#endif
 
 EXTERN_C_OFF

@@ -34,7 +34,7 @@ The FIELD_SIZE cubed data array is attached as a 3D sampled field, with color an
     - Category: `visual`
     - Lane: `visuals`
     - Source: [`examples/c/visuals/volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/volume.c)
-    - Reference: [Volume visual family](../../../reference/visual-families/visuals_volume.md)
+    - Reference: [Volume visual family](../../../reference/visual-families/volume.md)
     - Browser support: Planned
     - Browser capability tags: `volume`, `sampled-field`, `texture-3d`, `arcball`
     - Validation: `smoke+screenshot`

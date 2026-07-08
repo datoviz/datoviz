@@ -633,7 +633,7 @@ if(DVZ_ENABLE_COVERAGE)
     endif()
 endif()
 
-if(DVZ_INSTALL)
+if(DVZ_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
     include(CMakePackageConfigHelpers)
     set(_dvz_package_dir "${CMAKE_CURRENT_BINARY_DIR}/cmake")
     set(DVZ_PKG_CONFIG_PUBLIC_CFLAGS "")
@@ -750,7 +750,7 @@ endif()
 message(STATUS "-------------------------------------------------------------")
 message(STATUS "")
 
-if(DVZ_INSTALL)
+if(DVZ_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
     # Install headers and library
     install(DIRECTORY include/ DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 

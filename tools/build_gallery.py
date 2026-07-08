@@ -89,7 +89,7 @@ VISUAL_REFERENCE_BY_ID = {
     "visuals_labels": "labels",
     "visuals_mesh": "mesh",
     "visuals_sphere": "sphere",
-    "visuals_volume": "visuals_volume",
+    "visuals_volume": "volume",
 }
 
 # Full feature grouping used on the features page — covers all 71 public features.

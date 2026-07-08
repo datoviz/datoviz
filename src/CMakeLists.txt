@@ -167,8 +167,13 @@ set(DVZ_HAS_OPENMP "${DVZ_HAS_OPENMP}" CACHE INTERNAL "OpenMP availability flag"
 # Create the library
 # -------------------------------------------------------------------------------------------------
 
+set(DVZ_LIBRARY_TYPE SHARED)
+if(EMSCRIPTEN)
+    set(DVZ_LIBRARY_TYPE STATIC)
+endif()
+
 # Create the shared library combining all object libraries
-add_library(datoviz SHARED
+add_library(datoviz ${DVZ_LIBRARY_TYPE}
     "empty.c"
 )
 
@@ -176,7 +181,7 @@ add_library(datoviz SHARED
 set_target_properties(datoviz PROPERTIES OUTPUT_NAME "datoviz")
 set_target_properties(datoviz PROPERTIES EXPORT_NAME datoviz)
 
-if(DVZ_INSTALL)
+if(DVZ_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
     install(TARGETS datoviz
         EXPORT DatovizTargets
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
@@ -503,7 +508,7 @@ if(DVZ_BUILD_GUI)
 endif()
 
 if(DVZ_BUILD_CORE)
-    add_library(datoviz_core SHARED "empty.c")
+    add_library(datoviz_core ${DVZ_LIBRARY_TYPE} "empty.c")
     set_target_properties(datoviz_core PROPERTIES OUTPUT_NAME "datoviz_core")
     set_target_properties(datoviz_core PROPERTIES EXPORT_NAME core)
 
@@ -524,7 +529,7 @@ target_include_directories(datoviz_core
 endif()
 
 if(DVZ_BUILD_VK)
-    add_library(datoviz_vk_layer SHARED "empty.c")
+    add_library(datoviz_vk_layer ${DVZ_LIBRARY_TYPE} "empty.c")
     set_target_properties(datoviz_vk_layer PROPERTIES OUTPUT_NAME "datoviz_vk")
     set_target_properties(datoviz_vk_layer PROPERTIES EXPORT_NAME vk)
 
@@ -555,7 +560,7 @@ target_include_directories(datoviz_vk_layer
 endif()
 
 if(DVZ_BUILD_CANVAS)
-    add_library(datoviz_canvas_layer SHARED "empty.c")
+    add_library(datoviz_canvas_layer ${DVZ_LIBRARY_TYPE} "empty.c")
     set_target_properties(datoviz_canvas_layer PROPERTIES OUTPUT_NAME "datoviz_canvas")
     set_target_properties(datoviz_canvas_layer PROPERTIES EXPORT_NAME canvas)
 
@@ -591,7 +596,7 @@ if(TARGET datoviz_canvas_layer)
     list(APPEND DVZ_LAYER_TARGETS datoviz_canvas_layer)
 endif()
 
-if(DVZ_INSTALL AND DVZ_LAYER_TARGETS)
+if(DVZ_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES AND DVZ_LAYER_TARGETS)
     install(TARGETS ${DVZ_LAYER_TARGETS}
         EXPORT DatovizTargets
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"

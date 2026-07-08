@@ -15,6 +15,8 @@ add_executable(datoviz_wasm_scene
     scene_api_scenario.c
     scene_api_wrappers.c
     ${PROJECT_SOURCE_DIR}/examples/c/example_common.c
+    ${PROJECT_SOURCE_DIR}/examples/c/example_controller_preview.c
+    ${PROJECT_SOURCE_DIR}/examples/c/example_random.c
     ${PROJECT_SOURCE_DIR}/examples/c/example_style.c
     ${PROJECT_SOURCE_DIR}/examples/c/composites/polygon.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/annotation_readout.c

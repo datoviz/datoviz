@@ -26,7 +26,7 @@ when they truly need different visual families, materials, transforms, panels, o
 | Simple triangle or line batches | Primitive | [Primitive](../reference/visual-families/primitive.md) | [Primitive](../examples/gallery/visuals/visuals_primitive.md) |
 | 2D sampled scalar/color field | Image | [Image](../reference/visual-families/image.md) | [Image](../examples/gallery/visuals/visuals_image.md) |
 | Integer label field or segmentation mask | Labels | [Labels](../reference/visual-families/labels.md) | [Labels](../examples/gallery/visuals/visuals_labels.md) |
-| 3D sampled scalar field | Volume | [Volume](../reference/visual-families/visuals_volume.md) | [Volume](../examples/gallery/visuals/visuals_volume.md) |
+| 3D sampled scalar field | Volume | [Volume](../reference/visual-families/volume.md) | [Volume](../examples/gallery/visuals/visuals_volume.md) |
 | Triangulated surface or textured object | Mesh | [Mesh](../reference/visual-families/mesh.md) | [Mesh](../examples/gallery/visuals/visuals_mesh.md) |
 | Many copies of the same 3D object | Mesh with `instance_transform` | [Mesh](../reference/visual-families/mesh.md) | [Mesh Instance Selection](../examples/gallery/features/features_selection_mesh_instances.md) |
 | 3D balls, atoms, or particles with world-space radius | Sphere | [Sphere](../reference/visual-families/sphere.md) | [Sphere](../examples/gallery/visuals/visuals_sphere.md) |
