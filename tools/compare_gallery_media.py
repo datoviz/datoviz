@@ -9,7 +9,9 @@ do not commit the generated media until the gallery media policy is settled.
 from __future__ import annotations
 
 import argparse
+import html
 import json
+import os
 import shutil
 import subprocess
 from dataclasses import asdict, dataclass
@@ -29,6 +31,7 @@ DEFAULT_WEBP_QUALITY = 50
 DEFAULT_MP4_CRF = 28
 DEFAULT_WEBM_CRF = 34
 DEFAULT_REPORT = ROOT / "build/gallery-media-compare/report.json"
+DEFAULT_HTML_REPORT = ROOT / "build/gallery-media-compare/index.html"
 
 DEFAULT_CANDIDATE_IDS = (
     "showcases_point_cloud",
@@ -76,6 +79,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--input-dir", type=Path, default=DEFAULT_INPUT_DIR)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
+    parser.add_argument("--html-report", type=Path, default=DEFAULT_HTML_REPORT)
     parser.add_argument("--id", action="append", default=[], help="example id; repeat or comma-separate")
     parser.add_argument("--lane", action="append", default=[], help="gallery lane")
     parser.add_argument("--size", default=DEFAULT_SIZE, help="card media size, for example 640x360")
@@ -364,6 +368,86 @@ def write_report(path: Path, comparisons: list[MediaComparison]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf8")
 
 
+def relative_report_url(report: Path, media_path: str) -> str:
+    source = ROOT / media_path
+    return Path(os.path.relpath(source, report.parent)).as_posix()
+
+
+def media_element(report: Path, path: str, kind: str, title: str) -> str:
+    src = html.escape(relative_report_url(report, path), quote=True)
+    alt = html.escape(f"{title} {kind}", quote=True)
+    if kind in {"mp4-card", "webm-card"}:
+        media_type = "video/mp4" if kind == "mp4-card" else "video/webm"
+        return (
+            f'<video autoplay muted loop playsinline controls preload="metadata">'
+            f'<source src="{src}" type="{media_type}"></video>'
+        )
+    return f'<img src="{src}" alt="{alt}" loading="lazy">'
+
+
+def write_html_report(path: Path, comparisons: list[MediaComparison]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    rows = []
+    for item in comparisons:
+        title = html.escape(item.title)
+        source_src = html.escape(relative_report_url(path, item.source_webp), quote=True)
+        rows.append(f"<section><h2>{title}</h2>")
+        rows.append(
+            f"<p><code>{html.escape(item.id)}</code> source "
+            f"{item.source_bytes / 1024:.1f} KB, {item.source_frames} frames, "
+            f"{html.escape(item.source_size)}</p>"
+        )
+        rows.append('<div class="grid">')
+        rows.append(
+            '<figure><figcaption>source animated WebP</figcaption>'
+            f'<img src="{source_src}" alt="{title} source" loading="lazy"></figure>'
+        )
+        for media in item.variants:
+            rows.append(
+                "<figure>"
+                f"<figcaption>{html.escape(media.kind)} "
+                f"{media.bytes / 1024:.1f} KB "
+                f"<span class=\"{media.status}\">{media.status}</span></figcaption>"
+                f"{media_element(path, media.path, media.kind, item.title)}"
+                "</figure>"
+            )
+        rows.append("</div>")
+        rows.append(
+            "<details><summary>candidate video card HTML</summary>"
+            f"<pre>{html.escape(item.html_snippet)}</pre></details>"
+        )
+        rows.append("</section>")
+
+    document = "\n".join(
+        [
+            "<!doctype html>",
+            "<html lang=\"en\">",
+            "<head>",
+            "<meta charset=\"utf-8\">",
+            "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
+            "<title>Datoviz Gallery Media Comparison</title>",
+            "<style>",
+            "body{font-family:system-ui,sans-serif;margin:2rem;color:#202124;background:#fafafa}",
+            "section{margin:0 0 3rem}",
+            ".grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}",
+            "figure{margin:0;padding:.75rem;background:white;border:1px solid #ddd}",
+            "img,video{display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#111}",
+            "figcaption{font-size:.9rem;margin:0 0 .5rem}",
+            ".ok{color:#0a7a2f}.over-budget{color:#b00020}",
+            "pre{overflow:auto;padding:1rem;background:#111;color:#f5f5f5}",
+            "</style>",
+            "</head>",
+            "<body>",
+            "<h1>Datoviz Gallery Media Comparison</h1>",
+            "<p>Generated build-local media. Do not commit these binary outputs.</p>",
+            *rows,
+            "</body>",
+            "</html>",
+        ]
+    )
+    path.write_text(document + "\n", encoding="utf8")
+
+
 def main() -> int:
     args = parse_args()
     try:
@@ -397,6 +481,7 @@ def main() -> int:
 
         print_report(comparisons)
         write_report(args.report, comparisons)
+        write_html_report(args.html_report, comparisons)
         over_budget = sum(
             1
             for item in comparisons
@@ -405,7 +490,8 @@ def main() -> int:
         )
         print(
             f"gallery media compare: compared={len(comparisons)} "
-            f"over_budget={over_budget} report={child_path(args.report)}"
+            f"over_budget={over_budget} report={child_path(args.report)} "
+            f"html={child_path(args.html_report)}"
         )
         return 1 if over_budget else 0
     except (OSError, RuntimeError, ValueError, subprocess.CalledProcessError) as exc:
