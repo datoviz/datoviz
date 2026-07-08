@@ -26,6 +26,9 @@ VISUAL_ENUM_RE = re.compile(
 )
 VISUAL_DESC_RE = re.compile(r"DVZ_SCENE_VISUAL_DESC_[A-Z0-9_]+")
 PRIVATE_INCLUDE_RE = re.compile(r'#include "([a-z_]+/internal\.h)"')
+FAMILY_STATE_RE = re.compile(
+    r"\bDvzVisualFamilyState\b|\b_visual_family_state\s*\(|(?:->|\.)family_state\b"
+)
 VISUAL_FAMILY_NAMES = {
     "glyph",
     "image",
@@ -66,6 +69,27 @@ VISUAL_DESC_OWNER_PREFIXES = {
     "DVZ_SCENE_VISUAL_DESC_SPHERE": ("src/scene/visuals/sphere/",),
     "DVZ_SCENE_VISUAL_DESC_SPLAT": ("src/scene/visuals/splat/",),
 }
+FAMILY_STATE_OWNER_PATHS = {
+    "src/scene/core/_scene.h",
+    "src/scene/core/figure_emit.c",
+    "src/scene/core/json.c",
+    "src/scene/core/panel_layout.c",
+    "src/scene/core/resource_key.c",
+    "src/scene/core/scene.c",
+    "src/scene/core/scene_notify.c",
+    "src/scene/domain/buffer.c",
+    "src/scene/domain/field_binding.c",
+    "src/scene/domain/field_dirty.c",
+    "src/scene/domain/field_texture.c",
+    "src/scene/interaction/core.c",
+}
+FAMILY_STATE_OWNER_PREFIXES = (
+    "src/scene/annotation/",
+    "src/scene/scene_emit/",
+    "src/scene/tests/",
+    "src/scene/text/",
+    "src/scene/visuals/",
+)
 
 
 class Allowlist:
@@ -122,6 +146,12 @@ def _visual_desc_location_allowed(rel: str, token: str) -> bool:
     return any(rel.startswith(prefix) for prefix in VISUAL_DESC_OWNER_PREFIXES.get(token, ()))
 
 
+def _family_state_location_allowed(rel: str) -> bool:
+    if rel in FAMILY_STATE_OWNER_PATHS:
+        return True
+    return any(rel.startswith(prefix) for prefix in FAMILY_STATE_OWNER_PREFIXES)
+
+
 def _visual_desc_counts(root: Path) -> dict[tuple[str, str, str], int]:
     counts: dict[tuple[str, str, str], int] = {}
     scene_root = root / "src/scene"
@@ -171,6 +201,12 @@ def _exact_violations(root: Path) -> list[str]:
             if family_name not in VISUAL_FAMILY_NAMES:
                 continue
             entries.append(_entry(path, line_no, "private-include", line, root))
+
+        if _family_state_location_allowed(rel):
+            continue
+        for line_no, line in enumerate(path.read_text(encoding="utf8").splitlines(), start=1):
+            if FAMILY_STATE_RE.search(line):
+                entries.append(_entry(path, line_no, "family-state", line, root))
     return entries
 
 
