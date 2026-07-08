@@ -29,11 +29,11 @@
 #include "_overflow.h"
 #include "_runtime.h"
 #include "_stream.h"
+#include "datoviz/vk/gpu_ctx.h"
 
 #if DVZ_DRP2_HAS_VKLITE
 #include "datoviz/stream/frame_stream.h"
 #include "datoviz/vk/device.h"
-#include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/compute.h"
 #include "datoviz/vklite/commands.h"
