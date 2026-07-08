@@ -691,7 +691,6 @@ dvz_gui_slider_float3
 dvz_gui_slider_float4
 dvz_gui_slider_float_format
 dvz_gui_slider_int
-dvz_gui_slider_range_double
 dvz_gui_slider_range_float
 dvz_gui_text
 dvz_gui_viewport

@@ -10,8 +10,7 @@ The curated Datoviz GUI API is implemented in C++ and may call C++ ImGui symbols
 advanced C users, but Datoviz does not require every C++ ImGui API used internally to be wrapped by
 cimgui.
 
-`dvz_gui_slider_range_float()` and `dvz_gui_slider_range_double()` require the C++ range-slider APIs
-from ocornut/imgui#9164:
+`dvz_gui_slider_range_float()` requires the C++ range-slider APIs from ocornut/imgui#9164:
 
 - `ImGui::SliderFloatRange2()`
 - `ImGui::SliderScalarRange2()`

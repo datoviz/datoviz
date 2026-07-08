@@ -5368,6 +5368,12 @@ typedef void (*)(DvzGui *, DvzView *, void *) DvzGuiCallback;
 typedef struct DvzGuiConfig DvzGuiConfig;
 ```
 
+#### `DvzGuiDockSlot`
+
+```c
+typedef enum DvzGuiDockSlot DvzGuiDockSlot;
+```
+
 #### `DvzGuiFlags`
 
 ```c
@@ -5969,6 +5975,15 @@ DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST = 5,
 ```c
 DVZ_CANVAS_RENDER_MODE_PRESENT = 0,
 DVZ_CANVAS_RENDER_MODE_OFFSCREEN = 1,
+```
+
+#### `DvzGuiDockSlot`
+
+```c
+DVZ_GUI_DOCK_SLOT_LEFT = 0,
+DVZ_GUI_DOCK_SLOT_RIGHT = 1,
+DVZ_GUI_DOCK_SLOT_TOP = 2,
+DVZ_GUI_DOCK_SLOT_BOTTOM = 3,
 ```
 
 #### `DvzGuiFlags`
@@ -7057,6 +7072,12 @@ typedef struct DvzDrp2Recording DvzDrp2Recording;
 typedef struct DvzDrp2RecordingInfo DvzDrp2RecordingInfo;
 ```
 
+#### `DvzDrp2RenderPassDesc`
+
+```c
+typedef struct DvzDrp2RenderPassDesc DvzDrp2RenderPassDesc;
+```
+
 #### `DvzDrp2RenderPipelineDesc`
 
 ```c
@@ -7421,6 +7442,29 @@ struct DvzDrp2RecordingInfo {
     double t_present;
     double fps_cap;
     const char * backend_hint;
+};
+```
+
+#### `DvzDrp2RenderPassDesc`
+
+```c
+struct DvzDrp2RenderPassDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    uint64_t id;
+    uint64_t encoder_id;
+    uint32_t[4] render_area_px;
+    float[4] viewport_px;
+    float[4] scissor_px;
+    uint32_t color_attachment_count;
+    DvzDrp2ColorAttachment[4] color_attachments;
+    _Bool has_depth_attachment;
+    uint64_t depth_texture_id;
+    DvzDrp2AttachmentLoadOp depth_load_op;
+    DvzDrp2AttachmentStoreOp depth_store_op;
+    DvzDrp2AttachmentAccess depth_access;
+    _Bool depth_ops_explicit;
+    float clear_depth;
 };
 ```
 

@@ -18,15 +18,15 @@ Common workflows:
 - [Handle input events](../../how-to/input-events.md)
 - [Save screenshots](../../how-to/screenshots.md)
 
-Functions: 206
+Functions: 209
 
 ## Symbol Groups
 
 | Group | Functions | Headers |
 | --- | ---: | --- |
-| [App](#app) | 14 | `include/datoviz/app.h`, `include/datoviz/app_interop.h` |
+| [App](#app) | 15 | `include/datoviz/app.h`, `include/datoviz/app_interop.h` |
 | [Canvas](#canvas) | 18 | `include/datoviz/canvas.h` |
-| [Gui](#gui) | 32 | `include/datoviz/gui.h` |
+| [Gui](#gui) | 34 | `include/datoviz/gui.h` |
 | [Input](#input) | 15 | `include/datoviz/input/pointer.h`, `include/datoviz/input/router.h` |
 | [Keyboard](#keyboard) | 6 | `include/datoviz/input/keyboard.h` |
 | [Pointer](#pointer) | 5 | `include/datoviz/input/pointer.h` |
@@ -46,6 +46,7 @@ Functions: 206
     | [`dvz_app_capture_config_from_env()`](#dvz_app_capture_config_from_env) | `include/datoviz/app.h` |
     | [`dvz_app_config()`](#dvz_app_config) | `include/datoviz/app.h` |
     | [`dvz_app_destroy()`](#dvz_app_destroy) | `include/datoviz/app.h` |
+    | [`dvz_app_reap_closed_views()`](#dvz_app_reap_closed_views) | `include/datoviz/app.h` |
     | [`dvz_app_render_once()`](#dvz_app_render_once) | `include/datoviz/app.h` |
     | [`dvz_app_resources()`](#dvz_app_resources) | `include/datoviz/app.h` |
     | [`dvz_app_run()`](#dvz_app_run) | `include/datoviz/app.h` |
@@ -92,7 +93,10 @@ Functions: 206
     | [`dvz_gui_color_picker4()`](#dvz_gui_color_picker4) | `include/datoviz/gui.h` |
     | [`dvz_gui_combo()`](#dvz_gui_combo) | `include/datoviz/gui.h` |
     | [`dvz_gui_config()`](#dvz_gui_config) | `include/datoviz/gui.h` |
+    | [`dvz_gui_current_window_docked()`](#dvz_gui_current_window_docked) | `include/datoviz/gui.h` |
+    | [`dvz_gui_current_window_rect()`](#dvz_gui_current_window_rect) | `include/datoviz/gui.h` |
     | [`dvz_gui_demo()`](#dvz_gui_demo) | `include/datoviz/gui.h` |
+    | [`dvz_gui_dock_window_once()`](#dvz_gui_dock_window_once) | `include/datoviz/gui.h` |
     | [`dvz_gui_end()`](#dvz_gui_end) | `include/datoviz/gui.h` |
     | [`dvz_gui_pop_font()`](#dvz_gui_pop_font) | `include/datoviz/gui.h` |
     | [`dvz_gui_push_mono()`](#dvz_gui_push_mono) | `include/datoviz/gui.h` |
@@ -105,7 +109,6 @@ Functions: 206
     | [`dvz_gui_slider_float4()`](#dvz_gui_slider_float4) | `include/datoviz/gui.h` |
     | [`dvz_gui_slider_float_format()`](#dvz_gui_slider_float_format) | `include/datoviz/gui.h` |
     | [`dvz_gui_slider_int()`](#dvz_gui_slider_int) | `include/datoviz/gui.h` |
-    | [`dvz_gui_slider_range_double()`](#dvz_gui_slider_range_double) | `include/datoviz/gui.h` |
     | [`dvz_gui_slider_range_float()`](#dvz_gui_slider_range_float) | `include/datoviz/gui.h` |
     | [`dvz_gui_text()`](#dvz_gui_text) | `include/datoviz/gui.h` |
     | [`dvz_gui_viewport()`](#dvz_gui_viewport) | `include/datoviz/gui.h` |
@@ -330,7 +333,7 @@ DvzAppCaptureConfig dvz_app_capture_config(void);
 | --- | --- | --- |
 | return | `DvzAppCaptureConfig` | the default capture configuration |
 
-_Declared in `include/datoviz/app.h`:783._
+_Declared in `include/datoviz/app.h`:797._
 
 ### `dvz_app_capture_config_from_env()`
 
@@ -352,7 +355,7 @@ DvzAppCaptureConfig dvz_app_capture_config_from_env(
 | return | `DvzAppCaptureConfig` | the environment-derived capture configuration |
 | `basename` | `const char *` | fallback output basename, or NULL for "capture" |
 
-_Declared in `include/datoviz/app.h`:797._
+_Declared in `include/datoviz/app.h`:811._
 
 ### `dvz_app_config()`
 
@@ -384,6 +387,27 @@ void dvz_app_destroy(
 
 _Declared in `include/datoviz/app.h`:334._
 
+### `dvz_app_reap_closed_views()`
+
+Destroy native windows that have received a close request.
+
+Hosted integrations should call this after polling the window host and observing
+`dvz_app_should_exit(app)`. The function runs the same per-view close cleanup used by
+`dvz_app_run(app, 0)`.
+
+```c
+_Bool dvz_app_reap_closed_views(
+    DvzApp * app
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether any views were reaped |
+| `app` | `DvzApp *` | app to inspect |
+
+_Declared in `include/datoviz/app.h`:379._
+
 ### `dvz_app_render_once()`
 
 Render one frame for every view without polling any Datoviz-owned event loop.
@@ -399,7 +423,7 @@ int dvz_app_render_once(
 | return | `int` | 0 on success, DVZ_CANVAS_FRAME_WAIT_SURFACE if any surface is unavailable, or negative on error |
 | `app` | `DvzApp *` | the app |
 
-_Declared in `include/datoviz/app.h`:1099._
+_Declared in `include/datoviz/app.h`:1113._
 
 ### `dvz_app_resources()`
 
@@ -436,15 +460,16 @@ void dvz_app_run(
 | `app` | `DvzApp *` | the app |
 | `frame_count` | `uint32_t` | number of frames to render (0 = interactive loop) |
 
-_Declared in `include/datoviz/app.h`:1113._
+_Declared in `include/datoviz/app.h`:1127._
 
 ### `dvz_app_should_exit()`
 
 Return whether the app's interactive loop should exit.
 
 Hosted integrations that drive the app with `dvz_app_render_once()` should poll their window
-host, call this function, and destroy or replace the hosted app when it returns true. This mirrors
-the exit-policy check used by `dvz_app_run(app, 0)`.
+host, call this function, reap closed views with `dvz_app_reap_closed_views()` when it returns
+true, and destroy or replace the hosted app. This mirrors the exit-policy check used by
+`dvz_app_run(app, 0)`.
 
 ```c
 _Bool dvz_app_should_exit(
@@ -457,7 +482,7 @@ _Bool dvz_app_should_exit(
 | return | `_Bool` | whether the app should exit according to stop requests and window-close policy |
 | `app` | `DvzApp *` | app to inspect |
 
-_Declared in `include/datoviz/app.h`:365._
+_Declared in `include/datoviz/app.h`:366._
 
 ### `dvz_app_should_stop()`
 
@@ -932,7 +957,7 @@ _Bool dvz_gui_begin(
 | `open` | `_Bool *` | optional open flag, or NULL |
 | `flags` | `int` | Dear ImGui window flags |
 
-_Declared in `include/datoviz/gui.h`:165._
+_Declared in `include/datoviz/gui.h`:175._
 
 ### `dvz_gui_button()`
 
@@ -951,7 +976,7 @@ _Bool dvz_gui_button(
 | `gui` | `DvzGui *` | the GUI overlay |
 | `label` | `const char *` | button label |
 
-_Declared in `include/datoviz/gui.h`:214._
+_Declared in `include/datoviz/gui.h`:266._
 
 ### `dvz_gui_checkbox()`
 
@@ -972,7 +997,7 @@ _Bool dvz_gui_checkbox(
 | `label` | `const char *` | checkbox label |
 | `value` | `_Bool *` | value edited in place |
 
-_Declared in `include/datoviz/gui.h`:226._
+_Declared in `include/datoviz/gui.h`:278._
 
 ### `dvz_gui_collapsing_header()`
 
@@ -993,7 +1018,7 @@ _Bool dvz_gui_collapsing_header(
 | `label` | `const char *` | section label |
 | `flags` | `int` | Dear ImGui tree node flags |
 
-_Declared in `include/datoviz/gui.h`:446._
+_Declared in `include/datoviz/gui.h`:480._
 
 ### `dvz_gui_color_edit4()`
 
@@ -1016,7 +1041,7 @@ _Bool dvz_gui_color_edit4(
 | `rgba` | `float[4]` | RGBA channels edited in place |
 | `flags` | `int` | Dear ImGui color edit flags |
 
-_Declared in `include/datoviz/gui.h`:398._
+_Declared in `include/datoviz/gui.h`:432._
 
 ### `dvz_gui_color_edit_dvz()`
 
@@ -1039,7 +1064,7 @@ _Bool dvz_gui_color_edit_dvz(
 | `color` | `DvzColor *` | color edited in place |
 | `flags` | `int` | Dear ImGui color edit flags |
 
-_Declared in `include/datoviz/gui.h`:411._
+_Declared in `include/datoviz/gui.h`:445._
 
 ### `dvz_gui_color_picker4()`
 
@@ -1062,7 +1087,7 @@ _Bool dvz_gui_color_picker4(
 | `rgba` | `float[4]` | RGBA channels edited in place |
 | `flags` | `int` | Dear ImGui color edit flags |
 
-_Declared in `include/datoviz/gui.h`:424._
+_Declared in `include/datoviz/gui.h`:458._
 
 ### `dvz_gui_combo()`
 
@@ -1087,7 +1112,7 @@ _Bool dvz_gui_combo(
 | `items` | `const char *const *` | item labels |
 | `item_count` | `int` | number of item labels |
 
-_Declared in `include/datoviz/gui.h`:239._
+_Declared in `include/datoviz/gui.h`:291._
 
 ### `dvz_gui_config()`
 
@@ -1101,7 +1126,47 @@ DvzGuiConfig dvz_gui_config(void);
 | --- | --- | --- |
 | return | `DvzGuiConfig` | default GUI configuration |
 
-_Declared in `include/datoviz/gui.h`:115._
+_Declared in `include/datoviz/gui.h`:125._
+
+### `dvz_gui_current_window_docked()`
+
+Return whether the current ImGui window is docked.
+
+Call between dvz_gui_begin() and dvz_gui_end().
+
+```c
+_Bool dvz_gui_current_window_docked(
+    DvzGui * gui
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the current ImGui window is docked |
+| `gui` | `DvzGui *` | the GUI overlay |
+
+_Declared in `include/datoviz/gui.h`:204._
+
+### `dvz_gui_current_window_rect()`
+
+Return the current ImGui window rectangle in host-window logical pixels.
+
+Call between dvz_gui_begin() and dvz_gui_end().
+
+```c
+_Bool dvz_gui_current_window_rect(
+    DvzGui * gui,
+    DvzRect * out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the rectangle was written |
+| `gui` | `DvzGui *` | the GUI overlay |
+| `out` | `DvzRect *` | output rectangle |
+
+_Declared in `include/datoviz/gui.h`:217._
 
 ### `dvz_gui_demo()`
 
@@ -1119,7 +1184,33 @@ void dvz_gui_demo(
 | `gui` | `DvzGui *` | the GUI overlay |
 | `open` | `_Bool *` | optional open flag, or NULL |
 
-_Declared in `include/datoviz/gui.h`:467._
+_Declared in `include/datoviz/gui.h`:501._
+
+### `dvz_gui_dock_window_once()`
+
+Dock an ImGui window into the default full-view dockspace the first time it is shown.
+
+Call before dvz_gui_begin() with the same title. The request is applied only once per title, so
+user-driven docking changes are not overwritten on later frames.
+
+```c
+DvzResult dvz_gui_dock_window_once(
+    DvzGui * gui,
+    const char * title,
+    DvzGuiDockSlot slot,
+    float size_px
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | DVZ_OK if the request was accepted, DVZ_ERROR otherwise |
+| `gui` | `DvzGui *` | the GUI overlay |
+| `title` | `const char *` | the window title |
+| `slot` | `DvzGuiDockSlot` | side of the full-view dockspace |
+| `size_px` | `float` | initial docked size in logical pixels along the split axis, or 0 for default |
+
+_Declared in `include/datoviz/gui.h`:192._
 
 ### `dvz_gui_end()`
 
@@ -1135,7 +1226,7 @@ void dvz_gui_end(
 | --- | --- | --- |
 | `gui` | `DvzGui *` | the GUI overlay |
 
-_Declared in `include/datoviz/gui.h`:174._
+_Declared in `include/datoviz/gui.h`:226._
 
 ### `dvz_gui_pop_font()`
 
@@ -1151,7 +1242,7 @@ void dvz_gui_pop_font(
 | --- | --- | --- |
 | `gui` | `DvzGui *` | the GUI overlay |
 
-_Declared in `include/datoviz/gui.h`:203._
+_Declared in `include/datoviz/gui.h`:255._
 
 ### `dvz_gui_push_mono()`
 
@@ -1168,7 +1259,7 @@ _Bool dvz_gui_push_mono(
 | return | `_Bool` | whether the monospace font was available and pushed |
 | `gui` | `DvzGui *` | the GUI overlay |
 
-_Declared in `include/datoviz/gui.h`:194._
+_Declared in `include/datoviz/gui.h`:246._
 
 ### `dvz_gui_range_float()`
 
@@ -1199,7 +1290,7 @@ _Bool dvz_gui_range_float(
 | `max` | `float` | upper clamp value |
 | `format` | `const char *` | printf-style value format |
 
-_Declared in `include/datoviz/gui.h`:383._
+_Declared in `include/datoviz/gui.h`:417._
 
 ### `dvz_gui_same_line()`
 
@@ -1219,7 +1310,7 @@ void dvz_gui_same_line(
 | `offset_from_start_x` | `float` | x offset from start, or 0 |
 | `spacing` | `float` | spacing between items, or -1 for default |
 
-_Declared in `include/datoviz/gui.h`:457._
+_Declared in `include/datoviz/gui.h`:491._
 
 ### `dvz_gui_separator_text()`
 
@@ -1237,7 +1328,7 @@ void dvz_gui_separator_text(
 | `gui` | `DvzGui *` | the GUI overlay |
 | `label` | `const char *` | separator label |
 
-_Declared in `include/datoviz/gui.h`:434._
+_Declared in `include/datoviz/gui.h`:468._
 
 ### `dvz_gui_slider_float()`
 
@@ -1262,7 +1353,7 @@ _Bool dvz_gui_slider_float(
 | `min` | `float` | minimum value |
 | `max` | `float` | maximum value |
 
-_Declared in `include/datoviz/gui.h`:255._
+_Declared in `include/datoviz/gui.h`:307._
 
 ### `dvz_gui_slider_float2()`
 
@@ -1287,7 +1378,7 @@ _Bool dvz_gui_slider_float2(
 | `min` | `float` | minimum value |
 | `max` | `float` | maximum value |
 
-_Declared in `include/datoviz/gui.h`:284._
+_Declared in `include/datoviz/gui.h`:336._
 
 ### `dvz_gui_slider_float3()`
 
@@ -1312,7 +1403,7 @@ _Bool dvz_gui_slider_float3(
 | `min` | `float` | minimum value |
 | `max` | `float` | maximum value |
 
-_Declared in `include/datoviz/gui.h`:299._
+_Declared in `include/datoviz/gui.h`:351._
 
 ### `dvz_gui_slider_float4()`
 
@@ -1337,7 +1428,7 @@ _Bool dvz_gui_slider_float4(
 | `min` | `float` | minimum value |
 | `max` | `float` | maximum value |
 
-_Declared in `include/datoviz/gui.h`:314._
+_Declared in `include/datoviz/gui.h`:366._
 
 ### `dvz_gui_slider_float_format()`
 
@@ -1364,7 +1455,7 @@ _Bool dvz_gui_slider_float_format(
 | `max` | `float` | maximum value |
 | `format` | `const char *` | printf-style value format |
 
-_Declared in `include/datoviz/gui.h`:329._
+_Declared in `include/datoviz/gui.h`:381._
 
 ### `dvz_gui_slider_int()`
 
@@ -1389,36 +1480,7 @@ _Bool dvz_gui_slider_int(
 | `min` | `int` | minimum value |
 | `max` | `int` | maximum value |
 
-_Declared in `include/datoviz/gui.h`:269._
-
-### `dvz_gui_slider_range_double()`
-
-Show a double range slider with two handles.
-
-```c
-_Bool dvz_gui_slider_range_double(
-    DvzGui * gui,
-    const char * label,
-    double * current_min,
-    double * current_max,
-    double min,
-    double max,
-    const char * format
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `_Bool` | whether either value changed |
-| `gui` | `DvzGui *` | the GUI overlay |
-| `label` | `const char *` | slider label |
-| `current_min` | `double *` | minimum value edited in place |
-| `current_max` | `double *` | maximum value edited in place |
-| `min` | `double` | lower clamp value |
-| `max` | `double` | upper clamp value |
-| `format` | `const char *` | optional printf-style value format |
-
-_Declared in `include/datoviz/gui.h`:364._
+_Declared in `include/datoviz/gui.h`:321._
 
 ### `dvz_gui_slider_range_float()`
 
@@ -1447,7 +1509,7 @@ _Bool dvz_gui_slider_range_float(
 | `max` | `float` | upper clamp value |
 | `format` | `const char *` | optional printf-style value format |
 
-_Declared in `include/datoviz/gui.h`:346._
+_Declared in `include/datoviz/gui.h`:398._
 
 ### `dvz_gui_text()`
 
@@ -1465,7 +1527,7 @@ void dvz_gui_text(
 | `gui` | `DvzGui *` | the GUI overlay |
 | `text` | `const char *` | null-terminated text |
 
-_Declared in `include/datoviz/gui.h`:184._
+_Declared in `include/datoviz/gui.h`:236._
 
 ### `dvz_gui_viewport()`
 
@@ -1491,7 +1553,7 @@ DvzGuiViewport * dvz_gui_viewport(
 | `figure` | `DvzFigure *` | figure to render inside the GUI viewport |
 | `config` | `const DvzGuiViewportConfig *` | optional viewport configuration |
 
-_Declared in `include/datoviz/gui.h`:485._
+_Declared in `include/datoviz/gui.h`:519._
 
 ### `dvz_gui_viewport_config()`
 
@@ -1505,7 +1567,7 @@ DvzGuiViewportConfig dvz_gui_viewport_config(void);
 | --- | --- | --- |
 | return | `DvzGuiViewportConfig` | default GUI viewport configuration |
 
-_Declared in `include/datoviz/gui.h`:124._
+_Declared in `include/datoviz/gui.h`:134._
 
 ### `dvz_gui_viewport_destroy()`
 
@@ -1521,7 +1583,7 @@ void dvz_gui_viewport_destroy(
 | --- | --- | --- |
 | `viewport` | `DvzGuiViewport *` | the GUI viewport |
 
-_Declared in `include/datoviz/gui.h`:541._
+_Declared in `include/datoviz/gui.h`:575._
 
 ### `dvz_gui_viewport_from_window()`
 
@@ -1546,7 +1608,7 @@ DvzGuiViewport * dvz_gui_viewport_from_window(
 | `source` | `DvzView *` | view providing the rendered image |
 | `config` | `const DvzGuiViewportConfig *` | optional viewport configuration |
 
-_Declared in `include/datoviz/gui.h`:502._
+_Declared in `include/datoviz/gui.h`:536._
 
 ### `dvz_gui_viewport_input()`
 
@@ -1566,7 +1628,7 @@ struct DvzInputRouter * dvz_gui_viewport_input(
 | return | `struct DvzInputRouter *` | the input router, or NULL |
 | `viewport` | `DvzGuiViewport *` | the GUI viewport |
 
-_Declared in `include/datoviz/gui.h`:516._
+_Declared in `include/datoviz/gui.h`:550._
 
 ### `dvz_gui_viewport_mouse()`
 
@@ -1592,7 +1654,7 @@ _Bool dvz_gui_viewport_mouse(
 | `out_size` | `float[2]` | optional output displayed source width/height |
 | `out_hovered` | `_Bool *` | optional output hover state |
 
-_Declared in `include/datoviz/gui.h`:531._
+_Declared in `include/datoviz/gui.h`:565._
 
 ### `dvz_gui_viewport_window()`
 
@@ -1619,7 +1681,7 @@ _Bool dvz_gui_viewport_window(
 | `open` | `_Bool *` | optional open flag, or NULL |
 | `flags` | `int` | Dear ImGui window flags |
 
-_Declared in `include/datoviz/gui.h`:559._
+_Declared in `include/datoviz/gui.h`:593._
 
 ## Input
 
@@ -2516,7 +2578,7 @@ DvzView * dvz_view(
 | `figure` | `DvzFigure *` | the figure to render (borrowed) |
 | `desc` | `const DvzViewDesc *` | view descriptor |
 
-_Declared in `include/datoviz/app.h`:460._
+_Declared in `include/datoviz/app.h`:474._
 
 ### `dvz_view_arcball()`
 
@@ -2537,7 +2599,7 @@ DvzArcball * dvz_view_arcball(
 | `panel` | `DvzPanel *` | the panel |
 | `desc` | `const DvzArcballDesc *` | arcball descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/app.h`:734._
+_Declared in `include/datoviz/app.h`:748._
 
 ### `dvz_view_bind_controller()`
 
@@ -2560,7 +2622,7 @@ DvzResult dvz_view_bind_controller(
 | `controller` | `DvzController *` | the scene-owned controller |
 | `dims` | `DvzDimMask` | dimension mask |
 
-_Declared in `include/datoviz/app.h`:709._
+_Declared in `include/datoviz/app.h`:723._
 
 ### `dvz_view_canvas()`
 
@@ -2579,7 +2641,7 @@ struct DvzCanvas * dvz_view_canvas(
 | return | `struct DvzCanvas *` | the canvas, or NULL if the window was not created with GPU support |
 | `view` | `DvzView *` | the view |
 
-_Declared in `include/datoviz/app.h`:575._
+_Declared in `include/datoviz/app.h`:589._
 
 ### `dvz_view_capabilities()`
 
@@ -2601,7 +2663,7 @@ _Bool dvz_view_capabilities(
 | `view` | `const DvzView *` | the view |
 | `out` | `DvzCapabilitySnapshot *` | output capability snapshot |
 
-_Declared in `include/datoviz/app.h`:659._
+_Declared in `include/datoviz/app.h`:673._
 
 ### `dvz_view_capture_from_env()`
 
@@ -2624,7 +2686,7 @@ DvzResult dvz_view_capture_from_env(
 | `view` | `DvzView *` | the view |
 | `basename` | `const char *` | fallback output basename, or NULL for "capture" |
 
-_Declared in `include/datoviz/app.h`:826._
+_Declared in `include/datoviz/app.h`:840._
 
 ### `dvz_view_capture_png()`
 
@@ -2647,7 +2709,7 @@ DvzResult dvz_view_capture_png(
 | `view` | `DvzView *` | the view |
 | `path` | `const char *` | output file path |
 
-_Declared in `include/datoviz/app.h`:772._
+_Declared in `include/datoviz/app.h`:786._
 
 ### `dvz_view_capture_start()`
 
@@ -2670,7 +2732,7 @@ DvzResult dvz_view_capture_start(
 | `view` | `DvzView *` | the view |
 | `config` | `const DvzAppCaptureConfig *` | capture configuration, or NULL for dvz_app_capture_config() |
 
-_Declared in `include/datoviz/app.h`:811._
+_Declared in `include/datoviz/app.h`:825._
 
 ### `dvz_view_capture_stop()`
 
@@ -2690,7 +2752,7 @@ DvzResult dvz_view_capture_stop(
 | return | `DvzResult` | 0 on success, negative on error |
 | `view` | `DvzView *` | the view |
 
-_Declared in `include/datoviz/app.h`:838._
+_Declared in `include/datoviz/app.h`:852._
 
 ### `dvz_view_connect_panel()`
 
@@ -2709,7 +2771,7 @@ DvzResult dvz_view_connect_panel(
 | `view` | `DvzView *` | the view |
 | `panel` | `DvzPanel *` | the panel |
 
-_Declared in `include/datoviz/app.h`:697._
+_Declared in `include/datoviz/app.h`:711._
 
 ### `dvz_view_desc()`
 
@@ -2728,7 +2790,7 @@ DvzViewDesc dvz_view_desc(
 
 Related: [`dvz_view()`](#dvz_view).
 
-_Declared in `include/datoviz/app.h`:379._
+_Declared in `include/datoviz/app.h`:393._
 
 ### `dvz_view_device_scale()`
 
@@ -2745,7 +2807,7 @@ float dvz_view_device_scale(
 | return | `float` | physical pixels per logical pixel, or 1 when unavailable |
 | `view` | `const DvzView *` | the view |
 
-_Declared in `include/datoviz/app.h`:596._
+_Declared in `include/datoviz/app.h`:610._
 
 ### `dvz_view_device_scale_xy()`
 
@@ -2762,7 +2824,7 @@ DvzScaleXY dvz_view_device_scale_xy(
 | return | `DvzScaleXY` | physical pixels per logical pixel along X and Y |
 | `view` | `const DvzView *` | the view |
 
-_Declared in `include/datoviz/app.h`:605._
+_Declared in `include/datoviz/app.h`:619._
 
 ### `dvz_view_emit_key()`
 
@@ -2785,7 +2847,7 @@ DvzResult dvz_view_emit_key(
 | `key` | `DvzKeyCode` | Datoviz key code |
 | `mods` | `int` | keyboard modifier bit mask |
 
-_Declared in `include/datoviz/app.h`:564._
+_Declared in `include/datoviz/app.h`:578._
 
 ### `dvz_view_emit_pointer()`
 
@@ -2816,7 +2878,7 @@ DvzResult dvz_view_emit_pointer(
 | `button` | `DvzPointerButton` | pointer button, or DVZ_POINTER_BUTTON_NONE |
 | `mods` | `int` | keyboard modifier bit mask |
 
-_Declared in `include/datoviz/app.h`:531._
+_Declared in `include/datoviz/app.h`:545._
 
 ### `dvz_view_emit_resize()`
 
@@ -2848,7 +2910,7 @@ DvzResult dvz_view_emit_resize(
 | `content_scale_x` | `float` | horizontal content scale |
 | `content_scale_y` | `float` | vertical content scale |
 
-_Declared in `include/datoviz/app.h`:513._
+_Declared in `include/datoviz/app.h`:527._
 
 ### `dvz_view_emit_wheel()`
 
@@ -2879,7 +2941,7 @@ DvzResult dvz_view_emit_wheel(
 | `dy` | `float` | vertical wheel delta |
 | `mods` | `int` | keyboard modifier bit mask |
 
-_Declared in `include/datoviz/app.h`:549._
+_Declared in `include/datoviz/app.h`:563._
 
 ### `dvz_view_external_surface()`
 
@@ -2925,7 +2987,7 @@ DvzFly * dvz_view_fly(
 | `panel` | `DvzPanel *` | the panel |
 | `desc` | `const DvzFlyDesc *` | fly descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/app.h`:746._
+_Declared in `include/datoviz/app.h`:760._
 
 ### `dvz_view_framebuffer_size()`
 
@@ -2945,7 +3007,7 @@ void dvz_view_framebuffer_size(
 | `out_width` | `uint32_t *` | output framebuffer width in physical pixels, may be NULL |
 | `out_height` | `uint32_t *` | output framebuffer height in physical pixels, may be NULL |
 
-_Declared in `include/datoviz/app.h`:646._
+_Declared in `include/datoviz/app.h`:660._
 
 ### `dvz_view_gui()`
 
@@ -2964,7 +3026,7 @@ DvzGui * dvz_view_gui(
 | `view` | `DvzView *` | the view |
 | `config` | `const DvzGuiConfig *` | optional GUI configuration |
 
-_Declared in `include/datoviz/gui.h`:135._
+_Declared in `include/datoviz/gui.h`:145._
 
 ### `dvz_view_input()`
 
@@ -2984,7 +3046,7 @@ struct DvzInputRouter * dvz_view_input(
 | return | `struct DvzInputRouter *` | the input router, or NULL |
 | `view` | `DvzView *` | the view |
 
-_Declared in `include/datoviz/app.h`:587._
+_Declared in `include/datoviz/app.h`:601._
 
 ### `dvz_view_logical_size()`
 
@@ -3004,7 +3066,7 @@ void dvz_view_logical_size(
 | `out_width` | `uint32_t *` | output logical width in pixels, may be NULL |
 | `out_height` | `uint32_t *` | output logical height in pixels, may be NULL |
 
-_Declared in `include/datoviz/app.h`:635._
+_Declared in `include/datoviz/app.h`:649._
 
 ### `dvz_view_offscreen()`
 
@@ -3030,7 +3092,7 @@ DvzView * dvz_view_offscreen(
 | `width` | `uint32_t` | framebuffer width in pixels |
 | `height` | `uint32_t` | framebuffer height in pixels |
 
-_Declared in `include/datoviz/app.h`:475._
+_Declared in `include/datoviz/app.h`:489._
 
 ### `dvz_view_panzoom()`
 
@@ -3051,7 +3113,7 @@ DvzPanzoom * dvz_view_panzoom(
 | `panel` | `DvzPanel *` | the panel |
 | `desc` | `const DvzPanzoomDesc *` | panzoom descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/app.h`:722._
+_Declared in `include/datoviz/app.h`:736._
 
 ### `dvz_view_post()`
 
@@ -3076,7 +3138,7 @@ DvzResult dvz_view_post(
 | `callback` | `DvzViewPostCallback` | callback to run on the owner thread |
 | `user_data` | `void *` | opaque pointer forwarded to the callback |
 
-_Declared in `include/datoviz/app.h`:1038._
+_Declared in `include/datoviz/app.h`:1052._
 
 ### `dvz_view_record_start()`
 
@@ -3099,7 +3161,7 @@ DvzResult dvz_view_record_start(
 | `view` | `DvzView *` | the view |
 | `path` | `const char *` | output recording directory path |
 
-_Declared in `include/datoviz/app.h`:852._
+_Declared in `include/datoviz/app.h`:866._
 
 ### `dvz_view_record_stop()`
 
@@ -3116,7 +3178,7 @@ DvzResult dvz_view_record_stop(
 | return | `DvzResult` | 0 on success, negative on error |
 | `view` | `DvzView *` | the view |
 
-_Declared in `include/datoviz/app.h`:861._
+_Declared in `include/datoviz/app.h`:875._
 
 ### `dvz_view_release_external_surface()`
 
@@ -3154,7 +3216,7 @@ _Bool dvz_view_render_enabled(
 | return | `_Bool` | whether rendering is enabled |
 | `view` | `const DvzView *` | the view |
 
-_Declared in `include/datoviz/app.h`:997._
+_Declared in `include/datoviz/app.h`:1011._
 
 ### `dvz_view_render_once()`
 
@@ -3175,7 +3237,7 @@ int dvz_view_render_once(
 | return | `int` | DVZ_CANVAS_FRAME_READY after a submitted frame, DVZ_CANVAS_FRAME_WAIT_SURFACE while the surface is unavailable, after a disabled-view no-op, or a negative error code |
 | `view` | `DvzView *` | the view |
 
-_Declared in `include/datoviz/app.h`:1089._
+_Declared in `include/datoviz/app.h`:1103._
 
 ### `dvz_view_render_scale()`
 
@@ -3192,7 +3254,7 @@ float dvz_view_render_scale(
 | return | `float` | render scale, defaulting to 1 |
 | `view` | `const DvzView *` | the view |
 
-_Declared in `include/datoviz/app.h`:668._
+_Declared in `include/datoviz/app.h`:682._
 
 ### `dvz_view_replay_frame_count()`
 
@@ -3209,7 +3271,7 @@ uint32_t dvz_view_replay_frame_count(
 | return | `uint32_t` | replay frame count, or 0 when no replay is active |
 | `view` | `const DvzView *` | the view |
 
-_Declared in `include/datoviz/app.h`:926._
+_Declared in `include/datoviz/app.h`:940._
 
 ### `dvz_view_replay_set_loop()`
 
@@ -3230,7 +3292,7 @@ DvzResult dvz_view_replay_set_loop(
 | `view` | `DvzView *` | the view |
 | `loop` | `_Bool` | whether the recording should loop |
 
-_Declared in `include/datoviz/app.h`:917._
+_Declared in `include/datoviz/app.h`:931._
 
 ### `dvz_view_replay_set_paced()`
 
@@ -3249,7 +3311,7 @@ DvzResult dvz_view_replay_set_paced(
 | `view` | `DvzView *` | the view |
 | `paced` | `_Bool` | whether replay waits for recorded timestamps |
 
-_Declared in `include/datoviz/app.h`:893._
+_Declared in `include/datoviz/app.h`:907._
 
 ### `dvz_view_replay_set_speed()`
 
@@ -3270,7 +3332,7 @@ DvzResult dvz_view_replay_set_speed(
 | `view` | `DvzView *` | the view |
 | `speed` | `double` | replay speed multiplier |
 
-_Declared in `include/datoviz/app.h`:905._
+_Declared in `include/datoviz/app.h`:919._
 
 ### `dvz_view_replay_start()`
 
@@ -3292,7 +3354,7 @@ DvzResult dvz_view_replay_start(
 | `view` | `DvzView *` | the view |
 | `path` | `const char *` | input `.dvzr` recording directory |
 
-_Declared in `include/datoviz/app.h`:874._
+_Declared in `include/datoviz/app.h`:888._
 
 ### `dvz_view_replay_stop()`
 
@@ -3309,7 +3371,7 @@ DvzResult dvz_view_replay_stop(
 | return | `DvzResult` | 0 on success, negative on error |
 | `view` | `DvzView *` | the view |
 
-_Declared in `include/datoviz/app.h`:883._
+_Declared in `include/datoviz/app.h`:897._
 
 ### `dvz_view_request_frame()`
 
@@ -3329,7 +3391,7 @@ DvzResult dvz_view_request_frame(
 | return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on validation error |
 | `view` | `DvzView *` | the view |
 
-_Declared in `include/datoviz/app.h`:1009._
+_Declared in `include/datoviz/app.h`:1023._
 
 ### `dvz_view_resize()`
 
@@ -3353,7 +3415,7 @@ DvzResult dvz_view_resize(
 | `width` | `uint32_t` | width in pixels |
 | `height` | `uint32_t` | height in pixels |
 
-_Declared in `include/datoviz/app.h`:940._
+_Declared in `include/datoviz/app.h`:954._
 
 ### `dvz_view_resize_scaled()`
 
@@ -3380,7 +3442,7 @@ DvzResult dvz_view_resize_scaled(
 | `logical_height` | `uint32_t` | logical height in pixels |
 | `device_scale` | `float` | physical pixels per logical pixel |
 
-_Declared in `include/datoviz/app.h`:956._
+_Declared in `include/datoviz/app.h`:970._
 
 ### `dvz_view_resize_scaled_xy()`
 
@@ -3408,7 +3470,7 @@ DvzResult dvz_view_resize_scaled_xy(
 | `device_scale_x` | `float` | physical pixels per logical pixel along X |
 | `device_scale_y` | `float` | physical pixels per logical pixel along Y |
 
-_Declared in `include/datoviz/app.h`:973._
+_Declared in `include/datoviz/app.h`:987._
 
 ### `dvz_view_resolved_size()`
 
@@ -3425,7 +3487,7 @@ DvzResolvedViewSize dvz_view_resolved_size(
 | return | `DvzResolvedViewSize` | resolved view size metrics, or zeroed metrics on invalid input |
 | `view` | `const DvzView *` | the view |
 
-_Declared in `include/datoviz/app.h`:624._
+_Declared in `include/datoviz/app.h`:638._
 
 ### `dvz_view_set_frame_callback()`
 
@@ -3450,7 +3512,7 @@ DvzResult dvz_view_set_frame_callback(
 | `callback` | `DvzViewFrameCallback` | callback pointer, or NULL to clear it |
 | `user_data` | `void *` | opaque pointer forwarded to the callback |
 
-_Declared in `include/datoviz/app.h`:1069._
+_Declared in `include/datoviz/app.h`:1083._
 
 ### `dvz_view_set_gui_callback()`
 
@@ -3474,7 +3536,7 @@ DvzResult dvz_view_set_gui_callback(
 | `callback` | `DvzGuiCallback` | callback pointer, or NULL to clear it |
 | `user_data` | `void *` | opaque pointer forwarded to the callback |
 
-_Declared in `include/datoviz/gui.h`:151._
+_Declared in `include/datoviz/gui.h`:161._
 
 ### `dvz_view_set_render_enabled()`
 
@@ -3496,7 +3558,7 @@ DvzResult dvz_view_set_render_enabled(
 | `view` | `DvzView *` | the view |
 | `enabled` | `_Bool` | whether rendering should be enabled |
 
-_Declared in `include/datoviz/app.h`:988._
+_Declared in `include/datoviz/app.h`:1002._
 
 ### `dvz_view_set_request_frame_callback()`
 
@@ -3520,7 +3582,7 @@ DvzResult dvz_view_set_request_frame_callback(
 | `callback` | `DvzViewRequestFrameCallback` | callback pointer, or NULL to clear it |
 | `user_data` | `void *` | opaque pointer forwarded to the callback |
 
-_Declared in `include/datoviz/app.h`:1052._
+_Declared in `include/datoviz/app.h`:1066._
 
 ### `dvz_view_set_user_scale()`
 
@@ -3539,7 +3601,7 @@ DvzResult dvz_view_set_user_scale(
 | `view` | `DvzView *` | the view |
 | `scale` | `float` | positive user scale |
 
-_Declared in `include/datoviz/app.h`:687._
+_Declared in `include/datoviz/app.h`:701._
 
 ### `dvz_view_size()`
 
@@ -3558,7 +3620,7 @@ DvzExtent dvz_view_size(
 | `view` | `const DvzView *` | the view |
 | `space` | `DvzSizeSpace` | requested size space |
 
-_Declared in `include/datoviz/app.h`:615._
+_Declared in `include/datoviz/app.h`:629._
 
 ### `dvz_view_size_desc_framebuffer_px()`
 
@@ -3577,7 +3639,7 @@ DvzViewSizeDesc dvz_view_size_desc_framebuffer_px(
 | `width` | `uint32_t` | framebuffer width in device pixels |
 | `height` | `uint32_t` | framebuffer height in device pixels |
 
-_Declared in `include/datoviz/app.h`:390._
+_Declared in `include/datoviz/app.h`:404._
 
 ### `dvz_view_size_desc_host_logical_px()`
 
@@ -3596,7 +3658,7 @@ DvzViewSizeDesc dvz_view_size_desc_host_logical_px(
 | `width` | `uint32_t` | host/window logical width |
 | `height` | `uint32_t` | host/window logical height |
 
-_Declared in `include/datoviz/app.h`:400._
+_Declared in `include/datoviz/app.h`:414._
 
 ### `dvz_view_size_desc_physical_mm()`
 
@@ -3619,7 +3681,7 @@ DvzViewSizeDesc dvz_view_size_desc_physical_mm(
 | `height_mm` | `double` | target height in millimeters |
 | `reference_dpi` | `double` | reference pixels per inch, or <= 0 for 96 |
 
-_Declared in `include/datoviz/app.h`:430._
+_Declared in `include/datoviz/app.h`:444._
 
 ### `dvz_view_size_desc_reference_px()`
 
@@ -3644,7 +3706,7 @@ DvzViewSizeDesc dvz_view_size_desc_reference_px(
 | `height` | `double` | canvas/reference height |
 | `reference_dpi` | `double` | reference pixels per inch, or <= 0 for 96 |
 
-_Declared in `include/datoviz/app.h`:416._
+_Declared in `include/datoviz/app.h`:430._
 
 ### `dvz_view_size_resolve()`
 
@@ -3666,7 +3728,7 @@ DvzResolvedViewSize dvz_view_size_resolve(
 | `desc` | `const DvzViewSizeDesc *` | size descriptor |
 | `kind` | `DvzViewKind` | target view kind |
 
-_Declared in `include/datoviz/app.h`:444._
+_Declared in `include/datoviz/app.h`:458._
 
 ### `dvz_view_turntable()`
 
@@ -3687,7 +3749,7 @@ DvzTurntable * dvz_view_turntable(
 | `panel` | `DvzPanel *` | the panel |
 | `desc` | `const DvzTurntableDesc *` | turntable descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/app.h`:757._
+_Declared in `include/datoviz/app.h`:771._
 
 ### `dvz_view_update_external_surface()`
 
@@ -3727,7 +3789,7 @@ float dvz_view_user_scale(
 | return | `float` | user scale, defaulting to 1 |
 | `view` | `const DvzView *` | the view |
 
-_Declared in `include/datoviz/app.h`:677._
+_Declared in `include/datoviz/app.h`:691._
 
 ### `dvz_view_wake()`
 
@@ -3748,7 +3810,7 @@ DvzResult dvz_view_wake(
 | return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on validation error |
 | `view` | `DvzView *` | the view |
 
-_Declared in `include/datoviz/app.h`:1022._
+_Declared in `include/datoviz/app.h`:1036._
 
 ### `dvz_view_window()`
 
@@ -3779,7 +3841,7 @@ DvzView * dvz_view_window(
 | `height` | `uint32_t` | window height in pixels |
 | `title` | `const char *` | window title string, or NULL for a default title |
 
-_Declared in `include/datoviz/app.h`:494._
+_Declared in `include/datoviz/app.h`:508._
 
 ## Window
 

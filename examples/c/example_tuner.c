@@ -1238,8 +1238,14 @@ static bool _volume_gui(DvzGui* gui, void* user)
         changed = true;
     }
 
-    changed |= dvz_gui_slider_range_double(
-        gui, "Value range", &volume->value_min, &volume->value_max, 0.0, 1.0, "%.3f");
+    float value_min = (float)volume->value_min;
+    float value_max = (float)volume->value_max;
+    if (dvz_gui_slider_range_float(gui, "Value range", &value_min, &value_max, 0.0f, 1.0f, "%.3f"))
+    {
+        volume->value_min = (double)value_min;
+        volume->value_max = (double)value_max;
+        changed = true;
+    }
 
     int axis = _clamp_int((int)volume->slice_axis, 0, 2);
     if (dvz_gui_combo(gui, "Slice axis", &axis, axes, 3))

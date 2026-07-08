@@ -279,9 +279,6 @@ static int test_gui_widget_wrapper_symbols(TstContext* suite, const TstCase* ite
     bool (*slider_range_float)(
         DvzGui*, const char*, float*, float*, float, float, const char*) =
         dvz_gui_slider_range_float;
-    bool (*slider_range_double)(
-        DvzGui*, const char*, double*, double*, double, double, const char*) =
-        dvz_gui_slider_range_double;
     bool (*range_float)(
         DvzGui*, const char*, float*, float*, float, float, float, const char*) =
         dvz_gui_range_float;
@@ -301,7 +298,6 @@ static int test_gui_widget_wrapper_symbols(TstContext* suite, const TstCase* ite
     AT(slider_float3 != NULL);
     AT(slider_float4 != NULL);
     AT(slider_range_float != NULL);
-    AT(slider_range_double != NULL);
     AT(range_float != NULL);
     AT(color_edit4 != NULL);
     AT(color_edit_dvz != NULL);

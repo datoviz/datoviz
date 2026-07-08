@@ -424,8 +424,15 @@ static void _colorbar_gui(DvzGui* gui, DvzView* win, void* user_data)
         dvz_gui_separator_text(gui, "Scale");
         colormap_changed = dvz_gui_combo(
             gui, "Colormap", &state->colormap_index, colormap_names, (int)COLORMAP_COUNT);
-        range_changed = dvz_gui_slider_range_double(
-            gui, "Range", &state->range_min, &state->range_max, SCALE_MIN, SCALE_MAX, "%.2f");
+        float range_min = (float)state->range_min;
+        float range_max = (float)state->range_max;
+        if (dvz_gui_slider_range_float(
+                gui, "Range", &range_min, &range_max, (float)SCALE_MIN, (float)SCALE_MAX, "%.2f"))
+        {
+            state->range_min = (double)range_min;
+            state->range_max = (double)range_max;
+            range_changed = true;
+        }
         if (dvz_gui_button(gui, "Reset range"))
         {
             state->range_min = FIELD_MIN;
