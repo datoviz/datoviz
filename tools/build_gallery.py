@@ -152,6 +152,7 @@ FEATURE_PAGE_GROUPS = (
         "feature_mesh_texture",
         "feature_material_mesh",
         "feature_volume_occlusion",
+        "technique_edl",
         "technique_ssao",
         "technique_depth_cue",
         "technique_msaa",

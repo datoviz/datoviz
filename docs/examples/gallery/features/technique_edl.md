@@ -53,6 +53,6 @@ Both panels upload the same depth-rich point cloud with position, color, and siz
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_json_export">Previous: JSON Export</a>
+<a href="../feature_volume_occlusion">Previous: Volume Occlusion</a> · <a href="../technique_ssao">Next: Screen-Space Ambient Occlusion</a>
 </div>
 </nav>

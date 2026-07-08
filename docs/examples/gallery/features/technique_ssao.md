@@ -52,6 +52,6 @@ Both panels upload the same lit sphere position, radius, and color arrays, while
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_volume_occlusion">Previous: Volume Occlusion</a> · <a href="../technique_depth_cue">Next: Depth Cue</a>
+<a href="../technique_edl">Previous: Eye-Dome Lighting</a> · <a href="../technique_depth_cue">Next: Depth Cue</a>
 </div>
 </nav>

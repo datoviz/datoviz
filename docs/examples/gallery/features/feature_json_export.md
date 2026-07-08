@@ -54,6 +54,6 @@ The live view is intentionally small, with three point items whose position, col
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_input_events">Previous: Input Events</a> · <a href="../technique_edl">Next: Eye-Dome Lighting</a>
+<a href="../feature_input_events">Previous: Input Events</a>
 </div>
 </nav>

@@ -608,6 +608,18 @@ Volume_occlusion compares a volume slice with and without attenuation by the sur
 
 <div class="card" markdown="1">
 
+### [Eye-Dome Lighting](gallery/features/technique_edl.md)
+
+[![Eye-Dome Lighting](../assets/gallery/v0.4/features/technique_edl.webp)](gallery/features/technique_edl.md)
+
+`experimental` `features`
+
+Edl compares a dense 3D point cloud with and without Eye-Dome Lighting.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Screen-Space Ambient Occlusion](gallery/features/technique_ssao.md)
 
 [![Screen-Space Ambient Occlusion](../assets/gallery/v0.4/features/technique_ssao.webp)](gallery/features/technique_ssao.md)
@@ -879,24 +891,6 @@ This example shows native keyboard, pointer, wheel, and resize events.
 `experimental` `features`
 
 Json_export writes a scene to a compact JSON diagnostic file.
-
-</div>
-
-</div>
-
-## Other
-
-<div class="grid cards" markdown="1">
-
-<div class="card" markdown="1">
-
-### [Eye-Dome Lighting](gallery/features/technique_edl.md)
-
-[![Eye-Dome Lighting](../assets/gallery/v0.4/features/technique_edl.webp)](gallery/features/technique_edl.md)
-
-`experimental` `features`
-
-Edl compares a dense 3D point cloud with and without Eye-Dome Lighting.
 
 </div>
 
