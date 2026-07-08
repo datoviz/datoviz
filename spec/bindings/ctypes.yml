@@ -119,6 +119,8 @@ layout_records:
     - DvzPanelBackgroundGradient
     - DvzPanelBackgroundImage
     - DvzPanelBackgroundDesc
+    - DvzOverlayCardDesc
+    - DvzOverlayCardStyle
     - DvzPanelView2DDesc
     - DvzPanelView3DDesc
     - DvzTextItem
@@ -358,17 +360,6 @@ skipped_functions:
       helper: dvz_ffi_material_desc
       reason: >
         User-facing material descriptor default is available through the pointer-output FFI helper.
-    dvz_overlay_card_desc:
-      disposition: ffi-helper
-      helper: dvz_ffi_overlay_card_desc
-      reason: >
-        User-facing overlay-card descriptor default is available through the pointer-output FFI
-        helper.
-    dvz_overlay_card_style:
-      disposition: ffi-helper
-      helper: dvz_ffi_overlay_card_style
-      reason: >
-        User-facing overlay-card style default is available through the pointer-output FFI helper.
     dvz_phong_material_desc:
       disposition: ffi-helper
       helper: dvz_ffi_phong_material_desc
@@ -438,8 +429,6 @@ skipped_functions:
     - dvz_field_geometry
     - dvz_gpu_ctx_config
     - dvz_material_desc
-    - dvz_overlay_card_desc
-    - dvz_overlay_card_style
     - dvz_phong_material_desc
     - dvz_polygon_desc
     - dvz_reference_grid_desc
