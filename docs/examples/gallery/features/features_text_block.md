@@ -38,12 +38,19 @@ The text object keeps style, layout, placement, and the whole paragraph string t
     --8<-- "examples/c/features/text_block.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/text_block.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_text_block`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/text_block.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/text_block.c)
+    - Python source: [`examples/python/gallery/features/text_block.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/text_block.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_text_block"><code>examples/webgpu/live.html?id=features_text_block</code></a>
     - Browser capability tags: `text`, `glyph-atlas`
