@@ -27,7 +27,7 @@
  * Build:   just example-c showcases/protein
  * Run:     ./build/examples/c/showcases/protein
  * Smoke:   ./build/examples/c/showcases/protein 60
- * Options: --spin, --debug, [bundle-path], [frame-count]
+ * Options: [runner options], [frame-count]
  * Debug:   DVZ_EXAMPLE_DEBUG=gui enables post-processing diagnostics
  *
  * The full interactive GUI workbench lives in examples/c/lab/protein_viewer.c.
@@ -40,7 +40,6 @@
 /*************************************************************************************************/
 
 #include <ctype.h>
-#include <errno.h>
 #include <inttypes.h>
 #include <math.h>
 #include <stdbool.h>
@@ -51,6 +50,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "datoviz/fileio.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
@@ -71,6 +71,8 @@
 #define ROTATION_SPEED_RAD_PER_SEC 0.18f
 #define DEFAULT_ATOM_SCALE         0.4f
 
+static const float TAU = 6.28318530718f;
+
 
 
 /*************************************************************************************************/
@@ -85,6 +87,18 @@ typedef struct ProteinAtoms
     float* radii;
     DvzColor* colors;
 } ProteinAtoms;
+
+
+typedef struct ProteinBundleLayout
+{
+    char position_path[1200];
+    char radius_path[1200];
+    char color_path[1200];
+    DvzSize position_size;
+    DvzSize radius_size;
+    DvzSize color_size;
+    uint32_t count;
+} ProteinBundleLayout;
 
 
 typedef struct ProteinState
@@ -143,7 +157,7 @@ static bool _join_path(const char* dir, const char* name, char* out, size_t out_
  * @param out_size output size in bytes
  * @return whether the size was read
  */
-static bool _file_size(const char* path, uint64_t* out_size)
+static bool _file_size(const char* path, DvzSize* out_size)
 {
     ANN(path);
     ANN(out_size);
@@ -159,33 +173,35 @@ static bool _file_size(const char* path, uint64_t* out_size)
     fclose(f);
     if (end < 0)
         return false;
-    *out_size = (uint64_t)end;
+    *out_size = (DvzSize)end;
     return true;
 }
 
 
 
 /**
- * Read an entire file into an existing buffer.
+ * Return a typed file buffer after checking its exact byte size.
  *
  * @param path file path
- * @param dst destination buffer
- * @param size number of bytes to read
- * @return whether the exact byte count was read
+ * @param expected_size expected size in bytes
+ * @return owned file buffer, or NULL on failure
  */
-static bool _read_file_exact(const char* path, void* dst, uint64_t size)
+static void* _read_file_checked(const char* path, DvzSize expected_size)
 {
     ANN(path);
-    ANN(dst);
-    if (size > SIZE_MAX)
-        return false;
-    FILE* f = fopen(path, "rb");
-    if (f == NULL)
-        return false;
-    size_t read = fread(dst, 1, (size_t)size, f);
-    bool ok = read == (size_t)size && ferror(f) == 0;
-    fclose(f);
-    return ok;
+    if (expected_size == 0)
+        return NULL;
+
+    DvzSize size = 0;
+    void* data = dvz_read_file(path, &size);
+    if (data == NULL)
+        return NULL;
+    if (size != expected_size)
+    {
+        dvz_free(data);
+        return NULL;
+    }
+    return data;
 }
 
 
@@ -221,18 +237,43 @@ static bool _cache_bundle_path(const char* pdb_id, char* out, size_t out_size)
 
 
 /**
- * Return whether a bundle directory contains the required atom data.
+ * Resolve and validate the required atom files for a bundle.
  *
  * @param dir prepared protein bundle directory
- * @return whether the bundle has required atom arrays
+ * @param out resolved bundle layout
+ * @return whether the bundle has consistent atom arrays
  */
-static bool _bundle_exists(const char* dir)
+static bool _bundle_layout(const char* dir, ProteinBundleLayout* out)
 {
     ANN(dir);
-    char position_path[1200] = {0};
-    uint64_t position_size = 0;
-    return _join_path(dir, "atom_position.f32", position_path, sizeof(position_path)) &&
-           _file_size(position_path, &position_size) && position_size > 0;
+    ANN(out);
+    dvz_memset(out, sizeof(ProteinBundleLayout), 0, sizeof(ProteinBundleLayout));
+
+    if (!_join_path(dir, "atom_position.f32", out->position_path, sizeof(out->position_path)) ||
+        !_join_path(dir, "atom_radius_vdw.f32", out->radius_path, sizeof(out->radius_path)) ||
+        !_join_path(dir, "atom_color_element.rgba8", out->color_path, sizeof(out->color_path)))
+    {
+        return false;
+    }
+
+    if (!_file_size(out->position_path, &out->position_size) ||
+        !_file_size(out->radius_path, &out->radius_size) ||
+        !_file_size(out->color_path, &out->color_size))
+    {
+        return false;
+    }
+    if (out->position_size == 0 || out->position_size % (3u * sizeof(float)) != 0)
+        return false;
+
+    const DvzSize count = out->position_size / (3u * sizeof(float));
+    if (count > UINT32_MAX || out->radius_size != count * sizeof(float) ||
+        out->color_size != count * sizeof(DvzColor))
+    {
+        return false;
+    }
+
+    out->count = (uint32_t)count;
+    return out->count > 0;
 }
 
 
@@ -247,7 +288,8 @@ static bool _bundle_exists(const char* dir)
 static bool _default_bundle_path(char* out, size_t out_size)
 {
     ANN(out);
-    if (_cache_bundle_path(DEFAULT_PDB_ID, out, out_size) && _bundle_exists(out))
+    ProteinBundleLayout layout = {0};
+    if (_cache_bundle_path(DEFAULT_PDB_ID, out, out_size) && _bundle_layout(out, &layout))
         return true;
     int n = dvz_snprintf(out, out_size, "%s", DEFAULT_BUNDLE_PATH);
     return n > 0 && (size_t)n < out_size;
@@ -309,51 +351,18 @@ static bool _protein_atoms_load(const char* dir, ProteinAtoms* out)
     dvz_memset(out, sizeof(ProteinAtoms), 0, sizeof(ProteinAtoms));
     dvz_snprintf(out->path, sizeof(out->path), "%s", dir);
 
-    char position_path[1200] = {0};
-    char radius_path[1200] = {0};
-    char color_path[1200] = {0};
-    if (!_join_path(dir, "atom_position.f32", position_path, sizeof(position_path)) ||
-        !_join_path(dir, "atom_radius_vdw.f32", radius_path, sizeof(radius_path)) ||
-        !_join_path(dir, "atom_color_element.rgba8", color_path, sizeof(color_path)))
-    {
-        return false;
-    }
-
-    uint64_t position_size = 0;
-    uint64_t radius_size = 0;
-    uint64_t color_size = 0;
-    if (!_file_size(position_path, &position_size) || !_file_size(radius_path, &radius_size) ||
-        !_file_size(color_path, &color_size))
-    {
-        return false;
-    }
-    if (position_size == 0 || position_size % (3u * sizeof(float)) != 0)
+    ProteinBundleLayout layout = {0};
+    if (!_bundle_layout(dir, &layout))
         return false;
 
-    uint64_t count64 = position_size / (3u * sizeof(float));
-    if (count64 > UINT32_MAX || radius_size != count64 * sizeof(float) ||
-        color_size != count64 * sizeof(DvzColor))
-    {
-        return false;
-    }
-
-    out->count = (uint32_t)count64;
-    out->positions = (float*)dvz_calloc((size_t)out->count * 3u, sizeof(float));
-    out->radii = (float*)dvz_calloc(out->count, sizeof(float));
+    out->count = layout.count;
+    out->positions = (float*)_read_file_checked(layout.position_path, layout.position_size);
+    out->radii = (float*)_read_file_checked(layout.radius_path, layout.radius_size);
+    DvzColor* element_colors =
+        (DvzColor*)_read_file_checked(layout.color_path, layout.color_size);
     out->colors = (DvzColor*)dvz_calloc(out->count, sizeof(DvzColor));
-    DvzColor* element_colors = (DvzColor*)dvz_calloc(out->count, sizeof(DvzColor));
     if (out->positions == NULL || out->radii == NULL || out->colors == NULL ||
         element_colors == NULL)
-    {
-        dvz_free(element_colors);
-        _protein_atoms_destroy(out);
-        return false;
-    }
-
-    bool ok = _read_file_exact(position_path, out->positions, position_size) &&
-              _read_file_exact(radius_path, out->radii, radius_size) &&
-              _read_file_exact(color_path, element_colors, color_size);
-    if (!ok)
     {
         dvz_free(element_colors);
         _protein_atoms_destroy(out);
@@ -495,6 +504,233 @@ static void _print_prepare_hint(const char* path)
 
 
 
+/**
+ * Set up the gallery camera.
+ *
+ * @param panel target panel
+ * @param out_desc camera descriptor used by the tuner
+ * @param out_camera camera handle used by the tuner
+ * @return whether setup succeeded
+ */
+static bool _setup_camera(DvzPanel* panel, DvzCameraDesc* out_desc, DvzCamera** out_camera)
+{
+    ANN(panel);
+    ANN(out_desc);
+    ANN(out_camera);
+
+    DvzCameraDesc camera_desc = dvz_camera_desc();
+    camera_desc.view.eye[0] = 0.18f;
+    camera_desc.view.eye[1] = -0.08f;
+    camera_desc.view.eye[2] = 2.95f;
+    camera_desc.view.up[1] = 1.0f;
+    camera_desc.projection.fov_y = 0.57f;
+    camera_desc.projection.near_clip = 0.05f;
+    camera_desc.projection.far_clip = 100.0f;
+    if (dvz_panel_set_camera_desc(panel, &camera_desc) != 0)
+        return false;
+
+    DvzCamera* camera = dvz_panel_camera(panel);
+    if (camera == NULL)
+        return false;
+
+    *out_desc = camera_desc;
+    *out_camera = camera;
+    return true;
+}
+
+
+
+/**
+ * Configure the atom sphere material.
+ *
+ * @param state protein state storing the material descriptor
+ * @param spheres atom sphere visual
+ * @param selection selected atom visual
+ * @return whether setup succeeded
+ */
+static bool _setup_material(ProteinState* state, DvzVisual* spheres, DvzVisual* selection)
+{
+    ANN(state);
+    ANN(spheres);
+    ANN(selection);
+
+    state->sphere_material = dvz_material_desc();
+    state->sphere_material.model = DVZ_MATERIAL_MODEL_STANDARD;
+    state->sphere_material.light_direction[0] = 0.25f;
+    state->sphere_material.light_direction[1] = 0.65f;
+    state->sphere_material.light_direction[2] = 0.72f;
+    state->sphere_material.standard.roughness = 0.36f;
+    state->sphere_material.standard.specular = 0.68f;
+    state->sphere_material.standard.rim_strength = 0.12f;
+    return dvz_visual_set_material(spheres, &state->sphere_material) == 0 &&
+           dvz_visual_set_material(selection, &state->sphere_material) == 0;
+}
+
+
+
+/**
+ * Upload the atom sphere arrays.
+ *
+ * @param spheres atom sphere visual
+ * @param state loaded protein state
+ * @return whether upload succeeded
+ */
+static bool _upload_atoms(DvzVisual* spheres, const ProteinState* state)
+{
+    ANN(spheres);
+    ANN(state);
+
+    DvzVisualDataUpdate sphere_updates[] = {
+        {.attr_name = "position",
+         .data = state->atoms.positions,
+         .item_count = state->atoms.count},
+        {.attr_name = "color", .data = state->atoms.colors, .item_count = state->atoms.count},
+        {.attr_name = "radius", .data = state->scaled_radii, .item_count = state->atoms.count},
+    };
+    return dvz_visual_set_data_many(spheres, sphere_updates, 3) == 0;
+}
+
+
+
+/**
+ * Create and upload the atom, selection, and crosshair visuals.
+ *
+ * @param ctx scenario context
+ * @param panel target panel
+ * @param state protein state
+ * @param out_spheres atom sphere visual output
+ * @param out_selection selection sphere visual output
+ * @param out_crosshair crosshair segment visual output
+ * @return whether setup succeeded
+ */
+static bool _setup_visuals(
+    DvzScenarioContext* ctx, DvzPanel* panel, ProteinState* state, DvzVisual** out_spheres,
+    DvzVisual** out_selection, DvzVisual** out_crosshair)
+{
+    ANN(ctx);
+    ANN(panel);
+    ANN(state);
+    ANN(out_spheres);
+    ANN(out_selection);
+    ANN(out_crosshair);
+
+    DvzVisual* spheres = dvz_sphere(ctx->scene, DVZ_SPHERE_FLAGS_LIGHTING);
+    DvzVisual* selection = dvz_sphere(ctx->scene, DVZ_SPHERE_FLAGS_LIGHTING);
+    DvzVisual* crosshair = dvz_segment(ctx->scene, 0);
+    if (spheres == NULL || selection == NULL || crosshair == NULL)
+        return false;
+    if (dvz_sphere_set_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0 ||
+        dvz_sphere_set_mode(selection, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0)
+    {
+        return false;
+    }
+    if (!_setup_material(state, spheres, selection) || !_upload_atoms(spheres, state))
+        return false;
+
+    if (dvz_panel_add_visual(panel, spheres, NULL) != 0 ||
+        dvz_panel_add_visual(panel, selection, NULL) != 0)
+    {
+        return false;
+    }
+
+    if (dvz_segment_set_caps(crosshair, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND) != 0 ||
+        dvz_visual_set_depth_test(crosshair, false) != 0 ||
+        dvz_visual_set_alpha_mode(crosshair, DVZ_ALPHA_BLENDED) != 0 ||
+        dvz_panel_add_visual(panel, crosshair, NULL) != 0)
+    {
+        return false;
+    }
+
+    if (!_upload_selection(
+            selection, crosshair, &state->atoms, _selected_atom(&state->atoms),
+            DEFAULT_ATOM_SCALE))
+    {
+        return false;
+    }
+
+    *out_spheres = spheres;
+    *out_selection = selection;
+    *out_crosshair = crosshair;
+    return true;
+}
+
+
+
+/**
+ * Return the rotation speed for the current run mode.
+ *
+ * @param ctx scenario context
+ * @return animation speed
+ */
+static float _rotation_speed(const DvzScenarioContext* ctx)
+{
+    if (ctx == NULL || !ctx->preview_mode || ctx->preview_frame_count <= 1)
+        return ROTATION_SPEED_RAD_PER_SEC;
+
+    const uint64_t count = ctx->preview_frame_count;
+    const uint32_t stride = ctx->preview_sample_stride > 0 ? ctx->preview_sample_stride : 1;
+    const double fps = ctx->preview_fps > 0.0 ? ctx->preview_fps : 24.0;
+    const double duration_s = ((double)count * (double)stride) / fps;
+    return duration_s > 0.0 ? (float)((double)TAU / duration_s) : ROTATION_SPEED_RAD_PER_SEC;
+}
+
+
+
+/**
+ * Attach one vertical-axis rotation animation to a visual.
+ *
+ * @param ctx scenario context
+ * @param visual target visual
+ * @param controller controller that pauses animation while interacting
+ * @param speed animation speed
+ * @param out_track created track
+ * @param out_animation created animation
+ * @return whether setup succeeded
+ */
+static bool _attach_rotation_animation(
+    DvzScenarioContext* ctx, DvzVisual* visual, DvzController* controller, float speed,
+    DvzTrack** out_track, DvzAnimation** out_animation)
+{
+    ANN(ctx);
+    ANN(visual);
+    ANN(out_track);
+    ANN(out_animation);
+
+    DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
+    rotation_desc.axis[1] = 1.0f;
+    rotation_desc.speed_rad_per_sec = 1.0f;
+
+    DvzTrack* track = dvz_track_rotation(&rotation_desc);
+    if (track == NULL)
+        return false;
+
+    DvzTransformMotionDesc transform_desc = dvz_transform_motion_desc();
+    transform_desc.rotation = track;
+    DvzAnimation* animation = dvz_anim_visual_transform(ctx->scene, visual, &transform_desc);
+    if (animation == NULL)
+    {
+        dvz_track_destroy(track);
+        return false;
+    }
+    if (dvz_anim_set_interaction_policy(
+            animation, controller, DVZ_ANIM_INTERACTION_PAUSE, 0.0) != 0 ||
+        dvz_anim_set_speed(animation, speed) != 0)
+    {
+        dvz_track_destroy(track);
+        return false;
+    }
+
+    dvz_anim_stop(animation);
+    if (ctx->preview_mode)
+        dvz_anim_start(animation, 0.0);
+
+    *out_track = track;
+    *out_animation = animation;
+    return true;
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -541,66 +777,16 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_tuner_figure(&state->tuner, ctx->figure);
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.view.eye[0] = 0.18f;
-    camera_desc.view.eye[1] = -0.08f;
-    camera_desc.view.eye[2] = 2.95f;
-    camera_desc.view.up[1] = 1.0f;
-    camera_desc.projection.fov_y = 0.57f;
-    camera_desc.projection.near_clip = 0.05f;
-    camera_desc.projection.far_clip = 100.0f;
-    EXAMPLE_CHECK(
-        dvz_panel_set_camera_desc(panel, &camera_desc) == 0, "dvz_panel_set_camera_desc() failed");
-    DvzCamera* camera = dvz_panel_camera(panel);
-    EXAMPLE_CHECK(camera != NULL, "dvz_panel_camera() failed");
+    DvzCameraDesc camera_desc = {0};
+    DvzCamera* camera = NULL;
+    EXAMPLE_CHECK(_setup_camera(panel, &camera_desc, &camera), "camera setup failed");
 
-    DvzVisual* spheres = dvz_sphere(ctx->scene, DVZ_SPHERE_FLAGS_LIGHTING);
-    DvzVisual* selection = dvz_sphere(ctx->scene, DVZ_SPHERE_FLAGS_LIGHTING);
-    DvzVisual* crosshair = dvz_segment(ctx->scene, 0);
+    DvzVisual* spheres = NULL;
+    DvzVisual* selection = NULL;
+    DvzVisual* crosshair = NULL;
     EXAMPLE_CHECK(
-        spheres != NULL && selection != NULL && crosshair != NULL, "visual creation failed");
-    EXAMPLE_CHECK(
-        dvz_sphere_set_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0,
-        "dvz_sphere_set_mode() failed");
-    EXAMPLE_CHECK(
-        dvz_sphere_set_mode(selection, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0,
-        "dvz_sphere_set_mode(selection) failed");
-
-    state->sphere_material = dvz_material_desc();
-    state->sphere_material.model = DVZ_MATERIAL_MODEL_STANDARD;
-    state->sphere_material.light_direction[0] = 0.25f;
-    state->sphere_material.light_direction[1] = 0.65f;
-    state->sphere_material.light_direction[2] = 0.72f;
-    state->sphere_material.standard.roughness = 0.36f;
-    state->sphere_material.standard.specular = 0.68f;
-    state->sphere_material.standard.rim_strength = 0.12f;
-    (void)dvz_visual_set_material(spheres, &state->sphere_material);
-    (void)dvz_visual_set_material(selection, &state->sphere_material);
-
-    DvzVisualDataUpdate sphere_updates[] = {
-        {.attr_name = "position",
-         .data = state->atoms.positions,
-         .item_count = state->atoms.count},
-        {.attr_name = "color", .data = state->atoms.colors, .item_count = state->atoms.count},
-        {.attr_name = "radius", .data = state->scaled_radii, .item_count = state->atoms.count},
-    };
-    EXAMPLE_CHECK(
-        dvz_visual_set_data_many(spheres, sphere_updates, 3) == 0,
-        "dvz_visual_set_data_many() failed");
-    EXAMPLE_CHECK(dvz_panel_add_visual(panel, spheres, NULL) == 0, "add spheres failed");
-    EXAMPLE_CHECK(dvz_panel_add_visual(panel, selection, NULL) == 0, "add selection failed");
-
-    EXAMPLE_CHECK(
-        dvz_segment_set_caps(crosshair, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND) == 0,
-        "dvz_segment_set_caps() failed");
-    (void)dvz_visual_set_depth_test(crosshair, false);
-    (void)dvz_visual_set_alpha_mode(crosshair, DVZ_ALPHA_BLENDED);
-    EXAMPLE_CHECK(dvz_panel_add_visual(panel, crosshair, NULL) == 0, "add crosshair failed");
-    EXAMPLE_CHECK(
-        _upload_selection(
-            selection, crosshair, &state->atoms, _selected_atom(&state->atoms),
-            DEFAULT_ATOM_SCALE),
-        "selection upload failed");
+        _setup_visuals(ctx, panel, state, &spheres, &selection, &crosshair),
+        "visual setup failed");
 
 #ifndef DVZ_EXAMPLE_NO_MAIN
     state->ssao = (DvzExampleGuiSsaoControls){
@@ -638,56 +824,22 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         &state->tuner, "Arcball", arcball, arcball_angles, 1.0f, arcball_pan);
     example_tuner_material(&state->tuner, "Atom material", spheres, &state->sphere_material);
 
-    DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
-    rotation_desc.axis[2] = 1.0f;
-    rotation_desc.speed_rad_per_sec = 1.0f;
-
-    state->sphere_rotation = dvz_track_rotation(&rotation_desc);
-    EXAMPLE_CHECK(state->sphere_rotation != NULL, "dvz_track_rotation(spheres) failed");
-    DvzTransformMotionDesc transform_desc = dvz_transform_motion_desc();
-    transform_desc.rotation = state->sphere_rotation;
-    state->sphere_animation = dvz_anim_visual_transform(ctx->scene, spheres, &transform_desc);
-    EXAMPLE_CHECK(state->sphere_animation != NULL, "dvz_anim_visual_transform(spheres) failed");
-    dvz_anim_set_interaction_policy(
-        state->sphere_animation, arcball_controller, DVZ_ANIM_INTERACTION_PAUSE, 0.0);
-    dvz_anim_set_speed(state->sphere_animation, ROTATION_SPEED_RAD_PER_SEC);
-    dvz_anim_stop(state->sphere_animation);
-
-    state->selection_rotation = dvz_track_rotation(&rotation_desc);
-    EXAMPLE_CHECK(state->selection_rotation != NULL, "dvz_track_rotation(selection) failed");
-    transform_desc = dvz_transform_motion_desc();
-    transform_desc.rotation = state->selection_rotation;
-    state->selection_animation =
-        dvz_anim_visual_transform(ctx->scene, selection, &transform_desc);
+    const float rotation_speed = _rotation_speed(ctx);
     EXAMPLE_CHECK(
-        state->selection_animation != NULL, "dvz_anim_visual_transform(selection) failed");
-    dvz_anim_set_interaction_policy(
-        state->selection_animation, arcball_controller, DVZ_ANIM_INTERACTION_PAUSE, 0.0);
-    dvz_anim_set_speed(state->selection_animation, ROTATION_SPEED_RAD_PER_SEC);
-    dvz_anim_stop(state->selection_animation);
-
-    state->crosshair_rotation = dvz_track_rotation(&rotation_desc);
-    EXAMPLE_CHECK(state->crosshair_rotation != NULL, "dvz_track_rotation(crosshair) failed");
-    transform_desc = dvz_transform_motion_desc();
-    transform_desc.rotation = state->crosshair_rotation;
-    state->crosshair_animation =
-        dvz_anim_visual_transform(ctx->scene, crosshair, &transform_desc);
+        _attach_rotation_animation(
+            ctx, spheres, arcball_controller, rotation_speed, &state->sphere_rotation,
+            &state->sphere_animation),
+        "rotation animation setup failed");
     EXAMPLE_CHECK(
-        state->crosshair_animation != NULL, "dvz_anim_visual_transform(crosshair) failed");
-    dvz_anim_set_interaction_policy(
-        state->crosshair_animation, arcball_controller, DVZ_ANIM_INTERACTION_PAUSE, 0.0);
-    dvz_anim_set_speed(state->crosshair_animation, ROTATION_SPEED_RAD_PER_SEC);
-    dvz_anim_stop(state->crosshair_animation);
-    if (ctx->preview_mode)
-    {
-        const float preview_speed = 1.15f;
-        dvz_anim_set_speed(state->sphere_animation, preview_speed);
-        dvz_anim_set_speed(state->selection_animation, preview_speed);
-        dvz_anim_set_speed(state->crosshair_animation, preview_speed);
-        dvz_anim_start(state->sphere_animation, 0.0);
-        dvz_anim_start(state->selection_animation, 0.0);
-        dvz_anim_start(state->crosshair_animation, 0.0);
-    }
+        _attach_rotation_animation(
+            ctx, selection, arcball_controller, rotation_speed, &state->selection_rotation,
+            &state->selection_animation),
+        "selection animation setup failed");
+    EXAMPLE_CHECK(
+        _attach_rotation_animation(
+            ctx, crosshair, arcball_controller, rotation_speed, &state->crosshair_rotation,
+            &state->crosshair_animation),
+        "crosshair animation setup failed");
 
     dvz_fprintf(
         stderr, "loaded %" PRIu32 " atoms from %s\n", state->atoms.count, state->atoms.path);
