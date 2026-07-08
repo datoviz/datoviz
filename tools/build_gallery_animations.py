@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import os
 import shutil
 import subprocess
@@ -17,6 +19,7 @@ ROOT = gallery_media.ROOT
 DEFAULT_FRAME_DIR = ROOT / "build/gallery-frames/v0.4"
 DEFAULT_OUTPUT_DIR = ROOT / "build/gallery-webp/v0.4"
 DEFAULT_BUILD_EXAMPLES_DIR = ROOT / "build/examples/c"
+DEFAULT_CACHE_DIR = ROOT / "build/gallery-cache/animations"
 DEFAULT_SIZE = "1280x720"
 DEFAULT_FRAMES = 16
 DEFAULT_FPS = 12
@@ -51,12 +54,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--build-examples-dir", type=Path, default=DEFAULT_BUILD_EXAMPLES_DIR)
     parser.add_argument("--frame-dir", type=Path, default=DEFAULT_FRAME_DIR)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE_DIR)
     parser.add_argument("--id", action="append", default=[], help="example id; repeat or comma-separate")
     parser.add_argument("--lane", action="append", default=[], help="gallery lane")
     parser.add_argument("--dry-run", action="store_true", help="list work without rendering frames")
     parser.add_argument("--keep-frames", action="store_true", help="keep temporary PNG frame sequences")
     parser.add_argument("--quality", type=int, default=DEFAULT_QUALITY, help="lossy WebP quality")
-    parser.add_argument("--force", action="store_true", help="accepted for parity with other media tools")
+    parser.add_argument("--force", action="store_true", help="regenerate even when the cache is current")
     return parser.parse_args()
 
 
@@ -130,6 +134,104 @@ def child_path(path: Path) -> str:
         return str(path)
 
 
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _hash_file(digest: "hashlib._Hash", path: Path) -> None:
+    try:
+        resolved = path.resolve()
+        rel = resolved.relative_to(ROOT)
+        data = resolved.read_bytes()
+    except (OSError, ValueError):
+        return
+    digest.update(str(rel).encode("utf8"))
+    digest.update(b"\0")
+    digest.update(data)
+    digest.update(b"\0")
+
+
+def input_hash_for(
+    preview: AnimatedPreview,
+    manifest_path: Path,
+    frame_root: Path,
+    output_root: Path,
+    quality: int,
+) -> str:
+    digest = hashlib.sha256()
+    fields = (
+        preview.id,
+        preview.lane,
+        preview.source,
+        str(preview.executable.relative_to(ROOT))
+        if preview.executable.is_relative_to(ROOT)
+        else str(preview.executable),
+        str(frame_root.relative_to(ROOT)) if frame_root.is_relative_to(ROOT) else str(frame_root),
+        str(output_root.relative_to(ROOT)) if output_root.is_relative_to(ROOT) else str(output_root),
+        str(preview.frames),
+        str(preview.fps),
+        str(preview.sample_stride),
+        f"{preview.time_scale:g}",
+        preview.size,
+        str(quality),
+    )
+    for field in fields:
+        digest.update(field.encode("utf8"))
+        digest.update(b"\0")
+
+    for path in (
+        manifest_path,
+        ROOT / preview.source,
+        preview.executable,
+        ROOT / "tools/build_gallery_animations.py",
+        ROOT / "tools/gallery_media.py",
+    ):
+        _hash_file(digest, path)
+    return digest.hexdigest()
+
+
+def cache_path(preview: AnimatedPreview, cache_dir: Path) -> Path:
+    return cache_dir / preview.lane / f"{preview.id}.json"
+
+
+def load_cache(path: Path) -> dict:
+    try:
+        with path.open("r", encoding="utf8") as f:
+            payload = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def write_cache(path: Path, payload: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf8")
+
+
+def current_cache_hit(
+    preview: AnimatedPreview,
+    output_path: Path,
+    cache_dir: Path,
+    input_hash: str,
+) -> tuple[bool, str]:
+    payload = load_cache(cache_path(preview, cache_dir))
+    if not output_path.exists():
+        return False, "missing output"
+    if payload.get("input_hash") != input_hash:
+        return False, "stale inputs"
+    try:
+        output_hash = file_sha256(output_path)
+    except OSError:
+        return False, "missing output"
+    if payload.get("webp_hash") != output_hash:
+        return False, "changed outside cache"
+    return True, "current"
+
+
 def capture_sequence(preview: AnimatedPreview, frame_dir: Path) -> None:
     frame_dir.mkdir(parents=True, exist_ok=True)
     env = os.environ.copy()
@@ -174,8 +276,10 @@ def encode_webp(
 
 def generate_preview(
     preview: AnimatedPreview,
+    manifest_path: Path,
     frame_root: Path,
     output_root: Path,
+    cache_dir: Path,
     dry_run: bool,
     keep_frames: bool,
     quality: int,
@@ -184,8 +288,15 @@ def generate_preview(
     frame_dir = frame_root / preview.lane / preview.id
     output_path = output_root / preview.lane / f"{preview.id}.webp"
     rel_out = output_path.relative_to(ROOT) if output_path.is_relative_to(ROOT) else output_path
+    input_hash = input_hash_for(preview, manifest_path, frame_root, output_root, quality)
+    cache_hit, cache_reason = current_cache_hit(preview, output_path, cache_dir, input_hash)
+    if cache_hit and not force:
+        print(f"cached animated webp: {preview.id} -> {rel_out}")
+        return False
     if dry_run:
         action = "would replace" if output_path.exists() else "would animate"
+        if not force and output_path.exists() and not cache_hit:
+            action = f"{action} ({cache_reason})"
         print(
             f"{action}: {preview.id} frames={preview.frames} fps={preview.fps} "
             f"sample_stride={preview.sample_stride} time_scale={preview.time_scale:g} "
@@ -199,6 +310,14 @@ def generate_preview(
         shutil.rmtree(frame_dir)
     capture_sequence(preview, frame_dir)
     encode_webp(preview, frame_dir, output_path, quality)
+    write_cache(
+        cache_path(preview, cache_dir),
+        {
+            "input_hash": input_hash,
+            "webp_hash": file_sha256(output_path),
+            "path": child_path(output_path),
+        },
+    )
     if not keep_frames:
         shutil.rmtree(frame_dir)
     print(f"animated webp: {preview.id} -> {rel_out}")
@@ -221,8 +340,10 @@ def main() -> int:
         for preview in previews:
             if generate_preview(
                 preview,
+                args.manifest,
                 args.frame_dir,
                 args.output_dir,
+                args.cache_dir,
                 args.dry_run,
                 args.keep_frames,
                 args.quality,
