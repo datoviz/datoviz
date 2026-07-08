@@ -678,7 +678,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         const uint64_t span = count > 1 ? (count - 1) * (uint64_t)stride : 0;
         const double duration_s = ((double)span) / fps;
         state->spin_speed =
-            duration_s > 0.0 ? (float)((double)TAU / duration_s) : ROTATION_SPEED_RAD_PER_SEC;
+            duration_s > 0.0 ? (float)(2.0 * (double)TAU / duration_s)
+                              : ROTATION_SPEED_RAD_PER_SEC;
     }
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);

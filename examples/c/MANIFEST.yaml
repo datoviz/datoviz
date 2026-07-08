@@ -2747,9 +2747,17 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 36
-        fps: 12
-        sample_stride: 4
+        frames: 72
+        fps: 24
+        sample_stride: 2
+        card:
+          preferred: video-mp4
+          size: 1024x576
+          sample_step: 1
+          fps: 24
+          webp_quality: 60
+          mp4_crf: 28
+          webm_crf: 34
     data:
       kind: simulated
     webgpu:
@@ -3034,7 +3042,7 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 96
+        frames: 192
         fps: 24
         sample_stride: 1
         card:

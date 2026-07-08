@@ -90,7 +90,14 @@ This example combines a synthetic wind-speed field with vectors and streamlines.
 
 **[GPU Particle Smoke](gallery/showcases/showcases_gpu_particle_smoke.md)**
 
-[![GPU Particle Smoke](../assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.webp)](gallery/showcases/showcases_gpu_particle_smoke.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_gpu_particle_smoke" aria-label="GPU Particle Smoke"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.poster.webp" alt="GPU Particle Smoke" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.poster.webp" aria-label="GPU Particle Smoke preview">
+    <source data-src="../assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.mp4" type="video/mp4">
+  </video>
+</div>
 
 `experimental` `showcases`
 
