@@ -3112,6 +3112,8 @@ examples:
     category: showcase
     lane: showcases
     source: examples/c/showcases/brain_volume.c
+    python:
+      source: examples/python/gallery/showcases/brain_volume.py
     validation: smoke+screenshot
     media:
       preview:

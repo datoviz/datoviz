@@ -34,6 +34,12 @@ Prepare: `python tools/data/prepare_brain_volume.py`
     --8<-- "examples/c/showcases/brain_volume.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/showcases/brain_volume.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `showcases_brain_volume`
@@ -41,6 +47,7 @@ Prepare: `python tools/data/prepare_brain_volume.py`
     - Lane: `showcases`
     - Status: `prototype`
     - Source: [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c)
+    - Python source: [`examples/python/gallery/showcases/brain_volume.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/brain_volume.py)
     - Browser support: Planned
     - Browser capability tags: `volume`, `texture-3d`, `arcball`
     - Validation: `smoke+screenshot`
