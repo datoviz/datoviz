@@ -28,12 +28,19 @@ Four point positions and colors are uploaded once, while the GUI slider rewrites
     --8<-- "examples/c/features/gui_cimgui.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/gui_cimgui.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_gui_cimgui`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/gui_cimgui.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_cimgui.c)
+    - Python source: [`examples/python/gallery/features/gui_cimgui.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/gui_cimgui.py)
     - Browser support: Native only
     - Browser note: raw cimgui access requires the native ImGui app path
     - Browser capability tags: `gui`
