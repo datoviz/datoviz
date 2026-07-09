@@ -1472,6 +1472,8 @@ examples:
     category: showcase
     lane: showcases
     source: examples/c/showcases/scientific_plotting.c
+    python:
+      source: examples/python/gallery/showcases/scientific_plotting.py
     validation: smoke+screenshot
     data:
       kind: synthetic
