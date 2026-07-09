@@ -664,6 +664,9 @@ examples:
     primary_feature: controller-fly
     lane: features
     source: examples/c/features/controller_fly.c
+    python:
+      source: examples/python/gallery/features/controller_fly.py
+      status: direct-engine
     validation: smoke+interaction+screenshot
     media:
       preview:

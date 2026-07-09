@@ -38,12 +38,19 @@ The same colored cube and reference grid used by the controller examples are sho
     --8<-- "examples/c/features/controller_fly.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/controller_fly.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_controller_fly`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/controller_fly.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_fly.c)
+    - Python source: [`examples/python/gallery/features/controller_fly.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/controller_fly.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_controller_fly"><code>examples/webgpu/live.html?id=features_controller_fly</code></a>
     - Browser capability tags: `controller`, `fly`, `mesh`
