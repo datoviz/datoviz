@@ -1,19 +1,97 @@
 # Datoviz
 
-Datoviz is a GPU-powered visualization engine for scientific data. It helps you build fast,
-interactive 2D and 3D views when ordinary plotting tools become too slow or too limited.
+**Datoviz is a GPU-powered visualization engine for scientific data.** It is built for
+interactive 2D and 3D scenes that outgrow ordinary plotting: dense points, images, meshes, volumes,
+text, annotations, linked panels, controllers, capture, and replayable render streams.
 
-Datoviz v0.4 is the lower-level rendering engine in the broader GSP/VisPy2 direction. GSP/VisPy2 is
-the intended high-level plotting layer, but it is still work in progress. In the meantime, Python
-users can use Datoviz directly through one generated `ctypes` binding. Use `import datoviz as dvz`
-for the normal call form with documented NumPy array adaptation, and use `datoviz.raw` only when
-you need the exact C-shaped pointers, counts, bytes, or callbacks.
+Datoviz v0.4 is the **engine layer** in the broader GSP/VisPy2 direction. Use it directly when you
+want explicit control over scene objects and GPU-backed rendering; use GSP/VisPy2 for the future
+high-level plotting layer when that work matures.
 
-Use Datoviz when you want to explore many points, images, meshes, volumes, annotations, or custom
-scientific scenes, either on the desktop with Vulkan, using C or Python bindings, or in the browser
-with experimental WebGPU support.
+<a href="examples/gallery/showcases/showcases_protein/"><img src="assets/gallery/v0.4/showcases/showcases_protein.webp" alt="Interactive protein visualization rendered with Datoviz" style="width:100%;border-radius:8px;margin:1.5rem 0 1.5rem;display:block;"></a>
 
-<a href="examples/gallery/showcases/showcases_protein/"><img src="assets/gallery/v0.4/showcases/showcases_protein.webp" alt="Protein Viewer" style="width:100%;border-radius:8px;margin:1.5rem 0 2rem;display:block;"></a>
+
+## Why Datoviz?
+
+- ⚡ **Large interactive scenes**: explore point clouds, sampled fields, meshes, volumes, and
+  scientific annotations with GPU-backed rendering.
+- 🧩 **Retained scene model**: create figures, panels, visuals, cameras, controllers, and adornments
+  as explicit objects instead of one-shot plotting calls.
+- 🖥️ **Native first**: use the C API for applications, embedding, offscreen rendering, screenshots,
+  video export, and low-level runtime integration.
+- 🐍 **Python without a wrapper stack**: call the generated `datoviz` binding directly with
+  documented NumPy array adaptation; use `datoviz.raw` only for exact C-shaped calls.
+- 🌐 **Browser experiments**: try the experimental WebGPU/WASM path for selected examples that share
+  the same scene model as the native runtime.
+
+
+## Visual Proof
+
+<div class="grid cards" markdown="1">
+
+<div class="card" markdown="1">
+
+**[Point Cloud](examples/gallery/showcases/showcases_point_cloud.md)**
+
+[![Dense point cloud rendered in Datoviz](assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp)](examples/gallery/showcases/showcases_point_cloud.md)
+
+Large 3D datasets with depth, color, and interactive navigation.
+
+</div>
+
+<div class="card" markdown="1">
+
+**[Brain Volume](examples/gallery/showcases/showcases_brain_volume.md)**
+
+[![Brain volume rendering with mesh overlay](assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp)](examples/gallery/showcases/showcases_brain_volume.md)
+
+Volumes, slices, transparent geometry, and scientific context.
+
+</div>
+
+<div class="card" markdown="1">
+
+**[Wind Field](examples/gallery/showcases/showcases_wind_field.md)**
+
+[![Wind field visualization with color mapped data](assets/gallery/v0.4/showcases/showcases_wind_field.poster.webp)](examples/gallery/showcases/showcases_wind_field.md)
+
+Scalar fields, vector overlays, colorbars, and probe-style workflows.
+
+</div>
+
+<div class="card" markdown="1">
+
+**[Choropleth](examples/gallery/showcases/showcases_choropleth.md)**
+
+[![Choropleth map rendered with Datoviz](assets/gallery/v0.4/showcases/showcases_choropleth.webp)](examples/gallery/showcases/showcases_choropleth.md)
+
+Retained composites, labels, color scales, and responsive layouts.
+
+</div>
+
+</div>
+
+
+## Where It Fits
+
+<div class="dvz-nav-grid">
+<a class="dvz-nav-card" href="start/choose-your-layer/">
+<strong>Choose your layer</strong>
+<span>Decide between Datoviz, raw bindings, C/C++, WebGPU experiments, and the GSP/VisPy2 direction.</span>
+</a>
+<a class="dvz-nav-card" href="reference/python-direct-engine/">
+<strong>Python binding</strong>
+<span>Use `import datoviz as dvz` with NumPy arrays and documented type adaptation.</span>
+</a>
+<a class="dvz-nav-card" href="how-to/c-integration/">
+<strong>C and C++ integration</strong>
+<span>Embed Datoviz directly, manage native windows, render offscreen, and integrate with applications.</span>
+</a>
+<a class="dvz-nav-card" href="reference/webgpu-subset/">
+<strong>WebGPU subset</strong>
+<span>Understand the experimental browser runtime, supported examples, and current boundaries.</span>
+</a>
+</div>
 
 
 ## Start Here
@@ -25,133 +103,60 @@ with experimental WebGPU support.
 </a>
 <a class="dvz-nav-card" href="start/quickstart/">
 <strong>Quickstart</strong>
-<span>Run one scatter plot and learn the three basic parts: scene, panel, and visual.</span>
+<span>Follow the annotated walkthrough and learn scene, panel, visual, and interaction basics.</span>
 </a>
 <a class="dvz-nav-card" href="examples/">
 <strong>Examples</strong>
-<span>Browse working visuals, features, and showcases before writing your own code.</span>
+<span>Browse working visuals, features, runtime examples, and scientific showcases.</span>
 </a>
 <a class="dvz-nav-card" href="how-to/create-a-scene/">
 <strong>How-To Guides</strong>
-<span>Learn focused tasks such as adding axes, colorbars, interaction, and offscreen output.</span>
+<span>Learn focused tasks such as axes, colorbars, picking, animation, capture, and offscreen output.</span>
 </a>
-<a class="dvz-nav-card" href="ai-agents/">
-<strong>AI Agents</strong>
-<span>Give coding assistants the right Datoviz entry point and API-checking workflow.</span>
+<a class="dvz-nav-card" href="reference/feature-status/">
+<strong>Feature status</strong>
+<span>Check what is supported, experimental, advanced/unstable, deferred, or external/GSP-owned.</span>
 </a>
 <a class="dvz-nav-card" href="reference/">
 <strong>Reference</strong>
-<span>Look up visual families, attribute names, API status, and platform support.</span>
+<span>Look up visual families, attributes, C API pages, platform support, and project status.</span>
 </a>
 </div>
 
 
-## Quick example
+## API Sketch
 
-A scatter plot of 10 000 random points with pan/zoom:
+The core workflow is explicit: create a scene, add a panel, attach visual data, bind interaction,
+then run or capture.
 
-=== "Python"
+```python
+import numpy as np
+import datoviz as dvz
 
-    ```python
-    import numpy as np
-    import datoviz as dvz
+N = 10_000
+pos = np.random.uniform(-1, 1, (N, 3)).astype(np.float32)
+pos[:, 2] = 0
+color = np.full((N, 4), (80, 180, 255, 255), dtype=np.uint8)
+diameter = np.full(N, 5, dtype=np.float32)
 
-    # Each point is described by three arrays with the same length.
-    # - pos: one x/y/z position per point. z is 0, so this is a 2D scatter plot.
-    # - color: one red/green/blue/alpha color per point, stored as 8-bit RGBA values.
-    # - diameters: one point size per point, measured in screen pixels.
-    N = 10_000
-    pos = np.random.uniform(-1, 1, (N, 3)).astype(np.float32)
-    pos[:, 2] = 0.0
-    color = np.random.randint(0, 256, (N, 4), dtype=np.uint8)
-    color[:, 3] = 255
-    diameters = np.full(N, 5.0, dtype=np.float32)
+scene = dvz.dvz_scene()
+figure = dvz.dvz_figure(scene, 800, 600, 0)
+panel = dvz.dvz_panel_full(figure)
 
-    # Create the scene structure: one scene, one figure, and one full-size panel.
-    # The panel is the drawing area where the scatter plot will appear.
-    scene = dvz.dvz_scene()
-    figure = dvz.dvz_figure(scene, 800, 600, 0)
-    panel = dvz.dvz_panel_full(figure)
+panzoom = dvz.dvz_panzoom(scene, None)
+dvz.dvz_panel_bind_controller(panel, panzoom, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY)
 
-    # Add mouse interaction to the panel. Pan/zoom is limited to X and Y because
-    # the points are flat, with z = 0.
-    controller = dvz.dvz_panzoom(scene, None)
-    dvz.dvz_panel_bind_controller(panel, controller, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY)
+points = dvz.dvz_point(scene, 0)
+dvz.dvz_visual_set_data(points, "position", pos)
+dvz.dvz_visual_set_data(points, "color", color)
+dvz.dvz_visual_set_data(points, "diameter_px", diameter)
+dvz.dvz_panel_add_visual(panel, points, None)
 
-    # Create one point visual for the whole dataset. Each data call attaches
-    # one array to a named visual attribute.
-    visual = dvz.dvz_point(scene, 0)
-    dvz.dvz_visual_set_data(visual, "position", pos)
-    dvz.dvz_visual_set_data(visual, "color", color)
-    dvz.dvz_visual_set_data(visual, "diameter_px", diameters)
+dvz.run(scene, figure, title="Datoviz")
+```
 
-    # Add the visual to the panel so it becomes part of the figure.
-    dvz.dvz_panel_add_visual(panel, visual, None)
+![10 000 blue points in an interactive Datoviz window](assets/gallery/v0.4/start/start_scatter.webp)
 
-    # Open a window and keep the app running until the user closes it.
-    dvz.run(scene, figure, title="Scatter plot")
-    ```
-
-=== "C"
-
-    ```c
-    #include <stdint.h>
-    #include <stdlib.h>
-    #include "datoviz/app.h"
-    #include "datoviz/scene.h"
-
-    #define N 10000
-
-    int main(void) {
-        /* Each point is described by three arrays with the same length.
-         * pos stores x/y/z positions. z is 0, so this is a 2D scatter plot.
-         * color stores one 8-bit RGBA color per point.
-         * diameter_px stores one point size per point, measured in screen pixels. */
-        float pos[N * 3], diameter_px[N];
-        uint8_t color[N * 4];
-        for (int i = 0; i < N; i++) {
-            pos[3*i+0] = (float)rand()/RAND_MAX * 2 - 1;
-            pos[3*i+1] = (float)rand()/RAND_MAX * 2 - 1;
-            pos[3*i+2] = 0;
-            color[4*i+0] = rand() % 256;
-            color[4*i+1] = rand() % 256;
-            color[4*i+2] = rand() % 256;
-            color[4*i+3] = 255;
-            diameter_px[i] = 5.0f;
-        }
-
-        /* Create the scene structure: one scene, one figure, and one full-size panel.
-         * The panel is the drawing area where the scatter plot will appear. */
-        DvzScene* scene = dvz_scene();
-        DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
-        DvzPanel* panel = dvz_panel_full(figure);
-
-        /* Add mouse interaction to the panel. Pan/zoom is limited to X and Y because
-         * the points are flat, with z = 0. */
-        DvzController* controller = dvz_panzoom(scene, NULL);
-        dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY);
-
-        /* Create one point visual for the whole dataset. Each data call attaches
-         * one C array to a named visual attribute. */
-        DvzVisual* visual = dvz_point(scene, 0);
-        dvz_visual_set_data(visual, "position", pos, N);
-        dvz_visual_set_data(visual, "color", color, N);
-        dvz_visual_set_data(visual, "diameter_px", diameter_px, N);
-
-        /* Add the visual to the panel so it becomes part of the figure. */
-        dvz_panel_add_visual(panel, visual, NULL);
-
-        /* Open a window and keep the app running until the user closes it. */
-        DvzApp* app = dvz_app(scene);
-        dvz_view_window(app, figure, 800, 600, "Scatter plot");
-        dvz_app_run(app, 0);
-
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 0;
-    }
-    ```
-
-![10 000 colored dots in an interactive window with pan-and-zoom](assets/gallery/v0.4/start/start_scatter.webp)
-
-See [Quickstart](start/quickstart.md) for a fuller walkthrough, or [AI-assisted workflow](start/ai-workflow.md) to have an LLM generate Datoviz code for you.
+See [Quickstart](start/quickstart.md) for the annotated walkthrough, [Use from C or C++](how-to/c-integration.md)
+for native integration, or [AI-assisted workflow](start/ai-workflow.md) when you want an LLM to help
+generate Datoviz code.
