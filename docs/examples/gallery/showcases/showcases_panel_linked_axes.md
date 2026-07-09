@@ -16,7 +16,13 @@ This example builds linked time-series panels with shared axes behavior.
 
 === "Screenshot"
 
-    ![Linked Panels With Axes](../../../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.webp)
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.poster.webp" alt="Linked Panels With Axes" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.poster.webp" aria-label="Linked Panels With Axes preview">
+        <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.mp4" type="video/mp4">
+      </video>
+    </div>
 
 === "Live WebGPU"
 

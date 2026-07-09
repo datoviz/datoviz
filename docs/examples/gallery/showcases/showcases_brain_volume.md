@@ -14,7 +14,13 @@ This example renders a prepared Allen mouse brain volume with a visible slice.
 
 ## Preview
 
-![Allen Mouse Brain](../../../assets/gallery/v0.4/showcases/showcases_brain_volume.webp)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp" alt="Allen Mouse Brain" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../../../assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp" aria-label="Allen Mouse Brain preview">
+    <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_brain_volume.mp4" type="video/mp4">
+  </video>
+</div>
 
 ## What To Look For
 

@@ -548,6 +548,7 @@ examples:
         fps: 24
         card:
           compare: true
+          preferred: video-mp4
           sample_step: 1
           fps: 24
     data:
@@ -600,6 +601,7 @@ examples:
         fps: 12
         card:
           compare: true
+          preferred: video-mp4
           sample_step: 1
           fps: 12
           webp_quality: 85
@@ -684,6 +686,7 @@ examples:
         fps: 24
         card:
           compare: true
+          preferred: video-mp4
           sample_step: 1
           fps: 24
     data:
@@ -715,6 +718,7 @@ examples:
         fps: 24
         card:
           compare: true
+          preferred: video-mp4
           sample_step: 1
           fps: 24
     data:
@@ -815,6 +819,7 @@ examples:
         fps: 24
         card:
           compare: true
+          preferred: video-mp4
           sample_step: 1
           fps: 24
     data:
@@ -1412,6 +1417,7 @@ examples:
         fps: 24
         card:
           compare: true
+          preferred: video-mp4
     data:
       kind: synthetic
     webgpu:
@@ -1831,6 +1837,7 @@ examples:
         fps: 24
         card:
           compare: true
+          preferred: video-mp4
           sample_step: 1
           fps: 24
     data:
@@ -3122,6 +3129,7 @@ examples:
         fps: 24
         card:
           compare: true
+          preferred: video-mp4
     data:
       kind: prepared
     webgpu:

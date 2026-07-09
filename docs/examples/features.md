@@ -112,7 +112,14 @@ Panel_background shows a custom panel background behind a foreground primitive.
 
 ### [User Scale](gallery/features/features_user_scale.md)
 
-[![User Scale](../assets/gallery/v0.4/features/features_user_scale.webp)](gallery/features/features_user_scale.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_user_scale" aria-label="User Scale"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_user_scale.poster.webp" alt="User Scale" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_user_scale.poster.webp" aria-label="User Scale preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_user_scale.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 
@@ -178,7 +185,14 @@ This example shows explicit perspective-camera setup for a 3D scene.
 
 ### [Panzoom](gallery/features/features_panzoom.md)
 
-[![Panzoom](../assets/gallery/v0.4/features/features_panzoom.webp)](gallery/features/features_panzoom.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_panzoom" aria-label="Panzoom"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_panzoom.poster.webp" alt="Panzoom" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_panzoom.poster.webp" aria-label="Panzoom preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_panzoom.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 
@@ -190,7 +204,14 @@ Panzoom binds a 2D panzoom controller to a point visual in data coordinates.
 
 ### [Arcball Controller](gallery/features/features_controller_arcball.md)
 
-[![Arcball Controller](../assets/gallery/v0.4/features/features_controller_arcball.webp)](gallery/features/features_controller_arcball.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_controller_arcball" aria-label="Arcball Controller"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_controller_arcball.poster.webp" alt="Arcball Controller" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_controller_arcball.poster.webp" aria-label="Arcball Controller preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_controller_arcball.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 
@@ -202,7 +223,14 @@ This example shows an arcball controller rotating a 3D view.
 
 ### [Turntable Controller](gallery/features/features_controller_turntable.md)
 
-[![Turntable Controller](../assets/gallery/v0.4/features/features_controller_turntable.webp)](gallery/features/features_controller_turntable.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_controller_turntable" aria-label="Turntable Controller"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_controller_turntable.poster.webp" alt="Turntable Controller" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_controller_turntable.poster.webp" aria-label="Turntable Controller preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_controller_turntable.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 
@@ -214,7 +242,14 @@ This example shows world-up orbiting with a turntable controller.
 
 ### [Fly Controller](gallery/features/features_controller_fly.md)
 
-[![Fly Controller](../assets/gallery/v0.4/features/features_controller_fly.webp)](gallery/features/features_controller_fly.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_controller_fly" aria-label="Fly Controller"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_controller_fly.poster.webp" alt="Fly Controller" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_controller_fly.poster.webp" aria-label="Fly Controller preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_controller_fly.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 
@@ -226,7 +261,14 @@ This example shows fly-style camera navigation through a 3D scene.
 
 ### [Orientation Gizmo](gallery/features/features_orientation_gizmo.md)
 
-[![Orientation Gizmo](../assets/gallery/v0.4/features/features_orientation_gizmo.webp)](gallery/features/features_orientation_gizmo.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_orientation_gizmo" aria-label="Orientation Gizmo"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_orientation_gizmo.poster.webp" alt="Orientation Gizmo" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_orientation_gizmo.poster.webp" aria-label="Orientation Gizmo preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_orientation_gizmo.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 

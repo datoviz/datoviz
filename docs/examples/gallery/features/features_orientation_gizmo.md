@@ -14,7 +14,13 @@ Orientation_gizmo adds a small orientation widget to a 3D panel.
 
 ## Preview
 
-![Orientation Gizmo](../../../assets/gallery/v0.4/features/features_orientation_gizmo.webp)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_orientation_gizmo.poster.webp" alt="Orientation Gizmo" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../../../assets/gallery/v0.4/features/features_orientation_gizmo.poster.webp" aria-label="Orientation Gizmo preview">
+    <source data-src="../../../../assets/gallery/v0.4/features/features_orientation_gizmo.mp4" type="video/mp4">
+  </video>
+</div>
 
 ## What To Look For
 

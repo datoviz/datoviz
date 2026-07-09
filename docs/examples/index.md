@@ -30,7 +30,14 @@ This example composes common scientific plot elements in one figure.
 
 **[Linked Panels With Axes](gallery/showcases/showcases_panel_linked_axes.md)**
 
-[![Linked Panels With Axes](../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.webp)](gallery/showcases/showcases_panel_linked_axes.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_panel_linked_axes" aria-label="Linked Panels With Axes"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.poster.webp" alt="Linked Panels With Axes" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.poster.webp" aria-label="Linked Panels With Axes preview">
+    <source data-src="../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.mp4" type="video/mp4">
+  </video>
+</div>
 
 `showcases`
 
@@ -116,7 +123,14 @@ This example uses scene compute buffers to animate particle smoke.
 
 **[Allen Mouse Brain](gallery/showcases/showcases_brain_volume.md)**
 
-[![Allen Mouse Brain](../assets/gallery/v0.4/showcases/showcases_brain_volume.webp)](gallery/showcases/showcases_brain_volume.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_brain_volume" aria-label="Allen Mouse Brain"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp" alt="Allen Mouse Brain" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp" aria-label="Allen Mouse Brain preview">
+    <source data-src="../assets/gallery/v0.4/showcases/showcases_brain_volume.mp4" type="video/mp4">
+  </video>
+</div>
 
 `prototype` `showcases`
 
@@ -557,7 +571,14 @@ This example shows scalar point values mapped through a custom colormap.
 
 **[Panzoom](gallery/features/features_panzoom.md)**
 
-[![Panzoom](../assets/gallery/v0.4/features/features_panzoom.webp)](gallery/features/features_panzoom.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/features/features_panzoom" aria-label="Panzoom"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/features/features_panzoom.poster.webp" alt="Panzoom" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/features/features_panzoom.poster.webp" aria-label="Panzoom preview">
+    <source data-src="../assets/gallery/v0.4/features/features_panzoom.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 
@@ -569,7 +590,14 @@ Panzoom binds a 2D panzoom controller to a point visual in data coordinates.
 
 **[Arcball Controller](gallery/features/features_controller_arcball.md)**
 
-[![Arcball Controller](../assets/gallery/v0.4/features/features_controller_arcball.webp)](gallery/features/features_controller_arcball.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/features/features_controller_arcball" aria-label="Arcball Controller"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/features/features_controller_arcball.poster.webp" alt="Arcball Controller" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/features/features_controller_arcball.poster.webp" aria-label="Arcball Controller preview">
+    <source data-src="../assets/gallery/v0.4/features/features_controller_arcball.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 
@@ -581,7 +609,14 @@ This example shows an arcball controller rotating a 3D view.
 
 **[Fly Controller](gallery/features/features_controller_fly.md)**
 
-[![Fly Controller](../assets/gallery/v0.4/features/features_controller_fly.webp)](gallery/features/features_controller_fly.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/features/features_controller_fly" aria-label="Fly Controller"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/features/features_controller_fly.poster.webp" alt="Fly Controller" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/features/features_controller_fly.poster.webp" aria-label="Fly Controller preview">
+    <source data-src="../assets/gallery/v0.4/features/features_controller_fly.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 
@@ -593,7 +628,14 @@ This example shows fly-style camera navigation through a 3D scene.
 
 **[Turntable Controller](gallery/features/features_controller_turntable.md)**
 
-[![Turntable Controller](../assets/gallery/v0.4/features/features_controller_turntable.webp)](gallery/features/features_controller_turntable.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/features/features_controller_turntable" aria-label="Turntable Controller"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/features/features_controller_turntable.poster.webp" alt="Turntable Controller" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/features/features_controller_turntable.poster.webp" aria-label="Turntable Controller preview">
+    <source data-src="../assets/gallery/v0.4/features/features_controller_turntable.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 

@@ -16,7 +16,13 @@ This example shows fly-style camera navigation through a 3D scene.
 
 === "Screenshot"
 
-    ![Fly Controller](../../../assets/gallery/v0.4/features/features_controller_fly.webp)
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_controller_fly.poster.webp" alt="Fly Controller" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/features/features_controller_fly.poster.webp" aria-label="Fly Controller preview">
+        <source data-src="../../../../assets/gallery/v0.4/features/features_controller_fly.mp4" type="video/mp4">
+      </video>
+    </div>
 
 === "Live WebGPU"
 

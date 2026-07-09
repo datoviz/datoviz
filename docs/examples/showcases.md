@@ -28,7 +28,14 @@ This example composes common scientific plot elements in one figure.
 
 ### [Linked Panels With Axes](gallery/showcases/showcases_panel_linked_axes.md)
 
-[![Linked Panels With Axes](../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.webp)](gallery/showcases/showcases_panel_linked_axes.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_panel_linked_axes" aria-label="Linked Panels With Axes"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.poster.webp" alt="Linked Panels With Axes" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.poster.webp" aria-label="Linked Panels With Axes preview">
+    <source data-src="../../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.mp4" type="video/mp4">
+  </video>
+</div>
 
 `showcases`<br><span>`workflow`, `linked-panels`, `axes`, `panzoom`, `synthetic`</span>
 
@@ -120,7 +127,14 @@ This example uses scene compute buffers to animate particle smoke.
 
 ### [Allen Mouse Brain](gallery/showcases/showcases_brain_volume.md)
 
-[![Allen Mouse Brain](../assets/gallery/v0.4/showcases/showcases_brain_volume.webp)](gallery/showcases/showcases_brain_volume.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_brain_volume" aria-label="Allen Mouse Brain"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp" alt="Allen Mouse Brain" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp" aria-label="Allen Mouse Brain preview">
+    <source data-src="../../assets/gallery/v0.4/showcases/showcases_brain_volume.mp4" type="video/mp4">
+  </video>
+</div>
 
 `prototype` `showcases`<br><span>`scientific`, `real-data`, `volume`, `volume-slice`, `volume-occlusion`, ...</span>
 

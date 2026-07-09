@@ -16,7 +16,13 @@ This example shows world-up orbiting with a turntable controller.
 
 === "Screenshot"
 
-    ![Turntable Controller](../../../assets/gallery/v0.4/features/features_controller_turntable.webp)
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_controller_turntable.poster.webp" alt="Turntable Controller" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/features/features_controller_turntable.poster.webp" aria-label="Turntable Controller preview">
+        <source data-src="../../../../assets/gallery/v0.4/features/features_controller_turntable.mp4" type="video/mp4">
+      </video>
+    </div>
 
 === "Live WebGPU"
 

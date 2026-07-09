@@ -16,7 +16,13 @@ Panzoom binds a 2D panzoom controller to a point visual in data coordinates.
 
 === "Screenshot"
 
-    ![Panzoom](../../../assets/gallery/v0.4/features/features_panzoom.webp)
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_panzoom.poster.webp" alt="Panzoom" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/features/features_panzoom.poster.webp" aria-label="Panzoom preview">
+        <source data-src="../../../../assets/gallery/v0.4/features/features_panzoom.mp4" type="video/mp4">
+      </video>
+    </div>
 
 === "Live WebGPU"
 

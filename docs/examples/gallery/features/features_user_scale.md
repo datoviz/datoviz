@@ -14,7 +14,13 @@ User_scale shows how one user-scale value affects screen-space visual sizes and 
 
 ## Preview
 
-![User Scale](../../../assets/gallery/v0.4/features/features_user_scale.webp)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_user_scale.poster.webp" alt="User Scale" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../../../assets/gallery/v0.4/features/features_user_scale.poster.webp" aria-label="User Scale preview">
+    <source data-src="../../../../assets/gallery/v0.4/features/features_user_scale.mp4" type="video/mp4">
+  </video>
+</div>
 
 ## What To Look For
 
