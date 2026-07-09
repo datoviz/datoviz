@@ -157,12 +157,14 @@ typedef struct WindShowcaseParams
 typedef struct WindShowcaseState
 {
     DvzPanel* panel;
+    DvzScale* scale;
     DvzSampledField* field;
     DvzVisual* vectors;
     DvzVisual* streamlines;
     float* values;
     WindShowcaseParams params;
     ExampleTuner tuner;
+    float current_time_s;
 } WindShowcaseState;
 
 
@@ -1305,12 +1307,216 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user_data)
     const float time_s =
         ctx->preview_mode ? (float)dvz_scenario_preview_time(ctx)
                           : (float)frame_index / ANIMATION_FPS;
-    const float model_time_s = time_s * state->params.time_scale;
+    state->current_time_s = time_s;
+    const float model_time_s = state->current_time_s * state->params.time_scale;
     if (!_update_wind_image(state, model_time_s))
         return;
     if (!_update_streamlines(state, model_time_s))
         return;
     (void)_update_vectors(state, model_time_s);
+}
+
+
+/**
+ * Apply current wind parameter edits to retained visuals.
+ *
+ * @param user wind showcase state
+ */
+static void _wind_params_apply(void* user)
+{
+    WindShowcaseState* state = (WindShowcaseState*)user;
+    if (state == NULL)
+        return;
+
+    if (state->scale != NULL)
+    {
+        dvz_scale_set_domain(state->scale, 0.0, state->params.speed_max_mps);
+        dvz_scale_set_view_range(state->scale, 0.0, state->params.speed_max_mps);
+    }
+    const float model_time_s = state->current_time_s * state->params.time_scale;
+    if (!_update_wind_image(state, model_time_s))
+        return;
+    if (!_update_streamlines(state, model_time_s))
+        return;
+    (void)_update_vectors(state, model_time_s);
+}
+
+
+/**
+ * Reset editable wind parameters to the showcase defaults.
+ *
+ * @param user wind showcase state
+ */
+static void _wind_params_reset(void* user)
+{
+    WindShowcaseState* state = (WindShowcaseState*)user;
+    if (state == NULL)
+        return;
+    state->params = WIND_PARAMS_SHOWCASE;
+    _wind_params_apply(user);
+}
+
+
+/**
+ * Draw wind model controls in the example tuner.
+ *
+ * @param gui GUI
+ * @param user wind showcase state
+ * @return whether parameters changed
+ */
+static bool _wind_params_gui(DvzGui* gui, void* user)
+{
+    WindShowcaseState* state = (WindShowcaseState*)user;
+    if (gui == NULL || state == NULL)
+        return false;
+
+    bool changed = false;
+    WindShowcaseParams* p = &state->params;
+
+    dvz_gui_separator_text(gui, "Time and scale");
+    changed |= dvz_gui_slider_float(gui, "Time scale", &p->time_scale, 0.1f, 8.0f);
+    changed |= dvz_gui_slider_float(gui, "Speed max", &p->speed_max_mps, 30.0f, 140.0f);
+
+    dvz_gui_separator_text(gui, "Storm");
+    changed |=
+        dvz_gui_slider_float(gui, "Center X", &p->storm_center_x_km, DOMAIN_X_MIN_KM, DOMAIN_X_MAX_KM);
+    changed |=
+        dvz_gui_slider_float(gui, "Center Y", &p->storm_center_y_km, DOMAIN_Y_MIN_KM, DOMAIN_Y_MAX_KM);
+    changed |= dvz_gui_slider_float(gui, "Drift X", &p->storm_drift_x_km, 0.0f, 140.0f);
+    changed |= dvz_gui_slider_float(gui, "Drift Y", &p->storm_drift_y_km, 0.0f, 100.0f);
+    changed |= dvz_gui_slider_float(gui, "Drift rate X", &p->storm_drift_rate_x, 0.0f, 1.0f);
+    changed |= dvz_gui_slider_float(gui, "Drift rate Y", &p->storm_drift_rate_y, 0.0f, 1.0f);
+    changed |= dvz_gui_slider_float(gui, "Drift phase Y", &p->storm_drift_phase_y, 0.0f, TAU);
+    changed |= dvz_gui_slider_float(gui, "Eye radius", &p->eye_radius_km, 30.0f, 260.0f);
+    changed |= dvz_gui_slider_float(gui, "Vortex", &p->vortex_strength_mps, 10.0f, 150.0f);
+    changed |= dvz_gui_slider_float(gui, "Spiral radius", &p->spiral_radius_km, 80.0f, 700.0f);
+    changed |= dvz_gui_slider_float(gui, "Inflow", &p->inflow_strength_mps, -35.0f, 5.0f);
+    changed |= dvz_gui_slider_float(gui, "Breathing", &p->breathing_amplitude, 0.0f, 0.35f);
+    changed |= dvz_gui_slider_float(gui, "Breathing rate", &p->breathing_rate, 0.0f, 1.5f);
+
+    dvz_gui_separator_text(gui, "Background");
+    changed |= dvz_gui_slider_float(gui, "Base U", &p->background_u_mps, -20.0f, 45.0f);
+    changed |= dvz_gui_slider_float(gui, "U/Y gradient", &p->background_u_y_gradient, -0.05f, 0.05f);
+    changed |= dvz_gui_slider_float(gui, "U wave", &p->background_u_wave_mps, 0.0f, 12.0f);
+    changed |= dvz_gui_slider_float(gui, "U wave rate", &p->background_u_wave_rate, 0.0f, 1.5f);
+    changed |= dvz_gui_slider_float(gui, "Base V", &p->background_v_mps, -30.0f, 30.0f);
+    changed |= dvz_gui_slider_float(gui, "V wave", &p->background_v_wave_mps, 0.0f, 16.0f);
+    changed |= dvz_gui_slider_float(gui, "V wave rate", &p->background_v_wave_rate, 0.0f, 1.5f);
+    changed |= dvz_gui_slider_float(gui, "Shear", &p->shear_strength_mps, 0.0f, 30.0f);
+    changed |= dvz_gui_slider_float(gui, "Shear rate", &p->shear_rate, 0.0f, 1.5f);
+    changed |= dvz_gui_slider_float(gui, "Cross wind", &p->cross_wind_strength_mps, 0.0f, 20.0f);
+    changed |= dvz_gui_slider_float(gui, "Cross rate", &p->cross_wind_rate, 0.0f, 1.5f);
+    changed |= dvz_gui_slider_float(gui, "Terrain friction", &p->terrain_friction, 0.0f, 0.6f);
+    changed |= dvz_gui_slider_float(gui, "Terrain color", &p->scalar_terrain_mix_mps, 0.0f, 20.0f);
+
+    dvz_gui_separator_text(gui, "Vectors");
+    changed |= dvz_gui_slider_float(gui, "Vector scale", &p->vector_scale, 0.2f, 3.0f);
+    changed |= dvz_gui_slider_float(gui, "Vector alpha", &p->vector_alpha_base, 20.0f, 255.0f);
+    changed |= dvz_gui_slider_float(gui, "Vector alpha range", &p->vector_alpha_range, 0.0f, 160.0f);
+    changed |= dvz_gui_slider_float(gui, "Vector width", &p->vector_width_base_px, 0.5f, 8.0f);
+    changed |= dvz_gui_slider_float(gui, "Vector width range", &p->vector_width_range_px, 0.0f, 6.0f);
+
+    dvz_gui_separator_text(gui, "Streamlines");
+    changed |=
+        dvz_gui_slider_float(gui, "Seed wobble", &p->streamline_seed_wobble_km, 0.0f, 100.0f);
+    changed |= dvz_gui_slider_float(
+        gui, "Seed wobble rate", &p->streamline_seed_wobble_rate, 0.0f, 1.5f);
+    changed |= dvz_gui_slider_float(
+        gui, "Inner rotation", &p->streamline_inner_rotation_rate, 0.0f, 2.0f);
+    changed |=
+        dvz_gui_slider_float(gui, "Outer alpha", &p->streamline_alpha_outer, 0.0f, 255.0f);
+    changed |=
+        dvz_gui_slider_float(gui, "Inner alpha", &p->streamline_alpha_inner, 0.0f, 255.0f);
+    changed |=
+        dvz_gui_slider_float(gui, "Outer width", &p->streamline_width_outer_px, 0.3f, 6.0f);
+    changed |=
+        dvz_gui_slider_float(gui, "Inner width", &p->streamline_width_inner_px, 0.3f, 6.0f);
+    changed |=
+        dvz_gui_slider_float(gui, "Outer step", &p->streamline_step_outer_km, 1.0f, 18.0f);
+    changed |=
+        dvz_gui_slider_float(gui, "Inner step", &p->streamline_step_inner_km, 1.0f, 18.0f);
+    changed |= dvz_gui_slider_float(
+        gui, "Minimum speed", &p->streamline_min_speed_mps, 0.5f, 30.0f);
+
+    return changed;
+}
+
+
+/**
+ * Print pasteable C defaults for the current wind parameters.
+ *
+ * @param fp output stream
+ * @param user wind showcase state
+ */
+static void _wind_params_print_c(FILE* fp, void* user)
+{
+    WindShowcaseState* state = (WindShowcaseState*)user;
+    if (state == NULL)
+        return;
+    if (fp == NULL)
+        fp = stdout;
+
+    const WindShowcaseParams* p = &state->params;
+    fprintf(fp, "static const WindShowcaseParams WIND_PARAMS_SHOWCASE = {\n");
+#define PRINT_PARAM(name) fprintf(fp, "    ." #name " = %.6ff,\n", (double)p->name)
+    PRINT_PARAM(time_scale);
+    PRINT_PARAM(speed_max_mps);
+    PRINT_PARAM(storm_center_x_km);
+    PRINT_PARAM(storm_center_y_km);
+    PRINT_PARAM(storm_drift_x_km);
+    PRINT_PARAM(storm_drift_y_km);
+    PRINT_PARAM(storm_drift_rate_x);
+    PRINT_PARAM(storm_drift_rate_y);
+    PRINT_PARAM(storm_drift_phase_y);
+    PRINT_PARAM(eye_radius_km);
+    PRINT_PARAM(vortex_strength_mps);
+    PRINT_PARAM(spiral_radius_km);
+    PRINT_PARAM(inflow_strength_mps);
+    PRINT_PARAM(breathing_amplitude);
+    PRINT_PARAM(breathing_rate);
+    PRINT_PARAM(background_u_mps);
+    PRINT_PARAM(background_u_y_gradient);
+    PRINT_PARAM(background_u_wave_mps);
+    PRINT_PARAM(background_u_wave_rate);
+    PRINT_PARAM(background_u_wave_phase);
+    PRINT_PARAM(background_v_mps);
+    PRINT_PARAM(background_v_wave_mps);
+    PRINT_PARAM(background_v_wave_k);
+    PRINT_PARAM(background_v_wave_rate);
+    PRINT_PARAM(background_v_wave_phase);
+    PRINT_PARAM(shear_strength_mps);
+    PRINT_PARAM(shear_wave_k);
+    PRINT_PARAM(shear_rate);
+    PRINT_PARAM(shear_y_center_km);
+    PRINT_PARAM(shear_y_radius_km);
+    PRINT_PARAM(cross_wind_strength_mps);
+    PRINT_PARAM(cross_wind_wave_k);
+    PRINT_PARAM(cross_wind_rate);
+    PRINT_PARAM(cross_wind_phase);
+    PRINT_PARAM(cross_wind_x_center_km);
+    PRINT_PARAM(cross_wind_x_radius_km);
+    PRINT_PARAM(terrain_friction);
+    PRINT_PARAM(scalar_terrain_mix_mps);
+    PRINT_PARAM(vector_scale);
+    PRINT_PARAM(vector_alpha_base);
+    PRINT_PARAM(vector_alpha_range);
+    PRINT_PARAM(vector_width_base_px);
+    PRINT_PARAM(vector_width_range_px);
+    PRINT_PARAM(streamline_seed_wobble_km);
+    PRINT_PARAM(streamline_seed_wobble_rate);
+    PRINT_PARAM(streamline_inner_rotation_rate);
+    PRINT_PARAM(streamline_inner_radius_km);
+    PRINT_PARAM(streamline_inner_radius_jitter_km);
+    PRINT_PARAM(streamline_inner_y_scale);
+    PRINT_PARAM(streamline_alpha_outer);
+    PRINT_PARAM(streamline_alpha_inner);
+    PRINT_PARAM(streamline_width_outer_px);
+    PRINT_PARAM(streamline_width_inner_px);
+    PRINT_PARAM(streamline_step_outer_km);
+    PRINT_PARAM(streamline_step_inner_km);
+    PRINT_PARAM(streamline_min_speed_mps);
+#undef PRINT_PARAM
+    fprintf(fp, "};\n");
 }
 
 
@@ -1345,6 +1551,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
     example_tuner_figure(&state->tuner, ctx->figure);
+    (void)example_tuner_add_component(
+        &state->tuner, "Wind model", state, NULL, _wind_params_gui, _wind_params_apply,
+        _wind_params_reset, _wind_params_print_c);
 
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
@@ -1357,6 +1566,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzScale* scale = _add_wind_scale(ctx->scene, &state->params);
     EXAMPLE_CHECK(scale != NULL, "_add_wind_scale() failed");
+    state->scale = scale;
     DvzColorbar* colorbar = _add_wind_colorbar(panel, scale);
     EXAMPLE_CHECK(colorbar != NULL, "_add_wind_colorbar() failed");
 
@@ -1381,6 +1591,28 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     ok = true;
 cleanup:
     return ok;
+}
+
+
+/**
+ * Attach live-only wind model tuning controls to the native view.
+ *
+ * @param ctx scenario context
+ * @param app app
+ * @param view native view
+ * @param user scenario state
+ * @return whether the tuner was attached or intentionally skipped
+ */
+static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    (void)app;
+    WindShowcaseState* state = (WindShowcaseState*)user;
+    if (
+        ctx == NULL || ctx->presentation != DVZ_RUNNER_PRESENT_GLFW || state == NULL ||
+        view == NULL)
+        return true;
+
+    return example_tuner_attach(&state->tuner, view);
 }
 
 
@@ -1441,6 +1673,8 @@ DvzScenarioSpec dvz_showcase_wind_field_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = dvz_showcase_wind_field_scenario();
+    if (example_cli_wants_live_gui(argc, argv))
+        spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
 #endif
