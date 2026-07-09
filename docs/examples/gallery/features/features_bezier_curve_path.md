@@ -28,12 +28,19 @@ Four control points define the curve. The tessellated path uploads position, col
     --8<-- "examples/c/features/bezier_curve_path.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/bezier_curve_path.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_bezier_curve_path`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/bezier_curve_path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bezier_curve_path.c)
+    - Python source: [`examples/python/gallery/features/bezier_curve_path.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/bezier_curve_path.py)
     - Browser support: Planned
     - Browser capability tags: `path`, `segment`, `marker`
     - Validation: `smoke+screenshot`

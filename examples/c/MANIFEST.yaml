@@ -1347,6 +1347,9 @@ examples:
     primary_feature: bezier-curve-path
     lane: features
     source: examples/c/features/bezier_curve_path.c
+    python:
+      source: examples/python/gallery/features/bezier_curve_path.py
+      status: direct-engine
     validation: smoke+screenshot
     data:
       kind: synthetic
