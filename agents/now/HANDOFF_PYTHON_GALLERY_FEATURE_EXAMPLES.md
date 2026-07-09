@@ -59,9 +59,10 @@ Recent checkpoint commits landed:
 46. `ceaca3bf8` Add Python path-join gallery example.
 47. `72efadbab` Expose scale-bar descriptors to Python.
 48. `66cc428ca` Add Python scalebar gallery example.
+49. `3ea207185` Add Python scalebar-units gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
-next planned checkpoint is `features_scalebar_units`.
+next planned checkpoint is `features_datetime_axis`.
 
 The material-descriptor caveat is resolved for new examples: `DvzPhongMaterial`,
 `DvzStandardMaterial`, and `DvzMaterialDesc` now have generated ctypes layouts, and
@@ -214,6 +215,10 @@ python3 - <<'PY'
 ... construct scalebar scene with generated DvzScaleBarDesc, metric units, and panzoom binding,
     render one offscreen frame, and verify non-background pixels ...
 PY
+python3 - <<'PY'
+... construct scalebar_units scene with duration units and fixed-Y panzoom binding, render one
+    offscreen frame, and verify non-background pixels ...
+PY
 ```
 
 These returned `image_probe offscreen query smoke: 1 True` and
@@ -239,13 +244,14 @@ MSAA checkpoint returned `technique_msaa offscreen: OK`; the depth-cue checkpoin
 `input_events synthetic: OK pointer=6 keyboard=2 resize=1`; the view-size checkpoint returned
 `view_size_policies smoke: OK policy=pixel_exact framebuffer=1280x720`; the Bezier path checkpoint
 returned `bezier_curve_path offscreen: OK`; the path-join checkpoint returned
-`path_join offscreen: OK`; the scalebar checkpoint returned `scalebar offscreen: OK`.
+`path_join offscreen: OK`; the scalebar checkpoint returned `scalebar offscreen: OK`; the
+scalebar-units checkpoint returned `scalebar_units offscreen: OK`.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`features_scalebar`:
+`features_scalebar_units`:
 
-- v0.4-required feature examples: 62 of 64 have Python entries; 2 remain missing.
-- all v0.4-required public examples: 74 of 95 have Python entries; 21 remain missing.
+- v0.4-required feature examples: 63 of 64 have Python entries; 1 remains missing.
+- all v0.4-required public examples: 75 of 95 have Python entries; 20 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -377,6 +383,10 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   `examples/python/gallery/features/scalebar.py` and a matching `python.source` manifest entry. It
   uses generated `DvzScaleBarDesc`, `dvz_scale_bar_desc()`, metric units, label styling, 2D panel
   domains, and panzoom binding.
+- `features_scalebar_units` is committed: it has
+  `examples/python/gallery/features/scalebar_units.py` and a matching `python.source` manifest
+  entry. It uses generated duration unit bindings, `DvzScaleBarDesc`, a deterministic 96-sample path
+  trace, and a fixed-Y panzoom descriptor.
 
 
 ## Preferred Next Commit
@@ -390,9 +400,9 @@ checkpoint has `features_reference_grid` and `features_coordinate_system`; and
 `features_mesh_texture`, `features_material_mesh`, `features_lighting`, and `features_user_scale`
 and `features_gui_controls`, `features_gui_viewport`, and `features_gui_cimgui` are complete. The
 planned rendering-technique feature examples are complete through transparency. Next target
-`features_scalebar_units`, which is the first missing feature in manifest order. Inspect the C
-example and current unit-ladder/duration-unit bindings before deciding whether the Python path can
-be direct-engine, needs a narrow binding policy update, or should stay deferred.
+`features_datetime_axis`, which is the first missing feature in manifest order. Inspect the C
+example and current time/datetime axis bindings before deciding whether the Python path can be
+direct-engine, needs a narrow binding policy update, or should stay deferred.
 
 Implementation shape:
 
@@ -428,7 +438,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python scalebar-units gallery example
+examples: add Python datetime-axis gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -493,7 +503,7 @@ convert the examples that immediately need it.
 
 Current missing `v0.4_required` feature examples with no `python.source` entry:
 
-`features_scalebar_units` and `features_datetime_axis`.
+`features_datetime_axis`.
 
 
 ## Per-Example Checklist
