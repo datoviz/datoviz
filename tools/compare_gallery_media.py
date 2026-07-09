@@ -256,6 +256,29 @@ def coalesce_and_resize(
     return [FrameItem(path=path, delay_ms=delay) for path, delay in zip(paths, delays)]
 
 
+def capture_and_resize_preview(
+    preview: object, frame_root: Path, size: str, fallback_fps: int) -> list[FrameItem]:
+    raw_dir = frame_root / "raw"
+    resized_dir = frame_root / "resized"
+    build_gallery_animations.capture_sequence(preview, raw_dir)
+    resized_dir.mkdir(parents=True, exist_ok=True)
+
+    delay_ms = max(1, int(round(1000.0 / max(1, getattr(preview, "fps")))))
+    frames = []
+    for index in range(getattr(preview, "frames")):
+        raw = build_gallery_animations.frame_path(raw_dir, index)
+        if not raw.exists():
+            raise FileNotFoundError(raw)
+        resized = resized_dir / f"frame_{index:04d}.png"
+        run(["magick", str(raw), "-resize", size, str(resized)])
+        frames.append(FrameItem(path=resized, delay_ms=delay_ms))
+    return frames
+
+
+def should_capture_source_frames(args: argparse.Namespace, generated_kinds: set[str]) -> bool:
+    return should_merge_report(args) and "mp4-card" in generated_kinds
+
+
 def select_frames(frames: list[FrameItem], step: int) -> list[FrameItem]:
     if step <= 0:
         raise ValueError("--step must be positive")
@@ -420,7 +443,10 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
 
     with TemporaryDirectory(prefix="dvz-gallery-media-") as tmp:
         frame_root = Path(tmp)
-        frames = coalesce_and_resize(source, frame_root / "frames", profile.size, out_fps)
+        if should_capture_source_frames(args, generated_kinds):
+            frames = capture_and_resize_preview(preview, frame_root / "frames", profile.size, out_fps)
+        else:
+            frames = coalesce_and_resize(source, frame_root / "frames", profile.size, out_fps)
         selected = select_frames(frames, profile.step)
         selected_dir = frame_root / "selected"
         selected_dir.mkdir()
