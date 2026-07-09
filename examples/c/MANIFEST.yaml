@@ -1210,6 +1210,9 @@ examples:
     primary_runtime: offscreen-capture
     lane: runtime
     source: examples/c/runtime/offscreen_capture.c
+    python:
+      source: examples/python/gallery/runtime/offscreen_capture.py
+      status: direct-engine
     validation: smoke+screenshot
     capture:
       mode: custom

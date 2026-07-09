@@ -30,12 +30,19 @@ This is the runtime path to copy for reproducible batch figures, tests, and docu
     --8<-- "examples/c/runtime/offscreen_capture.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/runtime/offscreen_capture.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `runtime_offscreen_capture`
     - Category: `runtime`
     - Lane: `runtime`
     - Source: [`examples/c/runtime/offscreen_capture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/offscreen_capture.c)
+    - Python source: [`examples/python/gallery/runtime/offscreen_capture.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/runtime/offscreen_capture.py)
     - Browser support: Native only
     - Browser note: writes a native offscreen PNG through the app capture path
     - Browser capability tags: `native-capture`
