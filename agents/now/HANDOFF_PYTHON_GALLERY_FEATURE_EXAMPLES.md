@@ -53,9 +53,10 @@ Recent checkpoint commits landed:
 40. `490e57cde` Add Python MSAA technique gallery example.
 41. `54dfed00f` Add Python depth-cue technique gallery example.
 42. `8f673a61e` Add Python transparency technique gallery example.
+43. `d61a6c440` Add Python input-events gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
-next planned checkpoint is `features_input_events`.
+next planned checkpoint is `features_view_size_policies`.
 
 The material-descriptor caveat is resolved for new examples: `DvzPhongMaterial`,
 `DvzStandardMaterial`, and `DvzMaterialDesc` now have generated ctypes layouts, and
@@ -183,6 +184,10 @@ python3 - <<'PY'
 ... construct technique_transparency scene, render source-over, weighted OIT, and depth-peel panels
     in one offscreen frame, and verify non-background pixels ...
 PY
+python3 - <<'PY'
+... run input_events synthetic offscreen path, emit resize/pointer/wheel/key events through the
+    view input router, render once, and verify callback counters ...
+PY
 ```
 
 These returned `image_probe offscreen query smoke: 1 True` and
@@ -204,13 +209,14 @@ the user-scale checkpoint returned `user_scale offscreen: OK`; the GUI-controls 
 `animation_tracks offscreen: OK`; the SSAO checkpoint returned `technique_ssao offscreen: OK`; the
 MSAA checkpoint returned `technique_msaa offscreen: OK`; the depth-cue checkpoint returned
 `technique_depth_cue offscreen: OK`; the transparency checkpoint returned
-`technique_transparency offscreen: OK`.
+`technique_transparency offscreen: OK`; the input-events checkpoint returned
+`input_events synthetic: OK pointer=6 keyboard=2 resize=1`.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`features_technique_transparency`:
+`features_input_events`:
 
-- v0.4-required feature examples: 57 of 64 have Python entries; 7 remain missing.
-- all v0.4-required public examples: 69 of 95 have Python entries; 26 remain missing.
+- v0.4-required feature examples: 58 of 64 have Python entries; 6 remain missing.
+- all v0.4-required public examples: 70 of 95 have Python entries; 25 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -320,6 +326,11 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   manifest entry. It compares source-over blending, weighted OIT, and depth peeling on matching
   translucent cube pairs through generated `DvzMaterialDesc` alpha mode fields and exported
   `dvz_visual_set_alpha_mode()` / `dvz_visual_set_transform()` bindings.
+- `features_input_events` is committed: it has
+  `examples/python/gallery/features/input_events.py` and a matching `python.source` manifest entry.
+  It subscribes to `dvz_view_input()` through generated input callback bindings, logs pointer,
+  keyboard, and resize events, and keeps a synthetic offscreen path using `dvz_view_emit_*()`
+  helpers for headless validation.
 
 
 ## Preferred Next Commit
@@ -333,9 +344,9 @@ checkpoint has `features_reference_grid` and `features_coordinate_system`; and
 `features_mesh_texture`, `features_material_mesh`, `features_lighting`, and `features_user_scale`
 and `features_gui_controls`, `features_gui_viewport`, and `features_gui_cimgui` are complete. The
 planned rendering-technique feature examples are complete through transparency. Next target
-`features_input_events`, which is the first missing feature in manifest order. Inspect the C example
-and current input callback bindings before deciding whether the Python path can be direct-engine,
-needs a narrow binding policy update, or should stay deferred.
+`features_view_size_policies`, which is the first missing feature in manifest order. Inspect the C
+example and current view size/capture bindings before deciding whether the Python path can be
+direct-engine, needs a narrow binding policy update, or should stay deferred.
 
 Implementation shape:
 
@@ -371,7 +382,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python input-events gallery example
+examples: add Python view-size-policies gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -436,9 +447,8 @@ convert the examples that immediately need it.
 
 Current missing `v0.4_required` feature examples with no `python.source` entry:
 
-`features_input_events`, `features_view_size_policies`, `features_bezier_curve_path`,
-`features_path_join`, `features_scalebar`, `features_scalebar_units`, and
-`features_datetime_axis`.
+`features_view_size_policies`, `features_bezier_curve_path`, `features_path_join`,
+`features_scalebar`, `features_scalebar_units`, and `features_datetime_axis`.
 
 
 ## Per-Example Checklist
