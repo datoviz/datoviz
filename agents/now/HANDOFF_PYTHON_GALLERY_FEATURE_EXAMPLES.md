@@ -76,10 +76,11 @@ Recent checkpoint commits landed:
 63. `1bd1ff01f` Add Python choropleth showcase gallery example.
 64. `484f9ecd0` Add Python protein showcase gallery example.
 65. `e21746888` Add Python wind-field showcase gallery example.
+66. `68ac543c0` Add Python GPU particle smoke showcase gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
 v0.4-required feature lane is complete. The next missing v0.4-required public example in manifest
-order is `showcases_gpu_particle_smoke`.
+order is `showcases_surface_grid`.
 
 The material-descriptor caveat is resolved for new examples: `DvzPhongMaterial`,
 `DvzStandardMaterial`, and `DvzMaterialDesc` now have generated ctypes layouts, and
@@ -295,13 +296,14 @@ returned `datetime_axis offscreen: OK`; the runtime app GLFW checkpoint returned
 `composites_graph offscreen: OK`; the choropleth showcase checkpoint returned
 `showcases_choropleth offscreen: OK`; the protein showcase checkpoint returned
 `showcases_protein fallback offscreen: OK`; the wind-field showcase checkpoint returned
-`showcases_wind_field offscreen: OK`.
+`showcases_wind_field offscreen: OK`; the GPU particle smoke checkpoint returned
+`showcases_gpu_particle_smoke offscreen: OK`.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`showcases_wind_field`:
+`showcases_gpu_particle_smoke`:
 
 - v0.4-required feature examples: 64 of 64 have Python entries; 0 remain missing.
-- all v0.4-required public examples: 90 of 95 have Python entries; 5 remain missing.
+- all v0.4-required public examples: 91 of 95 have Python entries; 4 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -505,6 +507,13 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   procedural wind defaults, scalar sampled-field image, vector overlay, streamline path overlay,
   probe marker/readout, colorbar, equal-aspect View2D, and panzoom. The offscreen smoke rendered one
   320x180 frame and verified non-background pixels.
+- `showcases_gpu_particle_smoke` is committed: it has
+  `examples/python/gallery/showcases/gpu_particle_smoke.py` and a matching `python.source` manifest
+  entry. It keeps the real scene-buffer plus scene-compute workflow with position/velocity/age
+  storage buffers, point visual attribute buffers, blended rendering, and a frame callback that
+  updates the parameter buffer. The Python port intentionally omits the C pointer-swirl input path
+  and uses the smaller 32,768-particle offscreen count. The offscreen smoke rendered one 320x180
+  frame and verified non-background pixels.
 
 
 ## Preferred Next Commit
@@ -518,8 +527,8 @@ checkpoint has `features_reference_grid` and `features_coordinate_system`; and
 `features_mesh_texture`, `features_material_mesh`, `features_lighting`, and `features_user_scale`
 and `features_gui_controls`, `features_gui_viewport`, and `features_gui_cimgui` are complete. The
 planned rendering-technique feature examples are complete through transparency. Next target
-for the broader required-public backlog is `showcases_gpu_particle_smoke`, which is the first
-missing required public example in manifest order. Inspect the C showcase example and its data
+for the broader required-public backlog is `showcases_surface_grid`, which is the first missing
+required public example in manifest order. Inspect the C showcase example and its data
 contract before deciding whether a small shared helper is worth adding.
 
 Implementation shape:
@@ -556,7 +565,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python gpu-particle-smoke showcase gallery example
+examples: add Python surface-grid showcase gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -625,8 +634,8 @@ None. The required feature lane is complete.
 
 Current missing `v0.4_required` public examples with no `python.source` entry:
 
-`showcases_gpu_particle_smoke`, `showcases_surface_grid`, `showcases_brain_volume`,
-`showcases_point_cloud`, and `showcases_textured_planet`.
+`showcases_surface_grid`, `showcases_brain_volume`, `showcases_point_cloud`, and
+`showcases_textured_planet`.
 
 
 ## Per-Example Checklist
