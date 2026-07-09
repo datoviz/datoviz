@@ -1188,6 +1188,9 @@ examples:
     primary_runtime: multi-window
     lane: runtime
     source: examples/c/runtime/multi_window.c
+    python:
+      source: examples/python/gallery/runtime/multi_window.py
+      status: direct-engine
     validation: smoke+interaction
     data:
       kind: synthetic

@@ -30,12 +30,19 @@ This workflow is useful for scientific tools that need a coarse overview beside 
     --8<-- "examples/c/runtime/multi_window.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/runtime/multi_window.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `runtime_multi_window`
     - Category: `runtime`
     - Lane: `runtime`
     - Source: [`examples/c/runtime/multi_window.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/multi_window.c)
+    - Python source: [`examples/python/gallery/runtime/multi_window.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/runtime/multi_window.py)
     - Browser support: Native only
     - Browser note: multiple native GLFW windows are native-only
     - Browser capability tags: `native-view`, `multi-window`
