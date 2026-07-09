@@ -38,12 +38,19 @@ Five data-space points mark a simple ruler from 0 to 8 along X, while the scale 
     --8<-- "examples/c/features/scalebar.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/scalebar.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_scalebar`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/scalebar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar.c)
+    - Python source: [`examples/python/gallery/features/scalebar.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/scalebar.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_scalebar"><code>examples/webgpu/live.html?id=features_scalebar</code></a>
     - Browser capability tags: `scale-bar`, `text`, `panzoom`

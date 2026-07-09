@@ -2486,7 +2486,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=features_scalebar",
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_scalebar",
-      "primary_feature": "scale-bar"
+      "primary_feature": "scale-bar",
+      "python_source": "examples/python/gallery/features/scalebar.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/scalebar.py",
+      "python_status": "direct-engine"
     },
     {
       "id": "features_scalebar_units",

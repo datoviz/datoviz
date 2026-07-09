@@ -1479,6 +1479,9 @@ examples:
     primary_feature: scale-bar
     lane: features
     source: examples/c/features/scalebar.c
+    python:
+      source: examples/python/gallery/features/scalebar.py
+      status: direct-engine
     validation: smoke+screenshot
     media:
       preview:
