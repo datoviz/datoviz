@@ -28,12 +28,19 @@ Pass --policy pixel, host, reference, or physical to choose framebuffer pixels, 
     --8<-- "examples/c/features/view_size_policies.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/view_size_policies.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_view_size_policies`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/view_size_policies.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/view_size_policies.c)
+    - Python source: [`examples/python/gallery/features/view_size_policies.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/view_size_policies.py)
     - Browser support: Native only
     - Browser note: demonstrates native window, framebuffer, and physical-size policies
     - Browser capability tags: `native-view`, `view-size-policy`

@@ -1242,6 +1242,9 @@ examples:
     primary_feature: view-size-policy
     lane: features
     source: examples/c/features/view_size_policies.c
+    python:
+      source: examples/python/gallery/features/view_size_policies.py
+      status: direct-engine
     validation: smoke+interaction
     data:
       kind: synthetic
