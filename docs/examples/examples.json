@@ -1159,7 +1159,10 @@
         ],
         "reason": "Datoviz GUI controls require the native ImGui/GLFW app path"
       },
-      "primary_feature": "gui-controls"
+      "primary_feature": "gui-controls",
+      "python_source": "examples/python/gallery/features/gui_controls.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/gui_controls.py",
+      "python_status": "direct-engine"
     },
     {
       "id": "features_gui_viewport",

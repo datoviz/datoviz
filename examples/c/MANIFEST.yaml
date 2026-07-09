@@ -816,6 +816,9 @@ examples:
     primary_feature: gui-controls
     lane: features
     source: examples/c/features/gui_controls.c
+    python:
+      source: examples/python/gallery/features/gui_controls.py
+      status: direct-engine
     validation: smoke+interaction+screenshot
     capture:
       mode: native-app

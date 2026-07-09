@@ -28,12 +28,19 @@ Five point positions are fixed, while GUI sliders and color editors update the c
     --8<-- "examples/c/features/gui_controls.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/gui_controls.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_gui_controls`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/gui_controls.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_controls.c)
+    - Python source: [`examples/python/gallery/features/gui_controls.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/gui_controls.py)
     - Browser support: Native only
     - Browser note: Datoviz GUI controls require the native ImGui/GLFW app path
     - Browser capability tags: `gui`
