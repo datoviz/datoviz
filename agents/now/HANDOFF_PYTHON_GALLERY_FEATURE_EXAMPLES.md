@@ -67,10 +67,11 @@ Recent checkpoint commits landed:
 54. `d57857040` Add Python linked-axes showcase gallery example.
 55. `a0f3a4483` Add Python linked-probe colorbar showcase.
 56. `fd3df7db3` Add Python scientific-plotting showcase.
+57. `72d189cd4` Add Python scalebar-measurement showcase.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
 v0.4-required feature lane is complete. The next missing v0.4-required public example in manifest
-order is `showcases_scalebar_measurement`.
+order is `visuals_labels`.
 
 The material-descriptor caveat is resolved for new examples: `DvzPhongMaterial`,
 `DvzStandardMaterial`, and `DvzMaterialDesc` now have generated ctypes layouts, and
@@ -264,13 +265,14 @@ returned `datetime_axis offscreen: OK`; the runtime app GLFW checkpoint returned
 `runtime_offscreen_capture: OK`; the linked-axes showcase checkpoint returned
 `showcases_panel_linked_axes offscreen: OK`; the linked-probe colorbar checkpoint returned
 `showcases_linked_probe_colorbar offscreen: OK`; the scientific-plotting checkpoint returned
-`showcases_scientific_plotting offscreen: OK`.
+`showcases_scientific_plotting offscreen: OK`; the scalebar-measurement checkpoint returned
+`showcases_scalebar_measurement offscreen: OK`.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`showcases_scientific_plotting`:
+`showcases_scalebar_measurement`:
 
 - v0.4-required feature examples: 64 of 64 have Python entries; 0 remain missing.
-- all v0.4-required public examples: 82 of 95 have Python entries; 13 remain missing.
+- all v0.4-required public examples: 83 of 95 have Python entries; 12 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -435,6 +437,11 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   manifest entry. It mirrors the C composed plotting figure with an autocorrelogram, guide span and
   guide lines, annotation labels, uncertainty band, stacked trace paths, retained axes, panel
   borders, and panzoom bindings.
+- `showcases_scalebar_measurement` is committed: it has
+  `examples/python/gallery/showcases/scalebar_measurement.py` and a matching `python.source`
+  manifest entry. It mirrors the C measurement workflow with overview/detail RGBA images, zoom box,
+  detail markers, independent panel scale bars, a 3D specimen cloud, a view-plane world scale bar,
+  panzoom, arcball, and retained visual rotation.
 
 
 ## Preferred Next Commit
@@ -448,10 +455,9 @@ checkpoint has `features_reference_grid` and `features_coordinate_system`; and
 `features_mesh_texture`, `features_material_mesh`, `features_lighting`, and `features_user_scale`
 and `features_gui_controls`, `features_gui_viewport`, and `features_gui_cimgui` are complete. The
 planned rendering-technique feature examples are complete through transparency. Next target
-for the broader required-public backlog is `showcases_scalebar_measurement`, which is the first
-missing required public example in manifest order. Inspect the C example and adjacent scalebar,
-annotation, guide, and measurement-overlay helpers before deciding whether a small shared showcase
-helper is worth adding.
+for the broader required-public backlog is `visuals_labels`, which is the first missing required
+public example in manifest order. Inspect the C visual example and adjacent text/label helpers
+before deciding whether a small shared helper is worth adding.
 
 Implementation shape:
 
@@ -487,7 +493,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python scalebar-measurement showcase gallery example
+examples: add Python labels visual gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -556,8 +562,8 @@ None. The required feature lane is complete.
 
 Current missing `v0.4_required` public examples with no `python.source` entry:
 
-`showcases_scalebar_measurement`, `visuals_labels`, `visuals_volume`, `composites_polygon`,
-`composites_graph`, `showcases_choropleth`, `showcases_protein`, `showcases_wind_field`,
+`visuals_labels`, `visuals_volume`, `composites_polygon`, `composites_graph`,
+`showcases_choropleth`, `showcases_protein`, `showcases_wind_field`,
 `showcases_gpu_particle_smoke`, `showcases_surface_grid`, `showcases_brain_volume`,
 `showcases_point_cloud`, and `showcases_textured_planet`.
 
