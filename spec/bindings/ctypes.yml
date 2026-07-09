@@ -129,6 +129,8 @@ layout_records:
     - DvzOverlayCardStyle
     - DvzPanelView2DDesc
     - DvzPanelView3DDesc
+    - DvzPolygonRing
+    - DvzPolygonDesc
     - DvzTextItem
     - DvzTextLayout
     - DvzTextPlacement
@@ -371,11 +373,10 @@ skipped_functions:
         User-facing Phong material descriptor default is safe to return by value now that
         DvzMaterialDesc and its nested material records are generated ctypes layouts.
     dvz_polygon_desc:
-      disposition: ffi-helper
-      helper: dvz_ffi_polygon_desc
+      disposition: emit
       reason: >
-        User-facing polygon triangulation descriptor default is available through the pointer-output
-        FFI helper.
+        User-facing polygon descriptor default is safe to return by value now that DvzPolygonRing
+        and DvzPolygonDesc layouts are generated.
     dvz_scale_bar_desc:
       disposition: emit
       reason: >
@@ -424,7 +425,6 @@ skipped_functions:
     - dvz_drp2_render_pass_desc
     - dvz_field_geometry
     - dvz_gpu_ctx_config
-    - dvz_polygon_desc
     - dvz_surface_capabilities
     - dvz_surface_extent
     - dvz_surface_preferred_format

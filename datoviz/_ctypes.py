@@ -6086,6 +6086,21 @@ DvzPointerEvent._fields_ = [
 ]
 
 
+DvzPolygonRing._fields_ = [
+    ('xy', ctypes.c_void_p),
+    ('count', ctypes.c_uint32),
+]
+
+
+DvzPolygonDesc._fields_ = [
+    ('struct_size', ctypes.c_uint32),
+    ('flags', ctypes.c_uint32),
+    ('outer', DvzPolygonRing),
+    ('holes', ctypes.POINTER(DvzPolygonRing)),
+    ('hole_count', ctypes.c_uint32),
+]
+
+
 DvzPolygonStyle._fields_ = [
     ('struct_size', ctypes.c_uint32),
     ('flags', ctypes.c_uint32),
@@ -9128,7 +9143,7 @@ else:
  * @param pos the position in the target box
  * @param[out] out position transformed back into the source box
  */"""
-    dvz_box_inverse.argtypes = [DvzBox, DvzBox, (ctypes.c_float * 3), (ctypes.c_void_p * 3)]
+    dvz_box_inverse.argtypes = [DvzBox, DvzBox, (ctypes.c_float * 3), ctypes.c_void_p]
     dvz_box_inverse.restype = None
 
 
@@ -9164,7 +9179,7 @@ else:
  * @param pos the positions to normalize (double precision)
  * @param[out] out normalized positions to compute, as single-precision 3D positions
  */"""
-    dvz_box_normalize_1D.argtypes = [DvzBox, DvzBox, ctypes.c_int, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), (ctypes.c_void_p * 3)]
+    dvz_box_normalize_1D.argtypes = [DvzBox, DvzBox, ctypes.c_int, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.c_void_p]
     dvz_box_normalize_1D.restype = None
 
 
@@ -9182,7 +9197,7 @@ else:
  * @param pos the positions to normalize (double precision)
  * @param[out] out normalized positions to compute, as single-precision 3D positions
  */"""
-    dvz_box_normalize_2D.argtypes = [DvzBox, DvzBox, ctypes.c_uint32, (ctypes.c_void_p * 2), (ctypes.c_void_p * 3)]
+    dvz_box_normalize_2D.argtypes = [DvzBox, DvzBox, ctypes.c_uint32, ctypes.c_void_p, ctypes.c_void_p]
     dvz_box_normalize_2D.restype = None
 
 
@@ -9200,7 +9215,7 @@ else:
  * @param pos the positions to normalize (double precision)
  * @param[out] out normalized positions to compute, as single-precision 3D positions
  */"""
-    dvz_box_normalize_3D.argtypes = [DvzBox, DvzBox, ctypes.c_uint32, (ctypes.c_void_p * 3), (ctypes.c_void_p * 3)]
+    dvz_box_normalize_3D.argtypes = [DvzBox, DvzBox, ctypes.c_uint32, ctypes.c_void_p, ctypes.c_void_p]
     dvz_box_normalize_3D.restype = None
 
 
@@ -9218,7 +9233,7 @@ else:
  * @param pos the positions to normalize (double precision)
  * @param[out] out normalized positions to compute, as double-precision 2D positions
  */"""
-    dvz_box_normalize_polygon.argtypes = [DvzBox, DvzBox, ctypes.c_uint32, (ctypes.c_void_p * 2), (ctypes.c_void_p * 2)]
+    dvz_box_normalize_polygon.argtypes = [DvzBox, DvzBox, ctypes.c_uint32, ctypes.c_void_p, ctypes.c_void_p]
     dvz_box_normalize_polygon.restype = None
 
 
@@ -17782,7 +17797,7 @@ else:
  * @param control1 borrowed second control point array
  * @return 0 on success, -1 on error
  */"""
-    dvz_graph_set_edge_controls.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, (ctypes.c_void_p * 3), (ctypes.c_void_p * 3)]
+    dvz_graph_set_edge_controls.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_void_p, ctypes.c_void_p]
     dvz_graph_set_edge_controls.restype = ctypes.c_int32
 
 
@@ -17949,7 +17964,7 @@ else:
  * @param positions borrowed node positions
  * @return 0 on success, -1 on error
  */"""
-    dvz_graph_set_node_positions.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, (ctypes.c_void_p * 3)]
+    dvz_graph_set_node_positions.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_void_p]
     dvz_graph_set_node_positions.restype = ctypes.c_int32
 
 
@@ -23967,6 +23982,20 @@ else:
 
 
 try:
+    dvz_polygon_desc = dvz.dvz_polygon_desc
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygon_desc')
+else:
+    dvz_polygon_desc.__doc__ = """/**
+ * Return a default polygon descriptor.
+ *
+ * @return initialized polygon descriptor
+ */"""
+    dvz_polygon_desc.argtypes = []
+    dvz_polygon_desc.restype = DvzPolygonDesc
+
+
+try:
     dvz_polygon_destroy = dvz.dvz_polygon_destroy
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_polygon_destroy')
@@ -24029,7 +24058,7 @@ else:
  * @param count number of hole ring vertices
  * @return 0 on success, -1 on invalid input or allocation failure
  */"""
-    dvz_polygon_set_hole.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_uint32, (ctypes.c_void_p * 2), ctypes.c_uint32]
+    dvz_polygon_set_hole.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_uint32, ctypes.c_void_p, ctypes.c_uint32]
     dvz_polygon_set_hole.restype = ctypes.c_int32
 
 
@@ -24062,7 +24091,7 @@ else:
  * @param count number of outer ring vertices
  * @return 0 on success, -1 on invalid input or allocation failure
  */"""
-    dvz_polygon_set_outer.argtypes = [ctypes.POINTER(DvzPolygon), (ctypes.c_void_p * 2), ctypes.c_uint32]
+    dvz_polygon_set_outer.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_void_p, ctypes.c_uint32]
     dvz_polygon_set_outer.restype = ctypes.c_int32
 
 
@@ -28473,7 +28502,7 @@ else:
  * @param item_count number of anchors
  * @return 0 on success, -1 on error
  */"""
-    dvz_text_set_anchors.argtypes = [ctypes.POINTER(DvzText), (ctypes.c_void_p * 2), ctypes.c_uint32]
+    dvz_text_set_anchors.argtypes = [ctypes.POINTER(DvzText), ctypes.c_void_p, ctypes.c_uint32]
     dvz_text_set_anchors.restype = ctypes.c_int32
 
 
@@ -28567,7 +28596,7 @@ else:
  * @param item_count number of offsets
  * @return 0 on success, -1 on error
  */"""
-    dvz_text_set_offsets.argtypes = [ctypes.POINTER(DvzText), (ctypes.c_void_p * 2), ctypes.c_uint32]
+    dvz_text_set_offsets.argtypes = [ctypes.POINTER(DvzText), ctypes.c_void_p, ctypes.c_uint32]
     dvz_text_set_offsets.restype = ctypes.c_int32
 
 
@@ -28618,7 +28647,7 @@ else:
  * @param item_count number of positions
  * @return 0 on success, -1 on error
  */"""
-    dvz_text_set_positions.argtypes = [ctypes.POINTER(DvzText), (ctypes.c_void_p * 3), ctypes.c_uint32]
+    dvz_text_set_positions.argtypes = [ctypes.POINTER(DvzText), ctypes.c_void_p, ctypes.c_uint32]
     dvz_text_set_positions.restype = ctypes.c_int32
 
 
@@ -29423,7 +29452,7 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_vec3_cast')
 else:
-    dvz_vec3_cast.argtypes = [(ctypes.c_void_p * 3), (ctypes.c_void_p * 3)]
+    dvz_vec3_cast.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
     dvz_vec3_cast.restype = None
 
 
@@ -32499,7 +32528,7 @@ else:
     dvz_write_ppm.restype = ctypes.c_int
 
 
-_GENERATED_FUNCTION_COUNT = 1535
-_SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_device_config', 'dvz_drp2_render_pass_desc', 'dvz_field_geometry', 'dvz_gpu_ctx_config', 'dvz_polygon_desc', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
-_DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzDataDomain', 'DvzDepthCueDesc', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2TextureDesc', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFlyDesc', 'DvzFontDefaults', 'DvzFontDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanEmitConfig', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzStandardMaterial', 'DvzMaterialDesc', 'DvzMsaaDesc', 'DvzOrientationGizmoDesc', 'DvzOverlayCardDesc', 'DvzOverlayCardStyle', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBackgroundGradient', 'DvzPanelBackgroundImage', 'DvzPanelBackgroundDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzReferenceGridDesc', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleBarDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTextPlacement', 'DvzTextStyle', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewDesc', 'DvzViewSizeDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
+_GENERATED_FUNCTION_COUNT = 1536
+_SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_device_config', 'dvz_drp2_render_pass_desc', 'dvz_field_geometry', 'dvz_gpu_ctx_config', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
+_DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzDataDomain', 'DvzDepthCueDesc', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2TextureDesc', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFlyDesc', 'DvzFontDefaults', 'DvzFontDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanEmitConfig', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzStandardMaterial', 'DvzMaterialDesc', 'DvzMsaaDesc', 'DvzOrientationGizmoDesc', 'DvzOverlayCardDesc', 'DvzOverlayCardStyle', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBackgroundGradient', 'DvzPanelBackgroundImage', 'DvzPanelBackgroundDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonRing', 'DvzPolygonDesc', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzReferenceGridDesc', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleBarDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTextPlacement', 'DvzTextStyle', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewDesc', 'DvzViewSizeDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
 __all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]

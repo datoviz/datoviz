@@ -351,6 +351,8 @@ def _array_ctype(
     value_records: set[str] | None = None,
     callbacks: set[str] | None = None,
 ) -> str | None:
+    if '(*' in ''.join(qualtype.split()):
+        return None
     match = ARRAY_RE.match(_clean_type(qualtype))
     if not match:
         return None
@@ -387,6 +389,8 @@ def _pointer_ctype(qualtype: str, records: set[str], enums: set[str]) -> str | N
     if target == 'char' and depth == 2:
         return 'ctypes.POINTER(ctypes.c_char_p)'
     if target == 'void' and depth == 1:
+        return 'ctypes.c_void_p'
+    if target in SUPPORTED_VECTOR_FIELD_ALIASES:
         return 'ctypes.c_void_p'
     if target in records:
         base = target
