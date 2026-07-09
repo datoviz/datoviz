@@ -4,11 +4,17 @@
 interactive 2D and 3D scenes that outgrow ordinary plotting: dense points, images, meshes, volumes,
 text, annotations, linked panels, controllers, capture, and replayable render streams.
 
-Datoviz v0.4 is the **engine layer** in the broader GSP/VisPy2 direction. Use it directly when you
-want explicit control over scene objects and GPU-backed rendering; use GSP/VisPy2 for the future
-high-level plotting layer when that work matures.
+Datoviz v0.4 is the **engine layer**: use it directly when you want explicit control over scene
+objects, GPU-backed rendering, native integration, and reproducible visual output.
 
-<a href="examples/gallery/showcases/showcases_protein/"><img src="assets/gallery/v0.4/showcases/showcases_protein.webp" alt="Interactive protein visualization rendered with Datoviz" style="width:100%;border-radius:8px;margin:1.5rem 0 1.5rem;display:block;"></a>
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video" style="margin:1.5rem 0 1.5rem;">
+  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_protein/" aria-label="Protein visualization"></a>
+  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_protein.poster.webp" alt="Interactive protein visualization rendered with Datoviz" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="assets/gallery/v0.4/showcases/showcases_protein.poster.webp" aria-label="Protein visualization preview">
+    <source data-src="assets/gallery/v0.4/showcases/showcases_protein.mp4" type="video/mp4">
+  </video>
+</div>
 
 
 ## Why Datoviz?
@@ -20,7 +26,7 @@ high-level plotting layer when that work matures.
 - 🖥️ **Native first**: use the C API for applications, embedding, offscreen rendering, screenshots,
   video export, and low-level runtime integration.
 - 🐍 **Python without a wrapper stack**: call the generated `datoviz` binding directly with
-  documented NumPy array adaptation; use `datoviz.raw` only for exact C-shaped calls.
+  documented NumPy array adaptation.
 - 🌐 **Browser experiments**: try the experimental WebGPU/WASM path for selected examples that share
   the same scene model as the native runtime.
 
@@ -33,7 +39,14 @@ high-level plotting layer when that work matures.
 
 **[Point Cloud](examples/gallery/showcases/showcases_point_cloud.md)**
 
-[![Dense point cloud rendered in Datoviz](assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp)](examples/gallery/showcases/showcases_point_cloud.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_point_cloud.md" aria-label="Point Cloud"></a>
+  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" alt="Dense point cloud rendered in Datoviz" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" aria-label="Point Cloud preview">
+    <source data-src="assets/gallery/v0.4/showcases/showcases_point_cloud.mp4" type="video/mp4">
+  </video>
+</div>
 
 Large 3D datasets with depth, color, and interactive navigation.
 
@@ -43,7 +56,14 @@ Large 3D datasets with depth, color, and interactive navigation.
 
 **[Brain Volume](examples/gallery/showcases/showcases_brain_volume.md)**
 
-[![Brain volume rendering with mesh overlay](assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp)](examples/gallery/showcases/showcases_brain_volume.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_brain_volume.md" aria-label="Brain Volume"></a>
+  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp" alt="Brain volume rendering with mesh overlay" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp" aria-label="Brain Volume preview">
+    <source data-src="assets/gallery/v0.4/showcases/showcases_brain_volume.mp4" type="video/mp4">
+  </video>
+</div>
 
 Volumes, slices, transparent geometry, and scientific context.
 
@@ -53,7 +73,14 @@ Volumes, slices, transparent geometry, and scientific context.
 
 **[Wind Field](examples/gallery/showcases/showcases_wind_field.md)**
 
-[![Wind field visualization with color mapped data](assets/gallery/v0.4/showcases/showcases_wind_field.poster.webp)](examples/gallery/showcases/showcases_wind_field.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_wind_field.md" aria-label="Wind Field"></a>
+  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_wind_field.poster.webp" alt="Wind field visualization with color mapped data" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="assets/gallery/v0.4/showcases/showcases_wind_field.poster.webp" aria-label="Wind Field preview">
+    <source data-src="assets/gallery/v0.4/showcases/showcases_wind_field.mp4" type="video/mp4">
+  </video>
+</div>
 
 Scalar fields, vector overlays, colorbars, and probe-style workflows.
 
@@ -77,7 +104,7 @@ Retained composites, labels, color scales, and responsive layouts.
 <div class="dvz-nav-grid">
 <a class="dvz-nav-card" href="start/choose-your-layer/">
 <strong>Choose your layer</strong>
-<span>Decide between Datoviz, raw bindings, C/C++, WebGPU experiments, and the GSP/VisPy2 direction.</span>
+<span>Decide between the Python binding, C/C++ integration, browser experiments, and lower-level runtime docs.</span>
 </a>
 <a class="dvz-nav-card" href="reference/python-direct-engine/">
 <strong>Python binding</strong>
@@ -115,7 +142,7 @@ Retained composites, labels, color scales, and responsive layouts.
 </a>
 <a class="dvz-nav-card" href="reference/feature-status/">
 <strong>Feature status</strong>
-<span>Check what is supported, experimental, advanced/unstable, deferred, or external/GSP-owned.</span>
+<span>Check what is supported, experimental, advanced/unstable, deferred, or outside the v0.4 scope.</span>
 </a>
 <a class="dvz-nav-card" href="reference/">
 <strong>Reference</strong>
