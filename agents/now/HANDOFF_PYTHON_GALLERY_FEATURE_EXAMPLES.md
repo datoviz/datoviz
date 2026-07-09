@@ -43,9 +43,10 @@ Recent checkpoint commits landed:
 30. `b54a88016` Add Python mesh texture gallery example.
 31. `d88f3a10a` Expose material descriptors to Python.
 32. `79bf5e996` Add Python material mesh gallery example.
+33. `53700d638` Add Python lighting gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
-next planned checkpoint is `features_lighting`.
+next planned checkpoint is `features_user_scale`.
 
 The material-descriptor caveat is resolved for new examples: `DvzPhongMaterial`,
 `DvzStandardMaterial`, and `DvzMaterialDesc` now have generated ctypes layouts, and
@@ -128,6 +129,10 @@ python3 - <<'PY'
 ... construct material_mesh scene, set Phong and standard material descriptors on three cube
     meshes, bind linked arcballs, render one offscreen frame and verify non-background pixels ...
 PY
+python3 - <<'PY'
+... construct lighting scene, set three standard material light variants on matching sphere
+    clusters, bind linked arcballs, render one offscreen frame and verify non-background pixels ...
+PY
 ```
 
 These returned `image_probe offscreen query smoke: 1 True` and
@@ -141,13 +146,13 @@ These returned `image_probe offscreen query smoke: 1 True` and
 `isolines offscreen smoke: OK`, and `text_block offscreen smoke: OK`, and
 `overlay_card offscreen smoke: OK`, and `mesh_texture offscreen: OK`. Live window and screenshot
 validation were not run for the earlier checkpoint notes. The material-mesh checkpoint additionally
-returned `material_mesh offscreen: OK`.
+returned `material_mesh offscreen: OK`; the lighting checkpoint returned `lighting offscreen: OK`.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`features_material_mesh`:
+`features_lighting`:
 
-- v0.4-required feature examples: 47 of 64 have Python entries; 17 remain missing.
-- all v0.4-required public examples: 59 of 95 have Python entries; 36 remain missing.
+- v0.4-required feature examples: 48 of 64 have Python entries; 16 remain missing.
+- all v0.4-required public examples: 60 of 95 have Python entries; 35 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -194,8 +199,7 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
 - `features_coordinate_system` is committed: it has
   `examples/python/gallery/features/coordinate_system.py` and a matching `python.source` manifest
   entry. It reuses generated geometry descriptors, reference-grid descriptors, world text
-  placement, and turntable view binding. It intentionally uses geometry colors without
-  `dvz_visual_set_material()` because `DvzMaterialDesc` remains opaque in Python.
+  placement, and turntable view binding.
 - `features_orientation_gizmo` is committed: it has
   `examples/python/gallery/features/orientation_gizmo.py` and a matching `python.source` manifest
   entry. It uses the generated `DvzOrientationGizmoDesc`, `dvz_placement_panel_corner()`, and
@@ -213,6 +217,10 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   `examples/python/gallery/features/material_mesh.py` and a matching `python.source` manifest
   entry. It uses generated material descriptors, sets matte Phong, glossy Phong, and standard rim
   parameters, and binds linked arcball controllers across the three panels.
+- `features_lighting` is committed: it has
+  `examples/python/gallery/features/lighting.py` and a matching `python.source` manifest entry. It
+  uses standard material descriptors with three light/roughness/specular/rim variants on matching
+  sphere clusters, and binds linked arcball controllers across the three panels.
 
 
 ## Preferred Next Commit
@@ -223,9 +231,10 @@ and symbol helper batch has `features_marker_symbols`, `features_builtin_shapes_
 text/annotation checkpoint has `features_text_block`, `features_overlay_card`, and
 `features_annotation_readout`; `features_axis_labels` is complete; the first spatial-layout
 checkpoint has `features_reference_grid` and `features_coordinate_system`; and
-`features_mesh_texture` and `features_material_mesh` are complete. Next target `features_lighting`,
-which is the first missing feature in manifest order. Reuse the generated material descriptors from
-`d88f3a10a` rather than adding another binding workaround.
+`features_mesh_texture`, `features_material_mesh`, and `features_lighting` are complete. Next target
+`features_user_scale`, which is the first missing feature in manifest order. That example is marked
+native-only because its user-scale control is a native ImGui slider; keep the Python port direct and
+do not invent browser/WebGPU behavior.
 
 Implementation shape:
 
@@ -261,7 +270,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python lighting gallery example
+examples: add Python user scale gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
