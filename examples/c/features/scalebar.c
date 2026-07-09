@@ -90,13 +90,14 @@ static bool _add_points(DvzScene* scene, DvzPanel* panel)
     DvzColor colors[POINT_COUNT] = {{0}};
     float diameters[POINT_COUNT] = {0};
 
-    DvzColor muted = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
+    DvzColor inner = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
     DvzColor accent = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
     for (uint32_t i = 0; i < POINT_COUNT; i++)
     {
-        colors[i] = i == 0 || i == POINT_COUNT - 1u ? accent : muted;
-        colors[i].a = 230u;
-        diameters[i] = i == 0 || i == POINT_COUNT - 1u ? 16.0f : 10.0f;
+        const bool endpoint = i == 0 || i == POINT_COUNT - 1u;
+        colors[i] = endpoint ? accent : inner;
+        colors[i].a = endpoint ? 255u : 232u;
+        diameters[i] = endpoint ? 22.0f : 16.0f;
     }
 
     DvzVisual* points = dvz_point(scene, 0);

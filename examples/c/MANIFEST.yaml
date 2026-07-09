@@ -544,8 +544,11 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 24
-        fps: 12
+        frames: 48
+        fps: 24
+        card:
+          sample_step: 1
+          fps: 24
     data:
       kind: synthetic
     webgpu:
@@ -671,8 +674,11 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 24
-        fps: 12
+        frames: 48
+        fps: 24
+        card:
+          sample_step: 1
+          fps: 24
     data:
       kind: synthetic
     webgpu:
@@ -698,8 +704,11 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 24
-        fps: 12
+        frames: 48
+        fps: 24
+        card:
+          sample_step: 1
+          fps: 24
     data:
       kind: synthetic
     webgpu:
@@ -794,8 +803,11 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 72
+        frames: 48
         fps: 24
+        card:
+          sample_step: 1
+          fps: 24
     data:
       kind: synthetic
     portability: native-only
@@ -1597,8 +1609,19 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 72
+        frames: 48
         fps: 24
+        card:
+          sample_step: 1
+          fps: 24
+        timeline:
+          segments:
+            - id: before
+              kind: state
+              frames: 24
+            - id: after
+              kind: state
+              frames: 24
     data:
       kind: synthetic
     webgpu:
@@ -1624,8 +1647,16 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 72
+        frames: 48
         fps: 24
+        timeline:
+          segments:
+            - id: before
+              kind: state
+              frames: 24
+            - id: after
+              kind: state
+              frames: 24
     data:
       kind: synthetic
     webgpu:
@@ -1738,8 +1769,11 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 24
-        fps: 12
+        frames: 48
+        fps: 24
+        card:
+          sample_step: 1
+          fps: 24
     data:
       kind: synthetic
     webgpu:
@@ -3041,7 +3075,7 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 120
+        frames: 144
         fps: 24
         sample_stride: 2
         card:
@@ -3050,7 +3084,7 @@ examples:
           sample_step: 1
           fps: 24
           webp_quality: 1
-          mp4_crf: 39
+          mp4_crf: 38
           webm_crf: 50
     data:
       kind: prepared

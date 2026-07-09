@@ -438,7 +438,7 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
     const uint32_t frame_index =
         ctx->preview_mode ? (uint32_t)ctx->preview_frame_index + 1u
                           : (uint32_t)ctx->frame_index + 1u;
-    const uint32_t update_stride = ctx->preview_mode ? 8u : UPDATE_STRIDE;
+    const uint32_t update_stride = ctx->preview_mode ? 16u : UPDATE_STRIDE;
     if (frame_index % update_stride != 0)
         return;
 
@@ -449,7 +449,7 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
 
     state->patch_index = (state->patch_index + 1u) % PATCH_COUNT;
     _patch_position(state->patch_index, &state->patch_x, &state->patch_y);
-    const float phase = ctx->preview_mode ? (float)(0.35 * TAU * dvz_scenario_preview_time(ctx))
+    const float phase = ctx->preview_mode ? (float)(0.18 * TAU * dvz_scenario_preview_time(ctx))
                                           : (float)frame_index * 0.12f;
     _fill_highlight_patch(patch, phase);
     (void)_update_patch(state->field, state->patch_x, state->patch_y, patch);
