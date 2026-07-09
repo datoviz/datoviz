@@ -38,12 +38,19 @@ The panel has explicit x and y domains, matching tick policies, grid lines, and 
     --8<-- "examples/c/features/axis_labels.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/axis_labels.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_axis_labels`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/axis_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axis_labels.c)
+    - Python source: [`examples/python/gallery/features/axis_labels.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/axis_labels.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_axis_labels"><code>examples/webgpu/live.html?id=features_axis_labels</code></a>
     - Browser capability tags: `axes`, `text`, `labels`
