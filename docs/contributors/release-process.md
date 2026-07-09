@@ -48,6 +48,24 @@ Resolve or explicitly ignore unrelated work before building release artifacts. D
 artifacts from a tree with unreviewed staged changes, generated binary payloads, or an unintended
 `data` submodule update.
 
+For the automation front door, start with a dry run:
+
+```sh
+just release-plan 0.4.0rc1
+just release-candidate 0.4.0rc1 --dry-run
+```
+
+After reviewing the plan, run the local candidate flow:
+
+```sh
+just release-candidate 0.4.0rc1
+just release-report 0.4.0rc1
+```
+
+This writes `build/release/0.4.0rc1/release-state.json`, command logs, generated source bundle
+metadata, discovered wheel checksums, and the first release report inputs. It does not tag, upload,
+publish, push, or create a GitHub release.
+
 Then run the minimum local proof:
 
 ```sh
@@ -123,6 +141,40 @@ Build artifacts in this order:
 Keep wheel building separate from upload. The wheel build workflow produces artifacts. A later
 manual upload workflow should publish vetted artifacts to TestPyPI or PyPI.
 
+The candidate state under `build/release/<version>/` is the local handoff between artifact
+creation, machine validation, release reports, and later publication automation. If an artifact
+checksum changes after validation begins, rerun validation or discard the stale evidence.
+
+Create a portable validation pack for physical validation machines:
+
+```sh
+just release-validation-pack 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
+```
+
+Copy the generated `datoviz-0.4.0rc1-validation.tar.gz` to each target machine. After extraction,
+run:
+
+```sh
+./validate-rc.sh
+```
+
+On Windows PowerShell:
+
+```powershell
+./validate.ps1 -Profile rc
+```
+
+If the target machine already has the repository checkout, it may instead run the
+installed-artifact validator directly against the exact wheel or source artifact under review:
+
+```sh
+just release-machine-validate 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl --profile rc
+```
+
+Use `quick` for a short install/import/CLI smoke, `rc` for CMake consumer evidence, and `full` for
+shaderc plus render smoke on a graphics-capable host. The validator writes environment metadata,
+logs, failures, and `evidence.json` under `build/release/<version>/evidence/<machine-id>/`.
+
 
 ## TestPyPI And PyPI
 
@@ -191,14 +243,17 @@ identifiers is needed; if it is added, keep it consistent with `CITATION.cff`.
 
 Keep these as explicit maintainer actions for v0.4:
 
-1. moving draft GitHub Actions workflows into `.github/workflows/`;
-2. cutting RC and final tags;
-3. publishing to TestPyPI;
-4. publishing to PyPI;
-5. creating GitHub releases;
+1. approving movement of draft GitHub Actions workflows into `.github/workflows/`;
+2. approving RC and final tag creation;
+3. approving TestPyPI upload;
+4. approving PyPI upload;
+5. approving GitHub draft creation and release publication;
 6. approving `data` submodule pointer updates;
 7. approving generated binary payloads or vendored runtime libraries;
 8. final release-note wording and known-issues classification.
+
+After these approvals exist, tools may execute the corresponding commands and API calls. The
+decision remains manual; the mechanics should be automated.
 
 
 ## After Each RC

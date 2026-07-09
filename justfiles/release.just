@@ -87,6 +87,26 @@ release-tag version confirm='no':
     @just tag "{{version}}" "{{confirm}}"
 #
 
+release-plan version:
+    @python3 tools/release_automation.py plan "{{version}}"
+#
+
+release-candidate version *args:
+    @python3 tools/release_automation.py candidate "{{version}}" {{args}}
+#
+
+release-validation-pack version *args:
+    @python3 tools/release_automation.py validation-pack "{{version}}" {{args}}
+#
+
+release-machine-validate version *args:
+    @python3 tools/release_automation.py machine-validate "{{version}}" {{args}}
+#
+
+release-report version *args:
+    @python3 tools/release_automation.py report "{{version}}" {{args}}
+#
+
 runid:
     @echo "Use the manual .github/workflows/wheels.yml workflow for v0.4 RC wheel builds." >&2
     @echo "Query the selected GitHub Actions run ID explicitly before downloading artifacts." >&2

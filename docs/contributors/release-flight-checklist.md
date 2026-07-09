@@ -12,6 +12,8 @@ top to bottom and record skipped items as known exclusions.
 - [ ] Confirm no staged `data` submodule update unless explicitly approved.
 - [ ] Confirm no generated/runtime binary payloads are staged unintentionally.
 - [ ] Run `git diff --check`.
+- [ ] Run `just release-plan <version>`.
+- [ ] Run `just release-candidate <version> --dry-run`.
 
 
 ## 2. Version And Release Notes
@@ -29,6 +31,9 @@ top to bottom and record skipped items as known exclusions.
 
 ## 3. Native Build And Tests
 
+- [ ] Run `just release-candidate <version>` or record which lower-level candidate steps replaced
+      it.
+- [ ] Run `just release-report <version>`.
 - [ ] Run `just build`.
 - [ ] Run the focused release tests for touched areas.
 - [ ] Run `just test` or record why a narrower loop is being used.
@@ -67,6 +72,13 @@ top to bottom and record skipped items as known exclusions.
 
 ## 6. Wheel Install Smokes
 
+- [ ] Run `just release-validation-pack <version> --wheel <wheel>`.
+- [ ] Copy the generated validation pack to each required physical machine.
+- [ ] On each required physical machine, run
+      `./validate-rc.sh` or `./validate.ps1 -Profile rc` from the extracted pack.
+- [ ] On at least one graphics-capable host, run
+      `./validate-full.sh` or `./validate.ps1 -Profile full` from the extracted pack, or record why
+      render smoke is covered by lower-level checks.
 - [ ] Run `just wheel-check --cmake-consumer --qt-probe optional`.
 - [ ] Run render smoke with `--render` on at least one graphics-capable host.
 - [ ] Confirm `import datoviz` works from an installed wheel.

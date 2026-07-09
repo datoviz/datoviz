@@ -21,6 +21,49 @@ For a local RC1 preflight driver over the standard sequence, use:
 just release-preflight rc1
 ```
 
+For the v0.4 release automation front door, use:
+
+```sh
+just release-plan 0.4.0rc1
+just release-candidate 0.4.0rc1 --dry-run
+just release-candidate 0.4.0rc1
+just release-report 0.4.0rc1
+```
+
+`release-candidate` writes local state under `build/release/<version>/`. The first automation slice
+does not tag, upload, publish, push, or mutate GitHub. Publication remains a separate approval-gated
+phase.
+
+For installed-artifact validation on a physical machine, use:
+
+```sh
+just release-validation-pack 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
+```
+
+Copy `build/release/0.4.0rc1/validation-pack/datoviz-0.4.0rc1-validation.tar.gz` to the target
+machine, extract it, then run:
+
+```sh
+./validate-rc.sh
+```
+
+On Windows PowerShell:
+
+```powershell
+./validate.ps1 -Profile rc
+```
+
+If the target machine has the repository checkout, it can run the validator directly:
+
+```sh
+just release-machine-validate 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl --profile rc
+just release-report 0.4.0rc1
+```
+
+The `quick` profile runs wheel inventory plus installed import/CLI smoke. The `rc` profile adds the
+CMake consumer smoke. The `full` profile adds shaderc and render smoke. Evidence is written under
+`build/release/<version>/evidence/<machine-id>/`.
+
 
 ## Packaging
 
@@ -32,6 +75,7 @@ draft are documented in [Release wheels](release-wheels.md).
 
 Use [Release process](release-process.md) for the operational RC sequence and
 [Release flight checklist](release-flight-checklist.md) for the step-by-step maintainer checklist.
+Agents assisting release work should follow [Agent release checklist](agent-release-checklist.md).
 
 
 ## Release Records
