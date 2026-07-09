@@ -33,9 +33,10 @@ Recent checkpoint commits landed:
 20. `1e0486463` Expose overlay card descriptors to Python.
 21. `ef0e2cc44` Add Python overlay card gallery example.
 22. `6445a1400` Add Python annotation readout gallery example.
+23. `ceb5a5e1a` Add Python axis labels gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
-next planned checkpoint is `features_axis_labels`.
+next planned checkpoint is `features_reference_grid`.
 
 Known parity caveat from the geometry batch: the C OBJ and 3D shape examples apply a Phong
 material, but Python `DvzMaterialDesc` has no generated fields in the current binding, so these
@@ -118,10 +119,11 @@ These returned `image_probe offscreen query smoke: 1 True` and
 `overlay_card offscreen smoke: OK`. Live window and screenshot validation were not run for the
 earlier checkpoint notes.
 
-Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09:
+Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
+`features_axis_labels`:
 
-- v0.4-required feature examples: 39 of 64 have Python entries; 25 remain missing.
-- all v0.4-required public examples: 51 of 95 have Python entries; 44 remain missing.
+- v0.4-required feature examples: 40 of 64 have Python entries; 24 remain missing.
+- all v0.4-required public examples: 52 of 95 have Python entries; 43 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -159,6 +161,8 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
 - `features_annotation_readout` is committed: it has
   `examples/python/gallery/features/annotation_readout.py` and a matching `python.source` manifest
   entry.
+- `features_axis_labels` is committed: it has
+  `examples/python/gallery/features/axis_labels.py` and a matching `python.source` manifest entry.
 
 
 ## Preferred Next Commit
@@ -167,8 +171,10 @@ The event/query/selection helper batch is complete for the planned feature examp
 and symbol helper batch has `features_marker_symbols`, `features_builtin_shapes_2d`, and
 `features_builtin_shapes_3d`, `features_obj_loading`, and `features_isolines`; the first
 text/annotation checkpoint has `features_text_block`, `features_overlay_card`, and
-`features_annotation_readout`. Next target the small axes/text checkpoint, starting with
-`features_axis_labels`.
+`features_annotation_readout`; and `features_axis_labels` is complete. Next target the small
+spatial-layout checkpoint, starting with `features_reference_grid`. `features_coordinate_system`
+remains the first missing feature in manifest order, but it involves 3D geometry/material parity
+caveats and can follow after the smaller reference-grid route.
 
 Implementation shape:
 
@@ -204,7 +210,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python axis labels gallery example
+examples: add Python reference grid gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
