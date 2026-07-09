@@ -163,6 +163,60 @@ check-gallery-media-pipeline *args:
     @python3 tools/check_gallery_media_pipeline.py "$@"
 
 
+# Build the build-local gallery media comparison report.
+[positional-arguments]
+gallery-media-compare *args:
+    @python3 tools/compare_gallery_media.py "$@"
+
+
+# Serve the build-local gallery media comparison report.
+gallery-media-compare-serve:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    root="build/gallery-media-compare"
+    if [[ ! -f "${root}/index.html" ]]; then
+        echo "Missing ${root}/index.html; run: just gallery-media-compare --all-animated --force" >&2
+        exit 2
+    fi
+
+    host="${DATOVIZ_GALLERY_COMPARE_HOST:-localhost}"
+    start_port="${DATOVIZ_GALLERY_COMPARE_PORT:-8295}"
+    end_port=$((start_port + 20))
+
+    port=$(python3 - "$host" "$start_port" "$end_port" <<'PY'
+    import socket
+    import sys
+
+    host = sys.argv[1]
+    start_port = int(sys.argv[2])
+    end_port = int(sys.argv[3])
+
+    for port in range(start_port, end_port + 1):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                sock.bind((host, port))
+            except OSError:
+                continue
+        print(port)
+        break
+    else:
+        sys.exit(f"no free port found on {host}:{start_port}-{end_port}")
+    PY
+    )
+
+    if [ "$port" != "$start_port" ]; then
+        echo "Port ${host}:${start_port} is busy; serving gallery compare on ${host}:${port}."
+    fi
+
+    echo "Serving gallery compare at http://${host}:${port}/"
+    python3 -m http.server "$port" --bind "$host" --directory "$root"
+
+
+serve-gallery-compare: gallery-media-compare-serve
+
+
 # Capture screenshots for the Start Here / Get Started documentation pages.
 capture-start: build
     @python3 tools/capture_gallery.py --lane start
