@@ -606,6 +606,9 @@ examples:
     primary_feature: reference-grid
     lane: features
     source: examples/c/features/reference_grid.c
+    python:
+      source: examples/python/gallery/features/reference_grid.py
+      status: direct-engine
     validation: smoke+interaction+screenshot
     data:
       kind: synthetic
