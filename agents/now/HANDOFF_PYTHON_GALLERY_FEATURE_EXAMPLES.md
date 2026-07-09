@@ -47,9 +47,10 @@ Recent checkpoint commits landed:
 34. `16030eb15` Add Python user scale gallery example.
 35. `6a1e0141a` Add Python GUI controls gallery example.
 36. `83f0945f4` Add Python GUI viewport gallery example.
+37. `39a03cc50` Add Python raw cimgui gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
-next planned checkpoint is `features_gui_cimgui`.
+next planned checkpoint is `features_animation_tracks`.
 
 The material-descriptor caveat is resolved for new examples: `DvzPhongMaterial`,
 `DvzStandardMaterial`, and `DvzMaterialDesc` now have generated ctypes layouts, and
@@ -148,6 +149,10 @@ python3 - <<'PY'
 ... construct gui_viewport source scene, update point diameter, render the source figure offscreen,
     and verify non-background pixels ...
 PY
+python3 - <<'PY'
+... construct gui_cimgui scene, update raw-cimgui-controlled point diameter, render one offscreen
+    frame, and verify non-background pixels ...
+PY
 ```
 
 These returned `image_probe offscreen query smoke: 1 True` and
@@ -164,13 +169,14 @@ validation were not run for the earlier checkpoint notes. The material-mesh chec
 returned `material_mesh offscreen: OK`; the lighting checkpoint returned `lighting offscreen: OK`;
 the user-scale checkpoint returned `user_scale offscreen: OK`; the GUI-controls checkpoint returned
 `gui_controls offscreen: OK`; and the GUI-viewport checkpoint returned
-`gui_viewport source offscreen: OK`.
+`gui_viewport source offscreen: OK`; the raw-cimgui checkpoint returned
+`gui_cimgui offscreen: OK`.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`features_gui_viewport`:
+`features_gui_cimgui`:
 
-- v0.4-required feature examples: 51 of 64 have Python entries; 13 remain missing.
-- all v0.4-required public examples: 63 of 95 have Python entries; 32 remain missing.
+- v0.4-required feature examples: 52 of 64 have Python entries; 12 remain missing.
+- all v0.4-required public examples: 64 of 95 have Python entries; 31 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -252,6 +258,10 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   It uses generated GUI viewport bindings (`dvz_gui_viewport`, `dvz_gui_viewport_input`, and
   `dvz_panel_connect_input`); offscreen smoke renders the source figure because full GUI viewport
   composition is native-only.
+- `features_gui_cimgui` is committed: it has
+  `examples/python/gallery/features/gui_cimgui.py` and a matching `python.source` manifest entry.
+  It uses a narrow local ctypes declaration for the exported raw cimgui `ig*` symbols needed by the
+  C example, while keeping the retained point visual setup on the ordinary Datoviz facade.
 
 
 ## Preferred Next Commit
@@ -263,10 +273,10 @@ text/annotation checkpoint has `features_text_block`, `features_overlay_card`, a
 `features_annotation_readout`; `features_axis_labels` is complete; the first spatial-layout
 checkpoint has `features_reference_grid` and `features_coordinate_system`; and
 `features_mesh_texture`, `features_material_mesh`, `features_lighting`, and `features_user_scale`
-and `features_gui_controls` and `features_gui_viewport` are complete. Next target
-`features_gui_cimgui`, which is the first missing feature in manifest order. It is native-only and
-`agent_copy_safe: false`; inspect carefully before porting, and use generated raw cimgui bindings
-directly if the direct-engine Python surface can express it faithfully.
+and `features_gui_controls`, `features_gui_viewport`, and `features_gui_cimgui` are complete. Next
+target `features_animation_tracks`, which is the first missing feature in manifest order. It is a
+scenario-animation example; coordinate with any concurrent scenario-animation layer work and avoid
+depending on uncommitted changes from another agent.
 
 Implementation shape:
 
@@ -302,7 +312,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python raw cimgui gallery example
+examples: add Python animation tracks gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -367,11 +377,10 @@ convert the examples that immediately need it.
 
 Current missing `v0.4_required` feature examples with no `python.source` entry:
 
-`features_gui_cimgui`, `features_animation_tracks`, `features_technique_ssao`,
-`features_technique_msaa`, `features_technique_depth_cue`, `features_technique_transparency`,
-`features_input_events`, `features_view_size_policies`, `features_bezier_curve_path`,
-`features_path_join`, `features_scalebar`, `features_scalebar_units`, and
-`features_datetime_axis`.
+`features_animation_tracks`, `features_technique_ssao`, `features_technique_msaa`,
+`features_technique_depth_cue`, `features_technique_transparency`, `features_input_events`,
+`features_view_size_policies`, `features_bezier_curve_path`, `features_path_join`,
+`features_scalebar`, `features_scalebar_units`, and `features_datetime_axis`.
 
 
 ## Per-Example Checklist
