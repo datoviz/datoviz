@@ -122,9 +122,12 @@ top to bottom and record skipped items as known exclusions.
 ## 9. TestPyPI Rehearsal
 
 - [ ] Install and configure `twine` for TestPyPI.
+- [ ] Run `just release-testpypi <version> --dry-run --dist-dir dist`.
 - [ ] Run `just testpypi-check <host-platform-tag>` for a local single-platform wheel.
 - [ ] For a full wheelhouse, run `just testpypi-check-all wheelhouse`.
 - [ ] Upload candidate artifacts to TestPyPI through a manual workflow or local maintainer command.
+- [ ] After maintainer approval, run
+      `just release-testpypi <version> --dist-dir dist --confirm yes`.
 - [ ] Use `just testpypi-upload <host-platform-tag> dist yes` for local single-wheel rehearsal.
 - [ ] Use `just testpypi-upload-all wheelhouse yes` for full-wheelhouse rehearsal.
 - [ ] Install from TestPyPI in a clean environment.
@@ -139,6 +142,7 @@ top to bottom and record skipped items as known exclusions.
 - [ ] Re-run `git diff --check`.
 - [ ] Create the RC or final tag.
 - [ ] Upload artifacts to PyPI only after TestPyPI rehearsal is accepted.
+- [ ] Run `just release-github-draft <version> --dry-run`.
 - [ ] Create or update the GitHub release.
 - [ ] Attach source archive, wheels, checksums, and release notes.
 - [ ] Publish documentation.

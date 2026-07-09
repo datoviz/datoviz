@@ -94,6 +94,13 @@ just release-report 0.4.0rc1 --strict-matrix
 just release-gates 0.4.0rc1 --write-artifacts --strict-matrix
 ```
 
+Before asking for upload or GitHub draft approval, run dry rehearsals:
+
+```sh
+just release-testpypi 0.4.0rc1 --dry-run --dist-dir dist
+just release-github-draft 0.4.0rc1 --dry-run
+```
+
 
 ## Approval Gates
 

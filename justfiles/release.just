@@ -107,6 +107,14 @@ release-gates version *args:
     @python3 tools/release_automation.py gates "{{version}}" {{args}}
 #
 
+release-testpypi version *args:
+    @python3 tools/release_automation.py testpypi "{{version}}" {{args}}
+#
+
+release-github-draft version *args:
+    @python3 tools/release_automation.py github-draft "{{version}}" {{args}}
+#
+
 release-machine-validate version *args:
     @python3 tools/release_automation.py machine-validate "{{version}}" {{args}}
 #

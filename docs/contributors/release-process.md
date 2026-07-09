@@ -217,6 +217,16 @@ just testpypi-check-all wheelhouse
 just testpypi-upload-all wheelhouse yes
 ```
 
+The release automation wrapper keeps the same irreversible-action split:
+
+```sh
+just release-testpypi 0.4.0rc1 --dry-run --dist-dir dist
+just release-testpypi 0.4.0rc1 --dist-dir dist --confirm yes
+```
+
+It refuses to upload unless the release gates are satisfied, or the maintainer explicitly passes
+`--allow-incomplete` for a rehearsal with known gaps.
+
 Before PyPI:
 
 1. compare artifact names and versions against the intended tag;
@@ -276,6 +286,16 @@ Keep these as explicit maintainer actions for v0.4:
 
 After these approvals exist, tools may execute the corresponding commands and API calls. The
 decision remains manual; the mechanics should be automated.
+
+For GitHub release drafts, use a dry run first:
+
+```sh
+just release-github-draft 0.4.0rc1 --dry-run
+just release-github-draft 0.4.0rc1 --confirm yes
+```
+
+The command creates or updates a draft release and uploads the recorded source bundle, wheels,
+validation pack, release report, and checksum artifacts. It does not publish the release.
 
 
 ## After Each RC

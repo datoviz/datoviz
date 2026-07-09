@@ -700,6 +700,16 @@ def gate_rows(analysis: dict[str, Any]) -> list[dict[str, str]]:
             "detail": "release notes artifact recorded",
         },
         {
+            "id": "release_report",
+            "status": "pass" if artifact_kinds(artifacts, "release-report") else "missing",
+            "detail": "release report artifact recorded",
+        },
+        {
+            "id": "checksums",
+            "status": "pass" if len(artifact_kinds(artifacts, "checksum")) >= 2 else "missing",
+            "detail": "SHA256SUMS and SHA512SUMS artifacts recorded",
+        },
+        {
             "id": "machine_matrix",
             "status": "fail" if failed_evidence else "missing" if required_missing else "pass",
             "detail": "required machine evidence passed"
@@ -723,6 +733,24 @@ def gate_rows(analysis: dict[str, Any]) -> list[dict[str, str]]:
         },
     ]
     return rows
+
+
+def rehearsal_blockers(analysis: dict[str, Any]) -> list[str]:
+    blockers = []
+    if analysis["missing_artifacts"]:
+        blockers.append("recorded artifacts are missing")
+    if analysis["changed_artifacts"]:
+        blockers.append("recorded artifact checksums changed")
+    if analysis["version_mismatch_artifacts"]:
+        blockers.append("recorded wheel/source artifact version mismatch")
+    if analysis["failed_evidence"]:
+        blockers.append("machine evidence contains failures")
+    if analysis["missing_required"]:
+        blockers.append("required machine evidence is missing")
+    for row in gate_rows(analysis):
+        if row["id"] in {"source_bundle", "release_report", "checksums"} and row["status"] != "pass":
+            blockers.append(f"{row['id']} gate is {row['status']}")
+    return blockers
 
 
 def write_checksum_file(path: Path, algorithm: str, artifacts: list[dict[str, Any]]) -> None:
@@ -1426,6 +1454,11 @@ def report(args: argparse.Namespace) -> int:
 
 def gates(args: argparse.Namespace) -> int:
     analysis = release_analysis(args.version)
+    generated: list[dict[str, Any]] = []
+    if args.write_artifacts:
+        generated = write_release_artifacts(args.version, render_report_text(analysis))
+        analysis = release_analysis(args.version)
+
     rows = gate_rows(analysis)
     lines = [f"# Datoviz Release Gates: {args.version}", ""]
     for row in rows:
@@ -1433,14 +1466,191 @@ def gates(args: argparse.Namespace) -> int:
 
     output = "\n".join(lines)
     print(output)
-    if args.write_artifacts:
-        generated = write_release_artifacts(args.version, render_report_text(analysis))
+    if generated:
         for artifact in generated:
             print(f"wrote {artifact['kind']}: {artifact['path']}")
 
     failing = [row for row in rows if row["status"] == "fail"]
     missing_required = [row for row in rows if row["id"] == "machine_matrix" and row["status"] == "missing"]
     return 1 if failing or (args.strict_matrix and missing_required) else 0
+
+
+def state_artifact_paths(
+    state: dict[str, Any], *, kinds: set[str] | None = None, existing_only: bool = True
+) -> list[Path]:
+    paths = []
+    for artifact in state.get("artifacts", []):
+        if kinds is not None and artifact.get("kind") not in kinds:
+            continue
+        path = ROOT / str(artifact.get("path", ""))
+        if existing_only and not path.is_file():
+            continue
+        paths.append(path)
+    return paths
+
+
+def require_rehearsal_ready(version: str, *, allow_incomplete: bool) -> dict[str, Any]:
+    analysis = release_analysis(version)
+    blockers = rehearsal_blockers(analysis)
+    if blockers and not allow_incomplete:
+        lines = "\n".join(f"- {blocker}" for blocker in blockers)
+        raise RuntimeError(
+            "release rehearsal gates are not satisfied; rerun with --allow-incomplete to bypass:\n"
+            + lines
+        )
+    return analysis
+
+
+def run_checked(argv: list[str], *, dry_run: bool) -> int:
+    print("+ " + " ".join(argv))
+    if dry_run:
+        return 0
+    return subprocess.call(argv, cwd=ROOT)
+
+
+def update_publication_state(version: str, key: str, data: dict[str, Any]) -> None:
+    state = state_or_new(version)
+    publication = dict(state.get("publication", {}))
+    publication[key] = {"updated_at_utc": utc_now(), **data}
+    state["publication"] = publication
+    state["updated_at_utc"] = utc_now()
+    save_state(version, state)
+
+
+def testpypi(args: argparse.Namespace) -> int:
+    if not args.dry_run and args.confirm != "yes":
+        raise RuntimeError("refusing TestPyPI upload without --confirm yes")
+
+    analysis = require_rehearsal_ready(args.version, allow_incomplete=args.allow_incomplete)
+    wheels = state_artifact_paths(analysis["state"], kinds={"wheel"})
+    if args.dist_dir:
+        dist_dir = args.dist_dir if args.dist_dir.is_absolute() else ROOT / args.dist_dir
+        wheels.extend(sorted(dist_dir.glob(f"datoviz-{args.version}-*.whl")))
+    wheels = sorted({path.resolve() for path in wheels})
+    if not wheels:
+        raise RuntimeError("no wheel artifacts available for TestPyPI rehearsal")
+
+    if not args.skip_twine_check:
+        rc = run_checked([sys.executable, "-m", "twine", "check", *map(os.fspath, wheels)], dry_run=args.dry_run)
+        if rc != 0:
+            return rc
+
+    upload_cmd = [
+        sys.executable,
+        "-m",
+        "twine",
+        "upload",
+        "--repository",
+        "testpypi",
+        *map(os.fspath, wheels),
+    ]
+    rc = run_checked(upload_cmd, dry_run=args.dry_run)
+    if rc != 0:
+        return rc
+
+    if not args.dry_run:
+        update_publication_state(
+            args.version,
+            "testpypi",
+            {
+                "status": "uploaded",
+                "artifacts": [relpath(path) for path in wheels],
+            },
+        )
+    return 0
+
+
+def github_draft(args: argparse.Namespace) -> int:
+    if not args.dry_run and args.confirm != "yes":
+        raise RuntimeError("refusing GitHub draft mutation without --confirm yes")
+
+    analysis = require_rehearsal_ready(args.version, allow_incomplete=args.allow_incomplete)
+    state = analysis["state"]
+    tag = state.get("tag", f"v{args.version}")
+    if not args.allow_missing_tag and git_value(["rev-parse", "-q", "--verify", f"refs/tags/{tag}"]) == "":
+        raise RuntimeError(f"local tag is missing: {tag}; rerun with --allow-missing-tag to bypass")
+
+    note_paths = state_artifact_paths(state, kinds={"release-notes"})
+    report_paths = state_artifact_paths(state, kinds={"release-report"})
+    notes_file = args.notes_file
+    if notes_file is None:
+        notes_file = note_paths[0] if note_paths else report_paths[0] if report_paths else None
+    if notes_file is None:
+        raise RuntimeError("no release notes or release report artifact available for GitHub draft")
+    if not notes_file.is_absolute():
+        notes_file = ROOT / notes_file
+
+    assets = state_artifact_paths(
+        state,
+        kinds={"wheel", "source-bundle", "validation-pack", "release-report", "checksum"},
+    )
+    if not assets:
+        raise RuntimeError("no release assets available for GitHub draft")
+
+    if command_exists("gh") is None and not args.dry_run:
+        raise RuntimeError("gh is required for GitHub draft release automation")
+
+    view_rc = subprocess.call(
+        ["gh", "release", "view", str(tag)],
+        cwd=ROOT,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    ) if command_exists("gh") and not args.dry_run else 1
+
+    if view_rc == 0:
+        rc = run_checked(
+            [
+                "gh",
+                "release",
+                "edit",
+                str(tag),
+                "--draft",
+                "--title",
+                str(tag),
+                "--notes-file",
+                os.fspath(notes_file),
+            ],
+            dry_run=args.dry_run,
+        )
+        if rc != 0:
+            return rc
+    else:
+        rc = run_checked(
+            [
+                "gh",
+                "release",
+                "create",
+                str(tag),
+                "--draft",
+                "--title",
+                str(tag),
+                "--notes-file",
+                os.fspath(notes_file),
+            ],
+            dry_run=args.dry_run,
+        )
+        if rc != 0:
+            return rc
+
+    rc = run_checked(
+        ["gh", "release", "upload", str(tag), *map(os.fspath, assets), "--clobber"],
+        dry_run=args.dry_run,
+    )
+    if rc != 0:
+        return rc
+
+    if not args.dry_run:
+        update_publication_state(
+            args.version,
+            "github_draft",
+            {
+                "status": "drafted",
+                "tag": str(tag),
+                "notes_file": relpath(notes_file),
+                "assets": [relpath(path) for path in assets],
+            },
+        )
+    return 0
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -1490,6 +1700,26 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="return nonzero when required machine classes are missing",
     )
 
+    testpypi_parser = subparsers.add_parser(
+        "testpypi", help="Run or rehearse TestPyPI upload for release wheels"
+    )
+    testpypi_parser.add_argument("version")
+    testpypi_parser.add_argument("--dist-dir", type=Path)
+    testpypi_parser.add_argument("--confirm", default="no")
+    testpypi_parser.add_argument("--dry-run", action="store_true")
+    testpypi_parser.add_argument("--allow-incomplete", action="store_true")
+    testpypi_parser.add_argument("--skip-twine-check", action="store_true")
+
+    github_parser = subparsers.add_parser(
+        "github-draft", help="Create or update a draft GitHub release"
+    )
+    github_parser.add_argument("version")
+    github_parser.add_argument("--confirm", default="no")
+    github_parser.add_argument("--dry-run", action="store_true")
+    github_parser.add_argument("--allow-incomplete", action="store_true")
+    github_parser.add_argument("--allow-missing-tag", action="store_true")
+    github_parser.add_argument("--notes-file", type=Path)
+
     machine_parser = subparsers.add_parser(
         "machine-validate", help="Validate release artifacts on this machine and write evidence"
     )
@@ -1533,6 +1763,10 @@ def main(argv: list[str] | None = None) -> int:
         return ingest_evidence(args)
     if args.command == "gates":
         return gates(args)
+    if args.command == "testpypi":
+        return testpypi(args)
+    if args.command == "github-draft":
+        return github_draft(args)
     if args.command == "machine-validate":
         return machine_validate(args)
     if args.command == "report":
