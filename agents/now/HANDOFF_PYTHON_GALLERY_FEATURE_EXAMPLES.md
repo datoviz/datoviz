@@ -50,9 +50,10 @@ Recent checkpoint commits landed:
 37. `39a03cc50` Add Python raw cimgui gallery example.
 38. `6c10b7c35` Add Python animation tracks gallery example.
 39. `638354b27` Add Python SSAO technique gallery example.
+40. `490e57cde` Add Python MSAA technique gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
-next planned checkpoint is `features_technique_msaa`.
+next planned checkpoint is `features_technique_depth_cue`.
 
 The material-descriptor caveat is resolved for new examples: `DvzPhongMaterial`,
 `DvzStandardMaterial`, and `DvzMaterialDesc` now have generated ctypes layouts, and
@@ -163,6 +164,10 @@ python3 - <<'PY'
 ... construct technique_ssao scene, enable SSAO on the right panel, render one offscreen frame,
     and verify non-background pixels ...
 PY
+python3 - <<'PY'
+... construct technique_msaa scene, enable 8x MSAA on the right panel, render one offscreen frame,
+    and verify non-background pixels ...
+PY
 ```
 
 These returned `image_probe offscreen query smoke: 1 True` and
@@ -181,13 +186,14 @@ the user-scale checkpoint returned `user_scale offscreen: OK`; the GUI-controls 
 `gui_controls offscreen: OK`; and the GUI-viewport checkpoint returned
 `gui_viewport source offscreen: OK`; the raw-cimgui checkpoint returned
 `gui_cimgui offscreen: OK`; the animation-tracks checkpoint returned
-`animation_tracks offscreen: OK`; the SSAO checkpoint returned `technique_ssao offscreen: OK`.
+`animation_tracks offscreen: OK`; the SSAO checkpoint returned `technique_ssao offscreen: OK`; the
+MSAA checkpoint returned `technique_msaa offscreen: OK`.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`features_technique_ssao`:
+`features_technique_msaa`:
 
-- v0.4-required feature examples: 54 of 64 have Python entries; 10 remain missing.
-- all v0.4-required public examples: 66 of 95 have Python entries; 29 remain missing.
+- v0.4-required feature examples: 55 of 64 have Python entries; 9 remain missing.
+- all v0.4-required public examples: 67 of 95 have Python entries; 28 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -283,6 +289,10 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   entry. It compares identical lit sphere clusters with SSAO enabled only on the right panel through
   generated `DvzSsaoDesc` and `dvz_panel_set_ssao()` bindings; the Python path omits the native C
   GUI tuner but keeps direct-engine technique state.
+- `features_technique_msaa` is committed: it has
+  `examples/python/gallery/features/technique_msaa.py` and a matching `python.source` manifest
+  entry. It compares identical transformed cube clusters with MSAA enabled only on the right panel
+  through generated `DvzMsaaDesc` and `dvz_panel_set_msaa()` bindings.
 
 
 ## Preferred Next Commit
@@ -295,10 +305,10 @@ text/annotation checkpoint has `features_text_block`, `features_overlay_card`, a
 checkpoint has `features_reference_grid` and `features_coordinate_system`; and
 `features_mesh_texture`, `features_material_mesh`, `features_lighting`, and `features_user_scale`
 and `features_gui_controls`, `features_gui_viewport`, and `features_gui_cimgui` are complete. Next
-target `features_technique_msaa`, which is the first missing feature in manifest order. Continue
-the rendering-technique batch; inspect the C example and current descriptor bindings before deciding
-whether the Python path can be direct-engine, needs a narrow binding policy update, or should stay
-deferred.
+target `features_technique_depth_cue`, which is the first missing feature in manifest order.
+Continue the rendering-technique batch; inspect the C example and current descriptor bindings before
+deciding whether the Python path can be direct-engine, needs a narrow binding policy update, or
+should stay deferred.
 
 Implementation shape:
 
@@ -334,7 +344,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python MSAA technique gallery example
+examples: add Python depth-cue technique gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -399,10 +409,9 @@ convert the examples that immediately need it.
 
 Current missing `v0.4_required` feature examples with no `python.source` entry:
 
-`features_technique_msaa`, `features_technique_depth_cue`, `features_technique_transparency`,
-`features_input_events`, `features_view_size_policies`, `features_bezier_curve_path`,
-`features_path_join`, `features_scalebar`, `features_scalebar_units`, and
-`features_datetime_axis`.
+`features_technique_depth_cue`, `features_technique_transparency`, `features_input_events`,
+`features_view_size_policies`, `features_bezier_curve_path`, `features_path_join`,
+`features_scalebar`, `features_scalebar_units`, and `features_datetime_axis`.
 
 
 ## Per-Example Checklist
