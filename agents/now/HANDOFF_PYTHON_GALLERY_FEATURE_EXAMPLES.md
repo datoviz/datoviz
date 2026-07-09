@@ -73,10 +73,11 @@ Recent checkpoint commits landed:
 60. `6fc17a0cc` Expose polygon descriptor layouts to Python.
 61. `bd873494e` Add Python polygon composite gallery example.
 62. `16bc68709` Add Python graph composite gallery example.
+63. `1bd1ff01f` Add Python choropleth showcase gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
 v0.4-required feature lane is complete. The next missing v0.4-required public example in manifest
-order is `showcases_choropleth`.
+order is `showcases_protein`.
 
 The material-descriptor caveat is resolved for new examples: `DvzPhongMaterial`,
 `DvzStandardMaterial`, and `DvzMaterialDesc` now have generated ctypes layouts, and
@@ -289,13 +290,14 @@ returned `datetime_axis offscreen: OK`; the runtime app GLFW checkpoint returned
 `visuals_labels offscreen: OK`; the volume visual checkpoint returned
 `visuals_volume offscreen: OK`; the polygon composite checkpoint returned
 `composites_polygon offscreen: OK`; the graph composite checkpoint returned
-`composites_graph offscreen: OK`.
+`composites_graph offscreen: OK`; the choropleth showcase checkpoint returned
+`showcases_choropleth offscreen: OK`.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`composites_graph`:
+`showcases_choropleth`:
 
 - v0.4-required feature examples: 64 of 64 have Python entries; 0 remain missing.
-- all v0.4-required public examples: 87 of 95 have Python entries; 8 remain missing.
+- all v0.4-required public examples: 88 of 95 have Python entries; 7 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -481,6 +483,12 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   matching `python.source` manifest entry. It mirrors the C brain-connectivity graph composite with
   community-colored nodes, semantic node/edge IDs, per-edge colors and widths, Bezier edge style,
   explicit bridge controls, equal-aspect view2d, and panzoom.
+- `showcases_choropleth` is committed: it has
+  `examples/python/gallery/showcases/choropleth.py` and a matching `python.source` manifest entry.
+  It mirrors the C Census prepared-data choropleth with strict metadata/typed-array loading,
+  polygon-set regions, custom density color scale, vertical colorbar, equal-aspect View2D, and
+  panzoom. The offscreen smoke loaded `.cache/datoviz/examples/us_state_choropleth/prepared`,
+  rendered one 320x180 offscreen frame, and verified non-background pixels.
 
 
 ## Preferred Next Commit
@@ -494,9 +502,9 @@ checkpoint has `features_reference_grid` and `features_coordinate_system`; and
 `features_mesh_texture`, `features_material_mesh`, `features_lighting`, and `features_user_scale`
 and `features_gui_controls`, `features_gui_viewport`, and `features_gui_cimgui` are complete. The
 planned rendering-technique feature examples are complete through transparency. Next target
-for the broader required-public backlog is `showcases_choropleth`, which is the first missing
-required public example in manifest order. Inspect the C showcase example and its data contract
-before deciding whether a small shared helper is worth adding.
+for the broader required-public backlog is `showcases_protein`, which is the first missing required
+public example in manifest order. Inspect the C showcase example and its data contract before
+deciding whether a small shared helper is worth adding.
 
 Implementation shape:
 
@@ -532,7 +540,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python choropleth showcase gallery example
+examples: add Python protein showcase gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -601,9 +609,9 @@ None. The required feature lane is complete.
 
 Current missing `v0.4_required` public examples with no `python.source` entry:
 
-`showcases_choropleth`, `showcases_protein`, `showcases_wind_field`,
-`showcases_gpu_particle_smoke`, `showcases_surface_grid`, `showcases_brain_volume`,
-`showcases_point_cloud`, and `showcases_textured_planet`.
+`showcases_protein`, `showcases_wind_field`, `showcases_gpu_particle_smoke`,
+`showcases_surface_grid`, `showcases_brain_volume`, `showcases_point_cloud`, and
+`showcases_textured_planet`.
 
 
 ## Per-Example Checklist
