@@ -1628,12 +1628,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
-    example_graphite_cyan_set_panel_background(panel);
-
-    int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, DOMAIN_X_MIN_KM, DOMAIN_X_MAX_KM);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_set_domain(x) failed");
-    rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, DOMAIN_Y_MIN_KM, DOMAIN_Y_MAX_KM);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_set_domain(y) failed");
+    bool configured = example_configure_equal_aspect_panel(
+        panel,
+        (DvzDataDomain){.min = DOMAIN_X_MIN_KM, .max = DOMAIN_X_MAX_KM},
+        (DvzDataDomain){.min = DOMAIN_Y_MIN_KM, .max = DOMAIN_Y_MAX_KM}, 0.02);
+    EXAMPLE_CHECK(configured, "failed to configure equal-aspect wind panel");
 
     DvzScale* scale = _add_wind_scale(ctx->scene, &state->params);
     EXAMPLE_CHECK(scale != NULL, "_add_wind_scale() failed");
@@ -1655,7 +1654,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     ok = _add_probe(ctx->scene, panel, &state->params);
     EXAMPLE_CHECK(ok, "_add_probe() failed");
 
-    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
+    DvzPanzoomDesc panzoom_desc = dvz_panzoom_desc();
+    panzoom_desc.controller_flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
+    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, &panzoom_desc, DVZ_DIM_MASK_XY);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
     (void)panzoom;
 
