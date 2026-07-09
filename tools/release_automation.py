@@ -15,6 +15,7 @@ import socket
 import subprocess
 import sys
 import tarfile
+import tempfile
 import time
 from pathlib import Path
 from typing import Any
@@ -471,6 +472,146 @@ def discover_evidence(version: str) -> list[dict[str, Any]]:
     return records
 
 
+def find_evidence_dirs(path: Path) -> list[Path]:
+    if path.is_file():
+        return []
+    if (path / "evidence.json").is_file():
+        return [path]
+    evidence_root = path / "evidence"
+    if evidence_root.is_dir():
+        return sorted(parent for parent in evidence_root.iterdir() if (parent / "evidence.json").is_file())
+    return sorted(parent for parent in path.rglob("*") if parent.is_dir() and (parent / "evidence.json").is_file())
+
+
+def read_evidence_dir(path: Path) -> dict[str, Any]:
+    evidence_path = path / "evidence.json"
+    if not evidence_path.is_file():
+        raise FileNotFoundError(f"missing evidence.json in {path}")
+    try:
+        evidence = json.loads(evidence_path.read_text(encoding="utf8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"invalid evidence JSON: {evidence_path}") from exc
+    if not isinstance(evidence, dict):
+        raise ValueError(f"evidence JSON must be an object: {evidence_path}")
+    return evidence
+
+
+def validate_evidence_for_ingest(
+    evidence: dict[str, Any], version: str, *, force: bool = False
+) -> tuple[str, str]:
+    schema = evidence.get("schema")
+    if schema != "datoviz.release-evidence.v1" and not force:
+        raise ValueError(f"unsupported evidence schema {schema!r}")
+    evidence_version = str(evidence.get("version", ""))
+    if evidence_version != version and not force:
+        raise ValueError(f"evidence version {evidence_version!r} does not match {version!r}")
+    machine_id = str(evidence.get("machine_id", "")).strip()
+    if not machine_id:
+        raise ValueError("evidence is missing machine_id")
+    profile = str(evidence.get("profile", "")).strip()
+    if not profile:
+        raise ValueError(f"evidence for {machine_id} is missing profile")
+    return machine_id, profile
+
+
+def copy_evidence_dir(src: Path, dst: Path, *, replace: bool = False) -> None:
+    if dst.exists():
+        if not replace:
+            raise FileExistsError(f"evidence already exists: {relpath(dst)}")
+        shutil.rmtree(dst)
+    shutil.copytree(src, dst)
+
+
+def safe_extract_tar(archive: Path, dst: Path) -> None:
+    dst_resolved = dst.resolve()
+    with tarfile.open(archive) as tar:
+        for member in tar.getmembers():
+            target = (dst / member.name).resolve()
+            if not target.is_relative_to(dst_resolved):
+                raise ValueError(f"unsafe tar member path: {member.name}")
+        try:
+            tar.extractall(dst, filter="data")
+        except TypeError:  # pragma: no cover - Python versions before tar filters.
+            tar.extractall(dst)
+
+
+def class_from_environment(environment: dict[str, Any]) -> str:
+    platform_info = environment.get("platform") or {}
+    system = str(platform_info.get("system", "")).lower()
+    machine = str(platform_info.get("machine", "")).lower()
+    vulkan = environment.get("vulkaninfo") or {}
+    vulkan_ready = vulkan.get("status") == "pass"
+
+    if system == "darwin":
+        if machine in {"arm64", "aarch64"}:
+            return "macos-arm64"
+        if machine in {"x86_64", "amd64"}:
+            return "macos-x86_64"
+        return "macos-unknown"
+    if system == "linux":
+        if machine in {"x86_64", "amd64"}:
+            return "linux-x86_64-vulkan" if vulkan_ready else "linux-x86_64"
+        if machine in {"aarch64", "arm64"}:
+            return "linux-aarch64"
+        return "linux-unknown"
+    if system == "windows":
+        if machine in {"amd64", "x86_64"}:
+            return "windows-amd64"
+        if machine in {"arm64", "aarch64"}:
+            return "windows-arm64"
+        return "windows-unknown"
+    return "unknown"
+
+
+def evidence_class(item: dict[str, Any]) -> str:
+    env_ref = item.get("environment")
+    if isinstance(env_ref, str):
+        env_path = ROOT / env_ref
+        if env_path.is_file():
+            try:
+                return class_from_environment(json.loads(env_path.read_text(encoding="utf8")))
+            except (json.JSONDecodeError, OSError):
+                pass
+    machine = str(item.get("machine_id", "")).lower()
+    for machine_class in MACHINE_CLASSES:
+        class_name = str(machine_class["class"])
+        if class_name in machine:
+            return class_name
+    return "unknown"
+
+
+def machine_matrix(evidence: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    rows = []
+    evidence_by_class: dict[str, list[dict[str, Any]]] = {}
+    for item in evidence:
+        evidence_by_class.setdefault(evidence_class(item), []).append(item)
+
+    for machine in MACHINE_CLASSES:
+        class_name = str(machine["class"])
+        items = evidence_by_class.get(class_name, [])
+        passing = [item for item in items if item.get("status") == "pass"]
+        failing = [item for item in items if item.get("status") == "fail"]
+        if passing:
+            status = "pass"
+        elif failing:
+            status = "fail"
+        elif machine["required_for_rc"] is True:
+            status = "missing"
+        else:
+            status = "optional-missing"
+        rows.append(
+            {
+                "class": class_name,
+                "required_for_rc": machine["required_for_rc"],
+                "status": status,
+                "profiles": sorted({str(item.get("profile", "")) for item in items if item.get("profile")}),
+                "machines": sorted({str(item.get("machine_id", "")) for item in items if item.get("machine_id")}),
+                "proof": machine["proof"],
+            }
+        )
+    return rows
+
+
 def update_state_evidence(version: str) -> None:
     path = state_path(version)
     if not path.is_file():
@@ -772,6 +913,58 @@ def validation_pack(args: argparse.Namespace) -> int:
     return 0
 
 
+def ingest_evidence(args: argparse.Namespace) -> int:
+    version = args.version
+    source = args.path if args.path.is_absolute() else ROOT / args.path
+    target_root = state_dir(version) / "evidence"
+
+    imported: list[dict[str, str]] = []
+
+    def ingest_from_dir(root: Path) -> None:
+        dirs = find_evidence_dirs(root)
+        if not dirs:
+            raise FileNotFoundError(f"no evidence.json found under {root}")
+        for evidence_dir in dirs:
+            evidence = read_evidence_dir(evidence_dir)
+            machine_id, profile = validate_evidence_for_ingest(
+                evidence, version, force=args.force
+            )
+            dst = target_root / machine_id
+            copy_evidence_dir(evidence_dir, dst, replace=args.replace)
+            imported.append(
+                {
+                    "machine_id": machine_id,
+                    "profile": profile,
+                    "source": relpath(evidence_dir),
+                    "destination": relpath(dst),
+                }
+            )
+
+    if source.is_file() and tarfile.is_tarfile(source):
+        with tempfile.TemporaryDirectory(prefix="datoviz-evidence-") as tmp:
+            tmp_path = Path(tmp)
+            safe_extract_tar(source, tmp_path)
+            ingest_from_dir(tmp_path)
+    elif source.is_dir():
+        ingest_from_dir(source)
+    else:
+        raise FileNotFoundError(f"evidence path not found or unsupported: {source}")
+
+    update_state_evidence(version)
+    if not state_path(version).is_file():
+        state = state_or_new(version)
+        state["evidence"] = discover_evidence(version)
+        state["updated_at_utc"] = utc_now()
+        save_state(version, state)
+
+    for item in imported:
+        print(
+            f"ingested {item['machine_id']} profile={item['profile']} "
+            f"-> {item['destination']}"
+        )
+    return 0
+
+
 def machine_validate(args: argparse.Namespace) -> int:
     version = args.version
     profile = VALIDATION_PROFILES[args.profile]
@@ -946,6 +1139,10 @@ def report(args: argparse.Namespace) -> int:
     commands = state.get("commands", [])
     evidence = discover_evidence(version) or state.get("evidence", [])
     failed_evidence = [item for item in evidence if item.get("status") == "fail"]
+    matrix = machine_matrix(evidence)
+    missing_required = [
+        row for row in matrix if row["required_for_rc"] is True and row["status"] == "missing"
+    ]
 
     changed = []
     missing = []
@@ -1014,9 +1211,19 @@ def report(args: argparse.Namespace) -> int:
             status = item.get("status", "unknown")
             failures = item.get("failures") or []
             suffix = f", failures={len(failures)}" if failures else ""
-            lines.append(f"- `{status}` {machine} profile={profile}{suffix}")
+            machine_class = evidence_class(item)
+            lines.append(f"- `{status}` {machine} class={machine_class} profile={profile}{suffix}")
     else:
         lines.append("- missing: no physical-machine evidence ingested")
+
+    lines.extend(["", "## Machine Matrix"])
+    for row in matrix:
+        profiles = ", ".join(row["profiles"]) if row["profiles"] else "-"
+        machines = ", ".join(row["machines"]) if row["machines"] else "-"
+        lines.append(
+            f"- `{row['status']}` {row['class']} required={row['required_for_rc']} "
+            f"profiles={profiles} machines={machines}"
+        )
 
     lines.extend(["", "## Gates"])
     for gate in state.get("gates", APPROVAL_GATES):
@@ -1042,6 +1249,11 @@ def report(args: argparse.Namespace) -> int:
                     argv = " ".join(failure.get("argv", []))
                     lines.append(f"- {machine}: `{argv}` returned {failure.get('returncode')}")
 
+    if missing_required:
+        lines.extend(["", "## Missing Required Machines"])
+        for row in missing_required:
+            lines.append(f"- {row['class']}: {row['proof']}")
+
     output = "\n".join(lines)
     if args.output:
         output_path = args.output
@@ -1052,7 +1264,8 @@ def report(args: argparse.Namespace) -> int:
         print(relpath(output_path))
     else:
         print(output)
-    return 1 if missing or changed or version_mismatch or failed_evidence else 0
+    strict_matrix_fail = args.strict_matrix and bool(missing_required)
+    return 1 if missing or changed or version_mismatch or failed_evidence or strict_matrix_fail else 0
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -1085,6 +1298,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     pack_parser.add_argument("--output-dir", type=Path)
     pack_parser.add_argument("--dry-run", action="store_true")
 
+    ingest_parser = subparsers.add_parser(
+        "ingest-evidence", help="Copy returned machine evidence into release state"
+    )
+    ingest_parser.add_argument("version")
+    ingest_parser.add_argument("path", type=Path)
+    ingest_parser.add_argument("--replace", action="store_true")
+    ingest_parser.add_argument("--force", action="store_true")
+
     machine_parser = subparsers.add_parser(
         "machine-validate", help="Validate release artifacts on this machine and write evidence"
     )
@@ -1105,6 +1326,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     report_parser = subparsers.add_parser("report", help="Print a release-candidate report")
     report_parser.add_argument("version")
     report_parser.add_argument("--output", type=Path)
+    report_parser.add_argument(
+        "--strict-matrix",
+        action="store_true",
+        help="return nonzero when required machine classes are missing",
+    )
 
     return parser.parse_args(argv)
 
@@ -1118,6 +1344,8 @@ def main(argv: list[str] | None = None) -> int:
         return candidate(args)
     if args.command == "validation-pack":
         return validation_pack(args)
+    if args.command == "ingest-evidence":
+        return ingest_evidence(args)
     if args.command == "machine-validate":
         return machine_validate(args)
     if args.command == "report":

@@ -79,6 +79,8 @@ top to bottom and record skipped items as known exclusions.
 - [ ] On at least one graphics-capable host, run
       `./validate-full.sh` or `./validate.ps1 -Profile full` from the extracted pack, or record why
       render smoke is covered by lower-level checks.
+- [ ] Ingest returned evidence with `just release-ingest-evidence <version> <evidence-dir-or-tar>`.
+- [ ] Run `just release-report <version> --strict-matrix`.
 - [ ] Run `just wheel-check --cmake-consumer --qt-probe optional`.
 - [ ] Run render smoke with `--render` on at least one graphics-capable host.
 - [ ] Confirm `import datoviz` works from an installed wheel.

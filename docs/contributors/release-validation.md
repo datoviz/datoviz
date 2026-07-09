@@ -64,6 +64,19 @@ The `quick` profile runs wheel inventory plus installed import/CLI smoke. The `r
 CMake consumer smoke. The `full` profile adds shaderc and render smoke. Evidence is written under
 `build/release/<version>/evidence/<machine-id>/`.
 
+To return evidence from a validation pack, archive the generated evidence directory:
+
+```sh
+tar -czf evidence-<machine-id>.tar.gz evidence/<machine-id>
+```
+
+Back in the release checkout, ingest it and refresh the matrix report:
+
+```sh
+just release-ingest-evidence 0.4.0rc1 path/to/evidence-<machine-id>.tar.gz
+just release-report 0.4.0rc1 --strict-matrix
+```
+
 
 ## Packaging
 

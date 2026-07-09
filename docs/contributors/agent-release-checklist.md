@@ -80,6 +80,19 @@ The default evidence output is:
 build/release/<version>/evidence/<machine-id>/
 ```
 
+Ask the maintainer to return either that directory or a tarball:
+
+```sh
+tar -czf evidence-<machine-id>.tar.gz evidence/<machine-id>
+```
+
+Ingest returned evidence in the release checkout:
+
+```sh
+just release-ingest-evidence 0.4.0rc1 path/to/evidence-or-tar
+just release-report 0.4.0rc1 --strict-matrix
+```
+
 
 ## Approval Gates
 

@@ -99,6 +99,10 @@ release-validation-pack version *args:
     @python3 tools/release_automation.py validation-pack "{{version}}" {{args}}
 #
 
+release-ingest-evidence version path *args:
+    @python3 tools/release_automation.py ingest-evidence "{{version}}" "{{path}}" {{args}}
+#
+
 release-machine-validate version *args:
     @python3 tools/release_automation.py machine-validate "{{version}}" {{args}}
 #

@@ -108,6 +108,18 @@ just release-machine-validate <version> --wheel <wheel> --profile full
 The validation pack contains `validate-quick.sh`, `validate-rc.sh`, `validate-full.sh`, and
 `validate.ps1` wrappers so physical machines do not need a full repository checkout.
 
+Returned evidence is ingested with:
+
+```sh
+just release-ingest-evidence <version> path/to/evidence-dir-or-tar
+```
+
+The report matrix is checked with:
+
+```sh
+just release-report <version> --strict-matrix
+```
+
 
 ## Report Status Values
 

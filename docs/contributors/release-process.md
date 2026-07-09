@@ -175,6 +175,19 @@ Use `quick` for a short install/import/CLI smoke, `rc` for CMake consumer eviden
 shaderc plus render smoke on a graphics-capable host. The validator writes environment metadata,
 logs, failures, and `evidence.json` under `build/release/<version>/evidence/<machine-id>/`.
 
+Return each machine evidence directory as-is or as a tarball:
+
+```sh
+tar -czf evidence-<machine-id>.tar.gz evidence/<machine-id>
+```
+
+Ingest returned evidence in the release checkout:
+
+```sh
+just release-ingest-evidence 0.4.0rc1 path/to/evidence-<machine-id>.tar.gz
+just release-report 0.4.0rc1 --strict-matrix
+```
+
 
 ## TestPyPI And PyPI
 
