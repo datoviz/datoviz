@@ -77,10 +77,11 @@ Recent checkpoint commits landed:
 64. `484f9ecd0` Add Python protein showcase gallery example.
 65. `e21746888` Add Python wind-field showcase gallery example.
 66. `68ac543c0` Add Python GPU particle smoke showcase gallery example.
+67. `230c497a3` Add Python surface-grid showcase gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
 v0.4-required feature lane is complete. The next missing v0.4-required public example in manifest
-order is `showcases_surface_grid`.
+order is `showcases_brain_volume`.
 
 The material-descriptor caveat is resolved for new examples: `DvzPhongMaterial`,
 `DvzStandardMaterial`, and `DvzMaterialDesc` now have generated ctypes layouts, and
@@ -297,13 +298,14 @@ returned `datetime_axis offscreen: OK`; the runtime app GLFW checkpoint returned
 `showcases_choropleth offscreen: OK`; the protein showcase checkpoint returned
 `showcases_protein fallback offscreen: OK`; the wind-field showcase checkpoint returned
 `showcases_wind_field offscreen: OK`; the GPU particle smoke checkpoint returned
-`showcases_gpu_particle_smoke offscreen: OK`.
+`showcases_gpu_particle_smoke offscreen: OK`; the surface-grid checkpoint returned
+`showcases_surface_grid offscreen: OK`.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`showcases_gpu_particle_smoke`:
+`showcases_surface_grid`:
 
 - v0.4-required feature examples: 64 of 64 have Python entries; 0 remain missing.
-- all v0.4-required public examples: 91 of 95 have Python entries; 4 remain missing.
+- all v0.4-required public examples: 92 of 95 have Python entries; 3 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -514,6 +516,12 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   updates the parameter buffer. The Python port intentionally omits the C pointer-swirl input path
   and uses the smaller 32,768-particle offscreen count. The offscreen smoke rendered one 320x180
   frame and verified non-background pixels.
+- `showcases_surface_grid` is committed: it has
+  `examples/python/gallery/showcases/surface_grid.py` and a matching `python.source` manifest
+  entry. It mirrors the C synthetic surface with an 80 by 96 generated height/color grid, engine
+  `dvz_geometry_surface_grid()` mesh construction, `dvz_geometry_edges()` wireframe topology, a
+  Phong-lit mesh, a blended segment wireframe overlay, camera setup, and arcball binding. The
+  offscreen smoke rendered one 320x180 frame and verified non-background pixels.
 
 
 ## Preferred Next Commit
@@ -527,7 +535,7 @@ checkpoint has `features_reference_grid` and `features_coordinate_system`; and
 `features_mesh_texture`, `features_material_mesh`, `features_lighting`, and `features_user_scale`
 and `features_gui_controls`, `features_gui_viewport`, and `features_gui_cimgui` are complete. The
 planned rendering-technique feature examples are complete through transparency. Next target
-for the broader required-public backlog is `showcases_surface_grid`, which is the first missing
+for the broader required-public backlog is `showcases_brain_volume`, which is the first missing
 required public example in manifest order. Inspect the C showcase example and its data
 contract before deciding whether a small shared helper is worth adding.
 
@@ -565,7 +573,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python surface-grid showcase gallery example
+examples: add Python brain-volume showcase gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -634,8 +642,7 @@ None. The required feature lane is complete.
 
 Current missing `v0.4_required` public examples with no `python.source` entry:
 
-`showcases_surface_grid`, `showcases_brain_volume`, `showcases_point_cloud`, and
-`showcases_textured_planet`.
+`showcases_brain_volume`, `showcases_point_cloud`, and `showcases_textured_planet`.
 
 
 ## Per-Example Checklist
