@@ -38,12 +38,19 @@ The left shape uses outer and hole coordinate rings plus fill, stroke, width, jo
     --8<-- "examples/c/composites/polygon.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/composites/polygon.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `composites_polygon`
     - Category: `composite`
     - Lane: `composites`
     - Source: [`examples/c/composites/polygon.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/polygon.c)
+    - Python source: [`examples/python/gallery/composites/polygon.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/composites/polygon.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=composites_polygon"><code>examples/webgpu/live.html?id=composites_polygon</code></a>
     - Browser capability tags: `composite`, `polygon-set`, `primitive`, `segment`, `panzoom`
