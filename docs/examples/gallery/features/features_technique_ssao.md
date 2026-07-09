@@ -28,12 +28,19 @@ Both panels upload the same lit sphere position, radius, and color arrays, while
     --8<-- "examples/c/features/technique_ssao.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/technique_ssao.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_technique_ssao`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/technique_ssao.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_ssao.c)
+    - Python source: [`examples/python/gallery/features/technique_ssao.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/technique_ssao.py)
     - Browser support: Deferred
     - Browser capability tags: `gbuffer`, `depth-postprocess`
     - Validation: `smoke+screenshot`
