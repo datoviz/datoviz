@@ -787,6 +787,9 @@ examples:
     primary_feature: user-scale
     lane: features
     source: examples/c/features/user_scale.c
+    python:
+      source: examples/python/gallery/features/user_scale.py
+      status: direct-engine
     validation: smoke+interaction+screenshot
     media:
       preview:

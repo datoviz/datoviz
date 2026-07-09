@@ -28,12 +28,19 @@ The panel combines a data-space path, outlined markers, axes, and panzoom. The p
     --8<-- "examples/c/features/user_scale.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/user_scale.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_user_scale`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/user_scale.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/user_scale.c)
+    - Python source: [`examples/python/gallery/features/user_scale.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/user_scale.py)
     - Browser support: Native only
     - Browser note: the user-scale control is a native ImGui slider on a Datoviz app view
     - Browser capability tags: `marker`, `panzoom`, `path`, `gui`
