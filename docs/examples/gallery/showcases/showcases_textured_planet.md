@@ -46,12 +46,19 @@ The example uses real texture files from the data submodule when available. Eart
     --8<-- "examples/c/showcases/textured_planet.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/showcases/textured_planet.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `showcases_textured_planet`
     - Category: `showcase`
     - Lane: `showcases`
     - Source: [`examples/c/showcases/textured_planet.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet.c)
+    - Python source: [`examples/python/gallery/showcases/textured_planet.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/textured_planet.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_textured_planet"><code>examples/webgpu/live.html?id=showcases_textured_planet</code></a>
     - Browser capability tags: `mesh`, `sampled-field`, `texture`, `arcball`
