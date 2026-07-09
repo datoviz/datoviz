@@ -1063,7 +1063,10 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=features_lighting",
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_lighting",
-      "primary_feature": "lighting"
+      "primary_feature": "lighting",
+      "python_source": "examples/python/gallery/features/lighting.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/lighting.py",
+      "python_status": "direct-engine"
     },
     {
       "id": "features_user_scale",

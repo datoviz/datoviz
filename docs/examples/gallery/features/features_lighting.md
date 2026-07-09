@@ -38,12 +38,19 @@ Each panel uploads the same sphere position, radius, and color arrays, but chang
     --8<-- "examples/c/features/lighting.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/lighting.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_lighting`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/lighting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/lighting.c)
+    - Python source: [`examples/python/gallery/features/lighting.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/lighting.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_lighting"><code>examples/webgpu/live.html?id=features_lighting</code></a>
     - Browser capability tags: `sphere`, `material`, `lighting`, `arcball`
