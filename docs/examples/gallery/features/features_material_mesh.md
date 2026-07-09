@@ -38,12 +38,19 @@ All three panels use the same colored cube geometry, while the material descript
     --8<-- "examples/c/features/material_mesh.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/material_mesh.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_material_mesh`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/material_mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/material_mesh.c)
+    - Python source: [`examples/python/gallery/features/material_mesh.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/material_mesh.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_material_mesh"><code>examples/webgpu/live.html?id=features_material_mesh</code></a>
     - Browser capability tags: `mesh`, `material`, `lighting`, `arcball`
