@@ -28,6 +28,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "_alloc.h"
 #include "datoviz/scene.h"
@@ -134,6 +135,27 @@ static bool _upload_points(DvzVisual* visual, bool updated)
 }
 
 
+/**
+ * Apply one idempotent state of the retained full-data update.
+ *
+ * @param state scenario state
+ * @param updated whether the replacement data should be active
+ * @return true when the state is already active or the upload succeeds
+ */
+static bool _set_update_state(UpdateVisualDataState* state, bool updated)
+{
+    if (state == NULL)
+        return false;
+    if (state->updated == updated)
+        return true;
+
+    const bool ok = _upload_points(state->point, updated);
+    if (ok)
+        state->updated = updated;
+    return ok;
+}
+
+
 
 /*************************************************************************************************/
 /*  Scenario callbacks                                                                           */
@@ -205,11 +227,15 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
         return;
 
     UpdateVisualDataState* state = (UpdateVisualDataState*)user;
-    const double time = ctx->preview_mode ? dvz_scenario_preview_time(ctx) : ctx->time;
-    if (!state->updated && time >= 1.0)
+    if (ctx->preview_mode && ctx->preview_segment_id != NULL)
     {
-        state->updated = _upload_points(state->point, true);
+        (void)_set_update_state(state, strcmp(ctx->preview_segment_id, "after") == 0);
+        return;
     }
+
+    const double time = ctx->preview_mode ? dvz_scenario_preview_time(ctx) : ctx->time;
+    if (time >= 1.0)
+        (void)_set_update_state(state, true);
 }
 
 

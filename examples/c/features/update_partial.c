@@ -28,6 +28,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "_alloc.h"
 #include "datoviz/scene.h"
@@ -125,6 +126,28 @@ static bool _upload_partial_positions(DvzVisual* visual)
 }
 
 
+/**
+ * Apply one idempotent state of the retained data update.
+ *
+ * @param state scenario state
+ * @param updated whether the moved-point state should be active
+ * @return true when the state is already active or the upload succeeds
+ */
+static bool _set_update_state(UpdatePartialState* state, bool updated)
+{
+    if (state == NULL)
+        return false;
+    if (state->updated == updated)
+        return true;
+
+    const bool ok =
+        updated ? _upload_partial_positions(state->point) : _upload_initial_points(state->point);
+    if (ok)
+        state->updated = updated;
+    return ok;
+}
+
+
 
 /*************************************************************************************************/
 /*  Scenario callbacks                                                                           */
@@ -195,9 +218,15 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
         return;
 
     UpdatePartialState* state = (UpdatePartialState*)user;
+    if (ctx->preview_mode && ctx->preview_segment_id != NULL)
+    {
+        (void)_set_update_state(state, strcmp(ctx->preview_segment_id, "after") == 0);
+        return;
+    }
+
     const double time = ctx->preview_mode ? dvz_scenario_preview_time(ctx) : ctx->time;
-    if (!state->updated && time >= 1.0)
-        state->updated = _upload_partial_positions(state->point);
+    if (time >= 1.0)
+        (void)_set_update_state(state, true);
 }
 
 
