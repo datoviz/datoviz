@@ -280,6 +280,52 @@ static uint8_t _alpha_u8(float value)
 
 
 /**
+ * Snap a float to a display-oriented step.
+ *
+ * @param value input value
+ * @param min lower bound
+ * @param max upper bound
+ * @param step snap increment
+ * @return snapped and clamped value
+ */
+static float _snap_float_step(float value, float min, float max, float step)
+{
+    if (step > 0.0f)
+        value = roundf(value / step) * step;
+    if (value < min)
+        return min;
+    if (value > max)
+        return max;
+    return value;
+}
+
+
+
+/**
+ * Show a wind-parameter slider with a rounded display increment.
+ *
+ * @param gui GUI
+ * @param label slider label
+ * @param value edited value
+ * @param min lower bound
+ * @param max upper bound
+ * @param step snap increment
+ * @param format display format
+ * @return whether the value changed
+ */
+static bool _wind_gui_slider(
+    DvzGui* gui, const char* label, float* value, float min, float max, float step,
+    const char* format)
+{
+    if (!dvz_gui_slider_float_format(gui, label, value, min, max, format))
+        return false;
+    *value = _snap_float_step(*value, min, max, step);
+    return true;
+}
+
+
+
+/**
  * Linearly interpolate two floats.
  *
  * @param a first value
@@ -1374,69 +1420,92 @@ static bool _wind_params_gui(DvzGui* gui, void* user)
     WindShowcaseParams* p = &state->params;
 
     dvz_gui_separator_text(gui, "Time and scale");
-    changed |= dvz_gui_slider_float(gui, "Time scale", &p->time_scale, 0.1f, 8.0f);
-    changed |= dvz_gui_slider_float(gui, "Speed max", &p->speed_max_mps, 30.0f, 140.0f);
+    changed |= _wind_gui_slider(gui, "Time scale", &p->time_scale, 0.1f, 8.0f, 0.1f, "%.1f");
+    changed |= _wind_gui_slider(gui, "Speed max", &p->speed_max_mps, 30.0f, 140.0f, 1.0f, "%.0f");
 
     dvz_gui_separator_text(gui, "Storm");
+    changed |= _wind_gui_slider(
+        gui, "Center X", &p->storm_center_x_km, DOMAIN_X_MIN_KM, DOMAIN_X_MAX_KM, 5.0f,
+        "%.0f");
+    changed |= _wind_gui_slider(
+        gui, "Center Y", &p->storm_center_y_km, DOMAIN_Y_MIN_KM, DOMAIN_Y_MAX_KM, 5.0f,
+        "%.0f");
+    changed |= _wind_gui_slider(gui, "Drift X", &p->storm_drift_x_km, 0.0f, 140.0f, 5.0f, "%.0f");
+    changed |= _wind_gui_slider(gui, "Drift Y", &p->storm_drift_y_km, 0.0f, 100.0f, 5.0f, "%.0f");
     changed |=
-        dvz_gui_slider_float(gui, "Center X", &p->storm_center_x_km, DOMAIN_X_MIN_KM, DOMAIN_X_MAX_KM);
+        _wind_gui_slider(gui, "Drift rate X", &p->storm_drift_rate_x, 0.0f, 1.0f, 0.05f, "%.2f");
     changed |=
-        dvz_gui_slider_float(gui, "Center Y", &p->storm_center_y_km, DOMAIN_Y_MIN_KM, DOMAIN_Y_MAX_KM);
-    changed |= dvz_gui_slider_float(gui, "Drift X", &p->storm_drift_x_km, 0.0f, 140.0f);
-    changed |= dvz_gui_slider_float(gui, "Drift Y", &p->storm_drift_y_km, 0.0f, 100.0f);
-    changed |= dvz_gui_slider_float(gui, "Drift rate X", &p->storm_drift_rate_x, 0.0f, 1.0f);
-    changed |= dvz_gui_slider_float(gui, "Drift rate Y", &p->storm_drift_rate_y, 0.0f, 1.0f);
-    changed |= dvz_gui_slider_float(gui, "Drift phase Y", &p->storm_drift_phase_y, 0.0f, TAU);
-    changed |= dvz_gui_slider_float(gui, "Eye radius", &p->eye_radius_km, 30.0f, 260.0f);
-    changed |= dvz_gui_slider_float(gui, "Vortex", &p->vortex_strength_mps, 10.0f, 150.0f);
-    changed |= dvz_gui_slider_float(gui, "Spiral radius", &p->spiral_radius_km, 80.0f, 700.0f);
-    changed |= dvz_gui_slider_float(gui, "Inflow", &p->inflow_strength_mps, -35.0f, 5.0f);
-    changed |= dvz_gui_slider_float(gui, "Breathing", &p->breathing_amplitude, 0.0f, 0.35f);
-    changed |= dvz_gui_slider_float(gui, "Breathing rate", &p->breathing_rate, 0.0f, 1.5f);
+        _wind_gui_slider(gui, "Drift rate Y", &p->storm_drift_rate_y, 0.0f, 1.0f, 0.05f, "%.2f");
+    changed |=
+        _wind_gui_slider(gui, "Drift phase Y", &p->storm_drift_phase_y, 0.0f, TAU, 0.1f, "%.1f");
+    changed |=
+        _wind_gui_slider(gui, "Eye radius", &p->eye_radius_km, 30.0f, 260.0f, 5.0f, "%.0f");
+    changed |=
+        _wind_gui_slider(gui, "Vortex", &p->vortex_strength_mps, 10.0f, 150.0f, 1.0f, "%.0f");
+    changed |= _wind_gui_slider(
+        gui, "Spiral radius", &p->spiral_radius_km, 80.0f, 700.0f, 10.0f, "%.0f");
+    changed |= _wind_gui_slider(gui, "Inflow", &p->inflow_strength_mps, -35.0f, 5.0f, 0.5f, "%.1f");
+    changed |=
+        _wind_gui_slider(gui, "Breathing", &p->breathing_amplitude, 0.0f, 0.35f, 0.005f, "%.3f");
+    changed |= _wind_gui_slider(gui, "Breathing rate", &p->breathing_rate, 0.0f, 1.5f, 0.05f, "%.2f");
 
     dvz_gui_separator_text(gui, "Background");
-    changed |= dvz_gui_slider_float(gui, "Base U", &p->background_u_mps, -20.0f, 45.0f);
-    changed |= dvz_gui_slider_float(gui, "U/Y gradient", &p->background_u_y_gradient, -0.05f, 0.05f);
-    changed |= dvz_gui_slider_float(gui, "U wave", &p->background_u_wave_mps, 0.0f, 12.0f);
-    changed |= dvz_gui_slider_float(gui, "U wave rate", &p->background_u_wave_rate, 0.0f, 1.5f);
-    changed |= dvz_gui_slider_float(gui, "Base V", &p->background_v_mps, -30.0f, 30.0f);
-    changed |= dvz_gui_slider_float(gui, "V wave", &p->background_v_wave_mps, 0.0f, 16.0f);
-    changed |= dvz_gui_slider_float(gui, "V wave rate", &p->background_v_wave_rate, 0.0f, 1.5f);
-    changed |= dvz_gui_slider_float(gui, "Shear", &p->shear_strength_mps, 0.0f, 30.0f);
-    changed |= dvz_gui_slider_float(gui, "Shear rate", &p->shear_rate, 0.0f, 1.5f);
-    changed |= dvz_gui_slider_float(gui, "Cross wind", &p->cross_wind_strength_mps, 0.0f, 20.0f);
-    changed |= dvz_gui_slider_float(gui, "Cross rate", &p->cross_wind_rate, 0.0f, 1.5f);
-    changed |= dvz_gui_slider_float(gui, "Terrain friction", &p->terrain_friction, 0.0f, 0.6f);
-    changed |= dvz_gui_slider_float(gui, "Terrain color", &p->scalar_terrain_mix_mps, 0.0f, 20.0f);
+    changed |= _wind_gui_slider(gui, "Base U", &p->background_u_mps, -20.0f, 45.0f, 0.5f, "%.1f");
+    changed |= _wind_gui_slider(
+        gui, "U/Y gradient", &p->background_u_y_gradient, -0.05f, 0.05f, 0.005f,
+        "%.3f");
+    changed |= _wind_gui_slider(gui, "U wave", &p->background_u_wave_mps, 0.0f, 12.0f, 0.5f, "%.1f");
+    changed |=
+        _wind_gui_slider(gui, "U wave rate", &p->background_u_wave_rate, 0.0f, 1.5f, 0.05f, "%.2f");
+    changed |= _wind_gui_slider(gui, "Base V", &p->background_v_mps, -30.0f, 30.0f, 0.5f, "%.1f");
+    changed |= _wind_gui_slider(gui, "V wave", &p->background_v_wave_mps, 0.0f, 16.0f, 0.5f, "%.1f");
+    changed |=
+        _wind_gui_slider(gui, "V wave rate", &p->background_v_wave_rate, 0.0f, 1.5f, 0.05f, "%.2f");
+    changed |= _wind_gui_slider(gui, "Shear", &p->shear_strength_mps, 0.0f, 30.0f, 0.5f, "%.1f");
+    changed |= _wind_gui_slider(gui, "Shear rate", &p->shear_rate, 0.0f, 1.5f, 0.05f, "%.2f");
+    changed |= _wind_gui_slider(
+        gui, "Cross wind", &p->cross_wind_strength_mps, 0.0f, 20.0f, 0.5f, "%.1f");
+    changed |=
+        _wind_gui_slider(gui, "Cross rate", &p->cross_wind_rate, 0.0f, 1.5f, 0.05f, "%.2f");
+    changed |=
+        _wind_gui_slider(gui, "Terrain friction", &p->terrain_friction, 0.0f, 0.6f, 0.01f, "%.2f");
+    changed |= _wind_gui_slider(
+        gui, "Terrain color", &p->scalar_terrain_mix_mps, 0.0f, 20.0f, 0.5f, "%.1f");
 
     dvz_gui_separator_text(gui, "Vectors");
-    changed |= dvz_gui_slider_float(gui, "Vector scale", &p->vector_scale, 0.2f, 3.0f);
-    changed |= dvz_gui_slider_float(gui, "Vector alpha", &p->vector_alpha_base, 20.0f, 255.0f);
-    changed |= dvz_gui_slider_float(gui, "Vector alpha range", &p->vector_alpha_range, 0.0f, 160.0f);
-    changed |= dvz_gui_slider_float(gui, "Vector width", &p->vector_width_base_px, 0.5f, 8.0f);
-    changed |= dvz_gui_slider_float(gui, "Vector width range", &p->vector_width_range_px, 0.0f, 6.0f);
+    changed |= _wind_gui_slider(gui, "Vector scale", &p->vector_scale, 0.2f, 3.0f, 0.05f, "%.2f");
+    changed |=
+        _wind_gui_slider(gui, "Vector alpha", &p->vector_alpha_base, 20.0f, 255.0f, 5.0f, "%.0f");
+    changed |= _wind_gui_slider(
+        gui, "Vector alpha range", &p->vector_alpha_range, 0.0f, 160.0f, 5.0f, "%.0f");
+    changed |=
+        _wind_gui_slider(gui, "Vector width", &p->vector_width_base_px, 0.5f, 8.0f, 0.1f, "%.1f");
+    changed |= _wind_gui_slider(
+        gui, "Vector width range", &p->vector_width_range_px, 0.0f, 6.0f, 0.1f, "%.1f");
 
     dvz_gui_separator_text(gui, "Streamlines");
-    changed |=
-        dvz_gui_slider_float(gui, "Seed wobble", &p->streamline_seed_wobble_km, 0.0f, 100.0f);
-    changed |= dvz_gui_slider_float(
-        gui, "Seed wobble rate", &p->streamline_seed_wobble_rate, 0.0f, 1.5f);
-    changed |= dvz_gui_slider_float(
-        gui, "Inner rotation", &p->streamline_inner_rotation_rate, 0.0f, 2.0f);
-    changed |=
-        dvz_gui_slider_float(gui, "Outer alpha", &p->streamline_alpha_outer, 0.0f, 255.0f);
-    changed |=
-        dvz_gui_slider_float(gui, "Inner alpha", &p->streamline_alpha_inner, 0.0f, 255.0f);
-    changed |=
-        dvz_gui_slider_float(gui, "Outer width", &p->streamline_width_outer_px, 0.3f, 6.0f);
-    changed |=
-        dvz_gui_slider_float(gui, "Inner width", &p->streamline_width_inner_px, 0.3f, 6.0f);
-    changed |=
-        dvz_gui_slider_float(gui, "Outer step", &p->streamline_step_outer_km, 1.0f, 18.0f);
-    changed |=
-        dvz_gui_slider_float(gui, "Inner step", &p->streamline_step_inner_km, 1.0f, 18.0f);
-    changed |= dvz_gui_slider_float(
-        gui, "Minimum speed", &p->streamline_min_speed_mps, 0.5f, 30.0f);
+    changed |= _wind_gui_slider(
+        gui, "Seed wobble", &p->streamline_seed_wobble_km, 0.0f, 100.0f, 5.0f, "%.0f");
+    changed |= _wind_gui_slider(
+        gui, "Seed wobble rate", &p->streamline_seed_wobble_rate, 0.0f, 1.5f, 0.05f,
+        "%.2f");
+    changed |= _wind_gui_slider(
+        gui, "Inner rotation", &p->streamline_inner_rotation_rate, 0.0f, 2.0f, 0.05f,
+        "%.2f");
+    changed |= _wind_gui_slider(
+        gui, "Outer alpha", &p->streamline_alpha_outer, 0.0f, 255.0f, 5.0f, "%.0f");
+    changed |= _wind_gui_slider(
+        gui, "Inner alpha", &p->streamline_alpha_inner, 0.0f, 255.0f, 5.0f, "%.0f");
+    changed |= _wind_gui_slider(
+        gui, "Outer width", &p->streamline_width_outer_px, 0.3f, 6.0f, 0.1f, "%.1f");
+    changed |= _wind_gui_slider(
+        gui, "Inner width", &p->streamline_width_inner_px, 0.3f, 6.0f, 0.1f, "%.1f");
+    changed |= _wind_gui_slider(
+        gui, "Outer step", &p->streamline_step_outer_km, 1.0f, 18.0f, 0.5f, "%.1f");
+    changed |= _wind_gui_slider(
+        gui, "Inner step", &p->streamline_step_inner_km, 1.0f, 18.0f, 0.5f, "%.1f");
+    changed |= _wind_gui_slider(
+        gui, "Minimum speed", &p->streamline_min_speed_mps, 0.5f, 30.0f, 0.5f, "%.1f");
 
     return changed;
 }
@@ -1458,64 +1527,66 @@ static void _wind_params_print_c(FILE* fp, void* user)
 
     const WindShowcaseParams* p = &state->params;
     fprintf(fp, "static const WindShowcaseParams WIND_PARAMS_SHOWCASE = {\n");
-#define PRINT_PARAM(name) fprintf(fp, "    ." #name " = %.6ff,\n", (double)p->name)
-    PRINT_PARAM(time_scale);
-    PRINT_PARAM(speed_max_mps);
-    PRINT_PARAM(storm_center_x_km);
-    PRINT_PARAM(storm_center_y_km);
-    PRINT_PARAM(storm_drift_x_km);
-    PRINT_PARAM(storm_drift_y_km);
-    PRINT_PARAM(storm_drift_rate_x);
-    PRINT_PARAM(storm_drift_rate_y);
-    PRINT_PARAM(storm_drift_phase_y);
-    PRINT_PARAM(eye_radius_km);
-    PRINT_PARAM(vortex_strength_mps);
-    PRINT_PARAM(spiral_radius_km);
-    PRINT_PARAM(inflow_strength_mps);
-    PRINT_PARAM(breathing_amplitude);
-    PRINT_PARAM(breathing_rate);
-    PRINT_PARAM(background_u_mps);
-    PRINT_PARAM(background_u_y_gradient);
-    PRINT_PARAM(background_u_wave_mps);
-    PRINT_PARAM(background_u_wave_rate);
+#define PRINT_PARAM_FMT(name, fmt) fprintf(fp, "    ." #name " = " fmt "f,\n", (double)p->name)
+#define PRINT_PARAM(name)          PRINT_PARAM_FMT(name, "%.6f")
+    PRINT_PARAM_FMT(time_scale, "%.1f");
+    PRINT_PARAM_FMT(speed_max_mps, "%.0f");
+    PRINT_PARAM_FMT(storm_center_x_km, "%.0f");
+    PRINT_PARAM_FMT(storm_center_y_km, "%.0f");
+    PRINT_PARAM_FMT(storm_drift_x_km, "%.0f");
+    PRINT_PARAM_FMT(storm_drift_y_km, "%.0f");
+    PRINT_PARAM_FMT(storm_drift_rate_x, "%.2f");
+    PRINT_PARAM_FMT(storm_drift_rate_y, "%.2f");
+    PRINT_PARAM_FMT(storm_drift_phase_y, "%.1f");
+    PRINT_PARAM_FMT(eye_radius_km, "%.0f");
+    PRINT_PARAM_FMT(vortex_strength_mps, "%.0f");
+    PRINT_PARAM_FMT(spiral_radius_km, "%.0f");
+    PRINT_PARAM_FMT(inflow_strength_mps, "%.1f");
+    PRINT_PARAM_FMT(breathing_amplitude, "%.3f");
+    PRINT_PARAM_FMT(breathing_rate, "%.2f");
+    PRINT_PARAM_FMT(background_u_mps, "%.1f");
+    PRINT_PARAM_FMT(background_u_y_gradient, "%.3f");
+    PRINT_PARAM_FMT(background_u_wave_mps, "%.1f");
+    PRINT_PARAM_FMT(background_u_wave_rate, "%.2f");
     PRINT_PARAM(background_u_wave_phase);
-    PRINT_PARAM(background_v_mps);
-    PRINT_PARAM(background_v_wave_mps);
+    PRINT_PARAM_FMT(background_v_mps, "%.1f");
+    PRINT_PARAM_FMT(background_v_wave_mps, "%.1f");
     PRINT_PARAM(background_v_wave_k);
-    PRINT_PARAM(background_v_wave_rate);
+    PRINT_PARAM_FMT(background_v_wave_rate, "%.2f");
     PRINT_PARAM(background_v_wave_phase);
-    PRINT_PARAM(shear_strength_mps);
+    PRINT_PARAM_FMT(shear_strength_mps, "%.1f");
     PRINT_PARAM(shear_wave_k);
-    PRINT_PARAM(shear_rate);
+    PRINT_PARAM_FMT(shear_rate, "%.2f");
     PRINT_PARAM(shear_y_center_km);
     PRINT_PARAM(shear_y_radius_km);
-    PRINT_PARAM(cross_wind_strength_mps);
+    PRINT_PARAM_FMT(cross_wind_strength_mps, "%.1f");
     PRINT_PARAM(cross_wind_wave_k);
-    PRINT_PARAM(cross_wind_rate);
+    PRINT_PARAM_FMT(cross_wind_rate, "%.2f");
     PRINT_PARAM(cross_wind_phase);
     PRINT_PARAM(cross_wind_x_center_km);
     PRINT_PARAM(cross_wind_x_radius_km);
-    PRINT_PARAM(terrain_friction);
-    PRINT_PARAM(scalar_terrain_mix_mps);
-    PRINT_PARAM(vector_scale);
-    PRINT_PARAM(vector_alpha_base);
-    PRINT_PARAM(vector_alpha_range);
-    PRINT_PARAM(vector_width_base_px);
-    PRINT_PARAM(vector_width_range_px);
-    PRINT_PARAM(streamline_seed_wobble_km);
-    PRINT_PARAM(streamline_seed_wobble_rate);
-    PRINT_PARAM(streamline_inner_rotation_rate);
+    PRINT_PARAM_FMT(terrain_friction, "%.2f");
+    PRINT_PARAM_FMT(scalar_terrain_mix_mps, "%.1f");
+    PRINT_PARAM_FMT(vector_scale, "%.2f");
+    PRINT_PARAM_FMT(vector_alpha_base, "%.0f");
+    PRINT_PARAM_FMT(vector_alpha_range, "%.0f");
+    PRINT_PARAM_FMT(vector_width_base_px, "%.1f");
+    PRINT_PARAM_FMT(vector_width_range_px, "%.1f");
+    PRINT_PARAM_FMT(streamline_seed_wobble_km, "%.0f");
+    PRINT_PARAM_FMT(streamline_seed_wobble_rate, "%.2f");
+    PRINT_PARAM_FMT(streamline_inner_rotation_rate, "%.2f");
     PRINT_PARAM(streamline_inner_radius_km);
     PRINT_PARAM(streamline_inner_radius_jitter_km);
     PRINT_PARAM(streamline_inner_y_scale);
-    PRINT_PARAM(streamline_alpha_outer);
-    PRINT_PARAM(streamline_alpha_inner);
-    PRINT_PARAM(streamline_width_outer_px);
-    PRINT_PARAM(streamline_width_inner_px);
-    PRINT_PARAM(streamline_step_outer_km);
-    PRINT_PARAM(streamline_step_inner_km);
-    PRINT_PARAM(streamline_min_speed_mps);
+    PRINT_PARAM_FMT(streamline_alpha_outer, "%.0f");
+    PRINT_PARAM_FMT(streamline_alpha_inner, "%.0f");
+    PRINT_PARAM_FMT(streamline_width_outer_px, "%.1f");
+    PRINT_PARAM_FMT(streamline_width_inner_px, "%.1f");
+    PRINT_PARAM_FMT(streamline_step_outer_km, "%.1f");
+    PRINT_PARAM_FMT(streamline_step_inner_km, "%.1f");
+    PRINT_PARAM_FMT(streamline_min_speed_mps, "%.1f");
 #undef PRINT_PARAM
+#undef PRINT_PARAM_FMT
     fprintf(fp, "};\n");
 }
 
