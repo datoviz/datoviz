@@ -2817,14 +2817,14 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 72
-        fps: 12
+        frames: 144
+        fps: 24
         sample_stride: 4
         card:
           preferred: video-mp4
           size: 1024x576
           sample_step: 1
-          fps: 12
+          fps: 24
           webp_quality: 50
           mp4_crf: 30
           webm_crf: 34
