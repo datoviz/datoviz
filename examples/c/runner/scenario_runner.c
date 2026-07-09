@@ -216,6 +216,79 @@ static bool _parse_preview_phase_policy(const char* text, DvzScenarioPreviewPhas
 
 
 
+static bool _parse_preview_timeline(const char* text, DvzScenarioPreviewTimeline* out)
+{
+    if (text == NULL || text[0] == '\0' || out == NULL)
+        return false;
+
+    DvzScenarioPreviewTimeline timeline = {0};
+    char buffer[RUNNER_PATH_SIZE] = {0};
+    const size_t len = strlen(text);
+    if (len >= sizeof(buffer))
+        return false;
+    memcpy(buffer, text, len + 1);
+
+    char* save_segment = NULL;
+    char* segment = strtok_r(buffer, ",", &save_segment);
+    while (segment != NULL)
+    {
+        if (timeline.segment_count >= DVZ_SCENARIO_MAX_PREVIEW_SEGMENTS)
+            return false;
+
+        char* id = segment;
+        char* kind = strchr(id, ':');
+        if (kind == NULL)
+            return false;
+        *kind++ = '\0';
+        char* frames_text = strchr(kind, ':');
+        if (frames_text == NULL)
+            return false;
+        *frames_text++ = '\0';
+
+        uint32_t frames = 0;
+        if (id[0] == '\0' || kind[0] == '\0' || !_parse_u32(frames_text, &frames) || frames == 0)
+            return false;
+
+        DvzScenarioPreviewSegment* item = &timeline.segments[timeline.segment_count++];
+        snprintf(item->id, sizeof(item->id), "%s", id);
+        snprintf(item->kind, sizeof(item->kind), "%s", kind);
+        item->frames = frames;
+
+        segment = strtok_r(NULL, ",", &save_segment);
+    }
+    if (timeline.segment_count == 0)
+        return false;
+
+    *out = timeline;
+    return true;
+}
+
+
+
+static bool _resolve_preview_timeline(DvzRunnerConfig* config)
+{
+    if (config == NULL || config->preview_timeline.segment_count == 0)
+        return true;
+
+    uint32_t frame_total = 0;
+    for (uint32_t i = 0; i < config->preview_timeline.segment_count; i++)
+    {
+        DvzScenarioPreviewSegment* item = &config->preview_timeline.segments[i];
+        if (item->frames == 0)
+            return false;
+        item->start_frame = frame_total;
+        if (UINT32_MAX - frame_total < item->frames)
+            return false;
+        frame_total += item->frames;
+    }
+
+    if (config->preview_frame_count == 0)
+        config->preview_frame_count = frame_total;
+    return config->preview_frame_count == frame_total;
+}
+
+
+
 static uint32_t _frames_after(int argc, char** argv, int index, uint32_t fallback)
 {
     uint32_t out = 0;
@@ -516,6 +589,51 @@ static void _apply_preview_motion(DvzScenarioContext* ctx, const DvzRunnerConfig
 
 
 
+static void _update_preview_timeline(DvzScenarioContext* ctx, const DvzRunnerConfig* config)
+{
+    if (ctx == NULL)
+        return;
+
+    ctx->preview_segment_id = NULL;
+    ctx->preview_segment_kind = NULL;
+    ctx->preview_segment_index = 0;
+    ctx->preview_segment_count = 0;
+    ctx->preview_segment_frame_index = 0;
+    ctx->preview_segment_frame_count = 0;
+    ctx->preview_segment_phase = 0.0;
+    ctx->preview_global_phase =
+        dvz_scenario_preview_phase(ctx, DVZ_SCENARIO_PREVIEW_PHASE_SEAMLESS_LOOP);
+
+    if (
+        config == NULL || !ctx->preview_mode ||
+        config->preview_timeline.segment_count == 0 || ctx->preview_frame_count == 0)
+        return;
+
+    const uint64_t stride = ctx->preview_sample_stride > 0 ? ctx->preview_sample_stride : 1;
+    const uint64_t frame = (ctx->preview_frame_index / stride) % ctx->preview_frame_count;
+    ctx->preview_segment_count = config->preview_timeline.segment_count;
+
+    for (uint32_t i = 0; i < config->preview_timeline.segment_count; i++)
+    {
+        const DvzScenarioPreviewSegment* item = &config->preview_timeline.segments[i];
+        const uint64_t start = item->start_frame;
+        const uint64_t end = start + item->frames;
+        if (frame < start || frame >= end)
+            continue;
+
+        const uint64_t local = frame - start;
+        ctx->preview_segment_id = item->id;
+        ctx->preview_segment_kind = item->kind;
+        ctx->preview_segment_index = i;
+        ctx->preview_segment_frame_index = local;
+        ctx->preview_segment_frame_count = item->frames;
+        ctx->preview_segment_phase = item->frames > 0 ? (double)local / (double)item->frames : 0.0;
+        return;
+    }
+}
+
+
+
 static void
 _timer_callback(DvzAnimation* animation, double t, double dt, uint64_t tick, void* user_data)
 {
@@ -527,6 +645,7 @@ _timer_callback(DvzAnimation* animation, double t, double dt, uint64_t tick, voi
 
     state->ctx->time = t;
     state->ctx->dt = dt;
+    _update_preview_timeline(state->ctx, state->config);
     if (state->spec->frame != NULL)
         state->spec->frame(state->ctx, state->user);
     _apply_preview_motion(state->ctx, state->config);
@@ -749,6 +868,7 @@ static void _print_usage(const DvzScenarioSpec* spec)
     fprintf(stdout, "  --preview-fps FPS      preview frame rate for deterministic frame timing\n");
     fprintf(stdout, "  --preview-sample-stride N internal preview frames per captured frame\n");
     fprintf(stdout, "  --preview-time-scale S multiply preview time without changing playback FPS\n");
+    fprintf(stdout, "  --preview-timeline SPEC comma-separated preview segments id:kind:frames\n");
     fprintf(stdout, "  --preview-motion KIND  preview motion recipe: none, visual-spin\n");
     fprintf(stdout, "  --preview-motion-target NAME visual target name, default primary or sole target\n");
     fprintf(stdout, "  --preview-motion-axis x|y|z visual-spin axis\n");
@@ -1095,6 +1215,11 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
         resolved.preview_sample_stride = 1;
     if (resolved.preview_mode && resolved.preview_time_scale <= 0.0)
         resolved.preview_time_scale = 1.0;
+    if (resolved.preview_mode && !_resolve_preview_timeline(&resolved))
+    {
+        fprintf(stderr, "scenario_runner: preview timeline must match preview frame count\n");
+        goto cleanup;
+    }
     resolved.capture.flags = _capture_flags(resolved.capture_kind);
     if (resolved.capture.fps <= 0)
         resolved.capture.fps = resolved.fps;
@@ -1117,6 +1242,7 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     ctx.preview_sample_stride = resolved.preview_sample_stride;
     ctx.preview_fps = resolved.preview_fps;
     ctx.preview_time_scale = resolved.preview_time_scale;
+    _update_preview_timeline(&ctx, &resolved);
 
     scene = dvz_scene();
     if (scene == NULL)
@@ -1456,6 +1582,15 @@ int dvz_scenario_run_native_cli(const DvzScenarioSpec* spec, int argc, char** ar
                 return -1;
             }
             config.preview_time_scale = (double)scale;
+        }
+        else if (strcmp(arg, "--preview-timeline") == 0 && i + 1 < argc)
+        {
+            if (!_parse_preview_timeline(argv[++i], &config.preview_timeline))
+            {
+                fprintf(stderr, "scenario_runner: invalid --preview-timeline value\n");
+                return -1;
+            }
+            config.preview_mode = true;
         }
         else if (strcmp(arg, "--preview-motion") == 0 && i + 1 < argc)
         {

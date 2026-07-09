@@ -38,6 +38,7 @@ class AnimatedPreview:
     sample_stride: int
     time_scale: float
     size: str
+    timeline_spec: str = ""
     motion_type: str = ""
     motion_target: str = ""
     motion_axis: str = ""
@@ -110,6 +111,40 @@ def collect_previews(
         if time_scale <= 0.0:
             raise ValueError(f"{id_}: media.preview time_scale must be positive")
 
+        timeline_spec = ""
+        timeline = preview.get("timeline", {})
+        if timeline is None:
+            timeline = {}
+        if not isinstance(timeline, dict):
+            raise ValueError(f"{id_}: media.preview.timeline must be a mapping")
+        segments = timeline.get("segments", [])
+        if segments is None:
+            segments = []
+        if not isinstance(segments, list):
+            raise ValueError(f"{id_}: media.preview.timeline.segments must be a list")
+        if segments:
+            timeline_parts = []
+            timeline_frames = 0
+            for segment in segments:
+                if not isinstance(segment, dict):
+                    raise ValueError(f"{id_}: timeline segments must be mappings")
+                segment_id = str(segment.get("id", ""))
+                segment_kind = str(segment.get("kind", "state"))
+                segment_frames = int(segment.get("frames", 0))
+                if not segment_id or ":" in segment_id or "," in segment_id:
+                    raise ValueError(f"{id_}: timeline segment id is invalid")
+                if not segment_kind or ":" in segment_kind or "," in segment_kind:
+                    raise ValueError(f"{id_}: timeline segment kind is invalid")
+                if segment_frames <= 0:
+                    raise ValueError(f"{id_}: timeline segment frames must be positive")
+                timeline_parts.append(f"{segment_id}:{segment_kind}:{segment_frames}")
+                timeline_frames += segment_frames
+            if timeline_frames != frames:
+                raise ValueError(
+                    f"{id_}: timeline segment frames ({timeline_frames}) must equal frames ({frames})"
+                )
+            timeline_spec = ",".join(timeline_parts)
+
         motion_items = entry.get("motion", {}).get("preview", [])
         if isinstance(motion_items, dict):
             motion_items = [motion_items]
@@ -138,6 +173,7 @@ def collect_previews(
                 sample_stride=sample_stride,
                 time_scale=time_scale,
                 size=size,
+                timeline_spec=timeline_spec,
                 motion_type=motion_type,
                 motion_target=motion_target,
                 motion_axis=motion_axis,
@@ -203,6 +239,7 @@ def input_hash_for(
         str(preview.sample_stride),
         f"{preview.time_scale:g}",
         preview.size,
+        preview.timeline_spec,
         preview.motion_type,
         preview.motion_target,
         preview.motion_axis,
@@ -284,6 +321,8 @@ def capture_sequence(preview: AnimatedPreview, frame_dir: Path) -> None:
         "--size",
         preview.size,
     ]
+    if preview.timeline_spec:
+        cmd.extend(["--preview-timeline", preview.timeline_spec])
     if preview.motion_type:
         cmd.extend(["--preview-motion", preview.motion_type])
         if preview.motion_target:
@@ -346,10 +385,11 @@ def generate_preview(
                 f" cycles={preview.motion_cycles:g}"
                 f" phase={preview.motion_phase or 'default'}"
             )
+        timeline = f" timeline={preview.timeline_spec}" if preview.timeline_spec else ""
         print(
             f"{action}: {preview.id} frames={preview.frames} fps={preview.fps} "
             f"sample_stride={preview.sample_stride} time_scale={preview.time_scale:g} "
-            f"size={preview.size}{motion} -> {rel_out}"
+            f"size={preview.size}{timeline}{motion} -> {rel_out}"
         )
         return True
     if not preview.executable.exists():

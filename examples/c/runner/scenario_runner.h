@@ -136,6 +136,9 @@ typedef enum DvzScenarioMotionKind
 
 #define DVZ_SCENARIO_MAX_CONTROLLER_BINDINGS 32u
 #define DVZ_SCENARIO_MAX_VISUAL_TARGETS      32u
+#define DVZ_SCENARIO_MAX_PREVIEW_SEGMENTS    16u
+#define DVZ_SCENARIO_PREVIEW_SEGMENT_ID_SIZE 32u
+#define DVZ_SCENARIO_PREVIEW_KIND_SIZE       16u
 
 
 
@@ -156,6 +159,22 @@ typedef struct DvzScenarioVisualTarget
     const char* name;
     DvzVisual* visual;
 } DvzScenarioVisualTarget;
+
+
+typedef struct DvzScenarioPreviewSegment
+{
+    char id[DVZ_SCENARIO_PREVIEW_SEGMENT_ID_SIZE];
+    char kind[DVZ_SCENARIO_PREVIEW_KIND_SIZE];
+    uint32_t frames;
+    uint32_t start_frame;
+} DvzScenarioPreviewSegment;
+
+
+typedef struct DvzScenarioPreviewTimeline
+{
+    uint32_t segment_count;
+    DvzScenarioPreviewSegment segments[DVZ_SCENARIO_MAX_PREVIEW_SEGMENTS];
+} DvzScenarioPreviewTimeline;
 
 
 typedef struct DvzScenarioPointerEvent
@@ -232,6 +251,14 @@ struct DvzScenarioContext
     uint32_t preview_sample_stride;
     double preview_fps;
     double preview_time_scale;
+    const char* preview_segment_id;
+    const char* preview_segment_kind;
+    uint32_t preview_segment_index;
+    uint32_t preview_segment_count;
+    uint64_t preview_segment_frame_index;
+    uint64_t preview_segment_frame_count;
+    double preview_segment_phase;
+    double preview_global_phase;
 
     DvzScenarioControllerBinding controller_bindings[DVZ_SCENARIO_MAX_CONTROLLER_BINDINGS];
     uint32_t controller_binding_count;
@@ -289,6 +316,7 @@ typedef struct DvzRunnerConfig
     uint32_t preview_sample_stride;
     double preview_fps;
     double preview_time_scale;
+    DvzScenarioPreviewTimeline preview_timeline;
     DvzScenarioMotionKind preview_motion;
     const char* preview_motion_target;
     float preview_motion_axis[3];
