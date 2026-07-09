@@ -2624,6 +2624,8 @@ examples:
     primary_visual: labels
     lane: visuals
     source: examples/c/visuals/labels.c
+    python:
+      source: examples/python/gallery/visuals/labels.py
     validation: smoke+screenshot
     data:
       kind: synthetic

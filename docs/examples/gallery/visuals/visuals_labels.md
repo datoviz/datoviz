@@ -38,6 +38,12 @@ The labels array stores category IDs, and the category scale assigns each ID a n
     --8<-- "examples/c/visuals/labels.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/visuals/labels.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `visuals_labels`
@@ -45,6 +51,7 @@ The labels array stores category IDs, and the category scale assigns each ID a n
     - Lane: `visuals`
     - Source: [`examples/c/visuals/labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/labels.c)
     - Reference: [Labels visual family](../../../reference/visual-families/labels.md)
+    - Python source: [`examples/python/gallery/visuals/labels.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/labels.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_labels"><code>examples/webgpu/live.html?id=visuals_labels</code></a>
     - Browser capability tags: `labels`, `categorical-scale`, `panzoom`

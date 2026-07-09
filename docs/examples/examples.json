@@ -4666,7 +4666,9 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=visuals_labels",
       "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_labels",
-      "primary_visual": "labels"
+      "primary_visual": "labels",
+      "python_source": "examples/python/gallery/visuals/labels.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/labels.py"
     },
     {
       "id": "visuals_volume",
