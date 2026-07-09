@@ -103,6 +103,10 @@ release-ingest-evidence version path *args:
     @python3 tools/release_automation.py ingest-evidence "{{version}}" "{{path}}" {{args}}
 #
 
+release-gates version *args:
+    @python3 tools/release_automation.py gates "{{version}}" {{args}}
+#
+
 release-machine-validate version *args:
     @python3 tools/release_automation.py machine-validate "{{version}}" {{args}}
 #

@@ -98,6 +98,7 @@ just release-validation-pack 0.4.0rc1 --wheel path/to/wheel.whl
 just release-machine-validate 0.4.0rc1
 just release-ingest-evidence path/to/evidence.tar.zst
 just release-report 0.4.0rc1 --strict-matrix
+just release-gates 0.4.0rc1 --write-artifacts --strict-matrix
 just release-testpypi 0.4.0rc1 yes
 just release-github-draft 0.4.0rc1 yes
 just release-pypi 0.4.0 yes

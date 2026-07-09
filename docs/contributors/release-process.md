@@ -188,6 +188,15 @@ just release-ingest-evidence 0.4.0rc1 path/to/evidence-<machine-id>.tar.gz
 just release-report 0.4.0rc1 --strict-matrix
 ```
 
+Before any publication rehearsal, generate the release safety summary and local checksum artifacts:
+
+```sh
+just release-gates 0.4.0rc1 --write-artifacts --strict-matrix
+```
+
+This writes `build/release/<version>/release-report.md`, `SHA256SUMS`, and `SHA512SUMS`. A nonzero
+exit means the gate summary still has blocking failures or missing required machine evidence.
+
 
 ## TestPyPI And PyPI
 

@@ -612,6 +612,160 @@ def machine_matrix(evidence: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return rows
 
 
+def release_analysis(version: str) -> dict[str, Any]:
+    state = load_state(version)
+    artifacts = state.get("artifacts", [])
+    commands = state.get("commands", [])
+    evidence = discover_evidence(version) or state.get("evidence", [])
+    failed_evidence = [item for item in evidence if item.get("status") == "fail"]
+    matrix = machine_matrix(evidence)
+    missing_required = [
+        row for row in matrix if row["required_for_rc"] is True and row["status"] == "missing"
+    ]
+
+    changed = []
+    missing = []
+    version_mismatch = []
+    for artifact in artifacts:
+        path_text = artifact.get("path", "")
+        path = ROOT / path_text
+        if not path.is_file():
+            missing.append(path_text)
+            continue
+        if artifact.get("kind") in {"wheel", "source-bundle"} and version not in artifact.get("name", ""):
+            version_mismatch.append(path_text)
+        current = file_checksums(path)
+        if current.get("sha256") != artifact.get("sha256"):
+            changed.append(path_text)
+
+    return {
+        "version": version,
+        "state": state,
+        "artifacts": artifacts,
+        "commands": commands,
+        "evidence": evidence,
+        "failed_evidence": failed_evidence,
+        "matrix": matrix,
+        "missing_required": missing_required,
+        "missing_artifacts": missing,
+        "changed_artifacts": changed,
+        "version_mismatch_artifacts": version_mismatch,
+    }
+
+
+def artifact_kinds(artifacts: list[dict[str, Any]], kind: str) -> list[dict[str, Any]]:
+    return [artifact for artifact in artifacts if artifact.get("kind") == kind]
+
+
+def gate_rows(analysis: dict[str, Any]) -> list[dict[str, str]]:
+    state = analysis["state"]
+    identity = state.get("identity", {})
+    artifacts = analysis["artifacts"]
+    publication = state.get("publication", {})
+
+    blockers = (
+        analysis["missing_artifacts"]
+        or analysis["changed_artifacts"]
+        or analysis["version_mismatch_artifacts"]
+    )
+    required_missing = analysis["missing_required"]
+    failed_evidence = analysis["failed_evidence"]
+
+    rows = [
+        {
+            "id": "version_identity",
+            "status": "pass" if identity.get("status") == "pass" else "manual",
+            "detail": "; ".join(identity.get("mismatches", [])) or "metadata versions agree",
+        },
+        {
+            "id": "artifact_integrity",
+            "status": "fail" if blockers else "pass",
+            "detail": "artifact files exist and match recorded checksums"
+            if not blockers
+            else "artifact drift or version mismatch present",
+        },
+        {
+            "id": "source_bundle",
+            "status": "pass" if artifact_kinds(artifacts, "source-bundle") else "missing",
+            "detail": "source bundle artifact recorded",
+        },
+        {
+            "id": "validation_pack",
+            "status": "pass" if artifact_kinds(artifacts, "validation-pack") else "missing",
+            "detail": "portable validation pack artifact recorded",
+        },
+        {
+            "id": "release_notes",
+            "status": "pass" if artifact_kinds(artifacts, "release-notes") else "missing",
+            "detail": "release notes artifact recorded",
+        },
+        {
+            "id": "machine_matrix",
+            "status": "fail" if failed_evidence else "missing" if required_missing else "pass",
+            "detail": "required machine evidence passed"
+            if not required_missing and not failed_evidence
+            else "missing or failing required machine evidence",
+        },
+        {
+            "id": "testpypi_rehearsal",
+            "status": str(publication.get("testpypi", {}).get("status", "missing")),
+            "detail": "TestPyPI rehearsal state",
+        },
+        {
+            "id": "github_draft",
+            "status": str(publication.get("github_draft", {}).get("status", "missing")),
+            "detail": "GitHub draft release state",
+        },
+        {
+            "id": "pypi_publication",
+            "status": str(publication.get("pypi", {}).get("status", "missing")),
+            "detail": "final PyPI publication state",
+        },
+    ]
+    return rows
+
+
+def write_checksum_file(path: Path, algorithm: str, artifacts: list[dict[str, Any]]) -> None:
+    digest_key = algorithm.lower()
+    lines = []
+    for artifact in artifacts:
+        if artifact.get("kind") in {"checksum", "release-report"}:
+            continue
+        artifact_path = ROOT / str(artifact.get("path", ""))
+        if not artifact_path.is_file():
+            continue
+        digest = file_checksums(artifact_path)[digest_key]
+        lines.append(f"{digest}  {artifact.get('path')}")
+    path.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf8")
+
+
+def write_release_artifacts(version: str, report_text: str) -> list[dict[str, Any]]:
+    out_dir = state_dir(version)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    report_path = out_dir / "release-report.md"
+    sha256_path = out_dir / "SHA256SUMS"
+    sha512_path = out_dir / "SHA512SUMS"
+
+    state = load_state(version)
+    artifacts = list(state.get("artifacts", []))
+    report_path.write_text(report_text + "\n", encoding="utf8")
+    write_checksum_file(sha256_path, "sha256", artifacts)
+    write_checksum_file(sha512_path, "sha512", artifacts)
+
+    generated = [
+        artifact_record(report_path, "release-report"),
+        artifact_record(sha256_path, "checksum"),
+        artifact_record(sha512_path, "checksum"),
+    ]
+    generated_paths = {artifact["path"] for artifact in generated}
+    state["artifacts"] = [
+        artifact for artifact in artifacts if artifact.get("path") not in generated_paths
+    ] + generated
+    state["updated_at_utc"] = utc_now()
+    save_state(version, state)
+    return generated
+
+
 def update_state_evidence(version: str) -> None:
     path = state_path(version)
     if not path.is_file():
@@ -1132,32 +1286,18 @@ def candidate(args: argparse.Namespace) -> int:
     return 1 if failures else 0
 
 
-def report(args: argparse.Namespace) -> int:
-    version = args.version
-    state = load_state(version)
-    artifacts = state.get("artifacts", [])
-    commands = state.get("commands", [])
-    evidence = discover_evidence(version) or state.get("evidence", [])
-    failed_evidence = [item for item in evidence if item.get("status") == "fail"]
-    matrix = machine_matrix(evidence)
-    missing_required = [
-        row for row in matrix if row["required_for_rc"] is True and row["status"] == "missing"
-    ]
-
-    changed = []
-    missing = []
-    version_mismatch = []
-    for artifact in artifacts:
-        path_text = artifact.get("path", "")
-        path = ROOT / path_text
-        if not path.is_file():
-            missing.append(path_text)
-            continue
-        if artifact.get("kind") in {"wheel", "source-bundle"} and version not in artifact.get("name", ""):
-            version_mismatch.append(path_text)
-        current = file_checksums(path)
-        if current.get("sha256") != artifact.get("sha256"):
-            changed.append(path_text)
+def render_report_text(analysis: dict[str, Any]) -> str:
+    version = analysis["version"]
+    state = analysis["state"]
+    artifacts = analysis["artifacts"]
+    commands = analysis["commands"]
+    evidence = analysis["evidence"]
+    failed_evidence = analysis["failed_evidence"]
+    matrix = analysis["matrix"]
+    missing_required = analysis["missing_required"]
+    changed = analysis["changed_artifacts"]
+    missing = analysis["missing_artifacts"]
+    version_mismatch = analysis["version_mismatch_artifacts"]
 
     lines = [
         f"# Datoviz Release Report: {version}",
@@ -1254,7 +1394,23 @@ def report(args: argparse.Namespace) -> int:
         for row in missing_required:
             lines.append(f"- {row['class']}: {row['proof']}")
 
-    output = "\n".join(lines)
+    return "\n".join(lines)
+
+
+def report(args: argparse.Namespace) -> int:
+    version = args.version
+    analysis = release_analysis(version)
+    missing_required = analysis["missing_required"]
+    changed = analysis["changed_artifacts"]
+    missing = analysis["missing_artifacts"]
+    version_mismatch = analysis["version_mismatch_artifacts"]
+    failed_evidence = analysis["failed_evidence"]
+
+    output = render_report_text(analysis)
+    if args.write_artifacts:
+        generated = write_release_artifacts(version, output)
+        for artifact in generated:
+            print(f"wrote {artifact['kind']}: {artifact['path']}")
     if args.output:
         output_path = args.output
         if not output_path.is_absolute():
@@ -1266,6 +1422,25 @@ def report(args: argparse.Namespace) -> int:
         print(output)
     strict_matrix_fail = args.strict_matrix and bool(missing_required)
     return 1 if missing or changed or version_mismatch or failed_evidence or strict_matrix_fail else 0
+
+
+def gates(args: argparse.Namespace) -> int:
+    analysis = release_analysis(args.version)
+    rows = gate_rows(analysis)
+    lines = [f"# Datoviz Release Gates: {args.version}", ""]
+    for row in rows:
+        lines.append(f"- `{row['status']}` {row['id']}: {row['detail']}")
+
+    output = "\n".join(lines)
+    print(output)
+    if args.write_artifacts:
+        generated = write_release_artifacts(args.version, render_report_text(analysis))
+        for artifact in generated:
+            print(f"wrote {artifact['kind']}: {artifact['path']}")
+
+    failing = [row for row in rows if row["status"] == "fail"]
+    missing_required = [row for row in rows if row["id"] == "machine_matrix" and row["status"] == "missing"]
+    return 1 if failing or (args.strict_matrix and missing_required) else 0
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -1306,6 +1481,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     ingest_parser.add_argument("--replace", action="store_true")
     ingest_parser.add_argument("--force", action="store_true")
 
+    gates_parser = subparsers.add_parser("gates", help="Summarize release gates")
+    gates_parser.add_argument("version")
+    gates_parser.add_argument("--write-artifacts", action="store_true")
+    gates_parser.add_argument(
+        "--strict-matrix",
+        action="store_true",
+        help="return nonzero when required machine classes are missing",
+    )
+
     machine_parser = subparsers.add_parser(
         "machine-validate", help="Validate release artifacts on this machine and write evidence"
     )
@@ -1326,6 +1510,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     report_parser = subparsers.add_parser("report", help="Print a release-candidate report")
     report_parser.add_argument("version")
     report_parser.add_argument("--output", type=Path)
+    report_parser.add_argument("--write-artifacts", action="store_true")
     report_parser.add_argument(
         "--strict-matrix",
         action="store_true",
@@ -1346,6 +1531,8 @@ def main(argv: list[str] | None = None) -> int:
         return validation_pack(args)
     if args.command == "ingest-evidence":
         return ingest_evidence(args)
+    if args.command == "gates":
+        return gates(args)
     if args.command == "machine-validate":
         return machine_validate(args)
     if args.command == "report":

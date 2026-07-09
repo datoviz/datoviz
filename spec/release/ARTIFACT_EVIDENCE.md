@@ -120,6 +120,14 @@ The report matrix is checked with:
 just release-report <version> --strict-matrix
 ```
 
+The publication safety summary and local checksum files are generated with:
+
+```sh
+just release-gates <version> --write-artifacts --strict-matrix
+```
+
+This writes `build/release/<version>/release-report.md`, `SHA256SUMS`, and `SHA512SUMS`.
+
 
 ## Report Status Values
 

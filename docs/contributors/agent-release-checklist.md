@@ -91,6 +91,7 @@ Ingest returned evidence in the release checkout:
 ```sh
 just release-ingest-evidence 0.4.0rc1 path/to/evidence-or-tar
 just release-report 0.4.0rc1 --strict-matrix
+just release-gates 0.4.0rc1 --write-artifacts --strict-matrix
 ```
 
 

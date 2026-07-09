@@ -75,6 +75,7 @@ Back in the release checkout, ingest it and refresh the matrix report:
 ```sh
 just release-ingest-evidence 0.4.0rc1 path/to/evidence-<machine-id>.tar.gz
 just release-report 0.4.0rc1 --strict-matrix
+just release-gates 0.4.0rc1 --write-artifacts --strict-matrix
 ```
 
 
