@@ -786,6 +786,29 @@ double dvz_scenario_preview_dt(const DvzScenarioContext* ctx)
 
 
 
+double dvz_scenario_preview_phase(
+    const DvzScenarioContext* ctx, DvzScenarioPreviewPhasePolicy policy)
+{
+    if (ctx == NULL)
+        return 0.0;
+    const uint64_t stride = ctx->preview_sample_stride > 0 ? ctx->preview_sample_stride : 1;
+    const uint64_t count = ctx->preview_frame_count > 0 ? ctx->preview_frame_count : 1;
+    const uint64_t index = ctx->preview_frame_index / stride;
+    if (policy == DVZ_SCENARIO_PREVIEW_PHASE_ENDPOINT)
+        return count > 1 ? (double)(index % count) / (double)(count - 1) : 0.0;
+    return (double)(index % count) / (double)count;
+}
+
+
+
+double dvz_scenario_preview_cycles(
+    const DvzScenarioContext* ctx, double cycles, DvzScenarioPreviewPhasePolicy policy)
+{
+    return dvz_scenario_preview_phase(ctx, policy) * cycles;
+}
+
+
+
 int dvz_scenario_bind_controller(
     DvzScenarioContext* ctx, DvzPanel* panel, DvzController* controller, DvzDimMask dims)
 {

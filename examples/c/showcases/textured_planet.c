@@ -36,6 +36,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <cglm/affine.h>
+
 #include "_alloc.h"
 #include "datoviz/fileio.h"
 #include "datoviz/geom.h"
@@ -671,16 +673,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->planet_index = PLANET_EARTH;
     _state_reset_controls(state);
     if (ctx->preview_mode)
-    {
-        const uint64_t count = ctx->preview_frame_count > 0 ? ctx->preview_frame_count : 1;
-        const uint32_t stride = ctx->preview_sample_stride > 0 ? ctx->preview_sample_stride : 1;
-        const double fps = ctx->preview_fps > 0.0 ? ctx->preview_fps : 24.0;
-        const uint64_t span = count > 1 ? (count - 1) * (uint64_t)stride : 0;
-        const double duration_s = ((double)span) / fps;
-        state->spin_speed =
-            duration_s > 0.0 ? (float)(2.0 * (double)TAU / duration_s)
-                              : ROTATION_SPEED_RAD_PER_SEC;
-    }
+        state->spin_speed = 0.0f;
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
@@ -803,6 +796,22 @@ static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView*
 
 
 
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    TexturedPlanetState* state = (TexturedPlanetState*)user;
+    if (ctx == NULL || !ctx->preview_mode || state == NULL || state->visual == NULL)
+        return;
+
+    const double phase =
+        dvz_scenario_preview_cycles(ctx, 1.0, DVZ_SCENARIO_PREVIEW_PHASE_ENDPOINT);
+    mat4 transform = GLM_MAT4_IDENTITY_INIT;
+    vec3 axis = {0.0f, 1.0f, 0.0f};
+    glm_rotate_make(transform, (float)(TAU * phase), axis);
+    (void)dvz_visual_set_transform(state->visual, transform);
+}
+
+
+
 static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 {
     (void)ctx;
@@ -826,6 +835,7 @@ DvzScenarioSpec dvz_showcase_textured_planet_scenario(void)
         .height = HEIGHT,
         .fps = 60.0,
         .init = _scenario_init,
+        .frame = _scenario_frame,
 #ifndef DVZ_EXAMPLE_NO_MAIN
         .native_view = _scenario_native_view,
 #endif

@@ -114,6 +114,13 @@ typedef enum DvzScenarioPointerType
 } DvzScenarioPointerType;
 
 
+typedef enum DvzScenarioPreviewPhasePolicy
+{
+    DVZ_SCENARIO_PREVIEW_PHASE_SEAMLESS_LOOP,
+    DVZ_SCENARIO_PREVIEW_PHASE_ENDPOINT,
+} DvzScenarioPreviewPhasePolicy;
+
+
 
 /*************************************************************************************************/
 /*  Constants                                                                                    */
@@ -345,6 +352,54 @@ static inline double dvz_scenario_preview_dt(const DvzScenarioContext* ctx)
 }
 #else
 double dvz_scenario_preview_dt(const DvzScenarioContext* ctx);
+#endif
+
+/**
+ * Return normalized progress through a deterministic preview capture.
+ *
+ * The seamless-loop policy maps captured frame i to i / N so the encoded loop returns to frame 0
+ * without duplicating the first pose. The endpoint policy maps i to i / (N - 1) so the final
+ * captured frame lands exactly on phase 1.
+ *
+ * @param ctx scenario context
+ * @param policy phase policy
+ * @return normalized phase in [0, 1]
+ */
+#ifdef DVZ_EXAMPLE_NO_APP
+static inline double dvz_scenario_preview_phase(
+    const DvzScenarioContext* ctx, DvzScenarioPreviewPhasePolicy policy)
+{
+    if (ctx == NULL)
+        return 0.0;
+    const uint64_t stride = ctx->preview_sample_stride > 0 ? ctx->preview_sample_stride : 1;
+    const uint64_t count = ctx->preview_frame_count > 0 ? ctx->preview_frame_count : 1;
+    const uint64_t index = ctx->preview_frame_index / stride;
+    if (policy == DVZ_SCENARIO_PREVIEW_PHASE_ENDPOINT)
+        return count > 1 ? (double)(index % count) / (double)(count - 1) : 0.0;
+    return (double)(index % count) / (double)count;
+}
+#else
+double dvz_scenario_preview_phase(
+    const DvzScenarioContext* ctx, DvzScenarioPreviewPhasePolicy policy);
+#endif
+
+/**
+ * Return periodic preview progress for a requested number of cycles.
+ *
+ * @param ctx scenario context
+ * @param cycles number of cycles across the preview
+ * @param policy phase policy
+ * @return normalized cyclic progress
+ */
+#ifdef DVZ_EXAMPLE_NO_APP
+static inline double dvz_scenario_preview_cycles(
+    const DvzScenarioContext* ctx, double cycles, DvzScenarioPreviewPhasePolicy policy)
+{
+    return dvz_scenario_preview_phase(ctx, policy) * cycles;
+}
+#else
+double dvz_scenario_preview_cycles(
+    const DvzScenarioContext* ctx, double cycles, DvzScenarioPreviewPhasePolicy policy);
 #endif
 
 /**
