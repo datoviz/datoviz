@@ -55,9 +55,10 @@ Recent checkpoint commits landed:
 42. `8f673a61e` Add Python transparency technique gallery example.
 43. `d61a6c440` Add Python input-events gallery example.
 44. `29529bb89` Add Python view-size-policies gallery example.
+45. `f595c50e1` Add Python bezier-curve-path gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
-next planned checkpoint is `features_bezier_curve_path`.
+next planned checkpoint is `features_path_join`.
 
 The material-descriptor caveat is resolved for new examples: `DvzPhongMaterial`,
 `DvzStandardMaterial`, and `DvzMaterialDesc` now have generated ctypes layouts, and
@@ -193,6 +194,10 @@ python3 - <<'PY'
 ... construct view_size_policies explicit offscreen view with pixel-exact size policy, render once,
     and verify the resolved framebuffer size ...
 PY
+python3 - <<'PY'
+... construct bezier_curve_path scene with retained path, control polygon, and control points,
+    render one offscreen frame, and verify non-background pixels ...
+PY
 ```
 
 These returned `image_probe offscreen query smoke: 1 True` and
@@ -216,13 +221,14 @@ MSAA checkpoint returned `technique_msaa offscreen: OK`; the depth-cue checkpoin
 `technique_depth_cue offscreen: OK`; the transparency checkpoint returned
 `technique_transparency offscreen: OK`; the input-events checkpoint returned
 `input_events synthetic: OK pointer=6 keyboard=2 resize=1`; the view-size checkpoint returned
-`view_size_policies smoke: OK policy=pixel_exact framebuffer=1280x720`.
+`view_size_policies smoke: OK policy=pixel_exact framebuffer=1280x720`; the Bezier path checkpoint
+returned `bezier_curve_path offscreen: OK`.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`features_view_size_policies`:
+`features_bezier_curve_path`:
 
-- v0.4-required feature examples: 59 of 64 have Python entries; 5 remain missing.
-- all v0.4-required public examples: 71 of 95 have Python entries; 24 remain missing.
+- v0.4-required feature examples: 60 of 64 have Python entries; 4 remain missing.
+- all v0.4-required public examples: 72 of 95 have Python entries; 23 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -342,6 +348,10 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   entry. It uses generated view size descriptor constructors, `dvz_view_size_resolve()`, explicit
   `dvz_view()` descriptors, `dvz_view_resolved_size()`, and an offscreen smoke path for exact-pixel
   validation.
+- `features_bezier_curve_path` is committed: it has
+  `examples/python/gallery/features/bezier_curve_path.py` and a matching `python.source` manifest
+  entry. It mirrors the C control points with a NumPy cubic Bezier sample, then renders the retained
+  path, control-polygon segments, and endpoint/handle point markers through direct engine calls.
 
 
 ## Preferred Next Commit
@@ -355,9 +365,9 @@ checkpoint has `features_reference_grid` and `features_coordinate_system`; and
 `features_mesh_texture`, `features_material_mesh`, `features_lighting`, and `features_user_scale`
 and `features_gui_controls`, `features_gui_viewport`, and `features_gui_cimgui` are complete. The
 planned rendering-technique feature examples are complete through transparency. Next target
-`features_bezier_curve_path`, which is the first missing feature in manifest order. Inspect the C
-example and current path/vector/tessellation bindings before deciding whether the Python path can be
-direct-engine, needs a narrow binding policy update, or should stay deferred.
+`features_path_join`, which is the first missing feature in manifest order. Inspect the C example
+and current path join/cap bindings before deciding whether the Python path can be direct-engine,
+needs a narrow binding policy update, or should stay deferred.
 
 Implementation shape:
 
@@ -393,7 +403,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python bezier-curve-path gallery example
+examples: add Python path-join gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -458,8 +468,8 @@ convert the examples that immediately need it.
 
 Current missing `v0.4_required` feature examples with no `python.source` entry:
 
-`features_bezier_curve_path`, `features_path_join`, `features_scalebar`,
-`features_scalebar_units`, and `features_datetime_axis`.
+`features_path_join`, `features_scalebar`, `features_scalebar_units`, and
+`features_datetime_axis`.
 
 
 ## Per-Example Checklist
