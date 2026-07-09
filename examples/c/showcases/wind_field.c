@@ -38,6 +38,7 @@
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "example_tuner.h"
 #include "runner/scenario_runner.h"
 
 
@@ -68,13 +69,10 @@ DvzScenarioSpec dvz_showcase_wind_field_scenario(void);
 #define COLORMAP_LUT_SIZE   256u
 #define ANIMATION_STRIDE    2u
 #define ANIMATION_FPS       60.0f
-#define WIND_SPEED_MAX_MPS  80.0f
 #define DOMAIN_X_MIN_KM     -620.0f
 #define DOMAIN_X_MAX_KM     +620.0f
 #define DOMAIN_Y_MIN_KM     -390.0f
 #define DOMAIN_Y_MAX_KM     +390.0f
-#define STORM_CENTER_X_KM   +245.0f
-#define STORM_CENTER_Y_KM   -8.0f
 #define PROBE_X_KM          +345.0f
 #define PROBE_Y_KM          +14.0f
 
@@ -95,6 +93,67 @@ typedef struct WindSample
 } WindSample;
 
 
+typedef struct WindShowcaseParams
+{
+    float time_scale;
+    float speed_max_mps;
+    float storm_center_x_km;
+    float storm_center_y_km;
+    float storm_drift_x_km;
+    float storm_drift_y_km;
+    float storm_drift_rate_x;
+    float storm_drift_rate_y;
+    float storm_drift_phase_y;
+    float eye_radius_km;
+    float vortex_strength_mps;
+    float spiral_radius_km;
+    float inflow_strength_mps;
+    float breathing_amplitude;
+    float breathing_rate;
+    float background_u_mps;
+    float background_u_y_gradient;
+    float background_u_wave_mps;
+    float background_u_wave_rate;
+    float background_u_wave_phase;
+    float background_v_mps;
+    float background_v_wave_mps;
+    float background_v_wave_k;
+    float background_v_wave_rate;
+    float background_v_wave_phase;
+    float shear_strength_mps;
+    float shear_wave_k;
+    float shear_rate;
+    float shear_y_center_km;
+    float shear_y_radius_km;
+    float cross_wind_strength_mps;
+    float cross_wind_wave_k;
+    float cross_wind_rate;
+    float cross_wind_phase;
+    float cross_wind_x_center_km;
+    float cross_wind_x_radius_km;
+    float terrain_friction;
+    float scalar_terrain_mix_mps;
+    float vector_scale;
+    float vector_alpha_base;
+    float vector_alpha_range;
+    float vector_width_base_px;
+    float vector_width_range_px;
+    float streamline_seed_wobble_km;
+    float streamline_seed_wobble_rate;
+    float streamline_inner_rotation_rate;
+    float streamline_inner_radius_km;
+    float streamline_inner_radius_jitter_km;
+    float streamline_inner_y_scale;
+    float streamline_alpha_outer;
+    float streamline_alpha_inner;
+    float streamline_width_outer_px;
+    float streamline_width_inner_px;
+    float streamline_step_outer_km;
+    float streamline_step_inner_km;
+    float streamline_min_speed_mps;
+} WindShowcaseParams;
+
+
 typedef struct WindShowcaseState
 {
     DvzPanel* panel;
@@ -102,7 +161,69 @@ typedef struct WindShowcaseState
     DvzVisual* vectors;
     DvzVisual* streamlines;
     float* values;
+    WindShowcaseParams params;
+    ExampleTuner tuner;
 } WindShowcaseState;
+
+
+static const WindShowcaseParams WIND_PARAMS_SHOWCASE = {
+    .time_scale = 1.0f,
+    .speed_max_mps = 80.0f,
+    .storm_center_x_km = +245.0f,
+    .storm_center_y_km = -8.0f,
+    .storm_drift_x_km = 26.0f,
+    .storm_drift_y_km = 16.0f,
+    .storm_drift_rate_x = 0.105f,
+    .storm_drift_rate_y = 0.083f,
+    .storm_drift_phase_y = 0.7f,
+    .eye_radius_km = 112.0f,
+    .vortex_strength_mps = 70.0f,
+    .spiral_radius_km = 330.0f,
+    .inflow_strength_mps = -9.5f,
+    .breathing_amplitude = 0.045f,
+    .breathing_rate = 0.17f,
+    .background_u_mps = 17.0f,
+    .background_u_y_gradient = 0.010f,
+    .background_u_wave_mps = 1.9f,
+    .background_u_wave_rate = 0.090f,
+    .background_u_wave_phase = 0.4f,
+    .background_v_mps = -3.5f,
+    .background_v_wave_mps = 3.5f,
+    .background_v_wave_k = 0.008f,
+    .background_v_wave_rate = 0.12f,
+    .background_v_wave_phase = 0.7f,
+    .shear_strength_mps = 6.5f,
+    .shear_wave_k = 0.0055f,
+    .shear_rate = 0.20f,
+    .shear_y_center_km = -125.0f,
+    .shear_y_radius_km = 310.0f,
+    .cross_wind_strength_mps = 4.0f,
+    .cross_wind_wave_k = 0.007f,
+    .cross_wind_rate = 0.16f,
+    .cross_wind_phase = -0.3f,
+    .cross_wind_x_center_km = -220.0f,
+    .cross_wind_x_radius_km = 520.0f,
+    .terrain_friction = 0.17f,
+    .scalar_terrain_mix_mps = 6.0f,
+    .vector_scale = 1.02f,
+    .vector_alpha_base = 150.0f,
+    .vector_alpha_range = 78.0f,
+    .vector_width_base_px = 2.2f,
+    .vector_width_range_px = 1.6f,
+    .streamline_seed_wobble_km = 22.0f,
+    .streamline_seed_wobble_rate = 0.24f,
+    .streamline_inner_rotation_rate = 0.10f,
+    .streamline_inner_radius_km = 106.0f,
+    .streamline_inner_radius_jitter_km = 4.1f,
+    .streamline_inner_y_scale = 0.78f,
+    .streamline_alpha_outer = 118.0f,
+    .streamline_alpha_inner = 166.0f,
+    .streamline_width_outer_px = 1.35f,
+    .streamline_width_inner_px = 1.85f,
+    .streamline_step_outer_km = 6.2f,
+    .streamline_step_inner_km = 4.7f,
+    .streamline_min_speed_mps = 7.5f,
+};
 
 
 
@@ -136,6 +257,22 @@ static float _clamp01(float value)
 static uint8_t _u8(float value)
 {
     return (uint8_t)(255.0f * _clamp01(value) + 0.5f);
+}
+
+
+/**
+ * Convert a float alpha value to an 8-bit channel.
+ *
+ * @param value alpha in [0, 255]
+ * @return clamped 8-bit channel
+ */
+static uint8_t _alpha_u8(float value)
+{
+    if (value < 0.0f)
+        return 0u;
+    if (value > 255.0f)
+        return 255u;
+    return (uint8_t)(value + 0.5f);
 }
 
 
@@ -180,37 +317,65 @@ static float _terrain_mask(float x, float y)
  *
  * @param x domain X coordinate in km
  * @param y domain Y coordinate in km
+ * @param params procedural model parameters
  * @param time_s deterministic animation time in seconds
  * @return wind sample with vector, speed, and direction
  */
-static WindSample _wind_sample(float x, float y, float time_s)
+static WindSample
+_wind_sample(float x, float y, const WindShowcaseParams* params, float time_s)
 {
-    const float center_x = STORM_CENTER_X_KM + 26.0f * sinf(0.105f * time_s);
-    const float center_y = STORM_CENTER_Y_KM + 16.0f * cosf(0.083f * time_s + 0.7f);
+    ANN(params);
+
+    const float center_x =
+        params->storm_center_x_km + params->storm_drift_x_km *
+                                       sinf(params->storm_drift_rate_x * time_s);
+    const float center_y =
+        params->storm_center_y_km + params->storm_drift_y_km *
+                                       cosf(params->storm_drift_rate_y * time_s +
+                                            params->storm_drift_phase_y);
     const float dx = x - center_x;
     const float dy = y - center_y;
     const float r = sqrtf(dx * dx + dy * dy) + 1e-3f;
 
-    const float eye_radius = 112.0f;
+    const float eye_radius = fmaxf(params->eye_radius_km, 1e-3f);
     const float rr = r / eye_radius;
-    const float breathing = 1.0f + 0.045f * sinf(0.17f * time_s);
-    const float vortex = 70.0f * breathing * rr * expf(0.5f * (1.0f - rr * rr));
-    const float spiral = expf(-(r * r) / (2.0f * 330.0f * 330.0f));
-    const float inflow = -9.5f * spiral;
+    const float breathing =
+        1.0f + params->breathing_amplitude * sinf(params->breathing_rate * time_s);
+    const float vortex =
+        params->vortex_strength_mps * breathing * rr * expf(0.5f * (1.0f - rr * rr));
+    const float spiral_radius = fmaxf(params->spiral_radius_km, 1e-3f);
+    const float spiral = expf(-(r * r) / (2.0f * spiral_radius * spiral_radius));
+    const float inflow = params->inflow_strength_mps * spiral;
     const float terrain = _terrain_mask(x, y);
 
-    float u = 17.0f + 0.010f * y + 1.9f * sinf(0.090f * time_s + 0.4f);
-    float v = -3.5f + 3.5f * sinf(0.008f * x + 0.7f + 0.12f * time_s);
+    float u = params->background_u_mps + params->background_u_y_gradient * y +
+              params->background_u_wave_mps *
+                  sinf(params->background_u_wave_rate * time_s +
+                       params->background_u_wave_phase);
+    float v = params->background_v_mps +
+              params->background_v_wave_mps *
+                  sinf(
+                      params->background_v_wave_k * x + params->background_v_wave_phase +
+                      params->background_v_wave_rate * time_s);
 
     u += -vortex * dy / r + inflow * dx / r;
     v += +vortex * dx / r + inflow * dy / r;
 
-    const float shear = 6.5f * sinf(0.0055f * (x - 0.8f * y) + 0.20f * time_s);
-    u += shear * expf(-(y + 125.0f) * (y + 125.0f) / (2.0f * 310.0f * 310.0f));
-    v += 4.0f * sinf(0.007f * y - 0.3f + 0.16f * time_s) *
-         expf(-(x + 220.0f) * (x + 220.0f) / (2.0f * 520.0f * 520.0f));
+    const float shear = params->shear_strength_mps *
+                        sinf(params->shear_wave_k * (x - 0.8f * y) +
+                             params->shear_rate * time_s);
+    const float shear_dy = y - params->shear_y_center_km;
+    const float shear_radius = fmaxf(params->shear_y_radius_km, 1e-3f);
+    u += shear * expf(-(shear_dy * shear_dy) / (2.0f * shear_radius * shear_radius));
+    const float cross_dx = x - params->cross_wind_x_center_km;
+    const float cross_radius = fmaxf(params->cross_wind_x_radius_km, 1e-3f);
+    v += params->cross_wind_strength_mps *
+         sinf(
+             params->cross_wind_wave_k * y + params->cross_wind_phase +
+             params->cross_wind_rate * time_s) *
+         expf(-(cross_dx * cross_dx) / (2.0f * cross_radius * cross_radius));
 
-    const float friction = 1.0f - 0.17f * terrain;
+    const float friction = 1.0f - params->terrain_friction * terrain;
     u *= friction;
     v *= friction;
 
@@ -228,11 +393,14 @@ static WindSample _wind_sample(float x, float y, float time_s)
  * Map one wind speed to the showcase colormap.
  *
  * @param speed_mps wind speed in m/s
+ * @param params procedural model parameters
  * @return output RGBA8 color
  */
-static DvzColor _wind_colormap(float speed_mps)
+static DvzColor _wind_colormap(float speed_mps, const WindShowcaseParams* params)
 {
-    const float t = _clamp01(speed_mps / WIND_SPEED_MAX_MPS);
+    ANN(params);
+
+    const float t = _clamp01(speed_mps / fmaxf(params->speed_max_mps, 1e-3f));
     DvzColor c0 = dvz_color_rgb(14, 17, 23);
     DvzColor c1 = dvz_color_rgb(23, 65, 92);
     DvzColor c2 = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
@@ -284,12 +452,17 @@ static DvzColor _wind_colormap(float speed_mps)
  * @param alpha output alpha
  * @param midpoint normalized speed where mint is reached
  * @param gamma nonlinear contrast factor applied to normalized speed
+ * @param params procedural model parameters
  * @return output RGBA8 color
  */
 static DvzColor
-_wind_flow_color(float speed_mps, uint8_t alpha, float midpoint, float gamma)
+_wind_flow_color(
+    float speed_mps, uint8_t alpha, float midpoint, float gamma,
+    const WindShowcaseParams* params)
 {
-    const float normalized = _clamp01(speed_mps / WIND_SPEED_MAX_MPS);
+    ANN(params);
+
+    const float normalized = _clamp01(speed_mps / fmaxf(params->speed_max_mps, 1e-3f));
     const float t = powf(normalized, gamma);
     DvzColor a = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
     DvzColor b = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
@@ -315,11 +488,13 @@ _wind_flow_color(float speed_mps, uint8_t alpha, float midpoint, float gamma)
  *
  * @param speed_mps wind speed in m/s
  * @param alpha output alpha
+ * @param params procedural model parameters
  * @return output RGBA8 color
  */
-static DvzColor _wind_arrow_color(float speed_mps, uint8_t alpha)
+static DvzColor
+_wind_arrow_color(float speed_mps, uint8_t alpha, const WindShowcaseParams* params)
 {
-    return _wind_flow_color(speed_mps, alpha, 0.44f, 0.78f);
+    return _wind_flow_color(speed_mps, alpha, 0.44f, 0.78f, params);
 }
 
 
@@ -329,11 +504,13 @@ static DvzColor _wind_arrow_color(float speed_mps, uint8_t alpha)
  *
  * @param speed_mps wind speed in m/s
  * @param alpha output alpha
+ * @param params procedural model parameters
  * @return output RGBA8 color
  */
-static DvzColor _wind_streamline_color(float speed_mps, uint8_t alpha)
+static DvzColor
+_wind_streamline_color(float speed_mps, uint8_t alpha, const WindShowcaseParams* params)
 {
-    return _wind_flow_color(speed_mps, alpha, 0.36f, 0.64f);
+    return _wind_flow_color(speed_mps, alpha, 0.36f, 0.64f, params);
 }
 
 
@@ -342,16 +519,19 @@ static DvzColor _wind_streamline_color(float speed_mps, uint8_t alpha)
  * Fill the custom wind-speed colormap LUT.
  *
  * @param colors output RGBA8 LUT
+ * @param params procedural model parameters
  */
-static void _fill_wind_colormap(DvzColor colors[COLORMAP_LUT_SIZE])
+static void
+_fill_wind_colormap(DvzColor colors[COLORMAP_LUT_SIZE], const WindShowcaseParams* params)
 {
     ANN(colors);
+    ANN(params);
 
     for (uint32_t i = 0; i < COLORMAP_LUT_SIZE; i++)
     {
         const float t =
             COLORMAP_LUT_SIZE > 1u ? (float)i / (float)(COLORMAP_LUT_SIZE - 1u) : 0.0f;
-        colors[i] = _wind_colormap(t * WIND_SPEED_MAX_MPS);
+        colors[i] = _wind_colormap(t * params->speed_max_mps, params);
     }
 }
 
@@ -361,11 +541,13 @@ static void _fill_wind_colormap(DvzColor colors[COLORMAP_LUT_SIZE])
  * Fill the scalar wind-speed field.
  *
  * @param values output scalar field values in m/s
+ * @param params procedural model parameters
  * @param time_s deterministic animation time in seconds
  */
-static void _fill_scalar_field(float* values, float time_s)
+static void _fill_scalar_field(float* values, const WindShowcaseParams* params, float time_s)
 {
     ANN(values);
+    ANN(params);
 
     for (uint32_t y = 0; y < FIELD_HEIGHT; y++)
     {
@@ -375,11 +557,13 @@ static void _fill_scalar_field(float* values, float time_s)
         {
             const float fx = FIELD_WIDTH > 1u ? (float)x / (float)(FIELD_WIDTH - 1u) : 0.0f;
             const float data_x = _mix(DOMAIN_X_MIN_KM, DOMAIN_X_MAX_KM, fx);
-            WindSample sample = _wind_sample(data_x, data_y, time_s);
+            WindSample sample = _wind_sample(data_x, data_y, params, time_s);
             const float terrain = _terrain_mask(data_x, data_y);
             values[y * FIELD_WIDTH + x] =
-                _clamp01((sample.speed + 6.0f * terrain) / WIND_SPEED_MAX_MPS) *
-                WIND_SPEED_MAX_MPS;
+                _clamp01(
+                    (sample.speed + params->scalar_terrain_mix_mps * terrain) /
+                    fmaxf(params->speed_max_mps, 1e-3f)) *
+                params->speed_max_mps;
         }
     }
 }
@@ -507,15 +691,19 @@ static bool _add_wind_image(
  * @param vectors output vector displacements in data coordinates
  * @param colors output vector colors
  * @param widths output vector stroke widths
+ * @param params procedural model parameters
  * @param time_s deterministic animation time in seconds
  * @return true on success
  */
-static bool _fill_vectors(vec3* positions, vec3* vectors, DvzColor* colors, float* widths, float time_s)
+static bool _fill_vectors(
+    vec3* positions, vec3* vectors, DvzColor* colors, float* widths,
+    const WindShowcaseParams* params, float time_s)
 {
     ANN(positions);
     ANN(vectors);
     ANN(colors);
     ANN(widths);
+    ANN(params);
 
     uint32_t idx = 0;
     const float step_x = (DOMAIN_X_MAX_KM - DOMAIN_X_MIN_KM) / (float)(VECTOR_COLS - 1u);
@@ -526,11 +714,11 @@ static bool _fill_vectors(vec3* positions, vec3* vectors, DvzColor* colors, floa
         {
             const float x = DOMAIN_X_MIN_KM + (float)col * step_x;
             const float y = DOMAIN_Y_MIN_KM + (float)row * step_y;
-            WindSample sample = _wind_sample(x, y, time_s);
-            const float scale = 1.02f;
+            WindSample sample = _wind_sample(x, y, params, time_s);
 
             vec3 data_start[1] = {{x, y, 0.0f}};
-            vec3 data_end[1] = {{x + scale * sample.u, y + scale * sample.v, 0.0f}};
+            vec3 data_end[1] = {
+                {x + params->vector_scale * sample.u, y + params->vector_scale * sample.v, 0.0f}};
             data_start[0][2] = 0.03f;
             data_end[0][2] = 0.03f;
 
@@ -542,8 +730,16 @@ static bool _fill_vectors(vec3* positions, vec3* vectors, DvzColor* colors, floa
             vectors[idx][2] = 0.0f;
 
             colors[idx] = _wind_arrow_color(
-                sample.speed, (uint8_t)(150u + (uint32_t)(78.0f * _clamp01(sample.speed / 70.0f))));
-            widths[idx] = 2.2f + 1.6f * _clamp01(sample.speed / WIND_SPEED_MAX_MPS);
+                sample.speed,
+                _alpha_u8(
+                    params->vector_alpha_base +
+                    params->vector_alpha_range *
+                        _clamp01(sample.speed / fmaxf(params->vortex_strength_mps, 1e-3f))),
+                params);
+            widths[idx] =
+                params->vector_width_base_px +
+                params->vector_width_range_px *
+                    _clamp01(sample.speed / fmaxf(params->speed_max_mps, 1e-3f));
             idx++;
         }
     }
@@ -558,14 +754,18 @@ static bool _fill_vectors(vec3* positions, vec3* vectors, DvzColor* colors, floa
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
  * @param out_visual output vector visual
+ * @param params procedural model parameters
  * @param time_s deterministic animation time in seconds
  * @return true on success
  */
-static bool _add_vectors(DvzScene* scene, DvzPanel* panel, DvzVisual** out_visual, float time_s)
+static bool _add_vectors(
+    DvzScene* scene, DvzPanel* panel, DvzVisual** out_visual,
+    const WindShowcaseParams* params, float time_s)
 {
     ANN(scene);
     ANN(panel);
     ANN(out_visual);
+    ANN(params);
 
     vec3* positions = (vec3*)dvz_calloc(VECTOR_COUNT, sizeof(*positions));
     vec3* vectors = (vec3*)dvz_calloc(VECTOR_COUNT, sizeof(*vectors));
@@ -573,7 +773,7 @@ static bool _add_vectors(DvzScene* scene, DvzPanel* panel, DvzVisual** out_visua
     float* widths = (float*)dvz_calloc(VECTOR_COUNT, sizeof(*widths));
     if (positions == NULL || vectors == NULL || colors == NULL || widths == NULL)
         goto error;
-    if (!_fill_vectors(positions, vectors, colors, widths, time_s))
+    if (!_fill_vectors(positions, vectors, colors, widths, params, time_s))
         goto error;
 
     DvzVisual* visual = dvz_vector(scene, 0);
@@ -622,16 +822,20 @@ error:
  * @param colors output path colors
  * @param widths output stroke widths
  * @param subpaths output subpath lengths
+ * @param params procedural model parameters
  * @param time_s deterministic animation time in seconds
  * @return true on success
  */
 static bool
-_fill_streamlines(vec3* positions, DvzColor* colors, float* widths, uint32_t* subpaths, float time_s)
+_fill_streamlines(
+    vec3* positions, DvzColor* colors, float* widths, uint32_t* subpaths,
+    const WindShowcaseParams* params, float time_s)
 {
     ANN(positions);
     ANN(colors);
     ANN(widths);
     ANN(subpaths);
+    ANN(params);
 
     for (uint32_t line = 0; line < STREAMLINE_COUNT; line++)
     {
@@ -639,16 +843,20 @@ _fill_streamlines(vec3* positions, DvzColor* colors, float* widths, uint32_t* su
         const float band = (float)line / (float)(STREAMLINE_COUNT - 1u);
         const float upper_band = powf(band, 0.68f);
         float x = DOMAIN_X_MIN_KM + 78.0f + 54.0f * (float)(line % 8u) +
-                  22.0f * sinf(0.24f * time_s + 3.1f * band);
+                  params->streamline_seed_wobble_km *
+                      sinf(params->streamline_seed_wobble_rate * time_s + 3.1f * band);
         float y = _mix(DOMAIN_Y_MIN_KM + 132.0f, DOMAIN_Y_MAX_KM - 42.0f, upper_band);
         if (line >= STREAMLINE_COUNT / 2u)
         {
             const uint32_t inner = line - STREAMLINE_COUNT / 2u;
             const float a =
-                TAU * (float)inner / (float)(STREAMLINE_COUNT / 2u) + 0.10f * time_s;
-            const float radius = 106.0f + 4.1f * (float)(inner % 7u);
-            x = STORM_CENTER_X_KM + radius * cosf(a);
-            y = STORM_CENTER_Y_KM + (0.78f * radius) * sinf(a);
+                TAU * (float)inner / (float)(STREAMLINE_COUNT / 2u) +
+                params->streamline_inner_rotation_rate * time_s;
+            const float radius =
+                params->streamline_inner_radius_km +
+                params->streamline_inner_radius_jitter_km * (float)(inner % 7u);
+            x = params->storm_center_x_km + radius * cosf(a);
+            y = params->storm_center_y_km + (params->streamline_inner_y_scale * radius) * sinf(a);
         }
 
         bool active = true;
@@ -678,15 +886,21 @@ _fill_streamlines(vec3* positions, DvzColor* colors, float* widths, uint32_t* su
             held_position[1] = data[0][1];
             held_position[2] = data[0][2];
 
-            WindSample sample = _wind_sample(x, y, time_s);
+            WindSample sample = _wind_sample(x, y, params, time_s);
             colors[idx] = _wind_streamline_color(
-                sample.speed, line < STREAMLINE_COUNT / 2u ? 118u : 166u);
+                sample.speed,
+                _alpha_u8(
+                    line < STREAMLINE_COUNT / 2u ? params->streamline_alpha_outer
+                                                  : params->streamline_alpha_inner),
+                params);
             held_color = colors[idx];
             held_color.a = 0u;
-            widths[idx] = line < STREAMLINE_COUNT / 2u ? 1.35f : 1.85f;
+            widths[idx] = line < STREAMLINE_COUNT / 2u ? params->streamline_width_outer_px
+                                                       : params->streamline_width_inner_px;
 
-            const float norm = fmaxf(sample.speed, 7.5f);
-            const float step = line < STREAMLINE_COUNT / 2u ? 6.2f : 4.7f;
+            const float norm = fmaxf(sample.speed, params->streamline_min_speed_mps);
+            const float step = line < STREAMLINE_COUNT / 2u ? params->streamline_step_outer_km
+                                                            : params->streamline_step_inner_km;
             x += step * sample.u / norm;
             y += step * sample.v / norm;
             if (x < DOMAIN_X_MIN_KM || x > DOMAIN_X_MAX_KM || y < DOMAIN_Y_MIN_KM ||
@@ -707,15 +921,19 @@ _fill_streamlines(vec3* positions, DvzColor* colors, float* widths, uint32_t* su
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
  * @param out_visual output path visual
+ * @param params procedural model parameters
  * @param time_s deterministic animation time in seconds
  * @return true on success
  */
 static bool
-_add_streamlines(DvzScene* scene, DvzPanel* panel, DvzVisual** out_visual, float time_s)
+_add_streamlines(
+    DvzScene* scene, DvzPanel* panel, DvzVisual** out_visual,
+    const WindShowcaseParams* params, float time_s)
 {
     ANN(scene);
     ANN(panel);
     ANN(out_visual);
+    ANN(params);
 
     vec3* positions = (vec3*)dvz_calloc(STREAMLINE_TOTAL_COUNT, sizeof(*positions));
     DvzColor* colors = (DvzColor*)dvz_calloc(STREAMLINE_TOTAL_COUNT, sizeof(*colors));
@@ -723,7 +941,7 @@ _add_streamlines(DvzScene* scene, DvzPanel* panel, DvzVisual** out_visual, float
     uint32_t* subpaths = (uint32_t*)dvz_calloc(STREAMLINE_COUNT, sizeof(*subpaths));
     if (positions == NULL || colors == NULL || widths == NULL || subpaths == NULL)
         goto error;
-    if (!_fill_streamlines(positions, colors, widths, subpaths, time_s))
+    if (!_fill_streamlines(positions, colors, widths, subpaths, params, time_s))
         goto error;
 
     DvzVisual* path = dvz_path(scene, 0);
@@ -770,12 +988,14 @@ error:
  *
  * @param scene scene owning marker visuals
  * @param panel panel receiving overlays
+ * @param params procedural model parameters
  * @return true on success
  */
-static bool _add_probe(DvzScene* scene, DvzPanel* panel)
+static bool _add_probe(DvzScene* scene, DvzPanel* panel, const WindShowcaseParams* params)
 {
     ANN(scene);
     ANN(panel);
+    ANN(params);
 
     vec3 data_starts[PROBE_SEGMENTS] = {{0}};
     vec3 data_ends[PROBE_SEGMENTS] = {{0}};
@@ -844,7 +1064,7 @@ static bool _add_probe(DvzScene* scene, DvzPanel* panel)
     if (dvz_panel_add_visual(panel, dot, &dot_attach) != 0)
         return false;
 
-    WindSample sample = _wind_sample(PROBE_X_KM, PROBE_Y_KM, 0.0f);
+    WindSample sample = _wind_sample(PROBE_X_KM, PROBE_Y_KM, params, 0.0f);
     char readout[96] = {0};
     snprintf(
         readout, sizeof(readout), "Wind Speed  %.1f m/s    Dir  %.0f deg", sample.speed,
@@ -883,11 +1103,13 @@ static bool _add_probe(DvzScene* scene, DvzPanel* panel)
  * Create the shared wind-speed color scale.
  *
  * @param scene scene owning scale resources
+ * @param params procedural model parameters
  * @return created scale, or NULL on failure
  */
-static DvzScale* _add_wind_scale(DvzScene* scene)
+static DvzScale* _add_wind_scale(DvzScene* scene, const WindShowcaseParams* params)
 {
     ANN(scene);
+    ANN(params);
 
     DvzScale* scale = dvz_scale(
         scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
@@ -901,11 +1123,11 @@ static DvzScale* _add_wind_scale(DvzScene* scene)
         scale, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc),
                    .precision = 0,
                    .trim_trailing_zeros = true});
-    dvz_scale_set_domain(scale, 0.0, WIND_SPEED_MAX_MPS);
-    dvz_scale_set_view_range(scale, 0.0, WIND_SPEED_MAX_MPS);
+    dvz_scale_set_domain(scale, 0.0, params->speed_max_mps);
+    dvz_scale_set_view_range(scale, 0.0, params->speed_max_mps);
 
     DvzColor colors[COLORMAP_LUT_SIZE] = {0};
-    _fill_wind_colormap(colors);
+    _fill_wind_colormap(colors, params);
     DvzColormap* colormap =
         dvz_colormap_custom(scene, "showcase_wind_speed", colors, COLORMAP_LUT_SIZE);
     if (colormap == NULL)
@@ -962,7 +1184,7 @@ static bool _update_wind_image(WindShowcaseState* state, float time_s)
     if (state == NULL || state->field == NULL || state->values == NULL)
         return false;
 
-    _fill_scalar_field(state->values, time_s);
+    _fill_scalar_field(state->values, &state->params, time_s);
     return dvz_sampled_field_update_region(
                state->field,
                (DvzFieldRegion){
@@ -1001,7 +1223,7 @@ static bool _update_vectors(WindShowcaseState* state, float time_s)
     bool ok = false;
     if (positions == NULL || vectors == NULL || colors == NULL || widths == NULL)
         goto cleanup;
-    if (!_fill_vectors(positions, vectors, colors, widths, time_s))
+    if (!_fill_vectors(positions, vectors, colors, widths, &state->params, time_s))
         goto cleanup;
 
     DvzVisualDataUpdate updates[] = {
@@ -1041,7 +1263,7 @@ static bool _update_streamlines(WindShowcaseState* state, float time_s)
     bool ok = false;
     if (positions == NULL || colors == NULL || widths == NULL || subpaths == NULL)
         goto cleanup;
-    if (!_fill_streamlines(positions, colors, widths, subpaths, time_s))
+    if (!_fill_streamlines(positions, colors, widths, subpaths, &state->params, time_s))
         goto cleanup;
 
     DvzVisualDataUpdate updates[] = {
@@ -1083,11 +1305,12 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user_data)
     const float time_s =
         ctx->preview_mode ? (float)dvz_scenario_preview_time(ctx)
                           : (float)frame_index / ANIMATION_FPS;
-    if (!_update_wind_image(state, time_s))
+    const float model_time_s = time_s * state->params.time_scale;
+    if (!_update_wind_image(state, model_time_s))
         return;
-    if (!_update_streamlines(state, time_s))
+    if (!_update_streamlines(state, model_time_s))
         return;
-    (void)_update_vectors(state, time_s);
+    (void)_update_vectors(state, model_time_s);
 }
 
 
@@ -1116,9 +1339,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (out_user != NULL)
         *out_user = state;
+    state->params = WIND_PARAMS_SHOWCASE;
+    state->tuner = example_tuner("Wind field settings");
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
+    example_tuner_figure(&state->tuner, ctx->figure);
 
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
@@ -1129,23 +1355,23 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, DOMAIN_Y_MIN_KM, DOMAIN_Y_MAX_KM);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_set_domain(y) failed");
 
-    DvzScale* scale = _add_wind_scale(ctx->scene);
+    DvzScale* scale = _add_wind_scale(ctx->scene, &state->params);
     EXAMPLE_CHECK(scale != NULL, "_add_wind_scale() failed");
     DvzColorbar* colorbar = _add_wind_colorbar(panel, scale);
     EXAMPLE_CHECK(colorbar != NULL, "_add_wind_colorbar() failed");
 
     state->values = (float*)dvz_calloc((DvzSize)FIELD_WIDTH * FIELD_HEIGHT, sizeof(float));
     EXAMPLE_CHECK(state->values != NULL, "wind scalar field allocation failed");
-    _fill_scalar_field(state->values, 0.0f);
+    _fill_scalar_field(state->values, &state->params, 0.0f);
     state->panel = panel;
 
     ok = _add_wind_image(ctx->scene, panel, scale, state->values, &state->field);
     EXAMPLE_CHECK(ok, "_add_wind_image() failed");
-    ok = _add_streamlines(ctx->scene, panel, &state->streamlines, 0.0f);
+    ok = _add_streamlines(ctx->scene, panel, &state->streamlines, &state->params, 0.0f);
     EXAMPLE_CHECK(ok, "_add_streamlines() failed");
-    ok = _add_vectors(ctx->scene, panel, &state->vectors, 0.0f);
+    ok = _add_vectors(ctx->scene, panel, &state->vectors, &state->params, 0.0f);
     EXAMPLE_CHECK(ok, "_add_vectors() failed");
-    ok = _add_probe(ctx->scene, panel);
+    ok = _add_probe(ctx->scene, panel, &state->params);
     EXAMPLE_CHECK(ok, "_add_probe() failed");
 
     DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
