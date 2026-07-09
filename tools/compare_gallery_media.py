@@ -398,6 +398,8 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
 
     profile = profile_for(preview, args)
     base = output_base(preview, args.output_dir)
+    if args.force and base.exists():
+        shutil.rmtree(base)
     animated_webp = base / f"{getattr(preview, 'id')}.card.webp"
     mp4 = base / f"{getattr(preview, 'id')}.card.mp4"
     webm = base / f"{getattr(preview, 'id')}.card.webm"
@@ -481,6 +483,40 @@ def write_report(path: Path, comparisons: list[MediaComparison]) -> None:
         "comparisons": [asdict(item) for item in comparisons],
     }
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf8")
+
+
+def read_report(path: Path) -> list[MediaComparison]:
+    if not path.exists():
+        return []
+    payload = json.loads(path.read_text(encoding="utf8"))
+    items = payload.get("comparisons", [])
+    if not isinstance(items, list):
+        return []
+    comparisons = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        variants = [
+            MediaVariant(**variant)
+            for variant in item.get("variants", [])
+            if isinstance(variant, dict)
+        ]
+        fields = dict(item)
+        fields["variants"] = variants
+        comparisons.append(MediaComparison(**fields))
+    return comparisons
+
+
+def should_merge_report(args: argparse.Namespace) -> bool:
+    return bool(args.id or args.lane) and not args.all_animated
+
+
+def merge_comparisons(
+    existing: list[MediaComparison], updates: list[MediaComparison]) -> list[MediaComparison]:
+    merged = {(item.lane, item.id): item for item in existing}
+    for item in updates:
+        merged[(item.lane, item.id)] = item
+    return sorted(merged.values(), key=lambda item: (item.lane, item.id))
 
 
 def relative_report_url(report: Path, media_path: str) -> str:
@@ -810,9 +846,13 @@ def main() -> int:
             print(f"gallery media compare: selected={len(previews)}")
             return 0
 
+        report_comparisons = comparisons
+        if should_merge_report(args):
+            report_comparisons = merge_comparisons(read_report(args.report), comparisons)
+
         print_report(comparisons)
-        write_report(args.report, comparisons)
-        write_html_report(args.html_report, comparisons)
+        write_report(args.report, report_comparisons)
+        write_html_report(args.html_report, report_comparisons)
         copied = 0
         if args.write_site_assets:
             copied = write_site_assets(args.site_output_dir, comparisons, args.manifest)

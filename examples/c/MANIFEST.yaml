@@ -2880,7 +2880,7 @@ examples:
           sample_step: 2
           fps: 12
           webp_quality: 40
-          mp4_crf: 24
+          mp4_crf: 20
           webm_crf: 38
     data:
       kind: synthetic
