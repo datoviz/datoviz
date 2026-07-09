@@ -28,12 +28,19 @@ Both panels upload the same 3x3x3 sphere position, color, and radius arrays, but
     --8<-- "examples/c/features/technique_depth_cue.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/technique_depth_cue.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_technique_depth_cue`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/technique_depth_cue.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_depth_cue.c)
+    - Python source: [`examples/python/gallery/features/technique_depth_cue.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/technique_depth_cue.py)
     - Browser support: Deferred
     - Browser capability tags: `depth-cue`
     - Validation: `smoke+screenshot`
