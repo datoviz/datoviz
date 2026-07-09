@@ -4915,7 +4915,9 @@
         "position": "Census boundary rings projected with a spherical Albers equal-area transform and normalized into scene space",
         "color": "log10 of Vintage 2025 resident population per Census ALAND square kilometer",
         "topology": "each shapefile ring is rendered as one polygon-set region; interior holes are not preserved"
-      }
+      },
+      "python_source": "examples/python/gallery/showcases/choropleth.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/choropleth.py"
     },
     {
       "id": "showcases_protein",

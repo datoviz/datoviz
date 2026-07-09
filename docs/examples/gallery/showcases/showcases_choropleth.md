@@ -50,12 +50,19 @@ Promote: `python tools/data/prepare_us_state_choropleth.py --output data/example
     --8<-- "examples/c/showcases/choropleth.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/showcases/choropleth.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `showcases_choropleth`
     - Category: `showcase`
     - Lane: `showcases`
     - Source: [`examples/c/showcases/choropleth.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/choropleth.c)
+    - Python source: [`examples/python/gallery/showcases/choropleth.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/choropleth.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_choropleth"><code>examples/webgpu/live.html?id=showcases_choropleth</code></a>
     - Browser capability tags: `composite`, `polygon-set`, `colorbar`, `panzoom`
