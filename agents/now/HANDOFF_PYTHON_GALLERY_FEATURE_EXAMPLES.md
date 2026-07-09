@@ -44,9 +44,10 @@ Recent checkpoint commits landed:
 31. `d88f3a10a` Expose material descriptors to Python.
 32. `79bf5e996` Add Python material mesh gallery example.
 33. `53700d638` Add Python lighting gallery example.
+34. `16030eb15` Add Python user scale gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
-next planned checkpoint is `features_user_scale`.
+next planned checkpoint is `features_gui_controls`.
 
 The material-descriptor caveat is resolved for new examples: `DvzPhongMaterial`,
 `DvzStandardMaterial`, and `DvzMaterialDesc` now have generated ctypes layouts, and
@@ -133,6 +134,10 @@ python3 - <<'PY'
 ... construct lighting scene, set three standard material light variants on matching sphere
     clusters, bind linked arcballs, render one offscreen frame and verify non-background pixels ...
 PY
+python3 - <<'PY'
+... construct user_scale scene, bind panzoom, set view user scale to 1.4, render one offscreen
+    frame, and verify non-background pixels plus the applied scale ...
+PY
 ```
 
 These returned `image_probe offscreen query smoke: 1 True` and
@@ -146,13 +151,14 @@ These returned `image_probe offscreen query smoke: 1 True` and
 `isolines offscreen smoke: OK`, and `text_block offscreen smoke: OK`, and
 `overlay_card offscreen smoke: OK`, and `mesh_texture offscreen: OK`. Live window and screenshot
 validation were not run for the earlier checkpoint notes. The material-mesh checkpoint additionally
-returned `material_mesh offscreen: OK`; the lighting checkpoint returned `lighting offscreen: OK`.
+returned `material_mesh offscreen: OK`; the lighting checkpoint returned `lighting offscreen: OK`;
+the user-scale checkpoint returned `user_scale offscreen: OK`.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`features_lighting`:
+`features_user_scale`:
 
-- v0.4-required feature examples: 48 of 64 have Python entries; 16 remain missing.
-- all v0.4-required public examples: 60 of 95 have Python entries; 35 remain missing.
+- v0.4-required feature examples: 49 of 64 have Python entries; 15 remain missing.
+- all v0.4-required public examples: 61 of 95 have Python entries; 34 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -221,6 +227,10 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   `examples/python/gallery/features/lighting.py` and a matching `python.source` manifest entry. It
   uses standard material descriptors with three light/roughness/specular/rim variants on matching
   sphere clusters, and binds linked arcball controllers across the three panels.
+- `features_user_scale` is committed: it has
+  `examples/python/gallery/features/user_scale.py` and a matching `python.source` manifest entry.
+  It uses retained path, marker, axes, panzoom, view user scale, and a native GUI slider callback
+  when a GUI-capable view is available; offscreen smoke disables the GUI and sets the scale directly.
 
 
 ## Preferred Next Commit
@@ -231,10 +241,10 @@ and symbol helper batch has `features_marker_symbols`, `features_builtin_shapes_
 text/annotation checkpoint has `features_text_block`, `features_overlay_card`, and
 `features_annotation_readout`; `features_axis_labels` is complete; the first spatial-layout
 checkpoint has `features_reference_grid` and `features_coordinate_system`; and
-`features_mesh_texture`, `features_material_mesh`, and `features_lighting` are complete. Next target
-`features_user_scale`, which is the first missing feature in manifest order. That example is marked
-native-only because its user-scale control is a native ImGui slider; keep the Python port direct and
-do not invent browser/WebGPU behavior.
+`features_mesh_texture`, `features_material_mesh`, `features_lighting`, and `features_user_scale`
+are complete. Next target `features_gui_controls`, which is the first missing feature in manifest
+order. That example is native-only GUI work; use the generated `dvz_gui_*` and
+`dvz_view_set_gui_callback()` bindings directly and keep offscreen validation GUI-safe.
 
 Implementation shape:
 
@@ -270,7 +280,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python user scale gallery example
+examples: add Python GUI controls gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
