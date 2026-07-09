@@ -84,23 +84,23 @@ static bool _upload_points(DvzVisual* visual, bool updated)
         return false;
 
     const vec3 initial_positions[POINT_COUNT] = {
-        {-0.72f, -0.32f, 0.0f}, {-0.48f, -0.32f, 0.0f}, {-0.24f, -0.32f, 0.0f},
-        {+0.00f, -0.32f, 0.0f}, {+0.24f, -0.32f, 0.0f}, {+0.48f, -0.32f, 0.0f},
-        {+0.72f, -0.32f, 0.0f},
+        {-0.72f, -0.40f, 0.0f}, {-0.48f, -0.40f, 0.0f}, {-0.24f, -0.40f, 0.0f},
+        {+0.00f, -0.40f, 0.0f}, {+0.24f, -0.40f, 0.0f}, {+0.48f, -0.40f, 0.0f},
+        {+0.72f, -0.40f, 0.0f},
     };
     const vec3 updated_positions[POINT_COUNT] = {
-        {-0.72f, +0.18f, 0.0f}, {-0.48f, -0.02f, 0.0f}, {-0.24f, +0.30f, 0.0f},
-        {+0.00f, +0.04f, 0.0f}, {+0.24f, +0.30f, 0.0f}, {+0.48f, -0.02f, 0.0f},
-        {+0.72f, +0.18f, 0.0f},
+        {-0.72f, +0.24f, 0.0f}, {-0.48f, +0.02f, 0.0f}, {-0.24f, +0.42f, 0.0f},
+        {+0.00f, +0.10f, 0.0f}, {+0.24f, +0.42f, 0.0f}, {+0.48f, +0.02f, 0.0f},
+        {+0.72f, +0.24f, 0.0f},
     };
     DvzColor initial_colors[POINT_COUNT] = {
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT),
     };
     DvzColor updated_colors[POINT_COUNT] = {
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
@@ -111,8 +111,11 @@ static bool _upload_points(DvzVisual* visual, bool updated)
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
     };
-    const float initial_diameters[POINT_COUNT] = {18.0f, 18.0f, 18.0f, 18.0f, 18.0f, 18.0f, 18.0f};
-    const float updated_diameters[POINT_COUNT] = {26.0f, 34.0f, 44.0f, 58.0f, 44.0f, 34.0f, 26.0f};
+    const float initial_diameters[POINT_COUNT] = {26.0f, 26.0f, 26.0f, 26.0f, 26.0f, 26.0f, 26.0f};
+    const float updated_diameters[POINT_COUNT] = {34.0f, 42.0f, 54.0f, 68.0f, 54.0f, 42.0f, 34.0f};
+
+    for (uint32_t i = 0; i < POINT_COUNT; i++)
+        initial_colors[i].a = 210u;
 
     DvzVisualDataUpdate updates[] = {
         {

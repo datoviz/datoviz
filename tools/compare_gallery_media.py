@@ -92,6 +92,12 @@ class MediaComparison:
     video_html_snippet: str
 
 
+@dataclass(frozen=True)
+class FrameItem:
+    path: Path
+    delay_ms: int
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, default=gallery_media.DEFAULT_MANIFEST)
@@ -214,29 +220,64 @@ def selected_previews(args: argparse.Namespace) -> list[object]:
     return selected
 
 
-def coalesce_and_resize(source: Path, frame_dir: Path, size: str) -> list[Path]:
+def source_frame_delays_ms(source: Path, fallback_fps: int) -> list[int]:
+    try:
+        result = subprocess.run(
+            ["magick", "identify", "-format", "%T\n", str(source)],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except subprocess.CalledProcessError:
+        return []
+
+    fallback = max(1, int(round(1000.0 / max(1, fallback_fps))))
+    delays = []
+    for line in result.stdout.splitlines():
+        try:
+            delay_cs = int(line.strip())
+        except ValueError:
+            delay_cs = 0
+        delays.append(delay_cs * 10 if delay_cs > 0 else fallback)
+    return delays
+
+
+def coalesce_and_resize(
+    source: Path, frame_dir: Path, size: str, fallback_fps: int) -> list[FrameItem]:
     frame_dir.mkdir(parents=True, exist_ok=True)
     pattern = frame_dir / "frame_%04d.png"
     run(["magick", str(source), "-coalesce", "-resize", size, str(pattern)])
-    return sorted(frame_dir.glob("frame_*.png"))
+    paths = sorted(frame_dir.glob("frame_*.png"))
+    delays = source_frame_delays_ms(source, fallback_fps)
+    fallback = max(1, int(round(1000.0 / max(1, fallback_fps))))
+    if len(delays) != len(paths):
+        delays = [fallback for _ in paths]
+    return [FrameItem(path=path, delay_ms=delay) for path, delay in zip(paths, delays)]
 
 
-def select_frames(frames: list[Path], step: int) -> list[Path]:
+def select_frames(frames: list[FrameItem], step: int) -> list[FrameItem]:
     if step <= 0:
         raise ValueError("--step must be positive")
-    selected = frames[::step]
+    selected = [
+        FrameItem(
+            path=frames[index].path,
+            delay_ms=sum(frame.delay_ms for frame in frames[index : index + step]),
+        )
+        for index in range(0, len(frames), step)
+    ]
     if not selected:
         raise ValueError("no frames selected")
     return selected
 
 
-def encode_webp(frames: list[Path], output: Path, fps: int, quality: int) -> None:
+def encode_webp(frames: list[FrameItem], output: Path, quality: int) -> None:
     img2webp = require_tool("img2webp")
     output.parent.mkdir(parents=True, exist_ok=True)
-    delay_ms = max(1, int(round(1000.0 / fps)))
     cmd = [img2webp, "-loop", "0"]
     for frame in frames:
-        cmd.extend(["-d", str(delay_ms), "-lossy", "-q", str(quality), str(frame)])
+        cmd.extend(
+            ["-d", str(max(1, frame.delay_ms)), "-lossy", "-q", str(quality), str(frame.path)])
     cmd.extend(["-o", str(output)])
     run(cmd)
 
@@ -377,20 +418,20 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
 
     with TemporaryDirectory(prefix="dvz-gallery-media-") as tmp:
         frame_root = Path(tmp)
-        frames = coalesce_and_resize(source, frame_root / "frames", profile.size)
+        frames = coalesce_and_resize(source, frame_root / "frames", profile.size, out_fps)
         selected = select_frames(frames, profile.step)
         selected_dir = frame_root / "selected"
         selected_dir.mkdir()
         for index, frame in enumerate(selected):
-            shutil.copyfile(frame, selected_dir / f"frame_{index:04d}.png")
+            shutil.copyfile(frame.path, selected_dir / f"frame_{index:04d}.png")
         selected_pattern = str(selected_dir / "frame_%04d.png")
         if "animated-webp-card" in generated_kinds:
-            encode_webp(selected, animated_webp, out_fps, profile.webp_quality)
+            encode_webp(selected, animated_webp, profile.webp_quality)
         if "mp4-card" in generated_kinds:
             encode_mp4(selected_pattern, mp4, out_fps, profile.mp4_crf)
         if "webm-card" in generated_kinds:
             encode_webm(selected_pattern, webm, out_fps, profile.webm_crf)
-        encode_poster(selected[0], poster, profile.webp_quality)
+        encode_poster(selected[0].path, poster, profile.webp_quality)
         encoded_frames = len(selected)
 
     variants = [variant("poster", poster, BUDGETS["poster"])]
