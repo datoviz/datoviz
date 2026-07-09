@@ -28,12 +28,19 @@ The path visual uploads position, color, and linewidth arrays in compact numeric
     --8<-- "examples/c/features/datetime_axis.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/datetime_axis.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_datetime_axis`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/datetime_axis.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/datetime_axis.c)
+    - Python source: [`examples/python/gallery/features/datetime_axis.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/datetime_axis.py)
     - Browser support: Deferred
     - Browser note: datetime formatting is outside the RC browser subset
     - Browser capability tags: `axes`, `text`, `datetime`
