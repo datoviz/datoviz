@@ -31,7 +31,7 @@ DEFAULT_STEP = 2
 DEFAULT_WEBP_QUALITY = 40
 DEFAULT_MP4_CRF = 32
 DEFAULT_WEBM_CRF = 38
-DEFAULT_PREFERRED_KIND = "video-mp4"
+DEFAULT_PREFERRED_KIND = gallery_media.ANIMATED_WEBP_KIND
 DEFAULT_REPORT = ROOT / "build/gallery-media-compare/report.json"
 DEFAULT_HTML_REPORT = ROOT / "build/gallery-media-compare/index.html"
 
@@ -62,6 +62,7 @@ class EncodingProfile:
     mp4_crf: int
     webm_crf: int
     fps: int = 0
+    compare: bool = False
 
 
 @dataclass(frozen=True)
@@ -172,6 +173,7 @@ def profile_for(preview: object, args: argparse.Namespace) -> EncodingProfile:
         "mp4_crf": args.mp4_crf,
         "webm_crf": args.webm_crf,
         "fps": args.fps,
+        "compare": False,
     }
     if not args.no_manifest_card:
         card = preview_card_metadata(preview, args.manifest)
@@ -184,6 +186,7 @@ def profile_for(preview: object, args: argparse.Namespace) -> EncodingProfile:
                 "mp4_crf": int(card.get("mp4_crf", fields["mp4_crf"])),
                 "webm_crf": int(card.get("webm_crf", fields["webm_crf"])),
                 "fps": int(card.get("fps", fields["fps"])),
+                "compare": bool(card.get("compare", fields["compare"])),
             }
         )
     return EncodingProfile(**fields)
@@ -360,12 +363,15 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
     poster = base / f"{getattr(preview, 'id')}.poster.webp"
     out_fps = output_fps(preview, profile)
     encoded_frames = (getattr(preview, "frames") + profile.step - 1) // profile.step
+    generated_kinds = generated_variant_kinds(profile, args.webm)
 
     if args.dry_run:
+        variants = ",".join(sorted(generated_kinds | {"poster"}))
         print(
             f"would compare: {getattr(preview, 'id')} "
             f"source={child_path(source)} size={profile.size} "
-            f"step={profile.step} fps={out_fps} preferred={profile.preferred_kind}"
+            f"step={profile.step} fps={out_fps} preferred={profile.preferred_kind} "
+            f"compare={profile.compare} variants={variants}"
         )
         return None
 
@@ -378,19 +384,21 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
         for index, frame in enumerate(selected):
             shutil.copyfile(frame, selected_dir / f"frame_{index:04d}.png")
         selected_pattern = str(selected_dir / "frame_%04d.png")
-        encode_webp(selected, animated_webp, out_fps, profile.webp_quality)
-        encode_mp4(selected_pattern, mp4, out_fps, profile.mp4_crf)
-        if args.webm:
+        if "animated-webp-card" in generated_kinds:
+            encode_webp(selected, animated_webp, out_fps, profile.webp_quality)
+        if "mp4-card" in generated_kinds:
+            encode_mp4(selected_pattern, mp4, out_fps, profile.mp4_crf)
+        if "webm-card" in generated_kinds:
             encode_webm(selected_pattern, webm, out_fps, profile.webm_crf)
         encode_poster(selected[0], poster, profile.webp_quality)
         encoded_frames = len(selected)
 
-    variants = [
-        variant("animated-webp-card", animated_webp, BUDGETS["animated_webp_card"]),
-        variant("mp4-card", mp4, BUDGETS["video_card"]),
-        variant("poster", poster, BUDGETS["poster"]),
-    ]
-    if args.webm:
+    variants = [variant("poster", poster, BUDGETS["poster"])]
+    if "animated-webp-card" in generated_kinds:
+        variants.append(variant("animated-webp-card", animated_webp, BUDGETS["animated_webp_card"]))
+    if "mp4-card" in generated_kinds:
+        variants.append(variant("mp4-card", mp4, BUDGETS["video_card"]))
+    if "webm-card" in generated_kinds:
         variants.append(variant("webm-card", webm, BUDGETS["video_card"]))
     return MediaComparison(
         id=getattr(preview, "id"),
@@ -471,6 +479,19 @@ def preferred_variant_kind(preferred_kind: str) -> str:
         "video-mp4": "mp4-card",
         "video-webm": "webm-card",
     }.get(preferred_kind, preferred_kind)
+
+
+def generated_variant_kinds(profile: EncodingProfile, include_webm: bool) -> set[str]:
+    preferred = preferred_variant_kind(profile.preferred_kind)
+    if preferred not in {"animated-webp-card", "mp4-card", "webm-card"}:
+        raise ValueError(f"unsupported preferred media kind: {profile.preferred_kind}")
+
+    kinds = {preferred}
+    if profile.compare:
+        kinds.update({"animated-webp-card", "mp4-card"})
+        if include_webm:
+            kinds.add("webm-card")
+    return kinds
 
 
 def budgeted_variants(item: MediaComparison) -> list[MediaVariant]:
@@ -564,6 +585,24 @@ def write_html_report(path: Path, comparisons: list[MediaComparison]) -> None:
     summary_rows = []
     for item in comparisons:
         title = html.escape(item.title)
+        cards = []
+        snippets = []
+        if optional_variant_for(item, "animated-webp-card") is not None:
+            cards.append(lazy_webp_card(path, item))
+            snippets.extend(
+                [
+                    "<details><summary>lazy animated WebP card HTML</summary>",
+                    f"<pre>{html.escape(item.webp_html_snippet)}</pre></details>",
+                ]
+            )
+        if optional_variant_for(item, "mp4-card") is not None:
+            cards.append(lazy_video_card(path, item))
+            snippets.extend(
+                [
+                    "<details><summary>lazy MP4 video card HTML</summary>",
+                    f"<pre>{html.escape(item.video_html_snippet)}</pre></details>",
+                ]
+            )
         examples.append(
             "\n".join(
                 [
@@ -576,22 +615,28 @@ def write_html_report(path: Path, comparisons: list[MediaComparison]) -> None:
                         f"{item.encoded_fps} fps within {html.escape(item.encoded_size)}.</p>"
                     ),
                     '<div class="integration-row">',
-                    lazy_webp_card(path, item),
-                    lazy_video_card(path, item),
+                    *cards,
                     "</div>",
-                    "<details><summary>candidate lazy animated WebP card HTML</summary>",
-                    f"<pre>{html.escape(item.webp_html_snippet)}</pre></details>",
-                    "<details><summary>candidate lazy MP4 video card HTML</summary>",
-                    f"<pre>{html.escape(item.video_html_snippet)}</pre></details>",
+                    *snippets,
                     "</section>",
                 ]
             )
         )
 
-        animated = variant_for(item, "animated-webp-card")
-        video = variant_for(item, "mp4-card")
         poster = variant_for(item, "poster")
+        animated = optional_variant_for(item, "animated-webp-card")
+        video = optional_variant_for(item, "mp4-card")
         webm = optional_variant_for(item, "webm-card")
+        animated_cell = (
+            f"<td class=\"{animated.status}\">{animated.bytes / 1024:.1f} KB</td>"
+            if animated
+            else "<td class=\"skipped\">skipped</td>"
+        )
+        video_cell = (
+            f"<td class=\"{video.status}\">{video.bytes / 1024:.1f} KB</td>"
+            if video
+            else "<td class=\"skipped\">skipped</td>"
+        )
         webm_cell = f"<td>{webm.bytes / 1024:.1f} KB</td>" if webm else "<td></td>"
         summary_rows.append(
             "<tr>"
@@ -599,8 +644,8 @@ def write_html_report(path: Path, comparisons: list[MediaComparison]) -> None:
             f"<td>{html.escape(item.preferred_kind)}</td>"
             f"<td>{html.escape(item.encoded_size)}</td>"
             f"<td>{item.encoded_frames} @ {item.encoded_fps} fps</td>"
-            f"<td class=\"{animated.status}\">{animated.bytes / 1024:.1f} KB</td>"
-            f"<td class=\"{video.status}\">{video.bytes / 1024:.1f} KB</td>"
+            f"{animated_cell}"
+            f"{video_cell}"
             f"<td>{poster.bytes / 1024:.1f} KB</td>"
             f"{webm_cell}"
             "</tr>"
@@ -626,7 +671,7 @@ def write_html_report(path: Path, comparisons: list[MediaComparison]) -> None:
             ".dvz-gallery-poster,.dvz-gallery-animated,.dvz-gallery-video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}",
             ".dvz-gallery-animated,.dvz-gallery-video{opacity:0;transition:opacity .18s ease}",
             ".dvz-gallery-media.is-ready .dvz-gallery-animated,.dvz-gallery-media.is-ready .dvz-gallery-video{opacity:1}",
-            ".ok{color:#0a7a2f}.over-budget{color:#b00020}",
+            ".ok{color:#0a7a2f}.over-budget{color:#b00020}.skipped{color:#777}",
             "pre{overflow:auto;padding:1rem;background:#111;color:#f5f5f5}",
             "table{width:100%;border-collapse:collapse;background:white}",
             "th,td{text-align:left;border:1px solid #ddd;padding:.45rem;font-size:.9rem}",
@@ -637,7 +682,7 @@ def write_html_report(path: Path, comparisons: list[MediaComparison]) -> None:
             "<body>",
             "<h1>Datoviz Gallery Media Comparison</h1>",
             "<p>Generated build-local media. Do not commit these binary outputs.</p>",
-            "<p>Each example row shows exactly two candidate integrations: lazy animated WebP and lazy MP4. Posters display immediately; animation/video sources attach only near the viewport unless reduced motion or Save-Data is active.</p>",
+            "<p>Rows show the manifest-selected build-local media. Settled examples generate only their preferred asset plus a poster; examples with <code>card.compare: true</code> show WebP and MP4 side by side. Posters display immediately; animation/video sources attach only near the viewport unless reduced motion or Save-Data is active.</p>",
             *examples,
             "<section>",
             "<h2>Size Summary</h2>",

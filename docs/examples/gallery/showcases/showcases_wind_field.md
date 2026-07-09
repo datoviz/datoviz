@@ -16,7 +16,13 @@ This example combines a synthetic wind-speed field with vectors and streamlines.
 
 === "Screenshot"
 
-    ![Wind Field](../../../assets/gallery/v0.4/showcases/showcases_wind_field.webp)
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_wind_field.poster.webp" alt="Wind Field" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/showcases/showcases_wind_field.poster.webp" aria-label="Wind Field preview">
+        <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_wind_field.mp4" type="video/mp4">
+      </video>
+    </div>
 
 === "Live WebGPU"
 

@@ -76,7 +76,14 @@ This example renders contiguous U.S. population density as polygon-set data.
 
 ### [Wind Field](gallery/showcases/showcases_wind_field.md)
 
-[![Wind Field](../assets/gallery/v0.4/showcases/showcases_wind_field.webp)](gallery/showcases/showcases_wind_field.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_wind_field" aria-label="Wind Field"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_wind_field.poster.webp" alt="Wind Field" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/showcases/showcases_wind_field.poster.webp" aria-label="Wind Field preview">
+    <source data-src="../../assets/gallery/v0.4/showcases/showcases_wind_field.mp4" type="video/mp4">
+  </video>
+</div>
 
 `showcases`<br><span>`scientific`, `synthetic`, `scalar-field`, `vector-field`, `wind-field`, ...</span>
 
