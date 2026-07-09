@@ -28,12 +28,19 @@ The main scene is a lit cube controlled by an arcball, and the orientation gizmo
     --8<-- "examples/c/features/orientation_gizmo.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/orientation_gizmo.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_orientation_gizmo`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/orientation_gizmo.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/orientation_gizmo.c)
+    - Python source: [`examples/python/gallery/features/orientation_gizmo.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/orientation_gizmo.py)
     - Browser support: Planned
     - Browser capability tags: `orientation-gizmo`, `overlay`, `mesh`, `controller`
     - Validation: `smoke+interaction+screenshot`

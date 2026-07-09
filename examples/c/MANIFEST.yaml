@@ -585,6 +585,9 @@ examples:
     primary_feature: orientation-gizmo
     lane: features
     source: examples/c/features/orientation_gizmo.c
+    python:
+      source: examples/python/gallery/features/orientation_gizmo.py
+      status: direct-engine
     validation: smoke+interaction+screenshot
     media:
       preview:
