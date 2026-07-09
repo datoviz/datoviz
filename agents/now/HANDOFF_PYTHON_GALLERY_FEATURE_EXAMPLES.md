@@ -72,10 +72,11 @@ Recent checkpoint commits landed:
 59. `a25041942` Add Python volume visual gallery example.
 60. `6fc17a0cc` Expose polygon descriptor layouts to Python.
 61. `bd873494e` Add Python polygon composite gallery example.
+62. `16bc68709` Add Python graph composite gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
 v0.4-required feature lane is complete. The next missing v0.4-required public example in manifest
-order is `composites_graph`.
+order is `showcases_choropleth`.
 
 The material-descriptor caveat is resolved for new examples: `DvzPhongMaterial`,
 `DvzStandardMaterial`, and `DvzMaterialDesc` now have generated ctypes layouts, and
@@ -246,6 +247,10 @@ python3 - <<'PY'
 ... construct composites_polygon scene with a holed polygon and styled polygon set, bind panzoom,
     render one offscreen frame, and verify non-background pixels ...
 PY
+python3 - <<'PY'
+... construct composites_graph scene with community nodes, Bezier edges, bridge controls, bind
+    panzoom, render one offscreen frame, and verify non-background pixels ...
+PY
 ```
 
 These returned `image_probe offscreen query smoke: 1 True` and
@@ -283,13 +288,14 @@ returned `datetime_axis offscreen: OK`; the runtime app GLFW checkpoint returned
 `showcases_scalebar_measurement offscreen: OK`; the labels visual checkpoint returned
 `visuals_labels offscreen: OK`; the volume visual checkpoint returned
 `visuals_volume offscreen: OK`; the polygon composite checkpoint returned
-`composites_polygon offscreen: OK`.
+`composites_polygon offscreen: OK`; the graph composite checkpoint returned
+`composites_graph offscreen: OK`.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`composites_polygon`:
+`composites_graph`:
 
 - v0.4-required feature examples: 64 of 64 have Python entries; 0 remain missing.
-- all v0.4-required public examples: 86 of 95 have Python entries; 9 remain missing.
+- all v0.4-required public examples: 87 of 95 have Python entries; 8 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -471,6 +477,10 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   matching `python.source` manifest entry. It mirrors the C semantic polygon composite with a
   visible hole, per-polygon ID/style settings, a three-region polygon set, per-region IDs/colors/
   stroke widths, equal-aspect view2d, and panzoom.
+- `composites_graph` is committed: it has `examples/python/gallery/composites/graph.py` and a
+  matching `python.source` manifest entry. It mirrors the C brain-connectivity graph composite with
+  community-colored nodes, semantic node/edge IDs, per-edge colors and widths, Bezier edge style,
+  explicit bridge controls, equal-aspect view2d, and panzoom.
 
 
 ## Preferred Next Commit
@@ -484,8 +494,8 @@ checkpoint has `features_reference_grid` and `features_coordinate_system`; and
 `features_mesh_texture`, `features_material_mesh`, `features_lighting`, and `features_user_scale`
 and `features_gui_controls`, `features_gui_viewport`, and `features_gui_cimgui` are complete. The
 planned rendering-technique feature examples are complete through transparency. Next target
-for the broader required-public backlog is `composites_graph`, which is the first missing required
-public example in manifest order. Inspect the C composite example and adjacent marker/path helpers
+for the broader required-public backlog is `showcases_choropleth`, which is the first missing
+required public example in manifest order. Inspect the C showcase example and its data contract
 before deciding whether a small shared helper is worth adding.
 
 Implementation shape:
@@ -522,7 +532,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python graph composite gallery example
+examples: add Python choropleth showcase gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -591,7 +601,7 @@ None. The required feature lane is complete.
 
 Current missing `v0.4_required` public examples with no `python.source` entry:
 
-`composites_graph`, `showcases_choropleth`, `showcases_protein`, `showcases_wind_field`,
+`showcases_choropleth`, `showcases_protein`, `showcases_wind_field`,
 `showcases_gpu_particle_smoke`, `showcases_surface_grid`, `showcases_brain_volume`,
 `showcases_point_cloud`, and `showcases_textured_planet`.
 
