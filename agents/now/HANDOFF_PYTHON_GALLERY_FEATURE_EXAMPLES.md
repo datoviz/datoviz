@@ -80,10 +80,10 @@ Recent checkpoint commits landed:
 67. `230c497a3` Add Python surface-grid showcase gallery example.
 68. `4956c16dc` Add Python brain-volume showcase gallery example.
 69. `74cb27f60` Add Python point-cloud showcase gallery example.
+70. `7afd6ac17` Add Python textured-planet showcase gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
-v0.4-required feature lane is complete. The next missing v0.4-required public example in manifest
-order is `showcases_textured_planet`.
+v0.4-required feature lane is complete. The v0.4-required public example lane is also complete.
 
 The material-descriptor caveat is resolved for new examples: `DvzPhongMaterial`,
 `DvzStandardMaterial`, and `DvzMaterialDesc` now have generated ctypes layouts, and
@@ -303,13 +303,14 @@ returned `datetime_axis offscreen: OK`; the runtime app GLFW checkpoint returned
 `showcases_gpu_particle_smoke offscreen: OK`; the surface-grid checkpoint returned
 `showcases_surface_grid offscreen: OK`; the brain-volume checkpoint returned
 `showcases_brain_volume offscreen: OK`; the point-cloud checkpoint returned
-`showcases_point_cloud offscreen: OK`.
+`showcases_point_cloud offscreen: OK`; the textured-planet checkpoint returned
+`showcases_textured_planet offscreen: OK`.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`showcases_point_cloud`:
+`showcases_textured_planet`:
 
 - v0.4-required feature examples: 64 of 64 have Python entries; 0 remain missing.
-- all v0.4-required public examples: 94 of 95 have Python entries; 1 remains missing.
+- all v0.4-required public examples: 95 of 95 have Python entries; 0 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -542,6 +543,15 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   binds a plane fly controller for live navigation. The Python port intentionally omits the C native
   GUI tuner and preview camera orbit. The offscreen smoke loaded all 6,000,000 prepared points,
   rendered one 320x180 frame, and verified non-background pixels.
+- `showcases_textured_planet` is committed: it has
+  `examples/python/gallery/showcases/textured_planet.py` and a matching `python.source` manifest
+  entry. It loads the real Earth equirectangular JPEG from the data submodule when available, keeps
+  the C procedural Earth fallback, maps the texture onto an indexed sphere mesh, applies the C
+  planet-axis geometry transform through `dvz_geometry_transform()`, sets Phong material lighting,
+  adds the deterministic star shell, binds turntable navigation, and starts the retained visual spin
+  animation in live mode. The Python port intentionally omits the C GUI planet selector and uses
+  Earth as the fixed gallery planet. The offscreen smoke rendered one 320x180 frame and verified
+  non-background pixels.
 
 
 ## Preferred Next Commit
@@ -555,9 +565,8 @@ checkpoint has `features_reference_grid` and `features_coordinate_system`; and
 `features_mesh_texture`, `features_material_mesh`, `features_lighting`, and `features_user_scale`
 and `features_gui_controls`, `features_gui_viewport`, and `features_gui_cimgui` are complete. The
 planned rendering-technique feature examples are complete through transparency. Next target
-for the broader required-public backlog is `showcases_textured_planet`, which is the first missing
-required public example in manifest order. Inspect the C showcase example and its data
-contract before deciding whether a small shared helper is worth adding.
+for the broader required-public backlog is none: all `v0.4_required` public examples currently have
+Python entries.
 
 Implementation shape:
 
@@ -590,11 +599,7 @@ Implementation shape:
    git diff --check
    ```
 
-Suggested checkpoint commit for the current working tree:
-
-```text
-examples: add Python textured-planet showcase gallery example
-```
+Suggested checkpoint commit for the current working tree: none for the required public lane.
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
 additions if regenerated files make review clearer.
@@ -662,7 +667,7 @@ None. The required feature lane is complete.
 
 Current missing `v0.4_required` public examples with no `python.source` entry:
 
-`showcases_textured_planet`.
+None. The required public lane is complete.
 
 
 ## Per-Example Checklist
