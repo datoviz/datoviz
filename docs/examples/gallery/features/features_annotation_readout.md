@@ -38,12 +38,19 @@ The point visual uploads position, color, and diameter_px arrays for a small sig
     --8<-- "examples/c/features/annotation_readout.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/annotation_readout.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_annotation_readout`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/annotation_readout.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/annotation_readout.c)
+    - Python source: [`examples/python/gallery/features/annotation_readout.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/annotation_readout.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_annotation_readout"><code>examples/webgpu/live.html?id=features_annotation_readout</code></a>
     - Browser capability tags: `annotation`, `readout`, `text`, `point`
