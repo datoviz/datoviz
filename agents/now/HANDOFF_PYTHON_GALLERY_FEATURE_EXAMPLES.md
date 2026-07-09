@@ -64,10 +64,12 @@ Recent checkpoint commits landed:
 51. `917a85a65` Add Python runtime app GLFW gallery example.
 52. `207c03f05` Add Python multi-window runtime gallery example.
 53. `266dbee94` Add Python offscreen-capture runtime gallery example.
+54. `d57857040` Add Python linked-axes showcase gallery example.
+55. `a0f3a4483` Add Python linked-probe colorbar showcase.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
 v0.4-required feature lane is complete. The next missing v0.4-required public example in manifest
-order is `showcases_panel_linked_axes`.
+order is `showcases_scientific_plotting`.
 
 The material-descriptor caveat is resolved for new examples: `DvzPhongMaterial`,
 `DvzStandardMaterial`, and `DvzMaterialDesc` now have generated ctypes layouts, and
@@ -258,13 +260,15 @@ scalebar-units checkpoint returned `scalebar_units offscreen: OK`; the datetime-
 returned `datetime_axis offscreen: OK`; the runtime app GLFW checkpoint returned
 `runtime_app_glfw offscreen: OK`; the multi-window checkpoint returned
 `runtime_multi_window offscreen: OK`; the offscreen-capture checkpoint returned
-`runtime_offscreen_capture: OK`.
+`runtime_offscreen_capture: OK`; the linked-axes showcase checkpoint returned
+`showcases_panel_linked_axes offscreen: OK`; the linked-probe colorbar checkpoint returned
+`showcases_linked_probe_colorbar offscreen: OK`.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`runtime_offscreen_capture`:
+`showcases_linked_probe_colorbar`:
 
 - v0.4-required feature examples: 64 of 64 have Python entries; 0 remain missing.
-- all v0.4-required public examples: 79 of 95 have Python entries; 16 remain missing.
+- all v0.4-required public examples: 81 of 95 have Python entries; 14 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -416,6 +420,14 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   `examples/python/gallery/runtime/offscreen_capture.py` and a matching `python.source` manifest
   entry. It checks the exact 1920x1080 offscreen framebuffer and can optionally write the PNG via
   `dvz_view_capture_png()`.
+- `showcases_panel_linked_axes` is committed: it has
+  `examples/python/gallery/showcases/panel_linked_axes.py` and a matching `python.source` manifest
+  entry. It mirrors the C linked-dashboard scene with three shared-X panels, a phase summary, bands,
+  cursor lines, axes, and linked panzoom controllers.
+- `showcases_linked_probe_colorbar` is committed: it has
+  `examples/python/gallery/showcases/linked_probe_colorbar.py` and a matching `python.source`
+  manifest entry. It uses two sampled-field images, shared scale/colorbar, retained target markers,
+  readout text, linked panzooms, and the existing query helper path.
 
 
 ## Preferred Next Commit
@@ -429,9 +441,10 @@ checkpoint has `features_reference_grid` and `features_coordinate_system`; and
 `features_mesh_texture`, `features_material_mesh`, `features_lighting`, and `features_user_scale`
 and `features_gui_controls`, `features_gui_viewport`, and `features_gui_cimgui` are complete. The
 planned rendering-technique feature examples are complete through transparency. Next target
-for the broader required-public backlog is `showcases_panel_linked_axes`, which is the first missing
-required public example in manifest order. Inspect the showcase examples as a group before deciding
-whether to add common helpers for linked panels, probes, colorbars, or measurement overlays.
+for the broader required-public backlog is `showcases_scientific_plotting`, which is the first
+missing required public example in manifest order. Inspect the C example and adjacent plotting,
+axis, colorbar, and layout helpers before deciding whether a small shared showcase helper is worth
+adding.
 
 Implementation shape:
 
@@ -467,7 +480,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python linked-axes showcase gallery example
+examples: add Python scientific-plotting showcase gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -536,7 +549,6 @@ None. The required feature lane is complete.
 
 Current missing `v0.4_required` public examples with no `python.source` entry:
 
-`showcases_panel_linked_axes`, `showcases_linked_probe_colorbar`,
 `showcases_scientific_plotting`, `showcases_scalebar_measurement`, `visuals_labels`,
 `visuals_volume`, `composites_polygon`, `composites_graph`, `showcases_choropleth`,
 `showcases_protein`, `showcases_wind_field`, `showcases_gpu_particle_smoke`,
