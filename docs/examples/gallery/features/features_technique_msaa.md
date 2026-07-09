@@ -28,12 +28,19 @@ Both panels draw the same translated cube cluster with linked arcball controls, 
     --8<-- "examples/c/features/technique_msaa.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/technique_msaa.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_technique_msaa`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/technique_msaa.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_msaa.c)
+    - Python source: [`examples/python/gallery/features/technique_msaa.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/technique_msaa.py)
     - Browser support: Deferred
     - Browser capability tags: `multisample`
     - Validation: `smoke+screenshot`
