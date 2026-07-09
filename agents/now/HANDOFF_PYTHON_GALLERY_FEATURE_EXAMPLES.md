@@ -48,9 +48,10 @@ Recent checkpoint commits landed:
 35. `6a1e0141a` Add Python GUI controls gallery example.
 36. `83f0945f4` Add Python GUI viewport gallery example.
 37. `39a03cc50` Add Python raw cimgui gallery example.
+38. `6c10b7c35` Add Python animation tracks gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
-next planned checkpoint is `features_animation_tracks`.
+next planned checkpoint is `features_technique_ssao`.
 
 The material-descriptor caveat is resolved for new examples: `DvzPhongMaterial`,
 `DvzStandardMaterial`, and `DvzMaterialDesc` now have generated ctypes layouts, and
@@ -153,6 +154,10 @@ python3 - <<'PY'
 ... construct gui_cimgui scene, update raw-cimgui-controlled point diameter, render one offscreen
     frame, and verify non-background pixels ...
 PY
+python3 - <<'PY'
+... construct animation_tracks scene, start visual-transform and camera-motion tracks, render two
+    offscreen frames, and verify non-background pixels ...
+PY
 ```
 
 These returned `image_probe offscreen query smoke: 1 True` and
@@ -170,13 +175,14 @@ returned `material_mesh offscreen: OK`; the lighting checkpoint returned `lighti
 the user-scale checkpoint returned `user_scale offscreen: OK`; the GUI-controls checkpoint returned
 `gui_controls offscreen: OK`; and the GUI-viewport checkpoint returned
 `gui_viewport source offscreen: OK`; the raw-cimgui checkpoint returned
-`gui_cimgui offscreen: OK`.
+`gui_cimgui offscreen: OK`; the animation-tracks checkpoint returned
+`animation_tracks offscreen: OK`.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`features_gui_cimgui`:
+`features_animation_tracks`:
 
-- v0.4-required feature examples: 52 of 64 have Python entries; 12 remain missing.
-- all v0.4-required public examples: 64 of 95 have Python entries; 31 remain missing.
+- v0.4-required feature examples: 53 of 64 have Python entries; 11 remain missing.
+- all v0.4-required public examples: 65 of 95 have Python entries; 30 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -262,6 +268,11 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   `examples/python/gallery/features/gui_cimgui.py` and a matching `python.source` manifest entry.
   It uses a narrow local ctypes declaration for the exported raw cimgui `ig*` symbols needed by the
   C example, while keeping the retained point visual setup on the ordinary Datoviz facade.
+- `features_animation_tracks` is committed: it has
+  `examples/python/gallery/features/animation_tracks.py` and a matching `python.source` manifest
+  entry. It uses generated track descriptors, visual-transform animation, camera-motion animation,
+  and a turntable controller with camera animation pause policy; the Python example owns and
+  destroys its track handles explicitly.
 
 
 ## Preferred Next Commit
@@ -274,9 +285,10 @@ text/annotation checkpoint has `features_text_block`, `features_overlay_card`, a
 checkpoint has `features_reference_grid` and `features_coordinate_system`; and
 `features_mesh_texture`, `features_material_mesh`, `features_lighting`, and `features_user_scale`
 and `features_gui_controls`, `features_gui_viewport`, and `features_gui_cimgui` are complete. Next
-target `features_animation_tracks`, which is the first missing feature in manifest order. It is a
-scenario-animation example; coordinate with any concurrent scenario-animation layer work and avoid
-depending on uncommitted changes from another agent.
+target `features_technique_ssao`, which is the first missing feature in manifest order. This starts
+the rendering-technique batch; inspect the C example and current descriptor bindings before deciding
+whether the Python path can be direct-engine, needs a narrow binding policy update, or should stay
+deferred.
 
 Implementation shape:
 
@@ -312,7 +324,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python animation tracks gallery example
+examples: add Python SSAO technique gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -377,10 +389,10 @@ convert the examples that immediately need it.
 
 Current missing `v0.4_required` feature examples with no `python.source` entry:
 
-`features_animation_tracks`, `features_technique_ssao`, `features_technique_msaa`,
-`features_technique_depth_cue`, `features_technique_transparency`, `features_input_events`,
-`features_view_size_policies`, `features_bezier_curve_path`, `features_path_join`,
-`features_scalebar`, `features_scalebar_units`, and `features_datetime_axis`.
+`features_technique_ssao`, `features_technique_msaa`, `features_technique_depth_cue`,
+`features_technique_transparency`, `features_input_events`, `features_view_size_policies`,
+`features_bezier_curve_path`, `features_path_join`, `features_scalebar`,
+`features_scalebar_units`, and `features_datetime_axis`.
 
 
 ## Per-Example Checklist
