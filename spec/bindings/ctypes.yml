@@ -116,6 +116,9 @@ layout_records:
     - DvzCameraView
     - DvzCameraProjection
     - DvzCameraDesc
+    - DvzPhongMaterial
+    - DvzStandardMaterial
+    - DvzMaterialDesc
     - DvzReferenceGridDesc
     - DvzPanelBackgroundGradient
     - DvzPanelBackgroundImage
@@ -357,16 +360,15 @@ skipped_functions:
         GPU-context configuration is low-level runtime/Vulkan setup. Keep skipped for raw Python
         unless a concrete supported workflow needs a safe opaque configuration API.
     dvz_material_desc:
-      disposition: ffi-helper
-      helper: dvz_ffi_material_desc
+      disposition: emit
       reason: >
-        User-facing material descriptor default is available through the pointer-output FFI helper.
+        User-facing material descriptor default is safe to return by value now that
+        DvzMaterialDesc and its nested material records are generated ctypes layouts.
     dvz_phong_material_desc:
-      disposition: ffi-helper
-      helper: dvz_ffi_phong_material_desc
+      disposition: emit
       reason: >
-        User-facing Phong material descriptor default is available through the pointer-output FFI
-        helper.
+        User-facing Phong material descriptor default is safe to return by value now that
+        DvzMaterialDesc and its nested material records are generated ctypes layouts.
     dvz_polygon_desc:
       disposition: ffi-helper
       helper: dvz_ffi_polygon_desc
@@ -379,11 +381,10 @@ skipped_functions:
       reason: >
         User-facing scale-bar descriptor default is available through the pointer-output FFI helper.
     dvz_standard_material_desc:
-      disposition: ffi-helper
-      helper: dvz_ffi_standard_material_desc
+      disposition: emit
       reason: >
-        User-facing standard material descriptor default is available through the pointer-output FFI
-        helper.
+        User-facing standard material descriptor default is safe to return by value now that
+        DvzMaterialDesc and its nested material records are generated ctypes layouts.
     dvz_surface_capabilities:
       disposition: intentional-skip
       reason: >
@@ -423,11 +424,8 @@ skipped_functions:
     - dvz_drp2_render_pass_desc
     - dvz_field_geometry
     - dvz_gpu_ctx_config
-    - dvz_material_desc
-    - dvz_phong_material_desc
     - dvz_polygon_desc
     - dvz_scale_bar_desc
-    - dvz_standard_material_desc
     - dvz_surface_capabilities
     - dvz_surface_extent
     - dvz_surface_preferred_format
