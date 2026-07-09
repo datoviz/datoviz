@@ -1401,6 +1401,9 @@ examples:
     category: showcase
     lane: showcases
     source: examples/c/showcases/panel_linked_axes.c
+    python:
+      source: examples/python/gallery/showcases/panel_linked_axes.py
+      status: direct-engine
     validation: smoke+interaction+screenshot
     media:
       preview:

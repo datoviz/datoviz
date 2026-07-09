@@ -40,12 +40,19 @@ This workflow is useful for scientific dashboards where traces, events, and summ
     --8<-- "examples/c/showcases/panel_linked_axes.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/showcases/panel_linked_axes.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `showcases_panel_linked_axes`
     - Category: `showcase`
     - Lane: `showcases`
     - Source: [`examples/c/showcases/panel_linked_axes.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/panel_linked_axes.c)
+    - Python source: [`examples/python/gallery/showcases/panel_linked_axes.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/panel_linked_axes.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_panel_linked_axes"><code>examples/webgpu/live.html?id=showcases_panel_linked_axes</code></a>
     - Browser capability tags: `panel-grid`, `linked-panels`, `axes`, `panzoom`, `path`
