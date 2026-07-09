@@ -28,6 +28,12 @@ The FIELD_SIZE cubed data array is attached as a 3D sampled field, with color an
     --8<-- "examples/c/visuals/volume.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/visuals/volume.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `visuals_volume`
@@ -35,6 +41,7 @@ The FIELD_SIZE cubed data array is attached as a 3D sampled field, with color an
     - Lane: `visuals`
     - Source: [`examples/c/visuals/volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/volume.c)
     - Reference: [Volume visual family](../../../reference/visual-families/volume.md)
+    - Python source: [`examples/python/gallery/visuals/volume.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/volume.py)
     - Browser support: Planned
     - Browser capability tags: `volume`, `sampled-field`, `texture-3d`, `arcball`
     - Validation: `smoke+screenshot`

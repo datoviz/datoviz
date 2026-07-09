@@ -2653,6 +2653,8 @@ examples:
     primary_visual: volume
     lane: visuals
     source: examples/c/visuals/volume.c
+    python:
+      source: examples/python/gallery/visuals/volume.py
     validation: smoke+screenshot
     data:
       kind: synthetic
