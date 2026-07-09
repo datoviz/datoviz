@@ -2866,6 +2866,8 @@ examples:
     category: showcase
     lane: showcases
     source: examples/c/showcases/wind_field.c
+    python:
+      source: examples/python/gallery/showcases/wind_field.py
     validation: smoke+screenshot
     media:
       preview:
