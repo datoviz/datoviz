@@ -1514,6 +1514,9 @@ examples:
     primary_feature: scalebar-units
     lane: features
     source: examples/c/features/scalebar_units.c
+    python:
+      source: examples/python/gallery/features/scalebar_units.py
+      status: direct-engine
     validation: smoke+screenshot
     media:
       preview:

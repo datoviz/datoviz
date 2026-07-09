@@ -38,12 +38,19 @@ The path visual uploads 96 time samples whose X positions span 0 to 250 and whos
     --8<-- "examples/c/features/scalebar_units.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/scalebar_units.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_scalebar_units`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/scalebar_units.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar_units.c)
+    - Python source: [`examples/python/gallery/features/scalebar_units.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/scalebar_units.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_scalebar_units"><code>examples/webgpu/live.html?id=features_scalebar_units</code></a>
     - Browser capability tags: `scale-bar`, `text`, `panzoom`
