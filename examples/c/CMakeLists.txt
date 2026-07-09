@@ -16,6 +16,7 @@ add_library(datoviz_example_support STATIC
     example_controller_preview.c
     example_random.c
     example_style.c
+    runner/scenario_helpers.c
     runner/scenario_runner.c
 )
 

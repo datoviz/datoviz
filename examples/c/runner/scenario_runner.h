@@ -342,16 +342,7 @@ bool dvz_runner_capture_path(
  * @param ctx scenario context
  * @return positive preview frame rate, or 60 Hz when unavailable
  */
-#ifdef DVZ_EXAMPLE_NO_APP
-static inline double dvz_scenario_preview_fps(const DvzScenarioContext* ctx)
-{
-    if (ctx == NULL || ctx->preview_fps <= 0.0)
-        return 60.0;
-    return ctx->preview_fps;
-}
-#else
 double dvz_scenario_preview_fps(const DvzScenarioContext* ctx);
-#endif
 
 /**
  * Return the deterministic preview time scale.
@@ -359,16 +350,7 @@ double dvz_scenario_preview_fps(const DvzScenarioContext* ctx);
  * @param ctx scenario context
  * @return positive preview time scale, or 1 when unavailable
  */
-#ifdef DVZ_EXAMPLE_NO_APP
-static inline double dvz_scenario_preview_time_scale(const DvzScenarioContext* ctx)
-{
-    if (ctx == NULL || ctx->preview_time_scale <= 0.0)
-        return 1.0;
-    return ctx->preview_time_scale;
-}
-#else
 double dvz_scenario_preview_time_scale(const DvzScenarioContext* ctx);
-#endif
 
 /**
  * Return the deterministic preview time for the selected preview frame.
@@ -379,17 +361,7 @@ double dvz_scenario_preview_time_scale(const DvzScenarioContext* ctx);
  * @param ctx scenario context
  * @return preview time in seconds
  */
-#ifdef DVZ_EXAMPLE_NO_APP
-static inline double dvz_scenario_preview_time(const DvzScenarioContext* ctx)
-{
-    if (ctx == NULL)
-        return 0.0;
-    return (double)ctx->preview_frame_index * dvz_scenario_preview_time_scale(ctx) /
-           dvz_scenario_preview_fps(ctx);
-}
-#else
 double dvz_scenario_preview_time(const DvzScenarioContext* ctx);
-#endif
 
 /**
  * Return the deterministic frame interval for gallery preview captures.
@@ -397,14 +369,7 @@ double dvz_scenario_preview_time(const DvzScenarioContext* ctx);
  * @param ctx scenario context
  * @return preview timestep in seconds
  */
-#ifdef DVZ_EXAMPLE_NO_APP
-static inline double dvz_scenario_preview_dt(const DvzScenarioContext* ctx)
-{
-    return dvz_scenario_preview_time_scale(ctx) / dvz_scenario_preview_fps(ctx);
-}
-#else
 double dvz_scenario_preview_dt(const DvzScenarioContext* ctx);
-#endif
 
 /**
  * Return normalized progress through a deterministic preview capture.
@@ -417,23 +382,8 @@ double dvz_scenario_preview_dt(const DvzScenarioContext* ctx);
  * @param policy phase policy
  * @return normalized phase in [0, 1]
  */
-#ifdef DVZ_EXAMPLE_NO_APP
-static inline double dvz_scenario_preview_phase(
-    const DvzScenarioContext* ctx, DvzScenarioPreviewPhasePolicy policy)
-{
-    if (ctx == NULL)
-        return 0.0;
-    const uint64_t stride = ctx->preview_sample_stride > 0 ? ctx->preview_sample_stride : 1;
-    const uint64_t count = ctx->preview_frame_count > 0 ? ctx->preview_frame_count : 1;
-    const uint64_t index = ctx->preview_frame_index / stride;
-    if (policy == DVZ_SCENARIO_PREVIEW_PHASE_ENDPOINT)
-        return count > 1 ? (double)(index % count) / (double)(count - 1) : 0.0;
-    return (double)(index % count) / (double)count;
-}
-#else
 double dvz_scenario_preview_phase(
     const DvzScenarioContext* ctx, DvzScenarioPreviewPhasePolicy policy);
-#endif
 
 /**
  * Return periodic preview progress for a requested number of cycles.
@@ -443,16 +393,8 @@ double dvz_scenario_preview_phase(
  * @param policy phase policy
  * @return normalized cyclic progress
  */
-#ifdef DVZ_EXAMPLE_NO_APP
-static inline double dvz_scenario_preview_cycles(
-    const DvzScenarioContext* ctx, double cycles, DvzScenarioPreviewPhasePolicy policy)
-{
-    return dvz_scenario_preview_phase(ctx, policy) * cycles;
-}
-#else
 double dvz_scenario_preview_cycles(
     const DvzScenarioContext* ctx, double cycles, DvzScenarioPreviewPhasePolicy policy);
-#endif
 
 /**
  * Register a visual as a named scenario motion target.

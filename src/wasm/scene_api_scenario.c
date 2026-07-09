@@ -90,48 +90,6 @@ DvzScenarioSpec dvz_visual_vector_scenario(void);
 
 
 
-int dvz_scenario_bind_controller(
-    DvzScenarioContext* ctx, DvzPanel* panel, DvzController* controller, DvzDimMask dims)
-{
-    if (ctx == NULL || panel == NULL || controller == NULL)
-        return -1;
-
-    for (uint32_t i = 0; i < ctx->controller_binding_count; i++)
-    {
-        DvzScenarioControllerBinding* binding = &ctx->controller_bindings[i];
-        if (binding->panel == panel && binding->controller == controller && binding->dims == dims)
-            return dvz_panel_bind_controller(panel, controller, dims);
-    }
-
-    if (ctx->controller_binding_count >= DVZ_SCENARIO_MAX_CONTROLLER_BINDINGS)
-        return -1;
-    if (dvz_panel_bind_controller(panel, controller, dims) != 0)
-        return -1;
-
-    DvzScenarioControllerBinding* binding =
-        &ctx->controller_bindings[ctx->controller_binding_count++];
-    binding->panel = panel;
-    binding->controller = controller;
-    binding->dims = dims;
-    return 0;
-}
-
-
-
-DvzPanzoom* dvz_scenario_panzoom(
-    DvzScenarioContext* ctx, DvzPanel* panel, const DvzPanzoomDesc* desc, DvzDimMask dims)
-{
-    if (ctx == NULL || ctx->scene == NULL || panel == NULL)
-        return NULL;
-
-    DvzController* controller = dvz_panzoom(ctx->scene, desc);
-    DvzPanzoom* panzoom = dvz_controller_panzoom(controller);
-    if (panzoom == NULL)
-        return NULL;
-    if (dvz_scenario_bind_controller(ctx, panel, controller, dims) != 0)
-        return NULL;
-    return panzoom;
-}
 static DvzScenarioSpec _scenario_spec(uint32_t index)
 {
     switch (index)
