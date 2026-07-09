@@ -28,12 +28,19 @@ The three columns use the same acute V, zigzag, open star, and closed star subpa
     --8<-- "examples/c/features/path_join.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/path_join.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_path_join`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/path_join.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/path_join.c)
+    - Python source: [`examples/python/gallery/features/path_join.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/path_join.py)
     - Browser support: Planned
     - Browser capability tags: `path`
     - Validation: `smoke+screenshot`
