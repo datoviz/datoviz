@@ -119,6 +119,7 @@ layout_records:
     - DvzPhongMaterial
     - DvzStandardMaterial
     - DvzMaterialDesc
+    - DvzDepthCueDesc
     - DvzReferenceGridDesc
     - DvzPanelBackgroundGradient
     - DvzPanelBackgroundImage
@@ -332,11 +333,10 @@ skipped_functions:
         Low-level command-buffer helper combining borrowed Vulkan handles and VkClearValue by
         value. Python should use scene, app, canvas, or explicit vklite helpers instead.
     dvz_depth_cue_desc:
-      disposition: ffi-helper
-      helper: dvz_ffi_depth_cue_desc
+      disposition: emit
       reason: >
-        User-facing descriptor default is useful, but the raw binding uses the pointer-output FFI
-        helper to avoid by-value layout hazards.
+        User-facing descriptor default is useful for direct Python examples. The full
+        DvzDepthCueDesc ABI layout is generated, so the by-value default helper is safe to emit.
     dvz_device_config:
       disposition: intentional-skip
       reason: >
@@ -419,7 +419,6 @@ skipped_functions:
   expected:
     - dvz_attachment_clear
     - dvz_cmd_rendering_default
-    - dvz_depth_cue_desc
     - dvz_device_config
     - dvz_drp2_render_pass_desc
     - dvz_field_geometry
