@@ -61,10 +61,13 @@ Recent checkpoint commits landed:
 48. `66cc428ca` Add Python scalebar gallery example.
 49. `3ea207185` Add Python scalebar-units gallery example.
 50. `8d49d100d` Add Python datetime-axis gallery example.
+51. `917a85a65` Add Python runtime app GLFW gallery example.
+52. `207c03f05` Add Python multi-window runtime gallery example.
+53. `266dbee94` Add Python offscreen-capture runtime gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
 v0.4-required feature lane is complete. The next missing v0.4-required public example in manifest
-order is `runtime_app_glfw`; classify the runtime examples before adding Python entries.
+order is `showcases_panel_linked_axes`.
 
 The material-descriptor caveat is resolved for new examples: `DvzPhongMaterial`,
 `DvzStandardMaterial`, and `DvzMaterialDesc` now have generated ctypes layouts, and
@@ -252,13 +255,16 @@ MSAA checkpoint returned `technique_msaa offscreen: OK`; the depth-cue checkpoin
 returned `bezier_curve_path offscreen: OK`; the path-join checkpoint returned
 `path_join offscreen: OK`; the scalebar checkpoint returned `scalebar offscreen: OK`; the
 scalebar-units checkpoint returned `scalebar_units offscreen: OK`; the datetime-axis checkpoint
-returned `datetime_axis offscreen: OK`.
+returned `datetime_axis offscreen: OK`; the runtime app GLFW checkpoint returned
+`runtime_app_glfw offscreen: OK`; the multi-window checkpoint returned
+`runtime_multi_window offscreen: OK`; the offscreen-capture checkpoint returned
+`runtime_offscreen_capture: OK`.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`features_datetime_axis`:
+`runtime_offscreen_capture`:
 
 - v0.4-required feature examples: 64 of 64 have Python entries; 0 remain missing.
-- all v0.4-required public examples: 76 of 95 have Python entries; 19 remain missing.
+- all v0.4-required public examples: 79 of 95 have Python entries; 16 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -398,6 +404,18 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   `examples/python/gallery/features/datetime_axis.py` and a matching `python.source` manifest
   entry. It uses generated datetime formatter and axis metadata bindings while keeping path data in
   compact numeric coordinates.
+- `runtime_app_glfw` is committed: it has
+  `examples/python/gallery/runtime/app_glfw.py` and a matching `python.source` manifest entry. It
+  opens a native app window for the same six-point retained scene and uses an offscreen smoke path
+  for validation.
+- `runtime_multi_window` is committed: it has
+  `examples/python/gallery/runtime/multi_window.py` and a matching `python.source` manifest entry.
+  It creates two figures and positioned native views from one app, with a two-offscreen-view smoke
+  path for validation.
+- `runtime_offscreen_capture` is committed: it has
+  `examples/python/gallery/runtime/offscreen_capture.py` and a matching `python.source` manifest
+  entry. It checks the exact 1920x1080 offscreen framebuffer and can optionally write the PNG via
+  `dvz_view_capture_png()`.
 
 
 ## Preferred Next Commit
@@ -411,10 +429,9 @@ checkpoint has `features_reference_grid` and `features_coordinate_system`; and
 `features_mesh_texture`, `features_material_mesh`, `features_lighting`, and `features_user_scale`
 and `features_gui_controls`, `features_gui_viewport`, and `features_gui_cimgui` are complete. The
 planned rendering-technique feature examples are complete through transparency. Next target
-for the broader required-public backlog is `runtime_app_glfw`, which is the first missing required
-public example in manifest order. Inspect the runtime examples as a group before deciding whether
-they should get Python gallery entries, stay C/native-only, or wait for a narrow public Python
-runtime helper.
+for the broader required-public backlog is `showcases_panel_linked_axes`, which is the first missing
+required public example in manifest order. Inspect the showcase examples as a group before deciding
+whether to add common helpers for linked panels, probes, colorbars, or measurement overlays.
 
 Implementation shape:
 
@@ -450,7 +467,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python runtime app GLFW gallery example
+examples: add Python linked-axes showcase gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -519,7 +536,6 @@ None. The required feature lane is complete.
 
 Current missing `v0.4_required` public examples with no `python.source` entry:
 
-`runtime_app_glfw`, `runtime_multi_window`, `runtime_offscreen_capture`,
 `showcases_panel_linked_axes`, `showcases_linked_probe_colorbar`,
 `showcases_scientific_plotting`, `showcases_scalebar_measurement`, `visuals_labels`,
 `visuals_volume`, `composites_polygon`, `composites_graph`, `showcases_choropleth`,
