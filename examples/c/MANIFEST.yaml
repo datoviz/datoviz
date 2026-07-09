@@ -2804,6 +2804,8 @@ examples:
     category: showcase
     lane: showcases
     source: examples/c/showcases/protein.c
+    python:
+      source: examples/python/gallery/showcases/protein.py
     validation: smoke+screenshot+manual
     media:
       preview:

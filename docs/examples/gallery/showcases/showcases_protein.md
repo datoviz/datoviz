@@ -60,12 +60,19 @@ The full interactive GUI workbench lives in examples/c/lab/protein_viewer.c.
     --8<-- "examples/c/showcases/protein.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/showcases/protein.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `showcases_protein`
     - Category: `showcase`
     - Lane: `showcases`
     - Source: [`examples/c/showcases/protein.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/protein.c)
+    - Python source: [`examples/python/gallery/showcases/protein.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/protein.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_protein"><code>examples/webgpu/live.html?id=showcases_protein</code></a>
     - Browser capability tags: `sphere`, `arcball`, `material`, `real-data`
