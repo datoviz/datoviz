@@ -28,12 +28,19 @@ The axis triad uses red for X, green for Y, and blue for Z, with labels and a re
     --8<-- "examples/c/features/coordinate_system.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/coordinate_system.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_coordinate_system`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/coordinate_system.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/coordinate_system.c)
+    - Python source: [`examples/python/gallery/features/coordinate_system.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/coordinate_system.py)
     - Browser support: Planned
     - Browser capability tags: `mesh`, `reference-grid`, `text`, `controller`
     - Validation: `smoke+screenshot`
