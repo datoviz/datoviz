@@ -633,6 +633,9 @@ examples:
     primary_feature: bounds-overlay
     lane: features
     source: examples/c/features/bounds_overlay.c
+    python:
+      source: examples/python/gallery/features/bounds_overlay.py
+      status: direct-engine
     validation: smoke+screenshot
     data:
       kind: synthetic
