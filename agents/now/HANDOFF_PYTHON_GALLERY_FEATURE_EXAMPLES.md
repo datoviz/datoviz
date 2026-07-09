@@ -41,17 +41,25 @@ Recent checkpoint commits landed:
 28. `835e5171f` Add Python bounds overlay gallery example.
 29. `cb1a4fdbe` Add Python fly controller gallery example.
 30. `b54a88016` Add Python mesh texture gallery example.
+31. `d88f3a10a` Expose material descriptors to Python.
+32. `79bf5e996` Add Python material mesh gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
-next planned checkpoint is `features_material_mesh`.
+next planned checkpoint is `features_lighting`.
 
-Known parity caveat from the geometry batch: the C OBJ and 3D shape examples apply a Phong
-material, but Python `DvzMaterialDesc` has no generated fields in the current binding, so these
-Python examples use mesh geometry colors without calling `dvz_visual_set_material()`.
+The material-descriptor caveat is resolved for new examples: `DvzPhongMaterial`,
+`DvzStandardMaterial`, and `DvzMaterialDesc` now have generated ctypes layouts, and
+`dvz_material_desc()`, `dvz_phong_material_desc()`, and `dvz_standard_material_desc()` are generated
+by-value helpers. Older Python examples from before `d88f3a10a` may still use geometry colors
+without calling `dvz_visual_set_material()` unless they are revisited intentionally.
 
 The overlay-card checkpoint made `DvzOverlayCardDesc` and `DvzOverlayCardStyle` generated ctypes
 layouts and removed `dvz_overlay_card_desc()` / `dvz_overlay_card_style()` from the expected skipped
 function list. `just ctypes` and `just ctypes-check` passed after that binding-policy update.
+
+The material-descriptor checkpoint added the material value layouts to `spec/bindings/ctypes.yml`,
+removed the material default functions from the expected skipped list, regenerated
+`datoviz/_ctypes.py`, and passed `just ctypes`, `just ctypes-check`, and `just ctypes-smoke`.
 
 The last validation loop was:
 
@@ -116,6 +124,10 @@ python3 - <<'PY'
 ... construct mesh_texture scene, bind a procedural RGBA8 sampled field to a UV-sphere mesh,
     render one offscreen frame and verify non-background pixels ...
 PY
+python3 - <<'PY'
+... construct material_mesh scene, set Phong and standard material descriptors on three cube
+    meshes, bind linked arcballs, render one offscreen frame and verify non-background pixels ...
+PY
 ```
 
 These returned `image_probe offscreen query smoke: 1 True` and
@@ -128,13 +140,14 @@ These returned `image_probe offscreen query smoke: 1 True` and
 `builtin_shapes_3d offscreen smoke: OK`, and `obj_loading offscreen smoke: OK`, and
 `isolines offscreen smoke: OK`, and `text_block offscreen smoke: OK`, and
 `overlay_card offscreen smoke: OK`, and `mesh_texture offscreen: OK`. Live window and screenshot
-validation were not run for the earlier checkpoint notes.
+validation were not run for the earlier checkpoint notes. The material-mesh checkpoint additionally
+returned `material_mesh offscreen: OK`.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`features_mesh_texture`:
+`features_material_mesh`:
 
-- v0.4-required feature examples: 46 of 64 have Python entries; 18 remain missing.
-- all v0.4-required public examples: 58 of 95 have Python entries; 37 remain missing.
+- v0.4-required feature examples: 47 of 64 have Python entries; 17 remain missing.
+- all v0.4-required public examples: 59 of 95 have Python entries; 36 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -195,8 +208,11 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   entry. It uses generated `DvzFlyDesc` and `dvz_view_fly()` for live interaction.
 - `features_mesh_texture` is committed: it has
   `examples/python/gallery/features/mesh_texture.py` and a matching `python.source` manifest entry.
-  It binds a procedural RGBA8 sampled field to the mesh `"texture"` slot and intentionally does not
-  call `dvz_visual_set_material()` because `DvzMaterialDesc` remains opaque in Python.
+  It binds a procedural RGBA8 sampled field to the mesh `"texture"` slot.
+- `features_material_mesh` is committed: it has
+  `examples/python/gallery/features/material_mesh.py` and a matching `python.source` manifest
+  entry. It uses generated material descriptors, sets matte Phong, glossy Phong, and standard rim
+  parameters, and binds linked arcball controllers across the three panels.
 
 
 ## Preferred Next Commit
@@ -207,10 +223,9 @@ and symbol helper batch has `features_marker_symbols`, `features_builtin_shapes_
 text/annotation checkpoint has `features_text_block`, `features_overlay_card`, and
 `features_annotation_readout`; `features_axis_labels` is complete; the first spatial-layout
 checkpoint has `features_reference_grid` and `features_coordinate_system`; and
-`features_mesh_texture` is complete. Next target `features_material_mesh`, which is the first
-missing feature in manifest order. Keep the existing Python material caveat in mind: if Phong
-material descriptor fields are still not generated, use geometry colors or split a narrow
-material-binding checkpoint first.
+`features_mesh_texture` and `features_material_mesh` are complete. Next target `features_lighting`,
+which is the first missing feature in manifest order. Reuse the generated material descriptors from
+`d88f3a10a` rather than adding another binding workaround.
 
 Implementation shape:
 
@@ -246,7 +261,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python material mesh gallery example
+examples: add Python lighting gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
