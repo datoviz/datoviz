@@ -1216,6 +1216,9 @@ examples:
     primary_feature: input-events
     lane: features
     source: examples/c/features/input_events.c
+    python:
+      source: examples/python/gallery/features/input_events.py
+      status: direct-engine
     validation: smoke+interaction
     data:
       kind: synthetic
