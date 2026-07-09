@@ -28,12 +28,19 @@ Each panel draws two translucent cube meshes with the same geometry, transforms,
     --8<-- "examples/c/features/technique_transparency.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/technique_transparency.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_technique_transparency`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/technique_transparency.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_transparency.c)
+    - Python source: [`examples/python/gallery/features/technique_transparency.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/technique_transparency.py)
     - Browser support: Deferred
     - Browser capability tags: `wboit`, `depth-peeling`
     - Validation: `smoke+screenshot`
