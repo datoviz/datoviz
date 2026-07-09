@@ -40,9 +40,10 @@ Recent checkpoint commits landed:
 27. `ad258204b` Add Python orientation gizmo gallery example.
 28. `835e5171f` Add Python bounds overlay gallery example.
 29. `cb1a4fdbe` Add Python fly controller gallery example.
+30. `b54a88016` Add Python mesh texture gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
-next planned checkpoint is `features_mesh_texture`.
+next planned checkpoint is `features_material_mesh`.
 
 Known parity caveat from the geometry batch: the C OBJ and 3D shape examples apply a Phong
 material, but Python `DvzMaterialDesc` has no generated fields in the current binding, so these
@@ -111,6 +112,10 @@ PY
 python3 - <<'PY'
 ... construct overlay card with view-coordinate signal, render one offscreen frame ...
 PY
+python3 - <<'PY'
+... construct mesh_texture scene, bind a procedural RGBA8 sampled field to a UV-sphere mesh,
+    render one offscreen frame and verify non-background pixels ...
+PY
 ```
 
 These returned `image_probe offscreen query smoke: 1 True` and
@@ -122,14 +127,14 @@ These returned `image_probe offscreen query smoke: 1 True` and
 `marker_symbols offscreen smoke: OK`, and `builtin_shapes_2d offscreen smoke: OK`, and
 `builtin_shapes_3d offscreen smoke: OK`, and `obj_loading offscreen smoke: OK`, and
 `isolines offscreen smoke: OK`, and `text_block offscreen smoke: OK`, and
-`overlay_card offscreen smoke: OK`. Live window and screenshot validation were not run for the
-earlier checkpoint notes.
+`overlay_card offscreen smoke: OK`, and `mesh_texture offscreen: OK`. Live window and screenshot
+validation were not run for the earlier checkpoint notes.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`features_controller_fly`:
+`features_mesh_texture`:
 
-- v0.4-required feature examples: 45 of 64 have Python entries; 19 remain missing.
-- all v0.4-required public examples: 57 of 95 have Python entries; 38 remain missing.
+- v0.4-required feature examples: 46 of 64 have Python entries; 18 remain missing.
+- all v0.4-required public examples: 58 of 95 have Python entries; 37 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -188,6 +193,10 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
 - `features_controller_fly` is committed: it has
   `examples/python/gallery/features/controller_fly.py` and a matching `python.source` manifest
   entry. It uses generated `DvzFlyDesc` and `dvz_view_fly()` for live interaction.
+- `features_mesh_texture` is committed: it has
+  `examples/python/gallery/features/mesh_texture.py` and a matching `python.source` manifest entry.
+  It binds a procedural RGBA8 sampled field to the mesh `"texture"` slot and intentionally does not
+  call `dvz_visual_set_material()` because `DvzMaterialDesc` remains opaque in Python.
 
 
 ## Preferred Next Commit
@@ -196,11 +205,12 @@ The event/query/selection helper batch is complete for the planned feature examp
 and symbol helper batch has `features_marker_symbols`, `features_builtin_shapes_2d`, and
 `features_builtin_shapes_3d`, `features_obj_loading`, and `features_isolines`; the first
 text/annotation checkpoint has `features_text_block`, `features_overlay_card`, and
-`features_annotation_readout`; `features_axis_labels` is complete; and the first spatial-layout
-checkpoint has `features_reference_grid` and `features_coordinate_system`. Next target
-`features_mesh_texture`, which is the first missing feature in manifest order. Keep the
-existing Python material caveat in mind: if Phong material descriptor fields are still not
-generated, use geometry colors or split a narrow material-binding checkpoint first.
+`features_annotation_readout`; `features_axis_labels` is complete; the first spatial-layout
+checkpoint has `features_reference_grid` and `features_coordinate_system`; and
+`features_mesh_texture` is complete. Next target `features_material_mesh`, which is the first
+missing feature in manifest order. Keep the existing Python material caveat in mind: if Phong
+material descriptor fields are still not generated, use geometry colors or split a narrow
+material-binding checkpoint first.
 
 Implementation shape:
 
@@ -236,7 +246,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python mesh texture gallery example
+examples: add Python material mesh gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
