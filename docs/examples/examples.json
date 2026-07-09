@@ -5292,7 +5292,9 @@
         "license": "Public RESEPI sample data; usage follows the source site's terms",
         "preprocessing": "python tools/data/prepare_point_cloud.py --force",
         "cache_prepared_path": ".cache/datoviz/examples/point_cloud/prepared"
-      }
+      },
+      "python_source": "examples/python/gallery/showcases/point_cloud.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/point_cloud.py"
     },
     {
       "id": "showcases_textured_planet",

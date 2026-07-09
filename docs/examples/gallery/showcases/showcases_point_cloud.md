@@ -40,12 +40,19 @@ Real data is loaded from `.cache/datoviz/examples/point_cloud/prepared/point_clo
     --8<-- "examples/c/showcases/point_cloud.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/showcases/point_cloud.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `showcases_point_cloud`
     - Category: `showcase`
     - Lane: `showcases`
     - Source: [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c)
+    - Python source: [`examples/python/gallery/showcases/point_cloud.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/point_cloud.py)
     - Browser support: Deferred
     - Browser note: the public point-cloud showcase depends on large prepared data, native GUI controls, and EDL-style rendering
     - Browser capability tags: `pixel`, `dense-point-cloud`, `depth-postprocess`, `gui`, `fly`

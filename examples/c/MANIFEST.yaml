@@ -3163,6 +3163,8 @@ examples:
     category: showcase
     lane: showcases
     source: examples/c/showcases/point_cloud.c
+    python:
+      source: examples/python/gallery/showcases/point_cloud.py
     validation: smoke+screenshot
     media:
       preview:
