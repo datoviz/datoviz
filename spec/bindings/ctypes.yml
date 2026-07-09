@@ -116,6 +116,7 @@ layout_records:
     - DvzCameraView
     - DvzCameraProjection
     - DvzCameraDesc
+    - DvzReferenceGridDesc
     - DvzPanelBackgroundGradient
     - DvzPanelBackgroundImage
     - DvzPanelBackgroundDesc
@@ -372,12 +373,6 @@ skipped_functions:
       reason: >
         User-facing polygon triangulation descriptor default is available through the pointer-output
         FFI helper.
-    dvz_reference_grid_desc:
-      disposition: ffi-helper
-      helper: dvz_ffi_reference_grid_desc
-      reason: >
-        User-facing reference-grid descriptor default is available through the pointer-output FFI
-        helper.
     dvz_scale_bar_desc:
       disposition: ffi-helper
       helper: dvz_ffi_scale_bar_desc
@@ -431,7 +426,6 @@ skipped_functions:
     - dvz_material_desc
     - dvz_phong_material_desc
     - dvz_polygon_desc
-    - dvz_reference_grid_desc
     - dvz_scale_bar_desc
     - dvz_standard_material_desc
     - dvz_surface_capabilities
