@@ -895,6 +895,9 @@ examples:
     primary_feature: animation-tracks
     lane: features
     source: examples/c/features/animation_tracks.c
+    python:
+      source: examples/python/gallery/features/animation_tracks.py
+      status: direct-engine
     validation: smoke+interaction+screenshot
     media:
       preview:
