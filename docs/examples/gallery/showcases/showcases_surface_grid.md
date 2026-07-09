@@ -40,12 +40,19 @@ This workflow is useful for scientific surfaces where the same gridded data shou
     --8<-- "examples/c/showcases/surface_grid.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/showcases/surface_grid.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `showcases_surface_grid`
     - Category: `showcase`
     - Lane: `showcases`
     - Source: [`examples/c/showcases/surface_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/surface_grid.c)
+    - Python source: [`examples/python/gallery/showcases/surface_grid.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/surface_grid.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_surface_grid"><code>examples/webgpu/live.html?id=showcases_surface_grid</code></a>
     - Browser capability tags: `mesh`, `segment`, `arcball`

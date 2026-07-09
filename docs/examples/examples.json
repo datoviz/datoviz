@@ -5162,7 +5162,9 @@
         ]
       },
       "webgpu_route": "examples/webgpu/live.html?id=showcases_surface_grid",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_surface_grid"
+      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_surface_grid",
+      "python_source": "examples/python/gallery/showcases/surface_grid.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/surface_grid.py"
     },
     {
       "id": "showcases_brain_volume",
