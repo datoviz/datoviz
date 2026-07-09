@@ -3011,14 +3011,14 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 72
+        frames: 120
         fps: 24
         sample_stride: 2
         card:
           preferred: video-mp4
           size: 1024x576
           sample_step: 1
-          fps: 12
+          fps: 24
           webp_quality: 1
           mp4_crf: 39
           webm_crf: 50
