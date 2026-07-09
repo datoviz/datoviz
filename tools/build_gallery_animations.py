@@ -38,6 +38,11 @@ class AnimatedPreview:
     sample_stride: int
     time_scale: float
     size: str
+    motion_type: str = ""
+    motion_target: str = ""
+    motion_axis: str = ""
+    motion_cycles: float = 1.0
+    motion_phase: str = ""
 
     @property
     def frame_dir(self) -> Path:
@@ -105,6 +110,22 @@ def collect_previews(
         if time_scale <= 0.0:
             raise ValueError(f"{id_}: media.preview time_scale must be positive")
 
+        motion_items = entry.get("motion", {}).get("preview", [])
+        if isinstance(motion_items, dict):
+            motion_items = [motion_items]
+        motion = motion_items[0] if motion_items else {}
+        if not isinstance(motion, dict):
+            raise ValueError(f"{id_}: motion.preview entries must be mappings")
+        motion_type = str(motion.get("type", ""))
+        motion_target = str(motion.get("target", ""))
+        motion_axis = str(motion.get("axis", ""))
+        motion_cycles = float(motion.get("cycles", 1.0))
+        motion_phase = str(motion.get("phase", ""))
+        if motion_type and motion_type != "visual-spin":
+            raise ValueError(f"{id_}: unsupported preview motion type {motion_type!r}")
+        if motion_type and motion_cycles <= 0.0:
+            raise ValueError(f"{id_}: preview motion cycles must be positive")
+
         previews.append(
             AnimatedPreview(
                 id=id_,
@@ -117,6 +138,11 @@ def collect_previews(
                 sample_stride=sample_stride,
                 time_scale=time_scale,
                 size=size,
+                motion_type=motion_type,
+                motion_target=motion_target,
+                motion_axis=motion_axis,
+                motion_cycles=motion_cycles,
+                motion_phase=motion_phase,
             )
         )
     previews.sort(key=lambda item: (item.lane, item.id))
@@ -177,6 +203,11 @@ def input_hash_for(
         str(preview.sample_stride),
         f"{preview.time_scale:g}",
         preview.size,
+        preview.motion_type,
+        preview.motion_target,
+        preview.motion_axis,
+        f"{preview.motion_cycles:g}",
+        preview.motion_phase,
         str(quality),
     )
     for field in fields:
@@ -253,6 +284,15 @@ def capture_sequence(preview: AnimatedPreview, frame_dir: Path) -> None:
         "--size",
         preview.size,
     ]
+    if preview.motion_type:
+        cmd.extend(["--preview-motion", preview.motion_type])
+        if preview.motion_target:
+            cmd.extend(["--preview-motion-target", preview.motion_target])
+        if preview.motion_axis:
+            cmd.extend(["--preview-motion-axis", preview.motion_axis])
+        cmd.extend(["--preview-motion-cycles", f"{preview.motion_cycles:g}"])
+        if preview.motion_phase:
+            cmd.extend(["--preview-motion-phase", preview.motion_phase])
     subprocess.run(cmd, cwd=ROOT, env=env, check=True)
 
 
@@ -297,10 +337,19 @@ def generate_preview(
         action = "would replace" if output_path.exists() else "would animate"
         if not force and output_path.exists() and not cache_hit:
             action = f"{action} ({cache_reason})"
+        motion = ""
+        if preview.motion_type:
+            motion = (
+                f" motion={preview.motion_type}"
+                f" target={preview.motion_target or 'auto'}"
+                f" axis={preview.motion_axis or 'default'}"
+                f" cycles={preview.motion_cycles:g}"
+                f" phase={preview.motion_phase or 'default'}"
+            )
         print(
             f"{action}: {preview.id} frames={preview.frames} fps={preview.fps} "
             f"sample_stride={preview.sample_stride} time_scale={preview.time_scale:g} "
-            f"size={preview.size} -> {rel_out}"
+            f"size={preview.size}{motion} -> {rel_out}"
         )
         return True
     if not preview.executable.exists():

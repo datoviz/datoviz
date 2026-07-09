@@ -36,8 +36,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include <cglm/affine.h>
-
 #include "_alloc.h"
 #include "datoviz/fileio.h"
 #include "datoviz/geom.h"
@@ -712,6 +710,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzVisual* visual = dvz_mesh(ctx->scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_mesh() failed");
     state->visual = visual;
+    EXAMPLE_CHECK(
+        dvz_scenario_set_primary_visual(ctx, visual) == 0,
+        "dvz_scenario_set_primary_visual(planet) failed");
 
     ok = dvz_mesh_set_geometry(visual, sphere) == 0;
     EXAMPLE_CHECK(ok, "dvz_mesh_set_geometry() failed");
@@ -796,22 +797,6 @@ static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView*
 
 
 
-static void _scenario_frame(DvzScenarioContext* ctx, void* user)
-{
-    TexturedPlanetState* state = (TexturedPlanetState*)user;
-    if (ctx == NULL || !ctx->preview_mode || state == NULL || state->visual == NULL)
-        return;
-
-    const double phase =
-        dvz_scenario_preview_cycles(ctx, 1.0, DVZ_SCENARIO_PREVIEW_PHASE_ENDPOINT);
-    mat4 transform = GLM_MAT4_IDENTITY_INIT;
-    vec3 axis = {0.0f, 1.0f, 0.0f};
-    glm_rotate_make(transform, (float)(TAU * phase), axis);
-    (void)dvz_visual_set_transform(state->visual, transform);
-}
-
-
-
 static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 {
     (void)ctx;
@@ -835,7 +820,6 @@ DvzScenarioSpec dvz_showcase_textured_planet_scenario(void)
         .height = HEIGHT,
         .fps = 60.0,
         .init = _scenario_init,
-        .frame = _scenario_frame,
 #ifndef DVZ_EXAMPLE_NO_MAIN
         .native_view = _scenario_native_view,
 #endif

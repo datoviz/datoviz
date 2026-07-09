@@ -29,6 +29,7 @@
 typedef struct DvzScene DvzScene;
 typedef struct DvzFigure DvzFigure;
 typedef struct DvzPanel DvzPanel;
+typedef struct DvzVisual DvzVisual;
 typedef struct DvzController DvzController;
 typedef struct DvzQueryRequest DvzQueryRequest;
 typedef struct DvzQueryResult DvzQueryResult;
@@ -121,12 +122,20 @@ typedef enum DvzScenarioPreviewPhasePolicy
 } DvzScenarioPreviewPhasePolicy;
 
 
+typedef enum DvzScenarioMotionKind
+{
+    DVZ_SCENARIO_MOTION_NONE,
+    DVZ_SCENARIO_MOTION_VISUAL_SPIN,
+} DvzScenarioMotionKind;
+
+
 
 /*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
 #define DVZ_SCENARIO_MAX_CONTROLLER_BINDINGS 32u
+#define DVZ_SCENARIO_MAX_VISUAL_TARGETS      32u
 
 
 
@@ -140,6 +149,13 @@ typedef struct DvzScenarioControllerBinding
     DvzController* controller;
     DvzDimMask dims;
 } DvzScenarioControllerBinding;
+
+
+typedef struct DvzScenarioVisualTarget
+{
+    const char* name;
+    DvzVisual* visual;
+} DvzScenarioVisualTarget;
 
 
 typedef struct DvzScenarioPointerEvent
@@ -219,6 +235,9 @@ struct DvzScenarioContext
 
     DvzScenarioControllerBinding controller_bindings[DVZ_SCENARIO_MAX_CONTROLLER_BINDINGS];
     uint32_t controller_binding_count;
+    DvzScenarioVisualTarget visual_targets[DVZ_SCENARIO_MAX_VISUAL_TARGETS];
+    uint32_t visual_target_count;
+    DvzVisual* primary_visual;
 };
 
 
@@ -270,6 +289,11 @@ typedef struct DvzRunnerConfig
     uint32_t preview_sample_stride;
     double preview_fps;
     double preview_time_scale;
+    DvzScenarioMotionKind preview_motion;
+    const char* preview_motion_target;
+    float preview_motion_axis[3];
+    double preview_motion_cycles;
+    DvzScenarioPreviewPhasePolicy preview_motion_phase_policy;
 } DvzRunnerConfig;
 
 
@@ -401,6 +425,27 @@ static inline double dvz_scenario_preview_cycles(
 double dvz_scenario_preview_cycles(
     const DvzScenarioContext* ctx, double cycles, DvzScenarioPreviewPhasePolicy policy);
 #endif
+
+/**
+ * Register a visual as a named scenario motion target.
+ *
+ * @param ctx scenario context
+ * @param name stable target name, or NULL for an unnamed target
+ * @param visual scene-owned visual
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_scenario_register_visual(DvzScenarioContext* ctx, const char* name, DvzVisual* visual);
+
+/**
+ * Mark a visual as the primary scenario visual.
+ *
+ * The visual is also registered as the "primary" target for declarative runner motion.
+ *
+ * @param ctx scenario context
+ * @param visual scene-owned visual
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_scenario_set_primary_visual(DvzScenarioContext* ctx, DvzVisual* visual);
 
 /**
  * Bind a scene-owned controller to a scenario panel and register it for runner input connection.

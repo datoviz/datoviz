@@ -18,6 +18,8 @@
 #include "_time_utils.h"
 #include "datoviz/scene.h"
 
+#include <cglm/affine.h>
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,6 +46,7 @@
 typedef struct RunnerFrameState
 {
     const DvzScenarioSpec* spec;
+    const DvzRunnerConfig* config;
     DvzScenarioContext* ctx;
     void* user;
 } RunnerFrameState;
@@ -178,6 +181,41 @@ static bool _parse_float(const char* text, float* out)
 
 
 
+static bool _parse_axis(const char* text, float out[3])
+{
+    if (text == NULL || text[0] == '\0' || out == NULL)
+        return false;
+    out[0] = 0.0f;
+    out[1] = 0.0f;
+    out[2] = 0.0f;
+    if (strcmp(text, "x") == 0 || strcmp(text, "X") == 0)
+        out[0] = 1.0f;
+    else if (strcmp(text, "y") == 0 || strcmp(text, "Y") == 0)
+        out[1] = 1.0f;
+    else if (strcmp(text, "z") == 0 || strcmp(text, "Z") == 0)
+        out[2] = 1.0f;
+    else
+        return false;
+    return true;
+}
+
+
+
+static bool _parse_preview_phase_policy(const char* text, DvzScenarioPreviewPhasePolicy* out)
+{
+    if (text == NULL || text[0] == '\0' || out == NULL)
+        return false;
+    if (strcmp(text, "seamless-loop") == 0)
+        *out = DVZ_SCENARIO_PREVIEW_PHASE_SEAMLESS_LOOP;
+    else if (strcmp(text, "endpoint") == 0)
+        *out = DVZ_SCENARIO_PREVIEW_PHASE_ENDPOINT;
+    else
+        return false;
+    return true;
+}
+
+
+
 static uint32_t _frames_after(int argc, char** argv, int index, uint32_t fallback)
 {
     uint32_t out = 0;
@@ -281,6 +319,8 @@ static uint64_t _effective_requirements(
         requirements |= DVZ_SCENARIO_REQ_FRAME_CALLBACKS;
     if (spec != NULL && spec->native_view != NULL)
         requirements |= DVZ_SCENARIO_REQ_NATIVE_VIEW;
+    if (config != NULL && config->preview_motion != DVZ_SCENARIO_MOTION_NONE)
+        requirements |= DVZ_SCENARIO_REQ_FRAME_CALLBACKS;
     if (config != NULL && config->capture_kind != DVZ_RUNNER_CAPTURE_NONE)
         requirements |= DVZ_SCENARIO_REQ_NATIVE_CAPTURE;
     return requirements;
@@ -389,6 +429,93 @@ static DvzScenarioPointerType _scenario_pointer_type(DvzPointerEventType type)
 
 
 
+static bool _preview_motion_active(const DvzRunnerConfig* config)
+{
+    return config != NULL && config->preview_motion != DVZ_SCENARIO_MOTION_NONE;
+}
+
+
+
+static DvzVisual*
+_resolve_visual_target(const DvzScenarioContext* ctx, const char* target)
+{
+    if (ctx == NULL)
+        return NULL;
+
+    if (target != NULL && target[0] != '\0')
+    {
+        if (strcmp(target, "primary") == 0 && ctx->primary_visual != NULL)
+            return ctx->primary_visual;
+        for (uint32_t i = 0; i < ctx->visual_target_count; i++)
+        {
+            const DvzScenarioVisualTarget* item = &ctx->visual_targets[i];
+            if (item->name != NULL && strcmp(item->name, target) == 0)
+                return item->visual;
+        }
+        return NULL;
+    }
+
+    if (ctx->primary_visual != NULL)
+        return ctx->primary_visual;
+    if (ctx->visual_target_count == 1)
+        return ctx->visual_targets[0].visual;
+    return NULL;
+}
+
+
+
+static bool
+_preview_motion_resolves(const DvzScenarioContext* ctx, const DvzRunnerConfig* config)
+{
+    if (!_preview_motion_active(config))
+        return true;
+
+    switch (config->preview_motion)
+    {
+    case DVZ_SCENARIO_MOTION_VISUAL_SPIN:
+        return _resolve_visual_target(ctx, config->preview_motion_target) != NULL;
+
+    case DVZ_SCENARIO_MOTION_NONE:
+    default:
+        return true;
+    }
+}
+
+
+
+static void _apply_preview_motion(DvzScenarioContext* ctx, const DvzRunnerConfig* config)
+{
+    if (ctx == NULL || !ctx->preview_mode || !_preview_motion_active(config))
+        return;
+
+    switch (config->preview_motion)
+    {
+    case DVZ_SCENARIO_MOTION_VISUAL_SPIN:
+    {
+        DvzVisual* visual = _resolve_visual_target(ctx, config->preview_motion_target);
+        if (visual == NULL)
+            return;
+        const double phase = dvz_scenario_preview_cycles(
+            ctx, config->preview_motion_cycles, config->preview_motion_phase_policy);
+        mat4 transform = GLM_MAT4_IDENTITY_INIT;
+        vec3 axis = {
+            config->preview_motion_axis[0],
+            config->preview_motion_axis[1],
+            config->preview_motion_axis[2],
+        };
+        glm_rotate_make(transform, (float)(6.283185307179586 * phase), axis);
+        (void)dvz_visual_set_transform(visual, transform);
+        return;
+    }
+
+    case DVZ_SCENARIO_MOTION_NONE:
+    default:
+        return;
+    }
+}
+
+
+
 static void
 _timer_callback(DvzAnimation* animation, double t, double dt, uint64_t tick, void* user_data)
 {
@@ -402,6 +529,7 @@ _timer_callback(DvzAnimation* animation, double t, double dt, uint64_t tick, voi
     state->ctx->dt = dt;
     if (state->spec->frame != NULL)
         state->spec->frame(state->ctx, state->user);
+    _apply_preview_motion(state->ctx, state->config);
     state->ctx->frame_index++;
 }
 
@@ -621,6 +749,11 @@ static void _print_usage(const DvzScenarioSpec* spec)
     fprintf(stdout, "  --preview-fps FPS      preview frame rate for deterministic frame timing\n");
     fprintf(stdout, "  --preview-sample-stride N internal preview frames per captured frame\n");
     fprintf(stdout, "  --preview-time-scale S multiply preview time without changing playback FPS\n");
+    fprintf(stdout, "  --preview-motion KIND  preview motion recipe: none, visual-spin\n");
+    fprintf(stdout, "  --preview-motion-target NAME visual target name, default primary or sole target\n");
+    fprintf(stdout, "  --preview-motion-axis x|y|z visual-spin axis\n");
+    fprintf(stdout, "  --preview-motion-cycles N visual-spin cycles across preview\n");
+    fprintf(stdout, "  --preview-motion-phase POLICY seamless-loop or endpoint\n");
     fprintf(stdout, "size and scale:\n");
     fprintf(stdout, "  --size WxH             exact framebuffer/output pixels\n");
     fprintf(stdout, "  --logical-size WxH     logical layout size in pixels\n");
@@ -662,6 +795,11 @@ DvzRunnerConfig dvz_runner_config(const DvzScenarioSpec* spec)
         .preview_sample_stride = 0,
         .preview_fps = 0.0,
         .preview_time_scale = 0.0,
+        .preview_motion = DVZ_SCENARIO_MOTION_NONE,
+        .preview_motion_target = NULL,
+        .preview_motion_axis = {0.0f, 1.0f, 0.0f},
+        .preview_motion_cycles = 1.0,
+        .preview_motion_phase_policy = DVZ_SCENARIO_PREVIEW_PHASE_ENDPOINT,
     };
     config.capture.flags = DVZ_APP_CAPTURE_NONE;
     return config;
@@ -805,6 +943,41 @@ double dvz_scenario_preview_cycles(
     const DvzScenarioContext* ctx, double cycles, DvzScenarioPreviewPhasePolicy policy)
 {
     return dvz_scenario_preview_phase(ctx, policy) * cycles;
+}
+
+
+
+int dvz_scenario_register_visual(DvzScenarioContext* ctx, const char* name, DvzVisual* visual)
+{
+    if (ctx == NULL || visual == NULL)
+        return -1;
+    if (ctx->visual_target_count >= DVZ_SCENARIO_MAX_VISUAL_TARGETS)
+        return -1;
+
+    DvzScenarioVisualTarget* target = &ctx->visual_targets[ctx->visual_target_count++];
+    target->name = name;
+    target->visual = visual;
+    return 0;
+}
+
+
+
+int dvz_scenario_set_primary_visual(DvzScenarioContext* ctx, DvzVisual* visual)
+{
+    if (ctx == NULL || visual == NULL)
+        return -1;
+    ctx->primary_visual = visual;
+    for (uint32_t i = 0; i < ctx->visual_target_count; i++)
+    {
+        DvzScenarioVisualTarget* target = &ctx->visual_targets[i];
+        if (target->visual == visual)
+        {
+            if (target->name == NULL)
+                target->name = "primary";
+            return 0;
+        }
+    }
+    return dvz_scenario_register_visual(ctx, "primary", visual);
 }
 
 
@@ -964,10 +1137,16 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
         fprintf(stderr, "scenario_runner: scenario init failed\n");
         goto cleanup;
     }
+    if (!_preview_motion_resolves(&ctx, &resolved))
+    {
+        fprintf(stderr, "scenario_runner: preview motion target could not be resolved\n");
+        goto cleanup;
+    }
 
-    if (spec->frame != NULL || spec->continuous_frames)
+    if (spec->frame != NULL || spec->continuous_frames || _preview_motion_active(&resolved))
     {
         frame_state.spec = spec;
+        frame_state.config = &resolved;
         frame_state.ctx = &ctx;
         frame_state.user = user;
         DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
@@ -1277,6 +1456,49 @@ int dvz_scenario_run_native_cli(const DvzScenarioSpec* spec, int argc, char** ar
                 return -1;
             }
             config.preview_time_scale = (double)scale;
+        }
+        else if (strcmp(arg, "--preview-motion") == 0 && i + 1 < argc)
+        {
+            const char* motion = argv[++i];
+            if (strcmp(motion, "none") == 0)
+                config.preview_motion = DVZ_SCENARIO_MOTION_NONE;
+            else if (strcmp(motion, "visual-spin") == 0)
+                config.preview_motion = DVZ_SCENARIO_MOTION_VISUAL_SPIN;
+            else
+            {
+                fprintf(stderr, "scenario_runner: invalid --preview-motion value\n");
+                return -1;
+            }
+        }
+        else if (strcmp(arg, "--preview-motion-target") == 0 && i + 1 < argc)
+        {
+            config.preview_motion_target = argv[++i];
+        }
+        else if (strcmp(arg, "--preview-motion-axis") == 0 && i + 1 < argc)
+        {
+            if (!_parse_axis(argv[++i], config.preview_motion_axis))
+            {
+                fprintf(stderr, "scenario_runner: invalid --preview-motion-axis value\n");
+                return -1;
+            }
+        }
+        else if (strcmp(arg, "--preview-motion-cycles") == 0 && i + 1 < argc)
+        {
+            float cycles = 0.0f;
+            if (!_parse_float(argv[++i], &cycles))
+            {
+                fprintf(stderr, "scenario_runner: invalid --preview-motion-cycles value\n");
+                return -1;
+            }
+            config.preview_motion_cycles = (double)cycles;
+        }
+        else if (strcmp(arg, "--preview-motion-phase") == 0 && i + 1 < argc)
+        {
+            if (!_parse_preview_phase_policy(argv[++i], &config.preview_motion_phase_policy))
+            {
+                fprintf(stderr, "scenario_runner: invalid --preview-motion-phase value\n");
+                return -1;
+            }
         }
         else if (strcmp(arg, "--size") == 0 && i + 1 < argc)
         {

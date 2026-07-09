@@ -3062,6 +3062,13 @@ examples:
           webp_quality: 70
           mp4_crf: 24
           webm_crf: 28
+    motion:
+      preview:
+        - type: visual-spin
+          target: primary
+          axis: y
+          cycles: 1
+          phase: endpoint
     data:
       kind: real
     webgpu:
