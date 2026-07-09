@@ -2912,6 +2912,8 @@ examples:
     category: showcase
     lane: showcases
     source: examples/c/showcases/gpu_particle_smoke.c
+    python:
+      source: examples/python/gallery/showcases/gpu_particle_smoke.py
     validation: smoke+screenshot
     media:
       preview:
