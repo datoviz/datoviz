@@ -1437,6 +1437,9 @@ examples:
     category: showcase
     lane: showcases
     source: examples/c/showcases/linked_probe_colorbar.c
+    python:
+      source: examples/python/gallery/showcases/linked_probe_colorbar.py
+      status: direct-engine
     validation: smoke+readback+interaction+screenshot
     data:
       kind: synthetic

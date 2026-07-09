@@ -40,12 +40,19 @@ This workflow is useful for inspecting transformed measurements while preserving
     --8<-- "examples/c/showcases/linked_probe_colorbar.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/showcases/linked_probe_colorbar.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `showcases_linked_probe_colorbar`
     - Category: `showcase`
     - Lane: `showcases`
     - Source: [`examples/c/showcases/linked_probe_colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c)
+    - Python source: [`examples/python/gallery/showcases/linked_probe_colorbar.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/linked_probe_colorbar.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_linked_probe_colorbar"><code>examples/webgpu/live.html?id=showcases_linked_probe_colorbar</code></a>
     - Browser capability tags: `panel-grid`, `linked-panels`, `image`, `colorbar`, `query-readback`, `readout`
