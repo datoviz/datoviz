@@ -60,9 +60,11 @@ Recent checkpoint commits landed:
 47. `72efadbab` Expose scale-bar descriptors to Python.
 48. `66cc428ca` Add Python scalebar gallery example.
 49. `3ea207185` Add Python scalebar-units gallery example.
+50. `8d49d100d` Add Python datetime-axis gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
-next planned checkpoint is `features_datetime_axis`.
+v0.4-required feature lane is complete. The next missing v0.4-required public example in manifest
+order is `runtime_app_glfw`; classify the runtime examples before adding Python entries.
 
 The material-descriptor caveat is resolved for new examples: `DvzPhongMaterial`,
 `DvzStandardMaterial`, and `DvzMaterialDesc` now have generated ctypes layouts, and
@@ -219,6 +221,10 @@ python3 - <<'PY'
 ... construct scalebar_units scene with duration units and fixed-Y panzoom binding, render one
     offscreen frame, and verify non-background pixels ...
 PY
+python3 - <<'PY'
+... construct datetime_axis scene with datetime formatter/range metadata and x-only panzoom binding,
+    render one offscreen frame, and verify non-background pixels ...
+PY
 ```
 
 These returned `image_probe offscreen query smoke: 1 True` and
@@ -245,13 +251,14 @@ MSAA checkpoint returned `technique_msaa offscreen: OK`; the depth-cue checkpoin
 `view_size_policies smoke: OK policy=pixel_exact framebuffer=1280x720`; the Bezier path checkpoint
 returned `bezier_curve_path offscreen: OK`; the path-join checkpoint returned
 `path_join offscreen: OK`; the scalebar checkpoint returned `scalebar offscreen: OK`; the
-scalebar-units checkpoint returned `scalebar_units offscreen: OK`.
+scalebar-units checkpoint returned `scalebar_units offscreen: OK`; the datetime-axis checkpoint
+returned `datetime_axis offscreen: OK`.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`features_scalebar_units`:
+`features_datetime_axis`:
 
-- v0.4-required feature examples: 63 of 64 have Python entries; 1 remains missing.
-- all v0.4-required public examples: 75 of 95 have Python entries; 20 remain missing.
+- v0.4-required feature examples: 64 of 64 have Python entries; 0 remain missing.
+- all v0.4-required public examples: 76 of 95 have Python entries; 19 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -387,6 +394,10 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   `examples/python/gallery/features/scalebar_units.py` and a matching `python.source` manifest
   entry. It uses generated duration unit bindings, `DvzScaleBarDesc`, a deterministic 96-sample path
   trace, and a fixed-Y panzoom descriptor.
+- `features_datetime_axis` is committed: it has
+  `examples/python/gallery/features/datetime_axis.py` and a matching `python.source` manifest
+  entry. It uses generated datetime formatter and axis metadata bindings while keeping path data in
+  compact numeric coordinates.
 
 
 ## Preferred Next Commit
@@ -400,9 +411,10 @@ checkpoint has `features_reference_grid` and `features_coordinate_system`; and
 `features_mesh_texture`, `features_material_mesh`, `features_lighting`, and `features_user_scale`
 and `features_gui_controls`, `features_gui_viewport`, and `features_gui_cimgui` are complete. The
 planned rendering-technique feature examples are complete through transparency. Next target
-`features_datetime_axis`, which is the first missing feature in manifest order. Inspect the C
-example and current time/datetime axis bindings before deciding whether the Python path can be
-direct-engine, needs a narrow binding policy update, or should stay deferred.
+for the broader required-public backlog is `runtime_app_glfw`, which is the first missing required
+public example in manifest order. Inspect the runtime examples as a group before deciding whether
+they should get Python gallery entries, stay C/native-only, or wait for a narrow public Python
+runtime helper.
 
 Implementation shape:
 
@@ -438,7 +450,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python datetime-axis gallery example
+examples: add Python runtime app GLFW gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -503,7 +515,17 @@ convert the examples that immediately need it.
 
 Current missing `v0.4_required` feature examples with no `python.source` entry:
 
-`features_datetime_axis`.
+None. The required feature lane is complete.
+
+Current missing `v0.4_required` public examples with no `python.source` entry:
+
+`runtime_app_glfw`, `runtime_multi_window`, `runtime_offscreen_capture`,
+`showcases_panel_linked_axes`, `showcases_linked_probe_colorbar`,
+`showcases_scientific_plotting`, `showcases_scalebar_measurement`, `visuals_labels`,
+`visuals_volume`, `composites_polygon`, `composites_graph`, `showcases_choropleth`,
+`showcases_protein`, `showcases_wind_field`, `showcases_gpu_particle_smoke`,
+`showcases_surface_grid`, `showcases_brain_volume`, `showcases_point_cloud`, and
+`showcases_textured_planet`.
 
 
 ## Per-Example Checklist
