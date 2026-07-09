@@ -1206,7 +1206,10 @@
         ],
         "reason": "dockable GUI viewports require native ImGui and an offscreen native source view"
       },
-      "primary_feature": "gui-viewport"
+      "primary_feature": "gui-viewport",
+      "python_source": "examples/python/gallery/features/gui_viewport.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/gui_viewport.py",
+      "python_status": "direct-engine"
     },
     {
       "id": "features_gui_cimgui",

@@ -28,12 +28,19 @@ The application hosts a GUI window while a separate Datoviz figure renders a sma
     --8<-- "examples/c/features/gui_viewport.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/gui_viewport.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_gui_viewport`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/gui_viewport.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_viewport.c)
+    - Python source: [`examples/python/gallery/features/gui_viewport.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/gui_viewport.py)
     - Browser support: Native only
     - Browser note: dockable GUI viewports require native ImGui and an offscreen native source view
     - Browser capability tags: `gui`, `native-view`

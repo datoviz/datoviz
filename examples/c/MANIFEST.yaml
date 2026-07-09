@@ -842,6 +842,9 @@ examples:
     primary_feature: gui-viewport
     lane: features
     source: examples/c/features/gui_viewport.c
+    python:
+      source: examples/python/gallery/features/gui_viewport.py
+      status: direct-engine
     validation: smoke+interaction+screenshot
     capture:
       mode: native-app
