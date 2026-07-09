@@ -28,12 +28,19 @@ The texture pixels are generated as a 1024x512 color field, attached to the mesh
     --8<-- "examples/c/features/mesh_texture.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/features/mesh_texture.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `features_mesh_texture`
     - Category: `feature`
     - Lane: `features`
     - Source: [`examples/c/features/mesh_texture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/mesh_texture.c)
+    - Python source: [`examples/python/gallery/features/mesh_texture.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/mesh_texture.py)
     - Browser support: Planned
     - Browser capability tags: `mesh`, `sampled-field`, `texture`, `arcball`, `material`
     - Validation: `smoke+interaction+screenshot`

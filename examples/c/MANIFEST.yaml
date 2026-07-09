@@ -718,6 +718,9 @@ examples:
     primary_feature: mesh-texture
     lane: features
     source: examples/c/features/mesh_texture.c
+    python:
+      source: examples/python/gallery/features/mesh_texture.py
+      status: direct-engine
     validation: smoke+interaction+screenshot
     data:
       kind: synthetic
