@@ -28,12 +28,19 @@ Node arrays provide positions, semantic IDs, community colors, and sizes; edge a
     --8<-- "examples/c/composites/graph.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/composites/graph.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `composites_graph`
     - Category: `composite`
     - Lane: `composites`
     - Source: [`examples/c/composites/graph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/graph.c)
+    - Python source: [`examples/python/gallery/composites/graph.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/composites/graph.py)
     - Browser support: Planned
     - Browser capability tags: `composite`, `marker`, `bezier-edges`, `path`, `panzoom`
     - Validation: `smoke+screenshot`
