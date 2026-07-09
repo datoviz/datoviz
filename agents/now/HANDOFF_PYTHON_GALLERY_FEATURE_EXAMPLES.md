@@ -37,9 +37,10 @@ Recent checkpoint commits landed:
 24. `58e2cc79e` Expose reference grid descriptors to Python.
 25. `63eba9645` Add Python reference grid gallery example.
 26. `6f5e3164b` Add Python coordinate system gallery example.
+27. `ad258204b` Add Python orientation gizmo gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
-next planned checkpoint is `features_orientation_gizmo`.
+next planned checkpoint is `features_bounds_overlay`.
 
 Known parity caveat from the geometry batch: the C OBJ and 3D shape examples apply a Phong
 material, but Python `DvzMaterialDesc` has no generated fields in the current binding, so these
@@ -123,10 +124,10 @@ These returned `image_probe offscreen query smoke: 1 True` and
 earlier checkpoint notes.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`features_coordinate_system`:
+`features_orientation_gizmo`:
 
-- v0.4-required feature examples: 42 of 64 have Python entries; 22 remain missing.
-- all v0.4-required public examples: 54 of 95 have Python entries; 41 remain missing.
+- v0.4-required feature examples: 43 of 64 have Python entries; 21 remain missing.
+- all v0.4-required public examples: 55 of 95 have Python entries; 40 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -175,6 +176,10 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   entry. It reuses generated geometry descriptors, reference-grid descriptors, world text
   placement, and turntable view binding. It intentionally uses geometry colors without
   `dvz_visual_set_material()` because `DvzMaterialDesc` remains opaque in Python.
+- `features_orientation_gizmo` is committed: it has
+  `examples/python/gallery/features/orientation_gizmo.py` and a matching `python.source` manifest
+  entry. It uses the generated `DvzOrientationGizmoDesc`, `dvz_placement_panel_corner()`, and
+  `dvz_orientation_gizmo()` route.
 
 
 ## Preferred Next Commit
@@ -185,7 +190,7 @@ and symbol helper batch has `features_marker_symbols`, `features_builtin_shapes_
 text/annotation checkpoint has `features_text_block`, `features_overlay_card`, and
 `features_annotation_readout`; `features_axis_labels` is complete; and the first spatial-layout
 checkpoint has `features_reference_grid` and `features_coordinate_system`. Next target
-`features_orientation_gizmo`, which is the first missing feature in manifest order. Keep the
+`features_bounds_overlay`, which is the first missing feature in manifest order. Keep the
 existing Python material caveat in mind: if Phong material descriptor fields are still not
 generated, use geometry colors or split a narrow material-binding checkpoint first.
 
@@ -223,7 +228,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python orientation gizmo gallery example
+examples: add Python bounds overlay gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
