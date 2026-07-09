@@ -1557,6 +1557,8 @@ examples:
     category: showcase
     lane: showcases
     source: examples/c/showcases/scalebar_measurement.c
+    python:
+      source: examples/python/gallery/showcases/scalebar_measurement.py
     validation: smoke+screenshot
     data:
       kind: synthetic

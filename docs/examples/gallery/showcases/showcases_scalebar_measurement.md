@@ -40,12 +40,19 @@ This workflow is useful for scientific figures where readers must understand phy
     --8<-- "examples/c/showcases/scalebar_measurement.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/showcases/scalebar_measurement.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `showcases_scalebar_measurement`
     - Category: `showcase`
     - Lane: `showcases`
     - Source: [`examples/c/showcases/scalebar_measurement.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scalebar_measurement.c)
+    - Python source: [`examples/python/gallery/showcases/scalebar_measurement.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/scalebar_measurement.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_scalebar_measurement"><code>examples/webgpu/live.html?id=showcases_scalebar_measurement</code></a>
     - Browser capability tags: `scale-bar`, `text`, `panel-grid`, `mesh`, `panzoom`
