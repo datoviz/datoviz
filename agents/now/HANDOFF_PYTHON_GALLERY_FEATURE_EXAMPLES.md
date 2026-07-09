@@ -1,6 +1,6 @@
 # Python Gallery Feature Examples Handoff
 
-Status: active example-proof lane. Created: 2026-07-07. Updated: 2026-07-08.
+Status: active example-proof lane. Created: 2026-07-07. Updated: 2026-07-09.
 
 This handoff continues the Python gallery example lane for v0.4-required examples. The goal is one
 clear top-level Python entry per public v0.4 example wherever the direct `datoviz` binding can
@@ -36,9 +36,10 @@ Recent checkpoint commits landed:
 23. `ceb5a5e1a` Add Python axis labels gallery example.
 24. `58e2cc79e` Expose reference grid descriptors to Python.
 25. `63eba9645` Add Python reference grid gallery example.
+26. `6f5e3164b` Add Python coordinate system gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
-next planned checkpoint is `features_coordinate_system`.
+next planned checkpoint is `features_orientation_gizmo`.
 
 Known parity caveat from the geometry batch: the C OBJ and 3D shape examples apply a Phong
 material, but Python `DvzMaterialDesc` has no generated fields in the current binding, so these
@@ -122,10 +123,10 @@ These returned `image_probe offscreen query smoke: 1 True` and
 earlier checkpoint notes.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`features_reference_grid`:
+`features_coordinate_system`:
 
-- v0.4-required feature examples: 41 of 64 have Python entries; 23 remain missing.
-- all v0.4-required public examples: 53 of 95 have Python entries; 42 remain missing.
+- v0.4-required feature examples: 42 of 64 have Python entries; 22 remain missing.
+- all v0.4-required public examples: 54 of 95 have Python entries; 41 remain missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -169,6 +170,11 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   `examples/python/gallery/features/reference_grid.py` and a matching `python.source` manifest
   entry. It required exposing `DvzReferenceGridDesc` and generated `dvz_reference_grid_desc()` in
   ctypes policy/output; `just ctypes` and `just ctypes-check` passed.
+- `features_coordinate_system` is committed: it has
+  `examples/python/gallery/features/coordinate_system.py` and a matching `python.source` manifest
+  entry. It reuses generated geometry descriptors, reference-grid descriptors, world text
+  placement, and turntable view binding. It intentionally uses geometry colors without
+  `dvz_visual_set_material()` because `DvzMaterialDesc` remains opaque in Python.
 
 
 ## Preferred Next Commit
@@ -178,9 +184,9 @@ and symbol helper batch has `features_marker_symbols`, `features_builtin_shapes_
 `features_builtin_shapes_3d`, `features_obj_loading`, and `features_isolines`; the first
 text/annotation checkpoint has `features_text_block`, `features_overlay_card`, and
 `features_annotation_readout`; `features_axis_labels` is complete; and the first spatial-layout
-checkpoint has `features_reference_grid`. Next target `features_coordinate_system`, which remains
-the first missing feature in manifest order and can now reuse the reference-grid descriptor path.
-Keep the existing Python material caveat in mind: if Phong material descriptor fields are still not
+checkpoint has `features_reference_grid` and `features_coordinate_system`. Next target
+`features_orientation_gizmo`, which is the first missing feature in manifest order. Keep the
+existing Python material caveat in mind: if Phong material descriptor fields are still not
 generated, use geometry colors or split a narrow material-binding checkpoint first.
 
 Implementation shape:
@@ -217,7 +223,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python coordinate system gallery example
+examples: add Python orientation gizmo gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
