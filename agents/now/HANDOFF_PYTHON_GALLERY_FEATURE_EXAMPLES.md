@@ -79,10 +79,11 @@ Recent checkpoint commits landed:
 66. `68ac543c0` Add Python GPU particle smoke showcase gallery example.
 67. `230c497a3` Add Python surface-grid showcase gallery example.
 68. `4956c16dc` Add Python brain-volume showcase gallery example.
+69. `74cb27f60` Add Python point-cloud showcase gallery example.
 
 No Python gallery feature checkpoint is currently staged or in progress in this working tree. The
 v0.4-required feature lane is complete. The next missing v0.4-required public example in manifest
-order is `showcases_point_cloud`.
+order is `showcases_textured_planet`.
 
 The material-descriptor caveat is resolved for new examples: `DvzPhongMaterial`,
 `DvzStandardMaterial`, and `DvzMaterialDesc` now have generated ctypes layouts, and
@@ -301,13 +302,14 @@ returned `datetime_axis offscreen: OK`; the runtime app GLFW checkpoint returned
 `showcases_wind_field offscreen: OK`; the GPU particle smoke checkpoint returned
 `showcases_gpu_particle_smoke offscreen: OK`; the surface-grid checkpoint returned
 `showcases_surface_grid offscreen: OK`; the brain-volume checkpoint returned
-`showcases_brain_volume offscreen: OK`.
+`showcases_brain_volume offscreen: OK`; the point-cloud checkpoint returned
+`showcases_point_cloud offscreen: OK`.
 
 Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-09 after
-`showcases_brain_volume`:
+`showcases_point_cloud`:
 
 - v0.4-required feature examples: 64 of 64 have Python entries; 0 remain missing.
-- all v0.4-required public examples: 93 of 95 have Python entries; 2 remain missing.
+- all v0.4-required public examples: 94 of 95 have Python entries; 1 remains missing.
 - `features_bars_bands` is done: it has `examples/python/gallery/features/bars_bands.py` and a
   matching `python.source` manifest entry.
 - `image_probe` is committed: it has `examples/python/gallery/features/image_probe.py` and a
@@ -532,6 +534,14 @@ Current manifest ledger, recomputed from `examples/c/MANIFEST.yaml` on 2026-07-0
   clipping, volume occlusion, camera setup, and arcball binding. The Python port intentionally omits
   the C native GUI tuner and preview slice sweep. The offscreen smoke loaded the prepared payload,
   rendered one 320x180 frame, and verified non-background pixels.
+- `showcases_point_cloud` is committed: it has
+  `examples/python/gallery/showcases/point_cloud.py` and a matching `python.source` manifest entry.
+  It reads the prepared v2 binary point cloud from `.cache/datoviz/examples/point_cloud/prepared`,
+  validates the magic/version/count/file size, converts the C record layout to pixel positions,
+  direct RGBA colors, and per-point pixel sizes, enables depth test and EDL, sets the C camera, and
+  binds a plane fly controller for live navigation. The Python port intentionally omits the C native
+  GUI tuner and preview camera orbit. The offscreen smoke loaded all 6,000,000 prepared points,
+  rendered one 320x180 frame, and verified non-background pixels.
 
 
 ## Preferred Next Commit
@@ -545,7 +555,7 @@ checkpoint has `features_reference_grid` and `features_coordinate_system`; and
 `features_mesh_texture`, `features_material_mesh`, `features_lighting`, and `features_user_scale`
 and `features_gui_controls`, `features_gui_viewport`, and `features_gui_cimgui` are complete. The
 planned rendering-technique feature examples are complete through transparency. Next target
-for the broader required-public backlog is `showcases_point_cloud`, which is the first missing
+for the broader required-public backlog is `showcases_textured_planet`, which is the first missing
 required public example in manifest order. Inspect the C showcase example and its data
 contract before deciding whether a small shared helper is worth adding.
 
@@ -583,7 +593,7 @@ Implementation shape:
 Suggested checkpoint commit for the current working tree:
 
 ```text
-examples: add Python point-cloud showcase gallery example
+examples: add Python textured-planet showcase gallery example
 ```
 
 Use one commit for helper plus example. Split binding facade/generator changes from later example
@@ -652,7 +662,7 @@ None. The required feature lane is complete.
 
 Current missing `v0.4_required` public examples with no `python.source` entry:
 
-`showcases_point_cloud` and `showcases_textured_planet`.
+`showcases_textured_planet`.
 
 
 ## Per-Example Checklist
