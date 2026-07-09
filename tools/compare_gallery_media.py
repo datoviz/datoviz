@@ -18,7 +18,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-import build_gallery_animations
+import gallery_frames
 import gallery_media
 
 
@@ -26,6 +26,8 @@ ROOT = gallery_media.ROOT
 DEFAULT_INPUT_DIR = ROOT / "build/gallery-webp/v0.4"
 DEFAULT_OUTPUT_DIR = ROOT / "build/gallery-media-compare/v0.4"
 DEFAULT_SITE_OUTPUT_DIR = ROOT / "build/gallery-webp/v0.4"
+DEFAULT_FRAME_DIR = gallery_frames.DEFAULT_FRAME_DIR
+DEFAULT_FRAME_CACHE_DIR = gallery_frames.DEFAULT_CACHE_DIR
 DEFAULT_SIZE = "1024x576"
 DEFAULT_STEP = 2
 DEFAULT_WEBP_QUALITY = 40
@@ -104,6 +106,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--input-dir", type=Path, default=DEFAULT_INPUT_DIR)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--site-output-dir", type=Path, default=DEFAULT_SITE_OUTPUT_DIR)
+    parser.add_argument("--frame-dir", type=Path, default=DEFAULT_FRAME_DIR)
+    parser.add_argument("--frame-cache-dir", type=Path, default=DEFAULT_FRAME_CACHE_DIR)
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
     parser.add_argument("--html-report", type=Path, default=DEFAULT_HTML_REPORT)
     parser.add_argument("--id", action="append", default=[], help="example id; repeat or comma-separate")
@@ -210,7 +214,7 @@ def selected_previews(args: argparse.Namespace) -> list[object]:
     if not ids and not lanes and not args.all_animated:
         ids = set(DEFAULT_CANDIDATE_IDS)
     selected = []
-    for preview in build_gallery_animations.collect_previews(
+    for preview in gallery_frames.collect_previews(
         args.manifest, ROOT / "build/examples/c", ids, lanes
     ):
         if not args.all_animated and ids and getattr(preview, "id") not in ids:
@@ -220,63 +224,19 @@ def selected_previews(args: argparse.Namespace) -> list[object]:
     return selected
 
 
-def source_frame_delays_ms(source: Path, fallback_fps: int) -> list[int]:
-    try:
-        result = subprocess.run(
-            ["magick", "identify", "-format", "%T\n", str(source)],
-            cwd=ROOT,
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-    except subprocess.CalledProcessError:
-        return []
-
-    fallback = max(1, int(round(1000.0 / max(1, fallback_fps))))
-    delays = []
-    for line in result.stdout.splitlines():
-        try:
-            delay_cs = int(line.strip())
-        except ValueError:
-            delay_cs = 0
-        delays.append(delay_cs * 10 if delay_cs > 0 else fallback)
-    return delays
-
-
-def coalesce_and_resize(
-    source: Path, frame_dir: Path, size: str, fallback_fps: int) -> list[FrameItem]:
+def resize_cached_frames(
+    preview: object, source_dir: Path, frame_dir: Path, size: str) -> list[FrameItem]:
     frame_dir.mkdir(parents=True, exist_ok=True)
-    pattern = frame_dir / "frame_%04d.png"
-    run(["magick", str(source), "-coalesce", "-resize", size, str(pattern)])
-    paths = sorted(frame_dir.glob("frame_*.png"))
-    delays = source_frame_delays_ms(source, fallback_fps)
-    fallback = max(1, int(round(1000.0 / max(1, fallback_fps))))
-    if len(delays) != len(paths):
-        delays = [fallback for _ in paths]
-    return [FrameItem(path=path, delay_ms=delay) for path, delay in zip(paths, delays)]
-
-
-def capture_and_resize_preview(
-    preview: object, frame_root: Path, size: str, fallback_fps: int) -> list[FrameItem]:
-    raw_dir = frame_root / "raw"
-    resized_dir = frame_root / "resized"
-    build_gallery_animations.capture_sequence(preview, raw_dir)
-    resized_dir.mkdir(parents=True, exist_ok=True)
-
     delay_ms = max(1, int(round(1000.0 / max(1, getattr(preview, "fps")))))
     frames = []
     for index in range(getattr(preview, "frames")):
-        raw = build_gallery_animations.frame_path(raw_dir, index)
-        if not raw.exists():
-            raise FileNotFoundError(raw)
-        resized = resized_dir / f"frame_{index:04d}.png"
-        run(["magick", str(raw), "-resize", size, str(resized)])
+        source = gallery_frames.frame_path(source_dir, index)
+        if not source.exists():
+            raise FileNotFoundError(source)
+        resized = frame_dir / f"frame_{index:04d}.png"
+        run(["magick", str(source), "-resize", size, str(resized)])
         frames.append(FrameItem(path=resized, delay_ms=delay_ms))
     return frames
-
-
-def should_capture_source_frames(args: argparse.Namespace, generated_kinds: set[str]) -> bool:
-    return should_merge_report(args) and "mp4-card" in generated_kinds
 
 
 def select_frames(frames: list[FrameItem], step: int) -> list[FrameItem]:
@@ -415,10 +375,6 @@ def video_html_snippet(preview: object) -> str:
 
 def compare_preview(preview: object, args: argparse.Namespace) -> MediaComparison | None:
     source = source_webp_path(preview, args.input_dir)
-    if not source.exists():
-        print(f"missing source: {getattr(preview, 'id')} -> {child_path(source)}")
-        return None
-
     profile = profile_for(preview, args)
     base = output_base(preview, args.output_dir)
     if args.force and base.exists():
@@ -435,18 +391,24 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
         variants = ",".join(sorted(generated_kinds | {"poster"}))
         print(
             f"would compare: {getattr(preview, 'id')} "
-            f"source={child_path(source)} size={profile.size} "
+            f"frames={child_path(args.frame_dir / getattr(preview, 'lane') / getattr(preview, 'id'))} "
+            f"size={profile.size} "
             f"step={profile.step} fps={out_fps} preferred={profile.preferred_kind} "
             f"compare={profile.compare} variants={variants}"
         )
         return None
 
+    frame_sequence = gallery_frames.ensure_frames(
+        preview, args.manifest, args.frame_dir, args.frame_cache_dir, force=args.force
+    )
+    if frame_sequence.generated:
+        print(f"captured frames: {getattr(preview, 'id')} -> {child_path(frame_sequence.frame_dir)}")
+
     with TemporaryDirectory(prefix="dvz-gallery-media-") as tmp:
         frame_root = Path(tmp)
-        if should_capture_source_frames(args, generated_kinds):
-            frames = capture_and_resize_preview(preview, frame_root / "frames", profile.size, out_fps)
-        else:
-            frames = coalesce_and_resize(source, frame_root / "frames", profile.size, out_fps)
+        frames = resize_cached_frames(
+            preview, frame_sequence.frame_dir, frame_root / "frames", profile.size
+        )
         selected = select_frames(frames, profile.step)
         selected_dir = frame_root / "selected"
         selected_dir.mkdir()
@@ -474,7 +436,7 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
         lane=getattr(preview, "lane"),
         title=getattr(preview, "title"),
         source_webp=child_path(source),
-        source_bytes=source.stat().st_size,
+        source_bytes=source.stat().st_size if source.exists() else 0,
         source_frames=getattr(preview, "frames"),
         source_size=getattr(preview, "size"),
         encoded_size=profile.size,
