@@ -1167,6 +1167,9 @@ examples:
     primary_runtime: app-glfw
     lane: runtime
     source: examples/c/runtime/app_glfw.c
+    python:
+      source: examples/python/gallery/runtime/app_glfw.py
+      status: direct-engine
     validation: smoke+interaction
     data:
       kind: synthetic

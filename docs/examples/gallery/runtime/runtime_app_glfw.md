@@ -30,12 +30,19 @@ Use this as the beginner native-app template when you want Datoviz to own the GL
     --8<-- "examples/c/runtime/app_glfw.c"
     ```
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/runtime/app_glfw.py"
+    ```
+
 ??? info "Example details"
 
     - ID: `runtime_app_glfw`
     - Category: `runtime`
     - Lane: `runtime`
     - Source: [`examples/c/runtime/app_glfw.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/app_glfw.c)
+    - Python source: [`examples/python/gallery/runtime/app_glfw.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/runtime/app_glfw.py)
     - Browser support: Native only
     - Browser note: direct GLFW app lifecycle is native-only
     - Browser capability tags: `native-view`
