@@ -33,6 +33,11 @@ const COLOR_GREEN = '\x1b[32m';
 const COLOR_YELLOW = '\x1b[33m';
 const COLOR_RESET = '\x1b[0m';
 
+const CAPTURE_CANVAS_WIDTH = 1280;
+const CAPTURE_CANVAS_HEIGHT = 720;
+const CAPTURE_PAGE_CHROME_HEIGHT = 96;
+const CAPTURE_DEVICE_SCALE_FACTOR = 1;
+
 function useColor() {
   if (process.env.FORCE_COLOR !== undefined && process.env.FORCE_COLOR !== '0') return true;
   if (process.env.NO_COLOR !== undefined) return false;
@@ -197,6 +202,12 @@ class CdpPage {
     await this.send('Page.enable');
     await this.send('Runtime.enable');
     await this.send('Log.enable');
+    await this.send('Emulation.setDeviceMetricsOverride', {
+      width: CAPTURE_CANVAS_WIDTH,
+      height: CAPTURE_CANVAS_HEIGHT + CAPTURE_PAGE_CHROME_HEIGHT,
+      deviceScaleFactor: CAPTURE_DEVICE_SCALE_FACTOR,
+      mobile: false,
+    });
     this.on('Runtime.exceptionThrown', (event) => {
       const detail = event.exceptionDetails;
       this.errors.push(detail.text ?? detail.exception?.description ?? 'Runtime exception');
@@ -294,7 +305,44 @@ class CdpPage {
     })()`);
   }
 
-  async screenshotCanvas(path) {
+  async canvasMetrics() {
+    return await this.evaluate(`(() => {
+      const canvas = document.querySelector("#viewport");
+      if (canvas === null) return null;
+      const rect = canvas.getBoundingClientRect();
+      return {
+        cssWidth: rect.width,
+        cssHeight: rect.height,
+        framebufferWidth: canvas.width,
+        framebufferHeight: canvas.height,
+        devicePixelRatio: window.devicePixelRatio,
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+      };
+    })()`);
+  }
+
+  async screenshotCanvas(path, expectedSize = null) {
+    const metrics = await this.canvasMetrics();
+    requireOk(metrics !== null, `${path}: canvas is missing`);
+    if (expectedSize !== null) {
+      const expectedWidth = expectedSize.width;
+      const expectedHeight = expectedSize.height;
+      const matches = (
+        metrics.cssWidth === expectedWidth &&
+        metrics.cssHeight === expectedHeight &&
+        metrics.framebufferWidth === expectedWidth &&
+        metrics.framebufferHeight === expectedHeight &&
+        metrics.devicePixelRatio === CAPTURE_DEVICE_SCALE_FACTOR
+      );
+      requireOk(
+        matches,
+        `${path}: unexpected capture canvas metrics: ${JSON.stringify(metrics)}; ` +
+          `expected CSS=${expectedWidth}x${expectedHeight}, ` +
+          `framebuffer=${expectedWidth}x${expectedHeight}, ` +
+          `DPR=${CAPTURE_DEVICE_SCALE_FACTOR}`,
+      );
+    }
     const dataUrl = await this.evaluate(`(() => {
       const canvas = document.querySelector("#viewport");
       return canvas.toDataURL("image/png");
@@ -306,6 +354,13 @@ class CdpPage {
     const buffer = Buffer.from(dataUrl.slice('data:image/png;base64,'.length), 'base64');
     await writeFile(path, buffer);
     assertPngNonblank(buffer, path);
+    if (expectedSize !== null) {
+      requireOk(
+        buffer.readUInt32BE(16) === expectedSize.width &&
+          buffer.readUInt32BE(20) === expectedSize.height,
+        `${path}: PNG dimensions do not match ${expectedSize.width}x${expectedSize.height}`,
+      );
+    }
   }
 
   async dragCanvas(dx, dy) {
@@ -429,7 +484,10 @@ async function smokeWasmPage(page, baseUrl, path, expectedStatus, screenshotPath
     return (text.includes(${JSON.stringify(expectedStatus)}) || text.startsWith("Rendered ")) && text;
   })()`, 45000);
   requireOk(!String(initialStatus).startsWith('ERROR:'), initialStatus);
-  await page.screenshotCanvas(screenshotPath);
+  await page.screenshotCanvas(screenshotPath, {
+    width: CAPTURE_CANVAS_WIDTH,
+    height: CAPTURE_CANVAS_HEIGHT,
+  });
   const usesPacketRuntime = await page.evaluate(`(() => {
     const scene = window.__datovizWasmScene;
     return scene?.runtime?.stream?.name === "drp2_packet_set";

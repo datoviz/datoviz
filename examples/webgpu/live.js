@@ -7,6 +7,22 @@ const statusEl = document.querySelector("#status");
 const statsEl = document.querySelector("#stats");
 let session = null;
 
+const DESIGN_WIDTH = 1280;
+const DESIGN_HEIGHT = 720;
+
+function fitCanvasToStage() {
+  const stage = canvas.parentElement;
+  if (stage === null) return;
+  const rect = stage.getBoundingClientRect();
+  const scale = Math.min(rect.width / DESIGN_WIDTH, rect.height / DESIGN_HEIGHT);
+  canvas.style.width = `${Math.max(1, Math.floor(DESIGN_WIDTH * scale))}px`;
+  canvas.style.height = `${Math.max(1, Math.floor(DESIGN_HEIGHT * scale))}px`;
+}
+
+fitCanvasToStage();
+const stageResizeObserver = new ResizeObserver(fitCanvasToStage);
+stageResizeObserver.observe(canvas.parentElement);
+
 function setStatus(message, isError = false) {
   statusEl.textContent = message;
   statusEl.classList.toggle("error", isError);
@@ -41,6 +57,8 @@ async function loadLiveExample(id) {
   setStats("");
   session = new WasmSceneSession({
     canvas,
+    logicalWidth: DESIGN_WIDTH,
+    logicalHeight: DESIGN_HEIGHT,
     status: setStatus,
     stats: setStats,
     onScene(scene) {
@@ -52,6 +70,7 @@ async function loadLiveExample(id) {
 }
 
 window.addEventListener("pagehide", () => {
+  stageResizeObserver.disconnect();
   destroySession();
 }, { once: true });
 

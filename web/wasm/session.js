@@ -23,6 +23,8 @@ export class WasmSceneSession {
       throw new Error("WasmSceneSession needs a canvas");
     }
     this.gpu = options.gpu ?? null;
+    this.logicalWidth = options.logicalWidth;
+    this.logicalHeight = options.logicalHeight;
     this.status = messageCallback(options.status);
     this.stats = messageCallback(options.stats);
     this.onScene = sceneCallback(options.onScene);
@@ -61,7 +63,11 @@ export class WasmSceneSession {
     if (this.demo === null) {
       return null;
     }
-    const createOptions = this.gpu !== null ? { gpu: this.gpu } : {};
+    const createOptions = {
+      ...(this.gpu !== null ? { gpu: this.gpu } : {}),
+      logicalWidth: this.logicalWidth,
+      logicalHeight: this.logicalHeight,
+    };
     if (typeof this.demo.scenarioId === "string") {
       this.scene = await DatovizWasmScene.createScenario(this.canvas, this.demo.scenarioId, createOptions);
     } else {
