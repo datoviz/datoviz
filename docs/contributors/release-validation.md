@@ -25,6 +25,7 @@ For the v0.4 release automation front door, use:
 
 ```sh
 just release-plan 0.4.0rc1
+just release-dry-run 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
 just release-candidate 0.4.0rc1 --dry-run
 just release-candidate 0.4.0rc1
 just release-report 0.4.0rc1
@@ -81,6 +82,7 @@ just release-gates 0.4.0rc1 --write-artifacts --strict-matrix
 Publication rehearsals stay approval-gated:
 
 ```sh
+just release-dry-run 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl --dist-dir dist --write-report
 just release-testpypi 0.4.0rc1 --dry-run --dist-dir dist
 just release-github-draft 0.4.0rc1 --dry-run
 just release-create-tag 0.4.0 --dry-run

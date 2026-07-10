@@ -93,6 +93,7 @@ The intended maintainer command surface is:
 
 ```sh
 just release-plan 0.4.0rc1
+just release-dry-run 0.4.0rc1 --wheel path/to/wheel.whl
 just release-candidate 0.4.0rc1
 just release-validation-pack 0.4.0rc1 --wheel path/to/wheel.whl
 just release-machine-validate 0.4.0rc1
@@ -112,9 +113,12 @@ just release-github-publish 0.4.0 --confirm yes
 just release-docs-publish 0.4.0 --dry-run
 ```
 
-`release-plan`, `release-candidate`, `release-validation-pack`, `release-machine-validate`, and
-`release-report` cover the first local automation slices. Publication and remote evidence commands
-should be added after the local state format proves useful.
+`release-dry-run` is the agent-friendly front door: it chains the local plan, candidate dry-run,
+validation-pack rehearsal when wheels are supplied, strict matrix reporting when state exists, and
+all publication dry-runs without tagging, uploading, publishing, or pushing. `release-plan`,
+`release-candidate`, `release-validation-pack`, `release-machine-validate`, and `release-report`
+cover the lower-level local automation slices. Publication commands stay explicit approval-gated
+operations.
 
 
 ## Agent Behavior
@@ -123,7 +127,7 @@ An agent running the release process should:
 
 1. read this contract, [ARTIFACT_EVIDENCE.md](ARTIFACT_EVIDENCE.md), and
    [VALIDATION_MATRIX.md](VALIDATION_MATRIX.md);
-2. run `just release-plan <version>` before mutating local release state;
+2. run `just release-dry-run <version>` before mutating local release state;
 3. run candidate/report commands and summarize failures in plain language;
 4. give the maintainer exact per-machine validation commands;
 5. ask for approval at every approval gate;

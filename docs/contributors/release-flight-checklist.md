@@ -13,6 +13,7 @@ top to bottom and record skipped items as known exclusions.
 - [ ] Confirm no generated/runtime binary payloads are staged unintentionally.
 - [ ] Run `git diff --check`.
 - [ ] Run `just release-plan <version>`.
+- [ ] Run `just release-dry-run <version> --wheel <wheel>` if a candidate wheel is available.
 - [ ] Run `just release-candidate <version> --dry-run`.
 
 
@@ -140,6 +141,7 @@ top to bottom and record skipped items as known exclusions.
 
 - [ ] Re-run `git status --short`.
 - [ ] Re-run `git diff --check`.
+- [ ] Run `just release-dry-run <version> --wheel <wheel> --dist-dir dist --write-report`.
 - [ ] Run `just release-create-tag <version> --dry-run`.
 - [ ] After maintainer approval, run `just release-create-tag <version> --confirm yes`.
 - [ ] Upload artifacts to PyPI only after TestPyPI rehearsal is accepted.

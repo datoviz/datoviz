@@ -25,6 +25,7 @@ For a requested version such as `0.4.0rc1`:
 
 ```sh
 just release-plan 0.4.0rc1
+just release-dry-run 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
 just release-candidate 0.4.0rc1 --dry-run
 ```
 
@@ -97,6 +98,7 @@ just release-gates 0.4.0rc1 --write-artifacts --strict-matrix
 Before asking for upload or GitHub draft approval, run dry rehearsals:
 
 ```sh
+just release-dry-run 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl --dist-dir dist --write-report
 just release-testpypi 0.4.0rc1 --dry-run --dist-dir dist
 just release-github-draft 0.4.0rc1 --dry-run
 just release-create-tag 0.4.0 --dry-run

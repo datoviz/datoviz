@@ -52,10 +52,15 @@ For the automation front door, start with a dry run:
 
 ```sh
 just release-plan 0.4.0rc1
+just release-dry-run 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
 just release-candidate 0.4.0rc1 --dry-run
 ```
 
-After reviewing the plan, run the local candidate flow:
+`release-dry-run` chains the plan, candidate dry-run, optional validation-pack rehearsal, strict
+matrix report when state exists, and publication dry-runs. Add `--write-report` to save
+`build/release/<version>/dry-run-report.md`.
+
+After reviewing the dry-run output, run the local candidate flow:
 
 ```sh
 just release-candidate 0.4.0rc1
@@ -310,6 +315,7 @@ validation pack, release report, and checksum artifacts. It does not publish the
 Final tag creation, GitHub publication, and docs publication are separate approval-gated commands:
 
 ```sh
+just release-dry-run 0.4.0 --wheel path/to/datoviz-0.4.0-...whl --dist-dir dist --write-report
 just release-create-tag 0.4.0 --dry-run
 just release-create-tag 0.4.0 --confirm yes
 just release-github-publish 0.4.0 --dry-run

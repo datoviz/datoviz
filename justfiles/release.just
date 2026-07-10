@@ -91,6 +91,10 @@ release-plan version:
     @python3 tools/release_automation.py plan "{{version}}"
 #
 
+release-dry-run version *args:
+    @python3 tools/release_automation.py dry-run "{{version}}" {{args}}
+#
+
 release-candidate version *args:
     @python3 tools/release_automation.py candidate "{{version}}" {{args}}
 #

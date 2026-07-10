@@ -1823,12 +1823,223 @@ def docs_publish(args: argparse.Namespace) -> int:
     return 0
 
 
+def run_dry_step(name: str, argv: list[str]) -> dict[str, Any]:
+    print(f"== {name}")
+    print("+ " + " ".join(argv))
+    result = subprocess.run(argv, cwd=ROOT, text=True, capture_output=True, check=False)
+    if result.stdout:
+        print(result.stdout, end="" if result.stdout.endswith("\n") else "\n")
+    if result.stderr:
+        print(result.stderr, end="" if result.stderr.endswith("\n") else "\n", file=sys.stderr)
+    return {
+        "name": name,
+        "argv": argv,
+        "status": "pass" if result.returncode == 0 else "fail",
+        "returncode": result.returncode,
+        "stdout": result.stdout,
+        "stderr": result.stderr,
+    }
+
+
+def skipped_dry_step(name: str, reason: str) -> dict[str, Any]:
+    print(f"== {name}")
+    print(f"skip: {reason}")
+    return {
+        "name": name,
+        "argv": [],
+        "status": "skip",
+        "returncode": None,
+        "stdout": "",
+        "stderr": reason,
+    }
+
+
+def dry_run_report_text(version: str, steps: list[dict[str, Any]]) -> str:
+    lines = [
+        f"# Datoviz Release Dry Run: {version}",
+        "",
+        "## Steps",
+    ]
+    for step in steps:
+        lines.append(f"- `{step['status']}` {step['name']}")
+        if step.get("returncode") not in (0, None):
+            lines.append(f"  - return code: `{step['returncode']}`")
+
+    failed = [step for step in steps if step["status"] == "fail"]
+    skipped = [step for step in steps if step["status"] == "skip"]
+    lines.extend(["", "## Next Human Actions"])
+    if not state_path(version).is_file():
+        lines.append(f"- Create release state with `just release-candidate {version}`.")
+    if any(step["name"] == "validation-pack" and step["status"] == "skip" for step in skipped):
+        lines.append("- Pass `--wheel <wheel>` or build matching wheels before validation-pack rehearsal.")
+    if failed:
+        lines.append("- Review failed dry-run steps and satisfy the reported gates or artifacts.")
+    if not failed and not skipped:
+        lines.append("- Review the dry-run output, then ask for explicit approval before any confirmed action.")
+    lines.append("- Never add `--confirm yes` unless the maintainer approves that exact action.")
+
+    if failed:
+        lines.extend(["", "## Failed Step Details"])
+        for step in failed:
+            lines.append(f"### {step['name']}")
+            stderr = str(step.get("stderr") or "").strip()
+            stdout = str(step.get("stdout") or "").strip()
+            if stderr:
+                lines.append("```text")
+                lines.append(stderr[-3000:])
+                lines.append("```")
+            elif stdout:
+                lines.append("```text")
+                lines.append(stdout[-3000:])
+                lines.append("```")
+
+    return "\n".join(lines)
+
+
+def dry_run(args: argparse.Namespace) -> int:
+    version = args.version
+    script = [sys.executable, "tools/release_automation.py"]
+    steps: list[dict[str, Any]] = []
+
+    steps.append(run_dry_step("plan", [*script, "plan", version]))
+    steps.append(
+        run_dry_step(
+            "candidate",
+            [*script, "candidate", version, "--dry-run", "--profile", args.profile, "--skip-source"],
+        )
+    )
+
+    if args.wheel:
+        pack_cmd = [*script, "validation-pack", version, "--dry-run"]
+        for wheel in args.wheel:
+            pack_cmd.extend(["--wheel", os.fspath(wheel)])
+        steps.append(run_dry_step("validation-pack", pack_cmd))
+    else:
+        steps.append(skipped_dry_step("validation-pack", "no --wheel argument supplied"))
+
+    has_state = state_path(version).is_file()
+    if has_state:
+        steps.append(run_dry_step("report", [*script, "report", version, "--strict-matrix"]))
+        steps.append(run_dry_step("gates", [*script, "gates", version, "--strict-matrix"]))
+
+        testpypi_cmd = [
+            *script,
+            "testpypi",
+            version,
+            "--dry-run",
+            "--allow-incomplete",
+            "--skip-twine-check",
+        ]
+        if args.dist_dir:
+            testpypi_cmd.extend(["--dist-dir", os.fspath(args.dist_dir)])
+        steps.append(run_dry_step("testpypi", testpypi_cmd))
+
+        steps.append(
+            run_dry_step(
+                "github-draft",
+                [
+                    *script,
+                    "github-draft",
+                    version,
+                    "--dry-run",
+                    "--allow-incomplete",
+                    "--allow-missing-tag",
+                ],
+            )
+        )
+        steps.append(
+            run_dry_step(
+                "create-tag",
+                [
+                    *script,
+                    "create-tag",
+                    version,
+                    "--dry-run",
+                    "--allow-incomplete",
+                    "--allow-dirty",
+                    "--allow-commit-mismatch",
+                    "--allow-existing",
+                ],
+            )
+        )
+
+        pypi_cmd = [
+            *script,
+            "pypi",
+            version,
+            "--dry-run",
+            "--allow-incomplete",
+            "--allow-prerelease",
+            "--skip-twine-check",
+        ]
+        if args.dist_dir:
+            pypi_cmd.extend(["--dist-dir", os.fspath(args.dist_dir)])
+        steps.append(run_dry_step("pypi", pypi_cmd))
+        steps.append(
+            run_dry_step(
+                "github-publish",
+                [*script, "github-publish", version, "--dry-run", "--allow-incomplete"],
+            )
+        )
+        steps.append(
+            run_dry_step(
+                "docs-publish",
+                [*script, "docs-publish", version, "--dry-run", "--allow-incomplete"],
+            )
+        )
+    else:
+        for name in (
+            "report",
+            "gates",
+            "testpypi",
+            "github-draft",
+            "create-tag",
+            "pypi",
+            "github-publish",
+            "docs-publish",
+        ):
+            steps.append(skipped_dry_step(name, "release state is missing"))
+
+    report_text = dry_run_report_text(version, steps)
+    if args.output:
+        output = args.output if args.output.is_absolute() else ROOT / args.output
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(report_text + "\n", encoding="utf8")
+        print(f"wrote {relpath(output)}")
+    elif args.write_report:
+        output = state_dir(version) / "dry-run-report.md"
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(report_text + "\n", encoding="utf8")
+        print(f"wrote {relpath(output)}")
+
+    failed = [step for step in steps if step["status"] == "fail"]
+    return 1 if args.strict and failed else 0
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     plan_parser = subparsers.add_parser("plan", help="Print the release plan for a version")
     plan_parser.add_argument("version")
+
+    dry_parser = subparsers.add_parser("dry-run", help="Run end-to-end release dry-run conductor")
+    dry_parser.add_argument("version")
+    dry_parser.add_argument("--wheel", type=Path, action="append", default=[])
+    dry_parser.add_argument("--dist-dir", type=Path)
+    dry_parser.add_argument(
+        "--profile",
+        choices=sorted(PREFLIGHT_PROFILES),
+        default="light",
+        help="candidate dry-run preflight profile",
+    )
+    dry_parser.add_argument("--output", type=Path)
+    dry_parser.add_argument("--write-report", action="store_true")
+    dry_parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="return nonzero if any dry-run step fails",
+    )
 
     candidate_parser = subparsers.add_parser(
         "candidate", help="Create local release-candidate state"
@@ -1960,6 +2171,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "plan":
         print(command_plan(args.version))
         return 0
+    if args.command == "dry-run":
+        return dry_run(args)
     if args.command == "candidate":
         return candidate(args)
     if args.command == "validation-pack":
