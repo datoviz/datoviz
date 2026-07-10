@@ -32,16 +32,16 @@ Both panels plot deterministic path data over the same X domain but use differen
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/panel_linked.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/panel_linked.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/panel_linked.c"
     ```
 
 ??? info "Example details"

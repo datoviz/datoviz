@@ -32,16 +32,16 @@ A 192 by 144 float field is uploaded as an R32 sampled field, and the image visu
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/colorbar.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/colorbar.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/colorbar.c"
     ```
 
 ??? info "Example details"

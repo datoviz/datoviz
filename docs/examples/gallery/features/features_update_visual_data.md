@@ -32,16 +32,16 @@ The initial upload draws seven small gray points in a line. After one second, th
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/update_visual_data.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/update_visual_data.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/update_visual_data.c"
     ```
 
 ??? info "Example details"

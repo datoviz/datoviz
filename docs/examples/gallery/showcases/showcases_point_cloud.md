@@ -34,16 +34,16 @@ Real data is loaded from `.cache/datoviz/examples/point_cloud/prepared/point_clo
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/showcases/point_cloud.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/showcases/point_cloud.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/showcases/point_cloud.c"
     ```
 
 ??? info "Example details"

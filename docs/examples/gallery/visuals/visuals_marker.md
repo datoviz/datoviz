@@ -32,16 +32,16 @@ Each row reuses position, symbol, color, size, edge color, and angle arrays to s
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/visuals/marker.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/visuals/marker.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/visuals/marker.c"
     ```
 
 ??? info "Example details"

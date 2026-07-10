@@ -32,16 +32,16 @@ The 40x24 grid uploads position, color, and pixel_size_px arrays generated from 
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/selection_pixel.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/selection_pixel.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/selection_pixel.c"
     ```
 
 ??? info "Example details"

@@ -32,16 +32,16 @@ The example writes a compact OBJ file, loads it through dvz_geometry_obj(), assi
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/obj_loading.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/obj_loading.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/obj_loading.c"
     ```
 
 ??? info "Example details"

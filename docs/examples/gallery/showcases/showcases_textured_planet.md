@@ -40,16 +40,16 @@ The example uses real texture files from the data submodule when available. Eart
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/showcases/textured_planet.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/showcases/textured_planet.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/showcases/textured_planet.c"
     ```
 
 ??? info "Example details"

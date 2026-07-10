@@ -22,16 +22,16 @@ Both panels draw the same translated cube cluster with linked arcball controls, 
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/technique_msaa.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/technique_msaa.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/technique_msaa.c"
     ```
 
 ??? info "Example details"

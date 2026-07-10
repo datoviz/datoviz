@@ -22,16 +22,16 @@ Both panels upload the same lit sphere position, radius, and color arrays, while
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/technique_ssao.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/technique_ssao.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/technique_ssao.c"
     ```
 
 ??? info "Example details"

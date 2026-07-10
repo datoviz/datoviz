@@ -22,16 +22,16 @@ A 256x192 R32_SINT sampled field stores category IDs for cortex, fiber, nucleus,
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/probe_labels.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/probe_labels.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/probe_labels.c"
     ```
 
 ??? info "Example details"

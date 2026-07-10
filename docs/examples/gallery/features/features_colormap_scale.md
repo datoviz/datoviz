@@ -32,16 +32,16 @@ Five point positions are paired with a float color-value array instead of precom
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/colormap_scale.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/colormap_scale.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/colormap_scale.c"
     ```
 
 ??? info "Example details"

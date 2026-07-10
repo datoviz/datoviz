@@ -44,16 +44,16 @@ Promote: `python tools/data/prepare_us_state_choropleth.py --output data/example
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/showcases/choropleth.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/showcases/choropleth.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/showcases/choropleth.c"
     ```
 
 ??? info "Example details"

@@ -32,16 +32,16 @@ Both panels sample the same R32_FLOAT field and the same moving highlighted patc
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/sampled_field_update.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/sampled_field_update.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/sampled_field_update.c"
     ```
 
 ??? info "Example details"

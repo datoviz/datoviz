@@ -32,16 +32,16 @@ Each primitive supplies positions, colors, and group IDs, then chooses a line or
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/visuals/primitive.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/visuals/primitive.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/visuals/primitive.c"
     ```
 
 ??? info "Example details"

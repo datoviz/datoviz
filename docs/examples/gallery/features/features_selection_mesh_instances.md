@@ -32,16 +32,16 @@ A single cube geometry is reused with an instance_transform array for a 6x4x2 fi
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/selection_mesh_instances.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/selection_mesh_instances.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/selection_mesh_instances.c"
     ```
 
 ??? info "Example details"

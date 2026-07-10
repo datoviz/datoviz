@@ -34,16 +34,16 @@ This workflow is useful for scientific surfaces where the same gridded data shou
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/showcases/surface_grid.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/showcases/surface_grid.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/showcases/surface_grid.c"
     ```
 
 ??? info "Example details"

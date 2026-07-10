@@ -32,16 +32,16 @@ The left shape uses outer and hole coordinate rings plus fill, stroke, width, jo
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/composites/polygon.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/composites/polygon.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/composites/polygon.c"
     ```
 
 ??? info "Example details"

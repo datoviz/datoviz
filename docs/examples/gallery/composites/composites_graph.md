@@ -22,16 +22,16 @@ Node arrays provide positions, semantic IDs, community colors, and sizes; edge a
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/composites/graph.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/composites/graph.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/composites/graph.c"
     ```
 
 ??? info "Example details"

@@ -32,16 +32,16 @@ The FIELD_WIDTH by FIELD_HEIGHT RGBA8 array is attached directly as a color samp
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/visuals/image_rgba.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/visuals/image_rgba.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/visuals/image_rgba.c"
     ```
 
 ??? info "Example details"

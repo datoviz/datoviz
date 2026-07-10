@@ -32,16 +32,16 @@ Five data-space points mark a simple ruler from 0 to 8 along X, while the scale 
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/scalebar.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/scalebar.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/scalebar.c"
     ```
 
 ??? info "Example details"

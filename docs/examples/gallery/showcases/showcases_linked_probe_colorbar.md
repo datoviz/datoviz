@@ -34,16 +34,16 @@ This workflow is useful for inspecting transformed measurements while preserving
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/showcases/linked_probe_colorbar.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/showcases/linked_probe_colorbar.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/showcases/linked_probe_colorbar.c"
     ```
 
 ??? info "Example details"

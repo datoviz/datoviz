@@ -34,16 +34,16 @@ This workflow is useful for scientific figures where readers must understand phy
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/showcases/scalebar_measurement.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/showcases/scalebar_measurement.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/showcases/scalebar_measurement.c"
     ```
 
 ??? info "Example details"

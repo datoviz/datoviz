@@ -22,16 +22,16 @@ The grid is attached to the XZ plane, shifted downward on Y, and configured with
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/reference_grid.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/reference_grid.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/reference_grid.c"
     ```
 
 ??? info "Example details"

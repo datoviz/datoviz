@@ -32,16 +32,16 @@ The panel has explicit x and y domains, matching tick policies, grid lines, and 
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/axis_labels.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/axis_labels.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/axis_labels.c"
     ```
 
 ??? info "Example details"

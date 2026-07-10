@@ -22,16 +22,16 @@ The path visual uploads position, color, and linewidth arrays in compact numeric
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/datetime_axis.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/datetime_axis.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/datetime_axis.c"
     ```
 
 ??? info "Example details"

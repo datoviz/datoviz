@@ -22,16 +22,16 @@ Both panels upload the same 3x3x3 sphere position, color, and radius arrays, but
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/technique_depth_cue.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/technique_depth_cue.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/technique_depth_cue.c"
     ```
 
 ??? info "Example details"

@@ -40,16 +40,16 @@ This workflow is useful for geophysical or fluid-like data where scalar magnitud
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/showcases/wind_field.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/showcases/wind_field.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/showcases/wind_field.c"
     ```
 
 ??? info "Example details"

@@ -34,16 +34,16 @@ Prepare: `python tools/data/prepare_brain_volume.py`
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/showcases/brain_volume.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/showcases/brain_volume.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/showcases/brain_volume.c"
     ```
 
 ??? info "Example details"

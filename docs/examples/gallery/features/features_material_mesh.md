@@ -32,16 +32,16 @@ All three panels use the same colored cube geometry, while the material descript
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/material_mesh.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/material_mesh.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/material_mesh.c"
     ```
 
 ??? info "Example details"

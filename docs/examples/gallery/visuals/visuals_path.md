@@ -32,16 +32,16 @@ Positions hold the sampled curves, colors and widths vary per sample, and the su
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/visuals/path.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/visuals/path.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/visuals/path.c"
     ```
 
 ??? info "Example details"

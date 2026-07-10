@@ -32,16 +32,16 @@ Both panels upload the same eight large point sprites at the corners of a small 
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/technique_depth_test.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/technique_depth_test.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/technique_depth_test.c"
     ```
 
 ??? info "Example details"

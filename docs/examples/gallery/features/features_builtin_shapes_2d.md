@@ -32,16 +32,16 @@ The panel uses equal-aspect data coordinates, then uploads generated geometry fo
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/builtin_shapes_2d.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/builtin_shapes_2d.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/builtin_shapes_2d.c"
     ```
 
 ??? info "Example details"

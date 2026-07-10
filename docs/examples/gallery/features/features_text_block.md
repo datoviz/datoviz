@@ -32,16 +32,16 @@ The text object keeps style, layout, placement, and the whole paragraph string t
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/text_block.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/text_block.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/text_block.c"
     ```
 
 ??? info "Example details"

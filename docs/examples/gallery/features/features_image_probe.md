@@ -32,16 +32,16 @@ A synthetic microscopy-like float field is uploaded as an R32 sampled image and 
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/image_probe.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/image_probe.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/image_probe.c"
     ```
 
 ??? info "Example details"

@@ -22,16 +22,16 @@ Five point positions are fixed, while GUI sliders and color editors update the c
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/gui_controls.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/gui_controls.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/gui_controls.c"
     ```
 
 ??? info "Example details"

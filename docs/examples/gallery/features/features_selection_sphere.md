@@ -32,16 +32,16 @@ The sphere visual uploads position, radius, and color arrays for a compact depth
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/selection_sphere.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/selection_sphere.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/selection_sphere.c"
     ```
 
 ??? info "Example details"

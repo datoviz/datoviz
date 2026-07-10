@@ -22,16 +22,16 @@ The camera descriptor sets eye, target, up, field of view, and near/far clip pla
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/camera_manual.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/camera_manual.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/camera_manual.c"
     ```
 
 ??? info "Example details"

@@ -22,16 +22,16 @@ The texture pixels are generated as a 1024x512 color field, attached to the mesh
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/mesh_texture.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/mesh_texture.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/mesh_texture.c"
     ```
 
 ??? info "Example details"

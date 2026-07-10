@@ -22,16 +22,16 @@ Four point positions and colors are uploaded once, while the GUI slider rewrites
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/gui_cimgui.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/gui_cimgui.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/gui_cimgui.c"
     ```
 
 ??? info "Example details"

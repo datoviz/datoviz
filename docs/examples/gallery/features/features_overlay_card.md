@@ -32,16 +32,16 @@ The background path uploads position, color, and stroke_width_px arrays in view 
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/overlay_card.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/overlay_card.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/overlay_card.c"
     ```
 
 ??? info "Example details"

@@ -32,16 +32,16 @@ Three triangle groups share one primitive visual, with position and normal array
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/alpha_blending.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/alpha_blending.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/alpha_blending.c"
     ```
 
 ??? info "Example details"

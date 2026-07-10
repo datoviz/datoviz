@@ -32,16 +32,16 @@ Each panel has its own border, background, and small point visual with position,
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/panel_grid.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/panel_grid.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/panel_grid.c"
     ```
 
 ??? info "Example details"

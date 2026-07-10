@@ -32,16 +32,16 @@ The positions array lays out the grid, scalar values drive the color scale, and 
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/visuals/pixel.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/visuals/pixel.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/visuals/pixel.c"
     ```
 
 ??? info "Example details"

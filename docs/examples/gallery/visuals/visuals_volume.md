@@ -22,16 +22,16 @@ The FIELD_SIZE cubed data array is attached as a 3D sampled field, with color an
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/visuals/volume.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/visuals/volume.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/visuals/volume.c"
     ```
 
 ??? info "Example details"

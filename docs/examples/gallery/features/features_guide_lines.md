@@ -32,16 +32,16 @@ A path visual uploads position, color, and linewidth arrays for a signal, and th
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/guide_lines.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/guide_lines.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/guide_lines.c"
     ```
 
 ??? info "Example details"

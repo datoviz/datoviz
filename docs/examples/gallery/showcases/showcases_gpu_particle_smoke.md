@@ -40,16 +40,16 @@ This experimental workflow is useful for simulations where GPU-updated arrays sh
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/showcases/gpu_particle_smoke.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/showcases/gpu_particle_smoke.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/showcases/gpu_particle_smoke.c"
     ```
 
 ??? info "Example details"

@@ -28,16 +28,16 @@ The main scene is a lit cube controlled by an arcball, and the orientation gizmo
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/orientation_gizmo.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/orientation_gizmo.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/orientation_gizmo.c"
     ```
 
 ??? info "Example details"

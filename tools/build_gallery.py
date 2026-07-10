@@ -805,22 +805,20 @@ def media_block(
 
 def render_source_tabs(example: Example) -> list[str]:
     lines = ["## Source", ""]
-    tabs = [
+    tabs: list[SourceTab] = []
+    if example.python_source is not None and example.python_source_path is not None:
+        tabs.append(SourceTab(label="Python", language="python", path=example.python_source))
+    tabs.extend([
         SourceTab(
             label=example.source_label,
             language=example.source_language,
             path=example.source,
         ),
         *example.extra_sources,
-    ]
+    ])
     for tab in tabs:
         lines.extend([f'=== "{tab.label}"', "", f"    ```{tab.language}"])
         lines.append(f'    --8<-- "{tab.path}"')
-        lines.extend(["    ```", ""])
-
-    if example.python_source is not None and example.python_source_path is not None:
-        lines.extend(['=== "Python"', "", "    ```python"])
-        lines.append(f'    --8<-- "{example.python_source}"')
         lines.extend(["    ```", ""])
 
     return lines

@@ -38,16 +38,16 @@ The cube keeps its mesh geometry and material, while a rotation track updates it
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/animation_tracks.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/animation_tracks.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/animation_tracks.c"
     ```
 
 ??? info "Example details"

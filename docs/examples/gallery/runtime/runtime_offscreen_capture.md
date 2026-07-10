@@ -24,16 +24,16 @@ This is the runtime path to copy for reproducible batch figures, tests, and docu
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/runtime/offscreen_capture.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/runtime/offscreen_capture.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/runtime/offscreen_capture.c"
     ```
 
 ??? info "Example details"

@@ -38,16 +38,16 @@ A 64-point ring uploads position, color, and diameter_px arrays inside a [-1, 1]
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/panzoom.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/panzoom.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/panzoom.c"
     ```
 
 ??? info "Example details"

@@ -32,16 +32,16 @@ Generated positions place the samples, scalar values are mapped through a color 
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/visuals/point.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/visuals/point.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/visuals/point.c"
     ```
 
 ??? info "Example details"

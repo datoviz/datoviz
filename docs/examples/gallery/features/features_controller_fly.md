@@ -38,16 +38,16 @@ The same colored cube and reference grid used by the controller examples are sho
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/controller_fly.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/controller_fly.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/controller_fly.c"
     ```
 
 ??? info "Example details"

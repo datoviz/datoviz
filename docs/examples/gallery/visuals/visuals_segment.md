@@ -32,16 +32,16 @@ Start and end position arrays define each segment, while color and width arrays 
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/visuals/segment.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/visuals/segment.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/visuals/segment.c"
     ```
 
 ??? info "Example details"

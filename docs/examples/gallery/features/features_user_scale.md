@@ -28,16 +28,16 @@ The panel combines a data-space path, outlined markers, axes, and panzoom. The p
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/user_scale.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/user_scale.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/user_scale.c"
     ```
 
 ??? info "Example details"

@@ -40,16 +40,16 @@ This workflow is useful for scientific dashboards where traces, events, and summ
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/showcases/panel_linked_axes.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/showcases/panel_linked_axes.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/showcases/panel_linked_axes.c"
     ```
 
 ??? info "Example details"

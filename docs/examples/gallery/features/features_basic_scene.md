@@ -32,16 +32,16 @@ A scene owns one figure, one full panel, and one point visual. The point visual 
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/basic_scene.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/basic_scene.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/basic_scene.c"
     ```
 
 ??? info "Example details"

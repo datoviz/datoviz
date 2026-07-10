@@ -32,16 +32,16 @@ The bar helper uses start, end, and value arrays so each bar has an explicit int
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/bars_bands.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/bars_bands.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/bars_bands.c"
     ```
 
 ??? info "Example details"

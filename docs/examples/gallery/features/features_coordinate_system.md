@@ -22,16 +22,16 @@ The axis triad uses red for X, green for Y, and blue for Z, with labels and a re
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/coordinate_system.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/coordinate_system.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/coordinate_system.c"
     ```
 
 ??? info "Example details"

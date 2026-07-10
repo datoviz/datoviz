@@ -32,16 +32,16 @@ The scene uses geometry builders for common solids such as a cube, sphere, cylin
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/builtin_shapes_3d.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/builtin_shapes_3d.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/builtin_shapes_3d.c"
     ```
 
 ??? info "Example details"

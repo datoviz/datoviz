@@ -22,16 +22,16 @@ Both panels upload the same five point positions, colors, and diameter_px values
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/visual_transform.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/visual_transform.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/visual_transform.c"
     ```
 
 ??? info "Example details"

@@ -32,16 +32,16 @@ The straight field uses position, vector, color, and width arrays, while the cur
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/visuals/vector.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/visuals/vector.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/visuals/vector.c"
     ```
 
 ??? info "Example details"

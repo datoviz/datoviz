@@ -32,16 +32,16 @@ Three separate point visuals are created so the middle red point can use dvz_vis
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/visibility.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/visibility.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/visibility.c"
     ```
 
 ??? info "Example details"

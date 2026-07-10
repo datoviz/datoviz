@@ -32,16 +32,16 @@ Positions locate the sphere centers, radii control physical size, and colors dis
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/visuals/sphere.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/visuals/sphere.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/visuals/sphere.c"
     ```
 
 ??? info "Example details"

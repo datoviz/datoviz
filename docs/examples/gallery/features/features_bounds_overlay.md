@@ -22,16 +22,16 @@ The left panel contains a point cloud with position, color, and diameter arrays,
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/bounds_overlay.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/bounds_overlay.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/bounds_overlay.c"
     ```
 
 ??? info "Example details"

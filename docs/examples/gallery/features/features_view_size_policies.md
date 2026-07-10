@@ -22,16 +22,16 @@ Pass --policy pixel, host, reference, or physical to choose framebuffer pixels, 
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/view_size_policies.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/view_size_policies.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/view_size_policies.c"
     ```
 
 ??? info "Example details"

@@ -22,16 +22,16 @@ The application hosts a GUI window while a separate Datoviz figure renders a sma
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/gui_viewport.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/gui_viewport.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/gui_viewport.c"
     ```
 
 ??? info "Example details"

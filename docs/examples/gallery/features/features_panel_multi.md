@@ -32,16 +32,16 @@ The left panel uploads a point ring with position, color, and diameter_px arrays
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/panel_multi.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/panel_multi.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/panel_multi.c"
     ```
 
 ??? info "Example details"

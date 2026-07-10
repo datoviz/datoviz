@@ -32,16 +32,16 @@ The point visual uploads position, color, and diameter_px arrays for a small sig
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/annotation_readout.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/annotation_readout.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/annotation_readout.c"
     ```
 
 ??? info "Example details"

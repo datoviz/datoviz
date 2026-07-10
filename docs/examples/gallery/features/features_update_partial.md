@@ -32,16 +32,16 @@ The visual initially uploads six points with position, color, and diameter_px ar
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/update_partial.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/update_partial.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/update_partial.c"
     ```
 
 ??? info "Example details"

@@ -54,16 +54,16 @@ The full interactive GUI workbench lives in examples/c/lab/protein_viewer.c.
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/showcases/protein.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/showcases/protein.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/showcases/protein.c"
     ```
 
 ??? info "Example details"

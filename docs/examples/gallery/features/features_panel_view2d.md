@@ -22,16 +22,16 @@ Both panels draw the same unit circle path and styled X/Y axes. The left panel u
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/panel_view2d.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/panel_view2d.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/panel_view2d.c"
     ```
 
 ??? info "Example details"

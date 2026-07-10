@@ -22,16 +22,16 @@ Four control points define the curve. The tessellated path uploads position, col
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/bezier_curve_path.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/bezier_curve_path.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/bezier_curve_path.c"
     ```
 
 ??? info "Example details"

@@ -22,16 +22,16 @@ Each row uses the same marker attributes, including position, color, diameter_px
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/marker_symbols.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/marker_symbols.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/marker_symbols.c"
     ```
 
 ??? info "Example details"

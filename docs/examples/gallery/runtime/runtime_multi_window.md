@@ -24,16 +24,16 @@ This workflow is useful for scientific tools that need a coarse overview beside 
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/runtime/multi_window.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/runtime/multi_window.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/runtime/multi_window.c"
     ```
 
 ??? info "Example details"

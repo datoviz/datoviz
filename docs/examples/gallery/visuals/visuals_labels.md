@@ -32,16 +32,16 @@ The labels array stores category IDs, and the category scale assigns each ID a n
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/visuals/labels.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/visuals/labels.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/visuals/labels.c"
     ```
 
 ??? info "Example details"

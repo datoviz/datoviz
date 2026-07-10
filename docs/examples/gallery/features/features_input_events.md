@@ -22,16 +22,16 @@ The native app registers input callbacks and prints event details for pointer mo
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/input_events.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/input_events.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/input_events.c"
     ```
 
 ??? info "Example details"

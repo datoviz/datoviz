@@ -32,16 +32,16 @@ The path visual uploads 96 time samples whose X positions span 0 to 250 and whos
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/scalebar_units.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/scalebar_units.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/scalebar_units.c"
     ```
 
 ??? info "Example details"

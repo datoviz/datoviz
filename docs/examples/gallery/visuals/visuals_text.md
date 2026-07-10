@@ -32,16 +32,16 @@ Each text item provides a string, x/y screen position, font size, angle, and col
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/visuals/text.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/visuals/text.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/visuals/text.c"
     ```
 
 ??? info "Example details"

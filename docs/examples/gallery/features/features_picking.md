@@ -32,16 +32,16 @@ The marker grid uploads position, color, diameter_px, angle, and shape arrays, i
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/picking.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/picking.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/picking.c"
     ```
 
 ??? info "Example details"

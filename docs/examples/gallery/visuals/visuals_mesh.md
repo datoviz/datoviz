@@ -32,16 +32,16 @@ The cube geometry supplies vertices, indices, normals, and per-face colors to th
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/visuals/mesh.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/visuals/mesh.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/visuals/mesh.c"
     ```
 
 ??? info "Example details"

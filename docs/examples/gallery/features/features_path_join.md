@@ -22,16 +22,16 @@ The three columns use the same acute V, zigzag, open star, and closed star subpa
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/path_join.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/path_join.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/path_join.c"
     ```
 
 ??? info "Example details"

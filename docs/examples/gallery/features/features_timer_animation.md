@@ -32,16 +32,16 @@ The same point visual receives new position, color, and diameter_px arrays on ea
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/timer_animation.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/timer_animation.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/timer_animation.c"
     ```
 
 ??? info "Example details"

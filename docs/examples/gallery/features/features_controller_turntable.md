@@ -38,16 +38,16 @@ The lit cube and XZ grid provide a stable reference frame while the controller o
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/controller_turntable.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/controller_turntable.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/controller_turntable.c"
     ```
 
 ??? info "Example details"

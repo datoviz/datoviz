@@ -22,16 +22,16 @@ Each panel draws two translucent cube meshes with the same geometry, transforms,
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/technique_transparency.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/technique_transparency.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/technique_transparency.c"
     ```
 
 ??? info "Example details"

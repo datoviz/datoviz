@@ -32,16 +32,16 @@ Each panel uploads the same sphere position, radius, and color arrays, but chang
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/lighting.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/lighting.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/lighting.c"
     ```
 
 ??? info "Example details"

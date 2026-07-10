@@ -32,16 +32,16 @@ The FIELD_WIDTH by FIELD_HEIGHT value array is attached as a sampled field, whil
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/visuals/image.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/visuals/image.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/visuals/image.c"
     ```
 
 ??? info "Example details"

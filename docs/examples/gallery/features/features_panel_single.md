@@ -32,16 +32,16 @@ The panel is placed with normalized x, y, width, and height values instead of fi
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/panel_single.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/panel_single.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/panel_single.c"
     ```
 
 ??? info "Example details"

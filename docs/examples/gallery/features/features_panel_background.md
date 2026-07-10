@@ -32,16 +32,16 @@ The panel rectangle is explicitly inset inside the figure and receives a linear-
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/panel_background.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/panel_background.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/panel_background.c"
     ```
 
 ??? info "Example details"

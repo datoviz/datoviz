@@ -18,16 +18,16 @@ Quickstart scatter plot: 10 000 random colored points with pan/zoom.
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/start/scatter.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/start/scatter.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/start/scatter.c"
     ```
 
 ??? info "Example details"

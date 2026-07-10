@@ -24,16 +24,16 @@ Use this as the beginner native-app template when you want Datoviz to own the GL
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/runtime/app_glfw.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/runtime/app_glfw.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/runtime/app_glfw.c"
     ```
 
 ??? info "Example details"

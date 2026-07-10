@@ -28,16 +28,16 @@ A colored cube mesh and XZ reference grid make rotation easy to see, and the con
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/controller_arcball.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/controller_arcball.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/controller_arcball.c"
     ```
 
 ??? info "Example details"

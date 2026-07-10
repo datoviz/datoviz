@@ -32,16 +32,16 @@ The scalar field is sampled on a regular grid, and CPU contour extraction turns 
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/isolines.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/isolines.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/isolines.c"
     ```
 
 ??? info "Example details"

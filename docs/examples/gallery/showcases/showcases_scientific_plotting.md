@@ -34,16 +34,16 @@ This workflow is useful when a paper-style diagnostic figure needs multiple coor
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/showcases/scientific_plotting.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/showcases/scientific_plotting.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/showcases/scientific_plotting.c"
     ```
 
 ??? info "Example details"

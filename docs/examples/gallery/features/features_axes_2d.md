@@ -32,16 +32,16 @@ The path visual receives arrays for data-space position, color, and linewidth, t
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/axes_2d.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/axes_2d.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/axes_2d.c"
     ```
 
 ??? info "Example details"

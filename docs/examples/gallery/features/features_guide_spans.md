@@ -32,16 +32,16 @@ The point visual uploads position, color, and diameter_px arrays, while the pane
 
 ## Source
 
-=== "C"
-
-    ```c
-    --8<-- "examples/c/features/guide_spans.c"
-    ```
-
 === "Python"
 
     ```python
     --8<-- "examples/python/gallery/features/guide_spans.py"
+    ```
+
+=== "C"
+
+    ```c
+    --8<-- "examples/c/features/guide_spans.c"
     ```
 
 ??? info "Example details"
