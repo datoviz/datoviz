@@ -116,25 +116,9 @@ Pick the entry point that matches how you want to use Datoviz.
 <strong>Examples</strong>
 <span>Browse working visuals, features, runtime examples, and scientific showcases.</span>
 </a>
-<a class="dvz-nav-card" href="reference/python-direct-engine/">
-<strong>Python</strong>
-<span>Use `import datoviz as dvz` with NumPy arrays and documented type adaptation.</span>
-</a>
-<a class="dvz-nav-card" href="how-to/c-integration/">
-<strong>C and C++</strong>
-<span>Embed Datoviz directly, manage native windows, render offscreen, and integrate with applications.</span>
-</a>
-<a class="dvz-nav-card" href="reference/webgpu-subset/">
-<strong>WebGPU</strong>
-<span>Understand the experimental browser runtime, supported examples, and current boundaries.</span>
-</a>
 <a class="dvz-nav-card" href="how-to/create-a-scene/">
 <strong>How-To Guides</strong>
 <span>Learn focused tasks such as axes, colorbars, picking, animation, capture, and offscreen output.</span>
-</a>
-<a class="dvz-nav-card" href="reference/feature-status/">
-<strong>Feature status</strong>
-<span>Check what is supported, experimental, advanced/unstable, deferred, or outside the v0.4 scope.</span>
 </a>
 <a class="dvz-nav-card" href="reference/">
 <strong>Reference</strong>
