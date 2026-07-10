@@ -88,6 +88,9 @@ top to bottom and record skipped items as known exclusions.
 - [ ] Run `just release-gates <version> --write-artifacts --strict-matrix`.
 - [ ] Run `just wheel-check --cmake-consumer --qt-probe optional`.
 - [ ] Run render smoke with `--render` on at least one graphics-capable host.
+- [ ] Confirm `release-machine-validate --profile rc` ran installed Python/C example smokes.
+- [ ] Confirm `release-machine-validate --profile full` ran installed offscreen render examples on
+      at least one graphics-capable host, or record why render coverage came from another gate.
 - [ ] Confirm `import datoviz` works from an installed wheel.
 - [ ] Confirm `import datoviz.raw` works from an installed wheel.
 - [ ] Confirm `python -m datoviz.cli --cflags --libs --cmake-dir` behavior.

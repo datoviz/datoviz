@@ -126,10 +126,15 @@ VALIDATION_PROFILES: dict[str, dict[str, Any]] = {
         ],
     },
     "rc": {
-        "description": "Required installed wheel smoke with CMake consumer and optional Qt probe.",
+        "description": (
+            "Required installed wheel smoke with CMake consumer, examples, and optional Qt probe."
+        ),
         "commands": [
             {"kind": "wheel-inspect", "args": ["--native-deps"]},
-            {"kind": "wheel-check", "args": ["--cmake-consumer", "--qt-probe", "optional"]},
+            {
+                "kind": "wheel-check",
+                "args": ["--cmake-consumer", "--examples", "basic", "--qt-probe", "optional"],
+            },
         ],
     },
     "full": {
@@ -138,7 +143,15 @@ VALIDATION_PROFILES: dict[str, dict[str, Any]] = {
             {"kind": "wheel-inspect", "args": ["--native-deps"]},
             {
                 "kind": "wheel-check",
-                "args": ["--shaderc", "--cmake-consumer", "--render", "--qt-probe", "optional"],
+                "args": [
+                    "--shaderc",
+                    "--cmake-consumer",
+                    "--examples",
+                    "render",
+                    "--render",
+                    "--qt-probe",
+                    "optional",
+                ],
             },
         ],
     },

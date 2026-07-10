@@ -97,6 +97,10 @@ For wheel artifacts, run the host-local package proof:
 just wheel-ci-local <host-platform-tag>
 ```
 
+The release machine validator uses near-final installed wheel artifacts. Its `rc` profile runs
+installed Python and C no-window examples in addition to import, CLI, native dependency inventory,
+and CMake consumer checks. Its `full` profile adds installed offscreen render examples.
+
 Use the rebuild variant when the local native build configuration is known to be valid:
 
 ```sh

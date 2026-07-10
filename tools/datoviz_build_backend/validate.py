@@ -107,12 +107,15 @@ def run_installed_checks(
     render: bool = False,
     shaderc: bool = False,
     cmake_consumer: bool = False,
+    examples: str = "skip",
     qt_probe: str = "skip",
     keep: bool = False,
 ) -> None:
     """Install a wheel in a clean venv and run installed-package smokes."""
 
     work = work_dir or Path(tempfile.mkdtemp(prefix="datoviz-wheel-"))
+    if not work.is_absolute():
+        work = ROOT / work
     work.mkdir(parents=True, exist_ok=True)
     venv = work / "venv"
     try:
@@ -127,6 +130,8 @@ def run_installed_checks(
             _render_smoke(python, work)
         if cmake_consumer:
             _cmake_consumer_smoke(python, work)
+        if examples != "skip":
+            _installed_example_smokes(python, work, profile=examples)
         if qt_probe != "skip":
             _qt_probe(python, work, required=qt_probe == "required")
     finally:
@@ -149,6 +154,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--render", action="store_true")
     parser.add_argument("--shaderc", action="store_true")
     parser.add_argument("--cmake-consumer", action="store_true")
+    parser.add_argument("--examples", choices=("skip", "basic", "render"), default="skip")
     parser.add_argument("--qt-probe", choices=("skip", "optional", "required"), default="skip")
     parser.add_argument("--keep", action="store_true")
     args = parser.parse_args(argv)
@@ -160,13 +166,20 @@ def main(argv: list[str] | None = None) -> int:
     validate_wheel(wheel)
     if args.inspect or args.native_deps:
         inspect_wheel(wheel, native_deps=args.native_deps)
-    if args.render or args.shaderc or args.cmake_consumer or args.qt_probe != "skip":
+    if (
+        args.render
+        or args.shaderc
+        or args.cmake_consumer
+        or args.examples != "skip"
+        or args.qt_probe != "skip"
+    ):
         run_installed_checks(
             wheel,
             work_dir=args.work_dir,
             render=args.render,
             shaderc=args.shaderc,
             cmake_consumer=args.cmake_consumer,
+            examples=args.examples,
             qt_probe=args.qt_probe,
             keep=args.keep,
         )
@@ -358,6 +371,273 @@ def _cmake_consumer_smoke(python: Path, work: Path) -> None:
         ).strip()
         env["PATH"] = f"{prefix}{os.pathsep}{env.get('PATH', '')}"
     _run([str(exe)], cwd=work, env=env)
+
+
+def _installed_example_smokes(python: Path, work: Path, *, profile: str) -> None:
+    examples = work / "installed-examples"
+    examples.mkdir(parents=True, exist_ok=True)
+    _python_installed_example(python, examples, render=profile == "render")
+    _c_installed_example(python, examples, render=profile == "render")
+
+
+def _python_installed_example(python: Path, work: Path, *, render: bool) -> None:
+    script = work / ("python_render_example.py" if render else "python_basic_example.py")
+    if render:
+        script.write_text(_PYTHON_RENDER_EXAMPLE, encoding="utf8")
+    else:
+        script.write_text(_PYTHON_BASIC_EXAMPLE, encoding="utf8")
+    _run([str(python), str(script)], cwd=work)
+
+
+def _c_installed_example(python: Path, work: Path, *, render: bool) -> None:
+    cmake = shutil.which("cmake")
+    if cmake is None:
+        raise RuntimeError("cmake is required for installed C example smoke")
+    source = work / ("c-render-example" if render else "c-basic-example")
+    source.mkdir(parents=True, exist_ok=True)
+    (source / "main.c").write_text(
+        _C_RENDER_EXAMPLE if render else _C_BASIC_EXAMPLE,
+        encoding="utf8",
+    )
+    (source / "CMakeLists.txt").write_text(
+        "cmake_minimum_required(VERSION 3.21)\n"
+        "project(datoviz_installed_example C)\n"
+        "find_package(datoviz REQUIRED)\n"
+        "add_executable(datoviz_installed_example main.c)\n"
+        "target_link_libraries(datoviz_installed_example PRIVATE datoviz::datoviz)\n",
+        encoding="utf8",
+    )
+    cmake_dir = subprocess.check_output(
+        [str(python), "-m", "datoviz.cli", "--cmake-dir"], cwd=work, text=True
+    ).strip()
+    build = source / "build"
+    generator = ["-GNinja"] if shutil.which("ninja") else []
+    _run(
+        [cmake, "-S", str(source), "-B", str(build), f"-Ddatoviz_DIR={cmake_dir}", *generator],
+        cwd=work,
+    )
+    _run([cmake, "--build", str(build)], cwd=work)
+    exe = build / (
+        "datoviz_installed_example.exe" if os.name == "nt" else "datoviz_installed_example"
+    )
+    env = os.environ.copy()
+    if os.name == "nt":
+        prefix = subprocess.check_output(
+            [str(python), "-m", "datoviz.cli", "--prefix"], cwd=work, text=True
+        ).strip()
+        env["PATH"] = f"{prefix}{os.pathsep}{env.get('PATH', '')}"
+    _run([str(exe)], cwd=work, env=env)
+
+
+_PYTHON_BASIC_EXAMPLE = r'''
+import datoviz as dvz
+import datoviz.raw as raw
+
+scene = dvz.dvz_scene()
+if not scene:
+    raise SystemExit("dvz_scene() failed")
+try:
+    figure = dvz.dvz_figure(scene, 64, 64, 0)
+    if not figure:
+        raise SystemExit("dvz_figure() failed")
+    panel = dvz.dvz_panel_full(figure)
+    if not panel:
+        raise SystemExit("dvz_panel_full() failed")
+    if not raw.dvz_scene:
+        raise SystemExit("datoviz.raw did not expose dvz_scene")
+    print("installed Python basic example: OK")
+finally:
+    dvz.dvz_scene_destroy(scene)
+'''
+
+
+_PYTHON_RENDER_EXAMPLE = r'''
+import ctypes
+from pathlib import Path
+
+import datoviz.raw as dvz
+
+
+def void_p(array):
+    return ctypes.cast(array, ctypes.c_void_p)
+
+scene = dvz.dvz_scene()
+if not scene:
+    raise SystemExit("dvz_scene() failed")
+
+app = None
+try:
+    figure = dvz.dvz_figure(scene, 128, 128, 0)
+    if not figure:
+        raise SystemExit("dvz_figure() failed")
+    panel = dvz.dvz_panel_full(figure)
+    if not panel:
+        raise SystemExit("dvz_panel_full() failed")
+
+    visual = dvz.dvz_point(scene, 0)
+    if not visual:
+        raise SystemExit("dvz_point() failed")
+    positions = (ctypes.c_float * 9)(
+        -0.55,
+        -0.45,
+        0.0,
+        +0.55,
+        -0.45,
+        0.0,
+        0.0,
+        +0.50,
+        0.0,
+    )
+    colors = (dvz.DvzColor * 3)(
+        dvz.DvzColor(255, 80, 80, 255),
+        dvz.DvzColor(80, 220, 120, 255),
+        dvz.DvzColor(90, 150, 255, 255),
+    )
+    if dvz.dvz_visual_set_data(visual, b"position", void_p(positions), 3) != 0:
+        raise SystemExit("dvz_visual_set_data(position) failed")
+    if dvz.dvz_visual_set_data(visual, b"color", void_p(colors), 3) != 0:
+        raise SystemExit("dvz_visual_set_data(color) failed")
+    if dvz.dvz_panel_add_visual(panel, visual, None) != 0:
+        raise SystemExit("dvz_panel_add_visual() failed")
+
+    app = dvz.dvz_app(scene)
+    if not app:
+        print("installed Python render example: SKIP (dvz_app() failed)")
+        raise SystemExit(0)
+    view = dvz.dvz_view_offscreen(app, figure, 128, 128)
+    if not view:
+        print("installed Python render example: SKIP (dvz_view_offscreen() failed)")
+        raise SystemExit(0)
+    if dvz.dvz_view_render_once(view) < 0:
+        raise SystemExit("dvz_view_render_once() failed")
+    path = Path("python_render_example.png")
+    if dvz.dvz_view_capture_png(view, str(path).encode()) != 0:
+        raise SystemExit("dvz_view_capture_png() failed")
+    if not path.exists() or path.stat().st_size == 0:
+        raise SystemExit("PNG capture was not written")
+    print("installed Python render example: OK")
+finally:
+    if app:
+        dvz.dvz_app_destroy(app)
+    dvz.dvz_scene_destroy(scene)
+'''
+
+
+_C_BASIC_EXAMPLE = r'''
+#include <datoviz.h>
+#include <stdio.h>
+
+int main(void)
+{
+    DvzScene* scene = dvz_scene();
+    if (scene == NULL)
+    {
+        fprintf(stderr, "dvz_scene() failed\n");
+        return 1;
+    }
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    if (figure == NULL)
+    {
+        fprintf(stderr, "dvz_figure() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    DvzPanel* panel = dvz_panel_full(figure);
+    if (panel == NULL)
+    {
+        fprintf(stderr, "dvz_panel_full() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    printf("installed C basic example: OK %s\n", dvz_version());
+    dvz_scene_destroy(scene);
+    return 0;
+}
+'''
+
+
+_C_RENDER_EXAMPLE = r'''
+#include <datoviz.h>
+#include <stdint.h>
+#include <stdio.h>
+
+int main(void)
+{
+    int ret = 1;
+    DvzScene* scene = dvz_scene();
+    DvzApp* app = NULL;
+    if (scene == NULL)
+    {
+        fprintf(stderr, "dvz_scene() failed\n");
+        return 1;
+    }
+
+    DvzFigure* figure = dvz_figure(scene, 128, 128, 0);
+    DvzPanel* panel = figure != NULL ? dvz_panel_full(figure) : NULL;
+    DvzVisual* visual = dvz_point(scene, 0);
+    if (figure == NULL || panel == NULL || visual == NULL)
+    {
+        fprintf(stderr, "failed to create scene objects\n");
+        goto cleanup;
+    }
+    dvz_panel_set_background_color(panel, (DvzColor){13, 15, 20, 255});
+
+    vec3 positions[3] = {
+        {-0.55f, -0.45f, 0.0f},
+        {+0.55f, -0.45f, 0.0f},
+        {0.0f, +0.50f, 0.0f},
+    };
+    DvzColor colors[3] = {
+        {255, 80, 80, 255},
+        {80, 220, 120, 255},
+        {90, 150, 255, 255},
+    };
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = 3},
+        {.attr_name = "color", .data = colors, .item_count = 3},
+    };
+    if (dvz_visual_set_data_many(visual, updates, 2) != 0 ||
+        dvz_panel_add_visual(panel, visual, NULL) != 0)
+    {
+        fprintf(stderr, "failed to add point visual\n");
+        goto cleanup;
+    }
+
+    app = dvz_app(scene);
+    if (app == NULL)
+    {
+        printf("installed C render example: SKIP (dvz_app() failed)\n");
+        ret = 0;
+        goto cleanup;
+    }
+    DvzView* view = dvz_view_offscreen(app, figure, 128, 128);
+    if (view == NULL)
+    {
+        printf("installed C render example: SKIP (dvz_view_offscreen() failed)\n");
+        ret = 0;
+        goto cleanup;
+    }
+    if (dvz_view_render_once(view) < 0)
+    {
+        fprintf(stderr, "dvz_view_render_once() failed\n");
+        goto cleanup;
+    }
+    if (dvz_view_capture_png(view, "c_render_example.png") != 0)
+    {
+        fprintf(stderr, "dvz_view_capture_png() failed\n");
+        goto cleanup;
+    }
+    printf("installed C render example: OK\n");
+    ret = 0;
+
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    return ret;
+}
+'''
 
 
 if __name__ == "__main__":

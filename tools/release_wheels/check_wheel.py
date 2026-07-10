@@ -26,6 +26,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--render", action="store_true")
     parser.add_argument("--shaderc", action="store_true")
     parser.add_argument("--cmake-consumer", action="store_true")
+    parser.add_argument("--examples", choices=("skip", "basic", "render"), default="skip")
     parser.add_argument("--qt-probe", choices=("skip", "optional", "required"), default="skip")
     parser.add_argument("--keep", action="store_true")
     return parser.parse_args()
@@ -41,6 +42,7 @@ def main() -> int:
         render=args.render,
         shaderc=args.shaderc,
         cmake_consumer=args.cmake_consumer,
+        examples=args.examples,
         qt_probe=args.qt_probe,
         keep=args.keep,
     )

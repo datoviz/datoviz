@@ -69,7 +69,8 @@ just release-report 0.4.0rc1
 ```
 
 The `quick` profile runs wheel inventory plus installed import/CLI smoke. The `rc` profile adds the
-CMake consumer smoke. The `full` profile adds shaderc and render smoke. Evidence is written under
+CMake consumer smoke and installed Python/C no-window example smokes. The `full` profile adds
+shaderc plus installed Python/C offscreen render example smokes. Evidence is written under
 `build/release/<version>/evidence/<machine-id>/`.
 
 To return evidence from a validation pack, archive the generated evidence directory:

@@ -71,9 +71,10 @@ If the target machine has the repository checkout, it may instead run:
 just release-machine-validate 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl --profile rc
 ```
 
-Use `quick` for a short install/import/CLI smoke, `rc` for the required CMake consumer smoke, and
-`full` when the machine should also attempt shaderc and render smoke. Clearly separate required
-machines from optional or unavailable machines.
+Use `quick` for a short install/import/CLI smoke, `rc` for the required CMake consumer and
+installed Python/C no-window example smokes, and `full` when the machine should also attempt
+shaderc and installed offscreen render example smokes. Clearly separate required machines from
+optional or unavailable machines.
 
 The instruction should identify:
 

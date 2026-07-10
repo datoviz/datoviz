@@ -47,16 +47,21 @@ The `rc` profile should run from installed artifacts where possible:
 
 ## Full Profile Additions
 
+The `rc` profile includes wheel inventory, installed import/CLI checks, CMake consumer proof, and
+installed Python/C no-window example smokes from the candidate wheel. It should run on required
+machine classes before accepting the RC.
+
 The `full` profile may add:
 
-1. all public C examples that support bounded `--png` or `--smoke-ms` execution;
-2. all public Python examples classified as automated or smokeable;
-3. documentation fenced-code doctests;
-4. gallery capture and media fingerprint checks;
-5. WebGPU/WASM browser smoke on capable hosts;
-6. scripted interaction checks for panzoom, arcball, resize, picking, and close-window behavior;
-7. longer live-loop churn tests;
-8. Vulkan validation-layer runs for runtime ownership and synchronization paths.
+1. installed Python/C offscreen render example smokes from the candidate wheel;
+2. all public C examples that support bounded `--png` or `--smoke-ms` execution;
+3. all public Python examples classified as automated or smokeable;
+4. documentation fenced-code doctests;
+5. gallery capture and media fingerprint checks;
+6. WebGPU/WASM browser smoke on capable hosts;
+7. scripted interaction checks for panzoom, arcball, resize, picking, and close-window behavior;
+8. longer live-loop churn tests;
+9. Vulkan validation-layer runs for runtime ownership and synchronization paths.
 
 
 ## Manual Profile

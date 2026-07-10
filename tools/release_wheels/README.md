@@ -11,8 +11,12 @@ just wheel-stage --clean
 just wheel-build
 just wheel-validate --platform-tag manylinux_2_34_x86_64
 just wheel-inspect --native-deps
-just wheel-check --cmake-consumer --render --qt-probe optional
+just wheel-check --cmake-consumer --examples render --render --qt-probe optional
 ```
+
+Use `--examples basic` for installed Python/C no-window example smokes and `--examples render` for
+installed Python/C offscreen render example smokes. The release `rc` machine profile uses
+`--examples basic`; the `full` profile uses `--examples render`.
 
 CI-parity local loop:
 
