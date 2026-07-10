@@ -69,7 +69,16 @@ if [ "${_dvz_uname}" = "Darwin" ]; then
 
     export VK_ICD_FILENAMES="${_dvz_icd_path}"
 
-    if [ -n "${DYLD_LIBRARY_PATH:-}" ]; then
+    # Backward-compatibility mode: keep prior DYLD_LIBRARY_PATH behavior unless the caller
+    # explicitly requests a sanitized Vulkan environment.
+    if [ "${DVZ_VULKAN_SANITIZE_ENV:-0}" = "1" ]; then
+        unset VK_DRIVER_FILES
+        unset VK_ADD_DRIVER_FILES
+        unset VK_LOADER_DRIVERS_SELECT
+        unset VK_LOADER_DRIVERS_DISABLE
+        unset DYLD_LIBRARY_PATH
+        echo "datoviz: using sanitized Vulkan environment (DVZ_VULKAN_SANITIZE_ENV=1)" >&2
+    elif [ -n "${DYLD_LIBRARY_PATH:-}" ]; then
         case ":${DYLD_LIBRARY_PATH}:" in
             *:"${VULKAN_SDK}/lib":*) ;;
             *) export DYLD_LIBRARY_PATH="${VULKAN_SDK}/lib:${DYLD_LIBRARY_PATH}" ;;

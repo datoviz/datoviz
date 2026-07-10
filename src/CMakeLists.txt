@@ -298,8 +298,16 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/external/volk ${CMAKE_CURRENT_BINARY_DIR}
 
 if(DVZ_BUILD_VK OR DVZ_BUILD_CANVAS)
     find_package(Vulkan QUIET)
+
     if(NOT Vulkan_FOUND)
-        message(STATUS "Vulkan package not found; using vendored Vulkan C headers.")
+        message(WARNING "Vulkan SDK not found; falling back to vendored Vulkan headers (a Vulkan runtime loader/ICD is still required to run).")
+
+        if(NOT TARGET Vulkan::Headers)
+            add_library(Vulkan::Headers INTERFACE IMPORTED GLOBAL)
+            set_target_properties(Vulkan::Headers PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/external"
+            )
+        endif()
     endif()
 endif()
 
