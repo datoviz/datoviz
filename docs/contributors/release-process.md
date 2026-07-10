@@ -200,8 +200,10 @@ logs, failures, and `evidence.json` under `build/release/<version>/evidence/<mac
 Return each machine evidence directory as-is or as a tarball:
 
 ```sh
-tar -czf evidence-<machine-id>.tar.gz evidence/<machine-id>
+./archive-evidence.sh <machine-id>
 ```
+
+On Windows PowerShell, use `./archive-evidence.ps1 -MachineId <machine-id>`.
 
 Ingest returned evidence in the release checkout:
 

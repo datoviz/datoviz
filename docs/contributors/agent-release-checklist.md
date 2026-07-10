@@ -98,8 +98,10 @@ build/release/<version>/evidence/<machine-id>/
 Ask the maintainer to return either that directory or a tarball:
 
 ```sh
-tar -czf evidence-<machine-id>.tar.gz evidence/<machine-id>
+./archive-evidence.sh <machine-id>
 ```
+
+On Windows PowerShell, use `./archive-evidence.ps1 -MachineId <machine-id>`.
 
 Ingest returned evidence in the release checkout:
 

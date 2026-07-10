@@ -891,7 +891,8 @@ def machine_plan_text(version: str, wheel: Path | None = None) -> str:
         else:
             lines.append(f"- pack command: `./validate-{profile}.sh`")
             lines.append(f"- PowerShell: `./validate.ps1 -Profile {profile}`")
-            lines.append("- return: archive and send back `evidence/<machine-id>/`")
+            lines.append("- return: `./archive-evidence.sh <machine-id>`")
+            lines.append("- PowerShell return: `./archive-evidence.ps1 -MachineId <machine-id>`")
         lines.append("")
 
     lines.extend(["## Returned Evidence", ""])
@@ -1342,6 +1343,35 @@ exec "$(dirname "$0")/validate.sh" {profile}
         wrapper_path.write_text(wrapper, encoding="utf8")
         wrapper_path.chmod(0o755)
 
+    archive_sh = """#!/usr/bin/env sh
+set -eu
+
+machine_id="${1:-${DATOVIZ_RELEASE_MACHINE_ID:-}}"
+if [ -z "$machine_id" ]; then
+    count=$(find evidence -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
+    if [ "$count" = "1" ]; then
+        machine_id=$(basename "$(find evidence -mindepth 1 -maxdepth 1 -type d)")
+    else
+        echo "usage: $0 <machine-id>" >&2
+        echo "found $count evidence directories under ./evidence" >&2
+        exit 2
+    fi
+fi
+
+evidence_dir="evidence/$machine_id"
+if [ ! -f "$evidence_dir/evidence.json" ]; then
+    echo "missing $evidence_dir/evidence.json" >&2
+    exit 2
+fi
+
+archive="evidence-$machine_id.tar.gz"
+tar -czf "$archive" "$evidence_dir"
+echo "$archive"
+"""
+    archive_path = pack_root / "archive-evidence.sh"
+    archive_path.write_text(archive_sh, encoding="utf8")
+    archive_path.chmod(0o755)
+
     validate_ps1 = f"""param(
     [ValidateSet("quick", "rc", "full")]
     [string]$Profile = "rc",
@@ -1364,6 +1394,33 @@ if (-not $MachineId) {{
 exit $LASTEXITCODE
 """
     (pack_root / "validate.ps1").write_text(validate_ps1, encoding="utf8")
+
+    archive_ps1 = """param(
+    [string]$MachineId = $env:DATOVIZ_RELEASE_MACHINE_ID
+)
+
+if (-not $MachineId) {
+    $dirs = @(Get-ChildItem -Path "evidence" -Directory -ErrorAction SilentlyContinue)
+    if ($dirs.Count -eq 1) {
+        $MachineId = $dirs[0].Name
+    } else {
+        Write-Error "usage: ./archive-evidence.ps1 -MachineId <machine-id>; found $($dirs.Count) evidence directories"
+        exit 2
+    }
+}
+
+$EvidenceDir = Join-Path "evidence" $MachineId
+$EvidenceJson = Join-Path $EvidenceDir "evidence.json"
+if (-not (Test-Path $EvidenceJson)) {
+    Write-Error "missing $EvidenceJson"
+    exit 2
+}
+
+$Archive = "evidence-$MachineId.tar.gz"
+tar -czf $Archive $EvidenceDir
+Write-Output $Archive
+"""
+    (pack_root / "archive-evidence.ps1").write_text(archive_ps1, encoding="utf8")
 
 
 def write_pack_readme(
@@ -1410,6 +1467,18 @@ After validation, copy back:
 
 ```text
 evidence/<machine-id>/
+```
+
+or create a portable archive:
+
+```sh
+./archive-evidence.sh <machine-id>
+```
+
+On Windows PowerShell:
+
+```powershell
+./archive-evidence.ps1 -MachineId <machine-id>
 ```
 
 The pack manifest is `release-pack.json`. The selected artifact checksums are:
@@ -1489,11 +1558,13 @@ def validation_pack(args: argparse.Namespace) -> int:
         "artifacts": [artifact_record(path, "wheel") for path in copied_wheels],
         "commands": {
             "unix": ["./validate-quick.sh", "./validate-rc.sh", "./validate-full.sh"],
+            "archive_unix": ["./archive-evidence.sh <machine-id>"],
             "powershell": [
                 "./validate.ps1 -Profile quick",
                 "./validate.ps1 -Profile rc",
                 "./validate.ps1 -Profile full",
             ],
+            "archive_powershell": ["./archive-evidence.ps1 -MachineId <machine-id>"],
         },
     }
     (pack_root / "release-pack.json").write_text(

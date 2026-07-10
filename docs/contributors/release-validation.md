@@ -82,7 +82,13 @@ missing, failed, or ready.
 To return evidence from a validation pack, archive the generated evidence directory:
 
 ```sh
-tar -czf evidence-<machine-id>.tar.gz evidence/<machine-id>
+./archive-evidence.sh <machine-id>
+```
+
+On Windows PowerShell:
+
+```powershell
+./archive-evidence.ps1 -MachineId <machine-id>
 ```
 
 Back in the release checkout, ingest it and refresh the matrix report:
