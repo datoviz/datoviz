@@ -91,6 +91,7 @@ top to bottom and record skipped items as known exclusions.
 - [ ] Confirm `release-machine-validate --profile rc` ran installed Python/C example smokes.
 - [ ] Confirm `release-machine-validate --profile full` ran installed offscreen render examples on
       at least one graphics-capable host, or record why render coverage came from another gate.
+- [ ] Review machine evidence `warnings`, command `diagnostics`, and `failures.md`.
 - [ ] Confirm `import datoviz` works from an installed wheel.
 - [ ] Confirm `import datoviz.raw` works from an installed wheel.
 - [ ] Confirm `python -m datoviz.cli --cflags --libs --cmake-dir` behavior.

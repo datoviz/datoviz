@@ -374,6 +374,7 @@ def run_command(
     start = time.monotonic()
     result = subprocess.run(argv, cwd=ROOT, text=True, capture_output=True, check=False)
     duration = time.monotonic() - start
+    diagnostics = scan_output_diagnostics(result.stdout, result.stderr)
     log_path.write_text(
         "COMMAND: " + " ".join(argv) + "\n\n"
         + "STDOUT:\n"
@@ -390,9 +391,85 @@ def run_command(
             "duration_seconds": round(duration, 3),
         }
     )
+    if diagnostics:
+        warning_count = len([item for item in diagnostics if item["severity"] == "warning"])
+        error_count = len([item for item in diagnostics if item["severity"] == "error"])
+        record["diagnostics"] = diagnostics
+        record["diagnostic_counts"] = {"warning": warning_count, "error": error_count}
     if result.returncode != 0:
         print(f"failed: {' '.join(argv)}", file=sys.stderr)
     return record
+
+
+_DVZ_LOG_RE = re.compile(r"\bT\d+\s+([EWF])\s+\S")
+_ERROR_DIAGNOSTICS = [
+    ("python-traceback", re.compile(r"Traceback \(most recent call last\):")),
+    ("crash", re.compile(r"\b(?:Segmentation fault|Abort trap|Bus error)\b", re.IGNORECASE)),
+    ("asan", re.compile(r"\b(?:AddressSanitizer|UndefinedBehaviorSanitizer|LeakSanitizer)\b")),
+    ("vulkan-validation-error", re.compile(r"\b(?:Validation Error|VUID-[A-Za-z0-9_-]+)\b")),
+    ("vulkan-error-result", re.compile(r"\bERROR_[A-Z0-9_]+\b")),
+]
+
+
+def scan_output_diagnostics(stdout: str, stderr: str, *, limit: int = 50) -> list[dict[str, Any]]:
+    diagnostics: list[dict[str, Any]] = []
+    combined = stdout + "\n" + stderr
+    optional_qt_probe_expected = "optional Qt probe failed as expected" in combined
+
+    def append(
+        *, severity: str, source: str, pattern: str, stream: str, line_number: int, text: str
+    ) -> None:
+        if len(diagnostics) >= limit:
+            return
+        diagnostics.append(
+            {
+                "severity": severity,
+                "source": source,
+                "pattern": pattern,
+                "stream": stream,
+                "line": line_number,
+                "text": text[:500],
+            }
+        )
+
+    for stream, text in (("stdout", stdout), ("stderr", stderr)):
+        for line_number, line in enumerate(text.splitlines(), start=1):
+            stripped = line.strip()
+            if not stripped:
+                continue
+            if optional_qt_probe_expected and (
+                "Traceback (most recent call last):" in stripped
+                or "No module named 'PyQt6'" in stripped
+                or "datoviz.qt requires PyQt6" in stripped
+            ):
+                continue
+
+            dvz_match = _DVZ_LOG_RE.search(stripped)
+            if dvz_match:
+                level = dvz_match.group(1)
+                append(
+                    severity="warning" if level == "W" else "error",
+                    source="datoviz-log",
+                    pattern=f"datoviz-{level}",
+                    stream=stream,
+                    line_number=line_number,
+                    text=stripped,
+                )
+                continue
+
+            for name, pattern in _ERROR_DIAGNOSTICS:
+                if pattern.search(stripped):
+                    append(
+                        severity="error",
+                        source="process-output",
+                        pattern=name,
+                        stream=stream,
+                        line_number=line_number,
+                        text=stripped,
+                    )
+                    break
+
+    return diagnostics
 
 
 def validation_command(entry: dict[str, Any], wheel: Path, work_dir: Path | None) -> list[str]:
@@ -1441,6 +1518,7 @@ def machine_validate(args: argparse.Namespace) -> int:
         "results": [],
         "captures": [],
         "skips": [],
+        "warnings": [],
         "failures": [],
     }
 
@@ -1453,13 +1531,28 @@ def machine_validate(args: argparse.Namespace) -> int:
             argv = validation_command(entry, wheel, work_dir)
             record = run_command(argv, log_dir=log_dir, index=index, dry_run=args.dry_run)
             evidence["results"].append(record)
-            if record.get("returncode") not in (0, None):
+            diagnostics = list(record.get("diagnostics") or [])
+            diagnostic_errors = [item for item in diagnostics if item.get("severity") == "error"]
+            diagnostic_warnings = [
+                item for item in diagnostics if item.get("severity") == "warning"
+            ]
+            for warning in diagnostic_warnings:
+                evidence["warnings"].append(
+                    {
+                        "status": "warning",
+                        "argv": record.get("argv"),
+                        "log": record.get("log"),
+                        "diagnostic": warning,
+                    }
+                )
+            if record.get("returncode") not in (0, None) or diagnostic_errors:
                 evidence["failures"].append(
                     {
                         "status": "fail",
                         "argv": record.get("argv"),
                         "log": record.get("log"),
                         "returncode": record.get("returncode"),
+                        "diagnostics": diagnostic_errors,
                     }
                 )
                 if not args.keep_going:
@@ -1480,6 +1573,14 @@ def machine_validate(args: argparse.Namespace) -> int:
                 failures_lines.append(f"- {failure['message']}")
             else:
                 argv = " ".join(failure.get("argv", []))
+                diagnostics = failure.get("diagnostics") or []
+                if diagnostics:
+                    details = "; ".join(item.get("text", "") for item in diagnostics[:3])
+                    failures_lines.append(
+                        f"- `{argv}` produced error diagnostics: {details} "
+                        f"(log: `{failure.get('log')}`)"
+                    )
+                    continue
                 failures_lines.append(
                     f"- `{argv}` returned {failure.get('returncode')} "
                     f"(log: `{failure.get('log')}`)"

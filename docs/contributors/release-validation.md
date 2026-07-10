@@ -72,6 +72,9 @@ The `quick` profile runs wheel inventory plus installed import/CLI smoke. The `r
 CMake consumer smoke and installed Python/C no-window example smokes. The `full` profile adds
 shaderc plus installed Python/C offscreen render example smokes. Evidence is written under
 `build/release/<version>/evidence/<machine-id>/`.
+Machine validation scans command logs for Datoviz errors, Vulkan validation diagnostics, sanitizer
+output, crashes, and Python tracebacks. Error diagnostics are blocking even when the process exits
+with status 0; warning diagnostics are recorded for review.
 
 To return evidence from a validation pack, archive the generated evidence directory:
 

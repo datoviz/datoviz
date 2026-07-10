@@ -75,6 +75,8 @@ Use `quick` for a short install/import/CLI smoke, `rc` for the required CMake co
 installed Python/C no-window example smokes, and `full` when the machine should also attempt
 shaderc and installed offscreen render example smokes. Clearly separate required machines from
 optional or unavailable machines.
+Treat error-level diagnostics in machine evidence as blockers even when the underlying command
+returned 0. Summarize warning-level diagnostics separately for maintainer review.
 
 The instruction should identify:
 
