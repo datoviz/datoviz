@@ -933,6 +933,73 @@ def machine_plan(args: argparse.Namespace) -> int:
     return 0
 
 
+def next_actions(analysis: dict[str, Any]) -> list[str]:
+    version = analysis["version"]
+    actions: list[str] = []
+
+    if analysis["missing_artifacts"]:
+        for path in analysis["missing_artifacts"]:
+            actions.append(f"Restore or regenerate missing recorded artifact `{path}`.")
+    if analysis["changed_artifacts"]:
+        for path in analysis["changed_artifacts"]:
+            actions.append(
+                f"Artifact checksum changed for `{path}`; rerun validation or discard stale evidence."
+            )
+    if analysis["version_mismatch_artifacts"]:
+        for path in analysis["version_mismatch_artifacts"]:
+            actions.append(f"Replace version-mismatched artifact `{path}` with a `{version}` artifact.")
+
+    rows_by_id = {row["id"]: row for row in gate_rows(analysis)}
+    if rows_by_id.get("source_bundle", {}).get("status") != "pass":
+        actions.append(
+            f"Create source bundle with `just release-candidate {version}` without `--skip-source`."
+        )
+    if rows_by_id.get("release_notes", {}).get("status") != "pass":
+        actions.append(f"Generate and review release notes with `just release-notes {version}`.")
+    if rows_by_id.get("docs_validation", {}).get("status") != "pass":
+        actions.append(f"Run documentation validation with `just release-docs-validate {version}`.")
+    if rows_by_id.get("validation_pack", {}).get("status") != "pass":
+        actions.append(
+            f"Create validation pack with `just release-validation-pack {version} --wheel path/to/wheel.whl`."
+        )
+
+    for item in analysis["failed_evidence"]:
+        machine = item.get("machine_id", item.get("path", "unknown"))
+        actions.append(f"Fix failed machine evidence for `{machine}`, then rerun that machine validation.")
+
+    for row in analysis["missing_required"]:
+        profile = recommended_machine_profile(row["class"], row["required_for_rc"])
+        actions.append(
+            f"Required missing machine `{row['class']}`: run `./validate-{profile}.sh` "
+            f"from the validation pack, then ingest returned evidence."
+        )
+
+    if rows_by_id.get("release_report", {}).get("status") != "pass":
+        actions.append(
+            f"Write release report/checksums with `just release-gates {version} --write-artifacts`."
+        )
+    if rows_by_id.get("checksums", {}).get("status") != "pass":
+        actions.append(f"Write checksum artifacts with `just release-gates {version} --write-artifacts`.")
+
+    if rows_by_id.get("testpypi_rehearsal", {}).get("status") != "uploaded":
+        actions.append(
+            f"After required validation passes, rehearse TestPyPI with "
+            f"`just release-testpypi {version} --dry-run --dist-dir dist`."
+        )
+    if rows_by_id.get("github_draft", {}).get("status") != "drafted":
+        actions.append(
+            f"After release notes and artifacts are final, dry-run GitHub draft with "
+            f"`just release-github-draft {version} --dry-run`."
+        )
+
+    if not actions:
+        actions.append(
+            "No blocking next action found in release state; request maintainer approval for the "
+            "next publication gate."
+        )
+    return actions
+
+
 def rehearsal_blockers(analysis: dict[str, Any]) -> list[str]:
     blockers = []
     if analysis["missing_artifacts"]:
@@ -1940,6 +2007,10 @@ def render_report_text(analysis: dict[str, Any]) -> str:
         for row in missing_required:
             lines.append(f"- {row['class']}: {row['proof']}")
 
+    lines.extend(["", "## Next Actions"])
+    for action in next_actions(analysis):
+        lines.append(f"- {action}")
+
     return "\n".join(lines)
 
 
@@ -1981,6 +2052,10 @@ def gates(args: argparse.Namespace) -> int:
     lines = [f"# Datoviz Release Gates: {args.version}", ""]
     for row in rows:
         lines.append(f"- `{row['status']}` {row['id']}: {row['detail']}")
+
+    lines.extend(["", "## Next Actions"])
+    for action in next_actions(analysis):
+        lines.append(f"- {action}")
 
     output = "\n".join(lines)
     print(output)
