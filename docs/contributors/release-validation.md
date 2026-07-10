@@ -28,12 +28,16 @@ just release-plan 0.4.0rc1
 just release-dry-run 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
 just release-candidate 0.4.0rc1 --dry-run
 just release-candidate 0.4.0rc1
+just release-notes 0.4.0rc1
 just release-report 0.4.0rc1
 ```
 
 `release-candidate` writes local state under `build/release/<version>/`. The first automation slice
 does not tag, upload, publish, push, or mutate GitHub. Publication remains a separate approval-gated
 phase.
+
+`release-notes` writes a generated draft to `build/release/<version>/release-notes.md` and records
+it as the GitHub draft notes artifact. Review and edit the wording before using it for publication.
 
 For installed-artifact validation on a physical machine, use:
 

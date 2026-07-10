@@ -794,6 +794,158 @@ def write_release_artifacts(version: str, report_text: str) -> list[dict[str, An
     return generated
 
 
+def latest_git_tag() -> str:
+    return git_value(["describe", "--tags", "--abbrev=0"])
+
+
+def git_commit_subjects(since_ref: str | None, max_count: int) -> tuple[str, list[str]]:
+    range_ref = ""
+    if since_ref:
+        range_ref = f"{since_ref}..HEAD"
+    elif latest_git_tag():
+        range_ref = f"{latest_git_tag()}..HEAD"
+
+    args = ["log", "--no-merges", f"--max-count={max_count}", "--format=%s"]
+    if range_ref:
+        args.append(range_ref)
+    subjects = [line.strip() for line in git_value(args).splitlines() if line.strip()]
+    return range_ref or f"HEAD last {max_count} commits", subjects
+
+
+def grouped_commit_subjects(subjects: list[str]) -> dict[str, list[str]]:
+    groups: dict[str, list[str]] = {}
+    for subject in subjects:
+        if ":" in subject:
+            key, rest = subject.split(":", 1)
+            key = key.strip().lower() or "other"
+            text = rest.strip() or subject
+        else:
+            key = "other"
+            text = subject
+        groups.setdefault(key, []).append(text)
+    return groups
+
+
+def render_release_notes_draft(
+    version: str, analysis: dict[str, Any] | None, *, since_range: str, subjects: list[str]
+) -> str:
+    identity = (
+        analysis.get("identity", collect_identity(version)) if analysis else collect_identity(version)
+    )
+    lines = [
+        f"# Datoviz {version} Release Notes Draft",
+        "",
+        "Status: generated draft for maintainer review.",
+        "",
+        "## Identity",
+        "",
+        f"- Version: `{version}`",
+        f"- Tag: `{identity.get('tag', f'v{version}')}`",
+        f"- Commit: `{git_value(['rev-parse', 'HEAD'])}`",
+        f"- Branch: `{git_value(['branch', '--show-current'])}`",
+    ]
+    mismatches = identity.get("mismatches") or []
+    if mismatches:
+        lines.append(f"- Identity status: `manual` ({'; '.join(mismatches)})")
+    else:
+        lines.append("- Identity status: `pass`")
+
+    lines.extend(["", "## Generated Change Summary", ""])
+    if subjects:
+        lines.append(f"Source range: `{since_range}`")
+        lines.append("")
+        for group, items in sorted(grouped_commit_subjects(subjects).items()):
+            lines.append(f"### {group}")
+            for item in items[:20]:
+                lines.append(f"- {item}")
+            if len(items) > 20:
+                lines.append(f"- ... {len(items) - 20} more")
+            lines.append("")
+    else:
+        lines.append("No git commit subjects found for the selected range.")
+        lines.append("")
+
+    if analysis:
+        artifacts = analysis["artifacts"]
+        lines.extend(["## Artifacts", ""])
+        if artifacts:
+            for artifact in artifacts:
+                lines.append(
+                    f"- `{artifact.get('kind')}` `{artifact.get('name')}` "
+                    f"({artifact.get('bytes', 0)} bytes, sha256 {str(artifact.get('sha256', ''))[:16]}...)"
+                )
+        else:
+            lines.append("- missing: no artifacts recorded")
+
+        lines.extend(["", "## Validation Matrix", ""])
+        for row in analysis["matrix"]:
+            lines.append(
+                f"- `{row['status']}` {row['class']} required={row['required_for_rc']} "
+                f"profiles={', '.join(row.get('profiles') or []) or '-'}"
+            )
+
+        lines.extend(["", "## Gates", ""])
+        for row in gate_rows(analysis):
+            lines.append(f"- `{row['status']}` {row['id']}: {row['detail']}")
+    else:
+        lines.extend(
+            [
+                "## Release State",
+                "",
+                f"- missing: create state with `just release-candidate {version}`.",
+            ]
+        )
+
+    lines.extend(
+        [
+            "",
+            "## Maintainer Review Checklist",
+            "",
+            "- [ ] Replace generated commit grouping with user-facing release highlights.",
+            "- [ ] Fill final artifact URLs, checksums, tag date, and commit.",
+            "- [ ] Confirm known issues and deferred features are accurate.",
+            "- [ ] Confirm validation matrix reflects returned physical-machine evidence.",
+            "- [ ] Confirm publication wording before GitHub/PyPI release.",
+        ]
+    )
+    return "\n".join(lines).rstrip()
+
+
+def release_notes(args: argparse.Namespace) -> int:
+    analysis: dict[str, Any] | None = None
+    if state_path(args.version).is_file():
+        analysis = release_analysis(args.version)
+    since_range, subjects = git_commit_subjects(args.since_ref, args.max_commits)
+    output = render_release_notes_draft(
+        args.version,
+        analysis,
+        since_range=since_range,
+        subjects=subjects,
+    )
+
+    if args.dry_run:
+        print(output)
+        return 0
+
+    output_path = args.output or (state_dir(args.version) / "release-notes.md")
+    if not output_path.is_absolute():
+        output_path = ROOT / output_path
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(output + "\n", encoding="utf8")
+
+    state = state_or_new(args.version)
+    artifacts = [
+        artifact for artifact in state.get("artifacts", []) if artifact.get("kind") != "release-notes"
+    ]
+    artifacts.append(artifact_record(output_path, "release-notes"))
+    state["artifacts"] = artifacts
+    state["updated_at_utc"] = utc_now()
+    save_state(args.version, state)
+    print(f"wrote release-notes: {relpath(output_path)}")
+    print(f"updated {relpath(state_path(args.version))}")
+    return 0
+
+
 def update_state_evidence(version: str) -> None:
     path = state_path(version)
     if not path.is_file():
@@ -827,7 +979,9 @@ def command_plan(version: str) -> str:
         "",
         "Local commands:",
         f"  just release-plan {version}",
+        f"  just release-dry-run {version} --wheel path/to/wheel.whl",
         f"  just release-candidate {version}",
+        f"  just release-notes {version}",
         f"  just release-validation-pack {version} --wheel path/to/wheel.whl",
         f"  just release-report {version}",
         "",
@@ -1908,6 +2062,7 @@ def dry_run(args: argparse.Namespace) -> int:
             [*script, "candidate", version, "--dry-run", "--profile", args.profile, "--skip-source"],
         )
     )
+    steps.append(run_dry_step("release-notes", [*script, "release-notes", version, "--dry-run"]))
 
     if args.wheel:
         pack_cmd = [*script, "validation-pack", version, "--dry-run"]
@@ -2041,6 +2196,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="return nonzero if any dry-run step fails",
     )
 
+    notes_parser = subparsers.add_parser("release-notes", help="Generate draft release notes")
+    notes_parser.add_argument("version")
+    notes_parser.add_argument("--output", type=Path)
+    notes_parser.add_argument("--since-ref")
+    notes_parser.add_argument("--max-commits", type=int, default=80)
+    notes_parser.add_argument("--dry-run", action="store_true")
+
     candidate_parser = subparsers.add_parser(
         "candidate", help="Create local release-candidate state"
     )
@@ -2173,6 +2335,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.command == "dry-run":
         return dry_run(args)
+    if args.command == "release-notes":
+        return release_notes(args)
     if args.command == "candidate":
         return candidate(args)
     if args.command == "validation-pack":

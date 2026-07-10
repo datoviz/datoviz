@@ -64,12 +64,13 @@ After reviewing the dry-run output, run the local candidate flow:
 
 ```sh
 just release-candidate 0.4.0rc1
+just release-notes 0.4.0rc1
 just release-report 0.4.0rc1
 ```
 
 This writes `build/release/0.4.0rc1/release-state.json`, command logs, generated source bundle
-metadata, discovered wheel checksums, and the first release report inputs. It does not tag, upload,
-publish, push, or create a GitHub release.
+metadata, discovered wheel checksums, generated release notes, and the first release report inputs.
+It does not tag, upload, publish, push, or create a GitHub release.
 
 Then run the minimum local proof:
 
@@ -274,6 +275,15 @@ Every RC note should include:
 
 Keep known issues honest. If a platform or optional provider is untested, record it as untested
 rather than supported.
+
+Generate the first draft from release state and git history:
+
+```sh
+just release-notes 0.4.0rc1
+```
+
+Review `build/release/0.4.0rc1/release-notes.md` and replace generated commit grouping with
+user-facing highlights before GitHub draft approval.
 
 The current RC1 draft lives in [v0.4.0rc1 release notes](../releases/v0.4.0rc1.md). Keep it as a
 draft until the final commit, tag, artifact URLs, checksums, and platform validation matrix are

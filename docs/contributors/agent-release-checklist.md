@@ -36,12 +36,17 @@ After approval:
 
 ```sh
 just release-candidate 0.4.0rc1
+just release-notes 0.4.0rc1
 just release-validation-pack 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
 just release-report 0.4.0rc1
 ```
 
 Do not tag, push, upload, publish, create GitHub releases, or modify package registry state during
 this local candidate flow.
+
+Summarize the generated `build/release/<version>/release-notes.md` as a draft, not final wording.
+Ask the maintainer to review known issues, highlights, artifact URLs, and validation status before
+GitHub draft approval.
 
 
 ## Machine Instructions

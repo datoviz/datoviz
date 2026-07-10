@@ -34,6 +34,7 @@ top to bottom and record skipped items as known exclusions.
 
 - [ ] Run `just release-candidate <version>` or record which lower-level candidate steps replaced
       it.
+- [ ] Run `just release-notes <version>` and review the generated draft.
 - [ ] Run `just release-report <version>`.
 - [ ] Run `just build`.
 - [ ] Run the focused release tests for touched areas.
