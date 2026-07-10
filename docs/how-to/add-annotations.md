@@ -47,6 +47,13 @@ dvz_text_set_placement(text, &placement);
 dvz_text_set_string(text, "Frame 42\nprobe: 0.731");
 ```
 
+`DVZ_TEXT_PLACEMENT_SCREEN` selects pixel-based text placement; `placement.anchor` selects the
+pixel origin. Panel anchors such as `DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT` interpret `position` relative
+to the panel rectangle. Use `DVZ_SCENE_ANCHOR_SCREEN` when `position` must be absolute figure
+coordinates, independent of panel position, padding, or space reserved for axes and colorbars.
+This is useful for figure titles: reserve a top panel band for the plot, then place the title at a
+fixed screen position without moving it with that reserve.
+
 Use `dvz_text_set_string()` to update a changing readout. Do not rebuild the panel or recreate the
 scene for every value change.
 

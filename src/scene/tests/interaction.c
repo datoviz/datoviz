@@ -3612,6 +3612,26 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
     DvzVisual* glyph = _visual_family_state(text->visual)->text.glyph_visual;
     ANN(glyph);
     AT(glyph->visible);
+    bool found_text_attach = false;
+    bool found_glyph_attach = false;
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        DvzPanelAttach* attach = &panel->visuals[i];
+        if (attach->visual == text->visual)
+        {
+            AT(attach->clip_rect == DVZ_VISUAL_CLIP_AUTO);
+            AT(attach->viewport_rect == DVZ_VISUAL_VIEWPORT_AUTO);
+            found_text_attach = true;
+        }
+        else if (attach->visual == glyph)
+        {
+            AT(attach->clip_rect == DVZ_VISUAL_CLIP_PANEL);
+            AT(attach->viewport_rect == DVZ_VISUAL_VIEWPORT_PANEL);
+            found_glyph_attach = true;
+        }
+    }
+    AT(found_text_attach);
+    AT(found_glyph_attach);
     AT(text->dirty_flags == DVZ_TEXT_DIRTY_NONE);
     DvzVisualDataView position_view = {0};
     AT(dvz_visual_data(glyph, "position", &position_view) == 0);

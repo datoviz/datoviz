@@ -487,7 +487,7 @@ static bool _configure_panel(DvzPanel* panel, const ChoroplethBundle* bundle)
     if (dvz_panel_set_padding(
             panel, &(DvzPanelReserve){
                        .left_px = 14.0f, .right_px = 42.0f, .bottom_px = 13.5f,
-                       .top_px = 28.5f}) != DVZ_OK)
+                       .top_px = 110.0f}) != DVZ_OK)
         return false;
     return example_configure_equal_aspect_panel(
         panel, (DvzDataDomain){.min = bundle->xmin, .max = bundle->xmax},
@@ -530,7 +530,7 @@ static bool _add_screen_text(
 
     DvzTextPlacement placement = dvz_text_placement();
     placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
-    placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
+    placement.anchor = DVZ_SCENE_ANCHOR_SCREEN;
     placement.position[0] = x;
     placement.position[1] = y;
     placement.position[2] = 0.0;

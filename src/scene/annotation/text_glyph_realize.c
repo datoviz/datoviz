@@ -925,6 +925,11 @@ bool _text_visual_prepare(
     glyph_attach.coord_space = attach->coord_space;
     glyph_attach.clip_rect = attach->clip_rect;
     glyph_attach.viewport_rect = attach->viewport_rect;
+    if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
+    {
+        glyph_attach.clip_rect = DVZ_VISUAL_CLIP_PANEL;
+        glyph_attach.viewport_rect = DVZ_VISUAL_VIEWPORT_PANEL;
+    }
     bool realized_cache_valid =
         _visual_family_state(visual)->text.glyph_visual != NULL &&
         _visual_family_state(_visual_family_state(visual)->text.glyph_visual)->field != NULL &&

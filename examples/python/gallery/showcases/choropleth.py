@@ -154,7 +154,7 @@ def _configure_panel(panel, bundle: ChoroplethBundle) -> None:
     padding.left_px = 14.0
     padding.right_px = 42.0
     padding.bottom_px = 13.5
-    padding.top_px = 28.5
+    padding.top_px = 110.0
     if dvz.dvz_panel_set_padding(panel, ctypes.byref(padding)) != 0:
         raise RuntimeError("dvz_panel_set_padding() failed")
 
@@ -184,7 +184,7 @@ def _add_screen_text(panel, text: bytes, x: float, y: float, size: float) -> Non
 
     placement = dvz.dvz_text_placement()
     placement.mode = dvz.DVZ_TEXT_PLACEMENT_SCREEN
-    placement.anchor = dvz.DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT
+    placement.anchor = dvz.DVZ_SCENE_ANCHOR_SCREEN
     placement.position[:] = (x, y, 0.0)
     placement.text_anchor[:] = (0.0, 0.5)
     placement.has_text_anchor = True
