@@ -237,6 +237,16 @@ Before PyPI:
 6. confirm source archive build/install behavior;
 7. record checksums if the RC process requires them.
 
+The final PyPI wrapper is also dry-run first:
+
+```sh
+just release-pypi 0.4.0 --dry-run
+just release-pypi 0.4.0 --confirm yes
+```
+
+It requires a recorded TestPyPI rehearsal unless the maintainer explicitly passes
+`--allow-incomplete`. Prerelease uploads need `--allow-prerelease`.
+
 Final PyPI upload should be manual and irreversible. Do not combine build, test, and final upload in
 one unattended workflow.
 
@@ -296,6 +306,19 @@ just release-github-draft 0.4.0rc1 --confirm yes
 
 The command creates or updates a draft release and uploads the recorded source bundle, wheels,
 validation pack, release report, and checksum artifacts. It does not publish the release.
+
+Final tag creation, GitHub publication, and docs publication are separate approval-gated commands:
+
+```sh
+just release-create-tag 0.4.0 --dry-run
+just release-create-tag 0.4.0 --confirm yes
+just release-github-publish 0.4.0 --dry-run
+just release-github-publish 0.4.0 --confirm yes
+just release-docs-publish 0.4.0 --dry-run
+```
+
+`release-github-publish` only publishes an existing draft. `release-docs-publish` is a placeholder
+until a concrete docs deployment command is supplied with `--command`.
 
 
 ## After Each RC

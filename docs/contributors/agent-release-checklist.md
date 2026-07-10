@@ -99,6 +99,10 @@ Before asking for upload or GitHub draft approval, run dry rehearsals:
 ```sh
 just release-testpypi 0.4.0rc1 --dry-run --dist-dir dist
 just release-github-draft 0.4.0rc1 --dry-run
+just release-create-tag 0.4.0 --dry-run
+just release-pypi 0.4.0 --dry-run
+just release-github-publish 0.4.0 --dry-run
+just release-docs-publish 0.4.0 --dry-run
 ```
 
 

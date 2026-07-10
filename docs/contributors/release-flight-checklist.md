@@ -140,12 +140,18 @@ top to bottom and record skipped items as known exclusions.
 
 - [ ] Re-run `git status --short`.
 - [ ] Re-run `git diff --check`.
-- [ ] Create the RC or final tag.
+- [ ] Run `just release-create-tag <version> --dry-run`.
+- [ ] After maintainer approval, run `just release-create-tag <version> --confirm yes`.
 - [ ] Upload artifacts to PyPI only after TestPyPI rehearsal is accepted.
 - [ ] Run `just release-github-draft <version> --dry-run`.
+- [ ] Run `just release-pypi <version> --dry-run`.
+- [ ] After maintainer approval, run `just release-pypi <version> --confirm yes`.
 - [ ] Create or update the GitHub release.
+- [ ] Run `just release-github-publish <version> --dry-run`.
+- [ ] After maintainer approval, run `just release-github-publish <version> --confirm yes`.
 - [ ] Attach source archive, wheels, checksums, and release notes.
-- [ ] Publish documentation.
+- [ ] Run `just release-docs-publish <version> --dry-run`.
+- [ ] Publish documentation with an explicit docs deployment command.
 - [ ] Confirm GitHub issue forms, labels, and milestone are ready for RC feedback triage.
 - [ ] Announce known issues and feedback channels.
 - [ ] For final `v0.4.0`, confirm GitHub-Zenodo archiving created a version DOI and concept DOI.

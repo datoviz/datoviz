@@ -103,9 +103,13 @@ just release-testpypi 0.4.0rc1 --dry-run --dist-dir dist
 just release-testpypi 0.4.0rc1 --dist-dir dist --confirm yes
 just release-github-draft 0.4.0rc1 --dry-run
 just release-github-draft 0.4.0rc1 --confirm yes
-just release-pypi 0.4.0 yes
-just release-github-publish 0.4.0 yes
-just release-docs-publish 0.4.0 yes
+just release-create-tag 0.4.0 --dry-run
+just release-create-tag 0.4.0 --confirm yes
+just release-pypi 0.4.0 --dry-run
+just release-pypi 0.4.0 --confirm yes
+just release-github-publish 0.4.0 --dry-run
+just release-github-publish 0.4.0 --confirm yes
+just release-docs-publish 0.4.0 --dry-run
 ```
 
 `release-plan`, `release-candidate`, `release-validation-pack`, `release-machine-validate`, and

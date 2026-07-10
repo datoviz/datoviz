@@ -115,6 +115,22 @@ release-github-draft version *args:
     @python3 tools/release_automation.py github-draft "{{version}}" {{args}}
 #
 
+release-create-tag version *args:
+    @python3 tools/release_automation.py create-tag "{{version}}" {{args}}
+#
+
+release-pypi version *args:
+    @python3 tools/release_automation.py pypi "{{version}}" {{args}}
+#
+
+release-github-publish version *args:
+    @python3 tools/release_automation.py github-publish "{{version}}" {{args}}
+#
+
+release-docs-publish version *args:
+    @python3 tools/release_automation.py docs-publish "{{version}}" {{args}}
+#
+
 release-machine-validate version *args:
     @python3 tools/release_automation.py machine-validate "{{version}}" {{args}}
 #

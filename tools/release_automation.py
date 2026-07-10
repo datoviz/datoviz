@@ -1517,9 +1517,63 @@ def update_publication_state(version: str, key: str, data: dict[str, Any]) -> No
     save_state(version, state)
 
 
+def require_confirmed(action: str, *, confirm: str, dry_run: bool) -> None:
+    if not dry_run and confirm != "yes":
+        raise RuntimeError(f"refusing {action} without --confirm yes")
+
+
+def require_release_ready(version: str, *, allow_incomplete: bool) -> dict[str, Any]:
+    analysis = release_analysis(version)
+    blockers = rehearsal_blockers(analysis)
+    if blockers and not allow_incomplete:
+        lines = "\n".join(f"- {blocker}" for blocker in blockers)
+        raise RuntimeError(
+            "release publication gates are not satisfied; rerun with --allow-incomplete to bypass:\n"
+            + lines
+        )
+    return analysis
+
+
+def require_clean_publication_worktree(*, allow_dirty: bool) -> None:
+    if allow_dirty:
+        return
+    status = git_value(["status", "--short"])
+    if status:
+        raise RuntimeError("worktree is dirty; rerun with --allow-dirty to bypass:\n" + status)
+
+
+def require_state_commit(state: dict[str, Any], *, allow_commit_mismatch: bool) -> None:
+    if allow_commit_mismatch:
+        return
+    expected = str(state.get("commit", ""))
+    current = git_value(["rev-parse", "HEAD"])
+    if expected and current and expected != current:
+        raise RuntimeError(f"release state commit {expected} does not match HEAD {current}")
+
+
+def is_prerelease_version(version: str) -> bool:
+    return bool(re.search(r"(a|b|rc|dev)", version))
+
+
+def require_final_version(version: str, *, allow_prerelease: bool) -> None:
+    if is_prerelease_version(version) and not allow_prerelease:
+        raise RuntimeError(f"{version} looks like a prerelease; rerun with --allow-prerelease")
+
+
+def require_publication_state(
+    state: dict[str, Any], key: str, allowed_statuses: set[str], *, allow_incomplete: bool
+) -> dict[str, Any]:
+    publication = state.get("publication", {})
+    item = publication.get(key, {})
+    status = str(item.get("status", "missing"))
+    if status not in allowed_statuses and not allow_incomplete:
+        allowed = ", ".join(sorted(allowed_statuses))
+        raise RuntimeError(f"publication state {key}={status!r}; expected one of: {allowed}")
+    return item
+
+
 def testpypi(args: argparse.Namespace) -> int:
-    if not args.dry_run and args.confirm != "yes":
-        raise RuntimeError("refusing TestPyPI upload without --confirm yes")
+    require_confirmed("TestPyPI upload", confirm=args.confirm, dry_run=args.dry_run)
 
     analysis = require_rehearsal_ready(args.version, allow_incomplete=args.allow_incomplete)
     wheels = state_artifact_paths(analysis["state"], kinds={"wheel"})
@@ -1561,8 +1615,7 @@ def testpypi(args: argparse.Namespace) -> int:
 
 
 def github_draft(args: argparse.Namespace) -> int:
-    if not args.dry_run and args.confirm != "yes":
-        raise RuntimeError("refusing GitHub draft mutation without --confirm yes")
+    require_confirmed("GitHub draft mutation", confirm=args.confirm, dry_run=args.dry_run)
 
     analysis = require_rehearsal_ready(args.version, allow_incomplete=args.allow_incomplete)
     state = analysis["state"]
@@ -1653,6 +1706,123 @@ def github_draft(args: argparse.Namespace) -> int:
     return 0
 
 
+def create_tag(args: argparse.Namespace) -> int:
+    require_confirmed("tag creation", confirm=args.confirm, dry_run=args.dry_run)
+    analysis = require_release_ready(args.version, allow_incomplete=args.allow_incomplete)
+    state = analysis["state"]
+    require_clean_publication_worktree(allow_dirty=args.allow_dirty)
+    require_state_commit(state, allow_commit_mismatch=args.allow_commit_mismatch)
+
+    tag = str(state.get("tag", f"v{args.version}"))
+    tag_exists = git_value(["rev-parse", "-q", "--verify", f"refs/tags/{tag}"]) != ""
+    if tag_exists and not args.allow_existing:
+        raise RuntimeError(f"tag already exists: {tag}")
+    if tag_exists:
+        print(f"tag already exists: {tag}")
+        return 0
+
+    return run_checked(["git", "tag", "-a", tag, "-m", tag], dry_run=args.dry_run)
+
+
+def pypi(args: argparse.Namespace) -> int:
+    require_confirmed("PyPI upload", confirm=args.confirm, dry_run=args.dry_run)
+    require_final_version(args.version, allow_prerelease=args.allow_prerelease)
+    analysis = require_release_ready(args.version, allow_incomplete=args.allow_incomplete)
+    state = analysis["state"]
+    require_publication_state(
+        state,
+        "testpypi",
+        {"uploaded", "validated"},
+        allow_incomplete=args.allow_incomplete,
+    )
+
+    artifacts = state_artifact_paths(state, kinds={"wheel"})
+    if args.dist_dir:
+        dist_dir = args.dist_dir if args.dist_dir.is_absolute() else ROOT / args.dist_dir
+        artifacts.extend(sorted(dist_dir.glob(f"datoviz-{args.version}-*.whl")))
+        artifacts = sorted({path.resolve() for path in artifacts})
+    if not artifacts:
+        raise RuntimeError("no wheel artifacts available for PyPI upload")
+
+    if not args.skip_twine_check:
+        rc = run_checked([sys.executable, "-m", "twine", "check", *map(os.fspath, artifacts)], dry_run=args.dry_run)
+        if rc != 0:
+            return rc
+
+    rc = run_checked([sys.executable, "-m", "twine", "upload", *map(os.fspath, artifacts)], dry_run=args.dry_run)
+    if rc != 0:
+        return rc
+
+    if not args.dry_run:
+        update_publication_state(
+            args.version,
+            "pypi",
+            {
+                "status": "uploaded",
+                "artifacts": [relpath(path) for path in artifacts],
+            },
+        )
+    return 0
+
+
+def github_publish(args: argparse.Namespace) -> int:
+    require_confirmed("GitHub release publication", confirm=args.confirm, dry_run=args.dry_run)
+    analysis = require_release_ready(args.version, allow_incomplete=args.allow_incomplete)
+    state = analysis["state"]
+    require_publication_state(
+        state,
+        "github_draft",
+        {"drafted"},
+        allow_incomplete=args.allow_incomplete,
+    )
+
+    tag = str(state.get("tag", f"v{args.version}"))
+    if command_exists("gh") is None and not args.dry_run:
+        raise RuntimeError("gh is required for GitHub release publication")
+
+    rc = run_checked(["gh", "release", "edit", tag, "--draft=false"], dry_run=args.dry_run)
+    if rc != 0:
+        return rc
+
+    if not args.dry_run:
+        update_publication_state(
+            args.version,
+            "github_release",
+            {
+                "status": "published",
+                "tag": tag,
+            },
+        )
+    return 0
+
+
+def docs_publish(args: argparse.Namespace) -> int:
+    require_confirmed("documentation publication", confirm=args.confirm, dry_run=args.dry_run)
+    analysis = require_release_ready(args.version, allow_incomplete=args.allow_incomplete)
+    del analysis
+
+    if args.docs_command:
+        rc = run_checked(args.docs_command, dry_run=args.dry_run)
+        if rc != 0:
+            return rc
+        if not args.dry_run:
+            update_publication_state(
+                args.version,
+                "docs",
+                {
+                    "status": "published",
+                    "command": args.docs_command,
+                },
+            )
+        return 0
+
+    print("No docs publish command configured.")
+    print("Pass --command, for example: --command just --command docs-deploy")
+    if not args.dry_run:
+        raise RuntimeError("refusing docs publication without --command")
+    return 0
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -1720,6 +1890,41 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     github_parser.add_argument("--allow-missing-tag", action="store_true")
     github_parser.add_argument("--notes-file", type=Path)
 
+    tag_parser = subparsers.add_parser("create-tag", help="Create the release tag")
+    tag_parser.add_argument("version")
+    tag_parser.add_argument("--confirm", default="no")
+    tag_parser.add_argument("--dry-run", action="store_true")
+    tag_parser.add_argument("--allow-incomplete", action="store_true")
+    tag_parser.add_argument("--allow-dirty", action="store_true")
+    tag_parser.add_argument("--allow-existing", action="store_true")
+    tag_parser.add_argument("--allow-commit-mismatch", action="store_true")
+
+    pypi_parser = subparsers.add_parser("pypi", help="Upload final artifacts to PyPI")
+    pypi_parser.add_argument("version")
+    pypi_parser.add_argument("--dist-dir", type=Path)
+    pypi_parser.add_argument("--confirm", default="no")
+    pypi_parser.add_argument("--dry-run", action="store_true")
+    pypi_parser.add_argument("--allow-incomplete", action="store_true")
+    pypi_parser.add_argument("--allow-prerelease", action="store_true")
+    pypi_parser.add_argument("--skip-twine-check", action="store_true")
+
+    github_publish_parser = subparsers.add_parser(
+        "github-publish", help="Publish an existing draft GitHub release"
+    )
+    github_publish_parser.add_argument("version")
+    github_publish_parser.add_argument("--confirm", default="no")
+    github_publish_parser.add_argument("--dry-run", action="store_true")
+    github_publish_parser.add_argument("--allow-incomplete", action="store_true")
+
+    docs_publish_parser = subparsers.add_parser(
+        "docs-publish", help="Publish documentation through a maintainer-supplied command"
+    )
+    docs_publish_parser.add_argument("version")
+    docs_publish_parser.add_argument("--confirm", default="no")
+    docs_publish_parser.add_argument("--dry-run", action="store_true")
+    docs_publish_parser.add_argument("--allow-incomplete", action="store_true")
+    docs_publish_parser.add_argument("--command", action="append", default=[], dest="docs_command")
+
     machine_parser = subparsers.add_parser(
         "machine-validate", help="Validate release artifacts on this machine and write evidence"
     )
@@ -1767,6 +1972,14 @@ def main(argv: list[str] | None = None) -> int:
         return testpypi(args)
     if args.command == "github-draft":
         return github_draft(args)
+    if args.command == "create-tag":
+        return create_tag(args)
+    if args.command == "pypi":
+        return pypi(args)
+    if args.command == "github-publish":
+        return github_publish(args)
+    if args.command == "docs-publish":
+        return docs_publish(args)
     if args.command == "machine-validate":
         return machine_validate(args)
     if args.command == "report":
