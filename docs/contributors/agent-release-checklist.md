@@ -37,6 +37,7 @@ After approval:
 ```sh
 just release-candidate 0.4.0rc1
 just release-notes 0.4.0rc1
+just release-docs-validate 0.4.0rc1
 just release-validation-pack 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
 just release-report 0.4.0rc1
 ```
@@ -47,6 +48,8 @@ this local candidate flow.
 Summarize the generated `build/release/<version>/release-notes.md` as a draft, not final wording.
 Ask the maintainer to review known issues, highlights, artifact URLs, and validation status before
 GitHub draft approval.
+Treat a failed `release-docs-validate` result as a release blocker unless the maintainer explicitly
+accepts it as a known exclusion.
 
 
 ## Machine Instructions

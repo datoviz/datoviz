@@ -700,6 +700,11 @@ def gate_rows(analysis: dict[str, Any]) -> list[dict[str, str]]:
             "detail": "release notes artifact recorded",
         },
         {
+            "id": "docs_validation",
+            "status": str(state.get("docs_validation", {}).get("status", "missing")),
+            "detail": "documentation API and fenced snippet checks",
+        },
+        {
             "id": "release_report",
             "status": "pass" if artifact_kinds(artifacts, "release-report") else "missing",
             "detail": "release report artifact recorded",
@@ -748,7 +753,10 @@ def rehearsal_blockers(analysis: dict[str, Any]) -> list[str]:
     if analysis["missing_required"]:
         blockers.append("required machine evidence is missing")
     for row in gate_rows(analysis):
-        if row["id"] in {"source_bundle", "release_report", "checksums"} and row["status"] != "pass":
+        if (
+            row["id"] in {"source_bundle", "docs_validation", "release_report", "checksums"}
+            and row["status"] != "pass"
+        ):
             blockers.append(f"{row['id']} gate is {row['status']}")
     return blockers
 
@@ -946,6 +954,73 @@ def release_notes(args: argparse.Namespace) -> int:
     return 0
 
 
+def docs_validate(args: argparse.Namespace) -> int:
+    version = args.version
+    log_dir = state_dir(version) / "logs" / "docs-validation"
+    if not args.dry_run:
+        log_dir.mkdir(parents=True, exist_ok=True)
+
+    commands: list[list[str]] = []
+    if not args.skip_api:
+        commands.append(["just", "docs-api-check"])
+    if not args.skip_doctest:
+        if args.file:
+            command = [sys.executable, "tools/doctest.py", "--lang", args.lang]
+            command.extend(os.fspath(path) for path in args.file)
+            commands.append(command)
+        else:
+            commands.append(["just", "docs-doctest", args.lang])
+
+    records = []
+    failures = 0
+    for index, command in enumerate(commands, start=1):
+        record = run_command(command, log_dir=log_dir, index=index, dry_run=args.dry_run)
+        records.append(record)
+        if record.get("returncode") not in (0, None):
+            failures += 1
+            if not args.keep_going:
+                break
+
+    evidence = {
+        "schema": "datoviz.release-docs-validation.v1",
+        "version": version,
+        "created_at_utc": utc_now(),
+        "status": "fail" if failures else "pass",
+        "commands": records,
+    }
+
+    if args.dry_run:
+        print(json.dumps(evidence, indent=2, sort_keys=True))
+        return 0 if not failures else 1
+
+    output = args.output or (state_dir(version) / "docs-validation.json")
+    if not output.is_absolute():
+        output = ROOT / output
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf8")
+
+    state = state_or_new(version)
+    state["docs_validation"] = {
+        "status": evidence["status"],
+        "updated_at_utc": evidence["created_at_utc"],
+        "path": relpath(output),
+    }
+    artifacts = [
+        artifact
+        for artifact in state.get("artifacts", [])
+        if artifact.get("kind") != "docs-validation"
+    ]
+    artifacts.append(
+        artifact_record(output, "docs-validation", validated=evidence["status"] == "pass")
+    )
+    state["artifacts"] = artifacts
+    state["updated_at_utc"] = utc_now()
+    save_state(version, state)
+    print(f"wrote docs-validation: {relpath(output)}")
+    print(f"updated {relpath(state_path(version))}")
+    return 0 if not failures else 1
+
+
 def update_state_evidence(version: str) -> None:
     path = state_path(version)
     if not path.is_file():
@@ -982,6 +1057,7 @@ def command_plan(version: str) -> str:
         f"  just release-dry-run {version} --wheel path/to/wheel.whl",
         f"  just release-candidate {version}",
         f"  just release-notes {version}",
+        f"  just release-docs-validate {version}",
         f"  just release-validation-pack {version} --wheel path/to/wheel.whl",
         f"  just release-report {version}",
         "",
@@ -2063,6 +2139,7 @@ def dry_run(args: argparse.Namespace) -> int:
         )
     )
     steps.append(run_dry_step("release-notes", [*script, "release-notes", version, "--dry-run"]))
+    steps.append(run_dry_step("docs-validate", [*script, "docs-validate", version, "--dry-run"]))
 
     if args.wheel:
         pack_cmd = [*script, "validation-pack", version, "--dry-run"]
@@ -2203,6 +2280,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     notes_parser.add_argument("--max-commits", type=int, default=80)
     notes_parser.add_argument("--dry-run", action="store_true")
 
+    docs_validate_parser = subparsers.add_parser(
+        "docs-validate", help="Run documentation validation and record release evidence"
+    )
+    docs_validate_parser.add_argument("version")
+    docs_validate_parser.add_argument("--output", type=Path)
+    docs_validate_parser.add_argument("--file", type=Path, action="append", default=[])
+    docs_validate_parser.add_argument("--lang", choices=["python", "c", "both"], default="both")
+    docs_validate_parser.add_argument("--skip-api", action="store_true")
+    docs_validate_parser.add_argument("--skip-doctest", action="store_true")
+    docs_validate_parser.add_argument("--dry-run", action="store_true")
+    docs_validate_parser.add_argument("--keep-going", action="store_true")
+
     candidate_parser = subparsers.add_parser(
         "candidate", help="Create local release-candidate state"
     )
@@ -2337,6 +2426,8 @@ def main(argv: list[str] | None = None) -> int:
         return dry_run(args)
     if args.command == "release-notes":
         return release_notes(args)
+    if args.command == "docs-validate":
+        return docs_validate(args)
     if args.command == "candidate":
         return candidate(args)
     if args.command == "validation-pack":

@@ -65,12 +65,14 @@ After reviewing the dry-run output, run the local candidate flow:
 ```sh
 just release-candidate 0.4.0rc1
 just release-notes 0.4.0rc1
+just release-docs-validate 0.4.0rc1
 just release-report 0.4.0rc1
 ```
 
 This writes `build/release/0.4.0rc1/release-state.json`, command logs, generated source bundle
-metadata, discovered wheel checksums, generated release notes, and the first release report inputs.
-It does not tag, upload, publish, push, or create a GitHub release.
+metadata, discovered wheel checksums, generated release notes, documentation validation evidence,
+and the first release report inputs. It does not tag, upload, publish, push, or create a GitHub
+release.
 
 Then run the minimum local proof:
 
@@ -79,6 +81,15 @@ just build
 just test
 just spec-check
 ```
+
+Documentation validation is recorded separately because it produces release evidence:
+
+```sh
+just release-docs-validate 0.4.0rc1
+```
+
+By default this runs the generated C API classification check and selected fenced code-block
+doctests. Pass repeated `--file <path>` arguments to validate additional markdown pages.
 
 For wheel artifacts, run the host-local package proof:
 

@@ -96,6 +96,7 @@ just release-plan 0.4.0rc1
 just release-dry-run 0.4.0rc1 --wheel path/to/wheel.whl
 just release-candidate 0.4.0rc1
 just release-notes 0.4.0rc1
+just release-docs-validate 0.4.0rc1
 just release-validation-pack 0.4.0rc1 --wheel path/to/wheel.whl
 just release-machine-validate 0.4.0rc1
 just release-ingest-evidence path/to/evidence.tar.zst
@@ -115,10 +116,12 @@ just release-docs-publish 0.4.0 --dry-run
 ```
 
 `release-dry-run` is the agent-friendly front door: it chains the local plan, candidate dry-run,
-release-notes preview, validation-pack rehearsal when wheels are supplied, strict matrix reporting
-when state exists, and all publication dry-runs without tagging, uploading, publishing, or pushing.
-`release-notes` writes `build/release/<version>/release-notes.md`, records it as the release-notes
-artifact, and leaves final wording to maintainer review. `release-plan`, `release-candidate`,
+release-notes preview, documentation validation dry-run, validation-pack rehearsal when wheels are
+supplied, strict matrix reporting when state exists, and all publication dry-runs without tagging,
+uploading, publishing, or pushing. `release-notes` writes
+`build/release/<version>/release-notes.md`, records it as the release-notes artifact, and leaves
+final wording to maintainer review. `release-docs-validate` records API reference checks and
+selected fenced snippet doctests as release evidence. `release-plan`, `release-candidate`,
 `release-validation-pack`, `release-machine-validate`, and `release-report` cover the lower-level
 local automation slices. Publication commands stay explicit approval-gated operations.
 

@@ -99,6 +99,10 @@ release-notes version *args:
     @python3 tools/release_automation.py release-notes "{{version}}" {{args}}
 #
 
+release-docs-validate version *args:
+    @python3 tools/release_automation.py docs-validate "{{version}}" {{args}}
+#
+
 release-candidate version *args:
     @python3 tools/release_automation.py candidate "{{version}}" {{args}}
 #

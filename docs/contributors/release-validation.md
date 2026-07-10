@@ -29,6 +29,7 @@ just release-dry-run 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
 just release-candidate 0.4.0rc1 --dry-run
 just release-candidate 0.4.0rc1
 just release-notes 0.4.0rc1
+just release-docs-validate 0.4.0rc1
 just release-report 0.4.0rc1
 ```
 
@@ -38,6 +39,8 @@ phase.
 
 `release-notes` writes a generated draft to `build/release/<version>/release-notes.md` and records
 it as the GitHub draft notes artifact. Review and edit the wording before using it for publication.
+`release-docs-validate` records `docs-api-check` plus selected fenced code-block doctests in
+`build/release/<version>/docs-validation.json`.
 
 For installed-artifact validation on a physical machine, use:
 

@@ -35,6 +35,7 @@ top to bottom and record skipped items as known exclusions.
 - [ ] Run `just release-candidate <version>` or record which lower-level candidate steps replaced
       it.
 - [ ] Run `just release-notes <version>` and review the generated draft.
+- [ ] Run `just release-docs-validate <version>`.
 - [ ] Run `just release-report <version>`.
 - [ ] Run `just build`.
 - [ ] Run the focused release tests for touched areas.
@@ -47,6 +48,7 @@ top to bottom and record skipped items as known exclusions.
 ## 4. Examples, Docs, And Gallery
 
 - [ ] Build the documentation site.
+- [ ] Confirm `release-docs-validate` passed or record the accepted docs validation exclusion.
 - [ ] Run docs link checks if available.
 - [ ] Verify feature/status and known-issues pages.
 - [ ] Verify release examples compile or run as appropriate.
