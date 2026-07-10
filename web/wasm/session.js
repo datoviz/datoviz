@@ -77,11 +77,16 @@ export class WasmSceneSession {
     if (this.scene === null) {
       return;
     }
-    const requestRender = () => {
+    const requestInputRender = () => {
+      // Animated scenarios consume input on their next animation frame. A second render request
+      // can race a stateful frame update and force recovery, which restarts animation time.
+      if (this.demo?.animate === true && this.animationFrame !== 0) {
+        return;
+      }
       this.requestRender();
     };
-    this.scene.attachControllerInput(requestRender);
-    this.scene.attachResizeObserver(requestRender);
+    this.scene.attachControllerInput(requestInputRender);
+    this.scene.attachResizeObserver(() => this.requestRender());
   }
 
   async render() {

@@ -454,6 +454,10 @@ async function expectBrowserWrapperPacketRuntime() {
   );
   requireOk(sessionSource.includes("this.renderQueue"), "WASM session does not serialize renders");
   requireOk(
+    sessionSource.includes("this.demo?.animate === true && this.animationFrame !== 0"),
+    "animated WASM input schedules a competing render outside the animation loop",
+  );
+  requireOk(
     sessionSource.includes("recoverAfterRenderError"),
     "WASM session cannot recover a desynchronized WebGPU runtime",
   );
