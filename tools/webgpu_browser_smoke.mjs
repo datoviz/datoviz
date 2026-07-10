@@ -665,7 +665,33 @@ async function smokeAnimatedWasmPage(
     return (scene.runtime.packetFrameIndex > ${Number(initialFrame)} + 1) && session?.animationFrame !== 0;
   })()`, 15000);
   requireOk(animatedFrame, `${path}: scenario animation did not advance`);
-  await page.screenshotCanvas(screenshotPath);
+  const pointerContinuity = await page.evaluate(`(async () => {
+    const session = window.__datovizWasmSession;
+    const scene = window.__datovizWasmScene;
+    const canvas = document.querySelector("#viewport");
+    if (session === null || scene === null || canvas === null) return "missing live session";
+    const startTime = session.animationStartTime;
+    const frameIndex = scene.runtime?.packetFrameIndex ?? 0;
+    const rect = canvas.getBoundingClientRect();
+    canvas.dispatchEvent(new PointerEvent("pointermove", {
+      clientX: rect.left + 0.6 * rect.width,
+      clientY: rect.top + 0.45 * rect.height,
+      pointerId: 1,
+      bubbles: true,
+    }));
+    for (let i = 0; i < 120; i++) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      if ((scene.runtime?.packetFrameIndex ?? 0) > frameIndex) {
+        return session.animationStartTime === startTime || "pointer movement restarted animation time";
+      }
+    }
+    return "animation did not advance after pointer movement";
+  })()`);
+  requireOk(pointerContinuity === true, `${path}: ${pointerContinuity}`);
+  await page.screenshotCanvas(screenshotPath, {
+    width: CAPTURE_CANVAS_WIDTH,
+    height: CAPTURE_CANVAS_HEIGHT,
+  });
   await page.evaluate(`(() => {
     window.__datovizWasmSession?.stopAnimationLoop();
   })()`);
