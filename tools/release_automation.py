@@ -830,6 +830,108 @@ def gate_rows(analysis: dict[str, Any]) -> list[dict[str, str]]:
     return rows
 
 
+def recommended_machine_profile(machine_class: str, required: Any) -> str:
+    if machine_class == "linux-x86_64-vulkan":
+        return "full"
+    if required == "artifact-required":
+        return "quick"
+    return "rc"
+
+
+def machine_plan_text(version: str, wheel: Path | None = None) -> str:
+    analysis: dict[str, Any] | None = None
+    state_exists = state_path(version).is_file()
+    if state_exists:
+        analysis = release_analysis(version)
+        matrix = analysis["matrix"]
+        artifacts = analysis["artifacts"]
+        evidence = analysis["evidence"]
+        gate_summary = gate_rows(analysis)
+    else:
+        matrix = machine_matrix([])
+        artifacts = []
+        evidence = []
+        gate_summary = []
+
+    validation_packs = artifact_kinds(artifacts, "validation-pack")
+    pack_paths = [artifact["path"] for artifact in validation_packs]
+    wheel_text = relpath(wheel if wheel.is_absolute() else ROOT / wheel) if wheel else "path/to/wheel.whl"
+
+    lines = [
+        f"# Datoviz Machine Validation Plan: {version}",
+        "",
+        "## Validation Pack",
+        "",
+    ]
+    if pack_paths:
+        for path in pack_paths:
+            lines.append(f"- available: `{path}`")
+    else:
+        lines.append("- missing: no validation-pack artifact recorded")
+        lines.append(f"- create it with: `just release-validation-pack {version} --wheel {wheel_text}`")
+
+    lines.extend(["", "## Machine Actions", ""])
+    for row in matrix:
+        class_name = row["class"]
+        status = row["status"]
+        profile = recommended_machine_profile(class_name, row["required_for_rc"])
+        required = row["required_for_rc"]
+        machines = ", ".join(row.get("machines") or []) or "-"
+        profiles = ", ".join(row.get("profiles") or []) or "-"
+        lines.append(f"### {class_name}")
+        lines.append(f"- status: `{status}`")
+        lines.append(f"- required: `{required}`")
+        lines.append(f"- current machines: `{machines}`")
+        lines.append(f"- current profiles: `{profiles}`")
+        lines.append(f"- proof: {row['proof']}")
+        if status == "pass":
+            lines.append("- next: no action needed unless you want broader optional coverage")
+        elif status == "fail":
+            lines.append("- next: inspect `failures.md`, fix the issue, then rerun validation")
+        else:
+            lines.append(f"- pack command: `./validate-{profile}.sh`")
+            lines.append(f"- PowerShell: `./validate.ps1 -Profile {profile}`")
+            lines.append("- return: archive and send back `evidence/<machine-id>/`")
+        lines.append("")
+
+    lines.extend(["## Returned Evidence", ""])
+    if evidence:
+        for item in evidence:
+            warnings = len(item.get("warnings") or [])
+            failures = len(item.get("failures") or [])
+            lines.append(
+                f"- `{item.get('status', 'unknown')}` {item.get('machine_id', 'unknown')} "
+                f"profile={item.get('profile', '-')} warnings={warnings} failures={failures} "
+                f"path=`{item.get('path', '-')}`"
+            )
+    else:
+        lines.append("- missing: no physical-machine evidence ingested")
+
+    lines.extend(["", "## Ingest Commands", ""])
+    lines.append(
+        f"- ingest returned directory or tarball: "
+        f"`just release-ingest-evidence {version} path/to/evidence-or-tar`"
+    )
+    lines.append(f"- refresh report: `just release-report {version} --strict-matrix`")
+    lines.append(
+        f"- refresh gates: `just release-gates {version} --write-artifacts --strict-matrix`"
+    )
+
+    if gate_summary:
+        lines.extend(["", "## Gate Summary", ""])
+        for row in gate_summary:
+            lines.append(f"- `{row['status']}` {row['id']}: {row['detail']}")
+    else:
+        lines.extend(["", "## Gate Summary", "", "- missing: release state has not been created"])
+
+    return "\n".join(lines).rstrip()
+
+
+def machine_plan(args: argparse.Namespace) -> int:
+    print(machine_plan_text(args.version, wheel=args.wheel))
+    return 0
+
+
 def rehearsal_blockers(analysis: dict[str, Any]) -> list[str]:
     blockers = []
     if analysis["missing_artifacts"]:
@@ -1149,6 +1251,7 @@ def command_plan(version: str) -> str:
         f"  just release-notes {version}",
         f"  just release-docs-validate {version}",
         f"  just release-validation-pack {version} --wheel path/to/wheel.whl",
+        f"  just release-machine-plan {version} --wheel path/to/wheel.whl",
         f"  just release-report {version}",
         "",
         "Candidate phase:",
@@ -2260,8 +2363,13 @@ def dry_run(args: argparse.Namespace) -> int:
         for wheel in args.wheel:
             pack_cmd.extend(["--wheel", os.fspath(wheel)])
         steps.append(run_dry_step("validation-pack", pack_cmd))
+        plan_cmd = [*script, "machine-plan", version]
+        for wheel in args.wheel:
+            plan_cmd.extend(["--wheel", os.fspath(wheel)])
+        steps.append(run_dry_step("machine-plan", plan_cmd))
     else:
         steps.append(skipped_dry_step("validation-pack", "no --wheel argument supplied"))
+        steps.append(run_dry_step("machine-plan", [*script, "machine-plan", version]))
 
     has_state = state_path(version).is_file()
     if has_state:
@@ -2429,6 +2537,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     pack_parser.add_argument("--output-dir", type=Path)
     pack_parser.add_argument("--dry-run", action="store_true")
 
+    machine_plan_parser = subparsers.add_parser(
+        "machine-plan", help="Print physical-machine validation actions"
+    )
+    machine_plan_parser.add_argument("version")
+    machine_plan_parser.add_argument("--wheel", type=Path)
+
     ingest_parser = subparsers.add_parser(
         "ingest-evidence", help="Copy returned machine evidence into release state"
     )
@@ -2546,6 +2660,8 @@ def main(argv: list[str] | None = None) -> int:
         return candidate(args)
     if args.command == "validation-pack":
         return validation_pack(args)
+    if args.command == "machine-plan":
+        return machine_plan(args)
     if args.command == "ingest-evidence":
         return ingest_evidence(args)
     if args.command == "gates":

@@ -59,6 +59,7 @@ For the first automated evidence slice, use:
 
 ```sh
 just release-validation-pack 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
+just release-machine-plan 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
 ```
 
 Then send the generated `build/release/<version>/validation-pack/datoviz-<version>-validation.tar.gz`
@@ -77,6 +78,8 @@ shaderc and installed offscreen render example smokes. Clearly separate required
 optional or unavailable machines.
 Treat error-level diagnostics in machine evidence as blockers even when the underlying command
 returned 0. Summarize warning-level diagnostics separately for maintainer review.
+Prefer quoting `release-machine-plan` output over reconstructing machine commands manually. Rerun it
+after each evidence ingest before asking for publication rehearsal approval.
 
 The instruction should identify:
 

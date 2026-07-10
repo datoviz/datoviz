@@ -98,6 +98,7 @@ just release-candidate 0.4.0rc1
 just release-notes 0.4.0rc1
 just release-docs-validate 0.4.0rc1
 just release-validation-pack 0.4.0rc1 --wheel path/to/wheel.whl
+just release-machine-plan 0.4.0rc1 --wheel path/to/wheel.whl
 just release-machine-validate 0.4.0rc1
 just release-ingest-evidence path/to/evidence.tar.zst
 just release-report 0.4.0rc1 --strict-matrix
@@ -121,9 +122,11 @@ supplied, strict matrix reporting when state exists, and all publication dry-run
 uploading, publishing, or pushing. `release-notes` writes
 `build/release/<version>/release-notes.md`, records it as the release-notes artifact, and leaves
 final wording to maintainer review. `release-docs-validate` records API reference checks and
-selected fenced snippet doctests as release evidence. `release-plan`, `release-candidate`,
-`release-validation-pack`, `release-machine-validate`, and `release-report` cover the lower-level
-local automation slices. Publication commands stay explicit approval-gated operations.
+selected fenced snippet doctests as release evidence. `release-machine-plan` prints required
+physical-machine actions, current evidence status, and next ingest/report/gate commands.
+`release-plan`, `release-candidate`, `release-validation-pack`, `release-machine-validate`, and
+`release-report` cover the lower-level local automation slices. Publication commands stay explicit
+approval-gated operations.
 
 
 ## Agent Behavior

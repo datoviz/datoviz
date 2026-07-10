@@ -46,6 +46,7 @@ For installed-artifact validation on a physical machine, use:
 
 ```sh
 just release-validation-pack 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
+just release-machine-plan 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
 ```
 
 Copy `build/release/0.4.0rc1/validation-pack/datoviz-0.4.0rc1-validation.tar.gz` to the target
@@ -75,6 +76,8 @@ shaderc plus installed Python/C offscreen render example smokes. Evidence is wri
 Machine validation scans command logs for Datoviz errors, Vulkan validation diagnostics, sanitizer
 output, crashes, and Python tracebacks. Error diagnostics are blocking even when the process exits
 with status 0; warning diagnostics are recorded for review.
+Use `release-machine-plan` after each evidence ingest to see which machine classes are still
+missing, failed, or ready.
 
 To return evidence from a validation pack, archive the generated evidence directory:
 
@@ -86,6 +89,7 @@ Back in the release checkout, ingest it and refresh the matrix report:
 
 ```sh
 just release-ingest-evidence 0.4.0rc1 path/to/evidence-<machine-id>.tar.gz
+just release-machine-plan 0.4.0rc1
 just release-report 0.4.0rc1 --strict-matrix
 just release-gates 0.4.0rc1 --write-artifacts --strict-matrix
 ```

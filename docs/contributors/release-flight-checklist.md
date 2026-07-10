@@ -77,6 +77,7 @@ top to bottom and record skipped items as known exclusions.
 ## 6. Wheel Install Smokes
 
 - [ ] Run `just release-validation-pack <version> --wheel <wheel>`.
+- [ ] Run `just release-machine-plan <version> --wheel <wheel>`.
 - [ ] Copy the generated validation pack to each required physical machine.
 - [ ] On each required physical machine, run
       `./validate-rc.sh` or `./validate.ps1 -Profile rc` from the extracted pack.
@@ -84,6 +85,7 @@ top to bottom and record skipped items as known exclusions.
       `./validate-full.sh` or `./validate.ps1 -Profile full` from the extracted pack, or record why
       render smoke is covered by lower-level checks.
 - [ ] Ingest returned evidence with `just release-ingest-evidence <version> <evidence-dir-or-tar>`.
+- [ ] Re-run `just release-machine-plan <version>` and confirm required machine actions are clear.
 - [ ] Run `just release-report <version> --strict-matrix`.
 - [ ] Run `just release-gates <version> --write-artifacts --strict-matrix`.
 - [ ] Run `just wheel-check --cmake-consumer --qt-probe optional`.

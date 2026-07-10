@@ -170,10 +170,11 @@ Create a portable validation pack for physical validation machines:
 
 ```sh
 just release-validation-pack 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
+just release-machine-plan 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
 ```
 
-Copy the generated `datoviz-0.4.0rc1-validation.tar.gz` to each target machine. After extraction,
-run:
+Copy the generated `datoviz-0.4.0rc1-validation.tar.gz` to each target machine listed by
+`release-machine-plan`. After extraction, run:
 
 ```sh
 ./validate-rc.sh
@@ -206,6 +207,7 @@ Ingest returned evidence in the release checkout:
 
 ```sh
 just release-ingest-evidence 0.4.0rc1 path/to/evidence-<machine-id>.tar.gz
+just release-machine-plan 0.4.0rc1
 just release-report 0.4.0rc1 --strict-matrix
 ```
 
