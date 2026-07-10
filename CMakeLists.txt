@@ -161,7 +161,14 @@ set(DVZ_GLFW_DIR "${PROJECT_SOURCE_DIR}/external/glfw")
 
 if(DVZ_WITH_GLFW)
     if(DVZ_VENDORED_DEPS)
-        if(EXISTS "${DVZ_GLFW_DIR}/CMakeLists.txt")
+        if(TARGET glfw)
+            # An embedding project may already have built GLFW; reuse its target instead of
+            # adding the vendored copy, which would fail on the duplicate `glfw` target.
+            set(DVZ_HAS_GLFW 1)
+            if(NOT TARGET glfw::glfw)
+                add_library(glfw::glfw ALIAS glfw)
+            endif()
+        elseif(EXISTS "${DVZ_GLFW_DIR}/CMakeLists.txt")
             set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
             set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
             set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)

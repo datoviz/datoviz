@@ -1345,8 +1345,15 @@ static int canvas_submit_active_slot(
     {
         dvz_submit_command(submit, cmd);
     }
+    // Signal the acquired image's render_finished semaphore, not the slot's: the present-wait
+    // semaphore must be per swapchain image (VUID-vkQueueSubmit2-semaphore-03868). The slot's
+    // in-flight fence only proves the submit finished, not that the present consuming the
+    // semaphore has executed, so a recycled slot could re-signal a still-signaled binary
+    // semaphore. Slot count == image count, so slots[image_index] doubles as per-image state.
     dvz_submit_signal(
-        submit, dvz_semaphore_handle(state->active_slot->render_finished), 0, signal_stage);
+        submit,
+        dvz_semaphore_handle(state->slots[state->active_slot->image_index].render_finished), 0,
+        signal_stage);
     dvz_submit_signal(
         submit, dvz_semaphore_handle(canvas->timeline_semaphore), wait_value,
         VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
@@ -1516,9 +1523,10 @@ static int canvas_dispatch_present(DvzCanvas* canvas, DvzCanvasSwapchain* state,
     DvzPresentStatus present_status = DVZ_PRESENT_STATUS_OK;
     if (!canvas_test_consume_forced_status(&state->test_force_present_status, &present_status))
     {
+        // Wait on the presented image's render_finished semaphore (see the submit-side note).
         present_status = dvz_swapchain_present(
             state->swapchain_wrapper, queue, index,
-            dvz_semaphore_handle(state->active_slot->render_finished));
+            dvz_semaphore_handle(state->slots[index].render_finished));
     }
     return canvas_handle_present_status(canvas, state, present_status, index);
 }

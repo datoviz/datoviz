@@ -134,9 +134,12 @@ void log_set_lock(log_LockFn fn) { L.lock = fn; }
 
 void log_set_fp(FILE* fp) { L.fp = fp; }
 
+static int log_level_explicitly_set;
+
 void log_set_level(int level)
 {
     // log_debug("set log level to %d", level);
+    log_level_explicitly_set = 1;
     L.level = level;
 }
 
@@ -157,6 +160,13 @@ void log_set_intercept(log_InterceptFn fn, void* udata)
 
 void log_log(int level, const char* file, int line, const char* fmt, ...)
 {
+    // On compilers without __attribute__((constructor)) (MSVC), _log_init() never runs, so the
+    // zero-initialized level stays at LOG_TRACE and floods stderr in embedded/library builds.
+    // Pick up DVZ_LOG_LEVEL lazily unless a level was already set.
+    if (!log_level_explicitly_set)
+    {
+        log_set_level_env();
+    }
     if (level < L.level)
     {
         return;
