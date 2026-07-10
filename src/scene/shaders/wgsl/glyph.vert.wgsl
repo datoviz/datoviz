@@ -40,7 +40,8 @@ fn main(input: VertexIn, @builtin(vertex_index) vertex_index: u32) -> VertexOut 
     let local = mix(input.bounds.xy, input.bounds.zw, k);
     let uv = mix(input.uv_bounds.xy, input.uv_bounds.zw, k);
     output.position = transform(input.anchor);
-    output.position.xy += local_pixel_delta(input, local) * output.position.w;
+    let position_xy = output.position.xy + local_pixel_delta(input, local) * output.position.w;
+    output.position = vec4f(position_xy, output.position.zw);
     output.uv = uv;
     output.color = input.color;
     return output;
