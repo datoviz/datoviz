@@ -1615,6 +1615,10 @@ function expectProteinScenarioStreamShape(stream, label) {
     (pipeline) => pipeline.builtin_pipeline === "scene.segment",
   );
   requireOk(commandsOf(stream, "Draw").length >= 2, `${label}: expected atom and selection sphere draws`);
+  const atomDraw = commandsOf(stream, "Draw").find(
+    (draw) => [6406, 602].includes(draw.instance_count),
+  );
+  requireOk(atomDraw !== undefined, `${label}: expected canonical 6M0J or temporary 1UBQ atoms`);
   requireOk(commandsOf(stream, "DrawIndexed").length >= 1, `${label}: expected crosshair segment draw`);
   requireOk(commandsOf(stream, "WriteBuffer").length >= 8, `${label}: expected protein data and material uploads`);
 }

@@ -12,18 +12,15 @@
  * the dense molecular surface produced from per-atom arrays.
  *
  * This workflow is useful when a scientific viewer needs to turn prepared molecular coordinates
- * into an interactive 3D point/sphere representation. The repository fallback is 1UBQ; other PDB
- * ids must be prepared before running.
+ * into an interactive 3D point/sphere representation. The canonical prepared bundle is 6M0J.
  *
  * Scenario: showcases_protein
  * Style: showcase scientific, graphite_cyan, 1280x720 window target
  *
- * Data:    RCSB PDB structure data. The default cache target is 6M0J; the repository fallback is
- *          data/examples/proteins/1ubq/prepared, generated from RCSB PDB 1UBQ.
+ * Data:    RCSB PDB structure data. The canonical cache and repository bundle target is 6M0J.
  * Source:  https://files.rcsb.org/download/{PDB_ID}.pdb
  * Terms:   RCSB PDB data usage policy applies.
- * Prepare: python tools/data/prepare_protein_arcball.py 1UBQ --regenerate
- *          python tools/preprocess_protein.py 6M0J
+ * Prepare: python tools/preprocess_protein.py 6M0J
  * Build:   just example-c showcases/protein
  * Run:     ./build/examples/c/showcases/protein
  * Smoke:   ./build/examples/c/showcases/protein 60
@@ -66,11 +63,12 @@
 #define WIDTH  EXAMPLE_WINDOW_WIDTH
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
-#define DEFAULT_PDB_ID             "6m0j"
-#define DEFAULT_BUNDLE_PATH        "data/examples/proteins/1ubq/prepared"
-#define ROTATION_SPEED_RAD_PER_SEC 0.18f
-#define DEFAULT_ATOM_SCALE         0.4f
-#define SCENARIO_FPS               60.0
+#define DEFAULT_PDB_ID              "6m0j"
+#define DEFAULT_BUNDLE_PATH         "data/examples/proteins/6m0j/prepared"
+#define LEGACY_FALLBACK_BUNDLE_PATH "data/examples/proteins/1ubq/prepared"
+#define ROTATION_SPEED_RAD_PER_SEC  0.18f
+#define DEFAULT_ATOM_SCALE          0.4f
+#define SCENARIO_FPS                60.0
 
 static const float TAU = 6.28318530718f;
 
@@ -293,7 +291,10 @@ static bool _default_bundle_path(char* out, size_t out_size)
     if (_cache_bundle_path(DEFAULT_PDB_ID, out, out_size) && _bundle_layout(out, &layout))
         return true;
     int n = dvz_snprintf(out, out_size, "%s", DEFAULT_BUNDLE_PATH);
-    return n > 0 && (size_t)n < out_size;
+    if (n > 0 && (size_t)n < out_size && _bundle_layout(out, &layout))
+        return true;
+    n = dvz_snprintf(out, out_size, "%s", LEGACY_FALLBACK_BUNDLE_PATH);
+    return n > 0 && (size_t)n < out_size && _bundle_layout(out, &layout);
 }
 
 

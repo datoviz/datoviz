@@ -35,15 +35,15 @@ This example renders a prepared PDB structure as colored sphere impostors.
 
 The protein bundle supplies atom positions, element-style colors, and radii; the example scales those radii and renders the atoms as spheres with an arcball/spin view. In the preview, compare atom size and color clusters rather than expecting bonds: the visual focus is the dense molecular surface produced from per-atom arrays.
 
-This workflow is useful when a scientific viewer needs to turn prepared molecular coordinates into an interactive 3D point/sphere representation. The repository fallback is 1UBQ; other PDB ids must be prepared before running.
+This workflow is useful when a scientific viewer needs to turn prepared molecular coordinates into an interactive 3D point/sphere representation. The canonical prepared bundle is 6M0J.
 
-Data: RCSB PDB structure data. The default cache target is 6M0J; the repository fallback is data/examples/proteins/1ubq/prepared, generated from RCSB PDB 1UBQ.
+Data: RCSB PDB structure data. The canonical cache and repository bundle target is 6M0J.
 
 Source: [https://files.rcsb.org/download/{PDB_ID}.pdb](https://files.rcsb.org/download/{PDB_ID}.pdb)
 
 Terms: RCSB PDB data usage policy applies.
 
-Prepare: `python tools/data/prepare_protein_arcball.py 1UBQ --regenerate` `python tools/preprocess_protein.py 6M0J`
+Prepare: `python tools/preprocess_protein.py 6M0J`
 
 Options: [runner options], [frame-count]
 
@@ -97,9 +97,11 @@ The full interactive GUI workbench lives in examples/c/lab/protein_viewer.c.
     | `license` | PDB archive coordinate files are available under CC0 1.0; attribute original structure authors where possible. |
     | `citation` | Cite the original PDB structure entry and the wwPDB/RCSB PDB resource where appropriate. |
     | `default_pdb_id` | 6M0J |
-    | `fallback_pdb_id` | 1UBQ |
-    | `fallback_prepared_path` | data/examples/proteins/1ubq/prepared |
-    | `preprocessing` | `python tools/data/prepare_protein_arcball.py 1UBQ --regenerate` |
+    | `prepared_path` | data/examples/proteins/6m0j/prepared |
+    | `packaged_arrays` | atom_position.f32, atom_radius_vdw.f32, atom_color_element.rgba8 |
+    | `temporary_fallback_pdb_id` | 1UBQ |
+    | `temporary_fallback_prepared_path` | data/examples/proteins/1ubq/prepared |
+    | `preprocessing` | `python tools/preprocess_protein.py 6M0J` |
     | `provenance` | The showcase loads a PDB coordinate file, normalizes atom positions into scene space, and renders atoms as sphere impostors with element-style colors and radii from the preparation bundle. |
 
     **Encoding**
