@@ -180,4 +180,4 @@ materials, panels, transforms, or update schedules.
 ??? example "Related examples"
 
     - [Basic Scene](../examples/gallery/features/features_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
-    - [Scatter Plot](../examples/gallery/start/start_scatter.md) - Source: `examples/c/start/scatter.c`
+    - [Quickstart scatter plot](../start/quickstart.md) - Source: `examples/c/start/scatter.c`

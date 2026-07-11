@@ -937,7 +937,7 @@
             "category": "start",
             "status": "supported",
             "source": "examples/c/start/scatter.c",
-            "page": "gallery/start/start_scatter.md"
+            "page": "../start/quickstart.md"
           }
         ]
       }

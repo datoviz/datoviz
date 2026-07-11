@@ -126,4 +126,4 @@ and should be committed through that submodule, not copied into the main reposit
 | [Allen Mouse Brain](gallery/showcases/showcases_brain_volume.md) | [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c) | `prototype` | `smoke+screenshot` |
 | [Point Cloud](gallery/showcases/showcases_point_cloud.md) | [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c) | `supported` | `smoke+screenshot` |
 | [Textured Planets](gallery/showcases/showcases_textured_planet.md) | [`examples/c/showcases/textured_planet.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet.c) | `supported` | `smoke+screenshot` |
-| [Scatter Plot](gallery/start/start_scatter.md) | [`examples/c/start/scatter.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/start/scatter.c) | `supported` | `smoke+screenshot` |
+| [Scatter Plot](../start/quickstart.md) | [`examples/c/start/scatter.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/start/scatter.c) | `supported` | `smoke+screenshot` |

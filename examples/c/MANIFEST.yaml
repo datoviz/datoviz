@@ -3399,6 +3399,7 @@ examples:
   - id: start_scatter
     title: Scatter Plot
     lane: start
+    docs_page: ../start/quickstart.md
     source: examples/c/start/scatter.c
     python:
       status: manual

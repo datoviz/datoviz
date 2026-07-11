@@ -297,6 +297,7 @@ class Example:
     extra_sources: tuple[SourceTab, ...]
     python_source: str | None
     python_status: str | None
+    docs_page: str | None
 
     @property
     def source_path(self) -> Path:
@@ -311,7 +312,13 @@ class Example:
 
     @property
     def page_path(self) -> str:
+        if self.docs_page is not None:
+            return self.docs_page
         return f"gallery/{self.lane}/{self.id}.md"
+
+    @property
+    def has_detail_page(self) -> bool:
+        return self.docs_page is None
 
     @property
     def image_path(self) -> Path:
@@ -619,6 +626,7 @@ def collect_examples(manifest: dict) -> list[Example]:
             extra_sources=extra_sources,
             python_source=python_source,
             python_status=python_status,
+            docs_page=str(entry["docs_page"]) if entry.get("docs_page") else None,
         )
         examples.append(example)
     return examples
@@ -1615,6 +1623,8 @@ def main() -> int:
     render_webgpu_matrix(examples, args.docs_dir)
     neighbors = example_neighbors(examples)
     for example in examples:
+        if not example.has_detail_page:
+            continue
         previous, next_ = neighbors.get(example.id, (None, None))
         render_example_page(
             example,

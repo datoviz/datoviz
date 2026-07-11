@@ -111,4 +111,4 @@ When porting a C example:
 
     - Start page: [Quickstart](../start/quickstart.md)
     - Reference: [Python binding exact call form](../reference/ctypes.md)
-    - [Scatter Plot](../examples/gallery/start/start_scatter.md) - Source: `examples/c/start/scatter.c`
+    - [Quickstart scatter plot](../start/quickstart.md) - Source: `examples/c/start/scatter.c`
