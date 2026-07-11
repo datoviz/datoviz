@@ -4,10 +4,6 @@
 
 Browse one focused example per visual family or composite.
 
-Coverage: 16 visual families and 2 composites.
-
-Each card links to a detail page with preview media, source code, and example metadata.
-
 ## 0D — point-like
 
 <div class="grid cards" markdown="1">

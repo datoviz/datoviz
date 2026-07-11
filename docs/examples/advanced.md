@@ -4,10 +4,6 @@
 
 Browse advanced runtime and host-integration examples. These are useful after you are comfortable with ordinary scene code.
 
-Coverage: 4 examples (1 supported, 3 experimental).
-
-Each card links to a detail page with preview media, source code, and example metadata.
-
 ## Advanced
 
 <div class="grid cards" markdown="1">

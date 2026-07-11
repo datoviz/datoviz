@@ -4,10 +4,6 @@
 
 Browse examples for opening windows, rendering offscreen, recording, replaying, and exporting media.
 
-Coverage: 5 runtime examples (3 supported, 2 experimental).
-
-Each card links to a detail page with preview media, source code, and example metadata.
-
 ## Windows & Hosting
 
 <div class="grid cards" markdown="1">

@@ -4,10 +4,6 @@
 
 Browse the generated Datoviz v0.4 example gallery.
 
-Coverage: 12 showcases, 18 visuals and composites, 69 feature examples, 5 runtime examples, and 4 advanced examples.
-
-Each card links to a detail page with preview media, source code, and example metadata.
-
 ## Showcases
 
 Selected composed examples are shown below.

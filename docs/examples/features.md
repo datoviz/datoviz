@@ -4,10 +4,6 @@
 
 Browse isolated examples for layout, navigation, adornments, rendering, interaction, animation, and diagnostics.
 
-Coverage: 69 feature examples (63 supported, 5 experimental, 1 diagnostic).
-
-Each card links to a detail page with preview media, source code, and example metadata.
-
 ## Scene & Layout
 
 <div class="grid cards" markdown="1">

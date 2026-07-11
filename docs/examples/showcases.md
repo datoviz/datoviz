@@ -4,10 +4,6 @@
 
 Browse composed scenes demonstrating scientific workflows, real data, and polished demos.
 
-Coverage: 12 examples (10 supported, 1 experimental, 1 prototype).
-
-Each card links to a detail page with preview media, source code, and example metadata.
-
 ## 2D
 
 <div class="grid cards" markdown="1">
