@@ -285,10 +285,14 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
-    vec3 arcball_angles = {+0.58f, -0.12f, +0.26f};
-    vec2 arcball_pan = {0.0f, 0.0f};
-    dvz_arcball_set(arcball, arcball_angles);
-    example_tuner_arcball(&state->tuner, "Arcball", arcball, arcball_angles, 1.0f, arcball_pan);
+    vec3 arcball_angles = {-1.583611f, +0.025415f, -0.423062f};
+    const float arcball_zoom = 3.004166f;
+    vec2 arcball_pan = {+0.000000f, +0.000000f};
+    (void)dvz_arcball_initial(arcball, arcball_angles);
+    (void)dvz_arcball_zoom(arcball, arcball_zoom);
+    (void)dvz_arcball_pan(arcball, arcball_pan);
+    example_tuner_arcball(
+        &state->tuner, "Arcball", arcball, arcball_angles, arcball_zoom, arcball_pan);
     return true;
 
 error:

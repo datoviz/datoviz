@@ -139,9 +139,14 @@ def main() -> None:
         arcball = dvz.dvz_view_arcball(view, panel, None)
         if not arcball:
             raise RuntimeError("dvz_view_arcball() failed")
-        angles = (ctypes.c_float * 3)(+0.58, -0.12, +0.26)
-        if dvz.dvz_arcball_set(arcball, angles) != 0:
-            raise RuntimeError("dvz_arcball_set() failed")
+        angles = (ctypes.c_float * 3)(-1.583611, +0.025415, -0.423062)
+        pan = (ctypes.c_float * 2)(+0.0, +0.0)
+        if dvz.dvz_arcball_initial(arcball, angles) != 0:
+            raise RuntimeError("dvz_arcball_initial() failed")
+        if dvz.dvz_arcball_zoom(arcball, 3.004166) != 0:
+            raise RuntimeError("dvz_arcball_zoom() failed")
+        if dvz.dvz_arcball_pan(arcball, pan) != 0:
+            raise RuntimeError("dvz_arcball_pan() failed")
 
     ex.run_with_view(scene, figure, "Isolines", configure)
 
