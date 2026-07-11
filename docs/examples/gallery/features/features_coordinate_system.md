@@ -13,7 +13,17 @@ This example shows the Datoviz 3D coordinate convention.
 
 ## Preview
 
-![Coordinate System](../../../assets/gallery/v0.4/features/features_coordinate_system.webp)
+=== "Screenshot"
+
+    ![Coordinate System](../../../assets/gallery/v0.4/features/features_coordinate_system.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=features_coordinate_system" title="Coordinate System WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=features_coordinate_system">Open the live WebGPU example</a>.
 
 ## What To Look For
 
@@ -40,7 +50,8 @@ The axis triad uses red for X, green for Y, and blue for Z, with labels and a re
     - Lane: `features`
     - Source: [`examples/c/features/coordinate_system.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/coordinate_system.c)
     - Python source: [`examples/python/gallery/features/coordinate_system.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/coordinate_system.py)
-    - Browser support: Planned
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=features_coordinate_system"><code>examples/webgpu/live.html?id=features_coordinate_system</code></a>
     - Browser capability tags: `mesh`, `reference-grid`, `text`, `controller`
     - Validation: `smoke+screenshot`
 

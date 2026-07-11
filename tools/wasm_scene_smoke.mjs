@@ -2432,6 +2432,9 @@ try {
     "showcases_protein",
     "features_bezier_curve_path",
     "features_path_join",
+    "features_coordinate_system",
+    "features_visual_transform",
+    "features_panel_view2d",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -3381,6 +3384,33 @@ try {
           commandsOf(stream, "Draw").length + commandsOf(stream, "DrawIndexed").length >= 3,
           `${label}: expected miter, round, and bevel paths`,
         );
+      },
+    ],
+    [
+      "features_coordinate_system",
+      "coordinate system",
+      (stream, label) => {
+        expectPipeline(stream, `${label} grid`, (pipeline) => pipeline.builtin_pipeline === "scene.segment");
+        requireOk(
+          commandsOf(stream, "Draw").length + commandsOf(stream, "DrawIndexed").length >= 3,
+          `${label}: expected mesh, reference grid, and labels`,
+        );
+      },
+    ],
+    [
+      "features_visual_transform",
+      "visual transform",
+      (stream, label) => expectPanelScenarioStreamShape(stream, label, { minViewports: 2, pointInstances: 5 }),
+    ],
+    [
+      "features_panel_view2d",
+      "panel view2d",
+      (stream, label) => {
+        expectAllShadersWgsl(stream, label);
+        expectPipelineMetadata(stream, label);
+        expectPipeline(stream, `${label} path`, (pipeline) => pipeline.builtin_pipeline === "scene.path");
+        requireOk(commandsOf(stream, "SetViewport").length >= 2, `${label}: expected two panel viewports`);
+        requireOk(commandsOf(stream, "DrawIndexed").length >= 2, `${label}: expected two circle paths`);
       },
     ],
     [

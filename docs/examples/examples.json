@@ -344,8 +344,8 @@
           "site_asset": "/assets/gallery/v0.4/features/features_coordinate_system.webp"
         }
       },
-      "webgpu_status": "webgpu-planned",
-      "webgpu_status_label": "Planned",
+      "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "mesh",
         "reference-grid",
@@ -353,7 +353,8 @@
         "controller"
       ],
       "webgpu": {
-        "status": "webgpu-planned",
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=features_coordinate_system",
         "requirements": [
           "mesh",
           "reference-grid",
@@ -361,6 +362,8 @@
           "controller"
         ]
       },
+      "webgpu_route": "examples/webgpu/live.html?id=features_coordinate_system",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_coordinate_system",
       "primary_feature": "coordinate-system",
       "python_source": "examples/python/gallery/features/coordinate_system.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/coordinate_system.py",
@@ -2035,19 +2038,24 @@
           "site_asset": "/assets/gallery/v0.4/features/features_visual_transform.webp"
         }
       },
-      "webgpu_status": "webgpu-planned",
-      "webgpu_status_label": "Planned",
+      "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "visual-transform",
-        "mesh"
+        "point",
+        "panzoom"
       ],
       "webgpu": {
-        "status": "webgpu-planned",
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=features_visual_transform",
         "requirements": [
           "visual-transform",
-          "mesh"
+          "point",
+          "panzoom"
         ]
       },
+      "webgpu_route": "examples/webgpu/live.html?id=features_visual_transform",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_visual_transform",
       "primary_feature": "visual-transform",
       "python_source": "examples/python/gallery/features/visual_transform.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/visual_transform.py",
@@ -2080,21 +2088,24 @@
           "site_asset": "/assets/gallery/v0.4/features/features_panel_view2d.webp"
         }
       },
-      "webgpu_status": "webgpu-planned",
-      "webgpu_status_label": "Planned",
+      "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "panel-view",
         "panzoom",
         "point"
       ],
       "webgpu": {
-        "status": "webgpu-planned",
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=features_panel_view2d",
         "requirements": [
           "panel-view",
           "panzoom",
           "point"
         ]
       },
+      "webgpu_route": "examples/webgpu/live.html?id=features_panel_view2d",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_panel_view2d",
       "primary_feature": "panel-view2d",
       "python_source": "examples/python/gallery/features/panel_view2d.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_view2d.py",

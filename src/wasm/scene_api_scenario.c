@@ -33,6 +33,7 @@ DvzScenarioSpec dvz_example_bars_bands_scenario(void);
 DvzScenarioSpec dvz_example_colorbar_scenario(void);
 DvzScenarioSpec dvz_example_colormap_scale_scenario(void);
 DvzScenarioSpec dvz_example_compute_buffer_animation_scenario(void);
+DvzScenarioSpec dvz_example_coordinate_system_scenario(void);
 DvzScenarioSpec dvz_composite_polygon_scenario(void);
 DvzScenarioSpec dvz_example_controller_fly_scenario(void);
 DvzScenarioSpec dvz_example_controller_turntable_scenario(void);
@@ -42,6 +43,7 @@ DvzScenarioSpec dvz_example_timer_animation_scenario(void);
 DvzScenarioSpec dvz_example_update_partial_scenario(void);
 DvzScenarioSpec dvz_example_update_visual_data_scenario(void);
 DvzScenarioSpec dvz_example_visibility_scenario(void);
+DvzScenarioSpec dvz_example_visual_transform_scenario(void);
 DvzScenarioSpec dvz_example_picking_scenario(void);
 DvzScenarioSpec dvz_example_image_probe_scenario(void);
 DvzScenarioSpec dvz_example_isolines_scenario(void);
@@ -55,6 +57,7 @@ DvzScenarioSpec dvz_example_panel_grid_scenario(void);
 DvzScenarioSpec dvz_example_panel_linked_scenario(void);
 DvzScenarioSpec dvz_example_panel_multi_scenario(void);
 DvzScenarioSpec dvz_example_panel_single_scenario(void);
+DvzScenarioSpec dvz_example_panel_view2d_scenario(void);
 DvzScenarioSpec dvz_example_panzoom_scenario(void);
 DvzScenarioSpec dvz_example_path_join_scenario(void);
 DvzScenarioSpec dvz_example_scalebar_scenario(void);
@@ -234,6 +237,12 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_example_bezier_curve_path_scenario();
     case 68:
         return dvz_example_path_join_scenario();
+    case 69:
+        return dvz_example_coordinate_system_scenario();
+    case 70:
+        return dvz_example_visual_transform_scenario();
+    case 71:
+        return dvz_example_panel_view2d_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

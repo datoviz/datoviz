@@ -13,7 +13,17 @@ This example compares raw point data with a visual-local affine transform.
 
 ## Preview
 
-![Visual Transform](../../../assets/gallery/v0.4/features/features_visual_transform.webp)
+=== "Screenshot"
+
+    ![Visual Transform](../../../assets/gallery/v0.4/features/features_visual_transform.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=features_visual_transform" title="Visual Transform WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=features_visual_transform">Open the live WebGPU example</a>.
 
 ## What To Look For
 
@@ -40,8 +50,9 @@ Both panels upload the same five point positions, colors, and diameter_px values
     - Lane: `features`
     - Source: [`examples/c/features/visual_transform.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visual_transform.c)
     - Python source: [`examples/python/gallery/features/visual_transform.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/visual_transform.py)
-    - Browser support: Planned
-    - Browser capability tags: `visual-transform`, `mesh`
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=features_visual_transform"><code>examples/webgpu/live.html?id=features_visual_transform</code></a>
+    - Browser capability tags: `visual-transform`, `point`, `panzoom`
     - Validation: `smoke+screenshot`
 
     **Data**

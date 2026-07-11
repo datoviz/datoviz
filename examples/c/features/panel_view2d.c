@@ -53,6 +53,14 @@ static const float TAU = 6.28318530718f;
 
 
 /*************************************************************************************************/
+/*  Forward declarations                                                                         */
+/*************************************************************************************************/
+
+DvzScenarioSpec dvz_example_panel_view2d_scenario(void);
+
+
+
+/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
@@ -327,7 +335,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _panel_view2d_scenario(void)
+DvzScenarioSpec dvz_example_panel_view2d_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "features_panel_view2d",
@@ -356,8 +364,10 @@ static DvzScenarioSpec _panel_view2d_scenario(void)
  * @param argv command-line argument vector
  * @return process exit code
  */
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _panel_view2d_scenario();
+    DvzScenarioSpec spec = dvz_example_panel_view2d_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

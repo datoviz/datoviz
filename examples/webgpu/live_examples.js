@@ -292,6 +292,22 @@ export const LIVE_EXAMPLES = [
     scenarioId: "features_path_join",
   },
   {
+    id: "features_coordinate_system",
+    label: "Coordinate System",
+    scenarioId: "features_coordinate_system",
+  },
+  {
+    id: "features_visual_transform",
+    label: "Visual Transform",
+    scenarioId: "features_visual_transform",
+  },
+  {
+    id: "features_panel_view2d",
+    label: "Panel View 2D",
+    scenarioId: "features_panel_view2d",
+    animate: true,
+  },
+  {
     id: "visuals_point",
     label: "Point",
     scenarioId: "visuals_point",

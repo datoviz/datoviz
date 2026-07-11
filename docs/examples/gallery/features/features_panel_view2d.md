@@ -13,13 +13,23 @@ This example animates the widths of free and equal-aspect 2D panels.
 
 ## Preview
 
-<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_panel_view2d.poster.webp" alt="Panel View 2D" loading="lazy">
-  <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../../../../assets/gallery/v0.4/features/features_panel_view2d.poster.webp" aria-label="Panel View 2D preview">
-    <source data-src="../../../../assets/gallery/v0.4/features/features_panel_view2d.mp4" type="video/mp4">
-  </video>
-</div>
+=== "Screenshot"
+
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_panel_view2d.poster.webp" alt="Panel View 2D" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/features/features_panel_view2d.poster.webp" aria-label="Panel View 2D preview">
+        <source data-src="../../../../assets/gallery/v0.4/features/features_panel_view2d.mp4" type="video/mp4">
+      </video>
+    </div>
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=features_panel_view2d" title="Panel View 2D WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=features_panel_view2d">Open the live WebGPU example</a>.
 
 ## What To Look For
 
@@ -46,7 +56,8 @@ Both panels draw the same unit circle path and styled X/Y axes. The left panel u
     - Lane: `features`
     - Source: [`examples/c/features/panel_view2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_view2d.c)
     - Python source: [`examples/python/gallery/features/panel_view2d.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_view2d.py)
-    - Browser support: Planned
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=features_panel_view2d"><code>examples/webgpu/live.html?id=features_panel_view2d</code></a>
     - Browser capability tags: `panel-view`, `panzoom`, `point`
     - Validation: `smoke+animation+screenshot`
 

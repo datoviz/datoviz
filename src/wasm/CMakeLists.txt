@@ -33,6 +33,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/colorbar.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/colormap_scale.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/compute_buffer_animation.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/coordinate_system.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/controller_fly.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/controller_turntable.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/guide_lines.c
@@ -49,6 +50,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/panel_linked.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/panel_multi.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/panel_single.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/panel_view2d.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/panzoom.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/path_join.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/picking.c
@@ -64,6 +66,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/update_partial.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/update_visual_data.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/visibility.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/visual_transform.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/linked_probe_colorbar.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/gpu_particle_smoke.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/panel_linked_axes.c
