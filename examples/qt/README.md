@@ -9,10 +9,13 @@ The examples are built only when Qt development packages are found:
 just build
 ./build/examples/qt/hosted_qt_smoke 120
 ./build/examples/qt/qt_hosting
+./build/examples/qt/qt_hosting --png
 ```
 
 `hosted_qt_smoke` is the minimal contract smoke. `qt_hosting` embeds the hosted Vulkan window
-in a normal Qt Widgets layout and lets widget callbacks mutate retained scene data.
+in a normal Qt Widgets layout and lets widget callbacks mutate retained scene data. The `--png`
+mode captures the composed 1280x720 Qt window, including the hosted Vulkan child, using
+`DVZ_CAPTURE_DIR` and `DVZ_CAPTURE_BASENAME` when set.
 
 ## Ownership contract
 
@@ -63,4 +66,3 @@ The adapter forwards Qt events through the hosted app API:
 Wheel events are normalized to abstract wheel steps. Qt `angleDelta()` is divided by `120.0`; when
 only `pixelDelta()` is available, that is also divided by `120.0` before any example-level sensitivity
 is applied.
-

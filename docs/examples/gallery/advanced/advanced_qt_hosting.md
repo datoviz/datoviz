@@ -14,7 +14,7 @@ This example hosts a Datoviz Vulkan scene in live Qt Widgets.
 
 ## Preview
 
-<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Qt Hosting"><span>No screenshot</span></div>
+![Qt Hosting](../../../assets/gallery/v0.4/advanced/advanced_qt_hosting.webp)
 
 ## Source
 
@@ -40,7 +40,7 @@ This example hosts a Datoviz Vulkan scene in live Qt Widgets.
     - Browser support: Native only
     - Browser note: Qt and PyQt hosting use native toolkit windows and an optional bridge provider
     - Browser capability tags: `native-view`, `external-surface`, `qt`, `optional-provider`
-    - Validation: `optional-native-smoke`
+    - Validation: `optional-native-smoke+screenshot`
 
     ### Tags
 

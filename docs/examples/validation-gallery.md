@@ -9,7 +9,7 @@ generated in Vulkan-capable environments and should not be committed accidentall
 ## Evidence Counts
 
 - Reviewed public C examples generated for the website: 108
-- Examples declaring screenshot validation: 97
+- Examples declaring screenshot validation: 98
 - Examples that should have video or motion evidence: 5
 
 ## Commands
@@ -125,4 +125,5 @@ and should be committed through that submodule, not copied into the main reposit
 | [Allen Mouse Brain](gallery/showcases/showcases_brain_volume.md) | [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c) | `prototype` | `smoke+screenshot` |
 | [Point Cloud](gallery/showcases/showcases_point_cloud.md) | [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c) | `supported` | `smoke+screenshot` |
 | [Textured Planets](gallery/showcases/showcases_textured_planet.md) | [`examples/c/showcases/textured_planet.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet.c) | `supported` | `smoke+screenshot` |
+| [Qt Hosting](gallery/advanced/advanced_qt_hosting.md) | [`examples/qt/qt_hosting.cpp`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/qt/qt_hosting.cpp) | `supported` | `optional-native-smoke+screenshot` |
 | [Scatter Plot](../start/quickstart.md) | [`examples/c/start/scatter.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/start/scatter.c) | `supported` | `smoke+screenshot` |

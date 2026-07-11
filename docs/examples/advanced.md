@@ -24,7 +24,7 @@ This example embeds a Datoviz view inside a host-owned GLFW surface.
 
 ### [Qt Hosting](gallery/advanced/advanced_qt_hosting.md)
 
-<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Qt Hosting"><span>No screenshot</span></div>
+[![Qt Hosting](../assets/gallery/v0.4/advanced/advanced_qt_hosting.webp)](gallery/advanced/advanced_qt_hosting.md)
 
 `advanced`<br><span>`advanced`, `qt`, `pyqt`, `optional-provider`, `external-surface`, ...</span>
 

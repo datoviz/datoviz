@@ -3431,9 +3431,14 @@ examples:
       - label: PyQt
         language: python
         path: examples/python/qt/hosted_pyqt.py
-    validation: optional-native-smoke
+    validation: optional-native-smoke+screenshot
     build_command: DVZ_CMAKE_ARGS="-DDVZ_ENABLE_QT_BRIDGE=ON" just build
     smoke_command: ./build/examples/qt/qt_hosting --smoke-ms 1000
+    capture:
+      mode: qt-window
+      args: ["--png"]
+      size: 1280x720
+      reason: captures the composed Qt Widgets window including the hosted Vulkan child
     data:
       kind: synthetic
     portability: native-only

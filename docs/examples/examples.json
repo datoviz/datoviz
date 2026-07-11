@@ -5477,7 +5477,7 @@
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/qt/qt_hosting.cpp",
       "page": "gallery/advanced/advanced_qt_hosting.md",
       "summary": "This example hosts a Datoviz Vulkan scene in live Qt Widgets.",
-      "validation": "optional-native-smoke",
+      "validation": "optional-native-smoke+screenshot",
       "build_command": "DVZ_CMAKE_ARGS=\"-DDVZ_ENABLE_QT_BRIDGE=ON\" just build",
       "smoke_command": "./build/examples/qt/qt_hosting --smoke-ms 1000",
       "tags": [
@@ -5494,8 +5494,8 @@
       "data_kind": "synthetic",
       "media": {
         "screenshot": {
-          "expected": false,
-          "status": "not-required",
+          "expected": true,
+          "status": "available",
           "source": "data/gallery/v0.4/advanced/advanced_qt_hosting.png",
           "site_asset": "/assets/gallery/v0.4/advanced/advanced_qt_hosting.webp"
         }

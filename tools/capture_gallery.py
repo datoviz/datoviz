@@ -27,11 +27,12 @@ DEFAULT_MANIFEST = gallery_media.DEFAULT_MANIFEST
 DEFAULT_BUILD_DIR = ROOT / "build"
 DEFAULT_IMAGE_DIR = ROOT / "data/gallery/v0.4"
 DEFAULT_CACHE_DIR = ROOT / "build/gallery-cache/native"
-PUBLIC_LANES = gallery_media.MEDIA_LANES
+PUBLIC_LANES = gallery_media.DOC_LANES
 GLOBAL_FINGERPRINT_PATHS = (
     ROOT / "CMakeLists.txt",
     ROOT / "examples/c/CMakeLists.txt",
     ROOT / "examples/c/MANIFEST.yaml",
+    ROOT / "examples/qt",
     ROOT / "include",
     ROOT / "src",
     ROOT / "shaders",
@@ -68,7 +69,7 @@ class CaptureExample:
 
     @property
     def rel_executable(self) -> str:
-        rel = Path(self.source).relative_to("examples/c")
+        rel = Path(self.source).relative_to("examples")
         return rel.with_suffix("").as_posix()
 
 
@@ -381,7 +382,12 @@ def output_path(example: CaptureExample, image_dir: Path) -> Path:
 
 
 def executable_path(example: CaptureExample, build_dir: Path) -> Path:
-    return gallery_media.source_executable_path(example.source, build_dir / "examples" / "c")
+    source = Path(example.source)
+    try:
+        rel = source.relative_to("examples")
+    except ValueError as exc:
+        raise ValueError(f"unsupported example source path: {example.source}") from exc
+    return build_dir / "examples" / rel.with_suffix("")
 
 
 def png_is_nonblank(path: Path, expected_size: tuple[int, int]) -> tuple[bool, str]:

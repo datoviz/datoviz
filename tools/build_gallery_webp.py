@@ -72,7 +72,7 @@ def needs_update(png: Path, webp: Path, force: bool) -> bool:
 def prune_stale_webp(output_dir: Path, examples: list[build_gallery.Example]) -> int:
     valid = {(example.lane, example.id) for example in examples}
     removed = 0
-    for lane in gallery_media.MEDIA_LANES:
+    for lane in gallery_media.DOC_LANES:
         lane_dir = output_dir / lane
         if not lane_dir.exists():
             continue
@@ -98,7 +98,7 @@ def select_static_examples(
     for example in examples:
         if "screenshot" not in example.validation:
             continue
-        if example.lane not in gallery_media.MEDIA_LANES:
+        if example.lane not in gallery_media.DOC_LANES:
             continue
         if ids and example.id not in ids:
             continue
@@ -156,7 +156,7 @@ def generate_gallery_webp(
     valid_for_prune = [
         example
         for example in all_examples
-        if "screenshot" in example.validation and example.lane in gallery_media.MEDIA_LANES
+        if "screenshot" in example.validation and example.lane in gallery_media.DOC_LANES
     ]
     removed = prune_stale_webp(output_dir, valid_for_prune) if can_prune else 0
 
