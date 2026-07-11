@@ -72,6 +72,23 @@ static bool _scalebar_desc_validate(const DvzScaleBarDesc* desc)
 }
 
 
+
+/**
+ * Store one panel-local scale-bar point.
+ *
+ * @param out destination point
+ * @param x panel-local logical pixel X coordinate
+ * @param y panel-local logical pixel Y coordinate
+ */
+static void _scalebar_point_px(vec3 out, float x, float y)
+{
+    ANN(out);
+    out[0] = x;
+    out[1] = y;
+    out[2] = 0.0f;
+}
+
+
 /**
  * Return the default scale-bar annotation descriptor.
  *
@@ -754,21 +771,21 @@ static bool _scalebar_prepare_overlay_visual(
     float half_tick = 0.5f * tick;
     if (horizontal)
     {
-        _text_panel_pixel_to_clip(annotation->panel, x0, y0, 0.0f, resolved.starts[0]);
-        _text_panel_pixel_to_clip(annotation->panel, x1, y1, 0.0f, resolved.ends[0]);
-        _text_panel_pixel_to_clip(annotation->panel, x0, y0 - half_tick, 0.0f, resolved.starts[1]);
-        _text_panel_pixel_to_clip(annotation->panel, x0, y0 + half_tick, 0.0f, resolved.ends[1]);
-        _text_panel_pixel_to_clip(annotation->panel, x1, y1 - half_tick, 0.0f, resolved.starts[2]);
-        _text_panel_pixel_to_clip(annotation->panel, x1, y1 + half_tick, 0.0f, resolved.ends[2]);
+        _scalebar_point_px(resolved.starts[0], x0, y0);
+        _scalebar_point_px(resolved.ends[0], x1, y1);
+        _scalebar_point_px(resolved.starts[1], x0, y0 - half_tick);
+        _scalebar_point_px(resolved.ends[1], x0, y0 + half_tick);
+        _scalebar_point_px(resolved.starts[2], x1, y1 - half_tick);
+        _scalebar_point_px(resolved.ends[2], x1, y1 + half_tick);
     }
     else
     {
-        _text_panel_pixel_to_clip(annotation->panel, x0, y0, 0.0f, resolved.starts[0]);
-        _text_panel_pixel_to_clip(annotation->panel, x1, y1, 0.0f, resolved.ends[0]);
-        _text_panel_pixel_to_clip(annotation->panel, x0 - half_tick, y0, 0.0f, resolved.starts[1]);
-        _text_panel_pixel_to_clip(annotation->panel, x0 + half_tick, y0, 0.0f, resolved.ends[1]);
-        _text_panel_pixel_to_clip(annotation->panel, x1 - half_tick, y1, 0.0f, resolved.starts[2]);
-        _text_panel_pixel_to_clip(annotation->panel, x1 + half_tick, y1, 0.0f, resolved.ends[2]);
+        _scalebar_point_px(resolved.starts[0], x0, y0);
+        _scalebar_point_px(resolved.ends[0], x1, y1);
+        _scalebar_point_px(resolved.starts[1], x0 - half_tick, y0);
+        _scalebar_point_px(resolved.ends[1], x0 + half_tick, y0);
+        _scalebar_point_px(resolved.starts[2], x1 - half_tick, y1);
+        _scalebar_point_px(resolved.ends[2], x1 + half_tick, y1);
     }
     _scalebar_line_color(desc, &resolved.line_colors[0]);
     resolved.line_colors[1] = resolved.line_colors[0];

@@ -1640,11 +1640,50 @@ static int test_axis_text_inset_panel_coordinates(TstContext* suite, const TstCa
     AT(dvz_visual_data(
            _visual_family_state(x_axis->text_visual)->text.glyph_visual, "position", &glyph_position_view) == 0);
     const float* glyph_positions = (const float*)glyph_position_view.data;
-    const float expected_clip_x = 2.0f * expected_x0 / panel_width - 1.0f;
-    const float expected_clip_y =
-        1.0f - 2.0f * (expected_x_tick_y + tick_gap) / panel_height;
-    AC(glyph_positions[0], expected_clip_x, 1e-3f);
-    AC(glyph_positions[1], expected_clip_y, 1e-3f);
+    AC(glyph_positions[0], expected_x0, 1e-3f);
+    AC(glyph_positions[1], expected_x_tick_y + tick_gap, 1e-3f);
+
+    DvzVisual* y_glyph = _visual_family_state(y_axis->text_visual)->text.glyph_visual;
+    ANN(y_glyph);
+    DvzVisualDataView y_glyph_position_view = {0};
+    AT(dvz_visual_data(y_glyph, "position", &y_glyph_position_view) == 0);
+    const float* y_glyph_positions = (const float*)y_glyph_position_view.data;
+    ANN(y_glyph_positions);
+    const float stable_label_x = y_glyph_positions[0];
+    const float stable_label_y = y_glyph_positions[1];
+    const uint64_t realized_version = _visual_family_state(y_axis->text_visual)->text.realized_version;
+    const DvzPanelAttach* y_glyph_attach = NULL;
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        if (panel->visuals[i].visual == y_glyph)
+        {
+            y_glyph_attach = &panel->visuals[i];
+            break;
+        }
+    }
+    ANN(y_glyph_attach);
+    AT(y_glyph_attach->coord_space == DVZ_VISUAL_COORD_PANEL_PIXEL);
+
+    AT(dvz_panel_set_desc(
+           panel,
+           &(DvzPanelDesc){.x = 0.08f, .y = 0.06f, .width = 0.55f, .height = 0.86f}) ==
+       DVZ_OK);
+    _scene_prepare_axis_visuals(figure);
+    _scene_prepare_text_visuals(figure);
+    AT(_visual_family_state(y_axis->text_visual)->text.realized_version == realized_version);
+    AT(dvz_visual_data(y_glyph, "position", &y_glyph_position_view) == 0);
+    y_glyph_positions = (const float*)y_glyph_position_view.data;
+    AC(y_glyph_positions[0], stable_label_x, 1e-3f);
+    AC(y_glyph_positions[1], stable_label_y, 1e-3f);
+
+    DvzMVP resized_mvp = {0};
+    AT(_scene_panel_attachment_mvp(
+        panel, y_glyph, y_glyph_attach, NULL, &resized_mvp));
+    _scene_panel_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
+    const float label_clip_x =
+        resized_mvp.model[0][0] * stable_label_x + resized_mvp.model[3][0];
+    const float recovered_label_x = 0.5f * (label_clip_x + 1.0f) * panel_width;
+    AC(recovered_label_x, stable_label_x, 1e-3f);
 
     dvz_scene_destroy(scene);
     return 0;

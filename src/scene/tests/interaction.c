@@ -3637,8 +3637,8 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
     AT(dvz_visual_data(glyph, "position", &position_view) == 0);
     const float* positions = position_view.data;
     ANN(positions);
-    AC(positions[0], -0.96875f, 1e-6f);
-    AC(positions[1], 0.9166667f, 1e-6f);
+    AC(positions[0], 10.0f, 1e-6f);
+    AC(positions[1], 20.0f, 1e-6f);
 
     dvz_text_set_placement(
         text,
@@ -3935,7 +3935,10 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     AT(dvz_visual_set_data_many(text, updates, 5) == 0);
     AT(dvz_panel_add_visual(
            panel, text,
-           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
+               .z_layer = 1,
+               .controller_mode = DVZ_CONTROLLER_FIXED,
+               .coord_space = DVZ_VISUAL_COORD_PANEL_PIXEL}) == 0);
     AT(panel->visual_count == 1);
 
     _scene_prepare_text_visuals(figure);
@@ -3972,8 +3975,8 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     const vec4* bounds = (const vec4*)glyph->attrs[bounds_idx].data;
     ANN(positions);
     ANN(bounds);
-    AC(positions[0][0], -0.96875f, 1e-6f);
-    AC(positions[0][1], 0.9166667f, 1e-6f);
+    AC(positions[0][0], 10.0f, 1e-6f);
+    AC(positions[0][1], 20.0f, 1e-6f);
     AC(bounds[0][0], 0.0f, 1e-6f);
     AC(bounds[0][1], 0.0f, 1e-6f);
     AC(bounds[11][2], 12.0f, 1e-6f);
@@ -3987,8 +3990,8 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     bounds = (const vec4*)glyph->attrs[bounds_idx].data;
     ANN(positions);
     ANN(bounds);
-    AC(positions[0][0], -0.96875f, 1e-6f);
-    AC(positions[0][1], 0.9166667f, 1e-6f);
+    AC(positions[0][0], 10.0f, 1e-6f);
+    AC(positions[0][1], 20.0f, 1e-6f);
     AC(bounds[0][0], -6.0f, 1e-6f);
     AC(bounds[0][1], -4.0f, 1e-6f);
 
@@ -4045,10 +4048,8 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     _scene_prepare_text_visuals(figure);
     positions = (const vec3*)glyph->attrs[pos_idx].data;
     ANN(positions);
-    AC(positions[0][0], -0.9375f, 1e-6f);
-    AC(positions[0][1], 0.8333333f, 1e-6f);
-    AT(_visual_family_state(text)->text.visual_figure_width == 320);
-    AT(_visual_family_state(text)->text.visual_figure_height == 240);
+    AC(positions[0][0], 10.0f, 1e-6f);
+    AC(positions[0][1], 20.0f, 1e-6f);
 
     dvz_visual_set_visible(text, false);
     _scene_prepare_text_visuals(figure);
@@ -4882,13 +4883,13 @@ int test_scene_data_annotation_glyph_draw_uses_plot_viewport(
 
 
 /**
- * Verify text realization regenerates anchors when attachment controller mode changes.
+ * Verify text realization preserves authored coordinates when the controller mode changes.
  *
  * @param suite the active test suite
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_text_attach_mode_change_regenerates_glyphs(TstContext* suite, const TstCase* item)
+int test_scene_text_attach_mode_change_syncs_glyphs(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -4912,7 +4913,10 @@ int test_scene_text_attach_mode_change_regenerates_glyphs(TstContext* suite, con
     AT(dvz_visual_set_data_many(text, updates, 2) == 0);
     AT(dvz_panel_add_visual(
            panel, text,
-           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
+               .z_layer = 1,
+               .controller_mode = DVZ_CONTROLLER_FIXED,
+               .coord_space = DVZ_VISUAL_COORD_PANEL_PIXEL}) == 0);
 
     _scene_prepare_text_visuals(figure);
     AT(_visual_family_state(text)->text.glyph_visual != NULL);
@@ -4920,8 +4924,8 @@ int test_scene_text_attach_mode_change_regenerates_glyphs(TstContext* suite, con
     AT(dvz_visual_data(_visual_family_state(text)->text.glyph_visual, "position", &position_view) == 0);
     const float* glyph_positions = (const float*)position_view.data;
     ANN(glyph_positions);
-    AC(glyph_positions[0], 0.0f, 1e-6f);
-    AC(glyph_positions[1], 0.0f, 1e-6f);
+    AC(glyph_positions[0], positions[0][0], 1e-6f);
+    AC(glyph_positions[1], positions[0][1], 1e-6f);
 
     panel->visuals[0].controller_mode = DVZ_CONTROLLER_APPLY;
     _scene_prepare_text_visuals(figure);
@@ -5281,7 +5285,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_data_annotation_uses_data_controller_policy);
     TST_CASE(test_scene_data_annotation_panzoom_matches_data_visual);
     TST_CASE(test_scene_data_annotation_glyph_draw_uses_plot_viewport);
-    TST_CASE(test_scene_text_attach_mode_change_regenerates_glyphs);
+    TST_CASE(test_scene_text_attach_mode_change_syncs_glyphs);
     TST_CASE(test_scene_text_block_parse_markup);
     TST_CASE(test_scene_text_block_measure);
     TST_CASE(test_scene_text_block_rasterize);

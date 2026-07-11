@@ -1176,8 +1176,8 @@ struct DvzText
     DvzVisual* visual;
     uint64_t visual_version;
     uint64_t visual_atlas_generation;
-    uint32_t visual_figure_width;
-    uint32_t visual_figure_height;
+    DvzRect visual_panel_rect;
+    bool visual_panel_rect_set;
 };
 
 
@@ -1267,8 +1267,8 @@ struct DvzAnnotation
     DvzTextLayoutMetrics metrics;
     DvzVisual* visual;
     uint64_t visual_version;
-    uint32_t visual_figure_width;
-    uint32_t visual_figure_height;
+    DvzRect visual_panel_rect;
+    bool visual_panel_rect_set;
     DvzScaleBarDesc scalebar;
     DvzUnits* scalebar_units_format;
     DvzVisual* scalebar_visual;
@@ -1636,8 +1636,6 @@ struct DvzTextVisualState
     uint64_t atlas_generation;
     DvzControllerMode realized_controller_mode;
     float screen_scale;
-    uint32_t visual_figure_width;
-    uint32_t visual_figure_height;
     uint32_t reserved_glyph_vertices;
 };
 

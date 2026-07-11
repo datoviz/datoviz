@@ -72,15 +72,15 @@ static bool _annotation_prepare_visual(DvzFigure* figure, DvzAnnotation* annotat
     proxy.metrics = annotation->metrics;
     proxy.visual = annotation->visual;
     proxy.visual_version = annotation->visual_version;
-    proxy.visual_figure_width = annotation->visual_figure_width;
-    proxy.visual_figure_height = annotation->visual_figure_height;
+    proxy.visual_panel_rect = annotation->visual_panel_rect;
+    proxy.visual_panel_rect_set = annotation->visual_panel_rect_set;
 
     bool ok = _text_prepare_visual(figure, &proxy);
     annotation->metrics = proxy.metrics;
     annotation->visual = proxy.visual;
     annotation->visual_version = proxy.visual_version;
-    annotation->visual_figure_width = proxy.visual_figure_width;
-    annotation->visual_figure_height = proxy.visual_figure_height;
+    annotation->visual_panel_rect = proxy.visual_panel_rect;
+    annotation->visual_panel_rect_set = proxy.visual_panel_rect_set;
     if (ok)
         annotation->dirty_flags = proxy.dirty_flags;
     return ok;
@@ -137,4 +137,3 @@ void _scene_prepare_text_visuals(DvzFigure* figure)
             break;
     }
 }
-

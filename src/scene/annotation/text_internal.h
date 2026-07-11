@@ -60,11 +60,6 @@ void _text_sdf_measure(
     const char* string, DvzTextAtlas* atlas, float scale, float* out_width, float* out_height,
     uint32_t* out_visible);
 
-void _text_pixel_to_clip(const DvzFigure* figure, float x, float y, float z, float out[3]);
-
-void _text_panel_pixel_to_clip(
-    const DvzPanel* panel, float x, float y, float z, float out[3]);
-
 void _text_placement_alignment(
     const DvzTextPlacement* placement, float width, float height, float* out_x, float* out_y);
 

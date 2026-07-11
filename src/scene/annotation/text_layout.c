@@ -317,54 +317,6 @@ void _text_sdf_measure(
 
 
 /**
- * Convert figure pixel coordinates to fixed clip-space coordinates.
- *
- * @param figure the figure
- * @param x the x coordinate in pixels from the figure left
- * @param y the y coordinate in pixels from the figure top
- * @param z the clip-space z coordinate
- * @param out output 3D clip-space position
- */
-void _text_pixel_to_clip(const DvzFigure* figure, float x, float y, float z, float out[3])
-{
-    ANN(figure);
-    ANN(out);
-    out[0] = figure->width > 0 ? 2.0f * x / (float)figure->width - 1.0f : -1.0f;
-    out[1] = figure->height > 0 ? 1.0f - 2.0f * y / (float)figure->height : 1.0f;
-    out[2] = z;
-}
-
-
-
-/**
- * Convert panel-local pixel coordinates to fixed clip-space coordinates.
- *
- * @param panel the panel that owns the text visual
- * @param x the x coordinate in panel-local pixels
- * @param y the y coordinate in panel-local pixels from the panel top
- * @param z the clip-space z coordinate
- * @param out output 3D clip-space position
- */
-void _text_panel_pixel_to_clip(
-    const DvzPanel* panel, float x, float y, float z, float out[3])
-{
-    ANN(panel);
-    ANN(out);
-    float panel_x = 0.0f;
-    float panel_y = 0.0f;
-    float panel_width = 0.0f;
-    float panel_height = 0.0f;
-    _scene_panel_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
-    (void)panel_x;
-    (void)panel_y;
-    out[0] = panel_width > 0.0f ? 2.0f * x / panel_width - 1.0f : -1.0f;
-    out[1] = panel_height > 0.0f ? 1.0f - 2.0f * y / panel_height : 1.0f;
-    out[2] = z;
-}
-
-
-
-/**
  * Resolve the default text-box anchor for a target anchor.
  *
  * @param anchor the scene anchor

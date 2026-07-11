@@ -39,6 +39,59 @@
 /*************************************************************************************************/
 
 /**
+ * Resolve the current panel rectangle in figure logical pixels.
+ *
+ * @param panel panel to resolve
+ * @return resolved panel rectangle
+ */
+static DvzRect _text_panel_rect(const DvzPanel* panel)
+{
+    DvzRect rect = {0};
+    if (panel != NULL)
+        _scene_panel_pixel_rect(panel, &rect.x, &rect.y, &rect.width, &rect.height);
+    return rect;
+}
+
+
+
+/**
+ * Return whether cached screen-placement geometry matches the current panel rectangle.
+ *
+ * @param text text object carrying the cache
+ * @param rect current panel rectangle
+ * @return whether the cached rectangle matches
+ */
+static bool _text_panel_rect_matches(const DvzText* text, const DvzRect* rect)
+{
+    ANN(text);
+    ANN(rect);
+    if (!text->visual_panel_rect_set)
+        return false;
+    const DvzRect* cached = &text->visual_panel_rect;
+    return fabsf(cached->x - rect->x) <= 1e-4f && fabsf(cached->y - rect->y) <= 1e-4f &&
+           fabsf(cached->width - rect->width) <= 1e-4f &&
+           fabsf(cached->height - rect->height) <= 1e-4f;
+}
+
+
+
+/**
+ * Store the panel rectangle used to realize one text object.
+ *
+ * @param text text object receiving the cache
+ * @param rect realized panel rectangle
+ */
+static void _text_store_panel_rect(DvzText* text, const DvzRect* rect)
+{
+    ANN(text);
+    ANN(rect);
+    text->visual_panel_rect = *rect;
+    text->visual_panel_rect_set = true;
+}
+
+
+
+/**
  * Resolve a text anchor in figure pixels.
  *
  * @param text the text object
@@ -181,7 +234,11 @@ static bool _text_prepare_batched_visual(DvzFigure* figure, DvzText* text)
     ANN(text);
     if (text->scene == NULL || text->panel == NULL || text->panel->figure != figure)
         return true;
-    if (text->dirty_flags == DVZ_TEXT_DIRTY_NONE)
+    const bool screen_placement = text->placement.mode == DVZ_TEXT_PLACEMENT_SCREEN;
+    const DvzRect panel_rect = _text_panel_rect(text->panel);
+    if (
+        text->dirty_flags == DVZ_TEXT_DIRTY_NONE &&
+        (!screen_placement || _text_panel_rect_matches(text, &panel_rect)))
         return true;
     if (text->item_count == 0 || text->strings == NULL || text->positions == NULL)
     {
@@ -191,12 +248,13 @@ static bool _text_prepare_batched_visual(DvzFigure* figure, DvzText* text)
         return true;
     }
 
-    bool screen_placement = text->placement.mode == DVZ_TEXT_PLACEMENT_SCREEN;
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
     attach.z_layer = INT32_MAX / 4;
     attach.controller_mode = screen_placement ? DVZ_CONTROLLER_FIXED : DVZ_CONTROLLER_APPLY;
     if (text->placement.mode == DVZ_TEXT_PLACEMENT_DATA)
         attach.coord_space = DVZ_VISUAL_COORD_DATA;
+    else if (screen_placement)
+        attach.coord_space = DVZ_VISUAL_COORD_PANEL_PIXEL;
     else
         attach.coord_space = DVZ_VISUAL_COORD_VIEW;
 
@@ -271,8 +329,7 @@ static bool _text_prepare_batched_visual(DvzFigure* figure, DvzText* text)
             dvz_visual_set_depth_test(glyph, text->placement.depth_test);
         text->dirty_flags = DVZ_TEXT_DIRTY_NONE;
         text->visual_version = text->version;
-        text->visual_figure_width = figure->width;
-        text->visual_figure_height = figure->height;
+        _text_store_panel_rect(text, &panel_rect);
     }
     return ok;
 }
@@ -350,11 +407,14 @@ bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
         _text_renderer_backend(text->style.renderer, &text->style, default_size_px);
     bool use_builtin = backend == DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP;
     bool screen_placement = text->placement.mode == DVZ_TEXT_PLACEMENT_SCREEN;
+    const DvzRect panel_rect = _text_panel_rect(text->panel);
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
     attach.z_layer = INT32_MAX / 4;
     attach.controller_mode = screen_placement ? DVZ_CONTROLLER_FIXED : DVZ_CONTROLLER_APPLY;
     if (text->placement.mode == DVZ_TEXT_PLACEMENT_DATA)
         attach.coord_space = DVZ_VISUAL_COORD_DATA;
+    else if (screen_placement)
+        attach.coord_space = DVZ_VISUAL_COORD_PANEL_PIXEL;
     else
         attach.coord_space = DVZ_VISUAL_COORD_VIEW;
     uint32_t visible = 0;
@@ -398,7 +458,7 @@ bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
     if (text->visual != NULL && _visual_family_state(text->visual)->field != NULL &&
         text->visual_version == text->version &&
         text->visual_atlas_generation == atlas_generation &&
-        text->visual_figure_width == figure->width && text->visual_figure_height == figure->height)
+        (!screen_placement || _text_panel_rect_matches(text, &panel_rect)))
     {
         return true;
     }
@@ -455,20 +515,21 @@ bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
 
     uint8_t color[4] = {0};
     _text_style_color(&text->style, color);
-    float anchor_clip[3] = {0};
+    float anchor_position[3] = {0};
     if (screen_placement)
     {
         float anchor_x = 0;
         float anchor_y = 0;
         _text_anchor_pixels(text, &anchor_x, &anchor_y);
-        float z = (float)text->placement.position[2];
-        _text_pixel_to_clip(figure, anchor_x, anchor_y, z, anchor_clip);
+        anchor_position[0] = anchor_x - panel_rect.x;
+        anchor_position[1] = anchor_y - panel_rect.y;
+        anchor_position[2] = (float)text->placement.position[2];
     }
     else
     {
-        anchor_clip[0] = (float)text->placement.position[0];
-        anchor_clip[1] = (float)text->placement.position[1];
-        anchor_clip[2] = (float)text->placement.position[2];
+        anchor_position[0] = (float)text->placement.position[0];
+        anchor_position[1] = (float)text->placement.position[1];
+        anchor_position[2] = (float)text->placement.position[2];
     }
     float align_x = 0;
     float align_y = 0;
@@ -546,7 +607,7 @@ bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
         for (uint32_t j = 0; j < 6; j++)
         {
             _text_write_glyph_vertex(
-                anchor_clip, bounds_rect, uv, color, text->placement.angle, vertex_count,
+                anchor_position, bounds_rect, uv, color, text->placement.angle, vertex_count,
                 positions, bounds, texcoords, colors, angles);
             vertex_count++;
         }
@@ -624,8 +685,7 @@ bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
         text->dirty_flags = DVZ_TEXT_DIRTY_NONE;
         text->visual_version = text->version;
         text->visual_atlas_generation = atlas_generation;
-        text->visual_figure_width = figure->width;
-        text->visual_figure_height = figure->height;
+        _text_store_panel_rect(text, &panel_rect);
     }
     else if (text->visual != NULL)
     {
@@ -777,18 +837,7 @@ static bool _text_visual_update_glyph_positions(
             return false;
         }
 
-        float anchor_position[3] = {0};
-        if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
-        {
-            _text_panel_pixel_to_clip(
-                panel, target[i][0], target[i][1], target[i][2], anchor_position);
-        }
-        else
-        {
-            anchor_position[0] = target[i][0];
-            anchor_position[1] = target[i][1];
-            anchor_position[2] = target[i][2];
-        }
+        float anchor_position[3] = {target[i][0], target[i][1], target[i][2]};
         uint32_t first_vertex = (uint32_t)first_vertex64;
         uint32_t vertex_count = (uint32_t)vertex_count64;
         for (uint32_t j = 0; j < vertex_count; j++)
@@ -808,8 +857,6 @@ static bool _text_visual_update_glyph_positions(
     _visual_family_state(visual)->text.realized_version = version;
     _visual_family_state(visual)->text.realized_layout_version = layout_version;
     _visual_family_state(visual)->text.realized_controller_mode = attach->controller_mode;
-    _visual_family_state(visual)->text.visual_figure_width = figure->width;
-    _visual_family_state(visual)->text.visual_figure_height = figure->height;
     return true;
 }
 
@@ -936,9 +983,7 @@ bool _text_visual_prepare(
         _visual_family_state(visual)->text.realized_version == version &&
         _visual_family_state(visual)->text.atlas_generation == atlas_generation &&
         _visual_family_state(visual)->text.realized_controller_mode == attach->controller_mode &&
-        fabsf(_visual_family_state(visual)->text.screen_scale - screen_scale) <= 1e-6f &&
-        _visual_family_state(visual)->text.visual_figure_width == figure->width &&
-        _visual_family_state(visual)->text.visual_figure_height == figure->height;
+        fabsf(_visual_family_state(visual)->text.screen_scale - screen_scale) <= 1e-6f;
     if (realized_cache_valid)
     {
         return _text_sync_glyph_visual_attach(
@@ -1114,18 +1159,7 @@ bool _text_visual_prepare(
             align_y += offsets[i][1];
         }
         float angle = angles != NULL ? angles[i] : 0.0f;
-        float anchor_position[3] = {0};
-        if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
-        {
-            _text_panel_pixel_to_clip(
-                panel, target[i][0], target[i][1], target[i][2], anchor_position);
-        }
-        else
-        {
-            anchor_position[0] = target[i][0];
-            anchor_position[1] = target[i][1];
-            anchor_position[2] = target[i][2];
-        }
+        float anchor_position[3] = {target[i][0], target[i][1], target[i][2]};
         spans[i].first_glyph = vertex_count / 6u;
 
         uint32_t column = 0;
@@ -1251,8 +1285,6 @@ bool _text_visual_prepare(
         _visual_family_state(visual)->text.atlas_generation = atlas_generation;
         _visual_family_state(visual)->text.realized_controller_mode = attach->controller_mode;
         _visual_family_state(visual)->text.screen_scale = screen_scale;
-        _visual_family_state(visual)->text.visual_figure_width = figure->width;
-        _visual_family_state(visual)->text.visual_figure_height = figure->height;
     }
     else if (_visual_family_state(visual)->text.glyph_visual != NULL)
     {

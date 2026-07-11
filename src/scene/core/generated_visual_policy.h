@@ -136,7 +136,7 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
             .role = role,
             .z_layer = 1001,
             .controller_mode = DVZ_CONTROLLER_FIXED,
-            .coord_space = DVZ_VISUAL_COORD_VIEW,
+            .coord_space = DVZ_VISUAL_COORD_PANEL_PIXEL,
             .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
             .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
             .depth_test = false,
@@ -165,6 +165,16 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
             .alpha_mode = DVZ_ALPHA_OPAQUE,
         };
     case DVZ_GENERATED_VISUAL_COLORBAR_TEXT:
+        return (DvzGeneratedVisualPolicy){
+            .role = role,
+            .z_layer = 1002,
+            .controller_mode = DVZ_CONTROLLER_FIXED,
+            .coord_space = DVZ_VISUAL_COORD_PANEL_PIXEL,
+            .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
+            .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
+            .depth_test = false,
+            .alpha_mode = DVZ_ALPHA_BLENDED,
+        };
     case DVZ_GENERATED_VISUAL_LEGEND_MARKS:
         return (DvzGeneratedVisualPolicy){
             .role = role,
@@ -174,15 +184,14 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
             .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
             .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
             .depth_test = false,
-            .alpha_mode = role == DVZ_GENERATED_VISUAL_COLORBAR_TEXT ? DVZ_ALPHA_BLENDED
-                                                                     : DVZ_ALPHA_OPAQUE,
+            .alpha_mode = DVZ_ALPHA_OPAQUE,
         };
     case DVZ_GENERATED_VISUAL_LEGEND_TEXT:
         return (DvzGeneratedVisualPolicy){
             .role = role,
             .z_layer = 1003,
             .controller_mode = DVZ_CONTROLLER_FIXED,
-            .coord_space = DVZ_VISUAL_COORD_VIEW,
+            .coord_space = DVZ_VISUAL_COORD_PANEL_PIXEL,
             .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
             .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
             .depth_test = false,
@@ -193,7 +202,7 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
             .role = role,
             .z_layer = INT32_MAX / 4 - 1,
             .controller_mode = DVZ_CONTROLLER_FIXED,
-            .coord_space = DVZ_VISUAL_COORD_VIEW,
+            .coord_space = DVZ_VISUAL_COORD_PANEL_PIXEL,
             .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
             .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
             .depth_test = false,
@@ -204,7 +213,7 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
             .role = role,
             .z_layer = INT32_MAX / 4,
             .controller_mode = DVZ_CONTROLLER_FIXED,
-            .coord_space = DVZ_VISUAL_COORD_VIEW,
+            .coord_space = DVZ_VISUAL_COORD_PANEL_PIXEL,
             .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
             .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
             .depth_test = false,
@@ -226,7 +235,7 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
             .role = role,
             .z_layer = INT32_MAX / 4 - 1,
             .controller_mode = DVZ_CONTROLLER_FIXED,
-            .coord_space = DVZ_VISUAL_COORD_VIEW,
+            .coord_space = DVZ_VISUAL_COORD_PANEL_PIXEL,
             .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
             .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
             .depth_test = false,

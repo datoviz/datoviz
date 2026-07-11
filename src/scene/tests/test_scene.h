@@ -1235,7 +1235,7 @@ int test_scene_data_annotation_panzoom_matches_data_visual(TstContext* suite, co
 int test_scene_data_annotation_glyph_draw_uses_plot_viewport(
     TstContext* suite, const TstCase* item);
 
-int test_scene_text_attach_mode_change_regenerates_glyphs(TstContext* suite, const TstCase* item);
+int test_scene_text_attach_mode_change_syncs_glyphs(TstContext* suite, const TstCase* item);
 
 int test_scene_text_block_parse_markup(TstContext* suite, const TstCase* item);
 

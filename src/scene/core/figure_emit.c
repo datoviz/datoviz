@@ -543,16 +543,14 @@ static bool _scene_panel_has_pending_visual_work(const DvzPanel* panel)
             return true;
         if (visual != NULL && visual->type == DVZ_VISUAL_TYPE_TEXT)
         {
-            const DvzFigure* figure = panel->figure;
-            uint64_t version = _visual_family_state(visual)->text.strings_version + _visual_family_state(visual)->text.renderer_version;
+            uint64_t version = _visual_family_state(visual)->text.strings_version +
+                               _visual_family_state(visual)->text.renderer_version;
             for (uint32_t ai = 0; ai < visual->attr_count; ai++)
                 version += visual->attrs[ai].version;
             if (
-                _visual_family_state(visual)->text.string_count > 0 && _visual_family_state(visual)->text.strings != NULL &&
-                (_visual_family_state(visual)->text.realized_version != version ||
-                 (figure != NULL &&
-                  (_visual_family_state(visual)->text.visual_figure_width != figure->width ||
-                   _visual_family_state(visual)->text.visual_figure_height != figure->height))))
+                _visual_family_state(visual)->text.string_count > 0 &&
+                _visual_family_state(visual)->text.strings != NULL &&
+                _visual_family_state(visual)->text.realized_version != version)
             {
                 return true;
             }
