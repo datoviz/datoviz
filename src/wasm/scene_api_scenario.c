@@ -25,6 +25,7 @@ DvzScenarioSpec dvz_example_alpha_blending_scenario(void);
 DvzScenarioSpec dvz_example_animation_tracks_scenario(void);
 DvzScenarioSpec dvz_example_axes_2d_scenario(void);
 DvzScenarioSpec dvz_example_axis_labels_scenario(void);
+DvzScenarioSpec dvz_example_bezier_curve_path_scenario(void);
 DvzScenarioSpec dvz_example_basic_scene_scenario(void);
 DvzScenarioSpec dvz_example_builtin_shapes_2d_scenario(void);
 DvzScenarioSpec dvz_example_builtin_shapes_3d_scenario(void);
@@ -55,6 +56,7 @@ DvzScenarioSpec dvz_example_panel_linked_scenario(void);
 DvzScenarioSpec dvz_example_panel_multi_scenario(void);
 DvzScenarioSpec dvz_example_panel_single_scenario(void);
 DvzScenarioSpec dvz_example_panzoom_scenario(void);
+DvzScenarioSpec dvz_example_path_join_scenario(void);
 DvzScenarioSpec dvz_example_scalebar_scenario(void);
 DvzScenarioSpec dvz_example_scalebar_units_scenario(void);
 DvzScenarioSpec dvz_example_selection_mesh_instances_scenario(void);
@@ -228,6 +230,10 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_showcase_textured_planet_scenario();
     case 66:
         return dvz_showcase_protein_scenario();
+    case 67:
+        return dvz_example_bezier_curve_path_scenario();
+    case 68:
+        return dvz_example_path_join_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

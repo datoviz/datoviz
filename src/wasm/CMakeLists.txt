@@ -25,6 +25,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/alpha_blending.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/axes_2d.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/axis_labels.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/bezier_curve_path.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/bars_bands.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/basic_scene.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/builtin_shapes_2d.c
@@ -49,6 +50,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/panel_multi.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/panel_single.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/panzoom.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/path_join.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/picking.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/selection_mesh_instances.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/selection_pixel.c

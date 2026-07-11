@@ -1407,7 +1407,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=features_bezier_curve_path
       requirements:
         - path
         - segment
@@ -1428,7 +1429,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=features_path_join
       requirements:
         - path
     agent_copy_safe: true

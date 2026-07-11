@@ -2430,6 +2430,8 @@ try {
     "features_lighting",
     "showcases_textured_planet",
     "showcases_protein",
+    "features_bezier_curve_path",
+    "features_path_join",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -3356,6 +3358,30 @@ try {
       "features_controller_turntable",
       "turntable controller",
       (stream, label) => expectControllerMeshScenarioStreamShape(stream, label),
+    ],
+    [
+      "features_bezier_curve_path",
+      "bezier curve path",
+      (stream, label) => {
+        expectPipeline(stream, `${label} path`, (pipeline) => pipeline.builtin_pipeline === "scene.path");
+        expectPipeline(stream, `${label} segment`, (pipeline) => pipeline.builtin_pipeline === "scene.segment");
+        expectPipeline(stream, `${label} point`, (pipeline) => pipeline.builtin_pipeline === "scene.point");
+        requireOk(
+          commandsOf(stream, "Draw").length + commandsOf(stream, "DrawIndexed").length >= 3,
+          `${label}: expected curve, control polygon, and control points`,
+        );
+      },
+    ],
+    [
+      "features_path_join",
+      "path join",
+      (stream, label) => {
+        expectPipeline(stream, label, (pipeline) => pipeline.builtin_pipeline === "scene.path");
+        requireOk(
+          commandsOf(stream, "Draw").length + commandsOf(stream, "DrawIndexed").length >= 3,
+          `${label}: expected miter, round, and bevel paths`,
+        );
+      },
     ],
     [
       "features_sampled_field_update",

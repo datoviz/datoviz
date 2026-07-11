@@ -13,7 +13,17 @@ This example shows a cubic Bezier curve tessellated into a path.
 
 ## Preview
 
-![Bezier Curve Path](../../../assets/gallery/v0.4/features/features_bezier_curve_path.webp)
+=== "Screenshot"
+
+    ![Bezier Curve Path](../../../assets/gallery/v0.4/features/features_bezier_curve_path.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=features_bezier_curve_path" title="Bezier Curve Path WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=features_bezier_curve_path">Open the live WebGPU example</a>.
 
 ## What To Look For
 
@@ -40,7 +50,8 @@ Four control points define the curve. The tessellated path uploads position, col
     - Lane: `features`
     - Source: [`examples/c/features/bezier_curve_path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bezier_curve_path.c)
     - Python source: [`examples/python/gallery/features/bezier_curve_path.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/bezier_curve_path.py)
-    - Browser support: Planned
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=features_bezier_curve_path"><code>examples/webgpu/live.html?id=features_bezier_curve_path</code></a>
     - Browser capability tags: `path`, `segment`, `marker`
     - Validation: `smoke+screenshot`
 

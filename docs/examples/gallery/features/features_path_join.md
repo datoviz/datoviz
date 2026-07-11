@@ -13,7 +13,17 @@ This example compares miter, round, and bevel joins on difficult stroked paths.
 
 ## Preview
 
-![Path Join](../../../assets/gallery/v0.4/features/features_path_join.webp)
+=== "Screenshot"
+
+    ![Path Join](../../../assets/gallery/v0.4/features/features_path_join.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=features_path_join" title="Path Join WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=features_path_join">Open the live WebGPU example</a>.
 
 ## What To Look For
 
@@ -40,7 +50,8 @@ The three columns use the same acute V, zigzag, open star, and closed star subpa
     - Lane: `features`
     - Source: [`examples/c/features/path_join.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/path_join.c)
     - Python source: [`examples/python/gallery/features/path_join.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/path_join.py)
-    - Browser support: Planned
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=features_path_join"><code>examples/webgpu/live.html?id=features_path_join</code></a>
     - Browser capability tags: `path`
     - Validation: `smoke+screenshot`
 

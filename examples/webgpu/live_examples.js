@@ -282,6 +282,16 @@ export const LIVE_EXAMPLES = [
     scenarioId: "features_controller_turntable",
   },
   {
+    id: "features_bezier_curve_path",
+    label: "Bezier Curve Path",
+    scenarioId: "features_bezier_curve_path",
+  },
+  {
+    id: "features_path_join",
+    label: "Path Join",
+    scenarioId: "features_path_join",
+  },
+  {
     id: "visuals_point",
     label: "Point",
     scenarioId: "visuals_point",

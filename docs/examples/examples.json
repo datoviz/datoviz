@@ -2169,21 +2169,24 @@
           "site_asset": "/assets/gallery/v0.4/features/features_bezier_curve_path.webp"
         }
       },
-      "webgpu_status": "webgpu-planned",
-      "webgpu_status_label": "Planned",
+      "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "path",
         "segment",
         "marker"
       ],
       "webgpu": {
-        "status": "webgpu-planned",
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=features_bezier_curve_path",
         "requirements": [
           "path",
           "segment",
           "marker"
         ]
       },
+      "webgpu_route": "examples/webgpu/live.html?id=features_bezier_curve_path",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_bezier_curve_path",
       "primary_feature": "bezier-curve-path",
       "python_source": "examples/python/gallery/features/bezier_curve_path.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/bezier_curve_path.py",
@@ -2216,17 +2219,20 @@
           "site_asset": "/assets/gallery/v0.4/features/features_path_join.webp"
         }
       },
-      "webgpu_status": "webgpu-planned",
-      "webgpu_status_label": "Planned",
+      "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "path"
       ],
       "webgpu": {
-        "status": "webgpu-planned",
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=features_path_join",
         "requirements": [
           "path"
         ]
       },
+      "webgpu_route": "examples/webgpu/live.html?id=features_path_join",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_path_join",
       "primary_feature": "path-join",
       "python_source": "examples/python/gallery/features/path_join.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/path_join.py",
