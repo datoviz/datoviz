@@ -79,6 +79,7 @@ VISUAL_REFERENCE_BY_ID = {
 FEATURE_PAGE_GROUPS = navigation_groups("features")
 RUNTIME_PAGE_GROUPS = navigation_groups("runtime")
 INDEX_FEATURE_GROUPS = navigation_groups("features", index=True)
+INDEX_ADVANCED_GROUPS = navigation_groups("advanced", index=True)
 
 CATEGORY_TO_LANE = gallery_media.CATEGORY_TO_LANE
 LANE_TO_CATEGORY = gallery_media.LANE_TO_CATEGORY
@@ -1131,6 +1132,27 @@ def render_index(
             "",
         ]
     )
+    for group_label, group_ids in INDEX_ADVANCED_GROUPS:
+        group_examples = [by_id[id_] for id_ in group_ids if id_ in by_id]
+        if not group_examples:
+            continue
+        lines.extend([f"### {group_label}", ""])
+        lines.append('<div class="grid cards" markdown="1">')
+        lines.append("")
+        for example in group_examples:
+            lines.append(
+                render_card(
+                    example,
+                    page_path,
+                    image_dir,
+                    image_url_base,
+                    image_format,
+                    show_tags=False,
+                    title_heading=False,
+                )
+            )
+        lines.append("</div>")
+        lines.append("")
 
     write_text(index_path, "\n".join(lines))
 

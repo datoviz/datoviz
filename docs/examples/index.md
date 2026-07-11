@@ -941,3 +941,21 @@ This example records the DRP2 frame stream from an offscreen view and replays it
 Host integration and low-level rendering examples for experienced users.
 
 [Browse all 4 advanced examples](advanced.md).
+
+### Host Integration
+
+<div class="grid cards" markdown="1">
+
+<div class="card" markdown="1">
+
+**[Qt Hosting](gallery/advanced/advanced_qt_hosting.md)**
+
+[![Qt Hosting](../assets/gallery/v0.4/advanced/advanced_qt_hosting.webp)](gallery/advanced/advanced_qt_hosting.md)
+
+`advanced`
+
+This example hosts a Datoviz Vulkan scene in live Qt Widgets.
+
+</div>
+
+</div>
