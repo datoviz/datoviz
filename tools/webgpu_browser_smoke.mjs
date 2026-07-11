@@ -791,9 +791,11 @@ async function smokeQueryWasmPage(page, baseUrl, scenario, screenshotPath) {
 
       stage = "render-resolved-result";
       await session.render();
-      if (${scenario.pressAfterResolve === true ? 'true' : 'false'}) {
-        stage = "press-resolved-result";
-        scene.scenarioPointer(1, {
+      let clickPending = 0;
+      if (${scenario.clickAfterResolve === true ? 'true' : 'false'}) {
+        stage = "click-resolved-result";
+        canvas.dispatchEvent(new MouseEvent("click", {
+          bubbles: true,
           clientX: pointerX,
           clientY: pointerY,
           button: 0,
@@ -802,10 +804,15 @@ async function smokeQueryWasmPage(page, baseUrl, scenario, screenshotPath) {
           ctrlKey: false,
           altKey: false,
           metaKey: false,
-        });
+        }));
+        clickPending = Module._dvz_wasm_api_query_pending_count(scene.scene);
+        if (clickPending === 0) {
+          return "browser click did not queue a scenario query";
+        }
+        await session.render();
         await session.render();
       }
-      return { processed, pendingBefore, frameBefore, frameAfter };
+      return { processed, pendingBefore, frameBefore, frameAfter, clickPending };
     } catch (error) {
       return stage + ": " + (error instanceof Error ? error.message : String(error));
     }
@@ -982,7 +989,7 @@ async function main() {
           path: '/examples/webgpu/live.html?id=features_picking',
           label: 'Picking',
           scenarioId: 'features_picking',
-          pressAfterResolve: true,
+          clickAfterResolve: true,
         },
         join(artifactsDir, 'webgpu_live_picking.png'),
       );
