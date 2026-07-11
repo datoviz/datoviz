@@ -36,7 +36,8 @@
 #define DVZ_FLY_DEFAULT_SLOW     0.2f
 #define DVZ_FLY_DEFAULT_LOOK     0.7f
 #define DVZ_FLY_DEFAULT_WHEEL    0.04f
-#define DVZ_FLY_VERTICAL_SPEED   0.85f
+#define DVZ_FLY_VERTICAL_SPEED   0.75f
+#define DVZ_FLY_KEY_VERTICAL_SPEED 0.85f
 #define DVZ_FLY_PITCH_EPS        0.001f
 #define DVZ_FLY_PIVOT_MARKER_S   1.0
 #define DVZ_FLY_DESC_KNOWN_FLAGS 0u
@@ -1033,9 +1034,9 @@ DvzResult dvz_fly_update(DvzFly* fly, double dt)
     if (fly->key_left)
         right -= amount;
     if (fly->key_up)
-        up += DVZ_FLY_VERTICAL_SPEED * amount;
+        up += DVZ_FLY_KEY_VERTICAL_SPEED * amount;
     if (fly->key_down)
-        up -= DVZ_FLY_VERTICAL_SPEED * amount;
+        up -= DVZ_FLY_KEY_VERTICAL_SPEED * amount;
 
     if (forward != 0.0f)
         (void)dvz_fly_move_forward(fly, forward);
