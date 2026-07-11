@@ -127,9 +127,9 @@ Pick the entry point that matches how you want to use Datoviz.
 </div>
 
 
-## API Sketch
+## Code example
 
-The core workflow is explicit: create a scene, add a panel, attach visual data, bind interaction,
+The core workflow is straightforward: create a scene, add a panel, attach visual data, bind interaction,
 then run or capture.
 
 ```python
