@@ -29,11 +29,14 @@ DvzScenarioSpec dvz_example_bezier_curve_path_scenario(void);
 DvzScenarioSpec dvz_example_basic_scene_scenario(void);
 DvzScenarioSpec dvz_example_builtin_shapes_2d_scenario(void);
 DvzScenarioSpec dvz_example_builtin_shapes_3d_scenario(void);
+DvzScenarioSpec dvz_example_bounds_overlay_scenario(void);
+DvzScenarioSpec dvz_example_camera_manual_scenario(void);
 DvzScenarioSpec dvz_example_bars_bands_scenario(void);
 DvzScenarioSpec dvz_example_colorbar_scenario(void);
 DvzScenarioSpec dvz_example_colormap_scale_scenario(void);
 DvzScenarioSpec dvz_example_compute_buffer_animation_scenario(void);
 DvzScenarioSpec dvz_example_coordinate_system_scenario(void);
+DvzScenarioSpec dvz_example_controller_arcball_scenario(void);
 DvzScenarioSpec dvz_composite_polygon_scenario(void);
 DvzScenarioSpec dvz_example_controller_fly_scenario(void);
 DvzScenarioSpec dvz_example_controller_turntable_scenario(void);
@@ -45,11 +48,13 @@ DvzScenarioSpec dvz_example_update_visual_data_scenario(void);
 DvzScenarioSpec dvz_example_visibility_scenario(void);
 DvzScenarioSpec dvz_example_visual_transform_scenario(void);
 DvzScenarioSpec dvz_example_picking_scenario(void);
+DvzScenarioSpec dvz_example_reference_grid_scenario(void);
 DvzScenarioSpec dvz_example_image_probe_scenario(void);
 DvzScenarioSpec dvz_example_isolines_scenario(void);
 DvzScenarioSpec dvz_example_legend_categorical_scenario(void);
 DvzScenarioSpec dvz_example_lighting_scenario(void);
 DvzScenarioSpec dvz_example_material_mesh_scenario(void);
+DvzScenarioSpec dvz_example_mesh_texture_scenario(void);
 DvzScenarioSpec dvz_example_obj_loading_scenario(void);
 DvzScenarioSpec dvz_example_overlay_card_scenario(void);
 DvzScenarioSpec dvz_example_panel_background_scenario(void);
@@ -243,6 +248,16 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_example_visual_transform_scenario();
     case 71:
         return dvz_example_panel_view2d_scenario();
+    case 72:
+        return dvz_example_camera_manual_scenario();
+    case 73:
+        return dvz_example_controller_arcball_scenario();
+    case 74:
+        return dvz_example_mesh_texture_scenario();
+    case 75:
+        return dvz_example_reference_grid_scenario();
+    case 76:
+        return dvz_example_bounds_overlay_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

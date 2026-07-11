@@ -13,7 +13,17 @@ This example adds a ground-plane reference grid to a 3D scene.
 
 ## Preview
 
-![Reference Grid](../../../assets/gallery/v0.4/features/features_reference_grid.webp)
+=== "Screenshot"
+
+    ![Reference Grid](../../../assets/gallery/v0.4/features/features_reference_grid.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=features_reference_grid" title="Reference Grid WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=features_reference_grid">Open the live WebGPU example</a>.
 
 ## What To Look For
 
@@ -40,7 +50,8 @@ The grid is attached to the XZ plane, shifted downward on Y, and configured with
     - Lane: `features`
     - Source: [`examples/c/features/reference_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/reference_grid.c)
     - Python source: [`examples/python/gallery/features/reference_grid.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/reference_grid.py)
-    - Browser support: Planned
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=features_reference_grid"><code>examples/webgpu/live.html?id=features_reference_grid</code></a>
     - Browser capability tags: `reference-grid`, `segment`, `controller`
     - Validation: `smoke+interaction+screenshot`
 

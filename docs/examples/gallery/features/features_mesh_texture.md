@@ -13,13 +13,23 @@ This example maps an RGBA8 sampled field onto a UV sphere mesh.
 
 ## Preview
 
-<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_mesh_texture.poster.webp" alt="Textured Mesh" loading="lazy">
-  <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../../../../assets/gallery/v0.4/features/features_mesh_texture.poster.webp" aria-label="Textured Mesh preview">
-    <source data-src="../../../../assets/gallery/v0.4/features/features_mesh_texture.mp4" type="video/mp4">
-  </video>
-</div>
+=== "Screenshot"
+
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_mesh_texture.poster.webp" alt="Textured Mesh" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/features/features_mesh_texture.poster.webp" aria-label="Textured Mesh preview">
+        <source data-src="../../../../assets/gallery/v0.4/features/features_mesh_texture.mp4" type="video/mp4">
+      </video>
+    </div>
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=features_mesh_texture" title="Textured Mesh WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=features_mesh_texture">Open the live WebGPU example</a>.
 
 ## What To Look For
 
@@ -46,7 +56,8 @@ The texture pixels are generated as a 1024x512 color field, attached to the mesh
     - Lane: `features`
     - Source: [`examples/c/features/mesh_texture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/mesh_texture.c)
     - Python source: [`examples/python/gallery/features/mesh_texture.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/mesh_texture.py)
-    - Browser support: Planned
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=features_mesh_texture"><code>examples/webgpu/live.html?id=features_mesh_texture</code></a>
     - Browser capability tags: `mesh`, `sampled-field`, `texture`, `arcball`, `material`
     - Validation: `smoke+interaction+screenshot`
 

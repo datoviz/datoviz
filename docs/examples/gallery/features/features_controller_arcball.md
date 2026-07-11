@@ -13,13 +13,23 @@ This example shows an arcball controller rotating a 3D view.
 
 ## Preview
 
-<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_controller_arcball.poster.webp" alt="Arcball Controller" loading="lazy">
-  <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../../../../assets/gallery/v0.4/features/features_controller_arcball.poster.webp" aria-label="Arcball Controller preview">
-    <source data-src="../../../../assets/gallery/v0.4/features/features_controller_arcball.mp4" type="video/mp4">
-  </video>
-</div>
+=== "Screenshot"
+
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_controller_arcball.poster.webp" alt="Arcball Controller" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/features/features_controller_arcball.poster.webp" aria-label="Arcball Controller preview">
+        <source data-src="../../../../assets/gallery/v0.4/features/features_controller_arcball.mp4" type="video/mp4">
+      </video>
+    </div>
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=features_controller_arcball" title="Arcball Controller WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=features_controller_arcball">Open the live WebGPU example</a>.
 
 ## What To Look For
 
@@ -46,7 +56,8 @@ A colored cube mesh and XZ reference grid make rotation easy to see, and the con
     - Lane: `features`
     - Source: [`examples/c/features/controller_arcball.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_arcball.c)
     - Python source: [`examples/python/gallery/features/controller_arcball.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/controller_arcball.py)
-    - Browser support: Planned
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=features_controller_arcball"><code>examples/webgpu/live.html?id=features_controller_arcball</code></a>
     - Browser capability tags: `controller`, `arcball`, `mesh`
     - Validation: `smoke+interaction+screenshot`
 

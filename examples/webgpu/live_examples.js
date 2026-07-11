@@ -308,6 +308,31 @@ export const LIVE_EXAMPLES = [
     animate: true,
   },
   {
+    id: "features_camera_manual",
+    label: "Manual Camera",
+    scenarioId: "features_camera_manual",
+  },
+  {
+    id: "features_controller_arcball",
+    label: "Arcball Controller",
+    scenarioId: "features_controller_arcball",
+  },
+  {
+    id: "features_mesh_texture",
+    label: "Textured Mesh",
+    scenarioId: "features_mesh_texture",
+  },
+  {
+    id: "features_reference_grid",
+    label: "Reference Grid",
+    scenarioId: "features_reference_grid",
+  },
+  {
+    id: "features_bounds_overlay",
+    label: "Bounds Overlay",
+    scenarioId: "features_bounds_overlay",
+  },
+  {
     id: "visuals_point",
     label: "Point",
     scenarioId: "visuals_point",

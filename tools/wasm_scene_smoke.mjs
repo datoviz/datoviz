@@ -2435,6 +2435,11 @@ try {
     "features_coordinate_system",
     "features_visual_transform",
     "features_panel_view2d",
+    "features_camera_manual",
+    "features_controller_arcball",
+    "features_mesh_texture",
+    "features_reference_grid",
+    "features_bounds_overlay",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -3411,6 +3416,41 @@ try {
         expectPipeline(stream, `${label} path`, (pipeline) => pipeline.builtin_pipeline === "scene.path");
         requireOk(commandsOf(stream, "SetViewport").length >= 2, `${label}: expected two panel viewports`);
         requireOk(commandsOf(stream, "DrawIndexed").length >= 2, `${label}: expected two circle paths`);
+      },
+    ],
+    [
+      "features_camera_manual",
+      "manual camera",
+      (stream, label) => expectControllerMeshScenarioStreamShape(stream, label),
+    ],
+    [
+      "features_controller_arcball",
+      "arcball controller",
+      (stream, label) => expectControllerMeshScenarioStreamShape(stream, label),
+    ],
+    [
+      "features_mesh_texture",
+      "textured mesh",
+      (stream, label) => {
+        expectControllerMeshScenarioStreamShape(stream, label);
+        requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected texture upload`);
+      },
+    ],
+    [
+      "features_reference_grid",
+      "reference grid",
+      (stream, label) => {
+        expectPipeline(stream, label, (pipeline) => pipeline.builtin_pipeline === "scene.segment");
+        requireOk(commandsOf(stream, "DrawIndexed").length >= 1, `${label}: expected grid draw`);
+      },
+    ],
+    [
+      "features_bounds_overlay",
+      "bounds overlay",
+      (stream, label) => {
+        expectPipeline(stream, `${label} point`, (pipeline) => pipeline.builtin_pipeline === "scene.point");
+        expectPipeline(stream, `${label} sphere`, (pipeline) => pipeline.builtin_pipeline === "scene.sphere");
+        requireOk(commandsOf(stream, "SetViewport").length >= 2, `${label}: expected 2D and 3D panels`);
       },
     ],
     [

@@ -15,7 +15,7 @@ versions. Runner command expansion should remain evidence-driven and scoped to t
 ## RC Promotion Target
 
 Current fixture proof counts remain the dashboard truth for the low-level runner. The live gallery
-now has 66 promoted routes backed by canonical C examples or portable C scenarios:
+now has 76 promoted routes backed by canonical C examples or portable C scenarios:
 `features_basic_scene`, `features_timer_animation`, `features_builtin_shapes_2d`,
 `features_builtin_shapes_3d`, `features_isolines`,
 `features_animation_tracks`, `features_compute_buffer_animation`, `features_obj_loading`,
@@ -35,6 +35,10 @@ now has 66 promoted routes backed by canonical C examples or portable C scenario
 `showcases_textured_planet`, `showcases_protein`, `visuals_point`, `visuals_pixel`,
 `visuals_marker`, `visuals_primitive`, `visuals_segment`, `visuals_path`, `visuals_image`,
 `visuals_mesh`, `visuals_sphere`, `visuals_text`, `visuals_glyph`, and `visuals_labels`.
+The promoted set also includes `features_coordinate_system`, `features_visual_transform`,
+`features_panel_view2d`, `features_bezier_curve_path`, `features_path_join`,
+`features_camera_manual`, `features_controller_arcball`, `features_mesh_texture`,
+`features_reference_grid`, and `features_bounds_overlay`.
 
 This list uses public route IDs. When a route ID differs from the compiled C/WASM scenario ID,
 `examples/c/MANIFEST.yaml` records the mapping in `webgpu.scenario_id`.
@@ -48,6 +52,14 @@ Remaining RC promotions are:
 Do not move broader live-example coverage into the supported/current section until
 `wasm-scene-smoke`, `webgpu-browser-smoke`, and any relevant native/DRP2 checks have recorded
 evidence for the promoted slice.
+
+Recorded local composed-feature promotion proof on 2026-07-11: native builds passed for all ten
+new examples; `just wasm-scene-smoke` passed with 77 registered scenarios and targeted packet-shape
+coverage; manifest and JavaScript checks passed. The Textured Mesh scenario moved its 2 MiB
+temporary texture payload off the 1 MiB WASM stack. `just webgpu-browser-smoke` did not reach the
+new route loop because the earlier `features_picking` query probe timed out waiting for a queued
+request; this is recorded as an unrelated pre-existing browser-smoke blocker, not rendering proof
+for the promoted routes.
 
 Recorded local browser shader-payload proof on 2026-06-18: `node --check
 tools/webgpu_browser_smoke.mjs`, `node --check tools/wasm_scene_smoke.mjs`, and `just

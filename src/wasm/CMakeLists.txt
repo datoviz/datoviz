@@ -30,10 +30,13 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/basic_scene.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/builtin_shapes_2d.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/builtin_shapes_3d.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/bounds_overlay.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/camera_manual.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/colorbar.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/colormap_scale.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/compute_buffer_animation.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/coordinate_system.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/controller_arcball.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/controller_fly.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/controller_turntable.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/guide_lines.c
@@ -43,6 +46,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/legend_categorical.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/lighting.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/material_mesh.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/mesh_texture.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/obj_loading.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/overlay_card.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/panel_background.c
@@ -54,6 +58,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/panzoom.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/path_join.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/picking.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/reference_grid.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/selection_mesh_instances.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/selection_pixel.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/selection_sphere.c

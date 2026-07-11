@@ -554,7 +554,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=features_controller_arcball
       requirements:
         - controller
         - arcball
@@ -575,7 +576,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=features_camera_manual
       requirements:
         - camera
         - mesh
@@ -629,7 +631,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=features_reference_grid
       requirements:
         - reference-grid
         - segment
@@ -650,7 +653,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=features_bounds_overlay
       requirements:
         - bounds-overlay
         - point
@@ -755,7 +759,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=features_mesh_texture
       requirements:
         - mesh
         - sampled-field

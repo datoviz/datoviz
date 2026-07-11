@@ -43,6 +43,14 @@
 
 
 /*************************************************************************************************/
+/*  Forward declarations                                                                         */
+/*************************************************************************************************/
+
+DvzScenarioSpec dvz_example_mesh_texture_scenario(void);
+
+
+
+/*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
@@ -215,10 +223,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->tuner = example_tuner("Textured mesh settings");
     state->material = example_default_phong_material_desc();
 
-    uint8_t pixels[TEXTURE_WIDTH * TEXTURE_HEIGHT * 4] = {0};
-
-    _fill_texture(pixels);
-
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
         return false;
@@ -233,7 +237,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (dvz_panel_set_camera_desc(panel, &camera) != 0)
         return false;
 
+    uint8_t* pixels = (uint8_t*)dvz_calloc(TEXTURE_WIDTH * TEXTURE_HEIGHT * 4u, sizeof(uint8_t));
+    if (pixels == NULL)
+        return false;
+    _fill_texture(pixels);
     DvzSampledField* texture = _add_texture(ctx->scene, pixels);
+    dvz_free(pixels);
     if (texture == NULL)
         return false;
     if (!_add_textured_mesh(
@@ -309,7 +318,7 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _mesh_texture_scenario(void)
+DvzScenarioSpec dvz_example_mesh_texture_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "features_mesh_texture",
@@ -336,10 +345,12 @@ static DvzScenarioSpec _mesh_texture_scenario(void)
  * @param argv command-line argument vector
  * @return process exit code
  */
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _mesh_texture_scenario();
+    DvzScenarioSpec spec = dvz_example_mesh_texture_scenario();
     if (example_cli_wants_live_gui(argc, argv))
         spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

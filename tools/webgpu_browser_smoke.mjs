@@ -1161,6 +1161,15 @@ async function main() {
       console.log(skipLine(`WebGPU live axis-labels smoke: headless WebGPU instance loss (${error.message})`));
     }
     const promotedLiveRoutes = [
+      ['features_coordinate_system', 'Coordinate System', 'webgpu_live_coordinate_system.png', 'coordinate-system'],
+      ['features_visual_transform', 'Visual Transform', 'webgpu_live_visual_transform.png', 'visual-transform'],
+      ['features_bezier_curve_path', 'Bezier Curve Path', 'webgpu_live_bezier_curve_path.png', 'bezier-curve-path'],
+      ['features_path_join', 'Path Join', 'webgpu_live_path_join.png', 'path-join'],
+      ['features_camera_manual', 'Manual Camera', 'webgpu_live_camera_manual.png', 'camera-manual'],
+      ['features_controller_arcball', 'Arcball Controller', 'webgpu_live_controller_arcball.png', 'controller-arcball'],
+      ['features_mesh_texture', 'Textured Mesh', 'webgpu_live_mesh_texture.png', 'mesh-texture'],
+      ['features_reference_grid', 'Reference Grid', 'webgpu_live_reference_grid.png', 'reference-grid'],
+      ['features_bounds_overlay', 'Bounds Overlay', 'webgpu_live_bounds_overlay.png', 'bounds-overlay'],
       ['features_panel_multi', 'Multiple Panels', 'webgpu_live_panel_multi.png', 'multi-panel'],
       ['features_panel_linked', 'Linked Panels', 'webgpu_live_panel_linked.png', 'linked-panel'],
       ['features_text_block', 'Text Block', 'webgpu_live_text_block.png', 'text-block'],
@@ -1238,6 +1247,13 @@ async function main() {
     }
 
     const promotedAnimatedRoutes = [
+      [
+        'features_panel_view2d',
+        'Panel View 2D',
+        'webgpu_live_panel_view2d.png',
+        'panel-view2d',
+        'features_panel_view2d',
+      ],
       [
         'features_sampled_field_update',
         'Sampled Field Update',

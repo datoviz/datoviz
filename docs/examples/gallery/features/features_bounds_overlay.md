@@ -13,7 +13,17 @@ This example shows diagnostic bounds overlays for 2D and 3D visuals.
 
 ## Preview
 
-![Bounds Overlay](../../../assets/gallery/v0.4/features/features_bounds_overlay.webp)
+=== "Screenshot"
+
+    ![Bounds Overlay](../../../assets/gallery/v0.4/features/features_bounds_overlay.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=features_bounds_overlay" title="Bounds Overlay WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=features_bounds_overlay">Open the live WebGPU example</a>.
 
 ## What To Look For
 
@@ -41,7 +51,8 @@ The left panel contains a point cloud with position, color, and diameter arrays,
     - Status: `diagnostic`
     - Source: [`examples/c/features/bounds_overlay.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bounds_overlay.c)
     - Python source: [`examples/python/gallery/features/bounds_overlay.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/bounds_overlay.py)
-    - Browser support: Planned
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=features_bounds_overlay"><code>examples/webgpu/live.html?id=features_bounds_overlay</code></a>
     - Browser capability tags: `bounds-overlay`, `point`, `sphere`, `overlay`
     - Validation: `smoke+screenshot`
 

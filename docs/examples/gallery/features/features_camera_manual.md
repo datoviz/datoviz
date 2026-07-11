@@ -13,7 +13,17 @@ This example shows explicit perspective-camera setup for a 3D scene.
 
 ## Preview
 
-![Manual Camera](../../../assets/gallery/v0.4/features/features_camera_manual.webp)
+=== "Screenshot"
+
+    ![Manual Camera](../../../assets/gallery/v0.4/features/features_camera_manual.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=features_camera_manual" title="Manual Camera WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=features_camera_manual">Open the live WebGPU example</a>.
 
 ## What To Look For
 
@@ -40,7 +50,8 @@ The camera descriptor sets eye, target, up, field of view, and near/far clip pla
     - Lane: `features`
     - Source: [`examples/c/features/camera_manual.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/camera_manual.c)
     - Python source: [`examples/python/gallery/features/camera_manual.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/camera_manual.py)
-    - Browser support: Planned
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=features_camera_manual"><code>examples/webgpu/live.html?id=features_camera_manual</code></a>
     - Browser capability tags: `camera`, `mesh`, `controller`, `arcball`
     - Validation: `smoke+interaction+screenshot`
 
