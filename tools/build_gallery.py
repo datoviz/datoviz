@@ -13,6 +13,7 @@ from pathlib import Path
 from textwrap import dedent
 
 import gallery_media
+from example_navigation import load_navigation, validate_navigation
 
 
 ROOT = gallery_media.ROOT
@@ -43,36 +44,18 @@ SOURCE_LABEL_BY_LANGUAGE = {
     "javascript": "JavaScript",
 }
 
-# Editorial showcase groups. The 2D/3D split describes the primary gallery
-# presentation, not a strict mathematical classification.
-SHOWCASE_GROUPS = (
-    ("2D", [
-        "showcases_scientific_plotting",
-        "showcases_panel_linked_axes",
-        "showcases_linked_probe_colorbar",
-        "showcases_scalebar_measurement",
-        "showcases_choropleth",
-        "showcases_wind_field",
-        "showcases_gpu_particle_smoke",
-    ]),
-    ("3D", [
-        "showcases_brain_volume",
-        "showcases_protein",
-        "showcases_point_cloud",
-        "showcases_surface_grid",
-        "showcases_textured_planet",
-    ]),
-)
-SHOWCASE_ORDER = tuple(id_ for _, ids in SHOWCASE_GROUPS for id_ in ids)
+EXAMPLE_NAVIGATION = load_navigation()
 
-# Visuals grouped by dimensionality; each tuple is (subheading, [ids]).
-INDEX_VISUAL_GROUPS = (
-    ("0D — point-like", ["visuals_point", "visuals_pixel", "visuals_marker", "visuals_splat"]),
-    ("1D — line-like",  ["visuals_segment", "visuals_path", "visuals_vector", "visuals_primitive"]),
-    ("2D — planar",     ["visuals_image", "visuals_image_rgba", "visuals_text", "visuals_glyph", "visuals_labels"]),
-    ("3D — volumetric", ["visuals_mesh", "visuals_sphere", "visuals_volume"]),
-    ("Composites",      ["composites_polygon", "composites_graph"]),
-)
+
+def navigation_groups(section_id: str, index: bool = False) -> tuple[tuple[str, list[str]], ...]:
+    section = EXAMPLE_NAVIGATION.section(section_id)
+    groups = section.index if index else section.groups
+    return tuple((group.title, list(group.example_ids)) for group in groups)
+
+
+SHOWCASE_GROUPS = navigation_groups("showcases")
+SHOWCASE_ORDER = EXAMPLE_NAVIGATION.section("showcases").ordered_ids
+INDEX_VISUAL_GROUPS = navigation_groups("visuals", index=True)
 
 VISUAL_REFERENCE_BY_ID = {
     "visuals_point": "point",
@@ -93,153 +76,9 @@ VISUAL_REFERENCE_BY_ID = {
     "visuals_volume": "volume",
 }
 
-# Full feature grouping used on the features page — covers all 71 public features.
-FEATURE_PAGE_GROUPS = (
-    ("Scene & Layout", [
-        "features_basic_scene",
-        "features_coordinate_system",
-        "features_panel_single",
-        "features_panel_grid",
-        "features_panel_multi",
-        "features_panel_linked",
-        "features_panel_view2d",
-        "features_panel_background",
-        "features_user_scale",
-        "features_view_size_policies",
-        "features_visual_transform",
-        "features_visibility",
-    ]),
-    ("Navigation", [
-        "features_camera_manual",
-        "features_panzoom",
-        "features_controller_arcball",
-        "features_controller_turntable",
-        "features_controller_fly",
-        "features_orientation_gizmo",
-        "features_reference_grid",
-    ]),
-    ("Adornments", [
-        "features_axis_labels",
-        "features_axes_2d",
-        "features_guide_lines",
-        "features_guide_spans",
-        "features_bars_bands",
-        "features_scalebar",
-        "features_scalebar_units",
-        "features_colorbar",
-        "features_colormap_scale",
-        "features_legend_categorical",
-        "features_annotation_readout",
-        "features_text_block",
-        "features_overlay_card",
-        "features_probe_labels",
-    ]),
-    ("Shapes & Geometry", [
-        "features_builtin_shapes_2d",
-        "features_builtin_shapes_3d",
-        "features_marker_symbols",
-        "features_bezier_curve_path",
-        "features_path_join",
-        "features_obj_loading",
-    ]),
-    ("Scientific", [
-        "features_sampled_field_update",
-        "features_isolines",
-        "features_datetime_axis",
-        "features_image_probe",
-    ]),
-    ("3D Rendering", [
-        "features_lighting",
-        "features_mesh_texture",
-        "features_material_mesh",
-        "features_volume_occlusion",
-        "features_technique_edl",
-        "features_technique_ssao",
-        "features_technique_depth_cue",
-        "features_technique_msaa",
-        "features_technique_transparency",
-        "features_alpha_blending",
-        "features_technique_depth_test",
-        "features_bounds_overlay",
-    ]),
-    ("Interaction & Selection", [
-        "features_picking",
-        "features_selection_pixel",
-        "features_selection_sphere",
-        "features_selection_mesh_instances",
-    ]),
-    ("Animation & Updates", [
-        "features_animation_tracks",
-        "features_timer_animation",
-        "features_compute_buffer_animation",
-        "features_update_partial",
-        "features_update_visual_data",
-    ]),
-    ("GUI", [
-        "features_gui_controls",
-        "features_gui_viewport",
-        "features_gui_cimgui",
-    ]),
-    ("Input & Diagnostics", [
-        "features_input_events",
-        "features_json_export",
-    ]),
-)
-
-RUNTIME_PAGE_GROUPS = (
-    ("Windows & Hosting", [
-        "runtime_app_glfw",
-        "runtime_multi_window",
-    ]),
-    ("Capture, Export & Replay", [
-        "runtime_offscreen_capture",
-        "runtime_video_export",
-        "runtime_record_replay",
-    ]),
-)
-
-# Flagship feature IDs shown on the examples index; the rest are reachable via the full gallery.
-INDEX_FEATURE_GROUPS = (
-    ("Layout", [
-        "features_panel_grid",
-        "features_panel_multi",
-        "features_panel_linked",
-    ]),
-    ("Adornments", [
-        "features_axis_labels",
-        "features_colorbar",
-        "features_scalebar",
-        "features_colormap_scale",
-    ]),
-    ("Navigation", [
-        "features_panzoom",
-        "features_controller_arcball",
-        "features_controller_fly",
-        "features_controller_turntable",
-    ]),
-    ("Scientific", [
-        "features_sampled_field_update",
-        "features_isolines",
-        "features_marker_symbols",
-    ]),
-    ("3D Rendering", [
-        "features_lighting",
-        "features_mesh_texture",
-        "features_technique_ssao",
-        "features_technique_depth_cue",
-    ]),
-    ("Animation & Interaction", [
-        "features_animation_tracks",
-        "features_timer_animation",
-        "features_image_probe",
-        "features_selection_sphere",
-    ]),
-    ("GUI", [
-        "features_gui_controls",
-        "features_gui_viewport",
-        "features_gui_cimgui",
-    ]),
-)
+FEATURE_PAGE_GROUPS = navigation_groups("features")
+RUNTIME_PAGE_GROUPS = navigation_groups("runtime")
+INDEX_FEATURE_GROUPS = navigation_groups("features", index=True)
 
 CATEGORY_TO_LANE = gallery_media.CATEGORY_TO_LANE
 LANE_TO_CATEGORY = gallery_media.LANE_TO_CATEGORY
@@ -630,25 +469,6 @@ def collect_examples(manifest: dict) -> list[Example]:
         )
         examples.append(example)
     return examples
-
-
-def validate_showcase_groups(examples: list[Example]) -> None:
-    expected = {example.id for example in examples if example.lane == "showcases"}
-    listed: list[str] = []
-    for _, group_ids in SHOWCASE_GROUPS:
-        listed.extend(group_ids)
-
-    duplicates = sorted({id_ for id_ in listed if listed.count(id_) > 1})
-    if duplicates:
-        raise ValueError(f"Duplicate showcase IDs in SHOWCASE_GROUPS: {', '.join(duplicates)}")
-
-    listed_set = set(listed)
-    missing = sorted(expected - listed_set)
-    extra = sorted(listed_set - expected)
-    if missing:
-        raise ValueError(f"Missing showcase IDs in SHOWCASE_GROUPS: {', '.join(missing)}")
-    if extra:
-        raise ValueError(f"Unknown showcase IDs in SHOWCASE_GROUPS: {', '.join(extra)}")
 
 
 def lane_title(lane: str) -> str:
@@ -1361,15 +1181,8 @@ def render_visuals_page(
     page_path = docs_site_path(docs_dir, "visuals.md")
     lines = generated_header("Visuals & Composites")
     lines.extend(render_page_intro("Browse one focused example per visual family or composite."))
-    visual_groups = (
-        ("0D — point-like", ["visuals_point", "visuals_pixel", "visuals_marker", "visuals_splat"]),
-        ("1D — line-like",  ["visuals_segment", "visuals_path", "visuals_vector", "visuals_primitive"]),
-        ("2D — planar",     ["visuals_image", "visuals_image_rgba", "visuals_text", "visuals_glyph", "visuals_labels"]),
-        ("3D — volumetric", ["visuals_mesh", "visuals_sphere", "visuals_volume"]),
-        ("Composites",      ["composites_polygon", "composites_graph"]),
-    )
     by_id = {e.id: e for e in examples}
-    for group_label, group_ids in visual_groups:
+    for group_label, group_ids in INDEX_VISUAL_GROUPS:
         group_examples = [by_id[i] for i in group_ids if i in by_id]
         if not group_examples:
             continue
@@ -1618,7 +1431,7 @@ def main() -> int:
     args = parse_args()
     manifest = load_manifest(args.manifest)
     examples = collect_examples(manifest)
-    validate_showcase_groups(examples)
+    validate_navigation(EXAMPLE_NAVIGATION, examples)
     clean_generated_pages(args.docs_dir)
     render_index(examples, args.docs_dir, args.image_dir, args.image_url_base, args.image_format)
     render_showcases_page(examples, args.docs_dir, args.image_dir, args.image_url_base, args.image_format)

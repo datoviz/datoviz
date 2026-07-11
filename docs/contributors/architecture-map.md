@@ -41,6 +41,7 @@ Specs own durable behavior. Do not put active work queues or release handoff not
 | generated Python exact call form | `datoviz/raw.py`, `datoviz/_ctypes.py` |
 | generated NumPy adaptation | `datoviz/_array_facade.py` |
 | example manifest tooling | `tools/build_examples_manifest.py` |
+| example documentation structure | `docs/examples/navigation.yaml`, `tools/example_navigation.py` |
 
 The active runtime path is:
 

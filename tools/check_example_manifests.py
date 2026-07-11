@@ -209,6 +209,8 @@ def path_to_tool(path: Path) -> str:
 
 def main() -> int:
     args = parse_args()
+    examples = build_gallery.collect_examples(build_gallery.load_manifest(args.manifest))
+    build_gallery.validate_navigation(build_gallery.EXAMPLE_NAVIGATION, examples)
     checks = [
         (
             args.examples,

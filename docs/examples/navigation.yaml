@@ -1,0 +1,216 @@
+sections:
+  - id: showcases
+    title: Showcases
+    overview: showcases.md
+    lanes: [showcases]
+    groups:
+      - title: 2D
+        examples:
+          - showcases_scientific_plotting
+          - showcases_panel_linked_axes
+          - showcases_linked_probe_colorbar
+          - showcases_scalebar_measurement
+          - showcases_choropleth
+          - showcases_wind_field
+          - showcases_gpu_particle_smoke
+      - title: 3D
+        examples:
+          - showcases_brain_volume
+          - showcases_protein
+          - showcases_point_cloud
+          - showcases_surface_grid
+          - showcases_textured_planet
+
+  - id: visuals
+    title: Visuals & Composites
+    overview: visuals.md
+    lanes: [visuals, composites]
+    groups:
+      - title: 0D — point-like
+        examples:
+          - visuals_point
+          - visuals_pixel
+          - visuals_marker
+          - visuals_splat
+      - title: 1D — line-like
+        examples:
+          - visuals_segment
+          - visuals_path
+          - visuals_vector
+          - visuals_primitive
+      - title: 2D — planar
+        examples:
+          - visuals_image
+          - visuals_image_rgba
+          - visuals_text
+          - visuals_glyph
+          - visuals_labels
+      - title: 3D — volumetric
+        examples:
+          - visuals_mesh
+          - visuals_sphere
+          - visuals_volume
+      - title: Composites
+        examples:
+          - composites_polygon
+          - composites_graph
+
+  - id: features
+    title: Features
+    overview: features.md
+    lanes: [features]
+    groups:
+      - title: Scene & Layout
+        examples:
+          - features_basic_scene
+          - features_coordinate_system
+          - features_panel_single
+          - features_panel_grid
+          - features_panel_multi
+          - features_panel_linked
+          - features_panel_view2d
+          - features_panel_background
+          - features_user_scale
+          - features_view_size_policies
+          - features_visual_transform
+          - features_visibility
+      - title: Navigation
+        examples:
+          - features_camera_manual
+          - features_panzoom
+          - features_controller_arcball
+          - features_controller_turntable
+          - features_controller_fly
+          - features_orientation_gizmo
+          - features_reference_grid
+      - title: Adornments
+        examples:
+          - features_axis_labels
+          - features_axes_2d
+          - features_guide_lines
+          - features_guide_spans
+          - features_bars_bands
+          - features_scalebar
+          - features_scalebar_units
+          - features_colorbar
+          - features_colormap_scale
+          - features_legend_categorical
+          - features_annotation_readout
+          - features_text_block
+          - features_overlay_card
+          - features_probe_labels
+      - title: Shapes & Geometry
+        examples:
+          - features_builtin_shapes_2d
+          - features_builtin_shapes_3d
+          - features_marker_symbols
+          - features_bezier_curve_path
+          - features_path_join
+          - features_obj_loading
+      - title: Scientific
+        examples:
+          - features_sampled_field_update
+          - features_isolines
+          - features_datetime_axis
+          - features_image_probe
+      - title: 3D Rendering
+        examples:
+          - features_lighting
+          - features_mesh_texture
+          - features_material_mesh
+          - features_volume_occlusion
+          - features_technique_edl
+          - features_technique_ssao
+          - features_technique_depth_cue
+          - features_technique_msaa
+          - features_technique_transparency
+          - features_alpha_blending
+          - features_technique_depth_test
+          - features_bounds_overlay
+      - title: Interaction & Selection
+        examples:
+          - features_picking
+          - features_selection_pixel
+          - features_selection_sphere
+          - features_selection_mesh_instances
+      - title: Animation & Updates
+        examples:
+          - features_animation_tracks
+          - features_timer_animation
+          - features_compute_buffer_animation
+          - features_update_partial
+          - features_update_visual_data
+      - title: GUI
+        examples:
+          - features_gui_controls
+          - features_gui_viewport
+          - features_gui_cimgui
+      - title: Input & Diagnostics
+        examples:
+          - features_input_events
+          - features_json_export
+    index_groups:
+      - title: Layout
+        examples:
+          - features_panel_grid
+          - features_panel_multi
+          - features_panel_linked
+      - title: Adornments
+        examples:
+          - features_axis_labels
+          - features_colorbar
+          - features_scalebar
+          - features_colormap_scale
+      - title: Navigation
+        examples:
+          - features_panzoom
+          - features_controller_arcball
+          - features_controller_fly
+          - features_controller_turntable
+      - title: Scientific
+        examples:
+          - features_sampled_field_update
+          - features_isolines
+          - features_marker_symbols
+      - title: 3D Rendering
+        examples:
+          - features_lighting
+          - features_mesh_texture
+          - features_technique_ssao
+          - features_technique_depth_cue
+      - title: Animation & Interaction
+        examples:
+          - features_animation_tracks
+          - features_timer_animation
+          - features_image_probe
+          - features_selection_sphere
+      - title: GUI
+        examples:
+          - features_gui_controls
+          - features_gui_viewport
+          - features_gui_cimgui
+
+  - id: runtime
+    title: Runtime & Capture
+    overview: runtime.md
+    lanes: [runtime]
+    groups:
+      - title: Windows & Hosting
+        examples:
+          - runtime_app_glfw
+          - runtime_multi_window
+      - title: Capture, Export & Replay
+        examples:
+          - runtime_offscreen_capture
+          - runtime_video_export
+          - runtime_record_replay
+
+  - id: advanced
+    title: Advanced
+    overview: advanced.md
+    lanes: [advanced]
+    examples:
+      - advanced_raw_triangle_vklite
+      - advanced_raw_triangle_drp2
+      - advanced_external_surface_glfw
+      - advanced_qt_hosting
