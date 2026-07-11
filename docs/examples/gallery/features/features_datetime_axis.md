@@ -21,6 +21,11 @@ This example shows UTC datetime labels on a numeric data axis.
   </video>
 </div>
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>No live WebGPU preview</strong>
+<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 The path visual uploads position, color, and linewidth arrays in compact numeric coordinates from 0 to 8. The x axis is then configured with datetime metadata and a UTC range, so the tick labels display times while the visual data stays simple. Compare the curve's x positions with the formatted time labels; this is useful for time-series data where rendering should remain numeric but the plot must communicate real dates or times.

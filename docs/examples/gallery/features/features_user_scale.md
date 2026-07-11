@@ -21,6 +21,11 @@ This example shows how one user-scale value affects screen-space visual sizes an
   </video>
 </div>
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Native-only example</strong>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 The panel combines a data-space path, outlined markers, axes, and panzoom. The path uploads position, color, and stroke_width_px arrays, while the markers upload position, color, diameter_px, angle, and symbol arrays. In live mode, move the GUI scale slider and compare marker diameters, stroke widths, text, and axis styling while data coordinates stay fixed. User scale is useful for HiDPI displays, screenshots, and accessibility-sized scientific figures.

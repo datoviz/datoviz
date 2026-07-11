@@ -15,6 +15,11 @@ This example draws one RGB triangle with manual vklite commands.
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Raw Triangle Vklite"><span>No screenshot</span></div>
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Native-only example</strong>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 The triangle is not a scene visual. The example compiles the inline GLSL shaders, declares the vec2 position plus vec3 color vertex layout, uploads three vertices to a vertex buffer, and records the draw into the command buffer provided by DvzCanvas. The saved PNG should show a red/green/blue triangle over a dark clear color.

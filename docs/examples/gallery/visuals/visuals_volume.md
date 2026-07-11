@@ -15,6 +15,11 @@ This example volume-renders a generated 3D gyroid scalar field.
 
 ![Volume](../../../assets/gallery/v0.4/visuals/visuals_volume.webp)
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Live WebGPU preview not available yet</strong>
+<span>Browser support for this example is planned. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 The FIELD_SIZE cubed data array is attached as a 3D sampled field, with color and alpha scales controlling which values remain visible. Compare the rotating volume with the boundary box to understand the data bounds, transfer-function opacity, and maximum-intensity projection style used for volumetric microscopy, simulation, or tomography data.

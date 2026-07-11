@@ -21,6 +21,11 @@ This example renders a prepared RGB LiDAR point cloud with direct colors.
   </video>
 </div>
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>No live WebGPU preview</strong>
+<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 The prepared binary stores point positions, RGBA colors, and per-point pixel sizes after preprocessing the upstream LAZ source. The preview should read as a dense colored spatial scan, and the fly-style view is the interaction to use when inspecting depth and structure.

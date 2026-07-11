@@ -15,6 +15,11 @@ This example shows a Datoviz render viewport embedded inside a GUI window.
 
 ![GUI Viewport](../../../assets/gallery/v0.4/features/features_gui_viewport.webp)
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Native-only example</strong>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 The application hosts a GUI window while a separate Datoviz figure renders a small point scene at a fixed source size. The viewport presents that live render target inside the GUI instead of as the whole native window. Compare the embedded plot area with the surrounding controls; this layout is useful for tools where plots, parameter widgets, and diagnostics need to share the same application surface.

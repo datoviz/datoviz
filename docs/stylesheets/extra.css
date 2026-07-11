@@ -116,6 +116,23 @@ img[alt*=gpuopen] {
     background: #05070a;
 }
 
+.dvz-webgpu-unavailable {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 0.6rem;
+    margin: 0.75rem 0 1rem;
+    padding: 0.65rem 0.8rem;
+    border-left: 3px solid rgba(139, 148, 158, 0.55);
+    background: rgba(139, 148, 158, 0.08);
+    color: var(--md-default-fg-color--light);
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.dvz-webgpu-unavailable strong {
+    color: var(--md-default-fg-color);
+}
+
 .dvz-gallery-placeholder {
     display: grid;
     place-items: center;

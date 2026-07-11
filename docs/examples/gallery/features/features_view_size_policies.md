@@ -15,6 +15,11 @@ This example demonstrates how requested view size policies resolve to real view 
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for View Size Policies"><span>No screenshot</span></div>
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Native-only example</strong>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 Pass --policy pixel, host, reference, or physical to choose framebuffer pixels, host logical pixels, reference-DPI canvas pixels, or physical millimeters. The example prints the resolved canvas, host-logical, framebuffer, scale, and physical sizes, then renders a small point visual with position, color, and diameter_px arrays. This is useful when figures need reproducible screenshot dimensions across HiDPI monitors and different host toolkits.

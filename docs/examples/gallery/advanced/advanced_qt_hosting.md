@@ -15,6 +15,11 @@ This example hosts a Datoviz Vulkan scene in live Qt Widgets.
 
 ![Qt Hosting](../../../assets/gallery/v0.4/advanced/advanced_qt_hosting.webp)
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Native-only example</strong>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## Source
 
 === "C++"

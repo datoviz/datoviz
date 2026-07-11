@@ -15,6 +15,11 @@ This example renders one triangle from a hand-written DRP2 command stream.
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Raw Triangle DRP2"><span>No screenshot</span></div>
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Native-only example</strong>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 Every buffer, shader module, texture, command encoder, render pass, pipeline, draw, copy, and submit object is assigned an explicit DRP2 id. The vertex data is three position/color records, the pipeline declares that layout through DvzDrp2RenderPipelineDesc, and the rendered texture is copied to a readback buffer before the PNG is written.

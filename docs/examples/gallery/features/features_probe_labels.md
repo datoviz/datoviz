@@ -15,6 +15,11 @@ This example queries categorical label IDs from a generated label image.
 
 ![Label Probe](../../../assets/gallery/v0.4/features/features_probe_labels.webp)
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Live WebGPU preview not available yet</strong>
+<span>Browser support for this example is planned. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 A 256x192 R32_SINT sampled field stores category IDs for cortex, fiber, nucleus, vessel, and island regions, and a categorical scale maps those IDs to colors and labels. Move the live probe marker across the panel; the frame callback queries the label visual and prints the current label ID, name, and data position. This is useful for segmentation maps, classified microscopy images, and other categorical rasters where users need values under the cursor.

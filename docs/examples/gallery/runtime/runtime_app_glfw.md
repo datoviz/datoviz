@@ -15,6 +15,11 @@ This example opens a native GLFW window for a small point scene.
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for GLFW App"><span>No screenshot</span></div>
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Native-only example</strong>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 The scene creates one figure, one full-panel view, and one point visual with explicit position, color, and diameter arrays. The live preview should show six differently sized points on the graphite/cyan background, and panzoom interaction should work because the view binds a controller after the GLFW window is created.

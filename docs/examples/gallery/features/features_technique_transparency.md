@@ -21,6 +21,11 @@ This example compares three transparency techniques on the same overlapping cube
   </video>
 </div>
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>No live WebGPU preview</strong>
+<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 Each panel draws two translucent cube meshes with the same geometry, transforms, material settings, and face alpha values, but changes the alpha mode between source-over blending, weighted order-independent transparency, and depth peeling. Rotate the linked panels and compare how back faces and overlapping colors are resolved. This helps choose a transparency mode for volumes, nested surfaces, or uncertain 3D regions.

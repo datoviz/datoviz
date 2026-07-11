@@ -15,6 +15,11 @@ This example renders Gaussian splats as translucent ellipses.
 
 ![Splat](../../../assets/gallery/v0.4/visuals/visuals_splat.webp)
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>No live WebGPU preview</strong>
+<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 Positions place each splat, colors set the tint, sigma gives the two screen-space ellipse radii, and angles rotate the ellipses. Compare overlapping areas and the soft footprint shape to see how uncertain samples, local point spread, or projected density can be shown without drawing hard-edged markers.

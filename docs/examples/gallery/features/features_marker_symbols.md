@@ -15,6 +15,11 @@ This example compares several ways to define marker glyphs in one symbol set.
 
 ![Marker Symbols](../../../assets/gallery/v0.4/features/features_marker_symbols.webp)
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>No live WebGPU preview</strong>
+<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 Each row uses the same marker attributes, including position, color, diameter_px, angle, and symbol, but the symbol IDs come from built-in shapes, procedural bitmap images, SDF images, MSDF images, or SVG paths when available. Compare edge sharpness and shape detail across rows; custom symbols are useful when scientific categories need domain-specific marks instead of generic discs.

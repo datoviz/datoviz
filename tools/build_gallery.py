@@ -658,7 +658,33 @@ def render_preview(
 ) -> list[str]:
     screenshot = media_block(page_path, example, image_dir, image_url_base, image_format).splitlines()
     if example.webgpu_status != "webgpu-live" or not example.webgpu_site_route:
-        return ["## Preview", "", *screenshot, ""]
+        notice_by_status = {
+            "webgpu-planned": (
+                "Live WebGPU preview not available yet",
+                "Browser support for this example is planned. The preview above shows the native version.",
+            ),
+            "webgpu-deferred": (
+                "No live WebGPU preview",
+                "Browser support for this example is not currently implemented. The preview above shows the native version.",
+            ),
+            "native-only": (
+                "Native-only example",
+                "This example currently runs with the native Vulkan backend only.",
+            ),
+        }
+        notice = notice_by_status.get(example.webgpu_status)
+        if notice is None:
+            return ["## Preview", "", *screenshot, ""]
+
+        title, message = notice
+        support_url = site_relative_url(page_path, "reference/webgpu-subset.md")
+        status_lines = [
+            '<aside class="dvz-webgpu-unavailable" role="note">',
+            f'<strong>{title}</strong>',
+            f'<span>{message} <a href="{support_url}">Learn about browser support</a>.</span>',
+            "</aside>",
+        ]
+        return ["## Preview", "", *screenshot, "", *status_lines, ""]
 
     route = site_html_relative_url(page_path, example.webgpu_site_route)
     live_lines = [

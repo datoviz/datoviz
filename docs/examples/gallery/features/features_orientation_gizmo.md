@@ -21,6 +21,11 @@ This example adds a small orientation widget to a 3D panel.
   </video>
 </div>
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Live WebGPU preview not available yet</strong>
+<span>Browser support for this example is planned. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 The main scene is a lit cube controlled by an arcball, and the orientation gizmo is placed in the panel's bottom-right corner with a fixed screen size. Rotate the live cube and compare the cube faces with the gizmo axes; the widget helps users keep track of 3D orientation when inspecting volumes, meshes, or spatial point clouds.

@@ -21,6 +21,11 @@ This example compares single-sample rendering with 8x multisample antialiasing.
   </video>
 </div>
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>No live WebGPU preview</strong>
+<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 Both panels draw the same translated cube cluster with linked arcball controls, but only the right panel enables an MSAA descriptor with sample_count set to 8. Inspect diagonal cube edges and small silhouettes in the screenshot or live preview; MSAA is useful when scientific meshes or glyphs need smoother boundaries without changing their geometry.

@@ -15,6 +15,11 @@ This example writes a scene to a compact JSON diagnostic file.
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for JSON Export"><span>No screenshot</span></div>
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Native-only example</strong>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 The live view is intentionally small, with three point items whose position, color, and diameter_px arrays are uploaded before the scene is serialized. The useful output is also the generated json_export.json file: it should contain the figure/panel/visual structure rather than just pixels. This helps beginners see that Datoviz scenes keep inspectable state that can be exported for debugging or tooling.

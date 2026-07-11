@@ -15,6 +15,11 @@ This example renders a point scene offscreen and writes one PNG.
 
 ![Offscreen Capture](../../../assets/gallery/v0.4/runtime/runtime_offscreen_capture.webp)
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Native-only example</strong>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 Four point positions, colors, and pixel diameters are uploaded once, then an offscreen view is created at the requested 1920x1080 output size. The code checks the framebuffer dimensions before calling render-once and PNG capture, so the saved image should match the requested pixel size exactly.

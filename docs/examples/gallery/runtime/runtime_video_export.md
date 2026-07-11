@@ -15,6 +15,11 @@ This example records a deterministic offscreen point animation to video.
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Video Export"><span>No screenshot</span></div>
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Native-only example</strong>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 A row of tick points stays fixed while one larger point moves through a sinusoidal path; each frame updates the position, color, and diameter arrays before rendering. The default path writes video_export.mp4 through the app capture API, while --png renders a single smoke frame for quick validation.

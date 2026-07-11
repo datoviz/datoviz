@@ -15,6 +15,11 @@ This example shows raw cimgui widgets controlling a Datoviz visual.
 
 ![Raw cimgui GUI](../../../assets/gallery/v0.4/features/features_gui_cimgui.webp)
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Native-only example</strong>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 Four point positions and colors are uploaded once, while the GUI slider rewrites the diameter_px attribute for all points. The raw cimgui window also displays a small status table and can open the Dear ImGui demo. Move the diameter slider and compare the live marker sizes with the unchanged positions and colors; this demonstrates how advanced users can mix direct imgui calls with Datoviz data updates.

@@ -15,6 +15,11 @@ This example embeds a Datoviz view inside a host-owned GLFW surface.
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for External Surface GLFW"><span>No screenshot</span></div>
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Native-only example</strong>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 GLFW is only a surrogate for an external toolkit. The host asks Datoviz for a Vulkan instance, creates the VkSurfaceKHR itself, forwards framebuffer size, content scale, pointer, wheel, and key events, and calls dvz_view_render_once() from its own loop. The scene is deliberately small: three points with panzoom interaction make it easy to verify that hosted input and resize metadata reach Datoviz.

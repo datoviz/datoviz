@@ -15,6 +15,11 @@ This example builds a small graph composite.
 
 ![Graph Composite](../../../assets/gallery/v0.4/composites/composites_graph.webp)
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Live WebGPU preview not available yet</strong>
+<span>Browser support for this example is planned. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 Node arrays provide positions, semantic IDs, community colors, and sizes; edge arrays provide endpoints, IDs, colors, widths, and optional Bezier controls. Compare node clusters, thicker bridge edges, and curved links to see how a graph composite can turn relationship tables into a readable scientific network.

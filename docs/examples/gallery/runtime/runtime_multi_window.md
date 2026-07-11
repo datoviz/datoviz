@@ -15,6 +15,11 @@ This example drives two independent native GLFW windows from one Datoviz app.
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Multi Window"><span>No screenshot</span></div>
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Native-only example</strong>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 The overview and detail figures each get their own point-position, point-color, and point-diameter arrays, then the same app presents them in two positioned windows. Compare the two live windows rather than one screenshot: they prove that separate figures and views can share a process while keeping their own scene content.

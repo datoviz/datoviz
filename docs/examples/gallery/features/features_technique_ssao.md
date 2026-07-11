@@ -21,6 +21,11 @@ This example compares a sphere cluster with and without screen-space ambient occ
   </video>
 </div>
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>No live WebGPU preview</strong>
+<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 Both panels upload the same lit sphere position, radius, and color arrays, while the right panel applies SSAO with blur and tunable radius, strength, bias, power, visibility, sample count, and debug settings. In live mode, use the GUI and linked arcball to inspect contact shadows between nearby spheres. SSAO helps reveal local shape and separation in crowded 3D scientific scenes.

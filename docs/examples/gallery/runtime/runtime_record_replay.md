@@ -15,6 +15,11 @@ This example records the DRP2 frame stream from an offscreen view and replays it
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Record Replay"><span>No screenshot</span></div>
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Native-only example</strong>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 The recorded scene is a five-point visual with explicit position, color, and diameter arrays. The app records the backend-neutral rendering commands produced for the frame, not a video or editable scene file. It writes the DVZR recording plus two PNGs, one captured from the original offscreen view and one captured from the replay view; compare those images to verify that replaying the command stream reproduces the same rendered frame.

@@ -15,6 +15,11 @@ This example shows native keyboard, pointer, wheel, and resize events.
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Input Events"><span>No screenshot</span></div>
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Native-only example</strong>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 The native app registers input callbacks and prints event details for pointer movement, button presses, scrolling, keyboard input, and window resize. The synthetic smoke path exercises the same event-handling code without requiring manual interaction. Run it live and compare terminal output with your mouse and keyboard actions; event logging is useful when building custom picking, navigation, or analysis controls.

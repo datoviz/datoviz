@@ -21,6 +21,11 @@ This example renders a prepared Allen mouse brain volume with a visible slice.
   </video>
 </div>
 
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Live WebGPU preview not available yet</strong>
+<span>Browser support for this example is planned. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+</aside>
+
 ## What To Look For
 
 The loader reads the prepared compressed NumPy RGBA volume, downsamples it, derives scalar voxels for occlusion, and binds the same 3D sampled field to a composite volume and a slice visual. Compare the translucent context volume with the sharper slice plane while using the arcball camera.
