@@ -70,6 +70,6 @@ Both panels upload the same eight large point sprites at the corners of a small 
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../features_alpha_blending">Previous: Alpha Blending</a> · <a href="../features_bounds_overlay">Next: Bounds Overlay</a>
+<a href="../features_alpha_blending">Previous: Alpha Blending</a> · <a href="../features_picking">Next: Picking</a>
 </div>
 </nav>

@@ -592,7 +592,7 @@ This example shows probing a scalar image at a marked data position.
 
 </div>
 
-## 3D Rendering
+## Materials & Lighting
 
 <div class="grid cards" markdown="1">
 
@@ -634,6 +634,24 @@ This example compares cube meshes rendered with different material models and pa
 
 <div class="card" markdown="1">
 
+### [Depth Cue](gallery/features/features_technique_depth_cue.md)
+
+[![Depth Cue](../assets/gallery/v0.4/features/features_technique_depth_cue.webp)](gallery/features/features_technique_depth_cue.md)
+
+`features`
+
+This example compares a plain 3D sphere lattice with depth-dependent fading.
+
+</div>
+
+</div>
+
+## Rendering Techniques
+
+<div class="grid cards" markdown="1">
+
+<div class="card" markdown="1">
+
 ### [Volume Occlusion](gallery/features/features_volume_occlusion.md)
 
 [![Volume Occlusion](../assets/gallery/v0.4/features/features_volume_occlusion.webp)](gallery/features/features_volume_occlusion.md)
@@ -665,18 +683,6 @@ This example compares a dense 3D point cloud with and without Eye-Dome Lighting.
 `features`
 
 This example compares a sphere cluster with and without screen-space ambient occlusion.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Depth Cue](gallery/features/features_technique_depth_cue.md)
-
-[![Depth Cue](../assets/gallery/v0.4/features/features_technique_depth_cue.webp)](gallery/features/features_technique_depth_cue.md)
-
-`features`
-
-This example compares a plain 3D sphere lattice with depth-dependent fading.
 
 </div>
 
@@ -725,18 +731,6 @@ This example shows translucent triangles composited in draw order.
 `features`
 
 This example compares overlapping 3D points with depth testing enabled and disabled.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Bounds Overlay](gallery/features/features_bounds_overlay.md)
-
-[![Bounds Overlay](../assets/gallery/v0.4/features/features_bounds_overlay.webp)](gallery/features/features_bounds_overlay.md)
-
-`diagnostic` `features`<br><span>`diagnostic`, `bounds`, `overlay`, `point`, `sphere`</span>
-
-This example shows diagnostic bounds overlays for 2D and 3D visuals.
 
 </div>
 
@@ -936,6 +930,18 @@ This example shows native keyboard, pointer, wheel, and resize events.
 `experimental` `features`
 
 This example writes a scene to a compact JSON diagnostic file.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Bounds Overlay](gallery/features/features_bounds_overlay.md)
+
+[![Bounds Overlay](../assets/gallery/v0.4/features/features_bounds_overlay.webp)](gallery/features/features_bounds_overlay.md)
+
+`diagnostic` `features`<br><span>`diagnostic`, `bounds`, `overlay`, `point`, `sphere`</span>
+
+This example shows diagnostic bounds overlays for 2D and 3D visuals.
 
 </div>
 

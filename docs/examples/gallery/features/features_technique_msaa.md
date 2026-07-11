@@ -59,6 +59,6 @@ Both panels draw the same translated cube cluster with linked arcball controls, 
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../features_technique_depth_cue">Previous: Depth Cue</a> · <a href="../features_technique_transparency">Next: Transparency Order</a>
+<a href="../features_technique_ssao">Previous: Screen-Space Ambient Occlusion</a> · <a href="../features_technique_transparency">Next: Transparency Order</a>
 </div>
 </nav>

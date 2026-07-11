@@ -64,6 +64,6 @@ The left panel contains a point cloud with position, color, and diameter arrays,
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../features_technique_depth_test">Previous: Depth Test Toggle</a> · <a href="../features_picking">Next: Picking</a>
+<a href="../features_json_export">Previous: JSON Export</a>
 </div>
 </nav>

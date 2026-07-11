@@ -59,6 +59,6 @@ Both panels upload the same 3x3x3 sphere position, color, and radius arrays, but
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../features_technique_ssao">Previous: Screen-Space Ambient Occlusion</a> · <a href="../features_technique_msaa">Next: Multisample Antialiasing</a>
+<a href="../features_material_mesh">Previous: Mesh Materials</a> · <a href="../features_volume_occlusion">Next: Volume Occlusion</a>
 </div>
 </nav>

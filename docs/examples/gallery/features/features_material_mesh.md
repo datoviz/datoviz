@@ -70,6 +70,6 @@ All three panels use the same colored cube geometry, while the material descript
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../features_mesh_texture">Previous: Textured Mesh</a> · <a href="../features_volume_occlusion">Next: Volume Occlusion</a>
+<a href="../features_mesh_texture">Previous: Textured Mesh</a> · <a href="../features_technique_depth_cue">Next: Depth Cue</a>
 </div>
 </nav>

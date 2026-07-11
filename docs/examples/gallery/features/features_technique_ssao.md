@@ -59,6 +59,6 @@ Both panels upload the same lit sphere position, radius, and color arrays, while
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../features_technique_edl">Previous: Eye-Dome Lighting</a> · <a href="../features_technique_depth_cue">Next: Depth Cue</a>
+<a href="../features_technique_edl">Previous: Eye-Dome Lighting</a> · <a href="../features_technique_msaa">Next: Multisample Antialiasing</a>
 </div>
 </nav>

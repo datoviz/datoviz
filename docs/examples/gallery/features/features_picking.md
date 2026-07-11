@@ -70,6 +70,6 @@ The marker grid uploads position, color, diameter_px, angle, and shape arrays, i
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../features_bounds_overlay">Previous: Bounds Overlay</a> · <a href="../features_selection_pixel">Next: Pixel Selection</a>
+<a href="../features_technique_depth_test">Previous: Depth Test Toggle</a> · <a href="../features_selection_pixel">Next: Pixel Selection</a>
 </div>
 </nav>

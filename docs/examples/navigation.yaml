@@ -113,20 +113,21 @@ sections:
           - features_isolines
           - features_datetime_axis
           - features_image_probe
-      - title: 3D Rendering
+      - title: Materials & Lighting
         examples:
           - features_lighting
           - features_mesh_texture
           - features_material_mesh
+          - features_technique_depth_cue
+      - title: Rendering Techniques
+        examples:
           - features_volume_occlusion
           - features_technique_edl
           - features_technique_ssao
-          - features_technique_depth_cue
           - features_technique_msaa
           - features_technique_transparency
           - features_alpha_blending
           - features_technique_depth_test
-          - features_bounds_overlay
       - title: Interaction & Selection
         examples:
           - features_picking
@@ -149,6 +150,7 @@ sections:
         examples:
           - features_input_events
           - features_json_export
+          - features_bounds_overlay
     index_groups:
       - title: Layout
         examples:

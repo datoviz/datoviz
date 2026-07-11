@@ -53,6 +53,6 @@ Both panels share the same 32x32x32 R8 scalar field, colormap, alpha stops, boun
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../features_material_mesh">Previous: Mesh Materials</a> · <a href="../features_technique_edl">Next: Eye-Dome Lighting</a>
+<a href="../features_technique_depth_cue">Previous: Depth Cue</a> · <a href="../features_technique_edl">Next: Eye-Dome Lighting</a>
 </div>
 </nav>
