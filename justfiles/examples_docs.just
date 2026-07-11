@@ -238,12 +238,15 @@ gallery:
     @python3 tools/build_gallery_webp.py
     @python3 tools/build_gallery_animations.py
     @python3 tools/check_gallery_media_pipeline.py
-    @echo "Generating the gallery Markdown files..."
-    @python tools/build_gallery.py
-    @echo "Generating the public examples manifest..."
+    @just docs-generate
+
+docs-generate:
+    @python3 tools/build_gallery.py
     @python3 tools/build_examples_manifest.py
-    @echo "Generating the public capabilities manifest..."
     @python3 tools/build_capabilities.py
+
+docs-check-generated:
+    @python3 tools/check_generated_docs.py
 
 check-example-manifests:
     @python3 tools/check_example_ids.py

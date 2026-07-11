@@ -36,6 +36,9 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Check generated documentation
+      run: just docs-check-generated
+
     # Build the library (except if local with "act")
     - name: Build
       if: env.USING_ACT == 0

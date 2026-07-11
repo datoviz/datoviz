@@ -696,12 +696,8 @@ def site_html_relative_url(page_path: str | Path, target: str) -> str:
     return posixpath.relpath(normalized, page_dir)
 
 
-def docs_site_path(docs_dir: Path, page_path: str | Path) -> str:
-    full_path = docs_dir / page_path
-    try:
-        return full_path.relative_to(ROOT / "docs").as_posix()
-    except ValueError:
-        return Path(page_path).as_posix()
+def docs_site_path(_docs_dir: Path, page_path: str | Path) -> str:
+    return (Path("examples") / page_path).as_posix()
 
 
 def image_url(

@@ -217,6 +217,7 @@ nav:
       - Release wheels: 'contributors/release-wheels.md'
       - Release validation: 'contributors/release-validation.md'
       - Agent release checklist: 'contributors/agent-release-checklist.md'
+      - Generated documentation: 'contributors/generated-documentation.md'
       - Validation gallery: 'examples/validation-gallery.md'
 not_in_nav: |
   _old/*
