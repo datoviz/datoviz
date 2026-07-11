@@ -6,6 +6,8 @@ Browse the generated Datoviz v0.4 example gallery.
 
 ## Showcases
 
+[Browse all 12 showcases](showcases.md).
+
 Selected composed examples are shown below.
 
 <div class="grid cards" markdown="1">
@@ -205,9 +207,9 @@ This example maps real planetary textures onto an indexed sphere mesh.
 
 </div>
 
-[Browse all 12 showcases](showcases.md).
-
 ## Visuals & Composites
+
+[Browse all 18 visuals and composites](visuals.md).
 
 Selected visual and composite examples are shown below.
 
@@ -457,9 +459,9 @@ This example builds a small graph composite.
 
 </div>
 
-[Browse all 18 visuals and composites](visuals.md).
-
 ## Features
+
+[Browse all 69 feature examples](features.md).
 
 Selected isolated feature examples are shown below.
 
@@ -840,9 +842,9 @@ This example shows raw cimgui widgets controlling a Datoviz visual.
 
 </div>
 
-[Browse all 69 feature examples](features.md) — controllers, adornments, interaction, animation, rendering, and more.
-
 ## Runtime & Capture
+
+[Browse all 5 runtime examples](runtime.md).
 
 Selected windowing, capture, recording, and export examples are shown below.
 
@@ -918,4 +920,8 @@ This example records the DRP2 frame stream from an offscreen view and replays it
 
 </div>
 
-[Browse all 5 runtime examples](runtime.md).
+## Advanced
+
+[Browse all 4 advanced examples](advanced.md).
+
+Host integration and low-level rendering examples for experienced users.

@@ -1202,6 +1202,7 @@ def render_index(
     composite_examples = by_lane["composites"]
     feature_examples = by_lane["features"]
     runtime_examples = by_lane["runtime"]
+    advanced_examples = by_lane["advanced"]
     by_id = {e.id: e for e in examples}
     index_path = docs_dir / "index.md"
     page_path = docs_site_path(docs_dir, "index.md")
@@ -1213,6 +1214,8 @@ def render_index(
     lines.extend(["## Showcases", ""])
     lines.extend(
         [
+            f"[Browse all {len(showcase_examples)} showcases](showcases.md).",
+            "",
             "Selected composed examples are shown below.",
             "",
         ]
@@ -1232,12 +1235,19 @@ def render_index(
             )
         )
     lines.append("</div>")
-    lines.extend(["", f"[Browse all {len(showcase_examples)} showcases](showcases.md).", ""])
+    lines.append("")
 
     # --- Visuals & Composites ---
     n_vc = len(visual_examples) + len(composite_examples)
     lines.extend(["## Visuals & Composites", ""])
-    lines.extend(["Selected visual and composite examples are shown below.", ""])
+    lines.extend(
+        [
+            f"[Browse all {n_vc} visuals and composites](visuals.md).",
+            "",
+            "Selected visual and composite examples are shown below.",
+            "",
+        ]
+    )
     for group_label, group_ids in INDEX_VISUAL_GROUPS:
         group_examples = [by_id[id_] for id_ in group_ids if id_ in by_id]
         if not group_examples:
@@ -1260,12 +1270,17 @@ def render_index(
         lines.append("</div>")
         lines.append("")
 
-    lines.extend([f"[Browse all {n_vc} visuals and composites](visuals.md).", ""])
-
     # --- Features ---
     all_flagship_ids = {id_ for _, ids in INDEX_FEATURE_GROUPS for id_ in ids}
     lines.extend(["## Features", ""])
-    lines.extend(["Selected isolated feature examples are shown below.", ""])
+    lines.extend(
+        [
+            f"[Browse all {len(feature_examples)} feature examples](features.md).",
+            "",
+            "Selected isolated feature examples are shown below.",
+            "",
+        ]
+    )
     for group_label, group_ids in INDEX_FEATURE_GROUPS:
         group_examples = [by_id[id_] for id_ in group_ids if id_ in by_id]
         if not group_examples:
@@ -1287,18 +1302,12 @@ def render_index(
             )
         lines.append("</div>")
         lines.append("")
-    lines.extend(
-        [
-            f"[Browse all {len(feature_examples)} feature examples](features.md) — "
-            "controllers, adornments, interaction, animation, rendering, and more.",
-            "",
-        ]
-    )
-
     # --- Runtime & Capture ---
     lines.extend(["## Runtime & Capture", ""])
     lines.extend(
         [
+            f"[Browse all {len(runtime_examples)} runtime examples](runtime.md).",
+            "",
             "Selected windowing, capture, recording, and export examples are shown below.",
             "",
         ]
@@ -1324,7 +1333,18 @@ def render_index(
             )
         lines.append("</div>")
         lines.append("")
-    lines.extend([f"[Browse all {len(runtime_examples)} runtime examples](runtime.md).", ""])
+
+    # --- Advanced ---
+    lines.extend(
+        [
+            "## Advanced",
+            "",
+            f"[Browse all {len(advanced_examples)} advanced examples](advanced.md).",
+            "",
+            "Host integration and low-level rendering examples for experienced users.",
+            "",
+        ]
+    )
 
     write_text(index_path, "\n".join(lines))
 
