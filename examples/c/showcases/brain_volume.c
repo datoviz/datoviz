@@ -956,12 +956,20 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
+    camera_desc.projection.type = DVZ_CAMERA_PERSPECTIVE;
     camera_desc.view.eye[0] = -1.55f;
     camera_desc.view.eye[1] = 1.58f;
     camera_desc.view.eye[2] = -2.45f;
+    camera_desc.view.target[0] = 0.0f;
+    camera_desc.view.target[1] = 0.0f;
+    camera_desc.view.target[2] = 0.0f;
+    camera_desc.view.up[0] = 0.0f;
+    camera_desc.view.up[1] = 1.0f;
+    camera_desc.view.up[2] = 0.0f;
     camera_desc.projection.fov_y = 0.72f;
     camera_desc.projection.near_clip = 0.01f;
     camera_desc.projection.far_clip = 100.0f;
+    camera_desc.projection.ortho_height = 0.0f;
     DvzResult camera_rc = dvz_panel_set_camera_desc(panel, &camera_desc);
     EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc() failed");
     DvzCamera* camera = dvz_panel_camera(panel);
@@ -1051,12 +1059,15 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(
         dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) == 0,
         "dvz_scenario_bind_controller() failed");
-    vec3 arcball_angles = {-0.42f, +0.26f, -0.16f};
-    vec2 arcball_pan = {0.0f, 0.0f};
-    dvz_arcball_set(arcball, arcball_angles);
+    vec3 arcball_angles = {-1.178841f, +0.095422f, -0.171283f};
+    float arcball_zoom = 2.759362f;
+    vec2 arcball_pan = {-0.428839f, +0.095638f};
+    dvz_arcball_initial(arcball, arcball_angles);
+    (void)dvz_arcball_zoom(arcball, arcball_zoom);
+    (void)dvz_arcball_pan(arcball, arcball_pan);
     example_tuner_camera_ref(&state->tuner, "Camera", panel, camera, &camera_desc);
     example_tuner_arcball(
-        &state->tuner, "Arcball", arcball, arcball_angles, 1.0f, arcball_pan);
+        &state->tuner, "Arcball", arcball, arcball_angles, arcball_zoom, arcball_pan);
     example_tuner_volume(&state->tuner, "3D volume", volume_3d, NULL);
     example_tuner_volume(&state->tuner, "Slice", volume_slice, NULL);
 
