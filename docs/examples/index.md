@@ -864,7 +864,7 @@ Selected windowing, capture, recording, and export examples are shown below.
 
 [Browse all 5 runtime examples](runtime.md).
 
-### Windows & Hosting
+### Window Lifecycle
 
 <div class="grid cards" markdown="1">
 
@@ -945,6 +945,18 @@ Host integration and low-level rendering examples for experienced users.
 ### Host Integration
 
 <div class="grid cards" markdown="1">
+
+<div class="card" markdown="1">
+
+**[External Surface GLFW](gallery/advanced/advanced_external_surface_glfw.md)**
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for External Surface GLFW"><span>No screenshot</span></div>
+
+`experimental` `advanced`
+
+This example embeds a Datoviz view inside a host-owned GLFW surface.
+
+</div>
 
 <div class="card" markdown="1">
 

@@ -4,7 +4,7 @@
 
 Browse examples for opening windows, rendering offscreen, recording, replaying, and exporting media.
 
-## Windows & Hosting { #windows-hosting }
+## Window Lifecycle { #window-lifecycle }
 
 <div class="grid cards" markdown="1">
 
