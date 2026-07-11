@@ -5,7 +5,7 @@
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../features_json_export">← Previous: JSON Export</a></span>
-<span class="dvz-example-nav__next"></span>
+<span class="dvz-example-nav__next"><a href="../../../runtime">Next: Runtime & Capture →</a></span>
 </div>
 </nav>
 
@@ -59,6 +59,6 @@ The left panel contains a point cloud with position, color, and diameter arrays,
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../features_json_export">← Previous: JSON Export</a></span>
-<span class="dvz-example-nav__next"></span>
+<span class="dvz-example-nav__next"><a href="../../../runtime">Next: Runtime & Capture →</a></span>
 </div>
 </nav>

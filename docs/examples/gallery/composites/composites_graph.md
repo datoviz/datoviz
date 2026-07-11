@@ -5,7 +5,7 @@
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../composites_polygon">← Previous: Polygon Composite</a></span>
-<span class="dvz-example-nav__next"></span>
+<span class="dvz-example-nav__next"><a href="../../../features">Next: Features →</a></span>
 </div>
 </nav>
 
@@ -58,6 +58,6 @@ Node arrays provide positions, semantic IDs, community colors, and sizes; edge a
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../composites_polygon">← Previous: Polygon Composite</a></span>
-<span class="dvz-example-nav__next"></span>
+<span class="dvz-example-nav__next"><a href="../../../features">Next: Features →</a></span>
 </div>
 </nav>

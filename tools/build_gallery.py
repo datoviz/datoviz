@@ -830,6 +830,19 @@ def example_neighbors(examples: list[Example]) -> dict[str, tuple[Example | None
     return neighbors
 
 
+def next_example_section(example: Example) -> tuple[str, str] | None:
+    """Return the next Examples overview after the last lane in one navigation section."""
+    for index, section in enumerate(EXAMPLE_NAVIGATION.sections):
+        if example.lane not in section.lanes or section.lanes[-1] != example.lane:
+            continue
+        if index + 1 >= len(EXAMPLE_NAVIGATION.sections):
+            return None
+        next_section = EXAMPLE_NAVIGATION.sections[index + 1]
+        path = f"examples/{Path(next_section.overview).with_suffix('').as_posix()}/"
+        return next_section.title, path
+    return None
+
+
 def render_example_nav(
     example: Example,
     page_path: str | Path,
@@ -839,14 +852,20 @@ def render_example_nav(
 ) -> list[str]:
     previous_href = site_html_relative_url(page_path, f"examples/{previous.page_path[:-3]}/") if previous else ""
     next_href = site_html_relative_url(page_path, f"examples/{next_.page_path[:-3]}/") if next_ else ""
+    next_title = next_.title if next_ else ""
+    if next_ is None:
+        section_target = next_example_section(example)
+        if section_target is not None:
+            next_title, section_path = section_target
+            next_href = site_html_relative_url(page_path, section_path)
     previous_link = (
         f'<a href="{previous_href}">← Previous: {previous.title}</a>'
         if previous
         else ""
     )
     next_link = (
-        f'<a href="{next_href}">Next: {next_.title} →</a>'
-        if next_
+        f'<a href="{next_href}">Next: {next_title} →</a>'
+        if next_href
         else ""
     )
     return [
