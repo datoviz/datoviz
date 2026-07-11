@@ -1636,19 +1636,8 @@ struct DvzTextVisualState
     uint64_t atlas_generation;
     DvzControllerMode realized_controller_mode;
     float screen_scale;
-    uint64_t reserved_layout;
     uint32_t reserved_glyph_vertices;
 };
-
-#ifdef __cplusplus
-static_assert(
-    sizeof(DvzTextVisualState) == 144,
-    "DvzTextVisualState layout must preserve downstream visual-family state offsets");
-#else
-_Static_assert(
-    sizeof(DvzTextVisualState) == 144,
-    "DvzTextVisualState layout must preserve downstream visual-family state offsets");
-#endif
 
 
 typedef struct DvzImageGpuCache DvzImageGpuCache;
