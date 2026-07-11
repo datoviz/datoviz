@@ -62,9 +62,9 @@
 #define DEFAULT_DATA_PATH "data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz"
 #define DEFAULT_AXIS          DVZ_VOLUME_AXIS_Y
 #define DEFAULT_SLICE_POS     0.5f
-#define DEFAULT_SLICE_OPACITY 1.0f
-#define DEFAULT_VOLUME_OPACITY 0.85f
-#define DEFAULT_VOLUME_STEPS  192.0f
+#define DEFAULT_SLICE_OPACITY 0.5f
+#define DEFAULT_VOLUME_OPACITY 0.8f
+#define DEFAULT_VOLUME_STEPS  80.0f
 #define DEFAULT_DOWNSAMPLE    2u
 #define DEFAULT_OCCLUSION_THRESHOLD 0.000001f
 #define DEFAULT_OCCLUSION_FADE 0.000001f
