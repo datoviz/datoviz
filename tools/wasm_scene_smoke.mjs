@@ -2938,6 +2938,38 @@ try {
     Module._dvz_wasm_api_scene_destroy(isolinesScene);
   }
 
+  const pickingIndex = scenarioIndex(Module, "features_picking");
+  const pickingScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
+  requireOk(pickingScene !== 0, "marker picking scenario scene creation failed");
+  try {
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(pickingScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+      0,
+      "marker picking scenario canvas format",
+    );
+    expectStatus(
+      Module._dvz_wasm_api_scenario_create(pickingScene, pickingIndex),
+      0,
+      "marker picking scenario create",
+    );
+    expectNoDiagnostics(Module, pickingScene, "marker picking scenario create diagnostics");
+    const pickingFigure = Module._dvz_wasm_api_scenario_figure(pickingScene);
+    requireOk(pickingFigure !== 0, "marker picking scenario has no figure");
+    const initialPicking =
+      emitStream(Module, pickingScene, pickingFigure, "marker picking initial");
+    expectWriteCommands(initialPicking.stream, "marker picking initial");
+    requireOk(
+      initialPicking.stream.commands.some((command) => command.cmd === "CreateRenderPipeline"),
+      "marker picking initial did not create a render pipeline",
+    );
+    requireOk(
+      initialPicking.stream.commands.some((command) => command.cmd === "Draw"),
+      "marker picking initial did not draw",
+    );
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(pickingScene);
+  }
+
   const pixelSelectionScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
   requireOk(pixelSelectionScene !== 0, "pixel selection scenario scene creation failed");
   try {

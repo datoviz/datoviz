@@ -141,7 +141,7 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
     case DVZ_SCENE_BUILTIN_SHADER_MARKER_DISTANCE:
         return fragment ? "marker_distance_frag" : "marker_bitmap_vert";
     case DVZ_SCENE_BUILTIN_SHADER_MARKER_ITEM_STATE:
-        return fragment ? "marker_item_state_frag" : "marker_item_state_vert";
+        return fragment ? "marker_frag" : "marker_item_state_vert";
     case DVZ_SCENE_BUILTIN_SHADER_SEGMENT:
         return fragment ? "segment_frag" : "segment_vert";
     case DVZ_SCENE_BUILTIN_SHADER_SEGMENT_PICK:

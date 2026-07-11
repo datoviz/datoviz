@@ -59,6 +59,7 @@ COMMON_WGSL_VERTEX_SHADERS = [
     "point_style.vert.wgsl",
     "point_cue_style.vert.wgsl",
     "marker.vert.wgsl",
+    "marker_item_state.vert.wgsl",
     "segment.vert.wgsl",
     "path.vert.wgsl",
     "primitive.vert.wgsl",
