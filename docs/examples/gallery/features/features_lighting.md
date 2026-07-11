@@ -10,7 +10,7 @@
 <span>Lighting</span>
 </nav>
 
-Lighting compares the same sphere cluster under three material and light configurations.
+This example compares  the same sphere cluster under three material and light configurations.
 
 ## Preview
 

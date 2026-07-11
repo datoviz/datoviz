@@ -10,7 +10,7 @@
 <span>Linked Panels</span>
 </nav>
 
-Panel_linked links the X panzoom extent of two stacked signal panels.
+This example links the X panzoom extent of two stacked signal panels.
 
 ## Preview
 

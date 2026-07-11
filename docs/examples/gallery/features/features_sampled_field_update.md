@@ -10,7 +10,7 @@
 <span>Sampled Field Update</span>
 </nav>
 
-Sampled_field_update reuses one sampled scalar field in two image visuals while updating patches.
+This example reuses one sampled scalar field in two image visuals while updating patches.
 
 ## Preview
 

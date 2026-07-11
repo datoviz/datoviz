@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* splat - This experimental example renders Gaussian splats as translucent ellipses.
+/* splat - This example renders Gaussian splats as translucent ellipses.
  *
  * What to look for: positions place each splat, colors set the tint, sigma gives the two
  * screen-space ellipse radii, and angles rotate the ellipses. Compare overlapping areas and the
@@ -40,8 +40,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  EXAMPLE_WINDOW_WIDTH
-#define HEIGHT EXAMPLE_WINDOW_HEIGHT
+#define WIDTH       EXAMPLE_WINDOW_WIDTH
+#define HEIGHT      EXAMPLE_WINDOW_HEIGHT
 #define SPLAT_COUNT 84u
 
 static const float TAU = 6.28318530718f;

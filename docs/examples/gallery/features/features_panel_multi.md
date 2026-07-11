@@ -10,7 +10,7 @@
 <span>Multiple Panels</span>
 </nav>
 
-Panel_multi shows two panels with independent data, domains, and panzoom state.
+This example shows two panels with independent data, domains, and panzoom state.
 
 ## Preview
 

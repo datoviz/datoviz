@@ -56,7 +56,7 @@ This example compares marker symbols, sizes, strokes, fills, and rotations.
 
 `experimental` `visuals`<br><span>`splat`, `panzoom`, `capture`</span>
 
-This experimental example renders Gaussian splats as translucent ellipses.
+This example renders Gaussian splats as translucent ellipses.
 
 </div>
 

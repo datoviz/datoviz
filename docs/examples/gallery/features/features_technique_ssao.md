@@ -10,7 +10,7 @@
 <span>Screen-Space Ambient Occlusion</span>
 </nav>
 
-Ssao compares a sphere cluster with and without screen-space ambient occlusion.
+This example compares a sphere cluster with and without screen-space ambient occlusion.
 
 ## Preview
 

@@ -10,7 +10,7 @@
 <span>Sphere Selection</span>
 </nav>
 
-Selection_sphere queries and selects individual raycast spheres in a 3D cluster.
+This example queries and selects individual raycast spheres in a 3D cluster.
 
 ## Preview
 

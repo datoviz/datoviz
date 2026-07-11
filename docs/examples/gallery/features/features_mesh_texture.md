@@ -10,7 +10,7 @@
 <span>Textured Mesh</span>
 </nav>
 
-Mesh_texture maps an RGBA8 sampled field onto a UV sphere mesh.
+This example maps an RGBA8 sampled field onto a UV sphere mesh.
 
 ## Preview
 

@@ -10,7 +10,7 @@
 <span>Panel Grid</span>
 </nav>
 
-Panel_grid arranges four independent panels in a 2x2 figure grid.
+This example arranges four independent panels in a 2x2 figure grid.
 
 ## Preview
 

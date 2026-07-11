@@ -10,7 +10,7 @@
 <span>Panzoom</span>
 </nav>
 
-Panzoom binds a 2D panzoom controller to a point visual in data coordinates.
+This example binds a 2D panzoom controller to a point visual in data coordinates.
 
 ## Preview
 

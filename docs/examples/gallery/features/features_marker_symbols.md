@@ -10,7 +10,7 @@
 <span>Marker Symbols</span>
 </nav>
 
-Marker_symbols compares several ways to define marker glyphs in one symbol set.
+This example compares several ways to define marker glyphs in one symbol set.
 
 ## Preview
 

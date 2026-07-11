@@ -10,7 +10,7 @@
 <span>Scale Bar</span>
 </nav>
 
-Scalebar attaches a metric length scale bar to a 2D panel.
+This example attaches a metric length scale bar to a 2D panel.
 
 ## Preview
 

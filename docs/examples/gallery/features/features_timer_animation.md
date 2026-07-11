@@ -10,7 +10,7 @@
 <span>Timer Animation</span>
 </nav>
 
-Timer_animation updates point attributes every frame from scenario time.
+This example updates point attributes every frame from scenario time.
 
 ## Preview
 

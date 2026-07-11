@@ -56,7 +56,7 @@ Panel_single creates one explicit panel rectangle inside a figure.
 
 `features`
 
-Panel_grid arranges four independent panels in a 2x2 figure grid.
+This example arranges four independent panels in a 2x2 figure grid.
 
 </div>
 
@@ -68,7 +68,7 @@ Panel_grid arranges four independent panels in a 2x2 figure grid.
 
 `features`
 
-Panel_multi shows two panels with independent data, domains, and panzoom state.
+This example shows two panels with independent data, domains, and panzoom state.
 
 </div>
 
@@ -80,7 +80,7 @@ Panel_multi shows two panels with independent data, domains, and panzoom state.
 
 `features`
 
-Panel_linked links the X panzoom extent of two stacked signal panels.
+This example links the X panzoom extent of two stacked signal panels.
 
 </div>
 
@@ -196,7 +196,7 @@ This example shows explicit perspective-camera setup for a 3D scene.
 
 `features`
 
-Panzoom binds a 2D panzoom controller to a point visual in data coordinates.
+This example binds a 2D panzoom controller to a point visual in data coordinates.
 
 </div>
 
@@ -362,7 +362,7 @@ This example shows bars and an uncertainty band in one 2D panel.
 
 `features`
 
-Scalebar attaches a metric length scale bar to a 2D panel.
+This example attaches a metric length scale bar to a 2D panel.
 
 </div>
 
@@ -500,7 +500,7 @@ This example shows built-in 3D geometry rendered as lit meshes.
 
 `features`<br><span>`marker`, `symbol-set`, `bitmap-symbol`, `distance-field-symbol`, `svg-path-symbol`</span>
 
-Marker_symbols compares several ways to define marker glyphs in one symbol set.
+This example compares several ways to define marker glyphs in one symbol set.
 
 </div>
 
@@ -554,7 +554,7 @@ Obj_loading loads a Wavefront OBJ fixture and displays it as a mesh.
 
 `features`
 
-Sampled_field_update reuses one sampled scalar field in two image visuals while updating patches.
+This example reuses one sampled scalar field in two image visuals while updating patches.
 
 </div>
 
@@ -608,7 +608,7 @@ This example shows probing a scalar image at a marked data position.
 
 `features`
 
-Lighting compares the same sphere cluster under three material and light configurations.
+This example compares  the same sphere cluster under three material and light configurations.
 
 </div>
 
@@ -620,7 +620,7 @@ Lighting compares the same sphere cluster under three material and light configu
 
 `features`
 
-Mesh_texture maps an RGBA8 sampled field onto a UV sphere mesh.
+This example maps an RGBA8 sampled field onto a UV sphere mesh.
 
 </div>
 
@@ -668,7 +668,7 @@ Edl compares a dense 3D point cloud with and without Eye-Dome Lighting.
 
 `features`
 
-Ssao compares a sphere cluster with and without screen-space ambient occlusion.
+This example compares a sphere cluster with and without screen-space ambient occlusion.
 
 </div>
 
@@ -680,7 +680,7 @@ Ssao compares a sphere cluster with and without screen-space ambient occlusion.
 
 `features`
 
-Depth_cue compares a plain 3D sphere lattice with depth-dependent fading.
+This example compares a plain 3D sphere lattice with depth-dependent fading.
 
 </div>
 
@@ -782,7 +782,7 @@ Selection_pixel queries and selects individual cells in a pixel grid.
 
 `features`
 
-Selection_sphere queries and selects individual raycast spheres in a 3D cluster.
+This example queries and selects individual raycast spheres in a 3D cluster.
 
 </div>
 
@@ -831,7 +831,7 @@ This example shows scene animation tracks driving a cube and camera.
 
 `features`
 
-Timer_animation updates point attributes every frame from scenario time.
+This example updates point attributes every frame from scenario time.
 
 </div>
 

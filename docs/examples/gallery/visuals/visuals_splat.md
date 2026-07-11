@@ -10,7 +10,7 @@
 <span>Splat</span>
 </nav>
 
-This experimental example renders Gaussian splats as translucent ellipses.
+This example renders Gaussian splats as translucent ellipses.
 
 ## Preview
 

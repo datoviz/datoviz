@@ -10,7 +10,7 @@
 <span>Depth Cue</span>
 </nav>
 
-Depth_cue compares a plain 3D sphere lattice with depth-dependent fading.
+This example compares a plain 3D sphere lattice with depth-dependent fading.
 
 ## Preview
 
