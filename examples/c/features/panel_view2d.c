@@ -4,12 +4,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* This example compares a regular 2D panel with one that keeps equal data aspect.
+/* This example compares a regular 2D panel with one that keeps equal data aspect while their
+ * relative widths oscillate.
  *
  * What to look for: both panels draw the same unit circle path and styled X/Y axes. The left panel
  * uses a direct [-1, 1] domain, while the right panel configures an equal-aspect view and verifies
  * matching data units per pixel in X and Y. Compare the circle shape and grid spacing; equal
- * aspect is essential when distance, angle, or shape should not be visually distorted.
+ * aspect is essential when distance, angle, or shape should not be visually distorted. During
+ * live playback, the left circle stretches with its panel while the right circle remains circular
+ * and its visible data extent changes.
  *
  * Scenario: features_panel_view2d
  * Style: features, graphite_cyan, 1280x720 window target
@@ -29,6 +32,7 @@
 #include <stdint.h>
 #include <math.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
@@ -44,6 +48,20 @@
 #define WIDTH  EXAMPLE_WINDOW_WIDTH
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define CIRCLE_COUNT 97u
+
+static const float TAU = 6.28318530718f;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct PanelView2DState
+{
+    DvzPanel* free_panel;
+    DvzPanel* fit_panel;
+} PanelView2DState;
 
 
 
@@ -134,6 +152,33 @@ static bool _add_axes(DvzPanel* panel)
 
 
 
+/**
+ * Update the two panel rectangles for one animation phase.
+ *
+ * @param state scenario state
+ * @param phase normalized animation phase in [0, 1)
+ * @return true when both panel rectangles were updated
+ */
+static bool _set_panel_split(PanelView2DState* state, float phase)
+{
+    if (state == NULL || state->free_panel == NULL || state->fit_panel == NULL)
+        return false;
+
+    const float margin = 0.04f;
+    const float gutter = 0.025f;
+    const float available = 1.0f - 2.0f * margin - gutter;
+    const float split = 0.5f + 0.20f * sinf(TAU * phase);
+    const float left_width = available * split;
+    const float right_width = available - left_width;
+    const DvzPanelDesc free_desc = {margin, 0.08f, left_width, 0.84f};
+    const DvzPanelDesc fit_desc = {
+        margin + left_width + gutter, 0.08f, right_width, 0.84f};
+    return dvz_panel_set_desc(state->free_panel, &free_desc) == DVZ_OK &&
+           dvz_panel_set_desc(state->fit_panel, &fit_desc) == DVZ_OK;
+}
+
+
+
 /*************************************************************************************************/
 /*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
@@ -147,90 +192,133 @@ static bool _add_axes(DvzPanel* panel)
  */
 static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    if (ctx == NULL)
+    if (ctx == NULL || out_user == NULL)
         return false;
-    if (out_user != NULL)
-        *out_user = NULL;
+
+    PanelView2DState* state = (PanelView2DState*)dvz_calloc(1, sizeof(PanelView2DState));
+    if (state == NULL)
+        return false;
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
-        return false;
+        goto error;
 
-    DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 2);
-    if (grid == NULL)
-        return false;
-    if (!example_configure_compact_grid(grid, 34.0f, 0.0f))
-        return false;
-
-    DvzPanel* free_panel = dvz_grid_panel(grid, 0, 0);
-    DvzPanel* fit_panel = dvz_grid_panel(grid, 0, 1);
+    DvzPanelDesc free_desc = {0.04f, 0.08f, 0.4475f, 0.84f};
+    DvzPanelDesc fit_desc = {0.5125f, 0.08f, 0.4475f, 0.84f};
+    DvzPanel* free_panel = dvz_panel(ctx->figure, &free_desc);
+    DvzPanel* fit_panel = dvz_panel(ctx->figure, &fit_desc);
     if (free_panel == NULL || fit_panel == NULL)
-        return false;
+        goto error;
+    state->free_panel = free_panel;
+    state->fit_panel = fit_panel;
 
     DvzPanel* panels[2] = {free_panel, fit_panel};
     for (uint32_t i = 0; i < 2u; i++)
     {
         example_graphite_cyan_set_panel_background(panels[i]);
         if (!_add_axes(panels[i]))
-            return false;
+            goto error;
     }
 
     if (dvz_panel_set_domain(free_panel, DVZ_DIM_X, -1.0, +1.0) != 0)
-        return false;
+        goto error;
     if (dvz_panel_set_domain(free_panel, DVZ_DIM_Y, -1.0, +1.0) != 0)
-        return false;
+        goto error;
 
     if (!example_configure_equal_aspect_panel(
             fit_panel, (DvzDataDomain){.min = -1.0, .max = +1.0},
             (DvzDataDomain){.min = -1.0, .max = +1.0}, 0.18))
-        return false;
+        goto error;
 
     double x_min = 0.0;
     double x_max = 0.0;
     double y_min = 0.0;
     double y_max = 0.0;
     if (!dvz_panel_visible_domain(fit_panel, DVZ_DIM_X, &x_min, &x_max))
-        return false;
+        goto error;
     if (!dvz_panel_visible_domain(fit_panel, DVZ_DIM_Y, &y_min, &y_max))
-        return false;
+        goto error;
     const double x_span = x_max - x_min;
     const double y_span = y_max - y_min;
     DvzRect plot = {0};
     if (!dvz_panel_plot_rect_px(fit_panel, &plot) || !(plot.width > 0.0f) ||
         !(plot.height > 0.0f))
-        return false;
+        goto error;
     const double x_units_per_px = x_span / (double)plot.width;
     const double y_units_per_px = y_span / (double)plot.height;
     if (fabs(x_units_per_px - y_units_per_px) > 1e-4)
-        return false;
+        goto error;
 
     if (!_add_domain_shape(
             ctx->scene, free_panel,
             example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY)))
-        return false;
+        goto error;
     if (!_add_domain_shape(
             ctx->scene, fit_panel,
             example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY)))
-        return false;
+        goto error;
     DvzController* free_controller = dvz_panzoom(ctx->scene, NULL);
     if (free_controller == NULL)
-        return false;
+        goto error;
     DvzPanzoom* free_panzoom = dvz_controller_panzoom(free_controller);
     if (
         free_panzoom == NULL ||
         dvz_scenario_bind_controller(ctx, free_panel, free_controller, DVZ_DIM_MASK_XY) != 0)
     {
-        return false;
+        goto error;
     }
 
     DvzPanzoomDesc fit_panzoom_desc = dvz_panzoom_desc();
     fit_panzoom_desc.controller_flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
     DvzController* fit_controller = dvz_panzoom(ctx->scene, &fit_panzoom_desc);
     if (fit_controller == NULL)
-        return false;
+        goto error;
     DvzPanzoom* fit_panzoom = dvz_controller_panzoom(fit_controller);
-    return fit_panzoom != NULL &&
-           dvz_scenario_bind_controller(ctx, fit_panel, fit_controller, DVZ_DIM_MASK_XY) == 0;
+    if (
+        fit_panzoom == NULL ||
+        dvz_scenario_bind_controller(ctx, fit_panel, fit_controller, DVZ_DIM_MASK_XY) != 0)
+    {
+        goto error;
+    }
+
+    *out_user = state;
+    return true;
+
+error:
+    dvz_free(state);
+    return false;
+}
+
+
+
+/**
+ * Animate the relative panel widths for one frame.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    if (ctx == NULL || user == NULL)
+        return;
+
+    const double time = ctx->preview_mode ? dvz_scenario_preview_time(ctx) : ctx->time;
+    const float phase = (float)fmod(time / 4.0, 1.0);
+    (void)_set_panel_split((PanelView2DState*)user, phase);
+}
+
+
+
+/**
+ * Destroy the panel-view scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    dvz_free(user);
 }
 
 
@@ -248,7 +336,11 @@ static DvzScenarioSpec _panel_view2d_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_FRAME_CALLBACKS | DVZ_SCENARIO_REQ_CONTINUOUS_FRAMES,
+        .continuous_frames = true,
         .init = _scenario_init,
+        .frame = _scenario_frame,
+        .destroy = _scenario_destroy,
     };
 }
 
