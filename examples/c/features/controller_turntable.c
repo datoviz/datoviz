@@ -117,8 +117,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzTurntableDesc desc = dvz_turntable_desc();
     desc.controller_flags = DVZ_TURNTABLE_FLAGS_CLAMP_DISTANCE;
     desc.initial_view = camera.view;
-    desc.min_pitch = -0.72f;
-    desc.max_pitch = +0.72f;
+    desc.min_pitch = -1.20f;
+    desc.max_pitch = +1.20f;
     desc.min_distance = 2.40f;
     desc.max_distance = 6.20f;
 

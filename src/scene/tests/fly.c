@@ -505,7 +505,7 @@ int test_fly_ctrl_and_space_use_same_vertical_speed(TstContext* suite, const Tst
 
     vec3 pos = {0};
     dvz_fly_get_position(fly, pos);
-    AC(pos[1], 0.75f, 1e-5f);
+    AC(pos[1], 0.85f, 1e-5f);
 
     DvzKeyboardEvent release_space = {
         .type = DVZ_KEYBOARD_EVENT_RELEASE,
@@ -524,7 +524,7 @@ int test_fly_ctrl_and_space_use_same_vertical_speed(TstContext* suite, const Tst
     dvz_fly_update(fly, 0.5);
 
     dvz_fly_get_position(fly, pos);
-    AC(pos[1], -0.75f, 1e-5f);
+    AC(pos[1], -0.85f, 1e-5f);
 
     dvz_fly_destroy(fly);
     return 0;

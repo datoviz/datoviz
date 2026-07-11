@@ -19,8 +19,8 @@ def main() -> None:
         desc = dvz.dvz_turntable_desc()
         desc.controller_flags = dvz.DVZ_TURNTABLE_FLAGS_CLAMP_DISTANCE
         desc.initial_view = camera.view
-        desc.min_pitch = -0.72
-        desc.max_pitch = +0.72
+        desc.min_pitch = -1.20
+        desc.max_pitch = +1.20
         desc.min_distance = 2.40
         desc.max_distance = 6.20
         turntable = dvz.dvz_view_turntable(view, panel, ctypes.byref(desc))
