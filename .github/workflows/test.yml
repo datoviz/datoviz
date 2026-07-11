@@ -37,7 +37,9 @@ jobs:
         submodules: recursive
 
     - name: Check generated documentation
-      run: just docs-check-generated
+      run: |
+        just docs-check-generated
+        just docs-build-check
 
     # Build the library (except if local with "act")
     - name: Build

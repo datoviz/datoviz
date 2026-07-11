@@ -259,6 +259,9 @@ docs-generate:
 docs-check-generated:
     @python3 tools/check_generated_docs.py
 
+docs-build-check:
+    @python3 -m mkdocs build --strict
+
 check-example-manifests:
     @python3 tools/check_example_ids.py
     @python3 tools/check_example_manifests.py

@@ -182,19 +182,16 @@ def build_gallery_nav_sections(examples_nav):
 def on_config(config):
     examples_nav = find_named_nav_section(config.get('nav'), 'Examples')
     if examples_nav is None:
-        return config
-    try:
-        replacements = {
-            next(iter(section)): section for section in build_gallery_nav_sections(examples_nav)
-        }
-        examples_nav[:] = [
-            replacements.get(next(iter(item)), item)
-            if isinstance(item, dict) and len(item) == 1
-            else item
-            for item in examples_nav
-        ]
-    except Exception as exc:
-        print(f"mkdocs: gallery nav generation failed: {exc}")
+        raise ValueError("MkDocs navigation is missing the Examples section")
+    replacements = {
+        next(iter(section)): section for section in build_gallery_nav_sections(examples_nav)
+    }
+    examples_nav[:] = [
+        replacements.get(next(iter(item)), item)
+        if isinstance(item, dict) and len(item) == 1
+        else item
+        for item in examples_nav
+    ]
     return config
 
 
@@ -211,17 +208,13 @@ def on_page_markdown(markdown, page, config, files):
 
 
 def on_pre_build(**kwargs):
-    # build_gallery()
     remove_example_docstrings()
     import sys
     sys.path.insert(0, str(CURDIR))
     import build_gallery_webp
     import gen_start_thumbs
 
-    try:
-        build_gallery_webp.generate_gallery_webp(quiet_missing=True)
-    except Exception as exc:
-        print(f"mkdocs: gallery WebP generation failed: {exc}")
+    build_gallery_webp.generate_gallery_webp(quiet_missing=True)
     gen_start_thumbs.generate()
 
 
