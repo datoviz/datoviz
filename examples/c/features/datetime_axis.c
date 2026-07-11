@@ -30,6 +30,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/scene.h"
 #include "example_style.h"
@@ -46,6 +47,17 @@
 #define SAMPLE_COUNT 320u
 
 static const float TAU = 6.28318530718f;
+
+
+
+/*************************************************************************************************/
+/*  Types                                                                                         */
+/*************************************************************************************************/
+
+typedef struct DvzDateTimeAxisState
+{
+    DvzPanzoom* panzoom;
+} DvzDateTimeAxisState;
 
 
 
@@ -243,7 +255,51 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
 
     DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_X);
-    return panzoom != NULL;
+    if (panzoom == NULL)
+        return false;
+
+    DvzDateTimeAxisState* state = (DvzDateTimeAxisState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    state->panzoom = panzoom;
+    if (out_user != NULL)
+        *out_user = state;
+    return true;
+}
+
+
+
+/**
+ * Apply a deterministic eased zoom loop for generated gallery media.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    DvzDateTimeAxisState* state = (DvzDateTimeAxisState*)user;
+    if (ctx == NULL || !ctx->preview_mode || state == NULL || state->panzoom == NULL)
+        return;
+
+    const uint64_t count = ctx->preview_frame_count > 0 ? ctx->preview_frame_count : 1;
+    const float phase = (float)(ctx->preview_frame_index % count) / (float)count;
+    const float eased = 0.5f - 0.5f * cosf(TAU * phase);
+    const float zoom_x = powf(8.0f, eased);
+    (void)dvz_panzoom_pan(state->panzoom, (vec2){0.0f, 0.0f});
+    (void)dvz_panzoom_zoom(state->panzoom, (vec2){zoom_x, 1.0f});
+}
+
+
+/**
+ * Destroy the datetime-axis scenario state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    dvz_free(user);
 }
 
 
@@ -262,6 +318,8 @@ static DvzScenarioSpec _datetime_axis_scenario(void)
         .height = HEIGHT,
         .fps = 60.0,
         .init = _scenario_init,
+        .frame = _scenario_frame,
+        .destroy = _scenario_destroy,
     };
 }
 

@@ -26,6 +26,7 @@ CATEGORY_TO_LANE = {
 LANE_TO_CATEGORY = {lane: category for category, lane in CATEGORY_TO_LANE.items()}
 
 ANIMATED_WEBP_KIND = "animated-webp"
+CARD_MEDIA_SIZE = "1024x576"
 
 
 def load_manifest(path: Path = DEFAULT_MANIFEST) -> dict:

@@ -231,7 +231,6 @@ batches:
     - features_builtin_shapes_3d
     - features_obj_loading
     - visuals_glyph
-    - features_volume_occlusion
 
   review-16-images-fields:
     - visuals_image
@@ -743,6 +742,19 @@ examples:
       source: examples/python/gallery/features/mesh_texture.py
       status: direct-engine
     validation: smoke+interaction+screenshot
+    media: &rotation_preview
+      preview:
+        kind: animated-webp
+        frames: 72
+        fps: 24
+        card:
+          compare: true
+          preferred: animated-webp
+          size: 1024x576
+          sample_step: 1
+          fps: 24
+          webp_quality: 55
+          mp4_crf: 28
     data:
       kind: synthetic
     webgpu:
@@ -766,6 +778,7 @@ examples:
       source: examples/python/gallery/features/material_mesh.py
       status: direct-engine
     validation: smoke+screenshot
+    media: *rotation_preview
     data:
       kind: synthetic
     webgpu:
@@ -789,6 +802,7 @@ examples:
       source: examples/python/gallery/features/lighting.py
       status: direct-engine
     validation: smoke+screenshot
+    media: *rotation_preview
     data:
       kind: synthetic
     webgpu:
@@ -995,6 +1009,19 @@ examples:
     lane: features
     source: examples/c/features/technique_edl.c
     validation: smoke+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 72
+        fps: 24
+        card:
+          compare: true
+          preferred: animated-webp
+          size: 1024x576
+          sample_step: 1
+          fps: 24
+          webp_quality: 15
+          mp4_crf: 28
     data:
       kind: synthetic
     webgpu:
@@ -1014,6 +1041,7 @@ examples:
       source: examples/python/gallery/features/technique_ssao.py
       status: direct-engine
     validation: smoke+screenshot
+    media: *rotation_preview
     data:
       kind: synthetic
     webgpu:
@@ -1034,6 +1062,7 @@ examples:
       source: examples/python/gallery/features/technique_msaa.py
       status: direct-engine
     validation: smoke+screenshot
+    media: *rotation_preview
     data:
       kind: synthetic
     webgpu:
@@ -1053,6 +1082,7 @@ examples:
       source: examples/python/gallery/features/technique_depth_cue.py
       status: direct-engine
     validation: smoke+screenshot
+    media: *rotation_preview
     data:
       kind: synthetic
     webgpu:
@@ -1072,6 +1102,7 @@ examples:
       source: examples/python/gallery/features/technique_transparency.py
       status: direct-engine
     validation: smoke+screenshot
+    media: *rotation_preview
     data:
       kind: synthetic
     webgpu:
@@ -1791,6 +1822,7 @@ examples:
       source: examples/python/gallery/features/technique_depth_test.py
       status: direct-engine
     validation: smoke+screenshot
+    media: *rotation_preview
     data:
       kind: synthetic
     webgpu:
@@ -2120,6 +2152,16 @@ examples:
       source: examples/python/gallery/features/datetime_axis.py
       status: direct-engine
     validation: smoke+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 72
+        fps: 24
+        card:
+          compare: true
+          preferred: animated-webp
+          sample_step: 1
+          fps: 24
     data:
       kind: synthetic
     portability: portable-scenario

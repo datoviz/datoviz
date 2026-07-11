@@ -659,18 +659,6 @@ This example compares a plain 3D sphere lattice with depth-dependent fading.
 
 <div class="card" markdown="1">
 
-### [Volume Occlusion](gallery/features/features_volume_occlusion.md)
-
-[![Volume Occlusion](../assets/gallery/v0.4/features/features_volume_occlusion.webp)](gallery/features/features_volume_occlusion.md)
-
-`experimental` `features`
-
-This example compares a volume slice with and without attenuation by the surrounding volume.
-
-</div>
-
-<div class="card" markdown="1">
-
 ### [Eye-Dome Lighting](gallery/features/features_technique_edl.md)
 
 [![Eye-Dome Lighting](../assets/gallery/v0.4/features/features_technique_edl.webp)](gallery/features/features_technique_edl.md)

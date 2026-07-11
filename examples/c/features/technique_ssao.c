@@ -34,6 +34,7 @@
 #include "_alloc.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
+#include "example_controller_preview.h"
 #include "example_style.h"
 #include "example_tuner.h"
 #include "runner/scenario_runner.h"
@@ -322,6 +323,19 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 }
 
 
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    SsaoDemoState* state = (SsaoDemoState*)user;
+    if (ctx == NULL || !ctx->preview_mode || state == NULL)
+        return;
+    ExamplePreviewArcballDesc desc = example_preview_arcball_cube_desc();
+    example_preview_arcball(
+        state->plain_arcball, ctx->preview_frame_index, ctx->preview_frame_count, &desc);
+    example_preview_arcball(
+        state->ssao_arcball, ctx->preview_frame_index, ctx->preview_frame_count, &desc);
+}
+
+
 
 /**
  * Return the SSAO scenario specification.
@@ -337,6 +351,7 @@ static DvzScenarioSpec _ssao_scenario(void)
         .height = HEIGHT,
         .fps = 60.0,
         .init = _scenario_init,
+        .frame = _scenario_frame,
         .destroy = _scenario_destroy,
     };
 }

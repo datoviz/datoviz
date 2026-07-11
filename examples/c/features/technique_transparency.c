@@ -30,9 +30,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "_alloc.h"
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
+#include "example_controller_preview.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -44,6 +46,13 @@
 
 #define WIDTH  EXAMPLE_WINDOW_WIDTH
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
+
+
+
+typedef struct TransparencyState
+{
+    DvzArcball* arcball;
+} TransparencyState;
 
 
 
@@ -282,9 +291,43 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             return false;
     }
 
-    return _add_transparent_cubes(ctx->scene, blended, DVZ_ALPHA_BLENDED) &&
-           _add_transparent_cubes(ctx->scene, wboit, DVZ_ALPHA_WBOIT) &&
-           _add_transparent_cubes(ctx->scene, peel, DVZ_ALPHA_DEPTH_PEEL);
+    if (
+        !_add_transparent_cubes(ctx->scene, blended, DVZ_ALPHA_BLENDED) ||
+        !_add_transparent_cubes(ctx->scene, wboit, DVZ_ALPHA_WBOIT) ||
+        !_add_transparent_cubes(ctx->scene, peel, DVZ_ALPHA_DEPTH_PEEL))
+        return false;
+
+    TransparencyState* state = (TransparencyState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    state->arcball = dvz_controller_arcball(controllers[0]);
+    if (state->arcball == NULL)
+    {
+        dvz_free(state);
+        return false;
+    }
+    if (out_user != NULL)
+        *out_user = state;
+    return true;
+}
+
+
+
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    TransparencyState* state = (TransparencyState*)user;
+    if (ctx == NULL || !ctx->preview_mode || state == NULL)
+        return;
+    ExamplePreviewArcballDesc desc = example_preview_arcball_cube_desc();
+    example_preview_arcball(
+        state->arcball, ctx->preview_frame_index, ctx->preview_frame_count, &desc);
+}
+
+
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    dvz_free(user);
 }
 
 
@@ -305,6 +348,8 @@ static DvzScenarioSpec _transparency_order_scenario(void)
         .requirements = DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER |
                         DVZ_SCENARIO_REQ_ARCBALL,
         .init = _scenario_init,
+        .frame = _scenario_frame,
+        .destroy = _scenario_destroy,
     };
 }
 

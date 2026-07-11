@@ -28,7 +28,7 @@ DEFAULT_OUTPUT_DIR = ROOT / "build/gallery-media-compare/v0.4"
 DEFAULT_SITE_OUTPUT_DIR = ROOT / "build/gallery-webp/v0.4"
 DEFAULT_FRAME_DIR = gallery_frames.DEFAULT_FRAME_DIR
 DEFAULT_FRAME_CACHE_DIR = gallery_frames.DEFAULT_CACHE_DIR
-DEFAULT_SIZE = "1024x576"
+DEFAULT_SIZE = gallery_media.CARD_MEDIA_SIZE
 DEFAULT_STEP = 2
 DEFAULT_WEBP_QUALITY = 40
 DEFAULT_MP4_CRF = 32
@@ -198,6 +198,11 @@ def profile_for(preview: object, args: argparse.Namespace) -> EncodingProfile:
                 "fps": int(card.get("fps", fields["fps"])),
                 "compare": bool(card.get("compare", fields["compare"])),
             }
+        )
+    if fields["size"] != gallery_media.CARD_MEDIA_SIZE:
+        raise ValueError(
+            f"{getattr(preview, 'id')}: gallery card media must use "
+            f"{gallery_media.CARD_MEDIA_SIZE}, got {fields['size']}"
         )
     return EncodingProfile(**fields)
 

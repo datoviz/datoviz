@@ -463,7 +463,7 @@ This example builds a small graph composite.
 
 Selected isolated feature examples are shown below.
 
-[Browse all 69 feature examples](features.md).
+[Browse all 68 feature examples](features.md).
 
 ### Layout
 

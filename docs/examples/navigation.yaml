@@ -121,7 +121,6 @@ sections:
           - features_technique_depth_cue
       - title: Rendering Techniques
         examples:
-          - features_volume_occlusion
           - features_technique_edl
           - features_technique_ssao
           - features_technique_msaa
