@@ -114,6 +114,7 @@ export const LIVE_EXAMPLES = [
     id: "showcases_wind_field",
     label: "Wind Field",
     scenarioId: "showcases_wind_field",
+    animate: true,
   },
   {
     id: "showcases_gpu_particle_smoke",

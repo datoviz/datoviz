@@ -2879,6 +2879,22 @@ try {
     const initialWindField =
       emitStream(Module, windFieldScene, windFieldFigure, "wind-field scenario initial");
     expectWindFieldScenarioStreamShape(initialWindField.stream, "wind-field scenario initial");
+    expectStatus(
+      Module._dvz_wasm_api_scenario_frame(windFieldScene, 1 / 60, 1 / 60),
+      0,
+      "wind-field scenario first frame",
+    );
+    expectStatus(
+      Module._dvz_wasm_api_scenario_frame(windFieldScene, 2 / 60, 1 / 60),
+      0,
+      "wind-field scenario update frame",
+    );
+    const splitWindField = emitIncrementalPacketStream(
+      Module, windFieldScene, windFieldFigure, "wind-field scenario split packet frame");
+    requireOk(
+      splitWindField.update.commandCount > 0 && splitWindField.frame.commandCount > 0,
+      "wind-field scenario animation missing update/frame commands",
+    );
   } finally {
     Module._dvz_wasm_api_scene_destroy(windFieldScene);
   }

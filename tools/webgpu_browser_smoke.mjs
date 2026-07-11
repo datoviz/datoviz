@@ -1068,12 +1068,13 @@ async function main() {
       console.log(skipLine(`WebGPU live labels smoke: headless WebGPU instance loss (${error.message})`));
     }
     try {
-      wasmWindField = await smokeWasmPage(
+      wasmWindField = await smokeAnimatedWasmPage(
         page,
         baseUrl,
         '/examples/webgpu/live.html?id=showcases_wind_field',
         'Rendered Wind Field',
         join(artifactsDir, 'webgpu_live_wind_field.png'),
+        'showcases_wind_field',
       );
     } catch (error) {
       if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
