@@ -1542,7 +1542,8 @@ function makeDepthStencilAttachment(device, state, textures, command) {
 
 function makeColorAttachment(device, state, canvasFormat, textures, attachment, label = undefined) {
   const textureView = isBrowserCanvasTextureId(attachment.texture_id)
-    ? browserPresentTexture(device, state, attachmentExtent(state, attachment), canvasFormat, label)
+    ? browserPresentTexture(
+        device, state, attachmentExtent(state, attachment), state.browserPresentFormat, label)
         .createView()
     : required(textures.get(attachment.texture_id), `unknown texture ${attachment.texture_id}`)
         .createView();
@@ -1581,7 +1582,7 @@ function beginRenderPass(device, state, canvasFormat, textures, encoders, comman
 
 function attachmentTextureFormat(state, canvasFormat, attachment) {
   if (isBrowserCanvasTextureId(attachment.texture_id)) {
-    return canvasFormat;
+    return state.browserPresentFormat;
   }
   return requireLiveRecord(state, attachment.texture_id, "texture").format;
 }
@@ -2095,7 +2096,10 @@ async function browserPresentStaleFrameIfNeeded(device, context, canvasFormat, s
     return false;
   }
   const extent = canvasExtent(state);
-  if (current.width === extent.width && current.height === extent.height && current.format === canvasFormat) {
+  if (
+    current.width === extent.width && current.height === extent.height &&
+    current.format === state.browserPresentFormat
+  ) {
     return false;
   }
   return await browserPresentRecordToCanvas(device, context, canvasFormat, state, current);
@@ -2184,9 +2188,10 @@ function destroyExecutionState(state) {
 
 
 
-function createExecutionState(canvas = null) {
+function createExecutionState(canvas = null, browserPresentFormat = null) {
   return {
     canvas,
+    browserPresentFormat,
     objects: new Map(),
     buffers: new Map(),
     textures: new Map(),
@@ -2347,7 +2352,7 @@ export class Drp2WebGpuRuntime {
     this.canvasFormat = canvasFormat;
     this.options = options;
     this.canvas = options.canvas ?? null;
-    this.state = createExecutionState(this.canvas);
+    this.state = createExecutionState(this.canvas, options.browserPresentFormat ?? canvasFormat);
     this.stream = null;
     this.setupCommands = [];
     this.frameCommands = [];
@@ -2358,7 +2363,8 @@ export class Drp2WebGpuRuntime {
 
   destroy() {
     destroyExecutionState(this.state);
-    this.state = createExecutionState(this.canvas);
+    this.state = createExecutionState(
+      this.canvas, this.options.browserPresentFormat ?? this.canvasFormat);
     this.stream = null;
     this.setupCommands = [];
     this.frameCommands = [];
@@ -2372,7 +2378,8 @@ export class Drp2WebGpuRuntime {
     this.options = { ...this.options, ...options };
     destroyExecutionState(this.state);
     this.canvas = this.options.canvas ?? this.canvas;
-    this.state = createExecutionState(this.canvas);
+    this.state = createExecutionState(
+      this.canvas, this.options.browserPresentFormat ?? this.canvasFormat);
 
     const split = splitStreamCommands(stream);
     this.setupCommands = split.setupCommands;
@@ -2428,7 +2435,8 @@ export class Drp2WebGpuRuntime {
     if (this.stream === null || options.reset === true) {
       destroyExecutionState(this.state);
       this.canvas = this.options.canvas ?? this.canvas;
-      this.state = createExecutionState(this.canvas);
+      this.state = createExecutionState(
+        this.canvas, this.options.browserPresentFormat ?? this.canvasFormat);
       this.packetResourceVersion = null;
       this.packetFrameIndex = null;
     }
@@ -2656,7 +2664,8 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
     options.capabilities ?? runtimeCapabilities(device, canvasFormat),
     stream.capabilities,
   );
-  const state = options.state ?? createExecutionState(options.canvas ?? null);
+  const state = options.state ?? createExecutionState(
+    options.canvas ?? null, options.browserPresentFormat ?? canvasFormat);
   if (state.canvas === null && options.canvas !== undefined) {
     state.canvas = options.canvas;
   }

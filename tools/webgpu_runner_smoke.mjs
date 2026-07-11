@@ -72,6 +72,8 @@ let queueSubmitCount = 0;
 let observedViewports = [];
 let observedScissors = [];
 let observedShaderModules = [];
+let observedTextureDescriptors = [];
+let observedRenderPipelineDescriptors = [];
 
 const pass = () => ({
   setPipeline() {},
@@ -116,7 +118,8 @@ const device = {
       unmap() {},
     };
   },
-  createTexture() {
+  createTexture(desc = {}) {
+    observedTextureDescriptors.push(desc);
     return {
       createView() {
         return {};
@@ -144,7 +147,8 @@ const device = {
   createPipelineLayout() {
     return {};
   },
-  createRenderPipeline() {
+  createRenderPipeline(desc = {}) {
+    observedRenderPipelineDescriptors.push(desc);
     return {};
   },
   createComputePipeline() {
@@ -610,12 +614,16 @@ async function smokeBrowserCanvasDepthCache(Drp2WebGpuRuntime) {
 }
 
 async function smokeBrowserPresentResizeRetention(Drp2WebGpuRuntime) {
+  observedShaderModules = [];
+  observedTextureDescriptors = [];
+  observedRenderPipelineDescriptors = [];
   fakeCanvas.width = 640;
   fakeCanvas.height = 480;
   fakeCanvas.clientWidth = 640;
   fakeCanvas.clientHeight = 480;
   const runtime = new Drp2WebGpuRuntime(device, context, 'rgba8unorm', {
     canvas: fakeCanvas,
+    browserPresentFormat: 'rgba16float',
     requireExplicitBindGroupLayouts: true,
     requireExplicitPipelineMetadata: true,
   });
@@ -623,7 +631,7 @@ async function smokeBrowserPresentResizeRetention(Drp2WebGpuRuntime) {
     commands: [
       ...header,
       ...triangleShaders,
-      renderPipeline([{ format: 'rgba8unorm', write_mask: ['all'] }]),
+      renderPipeline([{ format: 'rgba16float', write_mask: ['all'] }]),
       { cmd: 'BeginCommandEncoder', id: 20 },
       renderPass([colorAttachment(0)]),
       { cmd: 'SetPipeline', pass_id: 21, pipeline_id: 10 },
@@ -645,6 +653,20 @@ async function smokeBrowserPresentResizeRetention(Drp2WebGpuRuntime) {
     !presentShader.code.includes('linear.a')
   ) {
     throw new Error('browser presentation must encode linear RGB to sRGB and preserve alpha');
+  }
+  const presentTexture = observedTextureDescriptors.find(
+    (texture) => texture.label?.includes('browser-present-color'),
+  );
+  if (presentTexture?.format !== 'rgba16float') {
+    throw new Error(
+      `browser scene intermediate must be rgba16float, got ${presentTexture?.format}`,
+    );
+  }
+  const presentPipeline = observedRenderPipelineDescriptors.find(
+    (pipeline) => pipeline.label === 'browser-present-pipeline',
+  );
+  if (presentPipeline?.fragment?.targets?.[0]?.format !== 'rgba8unorm') {
+    throw new Error('browser presentation pipeline must target the configured canvas format');
   }
   const firstStats = runtime.resourceStats();
   if (firstStats.browserPresentTextures !== 1) {

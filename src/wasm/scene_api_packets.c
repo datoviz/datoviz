@@ -24,7 +24,10 @@ int dvz_wasm_api_set_canvas_format(uint32_t scene_handle, uint32_t color_format)
     DvzWasmApiScene* scene = _scene(scene_handle);
     if (scene == NULL)
         return -1;
-    if (color_format != DVZ_FORMAT_R8G8B8A8_UNORM && color_format != DVZ_FORMAT_B8G8R8A8_UNORM)
+    if (
+        color_format != DVZ_FORMAT_R8G8B8A8_UNORM &&
+        color_format != DVZ_FORMAT_B8G8R8A8_UNORM &&
+        color_format != DVZ_FORMAT_R16G16B16A16_SFLOAT)
         return _fail(scene, "unsupported WASM canvas format");
     _clear_payload(scene);
     scene->color_format = color_format;

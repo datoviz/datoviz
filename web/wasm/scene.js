@@ -4,8 +4,7 @@ import {
   resizeWebGpuCanvas,
 } from "../drp2/webgpu.js";
 
-const DVZ_FORMAT_R8G8B8A8_UNORM = 37;
-const DVZ_FORMAT_B8G8R8A8_UNORM = 44;
+const DVZ_FORMAT_R16G16B16A16_SFLOAT = 97;
 const DVZ_DIM_X = 0;
 const DVZ_DIM_Y = 1;
 const DVZ_DIM_MASK_XY = 3;
@@ -54,17 +53,6 @@ export const DvzWasmVisual = Object.freeze({
 function requireOk(condition, message) {
   if (!condition) {
     throw new Error(message);
-  }
-}
-
-function canvasFormatCode(format) {
-  switch (format) {
-    case "rgba8unorm":
-      return DVZ_FORMAT_R8G8B8A8_UNORM;
-    case "bgra8unorm":
-      return DVZ_FORMAT_B8G8R8A8_UNORM;
-    default:
-      throw new Error(`unsupported browser canvas format ${format}`);
   }
 }
 
@@ -319,9 +307,10 @@ export class DatovizWasmScene {
     const logical = requestedLogicalSize(canvas, options);
     const scene = Module._dvz_wasm_api_scene(logical.width, logical.height);
     requireOk(scene !== 0, "dvz_wasm_api_scene failed");
-    const formatStatus = Module._dvz_wasm_api_set_canvas_format(scene, canvasFormatCode(gpu.format));
+    const formatStatus = Module._dvz_wasm_api_set_canvas_format(
+      scene, DVZ_FORMAT_R16G16B16A16_SFLOAT);
     if (formatStatus !== 0) {
-      throw new Error(diagnosticMessage(Module, scene, `scene rejected browser canvas format ${gpu.format}`));
+      throw new Error(diagnosticMessage(Module, scene, "scene rejected linear browser presentation format"));
     }
     const caps = browserCapabilityArgs(gpu.capabilities);
     const capsStatus = Module._dvz_wasm_api_set_capabilities(
@@ -362,9 +351,10 @@ export class DatovizWasmScene {
     const logical = requestedLogicalSize(canvas, options);
     const scene = Module._dvz_wasm_api_scene(logical.width, logical.height);
     requireOk(scene !== 0, "dvz_wasm_api_scene failed");
-    const formatStatus = Module._dvz_wasm_api_set_canvas_format(scene, canvasFormatCode(gpu.format));
+    const formatStatus = Module._dvz_wasm_api_set_canvas_format(
+      scene, DVZ_FORMAT_R16G16B16A16_SFLOAT);
     if (formatStatus !== 0) {
-      throw new Error(diagnosticMessage(Module, scene, `scene rejected browser canvas format ${gpu.format}`));
+      throw new Error(diagnosticMessage(Module, scene, "scene rejected linear browser presentation format"));
     }
     const caps = browserCapabilityArgs(gpu.capabilities);
     const capsStatus = Module._dvz_wasm_api_set_capabilities(
@@ -984,6 +974,7 @@ export class DatovizWasmScene {
     this.runtime = new Drp2WebGpuRuntime(this.gpu.device, this.gpu.context, this.gpu.format, {
       canvas: this.canvas,
       capabilities: this.gpu.capabilities,
+      browserPresentFormat: "rgba16float",
     });
     this._runtimeExecution = Promise.resolve();
     await this._executePacketSet("initial", packetSet, { reset: true, replaceExistingResources: false });

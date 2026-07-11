@@ -19,6 +19,7 @@ const DVZ_POINTER_EVENT_RELEASE = 0;
 const DVZ_POINTER_EVENT_MOVE = 2;
 const DVZ_POINTER_BUTTON_LEFT = 1;
 const DVZ_FORMAT_R8G8B8A8_UNORM = 37;
+const DVZ_FORMAT_R16G16B16A16_SFLOAT = 97;
 const DVZ_CONTROLLER_TYPE_PANZOOM = 1;
 const DVZ_CONTROLLER_TYPE_ARCBALL = 2;
 const DVZ_DIM_X = 0;
@@ -591,7 +592,8 @@ function expectPipelineMetadata(stream, label) {
     );
     for (const target of pipeline.color_targets) {
       requireOk(
-        target.format === "rgba8unorm" || target.format === "bgra8unorm" || target.format === "canvas",
+        target.format === "rgba8unorm" || target.format === "bgra8unorm" ||
+          target.format === "rgba16float" || target.format === "canvas",
         `${label}: render pipeline ${pipeline.id} has unexpected color target format ${target.format}`,
       );
     }
@@ -1586,6 +1588,10 @@ function expectTexturedPlanetScenarioStreamShape(stream, label) {
     (pipeline) => pipeline.builtin_pipeline === "scene.mesh",
   );
   expectDepthPipeline(mesh, `${label} textured mesh`);
+  requireOk(
+    mesh.color_targets.every((target) => target.format === "rgba16float"),
+    `${label}: expected high-precision linear presentation target`,
+  );
   requireOk(
     mesh.bind_group_layout_ids.length >= 2,
     `${label}: expected material or texture bind group layouts on mesh pipeline`,
@@ -3406,7 +3412,7 @@ try {
     requireOk(scene !== 0, `${label} scenario scene creation failed`);
     try {
       expectStatus(
-        Module._dvz_wasm_api_set_canvas_format(scene, DVZ_FORMAT_R8G8B8A8_UNORM),
+        Module._dvz_wasm_api_set_canvas_format(scene, DVZ_FORMAT_R16G16B16A16_SFLOAT),
         0,
         `${label} scenario canvas format`,
       );
