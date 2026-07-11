@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* sampled_field_update reuses one sampled scalar field in two image visuals while updating patches.
+/* This example reuses one sampled scalar field in two image visuals while updating patches.
  *
  * What to look for: both panels sample the same R32_FLOAT field and the same moving highlighted
  * patch, but each panel applies a different continuous color scale. Every few frames the previous

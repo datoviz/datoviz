@@ -10,7 +10,7 @@
 <span>Label Probe</span>
 </nav>
 
-Probe_labels queries categorical label IDs from a generated label image.
+This example queries categorical label IDs from a generated label image.
 
 ## Preview
 

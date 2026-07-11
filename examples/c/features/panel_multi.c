@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* panel_multi shows two panels with independent data, domains, and panzoom state.
+/* This example shows two panels with independent data, domains, and panzoom state.
  *
  * What to look for: the left panel uploads a point ring with position, color, and diameter_px
  * arrays, while the right panel uploads a stroked path with position, color, and stroke_width_px

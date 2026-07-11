@@ -10,7 +10,7 @@
 <span>Mesh Materials</span>
 </nav>
 
-Material_mesh compares cube meshes rendered with different material models and parameters.
+This example compares cube meshes rendered with different material models and parameters.
 
 ## Preview
 

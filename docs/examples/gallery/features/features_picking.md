@@ -10,7 +10,7 @@
 <span>Picking</span>
 </nav>
 
-Picking demonstrates item-level marker hover and click selection.
+This example demonstrates item-level marker hover and click selection.
 
 ## Preview
 

@@ -699,7 +699,7 @@ This example compares several ways to define marker glyphs in one symbol set.
 
 `features`
 
-This example compares  the same sphere cluster under three material and light configurations.
+This example compares the same sphere cluster under three material and light configurations.
 
 </div>
 

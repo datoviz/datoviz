@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* update_visual_data replaces all arrays on one retained point visual.
+/* This example replaces all arrays on one retained point visual.
  *
  * What to look for: the initial upload draws seven small gray points in a line. After one second,
  * the example replaces the full position, color, and diameter_px arrays with a colored arc of

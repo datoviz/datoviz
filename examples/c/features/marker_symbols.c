@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* marker_symbols compares several ways to define marker glyphs in one symbol set.
+/* This example compares several ways to define marker glyphs in one symbol set.
  *
  * What to look for: each row uses the same marker attributes, including position, color,
  * diameter_px, angle, and symbol, but the symbol IDs come from built-in shapes, procedural bitmap

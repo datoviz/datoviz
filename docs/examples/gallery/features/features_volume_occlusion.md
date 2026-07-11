@@ -10,7 +10,7 @@
 <span>Volume Occlusion</span>
 </nav>
 
-Volume_occlusion compares a volume slice with and without attenuation by the surrounding volume.
+This example compares a volume slice with and without attenuation by the surrounding volume.
 
 ## Preview
 

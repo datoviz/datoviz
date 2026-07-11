@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* ssao compares a sphere cluster with and without screen-space ambient occlusion.
+/* This example compares a sphere cluster with and without screen-space ambient occlusion.
  *
  * What to look for: both panels upload the same lit sphere position, radius, and color arrays,
  * while the right panel applies SSAO with blur and tunable radius, strength, bias, power,

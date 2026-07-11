@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* legend_categorical shows how one categorical scale drives both marker colors and a legend.
+/* This example shows how one categorical scale drives both marker colors and a legend.
  *
  * What to look for: five category IDs are assigned labels, colors, and marker shapes, then the
  * marker visual uploads matching position, color, diameter_px, angle, and shape arrays. Compare

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* scalebar attaches a retained metric length scale bar to a 2D panel.
+/* This example attaches a retained metric length scale bar to a 2D panel.
  *
  * What to look for: five data-space points mark a simple ruler from 0 to 8 along X, while the
  * scale bar is anchored near the bottom-left of the panel and uses built-in metric length units.

@@ -10,7 +10,7 @@
 <span>Overlay Card</span>
 </nav>
 
-Overlay_card places a screen-space readout card above a simple data trace.
+This example places a screen-space readout card above a simple data trace.
 
 ## Preview
 

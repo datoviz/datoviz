@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* depth_cue compares a plain 3D sphere lattice with depth-dependent fading.
+/* This example compares a plain 3D sphere lattice with depth-dependent fading.
  *
  * What to look for: both panels upload the same 3x3x3 sphere position, color, and radius arrays,
  * but only the right panel applies a depth-cue descriptor to the visual. In live mode, use the GUI

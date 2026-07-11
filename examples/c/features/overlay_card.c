@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* overlay_card places a screen-space readout card above a simple data trace.
+/* This example places a screen-space readout card above a simple data trace.
  *
  * What to look for: the background path uploads position, color, and stroke_width_px arrays in
  * view coordinates, and a highlighted point marks the sample being described. The overlay card is

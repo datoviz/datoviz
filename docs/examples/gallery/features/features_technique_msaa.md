@@ -10,7 +10,7 @@
 <span>Multisample Antialiasing</span>
 </nav>
 
-Msaa compares single-sample rendering with 8x multisample antialiasing.
+This example compares single-sample rendering with 8x multisample antialiasing.
 
 ## Preview
 

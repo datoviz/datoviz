@@ -10,7 +10,7 @@
 <span>Visual Transform</span>
 </nav>
 
-Visual_transform compares raw point data with a visual-local affine transform.
+This example compares raw point data with a visual-local affine transform.
 
 ## Preview
 

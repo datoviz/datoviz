@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* selection_sphere queries and selects individual raycast spheres in a 3D cluster.
+/* This example queries and selects individual raycast spheres in a 3D cluster.
  *
  * What to look for: the sphere visual uploads position, radius, and color arrays for a compact
  * depth-rich cluster with lighting enabled. Move the cursor over the live panel to query the

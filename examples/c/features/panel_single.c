@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* panel_single creates one explicit panel rectangle inside a figure.
+/* This example creates one explicit panel rectangle inside a figure.
  *
  * What to look for: the panel is placed with normalized x, y, width, and height values instead of
  * filling the whole figure. A border and background frame a five-point visual whose position,

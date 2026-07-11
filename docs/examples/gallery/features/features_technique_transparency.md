@@ -10,7 +10,7 @@
 <span>Transparency Order</span>
 </nav>
 
-Transparency_order compares three transparency techniques on the same overlapping cubes.
+This example compares three transparency techniques on the same overlapping cubes.
 
 ## Preview
 

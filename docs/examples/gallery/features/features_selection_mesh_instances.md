@@ -10,7 +10,7 @@
 <span>Mesh Instance Selection</span>
 </nav>
 
-Selection_mesh_instances queries and selects individual instances of one mesh visual.
+This example queries and selects individual instances of one mesh visual.
 
 ## Preview
 

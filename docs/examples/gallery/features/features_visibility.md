@@ -10,7 +10,7 @@
 <span>Visual Visibility</span>
 </nav>
 
-Visibility toggles one visual on and off without changing its data arrays.
+This example toggles one visual on and off without changing its data arrays.
 
 ## Preview
 

@@ -10,7 +10,7 @@
 <span>Scale Bar Units</span>
 </nav>
 
-Scalebar_units uses duration units for a scale bar on a time-series panel.
+This example uses duration units for a scale bar on a time-series panel.
 
 ## Preview
 

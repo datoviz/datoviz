@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* reference_grid adds a ground-plane reference grid to a 3D scene.
+/* This example adds a ground-plane reference grid to a 3D scene.
  *
  * What to look for: the grid is attached to the XZ plane, shifted downward on Y, and configured
  * with fixed size, spacing, and major-line cadence. Use the turntable controller in the live

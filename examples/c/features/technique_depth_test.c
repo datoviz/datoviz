@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* depth_test compares overlapping 3D points with depth testing enabled and disabled.
+/* This example compares overlapping 3D points with depth testing enabled and disabled.
  *
  * What to look for: both panels upload the same eight large point sprites at the corners of a
  * small 3D cube, with matching position, color, and diameter_px arrays. The left visual keeps

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* scatter - quickstart scatter plot: 10 000 random colored points with pan/zoom.
+/* scatter - This example renders a quickstart scatter plot with 10 000 random colored points.
  *
  * Scenario: start_scatter
  * Style: start, graphite_cyan, 1280x720 window target

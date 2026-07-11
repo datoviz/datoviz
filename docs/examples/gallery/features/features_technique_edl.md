@@ -10,7 +10,7 @@
 <span>Eye-Dome Lighting</span>
 </nav>
 
-Edl compares a dense 3D point cloud with and without Eye-Dome Lighting.
+This example compares a dense 3D point cloud with and without Eye-Dome Lighting.
 
 ## Preview
 

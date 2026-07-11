@@ -32,7 +32,7 @@ This example embeds a Datoviz view inside a host-owned GLFW surface.
 
 `advanced`<br><span>`advanced`, `qt`, `pyqt`, `optional-provider`, `external-surface`, ...</span>
 
-Live Qt Widgets host around a Datoviz Vulkan scene.
+This example hosts a Datoviz Vulkan scene in live Qt Widgets.
 
 </div>
 

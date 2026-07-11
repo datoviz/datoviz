@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* panel_background shows a custom panel background behind a foreground primitive.
+/* This example shows a custom panel background behind a foreground primitive.
  *
  * What to look for: the panel rectangle is explicitly inset inside the figure and receives a
  * linear-gradient background before a triangle-list primitive uploads position, color, and normal

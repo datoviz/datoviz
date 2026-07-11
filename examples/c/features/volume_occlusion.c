@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* volume_occlusion compares a volume slice with and without attenuation by the surrounding volume.
+/* This example compares a volume slice with and without attenuation by the surrounding volume.
  *
  * What to look for: both panels share the same 32x32x32 R8 scalar field, colormap, alpha stops,
  * bounds, opacity, and ray-march step count. Each panel draws a composited volume plus a slice, but

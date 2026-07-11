@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* visual_transform compares raw point data with a visual-local affine transform.
+/* This example compares raw point data with a visual-local affine transform.
  *
  * What to look for: both panels upload the same five point positions, colors, and diameter_px
  * values, but the right visual also receives a transform matrix with translation, shear, and

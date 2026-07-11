@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* probe_labels queries categorical label IDs from a generated label image.
+/* This example queries categorical label IDs from a generated label image.
  *
  * What to look for: a 256x192 R32_SINT sampled field stores category IDs for cortex, fiber,
  * nucleus, vessel, and island regions, and a categorical scale maps those IDs to colors and

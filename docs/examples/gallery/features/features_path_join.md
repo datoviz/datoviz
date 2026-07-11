@@ -10,7 +10,7 @@
 <span>Path Join</span>
 </nav>
 
-Path_join compares miter, round, and bevel joins on difficult stroked paths.
+This example compares miter, round, and bevel joins on difficult stroked paths.
 
 ## Preview
 

@@ -10,7 +10,7 @@
 <span>OBJ Loading</span>
 </nav>
 
-Obj_loading loads a Wavefront OBJ fixture and displays it as a mesh.
+This example loads a Wavefront OBJ fixture and displays it as a mesh.
 
 ## Preview
 

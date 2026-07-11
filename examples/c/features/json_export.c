@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* json_export writes a retained scene to a compact JSON diagnostic file.
+/* This example writes a retained scene to a compact JSON diagnostic file.
  *
  * What to look for: the live view is intentionally small, with three point items whose position,
  * color, and diameter_px arrays are uploaded before the scene is serialized. The useful output is

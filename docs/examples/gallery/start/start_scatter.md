@@ -10,7 +10,7 @@
 <span>Scatter Plot</span>
 </nav>
 
-Quickstart scatter plot: 10 000 random colored points with pan/zoom.
+This example renders a quickstart scatter plot with 10 000 random colored points.
 
 ## Preview
 

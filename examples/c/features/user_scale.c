@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* user_scale shows how one user-scale value affects screen-space visual sizes and axes.
+/* This example shows how one user-scale value affects screen-space visual sizes and axes.
  *
  * What to look for: the panel combines a data-space path, outlined markers, axes, and panzoom.
  * The path uploads position, color, and stroke_width_px arrays, while the markers upload position,

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* orientation_gizmo adds a small orientation widget to a 3D panel.
+/* This example adds a small orientation widget to a 3D panel.
  *
  * What to look for: the main scene is a lit cube controlled by an arcball, and the orientation
  * gizmo is placed in the panel's bottom-right corner with a fixed screen size. Rotate the live

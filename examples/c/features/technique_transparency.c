@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* transparency_order compares three transparency techniques on the same overlapping cubes.
+/* This example compares three transparency techniques on the same overlapping cubes.
  *
  * What to look for: each panel draws two translucent cube meshes with the same geometry,
  * transforms, material settings, and face alpha values, but changes the alpha mode between

@@ -10,7 +10,7 @@
 <span>Partial Data Update</span>
 </nav>
 
-Update_partial moves only part of a point visual's position array.
+This example moves only part of a point visual's position array.
 
 ## Preview
 

@@ -10,7 +10,7 @@
 <span>Qt Hosting</span>
 </nav>
 
-Live Qt Widgets host around a Datoviz Vulkan scene.
+This example hosts a Datoviz Vulkan scene in live Qt Widgets.
 
 ## Preview
 

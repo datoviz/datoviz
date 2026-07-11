@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* visibility toggles one retained visual on and off without changing its data arrays.
+/* This example toggles one retained visual on and off without changing its data arrays.
  *
  * What to look for: three separate point visuals are created so the middle red point can use
  * dvz_visual_set_visible() independently from the always-visible side points. A scene timer flips

@@ -10,7 +10,7 @@
 <span>Orientation Gizmo</span>
 </nav>
 
-Orientation_gizmo adds a small orientation widget to a 3D panel.
+This example adds a small orientation widget to a 3D panel.
 
 ## Preview
 

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* lighting compares the same sphere cluster under three material and light configurations.
+/* This example compares the same sphere cluster under three material and light configurations.
  *
  * What to look for: each panel uploads the same sphere position, radius, and color arrays, but
  * changes the material light_direction, roughness, specular, and rim_strength values. Rotate any

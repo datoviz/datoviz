@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* panzoom binds a 2D panzoom controller to a point visual in data coordinates.
+/* This example binds a 2D panzoom controller to a point visual in data coordinates.
  *
  * What to look for: a 64-point ring uploads position, color, and diameter_px arrays inside a
  * [-1, 1] X/Y data domain. In the live preview, drag to pan and scroll or gesture to zoom; the

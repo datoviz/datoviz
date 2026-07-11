@@ -10,7 +10,7 @@
 <span>JSON Export</span>
 </nav>
 
-Json_export writes a scene to a compact JSON diagnostic file.
+This example writes a scene to a compact JSON diagnostic file.
 
 ## Preview
 

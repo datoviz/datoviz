@@ -10,7 +10,7 @@
 <span>Visual Data Update</span>
 </nav>
 
-Update_visual_data replaces all arrays on one point visual.
+This example replaces all arrays on one point visual.
 
 ## Preview
 

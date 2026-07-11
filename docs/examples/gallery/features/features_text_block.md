@@ -10,7 +10,7 @@
 <span>Text Block</span>
 </nav>
 
-Text_block renders a multiline text object at a stable screen position.
+This example renders a multiline text object at a stable screen position.
 
 ## Preview
 

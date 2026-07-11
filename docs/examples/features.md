@@ -44,7 +44,7 @@ This example shows the Datoviz 3D coordinate convention.
 
 `features`
 
-Panel_single creates one explicit panel rectangle inside a figure.
+This example creates one explicit panel rectangle inside a figure.
 
 </div>
 
@@ -92,7 +92,7 @@ This example links the X panzoom extent of two stacked signal panels.
 
 `features`
 
-Panel_view2d compares a regular 2D panel with one that keeps equal data aspect.
+This example compares a regular 2D panel with one that keeps equal data aspect.
 
 </div>
 
@@ -104,7 +104,7 @@ Panel_view2d compares a regular 2D panel with one that keeps equal data aspect.
 
 `features`
 
-Panel_background shows a custom panel background behind a foreground primitive.
+This example shows a custom panel background behind a foreground primitive.
 
 </div>
 
@@ -123,7 +123,7 @@ Panel_background shows a custom panel background behind a foreground primitive.
 
 `features`
 
-User_scale shows how one user-scale value affects screen-space visual sizes and axes.
+This example shows how one user-scale value affects screen-space visual sizes and axes.
 
 </div>
 
@@ -135,7 +135,7 @@ User_scale shows how one user-scale value affects screen-space visual sizes and 
 
 `features`<br><span>`view-size`, `framebuffer`, `window`</span>
 
-View_size_policies demonstrates how requested view size policies resolve to real view sizes.
+This example demonstrates how requested view size policies resolve to real view sizes.
 
 </div>
 
@@ -147,7 +147,7 @@ View_size_policies demonstrates how requested view size policies resolve to real
 
 `features`
 
-Visual_transform compares raw point data with a visual-local affine transform.
+This example compares raw point data with a visual-local affine transform.
 
 </div>
 
@@ -159,7 +159,7 @@ Visual_transform compares raw point data with a visual-local affine transform.
 
 `features`
 
-Visibility toggles one visual on and off without changing its data arrays.
+This example toggles one visual on and off without changing its data arrays.
 
 </div>
 
@@ -272,7 +272,7 @@ This example shows fly-style camera navigation through a 3D scene.
 
 `features`
 
-Orientation_gizmo adds a small orientation widget to a 3D panel.
+This example adds a small orientation widget to a 3D panel.
 
 </div>
 
@@ -284,7 +284,7 @@ Orientation_gizmo adds a small orientation widget to a 3D panel.
 
 `features`
 
-Reference_grid adds a ground-plane reference grid to a 3D scene.
+This example adds a ground-plane reference grid to a 3D scene.
 
 </div>
 
@@ -374,7 +374,7 @@ This example attaches a metric length scale bar to a 2D panel.
 
 `features`
 
-Scalebar_units uses duration units for a scale bar on a time-series panel.
+This example uses duration units for a scale bar on a time-series panel.
 
 </div>
 
@@ -410,7 +410,7 @@ This example shows scalar point values mapped through a custom colormap.
 
 `experimental` `features`<br><span>`categorical-scale`, `legend`, `marker`, `capture`</span>
 
-Legend_categorical shows how one categorical scale drives both marker colors and a legend.
+This example shows how one categorical scale drives both marker colors and a legend.
 
 </div>
 
@@ -434,7 +434,7 @@ This example shows a text annotation anchored to one data point.
 
 `features`
 
-Text_block renders a multiline text object at a stable screen position.
+This example renders a multiline text object at a stable screen position.
 
 </div>
 
@@ -446,7 +446,7 @@ Text_block renders a multiline text object at a stable screen position.
 
 `features`
 
-Overlay_card places a screen-space readout card above a simple data trace.
+This example places a screen-space readout card above a simple data trace.
 
 </div>
 
@@ -458,7 +458,7 @@ Overlay_card places a screen-space readout card above a simple data trace.
 
 `features`
 
-Probe_labels queries categorical label IDs from a generated label image.
+This example queries categorical label IDs from a generated label image.
 
 </div>
 
@@ -524,7 +524,7 @@ This example shows a cubic Bezier curve tessellated into a path.
 
 `features`
 
-Path_join compares miter, round, and bevel joins on difficult stroked paths.
+This example compares miter, round, and bevel joins on difficult stroked paths.
 
 </div>
 
@@ -536,7 +536,7 @@ Path_join compares miter, round, and bevel joins on difficult stroked paths.
 
 `features`
 
-Obj_loading loads a Wavefront OBJ fixture and displays it as a mesh.
+This example loads a Wavefront OBJ fixture and displays it as a mesh.
 
 </div>
 
@@ -608,7 +608,7 @@ This example shows probing a scalar image at a marked data position.
 
 `features`
 
-This example compares  the same sphere cluster under three material and light configurations.
+This example compares the same sphere cluster under three material and light configurations.
 
 </div>
 
@@ -632,7 +632,7 @@ This example maps an RGBA8 sampled field onto a UV sphere mesh.
 
 `features`
 
-Material_mesh compares cube meshes rendered with different material models and parameters.
+This example compares cube meshes rendered with different material models and parameters.
 
 </div>
 
@@ -644,7 +644,7 @@ Material_mesh compares cube meshes rendered with different material models and p
 
 `experimental` `features`
 
-Volume_occlusion compares a volume slice with and without attenuation by the surrounding volume.
+This example compares a volume slice with and without attenuation by the surrounding volume.
 
 </div>
 
@@ -656,7 +656,7 @@ Volume_occlusion compares a volume slice with and without attenuation by the sur
 
 `experimental` `features`
 
-Edl compares a dense 3D point cloud with and without Eye-Dome Lighting.
+This example compares a dense 3D point cloud with and without Eye-Dome Lighting.
 
 </div>
 
@@ -692,7 +692,7 @@ This example compares a plain 3D sphere lattice with depth-dependent fading.
 
 `features`
 
-Msaa compares single-sample rendering with 8x multisample antialiasing.
+This example compares single-sample rendering with 8x multisample antialiasing.
 
 </div>
 
@@ -704,7 +704,7 @@ Msaa compares single-sample rendering with 8x multisample antialiasing.
 
 `features`
 
-Transparency_order compares three transparency techniques on the same overlapping cubes.
+This example compares three transparency techniques on the same overlapping cubes.
 
 </div>
 
@@ -728,7 +728,7 @@ This example shows translucent triangles composited in draw order.
 
 `features`
 
-Depth_test compares overlapping 3D points with depth testing enabled and disabled.
+This example compares overlapping 3D points with depth testing enabled and disabled.
 
 </div>
 
@@ -758,7 +758,7 @@ This example shows diagnostic bounds overlays for 2D and 3D visuals.
 
 `features`
 
-Picking demonstrates item-level marker hover and click selection.
+This example demonstrates item-level marker hover and click selection.
 
 </div>
 
@@ -770,7 +770,7 @@ Picking demonstrates item-level marker hover and click selection.
 
 `features`
 
-Selection_pixel queries and selects individual cells in a pixel grid.
+This example queries and selects individual cells in a pixel grid.
 
 </div>
 
@@ -794,7 +794,7 @@ This example queries and selects individual raycast spheres in a 3D cluster.
 
 `features`
 
-Selection_mesh_instances queries and selects individual instances of one mesh visual.
+This example queries and selects individual instances of one mesh visual.
 
 </div>
 
@@ -855,7 +855,7 @@ This example shows a compute pass updating point positions.
 
 `features`
 
-Update_partial moves only part of a point visual's position array.
+This example moves only part of a point visual's position array.
 
 </div>
 
@@ -867,7 +867,7 @@ Update_partial moves only part of a point visual's position array.
 
 `features`
 
-Update_visual_data replaces all arrays on one point visual.
+This example replaces all arrays on one point visual.
 
 </div>
 
@@ -939,7 +939,7 @@ This example shows native keyboard, pointer, wheel, and resize events.
 
 `experimental` `features`
 
-Json_export writes a scene to a compact JSON diagnostic file.
+This example writes a scene to a compact JSON diagnostic file.
 
 </div>
 

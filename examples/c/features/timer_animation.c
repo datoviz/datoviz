@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* timer_animation updates point attributes every frame from scenario time.
+/* This example updates point attributes every frame from scenario time.
  *
  * What to look for: the same retained point visual receives new position, color, and diameter_px
  * arrays on each frame. The eight points slide along a sine wave, pulse in size, and cycle through

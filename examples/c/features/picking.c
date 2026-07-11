@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* picking demonstrates item-level marker hover and click selection.
+/* This example demonstrates item-level marker hover and click selection.
  *
  * What to look for: the marker grid uploads position, color, diameter_px, angle, and shape arrays,
  * including several deliberately overlapping markers near the center. Move the cursor to query the

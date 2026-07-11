@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* text_block renders a retained multiline text object at a stable screen position.
+/* This example renders a retained multiline text object at a stable screen position.
  *
  * What to look for: the text object keeps style, layout, placement, and the whole paragraph string
  * together. The example uses an MSDF atlas renderer, explicit text size, line height, line gap,

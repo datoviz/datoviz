@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* panel_linked links the X panzoom extent of two stacked signal panels.
+/* This example links the X panzoom extent of two stacked signal panels.
  *
  * What to look for: both panels plot deterministic path data over the same X domain but use
  * different Y domains and independent Y panzoom controllers. In the live preview, pan or zoom

@@ -10,7 +10,7 @@
 <span>Panel Background</span>
 </nav>
 
-Panel_background shows a custom panel background behind a foreground primitive.
+This example shows a custom panel background behind a foreground primitive.
 
 ## Preview
 

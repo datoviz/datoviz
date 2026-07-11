@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* scalebar_units uses duration units for a scale bar on a time-series panel.
+/* This example uses duration units for a scale bar on a time-series panel.
  *
  * What to look for: the path visual uploads 96 time samples whose X positions span 0 to 250 and
  * whose Y positions form a waveform. The scale bar uses the built-in duration unit ladder, and

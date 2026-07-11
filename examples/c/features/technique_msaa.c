@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* msaa compares single-sample rendering with 8x multisample antialiasing.
+/* This example compares single-sample rendering with 8x multisample antialiasing.
  *
  * What to look for: both panels draw the same translated cube cluster with linked arcball
  * controls, but only the right panel enables an MSAA descriptor with sample_count set to 8. Inspect

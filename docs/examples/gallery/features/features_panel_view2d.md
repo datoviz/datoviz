@@ -10,7 +10,7 @@
 <span>Panel View 2D</span>
 </nav>
 
-Panel_view2d compares a regular 2D panel with one that keeps equal data aspect.
+This example compares a regular 2D panel with one that keeps equal data aspect.
 
 ## Preview
 

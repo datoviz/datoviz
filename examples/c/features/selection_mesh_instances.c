@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* selection_mesh_instances queries and selects individual instances of one retained mesh visual.
+/* This example queries and selects individual instances of one retained mesh visual.
  *
  * What to look for: a single cube geometry is reused with an instance_transform array for a
  * 6x4x2 field of differently placed, scaled, and rotated cubes. Move the cursor over the live 3D

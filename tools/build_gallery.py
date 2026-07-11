@@ -585,6 +585,10 @@ def collect_examples(manifest: dict) -> list[Example]:
         if tags is None:
             tags = entry.get("features", [])
         summary, description = extract_c_description(ROOT / source)
+        if not summary.startswith("This example "):
+            raise ValueError(
+                f"public example summary must start with 'This example ': {source}: {summary!r}"
+            )
         example = Example(
             id=str(entry["id"]),
             title=str(entry.get("title", entry["id"])),

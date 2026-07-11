@@ -10,7 +10,7 @@
 <span>User Scale</span>
 </nav>
 
-User_scale shows how one user-scale value affects screen-space visual sizes and axes.
+This example shows how one user-scale value affects screen-space visual sizes and axes.
 
 ## Preview
 

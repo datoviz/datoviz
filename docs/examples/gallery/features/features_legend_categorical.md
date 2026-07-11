@@ -10,7 +10,7 @@
 <span>Categorical Legend</span>
 </nav>
 
-Legend_categorical shows how one categorical scale drives both marker colors and a legend.
+This example shows how one categorical scale drives both marker colors and a legend.
 
 ## Preview
 

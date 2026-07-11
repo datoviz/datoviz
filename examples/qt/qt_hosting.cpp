@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* qt_hosting - live Qt Widgets host around a Datoviz Vulkan scene.
+/* qt_hosting - This example hosts a Datoviz Vulkan scene in live Qt Widgets.
  *
  * Qt owns the event loop and widgets. Datoviz creates the Vulkan instance and renders into a
  * Qt-created VkSurfaceKHR through the hosted view contract.

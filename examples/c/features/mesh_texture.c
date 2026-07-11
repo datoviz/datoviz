@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* mesh_texture maps an RGBA8 sampled field onto a UV sphere mesh.
+/* This example maps an RGBA8 sampled field onto a UV sphere mesh.
  *
  * What to look for: the texture pixels are generated as a 1024x512 color field, attached to the
  * mesh as the "texture" field, and combined with the sphere geometry's UV coordinates. Rotate the

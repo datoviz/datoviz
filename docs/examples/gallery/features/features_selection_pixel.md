@@ -10,7 +10,7 @@
 <span>Pixel Selection</span>
 </nav>
 
-Selection_pixel queries and selects individual cells in a pixel grid.
+This example queries and selects individual cells in a pixel grid.
 
 ## Preview
 

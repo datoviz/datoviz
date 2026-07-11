@@ -10,7 +10,7 @@
 <span>View Size Policies</span>
 </nav>
 
-View_size_policies demonstrates how requested view size policies resolve to real view sizes.
+This example demonstrates how requested view size policies resolve to real view sizes.
 
 ## Preview
 

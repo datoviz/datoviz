@@ -10,7 +10,7 @@
 <span>Reference Grid</span>
 </nav>
 
-Reference_grid adds a ground-plane reference grid to a 3D scene.
+This example adds a ground-plane reference grid to a 3D scene.
 
 ## Preview
 

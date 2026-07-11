@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* material_mesh compares cube meshes rendered with different material models and parameters.
+/* This example compares cube meshes rendered with different material models and parameters.
  *
  * What to look for: all three panels use the same colored cube geometry, while the material
  * descriptors change between matte Phong, glossy Phong, and a standard rim-lit material. The

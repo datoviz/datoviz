@@ -10,7 +10,7 @@
 <span>Depth Test Toggle</span>
 </nav>
 
-Depth_test compares overlapping 3D points with depth testing enabled and disabled.
+This example compares overlapping 3D points with depth testing enabled and disabled.
 
 ## Preview
 

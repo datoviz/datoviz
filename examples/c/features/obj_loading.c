@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* obj_loading loads a Wavefront OBJ fixture and displays it as a retained mesh.
+/* This example loads a Wavefront OBJ fixture and displays it as a retained mesh.
  *
  * What to look for: the example writes a compact OBJ file, loads it through dvz_geometry_obj(),
  * assigns one mesh color, then uploads the geometry into a lit mesh visual. In the live preview,

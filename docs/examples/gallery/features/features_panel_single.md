@@ -10,7 +10,7 @@
 <span>Single Panel</span>
 </nav>
 
-Panel_single creates one explicit panel rectangle inside a figure.
+This example creates one explicit panel rectangle inside a figure.
 
 ## Preview
 

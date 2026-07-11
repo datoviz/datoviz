@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* selection_pixel queries and selects individual cells in a retained pixel grid.
+/* This example queries and selects individual cells in a retained pixel grid.
  *
  * What to look for: the 40x24 grid uploads position, color, and pixel_size_px arrays generated
  * from a smooth scalar field. Move the cursor over the live panel to query a pixel item; hover

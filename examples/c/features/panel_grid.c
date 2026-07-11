@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* panel_grid arranges four independent panels in a 2x2 figure grid.
+/* This example arranges four independent panels in a 2x2 figure grid.
  *
  * What to look for: each panel has its own border, background, and small point visual with
  * position, color, and diameter_px arrays. The same point pattern is repeated with a different

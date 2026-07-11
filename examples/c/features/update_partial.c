@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* update_partial moves only part of a retained point visual's position array.
+/* This example moves only part of a retained point visual's position array.
  *
  * What to look for: the visual initially uploads six points with position, color, and diameter_px
  * arrays. After one second, dvz_visual_set_data_range() replaces only two position items, moving
