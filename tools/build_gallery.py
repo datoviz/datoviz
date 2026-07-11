@@ -696,7 +696,7 @@ def render_example_explanation(example: Example) -> list[str]:
 def append_detail_table(lines: list[str], title: str, values: dict) -> None:
     if not values:
         return
-    lines.extend([f"### {title}", "", "| Field | Value |", "| --- | --- |"])
+    lines.extend([f"**{title}**", "", "| Field | Value |", "| --- | --- |"])
     for key, value in values.items():
         lines.append(f"| `{key}` | {format_markdown_inline(value)} |")
     lines.append("")
@@ -742,7 +742,7 @@ def render_example_details(example: Example, page_path: str | Path) -> list[str]
         metadata.append(f"- Validation: `{example.validation}`")
     detail_lines = [*metadata, ""]
     if example.tags:
-        detail_lines.extend(["### Tags", "", ", ".join(f"`{tag}`" for tag in example.tags), ""])
+        detail_lines.extend(["**Tags**", "", ", ".join(f"`{tag}`" for tag in example.tags), ""])
     append_detail_table(detail_lines, "Data", example.data)
     append_detail_table(detail_lines, "Dataset", example.dataset)
     append_detail_table(detail_lines, "Encoding", example.encoding)
@@ -837,42 +837,21 @@ def render_example_nav(
     next_: Example | None,
     location: str = "top",
 ) -> list[str]:
-    overview_label, overview_path = lane_overview(example.lane)
-    overview_site_path = "examples/" if overview_path == "index.md" else f"examples/{overview_path[:-3]}/"
-    examples_href = site_html_relative_url(page_path, "examples/")
-    overview_href = site_html_relative_url(page_path, overview_site_path)
     previous_href = site_html_relative_url(page_path, f"examples/{previous.page_path[:-3]}/") if previous else ""
     next_href = site_html_relative_url(page_path, f"examples/{next_.page_path[:-3]}/") if next_ else ""
-    if location == "top":
-        return [
-            '<nav class="dvz-example-breadcrumbs" aria-label="Breadcrumbs">',
-            f'<a href="{examples_href}">Examples</a>',
-            '<span>/</span>',
-            f'<a href="{overview_href}">{overview_label}</a>',
-            '<span>/</span>',
-            f'<span>{example.title}</span>',
-            "</nav>",
-            "",
-        ]
-
     previous_link = (
-        f'<a href="{previous_href}">Previous: {previous.title}</a>'
+        f'<a href="{previous_href}">← Previous: {previous.title}</a>'
         if previous
         else ""
     )
     next_link = (
-        f'<a href="{next_href}">Next: {next_.title}</a>'
+        f'<a href="{next_href}">Next: {next_.title} →</a>'
         if next_
         else ""
     )
     sibling_links = [link for link in (previous_link, next_link) if link]
     return [
         f'<nav class="dvz-example-nav dvz-example-nav--{location}" aria-label="Example navigation">',
-        '<div class="dvz-example-nav__trail">',
-        f'<a href="{examples_href}">Examples</a>',
-        '<span>/</span>',
-        f'<a href="{overview_href}">{overview_label}</a>',
-        "</div>",
         '<div class="dvz-example-nav__siblings">',
         " · ".join(sibling_links),
         "</div>",

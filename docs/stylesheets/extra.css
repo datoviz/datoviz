@@ -182,8 +182,6 @@ img[alt*=gpuopen] {
     }
 }
 
-.dvz-example-breadcrumbs,
-.dvz-example-nav__trail,
 .dvz-example-nav__siblings {
     display: flex;
     flex-wrap: wrap;
@@ -193,12 +191,8 @@ img[alt*=gpuopen] {
     color: var(--md-default-fg-color--light);
 }
 
-.dvz-example-breadcrumbs {
-    margin: 0 0 0.8rem;
-}
-
-.dvz-example-breadcrumbs span:last-child {
-    color: var(--md-default-fg-color);
+.dvz-example-nav--top {
+    margin-bottom: 0.8rem;
 }
 
 .dvz-example-nav--bottom {
