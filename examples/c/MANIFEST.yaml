@@ -2884,7 +2884,7 @@ examples:
           sample_step: 1
           fps: 24
           webp_quality: 50
-          mp4_crf: 30
+          mp4_crf: 29
           webm_crf: 34
     data:
       kind: real
