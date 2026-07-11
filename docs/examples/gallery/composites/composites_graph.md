@@ -10,7 +10,7 @@
 <span>Graph Composite</span>
 </nav>
 
-This example builds a small brain-connectivity graph composite.
+This example builds a small graph composite.
 
 ## Preview
 

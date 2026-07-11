@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* graph - This example builds a small brain-connectivity graph composite.
+/* graph - This example builds a small graph composite.
  *
  * What to look for: node arrays provide positions, semantic IDs, community colors, and sizes;
  * edge arrays provide endpoints, IDs, colors, widths, and optional Bezier controls. Compare node
@@ -52,30 +52,30 @@
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-typedef struct BrainCommunity
+typedef struct Community
 {
     DvzColor color;
-} BrainCommunity;
+} Community;
 
 
-typedef struct BrainNode
+typedef struct Node
 {
     const char* label;
     uint32_t community;
     dvec3 position;
     uint64_t semantic_id;
     float strength;
-} BrainNode;
+} Node;
 
 
-typedef struct BrainEdge
+typedef struct Edge
 {
     uint32_t source;
     uint32_t target;
     uint64_t semantic_id;
     float weight;
     bool bridge;
-} BrainEdge;
+} Edge;
 
 
 
@@ -83,14 +83,14 @@ typedef struct BrainEdge
 /*  Data                                                                                         */
 /*************************************************************************************************/
 
-static const BrainCommunity COMMUNITIES[] = {
+static const Community COMMUNITIES[] = {
     {.color = {65, 201, 226, 255}},
     {.color = {246, 185, 72, 255}},
     {.color = {234, 104, 91, 255}},
 };
 
 
-static const BrainNode NODES[] = {
+static const Node NODES[] = {
     {.label = "V1", .community = 0, .position = {-1.05, +0.42, 0.0}, .semantic_id = 101, .strength = 0.88f},
     {.label = "V2", .community = 0, .position = {-0.80, +0.62, 0.0}, .semantic_id = 102, .strength = 0.72f},
     {.label = "V4", .community = 0, .position = {-0.55, +0.42, 0.0}, .semantic_id = 103, .strength = 0.76f},
@@ -109,7 +109,7 @@ static const BrainNode NODES[] = {
 };
 
 
-static const BrainEdge EDGES[] = {
+static const Edge EDGES[] = {
     {.source = 0, .target = 1, .semantic_id = 1001, .weight = 0.84f, .bridge = false},
     {.source = 1, .target = 2, .semantic_id = 1002, .weight = 0.76f, .bridge = false},
     {.source = 0, .target = 3, .semantic_id = 1003, .weight = 0.62f, .bridge = false},
@@ -139,13 +139,13 @@ static const BrainEdge EDGES[] = {
 };
 
 
-typedef struct BrainBounds
+typedef struct Bounds
 {
     double xmin;
     double xmax;
     double ymin;
     double ymax;
-} BrainBounds;
+} Bounds;
 
 
 enum
@@ -161,7 +161,7 @@ enum
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-static void _bounds_add(BrainBounds* bounds, double x, double y)
+static void _bounds_add(Bounds* bounds, double x, double y)
 {
     ANN(bounds);
     if (x < bounds->xmin)
@@ -207,7 +207,7 @@ static void _bridge_edge_controls(uint32_t edge_index, uint32_t bridge_index, dv
     ANN(c0);
     ANN(c1);
 
-    const BrainEdge* edge = &EDGES[edge_index];
+    const Edge* edge = &EDGES[edge_index];
     const dvec3* source = &NODES[edge->source].position;
     const dvec3* target = &NODES[edge->target].position;
     const double sx = (*source)[0];
@@ -229,7 +229,7 @@ static void _bridge_edge_controls(uint32_t edge_index, uint32_t bridge_index, dv
 
 
 static void _bounds_add_cubic(
-    BrainBounds* bounds, const dvec3 p0, const dvec3 c0, const dvec3 c1, const dvec3 p3)
+    Bounds* bounds, const dvec3 p0, const dvec3 c0, const dvec3 c1, const dvec3 p3)
 {
     ANN(bounds);
     ANN(p0);
@@ -253,16 +253,16 @@ static void _bounds_add_cubic(
 
 
 
-static BrainBounds _graph_bounds(void)
+static Bounds _graph_bounds(void)
 {
-    BrainBounds bounds = {.xmin = DBL_MAX, .xmax = -DBL_MAX, .ymin = DBL_MAX, .ymax = -DBL_MAX};
+    Bounds bounds = {.xmin = DBL_MAX, .xmax = -DBL_MAX, .ymin = DBL_MAX, .ymax = -DBL_MAX};
     for (uint32_t i = 0; i < NODE_COUNT; i++)
         _bounds_add(&bounds, NODES[i].position[0], NODES[i].position[1]);
 
     uint32_t bridge_index = 0;
     for (uint32_t i = 0; i < EDGE_COUNT; i++)
     {
-        const BrainEdge* edge = &EDGES[i];
+        const Edge* edge = &EDGES[i];
         const dvec3* p0 = &NODES[edge->source].position;
         const dvec3* p3 = &NODES[edge->target].position;
         dvec3 c0 = {0};
@@ -287,7 +287,7 @@ static BrainBounds _graph_bounds(void)
 static bool _configure_panel(DvzPanel* panel)
 {
     ANN(panel);
-    const BrainBounds bounds = _graph_bounds();
+    const Bounds bounds = _graph_bounds();
     if (dvz_panel_set_padding(
             panel, &(DvzPanelReserve){
                        .left_px = 24.0f, .right_px = 24.0f, .bottom_px = 18.0f,
@@ -301,7 +301,7 @@ static bool _configure_panel(DvzPanel* panel)
 
 
 /**
- * Fill node positions from the fixed brain-region table.
+ * Fill node positions from the fixed -region table.
  *
  * @param positions output node positions
  */

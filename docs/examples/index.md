@@ -455,7 +455,7 @@ This example compares one holed polygon with a multi-region polygon set.
 
 `composites`
 
-This example builds a small brain-connectivity graph composite.
+This example builds a small graph composite.
 
 </div>
 
