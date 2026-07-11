@@ -1752,6 +1752,22 @@ examples:
       source: examples/python/gallery/features/visibility.py
       status: direct-engine
     validation: smoke+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 48
+        fps: 24
+        card:
+          sample_step: 1
+          fps: 24
+        timeline:
+          segments:
+            - id: visible
+              kind: state
+              frames: 24
+            - id: hidden
+              kind: state
+              frames: 24
     data:
       kind: synthetic
     webgpu:
