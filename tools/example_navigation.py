@@ -23,6 +23,7 @@ class ExampleGroup:
 class ExampleSection:
     id: str
     title: str
+    page_title: str
     overview: str
     lanes: tuple[str, ...]
     groups: tuple[ExampleGroup, ...]
@@ -68,6 +69,7 @@ def load_navigation(path: Path = DEFAULT_NAVIGATION) -> ExampleNavigation:
     for item in raw.get('sections') or []:
         id_ = str(item.get('id') or '').strip()
         title = str(item.get('title') or '').strip()
+        page_title = str(item.get('page_title') or title).strip()
         overview = str(item.get('overview') or '').strip()
         lanes = tuple(str(lane) for lane in item.get('lanes') or [])
         groups = _groups(item.get('groups'), id_)
@@ -80,6 +82,7 @@ def load_navigation(path: Path = DEFAULT_NAVIGATION) -> ExampleNavigation:
             ExampleSection(
                 id=id_,
                 title=title,
+                page_title=page_title,
                 overview=overview,
                 lanes=lanes,
                 groups=groups,

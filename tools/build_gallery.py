@@ -83,23 +83,23 @@ INDEX_FEATURE_GROUPS = navigation_groups("features", index=True)
 CATEGORY_TO_LANE = gallery_media.CATEGORY_TO_LANE
 LANE_TO_CATEGORY = gallery_media.LANE_TO_CATEGORY
 
+PAGE_INTROS = {
+    "advanced": (
+        "Browse advanced runtime and host-integration examples. "
+        "These are useful after you are comfortable with ordinary scene code."
+    ),
+    "runtime": (
+        "Browse examples for opening windows, rendering offscreen, recording, replaying, "
+        "and exporting media."
+    ),
+}
 PAGE_CONFIG = {
-    "advanced.md": {
-        "title": "Advanced Examples",
-        "lanes": ("advanced",),
-        "intro": (
-            "Browse advanced runtime and host-integration examples. "
-            "These are useful after you are comfortable with ordinary scene code."
-        ),
-    },
-    "runtime.md": {
-        "title": "Runtime & Capture",
-        "lanes": ("runtime",),
-        "intro": (
-            "Browse examples for opening windows, rendering offscreen, recording, replaying, "
-            "and exporting media."
-        ),
-    },
+    EXAMPLE_NAVIGATION.section(id_).overview: {
+        "title": EXAMPLE_NAVIGATION.section(id_).page_title,
+        "lanes": EXAMPLE_NAVIGATION.section(id_).lanes,
+        "intro": intro,
+    }
+    for id_, intro in PAGE_INTROS.items()
 }
 
 
@@ -799,56 +799,22 @@ def render_card(
 
 
 def lane_overview(lane: str) -> tuple[str, str]:
-    return {
-        "start": ("Examples", "index.md"),
-        "visuals": ("Visuals & Composites", "visuals.md"),
-        "features": ("Features", "features.md"),
-        "runtime": ("Runtime & Capture", "runtime.md"),
-        "composites": ("Visuals & Composites", "visuals.md"),
-        "showcases": ("Showcases", "showcases.md"),
-        "advanced": ("Advanced Examples", "advanced.md"),
-    }.get(lane, ("Examples", "index.md"))
+    for section in EXAMPLE_NAVIGATION.sections:
+        if lane in section.lanes:
+            return section.page_title, section.overview
+    return "Examples", "index.md"
 
 
 def ordered_lane_examples(examples: list[Example], lane: str) -> list[Example]:
     lane_examples = [example for example in examples if example.lane == lane]
     by_id = {example.id: example for example in examples}
-    if lane == "features":
-        ordered: list[Example] = []
-        seen: set[str] = set()
-        for _, group_ids in FEATURE_PAGE_GROUPS:
-            for id_ in group_ids:
-                example = by_id.get(id_)
-                if example is not None and example.lane == lane:
-                    ordered.append(example)
-                    seen.add(id_)
-        ordered.extend(
-            sorted((e for e in lane_examples if e.id not in seen), key=lambda e: e.title.lower())
-        )
-        return ordered
-    if lane == "runtime":
-        ordered = []
-        seen: set[str] = set()
-        for _, group_ids in RUNTIME_PAGE_GROUPS:
-            for id_ in group_ids:
-                example = by_id.get(id_)
-                if example is not None and example.lane == lane:
-                    ordered.append(example)
-                    seen.add(id_)
-        ordered.extend(
-            sorted((e for e in lane_examples if e.id not in seen), key=lambda e: e.title.lower())
-        )
-        return ordered
-    if lane in ("visuals", "composites"):
-        group_ids = [id_ for _, ids in INDEX_VISUAL_GROUPS for id_ in ids]
-        ordered = [by_id[id_] for id_ in group_ids if id_ in by_id and by_id[id_].lane == lane]
-        seen = {example.id for example in ordered}
-        ordered.extend(
-            sorted((e for e in lane_examples if e.id not in seen), key=lambda e: e.title.lower())
-        )
-        return ordered
-    if lane == "showcases":
-        return semantic_sort(lane_examples, SHOWCASE_ORDER)
+    for section in EXAMPLE_NAVIGATION.sections:
+        if lane in section.lanes:
+            return [
+                by_id[id_]
+                for id_ in section.ordered_ids
+                if id_ in by_id and by_id[id_].lane == lane
+            ]
     return sorted(lane_examples, key=lambda e: e.title.lower())
 
 

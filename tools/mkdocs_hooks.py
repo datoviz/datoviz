@@ -17,15 +17,6 @@ from mkdocs.structure.files import File
 CURDIR = Path(__file__).parent
 ROOT = CURDIR.parent
 ROOT_DOCS = ('ARCHITECTURE', 'BUILD', 'CONTRIBUTING', 'MAINTAINERS')
-GALLERY_NAV_SECTIONS = (
-    ('Showcases', ('showcases',)),
-    ('Visuals & Composites', ('visuals', 'composites')),
-    ('Features', ('features',)),
-    ('Runtime & Capture', ('runtime',)),
-    ('Advanced', ('advanced',)),
-)
-
-
 # Util functions
 # -------------------------------------------------------------------------------------------------
 
@@ -144,34 +135,38 @@ def find_named_nav_section(nav, title):
     return None
 
 
-def build_gallery_nav_sections(examples_nav):
+def build_gallery_nav_sections():
     if str(CURDIR) not in sys.path:
         sys.path.insert(0, str(CURDIR))
 
-    from build_gallery import collect_examples, load_manifest, ordered_lane_examples
+    from build_gallery import (
+        EXAMPLE_NAVIGATION,
+        collect_examples,
+        load_manifest,
+        validate_navigation,
+    )
 
     manifest = load_manifest(ROOT / 'examples/c/MANIFEST.yaml')
     examples = collect_examples(manifest)
+    validate_navigation(EXAMPLE_NAVIGATION, examples)
+    by_id = {example.id: example for example in examples}
     sections = []
-    for label, lanes in GALLERY_NAV_SECTIONS:
-        section = find_named_nav_section(examples_nav, label)
-        if section is not None:
-            raise ValueError(f"Examples navigation section {label!r} is already nested")
-        overview = next(
-            (item[label] for item in examples_nav if isinstance(item, dict) and label in item),
-            None,
-        )
-        if not isinstance(overview, str):
-            raise ValueError(f"Examples navigation is missing the {label!r} overview page")
+    for section in EXAMPLE_NAVIGATION.sections:
+        overview = f'examples/{section.overview}'
         pages = [{'Overview': overview}]
-        for lane in lanes:
-            lane_examples = ordered_lane_examples(examples, lane)
+        if section.groups:
+            for group in section.groups:
+                group_pages = [
+                    {by_id[id_].title: f'examples/{by_id[id_].page_path}'}
+                    for id_ in group.example_ids
+                ]
+                pages.append({group.title: group_pages})
+        else:
             pages.extend(
-                {example.title: f"examples/{example.page_path}"} for example in lane_examples
+                {by_id[id_].title: f'examples/{by_id[id_].page_path}'}
+                for id_ in section.example_ids
             )
-        if len(pages) == 1:
-            continue
-        sections.append({label: pages})
+        sections.append({section.title: pages})
     return sections
 
 
@@ -183,15 +178,9 @@ def on_config(config):
     examples_nav = find_named_nav_section(config.get('nav'), 'Examples')
     if examples_nav is None:
         raise ValueError("MkDocs navigation is missing the Examples section")
-    replacements = {
-        next(iter(section)): section for section in build_gallery_nav_sections(examples_nav)
-    }
-    examples_nav[:] = [
-        replacements.get(next(iter(item)), item)
-        if isinstance(item, dict) and len(item) == 1
-        else item
-        for item in examples_nav
-    ]
+    if examples_nav != [{'Overview': 'examples/index.md'}]:
+        raise ValueError("MkDocs Examples navigation must contain only its Overview page")
+    examples_nav.extend(build_gallery_nav_sections())
     return config
 
 

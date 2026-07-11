@@ -6,6 +6,9 @@ comments. The navigation file is authored and owns section grouping and ordering
 JSON outputs are committed so reviews and release branches contain the exact documentation that
 will be published.
 
+`mkdocs.yml` declares only the Examples overview. The MkDocs hook expands the authored navigation
+model into subsection overviews, grouped detail pages, and flat sections where requested.
+
 Do not edit generated example pages directly. Update the manifest, source description, or generator,
 then run:
 

@@ -207,10 +207,11 @@ sections:
 
   - id: advanced
     title: Advanced
+    page_title: Advanced Examples
     overview: advanced.md
     lanes: [advanced]
     examples:
-      - advanced_raw_triangle_vklite
-      - advanced_raw_triangle_drp2
       - advanced_external_surface_glfw
       - advanced_qt_hosting
+      - advanced_raw_triangle_drp2
+      - advanced_raw_triangle_vklite
