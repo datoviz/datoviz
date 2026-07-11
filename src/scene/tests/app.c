@@ -957,7 +957,7 @@ static uint32_t _app_yellow_count_in_rows(
 
 
 /**
- * Convert glyph visual NDC bounds to a conservative pixel rectangle.
+ * Convert panel-pixel glyph bounds to a conservative pixel rectangle.
  *
  * @param visual the glyph visual
  * @param width capture width
@@ -1001,8 +1001,8 @@ static bool _app_glyph_pixel_bounds(
     for (uint64_t i = 0; i < position_view.item_count; i++)
     {
         uint64_t pos_offset = 3 * i;
-        float px = (positions[pos_offset + 0] * 0.5f + 0.5f) * (float)width;
-        float py = (1.0f - (positions[pos_offset + 1] * 0.5f + 0.5f)) * (float)height;
+        float px = positions[pos_offset + 0];
+        float py = positions[pos_offset + 1];
         if (bounds != NULL)
         {
             float c = angles != NULL ? cosf(angles[i]) : 1.0f;
@@ -3785,7 +3785,10 @@ int test_app_offscreen_text_has_nonblank_pixels(TstContext* suite, const TstCase
     AT(dvz_visual_set_data_many(text, updates, 5) == 0);
     AT(dvz_panel_add_visual(
            panel, text,
-           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
+               .z_layer = 1,
+               .controller_mode = DVZ_CONTROLLER_FIXED,
+               .coord_space = DVZ_VISUAL_COORD_PANEL_PIXEL}) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -3868,7 +3871,10 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
     AT(dvz_visual_set_data_many(text, updates, 5) == 0);
     AT(dvz_panel_add_visual(
            panel, text,
-           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
+               .z_layer = 1,
+               .controller_mode = DVZ_CONTROLLER_FIXED,
+               .coord_space = DVZ_VISUAL_COORD_PANEL_PIXEL}) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)

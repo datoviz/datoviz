@@ -412,7 +412,10 @@ int test_scene_text_atlas_utf8_runtime_readback(TstContext* suite, const TstCase
     AT(dvz_visual_set_data_many(text, updates, 5) == 0);
     AT(dvz_panel_add_visual(
            panel, text,
-           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
+               .z_layer = 1,
+               .controller_mode = DVZ_CONTROLLER_FIXED,
+               .coord_space = DVZ_VISUAL_COORD_PANEL_PIXEL}) == 0);
 
     _scene_prepare_text_visuals(figure);
     AT(_visual_family_state(text)->text.glyph_visual != NULL);
