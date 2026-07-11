@@ -1510,8 +1510,9 @@ void example_tuner_detach(ExampleTuner* tuner)
     if (tuner == NULL)
         return;
 
-    if (tuner->installed && tuner->input != NULL)
-        dvz_input_unsubscribe(tuner->input, tuner->input_subscription_id);
+    DvzInputRouter* input = tuner->view != NULL ? dvz_view_input(tuner->view) : NULL;
+    if (tuner->installed && input != NULL && input == tuner->input)
+        dvz_input_unsubscribe(input, tuner->input_subscription_id);
     if (tuner->view != NULL)
         dvz_view_set_gui_callback(tuner->view, NULL, NULL);
     _tuner_restore_figure_reserve(tuner);
