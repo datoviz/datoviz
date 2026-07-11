@@ -5,7 +5,7 @@
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../visuals_sphere">← Previous: Sphere</a></span>
-<span class="dvz-example-nav__next"></span>
+<span class="dvz-example-nav__next"><a href="../../composites/composites_polygon">Next: Polygon Composite →</a></span>
 </div>
 </nav>
 
@@ -59,6 +59,6 @@ The FIELD_SIZE cubed data array is attached as a 3D sampled field, with color an
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../visuals_sphere">← Previous: Sphere</a></span>
-<span class="dvz-example-nav__next"></span>
+<span class="dvz-example-nav__next"><a href="../../composites/composites_polygon">Next: Polygon Composite →</a></span>
 </div>
 </nav>

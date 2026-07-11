@@ -821,8 +821,9 @@ def ordered_lane_examples(examples: list[Example], lane: str) -> list[Example]:
 
 def example_neighbors(examples: list[Example]) -> dict[str, tuple[Example | None, Example | None]]:
     neighbors: dict[str, tuple[Example | None, Example | None]] = {}
-    for lane in PUBLIC_LANES:
-        ordered = ordered_lane_examples(examples, lane)
+    by_id = {example.id: example for example in examples}
+    for section in EXAMPLE_NAVIGATION.sections:
+        ordered = [by_id[id_] for id_ in section.ordered_ids if id_ in by_id]
         for i, example in enumerate(ordered):
             previous = ordered[i - 1] if i > 0 else None
             next_ = ordered[i + 1] if i + 1 < len(ordered) else None
