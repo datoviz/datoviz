@@ -1341,6 +1341,7 @@ examples:
         card:
           compare: true
           preferred: video-mp4
+          mp4_crf: 22
     data:
       kind: synthetic
     webgpu:
