@@ -151,6 +151,7 @@ export const LIVE_EXAMPLES = [
     id: "features_sampled_field_update",
     label: "Sampled Field Update",
     scenarioId: "features_sampled_field_update",
+    animate: true,
   },
   {
     id: "features_colormap_scale",

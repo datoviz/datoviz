@@ -1168,12 +1168,6 @@ async function main() {
         'webgpu_live_controller_turntable.png',
         'turntable-controller',
       ],
-      [
-        'features_sampled_field_update',
-        'Sampled Field Update',
-        'webgpu_live_sampled_field_update.png',
-        'sampled-field-update',
-      ],
       ['features_colormap_scale', 'Scalar Color Scale', 'webgpu_live_colormap_scale.png', 'colormap-scale'],
       ['features_panel_background', 'Panel Background', 'webgpu_live_panel_background.png', 'panel-background'],
       ['composites_polygon', 'Polygon Composite', 'webgpu_live_composite_polygon.png', 'composite-polygon'],
@@ -1237,6 +1231,13 @@ async function main() {
     }
 
     const promotedAnimatedRoutes = [
+      [
+        'features_sampled_field_update',
+        'Sampled Field Update',
+        'webgpu_live_sampled_field_update.png',
+        'sampled-field-update',
+        'features_sampled_field_update',
+      ],
       [
         'features_update_partial',
         'Partial Data Update',
