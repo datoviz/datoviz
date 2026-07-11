@@ -1941,6 +1941,13 @@ struct VertexOut {
 @group(0) @binding(0) var source_texture: texture_2d<f32>;
 @group(0) @binding(1) var source_sampler: sampler;
 
+fn linear_to_srgb(linear: vec3f) -> vec3f {
+  let clipped = clamp(linear, vec3f(0.0), vec3f(1.0));
+  let lo = clipped * vec3f(12.92);
+  let hi = vec3f(1.055) * pow(clipped, vec3f(1.0 / 2.4)) - vec3f(0.055);
+  return select(hi, lo, clipped <= vec3f(0.0031308));
+}
+
 @vertex
 fn vs_main(@builtin(vertex_index) vertex_index: u32) -> VertexOut {
   var positions = array<vec2f, 3>(
@@ -1961,7 +1968,8 @@ fn vs_main(@builtin(vertex_index) vertex_index: u32) -> VertexOut {
 
 @fragment
 fn fs_main(in: VertexOut) -> @location(0) vec4f {
-  return textureSample(source_texture, source_sampler, in.uv);
+  let linear = textureSample(source_texture, source_sampler, in.uv);
+  return vec4f(linear_to_srgb(linear.rgb), linear.a);
 }
 `;
 

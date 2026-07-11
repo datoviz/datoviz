@@ -71,6 +71,7 @@ let createdBufferCount = 0;
 let queueSubmitCount = 0;
 let observedViewports = [];
 let observedScissors = [];
+let observedShaderModules = [];
 
 const pass = () => ({
   setPipeline() {},
@@ -132,7 +133,8 @@ const device = {
   createBindGroup() {
     return {};
   },
-  createShaderModule() {
+  createShaderModule(desc = {}) {
+    observedShaderModules.push(desc);
     return {
       async getCompilationInfo() {
         return { messages: [] };
@@ -634,6 +636,16 @@ async function smokeBrowserPresentResizeRetention(Drp2WebGpuRuntime) {
 
   const beforeFirstRender = queueSubmitCount;
   await runtime.render();
+  const presentShader = observedShaderModules.find(
+    (module) => module.label === 'browser-present-shader',
+  );
+  if (
+    presentShader === undefined ||
+    !presentShader.code.includes('linear_to_srgb(linear.rgb)') ||
+    !presentShader.code.includes('linear.a')
+  ) {
+    throw new Error('browser presentation must encode linear RGB to sRGB and preserve alpha');
+  }
   const firstStats = runtime.resourceStats();
   if (firstStats.browserPresentTextures !== 1) {
     throw new Error(`browser present cache expected one texture, got ${firstStats.browserPresentTextures}`);
