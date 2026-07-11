@@ -145,6 +145,11 @@ def _run_app(app, view) -> None:
     if SMOKE_MODE and capture:
         path = Path(capture)
         path.parent.mkdir(parents=True, exist_ok=True)
+        rgba = dvz.dvz_view_capture_rgba(view)
+        if rgba is None or rgba.size == 0:
+            raise RuntimeError("dvz_view_capture_rgba() returned no pixels")
+        if not np.any(rgba[..., :3] != rgba[0, 0, :3]):
+            raise RuntimeError("gallery smoke capture is blank")
         if dvz.dvz_view_capture_png(view, str(path).encode()) != 0:
             raise RuntimeError(f"dvz_view_capture_png() failed: {path}")
 

@@ -88,6 +88,12 @@ review-batches:
         for name, ids in sorted(batches.items()):
             print(f"{name:36s} {len(ids)} examples")
 
+
+# Run manifest-declared Python gallery examples as isolated offscreen smokes.
+[positional-arguments]
+python-examples-check *args: build
+    @python3 tools/run_python_examples.py "$@"
+
 # Smoke-test fenced code blocks in documentation markdown files.
 # Prerequisites: build (for C) and ctypes (for Python array facade).
 doctest lang="both":
