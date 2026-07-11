@@ -4,7 +4,7 @@
 
 Browse composed scenes demonstrating scientific workflows, real data, and polished demos.
 
-## 2D
+## 2D { #2d }
 
 <div class="grid cards" markdown="1">
 
@@ -115,7 +115,7 @@ This example uses scene compute buffers to animate particle smoke.
 
 </div>
 
-## 3D
+## 3D { #3d }
 
 <div class="grid cards" markdown="1">
 

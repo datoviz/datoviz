@@ -4,7 +4,7 @@
 
 Browse isolated examples for layout, navigation, adornments, rendering, interaction, animation, and diagnostics.
 
-## Scene & Layout
+## Scene & Layout { #scene-layout }
 
 <div class="grid cards" markdown="1">
 
@@ -161,7 +161,7 @@ This example toggles one visual on and off without changing its data arrays.
 
 </div>
 
-## Navigation
+## Navigation { #navigation }
 
 <div class="grid cards" markdown="1">
 
@@ -286,7 +286,7 @@ This example adds a ground-plane reference grid to a 3D scene.
 
 </div>
 
-## Adornments
+## Adornments { #adornments }
 
 <div class="grid cards" markdown="1">
 
@@ -460,7 +460,7 @@ This example queries categorical label IDs from a generated label image.
 
 </div>
 
-## Shapes & Geometry
+## Shapes & Geometry { #shapes-geometry }
 
 <div class="grid cards" markdown="1">
 
@@ -538,7 +538,7 @@ This example loads a Wavefront OBJ fixture and displays it as a mesh.
 
 </div>
 
-## Scientific
+## Scientific { #scientific }
 
 <div class="grid cards" markdown="1">
 
@@ -592,7 +592,7 @@ This example shows probing a scalar image at a marked data position.
 
 </div>
 
-## Materials & Lighting
+## Materials & Lighting { #materials-lighting }
 
 <div class="grid cards" markdown="1">
 
@@ -646,7 +646,7 @@ This example compares a plain 3D sphere lattice with depth-dependent fading.
 
 </div>
 
-## Rendering Techniques
+## Rendering Techniques { #rendering-techniques }
 
 <div class="grid cards" markdown="1">
 
@@ -736,7 +736,7 @@ This example compares overlapping 3D points with depth testing enabled and disab
 
 </div>
 
-## Interaction & Selection
+## Interaction & Selection { #interaction-selection }
 
 <div class="grid cards" markdown="1">
 
@@ -790,7 +790,7 @@ This example queries and selects individual instances of one mesh visual.
 
 </div>
 
-## Animation & Updates
+## Animation & Updates { #animation-updates }
 
 <div class="grid cards" markdown="1">
 
@@ -863,7 +863,7 @@ This example replaces all arrays on one point visual.
 
 </div>
 
-## GUI
+## GUI { #gui }
 
 <div class="grid cards" markdown="1">
 
@@ -905,7 +905,7 @@ This example shows raw cimgui widgets controlling a Datoviz visual.
 
 </div>
 
-## Input & Diagnostics
+## Input & Diagnostics { #input-diagnostics }
 
 <div class="grid cards" markdown="1">
 

@@ -4,7 +4,7 @@
 
 Browse one focused example per visual family or composite.
 
-## 0D — point-like
+## 0D — point-like { #0d-point-like }
 
 <div class="grid cards" markdown="1">
 
@@ -58,7 +58,7 @@ This example renders Gaussian splats as translucent ellipses.
 
 </div>
 
-## 1D — line-like
+## 1D — line-like { #1d-line-like }
 
 <div class="grid cards" markdown="1">
 
@@ -112,7 +112,7 @@ This example compares basic primitive topologies.
 
 </div>
 
-## 2D — planar
+## 2D — planar { #2d-planar }
 
 <div class="grid cards" markdown="1">
 
@@ -178,7 +178,7 @@ This example turns an integer sampled field into categorical image labels.
 
 </div>
 
-## 3D — volumetric
+## 3D — volumetric { #3d-volumetric }
 
 <div class="grid cards" markdown="1">
 
@@ -220,7 +220,7 @@ This example volume-renders a generated 3D gyroid scalar field.
 
 </div>
 
-## Composites
+## Composites { #composites }
 
 <div class="grid cards" markdown="1">
 

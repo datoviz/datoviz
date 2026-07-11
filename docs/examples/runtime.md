@@ -4,7 +4,7 @@
 
 Browse examples for opening windows, rendering offscreen, recording, replaying, and exporting media.
 
-## Windows & Hosting
+## Windows & Hosting { #windows-hosting }
 
 <div class="grid cards" markdown="1">
 
@@ -34,7 +34,7 @@ This example drives two independent native GLFW windows from one Datoviz app.
 
 </div>
 
-## Capture, Export & Replay
+## Capture, Export & Replay { #capture-export-replay }
 
 <div class="grid cards" markdown="1">
 

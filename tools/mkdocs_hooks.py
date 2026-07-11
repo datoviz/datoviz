@@ -139,32 +139,21 @@ def build_gallery_nav_sections():
     if str(CURDIR) not in sys.path:
         sys.path.insert(0, str(CURDIR))
 
-    from build_gallery import (
-        EXAMPLE_NAVIGATION,
-        collect_examples,
-        load_manifest,
-        validate_navigation,
-    )
+    from build_gallery import EXAMPLE_NAVIGATION, collect_examples, load_manifest, validate_navigation
+    from example_navigation import navigation_anchor
 
     manifest = load_manifest(ROOT / 'examples/c/MANIFEST.yaml')
     examples = collect_examples(manifest)
     validate_navigation(EXAMPLE_NAVIGATION, examples)
-    by_id = {example.id: example for example in examples}
     sections = []
     for section in EXAMPLE_NAVIGATION.sections:
         overview = f'examples/{section.overview}'
+        overview_url = f'/examples/{Path(section.overview).with_suffix("").as_posix()}/'
         pages = [{'Overview': overview}]
         if section.groups:
-            for group in section.groups:
-                group_pages = [
-                    {by_id[id_].title: f'examples/{by_id[id_].page_path}'}
-                    for id_ in group.example_ids
-                ]
-                pages.append({group.title: group_pages})
-        else:
             pages.extend(
-                {by_id[id_].title: f'examples/{by_id[id_].page_path}'}
-                for id_ in section.example_ids
+                {group.title: f'{overview_url}#{navigation_anchor(group.title)}'}
+                for group in section.groups
             )
         sections.append({section.title: pages})
     return sections

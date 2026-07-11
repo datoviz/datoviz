@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import re
 from typing import Any, Iterable
 
 import yaml
@@ -11,6 +12,14 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_NAVIGATION = ROOT / 'docs/examples/navigation.yaml'
+
+
+def navigation_anchor(title: str) -> str:
+    """Return the stable URL anchor used for an example navigation group."""
+    anchor = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')
+    if not anchor:
+        raise ValueError(f'example navigation title has no URL-safe characters: {title!r}')
+    return anchor
 
 
 @dataclass(frozen=True)

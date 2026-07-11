@@ -13,7 +13,7 @@ from pathlib import Path
 from textwrap import dedent
 
 import gallery_media
-from example_navigation import load_navigation, validate_navigation
+from example_navigation import load_navigation, navigation_anchor, validate_navigation
 
 
 ROOT = gallery_media.ROOT
@@ -965,7 +965,7 @@ def render_showcases_page(
         group_examples = [by_id[id_] for id_ in group_ids if id_ in by_id]
         if not group_examples:
             continue
-        lines.extend([f"## {group_label}", ""])
+        lines.extend([f"## {group_label} {{ #{navigation_anchor(group_label)} }}", ""])
         lines.append('<div class="grid cards" markdown="1">')
         lines.append("")
         for example in group_examples:
@@ -1152,7 +1152,7 @@ def render_visuals_page(
         group_examples = [by_id[i] for i in group_ids if i in by_id]
         if not group_examples:
             continue
-        lines.extend([f"## {group_label}", ""])
+        lines.extend([f"## {group_label} {{ #{navigation_anchor(group_label)} }}", ""])
         lines.append('<div class="grid cards" markdown="1">')
         lines.append("")
         for example in group_examples:
@@ -1183,7 +1183,7 @@ def render_features_page(
         group_examples = [by_id[i] for i in group_ids if i in by_id]
         if not group_examples:
             continue
-        lines.extend([f"## {group_label}", ""])
+        lines.extend([f"## {group_label} {{ #{navigation_anchor(group_label)} }}", ""])
         lines.append('<div class="grid cards" markdown="1">')
         lines.append("")
         for example in group_examples:
@@ -1239,7 +1239,7 @@ def render_runtime_page(
         group_examples = [by_id[i] for i in group_ids if i in by_id]
         if not group_examples:
             continue
-        lines.extend([f"## {group_label}", ""])
+        lines.extend([f"## {group_label} {{ #{navigation_anchor(group_label)} }}", ""])
         lines.append('<div class="grid cards" markdown="1">')
         lines.append("")
         for example in group_examples:
