@@ -24,9 +24,10 @@ Datoviz v0.4-dev is a deep rewrite of v0.3. The branch is preparing release cand
 7. After changing public headers, exported API, binding policy, or binding generators, refresh and
    validate local Python bindings with `just ctypes` and `just ctypes-check` before running Python,
    GSP, or packaging validation.
-8. Never publish anything externally on the user's behalf without the user's explicit manual
-   approval of the exact final content and publication action first. This includes GitHub comments,
-   reviews, issues, pull requests, releases, pushes, messages, uploads, and posts. Prepare drafts
+8. Pushing commits to `origin/v0.4-dev` is allowed when the user explicitly requests a push in the
+   current turn. All other external publication requires the user's explicit manual approval of the
+   exact final content and publication action first. This includes GitHub comments, reviews, issues,
+   pull requests, releases, pushes to other branches, messages, uploads, and posts. Prepare drafts
    only until that approval is given; ambiguous instructions such as "do it" do not authorize
    publication.
 
