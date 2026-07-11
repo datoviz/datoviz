@@ -24,6 +24,11 @@
 #include "_compat.h"
 #include "example_common.h"
 
+#ifndef CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#endif
+#include "cimgui/cimgui.h"
+
 
 
 /*************************************************************************************************/
@@ -1356,10 +1361,12 @@ static void _tuner_gui(DvzGui* gui, DvzView* view, void* user_data)
             if (component->gui == NULL)
                 continue;
 
+            igPushID_Int((int)i);
             dvz_gui_separator_text(gui, _tuner_name(component->title, "Component"));
             const bool changed = component->gui(gui, component->user);
             if (changed && component->apply != NULL)
                 component->apply(component->user);
+            igPopID();
         }
 
         dvz_gui_separator_text(gui, "Actions");
