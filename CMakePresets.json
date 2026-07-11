@@ -1,11 +1,127 @@
 {
-    "version": 2,
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 21,
+        "patch": 0
+    },
     "configurePresets": [
         {
-            "name": "mingw",
-            "displayName": "MinGW Makefiles",
-            "description": "Generate build files with MinGW Makefiles",
+            "name": "base",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        },
+        {
+            "name": "dev-linux-debug",
+            "displayName": "Linux (GCC) - Debug",
+            "description": "Debug development build for Linux.",
+            "inherits": "base",
+            "generator": "Unix Makefiles",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "dev-linux-release",
+            "displayName": "Linux (GCC) - Release",
+            "description": "Release development build for Linux.",
+            "inherits": "dev-linux-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "dev-macos-debug",
+            "displayName": "macOS (Clang) - Debug",
+            "description": "Debug development build for macOS.",
+            "inherits": "base",
+            "generator": "Unix Makefiles",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "dev-macos-release",
+            "displayName": "macOS (Clang) - Release",
+            "description": "Release development build for macOS.",
+            "inherits": "dev-macos-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "dev-windows-mingw-debug",
+            "displayName": "Windows (MinGW) - Debug",
+            "description": "Windows fallback preset using MinGW Makefiles.",
+            "inherits": "base",
             "generator": "MinGW Makefiles",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "dev-windows-mingw-release",
+            "displayName": "Windows (MinGW) - Release",
+            "description": "Release preset for MinGW on Windows.",
+            "inherits": "dev-windows-mingw-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "dev-windows-msvc",
+            "displayName": "Windows (MSVC + vcpkg)",
+            "description": "MSVC preset (requires VCPKG_ROOT for PThreads4W).",
+            "inherits": "base",
+            "generator": "Visual Studio 17 2022",
+            "architecture": {
+                "value": "x64"
+            },
+            "toolset": {
+                "value": "host=x64"
+            },
+            "condition": {
+                "type": "allOf",
+                "conditions": [
+                    {
+                        "type": "equals",
+                        "lhs": "${hostSystemName}",
+                        "rhs": "Windows"
+                    },
+                    {
+                        "type": "notEquals",
+                        "lhs": "$env{VCPKG_ROOT}",
+                        "rhs": ""
+                    }
+                ]
+            },
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+            }
+        },
+        {
+            "name": "mingw",
+            "displayName": "MinGW Makefiles (legacy)",
+            "description": "Legacy preset name kept for existing scripts.",
+            "inherits": "dev-windows-mingw-release",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
@@ -13,19 +129,10 @@
         },
         {
             "name": "msvc",
-            "displayName": "MSVC 2022",
-            "description": "Generate build files with Visual Studio 17 2022 (x64)",
-            "generator": "Visual Studio 17 2022",
-            "binaryDir": "${sourceDir}/build-msvc",
-            "architecture": {
-                "value": "x64"
-            },
-            "toolset": {
-                "value": "host=x64"
-            },
-            "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-            }
+            "displayName": "MSVC 2022 (legacy)",
+            "description": "Legacy preset name kept for existing scripts.",
+            "inherits": "dev-windows-msvc",
+            "binaryDir": "${sourceDir}/build-msvc"
         },
         {
             "name": "package-smoke-vendored",
@@ -76,6 +183,40 @@
         }
     ],
     "buildPresets": [
+        {
+            "name": "dev-linux-debug",
+            "configurePreset": "dev-linux-debug"
+        },
+        {
+            "name": "dev-linux-release",
+            "configurePreset": "dev-linux-release"
+        },
+        {
+            "name": "dev-macos-debug",
+            "configurePreset": "dev-macos-debug"
+        },
+        {
+            "name": "dev-macos-release",
+            "configurePreset": "dev-macos-release"
+        },
+        {
+            "name": "dev-windows-mingw-debug",
+            "configurePreset": "dev-windows-mingw-debug"
+        },
+        {
+            "name": "dev-windows-mingw-release",
+            "configurePreset": "dev-windows-mingw-release"
+        },
+        {
+            "name": "dev-windows-msvc-debug",
+            "configurePreset": "dev-windows-msvc",
+            "configuration": "Debug"
+        },
+        {
+            "name": "dev-windows-msvc-release",
+            "configurePreset": "dev-windows-msvc",
+            "configuration": "Release"
+        },
         {
             "name": "mingw",
             "configurePreset": "mingw"
@@ -138,12 +279,76 @@
     ],
     "testPresets": [
         {
+            "name": "dev-linux-debug",
+            "configurePreset": "dev-linux-debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "dev-linux-release",
+            "configurePreset": "dev-linux-release",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "dev-macos-debug",
+            "configurePreset": "dev-macos-debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "dev-macos-release",
+            "configurePreset": "dev-macos-release",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "dev-windows-mingw-debug",
+            "configurePreset": "dev-windows-mingw-debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "dev-windows-mingw-release",
+            "configurePreset": "dev-windows-mingw-release",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "dev-windows-msvc-debug",
+            "configurePreset": "dev-windows-msvc",
+            "configuration": "Debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "dev-windows-msvc-release",
+            "configurePreset": "dev-windows-msvc",
+            "configuration": "Release",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
             "name": "mingw",
-            "configurePreset": "mingw"
+            "configurePreset": "mingw",
+            "output": {
+                "outputOnFailure": true
+            }
         },
         {
             "name": "msvc",
-            "configurePreset": "msvc"
+            "configurePreset": "msvc",
+            "output": {
+                "outputOnFailure": true
+            }
         }
     ]
 }

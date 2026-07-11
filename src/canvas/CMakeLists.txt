@@ -26,18 +26,35 @@ file(GLOB DVZ_CANVAS_SHADER_SOURCES
 if(DVZ_CANVAS_SHADER_SOURCES)
     find_package(Python COMPONENTS Interpreter REQUIRED)
 
-    set(DVZ_CANVAS_SHADER_GLSLANG_VALIDATOR "" CACHE FILEPATH "glslangValidator for canvas shaders")
+    set(DVZ_CANVAS_SHADER_GLSLANG_VALIDATOR "" CACHE FILEPATH "glslangValidator or glslc for canvas shaders")
 
     if(NOT DVZ_CANVAS_SHADER_GLSLANG_VALIDATOR)
         find_program(_dvz_shader_validator glslangValidator)
 
+        if(NOT _dvz_shader_validator)
+            find_program(_dvz_shader_validator
+                NAMES glslc
+                HINTS "$ENV{VULKAN_SDK}/bin" "$ENV{VULKAN_SDK}/Bin"
+            )
+        endif()
+
         if(_dvz_shader_validator)
-            set(DVZ_CANVAS_SHADER_GLSLANG_VALIDATOR "${_dvz_shader_validator}" CACHE FILEPATH "glslangValidator for canvas shaders" FORCE)
+            set(DVZ_CANVAS_SHADER_GLSLANG_VALIDATOR "${_dvz_shader_validator}" CACHE FILEPATH "glslangValidator or glslc for canvas shaders" FORCE)
         endif()
     endif()
 
     if(NOT DVZ_CANVAS_SHADER_GLSLANG_VALIDATOR)
-        message(FATAL_ERROR "glslangValidator not found; install the tool or set DVZ_CANVAS_SHADER_GLSLANG_VALIDATOR.")
+        message(FATAL_ERROR "glslangValidator/glslc not found; install one of them or set DVZ_CANVAS_SHADER_GLSLANG_VALIDATOR.")
+    endif()
+
+    # glslangValidator needs -V to emit Vulkan SPIR-V; glslc does so by default.
+    get_filename_component(_dvz_shader_compiler_name "${DVZ_CANVAS_SHADER_GLSLANG_VALIDATOR}" NAME_WE)
+    string(TOLOWER "${_dvz_shader_compiler_name}" _dvz_shader_compiler_name)
+
+    if(_dvz_shader_compiler_name STREQUAL "glslc")
+        set(_dvz_shader_compile_flags)
+    else()
+        set(_dvz_shader_compile_flags -V)
     endif()
 
     set(DVZ_CANVAS_SHADER_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders")
@@ -57,7 +74,7 @@ if(DVZ_CANVAS_SHADER_SOURCES)
             OUTPUT ${_dvz_shader_spv} ${_dvz_shader_header}
             COMMAND ${CMAKE_COMMAND} -E make_directory ${DVZ_CANVAS_SHADER_OUT_DIR}
             COMMAND ${DVZ_CANVAS_SHADER_GLSLANG_VALIDATOR}
-            -V
+            ${_dvz_shader_compile_flags}
             ${_dvz_shader}
             -o
             ${_dvz_shader_spv}
