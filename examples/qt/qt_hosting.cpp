@@ -12,6 +12,7 @@
  * Build:  just build
  * Run:    ./build/examples/qt/qt_hosting
  * Smoke:  ./build/examples/qt/qt_hosting --smoke-ms 1000
+ * Capture: ./build/examples/qt/qt_hosting --png
  */
 
 #include "hosted_qt_adapter.h"
@@ -20,10 +21,14 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QCoreApplication>
+#include <QDir>
 #include <QFont>
 #include <QHBoxLayout>
+#include <QImage>
 #include <QLabel>
+#include <QPixmap>
 #include <QPushButton>
+#include <QScreen>
 #include <QSlider>
 #include <QString>
 #include <QTimer>
@@ -46,6 +51,34 @@ constexpr int EXAMPLE_WINDOW_HEIGHT = 720;
 
 
 static const uint32_t POINT_COUNT = 96;
+
+
+
+static QString _capture_path()
+{
+    const QString directory = qEnvironmentVariable("DVZ_CAPTURE_DIR", QStringLiteral("."));
+    const QString basename =
+        qEnvironmentVariable("DVZ_CAPTURE_BASENAME", QStringLiteral("qt_hosting"));
+    return QDir(directory).filePath(basename + QStringLiteral(".png"));
+}
+
+
+
+static bool _capture_window(QWidget* widget)
+{
+    QScreen* screen = widget->screen();
+    if (screen == nullptr)
+        return false;
+
+    const QPixmap pixmap = screen->grabWindow(widget->winId());
+    if (pixmap.isNull())
+        return false;
+
+    const QImage image = pixmap.toImage().scaled(
+        EXAMPLE_WINDOW_WIDTH, EXAMPLE_WINDOW_HEIGHT, Qt::IgnoreAspectRatio,
+        Qt::SmoothTransformation);
+    return image.save(_capture_path(), "PNG");
+}
 
 
 
@@ -287,9 +320,13 @@ static QWidget* _controls_widget(SceneState* state, DvzQtHostedWindow* view_wind
 int main(int argc, char** argv)
 {
     int smoke_ms = 0;
-    for (int i = 1; i + 1 < argc; i++)
+    bool capture_png = false;
+    for (int i = 1; i < argc; i++)
     {
-        if (QString::fromUtf8(argv[i]) == QStringLiteral("--smoke-ms"))
+        const QString arg = QString::fromUtf8(argv[i]);
+        if (arg == QStringLiteral("--png"))
+            capture_png = true;
+        else if (arg == QStringLiteral("--smoke-ms") && i + 1 < argc)
             smoke_ms = std::atoi(argv[i + 1]);
     }
 
@@ -361,11 +398,23 @@ int main(int argc, char** argv)
     root_layout->addWidget(controls, 0);
     main_widget.resize(EXAMPLE_WINDOW_WIDTH, EXAMPLE_WINDOW_HEIGHT);
     main_widget.show();
+    bool capture_failed = false;
     QObject::connect(&qt_app, &QCoreApplication::aboutToQuit, &qt_app, [&view_window]() {
         view_window->release_surface();
     });
     if (smoke_ms > 0)
         QTimer::singleShot(smoke_ms, &qt_app, &QCoreApplication::quit);
+    if (capture_png)
+    {
+        QTimer::singleShot(1000, &qt_app, [&main_widget, &capture_failed]() {
+            if (!_capture_window(&main_widget))
+            {
+                std::fprintf(stderr, "qt_hosting: failed to capture the Qt window\n");
+                capture_failed = true;
+            }
+            QCoreApplication::quit();
+        });
+    }
 
     const int rc = qt_app.exec();
     timer.stop();
@@ -373,5 +422,5 @@ int main(int argc, char** argv)
     qt_instance.destroy();
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
-    return rc;
+    return capture_failed ? 1 : rc;
 }
