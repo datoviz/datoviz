@@ -162,6 +162,45 @@ workflows, volume-heavy examples, splats, marker symbol-set atlas parity, and po
 techniques.
 
 
+## Next Coverage Program
+
+Execute the remaining browser work in this order:
+
+1. **Stabilize browser evidence.** Fix the picking smoke to assert resolved visual output instead
+   of transient pending-query state, add per-route filtering to `webgpu-browser-smoke`, and obtain
+   direct browser proof for the ten routes promoted on 2026-07-11.
+2. **Existing-capability compositions.** Promote `composites_graph`,
+   `features_orientation_gizmo`, and `features_probe_labels` without adding browser-only scene
+   semantics.
+3. **Approachable deferred features.** Reassess `start_scatter`, `features_datetime_axis`, and
+   `features_marker_symbols`; keep native GUI behavior out of portable scenarios and complete only
+   the formatting or atlas parity needed by the canonical examples.
+4. **Volume capability.** Prove generic `visuals_volume` first, including 3D texture upload,
+   sampling, transfer state, camera interaction, limits, and diagnostics. Promote
+   `showcases_brain_volume` only after generic volume proof and prepared-data packaging pass.
+5. **Rendering techniques.** Advance depth cue, transparency ordering, MSAA, EDL, and SSAO in that
+   order, with focused fixture/runtime tests for each new render-state or multipass contract.
+6. **Experimental large-data rendering.** Handle `visuals_splat` and `showcases_point_cloud` last,
+   with explicit browser data budgets, upload/memory limits, interaction proof, and no native GUI
+   dependency.
+
+Keep GUI, GLFW, Qt, capture/export, raw Vulkan, and raw vklite examples native-only because their
+purpose is desktop runtime or host integration.
+
+Every promotion batch must pass this gate:
+
+```text
+canonical C scenario
+  -> native smoke
+  -> WASM packet-shape smoke
+  -> filtered live-browser smoke
+  -> interaction or animation assertion where applicable
+  -> manifest and generated-doc reconciliation
+  -> representative full browser suite
+  -> checkpoint commit
+```
+
+
 ## Capability Matrix
 
 | Area | RC status | Next action |

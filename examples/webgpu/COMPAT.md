@@ -45,8 +45,12 @@ This list uses public route IDs. When a route ID differs from the compiled C/WAS
 
 Remaining RC promotions are:
 
-1. continue planned example clusters that need data packaging or broader scene features;
-2. keep native-only and deferred diagnostics explicit, and classify lab-only manifest entries only
+1. repair the picking smoke's stale pending-query assertion and add per-route browser-smoke
+   filtering;
+2. obtain direct browser evidence for the ten routes promoted on 2026-07-11;
+3. continue with graph/orientation-gizmo/label-probe composition, then scatter/datetime/marker
+   parity, generic volume before brain volume, rendering techniques, and finally splat/point-cloud;
+4. keep native-only and deferred diagnostics explicit, and classify lab-only manifest entries only
    if they become public gallery routes.
 
 Do not move broader live-example coverage into the supported/current section until
@@ -60,6 +64,12 @@ temporary texture payload off the 1 MiB WASM stack. `just webgpu-browser-smoke` 
 new route loop because the earlier `features_picking` query probe timed out waiting for a queued
 request; this is recorded as an unrelated pre-existing browser-smoke blocker, not rendering proof
 for the promoted routes.
+
+Recheck on 2026-07-11 confirmed that the picking scenario/WASM packet path passes, while the browser
+smoke still tests obsolete queue timing: `session.render()` drains and resolves scenario queries
+before the smoke reads `pending_query_count`. The next validation change should assert resolved
+hover/click output, preferably a deterministic before/after pixel difference, rather than require a
+query to remain pending after rendering.
 
 Recorded local browser shader-payload proof on 2026-06-18: `node --check
 tools/webgpu_browser_smoke.mjs`, `node --check tools/wasm_scene_smoke.mjs`, and `just
