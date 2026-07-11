@@ -831,7 +831,7 @@ examples:
           preferred: video-mp4
           sample_step: 1
           fps: 24
-          mp4_crf: 24
+          mp4_crf: 20
     data:
       kind: synthetic
     portability: native-only
