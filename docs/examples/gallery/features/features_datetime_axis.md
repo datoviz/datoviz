@@ -14,7 +14,13 @@ This example shows UTC datetime labels on a numeric data axis.
 
 ## Preview
 
-![Datetime Axis](../../../assets/gallery/v0.4/features/features_datetime_axis.webp)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_datetime_axis.poster.webp" alt="Datetime Axis" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../../../assets/gallery/v0.4/features/features_datetime_axis.poster.webp" aria-label="Datetime Axis preview">
+    <source data-src="../../../../assets/gallery/v0.4/features/features_datetime_axis.mp4" type="video/mp4">
+  </video>
+</div>
 
 ## What To Look For
 

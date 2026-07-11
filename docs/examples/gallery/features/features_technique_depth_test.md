@@ -16,7 +16,13 @@ This example compares overlapping 3D points with depth testing enabled and disab
 
 === "Screenshot"
 
-    ![Depth Test Toggle](../../../assets/gallery/v0.4/features/features_technique_depth_test.webp)
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_technique_depth_test.poster.webp" alt="Depth Test Toggle" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/features/features_technique_depth_test.poster.webp" aria-label="Depth Test Toggle preview">
+        <source data-src="../../../../assets/gallery/v0.4/features/features_technique_depth_test.mp4" type="video/mp4">
+      </video>
+    </div>
 
 === "Live WebGPU"
 

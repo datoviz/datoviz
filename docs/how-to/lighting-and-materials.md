@@ -2,7 +2,7 @@
 
 Make 3D surfaces readable with normals, material attributes, and lights.
 
-![Mesh Materials](../assets/gallery/v0.4/features/features_material_mesh.webp)
+![Mesh Materials](../assets/gallery/v0.4/features/features_material_mesh.poster.webp)
 
 ## Task Workflow
 

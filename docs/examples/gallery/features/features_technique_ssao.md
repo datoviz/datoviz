@@ -14,7 +14,13 @@ This example compares a sphere cluster with and without screen-space ambient occ
 
 ## Preview
 
-![Screen-Space Ambient Occlusion](../../../assets/gallery/v0.4/features/features_technique_ssao.webp)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_technique_ssao.poster.webp" alt="Screen-Space Ambient Occlusion" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../../../assets/gallery/v0.4/features/features_technique_ssao.poster.webp" aria-label="Screen-Space Ambient Occlusion preview">
+    <source data-src="../../../../assets/gallery/v0.4/features/features_technique_ssao.mp4" type="video/mp4">
+  </video>
+</div>
 
 ## What To Look For
 

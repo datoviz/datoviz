@@ -325,7 +325,14 @@ This example shows a 2D data path with axes, ticks, and grid lines.
 
 ### [Datetime Axis](gallery/features/features_datetime_axis.md)
 
-[![Datetime Axis](../assets/gallery/v0.4/features/features_datetime_axis.webp)](gallery/features/features_datetime_axis.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_datetime_axis" aria-label="Datetime Axis"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_datetime_axis.poster.webp" alt="Datetime Axis" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_datetime_axis.poster.webp" aria-label="Datetime Axis preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_datetime_axis.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`<br><span>`axes`, `datetime`, `time-series`</span>
 
@@ -607,7 +614,14 @@ This example shows probing a scalar image at a marked data position.
 
 ### [Lighting](gallery/features/features_lighting.md)
 
-[![Lighting](../assets/gallery/v0.4/features/features_lighting.webp)](gallery/features/features_lighting.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_lighting" aria-label="Lighting"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_lighting.poster.webp" alt="Lighting" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_lighting.poster.webp" aria-label="Lighting preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_lighting.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 
@@ -619,7 +633,14 @@ This example compares the same sphere cluster under three material and light con
 
 ### [Textured Mesh](gallery/features/features_mesh_texture.md)
 
-[![Textured Mesh](../assets/gallery/v0.4/features/features_mesh_texture.webp)](gallery/features/features_mesh_texture.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_mesh_texture" aria-label="Textured Mesh"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_mesh_texture.poster.webp" alt="Textured Mesh" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_mesh_texture.poster.webp" aria-label="Textured Mesh preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_mesh_texture.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 
@@ -631,7 +652,14 @@ This example maps an RGBA8 sampled field onto a UV sphere mesh.
 
 ### [Mesh Materials](gallery/features/features_material_mesh.md)
 
-[![Mesh Materials](../assets/gallery/v0.4/features/features_material_mesh.webp)](gallery/features/features_material_mesh.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_material_mesh" aria-label="Mesh Materials"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_material_mesh.poster.webp" alt="Mesh Materials" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_material_mesh.poster.webp" aria-label="Mesh Materials preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_material_mesh.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 
@@ -643,7 +671,14 @@ This example compares cube meshes rendered with different material models and pa
 
 ### [Depth Cue](gallery/features/features_technique_depth_cue.md)
 
-[![Depth Cue](../assets/gallery/v0.4/features/features_technique_depth_cue.webp)](gallery/features/features_technique_depth_cue.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_technique_depth_cue" aria-label="Depth Cue"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_technique_depth_cue.poster.webp" alt="Depth Cue" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_technique_depth_cue.poster.webp" aria-label="Depth Cue preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_technique_depth_cue.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 
@@ -661,7 +696,14 @@ This example compares a plain 3D sphere lattice with depth-dependent fading.
 
 ### [Eye-Dome Lighting](gallery/features/features_technique_edl.md)
 
-[![Eye-Dome Lighting](../assets/gallery/v0.4/features/features_technique_edl.webp)](gallery/features/features_technique_edl.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_technique_edl" aria-label="Eye-Dome Lighting"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_technique_edl.poster.webp" alt="Eye-Dome Lighting" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_technique_edl.poster.webp" aria-label="Eye-Dome Lighting preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_technique_edl.mp4" type="video/mp4">
+  </video>
+</div>
 
 `experimental` `features`
 
@@ -673,7 +715,14 @@ This example compares a dense 3D point cloud with and without Eye-Dome Lighting.
 
 ### [Screen-Space Ambient Occlusion](gallery/features/features_technique_ssao.md)
 
-[![Screen-Space Ambient Occlusion](../assets/gallery/v0.4/features/features_technique_ssao.webp)](gallery/features/features_technique_ssao.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_technique_ssao" aria-label="Screen-Space Ambient Occlusion"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_technique_ssao.poster.webp" alt="Screen-Space Ambient Occlusion" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_technique_ssao.poster.webp" aria-label="Screen-Space Ambient Occlusion preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_technique_ssao.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 
@@ -685,7 +734,14 @@ This example compares a sphere cluster with and without screen-space ambient occ
 
 ### [Multisample Antialiasing](gallery/features/features_technique_msaa.md)
 
-[![Multisample Antialiasing](../assets/gallery/v0.4/features/features_technique_msaa.webp)](gallery/features/features_technique_msaa.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_technique_msaa" aria-label="Multisample Antialiasing"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_technique_msaa.poster.webp" alt="Multisample Antialiasing" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_technique_msaa.poster.webp" aria-label="Multisample Antialiasing preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_technique_msaa.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 
@@ -697,7 +753,14 @@ This example compares single-sample rendering with 8x multisample antialiasing.
 
 ### [Transparency Order](gallery/features/features_technique_transparency.md)
 
-[![Transparency Order](../assets/gallery/v0.4/features/features_technique_transparency.webp)](gallery/features/features_technique_transparency.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_technique_transparency" aria-label="Transparency Order"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_technique_transparency.poster.webp" alt="Transparency Order" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_technique_transparency.poster.webp" aria-label="Transparency Order preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_technique_transparency.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 
@@ -721,7 +784,14 @@ This example shows translucent triangles composited in draw order.
 
 ### [Depth Test Toggle](gallery/features/features_technique_depth_test.md)
 
-[![Depth Test Toggle](../assets/gallery/v0.4/features/features_technique_depth_test.webp)](gallery/features/features_technique_depth_test.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_technique_depth_test" aria-label="Depth Test Toggle"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_technique_depth_test.poster.webp" alt="Depth Test Toggle" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_technique_depth_test.poster.webp" aria-label="Depth Test Toggle preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_technique_depth_test.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 

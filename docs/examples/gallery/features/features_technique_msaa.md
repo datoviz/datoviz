@@ -14,7 +14,13 @@ This example compares single-sample rendering with 8x multisample antialiasing.
 
 ## Preview
 
-![Multisample Antialiasing](../../../assets/gallery/v0.4/features/features_technique_msaa.webp)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_technique_msaa.poster.webp" alt="Multisample Antialiasing" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../../../assets/gallery/v0.4/features/features_technique_msaa.poster.webp" aria-label="Multisample Antialiasing preview">
+    <source data-src="../../../../assets/gallery/v0.4/features/features_technique_msaa.mp4" type="video/mp4">
+  </video>
+</div>
 
 ## What To Look For
 

@@ -693,7 +693,14 @@ This example shows probing a scalar image at a marked data position.
 
 **[Lighting](gallery/features/features_lighting.md)**
 
-[![Lighting](../assets/gallery/v0.4/features/features_lighting.webp)](gallery/features/features_lighting.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/features/features_lighting" aria-label="Lighting"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/features/features_lighting.poster.webp" alt="Lighting" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/features/features_lighting.poster.webp" aria-label="Lighting preview">
+    <source data-src="../assets/gallery/v0.4/features/features_lighting.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 
@@ -705,7 +712,14 @@ This example compares the same sphere cluster under three material and light con
 
 **[Textured Mesh](gallery/features/features_mesh_texture.md)**
 
-[![Textured Mesh](../assets/gallery/v0.4/features/features_mesh_texture.webp)](gallery/features/features_mesh_texture.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/features/features_mesh_texture" aria-label="Textured Mesh"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/features/features_mesh_texture.poster.webp" alt="Textured Mesh" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/features/features_mesh_texture.poster.webp" aria-label="Textured Mesh preview">
+    <source data-src="../assets/gallery/v0.4/features/features_mesh_texture.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 
@@ -717,7 +731,14 @@ This example maps an RGBA8 sampled field onto a UV sphere mesh.
 
 **[Screen-Space Ambient Occlusion](gallery/features/features_technique_ssao.md)**
 
-[![Screen-Space Ambient Occlusion](../assets/gallery/v0.4/features/features_technique_ssao.webp)](gallery/features/features_technique_ssao.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/features/features_technique_ssao" aria-label="Screen-Space Ambient Occlusion"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/features/features_technique_ssao.poster.webp" alt="Screen-Space Ambient Occlusion" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/features/features_technique_ssao.poster.webp" aria-label="Screen-Space Ambient Occlusion preview">
+    <source data-src="../assets/gallery/v0.4/features/features_technique_ssao.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 
@@ -729,7 +750,14 @@ This example compares a sphere cluster with and without screen-space ambient occ
 
 **[Depth Cue](gallery/features/features_technique_depth_cue.md)**
 
-[![Depth Cue](../assets/gallery/v0.4/features/features_technique_depth_cue.webp)](gallery/features/features_technique_depth_cue.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/features/features_technique_depth_cue" aria-label="Depth Cue"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/features/features_technique_depth_cue.poster.webp" alt="Depth Cue" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/features/features_technique_depth_cue.poster.webp" aria-label="Depth Cue preview">
+    <source data-src="../assets/gallery/v0.4/features/features_technique_depth_cue.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 

@@ -204,6 +204,7 @@ def generate_preview(
     quality: int,
     force: bool,
 ) -> bool:
+    quality = preview.webp_quality or quality
     output_path = output_root / preview.lane / f"{preview.id}.webp"
     rel_out = output_path.relative_to(ROOT) if output_path.is_relative_to(ROOT) else output_path
     if dry_run:

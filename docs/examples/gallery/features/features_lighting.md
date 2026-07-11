@@ -16,7 +16,13 @@ This example compares the same sphere cluster under three material and light con
 
 === "Screenshot"
 
-    ![Lighting](../../../assets/gallery/v0.4/features/features_lighting.webp)
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_lighting.poster.webp" alt="Lighting" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/features/features_lighting.poster.webp" aria-label="Lighting preview">
+        <source data-src="../../../../assets/gallery/v0.4/features/features_lighting.mp4" type="video/mp4">
+      </video>
+    </div>
 
 === "Live WebGPU"
 

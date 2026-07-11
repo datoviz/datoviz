@@ -2,7 +2,7 @@
 
 Navigate 3D panels with arcball, turntable, or fly controls.
 
-![Arcball Controller](../assets/gallery/v0.4/features/features_controller_arcball.webp)
+![Arcball Controller](../assets/gallery/v0.4/features/features_controller_arcball.poster.webp)
 
 3D navigation is the combination of a camera, a controller, and scene scale. The camera defines the
 initial eye, target, up vector, projection, and clipping range. The controller turns mouse, wheel,

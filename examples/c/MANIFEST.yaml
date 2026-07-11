@@ -474,6 +474,7 @@ examples:
         kind: animated-webp
         frames: 72
         fps: 24
+        webp_quality: 95
     data:
       kind: synthetic
     webgpu:
@@ -546,7 +547,6 @@ examples:
         frames: 48
         fps: 24
         card:
-          compare: true
           preferred: video-mp4
           sample_step: 1
           fps: 24
@@ -599,7 +599,6 @@ examples:
         frames: 24
         fps: 12
         card:
-          compare: true
           preferred: video-mp4
           sample_step: 1
           fps: 12
@@ -684,7 +683,6 @@ examples:
         frames: 48
         fps: 24
         card:
-          compare: true
           preferred: video-mp4
           sample_step: 1
           fps: 24
@@ -716,7 +714,6 @@ examples:
         frames: 48
         fps: 24
         card:
-          compare: true
           preferred: video-mp4
           sample_step: 1
           fps: 24
@@ -748,13 +745,12 @@ examples:
         frames: 72
         fps: 24
         card:
-          compare: true
-          preferred: animated-webp
+          preferred: video-mp4
           size: 1024x576
           sample_step: 1
           fps: 24
           webp_quality: 55
-          mp4_crf: 28
+          mp4_crf: 24
     data:
       kind: synthetic
     webgpu:
@@ -832,10 +828,10 @@ examples:
         frames: 48
         fps: 24
         card:
-          compare: true
           preferred: video-mp4
           sample_step: 1
           fps: 24
+          mp4_crf: 24
     data:
       kind: synthetic
     portability: native-only
@@ -946,7 +942,6 @@ examples:
         fps: 24
         sample_stride: 3
         card:
-          compare: true
           preferred: video-mp4
           size: 1024x576
           sample_step: 1
@@ -1015,8 +1010,7 @@ examples:
         frames: 72
         fps: 24
         card:
-          compare: true
-          preferred: animated-webp
+          preferred: video-mp4
           size: 1024x576
           sample_step: 1
           fps: 24
@@ -1370,7 +1364,6 @@ examples:
         frames: 96
         fps: 24
         card:
-          compare: true
           preferred: video-mp4
           mp4_crf: 22
     data:
@@ -1456,8 +1449,8 @@ examples:
         frames: 72
         fps: 24
         card:
-          compare: true
           preferred: video-mp4
+          mp4_crf: 24
     data:
       kind: synthetic
     webgpu:
@@ -1893,7 +1886,6 @@ examples:
         frames: 48
         fps: 24
         card:
-          compare: true
           preferred: video-mp4
           sample_step: 1
           fps: 24
@@ -2158,8 +2150,7 @@ examples:
         frames: 72
         fps: 24
         card:
-          compare: true
-          preferred: animated-webp
+          preferred: video-mp4
           sample_step: 1
           fps: 24
     data:
@@ -3195,8 +3186,8 @@ examples:
         frames: 72
         fps: 24
         card:
-          compare: true
           preferred: video-mp4
+          mp4_crf: 24
     data:
       kind: prepared
     webgpu:

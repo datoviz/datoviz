@@ -35,6 +35,7 @@ class AnimatedPreview:
     sample_stride: int
     time_scale: float
     size: str
+    webp_quality: int = 0
     timeline_spec: str = ""
     motion_type: str = ""
     motion_target: str = ""
@@ -87,12 +88,15 @@ def collect_previews(
         sample_stride = int(preview.get("sample_stride", 1))
         time_scale = float(preview.get("time_scale", 1.0))
         size = str(preview.get("size", entry.get("capture", {}).get("size", DEFAULT_SIZE)))
+        webp_quality = int(preview.get("webp_quality", 0))
         if frames <= 0 or fps <= 0:
             raise ValueError(f"{id_}: media.preview frames and fps must be positive")
         if sample_stride <= 0:
             raise ValueError(f"{id_}: media.preview sample_stride must be positive")
         if time_scale <= 0.0:
             raise ValueError(f"{id_}: media.preview time_scale must be positive")
+        if not 0 <= webp_quality <= 100:
+            raise ValueError(f"{id_}: media.preview.webp_quality must be between 0 and 100")
 
         timeline_spec = _timeline_spec(id_, preview)
         motion = _preview_motion(id_, entry)
@@ -109,6 +113,7 @@ def collect_previews(
                 sample_stride=sample_stride,
                 time_scale=time_scale,
                 size=size,
+                webp_quality=webp_quality,
                 timeline_spec=timeline_spec,
                 motion_type=motion["type"],
                 motion_target=motion["target"],
@@ -251,6 +256,7 @@ def input_hash_for(
         str(preview.sample_stride),
         f"{preview.time_scale:g}",
         preview.size,
+        str(preview.webp_quality),
         preview.timeline_spec,
         preview.motion_type,
         preview.motion_target,

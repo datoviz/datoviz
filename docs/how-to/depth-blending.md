@@ -100,7 +100,7 @@ native-only until the corresponding gallery page advertises a live route.
 
 ## Canonical Examples
 
-![Depth test toggle](../assets/gallery/v0.4/features/features_technique_depth_test.webp)
+![Depth test toggle](../assets/gallery/v0.4/features/features_technique_depth_test.poster.webp)
 
 - [Depth Test Toggle](../examples/gallery/features/features_technique_depth_test.md) - compare overlapping
   3D points with depth testing on and off. Source:

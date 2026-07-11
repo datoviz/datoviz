@@ -14,7 +14,13 @@ This example compares a plain 3D sphere lattice with depth-dependent fading.
 
 ## Preview
 
-![Depth Cue](../../../assets/gallery/v0.4/features/features_technique_depth_cue.webp)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_technique_depth_cue.poster.webp" alt="Depth Cue" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../../../assets/gallery/v0.4/features/features_technique_depth_cue.poster.webp" aria-label="Depth Cue preview">
+    <source data-src="../../../../assets/gallery/v0.4/features/features_technique_depth_cue.mp4" type="video/mp4">
+  </video>
+</div>
 
 ## What To Look For
 

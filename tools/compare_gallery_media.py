@@ -392,6 +392,15 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
     encoded_frames = (getattr(preview, "frames") + profile.step - 1) // profile.step
     generated_kinds = generated_variant_kinds(profile, args.webm)
 
+    stale_variants = {
+        "animated-webp-card": animated_webp,
+        "mp4-card": mp4,
+        "webm-card": webm,
+    }
+    for kind, path in stale_variants.items():
+        if kind not in generated_kinds:
+            path.unlink(missing_ok=True)
+
     if args.dry_run:
         variants = ",".join(sorted(generated_kinds | {"poster"}))
         print(
@@ -593,6 +602,7 @@ def write_site_assets(
     for item in comparisons:
         if (item.lane, item.id) not in video_keys:
             continue
+        (output_dir / item.lane / f"{item.id}.webp").unlink(missing_ok=True)
         mp4 = variant_for(item, "mp4-card")
         poster = variant_for(item, "poster")
         for source, target in (

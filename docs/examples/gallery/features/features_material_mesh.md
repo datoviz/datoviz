@@ -16,7 +16,13 @@ This example compares cube meshes rendered with different material models and pa
 
 === "Screenshot"
 
-    ![Mesh Materials](../../../assets/gallery/v0.4/features/features_material_mesh.webp)
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_material_mesh.poster.webp" alt="Mesh Materials" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/features/features_material_mesh.poster.webp" aria-label="Mesh Materials preview">
+        <source data-src="../../../../assets/gallery/v0.4/features/features_material_mesh.mp4" type="video/mp4">
+      </video>
+    </div>
 
 === "Live WebGPU"
 

@@ -14,7 +14,13 @@ This example compares three transparency techniques on the same overlapping cube
 
 ## Preview
 
-![Transparency Order](../../../assets/gallery/v0.4/features/features_technique_transparency.webp)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_technique_transparency.poster.webp" alt="Transparency Order" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../../../assets/gallery/v0.4/features/features_technique_transparency.poster.webp" aria-label="Transparency Order preview">
+    <source data-src="../../../../assets/gallery/v0.4/features/features_technique_transparency.mp4" type="video/mp4">
+  </video>
+</div>
 
 ## What To Look For
 

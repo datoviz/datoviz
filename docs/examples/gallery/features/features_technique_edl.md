@@ -14,7 +14,13 @@ This example compares a dense 3D point cloud with and without Eye-Dome Lighting.
 
 ## Preview
 
-![Eye-Dome Lighting](../../../assets/gallery/v0.4/features/features_technique_edl.webp)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_technique_edl.poster.webp" alt="Eye-Dome Lighting" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../../../assets/gallery/v0.4/features/features_technique_edl.poster.webp" aria-label="Eye-Dome Lighting preview">
+    <source data-src="../../../../assets/gallery/v0.4/features/features_technique_edl.mp4" type="video/mp4">
+  </video>
+</div>
 
 ## What To Look For
 
