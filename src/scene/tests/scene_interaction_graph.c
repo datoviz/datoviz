@@ -1985,18 +1985,33 @@ int test_scene_equal_aspect_view_and_panel_coord_spaces(TstContext* suite, const
     panel_attach.coord_space = DVZ_VISUAL_COORD_PANEL;
     AT(dvz_panel_add_visual(panel, panel_point, &panel_attach) == 0);
 
+    vec3 pixel_pos[1] = {{100.0f, 50.0f, 0.0f}};
+    DvzVisual* pixel_point = dvz_point(scene, 0);
+    AT(dvz_visual_set_data(pixel_point, "position", pixel_pos, 1) == 0);
+    AT(dvz_visual_set_data(pixel_point, "color", col, 1) == 0);
+    AT(dvz_visual_set_data(pixel_point, "size", size, 1) == 0);
+    DvzVisualAttachDesc pixel_attach = dvz_visual_attach_desc();
+    pixel_attach.coord_space = DVZ_VISUAL_COORD_PANEL_PIXEL;
+    pixel_attach.controller_mode = DVZ_CONTROLLER_FIXED;
+    AT(dvz_panel_add_visual(panel, pixel_point, &pixel_attach) == 0);
+
     DvzFramePlan* plan = dvz_frame_plan("equal.aspect.view.panel", 0);
     ANN(plan);
     AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
     const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
     ANN(render);
-    AT(render->u.render.visual_count == 2);
+    AT(render->u.render.visual_count == 3);
     AC(render->u.render.apply_mvp.proj[0][0], 0.5f, 1e-6);
     AC(render->u.render.apply_mvp.proj[1][1], 1.0f, 1e-6);
     AT(!render->u.render.visual_has_mvp[0]);
     AT(render->u.render.visual_has_mvp[1]);
     AC(render->u.render.visual_mvp[1].proj[0][0], 1.0f, 1e-6);
     AC(render->u.render.visual_mvp[1].proj[1][1], 1.0f, 1e-6);
+    AT(render->u.render.visual_has_mvp[2]);
+    AC(render->u.render.visual_mvp[2].model[0][0], 2.0f / 200.0f, 1e-6);
+    AC(render->u.render.visual_mvp[2].model[1][1], -2.0f / 100.0f, 1e-6);
+    AC(render->u.render.visual_mvp[2].model[3][0], -1.0f, 1e-6);
+    AC(render->u.render.visual_mvp[2].model[3][1], +1.0f, 1e-6);
 
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);

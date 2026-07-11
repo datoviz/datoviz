@@ -151,7 +151,8 @@ static bool _composite_attach_desc_valid(const DvzVisualAttachDesc* desc)
     }
     if (
         desc->coord_space != DVZ_VISUAL_COORD_VIEW && desc->coord_space != DVZ_VISUAL_COORD_DATA &&
-        desc->coord_space != DVZ_VISUAL_COORD_PANEL)
+        desc->coord_space != DVZ_VISUAL_COORD_PANEL &&
+        desc->coord_space != DVZ_VISUAL_COORD_PANEL_PIXEL)
     {
         log_error("invalid visual coordinate space");
         return false;

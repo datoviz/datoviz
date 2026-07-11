@@ -311,6 +311,33 @@ static void _scene_panel_apply_panel_mvp(const DvzPanel* panel, DvzMVP* out)
 }
 
 
+
+/**
+ * Build the transform from panel-local logical pixels to normalized panel coordinates.
+ *
+ * @param panel panel defining the logical pixel rectangle
+ * @param out destination model transform
+ * @return whether the panel has a non-empty pixel rectangle
+ */
+static bool _scene_panel_pixel_model(const DvzPanel* panel, mat4 out)
+{
+    ANN(panel);
+    ANN(out);
+    float width = 0.0f;
+    float height = 0.0f;
+    _scene_panel_pixel_size(panel, &width, &height);
+    if (!(width > 0.0f) || !(height > 0.0f))
+        return false;
+
+    glm_mat4_identity(out);
+    out[0][0] = 2.0f / width;
+    out[1][1] = -2.0f / height;
+    out[3][0] = -1.0f;
+    out[3][1] = +1.0f;
+    return true;
+}
+
+
 /**
  * Compose the effective MVP for one visual attachment.
  *
@@ -347,6 +374,16 @@ bool _scene_panel_attachment_mvp(
     else if (attach->controller_mode == DVZ_CONTROLLER_APPLY_VIEW_PROJ)
     {
         glm_mat4_identity(out->model);
+    }
+
+    if (attach->coord_space == DVZ_VISUAL_COORD_PANEL_PIXEL)
+    {
+        mat4 pixel = GLM_MAT4_IDENTITY_INIT;
+        mat4 composed = GLM_MAT4_IDENTITY_INIT;
+        if (!_scene_panel_pixel_model(panel, pixel))
+            return false;
+        glm_mat4_mul(out->model, pixel, composed);
+        glm_mat4_copy(composed, out->model);
     }
 
     if (attach->coord_space == DVZ_VISUAL_COORD_DATA)

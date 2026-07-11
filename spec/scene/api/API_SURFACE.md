@@ -260,7 +260,9 @@ The public v0.4 coordinate-space surface is:
 1. `DVZ_VISUAL_COORD_VIEW`: metric panel view coordinates, affected by panel view/framing policy;
 2. `DVZ_VISUAL_COORD_DATA`: source data/domain coordinates mapped through the panel DATA-to-VIEW model;
 3. `DVZ_VISUAL_COORD_PANEL`: normalized panel coordinates over the full panel rectangle, intentionally
-   viewport-shaped.
+   viewport-shaped;
+4. `DVZ_VISUAL_COORD_PANEL_PIXEL`: panel-local logical pixels with a top-left origin, lowered through
+   the current panel geometry without regenerating visual resources.
 
 `DVZ_COORD_VISUAL` is not part of the v0.4 release surface. Callers must choose the intended
 coordinate space explicitly instead of relying on the v0.4-dev compatibility alias.

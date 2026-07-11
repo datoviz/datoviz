@@ -133,8 +133,9 @@ DataSpace -> coord_transform -> Cartesian DataSpace -> domain normalization -> V
 Zero-initialized params use defaults. Panel domains always refer to the post-transform Cartesian
 space. Polar axes, graticules, map tiling/LOD, and geographic tick formatting are deferred.
 
-The installed v0.4 public ABI supports `coord_space=DVZ_VISUAL_COORD_VIEW`, `coord_space=DVZ_VISUAL_COORD_DATA`,
-and `coord_space=DVZ_VISUAL_COORD_PANEL` in `DvzVisualAttachDesc`. Future pixel-space, domain-override, or
+The installed v0.4 public ABI supports `coord_space=DVZ_VISUAL_COORD_VIEW`,
+`coord_space=DVZ_VISUAL_COORD_DATA`, `coord_space=DVZ_VISUAL_COORD_PANEL`, and
+`coord_space=DVZ_VISUAL_COORD_PANEL_PIXEL` in `DvzVisualAttachDesc`. Future domain-override or
 nonlinear transform descriptor fields should be appended to `DvzVisualAttachDesc` or introduced
 through a new growable descriptor with the same `struct_size`/`flags` prologue. v0.4 must reject
 unknown attachment flags or unsupported coordinate-space values rather than accepting no-op
@@ -169,7 +170,7 @@ overrides.
 
 | Field | Rule |
 |---|---|
-| `coord_space` | `DVZ_VISUAL_COORD_VIEW`, `DVZ_VISUAL_COORD_DATA`, or `DVZ_VISUAL_COORD_PANEL`; pixel space is future work |
+| `coord_space` | `DVZ_VISUAL_COORD_VIEW`, `DVZ_VISUAL_COORD_DATA`, `DVZ_VISUAL_COORD_PANEL`, or `DVZ_VISUAL_COORD_PANEL_PIXEL` |
 | `clip_rect` | `DVZ_VISUAL_CLIP_AUTO`, `DVZ_VISUAL_CLIP_PANEL`, or `DVZ_VISUAL_CLIP_PLOT` |
 | `viewport_rect` | `DVZ_VISUAL_VIEWPORT_AUTO`, `DVZ_VISUAL_VIEWPORT_PANEL`, `DVZ_VISUAL_VIEWPORT_PLOT`, or `DVZ_VISUAL_VIEWPORT_TARGET` |
 | `coord_transform` / `transform_params` | future field: optional pre-normalization transform |
@@ -184,12 +185,15 @@ Coordinate-space meanings:
 | `DVZ_VISUAL_COORD_VIEW` | metric panel view coordinates, affected by equal-aspect panel view fit |
 | `DVZ_VISUAL_COORD_DATA` | mapped through panel DATA domains and the resolved DATA-to-VIEW model |
 | `DVZ_VISUAL_COORD_PANEL` | normalized panel coordinates over the full panel rectangle, intentionally viewport-shaped |
+| `DVZ_VISUAL_COORD_PANEL_PIXEL` | panel-local logical pixels with a top-left origin, positive X right, and positive Y down |
 
 `coord_space` and `controller_mode` are independent. Typical combinations include
-default `DATA+APPLY` for data visuals, `PANEL+FIXED` for static panel overlays, and
+default `DATA+APPLY` for data visuals, `PANEL+FIXED` for normalized static panel overlays,
+`PANEL_PIXEL+FIXED` for generated text and pixel-sized adornments, and
 `VIEW+APPLY_VIEW_PROJ` for reference aids that follow camera view/projection but ignore
-controller/object model transforms. Future `PIXEL+FIXED` attachments may cover legends, scale bars,
-or panel-corner annotations.
+controller/object model transforms. Panel geometry is resolved into the panel-pixel attachment MVP
+at frame-plan time; pixel-authored visual resources do not need regeneration when the panel moves
+or resizes.
 
 `clip_rect=AUTO` and `viewport_rect=AUTO` preserve the default routing policy: generated visual
 roles use their explicit role policy, panel-clipped visual families use panel rectangles, and normal
