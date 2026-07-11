@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import ctypes
+import os
 from pathlib import Path
 
 import numpy as np
@@ -89,6 +90,8 @@ def _render_capture(output: Path | None = None):
         if dvz.dvz_view_render_once(view) != dvz.DVZ_CANVAS_FRAME_READY:
             raise RuntimeError("dvz_view_render_once() failed")
         rgba = dvz.dvz_view_capture_rgba(view)
+        if ex.SMOKE_MODE and not np.any(rgba[..., :3] != rgba[0, 0, :3]):
+            raise RuntimeError("offscreen capture smoke is blank")
 
         if output is not None:
             output.parent.mkdir(parents=True, exist_ok=True)
@@ -103,14 +106,14 @@ def _render_capture(output: Path | None = None):
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, default=Path("offscreen_capture.png"))
+    smoke_capture = os.environ.get("DVZ_PYTHON_GALLERY_CAPTURE", "") if ex.SMOKE_MODE else ""
+    default_output = Path(smoke_capture) if smoke_capture else None
+    parser.add_argument("--output", type=Path, default=default_output)
     args = parser.parse_args(argv)
 
     rgba = _render_capture(args.output)
-    print(
-        f"offscreen_capture: wrote {args.output} "
-        f"({rgba.shape[1]}x{rgba.shape[0]} exact pixels)"
-    )
+    action = f"wrote {args.output}" if args.output is not None else "rendered without writing"
+    print(f"offscreen_capture: {action} ({rgba.shape[1]}x{rgba.shape[0]} exact pixels)")
     return 0
 
 

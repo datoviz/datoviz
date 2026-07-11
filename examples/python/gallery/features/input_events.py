@@ -276,6 +276,7 @@ def _run_synthetic(verbose: bool = True) -> InputEventsState:
             status = dvz.dvz_view_render_once(view)
             if status != dvz.DVZ_CANVAS_FRAME_READY:
                 raise RuntimeError("dvz_view_render_once() failed")
+            ex.capture_smoke(view)
             if state.pointer_count < 3 or state.keyboard_count != 2 or state.resize_count < 1:
                 raise RuntimeError("input event callbacks did not receive emitted events")
             return state
@@ -288,7 +289,7 @@ def _run_synthetic(verbose: bool = True) -> InputEventsState:
 
 def main(argv: list[str] | None = None) -> None:
     argv = sys.argv[1:] if argv is None else argv
-    if "--synthetic" in argv:
+    if "--synthetic" in argv or ex.SMOKE_MODE:
         _run_synthetic(verbose=True)
         return
 
@@ -308,7 +309,7 @@ def main(argv: list[str] | None = None) -> None:
         _subscribe_events(router, state)
         try:
             print("input_events: move/click/scroll/resize/type in the window; close it to exit")
-            dvz.dvz_app_run(app, 0)
+            ex.run_app(app, view)
         finally:
             _unsubscribe_events(router, state)
     finally:

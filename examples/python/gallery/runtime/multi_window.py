@@ -143,7 +143,7 @@ def main() -> None:
         )
         _configure_view(overview_view, scene, overview_panel)
         _configure_view(detail_view, scene, detail_panel)
-        dvz.dvz_app_run(app, 0)
+        ex.run_app(app, overview_view)
     finally:
         dvz.dvz_app_destroy(app)
         dvz.dvz_scene_destroy(scene)

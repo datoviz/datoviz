@@ -24,7 +24,7 @@ RED = dvz.DvzColor(248, 113, 113, 255)
 WHITE = dvz.DvzColor(255, 255, 255, 255)
 
 SMOKE_MODE = os.environ.get("DVZ_PYTHON_GALLERY_SMOKE", "") == "1"
-SMOKE_FRAMES = max(1, int(os.environ.get("DVZ_PYTHON_GALLERY_SMOKE_FRAMES", "1")))
+SMOKE_FRAMES = max(1, int(os.environ.get("DVZ_PYTHON_GALLERY_SMOKE_FRAMES", "3")))
 
 
 def color_array(*colors):
@@ -139,8 +139,8 @@ def _view(app, figure, title: str):
     return view
 
 
-def _run_app(app, view) -> None:
-    dvz.dvz_app_run(app, SMOKE_FRAMES if SMOKE_MODE else 0)
+def capture_smoke(view) -> None:
+    """Capture and validate the current view when smoke capture is requested."""
     capture = os.environ.get("DVZ_PYTHON_GALLERY_CAPTURE", "")
     if SMOKE_MODE and capture:
         path = Path(capture)
@@ -152,6 +152,16 @@ def _run_app(app, view) -> None:
             raise RuntimeError("gallery smoke capture is blank")
         if dvz.dvz_view_capture_png(view, str(path).encode()) != 0:
             raise RuntimeError(f"dvz_view_capture_png() failed: {path}")
+
+
+def _run_app(app, view) -> None:
+    dvz.dvz_app_run(app, SMOKE_FRAMES if SMOKE_MODE else 0)
+    capture_smoke(view)
+
+
+def run_app(app, view) -> None:
+    """Run interactively, or for a bounded frame count in gallery smoke mode."""
+    _run_app(app, view)
 
 
 def run(scene, figure, title: str):

@@ -19,3 +19,22 @@ just docs-check-generated
 
 MkDocs treats these committed files as read-only inputs. Documentation builds must not regenerate
 or modify the source tree.
+
+## Python example validation
+
+Run every required manifest-declared Python example in an isolated subprocess with a bounded
+offscreen render:
+
+```sh
+just python-examples-check
+```
+
+The runner continues after failures and writes logs, `results.json`, and `summary.md` under
+`build/python-example-check/`. It can follow the authored review batches, resume at an example, or
+write build-local nonblank PNG captures without changing committed gallery media:
+
+```sh
+just python-examples-check --batch 7
+just python-examples-check --review-order --start-at features_controller_fly
+just python-examples-check --capture-temp
+```

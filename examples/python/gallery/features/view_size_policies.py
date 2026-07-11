@@ -142,6 +142,7 @@ def _run_smoke(policy: str = "pixel"):
         status = dvz.dvz_view_render_once(view)
         if status != dvz.DVZ_CANVAS_FRAME_READY:
             raise RuntimeError("dvz_view_render_once() failed")
+        ex.capture_smoke(view)
         if resolved.framebuffer_width <= 0 or resolved.framebuffer_height <= 0:
             raise RuntimeError("resolved framebuffer size is empty")
         return resolved
@@ -170,7 +171,7 @@ def main() -> None:
     parser.add_argument("--smoke", action="store_true")
     args = parser.parse_args()
 
-    if args.smoke:
+    if args.smoke or ex.SMOKE_MODE:
         resolved = _run_smoke(args.policy)
         _print_resolved(resolved)
         return
@@ -178,7 +179,10 @@ def main() -> None:
     scene, app, view, resolved = _run_view(args.policy, kind=dvz.DVZ_VIEW_WINDOW)
     try:
         _print_resolved(resolved)
-        dvz.dvz_app_run(app, max(args.frames, 0))
+        if args.frames > 0 and not ex.SMOKE_MODE:
+            dvz.dvz_app_run(app, args.frames)
+        else:
+            ex.run_app(app, view)
     finally:
         dvz.dvz_app_destroy(app)
         dvz.dvz_scene_destroy(scene)

@@ -146,7 +146,7 @@ def main() -> None:
         if not view:
             raise RuntimeError("dvz_view_window() failed")
         _configure_gui_viewport(view, scene, source_figure, source_panel, state)
-        dvz.dvz_app_run(app, 0)
+        ex.run_app(app, view)
     finally:
         dvz.dvz_app_destroy(app)
         dvz.dvz_scene_destroy(scene)

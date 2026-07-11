@@ -188,9 +188,10 @@ def run_one(example: Example, args: argparse.Namespace, logs: Path, captures: Pa
 
     env = os.environ.copy()
     env["DVZ_PYTHON_GALLERY_SMOKE"] = "1"
-    env.setdefault("DVZ_PYTHON_GALLERY_SMOKE_FRAMES", "1")
+    env.setdefault("DVZ_PYTHON_GALLERY_SMOKE_FRAMES", "3")
     capture_path = captures / f"{example.id}.png" if args.capture_temp else None
     if capture_path is not None:
+        capture_path.unlink(missing_ok=True)
         env["DVZ_PYTHON_GALLERY_CAPTURE"] = str(capture_path)
     command = [sys.executable, "-m", module_name(example.source)]
     try:
@@ -258,7 +259,7 @@ def write_reports(output_dir: Path, results: list[Result], elapsed: float, args:
         "| --- | --- | ---: | --- | --- |",
     ]
     for result in results:
-        log = f"[{result.log}]({result.log})" if result.log else ""
+        log = f"[log](logs/{result.id}.log)" if result.log else ""
         lines.append(
             f"| {result.status.upper()} | `{result.id}` | {result.seconds:.2f} | "
             f"{result.detail} | {log} |"
