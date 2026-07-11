@@ -15,6 +15,7 @@ attributes.
 | View | Camera-relative coordinates after view transform. | Camera/controller evaluation. |
 | Clip/NDC | GPU-normalized space after projection and perspective divide. | Frame planning and shaders. |
 | Framebuffer | Pixel coordinates in the render target. | Runtime input, picking/query readback, screenshots. |
+| Panel pixel | Logical pixels local to an outer panel rectangle, with a top-left origin. | Fixed generated text and pixel-authored panel adornments. |
 | Texture/sample | Normalized UV/UVW or integer texel/voxel/sample indices. | Image, labels, volume, glyph atlas, sampled fields. |
 
 Public panel point transforms use the `DvzPanelCoordSpace` enum:
@@ -43,6 +44,7 @@ and screenshots use framebuffer pixels.
 | Data positions | Data/panel/world, by visual contract | No | Yes, when attached with controller application | `position`, `position_start`, `position_end` |
 | Screen-space sizes | Logical pixels | Converted by the view/runtime to framebuffer pixels | No, size stays screen-stable while centers move | `diameter_px`, `pixel_size_px`, `stroke_width_px`, text size |
 | Panel rectangles and reserves | Logical figure pixels | Converted during viewport/scissor resolution | No | `dvz_panel_set_desc()`, reserves, padding |
+| Panel-fixed positions | Panel-local logical pixels | Lowered through the current panel attachment MVP | No | `DVZ_VISUAL_COORD_PANEL_PIXEL` |
 | Offscreen view extent | Framebuffer pixels | Direct exact output for `dvz_view_offscreen()` | No | `dvz_view_offscreen(app, figure, width, height)` |
 | Screenshot/RGBA capture | Framebuffer pixels | Already applied | No | `dvz_view_capture_png()`, Python `dvz_view_capture_rgba()` |
 | Pointer input | Host/window or figure logical pixels at the public scene boundary | Backend reports scale separately where available | Routed through panel/controller transforms | `dvz_event_window_to_figure()`, `dvz_panel_transform_point()`, query APIs |

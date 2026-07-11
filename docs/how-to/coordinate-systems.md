@@ -19,10 +19,10 @@ domain.
 | `DVZ_VISUAL_COORD_DATA` | Positions are scientific or application data values. | This is the default when `dvz_panel_add_visual()` receives `NULL`; set panel domains when data has non-default ranges. |
 | `DVZ_VISUAL_COORD_VIEW` | Positions are already in panel view coordinates, usually `[-1, +1]`. | Attach explicitly with `coord_space = DVZ_VISUAL_COORD_VIEW`. |
 | `DVZ_VISUAL_COORD_PANEL` | Positions are normalized to the panel itself for fixed overlays. | Attach with `coord_space = DVZ_VISUAL_COORD_PANEL`. |
+| `DVZ_VISUAL_COORD_PANEL_PIXEL` | Positions are panel-local logical pixels with a top-left origin. | Attach with `coord_space = DVZ_VISUAL_COORD_PANEL_PIXEL`; normally combine it with `controller_mode = DVZ_CONTROLLER_FIXED`. |
 
-Pointer, query, and overlay code often needs pixel-space conversions instead of attachment-space
-selection. Use `dvz_panel_transform_point()` for one-point conversions between these explicit panel
-spaces:
+Pointer and query code often needs one-point pixel-space conversions instead of retained visual
+attachments. Use `dvz_panel_transform_point()` for conversions between these explicit panel spaces:
 
 | Space | Meaning |
 | --- | --- |

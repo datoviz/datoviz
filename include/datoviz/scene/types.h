@@ -1140,7 +1140,7 @@ struct DvzVisualAttachDesc
     uint32_t flags;
     int32_t           z_layer;          /* signed; lower draws behind, higher in front; default 0 */
     DvzControllerMode controller_mode;  /* APPLY (default), FIXED, VIEW_PROJ, or isotropic */
-    DvzVisualCoordSpace coord_space;    /* DATA/domain (default), VIEW, or PANEL coordinates */
+    DvzVisualCoordSpace coord_space;    /* DATA (default), VIEW, PANEL, or PANEL_PIXEL */
     DvzVisualClipRect clip_rect;        /* AUTO (default), PANEL, or PLOT scissor */
     DvzVisualViewportRect viewport_rect; /* AUTO (default), PANEL, PLOT, or TARGET viewport */
 };

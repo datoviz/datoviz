@@ -65,8 +65,9 @@ attach.coord_space = DVZ_VISUAL_COORD_DATA;
 dvz_panel_add_visual(panel, visual, &attach);
 ```
 
-Use `DVZ_VISUAL_COORD_VIEW` only when positions are already normalized view coordinates, typically around
-`[-1, +1]`. Use `DVZ_VISUAL_COORD_PANEL` for panel-fixed overlays. See
+Use `DVZ_VISUAL_COORD_VIEW` only when positions are already normalized view coordinates, typically
+around `[-1, +1]`. Use `DVZ_VISUAL_COORD_PANEL` for normalized panel-fixed overlays and
+`DVZ_VISUAL_COORD_PANEL_PIXEL` for overlays authored in panel-local logical pixels. See
 [Use coordinate systems](coordinate-systems.md) for the full coordinate-space distinction.
 
 ## User Scale
