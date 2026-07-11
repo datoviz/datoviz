@@ -39,9 +39,7 @@ as real implementation, not scaffolding.
 8. Use [HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md](HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md) as the completed
    pre-RC API cleanup record before changing public headers, exported API, generated C reference,
    generated `ctypes`, or public examples.
-9. Use [HANDOFF_PYTHON_GALLERY_FEATURE_EXAMPLES.md](HANDOFF_PYTHON_GALLERY_FEATURE_EXAMPLES.md)
-   before continuing the Python gallery feature-example lane.
-10. Use [../../plans/AXIS_GUIDE_VIEWPORT_REFACTOR_PLAN.md](../../plans/AXIS_GUIDE_VIEWPORT_REFACTOR_PLAN.md)
+9. Use [../../plans/AXIS_GUIDE_VIEWPORT_REFACTOR_PLAN.md](../../plans/AXIS_GUIDE_VIEWPORT_REFACTOR_PLAN.md)
    before changing 2D axes, grid lines, guides, View2D domains, aspect ratio, or plot/panel
    viewport behavior. Keep generated/adornment visual routing semantic and attachment-driven; do
    not reintroduce frame-plan pointer scans over axis, guide, colorbar, legend, panel chrome,
