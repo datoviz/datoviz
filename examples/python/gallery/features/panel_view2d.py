@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare a free 2D panel with an equal-aspect 2D panel."""
+"""Animate the widths of free and equal-aspect 2D panels."""
 
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ from examples.python.gallery import common as ex
 
 
 CIRCLE_COUNT = 97
+TAU = 2.0 * np.pi
 
 
 def _add_circle(scene, panel, color) -> None:
@@ -63,6 +64,26 @@ def _set_equal_view2d(panel) -> None:
         raise RuntimeError("dvz_panel_set_view2d() failed")
 
 
+def _set_panel_split(free_panel, fit_panel, phase: float) -> None:
+    margin = 0.04
+    gutter = 0.025
+    available = 1.0 - 2.0 * margin - gutter
+    split = 0.5 + 0.20 * np.sin(TAU * phase)
+    left_width = available * split
+    right_width = available - left_width
+
+    free_desc = dvz.dvz_panel_desc()
+    free_desc.x, free_desc.y = margin, 0.08
+    free_desc.width, free_desc.height = left_width, 0.84
+    fit_desc = dvz.dvz_panel_desc()
+    fit_desc.x, fit_desc.y = margin + left_width + gutter, 0.08
+    fit_desc.width, fit_desc.height = right_width, 0.84
+    if dvz.dvz_panel_set_desc(free_panel, ctypes.byref(free_desc)) != 0:
+        raise RuntimeError("dvz_panel_set_desc(free) failed")
+    if dvz.dvz_panel_set_desc(fit_panel, ctypes.byref(fit_desc)) != 0:
+        raise RuntimeError("dvz_panel_set_desc(equal) failed")
+
+
 def main() -> None:
     scene = dvz.dvz_scene()
     if not scene:
@@ -78,7 +99,10 @@ def main() -> None:
     _add_circle(scene, free_panel, ex.GREEN)
     _add_circle(scene, fit_panel, ex.CYAN)
 
-    ex.run(scene, figure, "Panel View 2D")
+    def on_frame(_view, _frame_index: int, elapsed: float) -> None:
+        _set_panel_split(free_panel, fit_panel, (elapsed / 4.0) % 1.0)
+
+    ex.run_with_frame_callback(scene, figure, "Panel View 2D", on_frame)
 
 
 if __name__ == "__main__":

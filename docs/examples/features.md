@@ -84,11 +84,18 @@ This example links the X panzoom extent of two stacked signal panels.
 
 ### [Panel View 2D](gallery/features/features_panel_view2d.md)
 
-[![Panel View 2D](../assets/gallery/v0.4/features/features_panel_view2d.webp)](gallery/features/features_panel_view2d.md)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_panel_view2d" aria-label="Panel View 2D"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_panel_view2d.poster.webp" alt="Panel View 2D" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_panel_view2d.poster.webp" aria-label="Panel View 2D preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_panel_view2d.mp4" type="video/mp4">
+  </video>
+</div>
 
 `features`
 
-This example compares a regular 2D panel with one that keeps equal data aspect.
+This example animates the widths of free and equal-aspect 2D panels.
 
 </div>
 

@@ -10,15 +10,21 @@
 <span>Panel View 2D</span>
 </nav>
 
-This example compares a regular 2D panel with one that keeps equal data aspect.
+This example animates the widths of free and equal-aspect 2D panels.
 
 ## Preview
 
-![Panel View 2D](../../../assets/gallery/v0.4/features/features_panel_view2d.webp)
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_panel_view2d.poster.webp" alt="Panel View 2D" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../../../assets/gallery/v0.4/features/features_panel_view2d.poster.webp" aria-label="Panel View 2D preview">
+    <source data-src="../../../../assets/gallery/v0.4/features/features_panel_view2d.mp4" type="video/mp4">
+  </video>
+</div>
 
 ## What To Look For
 
-Both panels draw the same unit circle path and styled X/Y axes. The left panel uses a direct [-1, 1] domain, while the right panel configures an equal-aspect view and verifies matching data units per pixel in X and Y. Compare the circle shape and grid spacing; equal aspect is essential when distance, angle, or shape should not be visually distorted.
+Both panels draw the same unit circle path and styled X/Y axes. The left panel uses a direct [-1, 1] domain, while the right panel configures an equal-aspect view and verifies matching data units per pixel in X and Y. Compare the circle shape and grid spacing; equal aspect is essential when distance, angle, or shape should not be visually distorted. During live playback, the left circle stretches with its panel while the right circle remains circular and its visible data extent changes.
 
 ## Source
 
@@ -43,7 +49,7 @@ Both panels draw the same unit circle path and styled X/Y axes. The left panel u
     - Python source: [`examples/python/gallery/features/panel_view2d.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_view2d.py)
     - Browser support: Planned
     - Browser capability tags: `panel-view`, `panzoom`, `point`
-    - Validation: `smoke+screenshot`
+    - Validation: `smoke+animation+screenshot`
 
     ### Data
 

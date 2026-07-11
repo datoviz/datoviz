@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* This example compares a regular 2D panel with one that keeps equal data aspect while their
- * relative widths oscillate.
+/* This example animates the widths of free and equal-aspect 2D panels.
  *
  * What to look for: both panels draw the same unit circle path and styled X/Y axes. The left panel
  * uses a direct [-1, 1] domain, while the right panel configures an equal-aspect view and verifies

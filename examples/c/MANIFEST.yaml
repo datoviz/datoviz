@@ -1332,7 +1332,15 @@ examples:
     python:
       source: examples/python/gallery/features/panel_view2d.py
       status: direct-engine
-    validation: smoke+screenshot
+    validation: smoke+animation+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 96
+        fps: 24
+        card:
+          compare: true
+          preferred: video-mp4
     data:
       kind: synthetic
     webgpu:
