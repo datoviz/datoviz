@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_technique_depth_test">← Previous: Depth Test Toggle</a> · <a href="../features_selection_pixel">Next: Pixel Selection →</a>
+<span class="dvz-example-nav__previous"><a href="../features_technique_depth_test">← Previous: Depth Test Toggle</a></span>
+<span class="dvz-example-nav__next"><a href="../features_selection_pixel">Next: Pixel Selection →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ The marker grid uploads position, color, diameter_px, angle, and shape arrays, i
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_technique_depth_test">← Previous: Depth Test Toggle</a> · <a href="../features_selection_pixel">Next: Pixel Selection →</a>
+<span class="dvz-example-nav__previous"><a href="../features_technique_depth_test">← Previous: Depth Test Toggle</a></span>
+<span class="dvz-example-nav__next"><a href="../features_selection_pixel">Next: Pixel Selection →</a></span>
 </div>
 </nav>

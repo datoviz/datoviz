@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_marker">← Previous: Marker</a> · <a href="../visuals_segment">Next: Segment →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_marker">← Previous: Marker</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_segment">Next: Segment →</a></span>
 </div>
 </nav>
 
@@ -52,6 +53,7 @@ Positions place each splat, colors set the tint, sigma gives the two screen-spac
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_marker">← Previous: Marker</a> · <a href="../visuals_segment">Next: Segment →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_marker">← Previous: Marker</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_segment">Next: Segment →</a></span>
 </div>
 </nav>

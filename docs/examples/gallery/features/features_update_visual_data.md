@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_update_partial">← Previous: Partial Data Update</a> · <a href="../features_gui_controls">Next: GUI Controls →</a>
+<span class="dvz-example-nav__previous"><a href="../features_update_partial">← Previous: Partial Data Update</a></span>
+<span class="dvz-example-nav__next"><a href="../features_gui_controls">Next: GUI Controls →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ The initial upload draws seven small gray points in a line. After one second, th
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_update_partial">← Previous: Partial Data Update</a> · <a href="../features_gui_controls">Next: GUI Controls →</a>
+<span class="dvz-example-nav__previous"><a href="../features_update_partial">← Previous: Partial Data Update</a></span>
+<span class="dvz-example-nav__next"><a href="../features_gui_controls">Next: GUI Controls →</a></span>
 </div>
 </nav>

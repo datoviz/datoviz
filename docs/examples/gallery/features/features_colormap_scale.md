@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_colorbar">← Previous: Colorbar</a> · <a href="../features_legend_categorical">Next: Categorical Legend →</a>
+<span class="dvz-example-nav__previous"><a href="../features_colorbar">← Previous: Colorbar</a></span>
+<span class="dvz-example-nav__next"><a href="../features_legend_categorical">Next: Categorical Legend →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ Five point positions are paired with a float color-value array instead of precom
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_colorbar">← Previous: Colorbar</a> · <a href="../features_legend_categorical">Next: Categorical Legend →</a>
+<span class="dvz-example-nav__previous"><a href="../features_colorbar">← Previous: Colorbar</a></span>
+<span class="dvz-example-nav__next"><a href="../features_legend_categorical">Next: Categorical Legend →</a></span>
 </div>
 </nav>

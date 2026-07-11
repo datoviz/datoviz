@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_panel_linked">← Previous: Linked Panels</a> · <a href="../features_panel_background">Next: Panel Background →</a>
+<span class="dvz-example-nav__previous"><a href="../features_panel_linked">← Previous: Linked Panels</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_background">Next: Panel Background →</a></span>
 </div>
 </nav>
 
@@ -58,6 +59,7 @@ Both panels draw the same unit circle path and styled X/Y axes. The left panel u
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_panel_linked">← Previous: Linked Panels</a> · <a href="../features_panel_background">Next: Panel Background →</a>
+<span class="dvz-example-nav__previous"><a href="../features_panel_linked">← Previous: Linked Panels</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_background">Next: Panel Background →</a></span>
 </div>
 </nav>

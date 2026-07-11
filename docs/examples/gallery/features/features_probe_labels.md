@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_overlay_card">← Previous: Overlay Card</a> · <a href="../features_builtin_shapes_2d">Next: Builtin Shapes 2D →</a>
+<span class="dvz-example-nav__previous"><a href="../features_overlay_card">← Previous: Overlay Card</a></span>
+<span class="dvz-example-nav__next"><a href="../features_builtin_shapes_2d">Next: Builtin Shapes 2D →</a></span>
 </div>
 </nav>
 
@@ -52,6 +53,7 @@ A 256x192 R32_SINT sampled field stores category IDs for cortex, fiber, nucleus,
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_overlay_card">← Previous: Overlay Card</a> · <a href="../features_builtin_shapes_2d">Next: Builtin Shapes 2D →</a>
+<span class="dvz-example-nav__previous"><a href="../features_overlay_card">← Previous: Overlay Card</a></span>
+<span class="dvz-example-nav__next"><a href="../features_builtin_shapes_2d">Next: Builtin Shapes 2D →</a></span>
 </div>
 </nav>

@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_scalebar">← Previous: Scale Bar</a> · <a href="../features_colorbar">Next: Colorbar →</a>
+<span class="dvz-example-nav__previous"><a href="../features_scalebar">← Previous: Scale Bar</a></span>
+<span class="dvz-example-nav__next"><a href="../features_colorbar">Next: Colorbar →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ The path visual uploads 96 time samples whose X positions span 0 to 250 and whos
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_scalebar">← Previous: Scale Bar</a> · <a href="../features_colorbar">Next: Colorbar →</a>
+<span class="dvz-example-nav__previous"><a href="../features_scalebar">← Previous: Scale Bar</a></span>
+<span class="dvz-example-nav__next"><a href="../features_colorbar">Next: Colorbar →</a></span>
 </div>
 </nav>

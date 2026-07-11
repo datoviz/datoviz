@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_choropleth">← Previous: U.S. State Choropleth</a> · <a href="../showcases_gpu_particle_smoke">Next: GPU Particle Smoke →</a>
+<span class="dvz-example-nav__previous"><a href="../showcases_choropleth">← Previous: U.S. State Choropleth</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_gpu_particle_smoke">Next: GPU Particle Smoke →</a></span>
 </div>
 </nav>
 
@@ -75,6 +76,7 @@ This workflow is useful for geophysical or fluid-like data where scalar magnitud
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_choropleth">← Previous: U.S. State Choropleth</a> · <a href="../showcases_gpu_particle_smoke">Next: GPU Particle Smoke →</a>
+<span class="dvz-example-nav__previous"><a href="../showcases_choropleth">← Previous: U.S. State Choropleth</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_gpu_particle_smoke">Next: GPU Particle Smoke →</a></span>
 </div>
 </nav>

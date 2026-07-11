@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_segment">← Previous: Segment</a> · <a href="../visuals_vector">Next: Vector →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_segment">← Previous: Segment</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_vector">Next: Vector →</a></span>
 </div>
 </nav>
 
@@ -68,6 +69,7 @@ Positions hold the sampled curves, colors and widths vary per sample, and the su
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_segment">← Previous: Segment</a> · <a href="../visuals_vector">Next: Vector →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_segment">← Previous: Segment</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_vector">Next: Vector →</a></span>
 </div>
 </nav>

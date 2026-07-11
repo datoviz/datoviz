@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_compute_buffer_animation">← Previous: Compute Buffer Animation</a> · <a href="../features_update_visual_data">Next: Visual Data Update →</a>
+<span class="dvz-example-nav__previous"><a href="../features_compute_buffer_animation">← Previous: Compute Buffer Animation</a></span>
+<span class="dvz-example-nav__next"><a href="../features_update_visual_data">Next: Visual Data Update →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ The visual initially uploads six points with position, color, and diameter_px ar
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_compute_buffer_animation">← Previous: Compute Buffer Animation</a> · <a href="../features_update_visual_data">Next: Visual Data Update →</a>
+<span class="dvz-example-nav__previous"><a href="../features_compute_buffer_animation">← Previous: Compute Buffer Animation</a></span>
+<span class="dvz-example-nav__next"><a href="../features_update_visual_data">Next: Visual Data Update →</a></span>
 </div>
 </nav>

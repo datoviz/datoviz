@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_image_probe">← Previous: Image Probe</a> · <a href="../features_mesh_texture">Next: Textured Mesh →</a>
+<span class="dvz-example-nav__previous"><a href="../features_image_probe">← Previous: Image Probe</a></span>
+<span class="dvz-example-nav__next"><a href="../features_mesh_texture">Next: Textured Mesh →</a></span>
 </div>
 </nav>
 
@@ -69,6 +70,7 @@ Each panel uploads the same sphere position, radius, and color arrays, but chang
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_image_probe">← Previous: Image Probe</a> · <a href="../features_mesh_texture">Next: Textured Mesh →</a>
+<span class="dvz-example-nav__previous"><a href="../features_image_probe">← Previous: Image Probe</a></span>
+<span class="dvz-example-nav__next"><a href="../features_mesh_texture">Next: Textured Mesh →</a></span>
 </div>
 </nav>

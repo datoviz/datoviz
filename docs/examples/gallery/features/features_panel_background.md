@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_panel_view2d">← Previous: Panel View 2D</a> · <a href="../features_user_scale">Next: User Scale →</a>
+<span class="dvz-example-nav__previous"><a href="../features_panel_view2d">← Previous: Panel View 2D</a></span>
+<span class="dvz-example-nav__next"><a href="../features_user_scale">Next: User Scale →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ The panel rectangle is explicitly inset inside the figure and receives a linear-
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_panel_view2d">← Previous: Panel View 2D</a> · <a href="../features_user_scale">Next: User Scale →</a>
+<span class="dvz-example-nav__previous"><a href="../features_panel_view2d">← Previous: Panel View 2D</a></span>
+<span class="dvz-example-nav__next"><a href="../features_user_scale">Next: User Scale →</a></span>
 </div>
 </nav>

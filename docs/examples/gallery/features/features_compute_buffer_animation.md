@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_timer_animation">← Previous: Timer Animation</a> · <a href="../features_update_partial">Next: Partial Data Update →</a>
+<span class="dvz-example-nav__previous"><a href="../features_timer_animation">← Previous: Timer Animation</a></span>
+<span class="dvz-example-nav__next"><a href="../features_update_partial">Next: Partial Data Update →</a></span>
 </div>
 </nav>
 
@@ -61,6 +62,7 @@ The point visual reads its position attribute from a scene buffer that is also b
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_timer_animation">← Previous: Timer Animation</a> · <a href="../features_update_partial">Next: Partial Data Update →</a>
+<span class="dvz-example-nav__previous"><a href="../features_timer_animation">← Previous: Timer Animation</a></span>
+<span class="dvz-example-nav__next"><a href="../features_update_partial">Next: Partial Data Update →</a></span>
 </div>
 </nav>

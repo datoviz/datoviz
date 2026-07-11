@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_camera_manual">← Previous: Manual Camera</a> · <a href="../features_controller_arcball">Next: Arcball Controller →</a>
+<span class="dvz-example-nav__previous"><a href="../features_camera_manual">← Previous: Manual Camera</a></span>
+<span class="dvz-example-nav__next"><a href="../features_controller_arcball">Next: Arcball Controller →</a></span>
 </div>
 </nav>
 
@@ -69,6 +70,7 @@ A 64-point ring uploads position, color, and diameter_px arrays inside a [-1, 1]
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_camera_manual">← Previous: Manual Camera</a> · <a href="../features_controller_arcball">Next: Arcball Controller →</a>
+<span class="dvz-example-nav__previous"><a href="../features_camera_manual">← Previous: Manual Camera</a></span>
+<span class="dvz-example-nav__next"><a href="../features_controller_arcball">Next: Arcball Controller →</a></span>
 </div>
 </nav>

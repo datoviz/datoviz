@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_pixel">← Previous: Pixel</a> · <a href="../visuals_splat">Next: Splat →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_pixel">← Previous: Pixel</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_splat">Next: Splat →</a></span>
 </div>
 </nav>
 
@@ -68,6 +69,7 @@ Each row reuses position, symbol, color, size, edge color, and angle arrays to s
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_pixel">← Previous: Pixel</a> · <a href="../visuals_splat">Next: Splat →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_pixel">← Previous: Pixel</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_splat">Next: Splat →</a></span>
 </div>
 </nav>

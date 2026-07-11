@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_path">← Previous: Path</a> · <a href="../visuals_primitive">Next: Primitive →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_path">← Previous: Path</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_primitive">Next: Primitive →</a></span>
 </div>
 </nav>
 
@@ -68,6 +69,7 @@ The straight field uses position, vector, color, and width arrays, while the cur
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_path">← Previous: Path</a> · <a href="../visuals_primitive">Next: Primitive →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_path">← Previous: Path</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_primitive">Next: Primitive →</a></span>
 </div>
 </nav>

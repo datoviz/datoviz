@@ -849,11 +849,11 @@ def render_example_nav(
         if next_
         else ""
     )
-    sibling_links = [link for link in (previous_link, next_link) if link]
     return [
         f'<nav class="dvz-example-nav dvz-example-nav--{location}" aria-label="Example navigation">',
         '<div class="dvz-example-nav__siblings">',
-        " · ".join(sibling_links),
+        f'<span class="dvz-example-nav__previous">{previous_link}</span>',
+        f'<span class="dvz-example-nav__next">{next_link}</span>',
         "</div>",
         "</nav>",
         "",

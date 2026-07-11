@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_coordinate_system">← Previous: Coordinate System</a> · <a href="../features_panel_grid">Next: Panel Grid →</a>
+<span class="dvz-example-nav__previous"><a href="../features_coordinate_system">← Previous: Coordinate System</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_grid">Next: Panel Grid →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ The panel is placed with normalized x, y, width, and height values instead of fi
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_coordinate_system">← Previous: Coordinate System</a> · <a href="../features_panel_grid">Next: Panel Grid →</a>
+<span class="dvz-example-nav__previous"><a href="../features_coordinate_system">← Previous: Coordinate System</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_grid">Next: Panel Grid →</a></span>
 </div>
 </nav>

@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_point">← Previous: Point</a> · <a href="../visuals_marker">Next: Marker →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_point">← Previous: Point</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_marker">Next: Marker →</a></span>
 </div>
 </nav>
 
@@ -68,6 +69,7 @@ The positions array lays out the grid, scalar values drive the color scale, and 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_point">← Previous: Point</a> · <a href="../visuals_marker">Next: Marker →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_point">← Previous: Point</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_marker">Next: Marker →</a></span>
 </div>
 </nav>

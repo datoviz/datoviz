@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_marker_symbols">← Previous: Marker Symbols</a> · <a href="../features_path_join">Next: Path Join →</a>
+<span class="dvz-example-nav__previous"><a href="../features_marker_symbols">← Previous: Marker Symbols</a></span>
+<span class="dvz-example-nav__next"><a href="../features_path_join">Next: Path Join →</a></span>
 </div>
 </nav>
 
@@ -52,6 +53,7 @@ Four control points define the curve. The tessellated path uploads position, col
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_marker_symbols">← Previous: Marker Symbols</a> · <a href="../features_path_join">Next: Path Join →</a>
+<span class="dvz-example-nav__previous"><a href="../features_marker_symbols">← Previous: Marker Symbols</a></span>
+<span class="dvz-example-nav__next"><a href="../features_path_join">Next: Path Join →</a></span>
 </div>
 </nav>

@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_primitive">← Previous: Primitive</a> · <a href="../visuals_image_rgba">Next: RGBA Image →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_primitive">← Previous: Primitive</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_image_rgba">Next: RGBA Image →</a></span>
 </div>
 </nav>
 
@@ -68,6 +69,7 @@ The FIELD_WIDTH by FIELD_HEIGHT value array is attached as a sampled field, whil
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_primitive">← Previous: Primitive</a> · <a href="../visuals_image_rgba">Next: RGBA Image →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_primitive">← Previous: Primitive</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_image_rgba">Next: RGBA Image →</a></span>
 </div>
 </nav>

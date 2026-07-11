@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_surface_grid">← Previous: Surface Grid</a>
+<span class="dvz-example-nav__previous"><a href="../showcases_surface_grid">← Previous: Surface Grid</a></span>
+<span class="dvz-example-nav__next"></span>
 </div>
 </nav>
 
@@ -87,6 +88,7 @@ The example uses real texture files from the data submodule when available. Eart
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_surface_grid">← Previous: Surface Grid</a>
+<span class="dvz-example-nav__previous"><a href="../showcases_surface_grid">← Previous: Surface Grid</a></span>
+<span class="dvz-example-nav__next"></span>
 </div>
 </nav>

@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_basic_scene">← Previous: Basic Scene</a> · <a href="../features_panel_single">Next: Single Panel →</a>
+<span class="dvz-example-nav__previous"><a href="../features_basic_scene">← Previous: Basic Scene</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_single">Next: Single Panel →</a></span>
 </div>
 </nav>
 
@@ -52,6 +53,7 @@ The axis triad uses red for X, green for Y, and blue for Z, with labels and a re
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_basic_scene">← Previous: Basic Scene</a> · <a href="../features_panel_single">Next: Single Panel →</a>
+<span class="dvz-example-nav__previous"><a href="../features_basic_scene">← Previous: Basic Scene</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_single">Next: Single Panel →</a></span>
 </div>
 </nav>

@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_glyph">← Previous: Font Atlas Glyphs</a> · <a href="../visuals_mesh">Next: Mesh →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_glyph">← Previous: Font Atlas Glyphs</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_mesh">Next: Mesh →</a></span>
 </div>
 </nav>
 
@@ -68,6 +69,7 @@ The labels array stores category IDs, and the category scale assigns each ID a n
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_glyph">← Previous: Font Atlas Glyphs</a> · <a href="../visuals_mesh">Next: Mesh →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_glyph">← Previous: Font Atlas Glyphs</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_mesh">Next: Mesh →</a></span>
 </div>
 </nav>

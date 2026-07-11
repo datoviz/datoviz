@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_technique_depth_cue">← Previous: Depth Cue</a> · <a href="../features_technique_ssao">Next: Screen-Space Ambient Occlusion →</a>
+<span class="dvz-example-nav__previous"><a href="../features_technique_depth_cue">← Previous: Depth Cue</a></span>
+<span class="dvz-example-nav__next"><a href="../features_technique_ssao">Next: Screen-Space Ambient Occlusion →</a></span>
 </div>
 </nav>
 
@@ -52,6 +53,7 @@ Both panels upload the same depth-rich point cloud with position, color, and siz
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_technique_depth_cue">← Previous: Depth Cue</a> · <a href="../features_technique_ssao">Next: Screen-Space Ambient Occlusion →</a>
+<span class="dvz-example-nav__previous"><a href="../features_technique_depth_cue">← Previous: Depth Cue</a></span>
+<span class="dvz-example-nav__next"><a href="../features_technique_ssao">Next: Screen-Space Ambient Occlusion →</a></span>
 </div>
 </nav>

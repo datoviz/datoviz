@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_brain_volume">← Previous: Allen Mouse Brain</a> · <a href="../showcases_point_cloud">Next: Point Cloud →</a>
+<span class="dvz-example-nav__previous"><a href="../showcases_brain_volume">← Previous: Allen Mouse Brain</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_point_cloud">Next: Point Cloud →</a></span>
 </div>
 </nav>
 
@@ -112,6 +113,7 @@ The full interactive GUI workbench lives in examples/c/lab/protein_viewer.c.
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_brain_volume">← Previous: Allen Mouse Brain</a> · <a href="../showcases_point_cloud">Next: Point Cloud →</a>
+<span class="dvz-example-nav__previous"><a href="../showcases_brain_volume">← Previous: Allen Mouse Brain</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_point_cloud">Next: Point Cloud →</a></span>
 </div>
 </nav>

@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_builtin_shapes_2d">← Previous: Builtin Shapes 2D</a> · <a href="../features_marker_symbols">Next: Marker Symbols →</a>
+<span class="dvz-example-nav__previous"><a href="../features_builtin_shapes_2d">← Previous: Builtin Shapes 2D</a></span>
+<span class="dvz-example-nav__next"><a href="../features_marker_symbols">Next: Marker Symbols →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ The scene uses geometry builders for common solids such as a cube, sphere, cylin
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_builtin_shapes_2d">← Previous: Builtin Shapes 2D</a> · <a href="../features_marker_symbols">Next: Marker Symbols →</a>
+<span class="dvz-example-nav__previous"><a href="../features_builtin_shapes_2d">← Previous: Builtin Shapes 2D</a></span>
+<span class="dvz-example-nav__next"><a href="../features_marker_symbols">Next: Marker Symbols →</a></span>
 </div>
 </nav>

@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../composites_graph">Next: Graph Composite →</a>
+<span class="dvz-example-nav__previous"></span>
+<span class="dvz-example-nav__next"><a href="../composites_graph">Next: Graph Composite →</a></span>
 </div>
 </nav>
 
@@ -67,6 +68,7 @@ The left shape uses outer and hole coordinate rings plus fill, stroke, width, jo
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../composites_graph">Next: Graph Composite →</a>
+<span class="dvz-example-nav__previous"></span>
+<span class="dvz-example-nav__next"><a href="../composites_graph">Next: Graph Composite →</a></span>
 </div>
 </nav>

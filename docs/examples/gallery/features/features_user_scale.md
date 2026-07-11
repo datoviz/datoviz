@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_panel_background">← Previous: Panel Background</a> · <a href="../features_view_size_policies">Next: View Size Policies →</a>
+<span class="dvz-example-nav__previous"><a href="../features_panel_background">← Previous: Panel Background</a></span>
+<span class="dvz-example-nav__next"><a href="../features_view_size_policies">Next: View Size Policies →</a></span>
 </div>
 </nav>
 
@@ -59,6 +60,7 @@ The panel combines a data-space path, outlined markers, axes, and panzoom. The p
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_panel_background">← Previous: Panel Background</a> · <a href="../features_view_size_policies">Next: View Size Policies →</a>
+<span class="dvz-example-nav__previous"><a href="../features_panel_background">← Previous: Panel Background</a></span>
+<span class="dvz-example-nav__next"><a href="../features_view_size_policies">Next: View Size Policies →</a></span>
 </div>
 </nav>

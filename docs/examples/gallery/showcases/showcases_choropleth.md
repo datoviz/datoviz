@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_scalebar_measurement">← Previous: Scale Bar Measurement Workflow</a> · <a href="../showcases_wind_field">Next: Wind Field →</a>
+<span class="dvz-example-nav__previous"><a href="../showcases_scalebar_measurement">← Previous: Scale Bar Measurement Workflow</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_wind_field">Next: Wind Field →</a></span>
 </div>
 </nav>
 
@@ -104,6 +105,7 @@ Promote: `python tools/data/prepare_us_state_choropleth.py --output data/example
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_scalebar_measurement">← Previous: Scale Bar Measurement Workflow</a> · <a href="../showcases_wind_field">Next: Wind Field →</a>
+<span class="dvz-example-nav__previous"><a href="../showcases_scalebar_measurement">← Previous: Scale Bar Measurement Workflow</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_wind_field">Next: Wind Field →</a></span>
 </div>
 </nav>

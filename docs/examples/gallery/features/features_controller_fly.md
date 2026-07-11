@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_controller_turntable">← Previous: Turntable Controller</a> · <a href="../features_orientation_gizmo">Next: Orientation Gizmo →</a>
+<span class="dvz-example-nav__previous"><a href="../features_controller_turntable">← Previous: Turntable Controller</a></span>
+<span class="dvz-example-nav__next"><a href="../features_orientation_gizmo">Next: Orientation Gizmo →</a></span>
 </div>
 </nav>
 
@@ -69,6 +70,7 @@ The same colored cube and reference grid used by the controller examples are sho
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_controller_turntable">← Previous: Turntable Controller</a> · <a href="../features_orientation_gizmo">Next: Orientation Gizmo →</a>
+<span class="dvz-example-nav__previous"><a href="../features_controller_turntable">← Previous: Turntable Controller</a></span>
+<span class="dvz-example-nav__next"><a href="../features_orientation_gizmo">Next: Orientation Gizmo →</a></span>
 </div>
 </nav>

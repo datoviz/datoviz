@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_datetime_axis">← Previous: Datetime Axis</a> · <a href="../features_guide_spans">Next: Guide Spans →</a>
+<span class="dvz-example-nav__previous"><a href="../features_datetime_axis">← Previous: Datetime Axis</a></span>
+<span class="dvz-example-nav__next"><a href="../features_guide_spans">Next: Guide Spans →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ A path visual uploads position, color, and linewidth arrays for a signal, and th
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_datetime_axis">← Previous: Datetime Axis</a> · <a href="../features_guide_spans">Next: Guide Spans →</a>
+<span class="dvz-example-nav__previous"><a href="../features_datetime_axis">← Previous: Datetime Axis</a></span>
+<span class="dvz-example-nav__next"><a href="../features_guide_spans">Next: Guide Spans →</a></span>
 </div>
 </nav>

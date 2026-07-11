@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_colormap_scale">← Previous: Scalar Color Scale</a> · <a href="../features_annotation_readout">Next: Annotation Readout →</a>
+<span class="dvz-example-nav__previous"><a href="../features_colormap_scale">← Previous: Scalar Color Scale</a></span>
+<span class="dvz-example-nav__next"><a href="../features_annotation_readout">Next: Annotation Readout →</a></span>
 </div>
 </nav>
 
@@ -61,6 +62,7 @@ Five category IDs are assigned labels, colors, and marker shapes, then the marke
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_colormap_scale">← Previous: Scalar Color Scale</a> · <a href="../features_annotation_readout">Next: Annotation Readout →</a>
+<span class="dvz-example-nav__previous"><a href="../features_colormap_scale">← Previous: Scalar Color Scale</a></span>
+<span class="dvz-example-nav__next"><a href="../features_annotation_readout">Next: Annotation Readout →</a></span>
 </div>
 </nav>

@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_technique_msaa">← Previous: Multisample Antialiasing</a> · <a href="../features_alpha_blending">Next: Alpha Blending →</a>
+<span class="dvz-example-nav__previous"><a href="../features_technique_msaa">← Previous: Multisample Antialiasing</a></span>
+<span class="dvz-example-nav__next"><a href="../features_alpha_blending">Next: Alpha Blending →</a></span>
 </div>
 </nav>
 
@@ -58,6 +59,7 @@ Each panel draws two translucent cube meshes with the same geometry, transforms,
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_technique_msaa">← Previous: Multisample Antialiasing</a> · <a href="../features_alpha_blending">Next: Alpha Blending →</a>
+<span class="dvz-example-nav__previous"><a href="../features_technique_msaa">← Previous: Multisample Antialiasing</a></span>
+<span class="dvz-example-nav__next"><a href="../features_alpha_blending">Next: Alpha Blending →</a></span>
 </div>
 </nav>

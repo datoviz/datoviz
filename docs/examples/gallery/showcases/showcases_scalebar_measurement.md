@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_linked_probe_colorbar">← Previous: Linked Probe With Colorbar</a> · <a href="../showcases_choropleth">Next: U.S. State Choropleth →</a>
+<span class="dvz-example-nav__previous"><a href="../showcases_linked_probe_colorbar">← Previous: Linked Probe With Colorbar</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_choropleth">Next: U.S. State Choropleth →</a></span>
 </div>
 </nav>
 
@@ -69,6 +70,7 @@ This workflow is useful for scientific figures where readers must understand phy
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_linked_probe_colorbar">← Previous: Linked Probe With Colorbar</a> · <a href="../showcases_choropleth">Next: U.S. State Choropleth →</a>
+<span class="dvz-example-nav__previous"><a href="../showcases_linked_probe_colorbar">← Previous: Linked Probe With Colorbar</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_choropleth">Next: U.S. State Choropleth →</a></span>
 </div>
 </nav>

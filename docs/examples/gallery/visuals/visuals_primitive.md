@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_vector">← Previous: Vector</a> · <a href="../visuals_image">Next: Image →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_vector">← Previous: Vector</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_image">Next: Image →</a></span>
 </div>
 </nav>
 
@@ -68,6 +69,7 @@ Each primitive supplies positions, colors, and group IDs, then chooses a line or
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_vector">← Previous: Vector</a> · <a href="../visuals_image">Next: Image →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_vector">← Previous: Vector</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_image">Next: Image →</a></span>
 </div>
 </nav>

@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../advanced_qt_hosting">← Previous: Qt Hosting</a> · <a href="../advanced_raw_triangle_vklite">Next: Raw Triangle Vklite →</a>
+<span class="dvz-example-nav__previous"><a href="../advanced_qt_hosting">← Previous: Qt Hosting</a></span>
+<span class="dvz-example-nav__next"><a href="../advanced_raw_triangle_vklite">Next: Raw Triangle Vklite →</a></span>
 </div>
 </nav>
 
@@ -55,6 +56,7 @@ Raw_triangle_drp2.png
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../advanced_qt_hosting">← Previous: Qt Hosting</a> · <a href="../advanced_raw_triangle_vklite">Next: Raw Triangle Vklite →</a>
+<span class="dvz-example-nav__previous"><a href="../advanced_qt_hosting">← Previous: Qt Hosting</a></span>
+<span class="dvz-example-nav__next"><a href="../advanced_raw_triangle_vklite">Next: Raw Triangle Vklite →</a></span>
 </div>
 </nav>

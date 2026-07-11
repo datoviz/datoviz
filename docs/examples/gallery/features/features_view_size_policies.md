@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_user_scale">← Previous: User Scale</a> · <a href="../features_visual_transform">Next: Visual Transform →</a>
+<span class="dvz-example-nav__previous"><a href="../features_user_scale">← Previous: User Scale</a></span>
+<span class="dvz-example-nav__next"><a href="../features_visual_transform">Next: Visual Transform →</a></span>
 </div>
 </nav>
 
@@ -57,6 +58,7 @@ Pass --policy pixel, host, reference, or physical to choose framebuffer pixels, 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_user_scale">← Previous: User Scale</a> · <a href="../features_visual_transform">Next: Visual Transform →</a>
+<span class="dvz-example-nav__previous"><a href="../features_user_scale">← Previous: User Scale</a></span>
+<span class="dvz-example-nav__next"><a href="../features_visual_transform">Next: Visual Transform →</a></span>
 </div>
 </nav>

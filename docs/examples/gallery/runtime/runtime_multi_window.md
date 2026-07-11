@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../runtime_app_glfw">← Previous: GLFW App</a> · <a href="../runtime_offscreen_capture">Next: Offscreen Capture →</a>
+<span class="dvz-example-nav__previous"><a href="../runtime_app_glfw">← Previous: GLFW App</a></span>
+<span class="dvz-example-nav__next"><a href="../runtime_offscreen_capture">Next: Offscreen Capture →</a></span>
 </div>
 </nav>
 
@@ -55,6 +56,7 @@ This workflow is useful for scientific tools that need a coarse overview beside 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../runtime_app_glfw">← Previous: GLFW App</a> · <a href="../runtime_offscreen_capture">Next: Offscreen Capture →</a>
+<span class="dvz-example-nav__previous"><a href="../runtime_app_glfw">← Previous: GLFW App</a></span>
+<span class="dvz-example-nav__next"><a href="../runtime_offscreen_capture">Next: Offscreen Capture →</a></span>
 </div>
 </nav>

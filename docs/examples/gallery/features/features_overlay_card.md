@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_text_block">← Previous: Text Block</a> · <a href="../features_probe_labels">Next: Label Probe →</a>
+<span class="dvz-example-nav__previous"><a href="../features_text_block">← Previous: Text Block</a></span>
+<span class="dvz-example-nav__next"><a href="../features_probe_labels">Next: Label Probe →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ The background path uploads position, color, and stroke_width_px arrays in view 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_text_block">← Previous: Text Block</a> · <a href="../features_probe_labels">Next: Label Probe →</a>
+<span class="dvz-example-nav__previous"><a href="../features_text_block">← Previous: Text Block</a></span>
+<span class="dvz-example-nav__next"><a href="../features_probe_labels">Next: Label Probe →</a></span>
 </div>
 </nav>

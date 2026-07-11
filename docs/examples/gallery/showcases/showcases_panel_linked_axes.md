@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_scientific_plotting">← Previous: Scientific Plotting Workflow</a> · <a href="../showcases_linked_probe_colorbar">Next: Linked Probe With Colorbar →</a>
+<span class="dvz-example-nav__previous"><a href="../showcases_scientific_plotting">← Previous: Scientific Plotting Workflow</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_linked_probe_colorbar">Next: Linked Probe With Colorbar →</a></span>
 </div>
 </nav>
 
@@ -75,6 +76,7 @@ This workflow is useful for scientific dashboards where traces, events, and summ
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_scientific_plotting">← Previous: Scientific Plotting Workflow</a> · <a href="../showcases_linked_probe_colorbar">Next: Linked Probe With Colorbar →</a>
+<span class="dvz-example-nav__previous"><a href="../showcases_scientific_plotting">← Previous: Scientific Plotting Workflow</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_linked_probe_colorbar">Next: Linked Probe With Colorbar →</a></span>
 </div>
 </nav>

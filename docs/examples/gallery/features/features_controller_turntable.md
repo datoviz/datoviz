@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_controller_arcball">← Previous: Arcball Controller</a> · <a href="../features_controller_fly">Next: Fly Controller →</a>
+<span class="dvz-example-nav__previous"><a href="../features_controller_arcball">← Previous: Arcball Controller</a></span>
+<span class="dvz-example-nav__next"><a href="../features_controller_fly">Next: Fly Controller →</a></span>
 </div>
 </nav>
 
@@ -69,6 +70,7 @@ The lit cube and XZ grid provide a stable reference frame while the controller o
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_controller_arcball">← Previous: Arcball Controller</a> · <a href="../features_controller_fly">Next: Fly Controller →</a>
+<span class="dvz-example-nav__previous"><a href="../features_controller_arcball">← Previous: Arcball Controller</a></span>
+<span class="dvz-example-nav__next"><a href="../features_controller_fly">Next: Fly Controller →</a></span>
 </div>
 </nav>

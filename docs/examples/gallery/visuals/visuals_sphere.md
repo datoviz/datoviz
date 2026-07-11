@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_mesh">← Previous: Mesh</a> · <a href="../visuals_volume">Next: Volume →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_mesh">← Previous: Mesh</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_volume">Next: Volume →</a></span>
 </div>
 </nav>
 
@@ -68,6 +69,7 @@ Positions locate the sphere centers, radii control physical size, and colors dis
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_mesh">← Previous: Mesh</a> · <a href="../visuals_volume">Next: Volume →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_mesh">← Previous: Mesh</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_volume">Next: Volume →</a></span>
 </div>
 </nav>

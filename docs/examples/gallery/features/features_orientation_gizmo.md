@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_controller_fly">← Previous: Fly Controller</a> · <a href="../features_reference_grid">Next: Reference Grid →</a>
+<span class="dvz-example-nav__previous"><a href="../features_controller_fly">← Previous: Fly Controller</a></span>
+<span class="dvz-example-nav__next"><a href="../features_reference_grid">Next: Reference Grid →</a></span>
 </div>
 </nav>
 
@@ -58,6 +59,7 @@ The main scene is a lit cube controlled by an arcball, and the orientation gizmo
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_controller_fly">← Previous: Fly Controller</a> · <a href="../features_reference_grid">Next: Reference Grid →</a>
+<span class="dvz-example-nav__previous"><a href="../features_controller_fly">← Previous: Fly Controller</a></span>
+<span class="dvz-example-nav__next"><a href="../features_reference_grid">Next: Reference Grid →</a></span>
 </div>
 </nav>

@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_selection_pixel">← Previous: Pixel Selection</a> · <a href="../features_selection_mesh_instances">Next: Mesh Instance Selection →</a>
+<span class="dvz-example-nav__previous"><a href="../features_selection_pixel">← Previous: Pixel Selection</a></span>
+<span class="dvz-example-nav__next"><a href="../features_selection_mesh_instances">Next: Mesh Instance Selection →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ The sphere visual uploads position, radius, and color arrays for a compact depth
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_selection_pixel">← Previous: Pixel Selection</a> · <a href="../features_selection_mesh_instances">Next: Mesh Instance Selection →</a>
+<span class="dvz-example-nav__previous"><a href="../features_selection_pixel">← Previous: Pixel Selection</a></span>
+<span class="dvz-example-nav__next"><a href="../features_selection_mesh_instances">Next: Mesh Instance Selection →</a></span>
 </div>
 </nav>

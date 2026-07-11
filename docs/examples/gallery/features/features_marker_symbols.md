@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_builtin_shapes_3d">← Previous: Builtin Shapes 3D</a> · <a href="../features_bezier_curve_path">Next: Bezier Curve Path →</a>
+<span class="dvz-example-nav__previous"><a href="../features_builtin_shapes_3d">← Previous: Builtin Shapes 3D</a></span>
+<span class="dvz-example-nav__next"><a href="../features_bezier_curve_path">Next: Bezier Curve Path →</a></span>
 </div>
 </nav>
 
@@ -57,6 +58,7 @@ Each row uses the same marker attributes, including position, color, diameter_px
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_builtin_shapes_3d">← Previous: Builtin Shapes 3D</a> · <a href="../features_bezier_curve_path">Next: Bezier Curve Path →</a>
+<span class="dvz-example-nav__previous"><a href="../features_builtin_shapes_3d">← Previous: Builtin Shapes 3D</a></span>
+<span class="dvz-example-nav__next"><a href="../features_bezier_curve_path">Next: Bezier Curve Path →</a></span>
 </div>
 </nav>

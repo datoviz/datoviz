@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../runtime_video_export">← Previous: Video Export</a>
+<span class="dvz-example-nav__previous"><a href="../runtime_video_export">← Previous: Video Export</a></span>
+<span class="dvz-example-nav__next"></span>
 </div>
 </nav>
 
@@ -49,6 +50,7 @@ This experimental workflow is useful when you need visual regression artifacts o
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../runtime_video_export">← Previous: Video Export</a>
+<span class="dvz-example-nav__previous"><a href="../runtime_video_export">← Previous: Video Export</a></span>
+<span class="dvz-example-nav__next"></span>
 </div>
 </nav>

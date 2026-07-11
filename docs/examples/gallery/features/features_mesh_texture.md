@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_lighting">← Previous: Lighting</a> · <a href="../features_material_mesh">Next: Mesh Materials →</a>
+<span class="dvz-example-nav__previous"><a href="../features_lighting">← Previous: Lighting</a></span>
+<span class="dvz-example-nav__next"><a href="../features_material_mesh">Next: Mesh Materials →</a></span>
 </div>
 </nav>
 
@@ -58,6 +59,7 @@ The texture pixels are generated as a 1024x512 color field, attached to the mesh
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_lighting">← Previous: Lighting</a> · <a href="../features_material_mesh">Next: Mesh Materials →</a>
+<span class="dvz-example-nav__previous"><a href="../features_lighting">← Previous: Lighting</a></span>
+<span class="dvz-example-nav__next"><a href="../features_material_mesh">Next: Mesh Materials →</a></span>
 </div>
 </nav>

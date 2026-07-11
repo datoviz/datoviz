@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_panel_single">← Previous: Single Panel</a> · <a href="../features_panel_multi">Next: Multiple Panels →</a>
+<span class="dvz-example-nav__previous"><a href="../features_panel_single">← Previous: Single Panel</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_multi">Next: Multiple Panels →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ Each panel has its own border, background, and small point visual with position,
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_panel_single">← Previous: Single Panel</a> · <a href="../features_panel_multi">Next: Multiple Panels →</a>
+<span class="dvz-example-nav__previous"><a href="../features_panel_single">← Previous: Single Panel</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_multi">Next: Multiple Panels →</a></span>
 </div>
 </nav>

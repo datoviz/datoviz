@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_labels">← Previous: Labels</a> · <a href="../visuals_sphere">Next: Sphere →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_labels">← Previous: Labels</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_sphere">Next: Sphere →</a></span>
 </div>
 </nav>
 
@@ -68,6 +69,7 @@ The cube geometry supplies vertices, indices, normals, and per-face colors to th
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_labels">← Previous: Labels</a> · <a href="../visuals_sphere">Next: Sphere →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_labels">← Previous: Labels</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_sphere">Next: Sphere →</a></span>
 </div>
 </nav>

@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_update_visual_data">← Previous: Visual Data Update</a> · <a href="../features_gui_viewport">Next: GUI Viewport →</a>
+<span class="dvz-example-nav__previous"><a href="../features_update_visual_data">← Previous: Visual Data Update</a></span>
+<span class="dvz-example-nav__next"><a href="../features_gui_viewport">Next: GUI Viewport →</a></span>
 </div>
 </nav>
 
@@ -53,6 +54,7 @@ Five point positions are fixed, while GUI sliders and color editors update the c
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_update_visual_data">← Previous: Visual Data Update</a> · <a href="../features_gui_viewport">Next: GUI Viewport →</a>
+<span class="dvz-example-nav__previous"><a href="../features_update_visual_data">← Previous: Visual Data Update</a></span>
+<span class="dvz-example-nav__next"><a href="../features_gui_viewport">Next: GUI Viewport →</a></span>
 </div>
 </nav>

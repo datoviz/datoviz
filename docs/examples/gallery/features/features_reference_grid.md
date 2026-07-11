@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_orientation_gizmo">← Previous: Orientation Gizmo</a> · <a href="../features_axis_labels">Next: Axis Labels →</a>
+<span class="dvz-example-nav__previous"><a href="../features_orientation_gizmo">← Previous: Orientation Gizmo</a></span>
+<span class="dvz-example-nav__next"><a href="../features_axis_labels">Next: Axis Labels →</a></span>
 </div>
 </nav>
 
@@ -52,6 +53,7 @@ The grid is attached to the XZ plane, shifted downward on Y, and configured with
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_orientation_gizmo">← Previous: Orientation Gizmo</a> · <a href="../features_axis_labels">Next: Axis Labels →</a>
+<span class="dvz-example-nav__previous"><a href="../features_orientation_gizmo">← Previous: Orientation Gizmo</a></span>
+<span class="dvz-example-nav__next"><a href="../features_axis_labels">Next: Axis Labels →</a></span>
 </div>
 </nav>

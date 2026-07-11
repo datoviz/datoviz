@@ -185,10 +185,16 @@ img[alt*=gpuopen] {
 .dvz-example-nav__siblings {
     display: flex;
     flex-wrap: wrap;
+    justify-content: space-between;
     gap: 0.4rem;
     align-items: center;
     font-size: 0.72rem;
     color: var(--md-default-fg-color--light);
+}
+
+.dvz-example-nav__next {
+    margin-left: auto;
+    text-align: right;
 }
 
 .dvz-example-nav--top {

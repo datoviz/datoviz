@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_probe_labels">← Previous: Label Probe</a> · <a href="../features_builtin_shapes_3d">Next: Builtin Shapes 3D →</a>
+<span class="dvz-example-nav__previous"><a href="../features_probe_labels">← Previous: Label Probe</a></span>
+<span class="dvz-example-nav__next"><a href="../features_builtin_shapes_3d">Next: Builtin Shapes 3D →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ The panel uses equal-aspect data coordinates, then uploads generated geometry fo
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_probe_labels">← Previous: Label Probe</a> · <a href="../features_builtin_shapes_3d">Next: Builtin Shapes 3D →</a>
+<span class="dvz-example-nav__previous"><a href="../features_probe_labels">← Previous: Label Probe</a></span>
+<span class="dvz-example-nav__next"><a href="../features_builtin_shapes_3d">Next: Builtin Shapes 3D →</a></span>
 </div>
 </nav>

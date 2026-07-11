@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_technique_edl">← Previous: Eye-Dome Lighting</a> · <a href="../features_technique_msaa">Next: Multisample Antialiasing →</a>
+<span class="dvz-example-nav__previous"><a href="../features_technique_edl">← Previous: Eye-Dome Lighting</a></span>
+<span class="dvz-example-nav__next"><a href="../features_technique_msaa">Next: Multisample Antialiasing →</a></span>
 </div>
 </nav>
 
@@ -58,6 +59,7 @@ Both panels upload the same lit sphere position, radius, and color arrays, while
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_technique_edl">← Previous: Eye-Dome Lighting</a> · <a href="../features_technique_msaa">Next: Multisample Antialiasing →</a>
+<span class="dvz-example-nav__previous"><a href="../features_technique_edl">← Previous: Eye-Dome Lighting</a></span>
+<span class="dvz-example-nav__next"><a href="../features_technique_msaa">Next: Multisample Antialiasing →</a></span>
 </div>
 </nav>

@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_protein">← Previous: Protein</a> · <a href="../showcases_surface_grid">Next: Surface Grid →</a>
+<span class="dvz-example-nav__previous"><a href="../showcases_protein">← Previous: Protein</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_surface_grid">Next: Surface Grid →</a></span>
 </div>
 </nav>
 
@@ -79,6 +80,7 @@ Real data is loaded from `.cache/datoviz/examples/point_cloud/prepared/point_clo
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_protein">← Previous: Protein</a> · <a href="../showcases_surface_grid">Next: Surface Grid →</a>
+<span class="dvz-example-nav__previous"><a href="../showcases_protein">← Previous: Protein</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_surface_grid">Next: Surface Grid →</a></span>
 </div>
 </nav>

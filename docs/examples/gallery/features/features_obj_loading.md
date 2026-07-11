@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_path_join">← Previous: Path Join</a> · <a href="../features_sampled_field_update">Next: Sampled Field Update →</a>
+<span class="dvz-example-nav__previous"><a href="../features_path_join">← Previous: Path Join</a></span>
+<span class="dvz-example-nav__next"><a href="../features_sampled_field_update">Next: Sampled Field Update →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ The example writes a compact OBJ file, loads it through dvz_geometry_obj(), assi
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_path_join">← Previous: Path Join</a> · <a href="../features_sampled_field_update">Next: Sampled Field Update →</a>
+<span class="dvz-example-nav__previous"><a href="../features_path_join">← Previous: Path Join</a></span>
+<span class="dvz-example-nav__next"><a href="../features_sampled_field_update">Next: Sampled Field Update →</a></span>
 </div>
 </nav>

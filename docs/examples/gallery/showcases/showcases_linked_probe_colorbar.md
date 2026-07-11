@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_panel_linked_axes">← Previous: Linked Panels With Axes</a> · <a href="../showcases_scalebar_measurement">Next: Scale Bar Measurement Workflow →</a>
+<span class="dvz-example-nav__previous"><a href="../showcases_panel_linked_axes">← Previous: Linked Panels With Axes</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_scalebar_measurement">Next: Scale Bar Measurement Workflow →</a></span>
 </div>
 </nav>
 
@@ -69,6 +70,7 @@ This workflow is useful for inspecting transformed measurements while preserving
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_panel_linked_axes">← Previous: Linked Panels With Axes</a> · <a href="../showcases_scalebar_measurement">Next: Scale Bar Measurement Workflow →</a>
+<span class="dvz-example-nav__previous"><a href="../showcases_panel_linked_axes">← Previous: Linked Panels With Axes</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_scalebar_measurement">Next: Scale Bar Measurement Workflow →</a></span>
 </div>
 </nav>

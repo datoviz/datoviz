@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_text">← Previous: Text</a> · <a href="../visuals_labels">Next: Labels →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_text">← Previous: Text</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_labels">Next: Labels →</a></span>
 </div>
 </nav>
 
@@ -62,6 +63,7 @@ Each visible character in "Datoviz Atlas cafe" is built from explicit positions,
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_text">← Previous: Text</a> · <a href="../visuals_labels">Next: Labels →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_text">← Previous: Text</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_labels">Next: Labels →</a></span>
 </div>
 </nav>

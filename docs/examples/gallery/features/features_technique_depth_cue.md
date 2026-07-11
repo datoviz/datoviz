@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_material_mesh">← Previous: Mesh Materials</a> · <a href="../features_technique_edl">Next: Eye-Dome Lighting →</a>
+<span class="dvz-example-nav__previous"><a href="../features_material_mesh">← Previous: Mesh Materials</a></span>
+<span class="dvz-example-nav__next"><a href="../features_technique_edl">Next: Eye-Dome Lighting →</a></span>
 </div>
 </nav>
 
@@ -58,6 +59,7 @@ Both panels upload the same 3x3x3 sphere position, color, and radius arrays, but
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_material_mesh">← Previous: Mesh Materials</a> · <a href="../features_technique_edl">Next: Eye-Dome Lighting →</a>
+<span class="dvz-example-nav__previous"><a href="../features_material_mesh">← Previous: Mesh Materials</a></span>
+<span class="dvz-example-nav__next"><a href="../features_technique_edl">Next: Eye-Dome Lighting →</a></span>
 </div>
 </nav>

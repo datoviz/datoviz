@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../runtime_offscreen_capture">← Previous: Offscreen Capture</a> · <a href="../runtime_record_replay">Next: Record Replay →</a>
+<span class="dvz-example-nav__previous"><a href="../runtime_offscreen_capture">← Previous: Offscreen Capture</a></span>
+<span class="dvz-example-nav__next"><a href="../runtime_record_replay">Next: Record Replay →</a></span>
 </div>
 </nav>
 
@@ -53,6 +54,7 @@ This runtime workflow is the reproducible offscreen video-export path: the scene
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../runtime_offscreen_capture">← Previous: Offscreen Capture</a> · <a href="../runtime_record_replay">Next: Record Replay →</a>
+<span class="dvz-example-nav__previous"><a href="../runtime_offscreen_capture">← Previous: Offscreen Capture</a></span>
+<span class="dvz-example-nav__next"><a href="../runtime_record_replay">Next: Record Replay →</a></span>
 </div>
 </nav>

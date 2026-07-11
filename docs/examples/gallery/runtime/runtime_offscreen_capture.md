@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../runtime_multi_window">← Previous: Multi Window</a> · <a href="../runtime_video_export">Next: Video Export →</a>
+<span class="dvz-example-nav__previous"><a href="../runtime_multi_window">← Previous: Multi Window</a></span>
+<span class="dvz-example-nav__next"><a href="../runtime_video_export">Next: Video Export →</a></span>
 </div>
 </nav>
 
@@ -55,6 +56,7 @@ This is the runtime path to copy for reproducible batch figures, tests, and docu
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../runtime_multi_window">← Previous: Multi Window</a> · <a href="../runtime_video_export">Next: Video Export →</a>
+<span class="dvz-example-nav__previous"><a href="../runtime_multi_window">← Previous: Multi Window</a></span>
+<span class="dvz-example-nav__next"><a href="../runtime_video_export">Next: Video Export →</a></span>
 </div>
 </nav>

@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_legend_categorical">← Previous: Categorical Legend</a> · <a href="../features_text_block">Next: Text Block →</a>
+<span class="dvz-example-nav__previous"><a href="../features_legend_categorical">← Previous: Categorical Legend</a></span>
+<span class="dvz-example-nav__next"><a href="../features_text_block">Next: Text Block →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ The point visual uploads position, color, and diameter_px arrays for a small sig
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_legend_categorical">← Previous: Categorical Legend</a> · <a href="../features_text_block">Next: Text Block →</a>
+<span class="dvz-example-nav__previous"><a href="../features_legend_categorical">← Previous: Categorical Legend</a></span>
+<span class="dvz-example-nav__next"><a href="../features_text_block">Next: Text Block →</a></span>
 </div>
 </nav>

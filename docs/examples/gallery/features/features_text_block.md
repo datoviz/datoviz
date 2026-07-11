@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_annotation_readout">← Previous: Annotation Readout</a> · <a href="../features_overlay_card">Next: Overlay Card →</a>
+<span class="dvz-example-nav__previous"><a href="../features_annotation_readout">← Previous: Annotation Readout</a></span>
+<span class="dvz-example-nav__next"><a href="../features_overlay_card">Next: Overlay Card →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ The text object keeps style, layout, placement, and the whole paragraph string t
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_annotation_readout">← Previous: Annotation Readout</a> · <a href="../features_overlay_card">Next: Overlay Card →</a>
+<span class="dvz-example-nav__previous"><a href="../features_annotation_readout">← Previous: Annotation Readout</a></span>
+<span class="dvz-example-nav__next"><a href="../features_overlay_card">Next: Overlay Card →</a></span>
 </div>
 </nav>

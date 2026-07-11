@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_visual_transform">← Previous: Visual Transform</a> · <a href="../features_camera_manual">Next: Manual Camera →</a>
+<span class="dvz-example-nav__previous"><a href="../features_visual_transform">← Previous: Visual Transform</a></span>
+<span class="dvz-example-nav__next"><a href="../features_camera_manual">Next: Manual Camera →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ Three separate point visuals are created so the middle red point can use dvz_vis
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_visual_transform">← Previous: Visual Transform</a> · <a href="../features_camera_manual">Next: Manual Camera →</a>
+<span class="dvz-example-nav__previous"><a href="../features_visual_transform">← Previous: Visual Transform</a></span>
+<span class="dvz-example-nav__next"><a href="../features_camera_manual">Next: Manual Camera →</a></span>
 </div>
 </nav>

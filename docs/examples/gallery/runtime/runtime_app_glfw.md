@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../runtime_multi_window">Next: Multi Window →</a>
+<span class="dvz-example-nav__previous"></span>
+<span class="dvz-example-nav__next"><a href="../runtime_multi_window">Next: Multi Window →</a></span>
 </div>
 </nav>
 
@@ -55,6 +56,7 @@ Use this as the beginner native-app template when you want Datoviz to own the GL
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../runtime_multi_window">Next: Multi Window →</a>
+<span class="dvz-example-nav__previous"></span>
+<span class="dvz-example-nav__next"><a href="../runtime_multi_window">Next: Multi Window →</a></span>
 </div>
 </nav>

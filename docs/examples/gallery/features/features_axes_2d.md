@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_axis_labels">← Previous: Axis Labels</a> · <a href="../features_datetime_axis">Next: Datetime Axis →</a>
+<span class="dvz-example-nav__previous"><a href="../features_axis_labels">← Previous: Axis Labels</a></span>
+<span class="dvz-example-nav__next"><a href="../features_datetime_axis">Next: Datetime Axis →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ The path visual receives arrays for data-space position, color, and linewidth, t
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_axis_labels">← Previous: Axis Labels</a> · <a href="../features_datetime_axis">Next: Datetime Axis →</a>
+<span class="dvz-example-nav__previous"><a href="../features_axis_labels">← Previous: Axis Labels</a></span>
+<span class="dvz-example-nav__next"><a href="../features_datetime_axis">Next: Datetime Axis →</a></span>
 </div>
 </nav>

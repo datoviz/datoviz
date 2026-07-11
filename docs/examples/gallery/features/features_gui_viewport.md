@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_gui_controls">← Previous: GUI Controls</a> · <a href="../features_gui_cimgui">Next: Raw cimgui GUI →</a>
+<span class="dvz-example-nav__previous"><a href="../features_gui_controls">← Previous: GUI Controls</a></span>
+<span class="dvz-example-nav__next"><a href="../features_gui_cimgui">Next: Raw cimgui GUI →</a></span>
 </div>
 </nav>
 
@@ -53,6 +54,7 @@ The application hosts a GUI window while a separate Datoviz figure renders a sma
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_gui_controls">← Previous: GUI Controls</a> · <a href="../features_gui_cimgui">Next: Raw cimgui GUI →</a>
+<span class="dvz-example-nav__previous"><a href="../features_gui_controls">← Previous: GUI Controls</a></span>
+<span class="dvz-example-nav__next"><a href="../features_gui_cimgui">Next: Raw cimgui GUI →</a></span>
 </div>
 </nav>

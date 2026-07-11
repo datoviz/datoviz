@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_obj_loading">← Previous: OBJ Loading</a> · <a href="../features_isolines">Next: Isolines →</a>
+<span class="dvz-example-nav__previous"><a href="../features_obj_loading">← Previous: OBJ Loading</a></span>
+<span class="dvz-example-nav__next"><a href="../features_isolines">Next: Isolines →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ Both panels sample the same R32_FLOAT field and the same moving highlighted patc
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_obj_loading">← Previous: OBJ Loading</a> · <a href="../features_isolines">Next: Isolines →</a>
+<span class="dvz-example-nav__previous"><a href="../features_obj_loading">← Previous: OBJ Loading</a></span>
+<span class="dvz-example-nav__next"><a href="../features_isolines">Next: Isolines →</a></span>
 </div>
 </nav>

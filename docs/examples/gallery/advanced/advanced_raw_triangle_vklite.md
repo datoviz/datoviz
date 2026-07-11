@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../advanced_raw_triangle_drp2">← Previous: Raw Triangle DRP2</a>
+<span class="dvz-example-nav__previous"><a href="../advanced_raw_triangle_drp2">← Previous: Raw Triangle DRP2</a></span>
+<span class="dvz-example-nav__next"></span>
 </div>
 </nav>
 
@@ -59,6 +60,7 @@ NOTE: this example intentionally uses an offscreen canvas. Hosted onscreen integ
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../advanced_raw_triangle_drp2">← Previous: Raw Triangle DRP2</a>
+<span class="dvz-example-nav__previous"><a href="../advanced_raw_triangle_drp2">← Previous: Raw Triangle DRP2</a></span>
+<span class="dvz-example-nav__next"></span>
 </div>
 </nav>

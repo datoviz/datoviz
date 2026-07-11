@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_image">← Previous: Image</a> · <a href="../visuals_text">Next: Text →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_image">← Previous: Image</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_text">Next: Text →</a></span>
 </div>
 </nav>
 
@@ -68,6 +69,7 @@ The FIELD_WIDTH by FIELD_HEIGHT RGBA8 array is attached directly as a color samp
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../visuals_image">← Previous: Image</a> · <a href="../visuals_text">Next: Text →</a>
+<span class="dvz-example-nav__previous"><a href="../visuals_image">← Previous: Image</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_text">Next: Text →</a></span>
 </div>
 </nav>

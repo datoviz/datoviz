@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_sampled_field_update">← Previous: Sampled Field Update</a> · <a href="../features_image_probe">Next: Image Probe →</a>
+<span class="dvz-example-nav__previous"><a href="../features_sampled_field_update">← Previous: Sampled Field Update</a></span>
+<span class="dvz-example-nav__next"><a href="../features_image_probe">Next: Image Probe →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ The scalar field is sampled on a regular grid, and CPU contour extraction turns 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_sampled_field_update">← Previous: Sampled Field Update</a> · <a href="../features_image_probe">Next: Image Probe →</a>
+<span class="dvz-example-nav__previous"><a href="../features_sampled_field_update">← Previous: Sampled Field Update</a></span>
+<span class="dvz-example-nav__next"><a href="../features_image_probe">Next: Image Probe →</a></span>
 </div>
 </nav>

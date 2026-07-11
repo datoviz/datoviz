@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_scalebar_units">← Previous: Scale Bar Units</a> · <a href="../features_colormap_scale">Next: Scalar Color Scale →</a>
+<span class="dvz-example-nav__previous"><a href="../features_scalebar_units">← Previous: Scale Bar Units</a></span>
+<span class="dvz-example-nav__next"><a href="../features_colormap_scale">Next: Scalar Color Scale →</a></span>
 </div>
 </nav>
 
@@ -67,6 +68,7 @@ A 192 by 144 float field is uploaded as an R32 sampled field, and the image visu
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_scalebar_units">← Previous: Scale Bar Units</a> · <a href="../features_colormap_scale">Next: Scalar Color Scale →</a>
+<span class="dvz-example-nav__previous"><a href="../features_scalebar_units">← Previous: Scale Bar Units</a></span>
+<span class="dvz-example-nav__next"><a href="../features_colormap_scale">Next: Scalar Color Scale →</a></span>
 </div>
 </nav>

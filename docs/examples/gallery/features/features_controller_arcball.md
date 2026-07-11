@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_panzoom">← Previous: Panzoom</a> · <a href="../features_controller_turntable">Next: Turntable Controller →</a>
+<span class="dvz-example-nav__previous"><a href="../features_panzoom">← Previous: Panzoom</a></span>
+<span class="dvz-example-nav__next"><a href="../features_controller_turntable">Next: Turntable Controller →</a></span>
 </div>
 </nav>
 
@@ -58,6 +59,7 @@ A colored cube mesh and XZ reference grid make rotation easy to see, and the con
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_panzoom">← Previous: Panzoom</a> · <a href="../features_controller_turntable">Next: Turntable Controller →</a>
+<span class="dvz-example-nav__previous"><a href="../features_panzoom">← Previous: Panzoom</a></span>
+<span class="dvz-example-nav__next"><a href="../features_controller_turntable">Next: Turntable Controller →</a></span>
 </div>
 </nav>

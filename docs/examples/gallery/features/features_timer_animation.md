@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_animation_tracks">← Previous: Animation Tracks</a> · <a href="../features_compute_buffer_animation">Next: Compute Buffer Animation →</a>
+<span class="dvz-example-nav__previous"><a href="../features_animation_tracks">← Previous: Animation Tracks</a></span>
+<span class="dvz-example-nav__next"><a href="../features_compute_buffer_animation">Next: Compute Buffer Animation →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ The same point visual receives new position, color, and diameter_px arrays on ea
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_animation_tracks">← Previous: Animation Tracks</a> · <a href="../features_compute_buffer_animation">Next: Compute Buffer Animation →</a>
+<span class="dvz-example-nav__previous"><a href="../features_animation_tracks">← Previous: Animation Tracks</a></span>
+<span class="dvz-example-nav__next"><a href="../features_compute_buffer_animation">Next: Compute Buffer Animation →</a></span>
 </div>
 </nav>

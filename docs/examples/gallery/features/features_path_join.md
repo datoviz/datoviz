@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_bezier_curve_path">← Previous: Bezier Curve Path</a> · <a href="../features_obj_loading">Next: OBJ Loading →</a>
+<span class="dvz-example-nav__previous"><a href="../features_bezier_curve_path">← Previous: Bezier Curve Path</a></span>
+<span class="dvz-example-nav__next"><a href="../features_obj_loading">Next: OBJ Loading →</a></span>
 </div>
 </nav>
 
@@ -52,6 +53,7 @@ The three columns use the same acute V, zigzag, open star, and closed star subpa
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_bezier_curve_path">← Previous: Bezier Curve Path</a> · <a href="../features_obj_loading">Next: OBJ Loading →</a>
+<span class="dvz-example-nav__previous"><a href="../features_bezier_curve_path">← Previous: Bezier Curve Path</a></span>
+<span class="dvz-example-nav__next"><a href="../features_obj_loading">Next: OBJ Loading →</a></span>
 </div>
 </nav>

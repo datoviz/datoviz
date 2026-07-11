@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../advanced_external_surface_glfw">← Previous: External Surface GLFW</a> · <a href="../advanced_raw_triangle_drp2">Next: Raw Triangle DRP2 →</a>
+<span class="dvz-example-nav__previous"><a href="../advanced_external_surface_glfw">← Previous: External Surface GLFW</a></span>
+<span class="dvz-example-nav__next"><a href="../advanced_raw_triangle_drp2">Next: Raw Triangle DRP2 →</a></span>
 </div>
 </nav>
 
@@ -53,6 +54,7 @@ This example hosts a Datoviz Vulkan scene in live Qt Widgets.
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../advanced_external_surface_glfw">← Previous: External Surface GLFW</a> · <a href="../advanced_raw_triangle_drp2">Next: Raw Triangle DRP2 →</a>
+<span class="dvz-example-nav__previous"><a href="../advanced_external_surface_glfw">← Previous: External Surface GLFW</a></span>
+<span class="dvz-example-nav__next"><a href="../advanced_raw_triangle_drp2">Next: Raw Triangle DRP2 →</a></span>
 </div>
 </nav>

@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_gpu_particle_smoke">← Previous: GPU Particle Smoke</a> · <a href="../showcases_protein">Next: Protein →</a>
+<span class="dvz-example-nav__previous"><a href="../showcases_gpu_particle_smoke">← Previous: GPU Particle Smoke</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_protein">Next: Protein →</a></span>
 </div>
 </nav>
 
@@ -82,6 +83,7 @@ Prepare: `python tools/data/prepare_brain_volume.py`
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_gpu_particle_smoke">← Previous: GPU Particle Smoke</a> · <a href="../showcases_protein">Next: Protein →</a>
+<span class="dvz-example-nav__previous"><a href="../showcases_gpu_particle_smoke">← Previous: GPU Particle Smoke</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_protein">Next: Protein →</a></span>
 </div>
 </nav>

@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_panel_linked_axes">Next: Linked Panels With Axes →</a>
+<span class="dvz-example-nav__previous"></span>
+<span class="dvz-example-nav__next"><a href="../showcases_panel_linked_axes">Next: Linked Panels With Axes →</a></span>
 </div>
 </nav>
 
@@ -69,6 +70,7 @@ This workflow is useful when a paper-style diagnostic figure needs multiple coor
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../showcases_panel_linked_axes">Next: Linked Panels With Axes →</a>
+<span class="dvz-example-nav__previous"></span>
+<span class="dvz-example-nav__next"><a href="../showcases_panel_linked_axes">Next: Linked Panels With Axes →</a></span>
 </div>
 </nav>

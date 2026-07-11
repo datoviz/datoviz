@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_coordinate_system">Next: Coordinate System →</a>
+<span class="dvz-example-nav__previous"></span>
+<span class="dvz-example-nav__next"><a href="../features_coordinate_system">Next: Coordinate System →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ A scene owns one figure, one full panel, and one point visual. The point visual 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_coordinate_system">Next: Coordinate System →</a>
+<span class="dvz-example-nav__previous"></span>
+<span class="dvz-example-nav__next"><a href="../features_coordinate_system">Next: Coordinate System →</a></span>
 </div>
 </nav>

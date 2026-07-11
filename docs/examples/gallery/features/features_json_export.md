@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_input_events">← Previous: Input Events</a> · <a href="../features_bounds_overlay">Next: Bounds Overlay →</a>
+<span class="dvz-example-nav__previous"><a href="../features_input_events">← Previous: Input Events</a></span>
+<span class="dvz-example-nav__next"><a href="../features_bounds_overlay">Next: Bounds Overlay →</a></span>
 </div>
 </nav>
 
@@ -47,6 +48,7 @@ The live view is intentionally small, with three point items whose position, col
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_input_events">← Previous: Input Events</a> · <a href="../features_bounds_overlay">Next: Bounds Overlay →</a>
+<span class="dvz-example-nav__previous"><a href="../features_input_events">← Previous: Input Events</a></span>
+<span class="dvz-example-nav__next"><a href="../features_bounds_overlay">Next: Bounds Overlay →</a></span>
 </div>
 </nav>

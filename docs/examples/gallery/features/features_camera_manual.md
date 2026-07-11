@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_visibility">← Previous: Visual Visibility</a> · <a href="../features_panzoom">Next: Panzoom →</a>
+<span class="dvz-example-nav__previous"><a href="../features_visibility">← Previous: Visual Visibility</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panzoom">Next: Panzoom →</a></span>
 </div>
 </nav>
 
@@ -52,6 +53,7 @@ The camera descriptor sets eye, target, up, field of view, and near/far clip pla
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_visibility">← Previous: Visual Visibility</a> · <a href="../features_panzoom">Next: Panzoom →</a>
+<span class="dvz-example-nav__previous"><a href="../features_visibility">← Previous: Visual Visibility</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panzoom">Next: Panzoom →</a></span>
 </div>
 </nav>

@@ -4,7 +4,8 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_isolines">← Previous: Isolines</a> · <a href="../features_lighting">Next: Lighting →</a>
+<span class="dvz-example-nav__previous"><a href="../features_isolines">← Previous: Isolines</a></span>
+<span class="dvz-example-nav__next"><a href="../features_lighting">Next: Lighting →</a></span>
 </div>
 </nav>
 
@@ -63,6 +64,7 @@ A synthetic microscopy-like float field is uploaded as an R32 sampled image and 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<a href="../features_isolines">← Previous: Isolines</a> · <a href="../features_lighting">Next: Lighting →</a>
+<span class="dvz-example-nav__previous"><a href="../features_isolines">← Previous: Isolines</a></span>
+<span class="dvz-example-nav__next"><a href="../features_lighting">Next: Lighting →</a></span>
 </div>
 </nav>
