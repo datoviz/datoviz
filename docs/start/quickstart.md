@@ -9,117 +9,23 @@ drag to pan and scroll to zoom. No data files are needed.
 Read the example in five blocks: create the data arrays, create the scene layout, add interaction,
 upload the arrays to one point visual, then open the window.
 
+The displayed programs are standalone teaching fixtures. The repository's
+`examples/c/start/scatter.c` gallery scenario produces the same result through the internal example
+runner used for screenshot and smoke-test automation.
+
 
 ## Full example
 
 === "Python"
 
     ```python
-    import numpy as np
-    import datoviz as dvz
-
-    # Each point is described by three arrays with the same length.
-    # - pos: one x/y/z position per point. z is 0, so this is a 2D scatter plot.
-    # - color: one red/green/blue/alpha color per point, stored as 8-bit RGBA values.
-    # - diameters: one point size per point, measured in screen pixels.
-    N = 10_000
-    pos = np.random.uniform(-1, 1, (N, 3)).astype(np.float32)
-    pos[:, 2] = 0.0
-    color = np.random.randint(0, 256, (N, 4), dtype=np.uint8)
-    color[:, 3] = 255
-    diameters = np.full(N, 5.0, dtype=np.float32)
-
-    # Create the scene structure: one scene, one figure, and one full-size panel.
-    # The scene contains the visualization, the figure has a pixel size, and the
-    # panel is the drawing area where the scatter plot will appear.
-    scene = dvz.dvz_scene()
-    figure = dvz.dvz_figure(scene, 800, 600, 0)
-    panel = dvz.dvz_panel_full(figure)
-
-    # Add mouse interaction to the panel. Pan/zoom is limited to X and Y because
-    # the points are flat, with z = 0.
-    controller = dvz.dvz_panzoom(scene, None)
-    dvz.dvz_panel_bind_controller(panel, controller, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY)
-
-    # Create one point visual for the whole dataset. The three calls to
-    # dvz_visual_set_data() attach the arrays to named visual attributes.
-    visual = dvz.dvz_point(scene, 0)
-    dvz.dvz_visual_set_data(visual, "position", pos)
-    dvz.dvz_visual_set_data(visual, "color", color)
-    dvz.dvz_visual_set_data(visual, "diameter_px", diameters)
-
-    # Uploading arrays is not enough by itself: the visual must be added to a
-    # panel before it becomes part of the figure.
-    dvz.dvz_panel_add_visual(panel, visual, None)
-
-    # Open a window. In a regular Python script this blocks until the user closes
-    # the window. In terminal IPython, the prompt returns with the window live.
-    dvz.run(scene, figure, title="Scatter plot")
+    --8<-- "examples/docs/quickstart.py"
     ```
 
 === "C"
 
     ```c
-    #include <stdint.h>
-    #include <stdlib.h>
-    #include <time.h>
-    #include "datoviz/app.h"
-    #include "datoviz/scene.h"
-
-    #define N 10000
-
-    int main(void) {
-        srand((unsigned)time(NULL));
-
-        /* Each point is described by three arrays with the same length.
-         * pos stores x/y/z positions. z is 0, so this is a 2D scatter plot.
-         * color stores one 8-bit RGBA color per point.
-         * diameter_px stores one point size per point, measured in screen pixels. */
-        float pos[N * 3], diameter_px[N];
-        uint8_t color[N * 4];
-        for (int i = 0; i < N; i++) {
-            pos[3*i+0] = (float)rand()/RAND_MAX * 2 - 1;
-            pos[3*i+1] = (float)rand()/RAND_MAX * 2 - 1;
-            pos[3*i+2] = 0;
-            color[4*i+0] = rand() % 256;
-            color[4*i+1] = rand() % 256;
-            color[4*i+2] = rand() % 256;
-            color[4*i+3] = 255;
-            diameter_px[i] = 5.0f;
-        }
-
-        /* Create the scene structure: one scene, one figure, and one full-size panel.
-         * The panel is the drawing area where the scatter plot will appear. */
-        DvzScene* scene = dvz_scene();
-        DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
-        DvzPanel* panel = dvz_panel_full(figure);
-
-        /* Add mouse interaction to the panel. Pan/zoom is limited to X and Y because
-         * the points are flat, with z = 0. */
-        DvzController* controller = dvz_panzoom(scene, NULL);
-        dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY);
-
-        /* Create one point visual for the whole dataset. Each data call attaches
-         * one C array to a named visual attribute. */
-        DvzVisual* visual = dvz_point(scene, 0);
-        dvz_visual_set_data(visual, "position", pos, N);
-        dvz_visual_set_data(visual, "color", color, N);
-        dvz_visual_set_data(visual, "diameter_px", diameter_px, N);
-
-        /* Uploading arrays is not enough by itself: the visual must be added to a
-         * panel before it becomes part of the figure. */
-        dvz_panel_add_visual(panel, visual, NULL);
-
-        DvzApp* app = dvz_app(scene);
-        /* Open a window, render the figure, and keep the app running until the user
-         * closes the window. */
-        dvz_view_window(app, figure, 800, 600, "Scatter plot");
-        dvz_app_run(app, 0);
-
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 0;
-    }
+    --8<-- "examples/docs/quickstart.c"
     ```
 
 
@@ -127,19 +33,19 @@ upload the arrays to one point visual, then open the window.
 
 === "Python"
 
-    Save as `scatter.py` and run:
+    Run the displayed fixture:
 
     ```sh
-    python scatter.py
+    python examples/docs/quickstart.py
     ```
 
 === "C"
 
-    If you built from source, run the included C scatter example:
+    From a source checkout, compile and run the displayed fixture:
 
     ```sh
-    just example-c start/scatter
-    ./build/examples/c/start/scatter --live
+    just quickstart-c
+    ./build/examples/docs/quickstart
     ```
 
     For a standalone C file outside the repository, use an installed Datoviz package and its

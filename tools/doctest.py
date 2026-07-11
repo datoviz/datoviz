@@ -10,9 +10,11 @@ dvz_app_run(app, 0) is patched to a single-frame offscreen run + PNG capture,
 then the snippet is compiled against the local build and executed.
 
 Usage:
-    python3 tools/doctest.py docs/index.md docs/start/quickstart.md
-    python3 tools/doctest.py --lang python docs/start/quickstart.md
-    python3 tools/doctest.py --lang c docs/start/quickstart.md
+    python3 tools/doctest.py docs/index.md
+    python3 tools/doctest.py --lang python docs/index.md
+
+Quickstart snippets are included from executable fixtures and validated by
+``just quickstart-check`` instead.
 """
 
 from __future__ import annotations
@@ -121,8 +123,11 @@ def run_python(code: str, label: str) -> bool:
     try:
         patched = _patch_python(code, out_png)
         if patched is None:
-            print(f"  [skip] {label}: no dvz.run() call")
-            return True
+            if "doctest: skip" in code:
+                print(f"  [skip] {label}: explicitly marked")
+                return True
+            print(f"  [FAIL] {label}: no dvz.run() call; add 'doctest: skip' if intentional")
+            return False
         with tempfile.NamedTemporaryFile(
             suffix=".py", mode="w", delete=False
         ) as f:
@@ -154,8 +159,14 @@ def run_c(code: str, label: str) -> bool:
     try:
         patched = _patch_c(code, out_png)
         if patched is None:
-            print(f"  [skip] {label}: no dvz_view_glfw() call")
-            return True
+            if "doctest: skip" in code:
+                print(f"  [skip] {label}: explicitly marked")
+                return True
+            print(
+                f"  [FAIL] {label}: no dvz_view_glfw() call; "
+                "add 'doctest: skip' if intentional"
+            )
+            return False
         with tempfile.NamedTemporaryFile(
             suffix=".c", mode="w", delete=False
         ) as f:

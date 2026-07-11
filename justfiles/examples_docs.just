@@ -98,10 +98,21 @@ review-batches:
 # Smoke-test fenced code blocks in documentation markdown files.
 # Prerequisites: build (for C) and ctypes (for Python array facade).
 doctest lang="both":
-    @python3 tools/doctest.py --lang {{lang}} docs/index.md docs/start/quickstart.md
+    @python3 tools/doctest.py --lang {{lang}} docs/index.md
 
 docs-doctest lang="both":
     @just doctest "{{lang}}"
+
+quickstart-c: build
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mkdir -p build/examples/docs
+    "${CC:-cc}" examples/docs/quickstart.c -o build/examples/docs/quickstart \
+        -Iinclude -Lbuild/src -Wl,-rpath,"$PWD/build/src" -ldatoviz -lm
+
+quickstart-check: quickstart-c
+    @DVZ_QUICKSTART_TEST=1 python3 examples/docs/quickstart.py
+    @./build/examples/docs/quickstart --frames 1
 
 # Run all Python examples and generate screenshots in data/gallery/.
 gallery-screenshots filter="":

@@ -44,6 +44,9 @@ jobs:
       if: env.USING_ACT == 0
       run: just build || just build
 
+    - name: Test Quickstart fixtures
+      run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" just quickstart-check
+
       # WARNING: disabling the MIT-SHM X extension is crucial as it avoid random X crashes that
       # make the tests fail.
     - name: Test
