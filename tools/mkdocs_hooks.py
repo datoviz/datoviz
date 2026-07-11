@@ -17,15 +17,12 @@ from mkdocs.structure.files import File
 CURDIR = Path(__file__).parent
 ROOT = CURDIR.parent
 ROOT_DOCS = ('ARCHITECTURE', 'BUILD', 'CONTRIBUTING', 'MAINTAINERS')
-GALLERY_NAV_TITLE = 'Individual Examples'
-GALLERY_NAV_LANES = (
-    ('start', 'Start'),
-    ('showcases', 'Showcases'),
-    ('visuals', 'Visuals'),
-    ('composites', 'Composites'),
-    ('features', 'Features'),
-    ('runtime', 'Runtime & Capture'),
-    ('advanced', 'Advanced'),
+GALLERY_NAV_SECTIONS = (
+    ('Showcases', ('showcases',)),
+    ('Visuals & Composites', ('visuals', 'composites')),
+    ('Features', ('features',)),
+    ('Runtime & Capture', ('runtime',)),
+    ('Advanced', ('advanced',)),
 )
 
 
@@ -147,7 +144,7 @@ def find_named_nav_section(nav, title):
     return None
 
 
-def build_gallery_nav():
+def build_gallery_nav_sections(examples_nav):
     if str(CURDIR) not in sys.path:
         sys.path.insert(0, str(CURDIR))
 
@@ -155,14 +152,27 @@ def build_gallery_nav():
 
     manifest = load_manifest(ROOT / 'examples/c/MANIFEST.yaml')
     examples = collect_examples(manifest)
-    lanes = []
-    for lane, label in GALLERY_NAV_LANES:
-        lane_examples = ordered_lane_examples(examples, lane)
-        if not lane_examples:
+    sections = []
+    for label, lanes in GALLERY_NAV_SECTIONS:
+        section = find_named_nav_section(examples_nav, label)
+        if section is not None:
+            raise ValueError(f"Examples navigation section {label!r} is already nested")
+        overview = next(
+            (item[label] for item in examples_nav if isinstance(item, dict) and label in item),
+            None,
+        )
+        if not isinstance(overview, str):
+            raise ValueError(f"Examples navigation is missing the {label!r} overview page")
+        pages = [{'Overview': overview}]
+        for lane in lanes:
+            lane_examples = ordered_lane_examples(examples, lane)
+            pages.extend(
+                {example.title: f"examples/{example.page_path}"} for example in lane_examples
+            )
+        if len(pages) == 1:
             continue
-        pages = [{example.title: f"examples/{example.page_path}"} for example in lane_examples]
-        lanes.append({label: pages})
-    return {GALLERY_NAV_TITLE: lanes}
+        sections.append({label: pages})
+    return sections
 
 
 # Hooks
@@ -173,10 +183,16 @@ def on_config(config):
     examples_nav = find_named_nav_section(config.get('nav'), 'Examples')
     if examples_nav is None:
         return config
-    if find_named_nav_section(examples_nav, GALLERY_NAV_TITLE) is not None:
-        return config
     try:
-        examples_nav.append(build_gallery_nav())
+        replacements = {
+            next(iter(section)): section for section in build_gallery_nav_sections(examples_nav)
+        }
+        examples_nav[:] = [
+            replacements.get(next(iter(item)), item)
+            if isinstance(item, dict) and len(item) == 1
+            else item
+            for item in examples_nav
+        ]
     except Exception as exc:
         print(f"mkdocs: gallery nav generation failed: {exc}")
     return config
