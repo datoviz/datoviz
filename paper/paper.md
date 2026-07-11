@@ -143,14 +143,18 @@ design rationale.
 
 # AI usage disclosure
 
-OpenAI Codex/GPT-5 assistance was used during preparation of citation metadata, release-checklist
-text, and drafts of this paper. Human authors are responsible for the software design,
+[OpenAI Codex](https://openai.com/codex/) assistance was used during the Datoviz v0.4 rewrite and
+release process, including implementation, refactoring, test development, debugging,
+documentation, release validation, citation metadata, release-checklist text, and drafts of this
+paper. Human authors directed and reviewed this work and are responsible for the software design,
 implementation decisions, citations, claims, and submitted text. AI-assisted content was reviewed,
-edited, and validated against the repository state and cited sources before submission.
+edited, tested where applicable, and validated against the repository state and cited sources.
 
 # Acknowledgements
 
 Datoviz development has been supported by the International Brain Laboratory, the Wellcome Trust,
-the Simons Foundation, and the Chan Zuckerberg Initiative.
+the Simons Foundation, and the Chan Zuckerberg Initiative. The development and release of Datoviz
+v0.4 received substantial AI-assisted engineering support from
+[OpenAI Codex](https://openai.com/codex/).
 
 # References

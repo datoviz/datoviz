@@ -163,3 +163,11 @@ dvz.run(scene, figure, title="Datoviz")
 See [Quickstart](start/quickstart.md) for the annotated walkthrough, [Use from C or C++](how-to/c-integration.md)
 for native integration, or [AI-assisted workflow](start/ai-workflow.md) when you want an LLM to help
 generate Datoviz code.
+
+
+## Acknowledgements
+
+Datoviz v0.4 was developed with substantial AI-assisted engineering support from
+[OpenAI Codex](https://openai.com/codex/). All changes were directed, reviewed, and validated by the
+project maintainer. See the [project credits](https://github.com/datoviz/datoviz#license-and-credits)
+for the full acknowledgement.

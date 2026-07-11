@@ -142,3 +142,8 @@ version-specific DOI.
 Datoviz builds on earlier open-source GPU visualization work including VisPy, Glumpy, Galry, and
 the Vulkan-based Datoviz releases. See the documentation and project papers for background and
 citations.
+
+Development of Datoviz v0.4 was assisted by
+[OpenAI Codex](https://openai.com/codex/), which was used for code implementation and review,
+testing, documentation, and release preparation. All generated changes were reviewed and validated
+by the project maintainer, who retains responsibility for the resulting software.
