@@ -70,6 +70,6 @@ A synthetic microscopy-like float field is uploaded as an R32 sampled image and 
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../features_datetime_axis">Previous: Datetime Axis</a> · <a href="../features_lighting">Next: Lighting</a>
+<a href="../features_isolines">Previous: Isolines</a> · <a href="../features_lighting">Next: Lighting</a>
 </div>
 </nav>

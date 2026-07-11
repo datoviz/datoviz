@@ -70,6 +70,6 @@ A path visual uploads position, color, and linewidth arrays for a signal, and th
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../features_axes_2d">Previous: Path With 2D Axes</a> · <a href="../features_guide_spans">Next: Guide Spans</a>
+<a href="../features_datetime_axis">Previous: Datetime Axis</a> · <a href="../features_guide_spans">Next: Guide Spans</a>
 </div>
 </nav>

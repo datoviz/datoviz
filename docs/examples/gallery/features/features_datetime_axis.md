@@ -64,6 +64,6 @@ The path visual uploads position, color, and linewidth arrays in compact numeric
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../features_isolines">Previous: Isolines</a> · <a href="../features_image_probe">Next: Image Probe</a>
+<a href="../features_axes_2d">Previous: Path With 2D Axes</a> · <a href="../features_guide_lines">Next: Guide Lines</a>
 </div>
 </nav>

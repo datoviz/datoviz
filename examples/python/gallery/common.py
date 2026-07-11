@@ -337,9 +337,9 @@ def bind_panzoom(view, scene, panel, dims):
 
 def manual_camera(panel):
     camera = dvz.dvz_camera_desc()
-    camera.view.eye[:] = (1.55, -2.00, 1.45)
+    camera.view.eye[:] = (2.60, 3.20, 2.40)
     camera.view.target[:] = (0.0, 0.0, 0.0)
-    camera.view.up[:] = (0.0, 0.0, 1.0)
+    camera.view.up[:] = (0.0, 1.0, 0.0)
     camera.projection.fov_y = 0.66
     camera.projection.near_clip = 0.05
     camera.projection.far_clip = 100.0

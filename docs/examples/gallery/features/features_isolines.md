@@ -70,6 +70,6 @@ The scalar field is sampled on a regular grid, and CPU contour extraction turns 
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../features_sampled_field_update">Previous: Sampled Field Update</a> · <a href="../features_datetime_axis">Next: Datetime Axis</a>
+<a href="../features_sampled_field_update">Previous: Sampled Field Update</a> · <a href="../features_image_probe">Next: Image Probe</a>
 </div>
 </nav>

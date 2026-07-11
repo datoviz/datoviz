@@ -323,6 +323,18 @@ This example shows a 2D data path with axes, ticks, and grid lines.
 
 <div class="card" markdown="1">
 
+### [Datetime Axis](gallery/features/features_datetime_axis.md)
+
+[![Datetime Axis](../assets/gallery/v0.4/features/features_datetime_axis.webp)](gallery/features/features_datetime_axis.md)
+
+`features`<br><span>`axes`, `datetime`, `time-series`</span>
+
+This example shows UTC datetime labels on a numeric data axis.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Guide Lines](gallery/features/features_guide_lines.md)
 
 [![Guide Lines](../assets/gallery/v0.4/features/features_guide_lines.webp)](gallery/features/features_guide_lines.md)
@@ -545,7 +557,7 @@ This example loads a Wavefront OBJ fixture and displays it as a mesh.
 
 </div>
 
-## Scientific { #scientific }
+## Scalar Fields { #scalar-fields }
 
 <div class="grid cards" markdown="1">
 
@@ -570,18 +582,6 @@ This example reuses one sampled scalar field in two image visuals while updating
 `features`
 
 This example shows contour isolines over a scalar field.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Datetime Axis](gallery/features/features_datetime_axis.md)
-
-[![Datetime Axis](../assets/gallery/v0.4/features/features_datetime_axis.webp)](gallery/features/features_datetime_axis.md)
-
-`features`<br><span>`axes`, `datetime`, `time-series`</span>
-
-This example shows UTC datetime labels on a numeric data axis.
 
 </div>
 

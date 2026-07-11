@@ -70,6 +70,6 @@ The path visual receives arrays for data-space position, color, and linewidth, t
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../features_axis_labels">Previous: Axis Labels</a> · <a href="../features_guide_lines">Next: Guide Lines</a>
+<a href="../features_axis_labels">Previous: Axis Labels</a> · <a href="../features_datetime_axis">Next: Datetime Axis</a>
 </div>
 </nav>

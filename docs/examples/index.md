@@ -643,7 +643,7 @@ This example shows world-up orbiting with a turntable controller.
 
 </div>
 
-### Scientific
+### Scalar Fields
 
 <div class="grid cards" markdown="1">
 
@@ -673,13 +673,13 @@ This example shows contour isolines over a scalar field.
 
 <div class="card" markdown="1">
 
-**[Marker Symbols](gallery/features/features_marker_symbols.md)**
+**[Image Probe](gallery/features/features_image_probe.md)**
 
-[![Marker Symbols](../assets/gallery/v0.4/features/features_marker_symbols.webp)](gallery/features/features_marker_symbols.md)
+[![Image Probe](../assets/gallery/v0.4/features/features_image_probe.webp)](gallery/features/features_image_probe.md)
 
 `features`
 
-This example compares several ways to define marker glyphs in one symbol set.
+This example shows probing a scalar image at a marked data position.
 
 </div>
 
@@ -771,18 +771,6 @@ This example shows scene animation tracks driving a cube and camera.
 `features`
 
 This example updates point attributes every frame from scenario time.
-
-</div>
-
-<div class="card" markdown="1">
-
-**[Image Probe](gallery/features/features_image_probe.md)**
-
-[![Image Probe](../assets/gallery/v0.4/features/features_image_probe.webp)](gallery/features/features_image_probe.md)
-
-`features`
-
-This example shows probing a scalar image at a marked data position.
 
 </div>
 

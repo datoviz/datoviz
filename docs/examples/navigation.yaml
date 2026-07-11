@@ -87,6 +87,7 @@ sections:
         examples:
           - features_axis_labels
           - features_axes_2d
+          - features_datetime_axis
           - features_guide_lines
           - features_guide_spans
           - features_bars_bands
@@ -107,11 +108,10 @@ sections:
           - features_bezier_curve_path
           - features_path_join
           - features_obj_loading
-      - title: Scientific
+      - title: Scalar Fields
         examples:
           - features_sampled_field_update
           - features_isolines
-          - features_datetime_axis
           - features_image_probe
       - title: Materials & Lighting
         examples:
@@ -169,11 +169,11 @@ sections:
           - features_controller_arcball
           - features_controller_fly
           - features_controller_turntable
-      - title: Scientific
+      - title: Scalar Fields
         examples:
           - features_sampled_field_update
           - features_isolines
-          - features_marker_symbols
+          - features_image_probe
       - title: 3D Rendering
         examples:
           - features_lighting
@@ -184,7 +184,6 @@ sections:
         examples:
           - features_animation_tracks
           - features_timer_animation
-          - features_image_probe
           - features_selection_sphere
       - title: GUI
         examples:

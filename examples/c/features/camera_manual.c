@@ -66,15 +66,15 @@ DvzScenarioSpec dvz_example_camera_manual_scenario(void);
 static bool _set_manual_camera(DvzPanel* panel)
 {
     DvzCameraDesc camera = dvz_camera_desc();
-    camera.view.eye[0] = 1.55f;
-    camera.view.eye[1] = -2.00f;
-    camera.view.eye[2] = 1.45f;
+    camera.view.eye[0] = 2.60f;
+    camera.view.eye[1] = 3.20f;
+    camera.view.eye[2] = 2.40f;
     camera.view.target[0] = 0.0f;
     camera.view.target[1] = 0.0f;
     camera.view.target[2] = 0.0f;
     camera.view.up[0] = 0.0f;
-    camera.view.up[1] = 0.0f;
-    camera.view.up[2] = 1.0f;
+    camera.view.up[1] = 1.0f;
+    camera.view.up[2] = 0.0f;
     camera.projection.fov_y = 0.66f;
     camera.projection.near_clip = 0.05f;
     camera.projection.far_clip = 100.0f;
