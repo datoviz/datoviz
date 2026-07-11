@@ -59,6 +59,17 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--review-order",
+        action="store_true",
+        help="run all manifest review batches in their declared order",
+    )
+    parser.add_argument(
+        "--start-at",
+        default="",
+        metavar="EXAMPLE_ID",
+        help="start at this example ID, skipping earlier selected review entries",
+    )
+    parser.add_argument(
         "--include-lab",
         action="store_true",
         help="include manifest lab entries in the default public-example selection",
@@ -115,10 +126,18 @@ def parse_args() -> argparse.Namespace:
     args = parser.parse_args()
     if args.batch and args.all_built:
         parser.error("--batch cannot be combined with --all-built")
+    if args.review_order and args.batch:
+        parser.error("--review-order cannot be combined with --batch")
+    if args.review_order and args.all_built:
+        parser.error("--review-order cannot be combined with --all-built")
     if args.batch and args.lane:
         parser.error("--batch cannot be combined with --lane; batch selects explicit manifest IDs")
     if args.batch and args.stage:
         parser.error("--batch cannot be combined with --stage; batch selects explicit manifest IDs")
+    if args.review_order and (args.lane or args.stage or args.filter):
+        parser.error("--review-order cannot be combined with a filter, --lane, or --stage")
+    if args.start_at and not (args.batch or args.review_order):
+        parser.error("--start-at requires --batch or --review-order")
     return args
 
 
@@ -177,6 +196,14 @@ def manifest_entry_rel(root: Path, entry: dict) -> str:
     if rel.suffix != ".c":
         raise ValueError(f"manifest source is not a C file: {source}")
     return rel.with_suffix("").as_posix()
+
+
+def manifest_entry_skip_reason(entry: dict) -> str:
+    source = str(entry.get("source", ""))
+    language = str(entry.get("source_language", "c"))
+    if language != "c" or not source.startswith("examples/c/") or not source.endswith(".c"):
+        return f"not a runnable C example: {source or '<missing source>'}"
+    return ""
 
 
 def manifest_entry_text(entry: dict, rel: str) -> str:
@@ -242,25 +269,58 @@ def manifest_batch_examples(
     resolved_name = resolve_batch_name(manifest, batch_name)
     args.resolved_batch = resolved_name
     batch_ids = [str(example_id) for example_id in manifest["batches"][resolved_name]]
+    return manifest_id_examples(root, examples_root, manifest, batch_ids, args, ignore_patterns)
+
+
+def manifest_review_examples(
+    root: Path,
+    examples_root: Path,
+    manifest: dict,
+    args: argparse.Namespace,
+    ignore_patterns: list[str],
+) -> tuple[list[tuple[str, Path]], list[str], list[str]]:
+    batches = manifest.get("batches") or {}
+    review_ids = [str(example_id) for ids in batches.values() for example_id in ids]
+    if not review_ids:
+        raise ValueError("no review batches are defined in the manifest")
+    return manifest_id_examples(root, examples_root, manifest, review_ids, args, ignore_patterns)
+
+
+def manifest_id_examples(
+    root: Path,
+    examples_root: Path,
+    manifest: dict,
+    example_ids: list[str],
+    args: argparse.Namespace,
+    ignore_patterns: list[str],
+) -> tuple[list[tuple[str, Path]], list[str], list[str]]:
     entries = manifest_entries_by_id(manifest)
-    unknown_ids = [example_id for example_id in batch_ids if example_id not in entries]
+    unknown_ids = [example_id for example_id in example_ids if example_id not in entries]
     if unknown_ids:
         raise ValueError(
-            f"C example review batch {resolved_name!r} contains unknown example IDs: "
-            + ", ".join(unknown_ids)
+            "C example review selection contains unknown example IDs: " + ", ".join(unknown_ids)
         )
+
+    if args.start_at:
+        if args.start_at not in example_ids:
+            raise ValueError(f"start example ID is not in the selected review entries: {args.start_at}")
+        example_ids = example_ids[example_ids.index(args.start_at) :]
 
     examples: list[tuple[str, Path]] = []
     ignored: list[str] = []
     missing: list[str] = []
     seen: set[str] = set()
 
-    for example_id in batch_ids:
+    for example_id in example_ids:
         if example_id in seen:
             continue
         seen.add(example_id)
 
         entry = entries[example_id]
+        skip_reason = manifest_entry_skip_reason(entry)
+        if skip_reason:
+            ignored.append(skip_reason)
+            continue
         rel = manifest_entry_rel(root, entry)
         text = manifest_entry_text(entry, rel)
         if any(matches_filter(text, pattern) for pattern in ignore_patterns):
@@ -282,6 +342,8 @@ def manifest_examples(
     manifest = load_manifest(root / args.manifest)
     if args.batch:
         return manifest_batch_examples(root, examples_root, manifest, args.batch, args, ignore_patterns)
+    if args.review_order:
+        return manifest_review_examples(root, examples_root, manifest, args, ignore_patterns)
 
     public_folders = manifest_public_folders(manifest)
     lane_filters = set(split_patterns(args.lane))
@@ -293,6 +355,10 @@ def manifest_examples(
     seen: set[str] = set()
 
     for entry in manifest.get("examples", []):
+        skip_reason = manifest_entry_skip_reason(entry)
+        if skip_reason:
+            ignored.append(skip_reason)
+            continue
         rel = manifest_entry_rel(root, entry)
         source = str(entry.get("source", ""))
         lane = str(entry.get("lane", ""))
@@ -442,6 +508,8 @@ def main() -> int:
     if args.batch:
         resolved_batch = getattr(args, "resolved_batch", args.batch)
         print(f"C example review batch: {resolved_batch} ({len(examples)} examples)")
+    elif args.review_order:
+        print(f"C example review order: {len(examples)} runnable examples")
     action = "open in VS Code" if args.code else "run sequentially"
     print(f"C examples to {action}:")
     for index, (rel, _) in enumerate(examples, 1):

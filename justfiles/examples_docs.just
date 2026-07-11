@@ -72,14 +72,7 @@ review *args:
     if [[ -n "${batch}" ]]; then
         python3 tools/run_c_examples.py --batch "${batch}" "${tool_args[@]}"
     else
-        mapfile -t batches < <(python3 -c 'from pathlib import Path; import yaml; manifest = yaml.safe_load(Path("examples/c/MANIFEST.yaml").read_text()) or {}; print("\n".join((manifest.get("batches") or {}).keys()))')
-        if [[ "${#batches[@]}" -eq 0 ]]; then
-            echo "No review batches defined." >&2
-            exit 1
-        fi
-        for batch_name in "${batches[@]}"; do
-            python3 tools/run_c_examples.py --batch "${batch_name}" "${tool_args[@]}"
-        done
+        python3 tools/run_c_examples.py --review-order "${tool_args[@]}"
     fi
 
 review-batches:
