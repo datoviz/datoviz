@@ -383,6 +383,8 @@ async function expectBrowserWrapperPacketRuntime() {
     source.match(/scenarioPointer\(type, event\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
   const scenarioWheel =
     source.match(/scenarioWheel\(event\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
+  const attachControllerInput =
+    source.match(/attachControllerInput\(onChange\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
   const attachResizeObserver =
     source.match(/attachResizeObserver\(onChange\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
   const recoverAfterRenderError = sessionSource.slice(
@@ -441,6 +443,11 @@ async function expectBrowserWrapperPacketRuntime() {
     !scenarioPointer.includes("_canvasPoint(event, true)") &&
       !scenarioWheel.includes("_canvasPoint(event, true)"),
     "scenario pointer events are pre-scaled before C figure-coordinate conversion",
+  );
+  requireOk(
+    attachControllerInput.includes('addEventListener("click", onClick)') &&
+      attachControllerInput.includes("this.scenarioPointer(DVZ_POINTER_EVENT_CLICK, event)"),
+    "browser wrapper does not deliver click events to portable scenarios",
   );
   requireOk(
     source.includes("canvasLogicalSize") &&

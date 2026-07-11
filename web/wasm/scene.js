@@ -680,6 +680,14 @@ export class DatovizWasmScene {
       }
     };
     const onPointerCancel = (event) => route(event, DVZ_POINTER_EVENT_RELEASE);
+    const onClick = (event) => {
+      if (this.scenario === null) {
+        return;
+      }
+      event.preventDefault();
+      this.scenarioPointer(DVZ_POINTER_EVENT_CLICK, event);
+      onChange();
+    };
     const onWheel = (event) => {
       event.preventDefault();
       this.wheel(event);
@@ -693,6 +701,7 @@ export class DatovizWasmScene {
     this.canvas.addEventListener("pointermove", onPointerMove);
     this.canvas.addEventListener("pointerup", onPointerUp);
     this.canvas.addEventListener("pointercancel", onPointerCancel);
+    this.canvas.addEventListener("click", onClick);
     this.canvas.addEventListener("wheel", onWheel, { passive: false });
     this.canvas.addEventListener("contextmenu", onContextMenu);
     const detach = () => {
@@ -700,6 +709,7 @@ export class DatovizWasmScene {
       this.canvas.removeEventListener("pointermove", onPointerMove);
       this.canvas.removeEventListener("pointerup", onPointerUp);
       this.canvas.removeEventListener("pointercancel", onPointerCancel);
+      this.canvas.removeEventListener("click", onClick);
       this.canvas.removeEventListener("wheel", onWheel);
       this.canvas.removeEventListener("contextmenu", onContextMenu);
     };
