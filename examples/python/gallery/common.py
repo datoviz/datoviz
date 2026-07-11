@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import ctypes
+import os
+from pathlib import Path
 import time
 
 import datoviz as dvz
@@ -20,6 +22,9 @@ GREEN = dvz.DvzColor(74, 222, 128, 255)
 YELLOW = dvz.DvzColor(250, 204, 21, 255)
 RED = dvz.DvzColor(248, 113, 113, 255)
 WHITE = dvz.DvzColor(255, 255, 255, 255)
+
+SMOKE_MODE = os.environ.get("DVZ_PYTHON_GALLERY_SMOKE", "") == "1"
+SMOKE_FRAMES = max(1, int(os.environ.get("DVZ_PYTHON_GALLERY_SMOKE_FRAMES", "1")))
 
 
 def color_array(*colors):
@@ -124,8 +129,36 @@ def panel_rect(figure, x: float, y: float, width: float, height: float):
     return panel
 
 
+def _view(app, figure, title: str):
+    if SMOKE_MODE:
+        view = dvz.dvz_view_offscreen(app, figure, WIDTH, HEIGHT)
+    else:
+        view = dvz.dvz_view_window(app, figure, WIDTH, HEIGHT, title.encode())
+    if not view:
+        raise RuntimeError("failed to create gallery view")
+    return view
+
+
+def _run_app(app, view) -> None:
+    dvz.dvz_app_run(app, SMOKE_FRAMES if SMOKE_MODE else 0)
+    capture = os.environ.get("DVZ_PYTHON_GALLERY_CAPTURE", "")
+    if SMOKE_MODE and capture:
+        path = Path(capture)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if dvz.dvz_view_capture_png(view, str(path).encode()) != 0:
+            raise RuntimeError(f"dvz_view_capture_png() failed: {path}")
+
+
 def run(scene, figure, title: str):
-    dvz.run(scene, figure, WIDTH, HEIGHT, title)
+    app = dvz.dvz_app(scene)
+    if not app:
+        raise RuntimeError("dvz_app() failed")
+    try:
+        view = _view(app, figure, title)
+        _run_app(app, view)
+    finally:
+        dvz.dvz_app_destroy(app)
+        dvz.dvz_scene_destroy(scene)
 
 
 def run_with_view(scene, figure, title: str, configure_view):
@@ -133,11 +166,9 @@ def run_with_view(scene, figure, title: str, configure_view):
     if not app:
         raise RuntimeError("dvz_app() failed")
     try:
-        view = dvz.dvz_view_window(app, figure, WIDTH, HEIGHT, title.encode())
-        if not view:
-            raise RuntimeError("dvz_view_window() failed")
+        view = _view(app, figure, title)
         configure_view(view)
-        dvz.dvz_app_run(app, 0)
+        _run_app(app, view)
     finally:
         dvz.dvz_app_destroy(app)
         dvz.dvz_scene_destroy(scene)
@@ -149,9 +180,7 @@ def run_with_frame_callback(scene, figure, title: str, on_frame, configure_view=
         raise RuntimeError("dvz_app() failed")
     callback_set = False
     try:
-        view = dvz.dvz_view_window(app, figure, WIDTH, HEIGHT, title.encode())
-        if not view:
-            raise RuntimeError("dvz_view_window() failed")
+        view = _view(app, figure, title)
         if configure_view is not None:
             configure_view(view)
 
@@ -167,7 +196,7 @@ def run_with_frame_callback(scene, figure, title: str, on_frame, configure_view=
         if dvz.dvz_view_set_frame_callback(view, frame_callback, None) != 0:
             raise RuntimeError("dvz_view_set_frame_callback() failed")
         callback_set = True
-        dvz.dvz_app_run(app, 0)
+        _run_app(app, view)
     finally:
         if callback_set:
             dvz.dvz_view_set_frame_callback(view, None, None)
@@ -192,9 +221,7 @@ def run_with_input_callbacks(
     input_subscription = 0
     frame_callback_set = False
     try:
-        view = dvz.dvz_view_window(app, figure, WIDTH, HEIGHT, title.encode())
-        if not view:
-            raise RuntimeError("dvz_view_window() failed")
+        view = _view(app, figure, title)
         if configure_view is not None:
             configure_view(view)
 
@@ -228,7 +255,7 @@ def run_with_input_callbacks(
                 raise RuntimeError("dvz_view_set_frame_callback() failed")
             frame_callback_set = True
 
-        dvz.dvz_app_run(app, 0)
+        _run_app(app, view)
     finally:
         if input_subscription and router:
             dvz.dvz_input_unsubscribe(router, input_subscription)
