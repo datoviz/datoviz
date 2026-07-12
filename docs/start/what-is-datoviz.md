@@ -1,7 +1,8 @@
-# What Is Datoviz?
+# What is Datoviz?
 
-Datoviz is a tool for drawing data as images and interactive windows. It is useful when your data is
-large, changes over time, or needs views that are more direct than a normal plotting function.
+Datoviz is a GPU visualization engine for rendering scientific data in images and interactive
+windows. It is useful when your data is large, changes over time, or needs more direct rendering
+control than a plotting function provides.
 
 Examples include point clouds, images, meshes, volumes, text labels, several linked panels, and
 screenshots made without opening a window.
@@ -23,7 +24,7 @@ Most Datoviz examples use the same pieces:
 | Scene | The whole visualization. |
 | Figure | The image area, with a pixel size such as 800 by 600. |
 | Panel | A drawing area inside the figure. One figure can contain one panel or many panels. |
-| Visual | One kind of thing to draw, such as points, line segments, an image, a mesh, or text. |
+| Visual | A renderable collection, such as points, line segments, an image, a mesh, or text. |
 | Data arrays | NumPy arrays or C arrays attached to visual attributes such as position, color, or size. |
 | View | A window or offscreen target where the figure is rendered. |
 
@@ -62,9 +63,7 @@ array uploads. Use `datoviz.raw` only when you need the exact low-level pointer-
 
 ## Where to start
 
-Begin with the [Quickstart](quickstart.md) if you want to run a first example. Use
-[Choose your layer](choose-your-layer.md) if you are deciding between Python, C, browser examples,
-or advanced integration paths.
-
 For the shortest first run, use the [Python-first Quickstart](quickstart.md). For a native C
-program, use [First C Program](first-c-program.md).
+program, use [First C Program](first-c-program.md). Use
+[Choose your layer](choose-your-layer.md) when deciding between Python, C, browser examples, or
+advanced integration paths.

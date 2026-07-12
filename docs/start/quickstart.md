@@ -1,4 +1,4 @@
-# Quickstart: Rendering in 10 Minutes
+# Quickstart: Rendering in 10 minutes
 
 **Prerequisites:** Datoviz v0.4 installed from source or from a v0.4 package named in the release
 notes. During the pre-RC phase, check [Install](install.md) before using `pip install datoviz`.
@@ -93,12 +93,14 @@ labels. Here, `dvz_point` creates one point visual for all 10,000 points. Each
 **Panel attachment** - Data upload prepares the visual, but it does not place it in the figure.
 `dvz_panel_add_visual` attaches the visual to the panel so it will be drawn.
 
-**Run** - `dvz.run(scene, figure)` opens the window in the Python example. The script waits while
-the window is open; close the window when you are done.
+**Run** - `dvz.run(scene, figure)` opens the window and blocks the script while the window is open.
+Close the window to end the managed session and let the script return; the blocking helper handles
+its own app-session cleanup.
 
 
 ## Next steps
 
-- Browse the [Examples gallery](../examples/index.md) for visual families, features, and showcase scenes.
+- Browse the [Examples gallery](../examples/index.md) for visual families, features, and showcase
+  scenes.
 - To render without a window, see [Render offscreen](../how-to/render-offscreen.md).
 - To add 3D rotation instead of panzoom, see [Use 3D controllers](../how-to/3d-navigation.md).

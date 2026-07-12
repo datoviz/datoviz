@@ -1,4 +1,4 @@
-# Get Started
+# Get started
 
 Start here if you are new to Datoviz v0.4.
 

@@ -10,14 +10,11 @@ pip install datoviz
 
 No public RC is assumed by this page. Until release notes name a published artifact, build from
 source. Once an RC exists, its release notes are authoritative and may specify `--pre`, an exact
-version, or an artifact URL; for example, but only after publication:
-
-```sh
-pip install --pre datoviz
-```
+version, or an artifact URL. This page will show the exact versioned command after publication; do
+not use a generic pre-release command in the meantime.
 
 
-## Choose Your Path
+## Choose your path
 
 | If you want to... | Start here |
 | --- | --- |
@@ -29,7 +26,7 @@ pip install --pre datoviz
 | Work on Windows | [Windows notes](#windows-notes) |
 
 
-## Python Package
+## Python package
 
 Use this section after v0.4 packages or release-candidate artifacts are available for your platform.
 Until then, use [Build from source](#build-from-source).
@@ -43,8 +40,6 @@ notes. The abbreviated platform setup is:
     python -m venv .venv
     source .venv/bin/activate
     python -m pip install --upgrade pip
-    # After publication only; replace with the release-note command.
-    python -m pip install --pre datoviz
     ```
 
 === "Windows PowerShell"
@@ -53,11 +48,10 @@ notes. The abbreviated platform setup is:
     py -m venv .venv
     .\.venv\Scripts\Activate.ps1
     python -m pip install --upgrade pip
-    # After publication only; replace with the release-note command.
-    python -m pip install --pre datoviz
     ```
 
-After the final v0.4 package is published, replace the last command with:
+Run the exact install command from the published release notes after activating the environment.
+After the final v0.4 package is published, that command will normally be:
 
 ```sh
 pip install datoviz
@@ -73,7 +67,7 @@ Then continue with the [Quickstart](quickstart.md). Before choosing optional pro
 targets, review [platform support and known limitations](../reference/platform-support.md).
 
 
-## C And C++
+## C and C++
 
 For C or C++ applications, you need the native Datoviz library, headers, and runtime assets.
 
@@ -89,7 +83,7 @@ If packaged C/C++ artifacts are not available yet for your platform, build Datov
 link against that local build.
 
 
-## Build From Source
+## Build from source
 
 Build from source when you want the current development version, need C/C++ integration before
 packages are published, or want to contribute to Datoviz.
@@ -134,7 +128,7 @@ pip install -e .
 ```
 
 
-### macOS Notes
+### macOS notes
 
 Install Apple's command-line tools and the build utilities used by the normal vendored build:
 
@@ -149,7 +143,7 @@ selected package/build environment. Current release wheels target macOS 15; sour
 versions are development configurations, not wheel-support claims.
 
 
-### Linux Notes
+### Linux notes
 
 Ubuntu 24.04 is the reference Linux source-build environment. The normal build prefers repository
 submodules for cglm, mimalloc, Kvazaar, GLFW, and msdf-atlas-gen where available; the system packages
@@ -175,7 +169,7 @@ CMake prefers installed GLFW, cglm, mimalloc, and Kvazaar packages while `AUTO` 
 to vendored sources. See [Build options](../reference/build-options.md).
 
 
-### Windows Notes
+### Windows notes
 
 For Python users, a native Windows wheel is the primary release path once the release notes publish
 one. Current wheel validation covers Windows AMD64 and ARM64 and includes the DLL, MSVC import
@@ -207,7 +201,7 @@ Native Windows Python wheels are part of the v0.4 packaging path. During RC test
 package command from the release notes.
 
 
-### Check Your Install
+### Check your install
 
 For a source checkout, run a small test target:
 
@@ -222,7 +216,7 @@ direnv exec . just test scene
 ```
 
 
-### Run One Example
+### Run one example
 
 From a source checkout, build and open the quickstart scatter plot:
 
@@ -235,12 +229,12 @@ You should see a window with colored points that you can pan and zoom. Continue 
 [Quickstart](quickstart.md) for the Python version and a short explanation of the code.
 
 
-## Package Status
+## Package status
 
 | Package path | v0.4 status |
 | --- | --- |
 | `pip install datoviz` | intended normal Python install command after v0.4 packages are published |
-| `pip install --pre datoviz` | example RC command only; use the exact command from the release notes |
+| Published RC wheel | no public command is assumed here; use only the exact version or artifact named by release notes |
 | Source build | available for development, C/C++ integration, and package validation |
 | C/C++ local integration | available from a source build |
 | Native Windows wheels | validated on AMD64/ARM64; install only from an artifact named by published release notes |

@@ -1,4 +1,4 @@
-# Choose Your Layer
+# Choose your layer
 
 Datoviz has several entry points because different users need different levels of control. Start
 with the highest-level path that exists for your task, then move lower only when you need the extra

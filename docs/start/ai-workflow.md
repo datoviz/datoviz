@@ -1,4 +1,4 @@
-# AI-Assisted Workflow
+# AI-assisted workflow
 
 You can ask a coding assistant to write Datoviz examples for you. The simplest approach is to send
 the assistant to the documentation site and describe what you want to see.
@@ -27,10 +27,10 @@ pointers/counts or switch to C and explain why.
 Return a complete runnable example, then list the Datoviz pages and examples you used.
 ```
 
-If the assistant cannot browse the website, give it the relevant page contents or attach the
-[Quickstart](quickstart.md), one [How-To guide](../how-to/index.md), the closest
-[example](../examples/index.md), and the required [reference page](../reference/index.md). Ask it to
-state which API details it could not verify instead of guessing.
+If the assistant cannot browse, paste the relevant parts of the [Quickstart](quickstart.md), one
+[How-To guide](../how-to/index.md), the closest [example](../examples/index.md), and the required
+[reference page](../reference/index.md). Tell it to identify unverified API details instead of
+guessing.
 
 For C code, change the language line:
 

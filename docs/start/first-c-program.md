@@ -1,4 +1,4 @@
-# First C Program
+# First C program
 
 This page is a compact C walkthrough for the same scene structure used throughout the v0.4
 examples. It creates one figure, one panel, one point visual, and one native window.
@@ -17,7 +17,7 @@ The gallery scenario at `examples/c/start/scatter.c` produces the corresponding 
 through the repository's example runner; it is not the standalone teaching fixture shown here.
 
 
-## Program Shape
+## Program shape
 
 A minimal C program follows this order:
 
@@ -59,7 +59,7 @@ The important rule is that uploading arrays prepares the visual, but the visual 
 `dvz_panel_add_visual()` attaches it to a panel.
 
 
-## Next Steps
+## Next steps
 
 - [Quickstart](quickstart.md) shows the same example in Python and C.
 - [Use from C or C++](../how-to/c-integration.md) explains how to integrate Datoviz into a native
