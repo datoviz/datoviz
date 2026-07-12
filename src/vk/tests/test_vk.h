@@ -32,6 +32,8 @@ int test_instance_extensions(TstContext* suite, const TstCase* tstitem);
 
 int test_instance_creation(TstContext* suite, const TstCase* tstitem);
 
+int test_instance_validation_features(TstContext* suite, const TstCase* tstitem);
+
 int test_instance_invalid_layer(TstContext* suite, const TstCase* tstitem);
 
 

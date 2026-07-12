@@ -17,6 +17,7 @@
 #include <inttypes.h>
 
 #include "../macros.h"
+#include "../validation.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/vk/instance.h"
@@ -110,6 +111,33 @@ int test_instance_creation(TstContext* suite, const TstCase* tstitem)
     // Destroy the instance.
     dvz_instance_destroy(instance);
 
+    return 0;
+}
+
+
+
+int test_instance_validation_features(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    AT(tst_unsetenv("DVZ_VK_DEBUG_PRINTF") == 0);
+    VkValidationFeaturesEXT features = {0};
+    _fill_validation_features(&features);
+    AT(features.sType == VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT);
+    AT(features.enabledValidationFeatureCount == 2);
+    AT(features.pEnabledValidationFeatures[0] == VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT);
+    AT(
+        features.pEnabledValidationFeatures[1] ==
+        VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT);
+
+    AT(tst_setenv("DVZ_VK_DEBUG_PRINTF", "1") == 0);
+    _fill_validation_features(&features);
+    AT(features.enabledValidationFeatureCount == 3);
+    AT(
+        features.pEnabledValidationFeatures[2] ==
+        VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT);
+    AT(tst_unsetenv("DVZ_VK_DEBUG_PRINTF") == 0);
     return 0;
 }
 

@@ -21,6 +21,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "_assertions.h"
+#include "_env.h"
 #include "_log.h"
 #include "datoviz/math/types.h"
 
@@ -73,10 +74,15 @@ static const char* DVZ_VALIDATION_IGNORES[] = {
     "prefer interleaving them in a single buffer",
 };
 
-static const VkValidationFeatureEnableEXT DVZ_VALIDATION_FEATURES[] = {
-    VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
+static const VkValidationFeatureEnableEXT DVZ_VALIDATION_FEATURES_DEFAULT[] = {
     VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
     VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
+};
+
+static const VkValidationFeatureEnableEXT DVZ_VALIDATION_FEATURES_DEBUG_PRINTF[] = {
+    VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
+    VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
+    VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
 };
 
 static const VkDebugUtilsMessageSeverityFlagsEXT DVZ_VALIDATION_SEVERITY =
@@ -193,6 +199,16 @@ static void _fill_validation_features(VkValidationFeaturesEXT* features)
 {
     ANN(features);
     features->sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
-    features->enabledValidationFeatureCount = DVZ_ARRAY_COUNT(DVZ_VALIDATION_FEATURES);
-    features->pEnabledValidationFeatures = DVZ_VALIDATION_FEATURES;
+    if (checkenv("DVZ_VK_DEBUG_PRINTF"))
+    {
+        log_info("Vulkan shader debug printf instrumentation enabled");
+        features->enabledValidationFeatureCount =
+            DVZ_ARRAY_COUNT(DVZ_VALIDATION_FEATURES_DEBUG_PRINTF);
+        features->pEnabledValidationFeatures = DVZ_VALIDATION_FEATURES_DEBUG_PRINTF;
+    }
+    else
+    {
+        features->enabledValidationFeatureCount = DVZ_ARRAY_COUNT(DVZ_VALIDATION_FEATURES_DEFAULT);
+        features->pEnabledValidationFeatures = DVZ_VALIDATION_FEATURES_DEFAULT;
+    }
 }

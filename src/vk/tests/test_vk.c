@@ -105,6 +105,7 @@ int test_vk(TstSuite* suite)
     TST_VK_CASE(test_instance_layers);
     TST_VK_CASE(test_instance_extensions);
     TST_VK_CASE(test_instance_creation);
+    TST_VK_CASE(test_instance_validation_features);
     TST_VK_CASE(test_instance_invalid_layer);
 
     TST_VK_CASE(test_gpu_props);
