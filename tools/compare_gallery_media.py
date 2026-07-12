@@ -64,6 +64,7 @@ class EncodingProfile:
     mp4_crf: int
     webm_crf: int
     fps: int = 0
+    fallback_fps: int = 0
     compare: bool = False
 
 
@@ -183,6 +184,7 @@ def profile_for(preview: object, args: argparse.Namespace) -> EncodingProfile:
         "mp4_crf": args.mp4_crf,
         "webm_crf": args.webm_crf,
         "fps": args.fps,
+        "fallback_fps": 0,
         "compare": False,
     }
     if not args.no_manifest_card:
@@ -196,6 +198,7 @@ def profile_for(preview: object, args: argparse.Namespace) -> EncodingProfile:
                 "mp4_crf": int(card.get("mp4_crf", fields["mp4_crf"])),
                 "webm_crf": int(card.get("webm_crf", fields["webm_crf"])),
                 "fps": int(card.get("fps", fields["fps"])),
+                "fallback_fps": int(card.get("fallback_fps", fields["fallback_fps"])),
                 "compare": bool(card.get("compare", fields["compare"])),
             }
         )
@@ -204,6 +207,20 @@ def profile_for(preview: object, args: argparse.Namespace) -> EncodingProfile:
             f"{getattr(preview, 'id')}: gallery card media must use "
             f"{gallery_media.CARD_MEDIA_SIZE}, got {fields['size']}"
         )
+    if fields["fallback_fps"] < 0:
+        raise ValueError(f"{getattr(preview, 'id')}: fallback_fps must not be negative")
+    if fields["fallback_fps"] >= fields["fps"] > 0:
+        raise ValueError(f"{getattr(preview, 'id')}: fallback_fps must be lower than fps")
+    if fields["fallback_fps"] > 0 and fields["fps"] % fields["fallback_fps"] != 0:
+        raise ValueError(f"{getattr(preview, 'id')}: fps must be divisible by fallback_fps")
+    preview_fps = int(getattr(preview, "fps"))
+    if fields["preferred_kind"] == "video-mp4" and fields["fps"] > 0:
+        expected_source_fps = fields["fps"] * fields["step"]
+        if preview_fps != expected_source_fps:
+            raise ValueError(
+                f"{getattr(preview, 'id')}: preview fps {preview_fps} must equal card fps "
+                f"{fields['fps']} * sample_step {fields['step']} to preserve duration"
+            )
     return EncodingProfile(**fields)
 
 
@@ -300,6 +317,16 @@ def encode_mp4(frame_pattern: str, output: Path, fps: int, crf: int) -> None:
     )
 
 
+def write_selected_frames(frames: list[FrameItem], selected_dir: Path, step: int) -> int:
+    selected = select_frames(frames, step)
+    if selected_dir.exists():
+        shutil.rmtree(selected_dir)
+    selected_dir.mkdir()
+    for index, frame in enumerate(selected):
+        shutil.copyfile(frame.path, selected_dir / f"frame_{index:04d}.png")
+    return len(selected)
+
+
 def encode_webm(frame_pattern: str, output: Path, fps: int, crf: int) -> None:
     ffmpeg = require_tool("ffmpeg")
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -389,6 +416,7 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
     webm = base / f"{getattr(preview, 'id')}.card.webm"
     poster = base / f"{getattr(preview, 'id')}.poster.webp"
     out_fps = output_fps(preview, profile)
+    preferred_fps = out_fps
     encoded_frames = (getattr(preview, "frames") + profile.step - 1) // profile.step
     generated_kinds = generated_variant_kinds(profile, args.webm)
 
@@ -425,18 +453,26 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
         )
         selected = select_frames(frames, profile.step)
         selected_dir = frame_root / "selected"
-        selected_dir.mkdir()
-        for index, frame in enumerate(selected):
-            shutil.copyfile(frame.path, selected_dir / f"frame_{index:04d}.png")
+        write_selected_frames(frames, selected_dir, profile.step)
         selected_pattern = str(selected_dir / "frame_%04d.png")
         if "animated-webp-card" in generated_kinds:
             encode_webp(selected, animated_webp, profile.webp_quality)
         if "mp4-card" in generated_kinds:
             encode_mp4(selected_pattern, mp4, out_fps, profile.mp4_crf)
+            if profile.fallback_fps > 0 and mp4.stat().st_size > BUDGETS["video_card"]:
+                fallback_step = profile.step * (out_fps // profile.fallback_fps)
+                encoded_frames = write_selected_frames(frames, selected_dir, fallback_step)
+                out_fps = profile.fallback_fps
+                encode_mp4(selected_pattern, mp4, out_fps, profile.mp4_crf)
+                print(
+                    f"{getattr(preview, 'id')}: {preferred_fps} fps exceeded the video budget; "
+                    f"using {out_fps} fps"
+                )
         if "webm-card" in generated_kinds:
             encode_webm(selected_pattern, webm, out_fps, profile.webm_crf)
         encode_poster(selected[0].path, poster, profile.webp_quality)
-        encoded_frames = len(selected)
+        if out_fps == preferred_fps:
+            encoded_frames = len(selected)
 
     variants = [variant("poster", poster, BUDGETS["poster"])]
     if "animated-webp-card" in generated_kinds:

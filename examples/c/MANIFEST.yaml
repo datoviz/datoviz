@@ -545,12 +545,13 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 48
-        fps: 24
+        frames: 120
+        fps: 60
         card:
           preferred: video-mp4
           sample_step: 1
-          fps: 24
+          fps: 60
+          fallback_fps: 30
     data:
       kind: synthetic
     webgpu:
@@ -599,12 +600,12 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 24
-        fps: 12
+        frames: 60
+        fps: 30
         card:
           preferred: video-mp4
           sample_step: 1
-          fps: 12
+          fps: 30
           webp_quality: 85
     data:
       kind: synthetic
@@ -686,12 +687,13 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 48
-        fps: 24
+        frames: 120
+        fps: 60
         card:
           preferred: video-mp4
           sample_step: 1
-          fps: 24
+          fps: 60
+          fallback_fps: 30
     data:
       kind: synthetic
     webgpu:
@@ -717,12 +719,13 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 48
-        fps: 24
+        frames: 120
+        fps: 60
         card:
           preferred: video-mp4
           sample_step: 1
-          fps: 24
+          fps: 60
+          fallback_fps: 30
     data:
       kind: synthetic
     webgpu:
@@ -748,13 +751,13 @@ examples:
     media: &rotation_preview
       preview:
         kind: animated-webp
-        frames: 72
-        fps: 24
+        frames: 90
+        fps: 30
         card:
           preferred: video-mp4
           size: 1024x576
           sample_step: 1
-          fps: 24
+          fps: 30
           webp_quality: 55
           mp4_crf: 24
     data:
@@ -832,12 +835,12 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 48
-        fps: 24
+        frames: 60
+        fps: 30
         card:
           preferred: video-mp4
           sample_step: 1
-          fps: 24
+          fps: 30
           mp4_crf: 20
     data:
       kind: synthetic
@@ -945,14 +948,15 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 72
-        fps: 24
+        frames: 180
+        fps: 60
         sample_stride: 3
         card:
           preferred: video-mp4
           size: 1024x576
           sample_step: 1
-          fps: 12
+          fps: 60
+          fallback_fps: 30
           webp_quality: 50
           mp4_crf: 24
           webm_crf: 30
@@ -1014,13 +1018,13 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 72
-        fps: 24
+        frames: 90
+        fps: 30
         card:
           preferred: video-mp4
           size: 1024x576
           sample_step: 1
-          fps: 24
+          fps: 30
           webp_quality: 15
           mp4_crf: 28
     data:
@@ -1370,10 +1374,12 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 96
-        fps: 24
+        frames: 120
+        fps: 30
         card:
           preferred: video-mp4
+          fps: 30
+          sample_step: 1
           mp4_crf: 22
     data:
       kind: synthetic
@@ -1458,10 +1464,12 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 72
-        fps: 24
+        frames: 90
+        fps: 30
         card:
           preferred: video-mp4
+          fps: 30
+          sample_step: 1
           mp4_crf: 24
     data:
       kind: synthetic
@@ -1895,12 +1903,13 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 48
-        fps: 24
+        frames: 120
+        fps: 60
         card:
           preferred: video-mp4
           sample_step: 1
-          fps: 24
+          fps: 60
+          fallback_fps: 30
     data:
       kind: synthetic
     webgpu:
@@ -2164,12 +2173,12 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 72
-        fps: 24
+        frames: 90
+        fps: 30
         card:
           preferred: video-mp4
           sample_step: 1
-          fps: 24
+          fps: 30
           mp4_crf: 28
     data:
       kind: synthetic
@@ -2900,14 +2909,15 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 144
-        fps: 24
+        frames: 360
+        fps: 60
         sample_stride: 4
         card:
           preferred: video-mp4
           size: 1024x576
           sample_step: 1
-          fps: 24
+          fps: 60
+          fallback_fps: 30
           webp_quality: 50
           mp4_crf: 29
           webm_crf: 34
@@ -2964,13 +2974,14 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 72
-        fps: 24
+        frames: 180
+        fps: 60
         card:
           preferred: video-mp4
           size: 1024x576
-          sample_step: 2
-          fps: 12
+          sample_step: 1
+          fps: 60
+          fallback_fps: 30
           webp_quality: 40
           mp4_crf: 20
           webm_crf: 38
@@ -3010,14 +3021,15 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 72
-        fps: 24
+        frames: 180
+        fps: 60
         sample_stride: 2
         card:
           preferred: video-mp4
           size: 1024x576
           sample_step: 1
-          fps: 24
+          fps: 60
+          fallback_fps: 30
           webp_quality: 60
           mp4_crf: 28
           webm_crf: 34
@@ -3216,6 +3228,7 @@ examples:
           preferred: video-mp4
           sample_step: 1
           fps: 60
+          fallback_fps: 30
           mp4_crf: 24
     data:
       kind: prepared
@@ -3264,14 +3277,15 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 144
-        fps: 24
+        frames: 360
+        fps: 60
         sample_stride: 2
         card:
           preferred: video-mp4
           size: 1024x576
           sample_step: 1
-          fps: 24
+          fps: 60
+          fallback_fps: 30
           webp_quality: 1
           mp4_crf: 38
           webm_crf: 50
@@ -3318,14 +3332,15 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 192
-        fps: 24
+        frames: 480
+        fps: 60
         sample_stride: 1
         card:
           preferred: video-mp4
           size: 1024x576
           sample_step: 1
-          fps: 24
+          fps: 60
+          fallback_fps: 30
           webp_quality: 70
           mp4_crf: 24
           webm_crf: 28

@@ -98,9 +98,14 @@ Animated gallery previews use manifest metadata:
 media:
   preview:
     kind: animated-webp
-    frames: 24
-    fps: 12
+    frames: 60
+    fps: 30
 ```
+
+MP4 gallery cards use `30` fps by default. High-motion cards may capture and request `60` fps with
+`card.fallback_fps: 30`; the media pipeline keeps the 60 fps encode only when it fits the 1 MB video
+budget, otherwise it re-encodes the same-duration sequence at 30 fps. Keep `preview.fps` equal to
+`card.fps * card.sample_step` so encoding never changes the preview duration.
 
 Generate selected previews with:
 
