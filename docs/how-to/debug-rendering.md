@@ -168,6 +168,43 @@ pipeline, bind, draw, and presentation commands. It is not a substitute for chec
 scene first; an empty or malformed scene can still produce a technically valid but visually empty
 frame.
 
+## Print values from a Vulkan shader
+
+Shader debug printf is an opt-in Vulkan validation feature for narrowly targeted shader debugging.
+Normal validated runs keep core, synchronization, and best-practices validation enabled without
+shader instrumentation. Enable instrumentation for one focused test or example with:
+
+```sh
+DVZ_VK_DEBUG_PRINTF=1 direnv exec . just test <test-filter>
+```
+
+or:
+
+```sh
+DVZ_VK_DEBUG_PRINTF=1 direnv exec . ./build/examples/c/features/basic_scene
+```
+
+Add the extension and a temporary `debugPrintfEXT()` call to the GLSL shader under investigation:
+
+```glsl
+#extension GL_EXT_debug_printf : enable
+
+if (gl_VertexIndex == 0)
+{
+    debugPrintfEXT("position=(%f, %f, %f)\n", position.x, position.y, position.z);
+}
+```
+
+Datoviz reports the output through its Vulkan validation callback. Always restrict the condition to
+a small number of shader invocations; an unguarded call can produce overwhelming output and make
+the instrumented run very slow. Remove temporary print calls after diagnosis and rerun without
+`DVZ_VK_DEBUG_PRINTF`.
+
+Debug printf changes shader execution and adds validation-layer GPU bookkeeping. It is intentionally
+disabled by default and should not be enabled for the full test suite. It is also distinct from DRP2
+trace output: DRP2 traces CPU-generated command flow, while debug printf reports values observed by
+executing shader invocations.
+
 ## Compare native, offscreen, and browser paths
 
 Keep these paths separate:

@@ -77,6 +77,8 @@
         _tst_desc.isolation = TST_ISOLATION_SERIAL;                                               \
         _tst_desc.fixture = TST_SCENE_APP_GPU_FIXTURE;                                            \
         _tst_desc.fixture_scope = TST_FIXTURE_SCOPE_PROCESS;                                      \
+        _tst_desc.setup = _app_gpu_validation_setup;                                               \
+        _tst_desc.teardown = _app_gpu_validation_teardown;                                        \
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 
@@ -205,9 +207,62 @@ typedef struct
     DvzGpuCtx* gpu_ctx;
     DvzDrp2Runtime* runtime;
     DvzWindowHost* window_host;
+    uint32_t validation_errors_before;
     bool available;
     const char* skip_reason;
 } DvzTestGpuFixture;
+
+
+
+/**
+ * Record the validation error count before a shared-fixture app test.
+ *
+ * @param suite active test context
+ * @param item current test case
+ * @return zero
+ */
+static int _app_gpu_validation_setup(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzTestGpuFixture* fixture =
+        (DvzTestGpuFixture*)tst_context_fixture(suite, TST_SCENE_APP_GPU_FIXTURE);
+    if (fixture != NULL && fixture->available && fixture->gpu_ctx != NULL)
+        fixture->validation_errors_before = dvz_gpu_ctx_error_count(fixture->gpu_ctx);
+    return 0;
+}
+
+
+
+/**
+ * Fail the responsible shared-fixture app test when it emitted a Vulkan validation error.
+ *
+ * @param suite active test context
+ * @param item current test case
+ * @return zero on a clean boundary, nonzero when validation reported a new error
+ */
+static int _app_gpu_validation_teardown(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzTestGpuFixture* fixture =
+        (DvzTestGpuFixture*)tst_context_fixture(suite, TST_SCENE_APP_GPU_FIXTURE);
+    if (fixture == NULL || !fixture->available || fixture->gpu_ctx == NULL)
+        return 0;
+
+    DvzDevice* device = dvz_gpu_ctx_device(fixture->gpu_ctx);
+    if (device != NULL)
+        dvz_device_wait(device);
+    uint32_t validation_errors_after = dvz_gpu_ctx_error_count(fixture->gpu_ctx);
+    if (validation_errors_after != fixture->validation_errors_before)
+    {
+        log_error(
+            "Vulkan validation errors increased during %s (%u -> %u)", item->name,
+            fixture->validation_errors_before, validation_errors_after);
+        return 1;
+    }
+    return 0;
+}
 
 
 typedef enum
