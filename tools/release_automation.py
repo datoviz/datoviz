@@ -1604,7 +1604,6 @@ def validation_pack(args: argparse.Namespace) -> int:
     for rel in (
         Path("tools/release_wheels/check_wheel.py"),
         Path("tools/release_wheels/inspect_wheel.py"),
-        Path("tools/datoviz_build_backend/__init__.py"),
         Path("tools/datoviz_build_backend/config.py"),
         Path("tools/datoviz_build_backend/manifest.py"),
         Path("tools/datoviz_build_backend/repair.py"),
