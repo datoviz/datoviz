@@ -47,17 +47,22 @@ def prepare(pdb_id: str, bundle_root: Path, regenerate: bool) -> None:
         artifacts.append(artifact(path, bundle_root, role, suffix))
 
     source_url = f"https://files.rcsb.org/download/{pdb_id.upper()}.pdb"
+    license_name = "CC0-1.0"
+    usage_url = "https://www.wwpdb.org/about/usage-policies"
     write_manifest(
         bundle_root,
         example_id=f"proteins/{pdb_id.lower()}",
         title=f"{pdb_id.upper()} Protein Arcball Bundle",
         status="committed",
         script=relpath(Path(__file__), ROOT),
-        command=command_argv(relpath(Path(__file__), ROOT), [pdb_id, "--regenerate"]),
+        command=command_argv(
+            relpath(Path(__file__), ROOT), [pdb_id, "--regenerate"] if regenerate else [pdb_id]
+        ),
         source={
             "name": f"RCSB PDB {pdb_id.upper()}",
             "url": source_url,
-            "license": "RCSB PDB data usage policy applies.",
+            "license": license_name,
+            "usage_url": usage_url,
         },
         artifacts=artifacts,
         validation={"artifact_count": len(artifacts)},
@@ -70,7 +75,11 @@ def prepare(pdb_id: str, bundle_root: Path, regenerate: bool) -> None:
             "Generated with `tools/preprocess_protein.py` into the C viewer bundle format.",
             "The prepared directory contains raw `.f32`, `.u32`, `.u8`, and `.rgba8` arrays.",
         ],
-        license_lines=["RCSB PDB data usage policy applies."],
+        license_lines=[
+            "PDB archive data files are available under the CC0 1.0 Universal Public Domain "
+            f"Dedication: {usage_url}.",
+            "Attribution to the original structure authors is encouraged.",
+        ],
     )
     print(f"wrote {relpath(bundle_root, ROOT)}")
 
