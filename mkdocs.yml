@@ -95,6 +95,7 @@ nav:
   - Home: 'index.md'
   - Get Started:
     - Overview: 'start/index.md'
+    - What is Datoviz?: 'start/what-is-datoviz.md'
     - Install: 'start/install.md'
     - Quickstart: 'start/quickstart.md'
     - Choose your layer: 'start/choose-your-layer.md'

@@ -16,16 +16,16 @@ visualization.
 
 | Need | Use | Status |
 | --- | --- | --- |
-| Write Python code with NumPy arrays | `import datoviz as dvz` | supported for documented calls |
-| Build a native C or C++ application | C `scene` and `app` APIs | supported by feature |
-| Render without a window, capture images, or integrate a native view | C `scene` and `app` APIs | supported by feature |
-| Call the Python binding with explicit pointers and counts | `datoviz.raw` | low-level exact call form |
-| Run selected examples in the browser | WebGPU/WASM example routes | experimental subset |
-| Work on advanced rendering, replay, or backend portability | Advanced rendering/runtime APIs | advanced/unstable |
-| Use high-level scientific plotting | GSP/VisPy2 when available | external WIP layer |
+| Write Python code with NumPy arrays | [`import datoviz as dvz`](../reference/python-direct-engine.md) | supported for documented calls |
+| Build a native C or C++ application | [C `scene` and `app` APIs](first-c-program.md) | supported by feature |
+| Render without a window, capture images, or integrate a native view | [C integration](../how-to/c-integration.md) | supported by feature |
+| Call the Python binding with explicit pointers and counts | [`datoviz.raw`](../reference/ctypes.md) | low-level exact call form |
+| Run selected examples in the browser | [WebGPU/WASM example routes](../reference/webgpu-subset.md) | experimental subset |
+| Work on advanced rendering, replay, or backend portability | [Advanced runtime APIs](../advanced/runtime-internals.md) | advanced/unstable |
+| Use high-level scientific plotting | [GSP/VisPy2 scope](../reference/project-status.md) | external WIP layer |
 
 
-## Python With NumPy
+## Python with NumPy
 
 Choose the main Python package when you want to create Datoviz scenes from Python and upload NumPy
 arrays to visual attributes:
@@ -38,8 +38,10 @@ This path keeps the same `dvz_*` function names as the C examples and adapts sup
 calls so you can pass NumPy arrays directly. It is the best starting point for scientists who are
 comfortable with Python but need lower-level rendering control than a plotting library gives.
 
+[Start with the Python-first Quickstart](quickstart.md).
 
-## C Or C++
+
+## C or C++
 
 Choose the C API when your application owns the window, rendering loop, offscreen target, capture
 path, or integration with another native system. The C examples show the supported native API
@@ -54,25 +56,42 @@ Most public C examples follow the same visible sequence:
 5. open a window or create an offscreen target;
 6. run the app or capture a frame.
 
+[Run the First C Program](first-c-program.md), then see
+[C/C++ integration](../how-to/c-integration.md) for installed projects.
 
-## WebGPU In The Browser
+
+## WebGPU in the browser
 
 Some examples have live browser routes using the experimental WebGPU/WASM subset. Use these routes
 to inspect supported examples in a browser or test portability. Do not assume every native Vulkan
 feature is available in WebGPU; each example and status page says whether browser support is live,
 planned, deferred, or native-only.
 
+[Browse examples](../examples/index.md) and check the
+[WebGPU subset](../reference/webgpu-subset.md) before choosing a live route.
 
-## Advanced Runtime Layers
+
+## Advanced runtime layers
 
 Use the advanced runtime pages when you are working on Datoviz internals, backend portability,
 render replay, or specialized embedding. These pages are documented under
 [Runtime internals](../advanced/runtime-internals.md) and are secondary to the user-facing scene API.
 
+[Open the advanced runtime overview](../advanced/runtime-internals.md).
 
-## High-Level Plotting
+
+## High-level plotting
 
 Datoviz v0.4 is not a high-level plotting library and does not restore the old Datoviz v0.3
 Pythonic plotting API. Use GSP/VisPy2, when available, for higher-level scientific plotting. Use
 Datoviz directly when you need the lower-level engine surface or while the high-level layer is still
 being developed.
+
+Check [project status](../reference/project-status.md) for the current `external/GSP` boundary. Do
+not plan around a stable high-level package until that status changes.
+
+
+## Next steps
+
+Choose one action above and complete its first example. Return to this page only when you need a
+lower-level integration surface or a different runtime target.

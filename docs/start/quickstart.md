@@ -79,7 +79,7 @@ A dark window containing 10,000 colored dots. Drag to pan, scroll to zoom.
 are ordinary C arrays.
 
 **Scene, figure, panel** - A `scene` is the whole visualization. A `figure` is the image area, here
-800 by 600 pixels. A `panel` is the part of the figure where the scatter plot is drawn. This
+1280 by 720 pixels. A `panel` is the part of the figure where the scatter plot is drawn. This
 quickstart uses one full-size panel.
 
 **Controller** - `dvz_panzoom` adds mouse interaction. `dvz_panel_bind_controller` connects it to

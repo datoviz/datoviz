@@ -9,12 +9,12 @@ screenshots made without opening a window.
 The main idea is simple:
 
 1. create a scene;
-2. add one or more things to draw;
-3. give those things your data arrays;
+2. create one or more visuals, such as points, an image, or a mesh;
+3. upload data arrays to the visual's named attributes;
 4. show the scene in a window or save it as an image.
 
 
-## What You Build
+## What you build
 
 Most Datoviz examples use the same pieces:
 
@@ -31,7 +31,7 @@ This structure is more explicit than `scatter()` or `imshow()`, but it gives you
 what is drawn and what changes from one frame to the next.
 
 
-## When Datoviz Fits
+## When Datoviz fits
 
 Use Datoviz directly when you want to:
 
@@ -46,7 +46,7 @@ which is still work in progress. Use Datoviz directly when you want the explicit
 above.
 
 
-## Python And C
+## Python and C
 
 You can use Datoviz from C, C++, or Python.
 
@@ -60,8 +60,11 @@ This package uses the same `dvz_*` function names as the C examples and supports
 array uploads. Use `datoviz.raw` only when you need the exact low-level pointer-and-count calls.
 
 
-## Where To Start
+## Where to start
 
 Begin with the [Quickstart](quickstart.md) if you want to run a first example. Use
 [Choose your layer](choose-your-layer.md) if you are deciding between Python, C, browser examples,
 or advanced integration paths.
+
+For the shortest first run, use the [Python-first Quickstart](quickstart.md). For a native C
+program, use [First C Program](first-c-program.md).

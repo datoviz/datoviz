@@ -31,7 +31,7 @@ can survive theme upgrades.
 
 | Page | Shape |
 | --- | --- |
-| Home | compact hero, six-card showcase strip, start links, current status |
+| Home | compact hero, four-card visual-proof grid, six start links, current status |
 | Gallery index | lane overview with large cards for showcases and smaller cards for visual/features |
 | Showcase page | one large screenshot or looped video, short thesis, source link, run/capture command, feature tags |
 | Visual-family page | controlled baseline image, supported attributes, minimal C example, deferred variants |
@@ -76,13 +76,12 @@ Prefer broad WASM build coverage but curated public embedding. A release can com
 to WASM for validation while showing only a small `gallery-live` subset on the public gallery.
 
 
-## Front-Page Card Set
+## Front-page card set
 
-When the homepage can show only six cards or videos, prefer the current v0.4 set:
+Use four visual-proof cards so the homepage reaches onboarding links quickly. Keep the six-card
+capacity for the separate text-first Start here grid. The current visual set is:
 
-1. dense LiDAR;
-2. molecular arcball;
-3. brain volume plus transparent mesh;
-4. weather field;
-5. linked probe plus colorbar panels;
-6. WebGPU browser preview or high-density 2D signals.
+1. point cloud;
+2. brain volume plus transparent mesh;
+3. wind field;
+4. choropleth.

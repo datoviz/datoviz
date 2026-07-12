@@ -31,7 +31,7 @@ objects, GPU-backed rendering, native integration, and reproducible visual outpu
   the same scene model as the native runtime.
 
 
-## Visual Proof
+## Visual proof
 
 <div class="grid cards" markdown="1">
 
@@ -99,7 +99,7 @@ Retained composites, labels, color scales, and responsive layouts.
 </div>
 
 
-## Start Here
+## Start here
 
 Pick the entry point that matches how you want to use Datoviz.
 
@@ -113,15 +113,15 @@ Pick the entry point that matches how you want to use Datoviz.
 <span>Follow the annotated walkthrough and learn scene, panel, visual, and interaction basics.</span>
 </a>
 <a class="dvz-nav-card" href="start/choose-your-layer/">
-<strong>Choose Your Layer</strong>
+<strong>Choose your layer</strong>
 <span>Compare Python, C/C++, WebGPU, exact raw calls, and higher-level plotting tools.</span>
 </a>
 <a class="dvz-nav-card" href="examples/">
 <strong>Examples</strong>
 <span>Browse working visuals, features, runtime examples, and scientific showcases.</span>
 </a>
-<a class="dvz-nav-card" href="how-to/create-a-scene/">
-<strong>How-To Guides</strong>
+<a class="dvz-nav-card" href="how-to/">
+<strong>How-To guides</strong>
 <span>Learn focused tasks such as axes, colorbars, picking, animation, capture, and offscreen output.</span>
 </a>
 <a class="dvz-nav-card" href="reference/">

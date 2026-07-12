@@ -8,7 +8,7 @@ page when you want the assistant to follow the API-checking workflow rather than
 memory.
 
 
-## Start With This Prompt
+## Start with this prompt
 
 Copy this prompt and replace the task with your own visualization:
 
@@ -27,6 +27,11 @@ pointers/counts or switch to C and explain why.
 Return a complete runnable example, then list the Datoviz pages and examples you used.
 ```
 
+If the assistant cannot browse the website, give it the relevant page contents or attach the
+[Quickstart](quickstart.md), one [How-To guide](../how-to/index.md), the closest
+[example](../examples/index.md), and the required [reference page](../reference/index.md). Ask it to
+state which API details it could not verify instead of guessing.
+
 For C code, change the language line:
 
 ```text
@@ -34,7 +39,7 @@ Use C instead of Python. Follow the style of the documented C examples.
 ```
 
 
-## Make the Request Specific
+## Make the request specific
 
 A good request says what should appear on screen. For example:
 
@@ -46,14 +51,14 @@ A good request says what should appear on screen. For example:
 | "export it" | "render one frame to a PNG without opening a window" |
 
 
-## Optional Pages For Better Precision
+## Optional pages for better precision
 
 The simple prompt above is enough to get started. For better precision, point the assistant to the
 same public pages you would use:
 
 - [Quickstart](quickstart.md) for the first complete Python and C examples.
 - [Examples](../examples/index.md) for working visual and feature examples.
-- [How-To Guides](../how-to/create-a-scene.md) for focused tasks.
+- [How-To guides](../how-to/index.md) for focused tasks.
 - [Reference](../reference/index.md) for exact visual names, attribute names, and feature status.
 - [AI Agents Start Here](../ai-agents.md) for the full agent workflow and verification checklist.
 
@@ -69,7 +74,7 @@ work in progress; in the meantime, use the generated Datoviz Python binding dire
 documented Python entry points.
 
 
-## A Useful Follow-Up
+## A useful follow-up
 
 After the assistant writes code, ask:
 

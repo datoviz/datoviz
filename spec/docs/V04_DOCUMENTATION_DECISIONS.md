@@ -210,16 +210,14 @@ No fake window chrome. Panel borders minimal or absent.
 - Media pipeline integration (ffmpeg, GStreamer) → future roadmap
 
 
-## Six-Panel Gallery Grid (below hero on landing page)
+## Four-card visual proof grid (below hero on landing page)
 
-Six cards showing range across scientific domains and visual families. No domain should appear
-twice. Candidates:
-1. Wind globe (geoscience / climate)
-2. Protein structure (molecular / life science)
-3. Signal traces (instrument / DAQ)
-4. Brain volume with slice (medical imaging — acceptable as one of six, not dominant)
-5. Choropleth or geospatial map (data science / social science)
-6. GPU particle simulation or LiDAR point cloud (physics / engineering)
+Use four compact cards to prove range without delaying the onboarding links. The current set is:
 
-Final selection depends on render quality of available screenshots. Priority: choose the six
-that look best at thumbnail size on a dark background.
+1. point cloud;
+2. brain volume;
+3. wind field;
+4. choropleth.
+
+Keep these distinct from the six text-first **Start here** cards below them. Change the visual set
+only when a replacement has stronger real media at card size and preserves scientific-domain range.
