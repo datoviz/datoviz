@@ -1,149 +1,189 @@
 # Datoviz
 
-Datoviz is a GPU-powered visualization engine for scientific data. It helps you build fast,
-interactive 2D and 3D views when ordinary plotting tools become too slow or too limited.
+[![Build and test](https://github.com/datoviz/datoviz/actions/workflows/test.yml/badge.svg?branch=v0.4-dev)](https://github.com/datoviz/datoviz/actions/workflows/test.yml)
+[![Documentation](https://img.shields.io/badge/docs-datoviz.org-2563eb)](https://datoviz.org/)
+[![Python 3.10–3.14](https://img.shields.io/badge/python-3.10%E2%80%933.14-3776ab)](https://datoviz.org/start/install/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-22c55e)](LICENSE)
 
-Use it when you need to display many points, images, meshes, volumes, annotations, or custom
-scientific scenes. In Python, use `import datoviz as dvz` and pass NumPy arrays to supported visual
-data uploads. For native applications, use the C scene/app API. Datoviz also provides native
-desktop rendering through Vulkan and an experimental browser path through WebGPU/WASM.
+**Datoviz is a GPU-powered visualization engine for interactive scientific data.** Use it when
+dense points, images, meshes, volumes, annotations, linked panels, or custom scientific scenes need
+more control and performance than an ordinary plotting library provides.
 
-Datoviz v0.4 is the lower-level rendering engine in the broader GSP/VisPy2 direction. GSP/VisPy2 is
-the intended high-level plotting layer, but it is still work in progress. Until that layer is ready,
-Python users can call Datoviz directly through one generated `ctypes` binding. Use
-`import datoviz as dvz` for the normal call form with documented NumPy array adaptation; use
-`datoviz.raw` only when a call must spell out the exact C-shaped pointers, counts, bytes, or
-callbacks.
+[![Scientific wind-field visualization rendered with Datoviz](docs/images/gallery/showcases/showcase_wind_field.png)](https://datoviz.org/examples/gallery/showcases/showcases_wind_field/)
+
+Datoviz v0.4 provides a retained scene model, native Vulkan rendering, desktop and offscreen
+presentation, reproducible capture, and direct use from C or Python. Python users call the generated
+binding with `import datoviz as dvz` and pass NumPy arrays directly to supported data-upload APIs.
+
+
+## v0.4 Release Status
+
+The `v0.4-dev` branch is preparing the first v0.4 release candidate. The native C and Python/NumPy
+paths are release-facing; experimental and deferred surfaces remain explicitly labeled throughout
+the documentation.
+
+| Surface | v0.4 status |
+| --- | --- |
+| Native C scene/app API | supported, with feature-specific gaps |
+| Python binding with NumPy arrays | supported |
+| Offscreen rendering and capture | supported |
+| Qt/PyQt hosted rendering | supported, optional provider |
+| Retained visual families | supported/experimental by family |
+| WebGPU/WASM browser path | experimental |
+| Scene compute-to-render integration | experimental |
+| DRP2 command streams and runtime internals | advanced/unstable |
+| High-level plotting API | external/GSP |
+
+See the detailed [feature status](https://datoviz.org/reference/feature-status/),
+[platform support](https://datoviz.org/reference/platform-support/), and
+[v0.3 capability disposition](https://datoviz.org/reference/v03-visible-parity/) before relying on
+an experimental or backend-specific feature.
 
 
 ## Install
 
-After v0.4 packages are published on PyPI, the normal Python install command is:
+Once a v0.4 release candidate is published on PyPI, use the exact command from its release notes. A
+pre-release install will normally look like:
 
 ```sh
-pip install datoviz
+python -m pip install --pre datoviz
 ```
 
-During release-candidate testing, use the exact command from the release notes. If an RC is
-published as a pre-release, that command may require `--pre` or an explicit version, for example:
+After the final v0.4 release, the normal command will be:
 
 ```sh
-pip install --pre datoviz
+python -m pip install datoviz
 ```
 
-Before v0.4 packages are available for your platform, or when you need C/C++ integration and local
-validation, build from source as described below.
-
-
-## Build From Source
-
-Build from source when you need the current development branch, want to contribute, or need local
-C/C++ integration before packaged artifacts are available for your platform.
-
-Prerequisites:
-
-- Git with submodule support
-- CMake 3.21+
-- GCC 12+, Clang 15+, or Visual Studio 2022
-- Ninja and [`just`](https://github.com/casey/just)
-- Python 3.10+
-- Vulkan-capable GPU and current graphics drivers
-- shader tools from the Vulkan SDK or packages such as `glslang-tools`/`glslangValidator`
-
-```sh
-git clone https://github.com/datoviz/datoviz.git --recursive
-cd datoviz
-git checkout v0.4-dev
-just build
-just test
-```
-
-Editable Python install for local testing:
-
-```sh
-pip install -e .
-```
+Until packages are published for your platform, use the source build below. The full
+[installation guide](https://datoviz.org/start/install/) covers macOS, Linux, Windows, Python, and
+C/C++ integration.
 
 
 ## Minimal Python Example
 
-This example creates one point visual with 10,000 random points. Each visual attribute gets one
-array: positions, colors, and point diameters.
+This deterministic example creates the scatter plot shown in the documentation: 10,000 random
+points with random colors and sizes on a dark background.
 
 ```python
+import ctypes
+
 import numpy as np
 import datoviz as dvz
 
 N = 10_000
-pos = np.random.uniform(-1, 1, (N, 3)).astype(np.float32)
-pos[:, 2] = 0
-color = np.random.randint(0, 256, (N, 4), dtype=np.uint8)
-color[:, 3] = 255
-diameters = np.full(N, 5.0, dtype=np.float32)
+rng = np.random.default_rng(12345)
+pos = np.zeros((N, 3), dtype=np.float32)
+pos[:, :2] = rng.uniform(-1, 1, (N, 2))
+color = rng.integers(0, 255, (N, 4), dtype=np.uint8)
+color[:, 3] = 200
+diameter = rng.uniform(4, 12, N).astype(np.float32)
 
 scene = dvz.dvz_scene()
-figure = dvz.dvz_figure(scene, 800, 600, 0)
+figure = dvz.dvz_figure(scene, 1280, 720, 0)
 panel = dvz.dvz_panel_full(figure)
+dvz.dvz_panel_set_background_color(panel, dvz.DvzColor(13, 18, 25, 255))
 
-controller = dvz.dvz_panzoom(scene, None)
-dvz.dvz_panel_bind_controller(panel, controller, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY)
+panzoom = dvz.dvz_panzoom(scene, None)
+dvz.dvz_panel_bind_controller(panel, panzoom, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY)
 
-visual = dvz.dvz_point(scene, 0)
-dvz.dvz_visual_set_data(visual, "position", pos)
-dvz.dvz_visual_set_data(visual, "color", color)
-dvz.dvz_visual_set_data(visual, "diameter_px", diameters)
-dvz.dvz_panel_add_visual(panel, visual, None)
+points = dvz.dvz_point(scene, 0)
+dvz.dvz_visual_set_data(points, "position", pos)
+dvz.dvz_visual_set_data(points, "color", color)
+dvz.dvz_visual_set_data(points, "diameter_px", diameter)
 
-dvz.run(scene, figure, title="Scatter plot")
+style = dvz.dvz_point_style_desc()
+style.aspect = dvz.DVZ_SHAPE_ASPECT_FILLED
+style.stroke_width_px = 0
+dvz.dvz_point_set_style(points, ctypes.byref(style))
+dvz.dvz_visual_set_depth_test(points, False)
+dvz.dvz_visual_set_alpha_mode(points, dvz.DVZ_ALPHA_BLENDED)
+dvz.dvz_panel_add_visual(panel, points, None)
+
+dvz.run(scene, figure, title="Datoviz")
 ```
+
+Continue with the annotated [Quickstart](https://datoviz.org/start/quickstart/) or browse the
+[example gallery](https://datoviz.org/examples/).
+
+
+## C And C++
+
+Datoviz is a native C library. Installed packages expose headers and a CMake package for C and C++
+applications:
+
+```cmake
+find_package(datoviz CONFIG REQUIRED)
+target_link_libraries(my_app PRIVATE datoviz::datoviz)
+```
+
+The public API uses C linkage and can be called directly from C++. See
+[C/C++ integration](https://datoviz.org/how-to/c-integration/) and the generated
+[C API reference](https://datoviz.org/reference/c-api/).
+
+
+## Build From Source
+
+Source builds require Git, CMake 3.21+, Ninja, `just`, Python 3.10+, a supported C/C++ compiler,
+shader tools, and a Vulkan-capable runtime. Clone the active branch with its submodules, then build
+and test:
+
+```sh
+git clone --branch v0.4-dev --recursive https://github.com/datoviz/datoviz.git
+cd datoviz
+just build
+just test
+python -m pip install -e .
+```
+
+Platform packages, compiler versions, Vulkan/MoltenVK requirements, and native Windows guidance
+are maintained in the [installation guide](https://datoviz.org/start/install/). Contributors should
+also read [CONTRIBUTING.md](CONTRIBUTING.md) and [BUILD.md](BUILD.md).
 
 
 ## Which Layer Should I Use?
 
 | Need | Use |
 | --- | --- |
-| Python code with Datoviz visuals and NumPy arrays | `import datoviz as dvz` |
+| Python with Datoviz visuals and NumPy arrays | `import datoviz as dvz` |
 | Native application or C/C++ integration | C scene/app API |
-| Exact pointer/count call form of the Python binding | `datoviz.raw` |
-| Browser rendering for supported examples | experimental WebGPU/WASM subset |
-| High-level scientific plotting | GSP/VisPy2 when that layer is available |
+| Exact pointer/count form of the Python binding | `datoviz.raw` |
+| Browser rendering for promoted examples | experimental WebGPU/WASM subset |
+| High-level functions such as `scatter()` or `imshow()` | GSP/VisPy2 when available |
 
-Datoviz v0.4 is the lower-level rendering engine used when you need explicit control over scenes,
-visuals, data uploads, windows, and captures. For high-level plotting functions such as `scatter()`
-or `imshow()`, use VisPy2/GSP when that layer is available.
-
-See [Choose your layer](https://datoviz.org/start/choose-your-layer/) for more detail.
+Datoviz v0.4 is the explicit engine layer: scenes, visuals, data uploads, controllers, windows,
+captures, and integration surfaces. The old high-level Datoviz Python plotting API is not part of
+v0.4; that role belongs to the developing GSP/VisPy2 layer. See
+[Choose Your Layer](https://datoviz.org/start/choose-your-layer/) for the complete comparison.
 
 
 ## Documentation
 
-- [Install](https://datoviz.org/start/install/)
-- [Quickstart](https://datoviz.org/start/quickstart/)
-- [Examples](https://datoviz.org/examples/)
-- [C API reference](https://datoviz.org/reference/c-api/)
-- [Python binding exact call form](https://datoviz.org/reference/ctypes/)
-- [WebGPU subset](https://datoviz.org/reference/webgpu-subset/)
+- [Get Started](https://datoviz.org/start/)
+- [Examples and Gallery](https://datoviz.org/examples/)
+- [How-To Guides](https://datoviz.org/how-to/create-a-scene/)
+- [Feature Status](https://datoviz.org/reference/feature-status/)
+- [Platform Support](https://datoviz.org/reference/platform-support/)
+- [Python With NumPy Arrays](https://datoviz.org/reference/python-direct-engine/)
+- [Exact `datoviz.raw` Calls](https://datoviz.org/reference/ctypes/)
+- [C API Reference](https://datoviz.org/reference/c-api/)
+- [WebGPU/WASM Subset](https://datoviz.org/reference/webgpu-subset/)
+- [Changelog](CHANGELOG.md)
 - [Citation](https://datoviz.org/reference/citation/)
-- [Contributing](CONTRIBUTING.md)
-- [Build notes](BUILD.md)
 
 
 ## License And Credits
 
 Datoviz is released under the [MIT license](LICENSE). It is developed by
 [Cyrille Rossant](https://cyrille.rossant.net/) at the
-[International Brain Laboratory](http://internationalbrainlab.org/), with support from the
+[International Brain Laboratory](https://www.internationalbrainlab.com/), with support from the
 Wellcome Trust, Simons Foundation, and Chan Zuckerberg Initiative.
 
-If you use Datoviz in research, see [Citation](https://datoviz.org/reference/citation/) for the
-current software citation guidance. The final v0.4.0 release will be archived with Zenodo for a
-version-specific DOI.
+If you use Datoviz in research, follow the current [citation guidance](https://datoviz.org/reference/citation/)
+and repository metadata in [CITATION.cff](CITATION.cff). The final v0.4.0 release is planned for
+archival with Zenodo and a version-specific DOI.
 
 Datoviz builds on earlier open-source GPU visualization work including VisPy, Glumpy, Galry, and
-the Vulkan-based Datoviz releases. See the documentation and project papers for background and
-citations.
-
-Development of Datoviz v0.4 was assisted by
-[OpenAI Codex](https://openai.com/codex/), which was used for code implementation and review,
-testing, documentation, and release preparation. All generated changes were reviewed and validated
-by the project maintainer, who retains responsibility for the resulting software.
+the Vulkan-based Datoviz releases. Development of v0.4 was assisted by
+[OpenAI Codex](https://openai.com/codex/) for implementation, review, testing, documentation, and
+release preparation. All changes were directed, reviewed, and validated by the project maintainer.
