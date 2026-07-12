@@ -138,7 +138,7 @@ then run or capture.
 
 ```python
 # doctest: skip -- MkDocs expands the source include after this checker runs.
---8<-- "examples/docs/quickstart.py"
+--8<-- "examples/docs/homepage.py"
 ```
 
 ![10 000 randomly colored points in an interactive Datoviz window](assets/gallery/v0.4/start/start_scatter.webp)
