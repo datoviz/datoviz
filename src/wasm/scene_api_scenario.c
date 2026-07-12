@@ -38,6 +38,7 @@ DvzScenarioSpec dvz_example_compute_buffer_animation_scenario(void);
 DvzScenarioSpec dvz_example_coordinate_system_scenario(void);
 DvzScenarioSpec dvz_example_controller_arcball_scenario(void);
 DvzScenarioSpec dvz_composite_polygon_scenario(void);
+DvzScenarioSpec dvz_composite_graph_scenario(void);
 DvzScenarioSpec dvz_example_controller_fly_scenario(void);
 DvzScenarioSpec dvz_example_controller_turntable_scenario(void);
 DvzScenarioSpec dvz_example_guide_lines_scenario(void);
@@ -56,6 +57,7 @@ DvzScenarioSpec dvz_example_lighting_scenario(void);
 DvzScenarioSpec dvz_example_material_mesh_scenario(void);
 DvzScenarioSpec dvz_example_mesh_texture_scenario(void);
 DvzScenarioSpec dvz_example_obj_loading_scenario(void);
+DvzScenarioSpec dvz_example_orientation_gizmo_scenario(void);
 DvzScenarioSpec dvz_example_overlay_card_scenario(void);
 DvzScenarioSpec dvz_example_panel_background_scenario(void);
 DvzScenarioSpec dvz_example_panel_grid_scenario(void);
@@ -258,6 +260,10 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_example_reference_grid_scenario();
     case 76:
         return dvz_example_bounds_overlay_scenario();
+    case 77:
+        return dvz_composite_graph_scenario();
+    case 78:
+        return dvz_example_orientation_gizmo_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

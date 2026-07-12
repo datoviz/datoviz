@@ -46,6 +46,8 @@
 #define WIDTH  EXAMPLE_WINDOW_WIDTH
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
+DvzScenarioSpec dvz_composite_graph_scenario(void);
+
 
 
 /*************************************************************************************************/
@@ -511,7 +513,7 @@ cleanup:
 
 
 
-static DvzScenarioSpec _graph_scenario(void)
+DvzScenarioSpec dvz_composite_graph_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "composites_graph",
@@ -530,8 +532,10 @@ static DvzScenarioSpec _graph_scenario(void)
 /*  Main                                                                                         */
 /*************************************************************************************************/
 
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _graph_scenario();
+    DvzScenarioSpec spec = dvz_composite_graph_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

@@ -609,7 +609,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=features_orientation_gizmo
       requirements:
         - orientation-gizmo
         - overlay
@@ -2799,7 +2800,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=composites_graph
       requirements:
         - composite
         - marker

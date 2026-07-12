@@ -13,18 +13,23 @@ This example adds a small orientation widget to a 3D panel.
 
 ## Preview
 
-<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_orientation_gizmo.poster.webp" alt="Orientation Gizmo" loading="lazy">
-  <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../../../../assets/gallery/v0.4/features/features_orientation_gizmo.poster.webp" aria-label="Orientation Gizmo preview">
-    <source data-src="../../../../assets/gallery/v0.4/features/features_orientation_gizmo.mp4" type="video/mp4">
-  </video>
-</div>
+=== "Screenshot"
 
-<aside class="dvz-webgpu-unavailable" role="note">
-<strong>Live WebGPU preview not available yet</strong>
-<span>Browser support for this example is planned. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
-</aside>
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_orientation_gizmo.poster.webp" alt="Orientation Gizmo" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/features/features_orientation_gizmo.poster.webp" aria-label="Orientation Gizmo preview">
+        <source data-src="../../../../assets/gallery/v0.4/features/features_orientation_gizmo.mp4" type="video/mp4">
+      </video>
+    </div>
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=features_orientation_gizmo" title="Orientation Gizmo WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=features_orientation_gizmo">Open the live WebGPU example</a>.
 
 ## What To Look For
 
@@ -51,7 +56,8 @@ The main scene is a lit cube controlled by an arcball, and the orientation gizmo
     - Lane: `features`
     - Source: [`examples/c/features/orientation_gizmo.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/orientation_gizmo.c)
     - Python source: [`examples/python/gallery/features/orientation_gizmo.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/orientation_gizmo.py)
-    - Browser support: Planned
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=features_orientation_gizmo"><code>examples/webgpu/live.html?id=features_orientation_gizmo</code></a>
     - Browser capability tags: `orientation-gizmo`, `overlay`, `mesh`, `controller`
     - Validation: `smoke+interaction+screenshot`
 

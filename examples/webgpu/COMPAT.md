@@ -15,7 +15,7 @@ versions. Runner command expansion should remain evidence-driven and scoped to t
 ## RC Promotion Target
 
 Current fixture proof counts remain the dashboard truth for the low-level runner. The live gallery
-now has 76 promoted routes backed by canonical C examples or portable C scenarios:
+now has 78 promoted routes backed by canonical C examples or portable C scenarios:
 `features_basic_scene`, `features_timer_animation`, `features_builtin_shapes_2d`,
 `features_builtin_shapes_3d`, `features_isolines`,
 `features_animation_tracks`, `features_compute_buffer_animation`, `features_obj_loading`,
@@ -38,19 +38,19 @@ now has 76 promoted routes backed by canonical C examples or portable C scenario
 The promoted set also includes `features_coordinate_system`, `features_visual_transform`,
 `features_panel_view2d`, `features_bezier_curve_path`, `features_path_join`,
 `features_camera_manual`, `features_controller_arcball`, `features_mesh_texture`,
-`features_reference_grid`, and `features_bounds_overlay`.
+`features_reference_grid`, `features_bounds_overlay`, `composites_graph`, and
+`features_orientation_gizmo`.
 
 This list uses public route IDs. When a route ID differs from the compiled C/WASM scenario ID,
 `examples/c/MANIFEST.yaml` records the mapping in `webgpu.scenario_id`.
 
 Remaining RC promotions are:
 
-1. repair the picking smoke's stale pending-query assertion and add per-route browser-smoke
-   filtering;
-2. obtain direct browser evidence for the ten routes promoted on 2026-07-11;
-3. continue with graph/orientation-gizmo/label-probe composition, then scatter/datetime/marker
+1. obtain manual website confirmation for `composites_graph` and
+   `features_orientation_gizmo`;
+2. continue with label-probe composition, then scatter/datetime/marker
    parity, generic volume before brain volume, rendering techniques, and finally splat/point-cloud;
-4. keep native-only and deferred diagnostics explicit, and classify lab-only manifest entries only
+3. keep native-only and deferred diagnostics explicit, and classify lab-only manifest entries only
    if they become public gallery routes.
 
 Do not move broader live-example coverage into the supported/current section until
@@ -70,6 +70,17 @@ smoke still tests obsolete queue timing: `session.render()` drains and resolves 
 before the smoke reads `pending_query_count`. The next validation change should assert resolved
 hover/click output, preferably a deterministic before/after pixel difference, rather than require a
 query to remain pending after rendering.
+
+Recorded local composition proof on 2026-07-12: the picking smoke now asserts resolved hover and
+click canvas output and supports `--route=<id>` filtering. Filtered browser smokes passed for the
+ten 2026-07-11 routes, `composites_graph`, and `features_orientation_gizmo`; the WASM packet smoke
+passed with 79 registered scenarios and targeted graph/gizmo stream-shape assertions. The
+representative full browser suite passed through those ten earlier routes before stopping at the
+pre-existing choropleth informational `stderr` message, which the harness reports as a console
+error.
+
+Manual website confirmation on 2026-07-12 passed for `composites_graph` pan/zoom and
+`features_orientation_gizmo` arcball/gizmo rendering.
 
 Recorded local browser shader-payload proof on 2026-06-18: `node --check
 tools/webgpu_browser_smoke.mjs`, `node --check tools/wasm_scene_smoke.mjs`, and `just

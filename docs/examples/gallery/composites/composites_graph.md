@@ -13,12 +13,17 @@ This example builds a small graph composite.
 
 ## Preview
 
-![Graph Composite](../../../assets/gallery/v0.4/composites/composites_graph.webp)
+=== "Screenshot"
 
-<aside class="dvz-webgpu-unavailable" role="note">
-<strong>Live WebGPU preview not available yet</strong>
-<span>Browser support for this example is planned. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
-</aside>
+    ![Graph Composite](../../../assets/gallery/v0.4/composites/composites_graph.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=composites_graph" title="Graph Composite WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=composites_graph">Open the live WebGPU example</a>.
 
 ## What To Look For
 
@@ -45,7 +50,8 @@ Node arrays provide positions, semantic IDs, community colors, and sizes; edge a
     - Lane: `composites`
     - Source: [`examples/c/composites/graph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/graph.c)
     - Python source: [`examples/python/gallery/composites/graph.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/composites/graph.py)
-    - Browser support: Planned
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=composites_graph"><code>examples/webgpu/live.html?id=composites_graph</code></a>
     - Browser capability tags: `composite`, `marker`, `bezier-edges`, `path`, `panzoom`
     - Validation: `smoke+screenshot`
 

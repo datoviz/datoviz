@@ -2440,6 +2440,8 @@ try {
     "features_mesh_texture",
     "features_reference_grid",
     "features_bounds_overlay",
+    "composites_graph",
+    "features_orientation_gizmo",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -3451,6 +3453,27 @@ try {
         expectPipeline(stream, `${label} point`, (pipeline) => pipeline.builtin_pipeline === "scene.point");
         expectPipeline(stream, `${label} sphere`, (pipeline) => pipeline.builtin_pipeline === "scene.sphere");
         requireOk(commandsOf(stream, "SetViewport").length >= 2, `${label}: expected 2D and 3D panels`);
+      },
+    ],
+    [
+      "composites_graph",
+      "graph composite",
+      (stream, label) => {
+        expectPipeline(stream, `${label} nodes`, (pipeline) => pipeline.builtin_pipeline === "scene.marker");
+        expectPipeline(stream, `${label} edges`, (pipeline) => pipeline.builtin_pipeline === "scene.path");
+        requireOk(
+          commandsOf(stream, "Draw").length + commandsOf(stream, "DrawIndexed").length >= 2,
+          `${label}: expected node and edge draws`,
+        );
+      },
+    ],
+    [
+      "features_orientation_gizmo",
+      "orientation gizmo",
+      (stream, label) => {
+        expectControllerMeshScenarioStreamShape(stream, label);
+        expectPipeline(stream, `${label} axes`, (pipeline) => pipeline.builtin_pipeline === "scene.segment");
+        requireOk(commandsOf(stream, "SetViewport").length >= 2, `${label}: expected scene and gizmo viewports`);
       },
     ],
     [

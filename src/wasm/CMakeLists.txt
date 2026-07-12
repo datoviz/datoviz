@@ -20,6 +20,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/example_random.c
     ${PROJECT_SOURCE_DIR}/examples/c/example_style.c
     ${PROJECT_SOURCE_DIR}/examples/c/composites/polygon.c
+    ${PROJECT_SOURCE_DIR}/examples/c/composites/graph.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/annotation_readout.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/animation_tracks.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/alpha_blending.c
@@ -48,6 +49,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/material_mesh.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/mesh_texture.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/obj_loading.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/orientation_gizmo.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/overlay_card.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/panel_background.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/panel_grid.c

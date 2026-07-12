@@ -1,5 +1,16 @@
 export const LIVE_EXAMPLES = [
   {
+    id: "composites_graph",
+    label: "Graph Composite",
+    scenarioId: "composites_graph",
+  },
+  {
+    id: "features_orientation_gizmo",
+    label: "Orientation Gizmo",
+    scenarioId: "features_orientation_gizmo",
+    animate: true,
+  },
+  {
     id: "features_basic_scene",
     label: "Basic Scene",
     scenarioId: "features_basic_scene",

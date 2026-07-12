@@ -38,6 +38,9 @@ const CAPTURE_CANVAS_HEIGHT = 720;
 const CAPTURE_PAGE_CHROME_HEIGHT = 96;
 const CAPTURE_DEVICE_SCALE_FACTOR = 1;
 
+const routeFilterArgument = process.argv.find((argument) => argument.startsWith('--route='));
+const routeFilter = routeFilterArgument?.slice('--route='.length) ?? null;
+
 function useColor() {
   if (process.env.FORCE_COLOR !== undefined && process.env.FORCE_COLOR !== '0') return true;
   if (process.env.NO_COLOR !== undefined) return false;
@@ -752,6 +755,7 @@ async function smokeQueryWasmPage(page, baseUrl, scenario, screenshotPath) {
 
       stage = "prime-pointer";
       const canvas = document.querySelector("#viewport");
+      const beforeHover = canvas.toDataURL("image/png");
       const rect = canvas.getBoundingClientRect();
       const pointerX = rect.left + rect.width * ${Number(scenario.pointerX ?? 0.5)};
       const pointerY = rect.top + rect.height * ${Number(scenario.pointerY ?? 0.5)};
@@ -768,30 +772,22 @@ async function smokeQueryWasmPage(page, baseUrl, scenario, screenshotPath) {
 
       stage = "queue-query";
       await session.render();
-      const pendingBefore = Module._dvz_wasm_api_query_pending_count(scene.scene);
-      if (pendingBefore === 0) {
-        return false;
-      }
-
-      stage = "drain-query";
       const frameBefore = scene.runtime.packetFrameIndex;
       const processed = await scene.flushScenarioQueries();
       const pendingAfter = Module._dvz_wasm_api_query_pending_count(scene.scene);
       const activeAfter = Module._dvz_wasm_api_query_active(scene.scene);
-      const frameAfter = scene.runtime.packetFrameIndex;
-      if (processed <= 0) {
-        return "query drain processed no requests";
-      }
       if (pendingAfter !== 0 || activeAfter !== 0) {
         return "query drain left pending=" + pendingAfter + " active=" + activeAfter;
-      }
-      if (frameAfter <= frameBefore) {
-        return "query packet execution did not advance the runtime frame";
       }
 
       stage = "render-resolved-result";
       await session.render();
-      let clickPending = 0;
+      const frameAfter = scene.runtime.packetFrameIndex;
+      const afterHover = canvas.toDataURL("image/png");
+      if (afterHover === beforeHover) {
+        return "resolved hover query did not change rendered output";
+      }
+      let clickChanged = false;
       if (${scenario.clickAfterResolve === true ? 'true' : 'false'}) {
         stage = "click-resolved-result";
         canvas.dispatchEvent(new MouseEvent("click", {
@@ -805,14 +801,14 @@ async function smokeQueryWasmPage(page, baseUrl, scenario, screenshotPath) {
           altKey: false,
           metaKey: false,
         }));
-        clickPending = Module._dvz_wasm_api_query_pending_count(scene.scene);
-        if (clickPending === 0) {
-          return "browser click did not queue a scenario query";
+        await session.render();
+        await session.render();
+        clickChanged = canvas.toDataURL("image/png") !== afterHover;
+        if (!clickChanged) {
+          return "resolved click query did not change rendered output";
         }
-        await session.render();
-        await session.render();
       }
-      return { processed, pendingBefore, frameBefore, frameAfter, clickPending };
+      return { processed, frameBefore, frameAfter, hoverChanged: true, clickChanged };
     } catch (error) {
       return stage + ": " + (error instanceof Error ? error.message : String(error));
     }
@@ -877,6 +873,44 @@ async function main() {
   let page = null;
   try {
     page = await createPage(chrome.debugPort);
+    if (routeFilter !== null) {
+      const filteredRoutes = new Map([
+        ['features_picking', { label: 'Picking', kind: 'query', clickAfterResolve: true }],
+        ['features_coordinate_system', { label: 'Coordinate System' }],
+        ['features_visual_transform', { label: 'Visual Transform' }],
+        ['features_panel_view2d', { label: 'Panel View 2D', kind: 'animated' }],
+        ['features_bezier_curve_path', { label: 'Bezier Curve Path' }],
+        ['features_path_join', { label: 'Path Join' }],
+        ['features_camera_manual', { label: 'Manual Camera' }],
+        ['features_controller_arcball', { label: 'Arcball Controller' }],
+        ['features_mesh_texture', { label: 'Textured Mesh' }],
+        ['features_reference_grid', { label: 'Reference Grid' }],
+        ['features_bounds_overlay', { label: 'Bounds Overlay' }],
+        ['composites_graph', { label: 'Graph Composite' }],
+        ['features_orientation_gizmo', { label: 'Orientation Gizmo', kind: 'animated' }],
+      ]);
+      const route = filteredRoutes.get(routeFilter);
+      requireOk(route !== undefined, `unknown filtered WebGPU route: ${routeFilter}`);
+      const path = `/examples/webgpu/live.html?id=${routeFilter}`;
+      const screenshot = join(artifactsDir, `webgpu_live_${routeFilter}.png`);
+      let result = null;
+      if (route.kind === 'query') {
+        result = await smokeQueryWasmPage(
+          page,
+          baseUrl,
+          { path, label: route.label, scenarioId: routeFilter, clickAfterResolve: route.clickAfterResolve },
+          screenshot,
+        );
+      } else if (route.kind === 'animated') {
+        result = await smokeAnimatedWasmPage(
+          page, baseUrl, path, `Rendered ${route.label}`, screenshot, routeFilter,
+        );
+      } else {
+        result = await smokeWasmPage(page, baseUrl, path, `Rendered ${route.label}`, screenshot);
+      }
+      console.log(passLine(`filtered live ${routeFilter}: ${result.initialStatus}`));
+      return;
+    }
     let wasmBasic = null;
     let wasmColorbar = null;
     let wasmScalebar = null;

@@ -698,8 +698,8 @@
           "site_asset": "/assets/gallery/v0.4/features/features_orientation_gizmo.webp"
         }
       },
-      "webgpu_status": "webgpu-planned",
-      "webgpu_status_label": "Planned",
+      "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "orientation-gizmo",
         "overlay",
@@ -707,7 +707,8 @@
         "controller"
       ],
       "webgpu": {
-        "status": "webgpu-planned",
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=features_orientation_gizmo",
         "requirements": [
           "orientation-gizmo",
           "overlay",
@@ -715,6 +716,8 @@
           "controller"
         ]
       },
+      "webgpu_route": "examples/webgpu/live.html?id=features_orientation_gizmo",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_orientation_gizmo",
       "primary_feature": "orientation-gizmo",
       "python_source": "examples/python/gallery/features/orientation_gizmo.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/orientation_gizmo.py",
@@ -4807,8 +4810,8 @@
           "site_asset": "/assets/gallery/v0.4/composites/composites_graph.webp"
         }
       },
-      "webgpu_status": "webgpu-planned",
-      "webgpu_status_label": "Planned",
+      "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "composite",
         "marker",
@@ -4817,7 +4820,8 @@
         "panzoom"
       ],
       "webgpu": {
-        "status": "webgpu-planned",
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=composites_graph",
         "requirements": [
           "composite",
           "marker",
@@ -4826,6 +4830,8 @@
           "panzoom"
         ]
       },
+      "webgpu_route": "examples/webgpu/live.html?id=composites_graph",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=composites_graph",
       "primary_composite": "graph",
       "python_source": "examples/python/gallery/composites/graph.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/composites/graph.py"
