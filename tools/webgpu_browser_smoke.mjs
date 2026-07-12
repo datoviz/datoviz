@@ -825,6 +825,29 @@ async function smokeQueryWasmPage(page, baseUrl, scenario, screenshotPath) {
   })()`, 30000);
   requireOk(typeof queryDelivery === 'object', `${path}: query/readback delivery failed: ${queryDelivery}`);
   await page.screenshotCanvas(screenshotPath.replace('.png', '-resolved.png'));
+  if (scenario.verifyDragClickSuppression === true) {
+    const installed = await page.evaluate(`(() => {
+      const scene = window.__datovizWasmScene;
+      if (scene === undefined || scene === null) return false;
+      const original = scene.scenarioPointer.bind(scene);
+      window.__datovizScenarioPointerTypes = [];
+      scene.scenarioPointer = (type, event) => {
+        window.__datovizScenarioPointerTypes.push(type);
+        return original(type, event);
+      };
+      return true;
+    })()`);
+    requireOk(installed, `${path}: could not install pointer gesture probe`);
+    await page.dragCanvas(48, 24);
+    const pointerTypes = await page.waitFor(`(() => {
+      const types = window.__datovizScenarioPointerTypes ?? [];
+      return types.includes(0) && types.includes(2) ? types : false;
+    })()`, 5000);
+    requireOk(
+      !pointerTypes.includes(3),
+      `${path}: arcball drag emitted a scenario click (${pointerTypes.join(',')})`,
+    );
+  }
   const destroyed = await page.evaluate(`(() => {
     const scene = window.__datovizWasmScene;
     if (scene === undefined || scene === null || scene.scene === 0) return false;
@@ -893,6 +916,7 @@ async function main() {
             kind: 'query',
             pointerX: 0.55,
             clickAfterResolve: true,
+            verifyDragClickSuppression: true,
           },
         ],
         ['features_image_probe', { label: 'Image Probe', kind: 'query' }],

@@ -15,6 +15,7 @@ const DVZ_POINTER_EVENT_RELEASE = 0;
 const DVZ_POINTER_EVENT_PRESS = 1;
 const DVZ_POINTER_EVENT_MOVE = 2;
 const DVZ_POINTER_EVENT_CLICK = 3;
+const DVZ_POINTER_CLICK_MAX_DISTANCE_PX = 4;
 const DVZ_POINTER_BUTTON_NONE = 0;
 const DVZ_POINTER_BUTTON_LEFT = 1;
 const DVZ_POINTER_BUTTON_MIDDLE = 2;
@@ -661,6 +662,8 @@ export class DatovizWasmScene {
 
   attachControllerInput(onChange) {
     this._requireAlive();
+    let activePointer = null;
+    let suppressedClick = null;
     const route = (event, type) => {
       event.preventDefault();
       this.pointer(type, event);
@@ -670,22 +673,75 @@ export class DatovizWasmScene {
       onChange();
     };
     const onPointerDown = (event) => {
+      activePointer = {
+        id: event.pointerId,
+        x: event.clientX,
+        y: event.clientY,
+        maxDistanceSquared: 0,
+      };
+      suppressedClick = null;
       this.canvas.setPointerCapture(event.pointerId);
       route(event, DVZ_POINTER_EVENT_PRESS);
     };
-    const onPointerMove = (event) => route(event, DVZ_POINTER_EVENT_MOVE);
+    const updatePointerDistance = (event) => {
+      if (activePointer === null || event.pointerId !== activePointer.id) {
+        return;
+      }
+      const dx = event.clientX - activePointer.x;
+      const dy = event.clientY - activePointer.y;
+      activePointer.maxDistanceSquared = Math.max(
+        activePointer.maxDistanceSquared,
+        dx * dx + dy * dy,
+      );
+    };
+    const onPointerMove = (event) => {
+      updatePointerDistance(event);
+      route(event, DVZ_POINTER_EVENT_MOVE);
+    };
     const onPointerUp = (event) => {
+      updatePointerDistance(event);
       route(event, DVZ_POINTER_EVENT_RELEASE);
+      if (activePointer !== null && event.pointerId === activePointer.id) {
+        const thresholdSquared = DVZ_POINTER_CLICK_MAX_DISTANCE_PX ** 2;
+        if (activePointer.maxDistanceSquared > thresholdSquared) {
+          suppressedClick = {
+            button: event.button,
+            x: event.clientX,
+            y: event.clientY,
+            expires: performance.now() + 1000,
+          };
+        }
+        activePointer = null;
+      }
       if (this.canvas.hasPointerCapture(event.pointerId)) {
         this.canvas.releasePointerCapture(event.pointerId);
       }
     };
-    const onPointerCancel = (event) => route(event, DVZ_POINTER_EVENT_RELEASE);
+    const onPointerCancel = (event) => {
+      route(event, DVZ_POINTER_EVENT_RELEASE);
+      if (activePointer !== null && event.pointerId === activePointer.id) {
+        activePointer = null;
+      }
+    };
     const onClick = (event) => {
       if (this.scenario === null) {
         return;
       }
       event.preventDefault();
+      if (suppressedClick !== null) {
+        const click = suppressedClick;
+        suppressedClick = null;
+        const dx = event.clientX - click.x;
+        const dy = event.clientY - click.y;
+        const thresholdSquared = DVZ_POINTER_CLICK_MAX_DISTANCE_PX ** 2;
+        if (
+          performance.now() <= click.expires &&
+          event.button === click.button &&
+          dx * dx + dy * dy <= thresholdSquared
+        ) {
+          return;
+        }
+      }
       this.scenarioPointer(DVZ_POINTER_EVENT_CLICK, event);
       onChange();
     };
