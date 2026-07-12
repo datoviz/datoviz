@@ -58,6 +58,18 @@ available. Only `AUTO` may fall back to the other source.
 `msdf-atlas-gen` remains source/vendored-only. It is too niche to rely on as a package-manager
 dependency across supported distributions.
 
+## Shader Tools
+
+`glslc` and shaderc serve different build paths. When `glslc` is available, the native build
+precompiles built-in GLSL shaders to embedded SPIR-V. Without `glslc`, CMake embeds GLSL sources and
+the runtime needs shaderc support; `DVZ_ENABLE_SHADERC=AUTO` enables that path when shaderc headers
+and a loadable library are found, while `ON` makes their absence a configuration error.
+
+The active default canvas build invokes `glslangValidator` for its canvas shaders, so normal full
+source builds require it. Additional shader validation and WebGPU workflows also invoke it.
+Release-wheel builds require shaderc so installed wheels do not depend on an accidental
+developer-machine fallback when precompiled scene shaders are unavailable.
+
 ## Package Smoke Presets
 
 | Preset | Purpose |
@@ -121,3 +133,10 @@ FetchContent builds Datoviz from source and still needs the native toolchain and
 During the pre-RC period, pin `v0.4-dev` or a known commit. After RC or final publication, pin the
 exact release tag you tested. For installed-user workflows after packages are published, prefer
 `find_package(datoviz)` from a wheel or package-manager install.
+
+## Package-Manager Status
+
+The repository contains a draft vcpkg overlay and a draft conda-forge split recipe. They are release
+engineering inputs, not published install channels. The vcpkg overlay still needs the stable source
+bundle URL and checksum; the conda recipe has local source-bundle build proof but no public feedstock
+is claimed. Native pip wheels use their own validated vendored/runtime-bundling policy.

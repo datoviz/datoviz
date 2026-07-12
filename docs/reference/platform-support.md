@@ -9,8 +9,8 @@ classification.
 | Platform | Status | Notes |
 | --- | --- | --- |
 | Linux | Supported target | Requires a working Vulkan loader/ICD for native rendering. GLFW is the normal native window backend when available. |
-| macOS | Supported target through Vulkan compatibility stack | Requires the packaged or system Vulkan/MoltenVK runtime path used by the build/install. Native windowing and offscreen paths should be validated locally. |
-| Windows | Supported target in packaging/build lanes | Requires Vulkan runtime/driver support. Build recipes include MSVC and MinGW-oriented paths. |
+| macOS | Supported target through Vulkan compatibility stack | Release wheels target macOS 15 on arm64 and Intel. Requires the packaged or system Vulkan/MoltenVK runtime path used by the build/install. |
+| Windows | Supported native wheel and source-build target | Validated wheel lanes cover AMD64 and ARM64. Native source development uses MSVC, Vulkan SDK, and vcpkg; WSL is a separate Linux environment. |
 | Headless/offscreen | Supported feature | Still requires a graphics-capable Vulkan runtime unless the specific test/example is CPU-only. |
 
 ## Browser/WebGPU
@@ -50,6 +50,12 @@ Core source builds need a C/C++ toolchain, CMake/Ninja-compatible build tools, a
 module dependencies. Common optional dependencies include Vulkan SDK/runtime, GLFW, cglm, mimalloc,
 Kvazaar, zlib, FreeType, msdf-atlas-gen, Qt6, and shaderc.
 
+The default source build prefers vendored dependency submodules. Distribution builders may use
+`DVZ_VENDORED_DEPS=OFF` to prefer supported system packages with `AUTO` fallback. `glslc` is the
+recommended build-time compiler for embedded SPIR-V; shaderc is the runtime-GLSL fallback and is
+required by release-wheel configuration. The active default canvas build invokes
+`glslangValidator`, so full source builds require that tool as well.
+
 Use [Build options](build-options.md) for the CMake switches that enable or disable these paths.
 
 ## Known Limitations
@@ -59,6 +65,8 @@ Use [Build options](build-options.md) for the CMake switches that enable or disa
 - GUI/native input examples do not automatically apply to browser routes.
 - Optional providers must fail with clear diagnostics without breaking core imports/builds.
 - Generated runtime binaries and SDK payloads are not part of the public source documentation.
+- Passing hosted wheel CI does not mean an RC or final package has been published; release notes are
+  authoritative for installable versions and artifact URLs.
 
 ## See Also
 

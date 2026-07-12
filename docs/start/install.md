@@ -2,15 +2,15 @@
 
 These instructions target Datoviz v0.4.
 
-After v0.4 packages are published on PyPI, the normal Python install command is:
+After v0.4 packages are published on PyPI, the normal Python install command will be:
 
 ```sh
 pip install datoviz
 ```
 
-During the release-candidate phase, use the exact command from the release notes. If an RC is
-published as a pre-release, that command may temporarily need `--pre` or an explicit version, for
-example:
+No public RC is assumed by this page. Until release notes name a published artifact, build from
+source. Once an RC exists, its release notes are authoritative and may specify `--pre`, an exact
+version, or an artifact URL; for example, but only after publication:
 
 ```sh
 pip install --pre datoviz
@@ -34,8 +34,8 @@ pip install --pre datoviz
 Use this section after v0.4 packages or release-candidate artifacts are available for your platform.
 Until then, use [Build from source](#build-from-source).
 
-Create a virtual environment first. This keeps Datoviz and its Python dependencies separate from your
-system Python.
+Create a virtual environment first, then use the exact install command from the published release
+notes. The abbreviated platform setup is:
 
 === "macOS / Linux"
 
@@ -43,8 +43,8 @@ system Python.
     python -m venv .venv
     source .venv/bin/activate
     python -m pip install --upgrade pip
-    # Example only: use the exact command from the release notes.
-    pip install --pre datoviz
+    # After publication only; replace with the release-note command.
+    python -m pip install --pre datoviz
     ```
 
 === "Windows PowerShell"
@@ -53,8 +53,8 @@ system Python.
     py -m venv .venv
     .\.venv\Scripts\Activate.ps1
     python -m pip install --upgrade pip
-    # Example only: use the exact command from the release notes.
-    pip install --pre datoviz
+    # After publication only; replace with the release-note command.
+    python -m pip install --pre datoviz
     ```
 
 After the final v0.4 package is published, replace the last command with:
@@ -69,7 +69,8 @@ Check that Python can import Datoviz:
 python -c "import datoviz as dvz; print('datoviz import ok')"
 ```
 
-Then continue with the [Quickstart](quickstart.md).
+Then continue with the [Quickstart](quickstart.md). Before choosing optional providers or deployment
+targets, review [platform support and known limitations](../reference/platform-support.md).
 
 
 ## C And C++
@@ -104,19 +105,14 @@ You need:
 | `just` | runs the project build commands used in this documentation |
 | Python 3.10+ and NumPy | runs Python examples and documentation tools |
 | Vulkan-capable GPU | renders native desktop examples |
-| Shader tools | `glslc` and `glslangValidator` compile shader assets |
+| Shader path | The default canvas build requires `glslangValidator`. `glslc` is recommended for precompiled built-in scene SPIR-V; otherwise a usable shaderc runtime is required. |
 
-Clone the repository with submodules:
+Clone the development branch and initialize the submodules at the revisions recorded by that branch:
 
 ```sh
-git clone https://github.com/datoviz/datoviz.git --recursive
+git clone --branch v0.4-dev https://github.com/datoviz/datoviz.git
 cd datoviz
-```
-
-For the v0.4 development branch:
-
-```sh
-git checkout v0.4-dev
+git submodule update --init --recursive
 ```
 
 Build Datoviz:
@@ -140,20 +136,24 @@ pip install -e .
 
 ### macOS Notes
 
-Install Apple's command-line tools and the Homebrew packages used by the build:
+Install Apple's command-line tools and the build utilities used by the normal vendored build:
 
 ```sh
 xcode-select --install
-brew install cmake just ninja glslang
+brew install cmake glslang just ninja
 ```
 
-Datoviz uses Vulkan through MoltenVK on macOS. The source build prepares the runtime path used by
-the examples and tests.
+The `glslang` package supplies `glslangValidator` for the default canvas build. Install a Vulkan SDK
+providing `glslc`, MoltenVK, headers, and the loader when those are not already provided by the
+selected package/build environment. Current release wheels target macOS 15; source builds on other
+versions are development configurations, not wheel-support claims.
 
 
 ### Linux Notes
 
-Ubuntu 24.04 is the easiest Linux path.
+Ubuntu 24.04 is the reference Linux source-build environment. The normal build prefers repository
+submodules for cglm, mimalloc, Kvazaar, GLFW, and msdf-atlas-gen where available; the system packages
+below provide the toolchain and common platform libraries:
 
 ```sh
 sudo apt install build-essential cmake curl gcc git ccache ninja-build \
@@ -166,12 +166,26 @@ Install `just` if it is not already available:
 curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
 ```
 
-Linux desktop examples need a Vulkan-capable GPU and working graphics drivers.
+Install a Vulkan SDK or distribution packages that provide the loader, headers, and `glslc` for
+precompiled shaders. `glslang-tools` supplies the `glslangValidator` required by the default canvas
+build. Linux desktop examples need a Vulkan-capable GPU and working graphics drivers.
+
+Distribution/package maintainers may instead set `DVZ_VENDORED_DEPS=OFF`. In that system-auto lane,
+CMake prefers installed GLFW, cglm, mimalloc, and Kvazaar packages while `AUTO` modes may fall back
+to vendored sources. See [Build options](../reference/build-options.md).
 
 
 ### Windows Notes
 
-For the fewest surprises during v0.4 testing, use WSL2 with Ubuntu 24.04:
+For Python users, a native Windows wheel is the primary release path once the release notes publish
+one. Current wheel validation covers Windows AMD64 and ARM64 and includes the DLL, MSVC import
+library, CMake package, and required runtime DLLs. Do not use an unpublished `pip` command merely
+because wheel validation has passed.
+
+For a native source build, use Visual Studio 2022, the Vulkan SDK, CMake/Ninja, and vcpkg. This is a
+developer/C++ integration path, not a prerequisite for consuming a published Python wheel.
+
+WSL2 with Ubuntu 24.04 is a separate Linux development option:
 
 ```powershell
 wsl --install
@@ -181,11 +195,11 @@ Install Ubuntu 24.04 from the Microsoft Store, open the Ubuntu shell, then follo
 build instructions. On current Windows 11 systems with Intel, AMD, or NVIDIA drivers, WSLg usually
 provides Vulkan GPU passthrough for desktop examples.
 
-Native Windows with Visual Studio is a more advanced path:
+Native Windows source-build outline:
 
 1. Install Visual Studio 2022 with the "Desktop development with C++" workload.
-2. Install the LunarG Vulkan SDK and make sure `glslc` and `glslangValidator` are on `PATH`.
-3. Install CMake and Ninja.
+2. Install the LunarG Vulkan SDK and ensure `glslc` and `glslangValidator` are on `PATH`.
+3. Install CMake, Ninja, and vcpkg.
 4. Open the Datoviz folder in Visual Studio.
 5. Select the `msvc` CMake preset and build.
 
@@ -229,8 +243,10 @@ You should see a window with colored points that you can pan and zoom. Continue 
 | `pip install --pre datoviz` | example RC command only; use the exact command from the release notes |
 | Source build | available for development, C/C++ integration, and package validation |
 | C/C++ local integration | available from a source build |
-| vcpkg | planned package path after a stable release tag |
-| conda-forge | planned package path after release tag and platform validation |
+| Native Windows wheels | validated on AMD64/ARM64; install only from an artifact named by published release notes |
+| vcpkg | draft overlay exists; Windows overlay validation, a stable source bundle, and its final checksum remain publication gates |
+| conda-forge | draft split `libdatoviz`/`datoviz` recipe has local source-bundle proof; no public feedstock/package is claimed |
+| Release source bundle | RC preparation item; use only after a release publishes the bundle and checksum |
 
 Before v0.4 packages are published, the source build is the v0.4 path. If a package command changes
 during the RC phase, the release notes should be treated as the source of truth.

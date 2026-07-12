@@ -47,12 +47,22 @@ just webgpu-runner-smoke
 ./build/testing/dvztest scene/scene-graph/compute_point_position_buffer_emits_drp2
 ```
 
-Native GPU execution proof, when Vulkan is available:
+Native Vulkan compute-to-render proof was recorded on 2026-06-17 with:
 
 ```bash
 ./build/testing/dvztest scene/frame-plan-emit/runtime_compute_two_frames_glsl_executes
+./build/testing/dvztest vklite/compute_1
+./build/testing/dvztest vklite/technique_compute_graphics
+./build/examples/c/showcases/gpu_particle_smoke --png
 ```
+
+The corresponding test functions are
+`test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes`, `test_vklite_compute_1`, and
+`test_technique_compute_graphics`. The showcase artifact was retained as
+`build/release-evidence/gpu_particle_smoke.png`.
 
 If the shell cannot create a Vulkan instance, the native GPU execution case may skip with a Vulkan
 initialization diagnostic. That does not invalidate the portable DRP2/WebGPU fixture proof, but it
-does mean native GPU evidence still needs to be recorded in an environment with Vulkan available.
+does mean that particular run is not fresh native GPU evidence. The recorded proof does not change
+the feature status: this remains a narrow experimental scene-compute/DRP2 interoperability slice,
+not a general compute framework.

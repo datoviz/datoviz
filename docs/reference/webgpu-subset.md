@@ -24,17 +24,9 @@ Live examples use this route shape:
 examples/webgpu/live.html?id=<example-id>
 ```
 
-For the generated public gallery:
-
-| Browser status | Count | Meaning |
-| --- | ---: | --- |
-| Live in browser | 76 | A public browser route exists. |
-| Planned | 5 | Browser support is intended, but the route is not promoted yet. |
-| Deferred | 10 | Browser support is intentionally postponed. |
-| Native only | 14 | The example needs desktop-only behavior. Use screenshots, videos, or native instructions instead. |
-
-See the generated [WebGPU matrix](../examples/webgpu-matrix.md) for the current example-by-example
-list.
+The example manifest changes as routes are promoted. Use the generated
+[WebGPU matrix](../examples/webgpu-matrix.md) for the current example-by-example list and status;
+this authored page deliberately does not copy counts from that generated source.
 
 
 ## What Is Supported
