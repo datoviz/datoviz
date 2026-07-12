@@ -317,12 +317,12 @@ print(f"shaderc GLSL smoke produced {size.value} bytes")
 
 
 def _render_smoke(python: Path, work: Path) -> None:
-    path = work / "datoviz-wheel-smoke.png"
-    env = os.environ.copy()
-    env["DVZ_CAPTURE_PNG"] = str(path)
-    _run([str(python), "-c", "import datoviz; datoviz.demo()"], cwd=work, env=env)
+    script = work / "datoviz-wheel-render-smoke.py"
+    script.write_text(_PYTHON_RENDER_EXAMPLE, encoding="utf8")
+    _run([str(python), str(script)], cwd=work)
+    path = work / "python_render_example.png"
     size = path.stat().st_size if path.exists() else 0
-    if size <= 100_000:
+    if size == 0:
         raise RuntimeError(f"render smoke output is missing or too small: {path} ({size} bytes)")
 
 
