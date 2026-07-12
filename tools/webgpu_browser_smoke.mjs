@@ -886,6 +886,7 @@ async function main() {
     if (routeFilter !== null) {
       const filteredRoutes = new Map([
         ['features_picking', { label: 'Picking', kind: 'query', clickAfterResolve: true }],
+        ['features_image_probe', { label: 'Image Probe', kind: 'query' }],
         ['features_coordinate_system', { label: 'Coordinate System' }],
         ['features_visual_transform', { label: 'Visual Transform' }],
         ['features_panel_view2d', { label: 'Panel View 2D', kind: 'animated' }],

@@ -16,8 +16,9 @@
  * What to look for: a synthetic microscopy-like float field is uploaded as an R32 sampled image and
  * mapped through a scalar color scale. The image visual enables pixel-query capability, and segment
  * plus point visuals draw a crosshair and dot at the probe location. Move the probe in the live
- * preview and compare the marker with bright and dim image regions; this is useful for inspecting
- * raw scalar values behind a heat map or image without changing the displayed field.
+ * preview and compare the in-scene value readout with bright and dim image regions; this is useful
+ * for inspecting raw scalar values behind a heat map or image without changing the displayed
+ * field on desktop and browser hosts.
  */
 
 
@@ -73,6 +74,7 @@ struct ImageProbeState
     DvzPanel* panel;
     DvzVisual* probe_segments;
     DvzVisual* probe_dot;
+    DvzOverlayCard* readout;
     float* values;
     bool cursor_valid;
     double cursor_x;
@@ -600,6 +602,46 @@ static void _queue_probe(ImageProbeState* state)
 
 
 
+/**
+ * Add the cross-platform scalar probe readout.
+ *
+ * @param panel panel owning the overlay card
+ * @return created card, or NULL on failure
+ */
+static DvzOverlayCard* _add_probe_readout(DvzPanel* panel)
+{
+    ANN(panel);
+    DvzOverlay* overlay = dvz_overlay(panel, 0);
+    if (overlay == NULL)
+        return NULL;
+
+    DvzOverlayCardDesc desc = dvz_overlay_card_desc();
+    desc.text = "Value: move the pointer over the image";
+    desc.placement = DVZ_OVERLAY_CARD_PLACEMENT_TOP_RIGHT;
+    desc.offset_px[0] = 24.0f;
+    desc.offset_px[1] = 24.0f;
+    DvzOverlayCard* card = dvz_overlay_card(overlay, &desc);
+    if (card == NULL)
+        return NULL;
+
+    DvzOverlayCardStyle style = dvz_overlay_card_style();
+    DvzColor background = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_PANEL_BG);
+    background.a = 238u;
+    style.background_color = background;
+    style.text_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
+    style.padding_px[0] = 16.0f;
+    style.padding_px[1] = 10.0f;
+    style.min_width_px = 350.0f;
+    style.height_px = 46.0f;
+    style.glyph_advance_px = 8.8f;
+    style.text_size_px = 18.0f;
+    style.text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    style.max_text_chars = 96u;
+    return dvz_overlay_card_set_style(card, &style) == DVZ_OK ? card : NULL;
+}
+
+
+
 /*************************************************************************************************/
 /*  Callbacks                                                                                    */
 /*************************************************************************************************/
@@ -657,12 +699,22 @@ static void _image_probe_post_frame(DvzScenarioContext* ctx, void* user_data)
         double value = 0.0;
         if (_query_probe_value(state, &query, &value))
         {
+            char readout[128] = {0};
+            dvz_snprintf(
+                readout, sizeof(readout), "Value: %.3f   Position: %.1f, %.1f px", value,
+                query.panel_position[0], query.panel_position[1]);
+            (void)dvz_overlay_card_set_text(state->readout, readout);
             dvz_fprintf(
                 stdout, "probe value=%0.3f panel=(%0.1f,%0.1f)\n", value,
                 query.panel_position[0], query.panel_position[1]);
         }
         else
         {
+            char readout[96] = {0};
+            dvz_snprintf(
+                readout, sizeof(readout), "Value: outside image   Position: %.1f, %.1f px",
+                query.panel_position[0], query.panel_position[1]);
+            (void)dvz_overlay_card_set_text(state->readout, readout);
             dvz_fprintf(
                 stdout, "probe miss panel=(%0.1f,%0.1f)\n", query.panel_position[0],
                 query.panel_position[1]);
@@ -762,6 +814,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->panel = panel;
     state->probe_segments = probe_segments;
     state->probe_dot = probe_dot;
+    state->readout = _add_probe_readout(panel);
+    if (state->readout == NULL)
+        return false;
     state->cursor_valid = true;
     state->cursor_x = initial_probe_px[0];
     state->cursor_y = initial_probe_px[1];
@@ -801,8 +856,8 @@ DvzScenarioSpec dvz_example_image_probe_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
-        .requirements = DVZ_SCENARIO_REQ_IMAGE_VISUAL | DVZ_SCENARIO_REQ_QUERY_READBACK |
-                        DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
+        .requirements = DVZ_SCENARIO_REQ_IMAGE_VISUAL | DVZ_SCENARIO_REQ_TEXT_VISUAL |
+                        DVZ_SCENARIO_REQ_QUERY_READBACK | DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
         .event = _scenario_event,
         .post_frame = _image_probe_post_frame,

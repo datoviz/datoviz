@@ -1933,6 +1933,8 @@ examples:
         - image
         - query-readback
         - frame-callbacks
+        - overlay
+        - text
     agent_copy_safe: true
 
   - id: features_picking

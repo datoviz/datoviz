@@ -90,6 +90,9 @@ The label probe now presents resolved category and position through a retained o
 by native and browser hosts; stdout remains secondary diagnostic evidence rather than the only
 user-visible result.
 
+The scalar image probe now follows the same policy: resolved values and positions update a retained
+overlay card on native and browser hosts, with stdout kept only as secondary diagnostic evidence.
+
 Recorded local browser shader-payload proof on 2026-06-18: `node --check
 tools/webgpu_browser_smoke.mjs`, `node --check tools/wasm_scene_smoke.mjs`, and `just
 wasm-scene-smoke` passed after resolving WGSL includes during scene shader emission and adding a

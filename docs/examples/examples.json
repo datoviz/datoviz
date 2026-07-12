@@ -3145,7 +3145,9 @@
       "webgpu_requirements": [
         "image",
         "query-readback",
-        "frame-callbacks"
+        "frame-callbacks",
+        "overlay",
+        "text"
       ],
       "webgpu": {
         "status": "webgpu-live",
@@ -3153,7 +3155,9 @@
         "requirements": [
           "image",
           "query-readback",
-          "frame-callbacks"
+          "frame-callbacks",
+          "overlay",
+          "text"
         ]
       },
       "webgpu_route": "examples/webgpu/live.html?id=features_image_probe",

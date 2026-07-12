@@ -27,7 +27,7 @@ This example shows probing a scalar image at a marked data position.
 
 ## What To Look For
 
-A synthetic microscopy-like float field is uploaded as an R32 sampled image and mapped through a scalar color scale. The image visual enables pixel-query capability, and segment plus point visuals draw a crosshair and dot at the probe location. Move the probe in the live preview and compare the marker with bright and dim image regions; this is useful for inspecting raw scalar values behind a heat map or image without changing the displayed field.
+A synthetic microscopy-like float field is uploaded as an R32 sampled image and mapped through a scalar color scale. The image visual enables pixel-query capability, and segment plus point visuals draw a crosshair and dot at the probe location. Move the probe in the live preview and compare the in-scene value readout with bright and dim image regions; this is useful for inspecting raw scalar values behind a heat map or image without changing the displayed field on desktop and browser hosts.
 
 ## Source
 
@@ -52,7 +52,7 @@ A synthetic microscopy-like float field is uploaded as an R32 sampled image and 
     - Python source: [`examples/python/gallery/features/image_probe.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/image_probe.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_image_probe"><code>examples/webgpu/live.html?id=features_image_probe</code></a>
-    - Browser capability tags: `image`, `query-readback`, `frame-callbacks`
+    - Browser capability tags: `image`, `query-readback`, `frame-callbacks`, `overlay`, `text`
     - Validation: `smoke+readback+screenshot`
 
     **Data**
