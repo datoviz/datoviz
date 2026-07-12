@@ -56,7 +56,17 @@ runner used for screenshot and smoke-test automation.
 
 A dark window containing 10,000 colored dots. Drag to pan, scroll to zoom.
 
-![10 000 colored dots in an interactive window with pan-and-zoom](../assets/gallery/v0.4/start/start_scatter.webp)
+=== "Screenshot"
+
+    ![10 000 colored dots in an interactive window with pan-and-zoom](../assets/gallery/v0.4/start/start_scatter.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../examples/webgpu/live.html?id=start_scatter" title="Scatter Plot WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../examples/webgpu/live.html?id=start_scatter">Open the live WebGPU example</a>.
 
 
 ## How it works
