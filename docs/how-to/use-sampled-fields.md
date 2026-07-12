@@ -21,24 +21,33 @@ Choose the field descriptor before choosing the visual:
 
 ## 2D Scalar Image
 
+The snippets below are function-body excerpts. They assume valid scene/panel objects, dimensions,
+CPU arrays, placement attributes, and scales where shown; their `return false` paths belong to an
+enclosing setup function. For complete lifecycle and error handling, start from the linked gallery
+sources.
+
 ```c
 DvzVisual* image = dvz_image(scene, 0);
 dvz_visual_set_data(image, "position", pos, 4);
 dvz_visual_set_data(image, "texcoords", uv, 4);
 
-DvzSampledField* field = dvz_sampled_field(
-    scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
-               .dim = DVZ_FIELD_DIM_2D,
-               .format = DVZ_FIELD_FORMAT_R32_FLOAT,
-               .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
-               .width = width,
-               .height = height,
-               .depth = 1});
-dvz_sampled_field_set_data(
-    field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-               .data = values,
-               .bytes_per_row = width * sizeof(float),
-               .rows_per_image = height});
+DvzSampledFieldDesc desc = dvz_sampled_field_desc();
+desc.dim = DVZ_FIELD_DIM_2D;
+desc.format = DVZ_FIELD_FORMAT_R32_FLOAT;
+desc.semantic = DVZ_FIELD_SEMANTIC_SCALAR;
+desc.width = width;
+desc.height = height;
+desc.depth = 1;
+DvzSampledField* field = dvz_sampled_field(scene, &desc);
+if (field == NULL)
+    return false;
+
+DvzFieldDataView data = dvz_field_data_view();
+data.data = values;
+data.bytes_per_row = width * sizeof(float);
+data.rows_per_image = height;
+if (dvz_sampled_field_set_data(field, &data) != 0)
+    return false;
 dvz_visual_set_field(image, "field", field);
 dvz_panel_add_visual(panel, image, NULL);
 ```
@@ -63,19 +72,21 @@ DvzVisual* labels = dvz_labels(scene, 0);
 dvz_visual_set_data(labels, "position", position, 1);
 dvz_visual_set_data(labels, "extent", extent, 1);
 
-DvzSampledField* field = dvz_sampled_field(
-    scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
-               .dim = DVZ_FIELD_DIM_2D,
-               .format = DVZ_FIELD_FORMAT_R32_SINT,
-               .semantic = DVZ_FIELD_SEMANTIC_LABEL,
-               .width = width,
-               .height = height,
-               .depth = 1});
-dvz_sampled_field_set_data(
-    field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-               .data = label_ids,
-               .bytes_per_row = width * sizeof(int32_t),
-               .rows_per_image = height});
+DvzSampledFieldDesc desc = dvz_sampled_field_desc();
+desc.dim = DVZ_FIELD_DIM_2D;
+desc.format = DVZ_FIELD_FORMAT_R32_SINT;
+desc.semantic = DVZ_FIELD_SEMANTIC_LABEL;
+desc.width = width;
+desc.height = height;
+desc.depth = 1;
+DvzSampledField* field = dvz_sampled_field(scene, &desc);
+
+DvzFieldDataView data = dvz_field_data_view();
+data.data = label_ids;
+data.bytes_per_row = width * sizeof(int32_t);
+data.rows_per_image = height;
+if (field == NULL || dvz_sampled_field_set_data(field, &data) != 0)
+    return false;
 
 dvz_visual_set_field(labels, "field", field);
 dvz_visual_set_scale(labels, "labels", categorical_scale);
@@ -90,19 +101,21 @@ For 3D fields, set `depth` to the number of slices and bind the field to a volum
 number of rows per slice.
 
 ```c
-DvzSampledField* field = dvz_sampled_field(
-    scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
-               .dim = DVZ_FIELD_DIM_3D,
-               .format = DVZ_FIELD_FORMAT_R8_UNORM,
-               .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
-               .width = size,
-               .height = size,
-               .depth = size});
-dvz_sampled_field_set_data(
-    field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-               .data = voxels,
-               .bytes_per_row = size,
-               .rows_per_image = size});
+DvzSampledFieldDesc desc = dvz_sampled_field_desc();
+desc.dim = DVZ_FIELD_DIM_3D;
+desc.format = DVZ_FIELD_FORMAT_R8_UNORM;
+desc.semantic = DVZ_FIELD_SEMANTIC_SCALAR;
+desc.width = size;
+desc.height = size;
+desc.depth = size;
+DvzSampledField* field = dvz_sampled_field(scene, &desc);
+
+DvzFieldDataView data = dvz_field_data_view();
+data.data = voxels;
+data.bytes_per_row = size;
+data.rows_per_image = size;
+if (field == NULL || dvz_sampled_field_set_data(field, &data) != 0)
+    return false;
 
 DvzVisual* volume = dvz_volume(scene, 0);
 dvz_visual_set_field(volume, "field", field);
@@ -115,19 +128,21 @@ Use a sampled field as a mesh texture only when the texture belongs to surface g
 still needs geometry attributes such as position, normal, and texture coordinates.
 
 ```c
-DvzSampledField* texture = dvz_sampled_field(
-    scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
-               .dim = DVZ_FIELD_DIM_2D,
-               .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
-               .semantic = DVZ_FIELD_SEMANTIC_COLOR,
-               .width = texture_width,
-               .height = texture_height,
-               .depth = 1});
-dvz_sampled_field_set_data(
-    texture, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-                .data = rgba,
-                .bytes_per_row = texture_width * 4u,
-                .rows_per_image = texture_height});
+DvzSampledFieldDesc desc = dvz_sampled_field_desc();
+desc.dim = DVZ_FIELD_DIM_2D;
+desc.format = DVZ_FIELD_FORMAT_RGBA8_UNORM;
+desc.semantic = DVZ_FIELD_SEMANTIC_COLOR;
+desc.width = texture_width;
+desc.height = texture_height;
+desc.depth = 1;
+DvzSampledField* texture = dvz_sampled_field(scene, &desc);
+
+DvzFieldDataView data = dvz_field_data_view();
+data.data = rgba;
+data.bytes_per_row = texture_width * 4u;
+data.rows_per_image = texture_height;
+if (texture == NULL || dvz_sampled_field_set_data(texture, &data) != 0)
+    return false;
 
 dvz_visual_set_field(mesh, "texture", texture);
 ```

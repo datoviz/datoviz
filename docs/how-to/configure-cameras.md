@@ -2,7 +2,11 @@
 
 Set the view and projection conventions for 3D panels.
 
-## Task Workflow
+This page configures the initial viewpoint and projection. Choose interaction separately in
+[Use 3D controllers](3d-navigation.md), and use
+[coordinate systems](coordinate-systems.md) to decide how visual positions map into a panel.
+
+## Task workflow
 
 Use panel domains and panzoom for 2D data. For 3D data, configure a panel camera or use a 3D
 controller that updates camera/view state. Keep camera state separate from mesh data so navigation
@@ -27,7 +31,7 @@ A camera descriptor defines the initial view and projection:
 | `projection.ortho_height` | Visible height for orthographic cameras. |
 | `projection.near_clip`, `projection.far_clip` | Clipping planes. Choose values that enclose the data without making the depth range needlessly large. |
 
-## Minimal Call Sequence
+## Minimal call sequence
 
 ```c
 DvzCameraDesc camera = dvz_camera_desc();
@@ -51,8 +55,10 @@ Turntable and fly descriptors commonly reuse the same target, eye, or up convent
 primarily object-inspection state, but it still depends on a clear view convention for predictable
 drag axes and lighting.
 
+The result is a panel whose first rendered frame uses this camera.
 
-## Important Details
+
+## Important details
 
 Camera conventions affect depth, lighting, picking, labels, and orientation UI. Confirm the scene's
 axis convention before adding a grid, orientation gizmo, scientific labels, or a controller with a
@@ -65,7 +71,7 @@ Use perspective projection for most spatial inspection. Use orthographic project
 size should not depend on distance, for example CAD-like inspection, aligned volumes, or physical
 scale comparisons.
 
-## Common Mistakes
+## Common mistakes
 
 - Using visual transforms as camera transforms.
 - Combining 2D domain navigation and 3D camera navigation on the same panel.
@@ -75,7 +81,7 @@ scale comparisons.
 - Letting the controller imply an axis convention that disagrees with labels, lighting, or the
   orientation gizmo.
 
-## See Also
+## Next steps
 
 - [Use 3D controllers](3d-navigation.md)
 - [Use coordinate systems](coordinate-systems.md)

@@ -3,9 +3,9 @@
 Add a visual when you want a panel to draw a dataset: points, lines, an image, a mesh, text labels,
 or another visual family.
 
-![Point](../assets/gallery/v0.4/visuals/visuals_point.webp)
+![Colored circular points rendered in one panel](../assets/gallery/v0.4/visuals/visuals_point.webp)
 
-## Task Workflow
+## Task workflow
 
 A visual is a renderable collection of related items. For a point visual, the items are points. For
 an image visual, the items are image corners and texture coordinates. For a mesh visual, the items
@@ -23,7 +23,7 @@ Uploading data prepares the visual, but it does not draw anything by itself. The
 of a figure only after `dvz_panel_add_visual()`.
 
 
-## Basic Point Visual
+## Basic point visual
 
 This example adds three points to an existing `scene` and `panel`.
 
@@ -109,7 +109,7 @@ This example adds three points to an existing `scene` and `panel`.
     ```
 
 
-## Choosing Attributes
+## Choose attributes
 
 Each visual family has its own attribute names and array shapes. A point visual commonly uses:
 
@@ -127,7 +127,7 @@ Do not assume that an attribute exists for every family. When changing visual fa
 [visual family reference](../reference/visual-families/index.md).
 
 
-## Keeping Arrays Aligned
+## Keep arrays aligned
 
 Related per-item arrays should describe the same items in the same order. In the point example,
 `positions[0]`, `colors[0]`, and `diameters[0]` all describe the first point.
@@ -153,7 +153,7 @@ dvz_visual_set_data_many(visual, updates, 3);
 ```
 
 
-## Grouping Items Into Visuals
+## Group items into visuals
 
 Prefer one visual that contains many related items over many small visuals with only a few items
 each. For example, if 100 points belong to the same dataset and use the same point visual settings,
@@ -172,7 +172,7 @@ point size, marker symbol, and per-item transform are examples of styles that ca
 within one visual.
 
 
-## Attachment Options
+## Choose attachment options
 
 Most visuals can use the default attachment:
 
@@ -213,7 +213,7 @@ See [Use coordinate systems](coordinate-systems.md) before mixing data, view, an
 spaces.
 
 
-## Instanced Meshes
+## Instance repeated meshes
 
 Use mesh instancing when many objects share the same triangle geometry and differ only by placement
 or orientation. Common cases include repeated cubes, repeated markers built from geometry, and many
@@ -233,7 +233,7 @@ Use separate mesh visuals only when copies need different materials, techniques,
 or update schedules.
 
 
-## Common Mistakes
+## Common mistakes
 
 - Creating a visual but never adding it to a panel.
 - Uploading arrays with different item counts for attributes that describe the same items.
@@ -243,7 +243,7 @@ or update schedules.
 - Using view or panel coordinates with the default data-coordinate attachment.
 
 
-## See Also
+## Next steps
 
 - [Choose a visual family](choose-a-visual-family.md)
 - [Update visual data](update-visual-data.md)

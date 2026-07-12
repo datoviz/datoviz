@@ -2,7 +2,10 @@
 
 Map your data coordinates into panel space.
 
-## Task Workflow
+Use this page to choose how uploaded positions are interpreted. Configure the initial 3D viewpoint
+and its interaction model in the camera and controller guides.
+
+## Task workflow
 
 Decide which coordinate space your positions use, set the panel domain when positions are data
 coordinates, attach visuals with the matching coordinate interpretation, then bind a controller
@@ -36,7 +39,7 @@ attachments. Use `dvz_panel_transform_point()` for conversions between these exp
 For the common data/pixel cases, use `dvz_panel_position_to_data()` and
 `dvz_panel_data_to_position()`.
 
-## Data-Space Call Sequence
+## Data-space call sequence
 
 ```c
 dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
@@ -52,7 +55,7 @@ In this pattern, upload positions in your data units. The panel maps X and Y fro
 domain into the visual panel range used for rendering. Panzoom changes the visible part of that
 domain; it does not rewrite the uploaded source positions.
 
-## View-Space Call Sequence
+## View-space call sequence
 
 ```c
 // Positions already use the view coordinate range.
@@ -66,7 +69,7 @@ Use this for examples or low-level visuals that intentionally work in normalized
 If the data has real units, avoid silently rescaling it into `[-1, +1]` unless that rescaling is part
 of the example contract.
 
-## 3D Scene Coordinates
+## 3D scene coordinates
 
 For 3D scenes, keep object positions in the model/world coordinate system chosen by the example,
 then use a camera and a 3D controller:
@@ -85,7 +88,7 @@ orbiting; there is no separate orbit controller. Use panzoom for 2D panels. Mixi
 with 3D camera navigation usually means the panel and visual coordinate model is not defined clearly
 enough.
 
-## Choosing Domains
+## Choosing domains
 
 Set a domain when coordinates have external meaning, such as time, depth, distance, image sample
 indices, atlas positions, or projected map coordinates. Set both X and Y for ordinary 2D navigation
@@ -97,7 +100,7 @@ pixel spaces. Do not pre-transform retained visual arrays just to fit the panel 
 positions and let the scene perform that mapping.
 
 
-## Important Details
+## Important details
 
 Panel domains describe the visible data range. Controllers modify the view over that domain. Visual
 transforms are for object-level placement and should not replace a panel domain when the task is
@@ -122,7 +125,7 @@ data-coordinate query point. Do not treat CPU geometry coordinates as a substitu
 query behavior; pick/probe results should follow the same transform, clipping, depth, and shader
 path as rendering.
 
-## Common Mistakes
+## Common mistakes
 
 - Uploading pixel coordinates to a data-space panel.
 - Uploading pre-normalized view coordinates but leaving the visual in the default
@@ -132,7 +135,7 @@ path as rendering.
 - Mixing 2D panzoom with 3D turntable or arcball camera control.
 - Pre-projecting geographic or nonlinear data without recording the projected units.
 
-## See Also
+## Next steps
 
 - [Use panzoom](use-panzoom.md)
 - [Configure cameras](configure-cameras.md)

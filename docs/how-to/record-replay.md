@@ -46,27 +46,50 @@ For command-stream details, use [DRP2 command streams](../advanced/drp2-command-
 ## App-Level Recording Fragment
 
 For app-level recording, start recording before the frame you want to capture, render frames, then
-stop recording before replaying the directory.
+stop recording before replaying the directory. This function-body excerpt assumes valid app, scene,
+and figure objects and uses one failure path so active recording or replay is stopped before return.
+The complete checked source is `examples/c/runtime/record_replay.c`.
 
 ```c
 DvzView* view = dvz_view_offscreen(app, figure, width, height);
+if (view == NULL)
+    return false;
 
-dvz_view_record_start(view, "capture.dvzr");
-dvz_view_render_once(view);
-dvz_view_record_stop(view);
+if (dvz_view_record_start(view, "capture.dvzr") != 0)
+    return false;
+if (dvz_view_render_once(view) != DVZ_CANVAS_FRAME_READY)
+{
+    (void)dvz_view_record_stop(view);
+    return false;
+}
+if (dvz_view_record_stop(view) != 0)
+    return false;
 
 DvzFigure* replay_figure = dvz_figure(scene, width, height, 0);
+if (replay_figure == NULL)
+    return false;
 DvzView* replay = dvz_view_offscreen(app, replay_figure, width, height);
+if (replay == NULL)
+    return false;
 
-dvz_view_replay_start(replay, "capture.dvzr");
-dvz_view_replay_set_paced(replay, false);
-dvz_view_render_once(replay);
-dvz_view_replay_stop(replay);
+if (dvz_view_replay_start(replay, "capture.dvzr") != 0)
+    return false;
+if (dvz_view_replay_set_paced(replay, false) != 0 ||
+    dvz_view_render_once(replay) != DVZ_CANVAS_FRAME_READY)
+{
+    (void)dvz_view_replay_stop(replay);
+    return false;
+}
+if (dvz_view_replay_stop(replay) != 0)
+    return false;
 ```
 
 Use `dvz_view_replay_frame_count()` when replaying a multi-frame recording into `dvz_app_run()`.
 Use `dvz_view_replay_set_loop()`, `dvz_view_replay_set_paced()`, and
 `dvz_view_replay_set_speed()` for live inspection.
+
+The following is a configuration excerpt for an already validated replay view; production code
+should check each setter and always stop replay before leaving the enclosing function:
 
 ```c
 dvz_view_replay_start(view, "capture.dvzr");

@@ -16,7 +16,12 @@ Choose the import surface first:
 | The same binding with explicit pointers, counts, bytes, or callbacks. | `import datoviz.raw as raw` |
 | High-level object-oriented plotting. | Outside Datoviz v0.4; this belongs to the external GSP/VisPy2 layer. |
 
-## Minimal Call Sequence
+## Minimal Scene Construction
+
+This complete scene-construction snippet requires NumPy and an installed Datoviz package. It creates
+one retained point visual but deliberately does not open a window or render; continue with
+[Open an interactive window](create-a-window.md) or [Render offscreen](render-offscreen.md) to
+produce pixels. The canonical complete application is the [Quickstart](../start/quickstart.md).
 
 ```python
 import numpy as np
@@ -42,8 +47,8 @@ dvz.dvz_visual_set_data(points, "diameter_px", diameters)
 dvz.dvz_panel_add_visual(panel, points, None)
 ```
 
-Adapt the C examples one call at a time. Keep NumPy array dtype and shape matched to the C
-attribute contract.
+After these calls, `scene` owns a figure with one panel and one point visual. Adapt the C examples
+one call at a time, keeping NumPy array dtype and shape matched to the C attribute contract.
 
 The top-level `datoviz` module accepts NumPy arrays for the calls covered by the binding policy. Use
 `datoviz.raw` only when you need the exact C-shaped call form. Calls that are not covered by

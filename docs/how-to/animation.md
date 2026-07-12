@@ -67,17 +67,43 @@ update idea in native and browser routes.
 Use tracks when the motion is a reusable path rather than arbitrary per-frame data mutation. Tracks
 can drive visual-local transforms or camera state.
 
-```c
-DvzTrackRotationDesc rotation = dvz_track_rotation_desc();
-rotation.axis[1] = 1.0f;
-rotation.speed_rad_per_sec = 1.0f;
-DvzTrack* track = dvz_track_rotation(&rotation);
+Prerequisite: create `scene` and an attached `visual` first. The result is a retained visual-local
+rotation driven by the scene clock. These fragments omit app creation and cleanup; see the complete
+[Animation Tracks example](../examples/gallery/features/features_animation_tracks.md).
 
-DvzTransformMotionDesc motion = dvz_transform_motion_desc();
-motion.rotation = track;
-DvzAnimation* anim = dvz_anim_visual_transform(scene, visual, &motion);
-dvz_anim_start(anim, 0.0);
-```
+=== "Python"
+
+    ```python
+    import ctypes
+    import datoviz as dvz
+
+    rotation = dvz.dvz_track_rotation_desc()
+    rotation.axis[:] = (0.0, 1.0, 0.0)
+    rotation.speed_rad_per_sec = 1.0
+    track = dvz.dvz_track_rotation(ctypes.byref(rotation))
+
+    motion = dvz.dvz_transform_motion_desc()
+    motion.rotation = track
+    animation = dvz.dvz_anim_visual_transform(scene, visual, ctypes.byref(motion))
+    if not track or not animation:
+        raise RuntimeError("animation creation failed")
+    if dvz.dvz_anim_start(animation, 0.0) != 0:
+        raise RuntimeError("dvz_anim_start() failed")
+    ```
+
+=== "C"
+
+    ```c
+    DvzTrackRotationDesc rotation = dvz_track_rotation_desc();
+    rotation.axis[1] = 1.0f;
+    rotation.speed_rad_per_sec = 1.0f;
+    DvzTrack* track = dvz_track_rotation(&rotation);
+
+    DvzTransformMotionDesc motion = dvz_transform_motion_desc();
+    motion.rotation = track;
+    DvzAnimation* anim = dvz_anim_visual_transform(scene, visual, &motion);
+    dvz_anim_start(anim, 0.0);
+    ```
 
 For camera paths, use `dvz_anim_camera_motion()` with eye, target, or up tracks. The animation
 tracks example shows both a rotating visual and a keyframed camera.

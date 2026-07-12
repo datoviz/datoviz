@@ -7,7 +7,11 @@ The WebGPU path in v0.4 is experimental and example-scoped. A native Datoviz sce
 while its browser route is planned, deferred, native-only, or unsupported on the selected adapter.
 Debug the route status and browser environment before changing scene code.
 
-## Task Workflow
+For serving and deployment, use [Deploy Datoviz scenes to the web](deploy-to-web.md). For build,
+import, or native device failures, use
+[Diagnose build and platform issues](diagnose-platform.md).
+
+## Diagnostic order
 
 Use this order:
 
@@ -25,7 +29,7 @@ example browser status
 Start with the standalone route. An iframe embedded in a gallery page adds page layout, permissions,
 loading, and caching variables that are not useful for the first diagnosis.
 
-## Check The Example Status
+## Check the example status
 
 Look at the generated example page or the [WebGPU matrix](../examples/webgpu-matrix.md). The route
 status determines what you should expect:
@@ -39,7 +43,7 @@ status determines what you should expect:
 
 Only `webgpu-live` examples should be opened as public browser routes.
 
-## Open The Standalone Route
+## Open the standalone route
 
 Serve the docs site over HTTP, then open the route directly:
 
@@ -60,7 +64,7 @@ Replace `features_basic_scene` with the example id from the gallery page or matr
 If the route id is wrong, the page should report a route error. Fix the route id before inspecting
 shader, adapter, or scene behavior.
 
-## Verify Browser WebGPU Availability
+## Verify browser WebGPU availability
 
 Use a current WebGPU-capable browser. Browser support depends on operating system, GPU, driver,
 adapter choice, user settings, and the route's required features.
@@ -78,7 +82,7 @@ Check these in order:
 Record the browser version, OS, GPU/adapter, and first console error. Later errors are often
 secondary.
 
-## Read Console Diagnostics
+## Read console diagnostics
 
 The browser console is the primary diagnostic surface for live routes. Common messages usually map
 to one of these layers:
@@ -97,7 +101,7 @@ to one of these layers:
 Do not summarize console output as "WebGPU failed" when filing a bug. The first specific adapter,
 device, shader, route, or unsupported-feature message is the useful part.
 
-## Compare Against Native Output
+## Compare against native output
 
 For a `webgpu-live` route, compare the browser result with the canonical native example or generated
 screenshot:
@@ -114,7 +118,7 @@ browser route, WebGPU subset, WASM scene host, or adapter.
 Native Vulkan success does not prove browser WebGPU success. WebGPU has a separate adapter, feature
 set, shader path, presentation model, and asynchronous readback behavior.
 
-## Run Maintainer Checks
+## Run maintainer checks
 
 For repository work, use the narrowest relevant validation:
 
@@ -132,7 +136,7 @@ Browser smoke can be limited by the local machine, CI runner, browser, or GPU. A
 adapter failure should be recorded as environment evidence, not silently converted into example
 support.
 
-## Browser Versus Native Differences
+## Browser versus native differences
 
 Expect these differences in v0.4:
 
@@ -146,7 +150,7 @@ Expect these differences in v0.4:
 Do not port a native example by rewriting scene behavior in JavaScript. A public live route should
 reuse the canonical C example or portable C scenario.
 
-## Fallback Decisions
+## Choose a fallback
 
 When a browser route does not run:
 
@@ -161,7 +165,7 @@ When a browser route does not run:
 Do not relabel an example as `native-only` just because one browser/adapter failed. Change status
 only at the source metadata after deciding the feature is outside the promoted subset.
 
-## Report Template
+## Report template
 
 ```text
 Example id:
@@ -181,7 +185,7 @@ Screenshot or video:
 The route URL, browser version, adapter, and first console error are usually enough to distinguish a
 browser support problem from a Datoviz scene or renderer issue.
 
-## Common Mistakes
+## Common mistakes
 
 - Treating `webgpu-planned` as a failing live route.
 - Debugging an iframe before trying `examples/webgpu/live.html?id=<example-id>` directly.
@@ -191,7 +195,7 @@ browser support problem from a Datoviz scene or renderer issue.
 - Reimplementing native scene behavior in JavaScript to work around an unsupported route.
 - Dropping the first console error and keeping only later secondary failures.
 
-## See Also
+## Next steps
 
 - [Deploy Datoviz scenes to the web](deploy-to-web.md)
 - [Debug rendering output](debug-rendering.md)

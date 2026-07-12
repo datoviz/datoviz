@@ -2,9 +2,9 @@
 
 Create the basic structure used by most Datoviz visualizations.
 
-![Basic Scene](../assets/gallery/v0.4/features/features_basic_scene.webp)
+![Three colored points in a basic Datoviz scene](../assets/gallery/v0.4/features/features_basic_scene.webp)
 
-## Task Workflow
+## Task workflow
 
 Start by creating the scene structure: one scene, one figure, one panel, and at least one visual.
 Then attach data arrays to the visual attributes, add the visual to the panel, create a window or
@@ -44,7 +44,7 @@ Basic checklist:
 6. Run the app or render/capture the frame.
 7. Clean up the app and scene when the program exits.
 
-## Minimal Call Sequence
+## Minimal call sequence
 
 === "Python"
 
@@ -131,7 +131,10 @@ Use `dvz_panel_full()` for a single drawing area. Use panel-grid helpers only wh
 multiple coordinated panels.
 
 
-## Important Details
+The result is an 800 by 600 native window containing three colored points. To add another dataset
+to an existing panel, continue with [Add visuals to a panel](add-a-visual.md).
+
+## Important details
 
 Create the initial scene structure before `dvz_app_run()`. You can update data later, but the first
 frame is easier to understand when the figure, panels, visuals, controllers, and adornments are
@@ -148,7 +151,7 @@ C-contiguous NumPy arrays with the dtype and shape required by the visual attrib
 Uploading data does not make it visible. A visual appears only after `dvz_panel_add_visual()`
 attaches it to a panel.
 
-## Visual Granularity
+## Choose visual granularity
 
 Use a small number of visuals, each with many items. Add another visual when the data needs a
 different visual family, style model, panel, transform, or update pattern.
@@ -159,7 +162,7 @@ dataset and use the same point styling, put them in one point visual with 100 po
 diameters. Create separate visuals when the elements represent different visual families, styles,
 materials, panels, transforms, or update schedules.
 
-## Common Mistakes
+## Common mistakes
 
 - Treating `DvzFigure` as a native window instead of an image area that can be shown in a window.
 - Creating an app before the scene has a figure, panel, and visual to draw.
@@ -168,7 +171,7 @@ materials, panels, transforms, or update schedules.
 - Mixing pixel coordinates and data coordinates without setting a panel domain or controller.
 - Destroying the scene while an app is still rendering it.
 
-## See Also
+## Next steps
 
 - [Open an interactive window](create-a-window.md)
 - [Render offscreen](render-offscreen.md)

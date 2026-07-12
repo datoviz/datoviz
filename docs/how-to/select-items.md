@@ -6,14 +6,14 @@ Use retained selection for item-level highlighting driven by picking, linked app
 external UI. Keep the semantic selection set in application code when it has meaning beyond the
 rendered visual.
 
-![Sphere Selection](../assets/gallery/v0.4/features/features_selection_sphere.webp)
+![A group of spheres with selected items highlighted](../assets/gallery/v0.4/features/features_selection_sphere.webp)
 
-## Task Workflow
+## Task workflow
 
 Use picking or application state to compute selected ids, then update a visual attribute or a
 separate highlight visual. Keep the base visual stable and make selection a small retained update.
 
-## Minimal Call Sequence
+## Minimal call sequence
 
 For item queries, prefer the retained selection object. It stores selected targets and lets the
 renderer apply the configured selected/unselected style:
@@ -53,7 +53,7 @@ Use `dvz_selection_count()` and `dvz_selection_copy()` when application code nee
 resolved selected targets.
 
 
-## Manual Highlighting
+## Manual highlighting
 
 Manual updates are still useful when the selected state changes a visual attribute that is not part
 of retained item styling, or when a separate glyph, outline, readout, or annotation should appear:
@@ -69,7 +69,7 @@ For dense point or pixel data, prefer a color, alpha, tint, or scale update over
 visual per selected item.
 
 
-## Selection Modes
+## Selection modes
 
 | Mode | Behavior |
 | --- | --- |
@@ -85,7 +85,7 @@ dvz_selection_clear(selection);
 ```
 
 
-## Hover And Click
+## Hover and click
 
 Most interactive selections use two query paths: a hover query on pointer move and a click query on
 button press. Give those requests different `request_id` values, apply hover results to `DvzHover`,
@@ -102,7 +102,7 @@ The `examples/c/features/picking.c` and `examples/c/features/selection_pixel.c` 
 pattern with separate hover and click request ids.
 
 
-## Important Details
+## Important details
 
 Selection state belongs to the application. Datoviz renders the highlight state you upload; it does
 not own your semantic selection model.
@@ -111,7 +111,7 @@ Retained selection targets are visual-local unless you bind explicit link keys. 
 mapping from query result ids to application ids, especially after sorting, filtering, or replacing
 visual data.
 
-## Common Mistakes
+## Common mistakes
 
 - Destroying and recreating visuals for every click.
 - Losing the mapping between pick ids and application ids after sorting data.
@@ -121,7 +121,7 @@ visual data.
 - Using retained selection as the only copy of application selection state when other subsystems
   need semantic ids.
 
-## See Also
+## Next steps
 
 - [Pick items](pick-items.md)
 - [Update visual data](update-visual-data.md)

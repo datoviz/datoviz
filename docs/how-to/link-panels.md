@@ -2,9 +2,9 @@
 
 Make multiple panels pan, zoom, or probe together.
 
-![Linked Panels](../assets/gallery/v0.4/features/features_panel_linked.webp)
+![Two panels sharing linked navigation state](../assets/gallery/v0.4/features/features_panel_linked.webp)
 
-## Task Workflow
+## Task workflow
 
 Create the panels first. Bind the same controller object to every panel that should share view
 state. Keep separate controllers for panels that should move independently.
@@ -16,7 +16,7 @@ state. Keep separate controllers for panels that should move independently.
 | Panels need independent state plus selected synchronization. | Use separate controllers and `dvz_controller_link()`. |
 | Axes, colorbars, visuals, or probe readouts should match. | Share the corresponding scale/data/readout state explicitly; controller sharing does not copy them. |
 
-## Minimal Call Sequence
+## Minimal call sequence
 
 ```c
 DvzController* shared = dvz_panzoom(scene, NULL);
@@ -47,7 +47,7 @@ DvzController* x_b = dvz_panzoom(scene, NULL);
 dvz_controller_link(scene, x_a, x_b, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_TWO_WAY);
 ```
 
-## Important Details
+## Important details
 
 Controller sharing links interaction state. It does not copy visuals, axes, colorbars, or data
 between panels.
@@ -69,7 +69,7 @@ Linked probe workflows have more state than navigation. The panels may share a c
 application still needs one consistent sampled field, color scale, query mapping, and readout
 format.
 
-## Common Mistakes
+## Common mistakes
 
 - Creating two identical controllers instead of sharing one controller pointer.
 - Sharing a full `DVZ_DIM_MASK_XY` controller when only X should be linked.
@@ -79,7 +79,7 @@ format.
 - Forgetting to keep axes, colorbars, units, and probe readouts synchronized with the linked view.
 - Treating showcase workflows as the minimal linked-panel API.
 
-## See Also
+## Next steps
 
 - [Create multiple panels](multiple-panels.md)
 - [Use panzoom](use-panzoom.md)

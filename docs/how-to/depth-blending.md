@@ -3,7 +3,7 @@
 Choose the rendering state for overlapping geometry, transparent visuals, and depth-based visual
 cues.
 
-## Use This When
+## Use this when
 
 - 3D objects should occlude each other correctly.
 - A visual has meaningful alpha values and must blend with the scene.
@@ -11,7 +11,7 @@ cues.
 - Depth variation is hard to read and needs depth cueing, SSAO, or another depth technique.
 - A browser target needs a status check before using an advanced rendering technique.
 
-## Minimal Sequence
+## Minimal sequence
 
 Start with an opaque scene. Enable depth testing on 3D visuals that should participate in scene
 occlusion.
@@ -30,7 +30,7 @@ dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_BLENDED);
 Use alpha blending only when the color data carries useful alpha. Keep technique state on the
 visual that needs it instead of changing unrelated scene state.
 
-## Technique Choice
+## Choose a technique
 
 | Goal | Use | Notes |
 | --- | --- | --- |
@@ -42,7 +42,7 @@ visual that needs it instead of changing unrelated scene state.
 | Depth perception in dense 3D scenes | `dvz_visual_set_depth_cue()` | Fades or darkens by depth without changing geometry. |
 | Jagged edges | MSAA example and panel/runtime sample settings | Antialiasing is separate from alpha correctness. |
 
-## Transparency Rules
+## Transparency rules
 
 Transparent rendering is not just a color-alpha setting. Depth testing, alpha mode, and draw order
 interact:
@@ -56,7 +56,7 @@ interact:
 - Text, labels, images, and some annotation helpers may configure alpha blending internally because
   their pixels naturally include transparent coverage.
 
-## Depth Cue
+## Depth cue
 
 Depth cueing is a visual perception aid, not a camera or clipping change. It is supported on point,
 pixel, primitive, mesh, and sphere visuals.
@@ -72,7 +72,7 @@ dvz_visual_set_depth_cue(visual, &cue);
 metric is normalized clip depth after the scene transform. Pass `NULL` to
 `dvz_visual_set_depth_cue()` to disable depth cueing.
 
-## Color Pipeline
+## Color pipeline
 
 Datoviz treats authored RGBA colors as display/sRGB semantic colors. The default figure color
 pipeline, `DVZ_COLOR_PIPELINE_LINEAR_SRGB`, converts RGB to linear values before scene arithmetic,
@@ -91,16 +91,15 @@ dvz_figure_set_color_pipeline(figure, DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND);
 The setting is figure-wide for app and offscreen rendering. Select it before rendering the first
 frame so Datoviz prepares the intended rendering path.
 
-## Browser Support
+## Browser support
 
-The native path is the reference path for advanced transparency techniques. In the current browser
-subset, depth testing and basic alpha blending have live coverage, while depth cueing, WBOIT, and
-depth peeling are marked deferred in the example matrix. Treat deferred browser techniques as
-native-only until the corresponding gallery page advertises a live route.
+The native path is the reference for advanced transparency techniques. Check the
+[WebGPU subset](../reference/webgpu-subset.md) and the relevant gallery page before choosing a
+technique for the experimental browser path.
 
-## Canonical Examples
+## Complete examples
 
-![Depth test toggle](../assets/gallery/v0.4/features/features_technique_depth_test.poster.webp)
+![Overlapping 3D points with depth testing enabled and disabled](../assets/gallery/v0.4/features/features_technique_depth_test.poster.webp)
 
 - [Depth Test Toggle](../examples/gallery/features/features_technique_depth_test.md) - compare overlapping
   3D points with depth testing on and off. Source:
@@ -116,7 +115,7 @@ native-only until the corresponding gallery page advertises a live route.
   quality. Source: `examples/c/features/technique_msaa.c`.
 
 
-## Important Details
+## Important details
 
 - Depth testing is per visual in the retained scene API. Do not solve one visual's ordering issue by
   disabling depth everywhere.
@@ -126,7 +125,7 @@ native-only until the corresponding gallery page advertises a live route.
 - Volume, SSAO, EDL, and other depth-based techniques have their own examples and status. Do not
   assume a technique is portable just because the visual family is portable.
 
-## Common Mistakes
+## Common mistakes
 
 - Disabling depth globally to fix one transparent visual.
 - Assuming alpha values change draw order automatically.
@@ -136,7 +135,7 @@ native-only until the corresponding gallery page advertises a live route.
   by 3D geometry.
 - Copying deferred or native-only technique code into a WebGPU target without checking status.
 
-## See Also
+## Next steps
 
 - [Use lighting and materials](lighting-and-materials.md)
 - [Debug rendering output](debug-rendering.md)

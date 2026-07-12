@@ -6,7 +6,7 @@ The v0.4 browser path is meant for Datoviz scene code, not for handwritten JavaS
 native examples. You build the same scene semantics into a WebAssembly module, the C/WASM scene
 host emits Datoviz frame packets, and the browser runtime replays those packets through WebGPU.
 
-## Task Workflow
+## Deployment workflow
 
 Start with a working Datoviz scene on the native path. Keep it within the portable scene subset,
 build it into the WASM scene host, serve the generated browser assets over HTTP or HTTPS, then open
@@ -21,7 +21,7 @@ workflow. For your own application code, treat the current path as an experiment
 route: there is no stable `datoviz export-to-web` command in v0.4.
 
 
-## What You Can Deploy
+## Check what you can deploy
 
 The browser path works best for scene-layer code that uses the promoted WebGPU subset: retained
 visuals, ordinary data buffers, supported controllers, selected annotations/layout features, and
@@ -40,7 +40,7 @@ move the scene construction into a portable C scene/scenario or use a Datoviz-pr
 that already does this.
 
 
-## Prepare the Scene
+## Prepare the scene
 
 1. Validate the scene natively first.
 2. Check that every required feature appears in the [WebGPU subset](../reference/webgpu-subset.md)
@@ -54,7 +54,7 @@ The browser JavaScript should remain host glue. Do not reimplement scene behavio
 animation, or data transforms in JavaScript just to make the page work.
 
 
-## Build and Serve
+## Build and serve
 
 Inside the Datoviz checkout, build the WASM scene assets and start a local server:
 
@@ -63,7 +63,7 @@ just wasm-scene-build
 just serve
 ```
 
-### Route Shape
+### Route shape
 
 ```text
 examples/webgpu/live.html?id=<scene-id>
@@ -83,7 +83,7 @@ The exact port depends on the local `just serve` invocation. Do not open WebGPU 
 `file://`; browsers restrict GPU access and resource loading from direct filesystem URLs.
 
 
-## Use Existing Live Routes
+## Use existing live routes
 
 Existing gallery examples are useful as compatibility references. Start from an example whose
 gallery page says `Browser support: Live in browser`, serve the docs site, then open the route shown
@@ -94,7 +94,7 @@ Only examples marked `webgpu-live` have public browser routes. `webgpu-planned`,
 instructions.
 
 
-## Check Browser Support
+## Check browser support
 
 | Check | Why it matters |
 | --- | --- |
@@ -108,7 +108,7 @@ instructions.
 Use [Diagnose WebGPU support](debug-webgpu.md) when the route fails to initialize.
 
 
-## Status Values
+## Read status values
 
 | Status | Meaning |
 | --- | --- |
@@ -129,7 +129,7 @@ just webgpu-browser-smoke
 ```
 
 
-## Deployment Notes
+## Deployment notes
 
 Serve WebGPU pages over HTTP or HTTPS. Browser WebGPU APIs do not work reliably from direct
 filesystem URLs, and browser support varies by platform, GPU, driver, and user settings.
@@ -157,7 +157,7 @@ If you are promoting a new public browser route in this repository, use the cont
 rather than copying an existing route by hand. Browser examples should reuse the canonical C example
 or portable C scenario.
 
-## Common Mistakes
+## Common mistakes
 
 - Assuming every native example has a WebGPU live route.
 - Expecting a Python `ctypes` script to run unchanged in the browser.
@@ -167,7 +167,7 @@ or portable C scenario.
 - Opening live routes through `file://` instead of a local or deployed HTTP server.
 - Treating browser support as full native feature parity.
 
-## See Also
+## Next steps
 
 - [Diagnose WebGPU support](debug-webgpu.md)
 - [Record and replay frame streams](record-replay.md)

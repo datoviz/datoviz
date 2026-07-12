@@ -27,3 +27,7 @@ import 'justfiles/wheels.just'
 import 'justfiles/diagnostics.just'
 import 'justfiles/examples_docs.just'
 import 'justfiles/test.just'
+
+# Check syntax and public C identifiers in handwritten How-To snippets.
+check-howto-snippets:
+    python3 tools/check_howto_snippets.py

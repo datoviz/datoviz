@@ -17,6 +17,29 @@ for 3D spatial context. The retained axis helpers described here are for panel-o
 Set the panel data domain first, then request the panel-owned axes and configure their visible
 parts.
 
+Prerequisite: create a 2D `panel` and its data visual first. The result is panel-owned X/Y axes
+with grid lines and labels. These are setup fragments; see the complete
+[Path With 2D Axes example](../examples/gallery/features/features_axes_2d.md).
+
+### Python
+
+```python
+import datoviz as dvz
+
+dvz.dvz_panel_set_domain(panel, dvz.DVZ_DIM_X, xmin, xmax)
+dvz.dvz_panel_set_domain(panel, dvz.DVZ_DIM_Y, ymin, ymax)
+x_axis = dvz.dvz_panel_axis(panel, dvz.DVZ_DIM_X)
+y_axis = dvz.dvz_panel_axis(panel, dvz.DVZ_DIM_Y)
+if not x_axis or not y_axis:
+    raise RuntimeError("dvz_panel_axis() failed")
+dvz.dvz_axis_set_grid(x_axis, True)
+dvz.dvz_axis_set_grid(y_axis, True)
+dvz.dvz_axis_set_label(x_axis, b"x")
+dvz.dvz_axis_set_label(y_axis, b"y")
+```
+
+### C
+
 ```c
 dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
 dvz_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax);
@@ -63,6 +86,18 @@ ticks.min_pixel_spacing = 150.0f;
 ticks.minor_per_interval = 2;
 dvz_axis_set_tick_policy(x_axis, &ticks);
 dvz_axis_set_tick_policy(y_axis, &ticks);
+```
+
+In Python, descriptor setters keep their exact generated pointer shape:
+
+```python
+import ctypes
+
+ticks = dvz.dvz_axis_tick_policy()
+ticks.target_count = 5
+ticks.min_pixel_spacing = 150.0
+ticks.minor_per_interval = 2
+dvz.dvz_axis_set_tick_policy(x_axis, ctypes.byref(ticks))
 ```
 
 When another layer owns tick selection, use explicit ticks instead of the automatic policy:

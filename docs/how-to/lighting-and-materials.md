@@ -2,9 +2,9 @@
 
 Make 3D surfaces readable with normals, material attributes, and lights.
 
-![Mesh Materials](../assets/gallery/v0.4/features/features_material_mesh.poster.webp)
+![Lit mesh surfaces comparing material settings](../assets/gallery/v0.4/features/features_material_mesh.poster.webp)
 
-## Task Workflow
+## Task workflow
 
 Choose a visual family that supports material parameters, provide the geometry attributes required
 by that family, set a material descriptor, and verify depth testing with a 3D camera or controller.
@@ -19,7 +19,7 @@ sphere visuals. It is not a general style setter for every visual family.
 | Primitive | `position`, optional `normal`, `color`, `index` | Low-level indexed or non-indexed geometry. |
 | Sphere | `position`, `radius`, `color`; use `DVZ_SPHERE_FLAGS_LIGHTING` | Many lit sphere impostors without mesh vertices. |
 
-## Choose a Material Model
+## Choose a material model
 
 Start from one of the descriptor helpers, then override only the fields that matter:
 
@@ -38,7 +38,7 @@ shader payload. Treat it as the recommended route for roughness, metallic, emiss
 controls; use the Phong descriptor when you want direct ambient, diffuse, specular, and shininess
 tuning.
 
-## Mesh Call Sequence
+## Mesh call sequence
 
 ```c
 DvzVisual* mesh = dvz_mesh(scene, 0);
@@ -63,7 +63,7 @@ For indexed meshes, also upload the index buffer with the mesh API used by the c
 example. For textured meshes, bind texture coordinates and the sampled field before relying on
 material lighting.
 
-## Sphere Call Sequence
+## Sphere call sequence
 
 ```c
 DvzVisual* spheres = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
@@ -85,7 +85,7 @@ Sphere impostors compute their surface normal in the sphere shader path, so they
 uploaded `normal` attribute. Mesh and primitive surfaces usually do.
 
 
-## Important Details
+## Important details
 
 - Normals must be in the same coordinate space as positions. If a mesh is transformed, generated, or
   imported from another tool, verify that normals were transformed consistently.
@@ -101,7 +101,7 @@ uploaded `normal` attribute. Mesh and primitive surfaces usually do.
 - WebGPU support covers the promoted material and lighting gallery routes, but advanced material
   behavior should still be checked against the current backend status before relying on parity.
 
-## Debug Checklist
+## Debug checklist
 
 When a lit surface looks flat, black, inverted, or unexpectedly glossy, check in this order:
 
@@ -115,7 +115,7 @@ When a lit surface looks flat, black, inverted, or unexpectedly glossy, check in
    roughness, and standard fields do not tune Phong shininess.
 7. Alpha mode and opacity match the intended rendering path.
 
-## Common Mistakes
+## Common mistakes
 
 - Debugging lighting before verifying face winding and normals.
 - Editing `standard.*` fields after creating a Phong descriptor, or editing `phong.*` fields after
@@ -125,7 +125,7 @@ When a lit surface looks flat, black, inverted, or unexpectedly glossy, check in
   state differs.
 - Forgetting backend status differences for advanced material features.
 
-## See Also
+## Next steps
 
 - [Configure cameras](configure-cameras.md)
 - [Control depth, blending, and transparency](depth-blending.md)

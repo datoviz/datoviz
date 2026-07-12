@@ -2,7 +2,10 @@
 
 Run a scene in a native window for desktop interaction.
 
-## Use This When
+You need a scene with a figure and panel. The result is a window whose event loop renders the
+figure and forwards resize and input events to its controllers.
+
+## Use this when
 
 - You want a visible native window with mouse, keyboard, resize, and controller interaction.
 - You are running on a desktop environment with GLFW and a Vulkan-capable GPU.
@@ -45,7 +48,7 @@ The usual order is:
 scene -> figure/panel/visuals -> app -> view -> controller/input -> run -> destroy app -> destroy scene
 ```
 
-## Controllers and Input
+## Controllers and input
 
 Bind controllers before entering the run loop. For the common panzoom case, create it from the
 view so the controller is connected to the live input path.
@@ -57,7 +60,7 @@ dvz_view_panzoom(view, panel, NULL);
 Use 3D controller helpers for 3D panels, such as arcball, turntable, or fly. Input callbacks and
 GUI overlays should also be registered before `dvz_app_run()`.
 
-## Backend Status
+## Backend status
 
 `dvz_view_window()` is a supported native presentation path. It opens a desktop window through the
 configured native backend and is not part of the WebGPU/WASM browser path. In the generated WebGPU
@@ -69,7 +72,7 @@ release status.
 creation fails, or the GPU/runtime cannot be initialized. In automated environments, prefer
 `dvz_view_offscreen()`.
 
-## Canonical Examples
+## Complete examples
 
 - [GLFW App](../examples/gallery/runtime/runtime_app_glfw.md) - direct GLFW app lifecycle without
   the scenario runner. Source: `examples/c/runtime/app_glfw.c`.
@@ -78,7 +81,7 @@ creation fails, or the GPU/runtime cannot be initialized. In automated environme
 - [Input Events](../examples/gallery/features/features_input_events.md) - native input callback
   handling. Source: `examples/c/features/input_events.c`.
 
-## Important Details
+## Important details
 
 The app/runtime is not a scene object. It should be destroyed explicitly with `dvz_app_destroy()`
 before `dvz_scene_destroy()`.
@@ -89,7 +92,7 @@ GUI overlays, and callbacks attached to the view or panel they control.
 Finite frame counts are useful for smoke tests. Interactive applications normally pass `0` and let
 the app scheduler render until the user closes the window.
 
-## Common Mistakes
+## Common mistakes
 
 - Creating the app before the scene has a figure and attached visuals.
 - Forgetting to check whether `dvz_app()` or `dvz_view_window()` returned `NULL`.
@@ -98,7 +101,7 @@ the app scheduler render until the user closes the window.
 - Running a native window path in headless CI instead of using `dvz_view_offscreen()`.
 - Sharing platform window handles without using the external-surface integration path.
 
-## See Also
+## Next steps
 
 - [Create a scene](create-a-scene.md)
 - [Use panzoom](use-panzoom.md)

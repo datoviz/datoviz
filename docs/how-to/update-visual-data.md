@@ -39,10 +39,28 @@ Choose the update method from what changed in your data:
 
 This is the simplest case. The visual already exists, and you replace one array:
 
-```c
-dvz_visual_set_data(visual, "position", pos, n);
-dvz_visual_set_data(visual, "color", color, n);
-```
+Prerequisite: `visual` already has its initial point attributes. The result appears on the next
+rendered frame. This is a fragment; see the complete
+[Visual Data Update example](../examples/gallery/features/features_update_visual_data.md).
+
+=== "Python"
+
+    ```python
+    import numpy as np
+    import datoviz as dvz
+
+    positions = np.asarray(positions, dtype=np.float32, order="C")
+    colors = np.asarray(colors, dtype=np.uint8, order="C")
+    dvz.dvz_visual_set_data(visual, "position", positions)
+    dvz.dvz_visual_set_data(visual, "color", colors)
+    ```
+
+=== "C"
+
+    ```c
+    dvz_visual_set_data(visual, "position", pos, n);
+    dvz_visual_set_data(visual, "color", color, n);
+    ```
 
 Here `n` is the number of items in the visual. For a point visual, that means the number of points.
 For a segment visual, it means the number of segments. The attribute name, such as `"position"` or
@@ -70,12 +88,27 @@ dvz_visual_set_data_many(visual, updates, 3);
 This form is also useful when several attributes change together even if the item count stays the
 same. It keeps related updates in one place and avoids temporary mismatches between arrays.
 
+In Python, the NumPy facade accepts a mapping and infers each item count:
+
+```python
+dvz.dvz_visual_set_data_many(
+    visual, {"position": positions, "color": colors, "diameter_px": diameters}
+)
+```
+
 ## Update Part Of One Attribute
 
 If only a continuous slice of one existing attribute changed, update just that range:
 
 ```c
 dvz_visual_set_data_range(visual, "color", first, color + first, count);
+```
+
+The equivalent NumPy range upload infers `count` from the contiguous slice:
+
+```python
+changed = np.asarray(colors[first:first + count], dtype=np.uint8, order="C")
+dvz.dvz_visual_set_data_range(visual, "color", first, changed)
 ```
 
 Use this after the attribute has already been fully allocated with `dvz_visual_set_data()` or

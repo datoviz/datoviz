@@ -7,7 +7,7 @@ Datoviz uses different platform layers for source builds, Python imports, native
 visible windows, offscreen capture, Qt hosting, video export, and browser WebGPU. A failure in one
 layer is not proof that the others are broken.
 
-## Task Workflow
+## Diagnostic order
 
 Use this order:
 
@@ -24,7 +24,7 @@ identify install type
 Always reduce to the smallest path that should work on the machine. Do not start with a complex
 showcase, real data bundle, video export, Qt embed, or browser iframe.
 
-## Identify The Layer That Fails
+## Identify the failing layer
 
 | Layer | Minimal proof |
 | --- | --- |
@@ -40,7 +40,7 @@ Stop at the first failing layer and debug that layer. For example, do not inspec
 messages when `just build` has not completed, and do not inspect Vulkan logs when only a browser
 route fails.
 
-## Source Checkout Checks
+## Check a source checkout
 
 From the repository root:
 
@@ -64,7 +64,7 @@ CMake prints detected options near the end of configuration, including `DVZ_BUIL
 `DVZ_WITH_*`, `DVZ_HAS_*`, and optional provider status. Use those lines to distinguish "feature
 disabled by configuration" from "feature enabled but broken at runtime."
 
-## Native Runtime Checks
+## Check the native runtime
 
 Build and run a tiny native example:
 
@@ -88,7 +88,7 @@ DVZ_DRP2_TRACE=normal ./build/examples/c/features/basic_scene
 Trace output helps inspect command flow; it does not fix missing drivers, missing window-system
 support, or malformed scene data.
 
-## Offscreen Checks
+## Check offscreen rendering
 
 Use offscreen rendering to remove visible-window and input variables:
 
@@ -109,7 +109,7 @@ Interpret the result:
 Offscreen rendering still needs a usable native graphics runtime. It avoids opening a visible
 window, but it does not remove GPU/driver requirements.
 
-## Python Package Checks
+## Check the Python package
 
 For an installed package or local Python environment:
 
@@ -138,7 +138,7 @@ just ctypes-check
 For ordinary platform diagnosis of an installed package, start with import and one minimal example
 before running broader binding checks.
 
-## Browser WebGPU Checks
+## Check browser WebGPU
 
 Browser WebGPU is a separate experimental path. First serve the site:
 
@@ -163,7 +163,7 @@ Remember:
 - native success does not imply WebGPU success on the current browser/adapter;
 - browser readback, input, timing, and resize behavior differ from native windows.
 
-## Optional Provider Checks
+## Check optional providers
 
 Optional providers should fail clearly without breaking the base library.
 
@@ -177,7 +177,7 @@ Optional providers should fail clearly without breaking the base library.
 Do not add Qt, CUDA, video, or shaderc requirements to a base-platform bug unless the failing path
 actually uses that provider.
 
-## Platform-Specific Notes
+## Platform-specific notes
 
 | Platform | First checks |
 | --- | --- |
@@ -190,7 +190,7 @@ actually uses that provider.
 For packaging or wheel issues, record the package filename, Python version, architecture, and how
 the package was installed.
 
-## Common Symptom Triage
+## Triage common symptoms
 
 | Symptom | Likely layer | First action |
 | --- | --- | --- |
@@ -204,7 +204,7 @@ the package was installed.
 | Video export fails, screenshots work. | Encoder/provider path. | Check encoder build option and runtime libraries. |
 | Real-data showcase fails, synthetic example works. | Data bundle or path. | Check prepared data availability and example manifest instructions. |
 
-## What To Include In A Platform Report
+## Prepare a platform report
 
 ```text
 Install type: source checkout / wheel / other
@@ -224,7 +224,7 @@ Relevant console/log output:
 Include the first failing command and its first specific error. Later errors are often cascades from
 the first missing dependency, failed device creation, or missing asset.
 
-## Common Mistakes
+## Common mistakes
 
 - Debugging a browser adapter issue through native Vulkan logs.
 - Assuming that offscreen rendering is CPU-only.
@@ -235,7 +235,7 @@ the first missing dependency, failed device creation, or missing asset.
 - Mixing source checkout diagnostics with installed wheel diagnostics without recording which one
   was used.
 
-## See Also
+## Next steps
 
 - [Debug rendering output](debug-rendering.md)
 - [Diagnose WebGPU support](debug-webgpu.md)

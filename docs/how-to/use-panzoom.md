@@ -15,12 +15,30 @@ panel with the axes that should respond to interaction.
 When you already have a live app view, use the view helper. It creates the controller, binds it to
 the panel, and connects it to the view input router:
 
-```c
-dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
-dvz_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax);
+Prerequisite: create `panel` and a live window-backed `view` first. The result is mouse-drag and
+wheel navigation over the declared domain. This is a setup fragment; see the complete
+[Panzoom example](../examples/gallery/features/features_panzoom.md).
 
-DvzPanzoom* panzoom = dvz_view_panzoom(view, panel, NULL);
-```
+=== "Python"
+
+    ```python
+    import datoviz as dvz
+
+    dvz.dvz_panel_set_domain(panel, dvz.DVZ_DIM_X, xmin, xmax)
+    dvz.dvz_panel_set_domain(panel, dvz.DVZ_DIM_Y, ymin, ymax)
+    panzoom = dvz.dvz_view_panzoom(view, panel, None)
+    if not panzoom:
+        raise RuntimeError("dvz_view_panzoom() failed")
+    ```
+
+=== "C"
+
+    ```c
+    dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
+    dvz_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax);
+
+    DvzPanzoom* panzoom = dvz_view_panzoom(view, panel, NULL);
+    ```
 
 When you need one-axis or shared-controller binding in a live app, create the controller explicitly
 and bind it through the view so the panel is also connected to input:

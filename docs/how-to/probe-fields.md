@@ -2,9 +2,9 @@
 
 Read the field value under a cursor or selected coordinate.
 
-![Image Probe](../assets/gallery/v0.4/features/features_image_probe.webp)
+![An image panel with a pointer probe and numeric value readout](../assets/gallery/v0.4/features/features_image_probe.webp)
 
-## Task Workflow
+## Task workflow
 
 Convert the pointer position to panel data coordinates, map that coordinate into the sampled field's
 index or texture coordinate space, then display the value with a label, annotation, or overlay.
@@ -12,7 +12,7 @@ index or texture coordinate space, then display the value with a label, annotati
 Use probing for continuous image or field values. Use picking when the target is a rendered item id,
 instance id, or primitive id.
 
-## Minimal Query Path
+## Minimal query path
 
 1. Enable pixel queries on the image visual.
 2. Queue a panel query at the latest outer-panel-local pointer position.
@@ -67,7 +67,7 @@ colorbar range, and probe coordinate transform synchronized. A readout that samp
 array or normalization than the colorbar is worse than no readout.
 
 
-## Important Details
+## Important details
 
 Probing depends on the same coordinate transform used for rendering. Use
 `dvz_panel_transform_point()` to move between figure pixels, panel pixels, plot pixels, data, and
@@ -83,21 +83,21 @@ Decide whether the readout reports nearest-texel values or interpolated values. 
 filtered by the GPU; a CPU-side nearest lookup can disagree with what the user sees between texel
 centers.
 
-## When To Use It
+## When to use it
 
 - Image or sampled-field cursor readouts.
 - Linked panels that share one probe marker and one value display.
 - Colorbar workflows where the displayed value must match the scalar normalization.
 - Debugging field transforms by printing the resolved panel coordinate and sampled value.
 
-## Common Mistakes
+## Common mistakes
 
 - Treating screen pixels as image indices after pan or zoom.
 - Ignoring interpolation and sampling mode when reporting values.
 - Turning a composed linked-probe showcase into copied starter code.
 - Showing a colorbar with a range that differs from the field normalization.
 
-## See Also
+## Next steps
 
 - [Use sampled fields and textures](use-sampled-fields.md)
 - [Pick items](pick-items.md)

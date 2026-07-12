@@ -20,6 +20,40 @@ Choose the color path by what the data represents:
 
 ## Minimal Call Sequence
 
+Prerequisite: create `scene`, `panel`, a point `visual`, and C-contiguous position and scalar arrays.
+The result maps the scalar `"color"` attribute through Viridis over `[0, 1]`. The snippets are setup
+fragments; see the complete
+[Scalar Color Scale example](../examples/gallery/features/features_colormap_scale.md).
+
+### Python
+
+```python
+import ctypes
+import numpy as np
+import datoviz as dvz
+
+positions = np.asarray(positions, dtype=np.float32, order="C")
+values = np.asarray(values, dtype=np.float32, order="C")
+colormap = dvz.dvz_colormap_builtin(scene, dvz.DVZ_BUILTIN_COLORMAP_VIRIDIS)
+
+desc = dvz.dvz_scale_desc()
+desc.kind = dvz.DVZ_SCALE_CONTINUOUS
+desc.label = b"scalar value"
+scale = dvz.dvz_scale(scene, ctypes.byref(desc))
+if not colormap or not scale:
+    raise RuntimeError("colormap or scale creation failed")
+dvz.dvz_scale_set_domain(scale, 0.0, 1.0)
+dvz.dvz_scale_set_colormap(scale, colormap)
+
+dvz.dvz_visual_set_attr_format(visual, b"color", dvz.DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32)
+dvz.dvz_visual_set_scale(visual, b"color", scale)
+dvz.dvz_visual_set_data(visual, "position", positions)
+dvz.dvz_visual_set_data(visual, "color", values)
+dvz.dvz_panel_add_visual(panel, visual, None)
+```
+
+### C
+
 ```c
 float values[N] = {0};
 

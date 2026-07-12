@@ -8,7 +8,11 @@ First prove that the retained scene contains the expected figure, panel, visual,
 item counts. Only then inspect command streams, Vulkan/WebGPU behavior, screenshots, or platform
 state.
 
-## Task Workflow
+If the project does not build, Python does not import, or no graphics device can be created, start
+with [Diagnose build and platform issues](diagnose-platform.md). If only a browser route fails, use
+[Diagnose WebGPU support](debug-webgpu.md).
+
+## Diagnostic order
 
 Use this order when a scene does not look right:
 
@@ -27,7 +31,7 @@ Do not start with the backend unless the same minimal scene fails after the scen
 Most blank frames are caused by a missing visual attachment, zero items, an attribute shape mismatch,
 transparent colors, a camera/domain mismatch, or depth/blend state hiding valid geometry.
 
-## Start With A Known-Good Baseline
+## Start with a known-good baseline
 
 Build and run a tiny scene before debugging a complex showcase:
 
@@ -46,7 +50,7 @@ just example-c runtime/offscreen_capture
 If the baseline fails too, switch to [Diagnose build and platform issues](diagnose-platform.md).
 If the baseline works, reduce your scene until the smallest failing version remains.
 
-## Verify The Scene Hierarchy
+## Verify the scene hierarchy
 
 A renderable scene needs this chain:
 
@@ -68,7 +72,7 @@ Check these facts before inspecting GPU logs:
 When in doubt, comment out all but one visual and make it large, centered, and opaque. A single
 visible point, triangle, or image is a better diagnostic than a full scene with many moving parts.
 
-## Check Visual Data
+## Check visual data
 
 Common data-side causes of missing geometry:
 
@@ -84,7 +88,7 @@ Use deterministic data while debugging. Fix the random seed, freeze animation st
 camera/controller state. Avoid comparing screenshots from randomized data or time-dependent
 callbacks.
 
-## Check Coordinates And Cameras
+## Check coordinates and cameras
 
 If the visual is attached and has data, the next likely issue is that valid geometry is outside the
 visible domain.
@@ -107,7 +111,7 @@ For screen-space visuals, labels, and overlays, verify whether positions are in 
 or pixel space. A coordinate-space mismatch can make a valid visual appear far from the intended
 panel.
 
-## Check Color, Alpha, Depth, And Blending
+## Check color, alpha, depth, and blending
 
 Use a deliberately boring render state for the first proof:
 
@@ -129,7 +133,7 @@ Then add depth and blending back one feature at a time.
 
 PNG screenshots are sRGB RGBA8 visual snapshots. They are not linear-float numeric readback.
 
-## Use Offscreen Rendering To Remove Window Variables
+## Remove window variables with offscreen rendering
 
 Offscreen rendering is the preferred diagnostic when the scene should be static:
 
@@ -145,7 +149,7 @@ If offscreen rendering works but the interactive window does not, focus on nativ
 resize, controller, or event-loop behavior. If both fail in the same way, focus on scene data,
 runtime command generation, or platform graphics support.
 
-## Inspect Runtime Command Flow
+## Inspect runtime command flow
 
 After scene-level checks pass, enable DRP2 trace output:
 
@@ -164,7 +168,7 @@ pipeline, bind, draw, and presentation commands. It is not a substitute for chec
 scene first; an empty or malformed scene can still produce a technically valid but visually empty
 frame.
 
-## Compare Native, Offscreen, And Browser Paths
+## Compare native, offscreen, and browser paths
 
 Keep these paths separate:
 
@@ -178,7 +182,7 @@ Keep these paths separate:
 A scene can be valid natively while its WebGPU route is unsupported, planned, or blocked by a
 browser adapter. Use [Diagnose WebGPU support](debug-webgpu.md) for browser-specific failures.
 
-## Symptom Triage
+## Triage by symptom
 
 | Symptom | Most useful first step |
 | --- | --- |
@@ -191,7 +195,7 @@ browser adapter. Use [Diagnose WebGPU support](debug-webgpu.md) for browser-spec
 | First frame is wrong, later frames recover. | Check upload timing, initial controller state, and first-frame callbacks. |
 | Later frames degrade. | Check retained updates, item ranges, resize handling, and resource churn. |
 
-## Report Template
+## Report template
 
 Use this shape when filing or handing off a rendering issue:
 
@@ -214,7 +218,7 @@ Relevant logs or DRP2 trace:
 
 Include a screenshot only after recording the exact example, size, data seed, and camera state.
 
-## Common Mistakes
+## Common mistakes
 
 - Debugging Vulkan before checking whether `dvz_panel_add_visual()` was called.
 - Testing with transparent colors and no known opaque baseline.
@@ -223,7 +227,7 @@ Include a screenshot only after recording the exact example, size, data seed, an
 - Assuming a WebGPU route exists because the native example works.
 - Treating a depth/blending issue as a geometry upload issue before testing opaque geometry.
 
-## See Also
+## Next steps
 
 - [Render offscreen](render-offscreen.md)
 - [Save screenshots](screenshots.md)

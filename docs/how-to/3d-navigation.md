@@ -2,7 +2,7 @@
 
 Navigate 3D panels with arcball, turntable, or fly controls.
 
-![Arcball Controller](../assets/gallery/v0.4/features/features_controller_arcball.poster.webp)
+![A colored 3D object viewed with the arcball controller](../assets/gallery/v0.4/features/features_controller_arcball.poster.webp)
 
 3D navigation is the combination of a camera, a controller, and scene scale. The camera defines the
 initial eye, target, up vector, projection, and clipping range. The controller turns mouse, wheel,
@@ -17,20 +17,23 @@ dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ);
 
 Bind 3D controllers with `DVZ_DIM_MASK_XYZ`. Use `panzoom` only for 2D panels.
 
-## Choose A Controller
+## Choose a controller
 
 Choose the controller by the user's mental model, not by the visual type alone.
 
-| Controller | Best for | Navigation model | Interaction model |
-| --- | --- | --- | --- |
-| `dvz_arcball()` | Inspecting one centered object such as a mesh, molecule, sphere, volume, or compact point cloud. | Rotates the object/view around a virtual sphere, with optional pan and zoom around the same subject. | Left drag rotates; middle or right drag pans; wheel zooms; double-click resets. |
-| `dvz_turntable()` | Upright scenes where roll would be disorienting, such as surfaces, terrain, laboratory coordinates, planets, or CAD-like models. | Orbits around a pivot with constrained yaw and pitch while preserving a world-up convention. | Left drag orbits; middle or right drag pans when enabled; wheel dollies; double-click resets. |
-| `dvz_fly()` | Large scenes, walkthroughs, volume interiors, dense point clouds, and data where the camera should move through space. | First-person camera navigation, with pointer look/orbit and keyboard translation. | Left drag looks; right drag strafes/up-down, or orbits when a pivot is set; wheel moves forward/back; `WASD` or arrows move; `Space` moves up; `Ctrl` or `C` moves down; `Shift` moves faster; `R` resets. |
+| Controller | Choose it for | Main interaction |
+| --- | --- | --- |
+| `dvz_arcball()` | A centered object inspected from arbitrary directions. | Drag to rotate; middle or right drag to pan; wheel to zoom. |
+| `dvz_turntable()` | An upright scene where roll would make axes or terrain disorienting. | Drag to orbit around a pivot; wheel to dolly. |
+| `dvz_fly()` | A large scene users move through instead of orbiting around. | Drag to look; use `WASD` or arrows to move; wheel to move forward or back. |
+
+Double-click resets arcball and turntable. Fly also supports vertical movement, speed modifiers, and
+reset; its focused section below gives the complete key mapping.
 
 Use arcball as the default for a 3D object viewer. Use turntable when the scene has a meaningful
 vertical axis. Use fly when translation through the scene is part of the task.
 
-## Camera First
+## Configure the camera first
 
 Set a camera before binding a controller when the initial viewpoint matters. A good camera makes
 controller behavior predictable and keeps depth precision stable.
@@ -61,7 +64,7 @@ Keep the camera convention consistent with labels, grids, lighting, picking, and
 gizmo. For most examples in this documentation, `Y` is up, the camera looks toward the origin, and
 the data is centered near the origin.
 
-## Arcball Object Inspection
+## Inspect an object with arcball
 
 Arcball is best when the user wants to inspect an object from arbitrary directions. It allows roll,
 so it is useful for molecules, anatomical meshes, isolated geometry, and compact point clouds where
@@ -93,7 +96,7 @@ dvz_panel_bind_controller(right_panel, shared, DVZ_DIM_MASK_XYZ);
 Shared controllers link navigation state. Use separate controller handles when panels should move
 independently.
 
-## Turntable For Upright Scenes
+## Keep scenes upright with turntable
 
 Turntable navigation keeps an upright feel. It is usually the right choice for surfaces, coordinate
 systems, instrument views, map-like 3D scenes, and any view where rolling the camera makes axes hard
@@ -119,7 +122,7 @@ if (dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) != 0)
 The `initial_view` should match the panel camera. Clamp pitch and distance when the object has a
 preferred viewing range, or when moving inside the object would be confusing.
 
-## Fly For Large 3D Data
+## Move through large 3D data with fly
 
 Fly navigation moves the camera through the world. It is more sensitive to scale than arcball or
 turntable because speed is expressed in scene units.
@@ -147,7 +150,7 @@ camera should move in all directions without preserving a ground-plane conventio
 `look_speed`, and `wheel_speed` after choosing the camera and clipping range; one wheel tick or one
 second of keyboard motion should move a useful distance, not skip across the dataset.
 
-## Scene Scale And Clipping
+## Match scene scale and clipping
 
 Controller tuning starts with scene scale:
 
@@ -161,7 +164,7 @@ Do not hide scale problems in the controller. If a scene is imported in microns,
 indices, decide whether the displayed coordinates should stay in those units or be normalized for
 inspection.
 
-## Depth, Lighting, And Orientation
+## Check depth, lighting, and orientation
 
 Navigation changes only view state. It does not fix render ordering, lighting, material, or depth
 setup.
@@ -176,7 +179,7 @@ For opaque 3D visuals:
 For transparent 3D visuals, read the depth and blending documentation before assuming navigation is
 the issue. Transparent geometry may need a dedicated transparency technique or draw-order policy.
 
-## Multi-Panel Navigation
+## Navigate multiple panels
 
 A controller is a retained scene object. Binding the same controller to several panels links the
 state of those panels; creating several controllers gives each panel independent navigation.
@@ -197,17 +200,13 @@ dvz_panel_bind_controller(panel_b, controller_b, DVZ_DIM_MASK_XYZ);
 Use the same camera descriptor for linked panels unless the difference is intentional. If cameras
 start from different targets or up vectors, shared interaction can feel inconsistent.
 
-## WebGPU Status
+## Browser status
 
-The v0.4 WebGPU/WASM path supports promoted controller examples, but it is not full native parity.
-Do not assume every native controller configuration, visual family, query target, or host input
-path is available in the browser.
+The experimental WebGPU/WASM path supports promoted controller examples, but not every native
+configuration or host input path. Check the [WebGPU subset](../reference/webgpu-subset.md) and the
+published status of the example you plan to deploy.
 
-For public examples, use the manifest-backed gallery route status. For application code, keep the
-scene contract shared and treat browser JavaScript as host glue, not a second implementation of the
-navigation semantics.
-
-## Common Mistakes
+## Common mistakes
 
 - Binding `dvz_panzoom()` to a 3D panel instead of a 3D controller.
 - Binding a 3D controller with `DVZ_DIM_MASK_XY` instead of `DVZ_DIM_MASK_XYZ`.
@@ -229,7 +228,7 @@ navigation semantics.
 | Fly jumps too far. | Movement speed is too large for the data units. | Reduce `speed` and `wheel_speed`, or normalize the scene. |
 | 3D shape looks flat or unordered. | Depth, normals, material, or transparency setup is missing. | Check visual depth settings and material/lighting configuration. |
 
-## Validate The Result
+## Validate the result
 
 For a native example, build and run the narrow controller example first:
 
@@ -250,7 +249,7 @@ just example-c features/controller_fly
 
 Use `--png` for a non-interactive smoke run, then use `--live` to validate the actual input model.
 
-## See Also
+## Next steps
 
 - [Configure cameras](configure-cameras.md)
 - [Use coordinate systems](coordinate-systems.md)

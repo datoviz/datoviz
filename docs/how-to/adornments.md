@@ -22,7 +22,11 @@ Use this page for the overview. Use [Add axes](axes.md), [Add text, labels, and
 annotations](add-annotations.md), [Map scalar values with colormaps](use-colormaps.md), and
 [Probe image or field values](probe-fields.md) for the specialized workflows.
 
-## Minimal Call Sequences
+## Minimal Call-Sequence Excerpts
+
+These excerpts assume a live panel and the required continuous or categorical scale. Constructors
+may return `NULL`, and the setters return `DvzResult`; complete examples should check both. The
+canonical sources are linked under Related examples below.
 
 ```c
 DvzColorbar* colorbar = dvz_colorbar(panel, scale, NULL);

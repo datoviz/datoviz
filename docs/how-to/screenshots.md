@@ -20,8 +20,10 @@ frame, writes a PNG, and keeps one cleanup path for success and failure.
 
 ```c
 DvzApp* app = dvz_app(scene);
-DvzView* view = dvz_view_offscreen(app, figure, width, height);
 int rc = -1;
+if (app == NULL)
+    return rc;
+DvzView* view = dvz_view_offscreen(app, figure, width, height);
 if (view == NULL)
     goto cleanup;
 
@@ -64,15 +66,23 @@ Use `dvz_view_capture_png()` when you want to save the last rendered frame immed
 Use `dvz_view_capture_start()` and `dvz_view_capture_stop()` when the same run may also produce
 DVZR recordings or video output, or when capture is controlled from `DvzAppCaptureConfig`:
 
+This function-body excerpt assumes a valid `view` and returns from its enclosing function on error:
+
 ```c
 DvzAppCaptureConfig capture = dvz_app_capture_config();
 capture.flags = DVZ_APP_CAPTURE_PNG;
 capture.directory = "captures";
 capture.basename = "frame";
 
-dvz_view_capture_start(view, &capture);
-dvz_view_render_once(view);
-dvz_view_capture_stop(view);
+if (dvz_view_capture_start(view, &capture) != 0)
+    return -1;
+if (dvz_view_render_once(view) != DVZ_CANVAS_FRAME_READY)
+{
+    (void)dvz_view_capture_stop(view);
+    return -1;
+}
+if (dvz_view_capture_stop(view) != 0)
+    return -1;
 ```
 
 `dvz_view_capture_stop()` writes the PNG from the last rendered frame for this capture mode.

@@ -2,7 +2,7 @@
 
 Pick the visual whose primitive and data layout match your task.
 
-## Task Workflow
+## Task workflow
 
 Start from the geometry you have, not from the plot name. Use point or marker for independent 2D
 samples, path or segment for lines, image or volume for sampled fields, mesh or sphere for 3D
@@ -12,7 +12,7 @@ Choose the coarsest visual family that lets you batch similar elements together.
 Datoviz layout is few visuals, many items per visual. Split elements into separate visuals only
 when they truly need different visual families, materials, transforms, panels, or update schedules.
 
-## Decision Matrix
+## Decision matrix
 
 | Data shape | Usually use | Reference | Canonical gallery |
 | --- | --- | --- | --- |
@@ -33,7 +33,7 @@ when they truly need different visual families, materials, transforms, panels, o
 | Human-readable retained strings | Text | [Text](../reference/visual-families/text.md) | [Text](../examples/gallery/visuals/visuals_text.md) |
 | Low-level font-atlas quads | Glyph | [Glyph](../reference/visual-families/glyph.md) | [Glyph](../examples/gallery/visuals/visuals_glyph.md) |
 
-## Neighboring Choices
+## Compare neighboring choices
 
 Use `dvz_point()` for dense circular marks when shape does not carry meaning. Use `dvz_marker()`
 when different symbols are part of the encoding. Use `dvz_pixel()` when every item should occupy a
@@ -60,7 +60,7 @@ API; it renders categorical sampled fields. Use `dvz_glyph()` only when you need
 over atlas glyph quads.
 
 
-## Important Details
+## Important details
 
 Visual families are lower-level than plotting functions. A composed chart may use several visuals
 plus adornments. Keep those compositions in examples and use How-To pages for the reusable workflow.
@@ -83,7 +83,7 @@ Split data into multiple visuals only when the split changes one of these contra
 If the difference is only per-item color, size, radius, symbol, category, or transform, prefer one
 visual with per-item attributes.
 
-## Common Mistakes
+## Common mistakes
 
 - Using mesh for point clouds; use point, marker, sphere, or splat depending on visual weight.
 - Using image for sparse cells; use pixel or primitive when every cell is independent geometry.
@@ -92,7 +92,7 @@ visual with per-item attributes.
 - Using primitive when the data already has mesh semantics such as normals, UVs, materials, or
   repeated instances.
 
-## See Also
+## Next steps
 
 - [Add visuals to a panel](add-a-visual.md)
 - [Use sampled fields and textures](use-sampled-fields.md)

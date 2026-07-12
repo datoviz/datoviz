@@ -23,13 +23,33 @@ or controller state automatically.
 
 ## Grid Call Sequence
 
-```c
-DvzGrid* grid = dvz_figure_grid(figure, 1, 2);
-DvzPanel* left = dvz_grid_panel(grid, 0, 0);
-DvzPanel* right = dvz_grid_panel(grid, 0, 1);
-dvz_panel_add_visual(left, visual_a, NULL);
-dvz_panel_add_visual(right, visual_b, NULL);
-```
+Prerequisite: create one `figure` and two prepared visuals. The result is a one-row, two-column
+figure with one visual per panel. These are fragments; see the complete
+[Multiple Panels example](../examples/gallery/features/features_panel_multi.md).
+
+=== "Python"
+
+    ```python
+    import datoviz as dvz
+
+    grid = dvz.dvz_figure_grid(figure, 1, 2)
+    left = dvz.dvz_grid_panel(grid, 0, 0)
+    right = dvz.dvz_grid_panel(grid, 0, 1)
+    if not grid or not left or not right:
+        raise RuntimeError("panel grid creation failed")
+    dvz.dvz_panel_add_visual(left, visual_a, None)
+    dvz.dvz_panel_add_visual(right, visual_b, None)
+    ```
+
+=== "C"
+
+    ```c
+    DvzGrid* grid = dvz_figure_grid(figure, 1, 2);
+    DvzPanel* left = dvz_grid_panel(grid, 0, 0);
+    DvzPanel* right = dvz_grid_panel(grid, 0, 1);
+    dvz_panel_add_visual(left, visual_a, NULL);
+    dvz_panel_add_visual(right, visual_b, NULL);
+    ```
 
 Use `dvz_grid_set_margins()` and `dvz_grid_set_gutter()` when the panels need reserved space or
 consistent spacing.

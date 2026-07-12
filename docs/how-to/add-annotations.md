@@ -20,7 +20,8 @@ deciding whether its placement is screen-space, data-space, or tied to a query r
 
 Create a retained `DvzText` when the text is a small number of strings owned by the scene. This is
 the right path for corner labels, captions, and status text that should stay readable while the data
-view changes.
+view changes. The following is a function-body excerpt that assumes a live `panel`; check constructor
+and mutator results in application code. See `examples/c/features/text_block.c` for complete setup.
 
 ```c
 DvzText* text = dvz_text(panel, 0);
@@ -60,7 +61,8 @@ scene for every value change.
 ## Categorical Label Fields
 
 Use `dvz_labels()` for label images or segmentation masks. A labels visual renders an integer
-sampled field through a categorical scale; it is not a per-item string list.
+sampled field through a categorical scale; it is not a per-item string list. This excerpt assumes
+that `scene`, `panel`, `label_field`, and `categorical_scale` are already valid.
 
 ```c
 DvzVisual* labels = dvz_labels(scene, 0);
@@ -88,7 +90,8 @@ visual.
 
 Use `dvz_annotation_label()` for one or a few labels tied to data coordinates: highlighted peaks,
 selected points, probe markers, and callouts. The placement is data-space with optional pixel
-offsets so the text can sit near, not on top of, the point.
+offsets so the text can sit near, not on top of, the point. This is an illustrative placement
+excerpt; the annotation-readout gallery source contains the complete query-driven workflow.
 
 ```c
 DvzTextStyle style = dvz_text_style();

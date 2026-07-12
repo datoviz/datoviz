@@ -18,8 +18,10 @@ view step and uses a cleanup path so failed size checks or render calls still de
 
 ```c
 DvzApp* app = dvz_app(scene);
-DvzView* view = dvz_view_offscreen(app, figure, width, height);
 int rc = -1;
+if (app == NULL)
+    return rc;
+DvzView* view = dvz_view_offscreen(app, figure, width, height);
 if (view == NULL)
     goto cleanup;
 
@@ -47,6 +49,9 @@ frame before reading pixels or saving a screenshot from the view.
 For static scenes, one call to `dvz_view_render_once()` is enough. This is the path used by
 `examples/c/runtime/offscreen_capture.c`: build the retained scene, create an offscreen view,
 verify the framebuffer dimensions, render once, and write the PNG.
+
+Prerequisite: build the source checkout from the repository root. A successful run writes the
+reported exact-size PNG; use the source below as the complete, checked example.
 
 ```sh
 just example-c runtime/offscreen_capture

@@ -23,7 +23,8 @@ whether frames come from a fixed offscreen sequence or from a visible app view.
 
 The canonical example uses the app capture API directly. The default run records a 120-frame
 offscreen video with the portable CPU-readback capture mode, and `--frames` lets you choose the
-frame count:
+frame count. Build the source checkout first; a successful run reports the generated video path.
+The complete checked source is `examples/c/runtime/video_export.c`.
 
 ```sh
 ./build/examples/c/runtime/video_export
@@ -34,10 +35,11 @@ Some repository examples also accept command-line capture flags for documentatio
 checks. Application code should use the app capture API shown below.
 
 
-## Minimal Capture Sequence
+## Portable CPU-Readback Capture
 
 For deterministic export, create an offscreen view, start video capture, update scene state before
-each frame, render a bounded number of frames, then stop capture:
+each frame, render a bounded number of frames, then stop capture. This function-body excerpt assumes
+valid app/figure state and an `update_scene()` helper:
 
 ```c
 DvzAppCaptureConfig capture = dvz_app_capture_config();
@@ -51,7 +53,8 @@ DvzView* view = dvz_view_offscreen(app, figure, width, height);
 if (view == NULL)
     return -1;
 
-dvz_view_capture_start(view, &capture);
+if (dvz_view_capture_start(view, &capture) != 0)
+    return -1;
 
 for (uint32_t frame = 0; frame < frame_count; frame++)
 {
@@ -59,7 +62,8 @@ for (uint32_t frame = 0; frame < frame_count; frame++)
     dvz_app_run(app, 1);
 }
 
-dvz_view_capture_stop(view);
+if (dvz_view_capture_stop(view) != 0)
+    return -1;
 ```
 
 Do not hand-roll a separate renderer for video; reuse the app/offscreen frame path.
@@ -68,7 +72,8 @@ Do not hand-roll a separate renderer for video; reuse the app/offscreen frame pa
 ## Live App Recording
 
 To record a visible native example, attach capture to the window-backed view before entering the app
-loop, then stop capture after the loop returns:
+loop, then stop capture after the loop returns. This is a function-body excerpt for the less
+reproducible interactive path:
 
 ```c
 DvzAppCaptureConfig capture = dvz_app_capture_config();
@@ -82,9 +87,11 @@ DvzView* view = dvz_view_window(app, figure, width, height, "Datoviz");
 if (view == NULL)
     return -1;
 
-dvz_view_capture_start(view, &capture);
+if (dvz_view_capture_start(view, &capture) != 0)
+    return -1;
 dvz_app_run(app, 0);
-dvz_view_capture_stop(view);
+if (dvz_view_capture_stop(view) != 0)
+    return -1;
 ```
 
 This records the frames presented by that view. Window resizes, device scale, controller input, and
@@ -125,7 +132,7 @@ The CPU-readback path is the documented default for portable examples. It is slo
 interop but easier to validate across machines.
 
 
-## NVENC
+## Advanced Optional NVENC Path
 
 NVENC is NVIDIA's hardware video encoder. In Datoviz, the NVENC path is an optional advanced
 backend for NVIDIA systems that can encode rendered frames on the GPU through external
