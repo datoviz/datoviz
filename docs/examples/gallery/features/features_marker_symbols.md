@@ -13,12 +13,17 @@ This example compares several ways to define marker glyphs in one symbol set.
 
 ## Preview
 
-![Marker Symbols](../../../assets/gallery/v0.4/features/features_marker_symbols.webp)
+=== "Screenshot"
 
-<aside class="dvz-webgpu-unavailable" role="note">
-<strong>No live WebGPU preview</strong>
-<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
-</aside>
+    ![Marker Symbols](../../../assets/gallery/v0.4/features/features_marker_symbols.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=features_marker_symbols" title="Marker Symbols WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=features_marker_symbols">Open the live WebGPU example</a>.
 
 ## What To Look For
 
@@ -45,9 +50,9 @@ Each row uses the same marker attributes, including position, color, diameter_px
     - Lane: `features`
     - Source: [`examples/c/features/marker_symbols.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/marker_symbols.c)
     - Python source: [`examples/python/gallery/features/marker_symbols.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/marker_symbols.py)
-    - Browser support: Deferred
-    - Browser note: marker symbol-set and mixed atlas encoding parity are not in the RC WebGPU path yet
-    - Browser capability tags: `marker`, `symbol-set`, `glyph-atlas`
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=features_marker_symbols"><code>examples/webgpu/live.html?id=features_marker_symbols</code></a>
+    - Browser capability tags: `marker`, `symbol-set`, `glyph-atlas`, `text`, `controller`, `panzoom`
     - Validation: `smoke+screenshot`
 
     **Tags**

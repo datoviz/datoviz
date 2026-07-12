@@ -66,6 +66,8 @@ static const char* _texture_format_name(uint32_t format)
 {
     switch (format)
     {
+    case DVZ_FORMAT_R8_UNORM:
+        return "r8unorm";
     case 0:
     case DVZ_FORMAT_R8G8B8A8_UNORM:
         return "rgba8unorm";

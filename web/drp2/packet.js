@@ -64,7 +64,7 @@ function textureUsage(mask) {
 
 function textureFormat(format) {
   return new Map([
-    [0, "rgba8unorm"], [37, "rgba8unorm"], [44, "bgra8unorm"], [76, "r16float"],
+    [0, "rgba8unorm"], [9, "r8unorm"], [37, "rgba8unorm"], [44, "bgra8unorm"], [76, "r16float"],
     [97, "rgba16float"], [98, "r32uint"], [99, "r32sint"], [100, "r32float"],
     [101, "rg32uint"], [126, "depth32float"],
   ]).get(format) ?? "rgba8unorm";

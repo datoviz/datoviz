@@ -57,6 +57,7 @@ DvzScenarioSpec dvz_example_isolines_scenario(void);
 DvzScenarioSpec dvz_example_legend_categorical_scenario(void);
 DvzScenarioSpec dvz_example_lighting_scenario(void);
 DvzScenarioSpec dvz_example_material_mesh_scenario(void);
+DvzScenarioSpec dvz_example_marker_symbols_scenario(void);
 DvzScenarioSpec dvz_example_mesh_texture_scenario(void);
 DvzScenarioSpec dvz_example_obj_loading_scenario(void);
 DvzScenarioSpec dvz_example_orientation_gizmo_scenario(void);
@@ -273,6 +274,8 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_start_scatter_scenario();
     case 81:
         return dvz_example_datetime_axis_scenario();
+    case 82:
+        return dvz_example_marker_symbols_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

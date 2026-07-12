@@ -3772,23 +3772,30 @@
           "site_asset": "/assets/gallery/v0.4/features/features_marker_symbols.webp"
         }
       },
-      "webgpu_status": "webgpu-deferred",
-      "webgpu_status_label": "Deferred",
+      "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "marker",
         "symbol-set",
-        "glyph-atlas"
+        "glyph-atlas",
+        "text",
+        "controller",
+        "panzoom"
       ],
-      "webgpu_reason": "marker symbol-set and mixed atlas encoding parity are not in the RC WebGPU path yet",
       "webgpu": {
-        "status": "webgpu-deferred",
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=features_marker_symbols",
         "requirements": [
           "marker",
           "symbol-set",
-          "glyph-atlas"
-        ],
-        "reason": "marker symbol-set and mixed atlas encoding parity are not in the RC WebGPU path yet"
+          "glyph-atlas",
+          "text",
+          "controller",
+          "panzoom"
+        ]
       },
+      "webgpu_route": "examples/webgpu/live.html?id=features_marker_symbols",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_marker_symbols",
       "primary_feature": "marker-symbols",
       "python_source": "examples/python/gallery/features/marker_symbols.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/marker_symbols.py",

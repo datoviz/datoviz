@@ -902,6 +902,7 @@ async function main() {
         ['features_probe_labels', { label: 'Label Probe', kind: 'query' }],
         ['start_scatter', { label: 'Scatter Plot' }],
         ['features_datetime_axis', { label: 'Datetime Axis', kind: 'animated' }],
+        ['features_marker_symbols', { label: 'Marker Symbols' }],
       ]);
       const route = filteredRoutes.get(routeFilter);
       requireOk(route !== undefined, `unknown filtered WebGPU route: ${routeFilter}`);

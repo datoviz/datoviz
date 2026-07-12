@@ -331,6 +331,7 @@ function mapTextureUsage(usage) {
 
 function mapTextureFormat(format) {
   switch (format) {
+    case "r8unorm":
     case "r16float":
     case "r32uint":
     case "r32sint":
@@ -358,6 +359,8 @@ function effectiveCapabilities(runtimeCaps, streamCaps) {
 
 function textureFormatBytes(format) {
   switch (format) {
+    case "r8unorm":
+      return 1;
     case "r16float":
       return 2;
     case "r32uint":

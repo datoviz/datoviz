@@ -48,6 +48,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/legend_categorical.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/lighting.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/material_mesh.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/marker_symbols.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/mesh_texture.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/obj_loading.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/orientation_gizmo.c

@@ -11,6 +11,11 @@ export const LIVE_EXAMPLES = [
     animate: true,
   },
   {
+    id: "features_marker_symbols",
+    label: "Marker Symbols",
+    scenarioId: "features_marker_symbols",
+  },
+  {
     id: "composites_graph",
     label: "Graph Composite",
     scenarioId: "composites_graph",

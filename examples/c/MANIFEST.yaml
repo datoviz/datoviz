@@ -2233,12 +2233,15 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-deferred
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=features_marker_symbols
       requirements:
         - marker
         - symbol-set
         - glyph-atlas
-      reason: marker symbol-set and mixed atlas encoding parity are not in the RC WebGPU path yet
+        - text
+        - controller
+        - panzoom
     agent_copy_safe: true
     gallery:
       card: small

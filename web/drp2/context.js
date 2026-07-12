@@ -2,6 +2,7 @@ const configuredCanvasContexts = new WeakMap();
 
 function supportedTextureFormats(canvasFormat) {
   const formats = [
+    "r8unorm",
     "r16float",
     "r32uint",
     "r32sint",

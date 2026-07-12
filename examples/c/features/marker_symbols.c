@@ -47,6 +47,8 @@
 #define ROW_SYMBOLS   5u
 #define ROW_LABEL_X   -0.78f
 
+DvzScenarioSpec dvz_example_marker_symbols_scenario(void);
+
 
 
 /*************************************************************************************************/
@@ -539,7 +541,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _marker_symbols_scenario(void)
+DvzScenarioSpec dvz_example_marker_symbols_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "features_marker_symbols",
@@ -547,6 +549,8 @@ static DvzScenarioSpec _marker_symbols_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_MARKER_VISUAL | DVZ_SCENARIO_REQ_TEXT_VISUAL |
+                        DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_PANZOOM,
         .init = _scenario_init,
     };
 }
@@ -564,8 +568,10 @@ static DvzScenarioSpec _marker_symbols_scenario(void)
  * @param argv command-line argument vector
  * @return process exit code
  */
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _marker_symbols_scenario();
+    DvzScenarioSpec spec = dvz_example_marker_symbols_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

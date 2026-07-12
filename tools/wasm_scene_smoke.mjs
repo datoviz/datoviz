@@ -2445,6 +2445,7 @@ try {
     "features_probe_labels",
     "start_scatter",
     "features_datetime_axis",
+    "features_marker_symbols",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -3510,6 +3511,22 @@ try {
         expectPipeline(stream, `${label} signal`, (pipeline) => pipeline.builtin_pipeline === "scene.path");
         expectPipeline(stream, `${label} text`, (pipeline) => pipeline.builtin_pipeline === "scene.glyph");
         requireOk(commandsOf(stream, "Draw").length >= 3, `${label}: expected signal, axes, and text draws`);
+      },
+    ],
+    [
+      "features_marker_symbols",
+      "marker symbols",
+      (stream, label) => {
+        expectPipeline(stream, `${label} builtins`, (pipeline) => pipeline.builtin_pipeline === "scene.marker");
+        expectPipeline(stream, `${label} labels`, (pipeline) => pipeline.builtin_pipeline === "scene.glyph");
+        requireOk(commandsOf(stream, "WriteTexture").length >= 4, `${label}: expected symbol atlas uploads`);
+        const textureFormats = new Set(commandsOf(stream, "CreateTexture").map((command) => command.format));
+        requireOk(textureFormats.has("r8unorm"), `${label}: expected SDF r8unorm atlas`);
+        requireOk(textureFormats.has("rgba8unorm"), `${label}: expected bitmap/MSDF rgba8unorm atlases`);
+        requireOk(
+          commandsOf(stream, "Draw").length + commandsOf(stream, "DrawIndexed").length >= 10,
+          `${label}: expected five symbol rows and labels`,
+        );
       },
     ],
     [
