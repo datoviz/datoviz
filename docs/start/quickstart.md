@@ -9,11 +9,10 @@ drag to pan and scroll to zoom. No data files are needed.
 Read the example in five blocks: create the data arrays, create the scene layout, add interaction,
 upload the arrays to one point visual, then open the window.
 
-The displayed programs are checked standalone teaching fixtures. They use the same deterministic
-visual contract as the `examples/c/start/scatter.c` gallery scenario: 1280 by 720 graphite canvas,
-seeded random positions and colors, translucent 4–12 px filled points, and XY panzoom. Each language
-uses its standard local PRNG, so individual point coordinates differ while the documented result and
-screenshot styling remain the same.
+The displayed programs use the same visual contract as the `examples/c/start/scatter.c` gallery
+scenario: a 1280 by 720 canvas, seeded random positions and colors, translucent 4–12 px points,
+and XY panzoom. Each language uses its standard local PRNG, so individual point coordinates differ
+while the documented result remains the same.
 
 
 ## Full example
@@ -35,7 +34,7 @@ screenshot styling remain the same.
 
 === "Python"
 
-    Run the displayed fixture:
+    Run the displayed example:
 
     ```sh
     python examples/docs/quickstart.py

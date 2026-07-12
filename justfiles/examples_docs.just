@@ -110,7 +110,7 @@ quickstart-c: build
         -Iinclude -Lbuild/src -Wl,-rpath,"$PWD/build/src" -ldatoviz -lm
 
 quickstart-check: quickstart-c
-    @DVZ_QUICKSTART_TEST=1 python3 examples/docs/quickstart.py
+    @python3 examples/docs/quickstart_smoke.py
     @./build/examples/docs/quickstart --frames 1
 
 # Run all Python examples and generate screenshots in data/gallery/.
