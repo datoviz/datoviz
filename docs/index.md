@@ -137,6 +137,7 @@ The core workflow is straightforward: create a scene, add a panel, attach visual
 then run or capture.
 
 ```python
+# doctest: skip -- MkDocs expands the source include after this checker runs.
 --8<-- "examples/docs/quickstart.py"
 ```
 
