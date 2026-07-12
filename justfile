@@ -28,9 +28,16 @@ import 'justfiles/diagnostics.just'
 import 'justfiles/examples_docs.just'
 import 'justfiles/test.just'
 
-# Check syntax and public C identifiers in handwritten How-To, Start, and homepage snippets.
+# Check syntax and public C identifiers in handwritten How-To, Start, homepage, and Reference snippets.
 check-howto-snippets:
     python3 tools/check_howto_snippets.py
 
-# Also compile and run the complete Quickstart fixtures for one bounded frame.
-check-doc-snippets: check-howto-snippets quickstart-check
+# Check mechanically derived public status facts for drift.
+docs-status-check:
+    python3 tools/check_docs_status.py
+
+# Backward-compatible spelling for callers that use the check-* convention.
+check-docs-status: docs-status-check
+
+# Also compile/run Quickstart fixtures and validate generated API/status facts.
+check-doc-snippets: check-howto-snippets quickstart-check docs-api-check docs-status-check
