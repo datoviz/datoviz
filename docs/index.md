@@ -7,6 +7,16 @@ text, annotations, linked panels, controllers, capture, and replayable render st
 Datoviz v0.4 is the **engine layer**: use it directly when you want explicit control over scene
 objects, GPU-backed rendering, native integration, and reproducible visual output.
 
+Datoviz is part of the [VisPy](https://vispy.org/) ecosystem. You can use it directly from C or
+Python today; it is also the flagship interactive GPU backend for the developing VisPy 2 and
+[Graphics Server Protocol](https://github.com/vispy/GSP_API) architecture.
+
+!!! info "Release status"
+
+    Datoviz 0.4 is a release candidate. The native scene API is the primary supported path;
+    WebGPU and selected advanced facilities remain experimental. Check [Feature status](reference/feature-status.md)
+    before adopting an experimental path.
+
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video" style="margin:1.5rem 0 1.5rem;">
   <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_protein/" aria-label="Protein visualization"></a>
   <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_protein.poster.webp" alt="Interactive protein visualization rendered with Datoviz" loading="lazy">
@@ -15,6 +25,42 @@ objects, GPU-backed rendering, native integration, and reproducible visual outpu
     <source data-src="assets/gallery/v0.4/showcases/showcases_protein.mp4" type="video/mp4">
   </video>
 </div>
+
+
+## Start here
+
+<div class="dvz-nav-grid">
+<a class="dvz-nav-card" href="start/install/">
+<strong>Install</strong>
+<span>Choose the right setup path for Python, C/C++, macOS, Linux, or Windows.</span>
+</a>
+<a class="dvz-nav-card" href="start/quickstart/">
+<strong>Quickstart</strong>
+<span>Render 10,000 interactive points and learn the core scene workflow.</span>
+</a>
+<a class="dvz-nav-card" href="examples/">
+<strong>Browse examples</strong>
+<span>Explore working visuals, features, runtime examples, and scientific showcases.</span>
+</a>
+<a class="dvz-nav-card" href="how-to/c-integration/">
+<strong>Use from C or C++</strong>
+<span>Build native applications against the installed Datoviz library.</span>
+</a>
+</div>
+
+
+## A complete first example
+
+Create a scene, attach point data to a panel, bind pan and zoom, then open the window.
+
+```python
+# doctest: skip -- MkDocs expands the source include after this checker runs.
+--8<-- "examples/docs/quickstart.py"
+```
+
+![10 000 randomly colored points in an interactive Datoviz window](assets/gallery/v0.4/start/start_scatter.webp)
+
+See the annotated [Quickstart](start/quickstart.md) or [use Datoviz from C or C++](how-to/c-integration.md).
 
 
 ## Why Datoviz?
@@ -31,7 +77,7 @@ objects, GPU-backed rendering, native integration, and reproducible visual outpu
   the same scene model as the native runtime.
 
 
-## Visual proof
+## Gallery highlights
 
 <div class="grid cards" markdown="1">
 
@@ -99,26 +145,12 @@ Retained composites, labels, color scales, and responsive layouts.
 </div>
 
 
-## Start here
-
-Pick the entry point that matches how you want to use Datoviz.
+## Go further
 
 <div class="dvz-nav-grid">
-<a class="dvz-nav-card" href="start/install/">
-<strong>Install</strong>
-<span>Choose the right setup path for Python, C/C++, macOS, Linux, or Windows.</span>
-</a>
-<a class="dvz-nav-card" href="start/quickstart/">
-<strong>Quickstart</strong>
-<span>Follow the annotated walkthrough and learn scene, panel, visual, and interaction basics.</span>
-</a>
 <a class="dvz-nav-card" href="start/choose-your-layer/">
 <strong>Choose your layer</strong>
 <span>Compare Python, C/C++, WebGPU, exact raw calls, and higher-level plotting tools.</span>
-</a>
-<a class="dvz-nav-card" href="examples/">
-<strong>Examples</strong>
-<span>Browse working visuals, features, runtime examples, and scientific showcases.</span>
 </a>
 <a class="dvz-nav-card" href="how-to/">
 <strong>How-To guides</strong>
@@ -128,29 +160,11 @@ Pick the entry point that matches how you want to use Datoviz.
 <strong>Reference</strong>
 <span>Look up visual families, attributes, C API pages, platform support, and project status.</span>
 </a>
+<a class="dvz-nav-card" href="reference/project-status/">
+<strong>Project status</strong>
+<span>See release maturity, supported paths, experimental features, and current limitations.</span>
+</a>
 </div>
 
-
-## Code example
-
-The core workflow is straightforward: create a scene, add a panel, attach visual data, bind interaction,
-then run or capture.
-
-```python
-# doctest: skip -- MkDocs expands the source include after this checker runs.
---8<-- "examples/docs/quickstart.py"
-```
-
-![10 000 randomly colored points in an interactive Datoviz window](assets/gallery/v0.4/start/start_scatter.webp)
-
-See [Quickstart](start/quickstart.md) for the annotated walkthrough, [Use from C or C++](how-to/c-integration.md)
-for native integration, or [AI-assisted workflow](start/ai-workflow.md) when you want an LLM to help
-generate Datoviz code.
-
-
-## Acknowledgements
-
-Datoviz v0.4 was developed with substantial AI-assisted engineering support from
-[OpenAI Codex](https://openai.com/codex/). All changes were directed, reviewed, and validated by the
-project maintainer. See the [project credits](https://github.com/datoviz/datoviz#license-and-credits)
-for the full acknowledgement.
+For coding-assistant guidance, see the [AI-assisted workflow](start/ai-workflow.md). Project
+acknowledgements are recorded in the [repository credits](https://github.com/datoviz/datoviz#license-and-credits).
