@@ -123,7 +123,10 @@ def _source_entries(submodules: tuple[str, ...]) -> list[tuple[Path, Path]]:
             raise FileNotFoundError(f"required release asset is missing: {rel}")
         entries.append((src, rel))
 
-    return sorted(entries, key=lambda item: os.fspath(item[1]))
+    # Required generated files may already be tracked. Keep one archive member per path while
+    # letting the explicit required-file checks above select the final worktree contents.
+    unique = {arcname: (src, arcname) for src, arcname in entries}
+    return sorted(unique.values(), key=lambda item: os.fspath(item[1]))
 
 
 def create_bundle(version: str, output_dir: Path, submodules: tuple[str, ...]) -> Path:
