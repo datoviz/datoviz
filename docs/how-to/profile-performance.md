@@ -3,7 +3,7 @@
 Measure how much time Datoviz spends updating and drawing a scene.
 
 
-## Task Workflow
+## Task workflow
 
 Use the smallest scene that reproduces the performance issue. Build the scene once, keep the output
 size fixed, warm up a few frames, then time a fixed number of frames.
@@ -25,7 +25,7 @@ Before collecting numbers, record:
 - whether screenshots, probes, queries, or buffer readback are enabled.
 
 
-## Minimal Call Sequence
+## Minimal call sequence
 
 ```c
 const uint32_t warmup_frames = 8;
@@ -59,7 +59,7 @@ For rendering-only checks, prefer offscreen or fixed-frame native examples. Avoi
 unbounded interactive event loop unless the interaction path is the performance issue.
 
 
-## Important Details
+## Important details
 
 Datoviz performance depends on how much data changes, how many items are drawn, how many visuals the
 scene has, output size, and whether screenshots or queries are enabled. Measure one variable at a
@@ -81,7 +81,7 @@ Compare desktop and browser results only after matching output size, feature set
 screenshot or query behavior.
 
 
-## What To Measure
+## What to measure
 
 | Symptom | Likely cause | First check |
 | --- | --- | --- |
@@ -93,32 +93,14 @@ screenshot or query behavior.
 | Many tiny objects are slow. | Too many separate visuals. | Batch items into fewer visuals. |
 
 
-## Batching Pattern
+## Batching pattern
 
-Prefer one visual with dense arrays:
-
-```c
-DvzVisual* points = dvz_point(scene, 0);
-dvz_visual_set_data(points, "position", positions, point_count);
-dvz_visual_set_data(points, "color", colors, point_count);
-dvz_visual_set_data(points, "diameter_px", diameters, point_count);
-```
-
-Avoid creating one visual per item:
-
-```c
-for (uint32_t i = 0; i < point_count; i++)
-{
-    DvzVisual* point = dvz_point(scene, 0);
-    dvz_visual_set_data(point, "position", &positions[i], 1);
-}
-```
-
-Split visuals only for real differences: a different visual type, style, panel, transform, lifetime,
-visibility policy, or update rate.
+Before lower-level profiling, verify that related items are grouped into dense visual arrays. Use
+the authoritative [visual grouping guidance](add-a-visual.md#group-items-into-visuals), then measure
+visual count, item count, and uploaded bytes rather than duplicating the construction pattern here.
 
 
-## Common Mistakes
+## Common mistakes
 
 - Timing random data generation and calling it rendering cost.
 - Recreating visuals in the hot path.
@@ -128,7 +110,7 @@ visibility policy, or update rate.
 - Comparing desktop and browser paths without matching resolution and feature set.
 
 
-## Report Template
+## Report template
 
 ```text
 Graphics path:
@@ -146,14 +128,14 @@ Reproducer:
 ```
 
 
-## See Also
+## See also
 
 - [Update visual data](update-visual-data.md)
 - [Render offscreen](render-offscreen.md)
 - [Diagnose build and platform issues](diagnose-platform.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Visual Data Update](../examples/gallery/features/features_update_visual_data.md) - Source: `examples/c/features/update_visual_data.c`
+    - Canonical complete example: [Visual Data Update](../examples/gallery/features/features_update_visual_data.md) - Source: `examples/c/features/update_visual_data.c`
     - [Compute Buffer Animation](../examples/gallery/features/features_compute_buffer_animation.md) - Source: `examples/c/features/compute_buffer_animation.c`
     - [Point Cloud](../examples/gallery/showcases/showcases_point_cloud.md) - Source: `examples/c/showcases/point_cloud.c`

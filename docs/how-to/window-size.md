@@ -8,7 +8,7 @@ matters on high-DPI displays, in offscreen screenshots, and when screen-space vi
 text size, marker diameter, or line width must stay predictable.
 
 
-## Choose A Size Policy
+## Choose a size policy
 
 | Need | Use | Why |
 | --- | --- | --- |
@@ -21,7 +21,7 @@ For documentation images and automated comparisons, prefer framebuffer pixels. F
 applications, logical pixels or reference pixels are usually easier to reason about.
 
 
-## Minimal Example
+## Minimal example
 
 ```c
 DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_WINDOW);
@@ -42,7 +42,7 @@ Inspect `resolved.framebuffer_per_canvas_px_x` and
 large or too small.
 
 
-## Size Spaces
+## Size spaces
 
 | Space | Meaning |
 | --- | --- |
@@ -55,7 +55,7 @@ High-DPI systems often use more than one framebuffer pixel per logical or refere
 why a window can be 800 by 600 logical pixels while its framebuffer is larger.
 
 
-## Try The Example
+## Try the example
 
 From a source checkout:
 
@@ -66,7 +66,7 @@ From a source checkout:
 ```
 
 
-## Important Details
+## Important details
 
 `user_scale` is separate from view size. It scales screen-space styling inside an already resolved
 canvas; it does not change the requested window, framebuffer, or physical size. See
@@ -76,7 +76,7 @@ Use offscreen rendering when the output must have a precise framebuffer size. Na
 resized by the window manager or scaled by the display.
 
 
-## See Also
+## See also
 
 - [Render offscreen](render-offscreen.md)
 - [Save screenshots](screenshots.md)

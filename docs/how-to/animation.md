@@ -2,7 +2,7 @@
 
 Update retained scene state over time without rebuilding the scene.
 
-## Use This When
+## Use this when
 
 - Visual attributes change every frame, such as positions, colors, sizes, or visibility.
 - A visual or camera should follow a repeatable transform path.
@@ -20,10 +20,11 @@ then update only the state that changes.
 | Repeatable camera motion | Track plus `dvz_anim_camera_motion()` | [Animation Tracks](../examples/gallery/features/features_animation_tracks.md) |
 | Video or deterministic capture | Bounded frame loop and capture path | [Export videos](video-export.md) |
 
-## Minimal Retained Update
+## Minimal retained update
 
 For direct app code, a scene timer can update retained visual attributes from the scene clock. The
-default timer mode runs on every scene frame.
+default timer mode runs on every scene frame. This function-body excerpt assumes valid `scene`,
+`visual`, `positions`, and `n` state; its setup path returns `false` on failure.
 
 ```c
 static void
@@ -35,14 +36,16 @@ on_timer(DvzAnimation* animation, double t, double dt, uint64_t tick, void* user
 
     DvzVisual* visual = user_data;
     update_positions(t, positions, n);
-    dvz_visual_set_data(visual, "position", positions, n);
+    if (dvz_visual_set_data(visual, "position", positions, n) != 0)
+        return;
 }
 
 DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
 timer_desc.callback = on_timer;
 timer_desc.user_data = visual;
 DvzAnimation* timer = dvz_anim_timer(scene, &timer_desc);
-dvz_anim_start(timer, 0.0);
+if (timer == NULL || dvz_anim_start(timer, 0.0) != 0)
+    return false;
 ```
 
 Use `DVZ_TIMER_INTERVAL` for discrete events on a fixed cadence. The callback receives a stable
@@ -62,7 +65,7 @@ Use `DVZ_TIMER_CATCH_UP` when missed interval ticks must be emitted after a long
 Run the app normally after registering the animation. The canonical example uses the same retained
 update idea in native and browser routes.
 
-## Track-Based Motion
+## Track-based motion
 
 Use tracks when the motion is a reusable path rather than arbitrary per-frame data mutation. Tracks
 can drive visual-local transforms or camera state.
@@ -81,12 +84,14 @@ rotation driven by the scene clock. These fragments omit app creation and cleanu
     rotation.axis[:] = (0.0, 1.0, 0.0)
     rotation.speed_rad_per_sec = 1.0
     track = dvz.dvz_track_rotation(ctypes.byref(rotation))
+    if not track:
+        raise RuntimeError("track creation failed")
 
     motion = dvz.dvz_transform_motion_desc()
     motion.rotation = track
     animation = dvz.dvz_anim_visual_transform(scene, visual, ctypes.byref(motion))
-    if not track or not animation:
-        raise RuntimeError("animation creation failed")
+    if not animation:
+        raise RuntimeError("visual animation creation failed")
     if dvz.dvz_anim_start(animation, 0.0) != 0:
         raise RuntimeError("dvz_anim_start() failed")
     ```
@@ -98,17 +103,20 @@ rotation driven by the scene clock. These fragments omit app creation and cleanu
     rotation.axis[1] = 1.0f;
     rotation.speed_rad_per_sec = 1.0f;
     DvzTrack* track = dvz_track_rotation(&rotation);
+    if (track == NULL)
+        return false;
 
     DvzTransformMotionDesc motion = dvz_transform_motion_desc();
     motion.rotation = track;
     DvzAnimation* anim = dvz_anim_visual_transform(scene, visual, &motion);
-    dvz_anim_start(anim, 0.0);
+    if (anim == NULL || dvz_anim_start(anim, 0.0) != 0)
+        return false;
     ```
 
 For camera paths, use `dvz_anim_camera_motion()` with eye, target, or up tracks. The animation
 tracks example shows both a rotating visual and a keyframed camera.
 
-## Deterministic Runs
+## Deterministic runs
 
 Interactive animations normally run until the window closes:
 
@@ -123,14 +131,14 @@ from frame time or frame index. Avoid wall-clock-only state when the output must
 dvz_app_run(app, frame_count);
 ```
 
-## Browser Support
+## Browser support
 
 The timer and track animation examples have live WebGPU routes in the current gallery. Native app
 callbacks and browser callbacks are not the same host API, so keep reusable animation logic in
 ordinary state-update functions and call those functions from the native timer, scenario frame
 callback, or browser host path.
 
-## Advanced Compute Animation
+## Advanced compute animation
 
 Use scene compute only when data should be written by a GPU compute pass and then consumed by
 rendering. This is not the default path for simple motion; most animations should update visual
@@ -140,9 +148,9 @@ The [Compute Buffer Animation](../examples/gallery/features/features_compute_buf
 example is experimental because it exercises scene compute, storage buffers, and compute-to-render
 synchronization.
 
-## Canonical Examples
+## Canonical examples
 
-![Timer Animation](../assets/gallery/v0.4/features/features_timer_animation.webp)
+![Colored points moving along a curve during a timer-driven animation](../assets/gallery/v0.4/features/features_timer_animation.webp)
 
 - [Timer Animation](../examples/gallery/features/features_timer_animation.md) - retained point data
   updated on frames. Source: `examples/c/features/timer_animation.c`.
@@ -152,7 +160,7 @@ synchronization.
   experimental scene compute pass writing render-consumed data. Source:
   `examples/c/features/compute_buffer_animation.c`.
 
-## Important Details
+## Important details
 
 - Prefer stable visual, panel, controller, and buffer objects.
 - Update dense attributes with `dvz_visual_set_data_range()` when only a subrange changes.
@@ -163,7 +171,7 @@ synchronization.
 - Stop or destroy long-lived scene animations when the scene state they reference is no longer
   valid.
 
-## Common Mistakes
+## Common mistakes
 
 - Recreating GPU objects every frame.
 - Recreating visuals instead of updating attributes or transforms.
@@ -173,7 +181,7 @@ synchronization.
 - Assuming browser and native animation paths expose the same callbacks.
 - Treating compute-buffer animation as the default path for simple CPU-driven motion.
 
-## See Also
+## See also
 
 - [Update visual data](update-visual-data.md)
 - [Export videos](video-export.md)

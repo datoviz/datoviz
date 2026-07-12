@@ -16,15 +16,27 @@ Use [offscreen rendering](render-offscreen.md) for headless CI, deterministic sc
 server-side image generation. Use [Qt embedding](embed-in-qt.md) when another UI toolkit owns the
 native window.
 
-## Minimal Sequence
+## Minimal sequence
 
 Build the retained scene first: create the scene, figure, panel, visuals, data, and panel
 attachments. Then create the native app and attach a window view to the figure.
 
 ```c
 DvzApp* app = dvz_app(scene);
+if (app == NULL)
+    return -1;
 DvzView* view = dvz_view_window(app, figure, width, height, "Datoviz");
-dvz_view_panzoom(view, panel, NULL);
+if (view == NULL)
+{
+    dvz_app_destroy(app);
+    return -1;
+}
+DvzPanzoom* panzoom = dvz_view_panzoom(view, panel, NULL);
+if (panzoom == NULL)
+{
+    dvz_app_destroy(app);
+    return -1;
+}
 
 dvz_app_run(app, 0);
 dvz_app_destroy(app);

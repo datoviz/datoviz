@@ -5,7 +5,7 @@ Capture a rendered figure to an image file.
 Use screenshot capture for documentation images, smoke-test artifacts, and user-facing raster
 exports. It captures the rendered framebuffer, not a scientific linear-float data buffer.
 
-## Task Workflow
+## Task workflow
 
 Use offscreen rendering for deterministic screenshots. For interactive workflows, render at least
 one frame before capture so the framebuffer contains the current scene.
@@ -13,7 +13,7 @@ one frame before capture so the framebuffer contains the current scene.
 If you only need to render without opening a window, start with [Render offscreen](render-offscreen.md).
 This page focuses on writing the rendered frame to an image file.
 
-## Core Capture Fragment
+## Core capture fragment
 
 This fragment assumes the scene, figure, panel, and visuals already exist. It renders one offscreen
 frame, writes a PNG, and keeps one cleanup path for success and failure.
@@ -44,7 +44,7 @@ canonical example also verifies that the offscreen framebuffer size matches the 
 size before writing the PNG.
 
 
-## Capture Size
+## Capture size
 
 Offscreen capture is the deterministic path: request the exact framebuffer size you want in the
 PNG, then render and capture that view.
@@ -59,7 +59,7 @@ For native GLFW views, remember that the framebuffer size can differ from the lo
 on high-DPI displays. Use offscreen views for exact-pixel tests and generated documentation assets.
 
 
-## Capture Modes
+## Capture modes
 
 Use `dvz_view_capture_png()` when you want to save the last rendered frame immediately.
 
@@ -88,7 +88,7 @@ if (dvz_view_capture_stop(view) != 0)
 `dvz_view_capture_stop()` writes the PNG from the last rendered frame for this capture mode.
 
 
-## Important Details
+## Important details
 
 Use fixed dimensions and deterministic data when screenshots become tests or documentation assets.
 
@@ -98,7 +98,7 @@ readback or as a replacement for sampled-field data export.
 Always check capture return codes in examples and tests. A missing display, unavailable GPU, invalid
 output path, or failed readback should fail loudly.
 
-## Common Mistakes
+## Common mistakes
 
 - Capturing before a frame is rendered.
 - Saving relative to an unexpected working directory.
@@ -107,13 +107,13 @@ output path, or failed readback should fail loudly.
 - Using PNG screenshots when the application needs linear floating-point data.
 - Ignoring a failed offscreen view or capture call.
 
-## See Also
+## See also
 
 - [Render offscreen](render-offscreen.md)
 - [Export videos](video-export.md)
 - [Debug rendering output](debug-rendering.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Offscreen Capture](../examples/gallery/runtime/runtime_offscreen_capture.md) - Source: `examples/c/runtime/offscreen_capture.c`
+    - Canonical complete example: [Offscreen Capture](../examples/gallery/runtime/runtime_offscreen_capture.md) - Source: `examples/c/runtime/offscreen_capture.c`
     - [Basic Scene](../examples/gallery/features/features_basic_scene.md) - Source: `examples/c/features/basic_scene.c`

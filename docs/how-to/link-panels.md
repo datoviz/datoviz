@@ -88,8 +88,8 @@ format.
 - [Add colorbars, scale bars, and legends](adornments.md)
 - [Probe image or field values](probe-fields.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Linked Panels](../examples/gallery/features/features_panel_linked.md) - Source: `examples/c/features/panel_linked.c`
+    - Canonical complete example: [Linked Panels](../examples/gallery/features/features_panel_linked.md) - Source: `examples/c/features/panel_linked.c`
     - [Linked Panels With Axes](../examples/gallery/showcases/showcases_panel_linked_axes.md) - Source: `examples/c/showcases/panel_linked_axes.c`
     - [Linked Probe With Colorbar](../examples/gallery/showcases/showcases_linked_probe_colorbar.md) - Source: `examples/c/showcases/linked_probe_colorbar.c`

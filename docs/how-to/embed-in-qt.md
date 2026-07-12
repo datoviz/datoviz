@@ -6,13 +6,13 @@ Qt hosting is a supported optional-provider path in v0.4. It is an advanced nati
 configure, but it does not make Qt a dependency of the base Datoviz library. Build or supply the Qt
 provider only when the host application needs it.
 
-## Task Workflow
+## Task workflow
 
 Let Qt own the application shell, menus, widgets, and native window. Let Datoviz render the figure
 inside the hosted view. Use the external-surface or viewport integration path closest to the
 platform you target.
 
-## Minimal Workflow
+## Minimal workflow
 
 1. Let the host toolkit create or expose the native surface.
 2. Create Datoviz with any required host Vulkan instance extensions.
@@ -22,7 +22,7 @@ platform you target.
 Use the GLFW external-surface example as the closest maintained native embedding reference.
 
 
-## Native Qt Examples
+## Native Qt examples
 
 The native Qt examples are built only when Qt development packages are available. Enable the
 optional bridge explicitly when validating the provider:
@@ -37,7 +37,7 @@ DVZ_CMAKE_ARGS="-DDVZ_ENABLE_QT_BRIDGE=ON" just build
 window in a Qt Widgets layout and lets widget callbacks mutate retained scene data.
 
 
-## Ownership Contract
+## Ownership contract
 
 | Owner | Responsibilities |
 | --- | --- |
@@ -51,7 +51,7 @@ The Qt surface is borrowed by Datoviz. Qt remains responsible for creating and d
 surface; Datoviz renders into it while it is available.
 
 
-## Event Forwarding
+## Event forwarding
 
 Forward host events through the public hosted app API:
 
@@ -67,7 +67,7 @@ from the update path. Widget callbacks should mutate retained scene state, reque
 Datoviz render through the existing view.
 
 
-## Surface Teardown
+## Surface teardown
 
 Before Qt destroys or recreates the native surface, release Datoviz's presentation resources:
 
@@ -81,7 +81,7 @@ surface is unavailable during this cleanup pass is expected; graphics validation
 expected.
 
 
-## PyQt Hosting
+## PyQt hosting
 
 The Python hosted path uses the optional `datoviz_qtbridge` provider. The base Python wheel does not
 load or link Qt by itself. Build the bridge with `DVZ_ENABLE_QT_BRIDGE=ON` or supply a compatible
@@ -111,11 +111,22 @@ DATOVIZ_QTBRIDGE_LIBRARY=build/qtbridge/libdatoviz_qtbridge.so \
 python examples/python/qt/hosted_pyqt.py --smoke-ms 1000
 ```
 
+The usual source-build filenames are:
+
+| Platform | Bridge path or filename |
+| --- | --- |
+| Linux | `build/qtbridge/libdatoviz_qtbridge.so` |
+| macOS | `build/qtbridge/libdatoviz_qtbridge.dylib` |
+| Windows | `build/qtbridge/datoviz_qtbridge.dll` or `build/qtbridge/libdatoviz_qtbridge.dll` |
+
+Prefer normal package or platform-library discovery and verify it with `python -m datoviz.qt`.
+Use `DATOVIZ_QTBRIDGE_LIBRARY` only when the bridge is outside those discovery locations.
+
 System PyQt packages may lack the required Vulkan instance API even when PyQt imports successfully.
 Treat that as an environment limitation, not as a Datoviz rendering failure.
 
 
-## Important Details
+## Important details
 
 Qt embedding is a host-integration task. Do not create a second rendering stack; adapt the existing
 Datoviz hosted view path.
@@ -123,7 +134,7 @@ Datoviz hosted view path.
 Qt and Datoviz must agree on Vulkan instance extensions before the Datoviz app is created. Query
 Qt's required extensions first, then pass them into Datoviz app creation.
 
-## Common Mistakes
+## Common mistakes
 
 - Letting both Qt and Datoviz own the same native graphics handle.
 - Handling resize in the UI but not notifying the Datoviz view.
@@ -132,14 +143,14 @@ Qt's required extensions first, then pass them into Datoviz app creation.
 - Rendering directly from arbitrary widget callbacks instead of scheduling a frame.
 - Treating PyQt import success as proof that the required Vulkan hosting API is available.
 
-## See Also
+## See also
 
 - [Open an interactive window](create-a-window.md)
 - [Handle input events](input-events.md)
 - [Diagnose build and platform issues](diagnose-platform.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Qt Hosting](../examples/gallery/advanced/advanced_qt_hosting.md) - Source: `examples/qt/qt_hosting.cpp`
+    - Canonical complete example: [Qt Hosting](../examples/gallery/advanced/advanced_qt_hosting.md) - Source: `examples/qt/qt_hosting.cpp`
     - [External Surface GLFW](../examples/gallery/advanced/advanced_external_surface_glfw.md) - Source: `examples/c/advanced/external_surface_glfw.c`
     - [GUI Viewport](../examples/gallery/features/features_gui_viewport.md) - Source: `examples/c/features/gui_viewport.c`

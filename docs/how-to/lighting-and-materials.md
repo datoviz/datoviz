@@ -131,8 +131,8 @@ When a lit surface looks flat, black, inverted, or unexpectedly glossy, check in
 - [Control depth, blending, and transparency](depth-blending.md)
 - [Use sampled fields and textures](use-sampled-fields.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Lighting](../examples/gallery/features/features_lighting.md) - Source: `examples/c/features/lighting.c`
+    - Canonical complete example: [Lighting](../examples/gallery/features/features_lighting.md) - Source: `examples/c/features/lighting.c`
     - [Mesh Materials](../examples/gallery/features/features_material_mesh.md) - Source: `examples/c/features/material_mesh.c`
     - [Textured Mesh](../examples/gallery/features/features_mesh_texture.md) - Source: `examples/c/features/mesh_texture.c`

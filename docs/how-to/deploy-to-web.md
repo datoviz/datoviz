@@ -110,15 +110,9 @@ Use [Diagnose WebGPU support](debug-webgpu.md) when the route fails to initializ
 
 ## Read status values
 
-| Status | Meaning |
-| --- | --- |
-| `webgpu-live` | Public live route exists for the promoted browser subset. |
-| `webgpu-planned` | Intended browser route, but not promoted yet. |
-| `webgpu-deferred` | Browser support is intentionally postponed. |
-| `native-only` | Native/runtime feature should link to native validation or static media instead. |
-
-Only `webgpu-live` examples should be linked as live browser routes. Other statuses need fallback
-links, screenshots, videos, or native instructions.
+The authoritative [WebGPU example matrix](../examples/webgpu-matrix.md) defines `webgpu-live`,
+`webgpu-planned`, `webgpu-deferred`, and `native-only`. Publish a live link only for a
+`webgpu-live` row; use static media or native instructions for every other status.
 
 A live route is not proof on every browser and GPU. Before publishing a route as supported, run the
 browser smoke test or record a manual browser result on the target platform:
@@ -174,8 +168,8 @@ or portable C scenario.
 - [Debug rendering output](debug-rendering.md)
 - [WebGPU subset](../reference/webgpu-subset.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Basic Scene](../examples/gallery/features/features_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
+    - Canonical complete example: [Basic Scene](../examples/gallery/features/features_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
     - [Linked Panels](../examples/gallery/features/features_panel_linked.md) - Source: `examples/c/features/panel_linked.c`
     - [Point](../examples/gallery/visuals/visuals_point.md) - Source: `examples/c/visuals/point.c`

@@ -2,9 +2,9 @@
 
 Split a figure into coordinated viewports.
 
-![Multiple Panels](../assets/gallery/v0.4/features/features_panel_multi.webp)
+![Several data views arranged as panels in one figure](../assets/gallery/v0.4/features/features_panel_multi.webp)
 
-## Task Workflow
+## Task workflow
 
 Create one figure, define a panel grid or multiple panels, attach visuals to each panel, and bind
 controllers per panel or share controllers when views should move together.
@@ -21,7 +21,7 @@ Choose the layout path first:
 Panels are viewports inside one figure and scene. They do not create separate scenes, data stores,
 or controller state automatically.
 
-## Grid Call Sequence
+## Grid call sequence
 
 Prerequisite: create one `figure` and two prepared visuals. The result is a one-row, two-column
 figure with one visual per panel. These are fragments; see the complete
@@ -71,7 +71,7 @@ dvz_grid_set_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 1.0f);
 dvz_grid_set_row_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, 160.0f);
 ```
 
-## Spanning Panels
+## Spanning panels
 
 Use a spanning panel when one plot should occupy several cells:
 
@@ -84,7 +84,7 @@ DvzPanel* bottom = dvz_grid_panel_span(grid, 1, 0, 1, 2);
 
 Spans must cover contiguous grid cells. Use manual panels when the layout is truly irregular.
 
-## Manual Panels
+## Manual panels
 
 For inset panels or layouts that do not fit a grid, create panels directly in normalized figure
 coordinates:
@@ -98,7 +98,7 @@ DvzPanel* right = dvz_panel(
 
 Use `dvz_panel_set_desc()` when a retained panel needs a new normalized rectangle after creation.
 
-## Plot Reserves and Padding
+## Plot reserves and padding
 
 Grid margins and gutters position panel rectangles. Panel reserves and padding affect the content
 inside one panel.
@@ -138,7 +138,7 @@ Use a narrower dimension mask, such as `DVZ_DIM_MASK_X`, when only one axis shou
 [Link panels and controllers](link-panels.md) for linked-controller patterns.
 
 
-## Important Details
+## Important details
 
 Panels are viewports in one figure and scene, not separate scenes. Share data and controllers
 deliberately; do not duplicate the whole scene unless the runtime really needs separate lifetimes.
@@ -154,7 +154,7 @@ state.
 Destroying a grid detaches grid-owned panels at their last resolved positions; it does not destroy
 the panels. Prefer keeping the grid alive for ordinary retained layouts.
 
-## Common Mistakes
+## Common mistakes
 
 - Adding one visual to the wrong panel and debugging the controller instead.
 - Assuming every panel shares a controller automatically.
@@ -164,7 +164,7 @@ the panels. Prefer keeping the grid alive for ordinary retained layouts.
 - Linking panels with incompatible domains or cameras.
 - Forgetting to attach a shared visual to every panel that should draw it.
 
-## See Also
+## See also
 
 - [Link panels and controllers](link-panels.md)
 - [Add visuals to a panel](add-a-visual.md)
@@ -172,8 +172,8 @@ the panels. Prefer keeping the grid alive for ordinary retained layouts.
 - [Add axes](axes.md)
 - [Use panzoom](use-panzoom.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Panel Grid](../examples/gallery/features/features_panel_grid.md) - Source: `examples/c/features/panel_grid.c`
+    - Canonical complete example: [Panel Grid](../examples/gallery/features/features_panel_grid.md) - Source: `examples/c/features/panel_grid.c`
     - [Multiple Panels](../examples/gallery/features/features_panel_multi.md) - Source: `examples/c/features/panel_multi.c`
     - [Linked Panels](../examples/gallery/features/features_panel_linked.md) - Source: `examples/c/features/panel_linked.c`

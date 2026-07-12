@@ -2,9 +2,9 @@
 
 Render regular 2D or 3D scalar data as image, texture, or volume content.
 
-![Sampled Field Update](../assets/gallery/v0.4/features/features_sampled_field_update.webp)
+![A scalar sampled field rendered as an image after its values are updated](../assets/gallery/v0.4/features/features_sampled_field_update.webp)
 
-## Task Workflow
+## Task workflow
 
 Keep regular grids in sampled-field form when possible. Use image visuals for 2D arrays, volume
 visuals for 3D arrays, labels visuals for integer categorical fields, and textured mesh only when
@@ -19,7 +19,7 @@ Choose the field descriptor before choosing the visual:
 | Integer segmentation or label mask | 2D integer format, `DVZ_FIELD_SEMANTIC_LABEL` | `dvz_labels()` slot `"field"` plus categorical scale |
 | 3D scalar array | `DVZ_FIELD_DIM_3D`, scalar format, `DVZ_FIELD_SEMANTIC_SCALAR` | `dvz_volume()` slot `"field"` |
 
-## 2D Scalar Image
+## 2D scalar image
 
 The snippets below are function-body excerpts. They assume valid scene/panel objects, dimensions,
 CPU arrays, placement attributes, and scales where shown; their `return false` paths belong to an
@@ -28,8 +28,9 @@ sources.
 
 ```c
 DvzVisual* image = dvz_image(scene, 0);
-dvz_visual_set_data(image, "position", pos, 4);
-dvz_visual_set_data(image, "texcoords", uv, 4);
+if (image == NULL || dvz_visual_set_data(image, "position", pos, 4) != 0 ||
+    dvz_visual_set_data(image, "texcoords", uv, 4) != 0)
+    return false;
 
 DvzSampledFieldDesc desc = dvz_sampled_field_desc();
 desc.dim = DVZ_FIELD_DIM_2D;
@@ -48,29 +49,32 @@ data.bytes_per_row = width * sizeof(float);
 data.rows_per_image = height;
 if (dvz_sampled_field_set_data(field, &data) != 0)
     return false;
-dvz_visual_set_field(image, "field", field);
-dvz_panel_add_visual(panel, image, NULL);
+if (dvz_visual_set_field(image, "field", field) != 0 ||
+    dvz_panel_add_visual(panel, image, NULL) != 0)
+    return false;
 ```
 
 Bind a color scale to the image when the scalar values should be colormapped:
 
 ```c
-dvz_visual_set_scale(image, "color", scale);
+if (dvz_visual_set_scale(image, "color", scale) != 0)
+    return false;
 ```
 
 Use `dvz_visual_set_field()` for image, labels, mesh texture, and volume sampled fields. Public
 examples should keep dimensions, format, semantic role, and row pitch explicit in the sampled-field
 descriptor and data view.
 
-## Categorical Labels
+## Categorical labels
 
 Use labels visuals for integer sampled fields such as segmentation masks. Labels need a categorical
 scale; ordinary floating-point scalar fields belong on an image visual instead.
 
 ```c
 DvzVisual* labels = dvz_labels(scene, 0);
-dvz_visual_set_data(labels, "position", position, 1);
-dvz_visual_set_data(labels, "extent", extent, 1);
+if (labels == NULL || dvz_visual_set_data(labels, "position", position, 1) != 0 ||
+    dvz_visual_set_data(labels, "extent", extent, 1) != 0)
+    return false;
 
 DvzSampledFieldDesc desc = dvz_sampled_field_desc();
 desc.dim = DVZ_FIELD_DIM_2D;
@@ -88,13 +92,14 @@ data.rows_per_image = height;
 if (field == NULL || dvz_sampled_field_set_data(field, &data) != 0)
     return false;
 
-dvz_visual_set_field(labels, "field", field);
-dvz_visual_set_scale(labels, "labels", categorical_scale);
-dvz_labels_set_background(labels, 0);
-dvz_panel_add_visual(panel, labels, NULL);
+if (dvz_visual_set_field(labels, "field", field) != 0 ||
+    dvz_visual_set_scale(labels, "labels", categorical_scale) != 0 ||
+    dvz_labels_set_background(labels, 0) != 0 ||
+    dvz_panel_add_visual(panel, labels, NULL) != 0)
+    return false;
 ```
 
-## 3D Volumes
+## 3D volumes
 
 For 3D fields, set `depth` to the number of slices and bind the field to a volume visual.
 `bytes_per_row` is the byte stride between adjacent rows in one slice, and `rows_per_image` is the
@@ -118,11 +123,12 @@ if (field == NULL || dvz_sampled_field_set_data(field, &data) != 0)
     return false;
 
 DvzVisual* volume = dvz_volume(scene, 0);
-dvz_visual_set_field(volume, "field", field);
-dvz_panel_add_visual(panel, volume, NULL);
+if (volume == NULL || dvz_visual_set_field(volume, "field", field) != 0 ||
+    dvz_panel_add_visual(panel, volume, NULL) != 0)
+    return false;
 ```
 
-## Textured Meshes
+## Textured meshes
 
 Use a sampled field as a mesh texture only when the texture belongs to surface geometry. The mesh
 still needs geometry attributes such as position, normal, and texture coordinates.
@@ -141,14 +147,15 @@ DvzFieldDataView data = dvz_field_data_view();
 data.data = rgba;
 data.bytes_per_row = texture_width * 4u;
 data.rows_per_image = texture_height;
-if (texture == NULL || dvz_sampled_field_set_data(texture, &data) != 0)
+if (mesh == NULL || texture == NULL || dvz_sampled_field_set_data(texture, &data) != 0)
     return false;
 
-dvz_visual_set_field(mesh, "texture", texture);
+if (dvz_visual_set_field(mesh, "texture", texture) != 0)
+    return false;
 ```
 
 
-## Important Details
+## Important details
 
 Images and volumes are not just dense point clouds. Preserve grid dimensions, value range, and
 texture format so filtering, colormapping, and probing remain meaningful.
@@ -167,7 +174,7 @@ For color textures, set the semantic and color role intentionally. Scientific sc
 use scalar semantics and a scale. Ordinary RGBA textures should use color semantics so color-space
 handling is explicit.
 
-## Common Mistakes
+## Common mistakes
 
 - Expanding large fields into millions of independent primitives.
 - Forgetting `bytes_per_row` and `rows_per_image` when uploading padded or 3D data.
@@ -177,14 +184,14 @@ handling is explicit.
 - Forgetting that 3D texture and volume support has different native and WebGPU status.
 - Reusing image probe logic for a transformed mesh texture without accounting for UV mapping.
 
-## See Also
+## See also
 
 - [Probe image or field values](probe-fields.md)
 - [Map scalar values with colormaps](use-colormaps.md)
 - [Use lighting and materials](lighting-and-materials.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Sampled Field Update](../examples/gallery/features/features_sampled_field_update.md) - Source: `examples/c/features/sampled_field_update.c`
+    - Canonical complete example: [Sampled Field Update](../examples/gallery/features/features_sampled_field_update.md) - Source: `examples/c/features/sampled_field_update.c`
     - [Volume](../examples/gallery/visuals/visuals_volume.md) - Source: `examples/c/visuals/volume.c`
     - [Textured Mesh](../examples/gallery/features/features_mesh_texture.md) - Source: `examples/c/features/mesh_texture.c`

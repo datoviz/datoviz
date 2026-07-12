@@ -245,8 +245,9 @@ the first missing dependency, failed device creation, or missing asset.
 - [Build options](../reference/build-options.md)
 - [Errors and logging](../reference/errors-and-logging.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
+    - Canonical complete example: [Basic Scene](../examples/gallery/features/features_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
     - Start page: [Install](../start/install.md)
     - Reference: [Platform support](../reference/platform-support.md)
     - Reference: [Build options](../reference/build-options.md)

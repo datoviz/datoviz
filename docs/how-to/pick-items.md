@@ -6,12 +6,12 @@ Use picking when the user points at rendered geometry and the application needs 
 face, or primitive that was drawn there. Use probing when the user needs a sampled field value at a
 data coordinate.
 
-## Task Workflow
+## Task workflow
 
 Use picking when the target is a rendered item, instance, or primitive. Use probing when the target
 is a sampled field value at a data coordinate.
 
-## Minimal Workflow
+## Minimal workflow
 
 1. Enable query support on the visual with `dvz_visual_set_query_capabilities()`.
 2. Convert pointer input to outer-panel-local logical pixel coordinates.
@@ -47,7 +47,7 @@ while (dvz_scene_poll_query(scene, &result))
 ```
 
 
-## Pointer Coordinates
+## Pointer coordinates
 
 Queries use `DVZ_PANEL_COORD_PANEL_PX` coordinates: logical pixels local to the outer panel
 rectangle, not raw window coordinates. When the pointer event comes from the scenario runner, use
@@ -60,7 +60,7 @@ When the application already has a data-coordinate point, use `dvz_panel_query_d
 with `dvz_panel_data_to_position()`.
 
 
-## Result Handling
+## Result handling
 
 | Field | Use |
 | --- | --- |
@@ -75,7 +75,7 @@ Use `request_id` to distinguish hover queries from click queries when both are a
 use one request id for hover and another for click selection.
 
 
-## Hover And Selection
+## Hover and selection
 
 For retained hover or selection styling, apply successful query results to the retained interaction
 objects instead of rewriting visual attributes manually:
@@ -91,7 +91,7 @@ dvz_selection_apply_query(selection, &result);
 Use [Select and highlight data](select-items.md) for selection modes, styles, and clearing rules.
 
 
-## Important Details
+## Important details
 
 Picking is tied to what is rendered. Hidden, clipped, transparent, or depth-tested items may not
 behave like a CPU-side nearest-neighbor search.
@@ -99,7 +99,7 @@ behave like a CPU-side nearest-neighbor search.
 Panel queries are GPU-backed and normally resolve after rendering work has advanced. Queue the
 request from input or frame code, then consume results from the scene polling path.
 
-## Common Mistakes
+## Common mistakes
 
 - Using picking to read image scalar values; use field probing.
 - Reordering visual data without updating the application-side id mapping.
@@ -108,14 +108,14 @@ request from input or frame code, then consume results from the scene polling pa
 - Treating query results as immediate return values instead of polling resolved results.
 - Using raw window coordinates instead of outer-panel-local logical pixels.
 
-## See Also
+## See also
 
 - [Probe image or field values](probe-fields.md)
 - [Select and highlight data](select-items.md)
 - [Handle input events](input-events.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Picking](../examples/gallery/features/features_picking.md) - Source: `examples/c/features/picking.c`
+    - Canonical complete example: [Picking](../examples/gallery/features/features_picking.md) - Source: `examples/c/features/picking.c`
     - [Pixel Selection](../examples/gallery/features/features_selection_pixel.md) - Source: `examples/c/features/selection_pixel.c`
     - [Label Probe](../examples/gallery/features/features_probe_labels.md) - Source: `examples/c/features/probe_labels.c`

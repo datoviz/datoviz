@@ -2,7 +2,7 @@
 
 Render a scene without opening a visible window.
 
-## Task Workflow
+## Task workflow
 
 Use the normal scene, figure, panel, and visual setup. At the view step, create an offscreen view
 instead of a visible window view, then render one frame or a bounded sequence of frames.
@@ -11,7 +11,7 @@ Use this path for exact-size native rendering, automated checks, documentation i
 renders where a visible window would be fragile or unnecessary. To save the rendered frame as a PNG,
 see [Save screenshots](screenshots.md).
 
-## Core Offscreen Fragment
+## Core offscreen fragment
 
 This fragment assumes the scene, figure, panel, and visuals already exist. It shows the offscreen
 view step and uses a cleanup path so failed size checks or render calls still destroy the app.
@@ -44,7 +44,7 @@ return rc;
 Create the scene, figure, panel, and visuals before `dvz_view_offscreen()`. Render at least one
 frame before reading pixels or saving a screenshot from the view.
 
-## Static Offscreen Frames
+## Static offscreen frames
 
 For static scenes, one call to `dvz_view_render_once()` is enough. This is the path used by
 `examples/c/runtime/offscreen_capture.c`: build the retained scene, create an offscreen view,
@@ -60,7 +60,7 @@ just example-c runtime/offscreen_capture
 
 The example writes `offscreen_capture.png` next to the executable and reports the exact pixel size.
 
-## Multi-Frame Rendering
+## Multi-frame rendering
 
 For animated or incremental output, update retained scene data before each render. Save screenshots
 or video only after each successful frame. This function-body excerpt assumes that the translation
@@ -87,10 +87,12 @@ For long sequences, prefer the video export path instead of writing and assembli
 hand.
 
 
-## Important Details
+## Important details
 
-Offscreen rendering is native-only in the current example set. It is the preferred path for CI,
-image comparison tests, batch rendering, and documentation screenshots.
+Offscreen rendering is a supported native feature. In the generated WebGPU example matrix its
+examples are classified as `native-only` because this view API is not a browser route; that label
+describes browser portability, not the native API's release status. Offscreen rendering is the
+preferred path for CI, image comparison tests, batch rendering, and documentation screenshots.
 
 `dvz_view_offscreen(app, figure, width, height)` uses framebuffer pixels. Python
 `dvz_view_capture_rgba(view)` returns an array shaped `(height, width, 4)` with top-row-first RGBA8
@@ -103,7 +105,7 @@ use explicit data/readback paths when the output is numeric evidence rather than
 An offscreen view still needs a usable native graphics runtime. It avoids opening a user-facing
 window, but it can still fail on machines without the required GPU/device capabilities.
 
-## Common Mistakes
+## Common mistakes
 
 - Reading pixels or capturing before running a frame.
 - Requesting a very large framebuffer without checking GPU limits.
@@ -112,13 +114,13 @@ window, but it can still fail on machines without the required GPU/device capabi
 - Using offscreen rendering as a substitute for WebGPU browser screenshots; browser examples use a
   separate route.
 
-## See Also
+## See also
 
 - [Save screenshots](screenshots.md)
 - [Export videos](video-export.md)
 - [Debug rendering output](debug-rendering.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Offscreen Capture](../examples/gallery/runtime/runtime_offscreen_capture.md) - Source: `examples/c/runtime/offscreen_capture.c`
+    - Canonical complete example: [Offscreen Capture](../examples/gallery/runtime/runtime_offscreen_capture.md) - Source: `examples/c/runtime/offscreen_capture.c`
     - [Basic Scene](../examples/gallery/features/features_basic_scene.md) - Source: `examples/c/features/basic_scene.c`

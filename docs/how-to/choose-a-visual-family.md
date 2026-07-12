@@ -99,8 +99,9 @@ visual with per-item attributes.
 - [Add text, labels, and annotations](add-annotations.md)
 - [Visual families reference](../reference/visual-families/index.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - Source directory: `examples/c/visuals/`
+    - Canonical complete example: [Point](../examples/gallery/visuals/visuals_point.md) - Source: `examples/c/visuals/point.c`
+    - Additional source directory: `examples/c/visuals/`
     - Gallery index: [Visual examples](../examples/visuals.md)
     - Manifest: `examples/c/MANIFEST.yaml`

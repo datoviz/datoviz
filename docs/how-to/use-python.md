@@ -2,7 +2,7 @@
 
 Create Datoviz scenes from Python and upload NumPy arrays to visual attributes.
 
-## Task Workflow
+## Task workflow
 
 Use the main Python package when you want the current v0.4 scene workflow from Python. Datoviz has
 one generated `ctypes` binding. The top-level package follows the same `dvz_*` function names as the
@@ -16,10 +16,10 @@ Choose the import surface first:
 | The same binding with explicit pointers, counts, bytes, or callbacks. | `import datoviz.raw as raw` |
 | High-level object-oriented plotting. | Outside Datoviz v0.4; this belongs to the external GSP/VisPy2 layer. |
 
-## Minimal Scene Construction
+## Minimal scene construction
 
-This complete scene-construction snippet requires NumPy and an installed Datoviz package. It creates
-one retained point visual but deliberately does not open a window or render; continue with
+This scene-construction excerpt requires NumPy and an installed Datoviz package. It creates one
+retained point visual but deliberately does not open a window or render; continue with
 [Open an interactive window](create-a-window.md) or [Render offscreen](render-offscreen.md) to
 produce pixels. The canonical complete application is the [Quickstart](../start/quickstart.md).
 
@@ -55,21 +55,21 @@ The top-level `datoviz` module accepts NumPy arrays for the calls covered by the
 the policy may still expect explicit pointer/count arguments, so consult the C and Python binding
 references when needed.
 
-Destroy owner handles with the same C lifecycle calls:
+If you stop after the construction excerpt, destroy the scene when finished:
 
 ```python
-app = dvz.dvz_app(scene)
-# Create a view and run or render frames here.
-dvz.dvz_app_destroy(app)
 dvz.dvz_scene_destroy(scene)
 ```
+
+If you continue by creating an app or hosted run session, close or destroy that runtime owner before
+destroying the scene, as shown in the window, offscreen, and IPython workflows.
 
 For terminal IPython, use `session = dvz.run(scene, figure)`. The prompt remains usable while the
 native window stays responsive, so you can update NumPy arrays, upload them with
 `dvz_visual_set_data_range()`, and call `session.request_frame()`. See
 [Use from terminal IPython](use-ipython.md).
 
-## Important Details
+## Important details
 
 The v0.4 Python surface is close to the C API. It is meant for explicit scene, panel, visual, and
 data-upload code.
@@ -97,7 +97,7 @@ When porting a C example:
 4. switch only the calls that need exact pointer/count behavior to `datoviz.raw`;
 5. keep explicit destroy calls for owner handles.
 
-## Common Mistakes
+## Common mistakes
 
 - Passing default `float64` NumPy arrays where the C API expects `float32`.
 - Passing non-contiguous arrays to exact pointer calls.
@@ -107,7 +107,7 @@ When porting a C example:
   `dvz_scene_destroy()`.
 - Adding empty Python tabs when a Python path is not implemented.
 
-## See Also
+## See also
 
 - [Python binding with NumPy arrays](../reference/python-direct-engine.md)
 - [Use from terminal IPython](use-ipython.md)
@@ -116,8 +116,6 @@ When porting a C example:
 - [Choose a visual family](choose-a-visual-family.md)
 - [Python binding exact call form](../reference/ctypes.md)
 
-??? example "Related examples"
+??? example "Complete example"
 
-    - Start page: [Quickstart](../start/quickstart.md)
-    - Reference: [Python binding exact call form](../reference/ctypes.md)
-    - [Quickstart scatter plot](../start/quickstart.md) - Source: `examples/c/start/scatter.c`
+    - Canonical complete example: [Quickstart scatter plot](../start/quickstart.md) - Python source: `examples/docs/quickstart.py`; C source: `examples/docs/quickstart.c`

@@ -4,7 +4,7 @@ Use `datoviz.raw` when Python code needs to call the generated `ctypes` binding 
 would. This is an advanced integration path for the same Python binding. For ordinary scene code
 with NumPy array adaptation, use `import datoviz as dvz` instead.
 
-## Task Workflow
+## Task workflow
 
 Use the exact call form when you need generated signatures, explicit pointer/count arguments,
 callback types, or binding diagnostics. Load `datoviz.raw`, pass C-compatible storage, and follow
@@ -22,7 +22,7 @@ Use `datoviz.raw` only when the exact C call shape matters:
 import datoviz.raw as raw
 ```
 
-## Smallest Handle Check
+## Smallest handle check
 
 ```python
 import datoviz.raw as raw
@@ -78,7 +78,7 @@ raw.dvz_visual_set_data(
 raw.dvz_scene_destroy(scene)
 ```
 
-## Important Details
+## Important details
 
 The exact `ctypes` call form is useful for integration checks, low-level debugging, and cases where
 the exact C call shape matters. It uses the same `dvz_*` function names and explicit destroy calls
@@ -103,7 +103,7 @@ raw.dvz_scene_destroy(scene)
 Do not import `datoviz._ctypes` from examples or application code. It is generated implementation
 detail behind the public `datoviz.raw` module.
 
-## Common Mistakes
+## Common mistakes
 
 - Letting temporary NumPy arrays be freed before a raw call finishes.
 - Passing wrong pointer types or item counts.
@@ -113,15 +113,16 @@ detail behind the public `datoviz.raw` module.
 - Treating Python object lifetime as a substitute for `dvz_app_destroy()` and
   `dvz_scene_destroy()`.
 
-## See Also
+## See also
 
 - [Use from Python](use-python.md)
 - [Use from C or C++](c-integration.md)
 - [Python binding exact call form](../reference/ctypes.md)
 - [Diagnose build and platform issues](diagnose-platform.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
+    - Canonical complete example: `examples/python/raw/offscreen_point.py`
     - Reference: [Python binding exact call form](../reference/ctypes.md)
     - Start page: [Quickstart](../start/quickstart.md)
     - Source: `examples/c/start/scatter.c`

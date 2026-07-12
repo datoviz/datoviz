@@ -7,7 +7,7 @@ deterministic offscreen path for tests, documentation, and release artifacts. Us
 recording when you need to capture an interactive native window. For replayable frame streams, use
 DVZR recording instead.
 
-## Task Workflow
+## Task workflow
 
 Choose the capture workflow first:
 
@@ -19,7 +19,7 @@ Choose the capture workflow first:
 Both workflows use `dvz_view_capture_start()` and `dvz_view_capture_stop()`. The difference is
 whether frames come from a fixed offscreen sequence or from a visible app view.
 
-## Recommended Example Path
+## Recommended example path
 
 The canonical example uses the app capture API directly. The default run records a 120-frame
 offscreen video with the portable CPU-readback capture mode, and `--frames` lets you choose the
@@ -35,7 +35,7 @@ Some repository examples also accept command-line capture flags for documentatio
 checks. Application code should use the app capture API shown below.
 
 
-## Portable CPU-Readback Capture
+## Portable cpu-readback capture
 
 For deterministic export, create an offscreen view, start video capture, update scene state before
 each frame, render a bounded number of frames, then stop capture. This function-body excerpt assumes
@@ -69,7 +69,7 @@ if (dvz_view_capture_stop(view) != 0)
 Do not hand-roll a separate renderer for video; reuse the app/offscreen frame path.
 
 
-## Live App Recording
+## Live app recording
 
 To record a visible native example, attach capture to the window-backed view before entering the app
 loop, then stop capture after the loop returns. This is a function-body excerpt for the less
@@ -100,7 +100,7 @@ release artifacts. For a reproducible live smoke, pass a finite frame count to `
 drive animation from frame index or fixed scenario time.
 
 
-## Frame Timing
+## Frame timing
 
 Make the animation a pure function of the frame index or scenario time when reproducibility matters.
 Do not record an unbounded interactive loop for release artifacts or tests.
@@ -117,7 +117,7 @@ for (uint32_t frame = 0; frame < frame_count; frame++)
 Update retained scene data before rendering the frame that should contain the update.
 
 
-## Backends And Modes
+## Backends and modes
 
 | Setting | Use |
 | --- | --- |
@@ -132,44 +132,15 @@ The CPU-readback path is the documented default for portable examples. It is slo
 interop but easier to validate across machines.
 
 
-## Advanced Optional NVENC Path
+## Advanced optional NVENC path
 
-NVENC is NVIDIA's hardware video encoder. In Datoviz, the NVENC path is an optional advanced
-backend for NVIDIA systems that can encode rendered frames on the GPU through external
-memory/semaphore interop. The point is to avoid the usual GPU-to-CPU readback and CPU-to-encoder
-upload used by portable capture, so large or high-frame-rate videos can be much faster and involve
-zero or few extra copies when the Vulkan, CUDA, and NVENC interop path is available.
-
-This speedup only exists with the right hardware, driver, and build configuration. Without proper
-NVIDIA/NVENC support, use the CPU-readback path. NVENC is not required for the canonical offscreen
-video example.
-
-Use NVENC only with the external capture mode:
-
-```c
-DvzAppCaptureConfig capture = dvz_app_capture_config();
-capture.flags = DVZ_APP_CAPTURE_VIDEO;
-capture.video_capture_mode = DVZ_VIDEO_CAPTURE_EXTERNAL;
-capture.video_backend = "nvenc";
-```
-
-The same selection is available through environment variables in examples or tools that use
-`dvz_app_capture_config_from_env()`:
-
-```sh
-DVZ_CAPTURE=mp4 \
-DVZ_CAPTURE_VIDEO_MODE=external \
-DVZ_CAPTURE_VIDEO_BACKEND=nvenc \
-./build/examples/c/features/timer_animation --video 120
-```
-
-NVENC requires a build with CUDA/NVENC support, an NVIDIA driver and GPU that expose NVENC, and the
-external-memory/semaphore path needed by the native runtime. If Datoviz is built without that
-support, selecting `nvenc` reports the backend as unavailable rather than making the portable
-CPU-readback example depend on NVIDIA hardware.
+NVENC is an optional NVIDIA-only provider for the advanced external-memory capture mode. It needs a
+compatible build, driver, GPU, CUDA/NVENC stack, and Vulkan external-memory support; it is not
+required by the portable example on this page. Check [Build options](../reference/build-options.md)
+and the generated [app API](../reference/c-api/app.md) before selecting an external video backend.
 
 
-## Environment Capture
+## Environment capture
 
 Use environment variables when examples or tools should opt into capture without changing source
 code:
@@ -188,7 +159,7 @@ DVZ_CAPTURE_VIDEO_MODE=cpu \
 systems where the NVENC path is expected to work.
 
 
-## Important Details
+## Important details
 
 Video export is native-only in the current manifest. Browser WebGPU routes do not export native
 videos directly.
@@ -202,7 +173,7 @@ finalizes the output file.
 Choose output directories intentionally. Treat encoded videos as generated outputs unless your
 project explicitly stores them as documentation assets.
 
-## Common Mistakes
+## Common mistakes
 
 - Treating live window recording and deterministic offscreen export as the same workflow.
 - Recording an interactive run loop with non-deterministic timing when a fixed frame loop is needed.
@@ -213,13 +184,13 @@ project explicitly stores them as documentation assets.
 - Leaving output paths implicit, then looking for the video in the wrong working directory.
 - Treating encoded videos as hand-written source assets.
 
-## See Also
+## See also
 
 - [Animate a scene](animation.md)
 - [Save screenshots](screenshots.md)
 - [Record and replay frame streams](record-replay.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Video Export](../examples/gallery/runtime/runtime_video_export.md) - Source: `examples/c/runtime/video_export.c`
+    - Canonical complete example: [Video Export](../examples/gallery/runtime/runtime_video_export.md) - Source: `examples/c/runtime/video_export.c`
     - [Timer Animation](../examples/gallery/features/features_timer_animation.md) - Source: `examples/c/features/timer_animation.c`

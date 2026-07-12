@@ -2,9 +2,9 @@
 
 Place readable text in or near a data view.
 
-![Annotation Readout](../assets/gallery/v0.4/features/features_annotation_readout.webp)
+![A data-anchored text label displaying the value at a selected point](../assets/gallery/v0.4/features/features_annotation_readout.webp)
 
-## Task Workflow
+## Task workflow
 
 Choose the text path from the job it needs to do. Use retained text for fixed panel text, labels for
 categorical label fields, and annotation labels for data-anchored readouts. Add the object after
@@ -16,7 +16,7 @@ deciding whether its placement is screen-space, data-space, or tied to a query r
 | Integer label image, segmentation mask, or categorical field overlay | `dvz_labels()` | Same image placement attributes as image visuals. |
 | One retained label at a data point or query location | `dvz_annotation_label()` | Data placement plus pixel offset. |
 
-## Fixed Text Block
+## Fixed text block
 
 Create a retained `DvzText` when the text is a small number of strings owned by the scene. This is
 the right path for corner labels, captions, and status text that should stay readable while the data
@@ -58,7 +58,7 @@ fixed screen position without moving it with that reserve.
 Use `dvz_text_set_string()` to update a changing readout. Do not rebuild the panel or recreate the
 scene for every value change.
 
-## Categorical Label Fields
+## Categorical label fields
 
 Use `dvz_labels()` for label images or segmentation masks. A labels visual renders an integer
 sampled field through a categorical scale; it is not a per-item string list. This excerpt assumes
@@ -86,7 +86,7 @@ Keep the label IDs, hidden/selected IDs, and categorical scale metadata synchron
 underlying field changes, update the sampled field or field region rather than replacing the whole
 visual.
 
-## Data-Anchored Readout
+## Data-anchored readout
 
 Use `dvz_annotation_label()` for one or a few labels tied to data coordinates: highlighted peaks,
 selected points, probe markers, and callouts. The placement is data-space with optional pixel
@@ -121,7 +121,7 @@ The annotation object is retained by the panel. Destroy it with `dvz_annotation_
 callout is no longer needed.
 
 
-## Important Details
+## Important details
 
 Text has layout and readability constraints that geometry does not. Keep labels sparse enough to
 remain legible and prefer probe readouts for dense data.
@@ -135,7 +135,7 @@ Text rendering uses glyph atlas resources. Very large font sizes, many unique gl
 string churn can become resource-heavy. Reuse retained text or annotations when the placement and
 style are stable.
 
-## Common Mistakes
+## Common mistakes
 
 - Treating labels as a substitute for picking or probing dense fields.
 - Treating `dvz_labels()` as a per-string label visual; it is for categorical sampled fields.
@@ -143,14 +143,14 @@ style are stable.
 - Baking changing readout text into a full scene rebuild.
 - Mixing screen-space and data-space coordinates in one readout path.
 
-## See Also
+## See also
 
 - [Pick items](pick-items.md)
 - [Probe image or field values](probe-fields.md)
 - [Add colorbars, scale bars, and legends](adornments.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Text Block](../examples/gallery/features/features_text_block.md) - Source: `examples/c/features/text_block.c`
+    - Canonical complete example: [Text Block](../examples/gallery/features/features_text_block.md) - Source: `examples/c/features/text_block.c`
     - [Labels](../examples/gallery/visuals/visuals_labels.md) - Source: `examples/c/visuals/labels.c`
     - [Annotation Readout](../examples/gallery/features/features_annotation_readout.md) - Source: `examples/c/features/annotation_readout.c`

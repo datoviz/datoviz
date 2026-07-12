@@ -2,13 +2,13 @@
 
 Change the data shown by an existing visual.
 
-![Visual Data Update](../assets/gallery/v0.4/features/features_update_visual_data.webp)
+![Point positions changing while the existing visual remains on screen](../assets/gallery/v0.4/features/features_update_visual_data.webp)
 
 Use this when the same plot should display new values: a time series advances, a simulation step
 finishes, a slider changes a threshold, or a selection changes the colors of some items. In most
 cases, keep the visual and update its data arrays. Do not rebuild the whole scene for every change.
 
-## Basic Workflow
+## Basic workflow
 
 Most updates follow the same shape:
 
@@ -23,7 +23,7 @@ For example, a point visual might have one array for `"position"`, one array for
 array for `"diameter_px"`. Updating the visual means replacing one or more of those arrays, not
 creating a new point visual for every point.
 
-## Choose The Update Method
+## Choose the update method
 
 Choose the update method from what changed in your data:
 
@@ -35,7 +35,7 @@ Choose the update method from what changed in your data:
 | Visibility, transform, material, depth, or blending changed. | The matching visual setter. | These are visual settings, not data arrays. |
 | Image or volume values changed. | Sampled-field APIs. | Use the field or texture path rather than treating each pixel or voxel as a separate item. |
 
-## Replace One Attribute
+## Replace one attribute
 
 This is the simplest case. The visual already exists, and you replace one array:
 
@@ -70,7 +70,7 @@ Datoviz copies the array when you call the function. If you later modify `pos` o
 own program, the visual does not change automatically. Call the update function again when you want
 the new values to appear.
 
-## Replace Several Attributes Together
+## Replace several attributes together
 
 When the number of items changes, update all per-item arrays that share that item count. For a point
 visual, positions, colors, and diameters usually all have one value per point. If you grow from
@@ -96,7 +96,7 @@ dvz.dvz_visual_set_data_many(
 )
 ```
 
-## Update Part Of One Attribute
+## Update part of one attribute
 
 If only a continuous slice of one existing attribute changed, update just that range:
 
@@ -119,7 +119,7 @@ Range updates are a good fit for hover or selection feedback when you know which
 changed. If the changed items are scattered throughout the array, replacing the full attribute may
 be simpler and still fast enough.
 
-## Animation And Interaction
+## Animation and interaction
 
 For animation, call the update from a timer, frame callback, or host event before the next frame is
 drawn. The visual remains the same object; only its data changes.
@@ -128,17 +128,13 @@ For interaction, keep your application data and your visual data connected by a 
 For example, if item 37 in your application is point 37 in the visual, a pick result or selection
 state can update the right color entry. If you reorder the visual data, update that mapping too.
 
-## Keep Related Items In One Visual
+## Keep related items in one visual
 
-Group related items of the same kind into one visual whenever possible. For example, 100 related
-points should usually be one point visual with 100 positions, 100 colors, and 100 sizes. Creating
-100 separate point visuals makes updates harder to manage and usually performs worse.
+Keep the grouping chosen during initial upload; an update should not split one visual into many
+objects. See [Group items into visuals](add-a-visual.md#group-items-into-visuals) for the
+authoritative batching and separation rules.
 
-Use separate visuals when the items are conceptually different or need different rendering settings:
-for example, a background image, a set of points, and a set of text labels. Do not split a visual
-only because some items change over time.
-
-## Details That Matter
+## Details that matter
 
 All dense per-item attributes on one visual must agree on item count. If a point visual has
 `"position"`, `"color"`, and `"diameter_px"`, changing the number of points means updating all three
@@ -155,7 +151,7 @@ Image and volume data use sampled fields and textures. Keep the grid dimensions,
 range explicit, and use the same scale for colorbars or probes. See [Use sampled fields and
 textures](use-sampled-fields.md).
 
-## Common Mistakes
+## Common mistakes
 
 - Rebuilding the whole scene for every data change.
 - Splitting related items into many tiny visuals instead of updating one grouped visual.
@@ -166,7 +162,7 @@ textures](use-sampled-fields.md).
 - Forgetting that pick or selection ids depend on a stable mapping between visual items and
   application data.
 
-## See Also
+## See also
 
 - [Animate a scene](animation.md)
 - [Add visuals to a panel](add-a-visual.md)
@@ -175,8 +171,8 @@ textures](use-sampled-fields.md).
 - [Transform visual data](transforms-and-scales.md)
 - [Profile rendering performance](profile-performance.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Visual Data Update](../examples/gallery/features/features_update_visual_data.md) - Source: `examples/c/features/update_visual_data.c`
+    - Canonical complete example: [Visual Data Update](../examples/gallery/features/features_update_visual_data.md) - Source: `examples/c/features/update_visual_data.c`
     - [Partial Data Update](../examples/gallery/features/features_update_partial.md) - Source: `examples/c/features/update_partial.c`
     - [Visual Visibility](../examples/gallery/features/features_visibility.md) - Source: `examples/c/features/visibility.c`

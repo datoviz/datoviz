@@ -22,7 +22,7 @@ From an editable checkout, make sure Python loads this checkout and its freshly 
 PYTHONPATH=. ipython
 ```
 
-## Create A Live Scene
+## Create a live scene
 
 Paste this into IPython:
 
@@ -67,7 +67,7 @@ In a regular Python script, `dvz.run(scene, figure)` blocks until the window clo
 IPython, it returns a `RunSession` and the prompt stays usable while the native window remains
 responsive. The macOS close limitation above applies when ending this hosted session.
 
-## Update Data At The Prompt
+## Update data at the prompt
 
 Modify the NumPy arrays and upload the changed slice. Then request a redraw:
 
@@ -101,7 +101,7 @@ For repeated prompt-side updates, keep using this pattern:
 2. upload it with `dvz_visual_set_data_range()`;
 3. call `session.request_frame()`.
 
-## Close And Reopen
+## Close and reopen
 
 The intended lifecycle is shown below, but close and reopen are not yet release-proven in terminal
 IPython on macOS. On that platform, treat this section as the target contract rather than a reliable
@@ -127,7 +127,7 @@ session.close()
 dvz.dvz_scene_destroy(scene)
 ```
 
-## Common Checks
+## Common checks
 
 If the window does not update after changing arrays, make sure you uploaded the changed data and
 requested a redraw:
@@ -141,7 +141,7 @@ If you are testing from an editable checkout, start IPython with `PYTHONPATH=.` 
 the checkout instead of an installed package. If the session object says it is closed, reopen the
 scene with `session = dvz.run(scene, figure)`.
 
-## See Also
+## See also
 
 - [Use from Python](use-python.md)
 - [Update visual data](update-visual-data.md)

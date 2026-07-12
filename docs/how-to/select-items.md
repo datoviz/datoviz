@@ -127,8 +127,8 @@ visual data.
 - [Update visual data](update-visual-data.md)
 - [Control depth, blending, and transparency](depth-blending.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Pixel Selection](../examples/gallery/features/features_selection_pixel.md) - Source: `examples/c/features/selection_pixel.c`
+    - Canonical complete example: [Pixel Selection](../examples/gallery/features/features_selection_pixel.md) - Source: `examples/c/features/selection_pixel.c`
     - [Sphere Selection](../examples/gallery/features/features_selection_sphere.md) - Source: `examples/c/features/selection_sphere.c`
     - [Mesh Instance Selection](../examples/gallery/features/features_selection_mesh_instances.md) - Source: `examples/c/features/selection_mesh_instances.c`

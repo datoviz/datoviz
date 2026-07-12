@@ -104,14 +104,14 @@ nav:
     - Overview: 'examples/index.md'
   - How-To:
     - Overview: 'how-to/index.md'
-    - Core Workflow:
+    - Core workflow:
       - Create a scene: 'how-to/create-a-scene.md'
       - Open an interactive window: 'how-to/create-a-window.md'
       - Render offscreen: 'how-to/render-offscreen.md'
       - Add visuals to a panel: 'how-to/add-a-visual.md'
       - Update visual data: 'how-to/update-visual-data.md'
       - Animate a scene: 'how-to/animation.md'
-    - Data To Visuals:
+    - Data to visuals:
       - Choose a visual family: 'how-to/choose-a-visual-family.md'
       - Use coordinate systems: 'how-to/coordinate-systems.md'
       - Transform visual data: 'how-to/transforms-and-scales.md'

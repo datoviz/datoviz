@@ -2,9 +2,9 @@
 
 Add visual context without turning the adornment into primary data.
 
-![Colorbar](../assets/gallery/v0.4/features/features_colorbar.webp)
+![A vertical colorbar beside a colored scientific data panel](../assets/gallery/v0.4/features/features_colorbar.webp)
 
-## Task Workflow
+## Task workflow
 
 Choose the adornment that explains the visual encoding: colorbars for scalar color, scale bars for
 spatial units, legends for categorical encodings. Add it after the data visual and keep its range or
@@ -22,7 +22,7 @@ Use this page for the overview. Use [Add axes](axes.md), [Add text, labels, and
 annotations](add-annotations.md), [Map scalar values with colormaps](use-colormaps.md), and
 [Probe image or field values](probe-fields.md) for the specialized workflows.
 
-## Minimal Call-Sequence Excerpts
+## Minimal call-sequence excerpts
 
 These excerpts assume a live panel and the required continuous or categorical scale. Constructors
 may return `NULL`, and the setters return `DvzResult`; complete examples should check both. The
@@ -54,7 +54,7 @@ Colorbars require a continuous scale. Legends require a categorical scale. Scale
 panel dimension and should match the panel's domain and units.
 
 
-## Important Details
+## Important details
 
 Adornments should describe the current visual encoding. If the scalar normalization, unit scale, or
 category set changes, update the adornment at the same time.
@@ -79,7 +79,7 @@ Probe readouts are a common source of subtle errors. If a cursor readout describ
 field, it should sample the same field and use the same normalization and display format as the
 colorbar.
 
-## Choosing Placement
+## Choosing placement
 
 | Placement choice | Use when | Watch for |
 | --- | --- | --- |
@@ -88,7 +88,7 @@ colorbar.
 | Detached placement | A composed figure needs a shared legend, large colorbar, or custom layout. | Make the visual association obvious and keep the scale contract shared. |
 | Data/world anchored annotation | The note refers to a specific item, point, or measurement. | It may move, clip, or become unreadable under navigation. |
 
-## Common Mistakes
+## Common mistakes
 
 - Showing a colorbar for arbitrary RGBA colors.
 - Building a colorbar or legend from duplicated colors instead of the visual's scale.
@@ -99,7 +99,7 @@ colorbar.
 - Letting an overlay adornment cover the data pattern it is meant to explain.
 - Using a long showcase as copied starter code instead of the minimal feature example.
 
-## See Also
+## See also
 
 - [Map scalar values with colormaps](use-colormaps.md)
 - [Add axes](axes.md)
@@ -107,9 +107,9 @@ colorbar.
 - [Probe image or field values](probe-fields.md)
 - [Link panels and controllers](link-panels.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Colorbar](../examples/gallery/features/features_colorbar.md) - Source: `examples/c/features/colorbar.c`
+    - Canonical complete example: [Colorbar](../examples/gallery/features/features_colorbar.md) - Source: `examples/c/features/colorbar.c`
     - [Scale Bar](../examples/gallery/features/features_scalebar.md) - Source: `examples/c/features/scalebar.c`
     - [Categorical Legend](../examples/gallery/features/features_legend_categorical.md) - Source: `examples/c/features/legend_categorical.c`
     - [Linked Probe With Colorbar](../examples/gallery/showcases/showcases_linked_probe_colorbar.md) - Source: `examples/c/showcases/linked_probe_colorbar.c`

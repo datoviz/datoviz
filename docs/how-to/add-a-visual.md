@@ -251,9 +251,9 @@ or update schedules.
 - [Use coordinate systems](coordinate-systems.md)
 - [Visual family reference](../reference/visual-families/index.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Point](../examples/gallery/visuals/visuals_point.md) - Source: `examples/c/visuals/point.c`
+    - Canonical complete example: [Point](../examples/gallery/visuals/visuals_point.md) - Source: `examples/c/visuals/point.c`
     - [Marker](../examples/gallery/visuals/visuals_marker.md) - Source: `examples/c/visuals/marker.c`
     - [Mesh](../examples/gallery/visuals/visuals_mesh.md) - Source: `examples/c/visuals/mesh.c`
     - [Mesh Instance Selection](../examples/gallery/features/features_selection_mesh_instances.md) - Source: `examples/c/features/selection_mesh_instances.c`

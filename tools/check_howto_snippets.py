@@ -6,20 +6,65 @@ from __future__ import annotations
 import ast
 import re
 import sys
+import textwrap
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
 HOWTO = ROOT / "docs" / "how-to"
-FENCE_RE = re.compile(r"^```([^\n]*)\n(.*?)^```", re.MULTILINE | re.DOTALL)
+FENCE_RE = re.compile(
+    r"^(?P<indent>[ \t]*)```([^\n]*)\n(.*?)^(?P=indent)```", re.MULTILINE | re.DOTALL
+)
 
 
-def _public_identifiers() -> tuple[set[str], set[str], set[str]]:
+def _public_identifiers() -> tuple[dict[str, int], set[str], set[str]]:
     text = "\n".join(path.read_text(errors="replace") for path in (ROOT / "include").rglob("*.h"))
-    functions = set(re.findall(r"\b(dvz_[A-Za-z0-9_]+)\s*\(", text))
+    declarations = re.sub(r"/\*.*?\*/|//[^\n]*", "", text, flags=re.DOTALL)
+    functions: dict[str, int] = {}
+    for match in re.finditer(r"\b(dvz_[A-Za-z0-9_]+)\s*\((.*?)\)\s*;", declarations, re.DOTALL):
+        args = match.group(2).strip()
+        functions[match.group(1)] = 0 if args in ("", "void") else len(args.split(","))
     types = set(re.findall(r"\b(Dvz[A-Za-z0-9_]+)\b", text))
     constants = set(re.findall(r"\b(DVZ_[A-Z0-9_]+)\b", text))
     return functions, types, constants
+
+
+def _calls(code: str):
+    """Yield public-looking calls and their top-level argument counts."""
+    for match in re.finditer(r"\b(dvz_[A-Za-z0-9_]+)\s*\(", code):
+        start = match.end()
+        depth = 1
+        quote = None
+        for index in range(start, len(code)):
+            char = code[index]
+            if quote is not None:
+                if char == quote and code[index - 1] != "\\":
+                    quote = None
+            elif char in "\"'":
+                quote = char
+            elif char == "(":
+                depth += 1
+            elif char == ")":
+                depth -= 1
+                if depth == 0:
+                    body = code[start:index]
+                    arg_depth = 0
+                    arg_quote = None
+                    count = 0 if not body.strip() else 1
+                    for offset, item in enumerate(body):
+                        if arg_quote is not None:
+                            if item == arg_quote and (offset == 0 or body[offset - 1] != "\\"):
+                                arg_quote = None
+                        elif item in "\"'":
+                            arg_quote = item
+                        elif item in "([{":
+                            arg_depth += 1
+                        elif item in ")]}":
+                            arg_depth -= 1
+                        elif item == "," and arg_depth == 0:
+                            count += 1
+                    yield match.group(1), count
+                    break
 
 
 def main() -> int:
@@ -30,9 +75,9 @@ def main() -> int:
     for path in sorted(HOWTO.glob("*.md")):
         text = path.read_text()
         for match in FENCE_RE.finditer(text):
-            language = match.group(1).strip()
-            code = match.group(2)
-            line = text.count("\n", 0, match.start(2)) + 1
+            language = match.group(2).strip()
+            code = textwrap.dedent(match.group(3))
+            line = text.count("\n", 0, match.start(3)) + 1
             if language == "python":
                 counts["python"] += 1
                 try:
@@ -42,7 +87,7 @@ def main() -> int:
             elif language == "c":
                 counts["c"] += 1
                 checks = (
-                    (r"\b(dvz_[A-Za-z0-9_]+)\s*\(", functions, "function"),
+                    (r"\b(dvz_[A-Za-z0-9_]+)\s*\(", set(functions), "function"),
                     (r"\b(Dvz[A-Za-z0-9_]+)\b", types, "type"),
                     (r"\b(DVZ_[A-Z0-9_]+)\b", constants, "constant"),
                 )
@@ -51,11 +96,20 @@ def main() -> int:
                         errors.append(
                             f"{path.relative_to(ROOT)}:{line}: non-public or unknown C {kind} {token}"
                         )
+                for name, count in _calls(code):
+                    if name in functions and count != functions[name]:
+                        errors.append(
+                            f"{path.relative_to(ROOT)}:{line}: {name} takes {functions[name]} "
+                            f"arguments in the public header, snippet passes {count}"
+                        )
 
     if errors:
         print("\n".join(errors), file=sys.stderr)
         return 1
-    print(f"How-To snippets: {counts['python']} Python and {counts['c']} C blocks passed")
+    print(
+        f"How-To snippets: {counts['python']} Python AST blocks and {counts['c']} C public "
+        "identifier/arity blocks passed (context excerpts are not compiled)"
+    )
     return 0
 
 

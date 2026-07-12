@@ -153,14 +153,9 @@ attaches it to a panel.
 
 ## Choose visual granularity
 
-Use a small number of visuals, each with many items. Add another visual when the data needs a
-different visual family, style model, panel, transform, or update pattern.
-
-Datoviz is designed for batching. Prefer one visual that contains many related items over many
-separate visuals that each contain a few items. For example, if 100 points belong to the same
-dataset and use the same point styling, put them in one point visual with 100 positions, colors, and
-diameters. Create separate visuals when the elements represent different visual families, styles,
-materials, panels, transforms, or update schedules.
+Use a small number of visuals, each with many related items. The authoritative grouping rules and
+examples are in [Add visuals to a panel](add-a-visual.md#group-items-into-visuals); scene creation
+only needs one visual to establish the object model.
 
 ## Common mistakes
 
@@ -180,7 +175,7 @@ materials, panels, transforms, or update schedules.
 - [Create multiple panels](multiple-panels.md)
 - [Scene building blocks](../explanation/figure-panel-visual-model.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Basic Scene](../examples/gallery/features/features_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
+    - Canonical complete example: [Basic Scene](../examples/gallery/features/features_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
     - [Quickstart scatter plot](../start/quickstart.md) - Source: `examples/c/start/scatter.c`

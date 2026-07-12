@@ -257,9 +257,9 @@ Use `--png` for a non-interactive smoke run, then use `--live` to validate the a
 - [Control depth, blending, and transparency](depth-blending.md)
 - [Controllers](../reference/controllers.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Arcball Controller](../examples/gallery/features/features_controller_arcball.md) - Source: `examples/c/features/controller_arcball.c`
+    - Canonical complete example: [Arcball Controller](../examples/gallery/features/features_controller_arcball.md) - Source: `examples/c/features/controller_arcball.c`
     - [Fly Controller](../examples/gallery/features/features_controller_fly.md) - Source: `examples/c/features/controller_fly.c`
     - [Turntable Controller](../examples/gallery/features/features_controller_turntable.md) - Source: `examples/c/features/controller_turntable.c`
     - [Orientation Gizmo](../examples/gallery/features/features_orientation_gizmo.md) - Source: `examples/c/features/orientation_gizmo.c`

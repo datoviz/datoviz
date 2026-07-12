@@ -2,7 +2,7 @@
 
 Add 2D axes, ticks, grid lines, and labels to a panel.
 
-## Use This When
+## Use this when
 
 - A 2D panel needs numeric X/Y context.
 - Panzoom interaction should keep ticks aligned with the visible data range.
@@ -12,7 +12,7 @@ Add 2D axes, ticks, grid lines, and labels to a panel.
 Use [reference grids](../examples/gallery/features/features_reference_grid.md) or orientation gizmos
 for 3D spatial context. The retained axis helpers described here are for panel-owned 2D X/Y axes.
 
-## Minimal Sequence
+## Minimal sequence
 
 Set the panel data domain first, then request the panel-owned axes and configure their visible
 parts.
@@ -55,7 +55,7 @@ dvz_axis_set_label(y_axis, "y");
 Keep axes in the same panel as the data they describe. If the panel uses panzoom, bind the
 controller to the same X/Y dimensions so ticks, grid lines, and visible data move together.
 
-## Domain and Coordinates
+## Domain and coordinates
 
 Axes are derived from the panel data domain. Visual attributes may still need to be uploaded in the
 coordinate space expected by the visual family. When your source samples are in panel data
@@ -75,7 +75,7 @@ Domain endpoints are ordered, not sorted. Reversed finite domains are valid: for
 visual edge and the second endpoint maps to the top visual edge. `dvz_panel_visible_domain()`
 preserves that endpoint order after View2D fitting and panzoom.
 
-## Tick Policy and Labels
+## Tick policy and labels
 
 Use the default tick policy for ordinary plots. Tune it when labels collide or the panel is small.
 
@@ -129,7 +129,7 @@ For formatted numeric units, attach a `DvzUnits` object with `dvz_axis_set_units
 data coordinates that should render as absolute UTC time, use `dvz_axis_set_datetime()` and
 `dvz_axis_set_datetime_range()`.
 
-## Styling and Margins
+## Styling and margins
 
 Axis labels and tick labels need space. If labels crowd the plot edge, reserve plot-area margins
 or use a larger panel/grid margin.
@@ -143,14 +143,14 @@ Use `dvz_axis_set_style()` when the default tick, text, or grid styling does not
 Avoid drawing custom axis lines unless the retained axis helper cannot express the intended
 annotation.
 
-## Browser Support
+## Browser support
 
 The 2D axes and axis-label examples have live WebGPU routes. Check the generated example page when
 browser support matters, especially if the scene also uses panzoom or text-heavy annotations.
 
-## Canonical Examples
+## Canonical examples
 
-![Path With 2D Axes](../assets/gallery/v0.4/features/features_axes_2d.webp)
+![A colored 2D path framed by labeled axes, ticks, and grid lines](../assets/gallery/v0.4/features/features_axes_2d.webp)
 
 - [Path With 2D Axes](../examples/gallery/features/features_axes_2d.md) - minimal retained 2D axes and
   tick labels on a path plot. Source: `examples/c/features/axes_2d.c`.
@@ -161,7 +161,7 @@ browser support matters, especially if the scene also uses panzoom or text-heavy
 - [Scientific Plotting Workflow](../examples/gallery/showcases/showcases_scientific_plotting.md) -
   composed plotting workflow using axes as one part of a larger layout.
 
-## Important Details
+## Important details
 
 - Axes are panel-owned adornments. Do not share one `DvzAxis` across panels.
 - The active retained axis path supports finite linear X/Y panel domains. Use separate 3D reference
@@ -172,7 +172,7 @@ browser support matters, especially if the scene also uses panzoom or text-heavy
 - When using colorbars, scale bars, or legends, keep each adornment synchronized with the same data
   range, units, and panel layout policy.
 
-## Common Mistakes
+## Common mistakes
 
 - Adding axes before deciding the panel data domain.
 - Uploading data-space positions directly when the visual expects visual-space positions.
@@ -182,7 +182,7 @@ browser support matters, especially if the scene also uses panzoom or text-heavy
 - Treating a composed scientific plotting showcase as the minimal axes example.
 - Drawing custom lines for axes when the axes helper already provides the intended behavior.
 
-## See Also
+## See also
 
 - [Use coordinate systems](coordinate-systems.md)
 - [Add colorbars, scale bars, and legends](adornments.md)

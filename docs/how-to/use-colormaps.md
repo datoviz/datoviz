@@ -2,9 +2,9 @@
 
 Convert scalar data into colors and expose the scale to readers.
 
-![Scalar Color Scale](../assets/gallery/v0.4/features/features_colormap_scale.webp)
+![Scalar values mapped through a colormap with a matching color scale](../assets/gallery/v0.4/features/features_colormap_scale.webp)
 
-## Task Workflow
+## Task workflow
 
 Choose the scalar range, choose a colormap, upload the mapped colors or sampled-field data, then add
 a colorbar when the visual result needs interpretation.
@@ -18,7 +18,7 @@ Choose the color path by what the data represents:
 | Already-computed RGBA colors. | Upload RGBA directly to `"color"`. | No colorbar unless there is a real scalar scale behind those colors. |
 | Category or label ids. | Use a categorical scale and legend. | Legend, not a continuous colorbar. |
 
-## Minimal Call Sequence
+## Minimal call sequence
 
 Prerequisite: create `scene`, `panel`, a point `visual`, and C-contiguous position and scalar arrays.
 The result maps the scalar `"color"` attribute through Viridis over `[0, 1]`. The snippets are setup
@@ -78,7 +78,7 @@ For sampled fields, use the image or volume path shown in the field examples ins
 expanding every scalar to geometry.
 
 
-## Important Details
+## Important details
 
 Keep the scalar domain explicit. The colorbar should match the normalization used for the visual,
 not just the colormap name.
@@ -104,7 +104,7 @@ visible panel range.
 Categorical labels are different from scalar values. Even if category ids are numeric, use a
 categorical scale and legend when the numbers name classes rather than ordered magnitudes.
 
-## Common Mistakes
+## Common mistakes
 
 - Remapping colors after every pan or zoom instead of only when scalar values or normalization
   change.
@@ -115,7 +115,7 @@ categorical scale and legend when the numbers name classes rather than ordered m
 - Letting probe/readout values use a different range or unit format than the colorbar.
 - Mixing premultiplied and straight alpha expectations in transparent colormaps.
 
-## See Also
+## See also
 
 - [Use sampled fields and textures](use-sampled-fields.md)
 - [Add colorbars, scale bars, and legends](adornments.md)
@@ -123,8 +123,8 @@ categorical scale and legend when the numbers name classes rather than ordered m
 - [Update visual data](update-visual-data.md)
 - [Control depth, blending, and transparency](depth-blending.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Scalar Color Scale](../examples/gallery/features/features_colormap_scale.md) - Source: `examples/c/features/colormap_scale.c`
+    - Canonical complete example: [Scalar Color Scale](../examples/gallery/features/features_colormap_scale.md) - Source: `examples/c/features/colormap_scale.c`
     - [Colorbar](../examples/gallery/features/features_colorbar.md) - Source: `examples/c/features/colorbar.c`
     - [Sampled Field Update](../examples/gallery/features/features_sampled_field_update.md) - Source: `examples/c/features/sampled_field_update.c`

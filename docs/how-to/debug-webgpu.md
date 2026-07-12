@@ -32,16 +32,9 @@ loading, and caching variables that are not useful for the first diagnosis.
 ## Check the example status
 
 Look at the generated example page or the [WebGPU matrix](../examples/webgpu-matrix.md). The route
-status determines what you should expect:
-
-| Status | What to do |
-| --- | --- |
-| `webgpu-live` | A public browser route exists. Debug browser support, route loading, and runtime diagnostics. |
-| `webgpu-planned` | Do not treat the missing live route as a runtime failure. Use the native example or static media. |
-| `webgpu-deferred` | Browser support is intentionally postponed. Use the native path or fallback documentation. |
-| `native-only` | The example depends on native behavior. Do not advertise a live WebGPU route. |
-
-Only `webgpu-live` examples should be opened as public browser routes.
+status determines what you should expect. The matrix is authoritative for the status definitions:
+only a `webgpu-live` row promises a public route. A planned, deferred, or native-only row is a
+fallback decision, not a browser runtime failure.
 
 ## Open the standalone route
 
@@ -203,8 +196,8 @@ browser support problem from a Datoviz scene or renderer issue.
 - [WebGPU subset](../reference/webgpu-subset.md)
 - [WebGPU matrix](../examples/webgpu-matrix.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Basic Scene](../examples/gallery/features/features_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
+    - Canonical complete example: [Basic Scene](../examples/gallery/features/features_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
     - Gallery: [WebGPU Matrix](../examples/webgpu-matrix.md)
     - Manifest: `examples/c/MANIFEST.yaml`

@@ -5,7 +5,7 @@ React to keyboard, mouse, and pointer input in native examples.
 Use explicit input callbacks when an application needs custom shortcuts, selection modes, overlays,
 diagnostics, or host integration. Use controllers instead when the input is ordinary navigation.
 
-## Task Workflow
+## Task workflow
 
 Use controllers for standard navigation first. Add explicit input callbacks when the application
 needs custom selection, toggles, overlays, or host integration.
@@ -14,7 +14,7 @@ For host GUI controls, let the UI own application state such as toggles, sliders
 switches, then update retained Datoviz visual data, visibility, or controller state from that
 state.
 
-## Minimal Workflow
+## Minimal workflow
 
 1. Bind a controller first if the input is ordinary navigation.
 2. Get the view input router with `dvz_view_input(view)`.
@@ -71,7 +71,7 @@ The related example uses this same route:
 `examples/c/features/input_events.c`.
 
 
-## Event Streams
+## Event streams
 
 | Stream | Subscribe with | Use for |
 | --- | --- | --- |
@@ -84,7 +84,7 @@ Use `dvz_input_subscribe_event()` when you need click, double-click, drag-start,
 events. Those gesture-derived events are emitted on the routed input stream.
 
 
-## Testing Callbacks
+## Testing callbacks
 
 Synthetic event emission is useful for smoke tests and hosted integrations. After creating a view,
 subscribe the callback and emit events through the view helper API:
@@ -102,7 +102,7 @@ The synthetic path works with offscreen views, so it can run in automated checks
 native GLFW window.
 
 
-## Important Details
+## Important details
 
 Input events are native-only in the current feature example. Browser interaction is handled by the
 WebGPU route and should not be copied from GLFW callback code.
@@ -110,7 +110,7 @@ WebGPU route and should not be copied from GLFW callback code.
 Callbacks run synchronously on the emitting thread. Keep callback state owned by the application,
 and unsubscribe before destroying that state or the view.
 
-## Common Mistakes
+## Common mistakes
 
 - Reimplementing pan/zoom in raw input callbacks.
 - Mutating visual data from long-running callback work.
@@ -118,15 +118,15 @@ and unsubscribe before destroying that state or the view.
 - Letting GUI state and visual attributes drift apart.
 - Forgetting to unsubscribe callbacks that capture application state.
 
-## See Also
+## See also
 
 - [Use panzoom](use-panzoom.md)
 - [Pick items](pick-items.md)
 - [Embed in Qt](embed-in-qt.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Input Events](../examples/gallery/features/features_input_events.md) - Source: `examples/c/features/input_events.c`
+    - Canonical complete example: [Input Events](../examples/gallery/features/features_input_events.md) - Source: `examples/c/features/input_events.c`
     - [Picking](../examples/gallery/features/features_picking.md) - Source: `examples/c/features/picking.c`
     - [GUI Controls](../examples/gallery/features/features_gui_controls.md) - Source: `examples/c/features/gui_controls.c`
     - [Raw cimgui GUI](../examples/gallery/features/features_gui_cimgui.md) - Source: `examples/c/features/gui_cimgui.c`

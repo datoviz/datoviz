@@ -87,7 +87,7 @@ scale comparisons.
 - [Use coordinate systems](coordinate-systems.md)
 - [Use lighting and materials](lighting-and-materials.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Arcball Controller](../examples/gallery/features/features_controller_arcball.md) - Source: `examples/c/features/controller_arcball.c`
+    - Canonical complete example: [Arcball Controller](../examples/gallery/features/features_controller_arcball.md) - Source: `examples/c/features/controller_arcball.c`
     - [Orientation Gizmo](../examples/gallery/features/features_orientation_gizmo.md) - Source: `examples/c/features/orientation_gizmo.c`

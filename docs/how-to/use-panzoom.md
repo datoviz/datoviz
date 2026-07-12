@@ -5,12 +5,12 @@ Enable 2D mouse pan and wheel zoom on a panel.
 Use panzoom for 2D data views where pointer drag and wheel input should change the visible X/Y
 range. Use custom input callbacks only for application behavior that is not ordinary navigation.
 
-## Task Workflow
+## Task workflow
 
 Set a panel domain for the visible data range, create a panzoom controller, then bind it to the
 panel with the axes that should respond to interaction.
 
-## Minimal Call Sequence
+## Minimal call sequence
 
 When you already have a live app view, use the view helper. It creates the controller, binds it to
 the panel, and connects it to the view input router:
@@ -54,7 +54,7 @@ dvz_view_bind_controller(view, panel, controller, DVZ_DIM_MASK_XY);
 Use `DVZ_DIM_MASK_X` or `DVZ_DIM_MASK_Y` for one-axis navigation.
 
 
-## Domains And Extents
+## Domains and extents
 
 Panel domains define the base data range. Panzoom state is applied on top of that domain to compute
 the current visible range. Query the resolved visible range when axes, labels, overlays, or host UI
@@ -90,7 +90,7 @@ one axis. Prefer binding with `DVZ_DIM_MASK_X` or `DVZ_DIM_MASK_Y` when the axis
 of the panel relationship rather than the controller behavior itself.
 
 
-## Linked Panels
+## Linked panels
 
 Sharing one controller handle links the bound state for every panel that uses it:
 
@@ -107,7 +107,7 @@ Y ranges, bind one X controller to both panels and bind separate Y controllers t
 links.
 
 
-## Important Details
+## Important details
 
 Panzoom is a 2D controller. Use 3D controllers for orbit, turntable, fly, or arcball navigation.
 Controllers live with the scene that created them.
@@ -116,7 +116,7 @@ Controllers live with the scene that created them.
 `dvz_view_bind_controller()` when you need one-axis binding, shared controllers, or custom link
 topology.
 
-## Common Mistakes
+## Common mistakes
 
 - Binding panzoom before deciding the panel domain.
 - Creating separate controllers for panels that should stay linked.
@@ -125,7 +125,7 @@ topology.
 - Reading the base panel domain when the application needs the current visible domain after
   navigation.
 
-## See Also
+## See also
 
 - [Link panels and controllers](link-panels.md)
 - [Use 3D controllers](3d-navigation.md)
@@ -133,8 +133,8 @@ topology.
 - [Handle input events](input-events.md)
 - [Controller reference](../reference/controllers.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Panzoom](../examples/gallery/features/features_panzoom.md) - Source: `examples/c/features/panzoom.c`
+    - Canonical complete example: [Panzoom](../examples/gallery/features/features_panzoom.md) - Source: `examples/c/features/panzoom.c`
     - [Linked Panels](../examples/gallery/features/features_panel_linked.md) - Source: `examples/c/features/panel_linked.c`
     - [Panel View 2D](../examples/gallery/features/features_panel_view2d.md) - Source: `examples/c/features/panel_view2d.c`

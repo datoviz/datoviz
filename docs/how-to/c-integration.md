@@ -6,7 +6,7 @@ sequence itself, start with [First C Program](../start/first-c-program.md) or
 [Create a scene](create-a-scene.md).
 
 
-## Public Interface
+## Public interface
 
 Application code should include Datoviz public headers only:
 
@@ -24,7 +24,7 @@ the scene, and do not manually destroy scene-owned objects unless a specific API
 ownership.
 
 
-## Installed Package
+## Installed package
 
 Use this path when Datoviz is already installed into the environment where you build your
 application. The installed package exports public headers, the Datoviz library, a CMake package,
@@ -63,7 +63,7 @@ The repository keeps a minimal installed-package consumer at
 `examples/c/integration/cmake_package/`.
 
 
-## Source Checkout
+## Source checkout
 
 Use this path when packages are not available yet, when you need the current development branch, or
 when you want Datoviz to build as part of your project.
@@ -102,7 +102,7 @@ The repository keeps the copy-pasteable source-checkout consumer at
 `examples/c/integration/fetchcontent/`.
 
 
-## Runtime Libraries
+## Runtime libraries
 
 Datoviz is linked as a native library. Your executable must be able to find the Datoviz shared
 library at runtime.
@@ -144,7 +144,7 @@ See [Build options](../reference/build-options.md) for package export options an
 presets.
 
 
-## Common Mistakes
+## Common mistakes
 
 - Including private headers from `src/`.
 - Linking to a build-tree library while including headers from a different install.
@@ -156,7 +156,7 @@ presets.
 - Destroying `DvzScene` before `dvz_app_destroy()` in an application that created an app.
 
 
-## See Also
+## See also
 
 - [First C Program](../start/first-c-program.md)
 - [Create a scene](create-a-scene.md)
@@ -164,8 +164,8 @@ presets.
 - [Render offscreen](render-offscreen.md)
 - [Build options](../reference/build-options.md)
 
-??? example "Related integration examples"
+??? example "Complete and related examples"
 
-    - Source: `examples/c/integration/cmake_package/`
+    - Canonical complete example: `examples/c/integration/cmake_package/`
     - Source: `examples/c/integration/fetchcontent/`
     - Smoke script: `tools/c_integration_smoke.sh`

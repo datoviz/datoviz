@@ -38,15 +38,16 @@ while (dvz_scene_poll_query(scene, &query))
     if (query.request_id != 1 || query.status != DVZ_QUERY_STATUS_HIT || !query.hit)
         continue;
 
-    double data_x = 0.0;
-    double data_y = 0.0;
+    double panel_position[2] = {query.panel_position[0], query.panel_position[1]};
+    double data_position[2] = {0};
     if (!dvz_panel_position_to_data(
-            panel, DVZ_PANEL_COORD_PANEL_PX, query.panel_position[0], query.panel_position[1],
-            &data_x, &data_y))
+            panel, DVZ_PANEL_COORD_PANEL_PX, panel_position, data_position))
     {
         continue;
     }
 
+    double data_x = data_position[0];
+    double data_y = data_position[1];
     double value = sample_field_value(values, width, height, data_x, data_y);
     update_probe_readout(readout, data_x, data_y, value);
 }
@@ -103,8 +104,8 @@ centers.
 - [Pick items](pick-items.md)
 - [Add text, labels, and annotations](add-annotations.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Image Probe](../examples/gallery/features/features_image_probe.md) - Source: `examples/c/features/image_probe.c`
+    - Canonical complete example: [Image Probe](../examples/gallery/features/features_image_probe.md) - Source: `examples/c/features/image_probe.c`
     - [Label Probe](../examples/gallery/features/features_probe_labels.md) - Source: `examples/c/features/probe_labels.c`
     - [Linked Probe With Colorbar](../examples/gallery/showcases/showcases_linked_probe_colorbar.md) - Source: `examples/c/showcases/linked_probe_colorbar.c`

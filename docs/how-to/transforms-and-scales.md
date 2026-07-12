@@ -2,7 +2,7 @@
 
 Apply object transforms or user scales without rewriting source data.
 
-## Task Workflow
+## Task workflow
 
 Use panel domains for the view's data range. Use visual transforms when one visual needs a local
 translation, scale, or rotation relative to the panel. Use user scales when an example explicitly
@@ -18,7 +18,7 @@ Choose the mechanism by the question you are answering:
 | Enlarge screen-space markers, strokes, axes, or UI-like elements | `dvz_view_set_user_scale()` | Presentation size, not data units. |
 | Map scalar or categorical values to colors/labels | `DvzScale` and `dvz_visual_set_scale()` | Semantic color/label scale, not geometry. |
 
-## Visual Transform Call Sequence
+## Visual transform call sequence
 
 ```c
 mat4 transform = {
@@ -51,7 +51,7 @@ dvz_visual_set_transform(visual, transform);
 Use the matrix setup pattern from `examples/c/features/visual_transform.c` for rotations, shears,
 non-uniform scales, or combined affine transforms.
 
-## Domains and Attachment Space
+## Domains and attachment space
 
 Do not use a visual transform to compensate for a wrong data domain. If positions are data values,
 set the panel domain and attach the visual in data coordinate space:
@@ -70,7 +70,7 @@ around `[-1, +1]`. Use `DVZ_VISUAL_COORD_PANEL` for normalized panel-fixed overl
 `DVZ_VISUAL_COORD_PANEL_PIXEL` for overlays authored in panel-local logical pixels. See
 [Use coordinate systems](coordinate-systems.md) for the full coordinate-space distinction.
 
-## User Scale
+## User scale
 
 User scale is presentation scale on a view. It is appropriate for screen-space sizes such as marker
 diameter_px, stroke width, axes, labels, and GUI-adjusted readability. It should not be used to change
@@ -84,7 +84,7 @@ dvz_view_set_user_scale(view, scale * 1.25f);
 The user-scale example drives this value from a GUI slider. It changes visual readability without
 rewriting source positions or changing the panel domain.
 
-## Semantic Scales
+## Semantic scales
 
 `DvzScale` is a semantic mapping object, not a geometry transform. Use it for scalar colormaps,
 categorical labels, colorbars, legends, and query/probe metadata.
@@ -100,7 +100,7 @@ Use [Use colormaps](use-colormaps.md) and [Use sampled fields](use-sampled-field
 bindings on scalar images, volumes, labels, points, or pixels.
 
 
-## Important Details
+## Important details
 
 Transforms are retained scene objects. Keep them alive with the scene and update them through the
 scene API rather than baking every camera or scale change into raw positions.
@@ -115,7 +115,7 @@ transform-description helpers are not part of the public task workflow on this p
 For animated or frequently changing placement, update the retained transform instead of uploading
 new positions every frame when the vertex data itself is unchanged.
 
-## Common Mistakes
+## Common mistakes
 
 - Using transforms to compensate for a wrong panel domain.
 - Uploading pre-normalized view coordinates with the default `DVZ_VISUAL_COORD_DATA` attachment, then
@@ -127,7 +127,7 @@ new positions every frame when the vertex data itself is unchanged.
 - Expecting WebGPU parity for every native transform example; check the generated example page or
   [WebGPU subset](../reference/webgpu-subset.md) status before relying on browser support.
 
-## See Also
+## See also
 
 - [Use coordinate systems](coordinate-systems.md)
 - [Add visuals to a panel](add-a-visual.md)
@@ -136,8 +136,8 @@ new positions every frame when the vertex data itself is unchanged.
 - [Use sampled fields](use-sampled-fields.md)
 - [Profile rendering performance](profile-performance.md)
 
-??? example "Related examples"
+??? example "Complete and related examples"
 
-    - [Visual Transform](../examples/gallery/features/features_visual_transform.md) - Source: `examples/c/features/visual_transform.c`
+    - Canonical complete example: [Visual Transform](../examples/gallery/features/features_visual_transform.md) - Source: `examples/c/features/visual_transform.c`
     - [User Scale](../examples/gallery/features/features_user_scale.md) - Source: `examples/c/features/user_scale.c`
     - [Reference Grid](../examples/gallery/features/features_reference_grid.md) - Source: `examples/c/features/reference_grid.c`
