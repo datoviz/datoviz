@@ -85,6 +85,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/choropleth.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/textured_planet.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/wind_field.c
+    ${PROJECT_SOURCE_DIR}/examples/c/start/scatter.c
     ${PROJECT_SOURCE_DIR}/examples/c/visuals/glyph.c
     ${PROJECT_SOURCE_DIR}/examples/c/visuals/image.c
     ${PROJECT_SOURCE_DIR}/examples/c/visuals/image_rgba.c

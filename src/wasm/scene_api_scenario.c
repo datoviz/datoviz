@@ -86,6 +86,7 @@ DvzScenarioSpec dvz_showcase_surface_grid_scenario(void);
 DvzScenarioSpec dvz_showcase_textured_planet_scenario(void);
 DvzScenarioSpec dvz_showcase_us_state_choropleth_scenario(void);
 DvzScenarioSpec dvz_showcase_wind_field_scenario(void);
+DvzScenarioSpec dvz_start_scatter_scenario(void);
 DvzScenarioSpec dvz_visual_glyph_scenario(void);
 DvzScenarioSpec dvz_visual_image_scenario(void);
 DvzScenarioSpec dvz_visual_image_rgba_scenario(void);
@@ -267,6 +268,8 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_example_orientation_gizmo_scenario();
     case 79:
         return dvz_example_probe_labels_scenario();
+    case 80:
+        return dvz_start_scatter_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

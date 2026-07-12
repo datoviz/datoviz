@@ -900,6 +900,7 @@ async function main() {
         ['composites_graph', { label: 'Graph Composite' }],
         ['features_orientation_gizmo', { label: 'Orientation Gizmo', kind: 'animated' }],
         ['features_probe_labels', { label: 'Label Probe', kind: 'query' }],
+        ['start_scatter', { label: 'Scatter Plot' }],
       ]);
       const route = filteredRoutes.get(routeFilter);
       requireOk(route !== undefined, `unknown filtered WebGPU route: ${routeFilter}`);

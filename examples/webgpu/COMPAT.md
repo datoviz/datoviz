@@ -15,7 +15,7 @@ versions. Runner command expansion should remain evidence-driven and scoped to t
 ## RC Promotion Target
 
 Current fixture proof counts remain the dashboard truth for the low-level runner. The live gallery
-now has 79 promoted routes backed by canonical C examples or portable C scenarios:
+now has 80 promoted routes backed by canonical C examples or portable C scenarios:
 `features_basic_scene`, `features_timer_animation`, `features_builtin_shapes_2d`,
 `features_builtin_shapes_3d`, `features_isolines`,
 `features_animation_tracks`, `features_compute_buffer_animation`, `features_obj_loading`,
@@ -40,14 +40,15 @@ The promoted set also includes `features_coordinate_system`, `features_visual_tr
 `features_camera_manual`, `features_controller_arcball`, `features_mesh_texture`,
 `features_reference_grid`, `features_bounds_overlay`, `composites_graph`, and
 `features_orientation_gizmo`, and `features_probe_labels`.
+The quickstart `start_scatter` route is also live with its canonical 10,000-point scenario.
 
 This list uses public route IDs. When a route ID differs from the compiled C/WASM scenario ID,
 `examples/c/MANIFEST.yaml` records the mapping in `webgpu.scenario_id`.
 
 Remaining RC promotions are:
 
-1. obtain manual website confirmation for `features_probe_labels`;
-2. continue with scatter/datetime/marker
+1. obtain manual website confirmation for `start_scatter`;
+2. continue with datetime/marker
    parity, generic volume before brain volume, rendering techniques, and finally splat/point-cloud;
 3. keep native-only and deferred diagnostics explicit, and classify lab-only manifest entries only
    if they become public gallery routes.
@@ -92,6 +93,9 @@ user-visible result.
 
 The scalar image probe now follows the same policy: resolved values and positions update a retained
 overlay card on native and browser hosts, with stdout kept only as secondary diagnostic evidence.
+
+Recorded local quickstart-scatter proof on 2026-07-12: native build, 81-scenario WASM packet smoke,
+targeted 10,000-instance point draw assertion, and filtered live-browser rendering passed.
 
 Recorded local browser shader-payload proof on 2026-06-18: `node --check
 tools/webgpu_browser_smoke.mjs`, `node --check tools/wasm_scene_smoke.mjs`, and `just

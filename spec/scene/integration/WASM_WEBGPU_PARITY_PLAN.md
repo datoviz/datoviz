@@ -34,7 +34,7 @@ Current source-of-truth files:
 
 As of 2026-07-12:
 
-1. Manifest counts: `79 webgpu-live`, with remaining examples explicitly classified as
+1. Manifest counts: `80 webgpu-live`, with remaining examples explicitly classified as
    `webgpu-planned`, `webgpu-deferred`, `native-only`, or non-public lab material.
 2. Live routes cover basic scene, timer animation, triangulation, builtin shapes 2D/3D, isolines,
    animation tracks, OBJ loading, picking, pixel/sphere/mesh selection, image probe, compute buffer
@@ -47,7 +47,7 @@ As of 2026-07-12:
    data update/visibility routes, depth-test route, alpha blending, material/lighting routes,
    coordinate/transform/View2D routes, Bezier and join-focused paths, manual-camera and arcball
    routes, textured mesh, reference grid, bounds overlay, graph composite, orientation gizmo, and
-   signed categorical label probe.
+   signed categorical label probe, and the quickstart scatter plot.
 3. The browser runtime consumes artifact-backed split DRP2 setup/update/frame packets. JSON is
    debug/fixture-only.
 4. Query/readback is intentionally narrow: point/marker picking, point hover/selection,
@@ -173,9 +173,10 @@ Execute the remaining browser work in this order:
 2. **Existing-capability compositions.** Complete: `composites_graph`,
    `features_orientation_gizmo`, and `features_probe_labels` are live with automated browser
    proof and no browser-only scene semantics.
-3. **Approachable deferred features.** Reassess `start_scatter`, `features_datetime_axis`, and
-   `features_marker_symbols`; keep native GUI behavior out of portable scenarios and complete only
-   the formatting or atlas parity needed by the canonical examples.
+3. **Approachable deferred features.** `start_scatter` is live with automated browser proof.
+   Reassess `features_datetime_axis` and `features_marker_symbols`; keep native GUI behavior out of
+   portable scenarios and complete only the formatting or atlas parity needed by the canonical
+   examples.
 4. **Volume capability.** Prove generic `visuals_volume` first, including 3D texture upload,
    sampling, transfer state, camera interaction, limits, and diagnostics. Promote
    `showcases_brain_volume` only after generic volume proof and prepared-data packaging pass.

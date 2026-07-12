@@ -2443,6 +2443,7 @@ try {
     "composites_graph",
     "features_orientation_gizmo",
     "features_probe_labels",
+    "start_scatter",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -3487,6 +3488,18 @@ try {
         expectPipeline(stream, `${label} readout`, (pipeline) => pipeline.builtin_pipeline === "scene.glyph");
         expectPipeline(stream, `${label} card`, (pipeline) => pipeline.builtin_pipeline === "scene.primitive");
         requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected signed label upload`);
+      },
+    ],
+    [
+      "start_scatter",
+      "scatter plot",
+      (stream, label) => {
+        expectPipeline(stream, label, (pipeline) => pipeline.builtin_pipeline === "scene.point");
+        const draws = commandsOf(stream, "Draw");
+        requireOk(
+          draws.some((draw) => draw.instance_count === 10000),
+          `${label}: expected 10000 point instances`,
+        );
       },
     ],
     [

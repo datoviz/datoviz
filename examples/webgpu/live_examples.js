@@ -1,5 +1,10 @@
 export const LIVE_EXAMPLES = [
   {
+    id: "start_scatter",
+    label: "Scatter Plot",
+    scenarioId: "start_scatter",
+  },
+  {
     id: "composites_graph",
     label: "Graph Composite",
     scenarioId: "composites_graph",

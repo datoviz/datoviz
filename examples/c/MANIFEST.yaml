@@ -3495,5 +3495,10 @@ examples:
       kind: synthetic
     portability: portable-scenario
     webgpu:
-      status: webgpu-deferred
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=start_scatter
+      requirements:
+        - point
+        - controller
+        - panzoom
     agent_copy_safe: true
