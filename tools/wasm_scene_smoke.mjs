@@ -3484,6 +3484,8 @@ try {
       (stream, label) => {
         expectPipeline(stream, `${label} field`, (pipeline) => pipeline.builtin_pipeline === "scene.labels");
         expectPipeline(stream, `${label} marker`, (pipeline) => pipeline.builtin_pipeline === "scene.marker");
+        expectPipeline(stream, `${label} readout`, (pipeline) => pipeline.builtin_pipeline === "scene.glyph");
+        expectPipeline(stream, `${label} card`, (pipeline) => pipeline.builtin_pipeline === "scene.primitive");
         requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected signed label upload`);
       },
     ],

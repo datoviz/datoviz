@@ -3605,7 +3605,9 @@
       "webgpu_requirements": [
         "labels",
         "query-readback",
-        "panzoom"
+        "panzoom",
+        "overlay",
+        "text"
       ],
       "webgpu": {
         "status": "webgpu-live",
@@ -3613,7 +3615,9 @@
         "requirements": [
           "labels",
           "query-readback",
-          "panzoom"
+          "panzoom",
+          "overlay",
+          "text"
         ]
       },
       "webgpu_route": "examples/webgpu/live.html?id=features_probe_labels",

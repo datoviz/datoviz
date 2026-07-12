@@ -2144,6 +2144,8 @@ examples:
         - labels
         - query-readback
         - panzoom
+        - overlay
+        - text
     agent_copy_safe: true
 
   - id: features_datetime_axis

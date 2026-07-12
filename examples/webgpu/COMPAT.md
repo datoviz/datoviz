@@ -86,6 +86,10 @@ and post-frame query hooks, signed and unsigned labels query passes have WGSL va
 ABI check and 80-scenario WASM packet smoke pass, and the filtered browser smoke proves GPU query
 processing plus resolved visual output for `features_probe_labels`.
 
+The label probe now presents resolved category and position through a retained overlay card shared
+by native and browser hosts; stdout remains secondary diagnostic evidence rather than the only
+user-visible result.
+
 Recorded local browser shader-payload proof on 2026-06-18: `node --check
 tools/webgpu_browser_smoke.mjs`, `node --check tools/wasm_scene_smoke.mjs`, and `just
 wasm-scene-smoke` passed after resolving WGSL includes during scene shader emission and adding a

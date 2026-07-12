@@ -9,9 +9,10 @@
  * What to look for: a 256x192 R32_SINT sampled field stores category IDs for cortex, fiber,
  * nucleus, vessel, and island regions, and a categorical scale maps those IDs to colors and
  * labels. Move the live probe marker across the panel; the frame callback queries the label visual
- * and prints the current label ID, name, and data position. This is useful for segmentation maps,
+ * and updates an in-scene readout with the current label ID, name, and data position. The same
+ * information is printed as secondary diagnostic output. This is useful for segmentation maps,
  * classified microscopy images, and other categorical rasters where users need values under the
- * cursor.
+ * cursor on desktop and browser hosts.
  *
  * Scenario: features_probe_labels
  * Style: features, graphite_cyan, 1280x720 window target
@@ -94,6 +95,7 @@ struct LabelProbeState
     DvzFigure* figure;
     DvzPanel* panel;
     LabelProbeMarker marker;
+    DvzOverlayCard* readout;
     int32_t* labels;
     bool cursor_valid;
     double cursor_x;
@@ -462,6 +464,46 @@ static bool _add_probe_marker(DvzScene* scene, DvzPanel* panel, LabelProbeMarker
 
 
 /**
+ * Add the cross-platform retained label readout.
+ *
+ * @param panel panel owning the overlay card
+ * @return created card, or NULL on failure
+ */
+static DvzOverlayCard* _add_probe_readout(DvzPanel* panel)
+{
+    ANN(panel);
+    DvzOverlay* overlay = dvz_overlay(panel, 0);
+    if (overlay == NULL)
+        return NULL;
+
+    DvzOverlayCardDesc desc = dvz_overlay_card_desc();
+    desc.text = "Label: move the pointer over a region";
+    desc.placement = DVZ_OVERLAY_CARD_PLACEMENT_TOP_RIGHT;
+    desc.offset_px[0] = 24.0f;
+    desc.offset_px[1] = 24.0f;
+    DvzOverlayCard* card = dvz_overlay_card(overlay, &desc);
+    if (card == NULL)
+        return NULL;
+
+    DvzOverlayCardStyle style = dvz_overlay_card_style();
+    DvzColor background = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_PANEL_BG);
+    background.a = 238u;
+    style.background_color = background;
+    style.text_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
+    style.padding_px[0] = 16.0f;
+    style.padding_px[1] = 10.0f;
+    style.min_width_px = 360.0f;
+    style.height_px = 46.0f;
+    style.glyph_advance_px = 8.8f;
+    style.text_size_px = 18.0f;
+    style.text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    style.max_text_chars = 96u;
+    return dvz_overlay_card_set_style(card, &style) == DVZ_OK ? card : NULL;
+}
+
+
+
+/**
  * Return whether a query result differs from the last printed category.
  *
  * @param state label query example state
@@ -584,12 +626,22 @@ static void _labels_probe_frame(DvzView* win, void* user_data)
             double data[2] = {query.uvw[0], query.uvw[1]};
             (void)dvz_panel_position_to_data(
                 state->panel, DVZ_PANEL_COORD_PANEL_PX, query.panel_position, data);
+            char readout[128] = {0};
+            dvz_snprintf(
+                readout, sizeof(readout), "Label: %s (%" PRId64 ")   Position: %.3f, %.3f",
+                query.label, query.category_id, data[0], data[1]);
+            (void)dvz_overlay_card_set_text(state->readout, readout);
             dvz_fprintf(
                 stdout, "probe label_id=%" PRId64 " label=\"%s\" data=(%0.3f,%0.3f)\n",
                 query.category_id, query.label, data[0], data[1]);
         }
         else
         {
+            char readout[96] = {0};
+            dvz_snprintf(
+                readout, sizeof(readout), "Label: background   Position: %.1f, %.1f px",
+                query.panel_position[0], query.panel_position[1]);
+            (void)dvz_overlay_card_set_text(state->readout, readout);
             dvz_fprintf(
                 stdout, "probe miss panel=(%0.1f,%0.1f)\n", query.panel_position[0],
                 query.panel_position[1]);
@@ -709,6 +761,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     ok = _add_probe_marker(ctx->scene, panel, &state->marker);
     if (!ok)
         return false;
+    state->readout = _add_probe_readout(panel);
+    if (state->readout == NULL)
+        return false;
 
     double initial_probe_px[2] = {0};
     if (!dvz_panel_data_to_position(
@@ -797,8 +852,8 @@ DvzScenarioSpec dvz_example_probe_labels_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
-        .requirements = DVZ_SCENARIO_REQ_MARKER_VISUAL | DVZ_SCENARIO_REQ_QUERY_READBACK |
-                        DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
+        .requirements = DVZ_SCENARIO_REQ_MARKER_VISUAL | DVZ_SCENARIO_REQ_TEXT_VISUAL |
+                        DVZ_SCENARIO_REQ_QUERY_READBACK | DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
         .event = _scenario_event,
         .post_frame = _scenario_post_frame,

@@ -27,7 +27,7 @@ This example queries categorical label IDs from a generated label image.
 
 ## What To Look For
 
-A 256x192 R32_SINT sampled field stores category IDs for cortex, fiber, nucleus, vessel, and island regions, and a categorical scale maps those IDs to colors and labels. Move the live probe marker across the panel; the frame callback queries the label visual and prints the current label ID, name, and data position. This is useful for segmentation maps, classified microscopy images, and other categorical rasters where users need values under the cursor.
+A 256x192 R32_SINT sampled field stores category IDs for cortex, fiber, nucleus, vessel, and island regions, and a categorical scale maps those IDs to colors and labels. Move the live probe marker across the panel; the frame callback queries the label visual and updates an in-scene readout with the current label ID, name, and data position. The same information is printed as secondary diagnostic output. This is useful for segmentation maps, classified microscopy images, and other categorical rasters where users need values under the cursor on desktop and browser hosts.
 
 ## Source
 
@@ -52,7 +52,7 @@ A 256x192 R32_SINT sampled field stores category IDs for cortex, fiber, nucleus,
     - Python source: [`examples/python/gallery/features/probe_labels.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/probe_labels.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_probe_labels"><code>examples/webgpu/live.html?id=features_probe_labels</code></a>
-    - Browser capability tags: `labels`, `query-readback`, `panzoom`
+    - Browser capability tags: `labels`, `query-readback`, `panzoom`, `overlay`, `text`
     - Validation: `smoke+readback+screenshot`
 
     **Data**
