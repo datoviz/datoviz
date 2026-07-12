@@ -67,7 +67,6 @@ struct DvzCanvasSwapchainSlot
     DvzImageViews* offscreen_views;
     DvzAllocation* offscreen_alloc;
     DvzSemaphore* image_available;
-    DvzSemaphore* render_finished;
     DvzFence* in_flight;
     VkCommandBuffer command_buffer;
     VkImageLayout offscreen_layout;
@@ -92,6 +91,11 @@ struct DvzCanvasSwapchain
     uint32_t image_count;
     DvzCanvasSwapchainSlot* slots;
     VkImageLayout* swapchain_layouts;
+    // Present-wait semaphores, owned per swapchain image rather than per frame slot: a binary
+    // present semaphore may only be re-signaled once the present waiting on it has consumed the
+    // signal, which is only guaranteed when the same image is re-acquired
+    // (VUID-vkQueueSubmit2-semaphore-03868).
+    DvzSemaphore** render_finished;
     uint32_t frame_index;
     uint32_t last_presented_slot_index;
     bool dirty;
@@ -644,13 +648,10 @@ static bool canvas_slot_init(
     }
 
     slot->image_available = dvz_semaphore_create_wrapper();
-    slot->render_finished = dvz_semaphore_create_wrapper();
     slot->in_flight = dvz_fence_create_wrapper();
     ANN(slot->image_available);
-    ANN(slot->render_finished);
     ANN(slot->in_flight);
     dvz_semaphore(canvas->device, slot->image_available);
-    dvz_semaphore(canvas->device, slot->render_finished);
     dvz_fence(canvas->device, true, slot->in_flight);
     slot->ready = true;
     return true;
@@ -780,6 +781,30 @@ canvas_swapchain_handle_recreate_status(DvzCanvasSwapchain* swapchain, DvzPresen
 
 
 /**
+ * Destroy and free the per-image present-wait semaphores owned by the canvas swapchain.
+ *
+ * @param swapchain canvas swapchain state owning the semaphores
+ */
+static void canvas_swapchain_release_render_finished(DvzCanvasSwapchain* swapchain)
+{
+    ANN(swapchain);
+    if (!swapchain->render_finished)
+    {
+        return;
+    }
+    for (uint32_t i = 0; i < swapchain->image_count; ++i)
+    {
+        dvz_semaphore_destroy(swapchain->render_finished[i]);
+        dvz_semaphore_free(swapchain->render_finished[i]);
+        swapchain->render_finished[i] = NULL;
+    }
+    dvz_free(swapchain->render_finished);
+    swapchain->render_finished = NULL;
+}
+
+
+
+/**
  * Allocate and initialize per-image slot/layout state after a successful wrapper recreate.
  *
  * @param swapchain canvas swapchain state receiving slot resources
@@ -804,6 +829,18 @@ static bool canvas_swapchain_init_slot_state(
     for (uint32_t i = 0; i < count; ++i)
     {
         swapchain->swapchain_layouts[i] = VK_IMAGE_LAYOUT_UNDEFINED;
+    }
+
+    // Recreate the per-image present-wait semaphores (the release consumes the previous
+    // image_count, so it must run before image_count is updated below).
+    canvas_swapchain_release_render_finished(swapchain);
+    swapchain->render_finished = (DvzSemaphore**)dvz_calloc(count, sizeof(DvzSemaphore*));
+    ANN(swapchain->render_finished);
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        swapchain->render_finished[i] = dvz_semaphore_create_wrapper();
+        ANN(swapchain->render_finished[i]);
+        dvz_semaphore(canvas->device, swapchain->render_finished[i]);
     }
 
     dvz_free(swapchain->slots);
@@ -925,9 +962,6 @@ static void canvas_destroy_slot(
     dvz_semaphore_destroy(slot->image_available);
     dvz_semaphore_free(slot->image_available);
     slot->image_available = NULL;
-    dvz_semaphore_destroy(slot->render_finished);
-    dvz_semaphore_free(slot->render_finished);
-    slot->render_finished = NULL;
     dvz_fence_destroy(slot->in_flight);
     dvz_fence_free(slot->in_flight);
     slot->in_flight = NULL;
@@ -948,7 +982,7 @@ static void canvas_destroy_slot(
 
 
 /**
- * Release per-slot and per-image layout resources owned by the canvas swapchain.
+ * Release per-slot and per-image resources owned by the canvas swapchain.
  *
  * @param swapchain canvas swapchain state to teardown
  */
@@ -972,6 +1006,7 @@ static void canvas_swapchain_release_slot_state(DvzCanvasSwapchain* swapchain)
         dvz_free(swapchain->swapchain_layouts);
         swapchain->swapchain_layouts = NULL;
     }
+    canvas_swapchain_release_render_finished(swapchain);
 }
 
 
@@ -1335,8 +1370,10 @@ static int canvas_submit_active_slot(
         VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_TRANSFER_BIT;
     VkPipelineStageFlags2 signal_stage = wait_stage | VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
 
-    // Ownership contract: one slot owns one fence + per-frame semaphores; the main queue is used
-    // for both submit and present, and slot synchronization primitives are reset on next acquire.
+    // Ownership contract: one slot owns one fence + the per-frame acquire semaphore, while the
+    // present-wait (render_finished) semaphores are owned per swapchain image; the main queue is
+    // used for both submit and present, and slot synchronization primitives are reset on next
+    // acquire.
     DvzSubmit* submit = dvz_submit_create_wrapper();
     ANN(submit);
     dvz_submit(submit);
@@ -1345,8 +1382,13 @@ static int canvas_submit_active_slot(
     {
         dvz_submit_command(submit, cmd);
     }
+    // Signal the acquired image's own present-wait semaphore: the slot's in-flight fence only
+    // proves the submit finished, not that the present consuming the semaphore has executed, so
+    // a per-slot semaphore could be re-signaled while still signaled
+    // (VUID-vkQueueSubmit2-semaphore-03868).
     dvz_submit_signal(
-        submit, dvz_semaphore_handle(state->active_slot->render_finished), 0, signal_stage);
+        submit, dvz_semaphore_handle(state->render_finished[state->active_slot->image_index]),
+        0, signal_stage);
     dvz_submit_signal(
         submit, dvz_semaphore_handle(canvas->timeline_semaphore), wait_value,
         VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
@@ -1516,9 +1558,10 @@ static int canvas_dispatch_present(DvzCanvas* canvas, DvzCanvasSwapchain* state,
     DvzPresentStatus present_status = DVZ_PRESENT_STATUS_OK;
     if (!canvas_test_consume_forced_status(&state->test_force_present_status, &present_status))
     {
+        // Wait on the presented image's own semaphore (see the ownership note at submit).
         present_status = dvz_swapchain_present(
             state->swapchain_wrapper, queue, index,
-            dvz_semaphore_handle(state->active_slot->render_finished));
+            dvz_semaphore_handle(state->render_finished[index]));
     }
     return canvas_handle_present_status(canvas, state, present_status, index);
 }
