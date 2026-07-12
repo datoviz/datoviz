@@ -3,14 +3,18 @@
 This page is a compact C walkthrough for the same scene structure used throughout the v0.4
 examples. It creates one figure, one panel, one point visual, and one native window.
 
-For a first runnable C example from a source checkout, use:
+The canonical complete source is `examples/docs/quickstart.c`, also displayed in the
+[Quickstart](quickstart.md).
+It includes data creation, headers, lifecycle cleanup, and the bounded-frame option used by checks.
+From a source checkout, build and run it with:
 
 ```sh
-just example-c start/scatter
-./build/examples/c/start/scatter --live
+just quickstart-c
+./build/examples/docs/quickstart
 ```
 
-The source is `examples/c/start/scatter.c`.
+The gallery scenario at `examples/c/start/scatter.c` produces the corresponding release screenshot
+through the repository's example runner; it is not the standalone teaching fixture shown here.
 
 
 ## Program Shape
@@ -26,7 +30,11 @@ A minimal C program follows this order:
 7. destroy the app before destroying the scene.
 
 
-## Core Calls
+## Call-sequence excerpt
+
+The excerpt below assumes that `positions`, `colors`, `diameter_px`, and `count` already exist. It
+omits includes, allocation, return-value checks, and failure cleanup to emphasize the object and call
+order. Do not copy it as a complete program; use the canonical source linked above.
 
 ```c
 DvzScene* scene = dvz_scene();

@@ -137,41 +137,7 @@ The core workflow is straightforward: create a scene, add a panel, attach visual
 then run or capture.
 
 ```python
-import ctypes
-
-import numpy as np
-import datoviz as dvz
-
-N = 10_000
-rng = np.random.default_rng(12345)
-pos = np.zeros((N, 3), dtype=np.float32)
-pos[:, :2] = rng.uniform(-1, 1, (N, 2))
-color = rng.integers(0, 255, (N, 4), dtype=np.uint8)
-color[:, 3] = 200
-diameter = rng.uniform(4, 12, N).astype(np.float32)
-
-scene = dvz.dvz_scene()
-figure = dvz.dvz_figure(scene, 1280, 720, 0)
-panel = dvz.dvz_panel_full(figure)
-dvz.dvz_panel_set_background_color(panel, dvz.DvzColor(13, 18, 25, 255))
-
-panzoom = dvz.dvz_panzoom(scene, None)
-dvz.dvz_panel_bind_controller(panel, panzoom, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY)
-
-points = dvz.dvz_point(scene, 0)
-dvz.dvz_visual_set_data(points, "position", pos)
-dvz.dvz_visual_set_data(points, "color", color)
-dvz.dvz_visual_set_data(points, "diameter_px", diameter)
-
-style = dvz.dvz_point_style_desc()
-style.aspect = dvz.DVZ_SHAPE_ASPECT_FILLED
-style.stroke_width_px = 0
-dvz.dvz_point_set_style(points, ctypes.byref(style))
-dvz.dvz_visual_set_depth_test(points, False)
-dvz.dvz_visual_set_alpha_mode(points, dvz.DVZ_ALPHA_BLENDED)
-dvz.dvz_panel_add_visual(panel, points, None)
-
-dvz.run(scene, figure, title="Datoviz")
+--8<-- "examples/docs/quickstart.py"
 ```
 
 ![10 000 randomly colored points in an interactive Datoviz window](assets/gallery/v0.4/start/start_scatter.webp)

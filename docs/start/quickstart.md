@@ -9,9 +9,11 @@ drag to pan and scroll to zoom. No data files are needed.
 Read the example in five blocks: create the data arrays, create the scene layout, add interaction,
 upload the arrays to one point visual, then open the window.
 
-The displayed programs are standalone teaching fixtures. The repository's
-`examples/c/start/scatter.c` gallery scenario produces the same result through the internal example
-runner used for screenshot and smoke-test automation.
+The displayed programs are checked standalone teaching fixtures. They use the same deterministic
+visual contract as the `examples/c/start/scatter.c` gallery scenario: 1280 by 720 graphite canvas,
+seeded random positions and colors, translucent 4–12 px filled points, and XY panzoom. Each language
+uses its standard local PRNG, so individual point coordinates differ while the documented result and
+screenshot styling remain the same.
 
 
 ## Full example

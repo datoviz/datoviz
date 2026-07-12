@@ -39,11 +39,13 @@ surfaces.
 Quickstart pages may use `dvz.run(scene, figure, title=...)` for brevity. The helper borrows the
 retained `scene` and `figure`; it owns only the app/window resources it creates. In regular Python
 scripts, it blocks until the window closes and then releases those runtime resources. In terminal
-IPython, it returns a live-session handle so the prompt remains usable; native window close and
-`session.close()` both close the session while leaving the retained scene alive. Call
-`dvz.run(scene, figure)` again to reopen the same visualization, and call
-`dvz.dvz_scene_destroy(scene)` when you are done with the retained scene. See
-[Use from terminal IPython](../how-to/use-ipython.md) for prompt-side live updates.
+IPython, it returns a live-session handle so the prompt remains usable. Closing and reopening that
+hosted session is the intended lifecycle, but it is not yet release-proven on macOS: native window
+close can currently leave the hosted window unresponsive. Do not rely on repeated close/reopen on
+that platform until the active issue is resolved. See
+[Use from terminal IPython](../how-to/use-ipython.md) for the current warning, prompt-side updates,
+and intended cleanup contract. Call `dvz.dvz_scene_destroy(scene)` only after the hosted session is
+closed and the retained scene is no longer needed.
 
 
 ## Dense Visual Data
@@ -94,18 +96,27 @@ Create an app and offscreen view, render one frame, then capture the framebuffer
 memory:
 
 ```python
-app = dvz.dvz_app(scene)
-view = dvz.dvz_view_offscreen(app, figure, 800, 600)
+app = None
+try:
+    app = dvz.dvz_app(scene)
+    if not app:
+        raise RuntimeError("dvz_app() failed")
 
-if dvz.dvz_view_render_once(view) != 0:
-    raise RuntimeError("render failed")
+    view = dvz.dvz_view_offscreen(app, figure, 800, 600)
+    if not view:
+        raise RuntimeError("dvz_view_offscreen() failed")
 
-rgba = dvz.dvz_view_capture_rgba(view)
-assert rgba.shape == (600, 800, 4)
-assert rgba.dtype == np.uint8
+    status = dvz.dvz_view_render_once(view)
+    if status != dvz.DVZ_CANVAS_FRAME_READY:
+        raise RuntimeError(f"render failed with status {status}")
 
-dvz.dvz_app_destroy(app)
-dvz.dvz_scene_destroy(scene)
+    rgba = dvz.dvz_view_capture_rgba(view)
+    assert rgba.shape == (600, 800, 4)
+    assert rgba.dtype == np.uint8
+finally:
+    if app:
+        dvz.dvz_app_destroy(app)
+    dvz.dvz_scene_destroy(scene)
 ```
 
 The returned pixels are screenshot/export pixels: tightly packed sRGB RGBA8 with straight alpha.

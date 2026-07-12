@@ -1,53 +1,87 @@
 #!/usr/bin/env python3
-"""Minimal public-API scatter plot used by the Quickstart documentation."""
+"""Checked public-API scatter plot used by the Quickstart and homepage."""
 
+import ctypes
 import os
 
 import numpy as np
 import datoviz as dvz
 
 
-# Each point is described by three arrays with the same length.
-# - pos: one x/y/z position per point. z is 0, so this is a 2D scatter plot.
-# - color: one red/green/blue/alpha color per point, stored as 8-bit RGBA values.
-# - diameters: one point size per point, measured in screen pixels.
+WIDTH, HEIGHT = 1280, 720
 N = 10_000
-pos = np.random.uniform(-1, 1, (N, 3)).astype(np.float32)
-pos[:, 2] = 0.0
-color = np.random.randint(0, 256, (N, 4), dtype=np.uint8)
-color[:, 3] = 255
-diameters = np.full(N, 5.0, dtype=np.float32)
+TITLE = "Datoviz Quickstart"
 
-# Create the scene structure: one scene, one figure, and one full-size panel.
-# The scene contains the visualization, the figure has a pixel size, and the
-# panel is the drawing area where the scatter plot will appear.
-scene = dvz.dvz_scene()
-figure = dvz.dvz_figure(scene, 800, 600, 0)
-panel = dvz.dvz_panel_full(figure)
 
-# Add mouse interaction to the panel. Pan/zoom is limited to X and Y because
-# the points are flat, with z = 0.
-controller = dvz.dvz_panzoom(scene, None)
-dvz.dvz_panel_bind_controller(panel, controller, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY)
+def _check(result, call):
+    if result != 0:
+        raise RuntimeError(f"{call} failed with code {result}")
 
-# Create one point visual for the whole dataset. The three calls to
-# dvz_visual_set_data() attach the arrays to named visual attributes.
-visual = dvz.dvz_point(scene, 0)
-dvz.dvz_visual_set_data(visual, "position", pos)
-dvz.dvz_visual_set_data(visual, "color", color)
-dvz.dvz_visual_set_data(visual, "diameter_px", diameters)
 
-# Uploading arrays is not enough by itself: the visual must be added to a
-# panel before it becomes part of the figure.
-dvz.dvz_panel_add_visual(panel, visual, None)
+def main():
+    rng = np.random.default_rng(12345)
+    positions = np.zeros((N, 3), dtype=np.float32)
+    positions[:, :2] = rng.uniform(-1, 1, (N, 2)).astype(np.float32)
+    colors = rng.integers(0, 256, (N, 4), dtype=np.uint8)
+    colors[:, 3] = 200
+    diameters = rng.uniform(4, 12, N).astype(np.float32)
 
-# Open a window. In a regular Python script this blocks until the user closes
-# the window. The test mode closes the nonblocking session after initialization.
-session = dvz.run(
-    scene,
-    figure,
-    title="Scatter plot",
-    blocking=False if os.environ.get("DVZ_QUICKSTART_TEST") else None,
-)
-if session is not None and os.environ.get("DVZ_QUICKSTART_TEST"):
-    session.close()
+    scene = dvz.dvz_scene()
+    if not scene:
+        raise RuntimeError("dvz_scene() failed")
+
+    session = None
+    try:
+        figure = dvz.dvz_figure(scene, WIDTH, HEIGHT, 0)
+        panel = dvz.dvz_panel_full(figure) if figure else None
+        if not figure or not panel:
+            raise RuntimeError("figure or panel creation failed")
+
+        _check(
+            dvz.dvz_panel_set_background_color(panel, dvz.DvzColor(13, 18, 25, 255)),
+            "dvz_panel_set_background_color()",
+        )
+        controller = dvz.dvz_panzoom(scene, None)
+        if not controller:
+            raise RuntimeError("dvz_panzoom() failed")
+        _check(
+            dvz.dvz_panel_bind_controller(panel, controller, dvz.DVZ_DIM_MASK_XY),
+            "dvz_panel_bind_controller()",
+        )
+
+        points = dvz.dvz_point(scene, 0)
+        if not points:
+            raise RuntimeError("dvz_point() failed")
+        _check(
+            dvz.dvz_visual_set_data_many(
+                points,
+                {"position": positions, "color": colors, "diameter_px": diameters},
+            ),
+            "dvz_visual_set_data_many()",
+        )
+
+        style = dvz.dvz_point_style_desc()
+        style.aspect = dvz.DVZ_SHAPE_ASPECT_FILLED
+        style.stroke_width_px = 0.0
+        _check(dvz.dvz_point_set_style(points, ctypes.byref(style)), "dvz_point_set_style()")
+        _check(dvz.dvz_visual_set_depth_test(points, False), "dvz_visual_set_depth_test()")
+        _check(
+            dvz.dvz_visual_set_alpha_mode(points, dvz.DVZ_ALPHA_BLENDED),
+            "dvz_visual_set_alpha_mode()",
+        )
+        _check(dvz.dvz_panel_add_visual(panel, points, None), "dvz_panel_add_visual()")
+
+        test_mode = os.environ.get("DVZ_QUICKSTART_TEST") == "1"
+        session = dvz.run(scene, figure, title=TITLE, blocking=False if test_mode else None)
+        if test_mode:
+            if session is None:
+                raise RuntimeError("nonblocking dvz.run() returned no session")
+            session.render_once()
+    finally:
+        if session is not None:
+            session.close()
+        dvz.dvz_scene_destroy(scene)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,64 +1,113 @@
+#include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 #include "datoviz/app.h"
 #include "datoviz/scene.h"
 
-#define N 10000
+#define WIDTH  1280u
+#define HEIGHT 720u
+#define N      10000u
+
+static uint32_t _random_state = 12345u;
+
+static uint32_t _random_u32(void)
+{
+    uint32_t x = _random_state;
+    x ^= x << 13;
+    x ^= x >> 17;
+    x ^= x << 5;
+    return _random_state = x;
+}
+
+static float _random_f32(float min, float max)
+{
+    return min + (max - min) * ((float)_random_u32() / (float)UINT32_MAX);
+}
 
 int main(int argc, char** argv)
 {
-    srand((unsigned)time(NULL));
-
-    /* Each point is described by three arrays with the same length.
-     * pos stores x/y/z positions. z is 0, so this is a 2D scatter plot.
-     * color stores one 8-bit RGBA color per point.
-     * diameter_px stores one point size per point, measured in screen pixels. */
-    float pos[N * 3], diameter_px[N];
-    uint8_t color[N * 4];
-    for (int i = 0; i < N; i++)
+    int rc = EXIT_FAILURE;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
+    float* positions = calloc(N * 3u, sizeof(*positions));
+    uint8_t* colors = calloc(N * 4u, sizeof(*colors));
+    float* diameters = calloc(N, sizeof(*diameters));
+    if (positions == NULL || colors == NULL || diameters == NULL)
     {
-        pos[3 * i + 0] = (float)rand() / (float)RAND_MAX * 2.0f - 1.0f;
-        pos[3 * i + 1] = (float)rand() / (float)RAND_MAX * 2.0f - 1.0f;
-        pos[3 * i + 2] = 0;
-        color[4 * i + 0] = rand() % 256;
-        color[4 * i + 1] = rand() % 256;
-        color[4 * i + 2] = rand() % 256;
-        color[4 * i + 3] = 255;
-        diameter_px[i] = 5.0f;
+        fprintf(stderr, "quickstart: data allocation failed\n");
+        goto cleanup;
     }
 
-    /* Create the scene structure: one scene, one figure, and one full-size panel.
-     * The panel is the drawing area where the scatter plot will appear. */
-    DvzScene* scene = dvz_scene();
-    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
-    DvzPanel* panel = dvz_panel_full(figure);
+    for (uint32_t i = 0; i < N; i++)
+    {
+        positions[3 * i + 0] = _random_f32(-1.0f, +1.0f);
+        positions[3 * i + 1] = _random_f32(-1.0f, +1.0f);
+        colors[4 * i + 0] = (uint8_t)_random_u32();
+        colors[4 * i + 1] = (uint8_t)_random_u32();
+        colors[4 * i + 2] = (uint8_t)_random_u32();
+        colors[4 * i + 3] = 200;
+        diameters[i] = _random_f32(4.0f, 12.0f);
+    }
 
-    /* Add mouse interaction to the panel. Pan/zoom is limited to X and Y because
-     * the points are flat, with z = 0. */
+    scene = dvz_scene();
+    DvzFigure* figure = scene != NULL ? dvz_figure(scene, WIDTH, HEIGHT, 0) : NULL;
+    DvzPanel* panel = figure != NULL ? dvz_panel_full(figure) : NULL;
+    if (scene == NULL || figure == NULL || panel == NULL)
+    {
+        fprintf(stderr, "quickstart: scene, figure, or panel creation failed\n");
+        goto cleanup;
+    }
+
+    DvzColor background = {13, 18, 25, 255};
+    if (dvz_panel_set_background_color(panel, background) != 0)
+        goto api_error;
     DvzController* controller = dvz_panzoom(scene, NULL);
-    dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY);
+    if (controller == NULL || dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY) != 0)
+        goto api_error;
 
-    /* Create one point visual for the whole dataset. Each data call attaches
-     * one C array to a named visual attribute. */
-    DvzVisual* visual = dvz_point(scene, 0);
-    dvz_visual_set_data(visual, "position", pos, N);
-    dvz_visual_set_data(visual, "color", color, N);
-    dvz_visual_set_data(visual, "diameter_px", diameter_px, N);
+    DvzVisual* points = dvz_point(scene, 0);
+    if (points == NULL)
+        goto api_error;
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = N},
+        {.attr_name = "color", .data = colors, .item_count = N},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = N},
+    };
+    if (dvz_visual_set_data_many(points, updates, 3) != 0)
+        goto api_error;
+    DvzPointStyleDesc style = dvz_point_style_desc();
+    style.aspect = DVZ_SHAPE_ASPECT_FILLED;
+    style.stroke_width_px = 0.0f;
+    if (dvz_point_set_style(points, &style) != 0 ||
+        dvz_visual_set_depth_test(points, false) != 0 ||
+        dvz_visual_set_alpha_mode(points, DVZ_ALPHA_BLENDED) != 0 ||
+        dvz_panel_add_visual(panel, points, NULL) != 0)
+        goto api_error;
 
-    /* Uploading arrays is not enough by itself: the visual must be added to a
-     * panel before it becomes part of the figure. */
-    dvz_panel_add_visual(panel, visual, NULL);
-
-    DvzApp* app = dvz_app(scene);
-    dvz_view_window(app, figure, 800, 600, "Scatter plot");
+    app = dvz_app(scene);
+    DvzView* view =
+        app != NULL ? dvz_view_window(app, figure, WIDTH, HEIGHT, "Datoviz Quickstart") : NULL;
+    if (app == NULL || view == NULL)
+        goto api_error;
     uint32_t frame_count =
         argc == 3 && strcmp(argv[1], "--frames") == 0 ? (uint32_t)strtoul(argv[2], NULL, 10) : 0;
     dvz_app_run(app, frame_count);
+    rc = EXIT_SUCCESS;
+    goto cleanup;
 
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
-    return 0;
+api_error:
+    fprintf(stderr, "quickstart: Datoviz setup failed\n");
+
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    free(diameters);
+    free(colors);
+    free(positions);
+    return rc;
 }

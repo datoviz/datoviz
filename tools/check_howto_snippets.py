@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check mechanically verifiable properties of the How-To code snippets."""
+"""Check mechanically verifiable properties of handwritten documentation snippets."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 HOWTO = ROOT / "docs" / "how-to"
+START = ROOT / "docs" / "start"
 FENCE_RE = re.compile(
     r"^(?P<indent>[ \t]*)```([^\n]*)\n(.*?)^(?P=indent)```", re.MULTILINE | re.DOTALL
 )
@@ -70,14 +71,25 @@ def _calls(code: str):
 def main() -> int:
     functions, types, constants = _public_identifiers()
     errors: list[str] = []
-    counts = {"python": 0, "c": 0}
+    counts = {"python": 0, "c": 0, "includes": 0}
 
-    for path in sorted(HOWTO.glob("*.md")):
+    documents = sorted(HOWTO.glob("*.md")) + sorted(START.glob("*.md")) + [ROOT / "docs/index.md"]
+    for path in documents:
         text = path.read_text()
         for match in FENCE_RE.finditer(text):
             language = match.group(2).strip()
             code = textwrap.dedent(match.group(3))
             line = text.count("\n", 0, match.start(3)) + 1
+            include = re.fullmatch(r'\s*--8<--\s+"([^\"]+)"\s*', code)
+            if include is not None:
+                include_path = ROOT / include.group(1)
+                if not include_path.is_file():
+                    errors.append(
+                        f"{path.relative_to(ROOT)}:{line}: missing snippet include {include.group(1)}"
+                    )
+                    continue
+                code = include_path.read_text()
+                counts["includes"] += 1
             if language == "python":
                 counts["python"] += 1
                 try:
@@ -108,7 +120,8 @@ def main() -> int:
         return 1
     print(
         f"How-To snippets: {counts['python']} Python AST blocks and {counts['c']} C public "
-        "identifier/arity blocks passed (context excerpts are not compiled)"
+        f"identifier/arity blocks passed, including {counts['includes']} resolved source includes "
+        "(context excerpts are not compiled)"
     )
     return 0
 

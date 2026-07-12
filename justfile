@@ -28,6 +28,9 @@ import 'justfiles/diagnostics.just'
 import 'justfiles/examples_docs.just'
 import 'justfiles/test.just'
 
-# Check syntax and public C identifiers in handwritten How-To snippets.
+# Check syntax and public C identifiers in handwritten How-To, Start, and homepage snippets.
 check-howto-snippets:
     python3 tools/check_howto_snippets.py
+
+# Also compile and run the complete Quickstart fixtures for one bounded frame.
+check-doc-snippets: check-howto-snippets quickstart-check

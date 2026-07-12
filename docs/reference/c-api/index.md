@@ -61,7 +61,7 @@ const void* arena = NULL;
 uint64_t packet_size = 0;
 uint64_t arena_size = 0;
 bool ok = dvz_scene_frame_artifact_get_packet(
-    artifact, DVZ_DRP2_PACKET_KIND_FRAME, &packet, &packet_size, &arena, &arena_size);
+    artifact, DVZ_DRP2_PACKET_FRAME, &packet, &packet_size, &arena, &arena_size);
 if (ok && packet != NULL)
 {
     // Packet and arena are borrowed from artifact.
