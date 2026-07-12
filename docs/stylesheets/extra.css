@@ -194,14 +194,33 @@ img[alt*=gpuopen] {
     right: 0.6rem;
     bottom: 0.6rem;
     z-index: 4;
-    padding: 0.35rem 0.55rem;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
     border: 1px solid rgba(255, 255, 255, 0.7);
-    border-radius: 0.25rem;
+    border-radius: 50%;
     color: #fff;
     background: rgba(5, 7, 10, 0.82);
     cursor: pointer;
-    font: inherit;
-    font-size: 0.7rem;
+}
+
+.dvz-gallery-video-control::before {
+    width: 0.65rem;
+    height: 0.75rem;
+    background: linear-gradient(to right, currentColor 0 34%, transparent 34% 66%, currentColor 66%);
+    content: "";
+}
+
+.dvz-gallery-video-control[data-state="paused"]::before {
+    width: 0;
+    height: 0;
+    margin-left: 0.12rem;
+    border-top: 0.42rem solid transparent;
+    border-bottom: 0.42rem solid transparent;
+    border-left: 0.7rem solid currentColor;
+    background: none;
 }
 
 .dvz-gallery-video-control:focus-visible {

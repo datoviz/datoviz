@@ -7,7 +7,7 @@
     const control = card.querySelector(".dvz-gallery-video-control");
     if (!control) return;
     const paused = video.paused;
-    control.textContent = paused ? "Play preview" : "Pause preview";
+    control.dataset.state = paused ? "paused" : "playing";
     control.setAttribute("aria-label", paused ? "Play video preview" : "Pause video preview");
     control.setAttribute("aria-pressed", paused ? "false" : "true");
   };
