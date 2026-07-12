@@ -55,6 +55,8 @@
 #define PROBE_Y          0.56f
 #define PROBE_REQUEST_ID 1u
 
+DvzScenarioSpec dvz_example_probe_labels_scenario(void);
+
 static const float TAU = 6.28318530718f;
 
 static const DvzCategoryId LABEL_IDS[LABEL_COUNT] = {7, 11, 17, 23, 31};
@@ -600,6 +602,59 @@ static void _labels_probe_frame(DvzView* win, void* user_data)
 
 
 
+/**
+ * Handle portable pointer events for the categorical labels probe.
+ *
+ * @param ctx scenario context
+ * @param event portable scenario event
+ * @param user scenario state
+ */
+static void _scenario_event(DvzScenarioContext* ctx, const DvzScenarioEvent* event, void* user)
+{
+    (void)ctx;
+    LabelProbeState* state = (LabelProbeState*)user;
+    if (state == NULL || event == NULL || event->kind != DVZ_SCENARIO_EVENT_POINTER)
+        return;
+    const DvzScenarioPointerEvent* pointer_event = &event->content.pointer;
+    if (
+        pointer_event->type != DVZ_SCENARIO_POINTER_MOVE &&
+        pointer_event->type != DVZ_SCENARIO_POINTER_CLICK)
+    {
+        return;
+    }
+
+    LabelProbePointer pointer = {0};
+    if (
+        _probe_pointer_from_figure(
+            state->panel, pointer_event->x, pointer_event->y, &pointer))
+    {
+        state->cursor_valid = true;
+        state->cursor_x = pointer.panel_px[0];
+        state->cursor_y = pointer.panel_px[1];
+        _update_probe_marker(&state->marker, (float)pointer.data[0], (float)pointer.data[1]);
+    }
+    else
+    {
+        state->cursor_valid = false;
+    }
+}
+
+
+
+/**
+ * Poll portable query results and queue the next label probe.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_post_frame(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    _labels_probe_frame(NULL, user);
+}
+
+
+
 /*************************************************************************************************/
 /*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
@@ -686,6 +741,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 static bool _scenario_native_view(
     DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
 {
+#ifdef DVZ_EXAMPLE_NO_APP
+    (void)ctx;
+    (void)app;
+    (void)view;
+    (void)user;
+    return true;
+#else
     (void)ctx;
     (void)app;
     LabelProbeState* state = (LabelProbeState*)user;
@@ -699,6 +761,7 @@ static bool _scenario_native_view(
     dvz_input_subscribe_pointer(router, _labels_probe_pointer, state);
     dvz_view_set_frame_callback(view, _labels_probe_frame, state);
     return true;
+#endif
 }
 
 
@@ -726,7 +789,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _probe_labels_scenario(void)
+DvzScenarioSpec dvz_example_probe_labels_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "features_probe_labels",
@@ -734,8 +797,14 @@ static DvzScenarioSpec _probe_labels_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_MARKER_VISUAL | DVZ_SCENARIO_REQ_QUERY_READBACK |
+                        DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
+        .event = _scenario_event,
+        .post_frame = _scenario_post_frame,
+#ifndef DVZ_EXAMPLE_NO_APP
         .native_view = _scenario_native_view,
+#endif
         .destroy = _scenario_destroy,
     };
 }
@@ -753,8 +822,10 @@ static DvzScenarioSpec _probe_labels_scenario(void)
  * @param argv command-line argument vector
  * @return process exit code
  */
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _probe_labels_scenario();
+    DvzScenarioSpec spec = dvz_example_probe_labels_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

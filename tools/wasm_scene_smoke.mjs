@@ -2442,6 +2442,7 @@ try {
     "features_bounds_overlay",
     "composites_graph",
     "features_orientation_gizmo",
+    "features_probe_labels",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -2450,6 +2451,7 @@ try {
     requireOk(id === expectedScenarioIds[i], `unexpected scenario ${i} id ${id}`);
     if (
       id === "features_picking" ||
+      id === "features_probe_labels" ||
       id === "features_selection_sphere" ||
       id === "features_selection_mesh_instances" ||
       id === "features_image_probe"
@@ -3474,6 +3476,15 @@ try {
         expectControllerMeshScenarioStreamShape(stream, label);
         expectPipeline(stream, `${label} axes`, (pipeline) => pipeline.builtin_pipeline === "scene.segment");
         requireOk(commandsOf(stream, "SetViewport").length >= 2, `${label}: expected scene and gizmo viewports`);
+      },
+    ],
+    [
+      "features_probe_labels",
+      "label probe",
+      (stream, label) => {
+        expectPipeline(stream, `${label} field`, (pipeline) => pipeline.builtin_pipeline === "scene.labels");
+        expectPipeline(stream, `${label} marker`, (pipeline) => pipeline.builtin_pipeline === "scene.marker");
+        requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected signed label upload`);
       },
     ],
     [

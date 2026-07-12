@@ -49,6 +49,7 @@ DvzScenarioSpec dvz_example_update_visual_data_scenario(void);
 DvzScenarioSpec dvz_example_visibility_scenario(void);
 DvzScenarioSpec dvz_example_visual_transform_scenario(void);
 DvzScenarioSpec dvz_example_picking_scenario(void);
+DvzScenarioSpec dvz_example_probe_labels_scenario(void);
 DvzScenarioSpec dvz_example_reference_grid_scenario(void);
 DvzScenarioSpec dvz_example_image_probe_scenario(void);
 DvzScenarioSpec dvz_example_isolines_scenario(void);
@@ -264,6 +265,8 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_composite_graph_scenario();
     case 78:
         return dvz_example_orientation_gizmo_scenario();
+    case 79:
+        return dvz_example_probe_labels_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

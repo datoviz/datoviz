@@ -15,7 +15,7 @@ versions. Runner command expansion should remain evidence-driven and scoped to t
 ## RC Promotion Target
 
 Current fixture proof counts remain the dashboard truth for the low-level runner. The live gallery
-now has 78 promoted routes backed by canonical C examples or portable C scenarios:
+now has 79 promoted routes backed by canonical C examples or portable C scenarios:
 `features_basic_scene`, `features_timer_animation`, `features_builtin_shapes_2d`,
 `features_builtin_shapes_3d`, `features_isolines`,
 `features_animation_tracks`, `features_compute_buffer_animation`, `features_obj_loading`,
@@ -39,16 +39,15 @@ The promoted set also includes `features_coordinate_system`, `features_visual_tr
 `features_panel_view2d`, `features_bezier_curve_path`, `features_path_join`,
 `features_camera_manual`, `features_controller_arcball`, `features_mesh_texture`,
 `features_reference_grid`, `features_bounds_overlay`, `composites_graph`, and
-`features_orientation_gizmo`.
+`features_orientation_gizmo`, and `features_probe_labels`.
 
 This list uses public route IDs. When a route ID differs from the compiled C/WASM scenario ID,
 `examples/c/MANIFEST.yaml` records the mapping in `webgpu.scenario_id`.
 
 Remaining RC promotions are:
 
-1. obtain manual website confirmation for `composites_graph` and
-   `features_orientation_gizmo`;
-2. continue with label-probe composition, then scatter/datetime/marker
+1. obtain manual website confirmation for `features_probe_labels`;
+2. continue with scatter/datetime/marker
    parity, generic volume before brain volume, rendering techniques, and finally splat/point-cloud;
 3. keep native-only and deferred diagnostics explicit, and classify lab-only manifest entries only
    if they become public gallery routes.
@@ -81,6 +80,11 @@ error.
 
 Manual website confirmation on 2026-07-12 passed for `composites_graph` pan/zoom and
 `features_orientation_gizmo` arcball/gizmo rendering.
+
+Recorded local label-probe proof on 2026-07-12: the canonical scenario now uses portable pointer
+and post-frame query hooks, signed and unsigned labels query passes have WGSL variants, the shader
+ABI check and 80-scenario WASM packet smoke pass, and the filtered browser smoke proves GPU query
+processing plus resolved visual output for `features_probe_labels`.
 
 Recorded local browser shader-payload proof on 2026-06-18: `node --check
 tools/webgpu_browser_smoke.mjs`, `node --check tools/wasm_scene_smoke.mjs`, and `just

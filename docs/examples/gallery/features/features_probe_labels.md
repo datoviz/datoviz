@@ -13,12 +13,17 @@ This example queries categorical label IDs from a generated label image.
 
 ## Preview
 
-![Label Probe](../../../assets/gallery/v0.4/features/features_probe_labels.webp)
+=== "Screenshot"
 
-<aside class="dvz-webgpu-unavailable" role="note">
-<strong>Live WebGPU preview not available yet</strong>
-<span>Browser support for this example is planned. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
-</aside>
+    ![Label Probe](../../../assets/gallery/v0.4/features/features_probe_labels.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=features_probe_labels" title="Label Probe WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=features_probe_labels">Open the live WebGPU example</a>.
 
 ## What To Look For
 
@@ -45,7 +50,8 @@ A 256x192 R32_SINT sampled field stores category IDs for cortex, fiber, nucleus,
     - Lane: `features`
     - Source: [`examples/c/features/probe_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/probe_labels.c)
     - Python source: [`examples/python/gallery/features/probe_labels.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/probe_labels.py)
-    - Browser support: Planned
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=features_probe_labels"><code>examples/webgpu/live.html?id=features_probe_labels</code></a>
     - Browser capability tags: `labels`, `query-readback`, `panzoom`
     - Validation: `smoke+readback+screenshot`
 

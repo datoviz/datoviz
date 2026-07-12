@@ -34,7 +34,7 @@ Current source-of-truth files:
 
 As of 2026-07-12:
 
-1. Manifest counts: `78 webgpu-live`, with remaining examples explicitly classified as
+1. Manifest counts: `79 webgpu-live`, with remaining examples explicitly classified as
    `webgpu-planned`, `webgpu-deferred`, `native-only`, or non-public lab material.
 2. Live routes cover basic scene, timer animation, triangulation, builtin shapes 2D/3D, isolines,
    animation tracks, OBJ loading, picking, pixel/sphere/mesh selection, image probe, compute buffer
@@ -46,7 +46,8 @@ As of 2026-07-12:
    surface-grid showcase, U.S. state choropleth, textured planets and protein showcases, retained
    data update/visibility routes, depth-test route, alpha blending, material/lighting routes,
    coordinate/transform/View2D routes, Bezier and join-focused paths, manual-camera and arcball
-   routes, textured mesh, reference grid, bounds overlay, graph composite, and orientation gizmo.
+   routes, textured mesh, reference grid, bounds overlay, graph composite, orientation gizmo, and
+   signed categorical label probe.
 3. The browser runtime consumes artifact-backed split DRP2 setup/update/frame packets. JSON is
    debug/fixture-only.
 4. Query/readback is intentionally narrow: point/marker picking, point hover/selection,
@@ -169,9 +170,9 @@ Execute the remaining browser work in this order:
 1. **Stabilize browser evidence.** Complete: picking smoke asserts resolved visual output,
    `webgpu-browser-smoke` supports per-route filtering, and the ten routes promoted on 2026-07-11
    have direct browser proof.
-2. **Existing-capability compositions.** `composites_graph` and
-   `features_orientation_gizmo` are live with automated browser proof. Promote
-   `features_probe_labels` next without adding browser-only scene semantics.
+2. **Existing-capability compositions.** Complete: `composites_graph`,
+   `features_orientation_gizmo`, and `features_probe_labels` are live with automated browser
+   proof and no browser-only scene semantics.
 3. **Approachable deferred features.** Reassess `start_scatter`, `features_datetime_axis`, and
    `features_marker_symbols`; keep native GUI behavior out of portable scenarios and complete only
    the formatting or atlas parity needed by the canonical examples.

@@ -11,6 +11,11 @@ export const LIVE_EXAMPLES = [
     animate: true,
   },
   {
+    id: "features_probe_labels",
+    label: "Label Probe",
+    scenarioId: "features_probe_labels",
+  },
+  {
     id: "features_basic_scene",
     label: "Basic Scene",
     scenarioId: "features_basic_scene",

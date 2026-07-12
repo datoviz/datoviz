@@ -2138,7 +2138,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=features_probe_labels
       requirements:
         - labels
         - query-readback

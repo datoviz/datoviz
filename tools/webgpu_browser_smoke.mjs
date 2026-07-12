@@ -752,6 +752,13 @@ async function smokeQueryWasmPage(page, baseUrl, scenario, screenshotPath) {
       for (let i = 0; i < 100 && session.rendering; i++) {
         await new Promise((resolve) => setTimeout(resolve, 50));
       }
+      let processed = 0;
+      const flushScenarioQueries = scene.flushScenarioQueries.bind(scene);
+      scene.flushScenarioQueries = async () => {
+        const count = await flushScenarioQueries();
+        processed += count;
+        return count;
+      };
 
       stage = "prime-pointer";
       const canvas = document.querySelector("#viewport");
@@ -773,7 +780,7 @@ async function smokeQueryWasmPage(page, baseUrl, scenario, screenshotPath) {
       stage = "queue-query";
       await session.render();
       const frameBefore = scene.runtime.packetFrameIndex;
-      const processed = await scene.flushScenarioQueries();
+      await scene.flushScenarioQueries();
       const pendingAfter = Module._dvz_wasm_api_query_pending_count(scene.scene);
       const activeAfter = Module._dvz_wasm_api_query_active(scene.scene);
       if (pendingAfter !== 0 || activeAfter !== 0) {
@@ -784,6 +791,9 @@ async function smokeQueryWasmPage(page, baseUrl, scenario, screenshotPath) {
       await session.render();
       const frameAfter = scene.runtime.packetFrameIndex;
       const afterHover = canvas.toDataURL("image/png");
+      if (processed <= 0) {
+        return "render processed no scenario queries";
+      }
       if (afterHover === beforeHover) {
         return "resolved hover query did not change rendered output";
       }
@@ -888,6 +898,7 @@ async function main() {
         ['features_bounds_overlay', { label: 'Bounds Overlay' }],
         ['composites_graph', { label: 'Graph Composite' }],
         ['features_orientation_gizmo', { label: 'Orientation Gizmo', kind: 'animated' }],
+        ['features_probe_labels', { label: 'Label Probe', kind: 'query' }],
       ]);
       const route = filteredRoutes.get(routeFilter);
       requireOk(route !== undefined, `unknown filtered WebGPU route: ${routeFilter}`);
