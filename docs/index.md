@@ -112,6 +112,10 @@ Pick the entry point that matches how you want to use Datoviz.
 <strong>Quickstart</strong>
 <span>Follow the annotated walkthrough and learn scene, panel, visual, and interaction basics.</span>
 </a>
+<a class="dvz-nav-card" href="start/choose-your-layer/">
+<strong>Choose Your Layer</strong>
+<span>Compare Python, C/C++, WebGPU, exact raw calls, and higher-level plotting tools.</span>
+</a>
 <a class="dvz-nav-card" href="examples/">
 <strong>Examples</strong>
 <span>Browse working visuals, features, runtime examples, and scientific showcases.</span>
@@ -133,18 +137,23 @@ The core workflow is straightforward: create a scene, add a panel, attach visual
 then run or capture.
 
 ```python
+import ctypes
+
 import numpy as np
 import datoviz as dvz
 
 N = 10_000
-pos = np.random.uniform(-1, 1, (N, 3)).astype(np.float32)
-pos[:, 2] = 0
-color = np.full((N, 4), (80, 180, 255, 255), dtype=np.uint8)
-diameter = np.full(N, 5, dtype=np.float32)
+rng = np.random.default_rng(12345)
+pos = np.zeros((N, 3), dtype=np.float32)
+pos[:, :2] = rng.uniform(-1, 1, (N, 2))
+color = rng.integers(0, 255, (N, 4), dtype=np.uint8)
+color[:, 3] = 200
+diameter = rng.uniform(4, 12, N).astype(np.float32)
 
 scene = dvz.dvz_scene()
-figure = dvz.dvz_figure(scene, 800, 600, 0)
+figure = dvz.dvz_figure(scene, 1280, 720, 0)
 panel = dvz.dvz_panel_full(figure)
+dvz.dvz_panel_set_background_color(panel, dvz.DvzColor(13, 18, 25, 255))
 
 panzoom = dvz.dvz_panzoom(scene, None)
 dvz.dvz_panel_bind_controller(panel, panzoom, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY)
@@ -153,12 +162,19 @@ points = dvz.dvz_point(scene, 0)
 dvz.dvz_visual_set_data(points, "position", pos)
 dvz.dvz_visual_set_data(points, "color", color)
 dvz.dvz_visual_set_data(points, "diameter_px", diameter)
+
+style = dvz.dvz_point_style_desc()
+style.aspect = dvz.DVZ_SHAPE_ASPECT_FILLED
+style.stroke_width_px = 0
+dvz.dvz_point_set_style(points, ctypes.byref(style))
+dvz.dvz_visual_set_depth_test(points, False)
+dvz.dvz_visual_set_alpha_mode(points, dvz.DVZ_ALPHA_BLENDED)
 dvz.dvz_panel_add_visual(panel, points, None)
 
 dvz.run(scene, figure, title="Datoviz")
 ```
 
-![10 000 blue points in an interactive Datoviz window](assets/gallery/v0.4/start/start_scatter.webp)
+![10 000 randomly colored points in an interactive Datoviz window](assets/gallery/v0.4/start/start_scatter.webp)
 
 See [Quickstart](start/quickstart.md) for the annotated walkthrough, [Use from C or C++](how-to/c-integration.md)
 for native integration, or [AI-assisted workflow](start/ai-workflow.md) when you want an LLM to help
