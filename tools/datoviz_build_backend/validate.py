@@ -493,10 +493,13 @@ try:
         dvz.DvzColor(80, 220, 120, 255),
         dvz.DvzColor(90, 150, 255, 255),
     )
+    diameters = (ctypes.c_float * 3)(16.0, 16.0, 16.0)
     if dvz.dvz_visual_set_data(visual, b"position", void_p(positions), 3) != 0:
         raise SystemExit("dvz_visual_set_data(position) failed")
     if dvz.dvz_visual_set_data(visual, b"color", void_p(colors), 3) != 0:
         raise SystemExit("dvz_visual_set_data(color) failed")
+    if dvz.dvz_visual_set_data(visual, b"diameter_px", void_p(diameters), 3) != 0:
+        raise SystemExit("dvz_visual_set_data(diameter_px) failed")
     if dvz.dvz_panel_add_visual(panel, visual, None) != 0:
         raise SystemExit("dvz_panel_add_visual() failed")
 
@@ -592,11 +595,13 @@ int main(void)
         {80, 220, 120, 255},
         {90, 150, 255, 255},
     };
+    float diameters[3] = {16.0f, 16.0f, 16.0f};
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = 3},
         {.attr_name = "color", .data = colors, .item_count = 3},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = 3},
     };
-    if (dvz_visual_set_data_many(visual, updates, 2) != 0 ||
+    if (dvz_visual_set_data_many(visual, updates, 3) != 0 ||
         dvz_panel_add_visual(panel, visual, NULL) != 0)
     {
         fprintf(stderr, "failed to add point visual\n");
