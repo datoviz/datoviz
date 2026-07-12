@@ -76,7 +76,9 @@ def main():
         if test_mode:
             if session is None:
                 raise RuntimeError("nonblocking dvz.run() returned no session")
-            session.render_once()
+            status = session.render_once()
+            if status != dvz.DVZ_CANVAS_FRAME_READY:
+                raise RuntimeError(f"first frame failed with status {status}")
     finally:
         if session is not None:
             session.close()
