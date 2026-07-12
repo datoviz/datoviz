@@ -321,9 +321,12 @@ def format_function(fn: dict, names: set[str]) -> list[str]:
 
 
 def object_group(name: str, group_labels: dict[str, str] | None = None) -> str:
+    symbol = name.removeprefix("dvz_")
+    if group_labels:
+        for prefix in sorted(group_labels, key=len, reverse=True):
+            if symbol == prefix or symbol.startswith(f"{prefix}_"):
+                return group_labels[prefix]
     prefix = symbol_prefix(name)
-    if group_labels and prefix in group_labels:
-        return group_labels[prefix]
     return prefix.replace("_", " ").title()
 
 

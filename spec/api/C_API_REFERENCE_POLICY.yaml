@@ -112,6 +112,13 @@ pages:
       - world
     group_labels:
       sampled: Sampled Field
+      font_atlas: Font Atlas
+      guide_line: Guide Line
+      guide_span: Guide Span
+      overlay_card: Overlay Card
+      reference_grid: Reference Grid
+      scale_bar: Scale Bar
+      text_atlas: Text Atlas
 
   visuals:
     title: Visuals And Composites API

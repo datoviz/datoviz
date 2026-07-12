@@ -38,10 +38,12 @@ Functions: 390
 | [Field](#field) | 2 | `include/datoviz/scene/field.h` |
 | [Figure](#figure) | 17 | `include/datoviz/scene.h` |
 | [Fly](#fly) | 1 | `include/datoviz/scene/fly.h` |
-| [Font](#font) | 6 | `include/datoviz/scene/text.h` |
+| [Font](#font) | 2 | `include/datoviz/scene/text.h` |
+| [Font Atlas](#font-atlas) | 4 | `include/datoviz/scene/text.h` |
 | [Format](#format) | 1 | `include/datoviz/scene/scale.h` |
 | [Grid](#grid) | 8 | `include/datoviz/scene.h` |
-| [Guide](#guide) | 8 | `include/datoviz/scene/plot.h` |
+| [Guide Line](#guide-line) | 4 | `include/datoviz/scene/plot.h` |
+| [Guide Span](#guide-span) | 4 | `include/datoviz/scene/plot.h` |
 | [Hover](#hover) | 6 | `include/datoviz/scene/interaction.h` |
 | [Interaction](#interaction) | 7 | `include/datoviz/scene/interaction.h` |
 | [Item](#item) | 6 | `include/datoviz/scene/interaction.h` |
@@ -50,18 +52,21 @@ Functions: 390
 | [Legend](#legend) | 9 | `include/datoviz/scene/scale.h` |
 | [Link](#link) | 2 | `include/datoviz/scene/interaction.h` |
 | [Orientation](#orientation) | 4 | `include/datoviz/scene.h` |
-| [Overlay](#overlay) | 14 | `include/datoviz/scene/overlay.h` |
+| [Overlay](#overlay) | 3 | `include/datoviz/scene/overlay.h` |
+| [Overlay Card](#overlay-card) | 11 | `include/datoviz/scene/overlay.h` |
 | [Panel](#panel) | 66 | 3 headers |
 | [Panzoom](#panzoom) | 1 | `include/datoviz/scene/panzoom.h` |
 | [Pinned](#pinned) | 3 | `include/datoviz/scene/interaction.h` |
 | [Placement](#placement) | 3 | `include/datoviz/scene.h` |
 | [Query](#query) | 1 | `include/datoviz/scene/interaction.h` |
-| [Reference](#reference) | 4 | `include/datoviz/scene.h` |
+| [Reference Grid](#reference-grid) | 4 | `include/datoviz/scene.h` |
 | [Sampled Field](#sampled-field) | 9 | `include/datoviz/scene/field.h` |
-| [Scale](#scale) | 24 | `include/datoviz/scene/annotation.h`, `include/datoviz/scene/scale.h` |
+| [Scale](#scale) | 15 | `include/datoviz/scene/scale.h` |
+| [Scale Bar](#scale-bar) | 9 | `include/datoviz/scene/annotation.h` |
 | [Scene](#scene) | 35 | 3 headers |
 | [Selection](#selection) | 9 | `include/datoviz/scene/interaction.h` |
-| [Text](#text) | 24 | `include/datoviz/scene/text.h` |
+| [Text](#text) | 20 | `include/datoviz/scene/text.h` |
+| [Text Atlas](#text-atlas) | 4 | `include/datoviz/scene/text.h` |
 | [Track](#track) | 14 | `include/datoviz/scene/animation.h` |
 | [Transform](#transform) | 1 | `include/datoviz/scene/animation.h` |
 | [Turntable](#turntable) | 1 | `include/datoviz/scene/turntable.h` |
@@ -247,11 +252,16 @@ Functions: 390
     | Function | Header |
     | --- | --- |
     | [`dvz_font()`](#dvz_font) | `include/datoviz/scene/text.h` |
+    | [`dvz_font_destroy()`](#dvz_font_destroy) | `include/datoviz/scene/text.h` |
+
+    ### Font Atlas
+
+    | Function | Header |
+    | --- | --- |
     | [`dvz_font_atlas()`](#dvz_font_atlas) | `include/datoviz/scene/text.h` |
     | [`dvz_font_atlas_ensure()`](#dvz_font_atlas_ensure) | `include/datoviz/scene/text.h` |
     | [`dvz_font_atlas_ensure_string()`](#dvz_font_atlas_ensure_string) | `include/datoviz/scene/text.h` |
     | [`dvz_font_atlas_ensure_strings()`](#dvz_font_atlas_ensure_strings) | `include/datoviz/scene/text.h` |
-    | [`dvz_font_destroy()`](#dvz_font_destroy) | `include/datoviz/scene/text.h` |
 
     ### Format
 
@@ -272,7 +282,7 @@ Functions: 390
     | [`dvz_grid_set_margins()`](#dvz_grid_set_margins) | `include/datoviz/scene.h` |
     | [`dvz_grid_set_row_size()`](#dvz_grid_set_row_size) | `include/datoviz/scene.h` |
 
-    ### Guide
+    ### Guide Line
 
     | Function | Header |
     | --- | --- |
@@ -280,6 +290,11 @@ Functions: 390
     | [`dvz_guide_line_desc()`](#dvz_guide_line_desc) | `include/datoviz/scene/plot.h` |
     | [`dvz_guide_line_set_value()`](#dvz_guide_line_set_value) | `include/datoviz/scene/plot.h` |
     | [`dvz_guide_line_visual()`](#dvz_guide_line_visual) | `include/datoviz/scene/plot.h` |
+
+    ### Guide Span
+
+    | Function | Header |
+    | --- | --- |
     | [`dvz_guide_span()`](#dvz_guide_span) | `include/datoviz/scene/plot.h` |
     | [`dvz_guide_span_desc()`](#dvz_guide_span_desc) | `include/datoviz/scene/plot.h` |
     | [`dvz_guide_span_set_range()`](#dvz_guide_span_set_range) | `include/datoviz/scene/plot.h` |
@@ -376,6 +391,13 @@ Functions: 390
     | Function | Header |
     | --- | --- |
     | [`dvz_overlay()`](#dvz_overlay) | `include/datoviz/scene/overlay.h` |
+    | [`dvz_overlay_destroy()`](#dvz_overlay_destroy) | `include/datoviz/scene/overlay.h` |
+    | [`dvz_overlay_rich_text_desc()`](#dvz_overlay_rich_text_desc) | `include/datoviz/scene/overlay.h` |
+
+    ### Overlay Card
+
+    | Function | Header |
+    | --- | --- |
     | [`dvz_overlay_card()`](#dvz_overlay_card) | `include/datoviz/scene/overlay.h` |
     | [`dvz_overlay_card_clear_rich_text()`](#dvz_overlay_card_clear_rich_text) | `include/datoviz/scene/overlay.h` |
     | [`dvz_overlay_card_desc()`](#dvz_overlay_card_desc) | `include/datoviz/scene/overlay.h` |
@@ -387,8 +409,6 @@ Functions: 390
     | [`dvz_overlay_card_set_text()`](#dvz_overlay_card_set_text) | `include/datoviz/scene/overlay.h` |
     | [`dvz_overlay_card_set_visible()`](#dvz_overlay_card_set_visible) | `include/datoviz/scene/overlay.h` |
     | [`dvz_overlay_card_style()`](#dvz_overlay_card_style) | `include/datoviz/scene/overlay.h` |
-    | [`dvz_overlay_destroy()`](#dvz_overlay_destroy) | `include/datoviz/scene/overlay.h` |
-    | [`dvz_overlay_rich_text_desc()`](#dvz_overlay_rich_text_desc) | `include/datoviz/scene/overlay.h` |
 
     ### Panel
 
@@ -489,7 +509,7 @@ Functions: 390
     | --- | --- |
     | [`dvz_query_request()`](#dvz_query_request) | `include/datoviz/scene/interaction.h` |
 
-    ### Reference
+    ### Reference Grid
 
     | Function | Header |
     | --- | --- |
@@ -517,15 +537,6 @@ Functions: 390
     | Function | Header |
     | --- | --- |
     | [`dvz_scale()`](#dvz_scale) | `include/datoviz/scene/scale.h` |
-    | [`dvz_scale_bar()`](#dvz_scale_bar) | `include/datoviz/scene/annotation.h` |
-    | [`dvz_scale_bar_desc()`](#dvz_scale_bar_desc) | `include/datoviz/scene/annotation.h` |
-    | [`dvz_scale_bar_set_anchor()`](#dvz_scale_bar_set_anchor) | `include/datoviz/scene/annotation.h` |
-    | [`dvz_scale_bar_set_dimension()`](#dvz_scale_bar_set_dimension) | `include/datoviz/scene/annotation.h` |
-    | [`dvz_scale_bar_set_duration_units()`](#dvz_scale_bar_set_duration_units) | `include/datoviz/scene/annotation.h` |
-    | [`dvz_scale_bar_set_format()`](#dvz_scale_bar_set_format) | `include/datoviz/scene/annotation.h` |
-    | [`dvz_scale_bar_set_label_style()`](#dvz_scale_bar_set_label_style) | `include/datoviz/scene/annotation.h` |
-    | [`dvz_scale_bar_set_placement()`](#dvz_scale_bar_set_placement) | `include/datoviz/scene/annotation.h` |
-    | [`dvz_scale_bar_set_units()`](#dvz_scale_bar_set_units) | `include/datoviz/scene/annotation.h` |
     | [`dvz_scale_category()`](#dvz_scale_category) | `include/datoviz/scene/scale.h` |
     | [`dvz_scale_category_count()`](#dvz_scale_category_count) | `include/datoviz/scene/scale.h` |
     | [`dvz_scale_desc()`](#dvz_scale_desc) | `include/datoviz/scene/scale.h` |
@@ -540,6 +551,20 @@ Functions: 390
     | [`dvz_scale_set_view_range()`](#dvz_scale_set_view_range) | `include/datoviz/scene/scale.h` |
     | [`dvz_scale_update_categories()`](#dvz_scale_update_categories) | `include/datoviz/scene/scale.h` |
     | [`dvz_scale_view_range()`](#dvz_scale_view_range) | `include/datoviz/scene/scale.h` |
+
+    ### Scale Bar
+
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_scale_bar()`](#dvz_scale_bar) | `include/datoviz/scene/annotation.h` |
+    | [`dvz_scale_bar_desc()`](#dvz_scale_bar_desc) | `include/datoviz/scene/annotation.h` |
+    | [`dvz_scale_bar_set_anchor()`](#dvz_scale_bar_set_anchor) | `include/datoviz/scene/annotation.h` |
+    | [`dvz_scale_bar_set_dimension()`](#dvz_scale_bar_set_dimension) | `include/datoviz/scene/annotation.h` |
+    | [`dvz_scale_bar_set_duration_units()`](#dvz_scale_bar_set_duration_units) | `include/datoviz/scene/annotation.h` |
+    | [`dvz_scale_bar_set_format()`](#dvz_scale_bar_set_format) | `include/datoviz/scene/annotation.h` |
+    | [`dvz_scale_bar_set_label_style()`](#dvz_scale_bar_set_label_style) | `include/datoviz/scene/annotation.h` |
+    | [`dvz_scale_bar_set_placement()`](#dvz_scale_bar_set_placement) | `include/datoviz/scene/annotation.h` |
+    | [`dvz_scale_bar_set_units()`](#dvz_scale_bar_set_units) | `include/datoviz/scene/annotation.h` |
 
     ### Scene
 
@@ -600,10 +625,6 @@ Functions: 390
     | Function | Header |
     | --- | --- |
     | [`dvz_text()`](#dvz_text) | `include/datoviz/scene/text.h` |
-    | [`dvz_text_atlas_field()`](#dvz_text_atlas_field) | `include/datoviz/scene/text.h` |
-    | [`dvz_text_atlas_glyph()`](#dvz_text_atlas_glyph) | `include/datoviz/scene/text.h` |
-    | [`dvz_text_atlas_info()`](#dvz_text_atlas_info) | `include/datoviz/scene/text.h` |
-    | [`dvz_text_atlas_spec()`](#dvz_text_atlas_spec) | `include/datoviz/scene/text.h` |
     | [`dvz_text_destroy()`](#dvz_text_destroy) | `include/datoviz/scene/text.h` |
     | [`dvz_text_id()`](#dvz_text_id) | `include/datoviz/scene/text.h` |
     | [`dvz_text_layout()`](#dvz_text_layout) | `include/datoviz/scene/text.h` |
@@ -623,6 +644,15 @@ Functions: 390
     | [`dvz_text_set_strings()`](#dvz_text_set_strings) | `include/datoviz/scene/text.h` |
     | [`dvz_text_set_style()`](#dvz_text_set_style) | `include/datoviz/scene/text.h` |
     | [`dvz_text_style()`](#dvz_text_style) | `include/datoviz/scene/text.h` |
+
+    ### Text Atlas
+
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_text_atlas_field()`](#dvz_text_atlas_field) | `include/datoviz/scene/text.h` |
+    | [`dvz_text_atlas_glyph()`](#dvz_text_atlas_glyph) | `include/datoviz/scene/text.h` |
+    | [`dvz_text_atlas_info()`](#dvz_text_atlas_info) | `include/datoviz/scene/text.h` |
+    | [`dvz_text_atlas_spec()`](#dvz_text_atlas_spec) | `include/datoviz/scene/text.h` |
 
     ### Track
 
@@ -2739,6 +2769,24 @@ DvzFont * dvz_font(
 
 _Declared in `include/datoviz/scene/text.h`:69._
 
+### `dvz_font_destroy()`
+
+Destroy a font resource.
+
+```c
+void dvz_font_destroy(
+    DvzFont * font
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `font` | `DvzFont *` | the font |
+
+_Declared in `include/datoviz/scene/text.h`:77._
+
+## Font Atlas
+
 ### `dvz_font_atlas()`
 
 Return the font atlas matching a spec.
@@ -2824,22 +2872,6 @@ _Bool dvz_font_atlas_ensure_strings(
 | `count` | `uint32_t` | string count |
 
 _Declared in `include/datoviz/scene/text.h`:121._
-
-### `dvz_font_destroy()`
-
-Destroy a font resource.
-
-```c
-void dvz_font_destroy(
-    DvzFont * font
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `font` | `DvzFont *` | the font |
-
-_Declared in `include/datoviz/scene/text.h`:77._
 
 ## Format
 
@@ -3035,7 +3067,7 @@ DvzResult dvz_grid_set_row_size(
 
 _Declared in `include/datoviz/scene.h`:330._
 
-## Guide
+## Guide Line
 
 ### `dvz_guide_line()`
 
@@ -3111,6 +3143,8 @@ DvzVisual * dvz_guide_line_visual(
 | `role` | `DvzPlotRole` | visual role |
 
 _Declared in `include/datoviz/scene/plot.h`:82._
+
+## Guide Span
 
 ### `dvz_guide_span()`
 
@@ -4072,6 +4106,38 @@ DvzOverlay * dvz_overlay(
 
 _Declared in `include/datoviz/scene/overlay.h`:100._
 
+### `dvz_overlay_destroy()`
+
+Destroy a panel overlay object and hide its cards.
+
+```c
+void dvz_overlay_destroy(
+    DvzOverlay * overlay
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `overlay` | `DvzOverlay *` | the overlay |
+
+_Declared in `include/datoviz/scene/overlay.h`:108._
+
+### `dvz_overlay_rich_text_desc()`
+
+Return the default overlay rich-text descriptor.
+
+```c
+DvzOverlayRichTextDesc dvz_overlay_rich_text_desc(void);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzOverlayRichTextDesc` | the default rich-text descriptor |
+
+_Declared in `include/datoviz/scene/overlay.h`:132._
+
+## Overlay Card
+
 ### `dvz_overlay_card()`
 
 Create a card attached to a panel overlay.
@@ -4271,36 +4337,6 @@ DvzOverlayCardStyle dvz_overlay_card_style(void);
 | return | `DvzOverlayCardStyle` | the default style descriptor |
 
 _Declared in `include/datoviz/scene/overlay.h`:116._
-
-### `dvz_overlay_destroy()`
-
-Destroy a panel overlay object and hide its cards.
-
-```c
-void dvz_overlay_destroy(
-    DvzOverlay * overlay
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `overlay` | `DvzOverlay *` | the overlay |
-
-_Declared in `include/datoviz/scene/overlay.h`:108._
-
-### `dvz_overlay_rich_text_desc()`
-
-Return the default overlay rich-text descriptor.
-
-```c
-DvzOverlayRichTextDesc dvz_overlay_rich_text_desc(void);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzOverlayRichTextDesc` | the default rich-text descriptor |
-
-_Declared in `include/datoviz/scene/overlay.h`:132._
 
 ## Panel
 
@@ -5846,7 +5882,7 @@ DvzQueryRequest dvz_query_request(void);
 
 _Declared in `include/datoviz/scene/interaction.h`:389._
 
-## Reference
+## Reference Grid
 
 ### `dvz_reference_grid()`
 
@@ -6129,177 +6165,6 @@ DvzScale * dvz_scale(
 | `desc` | `const DvzScaleDesc *` | the scale descriptor, or NULL for defaults |
 
 _Declared in `include/datoviz/scene/scale.h`:206._
-
-### `dvz_scale_bar()`
-
-Create a retained scale bar attached to a panel.
-
-`DvzScaleBar` is a typed alias for the retained annotation object returned here. Pass NULL for
-the default descriptor. Destroy it with `dvz_annotation_destroy((DvzAnnotation*)scalebar)`.
-
-```c
-DvzScaleBar * dvz_scale_bar(
-    DvzPanel * panel,
-    const DvzScaleBarDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzScaleBar *` | the scale bar |
-| `panel` | `DvzPanel *` | the panel |
-| `desc` | `const DvzScaleBarDesc *` | the scale-bar descriptor, or NULL for defaults |
-
-_Declared in `include/datoviz/scene/annotation.h`:116._
-
-### `dvz_scale_bar_desc()`
-
-Return the default scale-bar annotation descriptor.
-
-```c
-DvzScaleBarDesc dvz_scale_bar_desc(void);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzScaleBarDesc` | default scale-bar descriptor |
-
-Related: [`dvz_scale_bar()`](#dvz_scale_bar).
-
-_Declared in `include/datoviz/scene/annotation.h`:52._
-
-### `dvz_scale_bar_set_anchor()`
-
-Set the panel anchor of a retained scale bar.
-
-```c
-DvzResult dvz_scale_bar_set_anchor(
-    DvzScaleBar * scalebar,
-    DvzSceneAnchor anchor
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on validation error |
-| `scalebar` | `DvzScaleBar *` | the scale bar |
-| `anchor` | `DvzSceneAnchor` | panel anchor |
-
-_Declared in `include/datoviz/scene/annotation.h`:136._
-
-### `dvz_scale_bar_set_dimension()`
-
-Set the data dimension measured by a retained scale bar.
-
-```c
-DvzResult dvz_scale_bar_set_dimension(
-    DvzScaleBar * scalebar,
-    DvzDim dim
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on validation error |
-| `scalebar` | `DvzScaleBar *` | the scale bar |
-| `dim` | `DvzDim` | dimension |
-
-_Declared in `include/datoviz/scene/annotation.h`:126._
-
-### `dvz_scale_bar_set_duration_units()`
-
-Attach duration units to a retained scale bar.
-
-```c
-DvzResult dvz_scale_bar_set_duration_units(
-    DvzScaleBar * scalebar,
-    DvzUnits * duration_units
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on validation error |
-| `scalebar` | `DvzScaleBar *` | the scale bar |
-| `duration_units` | `DvzUnits *` | duration units object |
-
-_Declared in `include/datoviz/scene/annotation.h`:156._
-
-### `dvz_scale_bar_set_format()`
-
-Override formatting policy on a retained scale bar.
-
-```c
-DvzResult dvz_scale_bar_set_format(
-    DvzScaleBar * scalebar,
-    const DvzFormatDesc * format
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on validation error |
-| `scalebar` | `DvzScaleBar *` | the scale bar |
-| `format` | `const DvzFormatDesc *` | the format descriptor, or NULL to clear the override |
-
-_Declared in `include/datoviz/scene/annotation.h`:187._
-
-### `dvz_scale_bar_set_label_style()`
-
-Set the label style of a retained scale bar.
-
-```c
-DvzResult dvz_scale_bar_set_label_style(
-    DvzScaleBar * scalebar,
-    const DvzTextStyle * style
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on validation error |
-| `scalebar` | `DvzScaleBar *` | the scale bar |
-| `style` | `const DvzTextStyle *` | label style, or NULL for defaults |
-
-_Declared in `include/datoviz/scene/annotation.h`:166._
-
-### `dvz_scale_bar_set_placement()`
-
-Set the label placement policy of a retained scale bar.
-
-```c
-DvzResult dvz_scale_bar_set_placement(
-    DvzScaleBar * scalebar,
-    const DvzTextPlacement * placement
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on validation error |
-| `scalebar` | `DvzScaleBar *` | the scale bar |
-| `placement` | `const DvzTextPlacement *` | label placement, or NULL for defaults |
-
-_Declared in `include/datoviz/scene/annotation.h`:176._
-
-### `dvz_scale_bar_set_units()`
-
-Attach numeric units to a retained scale bar.
-
-```c
-DvzResult dvz_scale_bar_set_units(
-    DvzScaleBar * scalebar,
-    DvzUnits * units
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on validation error |
-| `scalebar` | `DvzScaleBar *` | the scale bar |
-| `units` | `DvzUnits *` | units object |
-
-_Declared in `include/datoviz/scene/annotation.h`:146._
 
 ### `dvz_scale_category()`
 
@@ -6595,6 +6460,179 @@ _Bool dvz_scale_view_range(
 | `out_max` | `double *` | view-range maximum |
 
 _Declared in `include/datoviz/scene/scale.h`:275._
+
+## Scale Bar
+
+### `dvz_scale_bar()`
+
+Create a retained scale bar attached to a panel.
+
+`DvzScaleBar` is a typed alias for the retained annotation object returned here. Pass NULL for
+the default descriptor. Destroy it with `dvz_annotation_destroy((DvzAnnotation*)scalebar)`.
+
+```c
+DvzScaleBar * dvz_scale_bar(
+    DvzPanel * panel,
+    const DvzScaleBarDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzScaleBar *` | the scale bar |
+| `panel` | `DvzPanel *` | the panel |
+| `desc` | `const DvzScaleBarDesc *` | the scale-bar descriptor, or NULL for defaults |
+
+_Declared in `include/datoviz/scene/annotation.h`:116._
+
+### `dvz_scale_bar_desc()`
+
+Return the default scale-bar annotation descriptor.
+
+```c
+DvzScaleBarDesc dvz_scale_bar_desc(void);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzScaleBarDesc` | default scale-bar descriptor |
+
+Related: [`dvz_scale_bar()`](#dvz_scale_bar).
+
+_Declared in `include/datoviz/scene/annotation.h`:52._
+
+### `dvz_scale_bar_set_anchor()`
+
+Set the panel anchor of a retained scale bar.
+
+```c
+DvzResult dvz_scale_bar_set_anchor(
+    DvzScaleBar * scalebar,
+    DvzSceneAnchor anchor
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on validation error |
+| `scalebar` | `DvzScaleBar *` | the scale bar |
+| `anchor` | `DvzSceneAnchor` | panel anchor |
+
+_Declared in `include/datoviz/scene/annotation.h`:136._
+
+### `dvz_scale_bar_set_dimension()`
+
+Set the data dimension measured by a retained scale bar.
+
+```c
+DvzResult dvz_scale_bar_set_dimension(
+    DvzScaleBar * scalebar,
+    DvzDim dim
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on validation error |
+| `scalebar` | `DvzScaleBar *` | the scale bar |
+| `dim` | `DvzDim` | dimension |
+
+_Declared in `include/datoviz/scene/annotation.h`:126._
+
+### `dvz_scale_bar_set_duration_units()`
+
+Attach duration units to a retained scale bar.
+
+```c
+DvzResult dvz_scale_bar_set_duration_units(
+    DvzScaleBar * scalebar,
+    DvzUnits * duration_units
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on validation error |
+| `scalebar` | `DvzScaleBar *` | the scale bar |
+| `duration_units` | `DvzUnits *` | duration units object |
+
+_Declared in `include/datoviz/scene/annotation.h`:156._
+
+### `dvz_scale_bar_set_format()`
+
+Override formatting policy on a retained scale bar.
+
+```c
+DvzResult dvz_scale_bar_set_format(
+    DvzScaleBar * scalebar,
+    const DvzFormatDesc * format
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on validation error |
+| `scalebar` | `DvzScaleBar *` | the scale bar |
+| `format` | `const DvzFormatDesc *` | the format descriptor, or NULL to clear the override |
+
+_Declared in `include/datoviz/scene/annotation.h`:187._
+
+### `dvz_scale_bar_set_label_style()`
+
+Set the label style of a retained scale bar.
+
+```c
+DvzResult dvz_scale_bar_set_label_style(
+    DvzScaleBar * scalebar,
+    const DvzTextStyle * style
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on validation error |
+| `scalebar` | `DvzScaleBar *` | the scale bar |
+| `style` | `const DvzTextStyle *` | label style, or NULL for defaults |
+
+_Declared in `include/datoviz/scene/annotation.h`:166._
+
+### `dvz_scale_bar_set_placement()`
+
+Set the label placement policy of a retained scale bar.
+
+```c
+DvzResult dvz_scale_bar_set_placement(
+    DvzScaleBar * scalebar,
+    const DvzTextPlacement * placement
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on validation error |
+| `scalebar` | `DvzScaleBar *` | the scale bar |
+| `placement` | `const DvzTextPlacement *` | label placement, or NULL for defaults |
+
+_Declared in `include/datoviz/scene/annotation.h`:176._
+
+### `dvz_scale_bar_set_units()`
+
+Attach numeric units to a retained scale bar.
+
+```c
+DvzResult dvz_scale_bar_set_units(
+    DvzScaleBar * scalebar,
+    DvzUnits * units
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on validation error |
+| `scalebar` | `DvzScaleBar *` | the scale bar |
+| `units` | `DvzUnits *` | units object |
+
+_Declared in `include/datoviz/scene/annotation.h`:146._
 
 ## Scene
 
@@ -7473,81 +7511,6 @@ DvzText * dvz_text(
 
 _Declared in `include/datoviz/scene/text.h`:182._
 
-### `dvz_text_atlas_field()`
-
-Return the sampled field containing the atlas texture.
-
-The field is owned by the atlas's font scene. It may be bound to glyph visuals but must not be
-destroyed or mutated by the caller.
-
-```c
-const DvzSampledField * dvz_text_atlas_field(
-    const DvzTextAtlas * atlas
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `const DvzSampledField *` | sampled atlas field, or NULL |
-| `atlas` | `const DvzTextAtlas *` | the text atlas |
-
-_Declared in `include/datoviz/scene/text.h`:158._
-
-### `dvz_text_atlas_glyph()`
-
-Return one atlas glyph, falling back to '?' for unsupported codepoints.
-
-```c
-const DvzTextAtlasGlyph * dvz_text_atlas_glyph(
-    const DvzTextAtlas * atlas,
-    uint32_t codepoint
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `const DvzTextAtlasGlyph *` | glyph metrics, or NULL when unavailable |
-| `atlas` | `const DvzTextAtlas *` | the text atlas |
-| `codepoint` | `uint32_t` | Unicode codepoint |
-
-_Declared in `include/datoviz/scene/text.h`:169._
-
-### `dvz_text_atlas_info()`
-
-Return immutable atlas metadata.
-
-```c
-DvzTextAtlasInfo dvz_text_atlas_info(
-    const DvzTextAtlas * atlas
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzTextAtlasInfo` | atlas metadata; zeroed when atlas is NULL |
-| `atlas` | `const DvzTextAtlas *` | the text atlas |
-
-_Declared in `include/datoviz/scene/text.h`:146._
-
-### `dvz_text_atlas_spec()`
-
-Resolve a text atlas specification from a renderer and rendered text size.
-
-```c
-DvzTextAtlasSpec dvz_text_atlas_spec(
-    DvzTextRenderer renderer,
-    float size_px
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzTextAtlasSpec` | atlas generation spec |
-| `renderer` | `DvzTextRenderer` | requested text renderer |
-| `size_px` | `float` | rendered text size in logical pixels |
-
-_Declared in `include/datoviz/scene/text.h`:87._
-
 ### `dvz_text_destroy()`
 
 Destroy a retained text object.
@@ -7930,6 +7893,83 @@ DvzTextStyle dvz_text_style(void);
 | return | `DvzTextStyle` | default text style |
 
 _Declared in `include/datoviz/scene/text.h`:39._
+
+## Text Atlas
+
+### `dvz_text_atlas_field()`
+
+Return the sampled field containing the atlas texture.
+
+The field is owned by the atlas's font scene. It may be bound to glyph visuals but must not be
+destroyed or mutated by the caller.
+
+```c
+const DvzSampledField * dvz_text_atlas_field(
+    const DvzTextAtlas * atlas
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `const DvzSampledField *` | sampled atlas field, or NULL |
+| `atlas` | `const DvzTextAtlas *` | the text atlas |
+
+_Declared in `include/datoviz/scene/text.h`:158._
+
+### `dvz_text_atlas_glyph()`
+
+Return one atlas glyph, falling back to '?' for unsupported codepoints.
+
+```c
+const DvzTextAtlasGlyph * dvz_text_atlas_glyph(
+    const DvzTextAtlas * atlas,
+    uint32_t codepoint
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `const DvzTextAtlasGlyph *` | glyph metrics, or NULL when unavailable |
+| `atlas` | `const DvzTextAtlas *` | the text atlas |
+| `codepoint` | `uint32_t` | Unicode codepoint |
+
+_Declared in `include/datoviz/scene/text.h`:169._
+
+### `dvz_text_atlas_info()`
+
+Return immutable atlas metadata.
+
+```c
+DvzTextAtlasInfo dvz_text_atlas_info(
+    const DvzTextAtlas * atlas
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzTextAtlasInfo` | atlas metadata; zeroed when atlas is NULL |
+| `atlas` | `const DvzTextAtlas *` | the text atlas |
+
+_Declared in `include/datoviz/scene/text.h`:146._
+
+### `dvz_text_atlas_spec()`
+
+Resolve a text atlas specification from a renderer and rendered text size.
+
+```c
+DvzTextAtlasSpec dvz_text_atlas_spec(
+    DvzTextRenderer renderer,
+    float size_px
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzTextAtlasSpec` | atlas generation spec |
+| `renderer` | `DvzTextRenderer` | requested text renderer |
+| `size_px` | `float` | rendered text size in logical pixels |
+
+_Declared in `include/datoviz/scene/text.h`:87._
 
 ## Track
 
