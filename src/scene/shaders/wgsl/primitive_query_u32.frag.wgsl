@@ -1,7 +1,7 @@
 // datoviz-builtin-shader: scene.primitive query_u32 fragment v1
 
 struct FragmentIn {
-    @location(0) id: u32,
+    @location(0) @interpolate(flat) id: u32,
 }
 
 @fragment

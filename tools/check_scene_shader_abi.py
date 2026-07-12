@@ -94,6 +94,12 @@ def _failures() -> list[str]:
             if not (WGSL_DIR / f"{stem}.{stage}.wgsl").exists():
                 failures.append(f"missing supported WGSL shader: {stem}.{stage}.wgsl")
 
+    for stage in ["vert", "frag"]:
+        name = f"primitive_query_u32.{stage}.wgsl"
+        text = (WGSL_DIR / name).read_text(encoding="utf8")
+        if "@location(0) @interpolate(flat) id: u32" not in text:
+            failures.append(f"integer query id is not flat-interpolated: {name}")
+
     image_frag = (GLSL_DIR / "image.frag").read_text(encoding="utf8")
     if "uniform sampler2D tex" in image_frag:
         failures.append("image.frag still uses combined sampler2D binding")

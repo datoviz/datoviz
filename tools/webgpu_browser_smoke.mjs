@@ -886,6 +886,15 @@ async function main() {
     if (routeFilter !== null) {
       const filteredRoutes = new Map([
         ['features_picking', { label: 'Picking', kind: 'query', clickAfterResolve: true }],
+        [
+          'features_selection_mesh_instances',
+          {
+            label: 'Mesh Instance Selection',
+            kind: 'query',
+            pointerX: 0.55,
+            clickAfterResolve: true,
+          },
+        ],
         ['features_image_probe', { label: 'Image Probe', kind: 'query' }],
         ['features_coordinate_system', { label: 'Coordinate System' }],
         ['features_visual_transform', { label: 'Visual Transform' }],
@@ -913,7 +922,7 @@ async function main() {
         result = await smokeQueryWasmPage(
           page,
           baseUrl,
-          { path, label: route.label, scenarioId: routeFilter, clickAfterResolve: route.clickAfterResolve },
+          { path, scenarioId: routeFilter, ...route },
           screenshot,
         );
       } else if (route.kind === 'animated') {
