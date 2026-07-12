@@ -191,13 +191,13 @@ img[alt*=gpuopen] {
 
 .dvz-gallery-video-control {
     position: absolute;
-    right: 0.6rem;
-    bottom: 0.6rem;
+    right: 0.4rem;
+    bottom: 0.4rem;
     z-index: 4;
     display: grid;
     place-items: center;
-    width: 2rem;
-    height: 2rem;
+    width: 1.5rem;
+    height: 1.5rem;
     padding: 0;
     border: 1px solid rgba(255, 255, 255, 0.7);
     border-radius: 50%;
@@ -207,8 +207,8 @@ img[alt*=gpuopen] {
 }
 
 .dvz-gallery-video-control::before {
-    width: 0.65rem;
-    height: 0.75rem;
+    width: 0.42rem;
+    height: 0.5rem;
     background: linear-gradient(to right, currentColor 0 34%, transparent 34% 66%, currentColor 66%);
     content: "";
 }
@@ -216,10 +216,10 @@ img[alt*=gpuopen] {
 .dvz-gallery-video-control[data-state="paused"]::before {
     width: 0;
     height: 0;
-    margin-left: 0.12rem;
-    border-top: 0.42rem solid transparent;
-    border-bottom: 0.42rem solid transparent;
-    border-left: 0.7rem solid currentColor;
+    margin-left: 0.08rem;
+    border-top: 0.28rem solid transparent;
+    border-bottom: 0.28rem solid transparent;
+    border-left: 0.46rem solid currentColor;
     background: none;
 }
 
