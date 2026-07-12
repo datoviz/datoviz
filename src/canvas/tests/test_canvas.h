@@ -40,6 +40,8 @@ int test_canvas_swapchain_failfast_slot_init(TstContext* suite, const TstCase* i
 
 int test_canvas_glfw_present_recovery(TstContext* suite, const TstCase* item);
 
+int test_canvas_glfw_present_semaphore_reuse(TstContext* suite, const TstCase* item);
+
 int test_canvas_handle_refresh_order(TstContext* suite, const TstCase* item);
 
 int test_canvas_video_wait_value_propagation(TstContext* suite, const TstCase* item);

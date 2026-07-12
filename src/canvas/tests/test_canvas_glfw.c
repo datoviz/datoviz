@@ -539,10 +539,16 @@ int test_canvas_swapchain_failfast_slot_init(TstContext* suite, const TstCase* i
     };
     dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
 
-    dvz_canvas_swapchain_test_fail_slot(canvas, 0);
-    dvz_window_host_poll(fixture.host);
     int frame_rc = 0;
-    AT_EXPECTED_LOG_STRICT(suite, LOG_WARN, (frame_rc = dvz_canvas_frame(canvas)) < 0);
+    for (uint32_t attempt = 0; attempt < 2; attempt++)
+    {
+        dvz_canvas_swapchain_test_fail_slot(canvas, 0);
+        dvz_window_host_poll(fixture.host);
+        AT_EXPECTED_LOG_STRICT(suite, LOG_WARN, (frame_rc = dvz_canvas_frame(canvas)) < 0);
+        AT(
+            dvz_canvas_present_runtime_state(canvas) ==
+            DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE);
+    }
 
     dvz_canvas_swapchain_test_fail_slot(canvas, -1);
     bool resumed = false;
@@ -627,6 +633,84 @@ int test_canvas_glfw_present_recovery(TstContext* suite, const TstCase* item)
     AT(got_recovery_submit);
     AT(canvas->frame_id >= frame_id_before + 2);
     AT(canvas->timeline_value >= timeline_before + 2);
+
+    canvas_glfw_fixture_destroy(&fixture);
+    return 0;
+}
+
+
+
+/**
+ * Exercise present-wait semaphore reuse across sustained presentation and swapchain recreation.
+ *
+ * Vulkan validation layers report binary-semaphore reuse violations during this test. Repeated
+ * recreation also covers release and replacement of the per-image present-wait semaphore array.
+ *
+ * @param suite The owning test suite.
+ * @param item  The test item (unused).
+ * @return int  Zero on success.
+ */
+int test_canvas_glfw_present_semaphore_reuse(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    CanvasGlfwFixture fixture = {0};
+    bool skipped = false;
+    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    if (skipped)
+    {
+        canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "GLFW fixture unavailable");
+        return 0;
+    }
+
+    DvzCanvas* canvas = fixture.canvas;
+    ANN(canvas);
+
+    CanvasGlfwClearContext clear_ctx = {
+        .device = fixture.device,
+        .format = DVZ_DEFAULT_COLOR_FORMAT,
+    };
+    dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
+
+    const uint32_t target_submits = 96;
+    const uint32_t recreate_interval = 16;
+    uint32_t submit_count = 0;
+    uint32_t recreate_count = 0;
+    uint64_t frame_id_before = canvas->frame_id;
+    uint64_t timeline_before = canvas->timeline_value;
+    uint32_t validation_errors_before = dvz_instance_error_count(fixture.instance);
+
+    for (uint32_t attempt = 0; attempt < 256 && submit_count < target_submits; attempt++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            continue;
+        }
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+        submit_count++;
+
+        if (submit_count % recreate_interval == 0 && submit_count < target_submits)
+        {
+            dvz_canvas_swapchain_mark_out_of_date(canvas);
+            recreate_count++;
+        }
+    }
+
+    AT(submit_count == target_submits);
+    AT(recreate_count == target_submits / recreate_interval - 1);
+    AT(canvas->frame_id >= frame_id_before + target_submits);
+    AT(canvas->timeline_value >= timeline_before + target_submits);
+    AT(dvz_canvas_present_runtime_state(canvas) == DVZ_CANVAS_PRESENT_STATE_READY);
+
+    dvz_canvas_set_draw_callback(canvas, NULL, NULL);
+    dvz_canvas_destroy(canvas);
+    fixture.canvas = NULL;
+    AT(dvz_instance_error_count(fixture.instance) == validation_errors_before);
 
     canvas_glfw_fixture_destroy(&fixture);
     return 0;
