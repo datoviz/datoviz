@@ -2164,6 +2164,7 @@ examples:
           preferred: video-mp4
           sample_step: 1
           fps: 24
+          mp4_crf: 28
     data:
       kind: synthetic
     portability: portable-scenario
@@ -3196,10 +3197,12 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 72
-        fps: 24
+        frames: 180
+        fps: 60
         card:
           preferred: video-mp4
+          sample_step: 1
+          fps: 60
           mp4_crf: 24
     data:
       kind: prepared
