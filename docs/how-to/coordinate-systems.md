@@ -73,16 +73,17 @@ then use a camera and a 3D controller:
 
 ```c
 DvzCameraDesc camera = dvz_camera_desc();
-camera.eye[2] = 3.0f;
+camera.view.eye[2] = 3.0f;
 dvz_panel_set_camera_desc(panel, &camera);
 
 DvzController* controller = dvz_arcball(scene, NULL);
 dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ);
 ```
 
-Use arcball, orbit, turntable, or fly controllers for 3D panels. Use panzoom for 2D panels. Mixing a
-2D controller with 3D camera navigation usually means the panel and visual coordinate model is not
-defined clearly enough.
+Use arcball, turntable, or fly controllers for 3D panels. Turntable provides world-up-constrained
+orbiting; there is no separate orbit controller. Use panzoom for 2D panels. Mixing a 2D controller
+with 3D camera navigation usually means the panel and visual coordinate model is not defined clearly
+enough.
 
 ## Choosing Domains
 
@@ -128,7 +129,7 @@ path as rendering.
   `DVZ_VISUAL_COORD_DATA` space.
 - Setting only one axis domain and expecting aspect-preserving 2D navigation.
 - Using a visual transform to compensate for a wrong data domain.
-- Mixing 2D panzoom with 3D orbit/arcball camera control.
+- Mixing 2D panzoom with 3D turntable or arcball camera control.
 - Pre-projecting geographic or nonlinear data without recording the projected units.
 
 ## See Also

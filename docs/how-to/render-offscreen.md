@@ -58,7 +58,8 @@ The example writes `offscreen_capture.png` next to the executable and reports th
 ## Multi-Frame Rendering
 
 For animated or incremental output, update retained scene data before each render. Save screenshots
-or video only after each successful frame.
+or video only after each successful frame. This function-body excerpt assumes that the translation
+unit includes `<stdio.h>` for standard `snprintf()`.
 
 ```c
 for (uint32_t frame = 0; frame < frame_count; frame++)
@@ -69,8 +70,11 @@ for (uint32_t frame = 0; frame < frame_count; frame++)
         break;
 
     char path[256] = {0};
-    dvz_snprintf(path, sizeof(path), "frames/frame_%04u.png", frame);
-    dvz_view_capture_png(view, path);
+    int written = snprintf(path, sizeof(path), "frames/frame_%04u.png", frame);
+    if (written < 0 || (size_t)written >= sizeof(path))
+        break;
+    if (dvz_view_capture_png(view, path) != 0)
+        break;
 }
 ```
 

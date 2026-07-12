@@ -2,8 +2,9 @@
 
 Integrate Datoviz with a Qt application that owns the window and event loop.
 
-Qt hosting is an advanced native-integration path. The base Datoviz library does not depend on Qt;
-Qt support is built or supplied only when the host application needs it.
+Qt hosting is a supported optional-provider path in v0.4. It is an advanced native integration to
+configure, but it does not make Qt a dependency of the base Datoviz library. Build or supply the Qt
+provider only when the host application needs it.
 
 ## Task Workflow
 
@@ -23,10 +24,11 @@ Use the GLFW external-surface example as the closest maintained native embedding
 
 ## Native Qt Examples
 
-The native Qt examples are built only when Qt development packages are available:
+The native Qt examples are built only when Qt development packages are available. Enable the
+optional bridge explicitly when validating the provider:
 
 ```sh
-just build
+DVZ_CMAKE_ARGS="-DDVZ_ENABLE_QT_BRIDGE=ON" just build
 ./build/examples/qt/hosted_qt_smoke 120
 ./build/examples/qt/qt_hosting --smoke-ms 1000
 ```
@@ -81,13 +83,28 @@ expected.
 
 ## PyQt Hosting
 
-The Python hosted path uses an optional `datoviz_qtbridge` provider. The base Python wheel does not
-include or load Qt by itself; build the bridge with `DVZ_ENABLE_QT_BRIDGE=ON` or supply a compatible
-bridge library separately. Keep failure diagnostics explicit: missing bridge library, unsupported
-PyQt/PySide binding, missing `QVulkanInstance` features, and Qt runtime mismatches should fail
-before rendering starts.
+The Python hosted path uses the optional `datoviz_qtbridge` provider. The base Python wheel does not
+load or link Qt by itself. Build the bridge with `DVZ_ENABLE_QT_BRIDGE=ON` or supply a compatible
+bridge library separately. The loader checks the package directory, its `.libs` directory, common
+source-checkout build directories, and the platform library search path. Set
+`DATOVIZ_QTBRIDGE_LIBRARY` only when discovery needs an explicit bridge path.
 
-The current example is:
+For an installed package or a bridge discoverable through the platform library path, run:
+
+```sh
+python -m datoviz.qt
+```
+
+For an isolated provider smoke with PyQt6, use:
+
+```sh
+uv run --isolated --with PyQt6 python -m datoviz.qt
+```
+
+Keep failure diagnostics explicit: a missing bridge library, unsupported PyQt/PySide binding,
+missing `QVulkanInstance` features, or Qt runtime mismatch should fail before rendering starts.
+
+For a source-checkout bridge that is not otherwise discoverable, pass its exact path:
 
 ```sh
 DATOVIZ_QTBRIDGE_LIBRARY=build/qtbridge/libdatoviz_qtbridge.so \

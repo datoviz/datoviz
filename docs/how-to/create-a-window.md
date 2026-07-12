@@ -59,9 +59,11 @@ GUI overlays should also be registered before `dvz_app_run()`.
 
 ## Backend Status
 
-`dvz_view_window()` is native-only. It opens a desktop window through the configured native backend
-and is not part of the WebGPU/WASM browser path. The generated gallery marks the canonical native
-app example as `native-only` with the `native-view` requirement.
+`dvz_view_window()` is a supported native presentation path. It opens a desktop window through the
+configured native backend and is not part of the WebGPU/WASM browser path. In the generated WebGPU
+example matrix, the canonical app example is therefore classified as `native-only` with the
+`native-view` requirement; that matrix label describes browser portability, not the native API's
+release status.
 
 `dvz_view_window()` can return `NULL` when GLFW is unavailable, no display is available, window
 creation fails, or the GPU/runtime cannot be initialized. In automated environments, prefer

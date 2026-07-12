@@ -6,6 +6,14 @@ calling Datoviz functions at the prompt.
 This workflow is for the terminal `ipython` program. It is not the Jupyter notebook or browser
 WebGPU path.
 
+!!! warning "Active macOS close issue"
+
+    On the current v0.4 development branch, closing a hosted Datoviz window from terminal IPython
+    can leave the native window unresponsive on macOS. Live updates work, but close and reopen are
+    not yet release-proven on that path. Save any prompt-side state before closing the window and
+    do not rely on repeated close/reopen until this known issue is resolved. Regular blocking
+    Python scripts and the native C app loop use a different run-loop path.
+
 ## Start IPython
 
 From an editable checkout, make sure Python loads this checkout and its freshly built library:
@@ -57,7 +65,7 @@ session
 
 In a regular Python script, `dvz.run(scene, figure)` blocks until the window closes. In terminal
 IPython, it returns a `RunSession` and the prompt stays usable while the native window remains
-responsive.
+responsive. The macOS close limitation above applies when ending this hosted session.
 
 ## Update Data At The Prompt
 
@@ -94,6 +102,10 @@ For repeated prompt-side updates, keep using this pattern:
 3. call `session.request_frame()`.
 
 ## Close And Reopen
+
+The intended lifecycle is shown below, but close and reopen are not yet release-proven in terminal
+IPython on macOS. On that platform, treat this section as the target contract rather than a reliable
+workflow until the active close issue is resolved.
 
 Close the native window normally, or close it from Python:
 

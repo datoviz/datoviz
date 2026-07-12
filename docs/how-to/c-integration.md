@@ -77,13 +77,18 @@ project(my_datoviz_app C)
 include(FetchContent)
 FetchContent_Declare(datoviz
     GIT_REPOSITORY https://github.com/datoviz/datoviz.git
-    GIT_TAG v0.4-dev  # replace with an exact release tag or commit when available
+    GIT_TAG v0.4-dev  # development branch only; pin a release tag or commit for applications
 )
 FetchContent_MakeAvailable(datoviz)
 
 add_executable(my_datoviz_app main.c)
 target_link_libraries(my_datoviz_app PRIVATE datoviz::datoviz)
 ```
+
+`v0.4-dev` is a moving development branch, not a reproducible application dependency. During RC
+testing, replace it with the exact RC tag or tested commit. The final RC documentation pass must
+replace this development example with the published RC tag once that tag exists; do not guess a tag
+before publication.
 
 During local Datoviz development, prefer pointing `FetchContent` at a checkout instead of fetching
 from Git:
@@ -145,6 +150,8 @@ presets.
 - Linking to a build-tree library while including headers from a different install.
 - Forgetting to make the Datoviz shared library discoverable at runtime.
 - Using `datoviz-config` with MSVC instead of the CMake package.
+- Shipping an application whose `FetchContent` dependency still follows the moving `v0.4-dev`
+  branch instead of an exact release tag or tested commit.
 - Copying generated gallery source from the built docs instead of using `examples/c/...`.
 - Destroying `DvzScene` before `dvz_app_destroy()` in an application that created an app.
 

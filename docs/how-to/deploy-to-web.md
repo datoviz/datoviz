@@ -56,7 +56,14 @@ animation, or data transforms in JavaScript just to make the page work.
 
 ## Build and Serve
 
-## Route Shape
+Inside the Datoviz checkout, build the WASM scene assets and start a local server:
+
+```sh
+just wasm-scene-build
+just serve
+```
+
+### Route Shape
 
 ```text
 examples/webgpu/live.html?id=<scene-id>
@@ -66,15 +73,7 @@ The `id` selects one registered WASM scene route. If the `id` is unknown, the pa
 error instead of silently choosing another scene.
 
 
-Inside the Datoviz checkout, build the WASM scene assets, start a local server, then open the route
-from that server:
-
-```sh
-just wasm-scene-build
-just serve
-```
-
-Then open the route from the served site, not from `file://`:
+Open the route from the served site, not from `file://`:
 
 ```text
 http://localhost:8000/examples/webgpu/live.html?id=features_basic_scene

@@ -14,7 +14,7 @@ Choose the import surface first:
 | --- | --- |
 | Normal binding calls with NumPy array adaptation. | `import datoviz as dvz` |
 | The same binding with explicit pointers, counts, bytes, or callbacks. | `import datoviz.raw as raw` |
-| High-level object-oriented plotting. | Use the external GSP/VisPy2 layer when available. |
+| High-level object-oriented plotting. | Outside Datoviz v0.4; this belongs to the external GSP/VisPy2 layer. |
 
 ## Minimal Call Sequence
 
@@ -71,6 +71,10 @@ data-upload code.
 
 The top-level package adapts arrays; it is not a plotting wrapper. It does not rename APIs into
 Pythonic objects, infer visual families, or replace the retained scene model.
+
+Datoviz v0.4 deliberately does not restore the old high-level Python plotting API. GSP/VisPy2 owns
+that Pythonic plotting and scientific-UX layer; availability and installation of that external
+layer are separate from the Datoviz engine package.
 
 Use NumPy arrays with explicit dtype, shape, and layout. For dense visual attributes, the first
 dimension is the item count. Common examples include `float32` positions shaped `(n, 3)`, `uint8`

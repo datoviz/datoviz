@@ -19,29 +19,29 @@ A camera descriptor defines the initial view and projection:
 
 | Field | Meaning |
 | --- | --- |
-| `eye` | Camera position in scene coordinates. |
-| `target` | Point the camera looks at. |
-| `up` | Direction treated as vertical for the view. Use a consistent world-up convention across the scene. |
-| `type` | Perspective or orthographic projection. |
-| `fov_y` | Vertical field of view for perspective cameras, in radians. |
-| `ortho_height` | Visible height for orthographic cameras. |
-| `near`, `far` | Clipping planes. Choose values that enclose the data without making the depth range needlessly large. |
+| `view.eye` | Camera position in scene coordinates. |
+| `view.target` | Point the camera looks at. |
+| `view.up` | Direction treated as vertical for the view. Use a consistent world-up convention across the scene. |
+| `projection.type` | Perspective or orthographic projection. |
+| `projection.fov_y` | Vertical field of view for perspective cameras, in radians. |
+| `projection.ortho_height` | Visible height for orthographic cameras. |
+| `projection.near_clip`, `projection.far_clip` | Clipping planes. Choose values that enclose the data without making the depth range needlessly large. |
 
 ## Minimal Call Sequence
 
 ```c
 DvzCameraDesc camera = dvz_camera_desc();
-camera.eye[0] = 0.0f;
-camera.eye[1] = 1.5f;
-camera.eye[2] = 4.0f;
-camera.target[0] = 0.0f;
-camera.target[1] = 0.0f;
-camera.target[2] = 0.0f;
-camera.up[0] = 0.0f;
-camera.up[1] = 1.0f;
-camera.up[2] = 0.0f;
-camera.near = 0.01f;
-camera.far = 100.0f;
+camera.view.eye[0] = 0.0f;
+camera.view.eye[1] = 1.5f;
+camera.view.eye[2] = 4.0f;
+camera.view.target[0] = 0.0f;
+camera.view.target[1] = 0.0f;
+camera.view.target[2] = 0.0f;
+camera.view.up[0] = 0.0f;
+camera.view.up[1] = 1.0f;
+camera.view.up[2] = 0.0f;
+camera.projection.near_clip = 0.01f;
+camera.projection.far_clip = 100.0f;
 
 dvz_panel_set_camera_desc(panel, &camera);
 ```
@@ -69,7 +69,8 @@ scale comparisons.
 
 - Using visual transforms as camera transforms.
 - Combining 2D domain navigation and 3D camera navigation on the same panel.
-- Choosing `near` and `far` values that clip the data or waste depth precision.
+- Choosing `projection.near_clip` and `projection.far_clip` values that clip the data or waste
+  depth precision.
 - Forgetting to center or scale imported geometry before attaching a 3D controller.
 - Letting the controller imply an axis convention that disagrees with labels, lighting, or the
   orientation gizmo.
