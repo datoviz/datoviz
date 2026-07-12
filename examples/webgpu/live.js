@@ -2,7 +2,6 @@ import { WasmSceneSession } from "../../web/wasm/session.js";
 import { liveExampleById } from "./live_examples.js";
 
 const canvas = document.querySelector("#viewport");
-const titleEl = document.querySelector("#title");
 const statusEl = document.querySelector("#status");
 const statsEl = document.querySelector("#stats");
 let session = null;
@@ -52,7 +51,7 @@ async function loadLiveExample(id) {
     scenarioId: example.scenarioId,
     animate: example.animate === true,
   };
-  titleEl.textContent = example.label;
+  document.title = `${example.label} - Datoviz WebGPU`;
   destroySession();
   setStats("");
   session = new WasmSceneSession({

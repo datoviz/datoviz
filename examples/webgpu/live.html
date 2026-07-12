@@ -29,11 +29,10 @@
         height: 100vh;
         overflow: hidden;
         display: grid;
-        grid-template-rows: auto minmax(0, 1fr) auto;
+        grid-template-rows: minmax(0, 1fr) auto;
         background: #101318;
       }
 
-      header,
       footer {
         display: flex;
         align-items: center;
@@ -47,19 +46,8 @@
         min-width: 0;
       }
 
-      header {
-        border-bottom: 1px solid #2e3540;
-      }
-
       footer {
         border-top: 1px solid #2e3540;
-      }
-
-      h1 {
-        margin: 0;
-        color: #f4f7fa;
-        font-size: 15px;
-        font-weight: 650;
       }
 
       #status {
@@ -97,9 +85,6 @@
     </style>
   </head>
   <body>
-    <header>
-      <h1 id="title">Datoviz WebGPU Live Example</h1>
-    </header>
     <main id="stage">
       <canvas id="viewport"></canvas>
     </main>
