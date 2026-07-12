@@ -1,10 +1,10 @@
 # GSP Texture2D Field-Sampling Integration Plan
 
-Status: proposal for near-term v0.4-dev work. Updated: 2026-07-05.
+Status: post-RC1 proposal; RC2 candidate, not a release blocker. Updated: 2026-07-12.
 
 Purpose: record the Datoviz-side changes needed for GSP to advertise strict unlit RGBA8
-Texture2D mesh rendering, and use that pressure to promote a general field-slot sampling API before
-v0.4 RC.
+Texture2D mesh rendering, and use that pressure to promote a general field-slot sampling API after
+RC1. Reassess for RC2 after RC1 feedback; defer again if it would put RC2 stabilization at risk.
 
 
 ## Boundary
@@ -109,12 +109,14 @@ Rules:
 6. The first implementation may support only clamp-to-edge and no mipmaps in native/WebGPU runtime
    emission, but the public descriptor should make those defaults explicit and mechanically
    inspectable.
-7. `dvz_image_set_sampling()` should be removed before RC or reimplemented as a private migration
-   helper. Public examples should use `dvz_visual_set_field_sampling(image, "field", &desc)`.
+7. Do not remove `dvz_image_set_sampling()` after RC1 without an explicit compatibility decision.
+   The general setter may initially coexist with it; migrate public examples only when release
+   policy permits the change.
 
 This shape matches v0.4 public API conventions: a flat public `Desc`, a by-value descriptor
 initializer, an object-level retained-state mutator, `DvzResult` return, and no backend handles in
-user code. It is an intentional pre-RC break that avoids a family-specific setter pileup.
+user code. Because RC1 freezes the initial public surface, implementation after RC1 must assess API
+compatibility and release risk before replacing the image-specific setter.
 
 
 ## Why Slot-Level, Not Field-Level
@@ -194,8 +196,9 @@ follows:
 7. Call `dvz_visual_set_field_sampling(mesh, "texture", &sampling)`.
 
 `DVZ_COLOR_ROLE_DATA` is not the right role for a direct RGBA color sampled field because Datoviz
-color fields require `srgb_color` or `linear_color`. `linear_color` is the generic Datoviz role
-that lets the GSP adapter avoid sRGB decode for unmanaged RGBA8 bytes.
+color fields require `srgb_color` or `linear_color`. `linear_color` is the candidate Datoviz role
+for avoiding sRGB decode, but its name is not sufficient conformance evidence: runtime fixtures
+must prove that the GSP resource bytes undergo no implicit conversion before capability promotion.
 
 
 ## Validation
@@ -245,7 +248,7 @@ nearest filtering, clamp behavior, orientation, linear color role, and unlit mul
 | --- | --- |
 | Exact screenshot bytes may still differ because final display/capture is sRGB RGBA8 | Use the color-management conformance tolerance policy; keep GSP's unmanaged contract at the adapter/resource level. |
 | Mesh textured descriptor currently requires normals | Keep the requirement for now; GSP can synthesize normals for unlit meshes. Revisit only if this becomes an ergonomic blocker for ordinary Datoviz users. |
-| This breaks `dvz_image_set_sampling()` public examples and bindings | Accept the pre-RC break; migrate examples/docs/bindings in the same implementation branch. |
+| A general setter overlaps `dvz_image_set_sampling()` after RC1 | Make an explicit compatibility decision; coexist initially if replacement would destabilize RC2. |
 | A descriptor with address and mipmap fields is broader than current runtime emission | Keep validation honest: unsupported descriptor values fail until DRP2/native/WebGPU support exists. |
 | Existing textured examples may expect smooth sampling | Preserve linear as the default; GSP must opt into nearest. |
 

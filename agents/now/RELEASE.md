@@ -253,6 +253,14 @@ Exit criteria:
 5. Gallery/data attribution and outreach candidates satisfy
    [../../spec/release/GALLERY_OUTREACH.md](../../spec/release/GALLERY_OUTREACH.md).
 
+Candidate feature work, not an RC2 blocker:
+
+1. Reassess the post-RC1
+   [GSP Texture2D mesh integration plan](../../spec/scene/integration/GSP_TEXTURE2D_MESH_PLAN.md).
+   Implement it only if RC1 feedback and stabilization leave room for the public field-slot
+   sampling API, deterministic nearest/clamp/no-mipmap fixtures, conversion-free linear RGBA,
+   unlit multiplication, and native/WebGPU validation. Otherwise defer it without blocking RC2.
+
 ### 9. RC3
 
 Exit criteria:
