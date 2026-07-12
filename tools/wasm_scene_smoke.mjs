@@ -2444,6 +2444,7 @@ try {
     "features_orientation_gizmo",
     "features_probe_labels",
     "start_scatter",
+    "features_datetime_axis",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -3500,6 +3501,15 @@ try {
           draws.some((draw) => draw.instance_count === 10000),
           `${label}: expected 10000 point instances`,
         );
+      },
+    ],
+    [
+      "features_datetime_axis",
+      "datetime axis",
+      (stream, label) => {
+        expectPipeline(stream, `${label} signal`, (pipeline) => pipeline.builtin_pipeline === "scene.path");
+        expectPipeline(stream, `${label} text`, (pipeline) => pipeline.builtin_pipeline === "scene.glyph");
+        requireOk(commandsOf(stream, "Draw").length >= 3, `${label}: expected signal, axes, and text draws`);
       },
     ],
     [

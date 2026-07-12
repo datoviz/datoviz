@@ -5,6 +5,12 @@ export const LIVE_EXAMPLES = [
     scenarioId: "start_scatter",
   },
   {
+    id: "features_datetime_axis",
+    label: "Datetime Axis",
+    scenarioId: "features_datetime_axis",
+    animate: true,
+  },
+  {
     id: "composites_graph",
     label: "Graph Composite",
     scenarioId: "composites_graph",

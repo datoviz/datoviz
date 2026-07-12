@@ -2175,11 +2175,14 @@ examples:
       kind: synthetic
     portability: portable-scenario
     webgpu:
-      status: webgpu-deferred
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=features_datetime_axis
       requirements:
         - axes
         - text
         - datetime
+        - controller
+        - panzoom
       reason: datetime formatting is outside the RC browser subset
     agent_copy_safe: true
     gallery:

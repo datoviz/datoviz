@@ -13,18 +13,23 @@ This example shows UTC datetime labels on a numeric data axis.
 
 ## Preview
 
-<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_datetime_axis.poster.webp" alt="Datetime Axis" loading="lazy">
-  <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../../../../assets/gallery/v0.4/features/features_datetime_axis.poster.webp" aria-label="Datetime Axis preview">
-    <source data-src="../../../../assets/gallery/v0.4/features/features_datetime_axis.mp4" type="video/mp4">
-  </video>
-</div>
+=== "Screenshot"
 
-<aside class="dvz-webgpu-unavailable" role="note">
-<strong>No live WebGPU preview</strong>
-<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
-</aside>
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_datetime_axis.poster.webp" alt="Datetime Axis" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/features/features_datetime_axis.poster.webp" aria-label="Datetime Axis preview">
+        <source data-src="../../../../assets/gallery/v0.4/features/features_datetime_axis.mp4" type="video/mp4">
+      </video>
+    </div>
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=features_datetime_axis" title="Datetime Axis WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=features_datetime_axis">Open the live WebGPU example</a>.
 
 ## What To Look For
 
@@ -51,9 +56,10 @@ The path visual uploads position, color, and linewidth arrays in compact numeric
     - Lane: `features`
     - Source: [`examples/c/features/datetime_axis.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/datetime_axis.c)
     - Python source: [`examples/python/gallery/features/datetime_axis.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/datetime_axis.py)
-    - Browser support: Deferred
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=features_datetime_axis"><code>examples/webgpu/live.html?id=features_datetime_axis</code></a>
     - Browser note: datetime formatting is outside the RC browser subset
-    - Browser capability tags: `axes`, `text`, `datetime`
+    - Browser capability tags: `axes`, `text`, `datetime`, `controller`, `panzoom`
     - Validation: `smoke+screenshot`
 
     **Tags**

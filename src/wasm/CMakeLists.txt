@@ -40,6 +40,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/controller_arcball.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/controller_fly.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/controller_turntable.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/datetime_axis.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/guide_lines.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/guide_spans.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/image_probe.c

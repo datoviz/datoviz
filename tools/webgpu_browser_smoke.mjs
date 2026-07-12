@@ -901,6 +901,7 @@ async function main() {
         ['features_orientation_gizmo', { label: 'Orientation Gizmo', kind: 'animated' }],
         ['features_probe_labels', { label: 'Label Probe', kind: 'query' }],
         ['start_scatter', { label: 'Scatter Plot' }],
+        ['features_datetime_axis', { label: 'Datetime Axis', kind: 'animated' }],
       ]);
       const route = filteredRoutes.get(routeFilter);
       requireOk(route !== undefined, `unknown filtered WebGPU route: ${routeFilter}`);

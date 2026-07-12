@@ -48,6 +48,8 @@
 
 static const float TAU = 6.28318530718f;
 
+DvzScenarioSpec dvz_example_datetime_axis_scenario(void);
+
 
 
 /*************************************************************************************************/
@@ -309,7 +311,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _datetime_axis_scenario(void)
+DvzScenarioSpec dvz_example_datetime_axis_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "features_datetime_axis",
@@ -317,6 +319,8 @@ static DvzScenarioSpec _datetime_axis_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_TEXT_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER |
+                        DVZ_SCENARIO_REQ_PANZOOM | DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
         .frame = _scenario_frame,
         .destroy = _scenario_destroy,
@@ -336,8 +340,10 @@ static DvzScenarioSpec _datetime_axis_scenario(void)
  * @param argv command-line argument vector
  * @return process exit code
  */
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _datetime_axis_scenario();
+    DvzScenarioSpec spec = dvz_example_datetime_axis_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

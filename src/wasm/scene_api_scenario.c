@@ -41,6 +41,7 @@ DvzScenarioSpec dvz_composite_polygon_scenario(void);
 DvzScenarioSpec dvz_composite_graph_scenario(void);
 DvzScenarioSpec dvz_example_controller_fly_scenario(void);
 DvzScenarioSpec dvz_example_controller_turntable_scenario(void);
+DvzScenarioSpec dvz_example_datetime_axis_scenario(void);
 DvzScenarioSpec dvz_example_guide_lines_scenario(void);
 DvzScenarioSpec dvz_example_guide_spans_scenario(void);
 DvzScenarioSpec dvz_example_timer_animation_scenario(void);
@@ -270,6 +271,8 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_example_probe_labels_scenario();
     case 80:
         return dvz_start_scatter_scenario();
+    case 81:
+        return dvz_example_datetime_axis_scenario();
     default:
         return (DvzScenarioSpec){0};
     }
