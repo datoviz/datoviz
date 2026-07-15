@@ -102,7 +102,7 @@ Types: 12
 
 ### Functions
 
-#### `dvz_capability_snapshot()` { #dvz_capability_snapshot }
+#### `dvz_capability_snapshot()` { #dvz_capability_snapshot .dvz-api-function }
 
 Return the default capability snapshot.
 
@@ -116,7 +116,7 @@ DvzCapabilitySnapshot dvz_capability_snapshot(void);
 
 _Declared in `include/datoviz/scene/frame_plan.h`:104._
 
-#### `dvz_capability_snapshot_copy()` { #dvz_capability_snapshot_copy }
+#### `dvz_capability_snapshot_copy()` { #dvz_capability_snapshot_copy .dvz-api-function }
 
 Copy a capability snapshot.
 
@@ -176,7 +176,7 @@ _Declared in `include/datoviz/scene/frame_plan.h`:115._
 
 ### Functions
 
-#### `dvz_diagnostic_report_add()` { #dvz_diagnostic_report_add }
+#### `dvz_diagnostic_report_add()` { #dvz_diagnostic_report_add .dvz-api-function }
 
 Add a diagnostic message.
 
@@ -195,7 +195,7 @@ _Bool dvz_diagnostic_report_add(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:135._
 
-#### `dvz_diagnostic_report_count()` { #dvz_diagnostic_report_count }
+#### `dvz_diagnostic_report_count()` { #dvz_diagnostic_report_count .dvz-api-function }
 
 Return a diagnostic count.
 
@@ -212,7 +212,7 @@ uint32_t dvz_diagnostic_report_count(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:145._
 
-#### `dvz_diagnostic_report_get()` { #dvz_diagnostic_report_get }
+#### `dvz_diagnostic_report_get()` { #dvz_diagnostic_report_get .dvz-api-function }
 
 Return a diagnostic message.
 
@@ -231,7 +231,7 @@ const char * dvz_diagnostic_report_get(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:157._
 
-#### `dvz_diagnostic_report_init()` { #dvz_diagnostic_report_init }
+#### `dvz_diagnostic_report_init()` { #dvz_diagnostic_report_init .dvz-api-function }
 
 Initialize a diagnostic report.
 
@@ -266,7 +266,7 @@ _Declared in `include/datoviz/scene/frame_plan.h`:124._
 
 ### Functions
 
-#### `dvz_frame_plan_emit_config()` { #dvz_frame_plan_emit_config }
+#### `dvz_frame_plan_emit_config()` { #dvz_frame_plan_emit_config .dvz-api-function }
 
 Return the default FramePlan-to-DRP2 emission configuration.
 
@@ -280,7 +280,7 @@ DvzFramePlanEmitConfig dvz_frame_plan_emit_config(void);
 
 _Declared in `include/datoviz/scene/frame_plan.h`:415._
 
-#### `dvz_frame_plan_emit_drp2()` { #dvz_frame_plan_emit_drp2 }
+#### `dvz_frame_plan_emit_drp2()` { #dvz_frame_plan_emit_drp2 .dvz-api-function }
 
 Emit a DRP2 command stream from a FramePlan in fixture mode.
 
@@ -301,7 +301,7 @@ DvzDrp2CommandStream * dvz_frame_plan_emit_drp2(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:406._
 
-#### `dvz_frame_plan_emit_drp2_ex()` { #dvz_frame_plan_emit_drp2_ex }
+#### `dvz_frame_plan_emit_drp2_ex()` { #dvz_frame_plan_emit_drp2_ex .dvz-api-function }
 
 Emit a DRP2 command stream from a FramePlan with explicit fixture options.
 
@@ -324,7 +324,7 @@ DvzDrp2CommandStream * dvz_frame_plan_emit_drp2_ex(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:427._
 
-#### `dvz_frame_plan_emitter_destroy()` { #dvz_frame_plan_emitter_destroy }
+#### `dvz_frame_plan_emitter_destroy()` { #dvz_frame_plan_emitter_destroy .dvz-api-function }
 
 Destroy a persistent FramePlan-to-DRP2 emitter.
 
@@ -340,7 +340,7 @@ void dvz_frame_plan_emitter_destroy(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:445._
 
-#### `dvz_frame_plan_emitter_emit_drp2()` { #dvz_frame_plan_emitter_emit_drp2 }
+#### `dvz_frame_plan_emitter_emit_drp2()` { #dvz_frame_plan_emitter_emit_drp2 .dvz-api-function }
 
 Emit a runtime-mode DRP2 command stream from a FramePlan.
 
@@ -365,7 +365,7 @@ DvzDrp2CommandStream * dvz_frame_plan_emitter_emit_drp2(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:458._
 
-#### `dvz_frame_plan_emitter_emit_drp2_packets()` { #dvz_frame_plan_emitter_emit_drp2_packets }
+#### `dvz_frame_plan_emitter_emit_drp2_packets()` { #dvz_frame_plan_emitter_emit_drp2_packets .dvz-api-function }
 
 Emit split setup/update/frame DRP2 binary packets from a FramePlan.
 
@@ -393,7 +393,7 @@ DvzFramePlanPacketResult * dvz_frame_plan_emitter_emit_drp2_packets(
 
 _Declared in `include/datoviz/scene/frame_packets.h`:70._
 
-#### `dvz_frame_plan_emitter_object_id()` { #dvz_frame_plan_emitter_object_id }
+#### `dvz_frame_plan_emitter_object_id()` { #dvz_frame_plan_emitter_object_id .dvz-api-function }
 
 Look up the DRP2 object id assigned to an emitter-internal key.
 
@@ -459,7 +459,7 @@ _Declared in `include/datoviz/scene/frame_plan.h`:475._
 
 ### Functions
 
-#### `dvz_frame_plan()` { #dvz_frame_plan }
+#### `dvz_frame_plan()` { #dvz_frame_plan .dvz-api-function }
 
 Create an empty FramePlan.
 
@@ -478,7 +478,7 @@ DvzFramePlan * dvz_frame_plan(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:168._
 
-#### `dvz_frame_plan_clear()` { #dvz_frame_plan_clear }
+#### `dvz_frame_plan_clear()` { #dvz_frame_plan_clear .dvz-api-function }
 
 Append a clear-only render node.
 
@@ -499,7 +499,7 @@ _Bool dvz_frame_plan_clear(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:334._
 
-#### `dvz_frame_plan_compute()` { #dvz_frame_plan_compute }
+#### `dvz_frame_plan_compute()` { #dvz_frame_plan_compute .dvz-api-function }
 
 Append a compute node.
 
@@ -524,7 +524,7 @@ _Bool dvz_frame_plan_compute(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:284._
 
-#### `dvz_frame_plan_compute_read()` { #dvz_frame_plan_compute_read }
+#### `dvz_frame_plan_compute_read()` { #dvz_frame_plan_compute_read .dvz-api-function }
 
 Add a resource read to the most recent compute node.
 
@@ -543,7 +543,7 @@ _Bool dvz_frame_plan_compute_read(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:296._
 
-#### `dvz_frame_plan_compute_write()` { #dvz_frame_plan_compute_write }
+#### `dvz_frame_plan_compute_write()` { #dvz_frame_plan_compute_write .dvz-api-function }
 
 Add a resource write to the most recent compute node.
 
@@ -562,7 +562,7 @@ _Bool dvz_frame_plan_compute_write(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:307._
 
-#### `dvz_frame_plan_copy()` { #dvz_frame_plan_copy }
+#### `dvz_frame_plan_copy()` { #dvz_frame_plan_copy .dvz-api-function }
 
 Append a copy node.
 
@@ -585,7 +585,7 @@ _Bool dvz_frame_plan_copy(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:358._
 
-#### `dvz_frame_plan_copy_desc()` { #dvz_frame_plan_copy_desc }
+#### `dvz_frame_plan_copy_desc()` { #dvz_frame_plan_copy_desc .dvz-api-function }
 
 Return the default FramePlan copy descriptor.
 
@@ -601,7 +601,7 @@ Related: [`dvz_frame_plan_copy()`](#dvz_frame_plan_copy).
 
 _Declared in `include/datoviz/scene/frame_plan.h`:90._
 
-#### `dvz_frame_plan_copy_ex()` { #dvz_frame_plan_copy_ex }
+#### `dvz_frame_plan_copy_ex()` { #dvz_frame_plan_copy_ex .dvz-api-function }
 
 Append an explicit texture-to-buffer copy node.
 
@@ -620,7 +620,7 @@ _Bool dvz_frame_plan_copy_ex(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:370._
 
-#### `dvz_frame_plan_destroy()` { #dvz_frame_plan_destroy }
+#### `dvz_frame_plan_destroy()` { #dvz_frame_plan_destroy .dvz-api-function }
 
 Destroy a FramePlan.
 
@@ -636,7 +636,7 @@ void dvz_frame_plan_destroy(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:177._
 
-#### `dvz_frame_plan_emitter()` { #dvz_frame_plan_emitter }
+#### `dvz_frame_plan_emitter()` { #dvz_frame_plan_emitter .dvz-api-function }
 
 Create a persistent FramePlan-to-DRP2 emitter for runtime-mode streams.
 
@@ -650,7 +650,7 @@ DvzFramePlanEmitter * dvz_frame_plan_emitter(void);
 
 _Declared in `include/datoviz/scene/frame_plan.h`:437._
 
-#### `dvz_frame_plan_json()` { #dvz_frame_plan_json }
+#### `dvz_frame_plan_json()` { #dvz_frame_plan_json .dvz-api-function }
 
 Serialize a FramePlan as deterministic debug JSON.
 
@@ -667,7 +667,7 @@ char * dvz_frame_plan_json(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:394._
 
-#### `dvz_frame_plan_json_destroy()` { #dvz_frame_plan_json_destroy }
+#### `dvz_frame_plan_json_destroy()` { #dvz_frame_plan_json_destroy .dvz-api-function }
 
 Destroy a JSON string returned by dvz_frame_plan_json().
 
@@ -683,7 +683,7 @@ void dvz_frame_plan_json_destroy(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:484._
 
-#### `dvz_frame_plan_node_count()` { #dvz_frame_plan_node_count }
+#### `dvz_frame_plan_node_count()` { #dvz_frame_plan_node_count .dvz-api-function }
 
 Return a FramePlan node count.
 
@@ -700,7 +700,7 @@ uint32_t dvz_frame_plan_node_count(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:187._
 
-#### `dvz_frame_plan_node_get()` { #dvz_frame_plan_node_get }
+#### `dvz_frame_plan_node_get()` { #dvz_frame_plan_node_get .dvz-api-function }
 
 Return a FramePlan node.
 
@@ -719,7 +719,7 @@ const DvzFramePlanNode * dvz_frame_plan_node_get(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:199._
 
-#### `dvz_frame_plan_node_type()` { #dvz_frame_plan_node_type }
+#### `dvz_frame_plan_node_type()` { #dvz_frame_plan_node_type .dvz-api-function }
 
 Return a FramePlan node type.
 
@@ -736,7 +736,7 @@ DvzFramePlanNodeType dvz_frame_plan_node_type(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:209._
 
-#### `dvz_frame_plan_readback()` { #dvz_frame_plan_readback }
+#### `dvz_frame_plan_readback()` { #dvz_frame_plan_readback .dvz-api-function }
 
 Append a readback node.
 
@@ -757,7 +757,7 @@ _Bool dvz_frame_plan_readback(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:384._
 
-#### `dvz_frame_plan_render()` { #dvz_frame_plan_render }
+#### `dvz_frame_plan_render()` { #dvz_frame_plan_render .dvz-api-function }
 
 Append a render node.
 
@@ -780,7 +780,7 @@ _Bool dvz_frame_plan_render(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:320._
 
-#### `dvz_frame_plan_render_pass_role()` { #dvz_frame_plan_render_pass_role }
+#### `dvz_frame_plan_render_pass_role()` { #dvz_frame_plan_render_pass_role .dvz-api-function }
 
 Return a FramePlan render node pass role.
 
@@ -797,7 +797,7 @@ DvzFramePlanRenderPassRole dvz_frame_plan_render_pass_role(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:220._
 
-#### `dvz_frame_plan_render_visual()` { #dvz_frame_plan_render_visual }
+#### `dvz_frame_plan_render_visual()` { #dvz_frame_plan_render_visual .dvz-api-function }
 
 Add a visual to the most recent render node.
 
@@ -816,7 +816,7 @@ _Bool dvz_frame_plan_render_visual(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:345._
 
-#### `dvz_frame_plan_upload()` { #dvz_frame_plan_upload }
+#### `dvz_frame_plan_upload()` { #dvz_frame_plan_upload .dvz-api-function }
 
 Append an upload node.
 
@@ -841,7 +841,7 @@ _Bool dvz_frame_plan_upload(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:234._
 
-#### `dvz_frame_plan_upload_bytes()` { #dvz_frame_plan_upload_bytes }
+#### `dvz_frame_plan_upload_bytes()` { #dvz_frame_plan_upload_bytes .dvz-api-function }
 
 Append an upload node with actual data to be encoded into the DRP2 stream.
 
@@ -872,7 +872,7 @@ _Bool dvz_frame_plan_upload_bytes(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:255._
 
-#### `dvz_frame_plan_upload_desc()` { #dvz_frame_plan_upload_desc }
+#### `dvz_frame_plan_upload_desc()` { #dvz_frame_plan_upload_desc .dvz-api-function }
 
 Return the default FramePlan upload descriptor.
 
@@ -888,7 +888,7 @@ Related: [`dvz_frame_plan_upload()`](#dvz_frame_plan_upload).
 
 _Declared in `include/datoviz/scene/frame_plan.h`:97._
 
-#### `dvz_frame_plan_upload_ex()` { #dvz_frame_plan_upload_ex }
+#### `dvz_frame_plan_upload_ex()` { #dvz_frame_plan_upload_ex .dvz-api-function }
 
 Append an upload node from a descriptor.
 
@@ -1035,7 +1035,7 @@ _Declared in `include/datoviz/scene/frame_plan.h`:270._
 
 ### Functions
 
-#### `dvz_frame_plan_packet_result_destroy()` { #dvz_frame_plan_packet_result_destroy }
+#### `dvz_frame_plan_packet_result_destroy()` { #dvz_frame_plan_packet_result_destroy .dvz-api-function }
 
 Destroy a split packet result.
 
@@ -1051,7 +1051,7 @@ void dvz_frame_plan_packet_result_destroy(
 
 _Declared in `include/datoviz/scene/frame_packets.h`:80._
 
-#### `dvz_frame_plan_packet_result_frame_index()` { #dvz_frame_plan_packet_result_frame_index }
+#### `dvz_frame_plan_packet_result_frame_index()` { #dvz_frame_plan_packet_result_frame_index .dvz-api-function }
 
 Return the frame index associated with the packet result.
 
@@ -1068,7 +1068,7 @@ uint64_t dvz_frame_plan_packet_result_frame_index(
 
 _Declared in `include/datoviz/scene/frame_packets.h`:109._
 
-#### `dvz_frame_plan_packet_result_get()` { #dvz_frame_plan_packet_result_get }
+#### `dvz_frame_plan_packet_result_get()` { #dvz_frame_plan_packet_result_get .dvz-api-function }
 
 Return one split packet and its companion payload arena.
 
@@ -1097,7 +1097,7 @@ _Bool dvz_frame_plan_packet_result_get(
 
 _Declared in `include/datoviz/scene/frame_packets.h`:126._
 
-#### `dvz_frame_plan_packet_result_resource_version()` { #dvz_frame_plan_packet_result_resource_version }
+#### `dvz_frame_plan_packet_result_resource_version()` { #dvz_frame_plan_packet_result_resource_version .dvz-api-function }
 
 Return the resource version associated with the packet result.
 
@@ -1114,7 +1114,7 @@ uint64_t dvz_frame_plan_packet_result_resource_version(
 
 _Declared in `include/datoviz/scene/frame_packets.h`:99._
 
-#### `dvz_frame_plan_packet_result_status()` { #dvz_frame_plan_packet_result_status }
+#### `dvz_frame_plan_packet_result_status()` { #dvz_frame_plan_packet_result_status .dvz-api-function }
 
 Return the result status.
 

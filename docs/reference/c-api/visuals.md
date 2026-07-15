@@ -434,7 +434,7 @@ Types: 89
 
 ### Functions
 
-#### `dvz_band()` { #dvz_band }
+#### `dvz_band()` { #dvz_band .dvz-api-function }
 
 Create a retained band/ribbon attached to one panel.
 
@@ -453,7 +453,7 @@ DvzBand * dvz_band(
 
 _Declared in `include/datoviz/scene/plot.h`:191._
 
-#### `dvz_band_desc()` { #dvz_band_desc }
+#### `dvz_band_desc()` { #dvz_band_desc .dvz-api-function }
 
 Return the default band/ribbon descriptor.
 
@@ -469,7 +469,7 @@ Related: [`dvz_band()`](#dvz_band).
 
 _Declared in `include/datoviz/scene/plot.h`:60._
 
-#### `dvz_band_set_bounds()` { #dvz_band_set_bounds }
+#### `dvz_band_set_bounds()` { #dvz_band_set_bounds .dvz-api-function }
 
 Set lower/upper band bounds.
 
@@ -497,7 +497,7 @@ DvzResult dvz_band_set_bounds(
 
 _Declared in `include/datoviz/scene/plot.h`:207._
 
-#### `dvz_band_set_center()` { #dvz_band_set_center }
+#### `dvz_band_set_center()` { #dvz_band_set_center .dvz-api-function }
 
 Set an explicit center line for the band.
 
@@ -523,7 +523,7 @@ DvzResult dvz_band_set_center(
 
 _Declared in `include/datoviz/scene/plot.h`:224._
 
-#### `dvz_band_set_style()` { #dvz_band_set_style }
+#### `dvz_band_set_style()` { #dvz_band_set_style .dvz-api-function }
 
 Update band style and rendering options while preserving bounds and center data.
 
@@ -545,7 +545,7 @@ DvzResult dvz_band_set_style(
 
 _Declared in `include/datoviz/scene/plot.h`:237._
 
-#### `dvz_band_visual()` { #dvz_band_visual }
+#### `dvz_band_visual()` { #dvz_band_visual .dvz-api-function }
 
 Return a borrowed role visual from a band object.
 
@@ -604,7 +604,7 @@ _Declared in `include/datoviz/scene/plot.h`:250._
 
 ### Functions
 
-#### `dvz_bars()` { #dvz_bars }
+#### `dvz_bars()` { #dvz_bars .dvz-api-function }
 
 Create a retained explicit-interval bar series attached to one panel.
 
@@ -623,7 +623,7 @@ DvzBars * dvz_bars(
 
 _Declared in `include/datoviz/scene/plot.h`:137._
 
-#### `dvz_bars_desc()` { #dvz_bars_desc }
+#### `dvz_bars_desc()` { #dvz_bars_desc .dvz-api-function }
 
 Return the default bars descriptor.
 
@@ -639,7 +639,7 @@ Related: [`dvz_bars()`](#dvz_bars).
 
 _Declared in `include/datoviz/scene/plot.h`:52._
 
-#### `dvz_bars_set_intervals()` { #dvz_bars_set_intervals }
+#### `dvz_bars_set_intervals()` { #dvz_bars_set_intervals .dvz-api-function }
 
 Set explicit bar intervals and values.
 
@@ -668,7 +668,7 @@ DvzResult dvz_bars_set_intervals(
 
 _Declared in `include/datoviz/scene/plot.h`:154._
 
-#### `dvz_bars_set_style()` { #dvz_bars_set_style }
+#### `dvz_bars_set_style()` { #dvz_bars_set_style .dvz-api-function }
 
 Update bar style and rendering options while preserving interval data.
 
@@ -689,7 +689,7 @@ DvzResult dvz_bars_set_style(
 
 _Declared in `include/datoviz/scene/plot.h`:168._
 
-#### `dvz_bars_visual()` { #dvz_bars_visual }
+#### `dvz_bars_visual()` { #dvz_bars_visual .dvz-api-function }
 
 Return a borrowed role visual from a bars object.
 
@@ -760,7 +760,7 @@ _Declared in `include/datoviz/scene/plot.h`:181._
 
 ### Functions
 
-#### `dvz_bezier_tessellation_desc()` { #dvz_bezier_tessellation_desc }
+#### `dvz_bezier_tessellation_desc()` { #dvz_bezier_tessellation_desc .dvz-api-function }
 
 Return a default Bezier tessellation descriptor.
 
@@ -795,7 +795,7 @@ _Declared in `include/datoviz/geom.h`:421._
 
 ### Functions
 
-#### `dvz_composite_destroy()` { #dvz_composite_destroy }
+#### `dvz_composite_destroy()` { #dvz_composite_destroy .dvz-api-function }
 
 Destroy a scene-owned composite render view.
 
@@ -811,7 +811,7 @@ void dvz_composite_destroy(
 
 _Declared in `include/datoviz/scene.h`:3483._
 
-#### `dvz_composite_visual()` { #dvz_composite_visual }
+#### `dvz_composite_visual()` { #dvz_composite_visual .dvz-api-function }
 
 Return a generated visual by role name.
 
@@ -832,7 +832,7 @@ DvzVisual * dvz_composite_visual(
 
 _Declared in `include/datoviz/scene.h`:3514._
 
-#### `dvz_composite_visual_at()` { #dvz_composite_visual_at }
+#### `dvz_composite_visual_at()` { #dvz_composite_visual_at .dvz-api-function }
 
 Return a generated visual by role index.
 
@@ -851,7 +851,7 @@ DvzVisual * dvz_composite_visual_at(
 
 _Declared in `include/datoviz/scene.h`:3502._
 
-#### `dvz_composite_visual_count()` { #dvz_composite_visual_count }
+#### `dvz_composite_visual_count()` { #dvz_composite_visual_count .dvz-api-function }
 
 Return the number of generated visuals owned by a composite.
 
@@ -884,7 +884,7 @@ _Declared in `include/datoviz/scene.h`:3492._
 
 ### Functions
 
-#### `dvz_depth_cue_desc()` { #dvz_depth_cue_desc }
+#### `dvz_depth_cue_desc()` { #dvz_depth_cue_desc .dvz-api-function }
 
 Return default depth-cue options.
 
@@ -898,7 +898,7 @@ DvzDepthCueDesc dvz_depth_cue_desc(void);
 
 _Declared in `include/datoviz/scene.h`:2466._
 
-#### `dvz_visual_set_depth_cue()` { #dvz_visual_set_depth_cue }
+#### `dvz_visual_set_depth_cue()` { #dvz_visual_set_depth_cue .dvz-api-function }
 
 Configure depth cueing for a point, pixel, primitive, mesh, or sphere visual.
 
@@ -991,7 +991,7 @@ _Declared in `include/datoviz/scene.h`:2481._
 
 ### Functions
 
-#### `dvz_geometry()` { #dvz_geometry }
+#### `dvz_geometry()` { #dvz_geometry .dvz-api-function }
 
 Allocate a geometry object with owned vertex and index buffers.
 
@@ -1010,7 +1010,7 @@ DvzGeometry * dvz_geometry(
 
 _Declared in `include/datoviz/geom.h`:47._
 
-#### `dvz_geometry_arrow()` { #dvz_geometry_arrow }
+#### `dvz_geometry_arrow()` { #dvz_geometry_arrow .dvz-api-function }
 
 Create an indexed Z-axis arrow geometry.
 
@@ -1027,7 +1027,7 @@ DvzGeometry * dvz_geometry_arrow(
 
 _Declared in `include/datoviz/geom.h`:375._
 
-#### `dvz_geometry_arrow_desc()` { #dvz_geometry_arrow_desc }
+#### `dvz_geometry_arrow_desc()` { #dvz_geometry_arrow_desc .dvz-api-function }
 
 Return a default arrow geometry descriptor.
 
@@ -1043,7 +1043,7 @@ Related: [`dvz_geometry_arrow()`](#dvz_geometry_arrow).
 
 _Declared in `include/datoviz/geom.h`:366._
 
-#### `dvz_geometry_bounds()` { #dvz_geometry_bounds }
+#### `dvz_geometry_bounds()` { #dvz_geometry_bounds .dvz-api-function }
 
 Compute the bounds of a geometry object's positions.
 
@@ -1060,7 +1060,7 @@ DvzGeometryBounds dvz_geometry_bounds(
 
 _Declared in `include/datoviz/geom.h`:76._
 
-#### `dvz_geometry_compute_normals()` { #dvz_geometry_compute_normals }
+#### `dvz_geometry_compute_normals()` { #dvz_geometry_compute_normals .dvz-api-function }
 
 Recompute smooth vertex normals from triangle indices.
 
@@ -1077,7 +1077,7 @@ DvzResult dvz_geometry_compute_normals(
 
 _Declared in `include/datoviz/geom.h`:86._
 
-#### `dvz_geometry_cone()` { #dvz_geometry_cone }
+#### `dvz_geometry_cone()` { #dvz_geometry_cone .dvz-api-function }
 
 Create an indexed Z-axis cone geometry.
 
@@ -1094,7 +1094,7 @@ DvzGeometry * dvz_geometry_cone(
 
 _Declared in `include/datoviz/geom.h`:341._
 
-#### `dvz_geometry_cone_desc()` { #dvz_geometry_cone_desc }
+#### `dvz_geometry_cone_desc()` { #dvz_geometry_cone_desc .dvz-api-function }
 
 Return a default cone geometry descriptor.
 
@@ -1110,7 +1110,7 @@ Related: [`dvz_geometry_cone()`](#dvz_geometry_cone).
 
 _Declared in `include/datoviz/geom.h`:332._
 
-#### `dvz_geometry_contours()` { #dvz_geometry_contours }
+#### `dvz_geometry_contours()` { #dvz_geometry_contours .dvz-api-function }
 
 Extract contour line segments from indexed triangle geometry and per-vertex scalar values.
 
@@ -1135,7 +1135,7 @@ DvzGeometryContours * dvz_geometry_contours(
 
 _Declared in `include/datoviz/geom.h`:142._
 
-#### `dvz_geometry_contours_destroy()` { #dvz_geometry_contours_destroy }
+#### `dvz_geometry_contours_destroy()` { #dvz_geometry_contours_destroy .dvz-api-function }
 
 Destroy extracted contour segments.
 
@@ -1151,7 +1151,7 @@ void dvz_geometry_contours_destroy(
 
 _Declared in `include/datoviz/geom.h`:153._
 
-#### `dvz_geometry_cube()` { #dvz_geometry_cube }
+#### `dvz_geometry_cube()` { #dvz_geometry_cube .dvz-api-function }
 
 Create an indexed cube geometry.
 
@@ -1168,7 +1168,7 @@ DvzGeometry * dvz_geometry_cube(
 
 _Declared in `include/datoviz/geom.h`:171._
 
-#### `dvz_geometry_cube_desc()` { #dvz_geometry_cube_desc }
+#### `dvz_geometry_cube_desc()` { #dvz_geometry_cube_desc .dvz-api-function }
 
 Return a default cube geometry descriptor.
 
@@ -1184,7 +1184,7 @@ Related: [`dvz_geometry_cube()`](#dvz_geometry_cube).
 
 _Declared in `include/datoviz/geom.h`:162._
 
-#### `dvz_geometry_cylinder()` { #dvz_geometry_cylinder }
+#### `dvz_geometry_cylinder()` { #dvz_geometry_cylinder .dvz-api-function }
 
 Create an indexed Z-axis cylinder geometry.
 
@@ -1201,7 +1201,7 @@ DvzGeometry * dvz_geometry_cylinder(
 
 _Declared in `include/datoviz/geom.h`:324._
 
-#### `dvz_geometry_cylinder_desc()` { #dvz_geometry_cylinder_desc }
+#### `dvz_geometry_cylinder_desc()` { #dvz_geometry_cylinder_desc .dvz-api-function }
 
 Return a default cylinder geometry descriptor.
 
@@ -1217,7 +1217,7 @@ Related: [`dvz_geometry_cylinder()`](#dvz_geometry_cylinder).
 
 _Declared in `include/datoviz/geom.h`:315._
 
-#### `dvz_geometry_destroy()` { #dvz_geometry_destroy }
+#### `dvz_geometry_destroy()` { #dvz_geometry_destroy .dvz-api-function }
 
 Destroy a geometry object.
 
@@ -1233,7 +1233,7 @@ void dvz_geometry_destroy(
 
 _Declared in `include/datoviz/geom.h`:66._
 
-#### `dvz_geometry_disc()` { #dvz_geometry_disc }
+#### `dvz_geometry_disc()` { #dvz_geometry_disc .dvz-api-function }
 
 Create an indexed XY disc geometry.
 
@@ -1250,7 +1250,7 @@ DvzGeometry * dvz_geometry_disc(
 
 _Declared in `include/datoviz/geom.h`:256._
 
-#### `dvz_geometry_disc_desc()` { #dvz_geometry_disc_desc }
+#### `dvz_geometry_disc_desc()` { #dvz_geometry_disc_desc .dvz-api-function }
 
 Return a default disc geometry descriptor.
 
@@ -1266,7 +1266,7 @@ Related: [`dvz_geometry_disc()`](#dvz_geometry_disc).
 
 _Declared in `include/datoviz/geom.h`:247._
 
-#### `dvz_geometry_edges()` { #dvz_geometry_edges }
+#### `dvz_geometry_edges()` { #dvz_geometry_edges .dvz-api-function }
 
 Derive a unique edge list from indexed triangle geometry.
 
@@ -1283,7 +1283,7 @@ DvzGeometryEdges * dvz_geometry_edges(
 
 _Declared in `include/datoviz/geom.h`:119._
 
-#### `dvz_geometry_edges_destroy()` { #dvz_geometry_edges_destroy }
+#### `dvz_geometry_edges_destroy()` { #dvz_geometry_edges_destroy .dvz-api-function }
 
 Destroy a derived geometry edge list.
 
@@ -1299,7 +1299,7 @@ void dvz_geometry_edges_destroy(
 
 _Declared in `include/datoviz/geom.h`:128._
 
-#### `dvz_geometry_merge()` { #dvz_geometry_merge }
+#### `dvz_geometry_merge()` { #dvz_geometry_merge .dvz-api-function }
 
 Merge several geometry objects into one indexed geometry.
 
@@ -1318,7 +1318,7 @@ DvzGeometry * dvz_geometry_merge(
 
 _Declared in `include/datoviz/geom.h`:109._
 
-#### `dvz_geometry_obj()` { #dvz_geometry_obj }
+#### `dvz_geometry_obj()` { #dvz_geometry_obj .dvz-api-function }
 
 Load a Wavefront OBJ mesh as indexed geometry.
 
@@ -1340,7 +1340,7 @@ DvzGeometry * dvz_geometry_obj(
 
 _Declared in `include/datoviz/geom.h`:396._
 
-#### `dvz_geometry_obj_desc()` { #dvz_geometry_obj_desc }
+#### `dvz_geometry_obj_desc()` { #dvz_geometry_obj_desc .dvz-api-function }
 
 Return a default Wavefront OBJ geometry loader descriptor.
 
@@ -1356,7 +1356,7 @@ Related: [`dvz_geometry_obj()`](#dvz_geometry_obj).
 
 _Declared in `include/datoviz/geom.h`:383._
 
-#### `dvz_geometry_plane()` { #dvz_geometry_plane }
+#### `dvz_geometry_plane()` { #dvz_geometry_plane .dvz-api-function }
 
 Create an indexed XY plane geometry.
 
@@ -1373,7 +1373,7 @@ DvzGeometry * dvz_geometry_plane(
 
 _Declared in `include/datoviz/geom.h`:189._
 
-#### `dvz_geometry_plane_desc()` { #dvz_geometry_plane_desc }
+#### `dvz_geometry_plane_desc()` { #dvz_geometry_plane_desc .dvz-api-function }
 
 Return a default plane geometry descriptor.
 
@@ -1389,7 +1389,7 @@ Related: [`dvz_geometry_plane()`](#dvz_geometry_plane).
 
 _Declared in `include/datoviz/geom.h`:180._
 
-#### `dvz_geometry_regular_polygon()` { #dvz_geometry_regular_polygon }
+#### `dvz_geometry_regular_polygon()` { #dvz_geometry_regular_polygon .dvz-api-function }
 
 Create an indexed XY regular-polygon geometry.
 
@@ -1406,7 +1406,7 @@ DvzGeometry * dvz_geometry_regular_polygon(
 
 _Declared in `include/datoviz/geom.h`:290._
 
-#### `dvz_geometry_regular_polygon_desc()` { #dvz_geometry_regular_polygon_desc }
+#### `dvz_geometry_regular_polygon_desc()` { #dvz_geometry_regular_polygon_desc .dvz-api-function }
 
 Return a default regular-polygon geometry descriptor.
 
@@ -1422,7 +1422,7 @@ Related: [`dvz_geometry_regular_polygon()`](#dvz_geometry_regular_polygon).
 
 _Declared in `include/datoviz/geom.h`:281._
 
-#### `dvz_geometry_reset()` { #dvz_geometry_reset }
+#### `dvz_geometry_reset()` { #dvz_geometry_reset .dvz-api-function }
 
 Free all buffers owned by a geometry object and reset it to an empty state.
 
@@ -1439,7 +1439,7 @@ DvzResult dvz_geometry_reset(
 
 _Declared in `include/datoviz/geom.h`:57._
 
-#### `dvz_geometry_sector()` { #dvz_geometry_sector }
+#### `dvz_geometry_sector()` { #dvz_geometry_sector .dvz-api-function }
 
 Create an indexed XY sector geometry.
 
@@ -1456,7 +1456,7 @@ DvzGeometry * dvz_geometry_sector(
 
 _Declared in `include/datoviz/geom.h`:273._
 
-#### `dvz_geometry_sector_desc()` { #dvz_geometry_sector_desc }
+#### `dvz_geometry_sector_desc()` { #dvz_geometry_sector_desc .dvz-api-function }
 
 Return a default sector geometry descriptor.
 
@@ -1472,7 +1472,7 @@ Related: [`dvz_geometry_sector()`](#dvz_geometry_sector).
 
 _Declared in `include/datoviz/geom.h`:264._
 
-#### `dvz_geometry_sphere()` { #dvz_geometry_sphere }
+#### `dvz_geometry_sphere()` { #dvz_geometry_sphere .dvz-api-function }
 
 Create an indexed UV-sphere geometry.
 
@@ -1489,7 +1489,7 @@ DvzGeometry * dvz_geometry_sphere(
 
 _Declared in `include/datoviz/geom.h`:207._
 
-#### `dvz_geometry_sphere_desc()` { #dvz_geometry_sphere_desc }
+#### `dvz_geometry_sphere_desc()` { #dvz_geometry_sphere_desc .dvz-api-function }
 
 Return a default sphere geometry descriptor.
 
@@ -1505,7 +1505,7 @@ Related: [`dvz_geometry_sphere()`](#dvz_geometry_sphere).
 
 _Declared in `include/datoviz/geom.h`:198._
 
-#### `dvz_geometry_star()` { #dvz_geometry_star }
+#### `dvz_geometry_star()` { #dvz_geometry_star .dvz-api-function }
 
 Create an indexed XY star geometry.
 
@@ -1522,7 +1522,7 @@ DvzGeometry * dvz_geometry_star(
 
 _Declared in `include/datoviz/geom.h`:307._
 
-#### `dvz_geometry_star_desc()` { #dvz_geometry_star_desc }
+#### `dvz_geometry_star_desc()` { #dvz_geometry_star_desc .dvz-api-function }
 
 Return a default star geometry descriptor.
 
@@ -1538,7 +1538,7 @@ Related: [`dvz_geometry_star()`](#dvz_geometry_star).
 
 _Declared in `include/datoviz/geom.h`:298._
 
-#### `dvz_geometry_surface_grid()` { #dvz_geometry_surface_grid }
+#### `dvz_geometry_surface_grid()` { #dvz_geometry_surface_grid .dvz-api-function }
 
 Create an indexed structured surface-grid geometry.
 
@@ -1555,7 +1555,7 @@ DvzGeometry * dvz_geometry_surface_grid(
 
 _Declared in `include/datoviz/geom.h`:225._
 
-#### `dvz_geometry_surface_grid_desc()` { #dvz_geometry_surface_grid_desc }
+#### `dvz_geometry_surface_grid_desc()` { #dvz_geometry_surface_grid_desc .dvz-api-function }
 
 Return a default surface-grid geometry descriptor.
 
@@ -1571,7 +1571,7 @@ Related: [`dvz_geometry_surface_grid()`](#dvz_geometry_surface_grid).
 
 _Declared in `include/datoviz/geom.h`:216._
 
-#### `dvz_geometry_surface_grid_update_heights()` { #dvz_geometry_surface_grid_update_heights }
+#### `dvz_geometry_surface_grid_update_heights()` { #dvz_geometry_surface_grid_update_heights .dvz-api-function }
 
 Update the heights of an existing structured surface-grid geometry.
 
@@ -1592,7 +1592,7 @@ DvzResult dvz_geometry_surface_grid_update_heights(
 
 _Declared in `include/datoviz/geom.h`:238._
 
-#### `dvz_geometry_torus()` { #dvz_geometry_torus }
+#### `dvz_geometry_torus()` { #dvz_geometry_torus .dvz-api-function }
 
 Create an indexed torus geometry around the Z axis.
 
@@ -1609,7 +1609,7 @@ DvzGeometry * dvz_geometry_torus(
 
 _Declared in `include/datoviz/geom.h`:358._
 
-#### `dvz_geometry_torus_desc()` { #dvz_geometry_torus_desc }
+#### `dvz_geometry_torus_desc()` { #dvz_geometry_torus_desc .dvz-api-function }
 
 Return a default torus geometry descriptor.
 
@@ -1625,7 +1625,7 @@ Related: [`dvz_geometry_torus()`](#dvz_geometry_torus).
 
 _Declared in `include/datoviz/geom.h`:349._
 
-#### `dvz_geometry_transform()` { #dvz_geometry_transform }
+#### `dvz_geometry_transform()` { #dvz_geometry_transform .dvz-api-function }
 
 Apply an affine transform to positions and normals in place.
 
@@ -2040,7 +2040,7 @@ _Declared in `include/datoviz/geom.h`:97._
 
 ### Functions
 
-#### `dvz_glyph()` { #dvz_glyph }
+#### `dvz_glyph()` { #dvz_glyph .dvz-api-function }
 
 Create a glyph visual.
 
@@ -2063,7 +2063,7 @@ DvzVisual * dvz_glyph(
 
 _Declared in `include/datoviz/scene.h`:3734._
 
-#### `dvz_glyph_set_atlas()` { #dvz_glyph_set_atlas }
+#### `dvz_glyph_set_atlas()` { #dvz_glyph_set_atlas .dvz-api-function }
 
 Bind a font atlas to a glyph visual.
 
@@ -2089,7 +2089,7 @@ _Declared in `include/datoviz/scene.h`:3747._
 
 ### Functions
 
-#### `dvz_graph()` { #dvz_graph }
+#### `dvz_graph()` { #dvz_graph .dvz-api-function }
 
 Create a scene-owned semantic graph object.
 
@@ -2112,7 +2112,7 @@ DvzGraph * dvz_graph(
 
 _Declared in `include/datoviz/scene.h`:2914._
 
-#### `dvz_graph_composite()` { #dvz_graph_composite }
+#### `dvz_graph_composite()` { #dvz_graph_composite .dvz-api-function }
 
 Create a scene-owned composite render view for a graph.
 
@@ -2133,7 +2133,7 @@ DvzComposite * dvz_graph_composite(
 
 _Declared in `include/datoviz/scene.h`:3111._
 
-#### `dvz_graph_destroy()` { #dvz_graph_destroy }
+#### `dvz_graph_destroy()` { #dvz_graph_destroy .dvz-api-function }
 
 Destroy a scene-owned graph object.
 
@@ -2149,7 +2149,7 @@ void dvz_graph_destroy(
 
 _Declared in `include/datoviz/scene.h`:2922._
 
-#### `dvz_graph_edge_style()` { #dvz_graph_edge_style }
+#### `dvz_graph_edge_style()` { #dvz_graph_edge_style .dvz-api-function }
 
 Return the default graph edge style descriptor.
 
@@ -2163,7 +2163,7 @@ DvzGraphEdgeStyle dvz_graph_edge_style(void);
 
 _Declared in `include/datoviz/scene.h`:2930._
 
-#### `dvz_graph_set_edge_colors()` { #dvz_graph_set_edge_colors }
+#### `dvz_graph_set_edge_colors()` { #dvz_graph_set_edge_colors .dvz-api-function }
 
 Set a range of graph edge colors.
 
@@ -2186,7 +2186,7 @@ DvzResult dvz_graph_set_edge_colors(
 
 _Declared in `include/datoviz/scene.h`:3084._
 
-#### `dvz_graph_set_edge_controls()` { #dvz_graph_set_edge_controls }
+#### `dvz_graph_set_edge_controls()` { #dvz_graph_set_edge_controls .dvz-api-function }
 
 Configure explicit cubic Bezier control points for graph edges.
 
@@ -2213,7 +2213,7 @@ DvzResult dvz_graph_set_edge_controls(
 
 _Declared in `include/datoviz/scene.h`:3041._
 
-#### `dvz_graph_set_edge_count()` { #dvz_graph_set_edge_count }
+#### `dvz_graph_set_edge_count()` { #dvz_graph_set_edge_count .dvz-api-function }
 
 Replace the graph edge array and reset edge style defaults.
 
@@ -2234,7 +2234,7 @@ DvzResult dvz_graph_set_edge_count(
 
 _Declared in `include/datoviz/scene.h`:2968._
 
-#### `dvz_graph_set_edge_endpoints()` { #dvz_graph_set_edge_endpoints }
+#### `dvz_graph_set_edge_endpoints()` { #dvz_graph_set_edge_endpoints .dvz-api-function }
 
 Update graph edge endpoints.
 
@@ -2259,7 +2259,7 @@ DvzResult dvz_graph_set_edge_endpoints(
 
 _Declared in `include/datoviz/scene.h`:2983._
 
-#### `dvz_graph_set_edge_ids()` { #dvz_graph_set_edge_ids }
+#### `dvz_graph_set_edge_ids()` { #dvz_graph_set_edge_ids .dvz-api-function }
 
 Set stable graph edge user ids.
 
@@ -2282,7 +2282,7 @@ DvzResult dvz_graph_set_edge_ids(
 
 _Declared in `include/datoviz/scene.h`:3011._
 
-#### `dvz_graph_set_edge_style()` { #dvz_graph_set_edge_style }
+#### `dvz_graph_set_edge_style()` { #dvz_graph_set_edge_style .dvz-api-function }
 
 Configure graph edge rendering.
 
@@ -2305,7 +2305,7 @@ DvzResult dvz_graph_set_edge_style(
 
 _Declared in `include/datoviz/scene.h`:3026._
 
-#### `dvz_graph_set_edge_widths()` { #dvz_graph_set_edge_widths }
+#### `dvz_graph_set_edge_widths()` { #dvz_graph_set_edge_widths .dvz-api-function }
 
 Set a range of graph edge stroke widths in pixels.
 
@@ -2328,7 +2328,7 @@ DvzResult dvz_graph_set_edge_widths(
 
 _Declared in `include/datoviz/scene.h`:3098._
 
-#### `dvz_graph_set_node_colors()` { #dvz_graph_set_node_colors }
+#### `dvz_graph_set_node_colors()` { #dvz_graph_set_node_colors .dvz-api-function }
 
 Set a range of graph node colors.
 
@@ -2351,7 +2351,7 @@ DvzResult dvz_graph_set_node_colors(
 
 _Declared in `include/datoviz/scene.h`:3056._
 
-#### `dvz_graph_set_node_count()` { #dvz_graph_set_node_count }
+#### `dvz_graph_set_node_count()` { #dvz_graph_set_node_count .dvz-api-function }
 
 Replace the graph node array and reset node style defaults.
 
@@ -2373,7 +2373,7 @@ DvzResult dvz_graph_set_node_count(
 
 _Declared in `include/datoviz/scene.h`:2943._
 
-#### `dvz_graph_set_node_ids()` { #dvz_graph_set_node_ids }
+#### `dvz_graph_set_node_ids()` { #dvz_graph_set_node_ids .dvz-api-function }
 
 Set stable graph node user ids.
 
@@ -2396,7 +2396,7 @@ DvzResult dvz_graph_set_node_ids(
 
 _Declared in `include/datoviz/scene.h`:2997._
 
-#### `dvz_graph_set_node_positions()` { #dvz_graph_set_node_positions }
+#### `dvz_graph_set_node_positions()` { #dvz_graph_set_node_positions .dvz-api-function }
 
 Update graph node positions without changing node styles or edges.
 
@@ -2419,7 +2419,7 @@ DvzResult dvz_graph_set_node_positions(
 
 _Declared in `include/datoviz/scene.h`:2955._
 
-#### `dvz_graph_set_node_sizes()` { #dvz_graph_set_node_sizes }
+#### `dvz_graph_set_node_sizes()` { #dvz_graph_set_node_sizes .dvz-api-function }
 
 Set a range of graph node sizes in pixels.
 
@@ -2492,7 +2492,7 @@ _Declared in `include/datoviz/scene.h`:3070._
 
 ### Functions
 
-#### `dvz_image()` { #dvz_image }
+#### `dvz_image()` { #dvz_image .dvz-api-function }
 
 Create an image visual.
 
@@ -2517,7 +2517,7 @@ DvzVisual * dvz_image(
 
 _Declared in `include/datoviz/scene.h`:3589._
 
-#### `dvz_image_set_sampling()` { #dvz_image_set_sampling }
+#### `dvz_image_set_sampling()` { #dvz_image_set_sampling .dvz-api-function }
 
 Set the sampler filter mode for an image visual.
 
@@ -2558,7 +2558,7 @@ _Declared in `include/datoviz/scene.h`:3602._
 
 ### Functions
 
-#### `dvz_labels()` { #dvz_labels }
+#### `dvz_labels()` { #dvz_labels .dvz-api-function }
 
 Create a labels visual.
 
@@ -2582,7 +2582,7 @@ DvzVisual * dvz_labels(
 
 _Declared in `include/datoviz/scene.h`:3617._
 
-#### `dvz_labels_clear_selected()` { #dvz_labels_clear_selected }
+#### `dvz_labels_clear_selected()` { #dvz_labels_clear_selected .dvz-api-function }
 
 Clear the selected label ID on a labels visual.
 
@@ -2599,7 +2599,7 @@ DvzResult dvz_labels_clear_selected(
 
 _Declared in `include/datoviz/scene.h`:3656._
 
-#### `dvz_labels_set_background()` { #dvz_labels_set_background }
+#### `dvz_labels_set_background()` { #dvz_labels_set_background .dvz-api-function }
 
 Set the transparent background label ID on a labels visual.
 
@@ -2618,7 +2618,7 @@ DvzResult dvz_labels_set_background(
 
 _Declared in `include/datoviz/scene.h`:3637._
 
-#### `dvz_labels_set_boundary()` { #dvz_labels_set_boundary }
+#### `dvz_labels_set_boundary()` { #dvz_labels_set_boundary .dvz-api-function }
 
 Configure boundary rendering on a labels visual.
 
@@ -2641,7 +2641,7 @@ DvzResult dvz_labels_set_boundary(
 
 _Declared in `include/datoviz/scene.h`:3681._
 
-#### `dvz_labels_set_fallback_seed()` { #dvz_labels_set_fallback_seed }
+#### `dvz_labels_set_fallback_seed()` { #dvz_labels_set_fallback_seed .dvz-api-function }
 
 Set the deterministic fallback-color seed on a labels visual.
 
@@ -2660,7 +2660,7 @@ DvzResult dvz_labels_set_fallback_seed(
 
 _Declared in `include/datoviz/scene.h`:3691._
 
-#### `dvz_labels_set_hidden()` { #dvz_labels_set_hidden }
+#### `dvz_labels_set_hidden()` { #dvz_labels_set_hidden .dvz-api-function }
 
 Set the hidden label IDs on a labels visual.
 
@@ -2681,7 +2681,7 @@ DvzResult dvz_labels_set_hidden(
 
 _Declared in `include/datoviz/scene.h`:3668._
 
-#### `dvz_labels_set_opacity()` { #dvz_labels_set_opacity }
+#### `dvz_labels_set_opacity()` { #dvz_labels_set_opacity .dvz-api-function }
 
 Set the global opacity multiplier on a labels visual.
 
@@ -2700,7 +2700,7 @@ DvzResult dvz_labels_set_opacity(
 
 _Declared in `include/datoviz/scene.h`:3627._
 
-#### `dvz_labels_set_selected()` { #dvz_labels_set_selected }
+#### `dvz_labels_set_selected()` { #dvz_labels_set_selected .dvz-api-function }
 
 Set the selected label ID on a labels visual.
 
@@ -2719,7 +2719,7 @@ DvzResult dvz_labels_set_selected(
 
 _Declared in `include/datoviz/scene.h`:3647._
 
-#### `dvz_labels_set_slice_axis()` { #dvz_labels_set_slice_axis }
+#### `dvz_labels_set_slice_axis()` { #dvz_labels_set_slice_axis .dvz-api-function }
 
 Set the slice axis for a 3D labels visual.
 
@@ -2738,7 +2738,7 @@ DvzResult dvz_labels_set_slice_axis(
 
 _Declared in `include/datoviz/scene.h`:3701._
 
-#### `dvz_labels_set_slice_position()` { #dvz_labels_set_slice_position }
+#### `dvz_labels_set_slice_position()` { #dvz_labels_set_slice_position .dvz-api-function }
 
 Set the slice position for a 3D labels visual.
 
@@ -2757,7 +2757,7 @@ DvzResult dvz_labels_set_slice_position(
 
 _Declared in `include/datoviz/scene.h`:3711._
 
-#### `dvz_labels_state()` { #dvz_labels_state }
+#### `dvz_labels_state()` { #dvz_labels_state .dvz-api-function }
 
 Return the retained labels state for inspection.
 
@@ -2804,7 +2804,7 @@ _Declared in `include/datoviz/scene.h`:3720._
 
 ### Functions
 
-#### `dvz_marker()` { #dvz_marker }
+#### `dvz_marker()` { #dvz_marker .dvz-api-function }
 
 Create a marker visual.
 
@@ -2831,7 +2831,7 @@ DvzVisual * dvz_marker(
 
 _Declared in `include/datoviz/scene.h`:2741._
 
-#### `dvz_marker_set_style()` { #dvz_marker_set_style }
+#### `dvz_marker_set_style()` { #dvz_marker_set_style .dvz-api-function }
 
 Configure marker fill/stroke styling.
 
@@ -2854,7 +2854,7 @@ DvzResult dvz_marker_set_style(
 
 _Declared in `include/datoviz/scene.h`:2674._
 
-#### `dvz_marker_set_symbol()` { #dvz_marker_set_symbol }
+#### `dvz_marker_set_symbol()` { #dvz_marker_set_symbol .dvz-api-function }
 
 Set every existing marker item to one built-in symbol.
 
@@ -2876,7 +2876,7 @@ DvzResult dvz_marker_set_symbol(
 
 _Declared in `include/datoviz/scene.h`:2648._
 
-#### `dvz_marker_set_symbols()` { #dvz_marker_set_symbols }
+#### `dvz_marker_set_symbols()` { #dvz_marker_set_symbols .dvz-api-function }
 
 Bind a reusable symbol set to a marker visual.
 
@@ -2898,7 +2898,7 @@ DvzResult dvz_marker_set_symbols(
 
 _Declared in `include/datoviz/scene.h`:2635._
 
-#### `dvz_marker_style()` { #dvz_marker_style }
+#### `dvz_marker_style()` { #dvz_marker_style .dvz-api-function }
 
 Return default marker styling.
 
@@ -2970,7 +2970,7 @@ _Declared in `include/datoviz/scene.h`:2660._
 
 ### Functions
 
-#### `dvz_material_desc()` { #dvz_material_desc }
+#### `dvz_material_desc()` { #dvz_material_desc .dvz-api-function }
 
 Return default visual material options.
 
@@ -2988,7 +2988,7 @@ DvzMaterialDesc dvz_material_desc(void);
 
 _Declared in `include/datoviz/scene.h`:2421._
 
-#### `dvz_phong_material_desc()` { #dvz_phong_material_desc }
+#### `dvz_phong_material_desc()` { #dvz_phong_material_desc .dvz-api-function }
 
 Return default Phong visual material options.
 
@@ -3005,7 +3005,7 @@ DvzMaterialDesc dvz_phong_material_desc(void);
 
 _Declared in `include/datoviz/scene.h`:2432._
 
-#### `dvz_standard_material_desc()` { #dvz_standard_material_desc }
+#### `dvz_standard_material_desc()` { #dvz_standard_material_desc .dvz-api-function }
 
 Return default standard visual material options.
 
@@ -3023,7 +3023,7 @@ DvzMaterialDesc dvz_standard_material_desc(void);
 
 _Declared in `include/datoviz/scene.h`:2444._
 
-#### `dvz_visual_set_material()` { #dvz_visual_set_material }
+#### `dvz_visual_set_material()` { #dvz_visual_set_material .dvz-api-function }
 
 Set the shared material parameters for a primitive, mesh, or sphere visual.
 
@@ -3117,7 +3117,7 @@ _Declared in `include/datoviz/scene.h`:2458._
 
 ### Functions
 
-#### `dvz_mesh()` { #dvz_mesh }
+#### `dvz_mesh()` { #dvz_mesh .dvz-api-function }
 
 Create a mesh visual.
 
@@ -3142,7 +3142,7 @@ DvzVisual * dvz_mesh(
 
 _Declared in `include/datoviz/scene.h`:2887._
 
-#### `dvz_mesh_set_geometry()` { #dvz_mesh_set_geometry }
+#### `dvz_mesh_set_geometry()` { #dvz_mesh_set_geometry .dvz-api-function }
 
 Upload a CPU geometry object into a mesh visual.
 
@@ -3168,7 +3168,7 @@ _Declared in `include/datoviz/scene.h`:2900._
 
 ### Functions
 
-#### `dvz_path()` { #dvz_path }
+#### `dvz_path()` { #dvz_path .dvz-api-function }
 
 Create a path visual.
 
@@ -3191,7 +3191,7 @@ DvzVisual * dvz_path(
 
 _Declared in `include/datoviz/scene.h`:3528._
 
-#### `dvz_path_set_caps()` { #dvz_path_set_caps }
+#### `dvz_path_set_caps()` { #dvz_path_set_caps .dvz-api-function }
 
 Configure caps applied to each open subpath endpoint.
 
@@ -3215,7 +3215,7 @@ DvzResult dvz_path_set_caps(
 
 _Declared in `include/datoviz/scene.h`:3543._
 
-#### `dvz_path_set_join()` { #dvz_path_set_join }
+#### `dvz_path_set_join()` { #dvz_path_set_join .dvz-api-function }
 
 Configure the join style and miter limit for stroked path corners.
 
@@ -3239,7 +3239,7 @@ DvzResult dvz_path_set_join(
 
 _Declared in `include/datoviz/scene.h`:3558._
 
-#### `dvz_path_set_subpaths()` { #dvz_path_set_subpaths }
+#### `dvz_path_set_subpaths()` { #dvz_path_set_subpaths .dvz-api-function }
 
 Set explicit subpath lengths for a path visual.
 
@@ -3283,7 +3283,7 @@ _Declared in `include/datoviz/scene.h`:3572._
 
 ### Functions
 
-#### `dvz_pixel()` { #dvz_pixel }
+#### `dvz_pixel()` { #dvz_pixel .dvz-api-function }
 
 Create a pixel visual.
 
@@ -3310,7 +3310,7 @@ _Declared in `include/datoviz/scene.h`:2723._
 
 ### Functions
 
-#### `dvz_point()` { #dvz_point }
+#### `dvz_point()` { #dvz_point .dvz-api-function }
 
 Create a point visual.
 
@@ -3334,7 +3334,7 @@ DvzVisual * dvz_point(
 
 _Declared in `include/datoviz/scene.h`:2694._
 
-#### `dvz_point_set_style()` { #dvz_point_set_style }
+#### `dvz_point_set_style()` { #dvz_point_set_style .dvz-api-function }
 
 Configure circular point fill/stroke styling.
 
@@ -3357,7 +3357,7 @@ DvzResult dvz_point_set_style(
 
 _Declared in `include/datoviz/scene.h`:2507._
 
-#### `dvz_point_style_desc()` { #dvz_point_style_desc }
+#### `dvz_point_style_desc()` { #dvz_point_style_desc .dvz-api-function }
 
 Return default point styling.
 
@@ -3397,7 +3397,7 @@ _Declared in `include/datoviz/scene.h`:2493._
 
 ### Functions
 
-#### `dvz_polygon()` { #dvz_polygon }
+#### `dvz_polygon()` { #dvz_polygon .dvz-api-function }
 
 Create a scene-owned semantic polygon object.
 
@@ -3418,7 +3418,7 @@ DvzPolygon * dvz_polygon(
 
 _Declared in `include/datoviz/scene.h`:3123._
 
-#### `dvz_polygon_composite()` { #dvz_polygon_composite }
+#### `dvz_polygon_composite()` { #dvz_polygon_composite .dvz-api-function }
 
 Create a scene-owned composite render view for a polygon.
 
@@ -3437,7 +3437,7 @@ DvzComposite * dvz_polygon_composite(
 
 _Declared in `include/datoviz/scene.h`:3273._
 
-#### `dvz_polygon_desc()` { #dvz_polygon_desc }
+#### `dvz_polygon_desc()` { #dvz_polygon_desc .dvz-api-function }
 
 Return a default polygon descriptor.
 
@@ -3453,7 +3453,7 @@ Related: [`dvz_polygon()`](#dvz_polygon).
 
 _Declared in `include/datoviz/geom.h`:405._
 
-#### `dvz_polygon_destroy()` { #dvz_polygon_destroy }
+#### `dvz_polygon_destroy()` { #dvz_polygon_destroy .dvz-api-function }
 
 Destroy a scene-owned polygon object and release its copied ring data.
 
@@ -3469,7 +3469,7 @@ void dvz_polygon_destroy(
 
 _Declared in `include/datoviz/scene.h`:3131._
 
-#### `dvz_polygon_set_fill_color()` { #dvz_polygon_set_fill_color }
+#### `dvz_polygon_set_fill_color()` { #dvz_polygon_set_fill_color .dvz-api-function }
 
 Set the polygon fill color.
 
@@ -3488,7 +3488,7 @@ DvzResult dvz_polygon_set_fill_color(
 
 _Declared in `include/datoviz/scene.h`:3219._
 
-#### `dvz_polygon_set_geometry()` { #dvz_polygon_set_geometry }
+#### `dvz_polygon_set_geometry()` { #dvz_polygon_set_geometry .dvz-api-function }
 
 Replace all polygon rings from a borrowed descriptor.
 
@@ -3507,7 +3507,7 @@ DvzResult dvz_polygon_set_geometry(
 
 _Declared in `include/datoviz/scene.h`:3149._
 
-#### `dvz_polygon_set_hole()` { #dvz_polygon_set_hole }
+#### `dvz_polygon_set_hole()` { #dvz_polygon_set_hole .dvz-api-function }
 
 Append or replace one polygon hole ring.
 
@@ -3533,7 +3533,7 @@ DvzResult dvz_polygon_set_hole(
 
 _Declared in `include/datoviz/scene.h`:3176._
 
-#### `dvz_polygon_set_id()` { #dvz_polygon_set_id }
+#### `dvz_polygon_set_id()` { #dvz_polygon_set_id .dvz-api-function }
 
 Set the stable user id associated with a polygon.
 
@@ -3552,7 +3552,7 @@ DvzResult dvz_polygon_set_id(
 
 _Declared in `include/datoviz/scene.h`:3186._
 
-#### `dvz_polygon_set_outer()` { #dvz_polygon_set_outer }
+#### `dvz_polygon_set_outer()` { #dvz_polygon_set_outer .dvz-api-function }
 
 Replace the polygon outer ring while preserving existing holes.
 
@@ -3573,7 +3573,7 @@ DvzResult dvz_polygon_set_outer(
 
 _Declared in `include/datoviz/scene.h`:3160._
 
-#### `dvz_polygon_set_stroke_caps()` { #dvz_polygon_set_stroke_caps }
+#### `dvz_polygon_set_stroke_caps()` { #dvz_polygon_set_stroke_caps .dvz-api-function }
 
 Configure polygon stroke endpoint caps.
 
@@ -3594,7 +3594,7 @@ DvzResult dvz_polygon_set_stroke_caps(
 
 _Declared in `include/datoviz/scene.h`:3251._
 
-#### `dvz_polygon_set_stroke_color()` { #dvz_polygon_set_stroke_color }
+#### `dvz_polygon_set_stroke_color()` { #dvz_polygon_set_stroke_color .dvz-api-function }
 
 Set the polygon stroke color.
 
@@ -3613,7 +3613,7 @@ DvzResult dvz_polygon_set_stroke_color(
 
 _Declared in `include/datoviz/scene.h`:3229._
 
-#### `dvz_polygon_set_stroke_join()` { #dvz_polygon_set_stroke_join }
+#### `dvz_polygon_set_stroke_join()` { #dvz_polygon_set_stroke_join .dvz-api-function }
 
 Configure polygon stroke joins.
 
@@ -3634,7 +3634,7 @@ DvzResult dvz_polygon_set_stroke_join(
 
 _Declared in `include/datoviz/scene.h`:3263._
 
-#### `dvz_polygon_set_stroke_width_px()` { #dvz_polygon_set_stroke_width_px }
+#### `dvz_polygon_set_stroke_width_px()` { #dvz_polygon_set_stroke_width_px .dvz-api-function }
 
 Set the polygon stroke width in pixels.
 
@@ -3653,7 +3653,7 @@ DvzResult dvz_polygon_set_stroke_width_px(
 
 _Declared in `include/datoviz/scene.h`:3239._
 
-#### `dvz_polygon_set_style()` { #dvz_polygon_set_style }
+#### `dvz_polygon_set_style()` { #dvz_polygon_set_style .dvz-api-function }
 
 Apply polygon render style.
 
@@ -3675,7 +3675,7 @@ DvzResult dvz_polygon_set_style(
 
 _Declared in `include/datoviz/scene.h`:3209._
 
-#### `dvz_polygon_set_visible()` { #dvz_polygon_set_visible }
+#### `dvz_polygon_set_visible()` { #dvz_polygon_set_visible .dvz-api-function }
 
 Set polygon visibility.
 
@@ -3694,7 +3694,7 @@ DvzResult dvz_polygon_set_visible(
 
 _Declared in `include/datoviz/scene.h`:3196._
 
-#### `dvz_polygon_style()` { #dvz_polygon_style }
+#### `dvz_polygon_style()` { #dvz_polygon_style .dvz-api-function }
 
 Return the default polygon style descriptor.
 
@@ -3774,7 +3774,7 @@ _Declared in `include/datoviz/scene.h`:3139._
 
 ### Functions
 
-#### `dvz_polygons()` { #dvz_polygons }
+#### `dvz_polygons()` { #dvz_polygons .dvz-api-function }
 
 Create a scene-owned semantic polygon set object.
 
@@ -3796,7 +3796,7 @@ DvzPolygons * dvz_polygons(
 
 _Declared in `include/datoviz/scene.h`:3286._
 
-#### `dvz_polygons_add_region()` { #dvz_polygons_add_region }
+#### `dvz_polygons_add_region()` { #dvz_polygons_add_region .dvz-api-function }
 
 Append one polygon region to a polygon set.
 
@@ -3815,7 +3815,7 @@ uint32_t dvz_polygons_add_region(
 
 _Declared in `include/datoviz/scene.h`:3304._
 
-#### `dvz_polygons_composite()` { #dvz_polygons_composite }
+#### `dvz_polygons_composite()` { #dvz_polygons_composite .dvz-api-function }
 
 Create a scene-owned composite render view for a polygon set.
 
@@ -3834,7 +3834,7 @@ DvzComposite * dvz_polygons_composite(
 
 _Declared in `include/datoviz/scene.h`:3475._
 
-#### `dvz_polygons_destroy()` { #dvz_polygons_destroy }
+#### `dvz_polygons_destroy()` { #dvz_polygons_destroy .dvz-api-function }
 
 Destroy a scene-owned polygon set object.
 
@@ -3850,7 +3850,7 @@ void dvz_polygons_destroy(
 
 _Declared in `include/datoviz/scene.h`:3294._
 
-#### `dvz_polygons_set_region_fill_color()` { #dvz_polygons_set_region_fill_color }
+#### `dvz_polygons_set_region_fill_color()` { #dvz_polygons_set_region_fill_color .dvz-api-function }
 
 Set one polygon region's fill color.
 
@@ -3871,7 +3871,7 @@ DvzResult dvz_polygons_set_region_fill_color(
 
 _Declared in `include/datoviz/scene.h`:3377._
 
-#### `dvz_polygons_set_region_fill_colors()` { #dvz_polygons_set_region_fill_colors }
+#### `dvz_polygons_set_region_fill_colors()` { #dvz_polygons_set_region_fill_colors .dvz-api-function }
 
 Set a contiguous range of polygon region fill colors.
 
@@ -3894,7 +3894,7 @@ DvzResult dvz_polygons_set_region_fill_colors(
 
 _Declared in `include/datoviz/scene.h`:3390._
 
-#### `dvz_polygons_set_region_geometry()` { #dvz_polygons_set_region_geometry }
+#### `dvz_polygons_set_region_geometry()` { #dvz_polygons_set_region_geometry .dvz-api-function }
 
 Replace one polygon region's rings.
 
@@ -3915,7 +3915,7 @@ DvzResult dvz_polygons_set_region_geometry(
 
 _Declared in `include/datoviz/scene.h`:3315._
 
-#### `dvz_polygons_set_region_id()` { #dvz_polygons_set_region_id }
+#### `dvz_polygons_set_region_id()` { #dvz_polygons_set_region_id .dvz-api-function }
 
 Set one polygon region's stable user id.
 
@@ -3936,7 +3936,7 @@ DvzResult dvz_polygons_set_region_id(
 
 _Declared in `include/datoviz/scene.h`:3328._
 
-#### `dvz_polygons_set_region_ids()` { #dvz_polygons_set_region_ids }
+#### `dvz_polygons_set_region_ids()` { #dvz_polygons_set_region_ids .dvz-api-function }
 
 Set a contiguous range of polygon region stable user ids.
 
@@ -3959,7 +3959,7 @@ DvzResult dvz_polygons_set_region_ids(
 
 _Declared in `include/datoviz/scene.h`:3340._
 
-#### `dvz_polygons_set_region_stroke_color()` { #dvz_polygons_set_region_stroke_color }
+#### `dvz_polygons_set_region_stroke_color()` { #dvz_polygons_set_region_stroke_color .dvz-api-function }
 
 Set one polygon region's stroke color.
 
@@ -3980,7 +3980,7 @@ DvzResult dvz_polygons_set_region_stroke_color(
 
 _Declared in `include/datoviz/scene.h`:3402._
 
-#### `dvz_polygons_set_region_stroke_colors()` { #dvz_polygons_set_region_stroke_colors }
+#### `dvz_polygons_set_region_stroke_colors()` { #dvz_polygons_set_region_stroke_colors .dvz-api-function }
 
 Set a contiguous range of polygon region stroke colors.
 
@@ -4003,7 +4003,7 @@ DvzResult dvz_polygons_set_region_stroke_colors(
 
 _Declared in `include/datoviz/scene.h`:3415._
 
-#### `dvz_polygons_set_region_stroke_width_px()` { #dvz_polygons_set_region_stroke_width_px }
+#### `dvz_polygons_set_region_stroke_width_px()` { #dvz_polygons_set_region_stroke_width_px .dvz-api-function }
 
 Set one polygon region's stroke width in pixels.
 
@@ -4024,7 +4024,7 @@ DvzResult dvz_polygons_set_region_stroke_width_px(
 
 _Declared in `include/datoviz/scene.h`:3428._
 
-#### `dvz_polygons_set_region_stroke_widths_px()` { #dvz_polygons_set_region_stroke_widths_px }
+#### `dvz_polygons_set_region_stroke_widths_px()` { #dvz_polygons_set_region_stroke_widths_px .dvz-api-function }
 
 Set a contiguous range of polygon region stroke widths.
 
@@ -4047,7 +4047,7 @@ DvzResult dvz_polygons_set_region_stroke_widths_px(
 
 _Declared in `include/datoviz/scene.h`:3440._
 
-#### `dvz_polygons_set_region_visibilities()` { #dvz_polygons_set_region_visibilities }
+#### `dvz_polygons_set_region_visibilities()` { #dvz_polygons_set_region_visibilities .dvz-api-function }
 
 Set a contiguous range of polygon region visibilities.
 
@@ -4070,7 +4070,7 @@ DvzResult dvz_polygons_set_region_visibilities(
 
 _Declared in `include/datoviz/scene.h`:3365._
 
-#### `dvz_polygons_set_region_visible()` { #dvz_polygons_set_region_visible }
+#### `dvz_polygons_set_region_visible()` { #dvz_polygons_set_region_visible .dvz-api-function }
 
 Set one polygon region's visibility.
 
@@ -4091,7 +4091,7 @@ DvzResult dvz_polygons_set_region_visible(
 
 _Declared in `include/datoviz/scene.h`:3353._
 
-#### `dvz_polygons_set_stroke_caps()` { #dvz_polygons_set_stroke_caps }
+#### `dvz_polygons_set_stroke_caps()` { #dvz_polygons_set_stroke_caps .dvz-api-function }
 
 Configure polygon-set stroke endpoint caps.
 
@@ -4112,7 +4112,7 @@ DvzResult dvz_polygons_set_stroke_caps(
 
 _Declared in `include/datoviz/scene.h`:3453._
 
-#### `dvz_polygons_set_stroke_join()` { #dvz_polygons_set_stroke_join }
+#### `dvz_polygons_set_stroke_join()` { #dvz_polygons_set_stroke_join .dvz-api-function }
 
 Configure polygon-set stroke joins.
 
@@ -4149,7 +4149,7 @@ _Declared in `include/datoviz/scene.h`:3465._
 
 ### Functions
 
-#### `dvz_primitive()` { #dvz_primitive }
+#### `dvz_primitive()` { #dvz_primitive .dvz-api-function }
 
 Create a primitive visual.
 
@@ -4178,7 +4178,7 @@ _Declared in `include/datoviz/scene.h`:2870._
 
 ### Functions
 
-#### `dvz_segment()` { #dvz_segment }
+#### `dvz_segment()` { #dvz_segment .dvz-api-function }
 
 Create a segment visual.
 
@@ -4202,7 +4202,7 @@ DvzVisual * dvz_segment(
 
 _Declared in `include/datoviz/scene.h`:2784._
 
-#### `dvz_segment_set_caps()` { #dvz_segment_set_caps }
+#### `dvz_segment_set_caps()` { #dvz_segment_set_caps .dvz-api-function }
 
 Configure segment endpoint caps.
 
@@ -4249,7 +4249,7 @@ _Declared in `include/datoviz/scene.h`:2799._
 
 ### Functions
 
-#### `dvz_sphere()` { #dvz_sphere }
+#### `dvz_sphere()` { #dvz_sphere .dvz-api-function }
 
 Create a sphere impostor visual.
 
@@ -4272,7 +4272,7 @@ DvzVisual * dvz_sphere(
 
 _Declared in `include/datoviz/scene.h`:2755._
 
-#### `dvz_sphere_set_mode()` { #dvz_sphere_set_mode }
+#### `dvz_sphere_set_mode()` { #dvz_sphere_set_mode .dvz-api-function }
 
 Set the sphere impostor rendering mode.
 
@@ -4327,7 +4327,7 @@ _Declared in `include/datoviz/scene.h`:2769._
 
 ### Functions
 
-#### `dvz_splat()` { #dvz_splat }
+#### `dvz_splat()` { #dvz_splat .dvz-api-function }
 
 Create a Gaussian splat visual.
 
@@ -4355,7 +4355,7 @@ _Declared in `include/datoviz/scene.h`:2709._
 
 ### Functions
 
-#### `dvz_symbol_bitmap()` { #dvz_symbol_bitmap }
+#### `dvz_symbol_bitmap()` { #dvz_symbol_bitmap .dvz-api-function }
 
 Register an RGBA bitmap symbol source in one symbol set.
 
@@ -4385,7 +4385,7 @@ DvzSymbolId dvz_symbol_bitmap(
 
 _Declared in `include/datoviz/scene.h`:2562._
 
-#### `dvz_symbol_builtin()` { #dvz_symbol_builtin }
+#### `dvz_symbol_builtin()` { #dvz_symbol_builtin .dvz-api-function }
 
 Register or return a built-in symbol id in one symbol set.
 
@@ -4407,7 +4407,7 @@ DvzSymbolId dvz_symbol_builtin(
 
 _Declared in `include/datoviz/scene.h`:2534._
 
-#### `dvz_symbol_image_desc()` { #dvz_symbol_image_desc }
+#### `dvz_symbol_image_desc()` { #dvz_symbol_image_desc .dvz-api-function }
 
 Return default image-backed symbol source options.
 
@@ -4424,7 +4424,7 @@ DvzSymbolImageDesc dvz_symbol_image_desc(void);
 
 _Declared in `include/datoviz/scene.h`:2545._
 
-#### `dvz_symbol_msdf()` { #dvz_symbol_msdf }
+#### `dvz_symbol_msdf()` { #dvz_symbol_msdf .dvz-api-function }
 
 Register an RGB MSDF symbol source in one symbol set.
 
@@ -4454,7 +4454,7 @@ DvzSymbolId dvz_symbol_msdf(
 
 _Declared in `include/datoviz/scene.h`:2600._
 
-#### `dvz_symbol_sdf()` { #dvz_symbol_sdf }
+#### `dvz_symbol_sdf()` { #dvz_symbol_sdf .dvz-api-function }
 
 Register a single-channel SDF symbol source in one symbol set.
 
@@ -4484,7 +4484,7 @@ DvzSymbolId dvz_symbol_sdf(
 
 _Declared in `include/datoviz/scene.h`:2581._
 
-#### `dvz_symbol_set()` { #dvz_symbol_set }
+#### `dvz_symbol_set()` { #dvz_symbol_set .dvz-api-function }
 
 Create a scene-owned reusable symbol set.
 
@@ -4507,7 +4507,7 @@ DvzSymbolSet * dvz_symbol_set(
 
 _Declared in `include/datoviz/scene.h`:2521._
 
-#### `dvz_symbol_svg_path()` { #dvz_symbol_svg_path }
+#### `dvz_symbol_svg_path()` { #dvz_symbol_svg_path .dvz-api-function }
 
 Generate and register an MSDF symbol source from an SVG path string.
 
@@ -4627,7 +4627,7 @@ _Declared in `include/datoviz/scene.h`:2620._
 
 ### Functions
 
-#### `dvz_tessellate_cubic_bezier()` { #dvz_tessellate_cubic_bezier }
+#### `dvz_tessellate_cubic_bezier()` { #dvz_tessellate_cubic_bezier .dvz-api-function }
 
 Tessellate a cubic Bezier curve into an owned point path.
 
@@ -4652,7 +4652,7 @@ DvzTessellatedPath * dvz_tessellate_cubic_bezier(
 
 _Declared in `include/datoviz/geom.h`:458._
 
-#### `dvz_tessellate_quadratic_bezier()` { #dvz_tessellate_quadratic_bezier }
+#### `dvz_tessellate_quadratic_bezier()` { #dvz_tessellate_quadratic_bezier .dvz-api-function }
 
 Tessellate a quadratic Bezier curve into an owned point path.
 
@@ -4679,7 +4679,7 @@ _Declared in `include/datoviz/geom.h`:444._
 
 ### Functions
 
-#### `dvz_tessellated_path_destroy()` { #dvz_tessellated_path_destroy }
+#### `dvz_tessellated_path_destroy()` { #dvz_tessellated_path_destroy .dvz-api-function }
 
 Destroy a tessellated path.
 
@@ -4714,7 +4714,7 @@ _Declared in `include/datoviz/geom.h`:468._
 
 ### Functions
 
-#### `dvz_triangulate_polygon()` { #dvz_triangulate_polygon }
+#### `dvz_triangulate_polygon()` { #dvz_triangulate_polygon .dvz-api-function }
 
 Triangulate a polygon with optional holes into indexed XY mesh geometry.
 
@@ -4737,7 +4737,7 @@ _Declared in `include/datoviz/geom.h`:432._
 
 ### Functions
 
-#### `dvz_triangulation_desc()` { #dvz_triangulation_desc }
+#### `dvz_triangulation_desc()` { #dvz_triangulation_desc .dvz-api-function }
 
 Return a default triangulation descriptor.
 
@@ -4784,7 +4784,7 @@ _Declared in `include/datoviz/geom.h`:413._
 
 ### Functions
 
-#### `dvz_vector()` { #dvz_vector }
+#### `dvz_vector()` { #dvz_vector .dvz-api-function }
 
 Create a vector visual.
 
@@ -4810,7 +4810,7 @@ DvzVisual * dvz_vector(
 
 _Declared in `include/datoviz/scene.h`:2827._
 
-#### `dvz_vector_set_style()` { #dvz_vector_set_style }
+#### `dvz_vector_set_style()` { #dvz_vector_set_style .dvz-api-function }
 
 Configure vector styling.
 
@@ -4832,7 +4832,7 @@ DvzResult dvz_vector_set_style(
 
 _Declared in `include/datoviz/scene.h`:2840._
 
-#### `dvz_vector_set_subpaths()` { #dvz_vector_set_subpaths }
+#### `dvz_vector_set_subpaths()` { #dvz_vector_set_subpaths .dvz-api-function }
 
 Set explicit curved-vector subpath lengths for a vector visual.
 
@@ -4856,7 +4856,7 @@ DvzResult dvz_vector_set_subpaths(
 
 _Declared in `include/datoviz/scene.h`:2854._
 
-#### `dvz_vector_style()` { #dvz_vector_style }
+#### `dvz_vector_style()` { #dvz_vector_style .dvz-api-function }
 
 Return default vector styling.
 
@@ -4912,7 +4912,7 @@ _Declared in `include/datoviz/scene.h`:2810._
 
 ### Functions
 
-#### `dvz_visual_alpha_mode()` { #dvz_visual_alpha_mode }
+#### `dvz_visual_alpha_mode()` { #dvz_visual_alpha_mode .dvz-api-function }
 
 Return the visual alpha handling mode.
 
@@ -4929,7 +4929,7 @@ DvzAlphaMode dvz_visual_alpha_mode(
 
 _Declared in `include/datoviz/scene.h`:1846._
 
-#### `dvz_visual_attach_desc()` { #dvz_visual_attach_desc }
+#### `dvz_visual_attach_desc()` { #dvz_visual_attach_desc .dvz-api-function }
 
 Return the default visual attachment descriptor.
 
@@ -4943,7 +4943,7 @@ DvzVisualAttachDesc dvz_visual_attach_desc(void);
 
 _Declared in `include/datoviz/scene.h`:1089._
 
-#### `dvz_visual_attr_count()` { #dvz_visual_attr_count }
+#### `dvz_visual_attr_count()` { #dvz_visual_attr_count .dvz-api-function }
 
 Return the number of public attributes accepted by a visual family.
 
@@ -4960,7 +4960,7 @@ uint32_t dvz_visual_attr_count(
 
 _Declared in `include/datoviz/scene.h`:1721._
 
-#### `dvz_visual_attr_format()` { #dvz_visual_attr_format }
+#### `dvz_visual_attr_format()` { #dvz_visual_attr_format .dvz-api-function }
 
 Return the effective storage format for a visual attribute.
 
@@ -4981,7 +4981,7 @@ DvzVisualAttrFormat dvz_visual_attr_format(
 
 _Declared in `include/datoviz/scene.h`:2005._
 
-#### `dvz_visual_attr_info()` { #dvz_visual_attr_info }
+#### `dvz_visual_attr_info()` { #dvz_visual_attr_info .dvz-api-function }
 
 Copy public metadata for one visual attribute.
 
@@ -5005,7 +5005,7 @@ DvzResult dvz_visual_attr_info(
 
 _Declared in `include/datoviz/scene.h`:1736._
 
-#### `dvz_visual_attr_mutability()` { #dvz_visual_attr_mutability }
+#### `dvz_visual_attr_mutability()` { #dvz_visual_attr_mutability .dvz-api-function }
 
 Return the expected update frequency for a visual attribute.
 
@@ -5026,7 +5026,7 @@ DvzVisualAttrMutability dvz_visual_attr_mutability(
 
 _Declared in `include/datoviz/scene.h`:1973._
 
-#### `dvz_visual_attr_source()` { #dvz_visual_attr_source }
+#### `dvz_visual_attr_source()` { #dvz_visual_attr_source .dvz-api-function }
 
 Return the semantic source for a visual attribute.
 
@@ -5047,7 +5047,7 @@ DvzVisualAttrSource dvz_visual_attr_source(
 
 _Declared in `include/datoviz/scene.h`:1945._
 
-#### `dvz_visual_attr_supported()` { #dvz_visual_attr_supported }
+#### `dvz_visual_attr_supported()` { #dvz_visual_attr_supported .dvz-api-function }
 
 Return whether a visual accepts one public attribute name.
 
@@ -5066,7 +5066,7 @@ _Bool dvz_visual_attr_supported(
 
 _Declared in `include/datoviz/scene.h`:1746._
 
-#### `dvz_visual_bounds()` { #dvz_visual_bounds }
+#### `dvz_visual_bounds()` { #dvz_visual_bounds .dvz-api-function }
 
 Return the retained visual-space bounding box of one visual.
 
@@ -5089,7 +5089,7 @@ DvzResult dvz_visual_bounds(
 
 _Declared in `include/datoviz/scene.h`:2110._
 
-#### `dvz_visual_clear_item_range()` { #dvz_visual_clear_item_range }
+#### `dvz_visual_clear_item_range()` { #dvz_visual_clear_item_range .dvz-api-function }
 
 Clear the active logical item range and restore full visual participation.
 
@@ -5106,7 +5106,7 @@ DvzResult dvz_visual_clear_item_range(
 
 _Declared in `include/datoviz/scene.h`:2083._
 
-#### `dvz_visual_clear_transform()` { #dvz_visual_clear_transform }
+#### `dvz_visual_clear_transform()` { #dvz_visual_clear_transform .dvz-api-function }
 
 Clear the retained visual-local transform back to identity.
 
@@ -5123,7 +5123,7 @@ DvzResult dvz_visual_clear_transform(
 
 _Declared in `include/datoviz/scene.h`:1916._
 
-#### `dvz_visual_data()` { #dvz_visual_data }
+#### `dvz_visual_data()` { #dvz_visual_data .dvz-api-function }
 
 Return a read-only view of retained dense visual attribute data.
 
@@ -5148,7 +5148,7 @@ DvzResult dvz_visual_data(
 
 _Declared in `include/datoviz/scene.h`:2056._
 
-#### `dvz_visual_depth_test()` { #dvz_visual_depth_test }
+#### `dvz_visual_depth_test()` { #dvz_visual_depth_test .dvz-api-function }
 
 Return whether depth testing is enabled for the visual.
 
@@ -5165,7 +5165,7 @@ _Bool dvz_visual_depth_test(
 
 _Declared in `include/datoviz/scene.h`:1792._
 
-#### `dvz_visual_destroy()` { #dvz_visual_destroy }
+#### `dvz_visual_destroy()` { #dvz_visual_destroy .dvz-api-function }
 
 Destroy a visual.
 
@@ -5181,7 +5181,7 @@ void dvz_visual_destroy(
 
 _Declared in `include/datoviz/scene.h`:1685._
 
-#### `dvz_visual_family()` { #dvz_visual_family }
+#### `dvz_visual_family()` { #dvz_visual_family .dvz-api-function }
 
 Return the family of a visual.
 
@@ -5198,7 +5198,7 @@ DvzSceneVisualFamily dvz_visual_family(
 
 _Declared in `include/datoviz/scene.h`:1703._
 
-#### `dvz_visual_family_name()` { #dvz_visual_family_name }
+#### `dvz_visual_family_name()` { #dvz_visual_family_name .dvz-api-function }
 
 Return the stable public name of a visual family.
 
@@ -5215,7 +5215,7 @@ const char * dvz_visual_family_name(
 
 _Declared in `include/datoviz/scene.h`:1712._
 
-#### `dvz_visual_get_item_range()` { #dvz_visual_get_item_range }
+#### `dvz_visual_get_item_range()` { #dvz_visual_get_item_range .dvz-api-function }
 
 Return the effective logical item range for a retained visual.
 
@@ -5237,7 +5237,7 @@ _Bool dvz_visual_get_item_range(
 
 _Declared in `include/datoviz/scene.h`:2096._
 
-#### `dvz_visual_get_transform()` { #dvz_visual_get_transform }
+#### `dvz_visual_get_transform()` { #dvz_visual_get_transform .dvz-api-function }
 
 Copy the retained visual-local transform.
 
@@ -5258,7 +5258,7 @@ DvzResult dvz_visual_get_transform(
 
 _Declared in `include/datoviz/scene.h`:1907._
 
-#### `dvz_visual_has_transform()` { #dvz_visual_has_transform }
+#### `dvz_visual_has_transform()` { #dvz_visual_has_transform .dvz-api-function }
 
 Return whether a visual has a retained local transform.
 
@@ -5275,7 +5275,7 @@ _Bool dvz_visual_has_transform(
 
 _Declared in `include/datoviz/scene.h`:1895._
 
-#### `dvz_visual_id()` { #dvz_visual_id }
+#### `dvz_visual_id()` { #dvz_visual_id .dvz-api-function }
 
 Return the scene-local identity of a visual.
 
@@ -5292,7 +5292,7 @@ DvzId dvz_visual_id(
 
 _Declared in `include/datoviz/scene.h`:1694._
 
-#### `dvz_visual_set_alpha_mode()` { #dvz_visual_set_alpha_mode }
+#### `dvz_visual_set_alpha_mode()` { #dvz_visual_set_alpha_mode .dvz-api-function }
 
 Set the visual alpha handling mode.
 
@@ -5316,7 +5316,7 @@ DvzResult dvz_visual_set_alpha_mode(
 
 _Declared in `include/datoviz/scene.h`:1807._
 
-#### `dvz_visual_set_attr_buffer()` { #dvz_visual_set_attr_buffer }
+#### `dvz_visual_set_attr_buffer()` { #dvz_visual_set_attr_buffer .dvz-api-function }
 
 Bind a scene-owned buffer to a per-item visual attribute.
 
@@ -5349,7 +5349,7 @@ DvzResult dvz_visual_set_attr_buffer(
 
 _Declared in `include/datoviz/scene.h`:2407._
 
-#### `dvz_visual_set_attr_format()` { #dvz_visual_set_attr_format }
+#### `dvz_visual_set_attr_format()` { #dvz_visual_set_attr_format .dvz-api-function }
 
 Declare the storage format for a visual attribute.
 
@@ -5377,7 +5377,7 @@ DvzResult dvz_visual_set_attr_format(
 
 _Declared in `include/datoviz/scene.h`:1991._
 
-#### `dvz_visual_set_attr_mutability()` { #dvz_visual_set_attr_mutability }
+#### `dvz_visual_set_attr_mutability()` { #dvz_visual_set_attr_mutability .dvz-api-function }
 
 Declare the expected update frequency for a visual attribute.
 
@@ -5401,7 +5401,7 @@ DvzResult dvz_visual_set_attr_mutability(
 
 _Declared in `include/datoviz/scene.h`:1959._
 
-#### `dvz_visual_set_attr_source()` { #dvz_visual_set_attr_source }
+#### `dvz_visual_set_attr_source()` { #dvz_visual_set_attr_source .dvz-api-function }
 
 Declare the semantic source for a visual attribute.
 
@@ -5426,7 +5426,7 @@ DvzResult dvz_visual_set_attr_source(
 
 _Declared in `include/datoviz/scene.h`:1931._
 
-#### `dvz_visual_set_buffer()` { #dvz_visual_set_buffer }
+#### `dvz_visual_set_buffer()` { #dvz_visual_set_buffer .dvz-api-function }
 
 Bind a scene-owned buffer to a named visual slot.
 
@@ -5450,7 +5450,7 @@ DvzResult dvz_visual_set_buffer(
 
 _Declared in `include/datoviz/scene.h`:2370._
 
-#### `dvz_visual_set_data()` { #dvz_visual_set_data }
+#### `dvz_visual_set_data()` { #dvz_visual_set_data .dvz-api-function }
 
 Write attribute data to a visual.
 
@@ -5495,7 +5495,7 @@ Related: [`dvz_visual_set_data_many()`](#dvz_visual_set_data_many), [`dvz_visual
 
 _Declared in `include/datoviz/scene.h`:2040._
 
-#### `dvz_visual_set_data_many()` { #dvz_visual_set_data_many }
+#### `dvz_visual_set_data_many()` { #dvz_visual_set_data_many .dvz-api-function }
 
 Atomically replace several dense visual attribute payloads.
 
@@ -5525,7 +5525,7 @@ Related: [`dvz_visual_set_data()`](#dvz_visual_set_data).
 
 _Declared in `include/datoviz/scene.h`:2176._
 
-#### `dvz_visual_set_data_range()` { #dvz_visual_set_data_range }
+#### `dvz_visual_set_data_range()` { #dvz_visual_set_data_range .dvz-api-function }
 
 Write a contiguous sub-range of attribute data to a visual.
 
@@ -5557,7 +5557,7 @@ Related: [`dvz_visual_set_data()`](#dvz_visual_set_data).
 
 _Declared in `include/datoviz/scene.h`:2198._
 
-#### `dvz_visual_set_depth_test()` { #dvz_visual_set_depth_test }
+#### `dvz_visual_set_depth_test()` { #dvz_visual_set_depth_test .dvz-api-function }
 
 Enable or disable depth testing for the visual.
 
@@ -5580,7 +5580,7 @@ DvzResult dvz_visual_set_depth_test(
 
 _Declared in `include/datoviz/scene.h`:1783._
 
-#### `dvz_visual_set_field()` { #dvz_visual_set_field }
+#### `dvz_visual_set_field()` { #dvz_visual_set_field .dvz-api-function }
 
 Bind a scene-owned sampled field to a named visual slot.
 
@@ -5606,7 +5606,7 @@ DvzResult dvz_visual_set_field(
 
 _Declared in `include/datoviz/scene/field.h`:307._
 
-#### `dvz_visual_set_index_data()` { #dvz_visual_set_index_data }
+#### `dvz_visual_set_index_data()` { #dvz_visual_set_index_data .dvz-api-function }
 
 Replace a visual's index buffer with copied 32-bit index data.
 
@@ -5631,7 +5631,7 @@ DvzResult dvz_visual_set_index_data(
 
 _Declared in `include/datoviz/scene.h`:2386._
 
-#### `dvz_visual_set_item_range()` { #dvz_visual_set_item_range }
+#### `dvz_visual_set_item_range()` { #dvz_visual_set_item_range .dvz-api-function }
 
 Set the active logical item range for a retained visual.
 
@@ -5657,7 +5657,7 @@ DvzResult dvz_visual_set_item_range(
 
 _Declared in `include/datoviz/scene.h`:2074._
 
-#### `dvz_visual_set_link_keys()` { #dvz_visual_set_link_keys }
+#### `dvz_visual_set_link_keys()` { #dvz_visual_set_link_keys .dvz-api-function }
 
 Bind per-item link keys for a visual on one link channel.
 
@@ -5683,7 +5683,7 @@ DvzResult dvz_visual_set_link_keys(
 
 _Declared in `include/datoviz/scene/interaction.h`:133._
 
-#### `dvz_visual_set_query_capabilities()` { #dvz_visual_set_query_capabilities }
+#### `dvz_visual_set_query_capabilities()` { #dvz_visual_set_query_capabilities .dvz-api-function }
 
 Declare the query capabilities exposed by a visual.
 
@@ -5702,7 +5702,7 @@ DvzResult dvz_visual_set_query_capabilities(
 
 _Declared in `include/datoviz/scene/interaction.h`:118._
 
-#### `dvz_visual_set_scale()` { #dvz_visual_set_scale }
+#### `dvz_visual_set_scale()` { #dvz_visual_set_scale .dvz-api-function }
 
 Bind a scene-owned scale to a named visual slot.
 
@@ -5729,7 +5729,7 @@ DvzResult dvz_visual_set_scale(
 
 _Declared in `include/datoviz/scene/scale.h`:732._
 
-#### `dvz_visual_set_shader_desc()` { #dvz_visual_set_shader_desc }
+#### `dvz_visual_set_shader_desc()` { #dvz_visual_set_shader_desc .dvz-api-function }
 
 Set the visual shader descriptor.
 
@@ -5751,7 +5751,7 @@ DvzResult dvz_visual_set_shader_desc(
 
 _Declared in `include/datoviz/scene.h`:1873._
 
-#### `dvz_visual_set_strings()` { #dvz_visual_set_strings }
+#### `dvz_visual_set_strings()` { #dvz_visual_set_strings .dvz-api-function }
 
 Write variable-length string data to a visual.
 
@@ -5777,7 +5777,7 @@ DvzResult dvz_visual_set_strings(
 
 _Declared in `include/datoviz/scene.h`:2153._
 
-#### `dvz_visual_set_transform()` { #dvz_visual_set_transform }
+#### `dvz_visual_set_transform()` { #dvz_visual_set_transform .dvz-api-function }
 
 Set the retained visual-local transform.
 
@@ -5799,7 +5799,7 @@ DvzResult dvz_visual_set_transform(
 
 _Declared in `include/datoviz/scene.h`:1886._
 
-#### `dvz_visual_set_transform_desc()` { #dvz_visual_set_transform_desc }
+#### `dvz_visual_set_transform_desc()` { #dvz_visual_set_transform_desc .dvz-api-function }
 
 Set the future scene-managed visual transform descriptor.
 
@@ -5823,7 +5823,7 @@ Related: [`dvz_visual_set_transform()`](#dvz_visual_set_transform).
 
 _Declared in `include/datoviz/scene.h`:1860._
 
-#### `dvz_visual_set_visible()` { #dvz_visual_set_visible }
+#### `dvz_visual_set_visible()` { #dvz_visual_set_visible .dvz-api-function }
 
 Set visual visibility.
 
@@ -5842,7 +5842,7 @@ DvzResult dvz_visual_set_visible(
 
 _Declared in `include/datoviz/scene.h`:1769._
 
-#### `dvz_visual_shader_desc()` { #dvz_visual_shader_desc }
+#### `dvz_visual_shader_desc()` { #dvz_visual_shader_desc .dvz-api-function }
 
 Return the default visual shader descriptor.
 
@@ -5859,7 +5859,7 @@ DvzVisualShaderDesc dvz_visual_shader_desc(void);
 
 _Declared in `include/datoviz/scene.h`:1111._
 
-#### `dvz_visual_transform_desc()` { #dvz_visual_transform_desc }
+#### `dvz_visual_transform_desc()` { #dvz_visual_transform_desc .dvz-api-function }
 
 Return the default future visual transform descriptor.
 
@@ -5876,7 +5876,7 @@ DvzVisualTransformDesc dvz_visual_transform_desc(void);
 
 _Declared in `include/datoviz/scene.h`:1100._
 
-#### `dvz_visual_validate()` { #dvz_visual_validate }
+#### `dvz_visual_validate()` { #dvz_visual_validate .dvz-api-function }
 
 Validate retained visual-local state.
 
@@ -6224,7 +6224,7 @@ _Declared in `include/datoviz/scene.h`:1759._
 
 ### Functions
 
-#### `dvz_volume()` { #dvz_volume }
+#### `dvz_volume()` { #dvz_volume .dvz-api-function }
 
 Create a volume visual.
 
@@ -6247,7 +6247,7 @@ DvzVisual * dvz_volume(
 
 _Declared in `include/datoviz/scene.h`:3761._
 
-#### `dvz_volume_clear_clipping()` { #dvz_volume_clear_clipping }
+#### `dvz_volume_clear_clipping()` { #dvz_volume_clear_clipping .dvz-api-function }
 
 Disable all clipping on a volume visual.
 
@@ -6264,7 +6264,7 @@ DvzResult dvz_volume_clear_clipping(
 
 _Declared in `include/datoviz/scene.h`:3922._
 
-#### `dvz_volume_clear_clipping_plane()` { #dvz_volume_clear_clipping_plane }
+#### `dvz_volume_clear_clipping_plane()` { #dvz_volume_clear_clipping_plane .dvz-api-function }
 
 Disable arbitrary plane clipping on a volume visual.
 
@@ -6281,7 +6281,7 @@ DvzResult dvz_volume_clear_clipping_plane(
 
 _Declared in `include/datoviz/scene.h`:3913._
 
-#### `dvz_volume_set_alpha_stops()` { #dvz_volume_set_alpha_stops }
+#### `dvz_volume_set_alpha_stops()` { #dvz_volume_set_alpha_stops .dvz-api-function }
 
 Set piecewise-linear opacity stops for scalar volume transfer.
 
@@ -6302,7 +6302,7 @@ DvzResult dvz_volume_set_alpha_stops(
 
 _Declared in `include/datoviz/scene.h`:3875._
 
-#### `dvz_volume_set_axis_mapping()` { #dvz_volume_set_axis_mapping }
+#### `dvz_volume_set_axis_mapping()` { #dvz_volume_set_axis_mapping .dvz-api-function }
 
 Set the mapping from normalized volume coordinates to texture UVW coordinates.
 
@@ -6327,7 +6327,7 @@ DvzResult dvz_volume_set_axis_mapping(
 
 _Declared in `include/datoviz/scene.h`:3852._
 
-#### `dvz_volume_set_bounds()` { #dvz_volume_set_bounds }
+#### `dvz_volume_set_bounds()` { #dvz_volume_set_bounds .dvz-api-function }
 
 Set the object-space volume proxy bounds.
 
@@ -6351,7 +6351,7 @@ DvzResult dvz_volume_set_bounds(
 
 _Declared in `include/datoviz/scene.h`:3837._
 
-#### `dvz_volume_set_clipping_box()` { #dvz_volume_set_clipping_box }
+#### `dvz_volume_set_clipping_box()` { #dvz_volume_set_clipping_box .dvz-api-function }
 
 Enable axis-aligned clipping on a volume visual.
 
@@ -6372,7 +6372,7 @@ DvzResult dvz_volume_set_clipping_box(
 
 _Declared in `include/datoviz/scene.h`:3888._
 
-#### `dvz_volume_set_clipping_plane()` { #dvz_volume_set_clipping_plane }
+#### `dvz_volume_set_clipping_plane()` { #dvz_volume_set_clipping_plane .dvz-api-function }
 
 Enable arbitrary plane clipping on a volume visual.
 
@@ -6398,7 +6398,7 @@ DvzResult dvz_volume_set_clipping_plane(
 
 _Declared in `include/datoviz/scene.h`:3903._
 
-#### `dvz_volume_set_opacity()` { #dvz_volume_set_opacity }
+#### `dvz_volume_set_opacity()` { #dvz_volume_set_opacity .dvz-api-function }
 
 Set the global opacity multiplier on a volume visual.
 
@@ -6417,7 +6417,7 @@ DvzResult dvz_volume_set_opacity(
 
 _Declared in `include/datoviz/scene.h`:3771._
 
-#### `dvz_volume_set_render_mode()` { #dvz_volume_set_render_mode }
+#### `dvz_volume_set_render_mode()` { #dvz_volume_set_render_mode .dvz-api-function }
 
 Set the volume render mode.
 
@@ -6436,7 +6436,7 @@ DvzResult dvz_volume_set_render_mode(
 
 _Declared in `include/datoviz/scene.h`:3792._
 
-#### `dvz_volume_set_sampling()` { #dvz_volume_set_sampling }
+#### `dvz_volume_set_sampling()` { #dvz_volume_set_sampling .dvz-api-function }
 
 Set the texture sampling mode on a volume visual.
 
@@ -6455,7 +6455,7 @@ DvzResult dvz_volume_set_sampling(
 
 _Declared in `include/datoviz/scene.h`:3782._
 
-#### `dvz_volume_set_slice_axis()` { #dvz_volume_set_slice_axis }
+#### `dvz_volume_set_slice_axis()` { #dvz_volume_set_slice_axis .dvz-api-function }
 
 Set the volume slice axis.
 
@@ -6474,7 +6474,7 @@ DvzResult dvz_volume_set_slice_axis(
 
 _Declared in `include/datoviz/scene.h`:3802._
 
-#### `dvz_volume_set_slice_position()` { #dvz_volume_set_slice_position }
+#### `dvz_volume_set_slice_position()` { #dvz_volume_set_slice_position .dvz-api-function }
 
 Set the normalized volume slice position.
 
@@ -6493,7 +6493,7 @@ DvzResult dvz_volume_set_slice_position(
 
 _Declared in `include/datoviz/scene.h`:3812._
 
-#### `dvz_volume_set_step_count()` { #dvz_volume_set_step_count }
+#### `dvz_volume_set_step_count()` { #dvz_volume_set_step_count .dvz-api-function }
 
 Set the volume raymarch step count used by MIP and composite rendering.
 
@@ -6512,7 +6512,7 @@ DvzResult dvz_volume_set_step_count(
 
 _Declared in `include/datoviz/scene.h`:3822._
 
-#### `dvz_volume_set_value_range()` { #dvz_volume_set_value_range }
+#### `dvz_volume_set_value_range()` { #dvz_volume_set_value_range .dvz-api-function }
 
 Set the scalar value range used before transfer texture lookup.
 
@@ -6533,7 +6533,7 @@ DvzResult dvz_volume_set_value_range(
 
 _Declared in `include/datoviz/scene.h`:3864._
 
-#### `dvz_volume_state()` { #dvz_volume_state }
+#### `dvz_volume_state()` { #dvz_volume_state .dvz-api-function }
 
 Return the retained volume state for inspection.
 

@@ -133,7 +133,7 @@ Types: 46
 
 ### Functions
 
-#### `dvz_box()` { #dvz_box }
+#### `dvz_box()` { #dvz_box .dvz-api-function }
 
 Create a box.
 
@@ -160,7 +160,7 @@ DvzBox dvz_box(
 
 _Declared in `include/datoviz/math/box.h`:88._
 
-#### `dvz_box_aspect()` { #dvz_box_aspect }
+#### `dvz_box_aspect()` { #dvz_box_aspect .dvz-api-function }
 
 Return the aspect ratio of a box.
 
@@ -177,7 +177,7 @@ double dvz_box_aspect(
 
 _Declared in `include/datoviz/math/box.h`:98._
 
-#### `dvz_box_center()` { #dvz_box_center }
+#### `dvz_box_center()` { #dvz_box_center .dvz-api-function }
 
 Return the box center.
 
@@ -195,7 +195,7 @@ void dvz_box_center(
 
 _Declared in `include/datoviz/math/box.h`:108._
 
-#### `dvz_box_extent()` { #dvz_box_extent }
+#### `dvz_box_extent()` { #dvz_box_extent .dvz-api-function }
 
 Return the extent of a box, in the same coordinate system, depending on the target viewport
 aspect ratio. `DVZ_BOX_EXTENT_DEFAULT` returns the input box unchanged. `EXPAND` preserves the
@@ -221,7 +221,7 @@ DvzBox dvz_box_extent(
 
 _Declared in `include/datoviz/math/box.h`:125._
 
-#### `dvz_box_inverse()` { #dvz_box_inverse }
+#### `dvz_box_inverse()` { #dvz_box_inverse .dvz-api-function }
 
 Perform an inverse transformation of a position from a target box to a source box.
 
@@ -243,7 +243,7 @@ void dvz_box_inverse(
 
 _Declared in `include/datoviz/math/box.h`:208._
 
-#### `dvz_box_merge()` { #dvz_box_merge }
+#### `dvz_box_merge()` { #dvz_box_merge .dvz-api-function }
 
 Merge a number of boxes into a single box.
 
@@ -264,7 +264,7 @@ DvzBox dvz_box_merge(
 
 _Declared in `include/datoviz/math/box.h`:138._
 
-#### `dvz_box_normalize_1D()` { #dvz_box_normalize_1d }
+#### `dvz_box_normalize_1D()` { #dvz_box_normalize_1d .dvz-api-function }
 
 Normalize 1D input positions into a target box.
 
@@ -290,7 +290,7 @@ void dvz_box_normalize_1D(
 
 _Declared in `include/datoviz/math/box.h`:153._
 
-#### `dvz_box_normalize_2D()` { #dvz_box_normalize_2d }
+#### `dvz_box_normalize_2D()` { #dvz_box_normalize_2d .dvz-api-function }
 
 Normalize 2D input positions into a target box.
 
@@ -314,7 +314,7 @@ void dvz_box_normalize_2D(
 
 _Declared in `include/datoviz/math/box.h`:168._
 
-#### `dvz_box_normalize_3D()` { #dvz_box_normalize_3d }
+#### `dvz_box_normalize_3D()` { #dvz_box_normalize_3d .dvz-api-function }
 
 Normalize 3D input positions into a target box.
 
@@ -338,7 +338,7 @@ void dvz_box_normalize_3D(
 
 _Declared in `include/datoviz/math/box.h`:196._
 
-#### `dvz_box_normalize_polygon()` { #dvz_box_normalize_polygon }
+#### `dvz_box_normalize_polygon()` { #dvz_box_normalize_polygon .dvz-api-function }
 
 Normalize 2D input positions into a target box, using dvec2* as output format.
 
@@ -432,7 +432,7 @@ _Declared in `include/datoviz/math/box.h`:181._
 
 ### Functions
 
-#### `dvz_dmat4_copy()` { #dvz_dmat4_copy }
+#### `dvz_dmat4_copy()` { #dvz_dmat4_copy .dvz-api-function }
 
 ```c
 void dvz_dmat4_copy(
@@ -448,7 +448,7 @@ void dvz_dmat4_copy(
 
 _Declared in `include/datoviz/math/vec.h`:54._
 
-#### `dvz_dmat4_identity()` { #dvz_dmat4_identity }
+#### `dvz_dmat4_identity()` { #dvz_dmat4_identity .dvz-api-function }
 
 ```c
 void dvz_dmat4_identity(
@@ -462,7 +462,7 @@ void dvz_dmat4_identity(
 
 _Declared in `include/datoviz/math/vec.h`:62._
 
-#### `dvz_dmat4_inv()` { #dvz_dmat4_inv }
+#### `dvz_dmat4_inv()` { #dvz_dmat4_inv .dvz-api-function }
 
 ```c
 void dvz_dmat4_inv(
@@ -478,7 +478,7 @@ void dvz_dmat4_inv(
 
 _Declared in `include/datoviz/math/vec.h`:90._
 
-#### `dvz_dmat4_mat4()` { #dvz_dmat4_mat4 }
+#### `dvz_dmat4_mat4()` { #dvz_dmat4_mat4 .dvz-api-function }
 
 ```c
 void dvz_dmat4_mat4(
@@ -494,7 +494,7 @@ void dvz_dmat4_mat4(
 
 _Declared in `include/datoviz/math/vec.h`:58._
 
-#### `dvz_dmat4_mul()` { #dvz_dmat4_mul }
+#### `dvz_dmat4_mul()` { #dvz_dmat4_mul .dvz-api-function }
 
 ```c
 void dvz_dmat4_mul(
@@ -512,7 +512,7 @@ void dvz_dmat4_mul(
 
 _Declared in `include/datoviz/math/vec.h`:66._
 
-#### `dvz_dmat4_mulv()` { #dvz_dmat4_mulv }
+#### `dvz_dmat4_mulv()` { #dvz_dmat4_mulv .dvz-api-function }
 
 ```c
 void dvz_dmat4_mulv(
@@ -530,7 +530,7 @@ void dvz_dmat4_mulv(
 
 _Declared in `include/datoviz/math/vec.h`:70._
 
-#### `dvz_dmat4_mulv3()` { #dvz_dmat4_mulv3 }
+#### `dvz_dmat4_mulv3()` { #dvz_dmat4_mulv3 .dvz-api-function }
 
 ```c
 void dvz_dmat4_mulv3(
@@ -550,7 +550,7 @@ void dvz_dmat4_mulv3(
 
 _Declared in `include/datoviz/math/vec.h`:82._
 
-#### `dvz_dmat4_scale_p()` { #dvz_dmat4_scale_p }
+#### `dvz_dmat4_scale_p()` { #dvz_dmat4_scale_p .dvz-api-function }
 
 ```c
 void dvz_dmat4_scale_p(
@@ -570,7 +570,7 @@ _Declared in `include/datoviz/math/vec.h`:86._
 
 ### Functions
 
-#### `dvz_dvec3()` { #dvz_dvec3 }
+#### `dvz_dvec3()` { #dvz_dvec3 .dvz-api-function }
 
 ```c
 void dvz_dvec3(
@@ -586,7 +586,7 @@ void dvz_dvec3(
 
 _Declared in `include/datoviz/math/vec.h`:78._
 
-#### `dvz_dvec3_copy()` { #dvz_dvec3_copy }
+#### `dvz_dvec3_copy()` { #dvz_dvec3_copy .dvz-api-function }
 
 ```c
 void dvz_dvec3_copy(
@@ -606,7 +606,7 @@ _Declared in `include/datoviz/math/vec.h`:46._
 
 ### Functions
 
-#### `dvz_dvec4()` { #dvz_dvec4 }
+#### `dvz_dvec4()` { #dvz_dvec4 .dvz-api-function }
 
 ```c
 void dvz_dvec4(
@@ -624,7 +624,7 @@ void dvz_dvec4(
 
 _Declared in `include/datoviz/math/vec.h`:74._
 
-#### `dvz_dvec4_copy()` { #dvz_dvec4_copy }
+#### `dvz_dvec4_copy()` { #dvz_dvec4_copy .dvz-api-function }
 
 ```c
 void dvz_dvec4_copy(
@@ -644,7 +644,7 @@ _Declared in `include/datoviz/math/vec.h`:50._
 
 ### Functions
 
-#### `dvz_easing()` { #dvz_easing }
+#### `dvz_easing()` { #dvz_easing .dvz-api-function }
 
 Apply an easing function to a normalized value.
 
@@ -712,7 +712,7 @@ _Declared in `include/datoviz/math/anim.h`:85._
 
 ### Functions
 
-#### `dvz_mean()` { #dvz_mean }
+#### `dvz_mean()` { #dvz_mean .dvz-api-function }
 
 Compute the mean of an array of double values.
 
@@ -735,7 +735,7 @@ _Declared in `include/datoviz/math/stats.h`:40._
 
 ### Functions
 
-#### `dvz_min_max()` { #dvz_min_max }
+#### `dvz_min_max()` { #dvz_min_max .dvz-api-function }
 
 Compute the min and max of an array of float values.
 
@@ -759,7 +759,7 @@ _Declared in `include/datoviz/math/stats.h`:51._
 
 ### Functions
 
-#### `dvz_normalize_bytes()` { #dvz_normalize_bytes }
+#### `dvz_normalize_bytes()` { #dvz_normalize_bytes .dvz-api-function }
 
 Normalize the array.
 
@@ -785,7 +785,7 @@ _Declared in `include/datoviz/math/stats.h`:63._
 
 ### Functions
 
-#### `dvz_prng()` { #dvz_prng }
+#### `dvz_prng()` { #dvz_prng .dvz-api-function }
 
 *********************************************************************************************
 
@@ -795,7 +795,7 @@ DvzPrng * dvz_prng(void);
 
 _Declared in `include/datoviz/math/prng.h`:38._
 
-#### `dvz_prng_destroy()` { #dvz_prng_destroy }
+#### `dvz_prng_destroy()` { #dvz_prng_destroy .dvz-api-function }
 
 ```c
 void dvz_prng_destroy(
@@ -809,7 +809,7 @@ void dvz_prng_destroy(
 
 _Declared in `include/datoviz/math/prng.h`:46._
 
-#### `dvz_prng_uuid()` { #dvz_prng_uuid }
+#### `dvz_prng_uuid()` { #dvz_prng_uuid .dvz-api-function }
 
 ```c
 uint64_t dvz_prng_uuid(
@@ -839,7 +839,7 @@ _Declared in `include/datoviz/math/prng.h`:42._
 
 ### Functions
 
-#### `dvz_range()` { #dvz_range }
+#### `dvz_range()` { #dvz_range .dvz-api-function }
 
 Compute the range of an array of double values.
 
@@ -1267,7 +1267,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
 
 ### Functions
 
-#### `dvz_vec2_copy()` { #dvz_vec2_copy }
+#### `dvz_vec2_copy()` { #dvz_vec2_copy .dvz-api-function }
 
 *********************************************************************************************
 
@@ -1289,7 +1289,7 @@ _Declared in `include/datoviz/math/vec.h`:34._
 
 ### Functions
 
-#### `dvz_vec3_cast()` { #dvz_vec3_cast }
+#### `dvz_vec3_cast()` { #dvz_vec3_cast .dvz-api-function }
 
 ```c
 void dvz_vec3_cast(
@@ -1305,7 +1305,7 @@ void dvz_vec3_cast(
 
 _Declared in `include/datoviz/math/vec.h`:42._
 
-#### `dvz_vec3_copy()` { #dvz_vec3_copy }
+#### `dvz_vec3_copy()` { #dvz_vec3_copy .dvz-api-function }
 
 ```c
 void dvz_vec3_copy(

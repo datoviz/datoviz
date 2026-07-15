@@ -180,7 +180,7 @@ Types: 8
 
 ### Functions
 
-#### `dvz_error_set_callback()` { #dvz_error_set_callback }
+#### `dvz_error_set_callback()` { #dvz_error_set_callback .dvz-api-function }
 
 Register an error callback.
 
@@ -215,7 +215,7 @@ _Declared in `include/datoviz/common/functions.h`:57._
 
 ### Functions
 
-#### `dvz_file_size()` { #dvz_file_size }
+#### `dvz_file_size()` { #dvz_file_size .dvz-api-function }
 
 Return the size of a file.
 
@@ -236,7 +236,7 @@ _Declared in `include/datoviz/fileio/fileio.h`:42._
 
 ### Functions
 
-#### `dvz_font_defaults()` { #dvz_font_defaults }
+#### `dvz_font_defaults()` { #dvz_font_defaults .dvz-api-function }
 
 Return Datoviz's shared default font policy.
 
@@ -253,7 +253,7 @@ DvzFontDefaults dvz_font_defaults(void);
 
 _Declared in `include/datoviz/font.h`:86._
 
-#### `dvz_font_desc()` { #dvz_font_desc }
+#### `dvz_font_desc()` { #dvz_font_desc .dvz-api-function }
 
 Return an empty font descriptor.
 
@@ -317,7 +317,7 @@ _Declared in `include/datoviz/font.h`:75._
 
 ### Functions
 
-#### `dvz_load_jpeg()` { #dvz_load_jpeg }
+#### `dvz_load_jpeg()` { #dvz_load_jpeg .dvz-api-function }
 
 Decode a JPEG image from memory into tightly packed RGBA8 pixels.
 
@@ -340,7 +340,7 @@ uint8_t * dvz_load_jpeg(
 
 _Declared in `include/datoviz/fileio/fileio.h`:192._
 
-#### `dvz_load_png()` { #dvz_load_png }
+#### `dvz_load_png()` { #dvz_load_png .dvz-api-function }
 
 Decode a PNG image from memory into tightly packed RGB8 pixels.
 
@@ -385,7 +385,7 @@ _Declared in `include/datoviz/fileio/fileio.h`:172._
 
 ### Functions
 
-#### `dvz_make_png()` { #dvz_make_png }
+#### `dvz_make_png()` { #dvz_make_png .dvz-api-function }
 
 Compress an sRGB RGB8 image to PNG and write it to a memory buffer.
 
@@ -413,7 +413,7 @@ _Declared in `include/datoviz/fileio/fileio.h`:157._
 
 ### Functions
 
-#### `dvz_memory_free()` { #dvz_memory_free }
+#### `dvz_memory_free()` { #dvz_memory_free .dvz-api-function }
 
 Release memory returned by Datoviz public APIs.
 
@@ -436,7 +436,7 @@ _Declared in `include/datoviz/common/functions.h`:68._
 
 ### Functions
 
-#### `dvz_parse_npy()` { #dvz_parse_npy }
+#### `dvz_parse_npy()` { #dvz_parse_npy .dvz-api-function }
 
 Read a NumPy NPY file from memory.
 
@@ -459,7 +459,7 @@ _Declared in `include/datoviz/fileio/fileio.h`:76._
 
 ### Functions
 
-#### `dvz_read_file()` { #dvz_read_file }
+#### `dvz_read_file()` { #dvz_read_file .dvz-api-function }
 
 Read a binary file.
 
@@ -478,7 +478,7 @@ void * dvz_read_file(
 
 _Declared in `include/datoviz/fileio/fileio.h`:54._
 
-#### `dvz_read_gz()` { #dvz_read_gz }
+#### `dvz_read_gz()` { #dvz_read_gz .dvz-api-function }
 
 Read a compressed GZIP file.
 
@@ -497,7 +497,7 @@ char * dvz_read_gz(
 
 _Declared in `include/datoviz/fileio/fileio.h`:87._
 
-#### `dvz_read_jpeg()` { #dvz_read_jpeg }
+#### `dvz_read_jpeg()` { #dvz_read_jpeg .dvz-api-function }
 
 Read and decode a JPEG image file into tightly packed RGBA8 pixels.
 
@@ -518,7 +518,7 @@ uint8_t * dvz_read_jpeg(
 
 _Declared in `include/datoviz/fileio/fileio.h`:206._
 
-#### `dvz_read_npy()` { #dvz_read_npy }
+#### `dvz_read_npy()` { #dvz_read_npy .dvz-api-function }
 
 Read a NumPy NPY file.
 
@@ -537,7 +537,7 @@ void * dvz_read_npy(
 
 _Declared in `include/datoviz/fileio/fileio.h`:65._
 
-#### `dvz_read_ppm()` { #dvz_read_ppm }
+#### `dvz_read_ppm()` { #dvz_read_ppm .dvz-api-function }
 
 Read a PPM image file.
 
@@ -562,7 +562,7 @@ _Declared in `include/datoviz/fileio/fileio.h`:129._
 
 ### Functions
 
-#### `dvz_resource_font()` { #dvz_resource_font }
+#### `dvz_resource_font()` { #dvz_resource_font .dvz-api-function }
 
 ```c
 const unsigned char * dvz_resource_font(
@@ -578,7 +578,7 @@ const unsigned char * dvz_resource_font(
 
 _Declared in `include/datoviz/fileio/fileio.h`:228._
 
-#### `dvz_resource_glsl()` { #dvz_resource_glsl }
+#### `dvz_resource_glsl()` { #dvz_resource_glsl .dvz-api-function }
 
 ```c
 const char * dvz_resource_glsl(
@@ -594,7 +594,7 @@ const char * dvz_resource_glsl(
 
 _Declared in `include/datoviz/fileio/fileio.h`:223._
 
-#### `dvz_resource_shader()` { #dvz_resource_shader }
+#### `dvz_resource_shader()` { #dvz_resource_shader .dvz-api-function }
 
 *********************************************************************************************
 
@@ -612,7 +612,7 @@ const unsigned char * dvz_resource_shader(
 
 _Declared in `include/datoviz/fileio/fileio.h`:215._
 
-#### `dvz_resource_wgsl()` { #dvz_resource_wgsl }
+#### `dvz_resource_wgsl()` { #dvz_resource_wgsl .dvz-api-function }
 
 ```c
 const char * dvz_resource_wgsl(
@@ -632,7 +632,7 @@ _Declared in `include/datoviz/fileio/fileio.h`:219._
 
 ### Functions
 
-#### `dvz_time_monotonic_ns()` { #dvz_time_monotonic_ns }
+#### `dvz_time_monotonic_ns()` { #dvz_time_monotonic_ns .dvz-api-function }
 
 Return a monotonic timestamp in nanoseconds.
 
@@ -650,7 +650,7 @@ _Declared in `include/datoviz/common/functions.h`:76._
 
 ### Functions
 
-#### `dvz_version()` { #dvz_version }
+#### `dvz_version()` { #dvz_version .dvz-api-function }
 
 Return the current version string.
 
@@ -668,7 +668,7 @@ _Declared in `include/datoviz/common/version.h`:69._
 
 ### Functions
 
-#### `dvz_write_bytes()` { #dvz_write_bytes }
+#### `dvz_write_bytes()` { #dvz_write_bytes .dvz-api-function }
 
 Save a binary file.
 
@@ -690,7 +690,7 @@ int dvz_write_bytes(
 
 _Declared in `include/datoviz/fileio/fileio.h`:100._
 
-#### `dvz_write_png()` { #dvz_write_png }
+#### `dvz_write_png()` { #dvz_write_png .dvz-api-function }
 
 Save an sRGB RGBA8 image to a PNG file.
 
@@ -712,7 +712,7 @@ int dvz_write_png(
 
 _Declared in `include/datoviz/fileio/fileio.h`:142._
 
-#### `dvz_write_ppm()` { #dvz_write_ppm }
+#### `dvz_write_ppm()` { #dvz_write_ppm .dvz-api-function }
 
 Save an image to a PPM file (short ASCII header and flat binary RGB values).
 

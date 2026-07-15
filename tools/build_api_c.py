@@ -332,7 +332,11 @@ def format_function(
 ) -> list[str]:
     doc, param_docs, ret_doc = doc_parts(fn.get("doc"))
     header = header_of(fn)
-    lines = [f"{heading} `{fn['name']}()` {{ #{symbol_anchor(str(fn['name']))} }}", ""]
+    lines = [
+        f"{heading} `{fn['name']}()` "
+        f"{{ #{symbol_anchor(str(fn['name']))} .dvz-api-function }}",
+        "",
+    ]
     if doc:
         lines.extend([doc, ""])
     lines.extend(

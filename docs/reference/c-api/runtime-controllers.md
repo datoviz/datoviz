@@ -161,7 +161,7 @@ Types: 24
 
 ### Functions
 
-#### `dvz_arcball_angles()` { #dvz_arcball_angles }
+#### `dvz_arcball_angles()` { #dvz_arcball_angles .dvz-api-function }
 
 Read current Euler angles.
 
@@ -179,7 +179,7 @@ void dvz_arcball_angles(
 
 _Declared in `include/datoviz/controller/arcball.h`:215._
 
-#### `dvz_arcball_connect()` { #dvz_arcball_connect }
+#### `dvz_arcball_connect()` { #dvz_arcball_connect .dvz-api-function }
 
 Subscribe the arcball to an input router.
 
@@ -198,7 +198,7 @@ DvzResult dvz_arcball_connect(
 
 _Declared in `include/datoviz/controller/arcball.h`:286._
 
-#### `dvz_arcball_constrain()` { #dvz_arcball_constrain }
+#### `dvz_arcball_constrain()` { #dvz_arcball_constrain .dvz-api-function }
 
 Set a rotation constraint axis.
 
@@ -217,7 +217,7 @@ DvzResult dvz_arcball_constrain(
 
 _Declared in `include/datoviz/controller/arcball.h`:208._
 
-#### `dvz_arcball_create()` { #dvz_arcball_create }
+#### `dvz_arcball_create()` { #dvz_arcball_create .dvz-api-function }
 
 Create a standalone arcball controller.
 
@@ -236,7 +236,7 @@ Related: [`dvz_arcball_destroy()`](#dvz_arcball_destroy).
 
 _Declared in `include/datoviz/controller/arcball.h`:102._
 
-#### `dvz_arcball_desc()` { #dvz_arcball_desc }
+#### `dvz_arcball_desc()` { #dvz_arcball_desc .dvz-api-function }
 
 ```c
 DvzArcballDesc dvz_arcball_desc(void);
@@ -244,7 +244,7 @@ DvzArcballDesc dvz_arcball_desc(void);
 
 _Declared in `include/datoviz/controller/arcball.h`:92._
 
-#### `dvz_arcball_destroy()` { #dvz_arcball_destroy }
+#### `dvz_arcball_destroy()` { #dvz_arcball_destroy .dvz-api-function }
 
 Destroy the arcball.
 
@@ -262,7 +262,7 @@ Related: [`dvz_arcball_create()`](#dvz_arcball_create).
 
 _Declared in `include/datoviz/controller/arcball.h`:304._
 
-#### `dvz_arcball_disconnect()` { #dvz_arcball_disconnect }
+#### `dvz_arcball_disconnect()` { #dvz_arcball_disconnect .dvz-api-function }
 
 Unsubscribe the arcball from a router.
 
@@ -281,7 +281,7 @@ DvzResult dvz_arcball_disconnect(
 
 _Declared in `include/datoviz/controller/arcball.h`:297._
 
-#### `dvz_arcball_end()` { #dvz_arcball_end }
+#### `dvz_arcball_end()` { #dvz_arcball_end .dvz-api-function }
 
 Commit the in-flight rotation into the accumulated matrix (call at drag stop).
 
@@ -298,7 +298,7 @@ DvzResult dvz_arcball_end(
 
 _Declared in `include/datoviz/controller/arcball.h`:250._
 
-#### `dvz_arcball_initial()` { #dvz_arcball_initial }
+#### `dvz_arcball_initial()` { #dvz_arcball_initial .dvz-api-function }
 
 Set the initial Euler angles and reset.
 
@@ -317,7 +317,7 @@ DvzResult dvz_arcball_initial(
 
 _Declared in `include/datoviz/controller/arcball.h`:113._
 
-#### `dvz_arcball_is_interacting()` { #dvz_arcball_is_interacting }
+#### `dvz_arcball_is_interacting()` { #dvz_arcball_is_interacting .dvz-api-function }
 
 Return whether the pointer is currently interacting with the arcball.
 
@@ -334,7 +334,7 @@ _Bool dvz_arcball_is_interacting(
 
 _Declared in `include/datoviz/controller/arcball.h`:266._
 
-#### `dvz_arcball_model()` { #dvz_arcball_model }
+#### `dvz_arcball_model()` { #dvz_arcball_model .dvz-api-function }
 
 Compute the model matrix (accumulated × in-flight rotation).
 
@@ -355,7 +355,7 @@ DvzResult dvz_arcball_model(
 
 _Declared in `include/datoviz/controller/arcball.h`:240._
 
-#### `dvz_arcball_mvp()` { #dvz_arcball_mvp }
+#### `dvz_arcball_mvp()` { #dvz_arcball_mvp .dvz-api-function }
 
 Fill the MVP struct from the current arcball state.
 Rotation is applied to the model matrix; pan and zoom are applied to view.
@@ -374,7 +374,7 @@ void dvz_arcball_mvp(
 
 _Declared in `include/datoviz/controller/arcball.h`:258._
 
-#### `dvz_arcball_pan()` { #dvz_arcball_pan }
+#### `dvz_arcball_pan()` { #dvz_arcball_pan .dvz-api-function }
 
 Set the camera view-plane pan offset.
 
@@ -393,7 +393,7 @@ DvzResult dvz_arcball_pan(
 
 _Declared in `include/datoviz/controller/arcball.h`:165._
 
-#### `dvz_arcball_pan_shift()` { #dvz_arcball_pan_shift }
+#### `dvz_arcball_pan_shift()` { #dvz_arcball_pan_shift .dvz-api-function }
 
 Apply an incremental panel-plane pan shift in pixels.
 
@@ -412,7 +412,7 @@ DvzResult dvz_arcball_pan_shift(
 
 _Declared in `include/datoviz/controller/arcball.h`:185._
 
-#### `dvz_arcball_pointer()` { #dvz_arcball_pointer }
+#### `dvz_arcball_pointer()` { #dvz_arcball_pointer .dvz-api-function }
 
 Process a pointer event and update arcball state.
 
@@ -431,7 +431,7 @@ _Bool dvz_arcball_pointer(
 
 _Declared in `include/datoviz/controller/arcball.h`:275._
 
-#### `dvz_arcball_reset()` { #dvz_arcball_reset }
+#### `dvz_arcball_reset()` { #dvz_arcball_reset .dvz-api-function }
 
 Reset to the initial orientation.
 
@@ -448,7 +448,7 @@ DvzResult dvz_arcball_reset(
 
 _Declared in `include/datoviz/controller/arcball.h`:123._
 
-#### `dvz_arcball_resize()` { #dvz_arcball_resize }
+#### `dvz_arcball_resize()` { #dvz_arcball_resize .dvz-api-function }
 
 Update the viewport size (call on window resize).
 
@@ -469,7 +469,7 @@ DvzResult dvz_arcball_resize(
 
 _Declared in `include/datoviz/controller/arcball.h`:197._
 
-#### `dvz_arcball_rotate()` { #dvz_arcball_rotate }
+#### `dvz_arcball_rotate()` { #dvz_arcball_rotate .dvz-api-function }
 
 Apply an in-flight rotation from two NDC screen positions.
 
@@ -490,7 +490,7 @@ DvzResult dvz_arcball_rotate(
 
 _Declared in `include/datoviz/controller/arcball.h`:227._
 
-#### `dvz_arcball_rotate_axis()` { #dvz_arcball_rotate_axis }
+#### `dvz_arcball_rotate_axis()` { #dvz_arcball_rotate_axis .dvz-api-function }
 
 Apply an incremental rotation around an axis to the accumulated orientation.
 
@@ -511,7 +511,7 @@ DvzResult dvz_arcball_rotate_axis(
 
 _Declared in `include/datoviz/controller/arcball.h`:145._
 
-#### `dvz_arcball_set()` { #dvz_arcball_set }
+#### `dvz_arcball_set()` { #dvz_arcball_set .dvz-api-function }
 
 Set the orientation directly from Euler angles.
 
@@ -530,7 +530,7 @@ DvzResult dvz_arcball_set(
 
 _Declared in `include/datoviz/controller/arcball.h`:134._
 
-#### `dvz_arcball_state()` { #dvz_arcball_state }
+#### `dvz_arcball_state()` { #dvz_arcball_state .dvz-api-function }
 
 Copy the current arcball state.
 
@@ -549,7 +549,7 @@ _Bool dvz_arcball_state(
 
 _Declared in `include/datoviz/controller/arcball.h`:175._
 
-#### `dvz_arcball_zoom()` { #dvz_arcball_zoom }
+#### `dvz_arcball_zoom()` { #dvz_arcball_zoom .dvz-api-function }
 
 Set the camera dolly factor.
 
@@ -627,7 +627,7 @@ _Declared in `include/datoviz/controller/arcball.h`:155._
 
 ### Functions
 
-#### `dvz_camera_create()` { #dvz_camera_create }
+#### `dvz_camera_create()` { #dvz_camera_create .dvz-api-function }
 
 Create a standalone camera.
 
@@ -646,7 +646,7 @@ Related: [`dvz_camera_destroy()`](#dvz_camera_destroy).
 
 _Declared in `include/datoviz/controller/camera.h`:133._
 
-#### `dvz_camera_desc()` { #dvz_camera_desc }
+#### `dvz_camera_desc()` { #dvz_camera_desc .dvz-api-function }
 
 Return a default perspective camera descriptor.
 
@@ -660,7 +660,7 @@ DvzCameraDesc dvz_camera_desc(void);
 
 _Declared in `include/datoviz/controller/camera.h`:123._
 
-#### `dvz_camera_destroy()` { #dvz_camera_destroy }
+#### `dvz_camera_destroy()` { #dvz_camera_destroy .dvz-api-function }
 
 Destroy a camera.
 
@@ -681,7 +681,7 @@ Related: [`dvz_camera_create()`](#dvz_camera_create).
 
 _Declared in `include/datoviz/controller/camera.h`:263._
 
-#### `dvz_camera_get_orthographic_bounds()` { #dvz_camera_get_orthographic_bounds }
+#### `dvz_camera_get_orthographic_bounds()` { #dvz_camera_get_orthographic_bounds .dvz-api-function }
 
 Return explicit orthographic projection bounds.
 
@@ -710,7 +710,7 @@ DvzResult dvz_camera_get_orthographic_bounds(
 
 _Declared in `include/datoviz/controller/camera.h`:227._
 
-#### `dvz_camera_get_projection()` { #dvz_camera_get_projection }
+#### `dvz_camera_get_projection()` { #dvz_camera_get_projection .dvz-api-function }
 
 Return camera projection parameters.
 
@@ -728,7 +728,7 @@ void dvz_camera_get_projection(
 
 _Declared in `include/datoviz/controller/camera.h`:163._
 
-#### `dvz_camera_get_view()` { #dvz_camera_get_view }
+#### `dvz_camera_get_view()` { #dvz_camera_get_view .dvz-api-function }
 
 Return a camera view transform.
 
@@ -746,7 +746,7 @@ void dvz_camera_get_view(
 
 _Declared in `include/datoviz/controller/camera.h`:154._
 
-#### `dvz_camera_mvp()` { #dvz_camera_mvp }
+#### `dvz_camera_mvp()` { #dvz_camera_mvp .dvz-api-function }
 
 Fill the view and projection matrices of an MVP struct from the camera state.
 
@@ -764,7 +764,7 @@ void dvz_camera_mvp(
 
 _Declared in `include/datoviz/controller/camera.h`:251._
 
-#### `dvz_camera_projection()` { #dvz_camera_projection }
+#### `dvz_camera_projection()` { #dvz_camera_projection .dvz-api-function }
 
 Return a default perspective camera projection.
 
@@ -778,7 +778,7 @@ DvzCameraProjection dvz_camera_projection(void);
 
 _Declared in `include/datoviz/controller/camera.h`:114._
 
-#### `dvz_camera_resize()` { #dvz_camera_resize }
+#### `dvz_camera_resize()` { #dvz_camera_resize .dvz-api-function }
 
 Update the camera viewport size.
 
@@ -799,7 +799,7 @@ DvzResult dvz_camera_resize(
 
 _Declared in `include/datoviz/controller/camera.h`:241._
 
-#### `dvz_camera_set_orthographic()` { #dvz_camera_set_orthographic }
+#### `dvz_camera_set_orthographic()` { #dvz_camera_set_orthographic .dvz-api-function }
 
 Set orthographic projection parameters.
 
@@ -822,7 +822,7 @@ DvzResult dvz_camera_set_orthographic(
 
 _Declared in `include/datoviz/controller/camera.h`:190._
 
-#### `dvz_camera_set_orthographic_bounds()` { #dvz_camera_set_orthographic_bounds }
+#### `dvz_camera_set_orthographic_bounds()` { #dvz_camera_set_orthographic_bounds .dvz-api-function }
 
 Set explicit orthographic projection bounds.
 
@@ -854,7 +854,7 @@ DvzResult dvz_camera_set_orthographic_bounds(
 
 _Declared in `include/datoviz/controller/camera.h`:210._
 
-#### `dvz_camera_set_perspective()` { #dvz_camera_set_perspective }
+#### `dvz_camera_set_perspective()` { #dvz_camera_set_perspective .dvz-api-function }
 
 Set perspective projection parameters.
 
@@ -877,7 +877,7 @@ DvzResult dvz_camera_set_perspective(
 
 _Declared in `include/datoviz/controller/camera.h`:176._
 
-#### `dvz_camera_set_view()` { #dvz_camera_set_view }
+#### `dvz_camera_set_view()` { #dvz_camera_set_view .dvz-api-function }
 
 Set a camera view transform.
 
@@ -896,7 +896,7 @@ DvzResult dvz_camera_set_view(
 
 _Declared in `include/datoviz/controller/camera.h`:144._
 
-#### `dvz_camera_view()` { #dvz_camera_view }
+#### `dvz_camera_view()` { #dvz_camera_view .dvz-api-function }
 
 Return a default camera view.
 
@@ -1013,7 +1013,7 @@ _Declared in `include/datoviz/controller/camera.h`:105._
 
 ### Functions
 
-#### `dvz_fly_apply_camera()` { #dvz_fly_apply_camera }
+#### `dvz_fly_apply_camera()` { #dvz_fly_apply_camera .dvz-api-function }
 
 Apply the current fly pose to the attached camera.
 
@@ -1030,7 +1030,7 @@ DvzResult dvz_fly_apply_camera(
 
 _Declared in `include/datoviz/controller/fly.h`:346._
 
-#### `dvz_fly_clear_pivot()` { #dvz_fly_clear_pivot }
+#### `dvz_fly_clear_pivot()` { #dvz_fly_clear_pivot .dvz-api-function }
 
 Clear the optional orbit pivot.
 
@@ -1047,7 +1047,7 @@ DvzResult dvz_fly_clear_pivot(
 
 _Declared in `include/datoviz/controller/fly.h`:293._
 
-#### `dvz_fly_connect()` { #dvz_fly_connect }
+#### `dvz_fly_connect()` { #dvz_fly_connect .dvz-api-function }
 
 Subscribe the fly controller to an input router.
 
@@ -1066,7 +1066,7 @@ DvzResult dvz_fly_connect(
 
 _Declared in `include/datoviz/controller/fly.h`:390._
 
-#### `dvz_fly_create()` { #dvz_fly_create }
+#### `dvz_fly_create()` { #dvz_fly_create .dvz-api-function }
 
 Create a standalone fly camera controller.
 
@@ -1085,7 +1085,7 @@ Related: [`dvz_fly_destroy()`](#dvz_fly_destroy).
 
 _Declared in `include/datoviz/controller/fly.h`:113._
 
-#### `dvz_fly_desc()` { #dvz_fly_desc }
+#### `dvz_fly_desc()` { #dvz_fly_desc .dvz-api-function }
 
 Return a default fly-controller descriptor.
 
@@ -1099,7 +1099,7 @@ DvzFlyDesc dvz_fly_desc(void);
 
 _Declared in `include/datoviz/controller/fly.h`:103._
 
-#### `dvz_fly_destroy()` { #dvz_fly_destroy }
+#### `dvz_fly_destroy()` { #dvz_fly_destroy .dvz-api-function }
 
 Destroy a fly controller.
 
@@ -1117,7 +1117,7 @@ Related: [`dvz_fly_create()`](#dvz_fly_create).
 
 _Declared in `include/datoviz/controller/fly.h`:410._
 
-#### `dvz_fly_disconnect()` { #dvz_fly_disconnect }
+#### `dvz_fly_disconnect()` { #dvz_fly_disconnect .dvz-api-function }
 
 Unsubscribe the fly controller from an input router.
 
@@ -1136,7 +1136,7 @@ DvzResult dvz_fly_disconnect(
 
 _Declared in `include/datoviz/controller/fly.h`:401._
 
-#### `dvz_fly_get_position()` { #dvz_fly_get_position }
+#### `dvz_fly_get_position()` { #dvz_fly_get_position .dvz-api-function }
 
 Return the current position.
 
@@ -1154,7 +1154,7 @@ void dvz_fly_get_position(
 
 _Declared in `include/datoviz/controller/fly.h`:252._
 
-#### `dvz_fly_get_target()` { #dvz_fly_get_target }
+#### `dvz_fly_get_target()` { #dvz_fly_get_target .dvz-api-function }
 
 Return the current look-at target.
 
@@ -1172,7 +1172,7 @@ void dvz_fly_get_target(
 
 _Declared in `include/datoviz/controller/fly.h`:262._
 
-#### `dvz_fly_get_up()` { #dvz_fly_get_up }
+#### `dvz_fly_get_up()` { #dvz_fly_get_up .dvz-api-function }
 
 Return the current up vector.
 
@@ -1190,7 +1190,7 @@ void dvz_fly_get_up(
 
 _Declared in `include/datoviz/controller/fly.h`:272._
 
-#### `dvz_fly_has_pivot()` { #dvz_fly_has_pivot }
+#### `dvz_fly_has_pivot()` { #dvz_fly_has_pivot .dvz-api-function }
 
 Return whether an orbit pivot is set.
 
@@ -1207,7 +1207,7 @@ _Bool dvz_fly_has_pivot(
 
 _Declared in `include/datoviz/controller/fly.h`:303._
 
-#### `dvz_fly_initial()` { #dvz_fly_initial }
+#### `dvz_fly_initial()` { #dvz_fly_initial .dvz-api-function }
 
 Set the initial pose from angles and reset.
 
@@ -1232,7 +1232,7 @@ DvzResult dvz_fly_initial(
 
 _Declared in `include/datoviz/controller/fly.h`:163._
 
-#### `dvz_fly_initial_lookat()` { #dvz_fly_initial_lookat }
+#### `dvz_fly_initial_lookat()` { #dvz_fly_initial_lookat .dvz-api-function }
 
 Set the initial pose from a look-at point and reset.
 
@@ -1253,7 +1253,7 @@ DvzResult dvz_fly_initial_lookat(
 
 _Declared in `include/datoviz/controller/fly.h`:175._
 
-#### `dvz_fly_keyboard()` { #dvz_fly_keyboard }
+#### `dvz_fly_keyboard()` { #dvz_fly_keyboard .dvz-api-function }
 
 Process a keyboard event.
 
@@ -1272,7 +1272,7 @@ _Bool dvz_fly_keyboard(
 
 _Declared in `include/datoviz/controller/fly.h`:379._
 
-#### `dvz_fly_look_at_pivot()` { #dvz_fly_look_at_pivot }
+#### `dvz_fly_look_at_pivot()` { #dvz_fly_look_at_pivot .dvz-api-function }
 
 Reorient the camera toward the active pivot without moving the eye.
 
@@ -1289,7 +1289,7 @@ DvzResult dvz_fly_look_at_pivot(
 
 _Declared in `include/datoviz/controller/fly.h`:313._
 
-#### `dvz_fly_move_forward()` { #dvz_fly_move_forward }
+#### `dvz_fly_move_forward()` { #dvz_fly_move_forward .dvz-api-function }
 
 Move forward along the active movement direction.
 
@@ -1308,7 +1308,7 @@ DvzResult dvz_fly_move_forward(
 
 _Declared in `include/datoviz/controller/fly.h`:197._
 
-#### `dvz_fly_move_right()` { #dvz_fly_move_right }
+#### `dvz_fly_move_right()` { #dvz_fly_move_right .dvz-api-function }
 
 Move right relative to the active movement direction.
 
@@ -1327,7 +1327,7 @@ DvzResult dvz_fly_move_right(
 
 _Declared in `include/datoviz/controller/fly.h`:208._
 
-#### `dvz_fly_move_up()` { #dvz_fly_move_up }
+#### `dvz_fly_move_up()` { #dvz_fly_move_up .dvz-api-function }
 
 Move up along the fly controller's world-up direction.
 
@@ -1346,7 +1346,7 @@ DvzResult dvz_fly_move_up(
 
 _Declared in `include/datoviz/controller/fly.h`:219._
 
-#### `dvz_fly_orbit()` { #dvz_fly_orbit }
+#### `dvz_fly_orbit()` { #dvz_fly_orbit .dvz-api-function }
 
 Orbit the camera around the active pivot.
 
@@ -1367,7 +1367,7 @@ DvzResult dvz_fly_orbit(
 
 _Declared in `include/datoviz/controller/fly.h`:325._
 
-#### `dvz_fly_pivot()` { #dvz_fly_pivot }
+#### `dvz_fly_pivot()` { #dvz_fly_pivot .dvz-api-function }
 
 Set or move the optional orbit pivot while preserving the camera eye.
 
@@ -1386,7 +1386,7 @@ DvzResult dvz_fly_pivot(
 
 _Declared in `include/datoviz/controller/fly.h`:283._
 
-#### `dvz_fly_pointer()` { #dvz_fly_pointer }
+#### `dvz_fly_pointer()` { #dvz_fly_pointer .dvz-api-function }
 
 Process a pointer event.
 
@@ -1405,7 +1405,7 @@ _Bool dvz_fly_pointer(
 
 _Declared in `include/datoviz/controller/fly.h`:368._
 
-#### `dvz_fly_reset()` { #dvz_fly_reset }
+#### `dvz_fly_reset()` { #dvz_fly_reset .dvz-api-function }
 
 Reset a fly controller to its initial pose.
 
@@ -1422,7 +1422,7 @@ DvzResult dvz_fly_reset(
 
 _Declared in `include/datoviz/controller/fly.h`:123._
 
-#### `dvz_fly_resize()` { #dvz_fly_resize }
+#### `dvz_fly_resize()` { #dvz_fly_resize .dvz-api-function }
 
 Update the viewport size.
 
@@ -1443,7 +1443,7 @@ DvzResult dvz_fly_resize(
 
 _Declared in `include/datoviz/controller/fly.h`:149._
 
-#### `dvz_fly_roll()` { #dvz_fly_roll }
+#### `dvz_fly_roll()` { #dvz_fly_roll .dvz-api-function }
 
 Roll the fly camera around its view direction.
 
@@ -1462,7 +1462,7 @@ DvzResult dvz_fly_roll(
 
 _Declared in `include/datoviz/controller/fly.h`:242._
 
-#### `dvz_fly_rotate()` { #dvz_fly_rotate }
+#### `dvz_fly_rotate()` { #dvz_fly_rotate .dvz-api-function }
 
 Rotate the fly view direction.
 
@@ -1483,7 +1483,7 @@ DvzResult dvz_fly_rotate(
 
 _Declared in `include/datoviz/controller/fly.h`:231._
 
-#### `dvz_fly_set_camera()` { #dvz_fly_set_camera }
+#### `dvz_fly_set_camera()` { #dvz_fly_set_camera .dvz-api-function }
 
 Attach a camera updated by this fly controller.
 
@@ -1502,7 +1502,7 @@ DvzResult dvz_fly_set_camera(
 
 _Declared in `include/datoviz/controller/fly.h`:336._
 
-#### `dvz_fly_set_mode()` { #dvz_fly_set_mode }
+#### `dvz_fly_set_mode()` { #dvz_fly_set_mode .dvz-api-function }
 
 Set the movement mode.
 
@@ -1521,7 +1521,7 @@ DvzResult dvz_fly_set_mode(
 
 _Declared in `include/datoviz/controller/fly.h`:186._
 
-#### `dvz_fly_update()` { #dvz_fly_update }
+#### `dvz_fly_update()` { #dvz_fly_update .dvz-api-function }
 
 Advance held-key movement.
 
@@ -1540,7 +1540,7 @@ DvzResult dvz_fly_update(
 
 _Declared in `include/datoviz/controller/fly.h`:357._
 
-#### `dvz_fly_viewport()` { #dvz_fly_viewport }
+#### `dvz_fly_viewport()` { #dvz_fly_viewport .dvz-api-function }
 
 Update the viewport rectangle in window coordinates.
 
@@ -1634,7 +1634,7 @@ _Declared in `include/datoviz/controller/fly.h`:137._
 
 ### Functions
 
-#### `dvz_panzoom_connect()` { #dvz_panzoom_connect }
+#### `dvz_panzoom_connect()` { #dvz_panzoom_connect .dvz-api-function }
 
 Subscribe the panzoom to an input router.
 The panzoom pointer callback will be registered; call dvz_panzoom_disconnect() to remove it.
@@ -1654,7 +1654,7 @@ DvzResult dvz_panzoom_connect(
 
 _Declared in `include/datoviz/controller/panzoom.h`:302._
 
-#### `dvz_panzoom_create()` { #dvz_panzoom_create }
+#### `dvz_panzoom_create()` { #dvz_panzoom_create .dvz-api-function }
 
 Create a standalone panzoom controller.
 
@@ -1673,7 +1673,7 @@ Related: [`dvz_panzoom_destroy()`](#dvz_panzoom_destroy).
 
 _Declared in `include/datoviz/controller/panzoom.h`:135._
 
-#### `dvz_panzoom_desc()` { #dvz_panzoom_desc }
+#### `dvz_panzoom_desc()` { #dvz_panzoom_desc .dvz-api-function }
 
 ```c
 DvzPanzoomDesc dvz_panzoom_desc(void);
@@ -1681,7 +1681,7 @@ DvzPanzoomDesc dvz_panzoom_desc(void);
 
 _Declared in `include/datoviz/controller/panzoom.h`:125._
 
-#### `dvz_panzoom_destroy()` { #dvz_panzoom_destroy }
+#### `dvz_panzoom_destroy()` { #dvz_panzoom_destroy .dvz-api-function }
 
 Destroy the panzoom.
 
@@ -1699,7 +1699,7 @@ Related: [`dvz_panzoom_create()`](#dvz_panzoom_create).
 
 _Declared in `include/datoviz/controller/panzoom.h`:320._
 
-#### `dvz_panzoom_disconnect()` { #dvz_panzoom_disconnect }
+#### `dvz_panzoom_disconnect()` { #dvz_panzoom_disconnect .dvz-api-function }
 
 Unsubscribe the panzoom from a router.
 
@@ -1718,7 +1718,7 @@ DvzResult dvz_panzoom_disconnect(
 
 _Declared in `include/datoviz/controller/panzoom.h`:313._
 
-#### `dvz_panzoom_end()` { #dvz_panzoom_end }
+#### `dvz_panzoom_end()` { #dvz_panzoom_end .dvz-api-function }
 
 Commit the current pan/zoom as the new drag baseline (call at drag stop).
 
@@ -1735,7 +1735,7 @@ DvzResult dvz_panzoom_end(
 
 _Declared in `include/datoviz/controller/panzoom.h`:270._
 
-#### `dvz_panzoom_extent()` { #dvz_panzoom_extent }
+#### `dvz_panzoom_extent()` { #dvz_panzoom_extent .dvz-api-function }
 
 Return the visible extent in visual coordinates.
 
@@ -1754,7 +1754,7 @@ _Bool dvz_panzoom_extent(
 
 _Declared in `include/datoviz/controller/panzoom.h`:214._
 
-#### `dvz_panzoom_mvp()` { #dvz_panzoom_mvp }
+#### `dvz_panzoom_mvp()` { #dvz_panzoom_mvp .dvz-api-function }
 
 Fill the view and proj matrices of an MVP struct from the current panzoom state.
 The model matrix is left untouched.
@@ -1773,7 +1773,7 @@ void dvz_panzoom_mvp(
 
 _Declared in `include/datoviz/controller/panzoom.h`:278._
 
-#### `dvz_panzoom_pan()` { #dvz_panzoom_pan }
+#### `dvz_panzoom_pan()` { #dvz_panzoom_pan .dvz-api-function }
 
 Set the pan offset in NDC.
 
@@ -1792,7 +1792,7 @@ DvzResult dvz_panzoom_pan(
 
 _Declared in `include/datoviz/controller/panzoom.h`:182._
 
-#### `dvz_panzoom_pan_shift()` { #dvz_panzoom_pan_shift }
+#### `dvz_panzoom_pan_shift()` { #dvz_panzoom_pan_shift .dvz-api-function }
 
 Apply a pan shift (pixel delta).
 
@@ -1813,7 +1813,7 @@ DvzResult dvz_panzoom_pan_shift(
 
 _Declared in `include/datoviz/controller/panzoom.h`:236._
 
-#### `dvz_panzoom_pointer()` { #dvz_panzoom_pointer }
+#### `dvz_panzoom_pointer()` { #dvz_panzoom_pointer .dvz-api-function }
 
 Process a pointer event and update panzoom state.
 
@@ -1832,7 +1832,7 @@ _Bool dvz_panzoom_pointer(
 
 _Declared in `include/datoviz/controller/panzoom.h`:290._
 
-#### `dvz_panzoom_reset()` { #dvz_panzoom_reset }
+#### `dvz_panzoom_reset()` { #dvz_panzoom_reset .dvz-api-function }
 
 Reset to the identity transform.
 
@@ -1849,7 +1849,7 @@ DvzResult dvz_panzoom_reset(
 
 _Declared in `include/datoviz/controller/panzoom.h`:145._
 
-#### `dvz_panzoom_resize()` { #dvz_panzoom_resize }
+#### `dvz_panzoom_resize()` { #dvz_panzoom_resize .dvz-api-function }
 
 Update the viewport size (call on window resize).
 
@@ -1870,7 +1870,7 @@ DvzResult dvz_panzoom_resize(
 
 _Declared in `include/datoviz/controller/panzoom.h`:157._
 
-#### `dvz_panzoom_resolve()` { #dvz_panzoom_resolve }
+#### `dvz_panzoom_resolve()` { #dvz_panzoom_resolve .dvz-api-function }
 
 ```c
 _Bool dvz_panzoom_resolve(
@@ -1888,7 +1888,7 @@ _Bool dvz_panzoom_resolve(
 
 _Declared in `include/datoviz/controller/panzoom.h`:280._
 
-#### `dvz_panzoom_state()` { #dvz_panzoom_state }
+#### `dvz_panzoom_state()` { #dvz_panzoom_state .dvz-api-function }
 
 Copy the current panzoom state.
 
@@ -1907,7 +1907,7 @@ _Bool dvz_panzoom_state(
 
 _Declared in `include/datoviz/controller/panzoom.h`:224._
 
-#### `dvz_panzoom_viewport()` { #dvz_panzoom_viewport }
+#### `dvz_panzoom_viewport()` { #dvz_panzoom_viewport .dvz-api-function }
 
 Update the viewport rectangle in window coordinates.
 
@@ -1932,7 +1932,7 @@ DvzResult dvz_panzoom_viewport(
 
 _Declared in `include/datoviz/controller/panzoom.h`:171._
 
-#### `dvz_panzoom_zoom()` { #dvz_panzoom_zoom }
+#### `dvz_panzoom_zoom()` { #dvz_panzoom_zoom .dvz-api-function }
 
 Set the zoom factors.
 
@@ -1951,7 +1951,7 @@ DvzResult dvz_panzoom_zoom(
 
 _Declared in `include/datoviz/controller/panzoom.h`:193._
 
-#### `dvz_panzoom_zoom_limits()` { #dvz_panzoom_zoom_limits }
+#### `dvz_panzoom_zoom_limits()` { #dvz_panzoom_zoom_limits .dvz-api-function }
 
 Set zoom limits.
 
@@ -1972,7 +1972,7 @@ _Bool dvz_panzoom_zoom_limits(
 
 _Declared in `include/datoviz/controller/panzoom.h`:204._
 
-#### `dvz_panzoom_zoom_shift()` { #dvz_panzoom_zoom_shift }
+#### `dvz_panzoom_zoom_shift()` { #dvz_panzoom_zoom_shift .dvz-api-function }
 
 Apply a zoom shift driven by right-drag (pixel delta + anchor).
 
@@ -1993,7 +1993,7 @@ DvzResult dvz_panzoom_zoom_shift(
 
 _Declared in `include/datoviz/controller/panzoom.h`:248._
 
-#### `dvz_panzoom_zoom_wheel()` { #dvz_panzoom_zoom_wheel }
+#### `dvz_panzoom_zoom_wheel()` { #dvz_panzoom_zoom_wheel .dvz-api-function }
 
 Apply a wheel zoom.
 
@@ -2102,7 +2102,7 @@ _Declared in `include/datoviz/controller/panzoom.h`:260._
 
 ### Functions
 
-#### `dvz_turntable_apply_camera()` { #dvz_turntable_apply_camera }
+#### `dvz_turntable_apply_camera()` { #dvz_turntable_apply_camera .dvz-api-function }
 
 Apply the turntable pose to the attached camera.
 
@@ -2119,7 +2119,7 @@ DvzResult dvz_turntable_apply_camera(
 
 _Declared in `include/datoviz/controller/turntable.h`:211._
 
-#### `dvz_turntable_connect()` { #dvz_turntable_connect }
+#### `dvz_turntable_connect()` { #dvz_turntable_connect .dvz-api-function }
 
 Subscribe the turntable to an input router.
 
@@ -2138,7 +2138,7 @@ DvzResult dvz_turntable_connect(
 
 _Declared in `include/datoviz/controller/turntable.h`:233._
 
-#### `dvz_turntable_create()` { #dvz_turntable_create }
+#### `dvz_turntable_create()` { #dvz_turntable_create .dvz-api-function }
 
 Create a standalone turntable controller.
 
@@ -2157,7 +2157,7 @@ Related: [`dvz_turntable_destroy()`](#dvz_turntable_destroy).
 
 _Declared in `include/datoviz/controller/turntable.h`:105._
 
-#### `dvz_turntable_desc()` { #dvz_turntable_desc }
+#### `dvz_turntable_desc()` { #dvz_turntable_desc .dvz-api-function }
 
 Return a default turntable descriptor.
 
@@ -2171,7 +2171,7 @@ DvzTurntableDesc dvz_turntable_desc(void);
 
 _Declared in `include/datoviz/controller/turntable.h`:95._
 
-#### `dvz_turntable_destroy()` { #dvz_turntable_destroy }
+#### `dvz_turntable_destroy()` { #dvz_turntable_destroy .dvz-api-function }
 
 Destroy a turntable controller.
 
@@ -2189,7 +2189,7 @@ Related: [`dvz_turntable_create()`](#dvz_turntable_create).
 
 _Declared in `include/datoviz/controller/turntable.h`:253._
 
-#### `dvz_turntable_disconnect()` { #dvz_turntable_disconnect }
+#### `dvz_turntable_disconnect()` { #dvz_turntable_disconnect .dvz-api-function }
 
 Unsubscribe the turntable from an input router.
 
@@ -2208,7 +2208,7 @@ DvzResult dvz_turntable_disconnect(
 
 _Declared in `include/datoviz/controller/turntable.h`:244._
 
-#### `dvz_turntable_dolly()` { #dvz_turntable_dolly }
+#### `dvz_turntable_dolly()` { #dvz_turntable_dolly .dvz-api-function }
 
 Dolly toward or away from the pivot.
 
@@ -2227,7 +2227,7 @@ DvzResult dvz_turntable_dolly(
 
 _Declared in `include/datoviz/controller/turntable.h`:177._
 
-#### `dvz_turntable_orbit()` { #dvz_turntable_orbit }
+#### `dvz_turntable_orbit()` { #dvz_turntable_orbit .dvz-api-function }
 
 Orbit around the pivot.
 
@@ -2248,7 +2248,7 @@ DvzResult dvz_turntable_orbit(
 
 _Declared in `include/datoviz/controller/turntable.h`:166._
 
-#### `dvz_turntable_pan()` { #dvz_turntable_pan }
+#### `dvz_turntable_pan()` { #dvz_turntable_pan .dvz-api-function }
 
 Pan the pivot in the current view plane.
 
@@ -2269,7 +2269,7 @@ DvzResult dvz_turntable_pan(
 
 _Declared in `include/datoviz/controller/turntable.h`:190._
 
-#### `dvz_turntable_pivot()` { #dvz_turntable_pivot }
+#### `dvz_turntable_pivot()` { #dvz_turntable_pivot .dvz-api-function }
 
 Set the pivot while preserving the current camera eye.
 
@@ -2288,7 +2288,7 @@ DvzResult dvz_turntable_pivot(
 
 _Declared in `include/datoviz/controller/turntable.h`:153._
 
-#### `dvz_turntable_pointer()` { #dvz_turntable_pointer }
+#### `dvz_turntable_pointer()` { #dvz_turntable_pointer .dvz-api-function }
 
 Process a pointer event.
 
@@ -2307,7 +2307,7 @@ _Bool dvz_turntable_pointer(
 
 _Declared in `include/datoviz/controller/turntable.h`:222._
 
-#### `dvz_turntable_reset()` { #dvz_turntable_reset }
+#### `dvz_turntable_reset()` { #dvz_turntable_reset .dvz-api-function }
 
 Reset a turntable to its initial pose.
 
@@ -2324,7 +2324,7 @@ DvzResult dvz_turntable_reset(
 
 _Declared in `include/datoviz/controller/turntable.h`:115._
 
-#### `dvz_turntable_resize()` { #dvz_turntable_resize }
+#### `dvz_turntable_resize()` { #dvz_turntable_resize .dvz-api-function }
 
 Update the viewport size.
 
@@ -2345,7 +2345,7 @@ DvzResult dvz_turntable_resize(
 
 _Declared in `include/datoviz/controller/turntable.h`:142._
 
-#### `dvz_turntable_set_camera()` { #dvz_turntable_set_camera }
+#### `dvz_turntable_set_camera()` { #dvz_turntable_set_camera .dvz-api-function }
 
 Attach a camera updated by this turntable.
 
@@ -2364,7 +2364,7 @@ DvzResult dvz_turntable_set_camera(
 
 _Declared in `include/datoviz/controller/turntable.h`:201._
 
-#### `dvz_turntable_viewport()` { #dvz_turntable_viewport }
+#### `dvz_turntable_viewport()` { #dvz_turntable_viewport .dvz-api-function }
 
 Update the viewport rectangle in window coordinates.
 

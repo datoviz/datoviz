@@ -152,7 +152,7 @@ Types: 26
 
 ### Functions
 
-#### `dvz_device_allocator()` { #dvz_device_allocator }
+#### `dvz_device_allocator()` { #dvz_device_allocator .dvz-api-function }
 
 Create an allocator for the stable low-level Datoviz allocation path.
 
@@ -177,7 +177,7 @@ int dvz_device_allocator(
 
 _Declared in `include/datoviz/vk/memory.h`:183._
 
-#### `dvz_device_command_pool()` { #dvz_device_command_pool }
+#### `dvz_device_command_pool()` { #dvz_device_command_pool .dvz-api-function }
 
 Return the command pool associated to a queue family index.
 
@@ -196,7 +196,7 @@ VkCommandPool dvz_device_command_pool(
 
 _Declared in `include/datoviz/vk/device.h`:236._
 
-#### `dvz_device_config()` { #dvz_device_config }
+#### `dvz_device_config()` { #dvz_device_config .dvz-api-function }
 
 Return default configuration values for creating a device.
 
@@ -215,7 +215,7 @@ Related: [`dvz_device_create()`](#dvz_device_create).
 
 _Declared in `include/datoviz/vk/device.h`:84._
 
-#### `dvz_device_config_enable_canvas_extensions()` { #dvz_device_config_enable_canvas_extensions }
+#### `dvz_device_config_enable_canvas_extensions()` { #dvz_device_config_enable_canvas_extensions .dvz-api-function }
 
 Toggle canvas extension requests on a device configuration.
 
@@ -233,7 +233,7 @@ void dvz_device_config_enable_canvas_extensions(
 
 _Declared in `include/datoviz/vk/device.h`:130._
 
-#### `dvz_device_config_request_extension()` { #dvz_device_config_request_extension }
+#### `dvz_device_config_request_extension()` { #dvz_device_config_request_extension .dvz-api-function }
 
 Add an extension request to a device configuration.
 
@@ -252,7 +252,7 @@ _Bool dvz_device_config_request_extension(
 
 _Declared in `include/datoviz/vk/device.h`:120._
 
-#### `dvz_device_config_request_queue()` { #dvz_device_config_request_queue }
+#### `dvz_device_config_request_queue()` { #dvz_device_config_request_queue .dvz-api-function }
 
 Add a queue request to a device configuration.
 
@@ -273,7 +273,7 @@ _Bool dvz_device_config_request_queue(
 
 _Declared in `include/datoviz/vk/device.h`:108._
 
-#### `dvz_device_config_set_features10()` { #dvz_device_config_set_features10 }
+#### `dvz_device_config_set_features10()` { #dvz_device_config_set_features10 .dvz-api-function }
 
 Copy Vulkan 1.0 features into a device configuration.
 
@@ -291,7 +291,7 @@ void dvz_device_config_set_features10(
 
 _Declared in `include/datoviz/vk/device.h`:141._
 
-#### `dvz_device_config_set_features11()` { #dvz_device_config_set_features11 }
+#### `dvz_device_config_set_features11()` { #dvz_device_config_set_features11 .dvz-api-function }
 
 Copy Vulkan 1.1 features into a device configuration.
 
@@ -309,7 +309,7 @@ void dvz_device_config_set_features11(
 
 _Declared in `include/datoviz/vk/device.h`:151._
 
-#### `dvz_device_config_set_features12()` { #dvz_device_config_set_features12 }
+#### `dvz_device_config_set_features12()` { #dvz_device_config_set_features12 .dvz-api-function }
 
 Copy Vulkan 1.2 features into a device configuration.
 
@@ -327,7 +327,7 @@ void dvz_device_config_set_features12(
 
 _Declared in `include/datoviz/vk/device.h`:162._
 
-#### `dvz_device_config_set_features13()` { #dvz_device_config_set_features13 }
+#### `dvz_device_config_set_features13()` { #dvz_device_config_set_features13 .dvz-api-function }
 
 Copy Vulkan 1.3 features into a device configuration.
 
@@ -345,7 +345,7 @@ void dvz_device_config_set_features13(
 
 _Declared in `include/datoviz/vk/device.h`:173._
 
-#### `dvz_device_config_set_gpu_index()` { #dvz_device_config_set_gpu_index }
+#### `dvz_device_config_set_gpu_index()` { #dvz_device_config_set_gpu_index .dvz-api-function }
 
 Select the GPU index used for device creation.
 
@@ -364,7 +364,7 @@ _Bool dvz_device_config_set_gpu_index(
 
 _Declared in `include/datoviz/vk/device.h`:95._
 
-#### `dvz_device_create()` { #dvz_device_create }
+#### `dvz_device_create()` { #dvz_device_create .dvz-api-function }
 
 Create and initialize a heap-allocated device from a configuration.
 
@@ -383,7 +383,7 @@ Related: [`dvz_device_destroy()`](#dvz_device_destroy).
 
 _Declared in `include/datoviz/vk/device.h`:184._
 
-#### `dvz_device_descriptor_pool()` { #dvz_device_descriptor_pool }
+#### `dvz_device_descriptor_pool()` { #dvz_device_descriptor_pool .dvz-api-function }
 
 Return the descriptor pool associated to a device.
 
@@ -400,7 +400,7 @@ VkDescriptorPool dvz_device_descriptor_pool(
 
 _Declared in `include/datoviz/vk/device.h`:246._
 
-#### `dvz_device_destroy()` { #dvz_device_destroy }
+#### `dvz_device_destroy()` { #dvz_device_destroy .dvz-api-function }
 
 Destroy a device.
 
@@ -418,7 +418,7 @@ Related: [`dvz_device_create()`](#dvz_device_create).
 
 _Declared in `include/datoviz/vk/device.h`:264._
 
-#### `dvz_device_features10()` { #dvz_device_features10 }
+#### `dvz_device_features10()` { #dvz_device_features10 .dvz-api-function }
 
 Return the Vulkan 1.0 feature set enabled on this device.
 
@@ -435,7 +435,7 @@ const VkPhysicalDeviceFeatures * dvz_device_features10(
 
 _Declared in `include/datoviz/vk/device.h`:214._
 
-#### `dvz_device_handle()` { #dvz_device_handle }
+#### `dvz_device_handle()` { #dvz_device_handle .dvz-api-function }
 
 Get the Vulkan VkDevice handle of a device.
 
@@ -452,7 +452,7 @@ VkDevice dvz_device_handle(
 
 _Declared in `include/datoviz/vk/device.h`:194._
 
-#### `dvz_device_has_extension()` { #dvz_device_has_extension }
+#### `dvz_device_has_extension()` { #dvz_device_has_extension .dvz-api-function }
 
 Return whether a device was created with support for a given extension or not.
 
@@ -471,7 +471,7 @@ _Bool dvz_device_has_extension(
 
 _Declared in `include/datoviz/vk/device.h`:275._
 
-#### `dvz_device_physical_device()` { #dvz_device_physical_device }
+#### `dvz_device_physical_device()` { #dvz_device_physical_device .dvz-api-function }
 
 Return the Vulkan physical device used by this logical device.
 
@@ -488,7 +488,7 @@ VkPhysicalDevice dvz_device_physical_device(
 
 _Declared in `include/datoviz/vk/device.h`:204._
 
-#### `dvz_device_queue()` { #dvz_device_queue }
+#### `dvz_device_queue()` { #dvz_device_queue .dvz-api-function }
 
 Retrieve a queue from a role.
 
@@ -507,7 +507,7 @@ DvzQueue * dvz_device_queue(
 
 _Declared in `include/datoviz/vk/device.h`:225._
 
-#### `dvz_device_wait()` { #dvz_device_wait }
+#### `dvz_device_wait()` { #dvz_device_wait .dvz-api-function }
 
 Wait until the device is ready. Inefficient.
 
@@ -523,7 +523,7 @@ void dvz_device_wait(
 
 _Declared in `include/datoviz/vk/device.h`:255._
 
-#### `dvz_queue_family()` { #dvz_queue_family }
+#### `dvz_queue_family()` { #dvz_queue_family .dvz-api-function }
 
 Return the queue family of a queue.
 
@@ -540,7 +540,7 @@ uint32_t dvz_queue_family(
 
 _Declared in `include/datoviz/vk/queues.h`:191._
 
-#### `dvz_queue_from_role()` { #dvz_queue_from_role }
+#### `dvz_queue_from_role()` { #dvz_queue_from_role .dvz-api-function }
 
 Get a queue for a role from a queue-selection plan or device-owned queue table.
 
@@ -562,7 +562,7 @@ DvzQueue * dvz_queue_from_role(
 
 _Declared in `include/datoviz/vk/queues.h`:171._
 
-#### `dvz_queue_handle()` { #dvz_queue_handle }
+#### `dvz_queue_handle()` { #dvz_queue_handle .dvz-api-function }
 
 Return the Vulkan handle of a queue.
 
@@ -579,7 +579,7 @@ VkQueue dvz_queue_handle(
 
 _Declared in `include/datoviz/vk/queues.h`:201._
 
-#### `dvz_queue_index()` { #dvz_queue_index }
+#### `dvz_queue_index()` { #dvz_queue_index .dvz-api-function }
 
 Return the queue index of a queue.
 
@@ -596,7 +596,7 @@ uint32_t dvz_queue_index(
 
 _Declared in `include/datoviz/vk/queues.h`:181._
 
-#### `dvz_queue_supports()` { #dvz_queue_supports }
+#### `dvz_queue_supports()` { #dvz_queue_supports .dvz-api-function }
 
 Returns whether a queue supports a given role.
 
@@ -614,7 +614,7 @@ _Bool dvz_queue_supports(
 
 _Declared in `include/datoviz/vk/queues.h`:220._
 
-#### `dvz_queue_wait()` { #dvz_queue_wait }
+#### `dvz_queue_wait()` { #dvz_queue_wait .dvz-api-function }
 
 Wait for a queue to be idle. Inefficient.
 
@@ -630,7 +630,7 @@ void dvz_queue_wait(
 
 _Declared in `include/datoviz/vk/queues.h`:210._
 
-#### `dvz_queues()` { #dvz_queues }
+#### `dvz_queues()` { #dvz_queues .dvz-api-function }
 
 Choose a logical-device queue plan from a capability snapshot.
 
@@ -652,7 +652,7 @@ void dvz_queues(
 
 _Declared in `include/datoviz/vk/queues.h`:148._
 
-#### `dvz_queues_show()` { #dvz_queues_show }
+#### `dvz_queues_show()` { #dvz_queues_show .dvz-api-function }
 
 Show the queues.
 
@@ -802,7 +802,7 @@ _Declared in `include/datoviz/vk/queues.h`:157._
 
 ### Functions
 
-#### `dvz_compile_glsl()` { #dvz_compile_glsl }
+#### `dvz_compile_glsl()` { #dvz_compile_glsl .dvz-api-function }
 
 Compile a GLSL source string to SPIR-V using shaderc (lazy-loaded).
 
@@ -826,7 +826,7 @@ uint32_t * dvz_compile_glsl(
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:273._
 
-#### `dvz_gpu_ctx()` { #dvz_gpu_ctx }
+#### `dvz_gpu_ctx()` { #dvz_gpu_ctx .dvz-api-function }
 
 Create an owned GPU context from a configuration.
 
@@ -843,7 +843,7 @@ DvzGpuCtx * dvz_gpu_ctx(
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:173._
 
-#### `dvz_gpu_ctx_alloc()` { #dvz_gpu_ctx_alloc }
+#### `dvz_gpu_ctx_alloc()` { #dvz_gpu_ctx_alloc .dvz-api-function }
 
 Return the allocator owned by a GPU context.
 
@@ -860,7 +860,7 @@ DvzVma * dvz_gpu_ctx_alloc(
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:224._
 
-#### `dvz_gpu_ctx_config()` { #dvz_gpu_ctx_config }
+#### `dvz_gpu_ctx_config()` { #dvz_gpu_ctx_config .dvz-api-function }
 
 Return the default GPU-context configuration.
 
@@ -874,7 +874,7 @@ DvzGpuCtxConfig dvz_gpu_ctx_config(void);
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:76._
 
-#### `dvz_gpu_ctx_config_add_instance_extension()` { #dvz_gpu_ctx_config_add_instance_extension }
+#### `dvz_gpu_ctx_config_add_instance_extension()` { #dvz_gpu_ctx_config_add_instance_extension .dvz-api-function }
 
 Request an additional Vulkan instance extension for a GPU-context configuration.
 
@@ -892,7 +892,7 @@ void dvz_gpu_ctx_config_add_instance_extension(
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:151._
 
-#### `dvz_gpu_ctx_config_alloc()` { #dvz_gpu_ctx_config_alloc }
+#### `dvz_gpu_ctx_config_alloc()` { #dvz_gpu_ctx_config_alloc .dvz-api-function }
 
 Select the allocator external-memory export policy for a GPU-context configuration.
 
@@ -910,7 +910,7 @@ void dvz_gpu_ctx_config_alloc(
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:108._
 
-#### `dvz_gpu_ctx_config_enable_canvas_extensions()` { #dvz_gpu_ctx_config_enable_canvas_extensions }
+#### `dvz_gpu_ctx_config_enable_canvas_extensions()` { #dvz_gpu_ctx_config_enable_canvas_extensions .dvz-api-function }
 
 Enable or disable canvas (swapchain/surface) device extensions for a GPU-context configuration.
 
@@ -930,7 +930,7 @@ void dvz_gpu_ctx_config_enable_canvas_extensions(
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:163._
 
-#### `dvz_gpu_ctx_config_features10()` { #dvz_gpu_ctx_config_features10 }
+#### `dvz_gpu_ctx_config_features10()` { #dvz_gpu_ctx_config_features10 .dvz-api-function }
 
 Copy Vulkan 1.0 features into a GPU-context configuration.
 
@@ -948,7 +948,7 @@ void dvz_gpu_ctx_config_features10(
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:119._
 
-#### `dvz_gpu_ctx_config_features12()` { #dvz_gpu_ctx_config_features12 }
+#### `dvz_gpu_ctx_config_features12()` { #dvz_gpu_ctx_config_features12 .dvz-api-function }
 
 Copy Vulkan 1.2 features into a GPU-context configuration.
 
@@ -966,7 +966,7 @@ void dvz_gpu_ctx_config_features12(
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:128._
 
-#### `dvz_gpu_ctx_config_features13()` { #dvz_gpu_ctx_config_features13 }
+#### `dvz_gpu_ctx_config_features13()` { #dvz_gpu_ctx_config_features13 .dvz-api-function }
 
 Copy Vulkan 1.3 features into a GPU-context configuration.
 
@@ -984,7 +984,7 @@ void dvz_gpu_ctx_config_features13(
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:139._
 
-#### `dvz_gpu_ctx_config_gpu()` { #dvz_gpu_ctx_config_gpu }
+#### `dvz_gpu_ctx_config_gpu()` { #dvz_gpu_ctx_config_gpu .dvz-api-function }
 
 Select the GPU index to use for a GPU-context configuration.
 
@@ -1002,7 +1002,7 @@ void dvz_gpu_ctx_config_gpu(
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:97._
 
-#### `dvz_gpu_ctx_config_validation()` { #dvz_gpu_ctx_config_validation }
+#### `dvz_gpu_ctx_config_validation()` { #dvz_gpu_ctx_config_validation .dvz-api-function }
 
 Toggle instance validation for a GPU-context configuration.
 
@@ -1020,7 +1020,7 @@ void dvz_gpu_ctx_config_validation(
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:87._
 
-#### `dvz_gpu_ctx_destroy()` { #dvz_gpu_ctx_destroy }
+#### `dvz_gpu_ctx_destroy()` { #dvz_gpu_ctx_destroy .dvz-api-function }
 
 Destroy a GPU context and all owned runtime objects.
 
@@ -1036,7 +1036,7 @@ void dvz_gpu_ctx_destroy(
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:254._
 
-#### `dvz_gpu_ctx_device()` { #dvz_gpu_ctx_device }
+#### `dvz_gpu_ctx_device()` { #dvz_gpu_ctx_device .dvz-api-function }
 
 Return the device owned by a GPU context.
 
@@ -1053,7 +1053,7 @@ DvzDevice * dvz_gpu_ctx_device(
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:214._
 
-#### `dvz_gpu_ctx_error_count()` { #dvz_gpu_ctx_error_count }
+#### `dvz_gpu_ctx_error_count()` { #dvz_gpu_ctx_error_count .dvz-api-function }
 
 Return the validation error count associated with a GPU context.
 
@@ -1070,7 +1070,7 @@ uint32_t dvz_gpu_ctx_error_count(
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:245._
 
-#### `dvz_gpu_ctx_gpu_index()` { #dvz_gpu_ctx_gpu_index }
+#### `dvz_gpu_ctx_gpu_index()` { #dvz_gpu_ctx_gpu_index .dvz-api-function }
 
 Return the selected GPU index of a GPU context.
 
@@ -1087,7 +1087,7 @@ uint32_t dvz_gpu_ctx_gpu_index(
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:193._
 
-#### `dvz_gpu_ctx_gpu_info()` { #dvz_gpu_ctx_gpu_info }
+#### `dvz_gpu_ctx_gpu_info()` { #dvz_gpu_ctx_gpu_info .dvz-api-function }
 
 Return the selected GPU descriptor of a GPU context.
 
@@ -1106,7 +1106,7 @@ _Bool dvz_gpu_ctx_gpu_info(
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:204._
 
-#### `dvz_gpu_ctx_instance()` { #dvz_gpu_ctx_instance }
+#### `dvz_gpu_ctx_instance()` { #dvz_gpu_ctx_instance .dvz-api-function }
 
 Return the instance owned by a GPU context.
 
@@ -1123,7 +1123,7 @@ DvzInstance * dvz_gpu_ctx_instance(
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:183._
 
-#### `dvz_gpu_ctx_queue()` { #dvz_gpu_ctx_queue }
+#### `dvz_gpu_ctx_queue()` { #dvz_gpu_ctx_queue .dvz-api-function }
 
 Return a queue owned by the GPU-context device.
 
@@ -1202,7 +1202,7 @@ _Declared in `include/datoviz/vk/gpu_ctx.h`:235._
 
 ### Functions
 
-#### `dvz_instance_config()` { #dvz_instance_config }
+#### `dvz_instance_config()` { #dvz_instance_config .dvz-api-function }
 
 Return default configuration values for creating an instance.
 
@@ -1218,7 +1218,7 @@ Related: [`dvz_instance_create()`](#dvz_instance_create).
 
 _Declared in `include/datoviz/vk/instance.h`:87._
 
-#### `dvz_instance_config_request_extension()` { #dvz_instance_config_request_extension }
+#### `dvz_instance_config_request_extension()` { #dvz_instance_config_request_extension .dvz-api-function }
 
 Add an instance extension request to a configuration.
 
@@ -1237,7 +1237,7 @@ _Bool dvz_instance_config_request_extension(
 
 _Declared in `include/datoviz/vk/instance.h`:110._
 
-#### `dvz_instance_config_request_layer()` { #dvz_instance_config_request_layer }
+#### `dvz_instance_config_request_layer()` { #dvz_instance_config_request_layer .dvz-api-function }
 
 Add an instance layer request to a configuration.
 
@@ -1256,7 +1256,7 @@ _Bool dvz_instance_config_request_layer(
 
 _Declared in `include/datoviz/vk/instance.h`:98._
 
-#### `dvz_instance_create()` { #dvz_instance_create }
+#### `dvz_instance_create()` { #dvz_instance_create .dvz-api-function }
 
 Create and initialize a heap-allocated instance from a configuration.
 
@@ -1275,7 +1275,7 @@ Related: [`dvz_instance_destroy()`](#dvz_instance_destroy).
 
 _Declared in `include/datoviz/vk/instance.h`:120._
 
-#### `dvz_instance_destroy()` { #dvz_instance_destroy }
+#### `dvz_instance_destroy()` { #dvz_instance_destroy .dvz-api-function }
 
 Destroy the instance.
 
@@ -1293,7 +1293,7 @@ Related: [`dvz_instance_create()`](#dvz_instance_create).
 
 _Declared in `include/datoviz/vk/instance.h`:139._
 
-#### `dvz_instance_error_count()` { #dvz_instance_error_count }
+#### `dvz_instance_error_count()` { #dvz_instance_error_count .dvz-api-function }
 
 Return the validation error counter accumulated by an instance.
 
@@ -1310,7 +1310,7 @@ uint32_t dvz_instance_error_count(
 
 _Declared in `include/datoviz/vk/instance.h`:149._
 
-#### `dvz_instance_gpu_count()` { #dvz_instance_gpu_count }
+#### `dvz_instance_gpu_count()` { #dvz_instance_gpu_count .dvz-api-function }
 
 Return the number of detected physical GPUs.
 
@@ -1327,7 +1327,7 @@ uint32_t dvz_instance_gpu_count(
 
 _Declared in `include/datoviz/vk/gpu.h`:66._
 
-#### `dvz_instance_gpu_handle()` { #dvz_instance_gpu_handle }
+#### `dvz_instance_gpu_handle()` { #dvz_instance_gpu_handle .dvz-api-function }
 
 Resolve the Vulkan physical device handle for a selected GPU index.
 
@@ -1348,7 +1348,7 @@ _Bool dvz_instance_gpu_handle(
 
 _Declared in `include/datoviz/vk/gpu.h`:91._
 
-#### `dvz_instance_gpu_info()` { #dvz_instance_gpu_info }
+#### `dvz_instance_gpu_info()` { #dvz_instance_gpu_info .dvz-api-function }
 
 Return a GPU descriptor snapshot for a given GPU index.
 
@@ -1369,7 +1369,7 @@ _Bool dvz_instance_gpu_info(
 
 _Declared in `include/datoviz/vk/gpu.h`:79._
 
-#### `dvz_instance_gpu_queue_caps()` { #dvz_instance_gpu_queue_caps }
+#### `dvz_instance_gpu_queue_caps()` { #dvz_instance_gpu_queue_caps .dvz-api-function }
 
 Query a GPU queue-family capability snapshot from an instance.
 
@@ -1394,7 +1394,7 @@ _Bool dvz_instance_gpu_queue_caps(
 
 _Declared in `include/datoviz/vk/queues.h`:134._
 
-#### `dvz_instance_handle()` { #dvz_instance_handle }
+#### `dvz_instance_handle()` { #dvz_instance_handle .dvz-api-function }
 
 Return the native VkInstance for a DvzInstance.
 
@@ -1411,7 +1411,7 @@ VkInstance dvz_instance_handle(
 
 _Declared in `include/datoviz/vk/instance.h`:130._
 
-#### `dvz_instance_has_extension()` { #dvz_instance_has_extension }
+#### `dvz_instance_has_extension()` { #dvz_instance_has_extension .dvz-api-function }
 
 Returns whether an instance extension is supported on the system?
 
@@ -1430,7 +1430,7 @@ _Bool dvz_instance_has_extension(
 
 _Declared in `include/datoviz/vk/instance.h`:227._
 
-#### `dvz_instance_has_layer()` { #dvz_instance_has_layer }
+#### `dvz_instance_has_layer()` { #dvz_instance_has_layer .dvz-api-function }
 
 Returns whether an instance layer is supported on the system?
 
@@ -1449,7 +1449,7 @@ _Bool dvz_instance_has_layer(
 
 _Declared in `include/datoviz/vk/instance.h`:188._
 
-#### `dvz_instance_probe_extensions()` { #dvz_instance_probe_extensions }
+#### `dvz_instance_probe_extensions()` { #dvz_instance_probe_extensions .dvz-api-function }
 
 Probe instance extensions.
 
@@ -1465,7 +1465,7 @@ void dvz_instance_probe_extensions(
 
 _Declared in `include/datoviz/vk/instance.h`:201._
 
-#### `dvz_instance_probe_layers()` { #dvz_instance_probe_layers }
+#### `dvz_instance_probe_layers()` { #dvz_instance_probe_layers .dvz-api-function }
 
 Probe instance layers.
 
@@ -1481,7 +1481,7 @@ void dvz_instance_probe_layers(
 
 _Declared in `include/datoviz/vk/instance.h`:162._
 
-#### `dvz_instance_supported_extensions()` { #dvz_instance_supported_extensions }
+#### `dvz_instance_supported_extensions()` { #dvz_instance_supported_extensions .dvz-api-function }
 
 Get the supported extensions before creating an instance.
 
@@ -1504,7 +1504,7 @@ char ** dvz_instance_supported_extensions(
 
 _Declared in `include/datoviz/vk/instance.h`:216._
 
-#### `dvz_instance_supported_layers()` { #dvz_instance_supported_layers }
+#### `dvz_instance_supported_layers()` { #dvz_instance_supported_layers .dvz-api-function }
 
 Get the supported layers before creating an instance.
 
@@ -1576,7 +1576,7 @@ _Declared in `include/datoviz/vk/instance.h`:177._
 
 ### Functions
 
-#### `dvz_allocation_create()` { #dvz_allocation_create }
+#### `dvz_allocation_create()` { #dvz_allocation_create .dvz-api-function }
 
 Allocate an empty allocation wrapper.
 
@@ -1595,7 +1595,7 @@ DvzAllocation * dvz_allocation_create(void);
 
 _Declared in `include/datoviz/vk/memory.h`:97._
 
-#### `dvz_allocation_flags()` { #dvz_allocation_flags }
+#### `dvz_allocation_flags()` { #dvz_allocation_flags .dvz-api-function }
 
 Return the allocation policy flags currently associated with an allocation.
 
@@ -1612,7 +1612,7 @@ DvzAllocationFlags dvz_allocation_flags(
 
 _Declared in `include/datoviz/vk/memory.h`:136._
 
-#### `dvz_allocation_flags_contains()` { #dvz_allocation_flags_contains }
+#### `dvz_allocation_flags_contains()` { #dvz_allocation_flags_contains .dvz-api-function }
 
 Test whether a flag set contains all requested allocation policy flags.
 
@@ -1631,7 +1631,7 @@ _Bool dvz_allocation_flags_contains(
 
 _Declared in `include/datoviz/vk/memory.h`:147._
 
-#### `dvz_allocation_free()` { #dvz_allocation_free }
+#### `dvz_allocation_free()` { #dvz_allocation_free .dvz-api-function }
 
 Free an allocation wrapper allocated by dvz_allocation_create().
 
@@ -1647,7 +1647,7 @@ void dvz_allocation_free(
 
 _Declared in `include/datoviz/vk/memory.h`:106._
 
-#### `dvz_allocation_mapped()` { #dvz_allocation_mapped }
+#### `dvz_allocation_mapped()` { #dvz_allocation_mapped .dvz-api-function }
 
 Return the mapped pointer currently associated with an allocation.
 
@@ -1664,7 +1664,7 @@ void * dvz_allocation_mapped(
 
 _Declared in `include/datoviz/vk/memory.h`:126._
 
-#### `dvz_allocation_memory()` { #dvz_allocation_memory }
+#### `dvz_allocation_memory()` { #dvz_allocation_memory .dvz-api-function }
 
 Return the Vulkan device-memory handle backing an allocation.
 
@@ -1685,7 +1685,7 @@ VkDeviceMemory dvz_allocation_memory(
 
 _Declared in `include/datoviz/vk/memory_interop.h`:267._
 
-#### `dvz_allocation_set_flags()` { #dvz_allocation_set_flags }
+#### `dvz_allocation_set_flags()` { #dvz_allocation_set_flags .dvz-api-function }
 
 Update the allocation policy flags used by higher-level wrappers.
 
@@ -1703,7 +1703,7 @@ void dvz_allocation_set_flags(
 
 _Declared in `include/datoviz/vk/memory.h`:157._
 
-#### `dvz_allocation_size()` { #dvz_allocation_size }
+#### `dvz_allocation_size()` { #dvz_allocation_size .dvz-api-function }
 
 Return the allocation size, in bytes.
 
@@ -1720,7 +1720,7 @@ VkDeviceSize dvz_allocation_size(
 
 _Declared in `include/datoviz/vk/memory.h`:167._
 
-#### `dvz_allocator_buffer()` { #dvz_allocator_buffer }
+#### `dvz_allocator_buffer()` { #dvz_allocator_buffer .dvz-api-function }
 
 Allocate and create a Vulkan buffer.
 
@@ -1747,7 +1747,7 @@ int dvz_allocator_buffer(
 
 _Declared in `include/datoviz/vk/memory.h`:200._
 
-#### `dvz_allocator_copy_from()` { #dvz_allocator_copy_from }
+#### `dvz_allocator_copy_from()` { #dvz_allocator_copy_from .dvz-api-function }
 
 Copy memory from an allocation into host memory.
 
@@ -1772,7 +1772,7 @@ int dvz_allocator_copy_from(
 
 _Declared in `include/datoviz/vk/memory.h`:296._
 
-#### `dvz_allocator_copy_to()` { #dvz_allocator_copy_to }
+#### `dvz_allocator_copy_to()` { #dvz_allocator_copy_to .dvz-api-function }
 
 Copy host memory into an allocation.
 
@@ -1797,7 +1797,7 @@ int dvz_allocator_copy_to(
 
 _Declared in `include/datoviz/vk/memory.h`:280._
 
-#### `dvz_allocator_create()` { #dvz_allocator_create }
+#### `dvz_allocator_create()` { #dvz_allocator_create .dvz-api-function }
 
 Allocate an empty allocator wrapper.
 
@@ -1817,7 +1817,7 @@ Related: [`dvz_allocator_destroy()`](#dvz_allocator_destroy).
 
 _Declared in `include/datoviz/vk/memory.h`:74._
 
-#### `dvz_allocator_destroy()` { #dvz_allocator_destroy }
+#### `dvz_allocator_destroy()` { #dvz_allocator_destroy .dvz-api-function }
 
 Destroy an allocator.
 
@@ -1835,7 +1835,7 @@ Related: [`dvz_allocator_create()`](#dvz_allocator_create).
 
 _Declared in `include/datoviz/vk/memory.h`:330._
 
-#### `dvz_allocator_destroy_buffer()` { #dvz_allocator_destroy_buffer }
+#### `dvz_allocator_destroy_buffer()` { #dvz_allocator_destroy_buffer .dvz-api-function }
 
 Destroy a buffer allocation.
 
@@ -1855,7 +1855,7 @@ void dvz_allocator_destroy_buffer(
 
 _Declared in `include/datoviz/vk/memory.h`:309._
 
-#### `dvz_allocator_destroy_image()` { #dvz_allocator_destroy_image }
+#### `dvz_allocator_destroy_image()` { #dvz_allocator_destroy_image .dvz-api-function }
 
 Destroy a image allocation.
 
@@ -1875,7 +1875,7 @@ void dvz_allocator_destroy_image(
 
 _Declared in `include/datoviz/vk/memory.h`:321._
 
-#### `dvz_allocator_device()` { #dvz_allocator_device }
+#### `dvz_allocator_device()` { #dvz_allocator_device .dvz-api-function }
 
 Return the device associated with an allocator.
 
@@ -1892,7 +1892,7 @@ DvzDevice * dvz_allocator_device(
 
 _Declared in `include/datoviz/vk/memory.h`:116._
 
-#### `dvz_allocator_export()` { #dvz_allocator_export }
+#### `dvz_allocator_export()` { #dvz_allocator_export .dvz-api-function }
 
 Export an allocation for another GPU API.
 
@@ -1915,7 +1915,7 @@ int dvz_allocator_export(
 
 _Declared in `include/datoviz/vk/memory_interop.h`:190._
 
-#### `dvz_allocator_external()` { #dvz_allocator_external }
+#### `dvz_allocator_external()` { #dvz_allocator_external .dvz-api-function }
 
 Return the external-handle type configured on an allocator.
 
@@ -1935,7 +1935,7 @@ VkExternalMemoryHandleTypeFlagsKHR dvz_allocator_external(
 
 _Declared in `include/datoviz/vk/memory_interop.h`:176._
 
-#### `dvz_allocator_flush()` { #dvz_allocator_flush }
+#### `dvz_allocator_flush()` { #dvz_allocator_flush .dvz-api-function }
 
 Flush mapped memory ranges so GPU sees the latest CPU writes.
 
@@ -1958,7 +1958,7 @@ int dvz_allocator_flush(
 
 _Declared in `include/datoviz/vk/memory.h`:253._
 
-#### `dvz_allocator_free()` { #dvz_allocator_free }
+#### `dvz_allocator_free()` { #dvz_allocator_free .dvz-api-function }
 
 Free an allocator wrapper allocated by dvz_allocator_create().
 
@@ -1974,7 +1974,7 @@ void dvz_allocator_free(
 
 _Declared in `include/datoviz/vk/memory.h`:83._
 
-#### `dvz_allocator_image()` { #dvz_allocator_image }
+#### `dvz_allocator_image()` { #dvz_allocator_image .dvz-api-function }
 
 Allocate and create a Vulkan image.
 
@@ -2001,7 +2001,7 @@ int dvz_allocator_image(
 
 _Declared in `include/datoviz/vk/memory.h`:218._
 
-#### `dvz_allocator_import_buffer()` { #dvz_allocator_import_buffer }
+#### `dvz_allocator_import_buffer()` { #dvz_allocator_import_buffer .dvz-api-function }
 
 Import an external GPU data pointer to a Vulkan buffer.
 
@@ -2040,7 +2040,7 @@ int dvz_allocator_import_buffer(
 
 _Declared in `include/datoviz/vk/memory_interop.h`:294._
 
-#### `dvz_allocator_import_image()` { #dvz_allocator_import_image }
+#### `dvz_allocator_import_image()` { #dvz_allocator_import_image .dvz-api-function }
 
 Import an external GPU data pointer to a Vulkan image.
 
@@ -2073,7 +2073,7 @@ int dvz_allocator_import_image(
 
 _Declared in `include/datoviz/vk/memory_interop.h`:317._
 
-#### `dvz_allocator_invalidate()` { #dvz_allocator_invalidate }
+#### `dvz_allocator_invalidate()` { #dvz_allocator_invalidate .dvz-api-function }
 
 Invalidate mapped memory ranges so the CPU sees the latest GPU writes.
 
@@ -2096,7 +2096,7 @@ int dvz_allocator_invalidate(
 
 _Declared in `include/datoviz/vk/memory.h`:266._
 
-#### `dvz_allocator_map()` { #dvz_allocator_map }
+#### `dvz_allocator_map()` { #dvz_allocator_map .dvz-api-function }
 
 Map an allocation.
 
@@ -2115,7 +2115,7 @@ void * dvz_allocator_map(
 
 _Declared in `include/datoviz/vk/memory.h`:230._
 
-#### `dvz_allocator_unmap()` { #dvz_allocator_unmap }
+#### `dvz_allocator_unmap()` { #dvz_allocator_unmap .dvz-api-function }
 
 Unmap the allocation.
 
@@ -2133,7 +2133,7 @@ void dvz_allocator_unmap(
 
 _Declared in `include/datoviz/vk/memory.h`:240._
 
-#### `dvz_interop_buffer_export()` { #dvz_interop_buffer_export }
+#### `dvz_interop_buffer_export()` { #dvz_interop_buffer_export .dvz-api-function }
 
 Export a Vulkan-owned buffer allocation and package external interop metadata.
 
@@ -2170,7 +2170,7 @@ int dvz_interop_buffer_export(
 
 _Declared in `include/datoviz/vk/memory_interop.h`:211._
 
-#### `dvz_interop_buffer_export_config()` { #dvz_interop_buffer_export_config }
+#### `dvz_interop_buffer_export_config()` { #dvz_interop_buffer_export_config .dvz-api-function }
 
 Return a default interop buffer export configuration.
 
@@ -2184,7 +2184,7 @@ DvzInteropBufferExportConfig dvz_interop_buffer_export_config(void);
 
 _Declared in `include/datoviz/vk/memory_interop.h`:104._
 
-#### `dvz_interop_buffer_export_from_buffer()` { #dvz_interop_buffer_export_from_buffer }
+#### `dvz_interop_buffer_export_from_buffer()` { #dvz_interop_buffer_export_from_buffer .dvz-api-function }
 
 Export a vklite buffer and package external interop metadata.
 
@@ -2211,7 +2211,7 @@ int dvz_interop_buffer_export_from_buffer(
 
 _Declared in `include/datoviz/vk/memory_interop.h`:232._
 
-#### `dvz_interop_buffer_wait_timeline()` { #dvz_interop_buffer_wait_timeline }
+#### `dvz_interop_buffer_wait_timeline()` { #dvz_interop_buffer_wait_timeline .dvz-api-function }
 
 Wait on a timeline semaphore before Vulkan reads an interop buffer as vertex input.
 
@@ -2240,7 +2240,7 @@ _Bool dvz_interop_buffer_wait_timeline(
 
 _Declared in `include/datoviz/vk/memory_interop.h`:252._
 
-#### `dvz_interop_gpu_ctx()` { #dvz_interop_gpu_ctx }
+#### `dvz_interop_gpu_ctx()` { #dvz_interop_gpu_ctx .dvz-api-function }
 
 Create an advanced GPU context for Vulkan-owned CUDA/CuPy interop buffers.
 
@@ -2264,7 +2264,7 @@ DvzGpuCtx * dvz_interop_gpu_ctx(
 
 _Declared in `include/datoviz/vk/memory_interop.h`:141._
 
-#### `dvz_interop_gpu_ctx_ex()` { #dvz_interop_gpu_ctx_ex }
+#### `dvz_interop_gpu_ctx_ex()` { #dvz_interop_gpu_ctx_ex .dvz-api-function }
 
 Create an advanced GPU context for CUDA/CuPy interop that also supports presentation.
 

@@ -352,7 +352,7 @@ Types: 29
 
 ### Functions
 
-#### `dvz_attachment_clear()` { #dvz_attachment_clear }
+#### `dvz_attachment_clear()` { #dvz_attachment_clear .dvz-api-function }
 
 Set the attachment clear value.
 
@@ -370,7 +370,7 @@ void dvz_attachment_clear(
 
 _Declared in `include/datoviz/vklite/rendering.h`:92._
 
-#### `dvz_attachment_image()` { #dvz_attachment_image }
+#### `dvz_attachment_image()` { #dvz_attachment_image .dvz-api-function }
 
 Set the attachment image view and layout.
 
@@ -390,7 +390,7 @@ void dvz_attachment_image(
 
 _Declared in `include/datoviz/vklite/rendering.h`:57._
 
-#### `dvz_attachment_ops()` { #dvz_attachment_ops }
+#### `dvz_attachment_ops()` { #dvz_attachment_ops .dvz-api-function }
 
 Set the attachment load and store operations.
 
@@ -410,7 +410,7 @@ void dvz_attachment_ops(
 
 _Declared in `include/datoviz/vklite/rendering.h`:82._
 
-#### `dvz_attachment_resolve()` { #dvz_attachment_resolve }
+#### `dvz_attachment_resolve()` { #dvz_attachment_resolve .dvz-api-function }
 
 When using multisampling, set the resolve mod and image view.
 
@@ -432,7 +432,7 @@ void dvz_attachment_resolve(
 
 _Declared in `include/datoviz/vklite/rendering.h`:69._
 
-#### `dvz_cmd_barriers()` { #dvz_cmd_barriers }
+#### `dvz_cmd_barriers()` { #dvz_cmd_barriers .dvz-api-function }
 
 Record a set of barriers in a command buffer.
 
@@ -450,7 +450,7 @@ void dvz_cmd_barriers(
 
 _Declared in `include/datoviz/vklite/sync.h`:363._
 
-#### `dvz_cmd_begin()` { #dvz_cmd_begin }
+#### `dvz_cmd_begin()` { #dvz_cmd_begin .dvz-api-function }
 
 Start recording a command buffer.
 
@@ -466,7 +466,7 @@ void dvz_cmd_begin(
 
 _Declared in `include/datoviz/vklite/commands.h`:159._
 
-#### `dvz_cmd_begin_result()` { #dvz_cmd_begin_result }
+#### `dvz_cmd_begin_result()` { #dvz_cmd_begin_result .dvz-api-function }
 
 Start recording a command buffer.
 
@@ -483,7 +483,7 @@ int dvz_cmd_begin_result(
 
 _Declared in `include/datoviz/vklite/commands.h`:150._
 
-#### `dvz_cmd_bind_compute()` { #dvz_cmd_bind_compute }
+#### `dvz_cmd_bind_compute()` { #dvz_cmd_bind_compute .dvz-api-function }
 
 Bind a compute pipeline.
 
@@ -501,7 +501,7 @@ void dvz_cmd_bind_compute(
 
 _Declared in `include/datoviz/vklite/compute.h`:178._
 
-#### `dvz_cmd_bind_descriptors()` { #dvz_cmd_bind_descriptors }
+#### `dvz_cmd_bind_descriptors()` { #dvz_cmd_bind_descriptors .dvz-api-function }
 
 Bind descriptors in a command buffer.
 
@@ -529,7 +529,7 @@ void dvz_cmd_bind_descriptors(
 
 _Declared in `include/datoviz/vklite/descriptors.h`:146._
 
-#### `dvz_cmd_bind_graphics()` { #dvz_cmd_bind_graphics }
+#### `dvz_cmd_bind_graphics()` { #dvz_cmd_bind_graphics .dvz-api-function }
 
 Bind a graphics pipeline.
 
@@ -547,7 +547,7 @@ void dvz_cmd_bind_graphics(
 
 _Declared in `include/datoviz/vklite/graphics.h`:510._
 
-#### `dvz_cmd_bind_index_buffer()` { #dvz_cmd_bind_index_buffer }
+#### `dvz_cmd_bind_index_buffer()` { #dvz_cmd_bind_index_buffer .dvz-api-function }
 
 Bind an index buffer.
 
@@ -569,7 +569,7 @@ void dvz_cmd_bind_index_buffer(
 
 _Declared in `include/datoviz/vklite/buffers.h`:341._
 
-#### `dvz_cmd_bind_vertex_buffers()` { #dvz_cmd_bind_vertex_buffers }
+#### `dvz_cmd_bind_vertex_buffers()` { #dvz_cmd_bind_vertex_buffers .dvz-api-function }
 
 Bind vertex buffers before recording draw commands.
 
@@ -593,7 +593,7 @@ void dvz_cmd_bind_vertex_buffers(
 
 _Declared in `include/datoviz/vklite/buffers.h`:326._
 
-#### `dvz_cmd_blit_destination()` { #dvz_cmd_blit_destination }
+#### `dvz_cmd_blit_destination()` { #dvz_cmd_blit_destination .dvz-api-function }
 
 Define the destination of a blit operation.
 
@@ -625,7 +625,7 @@ void dvz_cmd_blit_destination(
 
 _Declared in `include/datoviz/vklite/images.h`:625._
 
-#### `dvz_cmd_blit_filter()` { #dvz_cmd_blit_filter }
+#### `dvz_cmd_blit_filter()` { #dvz_cmd_blit_filter .dvz-api-function }
 
 Set the filter of a blit operation.
 
@@ -643,7 +643,7 @@ void dvz_cmd_blit_filter(
 
 _Declared in `include/datoviz/vklite/images.h`:637._
 
-#### `dvz_cmd_blit_image()` { #dvz_cmd_blit_image }
+#### `dvz_cmd_blit_image()` { #dvz_cmd_blit_image .dvz-api-function }
 
 End an image blit operation.
 
@@ -661,7 +661,7 @@ void dvz_cmd_blit_image(
 
 _Declared in `include/datoviz/vklite/images.h`:646._
 
-#### `dvz_cmd_blit_source()` { #dvz_cmd_blit_source }
+#### `dvz_cmd_blit_source()` { #dvz_cmd_blit_source .dvz-api-function }
 
 Define the source of a blit operation.
 
@@ -693,7 +693,7 @@ void dvz_cmd_blit_source(
 
 _Declared in `include/datoviz/vklite/images.h`:606._
 
-#### `dvz_cmd_copy_buffer_to_image()` { #dvz_cmd_copy_buffer_to_image }
+#### `dvz_cmd_copy_buffer_to_image()` { #dvz_cmd_copy_buffer_to_image .dvz-api-function }
 
 Copy a GPU buffer to a GPU image.
 
@@ -719,7 +719,7 @@ void dvz_cmd_copy_buffer_to_image(
 
 _Declared in `include/datoviz/vklite/images.h`:528._
 
-#### `dvz_cmd_copy_destination()` { #dvz_cmd_copy_destination }
+#### `dvz_cmd_copy_destination()` { #dvz_cmd_copy_destination .dvz-api-function }
 
 Define the destination of an image copy operation.
 
@@ -745,7 +745,7 @@ void dvz_cmd_copy_destination(
 
 _Declared in `include/datoviz/vklite/images.h`:579._
 
-#### `dvz_cmd_copy_image()` { #dvz_cmd_copy_image }
+#### `dvz_cmd_copy_image()` { #dvz_cmd_copy_image .dvz-api-function }
 
 End an image copy operation.
 
@@ -763,7 +763,7 @@ void dvz_cmd_copy_image(
 
 _Declared in `include/datoviz/vklite/images.h`:589._
 
-#### `dvz_cmd_copy_image_to_buffer()` { #dvz_cmd_copy_image_to_buffer }
+#### `dvz_cmd_copy_image_to_buffer()` { #dvz_cmd_copy_image_to_buffer .dvz-api-function }
 
 Copy a GPU image to a GPU buffer.
 
@@ -789,7 +789,7 @@ void dvz_cmd_copy_image_to_buffer(
 
 _Declared in `include/datoviz/vklite/images.h`:544._
 
-#### `dvz_cmd_copy_source()` { #dvz_cmd_copy_source }
+#### `dvz_cmd_copy_source()` { #dvz_cmd_copy_source .dvz-api-function }
 
 Define the source of an image copy operation.
 
@@ -821,7 +821,7 @@ void dvz_cmd_copy_source(
 
 _Declared in `include/datoviz/vklite/images.h`:563._
 
-#### `dvz_cmd_dispatch()` { #dvz_cmd_dispatch }
+#### `dvz_cmd_dispatch()` { #dvz_cmd_dispatch .dvz-api-function }
 
 Dispatch a compute task.
 
@@ -843,7 +843,7 @@ void dvz_cmd_dispatch(
 
 _Declared in `include/datoviz/vklite/compute.h`:190._
 
-#### `dvz_cmd_draw()` { #dvz_cmd_draw }
+#### `dvz_cmd_draw()` { #dvz_cmd_draw .dvz-api-function }
 
 Direct draw.
 
@@ -867,7 +867,7 @@ void dvz_cmd_draw(
 
 _Declared in `include/datoviz/vklite/rendering.h`:275._
 
-#### `dvz_cmd_draw_indexed()` { #dvz_cmd_draw_indexed }
+#### `dvz_cmd_draw_indexed()` { #dvz_cmd_draw_indexed .dvz-api-function }
 
 Direct indexed draw.
 
@@ -893,7 +893,7 @@ void dvz_cmd_draw_indexed(
 
 _Declared in `include/datoviz/vklite/rendering.h`:289._
 
-#### `dvz_cmd_draw_indexed_indirect()` { #dvz_cmd_draw_indexed_indirect }
+#### `dvz_cmd_draw_indexed_indirect()` { #dvz_cmd_draw_indexed_indirect .dvz-api-function }
 
 Indirect indexed draw.
 
@@ -917,7 +917,7 @@ void dvz_cmd_draw_indexed_indirect(
 
 _Declared in `include/datoviz/vklite/rendering.h`:312._
 
-#### `dvz_cmd_draw_indirect()` { #dvz_cmd_draw_indirect }
+#### `dvz_cmd_draw_indirect()` { #dvz_cmd_draw_indirect .dvz-api-function }
 
 Indirect draw.
 
@@ -941,7 +941,7 @@ void dvz_cmd_draw_indirect(
 
 _Declared in `include/datoviz/vklite/rendering.h`:301._
 
-#### `dvz_cmd_end()` { #dvz_cmd_end }
+#### `dvz_cmd_end()` { #dvz_cmd_end .dvz-api-function }
 
 Stop recording a command buffer.
 
@@ -957,7 +957,7 @@ void dvz_cmd_end(
 
 _Declared in `include/datoviz/vklite/commands.h`:178._
 
-#### `dvz_cmd_end_result()` { #dvz_cmd_end_result }
+#### `dvz_cmd_end_result()` { #dvz_cmd_end_result .dvz-api-function }
 
 Stop recording a command buffer.
 
@@ -974,7 +974,7 @@ int dvz_cmd_end_result(
 
 _Declared in `include/datoviz/vklite/commands.h`:169._
 
-#### `dvz_cmd_release()` { #dvz_cmd_release }
+#### `dvz_cmd_release()` { #dvz_cmd_release .dvz-api-function }
 
 Release the command buffers back to the Vulkan command pool.
 
@@ -994,7 +994,7 @@ void dvz_cmd_release(
 
 _Declared in `include/datoviz/vklite/commands.h`:200._
 
-#### `dvz_cmd_rendering_begin()` { #dvz_cmd_rendering_begin }
+#### `dvz_cmd_rendering_begin()` { #dvz_cmd_rendering_begin .dvz-api-function }
 
 Begin a rendering.
 
@@ -1012,7 +1012,7 @@ void dvz_cmd_rendering_begin(
 
 _Declared in `include/datoviz/vklite/rendering.h`:226._
 
-#### `dvz_cmd_rendering_default()` { #dvz_cmd_rendering_default }
+#### `dvz_cmd_rendering_default()` { #dvz_cmd_rendering_default .dvz-api-function }
 
 Set up a default rendering.
 
@@ -1038,7 +1038,7 @@ void dvz_cmd_rendering_default(
 
 _Declared in `include/datoviz/vklite/rendering.h`:240._
 
-#### `dvz_cmd_rendering_end()` { #dvz_cmd_rendering_end }
+#### `dvz_cmd_rendering_end()` { #dvz_cmd_rendering_end .dvz-api-function }
 
 End a rendering.
 
@@ -1054,7 +1054,7 @@ void dvz_cmd_rendering_end(
 
 _Declared in `include/datoviz/vklite/rendering.h`:251._
 
-#### `dvz_cmd_reset()` { #dvz_cmd_reset }
+#### `dvz_cmd_reset()` { #dvz_cmd_reset .dvz-api-function }
 
 Reset a command buffer.
 
@@ -1070,7 +1070,7 @@ void dvz_cmd_reset(
 
 _Declared in `include/datoviz/vklite/commands.h`:187._
 
-#### `dvz_cmd_submit()` { #dvz_cmd_submit }
+#### `dvz_cmd_submit()` { #dvz_cmd_submit .dvz-api-function }
 
 Submit a command buffer on its queue.
 
@@ -1088,7 +1088,7 @@ void dvz_cmd_submit(
 
 _Declared in `include/datoviz/vklite/commands.h`:223._
 
-#### `dvz_cmd_submit_result()` { #dvz_cmd_submit_result }
+#### `dvz_cmd_submit_result()` { #dvz_cmd_submit_result .dvz-api-function }
 
 Submit a command buffer on its queue.
 
@@ -1107,7 +1107,7 @@ int dvz_cmd_submit_result(
 
 _Declared in `include/datoviz/vklite/commands.h`:212._
 
-#### `dvz_command_buffer_alloc()` { #dvz_command_buffer_alloc }
+#### `dvz_command_buffer_alloc()` { #dvz_command_buffer_alloc .dvz-api-function }
 
 Allocate a single primary command buffer from the device command pool of a queue family.
 
@@ -1126,7 +1126,7 @@ VkCommandBuffer dvz_command_buffer_alloc(
 
 _Declared in `include/datoviz/vklite/commands.h`:98._
 
-#### `dvz_command_buffer_free()` { #dvz_command_buffer_free }
+#### `dvz_command_buffer_free()` { #dvz_command_buffer_free .dvz-api-function }
 
 Free a single command buffer from the device command pool of a queue family.
 
@@ -1146,7 +1146,7 @@ void dvz_command_buffer_free(
 
 _Declared in `include/datoviz/vklite/commands.h`:110._
 
-#### `dvz_commands()` { #dvz_commands }
+#### `dvz_commands()` { #dvz_commands .dvz-api-function }
 
 Create a set of command buffers.
 
@@ -1171,7 +1171,7 @@ void dvz_commands(
 
 _Declared in `include/datoviz/vklite/commands.h`:87._
 
-#### `dvz_commands_count()` { #dvz_commands_count }
+#### `dvz_commands_count()` { #dvz_commands_count .dvz-api-function }
 
 Return the number of command buffers managed by a wrapper.
 
@@ -1188,7 +1188,7 @@ uint32_t dvz_commands_count(
 
 _Declared in `include/datoviz/vklite/commands.h`:130._
 
-#### `dvz_commands_create_wrapper()` { #dvz_commands_create_wrapper }
+#### `dvz_commands_create_wrapper()` { #dvz_commands_create_wrapper .dvz-api-function }
 
 Allocate an empty commands wrapper.
 
@@ -1207,7 +1207,7 @@ DvzCommands * dvz_commands_create_wrapper(void);
 
 _Declared in `include/datoviz/vklite/commands.h`:62._
 
-#### `dvz_commands_current()` { #dvz_commands_current }
+#### `dvz_commands_current()` { #dvz_commands_current .dvz-api-function }
 
 Set the current command buffer index.
 
@@ -1225,7 +1225,7 @@ void dvz_commands_current(
 
 _Declared in `include/datoviz/vklite/commands.h`:140._
 
-#### `dvz_commands_destroy()` { #dvz_commands_destroy }
+#### `dvz_commands_destroy()` { #dvz_commands_destroy .dvz-api-function }
 
 Destroy a set of command buffers.
 
@@ -1244,7 +1244,7 @@ void dvz_commands_destroy(
 
 _Declared in `include/datoviz/vklite/commands.h`:235._
 
-#### `dvz_commands_free()` { #dvz_commands_free }
+#### `dvz_commands_free()` { #dvz_commands_free .dvz-api-function }
 
 Free a commands wrapper allocated by dvz_commands_create_wrapper().
 
@@ -1260,7 +1260,7 @@ void dvz_commands_free(
 
 _Declared in `include/datoviz/vklite/commands.h`:71._
 
-#### `dvz_commands_handle()` { #dvz_commands_handle }
+#### `dvz_commands_handle()` { #dvz_commands_handle .dvz-api-function }
 
 Return the Vulkan handle of the currently-selected command buffers.
 
@@ -1277,7 +1277,7 @@ VkCommandBuffer dvz_commands_handle(
 
 _Declared in `include/datoviz/vklite/commands.h`:120._
 
-#### `dvz_commands_wrap()` { #dvz_commands_wrap }
+#### `dvz_commands_wrap()` { #dvz_commands_wrap .dvz-api-function }
 
 Wrap an existing Vulkan command buffer in a DvzCommands struct.
 
@@ -1301,7 +1301,7 @@ void dvz_commands_wrap(
 
 _Declared in `include/datoviz/vklite/commands.h`:250._
 
-#### `dvz_commands_wrap_borrowed_recording()` { #dvz_commands_wrap_borrowed_recording }
+#### `dvz_commands_wrap_borrowed_recording()` { #dvz_commands_wrap_borrowed_recording .dvz-api-function }
 
 Wrap an externally-owned Vulkan command buffer that is already recording.
 
@@ -1325,7 +1325,7 @@ void dvz_commands_wrap_borrowed_recording(
 
 _Declared in `include/datoviz/vklite/commands.h`:265._
 
-#### `dvz_rendering()` { #dvz_rendering }
+#### `dvz_rendering()` { #dvz_rendering .dvz-api-function }
 
 Initialize or reset a rendering wrapper.
 
@@ -1344,7 +1344,7 @@ void dvz_rendering(
 
 _Declared in `include/datoviz/vklite/rendering.h`:121._
 
-#### `dvz_rendering_area()` { #dvz_rendering_area }
+#### `dvz_rendering_area()` { #dvz_rendering_area .dvz-api-function }
 
 Set a rendering area.
 
@@ -1368,7 +1368,7 @@ void dvz_rendering_area(
 
 _Declared in `include/datoviz/vklite/rendering.h`:135._
 
-#### `dvz_rendering_color()` { #dvz_rendering_color }
+#### `dvz_rendering_color()` { #dvz_rendering_color .dvz-api-function }
 
 Return a color attachment of a rendering.
 
@@ -1387,7 +1387,7 @@ DvzAttachment * dvz_rendering_color(
 
 _Declared in `include/datoviz/vklite/rendering.h`:196._
 
-#### `dvz_rendering_color_count()` { #dvz_rendering_color_count }
+#### `dvz_rendering_color_count()` { #dvz_rendering_color_count .dvz-api-function }
 
 Return the number of configured color attachments.
 
@@ -1404,7 +1404,7 @@ uint32_t dvz_rendering_color_count(
 
 _Declared in `include/datoviz/vklite/rendering.h`:155._
 
-#### `dvz_rendering_create_wrapper()` { #dvz_rendering_create_wrapper }
+#### `dvz_rendering_create_wrapper()` { #dvz_rendering_create_wrapper .dvz-api-function }
 
 Allocate an empty rendering wrapper.
 
@@ -1422,7 +1422,7 @@ DvzRendering * dvz_rendering_create_wrapper(void);
 
 _Declared in `include/datoviz/vklite/rendering.h`:109._
 
-#### `dvz_rendering_depth()` { #dvz_rendering_depth }
+#### `dvz_rendering_depth()` { #dvz_rendering_depth .dvz-api-function }
 
 Return the depth attachment of a rendering.
 
@@ -1439,7 +1439,7 @@ DvzAttachment * dvz_rendering_depth(
 
 _Declared in `include/datoviz/vklite/rendering.h`:206._
 
-#### `dvz_rendering_free()` { #dvz_rendering_free }
+#### `dvz_rendering_free()` { #dvz_rendering_free .dvz-api-function }
 
 Free a rendering wrapper allocated by dvz_rendering_create().
 
@@ -1455,7 +1455,7 @@ void dvz_rendering_free(
 
 _Declared in `include/datoviz/vklite/rendering.h`:260._
 
-#### `dvz_rendering_has_depth()` { #dvz_rendering_has_depth }
+#### `dvz_rendering_has_depth()` { #dvz_rendering_has_depth .dvz-api-function }
 
 Return whether a depth attachment is configured.
 
@@ -1472,7 +1472,7 @@ _Bool dvz_rendering_has_depth(
 
 _Declared in `include/datoviz/vklite/rendering.h`:175._
 
-#### `dvz_rendering_has_stencil()` { #dvz_rendering_has_stencil }
+#### `dvz_rendering_has_stencil()` { #dvz_rendering_has_stencil .dvz-api-function }
 
 Return whether a stencil attachment is configured.
 
@@ -1489,7 +1489,7 @@ _Bool dvz_rendering_has_stencil(
 
 _Declared in `include/datoviz/vklite/rendering.h`:185._
 
-#### `dvz_rendering_layer_count()` { #dvz_rendering_layer_count }
+#### `dvz_rendering_layer_count()` { #dvz_rendering_layer_count .dvz-api-function }
 
 Return the configured layer count.
 
@@ -1506,7 +1506,7 @@ uint32_t dvz_rendering_layer_count(
 
 _Declared in `include/datoviz/vklite/rendering.h`:165._
 
-#### `dvz_rendering_layers()` { #dvz_rendering_layers }
+#### `dvz_rendering_layers()` { #dvz_rendering_layers .dvz-api-function }
 
 Set the number of layers in a rendering.
 
@@ -1524,7 +1524,7 @@ void dvz_rendering_layers(
 
 _Declared in `include/datoviz/vklite/rendering.h`:145._
 
-#### `dvz_rendering_stencil()` { #dvz_rendering_stencil }
+#### `dvz_rendering_stencil()` { #dvz_rendering_stencil .dvz-api-function }
 
 Return the stencil attachment of a rendering.
 
@@ -1577,7 +1577,7 @@ _Declared in `include/datoviz/vklite/rendering.h`:216._
 
 ### Functions
 
-#### `dvz_surface_capabilities()` { #dvz_surface_capabilities }
+#### `dvz_surface_capabilities()` { #dvz_surface_capabilities .dvz-api-function }
 
 Return the cached surface capabilities snapshot.
 
@@ -1594,7 +1594,7 @@ VkSurfaceCapabilitiesKHR dvz_surface_capabilities(
 
 _Declared in `include/datoviz/vklite/surface.h`:140._
 
-#### `dvz_surface_create_wrapper()` { #dvz_surface_create_wrapper }
+#### `dvz_surface_create_wrapper()` { #dvz_surface_create_wrapper .dvz-api-function }
 
 Allocate an empty surface wrapper.
 
@@ -1608,7 +1608,7 @@ DvzSurface * dvz_surface_create_wrapper(void);
 
 _Declared in `include/datoviz/vklite/surface.h`:50._
 
-#### `dvz_surface_destroy()` { #dvz_surface_destroy }
+#### `dvz_surface_destroy()` { #dvz_surface_destroy .dvz-api-function }
 
 Destroy a surface wrapper cache.
 
@@ -1624,7 +1624,7 @@ void dvz_surface_destroy(
 
 _Declared in `include/datoviz/vklite/surface.h`:236._
 
-#### `dvz_surface_extent()` { #dvz_surface_extent }
+#### `dvz_surface_extent()` { #dvz_surface_extent .dvz-api-function }
 
 Return the current cached extent resolved during refresh.
 
@@ -1641,7 +1641,7 @@ VkExtent2D dvz_surface_extent(
 
 _Declared in `include/datoviz/vklite/surface.h`:227._
 
-#### `dvz_surface_format()` { #dvz_surface_format }
+#### `dvz_surface_format()` { #dvz_surface_format .dvz-api-function }
 
 Fetch a cached supported format by index.
 
@@ -1662,7 +1662,7 @@ _Bool dvz_surface_format(
 
 _Declared in `include/datoviz/vklite/surface.h`:163._
 
-#### `dvz_surface_format_count()` { #dvz_surface_format_count }
+#### `dvz_surface_format_count()` { #dvz_surface_format_count .dvz-api-function }
 
 Return the number of cached supported surface formats.
 
@@ -1679,7 +1679,7 @@ uint32_t dvz_surface_format_count(
 
 _Declared in `include/datoviz/vklite/surface.h`:150._
 
-#### `dvz_surface_free()` { #dvz_surface_free }
+#### `dvz_surface_free()` { #dvz_surface_free .dvz-api-function }
 
 Free a surface wrapper allocated by dvz_surface_create().
 
@@ -1695,7 +1695,7 @@ void dvz_surface_free(
 
 _Declared in `include/datoviz/vklite/surface.h`:245._
 
-#### `dvz_surface_handle()` { #dvz_surface_handle }
+#### `dvz_surface_handle()` { #dvz_surface_handle .dvz-api-function }
 
 Return the wrapped native Vulkan surface handle.
 
@@ -1712,7 +1712,7 @@ VkSurfaceKHR dvz_surface_handle(
 
 _Declared in `include/datoviz/vklite/surface.h`:130._
 
-#### `dvz_surface_has_present_mode()` { #dvz_surface_has_present_mode }
+#### `dvz_surface_has_present_mode()` { #dvz_surface_has_present_mode .dvz-api-function }
 
 Return whether a present mode is supported by the cached list.
 
@@ -1731,7 +1731,7 @@ _Bool dvz_surface_has_present_mode(
 
 _Declared in `include/datoviz/vklite/surface.h`:207._
 
-#### `dvz_surface_init_from_device()` { #dvz_surface_init_from_device }
+#### `dvz_surface_init_from_device()` { #dvz_surface_init_from_device .dvz-api-function }
 
 Initialize a surface wrapper from a logical device.
 
@@ -1752,7 +1752,7 @@ _Bool dvz_surface_init_from_device(
 
 _Declared in `include/datoviz/vklite/surface.h`:77._
 
-#### `dvz_surface_init_from_instance()` { #dvz_surface_init_from_instance }
+#### `dvz_surface_init_from_instance()` { #dvz_surface_init_from_instance .dvz-api-function }
 
 Initialize a surface wrapper from instance + GPU index selection.
 
@@ -1775,7 +1775,7 @@ _Bool dvz_surface_init_from_instance(
 
 _Declared in `include/datoviz/vklite/surface.h`:63._
 
-#### `dvz_surface_preferred_format()` { #dvz_surface_preferred_format }
+#### `dvz_surface_preferred_format()` { #dvz_surface_preferred_format .dvz-api-function }
 
 Return the preferred surface format selected during refresh.
 
@@ -1792,7 +1792,7 @@ VkSurfaceFormatKHR dvz_surface_preferred_format(
 
 _Declared in `include/datoviz/vklite/surface.h`:173._
 
-#### `dvz_surface_preferred_present_mode()` { #dvz_surface_preferred_present_mode }
+#### `dvz_surface_preferred_present_mode()` { #dvz_surface_preferred_present_mode .dvz-api-function }
 
 Return the preferred present mode selected during refresh.
 
@@ -1809,7 +1809,7 @@ VkPresentModeKHR dvz_surface_preferred_present_mode(
 
 _Declared in `include/datoviz/vklite/surface.h`:217._
 
-#### `dvz_surface_present_mode()` { #dvz_surface_present_mode }
+#### `dvz_surface_present_mode()` { #dvz_surface_present_mode .dvz-api-function }
 
 Fetch a cached supported present mode by index.
 
@@ -1830,7 +1830,7 @@ _Bool dvz_surface_present_mode(
 
 _Declared in `include/datoviz/vklite/surface.h`:196._
 
-#### `dvz_surface_present_mode_count()` { #dvz_surface_present_mode_count }
+#### `dvz_surface_present_mode_count()` { #dvz_surface_present_mode_count .dvz-api-function }
 
 Return the number of cached supported present modes.
 
@@ -1847,7 +1847,7 @@ uint32_t dvz_surface_present_mode_count(
 
 _Declared in `include/datoviz/vklite/surface.h`:183._
 
-#### `dvz_surface_ready()` { #dvz_surface_ready }
+#### `dvz_surface_ready()` { #dvz_surface_ready .dvz-api-function }
 
 Return whether the surface wrapper currently has a valid cached state.
 
@@ -1864,7 +1864,7 @@ _Bool dvz_surface_ready(
 
 _Declared in `include/datoviz/vklite/surface.h`:120._
 
-#### `dvz_surface_refresh()` { #dvz_surface_refresh }
+#### `dvz_surface_refresh()` { #dvz_surface_refresh .dvz-api-function }
 
 Refresh cached capabilities, formats, and present modes.
 
@@ -1881,7 +1881,7 @@ _Bool dvz_surface_refresh(
 
 _Declared in `include/datoviz/vklite/surface.h`:110._
 
-#### `dvz_surface_set_extent_hint()` { #dvz_surface_set_extent_hint }
+#### `dvz_surface_set_extent_hint()` { #dvz_surface_set_extent_hint .dvz-api-function }
 
 Update the extent hint used when a wrapped surface reports variable extent.
 
@@ -1899,7 +1899,7 @@ void dvz_surface_set_extent_hint(
 
 _Declared in `include/datoviz/vklite/surface.h`:100._
 
-#### `dvz_surface_wrap_native()` { #dvz_surface_wrap_native }
+#### `dvz_surface_wrap_native()` { #dvz_surface_wrap_native .dvz-api-function }
 
 Attach a native surface created by the window module to a surface wrapper.
 
@@ -1920,7 +1920,7 @@ _Bool dvz_surface_wrap_native(
 
 _Declared in `include/datoviz/vklite/surface.h`:89._
 
-#### `dvz_swapchain_acquire()` { #dvz_swapchain_acquire }
+#### `dvz_swapchain_acquire()` { #dvz_swapchain_acquire .dvz-api-function }
 
 Acquire the next image index from the swapchain.
 
@@ -1943,7 +1943,7 @@ DvzPresentStatus dvz_swapchain_acquire(
 
 _Declared in `include/datoviz/vklite/swapchain.h`:247._
 
-#### `dvz_swapchain_color_space()` { #dvz_swapchain_color_space }
+#### `dvz_swapchain_color_space()` { #dvz_swapchain_color_space .dvz-api-function }
 
 Return the resolved color space from the latest recreate.
 
@@ -1960,7 +1960,7 @@ VkColorSpaceKHR dvz_swapchain_color_space(
 
 _Declared in `include/datoviz/vklite/swapchain.h`:166._
 
-#### `dvz_swapchain_config()` { #dvz_swapchain_config }
+#### `dvz_swapchain_config()` { #dvz_swapchain_config .dvz-api-function }
 
 Set swapchain creation parameters.
 
@@ -1979,7 +1979,7 @@ _Bool dvz_swapchain_config(
 
 _Declared in `include/datoviz/vklite/swapchain.h`:116._
 
-#### `dvz_swapchain_create_wrapper()` { #dvz_swapchain_create_wrapper }
+#### `dvz_swapchain_create_wrapper()` { #dvz_swapchain_create_wrapper .dvz-api-function }
 
 Allocate an empty swapchain wrapper.
 
@@ -1993,7 +1993,7 @@ DvzSwapchain * dvz_swapchain_create_wrapper(void);
 
 _Declared in `include/datoviz/vklite/swapchain.h`:79._
 
-#### `dvz_swapchain_destroy()` { #dvz_swapchain_destroy }
+#### `dvz_swapchain_destroy()` { #dvz_swapchain_destroy .dvz-api-function }
 
 Destroy swapchain resources owned by vklite.
 
@@ -2009,7 +2009,7 @@ void dvz_swapchain_destroy(
 
 _Declared in `include/datoviz/vklite/swapchain.h`:271._
 
-#### `dvz_swapchain_device()` { #dvz_swapchain_device }
+#### `dvz_swapchain_device()` { #dvz_swapchain_device .dvz-api-function }
 
 Bind or override the Vulkan logical device used by swapchain create/destroy/acquire paths.
 
@@ -2028,7 +2028,7 @@ _Bool dvz_swapchain_device(
 
 _Declared in `include/datoviz/vklite/swapchain.h`:105._
 
-#### `dvz_swapchain_extent()` { #dvz_swapchain_extent }
+#### `dvz_swapchain_extent()` { #dvz_swapchain_extent .dvz-api-function }
 
 Return the current swapchain extent from the latest recreate.
 
@@ -2045,7 +2045,7 @@ VkExtent2D dvz_swapchain_extent(
 
 _Declared in `include/datoviz/vklite/swapchain.h`:196._
 
-#### `dvz_swapchain_free()` { #dvz_swapchain_free }
+#### `dvz_swapchain_free()` { #dvz_swapchain_free .dvz-api-function }
 
 Free a swapchain wrapper allocated by dvz_swapchain_create().
 
@@ -2061,7 +2061,7 @@ void dvz_swapchain_free(
 
 _Declared in `include/datoviz/vklite/swapchain.h`:280._
 
-#### `dvz_swapchain_get_config()` { #dvz_swapchain_get_config }
+#### `dvz_swapchain_get_config()` { #dvz_swapchain_get_config .dvz-api-function }
 
 Return the currently configured swapchain creation parameters.
 
@@ -2078,7 +2078,7 @@ DvzSwapchainConfig dvz_swapchain_get_config(
 
 _Declared in `include/datoviz/vklite/swapchain.h`:186._
 
-#### `dvz_swapchain_handle()` { #dvz_swapchain_handle }
+#### `dvz_swapchain_handle()` { #dvz_swapchain_handle .dvz-api-function }
 
 Return the wrapped Vulkan swapchain handle.
 
@@ -2095,7 +2095,7 @@ VkSwapchainKHR dvz_swapchain_handle(
 
 _Declared in `include/datoviz/vklite/swapchain.h`:136._
 
-#### `dvz_swapchain_image()` { #dvz_swapchain_image }
+#### `dvz_swapchain_image()` { #dvz_swapchain_image .dvz-api-function }
 
 Fetch a swapchain image handle by index.
 
@@ -2116,7 +2116,7 @@ _Bool dvz_swapchain_image(
 
 _Declared in `include/datoviz/vklite/swapchain.h`:209._
 
-#### `dvz_swapchain_image_count()` { #dvz_swapchain_image_count }
+#### `dvz_swapchain_image_count()` { #dvz_swapchain_image_count .dvz-api-function }
 
 Return the number of swapchain images in the current recreation state.
 
@@ -2133,7 +2133,7 @@ uint32_t dvz_swapchain_image_count(
 
 _Declared in `include/datoviz/vklite/swapchain.h`:146._
 
-#### `dvz_swapchain_image_format()` { #dvz_swapchain_image_format }
+#### `dvz_swapchain_image_format()` { #dvz_swapchain_image_format .dvz-api-function }
 
 Return the resolved image format from the latest recreate.
 
@@ -2150,7 +2150,7 @@ VkFormat dvz_swapchain_image_format(
 
 _Declared in `include/datoviz/vklite/swapchain.h`:156._
 
-#### `dvz_swapchain_image_view()` { #dvz_swapchain_image_view }
+#### `dvz_swapchain_image_view()` { #dvz_swapchain_image_view .dvz-api-function }
 
 Fetch a swapchain image view handle by index.
 
@@ -2171,7 +2171,7 @@ _Bool dvz_swapchain_image_view(
 
 _Declared in `include/datoviz/vklite/swapchain.h`:222._
 
-#### `dvz_swapchain_init_from_device()` { #dvz_swapchain_init_from_device }
+#### `dvz_swapchain_init_from_device()` { #dvz_swapchain_init_from_device .dvz-api-function }
 
 Initialize a swapchain wrapper from a logical device and surface.
 
@@ -2192,7 +2192,7 @@ _Bool dvz_swapchain_init_from_device(
 
 _Declared in `include/datoviz/vklite/swapchain.h`:93._
 
-#### `dvz_swapchain_present()` { #dvz_swapchain_present }
+#### `dvz_swapchain_present()` { #dvz_swapchain_present .dvz-api-function }
 
 Present a previously rendered image.
 
@@ -2215,7 +2215,7 @@ DvzPresentStatus dvz_swapchain_present(
 
 _Declared in `include/datoviz/vklite/swapchain.h`:261._
 
-#### `dvz_swapchain_present_mode()` { #dvz_swapchain_present_mode }
+#### `dvz_swapchain_present_mode()` { #dvz_swapchain_present_mode .dvz-api-function }
 
 Return the resolved present mode from the latest recreate.
 
@@ -2232,7 +2232,7 @@ VkPresentModeKHR dvz_swapchain_present_mode(
 
 _Declared in `include/datoviz/vklite/swapchain.h`:176._
 
-#### `dvz_swapchain_ready()` { #dvz_swapchain_ready }
+#### `dvz_swapchain_ready()` { #dvz_swapchain_ready .dvz-api-function }
 
 Return whether the swapchain wrapper currently owns valid Vulkan resources.
 
@@ -2249,7 +2249,7 @@ _Bool dvz_swapchain_ready(
 
 _Declared in `include/datoviz/vklite/swapchain.h`:126._
 
-#### `dvz_swapchain_recreate()` { #dvz_swapchain_recreate }
+#### `dvz_swapchain_recreate()` { #dvz_swapchain_recreate .dvz-api-function }
 
 Recreate swapchain images and image views for a new extent.
 
@@ -2328,7 +2328,7 @@ _Declared in `include/datoviz/vklite/swapchain.h`:234._
 
 ### Functions
 
-#### `dvz_compute()` { #dvz_compute }
+#### `dvz_compute()` { #dvz_compute .dvz-api-function }
 
 Initialize a compute pipeline.
 
@@ -2350,7 +2350,7 @@ void dvz_compute(
 
 _Declared in `include/datoviz/vklite/compute.h`:80._
 
-#### `dvz_compute_create()` { #dvz_compute_create }
+#### `dvz_compute_create()` { #dvz_compute_create .dvz-api-function }
 
 Create a compute pipeline after it has been set up.
 
@@ -2372,7 +2372,7 @@ Related: [`dvz_compute_destroy()`](#dvz_compute_destroy).
 
 _Declared in `include/datoviz/vklite/compute.h`:127._
 
-#### `dvz_compute_create_wrapper()` { #dvz_compute_create_wrapper }
+#### `dvz_compute_create_wrapper()` { #dvz_compute_create_wrapper .dvz-api-function }
 
 Allocate an empty compute wrapper.
 
@@ -2391,7 +2391,7 @@ DvzCompute * dvz_compute_create_wrapper(void);
 
 _Declared in `include/datoviz/vklite/compute.h`:66._
 
-#### `dvz_compute_destroy()` { #dvz_compute_destroy }
+#### `dvz_compute_destroy()` { #dvz_compute_destroy .dvz-api-function }
 
 Destroy a compute pipeline.
 
@@ -2412,7 +2412,7 @@ Related: [`dvz_compute_create()`](#dvz_compute_create).
 
 _Declared in `include/datoviz/vklite/compute.h`:159._
 
-#### `dvz_compute_free()` { #dvz_compute_free }
+#### `dvz_compute_free()` { #dvz_compute_free .dvz-api-function }
 
 Free a compute wrapper allocated by dvz_compute_create_wrapper().
 
@@ -2428,7 +2428,7 @@ void dvz_compute_free(
 
 _Declared in `include/datoviz/vklite/compute.h`:168._
 
-#### `dvz_compute_handle()` { #dvz_compute_handle }
+#### `dvz_compute_handle()` { #dvz_compute_handle .dvz-api-function }
 
 Return the Vulkan pipeline handle owned by a compute wrapper.
 
@@ -2445,7 +2445,7 @@ VkPipeline dvz_compute_handle(
 
 _Declared in `include/datoviz/vklite/compute.h`:137._
 
-#### `dvz_compute_layout()` { #dvz_compute_layout }
+#### `dvz_compute_layout()` { #dvz_compute_layout .dvz-api-function }
 
 Set the pipeline layout.
 
@@ -2463,7 +2463,7 @@ void dvz_compute_layout(
 
 _Declared in `include/datoviz/vklite/compute.h`:100._
 
-#### `dvz_compute_layout_handle()` { #dvz_compute_layout_handle }
+#### `dvz_compute_layout_handle()` { #dvz_compute_layout_handle .dvz-api-function }
 
 Return the pipeline layout bound to a compute wrapper.
 
@@ -2480,7 +2480,7 @@ VkPipelineLayout dvz_compute_layout_handle(
 
 _Declared in `include/datoviz/vklite/compute.h`:147._
 
-#### `dvz_compute_shader()` { #dvz_compute_shader }
+#### `dvz_compute_shader()` { #dvz_compute_shader .dvz-api-function }
 
 Set the shader module.
 
@@ -2498,7 +2498,7 @@ void dvz_compute_shader(
 
 _Declared in `include/datoviz/vklite/compute.h`:90._
 
-#### `dvz_compute_spec()` { #dvz_compute_spec }
+#### `dvz_compute_spec()` { #dvz_compute_spec .dvz-api-function }
 
 Set a specialization constant.
 
@@ -2522,7 +2522,7 @@ void dvz_compute_spec(
 
 _Declared in `include/datoviz/vklite/compute.h`:114._
 
-#### `dvz_descriptors()` { #dvz_descriptors }
+#### `dvz_descriptors()` { #dvz_descriptors .dvz-api-function }
 
 Initialize and allocate descriptors.
 
@@ -2547,7 +2547,7 @@ void dvz_descriptors(
 
 _Declared in `include/datoviz/vklite/descriptors.h`:76._
 
-#### `dvz_descriptors_buffer()` { #dvz_descriptors_buffer }
+#### `dvz_descriptors_buffer()` { #dvz_descriptors_buffer .dvz-api-function }
 
 Bind a buffer.
 
@@ -2575,7 +2575,7 @@ void dvz_descriptors_buffer(
 
 _Declared in `include/datoviz/vklite/descriptors.h`:112._
 
-#### `dvz_descriptors_create_wrapper()` { #dvz_descriptors_create_wrapper }
+#### `dvz_descriptors_create_wrapper()` { #dvz_descriptors_create_wrapper .dvz-api-function }
 
 Allocate an empty descriptor wrapper.
 
@@ -2593,7 +2593,7 @@ DvzDescriptors * dvz_descriptors_create_wrapper(void);
 
 _Declared in `include/datoviz/vklite/descriptors.h`:59._
 
-#### `dvz_descriptors_free()` { #dvz_descriptors_free }
+#### `dvz_descriptors_free()` { #dvz_descriptors_free .dvz-api-function }
 
 Free a descriptor wrapper allocated by dvz_descriptors_create().
 
@@ -2612,7 +2612,7 @@ void dvz_descriptors_free(
 
 _Declared in `include/datoviz/vklite/descriptors.h`:160._
 
-#### `dvz_descriptors_handle()` { #dvz_descriptors_handle }
+#### `dvz_descriptors_handle()` { #dvz_descriptors_handle .dvz-api-function }
 
 Return a Vulkan descriptor-set handle by set index.
 
@@ -2631,7 +2631,7 @@ VkDescriptorSet dvz_descriptors_handle(
 
 _Declared in `include/datoviz/vklite/descriptors.h`:97._
 
-#### `dvz_descriptors_image()` { #dvz_descriptors_image }
+#### `dvz_descriptors_image()` { #dvz_descriptors_image .dvz-api-function }
 
 Bind an image.
 
@@ -2659,7 +2659,7 @@ void dvz_descriptors_image(
 
 _Declared in `include/datoviz/vklite/descriptors.h`:129._
 
-#### `dvz_descriptors_set_count()` { #dvz_descriptors_set_count }
+#### `dvz_descriptors_set_count()` { #dvz_descriptors_set_count .dvz-api-function }
 
 Return the number of descriptor sets allocated by the wrapper.
 
@@ -2676,7 +2676,7 @@ uint32_t dvz_descriptors_set_count(
 
 _Declared in `include/datoviz/vklite/descriptors.h`:86._
 
-#### `dvz_graphics()` { #dvz_graphics }
+#### `dvz_graphics()` { #dvz_graphics .dvz-api-function }
 
 Initialize a graphics pipeline.
 
@@ -2698,7 +2698,7 @@ void dvz_graphics(
 
 _Declared in `include/datoviz/vklite/graphics.h`:100._
 
-#### `dvz_graphics_attachment_color()` { #dvz_graphics_attachment_color }
+#### `dvz_graphics_attachment_color()` { #dvz_graphics_attachment_color .dvz-api-function }
 
 Declare the format of a color attachment.
 
@@ -2718,7 +2718,7 @@ void dvz_graphics_attachment_color(
 
 _Declared in `include/datoviz/vklite/graphics.h`:140._
 
-#### `dvz_graphics_attachment_depth()` { #dvz_graphics_attachment_depth }
+#### `dvz_graphics_attachment_depth()` { #dvz_graphics_attachment_depth .dvz-api-function }
 
 Declare the format of a depth attachment.
 
@@ -2736,7 +2736,7 @@ void dvz_graphics_attachment_depth(
 
 _Declared in `include/datoviz/vklite/graphics.h`:150._
 
-#### `dvz_graphics_attachment_stencil()` { #dvz_graphics_attachment_stencil }
+#### `dvz_graphics_attachment_stencil()` { #dvz_graphics_attachment_stencil .dvz-api-function }
 
 Declare the format of a stencil attachment.
 
@@ -2754,7 +2754,7 @@ void dvz_graphics_attachment_stencil(
 
 _Declared in `include/datoviz/vklite/graphics.h`:160._
 
-#### `dvz_graphics_blend()` { #dvz_graphics_blend }
+#### `dvz_graphics_blend()` { #dvz_graphics_blend .dvz-api-function }
 
 Set the blending constants for the pipeline.
 
@@ -2774,7 +2774,7 @@ void dvz_graphics_blend(
 
 _Declared in `include/datoviz/vklite/graphics.h`:369._
 
-#### `dvz_graphics_blend_alpha()` { #dvz_graphics_blend_alpha }
+#### `dvz_graphics_blend_alpha()` { #dvz_graphics_blend_alpha .dvz-api-function }
 
 Set the alpha blending parameters of a color attachment.
 
@@ -2798,7 +2798,7 @@ void dvz_graphics_blend_alpha(
 
 _Declared in `include/datoviz/vklite/graphics.h`:398._
 
-#### `dvz_graphics_blend_color()` { #dvz_graphics_blend_color }
+#### `dvz_graphics_blend_color()` { #dvz_graphics_blend_color .dvz-api-function }
 
 Set the color blending parameters of a color attachment.
 
@@ -2824,7 +2824,7 @@ void dvz_graphics_blend_color(
 
 _Declared in `include/datoviz/vklite/graphics.h`:383._
 
-#### `dvz_graphics_color_attachment_count()` { #dvz_graphics_color_attachment_count }
+#### `dvz_graphics_color_attachment_count()` { #dvz_graphics_color_attachment_count .dvz-api-function }
 
 Return the number of configured color attachments on a graphics wrapper.
 
@@ -2841,7 +2841,7 @@ uint32_t dvz_graphics_color_attachment_count(
 
 _Declared in `include/datoviz/vklite/graphics.h`:479._
 
-#### `dvz_graphics_color_write_mask()` { #dvz_graphics_color_write_mask }
+#### `dvz_graphics_color_write_mask()` { #dvz_graphics_color_write_mask .dvz-api-function }
 
 Set the color write mask of a color attachment.
 
@@ -2861,7 +2861,7 @@ void dvz_graphics_color_write_mask(
 
 _Declared in `include/datoviz/vklite/graphics.h`:411._
 
-#### `dvz_graphics_create()` { #dvz_graphics_create }
+#### `dvz_graphics_create()` { #dvz_graphics_create .dvz-api-function }
 
 Create a graphics pipeline after it has been set up.
 
@@ -2883,7 +2883,7 @@ Related: [`dvz_graphics_destroy()`](#dvz_graphics_destroy).
 
 _Declared in `include/datoviz/vklite/graphics.h`:439._
 
-#### `dvz_graphics_create_wrapper()` { #dvz_graphics_create_wrapper }
+#### `dvz_graphics_create_wrapper()` { #dvz_graphics_create_wrapper .dvz-api-function }
 
 Allocate an empty graphics wrapper.
 
@@ -2902,7 +2902,7 @@ DvzGraphics * dvz_graphics_create_wrapper(void);
 
 _Declared in `include/datoviz/vklite/graphics.h`:86._
 
-#### `dvz_graphics_cull_mode()` { #dvz_graphics_cull_mode }
+#### `dvz_graphics_cull_mode()` { #dvz_graphics_cull_mode .dvz-api-function }
 
 Set the graphics cull mode.
 
@@ -2922,7 +2922,7 @@ void dvz_graphics_cull_mode(
 
 _Declared in `include/datoviz/vklite/graphics.h`:246._
 
-#### `dvz_graphics_depth()` { #dvz_graphics_depth }
+#### `dvz_graphics_depth()` { #dvz_graphics_depth .dvz-api-function }
 
 Set the depth test.
 
@@ -2946,7 +2946,7 @@ void dvz_graphics_depth(
 
 _Declared in `include/datoviz/vklite/graphics.h`:272._
 
-#### `dvz_graphics_depth_bias()` { #dvz_graphics_depth_bias }
+#### `dvz_graphics_depth_bias()` { #dvz_graphics_depth_bias .dvz-api-function }
 
 Enable or disable the depth bias.
 
@@ -2970,7 +2970,7 @@ void dvz_graphics_depth_bias(
 
 _Declared in `include/datoviz/vklite/graphics.h`:300._
 
-#### `dvz_graphics_depth_bounds()` { #dvz_graphics_depth_bounds }
+#### `dvz_graphics_depth_bounds()` { #dvz_graphics_depth_bounds .dvz-api-function }
 
 Set the depth bounds.
 
@@ -2992,7 +2992,7 @@ void dvz_graphics_depth_bounds(
 
 _Declared in `include/datoviz/vklite/graphics.h`:287._
 
-#### `dvz_graphics_destroy()` { #dvz_graphics_destroy }
+#### `dvz_graphics_destroy()` { #dvz_graphics_destroy .dvz-api-function }
 
 Destroy a graphics pipeline.
 
@@ -3013,7 +3013,7 @@ Related: [`dvz_graphics_create()`](#dvz_graphics_create).
 
 _Declared in `include/datoviz/vklite/graphics.h`:491._
 
-#### `dvz_graphics_free()` { #dvz_graphics_free }
+#### `dvz_graphics_free()` { #dvz_graphics_free .dvz-api-function }
 
 Free a graphics wrapper allocated by dvz_graphics_create_wrapper().
 
@@ -3029,7 +3029,7 @@ void dvz_graphics_free(
 
 _Declared in `include/datoviz/vklite/graphics.h`:500._
 
-#### `dvz_graphics_front_face()` { #dvz_graphics_front_face }
+#### `dvz_graphics_front_face()` { #dvz_graphics_front_face .dvz-api-function }
 
 Set the graphics front face.
 
@@ -3049,7 +3049,7 @@ void dvz_graphics_front_face(
 
 _Declared in `include/datoviz/vklite/graphics.h`:259._
 
-#### `dvz_graphics_handle()` { #dvz_graphics_handle }
+#### `dvz_graphics_handle()` { #dvz_graphics_handle .dvz-api-function }
 
 Return the Vulkan pipeline handle owned by a graphics wrapper.
 
@@ -3066,7 +3066,7 @@ VkPipeline dvz_graphics_handle(
 
 _Declared in `include/datoviz/vklite/graphics.h`:449._
 
-#### `dvz_graphics_layout()` { #dvz_graphics_layout }
+#### `dvz_graphics_layout()` { #dvz_graphics_layout .dvz-api-function }
 
 Set the pipeline layout.
 
@@ -3084,7 +3084,7 @@ void dvz_graphics_layout(
 
 _Declared in `include/datoviz/vklite/graphics.h`:197._
 
-#### `dvz_graphics_layout_handle()` { #dvz_graphics_layout_handle }
+#### `dvz_graphics_layout_handle()` { #dvz_graphics_layout_handle .dvz-api-function }
 
 Return the pipeline layout bound to a graphics wrapper.
 
@@ -3101,7 +3101,7 @@ VkPipelineLayout dvz_graphics_layout_handle(
 
 _Declared in `include/datoviz/vklite/graphics.h`:459._
 
-#### `dvz_graphics_multisampling()` { #dvz_graphics_multisampling }
+#### `dvz_graphics_multisampling()` { #dvz_graphics_multisampling .dvz-api-function }
 
 Set multisampling.
 
@@ -3123,7 +3123,7 @@ void dvz_graphics_multisampling(
 
 _Declared in `include/datoviz/vklite/graphics.h`:424._
 
-#### `dvz_graphics_polygon_mode()` { #dvz_graphics_polygon_mode }
+#### `dvz_graphics_polygon_mode()` { #dvz_graphics_polygon_mode .dvz-api-function }
 
 Set the graphics polygon mode.
 
@@ -3143,7 +3143,7 @@ void dvz_graphics_polygon_mode(
 
 _Declared in `include/datoviz/vklite/graphics.h`:233._
 
-#### `dvz_graphics_primitive()` { #dvz_graphics_primitive }
+#### `dvz_graphics_primitive()` { #dvz_graphics_primitive .dvz-api-function }
 
 Set the graphics pipeline primitive topology
 
@@ -3163,7 +3163,7 @@ void dvz_graphics_primitive(
 
 _Declared in `include/datoviz/vklite/graphics.h`:209._
 
-#### `dvz_graphics_primitive_restart()` { #dvz_graphics_primitive_restart }
+#### `dvz_graphics_primitive_restart()` { #dvz_graphics_primitive_restart .dvz-api-function }
 
 Set whether a special index value (when using indexed rendering) allows to restart the
 primitive.
@@ -3182,7 +3182,7 @@ void dvz_graphics_primitive_restart(
 
 _Declared in `include/datoviz/vklite/graphics.h`:221._
 
-#### `dvz_graphics_scissor()` { #dvz_graphics_scissor }
+#### `dvz_graphics_scissor()` { #dvz_graphics_scissor .dvz-api-function }
 
 Set the scissor.
 
@@ -3208,7 +3208,7 @@ void dvz_graphics_scissor(
 
 _Declared in `include/datoviz/vklite/graphics.h`:337._
 
-#### `dvz_graphics_shader()` { #dvz_graphics_shader }
+#### `dvz_graphics_shader()` { #dvz_graphics_shader .dvz-api-function }
 
 Set the path to a shader for a graphics pipeline.
 
@@ -3228,7 +3228,7 @@ void dvz_graphics_shader(
 
 _Declared in `include/datoviz/vklite/graphics.h`:112._
 
-#### `dvz_graphics_shader_count()` { #dvz_graphics_shader_count }
+#### `dvz_graphics_shader_count()` { #dvz_graphics_shader_count .dvz-api-function }
 
 Return the number of configured shader stages on a graphics wrapper.
 
@@ -3245,7 +3245,7 @@ uint32_t dvz_graphics_shader_count(
 
 _Declared in `include/datoviz/vklite/graphics.h`:469._
 
-#### `dvz_graphics_spec()` { #dvz_graphics_spec }
+#### `dvz_graphics_spec()` { #dvz_graphics_spec .dvz-api-function }
 
 Set a specialization constant.
 
@@ -3271,7 +3271,7 @@ void dvz_graphics_spec(
 
 _Declared in `include/datoviz/vklite/graphics.h`:126._
 
-#### `dvz_graphics_stencil()` { #dvz_graphics_stencil }
+#### `dvz_graphics_stencil()` { #dvz_graphics_stencil .dvz-api-function }
 
 Set the stencil test.
 
@@ -3305,7 +3305,7 @@ void dvz_graphics_stencil(
 
 _Declared in `include/datoviz/vklite/graphics.h`:320._
 
-#### `dvz_graphics_vertex_attr()` { #dvz_graphics_vertex_attr }
+#### `dvz_graphics_vertex_attr()` { #dvz_graphics_vertex_attr .dvz-api-function }
 
 Add a vertex attribute.
 
@@ -3329,7 +3329,7 @@ void dvz_graphics_vertex_attr(
 
 _Declared in `include/datoviz/vklite/graphics.h`:186._
 
-#### `dvz_graphics_vertex_binding()` { #dvz_graphics_vertex_binding }
+#### `dvz_graphics_vertex_binding()` { #dvz_graphics_vertex_binding .dvz-api-function }
 
 Set the vertex binding.
 
@@ -3351,7 +3351,7 @@ void dvz_graphics_vertex_binding(
 
 _Declared in `include/datoviz/vklite/graphics.h`:172._
 
-#### `dvz_graphics_viewport()` { #dvz_graphics_viewport }
+#### `dvz_graphics_viewport()` { #dvz_graphics_viewport .dvz-api-function }
 
 Set the viewport.
 
@@ -3381,7 +3381,7 @@ void dvz_graphics_viewport(
 
 _Declared in `include/datoviz/vklite/graphics.h`:355._
 
-#### `dvz_shader()` { #dvz_shader }
+#### `dvz_shader()` { #dvz_shader .dvz-api-function }
 
 Create a shader module.
 
@@ -3407,7 +3407,7 @@ int dvz_shader(
 
 _Declared in `include/datoviz/vklite/shader.h`:71._
 
-#### `dvz_shader_create_wrapper()` { #dvz_shader_create_wrapper }
+#### `dvz_shader_create_wrapper()` { #dvz_shader_create_wrapper .dvz-api-function }
 
 Allocate an empty shader wrapper.
 
@@ -3425,7 +3425,7 @@ DvzShader * dvz_shader_create_wrapper(void);
 
 _Declared in `include/datoviz/vklite/shader.h`:54._
 
-#### `dvz_shader_destroy()` { #dvz_shader_destroy }
+#### `dvz_shader_destroy()` { #dvz_shader_destroy .dvz-api-function }
 
 Destroy a shader module.
 
@@ -3444,7 +3444,7 @@ void dvz_shader_destroy(
 
 _Declared in `include/datoviz/vklite/shader.h`:93._
 
-#### `dvz_shader_free()` { #dvz_shader_free }
+#### `dvz_shader_free()` { #dvz_shader_free .dvz-api-function }
 
 Free a shader wrapper allocated by dvz_shader_create_wrapper().
 
@@ -3460,7 +3460,7 @@ void dvz_shader_free(
 
 _Declared in `include/datoviz/vklite/shader.h`:102._
 
-#### `dvz_shader_handle()` { #dvz_shader_handle }
+#### `dvz_shader_handle()` { #dvz_shader_handle .dvz-api-function }
 
 Return the shader Vulkan handle.
 
@@ -3477,7 +3477,7 @@ VkShaderModule dvz_shader_handle(
 
 _Declared in `include/datoviz/vklite/shader.h`:81._
 
-#### `dvz_slots()` { #dvz_slots }
+#### `dvz_slots()` { #dvz_slots .dvz-api-function }
 
 Initialize pipeline slots (aka Vulkan descriptor set layout).
 
@@ -3499,7 +3499,7 @@ void dvz_slots(
 
 _Declared in `include/datoviz/vklite/slots.h`:79._
 
-#### `dvz_slots_binding()` { #dvz_slots_binding }
+#### `dvz_slots_binding()` { #dvz_slots_binding .dvz-api-function }
 
 Set the slots descriptor.
 
@@ -3525,7 +3525,7 @@ void dvz_slots_binding(
 
 _Declared in `include/datoviz/vklite/slots.h`:93._
 
-#### `dvz_slots_binding_count()` { #dvz_slots_binding_count }
+#### `dvz_slots_binding_count()` { #dvz_slots_binding_count .dvz-api-function }
 
 Return the number of bindings configured for a descriptor set.
 
@@ -3544,7 +3544,7 @@ uint32_t dvz_slots_binding_count(
 
 _Declared in `include/datoviz/vklite/slots.h`:179._
 
-#### `dvz_slots_combined_pipeline_layout()` { #dvz_slots_combined_pipeline_layout }
+#### `dvz_slots_combined_pipeline_layout()` { #dvz_slots_combined_pipeline_layout .dvz-api-function }
 
 Create a pipeline layout that combines two existing descriptor set layouts.
 
@@ -3568,7 +3568,7 @@ VkPipelineLayout dvz_slots_combined_pipeline_layout(
 
 _Declared in `include/datoviz/vklite/slots.h`:147._
 
-#### `dvz_slots_create()` { #dvz_slots_create }
+#### `dvz_slots_create()` { #dvz_slots_create .dvz-api-function }
 
 Create the slots after they have been set up.
 
@@ -3591,7 +3591,7 @@ Related: [`dvz_slots_destroy()`](#dvz_slots_destroy).
 
 _Declared in `include/datoviz/vklite/slots.h`:122._
 
-#### `dvz_slots_create_wrapper()` { #dvz_slots_create_wrapper }
+#### `dvz_slots_create_wrapper()` { #dvz_slots_create_wrapper .dvz-api-function }
 
 Allocate an empty slots wrapper.
 
@@ -3610,7 +3610,7 @@ DvzSlots * dvz_slots_create_wrapper(void);
 
 _Declared in `include/datoviz/vklite/slots.h`:65._
 
-#### `dvz_slots_descriptor_type()` { #dvz_slots_descriptor_type }
+#### `dvz_slots_descriptor_type()` { #dvz_slots_descriptor_type .dvz-api-function }
 
 Return the descriptor type configured for a slot binding.
 
@@ -3631,7 +3631,7 @@ VkDescriptorType dvz_slots_descriptor_type(
 
 _Declared in `include/datoviz/vklite/slots.h`:201._
 
-#### `dvz_slots_destroy()` { #dvz_slots_destroy }
+#### `dvz_slots_destroy()` { #dvz_slots_destroy .dvz-api-function }
 
 Destroy the slots.
 
@@ -3652,7 +3652,7 @@ Related: [`dvz_slots_create()`](#dvz_slots_create).
 
 _Declared in `include/datoviz/vklite/slots.h`:224._
 
-#### `dvz_slots_device()` { #dvz_slots_device }
+#### `dvz_slots_device()` { #dvz_slots_device .dvz-api-function }
 
 Return the device that owns a slots wrapper.
 
@@ -3669,7 +3669,7 @@ DvzDevice * dvz_slots_device(
 
 _Declared in `include/datoviz/vklite/slots.h`:158._
 
-#### `dvz_slots_free()` { #dvz_slots_free }
+#### `dvz_slots_free()` { #dvz_slots_free .dvz-api-function }
 
 Free a slots wrapper allocated by dvz_slots_create_wrapper().
 
@@ -3685,7 +3685,7 @@ void dvz_slots_free(
 
 _Declared in `include/datoviz/vklite/slots.h`:233._
 
-#### `dvz_slots_handle()` { #dvz_slots_handle }
+#### `dvz_slots_handle()` { #dvz_slots_handle .dvz-api-function }
 
 Return the pipeline layout Vulkan handle.
 
@@ -3702,7 +3702,7 @@ VkPipelineLayout dvz_slots_handle(
 
 _Declared in `include/datoviz/vklite/slots.h`:132._
 
-#### `dvz_slots_push()` { #dvz_slots_push }
+#### `dvz_slots_push()` { #dvz_slots_push .dvz-api-function }
 
 Set up push constants.
 
@@ -3724,7 +3724,7 @@ void dvz_slots_push(
 
 _Declared in `include/datoviz/vklite/slots.h`:108._
 
-#### `dvz_slots_push_count()` { #dvz_slots_push_count }
+#### `dvz_slots_push_count()` { #dvz_slots_push_count .dvz-api-function }
 
 Return the number of configured push-constant ranges.
 
@@ -3741,7 +3741,7 @@ uint32_t dvz_slots_push_count(
 
 _Declared in `include/datoviz/vklite/slots.h`:189._
 
-#### `dvz_slots_set_count()` { #dvz_slots_set_count }
+#### `dvz_slots_set_count()` { #dvz_slots_set_count .dvz-api-function }
 
 Return the number of descriptor sets configured on a slots wrapper.
 
@@ -3758,7 +3758,7 @@ uint32_t dvz_slots_set_count(
 
 _Declared in `include/datoviz/vklite/slots.h`:168._
 
-#### `dvz_slots_set_layout()` { #dvz_slots_set_layout }
+#### `dvz_slots_set_layout()` { #dvz_slots_set_layout .dvz-api-function }
 
 Return the descriptor-set layout handle for a set.
 
@@ -3847,7 +3847,7 @@ _Declared in `include/datoviz/vklite/slots.h`:212._
 
 ### Functions
 
-#### `dvz_buffer()` { #dvz_buffer }
+#### `dvz_buffer()` { #dvz_buffer .dvz-api-function }
 
 Initialize a GPU buffer.
 
@@ -3871,7 +3871,7 @@ void dvz_buffer(
 
 _Declared in `include/datoviz/vklite/buffers.h`:97._
 
-#### `dvz_buffer_allocated_size()` { #dvz_buffer_allocated_size }
+#### `dvz_buffer_allocated_size()` { #dvz_buffer_allocated_size .dvz-api-function }
 
 Return the current allocated size of a buffer, in bytes.
 
@@ -3888,7 +3888,7 @@ DvzSize dvz_buffer_allocated_size(
 
 _Declared in `include/datoviz/vklite/buffers.h`:82._
 
-#### `dvz_buffer_create()` { #dvz_buffer_create }
+#### `dvz_buffer_create()` { #dvz_buffer_create .dvz-api-function }
 
 Create the buffer after it has been set.
 
@@ -3910,7 +3910,7 @@ Related: [`dvz_buffer_destroy()`](#dvz_buffer_destroy).
 
 _Declared in `include/datoviz/vklite/buffers.h`:140._
 
-#### `dvz_buffer_create_wrapper()` { #dvz_buffer_create_wrapper }
+#### `dvz_buffer_create_wrapper()` { #dvz_buffer_create_wrapper .dvz-api-function }
 
 Allocate an empty buffer wrapper.
 
@@ -3929,7 +3929,7 @@ DvzBuffer * dvz_buffer_create_wrapper(void);
 
 _Declared in `include/datoviz/vklite/buffers.h`:63._
 
-#### `dvz_buffer_destroy()` { #dvz_buffer_destroy }
+#### `dvz_buffer_destroy()` { #dvz_buffer_destroy .dvz-api-function }
 
 Destroy a buffer.
 
@@ -3950,7 +3950,7 @@ Related: [`dvz_buffer_create()`](#dvz_buffer_create).
 
 _Declared in `include/datoviz/vklite/buffers.h`:238._
 
-#### `dvz_buffer_download()` { #dvz_buffer_download }
+#### `dvz_buffer_download()` { #dvz_buffer_download .dvz-api-function }
 
 Download a buffer data to the CPU.
 
@@ -3976,7 +3976,7 @@ void dvz_buffer_download(
 
 _Declared in `include/datoviz/vklite/buffers.h`:226._
 
-#### `dvz_buffer_flags()` { #dvz_buffer_flags }
+#### `dvz_buffer_flags()` { #dvz_buffer_flags .dvz-api-function }
 
 Set the allocation policy flags used when the buffer creates its memory.
 
@@ -3994,7 +3994,7 @@ void dvz_buffer_flags(
 
 _Declared in `include/datoviz/vklite/buffers.h`:127._
 
-#### `dvz_buffer_free()` { #dvz_buffer_free }
+#### `dvz_buffer_free()` { #dvz_buffer_free .dvz-api-function }
 
 Free a buffer wrapper allocated by dvz_buffer_create_wrapper().
 
@@ -4010,7 +4010,7 @@ void dvz_buffer_free(
 
 _Declared in `include/datoviz/vklite/buffers.h`:72._
 
-#### `dvz_buffer_handle()` { #dvz_buffer_handle }
+#### `dvz_buffer_handle()` { #dvz_buffer_handle .dvz-api-function }
 
 Return a Vulkan handle to a buffer.
 
@@ -4027,7 +4027,7 @@ VkBuffer dvz_buffer_handle(
 
 _Declared in `include/datoviz/vklite/buffers.h`:150._
 
-#### `dvz_buffer_map()` { #dvz_buffer_map }
+#### `dvz_buffer_map()` { #dvz_buffer_map .dvz-api-function }
 
 Memmap a GPU buffer.
 
@@ -4044,7 +4044,7 @@ int dvz_buffer_map(
 
 _Declared in `include/datoviz/vklite/buffers.h`:184._
 
-#### `dvz_buffer_resize()` { #dvz_buffer_resize }
+#### `dvz_buffer_resize()` { #dvz_buffer_resize .dvz-api-function }
 
 Resize a buffer.
 
@@ -4066,7 +4066,7 @@ void dvz_buffer_resize(
 
 _Declared in `include/datoviz/vklite/buffers.h`:174._
 
-#### `dvz_buffer_size()` { #dvz_buffer_size }
+#### `dvz_buffer_size()` { #dvz_buffer_size .dvz-api-function }
 
 Set the buffer size.
 
@@ -4084,7 +4084,7 @@ void dvz_buffer_size(
 
 _Declared in `include/datoviz/vklite/buffers.h`:107._
 
-#### `dvz_buffer_size_value()` { #dvz_buffer_size_value }
+#### `dvz_buffer_size_value()` { #dvz_buffer_size_value .dvz-api-function }
 
 Return the requested logical size of a buffer, in bytes.
 
@@ -4101,7 +4101,7 @@ DvzSize dvz_buffer_size_value(
 
 _Declared in `include/datoviz/vklite/buffers.h`:160._
 
-#### `dvz_buffer_unmap()` { #dvz_buffer_unmap }
+#### `dvz_buffer_unmap()` { #dvz_buffer_unmap .dvz-api-function }
 
 Unmap a GPU buffer.
 
@@ -4117,7 +4117,7 @@ void dvz_buffer_unmap(
 
 _Declared in `include/datoviz/vklite/buffers.h`:193._
 
-#### `dvz_buffer_upload()` { #dvz_buffer_upload }
+#### `dvz_buffer_upload()` { #dvz_buffer_upload .dvz-api-function }
 
 Upload data to a GPU buffer.
 
@@ -4143,7 +4143,7 @@ void dvz_buffer_upload(
 
 _Declared in `include/datoviz/vklite/buffers.h`:210._
 
-#### `dvz_buffer_usage()` { #dvz_buffer_usage }
+#### `dvz_buffer_usage()` { #dvz_buffer_usage .dvz-api-function }
 
 Set the buffer usage.
 
@@ -4161,7 +4161,7 @@ void dvz_buffer_usage(
 
 _Declared in `include/datoviz/vklite/buffers.h`:117._
 
-#### `dvz_buffer_views()` { #dvz_buffer_views }
+#### `dvz_buffer_views()` { #dvz_buffer_views .dvz-api-function }
 
 Create buffer views on an existing GPU buffer.
 
@@ -4187,7 +4187,7 @@ void dvz_buffer_views(
 
 _Declared in `include/datoviz/vklite/buffers.h`:261._
 
-#### `dvz_buffer_views_aligned_size()` { #dvz_buffer_views_aligned_size }
+#### `dvz_buffer_views_aligned_size()` { #dvz_buffer_views_aligned_size .dvz-api-function }
 
 Return the aligned stride in bytes between successive views.
 
@@ -4204,7 +4204,7 @@ DvzSize dvz_buffer_views_aligned_size(
 
 _Declared in `include/datoviz/vklite/buffers.h`:293._
 
-#### `dvz_buffer_views_count()` { #dvz_buffer_views_count }
+#### `dvz_buffer_views_count()` { #dvz_buffer_views_count .dvz-api-function }
 
 Return the number of logical views configured in a buffer-views wrapper.
 
@@ -4221,7 +4221,7 @@ uint32_t dvz_buffer_views_count(
 
 _Declared in `include/datoviz/vklite/buffers.h`:273._
 
-#### `dvz_buffer_views_create()` { #dvz_buffer_views_create }
+#### `dvz_buffer_views_create()` { #dvz_buffer_views_create .dvz-api-function }
 
 Allocate an empty buffer-views wrapper.
 
@@ -4235,7 +4235,7 @@ DvzBufferViews * dvz_buffer_views_create(void);
 
 _Declared in `include/datoviz/vklite/buffers.h`:247._
 
-#### `dvz_buffer_views_free()` { #dvz_buffer_views_free }
+#### `dvz_buffer_views_free()` { #dvz_buffer_views_free .dvz-api-function }
 
 Free a buffer-views wrapper allocated by dvz_buffer_views_create().
 
@@ -4251,7 +4251,7 @@ void dvz_buffer_views_free(
 
 _Declared in `include/datoviz/vklite/buffers.h`:313._
 
-#### `dvz_buffer_views_offset()` { #dvz_buffer_views_offset }
+#### `dvz_buffer_views_offset()` { #dvz_buffer_views_offset .dvz-api-function }
 
 Return the byte offset of a configured view.
 
@@ -4270,7 +4270,7 @@ DvzSize dvz_buffer_views_offset(
 
 _Declared in `include/datoviz/vklite/buffers.h`:304._
 
-#### `dvz_buffer_views_size()` { #dvz_buffer_views_size }
+#### `dvz_buffer_views_size()` { #dvz_buffer_views_size .dvz-api-function }
 
 Return the size in bytes of each configured logical view.
 
@@ -4287,7 +4287,7 @@ DvzSize dvz_buffer_views_size(
 
 _Declared in `include/datoviz/vklite/buffers.h`:283._
 
-#### `dvz_image_blit()` { #dvz_image_blit }
+#### `dvz_image_blit()` { #dvz_image_blit .dvz-api-function }
 
 Reset an image-blit wrapper to its default state.
 
@@ -4303,7 +4303,7 @@ void dvz_image_blit(
 
 _Declared in `include/datoviz/vklite/images.h`:505._
 
-#### `dvz_image_blit_create()` { #dvz_image_blit_create }
+#### `dvz_image_blit_create()` { #dvz_image_blit_create .dvz-api-function }
 
 Allocate an empty image-blit wrapper.
 
@@ -4317,7 +4317,7 @@ DvzImageBlit * dvz_image_blit_create(void);
 
 _Declared in `include/datoviz/vklite/images.h`:496._
 
-#### `dvz_image_blit_free()` { #dvz_image_blit_free }
+#### `dvz_image_blit_free()` { #dvz_image_blit_free .dvz-api-function }
 
 Free an image-blit wrapper allocated by dvz_image_blit_create().
 
@@ -4333,7 +4333,7 @@ void dvz_image_blit_free(
 
 _Declared in `include/datoviz/vklite/images.h`:514._
 
-#### `dvz_image_copy()` { #dvz_image_copy }
+#### `dvz_image_copy()` { #dvz_image_copy .dvz-api-function }
 
 Reset an image-copy wrapper to its default state.
 
@@ -4349,7 +4349,7 @@ void dvz_image_copy(
 
 _Declared in `include/datoviz/vklite/images.h`:478._
 
-#### `dvz_image_copy_create()` { #dvz_image_copy_create }
+#### `dvz_image_copy_create()` { #dvz_image_copy_create .dvz-api-function }
 
 Allocate an empty image-copy wrapper.
 
@@ -4363,7 +4363,7 @@ DvzImageCopy * dvz_image_copy_create(void);
 
 _Declared in `include/datoviz/vklite/images.h`:469._
 
-#### `dvz_image_copy_free()` { #dvz_image_copy_free }
+#### `dvz_image_copy_free()` { #dvz_image_copy_free .dvz-api-function }
 
 Free an image-copy wrapper allocated by dvz_image_copy_create().
 
@@ -4379,7 +4379,7 @@ void dvz_image_copy_free(
 
 _Declared in `include/datoviz/vklite/images.h`:487._
 
-#### `dvz_image_handle()` { #dvz_image_handle }
+#### `dvz_image_handle()` { #dvz_image_handle .dvz-api-function }
 
 Return the Vulkan handle of an image.
 
@@ -4398,7 +4398,7 @@ VkImage dvz_image_handle(
 
 _Declared in `include/datoviz/vklite/images.h`:230._
 
-#### `dvz_image_region()` { #dvz_image_region }
+#### `dvz_image_region()` { #dvz_image_region .dvz-api-function }
 
 Initialize an image region.
 
@@ -4414,7 +4414,7 @@ void dvz_image_region(
 
 _Declared in `include/datoviz/vklite/images.h`:399._
 
-#### `dvz_image_region_aspect()` { #dvz_image_region_aspect }
+#### `dvz_image_region_aspect()` { #dvz_image_region_aspect .dvz-api-function }
 
 Set the image region aspect.
 
@@ -4432,7 +4432,7 @@ void dvz_image_region_aspect(
 
 _Declared in `include/datoviz/vklite/images.h`:434._
 
-#### `dvz_image_region_extent()` { #dvz_image_region_extent }
+#### `dvz_image_region_extent()` { #dvz_image_region_extent .dvz-api-function }
 
 Set the image region extent.
 
@@ -4454,7 +4454,7 @@ void dvz_image_region_extent(
 
 _Declared in `include/datoviz/vklite/images.h`:424._
 
-#### `dvz_image_region_layers()` { #dvz_image_region_layers }
+#### `dvz_image_region_layers()` { #dvz_image_region_layers .dvz-api-function }
 
 Set the array layers of the image region.
 
@@ -4474,7 +4474,7 @@ void dvz_image_region_layers(
 
 _Declared in `include/datoviz/vklite/images.h`:456._
 
-#### `dvz_image_region_mip()` { #dvz_image_region_mip }
+#### `dvz_image_region_mip()` { #dvz_image_region_mip .dvz-api-function }
 
 Set the MIP level of the image region.
 
@@ -4492,7 +4492,7 @@ void dvz_image_region_mip(
 
 _Declared in `include/datoviz/vklite/images.h`:444._
 
-#### `dvz_image_region_offset()` { #dvz_image_region_offset }
+#### `dvz_image_region_offset()` { #dvz_image_region_offset .dvz-api-function }
 
 Set the image region offset.
 
@@ -4514,7 +4514,7 @@ void dvz_image_region_offset(
 
 _Declared in `include/datoviz/vklite/images.h`:411._
 
-#### `dvz_image_views()` { #dvz_image_views }
+#### `dvz_image_views()` { #dvz_image_views .dvz-api-function }
 
 Initialize image views for an existing images wrapper.
 
@@ -4536,7 +4536,7 @@ void dvz_image_views(
 
 _Declared in `include/datoviz/vklite/images.h`:297._
 
-#### `dvz_image_views_aspect()` { #dvz_image_views_aspect }
+#### `dvz_image_views_aspect()` { #dvz_image_views_aspect .dvz-api-function }
 
 Set the image views aspect.
 
@@ -4554,7 +4554,7 @@ void dvz_image_views_aspect(
 
 _Declared in `include/datoviz/vklite/images.h`:317._
 
-#### `dvz_image_views_count()` { #dvz_image_views_count }
+#### `dvz_image_views_count()` { #dvz_image_views_count .dvz-api-function }
 
 Return the number of image views owned by a views wrapper.
 
@@ -4571,7 +4571,7 @@ uint32_t dvz_image_views_count(
 
 _Declared in `include/datoviz/vklite/images.h`:374._
 
-#### `dvz_image_views_create()` { #dvz_image_views_create }
+#### `dvz_image_views_create()` { #dvz_image_views_create .dvz-api-function }
 
 Create image views.
 
@@ -4594,7 +4594,7 @@ Related: [`dvz_image_views_destroy()`](#dvz_image_views_destroy).
 
 _Declared in `include/datoviz/vklite/images.h`:353._
 
-#### `dvz_image_views_create_wrapper()` { #dvz_image_views_create_wrapper }
+#### `dvz_image_views_create_wrapper()` { #dvz_image_views_create_wrapper .dvz-api-function }
 
 Allocate an empty image-view wrapper.
 
@@ -4613,7 +4613,7 @@ DvzImageViews * dvz_image_views_create_wrapper(void);
 
 _Declared in `include/datoviz/vklite/images.h`:89._
 
-#### `dvz_image_views_destroy()` { #dvz_image_views_destroy }
+#### `dvz_image_views_destroy()` { #dvz_image_views_destroy .dvz-api-function }
 
 Destroy image views.
 
@@ -4634,7 +4634,7 @@ Related: [`dvz_image_views_create()`](#dvz_image_views_create).
 
 _Declared in `include/datoviz/vklite/images.h`:386._
 
-#### `dvz_image_views_free()` { #dvz_image_views_free }
+#### `dvz_image_views_free()` { #dvz_image_views_free .dvz-api-function }
 
 Free an image-view wrapper allocated by dvz_image_views_create_wrapper().
 
@@ -4650,7 +4650,7 @@ void dvz_image_views_free(
 
 _Declared in `include/datoviz/vklite/images.h`:98._
 
-#### `dvz_image_views_handle()` { #dvz_image_views_handle }
+#### `dvz_image_views_handle()` { #dvz_image_views_handle .dvz-api-function }
 
 Return the Vulkan handle of an image view.
 
@@ -4669,7 +4669,7 @@ VkImageView dvz_image_views_handle(
 
 _Declared in `include/datoviz/vklite/images.h`:364._
 
-#### `dvz_image_views_layers()` { #dvz_image_views_layers }
+#### `dvz_image_views_layers()` { #dvz_image_views_layers .dvz-api-function }
 
 Set the array layers for the views.
 
@@ -4689,7 +4689,7 @@ void dvz_image_views_layers(
 
 _Declared in `include/datoviz/vklite/images.h`:339._
 
-#### `dvz_image_views_mip()` { #dvz_image_views_mip }
+#### `dvz_image_views_mip()` { #dvz_image_views_mip .dvz-api-function }
 
 Set the MIP levels for the views.
 
@@ -4709,7 +4709,7 @@ void dvz_image_views_mip(
 
 _Declared in `include/datoviz/vklite/images.h`:328._
 
-#### `dvz_image_views_type()` { #dvz_image_views_type }
+#### `dvz_image_views_type()` { #dvz_image_views_type .dvz-api-function }
 
 Set the image views type.
 
@@ -4727,7 +4727,7 @@ void dvz_image_views_type(
 
 _Declared in `include/datoviz/vklite/images.h`:307._
 
-#### `dvz_images()` { #dvz_images }
+#### `dvz_images()` { #dvz_images .dvz-api-function }
 
 Initialize a set of GPU images.
 
@@ -4755,7 +4755,7 @@ void dvz_images(
 
 _Declared in `include/datoviz/vklite/images.h`:113._
 
-#### `dvz_images_alloc_flags()` { #dvz_images_alloc_flags }
+#### `dvz_images_alloc_flags()` { #dvz_images_alloc_flags .dvz-api-function }
 
 Set the allocator policy flags used when the images create their memory.
 
@@ -4773,7 +4773,7 @@ void dvz_images_alloc_flags(
 
 _Declared in `include/datoviz/vklite/images.h`:166._
 
-#### `dvz_images_count()` { #dvz_images_count }
+#### `dvz_images_count()` { #dvz_images_count .dvz-api-function }
 
 Return the number of images wrapped by an images object.
 
@@ -4790,7 +4790,7 @@ uint32_t dvz_images_count(
 
 _Declared in `include/datoviz/vklite/images.h`:240._
 
-#### `dvz_images_create()` { #dvz_images_create }
+#### `dvz_images_create()` { #dvz_images_create .dvz-api-function }
 
 Create the images after they have been set up.
 
@@ -4812,7 +4812,7 @@ Related: [`dvz_images_destroy()`](#dvz_images_destroy).
 
 _Declared in `include/datoviz/vklite/images.h`:219._
 
-#### `dvz_images_create_wrapper()` { #dvz_images_create_wrapper }
+#### `dvz_images_create_wrapper()` { #dvz_images_create_wrapper .dvz-api-function }
 
 Allocate an empty images wrapper.
 
@@ -4831,7 +4831,7 @@ DvzImages * dvz_images_create_wrapper(void);
 
 _Declared in `include/datoviz/vklite/images.h`:66._
 
-#### `dvz_images_destroy()` { #dvz_images_destroy }
+#### `dvz_images_destroy()` { #dvz_images_destroy .dvz-api-function }
 
 Destroy images.
 
@@ -4852,7 +4852,7 @@ Related: [`dvz_images_create()`](#dvz_images_create).
 
 _Declared in `include/datoviz/vklite/images.h`:262._
 
-#### `dvz_images_flags()` { #dvz_images_flags }
+#### `dvz_images_flags()` { #dvz_images_flags .dvz-api-function }
 
 Set the image creation flags.
 
@@ -4870,7 +4870,7 @@ void dvz_images_flags(
 
 _Declared in `include/datoviz/vklite/images.h`:176._
 
-#### `dvz_images_format()` { #dvz_images_format }
+#### `dvz_images_format()` { #dvz_images_format .dvz-api-function }
 
 Set the images format.
 
@@ -4888,7 +4888,7 @@ void dvz_images_format(
 
 _Declared in `include/datoviz/vklite/images.h`:124._
 
-#### `dvz_images_format_value()` { #dvz_images_format_value }
+#### `dvz_images_format_value()` { #dvz_images_format_value .dvz-api-function }
 
 Return the configured image format for an images object.
 
@@ -4905,7 +4905,7 @@ VkFormat dvz_images_format_value(
 
 _Declared in `include/datoviz/vklite/images.h`:250._
 
-#### `dvz_images_free()` { #dvz_images_free }
+#### `dvz_images_free()` { #dvz_images_free .dvz-api-function }
 
 Free an images wrapper allocated by dvz_images_create_wrapper().
 
@@ -4921,7 +4921,7 @@ void dvz_images_free(
 
 _Declared in `include/datoviz/vklite/images.h`:75._
 
-#### `dvz_images_layers()` { #dvz_images_layers }
+#### `dvz_images_layers()` { #dvz_images_layers .dvz-api-function }
 
 Set the number of array layers.
 
@@ -4939,7 +4939,7 @@ void dvz_images_layers(
 
 _Declared in `include/datoviz/vklite/images.h`:206._
 
-#### `dvz_images_mip()` { #dvz_images_mip }
+#### `dvz_images_mip()` { #dvz_images_mip .dvz-api-function }
 
 Set the number of mip levels.
 
@@ -4957,7 +4957,7 @@ void dvz_images_mip(
 
 _Declared in `include/datoviz/vklite/images.h`:186._
 
-#### `dvz_images_samples()` { #dvz_images_samples }
+#### `dvz_images_samples()` { #dvz_images_samples .dvz-api-function }
 
 Set the number of MSAA samples.
 
@@ -4975,7 +4975,7 @@ void dvz_images_samples(
 
 _Declared in `include/datoviz/vklite/images.h`:196._
 
-#### `dvz_images_size()` { #dvz_images_size }
+#### `dvz_images_size()` { #dvz_images_size .dvz-api-function }
 
 Set the images shape.
 
@@ -4997,7 +4997,7 @@ void dvz_images_size(
 
 _Declared in `include/datoviz/vklite/images.h`:136._
 
-#### `dvz_images_tiling()` { #dvz_images_tiling }
+#### `dvz_images_tiling()` { #dvz_images_tiling .dvz-api-function }
 
 Set the images tiling.
 
@@ -5015,7 +5015,7 @@ void dvz_images_tiling(
 
 _Declared in `include/datoviz/vklite/images.h`:146._
 
-#### `dvz_images_usage()` { #dvz_images_usage }
+#### `dvz_images_usage()` { #dvz_images_usage .dvz-api-function }
 
 Set the images usage.
 
@@ -5033,7 +5033,7 @@ void dvz_images_usage(
 
 _Declared in `include/datoviz/vklite/images.h`:156._
 
-#### `dvz_images_wrap()` { #dvz_images_wrap }
+#### `dvz_images_wrap()` { #dvz_images_wrap .dvz-api-function }
 
 Wrap an existing Vulkan image into a DvzImages struct.
 
@@ -5060,7 +5060,7 @@ void dvz_images_wrap(
 
 _Declared in `include/datoviz/vklite/images.h`:278._
 
-#### `dvz_sampler()` { #dvz_sampler }
+#### `dvz_sampler()` { #dvz_sampler .dvz-api-function }
 
 Initialize a texture sampler.
 
@@ -5082,7 +5082,7 @@ void dvz_sampler(
 
 _Declared in `include/datoviz/vklite/sampler.h`:82._
 
-#### `dvz_sampler_address_mode()` { #dvz_sampler_address_mode }
+#### `dvz_sampler_address_mode()` { #dvz_sampler_address_mode .dvz-api-function }
 
 Set the sampler address mode
 
@@ -5102,7 +5102,7 @@ void dvz_sampler_address_mode(
 
 _Declared in `include/datoviz/vklite/sampler.h`:113._
 
-#### `dvz_sampler_anisotropy()` { #dvz_sampler_anisotropy }
+#### `dvz_sampler_anisotropy()` { #dvz_sampler_anisotropy .dvz-api-function }
 
 Set the anisotropy.
 
@@ -5120,7 +5120,7 @@ void dvz_sampler_anisotropy(
 
 _Declared in `include/datoviz/vklite/sampler.h`:124._
 
-#### `dvz_sampler_create()` { #dvz_sampler_create }
+#### `dvz_sampler_create()` { #dvz_sampler_create .dvz-api-function }
 
 Create the sampler after it has been set up.
 
@@ -5142,7 +5142,7 @@ Related: [`dvz_sampler_destroy()`](#dvz_sampler_destroy).
 
 _Declared in `include/datoviz/vklite/sampler.h`:137._
 
-#### `dvz_sampler_create_wrapper()` { #dvz_sampler_create_wrapper }
+#### `dvz_sampler_create_wrapper()` { #dvz_sampler_create_wrapper .dvz-api-function }
 
 Allocate an empty sampler wrapper.
 
@@ -5161,7 +5161,7 @@ DvzSampler * dvz_sampler_create_wrapper(void);
 
 _Declared in `include/datoviz/vklite/sampler.h`:68._
 
-#### `dvz_sampler_destroy()` { #dvz_sampler_destroy }
+#### `dvz_sampler_destroy()` { #dvz_sampler_destroy .dvz-api-function }
 
 Destroy a sampler.
 
@@ -5182,7 +5182,7 @@ Related: [`dvz_sampler_create()`](#dvz_sampler_create).
 
 _Declared in `include/datoviz/vklite/sampler.h`:149._
 
-#### `dvz_sampler_free()` { #dvz_sampler_free }
+#### `dvz_sampler_free()` { #dvz_sampler_free .dvz-api-function }
 
 Free a sampler wrapper allocated by dvz_sampler_create_wrapper().
 
@@ -5198,7 +5198,7 @@ void dvz_sampler_free(
 
 _Declared in `include/datoviz/vklite/sampler.h`:168._
 
-#### `dvz_sampler_handle()` { #dvz_sampler_handle }
+#### `dvz_sampler_handle()` { #dvz_sampler_handle .dvz-api-function }
 
 Return the Vulkan sampler handle.
 
@@ -5215,7 +5215,7 @@ VkSampler dvz_sampler_handle(
 
 _Declared in `include/datoviz/vklite/sampler.h`:159._
 
-#### `dvz_sampler_mag_filter()` { #dvz_sampler_mag_filter }
+#### `dvz_sampler_mag_filter()` { #dvz_sampler_mag_filter .dvz-api-function }
 
 Set the sampler mag filter.
 
@@ -5233,7 +5233,7 @@ void dvz_sampler_mag_filter(
 
 _Declared in `include/datoviz/vklite/sampler.h`:102._
 
-#### `dvz_sampler_min_filter()` { #dvz_sampler_min_filter }
+#### `dvz_sampler_min_filter()` { #dvz_sampler_min_filter .dvz-api-function }
 
 Set the sampler min filter.
 
@@ -5351,7 +5351,7 @@ _Declared in `include/datoviz/vklite/sampler.h`:92._
 
 ### Functions
 
-#### `dvz_barrier_buffer_access()` { #dvz_barrier_buffer_access }
+#### `dvz_barrier_buffer_access()` { #dvz_barrier_buffer_access .dvz-api-function }
 
 Set the barrier access.
 
@@ -5371,7 +5371,7 @@ void dvz_barrier_buffer_access(
 
 _Declared in `include/datoviz/vklite/sync.h`:186._
 
-#### `dvz_barrier_buffer_queue()` { #dvz_barrier_buffer_queue }
+#### `dvz_barrier_buffer_queue()` { #dvz_barrier_buffer_queue .dvz-api-function }
 
 Set the queue family transfer.
 
@@ -5391,7 +5391,7 @@ void dvz_barrier_buffer_queue(
 
 _Declared in `include/datoviz/vklite/sync.h`:198._
 
-#### `dvz_barrier_buffer_stage()` { #dvz_barrier_buffer_stage }
+#### `dvz_barrier_buffer_stage()` { #dvz_barrier_buffer_stage .dvz-api-function }
 
 Set the barrier stages.
 
@@ -5411,7 +5411,7 @@ void dvz_barrier_buffer_stage(
 
 _Declared in `include/datoviz/vklite/sync.h`:174._
 
-#### `dvz_barrier_image_access()` { #dvz_barrier_image_access }
+#### `dvz_barrier_image_access()` { #dvz_barrier_image_access .dvz-api-function }
 
 Set the barrier access.
 
@@ -5431,7 +5431,7 @@ void dvz_barrier_image_access(
 
 _Declared in `include/datoviz/vklite/sync.h`:226._
 
-#### `dvz_barrier_image_aspect()` { #dvz_barrier_image_aspect }
+#### `dvz_barrier_image_aspect()` { #dvz_barrier_image_aspect .dvz-api-function }
 
 Set the barrier image aspect flags.
 
@@ -5449,7 +5449,7 @@ void dvz_barrier_image_aspect(
 
 _Declared in `include/datoviz/vklite/sync.h`:261._
 
-#### `dvz_barrier_image_layers()` { #dvz_barrier_image_layers }
+#### `dvz_barrier_image_layers()` { #dvz_barrier_image_layers .dvz-api-function }
 
 Set the array layers of an image barrier.
 
@@ -5469,7 +5469,7 @@ void dvz_barrier_image_layers(
 
 _Declared in `include/datoviz/vklite/sync.h`:285._
 
-#### `dvz_barrier_image_layout()` { #dvz_barrier_image_layout }
+#### `dvz_barrier_image_layout()` { #dvz_barrier_image_layout .dvz-api-function }
 
 Set the image layout change.
 
@@ -5489,7 +5489,7 @@ void dvz_barrier_image_layout(
 
 _Declared in `include/datoviz/vklite/sync.h`:238._
 
-#### `dvz_barrier_image_mip()` { #dvz_barrier_image_mip }
+#### `dvz_barrier_image_mip()` { #dvz_barrier_image_mip .dvz-api-function }
 
 Set the MIP images of an image barrier.
 
@@ -5509,7 +5509,7 @@ void dvz_barrier_image_mip(
 
 _Declared in `include/datoviz/vklite/sync.h`:273._
 
-#### `dvz_barrier_image_queue()` { #dvz_barrier_image_queue }
+#### `dvz_barrier_image_queue()` { #dvz_barrier_image_queue .dvz-api-function }
 
 Set the queue family transfer.
 
@@ -5529,7 +5529,7 @@ void dvz_barrier_image_queue(
 
 _Declared in `include/datoviz/vklite/sync.h`:250._
 
-#### `dvz_barrier_image_stage()` { #dvz_barrier_image_stage }
+#### `dvz_barrier_image_stage()` { #dvz_barrier_image_stage .dvz-api-function }
 
 Set the barrier stages.
 
@@ -5549,7 +5549,7 @@ void dvz_barrier_image_stage(
 
 _Declared in `include/datoviz/vklite/sync.h`:214._
 
-#### `dvz_barrier_memory_access()` { #dvz_barrier_memory_access }
+#### `dvz_barrier_memory_access()` { #dvz_barrier_memory_access .dvz-api-function }
 
 Set the barrier access.
 
@@ -5569,7 +5569,7 @@ void dvz_barrier_memory_access(
 
 _Declared in `include/datoviz/vklite/sync.h`:159._
 
-#### `dvz_barrier_memory_stage()` { #dvz_barrier_memory_stage }
+#### `dvz_barrier_memory_stage()` { #dvz_barrier_memory_stage .dvz-api-function }
 
 Set the barrier stages.
 
@@ -5589,7 +5589,7 @@ void dvz_barrier_memory_stage(
 
 _Declared in `include/datoviz/vklite/sync.h`:146._
 
-#### `dvz_barriers()` { #dvz_barriers }
+#### `dvz_barriers()` { #dvz_barriers .dvz-api-function }
 
 Create a set of barriers.
 
@@ -5605,7 +5605,7 @@ void dvz_barriers(
 
 _Declared in `include/datoviz/vklite/sync.h`:299._
 
-#### `dvz_barriers_buffer()` { #dvz_barriers_buffer }
+#### `dvz_barriers_buffer()` { #dvz_barriers_buffer .dvz-api-function }
 
 Add a buffer barrier to a set of barriers
 
@@ -5631,7 +5631,7 @@ DvzBarrierBuffer * dvz_barriers_buffer(
 
 _Declared in `include/datoviz/vklite/sync.h`:338._
 
-#### `dvz_barriers_buffer_count()` { #dvz_barriers_buffer_count }
+#### `dvz_barriers_buffer_count()` { #dvz_barriers_buffer_count .dvz-api-function }
 
 Return the number of recorded buffer barriers in a barrier set.
 
@@ -5648,7 +5648,7 @@ uint32_t dvz_barriers_buffer_count(
 
 _Declared in `include/datoviz/vklite/sync.h`:383._
 
-#### `dvz_barriers_capacity()` { #dvz_barriers_capacity }
+#### `dvz_barriers_capacity()` { #dvz_barriers_capacity .dvz-api-function }
 
 Return the maximum number of barriers supported per barrier type.
 
@@ -5665,7 +5665,7 @@ uint32_t dvz_barriers_capacity(
 
 _Declared in `include/datoviz/vklite/sync.h`:413._
 
-#### `dvz_barriers_dependency_flags()` { #dvz_barriers_dependency_flags }
+#### `dvz_barriers_dependency_flags()` { #dvz_barriers_dependency_flags .dvz-api-function }
 
 Return the dependency flags configured on a barrier set.
 
@@ -5682,7 +5682,7 @@ VkDependencyFlags dvz_barriers_dependency_flags(
 
 _Declared in `include/datoviz/vklite/sync.h`:403._
 
-#### `dvz_barriers_flags()` { #dvz_barriers_flags }
+#### `dvz_barriers_flags()` { #dvz_barriers_flags .dvz-api-function }
 
 Set the dependency flags of a set of barriers
 
@@ -5700,7 +5700,7 @@ void dvz_barriers_flags(
 
 _Declared in `include/datoviz/vklite/sync.h`:309._
 
-#### `dvz_barriers_image()` { #dvz_barriers_image }
+#### `dvz_barriers_image()` { #dvz_barriers_image .dvz-api-function }
 
 Add an image barrier to a set of barriers
 
@@ -5722,7 +5722,7 @@ DvzBarrierImage * dvz_barriers_image(
 
 _Declared in `include/datoviz/vklite/sync.h`:353._
 
-#### `dvz_barriers_image_count()` { #dvz_barriers_image_count }
+#### `dvz_barriers_image_count()` { #dvz_barriers_image_count .dvz-api-function }
 
 Return the number of recorded image barriers in a barrier set.
 
@@ -5739,7 +5739,7 @@ uint32_t dvz_barriers_image_count(
 
 _Declared in `include/datoviz/vklite/sync.h`:393._
 
-#### `dvz_barriers_memory()` { #dvz_barriers_memory }
+#### `dvz_barriers_memory()` { #dvz_barriers_memory .dvz-api-function }
 
 Add a memory barrier to a set of barriers
 
@@ -5759,7 +5759,7 @@ DvzBarrierMemory * dvz_barriers_memory(
 
 _Declared in `include/datoviz/vklite/sync.h`:322._
 
-#### `dvz_barriers_memory_count()` { #dvz_barriers_memory_count }
+#### `dvz_barriers_memory_count()` { #dvz_barriers_memory_count .dvz-api-function }
 
 Return the number of recorded memory barriers in a barrier set.
 
@@ -5776,7 +5776,7 @@ uint32_t dvz_barriers_memory_count(
 
 _Declared in `include/datoviz/vklite/sync.h`:373._
 
-#### `dvz_fence()` { #dvz_fence }
+#### `dvz_fence()` { #dvz_fence .dvz-api-function }
 
 Initialize a fence (CPU-GPU synchronization).
 
@@ -5796,7 +5796,7 @@ void dvz_fence(
 
 _Declared in `include/datoviz/vklite/sync.h`:428._
 
-#### `dvz_fence_create_wrapper()` { #dvz_fence_create_wrapper }
+#### `dvz_fence_create_wrapper()` { #dvz_fence_create_wrapper .dvz-api-function }
 
 Allocate an empty fence wrapper.
 
@@ -5810,7 +5810,7 @@ DvzFence * dvz_fence_create_wrapper(void);
 
 _Declared in `include/datoviz/vklite/sync.h`:88._
 
-#### `dvz_fence_destroy()` { #dvz_fence_destroy }
+#### `dvz_fence_destroy()` { #dvz_fence_destroy .dvz-api-function }
 
 Destroy fence.
 
@@ -5826,7 +5826,7 @@ void dvz_fence_destroy(
 
 _Declared in `include/datoviz/vklite/sync.h`:475._
 
-#### `dvz_fence_free()` { #dvz_fence_free }
+#### `dvz_fence_free()` { #dvz_fence_free .dvz-api-function }
 
 Free a fence wrapper allocated by dvz_fence_create_wrapper().
 
@@ -5842,7 +5842,7 @@ void dvz_fence_free(
 
 _Declared in `include/datoviz/vklite/sync.h`:97._
 
-#### `dvz_fence_handle()` { #dvz_fence_handle }
+#### `dvz_fence_handle()` { #dvz_fence_handle .dvz-api-function }
 
 Return the Vulkan fence handle owned by a fence wrapper.
 
@@ -5859,7 +5859,7 @@ VkFence dvz_fence_handle(
 
 _Declared in `include/datoviz/vklite/sync.h`:448._
 
-#### `dvz_fence_ready()` { #dvz_fence_ready }
+#### `dvz_fence_ready()` { #dvz_fence_ready .dvz-api-function }
 
 Return whether a fence is ready.
 
@@ -5875,7 +5875,7 @@ _Bool dvz_fence_ready(
 
 _Declared in `include/datoviz/vklite/sync.h`:457._
 
-#### `dvz_fence_reset()` { #dvz_fence_reset }
+#### `dvz_fence_reset()` { #dvz_fence_reset .dvz-api-function }
 
 Rset the state of a fence.
 
@@ -5891,7 +5891,7 @@ void dvz_fence_reset(
 
 _Declared in `include/datoviz/vklite/sync.h`:466._
 
-#### `dvz_fence_wait()` { #dvz_fence_wait }
+#### `dvz_fence_wait()` { #dvz_fence_wait .dvz-api-function }
 
 Wait on the GPU until a fence is signaled.
 
@@ -5908,7 +5908,7 @@ _Bool dvz_fence_wait(
 
 _Declared in `include/datoviz/vklite/sync.h`:438._
 
-#### `dvz_semaphore()` { #dvz_semaphore }
+#### `dvz_semaphore()` { #dvz_semaphore .dvz-api-function }
 
 Initialize a semaphore (GPU-GPU synchronization).
 
@@ -5926,7 +5926,7 @@ void dvz_semaphore(
 
 _Declared in `include/datoviz/vklite/sync.h`:489._
 
-#### `dvz_semaphore_create_wrapper()` { #dvz_semaphore_create_wrapper }
+#### `dvz_semaphore_create_wrapper()` { #dvz_semaphore_create_wrapper .dvz-api-function }
 
 Allocate an empty semaphore wrapper.
 
@@ -5940,7 +5940,7 @@ DvzSemaphore * dvz_semaphore_create_wrapper(void);
 
 _Declared in `include/datoviz/vklite/sync.h`:106._
 
-#### `dvz_semaphore_destroy()` { #dvz_semaphore_destroy }
+#### `dvz_semaphore_destroy()` { #dvz_semaphore_destroy .dvz-api-function }
 
 Destroy semaphore.
 
@@ -5956,7 +5956,7 @@ void dvz_semaphore_destroy(
 
 _Declared in `include/datoviz/vklite/sync.h`:564._
 
-#### `dvz_semaphore_export_fd()` { #dvz_semaphore_export_fd }
+#### `dvz_semaphore_export_fd()` { #dvz_semaphore_export_fd .dvz-api-function }
 
 Export a semaphore as a Unix file descriptor.
 
@@ -5975,7 +5975,7 @@ int dvz_semaphore_export_fd(
 
 _Declared in `include/datoviz/vklite/sync.h`:555._
 
-#### `dvz_semaphore_free()` { #dvz_semaphore_free }
+#### `dvz_semaphore_free()` { #dvz_semaphore_free .dvz-api-function }
 
 Free a semaphore wrapper allocated by dvz_semaphore_create_wrapper().
 
@@ -5991,7 +5991,7 @@ void dvz_semaphore_free(
 
 _Declared in `include/datoviz/vklite/sync.h`:115._
 
-#### `dvz_semaphore_handle()` { #dvz_semaphore_handle }
+#### `dvz_semaphore_handle()` { #dvz_semaphore_handle .dvz-api-function }
 
 Return the Vulkan semaphore handle owned by a semaphore wrapper.
 
@@ -6008,7 +6008,7 @@ VkSemaphore dvz_semaphore_handle(
 
 _Declared in `include/datoviz/vklite/sync.h`:543._
 
-#### `dvz_semaphore_query()` { #dvz_semaphore_query }
+#### `dvz_semaphore_query()` { #dvz_semaphore_query .dvz-api-function }
 
 Retrieve the current value of a timeline semaphore.
 
@@ -6025,7 +6025,7 @@ uint64_t dvz_semaphore_query(
 
 _Declared in `include/datoviz/vklite/sync.h`:533._
 
-#### `dvz_semaphore_signal()` { #dvz_semaphore_signal }
+#### `dvz_semaphore_signal()` { #dvz_semaphore_signal .dvz-api-function }
 
 Signal a timeline semaphore from the CPU.
 
@@ -6043,7 +6043,7 @@ void dvz_semaphore_signal(
 
 _Declared in `include/datoviz/vklite/sync.h`:513._
 
-#### `dvz_semaphore_timeline()` { #dvz_semaphore_timeline }
+#### `dvz_semaphore_timeline()` { #dvz_semaphore_timeline .dvz-api-function }
 
 Initialize a timeline semaphore (GPU-GPU synchronization).
 
@@ -6065,7 +6065,7 @@ void dvz_semaphore_timeline(
 
 _Declared in `include/datoviz/vklite/sync.h`:501._
 
-#### `dvz_semaphore_wait()` { #dvz_semaphore_wait }
+#### `dvz_semaphore_wait()` { #dvz_semaphore_wait .dvz-api-function }
 
 Wait a timeline semaphore on the CPU.
 
@@ -6083,7 +6083,7 @@ void dvz_semaphore_wait(
 
 _Declared in `include/datoviz/vklite/sync.h`:523._
 
-#### `dvz_submit()` { #dvz_submit }
+#### `dvz_submit()` { #dvz_submit .dvz-api-function }
 
 Initialize or reset a submission.
 
@@ -6099,7 +6099,7 @@ void dvz_submit(
 
 _Declared in `include/datoviz/vklite/sync.h`:578._
 
-#### `dvz_submit_command()` { #dvz_submit_command }
+#### `dvz_submit_command()` { #dvz_submit_command .dvz-api-function }
 
 Add a command buffer to the submission.
 
@@ -6120,7 +6120,7 @@ void dvz_submit_command(
 
 _Declared in `include/datoviz/vklite/sync.h`:623._
 
-#### `dvz_submit_command_count()` { #dvz_submit_command_count }
+#### `dvz_submit_command_count()` { #dvz_submit_command_count .dvz-api-function }
 
 Return the number of command buffers configured on a submission.
 
@@ -6137,7 +6137,7 @@ uint32_t dvz_submit_command_count(
 
 _Declared in `include/datoviz/vklite/sync.h`:653._
 
-#### `dvz_submit_create_wrapper()` { #dvz_submit_create_wrapper }
+#### `dvz_submit_create_wrapper()` { #dvz_submit_create_wrapper .dvz-api-function }
 
 Allocate an empty submit wrapper.
 
@@ -6151,7 +6151,7 @@ DvzSubmit * dvz_submit_create_wrapper(void);
 
 _Declared in `include/datoviz/vklite/sync.h`:124._
 
-#### `dvz_submit_free()` { #dvz_submit_free }
+#### `dvz_submit_free()` { #dvz_submit_free .dvz-api-function }
 
 Free a submit wrapper allocated by dvz_submit_create_wrapper().
 
@@ -6167,7 +6167,7 @@ void dvz_submit_free(
 
 _Declared in `include/datoviz/vklite/sync.h`:133._
 
-#### `dvz_submit_is_empty()` { #dvz_submit_is_empty }
+#### `dvz_submit_is_empty()` { #dvz_submit_is_empty .dvz-api-function }
 
 Return whether a submission has no recorded waits, signals, or command buffers.
 
@@ -6184,7 +6184,7 @@ _Bool dvz_submit_is_empty(
 
 _Declared in `include/datoviz/vklite/sync.h`:663._
 
-#### `dvz_submit_send()` { #dvz_submit_send }
+#### `dvz_submit_send()` { #dvz_submit_send .dvz-api-function }
 
 Send a submission to a queue.
 
@@ -6205,7 +6205,7 @@ int32_t dvz_submit_send(
 
 _Declared in `include/datoviz/vklite/sync.h`:675._
 
-#### `dvz_submit_signal()` { #dvz_submit_signal }
+#### `dvz_submit_signal()` { #dvz_submit_signal .dvz-api-function }
 
 Add a semaphore to signal.
 
@@ -6230,7 +6230,7 @@ void dvz_submit_signal(
 
 _Declared in `include/datoviz/vklite/sync.h`:609._
 
-#### `dvz_submit_signal_count()` { #dvz_submit_signal_count }
+#### `dvz_submit_signal_count()` { #dvz_submit_signal_count .dvz-api-function }
 
 Return the number of signal semaphores configured on a submission.
 
@@ -6247,7 +6247,7 @@ uint32_t dvz_submit_signal_count(
 
 _Declared in `include/datoviz/vklite/sync.h`:643._
 
-#### `dvz_submit_wait()` { #dvz_submit_wait }
+#### `dvz_submit_wait()` { #dvz_submit_wait .dvz-api-function }
 
 Add a semaphore to wait on.
 
@@ -6272,7 +6272,7 @@ void dvz_submit_wait(
 
 _Declared in `include/datoviz/vklite/sync.h`:593._
 
-#### `dvz_submit_wait_count()` { #dvz_submit_wait_count }
+#### `dvz_submit_wait_count()` { #dvz_submit_wait_count .dvz-api-function }
 
 Return the number of wait semaphores configured on a submission.
 

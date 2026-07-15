@@ -74,7 +74,7 @@ Types: 5
 
 ### Functions
 
-#### `dvz_edl_desc()` { #dvz_edl_desc }
+#### `dvz_edl_desc()` { #dvz_edl_desc .dvz-api-function }
 
 Return default Eye-Dome Lighting options.
 
@@ -88,7 +88,7 @@ DvzEdlDesc dvz_edl_desc(void);
 
 _Declared in `include/datoviz/scene.h`:1255._
 
-#### `dvz_panel_set_edl()` { #dvz_panel_set_edl }
+#### `dvz_panel_set_edl()` { #dvz_panel_set_edl .dvz-api-function }
 
 Configure Eye-Dome Lighting for one panel.
 
@@ -133,7 +133,7 @@ _Declared in `include/datoviz/scene.h`:1269._
 
 ### Functions
 
-#### `dvz_msaa_desc()` { #dvz_msaa_desc }
+#### `dvz_msaa_desc()` { #dvz_msaa_desc .dvz-api-function }
 
 Return default panel MSAA options.
 
@@ -147,7 +147,7 @@ DvzMsaaDesc dvz_msaa_desc(void);
 
 _Declared in `include/datoviz/scene.h`:600._
 
-#### `dvz_panel_set_msaa()` { #dvz_panel_set_msaa }
+#### `dvz_panel_set_msaa()` { #dvz_panel_set_msaa .dvz-api-function }
 
 Configure internal multisample antialiasing for one panel.
 
@@ -191,7 +191,7 @@ _Declared in `include/datoviz/scene.h`:1282._
 
 ### Functions
 
-#### `dvz_panel_set_scene_occlusion()` { #dvz_panel_set_scene_occlusion }
+#### `dvz_panel_set_scene_occlusion()` { #dvz_panel_set_scene_occlusion .dvz-api-function }
 
 Configure generic screen-space scene occlusion for one panel.
 
@@ -214,7 +214,7 @@ DvzResult dvz_panel_set_scene_occlusion(
 
 _Declared in `include/datoviz/scene.h`:1348._
 
-#### `dvz_scene_occlusion_desc()` { #dvz_scene_occlusion_desc }
+#### `dvz_scene_occlusion_desc()` { #dvz_scene_occlusion_desc .dvz-api-function }
 
 Return default scene-occlusion options.
 
@@ -228,7 +228,7 @@ DvzSceneOcclusionDesc dvz_scene_occlusion_desc(void);
 
 _Declared in `include/datoviz/scene.h`:1333._
 
-#### `dvz_visual_set_scene_occluded()` { #dvz_visual_set_scene_occluded }
+#### `dvz_visual_set_scene_occluded()` { #dvz_visual_set_scene_occluded .dvz-api-function }
 
 Mark a visual as sampling panel scene occlusion.
 
@@ -247,7 +247,7 @@ DvzResult dvz_visual_set_scene_occluded(
 
 _Declared in `include/datoviz/scene.h`:1837._
 
-#### `dvz_visual_set_scene_occluder()` { #dvz_visual_set_scene_occluder }
+#### `dvz_visual_set_scene_occluder()` { #dvz_visual_set_scene_occluder .dvz-api-function }
 
 Mark a visual as contributing front depth to panel scene occlusion.
 
@@ -289,7 +289,7 @@ _Declared in `include/datoviz/scene.h`:1827._
 
 ### Functions
 
-#### `dvz_panel_set_ssao()` { #dvz_panel_set_ssao }
+#### `dvz_panel_set_ssao()` { #dvz_panel_set_ssao .dvz-api-function }
 
 Configure screen-space ambient occlusion for one panel.
 
@@ -313,7 +313,7 @@ DvzResult dvz_panel_set_ssao(
 
 _Declared in `include/datoviz/scene.h`:1305._
 
-#### `dvz_ssao_desc()` { #dvz_ssao_desc }
+#### `dvz_ssao_desc()` { #dvz_ssao_desc .dvz-api-function }
 
 Return default screen-space ambient occlusion options.
 
@@ -357,7 +357,7 @@ _Declared in `include/datoviz/scene.h`:1290._
 
 ### Functions
 
-#### `dvz_panel_set_volume_occluder()` { #dvz_panel_set_volume_occluder }
+#### `dvz_panel_set_volume_occluder()` { #dvz_panel_set_volume_occluder .dvz-api-function }
 
 Configure a panel volume visual as the screen-space occluder for embedded visuals.
 
@@ -378,7 +378,7 @@ DvzResult dvz_panel_set_volume_occluder(
 
 _Declared in `include/datoviz/scene.h`:1324._
 
-#### `dvz_visual_set_volume_occluded()` { #dvz_visual_set_volume_occluded }
+#### `dvz_visual_set_volume_occluded()` { #dvz_visual_set_volume_occluded .dvz-api-function }
 
 Mark a visual as embedded in the panel volume occluder.
 
@@ -397,7 +397,7 @@ DvzResult dvz_visual_set_volume_occluded(
 
 _Declared in `include/datoviz/scene.h`:1817._
 
-#### `dvz_volume_occlusion_desc()` { #dvz_volume_occlusion_desc }
+#### `dvz_volume_occlusion_desc()` { #dvz_volume_occlusion_desc .dvz-api-function }
 
 Return default volume-occlusion options.
 

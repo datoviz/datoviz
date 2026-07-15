@@ -80,9 +80,17 @@ body {
     height: 50px !important;
 }
 
-h3[id^=dvz_] {
-    border-top: 5px solid whitesmoke;
-    padding-top: 20px;
+.md-typeset .dvz-api-function {
+    margin-top: 2.4rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(76, 201, 240, 0.32);
+    color: #f0f6fc;
+    font-size: 1rem;
+    line-height: 1.45;
+}
+
+.md-typeset .dvz-api-function code {
+    font-size: 0.9rem;
 }
 
 img[alt^=marker_] {
