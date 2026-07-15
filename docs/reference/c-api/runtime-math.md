@@ -34,205 +34,102 @@ Types: 46
 | [Vec2](#vec2) | 1 | 0 | `include/datoviz/math/vec.h` |
 | [Vec3](#vec3) | 2 | 0 | `include/datoviz/math/vec.h` |
 
-??? info "Grouped symbol index"
+??? info "Grouped function index"
 
     **Box**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzBox`](#type-dvzbox) | record | `include/datoviz/math/box.h` |
-    | [`DvzBoxExtentStrategy`](#type-dvzboxextentstrategy) | enum | `include/datoviz/math/box.h` |
-    | [`DvzBoxMergeStrategy`](#type-dvzboxmergestrategy) | enum | `include/datoviz/math/box.h` |
-    | [`dvz_box()`](#dvz_box) | function | `include/datoviz/math/box.h` |
-    | [`dvz_box_aspect()`](#dvz_box_aspect) | function | `include/datoviz/math/box.h` |
-    | [`dvz_box_center()`](#dvz_box_center) | function | `include/datoviz/math/box.h` |
-    | [`dvz_box_extent()`](#dvz_box_extent) | function | `include/datoviz/math/box.h` |
-    | [`dvz_box_inverse()`](#dvz_box_inverse) | function | `include/datoviz/math/box.h` |
-    | [`dvz_box_merge()`](#dvz_box_merge) | function | `include/datoviz/math/box.h` |
-    | [`dvz_box_normalize_1D()`](#dvz_box_normalize_1d) | function | `include/datoviz/math/box.h` |
-    | [`dvz_box_normalize_2D()`](#dvz_box_normalize_2d) | function | `include/datoviz/math/box.h` |
-    | [`dvz_box_normalize_3D()`](#dvz_box_normalize_3d) | function | `include/datoviz/math/box.h` |
-    | [`dvz_box_normalize_polygon()`](#dvz_box_normalize_polygon) | function | `include/datoviz/math/box.h` |
-
-    **Dim**
-
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzDim`](#type-dvzdim) | enum | `include/datoviz/math/dim.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_box()`](#dvz_box) | `include/datoviz/math/box.h` |
+    | [`dvz_box_aspect()`](#dvz_box_aspect) | `include/datoviz/math/box.h` |
+    | [`dvz_box_center()`](#dvz_box_center) | `include/datoviz/math/box.h` |
+    | [`dvz_box_extent()`](#dvz_box_extent) | `include/datoviz/math/box.h` |
+    | [`dvz_box_inverse()`](#dvz_box_inverse) | `include/datoviz/math/box.h` |
+    | [`dvz_box_merge()`](#dvz_box_merge) | `include/datoviz/math/box.h` |
+    | [`dvz_box_normalize_1D()`](#dvz_box_normalize_1d) | `include/datoviz/math/box.h` |
+    | [`dvz_box_normalize_2D()`](#dvz_box_normalize_2d) | `include/datoviz/math/box.h` |
+    | [`dvz_box_normalize_3D()`](#dvz_box_normalize_3d) | `include/datoviz/math/box.h` |
+    | [`dvz_box_normalize_polygon()`](#dvz_box_normalize_polygon) | `include/datoviz/math/box.h` |
 
     **Dmat4**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`dvz_dmat4_copy()`](#dvz_dmat4_copy) | function | `include/datoviz/math/vec.h` |
-    | [`dvz_dmat4_identity()`](#dvz_dmat4_identity) | function | `include/datoviz/math/vec.h` |
-    | [`dvz_dmat4_inv()`](#dvz_dmat4_inv) | function | `include/datoviz/math/vec.h` |
-    | [`dvz_dmat4_mat4()`](#dvz_dmat4_mat4) | function | `include/datoviz/math/vec.h` |
-    | [`dvz_dmat4_mul()`](#dvz_dmat4_mul) | function | `include/datoviz/math/vec.h` |
-    | [`dvz_dmat4_mulv()`](#dvz_dmat4_mulv) | function | `include/datoviz/math/vec.h` |
-    | [`dvz_dmat4_mulv3()`](#dvz_dmat4_mulv3) | function | `include/datoviz/math/vec.h` |
-    | [`dvz_dmat4_scale_p()`](#dvz_dmat4_scale_p) | function | `include/datoviz/math/vec.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_dmat4_copy()`](#dvz_dmat4_copy) | `include/datoviz/math/vec.h` |
+    | [`dvz_dmat4_identity()`](#dvz_dmat4_identity) | `include/datoviz/math/vec.h` |
+    | [`dvz_dmat4_inv()`](#dvz_dmat4_inv) | `include/datoviz/math/vec.h` |
+    | [`dvz_dmat4_mat4()`](#dvz_dmat4_mat4) | `include/datoviz/math/vec.h` |
+    | [`dvz_dmat4_mul()`](#dvz_dmat4_mul) | `include/datoviz/math/vec.h` |
+    | [`dvz_dmat4_mulv()`](#dvz_dmat4_mulv) | `include/datoviz/math/vec.h` |
+    | [`dvz_dmat4_mulv3()`](#dvz_dmat4_mulv3) | `include/datoviz/math/vec.h` |
+    | [`dvz_dmat4_scale_p()`](#dvz_dmat4_scale_p) | `include/datoviz/math/vec.h` |
 
     **Dvec3**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`dvz_dvec3()`](#dvz_dvec3) | function | `include/datoviz/math/vec.h` |
-    | [`dvz_dvec3_copy()`](#dvz_dvec3_copy) | function | `include/datoviz/math/vec.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_dvec3()`](#dvz_dvec3) | `include/datoviz/math/vec.h` |
+    | [`dvz_dvec3_copy()`](#dvz_dvec3_copy) | `include/datoviz/math/vec.h` |
 
     **Dvec4**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`dvz_dvec4()`](#dvz_dvec4) | function | `include/datoviz/math/vec.h` |
-    | [`dvz_dvec4_copy()`](#dvz_dvec4_copy) | function | `include/datoviz/math/vec.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_dvec4()`](#dvz_dvec4) | `include/datoviz/math/vec.h` |
+    | [`dvz_dvec4_copy()`](#dvz_dvec4_copy) | `include/datoviz/math/vec.h` |
 
     **Easing**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzEasing`](#type-dvzeasing) | enum | `include/datoviz/math/anim.h` |
-    | [`dvz_easing()`](#dvz_easing) | function | `include/datoviz/math/anim.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_easing()`](#dvz_easing) | `include/datoviz/math/anim.h` |
 
     **Mean**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`dvz_mean()`](#dvz_mean) | function | `include/datoviz/math/stats.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_mean()`](#dvz_mean) | `include/datoviz/math/stats.h` |
 
     **Min**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`dvz_min_max()`](#dvz_min_max) | function | `include/datoviz/math/stats.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_min_max()`](#dvz_min_max) | `include/datoviz/math/stats.h` |
 
     **Normalize**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`dvz_normalize_bytes()`](#dvz_normalize_bytes) | function | `include/datoviz/math/stats.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_normalize_bytes()`](#dvz_normalize_bytes) | `include/datoviz/math/stats.h` |
 
     **Prng**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzPrng`](#type-dvzprng) | typedef | `include/datoviz/math/prng.h` |
-    | [`dvz_prng()`](#dvz_prng) | function | `include/datoviz/math/prng.h` |
-    | [`dvz_prng_destroy()`](#dvz_prng_destroy) | function | `include/datoviz/math/prng.h` |
-    | [`dvz_prng_uuid()`](#dvz_prng_uuid) | function | `include/datoviz/math/prng.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_prng()`](#dvz_prng) | `include/datoviz/math/prng.h` |
+    | [`dvz_prng_destroy()`](#dvz_prng_destroy) | `include/datoviz/math/prng.h` |
+    | [`dvz_prng_uuid()`](#dvz_prng_uuid) | `include/datoviz/math/prng.h` |
 
     **Range**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`dvz_range()`](#dvz_range) | function | `include/datoviz/math/stats.h` |
-
-    **Scalar And Vector Types**
-
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzAlpha`](#type-dvzalpha) | typedef | `include/datoviz/math/types.h` |
-    | [`DvzId`](#type-dvzid) | typedef | `include/datoviz/math/types.h` |
-    | [`DvzIndex`](#type-dvzindex) | typedef | `include/datoviz/math/types.h` |
-    | [`DvzSize`](#type-dvzsize) | typedef | `include/datoviz/math/types.h` |
-    | [`cvec2`](#type-cvec2) | typedef | `include/datoviz/math/types.h` |
-    | [`cvec3`](#type-cvec3) | typedef | `include/datoviz/math/types.h` |
-    | [`cvec4`](#type-cvec4) | typedef | `include/datoviz/math/types.h` |
-    | [`dmat2`](#type-dmat2) | typedef | `include/datoviz/math/types.h` |
-    | [`dmat3`](#type-dmat3) | typedef | `include/datoviz/math/types.h` |
-    | [`dmat4`](#type-dmat4) | typedef | `include/datoviz/math/types.h` |
-    | [`dvec2`](#type-dvec2) | typedef | `include/datoviz/math/types.h` |
-    | [`dvec3`](#type-dvec3) | typedef | `include/datoviz/math/types.h` |
-    | [`dvec4`](#type-dvec4) | typedef | `include/datoviz/math/types.h` |
-    | [`fvec2`](#type-fvec2) | typedef | `include/datoviz/math/types.h` |
-    | [`fvec3`](#type-fvec3) | typedef | `include/datoviz/math/types.h` |
-    | [`fvec4`](#type-fvec4) | typedef | `include/datoviz/math/types.h` |
-    | [`ivec2`](#type-ivec2) | typedef | `include/datoviz/math/types.h` |
-    | [`ivec3`](#type-ivec3) | typedef | `include/datoviz/math/types.h` |
-    | [`ivec4`](#type-ivec4) | typedef | `include/datoviz/math/types.h` |
-    | [`mat2`](#type-mat2) | typedef | `include/datoviz/math/types.h` |
-    | [`mat2x3`](#type-mat2x3) | typedef | `include/datoviz/math/types.h` |
-    | [`mat2x4`](#type-mat2x4) | typedef | `include/datoviz/math/types.h` |
-    | [`mat3`](#type-mat3) | typedef | `include/datoviz/math/types.h` |
-    | [`mat3x2`](#type-mat3x2) | typedef | `include/datoviz/math/types.h` |
-    | [`mat3x4`](#type-mat3x4) | typedef | `include/datoviz/math/types.h` |
-    | [`mat4`](#type-mat4) | typedef | `include/datoviz/math/types.h` |
-    | [`mat4x2`](#type-mat4x2) | typedef | `include/datoviz/math/types.h` |
-    | [`mat4x3`](#type-mat4x3) | typedef | `include/datoviz/math/types.h` |
-    | [`svec2`](#type-svec2) | typedef | `include/datoviz/math/types.h` |
-    | [`svec3`](#type-svec3) | typedef | `include/datoviz/math/types.h` |
-    | [`svec4`](#type-svec4) | typedef | `include/datoviz/math/types.h` |
-    | [`usvec2`](#type-usvec2) | typedef | `include/datoviz/math/types.h` |
-    | [`usvec3`](#type-usvec3) | typedef | `include/datoviz/math/types.h` |
-    | [`usvec4`](#type-usvec4) | typedef | `include/datoviz/math/types.h` |
-    | [`uvec2`](#type-uvec2) | typedef | `include/datoviz/math/types.h` |
-    | [`uvec3`](#type-uvec3) | typedef | `include/datoviz/math/types.h` |
-    | [`uvec4`](#type-uvec4) | typedef | `include/datoviz/math/types.h` |
-    | [`vec2`](#type-vec2) | typedef | `include/datoviz/math/types.h` |
-    | [`vec3`](#type-vec3) | typedef | `include/datoviz/math/types.h` |
-    | [`vec4`](#type-vec4) | typedef | `include/datoviz/math/types.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_range()`](#dvz_range) | `include/datoviz/math/stats.h` |
 
     **Vec2**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`dvz_vec2_copy()`](#dvz_vec2_copy) | function | `include/datoviz/math/vec.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_vec2_copy()`](#dvz_vec2_copy) | `include/datoviz/math/vec.h` |
 
     **Vec3**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`dvz_vec3_cast()`](#dvz_vec3_cast) | function | `include/datoviz/math/vec.h` |
-    | [`dvz_vec3_copy()`](#dvz_vec3_copy) | function | `include/datoviz/math/vec.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_vec3_cast()`](#dvz_vec3_cast) | `include/datoviz/math/vec.h` |
+    | [`dvz_vec3_copy()`](#dvz_vec3_copy) | `include/datoviz/math/vec.h` |
 
 ## Box { #box }
-
-### Types
-
-#### `DvzBox` { #type-dvzbox }
-
-```c
-struct DvzBox {
-    double xmin;
-    double xmax;
-    double ymin;
-    double ymax;
-    double zmin;
-    double zmax;
-};
-```
-
-Used by: [`dvz_box()`](runtime-math.md#dvz_box), [`dvz_box_aspect()`](runtime-math.md#dvz_box_aspect), [`dvz_box_center()`](runtime-math.md#dvz_box_center), [`dvz_box_extent()`](runtime-math.md#dvz_box_extent), [`dvz_box_inverse()`](runtime-math.md#dvz_box_inverse), [`dvz_box_merge()`](runtime-math.md#dvz_box_merge), [`dvz_box_normalize_1D()`](runtime-math.md#dvz_box_normalize_1d), [`dvz_box_normalize_2D()`](runtime-math.md#dvz_box_normalize_2d); plus 2 more.
-
-_Declared in `include/datoviz/math/box.h`:39._
-
-#### `DvzBoxExtentStrategy` { #type-dvzboxextentstrategy }
-
-```c
-enum DvzBoxExtentStrategy {
-    DVZ_BOX_EXTENT_DEFAULT = 0,
-    DVZ_BOX_EXTENT_FIXED_ASPECT_EXPAND = 1,
-    DVZ_BOX_EXTENT_FIXED_ASPECT_CONTRACT = 2,
-};
-```
-
-Used by: [`dvz_box_extent()`](runtime-math.md#dvz_box_extent).
-
-_Declared in `include/datoviz/math/box.h`:61._
-
-#### `DvzBoxMergeStrategy` { #type-dvzboxmergestrategy }
-
-```c
-enum DvzBoxMergeStrategy {
-    DVZ_BOX_MERGE_DEFAULT = 0,
-    DVZ_BOX_MERGE_CENTER = 1,
-    DVZ_BOX_MERGE_CORNER = 2,
-};
-```
-
-Used by: [`dvz_box_merge()`](runtime-math.md#dvz_box_merge).
-
-_Declared in `include/datoviz/math/box.h`:51._
 
 ### Functions
 
@@ -465,24 +362,71 @@ void dvz_box_normalize_polygon(
 
 _Declared in `include/datoviz/math/box.h`:181._
 
+### Types
+
+<a id="type-dvzbox"></a>
+
+??? abstract "`DvzBox` · record"
+
+    ```c
+    struct DvzBox {
+        double xmin;
+        double xmax;
+        double ymin;
+        double ymax;
+        double zmin;
+        double zmax;
+    };
+    ```
+
+    _Declared in `include/datoviz/math/box.h`:39._
+
+<a id="type-dvzboxextentstrategy"></a>
+
+??? abstract "`DvzBoxExtentStrategy` · enum"
+
+    ```c
+    enum DvzBoxExtentStrategy {
+        DVZ_BOX_EXTENT_DEFAULT = 0,
+        DVZ_BOX_EXTENT_FIXED_ASPECT_EXPAND = 1,
+        DVZ_BOX_EXTENT_FIXED_ASPECT_CONTRACT = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/math/box.h`:61._
+
+<a id="type-dvzboxmergestrategy"></a>
+
+??? abstract "`DvzBoxMergeStrategy` · enum"
+
+    ```c
+    enum DvzBoxMergeStrategy {
+        DVZ_BOX_MERGE_DEFAULT = 0,
+        DVZ_BOX_MERGE_CENTER = 1,
+        DVZ_BOX_MERGE_CORNER = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/math/box.h`:51._
+
 ## Dim { #dim }
 
 ### Types
 
-#### `DvzDim` { #type-dvzdim }
+<a id="type-dvzdim"></a>
 
-```c
-enum DvzDim {
-    DVZ_DIM_X = 0,
-    DVZ_DIM_Y = 1,
-    DVZ_DIM_Z = 2,
-    DVZ_DIM_COUNT = 3,
-};
-```
+??? abstract "`DvzDim` · enum"
 
-Used by: [`dvz_box_normalize_1D()`](runtime-math.md#dvz_box_normalize_1d), [`dvz_panel_axis()`](scene.md#dvz_panel_axis), [`dvz_panel_controller()`](scene.md#dvz_panel_controller), [`dvz_panel_set_domain()`](scene.md#dvz_panel_set_domain), [`dvz_panel_visible_domain()`](scene.md#dvz_panel_visible_domain), [`dvz_scale_bar_set_dimension()`](scene.md#dvz_scale_bar_set_dimension).
+    ```c
+    enum DvzDim {
+        DVZ_DIM_X = 0,
+        DVZ_DIM_Y = 1,
+        DVZ_DIM_Z = 2,
+        DVZ_DIM_COUNT = 3,
+    };
+    ```
 
-_Declared in `include/datoviz/math/dim.h`:20._
+    _Declared in `include/datoviz/math/dim.h`:20._
 
 ## Dmat4 { #dmat4 }
 
@@ -698,51 +642,6 @@ _Declared in `include/datoviz/math/vec.h`:50._
 
 ## Easing { #easing }
 
-### Types
-
-#### `DvzEasing` { #type-dvzeasing }
-
-```c
-enum DvzEasing {
-    DVZ_EASING_NONE = 0,
-    DVZ_EASING_IN_SINE = 1,
-    DVZ_EASING_OUT_SINE = 2,
-    DVZ_EASING_IN_OUT_SINE = 3,
-    DVZ_EASING_IN_QUAD = 4,
-    DVZ_EASING_OUT_QUAD = 5,
-    DVZ_EASING_IN_OUT_QUAD = 6,
-    DVZ_EASING_IN_CUBIC = 7,
-    DVZ_EASING_OUT_CUBIC = 8,
-    DVZ_EASING_IN_OUT_CUBIC = 9,
-    DVZ_EASING_IN_QUART = 10,
-    DVZ_EASING_OUT_QUART = 11,
-    DVZ_EASING_IN_OUT_QUART = 12,
-    DVZ_EASING_IN_QUINT = 13,
-    DVZ_EASING_OUT_QUINT = 14,
-    DVZ_EASING_IN_OUT_QUINT = 15,
-    DVZ_EASING_IN_EXPO = 16,
-    DVZ_EASING_OUT_EXPO = 17,
-    DVZ_EASING_IN_OUT_EXPO = 18,
-    DVZ_EASING_IN_CIRC = 19,
-    DVZ_EASING_OUT_CIRC = 20,
-    DVZ_EASING_IN_OUT_CIRC = 21,
-    DVZ_EASING_IN_BACK = 22,
-    DVZ_EASING_OUT_BACK = 23,
-    DVZ_EASING_IN_OUT_BACK = 24,
-    DVZ_EASING_IN_ELASTIC = 25,
-    DVZ_EASING_OUT_ELASTIC = 26,
-    DVZ_EASING_IN_OUT_ELASTIC = 27,
-    DVZ_EASING_IN_BOUNCE = 28,
-    DVZ_EASING_OUT_BOUNCE = 29,
-    DVZ_EASING_IN_OUT_BOUNCE = 30,
-    DVZ_EASING_COUNT = 31,
-};
-```
-
-Used by: [`dvz_easing()`](runtime-math.md#dvz_easing).
-
-_Declared in `include/datoviz/math/anim.h`:34._
-
 ### Functions
 
 #### `dvz_easing()` { #dvz_easing }
@@ -763,6 +662,51 @@ double dvz_easing(
 | `t` | `double` | the normalized value |
 
 _Declared in `include/datoviz/math/anim.h`:85._
+
+### Types
+
+<a id="type-dvzeasing"></a>
+
+??? abstract "`DvzEasing` · enum"
+
+    ```c
+    enum DvzEasing {
+        DVZ_EASING_NONE = 0,
+        DVZ_EASING_IN_SINE = 1,
+        DVZ_EASING_OUT_SINE = 2,
+        DVZ_EASING_IN_OUT_SINE = 3,
+        DVZ_EASING_IN_QUAD = 4,
+        DVZ_EASING_OUT_QUAD = 5,
+        DVZ_EASING_IN_OUT_QUAD = 6,
+        DVZ_EASING_IN_CUBIC = 7,
+        DVZ_EASING_OUT_CUBIC = 8,
+        DVZ_EASING_IN_OUT_CUBIC = 9,
+        DVZ_EASING_IN_QUART = 10,
+        DVZ_EASING_OUT_QUART = 11,
+        DVZ_EASING_IN_OUT_QUART = 12,
+        DVZ_EASING_IN_QUINT = 13,
+        DVZ_EASING_OUT_QUINT = 14,
+        DVZ_EASING_IN_OUT_QUINT = 15,
+        DVZ_EASING_IN_EXPO = 16,
+        DVZ_EASING_OUT_EXPO = 17,
+        DVZ_EASING_IN_OUT_EXPO = 18,
+        DVZ_EASING_IN_CIRC = 19,
+        DVZ_EASING_OUT_CIRC = 20,
+        DVZ_EASING_IN_OUT_CIRC = 21,
+        DVZ_EASING_IN_BACK = 22,
+        DVZ_EASING_OUT_BACK = 23,
+        DVZ_EASING_IN_OUT_BACK = 24,
+        DVZ_EASING_IN_ELASTIC = 25,
+        DVZ_EASING_OUT_ELASTIC = 26,
+        DVZ_EASING_IN_OUT_ELASTIC = 27,
+        DVZ_EASING_IN_BOUNCE = 28,
+        DVZ_EASING_OUT_BOUNCE = 29,
+        DVZ_EASING_IN_OUT_BOUNCE = 30,
+        DVZ_EASING_COUNT = 31,
+    };
+    ```
+
+    _Declared in `include/datoviz/math/anim.h`:34._
 
 ## Mean { #mean }
 
@@ -839,18 +783,6 @@ _Declared in `include/datoviz/math/stats.h`:63._
 
 ## Prng { #prng }
 
-### Types
-
-#### `DvzPrng` { #type-dvzprng }
-
-```c
-typedef struct DvzPrng DvzPrng;
-```
-
-Used by: [`dvz_prng()`](runtime-math.md#dvz_prng), [`dvz_prng_destroy()`](runtime-math.md#dvz_prng_destroy), [`dvz_prng_uuid()`](runtime-math.md#dvz_prng_uuid).
-
-_Declared in `include/datoviz/math/prng.h`:28._
-
 ### Functions
 
 #### `dvz_prng()` { #dvz_prng }
@@ -891,6 +823,18 @@ uint64_t dvz_prng_uuid(
 
 _Declared in `include/datoviz/math/prng.h`:42._
 
+### Types
+
+<a id="type-dvzprng"></a>
+
+??? abstract "`DvzPrng` · typedef"
+
+    ```c
+    typedef struct DvzPrng DvzPrng;
+    ```
+
+    _Declared in `include/datoviz/math/prng.h`:28._
+
 ## Range { #range }
 
 ### Functions
@@ -919,349 +863,405 @@ _Declared in `include/datoviz/math/stats.h`:74._
 
 ### Types
 
-#### `DvzAlpha` { #type-dvzalpha }
+<a id="type-dvzalpha"></a>
 
-```c
-typedef uint8_t DvzAlpha;
-```
+??? abstract "`DvzAlpha` · typedef"
 
-_Declared in `include/datoviz/math/types.h`:137._
+    ```c
+    typedef uint8_t DvzAlpha;
+    ```
 
-#### `DvzId` { #type-dvzid }
+    _Declared in `include/datoviz/math/types.h`:137._
 
-```c
-typedef uint64_t DvzId;
-```
+<a id="type-dvzid"></a>
 
-Used by: [`dvz_annotation_id()`](scene.md#dvz_annotation_id), [`dvz_colorbar_id()`](scene.md#dvz_colorbar_id), [`dvz_colormap_id()`](scene.md#dvz_colormap_id), [`dvz_controller_id()`](scene.md#dvz_controller_id), [`dvz_figure_id()`](scene.md#dvz_figure_id), [`dvz_legend_id()`](scene.md#dvz_legend_id), [`dvz_panel_frame_id()`](scene.md#dvz_panel_frame_id), [`dvz_panel_id()`](scene.md#dvz_panel_id); plus 5 more.
+??? abstract "`DvzId` · typedef"
 
-_Declared in `include/datoviz/math/types.h`:72._
+    ```c
+    typedef uint64_t DvzId;
+    ```
 
-#### `DvzIndex` { #type-dvzindex }
+    _Declared in `include/datoviz/math/types.h`:72._
 
-```c
-typedef uint32_t DvzIndex;
-```
+<a id="type-dvzindex"></a>
 
-Used by: [`dvz_visual_set_index_data()`](visuals.md#dvz_visual_set_index_data).
+??? abstract "`DvzIndex` · typedef"
 
-_Declared in `include/datoviz/math/types.h`:167._
+    ```c
+    typedef uint32_t DvzIndex;
+    ```
 
-#### `DvzSize` { #type-dvzsize }
+    _Declared in `include/datoviz/math/types.h`:167._
 
-```c
-typedef uint64_t DvzSize;
-```
+<a id="type-dvzsize"></a>
 
-Used by: [`dvz_buffer_allocated_size()`](runtime-vklite.md#dvz_buffer_allocated_size), [`dvz_buffer_download()`](runtime-vklite.md#dvz_buffer_download), [`dvz_buffer_resize()`](runtime-vklite.md#dvz_buffer_resize), [`dvz_buffer_size()`](runtime-vklite.md#dvz_buffer_size), [`dvz_buffer_size_value()`](runtime-vklite.md#dvz_buffer_size_value), [`dvz_buffer_upload()`](runtime-vklite.md#dvz_buffer_upload), [`dvz_buffer_views()`](runtime-vklite.md#dvz_buffer_views), [`dvz_buffer_views_aligned_size()`](runtime-vklite.md#dvz_buffer_views_aligned_size); plus 29 more.
+??? abstract "`DvzSize` · typedef"
 
-_Declared in `include/datoviz/math/types.h`:86._
+    ```c
+    typedef uint64_t DvzSize;
+    ```
 
-#### `cvec2` { #type-cvec2 }
+    _Declared in `include/datoviz/math/types.h`:86._
 
-```c
-typedef uint8_t[2] cvec2;
-```
+<a id="type-cvec2"></a>
 
-_Declared in `include/datoviz/math/types.h`:133._
+??? abstract "`cvec2` · typedef"
 
-#### `cvec3` { #type-cvec3 }
+    ```c
+    typedef uint8_t[2] cvec2;
+    ```
 
-```c
-typedef uint8_t[3] cvec3;
-```
+    _Declared in `include/datoviz/math/types.h`:133._
 
-_Declared in `include/datoviz/math/types.h`:134._
+<a id="type-cvec3"></a>
 
-#### `cvec4` { #type-cvec4 }
+??? abstract "`cvec3` · typedef"
 
-```c
-typedef uint8_t[4] cvec4;
-```
+    ```c
+    typedef uint8_t[3] cvec3;
+    ```
 
-_Declared in `include/datoviz/math/types.h`:135._
+    _Declared in `include/datoviz/math/types.h`:134._
 
-#### `dmat2` { #type-dmat2 }
+<a id="type-cvec4"></a>
 
-```c
-typedef dvec2[2] dmat2;
-```
+??? abstract "`cvec4` · typedef"
 
-_Declared in `include/datoviz/math/types.h`:276._
+    ```c
+    typedef uint8_t[4] cvec4;
+    ```
 
-#### `dmat3` { #type-dmat3 }
+    _Declared in `include/datoviz/math/types.h`:135._
 
-```c
-typedef dvec3[3] dmat3;
-```
+<a id="type-dmat2"></a>
 
-_Declared in `include/datoviz/math/types.h`:277._
+??? abstract "`dmat2` · typedef"
 
-#### `dmat4` { #type-dmat4 }
+    ```c
+    typedef dvec2[2] dmat2;
+    ```
 
-```c
-typedef dvec4[4] dmat4;
-```
+    _Declared in `include/datoviz/math/types.h`:276._
 
-Used by: [`dvz_dmat4_copy()`](runtime-math.md#dvz_dmat4_copy), [`dvz_dmat4_identity()`](runtime-math.md#dvz_dmat4_identity), [`dvz_dmat4_inv()`](runtime-math.md#dvz_dmat4_inv), [`dvz_dmat4_mat4()`](runtime-math.md#dvz_dmat4_mat4), [`dvz_dmat4_mul()`](runtime-math.md#dvz_dmat4_mul), [`dvz_dmat4_mulv()`](runtime-math.md#dvz_dmat4_mulv), [`dvz_dmat4_mulv3()`](runtime-math.md#dvz_dmat4_mulv3), [`dvz_dmat4_scale_p()`](runtime-math.md#dvz_dmat4_scale_p); plus 1 more.
+<a id="type-dmat3"></a>
 
-_Declared in `include/datoviz/math/types.h`:278._
+??? abstract "`dmat3` · typedef"
 
-#### `dvec2` { #type-dvec2 }
+    ```c
+    typedef dvec3[3] dmat3;
+    ```
 
-```c
-typedef double[2] dvec2;
-```
+    _Declared in `include/datoviz/math/types.h`:277._
 
-Used by: [`dvz_box_normalize_2D()`](runtime-math.md#dvz_box_normalize_2d), [`dvz_box_normalize_polygon()`](runtime-math.md#dvz_box_normalize_polygon), [`dvz_polygon_set_hole()`](visuals.md#dvz_polygon_set_hole), [`dvz_polygon_set_outer()`](visuals.md#dvz_polygon_set_outer), [`dvz_range()`](runtime-math.md#dvz_range).
+<a id="type-dmat4"></a>
 
-_Declared in `include/datoviz/math/types.h`:271._
+??? abstract "`dmat4` · typedef"
 
-#### `dvec3` { #type-dvec3 }
+    ```c
+    typedef dvec4[4] dmat4;
+    ```
 
-```c
-typedef double[3] dvec3;
-```
+    _Declared in `include/datoviz/math/types.h`:278._
 
-Used by: [`dvz_box_center()`](runtime-math.md#dvz_box_center), [`dvz_box_inverse()`](runtime-math.md#dvz_box_inverse), [`dvz_box_normalize_3D()`](runtime-math.md#dvz_box_normalize_3d), [`dvz_dmat4_mulv3()`](runtime-math.md#dvz_dmat4_mulv3), [`dvz_dvec3()`](runtime-math.md#dvz_dvec3), [`dvz_dvec3_copy()`](runtime-math.md#dvz_dvec3_copy), [`dvz_dvec4()`](runtime-math.md#dvz_dvec4), [`dvz_graph_set_edge_controls()`](visuals.md#dvz_graph_set_edge_controls); plus 4 more.
+<a id="type-dvec2"></a>
 
-_Declared in `include/datoviz/math/types.h`:272._
+??? abstract "`dvec2` · typedef"
 
-#### `dvec4` { #type-dvec4 }
+    ```c
+    typedef double[2] dvec2;
+    ```
 
-```c
-typedef double[4] dvec4;
-```
+    _Declared in `include/datoviz/math/types.h`:271._
 
-Used by: [`dvz_dmat4_mulv()`](runtime-math.md#dvz_dmat4_mulv), [`dvz_dvec3()`](runtime-math.md#dvz_dvec3), [`dvz_dvec4()`](runtime-math.md#dvz_dvec4), [`dvz_dvec4_copy()`](runtime-math.md#dvz_dvec4_copy).
+<a id="type-dvec3"></a>
 
-_Declared in `include/datoviz/math/types.h`:273._
+??? abstract "`dvec3` · typedef"
 
-#### `fvec2` { #type-fvec2 }
+    ```c
+    typedef double[3] dvec3;
+    ```
 
-```c
-typedef vec2 fvec2;
-```
+    _Declared in `include/datoviz/math/types.h`:272._
 
-_Declared in `include/datoviz/math/types.h`:260._
+<a id="type-dvec4"></a>
 
-#### `fvec3` { #type-fvec3 }
+??? abstract "`dvec4` · typedef"
 
-```c
-typedef vec3 fvec3;
-```
+    ```c
+    typedef double[4] dvec4;
+    ```
 
-_Declared in `include/datoviz/math/types.h`:261._
+    _Declared in `include/datoviz/math/types.h`:273._
 
-#### `fvec4` { #type-fvec4 }
+<a id="type-fvec2"></a>
 
-```c
-typedef vec4 fvec4;
-```
+??? abstract "`fvec2` · typedef"
 
-_Declared in `include/datoviz/math/types.h`:262._
+    ```c
+    typedef vec2 fvec2;
+    ```
 
-#### `ivec2` { #type-ivec2 }
+    _Declared in `include/datoviz/math/types.h`:260._
 
-```c
-typedef int32_t[2] ivec2;
-```
+<a id="type-fvec3"></a>
 
-_Declared in `include/datoviz/math/types.h`:240._
+??? abstract "`fvec3` · typedef"
 
-#### `ivec3` { #type-ivec3 }
+    ```c
+    typedef vec3 fvec3;
+    ```
 
-```c
-typedef int32_t[3] ivec3;
-```
+    _Declared in `include/datoviz/math/types.h`:261._
 
-_Declared in `include/datoviz/math/types.h`:241._
+<a id="type-fvec4"></a>
 
-#### `ivec4` { #type-ivec4 }
+??? abstract "`fvec4` · typedef"
 
-```c
-typedef int32_t[4] ivec4;
-```
+    ```c
+    typedef vec4 fvec4;
+    ```
 
-_Declared in `include/datoviz/math/types.h`:242._
+    _Declared in `include/datoviz/math/types.h`:262._
 
-#### `mat2` { #type-mat2 }
+<a id="type-ivec2"></a>
 
-```c
-typedef vec2[2] mat2;
-```
+??? abstract "`ivec2` · typedef"
 
-_Declared in `include/datoviz/math/types.h`:252._
+    ```c
+    typedef int32_t[2] ivec2;
+    ```
 
-#### `mat2x3` { #type-mat2x3 }
+    _Declared in `include/datoviz/math/types.h`:240._
 
-```c
-typedef vec3[2] mat2x3;
-```
+<a id="type-ivec3"></a>
 
-_Declared in `include/datoviz/math/types.h`:253._
+??? abstract "`ivec3` · typedef"
 
-#### `mat2x4` { #type-mat2x4 }
+    ```c
+    typedef int32_t[3] ivec3;
+    ```
 
-```c
-typedef vec4[2] mat2x4;
-```
+    _Declared in `include/datoviz/math/types.h`:241._
 
-_Declared in `include/datoviz/math/types.h`:254._
+<a id="type-ivec4"></a>
 
-#### `mat3` { #type-mat3 }
+??? abstract "`ivec4` · typedef"
 
-```c
-typedef vec3[3] mat3;
-```
+    ```c
+    typedef int32_t[4] ivec4;
+    ```
 
-_Declared in `include/datoviz/math/types.h`:248._
+    _Declared in `include/datoviz/math/types.h`:242._
 
-#### `mat3x2` { #type-mat3x2 }
+<a id="type-mat2"></a>
 
-```c
-typedef vec2[3] mat3x2;
-```
+??? abstract "`mat2` · typedef"
 
-_Declared in `include/datoviz/math/types.h`:249._
+    ```c
+    typedef vec2[2] mat2;
+    ```
 
-#### `mat3x4` { #type-mat3x4 }
+    _Declared in `include/datoviz/math/types.h`:252._
 
-```c
-typedef vec4[3] mat3x4;
-```
+<a id="type-mat2x3"></a>
 
-_Declared in `include/datoviz/math/types.h`:250._
+??? abstract "`mat2x3` · typedef"
 
-#### `mat4` { #type-mat4 }
+    ```c
+    typedef vec3[2] mat2x3;
+    ```
 
-```c
-typedef vec4[4] mat4;
-```
+    _Declared in `include/datoviz/math/types.h`:253._
 
-Used by: [`dvz_arcball_model()`](runtime-controllers.md#dvz_arcball_model), [`dvz_dmat4_mat4()`](runtime-math.md#dvz_dmat4_mat4), [`dvz_visual_get_transform()`](visuals.md#dvz_visual_get_transform), [`dvz_visual_set_transform()`](visuals.md#dvz_visual_set_transform).
+<a id="type-mat2x4"></a>
 
-_Declared in `include/datoviz/math/types.h`:256._
+??? abstract "`mat2x4` · typedef"
 
-#### `mat4x2` { #type-mat4x2 }
+    ```c
+    typedef vec4[2] mat2x4;
+    ```
 
-```c
-typedef vec2[4] mat4x2;
-```
+    _Declared in `include/datoviz/math/types.h`:254._
 
-_Declared in `include/datoviz/math/types.h`:257._
+<a id="type-mat3"></a>
 
-#### `mat4x3` { #type-mat4x3 }
+??? abstract "`mat3` · typedef"
 
-```c
-typedef vec3[4] mat4x3;
-```
+    ```c
+    typedef vec3[3] mat3;
+    ```
 
-_Declared in `include/datoviz/math/types.h`:258._
+    _Declared in `include/datoviz/math/types.h`:248._
 
-#### `svec2` { #type-svec2 }
+<a id="type-mat3x2"></a>
 
-```c
-typedef int16_t[2] svec2;
-```
+??? abstract "`mat3x2` · typedef"
 
-_Declared in `include/datoviz/math/types.h`:146._
+    ```c
+    typedef vec2[3] mat3x2;
+    ```
 
-#### `svec3` { #type-svec3 }
+    _Declared in `include/datoviz/math/types.h`:249._
 
-```c
-typedef int16_t[3] svec3;
-```
+<a id="type-mat3x4"></a>
 
-_Declared in `include/datoviz/math/types.h`:147._
+??? abstract "`mat3x4` · typedef"
 
-#### `svec4` { #type-svec4 }
+    ```c
+    typedef vec4[3] mat3x4;
+    ```
 
-```c
-typedef int16_t[4] svec4;
-```
+    _Declared in `include/datoviz/math/types.h`:250._
 
-_Declared in `include/datoviz/math/types.h`:148._
+<a id="type-mat4"></a>
 
-#### `usvec2` { #type-usvec2 }
+??? abstract "`mat4` · typedef"
 
-```c
-typedef uint16_t[2] usvec2;
-```
+    ```c
+    typedef vec4[4] mat4;
+    ```
 
-_Declared in `include/datoviz/math/types.h`:151._
+    _Declared in `include/datoviz/math/types.h`:256._
 
-#### `usvec3` { #type-usvec3 }
+<a id="type-mat4x2"></a>
 
-```c
-typedef uint16_t[3] usvec3;
-```
+??? abstract "`mat4x2` · typedef"
 
-_Declared in `include/datoviz/math/types.h`:152._
+    ```c
+    typedef vec2[4] mat4x2;
+    ```
 
-#### `usvec4` { #type-usvec4 }
+    _Declared in `include/datoviz/math/types.h`:257._
 
-```c
-typedef uint16_t[4] usvec4;
-```
+<a id="type-mat4x3"></a>
 
-_Declared in `include/datoviz/math/types.h`:153._
+??? abstract "`mat4x3` · typedef"
 
-#### `uvec2` { #type-uvec2 }
+    ```c
+    typedef vec3[4] mat4x3;
+    ```
 
-```c
-typedef uint32_t[2] uvec2;
-```
+    _Declared in `include/datoviz/math/types.h`:258._
 
-Used by: [`dvz_swapchain_recreate()`](runtime-vklite.md#dvz_swapchain_recreate).
+<a id="type-svec2"></a>
 
-_Declared in `include/datoviz/math/types.h`:162._
+??? abstract "`svec2` · typedef"
 
-#### `uvec3` { #type-uvec3 }
+    ```c
+    typedef int16_t[2] svec2;
+    ```
 
-```c
-typedef uint32_t[3] uvec3;
-```
+    _Declared in `include/datoviz/math/types.h`:146._
 
-_Declared in `include/datoviz/math/types.h`:163._
+<a id="type-svec3"></a>
 
-#### `uvec4` { #type-uvec4 }
+??? abstract "`svec3` · typedef"
 
-```c
-typedef uint32_t[4] uvec4;
-```
+    ```c
+    typedef int16_t[3] svec3;
+    ```
 
-_Declared in `include/datoviz/math/types.h`:164._
+    _Declared in `include/datoviz/math/types.h`:147._
 
-#### `vec2` { #type-vec2 }
+<a id="type-svec4"></a>
 
-```c
-typedef float[2] vec2;
-```
+??? abstract "`svec4` · typedef"
 
-Used by: [`dvz_arcball_pan()`](runtime-controllers.md#dvz_arcball_pan), [`dvz_arcball_pan_shift()`](runtime-controllers.md#dvz_arcball_pan_shift), [`dvz_arcball_rotate()`](runtime-controllers.md#dvz_arcball_rotate), [`dvz_min_max()`](runtime-math.md#dvz_min_max), [`dvz_normalize_bytes()`](runtime-math.md#dvz_normalize_bytes), [`dvz_panzoom_pan()`](runtime-controllers.md#dvz_panzoom_pan), [`dvz_panzoom_pan_shift()`](runtime-controllers.md#dvz_panzoom_pan_shift), [`dvz_panzoom_zoom()`](runtime-controllers.md#dvz_panzoom_zoom); plus 4 more.
+    ```c
+    typedef int16_t[4] svec4;
+    ```
 
-_Declared in `include/datoviz/math/types.h`:244._
+    _Declared in `include/datoviz/math/types.h`:148._
 
-#### `vec3` { #type-vec3 }
+<a id="type-usvec2"></a>
 
-```c
-typedef float[3] vec3;
-```
+??? abstract "`usvec2` · typedef"
 
-Used by: [`dvz_arcball_angles()`](runtime-controllers.md#dvz_arcball_angles), [`dvz_arcball_constrain()`](runtime-controllers.md#dvz_arcball_constrain), [`dvz_arcball_initial()`](runtime-controllers.md#dvz_arcball_initial), [`dvz_arcball_rotate_axis()`](runtime-controllers.md#dvz_arcball_rotate_axis), [`dvz_arcball_set()`](runtime-controllers.md#dvz_arcball_set), [`dvz_box_inverse()`](runtime-math.md#dvz_box_inverse), [`dvz_box_normalize_1D()`](runtime-math.md#dvz_box_normalize_1d), [`dvz_box_normalize_2D()`](runtime-math.md#dvz_box_normalize_2d); plus 10 more.
+    ```c
+    typedef uint16_t[2] usvec2;
+    ```
 
-_Declared in `include/datoviz/math/types.h`:245._
+    _Declared in `include/datoviz/math/types.h`:151._
 
-#### `vec4` { #type-vec4 }
+<a id="type-usvec3"></a>
 
-```c
-typedef float[4] vec4;
-```
+??? abstract "`usvec3` · typedef"
 
-Used by: [`dvz_graphics_blend()`](runtime-vklite.md#dvz_graphics_blend).
+    ```c
+    typedef uint16_t[3] usvec3;
+    ```
 
-_Declared in `include/datoviz/math/types.h`:246._
+    _Declared in `include/datoviz/math/types.h`:152._
+
+<a id="type-usvec4"></a>
+
+??? abstract "`usvec4` · typedef"
+
+    ```c
+    typedef uint16_t[4] usvec4;
+    ```
+
+    _Declared in `include/datoviz/math/types.h`:153._
+
+<a id="type-uvec2"></a>
+
+??? abstract "`uvec2` · typedef"
+
+    ```c
+    typedef uint32_t[2] uvec2;
+    ```
+
+    _Declared in `include/datoviz/math/types.h`:162._
+
+<a id="type-uvec3"></a>
+
+??? abstract "`uvec3` · typedef"
+
+    ```c
+    typedef uint32_t[3] uvec3;
+    ```
+
+    _Declared in `include/datoviz/math/types.h`:163._
+
+<a id="type-uvec4"></a>
+
+??? abstract "`uvec4` · typedef"
+
+    ```c
+    typedef uint32_t[4] uvec4;
+    ```
+
+    _Declared in `include/datoviz/math/types.h`:164._
+
+<a id="type-vec2"></a>
+
+??? abstract "`vec2` · typedef"
+
+    ```c
+    typedef float[2] vec2;
+    ```
+
+    _Declared in `include/datoviz/math/types.h`:244._
+
+<a id="type-vec3"></a>
+
+??? abstract "`vec3` · typedef"
+
+    ```c
+    typedef float[3] vec3;
+    ```
+
+    _Declared in `include/datoviz/math/types.h`:245._
+
+<a id="type-vec4"></a>
+
+??? abstract "`vec4` · typedef"
+
+    ```c
+    typedef float[4] vec4;
+    ```
+
+    _Declared in `include/datoviz/math/types.h`:246._
 
 ## Vec2 { #vec2 }
 

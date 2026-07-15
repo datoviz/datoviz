@@ -30,125 +30,75 @@ Types: 12
 | [Frame Planning](#frame-planning) | 23 | 6 | 3 headers |
 | [Packet Results](#packet-results) | 5 | 2 | `include/datoviz/scene/frame_packets.h` |
 
-??? info "Grouped symbol index"
+??? info "Grouped function index"
 
     **Capability**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzCapabilitySnapshot`](#type-dvzcapabilitysnapshot) | record | `include/datoviz/scene/types.h` |
-    | [`dvz_capability_snapshot()`](#dvz_capability_snapshot) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_capability_snapshot_copy()`](#dvz_capability_snapshot_copy) | function | `include/datoviz/scene/frame_plan.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_capability_snapshot()`](#dvz_capability_snapshot) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_capability_snapshot_copy()`](#dvz_capability_snapshot_copy) | `include/datoviz/scene/frame_plan.h` |
 
     **Diagnostic**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzDiagnosticReport`](#type-dvzdiagnosticreport) | record | `include/datoviz/scene/types.h` |
-    | [`dvz_diagnostic_report_add()`](#dvz_diagnostic_report_add) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_diagnostic_report_count()`](#dvz_diagnostic_report_count) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_diagnostic_report_get()`](#dvz_diagnostic_report_get) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_diagnostic_report_init()`](#dvz_diagnostic_report_init) | function | `include/datoviz/scene/frame_plan.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_diagnostic_report_add()`](#dvz_diagnostic_report_add) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_diagnostic_report_count()`](#dvz_diagnostic_report_count) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_diagnostic_report_get()`](#dvz_diagnostic_report_get) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_diagnostic_report_init()`](#dvz_diagnostic_report_init) | `include/datoviz/scene/frame_plan.h` |
 
     **Emission**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzFramePlanEmitConfig`](#type-dvzframeplanemitconfig) | record | `include/datoviz/scene/types.h` |
-    | [`DvzFramePlanEmitter`](#type-dvzframeplanemitter) | typedef | `include/datoviz/scene/types.h` |
-    | [`dvz_frame_plan_emit_config()`](#dvz_frame_plan_emit_config) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_emit_drp2()`](#dvz_frame_plan_emit_drp2) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_emit_drp2_ex()`](#dvz_frame_plan_emit_drp2_ex) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_emitter_destroy()`](#dvz_frame_plan_emitter_destroy) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_emitter_emit_drp2()`](#dvz_frame_plan_emitter_emit_drp2) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_emitter_emit_drp2_packets()`](#dvz_frame_plan_emitter_emit_drp2_packets) | function | `include/datoviz/scene/frame_packets.h` |
-    | [`dvz_frame_plan_emitter_object_id()`](#dvz_frame_plan_emitter_object_id) | function | `include/datoviz/scene/frame_plan.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_frame_plan_emit_config()`](#dvz_frame_plan_emit_config) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_emit_drp2()`](#dvz_frame_plan_emit_drp2) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_emit_drp2_ex()`](#dvz_frame_plan_emit_drp2_ex) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_emitter_destroy()`](#dvz_frame_plan_emitter_destroy) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_emitter_emit_drp2()`](#dvz_frame_plan_emitter_emit_drp2) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_emitter_emit_drp2_packets()`](#dvz_frame_plan_emitter_emit_drp2_packets) | `include/datoviz/scene/frame_packets.h` |
+    | [`dvz_frame_plan_emitter_object_id()`](#dvz_frame_plan_emitter_object_id) | `include/datoviz/scene/frame_plan.h` |
 
     **Frame Planning**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzFramePlan`](#type-dvzframeplan) | typedef | `include/datoviz/scene/types.h` |
-    | [`DvzFramePlanCopyDesc`](#type-dvzframeplancopydesc) | record | `include/datoviz/scene/frame_plan.h` |
-    | [`DvzFramePlanNode`](#type-dvzframeplannode) | typedef | `include/datoviz/scene/types.h` |
-    | [`DvzFramePlanNodeType`](#type-dvzframeplannodetype) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzFramePlanRenderPassRole`](#type-dvzframeplanrenderpassrole) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzFramePlanUploadDesc`](#type-dvzframeplanuploaddesc) | record | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan()`](#dvz_frame_plan) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_clear()`](#dvz_frame_plan_clear) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_compute()`](#dvz_frame_plan_compute) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_compute_read()`](#dvz_frame_plan_compute_read) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_compute_write()`](#dvz_frame_plan_compute_write) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_copy()`](#dvz_frame_plan_copy) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_copy_desc()`](#dvz_frame_plan_copy_desc) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_copy_ex()`](#dvz_frame_plan_copy_ex) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_destroy()`](#dvz_frame_plan_destroy) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_emitter()`](#dvz_frame_plan_emitter) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_json()`](#dvz_frame_plan_json) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_json_destroy()`](#dvz_frame_plan_json_destroy) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_node_count()`](#dvz_frame_plan_node_count) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_node_get()`](#dvz_frame_plan_node_get) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_node_type()`](#dvz_frame_plan_node_type) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_readback()`](#dvz_frame_plan_readback) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_render()`](#dvz_frame_plan_render) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_render_pass_role()`](#dvz_frame_plan_render_pass_role) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_render_visual()`](#dvz_frame_plan_render_visual) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_upload()`](#dvz_frame_plan_upload) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_upload_bytes()`](#dvz_frame_plan_upload_bytes) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_upload_desc()`](#dvz_frame_plan_upload_desc) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_upload_ex()`](#dvz_frame_plan_upload_ex) | function | `include/datoviz/scene/frame_plan.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_frame_plan()`](#dvz_frame_plan) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_clear()`](#dvz_frame_plan_clear) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_compute()`](#dvz_frame_plan_compute) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_compute_read()`](#dvz_frame_plan_compute_read) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_compute_write()`](#dvz_frame_plan_compute_write) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_copy()`](#dvz_frame_plan_copy) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_copy_desc()`](#dvz_frame_plan_copy_desc) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_copy_ex()`](#dvz_frame_plan_copy_ex) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_destroy()`](#dvz_frame_plan_destroy) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_emitter()`](#dvz_frame_plan_emitter) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_json()`](#dvz_frame_plan_json) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_json_destroy()`](#dvz_frame_plan_json_destroy) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_node_count()`](#dvz_frame_plan_node_count) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_node_get()`](#dvz_frame_plan_node_get) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_node_type()`](#dvz_frame_plan_node_type) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_readback()`](#dvz_frame_plan_readback) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_render()`](#dvz_frame_plan_render) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_render_pass_role()`](#dvz_frame_plan_render_pass_role) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_render_visual()`](#dvz_frame_plan_render_visual) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_upload()`](#dvz_frame_plan_upload) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_upload_bytes()`](#dvz_frame_plan_upload_bytes) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_upload_desc()`](#dvz_frame_plan_upload_desc) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_upload_ex()`](#dvz_frame_plan_upload_ex) | `include/datoviz/scene/frame_plan.h` |
 
     **Packet Results**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzFramePlanPacketResult`](#type-dvzframeplanpacketresult) | typedef | `include/datoviz/scene/frame_packets.h` |
-    | [`DvzFramePlanPacketStatus`](#type-dvzframeplanpacketstatus) | enum | `include/datoviz/scene/frame_packets.h` |
-    | [`dvz_frame_plan_packet_result_destroy()`](#dvz_frame_plan_packet_result_destroy) | function | `include/datoviz/scene/frame_packets.h` |
-    | [`dvz_frame_plan_packet_result_frame_index()`](#dvz_frame_plan_packet_result_frame_index) | function | `include/datoviz/scene/frame_packets.h` |
-    | [`dvz_frame_plan_packet_result_get()`](#dvz_frame_plan_packet_result_get) | function | `include/datoviz/scene/frame_packets.h` |
-    | [`dvz_frame_plan_packet_result_resource_version()`](#dvz_frame_plan_packet_result_resource_version) | function | `include/datoviz/scene/frame_packets.h` |
-    | [`dvz_frame_plan_packet_result_status()`](#dvz_frame_plan_packet_result_status) | function | `include/datoviz/scene/frame_packets.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_frame_plan_packet_result_destroy()`](#dvz_frame_plan_packet_result_destroy) | `include/datoviz/scene/frame_packets.h` |
+    | [`dvz_frame_plan_packet_result_frame_index()`](#dvz_frame_plan_packet_result_frame_index) | `include/datoviz/scene/frame_packets.h` |
+    | [`dvz_frame_plan_packet_result_get()`](#dvz_frame_plan_packet_result_get) | `include/datoviz/scene/frame_packets.h` |
+    | [`dvz_frame_plan_packet_result_resource_version()`](#dvz_frame_plan_packet_result_resource_version) | `include/datoviz/scene/frame_packets.h` |
+    | [`dvz_frame_plan_packet_result_status()`](#dvz_frame_plan_packet_result_status) | `include/datoviz/scene/frame_packets.h` |
 
 ## Capability { #capability }
-
-### Types
-
-#### `DvzCapabilitySnapshot` { #type-dvzcapabilitysnapshot }
-
-```c
-struct DvzCapabilitySnapshot {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint64_t max_buffer_size;
-    uint32_t max_texture_dimension_2d;
-    uint32_t max_bind_groups;
-    uint32_t max_vertex_buffers;
-    uint32_t max_color_attachments;
-    uint32_t max_color_sample_count;
-    uint32_t max_depth_sample_count;
-    _Bool shader_format_wgsl;
-    _Bool shader_format_glsl;
-    _Bool render_target_format_rgba16float;
-    _Bool render_target_format_r16float;
-    _Bool supports_render_target_sampling;
-    _Bool supports_color_blending;
-    _Bool supports_readback;
-    uint32_t min_texture_copy_bytes_per_row_alignment;
-    uint64_t max_readback_size;
-    _Bool texture_format_r32uint;
-    _Bool texture_format_rg32uint;
-    _Bool render_target_format_r32uint;
-    _Bool render_target_format_rg32uint;
-    _Bool query_profile_u32_r32;
-    _Bool query_profile_u64_rg32;
-    _Bool query_profile_u64_2xr32;
-};
-```
-
-Used by: [`dvz_capability_snapshot()`](frame-plan.md#dvz_capability_snapshot), [`dvz_capability_snapshot_copy()`](frame-plan.md#dvz_capability_snapshot_copy), [`dvz_figure_emit_frame()`](scene.md#dvz_figure_emit_frame), [`dvz_figure_process_queries()`](scene.md#dvz_figure_process_queries), [`dvz_figure_validate()`](scene.md#dvz_figure_validate), [`dvz_frame_plan_emit_drp2()`](frame-plan.md#dvz_frame_plan_emit_drp2), [`dvz_frame_plan_emit_drp2_ex()`](frame-plan.md#dvz_frame_plan_emit_drp2_ex), [`dvz_frame_plan_emitter_emit_drp2()`](frame-plan.md#dvz_frame_plan_emitter_emit_drp2); plus 3 more.
-
-_Declared in `include/datoviz/scene/types.h`:214._
 
 ### Functions
 
@@ -184,22 +134,45 @@ void dvz_capability_snapshot_copy(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:115._
 
-## Diagnostic { #diagnostic }
-
 ### Types
 
-#### `DvzDiagnosticReport` { #type-dvzdiagnosticreport }
+<a id="type-dvzcapabilitysnapshot"></a>
 
-```c
-struct DvzDiagnosticReport {
-    uint32_t count;
-    char[16][256] messages;
-};
-```
+??? abstract "`DvzCapabilitySnapshot` · record"
 
-Used by: [`dvz_diagnostic_report_add()`](frame-plan.md#dvz_diagnostic_report_add), [`dvz_diagnostic_report_count()`](frame-plan.md#dvz_diagnostic_report_count), [`dvz_diagnostic_report_get()`](frame-plan.md#dvz_diagnostic_report_get), [`dvz_diagnostic_report_init()`](frame-plan.md#dvz_diagnostic_report_init), [`dvz_figure_emit_frame()`](scene.md#dvz_figure_emit_frame), [`dvz_figure_validate()`](scene.md#dvz_figure_validate), [`dvz_frame_plan_emit_drp2()`](frame-plan.md#dvz_frame_plan_emit_drp2), [`dvz_frame_plan_emit_drp2_ex()`](frame-plan.md#dvz_frame_plan_emit_drp2_ex); plus 3 more.
+    ```c
+    struct DvzCapabilitySnapshot {
+        uint32_t struct_size;
+        uint32_t flags;
+        uint64_t max_buffer_size;
+        uint32_t max_texture_dimension_2d;
+        uint32_t max_bind_groups;
+        uint32_t max_vertex_buffers;
+        uint32_t max_color_attachments;
+        uint32_t max_color_sample_count;
+        uint32_t max_depth_sample_count;
+        _Bool shader_format_wgsl;
+        _Bool shader_format_glsl;
+        _Bool render_target_format_rgba16float;
+        _Bool render_target_format_r16float;
+        _Bool supports_render_target_sampling;
+        _Bool supports_color_blending;
+        _Bool supports_readback;
+        uint32_t min_texture_copy_bytes_per_row_alignment;
+        uint64_t max_readback_size;
+        _Bool texture_format_r32uint;
+        _Bool texture_format_rg32uint;
+        _Bool render_target_format_r32uint;
+        _Bool render_target_format_rg32uint;
+        _Bool query_profile_u32_r32;
+        _Bool query_profile_u64_rg32;
+        _Bool query_profile_u64_2xr32;
+    };
+    ```
 
-_Declared in `include/datoviz/scene/types.h`:245._
+    _Declared in `include/datoviz/scene/types.h`:214._
+
+## Diagnostic { #diagnostic }
 
 ### Functions
 
@@ -274,46 +247,22 @@ void dvz_diagnostic_report_init(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:124._
 
-## Emission { #emission }
-
 ### Types
 
-#### `DvzFramePlanEmitConfig` { #type-dvzframeplanemitconfig }
+<a id="type-dvzdiagnosticreport"></a>
 
-```c
-struct DvzFramePlanEmitConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzSceneShaderFormat shader_format;
-    DvzColorPipeline color_pipeline;
-    _Bool external_color_target;
-    uint64_t color_target_id;
-    DvzFormat color_target_format;
-    uint32_t target_width;
-    uint32_t target_height;
-    float device_scale_x;
-    float device_scale_y;
-    float render_scale;
-    float user_scale;
-    _Bool fullscreen_triangle;
-    uint64_t runtime_resource_scope_id;
-    float[4] clear_color;
-};
-```
+??? abstract "`DvzDiagnosticReport` · record"
 
-Used by: [`dvz_figure_emit_frame()`](scene.md#dvz_figure_emit_frame), [`dvz_frame_plan_emit_config()`](frame-plan.md#dvz_frame_plan_emit_config), [`dvz_frame_plan_emit_drp2_ex()`](frame-plan.md#dvz_frame_plan_emit_drp2_ex), [`dvz_frame_plan_emitter_emit_drp2()`](frame-plan.md#dvz_frame_plan_emitter_emit_drp2), [`dvz_frame_plan_emitter_emit_drp2_packets()`](frame-plan.md#dvz_frame_plan_emitter_emit_drp2_packets).
+    ```c
+    struct DvzDiagnosticReport {
+        uint32_t count;
+        char[16][256] messages;
+    };
+    ```
 
-_Declared in `include/datoviz/scene/types.h`:252._
+    _Declared in `include/datoviz/scene/types.h`:245._
 
-#### `DvzFramePlanEmitter` { #type-dvzframeplanemitter }
-
-```c
-typedef struct DvzFramePlanEmitter DvzFramePlanEmitter;
-```
-
-Used by: [`dvz_frame_plan_emitter()`](frame-plan.md#dvz_frame_plan_emitter), [`dvz_frame_plan_emitter_destroy()`](frame-plan.md#dvz_frame_plan_emitter_destroy), [`dvz_frame_plan_emitter_emit_drp2()`](frame-plan.md#dvz_frame_plan_emitter_emit_drp2), [`dvz_frame_plan_emitter_emit_drp2_packets()`](frame-plan.md#dvz_frame_plan_emitter_emit_drp2_packets), [`dvz_frame_plan_emitter_object_id()`](frame-plan.md#dvz_frame_plan_emitter_object_id).
-
-_Declared in `include/datoviz/scene/types.h`:49._
+## Emission { #emission }
 
 ### Functions
 
@@ -467,128 +416,46 @@ uint64_t dvz_frame_plan_emitter_object_id(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:475._
 
-## Frame Planning { #frame-planning }
-
 ### Types
 
-#### `DvzFramePlan` { #type-dvzframeplan }
+<a id="type-dvzframeplanemitconfig"></a>
 
-```c
-typedef struct DvzFramePlan DvzFramePlan;
-```
+??? abstract "`DvzFramePlanEmitConfig` · record"
 
-Used by: [`dvz_frame_plan()`](frame-plan.md#dvz_frame_plan), [`dvz_frame_plan_clear()`](frame-plan.md#dvz_frame_plan_clear), [`dvz_frame_plan_compute()`](frame-plan.md#dvz_frame_plan_compute), [`dvz_frame_plan_compute_read()`](frame-plan.md#dvz_frame_plan_compute_read), [`dvz_frame_plan_compute_write()`](frame-plan.md#dvz_frame_plan_compute_write), [`dvz_frame_plan_copy()`](frame-plan.md#dvz_frame_plan_copy), [`dvz_frame_plan_copy_ex()`](frame-plan.md#dvz_frame_plan_copy_ex), [`dvz_frame_plan_destroy()`](frame-plan.md#dvz_frame_plan_destroy); plus 13 more.
+    ```c
+    struct DvzFramePlanEmitConfig {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzSceneShaderFormat shader_format;
+        DvzColorPipeline color_pipeline;
+        _Bool external_color_target;
+        uint64_t color_target_id;
+        DvzFormat color_target_format;
+        uint32_t target_width;
+        uint32_t target_height;
+        float device_scale_x;
+        float device_scale_y;
+        float render_scale;
+        float user_scale;
+        _Bool fullscreen_triangle;
+        uint64_t runtime_resource_scope_id;
+        float[4] clear_color;
+    };
+    ```
 
-_Declared in `include/datoviz/scene/types.h`:51._
+    _Declared in `include/datoviz/scene/types.h`:252._
 
-#### `DvzFramePlanCopyDesc` { #type-dvzframeplancopydesc }
+<a id="type-dvzframeplanemitter"></a>
 
-```c
-struct DvzFramePlanCopyDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    const char * src_resource_id;
-    const char * dst_resource_id;
-    uint32_t src_attachment_index;
-    uint32_t[3] src_origin;
-    uint32_t[3] extent;
-    DvzFormat format;
-    uint32_t bytes_per_texel;
-    uint64_t bytes_per_row;
-    uint32_t rows_per_image;
-    uint64_t dst_offset;
-    uint64_t byte_size;
-    uint64_t request_id;
-};
-```
+??? abstract "`DvzFramePlanEmitter` · typedef"
 
-Used by: [`dvz_frame_plan_copy_desc()`](frame-plan.md#dvz_frame_plan_copy_desc), [`dvz_frame_plan_copy_ex()`](frame-plan.md#dvz_frame_plan_copy_ex).
+    ```c
+    typedef struct DvzFramePlanEmitter DvzFramePlanEmitter;
+    ```
 
-_Declared in `include/datoviz/scene/frame_plan.h`:37._
+    _Declared in `include/datoviz/scene/types.h`:49._
 
-#### `DvzFramePlanNode` { #type-dvzframeplannode }
-
-```c
-typedef struct DvzFramePlanNode DvzFramePlanNode;
-```
-
-Used by: [`dvz_frame_plan_node_get()`](frame-plan.md#dvz_frame_plan_node_get), [`dvz_frame_plan_node_type()`](frame-plan.md#dvz_frame_plan_node_type), [`dvz_frame_plan_render_pass_role()`](frame-plan.md#dvz_frame_plan_render_pass_role).
-
-_Declared in `include/datoviz/scene/types.h`:52._
-
-#### `DvzFramePlanNodeType` { #type-dvzframeplannodetype }
-
-```c
-enum DvzFramePlanNodeType {
-    DVZ_FRAME_PLAN_NODE_NONE = 0,
-    DVZ_FRAME_PLAN_NODE_UPLOAD = 1,
-    DVZ_FRAME_PLAN_NODE_COMPUTE = 2,
-    DVZ_FRAME_PLAN_NODE_RENDER = 3,
-    DVZ_FRAME_PLAN_NODE_CLEAR = 4,
-    DVZ_FRAME_PLAN_NODE_COPY = 5,
-    DVZ_FRAME_PLAN_NODE_READBACK = 6,
-};
-```
-
-Used by: [`dvz_frame_plan_node_type()`](frame-plan.md#dvz_frame_plan_node_type).
-
-_Declared in `include/datoviz/scene/enums.h`:21._
-
-#### `DvzFramePlanRenderPassRole` { #type-dvzframeplanrenderpassrole }
-
-```c
-enum DvzFramePlanRenderPassRole {
-    DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE = 0,
-    DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER = 1,
-    DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION = 2,
-    DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION = 3,
-    DVZ_FRAME_PLAN_RENDER_PASS_SSAO = 4,
-    DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR = 5,
-    DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE = 6,
-    DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE = 7,
-    DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION = 8,
-    DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND = 9,
-    DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE = 10,
-    DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT = 11,
-    DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER = 12,
-    DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE = 13,
-    DVZ_FRAME_PLAN_RENDER_PASS_PICKING = 14,
-};
-```
-
-Used by: [`dvz_frame_plan_render_pass_role()`](frame-plan.md#dvz_frame_plan_render_pass_role).
-
-_Declared in `include/datoviz/scene/enums.h`:34._
-
-#### `DvzFramePlanUploadDesc` { #type-dvzframeplanuploaddesc }
-
-```c
-struct DvzFramePlanUploadDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    const char * resource_id;
-    uint64_t byte_offset;
-    uint64_t byte_size;
-    const char * data_tag;
-    const void * data;
-    DvzPrimitiveTopology topology;
-    DvzFormat texture_format;
-    uint32_t texture_bytes_per_texel;
-    uint32_t texture_width;
-    uint32_t texture_height;
-    uint32_t texture_depth;
-    uint32_t texture_alloc_width;
-    uint32_t texture_alloc_height;
-    uint32_t texture_alloc_depth;
-    uint32_t texture_origin_x;
-    uint32_t texture_origin_y;
-    uint32_t texture_origin_z;
-};
-```
-
-Used by: [`dvz_frame_plan_upload_desc()`](frame-plan.md#dvz_frame_plan_upload_desc), [`dvz_frame_plan_upload_ex()`](frame-plan.md#dvz_frame_plan_upload_ex).
-
-_Declared in `include/datoviz/scene/frame_plan.h`:56._
+## Frame Planning { #frame-planning }
 
 ### Functions
 
@@ -1043,33 +910,128 @@ _Bool dvz_frame_plan_upload_ex(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:270._
 
-## Packet Results { #packet-results }
-
 ### Types
 
-#### `DvzFramePlanPacketResult` { #type-dvzframeplanpacketresult }
+<a id="type-dvzframeplan"></a>
 
-```c
-typedef struct DvzFramePlanPacketResult DvzFramePlanPacketResult;
-```
+??? abstract "`DvzFramePlan` · typedef"
 
-Used by: [`dvz_frame_plan_emitter_emit_drp2_packets()`](frame-plan.md#dvz_frame_plan_emitter_emit_drp2_packets), [`dvz_frame_plan_packet_result_destroy()`](frame-plan.md#dvz_frame_plan_packet_result_destroy), [`dvz_frame_plan_packet_result_frame_index()`](frame-plan.md#dvz_frame_plan_packet_result_frame_index), [`dvz_frame_plan_packet_result_get()`](frame-plan.md#dvz_frame_plan_packet_result_get), [`dvz_frame_plan_packet_result_resource_version()`](frame-plan.md#dvz_frame_plan_packet_result_resource_version), [`dvz_frame_plan_packet_result_status()`](frame-plan.md#dvz_frame_plan_packet_result_status).
+    ```c
+    typedef struct DvzFramePlan DvzFramePlan;
+    ```
 
-_Declared in `include/datoviz/scene/frame_packets.h`:35._
+    _Declared in `include/datoviz/scene/types.h`:51._
 
-#### `DvzFramePlanPacketStatus` { #type-dvzframeplanpacketstatus }
+<a id="type-dvzframeplancopydesc"></a>
 
-```c
-enum DvzFramePlanPacketStatus {
-    DVZ_FRAME_PLAN_PACKET_STATUS_OK = 0,
-    DVZ_FRAME_PLAN_PACKET_STATUS_EMIT_ERROR = 1,
-    DVZ_FRAME_PLAN_PACKET_STATUS_ENCODE_ERROR = 2,
-};
-```
+??? abstract "`DvzFramePlanCopyDesc` · record"
 
-Used by: [`dvz_frame_plan_packet_result_status()`](frame-plan.md#dvz_frame_plan_packet_result_status).
+    ```c
+    struct DvzFramePlanCopyDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        const char * src_resource_id;
+        const char * dst_resource_id;
+        uint32_t src_attachment_index;
+        uint32_t[3] src_origin;
+        uint32_t[3] extent;
+        DvzFormat format;
+        uint32_t bytes_per_texel;
+        uint64_t bytes_per_row;
+        uint32_t rows_per_image;
+        uint64_t dst_offset;
+        uint64_t byte_size;
+        uint64_t request_id;
+    };
+    ```
 
-_Declared in `include/datoviz/scene/frame_packets.h`:43._
+    _Declared in `include/datoviz/scene/frame_plan.h`:37._
+
+<a id="type-dvzframeplannode"></a>
+
+??? abstract "`DvzFramePlanNode` · typedef"
+
+    ```c
+    typedef struct DvzFramePlanNode DvzFramePlanNode;
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:52._
+
+<a id="type-dvzframeplannodetype"></a>
+
+??? abstract "`DvzFramePlanNodeType` · enum"
+
+    ```c
+    enum DvzFramePlanNodeType {
+        DVZ_FRAME_PLAN_NODE_NONE = 0,
+        DVZ_FRAME_PLAN_NODE_UPLOAD = 1,
+        DVZ_FRAME_PLAN_NODE_COMPUTE = 2,
+        DVZ_FRAME_PLAN_NODE_RENDER = 3,
+        DVZ_FRAME_PLAN_NODE_CLEAR = 4,
+        DVZ_FRAME_PLAN_NODE_COPY = 5,
+        DVZ_FRAME_PLAN_NODE_READBACK = 6,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:21._
+
+<a id="type-dvzframeplanrenderpassrole"></a>
+
+??? abstract "`DvzFramePlanRenderPassRole` · enum"
+
+    ```c
+    enum DvzFramePlanRenderPassRole {
+        DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE = 0,
+        DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER = 1,
+        DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION = 2,
+        DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION = 3,
+        DVZ_FRAME_PLAN_RENDER_PASS_SSAO = 4,
+        DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR = 5,
+        DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE = 6,
+        DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE = 7,
+        DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION = 8,
+        DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND = 9,
+        DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE = 10,
+        DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT = 11,
+        DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER = 12,
+        DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE = 13,
+        DVZ_FRAME_PLAN_RENDER_PASS_PICKING = 14,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:34._
+
+<a id="type-dvzframeplanuploaddesc"></a>
+
+??? abstract "`DvzFramePlanUploadDesc` · record"
+
+    ```c
+    struct DvzFramePlanUploadDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        const char * resource_id;
+        uint64_t byte_offset;
+        uint64_t byte_size;
+        const char * data_tag;
+        const void * data;
+        DvzPrimitiveTopology topology;
+        DvzFormat texture_format;
+        uint32_t texture_bytes_per_texel;
+        uint32_t texture_width;
+        uint32_t texture_height;
+        uint32_t texture_depth;
+        uint32_t texture_alloc_width;
+        uint32_t texture_alloc_height;
+        uint32_t texture_alloc_depth;
+        uint32_t texture_origin_x;
+        uint32_t texture_origin_y;
+        uint32_t texture_origin_z;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/frame_plan.h`:56._
+
+## Packet Results { #packet-results }
 
 ### Functions
 
@@ -1168,3 +1130,29 @@ DvzFramePlanPacketStatus dvz_frame_plan_packet_result_status(
 | `result` | `const` [`DvzFramePlanPacketResult`](frame-plan.md#type-dvzframeplanpacketresult) * | the packet result |
 
 _Declared in `include/datoviz/scene/frame_packets.h`:90._
+
+### Types
+
+<a id="type-dvzframeplanpacketresult"></a>
+
+??? abstract "`DvzFramePlanPacketResult` · typedef"
+
+    ```c
+    typedef struct DvzFramePlanPacketResult DvzFramePlanPacketResult;
+    ```
+
+    _Declared in `include/datoviz/scene/frame_packets.h`:35._
+
+<a id="type-dvzframeplanpacketstatus"></a>
+
+??? abstract "`DvzFramePlanPacketStatus` · enum"
+
+    ```c
+    enum DvzFramePlanPacketStatus {
+        DVZ_FRAME_PLAN_PACKET_STATUS_OK = 0,
+        DVZ_FRAME_PLAN_PACKET_STATUS_EMIT_ERROR = 1,
+        DVZ_FRAME_PLAN_PACKET_STATUS_ENCODE_ERROR = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/frame_packets.h`:43._

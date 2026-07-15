@@ -30,70 +30,47 @@ Types: 5
 | [Screen-Space Ambient Occlusion](#screen-space-ambient-occlusion) | 2 | 1 | `include/datoviz/scene.h`, `include/datoviz/scene/types.h` |
 | [Volume Occlusion](#volume-occlusion) | 3 | 1 | `include/datoviz/scene.h`, `include/datoviz/scene/types.h` |
 
-??? info "Grouped symbol index"
+??? info "Grouped function index"
 
     **Eye-Dome Lighting**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzEdlDesc`](#type-dvzedldesc) | record | `include/datoviz/scene/types.h` |
-    | [`dvz_edl_desc()`](#dvz_edl_desc) | function | `include/datoviz/scene.h` |
-    | [`dvz_panel_set_edl()`](#dvz_panel_set_edl) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_edl_desc()`](#dvz_edl_desc) | `include/datoviz/scene.h` |
+    | [`dvz_panel_set_edl()`](#dvz_panel_set_edl) | `include/datoviz/scene.h` |
 
     **Multisample Antialiasing**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzMsaaDesc`](#type-dvzmsaadesc) | record | `include/datoviz/scene/types.h` |
-    | [`dvz_msaa_desc()`](#dvz_msaa_desc) | function | `include/datoviz/scene.h` |
-    | [`dvz_panel_set_msaa()`](#dvz_panel_set_msaa) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_msaa_desc()`](#dvz_msaa_desc) | `include/datoviz/scene.h` |
+    | [`dvz_panel_set_msaa()`](#dvz_panel_set_msaa) | `include/datoviz/scene.h` |
 
     **Scene Occlusion**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzSceneOcclusionDesc`](#type-dvzsceneocclusiondesc) | record | `include/datoviz/scene/types.h` |
-    | [`dvz_panel_set_scene_occlusion()`](#dvz_panel_set_scene_occlusion) | function | `include/datoviz/scene.h` |
-    | [`dvz_scene_occlusion_desc()`](#dvz_scene_occlusion_desc) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_scene_occluded()`](#dvz_visual_set_scene_occluded) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_scene_occluder()`](#dvz_visual_set_scene_occluder) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_panel_set_scene_occlusion()`](#dvz_panel_set_scene_occlusion) | `include/datoviz/scene.h` |
+    | [`dvz_scene_occlusion_desc()`](#dvz_scene_occlusion_desc) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_scene_occluded()`](#dvz_visual_set_scene_occluded) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_scene_occluder()`](#dvz_visual_set_scene_occluder) | `include/datoviz/scene.h` |
 
     **Screen-Space Ambient Occlusion**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzSsaoDesc`](#type-dvzssaodesc) | record | `include/datoviz/scene/types.h` |
-    | [`dvz_panel_set_ssao()`](#dvz_panel_set_ssao) | function | `include/datoviz/scene.h` |
-    | [`dvz_ssao_desc()`](#dvz_ssao_desc) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_panel_set_ssao()`](#dvz_panel_set_ssao) | `include/datoviz/scene.h` |
+    | [`dvz_ssao_desc()`](#dvz_ssao_desc) | `include/datoviz/scene.h` |
 
     **Volume Occlusion**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzVolumeOcclusionDesc`](#type-dvzvolumeocclusiondesc) | record | `include/datoviz/scene/types.h` |
-    | [`dvz_panel_set_volume_occluder()`](#dvz_panel_set_volume_occluder) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_volume_occluded()`](#dvz_visual_set_volume_occluded) | function | `include/datoviz/scene.h` |
-    | [`dvz_volume_occlusion_desc()`](#dvz_volume_occlusion_desc) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_panel_set_volume_occluder()`](#dvz_panel_set_volume_occluder) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_volume_occluded()`](#dvz_visual_set_volume_occluded) | `include/datoviz/scene.h` |
+    | [`dvz_volume_occlusion_desc()`](#dvz_volume_occlusion_desc) | `include/datoviz/scene.h` |
 
 ## Eye-Dome Lighting { #eye-dome-lighting }
-
-### Types
-
-#### `DvzEdlDesc` { #type-dvzedldesc }
-
-```c
-struct DvzEdlDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    float radius;
-    float strength;
-    float depth_scale;
-};
-```
-
-Used by: [`dvz_edl_desc()`](techniques.md#dvz_edl_desc), [`dvz_panel_set_edl()`](techniques.md#dvz_panel_set_edl).
-
-_Declared in `include/datoviz/scene/types.h`:844._
 
 ### Functions
 
@@ -134,25 +111,25 @@ DvzResult dvz_panel_set_edl(
 
 _Declared in `include/datoviz/scene.h`:1269._
 
-## Multisample Antialiasing { #multisample-antialiasing }
-
 ### Types
 
-#### `DvzMsaaDesc` { #type-dvzmsaadesc }
+<a id="type-dvzedldesc"></a>
 
-```c
-struct DvzMsaaDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    _Bool enabled;
-    uint32_t sample_count;
-    _Bool alpha_to_coverage;
-};
-```
+??? abstract "`DvzEdlDesc` · record"
 
-Used by: [`dvz_msaa_desc()`](techniques.md#dvz_msaa_desc), [`dvz_panel_set_msaa()`](techniques.md#dvz_panel_set_msaa).
+    ```c
+    struct DvzEdlDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        float radius;
+        float strength;
+        float depth_scale;
+    };
+    ```
 
-_Declared in `include/datoviz/scene/types.h`:855._
+    _Declared in `include/datoviz/scene/types.h`:844._
+
+## Multisample Antialiasing { #multisample-antialiasing }
 
 ### Functions
 
@@ -192,26 +169,25 @@ DvzResult dvz_panel_set_msaa(
 
 _Declared in `include/datoviz/scene.h`:1282._
 
-## Scene Occlusion { #scene-occlusion }
-
 ### Types
 
-#### `DvzSceneOcclusionDesc` { #type-dvzsceneocclusiondesc }
+<a id="type-dvzmsaadesc"></a>
 
-```c
-struct DvzSceneOcclusionDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    _Bool enabled;
-    float depth_bias;
-    float soft_edge;
-    float hidden_alpha;
-};
-```
+??? abstract "`DvzMsaaDesc` · record"
 
-Used by: [`dvz_panel_set_scene_occlusion()`](techniques.md#dvz_panel_set_scene_occlusion), [`dvz_scene_occlusion_desc()`](techniques.md#dvz_scene_occlusion_desc).
+    ```c
+    struct DvzMsaaDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        _Bool enabled;
+        uint32_t sample_count;
+        _Bool alpha_to_coverage;
+    };
+    ```
 
-_Declared in `include/datoviz/scene/types.h`:897._
+    _Declared in `include/datoviz/scene/types.h`:855._
+
+## Scene Occlusion { #scene-occlusion }
 
 ### Functions
 
@@ -290,33 +266,26 @@ DvzResult dvz_visual_set_scene_occluder(
 
 _Declared in `include/datoviz/scene.h`:1827._
 
-## Screen-Space Ambient Occlusion { #screen-space-ambient-occlusion }
-
 ### Types
 
-#### `DvzSsaoDesc` { #type-dvzssaodesc }
+<a id="type-dvzsceneocclusiondesc"></a>
 
-```c
-struct DvzSsaoDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    float radius;
-    float strength;
-    float bias;
-    float power;
-    float min_visibility;
-    float blur_radius;
-    float blur_depth_sigma;
-    float blur_normal_sigma;
-    uint32_t sample_count;
-    _Bool blur_enabled;
-    _Bool debug_view;
-};
-```
+??? abstract "`DvzSceneOcclusionDesc` · record"
 
-Used by: [`dvz_panel_set_ssao()`](techniques.md#dvz_panel_set_ssao), [`dvz_ssao_desc()`](techniques.md#dvz_ssao_desc).
+    ```c
+    struct DvzSceneOcclusionDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        _Bool enabled;
+        float depth_bias;
+        float soft_edge;
+        float hidden_alpha;
+    };
+    ```
 
-_Declared in `include/datoviz/scene/types.h`:866._
+    _Declared in `include/datoviz/scene/types.h`:897._
+
+## Screen-Space Ambient Occlusion { #screen-space-ambient-occlusion }
 
 ### Functions
 
@@ -358,26 +327,33 @@ DvzSsaoDesc dvz_ssao_desc(void);
 
 _Declared in `include/datoviz/scene.h`:1290._
 
-## Volume Occlusion { #volume-occlusion }
-
 ### Types
 
-#### `DvzVolumeOcclusionDesc` { #type-dvzvolumeocclusiondesc }
+<a id="type-dvzssaodesc"></a>
 
-```c
-struct DvzVolumeOcclusionDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    _Bool enabled;
-    float alpha_threshold;
-    float fade_distance;
-    float occluded_alpha;
-};
-```
+??? abstract "`DvzSsaoDesc` · record"
 
-Used by: [`dvz_panel_set_volume_occluder()`](techniques.md#dvz_panel_set_volume_occluder), [`dvz_volume_occlusion_desc()`](techniques.md#dvz_volume_occlusion_desc).
+    ```c
+    struct DvzSsaoDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        float radius;
+        float strength;
+        float bias;
+        float power;
+        float min_visibility;
+        float blur_radius;
+        float blur_depth_sigma;
+        float blur_normal_sigma;
+        uint32_t sample_count;
+        _Bool blur_enabled;
+        _Bool debug_view;
+    };
+    ```
 
-_Declared in `include/datoviz/scene/types.h`:885._
+    _Declared in `include/datoviz/scene/types.h`:866._
+
+## Volume Occlusion { #volume-occlusion }
 
 ### Functions
 
@@ -434,3 +410,22 @@ DvzVolumeOcclusionDesc dvz_volume_occlusion_desc(void);
 | return | [`DvzVolumeOcclusionDesc`](techniques.md#type-dvzvolumeocclusiondesc) | volume-occlusion descriptor |
 
 _Declared in `include/datoviz/scene.h`:1313._
+
+### Types
+
+<a id="type-dvzvolumeocclusiondesc"></a>
+
+??? abstract "`DvzVolumeOcclusionDesc` · record"
+
+    ```c
+    struct DvzVolumeOcclusionDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        _Bool enabled;
+        float alpha_threshold;
+        float fade_distance;
+        float occluded_alpha;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:885._

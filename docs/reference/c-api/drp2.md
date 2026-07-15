@@ -30,779 +30,162 @@ Types: 42
 | [Recording And Replay](#recording-and-replay) | 15 | 4 | `include/datoviz/drp2/recording.h` |
 | [Runtime Integration](#runtime-integration) | 11 | 6 | 3 headers |
 
-??? info "Grouped symbol index"
+??? info "Grouped function index"
 
     **Command Streams**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzBlendFactor`](#type-dvzblendfactor) | enum | `include/datoviz/render_types.h` |
-    | [`DvzBlendOp`](#type-dvzblendop) | enum | `include/datoviz/render_types.h` |
-    | [`DvzColorMask`](#type-dvzcolormask) | enum | `include/datoviz/render_types.h` |
-    | [`DvzCompareOp`](#type-dvzcompareop) | enum | `include/datoviz/render_types.h` |
-    | [`DvzCullMode`](#type-dvzcullmode) | enum | `include/datoviz/render_types.h` |
-    | [`DvzDrp2AttachmentAccess`](#type-dvzdrp2attachmentaccess) | enum | `include/datoviz/drp2/enums.h` |
-    | [`DvzDrp2AttachmentLoadOp`](#type-dvzdrp2attachmentloadop) | enum | `include/datoviz/drp2/enums.h` |
-    | [`DvzDrp2AttachmentStoreOp`](#type-dvzdrp2attachmentstoreop) | enum | `include/datoviz/drp2/enums.h` |
-    | [`DvzDrp2BindGroupEntry`](#type-dvzdrp2bindgroupentry) | record | `include/datoviz/drp2/types.h` |
-    | [`DvzDrp2BindGroupLayoutEntry`](#type-dvzdrp2bindgrouplayoutentry) | record | `include/datoviz/drp2/types.h` |
-    | [`DvzDrp2BindingAccess`](#type-dvzdrp2bindingaccess) | enum | `include/datoviz/drp2/enums.h` |
-    | [`DvzDrp2BindingResourceKind`](#type-dvzdrp2bindingresourcekind) | enum | `include/datoviz/drp2/enums.h` |
-    | [`DvzDrp2BindingType`](#type-dvzdrp2bindingtype) | enum | `include/datoviz/drp2/enums.h` |
-    | [`DvzDrp2BufferUsageFlags`](#type-dvzdrp2bufferusageflags) | enum | `include/datoviz/drp2/enums.h` |
-    | [`DvzDrp2ColorAttachment`](#type-dvzdrp2colorattachment) | record | `include/datoviz/drp2/types.h` |
-    | [`DvzDrp2ColorRole`](#type-dvzdrp2colorrole) | enum | `include/datoviz/drp2/enums.h` |
-    | [`DvzDrp2ColorTarget`](#type-dvzdrp2colortarget) | record | `include/datoviz/drp2/types.h` |
-    | [`DvzDrp2Command`](#type-dvzdrp2command) | typedef | `include/datoviz/drp2/types.h` |
-    | [`DvzDrp2CommandStream`](#type-dvzdrp2commandstream) | typedef | `include/datoviz/drp2/types.h` |
-    | [`DvzDrp2CommandType`](#type-dvzdrp2commandtype) | enum | `include/datoviz/drp2/enums.h` |
-    | [`DvzDrp2FilterMode`](#type-dvzdrp2filtermode) | enum | `include/datoviz/drp2/enums.h` |
-    | [`DvzDrp2RenderPassDesc`](#type-dvzdrp2renderpassdesc) | record | `include/datoviz/drp2/types.h` |
-    | [`DvzDrp2RenderPipelineDesc`](#type-dvzdrp2renderpipelinedesc) | record | `include/datoviz/drp2/types.h` |
-    | [`DvzDrp2ShaderStageFlags`](#type-dvzdrp2shaderstageflags) | enum | `include/datoviz/drp2/enums.h` |
-    | [`DvzDrp2TextureDesc`](#type-dvzdrp2texturedesc) | record | `include/datoviz/drp2/types.h` |
-    | [`DvzDrp2TextureUsageFlags`](#type-dvzdrp2textureusageflags) | enum | `include/datoviz/drp2/enums.h` |
-    | [`DvzDrp2VertexStepMode`](#type-dvzdrp2vertexstepmode) | enum | `include/datoviz/drp2/enums.h` |
-    | [`DvzFormat`](#type-dvzformat) | enum | `include/datoviz/render_types.h` |
-    | [`DvzFrontFace`](#type-dvzfrontface) | enum | `include/datoviz/render_types.h` |
-    | [`DvzPrimitiveTopology`](#type-dvzprimitivetopology) | enum | `include/datoviz/render_types.h` |
-    | [`dvz_drp2_command_type()`](#dvz_drp2_command_type) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_render_pass_desc()`](#dvz_drp2_render_pass_desc) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_render_pipeline_desc()`](#dvz_drp2_render_pipeline_desc) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream()`](#dvz_drp2_stream) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_begin_command_encoder()`](#dvz_drp2_stream_begin_command_encoder) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_begin_compute_pass()`](#dvz_drp2_stream_begin_compute_pass) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_begin_render_pass()`](#dvz_drp2_stream_begin_render_pass) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_begin_render_pass_add_color_attachment()`](#dvz_drp2_stream_begin_render_pass_add_color_attachment) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_begin_render_pass_clear()`](#dvz_drp2_stream_begin_render_pass_clear) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_begin_render_pass_desc()`](#dvz_drp2_stream_begin_render_pass_desc) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_begin_render_pass_region_clear()`](#dvz_drp2_stream_begin_render_pass_region_clear) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_begin_render_pass_set_color_attachment_access()`](#dvz_drp2_stream_begin_render_pass_set_color_attachment_access) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_begin_render_pass_set_color_attachment_ops()`](#dvz_drp2_stream_begin_render_pass_set_color_attachment_ops) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve()`](#dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_begin_render_pass_set_depth()`](#dvz_drp2_stream_begin_render_pass_set_depth) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_begin_render_pass_set_depth_access()`](#dvz_drp2_stream_begin_render_pass_set_depth_access) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_begin_render_pass_set_depth_ops()`](#dvz_drp2_stream_begin_render_pass_set_depth_ops) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_begin_render_pass_set_depth_texture()`](#dvz_drp2_stream_begin_render_pass_set_depth_texture) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_copy_buffer_to_buffer()`](#dvz_drp2_stream_copy_buffer_to_buffer) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_copy_buffer_to_texture()`](#dvz_drp2_stream_copy_buffer_to_texture) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_copy_texture_to_buffer()`](#dvz_drp2_stream_copy_texture_to_buffer) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_copy_texture_to_texture()`](#dvz_drp2_stream_copy_texture_to_texture) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_count()`](#dvz_drp2_stream_count) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_bind_group_entries()`](#dvz_drp2_stream_create_bind_group_entries) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_bind_group_layout_entries()`](#dvz_drp2_stream_create_bind_group_layout_entries) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_buffer()`](#dvz_drp2_stream_create_buffer) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_compute_pipeline()`](#dvz_drp2_stream_create_compute_pipeline) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout()`](#dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_render_pipeline()`](#dvz_drp2_stream_create_render_pipeline) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_sampler()`](#dvz_drp2_stream_create_sampler) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_sampler_filter()`](#dvz_drp2_stream_create_sampler_filter) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_shader_module()`](#dvz_drp2_stream_create_shader_module) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_shader_module_format()`](#dvz_drp2_stream_create_shader_module_format) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_shader_module_spirv()`](#dvz_drp2_stream_create_shader_module_spirv) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_storage_bind_group()`](#dvz_drp2_stream_create_storage_bind_group) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_storage_bind_group_layout()`](#dvz_drp2_stream_create_storage_bind_group_layout) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_texture()`](#dvz_drp2_stream_create_texture) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_texture_2d()`](#dvz_drp2_stream_create_texture_2d) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_texture_2d_format_usage()`](#dvz_drp2_stream_create_texture_2d_format_usage) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_texture_2d_usage()`](#dvz_drp2_stream_create_texture_2d_usage) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_texture_3d()`](#dvz_drp2_stream_create_texture_3d) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_texture_3d_format_usage()`](#dvz_drp2_stream_create_texture_3d_format_usage) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_texture_sampler_bind_group()`](#dvz_drp2_stream_create_texture_sampler_bind_group) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_texture_sampler_bind_group_layout()`](#dvz_drp2_stream_create_texture_sampler_bind_group_layout) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_uniform_bind_group()`](#dvz_drp2_stream_create_uniform_bind_group) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_uniform_bind_group_layout()`](#dvz_drp2_stream_create_uniform_bind_group_layout) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_destroy()`](#dvz_drp2_stream_destroy) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_destroy_bind_group()`](#dvz_drp2_stream_destroy_bind_group) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_destroy_bind_group_layout()`](#dvz_drp2_stream_destroy_bind_group_layout) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_destroy_buffer()`](#dvz_drp2_stream_destroy_buffer) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_destroy_compute_pipeline()`](#dvz_drp2_stream_destroy_compute_pipeline) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_destroy_render_pipeline()`](#dvz_drp2_stream_destroy_render_pipeline) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_destroy_shader_module()`](#dvz_drp2_stream_destroy_shader_module) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_destroy_texture()`](#dvz_drp2_stream_destroy_texture) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_dispatch_workgroups()`](#dvz_drp2_stream_dispatch_workgroups) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_draw()`](#dvz_drp2_stream_draw) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_draw_indexed()`](#dvz_drp2_stream_draw_indexed) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_end_compute_pass()`](#dvz_drp2_stream_end_compute_pass) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_end_render_pass()`](#dvz_drp2_stream_end_render_pass) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_finish_command_encoder()`](#dvz_drp2_stream_finish_command_encoder) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_get()`](#dvz_drp2_stream_get) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_hello_renderer()`](#dvz_drp2_stream_hello_renderer) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_json()`](#dvz_drp2_stream_json) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_json_destroy()`](#dvz_drp2_stream_json_destroy) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_json_payload_refs()`](#dvz_drp2_stream_json_payload_refs) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_label()`](#dvz_drp2_stream_label) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_label_id()`](#dvz_drp2_stream_label_id) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_payload_command_index()`](#dvz_drp2_stream_payload_command_index) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_payload_count()`](#dvz_drp2_stream_payload_count) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_payload_ptr()`](#dvz_drp2_stream_payload_ptr) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_payload_size()`](#dvz_drp2_stream_payload_size) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_pipeline_set_bind_group_layout()`](#dvz_drp2_stream_pipeline_set_bind_group_layout) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_pipeline_set_bind_group_layouts()`](#dvz_drp2_stream_pipeline_set_bind_group_layouts) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_pipeline_set_builtin_identity()`](#dvz_drp2_stream_pipeline_set_builtin_identity) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_pipeline_set_color_blend()`](#dvz_drp2_stream_pipeline_set_color_blend) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_pipeline_set_color_target()`](#dvz_drp2_stream_pipeline_set_color_target) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_pipeline_set_depth_state()`](#dvz_drp2_stream_pipeline_set_depth_state) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_pipeline_set_multisampling()`](#dvz_drp2_stream_pipeline_set_multisampling) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_pipeline_set_raster_state()`](#dvz_drp2_stream_pipeline_set_raster_state) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_queue_submit()`](#dvz_drp2_stream_queue_submit) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_queue_submit_readback()`](#dvz_drp2_stream_queue_submit_readback) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_renderer_hello_reply()`](#dvz_drp2_stream_renderer_hello_reply) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_resource_barrier()`](#dvz_drp2_stream_resource_barrier) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_set_bind_group()`](#dvz_drp2_stream_set_bind_group) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_set_bind_group_dynamic()`](#dvz_drp2_stream_set_bind_group_dynamic) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_set_index_buffer()`](#dvz_drp2_stream_set_index_buffer) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_set_label()`](#dvz_drp2_stream_set_label) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_set_pipeline()`](#dvz_drp2_stream_set_pipeline) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_set_scissor()`](#dvz_drp2_stream_set_scissor) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_set_vertex_buffer()`](#dvz_drp2_stream_set_vertex_buffer) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_set_viewport()`](#dvz_drp2_stream_set_viewport) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_shader_set_builtin_identity()`](#dvz_drp2_stream_shader_set_builtin_identity) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_write_buffer_base64()`](#dvz_drp2_stream_write_buffer_base64) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_write_buffer_bytes()`](#dvz_drp2_stream_write_buffer_bytes) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_write_texture_2d_base64()`](#dvz_drp2_stream_write_texture_2d_base64) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_write_texture_2d_borrowed()`](#dvz_drp2_stream_write_texture_2d_borrowed) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_write_texture_2d_region_base64()`](#dvz_drp2_stream_write_texture_2d_region_base64) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_write_texture_2d_region_borrowed()`](#dvz_drp2_stream_write_texture_2d_region_borrowed) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_write_texture_3d_base64()`](#dvz_drp2_stream_write_texture_3d_base64) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_write_texture_3d_borrowed()`](#dvz_drp2_stream_write_texture_3d_borrowed) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_texture_desc()`](#dvz_drp2_texture_desc) | function | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_validate_stream()`](#dvz_drp2_validate_stream) | function | `include/datoviz/drp2/runtime.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_drp2_command_type()`](#dvz_drp2_command_type) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_render_pass_desc()`](#dvz_drp2_render_pass_desc) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_render_pipeline_desc()`](#dvz_drp2_render_pipeline_desc) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream()`](#dvz_drp2_stream) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_begin_command_encoder()`](#dvz_drp2_stream_begin_command_encoder) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_begin_compute_pass()`](#dvz_drp2_stream_begin_compute_pass) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_begin_render_pass()`](#dvz_drp2_stream_begin_render_pass) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_begin_render_pass_add_color_attachment()`](#dvz_drp2_stream_begin_render_pass_add_color_attachment) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_begin_render_pass_clear()`](#dvz_drp2_stream_begin_render_pass_clear) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_begin_render_pass_desc()`](#dvz_drp2_stream_begin_render_pass_desc) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_begin_render_pass_region_clear()`](#dvz_drp2_stream_begin_render_pass_region_clear) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_begin_render_pass_set_color_attachment_access()`](#dvz_drp2_stream_begin_render_pass_set_color_attachment_access) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_begin_render_pass_set_color_attachment_ops()`](#dvz_drp2_stream_begin_render_pass_set_color_attachment_ops) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve()`](#dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_begin_render_pass_set_depth()`](#dvz_drp2_stream_begin_render_pass_set_depth) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_begin_render_pass_set_depth_access()`](#dvz_drp2_stream_begin_render_pass_set_depth_access) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_begin_render_pass_set_depth_ops()`](#dvz_drp2_stream_begin_render_pass_set_depth_ops) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_begin_render_pass_set_depth_texture()`](#dvz_drp2_stream_begin_render_pass_set_depth_texture) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_copy_buffer_to_buffer()`](#dvz_drp2_stream_copy_buffer_to_buffer) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_copy_buffer_to_texture()`](#dvz_drp2_stream_copy_buffer_to_texture) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_copy_texture_to_buffer()`](#dvz_drp2_stream_copy_texture_to_buffer) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_copy_texture_to_texture()`](#dvz_drp2_stream_copy_texture_to_texture) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_count()`](#dvz_drp2_stream_count) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_bind_group_entries()`](#dvz_drp2_stream_create_bind_group_entries) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_bind_group_layout_entries()`](#dvz_drp2_stream_create_bind_group_layout_entries) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_buffer()`](#dvz_drp2_stream_create_buffer) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_compute_pipeline()`](#dvz_drp2_stream_create_compute_pipeline) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout()`](#dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_render_pipeline()`](#dvz_drp2_stream_create_render_pipeline) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_sampler()`](#dvz_drp2_stream_create_sampler) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_sampler_filter()`](#dvz_drp2_stream_create_sampler_filter) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_shader_module()`](#dvz_drp2_stream_create_shader_module) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_shader_module_format()`](#dvz_drp2_stream_create_shader_module_format) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_shader_module_spirv()`](#dvz_drp2_stream_create_shader_module_spirv) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_storage_bind_group()`](#dvz_drp2_stream_create_storage_bind_group) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_storage_bind_group_layout()`](#dvz_drp2_stream_create_storage_bind_group_layout) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_texture()`](#dvz_drp2_stream_create_texture) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_texture_2d()`](#dvz_drp2_stream_create_texture_2d) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_texture_2d_format_usage()`](#dvz_drp2_stream_create_texture_2d_format_usage) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_texture_2d_usage()`](#dvz_drp2_stream_create_texture_2d_usage) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_texture_3d()`](#dvz_drp2_stream_create_texture_3d) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_texture_3d_format_usage()`](#dvz_drp2_stream_create_texture_3d_format_usage) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_texture_sampler_bind_group()`](#dvz_drp2_stream_create_texture_sampler_bind_group) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_texture_sampler_bind_group_layout()`](#dvz_drp2_stream_create_texture_sampler_bind_group_layout) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_uniform_bind_group()`](#dvz_drp2_stream_create_uniform_bind_group) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_uniform_bind_group_layout()`](#dvz_drp2_stream_create_uniform_bind_group_layout) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_destroy()`](#dvz_drp2_stream_destroy) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_destroy_bind_group()`](#dvz_drp2_stream_destroy_bind_group) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_destroy_bind_group_layout()`](#dvz_drp2_stream_destroy_bind_group_layout) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_destroy_buffer()`](#dvz_drp2_stream_destroy_buffer) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_destroy_compute_pipeline()`](#dvz_drp2_stream_destroy_compute_pipeline) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_destroy_render_pipeline()`](#dvz_drp2_stream_destroy_render_pipeline) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_destroy_shader_module()`](#dvz_drp2_stream_destroy_shader_module) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_destroy_texture()`](#dvz_drp2_stream_destroy_texture) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_dispatch_workgroups()`](#dvz_drp2_stream_dispatch_workgroups) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_draw()`](#dvz_drp2_stream_draw) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_draw_indexed()`](#dvz_drp2_stream_draw_indexed) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_end_compute_pass()`](#dvz_drp2_stream_end_compute_pass) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_end_render_pass()`](#dvz_drp2_stream_end_render_pass) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_finish_command_encoder()`](#dvz_drp2_stream_finish_command_encoder) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_get()`](#dvz_drp2_stream_get) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_hello_renderer()`](#dvz_drp2_stream_hello_renderer) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_json()`](#dvz_drp2_stream_json) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_json_destroy()`](#dvz_drp2_stream_json_destroy) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_json_payload_refs()`](#dvz_drp2_stream_json_payload_refs) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_label()`](#dvz_drp2_stream_label) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_label_id()`](#dvz_drp2_stream_label_id) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_payload_command_index()`](#dvz_drp2_stream_payload_command_index) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_payload_count()`](#dvz_drp2_stream_payload_count) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_payload_ptr()`](#dvz_drp2_stream_payload_ptr) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_payload_size()`](#dvz_drp2_stream_payload_size) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_pipeline_set_bind_group_layout()`](#dvz_drp2_stream_pipeline_set_bind_group_layout) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_pipeline_set_bind_group_layouts()`](#dvz_drp2_stream_pipeline_set_bind_group_layouts) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_pipeline_set_builtin_identity()`](#dvz_drp2_stream_pipeline_set_builtin_identity) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_pipeline_set_color_blend()`](#dvz_drp2_stream_pipeline_set_color_blend) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_pipeline_set_color_target()`](#dvz_drp2_stream_pipeline_set_color_target) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_pipeline_set_depth_state()`](#dvz_drp2_stream_pipeline_set_depth_state) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_pipeline_set_multisampling()`](#dvz_drp2_stream_pipeline_set_multisampling) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_pipeline_set_raster_state()`](#dvz_drp2_stream_pipeline_set_raster_state) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_queue_submit()`](#dvz_drp2_stream_queue_submit) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_queue_submit_readback()`](#dvz_drp2_stream_queue_submit_readback) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_renderer_hello_reply()`](#dvz_drp2_stream_renderer_hello_reply) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_resource_barrier()`](#dvz_drp2_stream_resource_barrier) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_set_bind_group()`](#dvz_drp2_stream_set_bind_group) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_set_bind_group_dynamic()`](#dvz_drp2_stream_set_bind_group_dynamic) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_set_index_buffer()`](#dvz_drp2_stream_set_index_buffer) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_set_label()`](#dvz_drp2_stream_set_label) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_set_pipeline()`](#dvz_drp2_stream_set_pipeline) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_set_scissor()`](#dvz_drp2_stream_set_scissor) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_set_vertex_buffer()`](#dvz_drp2_stream_set_vertex_buffer) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_set_viewport()`](#dvz_drp2_stream_set_viewport) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_shader_set_builtin_identity()`](#dvz_drp2_stream_shader_set_builtin_identity) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_write_buffer_base64()`](#dvz_drp2_stream_write_buffer_base64) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_write_buffer_bytes()`](#dvz_drp2_stream_write_buffer_bytes) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_write_texture_2d_base64()`](#dvz_drp2_stream_write_texture_2d_base64) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_write_texture_2d_borrowed()`](#dvz_drp2_stream_write_texture_2d_borrowed) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_write_texture_2d_region_base64()`](#dvz_drp2_stream_write_texture_2d_region_base64) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_write_texture_2d_region_borrowed()`](#dvz_drp2_stream_write_texture_2d_region_borrowed) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_write_texture_3d_base64()`](#dvz_drp2_stream_write_texture_3d_base64) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_write_texture_3d_borrowed()`](#dvz_drp2_stream_write_texture_3d_borrowed) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_texture_desc()`](#dvz_drp2_texture_desc) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_validate_stream()`](#dvz_drp2_validate_stream) | `include/datoviz/drp2/runtime.h` |
 
     **Packets**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzDrp2PacketInfo`](#type-dvzdrp2packetinfo) | record | `include/datoviz/drp2/packet.h` |
-    | [`DvzDrp2PacketKind`](#type-dvzdrp2packetkind) | enum | `include/datoviz/drp2/packet.h` |
-    | [`dvz_drp2_packet_command_kind()`](#dvz_drp2_packet_command_kind) | function | `include/datoviz/drp2/packet.h` |
-    | [`dvz_drp2_packet_decode_stream()`](#dvz_drp2_packet_decode_stream) | function | `include/datoviz/drp2/packet.h` |
-    | [`dvz_drp2_packet_destroy()`](#dvz_drp2_packet_destroy) | function | `include/datoviz/drp2/packet.h` |
-    | [`dvz_drp2_packet_encode_stream()`](#dvz_drp2_packet_encode_stream) | function | `include/datoviz/drp2/packet.h` |
-    | [`dvz_drp2_packet_encode_stream_phase()`](#dvz_drp2_packet_encode_stream_phase) | function | `include/datoviz/drp2/packet.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_drp2_packet_command_kind()`](#dvz_drp2_packet_command_kind) | `include/datoviz/drp2/packet.h` |
+    | [`dvz_drp2_packet_decode_stream()`](#dvz_drp2_packet_decode_stream) | `include/datoviz/drp2/packet.h` |
+    | [`dvz_drp2_packet_destroy()`](#dvz_drp2_packet_destroy) | `include/datoviz/drp2/packet.h` |
+    | [`dvz_drp2_packet_encode_stream()`](#dvz_drp2_packet_encode_stream) | `include/datoviz/drp2/packet.h` |
+    | [`dvz_drp2_packet_encode_stream_phase()`](#dvz_drp2_packet_encode_stream_phase) | `include/datoviz/drp2/packet.h` |
 
     **Recording And Replay**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzDrp2RecordedFrame`](#type-dvzdrp2recordedframe) | record | `include/datoviz/drp2/recording.h` |
-    | [`DvzDrp2Recorder`](#type-dvzdrp2recorder) | typedef | `include/datoviz/drp2/recording.h` |
-    | [`DvzDrp2Recording`](#type-dvzdrp2recording) | typedef | `include/datoviz/drp2/recording.h` |
-    | [`DvzDrp2RecordingInfo`](#type-dvzdrp2recordinginfo) | record | `include/datoviz/drp2/recording.h` |
-    | [`dvz_drp2_recorder_close()`](#dvz_drp2_recorder_close) | function | `include/datoviz/drp2/recording.h` |
-    | [`dvz_drp2_recorder_open()`](#dvz_drp2_recorder_open) | function | `include/datoviz/drp2/recording.h` |
-    | [`dvz_drp2_recorder_write_stream()`](#dvz_drp2_recorder_write_stream) | function | `include/datoviz/drp2/recording.h` |
-    | [`dvz_drp2_recording_close()`](#dvz_drp2_recording_close) | function | `include/datoviz/drp2/recording.h` |
-    | [`dvz_drp2_recording_execute_all()`](#dvz_drp2_recording_execute_all) | function | `include/datoviz/drp2/recording.h` |
-    | [`dvz_drp2_recording_execute_frame()`](#dvz_drp2_recording_execute_frame) | function | `include/datoviz/drp2/recording.h` |
-    | [`dvz_drp2_recording_frame()`](#dvz_drp2_recording_frame) | function | `include/datoviz/drp2/recording.h` |
-    | [`dvz_drp2_recording_frame_count()`](#dvz_drp2_recording_frame_count) | function | `include/datoviz/drp2/recording.h` |
-    | [`dvz_drp2_recording_frame_stream()`](#dvz_drp2_recording_frame_stream) | function | `include/datoviz/drp2/recording.h` |
-    | [`dvz_drp2_recording_info()`](#dvz_drp2_recording_info) | function | `include/datoviz/drp2/recording.h` |
-    | [`dvz_drp2_recording_open()`](#dvz_drp2_recording_open) | function | `include/datoviz/drp2/recording.h` |
-    | [`dvz_drp2_recording_playback()`](#dvz_drp2_recording_playback) | function | `include/datoviz/drp2/recording.h` |
-    | [`dvz_drp2_recording_read_stream()`](#dvz_drp2_recording_read_stream) | function | `include/datoviz/drp2/recording.h` |
-    | [`dvz_drp2_recording_stream()`](#dvz_drp2_recording_stream) | function | `include/datoviz/drp2/recording.h` |
-    | [`dvz_drp2_recording_write_stream()`](#dvz_drp2_recording_write_stream) | function | `include/datoviz/drp2/recording.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_drp2_recorder_close()`](#dvz_drp2_recorder_close) | `include/datoviz/drp2/recording.h` |
+    | [`dvz_drp2_recorder_open()`](#dvz_drp2_recorder_open) | `include/datoviz/drp2/recording.h` |
+    | [`dvz_drp2_recorder_write_stream()`](#dvz_drp2_recorder_write_stream) | `include/datoviz/drp2/recording.h` |
+    | [`dvz_drp2_recording_close()`](#dvz_drp2_recording_close) | `include/datoviz/drp2/recording.h` |
+    | [`dvz_drp2_recording_execute_all()`](#dvz_drp2_recording_execute_all) | `include/datoviz/drp2/recording.h` |
+    | [`dvz_drp2_recording_execute_frame()`](#dvz_drp2_recording_execute_frame) | `include/datoviz/drp2/recording.h` |
+    | [`dvz_drp2_recording_frame()`](#dvz_drp2_recording_frame) | `include/datoviz/drp2/recording.h` |
+    | [`dvz_drp2_recording_frame_count()`](#dvz_drp2_recording_frame_count) | `include/datoviz/drp2/recording.h` |
+    | [`dvz_drp2_recording_frame_stream()`](#dvz_drp2_recording_frame_stream) | `include/datoviz/drp2/recording.h` |
+    | [`dvz_drp2_recording_info()`](#dvz_drp2_recording_info) | `include/datoviz/drp2/recording.h` |
+    | [`dvz_drp2_recording_open()`](#dvz_drp2_recording_open) | `include/datoviz/drp2/recording.h` |
+    | [`dvz_drp2_recording_playback()`](#dvz_drp2_recording_playback) | `include/datoviz/drp2/recording.h` |
+    | [`dvz_drp2_recording_read_stream()`](#dvz_drp2_recording_read_stream) | `include/datoviz/drp2/recording.h` |
+    | [`dvz_drp2_recording_stream()`](#dvz_drp2_recording_stream) | `include/datoviz/drp2/recording.h` |
+    | [`dvz_drp2_recording_write_stream()`](#dvz_drp2_recording_write_stream) | `include/datoviz/drp2/recording.h` |
 
     **Runtime Integration**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzDrp2ExternalBufferDesc`](#type-dvzdrp2externalbufferdesc) | record | `include/datoviz/drp2/runtime.h` |
-    | [`DvzDrp2Runtime`](#type-dvzdrp2runtime) | typedef | `include/datoviz/drp2/types.h` |
-    | [`DvzDrp2RuntimeConfig`](#type-dvzdrp2runtimeconfig) | record | `include/datoviz/drp2/runtime.h` |
-    | [`DvzDrp2ValidationCode`](#type-dvzdrp2validationcode) | enum | `include/datoviz/drp2/enums.h` |
-    | [`DvzDrp2ValidationResult`](#type-dvzdrp2validationresult) | record | `include/datoviz/drp2/runtime.h` |
-    | [`DvzVma`](#type-dvzvma) | typedef | `include/datoviz/drp2/runtime.h` |
-    | [`dvz_drp2_external_buffer_desc()`](#dvz_drp2_external_buffer_desc) | function | `include/datoviz/drp2/runtime.h` |
-    | [`dvz_drp2_runtime_attach_frame_target()`](#dvz_drp2_runtime_attach_frame_target) | function | `include/datoviz/drp2/runtime.h` |
-    | [`dvz_drp2_runtime_copy_texture_to_frame()`](#dvz_drp2_runtime_copy_texture_to_frame) | function | `include/datoviz/drp2/runtime.h` |
-    | [`dvz_drp2_runtime_destroy()`](#dvz_drp2_runtime_destroy) | function | `include/datoviz/drp2/runtime.h` |
-    | [`dvz_drp2_runtime_download_buffer()`](#dvz_drp2_runtime_download_buffer) | function | `include/datoviz/drp2/runtime.h` |
-    | [`dvz_drp2_runtime_execute()`](#dvz_drp2_runtime_execute) | function | `include/datoviz/drp2/runtime.h` |
-    | [`dvz_drp2_runtime_get_config()`](#dvz_drp2_runtime_get_config) | function | `include/datoviz/drp2/runtime.h` |
-    | [`dvz_drp2_runtime_register_external_buffer()`](#dvz_drp2_runtime_register_external_buffer) | function | `include/datoviz/drp2/runtime.h` |
-    | [`dvz_drp2_runtime_reset()`](#dvz_drp2_runtime_reset) | function | `include/datoviz/drp2/runtime.h` |
-    | [`dvz_drp2_runtime_vklite()`](#dvz_drp2_runtime_vklite) | function | `include/datoviz/drp2/runtime.h` |
-    | [`dvz_drp2_runtime_vklite_config()`](#dvz_drp2_runtime_vklite_config) | function | `include/datoviz/drp2/runtime.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_drp2_external_buffer_desc()`](#dvz_drp2_external_buffer_desc) | `include/datoviz/drp2/runtime.h` |
+    | [`dvz_drp2_runtime_attach_frame_target()`](#dvz_drp2_runtime_attach_frame_target) | `include/datoviz/drp2/runtime.h` |
+    | [`dvz_drp2_runtime_copy_texture_to_frame()`](#dvz_drp2_runtime_copy_texture_to_frame) | `include/datoviz/drp2/runtime.h` |
+    | [`dvz_drp2_runtime_destroy()`](#dvz_drp2_runtime_destroy) | `include/datoviz/drp2/runtime.h` |
+    | [`dvz_drp2_runtime_download_buffer()`](#dvz_drp2_runtime_download_buffer) | `include/datoviz/drp2/runtime.h` |
+    | [`dvz_drp2_runtime_execute()`](#dvz_drp2_runtime_execute) | `include/datoviz/drp2/runtime.h` |
+    | [`dvz_drp2_runtime_get_config()`](#dvz_drp2_runtime_get_config) | `include/datoviz/drp2/runtime.h` |
+    | [`dvz_drp2_runtime_register_external_buffer()`](#dvz_drp2_runtime_register_external_buffer) | `include/datoviz/drp2/runtime.h` |
+    | [`dvz_drp2_runtime_reset()`](#dvz_drp2_runtime_reset) | `include/datoviz/drp2/runtime.h` |
+    | [`dvz_drp2_runtime_vklite()`](#dvz_drp2_runtime_vklite) | `include/datoviz/drp2/runtime.h` |
+    | [`dvz_drp2_runtime_vklite_config()`](#dvz_drp2_runtime_vklite_config) | `include/datoviz/drp2/runtime.h` |
 
 ## Command Streams { #command-streams }
-
-### Types
-
-#### `DvzBlendFactor` { #type-dvzblendfactor }
-
-```c
-enum DvzBlendFactor {
-    DVZ_BLEND_FACTOR_ZERO = 0,
-    DVZ_BLEND_FACTOR_ONE = 1,
-    DVZ_BLEND_FACTOR_SRC_COLOR = 2,
-    DVZ_BLEND_FACTOR_ONE_MINUS_SRC_COLOR = 3,
-    DVZ_BLEND_FACTOR_DST_COLOR = 4,
-    DVZ_BLEND_FACTOR_ONE_MINUS_DST_COLOR = 5,
-    DVZ_BLEND_FACTOR_SRC_ALPHA = 6,
-    DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA = 7,
-    DVZ_BLEND_FACTOR_DST_ALPHA = 8,
-    DVZ_BLEND_FACTOR_ONE_MINUS_DST_ALPHA = 9,
-    DVZ_BLEND_FACTOR_CONSTANT_COLOR = 10,
-    DVZ_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR = 11,
-    DVZ_BLEND_FACTOR_CONSTANT_ALPHA = 12,
-    DVZ_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA = 13,
-    DVZ_BLEND_FACTOR_SRC_ALPHA_SATURATE = 14,
-};
-```
-
-Used by: [`dvz_drp2_stream_pipeline_set_color_blend()`](drp2.md#dvz_drp2_stream_pipeline_set_color_blend).
-
-_Declared in `include/datoviz/render_types.h`:139._
-
-#### `DvzBlendOp` { #type-dvzblendop }
-
-```c
-enum DvzBlendOp {
-    DVZ_BLEND_OP_ADD = 0,
-    DVZ_BLEND_OP_SUBTRACT = 1,
-    DVZ_BLEND_OP_REVERSE_SUBTRACT = 2,
-    DVZ_BLEND_OP_MIN = 3,
-    DVZ_BLEND_OP_MAX = 4,
-};
-```
-
-Used by: [`dvz_drp2_stream_pipeline_set_color_blend()`](drp2.md#dvz_drp2_stream_pipeline_set_color_blend).
-
-_Declared in `include/datoviz/render_types.h`:161._
-
-#### `DvzColorMask` { #type-dvzcolormask }
-
-```c
-enum DvzColorMask {
-    DVZ_MASK_COLOR_R = 1,
-    DVZ_MASK_COLOR_G = 2,
-    DVZ_MASK_COLOR_B = 4,
-    DVZ_MASK_COLOR_A = 8,
-    DVZ_MASK_COLOR_ALL = 15,
-};
-```
-
-Used by: [`dvz_drp2_stream_pipeline_set_color_blend()`](drp2.md#dvz_drp2_stream_pipeline_set_color_blend).
-
-_Declared in `include/datoviz/render_types.h`:173._
-
-#### `DvzCompareOp` { #type-dvzcompareop }
-
-```c
-enum DvzCompareOp {
-    DVZ_COMPARE_OP_NEVER = 0,
-    DVZ_COMPARE_OP_LESS = 1,
-    DVZ_COMPARE_OP_EQUAL = 2,
-    DVZ_COMPARE_OP_LESS_OR_EQUAL = 3,
-    DVZ_COMPARE_OP_GREATER = 4,
-    DVZ_COMPARE_OP_NOT_EQUAL = 5,
-    DVZ_COMPARE_OP_GREATER_OR_EQUAL = 6,
-    DVZ_COMPARE_OP_ALWAYS = 7,
-};
-```
-
-Used by: [`dvz_drp2_stream_pipeline_set_depth_state()`](drp2.md#dvz_drp2_stream_pipeline_set_depth_state).
-
-_Declared in `include/datoviz/render_types.h`:104._
-
-#### `DvzCullMode` { #type-dvzcullmode }
-
-```c
-enum DvzCullMode {
-    DVZ_CULL_MODE_NONE = 0,
-    DVZ_CULL_MODE_FRONT = 1,
-    DVZ_CULL_MODE_BACK = 2,
-    DVZ_CULL_MODE_FRONT_AND_BACK = 3,
-};
-```
-
-Used by: [`dvz_drp2_stream_pipeline_set_raster_state()`](drp2.md#dvz_drp2_stream_pipeline_set_raster_state).
-
-_Declared in `include/datoviz/render_types.h`:128._
-
-#### `DvzDrp2AttachmentAccess` { #type-dvzdrp2attachmentaccess }
-
-```c
-enum DvzDrp2AttachmentAccess {
-    DVZ_DRP2_ATTACHMENT_ACCESS_WRITE = 0,
-    DVZ_DRP2_ATTACHMENT_ACCESS_READ = 1,
-    DVZ_DRP2_ATTACHMENT_ACCESS_READ_WRITE = 2,
-};
-```
-
-Used by: [`dvz_drp2_stream_begin_render_pass_set_color_attachment_access()`](drp2.md#dvz_drp2_stream_begin_render_pass_set_color_attachment_access), [`dvz_drp2_stream_begin_render_pass_set_depth_access()`](drp2.md#dvz_drp2_stream_begin_render_pass_set_depth_access).
-
-_Declared in `include/datoviz/drp2/enums.h`:175._
-
-#### `DvzDrp2AttachmentLoadOp` { #type-dvzdrp2attachmentloadop }
-
-```c
-enum DvzDrp2AttachmentLoadOp {
-    DVZ_DRP2_ATTACHMENT_LOAD_CLEAR = 0,
-    DVZ_DRP2_ATTACHMENT_LOAD_LOAD = 1,
-    DVZ_DRP2_ATTACHMENT_LOAD_DONT_CARE = 2,
-};
-```
-
-Used by: [`dvz_drp2_stream_begin_render_pass_set_color_attachment_ops()`](drp2.md#dvz_drp2_stream_begin_render_pass_set_color_attachment_ops), [`dvz_drp2_stream_begin_render_pass_set_depth_ops()`](drp2.md#dvz_drp2_stream_begin_render_pass_set_depth_ops).
-
-_Declared in `include/datoviz/drp2/enums.h`:158._
-
-#### `DvzDrp2AttachmentStoreOp` { #type-dvzdrp2attachmentstoreop }
-
-```c
-enum DvzDrp2AttachmentStoreOp {
-    DVZ_DRP2_ATTACHMENT_STORE_STORE = 0,
-    DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE = 1,
-};
-```
-
-Used by: [`dvz_drp2_stream_begin_render_pass_set_color_attachment_ops()`](drp2.md#dvz_drp2_stream_begin_render_pass_set_color_attachment_ops), [`dvz_drp2_stream_begin_render_pass_set_depth_ops()`](drp2.md#dvz_drp2_stream_begin_render_pass_set_depth_ops).
-
-_Declared in `include/datoviz/drp2/enums.h`:167._
-
-#### `DvzDrp2BindGroupEntry` { #type-dvzdrp2bindgroupentry }
-
-```c
-struct DvzDrp2BindGroupEntry {
-    uint32_t binding;
-    DvzDrp2BindingType binding_type;
-    DvzDrp2BindingResourceKind resource_kind;
-    uint64_t resource_id;
-    uint64_t offset;
-    uint64_t size;
-};
-```
-
-Used by: [`dvz_drp2_stream_create_bind_group_entries()`](drp2.md#dvz_drp2_stream_create_bind_group_entries).
-
-_Declared in `include/datoviz/drp2/types.h`:63._
-
-#### `DvzDrp2BindGroupLayoutEntry` { #type-dvzdrp2bindgrouplayoutentry }
-
-```c
-struct DvzDrp2BindGroupLayoutEntry {
-    uint32_t binding;
-    DvzDrp2BindingType binding_type;
-    uint32_t visibility;
-    DvzDrp2BindingAccess access;
-    _Bool has_dynamic_offset;
-};
-```
-
-Used by: [`dvz_drp2_stream_create_bind_group_layout_entries()`](drp2.md#dvz_drp2_stream_create_bind_group_layout_entries).
-
-_Declared in `include/datoviz/drp2/types.h`:52._
-
-#### `DvzDrp2BindingAccess` { #type-dvzdrp2bindingaccess }
-
-```c
-enum DvzDrp2BindingAccess {
-    DVZ_DRP2_BINDING_ACCESS_READ = 0,
-    DVZ_DRP2_BINDING_ACCESS_READ_WRITE = 1,
-};
-```
-
-_Declared in `include/datoviz/drp2/enums.h`:112._
-
-#### `DvzDrp2BindingResourceKind` { #type-dvzdrp2bindingresourcekind }
-
-```c
-enum DvzDrp2BindingResourceKind {
-    DVZ_DRP2_BINDING_RESOURCE_NONE = 0,
-    DVZ_DRP2_BINDING_RESOURCE_BUFFER = 1,
-    DVZ_DRP2_BINDING_RESOURCE_TEXTURE = 2,
-    DVZ_DRP2_BINDING_RESOURCE_TEXTURE_VIEW = 3,
-    DVZ_DRP2_BINDING_RESOURCE_SAMPLER = 4,
-};
-```
-
-_Declared in `include/datoviz/drp2/enums.h`:120._
-
-#### `DvzDrp2BindingType` { #type-dvzdrp2bindingtype }
-
-```c
-enum DvzDrp2BindingType {
-    DVZ_DRP2_BINDING_TYPE_NONE = 0,
-    DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER = 1,
-    DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER = 2,
-    DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE = 3,
-    DVZ_DRP2_BINDING_TYPE_STORAGE_TEXTURE = 4,
-    DVZ_DRP2_BINDING_TYPE_SAMPLER = 5,
-};
-```
-
-_Declared in `include/datoviz/drp2/enums.h`:93._
-
-#### `DvzDrp2BufferUsageFlags` { #type-dvzdrp2bufferusageflags }
-
-```c
-enum DvzDrp2BufferUsageFlags {
-    DVZ_DRP2_BUFFER_USAGE_NONE = 0,
-    DVZ_DRP2_BUFFER_USAGE_COPY_SRC = 1,
-    DVZ_DRP2_BUFFER_USAGE_COPY_DST = 2,
-    DVZ_DRP2_BUFFER_USAGE_MAP_READ = 4,
-    DVZ_DRP2_BUFFER_USAGE_MAP_WRITE = 8,
-    DVZ_DRP2_BUFFER_USAGE_VERTEX = 16,
-    DVZ_DRP2_BUFFER_USAGE_INDEX = 32,
-    DVZ_DRP2_BUFFER_USAGE_UNIFORM = 64,
-    DVZ_DRP2_BUFFER_USAGE_STORAGE = 128,
-};
-```
-
-_Declared in `include/datoviz/drp2/enums.h`:131._
-
-#### `DvzDrp2ColorAttachment` { #type-dvzdrp2colorattachment }
-
-```c
-struct DvzDrp2ColorAttachment {
-    uint64_t texture_id;
-    uint64_t resolve_texture_id;
-    uint32_t resolve_mode;
-    _Bool clear;
-    DvzDrp2AttachmentLoadOp load_op;
-    DvzDrp2AttachmentStoreOp store_op;
-    DvzDrp2AttachmentAccess access;
-    float[4] clear_color;
-};
-```
-
-_Declared in `include/datoviz/drp2/types.h`:74._
-
-#### `DvzDrp2ColorRole` { #type-dvzdrp2colorrole }
-
-```c
-enum DvzDrp2ColorRole {
-    DVZ_DRP2_COLOR_ROLE_NONE = 0,
-    DVZ_DRP2_COLOR_ROLE_SRGB_COLOR = 1,
-    DVZ_DRP2_COLOR_ROLE_LINEAR_COLOR = 2,
-    DVZ_DRP2_COLOR_ROLE_DATA = 3,
-};
-```
-
-_Declared in `include/datoviz/drp2/enums.h`:67._
-
-#### `DvzDrp2ColorTarget` { #type-dvzdrp2colortarget }
-
-```c
-struct DvzDrp2ColorTarget {
-    uint32_t format;
-    _Bool blend_enabled;
-    uint32_t src_color_blend_factor;
-    uint32_t dst_color_blend_factor;
-    uint32_t color_blend_op;
-    uint32_t src_alpha_blend_factor;
-    uint32_t dst_alpha_blend_factor;
-    uint32_t alpha_blend_op;
-    uint32_t color_write_mask;
-};
-```
-
-_Declared in `include/datoviz/drp2/types.h`:87._
-
-#### `DvzDrp2Command` { #type-dvzdrp2command }
-
-```c
-typedef struct DvzDrp2Command DvzDrp2Command;
-```
-
-Used by: [`dvz_drp2_command_type()`](drp2.md#dvz_drp2_command_type), [`dvz_drp2_stream_get()`](drp2.md#dvz_drp2_stream_get).
-
-_Declared in `include/datoviz/drp2/types.h`:36._
-
-#### `DvzDrp2CommandStream` { #type-dvzdrp2commandstream }
-
-```c
-typedef struct DvzDrp2CommandStream DvzDrp2CommandStream;
-```
-
-Used by: [`dvz_drp2_packet_decode_stream()`](drp2.md#dvz_drp2_packet_decode_stream), [`dvz_drp2_packet_encode_stream()`](drp2.md#dvz_drp2_packet_encode_stream), [`dvz_drp2_packet_encode_stream_phase()`](drp2.md#dvz_drp2_packet_encode_stream_phase), [`dvz_drp2_recorder_write_stream()`](drp2.md#dvz_drp2_recorder_write_stream), [`dvz_drp2_recording_frame_stream()`](drp2.md#dvz_drp2_recording_frame_stream), [`dvz_drp2_recording_read_stream()`](drp2.md#dvz_drp2_recording_read_stream), [`dvz_drp2_recording_stream()`](drp2.md#dvz_drp2_recording_stream), [`dvz_drp2_recording_write_stream()`](drp2.md#dvz_drp2_recording_write_stream); plus 102 more.
-
-_Declared in `include/datoviz/drp2/types.h`:35._
-
-#### `DvzDrp2CommandType` { #type-dvzdrp2commandtype }
-
-```c
-enum DvzDrp2CommandType {
-    DVZ_DRP2_COMMAND_NONE = 0,
-    DVZ_DRP2_COMMAND_HELLO_RENDERER = 1,
-    DVZ_DRP2_COMMAND_RENDERER_HELLO_REPLY = 2,
-    DVZ_DRP2_COMMAND_CREATE_BUFFER = 3,
-    DVZ_DRP2_COMMAND_DESTROY_BUFFER = 4,
-    DVZ_DRP2_COMMAND_CREATE_TEXTURE = 5,
-    DVZ_DRP2_COMMAND_DESTROY_TEXTURE = 6,
-    DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE = 7,
-    DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE = 8,
-    DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE = 9,
-    DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE = 10,
-    DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE = 11,
-    DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE = 12,
-    DVZ_DRP2_COMMAND_CREATE_SAMPLER = 13,
-    DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT = 14,
-    DVZ_DRP2_COMMAND_CREATE_BIND_GROUP = 15,
-    DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT = 16,
-    DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP = 17,
-    DVZ_DRP2_COMMAND_WRITE_BUFFER = 18,
-    DVZ_DRP2_COMMAND_WRITE_TEXTURE = 19,
-    DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER = 20,
-    DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS = 21,
-    DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS = 22,
-    DVZ_DRP2_COMMAND_SET_VIEWPORT = 23,
-    DVZ_DRP2_COMMAND_SET_SCISSOR = 24,
-    DVZ_DRP2_COMMAND_SET_PIPELINE = 25,
-    DVZ_DRP2_COMMAND_SET_BIND_GROUP = 26,
-    DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER = 27,
-    DVZ_DRP2_COMMAND_SET_INDEX_BUFFER = 28,
-    DVZ_DRP2_COMMAND_DRAW = 29,
-    DVZ_DRP2_COMMAND_DRAW_INDEXED = 30,
-    DVZ_DRP2_COMMAND_END_RENDER_PASS = 31,
-    DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS = 32,
-    DVZ_DRP2_COMMAND_END_COMPUTE_PASS = 33,
-    DVZ_DRP2_COMMAND_RESOURCE_BARRIER = 34,
-    DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER = 35,
-    DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE = 36,
-    DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER = 37,
-    DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_TEXTURE = 38,
-    DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER = 39,
-    DVZ_DRP2_COMMAND_QUEUE_SUBMIT = 40,
-    DVZ_DRP2_COMMAND_QUEUE_SUBMIT_REPLY = 41,
-};
-```
-
-Used by: [`dvz_drp2_command_type()`](drp2.md#dvz_drp2_command_type), [`dvz_drp2_packet_command_kind()`](drp2.md#dvz_drp2_packet_command_kind).
-
-_Declared in `include/datoviz/drp2/enums.h`:19._
-
-#### `DvzDrp2FilterMode` { #type-dvzdrp2filtermode }
-
-```c
-enum DvzDrp2FilterMode {
-    DVZ_DRP2_FILTER_LINEAR = 0,
-    DVZ_DRP2_FILTER_NEAREST = 1,
-};
-```
-
-Used by: [`dvz_drp2_stream_create_sampler_filter()`](drp2.md#dvz_drp2_stream_create_sampler_filter).
-
-_Declared in `include/datoviz/drp2/enums.h`:104._
-
-#### `DvzDrp2RenderPassDesc` { #type-dvzdrp2renderpassdesc }
-
-```c
-struct DvzDrp2RenderPassDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint64_t id;
-    uint64_t encoder_id;
-    uint32_t[4] render_area_px;
-    float[4] viewport_px;
-    float[4] scissor_px;
-    uint32_t color_attachment_count;
-    DvzDrp2ColorAttachment[4] color_attachments;
-    _Bool has_depth_attachment;
-    uint64_t depth_texture_id;
-    DvzDrp2AttachmentLoadOp depth_load_op;
-    DvzDrp2AttachmentStoreOp depth_store_op;
-    DvzDrp2AttachmentAccess depth_access;
-    _Bool depth_ops_explicit;
-    float clear_depth;
-};
-```
-
-Used by: [`dvz_drp2_render_pass_desc()`](drp2.md#dvz_drp2_render_pass_desc), [`dvz_drp2_stream_begin_render_pass_desc()`](drp2.md#dvz_drp2_stream_begin_render_pass_desc).
-
-_Declared in `include/datoviz/drp2/types.h`:116._
-
-#### `DvzDrp2RenderPipelineDesc` { #type-dvzdrp2renderpipelinedesc }
-
-```c
-struct DvzDrp2RenderPipelineDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint64_t id;
-    uint64_t vertex_shader_module_id;
-    uint64_t fragment_shader_module_id;
-    uint32_t vertex_buffer_slots;
-    DvzPrimitiveTopology topology;
-    uint32_t bind_group_layout_count;
-    const uint64_t * bind_group_layout_ids;
-    uint32_t binding_count;
-    const uint32_t * binding_strides;
-    const uint32_t * binding_step_modes;
-    uint32_t attr_count;
-    const uint32_t * attr_bindings;
-    const uint32_t * attr_locations;
-    const DvzFormat * attr_formats;
-    const uint32_t * attr_offsets;
-};
-```
-
-Used by: [`dvz_drp2_render_pipeline_desc()`](drp2.md#dvz_drp2_render_pipeline_desc), [`dvz_drp2_stream_create_render_pipeline()`](drp2.md#dvz_drp2_stream_create_render_pipeline).
-
-_Declared in `include/datoviz/drp2/types.h`:137._
-
-#### `DvzDrp2ShaderStageFlags` { #type-dvzdrp2shaderstageflags }
-
-```c
-enum DvzDrp2ShaderStageFlags {
-    DVZ_DRP2_SHADER_STAGE_VERTEX = 1,
-    DVZ_DRP2_SHADER_STAGE_FRAGMENT = 2,
-    DVZ_DRP2_SHADER_STAGE_COMPUTE = 4,
-};
-```
-
-_Declared in `include/datoviz/drp2/enums.h`:84._
-
-#### `DvzDrp2TextureDesc` { #type-dvzdrp2texturedesc }
-
-```c
-struct DvzDrp2TextureDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint64_t id;
-    uint32_t width;
-    uint32_t height;
-    uint32_t depth;
-    DvzFormat format;
-    uint32_t usage;
-    uint32_t sample_count;
-    DvzDrp2ColorRole color_role;
-};
-```
-
-Used by: [`dvz_drp2_stream_create_texture()`](drp2.md#dvz_drp2_stream_create_texture), [`dvz_drp2_texture_desc()`](drp2.md#dvz_drp2_texture_desc).
-
-_Declared in `include/datoviz/drp2/types.h`:101._
-
-#### `DvzDrp2TextureUsageFlags` { #type-dvzdrp2textureusageflags }
-
-```c
-enum DvzDrp2TextureUsageFlags {
-    DVZ_DRP2_TEXTURE_USAGE_NONE = 0,
-    DVZ_DRP2_TEXTURE_USAGE_COPY_SRC = 1,
-    DVZ_DRP2_TEXTURE_USAGE_COPY_DST = 2,
-    DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING = 4,
-    DVZ_DRP2_TEXTURE_USAGE_STORAGE_BINDING = 8,
-    DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT = 16,
-};
-```
-
-_Declared in `include/datoviz/drp2/enums.h`:146._
-
-#### `DvzDrp2VertexStepMode` { #type-dvzdrp2vertexstepmode }
-
-```c
-enum DvzDrp2VertexStepMode {
-    DVZ_DRP2_VERTEX_STEP_MODE_VERTEX = 0,
-    DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE = 1,
-};
-```
-
-_Declared in `include/datoviz/drp2/enums.h`:77._
-
-#### `DvzFormat` { #type-dvzformat }
-
-```c
-enum DvzFormat {
-    DVZ_FORMAT_NONE = 0,
-    DVZ_FORMAT_R8_UNORM = 9,
-    DVZ_FORMAT_R8_SNORM = 10,
-    DVZ_FORMAT_R8_UINT = 13,
-    DVZ_FORMAT_R8_SINT = 14,
-    DVZ_FORMAT_R8G8_UNORM = 16,
-    DVZ_FORMAT_R8G8_SNORM = 17,
-    DVZ_FORMAT_R8G8_UINT = 20,
-    DVZ_FORMAT_R8G8_SINT = 21,
-    DVZ_FORMAT_R8G8B8_UNORM = 23,
-    DVZ_FORMAT_R8G8B8_SNORM = 24,
-    DVZ_FORMAT_R8G8B8_UINT = 27,
-    DVZ_FORMAT_R8G8B8_SINT = 28,
-    DVZ_FORMAT_R8G8B8A8_UNORM = 37,
-    DVZ_FORMAT_R8G8B8A8_SNORM = 38,
-    DVZ_FORMAT_R8G8B8A8_UINT = 41,
-    DVZ_FORMAT_R8G8B8A8_SINT = 42,
-    DVZ_FORMAT_R8G8B8A8_SRGB = 43,
-    DVZ_FORMAT_B8G8R8A8_UNORM = 44,
-    DVZ_FORMAT_B8G8R8A8_SRGB = 50,
-    DVZ_FORMAT_R16_UNORM = 70,
-    DVZ_FORMAT_R16_SNORM = 71,
-    DVZ_FORMAT_R16_UINT = 74,
-    DVZ_FORMAT_R16_SINT = 75,
-    DVZ_FORMAT_R16_SFLOAT = 76,
-    DVZ_FORMAT_R16G16B16A16_UNORM = 91,
-    DVZ_FORMAT_R16G16B16A16_SNORM = 92,
-    DVZ_FORMAT_R16G16B16A16_UINT = 95,
-    DVZ_FORMAT_R16G16B16A16_SINT = 96,
-    DVZ_FORMAT_R16G16B16A16_SFLOAT = 97,
-    DVZ_FORMAT_R32_UINT = 98,
-    DVZ_FORMAT_R32_SINT = 99,
-    DVZ_FORMAT_R32_SFLOAT = 100,
-    DVZ_FORMAT_R32G32_UINT = 101,
-    DVZ_FORMAT_R32G32_SINT = 102,
-    DVZ_FORMAT_R32G32_SFLOAT = 103,
-    DVZ_FORMAT_R32G32B32_UINT = 104,
-    DVZ_FORMAT_R32G32B32_SINT = 105,
-    DVZ_FORMAT_R32G32B32_SFLOAT = 106,
-    DVZ_FORMAT_R32G32B32A32_UINT = 107,
-    DVZ_FORMAT_R32G32B32A32_SINT = 108,
-    DVZ_FORMAT_R32G32B32A32_SFLOAT = 109,
-    DVZ_FORMAT_R64_UINT = 110,
-    DVZ_FORMAT_R64_SINT = 111,
-    DVZ_FORMAT_R64_SFLOAT = 112,
-    DVZ_FORMAT_R64G64_UINT = 113,
-    DVZ_FORMAT_R64G64_SINT = 114,
-    DVZ_FORMAT_R64G64_SFLOAT = 115,
-    DVZ_FORMAT_R64G64B64_UINT = 116,
-    DVZ_FORMAT_R64G64B64_SINT = 117,
-    DVZ_FORMAT_R64G64B64_SFLOAT = 118,
-    DVZ_FORMAT_R64G64B64A64_UINT = 119,
-    DVZ_FORMAT_R64G64B64A64_SINT = 120,
-    DVZ_FORMAT_R64G64B64A64_SFLOAT = 121,
-    DVZ_FORMAT_D16_UNORM = 124,
-    DVZ_FORMAT_X8_D24_UNORM_PACK32 = 125,
-    DVZ_FORMAT_D32_SFLOAT = 126,
-    DVZ_FORMAT_D16_UNORM_S8_UINT = 128,
-    DVZ_FORMAT_D24_UNORM_S8_UINT = 129,
-    DVZ_FORMAT_D32_SFLOAT_S8_UINT = 130,
-};
-```
-
-Used by: [`dvz_drp2_stream_create_texture_2d_format_usage()`](drp2.md#dvz_drp2_stream_create_texture_2d_format_usage), [`dvz_drp2_stream_create_texture_3d_format_usage()`](drp2.md#dvz_drp2_stream_create_texture_3d_format_usage), [`dvz_drp2_stream_pipeline_set_color_target()`](drp2.md#dvz_drp2_stream_pipeline_set_color_target).
-
-_Declared in `include/datoviz/render_types.h`:22._
-
-#### `DvzFrontFace` { #type-dvzfrontface }
-
-```c
-enum DvzFrontFace {
-    DVZ_FRONT_FACE_COUNTER_CLOCKWISE = 0,
-    DVZ_FRONT_FACE_CLOCKWISE = 1,
-};
-```
-
-Used by: [`dvz_drp2_stream_pipeline_set_raster_state()`](drp2.md#dvz_drp2_stream_pipeline_set_raster_state).
-
-_Declared in `include/datoviz/render_types.h`:119._
-
-#### `DvzPrimitiveTopology` { #type-dvzprimitivetopology }
-
-```c
-enum DvzPrimitiveTopology {
-    DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST = 0,
-    DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST = 1,
-    DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP = 2,
-    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST = 3,
-    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP = 4,
-    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN = 5,
-};
-```
-
-Used by: [`dvz_primitive()`](visuals.md#dvz_primitive).
-
-_Declared in `include/datoviz/render_types.h`:91._
 
 ### Functions
 
@@ -3210,41 +2593,602 @@ DvzDrp2ValidationResult dvz_drp2_validate_stream(
 
 _Declared in `include/datoviz/drp2/runtime.h`:163._
 
-## Packets { #packets }
-
 ### Types
 
-#### `DvzDrp2PacketInfo` { #type-dvzdrp2packetinfo }
+<a id="type-dvzblendfactor"></a>
 
-```c
-struct DvzDrp2PacketInfo {
-    DvzDrp2PacketKind kind;
-    uint32_t command_count;
-    uint64_t command_bytes;
-    uint64_t arena_size;
-    uint64_t resource_version;
-    uint64_t frame_index;
-};
-```
+??? abstract "`DvzBlendFactor` · enum"
 
-Used by: [`dvz_drp2_packet_decode_stream()`](drp2.md#dvz_drp2_packet_decode_stream).
+    ```c
+    enum DvzBlendFactor {
+        DVZ_BLEND_FACTOR_ZERO = 0,
+        DVZ_BLEND_FACTOR_ONE = 1,
+        DVZ_BLEND_FACTOR_SRC_COLOR = 2,
+        DVZ_BLEND_FACTOR_ONE_MINUS_SRC_COLOR = 3,
+        DVZ_BLEND_FACTOR_DST_COLOR = 4,
+        DVZ_BLEND_FACTOR_ONE_MINUS_DST_COLOR = 5,
+        DVZ_BLEND_FACTOR_SRC_ALPHA = 6,
+        DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA = 7,
+        DVZ_BLEND_FACTOR_DST_ALPHA = 8,
+        DVZ_BLEND_FACTOR_ONE_MINUS_DST_ALPHA = 9,
+        DVZ_BLEND_FACTOR_CONSTANT_COLOR = 10,
+        DVZ_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR = 11,
+        DVZ_BLEND_FACTOR_CONSTANT_ALPHA = 12,
+        DVZ_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA = 13,
+        DVZ_BLEND_FACTOR_SRC_ALPHA_SATURATE = 14,
+    };
+    ```
 
-_Declared in `include/datoviz/drp2/packet.h`:47._
+    _Declared in `include/datoviz/render_types.h`:139._
 
-#### `DvzDrp2PacketKind` { #type-dvzdrp2packetkind }
+<a id="type-dvzblendop"></a>
 
-```c
-enum DvzDrp2PacketKind {
-    DVZ_DRP2_PACKET_NONE = 0,
-    DVZ_DRP2_PACKET_SETUP = 1,
-    DVZ_DRP2_PACKET_UPDATE = 2,
-    DVZ_DRP2_PACKET_FRAME = 3,
-};
-```
+??? abstract "`DvzBlendOp` · enum"
 
-Used by: [`dvz_drp2_packet_command_kind()`](drp2.md#dvz_drp2_packet_command_kind), [`dvz_drp2_packet_encode_stream()`](drp2.md#dvz_drp2_packet_encode_stream), [`dvz_drp2_packet_encode_stream_phase()`](drp2.md#dvz_drp2_packet_encode_stream_phase), [`dvz_frame_plan_packet_result_get()`](frame-plan.md#dvz_frame_plan_packet_result_get), [`dvz_scene_frame_artifact_get_packet()`](scene.md#dvz_scene_frame_artifact_get_packet).
+    ```c
+    enum DvzBlendOp {
+        DVZ_BLEND_OP_ADD = 0,
+        DVZ_BLEND_OP_SUBTRACT = 1,
+        DVZ_BLEND_OP_REVERSE_SUBTRACT = 2,
+        DVZ_BLEND_OP_MIN = 3,
+        DVZ_BLEND_OP_MAX = 4,
+    };
+    ```
 
-_Declared in `include/datoviz/drp2/packet.h`:33._
+    _Declared in `include/datoviz/render_types.h`:161._
+
+<a id="type-dvzcolormask"></a>
+
+??? abstract "`DvzColorMask` · enum"
+
+    ```c
+    enum DvzColorMask {
+        DVZ_MASK_COLOR_R = 1,
+        DVZ_MASK_COLOR_G = 2,
+        DVZ_MASK_COLOR_B = 4,
+        DVZ_MASK_COLOR_A = 8,
+        DVZ_MASK_COLOR_ALL = 15,
+    };
+    ```
+
+    _Declared in `include/datoviz/render_types.h`:173._
+
+<a id="type-dvzcompareop"></a>
+
+??? abstract "`DvzCompareOp` · enum"
+
+    ```c
+    enum DvzCompareOp {
+        DVZ_COMPARE_OP_NEVER = 0,
+        DVZ_COMPARE_OP_LESS = 1,
+        DVZ_COMPARE_OP_EQUAL = 2,
+        DVZ_COMPARE_OP_LESS_OR_EQUAL = 3,
+        DVZ_COMPARE_OP_GREATER = 4,
+        DVZ_COMPARE_OP_NOT_EQUAL = 5,
+        DVZ_COMPARE_OP_GREATER_OR_EQUAL = 6,
+        DVZ_COMPARE_OP_ALWAYS = 7,
+    };
+    ```
+
+    _Declared in `include/datoviz/render_types.h`:104._
+
+<a id="type-dvzcullmode"></a>
+
+??? abstract "`DvzCullMode` · enum"
+
+    ```c
+    enum DvzCullMode {
+        DVZ_CULL_MODE_NONE = 0,
+        DVZ_CULL_MODE_FRONT = 1,
+        DVZ_CULL_MODE_BACK = 2,
+        DVZ_CULL_MODE_FRONT_AND_BACK = 3,
+    };
+    ```
+
+    _Declared in `include/datoviz/render_types.h`:128._
+
+<a id="type-dvzdrp2attachmentaccess"></a>
+
+??? abstract "`DvzDrp2AttachmentAccess` · enum"
+
+    ```c
+    enum DvzDrp2AttachmentAccess {
+        DVZ_DRP2_ATTACHMENT_ACCESS_WRITE = 0,
+        DVZ_DRP2_ATTACHMENT_ACCESS_READ = 1,
+        DVZ_DRP2_ATTACHMENT_ACCESS_READ_WRITE = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/enums.h`:175._
+
+<a id="type-dvzdrp2attachmentloadop"></a>
+
+??? abstract "`DvzDrp2AttachmentLoadOp` · enum"
+
+    ```c
+    enum DvzDrp2AttachmentLoadOp {
+        DVZ_DRP2_ATTACHMENT_LOAD_CLEAR = 0,
+        DVZ_DRP2_ATTACHMENT_LOAD_LOAD = 1,
+        DVZ_DRP2_ATTACHMENT_LOAD_DONT_CARE = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/enums.h`:158._
+
+<a id="type-dvzdrp2attachmentstoreop"></a>
+
+??? abstract "`DvzDrp2AttachmentStoreOp` · enum"
+
+    ```c
+    enum DvzDrp2AttachmentStoreOp {
+        DVZ_DRP2_ATTACHMENT_STORE_STORE = 0,
+        DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE = 1,
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/enums.h`:167._
+
+<a id="type-dvzdrp2bindgroupentry"></a>
+
+??? abstract "`DvzDrp2BindGroupEntry` · record"
+
+    ```c
+    struct DvzDrp2BindGroupEntry {
+        uint32_t binding;
+        DvzDrp2BindingType binding_type;
+        DvzDrp2BindingResourceKind resource_kind;
+        uint64_t resource_id;
+        uint64_t offset;
+        uint64_t size;
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/types.h`:63._
+
+<a id="type-dvzdrp2bindgrouplayoutentry"></a>
+
+??? abstract "`DvzDrp2BindGroupLayoutEntry` · record"
+
+    ```c
+    struct DvzDrp2BindGroupLayoutEntry {
+        uint32_t binding;
+        DvzDrp2BindingType binding_type;
+        uint32_t visibility;
+        DvzDrp2BindingAccess access;
+        _Bool has_dynamic_offset;
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/types.h`:52._
+
+<a id="type-dvzdrp2bindingaccess"></a>
+
+??? abstract "`DvzDrp2BindingAccess` · enum"
+
+    ```c
+    enum DvzDrp2BindingAccess {
+        DVZ_DRP2_BINDING_ACCESS_READ = 0,
+        DVZ_DRP2_BINDING_ACCESS_READ_WRITE = 1,
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/enums.h`:112._
+
+<a id="type-dvzdrp2bindingresourcekind"></a>
+
+??? abstract "`DvzDrp2BindingResourceKind` · enum"
+
+    ```c
+    enum DvzDrp2BindingResourceKind {
+        DVZ_DRP2_BINDING_RESOURCE_NONE = 0,
+        DVZ_DRP2_BINDING_RESOURCE_BUFFER = 1,
+        DVZ_DRP2_BINDING_RESOURCE_TEXTURE = 2,
+        DVZ_DRP2_BINDING_RESOURCE_TEXTURE_VIEW = 3,
+        DVZ_DRP2_BINDING_RESOURCE_SAMPLER = 4,
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/enums.h`:120._
+
+<a id="type-dvzdrp2bindingtype"></a>
+
+??? abstract "`DvzDrp2BindingType` · enum"
+
+    ```c
+    enum DvzDrp2BindingType {
+        DVZ_DRP2_BINDING_TYPE_NONE = 0,
+        DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER = 1,
+        DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER = 2,
+        DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE = 3,
+        DVZ_DRP2_BINDING_TYPE_STORAGE_TEXTURE = 4,
+        DVZ_DRP2_BINDING_TYPE_SAMPLER = 5,
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/enums.h`:93._
+
+<a id="type-dvzdrp2bufferusageflags"></a>
+
+??? abstract "`DvzDrp2BufferUsageFlags` · enum"
+
+    ```c
+    enum DvzDrp2BufferUsageFlags {
+        DVZ_DRP2_BUFFER_USAGE_NONE = 0,
+        DVZ_DRP2_BUFFER_USAGE_COPY_SRC = 1,
+        DVZ_DRP2_BUFFER_USAGE_COPY_DST = 2,
+        DVZ_DRP2_BUFFER_USAGE_MAP_READ = 4,
+        DVZ_DRP2_BUFFER_USAGE_MAP_WRITE = 8,
+        DVZ_DRP2_BUFFER_USAGE_VERTEX = 16,
+        DVZ_DRP2_BUFFER_USAGE_INDEX = 32,
+        DVZ_DRP2_BUFFER_USAGE_UNIFORM = 64,
+        DVZ_DRP2_BUFFER_USAGE_STORAGE = 128,
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/enums.h`:131._
+
+<a id="type-dvzdrp2colorattachment"></a>
+
+??? abstract "`DvzDrp2ColorAttachment` · record"
+
+    ```c
+    struct DvzDrp2ColorAttachment {
+        uint64_t texture_id;
+        uint64_t resolve_texture_id;
+        uint32_t resolve_mode;
+        _Bool clear;
+        DvzDrp2AttachmentLoadOp load_op;
+        DvzDrp2AttachmentStoreOp store_op;
+        DvzDrp2AttachmentAccess access;
+        float[4] clear_color;
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/types.h`:74._
+
+<a id="type-dvzdrp2colorrole"></a>
+
+??? abstract "`DvzDrp2ColorRole` · enum"
+
+    ```c
+    enum DvzDrp2ColorRole {
+        DVZ_DRP2_COLOR_ROLE_NONE = 0,
+        DVZ_DRP2_COLOR_ROLE_SRGB_COLOR = 1,
+        DVZ_DRP2_COLOR_ROLE_LINEAR_COLOR = 2,
+        DVZ_DRP2_COLOR_ROLE_DATA = 3,
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/enums.h`:67._
+
+<a id="type-dvzdrp2colortarget"></a>
+
+??? abstract "`DvzDrp2ColorTarget` · record"
+
+    ```c
+    struct DvzDrp2ColorTarget {
+        uint32_t format;
+        _Bool blend_enabled;
+        uint32_t src_color_blend_factor;
+        uint32_t dst_color_blend_factor;
+        uint32_t color_blend_op;
+        uint32_t src_alpha_blend_factor;
+        uint32_t dst_alpha_blend_factor;
+        uint32_t alpha_blend_op;
+        uint32_t color_write_mask;
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/types.h`:87._
+
+<a id="type-dvzdrp2command"></a>
+
+??? abstract "`DvzDrp2Command` · typedef"
+
+    ```c
+    typedef struct DvzDrp2Command DvzDrp2Command;
+    ```
+
+    _Declared in `include/datoviz/drp2/types.h`:36._
+
+<a id="type-dvzdrp2commandstream"></a>
+
+??? abstract "`DvzDrp2CommandStream` · typedef"
+
+    ```c
+    typedef struct DvzDrp2CommandStream DvzDrp2CommandStream;
+    ```
+
+    _Declared in `include/datoviz/drp2/types.h`:35._
+
+<a id="type-dvzdrp2commandtype"></a>
+
+??? abstract "`DvzDrp2CommandType` · enum"
+
+    ```c
+    enum DvzDrp2CommandType {
+        DVZ_DRP2_COMMAND_NONE = 0,
+        DVZ_DRP2_COMMAND_HELLO_RENDERER = 1,
+        DVZ_DRP2_COMMAND_RENDERER_HELLO_REPLY = 2,
+        DVZ_DRP2_COMMAND_CREATE_BUFFER = 3,
+        DVZ_DRP2_COMMAND_DESTROY_BUFFER = 4,
+        DVZ_DRP2_COMMAND_CREATE_TEXTURE = 5,
+        DVZ_DRP2_COMMAND_DESTROY_TEXTURE = 6,
+        DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE = 7,
+        DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE = 8,
+        DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE = 9,
+        DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE = 10,
+        DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE = 11,
+        DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE = 12,
+        DVZ_DRP2_COMMAND_CREATE_SAMPLER = 13,
+        DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT = 14,
+        DVZ_DRP2_COMMAND_CREATE_BIND_GROUP = 15,
+        DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT = 16,
+        DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP = 17,
+        DVZ_DRP2_COMMAND_WRITE_BUFFER = 18,
+        DVZ_DRP2_COMMAND_WRITE_TEXTURE = 19,
+        DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER = 20,
+        DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS = 21,
+        DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS = 22,
+        DVZ_DRP2_COMMAND_SET_VIEWPORT = 23,
+        DVZ_DRP2_COMMAND_SET_SCISSOR = 24,
+        DVZ_DRP2_COMMAND_SET_PIPELINE = 25,
+        DVZ_DRP2_COMMAND_SET_BIND_GROUP = 26,
+        DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER = 27,
+        DVZ_DRP2_COMMAND_SET_INDEX_BUFFER = 28,
+        DVZ_DRP2_COMMAND_DRAW = 29,
+        DVZ_DRP2_COMMAND_DRAW_INDEXED = 30,
+        DVZ_DRP2_COMMAND_END_RENDER_PASS = 31,
+        DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS = 32,
+        DVZ_DRP2_COMMAND_END_COMPUTE_PASS = 33,
+        DVZ_DRP2_COMMAND_RESOURCE_BARRIER = 34,
+        DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER = 35,
+        DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE = 36,
+        DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER = 37,
+        DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_TEXTURE = 38,
+        DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER = 39,
+        DVZ_DRP2_COMMAND_QUEUE_SUBMIT = 40,
+        DVZ_DRP2_COMMAND_QUEUE_SUBMIT_REPLY = 41,
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/enums.h`:19._
+
+<a id="type-dvzdrp2filtermode"></a>
+
+??? abstract "`DvzDrp2FilterMode` · enum"
+
+    ```c
+    enum DvzDrp2FilterMode {
+        DVZ_DRP2_FILTER_LINEAR = 0,
+        DVZ_DRP2_FILTER_NEAREST = 1,
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/enums.h`:104._
+
+<a id="type-dvzdrp2renderpassdesc"></a>
+
+??? abstract "`DvzDrp2RenderPassDesc` · record"
+
+    ```c
+    struct DvzDrp2RenderPassDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        uint64_t id;
+        uint64_t encoder_id;
+        uint32_t[4] render_area_px;
+        float[4] viewport_px;
+        float[4] scissor_px;
+        uint32_t color_attachment_count;
+        DvzDrp2ColorAttachment[4] color_attachments;
+        _Bool has_depth_attachment;
+        uint64_t depth_texture_id;
+        DvzDrp2AttachmentLoadOp depth_load_op;
+        DvzDrp2AttachmentStoreOp depth_store_op;
+        DvzDrp2AttachmentAccess depth_access;
+        _Bool depth_ops_explicit;
+        float clear_depth;
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/types.h`:116._
+
+<a id="type-dvzdrp2renderpipelinedesc"></a>
+
+??? abstract "`DvzDrp2RenderPipelineDesc` · record"
+
+    ```c
+    struct DvzDrp2RenderPipelineDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        uint64_t id;
+        uint64_t vertex_shader_module_id;
+        uint64_t fragment_shader_module_id;
+        uint32_t vertex_buffer_slots;
+        DvzPrimitiveTopology topology;
+        uint32_t bind_group_layout_count;
+        const uint64_t * bind_group_layout_ids;
+        uint32_t binding_count;
+        const uint32_t * binding_strides;
+        const uint32_t * binding_step_modes;
+        uint32_t attr_count;
+        const uint32_t * attr_bindings;
+        const uint32_t * attr_locations;
+        const DvzFormat * attr_formats;
+        const uint32_t * attr_offsets;
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/types.h`:137._
+
+<a id="type-dvzdrp2shaderstageflags"></a>
+
+??? abstract "`DvzDrp2ShaderStageFlags` · enum"
+
+    ```c
+    enum DvzDrp2ShaderStageFlags {
+        DVZ_DRP2_SHADER_STAGE_VERTEX = 1,
+        DVZ_DRP2_SHADER_STAGE_FRAGMENT = 2,
+        DVZ_DRP2_SHADER_STAGE_COMPUTE = 4,
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/enums.h`:84._
+
+<a id="type-dvzdrp2texturedesc"></a>
+
+??? abstract "`DvzDrp2TextureDesc` · record"
+
+    ```c
+    struct DvzDrp2TextureDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        uint64_t id;
+        uint32_t width;
+        uint32_t height;
+        uint32_t depth;
+        DvzFormat format;
+        uint32_t usage;
+        uint32_t sample_count;
+        DvzDrp2ColorRole color_role;
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/types.h`:101._
+
+<a id="type-dvzdrp2textureusageflags"></a>
+
+??? abstract "`DvzDrp2TextureUsageFlags` · enum"
+
+    ```c
+    enum DvzDrp2TextureUsageFlags {
+        DVZ_DRP2_TEXTURE_USAGE_NONE = 0,
+        DVZ_DRP2_TEXTURE_USAGE_COPY_SRC = 1,
+        DVZ_DRP2_TEXTURE_USAGE_COPY_DST = 2,
+        DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING = 4,
+        DVZ_DRP2_TEXTURE_USAGE_STORAGE_BINDING = 8,
+        DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT = 16,
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/enums.h`:146._
+
+<a id="type-dvzdrp2vertexstepmode"></a>
+
+??? abstract "`DvzDrp2VertexStepMode` · enum"
+
+    ```c
+    enum DvzDrp2VertexStepMode {
+        DVZ_DRP2_VERTEX_STEP_MODE_VERTEX = 0,
+        DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE = 1,
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/enums.h`:77._
+
+<a id="type-dvzformat"></a>
+
+??? abstract "`DvzFormat` · enum"
+
+    ```c
+    enum DvzFormat {
+        DVZ_FORMAT_NONE = 0,
+        DVZ_FORMAT_R8_UNORM = 9,
+        DVZ_FORMAT_R8_SNORM = 10,
+        DVZ_FORMAT_R8_UINT = 13,
+        DVZ_FORMAT_R8_SINT = 14,
+        DVZ_FORMAT_R8G8_UNORM = 16,
+        DVZ_FORMAT_R8G8_SNORM = 17,
+        DVZ_FORMAT_R8G8_UINT = 20,
+        DVZ_FORMAT_R8G8_SINT = 21,
+        DVZ_FORMAT_R8G8B8_UNORM = 23,
+        DVZ_FORMAT_R8G8B8_SNORM = 24,
+        DVZ_FORMAT_R8G8B8_UINT = 27,
+        DVZ_FORMAT_R8G8B8_SINT = 28,
+        DVZ_FORMAT_R8G8B8A8_UNORM = 37,
+        DVZ_FORMAT_R8G8B8A8_SNORM = 38,
+        DVZ_FORMAT_R8G8B8A8_UINT = 41,
+        DVZ_FORMAT_R8G8B8A8_SINT = 42,
+        DVZ_FORMAT_R8G8B8A8_SRGB = 43,
+        DVZ_FORMAT_B8G8R8A8_UNORM = 44,
+        DVZ_FORMAT_B8G8R8A8_SRGB = 50,
+        DVZ_FORMAT_R16_UNORM = 70,
+        DVZ_FORMAT_R16_SNORM = 71,
+        DVZ_FORMAT_R16_UINT = 74,
+        DVZ_FORMAT_R16_SINT = 75,
+        DVZ_FORMAT_R16_SFLOAT = 76,
+        DVZ_FORMAT_R16G16B16A16_UNORM = 91,
+        DVZ_FORMAT_R16G16B16A16_SNORM = 92,
+        DVZ_FORMAT_R16G16B16A16_UINT = 95,
+        DVZ_FORMAT_R16G16B16A16_SINT = 96,
+        DVZ_FORMAT_R16G16B16A16_SFLOAT = 97,
+        DVZ_FORMAT_R32_UINT = 98,
+        DVZ_FORMAT_R32_SINT = 99,
+        DVZ_FORMAT_R32_SFLOAT = 100,
+        DVZ_FORMAT_R32G32_UINT = 101,
+        DVZ_FORMAT_R32G32_SINT = 102,
+        DVZ_FORMAT_R32G32_SFLOAT = 103,
+        DVZ_FORMAT_R32G32B32_UINT = 104,
+        DVZ_FORMAT_R32G32B32_SINT = 105,
+        DVZ_FORMAT_R32G32B32_SFLOAT = 106,
+        DVZ_FORMAT_R32G32B32A32_UINT = 107,
+        DVZ_FORMAT_R32G32B32A32_SINT = 108,
+        DVZ_FORMAT_R32G32B32A32_SFLOAT = 109,
+        DVZ_FORMAT_R64_UINT = 110,
+        DVZ_FORMAT_R64_SINT = 111,
+        DVZ_FORMAT_R64_SFLOAT = 112,
+        DVZ_FORMAT_R64G64_UINT = 113,
+        DVZ_FORMAT_R64G64_SINT = 114,
+        DVZ_FORMAT_R64G64_SFLOAT = 115,
+        DVZ_FORMAT_R64G64B64_UINT = 116,
+        DVZ_FORMAT_R64G64B64_SINT = 117,
+        DVZ_FORMAT_R64G64B64_SFLOAT = 118,
+        DVZ_FORMAT_R64G64B64A64_UINT = 119,
+        DVZ_FORMAT_R64G64B64A64_SINT = 120,
+        DVZ_FORMAT_R64G64B64A64_SFLOAT = 121,
+        DVZ_FORMAT_D16_UNORM = 124,
+        DVZ_FORMAT_X8_D24_UNORM_PACK32 = 125,
+        DVZ_FORMAT_D32_SFLOAT = 126,
+        DVZ_FORMAT_D16_UNORM_S8_UINT = 128,
+        DVZ_FORMAT_D24_UNORM_S8_UINT = 129,
+        DVZ_FORMAT_D32_SFLOAT_S8_UINT = 130,
+    };
+    ```
+
+    _Declared in `include/datoviz/render_types.h`:22._
+
+<a id="type-dvzfrontface"></a>
+
+??? abstract "`DvzFrontFace` · enum"
+
+    ```c
+    enum DvzFrontFace {
+        DVZ_FRONT_FACE_COUNTER_CLOCKWISE = 0,
+        DVZ_FRONT_FACE_CLOCKWISE = 1,
+    };
+    ```
+
+    _Declared in `include/datoviz/render_types.h`:119._
+
+<a id="type-dvzprimitivetopology"></a>
+
+??? abstract "`DvzPrimitiveTopology` · enum"
+
+    ```c
+    enum DvzPrimitiveTopology {
+        DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST = 0,
+        DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST = 1,
+        DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP = 2,
+        DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST = 3,
+        DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP = 4,
+        DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN = 5,
+    };
+    ```
+
+    _Declared in `include/datoviz/render_types.h`:91._
+
+## Packets { #packets }
 
 ### Functions
 
@@ -3378,62 +3322,41 @@ _Bool dvz_drp2_packet_encode_stream_phase(
 
 _Declared in `include/datoviz/drp2/packet.h`:88._
 
-## Recording And Replay { #recording-and-replay }
-
 ### Types
 
-#### `DvzDrp2RecordedFrame` { #type-dvzdrp2recordedframe }
+<a id="type-dvzdrp2packetinfo"></a>
 
-```c
-struct DvzDrp2RecordedFrame {
-    double t_present;
-    uint32_t first_command;
-    uint32_t command_count;
-};
-```
+??? abstract "`DvzDrp2PacketInfo` · record"
 
-Used by: [`dvz_drp2_recording_frame()`](drp2.md#dvz_drp2_recording_frame).
+    ```c
+    struct DvzDrp2PacketInfo {
+        DvzDrp2PacketKind kind;
+        uint32_t command_count;
+        uint64_t command_bytes;
+        uint64_t arena_size;
+        uint64_t resource_version;
+        uint64_t frame_index;
+    };
+    ```
 
-_Declared in `include/datoviz/drp2/recording.h`:52._
+    _Declared in `include/datoviz/drp2/packet.h`:47._
 
-#### `DvzDrp2Recorder` { #type-dvzdrp2recorder }
+<a id="type-dvzdrp2packetkind"></a>
 
-```c
-typedef struct DvzDrp2Recorder DvzDrp2Recorder;
-```
+??? abstract "`DvzDrp2PacketKind` · enum"
 
-Used by: [`dvz_drp2_recorder_close()`](drp2.md#dvz_drp2_recorder_close), [`dvz_drp2_recorder_open()`](drp2.md#dvz_drp2_recorder_open), [`dvz_drp2_recorder_write_stream()`](drp2.md#dvz_drp2_recorder_write_stream).
+    ```c
+    enum DvzDrp2PacketKind {
+        DVZ_DRP2_PACKET_NONE = 0,
+        DVZ_DRP2_PACKET_SETUP = 1,
+        DVZ_DRP2_PACKET_UPDATE = 2,
+        DVZ_DRP2_PACKET_FRAME = 3,
+    };
+    ```
 
-_Declared in `include/datoviz/drp2/recording.h`:37._
+    _Declared in `include/datoviz/drp2/packet.h`:33._
 
-#### `DvzDrp2Recording` { #type-dvzdrp2recording }
-
-```c
-typedef struct DvzDrp2Recording DvzDrp2Recording;
-```
-
-Used by: [`dvz_drp2_recording_close()`](drp2.md#dvz_drp2_recording_close), [`dvz_drp2_recording_execute_all()`](drp2.md#dvz_drp2_recording_execute_all), [`dvz_drp2_recording_execute_frame()`](drp2.md#dvz_drp2_recording_execute_frame), [`dvz_drp2_recording_frame()`](drp2.md#dvz_drp2_recording_frame), [`dvz_drp2_recording_frame_count()`](drp2.md#dvz_drp2_recording_frame_count), [`dvz_drp2_recording_frame_stream()`](drp2.md#dvz_drp2_recording_frame_stream), [`dvz_drp2_recording_open()`](drp2.md#dvz_drp2_recording_open), [`dvz_drp2_recording_playback()`](drp2.md#dvz_drp2_recording_playback); plus 1 more.
-
-_Declared in `include/datoviz/drp2/recording.h`:35._
-
-#### `DvzDrp2RecordingInfo` { #type-dvzdrp2recordinginfo }
-
-```c
-struct DvzDrp2RecordingInfo {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint32_t width;
-    uint32_t height;
-    double duration_s;
-    double t_present;
-    double fps_cap;
-    const char * backend_hint;
-};
-```
-
-Used by: [`dvz_drp2_recorder_open()`](drp2.md#dvz_drp2_recorder_open), [`dvz_drp2_recording_info()`](drp2.md#dvz_drp2_recording_info), [`dvz_drp2_recording_write_stream()`](drp2.md#dvz_drp2_recording_write_stream).
-
-_Declared in `include/datoviz/drp2/recording.h`:39._
+## Recording And Replay { #recording-and-replay }
 
 ### Functions
 
@@ -3717,89 +3640,62 @@ _Bool dvz_drp2_recording_write_stream(
 
 _Declared in `include/datoviz/drp2/recording.h`:115._
 
-## Runtime Integration { #runtime-integration }
-
 ### Types
 
-#### `DvzDrp2ExternalBufferDesc` { #type-dvzdrp2externalbufferdesc }
+<a id="type-dvzdrp2recordedframe"></a>
 
-```c
-struct DvzDrp2ExternalBufferDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzBuffer * buffer;
-    uint64_t size;
-    uint32_t usage;
-};
-```
+??? abstract "`DvzDrp2RecordedFrame` · record"
 
-Used by: [`dvz_drp2_external_buffer_desc()`](drp2.md#dvz_drp2_external_buffer_desc), [`dvz_drp2_runtime_register_external_buffer()`](drp2.md#dvz_drp2_runtime_register_external_buffer).
+    ```c
+    struct DvzDrp2RecordedFrame {
+        double t_present;
+        uint32_t first_command;
+        uint32_t command_count;
+    };
+    ```
 
-_Declared in `include/datoviz/drp2/runtime.h`:61._
+    _Declared in `include/datoviz/drp2/recording.h`:52._
 
-#### `DvzDrp2Runtime` { #type-dvzdrp2runtime }
+<a id="type-dvzdrp2recorder"></a>
 
-```c
-typedef struct DvzDrp2Runtime DvzDrp2Runtime;
-```
+??? abstract "`DvzDrp2Recorder` · typedef"
 
-Used by: [`dvz_drp2_recording_execute_all()`](drp2.md#dvz_drp2_recording_execute_all), [`dvz_drp2_recording_execute_frame()`](drp2.md#dvz_drp2_recording_execute_frame), [`dvz_drp2_recording_playback()`](drp2.md#dvz_drp2_recording_playback), [`dvz_drp2_runtime_attach_frame_target()`](drp2.md#dvz_drp2_runtime_attach_frame_target), [`dvz_drp2_runtime_copy_texture_to_frame()`](drp2.md#dvz_drp2_runtime_copy_texture_to_frame), [`dvz_drp2_runtime_destroy()`](drp2.md#dvz_drp2_runtime_destroy), [`dvz_drp2_runtime_download_buffer()`](drp2.md#dvz_drp2_runtime_download_buffer), [`dvz_drp2_runtime_execute()`](drp2.md#dvz_drp2_runtime_execute); plus 6 more.
+    ```c
+    typedef struct DvzDrp2Recorder DvzDrp2Recorder;
+    ```
 
-_Declared in `include/datoviz/drp2/types.h`._
+    _Declared in `include/datoviz/drp2/recording.h`:37._
 
-#### `DvzDrp2RuntimeConfig` { #type-dvzdrp2runtimeconfig }
+<a id="type-dvzdrp2recording"></a>
 
-```c
-struct DvzDrp2RuntimeConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzDevice * device;
-    DvzVma * allocator;
-    _Bool semantic_only;
-};
-```
+??? abstract "`DvzDrp2Recording` · typedef"
 
-Used by: [`dvz_drp2_runtime_get_config()`](drp2.md#dvz_drp2_runtime_get_config), [`dvz_drp2_runtime_vklite()`](drp2.md#dvz_drp2_runtime_vklite), [`dvz_drp2_runtime_vklite_config()`](drp2.md#dvz_drp2_runtime_vklite_config).
+    ```c
+    typedef struct DvzDrp2Recording DvzDrp2Recording;
+    ```
 
-_Declared in `include/datoviz/drp2/runtime.h`:51._
+    _Declared in `include/datoviz/drp2/recording.h`:35._
 
-#### `DvzDrp2ValidationCode` { #type-dvzdrp2validationcode }
+<a id="type-dvzdrp2recordinginfo"></a>
 
-```c
-enum DvzDrp2ValidationCode {
-    DVZ_DRP2_VALIDATION_OK = 0,
-    DVZ_DRP2_VALIDATION_INVALID_ARGUMENT = 1,
-    DVZ_DRP2_VALIDATION_INVALID_STATE = 2,
-    DVZ_DRP2_VALIDATION_OUT_OF_RANGE = 3,
-    DVZ_DRP2_VALIDATION_USAGE = 4,
-};
-```
+??? abstract "`DvzDrp2RecordingInfo` · record"
 
-_Declared in `include/datoviz/drp2/enums.h`:184._
+    ```c
+    struct DvzDrp2RecordingInfo {
+        uint32_t struct_size;
+        uint32_t flags;
+        uint32_t width;
+        uint32_t height;
+        double duration_s;
+        double t_present;
+        double fps_cap;
+        const char * backend_hint;
+    };
+    ```
 
-#### `DvzDrp2ValidationResult` { #type-dvzdrp2validationresult }
+    _Declared in `include/datoviz/drp2/recording.h`:39._
 
-```c
-struct DvzDrp2ValidationResult {
-    _Bool ok;
-    DvzDrp2ValidationCode code;
-    uint32_t command_index;
-};
-```
-
-Used by: [`dvz_drp2_recording_execute_all()`](drp2.md#dvz_drp2_recording_execute_all), [`dvz_drp2_recording_execute_frame()`](drp2.md#dvz_drp2_recording_execute_frame), [`dvz_drp2_recording_playback()`](drp2.md#dvz_drp2_recording_playback), [`dvz_drp2_runtime_execute()`](drp2.md#dvz_drp2_runtime_execute), [`dvz_drp2_validate_stream()`](drp2.md#dvz_drp2_validate_stream).
-
-_Declared in `include/datoviz/drp2/runtime.h`:42._
-
-#### `DvzVma` { #type-dvzvma }
-
-```c
-typedef struct DvzVma DvzVma;
-```
-
-Used by: [`dvz_allocator_buffer()`](runtime-vulkan.md#dvz_allocator_buffer), [`dvz_allocator_copy_from()`](runtime-vulkan.md#dvz_allocator_copy_from), [`dvz_allocator_copy_to()`](runtime-vulkan.md#dvz_allocator_copy_to), [`dvz_allocator_create()`](runtime-vulkan.md#dvz_allocator_create), [`dvz_allocator_destroy()`](runtime-vulkan.md#dvz_allocator_destroy), [`dvz_allocator_destroy_buffer()`](runtime-vulkan.md#dvz_allocator_destroy_buffer), [`dvz_allocator_destroy_image()`](runtime-vulkan.md#dvz_allocator_destroy_image), [`dvz_allocator_device()`](runtime-vulkan.md#dvz_allocator_device); plus 17 more.
-
-_Declared in `include/datoviz/drp2/runtime.h`:39._
+## Runtime Integration { #runtime-integration }
 
 ### Functions
 
@@ -4021,3 +3917,87 @@ DvzDrp2RuntimeConfig dvz_drp2_runtime_vklite_config(
 | `allocator` | [`DvzVma`](drp2.md#type-dvzvma) * | the borrowed Vulkan allocator wrapper |
 
 _Declared in `include/datoviz/drp2/runtime.h`:84._
+
+### Types
+
+<a id="type-dvzdrp2externalbufferdesc"></a>
+
+??? abstract "`DvzDrp2ExternalBufferDesc` · record"
+
+    ```c
+    struct DvzDrp2ExternalBufferDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzBuffer * buffer;
+        uint64_t size;
+        uint32_t usage;
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/runtime.h`:61._
+
+<a id="type-dvzdrp2runtime"></a>
+
+??? abstract "`DvzDrp2Runtime` · typedef"
+
+    ```c
+    typedef struct DvzDrp2Runtime DvzDrp2Runtime;
+    ```
+
+    _Declared in `include/datoviz/drp2/types.h`._
+
+<a id="type-dvzdrp2runtimeconfig"></a>
+
+??? abstract "`DvzDrp2RuntimeConfig` · record"
+
+    ```c
+    struct DvzDrp2RuntimeConfig {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzDevice * device;
+        DvzVma * allocator;
+        _Bool semantic_only;
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/runtime.h`:51._
+
+<a id="type-dvzdrp2validationcode"></a>
+
+??? abstract "`DvzDrp2ValidationCode` · enum"
+
+    ```c
+    enum DvzDrp2ValidationCode {
+        DVZ_DRP2_VALIDATION_OK = 0,
+        DVZ_DRP2_VALIDATION_INVALID_ARGUMENT = 1,
+        DVZ_DRP2_VALIDATION_INVALID_STATE = 2,
+        DVZ_DRP2_VALIDATION_OUT_OF_RANGE = 3,
+        DVZ_DRP2_VALIDATION_USAGE = 4,
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/enums.h`:184._
+
+<a id="type-dvzdrp2validationresult"></a>
+
+??? abstract "`DvzDrp2ValidationResult` · record"
+
+    ```c
+    struct DvzDrp2ValidationResult {
+        _Bool ok;
+        DvzDrp2ValidationCode code;
+        uint32_t command_index;
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/runtime.h`:42._
+
+<a id="type-dvzvma"></a>
+
+??? abstract "`DvzVma` · typedef"
+
+    ```c
+    typedef struct DvzVma DvzVma;
+    ```
+
+    _Declared in `include/datoviz/drp2/runtime.h`:39._

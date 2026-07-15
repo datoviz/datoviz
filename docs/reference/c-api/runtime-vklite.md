@@ -30,386 +30,325 @@ Types: 29
 | [Resources](#resources) | 74 | 9 | 3 headers |
 | [Synchronization And Submission](#synchronization-and-submission) | 51 | 7 | `include/datoviz/vklite/sync.h` |
 
-??? info "Grouped symbol index"
+??? info "Grouped function index"
 
     **Commands And Rendering**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzAttachment`](#type-dvzattachment) | typedef | `include/datoviz/vklite/rendering.h` |
-    | [`DvzCommands`](#type-dvzcommands) | typedef | `include/datoviz/vklite/commands.h` |
-    | [`DvzRendering`](#type-dvzrendering) | typedef | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_attachment_clear()`](#dvz_attachment_clear) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_attachment_image()`](#dvz_attachment_image) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_attachment_ops()`](#dvz_attachment_ops) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_attachment_resolve()`](#dvz_attachment_resolve) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_cmd_barriers()`](#dvz_cmd_barriers) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_cmd_begin()`](#dvz_cmd_begin) | function | `include/datoviz/vklite/commands.h` |
-    | [`dvz_cmd_begin_result()`](#dvz_cmd_begin_result) | function | `include/datoviz/vklite/commands.h` |
-    | [`dvz_cmd_bind_compute()`](#dvz_cmd_bind_compute) | function | `include/datoviz/vklite/compute.h` |
-    | [`dvz_cmd_bind_descriptors()`](#dvz_cmd_bind_descriptors) | function | `include/datoviz/vklite/descriptors.h` |
-    | [`dvz_cmd_bind_graphics()`](#dvz_cmd_bind_graphics) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_cmd_bind_index_buffer()`](#dvz_cmd_bind_index_buffer) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_cmd_bind_vertex_buffers()`](#dvz_cmd_bind_vertex_buffers) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_cmd_blit_destination()`](#dvz_cmd_blit_destination) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_cmd_blit_filter()`](#dvz_cmd_blit_filter) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_cmd_blit_image()`](#dvz_cmd_blit_image) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_cmd_blit_source()`](#dvz_cmd_blit_source) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_cmd_copy_buffer_to_image()`](#dvz_cmd_copy_buffer_to_image) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_cmd_copy_destination()`](#dvz_cmd_copy_destination) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_cmd_copy_image()`](#dvz_cmd_copy_image) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_cmd_copy_image_to_buffer()`](#dvz_cmd_copy_image_to_buffer) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_cmd_copy_source()`](#dvz_cmd_copy_source) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_cmd_dispatch()`](#dvz_cmd_dispatch) | function | `include/datoviz/vklite/compute.h` |
-    | [`dvz_cmd_draw()`](#dvz_cmd_draw) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_cmd_draw_indexed()`](#dvz_cmd_draw_indexed) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_cmd_draw_indexed_indirect()`](#dvz_cmd_draw_indexed_indirect) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_cmd_draw_indirect()`](#dvz_cmd_draw_indirect) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_cmd_end()`](#dvz_cmd_end) | function | `include/datoviz/vklite/commands.h` |
-    | [`dvz_cmd_end_result()`](#dvz_cmd_end_result) | function | `include/datoviz/vklite/commands.h` |
-    | [`dvz_cmd_release()`](#dvz_cmd_release) | function | `include/datoviz/vklite/commands.h` |
-    | [`dvz_cmd_rendering_begin()`](#dvz_cmd_rendering_begin) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_cmd_rendering_default()`](#dvz_cmd_rendering_default) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_cmd_rendering_end()`](#dvz_cmd_rendering_end) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_cmd_reset()`](#dvz_cmd_reset) | function | `include/datoviz/vklite/commands.h` |
-    | [`dvz_cmd_submit()`](#dvz_cmd_submit) | function | `include/datoviz/vklite/commands.h` |
-    | [`dvz_cmd_submit_result()`](#dvz_cmd_submit_result) | function | `include/datoviz/vklite/commands.h` |
-    | [`dvz_command_buffer_alloc()`](#dvz_command_buffer_alloc) | function | `include/datoviz/vklite/commands.h` |
-    | [`dvz_command_buffer_free()`](#dvz_command_buffer_free) | function | `include/datoviz/vklite/commands.h` |
-    | [`dvz_commands()`](#dvz_commands) | function | `include/datoviz/vklite/commands.h` |
-    | [`dvz_commands_count()`](#dvz_commands_count) | function | `include/datoviz/vklite/commands.h` |
-    | [`dvz_commands_create_wrapper()`](#dvz_commands_create_wrapper) | function | `include/datoviz/vklite/commands.h` |
-    | [`dvz_commands_current()`](#dvz_commands_current) | function | `include/datoviz/vklite/commands.h` |
-    | [`dvz_commands_destroy()`](#dvz_commands_destroy) | function | `include/datoviz/vklite/commands.h` |
-    | [`dvz_commands_free()`](#dvz_commands_free) | function | `include/datoviz/vklite/commands.h` |
-    | [`dvz_commands_handle()`](#dvz_commands_handle) | function | `include/datoviz/vklite/commands.h` |
-    | [`dvz_commands_wrap()`](#dvz_commands_wrap) | function | `include/datoviz/vklite/commands.h` |
-    | [`dvz_commands_wrap_borrowed_recording()`](#dvz_commands_wrap_borrowed_recording) | function | `include/datoviz/vklite/commands.h` |
-    | [`dvz_rendering()`](#dvz_rendering) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_rendering_area()`](#dvz_rendering_area) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_rendering_color()`](#dvz_rendering_color) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_rendering_color_count()`](#dvz_rendering_color_count) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_rendering_create_wrapper()`](#dvz_rendering_create_wrapper) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_rendering_depth()`](#dvz_rendering_depth) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_rendering_free()`](#dvz_rendering_free) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_rendering_has_depth()`](#dvz_rendering_has_depth) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_rendering_has_stencil()`](#dvz_rendering_has_stencil) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_rendering_layer_count()`](#dvz_rendering_layer_count) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_rendering_layers()`](#dvz_rendering_layers) | function | `include/datoviz/vklite/rendering.h` |
-    | [`dvz_rendering_stencil()`](#dvz_rendering_stencil) | function | `include/datoviz/vklite/rendering.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_attachment_clear()`](#dvz_attachment_clear) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_attachment_image()`](#dvz_attachment_image) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_attachment_ops()`](#dvz_attachment_ops) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_attachment_resolve()`](#dvz_attachment_resolve) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_cmd_barriers()`](#dvz_cmd_barriers) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_cmd_begin()`](#dvz_cmd_begin) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_cmd_begin_result()`](#dvz_cmd_begin_result) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_cmd_bind_compute()`](#dvz_cmd_bind_compute) | `include/datoviz/vklite/compute.h` |
+    | [`dvz_cmd_bind_descriptors()`](#dvz_cmd_bind_descriptors) | `include/datoviz/vklite/descriptors.h` |
+    | [`dvz_cmd_bind_graphics()`](#dvz_cmd_bind_graphics) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_cmd_bind_index_buffer()`](#dvz_cmd_bind_index_buffer) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_cmd_bind_vertex_buffers()`](#dvz_cmd_bind_vertex_buffers) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_cmd_blit_destination()`](#dvz_cmd_blit_destination) | `include/datoviz/vklite/images.h` |
+    | [`dvz_cmd_blit_filter()`](#dvz_cmd_blit_filter) | `include/datoviz/vklite/images.h` |
+    | [`dvz_cmd_blit_image()`](#dvz_cmd_blit_image) | `include/datoviz/vklite/images.h` |
+    | [`dvz_cmd_blit_source()`](#dvz_cmd_blit_source) | `include/datoviz/vklite/images.h` |
+    | [`dvz_cmd_copy_buffer_to_image()`](#dvz_cmd_copy_buffer_to_image) | `include/datoviz/vklite/images.h` |
+    | [`dvz_cmd_copy_destination()`](#dvz_cmd_copy_destination) | `include/datoviz/vklite/images.h` |
+    | [`dvz_cmd_copy_image()`](#dvz_cmd_copy_image) | `include/datoviz/vklite/images.h` |
+    | [`dvz_cmd_copy_image_to_buffer()`](#dvz_cmd_copy_image_to_buffer) | `include/datoviz/vklite/images.h` |
+    | [`dvz_cmd_copy_source()`](#dvz_cmd_copy_source) | `include/datoviz/vklite/images.h` |
+    | [`dvz_cmd_dispatch()`](#dvz_cmd_dispatch) | `include/datoviz/vklite/compute.h` |
+    | [`dvz_cmd_draw()`](#dvz_cmd_draw) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_cmd_draw_indexed()`](#dvz_cmd_draw_indexed) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_cmd_draw_indexed_indirect()`](#dvz_cmd_draw_indexed_indirect) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_cmd_draw_indirect()`](#dvz_cmd_draw_indirect) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_cmd_end()`](#dvz_cmd_end) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_cmd_end_result()`](#dvz_cmd_end_result) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_cmd_release()`](#dvz_cmd_release) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_cmd_rendering_begin()`](#dvz_cmd_rendering_begin) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_cmd_rendering_default()`](#dvz_cmd_rendering_default) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_cmd_rendering_end()`](#dvz_cmd_rendering_end) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_cmd_reset()`](#dvz_cmd_reset) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_cmd_submit()`](#dvz_cmd_submit) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_cmd_submit_result()`](#dvz_cmd_submit_result) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_command_buffer_alloc()`](#dvz_command_buffer_alloc) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_command_buffer_free()`](#dvz_command_buffer_free) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_commands()`](#dvz_commands) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_commands_count()`](#dvz_commands_count) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_commands_create_wrapper()`](#dvz_commands_create_wrapper) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_commands_current()`](#dvz_commands_current) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_commands_destroy()`](#dvz_commands_destroy) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_commands_free()`](#dvz_commands_free) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_commands_handle()`](#dvz_commands_handle) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_commands_wrap()`](#dvz_commands_wrap) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_commands_wrap_borrowed_recording()`](#dvz_commands_wrap_borrowed_recording) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_rendering()`](#dvz_rendering) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_rendering_area()`](#dvz_rendering_area) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_rendering_color()`](#dvz_rendering_color) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_rendering_color_count()`](#dvz_rendering_color_count) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_rendering_create_wrapper()`](#dvz_rendering_create_wrapper) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_rendering_depth()`](#dvz_rendering_depth) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_rendering_free()`](#dvz_rendering_free) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_rendering_has_depth()`](#dvz_rendering_has_depth) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_rendering_has_stencil()`](#dvz_rendering_has_stencil) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_rendering_layer_count()`](#dvz_rendering_layer_count) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_rendering_layers()`](#dvz_rendering_layers) | `include/datoviz/vklite/rendering.h` |
+    | [`dvz_rendering_stencil()`](#dvz_rendering_stencil) | `include/datoviz/vklite/rendering.h` |
 
     **Device And Presentation**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzPresentStatus`](#type-dvzpresentstatus) | enum | `include/datoviz/vklite/swapchain.h` |
-    | [`DvzSurface`](#type-dvzsurface) | typedef | `include/datoviz/vklite/surface.h` |
-    | [`DvzSwapchain`](#type-dvzswapchain) | typedef | `include/datoviz/vklite/swapchain.h` |
-    | [`DvzSwapchainConfig`](#type-dvzswapchainconfig) | record | `include/datoviz/vklite/swapchain.h` |
-    | [`dvz_surface_capabilities()`](#dvz_surface_capabilities) | function | `include/datoviz/vklite/surface.h` |
-    | [`dvz_surface_create_wrapper()`](#dvz_surface_create_wrapper) | function | `include/datoviz/vklite/surface.h` |
-    | [`dvz_surface_destroy()`](#dvz_surface_destroy) | function | `include/datoviz/vklite/surface.h` |
-    | [`dvz_surface_extent()`](#dvz_surface_extent) | function | `include/datoviz/vklite/surface.h` |
-    | [`dvz_surface_format()`](#dvz_surface_format) | function | `include/datoviz/vklite/surface.h` |
-    | [`dvz_surface_format_count()`](#dvz_surface_format_count) | function | `include/datoviz/vklite/surface.h` |
-    | [`dvz_surface_free()`](#dvz_surface_free) | function | `include/datoviz/vklite/surface.h` |
-    | [`dvz_surface_handle()`](#dvz_surface_handle) | function | `include/datoviz/vklite/surface.h` |
-    | [`dvz_surface_has_present_mode()`](#dvz_surface_has_present_mode) | function | `include/datoviz/vklite/surface.h` |
-    | [`dvz_surface_init_from_device()`](#dvz_surface_init_from_device) | function | `include/datoviz/vklite/surface.h` |
-    | [`dvz_surface_init_from_instance()`](#dvz_surface_init_from_instance) | function | `include/datoviz/vklite/surface.h` |
-    | [`dvz_surface_preferred_format()`](#dvz_surface_preferred_format) | function | `include/datoviz/vklite/surface.h` |
-    | [`dvz_surface_preferred_present_mode()`](#dvz_surface_preferred_present_mode) | function | `include/datoviz/vklite/surface.h` |
-    | [`dvz_surface_present_mode()`](#dvz_surface_present_mode) | function | `include/datoviz/vklite/surface.h` |
-    | [`dvz_surface_present_mode_count()`](#dvz_surface_present_mode_count) | function | `include/datoviz/vklite/surface.h` |
-    | [`dvz_surface_ready()`](#dvz_surface_ready) | function | `include/datoviz/vklite/surface.h` |
-    | [`dvz_surface_refresh()`](#dvz_surface_refresh) | function | `include/datoviz/vklite/surface.h` |
-    | [`dvz_surface_set_extent_hint()`](#dvz_surface_set_extent_hint) | function | `include/datoviz/vklite/surface.h` |
-    | [`dvz_surface_wrap_native()`](#dvz_surface_wrap_native) | function | `include/datoviz/vklite/surface.h` |
-    | [`dvz_swapchain_acquire()`](#dvz_swapchain_acquire) | function | `include/datoviz/vklite/swapchain.h` |
-    | [`dvz_swapchain_color_space()`](#dvz_swapchain_color_space) | function | `include/datoviz/vklite/swapchain.h` |
-    | [`dvz_swapchain_config()`](#dvz_swapchain_config) | function | `include/datoviz/vklite/swapchain.h` |
-    | [`dvz_swapchain_create_wrapper()`](#dvz_swapchain_create_wrapper) | function | `include/datoviz/vklite/swapchain.h` |
-    | [`dvz_swapchain_destroy()`](#dvz_swapchain_destroy) | function | `include/datoviz/vklite/swapchain.h` |
-    | [`dvz_swapchain_device()`](#dvz_swapchain_device) | function | `include/datoviz/vklite/swapchain.h` |
-    | [`dvz_swapchain_extent()`](#dvz_swapchain_extent) | function | `include/datoviz/vklite/swapchain.h` |
-    | [`dvz_swapchain_free()`](#dvz_swapchain_free) | function | `include/datoviz/vklite/swapchain.h` |
-    | [`dvz_swapchain_get_config()`](#dvz_swapchain_get_config) | function | `include/datoviz/vklite/swapchain.h` |
-    | [`dvz_swapchain_handle()`](#dvz_swapchain_handle) | function | `include/datoviz/vklite/swapchain.h` |
-    | [`dvz_swapchain_image()`](#dvz_swapchain_image) | function | `include/datoviz/vklite/swapchain.h` |
-    | [`dvz_swapchain_image_count()`](#dvz_swapchain_image_count) | function | `include/datoviz/vklite/swapchain.h` |
-    | [`dvz_swapchain_image_format()`](#dvz_swapchain_image_format) | function | `include/datoviz/vklite/swapchain.h` |
-    | [`dvz_swapchain_image_view()`](#dvz_swapchain_image_view) | function | `include/datoviz/vklite/swapchain.h` |
-    | [`dvz_swapchain_init_from_device()`](#dvz_swapchain_init_from_device) | function | `include/datoviz/vklite/swapchain.h` |
-    | [`dvz_swapchain_present()`](#dvz_swapchain_present) | function | `include/datoviz/vklite/swapchain.h` |
-    | [`dvz_swapchain_present_mode()`](#dvz_swapchain_present_mode) | function | `include/datoviz/vklite/swapchain.h` |
-    | [`dvz_swapchain_ready()`](#dvz_swapchain_ready) | function | `include/datoviz/vklite/swapchain.h` |
-    | [`dvz_swapchain_recreate()`](#dvz_swapchain_recreate) | function | `include/datoviz/vklite/swapchain.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_surface_capabilities()`](#dvz_surface_capabilities) | `include/datoviz/vklite/surface.h` |
+    | [`dvz_surface_create_wrapper()`](#dvz_surface_create_wrapper) | `include/datoviz/vklite/surface.h` |
+    | [`dvz_surface_destroy()`](#dvz_surface_destroy) | `include/datoviz/vklite/surface.h` |
+    | [`dvz_surface_extent()`](#dvz_surface_extent) | `include/datoviz/vklite/surface.h` |
+    | [`dvz_surface_format()`](#dvz_surface_format) | `include/datoviz/vklite/surface.h` |
+    | [`dvz_surface_format_count()`](#dvz_surface_format_count) | `include/datoviz/vklite/surface.h` |
+    | [`dvz_surface_free()`](#dvz_surface_free) | `include/datoviz/vklite/surface.h` |
+    | [`dvz_surface_handle()`](#dvz_surface_handle) | `include/datoviz/vklite/surface.h` |
+    | [`dvz_surface_has_present_mode()`](#dvz_surface_has_present_mode) | `include/datoviz/vklite/surface.h` |
+    | [`dvz_surface_init_from_device()`](#dvz_surface_init_from_device) | `include/datoviz/vklite/surface.h` |
+    | [`dvz_surface_init_from_instance()`](#dvz_surface_init_from_instance) | `include/datoviz/vklite/surface.h` |
+    | [`dvz_surface_preferred_format()`](#dvz_surface_preferred_format) | `include/datoviz/vklite/surface.h` |
+    | [`dvz_surface_preferred_present_mode()`](#dvz_surface_preferred_present_mode) | `include/datoviz/vklite/surface.h` |
+    | [`dvz_surface_present_mode()`](#dvz_surface_present_mode) | `include/datoviz/vklite/surface.h` |
+    | [`dvz_surface_present_mode_count()`](#dvz_surface_present_mode_count) | `include/datoviz/vklite/surface.h` |
+    | [`dvz_surface_ready()`](#dvz_surface_ready) | `include/datoviz/vklite/surface.h` |
+    | [`dvz_surface_refresh()`](#dvz_surface_refresh) | `include/datoviz/vklite/surface.h` |
+    | [`dvz_surface_set_extent_hint()`](#dvz_surface_set_extent_hint) | `include/datoviz/vklite/surface.h` |
+    | [`dvz_surface_wrap_native()`](#dvz_surface_wrap_native) | `include/datoviz/vklite/surface.h` |
+    | [`dvz_swapchain_acquire()`](#dvz_swapchain_acquire) | `include/datoviz/vklite/swapchain.h` |
+    | [`dvz_swapchain_color_space()`](#dvz_swapchain_color_space) | `include/datoviz/vklite/swapchain.h` |
+    | [`dvz_swapchain_config()`](#dvz_swapchain_config) | `include/datoviz/vklite/swapchain.h` |
+    | [`dvz_swapchain_create_wrapper()`](#dvz_swapchain_create_wrapper) | `include/datoviz/vklite/swapchain.h` |
+    | [`dvz_swapchain_destroy()`](#dvz_swapchain_destroy) | `include/datoviz/vklite/swapchain.h` |
+    | [`dvz_swapchain_device()`](#dvz_swapchain_device) | `include/datoviz/vklite/swapchain.h` |
+    | [`dvz_swapchain_extent()`](#dvz_swapchain_extent) | `include/datoviz/vklite/swapchain.h` |
+    | [`dvz_swapchain_free()`](#dvz_swapchain_free) | `include/datoviz/vklite/swapchain.h` |
+    | [`dvz_swapchain_get_config()`](#dvz_swapchain_get_config) | `include/datoviz/vklite/swapchain.h` |
+    | [`dvz_swapchain_handle()`](#dvz_swapchain_handle) | `include/datoviz/vklite/swapchain.h` |
+    | [`dvz_swapchain_image()`](#dvz_swapchain_image) | `include/datoviz/vklite/swapchain.h` |
+    | [`dvz_swapchain_image_count()`](#dvz_swapchain_image_count) | `include/datoviz/vklite/swapchain.h` |
+    | [`dvz_swapchain_image_format()`](#dvz_swapchain_image_format) | `include/datoviz/vklite/swapchain.h` |
+    | [`dvz_swapchain_image_view()`](#dvz_swapchain_image_view) | `include/datoviz/vklite/swapchain.h` |
+    | [`dvz_swapchain_init_from_device()`](#dvz_swapchain_init_from_device) | `include/datoviz/vklite/swapchain.h` |
+    | [`dvz_swapchain_present()`](#dvz_swapchain_present) | `include/datoviz/vklite/swapchain.h` |
+    | [`dvz_swapchain_present_mode()`](#dvz_swapchain_present_mode) | `include/datoviz/vklite/swapchain.h` |
+    | [`dvz_swapchain_ready()`](#dvz_swapchain_ready) | `include/datoviz/vklite/swapchain.h` |
+    | [`dvz_swapchain_recreate()`](#dvz_swapchain_recreate) | `include/datoviz/vklite/swapchain.h` |
 
     **Pipelines And Bindings**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzCompute`](#type-dvzcompute) | typedef | `include/datoviz/vklite/compute.h` |
-    | [`DvzDescriptors`](#type-dvzdescriptors) | typedef | `include/datoviz/vklite/descriptors.h` |
-    | [`DvzGraphics`](#type-dvzgraphics) | typedef | `include/datoviz/vklite/graphics.h` |
-    | [`DvzGraphicsFlags`](#type-dvzgraphicsflags) | enum | `include/datoviz/vklite/graphics.h` |
-    | [`DvzShader`](#type-dvzshader) | typedef | `include/datoviz/vklite/shader.h` |
-    | [`DvzSlots`](#type-dvzslots) | typedef | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_compute()`](#dvz_compute) | function | `include/datoviz/vklite/compute.h` |
-    | [`dvz_compute_create()`](#dvz_compute_create) | function | `include/datoviz/vklite/compute.h` |
-    | [`dvz_compute_create_wrapper()`](#dvz_compute_create_wrapper) | function | `include/datoviz/vklite/compute.h` |
-    | [`dvz_compute_destroy()`](#dvz_compute_destroy) | function | `include/datoviz/vklite/compute.h` |
-    | [`dvz_compute_free()`](#dvz_compute_free) | function | `include/datoviz/vklite/compute.h` |
-    | [`dvz_compute_handle()`](#dvz_compute_handle) | function | `include/datoviz/vklite/compute.h` |
-    | [`dvz_compute_layout()`](#dvz_compute_layout) | function | `include/datoviz/vklite/compute.h` |
-    | [`dvz_compute_layout_handle()`](#dvz_compute_layout_handle) | function | `include/datoviz/vklite/compute.h` |
-    | [`dvz_compute_shader()`](#dvz_compute_shader) | function | `include/datoviz/vklite/compute.h` |
-    | [`dvz_compute_spec()`](#dvz_compute_spec) | function | `include/datoviz/vklite/compute.h` |
-    | [`dvz_descriptors()`](#dvz_descriptors) | function | `include/datoviz/vklite/descriptors.h` |
-    | [`dvz_descriptors_buffer()`](#dvz_descriptors_buffer) | function | `include/datoviz/vklite/descriptors.h` |
-    | [`dvz_descriptors_create_wrapper()`](#dvz_descriptors_create_wrapper) | function | `include/datoviz/vklite/descriptors.h` |
-    | [`dvz_descriptors_free()`](#dvz_descriptors_free) | function | `include/datoviz/vklite/descriptors.h` |
-    | [`dvz_descriptors_handle()`](#dvz_descriptors_handle) | function | `include/datoviz/vklite/descriptors.h` |
-    | [`dvz_descriptors_image()`](#dvz_descriptors_image) | function | `include/datoviz/vklite/descriptors.h` |
-    | [`dvz_descriptors_set_count()`](#dvz_descriptors_set_count) | function | `include/datoviz/vklite/descriptors.h` |
-    | [`dvz_graphics()`](#dvz_graphics) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_attachment_color()`](#dvz_graphics_attachment_color) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_attachment_depth()`](#dvz_graphics_attachment_depth) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_attachment_stencil()`](#dvz_graphics_attachment_stencil) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_blend()`](#dvz_graphics_blend) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_blend_alpha()`](#dvz_graphics_blend_alpha) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_blend_color()`](#dvz_graphics_blend_color) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_color_attachment_count()`](#dvz_graphics_color_attachment_count) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_color_write_mask()`](#dvz_graphics_color_write_mask) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_create()`](#dvz_graphics_create) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_create_wrapper()`](#dvz_graphics_create_wrapper) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_cull_mode()`](#dvz_graphics_cull_mode) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_depth()`](#dvz_graphics_depth) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_depth_bias()`](#dvz_graphics_depth_bias) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_depth_bounds()`](#dvz_graphics_depth_bounds) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_destroy()`](#dvz_graphics_destroy) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_free()`](#dvz_graphics_free) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_front_face()`](#dvz_graphics_front_face) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_handle()`](#dvz_graphics_handle) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_layout()`](#dvz_graphics_layout) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_layout_handle()`](#dvz_graphics_layout_handle) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_multisampling()`](#dvz_graphics_multisampling) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_polygon_mode()`](#dvz_graphics_polygon_mode) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_primitive()`](#dvz_graphics_primitive) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_primitive_restart()`](#dvz_graphics_primitive_restart) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_scissor()`](#dvz_graphics_scissor) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_shader()`](#dvz_graphics_shader) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_shader_count()`](#dvz_graphics_shader_count) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_spec()`](#dvz_graphics_spec) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_stencil()`](#dvz_graphics_stencil) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_vertex_attr()`](#dvz_graphics_vertex_attr) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_vertex_binding()`](#dvz_graphics_vertex_binding) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_graphics_viewport()`](#dvz_graphics_viewport) | function | `include/datoviz/vklite/graphics.h` |
-    | [`dvz_shader()`](#dvz_shader) | function | `include/datoviz/vklite/shader.h` |
-    | [`dvz_shader_create_wrapper()`](#dvz_shader_create_wrapper) | function | `include/datoviz/vklite/shader.h` |
-    | [`dvz_shader_destroy()`](#dvz_shader_destroy) | function | `include/datoviz/vklite/shader.h` |
-    | [`dvz_shader_free()`](#dvz_shader_free) | function | `include/datoviz/vklite/shader.h` |
-    | [`dvz_shader_handle()`](#dvz_shader_handle) | function | `include/datoviz/vklite/shader.h` |
-    | [`dvz_slots()`](#dvz_slots) | function | `include/datoviz/vklite/slots.h` |
-    | [`dvz_slots_binding()`](#dvz_slots_binding) | function | `include/datoviz/vklite/slots.h` |
-    | [`dvz_slots_binding_count()`](#dvz_slots_binding_count) | function | `include/datoviz/vklite/slots.h` |
-    | [`dvz_slots_combined_pipeline_layout()`](#dvz_slots_combined_pipeline_layout) | function | `include/datoviz/vklite/slots.h` |
-    | [`dvz_slots_create()`](#dvz_slots_create) | function | `include/datoviz/vklite/slots.h` |
-    | [`dvz_slots_create_wrapper()`](#dvz_slots_create_wrapper) | function | `include/datoviz/vklite/slots.h` |
-    | [`dvz_slots_descriptor_type()`](#dvz_slots_descriptor_type) | function | `include/datoviz/vklite/slots.h` |
-    | [`dvz_slots_destroy()`](#dvz_slots_destroy) | function | `include/datoviz/vklite/slots.h` |
-    | [`dvz_slots_device()`](#dvz_slots_device) | function | `include/datoviz/vklite/slots.h` |
-    | [`dvz_slots_free()`](#dvz_slots_free) | function | `include/datoviz/vklite/slots.h` |
-    | [`dvz_slots_handle()`](#dvz_slots_handle) | function | `include/datoviz/vklite/slots.h` |
-    | [`dvz_slots_push()`](#dvz_slots_push) | function | `include/datoviz/vklite/slots.h` |
-    | [`dvz_slots_push_count()`](#dvz_slots_push_count) | function | `include/datoviz/vklite/slots.h` |
-    | [`dvz_slots_set_count()`](#dvz_slots_set_count) | function | `include/datoviz/vklite/slots.h` |
-    | [`dvz_slots_set_layout()`](#dvz_slots_set_layout) | function | `include/datoviz/vklite/slots.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_compute()`](#dvz_compute) | `include/datoviz/vklite/compute.h` |
+    | [`dvz_compute_create()`](#dvz_compute_create) | `include/datoviz/vklite/compute.h` |
+    | [`dvz_compute_create_wrapper()`](#dvz_compute_create_wrapper) | `include/datoviz/vklite/compute.h` |
+    | [`dvz_compute_destroy()`](#dvz_compute_destroy) | `include/datoviz/vklite/compute.h` |
+    | [`dvz_compute_free()`](#dvz_compute_free) | `include/datoviz/vklite/compute.h` |
+    | [`dvz_compute_handle()`](#dvz_compute_handle) | `include/datoviz/vklite/compute.h` |
+    | [`dvz_compute_layout()`](#dvz_compute_layout) | `include/datoviz/vklite/compute.h` |
+    | [`dvz_compute_layout_handle()`](#dvz_compute_layout_handle) | `include/datoviz/vklite/compute.h` |
+    | [`dvz_compute_shader()`](#dvz_compute_shader) | `include/datoviz/vklite/compute.h` |
+    | [`dvz_compute_spec()`](#dvz_compute_spec) | `include/datoviz/vklite/compute.h` |
+    | [`dvz_descriptors()`](#dvz_descriptors) | `include/datoviz/vklite/descriptors.h` |
+    | [`dvz_descriptors_buffer()`](#dvz_descriptors_buffer) | `include/datoviz/vklite/descriptors.h` |
+    | [`dvz_descriptors_create_wrapper()`](#dvz_descriptors_create_wrapper) | `include/datoviz/vklite/descriptors.h` |
+    | [`dvz_descriptors_free()`](#dvz_descriptors_free) | `include/datoviz/vklite/descriptors.h` |
+    | [`dvz_descriptors_handle()`](#dvz_descriptors_handle) | `include/datoviz/vklite/descriptors.h` |
+    | [`dvz_descriptors_image()`](#dvz_descriptors_image) | `include/datoviz/vklite/descriptors.h` |
+    | [`dvz_descriptors_set_count()`](#dvz_descriptors_set_count) | `include/datoviz/vklite/descriptors.h` |
+    | [`dvz_graphics()`](#dvz_graphics) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_attachment_color()`](#dvz_graphics_attachment_color) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_attachment_depth()`](#dvz_graphics_attachment_depth) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_attachment_stencil()`](#dvz_graphics_attachment_stencil) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_blend()`](#dvz_graphics_blend) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_blend_alpha()`](#dvz_graphics_blend_alpha) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_blend_color()`](#dvz_graphics_blend_color) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_color_attachment_count()`](#dvz_graphics_color_attachment_count) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_color_write_mask()`](#dvz_graphics_color_write_mask) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_create()`](#dvz_graphics_create) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_create_wrapper()`](#dvz_graphics_create_wrapper) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_cull_mode()`](#dvz_graphics_cull_mode) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_depth()`](#dvz_graphics_depth) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_depth_bias()`](#dvz_graphics_depth_bias) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_depth_bounds()`](#dvz_graphics_depth_bounds) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_destroy()`](#dvz_graphics_destroy) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_free()`](#dvz_graphics_free) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_front_face()`](#dvz_graphics_front_face) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_handle()`](#dvz_graphics_handle) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_layout()`](#dvz_graphics_layout) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_layout_handle()`](#dvz_graphics_layout_handle) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_multisampling()`](#dvz_graphics_multisampling) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_polygon_mode()`](#dvz_graphics_polygon_mode) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_primitive()`](#dvz_graphics_primitive) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_primitive_restart()`](#dvz_graphics_primitive_restart) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_scissor()`](#dvz_graphics_scissor) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_shader()`](#dvz_graphics_shader) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_shader_count()`](#dvz_graphics_shader_count) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_spec()`](#dvz_graphics_spec) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_stencil()`](#dvz_graphics_stencil) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_vertex_attr()`](#dvz_graphics_vertex_attr) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_vertex_binding()`](#dvz_graphics_vertex_binding) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_graphics_viewport()`](#dvz_graphics_viewport) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_shader()`](#dvz_shader) | `include/datoviz/vklite/shader.h` |
+    | [`dvz_shader_create_wrapper()`](#dvz_shader_create_wrapper) | `include/datoviz/vklite/shader.h` |
+    | [`dvz_shader_destroy()`](#dvz_shader_destroy) | `include/datoviz/vklite/shader.h` |
+    | [`dvz_shader_free()`](#dvz_shader_free) | `include/datoviz/vklite/shader.h` |
+    | [`dvz_shader_handle()`](#dvz_shader_handle) | `include/datoviz/vklite/shader.h` |
+    | [`dvz_slots()`](#dvz_slots) | `include/datoviz/vklite/slots.h` |
+    | [`dvz_slots_binding()`](#dvz_slots_binding) | `include/datoviz/vklite/slots.h` |
+    | [`dvz_slots_binding_count()`](#dvz_slots_binding_count) | `include/datoviz/vklite/slots.h` |
+    | [`dvz_slots_combined_pipeline_layout()`](#dvz_slots_combined_pipeline_layout) | `include/datoviz/vklite/slots.h` |
+    | [`dvz_slots_create()`](#dvz_slots_create) | `include/datoviz/vklite/slots.h` |
+    | [`dvz_slots_create_wrapper()`](#dvz_slots_create_wrapper) | `include/datoviz/vklite/slots.h` |
+    | [`dvz_slots_descriptor_type()`](#dvz_slots_descriptor_type) | `include/datoviz/vklite/slots.h` |
+    | [`dvz_slots_destroy()`](#dvz_slots_destroy) | `include/datoviz/vklite/slots.h` |
+    | [`dvz_slots_device()`](#dvz_slots_device) | `include/datoviz/vklite/slots.h` |
+    | [`dvz_slots_free()`](#dvz_slots_free) | `include/datoviz/vklite/slots.h` |
+    | [`dvz_slots_handle()`](#dvz_slots_handle) | `include/datoviz/vklite/slots.h` |
+    | [`dvz_slots_push()`](#dvz_slots_push) | `include/datoviz/vklite/slots.h` |
+    | [`dvz_slots_push_count()`](#dvz_slots_push_count) | `include/datoviz/vklite/slots.h` |
+    | [`dvz_slots_set_count()`](#dvz_slots_set_count) | `include/datoviz/vklite/slots.h` |
+    | [`dvz_slots_set_layout()`](#dvz_slots_set_layout) | `include/datoviz/vklite/slots.h` |
 
     **Resources**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzBuffer`](#type-dvzbuffer) | typedef | `include/datoviz/vklite/buffers.h` |
-    | [`DvzBufferViews`](#type-dvzbufferviews) | typedef | `include/datoviz/vklite/buffers.h` |
-    | [`DvzImageBlit`](#type-dvzimageblit) | typedef | `include/datoviz/vklite/images.h` |
-    | [`DvzImageCopy`](#type-dvzimagecopy) | typedef | `include/datoviz/vklite/images.h` |
-    | [`DvzImageRegion`](#type-dvzimageregion) | typedef | `include/datoviz/vklite/images.h` |
-    | [`DvzImageViews`](#type-dvzimageviews) | typedef | `include/datoviz/vklite/images.h` |
-    | [`DvzImages`](#type-dvzimages) | typedef | `include/datoviz/vklite/images.h` |
-    | [`DvzSampler`](#type-dvzsampler) | typedef | `include/datoviz/vklite/sampler.h` |
-    | [`DvzSamplerAxis`](#type-dvzsampleraxis) | enum | `include/datoviz/vklite/sampler.h` |
-    | [`dvz_buffer()`](#dvz_buffer) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_allocated_size()`](#dvz_buffer_allocated_size) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_create()`](#dvz_buffer_create) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_create_wrapper()`](#dvz_buffer_create_wrapper) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_destroy()`](#dvz_buffer_destroy) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_download()`](#dvz_buffer_download) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_flags()`](#dvz_buffer_flags) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_free()`](#dvz_buffer_free) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_handle()`](#dvz_buffer_handle) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_map()`](#dvz_buffer_map) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_resize()`](#dvz_buffer_resize) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_size()`](#dvz_buffer_size) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_size_value()`](#dvz_buffer_size_value) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_unmap()`](#dvz_buffer_unmap) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_upload()`](#dvz_buffer_upload) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_usage()`](#dvz_buffer_usage) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_views()`](#dvz_buffer_views) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_views_aligned_size()`](#dvz_buffer_views_aligned_size) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_views_count()`](#dvz_buffer_views_count) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_views_create()`](#dvz_buffer_views_create) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_views_free()`](#dvz_buffer_views_free) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_views_offset()`](#dvz_buffer_views_offset) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_buffer_views_size()`](#dvz_buffer_views_size) | function | `include/datoviz/vklite/buffers.h` |
-    | [`dvz_image_blit()`](#dvz_image_blit) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_blit_create()`](#dvz_image_blit_create) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_blit_free()`](#dvz_image_blit_free) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_copy()`](#dvz_image_copy) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_copy_create()`](#dvz_image_copy_create) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_copy_free()`](#dvz_image_copy_free) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_handle()`](#dvz_image_handle) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_region()`](#dvz_image_region) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_region_aspect()`](#dvz_image_region_aspect) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_region_extent()`](#dvz_image_region_extent) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_region_layers()`](#dvz_image_region_layers) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_region_mip()`](#dvz_image_region_mip) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_region_offset()`](#dvz_image_region_offset) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_views()`](#dvz_image_views) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_views_aspect()`](#dvz_image_views_aspect) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_views_count()`](#dvz_image_views_count) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_views_create()`](#dvz_image_views_create) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_views_create_wrapper()`](#dvz_image_views_create_wrapper) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_views_destroy()`](#dvz_image_views_destroy) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_views_free()`](#dvz_image_views_free) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_views_handle()`](#dvz_image_views_handle) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_views_layers()`](#dvz_image_views_layers) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_views_mip()`](#dvz_image_views_mip) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_image_views_type()`](#dvz_image_views_type) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_images()`](#dvz_images) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_images_alloc_flags()`](#dvz_images_alloc_flags) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_images_count()`](#dvz_images_count) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_images_create()`](#dvz_images_create) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_images_create_wrapper()`](#dvz_images_create_wrapper) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_images_destroy()`](#dvz_images_destroy) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_images_flags()`](#dvz_images_flags) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_images_format()`](#dvz_images_format) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_images_format_value()`](#dvz_images_format_value) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_images_free()`](#dvz_images_free) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_images_layers()`](#dvz_images_layers) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_images_mip()`](#dvz_images_mip) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_images_samples()`](#dvz_images_samples) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_images_size()`](#dvz_images_size) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_images_tiling()`](#dvz_images_tiling) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_images_usage()`](#dvz_images_usage) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_images_wrap()`](#dvz_images_wrap) | function | `include/datoviz/vklite/images.h` |
-    | [`dvz_sampler()`](#dvz_sampler) | function | `include/datoviz/vklite/sampler.h` |
-    | [`dvz_sampler_address_mode()`](#dvz_sampler_address_mode) | function | `include/datoviz/vklite/sampler.h` |
-    | [`dvz_sampler_anisotropy()`](#dvz_sampler_anisotropy) | function | `include/datoviz/vklite/sampler.h` |
-    | [`dvz_sampler_create()`](#dvz_sampler_create) | function | `include/datoviz/vklite/sampler.h` |
-    | [`dvz_sampler_create_wrapper()`](#dvz_sampler_create_wrapper) | function | `include/datoviz/vklite/sampler.h` |
-    | [`dvz_sampler_destroy()`](#dvz_sampler_destroy) | function | `include/datoviz/vklite/sampler.h` |
-    | [`dvz_sampler_free()`](#dvz_sampler_free) | function | `include/datoviz/vklite/sampler.h` |
-    | [`dvz_sampler_handle()`](#dvz_sampler_handle) | function | `include/datoviz/vklite/sampler.h` |
-    | [`dvz_sampler_mag_filter()`](#dvz_sampler_mag_filter) | function | `include/datoviz/vklite/sampler.h` |
-    | [`dvz_sampler_min_filter()`](#dvz_sampler_min_filter) | function | `include/datoviz/vklite/sampler.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_buffer()`](#dvz_buffer) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_allocated_size()`](#dvz_buffer_allocated_size) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_create()`](#dvz_buffer_create) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_create_wrapper()`](#dvz_buffer_create_wrapper) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_destroy()`](#dvz_buffer_destroy) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_download()`](#dvz_buffer_download) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_flags()`](#dvz_buffer_flags) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_free()`](#dvz_buffer_free) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_handle()`](#dvz_buffer_handle) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_map()`](#dvz_buffer_map) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_resize()`](#dvz_buffer_resize) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_size()`](#dvz_buffer_size) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_size_value()`](#dvz_buffer_size_value) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_unmap()`](#dvz_buffer_unmap) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_upload()`](#dvz_buffer_upload) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_usage()`](#dvz_buffer_usage) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_views()`](#dvz_buffer_views) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_views_aligned_size()`](#dvz_buffer_views_aligned_size) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_views_count()`](#dvz_buffer_views_count) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_views_create()`](#dvz_buffer_views_create) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_views_free()`](#dvz_buffer_views_free) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_views_offset()`](#dvz_buffer_views_offset) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_buffer_views_size()`](#dvz_buffer_views_size) | `include/datoviz/vklite/buffers.h` |
+    | [`dvz_image_blit()`](#dvz_image_blit) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_blit_create()`](#dvz_image_blit_create) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_blit_free()`](#dvz_image_blit_free) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_copy()`](#dvz_image_copy) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_copy_create()`](#dvz_image_copy_create) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_copy_free()`](#dvz_image_copy_free) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_handle()`](#dvz_image_handle) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_region()`](#dvz_image_region) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_region_aspect()`](#dvz_image_region_aspect) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_region_extent()`](#dvz_image_region_extent) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_region_layers()`](#dvz_image_region_layers) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_region_mip()`](#dvz_image_region_mip) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_region_offset()`](#dvz_image_region_offset) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_views()`](#dvz_image_views) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_views_aspect()`](#dvz_image_views_aspect) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_views_count()`](#dvz_image_views_count) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_views_create()`](#dvz_image_views_create) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_views_create_wrapper()`](#dvz_image_views_create_wrapper) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_views_destroy()`](#dvz_image_views_destroy) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_views_free()`](#dvz_image_views_free) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_views_handle()`](#dvz_image_views_handle) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_views_layers()`](#dvz_image_views_layers) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_views_mip()`](#dvz_image_views_mip) | `include/datoviz/vklite/images.h` |
+    | [`dvz_image_views_type()`](#dvz_image_views_type) | `include/datoviz/vklite/images.h` |
+    | [`dvz_images()`](#dvz_images) | `include/datoviz/vklite/images.h` |
+    | [`dvz_images_alloc_flags()`](#dvz_images_alloc_flags) | `include/datoviz/vklite/images.h` |
+    | [`dvz_images_count()`](#dvz_images_count) | `include/datoviz/vklite/images.h` |
+    | [`dvz_images_create()`](#dvz_images_create) | `include/datoviz/vklite/images.h` |
+    | [`dvz_images_create_wrapper()`](#dvz_images_create_wrapper) | `include/datoviz/vklite/images.h` |
+    | [`dvz_images_destroy()`](#dvz_images_destroy) | `include/datoviz/vklite/images.h` |
+    | [`dvz_images_flags()`](#dvz_images_flags) | `include/datoviz/vklite/images.h` |
+    | [`dvz_images_format()`](#dvz_images_format) | `include/datoviz/vklite/images.h` |
+    | [`dvz_images_format_value()`](#dvz_images_format_value) | `include/datoviz/vklite/images.h` |
+    | [`dvz_images_free()`](#dvz_images_free) | `include/datoviz/vklite/images.h` |
+    | [`dvz_images_layers()`](#dvz_images_layers) | `include/datoviz/vklite/images.h` |
+    | [`dvz_images_mip()`](#dvz_images_mip) | `include/datoviz/vklite/images.h` |
+    | [`dvz_images_samples()`](#dvz_images_samples) | `include/datoviz/vklite/images.h` |
+    | [`dvz_images_size()`](#dvz_images_size) | `include/datoviz/vklite/images.h` |
+    | [`dvz_images_tiling()`](#dvz_images_tiling) | `include/datoviz/vklite/images.h` |
+    | [`dvz_images_usage()`](#dvz_images_usage) | `include/datoviz/vklite/images.h` |
+    | [`dvz_images_wrap()`](#dvz_images_wrap) | `include/datoviz/vklite/images.h` |
+    | [`dvz_sampler()`](#dvz_sampler) | `include/datoviz/vklite/sampler.h` |
+    | [`dvz_sampler_address_mode()`](#dvz_sampler_address_mode) | `include/datoviz/vklite/sampler.h` |
+    | [`dvz_sampler_anisotropy()`](#dvz_sampler_anisotropy) | `include/datoviz/vklite/sampler.h` |
+    | [`dvz_sampler_create()`](#dvz_sampler_create) | `include/datoviz/vklite/sampler.h` |
+    | [`dvz_sampler_create_wrapper()`](#dvz_sampler_create_wrapper) | `include/datoviz/vklite/sampler.h` |
+    | [`dvz_sampler_destroy()`](#dvz_sampler_destroy) | `include/datoviz/vklite/sampler.h` |
+    | [`dvz_sampler_free()`](#dvz_sampler_free) | `include/datoviz/vklite/sampler.h` |
+    | [`dvz_sampler_handle()`](#dvz_sampler_handle) | `include/datoviz/vklite/sampler.h` |
+    | [`dvz_sampler_mag_filter()`](#dvz_sampler_mag_filter) | `include/datoviz/vklite/sampler.h` |
+    | [`dvz_sampler_min_filter()`](#dvz_sampler_min_filter) | `include/datoviz/vklite/sampler.h` |
 
     **Synchronization And Submission**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzBarrierBuffer`](#type-dvzbarrierbuffer) | typedef | `include/datoviz/vklite/sync.h` |
-    | [`DvzBarrierImage`](#type-dvzbarrierimage) | typedef | `include/datoviz/vklite/sync.h` |
-    | [`DvzBarrierMemory`](#type-dvzbarriermemory) | typedef | `include/datoviz/vklite/sync.h` |
-    | [`DvzBarriers`](#type-dvzbarriers) | record | `include/datoviz/vklite/sync.h` |
-    | [`DvzFence`](#type-dvzfence) | typedef | `include/datoviz/vklite/sync.h` |
-    | [`DvzSemaphore`](#type-dvzsemaphore) | typedef | `include/datoviz/vklite/sync.h` |
-    | [`DvzSubmit`](#type-dvzsubmit) | typedef | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barrier_buffer_access()`](#dvz_barrier_buffer_access) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barrier_buffer_queue()`](#dvz_barrier_buffer_queue) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barrier_buffer_stage()`](#dvz_barrier_buffer_stage) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barrier_image_access()`](#dvz_barrier_image_access) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barrier_image_aspect()`](#dvz_barrier_image_aspect) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barrier_image_layers()`](#dvz_barrier_image_layers) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barrier_image_layout()`](#dvz_barrier_image_layout) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barrier_image_mip()`](#dvz_barrier_image_mip) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barrier_image_queue()`](#dvz_barrier_image_queue) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barrier_image_stage()`](#dvz_barrier_image_stage) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barrier_memory_access()`](#dvz_barrier_memory_access) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barrier_memory_stage()`](#dvz_barrier_memory_stage) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barriers()`](#dvz_barriers) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barriers_buffer()`](#dvz_barriers_buffer) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barriers_buffer_count()`](#dvz_barriers_buffer_count) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barriers_capacity()`](#dvz_barriers_capacity) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barriers_dependency_flags()`](#dvz_barriers_dependency_flags) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barriers_flags()`](#dvz_barriers_flags) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barriers_image()`](#dvz_barriers_image) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barriers_image_count()`](#dvz_barriers_image_count) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barriers_memory()`](#dvz_barriers_memory) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_barriers_memory_count()`](#dvz_barriers_memory_count) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_fence()`](#dvz_fence) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_fence_create_wrapper()`](#dvz_fence_create_wrapper) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_fence_destroy()`](#dvz_fence_destroy) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_fence_free()`](#dvz_fence_free) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_fence_handle()`](#dvz_fence_handle) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_fence_ready()`](#dvz_fence_ready) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_fence_reset()`](#dvz_fence_reset) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_fence_wait()`](#dvz_fence_wait) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_semaphore()`](#dvz_semaphore) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_semaphore_create_wrapper()`](#dvz_semaphore_create_wrapper) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_semaphore_destroy()`](#dvz_semaphore_destroy) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_semaphore_export_fd()`](#dvz_semaphore_export_fd) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_semaphore_free()`](#dvz_semaphore_free) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_semaphore_handle()`](#dvz_semaphore_handle) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_semaphore_query()`](#dvz_semaphore_query) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_semaphore_signal()`](#dvz_semaphore_signal) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_semaphore_timeline()`](#dvz_semaphore_timeline) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_semaphore_wait()`](#dvz_semaphore_wait) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_submit()`](#dvz_submit) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_submit_command()`](#dvz_submit_command) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_submit_command_count()`](#dvz_submit_command_count) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_submit_create_wrapper()`](#dvz_submit_create_wrapper) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_submit_free()`](#dvz_submit_free) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_submit_is_empty()`](#dvz_submit_is_empty) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_submit_send()`](#dvz_submit_send) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_submit_signal()`](#dvz_submit_signal) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_submit_signal_count()`](#dvz_submit_signal_count) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_submit_wait()`](#dvz_submit_wait) | function | `include/datoviz/vklite/sync.h` |
-    | [`dvz_submit_wait_count()`](#dvz_submit_wait_count) | function | `include/datoviz/vklite/sync.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_barrier_buffer_access()`](#dvz_barrier_buffer_access) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barrier_buffer_queue()`](#dvz_barrier_buffer_queue) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barrier_buffer_stage()`](#dvz_barrier_buffer_stage) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barrier_image_access()`](#dvz_barrier_image_access) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barrier_image_aspect()`](#dvz_barrier_image_aspect) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barrier_image_layers()`](#dvz_barrier_image_layers) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barrier_image_layout()`](#dvz_barrier_image_layout) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barrier_image_mip()`](#dvz_barrier_image_mip) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barrier_image_queue()`](#dvz_barrier_image_queue) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barrier_image_stage()`](#dvz_barrier_image_stage) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barrier_memory_access()`](#dvz_barrier_memory_access) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barrier_memory_stage()`](#dvz_barrier_memory_stage) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barriers()`](#dvz_barriers) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barriers_buffer()`](#dvz_barriers_buffer) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barriers_buffer_count()`](#dvz_barriers_buffer_count) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barriers_capacity()`](#dvz_barriers_capacity) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barriers_dependency_flags()`](#dvz_barriers_dependency_flags) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barriers_flags()`](#dvz_barriers_flags) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barriers_image()`](#dvz_barriers_image) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barriers_image_count()`](#dvz_barriers_image_count) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barriers_memory()`](#dvz_barriers_memory) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_barriers_memory_count()`](#dvz_barriers_memory_count) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_fence()`](#dvz_fence) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_fence_create_wrapper()`](#dvz_fence_create_wrapper) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_fence_destroy()`](#dvz_fence_destroy) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_fence_free()`](#dvz_fence_free) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_fence_handle()`](#dvz_fence_handle) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_fence_ready()`](#dvz_fence_ready) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_fence_reset()`](#dvz_fence_reset) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_fence_wait()`](#dvz_fence_wait) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_semaphore()`](#dvz_semaphore) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_semaphore_create_wrapper()`](#dvz_semaphore_create_wrapper) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_semaphore_destroy()`](#dvz_semaphore_destroy) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_semaphore_export_fd()`](#dvz_semaphore_export_fd) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_semaphore_free()`](#dvz_semaphore_free) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_semaphore_handle()`](#dvz_semaphore_handle) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_semaphore_query()`](#dvz_semaphore_query) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_semaphore_signal()`](#dvz_semaphore_signal) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_semaphore_timeline()`](#dvz_semaphore_timeline) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_semaphore_wait()`](#dvz_semaphore_wait) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_submit()`](#dvz_submit) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_submit_command()`](#dvz_submit_command) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_submit_command_count()`](#dvz_submit_command_count) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_submit_create_wrapper()`](#dvz_submit_create_wrapper) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_submit_free()`](#dvz_submit_free) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_submit_is_empty()`](#dvz_submit_is_empty) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_submit_send()`](#dvz_submit_send) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_submit_signal()`](#dvz_submit_signal) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_submit_signal_count()`](#dvz_submit_signal_count) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_submit_wait()`](#dvz_submit_wait) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_submit_wait_count()`](#dvz_submit_wait_count) | `include/datoviz/vklite/sync.h` |
 
 ## Commands And Rendering { #commands-and-rendering }
-
-### Types
-
-#### `DvzAttachment` { #type-dvzattachment }
-
-```c
-typedef struct VkRenderingAttachmentInfo DvzAttachment;
-```
-
-Used by: [`dvz_attachment_clear()`](runtime-vklite.md#dvz_attachment_clear), [`dvz_attachment_image()`](runtime-vklite.md#dvz_attachment_image), [`dvz_attachment_ops()`](runtime-vklite.md#dvz_attachment_ops), [`dvz_attachment_resolve()`](runtime-vklite.md#dvz_attachment_resolve), [`dvz_rendering_color()`](runtime-vklite.md#dvz_rendering_color), [`dvz_rendering_depth()`](runtime-vklite.md#dvz_rendering_depth), [`dvz_rendering_stencil()`](runtime-vklite.md#dvz_rendering_stencil).
-
-_Declared in `include/datoviz/vklite/rendering.h`:38._
-
-#### `DvzCommands` { #type-dvzcommands }
-
-```c
-typedef struct DvzCommands DvzCommands;
-```
-
-Used by: [`dvz_cmd_barriers()`](runtime-vklite.md#dvz_cmd_barriers), [`dvz_cmd_begin()`](runtime-vklite.md#dvz_cmd_begin), [`dvz_cmd_begin_result()`](runtime-vklite.md#dvz_cmd_begin_result), [`dvz_cmd_bind_compute()`](runtime-vklite.md#dvz_cmd_bind_compute), [`dvz_cmd_bind_descriptors()`](runtime-vklite.md#dvz_cmd_bind_descriptors), [`dvz_cmd_bind_graphics()`](runtime-vklite.md#dvz_cmd_bind_graphics), [`dvz_cmd_bind_index_buffer()`](runtime-vklite.md#dvz_cmd_bind_index_buffer), [`dvz_cmd_bind_vertex_buffers()`](runtime-vklite.md#dvz_cmd_bind_vertex_buffers); plus 27 more.
-
-_Declared in `include/datoviz/vklite/commands.h`._
-
-#### `DvzRendering` { #type-dvzrendering }
-
-```c
-typedef struct DvzRendering DvzRendering;
-```
-
-Used by: [`dvz_cmd_rendering_begin()`](runtime-vklite.md#dvz_cmd_rendering_begin), [`dvz_cmd_rendering_default()`](runtime-vklite.md#dvz_cmd_rendering_default), [`dvz_rendering()`](runtime-vklite.md#dvz_rendering), [`dvz_rendering_area()`](runtime-vklite.md#dvz_rendering_area), [`dvz_rendering_color()`](runtime-vklite.md#dvz_rendering_color), [`dvz_rendering_color_count()`](runtime-vklite.md#dvz_rendering_color_count), [`dvz_rendering_create_wrapper()`](runtime-vklite.md#dvz_rendering_create_wrapper), [`dvz_rendering_depth()`](runtime-vklite.md#dvz_rendering_depth); plus 6 more.
-
-_Declared in `include/datoviz/vklite/rendering.h`:39._
 
 ### Functions
 
@@ -1602,63 +1541,39 @@ DvzAttachment * dvz_rendering_stencil(
 
 _Declared in `include/datoviz/vklite/rendering.h`:216._
 
-## Device And Presentation { #device-and-presentation }
-
 ### Types
 
-#### `DvzPresentStatus` { #type-dvzpresentstatus }
+<a id="type-dvzattachment"></a>
 
-```c
-enum DvzPresentStatus {
-    DVZ_PRESENT_STATUS_OK = 0,
-    DVZ_PRESENT_STATUS_RECREATE = 1,
-    DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT = 2,
-    DVZ_PRESENT_STATUS_DEVICE_LOST = 3,
-    DVZ_PRESENT_STATUS_ERROR = 4,
-};
-```
+??? abstract "`DvzAttachment` · typedef"
 
-Used by: [`dvz_swapchain_acquire()`](runtime-vklite.md#dvz_swapchain_acquire), [`dvz_swapchain_present()`](runtime-vklite.md#dvz_swapchain_present), [`dvz_swapchain_recreate()`](runtime-vklite.md#dvz_swapchain_recreate).
+    ```c
+    typedef struct VkRenderingAttachmentInfo DvzAttachment;
+    ```
 
-_Declared in `include/datoviz/vklite/swapchain.h`:43._
+    _Declared in `include/datoviz/vklite/rendering.h`:38._
 
-#### `DvzSurface` { #type-dvzsurface }
+<a id="type-dvzcommands"></a>
 
-```c
-typedef struct DvzSurface DvzSurface;
-```
+??? abstract "`DvzCommands` · typedef"
 
-Used by: [`dvz_surface_capabilities()`](runtime-vklite.md#dvz_surface_capabilities), [`dvz_surface_create_wrapper()`](runtime-vklite.md#dvz_surface_create_wrapper), [`dvz_surface_destroy()`](runtime-vklite.md#dvz_surface_destroy), [`dvz_surface_extent()`](runtime-vklite.md#dvz_surface_extent), [`dvz_surface_format()`](runtime-vklite.md#dvz_surface_format), [`dvz_surface_format_count()`](runtime-vklite.md#dvz_surface_format_count), [`dvz_surface_free()`](runtime-vklite.md#dvz_surface_free), [`dvz_surface_handle()`](runtime-vklite.md#dvz_surface_handle); plus 12 more.
+    ```c
+    typedef struct DvzCommands DvzCommands;
+    ```
 
-_Declared in `include/datoviz/vklite/surface.h`:33._
+    _Declared in `include/datoviz/vklite/commands.h`._
 
-#### `DvzSwapchain` { #type-dvzswapchain }
+<a id="type-dvzrendering"></a>
 
-```c
-typedef struct DvzSwapchain DvzSwapchain;
-```
+??? abstract "`DvzRendering` · typedef"
 
-Used by: [`dvz_swapchain_acquire()`](runtime-vklite.md#dvz_swapchain_acquire), [`dvz_swapchain_color_space()`](runtime-vklite.md#dvz_swapchain_color_space), [`dvz_swapchain_config()`](runtime-vklite.md#dvz_swapchain_config), [`dvz_swapchain_create_wrapper()`](runtime-vklite.md#dvz_swapchain_create_wrapper), [`dvz_swapchain_destroy()`](runtime-vklite.md#dvz_swapchain_destroy), [`dvz_swapchain_device()`](runtime-vklite.md#dvz_swapchain_device), [`dvz_swapchain_extent()`](runtime-vklite.md#dvz_swapchain_extent), [`dvz_swapchain_free()`](runtime-vklite.md#dvz_swapchain_free); plus 11 more.
+    ```c
+    typedef struct DvzRendering DvzRendering;
+    ```
 
-_Declared in `include/datoviz/vklite/swapchain.h`:34._
+    _Declared in `include/datoviz/vklite/rendering.h`:39._
 
-#### `DvzSwapchainConfig` { #type-dvzswapchainconfig }
-
-```c
-struct DvzSwapchainConfig {
-    VkFormat image_format;
-    VkColorSpaceKHR color_space;
-    VkPresentModeKHR present_mode;
-    VkImageUsageFlags image_usage;
-    VkCompositeAlphaFlagBitsKHR composite_alpha;
-    uint32_t min_image_count;
-    _Bool clipped;
-};
-```
-
-Used by: [`dvz_swapchain_config()`](runtime-vklite.md#dvz_swapchain_config), [`dvz_swapchain_get_config()`](runtime-vklite.md#dvz_swapchain_get_config).
-
-_Declared in `include/datoviz/vklite/swapchain.h`:54._
+## Device And Presentation { #device-and-presentation }
 
 ### Functions
 
@@ -2353,73 +2268,63 @@ DvzPresentStatus dvz_swapchain_recreate(
 
 _Declared in `include/datoviz/vklite/swapchain.h`:234._
 
-## Pipelines And Bindings { #pipelines-and-bindings }
-
 ### Types
 
-#### `DvzCompute` { #type-dvzcompute }
+<a id="type-dvzpresentstatus"></a>
 
-```c
-typedef struct DvzCompute DvzCompute;
-```
+??? abstract "`DvzPresentStatus` · enum"
 
-Used by: [`dvz_cmd_bind_compute()`](runtime-vklite.md#dvz_cmd_bind_compute), [`dvz_compute()`](runtime-vklite.md#dvz_compute), [`dvz_compute_create()`](runtime-vklite.md#dvz_compute_create), [`dvz_compute_create_wrapper()`](runtime-vklite.md#dvz_compute_create_wrapper), [`dvz_compute_destroy()`](runtime-vklite.md#dvz_compute_destroy), [`dvz_compute_free()`](runtime-vklite.md#dvz_compute_free), [`dvz_compute_handle()`](runtime-vklite.md#dvz_compute_handle), [`dvz_compute_layout()`](runtime-vklite.md#dvz_compute_layout); plus 3 more.
+    ```c
+    enum DvzPresentStatus {
+        DVZ_PRESENT_STATUS_OK = 0,
+        DVZ_PRESENT_STATUS_RECREATE = 1,
+        DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT = 2,
+        DVZ_PRESENT_STATUS_DEVICE_LOST = 3,
+        DVZ_PRESENT_STATUS_ERROR = 4,
+    };
+    ```
 
-_Declared in `include/datoviz/vklite/compute.h`:45._
+    _Declared in `include/datoviz/vklite/swapchain.h`:43._
 
-#### `DvzDescriptors` { #type-dvzdescriptors }
+<a id="type-dvzsurface"></a>
 
-```c
-typedef struct DvzDescriptors DvzDescriptors;
-```
+??? abstract "`DvzSurface` · typedef"
 
-Used by: [`dvz_cmd_bind_descriptors()`](runtime-vklite.md#dvz_cmd_bind_descriptors), [`dvz_descriptors()`](runtime-vklite.md#dvz_descriptors), [`dvz_descriptors_buffer()`](runtime-vklite.md#dvz_descriptors_buffer), [`dvz_descriptors_create_wrapper()`](runtime-vklite.md#dvz_descriptors_create_wrapper), [`dvz_descriptors_free()`](runtime-vklite.md#dvz_descriptors_free), [`dvz_descriptors_handle()`](runtime-vklite.md#dvz_descriptors_handle), [`dvz_descriptors_image()`](runtime-vklite.md#dvz_descriptors_image), [`dvz_descriptors_set_count()`](runtime-vklite.md#dvz_descriptors_set_count).
+    ```c
+    typedef struct DvzSurface DvzSurface;
+    ```
 
-_Declared in `include/datoviz/vklite/descriptors.h`:37._
+    _Declared in `include/datoviz/vklite/surface.h`:33._
 
-#### `DvzGraphics` { #type-dvzgraphics }
+<a id="type-dvzswapchain"></a>
 
-```c
-typedef struct DvzGraphics DvzGraphics;
-```
+??? abstract "`DvzSwapchain` · typedef"
 
-Used by: [`dvz_cmd_bind_graphics()`](runtime-vklite.md#dvz_cmd_bind_graphics), [`dvz_graphics()`](runtime-vklite.md#dvz_graphics), [`dvz_graphics_attachment_color()`](runtime-vklite.md#dvz_graphics_attachment_color), [`dvz_graphics_attachment_depth()`](runtime-vklite.md#dvz_graphics_attachment_depth), [`dvz_graphics_attachment_stencil()`](runtime-vklite.md#dvz_graphics_attachment_stencil), [`dvz_graphics_blend()`](runtime-vklite.md#dvz_graphics_blend), [`dvz_graphics_blend_alpha()`](runtime-vklite.md#dvz_graphics_blend_alpha), [`dvz_graphics_blend_color()`](runtime-vklite.md#dvz_graphics_blend_color); plus 26 more.
+    ```c
+    typedef struct DvzSwapchain DvzSwapchain;
+    ```
 
-_Declared in `include/datoviz/vklite/graphics.h`:38._
+    _Declared in `include/datoviz/vklite/swapchain.h`:34._
 
-#### `DvzGraphicsFlags` { #type-dvzgraphicsflags }
+<a id="type-dvzswapchainconfig"></a>
 
-```c
-enum DvzGraphicsFlags {
-    DVZ_GRAPHICS_FLAGS_DISABLE = 0,
-    DVZ_GRAPHICS_FLAGS_FIXED = 1,
-    DVZ_GRAPHICS_FLAGS_DYNAMIC = 2,
-};
-```
+??? abstract "`DvzSwapchainConfig` · record"
 
-Used by: [`dvz_graphics_blend()`](runtime-vklite.md#dvz_graphics_blend), [`dvz_graphics_cull_mode()`](runtime-vklite.md#dvz_graphics_cull_mode), [`dvz_graphics_depth()`](runtime-vklite.md#dvz_graphics_depth), [`dvz_graphics_depth_bias()`](runtime-vklite.md#dvz_graphics_depth_bias), [`dvz_graphics_depth_bounds()`](runtime-vklite.md#dvz_graphics_depth_bounds), [`dvz_graphics_front_face()`](runtime-vklite.md#dvz_graphics_front_face), [`dvz_graphics_polygon_mode()`](runtime-vklite.md#dvz_graphics_polygon_mode), [`dvz_graphics_primitive()`](runtime-vklite.md#dvz_graphics_primitive); plus 4 more.
+    ```c
+    struct DvzSwapchainConfig {
+        VkFormat image_format;
+        VkColorSpaceKHR color_space;
+        VkPresentModeKHR present_mode;
+        VkImageUsageFlags image_usage;
+        VkCompositeAlphaFlagBitsKHR composite_alpha;
+        uint32_t min_image_count;
+        _Bool clipped;
+    };
+    ```
 
-_Declared in `include/datoviz/vklite/graphics.h`:60._
+    _Declared in `include/datoviz/vklite/swapchain.h`:54._
 
-#### `DvzShader` { #type-dvzshader }
-
-```c
-typedef struct DvzShader DvzShader;
-```
-
-Used by: [`dvz_shader()`](runtime-vklite.md#dvz_shader), [`dvz_shader_create_wrapper()`](runtime-vklite.md#dvz_shader_create_wrapper), [`dvz_shader_destroy()`](runtime-vklite.md#dvz_shader_destroy), [`dvz_shader_free()`](runtime-vklite.md#dvz_shader_free), [`dvz_shader_handle()`](runtime-vklite.md#dvz_shader_handle).
-
-_Declared in `include/datoviz/vklite/shader.h`:34._
-
-#### `DvzSlots` { #type-dvzslots }
-
-```c
-typedef struct DvzSlots DvzSlots;
-```
-
-Used by: [`dvz_descriptors()`](runtime-vklite.md#dvz_descriptors), [`dvz_slots()`](runtime-vklite.md#dvz_slots), [`dvz_slots_binding()`](runtime-vklite.md#dvz_slots_binding), [`dvz_slots_binding_count()`](runtime-vklite.md#dvz_slots_binding_count), [`dvz_slots_create()`](runtime-vklite.md#dvz_slots_create), [`dvz_slots_create_wrapper()`](runtime-vklite.md#dvz_slots_create_wrapper), [`dvz_slots_descriptor_type()`](runtime-vklite.md#dvz_slots_descriptor_type), [`dvz_slots_destroy()`](runtime-vklite.md#dvz_slots_destroy); plus 7 more.
-
-_Declared in `include/datoviz/vklite/graphics.h`:37._
+## Pipelines And Bindings { #pipelines-and-bindings }
 
 ### Functions
 
@@ -3872,103 +3777,73 @@ VkDescriptorSetLayout dvz_slots_set_layout(
 
 _Declared in `include/datoviz/vklite/slots.h`:212._
 
-## Resources { #resources }
-
 ### Types
 
-#### `DvzBuffer` { #type-dvzbuffer }
+<a id="type-dvzcompute"></a>
 
-```c
-typedef struct DvzBuffer DvzBuffer;
-```
+??? abstract "`DvzCompute` · typedef"
 
-Used by: [`dvz_buffer()`](runtime-vklite.md#dvz_buffer), [`dvz_buffer_allocated_size()`](runtime-vklite.md#dvz_buffer_allocated_size), [`dvz_buffer_create()`](runtime-vklite.md#dvz_buffer_create), [`dvz_buffer_create_wrapper()`](runtime-vklite.md#dvz_buffer_create_wrapper), [`dvz_buffer_destroy()`](runtime-vklite.md#dvz_buffer_destroy), [`dvz_buffer_download()`](runtime-vklite.md#dvz_buffer_download), [`dvz_buffer_flags()`](runtime-vklite.md#dvz_buffer_flags), [`dvz_buffer_free()`](runtime-vklite.md#dvz_buffer_free); plus 13 more.
+    ```c
+    typedef struct DvzCompute DvzCompute;
+    ```
 
-_Declared in `include/datoviz/vklite/buffers.h`._
+    _Declared in `include/datoviz/vklite/compute.h`:45._
 
-#### `DvzBufferViews` { #type-dvzbufferviews }
+<a id="type-dvzdescriptors"></a>
 
-```c
-typedef struct DvzBufferViews DvzBufferViews;
-```
+??? abstract "`DvzDescriptors` · typedef"
 
-Used by: [`dvz_buffer_views()`](runtime-vklite.md#dvz_buffer_views), [`dvz_buffer_views_aligned_size()`](runtime-vklite.md#dvz_buffer_views_aligned_size), [`dvz_buffer_views_count()`](runtime-vklite.md#dvz_buffer_views_count), [`dvz_buffer_views_create()`](runtime-vklite.md#dvz_buffer_views_create), [`dvz_buffer_views_free()`](runtime-vklite.md#dvz_buffer_views_free), [`dvz_buffer_views_offset()`](runtime-vklite.md#dvz_buffer_views_offset), [`dvz_buffer_views_size()`](runtime-vklite.md#dvz_buffer_views_size).
+    ```c
+    typedef struct DvzDescriptors DvzDescriptors;
+    ```
 
-_Declared in `include/datoviz/vklite/buffers.h`:42._
+    _Declared in `include/datoviz/vklite/descriptors.h`:37._
 
-#### `DvzImageBlit` { #type-dvzimageblit }
+<a id="type-dvzgraphics"></a>
 
-```c
-typedef struct DvzImageBlit DvzImageBlit;
-```
+??? abstract "`DvzGraphics` · typedef"
 
-Used by: [`dvz_cmd_blit_destination()`](runtime-vklite.md#dvz_cmd_blit_destination), [`dvz_cmd_blit_filter()`](runtime-vklite.md#dvz_cmd_blit_filter), [`dvz_cmd_blit_image()`](runtime-vklite.md#dvz_cmd_blit_image), [`dvz_cmd_blit_source()`](runtime-vklite.md#dvz_cmd_blit_source), [`dvz_image_blit()`](runtime-vklite.md#dvz_image_blit), [`dvz_image_blit_create()`](runtime-vklite.md#dvz_image_blit_create), [`dvz_image_blit_free()`](runtime-vklite.md#dvz_image_blit_free).
+    ```c
+    typedef struct DvzGraphics DvzGraphics;
+    ```
 
-_Declared in `include/datoviz/vklite/images.h`:45._
+    _Declared in `include/datoviz/vklite/graphics.h`:38._
 
-#### `DvzImageCopy` { #type-dvzimagecopy }
+<a id="type-dvzgraphicsflags"></a>
 
-```c
-typedef struct DvzImageCopy DvzImageCopy;
-```
+??? abstract "`DvzGraphicsFlags` · enum"
 
-Used by: [`dvz_cmd_copy_destination()`](runtime-vklite.md#dvz_cmd_copy_destination), [`dvz_cmd_copy_image()`](runtime-vklite.md#dvz_cmd_copy_image), [`dvz_cmd_copy_source()`](runtime-vklite.md#dvz_cmd_copy_source), [`dvz_image_copy()`](runtime-vklite.md#dvz_image_copy), [`dvz_image_copy_create()`](runtime-vklite.md#dvz_image_copy_create), [`dvz_image_copy_free()`](runtime-vklite.md#dvz_image_copy_free).
+    ```c
+    enum DvzGraphicsFlags {
+        DVZ_GRAPHICS_FLAGS_DISABLE = 0,
+        DVZ_GRAPHICS_FLAGS_FIXED = 1,
+        DVZ_GRAPHICS_FLAGS_DYNAMIC = 2,
+    };
+    ```
 
-_Declared in `include/datoviz/vklite/images.h`:46._
+    _Declared in `include/datoviz/vklite/graphics.h`:60._
 
-#### `DvzImageRegion` { #type-dvzimageregion }
+<a id="type-dvzshader"></a>
 
-```c
-typedef struct VkBufferImageCopy2 DvzImageRegion;
-```
+??? abstract "`DvzShader` · typedef"
 
-Used by: [`dvz_cmd_copy_buffer_to_image()`](runtime-vklite.md#dvz_cmd_copy_buffer_to_image), [`dvz_cmd_copy_image_to_buffer()`](runtime-vklite.md#dvz_cmd_copy_image_to_buffer), [`dvz_image_region()`](runtime-vklite.md#dvz_image_region), [`dvz_image_region_aspect()`](runtime-vklite.md#dvz_image_region_aspect), [`dvz_image_region_extent()`](runtime-vklite.md#dvz_image_region_extent), [`dvz_image_region_layers()`](runtime-vklite.md#dvz_image_region_layers), [`dvz_image_region_mip()`](runtime-vklite.md#dvz_image_region_mip), [`dvz_image_region_offset()`](runtime-vklite.md#dvz_image_region_offset).
+    ```c
+    typedef struct DvzShader DvzShader;
+    ```
 
-_Declared in `include/datoviz/vklite/images.h`:44._
+    _Declared in `include/datoviz/vklite/shader.h`:34._
 
-#### `DvzImageViews` { #type-dvzimageviews }
+<a id="type-dvzslots"></a>
 
-```c
-typedef struct DvzImageViews DvzImageViews;
-```
+??? abstract "`DvzSlots` · typedef"
 
-Used by: [`dvz_image_views()`](runtime-vklite.md#dvz_image_views), [`dvz_image_views_aspect()`](runtime-vklite.md#dvz_image_views_aspect), [`dvz_image_views_count()`](runtime-vklite.md#dvz_image_views_count), [`dvz_image_views_create()`](runtime-vklite.md#dvz_image_views_create), [`dvz_image_views_create_wrapper()`](runtime-vklite.md#dvz_image_views_create_wrapper), [`dvz_image_views_destroy()`](runtime-vklite.md#dvz_image_views_destroy), [`dvz_image_views_free()`](runtime-vklite.md#dvz_image_views_free), [`dvz_image_views_handle()`](runtime-vklite.md#dvz_image_views_handle); plus 3 more.
+    ```c
+    typedef struct DvzSlots DvzSlots;
+    ```
 
-_Declared in `include/datoviz/vklite/images.h`:43._
+    _Declared in `include/datoviz/vklite/graphics.h`:37._
 
-#### `DvzImages` { #type-dvzimages }
-
-```c
-typedef struct DvzImages DvzImages;
-```
-
-Used by: [`dvz_image_handle()`](runtime-vklite.md#dvz_image_handle), [`dvz_image_views()`](runtime-vklite.md#dvz_image_views), [`dvz_images()`](runtime-vklite.md#dvz_images), [`dvz_images_alloc_flags()`](runtime-vklite.md#dvz_images_alloc_flags), [`dvz_images_count()`](runtime-vklite.md#dvz_images_count), [`dvz_images_create()`](runtime-vklite.md#dvz_images_create), [`dvz_images_create_wrapper()`](runtime-vklite.md#dvz_images_create_wrapper), [`dvz_images_destroy()`](runtime-vklite.md#dvz_images_destroy); plus 11 more.
-
-_Declared in `include/datoviz/vklite/images.h`:42._
-
-#### `DvzSampler` { #type-dvzsampler }
-
-```c
-typedef struct DvzSampler DvzSampler;
-```
-
-Used by: [`dvz_sampler()`](runtime-vklite.md#dvz_sampler), [`dvz_sampler_address_mode()`](runtime-vklite.md#dvz_sampler_address_mode), [`dvz_sampler_anisotropy()`](runtime-vklite.md#dvz_sampler_anisotropy), [`dvz_sampler_create()`](runtime-vklite.md#dvz_sampler_create), [`dvz_sampler_create_wrapper()`](runtime-vklite.md#dvz_sampler_create_wrapper), [`dvz_sampler_destroy()`](runtime-vklite.md#dvz_sampler_destroy), [`dvz_sampler_free()`](runtime-vklite.md#dvz_sampler_free), [`dvz_sampler_handle()`](runtime-vklite.md#dvz_sampler_handle); plus 2 more.
-
-_Declared in `include/datoviz/vklite/sampler.h`:32._
-
-#### `DvzSamplerAxis` { #type-dvzsampleraxis }
-
-```c
-enum DvzSamplerAxis {
-    DVZ_SAMPLER_AXIS_U = 0,
-    DVZ_SAMPLER_AXIS_V = 1,
-    DVZ_SAMPLER_AXIS_W = 2,
-};
-```
-
-Used by: [`dvz_sampler_address_mode()`](runtime-vklite.md#dvz_sampler_address_mode).
-
-_Declared in `include/datoviz/vklite/sampler.h`:41._
+## Resources { #resources }
 
 ### Functions
 
@@ -5376,84 +5251,103 @@ void dvz_sampler_min_filter(
 
 _Declared in `include/datoviz/vklite/sampler.h`:92._
 
-## Synchronization And Submission { #synchronization-and-submission }
-
 ### Types
 
-#### `DvzBarrierBuffer` { #type-dvzbarrierbuffer }
+<a id="type-dvzbuffer"></a>
 
-```c
-typedef struct VkBufferMemoryBarrier2 DvzBarrierBuffer;
-```
+??? abstract "`DvzBuffer` · typedef"
 
-Used by: [`dvz_barrier_buffer_access()`](runtime-vklite.md#dvz_barrier_buffer_access), [`dvz_barrier_buffer_queue()`](runtime-vklite.md#dvz_barrier_buffer_queue), [`dvz_barrier_buffer_stage()`](runtime-vklite.md#dvz_barrier_buffer_stage), [`dvz_barriers_buffer()`](runtime-vklite.md#dvz_barriers_buffer).
+    ```c
+    typedef struct DvzBuffer DvzBuffer;
+    ```
 
-_Declared in `include/datoviz/vklite/sync.h`:37._
+    _Declared in `include/datoviz/vklite/buffers.h`._
 
-#### `DvzBarrierImage` { #type-dvzbarrierimage }
+<a id="type-dvzbufferviews"></a>
 
-```c
-typedef struct VkImageMemoryBarrier2 DvzBarrierImage;
-```
+??? abstract "`DvzBufferViews` · typedef"
 
-Used by: [`dvz_barrier_image_access()`](runtime-vklite.md#dvz_barrier_image_access), [`dvz_barrier_image_aspect()`](runtime-vklite.md#dvz_barrier_image_aspect), [`dvz_barrier_image_layers()`](runtime-vklite.md#dvz_barrier_image_layers), [`dvz_barrier_image_layout()`](runtime-vklite.md#dvz_barrier_image_layout), [`dvz_barrier_image_mip()`](runtime-vklite.md#dvz_barrier_image_mip), [`dvz_barrier_image_queue()`](runtime-vklite.md#dvz_barrier_image_queue), [`dvz_barrier_image_stage()`](runtime-vklite.md#dvz_barrier_image_stage), [`dvz_barriers_image()`](runtime-vklite.md#dvz_barriers_image).
+    ```c
+    typedef struct DvzBufferViews DvzBufferViews;
+    ```
 
-_Declared in `include/datoviz/vklite/sync.h`:38._
+    _Declared in `include/datoviz/vklite/buffers.h`:42._
 
-#### `DvzBarrierMemory` { #type-dvzbarriermemory }
+<a id="type-dvzimageblit"></a>
 
-```c
-typedef struct VkMemoryBarrier2 DvzBarrierMemory;
-```
+??? abstract "`DvzImageBlit` · typedef"
 
-Used by: [`dvz_barrier_memory_access()`](runtime-vklite.md#dvz_barrier_memory_access), [`dvz_barrier_memory_stage()`](runtime-vklite.md#dvz_barrier_memory_stage), [`dvz_barriers_memory()`](runtime-vklite.md#dvz_barriers_memory).
+    ```c
+    typedef struct DvzImageBlit DvzImageBlit;
+    ```
 
-_Declared in `include/datoviz/vklite/sync.h`:36._
+    _Declared in `include/datoviz/vklite/images.h`:45._
 
-#### `DvzBarriers` { #type-dvzbarriers }
+<a id="type-dvzimagecopy"></a>
 
-```c
-struct DvzBarriers {
-    VkDependencyInfo info;
-    DvzBarrierMemory[4] bmems;
-    DvzBarrierBuffer[4] bbufs;
-    DvzBarrierImage[4] bimg;
-};
-```
+??? abstract "`DvzImageCopy` · typedef"
 
-Used by: [`dvz_barriers()`](runtime-vklite.md#dvz_barriers), [`dvz_barriers_buffer()`](runtime-vklite.md#dvz_barriers_buffer), [`dvz_barriers_buffer_count()`](runtime-vklite.md#dvz_barriers_buffer_count), [`dvz_barriers_capacity()`](runtime-vklite.md#dvz_barriers_capacity), [`dvz_barriers_dependency_flags()`](runtime-vklite.md#dvz_barriers_dependency_flags), [`dvz_barriers_flags()`](runtime-vklite.md#dvz_barriers_flags), [`dvz_barriers_image()`](runtime-vklite.md#dvz_barriers_image), [`dvz_barriers_image_count()`](runtime-vklite.md#dvz_barriers_image_count); plus 3 more.
+    ```c
+    typedef struct DvzImageCopy DvzImageCopy;
+    ```
 
-_Declared in `include/datoviz/vklite/sync.h`:67._
+    _Declared in `include/datoviz/vklite/images.h`:46._
 
-#### `DvzFence` { #type-dvzfence }
+<a id="type-dvzimageregion"></a>
 
-```c
-typedef struct DvzFence DvzFence;
-```
+??? abstract "`DvzImageRegion` · typedef"
 
-Used by: [`dvz_fence()`](runtime-vklite.md#dvz_fence), [`dvz_fence_create_wrapper()`](runtime-vklite.md#dvz_fence_create_wrapper), [`dvz_fence_destroy()`](runtime-vklite.md#dvz_fence_destroy), [`dvz_fence_free()`](runtime-vklite.md#dvz_fence_free), [`dvz_fence_handle()`](runtime-vklite.md#dvz_fence_handle), [`dvz_fence_ready()`](runtime-vklite.md#dvz_fence_ready), [`dvz_fence_reset()`](runtime-vklite.md#dvz_fence_reset), [`dvz_fence_wait()`](runtime-vklite.md#dvz_fence_wait).
+    ```c
+    typedef struct VkBufferImageCopy2 DvzImageRegion;
+    ```
 
-_Declared in `include/datoviz/vklite/sync.h`:40._
+    _Declared in `include/datoviz/vklite/images.h`:44._
 
-#### `DvzSemaphore` { #type-dvzsemaphore }
+<a id="type-dvzimageviews"></a>
 
-```c
-typedef struct DvzSemaphore DvzSemaphore;
-```
+??? abstract "`DvzImageViews` · typedef"
 
-Used by: [`dvz_interop_buffer_wait_timeline()`](runtime-vulkan.md#dvz_interop_buffer_wait_timeline), [`dvz_semaphore()`](runtime-vklite.md#dvz_semaphore), [`dvz_semaphore_create_wrapper()`](runtime-vklite.md#dvz_semaphore_create_wrapper), [`dvz_semaphore_destroy()`](runtime-vklite.md#dvz_semaphore_destroy), [`dvz_semaphore_export_fd()`](runtime-vklite.md#dvz_semaphore_export_fd), [`dvz_semaphore_free()`](runtime-vklite.md#dvz_semaphore_free), [`dvz_semaphore_handle()`](runtime-vklite.md#dvz_semaphore_handle), [`dvz_semaphore_query()`](runtime-vklite.md#dvz_semaphore_query); plus 3 more.
+    ```c
+    typedef struct DvzImageViews DvzImageViews;
+    ```
 
-_Declared in `include/datoviz/vklite/sync.h`._
+    _Declared in `include/datoviz/vklite/images.h`:43._
 
-#### `DvzSubmit` { #type-dvzsubmit }
+<a id="type-dvzimages"></a>
 
-```c
-typedef struct DvzSubmit DvzSubmit;
-```
+??? abstract "`DvzImages` · typedef"
 
-Used by: [`dvz_submit()`](runtime-vklite.md#dvz_submit), [`dvz_submit_command()`](runtime-vklite.md#dvz_submit_command), [`dvz_submit_command_count()`](runtime-vklite.md#dvz_submit_command_count), [`dvz_submit_create_wrapper()`](runtime-vklite.md#dvz_submit_create_wrapper), [`dvz_submit_free()`](runtime-vklite.md#dvz_submit_free), [`dvz_submit_is_empty()`](runtime-vklite.md#dvz_submit_is_empty), [`dvz_submit_send()`](runtime-vklite.md#dvz_submit_send), [`dvz_submit_signal()`](runtime-vklite.md#dvz_submit_signal); plus 3 more.
+    ```c
+    typedef struct DvzImages DvzImages;
+    ```
 
-_Declared in `include/datoviz/vklite/sync.h`:42._
+    _Declared in `include/datoviz/vklite/images.h`:42._
+
+<a id="type-dvzsampler"></a>
+
+??? abstract "`DvzSampler` · typedef"
+
+    ```c
+    typedef struct DvzSampler DvzSampler;
+    ```
+
+    _Declared in `include/datoviz/vklite/sampler.h`:32._
+
+<a id="type-dvzsampleraxis"></a>
+
+??? abstract "`DvzSamplerAxis` · enum"
+
+    ```c
+    enum DvzSamplerAxis {
+        DVZ_SAMPLER_AXIS_U = 0,
+        DVZ_SAMPLER_AXIS_V = 1,
+        DVZ_SAMPLER_AXIS_W = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/vklite/sampler.h`:41._
+
+## Synchronization And Submission { #synchronization-and-submission }
 
 ### Functions
 
@@ -6394,3 +6288,80 @@ uint32_t dvz_submit_wait_count(
 | `submit` | [`DvzSubmit`](runtime-vklite.md#type-dvzsubmit) * | the submission |
 
 _Declared in `include/datoviz/vklite/sync.h`:633._
+
+### Types
+
+<a id="type-dvzbarrierbuffer"></a>
+
+??? abstract "`DvzBarrierBuffer` · typedef"
+
+    ```c
+    typedef struct VkBufferMemoryBarrier2 DvzBarrierBuffer;
+    ```
+
+    _Declared in `include/datoviz/vklite/sync.h`:37._
+
+<a id="type-dvzbarrierimage"></a>
+
+??? abstract "`DvzBarrierImage` · typedef"
+
+    ```c
+    typedef struct VkImageMemoryBarrier2 DvzBarrierImage;
+    ```
+
+    _Declared in `include/datoviz/vklite/sync.h`:38._
+
+<a id="type-dvzbarriermemory"></a>
+
+??? abstract "`DvzBarrierMemory` · typedef"
+
+    ```c
+    typedef struct VkMemoryBarrier2 DvzBarrierMemory;
+    ```
+
+    _Declared in `include/datoviz/vklite/sync.h`:36._
+
+<a id="type-dvzbarriers"></a>
+
+??? abstract "`DvzBarriers` · record"
+
+    ```c
+    struct DvzBarriers {
+        VkDependencyInfo info;
+        DvzBarrierMemory[4] bmems;
+        DvzBarrierBuffer[4] bbufs;
+        DvzBarrierImage[4] bimg;
+    };
+    ```
+
+    _Declared in `include/datoviz/vklite/sync.h`:67._
+
+<a id="type-dvzfence"></a>
+
+??? abstract "`DvzFence` · typedef"
+
+    ```c
+    typedef struct DvzFence DvzFence;
+    ```
+
+    _Declared in `include/datoviz/vklite/sync.h`:40._
+
+<a id="type-dvzsemaphore"></a>
+
+??? abstract "`DvzSemaphore` · typedef"
+
+    ```c
+    typedef struct DvzSemaphore DvzSemaphore;
+    ```
+
+    _Declared in `include/datoviz/vklite/sync.h`._
+
+<a id="type-dvzsubmit"></a>
+
+??? abstract "`DvzSubmit` · typedef"
+
+    ```c
+    typedef struct DvzSubmit DvzSubmit;
+    ```
+
+    _Declared in `include/datoviz/vklite/sync.h`:42._

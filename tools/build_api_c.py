@@ -462,49 +462,48 @@ def render_symbol_groups(
             f"{len(page_types)} | {header_text} |"
         )
     lines.append("")
-    lines.extend(
-        [
-            '??? info "Grouped symbol index"',
-            "",
-        ]
-    )
-    for group in sorted(set(grouped) | set(types_grouped)):
+    if any(grouped.values()):
+        lines.extend(
+            [
+                '??? info "Grouped function index"',
+                "",
+            ]
+        )
+    for group in sorted(grouped):
         functions = sorted(grouped[group], key=lambda item: item["name"])
-        page_types = sorted(types_grouped[group], key=lambda item: item["name"])
+        if not functions:
+            continue
         lines.extend(
             [
                 f"    **{group}**",
                 "",
-                "    | Symbol | Kind | Header |",
-                "    | --- | --- | --- |",
+                "    | Function | Header |",
+                "    | --- | --- |",
             ]
         )
-        for entity in page_types:
-            lines.append(
-                f"    | [`{entity['name']}`](#{type_anchor(entity['name'])}) | "
-                f"{entity['kind']} | `{entity_header(entity)}` |"
-            )
         for fn in functions:
             lines.append(
-                f"    | [`{fn['name']}()`](#{symbol_anchor(fn['name'])}) | function | "
-                f"`{header_of(fn)}` |"
+                f"    | [`{fn['name']}()`](#{symbol_anchor(fn['name'])}) | `{header_of(fn)}` |"
             )
         lines.append("")
     return lines
 
 
-def render_type_entity(entity: dict, relations: list[tuple[str, str]]) -> list[str]:
+def render_type_entity(entity: dict) -> list[str]:
     source = entity["source"]
     doc, _, _ = doc_parts(source.get("doc"))
-    lines = [f"#### `{entity['name']}` {{ #{type_anchor(entity['name'])} }}", ""]
+    lines = [
+        f'<a id="{type_anchor(entity["name"])}"></a>',
+        "",
+        f'??? abstract "`{entity["name"]}` · {entity["kind"]}"',
+        "",
+    ]
     if doc:
-        lines.extend([doc, ""])
-    lines.extend(["```c", entity["signature"], "```", ""])
-    if relations:
-        shown = relations[:8]
-        links = ", ".join(f"[`{name}()`]({target})" for name, target in shown)
-        suffix = f"; plus {len(relations) - len(shown)} more" if len(relations) > len(shown) else ""
-        lines.extend([f"Used by: {links}{suffix}.", ""])
+        lines.extend([f"    {line}" if line else "" for line in doc.splitlines()])
+        lines.append("")
+    lines.extend(["    ```c"])
+    lines.extend(f"    {line}" for line in entity["signature"].splitlines())
+    lines.extend(["    ```", ""])
     header = entity_header(entity)
     if header:
         line = (
@@ -513,7 +512,7 @@ def render_type_entity(entity: dict, relations: list[tuple[str, str]]) -> list[s
             else None
         )
         location = f"`{header}`" + (f":{line}" if line else "")
-        lines.extend([f"_Declared in {location}._", ""])
+        lines.extend([f"    _Declared in {location}._", ""])
     return lines
 
 
@@ -522,7 +521,6 @@ def render_page(
     functions: list[dict],
     page_types: list[dict],
     type_targets: dict[str, str],
-    type_relations: dict[str, list[tuple[str, str]]],
 ) -> None:
     lines = generated_header(page.title, page.summary)
     lines.extend(render_page_intro(page, functions, len(page_types)))
@@ -538,14 +536,14 @@ def render_page(
     names = {str(fn["name"]) for fn in functions}
     for group in sorted(set(grouped) | set(types_grouped)):
         lines.extend([f"## {group} {{ #{group_anchor(group)} }}", ""])
-        if types_grouped[group]:
-            lines.extend(["### Types", ""])
-            for entity in sorted(types_grouped[group], key=lambda item: item["name"]):
-                lines.extend(render_type_entity(entity, type_relations.get(entity["name"], [])))
         if grouped[group]:
             lines.extend(["### Functions", ""])
         for fn in sorted(grouped[group], key=lambda item: item["name"]):
             lines.extend(format_function(fn, names, type_targets, "####"))
+        if types_grouped[group]:
+            lines.extend(["### Types", ""])
+            for entity in sorted(types_grouped[group], key=lambda item: item["name"]):
+                lines.extend(render_type_entity(entity))
 
     page.output.parent.mkdir(parents=True, exist_ok=True)
     page.output.write_text("\n".join(lines).rstrip() + "\n", encoding="utf8")
@@ -812,7 +810,7 @@ def main() -> int:
         typedefs,
         tuple(str(item) for item in types_policy.get("hidden", ())),
     )
-    type_relations = build_type_relations(pages, functions, type_targets)
+    build_type_relations(pages, functions, type_targets)
     validate_policy_patterns(api, pages, functions, types_by_page)
 
     missing = {
@@ -839,7 +837,6 @@ def main() -> int:
                 sorted(functions.get(page.key, []), key=lambda item: item["name"]),
                 sorted(types_by_page.get(page.key, []), key=lambda item: item["name"]),
                 type_targets,
-                type_relations,
             )
         render_types_index(types_policy, pages, types_by_page)
         write_summary(args.summary, pages, functions, records, enums, typedefs)

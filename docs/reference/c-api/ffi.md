@@ -26,38 +26,38 @@ Types: 0
 | --- | ---: | ---: | --- |
 | [Ffi](#ffi) | 26 | 0 | `include/datoviz/ffi.h` |
 
-??? info "Grouped symbol index"
+??? info "Grouped function index"
 
     **Ffi**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`dvz_ffi_depth_cue_desc()`](#dvz_ffi_depth_cue_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_field_geometry()`](#dvz_ffi_field_geometry) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_geometry_arrow_desc()`](#dvz_ffi_geometry_arrow_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_geometry_cone_desc()`](#dvz_ffi_geometry_cone_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_geometry_cube_desc()`](#dvz_ffi_geometry_cube_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_geometry_cylinder_desc()`](#dvz_ffi_geometry_cylinder_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_geometry_disc_desc()`](#dvz_ffi_geometry_disc_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_geometry_plane_desc()`](#dvz_ffi_geometry_plane_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_geometry_regular_polygon_desc()`](#dvz_ffi_geometry_regular_polygon_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_geometry_sector_desc()`](#dvz_ffi_geometry_sector_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_geometry_sphere_desc()`](#dvz_ffi_geometry_sphere_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_geometry_star_desc()`](#dvz_ffi_geometry_star_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_geometry_surface_grid_desc()`](#dvz_ffi_geometry_surface_grid_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_geometry_torus_desc()`](#dvz_ffi_geometry_torus_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_material_desc()`](#dvz_ffi_material_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_overlay_card_desc()`](#dvz_ffi_overlay_card_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_overlay_card_style()`](#dvz_ffi_overlay_card_style) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_panel_background_desc()`](#dvz_ffi_panel_background_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_phong_material_desc()`](#dvz_ffi_phong_material_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_polygon_desc()`](#dvz_ffi_polygon_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_reference_grid_desc()`](#dvz_ffi_reference_grid_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_scale_bar_desc()`](#dvz_ffi_scale_bar_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_standard_material_desc()`](#dvz_ffi_standard_material_desc) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_view_external_surface()`](#dvz_ffi_view_external_surface) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_view_update_external_surface()`](#dvz_ffi_view_update_external_surface) | function | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_visual_transform_desc()`](#dvz_ffi_visual_transform_desc) | function | `include/datoviz/ffi.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_ffi_depth_cue_desc()`](#dvz_ffi_depth_cue_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_field_geometry()`](#dvz_ffi_field_geometry) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_geometry_arrow_desc()`](#dvz_ffi_geometry_arrow_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_geometry_cone_desc()`](#dvz_ffi_geometry_cone_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_geometry_cube_desc()`](#dvz_ffi_geometry_cube_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_geometry_cylinder_desc()`](#dvz_ffi_geometry_cylinder_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_geometry_disc_desc()`](#dvz_ffi_geometry_disc_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_geometry_plane_desc()`](#dvz_ffi_geometry_plane_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_geometry_regular_polygon_desc()`](#dvz_ffi_geometry_regular_polygon_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_geometry_sector_desc()`](#dvz_ffi_geometry_sector_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_geometry_sphere_desc()`](#dvz_ffi_geometry_sphere_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_geometry_star_desc()`](#dvz_ffi_geometry_star_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_geometry_surface_grid_desc()`](#dvz_ffi_geometry_surface_grid_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_geometry_torus_desc()`](#dvz_ffi_geometry_torus_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_material_desc()`](#dvz_ffi_material_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_overlay_card_desc()`](#dvz_ffi_overlay_card_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_overlay_card_style()`](#dvz_ffi_overlay_card_style) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_panel_background_desc()`](#dvz_ffi_panel_background_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_phong_material_desc()`](#dvz_ffi_phong_material_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_polygon_desc()`](#dvz_ffi_polygon_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_reference_grid_desc()`](#dvz_ffi_reference_grid_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_scale_bar_desc()`](#dvz_ffi_scale_bar_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_standard_material_desc()`](#dvz_ffi_standard_material_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_view_external_surface()`](#dvz_ffi_view_external_surface) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_view_update_external_surface()`](#dvz_ffi_view_update_external_surface) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_visual_transform_desc()`](#dvz_ffi_visual_transform_desc) | `include/datoviz/ffi.h` |
 
 ## Ffi { #ffi }
 

@@ -35,494 +35,253 @@ Types: 108
 | [Views And Capture](#views-and-capture) | 59 | 8 | 3 headers |
 | [Window Hosting](#window-hosting) | 38 | 26 | 5 headers |
 
-??? info "Grouped symbol index"
+??? info "Grouped function index"
 
     **Application Lifecycle**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzApp`](#type-dvzapp) | typedef | `include/datoviz/app.h` |
-    | [`DvzAppCaptureConfig`](#type-dvzappcaptureconfig) | record | `include/datoviz/app.h` |
-    | [`DvzAppCaptureFlags`](#type-dvzappcaptureflags) | enum | `include/datoviz/app.h` |
-    | [`DvzAppConfig`](#type-dvzappconfig) | record | `include/datoviz/app.h` |
-    | [`DvzAppExitPolicy`](#type-dvzappexitpolicy) | enum | `include/datoviz/app.h` |
-    | [`DvzAppFlags`](#type-dvzappflags) | enum | `include/datoviz/runner/enums.h` |
-    | [`DvzAppResources`](#type-dvzappresources) | record | `include/datoviz/app.h` |
-    | [`DvzAppScheduleMode`](#type-dvzappschedulemode) | enum | `include/datoviz/app.h` |
-    | [`dvz_app()`](#dvz_app) | function | `include/datoviz/app.h` |
-    | [`dvz_app_capture_config()`](#dvz_app_capture_config) | function | `include/datoviz/app.h` |
-    | [`dvz_app_capture_config_from_env()`](#dvz_app_capture_config_from_env) | function | `include/datoviz/app.h` |
-    | [`dvz_app_config()`](#dvz_app_config) | function | `include/datoviz/app.h` |
-    | [`dvz_app_destroy()`](#dvz_app_destroy) | function | `include/datoviz/app.h` |
-    | [`dvz_app_reap_closed_views()`](#dvz_app_reap_closed_views) | function | `include/datoviz/app.h` |
-    | [`dvz_app_render_once()`](#dvz_app_render_once) | function | `include/datoviz/app.h` |
-    | [`dvz_app_resources()`](#dvz_app_resources) | function | `include/datoviz/app.h` |
-    | [`dvz_app_run()`](#dvz_app_run) | function | `include/datoviz/app.h` |
-    | [`dvz_app_should_exit()`](#dvz_app_should_exit) | function | `include/datoviz/app.h` |
-    | [`dvz_app_should_stop()`](#dvz_app_should_stop) | function | `include/datoviz/app.h` |
-    | [`dvz_app_stop()`](#dvz_app_stop) | function | `include/datoviz/app.h` |
-    | [`dvz_app_vk_instance()`](#dvz_app_vk_instance) | function | `include/datoviz/app_interop.h` |
-    | [`dvz_app_with_config()`](#dvz_app_with_config) | function | `include/datoviz/app.h` |
-    | [`dvz_app_with_resources()`](#dvz_app_with_resources) | function | `include/datoviz/app.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_app()`](#dvz_app) | `include/datoviz/app.h` |
+    | [`dvz_app_capture_config()`](#dvz_app_capture_config) | `include/datoviz/app.h` |
+    | [`dvz_app_capture_config_from_env()`](#dvz_app_capture_config_from_env) | `include/datoviz/app.h` |
+    | [`dvz_app_config()`](#dvz_app_config) | `include/datoviz/app.h` |
+    | [`dvz_app_destroy()`](#dvz_app_destroy) | `include/datoviz/app.h` |
+    | [`dvz_app_reap_closed_views()`](#dvz_app_reap_closed_views) | `include/datoviz/app.h` |
+    | [`dvz_app_render_once()`](#dvz_app_render_once) | `include/datoviz/app.h` |
+    | [`dvz_app_resources()`](#dvz_app_resources) | `include/datoviz/app.h` |
+    | [`dvz_app_run()`](#dvz_app_run) | `include/datoviz/app.h` |
+    | [`dvz_app_should_exit()`](#dvz_app_should_exit) | `include/datoviz/app.h` |
+    | [`dvz_app_should_stop()`](#dvz_app_should_stop) | `include/datoviz/app.h` |
+    | [`dvz_app_stop()`](#dvz_app_stop) | `include/datoviz/app.h` |
+    | [`dvz_app_vk_instance()`](#dvz_app_vk_instance) | `include/datoviz/app_interop.h` |
+    | [`dvz_app_with_config()`](#dvz_app_with_config) | `include/datoviz/app.h` |
+    | [`dvz_app_with_resources()`](#dvz_app_with_resources) | `include/datoviz/app.h` |
 
     **Canvas Execution**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzCanvas`](#type-dvzcanvas) | typedef | `include/datoviz/canvas.h` |
-    | [`DvzCanvasConfig`](#type-dvzcanvasconfig) | record | `include/datoviz/canvas.h` |
-    | [`DvzCanvasDraw`](#type-dvzcanvasdraw) | typedef | `include/datoviz/canvas.h` |
-    | [`DvzCanvasFlags`](#type-dvzcanvasflags) | enum | `include/datoviz/canvas/enums.h` |
-    | [`DvzCanvasFrameStatus`](#type-dvzcanvasframestatus) | enum | `include/datoviz/canvas/enums.h` |
-    | [`DvzCanvasLiveImageCallback`](#type-dvzcanvasliveimagecallback) | typedef | `include/datoviz/canvas.h` |
-    | [`DvzCanvasLiveImageFrame`](#type-dvzcanvasliveimageframe) | record | `include/datoviz/canvas.h` |
-    | [`DvzCanvasLiveImageSinkConfig`](#type-dvzcanvasliveimagesinkconfig) | record | `include/datoviz/canvas.h` |
-    | [`DvzCanvasOffscreenRuntimeState`](#type-dvzcanvasoffscreenruntimestate) | enum | `include/datoviz/canvas/enums.h` |
-    | [`DvzCanvasPresentRuntimeState`](#type-dvzcanvaspresentruntimestate) | enum | `include/datoviz/canvas/enums.h` |
-    | [`DvzCanvasRenderMode`](#type-dvzcanvasrendermode) | enum | `include/datoviz/canvas/enums.h` |
-    | [`DvzFrameTiming`](#type-dvzframetiming) | record | `include/datoviz/canvas.h` |
-    | [`dvz_canvas_capture_png()`](#dvz_canvas_capture_png) | function | `include/datoviz/canvas.h` |
-    | [`dvz_canvas_capture_rgba()`](#dvz_canvas_capture_rgba) | function | `include/datoviz/canvas.h` |
-    | [`dvz_canvas_capture_rgba_into()`](#dvz_canvas_capture_rgba_into) | function | `include/datoviz/canvas.h` |
-    | [`dvz_canvas_config()`](#dvz_canvas_config) | function | `include/datoviz/canvas.h` |
-    | [`dvz_canvas_configure_live_image_sink()`](#dvz_canvas_configure_live_image_sink) | function | `include/datoviz/canvas.h` |
-    | [`dvz_canvas_configure_video_sink()`](#dvz_canvas_configure_video_sink) | function | `include/datoviz/canvas.h` |
-    | [`dvz_canvas_create()`](#dvz_canvas_create) | function | `include/datoviz/canvas.h` |
-    | [`dvz_canvas_destroy()`](#dvz_canvas_destroy) | function | `include/datoviz/canvas.h` |
-    | [`dvz_canvas_frame()`](#dvz_canvas_frame) | function | `include/datoviz/canvas.h` |
-    | [`dvz_canvas_input()`](#dvz_canvas_input) | function | `include/datoviz/canvas.h` |
-    | [`dvz_canvas_live_image_sink_config()`](#dvz_canvas_live_image_sink_config) | function | `include/datoviz/canvas.h` |
-    | [`dvz_canvas_offscreen_runtime_state()`](#dvz_canvas_offscreen_runtime_state) | function | `include/datoviz/canvas.h` |
-    | [`dvz_canvas_present_runtime_state()`](#dvz_canvas_present_runtime_state) | function | `include/datoviz/canvas.h` |
-    | [`dvz_canvas_render_mode()`](#dvz_canvas_render_mode) | function | `include/datoviz/canvas.h` |
-    | [`dvz_canvas_set_draw_callback()`](#dvz_canvas_set_draw_callback) | function | `include/datoviz/canvas.h` |
-    | [`dvz_canvas_stream()`](#dvz_canvas_stream) | function | `include/datoviz/canvas.h` |
-    | [`dvz_canvas_submit()`](#dvz_canvas_submit) | function | `include/datoviz/canvas.h` |
-    | [`dvz_canvas_timings()`](#dvz_canvas_timings) | function | `include/datoviz/canvas.h` |
-
-    **Display Sizing**
-
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzExtent`](#type-dvzextent) | record | `include/datoviz/window/size.h` |
-    | [`DvzPhysicalMetricsSource`](#type-dvzphysicalmetricssource) | enum | `include/datoviz/app.h` |
-    | [`DvzResolvedExactness`](#type-dvzresolvedexactness) | enum | `include/datoviz/app.h` |
-    | [`DvzResolvedViewSize`](#type-dvzresolvedviewsize) | record | `include/datoviz/app.h` |
-    | [`DvzScaleXY`](#type-dvzscalexy) | record | `include/datoviz/window/size.h` |
-    | [`DvzSizeSpace`](#type-dvzsizespace) | enum | `include/datoviz/window/size.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_canvas_capture_png()`](#dvz_canvas_capture_png) | `include/datoviz/canvas.h` |
+    | [`dvz_canvas_capture_rgba()`](#dvz_canvas_capture_rgba) | `include/datoviz/canvas.h` |
+    | [`dvz_canvas_capture_rgba_into()`](#dvz_canvas_capture_rgba_into) | `include/datoviz/canvas.h` |
+    | [`dvz_canvas_config()`](#dvz_canvas_config) | `include/datoviz/canvas.h` |
+    | [`dvz_canvas_configure_live_image_sink()`](#dvz_canvas_configure_live_image_sink) | `include/datoviz/canvas.h` |
+    | [`dvz_canvas_configure_video_sink()`](#dvz_canvas_configure_video_sink) | `include/datoviz/canvas.h` |
+    | [`dvz_canvas_create()`](#dvz_canvas_create) | `include/datoviz/canvas.h` |
+    | [`dvz_canvas_destroy()`](#dvz_canvas_destroy) | `include/datoviz/canvas.h` |
+    | [`dvz_canvas_frame()`](#dvz_canvas_frame) | `include/datoviz/canvas.h` |
+    | [`dvz_canvas_input()`](#dvz_canvas_input) | `include/datoviz/canvas.h` |
+    | [`dvz_canvas_live_image_sink_config()`](#dvz_canvas_live_image_sink_config) | `include/datoviz/canvas.h` |
+    | [`dvz_canvas_offscreen_runtime_state()`](#dvz_canvas_offscreen_runtime_state) | `include/datoviz/canvas.h` |
+    | [`dvz_canvas_present_runtime_state()`](#dvz_canvas_present_runtime_state) | `include/datoviz/canvas.h` |
+    | [`dvz_canvas_render_mode()`](#dvz_canvas_render_mode) | `include/datoviz/canvas.h` |
+    | [`dvz_canvas_set_draw_callback()`](#dvz_canvas_set_draw_callback) | `include/datoviz/canvas.h` |
+    | [`dvz_canvas_stream()`](#dvz_canvas_stream) | `include/datoviz/canvas.h` |
+    | [`dvz_canvas_submit()`](#dvz_canvas_submit) | `include/datoviz/canvas.h` |
+    | [`dvz_canvas_timings()`](#dvz_canvas_timings) | `include/datoviz/canvas.h` |
 
     **GUI**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzGui`](#type-dvzgui) | typedef | `include/datoviz/gui.h` |
-    | [`DvzGuiCallback`](#type-dvzguicallback) | typedef | `include/datoviz/gui.h` |
-    | [`DvzGuiConfig`](#type-dvzguiconfig) | record | `include/datoviz/gui.h` |
-    | [`DvzGuiDockSlot`](#type-dvzguidockslot) | enum | `include/datoviz/gui.h` |
-    | [`DvzGuiFlags`](#type-dvzguiflags) | enum | `include/datoviz/gui.h` |
-    | [`DvzGuiViewport`](#type-dvzguiviewport) | typedef | `include/datoviz/gui.h` |
-    | [`DvzGuiViewportConfig`](#type-dvzguiviewportconfig) | record | `include/datoviz/gui.h` |
-    | [`DvzGuiViewportFlags`](#type-dvzguiviewportflags) | enum | `include/datoviz/gui.h` |
-    | [`dvz_gui_begin()`](#dvz_gui_begin) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_button()`](#dvz_gui_button) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_checkbox()`](#dvz_gui_checkbox) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_collapsing_header()`](#dvz_gui_collapsing_header) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_color_edit4()`](#dvz_gui_color_edit4) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_color_edit_dvz()`](#dvz_gui_color_edit_dvz) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_color_picker4()`](#dvz_gui_color_picker4) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_combo()`](#dvz_gui_combo) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_config()`](#dvz_gui_config) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_current_window_docked()`](#dvz_gui_current_window_docked) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_current_window_rect()`](#dvz_gui_current_window_rect) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_demo()`](#dvz_gui_demo) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_dock_window_once()`](#dvz_gui_dock_window_once) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_end()`](#dvz_gui_end) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_pop_font()`](#dvz_gui_pop_font) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_push_mono()`](#dvz_gui_push_mono) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_range_float()`](#dvz_gui_range_float) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_same_line()`](#dvz_gui_same_line) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_separator_text()`](#dvz_gui_separator_text) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_slider_float()`](#dvz_gui_slider_float) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_slider_float2()`](#dvz_gui_slider_float2) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_slider_float3()`](#dvz_gui_slider_float3) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_slider_float4()`](#dvz_gui_slider_float4) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_slider_float_format()`](#dvz_gui_slider_float_format) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_slider_int()`](#dvz_gui_slider_int) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_slider_range_float()`](#dvz_gui_slider_range_float) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_text()`](#dvz_gui_text) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_viewport()`](#dvz_gui_viewport) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_viewport_config()`](#dvz_gui_viewport_config) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_viewport_destroy()`](#dvz_gui_viewport_destroy) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_viewport_from_window()`](#dvz_gui_viewport_from_window) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_viewport_input()`](#dvz_gui_viewport_input) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_viewport_mouse()`](#dvz_gui_viewport_mouse) | function | `include/datoviz/gui.h` |
-    | [`dvz_gui_viewport_window()`](#dvz_gui_viewport_window) | function | `include/datoviz/gui.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_gui_begin()`](#dvz_gui_begin) | `include/datoviz/gui.h` |
+    | [`dvz_gui_button()`](#dvz_gui_button) | `include/datoviz/gui.h` |
+    | [`dvz_gui_checkbox()`](#dvz_gui_checkbox) | `include/datoviz/gui.h` |
+    | [`dvz_gui_collapsing_header()`](#dvz_gui_collapsing_header) | `include/datoviz/gui.h` |
+    | [`dvz_gui_color_edit4()`](#dvz_gui_color_edit4) | `include/datoviz/gui.h` |
+    | [`dvz_gui_color_edit_dvz()`](#dvz_gui_color_edit_dvz) | `include/datoviz/gui.h` |
+    | [`dvz_gui_color_picker4()`](#dvz_gui_color_picker4) | `include/datoviz/gui.h` |
+    | [`dvz_gui_combo()`](#dvz_gui_combo) | `include/datoviz/gui.h` |
+    | [`dvz_gui_config()`](#dvz_gui_config) | `include/datoviz/gui.h` |
+    | [`dvz_gui_current_window_docked()`](#dvz_gui_current_window_docked) | `include/datoviz/gui.h` |
+    | [`dvz_gui_current_window_rect()`](#dvz_gui_current_window_rect) | `include/datoviz/gui.h` |
+    | [`dvz_gui_demo()`](#dvz_gui_demo) | `include/datoviz/gui.h` |
+    | [`dvz_gui_dock_window_once()`](#dvz_gui_dock_window_once) | `include/datoviz/gui.h` |
+    | [`dvz_gui_end()`](#dvz_gui_end) | `include/datoviz/gui.h` |
+    | [`dvz_gui_pop_font()`](#dvz_gui_pop_font) | `include/datoviz/gui.h` |
+    | [`dvz_gui_push_mono()`](#dvz_gui_push_mono) | `include/datoviz/gui.h` |
+    | [`dvz_gui_range_float()`](#dvz_gui_range_float) | `include/datoviz/gui.h` |
+    | [`dvz_gui_same_line()`](#dvz_gui_same_line) | `include/datoviz/gui.h` |
+    | [`dvz_gui_separator_text()`](#dvz_gui_separator_text) | `include/datoviz/gui.h` |
+    | [`dvz_gui_slider_float()`](#dvz_gui_slider_float) | `include/datoviz/gui.h` |
+    | [`dvz_gui_slider_float2()`](#dvz_gui_slider_float2) | `include/datoviz/gui.h` |
+    | [`dvz_gui_slider_float3()`](#dvz_gui_slider_float3) | `include/datoviz/gui.h` |
+    | [`dvz_gui_slider_float4()`](#dvz_gui_slider_float4) | `include/datoviz/gui.h` |
+    | [`dvz_gui_slider_float_format()`](#dvz_gui_slider_float_format) | `include/datoviz/gui.h` |
+    | [`dvz_gui_slider_int()`](#dvz_gui_slider_int) | `include/datoviz/gui.h` |
+    | [`dvz_gui_slider_range_float()`](#dvz_gui_slider_range_float) | `include/datoviz/gui.h` |
+    | [`dvz_gui_text()`](#dvz_gui_text) | `include/datoviz/gui.h` |
+    | [`dvz_gui_viewport()`](#dvz_gui_viewport) | `include/datoviz/gui.h` |
+    | [`dvz_gui_viewport_config()`](#dvz_gui_viewport_config) | `include/datoviz/gui.h` |
+    | [`dvz_gui_viewport_destroy()`](#dvz_gui_viewport_destroy) | `include/datoviz/gui.h` |
+    | [`dvz_gui_viewport_from_window()`](#dvz_gui_viewport_from_window) | `include/datoviz/gui.h` |
+    | [`dvz_gui_viewport_input()`](#dvz_gui_viewport_input) | `include/datoviz/gui.h` |
+    | [`dvz_gui_viewport_mouse()`](#dvz_gui_viewport_mouse) | `include/datoviz/gui.h` |
+    | [`dvz_gui_viewport_window()`](#dvz_gui_viewport_window) | `include/datoviz/gui.h` |
 
     **Input Routing**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzCallbackId`](#type-dvzcallbackid) | typedef | `include/datoviz/input/router.h` |
-    | [`DvzCallbackIdSpecial`](#type-dvzcallbackidspecial) | enum | `include/datoviz/input/router.h` |
-    | [`DvzInputCallback`](#type-dvzinputcallback) | typedef | `include/datoviz/input/router.h` |
-    | [`DvzInputEvent`](#type-dvzinputevent) | record | `include/datoviz/input/router.h` |
-    | [`DvzInputEventType`](#type-dvzinputeventtype) | enum | `include/datoviz/input/router.h` |
-    | [`DvzInputResizeEvent`](#type-dvzinputresizeevent) | record | `include/datoviz/input/router.h` |
-    | [`DvzInputRouter`](#type-dvzinputrouter) | typedef | `include/datoviz/input/router.h` |
-    | [`DvzInputScaleEvent`](#type-dvzinputscaleevent) | record | `include/datoviz/input/router.h` |
-    | [`DvzKeyCode`](#type-dvzkeycode) | enum | `include/datoviz/input/keycodes.h` |
-    | [`DvzKeyboardCallback`](#type-dvzkeyboardcallback) | typedef | `include/datoviz/input/router.h` |
-    | [`DvzKeyboardEvent`](#type-dvzkeyboardevent) | record | `include/datoviz/input/keyboard.h` |
-    | [`DvzKeyboardEventType`](#type-dvzkeyboardeventtype) | enum | `include/datoviz/input/enums.h` |
-    | [`DvzKeyboardModifierState`](#type-dvzkeyboardmodifierstate) | record | `include/datoviz/input/keyboard.h` |
-    | [`DvzKeyboardModifiers`](#type-dvzkeyboardmodifiers) | enum | `include/datoviz/input/enums.h` |
-    | [`DvzPointerButton`](#type-dvzpointerbutton) | enum | `include/datoviz/input/enums.h` |
-    | [`DvzPointerCallback`](#type-dvzpointercallback) | typedef | `include/datoviz/input/router.h` |
-    | [`DvzPointerDragEvent`](#type-dvzpointerdragevent) | record | `include/datoviz/input/pointer.h` |
-    | [`DvzPointerEvent`](#type-dvzpointerevent) | record | `include/datoviz/input/pointer.h` |
-    | [`DvzPointerEventType`](#type-dvzpointereventtype) | enum | `include/datoviz/input/enums.h` |
-    | [`DvzPointerEventUnion`](#type-dvzpointereventunion) | record | `include/datoviz/input/pointer.h` |
-    | [`DvzPointerGestureHandler`](#type-dvzpointergesturehandler) | typedef | `include/datoviz/input/pointer.h` |
-    | [`DvzPointerState`](#type-dvzpointerstate) | enum | `include/datoviz/input/enums.h` |
-    | [`DvzPointerWheelEvent`](#type-dvzpointerwheelevent) | record | `include/datoviz/input/pointer.h` |
-    | [`DvzResizeCallback`](#type-dvzresizecallback) | typedef | `include/datoviz/input/router.h` |
-    | [`DvzScaleCallback`](#type-dvzscalecallback) | typedef | `include/datoviz/input/router.h` |
-    | [`dvz_input_emit_event()`](#dvz_input_emit_event) | function | `include/datoviz/input/router.h` |
-    | [`dvz_input_emit_keyboard()`](#dvz_input_emit_keyboard) | function | `include/datoviz/input/router.h` |
-    | [`dvz_input_emit_pointer()`](#dvz_input_emit_pointer) | function | `include/datoviz/input/router.h` |
-    | [`dvz_input_emit_resize()`](#dvz_input_emit_resize) | function | `include/datoviz/input/router.h` |
-    | [`dvz_input_emit_scale()`](#dvz_input_emit_scale) | function | `include/datoviz/input/router.h` |
-    | [`dvz_input_router()`](#dvz_input_router) | function | `include/datoviz/input/router.h` |
-    | [`dvz_input_router_destroy()`](#dvz_input_router_destroy) | function | `include/datoviz/input/router.h` |
-    | [`dvz_input_router_last_resize()`](#dvz_input_router_last_resize) | function | `include/datoviz/input/router.h` |
-    | [`dvz_input_subscribe_event()`](#dvz_input_subscribe_event) | function | `include/datoviz/input/router.h` |
-    | [`dvz_input_subscribe_keyboard()`](#dvz_input_subscribe_keyboard) | function | `include/datoviz/input/router.h` |
-    | [`dvz_input_subscribe_pointer()`](#dvz_input_subscribe_pointer) | function | `include/datoviz/input/router.h` |
-    | [`dvz_input_subscribe_resize()`](#dvz_input_subscribe_resize) | function | `include/datoviz/input/router.h` |
-    | [`dvz_input_subscribe_scale()`](#dvz_input_subscribe_scale) | function | `include/datoviz/input/router.h` |
-    | [`dvz_input_timestamp_ns()`](#dvz_input_timestamp_ns) | function | `include/datoviz/input/pointer.h` |
-    | [`dvz_input_unsubscribe()`](#dvz_input_unsubscribe) | function | `include/datoviz/input/router.h` |
-    | [`dvz_keyboard_emit()`](#dvz_keyboard_emit) | function | `include/datoviz/input/keyboard.h` |
-    | [`dvz_keyboard_modifier_bit()`](#dvz_keyboard_modifier_bit) | function | `include/datoviz/input/keyboard.h` |
-    | [`dvz_keyboard_modifier_state()`](#dvz_keyboard_modifier_state) | function | `include/datoviz/input/keyboard.h` |
-    | [`dvz_keyboard_modifier_state_destroy()`](#dvz_keyboard_modifier_state_destroy) | function | `include/datoviz/input/keyboard.h` |
-    | [`dvz_keyboard_modifier_state_mods()`](#dvz_keyboard_modifier_state_mods) | function | `include/datoviz/input/keyboard.h` |
-    | [`dvz_keyboard_modifier_state_update()`](#dvz_keyboard_modifier_state_update) | function | `include/datoviz/input/keyboard.h` |
-    | [`dvz_pointer_button_from_glfw()`](#dvz_pointer_button_from_glfw) | function | `include/datoviz/input/pointer.h` |
-    | [`dvz_pointer_emit_position()`](#dvz_pointer_emit_position) | function | `include/datoviz/input/pointer.h` |
-    | [`dvz_pointer_emit_wheel()`](#dvz_pointer_emit_wheel) | function | `include/datoviz/input/pointer.h` |
-    | [`dvz_pointer_gesture_handler()`](#dvz_pointer_gesture_handler) | function | `include/datoviz/input/pointer.h` |
-    | [`dvz_pointer_gesture_handler_destroy()`](#dvz_pointer_gesture_handler_destroy) | function | `include/datoviz/input/pointer.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_input_emit_event()`](#dvz_input_emit_event) | `include/datoviz/input/router.h` |
+    | [`dvz_input_emit_keyboard()`](#dvz_input_emit_keyboard) | `include/datoviz/input/router.h` |
+    | [`dvz_input_emit_pointer()`](#dvz_input_emit_pointer) | `include/datoviz/input/router.h` |
+    | [`dvz_input_emit_resize()`](#dvz_input_emit_resize) | `include/datoviz/input/router.h` |
+    | [`dvz_input_emit_scale()`](#dvz_input_emit_scale) | `include/datoviz/input/router.h` |
+    | [`dvz_input_router()`](#dvz_input_router) | `include/datoviz/input/router.h` |
+    | [`dvz_input_router_destroy()`](#dvz_input_router_destroy) | `include/datoviz/input/router.h` |
+    | [`dvz_input_router_last_resize()`](#dvz_input_router_last_resize) | `include/datoviz/input/router.h` |
+    | [`dvz_input_subscribe_event()`](#dvz_input_subscribe_event) | `include/datoviz/input/router.h` |
+    | [`dvz_input_subscribe_keyboard()`](#dvz_input_subscribe_keyboard) | `include/datoviz/input/router.h` |
+    | [`dvz_input_subscribe_pointer()`](#dvz_input_subscribe_pointer) | `include/datoviz/input/router.h` |
+    | [`dvz_input_subscribe_resize()`](#dvz_input_subscribe_resize) | `include/datoviz/input/router.h` |
+    | [`dvz_input_subscribe_scale()`](#dvz_input_subscribe_scale) | `include/datoviz/input/router.h` |
+    | [`dvz_input_timestamp_ns()`](#dvz_input_timestamp_ns) | `include/datoviz/input/pointer.h` |
+    | [`dvz_input_unsubscribe()`](#dvz_input_unsubscribe) | `include/datoviz/input/router.h` |
+    | [`dvz_keyboard_emit()`](#dvz_keyboard_emit) | `include/datoviz/input/keyboard.h` |
+    | [`dvz_keyboard_modifier_bit()`](#dvz_keyboard_modifier_bit) | `include/datoviz/input/keyboard.h` |
+    | [`dvz_keyboard_modifier_state()`](#dvz_keyboard_modifier_state) | `include/datoviz/input/keyboard.h` |
+    | [`dvz_keyboard_modifier_state_destroy()`](#dvz_keyboard_modifier_state_destroy) | `include/datoviz/input/keyboard.h` |
+    | [`dvz_keyboard_modifier_state_mods()`](#dvz_keyboard_modifier_state_mods) | `include/datoviz/input/keyboard.h` |
+    | [`dvz_keyboard_modifier_state_update()`](#dvz_keyboard_modifier_state_update) | `include/datoviz/input/keyboard.h` |
+    | [`dvz_pointer_button_from_glfw()`](#dvz_pointer_button_from_glfw) | `include/datoviz/input/pointer.h` |
+    | [`dvz_pointer_emit_position()`](#dvz_pointer_emit_position) | `include/datoviz/input/pointer.h` |
+    | [`dvz_pointer_emit_wheel()`](#dvz_pointer_emit_wheel) | `include/datoviz/input/pointer.h` |
+    | [`dvz_pointer_gesture_handler()`](#dvz_pointer_gesture_handler) | `include/datoviz/input/pointer.h` |
+    | [`dvz_pointer_gesture_handler_destroy()`](#dvz_pointer_gesture_handler_destroy) | `include/datoviz/input/pointer.h` |
 
     **Streaming And Video**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzStream`](#type-dvzstream) | typedef | `include/datoviz/stream/frame_stream.h` |
-    | [`DvzStreamConfig`](#type-dvzstreamconfig) | record | `include/datoviz/stream/frame_stream.h` |
-    | [`DvzStreamFrame`](#type-dvzstreamframe) | record | `include/datoviz/stream/frame_stream.h` |
-    | [`DvzStreamFrameUsage`](#type-dvzstreamframeusage) | enum | `include/datoviz/stream/frame_stream.h` |
-    | [`DvzStreamSink`](#type-dvzstreamsink) | record | `include/datoviz/stream/frame_stream.h` |
-    | [`DvzStreamSinkBackend`](#type-dvzstreamsinkbackend) | record | `include/datoviz/stream/frame_stream.h` |
-    | [`DvzStreamSinkRegistry`](#type-dvzstreamsinkregistry) | typedef | `include/datoviz/stream/frame_stream.h` |
-    | [`DvzStreamSinkRequest`](#type-dvzstreamsinkrequest) | record | `include/datoviz/stream/frame_stream.h` |
-    | [`DvzVideoCaptureMode`](#type-dvzvideocapturemode) | enum | `include/datoviz/video/types.h` |
-    | [`DvzVideoCodec`](#type-dvzvideocodec) | enum | `include/datoviz/video.h` |
-    | [`DvzVideoEncoderConfig`](#type-dvzvideoencoderconfig) | record | `include/datoviz/video.h` |
-    | [`DvzVideoMux`](#type-dvzvideomux) | enum | `include/datoviz/video.h` |
-    | [`DvzVideoSinkCaptureFn`](#type-dvzvideosinkcapturefn) | typedef | `include/datoviz/video.h` |
-    | [`DvzVideoSinkConfig`](#type-dvzvideosinkconfig) | record | `include/datoviz/video.h` |
-    | [`DvzVideoSinkReleaseFn`](#type-dvzvideosinkreleasefn) | typedef | `include/datoviz/video.h` |
-    | [`dvz_stream_attach_sink()`](#dvz_stream_attach_sink) | function | `include/datoviz/stream.h` |
-    | [`dvz_stream_attach_sink_name()`](#dvz_stream_attach_sink_name) | function | `include/datoviz/stream.h` |
-    | [`dvz_stream_config()`](#dvz_stream_config) | function | `include/datoviz/stream.h` |
-    | [`dvz_stream_create()`](#dvz_stream_create) | function | `include/datoviz/stream.h` |
-    | [`dvz_stream_destroy()`](#dvz_stream_destroy) | function | `include/datoviz/stream.h` |
-    | [`dvz_stream_device()`](#dvz_stream_device) | function | `include/datoviz/stream.h` |
-    | [`dvz_stream_get_config()`](#dvz_stream_get_config) | function | `include/datoviz/stream.h` |
-    | [`dvz_stream_sink_registry_create()`](#dvz_stream_sink_registry_create) | function | `include/datoviz/stream.h` |
-    | [`dvz_stream_sink_registry_destroy()`](#dvz_stream_sink_registry_destroy) | function | `include/datoviz/stream.h` |
-    | [`dvz_stream_sink_registry_find()`](#dvz_stream_sink_registry_find) | function | `include/datoviz/stream.h` |
-    | [`dvz_stream_sink_registry_pick()`](#dvz_stream_sink_registry_pick) | function | `include/datoviz/stream.h` |
-    | [`dvz_stream_sink_registry_register()`](#dvz_stream_sink_registry_register) | function | `include/datoviz/stream.h` |
-    | [`dvz_stream_sink_video()`](#dvz_stream_sink_video) | function | `include/datoviz/video.h` |
-    | [`dvz_stream_start()`](#dvz_stream_start) | function | `include/datoviz/stream.h` |
-    | [`dvz_stream_stop()`](#dvz_stream_stop) | function | `include/datoviz/stream.h` |
-    | [`dvz_stream_submit()`](#dvz_stream_submit) | function | `include/datoviz/stream.h` |
-    | [`dvz_stream_update()`](#dvz_stream_update) | function | `include/datoviz/stream.h` |
-    | [`dvz_video_encoder_config()`](#dvz_video_encoder_config) | function | `include/datoviz/video.h` |
-    | [`dvz_video_sink_config()`](#dvz_video_sink_config) | function | `include/datoviz/video.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_stream_attach_sink()`](#dvz_stream_attach_sink) | `include/datoviz/stream.h` |
+    | [`dvz_stream_attach_sink_name()`](#dvz_stream_attach_sink_name) | `include/datoviz/stream.h` |
+    | [`dvz_stream_config()`](#dvz_stream_config) | `include/datoviz/stream.h` |
+    | [`dvz_stream_create()`](#dvz_stream_create) | `include/datoviz/stream.h` |
+    | [`dvz_stream_destroy()`](#dvz_stream_destroy) | `include/datoviz/stream.h` |
+    | [`dvz_stream_device()`](#dvz_stream_device) | `include/datoviz/stream.h` |
+    | [`dvz_stream_get_config()`](#dvz_stream_get_config) | `include/datoviz/stream.h` |
+    | [`dvz_stream_sink_registry_create()`](#dvz_stream_sink_registry_create) | `include/datoviz/stream.h` |
+    | [`dvz_stream_sink_registry_destroy()`](#dvz_stream_sink_registry_destroy) | `include/datoviz/stream.h` |
+    | [`dvz_stream_sink_registry_find()`](#dvz_stream_sink_registry_find) | `include/datoviz/stream.h` |
+    | [`dvz_stream_sink_registry_pick()`](#dvz_stream_sink_registry_pick) | `include/datoviz/stream.h` |
+    | [`dvz_stream_sink_registry_register()`](#dvz_stream_sink_registry_register) | `include/datoviz/stream.h` |
+    | [`dvz_stream_sink_video()`](#dvz_stream_sink_video) | `include/datoviz/video.h` |
+    | [`dvz_stream_start()`](#dvz_stream_start) | `include/datoviz/stream.h` |
+    | [`dvz_stream_stop()`](#dvz_stream_stop) | `include/datoviz/stream.h` |
+    | [`dvz_stream_submit()`](#dvz_stream_submit) | `include/datoviz/stream.h` |
+    | [`dvz_stream_update()`](#dvz_stream_update) | `include/datoviz/stream.h` |
+    | [`dvz_video_encoder_config()`](#dvz_video_encoder_config) | `include/datoviz/video.h` |
+    | [`dvz_video_sink_config()`](#dvz_video_sink_config) | `include/datoviz/video.h` |
 
     **Views And Capture**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzView`](#type-dvzview) | typedef | `include/datoviz/app.h` |
-    | [`DvzViewDesc`](#type-dvzviewdesc) | record | `include/datoviz/app.h` |
-    | [`DvzViewFrameCallback`](#type-dvzviewframecallback) | typedef | `include/datoviz/app.h` |
-    | [`DvzViewKind`](#type-dvzviewkind) | enum | `include/datoviz/app.h` |
-    | [`DvzViewPostCallback`](#type-dvzviewpostcallback) | typedef | `include/datoviz/app.h` |
-    | [`DvzViewRequestFrameCallback`](#type-dvzviewrequestframecallback) | typedef | `include/datoviz/app.h` |
-    | [`DvzViewSizeDesc`](#type-dvzviewsizedesc) | record | `include/datoviz/app.h` |
-    | [`DvzViewSizePolicy`](#type-dvzviewsizepolicy) | enum | `include/datoviz/app.h` |
-    | [`dvz_view()`](#dvz_view) | function | `include/datoviz/app.h` |
-    | [`dvz_view_arcball()`](#dvz_view_arcball) | function | `include/datoviz/app.h` |
-    | [`dvz_view_bind_controller()`](#dvz_view_bind_controller) | function | `include/datoviz/app.h` |
-    | [`dvz_view_canvas()`](#dvz_view_canvas) | function | `include/datoviz/app.h` |
-    | [`dvz_view_capabilities()`](#dvz_view_capabilities) | function | `include/datoviz/app.h` |
-    | [`dvz_view_capture_from_env()`](#dvz_view_capture_from_env) | function | `include/datoviz/app.h` |
-    | [`dvz_view_capture_png()`](#dvz_view_capture_png) | function | `include/datoviz/app.h` |
-    | [`dvz_view_capture_start()`](#dvz_view_capture_start) | function | `include/datoviz/app.h` |
-    | [`dvz_view_capture_stop()`](#dvz_view_capture_stop) | function | `include/datoviz/app.h` |
-    | [`dvz_view_connect_panel()`](#dvz_view_connect_panel) | function | `include/datoviz/app.h` |
-    | [`dvz_view_desc()`](#dvz_view_desc) | function | `include/datoviz/app.h` |
-    | [`dvz_view_device_scale()`](#dvz_view_device_scale) | function | `include/datoviz/app.h` |
-    | [`dvz_view_device_scale_xy()`](#dvz_view_device_scale_xy) | function | `include/datoviz/app.h` |
-    | [`dvz_view_emit_key()`](#dvz_view_emit_key) | function | `include/datoviz/app.h` |
-    | [`dvz_view_emit_pointer()`](#dvz_view_emit_pointer) | function | `include/datoviz/app.h` |
-    | [`dvz_view_emit_resize()`](#dvz_view_emit_resize) | function | `include/datoviz/app.h` |
-    | [`dvz_view_emit_wheel()`](#dvz_view_emit_wheel) | function | `include/datoviz/app.h` |
-    | [`dvz_view_external_surface()`](#dvz_view_external_surface) | function | `include/datoviz/app_interop.h` |
-    | [`dvz_view_fly()`](#dvz_view_fly) | function | `include/datoviz/app.h` |
-    | [`dvz_view_framebuffer_size()`](#dvz_view_framebuffer_size) | function | `include/datoviz/app.h` |
-    | [`dvz_view_gui()`](#dvz_view_gui) | function | `include/datoviz/gui.h` |
-    | [`dvz_view_input()`](#dvz_view_input) | function | `include/datoviz/app.h` |
-    | [`dvz_view_logical_size()`](#dvz_view_logical_size) | function | `include/datoviz/app.h` |
-    | [`dvz_view_offscreen()`](#dvz_view_offscreen) | function | `include/datoviz/app.h` |
-    | [`dvz_view_panzoom()`](#dvz_view_panzoom) | function | `include/datoviz/app.h` |
-    | [`dvz_view_post()`](#dvz_view_post) | function | `include/datoviz/app.h` |
-    | [`dvz_view_record_start()`](#dvz_view_record_start) | function | `include/datoviz/app.h` |
-    | [`dvz_view_record_stop()`](#dvz_view_record_stop) | function | `include/datoviz/app.h` |
-    | [`dvz_view_release_external_surface()`](#dvz_view_release_external_surface) | function | `include/datoviz/app_interop.h` |
-    | [`dvz_view_render_enabled()`](#dvz_view_render_enabled) | function | `include/datoviz/app.h` |
-    | [`dvz_view_render_once()`](#dvz_view_render_once) | function | `include/datoviz/app.h` |
-    | [`dvz_view_render_scale()`](#dvz_view_render_scale) | function | `include/datoviz/app.h` |
-    | [`dvz_view_replay_frame_count()`](#dvz_view_replay_frame_count) | function | `include/datoviz/app.h` |
-    | [`dvz_view_replay_set_loop()`](#dvz_view_replay_set_loop) | function | `include/datoviz/app.h` |
-    | [`dvz_view_replay_set_paced()`](#dvz_view_replay_set_paced) | function | `include/datoviz/app.h` |
-    | [`dvz_view_replay_set_speed()`](#dvz_view_replay_set_speed) | function | `include/datoviz/app.h` |
-    | [`dvz_view_replay_start()`](#dvz_view_replay_start) | function | `include/datoviz/app.h` |
-    | [`dvz_view_replay_stop()`](#dvz_view_replay_stop) | function | `include/datoviz/app.h` |
-    | [`dvz_view_request_frame()`](#dvz_view_request_frame) | function | `include/datoviz/app.h` |
-    | [`dvz_view_resize()`](#dvz_view_resize) | function | `include/datoviz/app.h` |
-    | [`dvz_view_resize_scaled()`](#dvz_view_resize_scaled) | function | `include/datoviz/app.h` |
-    | [`dvz_view_resize_scaled_xy()`](#dvz_view_resize_scaled_xy) | function | `include/datoviz/app.h` |
-    | [`dvz_view_resolved_size()`](#dvz_view_resolved_size) | function | `include/datoviz/app.h` |
-    | [`dvz_view_set_frame_callback()`](#dvz_view_set_frame_callback) | function | `include/datoviz/app.h` |
-    | [`dvz_view_set_gui_callback()`](#dvz_view_set_gui_callback) | function | `include/datoviz/gui.h` |
-    | [`dvz_view_set_render_enabled()`](#dvz_view_set_render_enabled) | function | `include/datoviz/app.h` |
-    | [`dvz_view_set_request_frame_callback()`](#dvz_view_set_request_frame_callback) | function | `include/datoviz/app.h` |
-    | [`dvz_view_set_user_scale()`](#dvz_view_set_user_scale) | function | `include/datoviz/app.h` |
-    | [`dvz_view_size()`](#dvz_view_size) | function | `include/datoviz/app.h` |
-    | [`dvz_view_size_desc_framebuffer_px()`](#dvz_view_size_desc_framebuffer_px) | function | `include/datoviz/app.h` |
-    | [`dvz_view_size_desc_host_logical_px()`](#dvz_view_size_desc_host_logical_px) | function | `include/datoviz/app.h` |
-    | [`dvz_view_size_desc_physical_mm()`](#dvz_view_size_desc_physical_mm) | function | `include/datoviz/app.h` |
-    | [`dvz_view_size_desc_reference_px()`](#dvz_view_size_desc_reference_px) | function | `include/datoviz/app.h` |
-    | [`dvz_view_size_resolve()`](#dvz_view_size_resolve) | function | `include/datoviz/app.h` |
-    | [`dvz_view_turntable()`](#dvz_view_turntable) | function | `include/datoviz/app.h` |
-    | [`dvz_view_update_external_surface()`](#dvz_view_update_external_surface) | function | `include/datoviz/app_interop.h` |
-    | [`dvz_view_user_scale()`](#dvz_view_user_scale) | function | `include/datoviz/app.h` |
-    | [`dvz_view_wake()`](#dvz_view_wake) | function | `include/datoviz/app.h` |
-    | [`dvz_view_window()`](#dvz_view_window) | function | `include/datoviz/app.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_view()`](#dvz_view) | `include/datoviz/app.h` |
+    | [`dvz_view_arcball()`](#dvz_view_arcball) | `include/datoviz/app.h` |
+    | [`dvz_view_bind_controller()`](#dvz_view_bind_controller) | `include/datoviz/app.h` |
+    | [`dvz_view_canvas()`](#dvz_view_canvas) | `include/datoviz/app.h` |
+    | [`dvz_view_capabilities()`](#dvz_view_capabilities) | `include/datoviz/app.h` |
+    | [`dvz_view_capture_from_env()`](#dvz_view_capture_from_env) | `include/datoviz/app.h` |
+    | [`dvz_view_capture_png()`](#dvz_view_capture_png) | `include/datoviz/app.h` |
+    | [`dvz_view_capture_start()`](#dvz_view_capture_start) | `include/datoviz/app.h` |
+    | [`dvz_view_capture_stop()`](#dvz_view_capture_stop) | `include/datoviz/app.h` |
+    | [`dvz_view_connect_panel()`](#dvz_view_connect_panel) | `include/datoviz/app.h` |
+    | [`dvz_view_desc()`](#dvz_view_desc) | `include/datoviz/app.h` |
+    | [`dvz_view_device_scale()`](#dvz_view_device_scale) | `include/datoviz/app.h` |
+    | [`dvz_view_device_scale_xy()`](#dvz_view_device_scale_xy) | `include/datoviz/app.h` |
+    | [`dvz_view_emit_key()`](#dvz_view_emit_key) | `include/datoviz/app.h` |
+    | [`dvz_view_emit_pointer()`](#dvz_view_emit_pointer) | `include/datoviz/app.h` |
+    | [`dvz_view_emit_resize()`](#dvz_view_emit_resize) | `include/datoviz/app.h` |
+    | [`dvz_view_emit_wheel()`](#dvz_view_emit_wheel) | `include/datoviz/app.h` |
+    | [`dvz_view_external_surface()`](#dvz_view_external_surface) | `include/datoviz/app_interop.h` |
+    | [`dvz_view_fly()`](#dvz_view_fly) | `include/datoviz/app.h` |
+    | [`dvz_view_framebuffer_size()`](#dvz_view_framebuffer_size) | `include/datoviz/app.h` |
+    | [`dvz_view_gui()`](#dvz_view_gui) | `include/datoviz/gui.h` |
+    | [`dvz_view_input()`](#dvz_view_input) | `include/datoviz/app.h` |
+    | [`dvz_view_logical_size()`](#dvz_view_logical_size) | `include/datoviz/app.h` |
+    | [`dvz_view_offscreen()`](#dvz_view_offscreen) | `include/datoviz/app.h` |
+    | [`dvz_view_panzoom()`](#dvz_view_panzoom) | `include/datoviz/app.h` |
+    | [`dvz_view_post()`](#dvz_view_post) | `include/datoviz/app.h` |
+    | [`dvz_view_record_start()`](#dvz_view_record_start) | `include/datoviz/app.h` |
+    | [`dvz_view_record_stop()`](#dvz_view_record_stop) | `include/datoviz/app.h` |
+    | [`dvz_view_release_external_surface()`](#dvz_view_release_external_surface) | `include/datoviz/app_interop.h` |
+    | [`dvz_view_render_enabled()`](#dvz_view_render_enabled) | `include/datoviz/app.h` |
+    | [`dvz_view_render_once()`](#dvz_view_render_once) | `include/datoviz/app.h` |
+    | [`dvz_view_render_scale()`](#dvz_view_render_scale) | `include/datoviz/app.h` |
+    | [`dvz_view_replay_frame_count()`](#dvz_view_replay_frame_count) | `include/datoviz/app.h` |
+    | [`dvz_view_replay_set_loop()`](#dvz_view_replay_set_loop) | `include/datoviz/app.h` |
+    | [`dvz_view_replay_set_paced()`](#dvz_view_replay_set_paced) | `include/datoviz/app.h` |
+    | [`dvz_view_replay_set_speed()`](#dvz_view_replay_set_speed) | `include/datoviz/app.h` |
+    | [`dvz_view_replay_start()`](#dvz_view_replay_start) | `include/datoviz/app.h` |
+    | [`dvz_view_replay_stop()`](#dvz_view_replay_stop) | `include/datoviz/app.h` |
+    | [`dvz_view_request_frame()`](#dvz_view_request_frame) | `include/datoviz/app.h` |
+    | [`dvz_view_resize()`](#dvz_view_resize) | `include/datoviz/app.h` |
+    | [`dvz_view_resize_scaled()`](#dvz_view_resize_scaled) | `include/datoviz/app.h` |
+    | [`dvz_view_resize_scaled_xy()`](#dvz_view_resize_scaled_xy) | `include/datoviz/app.h` |
+    | [`dvz_view_resolved_size()`](#dvz_view_resolved_size) | `include/datoviz/app.h` |
+    | [`dvz_view_set_frame_callback()`](#dvz_view_set_frame_callback) | `include/datoviz/app.h` |
+    | [`dvz_view_set_gui_callback()`](#dvz_view_set_gui_callback) | `include/datoviz/gui.h` |
+    | [`dvz_view_set_render_enabled()`](#dvz_view_set_render_enabled) | `include/datoviz/app.h` |
+    | [`dvz_view_set_request_frame_callback()`](#dvz_view_set_request_frame_callback) | `include/datoviz/app.h` |
+    | [`dvz_view_set_user_scale()`](#dvz_view_set_user_scale) | `include/datoviz/app.h` |
+    | [`dvz_view_size()`](#dvz_view_size) | `include/datoviz/app.h` |
+    | [`dvz_view_size_desc_framebuffer_px()`](#dvz_view_size_desc_framebuffer_px) | `include/datoviz/app.h` |
+    | [`dvz_view_size_desc_host_logical_px()`](#dvz_view_size_desc_host_logical_px) | `include/datoviz/app.h` |
+    | [`dvz_view_size_desc_physical_mm()`](#dvz_view_size_desc_physical_mm) | `include/datoviz/app.h` |
+    | [`dvz_view_size_desc_reference_px()`](#dvz_view_size_desc_reference_px) | `include/datoviz/app.h` |
+    | [`dvz_view_size_resolve()`](#dvz_view_size_resolve) | `include/datoviz/app.h` |
+    | [`dvz_view_turntable()`](#dvz_view_turntable) | `include/datoviz/app.h` |
+    | [`dvz_view_update_external_surface()`](#dvz_view_update_external_surface) | `include/datoviz/app_interop.h` |
+    | [`dvz_view_user_scale()`](#dvz_view_user_scale) | `include/datoviz/app.h` |
+    | [`dvz_view_wake()`](#dvz_view_wake) | `include/datoviz/app.h` |
+    | [`dvz_view_window()`](#dvz_view_window) | `include/datoviz/app.h` |
 
     **Window Hosting**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzBackend`](#type-dvzbackend) | enum | `include/datoviz/runner/enums.h` |
-    | [`DvzHiDpiPolicy`](#type-dvzhidpipolicy) | enum | `include/datoviz/window/types.h` |
-    | [`DvzWindow`](#type-dvzwindow) | typedef | `include/datoviz/window/types.h` |
-    | [`DvzWindowBackend`](#type-dvzwindowbackend) | record | `include/datoviz/window/backend.h` |
-    | [`DvzWindowBackendCreate`](#type-dvzwindowbackendcreate) | typedef | `include/datoviz/window/backend.h` |
-    | [`DvzWindowBackendDestroy`](#type-dvzwindowbackenddestroy) | typedef | `include/datoviz/window/backend.h` |
-    | [`DvzWindowBackendPoll`](#type-dvzwindowbackendpoll) | typedef | `include/datoviz/window/backend.h` |
-    | [`DvzWindowBackendProbe`](#type-dvzwindowbackendprobe) | typedef | `include/datoviz/window/backend.h` |
-    | [`DvzWindowBackendProcs`](#type-dvzwindowbackendprocs) | record | `include/datoviz/window/backend.h` |
-    | [`DvzWindowBackendRequestFrame`](#type-dvzwindowbackendrequestframe) | typedef | `include/datoviz/window/backend.h` |
-    | [`DvzWindowBackendRequiredExtensionAt`](#type-dvzwindowbackendrequiredextensionat) | typedef | `include/datoviz/window/backend.h` |
-    | [`DvzWindowBackendRequiredExtensionCount`](#type-dvzwindowbackendrequiredextensioncount) | typedef | `include/datoviz/window/backend.h` |
-    | [`DvzWindowBackendShouldClose`](#type-dvzwindowbackendshouldclose) | typedef | `include/datoviz/window/backend.h` |
-    | [`DvzWindowBackendWait`](#type-dvzwindowbackendwait) | typedef | `include/datoviz/window/backend.h` |
-    | [`DvzWindowBackendWaitTimeout`](#type-dvzwindowbackendwaittimeout) | typedef | `include/datoviz/window/backend.h` |
-    | [`DvzWindowConfig`](#type-dvzwindowconfig) | record | `include/datoviz/window/types.h` |
-    | [`DvzWindowExternalSurfaceInfo`](#type-dvzwindowexternalsurfaceinfo) | record | `include/datoviz/window/backend.h` |
-    | [`DvzWindowGlfwCharCallback`](#type-dvzwindowglfwcharcallback) | typedef | `include/datoviz/window/backend.h` |
-    | [`DvzWindowGlfwCursorPosCallback`](#type-dvzwindowglfwcursorposcallback) | typedef | `include/datoviz/window/backend.h` |
-    | [`DvzWindowGlfwInputCallbacks`](#type-dvzwindowglfwinputcallbacks) | record | `include/datoviz/window/backend.h` |
-    | [`DvzWindowGlfwKeyCallback`](#type-dvzwindowglfwkeycallback) | typedef | `include/datoviz/window/backend.h` |
-    | [`DvzWindowGlfwMouseButtonCallback`](#type-dvzwindowglfwmousebuttoncallback) | typedef | `include/datoviz/window/backend.h` |
-    | [`DvzWindowGlfwScrollCallback`](#type-dvzwindowglfwscrollcallback) | typedef | `include/datoviz/window/backend.h` |
-    | [`DvzWindowHost`](#type-dvzwindowhost) | typedef | `include/datoviz/app.h` |
-    | [`DvzWindowMetrics`](#type-dvzwindowmetrics) | record | `include/datoviz/window/types.h` |
-    | [`DvzWindowSurface`](#type-dvzwindowsurface) | record | `include/datoviz/window/types.h` |
-    | [`dvz_window_backend_emit_resize()`](#dvz_window_backend_emit_resize) | function | `include/datoviz/window/backend.h` |
-    | [`dvz_window_backend_emit_scale()`](#dvz_window_backend_emit_scale) | function | `include/datoviz/window/backend.h` |
-    | [`dvz_window_backend_handle()`](#dvz_window_backend_handle) | function | `include/datoviz/window/backend.h` |
-    | [`dvz_window_backend_payload()`](#dvz_window_backend_payload) | function | `include/datoviz/window/backend.h` |
-    | [`dvz_window_backend_router()`](#dvz_window_backend_router) | function | `include/datoviz/window/backend.h` |
-    | [`dvz_window_backend_set_handle()`](#dvz_window_backend_set_handle) | function | `include/datoviz/window/backend.h` |
-    | [`dvz_window_backend_set_payload()`](#dvz_window_backend_set_payload) | function | `include/datoviz/window/backend.h` |
-    | [`dvz_window_backend_surface()`](#dvz_window_backend_surface) | function | `include/datoviz/window/backend.h` |
-    | [`dvz_window_backend_type()`](#dvz_window_backend_type) | function | `include/datoviz/window.h` |
-    | [`dvz_window_config()`](#dvz_window_config) | function | `include/datoviz/window.h` |
-    | [`dvz_window_create()`](#dvz_window_create) | function | `include/datoviz/window.h` |
-    | [`dvz_window_destroy()`](#dvz_window_destroy) | function | `include/datoviz/window.h` |
-    | [`dvz_window_external_surface_info()`](#dvz_window_external_surface_info) | function | `include/datoviz/window/backend.h` |
-    | [`dvz_window_frame_pending()`](#dvz_window_frame_pending) | function | `include/datoviz/window.h` |
-    | [`dvz_window_glfw_init()`](#dvz_window_glfw_init) | function | `include/datoviz/window/backend.h` |
-    | [`dvz_window_glfw_set_input_callbacks()`](#dvz_window_glfw_set_input_callbacks) | function | `include/datoviz/window/backend.h` |
-    | [`dvz_window_host()`](#dvz_window_host) | function | `include/datoviz/window.h` |
-    | [`dvz_window_host_destroy()`](#dvz_window_host_destroy) | function | `include/datoviz/window.h` |
-    | [`dvz_window_host_poll()`](#dvz_window_host_poll) | function | `include/datoviz/window.h` |
-    | [`dvz_window_host_register_backend()`](#dvz_window_host_register_backend) | function | `include/datoviz/window.h` |
-    | [`dvz_window_host_request_frame()`](#dvz_window_host_request_frame) | function | `include/datoviz/window.h` |
-    | [`dvz_window_host_required_extension_count()`](#dvz_window_host_required_extension_count) | function | `include/datoviz/window/backend.h` |
-    | [`dvz_window_host_required_extensions()`](#dvz_window_host_required_extensions) | function | `include/datoviz/window/backend.h` |
-    | [`dvz_window_host_wait()`](#dvz_window_host_wait) | function | `include/datoviz/window.h` |
-    | [`dvz_window_host_wait_timeout()`](#dvz_window_host_wait_timeout) | function | `include/datoviz/window.h` |
-    | [`dvz_window_metrics()`](#dvz_window_metrics) | function | `include/datoviz/window.h` |
-    | [`dvz_window_register_glfw_backend()`](#dvz_window_register_glfw_backend) | function | `include/datoviz/window/backend.h` |
-    | [`dvz_window_register_headless_backend()`](#dvz_window_register_headless_backend) | function | `include/datoviz/window/backend.h` |
-    | [`dvz_window_register_wrap_backend()`](#dvz_window_register_wrap_backend) | function | `include/datoviz/window/backend.h` |
-    | [`dvz_window_router()`](#dvz_window_router) | function | `include/datoviz/window.h` |
-    | [`dvz_window_set_user_data()`](#dvz_window_set_user_data) | function | `include/datoviz/window.h` |
-    | [`dvz_window_should_close()`](#dvz_window_should_close) | function | `include/datoviz/window.h` |
-    | [`dvz_window_surface()`](#dvz_window_surface) | function | `include/datoviz/window.h` |
-    | [`dvz_window_user_data()`](#dvz_window_user_data) | function | `include/datoviz/window.h` |
-    | [`dvz_window_wrap_attach_surface()`](#dvz_window_wrap_attach_surface) | function | `include/datoviz/window/backend.h` |
-    | [`dvz_window_wrap_detach_surface()`](#dvz_window_wrap_detach_surface) | function | `include/datoviz/window/backend.h` |
-    | [`dvz_window_wrap_set_required_extensions()`](#dvz_window_wrap_set_required_extensions) | function | `include/datoviz/window/backend.h` |
-    | [`dvz_window_wrap_update_surface()`](#dvz_window_wrap_update_surface) | function | `include/datoviz/window/backend.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_window_backend_emit_resize()`](#dvz_window_backend_emit_resize) | `include/datoviz/window/backend.h` |
+    | [`dvz_window_backend_emit_scale()`](#dvz_window_backend_emit_scale) | `include/datoviz/window/backend.h` |
+    | [`dvz_window_backend_handle()`](#dvz_window_backend_handle) | `include/datoviz/window/backend.h` |
+    | [`dvz_window_backend_payload()`](#dvz_window_backend_payload) | `include/datoviz/window/backend.h` |
+    | [`dvz_window_backend_router()`](#dvz_window_backend_router) | `include/datoviz/window/backend.h` |
+    | [`dvz_window_backend_set_handle()`](#dvz_window_backend_set_handle) | `include/datoviz/window/backend.h` |
+    | [`dvz_window_backend_set_payload()`](#dvz_window_backend_set_payload) | `include/datoviz/window/backend.h` |
+    | [`dvz_window_backend_surface()`](#dvz_window_backend_surface) | `include/datoviz/window/backend.h` |
+    | [`dvz_window_backend_type()`](#dvz_window_backend_type) | `include/datoviz/window.h` |
+    | [`dvz_window_config()`](#dvz_window_config) | `include/datoviz/window.h` |
+    | [`dvz_window_create()`](#dvz_window_create) | `include/datoviz/window.h` |
+    | [`dvz_window_destroy()`](#dvz_window_destroy) | `include/datoviz/window.h` |
+    | [`dvz_window_external_surface_info()`](#dvz_window_external_surface_info) | `include/datoviz/window/backend.h` |
+    | [`dvz_window_frame_pending()`](#dvz_window_frame_pending) | `include/datoviz/window.h` |
+    | [`dvz_window_glfw_init()`](#dvz_window_glfw_init) | `include/datoviz/window/backend.h` |
+    | [`dvz_window_glfw_set_input_callbacks()`](#dvz_window_glfw_set_input_callbacks) | `include/datoviz/window/backend.h` |
+    | [`dvz_window_host()`](#dvz_window_host) | `include/datoviz/window.h` |
+    | [`dvz_window_host_destroy()`](#dvz_window_host_destroy) | `include/datoviz/window.h` |
+    | [`dvz_window_host_poll()`](#dvz_window_host_poll) | `include/datoviz/window.h` |
+    | [`dvz_window_host_register_backend()`](#dvz_window_host_register_backend) | `include/datoviz/window.h` |
+    | [`dvz_window_host_request_frame()`](#dvz_window_host_request_frame) | `include/datoviz/window.h` |
+    | [`dvz_window_host_required_extension_count()`](#dvz_window_host_required_extension_count) | `include/datoviz/window/backend.h` |
+    | [`dvz_window_host_required_extensions()`](#dvz_window_host_required_extensions) | `include/datoviz/window/backend.h` |
+    | [`dvz_window_host_wait()`](#dvz_window_host_wait) | `include/datoviz/window.h` |
+    | [`dvz_window_host_wait_timeout()`](#dvz_window_host_wait_timeout) | `include/datoviz/window.h` |
+    | [`dvz_window_metrics()`](#dvz_window_metrics) | `include/datoviz/window.h` |
+    | [`dvz_window_register_glfw_backend()`](#dvz_window_register_glfw_backend) | `include/datoviz/window/backend.h` |
+    | [`dvz_window_register_headless_backend()`](#dvz_window_register_headless_backend) | `include/datoviz/window/backend.h` |
+    | [`dvz_window_register_wrap_backend()`](#dvz_window_register_wrap_backend) | `include/datoviz/window/backend.h` |
+    | [`dvz_window_router()`](#dvz_window_router) | `include/datoviz/window.h` |
+    | [`dvz_window_set_user_data()`](#dvz_window_set_user_data) | `include/datoviz/window.h` |
+    | [`dvz_window_should_close()`](#dvz_window_should_close) | `include/datoviz/window.h` |
+    | [`dvz_window_surface()`](#dvz_window_surface) | `include/datoviz/window.h` |
+    | [`dvz_window_user_data()`](#dvz_window_user_data) | `include/datoviz/window.h` |
+    | [`dvz_window_wrap_attach_surface()`](#dvz_window_wrap_attach_surface) | `include/datoviz/window/backend.h` |
+    | [`dvz_window_wrap_detach_surface()`](#dvz_window_wrap_detach_surface) | `include/datoviz/window/backend.h` |
+    | [`dvz_window_wrap_set_required_extensions()`](#dvz_window_wrap_set_required_extensions) | `include/datoviz/window/backend.h` |
+    | [`dvz_window_wrap_update_surface()`](#dvz_window_wrap_update_surface) | `include/datoviz/window/backend.h` |
 
 ## Application Lifecycle { #application-lifecycle }
-
-### Types
-
-#### `DvzApp` { #type-dvzapp }
-
-```c
-typedef struct DvzApp DvzApp;
-```
-
-Used by: [`dvz_app()`](app.md#dvz_app), [`dvz_app_destroy()`](app.md#dvz_app_destroy), [`dvz_app_reap_closed_views()`](app.md#dvz_app_reap_closed_views), [`dvz_app_render_once()`](app.md#dvz_app_render_once), [`dvz_app_run()`](app.md#dvz_app_run), [`dvz_app_should_exit()`](app.md#dvz_app_should_exit), [`dvz_app_should_stop()`](app.md#dvz_app_should_stop), [`dvz_app_stop()`](app.md#dvz_app_stop); plus 8 more.
-
-_Declared in `include/datoviz/app.h`:37._
-
-#### `DvzAppCaptureConfig` { #type-dvzappcaptureconfig }
-
-```c
-struct DvzAppCaptureConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    const char * directory;
-    const char * basename;
-    double fps;
-    const char * video_backend;
-    DvzVideoCaptureMode video_capture_mode;
-};
-```
-
-Used by: [`dvz_app_capture_config()`](app.md#dvz_app_capture_config), [`dvz_app_capture_config_from_env()`](app.md#dvz_app_capture_config_from_env), [`dvz_view_capture_start()`](app.md#dvz_view_capture_start).
-
-_Declared in `include/datoviz/app.h`:160._
-
-#### `DvzAppCaptureFlags` { #type-dvzappcaptureflags }
-
-```c
-enum DvzAppCaptureFlags {
-    DVZ_APP_CAPTURE_NONE = 0,
-    DVZ_APP_CAPTURE_DVZR = 1,
-    DVZ_APP_CAPTURE_VIDEO = 2,
-    DVZ_APP_CAPTURE_PNG = 4,
-};
-```
-
-_Declared in `include/datoviz/app.h`:83._
-
-#### `DvzAppConfig` { #type-dvzappconfig }
-
-```c
-struct DvzAppConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint32_t instance_extension_count;
-    const char *const * instance_extensions;
-    _Bool enable_canvas_extensions;
-    _Bool enable_glfw_extensions;
-    DvzAppScheduleMode schedule_mode;
-    DvzAppExitPolicy exit_policy;
-    double fps_cap;
-    const char * font_sans_path;
-    const char * font_sans_family;
-    const char * font_sans_style;
-    uint32_t font_sans_face_index;
-    uint32_t font_sans_font_flags;
-    const char * font_mono_path;
-    const char * font_mono_family;
-    const char * font_mono_style;
-    uint32_t font_mono_face_index;
-    uint32_t font_mono_font_flags;
-    float font_ui_size_px;
-    float font_mono_size_px;
-    float font_text_size_px;
-};
-```
-
-Used by: [`dvz_app_config()`](app.md#dvz_app_config), [`dvz_app_with_config()`](app.md#dvz_app_with_config), [`dvz_app_with_resources()`](app.md#dvz_app_with_resources).
-
-_Declared in `include/datoviz/app.h`:133._
-
-#### `DvzAppExitPolicy` { #type-dvzappexitpolicy }
-
-```c
-enum DvzAppExitPolicy {
-    DVZ_APP_EXIT_WHEN_ALL_WINDOWS_CLOSED = 0,
-    DVZ_APP_EXIT_WHEN_ANY_WINDOW_CLOSED = 1,
-    DVZ_APP_EXIT_NEVER = 2,
-};
-```
-
-_Declared in `include/datoviz/app.h`:75._
-
-#### `DvzAppFlags` { #type-dvzappflags }
-
-```c
-enum DvzAppFlags {
-    DVZ_APP_FLAGS_NONE = 0,
-    DVZ_APP_FLAGS_OFFSCREEN = 32768,
-    DVZ_APP_FLAGS_EXTERNAL = 524288,
-    DVZ_APP_FLAGS_WHITE_BACKGROUND = 1048576,
-};
-```
-
-_Declared in `include/datoviz/runner/enums.h`:32._
-
-#### `DvzAppResources` { #type-dvzappresources }
-
-```c
-struct DvzAppResources {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzGpuCtx * gpu_ctx;
-    DvzDrp2Runtime * runtime;
-    DvzWindowHost * window_host;
-};
-```
-
-Used by: [`dvz_app_resources()`](app.md#dvz_app_resources), [`dvz_app_with_resources()`](app.md#dvz_app_with_resources).
-
-_Declared in `include/datoviz/app.h`:172._
-
-#### `DvzAppScheduleMode` { #type-dvzappschedulemode }
-
-```c
-enum DvzAppScheduleMode {
-    DVZ_APP_SCHEDULE_ON_DEMAND = 0,
-    DVZ_APP_SCHEDULE_CONTINUOUS = 1,
-};
-```
-
-_Declared in `include/datoviz/app.h`:68._
 
 ### Functions
 
@@ -815,183 +574,143 @@ DvzApp * dvz_app_with_resources(
 
 _Declared in `include/datoviz/app.h`:325._
 
-## Canvas Execution { #canvas-execution }
-
 ### Types
 
-#### `DvzCanvas` { #type-dvzcanvas }
+<a id="type-dvzapp"></a>
 
-```c
-typedef struct DvzCanvas DvzCanvas;
-```
+??? abstract "`DvzApp` · typedef"
 
-Used by: [`dvz_canvas_capture_png()`](app.md#dvz_canvas_capture_png), [`dvz_canvas_capture_rgba()`](app.md#dvz_canvas_capture_rgba), [`dvz_canvas_capture_rgba_into()`](app.md#dvz_canvas_capture_rgba_into), [`dvz_canvas_configure_live_image_sink()`](app.md#dvz_canvas_configure_live_image_sink), [`dvz_canvas_configure_video_sink()`](app.md#dvz_canvas_configure_video_sink), [`dvz_canvas_create()`](app.md#dvz_canvas_create), [`dvz_canvas_destroy()`](app.md#dvz_canvas_destroy), [`dvz_canvas_frame()`](app.md#dvz_canvas_frame); plus 9 more.
+    ```c
+    typedef struct DvzApp DvzApp;
+    ```
 
-_Declared in `include/datoviz/canvas.h`:40._
+    _Declared in `include/datoviz/app.h`:37._
 
-#### `DvzCanvasConfig` { #type-dvzcanvasconfig }
+<a id="type-dvzappcaptureconfig"></a>
 
-```c
-struct DvzCanvasConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzWindow * window;
-    DvzDevice * device;
-    DvzCanvasRenderMode render_mode;
-    VkFormat color_format;
-    VkPresentModeKHR present_mode;
-    _Bool enable_video_sink;
-    size_t timing_history;
-};
-```
+??? abstract "`DvzAppCaptureConfig` · record"
 
-Used by: [`dvz_canvas_config()`](app.md#dvz_canvas_config), [`dvz_canvas_create()`](app.md#dvz_canvas_create).
+    ```c
+    struct DvzAppCaptureConfig {
+        uint32_t struct_size;
+        uint32_t flags;
+        const char * directory;
+        const char * basename;
+        double fps;
+        const char * video_backend;
+        DvzVideoCaptureMode video_capture_mode;
+    };
+    ```
 
-_Declared in `include/datoviz/canvas.h`:59._
+    _Declared in `include/datoviz/app.h`:160._
 
-#### `DvzCanvasDraw` { #type-dvzcanvasdraw }
+<a id="type-dvzappcaptureflags"></a>
 
-```c
-typedef void (*)(DvzCanvas *, const DvzStreamFrame *, void *) DvzCanvasDraw;
-```
+??? abstract "`DvzAppCaptureFlags` · enum"
 
-Used by: [`dvz_canvas_set_draw_callback()`](app.md#dvz_canvas_set_draw_callback).
+    ```c
+    enum DvzAppCaptureFlags {
+        DVZ_APP_CAPTURE_NONE = 0,
+        DVZ_APP_CAPTURE_DVZR = 1,
+        DVZ_APP_CAPTURE_VIDEO = 2,
+        DVZ_APP_CAPTURE_PNG = 4,
+    };
+    ```
 
-_Declared in `include/datoviz/canvas.h`:129._
+    _Declared in `include/datoviz/app.h`:83._
 
-#### `DvzCanvasFlags` { #type-dvzcanvasflags }
+<a id="type-dvzappconfig"></a>
 
-```c
-enum DvzCanvasFlags {
-    DVZ_CANVAS_FLAGS_NONE = 0,
-    DVZ_CANVAS_FLAGS_IMGUI = 1,
-    DVZ_CANVAS_FLAGS_FPS = 2,
-    DVZ_CANVAS_FLAGS_MONITOR = 4,
-    DVZ_CANVAS_FLAGS_FULLSCREEN = 8,
-    DVZ_CANVAS_FLAGS_VSYNC = 16,
-    DVZ_CANVAS_FLAGS_PICK = 32,
-    DVZ_CANVAS_FLAGS_PUSH_SCALE = 64,
-};
-```
+??? abstract "`DvzAppConfig` · record"
 
-_Declared in `include/datoviz/canvas/enums.h`:20._
+    ```c
+    struct DvzAppConfig {
+        uint32_t struct_size;
+        uint32_t flags;
+        uint32_t instance_extension_count;
+        const char *const * instance_extensions;
+        _Bool enable_canvas_extensions;
+        _Bool enable_glfw_extensions;
+        DvzAppScheduleMode schedule_mode;
+        DvzAppExitPolicy exit_policy;
+        double fps_cap;
+        const char * font_sans_path;
+        const char * font_sans_family;
+        const char * font_sans_style;
+        uint32_t font_sans_face_index;
+        uint32_t font_sans_font_flags;
+        const char * font_mono_path;
+        const char * font_mono_family;
+        const char * font_mono_style;
+        uint32_t font_mono_face_index;
+        uint32_t font_mono_font_flags;
+        float font_ui_size_px;
+        float font_mono_size_px;
+        float font_text_size_px;
+    };
+    ```
 
-#### `DvzCanvasFrameStatus` { #type-dvzcanvasframestatus }
+    _Declared in `include/datoviz/app.h`:133._
 
-```c
-enum DvzCanvasFrameStatus {
-    DVZ_CANVAS_FRAME_READY = 0,
-    DVZ_CANVAS_FRAME_WAIT_SURFACE = 1,
-};
-```
+<a id="type-dvzappexitpolicy"></a>
 
-_Declared in `include/datoviz/canvas/enums.h`:35._
+??? abstract "`DvzAppExitPolicy` · enum"
 
-#### `DvzCanvasLiveImageCallback` { #type-dvzcanvasliveimagecallback }
+    ```c
+    enum DvzAppExitPolicy {
+        DVZ_APP_EXIT_WHEN_ALL_WINDOWS_CLOSED = 0,
+        DVZ_APP_EXIT_WHEN_ANY_WINDOW_CLOSED = 1,
+        DVZ_APP_EXIT_NEVER = 2,
+    };
+    ```
 
-```c
-typedef int (*)(const DvzCanvasLiveImageFrame *, void *) DvzCanvasLiveImageCallback;
-```
+    _Declared in `include/datoviz/app.h`:75._
 
-_Declared in `include/datoviz/canvas.h`:113._
+<a id="type-dvzappflags"></a>
 
-#### `DvzCanvasLiveImageFrame` { #type-dvzcanvasliveimageframe }
+??? abstract "`DvzAppFlags` · enum"
 
-```c
-struct DvzCanvasLiveImageFrame {
-    uint64_t frame_id;
-    uint64_t wait_value;
-    VkFormat color_format;
-    VkImage image;
-    VkImageView image_view;
-    VkCommandBuffer command_buffer;
-    VkExtent2D extent;
-    _Bool handles_dirty;
-    uint64_t resource_generation;
-    _Bool image_valid;
-    int memory_fd;
-    int wait_semaphore_fd;
-};
-```
+    ```c
+    enum DvzAppFlags {
+        DVZ_APP_FLAGS_NONE = 0,
+        DVZ_APP_FLAGS_OFFSCREEN = 32768,
+        DVZ_APP_FLAGS_EXTERNAL = 524288,
+        DVZ_APP_FLAGS_WHITE_BACKGROUND = 1048576,
+    };
+    ```
 
-_Declared in `include/datoviz/canvas.h`:95._
+    _Declared in `include/datoviz/runner/enums.h`:32._
 
-#### `DvzCanvasLiveImageSinkConfig` { #type-dvzcanvasliveimagesinkconfig }
+<a id="type-dvzappresources"></a>
 
-```c
-struct DvzCanvasLiveImageSinkConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzCanvasLiveImageCallback callback;
-    void * user_data;
-};
-```
+??? abstract "`DvzAppResources` · record"
 
-Used by: [`dvz_canvas_configure_live_image_sink()`](app.md#dvz_canvas_configure_live_image_sink), [`dvz_canvas_live_image_sink_config()`](app.md#dvz_canvas_live_image_sink_config).
+    ```c
+    struct DvzAppResources {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzGpuCtx * gpu_ctx;
+        DvzDrp2Runtime * runtime;
+        DvzWindowHost * window_host;
+    };
+    ```
 
-_Declared in `include/datoviz/canvas.h`:119._
+    _Declared in `include/datoviz/app.h`:172._
 
-#### `DvzCanvasOffscreenRuntimeState` { #type-dvzcanvasoffscreenruntimestate }
+<a id="type-dvzappschedulemode"></a>
 
-```c
-enum DvzCanvasOffscreenRuntimeState {
-    DVZ_CANVAS_OFFSCREEN_STATE_UNINITIALIZED = 0,
-    DVZ_CANVAS_OFFSCREEN_STATE_READY = 1,
-    DVZ_CANVAS_OFFSCREEN_STATE_DRAW_PENDING = 2,
-    DVZ_CANVAS_OFFSCREEN_STATE_OUTPUT_PENDING = 3,
-    DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST = 4,
-};
-```
+??? abstract "`DvzAppScheduleMode` · enum"
 
-Used by: [`dvz_canvas_offscreen_runtime_state()`](app.md#dvz_canvas_offscreen_runtime_state).
+    ```c
+    enum DvzAppScheduleMode {
+        DVZ_APP_SCHEDULE_ON_DEMAND = 0,
+        DVZ_APP_SCHEDULE_CONTINUOUS = 1,
+    };
+    ```
 
-_Declared in `include/datoviz/canvas/enums.h`:66._
+    _Declared in `include/datoviz/app.h`:68._
 
-#### `DvzCanvasPresentRuntimeState` { #type-dvzcanvaspresentruntimestate }
-
-```c
-enum DvzCanvasPresentRuntimeState {
-    DVZ_CANVAS_PRESENT_STATE_UNINITIALIZED = 0,
-    DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE = 1,
-    DVZ_CANVAS_PRESENT_STATE_READY = 2,
-    DVZ_CANVAS_PRESENT_STATE_ACQUIRED = 3,
-    DVZ_CANVAS_PRESENT_STATE_PRESENT_PENDING = 4,
-    DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST = 5,
-};
-```
-
-Used by: [`dvz_canvas_present_runtime_state()`](app.md#dvz_canvas_present_runtime_state).
-
-_Declared in `include/datoviz/canvas/enums.h`:53._
-
-#### `DvzCanvasRenderMode` { #type-dvzcanvasrendermode }
-
-```c
-enum DvzCanvasRenderMode {
-    DVZ_CANVAS_RENDER_MODE_PRESENT = 0,
-    DVZ_CANVAS_RENDER_MODE_OFFSCREEN = 1,
-};
-```
-
-Used by: [`dvz_canvas_render_mode()`](app.md#dvz_canvas_render_mode).
-
-_Declared in `include/datoviz/canvas/enums.h`:44._
-
-#### `DvzFrameTiming` { #type-dvzframetiming }
-
-```c
-struct DvzFrameTiming {
-    uint64_t frame_id;
-    double cpu_submit_us;
-    double gpu_complete_us;
-    double present_start_us;
-    double present_done_us;
-};
-```
-
-Used by: [`dvz_canvas_timings()`](app.md#dvz_canvas_timings).
-
-_Declared in `include/datoviz/canvas.h`:75._
+## Canvas Execution { #canvas-execution }
 
 ### Functions
 
@@ -1340,221 +1059,302 @@ const DvzFrameTiming * dvz_canvas_timings(
 
 _Declared in `include/datoviz/canvas.h`:348._
 
+### Types
+
+<a id="type-dvzcanvas"></a>
+
+??? abstract "`DvzCanvas` · typedef"
+
+    ```c
+    typedef struct DvzCanvas DvzCanvas;
+    ```
+
+    _Declared in `include/datoviz/canvas.h`:40._
+
+<a id="type-dvzcanvasconfig"></a>
+
+??? abstract "`DvzCanvasConfig` · record"
+
+    ```c
+    struct DvzCanvasConfig {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzWindow * window;
+        DvzDevice * device;
+        DvzCanvasRenderMode render_mode;
+        VkFormat color_format;
+        VkPresentModeKHR present_mode;
+        _Bool enable_video_sink;
+        size_t timing_history;
+    };
+    ```
+
+    _Declared in `include/datoviz/canvas.h`:59._
+
+<a id="type-dvzcanvasdraw"></a>
+
+??? abstract "`DvzCanvasDraw` · typedef"
+
+    ```c
+    typedef void (*)(DvzCanvas *, const DvzStreamFrame *, void *) DvzCanvasDraw;
+    ```
+
+    _Declared in `include/datoviz/canvas.h`:129._
+
+<a id="type-dvzcanvasflags"></a>
+
+??? abstract "`DvzCanvasFlags` · enum"
+
+    ```c
+    enum DvzCanvasFlags {
+        DVZ_CANVAS_FLAGS_NONE = 0,
+        DVZ_CANVAS_FLAGS_IMGUI = 1,
+        DVZ_CANVAS_FLAGS_FPS = 2,
+        DVZ_CANVAS_FLAGS_MONITOR = 4,
+        DVZ_CANVAS_FLAGS_FULLSCREEN = 8,
+        DVZ_CANVAS_FLAGS_VSYNC = 16,
+        DVZ_CANVAS_FLAGS_PICK = 32,
+        DVZ_CANVAS_FLAGS_PUSH_SCALE = 64,
+    };
+    ```
+
+    _Declared in `include/datoviz/canvas/enums.h`:20._
+
+<a id="type-dvzcanvasframestatus"></a>
+
+??? abstract "`DvzCanvasFrameStatus` · enum"
+
+    ```c
+    enum DvzCanvasFrameStatus {
+        DVZ_CANVAS_FRAME_READY = 0,
+        DVZ_CANVAS_FRAME_WAIT_SURFACE = 1,
+    };
+    ```
+
+    _Declared in `include/datoviz/canvas/enums.h`:35._
+
+<a id="type-dvzcanvasliveimagecallback"></a>
+
+??? abstract "`DvzCanvasLiveImageCallback` · typedef"
+
+    ```c
+    typedef int (*)(const DvzCanvasLiveImageFrame *, void *) DvzCanvasLiveImageCallback;
+    ```
+
+    _Declared in `include/datoviz/canvas.h`:113._
+
+<a id="type-dvzcanvasliveimageframe"></a>
+
+??? abstract "`DvzCanvasLiveImageFrame` · record"
+
+    ```c
+    struct DvzCanvasLiveImageFrame {
+        uint64_t frame_id;
+        uint64_t wait_value;
+        VkFormat color_format;
+        VkImage image;
+        VkImageView image_view;
+        VkCommandBuffer command_buffer;
+        VkExtent2D extent;
+        _Bool handles_dirty;
+        uint64_t resource_generation;
+        _Bool image_valid;
+        int memory_fd;
+        int wait_semaphore_fd;
+    };
+    ```
+
+    _Declared in `include/datoviz/canvas.h`:95._
+
+<a id="type-dvzcanvasliveimagesinkconfig"></a>
+
+??? abstract "`DvzCanvasLiveImageSinkConfig` · record"
+
+    ```c
+    struct DvzCanvasLiveImageSinkConfig {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzCanvasLiveImageCallback callback;
+        void * user_data;
+    };
+    ```
+
+    _Declared in `include/datoviz/canvas.h`:119._
+
+<a id="type-dvzcanvasoffscreenruntimestate"></a>
+
+??? abstract "`DvzCanvasOffscreenRuntimeState` · enum"
+
+    ```c
+    enum DvzCanvasOffscreenRuntimeState {
+        DVZ_CANVAS_OFFSCREEN_STATE_UNINITIALIZED = 0,
+        DVZ_CANVAS_OFFSCREEN_STATE_READY = 1,
+        DVZ_CANVAS_OFFSCREEN_STATE_DRAW_PENDING = 2,
+        DVZ_CANVAS_OFFSCREEN_STATE_OUTPUT_PENDING = 3,
+        DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST = 4,
+    };
+    ```
+
+    _Declared in `include/datoviz/canvas/enums.h`:66._
+
+<a id="type-dvzcanvaspresentruntimestate"></a>
+
+??? abstract "`DvzCanvasPresentRuntimeState` · enum"
+
+    ```c
+    enum DvzCanvasPresentRuntimeState {
+        DVZ_CANVAS_PRESENT_STATE_UNINITIALIZED = 0,
+        DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE = 1,
+        DVZ_CANVAS_PRESENT_STATE_READY = 2,
+        DVZ_CANVAS_PRESENT_STATE_ACQUIRED = 3,
+        DVZ_CANVAS_PRESENT_STATE_PRESENT_PENDING = 4,
+        DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST = 5,
+    };
+    ```
+
+    _Declared in `include/datoviz/canvas/enums.h`:53._
+
+<a id="type-dvzcanvasrendermode"></a>
+
+??? abstract "`DvzCanvasRenderMode` · enum"
+
+    ```c
+    enum DvzCanvasRenderMode {
+        DVZ_CANVAS_RENDER_MODE_PRESENT = 0,
+        DVZ_CANVAS_RENDER_MODE_OFFSCREEN = 1,
+    };
+    ```
+
+    _Declared in `include/datoviz/canvas/enums.h`:44._
+
+<a id="type-dvzframetiming"></a>
+
+??? abstract "`DvzFrameTiming` · record"
+
+    ```c
+    struct DvzFrameTiming {
+        uint64_t frame_id;
+        double cpu_submit_us;
+        double gpu_complete_us;
+        double present_start_us;
+        double present_done_us;
+    };
+    ```
+
+    _Declared in `include/datoviz/canvas.h`:75._
+
 ## Display Sizing { #display-sizing }
 
 ### Types
 
-#### `DvzExtent` { #type-dvzextent }
+<a id="type-dvzextent"></a>
 
-```c
-struct DvzExtent {
-    uint32_t width;
-    uint32_t height;
-};
-```
+??? abstract "`DvzExtent` · record"
 
-Used by: [`dvz_view_size()`](app.md#dvz_view_size).
+    ```c
+    struct DvzExtent {
+        uint32_t width;
+        uint32_t height;
+    };
+    ```
 
-_Declared in `include/datoviz/window/size.h`:50._
+    _Declared in `include/datoviz/window/size.h`:50._
 
-#### `DvzPhysicalMetricsSource` { #type-dvzphysicalmetricssource }
+<a id="type-dvzphysicalmetricssource"></a>
 
-```c
-enum DvzPhysicalMetricsSource {
-    DVZ_PHYSICAL_METRICS_NONE = 0,
-    DVZ_PHYSICAL_METRICS_MONITOR_EDID = 1,
-    DVZ_PHYSICAL_METRICS_GLFW_MONITOR_SIZE = 2,
-    DVZ_PHYSICAL_METRICS_PLATFORM_API = 3,
-    DVZ_PHYSICAL_METRICS_USER_OVERRIDE = 4,
-    DVZ_PHYSICAL_METRICS_ESTIMATED = 5,
-};
-```
+??? abstract "`DvzPhysicalMetricsSource` · enum"
 
-_Declared in `include/datoviz/app.h`:109._
+    ```c
+    enum DvzPhysicalMetricsSource {
+        DVZ_PHYSICAL_METRICS_NONE = 0,
+        DVZ_PHYSICAL_METRICS_MONITOR_EDID = 1,
+        DVZ_PHYSICAL_METRICS_GLFW_MONITOR_SIZE = 2,
+        DVZ_PHYSICAL_METRICS_PLATFORM_API = 3,
+        DVZ_PHYSICAL_METRICS_USER_OVERRIDE = 4,
+        DVZ_PHYSICAL_METRICS_ESTIMATED = 5,
+    };
+    ```
 
-#### `DvzResolvedExactness` { #type-dvzresolvedexactness }
+    _Declared in `include/datoviz/app.h`:109._
 
-```c
-enum DvzResolvedExactness {
-    DVZ_RESOLVED_EXACT = 0,
-    DVZ_RESOLVED_APPROXIMATE = 1,
-    DVZ_RESOLVED_UNKNOWN = 2,
-};
-```
+<a id="type-dvzresolvedexactness"></a>
 
-_Declared in `include/datoviz/app.h`:120._
+??? abstract "`DvzResolvedExactness` · enum"
 
-#### `DvzResolvedViewSize` { #type-dvzresolvedviewsize }
+    ```c
+    enum DvzResolvedExactness {
+        DVZ_RESOLVED_EXACT = 0,
+        DVZ_RESOLVED_APPROXIMATE = 1,
+        DVZ_RESOLVED_UNKNOWN = 2,
+    };
+    ```
 
-```c
-struct DvzResolvedViewSize {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzViewSizePolicy requested_policy;
-    double requested_width;
-    double requested_height;
-    double reference_dpi;
-    double canvas_width_px;
-    double canvas_height_px;
-    uint32_t host_logical_width;
-    uint32_t host_logical_height;
-    uint32_t framebuffer_width;
-    uint32_t framebuffer_height;
-    double device_scale_x;
-    double device_scale_y;
-    double canvas_to_host_scale_x;
-    double canvas_to_host_scale_y;
-    double framebuffer_per_canvas_px_x;
-    double framebuffer_per_canvas_px_y;
-    double target_width_mm;
-    double target_height_mm;
-    double estimated_width_mm;
-    double estimated_height_mm;
-    DvzPhysicalMetricsSource physical_metrics_source;
-    DvzResolvedExactness exactness;
-};
-```
+    _Declared in `include/datoviz/app.h`:120._
 
-Used by: [`dvz_view_resolved_size()`](app.md#dvz_view_resolved_size), [`dvz_view_size_resolve()`](app.md#dvz_view_size_resolve).
+<a id="type-dvzresolvedviewsize"></a>
 
-_Declared in `include/datoviz/app.h`:203._
+??? abstract "`DvzResolvedViewSize` · record"
 
-#### `DvzScaleXY` { #type-dvzscalexy }
+    ```c
+    struct DvzResolvedViewSize {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzViewSizePolicy requested_policy;
+        double requested_width;
+        double requested_height;
+        double reference_dpi;
+        double canvas_width_px;
+        double canvas_height_px;
+        uint32_t host_logical_width;
+        uint32_t host_logical_height;
+        uint32_t framebuffer_width;
+        uint32_t framebuffer_height;
+        double device_scale_x;
+        double device_scale_y;
+        double canvas_to_host_scale_x;
+        double canvas_to_host_scale_y;
+        double framebuffer_per_canvas_px_x;
+        double framebuffer_per_canvas_px_y;
+        double target_width_mm;
+        double target_height_mm;
+        double estimated_width_mm;
+        double estimated_height_mm;
+        DvzPhysicalMetricsSource physical_metrics_source;
+        DvzResolvedExactness exactness;
+    };
+    ```
 
-```c
-struct DvzScaleXY {
-    float x;
-    float y;
-};
-```
+    _Declared in `include/datoviz/app.h`:203._
 
-Used by: [`dvz_view_device_scale_xy()`](app.md#dvz_view_device_scale_xy).
+<a id="type-dvzscalexy"></a>
 
-_Declared in `include/datoviz/window/size.h`:58._
+??? abstract "`DvzScaleXY` · record"
 
-#### `DvzSizeSpace` { #type-dvzsizespace }
+    ```c
+    struct DvzScaleXY {
+        float x;
+        float y;
+    };
+    ```
 
-```c
-enum DvzSizeSpace {
-    DVZ_SIZE_LOGICAL = 0,
-    DVZ_SIZE_NATIVE = 1,
-    DVZ_SIZE_SURFACE = 2,
-    DVZ_SIZE_RENDER = 3,
-};
-```
+    _Declared in `include/datoviz/window/size.h`:58._
 
-Used by: [`dvz_view_size()`](app.md#dvz_view_size).
+<a id="type-dvzsizespace"></a>
 
-_Declared in `include/datoviz/window/size.h`:36._
+??? abstract "`DvzSizeSpace` · enum"
+
+    ```c
+    enum DvzSizeSpace {
+        DVZ_SIZE_LOGICAL = 0,
+        DVZ_SIZE_NATIVE = 1,
+        DVZ_SIZE_SURFACE = 2,
+        DVZ_SIZE_RENDER = 3,
+    };
+    ```
+
+    _Declared in `include/datoviz/window/size.h`:36._
 
 ## GUI { #gui }
-
-### Types
-
-#### `DvzGui` { #type-dvzgui }
-
-```c
-typedef struct DvzGui DvzGui;
-```
-
-Used by: [`dvz_gui_begin()`](app.md#dvz_gui_begin), [`dvz_gui_button()`](app.md#dvz_gui_button), [`dvz_gui_checkbox()`](app.md#dvz_gui_checkbox), [`dvz_gui_collapsing_header()`](app.md#dvz_gui_collapsing_header), [`dvz_gui_color_edit4()`](app.md#dvz_gui_color_edit4), [`dvz_gui_color_edit_dvz()`](app.md#dvz_gui_color_edit_dvz), [`dvz_gui_color_picker4()`](app.md#dvz_gui_color_picker4), [`dvz_gui_combo()`](app.md#dvz_gui_combo); plus 21 more.
-
-_Declared in `include/datoviz/gui.h`:33._
-
-#### `DvzGuiCallback` { #type-dvzguicallback }
-
-```c
-typedef void (*)(DvzGui *, DvzView *, void *) DvzGuiCallback;
-```
-
-Used by: [`dvz_view_set_gui_callback()`](app.md#dvz_view_set_gui_callback).
-
-_Declared in `include/datoviz/gui.h`:36._
-
-#### `DvzGuiConfig` { #type-dvzguiconfig }
-
-```c
-struct DvzGuiConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint32_t gui_flags;
-    uint32_t default_window_width;
-    const char * ini_path;
-};
-```
-
-Used by: [`dvz_gui_config()`](app.md#dvz_gui_config), [`dvz_view_gui()`](app.md#dvz_view_gui).
-
-_Declared in `include/datoviz/gui.h`:80._
-
-#### `DvzGuiDockSlot` { #type-dvzguidockslot }
-
-```c
-enum DvzGuiDockSlot {
-    DVZ_GUI_DOCK_SLOT_LEFT = 0,
-    DVZ_GUI_DOCK_SLOT_RIGHT = 1,
-    DVZ_GUI_DOCK_SLOT_TOP = 2,
-    DVZ_GUI_DOCK_SLOT_BOTTOM = 3,
-};
-```
-
-Used by: [`dvz_gui_dock_window_once()`](app.md#dvz_gui_dock_window_once).
-
-_Declared in `include/datoviz/gui.h`:66._
-
-#### `DvzGuiFlags` { #type-dvzguiflags }
-
-```c
-enum DvzGuiFlags {
-    DVZ_GUI_FLAGS_NONE = 0,
-    DVZ_GUI_FLAGS_DOCKING = 1,
-    DVZ_GUI_FLAGS_DOCKSPACE = 2,
-};
-```
-
-_Declared in `include/datoviz/gui.h`:44._
-
-#### `DvzGuiViewport` { #type-dvzguiviewport }
-
-```c
-typedef struct DvzGuiViewport DvzGuiViewport;
-```
-
-Used by: [`dvz_gui_viewport()`](app.md#dvz_gui_viewport), [`dvz_gui_viewport_destroy()`](app.md#dvz_gui_viewport_destroy), [`dvz_gui_viewport_from_window()`](app.md#dvz_gui_viewport_from_window), [`dvz_gui_viewport_input()`](app.md#dvz_gui_viewport_input), [`dvz_gui_viewport_mouse()`](app.md#dvz_gui_viewport_mouse), [`dvz_gui_viewport_window()`](app.md#dvz_gui_viewport_window).
-
-_Declared in `include/datoviz/gui.h`:34._
-
-#### `DvzGuiViewportConfig` { #type-dvzguiviewportconfig }
-
-```c
-struct DvzGuiViewportConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint32_t viewport_flags;
-    uint32_t initial_width;
-    uint32_t initial_height;
-    uint32_t min_width;
-    uint32_t min_height;
-    uint32_t resize_step;
-    uint32_t resize_delay_frames;
-};
-```
-
-Used by: [`dvz_gui_viewport()`](app.md#dvz_gui_viewport), [`dvz_gui_viewport_config()`](app.md#dvz_gui_viewport_config), [`dvz_gui_viewport_from_window()`](app.md#dvz_gui_viewport_from_window).
-
-_Declared in `include/datoviz/gui.h`:93._
-
-#### `DvzGuiViewportFlags` { #type-dvzguiviewportflags }
-
-```c
-enum DvzGuiViewportFlags {
-    DVZ_GUI_VIEWPORT_FLAGS_NONE = 0,
-    DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT = 1,
-    DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN = 2,
-};
-```
-
-_Declared in `include/datoviz/gui.h`:53._
 
 ### Functions
 
@@ -2305,452 +2105,118 @@ _Bool dvz_gui_viewport_window(
 
 _Declared in `include/datoviz/gui.h`:593._
 
-## Input Routing { #input-routing }
-
 ### Types
 
-#### `DvzCallbackId` { #type-dvzcallbackid }
+<a id="type-dvzgui"></a>
 
-```c
-typedef uint64_t DvzCallbackId;
-```
+??? abstract "`DvzGui` · typedef"
 
-Used by: [`dvz_input_subscribe_event()`](app.md#dvz_input_subscribe_event), [`dvz_input_subscribe_keyboard()`](app.md#dvz_input_subscribe_keyboard), [`dvz_input_subscribe_pointer()`](app.md#dvz_input_subscribe_pointer), [`dvz_input_subscribe_resize()`](app.md#dvz_input_subscribe_resize), [`dvz_input_subscribe_scale()`](app.md#dvz_input_subscribe_scale), [`dvz_input_unsubscribe()`](app.md#dvz_input_unsubscribe).
+    ```c
+    typedef struct DvzGui DvzGui;
+    ```
 
-_Declared in `include/datoviz/input/router.h`:58._
+    _Declared in `include/datoviz/gui.h`:33._
 
-#### `DvzCallbackIdSpecial` { #type-dvzcallbackidspecial }
+<a id="type-dvzguicallback"></a>
 
-```c
-enum DvzCallbackIdSpecial {
-    DVZ_CALLBACK_ID_NONE = 0,
-};
-```
+??? abstract "`DvzGuiCallback` · typedef"
 
-_Declared in `include/datoviz/input/router.h`:42._
+    ```c
+    typedef void (*)(DvzGui *, DvzView *, void *) DvzGuiCallback;
+    ```
 
-#### `DvzInputCallback` { #type-dvzinputcallback }
+    _Declared in `include/datoviz/gui.h`:36._
 
-```c
-typedef void (*)(DvzInputRouter *, const DvzInputEvent *, void *) DvzInputCallback;
-```
-
-Used by: [`dvz_input_subscribe_event()`](app.md#dvz_input_subscribe_event).
-
-_Declared in `include/datoviz/input/router.h`:64._
-
-#### `DvzInputEvent` { #type-dvzinputevent }
-
-```c
-struct DvzInputEvent {
-    DvzInputEventType type;
-    union (unnamed union at include/datoviz/input/router.h:95:5) content;
-};
-```
-
-Used by: [`dvz_input_emit_event()`](app.md#dvz_input_emit_event).
-
-_Declared in `include/datoviz/input/router.h`:92._
-
-#### `DvzInputEventType` { #type-dvzinputeventtype }
-
-```c
-enum DvzInputEventType {
-    DVZ_INPUT_EVENT_NONE = 0,
-    DVZ_INPUT_EVENT_POINTER = 1,
-    DVZ_INPUT_EVENT_KEYBOARD = 2,
-    DVZ_INPUT_EVENT_RESIZE = 3,
-    DVZ_INPUT_EVENT_SCALE = 4,
-};
-```
-
-_Declared in `include/datoviz/input/router.h`:31._
-
-#### `DvzInputResizeEvent` { #type-dvzinputresizeevent }
-
-```c
-struct DvzInputResizeEvent {
-    uint32_t framebuffer_width;
-    uint32_t framebuffer_height;
-    uint32_t window_width;
-    uint32_t window_height;
-    float content_scale_x;
-    float content_scale_y;
-};
-```
-
-Used by: [`dvz_input_emit_resize()`](app.md#dvz_input_emit_resize), [`dvz_input_router_last_resize()`](app.md#dvz_input_router_last_resize).
-
-_Declared in `include/datoviz/input/router.h`:72._
-
-#### `DvzInputRouter` { #type-dvzinputrouter }
-
-```c
-typedef struct DvzInputRouter DvzInputRouter;
-```
-
-Used by: [`dvz_arcball_connect()`](runtime-controllers.md#dvz_arcball_connect), [`dvz_arcball_disconnect()`](runtime-controllers.md#dvz_arcball_disconnect), [`dvz_canvas_input()`](app.md#dvz_canvas_input), [`dvz_fly_connect()`](runtime-controllers.md#dvz_fly_connect), [`dvz_fly_disconnect()`](runtime-controllers.md#dvz_fly_disconnect), [`dvz_gui_viewport_input()`](app.md#dvz_gui_viewport_input), [`dvz_input_emit_event()`](app.md#dvz_input_emit_event), [`dvz_input_emit_keyboard()`](app.md#dvz_input_emit_keyboard); plus 24 more.
-
-_Declared in `include/datoviz/input/router.h`:56._
-
-#### `DvzInputScaleEvent` { #type-dvzinputscaleevent }
-
-```c
-struct DvzInputScaleEvent {
-    float content_scale_x;
-    float content_scale_y;
-};
-```
-
-Used by: [`dvz_input_emit_scale()`](app.md#dvz_input_emit_scale).
-
-_Declared in `include/datoviz/input/router.h`:84._
-
-#### `DvzKeyCode` { #type-dvzkeycode }
-
-```c
-enum DvzKeyCode {
-    DVZ_KEY_UNKNOWN = -1,
-    DVZ_KEY_NONE = 0,
-    DVZ_KEY_SPACE = 32,
-    DVZ_KEY_APOSTROPHE = 39,
-    DVZ_KEY_COMMA = 44,
-    DVZ_KEY_MINUS = 45,
-    DVZ_KEY_PERIOD = 46,
-    DVZ_KEY_SLASH = 47,
-    DVZ_KEY_0 = 48,
-    DVZ_KEY_1 = 49,
-    DVZ_KEY_2 = 50,
-    DVZ_KEY_3 = 51,
-    DVZ_KEY_4 = 52,
-    DVZ_KEY_5 = 53,
-    DVZ_KEY_6 = 54,
-    DVZ_KEY_7 = 55,
-    DVZ_KEY_8 = 56,
-    DVZ_KEY_9 = 57,
-    DVZ_KEY_SEMICOLON = 59,
-    DVZ_KEY_EQUAL = 61,
-    DVZ_KEY_A = 65,
-    DVZ_KEY_B = 66,
-    DVZ_KEY_C = 67,
-    DVZ_KEY_D = 68,
-    DVZ_KEY_E = 69,
-    DVZ_KEY_F = 70,
-    DVZ_KEY_G = 71,
-    DVZ_KEY_H = 72,
-    DVZ_KEY_I = 73,
-    DVZ_KEY_J = 74,
-    DVZ_KEY_K = 75,
-    DVZ_KEY_L = 76,
-    DVZ_KEY_M = 77,
-    DVZ_KEY_N = 78,
-    DVZ_KEY_O = 79,
-    DVZ_KEY_P = 80,
-    DVZ_KEY_Q = 81,
-    DVZ_KEY_R = 82,
-    DVZ_KEY_S = 83,
-    DVZ_KEY_T = 84,
-    DVZ_KEY_U = 85,
-    DVZ_KEY_V = 86,
-    DVZ_KEY_W = 87,
-    DVZ_KEY_X = 88,
-    DVZ_KEY_Y = 89,
-    DVZ_KEY_Z = 90,
-    DVZ_KEY_LEFT_BRACKET = 91,
-    DVZ_KEY_BACKSLASH = 92,
-    DVZ_KEY_RIGHT_BRACKET = 93,
-    DVZ_KEY_GRAVE_ACCENT = 96,
-    DVZ_KEY_WORLD_1 = 161,
-    DVZ_KEY_WORLD_2 = 162,
-    DVZ_KEY_ESCAPE = 256,
-    DVZ_KEY_ENTER = 257,
-    DVZ_KEY_TAB = 258,
-    DVZ_KEY_BACKSPACE = 259,
-    DVZ_KEY_INSERT = 260,
-    DVZ_KEY_DELETE = 261,
-    DVZ_KEY_RIGHT = 262,
-    DVZ_KEY_LEFT = 263,
-    DVZ_KEY_DOWN = 264,
-    DVZ_KEY_UP = 265,
-    DVZ_KEY_PAGE_UP = 266,
-    DVZ_KEY_PAGE_DOWN = 267,
-    DVZ_KEY_HOME = 268,
-    DVZ_KEY_END = 269,
-    DVZ_KEY_CAPS_LOCK = 280,
-    DVZ_KEY_SCROLL_LOCK = 281,
-    DVZ_KEY_NUM_LOCK = 282,
-    DVZ_KEY_PRINT_SCREEN = 283,
-    DVZ_KEY_PAUSE = 284,
-    DVZ_KEY_F1 = 290,
-    DVZ_KEY_F2 = 291,
-    DVZ_KEY_F3 = 292,
-    DVZ_KEY_F4 = 293,
-    DVZ_KEY_F5 = 294,
-    DVZ_KEY_F6 = 295,
-    DVZ_KEY_F7 = 296,
-    DVZ_KEY_F8 = 297,
-    DVZ_KEY_F9 = 298,
-    DVZ_KEY_F10 = 299,
-    DVZ_KEY_F11 = 300,
-    DVZ_KEY_F12 = 301,
-    DVZ_KEY_F13 = 302,
-    DVZ_KEY_F14 = 303,
-    DVZ_KEY_F15 = 304,
-    DVZ_KEY_F16 = 305,
-    DVZ_KEY_F17 = 306,
-    DVZ_KEY_F18 = 307,
-    DVZ_KEY_F19 = 308,
-    DVZ_KEY_F20 = 309,
-    DVZ_KEY_F21 = 310,
-    DVZ_KEY_F22 = 311,
-    DVZ_KEY_F23 = 312,
-    DVZ_KEY_F24 = 313,
-    DVZ_KEY_F25 = 314,
-    DVZ_KEY_KP_0 = 320,
-    DVZ_KEY_KP_1 = 321,
-    DVZ_KEY_KP_2 = 322,
-    DVZ_KEY_KP_3 = 323,
-    DVZ_KEY_KP_4 = 324,
-    DVZ_KEY_KP_5 = 325,
-    DVZ_KEY_KP_6 = 326,
-    DVZ_KEY_KP_7 = 327,
-    DVZ_KEY_KP_8 = 328,
-    DVZ_KEY_KP_9 = 329,
-    DVZ_KEY_KP_DECIMAL = 330,
-    DVZ_KEY_KP_DIVIDE = 331,
-    DVZ_KEY_KP_MULTIPLY = 332,
-    DVZ_KEY_KP_SUBTRACT = 333,
-    DVZ_KEY_KP_ADD = 334,
-    DVZ_KEY_KP_ENTER = 335,
-    DVZ_KEY_KP_EQUAL = 336,
-    DVZ_KEY_LEFT_SHIFT = 340,
-    DVZ_KEY_LEFT_CONTROL = 341,
-    DVZ_KEY_LEFT_ALT = 342,
-    DVZ_KEY_LEFT_SUPER = 343,
-    DVZ_KEY_RIGHT_SHIFT = 344,
-    DVZ_KEY_RIGHT_CONTROL = 345,
-    DVZ_KEY_RIGHT_ALT = 346,
-    DVZ_KEY_RIGHT_SUPER = 347,
-    DVZ_KEY_MENU = 348,
-    DVZ_KEY_LAST = 348,
-};
-```
-
-Used by: [`dvz_keyboard_emit()`](app.md#dvz_keyboard_emit), [`dvz_keyboard_modifier_bit()`](app.md#dvz_keyboard_modifier_bit), [`dvz_keyboard_modifier_state_update()`](app.md#dvz_keyboard_modifier_state_update), [`dvz_view_emit_key()`](app.md#dvz_view_emit_key).
-
-_Declared in `include/datoviz/input/keycodes.h`:20._
-
-#### `DvzKeyboardCallback` { #type-dvzkeyboardcallback }
-
-```c
-typedef void (*)(DvzInputRouter *, const DvzKeyboardEvent *, void *) DvzKeyboardCallback;
-```
-
-Used by: [`dvz_input_subscribe_keyboard()`](app.md#dvz_input_subscribe_keyboard).
-
-_Declared in `include/datoviz/input/router.h`:61._
-
-#### `DvzKeyboardEvent` { #type-dvzkeyboardevent }
-
-```c
-struct DvzKeyboardEvent {
-    DvzKeyboardEventType type;
-    DvzKeyCode key;
-    int mods;
-    void * user_data;
-};
-```
-
-Used by: [`dvz_fly_keyboard()`](runtime-controllers.md#dvz_fly_keyboard), [`dvz_input_emit_keyboard()`](app.md#dvz_input_emit_keyboard).
-
-_Declared in `include/datoviz/input/keyboard.h`:42._
-
-#### `DvzKeyboardEventType` { #type-dvzkeyboardeventtype }
-
-```c
-enum DvzKeyboardEventType {
-    DVZ_KEYBOARD_EVENT_NONE = 0,
-    DVZ_KEYBOARD_EVENT_PRESS = 1,
-    DVZ_KEYBOARD_EVENT_REPEAT = 2,
-    DVZ_KEYBOARD_EVENT_RELEASE = 3,
-};
-```
-
-Used by: [`dvz_keyboard_emit()`](app.md#dvz_keyboard_emit), [`dvz_keyboard_modifier_state_update()`](app.md#dvz_keyboard_modifier_state_update), [`dvz_view_emit_key()`](app.md#dvz_view_emit_key).
-
-_Declared in `include/datoviz/input/enums.h`:33._
-
-#### `DvzKeyboardModifierState` { #type-dvzkeyboardmodifierstate }
-
-```c
-struct DvzKeyboardModifierState {
-    int mods;
-};
-```
-
-Used by: [`dvz_keyboard_modifier_state()`](app.md#dvz_keyboard_modifier_state), [`dvz_keyboard_modifier_state_destroy()`](app.md#dvz_keyboard_modifier_state_destroy), [`dvz_keyboard_modifier_state_mods()`](app.md#dvz_keyboard_modifier_state_mods), [`dvz_keyboard_modifier_state_update()`](app.md#dvz_keyboard_modifier_state_update).
-
-_Declared in `include/datoviz/input/keyboard.h`:52._
-
-#### `DvzKeyboardModifiers` { #type-dvzkeyboardmodifiers }
-
-```c
-enum DvzKeyboardModifiers {
-    DVZ_KEY_MODIFIER_NONE = 0,
-    DVZ_KEY_MODIFIER_SHIFT = 1,
-    DVZ_KEY_MODIFIER_CONTROL = 2,
-    DVZ_KEY_MODIFIER_ALT = 4,
-    DVZ_KEY_MODIFIER_SUPER = 8,
-};
-```
-
-_Declared in `include/datoviz/input/enums.h`:21._
-
-#### `DvzPointerButton` { #type-dvzpointerbutton }
-
-```c
-enum DvzPointerButton {
-    DVZ_POINTER_BUTTON_NONE = 0,
-    DVZ_POINTER_BUTTON_LEFT = 1,
-    DVZ_POINTER_BUTTON_MIDDLE = 2,
-    DVZ_POINTER_BUTTON_RIGHT = 3,
-};
-```
-
-Used by: [`dvz_pointer_button_from_glfw()`](app.md#dvz_pointer_button_from_glfw), [`dvz_pointer_emit_position()`](app.md#dvz_pointer_emit_position), [`dvz_view_emit_pointer()`](app.md#dvz_view_emit_pointer).
-
-_Declared in `include/datoviz/input/enums.h`:46._
-
-#### `DvzPointerCallback` { #type-dvzpointercallback }
-
-```c
-typedef void (*)(DvzInputRouter *, const DvzPointerEvent *, void *) DvzPointerCallback;
-```
-
-Used by: [`dvz_input_subscribe_pointer()`](app.md#dvz_input_subscribe_pointer).
-
-_Declared in `include/datoviz/input/router.h`:60._
-
-#### `DvzPointerDragEvent` { #type-dvzpointerdragevent }
-
-```c
-struct DvzPointerDragEvent {
-    vec2 press_pos;
-    vec2 last_pos;
-    vec2 shift;
-    _Bool is_press_valid;
-};
-```
-
-_Declared in `include/datoviz/input/pointer.h`:64._
-
-#### `DvzPointerEvent` { #type-dvzpointerevent }
-
-```c
-struct DvzPointerEvent {
-    DvzPointerEventType type;
-    DvzPointerEventUnion content;
-    vec2 pos;
-    vec2 window_size;
-    DvzPointerButton button;
-    int mods;
-    float content_scale;
-    uint64_t timestamp_ns;
-    void * user_data;
-};
-```
-
-Used by: [`dvz_arcball_pointer()`](runtime-controllers.md#dvz_arcball_pointer), [`dvz_fly_pointer()`](runtime-controllers.md#dvz_fly_pointer), [`dvz_input_emit_pointer()`](app.md#dvz_input_emit_pointer), [`dvz_panzoom_pointer()`](runtime-controllers.md#dvz_panzoom_pointer), [`dvz_turntable_pointer()`](runtime-controllers.md#dvz_turntable_pointer).
-
-_Declared in `include/datoviz/input/pointer.h`:82._
-
-#### `DvzPointerEventType` { #type-dvzpointereventtype }
-
-```c
-enum DvzPointerEventType {
-    DVZ_POINTER_EVENT_NONE = -1,
-    DVZ_POINTER_EVENT_RELEASE = 0,
-    DVZ_POINTER_EVENT_PRESS = 1,
-    DVZ_POINTER_EVENT_MOVE = 2,
-    DVZ_POINTER_EVENT_CLICK = 3,
-    DVZ_POINTER_EVENT_DOUBLE_CLICK = 5,
-    DVZ_POINTER_EVENT_DRAG_START = 10,
-    DVZ_POINTER_EVENT_DRAG = 11,
-    DVZ_POINTER_EVENT_DRAG_STOP = 12,
-    DVZ_POINTER_EVENT_WHEEL = 20,
-    DVZ_POINTER_EVENT_ALL = 255,
-};
-```
-
-Used by: [`dvz_pointer_emit_position()`](app.md#dvz_pointer_emit_position), [`dvz_view_emit_pointer()`](app.md#dvz_view_emit_pointer).
-
-_Declared in `include/datoviz/input/enums.h`:70._
-
-#### `DvzPointerEventUnion` { #type-dvzpointereventunion }
-
-```c
-union DvzPointerEventUnion {
-    DvzPointerWheelEvent w;
-    DvzPointerDragEvent d;
-};
-```
-
-_Declared in `include/datoviz/input/pointer.h`:74._
-
-#### `DvzPointerGestureHandler` { #type-dvzpointergesturehandler }
-
-```c
-typedef struct DvzPointerGestureHandler DvzPointerGestureHandler;
-```
-
-Used by: [`dvz_pointer_gesture_handler()`](app.md#dvz_pointer_gesture_handler), [`dvz_pointer_gesture_handler_destroy()`](app.md#dvz_pointer_gesture_handler_destroy).
-
-_Declared in `include/datoviz/input/pointer.h`:49._
-
-#### `DvzPointerState` { #type-dvzpointerstate }
-
-```c
-enum DvzPointerState {
-    DVZ_POINTER_STATE_RELEASE = 0,
-    DVZ_POINTER_STATE_PRESS = 1,
-    DVZ_POINTER_STATE_CLICK = 3,
-    DVZ_POINTER_STATE_CLICK_PRESS = 4,
-    DVZ_POINTER_STATE_DOUBLE_CLICK = 5,
-    DVZ_POINTER_STATE_DRAGGING = 11,
-};
-```
-
-_Declared in `include/datoviz/input/enums.h`:57._
-
-#### `DvzPointerWheelEvent` { #type-dvzpointerwheelevent }
-
-```c
-struct DvzPointerWheelEvent {
-    vec2 dir;
-};
-```
-
-_Declared in `include/datoviz/input/pointer.h`:57._
-
-#### `DvzResizeCallback` { #type-dvzresizecallback }
-
-```c
-typedef void (*)(DvzInputRouter *, const DvzInputResizeEvent *, void *) DvzResizeCallback;
-```
-
-Used by: [`dvz_input_subscribe_resize()`](app.md#dvz_input_subscribe_resize).
-
-_Declared in `include/datoviz/input/router.h`:62._
-
-#### `DvzScaleCallback` { #type-dvzscalecallback }
-
-```c
-typedef void (*)(DvzInputRouter *, const DvzInputScaleEvent *, void *) DvzScaleCallback;
-```
-
-Used by: [`dvz_input_subscribe_scale()`](app.md#dvz_input_subscribe_scale).
-
-_Declared in `include/datoviz/input/router.h`:63._
+<a id="type-dvzguiconfig"></a>
+
+??? abstract "`DvzGuiConfig` · record"
+
+    ```c
+    struct DvzGuiConfig {
+        uint32_t struct_size;
+        uint32_t flags;
+        uint32_t gui_flags;
+        uint32_t default_window_width;
+        const char * ini_path;
+    };
+    ```
+
+    _Declared in `include/datoviz/gui.h`:80._
+
+<a id="type-dvzguidockslot"></a>
+
+??? abstract "`DvzGuiDockSlot` · enum"
+
+    ```c
+    enum DvzGuiDockSlot {
+        DVZ_GUI_DOCK_SLOT_LEFT = 0,
+        DVZ_GUI_DOCK_SLOT_RIGHT = 1,
+        DVZ_GUI_DOCK_SLOT_TOP = 2,
+        DVZ_GUI_DOCK_SLOT_BOTTOM = 3,
+    };
+    ```
+
+    _Declared in `include/datoviz/gui.h`:66._
+
+<a id="type-dvzguiflags"></a>
+
+??? abstract "`DvzGuiFlags` · enum"
+
+    ```c
+    enum DvzGuiFlags {
+        DVZ_GUI_FLAGS_NONE = 0,
+        DVZ_GUI_FLAGS_DOCKING = 1,
+        DVZ_GUI_FLAGS_DOCKSPACE = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/gui.h`:44._
+
+<a id="type-dvzguiviewport"></a>
+
+??? abstract "`DvzGuiViewport` · typedef"
+
+    ```c
+    typedef struct DvzGuiViewport DvzGuiViewport;
+    ```
+
+    _Declared in `include/datoviz/gui.h`:34._
+
+<a id="type-dvzguiviewportconfig"></a>
+
+??? abstract "`DvzGuiViewportConfig` · record"
+
+    ```c
+    struct DvzGuiViewportConfig {
+        uint32_t struct_size;
+        uint32_t flags;
+        uint32_t viewport_flags;
+        uint32_t initial_width;
+        uint32_t initial_height;
+        uint32_t min_width;
+        uint32_t min_height;
+        uint32_t resize_step;
+        uint32_t resize_delay_frames;
+    };
+    ```
+
+    _Declared in `include/datoviz/gui.h`:93._
+
+<a id="type-dvzguiviewportflags"></a>
+
+??? abstract "`DvzGuiViewportFlags` · enum"
+
+    ```c
+    enum DvzGuiViewportFlags {
+        DVZ_GUI_VIEWPORT_FLAGS_NONE = 0,
+        DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT = 1,
+        DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/gui.h`:53._
+
+## Input Routing { #input-routing }
 
 ### Functions
 
@@ -3266,224 +2732,466 @@ void dvz_pointer_gesture_handler_destroy(
 
 _Declared in `include/datoviz/input/pointer.h`:151._
 
-## Streaming And Video { #streaming-and-video }
-
 ### Types
 
-#### `DvzStream` { #type-dvzstream }
+<a id="type-dvzcallbackid"></a>
 
-```c
-typedef struct DvzStream DvzStream;
-```
+??? abstract "`DvzCallbackId` · typedef"
 
-Used by: [`dvz_canvas_stream()`](app.md#dvz_canvas_stream), [`dvz_stream_attach_sink()`](app.md#dvz_stream_attach_sink), [`dvz_stream_attach_sink_name()`](app.md#dvz_stream_attach_sink_name), [`dvz_stream_create()`](app.md#dvz_stream_create), [`dvz_stream_destroy()`](app.md#dvz_stream_destroy), [`dvz_stream_device()`](app.md#dvz_stream_device), [`dvz_stream_get_config()`](app.md#dvz_stream_get_config), [`dvz_stream_start()`](app.md#dvz_stream_start); plus 3 more.
+    ```c
+    typedef uint64_t DvzCallbackId;
+    ```
 
-_Declared in `include/datoviz/stream/frame_stream.h`:36._
+    _Declared in `include/datoviz/input/router.h`:58._
 
-#### `DvzStreamConfig` { #type-dvzstreamconfig }
+<a id="type-dvzcallbackidspecial"></a>
 
-```c
-struct DvzStreamConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint32_t width;
-    uint32_t height;
-    uint32_t fps;
-    VkFormat color_format;
-};
-```
+??? abstract "`DvzCallbackIdSpecial` · enum"
 
-Used by: [`dvz_stream_config()`](app.md#dvz_stream_config), [`dvz_stream_create()`](app.md#dvz_stream_create), [`dvz_stream_get_config()`](app.md#dvz_stream_get_config).
+    ```c
+    enum DvzCallbackIdSpecial {
+        DVZ_CALLBACK_ID_NONE = 0,
+    };
+    ```
 
-_Declared in `include/datoviz/stream/frame_stream.h`:48._
+    _Declared in `include/datoviz/input/router.h`:42._
 
-#### `DvzStreamFrame` { #type-dvzstreamframe }
+<a id="type-dvzinputcallback"></a>
 
-```c
-struct DvzStreamFrame {
-    VkImage image;
-    VkDeviceMemory memory;
-    VkDeviceSize memory_size;
-    VkCommandBuffer command_buffer;
-    VkImageView image_view;
-    VkExtent2D extent;
-    VkFormat color_format;
-    VkImageLayout image_layout;
-    uint32_t usage;
-    _Bool command_buffer_recording;
-    _Bool image_borrowed;
-    _Bool image_view_borrowed;
-    _Bool command_buffer_borrowed;
-    _Bool handles_dirty;
-    uint64_t resource_generation;
-    _Bool image_valid;
-    int memory_fd;
-    int wait_semaphore_fd;
-};
-```
+??? abstract "`DvzInputCallback` · typedef"
 
-Used by: [`dvz_drp2_runtime_attach_frame_target()`](drp2.md#dvz_drp2_runtime_attach_frame_target), [`dvz_drp2_runtime_copy_texture_to_frame()`](drp2.md#dvz_drp2_runtime_copy_texture_to_frame), [`dvz_stream_start()`](app.md#dvz_stream_start), [`dvz_stream_update()`](app.md#dvz_stream_update).
+    ```c
+    typedef void (*)(DvzInputRouter *, const DvzInputEvent *, void *) DvzInputCallback;
+    ```
 
-_Declared in `include/datoviz/stream/frame_stream.h`:80._
+    _Declared in `include/datoviz/input/router.h`:64._
 
-#### `DvzStreamFrameUsage` { #type-dvzstreamframeusage }
+<a id="type-dvzinputevent"></a>
 
-```c
-enum DvzStreamFrameUsage {
-    DVZ_STREAM_FRAME_USAGE_NONE = 0,
-    DVZ_STREAM_FRAME_USAGE_RENDER_TARGET = 1,
-    DVZ_STREAM_FRAME_USAGE_COPY_SRC = 2,
-    DVZ_STREAM_FRAME_USAGE_COPY_DST = 4,
-};
-```
+??? abstract "`DvzInputEvent` · record"
 
-_Declared in `include/datoviz/stream/frame_stream.h`:61._
+    ```c
+    struct DvzInputEvent {
+        DvzInputEventType type;
+        union (unnamed union at include/datoviz/input/router.h:95:5) content;
+    };
+    ```
 
-#### `DvzStreamSink` { #type-dvzstreamsink }
+    _Declared in `include/datoviz/input/router.h`:92._
 
-```c
-struct DvzStreamSink {
-    DvzStream * stream;
-    const DvzStreamSinkBackend * backend;
-    void * backend_data;
-    const void * config;
-    _Bool started;
-};
-```
+<a id="type-dvzinputeventtype"></a>
 
-_Declared in `include/datoviz/stream/frame_stream.h`:105._
+??? abstract "`DvzInputEventType` · enum"
 
-#### `DvzStreamSinkBackend` { #type-dvzstreamsinkbackend }
+    ```c
+    enum DvzInputEventType {
+        DVZ_INPUT_EVENT_NONE = 0,
+        DVZ_INPUT_EVENT_POINTER = 1,
+        DVZ_INPUT_EVENT_KEYBOARD = 2,
+        DVZ_INPUT_EVENT_RESIZE = 3,
+        DVZ_INPUT_EVENT_SCALE = 4,
+    };
+    ```
 
-```c
-struct DvzStreamSinkBackend {
-    const char * name;
-    _Bool (*)(const void *) probe;
-    int (*)(DvzStreamSink *, const void *) create;
-    int (*)(DvzStreamSink *, const DvzStreamFrame *) start;
-    int (*)(DvzStreamSink *, uint64_t) submit;
-    int (*)(DvzStreamSink *) stop;
-    int (*)(DvzStreamSink *, const DvzStreamFrame *) update;
-    void (*)(DvzStreamSink *) destroy;
-};
-```
+    _Declared in `include/datoviz/input/router.h`:31._
 
-Used by: [`dvz_stream_attach_sink()`](app.md#dvz_stream_attach_sink), [`dvz_stream_sink_registry_find()`](app.md#dvz_stream_sink_registry_find), [`dvz_stream_sink_registry_pick()`](app.md#dvz_stream_sink_registry_pick), [`dvz_stream_sink_registry_register()`](app.md#dvz_stream_sink_registry_register), [`dvz_stream_sink_video()`](app.md#dvz_stream_sink_video).
+<a id="type-dvzinputresizeevent"></a>
 
-_Declared in `include/datoviz/stream/frame_stream.h`:126._
+??? abstract "`DvzInputResizeEvent` · record"
 
-#### `DvzStreamSinkRegistry` { #type-dvzstreamsinkregistry }
+    ```c
+    struct DvzInputResizeEvent {
+        uint32_t framebuffer_width;
+        uint32_t framebuffer_height;
+        uint32_t window_width;
+        uint32_t window_height;
+        float content_scale_x;
+        float content_scale_y;
+    };
+    ```
 
-```c
-typedef struct DvzStreamSinkRegistry DvzStreamSinkRegistry;
-```
+    _Declared in `include/datoviz/input/router.h`:72._
 
-Used by: [`dvz_stream_create()`](app.md#dvz_stream_create), [`dvz_stream_sink_registry_create()`](app.md#dvz_stream_sink_registry_create), [`dvz_stream_sink_registry_destroy()`](app.md#dvz_stream_sink_registry_destroy), [`dvz_stream_sink_registry_find()`](app.md#dvz_stream_sink_registry_find), [`dvz_stream_sink_registry_pick()`](app.md#dvz_stream_sink_registry_pick), [`dvz_stream_sink_registry_register()`](app.md#dvz_stream_sink_registry_register).
+<a id="type-dvzinputrouter"></a>
 
-_Declared in `include/datoviz/stream/frame_stream.h`:39._
+??? abstract "`DvzInputRouter` · typedef"
 
-#### `DvzStreamSinkRequest` { #type-dvzstreamsinkrequest }
+    ```c
+    typedef struct DvzInputRouter DvzInputRouter;
+    ```
 
-```c
-struct DvzStreamSinkRequest {
-    const char * backend;
-    const void * config;
-};
-```
+    _Declared in `include/datoviz/input/router.h`:56._
 
-_Declared in `include/datoviz/stream/frame_stream.h`:117._
+<a id="type-dvzinputscaleevent"></a>
 
-#### `DvzVideoCaptureMode` { #type-dvzvideocapturemode }
+??? abstract "`DvzInputScaleEvent` · record"
 
-```c
-enum DvzVideoCaptureMode {
-    DVZ_VIDEO_CAPTURE_AUTO = 0,
-    DVZ_VIDEO_CAPTURE_EXTERNAL = 1,
-    DVZ_VIDEO_CAPTURE_CPU_READBACK = 2,
-};
-```
+    ```c
+    struct DvzInputScaleEvent {
+        float content_scale_x;
+        float content_scale_y;
+    };
+    ```
 
-_Declared in `include/datoviz/video/types.h`:20._
+    _Declared in `include/datoviz/input/router.h`:84._
 
-#### `DvzVideoCodec` { #type-dvzvideocodec }
+<a id="type-dvzkeycode"></a>
 
-```c
-enum DvzVideoCodec {
-    DVZ_VIDEO_CODEC_H264 = 0,
-    DVZ_VIDEO_CODEC_HEVC = 1,
-};
-```
+??? abstract "`DvzKeyCode` · enum"
 
-_Declared in `include/datoviz/video.h`:44._
+    ```c
+    enum DvzKeyCode {
+        DVZ_KEY_UNKNOWN = -1,
+        DVZ_KEY_NONE = 0,
+        DVZ_KEY_SPACE = 32,
+        DVZ_KEY_APOSTROPHE = 39,
+        DVZ_KEY_COMMA = 44,
+        DVZ_KEY_MINUS = 45,
+        DVZ_KEY_PERIOD = 46,
+        DVZ_KEY_SLASH = 47,
+        DVZ_KEY_0 = 48,
+        DVZ_KEY_1 = 49,
+        DVZ_KEY_2 = 50,
+        DVZ_KEY_3 = 51,
+        DVZ_KEY_4 = 52,
+        DVZ_KEY_5 = 53,
+        DVZ_KEY_6 = 54,
+        DVZ_KEY_7 = 55,
+        DVZ_KEY_8 = 56,
+        DVZ_KEY_9 = 57,
+        DVZ_KEY_SEMICOLON = 59,
+        DVZ_KEY_EQUAL = 61,
+        DVZ_KEY_A = 65,
+        DVZ_KEY_B = 66,
+        DVZ_KEY_C = 67,
+        DVZ_KEY_D = 68,
+        DVZ_KEY_E = 69,
+        DVZ_KEY_F = 70,
+        DVZ_KEY_G = 71,
+        DVZ_KEY_H = 72,
+        DVZ_KEY_I = 73,
+        DVZ_KEY_J = 74,
+        DVZ_KEY_K = 75,
+        DVZ_KEY_L = 76,
+        DVZ_KEY_M = 77,
+        DVZ_KEY_N = 78,
+        DVZ_KEY_O = 79,
+        DVZ_KEY_P = 80,
+        DVZ_KEY_Q = 81,
+        DVZ_KEY_R = 82,
+        DVZ_KEY_S = 83,
+        DVZ_KEY_T = 84,
+        DVZ_KEY_U = 85,
+        DVZ_KEY_V = 86,
+        DVZ_KEY_W = 87,
+        DVZ_KEY_X = 88,
+        DVZ_KEY_Y = 89,
+        DVZ_KEY_Z = 90,
+        DVZ_KEY_LEFT_BRACKET = 91,
+        DVZ_KEY_BACKSLASH = 92,
+        DVZ_KEY_RIGHT_BRACKET = 93,
+        DVZ_KEY_GRAVE_ACCENT = 96,
+        DVZ_KEY_WORLD_1 = 161,
+        DVZ_KEY_WORLD_2 = 162,
+        DVZ_KEY_ESCAPE = 256,
+        DVZ_KEY_ENTER = 257,
+        DVZ_KEY_TAB = 258,
+        DVZ_KEY_BACKSPACE = 259,
+        DVZ_KEY_INSERT = 260,
+        DVZ_KEY_DELETE = 261,
+        DVZ_KEY_RIGHT = 262,
+        DVZ_KEY_LEFT = 263,
+        DVZ_KEY_DOWN = 264,
+        DVZ_KEY_UP = 265,
+        DVZ_KEY_PAGE_UP = 266,
+        DVZ_KEY_PAGE_DOWN = 267,
+        DVZ_KEY_HOME = 268,
+        DVZ_KEY_END = 269,
+        DVZ_KEY_CAPS_LOCK = 280,
+        DVZ_KEY_SCROLL_LOCK = 281,
+        DVZ_KEY_NUM_LOCK = 282,
+        DVZ_KEY_PRINT_SCREEN = 283,
+        DVZ_KEY_PAUSE = 284,
+        DVZ_KEY_F1 = 290,
+        DVZ_KEY_F2 = 291,
+        DVZ_KEY_F3 = 292,
+        DVZ_KEY_F4 = 293,
+        DVZ_KEY_F5 = 294,
+        DVZ_KEY_F6 = 295,
+        DVZ_KEY_F7 = 296,
+        DVZ_KEY_F8 = 297,
+        DVZ_KEY_F9 = 298,
+        DVZ_KEY_F10 = 299,
+        DVZ_KEY_F11 = 300,
+        DVZ_KEY_F12 = 301,
+        DVZ_KEY_F13 = 302,
+        DVZ_KEY_F14 = 303,
+        DVZ_KEY_F15 = 304,
+        DVZ_KEY_F16 = 305,
+        DVZ_KEY_F17 = 306,
+        DVZ_KEY_F18 = 307,
+        DVZ_KEY_F19 = 308,
+        DVZ_KEY_F20 = 309,
+        DVZ_KEY_F21 = 310,
+        DVZ_KEY_F22 = 311,
+        DVZ_KEY_F23 = 312,
+        DVZ_KEY_F24 = 313,
+        DVZ_KEY_F25 = 314,
+        DVZ_KEY_KP_0 = 320,
+        DVZ_KEY_KP_1 = 321,
+        DVZ_KEY_KP_2 = 322,
+        DVZ_KEY_KP_3 = 323,
+        DVZ_KEY_KP_4 = 324,
+        DVZ_KEY_KP_5 = 325,
+        DVZ_KEY_KP_6 = 326,
+        DVZ_KEY_KP_7 = 327,
+        DVZ_KEY_KP_8 = 328,
+        DVZ_KEY_KP_9 = 329,
+        DVZ_KEY_KP_DECIMAL = 330,
+        DVZ_KEY_KP_DIVIDE = 331,
+        DVZ_KEY_KP_MULTIPLY = 332,
+        DVZ_KEY_KP_SUBTRACT = 333,
+        DVZ_KEY_KP_ADD = 334,
+        DVZ_KEY_KP_ENTER = 335,
+        DVZ_KEY_KP_EQUAL = 336,
+        DVZ_KEY_LEFT_SHIFT = 340,
+        DVZ_KEY_LEFT_CONTROL = 341,
+        DVZ_KEY_LEFT_ALT = 342,
+        DVZ_KEY_LEFT_SUPER = 343,
+        DVZ_KEY_RIGHT_SHIFT = 344,
+        DVZ_KEY_RIGHT_CONTROL = 345,
+        DVZ_KEY_RIGHT_ALT = 346,
+        DVZ_KEY_RIGHT_SUPER = 347,
+        DVZ_KEY_MENU = 348,
+        DVZ_KEY_LAST = 348,
+    };
+    ```
 
-#### `DvzVideoEncoderConfig` { #type-dvzvideoencoderconfig }
+    _Declared in `include/datoviz/input/keycodes.h`:20._
 
-```c
-struct DvzVideoEncoderConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint32_t width;
-    uint32_t height;
-    uint32_t fps;
-    VkFormat color_format;
-    DvzVideoCodec codec;
-    DvzVideoMux mux;
-    const char * mp4_path;
-    const char * raw_path;
-    const char * backend;
-};
-```
+<a id="type-dvzkeyboardcallback"></a>
 
-Used by: [`dvz_video_encoder_config()`](app.md#dvz_video_encoder_config).
+??? abstract "`DvzKeyboardCallback` · typedef"
 
-_Declared in `include/datoviz/video.h`:76._
+    ```c
+    typedef void (*)(DvzInputRouter *, const DvzKeyboardEvent *, void *) DvzKeyboardCallback;
+    ```
 
-#### `DvzVideoMux` { #type-dvzvideomux }
+    _Declared in `include/datoviz/input/router.h`:61._
 
-```c
-enum DvzVideoMux {
-    DVZ_VIDEO_MUX_NONE = 0,
-    DVZ_VIDEO_MUX_MP4_STREAMING = 1,
-    DVZ_VIDEO_MUX_MP4_POST = 2,
-};
-```
+<a id="type-dvzkeyboardevent"></a>
 
-_Declared in `include/datoviz/video.h`:53._
+??? abstract "`DvzKeyboardEvent` · record"
 
-#### `DvzVideoSinkCaptureFn` { #type-dvzvideosinkcapturefn }
+    ```c
+    struct DvzKeyboardEvent {
+        DvzKeyboardEventType type;
+        DvzKeyCode key;
+        int mods;
+        void * user_data;
+    };
+    ```
 
-```c
-typedef int (*)(void *, uint32_t *, uint32_t *, size_t *, uint8_t **) DvzVideoSinkCaptureFn;
-```
+    _Declared in `include/datoviz/input/keyboard.h`:42._
 
-_Declared in `include/datoviz/video.h`:64._
+<a id="type-dvzkeyboardeventtype"></a>
 
-#### `DvzVideoSinkConfig` { #type-dvzvideosinkconfig }
+??? abstract "`DvzKeyboardEventType` · enum"
 
-```c
-struct DvzVideoSinkConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzVideoEncoderConfig encoder;
-    FILE * bitstream;
-    DvzVideoCaptureMode capture_mode;
-    DvzVideoSinkCaptureFn capture_rgba;
-    DvzVideoSinkReleaseFn release_rgba;
-    void * capture_user_data;
-};
-```
+    ```c
+    enum DvzKeyboardEventType {
+        DVZ_KEYBOARD_EVENT_NONE = 0,
+        DVZ_KEYBOARD_EVENT_PRESS = 1,
+        DVZ_KEYBOARD_EVENT_REPEAT = 2,
+        DVZ_KEYBOARD_EVENT_RELEASE = 3,
+    };
+    ```
 
-Used by: [`dvz_canvas_configure_video_sink()`](app.md#dvz_canvas_configure_video_sink), [`dvz_video_sink_config()`](app.md#dvz_video_sink_config).
+    _Declared in `include/datoviz/input/enums.h`:33._
 
-_Declared in `include/datoviz/video.h`:94._
+<a id="type-dvzkeyboardmodifierstate"></a>
 
-#### `DvzVideoSinkReleaseFn` { #type-dvzvideosinkreleasefn }
+??? abstract "`DvzKeyboardModifierState` · record"
 
-```c
-typedef void (*)(void *, uint8_t *) DvzVideoSinkReleaseFn;
-```
+    ```c
+    struct DvzKeyboardModifierState {
+        int mods;
+    };
+    ```
 
-_Declared in `include/datoviz/video.h`:71._
+    _Declared in `include/datoviz/input/keyboard.h`:52._
+
+<a id="type-dvzkeyboardmodifiers"></a>
+
+??? abstract "`DvzKeyboardModifiers` · enum"
+
+    ```c
+    enum DvzKeyboardModifiers {
+        DVZ_KEY_MODIFIER_NONE = 0,
+        DVZ_KEY_MODIFIER_SHIFT = 1,
+        DVZ_KEY_MODIFIER_CONTROL = 2,
+        DVZ_KEY_MODIFIER_ALT = 4,
+        DVZ_KEY_MODIFIER_SUPER = 8,
+    };
+    ```
+
+    _Declared in `include/datoviz/input/enums.h`:21._
+
+<a id="type-dvzpointerbutton"></a>
+
+??? abstract "`DvzPointerButton` · enum"
+
+    ```c
+    enum DvzPointerButton {
+        DVZ_POINTER_BUTTON_NONE = 0,
+        DVZ_POINTER_BUTTON_LEFT = 1,
+        DVZ_POINTER_BUTTON_MIDDLE = 2,
+        DVZ_POINTER_BUTTON_RIGHT = 3,
+    };
+    ```
+
+    _Declared in `include/datoviz/input/enums.h`:46._
+
+<a id="type-dvzpointercallback"></a>
+
+??? abstract "`DvzPointerCallback` · typedef"
+
+    ```c
+    typedef void (*)(DvzInputRouter *, const DvzPointerEvent *, void *) DvzPointerCallback;
+    ```
+
+    _Declared in `include/datoviz/input/router.h`:60._
+
+<a id="type-dvzpointerdragevent"></a>
+
+??? abstract "`DvzPointerDragEvent` · record"
+
+    ```c
+    struct DvzPointerDragEvent {
+        vec2 press_pos;
+        vec2 last_pos;
+        vec2 shift;
+        _Bool is_press_valid;
+    };
+    ```
+
+    _Declared in `include/datoviz/input/pointer.h`:64._
+
+<a id="type-dvzpointerevent"></a>
+
+??? abstract "`DvzPointerEvent` · record"
+
+    ```c
+    struct DvzPointerEvent {
+        DvzPointerEventType type;
+        DvzPointerEventUnion content;
+        vec2 pos;
+        vec2 window_size;
+        DvzPointerButton button;
+        int mods;
+        float content_scale;
+        uint64_t timestamp_ns;
+        void * user_data;
+    };
+    ```
+
+    _Declared in `include/datoviz/input/pointer.h`:82._
+
+<a id="type-dvzpointereventtype"></a>
+
+??? abstract "`DvzPointerEventType` · enum"
+
+    ```c
+    enum DvzPointerEventType {
+        DVZ_POINTER_EVENT_NONE = -1,
+        DVZ_POINTER_EVENT_RELEASE = 0,
+        DVZ_POINTER_EVENT_PRESS = 1,
+        DVZ_POINTER_EVENT_MOVE = 2,
+        DVZ_POINTER_EVENT_CLICK = 3,
+        DVZ_POINTER_EVENT_DOUBLE_CLICK = 5,
+        DVZ_POINTER_EVENT_DRAG_START = 10,
+        DVZ_POINTER_EVENT_DRAG = 11,
+        DVZ_POINTER_EVENT_DRAG_STOP = 12,
+        DVZ_POINTER_EVENT_WHEEL = 20,
+        DVZ_POINTER_EVENT_ALL = 255,
+    };
+    ```
+
+    _Declared in `include/datoviz/input/enums.h`:70._
+
+<a id="type-dvzpointereventunion"></a>
+
+??? abstract "`DvzPointerEventUnion` · record"
+
+    ```c
+    union DvzPointerEventUnion {
+        DvzPointerWheelEvent w;
+        DvzPointerDragEvent d;
+    };
+    ```
+
+    _Declared in `include/datoviz/input/pointer.h`:74._
+
+<a id="type-dvzpointergesturehandler"></a>
+
+??? abstract "`DvzPointerGestureHandler` · typedef"
+
+    ```c
+    typedef struct DvzPointerGestureHandler DvzPointerGestureHandler;
+    ```
+
+    _Declared in `include/datoviz/input/pointer.h`:49._
+
+<a id="type-dvzpointerstate"></a>
+
+??? abstract "`DvzPointerState` · enum"
+
+    ```c
+    enum DvzPointerState {
+        DVZ_POINTER_STATE_RELEASE = 0,
+        DVZ_POINTER_STATE_PRESS = 1,
+        DVZ_POINTER_STATE_CLICK = 3,
+        DVZ_POINTER_STATE_CLICK_PRESS = 4,
+        DVZ_POINTER_STATE_DOUBLE_CLICK = 5,
+        DVZ_POINTER_STATE_DRAGGING = 11,
+    };
+    ```
+
+    _Declared in `include/datoviz/input/enums.h`:57._
+
+<a id="type-dvzpointerwheelevent"></a>
+
+??? abstract "`DvzPointerWheelEvent` · record"
+
+    ```c
+    struct DvzPointerWheelEvent {
+        vec2 dir;
+    };
+    ```
+
+    _Declared in `include/datoviz/input/pointer.h`:57._
+
+<a id="type-dvzresizecallback"></a>
+
+??? abstract "`DvzResizeCallback` · typedef"
+
+    ```c
+    typedef void (*)(DvzInputRouter *, const DvzInputResizeEvent *, void *) DvzResizeCallback;
+    ```
+
+    _Declared in `include/datoviz/input/router.h`:62._
+
+<a id="type-dvzscalecallback"></a>
+
+??? abstract "`DvzScaleCallback` · typedef"
+
+    ```c
+    typedef void (*)(DvzInputRouter *, const DvzInputScaleEvent *, void *) DvzScaleCallback;
+    ```
+
+    _Declared in `include/datoviz/input/router.h`:63._
+
+## Streaming And Video { #streaming-and-video }
 
 ### Functions
 
@@ -3834,126 +3542,240 @@ DvzVideoSinkConfig dvz_video_sink_config(void);
 
 _Declared in `include/datoviz/video.h`:135._
 
-## Views And Capture { #views-and-capture }
-
 ### Types
 
-#### `DvzView` { #type-dvzview }
+<a id="type-dvzstream"></a>
 
-```c
-typedef struct DvzView DvzView;
-```
+??? abstract "`DvzStream` · typedef"
 
-Used by: [`dvz_ffi_view_external_surface()`](ffi.md#dvz_ffi_view_external_surface), [`dvz_ffi_view_update_external_surface()`](ffi.md#dvz_ffi_view_update_external_surface), [`dvz_gui_viewport_from_window()`](app.md#dvz_gui_viewport_from_window), [`dvz_view()`](app.md#dvz_view), [`dvz_view_arcball()`](app.md#dvz_view_arcball), [`dvz_view_bind_controller()`](app.md#dvz_view_bind_controller), [`dvz_view_canvas()`](app.md#dvz_view_canvas), [`dvz_view_capabilities()`](app.md#dvz_view_capabilities); plus 48 more.
+    ```c
+    typedef struct DvzStream DvzStream;
+    ```
 
-_Declared in `include/datoviz/app.h`:44._
+    _Declared in `include/datoviz/stream/frame_stream.h`:36._
 
-#### `DvzViewDesc` { #type-dvzviewdesc }
+<a id="type-dvzstreamconfig"></a>
 
-```c
-struct DvzViewDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzViewKind kind;
-    DvzViewSizePolicy size_policy;
-    double size_width;
-    double size_height;
-    double size_reference_dpi;
-    double size_requested_device_scale;
-    double size_monitor_dpi_x_override;
-    double size_monitor_dpi_y_override;
-    _Bool size_strict_framebuffer_size;
-    float device_scale;
-    float user_scale;
-    float render_scale;
-    const char * title;
-    _Bool has_position;
-    int32_t x;
-    int32_t y;
-};
-```
+??? abstract "`DvzStreamConfig` · record"
 
-Used by: [`dvz_view()`](app.md#dvz_view), [`dvz_view_desc()`](app.md#dvz_view_desc).
+    ```c
+    struct DvzStreamConfig {
+        uint32_t struct_size;
+        uint32_t flags;
+        uint32_t width;
+        uint32_t height;
+        uint32_t fps;
+        VkFormat color_format;
+    };
+    ```
 
-_Declared in `include/datoviz/app.h`:237._
+    _Declared in `include/datoviz/stream/frame_stream.h`:48._
 
-#### `DvzViewFrameCallback` { #type-dvzviewframecallback }
+<a id="type-dvzstreamframe"></a>
 
-```c
-typedef void (*)(DvzView *, void *) DvzViewFrameCallback;
-```
+??? abstract "`DvzStreamFrame` · record"
 
-Used by: [`dvz_view_set_frame_callback()`](app.md#dvz_view_set_frame_callback).
+    ```c
+    struct DvzStreamFrame {
+        VkImage image;
+        VkDeviceMemory memory;
+        VkDeviceSize memory_size;
+        VkCommandBuffer command_buffer;
+        VkImageView image_view;
+        VkExtent2D extent;
+        VkFormat color_format;
+        VkImageLayout image_layout;
+        uint32_t usage;
+        _Bool command_buffer_recording;
+        _Bool image_borrowed;
+        _Bool image_view_borrowed;
+        _Bool command_buffer_borrowed;
+        _Bool handles_dirty;
+        uint64_t resource_generation;
+        _Bool image_valid;
+        int memory_fd;
+        int wait_semaphore_fd;
+    };
+    ```
 
-_Declared in `include/datoviz/app.h`:58._
+    _Declared in `include/datoviz/stream/frame_stream.h`:80._
 
-#### `DvzViewKind` { #type-dvzviewkind }
+<a id="type-dvzstreamframeusage"></a>
 
-```c
-enum DvzViewKind {
-    DVZ_VIEW_OFFSCREEN = 0,
-    DVZ_VIEW_WINDOW = 1,
-    DVZ_VIEW_EXTERNAL_SURFACE = 2,
-};
-```
+??? abstract "`DvzStreamFrameUsage` · enum"
 
-Used by: [`dvz_view_desc()`](app.md#dvz_view_desc), [`dvz_view_size_resolve()`](app.md#dvz_view_size_resolve).
+    ```c
+    enum DvzStreamFrameUsage {
+        DVZ_STREAM_FRAME_USAGE_NONE = 0,
+        DVZ_STREAM_FRAME_USAGE_RENDER_TARGET = 1,
+        DVZ_STREAM_FRAME_USAGE_COPY_SRC = 2,
+        DVZ_STREAM_FRAME_USAGE_COPY_DST = 4,
+    };
+    ```
 
-_Declared in `include/datoviz/app.h`:92._
+    _Declared in `include/datoviz/stream/frame_stream.h`:61._
 
-#### `DvzViewPostCallback` { #type-dvzviewpostcallback }
+<a id="type-dvzstreamsink"></a>
 
-```c
-typedef void (*)(DvzView *, void *) DvzViewPostCallback;
-```
+??? abstract "`DvzStreamSink` · record"
 
-Used by: [`dvz_view_post()`](app.md#dvz_view_post).
+    ```c
+    struct DvzStreamSink {
+        DvzStream * stream;
+        const DvzStreamSinkBackend * backend;
+        void * backend_data;
+        const void * config;
+        _Bool started;
+    };
+    ```
 
-_Declared in `include/datoviz/app.h`:60._
+    _Declared in `include/datoviz/stream/frame_stream.h`:105._
 
-#### `DvzViewRequestFrameCallback` { #type-dvzviewrequestframecallback }
+<a id="type-dvzstreamsinkbackend"></a>
 
-```c
-typedef void (*)(DvzView *, void *) DvzViewRequestFrameCallback;
-```
+??? abstract "`DvzStreamSinkBackend` · record"
 
-Used by: [`dvz_view_set_request_frame_callback()`](app.md#dvz_view_set_request_frame_callback).
+    ```c
+    struct DvzStreamSinkBackend {
+        const char * name;
+        _Bool (*)(const void *) probe;
+        int (*)(DvzStreamSink *, const void *) create;
+        int (*)(DvzStreamSink *, const DvzStreamFrame *) start;
+        int (*)(DvzStreamSink *, uint64_t) submit;
+        int (*)(DvzStreamSink *) stop;
+        int (*)(DvzStreamSink *, const DvzStreamFrame *) update;
+        void (*)(DvzStreamSink *) destroy;
+    };
+    ```
 
-_Declared in `include/datoviz/app.h`:59._
+    _Declared in `include/datoviz/stream/frame_stream.h`:126._
 
-#### `DvzViewSizeDesc` { #type-dvzviewsizedesc }
+<a id="type-dvzstreamsinkregistry"></a>
 
-```c
-struct DvzViewSizeDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzViewSizePolicy policy;
-    double width;
-    double height;
-    double reference_dpi;
-    double requested_device_scale;
-    double monitor_dpi_x_override;
-    double monitor_dpi_y_override;
-    _Bool strict_framebuffer_size;
-};
-```
+??? abstract "`DvzStreamSinkRegistry` · typedef"
 
-Used by: [`dvz_view_size_desc_framebuffer_px()`](app.md#dvz_view_size_desc_framebuffer_px), [`dvz_view_size_desc_host_logical_px()`](app.md#dvz_view_size_desc_host_logical_px), [`dvz_view_size_desc_physical_mm()`](app.md#dvz_view_size_desc_physical_mm), [`dvz_view_size_desc_reference_px()`](app.md#dvz_view_size_desc_reference_px), [`dvz_view_size_resolve()`](app.md#dvz_view_size_resolve).
+    ```c
+    typedef struct DvzStreamSinkRegistry DvzStreamSinkRegistry;
+    ```
 
-_Declared in `include/datoviz/app.h`:188._
+    _Declared in `include/datoviz/stream/frame_stream.h`:39._
 
-#### `DvzViewSizePolicy` { #type-dvzviewsizepolicy }
+<a id="type-dvzstreamsinkrequest"></a>
 
-```c
-enum DvzViewSizePolicy {
-    DVZ_VIEW_SIZE_FRAMEBUFFER_PX = 0,
-    DVZ_VIEW_SIZE_HOST_LOGICAL_PX = 1,
-    DVZ_VIEW_SIZE_REFERENCE_PX = 2,
-    DVZ_VIEW_SIZE_PHYSICAL_MM = 3,
-};
-```
+??? abstract "`DvzStreamSinkRequest` · record"
 
-_Declared in `include/datoviz/app.h`:100._
+    ```c
+    struct DvzStreamSinkRequest {
+        const char * backend;
+        const void * config;
+    };
+    ```
+
+    _Declared in `include/datoviz/stream/frame_stream.h`:117._
+
+<a id="type-dvzvideocapturemode"></a>
+
+??? abstract "`DvzVideoCaptureMode` · enum"
+
+    ```c
+    enum DvzVideoCaptureMode {
+        DVZ_VIDEO_CAPTURE_AUTO = 0,
+        DVZ_VIDEO_CAPTURE_EXTERNAL = 1,
+        DVZ_VIDEO_CAPTURE_CPU_READBACK = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/video/types.h`:20._
+
+<a id="type-dvzvideocodec"></a>
+
+??? abstract "`DvzVideoCodec` · enum"
+
+    ```c
+    enum DvzVideoCodec {
+        DVZ_VIDEO_CODEC_H264 = 0,
+        DVZ_VIDEO_CODEC_HEVC = 1,
+    };
+    ```
+
+    _Declared in `include/datoviz/video.h`:44._
+
+<a id="type-dvzvideoencoderconfig"></a>
+
+??? abstract "`DvzVideoEncoderConfig` · record"
+
+    ```c
+    struct DvzVideoEncoderConfig {
+        uint32_t struct_size;
+        uint32_t flags;
+        uint32_t width;
+        uint32_t height;
+        uint32_t fps;
+        VkFormat color_format;
+        DvzVideoCodec codec;
+        DvzVideoMux mux;
+        const char * mp4_path;
+        const char * raw_path;
+        const char * backend;
+    };
+    ```
+
+    _Declared in `include/datoviz/video.h`:76._
+
+<a id="type-dvzvideomux"></a>
+
+??? abstract "`DvzVideoMux` · enum"
+
+    ```c
+    enum DvzVideoMux {
+        DVZ_VIDEO_MUX_NONE = 0,
+        DVZ_VIDEO_MUX_MP4_STREAMING = 1,
+        DVZ_VIDEO_MUX_MP4_POST = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/video.h`:53._
+
+<a id="type-dvzvideosinkcapturefn"></a>
+
+??? abstract "`DvzVideoSinkCaptureFn` · typedef"
+
+    ```c
+    typedef int (*)(void *, uint32_t *, uint32_t *, size_t *, uint8_t **) DvzVideoSinkCaptureFn;
+    ```
+
+    _Declared in `include/datoviz/video.h`:64._
+
+<a id="type-dvzvideosinkconfig"></a>
+
+??? abstract "`DvzVideoSinkConfig` · record"
+
+    ```c
+    struct DvzVideoSinkConfig {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzVideoEncoderConfig encoder;
+        FILE * bitstream;
+        DvzVideoCaptureMode capture_mode;
+        DvzVideoSinkCaptureFn capture_rgba;
+        DvzVideoSinkReleaseFn release_rgba;
+        void * capture_user_data;
+    };
+    ```
+
+    _Declared in `include/datoviz/video.h`:94._
+
+<a id="type-dvzvideosinkreleasefn"></a>
+
+??? abstract "`DvzVideoSinkReleaseFn` · typedef"
+
+    ```c
+    typedef void (*)(void *, uint8_t *) DvzVideoSinkReleaseFn;
+    ```
+
+    _Declared in `include/datoviz/video.h`:71._
+
+## Views And Capture { #views-and-capture }
 
 ### Functions
 
@@ -5246,310 +5068,128 @@ DvzView * dvz_view_window(
 
 _Declared in `include/datoviz/app.h`:508._
 
-## Window Hosting { #window-hosting }
-
 ### Types
 
-#### `DvzBackend` { #type-dvzbackend }
+<a id="type-dvzview"></a>
 
-```c
-enum DvzBackend {
-    DVZ_BACKEND_NONE = 0,
-    DVZ_BACKEND_GLFW = 1,
-    DVZ_BACKEND_QT = 2,
-    DVZ_BACKEND_OFFSCREEN = 3,
-    DVZ_BACKEND_WRAP = 4,
-};
-```
+??? abstract "`DvzView` · typedef"
 
-Used by: [`dvz_window_backend_type()`](app.md#dvz_window_backend_type), [`dvz_window_create()`](app.md#dvz_window_create), [`dvz_window_host_required_extension_count()`](app.md#dvz_window_host_required_extension_count), [`dvz_window_host_required_extensions()`](app.md#dvz_window_host_required_extensions).
+    ```c
+    typedef struct DvzView DvzView;
+    ```
 
-_Declared in `include/datoviz/runner/enums.h`:20._
+    _Declared in `include/datoviz/app.h`:44._
 
-#### `DvzHiDpiPolicy` { #type-dvzhidpipolicy }
+<a id="type-dvzviewdesc"></a>
 
-```c
-enum DvzHiDpiPolicy {
-    DVZ_HIDPI_AUTO = 0,
-    DVZ_HIDPI_DISABLED = 1,
-    DVZ_HIDPI_FRAMEBUFFER = 2,
-    DVZ_HIDPI_NATIVE_WINDOW = 3,
-    DVZ_HIDPI_EXTERNAL = 4,
-};
-```
+??? abstract "`DvzViewDesc` · record"
 
-_Declared in `include/datoviz/window/types.h`:57._
+    ```c
+    struct DvzViewDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzViewKind kind;
+        DvzViewSizePolicy size_policy;
+        double size_width;
+        double size_height;
+        double size_reference_dpi;
+        double size_requested_device_scale;
+        double size_monitor_dpi_x_override;
+        double size_monitor_dpi_y_override;
+        _Bool size_strict_framebuffer_size;
+        float device_scale;
+        float user_scale;
+        float render_scale;
+        const char * title;
+        _Bool has_position;
+        int32_t x;
+        int32_t y;
+    };
+    ```
 
-#### `DvzWindow` { #type-dvzwindow }
+    _Declared in `include/datoviz/app.h`:237._
 
-```c
-typedef struct DvzWindow DvzWindow;
-```
+<a id="type-dvzviewframecallback"></a>
 
-Used by: [`dvz_window_backend_emit_resize()`](app.md#dvz_window_backend_emit_resize), [`dvz_window_backend_emit_scale()`](app.md#dvz_window_backend_emit_scale), [`dvz_window_backend_handle()`](app.md#dvz_window_backend_handle), [`dvz_window_backend_payload()`](app.md#dvz_window_backend_payload), [`dvz_window_backend_router()`](app.md#dvz_window_backend_router), [`dvz_window_backend_set_handle()`](app.md#dvz_window_backend_set_handle), [`dvz_window_backend_set_payload()`](app.md#dvz_window_backend_set_payload), [`dvz_window_backend_surface()`](app.md#dvz_window_backend_surface); plus 15 more.
+??? abstract "`DvzViewFrameCallback` · typedef"
 
-_Declared in `include/datoviz/window/types.h`:46._
+    ```c
+    typedef void (*)(DvzView *, void *) DvzViewFrameCallback;
+    ```
 
-#### `DvzWindowBackend` { #type-dvzwindowbackend }
+    _Declared in `include/datoviz/app.h`:58._
 
-```c
-struct DvzWindowBackend {
-    const char * name;
-    DvzBackend type;
-    void * user_data;
-    DvzWindowBackendProcs procs;
-};
-```
+<a id="type-dvzviewkind"></a>
 
-Used by: [`dvz_window_host_register_backend()`](app.md#dvz_window_host_register_backend).
+??? abstract "`DvzViewKind` · enum"
 
-_Declared in `include/datoviz/window/backend.h`:81._
+    ```c
+    enum DvzViewKind {
+        DVZ_VIEW_OFFSCREEN = 0,
+        DVZ_VIEW_WINDOW = 1,
+        DVZ_VIEW_EXTERNAL_SURFACE = 2,
+    };
+    ```
 
-#### `DvzWindowBackendCreate` { #type-dvzwindowbackendcreate }
+    _Declared in `include/datoviz/app.h`:92._
 
-```c
-typedef _Bool (*)(DvzWindowBackend *, DvzWindow *, const DvzWindowConfig *) DvzWindowBackendCreate;
-```
+<a id="type-dvzviewpostcallback"></a>
 
-_Declared in `include/datoviz/window/backend.h`:36._
+??? abstract "`DvzViewPostCallback` · typedef"
 
-#### `DvzWindowBackendDestroy` { #type-dvzwindowbackenddestroy }
+    ```c
+    typedef void (*)(DvzView *, void *) DvzViewPostCallback;
+    ```
 
-```c
-typedef void (*)(DvzWindowBackend *, DvzWindow *) DvzWindowBackendDestroy;
-```
+    _Declared in `include/datoviz/app.h`:60._
 
-_Declared in `include/datoviz/window/backend.h`:38._
+<a id="type-dvzviewrequestframecallback"></a>
 
-#### `DvzWindowBackendPoll` { #type-dvzwindowbackendpoll }
+??? abstract "`DvzViewRequestFrameCallback` · typedef"
 
-```c
-typedef void (*)(DvzWindowBackend *, DvzWindowHost *) DvzWindowBackendPoll;
-```
+    ```c
+    typedef void (*)(DvzView *, void *) DvzViewRequestFrameCallback;
+    ```
 
-_Declared in `include/datoviz/window/backend.h`:39._
+    _Declared in `include/datoviz/app.h`:59._
 
-#### `DvzWindowBackendProbe` { #type-dvzwindowbackendprobe }
+<a id="type-dvzviewsizedesc"></a>
 
-```c
-typedef _Bool (*)(DvzWindowBackend *, DvzWindowHost *) DvzWindowBackendProbe;
-```
+??? abstract "`DvzViewSizeDesc` · record"
 
-_Declared in `include/datoviz/window/backend.h`:35._
+    ```c
+    struct DvzViewSizeDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzViewSizePolicy policy;
+        double width;
+        double height;
+        double reference_dpi;
+        double requested_device_scale;
+        double monitor_dpi_x_override;
+        double monitor_dpi_y_override;
+        _Bool strict_framebuffer_size;
+    };
+    ```
 
-#### `DvzWindowBackendProcs` { #type-dvzwindowbackendprocs }
+    _Declared in `include/datoviz/app.h`:188._
 
-```c
-struct DvzWindowBackendProcs {
-    DvzWindowBackendProbe probe;
-    DvzWindowBackendCreate create;
-    DvzWindowBackendDestroy destroy;
-    DvzWindowBackendPoll poll;
-    DvzWindowBackendWait wait;
-    DvzWindowBackendWaitTimeout wait_timeout;
-    DvzWindowBackendRequestFrame request_frame;
-    DvzWindowBackendShouldClose should_close;
-    DvzWindowBackendRequiredExtensionCount required_extension_count;
-    DvzWindowBackendRequiredExtensionAt required_extension_at;
-};
-```
+<a id="type-dvzviewsizepolicy"></a>
 
-_Declared in `include/datoviz/window/backend.h`:65._
+??? abstract "`DvzViewSizePolicy` · enum"
 
-#### `DvzWindowBackendRequestFrame` { #type-dvzwindowbackendrequestframe }
+    ```c
+    enum DvzViewSizePolicy {
+        DVZ_VIEW_SIZE_FRAMEBUFFER_PX = 0,
+        DVZ_VIEW_SIZE_HOST_LOGICAL_PX = 1,
+        DVZ_VIEW_SIZE_REFERENCE_PX = 2,
+        DVZ_VIEW_SIZE_PHYSICAL_MM = 3,
+    };
+    ```
 
-```c
-typedef void (*)(DvzWindowBackend *, DvzWindow *) DvzWindowBackendRequestFrame;
-```
+    _Declared in `include/datoviz/app.h`:100._
 
-_Declared in `include/datoviz/window/backend.h`:43._
-
-#### `DvzWindowBackendRequiredExtensionAt` { #type-dvzwindowbackendrequiredextensionat }
-
-```c
-typedef const char *(*)(DvzWindowBackend *, DvzWindowHost *, uint32_t) DvzWindowBackendRequiredExtensionAt;
-```
-
-_Declared in `include/datoviz/window/backend.h`:48._
-
-#### `DvzWindowBackendRequiredExtensionCount` { #type-dvzwindowbackendrequiredextensioncount }
-
-```c
-typedef uint32_t (*)(DvzWindowBackend *, DvzWindowHost *) DvzWindowBackendRequiredExtensionCount;
-```
-
-_Declared in `include/datoviz/window/backend.h`:46._
-
-#### `DvzWindowBackendShouldClose` { #type-dvzwindowbackendshouldclose }
-
-```c
-typedef _Bool (*)(const DvzWindowBackend *, const DvzWindow *) DvzWindowBackendShouldClose;
-```
-
-_Declared in `include/datoviz/window/backend.h`:44._
-
-#### `DvzWindowBackendWait` { #type-dvzwindowbackendwait }
-
-```c
-typedef void (*)(DvzWindowBackend *, DvzWindowHost *) DvzWindowBackendWait;
-```
-
-_Declared in `include/datoviz/window/backend.h`:40._
-
-#### `DvzWindowBackendWaitTimeout` { #type-dvzwindowbackendwaittimeout }
-
-```c
-typedef void (*)(DvzWindowBackend *, DvzWindowHost *, double) DvzWindowBackendWaitTimeout;
-```
-
-_Declared in `include/datoviz/window/backend.h`:41._
-
-#### `DvzWindowConfig` { #type-dvzwindowconfig }
-
-```c
-struct DvzWindowConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint32_t width;
-    uint32_t height;
-    const char * title;
-    _Bool resizable;
-    _Bool visible;
-    float user_scale;
-    DvzHiDpiPolicy hidpi_policy;
-    _Bool has_position;
-    int32_t x;
-    int32_t y;
-};
-```
-
-Used by: [`dvz_window_config()`](app.md#dvz_window_config), [`dvz_window_create()`](app.md#dvz_window_create).
-
-_Declared in `include/datoviz/window/types.h`:72._
-
-#### `DvzWindowExternalSurfaceInfo` { #type-dvzwindowexternalsurfaceinfo }
-
-```c
-struct DvzWindowExternalSurfaceInfo {
-    uint32_t struct_size;
-    uint32_t flags;
-    VkInstance instance;
-    VkSurfaceKHR surface;
-    VkExtent2D extent;
-    float scale_x;
-    float scale_y;
-    _Bool owned_by_datoviz;
-};
-```
-
-Used by: [`dvz_view_external_surface()`](app.md#dvz_view_external_surface), [`dvz_view_update_external_surface()`](app.md#dvz_view_update_external_surface), [`dvz_window_external_surface_info()`](app.md#dvz_window_external_surface_info), [`dvz_window_wrap_attach_surface()`](app.md#dvz_window_wrap_attach_surface), [`dvz_window_wrap_update_surface()`](app.md#dvz_window_wrap_update_surface).
-
-_Declared in `include/datoviz/window/backend.h`:91._
-
-#### `DvzWindowGlfwCharCallback` { #type-dvzwindowglfwcharcallback }
-
-```c
-typedef _Bool (*)(DvzWindow *, uint32_t, void *) DvzWindowGlfwCharCallback;
-```
-
-_Declared in `include/datoviz/window/backend.h`:57._
-
-#### `DvzWindowGlfwCursorPosCallback` { #type-dvzwindowglfwcursorposcallback }
-
-```c
-typedef _Bool (*)(DvzWindow *, double, double, void *) DvzWindowGlfwCursorPosCallback;
-```
-
-_Declared in `include/datoviz/window/backend.h`:50._
-
-#### `DvzWindowGlfwInputCallbacks` { #type-dvzwindowglfwinputcallbacks }
-
-```c
-struct DvzWindowGlfwInputCallbacks {
-    DvzWindowGlfwCursorPosCallback cursor_pos;
-    DvzWindowGlfwMouseButtonCallback mouse_button;
-    DvzWindowGlfwScrollCallback scroll;
-    DvzWindowGlfwKeyCallback key;
-    DvzWindowGlfwCharCallback character;
-};
-```
-
-Used by: [`dvz_window_glfw_set_input_callbacks()`](app.md#dvz_window_glfw_set_input_callbacks).
-
-_Declared in `include/datoviz/window/backend.h`:105._
-
-#### `DvzWindowGlfwKeyCallback` { #type-dvzwindowglfwkeycallback }
-
-```c
-typedef _Bool (*)(DvzWindow *, int, int, int, int, void *) DvzWindowGlfwKeyCallback;
-```
-
-_Declared in `include/datoviz/window/backend.h`:55._
-
-#### `DvzWindowGlfwMouseButtonCallback` { #type-dvzwindowglfwmousebuttoncallback }
-
-```c
-typedef _Bool (*)(DvzWindow *, int, int, int, void *) DvzWindowGlfwMouseButtonCallback;
-```
-
-_Declared in `include/datoviz/window/backend.h`:51._
-
-#### `DvzWindowGlfwScrollCallback` { #type-dvzwindowglfwscrollcallback }
-
-```c
-typedef _Bool (*)(DvzWindow *, double, double, void *) DvzWindowGlfwScrollCallback;
-```
-
-_Declared in `include/datoviz/window/backend.h`:53._
-
-#### `DvzWindowHost` { #type-dvzwindowhost }
-
-```c
-typedef struct DvzWindowHost DvzWindowHost;
-```
-
-Used by: [`dvz_window_create()`](app.md#dvz_window_create), [`dvz_window_host()`](app.md#dvz_window_host), [`dvz_window_host_destroy()`](app.md#dvz_window_host_destroy), [`dvz_window_host_poll()`](app.md#dvz_window_host_poll), [`dvz_window_host_register_backend()`](app.md#dvz_window_host_register_backend), [`dvz_window_host_request_frame()`](app.md#dvz_window_host_request_frame), [`dvz_window_host_required_extension_count()`](app.md#dvz_window_host_required_extension_count), [`dvz_window_host_required_extensions()`](app.md#dvz_window_host_required_extensions); plus 6 more.
-
-_Declared in `include/datoviz/app.h`:55._
-
-#### `DvzWindowMetrics` { #type-dvzwindowmetrics }
-
-```c
-struct DvzWindowMetrics {
-    DvzExtent logical_size;
-    DvzExtent native_size;
-    DvzExtent surface_size;
-    DvzExtent render_size;
-    DvzScaleXY content_scale;
-    DvzScaleXY framebuffer_scale;
-    DvzScaleXY device_scale;
-    DvzScaleXY native_to_logical;
-    DvzHiDpiPolicy active_hidpi_policy;
-    uint64_t generation;
-};
-```
-
-Used by: [`dvz_window_metrics()`](app.md#dvz_window_metrics).
-
-_Declared in `include/datoviz/window/types.h`:90._
-
-#### `DvzWindowSurface` { #type-dvzwindowsurface }
-
-```c
-struct DvzWindowSurface {
-    VkInstance instance;
-    VkSurfaceKHR surface;
-    VkExtent2D extent;
-    VkFormat format;
-    VkColorSpaceKHR color_space;
-    float scale_x;
-    float scale_y;
-};
-```
-
-Used by: [`dvz_window_backend_surface()`](app.md#dvz_window_backend_surface), [`dvz_window_surface()`](app.md#dvz_window_surface).
-
-_Declared in `include/datoviz/window/types.h`:108._
+## Window Hosting { #window-hosting }
 
 ### Functions
 
@@ -6232,3 +5872,340 @@ int dvz_window_wrap_update_surface(
 | `info` | `const` [`DvzWindowExternalSurfaceInfo`](app.md#type-dvzwindowexternalsurfaceinfo) * | external surface description |
 
 _Declared in `include/datoviz/window/backend.h`:246._
+
+### Types
+
+<a id="type-dvzbackend"></a>
+
+??? abstract "`DvzBackend` · enum"
+
+    ```c
+    enum DvzBackend {
+        DVZ_BACKEND_NONE = 0,
+        DVZ_BACKEND_GLFW = 1,
+        DVZ_BACKEND_QT = 2,
+        DVZ_BACKEND_OFFSCREEN = 3,
+        DVZ_BACKEND_WRAP = 4,
+    };
+    ```
+
+    _Declared in `include/datoviz/runner/enums.h`:20._
+
+<a id="type-dvzhidpipolicy"></a>
+
+??? abstract "`DvzHiDpiPolicy` · enum"
+
+    ```c
+    enum DvzHiDpiPolicy {
+        DVZ_HIDPI_AUTO = 0,
+        DVZ_HIDPI_DISABLED = 1,
+        DVZ_HIDPI_FRAMEBUFFER = 2,
+        DVZ_HIDPI_NATIVE_WINDOW = 3,
+        DVZ_HIDPI_EXTERNAL = 4,
+    };
+    ```
+
+    _Declared in `include/datoviz/window/types.h`:57._
+
+<a id="type-dvzwindow"></a>
+
+??? abstract "`DvzWindow` · typedef"
+
+    ```c
+    typedef struct DvzWindow DvzWindow;
+    ```
+
+    _Declared in `include/datoviz/window/types.h`:46._
+
+<a id="type-dvzwindowbackend"></a>
+
+??? abstract "`DvzWindowBackend` · record"
+
+    ```c
+    struct DvzWindowBackend {
+        const char * name;
+        DvzBackend type;
+        void * user_data;
+        DvzWindowBackendProcs procs;
+    };
+    ```
+
+    _Declared in `include/datoviz/window/backend.h`:81._
+
+<a id="type-dvzwindowbackendcreate"></a>
+
+??? abstract "`DvzWindowBackendCreate` · typedef"
+
+    ```c
+    typedef _Bool (*)(DvzWindowBackend *, DvzWindow *, const DvzWindowConfig *) DvzWindowBackendCreate;
+    ```
+
+    _Declared in `include/datoviz/window/backend.h`:36._
+
+<a id="type-dvzwindowbackenddestroy"></a>
+
+??? abstract "`DvzWindowBackendDestroy` · typedef"
+
+    ```c
+    typedef void (*)(DvzWindowBackend *, DvzWindow *) DvzWindowBackendDestroy;
+    ```
+
+    _Declared in `include/datoviz/window/backend.h`:38._
+
+<a id="type-dvzwindowbackendpoll"></a>
+
+??? abstract "`DvzWindowBackendPoll` · typedef"
+
+    ```c
+    typedef void (*)(DvzWindowBackend *, DvzWindowHost *) DvzWindowBackendPoll;
+    ```
+
+    _Declared in `include/datoviz/window/backend.h`:39._
+
+<a id="type-dvzwindowbackendprobe"></a>
+
+??? abstract "`DvzWindowBackendProbe` · typedef"
+
+    ```c
+    typedef _Bool (*)(DvzWindowBackend *, DvzWindowHost *) DvzWindowBackendProbe;
+    ```
+
+    _Declared in `include/datoviz/window/backend.h`:35._
+
+<a id="type-dvzwindowbackendprocs"></a>
+
+??? abstract "`DvzWindowBackendProcs` · record"
+
+    ```c
+    struct DvzWindowBackendProcs {
+        DvzWindowBackendProbe probe;
+        DvzWindowBackendCreate create;
+        DvzWindowBackendDestroy destroy;
+        DvzWindowBackendPoll poll;
+        DvzWindowBackendWait wait;
+        DvzWindowBackendWaitTimeout wait_timeout;
+        DvzWindowBackendRequestFrame request_frame;
+        DvzWindowBackendShouldClose should_close;
+        DvzWindowBackendRequiredExtensionCount required_extension_count;
+        DvzWindowBackendRequiredExtensionAt required_extension_at;
+    };
+    ```
+
+    _Declared in `include/datoviz/window/backend.h`:65._
+
+<a id="type-dvzwindowbackendrequestframe"></a>
+
+??? abstract "`DvzWindowBackendRequestFrame` · typedef"
+
+    ```c
+    typedef void (*)(DvzWindowBackend *, DvzWindow *) DvzWindowBackendRequestFrame;
+    ```
+
+    _Declared in `include/datoviz/window/backend.h`:43._
+
+<a id="type-dvzwindowbackendrequiredextensionat"></a>
+
+??? abstract "`DvzWindowBackendRequiredExtensionAt` · typedef"
+
+    ```c
+    typedef const char *(*)(DvzWindowBackend *, DvzWindowHost *, uint32_t) DvzWindowBackendRequiredExtensionAt;
+    ```
+
+    _Declared in `include/datoviz/window/backend.h`:48._
+
+<a id="type-dvzwindowbackendrequiredextensioncount"></a>
+
+??? abstract "`DvzWindowBackendRequiredExtensionCount` · typedef"
+
+    ```c
+    typedef uint32_t (*)(DvzWindowBackend *, DvzWindowHost *) DvzWindowBackendRequiredExtensionCount;
+    ```
+
+    _Declared in `include/datoviz/window/backend.h`:46._
+
+<a id="type-dvzwindowbackendshouldclose"></a>
+
+??? abstract "`DvzWindowBackendShouldClose` · typedef"
+
+    ```c
+    typedef _Bool (*)(const DvzWindowBackend *, const DvzWindow *) DvzWindowBackendShouldClose;
+    ```
+
+    _Declared in `include/datoviz/window/backend.h`:44._
+
+<a id="type-dvzwindowbackendwait"></a>
+
+??? abstract "`DvzWindowBackendWait` · typedef"
+
+    ```c
+    typedef void (*)(DvzWindowBackend *, DvzWindowHost *) DvzWindowBackendWait;
+    ```
+
+    _Declared in `include/datoviz/window/backend.h`:40._
+
+<a id="type-dvzwindowbackendwaittimeout"></a>
+
+??? abstract "`DvzWindowBackendWaitTimeout` · typedef"
+
+    ```c
+    typedef void (*)(DvzWindowBackend *, DvzWindowHost *, double) DvzWindowBackendWaitTimeout;
+    ```
+
+    _Declared in `include/datoviz/window/backend.h`:41._
+
+<a id="type-dvzwindowconfig"></a>
+
+??? abstract "`DvzWindowConfig` · record"
+
+    ```c
+    struct DvzWindowConfig {
+        uint32_t struct_size;
+        uint32_t flags;
+        uint32_t width;
+        uint32_t height;
+        const char * title;
+        _Bool resizable;
+        _Bool visible;
+        float user_scale;
+        DvzHiDpiPolicy hidpi_policy;
+        _Bool has_position;
+        int32_t x;
+        int32_t y;
+    };
+    ```
+
+    _Declared in `include/datoviz/window/types.h`:72._
+
+<a id="type-dvzwindowexternalsurfaceinfo"></a>
+
+??? abstract "`DvzWindowExternalSurfaceInfo` · record"
+
+    ```c
+    struct DvzWindowExternalSurfaceInfo {
+        uint32_t struct_size;
+        uint32_t flags;
+        VkInstance instance;
+        VkSurfaceKHR surface;
+        VkExtent2D extent;
+        float scale_x;
+        float scale_y;
+        _Bool owned_by_datoviz;
+    };
+    ```
+
+    _Declared in `include/datoviz/window/backend.h`:91._
+
+<a id="type-dvzwindowglfwcharcallback"></a>
+
+??? abstract "`DvzWindowGlfwCharCallback` · typedef"
+
+    ```c
+    typedef _Bool (*)(DvzWindow *, uint32_t, void *) DvzWindowGlfwCharCallback;
+    ```
+
+    _Declared in `include/datoviz/window/backend.h`:57._
+
+<a id="type-dvzwindowglfwcursorposcallback"></a>
+
+??? abstract "`DvzWindowGlfwCursorPosCallback` · typedef"
+
+    ```c
+    typedef _Bool (*)(DvzWindow *, double, double, void *) DvzWindowGlfwCursorPosCallback;
+    ```
+
+    _Declared in `include/datoviz/window/backend.h`:50._
+
+<a id="type-dvzwindowglfwinputcallbacks"></a>
+
+??? abstract "`DvzWindowGlfwInputCallbacks` · record"
+
+    ```c
+    struct DvzWindowGlfwInputCallbacks {
+        DvzWindowGlfwCursorPosCallback cursor_pos;
+        DvzWindowGlfwMouseButtonCallback mouse_button;
+        DvzWindowGlfwScrollCallback scroll;
+        DvzWindowGlfwKeyCallback key;
+        DvzWindowGlfwCharCallback character;
+    };
+    ```
+
+    _Declared in `include/datoviz/window/backend.h`:105._
+
+<a id="type-dvzwindowglfwkeycallback"></a>
+
+??? abstract "`DvzWindowGlfwKeyCallback` · typedef"
+
+    ```c
+    typedef _Bool (*)(DvzWindow *, int, int, int, int, void *) DvzWindowGlfwKeyCallback;
+    ```
+
+    _Declared in `include/datoviz/window/backend.h`:55._
+
+<a id="type-dvzwindowglfwmousebuttoncallback"></a>
+
+??? abstract "`DvzWindowGlfwMouseButtonCallback` · typedef"
+
+    ```c
+    typedef _Bool (*)(DvzWindow *, int, int, int, void *) DvzWindowGlfwMouseButtonCallback;
+    ```
+
+    _Declared in `include/datoviz/window/backend.h`:51._
+
+<a id="type-dvzwindowglfwscrollcallback"></a>
+
+??? abstract "`DvzWindowGlfwScrollCallback` · typedef"
+
+    ```c
+    typedef _Bool (*)(DvzWindow *, double, double, void *) DvzWindowGlfwScrollCallback;
+    ```
+
+    _Declared in `include/datoviz/window/backend.h`:53._
+
+<a id="type-dvzwindowhost"></a>
+
+??? abstract "`DvzWindowHost` · typedef"
+
+    ```c
+    typedef struct DvzWindowHost DvzWindowHost;
+    ```
+
+    _Declared in `include/datoviz/app.h`:55._
+
+<a id="type-dvzwindowmetrics"></a>
+
+??? abstract "`DvzWindowMetrics` · record"
+
+    ```c
+    struct DvzWindowMetrics {
+        DvzExtent logical_size;
+        DvzExtent native_size;
+        DvzExtent surface_size;
+        DvzExtent render_size;
+        DvzScaleXY content_scale;
+        DvzScaleXY framebuffer_scale;
+        DvzScaleXY device_scale;
+        DvzScaleXY native_to_logical;
+        DvzHiDpiPolicy active_hidpi_policy;
+        uint64_t generation;
+    };
+    ```
+
+    _Declared in `include/datoviz/window/types.h`:90._
+
+<a id="type-dvzwindowsurface"></a>
+
+??? abstract "`DvzWindowSurface` · record"
+
+    ```c
+    struct DvzWindowSurface {
+        VkInstance instance;
+        VkSurfaceKHR surface;
+        VkExtent2D extent;
+        VkFormat format;
+        VkColorSpaceKHR color_space;
+        float scale_x;
+        float scale_y;
+    };
+    ```
+
+    _Declared in `include/datoviz/window/types.h`:108._

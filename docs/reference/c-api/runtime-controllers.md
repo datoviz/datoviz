@@ -30,211 +30,134 @@ Types: 24
 | [Panzoom](#panzoom) | 20 | 6 | `include/datoviz/controller/panzoom.h` |
 | [Turntable](#turntable) | 15 | 3 | `include/datoviz/controller/turntable.h` |
 
-??? info "Grouped symbol index"
+??? info "Grouped function index"
 
     **Arcball**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzArcball`](#type-dvzarcball) | typedef | `include/datoviz/controller/arcball.h` |
-    | [`DvzArcballDesc`](#type-dvzarcballdesc) | record | `include/datoviz/controller/arcball.h` |
-    | [`DvzArcballFlags`](#type-dvzarcballflags) | enum | `include/datoviz/controller/arcball.h` |
-    | [`DvzArcballState`](#type-dvzarcballstate) | record | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_angles()`](#dvz_arcball_angles) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_connect()`](#dvz_arcball_connect) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_constrain()`](#dvz_arcball_constrain) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_create()`](#dvz_arcball_create) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_desc()`](#dvz_arcball_desc) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_destroy()`](#dvz_arcball_destroy) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_disconnect()`](#dvz_arcball_disconnect) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_end()`](#dvz_arcball_end) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_initial()`](#dvz_arcball_initial) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_is_interacting()`](#dvz_arcball_is_interacting) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_model()`](#dvz_arcball_model) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_mvp()`](#dvz_arcball_mvp) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_pan()`](#dvz_arcball_pan) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_pan_shift()`](#dvz_arcball_pan_shift) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_pointer()`](#dvz_arcball_pointer) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_reset()`](#dvz_arcball_reset) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_resize()`](#dvz_arcball_resize) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_rotate()`](#dvz_arcball_rotate) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_rotate_axis()`](#dvz_arcball_rotate_axis) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_set()`](#dvz_arcball_set) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_state()`](#dvz_arcball_state) | function | `include/datoviz/controller/arcball.h` |
-    | [`dvz_arcball_zoom()`](#dvz_arcball_zoom) | function | `include/datoviz/controller/arcball.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_arcball_angles()`](#dvz_arcball_angles) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_connect()`](#dvz_arcball_connect) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_constrain()`](#dvz_arcball_constrain) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_create()`](#dvz_arcball_create) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_desc()`](#dvz_arcball_desc) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_destroy()`](#dvz_arcball_destroy) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_disconnect()`](#dvz_arcball_disconnect) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_end()`](#dvz_arcball_end) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_initial()`](#dvz_arcball_initial) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_is_interacting()`](#dvz_arcball_is_interacting) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_model()`](#dvz_arcball_model) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_mvp()`](#dvz_arcball_mvp) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_pan()`](#dvz_arcball_pan) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_pan_shift()`](#dvz_arcball_pan_shift) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_pointer()`](#dvz_arcball_pointer) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_reset()`](#dvz_arcball_reset) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_resize()`](#dvz_arcball_resize) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_rotate()`](#dvz_arcball_rotate) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_rotate_axis()`](#dvz_arcball_rotate_axis) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_set()`](#dvz_arcball_set) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_state()`](#dvz_arcball_state) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_zoom()`](#dvz_arcball_zoom) | `include/datoviz/controller/arcball.h` |
 
     **Camera**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzCamera`](#type-dvzcamera) | typedef | `include/datoviz/controller/camera.h` |
-    | [`DvzCameraDesc`](#type-dvzcameradesc) | record | `include/datoviz/controller/camera.h` |
-    | [`DvzCameraProjection`](#type-dvzcameraprojection) | record | `include/datoviz/controller/camera.h` |
-    | [`DvzCameraType`](#type-dvzcameratype) | enum | `include/datoviz/controller/camera.h` |
-    | [`DvzCameraView`](#type-dvzcameraview) | record | `include/datoviz/controller/camera.h` |
-    | [`DvzMVP`](#type-dvzmvp) | record | `include/datoviz/controller/panzoom.h` |
-    | [`DvzMVPFlags`](#type-dvzmvpflags) | enum | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_camera_create()`](#dvz_camera_create) | function | `include/datoviz/controller/camera.h` |
-    | [`dvz_camera_desc()`](#dvz_camera_desc) | function | `include/datoviz/controller/camera.h` |
-    | [`dvz_camera_destroy()`](#dvz_camera_destroy) | function | `include/datoviz/controller/camera.h` |
-    | [`dvz_camera_get_orthographic_bounds()`](#dvz_camera_get_orthographic_bounds) | function | `include/datoviz/controller/camera.h` |
-    | [`dvz_camera_get_projection()`](#dvz_camera_get_projection) | function | `include/datoviz/controller/camera.h` |
-    | [`dvz_camera_get_view()`](#dvz_camera_get_view) | function | `include/datoviz/controller/camera.h` |
-    | [`dvz_camera_mvp()`](#dvz_camera_mvp) | function | `include/datoviz/controller/camera.h` |
-    | [`dvz_camera_projection()`](#dvz_camera_projection) | function | `include/datoviz/controller/camera.h` |
-    | [`dvz_camera_resize()`](#dvz_camera_resize) | function | `include/datoviz/controller/camera.h` |
-    | [`dvz_camera_set_orthographic()`](#dvz_camera_set_orthographic) | function | `include/datoviz/controller/camera.h` |
-    | [`dvz_camera_set_orthographic_bounds()`](#dvz_camera_set_orthographic_bounds) | function | `include/datoviz/controller/camera.h` |
-    | [`dvz_camera_set_perspective()`](#dvz_camera_set_perspective) | function | `include/datoviz/controller/camera.h` |
-    | [`dvz_camera_set_view()`](#dvz_camera_set_view) | function | `include/datoviz/controller/camera.h` |
-    | [`dvz_camera_view()`](#dvz_camera_view) | function | `include/datoviz/controller/camera.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_camera_create()`](#dvz_camera_create) | `include/datoviz/controller/camera.h` |
+    | [`dvz_camera_desc()`](#dvz_camera_desc) | `include/datoviz/controller/camera.h` |
+    | [`dvz_camera_destroy()`](#dvz_camera_destroy) | `include/datoviz/controller/camera.h` |
+    | [`dvz_camera_get_orthographic_bounds()`](#dvz_camera_get_orthographic_bounds) | `include/datoviz/controller/camera.h` |
+    | [`dvz_camera_get_projection()`](#dvz_camera_get_projection) | `include/datoviz/controller/camera.h` |
+    | [`dvz_camera_get_view()`](#dvz_camera_get_view) | `include/datoviz/controller/camera.h` |
+    | [`dvz_camera_mvp()`](#dvz_camera_mvp) | `include/datoviz/controller/camera.h` |
+    | [`dvz_camera_projection()`](#dvz_camera_projection) | `include/datoviz/controller/camera.h` |
+    | [`dvz_camera_resize()`](#dvz_camera_resize) | `include/datoviz/controller/camera.h` |
+    | [`dvz_camera_set_orthographic()`](#dvz_camera_set_orthographic) | `include/datoviz/controller/camera.h` |
+    | [`dvz_camera_set_orthographic_bounds()`](#dvz_camera_set_orthographic_bounds) | `include/datoviz/controller/camera.h` |
+    | [`dvz_camera_set_perspective()`](#dvz_camera_set_perspective) | `include/datoviz/controller/camera.h` |
+    | [`dvz_camera_set_view()`](#dvz_camera_set_view) | `include/datoviz/controller/camera.h` |
+    | [`dvz_camera_view()`](#dvz_camera_view) | `include/datoviz/controller/camera.h` |
 
     **Fly**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzFly`](#type-dvzfly) | typedef | `include/datoviz/controller/fly.h` |
-    | [`DvzFlyDesc`](#type-dvzflydesc) | record | `include/datoviz/controller/fly.h` |
-    | [`DvzFlyFlags`](#type-dvzflyflags) | enum | `include/datoviz/controller/fly.h` |
-    | [`DvzFlyMode`](#type-dvzflymode) | enum | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_apply_camera()`](#dvz_fly_apply_camera) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_clear_pivot()`](#dvz_fly_clear_pivot) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_connect()`](#dvz_fly_connect) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_create()`](#dvz_fly_create) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_desc()`](#dvz_fly_desc) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_destroy()`](#dvz_fly_destroy) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_disconnect()`](#dvz_fly_disconnect) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_get_position()`](#dvz_fly_get_position) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_get_target()`](#dvz_fly_get_target) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_get_up()`](#dvz_fly_get_up) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_has_pivot()`](#dvz_fly_has_pivot) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_initial()`](#dvz_fly_initial) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_initial_lookat()`](#dvz_fly_initial_lookat) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_keyboard()`](#dvz_fly_keyboard) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_look_at_pivot()`](#dvz_fly_look_at_pivot) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_move_forward()`](#dvz_fly_move_forward) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_move_right()`](#dvz_fly_move_right) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_move_up()`](#dvz_fly_move_up) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_orbit()`](#dvz_fly_orbit) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_pivot()`](#dvz_fly_pivot) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_pointer()`](#dvz_fly_pointer) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_reset()`](#dvz_fly_reset) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_resize()`](#dvz_fly_resize) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_roll()`](#dvz_fly_roll) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_rotate()`](#dvz_fly_rotate) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_set_camera()`](#dvz_fly_set_camera) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_set_mode()`](#dvz_fly_set_mode) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_update()`](#dvz_fly_update) | function | `include/datoviz/controller/fly.h` |
-    | [`dvz_fly_viewport()`](#dvz_fly_viewport) | function | `include/datoviz/controller/fly.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_fly_apply_camera()`](#dvz_fly_apply_camera) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_clear_pivot()`](#dvz_fly_clear_pivot) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_connect()`](#dvz_fly_connect) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_create()`](#dvz_fly_create) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_desc()`](#dvz_fly_desc) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_destroy()`](#dvz_fly_destroy) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_disconnect()`](#dvz_fly_disconnect) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_get_position()`](#dvz_fly_get_position) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_get_target()`](#dvz_fly_get_target) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_get_up()`](#dvz_fly_get_up) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_has_pivot()`](#dvz_fly_has_pivot) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_initial()`](#dvz_fly_initial) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_initial_lookat()`](#dvz_fly_initial_lookat) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_keyboard()`](#dvz_fly_keyboard) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_look_at_pivot()`](#dvz_fly_look_at_pivot) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_move_forward()`](#dvz_fly_move_forward) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_move_right()`](#dvz_fly_move_right) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_move_up()`](#dvz_fly_move_up) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_orbit()`](#dvz_fly_orbit) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_pivot()`](#dvz_fly_pivot) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_pointer()`](#dvz_fly_pointer) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_reset()`](#dvz_fly_reset) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_resize()`](#dvz_fly_resize) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_roll()`](#dvz_fly_roll) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_rotate()`](#dvz_fly_rotate) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_set_camera()`](#dvz_fly_set_camera) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_set_mode()`](#dvz_fly_set_mode) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_update()`](#dvz_fly_update) | `include/datoviz/controller/fly.h` |
+    | [`dvz_fly_viewport()`](#dvz_fly_viewport) | `include/datoviz/controller/fly.h` |
 
     **Panzoom**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzPanzoom`](#type-dvzpanzoom) | typedef | `include/datoviz/controller/panzoom.h` |
-    | [`DvzPanzoomDesc`](#type-dvzpanzoomdesc) | record | `include/datoviz/controller/panzoom.h` |
-    | [`DvzPanzoomEval`](#type-dvzpanzoomeval) | record | `include/datoviz/controller/panzoom.h` |
-    | [`DvzPanzoomFlags`](#type-dvzpanzoomflags) | enum | `include/datoviz/controller/panzoom.h` |
-    | [`DvzPanzoomResolved`](#type-dvzpanzoomresolved) | record | `include/datoviz/controller/panzoom.h` |
-    | [`DvzPanzoomState`](#type-dvzpanzoomstate) | record | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_connect()`](#dvz_panzoom_connect) | function | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_create()`](#dvz_panzoom_create) | function | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_desc()`](#dvz_panzoom_desc) | function | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_destroy()`](#dvz_panzoom_destroy) | function | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_disconnect()`](#dvz_panzoom_disconnect) | function | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_end()`](#dvz_panzoom_end) | function | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_extent()`](#dvz_panzoom_extent) | function | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_mvp()`](#dvz_panzoom_mvp) | function | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_pan()`](#dvz_panzoom_pan) | function | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_pan_shift()`](#dvz_panzoom_pan_shift) | function | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_pointer()`](#dvz_panzoom_pointer) | function | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_reset()`](#dvz_panzoom_reset) | function | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_resize()`](#dvz_panzoom_resize) | function | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_resolve()`](#dvz_panzoom_resolve) | function | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_state()`](#dvz_panzoom_state) | function | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_viewport()`](#dvz_panzoom_viewport) | function | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_zoom()`](#dvz_panzoom_zoom) | function | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_zoom_limits()`](#dvz_panzoom_zoom_limits) | function | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_zoom_shift()`](#dvz_panzoom_zoom_shift) | function | `include/datoviz/controller/panzoom.h` |
-    | [`dvz_panzoom_zoom_wheel()`](#dvz_panzoom_zoom_wheel) | function | `include/datoviz/controller/panzoom.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_panzoom_connect()`](#dvz_panzoom_connect) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_create()`](#dvz_panzoom_create) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_desc()`](#dvz_panzoom_desc) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_destroy()`](#dvz_panzoom_destroy) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_disconnect()`](#dvz_panzoom_disconnect) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_end()`](#dvz_panzoom_end) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_extent()`](#dvz_panzoom_extent) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_mvp()`](#dvz_panzoom_mvp) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_pan()`](#dvz_panzoom_pan) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_pan_shift()`](#dvz_panzoom_pan_shift) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_pointer()`](#dvz_panzoom_pointer) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_reset()`](#dvz_panzoom_reset) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_resize()`](#dvz_panzoom_resize) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_resolve()`](#dvz_panzoom_resolve) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_state()`](#dvz_panzoom_state) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_viewport()`](#dvz_panzoom_viewport) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_zoom()`](#dvz_panzoom_zoom) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_zoom_limits()`](#dvz_panzoom_zoom_limits) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_zoom_shift()`](#dvz_panzoom_zoom_shift) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_zoom_wheel()`](#dvz_panzoom_zoom_wheel) | `include/datoviz/controller/panzoom.h` |
 
     **Turntable**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzTurntable`](#type-dvzturntable) | typedef | `include/datoviz/controller/turntable.h` |
-    | [`DvzTurntableDesc`](#type-dvzturntabledesc) | record | `include/datoviz/controller/turntable.h` |
-    | [`DvzTurntableFlags`](#type-dvzturntableflags) | enum | `include/datoviz/controller/turntable.h` |
-    | [`dvz_turntable_apply_camera()`](#dvz_turntable_apply_camera) | function | `include/datoviz/controller/turntable.h` |
-    | [`dvz_turntable_connect()`](#dvz_turntable_connect) | function | `include/datoviz/controller/turntable.h` |
-    | [`dvz_turntable_create()`](#dvz_turntable_create) | function | `include/datoviz/controller/turntable.h` |
-    | [`dvz_turntable_desc()`](#dvz_turntable_desc) | function | `include/datoviz/controller/turntable.h` |
-    | [`dvz_turntable_destroy()`](#dvz_turntable_destroy) | function | `include/datoviz/controller/turntable.h` |
-    | [`dvz_turntable_disconnect()`](#dvz_turntable_disconnect) | function | `include/datoviz/controller/turntable.h` |
-    | [`dvz_turntable_dolly()`](#dvz_turntable_dolly) | function | `include/datoviz/controller/turntable.h` |
-    | [`dvz_turntable_orbit()`](#dvz_turntable_orbit) | function | `include/datoviz/controller/turntable.h` |
-    | [`dvz_turntable_pan()`](#dvz_turntable_pan) | function | `include/datoviz/controller/turntable.h` |
-    | [`dvz_turntable_pivot()`](#dvz_turntable_pivot) | function | `include/datoviz/controller/turntable.h` |
-    | [`dvz_turntable_pointer()`](#dvz_turntable_pointer) | function | `include/datoviz/controller/turntable.h` |
-    | [`dvz_turntable_reset()`](#dvz_turntable_reset) | function | `include/datoviz/controller/turntable.h` |
-    | [`dvz_turntable_resize()`](#dvz_turntable_resize) | function | `include/datoviz/controller/turntable.h` |
-    | [`dvz_turntable_set_camera()`](#dvz_turntable_set_camera) | function | `include/datoviz/controller/turntable.h` |
-    | [`dvz_turntable_viewport()`](#dvz_turntable_viewport) | function | `include/datoviz/controller/turntable.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_turntable_apply_camera()`](#dvz_turntable_apply_camera) | `include/datoviz/controller/turntable.h` |
+    | [`dvz_turntable_connect()`](#dvz_turntable_connect) | `include/datoviz/controller/turntable.h` |
+    | [`dvz_turntable_create()`](#dvz_turntable_create) | `include/datoviz/controller/turntable.h` |
+    | [`dvz_turntable_desc()`](#dvz_turntable_desc) | `include/datoviz/controller/turntable.h` |
+    | [`dvz_turntable_destroy()`](#dvz_turntable_destroy) | `include/datoviz/controller/turntable.h` |
+    | [`dvz_turntable_disconnect()`](#dvz_turntable_disconnect) | `include/datoviz/controller/turntable.h` |
+    | [`dvz_turntable_dolly()`](#dvz_turntable_dolly) | `include/datoviz/controller/turntable.h` |
+    | [`dvz_turntable_orbit()`](#dvz_turntable_orbit) | `include/datoviz/controller/turntable.h` |
+    | [`dvz_turntable_pan()`](#dvz_turntable_pan) | `include/datoviz/controller/turntable.h` |
+    | [`dvz_turntable_pivot()`](#dvz_turntable_pivot) | `include/datoviz/controller/turntable.h` |
+    | [`dvz_turntable_pointer()`](#dvz_turntable_pointer) | `include/datoviz/controller/turntable.h` |
+    | [`dvz_turntable_reset()`](#dvz_turntable_reset) | `include/datoviz/controller/turntable.h` |
+    | [`dvz_turntable_resize()`](#dvz_turntable_resize) | `include/datoviz/controller/turntable.h` |
+    | [`dvz_turntable_set_camera()`](#dvz_turntable_set_camera) | `include/datoviz/controller/turntable.h` |
+    | [`dvz_turntable_viewport()`](#dvz_turntable_viewport) | `include/datoviz/controller/turntable.h` |
 
 ## Arcball { #arcball }
-
-### Types
-
-#### `DvzArcball` { #type-dvzarcball }
-
-```c
-typedef struct DvzArcball DvzArcball;
-```
-
-Used by: [`dvz_arcball_angles()`](runtime-controllers.md#dvz_arcball_angles), [`dvz_arcball_connect()`](runtime-controllers.md#dvz_arcball_connect), [`dvz_arcball_constrain()`](runtime-controllers.md#dvz_arcball_constrain), [`dvz_arcball_create()`](runtime-controllers.md#dvz_arcball_create), [`dvz_arcball_destroy()`](runtime-controllers.md#dvz_arcball_destroy), [`dvz_arcball_disconnect()`](runtime-controllers.md#dvz_arcball_disconnect), [`dvz_arcball_end()`](runtime-controllers.md#dvz_arcball_end), [`dvz_arcball_initial()`](runtime-controllers.md#dvz_arcball_initial); plus 15 more.
-
-_Declared in `include/datoviz/controller/arcball.h`._
-
-#### `DvzArcballDesc` { #type-dvzarcballdesc }
-
-```c
-struct DvzArcballDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    float width;
-    float height;
-    uint32_t controller_flags;
-};
-```
-
-Used by: [`dvz_arcball()`](scene.md#dvz_arcball), [`dvz_arcball_create()`](runtime-controllers.md#dvz_arcball_create), [`dvz_arcball_desc()`](runtime-controllers.md#dvz_arcball_desc), [`dvz_view_arcball()`](app.md#dvz_view_arcball).
-
-_Declared in `include/datoviz/controller/arcball.h`:81._
-
-#### `DvzArcballFlags` { #type-dvzarcballflags }
-
-```c
-enum DvzArcballFlags {
-    DVZ_ARCBALL_FLAGS_NONE = 0,
-    DVZ_ARCBALL_FLAGS_CONSTRAIN = 1,
-};
-```
-
-_Declared in `include/datoviz/controller/arcball.h`:41._
-
-#### `DvzArcballState` { #type-dvzarcballstate }
-
-```c
-struct DvzArcballState {
-    float zoom;
-    vec2 pan;
-    _Bool interacting;
-};
-```
-
-Used by: [`dvz_arcball_state()`](runtime-controllers.md#dvz_arcball_state).
-
-_Declared in `include/datoviz/controller/arcball.h`:62._
 
 ### Functions
 
@@ -645,102 +568,62 @@ DvzResult dvz_arcball_zoom(
 
 _Declared in `include/datoviz/controller/arcball.h`:155._
 
-## Camera { #camera }
-
 ### Types
 
-#### `DvzCamera` { #type-dvzcamera }
+<a id="type-dvzarcball"></a>
 
-```c
-typedef struct DvzCamera DvzCamera;
-```
+??? abstract "`DvzArcball` · typedef"
 
-Used by: [`dvz_anim_camera_motion()`](scene.md#dvz_anim_camera_motion), [`dvz_camera_create()`](runtime-controllers.md#dvz_camera_create), [`dvz_camera_destroy()`](runtime-controllers.md#dvz_camera_destroy), [`dvz_camera_get_orthographic_bounds()`](runtime-controllers.md#dvz_camera_get_orthographic_bounds), [`dvz_camera_get_projection()`](runtime-controllers.md#dvz_camera_get_projection), [`dvz_camera_get_view()`](runtime-controllers.md#dvz_camera_get_view), [`dvz_camera_mvp()`](runtime-controllers.md#dvz_camera_mvp), [`dvz_camera_resize()`](runtime-controllers.md#dvz_camera_resize); plus 7 more.
+    ```c
+    typedef struct DvzArcball DvzArcball;
+    ```
 
-_Declared in `include/datoviz/controller/camera.h`._
+    _Declared in `include/datoviz/controller/arcball.h`._
 
-#### `DvzCameraDesc` { #type-dvzcameradesc }
+<a id="type-dvzarcballdesc"></a>
 
-```c
-struct DvzCameraDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzCameraView view;
-    DvzCameraProjection projection;
-};
-```
+??? abstract "`DvzArcballDesc` · record"
 
-Used by: [`dvz_camera_create()`](runtime-controllers.md#dvz_camera_create), [`dvz_camera_desc()`](runtime-controllers.md#dvz_camera_desc), [`dvz_panel_set_camera_desc()`](scene.md#dvz_panel_set_camera_desc).
+    ```c
+    struct DvzArcballDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        float width;
+        float height;
+        uint32_t controller_flags;
+    };
+    ```
 
-_Declared in `include/datoviz/controller/camera.h`:83._
+    _Declared in `include/datoviz/controller/arcball.h`:81._
 
-#### `DvzCameraProjection` { #type-dvzcameraprojection }
+<a id="type-dvzarcballflags"></a>
 
-```c
-struct DvzCameraProjection {
-    DvzCameraType type;
-    float fov_y;
-    float near_clip;
-    float far_clip;
-    float ortho_height;
-};
-```
+??? abstract "`DvzArcballFlags` · enum"
 
-Used by: [`dvz_camera_get_projection()`](runtime-controllers.md#dvz_camera_get_projection), [`dvz_camera_projection()`](runtime-controllers.md#dvz_camera_projection).
+    ```c
+    enum DvzArcballFlags {
+        DVZ_ARCBALL_FLAGS_NONE = 0,
+        DVZ_ARCBALL_FLAGS_CONSTRAIN = 1,
+    };
+    ```
 
-_Declared in `include/datoviz/controller/camera.h`:71._
+    _Declared in `include/datoviz/controller/arcball.h`:41._
 
-#### `DvzCameraType` { #type-dvzcameratype }
+<a id="type-dvzarcballstate"></a>
 
-```c
-enum DvzCameraType {
-    DVZ_CAMERA_PERSPECTIVE = 0,
-    DVZ_CAMERA_ORTHOGRAPHIC = 1,
-};
-```
+??? abstract "`DvzArcballState` · record"
 
-_Declared in `include/datoviz/controller/camera.h`:41._
+    ```c
+    struct DvzArcballState {
+        float zoom;
+        vec2 pan;
+        _Bool interacting;
+    };
+    ```
 
-#### `DvzCameraView` { #type-dvzcameraview }
+    _Declared in `include/datoviz/controller/arcball.h`:62._
 
-```c
-struct DvzCameraView {
-    vec3 eye;
-    vec3 target;
-    vec3 up;
-};
-```
-
-Used by: [`dvz_camera_get_view()`](runtime-controllers.md#dvz_camera_get_view), [`dvz_camera_set_view()`](runtime-controllers.md#dvz_camera_set_view), [`dvz_camera_view()`](runtime-controllers.md#dvz_camera_view).
-
-_Declared in `include/datoviz/controller/camera.h`:61._
-
-#### `DvzMVP` { #type-dvzmvp }
-
-```c
-struct DvzMVP {
-    mat4 model;
-    mat4 view;
-    mat4 proj;
-    float time;
-    uint32_t flags;
-};
-```
-
-Used by: [`dvz_arcball_mvp()`](runtime-controllers.md#dvz_arcball_mvp), [`dvz_camera_mvp()`](runtime-controllers.md#dvz_camera_mvp), [`dvz_panzoom_mvp()`](runtime-controllers.md#dvz_panzoom_mvp).
-
-_Declared in `include/datoviz/controller/panzoom.h`:62._
-
-#### `DvzMVPFlags` { #type-dvzmvpflags }
-
-```c
-enum DvzMVPFlags {
-    DVZ_MVP_FLAGS_NONE = 0,
-    DVZ_MVP_FLAGS_ISOTROPIC_LOCAL = 1,
-};
-```
-
-_Declared in `include/datoviz/controller/panzoom.h`:72._
+## Camera { #camera }
 
 ### Functions
 
@@ -1027,70 +910,106 @@ DvzCameraView dvz_camera_view(void);
 
 _Declared in `include/datoviz/controller/camera.h`:105._
 
-## Fly { #fly }
-
 ### Types
 
-#### `DvzFly` { #type-dvzfly }
+<a id="type-dvzcamera"></a>
 
-```c
-typedef struct DvzFly DvzFly;
-```
+??? abstract "`DvzCamera` · typedef"
 
-Used by: [`dvz_controller_fly()`](scene.md#dvz_controller_fly), [`dvz_fly_apply_camera()`](runtime-controllers.md#dvz_fly_apply_camera), [`dvz_fly_clear_pivot()`](runtime-controllers.md#dvz_fly_clear_pivot), [`dvz_fly_connect()`](runtime-controllers.md#dvz_fly_connect), [`dvz_fly_create()`](runtime-controllers.md#dvz_fly_create), [`dvz_fly_destroy()`](runtime-controllers.md#dvz_fly_destroy), [`dvz_fly_disconnect()`](runtime-controllers.md#dvz_fly_disconnect), [`dvz_fly_get_position()`](runtime-controllers.md#dvz_fly_get_position); plus 22 more.
+    ```c
+    typedef struct DvzCamera DvzCamera;
+    ```
 
-_Declared in `include/datoviz/controller/fly.h`._
+    _Declared in `include/datoviz/controller/camera.h`._
 
-#### `DvzFlyDesc` { #type-dvzflydesc }
+<a id="type-dvzcameradesc"></a>
 
-```c
-struct DvzFlyDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzFlyMode mode;
-    uint32_t controller_flags;
-    DvzCameraView initial_view;
-    float yaw;
-    float pitch;
-    float roll;
-    _Bool use_angles;
-    float speed;
-    float fast_multiplier;
-    float slow_multiplier;
-    float look_speed;
-    float wheel_speed;
-};
-```
+??? abstract "`DvzCameraDesc` · record"
 
-Used by: [`dvz_fly()`](scene.md#dvz_fly), [`dvz_fly_create()`](runtime-controllers.md#dvz_fly_create), [`dvz_fly_desc()`](runtime-controllers.md#dvz_fly_desc), [`dvz_view_fly()`](app.md#dvz_view_fly).
+    ```c
+    struct DvzCameraDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzCameraView view;
+        DvzCameraProjection projection;
+    };
+    ```
 
-_Declared in `include/datoviz/controller/fly.h`:69._
+    _Declared in `include/datoviz/controller/camera.h`:83._
 
-#### `DvzFlyFlags` { #type-dvzflyflags }
+<a id="type-dvzcameraprojection"></a>
 
-```c
-enum DvzFlyFlags {
-    DVZ_FLY_FLAGS_NONE = 0,
-    DVZ_FLY_FLAGS_INVERT_Y = 1,
-    DVZ_FLY_FLAGS_FIXED_UP = 2,
-    DVZ_FLY_FLAGS_DISABLE_ROLL = 4,
-};
-```
+??? abstract "`DvzCameraProjection` · record"
 
-_Declared in `include/datoviz/controller/fly.h`:46._
+    ```c
+    struct DvzCameraProjection {
+        DvzCameraType type;
+        float fov_y;
+        float near_clip;
+        float far_clip;
+        float ortho_height;
+    };
+    ```
 
-#### `DvzFlyMode` { #type-dvzflymode }
+    _Declared in `include/datoviz/controller/camera.h`:71._
 
-```c
-enum DvzFlyMode {
-    DVZ_FLY_MODE_FREE = 0,
-    DVZ_FLY_MODE_PLANE = 1,
-};
-```
+<a id="type-dvzcameratype"></a>
 
-Used by: [`dvz_fly_set_mode()`](runtime-controllers.md#dvz_fly_set_mode).
+??? abstract "`DvzCameraType` · enum"
 
-_Declared in `include/datoviz/controller/fly.h`:38._
+    ```c
+    enum DvzCameraType {
+        DVZ_CAMERA_PERSPECTIVE = 0,
+        DVZ_CAMERA_ORTHOGRAPHIC = 1,
+    };
+    ```
+
+    _Declared in `include/datoviz/controller/camera.h`:41._
+
+<a id="type-dvzcameraview"></a>
+
+??? abstract "`DvzCameraView` · record"
+
+    ```c
+    struct DvzCameraView {
+        vec3 eye;
+        vec3 target;
+        vec3 up;
+    };
+    ```
+
+    _Declared in `include/datoviz/controller/camera.h`:61._
+
+<a id="type-dvzmvp"></a>
+
+??? abstract "`DvzMVP` · record"
+
+    ```c
+    struct DvzMVP {
+        mat4 model;
+        mat4 view;
+        mat4 proj;
+        float time;
+        uint32_t flags;
+    };
+    ```
+
+    _Declared in `include/datoviz/controller/panzoom.h`:62._
+
+<a id="type-dvzmvpflags"></a>
+
+??? abstract "`DvzMVPFlags` · enum"
+
+    ```c
+    enum DvzMVPFlags {
+        DVZ_MVP_FLAGS_NONE = 0,
+        DVZ_MVP_FLAGS_ISOTROPIC_LOCAL = 1,
+    };
+    ```
+
+    _Declared in `include/datoviz/controller/panzoom.h`:72._
+
+## Fly { #fly }
 
 ### Functions
 
@@ -1646,89 +1565,72 @@ DvzResult dvz_fly_viewport(
 
 _Declared in `include/datoviz/controller/fly.h`:137._
 
-## Panzoom { #panzoom }
-
 ### Types
 
-#### `DvzPanzoom` { #type-dvzpanzoom }
+<a id="type-dvzfly"></a>
 
-```c
-typedef struct DvzPanzoom DvzPanzoom;
-```
+??? abstract "`DvzFly` · typedef"
 
-Used by: [`dvz_controller_panzoom()`](scene.md#dvz_controller_panzoom), [`dvz_panzoom_connect()`](runtime-controllers.md#dvz_panzoom_connect), [`dvz_panzoom_create()`](runtime-controllers.md#dvz_panzoom_create), [`dvz_panzoom_destroy()`](runtime-controllers.md#dvz_panzoom_destroy), [`dvz_panzoom_disconnect()`](runtime-controllers.md#dvz_panzoom_disconnect), [`dvz_panzoom_end()`](runtime-controllers.md#dvz_panzoom_end), [`dvz_panzoom_extent()`](runtime-controllers.md#dvz_panzoom_extent), [`dvz_panzoom_mvp()`](runtime-controllers.md#dvz_panzoom_mvp); plus 13 more.
+    ```c
+    typedef struct DvzFly DvzFly;
+    ```
 
-_Declared in `include/datoviz/controller/panzoom.h`._
+    _Declared in `include/datoviz/controller/fly.h`._
 
-#### `DvzPanzoomDesc` { #type-dvzpanzoomdesc }
+<a id="type-dvzflydesc"></a>
 
-```c
-struct DvzPanzoomDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    float width;
-    float height;
-    uint32_t controller_flags;
-};
-```
+??? abstract "`DvzFlyDesc` · record"
 
-Used by: [`dvz_panzoom()`](scene.md#dvz_panzoom), [`dvz_panzoom_create()`](runtime-controllers.md#dvz_panzoom_create), [`dvz_panzoom_desc()`](runtime-controllers.md#dvz_panzoom_desc), [`dvz_view_panzoom()`](app.md#dvz_view_panzoom).
+    ```c
+    struct DvzFlyDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzFlyMode mode;
+        uint32_t controller_flags;
+        DvzCameraView initial_view;
+        float yaw;
+        float pitch;
+        float roll;
+        _Bool use_angles;
+        float speed;
+        float fast_multiplier;
+        float slow_multiplier;
+        float look_speed;
+        float wheel_speed;
+    };
+    ```
 
-_Declared in `include/datoviz/controller/panzoom.h`:114._
+    _Declared in `include/datoviz/controller/fly.h`:69._
 
-#### `DvzPanzoomEval` { #type-dvzpanzoomeval }
+<a id="type-dvzflyflags"></a>
 
-```c
-struct DvzPanzoomEval {
-    float[4] base_extent;
-    float viewport_width;
-    float viewport_height;
-};
-```
+??? abstract "`DvzFlyFlags` · enum"
 
-Used by: [`dvz_panzoom_resolve()`](runtime-controllers.md#dvz_panzoom_resolve).
+    ```c
+    enum DvzFlyFlags {
+        DVZ_FLY_FLAGS_NONE = 0,
+        DVZ_FLY_FLAGS_INVERT_Y = 1,
+        DVZ_FLY_FLAGS_FIXED_UP = 2,
+        DVZ_FLY_FLAGS_DISABLE_ROLL = 4,
+    };
+    ```
 
-_Declared in `include/datoviz/controller/panzoom.h`:88._
+    _Declared in `include/datoviz/controller/fly.h`:46._
 
-#### `DvzPanzoomFlags` { #type-dvzpanzoomflags }
+<a id="type-dvzflymode"></a>
 
-```c
-enum DvzPanzoomFlags {
-    DVZ_PANZOOM_FLAGS_NONE = 0,
-    DVZ_PANZOOM_FLAGS_FIXED_X = 1,
-    DVZ_PANZOOM_FLAGS_FIXED_Y = 2,
-    DVZ_PANZOOM_FLAGS_KEEP_ASPECT = 4,
-};
-```
+??? abstract "`DvzFlyMode` · enum"
 
-_Declared in `include/datoviz/controller/panzoom.h`:36._
+    ```c
+    enum DvzFlyMode {
+        DVZ_FLY_MODE_FREE = 0,
+        DVZ_FLY_MODE_PLANE = 1,
+    };
+    ```
 
-#### `DvzPanzoomResolved` { #type-dvzpanzoomresolved }
+    _Declared in `include/datoviz/controller/fly.h`:38._
 
-```c
-struct DvzPanzoomResolved {
-    DvzMVP mvp;
-    float[4] visible_extent;
-};
-```
-
-Used by: [`dvz_panzoom_resolve()`](runtime-controllers.md#dvz_panzoom_resolve).
-
-_Declared in `include/datoviz/controller/panzoom.h`:96._
-
-#### `DvzPanzoomState` { #type-dvzpanzoomstate }
-
-```c
-struct DvzPanzoomState {
-    vec2 pan;
-    vec2 zoom;
-    _Bool interacting;
-};
-```
-
-Used by: [`dvz_panzoom_state()`](runtime-controllers.md#dvz_panzoom_state).
-
-_Declared in `include/datoviz/controller/panzoom.h`:80._
+## Panzoom { #panzoom }
 
 ### Functions
 
@@ -2112,56 +2014,91 @@ DvzResult dvz_panzoom_zoom_wheel(
 
 _Declared in `include/datoviz/controller/panzoom.h`:260._
 
-## Turntable { #turntable }
-
 ### Types
 
-#### `DvzTurntable` { #type-dvzturntable }
+<a id="type-dvzpanzoom"></a>
 
-```c
-typedef struct DvzTurntable DvzTurntable;
-```
+??? abstract "`DvzPanzoom` · typedef"
 
-Used by: [`dvz_controller_turntable()`](scene.md#dvz_controller_turntable), [`dvz_turntable_apply_camera()`](runtime-controllers.md#dvz_turntable_apply_camera), [`dvz_turntable_connect()`](runtime-controllers.md#dvz_turntable_connect), [`dvz_turntable_create()`](runtime-controllers.md#dvz_turntable_create), [`dvz_turntable_destroy()`](runtime-controllers.md#dvz_turntable_destroy), [`dvz_turntable_disconnect()`](runtime-controllers.md#dvz_turntable_disconnect), [`dvz_turntable_dolly()`](runtime-controllers.md#dvz_turntable_dolly), [`dvz_turntable_orbit()`](runtime-controllers.md#dvz_turntable_orbit); plus 8 more.
+    ```c
+    typedef struct DvzPanzoom DvzPanzoom;
+    ```
 
-_Declared in `include/datoviz/controller/turntable.h`._
+    _Declared in `include/datoviz/controller/panzoom.h`._
 
-#### `DvzTurntableDesc` { #type-dvzturntabledesc }
+<a id="type-dvzpanzoomdesc"></a>
 
-```c
-struct DvzTurntableDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzCameraView initial_view;
-    float yaw_speed;
-    float pitch_speed;
-    float zoom_speed;
-    float pan_speed;
-    float min_pitch;
-    float max_pitch;
-    float min_distance;
-    float max_distance;
-    uint32_t controller_flags;
-};
-```
+??? abstract "`DvzPanzoomDesc` · record"
 
-Used by: [`dvz_turntable()`](scene.md#dvz_turntable), [`dvz_turntable_create()`](runtime-controllers.md#dvz_turntable_create), [`dvz_turntable_desc()`](runtime-controllers.md#dvz_turntable_desc), [`dvz_view_turntable()`](app.md#dvz_view_turntable).
+    ```c
+    struct DvzPanzoomDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        float width;
+        float height;
+        uint32_t controller_flags;
+    };
+    ```
 
-_Declared in `include/datoviz/controller/turntable.h`:63._
+    _Declared in `include/datoviz/controller/panzoom.h`:114._
 
-#### `DvzTurntableFlags` { #type-dvzturntableflags }
+<a id="type-dvzpanzoomeval"></a>
 
-```c
-enum DvzTurntableFlags {
-    DVZ_TURNTABLE_FLAGS_NONE = 0,
-    DVZ_TURNTABLE_FLAGS_INVERT_Y = 1,
-    DVZ_TURNTABLE_FLAGS_ALLOW_PAN = 2,
-    DVZ_TURNTABLE_FLAGS_WRAP_YAW = 4,
-    DVZ_TURNTABLE_FLAGS_CLAMP_DISTANCE = 8,
-};
-```
+??? abstract "`DvzPanzoomEval` · record"
 
-_Declared in `include/datoviz/controller/turntable.h`:39._
+    ```c
+    struct DvzPanzoomEval {
+        float[4] base_extent;
+        float viewport_width;
+        float viewport_height;
+    };
+    ```
+
+    _Declared in `include/datoviz/controller/panzoom.h`:88._
+
+<a id="type-dvzpanzoomflags"></a>
+
+??? abstract "`DvzPanzoomFlags` · enum"
+
+    ```c
+    enum DvzPanzoomFlags {
+        DVZ_PANZOOM_FLAGS_NONE = 0,
+        DVZ_PANZOOM_FLAGS_FIXED_X = 1,
+        DVZ_PANZOOM_FLAGS_FIXED_Y = 2,
+        DVZ_PANZOOM_FLAGS_KEEP_ASPECT = 4,
+    };
+    ```
+
+    _Declared in `include/datoviz/controller/panzoom.h`:36._
+
+<a id="type-dvzpanzoomresolved"></a>
+
+??? abstract "`DvzPanzoomResolved` · record"
+
+    ```c
+    struct DvzPanzoomResolved {
+        DvzMVP mvp;
+        float[4] visible_extent;
+    };
+    ```
+
+    _Declared in `include/datoviz/controller/panzoom.h`:96._
+
+<a id="type-dvzpanzoomstate"></a>
+
+??? abstract "`DvzPanzoomState` · record"
+
+    ```c
+    struct DvzPanzoomState {
+        vec2 pan;
+        vec2 zoom;
+        _Bool interacting;
+    };
+    ```
+
+    _Declared in `include/datoviz/controller/panzoom.h`:80._
+
+## Turntable { #turntable }
 
 ### Functions
 
@@ -2451,3 +2388,54 @@ DvzResult dvz_turntable_viewport(
 | `height` | `float` | viewport height in window pixels |
 
 _Declared in `include/datoviz/controller/turntable.h`:130._
+
+### Types
+
+<a id="type-dvzturntable"></a>
+
+??? abstract "`DvzTurntable` · typedef"
+
+    ```c
+    typedef struct DvzTurntable DvzTurntable;
+    ```
+
+    _Declared in `include/datoviz/controller/turntable.h`._
+
+<a id="type-dvzturntabledesc"></a>
+
+??? abstract "`DvzTurntableDesc` · record"
+
+    ```c
+    struct DvzTurntableDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzCameraView initial_view;
+        float yaw_speed;
+        float pitch_speed;
+        float zoom_speed;
+        float pan_speed;
+        float min_pitch;
+        float max_pitch;
+        float min_distance;
+        float max_distance;
+        uint32_t controller_flags;
+    };
+    ```
+
+    _Declared in `include/datoviz/controller/turntable.h`:63._
+
+<a id="type-dvzturntableflags"></a>
+
+??? abstract "`DvzTurntableFlags` · enum"
+
+    ```c
+    enum DvzTurntableFlags {
+        DVZ_TURNTABLE_FLAGS_NONE = 0,
+        DVZ_TURNTABLE_FLAGS_INVERT_Y = 1,
+        DVZ_TURNTABLE_FLAGS_ALLOW_PAN = 2,
+        DVZ_TURNTABLE_FLAGS_WRAP_YAW = 4,
+        DVZ_TURNTABLE_FLAGS_CLAMP_DISTANCE = 8,
+    };
+    ```
+
+    _Declared in `include/datoviz/controller/turntable.h`:39._

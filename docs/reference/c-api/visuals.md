@@ -57,502 +57,380 @@ Types: 89
 | [Visual](#visual) | 44 | 20 | 6 headers |
 | [Volume](#volume) | 16 | 5 | 3 headers |
 
-??? info "Grouped symbol index"
+??? info "Grouped function index"
 
     **Band**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzBand`](#type-dvzband) | typedef | `include/datoviz/scene/types.h` |
-    | [`DvzBandDesc`](#type-dvzbanddesc) | record | `include/datoviz/scene/types.h` |
-    | [`dvz_band()`](#dvz_band) | function | `include/datoviz/scene/plot.h` |
-    | [`dvz_band_desc()`](#dvz_band_desc) | function | `include/datoviz/scene/plot.h` |
-    | [`dvz_band_set_bounds()`](#dvz_band_set_bounds) | function | `include/datoviz/scene/plot.h` |
-    | [`dvz_band_set_center()`](#dvz_band_set_center) | function | `include/datoviz/scene/plot.h` |
-    | [`dvz_band_set_style()`](#dvz_band_set_style) | function | `include/datoviz/scene/plot.h` |
-    | [`dvz_band_visual()`](#dvz_band_visual) | function | `include/datoviz/scene/plot.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_band()`](#dvz_band) | `include/datoviz/scene/plot.h` |
+    | [`dvz_band_desc()`](#dvz_band_desc) | `include/datoviz/scene/plot.h` |
+    | [`dvz_band_set_bounds()`](#dvz_band_set_bounds) | `include/datoviz/scene/plot.h` |
+    | [`dvz_band_set_center()`](#dvz_band_set_center) | `include/datoviz/scene/plot.h` |
+    | [`dvz_band_set_style()`](#dvz_band_set_style) | `include/datoviz/scene/plot.h` |
+    | [`dvz_band_visual()`](#dvz_band_visual) | `include/datoviz/scene/plot.h` |
 
     **Bars**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzBars`](#type-dvzbars) | typedef | `include/datoviz/scene/types.h` |
-    | [`DvzBarsDesc`](#type-dvzbarsdesc) | record | `include/datoviz/scene/types.h` |
-    | [`DvzBarsOrientation`](#type-dvzbarsorientation) | enum | `include/datoviz/scene/types.h` |
-    | [`dvz_bars()`](#dvz_bars) | function | `include/datoviz/scene/plot.h` |
-    | [`dvz_bars_desc()`](#dvz_bars_desc) | function | `include/datoviz/scene/plot.h` |
-    | [`dvz_bars_set_intervals()`](#dvz_bars_set_intervals) | function | `include/datoviz/scene/plot.h` |
-    | [`dvz_bars_set_style()`](#dvz_bars_set_style) | function | `include/datoviz/scene/plot.h` |
-    | [`dvz_bars_visual()`](#dvz_bars_visual) | function | `include/datoviz/scene/plot.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_bars()`](#dvz_bars) | `include/datoviz/scene/plot.h` |
+    | [`dvz_bars_desc()`](#dvz_bars_desc) | `include/datoviz/scene/plot.h` |
+    | [`dvz_bars_set_intervals()`](#dvz_bars_set_intervals) | `include/datoviz/scene/plot.h` |
+    | [`dvz_bars_set_style()`](#dvz_bars_set_style) | `include/datoviz/scene/plot.h` |
+    | [`dvz_bars_visual()`](#dvz_bars_visual) | `include/datoviz/scene/plot.h` |
 
     **Bezier**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzBezierTessellationDesc`](#type-dvzbeziertessellationdesc) | record | `include/datoviz/geom/types.h` |
-    | [`dvz_bezier_tessellation_desc()`](#dvz_bezier_tessellation_desc) | function | `include/datoviz/geom.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_bezier_tessellation_desc()`](#dvz_bezier_tessellation_desc) | `include/datoviz/geom.h` |
 
     **Composite**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzComposite`](#type-dvzcomposite) | typedef | `include/datoviz/scene/types.h` |
-    | [`dvz_composite_destroy()`](#dvz_composite_destroy) | function | `include/datoviz/scene.h` |
-    | [`dvz_composite_visual()`](#dvz_composite_visual) | function | `include/datoviz/scene.h` |
-    | [`dvz_composite_visual_at()`](#dvz_composite_visual_at) | function | `include/datoviz/scene.h` |
-    | [`dvz_composite_visual_count()`](#dvz_composite_visual_count) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_composite_destroy()`](#dvz_composite_destroy) | `include/datoviz/scene.h` |
+    | [`dvz_composite_visual()`](#dvz_composite_visual) | `include/datoviz/scene.h` |
+    | [`dvz_composite_visual_at()`](#dvz_composite_visual_at) | `include/datoviz/scene.h` |
+    | [`dvz_composite_visual_count()`](#dvz_composite_visual_count) | `include/datoviz/scene.h` |
 
     **Depth Cueing**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzDepthCueDesc`](#type-dvzdepthcuedesc) | record | `include/datoviz/scene/types.h` |
-    | [`DvzDepthCueFalloff`](#type-dvzdepthcuefalloff) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzDepthCueMetric`](#type-dvzdepthcuemetric) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzDepthCueMode`](#type-dvzdepthcuemode) | enum | `include/datoviz/scene/enums.h` |
-    | [`dvz_depth_cue_desc()`](#dvz_depth_cue_desc) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_depth_cue()`](#dvz_visual_set_depth_cue) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_depth_cue_desc()`](#dvz_depth_cue_desc) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_depth_cue()`](#dvz_visual_set_depth_cue) | `include/datoviz/scene.h` |
 
     **Geometry**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzGeometry`](#type-dvzgeometry) | record | `include/datoviz/geom/types.h` |
-    | [`DvzGeometryArrowDesc`](#type-dvzgeometryarrowdesc) | record | `include/datoviz/geom/types.h` |
-    | [`DvzGeometryBounds`](#type-dvzgeometrybounds) | record | `include/datoviz/geom/types.h` |
-    | [`DvzGeometryConeDesc`](#type-dvzgeometryconedesc) | record | `include/datoviz/geom/types.h` |
-    | [`DvzGeometryContourSegment`](#type-dvzgeometrycontoursegment) | record | `include/datoviz/geom/types.h` |
-    | [`DvzGeometryContours`](#type-dvzgeometrycontours) | record | `include/datoviz/geom/types.h` |
-    | [`DvzGeometryCubeDesc`](#type-dvzgeometrycubedesc) | record | `include/datoviz/geom/types.h` |
-    | [`DvzGeometryCylinderDesc`](#type-dvzgeometrycylinderdesc) | record | `include/datoviz/geom/types.h` |
-    | [`DvzGeometryDiscDesc`](#type-dvzgeometrydiscdesc) | record | `include/datoviz/geom/types.h` |
-    | [`DvzGeometryEdge`](#type-dvzgeometryedge) | record | `include/datoviz/geom/types.h` |
-    | [`DvzGeometryEdgeFlags`](#type-dvzgeometryedgeflags) | enum | `include/datoviz/geom/enums.h` |
-    | [`DvzGeometryEdges`](#type-dvzgeometryedges) | record | `include/datoviz/geom/types.h` |
-    | [`DvzGeometryIndexingFlags`](#type-dvzgeometryindexingflags) | enum | `include/datoviz/geom/enums.h` |
-    | [`DvzGeometryObjDesc`](#type-dvzgeometryobjdesc) | record | `include/datoviz/geom/types.h` |
-    | [`DvzGeometryPlaneDesc`](#type-dvzgeometryplanedesc) | record | `include/datoviz/geom/types.h` |
-    | [`DvzGeometryRegularPolygonDesc`](#type-dvzgeometryregularpolygondesc) | record | `include/datoviz/geom/types.h` |
-    | [`DvzGeometrySectorDesc`](#type-dvzgeometrysectordesc) | record | `include/datoviz/geom/types.h` |
-    | [`DvzGeometrySphereDesc`](#type-dvzgeometryspheredesc) | record | `include/datoviz/geom/types.h` |
-    | [`DvzGeometryStarDesc`](#type-dvzgeometrystardesc) | record | `include/datoviz/geom/types.h` |
-    | [`DvzGeometrySurfaceGridDesc`](#type-dvzgeometrysurfacegriddesc) | record | `include/datoviz/geom/types.h` |
-    | [`DvzGeometryTorusDesc`](#type-dvzgeometrytorusdesc) | record | `include/datoviz/geom/types.h` |
-    | [`DvzGeometryType`](#type-dvzgeometrytype) | enum | `include/datoviz/geom/enums.h` |
-    | [`dvz_geometry()`](#dvz_geometry) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_arrow()`](#dvz_geometry_arrow) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_arrow_desc()`](#dvz_geometry_arrow_desc) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_bounds()`](#dvz_geometry_bounds) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_compute_normals()`](#dvz_geometry_compute_normals) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_cone()`](#dvz_geometry_cone) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_cone_desc()`](#dvz_geometry_cone_desc) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_contours()`](#dvz_geometry_contours) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_contours_destroy()`](#dvz_geometry_contours_destroy) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_cube()`](#dvz_geometry_cube) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_cube_desc()`](#dvz_geometry_cube_desc) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_cylinder()`](#dvz_geometry_cylinder) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_cylinder_desc()`](#dvz_geometry_cylinder_desc) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_destroy()`](#dvz_geometry_destroy) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_disc()`](#dvz_geometry_disc) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_disc_desc()`](#dvz_geometry_disc_desc) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_edges()`](#dvz_geometry_edges) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_edges_destroy()`](#dvz_geometry_edges_destroy) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_merge()`](#dvz_geometry_merge) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_obj()`](#dvz_geometry_obj) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_obj_desc()`](#dvz_geometry_obj_desc) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_plane()`](#dvz_geometry_plane) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_plane_desc()`](#dvz_geometry_plane_desc) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_regular_polygon()`](#dvz_geometry_regular_polygon) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_regular_polygon_desc()`](#dvz_geometry_regular_polygon_desc) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_reset()`](#dvz_geometry_reset) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_sector()`](#dvz_geometry_sector) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_sector_desc()`](#dvz_geometry_sector_desc) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_sphere()`](#dvz_geometry_sphere) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_sphere_desc()`](#dvz_geometry_sphere_desc) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_star()`](#dvz_geometry_star) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_star_desc()`](#dvz_geometry_star_desc) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_surface_grid()`](#dvz_geometry_surface_grid) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_surface_grid_desc()`](#dvz_geometry_surface_grid_desc) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_surface_grid_update_heights()`](#dvz_geometry_surface_grid_update_heights) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_torus()`](#dvz_geometry_torus) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_torus_desc()`](#dvz_geometry_torus_desc) | function | `include/datoviz/geom.h` |
-    | [`dvz_geometry_transform()`](#dvz_geometry_transform) | function | `include/datoviz/geom.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_geometry()`](#dvz_geometry) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_arrow()`](#dvz_geometry_arrow) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_arrow_desc()`](#dvz_geometry_arrow_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_bounds()`](#dvz_geometry_bounds) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_compute_normals()`](#dvz_geometry_compute_normals) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_cone()`](#dvz_geometry_cone) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_cone_desc()`](#dvz_geometry_cone_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_contours()`](#dvz_geometry_contours) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_contours_destroy()`](#dvz_geometry_contours_destroy) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_cube()`](#dvz_geometry_cube) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_cube_desc()`](#dvz_geometry_cube_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_cylinder()`](#dvz_geometry_cylinder) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_cylinder_desc()`](#dvz_geometry_cylinder_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_destroy()`](#dvz_geometry_destroy) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_disc()`](#dvz_geometry_disc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_disc_desc()`](#dvz_geometry_disc_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_edges()`](#dvz_geometry_edges) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_edges_destroy()`](#dvz_geometry_edges_destroy) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_merge()`](#dvz_geometry_merge) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_obj()`](#dvz_geometry_obj) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_obj_desc()`](#dvz_geometry_obj_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_plane()`](#dvz_geometry_plane) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_plane_desc()`](#dvz_geometry_plane_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_regular_polygon()`](#dvz_geometry_regular_polygon) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_regular_polygon_desc()`](#dvz_geometry_regular_polygon_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_reset()`](#dvz_geometry_reset) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_sector()`](#dvz_geometry_sector) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_sector_desc()`](#dvz_geometry_sector_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_sphere()`](#dvz_geometry_sphere) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_sphere_desc()`](#dvz_geometry_sphere_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_star()`](#dvz_geometry_star) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_star_desc()`](#dvz_geometry_star_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_surface_grid()`](#dvz_geometry_surface_grid) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_surface_grid_desc()`](#dvz_geometry_surface_grid_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_surface_grid_update_heights()`](#dvz_geometry_surface_grid_update_heights) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_torus()`](#dvz_geometry_torus) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_torus_desc()`](#dvz_geometry_torus_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_transform()`](#dvz_geometry_transform) | `include/datoviz/geom.h` |
 
     **Glyph**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`dvz_glyph()`](#dvz_glyph) | function | `include/datoviz/scene.h` |
-    | [`dvz_glyph_set_atlas()`](#dvz_glyph_set_atlas) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_glyph()`](#dvz_glyph) | `include/datoviz/scene.h` |
+    | [`dvz_glyph_set_atlas()`](#dvz_glyph_set_atlas) | `include/datoviz/scene.h` |
 
     **Graph**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzGraph`](#type-dvzgraph) | typedef | `include/datoviz/scene/types.h` |
-    | [`DvzGraphEdgeMode`](#type-dvzgraphedgemode) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzGraphEdgeStyle`](#type-dvzgraphedgestyle) | record | `include/datoviz/scene/types.h` |
-    | [`dvz_graph()`](#dvz_graph) | function | `include/datoviz/scene.h` |
-    | [`dvz_graph_composite()`](#dvz_graph_composite) | function | `include/datoviz/scene.h` |
-    | [`dvz_graph_destroy()`](#dvz_graph_destroy) | function | `include/datoviz/scene.h` |
-    | [`dvz_graph_edge_style()`](#dvz_graph_edge_style) | function | `include/datoviz/scene.h` |
-    | [`dvz_graph_set_edge_colors()`](#dvz_graph_set_edge_colors) | function | `include/datoviz/scene.h` |
-    | [`dvz_graph_set_edge_controls()`](#dvz_graph_set_edge_controls) | function | `include/datoviz/scene.h` |
-    | [`dvz_graph_set_edge_count()`](#dvz_graph_set_edge_count) | function | `include/datoviz/scene.h` |
-    | [`dvz_graph_set_edge_endpoints()`](#dvz_graph_set_edge_endpoints) | function | `include/datoviz/scene.h` |
-    | [`dvz_graph_set_edge_ids()`](#dvz_graph_set_edge_ids) | function | `include/datoviz/scene.h` |
-    | [`dvz_graph_set_edge_style()`](#dvz_graph_set_edge_style) | function | `include/datoviz/scene.h` |
-    | [`dvz_graph_set_edge_widths()`](#dvz_graph_set_edge_widths) | function | `include/datoviz/scene.h` |
-    | [`dvz_graph_set_node_colors()`](#dvz_graph_set_node_colors) | function | `include/datoviz/scene.h` |
-    | [`dvz_graph_set_node_count()`](#dvz_graph_set_node_count) | function | `include/datoviz/scene.h` |
-    | [`dvz_graph_set_node_ids()`](#dvz_graph_set_node_ids) | function | `include/datoviz/scene.h` |
-    | [`dvz_graph_set_node_positions()`](#dvz_graph_set_node_positions) | function | `include/datoviz/scene.h` |
-    | [`dvz_graph_set_node_sizes()`](#dvz_graph_set_node_sizes) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_graph()`](#dvz_graph) | `include/datoviz/scene.h` |
+    | [`dvz_graph_composite()`](#dvz_graph_composite) | `include/datoviz/scene.h` |
+    | [`dvz_graph_destroy()`](#dvz_graph_destroy) | `include/datoviz/scene.h` |
+    | [`dvz_graph_edge_style()`](#dvz_graph_edge_style) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_edge_colors()`](#dvz_graph_set_edge_colors) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_edge_controls()`](#dvz_graph_set_edge_controls) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_edge_count()`](#dvz_graph_set_edge_count) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_edge_endpoints()`](#dvz_graph_set_edge_endpoints) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_edge_ids()`](#dvz_graph_set_edge_ids) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_edge_style()`](#dvz_graph_set_edge_style) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_edge_widths()`](#dvz_graph_set_edge_widths) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_node_colors()`](#dvz_graph_set_node_colors) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_node_count()`](#dvz_graph_set_node_count) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_node_ids()`](#dvz_graph_set_node_ids) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_node_positions()`](#dvz_graph_set_node_positions) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_node_sizes()`](#dvz_graph_set_node_sizes) | `include/datoviz/scene.h` |
 
     **Image**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzImageSampling`](#type-dvzimagesampling) | enum | `include/datoviz/scene/enums.h` |
-    | [`dvz_image()`](#dvz_image) | function | `include/datoviz/scene.h` |
-    | [`dvz_image_set_sampling()`](#dvz_image_set_sampling) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_image()`](#dvz_image) | `include/datoviz/scene.h` |
+    | [`dvz_image_set_sampling()`](#dvz_image_set_sampling) | `include/datoviz/scene.h` |
 
     **Labels**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzLabelsState`](#type-dvzlabelsstate) | record | `include/datoviz/scene/types.h` |
-    | [`dvz_labels()`](#dvz_labels) | function | `include/datoviz/scene.h` |
-    | [`dvz_labels_clear_selected()`](#dvz_labels_clear_selected) | function | `include/datoviz/scene.h` |
-    | [`dvz_labels_set_background()`](#dvz_labels_set_background) | function | `include/datoviz/scene.h` |
-    | [`dvz_labels_set_boundary()`](#dvz_labels_set_boundary) | function | `include/datoviz/scene.h` |
-    | [`dvz_labels_set_fallback_seed()`](#dvz_labels_set_fallback_seed) | function | `include/datoviz/scene.h` |
-    | [`dvz_labels_set_hidden()`](#dvz_labels_set_hidden) | function | `include/datoviz/scene.h` |
-    | [`dvz_labels_set_opacity()`](#dvz_labels_set_opacity) | function | `include/datoviz/scene.h` |
-    | [`dvz_labels_set_selected()`](#dvz_labels_set_selected) | function | `include/datoviz/scene.h` |
-    | [`dvz_labels_set_slice_axis()`](#dvz_labels_set_slice_axis) | function | `include/datoviz/scene.h` |
-    | [`dvz_labels_set_slice_position()`](#dvz_labels_set_slice_position) | function | `include/datoviz/scene.h` |
-    | [`dvz_labels_state()`](#dvz_labels_state) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_labels()`](#dvz_labels) | `include/datoviz/scene.h` |
+    | [`dvz_labels_clear_selected()`](#dvz_labels_clear_selected) | `include/datoviz/scene.h` |
+    | [`dvz_labels_set_background()`](#dvz_labels_set_background) | `include/datoviz/scene.h` |
+    | [`dvz_labels_set_boundary()`](#dvz_labels_set_boundary) | `include/datoviz/scene.h` |
+    | [`dvz_labels_set_fallback_seed()`](#dvz_labels_set_fallback_seed) | `include/datoviz/scene.h` |
+    | [`dvz_labels_set_hidden()`](#dvz_labels_set_hidden) | `include/datoviz/scene.h` |
+    | [`dvz_labels_set_opacity()`](#dvz_labels_set_opacity) | `include/datoviz/scene.h` |
+    | [`dvz_labels_set_selected()`](#dvz_labels_set_selected) | `include/datoviz/scene.h` |
+    | [`dvz_labels_set_slice_axis()`](#dvz_labels_set_slice_axis) | `include/datoviz/scene.h` |
+    | [`dvz_labels_set_slice_position()`](#dvz_labels_set_slice_position) | `include/datoviz/scene.h` |
+    | [`dvz_labels_state()`](#dvz_labels_state) | `include/datoviz/scene.h` |
 
     **Marker**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzMarkerShape`](#type-dvzmarkershape) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzMarkerStyle`](#type-dvzmarkerstyle) | record | `include/datoviz/scene/types.h` |
-    | [`dvz_marker()`](#dvz_marker) | function | `include/datoviz/scene.h` |
-    | [`dvz_marker_set_style()`](#dvz_marker_set_style) | function | `include/datoviz/scene.h` |
-    | [`dvz_marker_set_symbol()`](#dvz_marker_set_symbol) | function | `include/datoviz/scene.h` |
-    | [`dvz_marker_set_symbols()`](#dvz_marker_set_symbols) | function | `include/datoviz/scene.h` |
-    | [`dvz_marker_style()`](#dvz_marker_style) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_marker()`](#dvz_marker) | `include/datoviz/scene.h` |
+    | [`dvz_marker_set_style()`](#dvz_marker_set_style) | `include/datoviz/scene.h` |
+    | [`dvz_marker_set_symbol()`](#dvz_marker_set_symbol) | `include/datoviz/scene.h` |
+    | [`dvz_marker_set_symbols()`](#dvz_marker_set_symbols) | `include/datoviz/scene.h` |
+    | [`dvz_marker_style()`](#dvz_marker_style) | `include/datoviz/scene.h` |
 
     **Materials**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzMaterialDesc`](#type-dvzmaterialdesc) | record | `include/datoviz/scene/types.h` |
-    | [`DvzMaterialModel`](#type-dvzmaterialmodel) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzPhongMaterial`](#type-dvzphongmaterial) | record | `include/datoviz/scene/types.h` |
-    | [`DvzStandardMaterial`](#type-dvzstandardmaterial) | record | `include/datoviz/scene/types.h` |
-    | [`dvz_material_desc()`](#dvz_material_desc) | function | `include/datoviz/scene.h` |
-    | [`dvz_phong_material_desc()`](#dvz_phong_material_desc) | function | `include/datoviz/scene.h` |
-    | [`dvz_standard_material_desc()`](#dvz_standard_material_desc) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_material()`](#dvz_visual_set_material) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_material_desc()`](#dvz_material_desc) | `include/datoviz/scene.h` |
+    | [`dvz_phong_material_desc()`](#dvz_phong_material_desc) | `include/datoviz/scene.h` |
+    | [`dvz_standard_material_desc()`](#dvz_standard_material_desc) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_material()`](#dvz_visual_set_material) | `include/datoviz/scene.h` |
 
     **Mesh**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`dvz_mesh()`](#dvz_mesh) | function | `include/datoviz/scene.h` |
-    | [`dvz_mesh_set_geometry()`](#dvz_mesh_set_geometry) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_mesh()`](#dvz_mesh) | `include/datoviz/scene.h` |
+    | [`dvz_mesh_set_geometry()`](#dvz_mesh_set_geometry) | `include/datoviz/scene.h` |
 
     **Path**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzPathJoin`](#type-dvzpathjoin) | enum | `include/datoviz/scene/enums.h` |
-    | [`dvz_path()`](#dvz_path) | function | `include/datoviz/scene.h` |
-    | [`dvz_path_set_caps()`](#dvz_path_set_caps) | function | `include/datoviz/scene.h` |
-    | [`dvz_path_set_join()`](#dvz_path_set_join) | function | `include/datoviz/scene.h` |
-    | [`dvz_path_set_subpaths()`](#dvz_path_set_subpaths) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_path()`](#dvz_path) | `include/datoviz/scene.h` |
+    | [`dvz_path_set_caps()`](#dvz_path_set_caps) | `include/datoviz/scene.h` |
+    | [`dvz_path_set_join()`](#dvz_path_set_join) | `include/datoviz/scene.h` |
+    | [`dvz_path_set_subpaths()`](#dvz_path_set_subpaths) | `include/datoviz/scene.h` |
 
     **Pixel**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`dvz_pixel()`](#dvz_pixel) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_pixel()`](#dvz_pixel) | `include/datoviz/scene.h` |
 
     **Point**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzPointStyleDesc`](#type-dvzpointstyledesc) | record | `include/datoviz/scene/types.h` |
-    | [`dvz_point()`](#dvz_point) | function | `include/datoviz/scene.h` |
-    | [`dvz_point_set_style()`](#dvz_point_set_style) | function | `include/datoviz/scene.h` |
-    | [`dvz_point_style_desc()`](#dvz_point_style_desc) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_point()`](#dvz_point) | `include/datoviz/scene.h` |
+    | [`dvz_point_set_style()`](#dvz_point_set_style) | `include/datoviz/scene.h` |
+    | [`dvz_point_style_desc()`](#dvz_point_style_desc) | `include/datoviz/scene.h` |
 
     **Polygon**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzPolygon`](#type-dvzpolygon) | typedef | `include/datoviz/scene/types.h` |
-    | [`DvzPolygonDesc`](#type-dvzpolygondesc) | record | `include/datoviz/geom/types.h` |
-    | [`DvzPolygonRing`](#type-dvzpolygonring) | record | `include/datoviz/geom/types.h` |
-    | [`DvzPolygonStyle`](#type-dvzpolygonstyle) | record | `include/datoviz/scene/types.h` |
-    | [`dvz_polygon()`](#dvz_polygon) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygon_composite()`](#dvz_polygon_composite) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygon_desc()`](#dvz_polygon_desc) | function | `include/datoviz/geom.h` |
-    | [`dvz_polygon_destroy()`](#dvz_polygon_destroy) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_fill_color()`](#dvz_polygon_set_fill_color) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_geometry()`](#dvz_polygon_set_geometry) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_hole()`](#dvz_polygon_set_hole) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_id()`](#dvz_polygon_set_id) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_outer()`](#dvz_polygon_set_outer) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_stroke_caps()`](#dvz_polygon_set_stroke_caps) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_stroke_color()`](#dvz_polygon_set_stroke_color) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_stroke_join()`](#dvz_polygon_set_stroke_join) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_stroke_width_px()`](#dvz_polygon_set_stroke_width_px) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_style()`](#dvz_polygon_set_style) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_visible()`](#dvz_polygon_set_visible) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygon_style()`](#dvz_polygon_style) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_polygon()`](#dvz_polygon) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_composite()`](#dvz_polygon_composite) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_desc()`](#dvz_polygon_desc) | `include/datoviz/geom.h` |
+    | [`dvz_polygon_destroy()`](#dvz_polygon_destroy) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_fill_color()`](#dvz_polygon_set_fill_color) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_geometry()`](#dvz_polygon_set_geometry) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_hole()`](#dvz_polygon_set_hole) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_id()`](#dvz_polygon_set_id) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_outer()`](#dvz_polygon_set_outer) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_stroke_caps()`](#dvz_polygon_set_stroke_caps) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_stroke_color()`](#dvz_polygon_set_stroke_color) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_stroke_join()`](#dvz_polygon_set_stroke_join) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_stroke_width_px()`](#dvz_polygon_set_stroke_width_px) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_style()`](#dvz_polygon_set_style) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_visible()`](#dvz_polygon_set_visible) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_style()`](#dvz_polygon_style) | `include/datoviz/scene.h` |
 
     **Polygons**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzPolygons`](#type-dvzpolygons) | typedef | `include/datoviz/scene/types.h` |
-    | [`dvz_polygons()`](#dvz_polygons) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygons_add_region()`](#dvz_polygons_add_region) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygons_composite()`](#dvz_polygons_composite) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygons_destroy()`](#dvz_polygons_destroy) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygons_set_region_fill_color()`](#dvz_polygons_set_region_fill_color) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygons_set_region_fill_colors()`](#dvz_polygons_set_region_fill_colors) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygons_set_region_geometry()`](#dvz_polygons_set_region_geometry) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygons_set_region_id()`](#dvz_polygons_set_region_id) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygons_set_region_ids()`](#dvz_polygons_set_region_ids) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygons_set_region_stroke_color()`](#dvz_polygons_set_region_stroke_color) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygons_set_region_stroke_colors()`](#dvz_polygons_set_region_stroke_colors) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygons_set_region_stroke_width_px()`](#dvz_polygons_set_region_stroke_width_px) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygons_set_region_stroke_widths_px()`](#dvz_polygons_set_region_stroke_widths_px) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygons_set_region_visibilities()`](#dvz_polygons_set_region_visibilities) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygons_set_region_visible()`](#dvz_polygons_set_region_visible) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygons_set_stroke_caps()`](#dvz_polygons_set_stroke_caps) | function | `include/datoviz/scene.h` |
-    | [`dvz_polygons_set_stroke_join()`](#dvz_polygons_set_stroke_join) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_polygons()`](#dvz_polygons) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_add_region()`](#dvz_polygons_add_region) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_composite()`](#dvz_polygons_composite) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_destroy()`](#dvz_polygons_destroy) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_fill_color()`](#dvz_polygons_set_region_fill_color) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_fill_colors()`](#dvz_polygons_set_region_fill_colors) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_geometry()`](#dvz_polygons_set_region_geometry) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_id()`](#dvz_polygons_set_region_id) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_ids()`](#dvz_polygons_set_region_ids) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_stroke_color()`](#dvz_polygons_set_region_stroke_color) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_stroke_colors()`](#dvz_polygons_set_region_stroke_colors) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_stroke_width_px()`](#dvz_polygons_set_region_stroke_width_px) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_stroke_widths_px()`](#dvz_polygons_set_region_stroke_widths_px) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_visibilities()`](#dvz_polygons_set_region_visibilities) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_region_visible()`](#dvz_polygons_set_region_visible) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_stroke_caps()`](#dvz_polygons_set_stroke_caps) | `include/datoviz/scene.h` |
+    | [`dvz_polygons_set_stroke_join()`](#dvz_polygons_set_stroke_join) | `include/datoviz/scene.h` |
 
     **Primitive**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`dvz_primitive()`](#dvz_primitive) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_primitive()`](#dvz_primitive) | `include/datoviz/scene.h` |
 
     **Segment**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzSegmentCap`](#type-dvzsegmentcap) | enum | `include/datoviz/scene/enums.h` |
-    | [`dvz_segment()`](#dvz_segment) | function | `include/datoviz/scene.h` |
-    | [`dvz_segment_set_caps()`](#dvz_segment_set_caps) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_segment()`](#dvz_segment) | `include/datoviz/scene.h` |
+    | [`dvz_segment_set_caps()`](#dvz_segment_set_caps) | `include/datoviz/scene.h` |
 
     **Sphere**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzSphereFlags`](#type-dvzsphereflags) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzSphereMode`](#type-dvzspheremode) | enum | `include/datoviz/scene/enums.h` |
-    | [`dvz_sphere()`](#dvz_sphere) | function | `include/datoviz/scene.h` |
-    | [`dvz_sphere_set_mode()`](#dvz_sphere_set_mode) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_sphere()`](#dvz_sphere) | `include/datoviz/scene.h` |
+    | [`dvz_sphere_set_mode()`](#dvz_sphere_set_mode) | `include/datoviz/scene.h` |
 
     **Splat**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`dvz_splat()`](#dvz_splat) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_splat()`](#dvz_splat) | `include/datoviz/scene.h` |
 
     **Symbol**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzSymbolBuiltin`](#type-dvzsymbolbuiltin) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzSymbolId`](#type-dvzsymbolid) | typedef | `include/datoviz/scene/types.h` |
-    | [`DvzSymbolImageDesc`](#type-dvzsymbolimagedesc) | record | `include/datoviz/scene/types.h` |
-    | [`DvzSymbolSet`](#type-dvzsymbolset) | typedef | `include/datoviz/scene/types.h` |
-    | [`DvzSymbolSourceKind`](#type-dvzsymbolsourcekind) | enum | `include/datoviz/scene/enums.h` |
-    | [`dvz_symbol_bitmap()`](#dvz_symbol_bitmap) | function | `include/datoviz/scene.h` |
-    | [`dvz_symbol_builtin()`](#dvz_symbol_builtin) | function | `include/datoviz/scene.h` |
-    | [`dvz_symbol_image_desc()`](#dvz_symbol_image_desc) | function | `include/datoviz/scene.h` |
-    | [`dvz_symbol_msdf()`](#dvz_symbol_msdf) | function | `include/datoviz/scene.h` |
-    | [`dvz_symbol_sdf()`](#dvz_symbol_sdf) | function | `include/datoviz/scene.h` |
-    | [`dvz_symbol_set()`](#dvz_symbol_set) | function | `include/datoviz/scene.h` |
-    | [`dvz_symbol_svg_path()`](#dvz_symbol_svg_path) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_symbol_bitmap()`](#dvz_symbol_bitmap) | `include/datoviz/scene.h` |
+    | [`dvz_symbol_builtin()`](#dvz_symbol_builtin) | `include/datoviz/scene.h` |
+    | [`dvz_symbol_image_desc()`](#dvz_symbol_image_desc) | `include/datoviz/scene.h` |
+    | [`dvz_symbol_msdf()`](#dvz_symbol_msdf) | `include/datoviz/scene.h` |
+    | [`dvz_symbol_sdf()`](#dvz_symbol_sdf) | `include/datoviz/scene.h` |
+    | [`dvz_symbol_set()`](#dvz_symbol_set) | `include/datoviz/scene.h` |
+    | [`dvz_symbol_svg_path()`](#dvz_symbol_svg_path) | `include/datoviz/scene.h` |
 
     **Tessellate**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`dvz_tessellate_cubic_bezier()`](#dvz_tessellate_cubic_bezier) | function | `include/datoviz/geom.h` |
-    | [`dvz_tessellate_quadratic_bezier()`](#dvz_tessellate_quadratic_bezier) | function | `include/datoviz/geom.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_tessellate_cubic_bezier()`](#dvz_tessellate_cubic_bezier) | `include/datoviz/geom.h` |
+    | [`dvz_tessellate_quadratic_bezier()`](#dvz_tessellate_quadratic_bezier) | `include/datoviz/geom.h` |
 
     **Tessellated**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzTessellatedPath`](#type-dvztessellatedpath) | record | `include/datoviz/geom/types.h` |
-    | [`dvz_tessellated_path_destroy()`](#dvz_tessellated_path_destroy) | function | `include/datoviz/geom.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_tessellated_path_destroy()`](#dvz_tessellated_path_destroy) | `include/datoviz/geom.h` |
 
     **Triangulate**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`dvz_triangulate_polygon()`](#dvz_triangulate_polygon) | function | `include/datoviz/geom.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_triangulate_polygon()`](#dvz_triangulate_polygon) | `include/datoviz/geom.h` |
 
     **Triangulation**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzTriangulationBackend`](#type-dvztriangulationbackend) | enum | `include/datoviz/geom/enums.h` |
-    | [`DvzTriangulationDesc`](#type-dvztriangulationdesc) | record | `include/datoviz/geom/types.h` |
-    | [`dvz_triangulation_desc()`](#dvz_triangulation_desc) | function | `include/datoviz/geom.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_triangulation_desc()`](#dvz_triangulation_desc) | `include/datoviz/geom.h` |
 
     **Vector**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzVectorAnchor`](#type-dvzvectoranchor) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzVectorStyle`](#type-dvzvectorstyle) | record | `include/datoviz/scene/types.h` |
-    | [`dvz_vector()`](#dvz_vector) | function | `include/datoviz/scene.h` |
-    | [`dvz_vector_set_style()`](#dvz_vector_set_style) | function | `include/datoviz/scene.h` |
-    | [`dvz_vector_set_subpaths()`](#dvz_vector_set_subpaths) | function | `include/datoviz/scene.h` |
-    | [`dvz_vector_style()`](#dvz_vector_style) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_vector()`](#dvz_vector) | `include/datoviz/scene.h` |
+    | [`dvz_vector_set_style()`](#dvz_vector_set_style) | `include/datoviz/scene.h` |
+    | [`dvz_vector_set_subpaths()`](#dvz_vector_set_subpaths) | `include/datoviz/scene.h` |
+    | [`dvz_vector_style()`](#dvz_vector_style) | `include/datoviz/scene.h` |
 
     **Visual**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzAlphaMode`](#type-dvzalphamode) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzSceneVisualFamily`](#type-dvzscenevisualfamily) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzShapeAspect`](#type-dvzshapeaspect) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzVisual`](#type-dvzvisual) | typedef | `include/datoviz/scene/types.h` |
-    | [`DvzVisualAttachDesc`](#type-dvzvisualattachdesc) | record | `include/datoviz/scene/types.h` |
-    | [`DvzVisualAttrFormat`](#type-dvzvisualattrformat) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzVisualAttrInfo`](#type-dvzvisualattrinfo) | record | `include/datoviz/scene/types.h` |
-    | [`DvzVisualAttrMutability`](#type-dvzvisualattrmutability) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzVisualAttrSource`](#type-dvzvisualattrsource) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzVisualClipRect`](#type-dvzvisualcliprect) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzVisualCoordSpace`](#type-dvzvisualcoordspace) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzVisualDataUpdate`](#type-dvzvisualdataupdate) | record | `include/datoviz/scene/types.h` |
-    | [`DvzVisualDataView`](#type-dvzvisualdataview) | record | `include/datoviz/scene/types.h` |
-    | [`DvzVisualShaderDesc`](#type-dvzvisualshaderdesc) | record | `include/datoviz/scene/types.h` |
-    | [`DvzVisualShaderKind`](#type-dvzvisualshaderkind) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzVisualShaderSource`](#type-dvzvisualshadersource) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzVisualTransformDesc`](#type-dvzvisualtransformdesc) | record | `include/datoviz/scene/types.h` |
-    | [`DvzVisualTransformKind`](#type-dvzvisualtransformkind) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzVisualTransformSpace`](#type-dvzvisualtransformspace) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzVisualViewportRect`](#type-dvzvisualviewportrect) | enum | `include/datoviz/scene/enums.h` |
-    | [`dvz_visual_alpha_mode()`](#dvz_visual_alpha_mode) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_attach_desc()`](#dvz_visual_attach_desc) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_attr_count()`](#dvz_visual_attr_count) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_attr_format()`](#dvz_visual_attr_format) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_attr_info()`](#dvz_visual_attr_info) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_attr_mutability()`](#dvz_visual_attr_mutability) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_attr_source()`](#dvz_visual_attr_source) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_attr_supported()`](#dvz_visual_attr_supported) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_bounds()`](#dvz_visual_bounds) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_clear_item_range()`](#dvz_visual_clear_item_range) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_clear_transform()`](#dvz_visual_clear_transform) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_data()`](#dvz_visual_data) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_depth_test()`](#dvz_visual_depth_test) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_destroy()`](#dvz_visual_destroy) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_family()`](#dvz_visual_family) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_family_name()`](#dvz_visual_family_name) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_get_item_range()`](#dvz_visual_get_item_range) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_get_transform()`](#dvz_visual_get_transform) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_has_transform()`](#dvz_visual_has_transform) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_id()`](#dvz_visual_id) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_alpha_mode()`](#dvz_visual_set_alpha_mode) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_attr_buffer()`](#dvz_visual_set_attr_buffer) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_attr_format()`](#dvz_visual_set_attr_format) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_attr_mutability()`](#dvz_visual_set_attr_mutability) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_attr_source()`](#dvz_visual_set_attr_source) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_buffer()`](#dvz_visual_set_buffer) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_data()`](#dvz_visual_set_data) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_data_many()`](#dvz_visual_set_data_many) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_data_range()`](#dvz_visual_set_data_range) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_depth_test()`](#dvz_visual_set_depth_test) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_field()`](#dvz_visual_set_field) | function | `include/datoviz/scene/field.h` |
-    | [`dvz_visual_set_index_data()`](#dvz_visual_set_index_data) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_item_range()`](#dvz_visual_set_item_range) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_link_keys()`](#dvz_visual_set_link_keys) | function | `include/datoviz/scene/interaction.h` |
-    | [`dvz_visual_set_query_capabilities()`](#dvz_visual_set_query_capabilities) | function | `include/datoviz/scene/interaction.h` |
-    | [`dvz_visual_set_scale()`](#dvz_visual_set_scale) | function | `include/datoviz/scene/scale.h` |
-    | [`dvz_visual_set_shader_desc()`](#dvz_visual_set_shader_desc) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_strings()`](#dvz_visual_set_strings) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_transform()`](#dvz_visual_set_transform) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_transform_desc()`](#dvz_visual_set_transform_desc) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_visible()`](#dvz_visual_set_visible) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_shader_desc()`](#dvz_visual_shader_desc) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_transform_desc()`](#dvz_visual_transform_desc) | function | `include/datoviz/scene.h` |
-    | [`dvz_visual_validate()`](#dvz_visual_validate) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_visual_alpha_mode()`](#dvz_visual_alpha_mode) | `include/datoviz/scene.h` |
+    | [`dvz_visual_attach_desc()`](#dvz_visual_attach_desc) | `include/datoviz/scene.h` |
+    | [`dvz_visual_attr_count()`](#dvz_visual_attr_count) | `include/datoviz/scene.h` |
+    | [`dvz_visual_attr_format()`](#dvz_visual_attr_format) | `include/datoviz/scene.h` |
+    | [`dvz_visual_attr_info()`](#dvz_visual_attr_info) | `include/datoviz/scene.h` |
+    | [`dvz_visual_attr_mutability()`](#dvz_visual_attr_mutability) | `include/datoviz/scene.h` |
+    | [`dvz_visual_attr_source()`](#dvz_visual_attr_source) | `include/datoviz/scene.h` |
+    | [`dvz_visual_attr_supported()`](#dvz_visual_attr_supported) | `include/datoviz/scene.h` |
+    | [`dvz_visual_bounds()`](#dvz_visual_bounds) | `include/datoviz/scene.h` |
+    | [`dvz_visual_clear_item_range()`](#dvz_visual_clear_item_range) | `include/datoviz/scene.h` |
+    | [`dvz_visual_clear_transform()`](#dvz_visual_clear_transform) | `include/datoviz/scene.h` |
+    | [`dvz_visual_data()`](#dvz_visual_data) | `include/datoviz/scene.h` |
+    | [`dvz_visual_depth_test()`](#dvz_visual_depth_test) | `include/datoviz/scene.h` |
+    | [`dvz_visual_destroy()`](#dvz_visual_destroy) | `include/datoviz/scene.h` |
+    | [`dvz_visual_family()`](#dvz_visual_family) | `include/datoviz/scene.h` |
+    | [`dvz_visual_family_name()`](#dvz_visual_family_name) | `include/datoviz/scene.h` |
+    | [`dvz_visual_get_item_range()`](#dvz_visual_get_item_range) | `include/datoviz/scene.h` |
+    | [`dvz_visual_get_transform()`](#dvz_visual_get_transform) | `include/datoviz/scene.h` |
+    | [`dvz_visual_has_transform()`](#dvz_visual_has_transform) | `include/datoviz/scene.h` |
+    | [`dvz_visual_id()`](#dvz_visual_id) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_alpha_mode()`](#dvz_visual_set_alpha_mode) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_attr_buffer()`](#dvz_visual_set_attr_buffer) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_attr_format()`](#dvz_visual_set_attr_format) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_attr_mutability()`](#dvz_visual_set_attr_mutability) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_attr_source()`](#dvz_visual_set_attr_source) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_buffer()`](#dvz_visual_set_buffer) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_data()`](#dvz_visual_set_data) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_data_many()`](#dvz_visual_set_data_many) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_data_range()`](#dvz_visual_set_data_range) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_depth_test()`](#dvz_visual_set_depth_test) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_field()`](#dvz_visual_set_field) | `include/datoviz/scene/field.h` |
+    | [`dvz_visual_set_index_data()`](#dvz_visual_set_index_data) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_item_range()`](#dvz_visual_set_item_range) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_link_keys()`](#dvz_visual_set_link_keys) | `include/datoviz/scene/interaction.h` |
+    | [`dvz_visual_set_query_capabilities()`](#dvz_visual_set_query_capabilities) | `include/datoviz/scene/interaction.h` |
+    | [`dvz_visual_set_scale()`](#dvz_visual_set_scale) | `include/datoviz/scene/scale.h` |
+    | [`dvz_visual_set_shader_desc()`](#dvz_visual_set_shader_desc) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_strings()`](#dvz_visual_set_strings) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_transform()`](#dvz_visual_set_transform) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_transform_desc()`](#dvz_visual_set_transform_desc) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_visible()`](#dvz_visual_set_visible) | `include/datoviz/scene.h` |
+    | [`dvz_visual_shader_desc()`](#dvz_visual_shader_desc) | `include/datoviz/scene.h` |
+    | [`dvz_visual_transform_desc()`](#dvz_visual_transform_desc) | `include/datoviz/scene.h` |
+    | [`dvz_visual_validate()`](#dvz_visual_validate) | `include/datoviz/scene.h` |
 
     **Volume**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzVolumeAlphaStop`](#type-dvzvolumealphastop) | record | `include/datoviz/scene/types.h` |
-    | [`DvzVolumeAxis`](#type-dvzvolumeaxis) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzVolumeRenderMode`](#type-dvzvolumerendermode) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzVolumeSamplingMode`](#type-dvzvolumesamplingmode) | enum | `include/datoviz/scene/enums.h` |
-    | [`DvzVolumeState`](#type-dvzvolumestate) | record | `include/datoviz/scene/types.h` |
-    | [`dvz_volume()`](#dvz_volume) | function | `include/datoviz/scene.h` |
-    | [`dvz_volume_clear_clipping()`](#dvz_volume_clear_clipping) | function | `include/datoviz/scene.h` |
-    | [`dvz_volume_clear_clipping_plane()`](#dvz_volume_clear_clipping_plane) | function | `include/datoviz/scene.h` |
-    | [`dvz_volume_set_alpha_stops()`](#dvz_volume_set_alpha_stops) | function | `include/datoviz/scene.h` |
-    | [`dvz_volume_set_axis_mapping()`](#dvz_volume_set_axis_mapping) | function | `include/datoviz/scene.h` |
-    | [`dvz_volume_set_bounds()`](#dvz_volume_set_bounds) | function | `include/datoviz/scene.h` |
-    | [`dvz_volume_set_clipping_box()`](#dvz_volume_set_clipping_box) | function | `include/datoviz/scene.h` |
-    | [`dvz_volume_set_clipping_plane()`](#dvz_volume_set_clipping_plane) | function | `include/datoviz/scene.h` |
-    | [`dvz_volume_set_opacity()`](#dvz_volume_set_opacity) | function | `include/datoviz/scene.h` |
-    | [`dvz_volume_set_render_mode()`](#dvz_volume_set_render_mode) | function | `include/datoviz/scene.h` |
-    | [`dvz_volume_set_sampling()`](#dvz_volume_set_sampling) | function | `include/datoviz/scene.h` |
-    | [`dvz_volume_set_slice_axis()`](#dvz_volume_set_slice_axis) | function | `include/datoviz/scene.h` |
-    | [`dvz_volume_set_slice_position()`](#dvz_volume_set_slice_position) | function | `include/datoviz/scene.h` |
-    | [`dvz_volume_set_step_count()`](#dvz_volume_set_step_count) | function | `include/datoviz/scene.h` |
-    | [`dvz_volume_set_value_range()`](#dvz_volume_set_value_range) | function | `include/datoviz/scene.h` |
-    | [`dvz_volume_state()`](#dvz_volume_state) | function | `include/datoviz/scene.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_volume()`](#dvz_volume) | `include/datoviz/scene.h` |
+    | [`dvz_volume_clear_clipping()`](#dvz_volume_clear_clipping) | `include/datoviz/scene.h` |
+    | [`dvz_volume_clear_clipping_plane()`](#dvz_volume_clear_clipping_plane) | `include/datoviz/scene.h` |
+    | [`dvz_volume_set_alpha_stops()`](#dvz_volume_set_alpha_stops) | `include/datoviz/scene.h` |
+    | [`dvz_volume_set_axis_mapping()`](#dvz_volume_set_axis_mapping) | `include/datoviz/scene.h` |
+    | [`dvz_volume_set_bounds()`](#dvz_volume_set_bounds) | `include/datoviz/scene.h` |
+    | [`dvz_volume_set_clipping_box()`](#dvz_volume_set_clipping_box) | `include/datoviz/scene.h` |
+    | [`dvz_volume_set_clipping_plane()`](#dvz_volume_set_clipping_plane) | `include/datoviz/scene.h` |
+    | [`dvz_volume_set_opacity()`](#dvz_volume_set_opacity) | `include/datoviz/scene.h` |
+    | [`dvz_volume_set_render_mode()`](#dvz_volume_set_render_mode) | `include/datoviz/scene.h` |
+    | [`dvz_volume_set_sampling()`](#dvz_volume_set_sampling) | `include/datoviz/scene.h` |
+    | [`dvz_volume_set_slice_axis()`](#dvz_volume_set_slice_axis) | `include/datoviz/scene.h` |
+    | [`dvz_volume_set_slice_position()`](#dvz_volume_set_slice_position) | `include/datoviz/scene.h` |
+    | [`dvz_volume_set_step_count()`](#dvz_volume_set_step_count) | `include/datoviz/scene.h` |
+    | [`dvz_volume_set_value_range()`](#dvz_volume_set_value_range) | `include/datoviz/scene.h` |
+    | [`dvz_volume_state()`](#dvz_volume_state) | `include/datoviz/scene.h` |
 
 ## Band { #band }
-
-### Types
-
-#### `DvzBand` { #type-dvzband }
-
-```c
-typedef struct DvzBand DvzBand;
-```
-
-Used by: [`dvz_band()`](visuals.md#dvz_band), [`dvz_band_set_bounds()`](visuals.md#dvz_band_set_bounds), [`dvz_band_set_center()`](visuals.md#dvz_band_set_center), [`dvz_band_set_style()`](visuals.md#dvz_band_set_style), [`dvz_band_visual()`](visuals.md#dvz_band_visual).
-
-_Declared in `include/datoviz/scene/types.h`:97._
-
-#### `DvzBandDesc` { #type-dvzbanddesc }
-
-```c
-struct DvzBandDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzColor fill_color;
-    DvzColor line_color;
-    float line_width_px;
-    _Bool show_line;
-    _Bool show_bounds;
-    DvzColor bound_color;
-    float bound_width_px;
-    int32_t z_layer;
-};
-```
-
-Used by: [`dvz_band()`](visuals.md#dvz_band), [`dvz_band_desc()`](visuals.md#dvz_band_desc), [`dvz_band_set_style()`](visuals.md#dvz_band_set_style).
-
-_Declared in `include/datoviz/scene/types.h`:433._
 
 ### Functions
 
@@ -689,50 +567,40 @@ DvzVisual * dvz_band_visual(
 
 _Declared in `include/datoviz/scene/plot.h`:250._
 
-## Bars { #bars }
-
 ### Types
 
-#### `DvzBars` { #type-dvzbars }
+<a id="type-dvzband"></a>
 
-```c
-typedef struct DvzBars DvzBars;
-```
+??? abstract "`DvzBand` · typedef"
 
-Used by: [`dvz_bars()`](visuals.md#dvz_bars), [`dvz_bars_set_intervals()`](visuals.md#dvz_bars_set_intervals), [`dvz_bars_set_style()`](visuals.md#dvz_bars_set_style), [`dvz_bars_visual()`](visuals.md#dvz_bars_visual).
+    ```c
+    typedef struct DvzBand DvzBand;
+    ```
 
-_Declared in `include/datoviz/scene/types.h`:96._
+    _Declared in `include/datoviz/scene/types.h`:97._
 
-#### `DvzBarsDesc` { #type-dvzbarsdesc }
+<a id="type-dvzbanddesc"></a>
 
-```c
-struct DvzBarsDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzBarsOrientation orientation;
-    double baseline;
-    float gap_fraction;
-    DvzColor fill_color;
-    DvzColor outline_color;
-    float outline_width_px;
-    int32_t z_layer;
-};
-```
+??? abstract "`DvzBandDesc` · record"
 
-Used by: [`dvz_bars()`](visuals.md#dvz_bars), [`dvz_bars_desc()`](visuals.md#dvz_bars_desc), [`dvz_bars_set_style()`](visuals.md#dvz_bars_set_style).
+    ```c
+    struct DvzBandDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzColor fill_color;
+        DvzColor line_color;
+        float line_width_px;
+        _Bool show_line;
+        _Bool show_bounds;
+        DvzColor bound_color;
+        float bound_width_px;
+        int32_t z_layer;
+    };
+    ```
 
-_Declared in `include/datoviz/scene/types.h`:418._
+    _Declared in `include/datoviz/scene/types.h`:433._
 
-#### `DvzBarsOrientation` { #type-dvzbarsorientation }
-
-```c
-enum DvzBarsOrientation {
-    DVZ_BARS_ORIENTATION_VERTICAL = 0,
-    DVZ_BARS_ORIENTATION_HORIZONTAL = 1,
-};
-```
-
-_Declared in `include/datoviz/scene/types.h`:411._
+## Bars { #bars }
 
 ### Functions
 
@@ -843,24 +711,52 @@ DvzVisual * dvz_bars_visual(
 
 _Declared in `include/datoviz/scene/plot.h`:181._
 
-## Bezier { #bezier }
-
 ### Types
 
-#### `DvzBezierTessellationDesc` { #type-dvzbeziertessellationdesc }
+<a id="type-dvzbars"></a>
 
-```c
-struct DvzBezierTessellationDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint32_t segment_count;
-    double tolerance;
-};
-```
+??? abstract "`DvzBars` · typedef"
 
-Used by: [`dvz_bezier_tessellation_desc()`](visuals.md#dvz_bezier_tessellation_desc), [`dvz_tessellate_cubic_bezier()`](visuals.md#dvz_tessellate_cubic_bezier), [`dvz_tessellate_quadratic_bezier()`](visuals.md#dvz_tessellate_quadratic_bezier).
+    ```c
+    typedef struct DvzBars DvzBars;
+    ```
 
-_Declared in `include/datoviz/geom/types.h`:300._
+    _Declared in `include/datoviz/scene/types.h`:96._
+
+<a id="type-dvzbarsdesc"></a>
+
+??? abstract "`DvzBarsDesc` · record"
+
+    ```c
+    struct DvzBarsDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzBarsOrientation orientation;
+        double baseline;
+        float gap_fraction;
+        DvzColor fill_color;
+        DvzColor outline_color;
+        float outline_width_px;
+        int32_t z_layer;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:418._
+
+<a id="type-dvzbarsorientation"></a>
+
+??? abstract "`DvzBarsOrientation` · enum"
+
+    ```c
+    enum DvzBarsOrientation {
+        DVZ_BARS_ORIENTATION_VERTICAL = 0,
+        DVZ_BARS_ORIENTATION_HORIZONTAL = 1,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:411._
+
+## Bezier { #bezier }
 
 ### Functions
 
@@ -878,19 +774,24 @@ DvzBezierTessellationDesc dvz_bezier_tessellation_desc(void);
 
 _Declared in `include/datoviz/geom.h`:421._
 
-## Composite { #composite }
-
 ### Types
 
-#### `DvzComposite` { #type-dvzcomposite }
+<a id="type-dvzbeziertessellationdesc"></a>
 
-```c
-typedef struct DvzComposite DvzComposite;
-```
+??? abstract "`DvzBezierTessellationDesc` · record"
 
-Used by: [`dvz_composite_destroy()`](visuals.md#dvz_composite_destroy), [`dvz_composite_visual()`](visuals.md#dvz_composite_visual), [`dvz_composite_visual_at()`](visuals.md#dvz_composite_visual_at), [`dvz_composite_visual_count()`](visuals.md#dvz_composite_visual_count), [`dvz_graph_composite()`](visuals.md#dvz_graph_composite), [`dvz_panel_add_composite()`](scene.md#dvz_panel_add_composite), [`dvz_polygon_composite()`](visuals.md#dvz_polygon_composite), [`dvz_polygons_composite()`](visuals.md#dvz_polygons_composite).
+    ```c
+    struct DvzBezierTessellationDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        uint32_t segment_count;
+        double tolerance;
+    };
+    ```
 
-_Declared in `include/datoviz/scene/types.h`:65._
+    _Declared in `include/datoviz/geom/types.h`:300._
+
+## Composite { #composite }
 
 ### Functions
 
@@ -967,66 +868,19 @@ uint32_t dvz_composite_visual_count(
 
 _Declared in `include/datoviz/scene.h`:3492._
 
-## Depth Cueing { #depth-cueing }
-
 ### Types
 
-#### `DvzDepthCueDesc` { #type-dvzdepthcuedesc }
+<a id="type-dvzcomposite"></a>
 
-```c
-struct DvzDepthCueDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzDepthCueMode mode;
-    DvzDepthCueMetric metric;
-    DvzDepthCueFalloff falloff;
-    float near_depth;
-    float far_depth;
-    float strength;
-    float density;
-    float[4] background_color;
-};
-```
+??? abstract "`DvzComposite` · typedef"
 
-Used by: [`dvz_depth_cue_desc()`](visuals.md#dvz_depth_cue_desc), [`dvz_ffi_depth_cue_desc()`](ffi.md#dvz_ffi_depth_cue_desc), [`dvz_visual_set_depth_cue()`](visuals.md#dvz_visual_set_depth_cue).
+    ```c
+    typedef struct DvzComposite DvzComposite;
+    ```
 
-_Declared in `include/datoviz/scene/types.h`:1021._
+    _Declared in `include/datoviz/scene/types.h`:65._
 
-#### `DvzDepthCueFalloff` { #type-dvzdepthcuefalloff }
-
-```c
-enum DvzDepthCueFalloff {
-    DVZ_DEPTH_CUE_FALLOFF_LINEAR = 0,
-    DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL = 1,
-};
-```
-
-_Declared in `include/datoviz/scene/enums.h`:377._
-
-#### `DvzDepthCueMetric` { #type-dvzdepthcuemetric }
-
-```c
-enum DvzDepthCueMetric {
-    DVZ_DEPTH_CUE_METRIC_CLIP_DEPTH = 0,
-    DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE = 1,
-    DVZ_DEPTH_CUE_METRIC_WORLD_DISTANCE = 2,
-};
-```
-
-_Declared in `include/datoviz/scene/enums.h`:369._
-
-#### `DvzDepthCueMode` { #type-dvzdepthcuemode }
-
-```c
-enum DvzDepthCueMode {
-    DVZ_DEPTH_CUE_NONE = 0,
-    DVZ_DEPTH_CUE_FADE_TO_BACKGROUND = 1,
-    DVZ_DEPTH_CUE_DESATURATE = 2,
-    DVZ_DEPTH_CUE_DARKEN = 3,
-};
-```
-
-_Declared in `include/datoviz/scene/enums.h`:360._
+## Depth Cueing { #depth-cueing }
 
 ### Functions
 
@@ -1068,389 +922,72 @@ DvzResult dvz_visual_set_depth_cue(
 
 _Declared in `include/datoviz/scene.h`:2481._
 
-## Geometry { #geometry }
-
 ### Types
 
-#### `DvzGeometry` { #type-dvzgeometry }
-
-```c
-struct DvzGeometry {
-    DvzGeometryType type;
-    uint32_t flags;
-    uint32_t vertex_count;
-    uint32_t index_count;
-    uint32_t grid_rows;
-    uint32_t grid_cols;
-    dvec3 grid_origin;
-    dvec3 grid_row_basis;
-    dvec3 grid_col_basis;
-    dvec3 grid_height_axis;
-    double grid_height_scale;
-    dvec3 * positions;
-    dvec3 * normals;
-    DvzColor * colors;
-    dvec2 * texcoords;
-    DvzIndex * indices;
-};
-```
-
-Used by: [`dvz_geometry()`](visuals.md#dvz_geometry), [`dvz_geometry_arrow()`](visuals.md#dvz_geometry_arrow), [`dvz_geometry_bounds()`](visuals.md#dvz_geometry_bounds), [`dvz_geometry_compute_normals()`](visuals.md#dvz_geometry_compute_normals), [`dvz_geometry_cone()`](visuals.md#dvz_geometry_cone), [`dvz_geometry_contours()`](visuals.md#dvz_geometry_contours), [`dvz_geometry_cube()`](visuals.md#dvz_geometry_cube), [`dvz_geometry_cylinder()`](visuals.md#dvz_geometry_cylinder); plus 17 more.
-
-_Declared in `include/datoviz/geom/types.h`:61._
-
-#### `DvzGeometryArrowDesc` { #type-dvzgeometryarrowdesc }
-
-```c
-struct DvzGeometryArrowDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    dvec3 center;
-    double length;
-    double shaft_radius;
-    double head_radius;
-    double head_length;
-    uint32_t sectors;
-    DvzColor color;
-};
-```
-
-Used by: [`dvz_ffi_geometry_arrow_desc()`](ffi.md#dvz_ffi_geometry_arrow_desc), [`dvz_geometry_arrow()`](visuals.md#dvz_geometry_arrow), [`dvz_geometry_arrow_desc()`](visuals.md#dvz_geometry_arrow_desc).
-
-_Declared in `include/datoviz/geom/types.h`:248._
-
-#### `DvzGeometryBounds` { #type-dvzgeometrybounds }
-
-```c
-struct DvzGeometryBounds {
-    double xmin;
-    double xmax;
-    double ymin;
-    double ymax;
-    double zmin;
-    double zmax;
-};
-```
-
-Used by: [`dvz_geometry_bounds()`](visuals.md#dvz_geometry_bounds).
-
-_Declared in `include/datoviz/geom/types.h`:90._
-
-#### `DvzGeometryConeDesc` { #type-dvzgeometryconedesc }
-
-```c
-struct DvzGeometryConeDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    dvec3 center;
-    double radius;
-    double height;
-    uint32_t sectors;
-    DvzColor color;
-};
-```
-
-Used by: [`dvz_ffi_geometry_cone_desc()`](ffi.md#dvz_ffi_geometry_cone_desc), [`dvz_geometry_cone()`](visuals.md#dvz_geometry_cone), [`dvz_geometry_cone_desc()`](visuals.md#dvz_geometry_cone_desc).
-
-_Declared in `include/datoviz/geom/types.h`:221._
-
-#### `DvzGeometryContourSegment` { #type-dvzgeometrycontoursegment }
-
-```c
-struct DvzGeometryContourSegment {
-    dvec3 p0;
-    dvec3 p1;
-    double level;
-    uint32_t level_index;
-    uint32_t face_index;
-};
-```
-
-_Declared in `include/datoviz/geom/types.h`:339._
-
-#### `DvzGeometryContours` { #type-dvzgeometrycontours }
-
-```c
-struct DvzGeometryContours {
-    uint32_t segment_count;
-    DvzGeometryContourSegment * segments;
-};
-```
+<a id="type-dvzdepthcuedesc"></a>
 
-Used by: [`dvz_geometry_contours()`](visuals.md#dvz_geometry_contours), [`dvz_geometry_contours_destroy()`](visuals.md#dvz_geometry_contours_destroy).
-
-_Declared in `include/datoviz/geom/types.h`:351._
-
-#### `DvzGeometryCubeDesc` { #type-dvzgeometrycubedesc }
-
-```c
-struct DvzGeometryCubeDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    dvec3 center;
-    double size;
-    DvzColor color;
-    const DvzColor * face_colors;
-    uint32_t face_color_count;
-};
-```
-
-Used by: [`dvz_ffi_geometry_cube_desc()`](ffi.md#dvz_ffi_geometry_cube_desc), [`dvz_geometry_cube()`](visuals.md#dvz_geometry_cube), [`dvz_geometry_cube_desc()`](visuals.md#dvz_geometry_cube_desc).
-
-_Declared in `include/datoviz/geom/types.h`:97._
-
-#### `DvzGeometryCylinderDesc` { #type-dvzgeometrycylinderdesc }
-
-```c
-struct DvzGeometryCylinderDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    dvec3 center;
-    double radius;
-    double height;
-    uint32_t sectors;
-    DvzColor color;
-};
-```
-
-Used by: [`dvz_ffi_geometry_cylinder_desc()`](ffi.md#dvz_ffi_geometry_cylinder_desc), [`dvz_geometry_cylinder()`](visuals.md#dvz_geometry_cylinder), [`dvz_geometry_cylinder_desc()`](visuals.md#dvz_geometry_cylinder_desc).
-
-_Declared in `include/datoviz/geom/types.h`:208._
-
-#### `DvzGeometryDiscDesc` { #type-dvzgeometrydiscdesc }
-
-```c
-struct DvzGeometryDiscDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    dvec3 center;
-    double radius;
-    uint32_t segments;
-    DvzColor color;
-};
-```
-
-Used by: [`dvz_ffi_geometry_disc_desc()`](ffi.md#dvz_ffi_geometry_disc_desc), [`dvz_geometry_disc()`](visuals.md#dvz_geometry_disc), [`dvz_geometry_disc_desc()`](visuals.md#dvz_geometry_disc_desc).
-
-_Declared in `include/datoviz/geom/types.h`:157._
-
-#### `DvzGeometryEdge` { #type-dvzgeometryedge }
-
-```c
-struct DvzGeometryEdge {
-    DvzIndex v0;
-    DvzIndex v1;
-    uint32_t face0;
-    uint32_t face1;
-    uint32_t adjacent_count;
-    uint32_t flags;
-};
-```
-
-_Declared in `include/datoviz/geom/types.h`:318._
-
-#### `DvzGeometryEdgeFlags` { #type-dvzgeometryedgeflags }
-
-```c
-enum DvzGeometryEdgeFlags {
-    DVZ_GEOMETRY_EDGE_NONE = 0,
-    DVZ_GEOMETRY_EDGE_BOUNDARY = 1,
-    DVZ_GEOMETRY_EDGE_NONMANIFOLD = 2,
-};
-```
-
-_Declared in `include/datoviz/geom/enums.h`:66._
-
-#### `DvzGeometryEdges` { #type-dvzgeometryedges }
-
-```c
-struct DvzGeometryEdges {
-    uint32_t edge_count;
-    DvzGeometryEdge * edges;
-};
-```
-
-Used by: [`dvz_geometry_edges()`](visuals.md#dvz_geometry_edges), [`dvz_geometry_edges_destroy()`](visuals.md#dvz_geometry_edges_destroy).
-
-_Declared in `include/datoviz/geom/types.h`:331._
-
-#### `DvzGeometryIndexingFlags` { #type-dvzgeometryindexingflags }
-
-```c
-enum DvzGeometryIndexingFlags {
-    DVZ_GEOMETRY_INDEXING_NONE = 0,
-    DVZ_GEOMETRY_INDEXING_TRIANGLES = 1,
-    DVZ_GEOMETRY_INDEXING_SURFACE_GRID = 2,
-    DVZ_GEOMETRY_INDEXING_TRIANGULATION = 4,
-};
-```
-
-_Declared in `include/datoviz/geom/enums.h`:46._
-
-#### `DvzGeometryObjDesc` { #type-dvzgeometryobjdesc }
-
-```c
-struct DvzGeometryObjDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzColor color;
-};
-```
-
-Used by: [`dvz_geometry_obj()`](visuals.md#dvz_geometry_obj), [`dvz_geometry_obj_desc()`](visuals.md#dvz_geometry_obj_desc).
-
-_Declared in `include/datoviz/geom/types.h`:263._
-
-#### `DvzGeometryPlaneDesc` { #type-dvzgeometryplanedesc }
-
-```c
-struct DvzGeometryPlaneDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    dvec3 center;
-    double width;
-    double height;
-    double z;
-    DvzColor color;
-};
-```
-
-Used by: [`dvz_ffi_geometry_plane_desc()`](ffi.md#dvz_ffi_geometry_plane_desc), [`dvz_geometry_plane()`](visuals.md#dvz_geometry_plane), [`dvz_geometry_plane_desc()`](visuals.md#dvz_geometry_plane_desc).
-
-_Declared in `include/datoviz/geom/types.h`:110._
-
-#### `DvzGeometryRegularPolygonDesc` { #type-dvzgeometryregularpolygondesc }
-
-```c
-struct DvzGeometryRegularPolygonDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    dvec3 center;
-    double radius;
-    uint32_t sides;
-    DvzColor color;
-};
-```
-
-Used by: [`dvz_ffi_geometry_regular_polygon_desc()`](ffi.md#dvz_ffi_geometry_regular_polygon_desc), [`dvz_geometry_regular_polygon()`](visuals.md#dvz_geometry_regular_polygon), [`dvz_geometry_regular_polygon_desc()`](visuals.md#dvz_geometry_regular_polygon_desc).
-
-_Declared in `include/datoviz/geom/types.h`:183._
-
-#### `DvzGeometrySectorDesc` { #type-dvzgeometrysectordesc }
-
-```c
-struct DvzGeometrySectorDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    dvec3 center;
-    double radius;
-    double start_angle;
-    double sweep_angle;
-    uint32_t segments;
-    DvzColor color;
-};
-```
-
-Used by: [`dvz_ffi_geometry_sector_desc()`](ffi.md#dvz_ffi_geometry_sector_desc), [`dvz_geometry_sector()`](visuals.md#dvz_geometry_sector), [`dvz_geometry_sector_desc()`](visuals.md#dvz_geometry_sector_desc).
-
-_Declared in `include/datoviz/geom/types.h`:169._
-
-#### `DvzGeometrySphereDesc` { #type-dvzgeometryspheredesc }
-
-```c
-struct DvzGeometrySphereDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    dvec3 center;
-    double radius;
-    uint32_t rings;
-    uint32_t sectors;
-    DvzColor color;
-};
-```
-
-Used by: [`dvz_ffi_geometry_sphere_desc()`](ffi.md#dvz_ffi_geometry_sphere_desc), [`dvz_geometry_sphere()`](visuals.md#dvz_geometry_sphere), [`dvz_geometry_sphere_desc()`](visuals.md#dvz_geometry_sphere_desc).
-
-_Declared in `include/datoviz/geom/types.h`:123._
-
-#### `DvzGeometryStarDesc` { #type-dvzgeometrystardesc }
-
-```c
-struct DvzGeometryStarDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    dvec3 center;
-    double outer_radius;
-    double inner_radius;
-    uint32_t points;
-    DvzColor color;
-};
-```
-
-Used by: [`dvz_ffi_geometry_star_desc()`](ffi.md#dvz_ffi_geometry_star_desc), [`dvz_geometry_star()`](visuals.md#dvz_geometry_star), [`dvz_geometry_star_desc()`](visuals.md#dvz_geometry_star_desc).
-
-_Declared in `include/datoviz/geom/types.h`:195._
-
-#### `DvzGeometrySurfaceGridDesc` { #type-dvzgeometrysurfacegriddesc }
-
-```c
-struct DvzGeometrySurfaceGridDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint32_t rows;
-    uint32_t cols;
-    const double * heights;
-    const DvzColor * colors;
-    dvec3 origin;
-    dvec3 row_basis;
-    dvec3 col_basis;
-    dvec3 height_axis;
-    double height_scale;
-    DvzColor color;
-};
-```
-
-Used by: [`dvz_ffi_geometry_surface_grid_desc()`](ffi.md#dvz_ffi_geometry_surface_grid_desc), [`dvz_geometry_surface_grid()`](visuals.md#dvz_geometry_surface_grid), [`dvz_geometry_surface_grid_desc()`](visuals.md#dvz_geometry_surface_grid_desc).
-
-_Declared in `include/datoviz/geom/types.h`:136._
-
-#### `DvzGeometryTorusDesc` { #type-dvzgeometrytorusdesc }
-
-```c
-struct DvzGeometryTorusDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    dvec3 center;
-    double major_radius;
-    double minor_radius;
-    uint32_t rings;
-    uint32_t sectors;
-    DvzColor color;
-};
-```
-
-Used by: [`dvz_ffi_geometry_torus_desc()`](ffi.md#dvz_ffi_geometry_torus_desc), [`dvz_geometry_torus()`](visuals.md#dvz_geometry_torus), [`dvz_geometry_torus_desc()`](visuals.md#dvz_geometry_torus_desc).
-
-_Declared in `include/datoviz/geom/types.h`:234._
-
-#### `DvzGeometryType` { #type-dvzgeometrytype }
-
-```c
-enum DvzGeometryType {
-    DVZ_GEOMETRY_NONE = 0,
-    DVZ_GEOMETRY_CUSTOM = 1,
-    DVZ_GEOMETRY_CUBE = 2,
-    DVZ_GEOMETRY_PLANE = 3,
-    DVZ_GEOMETRY_SURFACE_GRID = 4,
-    DVZ_GEOMETRY_SPHERE = 5,
-    DVZ_GEOMETRY_CYLINDER = 6,
-    DVZ_GEOMETRY_CONE = 7,
-    DVZ_GEOMETRY_TORUS = 8,
-    DVZ_GEOMETRY_ARROW = 9,
-};
-```
-
-_Declared in `include/datoviz/geom/enums.h`:29._
+??? abstract "`DvzDepthCueDesc` · record"
+
+    ```c
+    struct DvzDepthCueDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzDepthCueMode mode;
+        DvzDepthCueMetric metric;
+        DvzDepthCueFalloff falloff;
+        float near_depth;
+        float far_depth;
+        float strength;
+        float density;
+        float[4] background_color;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:1021._
+
+<a id="type-dvzdepthcuefalloff"></a>
+
+??? abstract "`DvzDepthCueFalloff` · enum"
+
+    ```c
+    enum DvzDepthCueFalloff {
+        DVZ_DEPTH_CUE_FALLOFF_LINEAR = 0,
+        DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL = 1,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:377._
+
+<a id="type-dvzdepthcuemetric"></a>
+
+??? abstract "`DvzDepthCueMetric` · enum"
+
+    ```c
+    enum DvzDepthCueMetric {
+        DVZ_DEPTH_CUE_METRIC_CLIP_DEPTH = 0,
+        DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE = 1,
+        DVZ_DEPTH_CUE_METRIC_WORLD_DISTANCE = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:369._
+
+<a id="type-dvzdepthcuemode"></a>
+
+??? abstract "`DvzDepthCueMode` · enum"
+
+    ```c
+    enum DvzDepthCueMode {
+        DVZ_DEPTH_CUE_NONE = 0,
+        DVZ_DEPTH_CUE_FADE_TO_BACKGROUND = 1,
+        DVZ_DEPTH_CUE_DESATURATE = 2,
+        DVZ_DEPTH_CUE_DARKEN = 3,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:360._
+
+## Geometry { #geometry }
 
 ### Functions
 
@@ -2107,6 +1644,398 @@ DvzResult dvz_geometry_transform(
 
 _Declared in `include/datoviz/geom.h`:97._
 
+### Types
+
+<a id="type-dvzgeometry"></a>
+
+??? abstract "`DvzGeometry` · record"
+
+    ```c
+    struct DvzGeometry {
+        DvzGeometryType type;
+        uint32_t flags;
+        uint32_t vertex_count;
+        uint32_t index_count;
+        uint32_t grid_rows;
+        uint32_t grid_cols;
+        dvec3 grid_origin;
+        dvec3 grid_row_basis;
+        dvec3 grid_col_basis;
+        dvec3 grid_height_axis;
+        double grid_height_scale;
+        dvec3 * positions;
+        dvec3 * normals;
+        DvzColor * colors;
+        dvec2 * texcoords;
+        DvzIndex * indices;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:61._
+
+<a id="type-dvzgeometryarrowdesc"></a>
+
+??? abstract "`DvzGeometryArrowDesc` · record"
+
+    ```c
+    struct DvzGeometryArrowDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        dvec3 center;
+        double length;
+        double shaft_radius;
+        double head_radius;
+        double head_length;
+        uint32_t sectors;
+        DvzColor color;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:248._
+
+<a id="type-dvzgeometrybounds"></a>
+
+??? abstract "`DvzGeometryBounds` · record"
+
+    ```c
+    struct DvzGeometryBounds {
+        double xmin;
+        double xmax;
+        double ymin;
+        double ymax;
+        double zmin;
+        double zmax;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:90._
+
+<a id="type-dvzgeometryconedesc"></a>
+
+??? abstract "`DvzGeometryConeDesc` · record"
+
+    ```c
+    struct DvzGeometryConeDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        dvec3 center;
+        double radius;
+        double height;
+        uint32_t sectors;
+        DvzColor color;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:221._
+
+<a id="type-dvzgeometrycontoursegment"></a>
+
+??? abstract "`DvzGeometryContourSegment` · record"
+
+    ```c
+    struct DvzGeometryContourSegment {
+        dvec3 p0;
+        dvec3 p1;
+        double level;
+        uint32_t level_index;
+        uint32_t face_index;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:339._
+
+<a id="type-dvzgeometrycontours"></a>
+
+??? abstract "`DvzGeometryContours` · record"
+
+    ```c
+    struct DvzGeometryContours {
+        uint32_t segment_count;
+        DvzGeometryContourSegment * segments;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:351._
+
+<a id="type-dvzgeometrycubedesc"></a>
+
+??? abstract "`DvzGeometryCubeDesc` · record"
+
+    ```c
+    struct DvzGeometryCubeDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        dvec3 center;
+        double size;
+        DvzColor color;
+        const DvzColor * face_colors;
+        uint32_t face_color_count;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:97._
+
+<a id="type-dvzgeometrycylinderdesc"></a>
+
+??? abstract "`DvzGeometryCylinderDesc` · record"
+
+    ```c
+    struct DvzGeometryCylinderDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        dvec3 center;
+        double radius;
+        double height;
+        uint32_t sectors;
+        DvzColor color;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:208._
+
+<a id="type-dvzgeometrydiscdesc"></a>
+
+??? abstract "`DvzGeometryDiscDesc` · record"
+
+    ```c
+    struct DvzGeometryDiscDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        dvec3 center;
+        double radius;
+        uint32_t segments;
+        DvzColor color;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:157._
+
+<a id="type-dvzgeometryedge"></a>
+
+??? abstract "`DvzGeometryEdge` · record"
+
+    ```c
+    struct DvzGeometryEdge {
+        DvzIndex v0;
+        DvzIndex v1;
+        uint32_t face0;
+        uint32_t face1;
+        uint32_t adjacent_count;
+        uint32_t flags;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:318._
+
+<a id="type-dvzgeometryedgeflags"></a>
+
+??? abstract "`DvzGeometryEdgeFlags` · enum"
+
+    ```c
+    enum DvzGeometryEdgeFlags {
+        DVZ_GEOMETRY_EDGE_NONE = 0,
+        DVZ_GEOMETRY_EDGE_BOUNDARY = 1,
+        DVZ_GEOMETRY_EDGE_NONMANIFOLD = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/enums.h`:66._
+
+<a id="type-dvzgeometryedges"></a>
+
+??? abstract "`DvzGeometryEdges` · record"
+
+    ```c
+    struct DvzGeometryEdges {
+        uint32_t edge_count;
+        DvzGeometryEdge * edges;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:331._
+
+<a id="type-dvzgeometryindexingflags"></a>
+
+??? abstract "`DvzGeometryIndexingFlags` · enum"
+
+    ```c
+    enum DvzGeometryIndexingFlags {
+        DVZ_GEOMETRY_INDEXING_NONE = 0,
+        DVZ_GEOMETRY_INDEXING_TRIANGLES = 1,
+        DVZ_GEOMETRY_INDEXING_SURFACE_GRID = 2,
+        DVZ_GEOMETRY_INDEXING_TRIANGULATION = 4,
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/enums.h`:46._
+
+<a id="type-dvzgeometryobjdesc"></a>
+
+??? abstract "`DvzGeometryObjDesc` · record"
+
+    ```c
+    struct DvzGeometryObjDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzColor color;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:263._
+
+<a id="type-dvzgeometryplanedesc"></a>
+
+??? abstract "`DvzGeometryPlaneDesc` · record"
+
+    ```c
+    struct DvzGeometryPlaneDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        dvec3 center;
+        double width;
+        double height;
+        double z;
+        DvzColor color;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:110._
+
+<a id="type-dvzgeometryregularpolygondesc"></a>
+
+??? abstract "`DvzGeometryRegularPolygonDesc` · record"
+
+    ```c
+    struct DvzGeometryRegularPolygonDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        dvec3 center;
+        double radius;
+        uint32_t sides;
+        DvzColor color;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:183._
+
+<a id="type-dvzgeometrysectordesc"></a>
+
+??? abstract "`DvzGeometrySectorDesc` · record"
+
+    ```c
+    struct DvzGeometrySectorDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        dvec3 center;
+        double radius;
+        double start_angle;
+        double sweep_angle;
+        uint32_t segments;
+        DvzColor color;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:169._
+
+<a id="type-dvzgeometryspheredesc"></a>
+
+??? abstract "`DvzGeometrySphereDesc` · record"
+
+    ```c
+    struct DvzGeometrySphereDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        dvec3 center;
+        double radius;
+        uint32_t rings;
+        uint32_t sectors;
+        DvzColor color;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:123._
+
+<a id="type-dvzgeometrystardesc"></a>
+
+??? abstract "`DvzGeometryStarDesc` · record"
+
+    ```c
+    struct DvzGeometryStarDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        dvec3 center;
+        double outer_radius;
+        double inner_radius;
+        uint32_t points;
+        DvzColor color;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:195._
+
+<a id="type-dvzgeometrysurfacegriddesc"></a>
+
+??? abstract "`DvzGeometrySurfaceGridDesc` · record"
+
+    ```c
+    struct DvzGeometrySurfaceGridDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        uint32_t rows;
+        uint32_t cols;
+        const double * heights;
+        const DvzColor * colors;
+        dvec3 origin;
+        dvec3 row_basis;
+        dvec3 col_basis;
+        dvec3 height_axis;
+        double height_scale;
+        DvzColor color;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:136._
+
+<a id="type-dvzgeometrytorusdesc"></a>
+
+??? abstract "`DvzGeometryTorusDesc` · record"
+
+    ```c
+    struct DvzGeometryTorusDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        dvec3 center;
+        double major_radius;
+        double minor_radius;
+        uint32_t rings;
+        uint32_t sectors;
+        DvzColor color;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:234._
+
+<a id="type-dvzgeometrytype"></a>
+
+??? abstract "`DvzGeometryType` · enum"
+
+    ```c
+    enum DvzGeometryType {
+        DVZ_GEOMETRY_NONE = 0,
+        DVZ_GEOMETRY_CUSTOM = 1,
+        DVZ_GEOMETRY_CUBE = 2,
+        DVZ_GEOMETRY_PLANE = 3,
+        DVZ_GEOMETRY_SURFACE_GRID = 4,
+        DVZ_GEOMETRY_SPHERE = 5,
+        DVZ_GEOMETRY_CYLINDER = 6,
+        DVZ_GEOMETRY_CONE = 7,
+        DVZ_GEOMETRY_TORUS = 8,
+        DVZ_GEOMETRY_ARROW = 9,
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/enums.h`:29._
+
 ## Glyph { #glyph }
 
 ### Functions
@@ -2157,50 +2086,6 @@ DvzResult dvz_glyph_set_atlas(
 _Declared in `include/datoviz/scene.h`:3747._
 
 ## Graph { #graph }
-
-### Types
-
-#### `DvzGraph` { #type-dvzgraph }
-
-```c
-typedef struct DvzGraph DvzGraph;
-```
-
-Used by: [`dvz_graph()`](visuals.md#dvz_graph), [`dvz_graph_composite()`](visuals.md#dvz_graph_composite), [`dvz_graph_destroy()`](visuals.md#dvz_graph_destroy), [`dvz_graph_set_edge_colors()`](visuals.md#dvz_graph_set_edge_colors), [`dvz_graph_set_edge_controls()`](visuals.md#dvz_graph_set_edge_controls), [`dvz_graph_set_edge_count()`](visuals.md#dvz_graph_set_edge_count), [`dvz_graph_set_edge_endpoints()`](visuals.md#dvz_graph_set_edge_endpoints), [`dvz_graph_set_edge_ids()`](visuals.md#dvz_graph_set_edge_ids); plus 7 more.
-
-_Declared in `include/datoviz/scene/types.h`:68._
-
-#### `DvzGraphEdgeMode` { #type-dvzgraphedgemode }
-
-```c
-enum DvzGraphEdgeMode {
-    DVZ_GRAPH_EDGE_MODE_SEGMENT = 0,
-    DVZ_GRAPH_EDGE_MODE_PATH = 1,
-    DVZ_GRAPH_EDGE_MODE_BEZIER = 2,
-};
-```
-
-_Declared in `include/datoviz/scene/enums.h`:282._
-
-#### `DvzGraphEdgeStyle` { #type-dvzgraphedgestyle }
-
-```c
-struct DvzGraphEdgeStyle {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzGraphEdgeMode mode;
-    uint32_t tessellation_segment_count;
-    double tessellation_tolerance;
-    DvzSegmentCap start_cap;
-    DvzSegmentCap end_cap;
-    DvzPathJoin join;
-    float miter_limit;
-};
-```
-
-Used by: [`dvz_graph_edge_style()`](visuals.md#dvz_graph_edge_style), [`dvz_graph_set_edge_style()`](visuals.md#dvz_graph_set_edge_style).
-
-_Declared in `include/datoviz/scene/types.h`:939._
 
 ### Functions
 
@@ -2557,22 +2442,53 @@ DvzResult dvz_graph_set_node_sizes(
 
 _Declared in `include/datoviz/scene.h`:3070._
 
-## Image { #image }
-
 ### Types
 
-#### `DvzImageSampling` { #type-dvzimagesampling }
+<a id="type-dvzgraph"></a>
 
-```c
-enum DvzImageSampling {
-    DVZ_IMAGE_SAMPLING_LINEAR = 0,
-    DVZ_IMAGE_SAMPLING_NEAREST = 1,
-};
-```
+??? abstract "`DvzGraph` · typedef"
 
-Used by: [`dvz_image_set_sampling()`](visuals.md#dvz_image_set_sampling).
+    ```c
+    typedef struct DvzGraph DvzGraph;
+    ```
 
-_Declared in `include/datoviz/scene/enums.h`:384._
+    _Declared in `include/datoviz/scene/types.h`:68._
+
+<a id="type-dvzgraphedgemode"></a>
+
+??? abstract "`DvzGraphEdgeMode` · enum"
+
+    ```c
+    enum DvzGraphEdgeMode {
+        DVZ_GRAPH_EDGE_MODE_SEGMENT = 0,
+        DVZ_GRAPH_EDGE_MODE_PATH = 1,
+        DVZ_GRAPH_EDGE_MODE_BEZIER = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:282._
+
+<a id="type-dvzgraphedgestyle"></a>
+
+??? abstract "`DvzGraphEdgeStyle` · record"
+
+    ```c
+    struct DvzGraphEdgeStyle {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzGraphEdgeMode mode;
+        uint32_t tessellation_segment_count;
+        double tessellation_tolerance;
+        DvzSegmentCap start_cap;
+        DvzSegmentCap end_cap;
+        DvzPathJoin join;
+        float miter_limit;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:939._
+
+## Image { #image }
 
 ### Functions
 
@@ -2623,33 +2539,22 @@ DvzResult dvz_image_set_sampling(
 
 _Declared in `include/datoviz/scene.h`:3602._
 
-## Labels { #labels }
-
 ### Types
 
-#### `DvzLabelsState` { #type-dvzlabelsstate }
+<a id="type-dvzimagesampling"></a>
 
-```c
-struct DvzLabelsState {
-    float opacity;
-    DvzCategoryId background_id;
-    _Bool selected_enabled;
-    DvzCategoryId selected_id;
-    DvzCategoryId[256] hidden_ids;
-    uint32_t hidden_count;
-    _Bool boundary_enabled;
-    float boundary_width_px;
-    DvzColor boundary_color;
-    uint32_t fallback_seed;
-    DvzVolumeAxis slice_axis;
-    double slice_position;
-    uint64_t version;
-};
-```
+??? abstract "`DvzImageSampling` · enum"
 
-Used by: [`dvz_labels_state()`](visuals.md#dvz_labels_state).
+    ```c
+    enum DvzImageSampling {
+        DVZ_IMAGE_SAMPLING_LINEAR = 0,
+        DVZ_IMAGE_SAMPLING_NEAREST = 1,
+    };
+    ```
 
-_Declared in `include/datoviz/scene/types.h`:1108._
+    _Declared in `include/datoviz/scene/enums.h`:384._
+
+## Labels { #labels }
 
 ### Functions
 
@@ -2869,55 +2774,33 @@ const DvzLabelsState * dvz_labels_state(
 
 _Declared in `include/datoviz/scene.h`:3720._
 
-## Marker { #marker }
-
 ### Types
 
-#### `DvzMarkerShape` { #type-dvzmarkershape }
+<a id="type-dvzlabelsstate"></a>
 
-```c
-enum DvzMarkerShape {
-    DVZ_MARKER_SHAPE_DISC = 0,
-    DVZ_MARKER_SHAPE_SQUARE = 1,
-    DVZ_MARKER_SHAPE_TRIANGLE = 2,
-    DVZ_MARKER_SHAPE_DIAMOND = 3,
-    DVZ_MARKER_SHAPE_CROSS = 4,
-    DVZ_MARKER_SHAPE_RING = 5,
-    DVZ_MARKER_SHAPE_TARGET = 6,
-    DVZ_MARKER_SHAPE_ASTERISK = 7,
-    DVZ_MARKER_SHAPE_CHEVRON = 8,
-    DVZ_MARKER_SHAPE_CLOVER = 9,
-    DVZ_MARKER_SHAPE_CLUB = 10,
-    DVZ_MARKER_SHAPE_ARROW = 11,
-    DVZ_MARKER_SHAPE_ELLIPSE = 12,
-    DVZ_MARKER_SHAPE_HBAR = 13,
-    DVZ_MARKER_SHAPE_HEART = 14,
-    DVZ_MARKER_SHAPE_INFINITY = 15,
-    DVZ_MARKER_SHAPE_PIN = 16,
-    DVZ_MARKER_SHAPE_SPADE = 17,
-    DVZ_MARKER_SHAPE_TAG = 18,
-    DVZ_MARKER_SHAPE_VBAR = 19,
-    DVZ_MARKER_SHAPE_ROUNDED_RECT = 20,
-};
-```
+??? abstract "`DvzLabelsState` · record"
 
-_Declared in `include/datoviz/scene/enums.h`:290._
+    ```c
+    struct DvzLabelsState {
+        float opacity;
+        DvzCategoryId background_id;
+        _Bool selected_enabled;
+        DvzCategoryId selected_id;
+        DvzCategoryId[256] hidden_ids;
+        uint32_t hidden_count;
+        _Bool boundary_enabled;
+        float boundary_width_px;
+        DvzColor boundary_color;
+        uint32_t fallback_seed;
+        DvzVolumeAxis slice_axis;
+        double slice_position;
+        uint64_t version;
+    };
+    ```
 
-#### `DvzMarkerStyle` { #type-dvzmarkerstyle }
+    _Declared in `include/datoviz/scene/types.h`:1108._
 
-```c
-struct DvzMarkerStyle {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzColor edge_color;
-    float stroke_width_px;
-    DvzShapeAspect aspect;
-};
-```
-
-Used by: [`dvz_marker_set_style()`](visuals.md#dvz_marker_set_style), [`dvz_marker_style()`](visuals.md#dvz_marker_style).
-
-_Declared in `include/datoviz/scene/types.h`:1048._
+## Marker { #marker }
 
 ### Functions
 
@@ -3033,68 +2916,57 @@ DvzMarkerStyle dvz_marker_style(void);
 
 _Declared in `include/datoviz/scene.h`:2660._
 
-## Materials { #materials }
-
 ### Types
 
-#### `DvzMaterialDesc` { #type-dvzmaterialdesc }
+<a id="type-dvzmarkershape"></a>
 
-```c
-struct DvzMaterialDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzMaterialModel model;
-    DvzAlphaMode alpha_mode;
-    float opacity;
-    float[4] base_color_factor;
-    float[3] light_direction;
-    DvzPhongMaterial phong;
-    DvzStandardMaterial standard;
-};
-```
+??? abstract "`DvzMarkerShape` · enum"
 
-Used by: [`dvz_ffi_material_desc()`](ffi.md#dvz_ffi_material_desc), [`dvz_ffi_phong_material_desc()`](ffi.md#dvz_ffi_phong_material_desc), [`dvz_ffi_standard_material_desc()`](ffi.md#dvz_ffi_standard_material_desc), [`dvz_material_desc()`](visuals.md#dvz_material_desc), [`dvz_phong_material_desc()`](visuals.md#dvz_phong_material_desc), [`dvz_standard_material_desc()`](visuals.md#dvz_standard_material_desc), [`dvz_visual_set_material()`](visuals.md#dvz_visual_set_material).
+    ```c
+    enum DvzMarkerShape {
+        DVZ_MARKER_SHAPE_DISC = 0,
+        DVZ_MARKER_SHAPE_SQUARE = 1,
+        DVZ_MARKER_SHAPE_TRIANGLE = 2,
+        DVZ_MARKER_SHAPE_DIAMOND = 3,
+        DVZ_MARKER_SHAPE_CROSS = 4,
+        DVZ_MARKER_SHAPE_RING = 5,
+        DVZ_MARKER_SHAPE_TARGET = 6,
+        DVZ_MARKER_SHAPE_ASTERISK = 7,
+        DVZ_MARKER_SHAPE_CHEVRON = 8,
+        DVZ_MARKER_SHAPE_CLOVER = 9,
+        DVZ_MARKER_SHAPE_CLUB = 10,
+        DVZ_MARKER_SHAPE_ARROW = 11,
+        DVZ_MARKER_SHAPE_ELLIPSE = 12,
+        DVZ_MARKER_SHAPE_HBAR = 13,
+        DVZ_MARKER_SHAPE_HEART = 14,
+        DVZ_MARKER_SHAPE_INFINITY = 15,
+        DVZ_MARKER_SHAPE_PIN = 16,
+        DVZ_MARKER_SHAPE_SPADE = 17,
+        DVZ_MARKER_SHAPE_TAG = 18,
+        DVZ_MARKER_SHAPE_VBAR = 19,
+        DVZ_MARKER_SHAPE_ROUNDED_RECT = 20,
+    };
+    ```
 
-_Declared in `include/datoviz/scene/types.h`:1006._
+    _Declared in `include/datoviz/scene/enums.h`:290._
 
-#### `DvzMaterialModel` { #type-dvzmaterialmodel }
+<a id="type-dvzmarkerstyle"></a>
 
-```c
-enum DvzMaterialModel {
-    DVZ_MATERIAL_MODEL_UNLIT = 0,
-    DVZ_MATERIAL_MODEL_PHONG = 1,
-    DVZ_MATERIAL_MODEL_STANDARD = 2,
-};
-```
+??? abstract "`DvzMarkerStyle` · record"
 
-_Declared in `include/datoviz/scene/enums.h`:233._
+    ```c
+    struct DvzMarkerStyle {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzColor edge_color;
+        float stroke_width_px;
+        DvzShapeAspect aspect;
+    };
+    ```
 
-#### `DvzPhongMaterial` { #type-dvzphongmaterial }
+    _Declared in `include/datoviz/scene/types.h`:1048._
 
-```c
-struct DvzPhongMaterial {
-    float ambient;
-    float diffuse;
-    float specular;
-    float shininess;
-};
-```
-
-_Declared in `include/datoviz/scene/types.h`:985._
-
-#### `DvzStandardMaterial` { #type-dvzstandardmaterial }
-
-```c
-struct DvzStandardMaterial {
-    float roughness;
-    float specular;
-    float metallic;
-    float[3] emissive;
-    float rim_strength;
-};
-```
-
-_Declared in `include/datoviz/scene/types.h`:995._
+## Materials { #materials }
 
 ### Functions
 
@@ -3174,6 +3046,73 @@ DvzResult dvz_visual_set_material(
 
 _Declared in `include/datoviz/scene.h`:2458._
 
+### Types
+
+<a id="type-dvzmaterialdesc"></a>
+
+??? abstract "`DvzMaterialDesc` · record"
+
+    ```c
+    struct DvzMaterialDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzMaterialModel model;
+        DvzAlphaMode alpha_mode;
+        float opacity;
+        float[4] base_color_factor;
+        float[3] light_direction;
+        DvzPhongMaterial phong;
+        DvzStandardMaterial standard;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:1006._
+
+<a id="type-dvzmaterialmodel"></a>
+
+??? abstract "`DvzMaterialModel` · enum"
+
+    ```c
+    enum DvzMaterialModel {
+        DVZ_MATERIAL_MODEL_UNLIT = 0,
+        DVZ_MATERIAL_MODEL_PHONG = 1,
+        DVZ_MATERIAL_MODEL_STANDARD = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:233._
+
+<a id="type-dvzphongmaterial"></a>
+
+??? abstract "`DvzPhongMaterial` · record"
+
+    ```c
+    struct DvzPhongMaterial {
+        float ambient;
+        float diffuse;
+        float specular;
+        float shininess;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:985._
+
+<a id="type-dvzstandardmaterial"></a>
+
+??? abstract "`DvzStandardMaterial` · record"
+
+    ```c
+    struct DvzStandardMaterial {
+        float roughness;
+        float specular;
+        float metallic;
+        float[3] emissive;
+        float rim_strength;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:995._
+
 ## Mesh { #mesh }
 
 ### Functions
@@ -3226,22 +3165,6 @@ DvzResult dvz_mesh_set_geometry(
 _Declared in `include/datoviz/scene.h`:2900._
 
 ## Path { #path }
-
-### Types
-
-#### `DvzPathJoin` { #type-dvzpathjoin }
-
-```c
-enum DvzPathJoin {
-    DVZ_PATH_JOIN_MITER = 0,
-    DVZ_PATH_JOIN_ROUND = 1,
-    DVZ_PATH_JOIN_BEVEL = 2,
-};
-```
-
-Used by: [`dvz_path_set_join()`](visuals.md#dvz_path_set_join), [`dvz_polygon_set_stroke_join()`](visuals.md#dvz_polygon_set_stroke_join), [`dvz_polygons_set_stroke_join()`](visuals.md#dvz_polygons_set_stroke_join).
-
-_Declared in `include/datoviz/scene/enums.h`:274._
 
 ### Functions
 
@@ -3340,6 +3263,22 @@ DvzResult dvz_path_set_subpaths(
 
 _Declared in `include/datoviz/scene.h`:3572._
 
+### Types
+
+<a id="type-dvzpathjoin"></a>
+
+??? abstract "`DvzPathJoin` · enum"
+
+    ```c
+    enum DvzPathJoin {
+        DVZ_PATH_JOIN_MITER = 0,
+        DVZ_PATH_JOIN_ROUND = 1,
+        DVZ_PATH_JOIN_BEVEL = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:274._
+
 ## Pixel { #pixel }
 
 ### Functions
@@ -3368,24 +3307,6 @@ DvzVisual * dvz_pixel(
 _Declared in `include/datoviz/scene.h`:2723._
 
 ## Point { #point }
-
-### Types
-
-#### `DvzPointStyleDesc` { #type-dvzpointstyledesc }
-
-```c
-struct DvzPointStyleDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzColor edge_color;
-    float stroke_width_px;
-    DvzShapeAspect aspect;
-};
-```
-
-Used by: [`dvz_point_set_style()`](visuals.md#dvz_point_set_style), [`dvz_point_style_desc()`](visuals.md#dvz_point_style_desc).
-
-_Declared in `include/datoviz/scene/types.h`:1037._
 
 ### Functions
 
@@ -3454,67 +3375,25 @@ DvzPointStyleDesc dvz_point_style_desc(void);
 
 _Declared in `include/datoviz/scene.h`:2493._
 
-## Polygon { #polygon }
-
 ### Types
 
-#### `DvzPolygon` { #type-dvzpolygon }
+<a id="type-dvzpointstyledesc"></a>
 
-```c
-typedef struct DvzPolygon DvzPolygon;
-```
+??? abstract "`DvzPointStyleDesc` · record"
 
-Used by: [`dvz_polygon()`](visuals.md#dvz_polygon), [`dvz_polygon_composite()`](visuals.md#dvz_polygon_composite), [`dvz_polygon_destroy()`](visuals.md#dvz_polygon_destroy), [`dvz_polygon_set_fill_color()`](visuals.md#dvz_polygon_set_fill_color), [`dvz_polygon_set_geometry()`](visuals.md#dvz_polygon_set_geometry), [`dvz_polygon_set_hole()`](visuals.md#dvz_polygon_set_hole), [`dvz_polygon_set_id()`](visuals.md#dvz_polygon_set_id), [`dvz_polygon_set_outer()`](visuals.md#dvz_polygon_set_outer); plus 6 more.
+    ```c
+    struct DvzPointStyleDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzColor edge_color;
+        float stroke_width_px;
+        DvzShapeAspect aspect;
+    };
+    ```
 
-_Declared in `include/datoviz/scene/types.h`:66._
+    _Declared in `include/datoviz/scene/types.h`:1037._
 
-#### `DvzPolygonDesc` { #type-dvzpolygondesc }
-
-```c
-struct DvzPolygonDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzPolygonRing outer;
-    const DvzPolygonRing * holes;
-    uint32_t hole_count;
-};
-```
-
-Used by: [`dvz_ffi_polygon_desc()`](ffi.md#dvz_ffi_polygon_desc), [`dvz_polygon_desc()`](visuals.md#dvz_polygon_desc), [`dvz_polygon_set_geometry()`](visuals.md#dvz_polygon_set_geometry), [`dvz_polygons_add_region()`](visuals.md#dvz_polygons_add_region), [`dvz_polygons_set_region_geometry()`](visuals.md#dvz_polygons_set_region_geometry), [`dvz_triangulate_polygon()`](visuals.md#dvz_triangulate_polygon).
-
-_Declared in `include/datoviz/geom/types.h`:280._
-
-#### `DvzPolygonRing` { #type-dvzpolygonring }
-
-```c
-struct DvzPolygonRing {
-    const dvec2 * xy;
-    uint32_t count;
-};
-```
-
-_Declared in `include/datoviz/geom/types.h`:272._
-
-#### `DvzPolygonStyle` { #type-dvzpolygonstyle }
-
-```c
-struct DvzPolygonStyle {
-    uint32_t struct_size;
-    uint32_t flags;
-    _Bool visible;
-    DvzColor fill_color;
-    DvzColor stroke_color;
-    float stroke_width_px;
-    DvzSegmentCap stroke_start_cap;
-    DvzSegmentCap stroke_end_cap;
-    DvzPathJoin stroke_join;
-    float stroke_miter_limit;
-};
-```
-
-Used by: [`dvz_polygon_set_style()`](visuals.md#dvz_polygon_set_style), [`dvz_polygon_style()`](visuals.md#dvz_polygon_style).
-
-_Declared in `include/datoviz/scene/types.h`:923._
+## Polygon { #polygon }
 
 ### Functions
 
@@ -3829,19 +3708,69 @@ DvzPolygonStyle dvz_polygon_style(void);
 
 _Declared in `include/datoviz/scene.h`:3139._
 
-## Polygons { #polygons }
-
 ### Types
 
-#### `DvzPolygons` { #type-dvzpolygons }
+<a id="type-dvzpolygon"></a>
 
-```c
-typedef struct DvzPolygons DvzPolygons;
-```
+??? abstract "`DvzPolygon` · typedef"
 
-Used by: [`dvz_polygons()`](visuals.md#dvz_polygons), [`dvz_polygons_add_region()`](visuals.md#dvz_polygons_add_region), [`dvz_polygons_composite()`](visuals.md#dvz_polygons_composite), [`dvz_polygons_destroy()`](visuals.md#dvz_polygons_destroy), [`dvz_polygons_set_region_fill_color()`](visuals.md#dvz_polygons_set_region_fill_color), [`dvz_polygons_set_region_fill_colors()`](visuals.md#dvz_polygons_set_region_fill_colors), [`dvz_polygons_set_region_geometry()`](visuals.md#dvz_polygons_set_region_geometry), [`dvz_polygons_set_region_id()`](visuals.md#dvz_polygons_set_region_id); plus 9 more.
+    ```c
+    typedef struct DvzPolygon DvzPolygon;
+    ```
 
-_Declared in `include/datoviz/scene/types.h`:67._
+    _Declared in `include/datoviz/scene/types.h`:66._
+
+<a id="type-dvzpolygondesc"></a>
+
+??? abstract "`DvzPolygonDesc` · record"
+
+    ```c
+    struct DvzPolygonDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzPolygonRing outer;
+        const DvzPolygonRing * holes;
+        uint32_t hole_count;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:280._
+
+<a id="type-dvzpolygonring"></a>
+
+??? abstract "`DvzPolygonRing` · record"
+
+    ```c
+    struct DvzPolygonRing {
+        const dvec2 * xy;
+        uint32_t count;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:272._
+
+<a id="type-dvzpolygonstyle"></a>
+
+??? abstract "`DvzPolygonStyle` · record"
+
+    ```c
+    struct DvzPolygonStyle {
+        uint32_t struct_size;
+        uint32_t flags;
+        _Bool visible;
+        DvzColor fill_color;
+        DvzColor stroke_color;
+        float stroke_width_px;
+        DvzSegmentCap stroke_start_cap;
+        DvzSegmentCap stroke_end_cap;
+        DvzPathJoin stroke_join;
+        float stroke_miter_limit;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:923._
+
+## Polygons { #polygons }
 
 ### Functions
 
@@ -4204,6 +4133,18 @@ DvzResult dvz_polygons_set_stroke_join(
 
 _Declared in `include/datoviz/scene.h`:3465._
 
+### Types
+
+<a id="type-dvzpolygons"></a>
+
+??? abstract "`DvzPolygons` · typedef"
+
+    ```c
+    typedef struct DvzPolygons DvzPolygons;
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:67._
+
 ## Primitive { #primitive }
 
 ### Functions
@@ -4234,25 +4175,6 @@ DvzVisual * dvz_primitive(
 _Declared in `include/datoviz/scene.h`:2870._
 
 ## Segment { #segment }
-
-### Types
-
-#### `DvzSegmentCap` { #type-dvzsegmentcap }
-
-```c
-enum DvzSegmentCap {
-    DVZ_SEGMENT_CAP_NONE = 0,
-    DVZ_SEGMENT_CAP_ROUND = 1,
-    DVZ_SEGMENT_CAP_TRIANGLE_IN = 2,
-    DVZ_SEGMENT_CAP_TRIANGLE_OUT = 3,
-    DVZ_SEGMENT_CAP_SQUARE = 4,
-    DVZ_SEGMENT_CAP_BUTT = 5,
-};
-```
-
-Used by: [`dvz_path_set_caps()`](visuals.md#dvz_path_set_caps), [`dvz_polygon_set_stroke_caps()`](visuals.md#dvz_polygon_set_stroke_caps), [`dvz_polygons_set_stroke_caps()`](visuals.md#dvz_polygons_set_stroke_caps), [`dvz_segment_set_caps()`](visuals.md#dvz_segment_set_caps).
-
-_Declared in `include/datoviz/scene/enums.h`:255._
 
 ### Functions
 
@@ -4304,33 +4226,26 @@ DvzResult dvz_segment_set_caps(
 
 _Declared in `include/datoviz/scene.h`:2799._
 
-## Sphere { #sphere }
-
 ### Types
 
-#### `DvzSphereFlags` { #type-dvzsphereflags }
+<a id="type-dvzsegmentcap"></a>
 
-```c
-enum DvzSphereFlags {
-    DVZ_SPHERE_FLAGS_NONE = 0,
-    DVZ_SPHERE_FLAGS_LIGHTING = 1,
-};
-```
+??? abstract "`DvzSegmentCap` · enum"
 
-_Declared in `include/datoviz/scene/enums.h`:241._
+    ```c
+    enum DvzSegmentCap {
+        DVZ_SEGMENT_CAP_NONE = 0,
+        DVZ_SEGMENT_CAP_ROUND = 1,
+        DVZ_SEGMENT_CAP_TRIANGLE_IN = 2,
+        DVZ_SEGMENT_CAP_TRIANGLE_OUT = 3,
+        DVZ_SEGMENT_CAP_SQUARE = 4,
+        DVZ_SEGMENT_CAP_BUTT = 5,
+    };
+    ```
 
-#### `DvzSphereMode` { #type-dvzspheremode }
+    _Declared in `include/datoviz/scene/enums.h`:255._
 
-```c
-enum DvzSphereMode {
-    DVZ_SPHERE_MODE_FAST_IMPOSTOR = 0,
-    DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR = 1,
-};
-```
-
-Used by: [`dvz_sphere_set_mode()`](visuals.md#dvz_sphere_set_mode).
-
-_Declared in `include/datoviz/scene/enums.h`:248._
+## Sphere { #sphere }
 
 ### Functions
 
@@ -4380,6 +4295,34 @@ DvzResult dvz_sphere_set_mode(
 
 _Declared in `include/datoviz/scene.h`:2769._
 
+### Types
+
+<a id="type-dvzsphereflags"></a>
+
+??? abstract "`DvzSphereFlags` · enum"
+
+    ```c
+    enum DvzSphereFlags {
+        DVZ_SPHERE_FLAGS_NONE = 0,
+        DVZ_SPHERE_FLAGS_LIGHTING = 1,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:241._
+
+<a id="type-dvzspheremode"></a>
+
+??? abstract "`DvzSphereMode` · enum"
+
+    ```c
+    enum DvzSphereMode {
+        DVZ_SPHERE_MODE_FAST_IMPOSTOR = 0,
+        DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR = 1,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:248._
+
 ## Splat { #splat }
 
 ### Functions
@@ -4409,89 +4352,6 @@ DvzVisual * dvz_splat(
 _Declared in `include/datoviz/scene.h`:2709._
 
 ## Symbol { #symbol }
-
-### Types
-
-#### `DvzSymbolBuiltin` { #type-dvzsymbolbuiltin }
-
-```c
-enum DvzSymbolBuiltin {
-    DVZ_SYMBOL_DISC = 0,
-    DVZ_SYMBOL_SQUARE = 1,
-    DVZ_SYMBOL_TRIANGLE = 2,
-    DVZ_SYMBOL_DIAMOND = 3,
-    DVZ_SYMBOL_CROSS = 4,
-    DVZ_SYMBOL_RING = 5,
-    DVZ_SYMBOL_TARGET = 6,
-    DVZ_SYMBOL_ASTERISK = 7,
-    DVZ_SYMBOL_CHEVRON = 8,
-    DVZ_SYMBOL_CLOVER = 9,
-    DVZ_SYMBOL_CLUB = 10,
-    DVZ_SYMBOL_ARROW = 11,
-    DVZ_SYMBOL_ELLIPSE = 12,
-    DVZ_SYMBOL_HBAR = 13,
-    DVZ_SYMBOL_HEART = 14,
-    DVZ_SYMBOL_INFINITY = 15,
-    DVZ_SYMBOL_PIN = 16,
-    DVZ_SYMBOL_SPADE = 17,
-    DVZ_SYMBOL_TAG = 18,
-    DVZ_SYMBOL_VBAR = 19,
-    DVZ_SYMBOL_ROUNDED_RECT = 20,
-};
-```
-
-Used by: [`dvz_marker_set_symbol()`](visuals.md#dvz_marker_set_symbol), [`dvz_symbol_builtin()`](visuals.md#dvz_symbol_builtin).
-
-_Declared in `include/datoviz/scene/enums.h`:316._
-
-#### `DvzSymbolId` { #type-dvzsymbolid }
-
-```c
-typedef uint32_t DvzSymbolId;
-```
-
-Used by: [`dvz_symbol_bitmap()`](visuals.md#dvz_symbol_bitmap), [`dvz_symbol_builtin()`](visuals.md#dvz_symbol_builtin), [`dvz_symbol_msdf()`](visuals.md#dvz_symbol_msdf), [`dvz_symbol_sdf()`](visuals.md#dvz_symbol_sdf), [`dvz_symbol_svg_path()`](visuals.md#dvz_symbol_svg_path).
-
-_Declared in `include/datoviz/scene/types.h`:106._
-
-#### `DvzSymbolImageDesc` { #type-dvzsymbolimagedesc }
-
-```c
-struct DvzSymbolImageDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint32_t row_stride;
-    float distance_range_px;
-};
-```
-
-Used by: [`dvz_symbol_bitmap()`](visuals.md#dvz_symbol_bitmap), [`dvz_symbol_image_desc()`](visuals.md#dvz_symbol_image_desc), [`dvz_symbol_msdf()`](visuals.md#dvz_symbol_msdf), [`dvz_symbol_sdf()`](visuals.md#dvz_symbol_sdf), [`dvz_symbol_svg_path()`](visuals.md#dvz_symbol_svg_path).
-
-_Declared in `include/datoviz/scene/types.h`:1059._
-
-#### `DvzSymbolSet` { #type-dvzsymbolset }
-
-```c
-typedef struct DvzSymbolSet DvzSymbolSet;
-```
-
-Used by: [`dvz_marker_set_symbols()`](visuals.md#dvz_marker_set_symbols), [`dvz_symbol_bitmap()`](visuals.md#dvz_symbol_bitmap), [`dvz_symbol_builtin()`](visuals.md#dvz_symbol_builtin), [`dvz_symbol_msdf()`](visuals.md#dvz_symbol_msdf), [`dvz_symbol_sdf()`](visuals.md#dvz_symbol_sdf), [`dvz_symbol_set()`](visuals.md#dvz_symbol_set), [`dvz_symbol_svg_path()`](visuals.md#dvz_symbol_svg_path).
-
-_Declared in `include/datoviz/scene/types.h`:91._
-
-#### `DvzSymbolSourceKind` { #type-dvzsymbolsourcekind }
-
-```c
-enum DvzSymbolSourceKind {
-    DVZ_SYMBOL_SOURCE_NONE = 0,
-    DVZ_SYMBOL_SOURCE_BUILTIN = 1,
-    DVZ_SYMBOL_SOURCE_BITMAP = 2,
-    DVZ_SYMBOL_SOURCE_SDF = 3,
-    DVZ_SYMBOL_SOURCE_MSDF = 4,
-};
-```
-
-_Declared in `include/datoviz/scene/enums.h`:342._
 
 ### Functions
 
@@ -4678,6 +4538,91 @@ DvzSymbolId dvz_symbol_svg_path(
 
 _Declared in `include/datoviz/scene.h`:2620._
 
+### Types
+
+<a id="type-dvzsymbolbuiltin"></a>
+
+??? abstract "`DvzSymbolBuiltin` · enum"
+
+    ```c
+    enum DvzSymbolBuiltin {
+        DVZ_SYMBOL_DISC = 0,
+        DVZ_SYMBOL_SQUARE = 1,
+        DVZ_SYMBOL_TRIANGLE = 2,
+        DVZ_SYMBOL_DIAMOND = 3,
+        DVZ_SYMBOL_CROSS = 4,
+        DVZ_SYMBOL_RING = 5,
+        DVZ_SYMBOL_TARGET = 6,
+        DVZ_SYMBOL_ASTERISK = 7,
+        DVZ_SYMBOL_CHEVRON = 8,
+        DVZ_SYMBOL_CLOVER = 9,
+        DVZ_SYMBOL_CLUB = 10,
+        DVZ_SYMBOL_ARROW = 11,
+        DVZ_SYMBOL_ELLIPSE = 12,
+        DVZ_SYMBOL_HBAR = 13,
+        DVZ_SYMBOL_HEART = 14,
+        DVZ_SYMBOL_INFINITY = 15,
+        DVZ_SYMBOL_PIN = 16,
+        DVZ_SYMBOL_SPADE = 17,
+        DVZ_SYMBOL_TAG = 18,
+        DVZ_SYMBOL_VBAR = 19,
+        DVZ_SYMBOL_ROUNDED_RECT = 20,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:316._
+
+<a id="type-dvzsymbolid"></a>
+
+??? abstract "`DvzSymbolId` · typedef"
+
+    ```c
+    typedef uint32_t DvzSymbolId;
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:106._
+
+<a id="type-dvzsymbolimagedesc"></a>
+
+??? abstract "`DvzSymbolImageDesc` · record"
+
+    ```c
+    struct DvzSymbolImageDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        uint32_t row_stride;
+        float distance_range_px;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:1059._
+
+<a id="type-dvzsymbolset"></a>
+
+??? abstract "`DvzSymbolSet` · typedef"
+
+    ```c
+    typedef struct DvzSymbolSet DvzSymbolSet;
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:91._
+
+<a id="type-dvzsymbolsourcekind"></a>
+
+??? abstract "`DvzSymbolSourceKind` · enum"
+
+    ```c
+    enum DvzSymbolSourceKind {
+        DVZ_SYMBOL_SOURCE_NONE = 0,
+        DVZ_SYMBOL_SOURCE_BUILTIN = 1,
+        DVZ_SYMBOL_SOURCE_BITMAP = 2,
+        DVZ_SYMBOL_SOURCE_SDF = 3,
+        DVZ_SYMBOL_SOURCE_MSDF = 4,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:342._
+
 ## Tessellate { #tessellate }
 
 ### Functions
@@ -4732,21 +4677,6 @@ _Declared in `include/datoviz/geom.h`:444._
 
 ## Tessellated { #tessellated }
 
-### Types
-
-#### `DvzTessellatedPath` { #type-dvztessellatedpath }
-
-```c
-struct DvzTessellatedPath {
-    uint32_t point_count;
-    dvec3 * points;
-};
-```
-
-Used by: [`dvz_tessellate_cubic_bezier()`](visuals.md#dvz_tessellate_cubic_bezier), [`dvz_tessellate_quadratic_bezier()`](visuals.md#dvz_tessellate_quadratic_bezier), [`dvz_tessellated_path_destroy()`](visuals.md#dvz_tessellated_path_destroy).
-
-_Declared in `include/datoviz/geom/types.h`:310._
-
 ### Functions
 
 #### `dvz_tessellated_path_destroy()` { #dvz_tessellated_path_destroy }
@@ -4764,6 +4694,21 @@ void dvz_tessellated_path_destroy(
 | `path` | [`DvzTessellatedPath`](visuals.md#type-dvztessellatedpath) * | tessellated path |
 
 _Declared in `include/datoviz/geom.h`:468._
+
+### Types
+
+<a id="type-dvztessellatedpath"></a>
+
+??? abstract "`DvzTessellatedPath` · record"
+
+    ```c
+    struct DvzTessellatedPath {
+        uint32_t point_count;
+        dvec3 * points;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:310._
 
 ## Triangulate { #triangulate }
 
@@ -4790,33 +4735,6 @@ _Declared in `include/datoviz/geom.h`:432._
 
 ## Triangulation { #triangulation }
 
-### Types
-
-#### `DvzTriangulationBackend` { #type-dvztriangulationbackend }
-
-```c
-enum DvzTriangulationBackend {
-    DVZ_TRIANGULATION_BACKEND_DEFAULT = 0,
-    DVZ_TRIANGULATION_BACKEND_EARCUT = 1,
-};
-```
-
-_Declared in `include/datoviz/geom/enums.h`:57._
-
-#### `DvzTriangulationDesc` { #type-dvztriangulationdesc }
-
-```c
-struct DvzTriangulationDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzTriangulationBackend backend;
-};
-```
-
-Used by: [`dvz_triangulate_polygon()`](visuals.md#dvz_triangulate_polygon), [`dvz_triangulation_desc()`](visuals.md#dvz_triangulation_desc).
-
-_Declared in `include/datoviz/geom/types.h`:291._
-
 ### Functions
 
 #### `dvz_triangulation_desc()` { #dvz_triangulation_desc }
@@ -4833,40 +4751,36 @@ DvzTriangulationDesc dvz_triangulation_desc(void);
 
 _Declared in `include/datoviz/geom.h`:413._
 
-## Vector { #vector }
-
 ### Types
 
-#### `DvzVectorAnchor` { #type-dvzvectoranchor }
+<a id="type-dvztriangulationbackend"></a>
 
-```c
-enum DvzVectorAnchor {
-    DVZ_VECTOR_ANCHOR_TAIL = 0,
-    DVZ_VECTOR_ANCHOR_CENTER = 1,
-    DVZ_VECTOR_ANCHOR_HEAD = 2,
-};
-```
+??? abstract "`DvzTriangulationBackend` · enum"
 
-_Declared in `include/datoviz/scene/enums.h`:266._
+    ```c
+    enum DvzTriangulationBackend {
+        DVZ_TRIANGULATION_BACKEND_DEFAULT = 0,
+        DVZ_TRIANGULATION_BACKEND_EARCUT = 1,
+    };
+    ```
 
-#### `DvzVectorStyle` { #type-dvzvectorstyle }
+    _Declared in `include/datoviz/geom/enums.h`:57._
 
-```c
-struct DvzVectorStyle {
-    uint32_t struct_size;
-    uint32_t flags;
-    float scale;
-    DvzVectorAnchor anchor;
-    DvzSegmentCap start_cap;
-    DvzSegmentCap end_cap;
-    DvzPathJoin join;
-    float miter_limit;
-};
-```
+<a id="type-dvztriangulationdesc"></a>
 
-Used by: [`dvz_vector_set_style()`](visuals.md#dvz_vector_set_style), [`dvz_vector_style()`](visuals.md#dvz_vector_style).
+??? abstract "`DvzTriangulationDesc` · record"
 
-_Declared in `include/datoviz/scene/types.h`:909._
+    ```c
+    struct DvzTriangulationDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzTriangulationBackend backend;
+    };
+    ```
+
+    _Declared in `include/datoviz/geom/types.h`:291._
+
+## Vector { #vector }
 
 ### Functions
 
@@ -4959,313 +4873,42 @@ DvzVectorStyle dvz_vector_style(void);
 
 _Declared in `include/datoviz/scene.h`:2810._
 
-## Visual { #visual }
-
 ### Types
 
-#### `DvzAlphaMode` { #type-dvzalphamode }
-
-```c
-enum DvzAlphaMode {
-    DVZ_ALPHA_OPAQUE = 0,
-    DVZ_ALPHA_BLENDED = 1,
-    DVZ_ALPHA_WBOIT = 2,
-    DVZ_ALPHA_DEPTH_PEEL = 3,
-    DVZ_ALPHA_MASK = 4,
-};
-```
-
-Used by: [`dvz_visual_alpha_mode()`](visuals.md#dvz_visual_alpha_mode), [`dvz_visual_set_alpha_mode()`](visuals.md#dvz_visual_set_alpha_mode).
-
-_Declared in `include/datoviz/scene/enums.h`:223._
-
-#### `DvzSceneVisualFamily` { #type-dvzscenevisualfamily }
-
-```c
-enum DvzSceneVisualFamily {
-    DVZ_SCENE_VISUAL_FAMILY_NONE = 0,
-    DVZ_SCENE_VISUAL_FAMILY_POINT = 1,
-    DVZ_SCENE_VISUAL_FAMILY_PIXEL = 2,
-    DVZ_SCENE_VISUAL_FAMILY_MARKER = 3,
-    DVZ_SCENE_VISUAL_FAMILY_SEGMENT = 4,
-    DVZ_SCENE_VISUAL_FAMILY_VECTOR = 5,
-    DVZ_SCENE_VISUAL_FAMILY_PATH = 6,
-    DVZ_SCENE_VISUAL_FAMILY_IMAGE = 7,
-    DVZ_SCENE_VISUAL_FAMILY_MESH = 8,
-    DVZ_SCENE_VISUAL_FAMILY_VOLUME = 9,
-    DVZ_SCENE_VISUAL_FAMILY_PRIMITIVE = 10,
-    DVZ_SCENE_VISUAL_FAMILY_SPHERE = 11,
-    DVZ_SCENE_VISUAL_FAMILY_GLYPH = 12,
-    DVZ_SCENE_VISUAL_FAMILY_TEXT = 13,
-    DVZ_SCENE_VISUAL_FAMILY_LABELS = 14,
-    DVZ_SCENE_VISUAL_FAMILY_SPLAT = 15,
-};
-```
-
-Used by: [`dvz_visual_family()`](visuals.md#dvz_visual_family), [`dvz_visual_family_name()`](visuals.md#dvz_visual_family_name).
-
-_Declared in `include/datoviz/scene/enums.h`:436._
-
-#### `DvzShapeAspect` { #type-dvzshapeaspect }
-
-```c
-enum DvzShapeAspect {
-    DVZ_SHAPE_ASPECT_FILLED = 0,
-    DVZ_SHAPE_ASPECT_STROKE = 1,
-    DVZ_SHAPE_ASPECT_OUTLINE = 2,
-};
-```
-
-_Declared in `include/datoviz/scene/enums.h`:352._
-
-#### `DvzVisual` { #type-dvzvisual }
-
-```c
-typedef struct DvzVisual DvzVisual;
-```
-
-Used by: [`dvz_anim_visual_transform()`](scene.md#dvz_anim_visual_transform), [`dvz_band_visual()`](visuals.md#dvz_band_visual), [`dvz_bars_visual()`](visuals.md#dvz_bars_visual), [`dvz_composite_visual()`](visuals.md#dvz_composite_visual), [`dvz_composite_visual_at()`](visuals.md#dvz_composite_visual_at), [`dvz_glyph()`](visuals.md#dvz_glyph), [`dvz_glyph_set_atlas()`](visuals.md#dvz_glyph_set_atlas), [`dvz_guide_line_visual()`](scene.md#dvz_guide_line_visual); plus 100 more.
-
-_Declared in `include/datoviz/scene/types.h`:63._
-
-#### `DvzVisualAttachDesc` { #type-dvzvisualattachdesc }
-
-```c
-struct DvzVisualAttachDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    int32_t z_layer;
-    DvzControllerMode controller_mode;
-    DvzVisualCoordSpace coord_space;
-    DvzVisualClipRect clip_rect;
-    DvzVisualViewportRect viewport_rect;
-};
-```
-
-Used by: [`dvz_panel_add_composite()`](scene.md#dvz_panel_add_composite), [`dvz_panel_add_visual()`](scene.md#dvz_panel_add_visual), [`dvz_visual_attach_desc()`](visuals.md#dvz_visual_attach_desc).
-
-_Declared in `include/datoviz/scene/types.h`:1137._
-
-#### `DvzVisualAttrFormat` { #type-dvzvisualattrformat }
-
-```c
-enum DvzVisualAttrFormat {
-    DVZ_VISUAL_ATTR_FORMAT_DEFAULT = 0,
-    DVZ_VISUAL_ATTR_FORMAT_RGBA_U8 = 1,
-    DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32 = 2,
-};
-```
-
-Used by: [`dvz_visual_attr_format()`](visuals.md#dvz_visual_attr_format), [`dvz_visual_set_attr_format()`](visuals.md#dvz_visual_set_attr_format).
-
-_Declared in `include/datoviz/scene/enums.h`:537._
-
-#### `DvzVisualAttrInfo` { #type-dvzvisualattrinfo }
-
-```c
-struct DvzVisualAttrInfo {
-    const char * name;
-    uint32_t item_size;
-    uint32_t source_mask;
-    DvzVisualAttrFormat default_format;
-    _Bool instance;
-};
-```
-
-Used by: [`dvz_visual_attr_info()`](visuals.md#dvz_visual_attr_info).
-
-_Declared in `include/datoviz/scene/types.h`:1171._
-
-#### `DvzVisualAttrMutability` { #type-dvzvisualattrmutability }
-
-```c
-enum DvzVisualAttrMutability {
-    DVZ_VISUAL_ATTR_MUTABILITY_DYNAMIC = 0,
-    DVZ_VISUAL_ATTR_MUTABILITY_STATIC = 1,
-    DVZ_VISUAL_ATTR_MUTABILITY_STREAMING = 2,
-};
-```
-
-Used by: [`dvz_visual_attr_mutability()`](visuals.md#dvz_visual_attr_mutability), [`dvz_visual_set_attr_mutability()`](visuals.md#dvz_visual_set_attr_mutability).
-
-_Declared in `include/datoviz/scene/enums.h`:107._
-
-#### `DvzVisualAttrSource` { #type-dvzvisualattrsource }
-
-```c
-enum DvzVisualAttrSource {
-    DVZ_VISUAL_ATTR_SOURCE_PER_ITEM = 0,
-    DVZ_VISUAL_ATTR_SOURCE_CONSTANT = 1,
-    DVZ_VISUAL_ATTR_SOURCE_PER_SPAN = 2,
-    DVZ_VISUAL_ATTR_SOURCE_PER_GROUP = 3,
-};
-```
-
-Used by: [`dvz_visual_attr_source()`](visuals.md#dvz_visual_attr_source), [`dvz_visual_set_attr_source()`](visuals.md#dvz_visual_set_attr_source).
-
-_Declared in `include/datoviz/scene/enums.h`:97._
-
-#### `DvzVisualClipRect` { #type-dvzvisualcliprect }
-
-```c
-enum DvzVisualClipRect {
-    DVZ_VISUAL_CLIP_AUTO = 0,
-    DVZ_VISUAL_CLIP_PANEL = 1,
-    DVZ_VISUAL_CLIP_PLOT = 2,
-};
-```
-
-_Declared in `include/datoviz/scene/enums.h`:143._
-
-#### `DvzVisualCoordSpace` { #type-dvzvisualcoordspace }
-
-```c
-enum DvzVisualCoordSpace {
-    DVZ_VISUAL_COORD_VIEW = 0,
-    DVZ_VISUAL_COORD_DATA = 1,
-    DVZ_VISUAL_COORD_PANEL = 2,
-    DVZ_VISUAL_COORD_PANEL_PIXEL = 3,
-};
-```
-
-_Declared in `include/datoviz/scene/enums.h`:133._
-
-#### `DvzVisualDataUpdate` { #type-dvzvisualdataupdate }
-
-```c
-struct DvzVisualDataUpdate {
-    const char * attr_name;
-    const void * data;
-    uint32_t item_count;
-};
-```
-
-Used by: [`dvz_visual_set_data_many()`](visuals.md#dvz_visual_set_data_many).
-
-_Declared in `include/datoviz/scene/types.h`:1150._
-
-#### `DvzVisualDataView` { #type-dvzvisualdataview }
-
-```c
-struct DvzVisualDataView {
-    const void * data;
-    uint64_t item_count;
-    uint32_t item_size;
-    DvzVisualAttrSource source;
-    DvzVisualAttrMutability mutability;
-    uint64_t version;
-};
-```
-
-Used by: [`dvz_visual_data()`](visuals.md#dvz_visual_data).
-
-_Declared in `include/datoviz/scene/types.h`:1159._
-
-#### `DvzVisualShaderDesc` { #type-dvzvisualshaderdesc }
-
-```c
-struct DvzVisualShaderDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzVisualShaderKind kind;
-    DvzVisualShaderSource vertex_source;
-    DvzVisualShaderSource fragment_source;
-    uint64_t shader_id;
-    const char * family;
-    const char * variant;
-    const char * label;
-    const void * vertex_code;
-    uint64_t vertex_code_size;
-    const void * fragment_code;
-    uint64_t fragment_code_size;
-};
-```
-
-Used by: [`dvz_visual_set_shader_desc()`](visuals.md#dvz_visual_set_shader_desc), [`dvz_visual_shader_desc()`](visuals.md#dvz_visual_shader_desc).
-
-_Declared in `include/datoviz/scene/types.h`:295._
-
-#### `DvzVisualShaderKind` { #type-dvzvisualshaderkind }
-
-```c
-enum DvzVisualShaderKind {
-    DVZ_VISUAL_SHADER_NONE = 0,
-    DVZ_VISUAL_SHADER_CUSTOM_FAMILY = 1,
-    DVZ_VISUAL_SHADER_BUILTIN_REPLACEMENT = 2,
-};
-```
-
-_Declared in `include/datoviz/scene/enums.h`:173._
-
-#### `DvzVisualShaderSource` { #type-dvzvisualshadersource }
-
-```c
-enum DvzVisualShaderSource {
-    DVZ_VISUAL_SHADER_SOURCE_NONE = 0,
-    DVZ_VISUAL_SHADER_SOURCE_GLSL = 1,
-    DVZ_VISUAL_SHADER_SOURCE_WGSL = 2,
-    DVZ_VISUAL_SHADER_SOURCE_SPIRV = 3,
-};
-```
-
-_Declared in `include/datoviz/scene/enums.h`:181._
-
-#### `DvzVisualTransformDesc` { #type-dvzvisualtransformdesc }
-
-```c
-struct DvzVisualTransformDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzVisualTransformKind kind;
-    DvzVisualTransformSpace input_space;
-    DvzVisualTransformSpace output_space;
-    uint64_t transform_id;
-    const char * label;
-    mat4 matrix;
-};
-```
-
-Used by: [`dvz_ffi_visual_transform_desc()`](ffi.md#dvz_ffi_visual_transform_desc), [`dvz_visual_set_transform_desc()`](visuals.md#dvz_visual_set_transform_desc), [`dvz_visual_transform_desc()`](visuals.md#dvz_visual_transform_desc).
-
-_Declared in `include/datoviz/scene/types.h`:282._
-
-#### `DvzVisualTransformKind` { #type-dvzvisualtransformkind }
-
-```c
-enum DvzVisualTransformKind {
-    DVZ_VISUAL_TRANSFORM_NONE = 0,
-    DVZ_VISUAL_TRANSFORM_LINEAR = 1,
-    DVZ_VISUAL_TRANSFORM_NONLINEAR = 2,
-    DVZ_VISUAL_TRANSFORM_CUSTOM = 3,
-};
-```
-
-_Declared in `include/datoviz/scene/enums.h`:115._
-
-#### `DvzVisualTransformSpace` { #type-dvzvisualtransformspace }
-
-```c
-enum DvzVisualTransformSpace {
-    DVZ_VISUAL_TRANSFORM_SPACE_DATA = 0,
-    DVZ_VISUAL_TRANSFORM_SPACE_VISUAL = 1,
-    DVZ_VISUAL_TRANSFORM_SPACE_PANEL = 2,
-};
-```
-
-_Declared in `include/datoviz/scene/enums.h`:124._
-
-#### `DvzVisualViewportRect` { #type-dvzvisualviewportrect }
-
-```c
-enum DvzVisualViewportRect {
-    DVZ_VISUAL_VIEWPORT_AUTO = 0,
-    DVZ_VISUAL_VIEWPORT_PANEL = 1,
-    DVZ_VISUAL_VIEWPORT_PLOT = 2,
-    DVZ_VISUAL_VIEWPORT_TARGET = 3,
-};
-```
-
-_Declared in `include/datoviz/scene/enums.h`:152._
+<a id="type-dvzvectoranchor"></a>
+
+??? abstract "`DvzVectorAnchor` · enum"
+
+    ```c
+    enum DvzVectorAnchor {
+        DVZ_VECTOR_ANCHOR_TAIL = 0,
+        DVZ_VECTOR_ANCHOR_CENTER = 1,
+        DVZ_VECTOR_ANCHOR_HEAD = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:266._
+
+<a id="type-dvzvectorstyle"></a>
+
+??? abstract "`DvzVectorStyle` · record"
+
+    ```c
+    struct DvzVectorStyle {
+        uint32_t struct_size;
+        uint32_t flags;
+        float scale;
+        DvzVectorAnchor anchor;
+        DvzSegmentCap start_cap;
+        DvzSegmentCap end_cap;
+        DvzPathJoin join;
+        float miter_limit;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:909._
+
+## Visual { #visual }
 
 ### Functions
 
@@ -6255,96 +5898,329 @@ _Bool dvz_visual_validate(
 
 _Declared in `include/datoviz/scene.h`:1759._
 
-## Volume { #volume }
-
 ### Types
 
-#### `DvzVolumeAlphaStop` { #type-dvzvolumealphastop }
+<a id="type-dvzalphamode"></a>
 
-```c
-struct DvzVolumeAlphaStop {
-    double position;
-    float alpha;
-};
-```
+??? abstract "`DvzAlphaMode` · enum"
 
-Used by: [`dvz_volume_set_alpha_stops()`](visuals.md#dvz_volume_set_alpha_stops).
+    ```c
+    enum DvzAlphaMode {
+        DVZ_ALPHA_OPAQUE = 0,
+        DVZ_ALPHA_BLENDED = 1,
+        DVZ_ALPHA_WBOIT = 2,
+        DVZ_ALPHA_DEPTH_PEEL = 3,
+        DVZ_ALPHA_MASK = 4,
+    };
+    ```
 
-_Declared in `include/datoviz/scene/types.h`:1069._
+    _Declared in `include/datoviz/scene/enums.h`:223._
 
-#### `DvzVolumeAxis` { #type-dvzvolumeaxis }
+<a id="type-dvzscenevisualfamily"></a>
 
-```c
-enum DvzVolumeAxis {
-    DVZ_VOLUME_AXIS_X = 0,
-    DVZ_VOLUME_AXIS_Y = 1,
-    DVZ_VOLUME_AXIS_Z = 2,
-};
-```
+??? abstract "`DvzSceneVisualFamily` · enum"
 
-Used by: [`dvz_labels_set_slice_axis()`](visuals.md#dvz_labels_set_slice_axis), [`dvz_volume_set_slice_axis()`](visuals.md#dvz_volume_set_slice_axis).
+    ```c
+    enum DvzSceneVisualFamily {
+        DVZ_SCENE_VISUAL_FAMILY_NONE = 0,
+        DVZ_SCENE_VISUAL_FAMILY_POINT = 1,
+        DVZ_SCENE_VISUAL_FAMILY_PIXEL = 2,
+        DVZ_SCENE_VISUAL_FAMILY_MARKER = 3,
+        DVZ_SCENE_VISUAL_FAMILY_SEGMENT = 4,
+        DVZ_SCENE_VISUAL_FAMILY_VECTOR = 5,
+        DVZ_SCENE_VISUAL_FAMILY_PATH = 6,
+        DVZ_SCENE_VISUAL_FAMILY_IMAGE = 7,
+        DVZ_SCENE_VISUAL_FAMILY_MESH = 8,
+        DVZ_SCENE_VISUAL_FAMILY_VOLUME = 9,
+        DVZ_SCENE_VISUAL_FAMILY_PRIMITIVE = 10,
+        DVZ_SCENE_VISUAL_FAMILY_SPHERE = 11,
+        DVZ_SCENE_VISUAL_FAMILY_GLYPH = 12,
+        DVZ_SCENE_VISUAL_FAMILY_TEXT = 13,
+        DVZ_SCENE_VISUAL_FAMILY_LABELS = 14,
+        DVZ_SCENE_VISUAL_FAMILY_SPLAT = 15,
+    };
+    ```
 
-_Declared in `include/datoviz/scene/enums.h`:407._
+    _Declared in `include/datoviz/scene/enums.h`:436._
 
-#### `DvzVolumeRenderMode` { #type-dvzvolumerendermode }
+<a id="type-dvzshapeaspect"></a>
 
-```c
-enum DvzVolumeRenderMode {
-    DVZ_VOLUME_RENDER_SLICE = 0,
-    DVZ_VOLUME_RENDER_MIP = 1,
-    DVZ_VOLUME_RENDER_COMPOSITE = 2,
-};
-```
+??? abstract "`DvzShapeAspect` · enum"
 
-Used by: [`dvz_volume_set_render_mode()`](visuals.md#dvz_volume_set_render_mode).
+    ```c
+    enum DvzShapeAspect {
+        DVZ_SHAPE_ASPECT_FILLED = 0,
+        DVZ_SHAPE_ASPECT_STROKE = 1,
+        DVZ_SHAPE_ASPECT_OUTLINE = 2,
+    };
+    ```
 
-_Declared in `include/datoviz/scene/enums.h`:398._
+    _Declared in `include/datoviz/scene/enums.h`:352._
 
-#### `DvzVolumeSamplingMode` { #type-dvzvolumesamplingmode }
+<a id="type-dvzvisual"></a>
 
-```c
-enum DvzVolumeSamplingMode {
-    DVZ_VOLUME_SAMPLING_LINEAR = 0,
-    DVZ_VOLUME_SAMPLING_NEAREST = 1,
-};
-```
+??? abstract "`DvzVisual` · typedef"
 
-Used by: [`dvz_volume_set_sampling()`](visuals.md#dvz_volume_set_sampling).
+    ```c
+    typedef struct DvzVisual DvzVisual;
+    ```
 
-_Declared in `include/datoviz/scene/enums.h`:391._
+    _Declared in `include/datoviz/scene/types.h`:63._
 
-#### `DvzVolumeState` { #type-dvzvolumestate }
+<a id="type-dvzvisualattachdesc"></a>
 
-```c
-struct DvzVolumeState {
-    float opacity;
-    DvzVolumeSamplingMode sampling;
-    DvzVolumeRenderMode render_mode;
-    DvzVolumeAxis slice_axis;
-    double slice_position;
-    _Bool clipping_enabled;
-    double[3] clip_min;
-    double[3] clip_max;
-    _Bool clip_plane_enabled;
-    _Bool clip_plane_keep_positive;
-    double[3] clip_plane_point;
-    double[3] clip_plane_normal;
-    double[3] bounds_min;
-    double[3] bounds_max;
-    uint32_t[3] axis_order;
-    _Bool[3] axis_flip;
-    double value_min;
-    double value_max;
-    DvzVolumeAlphaStop[8] alpha_stops;
-    uint32_t alpha_stop_count;
-    uint32_t step_count;
-    uint64_t version;
-};
-```
+??? abstract "`DvzVisualAttachDesc` · record"
 
-Used by: [`dvz_volume_state()`](visuals.md#dvz_volume_state).
+    ```c
+    struct DvzVisualAttachDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        int32_t z_layer;
+        DvzControllerMode controller_mode;
+        DvzVisualCoordSpace coord_space;
+        DvzVisualClipRect clip_rect;
+        DvzVisualViewportRect viewport_rect;
+    };
+    ```
 
-_Declared in `include/datoviz/scene/types.h`:1077._
+    _Declared in `include/datoviz/scene/types.h`:1137._
+
+<a id="type-dvzvisualattrformat"></a>
+
+??? abstract "`DvzVisualAttrFormat` · enum"
+
+    ```c
+    enum DvzVisualAttrFormat {
+        DVZ_VISUAL_ATTR_FORMAT_DEFAULT = 0,
+        DVZ_VISUAL_ATTR_FORMAT_RGBA_U8 = 1,
+        DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32 = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:537._
+
+<a id="type-dvzvisualattrinfo"></a>
+
+??? abstract "`DvzVisualAttrInfo` · record"
+
+    ```c
+    struct DvzVisualAttrInfo {
+        const char * name;
+        uint32_t item_size;
+        uint32_t source_mask;
+        DvzVisualAttrFormat default_format;
+        _Bool instance;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:1171._
+
+<a id="type-dvzvisualattrmutability"></a>
+
+??? abstract "`DvzVisualAttrMutability` · enum"
+
+    ```c
+    enum DvzVisualAttrMutability {
+        DVZ_VISUAL_ATTR_MUTABILITY_DYNAMIC = 0,
+        DVZ_VISUAL_ATTR_MUTABILITY_STATIC = 1,
+        DVZ_VISUAL_ATTR_MUTABILITY_STREAMING = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:107._
+
+<a id="type-dvzvisualattrsource"></a>
+
+??? abstract "`DvzVisualAttrSource` · enum"
+
+    ```c
+    enum DvzVisualAttrSource {
+        DVZ_VISUAL_ATTR_SOURCE_PER_ITEM = 0,
+        DVZ_VISUAL_ATTR_SOURCE_CONSTANT = 1,
+        DVZ_VISUAL_ATTR_SOURCE_PER_SPAN = 2,
+        DVZ_VISUAL_ATTR_SOURCE_PER_GROUP = 3,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:97._
+
+<a id="type-dvzvisualcliprect"></a>
+
+??? abstract "`DvzVisualClipRect` · enum"
+
+    ```c
+    enum DvzVisualClipRect {
+        DVZ_VISUAL_CLIP_AUTO = 0,
+        DVZ_VISUAL_CLIP_PANEL = 1,
+        DVZ_VISUAL_CLIP_PLOT = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:143._
+
+<a id="type-dvzvisualcoordspace"></a>
+
+??? abstract "`DvzVisualCoordSpace` · enum"
+
+    ```c
+    enum DvzVisualCoordSpace {
+        DVZ_VISUAL_COORD_VIEW = 0,
+        DVZ_VISUAL_COORD_DATA = 1,
+        DVZ_VISUAL_COORD_PANEL = 2,
+        DVZ_VISUAL_COORD_PANEL_PIXEL = 3,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:133._
+
+<a id="type-dvzvisualdataupdate"></a>
+
+??? abstract "`DvzVisualDataUpdate` · record"
+
+    ```c
+    struct DvzVisualDataUpdate {
+        const char * attr_name;
+        const void * data;
+        uint32_t item_count;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:1150._
+
+<a id="type-dvzvisualdataview"></a>
+
+??? abstract "`DvzVisualDataView` · record"
+
+    ```c
+    struct DvzVisualDataView {
+        const void * data;
+        uint64_t item_count;
+        uint32_t item_size;
+        DvzVisualAttrSource source;
+        DvzVisualAttrMutability mutability;
+        uint64_t version;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:1159._
+
+<a id="type-dvzvisualshaderdesc"></a>
+
+??? abstract "`DvzVisualShaderDesc` · record"
+
+    ```c
+    struct DvzVisualShaderDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzVisualShaderKind kind;
+        DvzVisualShaderSource vertex_source;
+        DvzVisualShaderSource fragment_source;
+        uint64_t shader_id;
+        const char * family;
+        const char * variant;
+        const char * label;
+        const void * vertex_code;
+        uint64_t vertex_code_size;
+        const void * fragment_code;
+        uint64_t fragment_code_size;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:295._
+
+<a id="type-dvzvisualshaderkind"></a>
+
+??? abstract "`DvzVisualShaderKind` · enum"
+
+    ```c
+    enum DvzVisualShaderKind {
+        DVZ_VISUAL_SHADER_NONE = 0,
+        DVZ_VISUAL_SHADER_CUSTOM_FAMILY = 1,
+        DVZ_VISUAL_SHADER_BUILTIN_REPLACEMENT = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:173._
+
+<a id="type-dvzvisualshadersource"></a>
+
+??? abstract "`DvzVisualShaderSource` · enum"
+
+    ```c
+    enum DvzVisualShaderSource {
+        DVZ_VISUAL_SHADER_SOURCE_NONE = 0,
+        DVZ_VISUAL_SHADER_SOURCE_GLSL = 1,
+        DVZ_VISUAL_SHADER_SOURCE_WGSL = 2,
+        DVZ_VISUAL_SHADER_SOURCE_SPIRV = 3,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:181._
+
+<a id="type-dvzvisualtransformdesc"></a>
+
+??? abstract "`DvzVisualTransformDesc` · record"
+
+    ```c
+    struct DvzVisualTransformDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzVisualTransformKind kind;
+        DvzVisualTransformSpace input_space;
+        DvzVisualTransformSpace output_space;
+        uint64_t transform_id;
+        const char * label;
+        mat4 matrix;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:282._
+
+<a id="type-dvzvisualtransformkind"></a>
+
+??? abstract "`DvzVisualTransformKind` · enum"
+
+    ```c
+    enum DvzVisualTransformKind {
+        DVZ_VISUAL_TRANSFORM_NONE = 0,
+        DVZ_VISUAL_TRANSFORM_LINEAR = 1,
+        DVZ_VISUAL_TRANSFORM_NONLINEAR = 2,
+        DVZ_VISUAL_TRANSFORM_CUSTOM = 3,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:115._
+
+<a id="type-dvzvisualtransformspace"></a>
+
+??? abstract "`DvzVisualTransformSpace` · enum"
+
+    ```c
+    enum DvzVisualTransformSpace {
+        DVZ_VISUAL_TRANSFORM_SPACE_DATA = 0,
+        DVZ_VISUAL_TRANSFORM_SPACE_VISUAL = 1,
+        DVZ_VISUAL_TRANSFORM_SPACE_PANEL = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:124._
+
+<a id="type-dvzvisualviewportrect"></a>
+
+??? abstract "`DvzVisualViewportRect` · enum"
+
+    ```c
+    enum DvzVisualViewportRect {
+        DVZ_VISUAL_VIEWPORT_AUTO = 0,
+        DVZ_VISUAL_VIEWPORT_PANEL = 1,
+        DVZ_VISUAL_VIEWPORT_PLOT = 2,
+        DVZ_VISUAL_VIEWPORT_TARGET = 3,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:152._
+
+## Volume { #volume }
 
 ### Functions
 
@@ -6673,3 +6549,92 @@ const DvzVolumeState * dvz_volume_state(
 | `visual` | `const` [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual |
 
 _Declared in `include/datoviz/scene.h`:3931._
+
+### Types
+
+<a id="type-dvzvolumealphastop"></a>
+
+??? abstract "`DvzVolumeAlphaStop` · record"
+
+    ```c
+    struct DvzVolumeAlphaStop {
+        double position;
+        float alpha;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:1069._
+
+<a id="type-dvzvolumeaxis"></a>
+
+??? abstract "`DvzVolumeAxis` · enum"
+
+    ```c
+    enum DvzVolumeAxis {
+        DVZ_VOLUME_AXIS_X = 0,
+        DVZ_VOLUME_AXIS_Y = 1,
+        DVZ_VOLUME_AXIS_Z = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:407._
+
+<a id="type-dvzvolumerendermode"></a>
+
+??? abstract "`DvzVolumeRenderMode` · enum"
+
+    ```c
+    enum DvzVolumeRenderMode {
+        DVZ_VOLUME_RENDER_SLICE = 0,
+        DVZ_VOLUME_RENDER_MIP = 1,
+        DVZ_VOLUME_RENDER_COMPOSITE = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:398._
+
+<a id="type-dvzvolumesamplingmode"></a>
+
+??? abstract "`DvzVolumeSamplingMode` · enum"
+
+    ```c
+    enum DvzVolumeSamplingMode {
+        DVZ_VOLUME_SAMPLING_LINEAR = 0,
+        DVZ_VOLUME_SAMPLING_NEAREST = 1,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:391._
+
+<a id="type-dvzvolumestate"></a>
+
+??? abstract "`DvzVolumeState` · record"
+
+    ```c
+    struct DvzVolumeState {
+        float opacity;
+        DvzVolumeSamplingMode sampling;
+        DvzVolumeRenderMode render_mode;
+        DvzVolumeAxis slice_axis;
+        double slice_position;
+        _Bool clipping_enabled;
+        double[3] clip_min;
+        double[3] clip_max;
+        _Bool clip_plane_enabled;
+        _Bool clip_plane_keep_positive;
+        double[3] clip_plane_point;
+        double[3] clip_plane_normal;
+        double[3] bounds_min;
+        double[3] bounds_max;
+        uint32_t[3] axis_order;
+        _Bool[3] axis_flip;
+        double value_min;
+        double value_max;
+        DvzVolumeAlphaStop[8] alpha_stops;
+        uint32_t alpha_stop_count;
+        uint32_t step_count;
+        uint64_t version;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:1077._

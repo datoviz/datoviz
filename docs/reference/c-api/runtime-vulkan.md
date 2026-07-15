@@ -30,282 +30,125 @@ Types: 26
 | [Memory And Interop](#memory-and-interop) | 32 | 4 | `include/datoviz/vk/memory.h`, `include/datoviz/vk/memory_interop.h` |
 | [Shared Render Types](#shared-render-types) | 0 | 8 | `include/datoviz/vk/enums.h` |
 
-??? info "Grouped symbol index"
+??? info "Grouped function index"
 
     **Devices And Queues**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzDefaultQueue`](#type-dvzdefaultqueue) | enum | `include/datoviz/vk/enums.h` |
-    | [`DvzDevice`](#type-dvzdevice) | typedef | `include/datoviz/vk/device.h` |
-    | [`DvzDeviceConfig`](#type-dvzdeviceconfig) | record | `include/datoviz/vk/device.h` |
-    | [`DvzDeviceQueueRequest`](#type-dvzdevicequeuerequest) | record | `include/datoviz/vk/device.h` |
-    | [`DvzQueue`](#type-dvzqueue) | record | `include/datoviz/vk/queues.h` |
-    | [`DvzQueueCaps`](#type-dvzqueuecaps) | record | `include/datoviz/vk/queues.h` |
-    | [`DvzQueueRole`](#type-dvzqueuerole) | enum | `include/datoviz/vk/queues.h` |
-    | [`DvzQueues`](#type-dvzqueues) | record | `include/datoviz/vk/queues.h` |
-    | [`dvz_device_allocator()`](#dvz_device_allocator) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_device_command_pool()`](#dvz_device_command_pool) | function | `include/datoviz/vk/device.h` |
-    | [`dvz_device_config()`](#dvz_device_config) | function | `include/datoviz/vk/device.h` |
-    | [`dvz_device_config_enable_canvas_extensions()`](#dvz_device_config_enable_canvas_extensions) | function | `include/datoviz/vk/device.h` |
-    | [`dvz_device_config_request_extension()`](#dvz_device_config_request_extension) | function | `include/datoviz/vk/device.h` |
-    | [`dvz_device_config_request_queue()`](#dvz_device_config_request_queue) | function | `include/datoviz/vk/device.h` |
-    | [`dvz_device_config_set_features10()`](#dvz_device_config_set_features10) | function | `include/datoviz/vk/device.h` |
-    | [`dvz_device_config_set_features11()`](#dvz_device_config_set_features11) | function | `include/datoviz/vk/device.h` |
-    | [`dvz_device_config_set_features12()`](#dvz_device_config_set_features12) | function | `include/datoviz/vk/device.h` |
-    | [`dvz_device_config_set_features13()`](#dvz_device_config_set_features13) | function | `include/datoviz/vk/device.h` |
-    | [`dvz_device_config_set_gpu_index()`](#dvz_device_config_set_gpu_index) | function | `include/datoviz/vk/device.h` |
-    | [`dvz_device_create()`](#dvz_device_create) | function | `include/datoviz/vk/device.h` |
-    | [`dvz_device_descriptor_pool()`](#dvz_device_descriptor_pool) | function | `include/datoviz/vk/device.h` |
-    | [`dvz_device_destroy()`](#dvz_device_destroy) | function | `include/datoviz/vk/device.h` |
-    | [`dvz_device_features10()`](#dvz_device_features10) | function | `include/datoviz/vk/device.h` |
-    | [`dvz_device_handle()`](#dvz_device_handle) | function | `include/datoviz/vk/device.h` |
-    | [`dvz_device_has_extension()`](#dvz_device_has_extension) | function | `include/datoviz/vk/device.h` |
-    | [`dvz_device_physical_device()`](#dvz_device_physical_device) | function | `include/datoviz/vk/device.h` |
-    | [`dvz_device_queue()`](#dvz_device_queue) | function | `include/datoviz/vk/device.h` |
-    | [`dvz_device_wait()`](#dvz_device_wait) | function | `include/datoviz/vk/device.h` |
-    | [`dvz_queue_family()`](#dvz_queue_family) | function | `include/datoviz/vk/queues.h` |
-    | [`dvz_queue_from_role()`](#dvz_queue_from_role) | function | `include/datoviz/vk/queues.h` |
-    | [`dvz_queue_handle()`](#dvz_queue_handle) | function | `include/datoviz/vk/queues.h` |
-    | [`dvz_queue_index()`](#dvz_queue_index) | function | `include/datoviz/vk/queues.h` |
-    | [`dvz_queue_supports()`](#dvz_queue_supports) | function | `include/datoviz/vk/queues.h` |
-    | [`dvz_queue_wait()`](#dvz_queue_wait) | function | `include/datoviz/vk/queues.h` |
-    | [`dvz_queues()`](#dvz_queues) | function | `include/datoviz/vk/queues.h` |
-    | [`dvz_queues_show()`](#dvz_queues_show) | function | `include/datoviz/vk/queues.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_device_allocator()`](#dvz_device_allocator) | `include/datoviz/vk/memory.h` |
+    | [`dvz_device_command_pool()`](#dvz_device_command_pool) | `include/datoviz/vk/device.h` |
+    | [`dvz_device_config()`](#dvz_device_config) | `include/datoviz/vk/device.h` |
+    | [`dvz_device_config_enable_canvas_extensions()`](#dvz_device_config_enable_canvas_extensions) | `include/datoviz/vk/device.h` |
+    | [`dvz_device_config_request_extension()`](#dvz_device_config_request_extension) | `include/datoviz/vk/device.h` |
+    | [`dvz_device_config_request_queue()`](#dvz_device_config_request_queue) | `include/datoviz/vk/device.h` |
+    | [`dvz_device_config_set_features10()`](#dvz_device_config_set_features10) | `include/datoviz/vk/device.h` |
+    | [`dvz_device_config_set_features11()`](#dvz_device_config_set_features11) | `include/datoviz/vk/device.h` |
+    | [`dvz_device_config_set_features12()`](#dvz_device_config_set_features12) | `include/datoviz/vk/device.h` |
+    | [`dvz_device_config_set_features13()`](#dvz_device_config_set_features13) | `include/datoviz/vk/device.h` |
+    | [`dvz_device_config_set_gpu_index()`](#dvz_device_config_set_gpu_index) | `include/datoviz/vk/device.h` |
+    | [`dvz_device_create()`](#dvz_device_create) | `include/datoviz/vk/device.h` |
+    | [`dvz_device_descriptor_pool()`](#dvz_device_descriptor_pool) | `include/datoviz/vk/device.h` |
+    | [`dvz_device_destroy()`](#dvz_device_destroy) | `include/datoviz/vk/device.h` |
+    | [`dvz_device_features10()`](#dvz_device_features10) | `include/datoviz/vk/device.h` |
+    | [`dvz_device_handle()`](#dvz_device_handle) | `include/datoviz/vk/device.h` |
+    | [`dvz_device_has_extension()`](#dvz_device_has_extension) | `include/datoviz/vk/device.h` |
+    | [`dvz_device_physical_device()`](#dvz_device_physical_device) | `include/datoviz/vk/device.h` |
+    | [`dvz_device_queue()`](#dvz_device_queue) | `include/datoviz/vk/device.h` |
+    | [`dvz_device_wait()`](#dvz_device_wait) | `include/datoviz/vk/device.h` |
+    | [`dvz_queue_family()`](#dvz_queue_family) | `include/datoviz/vk/queues.h` |
+    | [`dvz_queue_from_role()`](#dvz_queue_from_role) | `include/datoviz/vk/queues.h` |
+    | [`dvz_queue_handle()`](#dvz_queue_handle) | `include/datoviz/vk/queues.h` |
+    | [`dvz_queue_index()`](#dvz_queue_index) | `include/datoviz/vk/queues.h` |
+    | [`dvz_queue_supports()`](#dvz_queue_supports) | `include/datoviz/vk/queues.h` |
+    | [`dvz_queue_wait()`](#dvz_queue_wait) | `include/datoviz/vk/queues.h` |
+    | [`dvz_queues()`](#dvz_queues) | `include/datoviz/vk/queues.h` |
+    | [`dvz_queues_show()`](#dvz_queues_show) | `include/datoviz/vk/queues.h` |
 
     **GPU Context**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzGpuCtx`](#type-dvzgpuctx) | typedef | `include/datoviz/vk/gpu_ctx.h` |
-    | [`DvzGpuCtxConfig`](#type-dvzgpuctxconfig) | record | `include/datoviz/vk/gpu_ctx.h` |
-    | [`DvzGpuInfo`](#type-dvzgpuinfo) | record | `include/datoviz/vk/gpu.h` |
-    | [`dvz_compile_glsl()`](#dvz_compile_glsl) | function | `include/datoviz/vk/gpu_ctx.h` |
-    | [`dvz_gpu_ctx()`](#dvz_gpu_ctx) | function | `include/datoviz/vk/gpu_ctx.h` |
-    | [`dvz_gpu_ctx_alloc()`](#dvz_gpu_ctx_alloc) | function | `include/datoviz/vk/gpu_ctx.h` |
-    | [`dvz_gpu_ctx_config()`](#dvz_gpu_ctx_config) | function | `include/datoviz/vk/gpu_ctx.h` |
-    | [`dvz_gpu_ctx_config_add_instance_extension()`](#dvz_gpu_ctx_config_add_instance_extension) | function | `include/datoviz/vk/gpu_ctx.h` |
-    | [`dvz_gpu_ctx_config_alloc()`](#dvz_gpu_ctx_config_alloc) | function | `include/datoviz/vk/gpu_ctx.h` |
-    | [`dvz_gpu_ctx_config_enable_canvas_extensions()`](#dvz_gpu_ctx_config_enable_canvas_extensions) | function | `include/datoviz/vk/gpu_ctx.h` |
-    | [`dvz_gpu_ctx_config_features10()`](#dvz_gpu_ctx_config_features10) | function | `include/datoviz/vk/gpu_ctx.h` |
-    | [`dvz_gpu_ctx_config_features12()`](#dvz_gpu_ctx_config_features12) | function | `include/datoviz/vk/gpu_ctx.h` |
-    | [`dvz_gpu_ctx_config_features13()`](#dvz_gpu_ctx_config_features13) | function | `include/datoviz/vk/gpu_ctx.h` |
-    | [`dvz_gpu_ctx_config_gpu()`](#dvz_gpu_ctx_config_gpu) | function | `include/datoviz/vk/gpu_ctx.h` |
-    | [`dvz_gpu_ctx_config_validation()`](#dvz_gpu_ctx_config_validation) | function | `include/datoviz/vk/gpu_ctx.h` |
-    | [`dvz_gpu_ctx_destroy()`](#dvz_gpu_ctx_destroy) | function | `include/datoviz/vk/gpu_ctx.h` |
-    | [`dvz_gpu_ctx_device()`](#dvz_gpu_ctx_device) | function | `include/datoviz/vk/gpu_ctx.h` |
-    | [`dvz_gpu_ctx_error_count()`](#dvz_gpu_ctx_error_count) | function | `include/datoviz/vk/gpu_ctx.h` |
-    | [`dvz_gpu_ctx_gpu_index()`](#dvz_gpu_ctx_gpu_index) | function | `include/datoviz/vk/gpu_ctx.h` |
-    | [`dvz_gpu_ctx_gpu_info()`](#dvz_gpu_ctx_gpu_info) | function | `include/datoviz/vk/gpu_ctx.h` |
-    | [`dvz_gpu_ctx_instance()`](#dvz_gpu_ctx_instance) | function | `include/datoviz/vk/gpu_ctx.h` |
-    | [`dvz_gpu_ctx_queue()`](#dvz_gpu_ctx_queue) | function | `include/datoviz/vk/gpu_ctx.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_compile_glsl()`](#dvz_compile_glsl) | `include/datoviz/vk/gpu_ctx.h` |
+    | [`dvz_gpu_ctx()`](#dvz_gpu_ctx) | `include/datoviz/vk/gpu_ctx.h` |
+    | [`dvz_gpu_ctx_alloc()`](#dvz_gpu_ctx_alloc) | `include/datoviz/vk/gpu_ctx.h` |
+    | [`dvz_gpu_ctx_config()`](#dvz_gpu_ctx_config) | `include/datoviz/vk/gpu_ctx.h` |
+    | [`dvz_gpu_ctx_config_add_instance_extension()`](#dvz_gpu_ctx_config_add_instance_extension) | `include/datoviz/vk/gpu_ctx.h` |
+    | [`dvz_gpu_ctx_config_alloc()`](#dvz_gpu_ctx_config_alloc) | `include/datoviz/vk/gpu_ctx.h` |
+    | [`dvz_gpu_ctx_config_enable_canvas_extensions()`](#dvz_gpu_ctx_config_enable_canvas_extensions) | `include/datoviz/vk/gpu_ctx.h` |
+    | [`dvz_gpu_ctx_config_features10()`](#dvz_gpu_ctx_config_features10) | `include/datoviz/vk/gpu_ctx.h` |
+    | [`dvz_gpu_ctx_config_features12()`](#dvz_gpu_ctx_config_features12) | `include/datoviz/vk/gpu_ctx.h` |
+    | [`dvz_gpu_ctx_config_features13()`](#dvz_gpu_ctx_config_features13) | `include/datoviz/vk/gpu_ctx.h` |
+    | [`dvz_gpu_ctx_config_gpu()`](#dvz_gpu_ctx_config_gpu) | `include/datoviz/vk/gpu_ctx.h` |
+    | [`dvz_gpu_ctx_config_validation()`](#dvz_gpu_ctx_config_validation) | `include/datoviz/vk/gpu_ctx.h` |
+    | [`dvz_gpu_ctx_destroy()`](#dvz_gpu_ctx_destroy) | `include/datoviz/vk/gpu_ctx.h` |
+    | [`dvz_gpu_ctx_device()`](#dvz_gpu_ctx_device) | `include/datoviz/vk/gpu_ctx.h` |
+    | [`dvz_gpu_ctx_error_count()`](#dvz_gpu_ctx_error_count) | `include/datoviz/vk/gpu_ctx.h` |
+    | [`dvz_gpu_ctx_gpu_index()`](#dvz_gpu_ctx_gpu_index) | `include/datoviz/vk/gpu_ctx.h` |
+    | [`dvz_gpu_ctx_gpu_info()`](#dvz_gpu_ctx_gpu_info) | `include/datoviz/vk/gpu_ctx.h` |
+    | [`dvz_gpu_ctx_instance()`](#dvz_gpu_ctx_instance) | `include/datoviz/vk/gpu_ctx.h` |
+    | [`dvz_gpu_ctx_queue()`](#dvz_gpu_ctx_queue) | `include/datoviz/vk/gpu_ctx.h` |
 
     **Instances**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzInstance`](#type-dvzinstance) | typedef | `include/datoviz/vk/instance.h` |
-    | [`DvzInstanceConfig`](#type-dvzinstanceconfig) | record | `include/datoviz/vk/instance.h` |
-    | [`DvzInstanceFlags`](#type-dvzinstanceflags) | enum | `include/datoviz/vk/instance.h` |
-    | [`dvz_instance_config()`](#dvz_instance_config) | function | `include/datoviz/vk/instance.h` |
-    | [`dvz_instance_config_request_extension()`](#dvz_instance_config_request_extension) | function | `include/datoviz/vk/instance.h` |
-    | [`dvz_instance_config_request_layer()`](#dvz_instance_config_request_layer) | function | `include/datoviz/vk/instance.h` |
-    | [`dvz_instance_create()`](#dvz_instance_create) | function | `include/datoviz/vk/instance.h` |
-    | [`dvz_instance_destroy()`](#dvz_instance_destroy) | function | `include/datoviz/vk/instance.h` |
-    | [`dvz_instance_error_count()`](#dvz_instance_error_count) | function | `include/datoviz/vk/instance.h` |
-    | [`dvz_instance_gpu_count()`](#dvz_instance_gpu_count) | function | `include/datoviz/vk/gpu.h` |
-    | [`dvz_instance_gpu_handle()`](#dvz_instance_gpu_handle) | function | `include/datoviz/vk/gpu.h` |
-    | [`dvz_instance_gpu_info()`](#dvz_instance_gpu_info) | function | `include/datoviz/vk/gpu.h` |
-    | [`dvz_instance_gpu_queue_caps()`](#dvz_instance_gpu_queue_caps) | function | `include/datoviz/vk/queues.h` |
-    | [`dvz_instance_handle()`](#dvz_instance_handle) | function | `include/datoviz/vk/instance.h` |
-    | [`dvz_instance_has_extension()`](#dvz_instance_has_extension) | function | `include/datoviz/vk/instance.h` |
-    | [`dvz_instance_has_layer()`](#dvz_instance_has_layer) | function | `include/datoviz/vk/instance.h` |
-    | [`dvz_instance_probe_extensions()`](#dvz_instance_probe_extensions) | function | `include/datoviz/vk/instance.h` |
-    | [`dvz_instance_probe_layers()`](#dvz_instance_probe_layers) | function | `include/datoviz/vk/instance.h` |
-    | [`dvz_instance_supported_extensions()`](#dvz_instance_supported_extensions) | function | `include/datoviz/vk/instance.h` |
-    | [`dvz_instance_supported_layers()`](#dvz_instance_supported_layers) | function | `include/datoviz/vk/instance.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_instance_config()`](#dvz_instance_config) | `include/datoviz/vk/instance.h` |
+    | [`dvz_instance_config_request_extension()`](#dvz_instance_config_request_extension) | `include/datoviz/vk/instance.h` |
+    | [`dvz_instance_config_request_layer()`](#dvz_instance_config_request_layer) | `include/datoviz/vk/instance.h` |
+    | [`dvz_instance_create()`](#dvz_instance_create) | `include/datoviz/vk/instance.h` |
+    | [`dvz_instance_destroy()`](#dvz_instance_destroy) | `include/datoviz/vk/instance.h` |
+    | [`dvz_instance_error_count()`](#dvz_instance_error_count) | `include/datoviz/vk/instance.h` |
+    | [`dvz_instance_gpu_count()`](#dvz_instance_gpu_count) | `include/datoviz/vk/gpu.h` |
+    | [`dvz_instance_gpu_handle()`](#dvz_instance_gpu_handle) | `include/datoviz/vk/gpu.h` |
+    | [`dvz_instance_gpu_info()`](#dvz_instance_gpu_info) | `include/datoviz/vk/gpu.h` |
+    | [`dvz_instance_gpu_queue_caps()`](#dvz_instance_gpu_queue_caps) | `include/datoviz/vk/queues.h` |
+    | [`dvz_instance_handle()`](#dvz_instance_handle) | `include/datoviz/vk/instance.h` |
+    | [`dvz_instance_has_extension()`](#dvz_instance_has_extension) | `include/datoviz/vk/instance.h` |
+    | [`dvz_instance_has_layer()`](#dvz_instance_has_layer) | `include/datoviz/vk/instance.h` |
+    | [`dvz_instance_probe_extensions()`](#dvz_instance_probe_extensions) | `include/datoviz/vk/instance.h` |
+    | [`dvz_instance_probe_layers()`](#dvz_instance_probe_layers) | `include/datoviz/vk/instance.h` |
+    | [`dvz_instance_supported_extensions()`](#dvz_instance_supported_extensions) | `include/datoviz/vk/instance.h` |
+    | [`dvz_instance_supported_layers()`](#dvz_instance_supported_layers) | `include/datoviz/vk/instance.h` |
 
     **Memory And Interop**
 
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzAllocation`](#type-dvzallocation) | typedef | `include/datoviz/vk/memory.h` |
-    | [`DvzAllocationFlags`](#type-dvzallocationflags) | typedef | `include/datoviz/vk/memory.h` |
-    | [`DvzInteropBufferExport`](#type-dvzinteropbufferexport) | record | `include/datoviz/vk/memory_interop.h` |
-    | [`DvzInteropBufferExportConfig`](#type-dvzinteropbufferexportconfig) | record | `include/datoviz/vk/memory_interop.h` |
-    | [`dvz_allocation_create()`](#dvz_allocation_create) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocation_flags()`](#dvz_allocation_flags) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocation_flags_contains()`](#dvz_allocation_flags_contains) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocation_free()`](#dvz_allocation_free) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocation_mapped()`](#dvz_allocation_mapped) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocation_memory()`](#dvz_allocation_memory) | function | `include/datoviz/vk/memory_interop.h` |
-    | [`dvz_allocation_set_flags()`](#dvz_allocation_set_flags) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocation_size()`](#dvz_allocation_size) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocator_buffer()`](#dvz_allocator_buffer) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocator_copy_from()`](#dvz_allocator_copy_from) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocator_copy_to()`](#dvz_allocator_copy_to) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocator_create()`](#dvz_allocator_create) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocator_destroy()`](#dvz_allocator_destroy) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocator_destroy_buffer()`](#dvz_allocator_destroy_buffer) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocator_destroy_image()`](#dvz_allocator_destroy_image) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocator_device()`](#dvz_allocator_device) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocator_export()`](#dvz_allocator_export) | function | `include/datoviz/vk/memory_interop.h` |
-    | [`dvz_allocator_external()`](#dvz_allocator_external) | function | `include/datoviz/vk/memory_interop.h` |
-    | [`dvz_allocator_flush()`](#dvz_allocator_flush) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocator_free()`](#dvz_allocator_free) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocator_image()`](#dvz_allocator_image) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocator_import_buffer()`](#dvz_allocator_import_buffer) | function | `include/datoviz/vk/memory_interop.h` |
-    | [`dvz_allocator_import_image()`](#dvz_allocator_import_image) | function | `include/datoviz/vk/memory_interop.h` |
-    | [`dvz_allocator_invalidate()`](#dvz_allocator_invalidate) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocator_map()`](#dvz_allocator_map) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_allocator_unmap()`](#dvz_allocator_unmap) | function | `include/datoviz/vk/memory.h` |
-    | [`dvz_interop_buffer_export()`](#dvz_interop_buffer_export) | function | `include/datoviz/vk/memory_interop.h` |
-    | [`dvz_interop_buffer_export_config()`](#dvz_interop_buffer_export_config) | function | `include/datoviz/vk/memory_interop.h` |
-    | [`dvz_interop_buffer_export_from_buffer()`](#dvz_interop_buffer_export_from_buffer) | function | `include/datoviz/vk/memory_interop.h` |
-    | [`dvz_interop_buffer_wait_timeline()`](#dvz_interop_buffer_wait_timeline) | function | `include/datoviz/vk/memory_interop.h` |
-    | [`dvz_interop_gpu_ctx()`](#dvz_interop_gpu_ctx) | function | `include/datoviz/vk/memory_interop.h` |
-    | [`dvz_interop_gpu_ctx_ex()`](#dvz_interop_gpu_ctx_ex) | function | `include/datoviz/vk/memory_interop.h` |
-
-    **Shared Render Types**
-
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzDescriptorType`](#type-dvzdescriptortype) | enum | `include/datoviz/vk/enums.h` |
-    | [`DvzFilter`](#type-dvzfilter) | enum | `include/datoviz/vk/enums.h` |
-    | [`DvzPolygonMode`](#type-dvzpolygonmode) | enum | `include/datoviz/vk/enums.h` |
-    | [`DvzSamplerAddressMode`](#type-dvzsampleraddressmode) | enum | `include/datoviz/vk/enums.h` |
-    | [`DvzShaderFormat`](#type-dvzshaderformat) | enum | `include/datoviz/vk/enums.h` |
-    | [`DvzShaderStageFlags`](#type-dvzshaderstageflags) | typedef | `include/datoviz/vk/enums.h` |
-    | [`DvzShaderType`](#type-dvzshadertype) | enum | `include/datoviz/vk/enums.h` |
-    | [`DvzVertexInputRate`](#type-dvzvertexinputrate) | enum | `include/datoviz/vk/enums.h` |
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_allocation_create()`](#dvz_allocation_create) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocation_flags()`](#dvz_allocation_flags) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocation_flags_contains()`](#dvz_allocation_flags_contains) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocation_free()`](#dvz_allocation_free) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocation_mapped()`](#dvz_allocation_mapped) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocation_memory()`](#dvz_allocation_memory) | `include/datoviz/vk/memory_interop.h` |
+    | [`dvz_allocation_set_flags()`](#dvz_allocation_set_flags) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocation_size()`](#dvz_allocation_size) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocator_buffer()`](#dvz_allocator_buffer) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocator_copy_from()`](#dvz_allocator_copy_from) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocator_copy_to()`](#dvz_allocator_copy_to) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocator_create()`](#dvz_allocator_create) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocator_destroy()`](#dvz_allocator_destroy) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocator_destroy_buffer()`](#dvz_allocator_destroy_buffer) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocator_destroy_image()`](#dvz_allocator_destroy_image) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocator_device()`](#dvz_allocator_device) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocator_export()`](#dvz_allocator_export) | `include/datoviz/vk/memory_interop.h` |
+    | [`dvz_allocator_external()`](#dvz_allocator_external) | `include/datoviz/vk/memory_interop.h` |
+    | [`dvz_allocator_flush()`](#dvz_allocator_flush) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocator_free()`](#dvz_allocator_free) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocator_image()`](#dvz_allocator_image) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocator_import_buffer()`](#dvz_allocator_import_buffer) | `include/datoviz/vk/memory_interop.h` |
+    | [`dvz_allocator_import_image()`](#dvz_allocator_import_image) | `include/datoviz/vk/memory_interop.h` |
+    | [`dvz_allocator_invalidate()`](#dvz_allocator_invalidate) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocator_map()`](#dvz_allocator_map) | `include/datoviz/vk/memory.h` |
+    | [`dvz_allocator_unmap()`](#dvz_allocator_unmap) | `include/datoviz/vk/memory.h` |
+    | [`dvz_interop_buffer_export()`](#dvz_interop_buffer_export) | `include/datoviz/vk/memory_interop.h` |
+    | [`dvz_interop_buffer_export_config()`](#dvz_interop_buffer_export_config) | `include/datoviz/vk/memory_interop.h` |
+    | [`dvz_interop_buffer_export_from_buffer()`](#dvz_interop_buffer_export_from_buffer) | `include/datoviz/vk/memory_interop.h` |
+    | [`dvz_interop_buffer_wait_timeline()`](#dvz_interop_buffer_wait_timeline) | `include/datoviz/vk/memory_interop.h` |
+    | [`dvz_interop_gpu_ctx()`](#dvz_interop_gpu_ctx) | `include/datoviz/vk/memory_interop.h` |
+    | [`dvz_interop_gpu_ctx_ex()`](#dvz_interop_gpu_ctx_ex) | `include/datoviz/vk/memory_interop.h` |
 
 ## Devices And Queues { #devices-and-queues }
-
-### Types
-
-#### `DvzDefaultQueue` { #type-dvzdefaultqueue }
-
-```c
-enum DvzDefaultQueue {
-    DVZ_DEFAULT_QUEUE_TRANSFER = 0,
-    DVZ_DEFAULT_QUEUE_COMPUTE = 1,
-    DVZ_DEFAULT_QUEUE_RENDER = 2,
-    DVZ_DEFAULT_QUEUE_PRESENT = 3,
-    DVZ_DEFAULT_QUEUE_COUNT = 4,
-};
-```
-
-_Declared in `include/datoviz/vk/enums.h`:48._
-
-#### `DvzDevice` { #type-dvzdevice }
-
-```c
-typedef struct DvzDevice DvzDevice;
-```
-
-Used by: [`dvz_allocator_device()`](runtime-vulkan.md#dvz_allocator_device), [`dvz_buffer()`](runtime-vklite.md#dvz_buffer), [`dvz_command_buffer_alloc()`](runtime-vklite.md#dvz_command_buffer_alloc), [`dvz_command_buffer_free()`](runtime-vklite.md#dvz_command_buffer_free), [`dvz_commands()`](runtime-vklite.md#dvz_commands), [`dvz_commands_wrap()`](runtime-vklite.md#dvz_commands_wrap), [`dvz_commands_wrap_borrowed_recording()`](runtime-vklite.md#dvz_commands_wrap_borrowed_recording), [`dvz_compute()`](runtime-vklite.md#dvz_compute); plus 29 more.
-
-_Declared in `include/datoviz/vk/device.h`._
-
-#### `DvzDeviceConfig` { #type-dvzdeviceconfig }
-
-```c
-struct DvzDeviceConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzInstance * instance;
-    uint32_t gpu_index;
-    _Bool enable_canvas_extensions;
-    uint32_t queue_request_count;
-    DvzDeviceQueueRequest[8] queue_requests;
-    uint32_t extension_count;
-    const char *[256] extensions;
-    _Bool has_features10;
-    _Bool has_features11;
-    _Bool has_features12;
-    _Bool has_features13;
-    VkPhysicalDeviceFeatures features10;
-    VkPhysicalDeviceVulkan11Features features11;
-    VkPhysicalDeviceVulkan12Features features12;
-    VkPhysicalDeviceVulkan13Features features13;
-};
-```
-
-Used by: [`dvz_device_config()`](runtime-vulkan.md#dvz_device_config), [`dvz_device_config_enable_canvas_extensions()`](runtime-vulkan.md#dvz_device_config_enable_canvas_extensions), [`dvz_device_config_request_extension()`](runtime-vulkan.md#dvz_device_config_request_extension), [`dvz_device_config_request_queue()`](runtime-vulkan.md#dvz_device_config_request_queue), [`dvz_device_config_set_features10()`](runtime-vulkan.md#dvz_device_config_set_features10), [`dvz_device_config_set_features11()`](runtime-vulkan.md#dvz_device_config_set_features11), [`dvz_device_config_set_features12()`](runtime-vulkan.md#dvz_device_config_set_features12), [`dvz_device_config_set_features13()`](runtime-vulkan.md#dvz_device_config_set_features13); plus 2 more.
-
-_Declared in `include/datoviz/vk/device.h`:51._
-
-#### `DvzDeviceQueueRequest` { #type-dvzdevicequeuerequest }
-
-```c
-struct DvzDeviceQueueRequest {
-    uint32_t family;
-    uint32_t count;
-};
-```
-
-_Declared in `include/datoviz/vk/device.h`:43._
-
-#### `DvzQueue` { #type-dvzqueue }
-
-```c
-struct DvzQueue {
-    uint32_t family_idx;
-    uint32_t queue_idx;
-    VkQueue vk_queue;
-    VkQueueFlags flags;
-    _Bool is_main;
-    _Bool is_set;
-};
-```
-
-Used by: [`dvz_commands()`](runtime-vklite.md#dvz_commands), [`dvz_device_queue()`](runtime-vulkan.md#dvz_device_queue), [`dvz_gpu_ctx_queue()`](runtime-vulkan.md#dvz_gpu_ctx_queue), [`dvz_queue_family()`](runtime-vulkan.md#dvz_queue_family), [`dvz_queue_from_role()`](runtime-vulkan.md#dvz_queue_from_role), [`dvz_queue_handle()`](runtime-vulkan.md#dvz_queue_handle), [`dvz_queue_index()`](runtime-vulkan.md#dvz_queue_index), [`dvz_queue_supports()`](runtime-vulkan.md#dvz_queue_supports); plus 1 more.
-
-_Declared in `include/datoviz/vk/queues.h`:89._
-
-#### `DvzQueueCaps` { #type-dvzqueuecaps }
-
-```c
-struct DvzQueueCaps {
-    uint32_t family_count;
-    VkQueueFlags[8] flags;
-    uint32_t[8] queue_count;
-};
-```
-
-Used by: [`dvz_instance_gpu_queue_caps()`](runtime-vulkan.md#dvz_instance_gpu_queue_caps), [`dvz_queues()`](runtime-vulkan.md#dvz_queues).
-
-_Declared in `include/datoviz/vk/queues.h`:74._
-
-#### `DvzQueueRole` { #type-dvzqueuerole }
-
-```c
-enum DvzQueueRole {
-    DVZ_QUEUE_MAIN = 0,
-    DVZ_QUEUE_COMPUTE = 1,
-    DVZ_QUEUE_TRANSFER = 2,
-    DVZ_QUEUE_VIDEO_ENCODE = 3,
-    DVZ_QUEUE_VIDEO_DECODE = 4,
-    DVZ_QUEUE_COUNT = 5,
-};
-```
-
-Used by: [`dvz_device_queue()`](runtime-vulkan.md#dvz_device_queue), [`dvz_gpu_ctx_queue()`](runtime-vulkan.md#dvz_gpu_ctx_queue), [`dvz_queue_from_role()`](runtime-vulkan.md#dvz_queue_from_role), [`dvz_queue_supports()`](runtime-vulkan.md#dvz_queue_supports).
-
-_Declared in `include/datoviz/vk/queues.h`:40._
-
-#### `DvzQueues` { #type-dvzqueues }
-
-```c
-struct DvzQueues {
-    uint32_t queue_count;
-    DvzQueue[5] queues;
-};
-```
-
-Used by: [`dvz_queue_from_role()`](runtime-vulkan.md#dvz_queue_from_role), [`dvz_queues()`](runtime-vulkan.md#dvz_queues), [`dvz_queues_show()`](runtime-vulkan.md#dvz_queues_show).
-
-_Declared in `include/datoviz/vk/queues.h`:107._
 
 ### Functions
 
@@ -825,63 +668,137 @@ void dvz_queues_show(
 
 _Declared in `include/datoviz/vk/queues.h`:157._
 
-## GPU Context { #gpu-context }
-
 ### Types
 
-#### `DvzGpuCtx` { #type-dvzgpuctx }
+<a id="type-dvzdefaultqueue"></a>
 
-```c
-typedef struct DvzGpuCtx DvzGpuCtx;
-```
+??? abstract "`DvzDefaultQueue` · enum"
 
-Used by: [`dvz_gpu_ctx()`](runtime-vulkan.md#dvz_gpu_ctx), [`dvz_gpu_ctx_alloc()`](runtime-vulkan.md#dvz_gpu_ctx_alloc), [`dvz_gpu_ctx_destroy()`](runtime-vulkan.md#dvz_gpu_ctx_destroy), [`dvz_gpu_ctx_device()`](runtime-vulkan.md#dvz_gpu_ctx_device), [`dvz_gpu_ctx_error_count()`](runtime-vulkan.md#dvz_gpu_ctx_error_count), [`dvz_gpu_ctx_gpu_index()`](runtime-vulkan.md#dvz_gpu_ctx_gpu_index), [`dvz_gpu_ctx_gpu_info()`](runtime-vulkan.md#dvz_gpu_ctx_gpu_info), [`dvz_gpu_ctx_instance()`](runtime-vulkan.md#dvz_gpu_ctx_instance); plus 3 more.
+    ```c
+    enum DvzDefaultQueue {
+        DVZ_DEFAULT_QUEUE_TRANSFER = 0,
+        DVZ_DEFAULT_QUEUE_COMPUTE = 1,
+        DVZ_DEFAULT_QUEUE_RENDER = 2,
+        DVZ_DEFAULT_QUEUE_PRESENT = 3,
+        DVZ_DEFAULT_QUEUE_COUNT = 4,
+    };
+    ```
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`._
+    _Declared in `include/datoviz/vk/enums.h`:48._
 
-#### `DvzGpuCtxConfig` { #type-dvzgpuctxconfig }
+<a id="type-dvzdevice"></a>
 
-```c
-struct DvzGpuCtxConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    _Bool enable_validation;
-    uint32_t gpu_index;
-    VkExternalMemoryHandleTypeFlagsKHR export_handle_type;
-    _Bool has_features10;
-    _Bool has_features12;
-    _Bool has_features13;
-    VkPhysicalDeviceFeatures features10;
-    VkPhysicalDeviceVulkan12Features features12;
-    VkPhysicalDeviceVulkan13Features features13;
-    uint32_t instance_extension_count;
-    const char *[16] instance_extensions;
-    _Bool enable_canvas_extensions;
-};
-```
+??? abstract "`DvzDevice` · typedef"
 
-Used by: [`dvz_gpu_ctx()`](runtime-vulkan.md#dvz_gpu_ctx), [`dvz_gpu_ctx_config()`](runtime-vulkan.md#dvz_gpu_ctx_config), [`dvz_gpu_ctx_config_add_instance_extension()`](runtime-vulkan.md#dvz_gpu_ctx_config_add_instance_extension), [`dvz_gpu_ctx_config_alloc()`](runtime-vulkan.md#dvz_gpu_ctx_config_alloc), [`dvz_gpu_ctx_config_enable_canvas_extensions()`](runtime-vulkan.md#dvz_gpu_ctx_config_enable_canvas_extensions), [`dvz_gpu_ctx_config_features10()`](runtime-vulkan.md#dvz_gpu_ctx_config_features10), [`dvz_gpu_ctx_config_features12()`](runtime-vulkan.md#dvz_gpu_ctx_config_features12), [`dvz_gpu_ctx_config_features13()`](runtime-vulkan.md#dvz_gpu_ctx_config_features13); plus 2 more.
+    ```c
+    typedef struct DvzDevice DvzDevice;
+    ```
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`:45._
+    _Declared in `include/datoviz/vk/device.h`._
 
-#### `DvzGpuInfo` { #type-dvzgpuinfo }
+<a id="type-dvzdeviceconfig"></a>
 
-```c
-struct DvzGpuInfo {
-    uint32_t index;
-    char[256] name;
-    VkPhysicalDeviceType device_type;
-    uint32_t api_version;
-    uint32_t driver_version;
-    uint32_t vendor_id;
-    uint32_t device_id;
-    DvzQueueCaps queue_caps;
-};
-```
+??? abstract "`DvzDeviceConfig` · record"
 
-Used by: [`dvz_gpu_ctx_gpu_info()`](runtime-vulkan.md#dvz_gpu_ctx_gpu_info), [`dvz_instance_gpu_info()`](runtime-vulkan.md#dvz_instance_gpu_info).
+    ```c
+    struct DvzDeviceConfig {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzInstance * instance;
+        uint32_t gpu_index;
+        _Bool enable_canvas_extensions;
+        uint32_t queue_request_count;
+        DvzDeviceQueueRequest[8] queue_requests;
+        uint32_t extension_count;
+        const char *[256] extensions;
+        _Bool has_features10;
+        _Bool has_features11;
+        _Bool has_features12;
+        _Bool has_features13;
+        VkPhysicalDeviceFeatures features10;
+        VkPhysicalDeviceVulkan11Features features11;
+        VkPhysicalDeviceVulkan12Features features12;
+        VkPhysicalDeviceVulkan13Features features13;
+    };
+    ```
 
-_Declared in `include/datoviz/vk/gpu.h`:42._
+    _Declared in `include/datoviz/vk/device.h`:51._
+
+<a id="type-dvzdevicequeuerequest"></a>
+
+??? abstract "`DvzDeviceQueueRequest` · record"
+
+    ```c
+    struct DvzDeviceQueueRequest {
+        uint32_t family;
+        uint32_t count;
+    };
+    ```
+
+    _Declared in `include/datoviz/vk/device.h`:43._
+
+<a id="type-dvzqueue"></a>
+
+??? abstract "`DvzQueue` · record"
+
+    ```c
+    struct DvzQueue {
+        uint32_t family_idx;
+        uint32_t queue_idx;
+        VkQueue vk_queue;
+        VkQueueFlags flags;
+        _Bool is_main;
+        _Bool is_set;
+    };
+    ```
+
+    _Declared in `include/datoviz/vk/queues.h`:89._
+
+<a id="type-dvzqueuecaps"></a>
+
+??? abstract "`DvzQueueCaps` · record"
+
+    ```c
+    struct DvzQueueCaps {
+        uint32_t family_count;
+        VkQueueFlags[8] flags;
+        uint32_t[8] queue_count;
+    };
+    ```
+
+    _Declared in `include/datoviz/vk/queues.h`:74._
+
+<a id="type-dvzqueuerole"></a>
+
+??? abstract "`DvzQueueRole` · enum"
+
+    ```c
+    enum DvzQueueRole {
+        DVZ_QUEUE_MAIN = 0,
+        DVZ_QUEUE_COMPUTE = 1,
+        DVZ_QUEUE_TRANSFER = 2,
+        DVZ_QUEUE_VIDEO_ENCODE = 3,
+        DVZ_QUEUE_VIDEO_DECODE = 4,
+        DVZ_QUEUE_COUNT = 5,
+    };
+    ```
+
+    _Declared in `include/datoviz/vk/queues.h`:40._
+
+<a id="type-dvzqueues"></a>
+
+??? abstract "`DvzQueues` · record"
+
+    ```c
+    struct DvzQueues {
+        uint32_t queue_count;
+        DvzQueue[5] queues;
+    };
+    ```
+
+    _Declared in `include/datoviz/vk/queues.h`:107._
+
+## GPU Context { #gpu-context }
 
 ### Functions
 
@@ -1225,50 +1142,63 @@ DvzQueue * dvz_gpu_ctx_queue(
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:235._
 
-## Instances { #instances }
-
 ### Types
 
-#### `DvzInstance` { #type-dvzinstance }
+<a id="type-dvzgpuctx"></a>
 
-```c
-typedef struct DvzInstance DvzInstance;
-```
+??? abstract "`DvzGpuCtx` · typedef"
 
-Used by: [`dvz_device_config()`](runtime-vulkan.md#dvz_device_config), [`dvz_gpu_ctx_instance()`](runtime-vulkan.md#dvz_gpu_ctx_instance), [`dvz_instance_create()`](runtime-vulkan.md#dvz_instance_create), [`dvz_instance_destroy()`](runtime-vulkan.md#dvz_instance_destroy), [`dvz_instance_error_count()`](runtime-vulkan.md#dvz_instance_error_count), [`dvz_instance_gpu_count()`](runtime-vulkan.md#dvz_instance_gpu_count), [`dvz_instance_gpu_handle()`](runtime-vulkan.md#dvz_instance_gpu_handle), [`dvz_instance_gpu_info()`](runtime-vulkan.md#dvz_instance_gpu_info); plus 9 more.
+    ```c
+    typedef struct DvzGpuCtx DvzGpuCtx;
+    ```
 
-_Declared in `include/datoviz/vk/instance.h`:41._
+    _Declared in `include/datoviz/vk/gpu_ctx.h`._
 
-#### `DvzInstanceConfig` { #type-dvzinstanceconfig }
+<a id="type-dvzgpuctxconfig"></a>
 
-```c
-struct DvzInstanceConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint32_t vk_version;
-    const char * app_name;
-    uint32_t app_version;
-    _Bool portability;
-    uint32_t layer_count;
-    const char *[32] layers;
-    uint32_t extension_count;
-    const char *[256] extensions;
-};
-```
+??? abstract "`DvzGpuCtxConfig` · record"
 
-Used by: [`dvz_instance_config()`](runtime-vulkan.md#dvz_instance_config), [`dvz_instance_config_request_extension()`](runtime-vulkan.md#dvz_instance_config_request_extension), [`dvz_instance_config_request_layer()`](runtime-vulkan.md#dvz_instance_config_request_layer), [`dvz_instance_create()`](runtime-vulkan.md#dvz_instance_create).
+    ```c
+    struct DvzGpuCtxConfig {
+        uint32_t struct_size;
+        uint32_t flags;
+        _Bool enable_validation;
+        uint32_t gpu_index;
+        VkExternalMemoryHandleTypeFlagsKHR export_handle_type;
+        _Bool has_features10;
+        _Bool has_features12;
+        _Bool has_features13;
+        VkPhysicalDeviceFeatures features10;
+        VkPhysicalDeviceVulkan12Features features12;
+        VkPhysicalDeviceVulkan13Features features13;
+        uint32_t instance_extension_count;
+        const char *[16] instance_extensions;
+        _Bool enable_canvas_extensions;
+    };
+    ```
 
-_Declared in `include/datoviz/vk/instance.h`:48._
+    _Declared in `include/datoviz/vk/gpu_ctx.h`:45._
 
-#### `DvzInstanceFlags` { #type-dvzinstanceflags }
+<a id="type-dvzgpuinfo"></a>
 
-```c
-enum DvzInstanceFlags {
-    DVZ_INSTANCE_VALIDATION_FLAGS = 1,
-};
-```
+??? abstract "`DvzGpuInfo` · record"
 
-_Declared in `include/datoviz/vk/instance.h`:69._
+    ```c
+    struct DvzGpuInfo {
+        uint32_t index;
+        char[256] name;
+        VkPhysicalDeviceType device_type;
+        uint32_t api_version;
+        uint32_t driver_version;
+        uint32_t vendor_id;
+        uint32_t device_id;
+        DvzQueueCaps queue_caps;
+    };
+    ```
+
+    _Declared in `include/datoviz/vk/gpu.h`:42._
+
+## Instances { #instances }
 
 ### Functions
 
@@ -1597,75 +1527,52 @@ char ** dvz_instance_supported_layers(
 
 _Declared in `include/datoviz/vk/instance.h`:177._
 
-## Memory And Interop { #memory-and-interop }
-
 ### Types
 
-#### `DvzAllocation` { #type-dvzallocation }
+<a id="type-dvzinstance"></a>
 
-```c
-typedef struct DvzAllocation DvzAllocation;
-```
+??? abstract "`DvzInstance` · typedef"
 
-Used by: [`dvz_allocation_create()`](runtime-vulkan.md#dvz_allocation_create), [`dvz_allocation_flags()`](runtime-vulkan.md#dvz_allocation_flags), [`dvz_allocation_free()`](runtime-vulkan.md#dvz_allocation_free), [`dvz_allocation_mapped()`](runtime-vulkan.md#dvz_allocation_mapped), [`dvz_allocation_memory()`](runtime-vulkan.md#dvz_allocation_memory), [`dvz_allocation_set_flags()`](runtime-vulkan.md#dvz_allocation_set_flags), [`dvz_allocation_size()`](runtime-vulkan.md#dvz_allocation_size), [`dvz_allocator_buffer()`](runtime-vulkan.md#dvz_allocator_buffer); plus 13 more.
+    ```c
+    typedef struct DvzInstance DvzInstance;
+    ```
 
-_Declared in `include/datoviz/vk/memory.h`:33._
+    _Declared in `include/datoviz/vk/instance.h`:41._
 
-#### `DvzAllocationFlags` { #type-dvzallocationflags }
+<a id="type-dvzinstanceconfig"></a>
 
-```c
-typedef uint32_t DvzAllocationFlags;
-```
+??? abstract "`DvzInstanceConfig` · record"
 
-Used by: [`dvz_allocation_flags()`](runtime-vulkan.md#dvz_allocation_flags), [`dvz_allocation_flags_contains()`](runtime-vulkan.md#dvz_allocation_flags_contains), [`dvz_allocation_set_flags()`](runtime-vulkan.md#dvz_allocation_set_flags), [`dvz_allocator_buffer()`](runtime-vulkan.md#dvz_allocator_buffer), [`dvz_allocator_image()`](runtime-vulkan.md#dvz_allocator_image), [`dvz_allocator_import_buffer()`](runtime-vulkan.md#dvz_allocator_import_buffer), [`dvz_allocator_import_image()`](runtime-vulkan.md#dvz_allocator_import_image), [`dvz_buffer_flags()`](runtime-vklite.md#dvz_buffer_flags); plus 1 more.
+    ```c
+    struct DvzInstanceConfig {
+        uint32_t struct_size;
+        uint32_t flags;
+        uint32_t vk_version;
+        const char * app_name;
+        uint32_t app_version;
+        _Bool portability;
+        uint32_t layer_count;
+        const char *[32] layers;
+        uint32_t extension_count;
+        const char *[256] extensions;
+    };
+    ```
 
-_Declared in `include/datoviz/vk/memory.h`:34._
+    _Declared in `include/datoviz/vk/instance.h`:48._
 
-#### `DvzInteropBufferExport` { #type-dvzinteropbufferexport }
+<a id="type-dvzinstanceflags"></a>
 
-```c
-struct DvzInteropBufferExport {
-    uint32_t version;
-    int memory_handle;
-    uint32_t memory_handle_type;
-    uint64_t allocation_size;
-    uint64_t offset;
-    uint64_t size;
-    uint32_t usage;
-    uint32_t vk_usage;
-    uint32_t drp2_usage;
-    uint32_t flags;
-    uint32_t device_uuid_valid;
-    uint8_t[16] device_uuid;
-    int semaphore_handle;
-    uint32_t semaphore_handle_type;
-    uint64_t semaphore_value;
-};
-```
+??? abstract "`DvzInstanceFlags` · enum"
 
-Used by: [`dvz_interop_buffer_export()`](runtime-vulkan.md#dvz_interop_buffer_export), [`dvz_interop_buffer_export_from_buffer()`](runtime-vulkan.md#dvz_interop_buffer_export_from_buffer).
+    ```c
+    enum DvzInstanceFlags {
+        DVZ_INSTANCE_VALIDATION_FLAGS = 1,
+    };
+    ```
 
-_Declared in `include/datoviz/vk/memory_interop.h`:51._
+    _Declared in `include/datoviz/vk/instance.h`:69._
 
-#### `DvzInteropBufferExportConfig` { #type-dvzinteropbufferexportconfig }
-
-```c
-struct DvzInteropBufferExportConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint64_t offset;
-    uint64_t size;
-    uint32_t drp2_usage;
-    uint32_t export_flags;
-    DvzSemaphore * semaphore;
-    uint32_t semaphore_handle_type;
-    uint64_t semaphore_value;
-};
-```
-
-Used by: [`dvz_interop_buffer_export_config()`](runtime-vulkan.md#dvz_interop_buffer_export_config), [`dvz_interop_buffer_export_from_buffer()`](runtime-vulkan.md#dvz_interop_buffer_export_from_buffer).
-
-_Declared in `include/datoviz/vk/memory_interop.h`:72._
+## Memory And Interop { #memory-and-interop }
 
 ### Functions
 
@@ -2387,109 +2294,193 @@ DvzGpuCtx * dvz_interop_gpu_ctx_ex(
 
 _Declared in `include/datoviz/vk/memory_interop.h`:160._
 
+### Types
+
+<a id="type-dvzallocation"></a>
+
+??? abstract "`DvzAllocation` · typedef"
+
+    ```c
+    typedef struct DvzAllocation DvzAllocation;
+    ```
+
+    _Declared in `include/datoviz/vk/memory.h`:33._
+
+<a id="type-dvzallocationflags"></a>
+
+??? abstract "`DvzAllocationFlags` · typedef"
+
+    ```c
+    typedef uint32_t DvzAllocationFlags;
+    ```
+
+    _Declared in `include/datoviz/vk/memory.h`:34._
+
+<a id="type-dvzinteropbufferexport"></a>
+
+??? abstract "`DvzInteropBufferExport` · record"
+
+    ```c
+    struct DvzInteropBufferExport {
+        uint32_t version;
+        int memory_handle;
+        uint32_t memory_handle_type;
+        uint64_t allocation_size;
+        uint64_t offset;
+        uint64_t size;
+        uint32_t usage;
+        uint32_t vk_usage;
+        uint32_t drp2_usage;
+        uint32_t flags;
+        uint32_t device_uuid_valid;
+        uint8_t[16] device_uuid;
+        int semaphore_handle;
+        uint32_t semaphore_handle_type;
+        uint64_t semaphore_value;
+    };
+    ```
+
+    _Declared in `include/datoviz/vk/memory_interop.h`:51._
+
+<a id="type-dvzinteropbufferexportconfig"></a>
+
+??? abstract "`DvzInteropBufferExportConfig` · record"
+
+    ```c
+    struct DvzInteropBufferExportConfig {
+        uint32_t struct_size;
+        uint32_t flags;
+        uint64_t offset;
+        uint64_t size;
+        uint32_t drp2_usage;
+        uint32_t export_flags;
+        DvzSemaphore * semaphore;
+        uint32_t semaphore_handle_type;
+        uint64_t semaphore_value;
+    };
+    ```
+
+    _Declared in `include/datoviz/vk/memory_interop.h`:72._
+
 ## Shared Render Types { #shared-render-types }
 
 ### Types
 
-#### `DvzDescriptorType` { #type-dvzdescriptortype }
+<a id="type-dvzdescriptortype"></a>
 
-```c
-enum DvzDescriptorType {
-    DVZ_DESCRIPTOR_TYPE_SAMPLER = 0,
-    DVZ_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER = 1,
-    DVZ_DESCRIPTOR_TYPE_SAMPLED_IMAGE = 2,
-    DVZ_DESCRIPTOR_TYPE_STORAGE_IMAGE = 3,
-    DVZ_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER = 4,
-    DVZ_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER = 5,
-    DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER = 6,
-    DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER = 7,
-    DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = 8,
-    DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9,
-};
-```
+??? abstract "`DvzDescriptorType` · enum"
 
-_Declared in `include/datoviz/vk/enums.h`:119._
+    ```c
+    enum DvzDescriptorType {
+        DVZ_DESCRIPTOR_TYPE_SAMPLER = 0,
+        DVZ_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER = 1,
+        DVZ_DESCRIPTOR_TYPE_SAMPLED_IMAGE = 2,
+        DVZ_DESCRIPTOR_TYPE_STORAGE_IMAGE = 3,
+        DVZ_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER = 4,
+        DVZ_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER = 5,
+        DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER = 6,
+        DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER = 7,
+        DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = 8,
+        DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9,
+    };
+    ```
 
-#### `DvzFilter` { #type-dvzfilter }
+    _Declared in `include/datoviz/vk/enums.h`:119._
 
-```c
-enum DvzFilter {
-    DVZ_FILTER_NEAREST = 0,
-    DVZ_FILTER_LINEAR = 1,
-    DVZ_FILTER_CUBIC_IMG = 1000015000,
-};
-```
+<a id="type-dvzfilter"></a>
 
-_Declared in `include/datoviz/vk/enums.h`:61._
+??? abstract "`DvzFilter` · enum"
 
-#### `DvzPolygonMode` { #type-dvzpolygonmode }
+    ```c
+    enum DvzFilter {
+        DVZ_FILTER_NEAREST = 0,
+        DVZ_FILTER_LINEAR = 1,
+        DVZ_FILTER_CUBIC_IMG = 1000015000,
+    };
+    ```
 
-```c
-enum DvzPolygonMode {
-    DVZ_POLYGON_MODE_FILL = 0,
-    DVZ_POLYGON_MODE_LINE = 1,
-    DVZ_POLYGON_MODE_POINT = 2,
-};
-```
+    _Declared in `include/datoviz/vk/enums.h`:61._
 
-_Declared in `include/datoviz/vk/enums.h`:92._
+<a id="type-dvzpolygonmode"></a>
 
-#### `DvzSamplerAddressMode` { #type-dvzsampleraddressmode }
+??? abstract "`DvzPolygonMode` · enum"
 
-```c
-enum DvzSamplerAddressMode {
-    DVZ_SAMPLER_ADDRESS_MODE_REPEAT = 0,
-    DVZ_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT = 1,
-    DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE = 2,
-    DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER = 3,
-    DVZ_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE = 4,
-};
-```
+    ```c
+    enum DvzPolygonMode {
+        DVZ_POLYGON_MODE_FILL = 0,
+        DVZ_POLYGON_MODE_LINE = 1,
+        DVZ_POLYGON_MODE_POINT = 2,
+    };
+    ```
 
-_Declared in `include/datoviz/vk/enums.h`:71._
+    _Declared in `include/datoviz/vk/enums.h`:92._
 
-#### `DvzShaderFormat` { #type-dvzshaderformat }
+<a id="type-dvzsampleraddressmode"></a>
 
-```c
-enum DvzShaderFormat {
-    DVZ_SHADER_NONE = 0,
-    DVZ_SHADER_SPIRV = 1,
-    DVZ_SHADER_GLSL = 2,
-};
-```
+??? abstract "`DvzSamplerAddressMode` · enum"
 
-_Declared in `include/datoviz/vk/enums.h`:38._
+    ```c
+    enum DvzSamplerAddressMode {
+        DVZ_SAMPLER_ADDRESS_MODE_REPEAT = 0,
+        DVZ_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT = 1,
+        DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE = 2,
+        DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER = 3,
+        DVZ_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE = 4,
+    };
+    ```
 
-#### `DvzShaderStageFlags` { #type-dvzshaderstageflags }
+    _Declared in `include/datoviz/vk/enums.h`:71._
 
-```c
-typedef int32_t DvzShaderStageFlags;
-```
+<a id="type-dvzshaderformat"></a>
 
-_Declared in `include/datoviz/vk/enums.h`:114._
+??? abstract "`DvzShaderFormat` · enum"
 
-#### `DvzShaderType` { #type-dvzshadertype }
+    ```c
+    enum DvzShaderFormat {
+        DVZ_SHADER_NONE = 0,
+        DVZ_SHADER_SPIRV = 1,
+        DVZ_SHADER_GLSL = 2,
+    };
+    ```
 
-```c
-enum DvzShaderType {
-    DVZ_SHADER_VERTEX = 1,
-    DVZ_SHADER_TESSELLATION_CONTROL = 2,
-    DVZ_SHADER_TESSELLATION_EVALUATION = 4,
-    DVZ_SHADER_GEOMETRY = 8,
-    DVZ_SHADER_FRAGMENT = 16,
-    DVZ_SHADER_COMPUTE = 32,
-};
-```
+    _Declared in `include/datoviz/vk/enums.h`:38._
 
-_Declared in `include/datoviz/vk/enums.h`:102._
+<a id="type-dvzshaderstageflags"></a>
 
-#### `DvzVertexInputRate` { #type-dvzvertexinputrate }
+??? abstract "`DvzShaderStageFlags` · typedef"
 
-```c
-enum DvzVertexInputRate {
-    DVZ_VERTEX_INPUT_RATE_VERTEX = 0,
-    DVZ_VERTEX_INPUT_RATE_INSTANCE = 1,
-};
-```
+    ```c
+    typedef int32_t DvzShaderStageFlags;
+    ```
 
-_Declared in `include/datoviz/vk/enums.h`:83._
+    _Declared in `include/datoviz/vk/enums.h`:114._
+
+<a id="type-dvzshadertype"></a>
+
+??? abstract "`DvzShaderType` · enum"
+
+    ```c
+    enum DvzShaderType {
+        DVZ_SHADER_VERTEX = 1,
+        DVZ_SHADER_TESSELLATION_CONTROL = 2,
+        DVZ_SHADER_TESSELLATION_EVALUATION = 4,
+        DVZ_SHADER_GEOMETRY = 8,
+        DVZ_SHADER_FRAGMENT = 16,
+        DVZ_SHADER_COMPUTE = 32,
+    };
+    ```
+
+    _Declared in `include/datoviz/vk/enums.h`:102._
+
+<a id="type-dvzvertexinputrate"></a>
+
+??? abstract "`DvzVertexInputRate` · enum"
+
+    ```c
+    enum DvzVertexInputRate {
+        DVZ_VERTEX_INPUT_RATE_VERTEX = 0,
+        DVZ_VERTEX_INPUT_RATE_INSTANCE = 1,
+    };
+    ```
+
+    _Declared in `include/datoviz/vk/enums.h`:83._
