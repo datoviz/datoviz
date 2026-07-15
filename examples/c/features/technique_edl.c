@@ -46,9 +46,11 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  EXAMPLE_WINDOW_WIDTH
-#define HEIGHT EXAMPLE_WINDOW_HEIGHT
-#define POINT_COUNT 192u
+#define WIDTH           EXAMPLE_WINDOW_WIDTH
+#define HEIGHT          EXAMPLE_WINDOW_HEIGHT
+#define POINT_RINGS     72u
+#define POINTS_PER_RING 72u
+#define POINT_COUNT     (POINT_RINGS * POINTS_PER_RING)
 
 static const float TAU = 6.28318530718f;
 
@@ -95,26 +97,25 @@ static bool _add_depth_cloud(DvzScene* scene, DvzPanel* panel)
     DvzColor colors[POINT_COUNT] = {{0}};
     float sizes[POINT_COUNT] = {0};
 
+    const DvzColor point_color =
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
     for (uint32_t i = 0; i < POINT_COUNT; i++)
     {
-        const float layer = (float)(i % 12u);
-        const float row = (float)(i / 12u);
-        const float t = POINT_COUNT > 1u ? (float)i / (float)(POINT_COUNT - 1u) : 0.0f;
-        const float theta = TAU * (0.19f * row + 0.083333f * layer);
-        const float radius = 0.16f + 0.82f * sqrtf(t);
-        const float wave = 0.34f * sinf(TAU * (3.0f * t + 0.083333f * layer));
+        const uint32_t ring = i / POINTS_PER_RING;
+        const uint32_t column = i % POINTS_PER_RING;
+        const float v = -1.0f + 2.0f * (float)ring / (float)(POINT_RINGS - 1u);
+        const float theta =
+            TAU * (float)column / (float)POINTS_PER_RING + 0.055f * (float)ring;
+        const float equator = sqrtf(fmaxf(0.0f, 1.0f - v * v));
+        const float radius =
+            0.68f + 0.13f * sinf(5.0f * theta + 7.0f * v) +
+            0.08f * cosf(9.0f * theta - 3.0f * v);
 
-        positions[i][0] = 0.78f * radius * cosf(theta);
-        positions[i][1] = 0.68f * radius * sinf(theta);
-        positions[i][2] = -0.80f + 1.60f * (layer / 11.0f) + wave;
-
-        DvzColor color = example_graphite_cyan_color(
-            layer < 4.0f   ? EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY
-            : layer < 8.0f ? EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY
-                            : EXAMPLE_STYLE_COLOR_WARNING);
-        color.a = 255u;
-        colors[i] = color;
-        sizes[i] = 22.0f + 12.0f * (0.5f + 0.5f * sinf(TAU * (4.0f * t)));
+        positions[i][0] = radius * equator * cosf(theta);
+        positions[i][1] = 0.78f * v;
+        positions[i][2] = radius * equator * sinf(theta);
+        colors[i] = point_color;
+        sizes[i] = 5.0f;
     }
 
     DvzVisual* point = dvz_point(scene, 0);
@@ -127,13 +128,6 @@ static bool _add_depth_cloud(DvzScene* scene, DvzPanel* panel)
         {.attr_name = "size", .data = sizes, .item_count = POINT_COUNT},
     };
     if (dvz_visual_set_data_many(point, updates, 3) != 0)
-        return false;
-    DvzPointStyleDesc style = dvz_point_style_desc();
-    style.aspect = DVZ_SHAPE_ASPECT_OUTLINE;
-    style.edge_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_PANEL_BG);
-    style.edge_color.a = 245u;
-    style.stroke_width_px = 2.0f;
-    if (dvz_point_set_style(point, &style) != 0)
         return false;
     return dvz_panel_add_visual(panel, point, NULL) == 0;
 }
@@ -200,12 +194,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     label_placement.text_anchor[1] = 0.0f;
     label_placement.has_text_anchor = true;
     DvzLabelDesc label = dvz_label_desc();
-    label.text = "plain depth";
+    label.text = "plain points";
     DvzAnnotation* annotation = dvz_annotation_label(plain, &label);
     if (annotation == NULL || dvz_annotation_set_style(annotation, &label_style) != 0 ||
         dvz_annotation_set_placement(annotation, &label_placement) != 0)
         return false;
-    label.text = "EDL resolve";
+    label.text = "eye-dome lighting";
     annotation = dvz_annotation_label(lit, &label);
     if (annotation == NULL || dvz_annotation_set_style(annotation, &label_style) != 0 ||
         dvz_annotation_set_placement(annotation, &label_placement) != 0)
@@ -234,9 +228,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     state->edl = (DvzExampleGuiEdlControls){
         .enabled = true,
-        .radius = 6.941f,
-        .strength = 112.941f,
-        .depth_scale = 1.361f,
+        .radius = 2.0f,
+        .strength = 55.0f,
+        .depth_scale = 1.0f,
     };
     example_tuner_edl(&state->tuner, "Lighting", state->lit_panel, &state->edl);
     example_tuner_arcball(

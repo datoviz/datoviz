@@ -1260,6 +1260,9 @@ int test_app_offscreen_points_edl_renders(TstContext* suite, const TstCase* item
 
 int test_app_offscreen_points_edl_changes_pixels(TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_points_edl_strength_changes_pixels(
+    TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_points_edl_projection_stable(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_mesh_ssao_changes_pixels(TstContext* suite, const TstCase* item);
