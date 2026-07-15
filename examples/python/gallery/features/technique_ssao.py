@@ -13,10 +13,12 @@ from examples.python.gallery import common as ex
 
 
 LABELS = (b"Plain lighting", b"Ambient occlusion")
-INITIAL_ANGLES = (ctypes.c_float * 3)(0.180, -0.120, 0.000)
+INITIAL_ANGLES = (ctypes.c_float * 3)(0.520, -0.320, 0.180)
 INITIAL_PAN = (ctypes.c_float * 2)(0.0, -0.020)
 INITIAL_ZOOM = 0.82
-AGGREGATE_SIDE = 11
+AGGREGATE_SIDE = 25
+AGGREGATE_DIAMETER = 0.070
+AGGREGATE_RADIUS = 0.033
 
 
 def _sphere_data():
@@ -26,8 +28,10 @@ def _sphere_data():
         for y in range(AGGREGATE_SIDE):
             for x in range(AGGREGATE_SIDE):
                 ix, iy, iz = x - center, y - center, z - center
-                stagger = 0.0668 if (x + y + z) & 1 else 0.0
-                px, py, pz = 0.1336 * ix + stagger, 0.1196 * iy, 0.1133 * iz
+                layer = z & 1
+                px = AGGREGATE_DIAMETER * (ix + 0.5 * (y & 1) + 0.5 * layer)
+                py = AGGREGATE_DIAMETER * (0.8660254 * iy + 0.2886751 * layer)
+                pz = AGGREGATE_DIAMETER * 0.8164966 * iz
                 distance2 = px * px + py * py + pz * pz
                 outside = distance2 > 0.47
                 cavity = pz > -0.08 and px * px + py * py < 0.045
@@ -37,7 +41,7 @@ def _sphere_data():
                 positions.append((px, py, pz))
 
     count = len(positions)
-    radii = np.full(count, 0.0687, dtype=np.float32)
+    radii = np.full(count, AGGREGATE_RADIUS, dtype=np.float32)
     colors = np.tile(np.array([[ex.CYAN.r, ex.CYAN.g, ex.CYAN.b, ex.CYAN.a]]), (count, 1))
     return np.asarray(positions, dtype=np.float32), radii, colors.astype(np.uint8)
 
@@ -96,7 +100,7 @@ def _add_sphere_cluster(scene, panel) -> None:
 
 def _set_ssao(panel) -> None:
     desc = dvz.dvz_ssao_desc()
-    desc.radius = 0.28
+    desc.radius = 0.12
     desc.strength = 4.0
     desc.bias = 0.0
     desc.power = 1.25

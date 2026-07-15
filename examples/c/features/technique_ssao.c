@@ -46,8 +46,10 @@
 
 #define WIDTH  EXAMPLE_WINDOW_WIDTH
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
-#define AGGREGATE_SIDE         11u
-#define AGGREGATE_MAX_SPHERES  (AGGREGATE_SIDE * AGGREGATE_SIDE * AGGREGATE_SIDE)
+#define AGGREGATE_SIDE         25u
+#define AGGREGATE_MAX_SPHERES  6000u
+#define AGGREGATE_DIAMETER     0.070f
+#define AGGREGATE_RADIUS       0.033f
 
 
 
@@ -114,21 +116,25 @@ static bool _add_sphere_cluster(DvzScene* scene, DvzPanel* panel)
                 const int32_t ix = (int32_t)x - center;
                 const int32_t iy = (int32_t)y - center;
                 const int32_t iz = (int32_t)z - center;
-                const float stagger = ((x + y + z) & 1u) != 0u ? 0.0668f : 0.0f;
-                const float px = 0.1336f * (float)ix + stagger;
-                const float py = 0.1196f * (float)iy;
-                const float pz = 0.1133f * (float)iz;
+                const float layer = (float)(z & 1u);
+                const float px = AGGREGATE_DIAMETER *
+                                 ((float)ix + 0.5f * (float)(y & 1u) + 0.5f * layer);
+                const float py = AGGREGATE_DIAMETER *
+                                 (0.8660254f * (float)iy + 0.2886751f * layer);
+                const float pz = AGGREGATE_DIAMETER * 0.8164966f * (float)iz;
                 const float distance2 = px * px + py * py + pz * pz;
                 const bool outside = distance2 > 0.47f;
                 const bool cavity = pz > -0.08f && px * px + py * py < 0.045f;
                 const bool pore = (7u * x + 11u * y + 13u * z) % 23u == 0u;
                 if (outside || cavity || pore)
                     continue;
+                if (count >= AGGREGATE_MAX_SPHERES)
+                    return false;
 
                 positions[count][0] = px;
                 positions[count][1] = py;
                 positions[count][2] = pz;
-                radii[count] = 0.0687f;
+                radii[count] = AGGREGATE_RADIUS;
                 colors[count] =
                     example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
                 count++;
@@ -258,9 +264,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!_add_sphere_cluster(ctx->scene, plain) || !_add_sphere_cluster(ctx->scene, ssao_panel))
         return false;
 
-    state->arcball_angles[0] = +0.180f;
-    state->arcball_angles[1] = -0.120f;
-    state->arcball_angles[2] = +0.000f;
+    state->arcball_angles[0] = +0.520f;
+    state->arcball_angles[1] = -0.320f;
+    state->arcball_angles[2] = +0.180f;
     state->arcball_zoom = 0.82f;
     state->arcball_pan[0] = +0.000f;
     state->arcball_pan[1] = -0.020f;
@@ -285,7 +291,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         .debug_view = false,
         .show_blur_sigmas = true,
         .show_debug_view = true,
-        .radius = 0.28f,
+        .radius = 0.12f,
         .strength = 4.0f,
         .bias = 0.000f,
         .power = 1.25f,
