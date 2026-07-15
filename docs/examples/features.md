@@ -726,7 +726,7 @@ This example compares a dense 3D point cloud with and without Eye-Dome Lighting.
 
 `features`
 
-This example compares a sphere cluster with and without screen-space ambient occlusion.
+This example compares floor contact shadows with and without screen-space ambient occlusion.
 
 </div>
 

@@ -9,7 +9,7 @@
 </div>
 </nav>
 
-This example compares a sphere cluster with and without screen-space ambient occlusion.
+This example compares floor contact shadows with and without screen-space ambient occlusion.
 
 ## Preview
 
@@ -28,7 +28,7 @@ This example compares a sphere cluster with and without screen-space ambient occ
 
 ## What To Look For
 
-Both panels upload the same lit sphere position, radius, and color arrays, while the right panel applies SSAO with blur and tunable radius, strength, bias, power, visibility, sample count, and debug settings. In live mode, use the GUI and linked arcball to inspect contact shadows between nearby spheres. SSAO helps reveal local shape and separation in crowded 3D scientific scenes.
+Both panels render the same lit sphere cluster and floor, while the right panel applies SSAO with blur and tunable radius, strength, bias, power, visibility, sample count, and debug settings. In live mode, use the GUI and linked arcball to inspect the contact shadows beneath and between nearby spheres. SSAO helps reveal local shape and separation in crowded 3D scientific scenes.
 
 ## Source
 

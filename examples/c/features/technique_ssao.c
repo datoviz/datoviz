@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* This example compares a sphere cluster on a floor with and without screen-space ambient
- * occlusion.
+/* This example compares floor contact shadows with and without screen-space ambient occlusion.
  *
  * What to look for: both panels render the same lit sphere cluster and floor, while the right
  * panel applies SSAO with blur and tunable radius, strength, bias, power, visibility, sample count,
