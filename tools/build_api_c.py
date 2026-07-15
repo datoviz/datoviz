@@ -38,6 +38,7 @@ class PagePolicy:
     headers: tuple[str, ...]
     prefixes: tuple[str, ...]
     symbols: tuple[str, ...]
+    type_symbols: tuple[str, ...]
     group_labels: dict[str, str]
     group_patterns: dict[str, tuple[str, ...]]
 
@@ -117,6 +118,7 @@ def load_policy(path: Path, status_entries: list[dict]) -> tuple[list[PagePolicy
                 headers=tuple(str(item) for item in entry.get("headers", ())),
                 prefixes=tuple(str(item) for item in entry.get("prefixes", ())),
                 symbols=tuple(str(item) for item in entry.get("symbols", ())),
+                type_symbols=tuple(str(item) for item in entry.get("type_symbols", ())),
                 group_labels={
                     str(prefix): str(label)
                     for prefix, label in (entry.get("group_labels") or {}).items()
@@ -174,7 +176,7 @@ def classify_symbol(item: dict, pages: list[PagePolicy], hidden_headers: tuple[s
         if header_matches(header, page.headers) and prefix in page.prefixes:
             return page.key
     for page in pages:
-        if header_matches(header, page.headers) and not page.prefixes:
+        if header_matches(header, page.headers) and not page.prefixes and not page.symbols:
             return page.key
     return None
 
@@ -471,13 +473,18 @@ def render_symbol_groups(
     return lines
 
 
-def render_type_entity(entity: dict) -> list[str]:
+def render_type_entity(entity: dict, relations: list[tuple[str, str]]) -> list[str]:
     source = entity["source"]
     doc, _, _ = doc_parts(source.get("doc"))
     lines = [f'<a id="{type_anchor(entity["name"])}"></a>', "", f"#### `{entity['name']}`", ""]
     if doc:
         lines.extend([doc, ""])
     lines.extend(["```c", entity["signature"], "```", ""])
+    if relations:
+        shown = relations[:8]
+        links = ", ".join(f"[`{name}()`]({target})" for name, target in shown)
+        suffix = f"; plus {len(relations) - len(shown)} more" if len(relations) > len(shown) else ""
+        lines.extend([f"Used by: {links}{suffix}.", ""])
     header = header_of(source)
     if header:
         line = (source.get("location") or {}).get("line")
@@ -491,6 +498,7 @@ def render_page(
     functions: list[dict],
     page_types: list[dict],
     type_targets: dict[str, str],
+    type_relations: dict[str, list[tuple[str, str]]],
 ) -> None:
     lines = generated_header(page.title, page.summary)
     lines.extend(render_page_intro(page, functions, len(page_types)))
@@ -509,7 +517,7 @@ def render_page(
         if types_grouped[group]:
             lines.extend(["### Types", ""])
             for entity in sorted(types_grouped[group], key=lambda item: item["name"]):
-                lines.extend(render_type_entity(entity))
+                lines.extend(render_type_entity(entity, type_relations.get(entity["name"], [])))
         if grouped[group]:
             lines.extend(["### Functions", ""])
         for fn in sorted(grouped[group], key=lambda item: item["name"]):
@@ -562,6 +570,13 @@ def build_type_catalog(
         concrete_records = [item for item in records_for_name if not item.get("opaque")]
         if len(concrete_records) > 1 or len(enums_for_name) > 1:
             raise ValueError(f"public type {name} has multiple concrete definitions")
+        explicit_pages = [
+            page.key
+            for page in pages
+            if any(fnmatch.fnmatchcase(name, pattern) for pattern in page.type_symbols)
+        ]
+        if len(explicit_pages) > 1:
+            raise ValueError(f"public type {name} has multiple explicit owners: {explicit_pages}")
         definition_items = concrete_records + enums_for_name
         owner_entries = (
             [entry for entry in entries if entry[2] in definition_items]
@@ -573,9 +588,14 @@ def build_type_catalog(
             )
         )
         page_keys = {page_key for page_key, _, _ in owner_entries}
-        if len(page_keys) != 1:
-            raise ValueError(f"public type {name} has conflicting canonical owners: {sorted(page_keys)}")
-        page_key = next(iter(page_keys))
+        if explicit_pages:
+            page_key = explicit_pages[0]
+        else:
+            if len(page_keys) != 1:
+                raise ValueError(
+                    f"public type {name} has conflicting canonical owners: {sorted(page_keys)}"
+                )
+            page_key = next(iter(page_keys))
         if concrete_records:
             source = concrete_records[0]
             kind = "record"
@@ -596,6 +616,31 @@ def build_type_catalog(
         by_page[page_key].append(entity)
         targets[name] = f"{page_by_key[page_key].output.name}#{type_anchor(name)}"
     return by_page, targets
+
+
+def build_type_relations(
+    pages: list[PagePolicy], functions: dict, type_targets: dict[str, str]
+) -> dict[str, list[tuple[str, str]]]:
+    page_by_key = {page.key: page for page in pages}
+    relations: dict[str, list[tuple[str, str]]] = defaultdict(list)
+    missing = set()
+    for page_key, page_functions in functions.items():
+        for fn in page_functions:
+            type_strings = [type_name(fn.get("result"))] + [
+                type_name(arg.get("type")) for arg in fn.get("parameters") or []
+            ]
+            names = sorted({name for value in type_strings for name in PUBLIC_TYPE_RE.findall(value)})
+            for name in names:
+                if name not in type_targets:
+                    missing.add(name)
+                    continue
+                target = f"{page_by_key[page_key].output.name}#{symbol_anchor(str(fn['name']))}"
+                relations[name].append((str(fn["name"]), target))
+    if missing:
+        raise ValueError(f"function signatures reference undocumented public types: {sorted(missing)}")
+    for name in relations:
+        relations[name] = sorted(set(relations[name]))
+    return relations
 
 
 def render_types_index(
@@ -641,7 +686,7 @@ def validate_classification(kind: str, items: list[dict], pages: list[PagePolicy
         if page_key is None and kind != "functions":
             header = header_of(item)
             for page in pages:
-                if header_matches(header, page.headers):
+                if header_matches(header, page.headers) and not page.symbols:
                     page_key = page.key
                     break
         if page_key is None:
@@ -669,6 +714,12 @@ def validate_policy_patterns(
                 for item in all_items
             ):
                 errors.append(f"{page.key}: symbol pattern {pattern!r} matches nothing")
+        type_names = {
+            entity["name"] for entities in types_by_page.values() for entity in entities
+        }
+        for pattern in page.type_symbols:
+            if not any(fnmatch.fnmatchcase(name, pattern) for name in type_names):
+                errors.append(f"{page.key}: type pattern {pattern!r} matches nothing")
         page_entities = functions.get(page.key, []) + [
             entity["source"] for entity in types_by_page.get(page.key, [])
         ]
@@ -722,6 +773,7 @@ def main() -> int:
         "typedefs", api.get("typedefs", []), pages, hidden_headers
     )
     types_by_page, type_targets = build_type_catalog(pages, records, enums, typedefs)
+    type_relations = build_type_relations(pages, functions, type_targets)
     validate_policy_patterns(api, pages, functions, types_by_page)
 
     missing = {
@@ -748,6 +800,7 @@ def main() -> int:
                 sorted(functions.get(page.key, []), key=lambda item: item["name"]),
                 sorted(types_by_page.get(page.key, []), key=lambda item: item["name"]),
                 type_targets,
+                type_relations,
             )
         render_types_index(types_policy, pages, types_by_page)
         write_summary(args.summary, pages, functions, records, enums, typedefs)

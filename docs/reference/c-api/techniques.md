@@ -6,8 +6,9 @@ Panel-level rendering techniques including multisampling and depth-based post-pr
 
 !!! info "Status: stable"
 
-    This generated page lists exported C functions classified by the v0.4 C API
-    reference policy. Raw Python `ctypes` call forms are documented separately.
+    This generated page lists exported C functions and their canonical public types
+    classified by the v0.4 C API reference policy. Raw Python `ctypes` call forms are
+    documented separately.
 
 Use this page to configure rendering techniques that operate on a complete panel rather than one visual family.
 
@@ -17,41 +18,67 @@ Common workflows:
 - [Runtime internals](../../advanced/runtime-internals.md)
 
 Functions: 6
+Types: 3
 
 ## Symbol Groups
 
-| Group | Functions | Headers |
-| --- | ---: | --- |
-| [Eye-Dome Lighting](#eye-dome-lighting) | 2 | `include/datoviz/scene.h` |
-| [Multisample Antialiasing](#multisample-antialiasing) | 2 | `include/datoviz/scene.h` |
-| [Screen-Space Ambient Occlusion](#screen-space-ambient-occlusion) | 2 | `include/datoviz/scene.h` |
+| Group | Functions | Types | Headers |
+| --- | ---: | ---: | --- |
+| [Eye-Dome Lighting](#eye-dome-lighting) | 2 | 1 | `include/datoviz/scene.h`, `include/datoviz/scene/types.h` |
+| [Multisample Antialiasing](#multisample-antialiasing) | 2 | 1 | `include/datoviz/scene.h`, `include/datoviz/scene/types.h` |
+| [Screen-Space Ambient Occlusion](#screen-space-ambient-occlusion) | 2 | 1 | `include/datoviz/scene.h`, `include/datoviz/scene/types.h` |
 
 ??? info "Grouped symbol index"
 
     ### Eye-Dome Lighting
 
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_edl_desc()`](#dvz_edl_desc) | `include/datoviz/scene.h` |
-    | [`dvz_panel_set_edl()`](#dvz_panel_set_edl) | `include/datoviz/scene.h` |
+    | Symbol | Kind | Header |
+    | --- | --- | --- |
+    | [`DvzEdlDesc`](#type-dvzedldesc) | record | `include/datoviz/scene/types.h` |
+    | [`dvz_edl_desc()`](#dvz_edl_desc) | function | `include/datoviz/scene.h` |
+    | [`dvz_panel_set_edl()`](#dvz_panel_set_edl) | function | `include/datoviz/scene.h` |
 
     ### Multisample Antialiasing
 
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_msaa_desc()`](#dvz_msaa_desc) | `include/datoviz/scene.h` |
-    | [`dvz_panel_set_msaa()`](#dvz_panel_set_msaa) | `include/datoviz/scene.h` |
+    | Symbol | Kind | Header |
+    | --- | --- | --- |
+    | [`DvzMsaaDesc`](#type-dvzmsaadesc) | record | `include/datoviz/scene/types.h` |
+    | [`dvz_msaa_desc()`](#dvz_msaa_desc) | function | `include/datoviz/scene.h` |
+    | [`dvz_panel_set_msaa()`](#dvz_panel_set_msaa) | function | `include/datoviz/scene.h` |
 
     ### Screen-Space Ambient Occlusion
 
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_panel_set_ssao()`](#dvz_panel_set_ssao) | `include/datoviz/scene.h` |
-    | [`dvz_ssao_desc()`](#dvz_ssao_desc) | `include/datoviz/scene.h` |
+    | Symbol | Kind | Header |
+    | --- | --- | --- |
+    | [`DvzSsaoDesc`](#type-dvzssaodesc) | record | `include/datoviz/scene/types.h` |
+    | [`dvz_panel_set_ssao()`](#dvz_panel_set_ssao) | function | `include/datoviz/scene.h` |
+    | [`dvz_ssao_desc()`](#dvz_ssao_desc) | function | `include/datoviz/scene.h` |
 
 ## Eye-Dome Lighting
 
-### `dvz_edl_desc()`
+### Types
+
+<a id="type-dvzedldesc"></a>
+
+#### `DvzEdlDesc`
+
+```c
+struct DvzEdlDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    float radius;
+    float strength;
+    float depth_scale;
+};
+```
+
+Used by: [`dvz_edl_desc()`](techniques.md#dvz_edl_desc), [`dvz_panel_set_edl()`](techniques.md#dvz_panel_set_edl).
+
+_Declared in `include/datoviz/scene/types.h`:844._
+
+### Functions
+
+#### `dvz_edl_desc()`
 
 Return default Eye-Dome Lighting options.
 
@@ -61,11 +88,11 @@ DvzEdlDesc dvz_edl_desc(void);
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `DvzEdlDesc` | EDL descriptor |
+| return | [`DvzEdlDesc`](techniques.md#type-dvzedldesc) | EDL descriptor |
 
 _Declared in `include/datoviz/scene.h`:1255._
 
-### `dvz_panel_set_edl()`
+#### `dvz_panel_set_edl()`
 
 Configure Eye-Dome Lighting for one panel.
 
@@ -82,15 +109,37 @@ DvzResult dvz_panel_set_edl(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `DvzResult` | DVZ_OK if the panel EDL state was updated, DVZ_ERROR otherwise |
-| `panel` | `DvzPanel *` | the panel |
-| `desc` | `const DvzEdlDesc *` | EDL descriptor, or NULL to disable |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK if the panel EDL state was updated, DVZ_ERROR otherwise |
+| `panel` | [`DvzPanel`](scene.md#type-dvzpanel) * | the panel |
+| `desc` | const [`DvzEdlDesc`](techniques.md#type-dvzedldesc) * | EDL descriptor, or NULL to disable |
 
 _Declared in `include/datoviz/scene.h`:1269._
 
 ## Multisample Antialiasing
 
-### `dvz_msaa_desc()`
+### Types
+
+<a id="type-dvzmsaadesc"></a>
+
+#### `DvzMsaaDesc`
+
+```c
+struct DvzMsaaDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    _Bool enabled;
+    uint32_t sample_count;
+    _Bool alpha_to_coverage;
+};
+```
+
+Used by: [`dvz_msaa_desc()`](techniques.md#dvz_msaa_desc), [`dvz_panel_set_msaa()`](techniques.md#dvz_panel_set_msaa).
+
+_Declared in `include/datoviz/scene/types.h`:855._
+
+### Functions
+
+#### `dvz_msaa_desc()`
 
 Return default panel MSAA options.
 
@@ -100,11 +149,11 @@ DvzMsaaDesc dvz_msaa_desc(void);
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `DvzMsaaDesc` | MSAA descriptor with 4x samples and alpha-to-coverage enabled |
+| return | [`DvzMsaaDesc`](techniques.md#type-dvzmsaadesc) | MSAA descriptor with 4x samples and alpha-to-coverage enabled |
 
 _Declared in `include/datoviz/scene.h`:600._
 
-### `dvz_panel_set_msaa()`
+#### `dvz_panel_set_msaa()`
 
 Configure internal multisample antialiasing for one panel.
 
@@ -120,15 +169,45 @@ DvzResult dvz_panel_set_msaa(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `DvzResult` | DVZ_OK if the panel MSAA state was updated, DVZ_ERROR otherwise |
-| `panel` | `DvzPanel *` | the panel |
-| `desc` | `const DvzMsaaDesc *` | MSAA descriptor, or NULL to disable |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK if the panel MSAA state was updated, DVZ_ERROR otherwise |
+| `panel` | [`DvzPanel`](scene.md#type-dvzpanel) * | the panel |
+| `desc` | const [`DvzMsaaDesc`](techniques.md#type-dvzmsaadesc) * | MSAA descriptor, or NULL to disable |
 
 _Declared in `include/datoviz/scene.h`:1282._
 
 ## Screen-Space Ambient Occlusion
 
-### `dvz_panel_set_ssao()`
+### Types
+
+<a id="type-dvzssaodesc"></a>
+
+#### `DvzSsaoDesc`
+
+```c
+struct DvzSsaoDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    float radius;
+    float strength;
+    float bias;
+    float power;
+    float min_visibility;
+    float blur_radius;
+    float blur_depth_sigma;
+    float blur_normal_sigma;
+    uint32_t sample_count;
+    _Bool blur_enabled;
+    _Bool debug_view;
+};
+```
+
+Used by: [`dvz_panel_set_ssao()`](techniques.md#dvz_panel_set_ssao), [`dvz_ssao_desc()`](techniques.md#dvz_ssao_desc).
+
+_Declared in `include/datoviz/scene/types.h`:866._
+
+### Functions
+
+#### `dvz_panel_set_ssao()`
 
 Configure screen-space ambient occlusion for one panel.
 
@@ -146,13 +225,13 @@ DvzResult dvz_panel_set_ssao(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `DvzResult` | DVZ_OK if the panel SSAO state was updated, DVZ_ERROR otherwise |
-| `panel` | `DvzPanel *` | the panel |
-| `desc` | `const DvzSsaoDesc *` | SSAO descriptor, or NULL to disable |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK if the panel SSAO state was updated, DVZ_ERROR otherwise |
+| `panel` | [`DvzPanel`](scene.md#type-dvzpanel) * | the panel |
+| `desc` | const [`DvzSsaoDesc`](techniques.md#type-dvzssaodesc) * | SSAO descriptor, or NULL to disable |
 
 _Declared in `include/datoviz/scene.h`:1305._
 
-### `dvz_ssao_desc()`
+#### `dvz_ssao_desc()`
 
 Return default screen-space ambient occlusion options.
 
@@ -162,6 +241,6 @@ DvzSsaoDesc dvz_ssao_desc(void);
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `DvzSsaoDesc` | SSAO descriptor |
+| return | [`DvzSsaoDesc`](techniques.md#type-dvzssaodesc) | SSAO descriptor |
 
 _Declared in `include/datoviz/scene.h`:1290._

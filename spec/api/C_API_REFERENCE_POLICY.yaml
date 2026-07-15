@@ -294,6 +294,8 @@ pages:
     headers:
       - include/datoviz/vklite.h
       - include/datoviz/vklite/**
+    type_symbols:
+      - DvzBuffer
     prefixes:
       - attachment
       - barrier
@@ -378,6 +380,8 @@ pages:
       - include/datoviz/vk.h
       - include/datoviz/vk/**
       - include/datoviz/gpu/**
+    type_symbols:
+      - DvzDevice
     prefixes:
       - allocation
       - allocator
@@ -424,6 +428,12 @@ pages:
     headers:
       - include/datoviz/controller.h
       - include/datoviz/controller/**
+    type_symbols:
+      - DvzArcball
+      - DvzCamera
+      - DvzFly
+      - DvzPanzoom
+      - DvzTurntable
     prefixes:
       - arcball
       - camera
