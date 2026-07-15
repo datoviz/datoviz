@@ -12,8 +12,8 @@ Give the agent this workflow:
 1. Read the task and decide whether the user wants Python, C, or both.
 2. Start from the [Examples](examples/index.md), especially examples whose pages include complete
    source code.
-3. Check the [C API reference](reference/c-api/index.md), [Python binding with NumPy arrays](reference/python-direct-engine.md),
-   or [Python binding exact call form](reference/ctypes.md) before writing code.
+3. Check the [C API reference](reference/c-api/index.md) or [Python API](reference/ctypes.md)
+   before writing code.
 4. Verify every Datoviz function used in the answer exists in the current reference.
 5. Verify the signature: argument count, pointer/count pairs, enum names, string attribute names,
    and whether a Python call accepts a NumPy array directly.
@@ -60,6 +60,5 @@ closest current Datoviz scene example instead.
 - [Quickstart](start/quickstart.md): first Python and C examples.
 - [Choose your layer](start/choose-your-layer.md): Python, C, WebGPU, exact binding calls, and GSP/VisPy2 boundaries.
 - [C API reference](reference/c-api/index.md): exact native API names and signatures.
-- [Python binding with NumPy arrays](reference/python-direct-engine.md): supported Python NumPy adaptation.
-- [Python binding exact call form](reference/ctypes.md): explicit pointer/count calls through `datoviz.raw`.
+- [Python API](reference/ctypes.md): NumPy-adapted calls and exact pointer/count calls through `datoviz.raw`.
 - [WebGPU matrix](examples/webgpu-matrix.md): browser support status by example.

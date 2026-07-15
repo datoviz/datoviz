@@ -94,7 +94,7 @@ the same retained scene model.
 <h3>Python + NumPy</h3>
 <p>Create retained scenes and pass NumPy arrays directly to Datoviz functions. The API keeps the
 same explicit <code>dvz_*</code> vocabulary as C.</p>
-<p class="dvz-text-links"><a href="start/quickstart/">Python quickstart →</a> <a href="reference/python-direct-engine/">Python reference</a></p>
+<p class="dvz-text-links"><a href="start/quickstart/">Python quickstart →</a> <a href="reference/ctypes/">Python API</a></p>
 </section>
 <section>
 <h3>C or C++</h3>

@@ -117,12 +117,12 @@ detail behind the public `datoviz.raw` module.
 
 - [Use from Python](use-python.md)
 - [Use from C or C++](c-integration.md)
-- [Python binding exact call form](../reference/ctypes.md)
+- [Python API: exact raw calls](../reference/ctypes.md#exact-datovizraw-calls)
 - [Diagnose build and platform issues](diagnose-platform.md)
 
 ??? example "Complete and related examples"
 
     - Canonical complete example: `examples/python/raw/offscreen_point.py`
-    - Reference: [Python binding exact call form](../reference/ctypes.md)
+    - Reference: [Python API: exact raw calls](../reference/ctypes.md#exact-datovizraw-calls)
     - Start page: [Quickstart](../start/quickstart.md)
     - Source: `examples/c/start/scatter.c`

@@ -25,7 +25,7 @@ the documentation.
 | Surface | v0.4 status |
 | --- | --- |
 | Native C scene/app API | supported, with feature-specific gaps |
-| Python binding with NumPy arrays | supported |
+| Python API with NumPy adaptation and exact raw calls | supported |
 | Offscreen rendering and capture | supported |
 | Qt/PyQt hosted rendering | supported, optional provider |
 | Retained visual families | supported/experimental by family |
@@ -164,8 +164,7 @@ v0.4; that role belongs to the developing GSP/VisPy2 layer. See
 - [How-To Guides](https://datoviz.org/how-to/create-a-scene/)
 - [Feature Status](https://datoviz.org/reference/feature-status/)
 - [Platform Support](https://datoviz.org/reference/platform-support/)
-- [Python With NumPy Arrays](https://datoviz.org/reference/python-direct-engine/)
-- [Exact `datoviz.raw` Calls](https://datoviz.org/reference/ctypes/)
+- [Python API](https://datoviz.org/reference/ctypes/)
 - [C API Reference](https://datoviz.org/reference/c-api/)
 - [WebGPU/WASM Subset](https://datoviz.org/reference/webgpu-subset/)
 - [Changelog](CHANGELOG.md)

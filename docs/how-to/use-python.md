@@ -109,12 +109,11 @@ When porting a C example:
 
 ## See also
 
-- [Python binding with NumPy arrays](../reference/python-direct-engine.md)
+- [Python API](../reference/ctypes.md)
 - [Use from terminal IPython](use-ipython.md)
 - [Use the exact Python binding call form](use-raw-ctypes.md)
 - [Use from C or C++](c-integration.md)
 - [Choose a visual family](choose-a-visual-family.md)
-- [Python binding exact call form](../reference/ctypes.md)
 
 ??? example "Complete example"
 

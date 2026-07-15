@@ -155,30 +155,27 @@ nav:
       - Diagnose build and platform issues: 'how-to/diagnose-platform.md'
   - Reference:
     - Overview: 'reference/index.md'
-    - Citation: 'reference/citation.md'
-    - API:
-      - C API:
-        - Overview: 'reference/c-api/index.md'
-        - Scene and presentation:
-          - Scene: 'reference/c-api/scene.md'
-          - Visuals and composites: 'reference/c-api/visuals.md'
-          - Rendering techniques: 'reference/c-api/techniques.md'
-          - App, window, and I/O: 'reference/c-api/app.md'
-        - Protocol and integration:
-          - FFI helpers: 'reference/c-api/ffi.md'
-          - FramePlan and packets: 'reference/c-api/frame-plan.md'
-          - DRP2: 'reference/c-api/drp2.md'
-        - Low-level runtime:
-          - Overview: 'reference/c-api/runtime.md'
-          - vklite: 'reference/c-api/runtime-vklite.md'
-          - Vulkan foundation: 'reference/c-api/runtime-vulkan.md'
-          - Low-level controllers: 'reference/c-api/runtime-controllers.md'
-        - Utilities:
-          - Math: 'reference/c-api/runtime-math.md'
-          - Common and utilities: 'reference/c-api/runtime-utilities.md'
-        - C types: 'reference/c-api/types.md'
-      - Python binding: 'reference/ctypes.md'
-      - Python with NumPy arrays: 'reference/python-direct-engine.md'
+    - C API:
+      - Overview: 'reference/c-api/index.md'
+      - Scene and presentation:
+        - Scene: 'reference/c-api/scene.md'
+        - Visuals and composites: 'reference/c-api/visuals.md'
+        - Rendering techniques: 'reference/c-api/techniques.md'
+        - App, window, and I/O: 'reference/c-api/app.md'
+      - Protocol and integration:
+        - FFI helpers: 'reference/c-api/ffi.md'
+        - FramePlan and packets: 'reference/c-api/frame-plan.md'
+        - DRP2: 'reference/c-api/drp2.md'
+      - Low-level runtime:
+        - Overview: 'reference/c-api/runtime.md'
+        - vklite: 'reference/c-api/runtime-vklite.md'
+        - Vulkan foundation: 'reference/c-api/runtime-vulkan.md'
+        - Low-level controllers: 'reference/c-api/runtime-controllers.md'
+      - Utilities:
+        - Math: 'reference/c-api/runtime-math.md'
+        - Common and utilities: 'reference/c-api/runtime-utilities.md'
+      - C types: 'reference/c-api/types.md'
+    - Python API: 'reference/ctypes.md'
     - Visual families:
       - Overview: 'reference/visual-families/index.md'
       - Point: 'reference/visual-families/point.md'
@@ -213,6 +210,7 @@ nav:
     - Backends:
       - WebGPU subset: 'reference/webgpu-subset.md'
       - Compute and graphics: 'reference/compute-graphics.md'
+    - Citation: 'reference/citation.md'
   - Advanced:
     - Runtime internals: 'advanced/runtime-internals.md'
     - DRP2 command streams: 'advanced/drp2-command-streams.md'
@@ -233,6 +231,7 @@ not_in_nav: |
   discussions/*
   landing/*
   examples/webgpu/COMPAT.md
+  reference/python-direct-engine.md
   gallery/*
   guide/*
   tasks/*

@@ -145,4 +145,4 @@ scene with `session = dvz.run(scene, figure)`.
 
 - [Use from Python](use-python.md)
 - [Update visual data](update-visual-data.md)
-- [Python binding with NumPy arrays](../reference/python-direct-engine.md)
+- [Python API](../reference/ctypes.md)

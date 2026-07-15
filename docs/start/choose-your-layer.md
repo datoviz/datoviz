@@ -16,10 +16,10 @@ visualization.
 
 | Need | Use | Status |
 | --- | --- | --- |
-| Write Python code with NumPy arrays | [`import datoviz as dvz`](../reference/python-direct-engine.md) | supported for documented calls |
+| Write Python code with NumPy arrays | [`import datoviz as dvz`](../reference/ctypes.md#numpy-adapted-calls) | supported for documented calls |
 | Build a native C or C++ application | [C `scene` and `app` APIs](first-c-program.md) | supported by feature |
 | Render without a window, capture images, or integrate a native view | [C integration](../how-to/c-integration.md) | supported by feature |
-| Call the Python binding with explicit pointers and counts | [`datoviz.raw`](../reference/ctypes.md) | low-level exact call form |
+| Call the Python binding with explicit pointers and counts | [`datoviz.raw`](../reference/ctypes.md#exact-datovizraw-calls) | low-level exact call form |
 | Run selected examples in the browser | [WebGPU/WASM example routes](../reference/webgpu-subset.md) | experimental subset |
 | Work on advanced rendering, replay, or backend portability | [Advanced runtime APIs](../advanced/runtime-internals.md) | advanced/unstable |
 | Use high-level scientific plotting | [GSP/VisPy2 scope](../reference/project-status.md) | external WIP layer |

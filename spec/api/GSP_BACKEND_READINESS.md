@@ -76,7 +76,7 @@ Completed in the current RC lane:
    descriptor-array passthrough when `update_count` is supplied.
 2. `dvz.dvz_view_capture_rgba(view)` returns Python-owned NumPy RGBA8 memory shaped
    `(framebuffer_height, framebuffer_width, 4)` with top-row-first rows.
-3. `docs/reference/python-direct-engine.md` documents the direct-engine Python binding, dense data updates,
+3. `docs/reference/ctypes.md` documents the Python API, dense data updates,
    offscreen RGBA capture, and the GSP/VisPy2 boundary.
 4. `examples/python/direct/offscreen_point.py` and `tools/bindings/ctypes_render_smoke.py` cover the
    direct facade offscreen point/capture path where native runtime support is available.
@@ -678,7 +678,7 @@ Completed RC-lane implementation:
 4. Focused tests cover `set_data_many`, `set_data_range`, and capture memory;
    `tools/bindings/ctypes_render_smoke.py` runs raw and direct offscreen smoke examples when runtime
    support is available.
-5. `docs/reference/python-direct-engine.md` documents the Python binding, dense data updates, and RGBA
+5. `docs/reference/ctypes.md` documents the Python API, dense data updates, and RGBA
    capture, with cross-links from status/reference pages.
 6. `docs/reference/coordinate-systems.md` and `docs/reference/visual-attributes.md` document
    logical-pixel, framebuffer-pixel, screen-space attribute, panel clipping, and capture semantics.
