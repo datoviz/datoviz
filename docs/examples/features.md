@@ -667,6 +667,12 @@ This example compares cube meshes rendered with different material models and pa
 
 </div>
 
+</div>
+
+## Rendering Techniques { #rendering-techniques }
+
+<div class="grid cards" markdown="1">
+
 <div class="card" markdown="1">
 
 ### [Depth Cue](gallery/features/features_technique_depth_cue.md)
@@ -685,12 +691,6 @@ This example compares cube meshes rendered with different material models and pa
 This example compares a plain 3D sphere lattice with depth-dependent fading.
 
 </div>
-
-</div>
-
-## Rendering Techniques { #rendering-techniques }
-
-<div class="grid cards" markdown="1">
 
 <div class="card" markdown="1">
 

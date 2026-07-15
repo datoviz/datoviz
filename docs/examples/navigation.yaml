@@ -118,9 +118,9 @@ sections:
           - features_lighting
           - features_mesh_texture
           - features_material_mesh
-          - features_technique_depth_cue
       - title: Rendering Techniques
         examples:
+          - features_technique_depth_cue
           - features_technique_edl
           - features_technique_ssao
           - features_technique_msaa
