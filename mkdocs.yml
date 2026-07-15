@@ -159,18 +159,21 @@ nav:
     - API:
       - C API:
         - Overview: 'reference/c-api/index.md'
-        - Scene: 'reference/c-api/scene.md'
-        - Visuals and composites: 'reference/c-api/visuals.md'
-        - Rendering techniques: 'reference/c-api/techniques.md'
-        - App, window, and I/O: 'reference/c-api/app.md'
-        - FFI helpers: 'reference/c-api/ffi.md'
-        - FramePlan and packets: 'reference/c-api/frame-plan.md'
-        - DRP2: 'reference/c-api/drp2.md'
-        - Runtime and low-level APIs:
+        - Scene and presentation:
+          - Scene: 'reference/c-api/scene.md'
+          - Visuals and composites: 'reference/c-api/visuals.md'
+          - Rendering techniques: 'reference/c-api/techniques.md'
+          - App, window, and I/O: 'reference/c-api/app.md'
+        - Protocol and integration:
+          - FFI helpers: 'reference/c-api/ffi.md'
+          - FramePlan and packets: 'reference/c-api/frame-plan.md'
+          - DRP2: 'reference/c-api/drp2.md'
+        - Low-level runtime:
           - Overview: 'reference/c-api/runtime.md'
           - vklite: 'reference/c-api/runtime-vklite.md'
           - Vulkan foundation: 'reference/c-api/runtime-vulkan.md'
           - Low-level controllers: 'reference/c-api/runtime-controllers.md'
+        - Utilities:
           - Math: 'reference/c-api/runtime-math.md'
           - Common and utilities: 'reference/c-api/runtime-utilities.md'
         - C types: 'reference/c-api/types.md'
