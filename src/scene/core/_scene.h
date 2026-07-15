@@ -1795,6 +1795,8 @@ typedef struct DvzSceneGBufferTechniqueState
 
 typedef struct DvzSceneEdlUniform
 {
+    mat4 inv_proj;
+    float viewport[4];
     float params[4];
 } DvzSceneEdlUniform;
 

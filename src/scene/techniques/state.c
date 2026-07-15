@@ -609,14 +609,31 @@ _scene_technique_msaa_state(const DvzScene* scene, const DvzPanel* panel)
  * Fill the EDL shader uniform from retained technique state.
  *
  * @param edl the effective EDL state
+ * @param mvp panel APPLY transform
+ * @param viewport panel viewport
  * @param out output shader uniform
  */
-void _scene_technique_edl_uniform(const DvzSceneEdlTechniqueState* edl, DvzSceneEdlUniform* out)
+void _scene_technique_edl_uniform(
+    const DvzSceneEdlTechniqueState* edl, const DvzMVP* mvp,
+    const DvzSceneViewportUniform* viewport, DvzSceneEdlUniform* out)
 {
     ANN(out);
     dvz_memset(out, sizeof(DvzSceneEdlUniform), 0, sizeof(DvzSceneEdlUniform));
     if (edl == NULL)
         return;
+    if (mvp != NULL)
+    {
+        mat4 proj = {0};
+        dvz_memcpy(proj, sizeof(proj), mvp->proj, sizeof(mvp->proj));
+        glm_mat4_inv(proj, out->inv_proj);
+    }
+    if (viewport != NULL)
+    {
+        out->viewport[0] = viewport->x;
+        out->viewport[1] = viewport->y;
+        out->viewport[2] = viewport->width > 0.0f ? viewport->width : 1.0f;
+        out->viewport[3] = viewport->height > 0.0f ? viewport->height : 1.0f;
+    }
     out->params[0] = edl->radius;
     out->params[1] = edl->strength;
     out->params[2] = edl->depth_scale;

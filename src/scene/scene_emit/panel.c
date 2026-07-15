@@ -606,16 +606,20 @@ static bool _scene_append_planned_visual_to_render_pass(
 
 static bool _scene_emit_edl_params_upload(
     DvzFramePlan* plan, DvzPanel* panel, const char* panel_id,
-    const DvzSceneEdlTechniqueState* edl_state)
+    const DvzSceneEdlTechniqueState* edl_state, const DvzMVP* panel_apply_mvp,
+    const DvzSceneViewportUniform* panel_viewport)
 {
     ANN(plan);
     ANN(panel);
     ANN(panel_id);
     ANN(edl_state);
+    ANN(panel_apply_mvp);
+    ANN(panel_viewport);
     char edl_params_key[DVZ_SCENE_LABEL_SIZE];
     if (!_scene_edl_params_resource_key(panel_id, edl_params_key, sizeof(edl_params_key)))
         return false;
-    _scene_technique_edl_uniform(edl_state, &panel->techniques.edl.uniform);
+    _scene_technique_edl_uniform(
+        edl_state, panel_apply_mvp, panel_viewport, &panel->techniques.edl.uniform);
     if (!dvz_frame_plan_upload_bytes(
             plan, edl_params_key, 0, sizeof(DvzSceneEdlUniform), "edl_params",
             &panel->techniques.edl.uniform))
@@ -1140,7 +1144,8 @@ bool _scene_emit_panel_render_caps(
         }
         if (render_plan.edl_enabled && render_plan.edl_has_depth_producer)
         {
-            (void)_scene_emit_edl_params_upload(plan, panel, panel_id, render_plan.edl_state);
+            (void)_scene_emit_edl_params_upload(
+                plan, panel, panel_id, render_plan.edl_state, &panel_apply_mvp, &panel_viewport);
             if (!_scene_begin_panel_render_pass(
                     plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE,
                     &panel_apply_mvp, &panel_viewport, plot_desc, &edl_node) ||
@@ -1206,7 +1211,8 @@ bool _scene_emit_panel_render_caps(
         }
         if (render_plan.edl_enabled && render_plan.edl_has_depth_producer)
         {
-            (void)_scene_emit_edl_params_upload(plan, panel, panel_id, render_plan.edl_state);
+            (void)_scene_emit_edl_params_upload(
+                plan, panel, panel_id, render_plan.edl_state, &panel_apply_mvp, &panel_viewport);
             if (!_scene_begin_panel_render_pass(
                     plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE,
                     &panel_apply_mvp, &panel_viewport, plot_desc, &edl_node) ||

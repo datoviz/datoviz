@@ -1136,9 +1136,10 @@ static bool _app_text_green_pixel(const uint8_t* pixel)
  *
  * @param suite test context used for shared app resources
  * @param enabled whether EDL should be enabled for the panel
+ * @param near_clip camera near clipping distance
  * @return captured RGBA buffer, or skipped=true when no app context is available
  */
-static AppRgbaCapture _app_edl_point_capture(TstContext* suite, bool enabled)
+static AppRgbaCapture _app_edl_point_capture(TstContext* suite, bool enabled, float near_clip)
 {
     ANN(suite);
     AppRgbaCapture out = {0};
@@ -1153,6 +1154,15 @@ static AppRgbaCapture _app_edl_point_capture(TstContext* suite, bool enabled)
     }
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     if (panel == NULL)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+
+    DvzCameraDesc camera = dvz_camera_desc();
+    camera.projection.near_clip = near_clip;
+    camera.projection.far_clip = 100.0f;
+    if (dvz_panel_set_camera_desc(panel, &camera) != DVZ_OK)
     {
         dvz_scene_destroy(scene);
         return out;
@@ -3209,14 +3219,14 @@ int test_app_offscreen_points_edl_changes_pixels(TstContext* suite, const TstCas
 
     TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
-    AppRgbaCapture disabled = _app_edl_point_capture(suite, false);
+    AppRgbaCapture disabled = _app_edl_point_capture(suite, false, 0.05f);
     if (disabled.skipped)
     {
         log_warn("test_app_offscreen_points_edl_changes_pixels skipped: GPU context failed");
         tst_skip(suite, disabled.skip_reason);
         return 0;
     }
-    AppRgbaCapture enabled = _app_edl_point_capture(suite, true);
+    AppRgbaCapture enabled = _app_edl_point_capture(suite, true, 0.05f);
     if (enabled.skipped)
     {
         log_warn("test_app_offscreen_points_edl_changes_pixels skipped: GPU context failed");
@@ -3251,6 +3261,65 @@ int test_app_offscreen_points_edl_changes_pixels(TstContext* suite, const TstCas
 
     dvz_free(enabled.rgba);
     dvz_free(disabled.rgba);
+    return 0;
+}
+
+
+
+/**
+ * Ensure EDL shading is stable when the perspective near clip changes.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_points_edl_projection_stable(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    AppRgbaCapture near_a = _app_edl_point_capture(suite, true, 0.05f);
+    if (near_a.skipped)
+    {
+        log_warn("test_app_offscreen_points_edl_projection_stable skipped: GPU context failed");
+        tst_skip(suite, near_a.skip_reason);
+        return 0;
+    }
+    AppRgbaCapture near_b = _app_edl_point_capture(suite, true, 0.50f);
+    if (near_b.skipped)
+    {
+        log_warn("test_app_offscreen_points_edl_projection_stable skipped: GPU context failed");
+        dvz_free(near_a.rgba);
+        tst_skip(suite, near_b.skip_reason);
+        return 0;
+    }
+    ANN(near_a.rgba);
+    ANN(near_b.rgba);
+    AT(near_a.width == near_b.width);
+    AT(near_a.height == near_b.height);
+
+    uint64_t total_difference = 0;
+    uint32_t changed_count = 0;
+    const uint32_t pixel_count = near_a.width * near_a.height;
+    for (uint32_t i = 0; i < pixel_count; i++)
+    {
+        const uint8_t* a = &near_a.rgba[4 * i];
+        const uint8_t* b = &near_b.rgba[4 * i];
+        uint32_t difference =
+            (uint32_t)abs((int)a[0] - (int)b[0]) +
+            (uint32_t)abs((int)a[1] - (int)b[1]) +
+            (uint32_t)abs((int)a[2] - (int)b[2]);
+        total_difference += difference;
+        if (difference > 3)
+            changed_count++;
+    }
+    AT(total_difference <= (uint64_t)pixel_count * 3u);
+    AT(changed_count <= 8u);
+
+    dvz_free(near_b.rgba);
+    dvz_free(near_a.rgba);
     return 0;
 }
 
@@ -8441,6 +8510,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_pixel_square_has_nonblank_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_points_edl_renders);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_points_edl_changes_pixels);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_points_edl_projection_stable);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_mesh_ssao_changes_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_sphere_ssao_darkens_contact);
     TST_SCENE_APP_CASE(

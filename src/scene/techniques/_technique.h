@@ -126,7 +126,8 @@ const DvzSceneMsaaTechniqueState*
 _scene_technique_msaa_state(const DvzScene* scene, const DvzPanel* panel);
 
 void _scene_technique_edl_uniform(
-    const DvzSceneEdlTechniqueState* edl, DvzSceneEdlUniform* out);
+    const DvzSceneEdlTechniqueState* edl, const DvzMVP* mvp,
+    const DvzSceneViewportUniform* viewport, DvzSceneEdlUniform* out);
 
 void _scene_technique_ssao_uniform(
     const DvzSceneSsaoTechniqueState* ssao, const DvzMVP* mvp,
