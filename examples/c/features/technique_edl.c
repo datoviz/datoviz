@@ -208,7 +208,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (example_set_default_3d_camera(plain, 1.0f) == NULL ||
         example_set_default_3d_camera(lit, 1.0f) == NULL)
         return false;
-    vec3 arcball_angles = {+0.616f, -0.403f, +0.339f};
+    vec3 arcball_angles = {+1.838925f, -0.397293f, +1.327373f};
     vec2 arcball_pan = {0.0f, 0.0f};
     DvzController* plain_controller = _bind_arcball(ctx, plain, arcball_angles);
     DvzController* lit_controller = _bind_arcball(ctx, lit, arcball_angles);
@@ -228,9 +228,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     state->edl = (DvzExampleGuiEdlControls){
         .enabled = true,
-        .radius = 2.0f,
-        .strength = 55.0f,
-        .depth_scale = 1.0f,
+        .radius = 3.968000f,
+        .strength = 88.478996f,
+        .depth_scale = 1.447000f,
     };
     example_tuner_edl(&state->tuner, "Lighting", state->lit_panel, &state->edl);
     example_tuner_arcball(
