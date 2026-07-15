@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Screen-space ambient occlusion on a lit sphere cluster and floor."""
+"""Screen-space ambient occlusion on a porous close-packed sphere aggregate."""
 
 from __future__ import annotations
 
@@ -13,47 +13,33 @@ from examples.python.gallery import common as ex
 
 
 LABELS = (b"Plain lighting", b"Ambient occlusion")
-INITIAL_ANGLES = (ctypes.c_float * 3)(0.708, -0.354, 0.244)
+INITIAL_ANGLES = (ctypes.c_float * 3)(0.180, -0.120, 0.000)
 INITIAL_PAN = (ctypes.c_float * 2)(0.0, -0.020)
+INITIAL_ZOOM = 0.82
+AGGREGATE_SIDE = 9
 
 
 def _sphere_data():
-    positions = np.array(
-        [
-            [-0.62, -0.42, -0.18],
-            [-0.26, -0.50, -0.07],
-            [+0.12, -0.45, +0.01],
-            [+0.52, -0.28, -0.15],
-            [-0.50, +0.00, +0.04],
-            [-0.10, -0.04, +0.19],
-            [+0.31, +0.04, +0.13],
-            [+0.70, +0.22, -0.05],
-            [-0.33, +0.42, -0.04],
-            [+0.06, +0.41, +0.08],
-            [+0.48, +0.48, -0.11],
-            [+0.02, +0.03, -0.34],
-        ],
-        dtype=np.float32,
-    )
-    radii = np.array(
-        [0.13, 0.11, 0.12, 0.10, 0.14, 0.17, 0.13, 0.10, 0.12, 0.15, 0.11, 0.23],
-        dtype=np.float32,
-    )
-    colors = ex.color_array(
-        ex.YELLOW,
-        ex.CYAN,
-        ex.GREEN,
-        ex.TEXT,
-        ex.CYAN,
-        ex.YELLOW,
-        ex.GREEN,
-        ex.TEXT,
-        ex.GREEN,
-        ex.YELLOW,
-        ex.CYAN,
-        ex.BLUE,
-    )
-    return positions, radii, colors
+    positions = []
+    center = AGGREGATE_SIDE // 2
+    for z in range(AGGREGATE_SIDE):
+        for y in range(AGGREGATE_SIDE):
+            for x in range(AGGREGATE_SIDE):
+                ix, iy, iz = x - center, y - center, z - center
+                stagger = 0.0817 if (x + y + z) & 1 else 0.0
+                px, py, pz = 0.1633 * ix + stagger, 0.1462 * iy, 0.1385 * iz
+                distance2 = px * px + py * py + pz * pz
+                outside = distance2 > 0.47
+                cavity = pz > -0.08 and px * px + py * py < 0.045
+                pore = (7 * x + 11 * y + 13 * z) % 23 == 0
+                if outside or cavity or pore:
+                    continue
+                positions.append((px, py, pz))
+
+    count = len(positions)
+    radii = np.full(count, 0.084, dtype=np.float32)
+    colors = np.tile(np.array([[ex.CYAN.r, ex.CYAN.g, ex.CYAN.b, ex.CYAN.a]]), (count, 1))
+    return np.asarray(positions, dtype=np.float32), radii, colors.astype(np.uint8)
 
 
 def _add_label(panel, label: bytes) -> None:
@@ -81,35 +67,6 @@ def _add_label(panel, label: bytes) -> None:
         raise RuntimeError("dvz_annotation_set_placement() failed")
 
 
-def _add_floor(scene, panel) -> None:
-    primitive = dvz.dvz_primitive(scene, dvz.DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0)
-    if not primitive:
-        raise RuntimeError("dvz_primitive() failed")
-    positions = np.array(
-        [
-            [-1.05, -0.62, -0.90],
-            [-1.05, -0.62, +0.90],
-            [+1.05, -0.62, -0.90],
-            [-1.05, -0.62, +0.90],
-            [+1.05, -0.62, +0.90],
-            [+1.05, -0.62, -0.90],
-        ],
-        dtype=np.float32,
-    )
-    normals = np.tile(np.array([[0.0, 1.0, 0.0]], dtype=np.float32), (6, 1))
-    colors = np.tile(np.array([[58, 64, 72, 255]], dtype=np.uint8), (6, 1))
-    if dvz.dvz_visual_set_data_many(
-        primitive,
-        {
-            "position": positions,
-            "normal": normals,
-            "color": colors,
-        },
-    ) != 0:
-        raise RuntimeError("dvz_visual_set_data_many(floor) failed")
-    ex.add_visual(panel, primitive)
-
-
 def _add_sphere_cluster(scene, panel) -> None:
     spheres = dvz.dvz_sphere(scene, dvz.DVZ_SPHERE_FLAGS_LIGHTING)
     if not spheres:
@@ -127,16 +84,23 @@ def _add_sphere_cluster(scene, panel) -> None:
         },
     ) != 0:
         raise RuntimeError("dvz_visual_set_data_many(spheres) failed")
+    material = dvz.dvz_standard_material_desc()
+    material.light_direction[:] = (-0.38, 0.52, 0.76)
+    material.standard.roughness = 0.72
+    material.standard.specular = 0.22
+    material.standard.rim_strength = 0.10
+    if dvz.dvz_visual_set_material(spheres, ctypes.byref(material)) != 0:
+        raise RuntimeError("dvz_visual_set_material() failed")
     ex.add_visual(panel, spheres)
 
 
 def _set_ssao(panel) -> None:
     desc = dvz.dvz_ssao_desc()
-    desc.radius = 0.55
-    desc.strength = 5.0
+    desc.radius = 0.28
+    desc.strength = 4.0
     desc.bias = 0.0
     desc.power = 1.25
-    desc.min_visibility = 0.25
+    desc.min_visibility = 0.30
     desc.sample_count = 32
     desc.blur_radius = 3.0
     desc.blur_depth_sigma = 0.65
@@ -172,7 +136,6 @@ def _build_scene():
         dvz.dvz_panel_set_background_color(panel, ex.BG)
         ex.manual_camera(panel)
         _add_label(panel, label)
-        _add_floor(scene, panel)
         _add_sphere_cluster(scene, panel)
         panels.append(panel)
 
@@ -193,7 +156,7 @@ def _configure_view(view, scene, panels) -> None:
             raise RuntimeError("dvz_controller_arcball() failed")
         if dvz.dvz_arcball_set(arcball, INITIAL_ANGLES) != 0:
             raise RuntimeError("dvz_arcball_set() failed")
-        if dvz.dvz_arcball_zoom(arcball, 1.0) != 0:
+        if dvz.dvz_arcball_zoom(arcball, INITIAL_ZOOM) != 0:
             raise RuntimeError("dvz_arcball_zoom() failed")
         if dvz.dvz_arcball_pan(arcball, INITIAL_PAN) != 0:
             raise RuntimeError("dvz_arcball_pan() failed")

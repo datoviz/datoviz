@@ -4,13 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* This example compares floor contact shadows with and without screen-space ambient occlusion.
+/* This example compares a porous sphere aggregate with and without screen-space ambient occlusion.
  *
- * What to look for: both panels render the same lit sphere cluster and floor, while the right
- * panel applies SSAO with blur and tunable radius, strength, bias, power, visibility, sample count,
- * and debug settings. In live mode, use the GUI and linked arcball to inspect the contact shadows
- * beneath and between nearby spheres. SSAO helps reveal local shape and separation in crowded 3D
- * scientific scenes.
+ * What to look for: both panels render the same uniformly colored, close-packed sphere aggregate,
+ * while the right panel applies SSAO. Contact seams, pores, and the open central cavity become
+ * legible without a floor or color mapping. In live mode, use the GUI and linked arcball to inspect
+ * how radius, strength, bias, power, visibility, sample count, and blur affect local occlusion.
  *
  * Scenario: features_technique_ssao
  * Style: features, graphite_cyan, 1280x720 window target
@@ -47,6 +46,8 @@
 
 #define WIDTH  EXAMPLE_WINDOW_WIDTH
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
+#define AGGREGATE_SIDE         9u
+#define AGGREGATE_MAX_SPHERES  (AGGREGATE_SIDE * AGGREGATE_SIDE * AGGREGATE_SIDE)
 
 
 
@@ -90,47 +91,7 @@ static void _apply_arcball(SsaoDemoState* state)
 
 
 /**
- * Add a floor beneath the sphere cluster so SSAO has a readable contact surface.
- *
- * @param scene scene owning the visual
- * @param panel panel receiving the visual
- * @return true on success
- */
-static bool _add_floor(DvzScene* scene, DvzPanel* panel)
-{
-    const vec3 positions[6] = {
-        {-1.05f, -0.62f, -0.90f},
-        {-1.05f, -0.62f, +0.90f},
-        {+1.05f, -0.62f, -0.90f},
-        {-1.05f, -0.62f, +0.90f},
-        {+1.05f, -0.62f, +0.90f},
-        {+1.05f, -0.62f, -0.90f},
-    };
-    vec3 normals[6] = {{0}};
-    DvzColor colors[6] = {{0}};
-    for (uint32_t i = 0; i < 6; i++)
-    {
-        normals[i][1] = 1.0f;
-        colors[i] = dvz_color_rgb(58, 64, 72);
-    }
-
-    DvzVisual* floor = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
-    if (floor == NULL)
-        return false;
-    DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = positions, .item_count = 6},
-        {.attr_name = "normal", .data = normals, .item_count = 6},
-        {.attr_name = "color", .data = colors, .item_count = 6},
-    };
-    if (dvz_visual_set_data_many(floor, updates, 3) != 0)
-        return false;
-    return dvz_panel_add_visual(panel, floor, NULL) == 0;
-}
-
-
-
-/**
- * Add an opaque sphere cluster with close contact shadows for SSAO tuning.
+ * Add a rounded close-packed sphere aggregate with pores and an open central cavity.
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
@@ -138,48 +99,44 @@ static bool _add_floor(DvzScene* scene, DvzPanel* panel)
  */
 static bool _add_sphere_cluster(DvzScene* scene, DvzPanel* panel)
 {
-    const vec3 positions[12] = {
-        {-0.62f, -0.42f, -0.18f},
-        {-0.26f, -0.50f, -0.07f},
-        {+0.12f, -0.45f, +0.01f},
-        {+0.52f, -0.28f, -0.15f},
-        {-0.50f, +0.00f, +0.04f},
-        {-0.10f, -0.04f, +0.19f},
-        {+0.31f, +0.04f, +0.13f},
-        {+0.70f, +0.22f, -0.05f},
-        {-0.33f, +0.42f, -0.04f},
-        {+0.06f, +0.41f, +0.08f},
-        {+0.48f, +0.48f, -0.11f},
-        {+0.02f, +0.03f, -0.34f},
-    };
-    const float radii[12] = {
-        0.13f,
-        0.11f,
-        0.12f,
-        0.10f,
-        0.14f,
-        0.17f,
-        0.13f,
-        0.10f,
-        0.12f,
-        0.15f,
-        0.11f,
-        0.23f,
-    };
-    DvzColor colors[12] = {
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID),
-    };
+    vec3 positions[AGGREGATE_MAX_SPHERES] = {{0}};
+    float radii[AGGREGATE_MAX_SPHERES] = {0};
+    DvzColor colors[AGGREGATE_MAX_SPHERES] = {{0}};
+    uint32_t count = 0;
+    const int32_t center = (int32_t)(AGGREGATE_SIDE / 2u);
+
+    for (uint32_t z = 0; z < AGGREGATE_SIDE; z++)
+    {
+        for (uint32_t y = 0; y < AGGREGATE_SIDE; y++)
+        {
+            for (uint32_t x = 0; x < AGGREGATE_SIDE; x++)
+            {
+                const int32_t ix = (int32_t)x - center;
+                const int32_t iy = (int32_t)y - center;
+                const int32_t iz = (int32_t)z - center;
+                const float stagger = ((x + y + z) & 1u) != 0u ? 0.0817f : 0.0f;
+                const float px = 0.1633f * (float)ix + stagger;
+                const float py = 0.1462f * (float)iy;
+                const float pz = 0.1385f * (float)iz;
+                const float distance2 = px * px + py * py + pz * pz;
+                const bool outside = distance2 > 0.47f;
+                const bool cavity = pz > -0.08f && px * px + py * py < 0.045f;
+                const bool pore = (7u * x + 11u * y + 13u * z) % 23u == 0u;
+                if (outside || cavity || pore)
+                    continue;
+
+                positions[count][0] = px;
+                positions[count][1] = py;
+                positions[count][2] = pz;
+                radii[count] = 0.084f;
+                colors[count] =
+                    example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
+                count++;
+            }
+        }
+    }
+    if (count == 0)
+        return false;
 
     DvzVisual* spheres = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     if (spheres == NULL)
@@ -188,11 +145,21 @@ static bool _add_sphere_cluster(DvzScene* scene, DvzPanel* panel)
         return false;
 
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = positions, .item_count = 12},
-        {.attr_name = "radius", .data = radii, .item_count = 12},
-        {.attr_name = "color", .data = colors, .item_count = 12},
+        {.attr_name = "position", .data = positions, .item_count = count},
+        {.attr_name = "radius", .data = radii, .item_count = count},
+        {.attr_name = "color", .data = colors, .item_count = count},
     };
     if (dvz_visual_set_data_many(spheres, updates, 3) != 0)
+        return false;
+
+    DvzMaterialDesc material = dvz_standard_material_desc();
+    material.light_direction[0] = -0.38f;
+    material.light_direction[1] = +0.52f;
+    material.light_direction[2] = +0.76f;
+    material.standard.roughness = 0.72f;
+    material.standard.specular = 0.22f;
+    material.standard.rim_strength = 0.10f;
+    if (dvz_visual_set_material(spheres, &material) != 0)
         return false;
     return dvz_panel_add_visual(panel, spheres, NULL) == 0;
 }
@@ -288,16 +255,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (example_set_default_3d_camera(plain, 1.0f) == NULL ||
         example_set_default_3d_camera(ssao_panel, 1.0f) == NULL)
         return false;
-    if (
-        !_add_floor(ctx->scene, plain) || !_add_sphere_cluster(ctx->scene, plain) ||
-        !_add_floor(ctx->scene, ssao_panel) ||
-        !_add_sphere_cluster(ctx->scene, ssao_panel))
+    if (!_add_sphere_cluster(ctx->scene, plain) || !_add_sphere_cluster(ctx->scene, ssao_panel))
         return false;
 
-    state->arcball_angles[0] = +0.708f;
-    state->arcball_angles[1] = -0.354f;
-    state->arcball_angles[2] = +0.244f;
-    state->arcball_zoom = 1.0f;
+    state->arcball_angles[0] = +0.180f;
+    state->arcball_angles[1] = -0.120f;
+    state->arcball_angles[2] = +0.000f;
+    state->arcball_zoom = 0.82f;
     state->arcball_pan[0] = +0.000f;
     state->arcball_pan[1] = -0.020f;
     DvzController* plain_controller = _bind_arcball(ctx, plain, state->arcball_angles);
@@ -321,11 +285,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         .debug_view = false,
         .show_blur_sigmas = true,
         .show_debug_view = true,
-        .radius = 0.55f,
-        .strength = 5.0f,
+        .radius = 0.28f,
+        .strength = 4.0f,
         .bias = 0.000f,
         .power = 1.25f,
-        .min_visibility = 0.25f,
+        .min_visibility = 0.30f,
         .samples = 32.0f,
         .min_samples = 4.0f,
         .max_samples = 32.0f,
