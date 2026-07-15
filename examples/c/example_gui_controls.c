@@ -142,7 +142,7 @@ bool example_gui_ssao(DvzGui* gui, DvzExampleGuiSsaoControls* controls)
 
     changed |= dvz_gui_checkbox(gui, "Enable SSAO", &controls->enabled);
     changed |= dvz_gui_slider_float(gui, "Radius", &controls->radius, 0.05f, 4.0f);
-    changed |= dvz_gui_slider_float(gui, "Strength", &controls->strength, 0.0f, 6.0f);
+    changed |= dvz_gui_slider_float(gui, "Strength", &controls->strength, 0.0f, 16.0f);
     changed |= dvz_gui_slider_float(gui, "Bias", &controls->bias, 0.0f, 0.12f);
     changed |= dvz_gui_slider_float(gui, "Power", &controls->power, 0.1f, 8.0f);
     changed |= dvz_gui_slider_float(gui, "Min visibility", &controls->min_visibility, 0.0f, 1.0f);

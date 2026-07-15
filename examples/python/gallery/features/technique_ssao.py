@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Screen-space ambient occlusion on a dense lit sphere cluster."""
+"""Screen-space ambient occlusion on a lit sphere cluster and floor."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ import datoviz as dvz
 from examples.python.gallery import common as ex
 
 
-LABELS = (b"Plain depth", b"SSAO resolve")
+LABELS = (b"Plain lighting", b"Ambient occlusion")
 INITIAL_ANGLES = (ctypes.c_float * 3)(0.708, -0.354, 0.244)
 INITIAL_PAN = (ctypes.c_float * 2)(0.0, -0.020)
 
@@ -81,6 +81,35 @@ def _add_label(panel, label: bytes) -> None:
         raise RuntimeError("dvz_annotation_set_placement() failed")
 
 
+def _add_floor(scene, panel) -> None:
+    primitive = dvz.dvz_primitive(scene, dvz.DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0)
+    if not primitive:
+        raise RuntimeError("dvz_primitive() failed")
+    positions = np.array(
+        [
+            [-1.05, -0.62, -0.90],
+            [-1.05, -0.62, +0.90],
+            [+1.05, -0.62, -0.90],
+            [-1.05, -0.62, +0.90],
+            [+1.05, -0.62, +0.90],
+            [+1.05, -0.62, -0.90],
+        ],
+        dtype=np.float32,
+    )
+    normals = np.tile(np.array([[0.0, 1.0, 0.0]], dtype=np.float32), (6, 1))
+    colors = np.tile(np.array([[58, 64, 72, 255]], dtype=np.uint8), (6, 1))
+    if dvz.dvz_visual_set_data_many(
+        primitive,
+        {
+            "position": positions,
+            "normal": normals,
+            "color": colors,
+        },
+    ) != 0:
+        raise RuntimeError("dvz_visual_set_data_many(floor) failed")
+    ex.add_visual(panel, primitive)
+
+
 def _add_sphere_cluster(scene, panel) -> None:
     spheres = dvz.dvz_sphere(scene, dvz.DVZ_SPHERE_FLAGS_LIGHTING)
     if not spheres:
@@ -103,15 +132,15 @@ def _add_sphere_cluster(scene, panel) -> None:
 
 def _set_ssao(panel) -> None:
     desc = dvz.dvz_ssao_desc()
-    desc.radius = 0.674
-    desc.strength = 2.105
+    desc.radius = 0.55
+    desc.strength = 5.0
     desc.bias = 0.0
-    desc.power = 1.902
-    desc.min_visibility = 0.439
-    desc.sample_count = 22
-    desc.blur_radius = 11.289
-    desc.blur_depth_sigma = 0.993
-    desc.blur_normal_sigma = 0.297
+    desc.power = 1.25
+    desc.min_visibility = 0.25
+    desc.sample_count = 32
+    desc.blur_radius = 3.0
+    desc.blur_depth_sigma = 0.65
+    desc.blur_normal_sigma = 0.35
     desc.blur_enabled = True
     desc.debug_view = False
     if dvz.dvz_panel_set_ssao(panel, ctypes.byref(desc)) != 0:
@@ -143,6 +172,7 @@ def _build_scene():
         dvz.dvz_panel_set_background_color(panel, ex.BG)
         ex.manual_camera(panel)
         _add_label(panel, label)
+        _add_floor(scene, panel)
         _add_sphere_cluster(scene, panel)
         panels.append(panel)
 

@@ -4,13 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* This example compares a sphere cluster with and without screen-space ambient occlusion.
+/* This example compares a sphere cluster on a floor with and without screen-space ambient
+ * occlusion.
  *
- * What to look for: both panels upload the same lit sphere position, radius, and color arrays,
- * while the right panel applies SSAO with blur and tunable radius, strength, bias, power,
- * visibility, sample count, and debug settings. In live mode, use the GUI and linked arcball to
- * inspect contact shadows between nearby spheres. SSAO helps reveal local shape and separation in
- * crowded 3D scientific scenes.
+ * What to look for: both panels render the same lit sphere cluster and floor, while the right
+ * panel applies SSAO with blur and tunable radius, strength, bias, power, visibility, sample count,
+ * and debug settings. In live mode, use the GUI and linked arcball to inspect the contact shadows
+ * beneath and between nearby spheres. SSAO helps reveal local shape and separation in crowded 3D
+ * scientific scenes.
  *
  * Scenario: features_technique_ssao
  * Style: features, graphite_cyan, 1280x720 window target
@@ -85,6 +86,46 @@ static void _apply_arcball(SsaoDemoState* state)
         dvz_arcball_zoom(state->ssao_arcball, state->arcball_zoom);
         dvz_arcball_pan(state->ssao_arcball, state->arcball_pan);
     }
+}
+
+
+
+/**
+ * Add a floor beneath the sphere cluster so SSAO has a readable contact surface.
+ *
+ * @param scene scene owning the visual
+ * @param panel panel receiving the visual
+ * @return true on success
+ */
+static bool _add_floor(DvzScene* scene, DvzPanel* panel)
+{
+    const vec3 positions[6] = {
+        {-1.05f, -0.62f, -0.90f},
+        {-1.05f, -0.62f, +0.90f},
+        {+1.05f, -0.62f, -0.90f},
+        {-1.05f, -0.62f, +0.90f},
+        {+1.05f, -0.62f, +0.90f},
+        {+1.05f, -0.62f, -0.90f},
+    };
+    vec3 normals[6] = {{0}};
+    DvzColor colors[6] = {{0}};
+    for (uint32_t i = 0; i < 6; i++)
+    {
+        normals[i][1] = 1.0f;
+        colors[i] = dvz_color_rgb(58, 64, 72);
+    }
+
+    DvzVisual* floor = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    if (floor == NULL)
+        return false;
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = 6},
+        {.attr_name = "normal", .data = normals, .item_count = 6},
+        {.attr_name = "color", .data = colors, .item_count = 6},
+    };
+    if (dvz_visual_set_data_many(floor, updates, 3) != 0)
+        return false;
+    return dvz_panel_add_visual(panel, floor, NULL) == 0;
 }
 
 
@@ -235,12 +276,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     label_placement.text_anchor[1] = 0.0f;
     label_placement.has_text_anchor = true;
     DvzLabelDesc label = dvz_label_desc();
-    label.text = "plain depth";
+    label.text = "plain lighting";
     DvzAnnotation* annotation = dvz_annotation_label(plain, &label);
     if (annotation == NULL || dvz_annotation_set_style(annotation, &label_style) != 0 ||
         dvz_annotation_set_placement(annotation, &label_placement) != 0)
         return false;
-    label.text = "SSAO resolve";
+    label.text = "ambient occlusion";
     annotation = dvz_annotation_label(ssao_panel, &label);
     if (annotation == NULL || dvz_annotation_set_style(annotation, &label_style) != 0 ||
         dvz_annotation_set_placement(annotation, &label_placement) != 0)
@@ -248,7 +289,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (example_set_default_3d_camera(plain, 1.0f) == NULL ||
         example_set_default_3d_camera(ssao_panel, 1.0f) == NULL)
         return false;
-    if (!_add_sphere_cluster(ctx->scene, plain) || !_add_sphere_cluster(ctx->scene, ssao_panel))
+    if (
+        !_add_floor(ctx->scene, plain) || !_add_sphere_cluster(ctx->scene, plain) ||
+        !_add_floor(ctx->scene, ssao_panel) ||
+        !_add_sphere_cluster(ctx->scene, ssao_panel))
         return false;
 
     state->arcball_angles[0] = +0.708f;
@@ -278,18 +322,18 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         .debug_view = false,
         .show_blur_sigmas = true,
         .show_debug_view = true,
-        .radius = 0.674f,
-        .strength = 2.105f,
+        .radius = 0.55f,
+        .strength = 5.0f,
         .bias = 0.000f,
-        .power = 1.902f,
-        .min_visibility = 0.439f,
-        .samples = 22.421f,
+        .power = 1.25f,
+        .min_visibility = 0.25f,
+        .samples = 32.0f,
         .min_samples = 4.0f,
-        .max_samples = 64.0f,
-        .blur_radius = 11.289f,
-        .blur_radius_max = 24.0f,
-        .blur_depth_sigma = 0.993f,
-        .blur_normal_sigma = 0.297f,
+        .max_samples = 32.0f,
+        .blur_radius = 3.0f,
+        .blur_radius_max = 16.0f,
+        .blur_depth_sigma = 0.65f,
+        .blur_normal_sigma = 0.35f,
     };
     example_tuner_ssao(&state->tuner, "Occlusion", state->ssao_panel, &state->ssao);
     example_tuner_arcball(
