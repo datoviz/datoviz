@@ -1,47 +1,35 @@
-# Datoviz — High-performance 2D and 3D scientific visualization
+# Datoviz — GPU visualization for large scientific data
 
-**Datoviz is an open-source, cross-platform visualization engine written in C, with direct Python
-bindings designed for NumPy arrays.** Powered by Vulkan, it targets large, dynamic GPU-resident
-datasets on Linux, macOS, and Windows, with high-quality 2D and 3D rendering as equal priorities.
+**Datoviz is an open-source, cross-platform visualization engine written in C, with direct
+Python/NumPy bindings.** It uses Vulkan to render large, dynamic datasets in
+interactive, high-quality 2D and 3D scenes on Linux, macOS, and Windows.
 
-Datoviz is desktop-first and deliberately more explicit than a Matplotlib-like plotting library.
-With its retained scene API, you create figures and visuals once, attach arrays, then update only
-what changes. Applications keep direct control over interaction, layout, GPU resources, and
-reproducible output. Built-in GUI support uses
-[Dear ImGui](https://github.com/ocornut/imgui); an experimental WebGPU/WASM path brings a growing
-subset of the same scenes to the browser. See the current
-[browser subset](reference/webgpu-subset.md) and its limits.
+Datoviz is desktop-first, with native windows, offscreen rendering, application embedding, and
+built-in GUI support through [Dear ImGui](https://github.com/ocornut/imgui). An experimental
+[WebGPU/WASM subset](reference/webgpu-subset.md) brings selected scenes to the browser.
 
-<ul class="dvz-home-facts" aria-label="Datoviz at a glance">
-<li>MIT open source</li>
-<li>C + Python/NumPy</li>
-<li>Vulkan</li>
-<li>Linux · macOS · Windows</li>
-<li>First-class 2D + 3D</li>
-<li>Dear ImGui</li>
+<ul class="dvz-home-meta" aria-label="Datoviz at a glance">
+<li>MIT license</li>
+<li>C API and Python/NumPy</li>
+<li>Linux, macOS, and Windows</li>
+<li>Desktop-first</li>
 </ul>
 
-<div class="dvz-home-actions">
-<a class="md-button md-button--primary" href="start/install/">Install</a>
-<a class="md-button" href="start/quickstart/">Python quickstart</a>
-<a class="md-button" href="examples/">Browse examples</a>
-</div>
+<nav class="dvz-home-actions" aria-label="Primary actions">
+<a class="dvz-home-action-primary" href="start/">Get started <span aria-hidden="true">→</span></a>
+<a href="examples/">Browse the gallery</a>
+<a href="https://github.com/datoviz/datoviz">View on GitHub</a>
+</nav>
 
-Prebuilt wheels containing the Python binding and native runtime have been validated for supported
-Linux, macOS, and Windows targets. They will provide the one-command `pip install datoviz` path when
-the first public release candidate is published. Until then, follow the exact current instructions
-on the [installation page](start/install.md); see [platform support](reference/platform-support.md)
-for graphics and architecture requirements.
+<p class="dvz-home-status">
+<strong>v0.4 status:</strong> the native Vulkan scene API is the primary supported path. The first
+public release candidate is in preparation; browser WebGPU and advanced/unstable facilities remain
+experimental. See <a href="reference/feature-status/">feature status</a>.
+</p>
 
-!!! info "v0.4 release status"
-
-    The native Vulkan scene API is the primary supported v0.4 path, with feature-specific status
-    recorded in [Feature status](reference/feature-status.md). Browser WebGPU and facilities marked
-    advanced/unstable remain experimental.
-
-<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video" style="margin:1.5rem 0 1.5rem;">
-  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_protein/" aria-label="Protein visualization"></a>
-  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_protein.poster.webp" alt="Interactive protein visualization rendered with Datoviz" loading="lazy">
+<div class="dvz-gallery-media dvz-gallery-media--video dvz-home-hero" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_protein/" aria-label="Open the protein visualization example"></a>
+  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_protein.poster.webp" alt="Interactive 3D protein visualization rendered with Datoviz" loading="eager">
   <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true"
          poster="assets/gallery/v0.4/showcases/showcases_protein.poster.webp">
     <source data-src="assets/gallery/v0.4/showcases/showcases_protein.mp4" type="video/mp4">
@@ -49,165 +37,165 @@ for graphics and architecture requirements.
 </div>
 
 
-## Choose your path
+## What can you build?
 
-<div class="dvz-nav-grid">
-<a class="dvz-nav-card" href="start/quickstart/">
-<strong>Python + NumPy</strong>
-<span>Render 10,000 interactive points and learn the retained scene workflow.</span>
-</a>
-<a class="dvz-nav-card" href="start/first-c-program/">
-<strong>C or C++</strong>
-<span>Build a native first program, then integrate the installed C library with CMake.</span>
-</a>
-<a class="dvz-nav-card" href="reference/webgpu-subset/">
-<strong>Browser WebGPU</strong>
-<span>Try promoted live examples and understand the experimental browser subset.</span>
-</a>
-<a class="dvz-nav-card" href="advanced/runtime-internals/">
-<strong>Engine internals</strong>
-<span>Explore DRP2, Vulkan execution, recording, replay, and backend portability.</span>
-</a>
-</div>
+Datoviz combines scientific visuals, interaction, annotation, and native application controls in
+the same retained scene model.
 
-
-## One engine, three layers
-
-Datoviz is modular from the rendering core upward. Most applications use the retained scene layer;
-specialized integrations can work closer to the protocol and runtime.
-
-<ol class="dvz-layer-grid" aria-label="Datoviz architecture from scene to runtime">
-<li class="dvz-layer-card">
-<h3><a href="start/what-is-datoviz/">Scene</a></h3>
-<span>Retained figures, panels, visuals, controllers, axes, annotations, queries, and frame planning.</span>
-</li>
-<li class="dvz-layer-card">
-<h3><a href="advanced/drp2-command-streams/">Datoviz Rendering Protocol v2 (DRP2)</a></h3>
-<span>A backend-neutral, WebGPU-shaped contract for validation, replay, and portable command streams.</span>
-</li>
-<li class="dvz-layer-card">
-<h3><a href="advanced/runtime-internals/">Rendering runtimes</a></h3>
-<span>The core Vulkan engine handles native rendering, windows, offscreen targets, capture, and streaming; browser WebGPU execution is experimental.</span>
-</li>
-</ol>
-
-Source builds expose switches for compatible core, Vulkan, canvas, DRP2, scene, app, and GUI
-components. The native WebGPU build option is separate from the experimental browser WebGPU/WASM
-toolchain. See [Choose your layer](start/choose-your-layer.md) for API guidance and
-[Build options](reference/build-options.md) for the module list and dependencies.
-
-
-## A first Python scene
-
-This complete example creates a scene, attaches point data to a panel, binds pan and zoom, then
-opens a native window.
-
-```python
-# doctest: skip -- MkDocs expands the source include after this checker runs.
---8<-- "examples/docs/quickstart.py"
-```
-
-![10 000 randomly colored points in an interactive Datoviz window](assets/gallery/v0.4/start/start_scatter.webp)
-
-See the annotated [Quickstart](start/quickstart.md) or [use Datoviz from C or C++](how-to/c-integration.md).
-
-
-## Built for scientific applications
-
-- **Large, dynamic data**: dense points, sampled fields, images, meshes, volumes, text, and
-  scientific annotations remain interactive through GPU-backed rendering.
-- **Application-ready output**: render in native windows or offscreen, embed the C library, capture
-  screenshots, export video, and record or replay render streams.
-- **Interaction and composition**: combine linked panels, cameras, 2D and 3D controllers, picking,
-  queries, axes, colorbars, labels, and Dear ImGui controls.
-- **Direct APIs**: use the native C API from C or C++, or call the generated Python binding directly
-  with documented NumPy array adaptation.
-
-Datoviz is part of the [VisPy](https://vispy.org/) ecosystem and is the flagship interactive GPU
-backend for the developing VisPy 2 and
-[Graphics Server Protocol](https://github.com/vispy/GSP_API) architecture. That project owns the
-higher-level plotting layer; Datoviz v0.4 remains the explicit rendering engine underneath it.
-
-
-## Gallery highlights
-
-<div class="grid cards" markdown="1">
-
-<div class="card" markdown="1">
-
-### [Point Cloud](examples/gallery/showcases/showcases_point_cloud.md)
-
+<div class="dvz-showcase-grid">
+<article class="dvz-showcase">
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" alt="Dense point cloud rendered in Datoviz" loading="lazy">
+  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_panel_linked_axes.poster.webp" alt="Two linked scientific 2D panels with axes" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true"
+         poster="assets/gallery/v0.4/showcases/showcases_panel_linked_axes.poster.webp">
+    <source data-src="assets/gallery/v0.4/showcases/showcases_panel_linked_axes.mp4" type="video/mp4">
+  </video>
+</div>
+<h3><a href="examples/gallery/showcases/showcases_panel_linked_axes/">Scientific 2D</a></h3>
+<p>Linked panels, axes, traces, annotations, and interactive navigation.</p>
+</article>
+<article class="dvz-showcase">
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" alt="A dense colored 3D point cloud" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true"
          poster="assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp">
     <source data-src="assets/gallery/v0.4/showcases/showcases_point_cloud.mp4" type="video/mp4">
   </video>
 </div>
-
-Large 3D datasets with depth, color, and interactive navigation.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Brain Volume](examples/gallery/showcases/showcases_brain_volume.md)
-
+<h3><a href="examples/gallery/showcases/showcases_point_cloud/">Large point clouds</a></h3>
+<p>Large 3D data with depth, color, and interactive navigation.</p>
+</article>
+<article class="dvz-showcase">
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp" alt="Brain volume rendering with mesh overlay" loading="lazy">
+  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp" alt="A brain volume rendering with an anatomical mesh overlay" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true"
          poster="assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp">
     <source data-src="assets/gallery/v0.4/showcases/showcases_brain_volume.mp4" type="video/mp4">
   </video>
 </div>
-
-Volumes, slices, transparent geometry, and scientific context.
-
+<h3><a href="examples/gallery/showcases/showcases_brain_volume/">Volumes and meshes</a></h3>
+<p>Three-dimensional sampled fields, slices, lighting, and transparent geometry.</p>
+</article>
+<article class="dvz-showcase">
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_wind_field.poster.webp" alt="A color-mapped wind field with vector overlays" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true"
+         poster="assets/gallery/v0.4/showcases/showcases_wind_field.poster.webp">
+    <source data-src="assets/gallery/v0.4/showcases/showcases_wind_field.mp4" type="video/mp4">
+  </video>
 </div>
-
-<div class="card" markdown="1">
-
-### [Scientific Plotting](examples/gallery/showcases/showcases_scientific_plotting.md)
-
-![A composed 2D scientific figure with axes, traces, bands, and annotations](assets/gallery/v0.4/showcases/showcases_scientific_plotting.webp)
-
-First-class 2D axes, traces, uncertainty bands, annotations, and linked layouts.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [GUI Controls](examples/gallery/features/features_gui_controls.md)
-
-![Dear ImGui controls updating a Datoviz point visual](assets/gallery/v0.4/features/features_gui_controls.webp)
-
-Native Dear ImGui controls connected to retained visual data and application state.
-
-</div>
-
+<h3><a href="examples/gallery/showcases/showcases_wind_field/">Vector and scalar fields</a></h3>
+<p>Color-mapped fields, vector overlays, colorbars, and probe-style workflows.</p>
+</article>
 </div>
 
 
-## Go further
+## Start with your language
 
-<div class="dvz-nav-grid">
-<a class="dvz-nav-card" href="how-to/">
-<strong>How-To guides</strong>
-<span>Learn focused tasks such as axes, colorbars, picking, animation, capture, and offscreen output.</span>
-</a>
-<a class="dvz-nav-card" href="reference/">
-<strong>Reference</strong>
-<span>Look up visual families, attributes, C API pages, platform support, and project status.</span>
-</a>
-<a class="dvz-nav-card" href="reference/project-status/">
-<strong>Project status</strong>
-<span>See release maturity, supported paths, experimental features, and current limitations.</span>
-</a>
-<a class="dvz-nav-card" href="https://github.com/datoviz/datoviz">
-<strong>Source and contributions</strong>
-<span>Read the MIT-licensed source, report issues, and follow development on GitHub.</span>
-</a>
+<div class="dvz-language-grid">
+<section>
+<h3>Python + NumPy</h3>
+<p>Create retained scenes and pass NumPy arrays directly to Datoviz functions. The API keeps the
+same explicit <code>dvz_*</code> vocabulary as C.</p>
+<p class="dvz-text-links"><a href="start/quickstart/">Python quickstart →</a> <a href="reference/python-direct-engine/">Python binding reference</a></p>
+</section>
+<section>
+<h3>C or C++</h3>
+<p>Use the native C library for desktop applications, embedding, offscreen rendering, capture, and
+lower-level runtime integration. The public API uses C linkage and is callable from C++.</p>
+<p class="dvz-text-links"><a href="start/first-c-program/">First C program →</a> <a href="how-to/c-integration/">C/C++ integration</a></p>
+</section>
 </div>
+
+Prebuilt wheels containing the Python binding and native runtime have been validated for supported
+Linux, macOS, and Windows targets. They will provide the normal `pip install datoviz` path when the
+first public release candidate is published. Until then, follow the current
+[installation instructions](start/install.md).
+
+
+## Built for scientific applications
+
+<div class="dvz-feature-grid">
+<section>
+<h3>Large, dynamic data</h3>
+<p>Update points, images, sampled fields, meshes, volumes, text, and annotations without
+rebuilding the entire scene.</p>
+</section>
+<section>
+<h3>First-class 2D and 3D</h3>
+<p>Compose axes, panels, paths, images, and guides alongside cameras, lighting, meshes, point clouds,
+and volumes.</p>
+</section>
+<section>
+<h3>Interaction and composition</h3>
+<p>Combine linked panels, panzoom and 3D controllers, picking, queries, labels, colorbars, and native
+GUI controls.</p>
+</section>
+<section>
+<h3>Native integration and output</h3>
+<p>Render in windows or offscreen, embed the C engine, capture screenshots, export video, and record
+or replay render streams.</p>
+</section>
+</div>
+
+
+## Where Datoviz fits
+
+Datoviz v0.4 is an explicit rendering engine, not a Matplotlib-like plotting frontend. Most users
+work with retained figures, panels, visuals, and controllers; experienced integrators can use the
+protocol and runtime layers directly.
+
+<ol class="dvz-architecture" aria-label="Datoviz software layers">
+<li>
+<strong>High-level plotting</strong>
+<span>Developing GSP and VisPy 2 interfaces outside Datoviz v0.4</span>
+</li>
+<li>
+<strong><a href="start/what-is-datoviz/">Retained scene API</a></strong>
+<span>Figures, panels, visuals, controllers, annotations, and queries</span>
+</li>
+<li>
+<strong><a href="advanced/drp2-command-streams/">Datoviz Rendering Protocol v2 (DRP2)</a></strong>
+<span>Backend-neutral, WebGPU-shaped command streams, validation, and replay</span>
+</li>
+<li>
+<strong><a href="advanced/runtime-internals/">Rendering runtimes</a></strong>
+<span>Native Vulkan execution and the experimental browser WebGPU subset</span>
+</li>
+</ol>
+
+Source builds expose switches for compatible core, Vulkan, canvas, DRP2, scene, app, and GUI
+components. The native WebGPU build option is separate from the browser WebGPU/WASM toolchain. See
+[Choose your layer](start/choose-your-layer.md) and [Build options](reference/build-options.md).
+
+
+## Platform and maturity
+
+| Surface | v0.4 position |
+| --- | --- |
+| Native Vulkan scene API | Primary supported path, with feature-specific status documented separately |
+| Linux, macOS, and Windows | Supported wheel and source-build targets; graphics requirements vary by platform |
+| Python | Direct generated binding with documented NumPy adaptation |
+| Dear ImGui | Built-in native desktop GUI support |
+| WebGPU/WASM | Experimental browser subset for promoted examples, not native feature parity |
+| DRP2 and lower-level runtime APIs | Advanced/unstable integration surfaces |
+
+Review [Platform support](reference/platform-support.md), [Feature status](reference/feature-status.md),
+and [Project status](reference/project-status.md) before adopting an experimental or
+backend-specific feature.
+
+
+## Continue
+
+<nav class="dvz-continue-links" aria-label="Documentation links">
+<a href="start/install/">Install</a>
+<a href="start/quickstart/">Quickstart</a>
+<a href="examples/">Examples</a>
+<a href="how-to/">How-To guides</a>
+<a href="reference/">Reference</a>
+<a href="https://github.com/datoviz/datoviz">GitHub</a>
+</nav>
 
 For coding-assistant guidance, see the [AI-assisted workflow](start/ai-workflow.md). Project
-acknowledgements are recorded in the [repository credits](https://github.com/datoviz/datoviz#license-and-credits).
+acknowledgements are recorded in the
+[repository credits](https://github.com/datoviz/datoviz#license-and-credits).

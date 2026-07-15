@@ -3,8 +3,6 @@
   const saveData = navigator.connection && navigator.connection.saveData;
   if (reduceMotion || saveData) return;
 
-  let activeVideo = null;
-
   const updateControl = (card, video) => {
     const control = card.querySelector(".dvz-gallery-video-control");
     if (!control) return;
@@ -26,15 +24,8 @@
         video.pause();
       }
     });
-    video.addEventListener("play", () => {
-      if (activeVideo && activeVideo !== video) activeVideo.pause();
-      activeVideo = video;
-      updateControl(card, video);
-    });
-    video.addEventListener("pause", () => {
-      if (activeVideo === video) activeVideo = null;
-      updateControl(card, video);
-    });
+    video.addEventListener("play", () => updateControl(card, video));
+    video.addEventListener("pause", () => updateControl(card, video));
     card.appendChild(control);
     updateControl(card, video);
   };
@@ -84,8 +75,4 @@
   }, { rootMargin: "400px 0px" });
 
   document.querySelectorAll("[data-gallery-lazy]").forEach((card) => observer.observe(card));
-
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden && activeVideo) activeVideo.pause();
-  });
 })();
