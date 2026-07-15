@@ -6,11 +6,11 @@
 
 /* This example compares a plain 3D sphere lattice with depth-dependent fading.
  *
- * What to look for: both panels upload the same 3x3x3 sphere position, color, and radius arrays,
- * but only the right panel applies a depth-cue descriptor to the visual. In live mode, use the GUI
- * to change cue mode, depth metric, falloff, near/far depth, strength, density, and background
- * color while the linked arcball keeps both views aligned. Depth cueing helps dense 3D plots read
- * as depth instead of a flat pile of symbols.
+ * What to look for: both panels upload the same uniformly colored 3x3x3 sphere lattice, but only
+ * the right panel applies a depth-cue descriptor to the visual. The uniform material makes the
+ * progressive fade toward the background attributable to depth rather than a color mapping. In
+ * live mode, use the GUI to change cue mode, depth metric, falloff, near/far depth, strength,
+ * density, and background color while the linked arcball keeps both views aligned.
  *
  * Scenario: features_technique_depth_cue
  * Style: features, graphite_cyan, 1280x720 window target
@@ -158,10 +158,8 @@ static bool _add_sphere_lattice(
                 positions[i][0] = -0.58f + 0.58f * (float)x;
                 positions[i][1] = -0.44f + 0.44f * (float)y;
                 positions[i][2] = -0.72f + 0.72f * (float)z;
-                colors[i] = example_graphite_cyan_color(
-                    z == 0u   ? EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY
-                    : z == 1u ? EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY
-                              : EXAMPLE_STYLE_COLOR_WARNING);
+                colors[i] =
+                    example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
                 radii[i] = 0.115f;
             }
         }

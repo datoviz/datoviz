@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Plain sphere lattice compared with depth-dependent fading."""
+"""Uniform sphere lattice compared with depth-dependent fading."""
 
 from __future__ import annotations
 
@@ -21,12 +21,11 @@ def _sphere_lattice_data():
     positions = []
     colors = []
     radii = []
-    palette = (ex.CYAN, ex.GREEN, ex.YELLOW)
     for z in range(LATTICE_SIDE):
         for y in range(LATTICE_SIDE):
             for x in range(LATTICE_SIDE):
                 positions.append((-0.58 + 0.58 * x, -0.44 + 0.44 * y, -0.72 + 0.72 * z))
-                colors.append(palette[z])
+                colors.append(ex.CYAN)
                 radii.append(0.115)
     return (
         np.array(positions, dtype=np.float32),
