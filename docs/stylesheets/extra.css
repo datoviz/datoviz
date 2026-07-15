@@ -196,8 +196,8 @@ img[alt*=gpuopen] {
     z-index: 4;
     display: grid;
     place-items: center;
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 2rem;
+    height: 2rem;
     padding: 0;
     border: 1px solid rgba(255, 255, 255, 0.7);
     border-radius: 50%;
@@ -283,20 +283,23 @@ img[alt*=gpuopen] {
 }
 
 /* ── Docs homepage ──────────────────────────────────────────────────────── */
-.dvz-home-facts {
+.md-typeset .dvz-home-facts {
     display: flex;
     flex-wrap: wrap;
     gap: 0.55rem;
     margin: 1.25rem 0;
+    padding: 0;
+    list-style: none;
 }
 
-.dvz-home-facts span {
+.md-typeset .dvz-home-facts li {
+    margin: 0;
     padding: 0.4rem 0.65rem;
     border: 1px solid rgba(76, 201, 240, 0.28);
     border-radius: 999px;
     color: var(--dvz-muted);
     background: rgba(76, 201, 240, 0.05);
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     font-weight: 700;
 }
 
@@ -311,43 +314,54 @@ img[alt*=gpuopen] {
     margin: 0;
 }
 
-.dvz-layer-grid {
+.md-typeset .dvz-layer-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
-    gap: 0.75rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2rem;
     align-items: stretch;
     margin: 1.5rem 0;
+    padding: 0;
+    list-style: none;
 }
 
 .dvz-layer-card {
+    position: relative;
+    margin: 0;
     padding: 1rem;
     border: 1px solid rgba(76, 201, 240, 0.24);
     border-radius: 8px;
     background: var(--md-code-bg-color);
 }
 
-.dvz-layer-card strong,
 .dvz-layer-card span {
     display: block;
 }
 
-.dvz-layer-card strong {
+.dvz-layer-card h3 {
+    margin: 0 0 0.45rem;
+    font-size: 1rem;
+    line-height: 1.35;
+}
+
+.dvz-layer-card h3 a {
     margin-bottom: 0.35rem;
     color: var(--dvz-cyan);
-    font-size: 1rem;
 }
 
 .dvz-layer-card span {
     color: var(--dvz-muted);
-    font-size: 0.78rem;
+    font-size: 0.85rem;
     line-height: 1.5;
 }
 
-.dvz-layer-arrow {
-    display: grid;
-    place-items: center;
+.dvz-layer-card:not(:last-child)::after {
+    position: absolute;
+    top: 50%;
+    right: -1.55rem;
+    transform: translateY(-50%);
     color: var(--dvz-cyan);
     font-size: 1.2rem;
+    content: "→";
 }
 
 .dvz-nav-grid {
@@ -369,6 +383,11 @@ img[alt*=gpuopen] {
     border-color: var(--md-accent-fg-color);
     transform: translateY(-2px);
 }
+.dvz-nav-card:focus-visible {
+    border-color: var(--md-accent-fg-color);
+    outline: 3px solid var(--md-accent-fg-color);
+    outline-offset: 2px;
+}
 .dvz-nav-card strong {
     display: block;
     font-size: 0.95rem;
@@ -382,12 +401,21 @@ img[alt*=gpuopen] {
 }
 
 @media screen and (max-width: 760px) {
-    .dvz-layer-grid {
+    .md-typeset .dvz-layer-grid {
         grid-template-columns: 1fr;
     }
 
-    .dvz-layer-arrow {
-        transform: rotate(90deg);
+    .dvz-layer-card:not(:last-child)::after {
+        top: auto;
+        right: auto;
+        bottom: -1.7rem;
+        left: 50%;
+        transform: translateX(-50%);
+        content: "↓";
+    }
+
+    .dvz-nav-grid {
+        grid-template-columns: 1fr;
     }
 }
 

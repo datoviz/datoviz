@@ -12,14 +12,14 @@ reproducible output. Built-in GUI support uses
 subset of the same scenes to the browser. See the current
 [browser subset](reference/webgpu-subset.md) and its limits.
 
-<div class="dvz-home-facts">
-<span>MIT open source</span>
-<span>C + Python/NumPy</span>
-<span>Vulkan</span>
-<span>Linux · macOS · Windows</span>
-<span>First-class 2D + 3D</span>
-<span>Dear ImGui</span>
-</div>
+<ul class="dvz-home-facts" aria-label="Datoviz at a glance">
+<li>MIT open source</li>
+<li>C + Python/NumPy</li>
+<li>Vulkan</li>
+<li>Linux · macOS · Windows</li>
+<li>First-class 2D + 3D</li>
+<li>Dear ImGui</li>
+</ul>
 
 <div class="dvz-home-actions">
 <a class="md-button md-button--primary" href="start/install/">Install</a>
@@ -42,8 +42,8 @@ for graphics and architecture requirements.
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video" style="margin:1.5rem 0 1.5rem;">
   <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_protein/" aria-label="Protein visualization"></a>
   <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_protein.poster.webp" alt="Interactive protein visualization rendered with Datoviz" loading="lazy">
-  <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="assets/gallery/v0.4/showcases/showcases_protein.poster.webp" aria-label="Protein visualization preview">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true"
+         poster="assets/gallery/v0.4/showcases/showcases_protein.poster.webp">
     <source data-src="assets/gallery/v0.4/showcases/showcases_protein.mp4" type="video/mp4">
   </video>
 </div>
@@ -76,22 +76,20 @@ for graphics and architecture requirements.
 Datoviz is modular from the rendering core upward. Most applications use the retained scene layer;
 specialized integrations can work closer to the protocol and runtime.
 
-<div class="dvz-layer-grid">
-<div class="dvz-layer-card">
-<strong><a href="start/what-is-datoviz/">Scene</a></strong>
+<ol class="dvz-layer-grid" aria-label="Datoviz architecture from scene to runtime">
+<li class="dvz-layer-card">
+<h3><a href="start/what-is-datoviz/">Scene</a></h3>
 <span>Retained figures, panels, visuals, controllers, axes, annotations, queries, and frame planning.</span>
-</div>
-<div class="dvz-layer-arrow" aria-hidden="true">→</div>
-<div class="dvz-layer-card">
-<strong><a href="advanced/drp2-command-streams/">Datoviz Rendering Protocol v2 (DRP2)</a></strong>
+</li>
+<li class="dvz-layer-card">
+<h3><a href="advanced/drp2-command-streams/">Datoviz Rendering Protocol v2 (DRP2)</a></h3>
 <span>A backend-neutral, WebGPU-shaped contract for validation, replay, and portable command streams.</span>
-</div>
-<div class="dvz-layer-arrow" aria-hidden="true">→</div>
-<div class="dvz-layer-card">
-<strong><a href="advanced/runtime-internals/">Rendering runtimes</a></strong>
+</li>
+<li class="dvz-layer-card">
+<h3><a href="advanced/runtime-internals/">Rendering runtimes</a></h3>
 <span>The core Vulkan engine handles native rendering, windows, offscreen targets, capture, and streaming; browser WebGPU execution is experimental.</span>
-</div>
-</div>
+</li>
+</ol>
 
 Source builds expose switches for compatible core, Vulkan, canvas, DRP2, scene, app, and GUI
 components. The native WebGPU build option is separate from the experimental browser WebGPU/WASM
@@ -140,10 +138,9 @@ higher-level plotting layer; Datoviz v0.4 remains the explicit rendering engine 
 ### [Point Cloud](examples/gallery/showcases/showcases_point_cloud.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_point_cloud.md" aria-label="Point Cloud"></a>
   <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" alt="Dense point cloud rendered in Datoviz" loading="lazy">
-  <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" aria-label="Point Cloud preview">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true"
+         poster="assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp">
     <source data-src="assets/gallery/v0.4/showcases/showcases_point_cloud.mp4" type="video/mp4">
   </video>
 </div>
@@ -157,10 +154,9 @@ Large 3D datasets with depth, color, and interactive navigation.
 ### [Brain Volume](examples/gallery/showcases/showcases_brain_volume.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_brain_volume.md" aria-label="Brain Volume"></a>
   <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp" alt="Brain volume rendering with mesh overlay" loading="lazy">
-  <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp" aria-label="Brain Volume preview">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true"
+         poster="assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp">
     <source data-src="assets/gallery/v0.4/showcases/showcases_brain_volume.mp4" type="video/mp4">
   </video>
 </div>
