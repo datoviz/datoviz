@@ -8,12 +8,9 @@ Datoviz is desktop-first, with native windows, offscreen rendering, application 
 built-in GUI support through [Dear ImGui](https://github.com/ocornut/imgui). An experimental
 [WebGPU/WASM subset](reference/webgpu-subset.md) brings selected scenes to the browser.
 
-<ul class="dvz-home-meta" aria-label="Datoviz at a glance">
-<li>MIT license</li>
-<li>C API and Python/NumPy</li>
-<li>Linux, macOS, and Windows</li>
-<li>Desktop-first</li>
-</ul>
+<p class="dvz-home-meta">MIT license <span aria-hidden="true">·</span> C API and Python/NumPy
+<span aria-hidden="true">·</span> Linux, macOS, and Windows <span aria-hidden="true">·</span>
+Desktop-first</p>
 
 <nav class="dvz-home-actions" aria-label="Primary actions">
 <a class="dvz-home-action-primary" href="start/">Get started <span aria-hidden="true">→</span></a>
@@ -37,7 +34,7 @@ experimental. See <a href="reference/feature-status/">feature status</a>.
 </div>
 
 
-## What can you build?
+## :material-image-multiple-outline: What can you build? { .dvz-home-heading }
 
 Datoviz combines scientific visuals, interaction, annotation, and native application controls in
 the same retained scene model.
@@ -90,14 +87,14 @@ the same retained scene model.
 </div>
 
 
-## Start with your language
+## :material-code-braces: Start with your language { .dvz-home-heading }
 
 <div class="dvz-language-grid">
 <section>
 <h3>Python + NumPy</h3>
 <p>Create retained scenes and pass NumPy arrays directly to Datoviz functions. The API keeps the
 same explicit <code>dvz_*</code> vocabulary as C.</p>
-<p class="dvz-text-links"><a href="start/quickstart/">Python quickstart →</a> <a href="reference/python-direct-engine/">Python binding reference</a></p>
+<p class="dvz-text-links"><a href="start/quickstart/">Python quickstart →</a> <a href="reference/python-direct-engine/">Python reference</a></p>
 </section>
 <section>
 <h3>C or C++</h3>
@@ -113,33 +110,45 @@ first public release candidate is published. Until then, follow the current
 [installation instructions](start/install.md).
 
 
-## Built for scientific applications
+## :material-flask-outline: Built for scientific applications { .dvz-home-heading }
 
-<div class="dvz-feature-grid">
-<section>
-<h3>Large, dynamic data</h3>
-<p>Update points, images, sampled fields, meshes, volumes, text, and annotations without
-rebuilding the entire scene.</p>
+<div class="dvz-feature-grid" markdown="1">
+<section markdown="1">
+
+### :material-database-outline: Large, dynamic data
+
+Update points, images, sampled fields, meshes, volumes, text, and annotations without rebuilding
+the entire scene.
+
 </section>
-<section>
-<h3>First-class 2D and 3D</h3>
-<p>Compose axes, panels, paths, images, and guides alongside cameras, lighting, meshes, point clouds,
-and volumes.</p>
+<section markdown="1">
+
+### :material-axis-arrow: First-class 2D and 3D
+
+Compose axes, panels, paths, images, and guides alongside cameras, lighting, meshes, point clouds,
+and volumes.
+
 </section>
-<section>
-<h3>Interaction and composition</h3>
-<p>Combine linked panels, panzoom and 3D controllers, picking, queries, labels, colorbars, and native
-GUI controls.</p>
+<section markdown="1">
+
+### :material-cursor-default-click-outline: Interaction and composition
+
+Combine linked panels, panzoom and 3D controllers, picking, queries, labels, colorbars, and native
+GUI controls.
+
 </section>
-<section>
-<h3>Native integration and output</h3>
-<p>Render in windows or offscreen, embed the C engine, capture screenshots, export video, and record
-or replay render streams.</p>
+<section markdown="1">
+
+### :material-application-export: Native integration and output
+
+Render in windows or offscreen, embed the C engine, capture screenshots, export video, and record
+or replay render streams.
+
 </section>
 </div>
 
 
-## Where Datoviz fits
+## :material-layers-triple-outline: Where Datoviz fits { .dvz-home-heading }
 
 Datoviz v0.4 is an explicit rendering engine, not a Matplotlib-like plotting frontend. Most users
 work with retained figures, panels, visuals, and controllers; experienced integrators can use the
@@ -169,23 +178,23 @@ components. The native WebGPU build option is separate from the browser WebGPU/W
 [Choose your layer](start/choose-your-layer.md) and [Build options](reference/build-options.md).
 
 
-## Platform and maturity
+## :material-check-decagram-outline: Platform and maturity { .dvz-home-heading }
 
 | Surface | v0.4 position |
 | --- | --- |
-| Native Vulkan scene API | Primary supported path, with feature-specific status documented separately |
-| Linux, macOS, and Windows | Supported wheel and source-build targets; graphics requirements vary by platform |
-| Python | Direct generated binding with documented NumPy adaptation |
-| Dear ImGui | Built-in native desktop GUI support |
-| WebGPU/WASM | Experimental browser subset for promoted examples, not native feature parity |
-| DRP2 and lower-level runtime APIs | Advanced/unstable integration surfaces |
+| Native Vulkan scene API | <span class="dvz-status dvz-status--supported">Supported</span> Primary path, with feature-specific status documented separately |
+| Linux, macOS, and Windows | <span class="dvz-status dvz-status--supported">Supported targets</span> Wheel and source-build requirements vary by platform |
+| Python | <span class="dvz-status dvz-status--supported">Supported</span> Direct generated binding with documented NumPy adaptation |
+| Dear ImGui | <span class="dvz-status dvz-status--supported">Supported</span> Built-in native desktop GUI support |
+| WebGPU/WASM | <span class="dvz-status dvz-status--experimental">Experimental</span> Browser subset for promoted examples, not native feature parity |
+| DRP2 and lower-level runtime APIs | <span class="dvz-status dvz-status--advanced">Advanced/unstable</span> Integration surfaces |
 
 Review [Platform support](reference/platform-support.md), [Feature status](reference/feature-status.md),
 and [Project status](reference/project-status.md) before adopting an experimental or
 backend-specific feature.
 
 
-## Continue
+## :material-arrow-right-circle-outline: Continue { .dvz-home-heading }
 
 <nav class="dvz-continue-links" aria-label="Documentation links">
 <a href="start/install/">Install</a>

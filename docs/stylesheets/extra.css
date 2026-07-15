@@ -284,29 +284,40 @@ img[alt*=gpuopen] {
 
 /* ── Docs homepage ──────────────────────────────────────────────────────── */
 .md-typeset .dvz-home-meta {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 0.25rem 0;
     margin: 1.1rem 0;
-    padding: 0;
-    list-style: none;
-}
-
-.md-typeset .dvz-home-meta li {
-    display: flex;
-    align-items: center;
-    margin: 0;
-    padding: 0;
     color: var(--dvz-muted);
     font-size: 0.8rem;
     font-weight: 600;
+    line-height: 1.5;
+    overflow-x: auto;
+    scrollbar-width: thin;
     white-space: nowrap;
 }
 
-.md-typeset .dvz-home-meta li:not(:last-child)::after {
+.md-typeset .dvz-home-meta span {
     margin: 0 0.55rem;
-    color: rgba(139, 148, 158, 0.6);
-    content: "·";
+    color: var(--dvz-cyan);
+}
+
+.md-typeset .dvz-home-heading {
+    position: relative;
+    margin-top: 2.8rem;
+    padding-bottom: 0.55rem;
+    border-bottom: 1px solid rgba(76, 201, 240, 0.16);
+}
+
+.md-typeset .dvz-home-heading::after {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 4.5rem;
+    height: 2px;
+    background: linear-gradient(90deg, var(--dvz-cyan), var(--dvz-mint));
+    content: "";
+}
+
+.md-typeset .dvz-home-heading .twemoji {
+    color: var(--dvz-cyan);
 }
 
 .dvz-home-actions {
@@ -404,6 +415,16 @@ img[alt*=gpuopen] {
     border-top: 1px solid rgba(139, 148, 158, 0.3);
 }
 
+.dvz-language-grid section:first-child,
+.dvz-feature-grid section:nth-child(odd) {
+    border-top-color: rgba(76, 201, 240, 0.55);
+}
+
+.dvz-language-grid section:last-child,
+.dvz-feature-grid section:nth-child(even) {
+    border-top-color: rgba(128, 255, 219, 0.5);
+}
+
 .dvz-language-grid h3,
 .dvz-feature-grid h3 {
     margin: 0 0 0.45rem;
@@ -415,6 +436,15 @@ img[alt*=gpuopen] {
     margin: 0.4rem 0;
 }
 
+.dvz-feature-grid h3 .twemoji {
+    margin-right: 0.18rem;
+    color: var(--dvz-cyan);
+}
+
+.dvz-feature-grid section:nth-child(even) h3 .twemoji {
+    color: var(--dvz-mint);
+}
+
 .dvz-text-links {
     display: flex;
     flex-wrap: wrap;
@@ -424,11 +454,28 @@ img[alt*=gpuopen] {
 }
 
 .md-typeset .dvz-architecture {
+    position: relative;
     max-width: 54rem;
     margin: 1.5rem 0 1.8rem;
     padding: 0;
     list-style: none;
     counter-reset: dvz-layer;
+}
+
+.md-typeset .dvz-architecture::before {
+    position: absolute;
+    top: 1.3rem;
+    bottom: 1.3rem;
+    left: 0.72rem;
+    width: 1px;
+    background: linear-gradient(
+        180deg,
+        rgba(139, 148, 158, 0.35),
+        rgba(76, 201, 240, 0.7),
+        rgba(128, 255, 219, 0.65),
+        rgba(76, 201, 240, 0.7)
+    );
+    content: "";
 }
 
 .md-typeset .dvz-architecture li {
@@ -447,15 +494,69 @@ img[alt*=gpuopen] {
 }
 
 .dvz-architecture li::before {
+    z-index: 1;
+    padding: 0.08rem 0;
+    background: var(--dvz-bg);
     color: var(--dvz-muted);
     font-family: var(--md-code-font-family);
     font-size: 0.72rem;
     content: "0" counter(dvz-layer);
 }
 
+.dvz-architecture li:nth-child(2)::before,
+.dvz-architecture li:nth-child(4)::before {
+    color: var(--dvz-cyan);
+}
+
+.dvz-architecture li:nth-child(3)::before {
+    color: var(--dvz-mint);
+}
+
 .dvz-architecture strong,
 .dvz-architecture span {
     display: block;
+}
+
+.dvz-status {
+    display: inline-flex;
+    gap: 0.35rem;
+    align-items: center;
+    margin-right: 0.25rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.dvz-status::before {
+    width: 0.48rem;
+    height: 0.48rem;
+    border-radius: 50%;
+    background: currentColor;
+    content: "";
+}
+
+.dvz-status--supported {
+    color: var(--dvz-mint);
+}
+
+.dvz-status--supported::before {
+    box-shadow: 0 0 0 3px rgba(128, 255, 219, 0.15);
+}
+
+.dvz-status--experimental {
+    color: var(--dvz-amber);
+}
+
+.dvz-status--experimental::before {
+    box-shadow: 0 0 0 3px rgba(255, 183, 3, 0.15);
+}
+
+.dvz-status--advanced {
+    color: var(--dvz-cyan);
+}
+
+.dvz-status--advanced::before {
+    box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.15);
 }
 
 .dvz-architecture span {
@@ -472,10 +573,6 @@ img[alt*=gpuopen] {
 }
 
 @media screen and (max-width: 760px) {
-    .md-typeset .dvz-home-meta {
-        flex-wrap: wrap;
-    }
-
     .dvz-showcase-grid,
     .dvz-language-grid,
     .dvz-feature-grid {
