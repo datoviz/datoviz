@@ -13,83 +13,52 @@ Common runtime, file I/O, font, render-type, and miscellaneous utility functions
 Use these functions for allocation, diagnostics, resources, file access, and shared runtime support.
 
 Functions: 23
-Types: 16
+Types: 8
 
 ## Symbol Groups
 
 | Group | Functions | Types | Headers |
 | --- | ---: | ---: | --- |
-| [Blend](#blend) | 0 | 2 | `include/datoviz/render_types.h` |
-| [Color](#color) | 0 | 2 | `include/datoviz/common/types.h`, `include/datoviz/render_types.h` |
-| [Colorf](#colorf) | 0 | 1 | `include/datoviz/common/types.h` |
-| [Compare](#compare) | 0 | 1 | `include/datoviz/render_types.h` |
-| [Cull](#cull) | 0 | 1 | `include/datoviz/render_types.h` |
+| [Common Types](#common-types) | 0 | 4 | `include/datoviz/common/types.h` |
 | [Error](#error) | 1 | 1 | `include/datoviz/common/functions.h` |
 | [File](#file) | 1 | 0 | `include/datoviz/fileio/fileio.h` |
 | [Font](#font) | 2 | 2 | `include/datoviz/font.h` |
-| [Format](#format) | 0 | 1 | `include/datoviz/render_types.h` |
-| [Front](#front) | 0 | 1 | `include/datoviz/render_types.h` |
 | [Load](#load) | 2 | 0 | `include/datoviz/fileio/fileio.h` |
 | [Log](#log) | 0 | 1 | `include/datoviz/common/functions.h` |
 | [Make](#make) | 1 | 0 | `include/datoviz/fileio/fileio.h` |
 | [Memory](#memory) | 1 | 0 | `include/datoviz/common/functions.h` |
 | [Parse](#parse) | 1 | 0 | `include/datoviz/fileio/fileio.h` |
-| [Primitive](#primitive) | 0 | 1 | `include/datoviz/render_types.h` |
 | [Read](#read) | 5 | 0 | `include/datoviz/fileio/fileio.h` |
 | [Resource](#resource) | 4 | 0 | `include/datoviz/fileio/fileio.h` |
-| [Result](#result) | 0 | 1 | `include/datoviz/common/types.h` |
-| [Time](#time) | 1 | 1 | `include/datoviz/common/functions.h`, `include/datoviz/common/types.h` |
+| [Time](#time) | 1 | 0 | `include/datoviz/common/functions.h` |
 | [Version](#version) | 1 | 0 | `include/datoviz/common/version.h` |
 | [Write](#write) | 3 | 0 | `include/datoviz/fileio/fileio.h` |
 
 ??? info "Grouped symbol index"
 
-    ### Blend
-
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzBlendFactor`](#type-dvzblendfactor) | enum | `include/datoviz/render_types.h` |
-    | [`DvzBlendOp`](#type-dvzblendop) | enum | `include/datoviz/render_types.h` |
-
-    ### Color
+    **Common Types**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
     | [`DvzColor`](#type-dvzcolor) | record | `include/datoviz/common/types.h` |
-    | [`DvzColorMask`](#type-dvzcolormask) | enum | `include/datoviz/render_types.h` |
-
-    ### Colorf
-
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
     | [`DvzColorf`](#type-dvzcolorf) | record | `include/datoviz/common/types.h` |
+    | [`DvzResult`](#type-dvzresult) | typedef | `include/datoviz/common/types.h` |
+    | [`DvzTime`](#type-dvztime) | record | `include/datoviz/common/types.h` |
 
-    ### Compare
-
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzCompareOp`](#type-dvzcompareop) | enum | `include/datoviz/render_types.h` |
-
-    ### Cull
-
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzCullMode`](#type-dvzcullmode) | enum | `include/datoviz/render_types.h` |
-
-    ### Error
+    **Error**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
     | [`DvzErrorCallback`](#type-dvzerrorcallback) | typedef | `include/datoviz/common/functions.h` |
     | [`dvz_error_set_callback()`](#dvz_error_set_callback) | function | `include/datoviz/common/functions.h` |
 
-    ### File
+    **File**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
     | [`dvz_file_size()`](#dvz_file_size) | function | `include/datoviz/fileio/fileio.h` |
 
-    ### Font
+    **Font**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
@@ -98,56 +67,38 @@ Types: 16
     | [`dvz_font_defaults()`](#dvz_font_defaults) | function | `include/datoviz/font.h` |
     | [`dvz_font_desc()`](#dvz_font_desc) | function | `include/datoviz/font.h` |
 
-    ### Format
-
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzFormat`](#type-dvzformat) | enum | `include/datoviz/render_types.h` |
-
-    ### Front
-
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzFrontFace`](#type-dvzfrontface) | enum | `include/datoviz/render_types.h` |
-
-    ### Load
+    **Load**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
     | [`dvz_load_jpeg()`](#dvz_load_jpeg) | function | `include/datoviz/fileio/fileio.h` |
     | [`dvz_load_png()`](#dvz_load_png) | function | `include/datoviz/fileio/fileio.h` |
 
-    ### Log
+    **Log**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
     | [`DvzLogLevel`](#type-dvzloglevel) | enum | `include/datoviz/common/functions.h` |
 
-    ### Make
+    **Make**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
     | [`dvz_make_png()`](#dvz_make_png) | function | `include/datoviz/fileio/fileio.h` |
 
-    ### Memory
+    **Memory**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
     | [`dvz_memory_free()`](#dvz_memory_free) | function | `include/datoviz/common/functions.h` |
 
-    ### Parse
+    **Parse**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
     | [`dvz_parse_npy()`](#dvz_parse_npy) | function | `include/datoviz/fileio/fileio.h` |
 
-    ### Primitive
-
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzPrimitiveTopology`](#type-dvzprimitivetopology) | enum | `include/datoviz/render_types.h` |
-
-    ### Read
+    **Read**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
@@ -157,7 +108,7 @@ Types: 16
     | [`dvz_read_npy()`](#dvz_read_npy) | function | `include/datoviz/fileio/fileio.h` |
     | [`dvz_read_ppm()`](#dvz_read_ppm) | function | `include/datoviz/fileio/fileio.h` |
 
-    ### Resource
+    **Resource**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
@@ -166,26 +117,19 @@ Types: 16
     | [`dvz_resource_shader()`](#dvz_resource_shader) | function | `include/datoviz/fileio/fileio.h` |
     | [`dvz_resource_wgsl()`](#dvz_resource_wgsl) | function | `include/datoviz/fileio/fileio.h` |
 
-    ### Result
+    **Time**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
-    | [`DvzResult`](#type-dvzresult) | typedef | `include/datoviz/common/types.h` |
-
-    ### Time
-
-    | Symbol | Kind | Header |
-    | --- | --- | --- |
-    | [`DvzTime`](#type-dvztime) | record | `include/datoviz/common/types.h` |
     | [`dvz_time_monotonic_ns()`](#dvz_time_monotonic_ns) | function | `include/datoviz/common/functions.h` |
 
-    ### Version
+    **Version**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
     | [`dvz_version()`](#dvz_version) | function | `include/datoviz/common/version.h` |
 
-    ### Write
+    **Write**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
@@ -193,63 +137,11 @@ Types: 16
     | [`dvz_write_png()`](#dvz_write_png) | function | `include/datoviz/fileio/fileio.h` |
     | [`dvz_write_ppm()`](#dvz_write_ppm) | function | `include/datoviz/fileio/fileio.h` |
 
-## Blend
+## Common Types { #common-types }
 
 ### Types
 
-<a id="type-dvzblendfactor"></a>
-
-#### `DvzBlendFactor`
-
-```c
-enum DvzBlendFactor {
-    DVZ_BLEND_FACTOR_ZERO = 0,
-    DVZ_BLEND_FACTOR_ONE = 1,
-    DVZ_BLEND_FACTOR_SRC_COLOR = 2,
-    DVZ_BLEND_FACTOR_ONE_MINUS_SRC_COLOR = 3,
-    DVZ_BLEND_FACTOR_DST_COLOR = 4,
-    DVZ_BLEND_FACTOR_ONE_MINUS_DST_COLOR = 5,
-    DVZ_BLEND_FACTOR_SRC_ALPHA = 6,
-    DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA = 7,
-    DVZ_BLEND_FACTOR_DST_ALPHA = 8,
-    DVZ_BLEND_FACTOR_ONE_MINUS_DST_ALPHA = 9,
-    DVZ_BLEND_FACTOR_CONSTANT_COLOR = 10,
-    DVZ_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR = 11,
-    DVZ_BLEND_FACTOR_CONSTANT_ALPHA = 12,
-    DVZ_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA = 13,
-    DVZ_BLEND_FACTOR_SRC_ALPHA_SATURATE = 14,
-};
-```
-
-Used by: [`dvz_drp2_stream_pipeline_set_color_blend()`](drp2.md#dvz_drp2_stream_pipeline_set_color_blend).
-
-_Declared in `include/datoviz/render_types.h`:139._
-
-<a id="type-dvzblendop"></a>
-
-#### `DvzBlendOp`
-
-```c
-enum DvzBlendOp {
-    DVZ_BLEND_OP_ADD = 0,
-    DVZ_BLEND_OP_SUBTRACT = 1,
-    DVZ_BLEND_OP_REVERSE_SUBTRACT = 2,
-    DVZ_BLEND_OP_MIN = 3,
-    DVZ_BLEND_OP_MAX = 4,
-};
-```
-
-Used by: [`dvz_drp2_stream_pipeline_set_color_blend()`](drp2.md#dvz_drp2_stream_pipeline_set_color_blend).
-
-_Declared in `include/datoviz/render_types.h`:161._
-
-## Color
-
-### Types
-
-<a id="type-dvzcolor"></a>
-
-#### `DvzColor`
+#### `DvzColor` { #type-dvzcolor }
 
 ```c
 struct DvzColor {
@@ -260,35 +152,11 @@ struct DvzColor {
 };
 ```
 
-Used by: [`dvz_colormap_builtin_sample()`](scene.md#dvz_colormap_builtin_sample), [`dvz_colormap_custom()`](scene.md#dvz_colormap_custom), [`dvz_colormap_sample()`](scene.md#dvz_colormap_sample), [`dvz_graph_set_edge_colors()`](visuals.md#dvz_graph_set_edge_colors), [`dvz_graph_set_node_colors()`](visuals.md#dvz_graph_set_node_colors), [`dvz_gui_color_edit_dvz()`](app.md#dvz_gui_color_edit_dvz), [`dvz_labels_set_boundary()`](scene.md#dvz_labels_set_boundary), [`dvz_panel_set_background_color()`](scene.md#dvz_panel_set_background_color); plus 7 more.
+Used by: [`dvz_colormap_builtin_sample()`](scene.md#dvz_colormap_builtin_sample), [`dvz_colormap_custom()`](scene.md#dvz_colormap_custom), [`dvz_colormap_sample()`](scene.md#dvz_colormap_sample), [`dvz_graph_set_edge_colors()`](visuals.md#dvz_graph_set_edge_colors), [`dvz_graph_set_node_colors()`](visuals.md#dvz_graph_set_node_colors), [`dvz_gui_color_edit_dvz()`](app.md#dvz_gui_color_edit_dvz), [`dvz_labels_set_boundary()`](visuals.md#dvz_labels_set_boundary), [`dvz_panel_set_background_color()`](scene.md#dvz_panel_set_background_color); plus 7 more.
 
 _Declared in `include/datoviz/common/types.h`:51._
 
-<a id="type-dvzcolormask"></a>
-
-#### `DvzColorMask`
-
-```c
-enum DvzColorMask {
-    DVZ_MASK_COLOR_R = 1,
-    DVZ_MASK_COLOR_G = 2,
-    DVZ_MASK_COLOR_B = 4,
-    DVZ_MASK_COLOR_A = 8,
-    DVZ_MASK_COLOR_ALL = 15,
-};
-```
-
-Used by: [`dvz_drp2_stream_pipeline_set_color_blend()`](drp2.md#dvz_drp2_stream_pipeline_set_color_blend).
-
-_Declared in `include/datoviz/render_types.h`:173._
-
-## Colorf
-
-### Types
-
-<a id="type-dvzcolorf"></a>
-
-#### `DvzColorf`
+#### `DvzColorf` { #type-dvzcolorf }
 
 ```c
 struct DvzColorf {
@@ -301,59 +169,32 @@ struct DvzColorf {
 
 _Declared in `include/datoviz/common/types.h`:61._
 
-## Compare
-
-### Types
-
-<a id="type-dvzcompareop"></a>
-
-#### `DvzCompareOp`
+#### `DvzResult` { #type-dvzresult }
 
 ```c
-enum DvzCompareOp {
-    DVZ_COMPARE_OP_NEVER = 0,
-    DVZ_COMPARE_OP_LESS = 1,
-    DVZ_COMPARE_OP_EQUAL = 2,
-    DVZ_COMPARE_OP_LESS_OR_EQUAL = 3,
-    DVZ_COMPARE_OP_GREATER = 4,
-    DVZ_COMPARE_OP_NOT_EQUAL = 5,
-    DVZ_COMPARE_OP_GREATER_OR_EQUAL = 6,
-    DVZ_COMPARE_OP_ALWAYS = 7,
+typedef int32_t DvzResult;
+```
+
+Used by: [`dvz_anim_phase_set_value()`](scene.md#dvz_anim_phase_set_value), [`dvz_anim_set_interaction_policy()`](scene.md#dvz_anim_set_interaction_policy), [`dvz_anim_set_speed()`](scene.md#dvz_anim_set_speed), [`dvz_anim_start()`](scene.md#dvz_anim_start), [`dvz_anim_stop()`](scene.md#dvz_anim_stop), [`dvz_annotation_set_format()`](scene.md#dvz_annotation_set_format), [`dvz_annotation_set_placement()`](scene.md#dvz_annotation_set_placement), [`dvz_annotation_set_style()`](scene.md#dvz_annotation_set_style); plus 344 more.
+
+_Declared in `include/datoviz/common/types.h`:34._
+
+#### `DvzTime` { #type-dvztime }
+
+```c
+struct DvzTime {
+    uint64_t seconds;
+    uint64_t nanoseconds;
 };
 ```
 
-Used by: [`dvz_drp2_stream_pipeline_set_depth_state()`](drp2.md#dvz_drp2_stream_pipeline_set_depth_state).
+_Declared in `include/datoviz/common/types.h`:71._
 
-_Declared in `include/datoviz/render_types.h`:104._
-
-## Cull
+## Error { #error }
 
 ### Types
 
-<a id="type-dvzcullmode"></a>
-
-#### `DvzCullMode`
-
-```c
-enum DvzCullMode {
-    DVZ_CULL_MODE_NONE = 0,
-    DVZ_CULL_MODE_FRONT = 1,
-    DVZ_CULL_MODE_BACK = 2,
-    DVZ_CULL_MODE_FRONT_AND_BACK = 3,
-};
-```
-
-Used by: [`dvz_drp2_stream_pipeline_set_raster_state()`](drp2.md#dvz_drp2_stream_pipeline_set_raster_state).
-
-_Declared in `include/datoviz/render_types.h`:128._
-
-## Error
-
-### Types
-
-<a id="type-dvzerrorcallback"></a>
-
-#### `DvzErrorCallback`
+#### `DvzErrorCallback` { #type-dvzerrorcallback }
 
 ```c
 typedef void (*)(DvzLogLevel, const char *, void *) DvzErrorCallback;
@@ -365,7 +206,7 @@ _Declared in `include/datoviz/common/functions.h`:39._
 
 ### Functions
 
-#### `dvz_error_set_callback()`
+#### `dvz_error_set_callback()` { #dvz_error_set_callback }
 
 Register an error callback.
 
@@ -380,15 +221,15 @@ DvzResult dvz_error_set_callback(
 | --- | --- | --- |
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success |
 | `cb` | [`DvzErrorCallback`](runtime-utilities.md#type-dvzerrorcallback) | the error callback |
-| `user_data` | void * | opaque pointer passed to the callback |
+| `user_data` | `void` * | opaque pointer passed to the callback |
 
 _Declared in `include/datoviz/common/functions.h`:57._
 
-## File
+## File { #file }
 
 ### Functions
 
-#### `dvz_file_size()`
+#### `dvz_file_size()` { #dvz_file_size }
 
 Return the size of a file.
 
@@ -401,17 +242,15 @@ DvzSize dvz_file_size(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | [`DvzSize`](runtime-math.md#type-dvzsize) | the size of the file |
-| `filename` | const char * | path of the file |
+| `filename` | `const` `char` * | path of the file |
 
 _Declared in `include/datoviz/fileio/fileio.h`:42._
 
-## Font
+## Font { #font }
 
 ### Types
 
-<a id="type-dvzfontdefaults"></a>
-
-#### `DvzFontDefaults`
+#### `DvzFontDefaults` { #type-dvzfontdefaults }
 
 ```c
 struct DvzFontDefaults {
@@ -437,9 +276,7 @@ Used by: [`dvz_font_defaults()`](runtime-utilities.md#dvz_font_defaults), [`dvz_
 
 _Declared in `include/datoviz/font.h`:42._
 
-<a id="type-dvzfontdesc"></a>
-
-#### `DvzFontDesc`
+#### `DvzFontDesc` { #type-dvzfontdesc }
 
 ```c
 struct DvzFontDesc {
@@ -459,7 +296,7 @@ _Declared in `include/datoviz/font.h`:29._
 
 ### Functions
 
-#### `dvz_font_defaults()`
+#### `dvz_font_defaults()` { #dvz_font_defaults }
 
 Return Datoviz's shared default font policy.
 
@@ -476,7 +313,7 @@ DvzFontDefaults dvz_font_defaults(void);
 
 _Declared in `include/datoviz/font.h`:86._
 
-#### `dvz_font_desc()`
+#### `dvz_font_desc()` { #dvz_font_desc }
 
 Return an empty font descriptor.
 
@@ -490,107 +327,11 @@ DvzFontDesc dvz_font_desc(void);
 
 _Declared in `include/datoviz/font.h`:75._
 
-## Format
-
-### Types
-
-<a id="type-dvzformat"></a>
-
-#### `DvzFormat`
-
-```c
-enum DvzFormat {
-    DVZ_FORMAT_NONE = 0,
-    DVZ_FORMAT_R8_UNORM = 9,
-    DVZ_FORMAT_R8_SNORM = 10,
-    DVZ_FORMAT_R8_UINT = 13,
-    DVZ_FORMAT_R8_SINT = 14,
-    DVZ_FORMAT_R8G8_UNORM = 16,
-    DVZ_FORMAT_R8G8_SNORM = 17,
-    DVZ_FORMAT_R8G8_UINT = 20,
-    DVZ_FORMAT_R8G8_SINT = 21,
-    DVZ_FORMAT_R8G8B8_UNORM = 23,
-    DVZ_FORMAT_R8G8B8_SNORM = 24,
-    DVZ_FORMAT_R8G8B8_UINT = 27,
-    DVZ_FORMAT_R8G8B8_SINT = 28,
-    DVZ_FORMAT_R8G8B8A8_UNORM = 37,
-    DVZ_FORMAT_R8G8B8A8_SNORM = 38,
-    DVZ_FORMAT_R8G8B8A8_UINT = 41,
-    DVZ_FORMAT_R8G8B8A8_SINT = 42,
-    DVZ_FORMAT_R8G8B8A8_SRGB = 43,
-    DVZ_FORMAT_B8G8R8A8_UNORM = 44,
-    DVZ_FORMAT_B8G8R8A8_SRGB = 50,
-    DVZ_FORMAT_R16_UNORM = 70,
-    DVZ_FORMAT_R16_SNORM = 71,
-    DVZ_FORMAT_R16_UINT = 74,
-    DVZ_FORMAT_R16_SINT = 75,
-    DVZ_FORMAT_R16_SFLOAT = 76,
-    DVZ_FORMAT_R16G16B16A16_UNORM = 91,
-    DVZ_FORMAT_R16G16B16A16_SNORM = 92,
-    DVZ_FORMAT_R16G16B16A16_UINT = 95,
-    DVZ_FORMAT_R16G16B16A16_SINT = 96,
-    DVZ_FORMAT_R16G16B16A16_SFLOAT = 97,
-    DVZ_FORMAT_R32_UINT = 98,
-    DVZ_FORMAT_R32_SINT = 99,
-    DVZ_FORMAT_R32_SFLOAT = 100,
-    DVZ_FORMAT_R32G32_UINT = 101,
-    DVZ_FORMAT_R32G32_SINT = 102,
-    DVZ_FORMAT_R32G32_SFLOAT = 103,
-    DVZ_FORMAT_R32G32B32_UINT = 104,
-    DVZ_FORMAT_R32G32B32_SINT = 105,
-    DVZ_FORMAT_R32G32B32_SFLOAT = 106,
-    DVZ_FORMAT_R32G32B32A32_UINT = 107,
-    DVZ_FORMAT_R32G32B32A32_SINT = 108,
-    DVZ_FORMAT_R32G32B32A32_SFLOAT = 109,
-    DVZ_FORMAT_R64_UINT = 110,
-    DVZ_FORMAT_R64_SINT = 111,
-    DVZ_FORMAT_R64_SFLOAT = 112,
-    DVZ_FORMAT_R64G64_UINT = 113,
-    DVZ_FORMAT_R64G64_SINT = 114,
-    DVZ_FORMAT_R64G64_SFLOAT = 115,
-    DVZ_FORMAT_R64G64B64_UINT = 116,
-    DVZ_FORMAT_R64G64B64_SINT = 117,
-    DVZ_FORMAT_R64G64B64_SFLOAT = 118,
-    DVZ_FORMAT_R64G64B64A64_UINT = 119,
-    DVZ_FORMAT_R64G64B64A64_SINT = 120,
-    DVZ_FORMAT_R64G64B64A64_SFLOAT = 121,
-    DVZ_FORMAT_D16_UNORM = 124,
-    DVZ_FORMAT_X8_D24_UNORM_PACK32 = 125,
-    DVZ_FORMAT_D32_SFLOAT = 126,
-    DVZ_FORMAT_D16_UNORM_S8_UINT = 128,
-    DVZ_FORMAT_D24_UNORM_S8_UINT = 129,
-    DVZ_FORMAT_D32_SFLOAT_S8_UINT = 130,
-};
-```
-
-Used by: [`dvz_drp2_stream_create_texture_2d_format_usage()`](drp2.md#dvz_drp2_stream_create_texture_2d_format_usage), [`dvz_drp2_stream_create_texture_3d_format_usage()`](drp2.md#dvz_drp2_stream_create_texture_3d_format_usage), [`dvz_drp2_stream_pipeline_set_color_target()`](drp2.md#dvz_drp2_stream_pipeline_set_color_target).
-
-_Declared in `include/datoviz/render_types.h`:22._
-
-## Front
-
-### Types
-
-<a id="type-dvzfrontface"></a>
-
-#### `DvzFrontFace`
-
-```c
-enum DvzFrontFace {
-    DVZ_FRONT_FACE_COUNTER_CLOCKWISE = 0,
-    DVZ_FRONT_FACE_CLOCKWISE = 1,
-};
-```
-
-Used by: [`dvz_drp2_stream_pipeline_set_raster_state()`](drp2.md#dvz_drp2_stream_pipeline_set_raster_state).
-
-_Declared in `include/datoviz/render_types.h`:119._
-
-## Load
+## Load { #load }
 
 ### Functions
 
-#### `dvz_load_jpeg()`
+#### `dvz_load_jpeg()` { #dvz_load_jpeg }
 
 Decode a JPEG image from memory into tightly packed RGBA8 pixels.
 
@@ -605,15 +346,15 @@ uint8_t * dvz_load_jpeg(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | uint8_t * | RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure |
-| `bytes` | const void * | JPEG byte buffer |
+| return | `uint8_t` * | RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure |
+| `bytes` | `const` `void` * | JPEG byte buffer |
 | `size_bytes` | [`DvzSize`](runtime-math.md#type-dvzsize) | size of the JPEG byte buffer in bytes |
-| `width` | uint32_t * |  |
-| `height` | uint32_t * |  |
+| `width` | `uint32_t` * |  |
+| `height` | `uint32_t` * |  |
 
 _Declared in `include/datoviz/fileio/fileio.h`:192._
 
-#### `dvz_load_png()`
+#### `dvz_load_png()` { #dvz_load_png }
 
 Decode a PNG image from memory into tightly packed RGB8 pixels.
 
@@ -628,21 +369,19 @@ uint8_t * dvz_load_png(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | uint8_t * | owned RGB8 pixel buffer allocated with the Datoviz allocator, or NULL on failure; free with dvz_memory_free() |
-| `bytes` | const void * | PNG byte buffer |
+| return | `uint8_t` * | owned RGB8 pixel buffer allocated with the Datoviz allocator, or NULL on failure; free with dvz_memory_free() |
+| `bytes` | `const` `void` * | PNG byte buffer |
 | `size_bytes` | [`DvzSize`](runtime-math.md#type-dvzsize) | size of the PNG byte buffer in bytes |
-| `width` | uint32_t * |  |
-| `height` | uint32_t * |  |
+| `width` | `uint32_t` * |  |
+| `height` | `uint32_t` * |  |
 
 _Declared in `include/datoviz/fileio/fileio.h`:172._
 
-## Log
+## Log { #log }
 
 ### Types
 
-<a id="type-dvzloglevel"></a>
-
-#### `DvzLogLevel`
+#### `DvzLogLevel` { #type-dvzloglevel }
 
 ```c
 enum DvzLogLevel {
@@ -654,11 +393,11 @@ enum DvzLogLevel {
 
 _Declared in `include/datoviz/common/functions.h`:30._
 
-## Make
+## Make { #make }
 
 ### Functions
 
-#### `dvz_make_png()`
+#### `dvz_make_png()` { #dvz_make_png }
 
 Compress an sRGB RGB8 image to PNG and write it to a memory buffer.
 
@@ -674,19 +413,19 @@ int dvz_make_png(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `width` | uint32_t | width of the image |
-| `height` | uint32_t | height of the image |
-| `rgb` | const uint8_t * | pointer to tightly packed sRGB RGB8 pixels |
+| `width` | `uint32_t` | width of the image |
+| `height` | `uint32_t` | height of the image |
+| `rgb` | `const` `uint8_t` * | pointer to tightly packed sRGB RGB8 pixels |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * | pointer to a variable that will contain the size of the buffer |
-| `out` | void ** | pointer to an owned PNG byte buffer allocated with the Datoviz allocator; free with dvz_memory_free() |
+| `out` | `void` ** | pointer to an owned PNG byte buffer allocated with the Datoviz allocator; free with dvz_memory_free() |
 
 _Declared in `include/datoviz/fileio/fileio.h`:157._
 
-## Memory
+## Memory { #memory }
 
 ### Functions
 
-#### `dvz_memory_free()`
+#### `dvz_memory_free()` { #dvz_memory_free }
 
 Release memory returned by Datoviz public APIs.
 
@@ -701,15 +440,15 @@ void dvz_memory_free(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `pointer` | void * | pointer returned by a Datoviz public API, or NULL |
+| `pointer` | `void` * | pointer returned by a Datoviz public API, or NULL |
 
 _Declared in `include/datoviz/common/functions.h`:68._
 
-## Parse
+## Parse { #parse }
 
 ### Functions
 
-#### `dvz_parse_npy()`
+#### `dvz_parse_npy()` { #dvz_parse_npy }
 
 Read a NumPy NPY file from memory.
 
@@ -722,40 +461,17 @@ void * dvz_parse_npy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | void * | owned buffer containing the array elements, or NULL on failure; free with dvz_memory_free() |
-| `bytes` | const void * | the contents of the NPY file |
+| return | `void` * | owned buffer containing the array elements, or NULL on failure; free with dvz_memory_free() |
+| `bytes` | `const` `void` * | the contents of the NPY file |
 | `size_bytes` | [`DvzSize`](runtime-math.md#type-dvzsize) | size of the file in bytes |
 
 _Declared in `include/datoviz/fileio/fileio.h`:76._
 
-## Primitive
-
-### Types
-
-<a id="type-dvzprimitivetopology"></a>
-
-#### `DvzPrimitiveTopology`
-
-```c
-enum DvzPrimitiveTopology {
-    DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST = 0,
-    DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST = 1,
-    DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP = 2,
-    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST = 3,
-    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP = 4,
-    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN = 5,
-};
-```
-
-Used by: [`dvz_primitive()`](visuals.md#dvz_primitive).
-
-_Declared in `include/datoviz/render_types.h`:91._
-
-## Read
+## Read { #read }
 
 ### Functions
 
-#### `dvz_read_file()`
+#### `dvz_read_file()` { #dvz_read_file }
 
 Read a binary file.
 
@@ -768,13 +484,13 @@ void * dvz_read_file(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | void * | owned byte buffer allocated with the Datoviz allocator, or NULL on failure; free with dvz_memory_free() |
-| `filename` | const char * | path of the file to open |
+| return | `void` * | owned byte buffer allocated with the Datoviz allocator, or NULL on failure; free with dvz_memory_free() |
+| `filename` | `const` `char` * | path of the file to open |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
 _Declared in `include/datoviz/fileio/fileio.h`:54._
 
-#### `dvz_read_gz()`
+#### `dvz_read_gz()` { #dvz_read_gz }
 
 Read a compressed GZIP file.
 
@@ -787,13 +503,13 @@ char * dvz_read_gz(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | char * | owned decompressed buffer, or NULL on failure; free with dvz_memory_free() |
-| `filename` | const char * | path of the GZIP compressed file to open |
+| return | `char` * | owned decompressed buffer, or NULL on failure; free with dvz_memory_free() |
+| `filename` | `const` `char` * | path of the GZIP compressed file to open |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
 _Declared in `include/datoviz/fileio/fileio.h`:87._
 
-#### `dvz_read_jpeg()`
+#### `dvz_read_jpeg()` { #dvz_read_jpeg }
 
 Read and decode a JPEG image file into tightly packed RGBA8 pixels.
 
@@ -807,14 +523,14 @@ uint8_t * dvz_read_jpeg(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | uint8_t * | RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure |
-| `filename` | const char * | path of the JPEG file to open |
-| `width` | uint32_t * |  |
-| `height` | uint32_t * |  |
+| return | `uint8_t` * | RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure |
+| `filename` | `const` `char` * | path of the JPEG file to open |
+| `width` | `uint32_t` * |  |
+| `height` | `uint32_t` * |  |
 
 _Declared in `include/datoviz/fileio/fileio.h`:206._
 
-#### `dvz_read_npy()`
+#### `dvz_read_npy()` { #dvz_read_npy }
 
 Read a NumPy NPY file.
 
@@ -827,13 +543,13 @@ void * dvz_read_npy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | void * | owned buffer containing the array elements, or NULL on failure; free with dvz_memory_free() |
-| `filename` | const char * | path of the file to open |
+| return | `void` * | owned buffer containing the array elements, or NULL on failure; free with dvz_memory_free() |
+| `filename` | `const` `char` * | path of the file to open |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
 _Declared in `include/datoviz/fileio/fileio.h`:65._
 
-#### `dvz_read_ppm()`
+#### `dvz_read_ppm()` { #dvz_read_ppm }
 
 Read a PPM image file.
 
@@ -847,18 +563,18 @@ uint8_t * dvz_read_ppm(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | uint8_t * | owned tightly packed RGB8 pixel buffer, or NULL on failure; free with dvz_memory_free() |
-| `filename` | const char * | path of the file to open |
-| `width` | uint32_t * |  |
-| `height` | uint32_t * |  |
+| return | `uint8_t` * | owned tightly packed RGB8 pixel buffer, or NULL on failure; free with dvz_memory_free() |
+| `filename` | `const` `char` * | path of the file to open |
+| `width` | `uint32_t` * |  |
+| `height` | `uint32_t` * |  |
 
 _Declared in `include/datoviz/fileio/fileio.h`:129._
 
-## Resource
+## Resource { #resource }
 
 ### Functions
 
-#### `dvz_resource_font()`
+#### `dvz_resource_font()` { #dvz_resource_font }
 
 ```c
 const unsigned char * dvz_resource_font(
@@ -869,12 +585,12 @@ const unsigned char * dvz_resource_font(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `name` | const char * |  |
+| `name` | `const` `char` * |  |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
 _Declared in `include/datoviz/fileio/fileio.h`:228._
 
-#### `dvz_resource_glsl()`
+#### `dvz_resource_glsl()` { #dvz_resource_glsl }
 
 ```c
 const char * dvz_resource_glsl(
@@ -885,12 +601,12 @@ const char * dvz_resource_glsl(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `name` | const char * |  |
+| `name` | `const` `char` * |  |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
 _Declared in `include/datoviz/fileio/fileio.h`:223._
 
-#### `dvz_resource_shader()`
+#### `dvz_resource_shader()` { #dvz_resource_shader }
 
 *********************************************************************************************
 
@@ -903,12 +619,12 @@ const unsigned char * dvz_resource_shader(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `name` | const char * |  |
+| `name` | `const` `char` * |  |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
 _Declared in `include/datoviz/fileio/fileio.h`:215._
 
-#### `dvz_resource_wgsl()`
+#### `dvz_resource_wgsl()` { #dvz_resource_wgsl }
 
 ```c
 const char * dvz_resource_wgsl(
@@ -919,47 +635,16 @@ const char * dvz_resource_wgsl(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `name` | const char * |  |
+| `name` | `const` `char` * |  |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
 _Declared in `include/datoviz/fileio/fileio.h`:219._
 
-## Result
-
-### Types
-
-<a id="type-dvzresult"></a>
-
-#### `DvzResult`
-
-```c
-typedef int32_t DvzResult;
-```
-
-Used by: [`dvz_anim_phase_set_value()`](scene.md#dvz_anim_phase_set_value), [`dvz_anim_set_interaction_policy()`](scene.md#dvz_anim_set_interaction_policy), [`dvz_anim_set_speed()`](scene.md#dvz_anim_set_speed), [`dvz_anim_start()`](scene.md#dvz_anim_start), [`dvz_anim_stop()`](scene.md#dvz_anim_stop), [`dvz_annotation_set_format()`](scene.md#dvz_annotation_set_format), [`dvz_annotation_set_placement()`](scene.md#dvz_annotation_set_placement), [`dvz_annotation_set_style()`](scene.md#dvz_annotation_set_style); plus 344 more.
-
-_Declared in `include/datoviz/common/types.h`:34._
-
-## Time
-
-### Types
-
-<a id="type-dvztime"></a>
-
-#### `DvzTime`
-
-```c
-struct DvzTime {
-    uint64_t seconds;
-    uint64_t nanoseconds;
-};
-```
-
-_Declared in `include/datoviz/common/types.h`:71._
+## Time { #time }
 
 ### Functions
 
-#### `dvz_time_monotonic_ns()`
+#### `dvz_time_monotonic_ns()` { #dvz_time_monotonic_ns }
 
 Return a monotonic timestamp in nanoseconds.
 
@@ -969,15 +654,15 @@ uint64_t dvz_time_monotonic_ns(void);
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | uint64_t | monotonic timestamp in nanoseconds |
+| return | `uint64_t` | monotonic timestamp in nanoseconds |
 
 _Declared in `include/datoviz/common/functions.h`:76._
 
-## Version
+## Version { #version }
 
 ### Functions
 
-#### `dvz_version()`
+#### `dvz_version()` { #dvz_version }
 
 Return the current version string.
 
@@ -987,15 +672,15 @@ const char * dvz_version(void);
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | const char * | the version string |
+| return | `const` `char` * | the version string |
 
 _Declared in `include/datoviz/common/version.h`:69._
 
-## Write
+## Write { #write }
 
 ### Functions
 
-#### `dvz_write_bytes()`
+#### `dvz_write_bytes()` { #dvz_write_bytes }
 
 Save a binary file.
 
@@ -1010,14 +695,14 @@ int dvz_write_bytes(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `filename` | const char * | path to the PPM file to create |
-| `mode` | const char * | typically "wb" or "ab" |
+| `filename` | `const` `char` * | path to the PPM file to create |
+| `mode` | `const` `char` * | typically "wb" or "ab" |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) | size of the buffer |
-| `bytes` | const uint8_t * | buffer |
+| `bytes` | `const` `uint8_t` * | buffer |
 
 _Declared in `include/datoviz/fileio/fileio.h`:100._
 
-#### `dvz_write_png()`
+#### `dvz_write_png()` { #dvz_write_png }
 
 Save an sRGB RGBA8 image to a PNG file.
 
@@ -1032,14 +717,14 @@ int dvz_write_png(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `filename` | const char * | path to the PNG file to create |
-| `width` | uint32_t | width of the image |
-| `height` | uint32_t | height of the image |
-| `rgba` | const uint8_t * | pointer to tightly packed sRGB RGBA8 pixels with straight linear alpha |
+| `filename` | `const` `char` * | path to the PNG file to create |
+| `width` | `uint32_t` | width of the image |
+| `height` | `uint32_t` | height of the image |
+| `rgba` | `const` `uint8_t` * | pointer to tightly packed sRGB RGBA8 pixels with straight linear alpha |
 
 _Declared in `include/datoviz/fileio/fileio.h`:142._
 
-#### `dvz_write_ppm()`
+#### `dvz_write_ppm()` { #dvz_write_ppm }
 
 Save an image to a PPM file (short ASCII header and flat binary RGB values).
 
@@ -1054,9 +739,9 @@ int dvz_write_ppm(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `filename` | const char * | path to the PPM file to create |
-| `width` | uint32_t | width of the image |
-| `height` | uint32_t | height of the image |
-| `image` | const uint8_t * | pointer to an array of 24-bit RGB values |
+| `filename` | `const` `char` * | path to the PPM file to create |
+| `width` | `uint32_t` | width of the image |
+| `height` | `uint32_t` | height of the image |
+| `image` | `const` `uint8_t` * | pointer to an array of 24-bit RGB values |
 
 _Declared in `include/datoviz/fileio/fileio.h`:117._

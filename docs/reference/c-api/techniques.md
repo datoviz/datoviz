@@ -17,8 +17,8 @@ Common workflows:
 - [Add a visual](../../how-to/add-a-visual.md)
 - [Runtime internals](../../advanced/runtime-internals.md)
 
-Functions: 6
-Types: 3
+Functions: 13
+Types: 5
 
 ## Symbol Groups
 
@@ -26,11 +26,13 @@ Types: 3
 | --- | ---: | ---: | --- |
 | [Eye-Dome Lighting](#eye-dome-lighting) | 2 | 1 | `include/datoviz/scene.h`, `include/datoviz/scene/types.h` |
 | [Multisample Antialiasing](#multisample-antialiasing) | 2 | 1 | `include/datoviz/scene.h`, `include/datoviz/scene/types.h` |
+| [Scene Occlusion](#scene-occlusion) | 4 | 1 | `include/datoviz/scene.h`, `include/datoviz/scene/types.h` |
 | [Screen-Space Ambient Occlusion](#screen-space-ambient-occlusion) | 2 | 1 | `include/datoviz/scene.h`, `include/datoviz/scene/types.h` |
+| [Volume Occlusion](#volume-occlusion) | 3 | 1 | `include/datoviz/scene.h`, `include/datoviz/scene/types.h` |
 
 ??? info "Grouped symbol index"
 
-    ### Eye-Dome Lighting
+    **Eye-Dome Lighting**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
@@ -38,7 +40,7 @@ Types: 3
     | [`dvz_edl_desc()`](#dvz_edl_desc) | function | `include/datoviz/scene.h` |
     | [`dvz_panel_set_edl()`](#dvz_panel_set_edl) | function | `include/datoviz/scene.h` |
 
-    ### Multisample Antialiasing
+    **Multisample Antialiasing**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
@@ -46,7 +48,17 @@ Types: 3
     | [`dvz_msaa_desc()`](#dvz_msaa_desc) | function | `include/datoviz/scene.h` |
     | [`dvz_panel_set_msaa()`](#dvz_panel_set_msaa) | function | `include/datoviz/scene.h` |
 
-    ### Screen-Space Ambient Occlusion
+    **Scene Occlusion**
+
+    | Symbol | Kind | Header |
+    | --- | --- | --- |
+    | [`DvzSceneOcclusionDesc`](#type-dvzsceneocclusiondesc) | record | `include/datoviz/scene/types.h` |
+    | [`dvz_panel_set_scene_occlusion()`](#dvz_panel_set_scene_occlusion) | function | `include/datoviz/scene.h` |
+    | [`dvz_scene_occlusion_desc()`](#dvz_scene_occlusion_desc) | function | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_scene_occluded()`](#dvz_visual_set_scene_occluded) | function | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_scene_occluder()`](#dvz_visual_set_scene_occluder) | function | `include/datoviz/scene.h` |
+
+    **Screen-Space Ambient Occlusion**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
@@ -54,13 +66,20 @@ Types: 3
     | [`dvz_panel_set_ssao()`](#dvz_panel_set_ssao) | function | `include/datoviz/scene.h` |
     | [`dvz_ssao_desc()`](#dvz_ssao_desc) | function | `include/datoviz/scene.h` |
 
-## Eye-Dome Lighting
+    **Volume Occlusion**
+
+    | Symbol | Kind | Header |
+    | --- | --- | --- |
+    | [`DvzVolumeOcclusionDesc`](#type-dvzvolumeocclusiondesc) | record | `include/datoviz/scene/types.h` |
+    | [`dvz_panel_set_volume_occluder()`](#dvz_panel_set_volume_occluder) | function | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_volume_occluded()`](#dvz_visual_set_volume_occluded) | function | `include/datoviz/scene.h` |
+    | [`dvz_volume_occlusion_desc()`](#dvz_volume_occlusion_desc) | function | `include/datoviz/scene.h` |
+
+## Eye-Dome Lighting { #eye-dome-lighting }
 
 ### Types
 
-<a id="type-dvzedldesc"></a>
-
-#### `DvzEdlDesc`
+#### `DvzEdlDesc` { #type-dvzedldesc }
 
 ```c
 struct DvzEdlDesc {
@@ -78,7 +97,7 @@ _Declared in `include/datoviz/scene/types.h`:844._
 
 ### Functions
 
-#### `dvz_edl_desc()`
+#### `dvz_edl_desc()` { #dvz_edl_desc }
 
 Return default Eye-Dome Lighting options.
 
@@ -92,7 +111,7 @@ DvzEdlDesc dvz_edl_desc(void);
 
 _Declared in `include/datoviz/scene.h`:1255._
 
-#### `dvz_panel_set_edl()`
+#### `dvz_panel_set_edl()` { #dvz_panel_set_edl }
 
 Configure Eye-Dome Lighting for one panel.
 
@@ -111,17 +130,15 @@ DvzResult dvz_panel_set_edl(
 | --- | --- | --- |
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK if the panel EDL state was updated, DVZ_ERROR otherwise |
 | `panel` | [`DvzPanel`](scene.md#type-dvzpanel) * | the panel |
-| `desc` | const [`DvzEdlDesc`](techniques.md#type-dvzedldesc) * | EDL descriptor, or NULL to disable |
+| `desc` | `const` [`DvzEdlDesc`](techniques.md#type-dvzedldesc) * | EDL descriptor, or NULL to disable |
 
 _Declared in `include/datoviz/scene.h`:1269._
 
-## Multisample Antialiasing
+## Multisample Antialiasing { #multisample-antialiasing }
 
 ### Types
 
-<a id="type-dvzmsaadesc"></a>
-
-#### `DvzMsaaDesc`
+#### `DvzMsaaDesc` { #type-dvzmsaadesc }
 
 ```c
 struct DvzMsaaDesc {
@@ -139,7 +156,7 @@ _Declared in `include/datoviz/scene/types.h`:855._
 
 ### Functions
 
-#### `dvz_msaa_desc()`
+#### `dvz_msaa_desc()` { #dvz_msaa_desc }
 
 Return default panel MSAA options.
 
@@ -153,7 +170,7 @@ DvzMsaaDesc dvz_msaa_desc(void);
 
 _Declared in `include/datoviz/scene.h`:600._
 
-#### `dvz_panel_set_msaa()`
+#### `dvz_panel_set_msaa()` { #dvz_panel_set_msaa }
 
 Configure internal multisample antialiasing for one panel.
 
@@ -171,17 +188,113 @@ DvzResult dvz_panel_set_msaa(
 | --- | --- | --- |
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK if the panel MSAA state was updated, DVZ_ERROR otherwise |
 | `panel` | [`DvzPanel`](scene.md#type-dvzpanel) * | the panel |
-| `desc` | const [`DvzMsaaDesc`](techniques.md#type-dvzmsaadesc) * | MSAA descriptor, or NULL to disable |
+| `desc` | `const` [`DvzMsaaDesc`](techniques.md#type-dvzmsaadesc) * | MSAA descriptor, or NULL to disable |
 
 _Declared in `include/datoviz/scene.h`:1282._
 
-## Screen-Space Ambient Occlusion
+## Scene Occlusion { #scene-occlusion }
 
 ### Types
 
-<a id="type-dvzssaodesc"></a>
+#### `DvzSceneOcclusionDesc` { #type-dvzsceneocclusiondesc }
 
-#### `DvzSsaoDesc`
+```c
+struct DvzSceneOcclusionDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    _Bool enabled;
+    float depth_bias;
+    float soft_edge;
+    float hidden_alpha;
+};
+```
+
+Used by: [`dvz_panel_set_scene_occlusion()`](techniques.md#dvz_panel_set_scene_occlusion), [`dvz_scene_occlusion_desc()`](techniques.md#dvz_scene_occlusion_desc).
+
+_Declared in `include/datoviz/scene/types.h`:897._
+
+### Functions
+
+#### `dvz_panel_set_scene_occlusion()` { #dvz_panel_set_scene_occlusion }
+
+Configure generic screen-space scene occlusion for one panel.
+
+Scene occlusion is active only when the panel contains at least one visible visual marked as a
+scene occluder and at least one visible visual marked as scene-occluded. Pass NULL or a disabled
+descriptor to disable the panel path.
+
+```c
+DvzResult dvz_panel_set_scene_occlusion(
+    DvzPanel * panel,
+    const DvzSceneOcclusionDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | 0 on success, -1 on validation error |
+| `panel` | [`DvzPanel`](scene.md#type-dvzpanel) * | the panel |
+| `desc` | `const` [`DvzSceneOcclusionDesc`](techniques.md#type-dvzsceneocclusiondesc) * | scene occlusion descriptor, or NULL to disable |
+
+_Declared in `include/datoviz/scene.h`:1348._
+
+#### `dvz_scene_occlusion_desc()` { #dvz_scene_occlusion_desc }
+
+Return default scene-occlusion options.
+
+```c
+DvzSceneOcclusionDesc dvz_scene_occlusion_desc(void);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzSceneOcclusionDesc`](techniques.md#type-dvzsceneocclusiondesc) | scene-occlusion descriptor |
+
+_Declared in `include/datoviz/scene.h`:1333._
+
+#### `dvz_visual_set_scene_occluded()` { #dvz_visual_set_scene_occluded }
+
+Mark a visual as sampling panel scene occlusion.
+
+```c
+DvzResult dvz_visual_set_scene_occluded(
+    DvzVisual * visual,
+    _Bool enabled
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | 0 on success, -1 on validation error |
+| `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the visual |
+| `enabled` | `_Bool` | whether the visual should be attenuated by scene occlusion |
+
+_Declared in `include/datoviz/scene.h`:1837._
+
+#### `dvz_visual_set_scene_occluder()` { #dvz_visual_set_scene_occluder }
+
+Mark a visual as contributing front depth to panel scene occlusion.
+
+```c
+DvzResult dvz_visual_set_scene_occluder(
+    DvzVisual * visual,
+    _Bool enabled
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | 0 on success, -1 on validation error |
+| `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the visual |
+| `enabled` | `_Bool` | whether the visual should act as a scene occluder |
+
+_Declared in `include/datoviz/scene.h`:1827._
+
+## Screen-Space Ambient Occlusion { #screen-space-ambient-occlusion }
+
+### Types
+
+#### `DvzSsaoDesc` { #type-dvzssaodesc }
 
 ```c
 struct DvzSsaoDesc {
@@ -207,7 +320,7 @@ _Declared in `include/datoviz/scene/types.h`:866._
 
 ### Functions
 
-#### `dvz_panel_set_ssao()`
+#### `dvz_panel_set_ssao()` { #dvz_panel_set_ssao }
 
 Configure screen-space ambient occlusion for one panel.
 
@@ -227,11 +340,11 @@ DvzResult dvz_panel_set_ssao(
 | --- | --- | --- |
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK if the panel SSAO state was updated, DVZ_ERROR otherwise |
 | `panel` | [`DvzPanel`](scene.md#type-dvzpanel) * | the panel |
-| `desc` | const [`DvzSsaoDesc`](techniques.md#type-dvzssaodesc) * | SSAO descriptor, or NULL to disable |
+| `desc` | `const` [`DvzSsaoDesc`](techniques.md#type-dvzssaodesc) * | SSAO descriptor, or NULL to disable |
 
 _Declared in `include/datoviz/scene.h`:1305._
 
-#### `dvz_ssao_desc()`
+#### `dvz_ssao_desc()` { #dvz_ssao_desc }
 
 Return default screen-space ambient occlusion options.
 
@@ -244,3 +357,80 @@ DvzSsaoDesc dvz_ssao_desc(void);
 | return | [`DvzSsaoDesc`](techniques.md#type-dvzssaodesc) | SSAO descriptor |
 
 _Declared in `include/datoviz/scene.h`:1290._
+
+## Volume Occlusion { #volume-occlusion }
+
+### Types
+
+#### `DvzVolumeOcclusionDesc` { #type-dvzvolumeocclusiondesc }
+
+```c
+struct DvzVolumeOcclusionDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    _Bool enabled;
+    float alpha_threshold;
+    float fade_distance;
+    float occluded_alpha;
+};
+```
+
+Used by: [`dvz_panel_set_volume_occluder()`](techniques.md#dvz_panel_set_volume_occluder), [`dvz_volume_occlusion_desc()`](techniques.md#dvz_volume_occlusion_desc).
+
+_Declared in `include/datoviz/scene/types.h`:885._
+
+### Functions
+
+#### `dvz_panel_set_volume_occluder()` { #dvz_panel_set_volume_occluder }
+
+Configure a panel volume visual as the screen-space occluder for embedded visuals.
+
+```c
+DvzResult dvz_panel_set_volume_occluder(
+    DvzPanel * panel,
+    DvzVisual * volume,
+    const DvzVolumeOcclusionDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | 0 on success, -1 on validation error |
+| `panel` | [`DvzPanel`](scene.md#type-dvzpanel) * | the panel |
+| `volume` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual attached to the same panel, or NULL to disable |
+| `desc` | `const` [`DvzVolumeOcclusionDesc`](techniques.md#type-dvzvolumeocclusiondesc) * | volume occlusion descriptor, or NULL to disable |
+
+_Declared in `include/datoviz/scene.h`:1324._
+
+#### `dvz_visual_set_volume_occluded()` { #dvz_visual_set_volume_occluded }
+
+Mark a visual as embedded in the panel volume occluder.
+
+```c
+DvzResult dvz_visual_set_volume_occluded(
+    DvzVisual * visual,
+    _Bool enabled
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | 0 on success, -1 on validation error |
+| `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the visual |
+| `enabled` | `_Bool` | whether the visual should sample panel volume occlusion |
+
+_Declared in `include/datoviz/scene.h`:1817._
+
+#### `dvz_volume_occlusion_desc()` { #dvz_volume_occlusion_desc }
+
+Return default volume-occlusion options.
+
+```c
+DvzVolumeOcclusionDesc dvz_volume_occlusion_desc(void);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzVolumeOcclusionDesc`](techniques.md#type-dvzvolumeocclusiondesc) | volume-occlusion descriptor |
+
+_Declared in `include/datoviz/scene.h`:1313._

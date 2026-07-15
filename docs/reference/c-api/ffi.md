@@ -28,7 +28,7 @@ Types: 0
 
 ??? info "Grouped symbol index"
 
-    ### Ffi
+    **Ffi**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
@@ -59,11 +59,11 @@ Types: 0
     | [`dvz_ffi_view_update_external_surface()`](#dvz_ffi_view_update_external_surface) | function | `include/datoviz/ffi.h` |
     | [`dvz_ffi_visual_transform_desc()`](#dvz_ffi_visual_transform_desc) | function | `include/datoviz/ffi.h` |
 
-## Ffi
+## Ffi { #ffi }
 
 ### Functions
 
-#### `dvz_ffi_depth_cue_desc()`
+#### `dvz_ffi_depth_cue_desc()` { #dvz_ffi_depth_cue_desc }
 
 Initialize a default depth-cue descriptor through an out pointer.
 
@@ -75,12 +75,12 @@ _Bool dvz_ffi_depth_cue_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzDepthCueDesc`](visuals.md#type-dvzdepthcuedesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:284._
 
-#### `dvz_ffi_field_geometry()`
+#### `dvz_ffi_field_geometry()` { #dvz_ffi_field_geometry }
 
 Initialize a default sampled-field geometry descriptor through an out pointer.
 
@@ -92,12 +92,12 @@ _Bool dvz_ffi_field_geometry(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzFieldGeometry`](scene.md#type-dvzfieldgeometry) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:221._
 
-#### `dvz_ffi_geometry_arrow_desc()`
+#### `dvz_ffi_geometry_arrow_desc()` { #dvz_ffi_geometry_arrow_desc }
 
 Initialize a default arrow geometry descriptor through an out pointer.
 
@@ -109,12 +109,12 @@ _Bool dvz_ffi_geometry_arrow_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzGeometryArrowDesc`](visuals.md#type-dvzgeometryarrowdesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:104._
 
-#### `dvz_ffi_geometry_cone_desc()`
+#### `dvz_ffi_geometry_cone_desc()` { #dvz_ffi_geometry_cone_desc }
 
 Initialize a default cone geometry descriptor through an out pointer.
 
@@ -126,12 +126,12 @@ _Bool dvz_ffi_geometry_cone_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzGeometryConeDesc`](visuals.md#type-dvzgeometryconedesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:113._
 
-#### `dvz_ffi_geometry_cube_desc()`
+#### `dvz_ffi_geometry_cube_desc()` { #dvz_ffi_geometry_cube_desc }
 
 Initialize a default cube geometry descriptor through an out pointer.
 
@@ -143,12 +143,12 @@ _Bool dvz_ffi_geometry_cube_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzGeometryCubeDesc`](visuals.md#type-dvzgeometrycubedesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:122._
 
-#### `dvz_ffi_geometry_cylinder_desc()`
+#### `dvz_ffi_geometry_cylinder_desc()` { #dvz_ffi_geometry_cylinder_desc }
 
 Initialize a default cylinder geometry descriptor through an out pointer.
 
@@ -160,12 +160,12 @@ _Bool dvz_ffi_geometry_cylinder_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzGeometryCylinderDesc`](visuals.md#type-dvzgeometrycylinderdesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:131._
 
-#### `dvz_ffi_geometry_disc_desc()`
+#### `dvz_ffi_geometry_disc_desc()` { #dvz_ffi_geometry_disc_desc }
 
 Initialize a default disc geometry descriptor through an out pointer.
 
@@ -177,12 +177,12 @@ _Bool dvz_ffi_geometry_disc_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzGeometryDiscDesc`](visuals.md#type-dvzgeometrydiscdesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:140._
 
-#### `dvz_ffi_geometry_plane_desc()`
+#### `dvz_ffi_geometry_plane_desc()` { #dvz_ffi_geometry_plane_desc }
 
 Initialize a default plane geometry descriptor through an out pointer.
 
@@ -194,12 +194,12 @@ _Bool dvz_ffi_geometry_plane_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzGeometryPlaneDesc`](visuals.md#type-dvzgeometryplanedesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:149._
 
-#### `dvz_ffi_geometry_regular_polygon_desc()`
+#### `dvz_ffi_geometry_regular_polygon_desc()` { #dvz_ffi_geometry_regular_polygon_desc }
 
 Initialize a default regular-polygon geometry descriptor through an out pointer.
 
@@ -211,12 +211,12 @@ _Bool dvz_ffi_geometry_regular_polygon_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzGeometryRegularPolygonDesc`](visuals.md#type-dvzgeometryregularpolygondesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:158._
 
-#### `dvz_ffi_geometry_sector_desc()`
+#### `dvz_ffi_geometry_sector_desc()` { #dvz_ffi_geometry_sector_desc }
 
 Initialize a default sector geometry descriptor through an out pointer.
 
@@ -228,12 +228,12 @@ _Bool dvz_ffi_geometry_sector_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzGeometrySectorDesc`](visuals.md#type-dvzgeometrysectordesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:167._
 
-#### `dvz_ffi_geometry_sphere_desc()`
+#### `dvz_ffi_geometry_sphere_desc()` { #dvz_ffi_geometry_sphere_desc }
 
 Initialize a default sphere geometry descriptor through an out pointer.
 
@@ -245,12 +245,12 @@ _Bool dvz_ffi_geometry_sphere_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzGeometrySphereDesc`](visuals.md#type-dvzgeometryspheredesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:176._
 
-#### `dvz_ffi_geometry_star_desc()`
+#### `dvz_ffi_geometry_star_desc()` { #dvz_ffi_geometry_star_desc }
 
 Initialize a default star geometry descriptor through an out pointer.
 
@@ -262,12 +262,12 @@ _Bool dvz_ffi_geometry_star_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzGeometryStarDesc`](visuals.md#type-dvzgeometrystardesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:185._
 
-#### `dvz_ffi_geometry_surface_grid_desc()`
+#### `dvz_ffi_geometry_surface_grid_desc()` { #dvz_ffi_geometry_surface_grid_desc }
 
 Initialize a default surface-grid geometry descriptor through an out pointer.
 
@@ -279,12 +279,12 @@ _Bool dvz_ffi_geometry_surface_grid_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzGeometrySurfaceGridDesc`](visuals.md#type-dvzgeometrysurfacegriddesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:194._
 
-#### `dvz_ffi_geometry_torus_desc()`
+#### `dvz_ffi_geometry_torus_desc()` { #dvz_ffi_geometry_torus_desc }
 
 Initialize a default torus geometry descriptor through an out pointer.
 
@@ -296,12 +296,12 @@ _Bool dvz_ffi_geometry_torus_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzGeometryTorusDesc`](visuals.md#type-dvzgeometrytorusdesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:203._
 
-#### `dvz_ffi_material_desc()`
+#### `dvz_ffi_material_desc()` { #dvz_ffi_material_desc }
 
 Initialize a default material descriptor through an out pointer.
 
@@ -313,12 +313,12 @@ _Bool dvz_ffi_material_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzMaterialDesc`](visuals.md#type-dvzmaterialdesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:257._
 
-#### `dvz_ffi_overlay_card_desc()`
+#### `dvz_ffi_overlay_card_desc()` { #dvz_ffi_overlay_card_desc }
 
 Initialize a default overlay-card descriptor through an out pointer.
 
@@ -330,12 +330,12 @@ _Bool dvz_ffi_overlay_card_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzOverlayCardDesc`](scene.md#type-dvzoverlaycarddesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:311._
 
-#### `dvz_ffi_overlay_card_style()`
+#### `dvz_ffi_overlay_card_style()` { #dvz_ffi_overlay_card_style }
 
 Initialize a default overlay-card style descriptor through an out pointer.
 
@@ -347,12 +347,12 @@ _Bool dvz_ffi_overlay_card_style(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzOverlayCardStyle`](scene.md#type-dvzoverlaycardstyle) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:302._
 
-#### `dvz_ffi_panel_background_desc()`
+#### `dvz_ffi_panel_background_desc()` { #dvz_ffi_panel_background_desc }
 
 Initialize a default panel background descriptor through an out pointer.
 
@@ -364,12 +364,12 @@ _Bool dvz_ffi_panel_background_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzPanelBackgroundDesc`](scene.md#type-dvzpanelbackgrounddesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:248._
 
-#### `dvz_ffi_phong_material_desc()`
+#### `dvz_ffi_phong_material_desc()` { #dvz_ffi_phong_material_desc }
 
 Initialize a default Phong material descriptor through an out pointer.
 
@@ -381,12 +381,12 @@ _Bool dvz_ffi_phong_material_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzMaterialDesc`](visuals.md#type-dvzmaterialdesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:266._
 
-#### `dvz_ffi_polygon_desc()`
+#### `dvz_ffi_polygon_desc()` { #dvz_ffi_polygon_desc }
 
 Initialize a default polygon descriptor through an out pointer.
 
@@ -398,12 +398,12 @@ _Bool dvz_ffi_polygon_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzPolygonDesc`](visuals.md#type-dvzpolygondesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:212._
 
-#### `dvz_ffi_reference_grid_desc()`
+#### `dvz_ffi_reference_grid_desc()` { #dvz_ffi_reference_grid_desc }
 
 Initialize a default reference-grid descriptor through an out pointer.
 
@@ -415,12 +415,12 @@ _Bool dvz_ffi_reference_grid_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzReferenceGridDesc`](scene.md#type-dvzreferencegriddesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:230._
 
-#### `dvz_ffi_scale_bar_desc()`
+#### `dvz_ffi_scale_bar_desc()` { #dvz_ffi_scale_bar_desc }
 
 Initialize a default scale-bar descriptor through an out pointer.
 
@@ -432,12 +432,12 @@ _Bool dvz_ffi_scale_bar_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzScaleBarDesc`](scene.md#type-dvzscalebardesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:293._
 
-#### `dvz_ffi_standard_material_desc()`
+#### `dvz_ffi_standard_material_desc()` { #dvz_ffi_standard_material_desc }
 
 Initialize a default standard material descriptor through an out pointer.
 
@@ -449,12 +449,12 @@ _Bool dvz_ffi_standard_material_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzMaterialDesc`](visuals.md#type-dvzmaterialdesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:275._
 
-#### `dvz_ffi_view_external_surface()`
+#### `dvz_ffi_view_external_surface()` { #dvz_ffi_view_external_surface }
 
 Create a hosted present view around an external Vulkan surface from FFI-friendly handles.
 
@@ -481,17 +481,17 @@ DvzView * dvz_ffi_view_external_surface(
 | return | [`DvzView`](app.md#type-dvzview) * | the view handle, or NULL on failure |
 | `app` | [`DvzApp`](app.md#type-dvzapp) * | the app |
 | `figure` | [`DvzFigure`](scene.md#type-dvzfigure) * | the figure to render (borrowed) |
-| `instance` | void * | borrowed VkInstance handle as an opaque pointer |
-| `surface` | uint64_t | borrowed or Datoviz-owned VkSurfaceKHR handle value |
-| `framebuffer_width` | uint32_t | framebuffer width in physical pixels |
-| `framebuffer_height` | uint32_t | framebuffer height in physical pixels |
-| `scale_x` | float | horizontal content scale |
-| `scale_y` | float | vertical content scale |
-| `owned_by_datoviz` | _Bool | whether Datoviz should destroy the surface |
+| `instance` | `void` * | borrowed VkInstance handle as an opaque pointer |
+| `surface` | `uint64_t` | borrowed or Datoviz-owned VkSurfaceKHR handle value |
+| `framebuffer_width` | `uint32_t` | framebuffer width in physical pixels |
+| `framebuffer_height` | `uint32_t` | framebuffer height in physical pixels |
+| `scale_x` | `float` | horizontal content scale |
+| `scale_y` | `float` | vertical content scale |
+| `owned_by_datoviz` | `_Bool` | whether Datoviz should destroy the surface |
 
 _Declared in `include/datoviz/ffi.h`:65._
 
-#### `dvz_ffi_view_update_external_surface()`
+#### `dvz_ffi_view_update_external_surface()` { #dvz_ffi_view_update_external_surface }
 
 Update a hosted external surface from FFI-friendly handles.
 
@@ -516,17 +516,17 @@ DvzResult dvz_ffi_view_update_external_surface(
 | --- | --- | --- |
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | 0 on success, negative on error |
 | `view` | [`DvzView`](app.md#type-dvzview) * | view created with dvz_view_external_surface() or dvz_ffi_view_external_surface() |
-| `instance` | void * | borrowed VkInstance handle as an opaque pointer, or NULL for surface loss |
-| `surface` | uint64_t | borrowed or Datoviz-owned VkSurfaceKHR handle value, or zero for surface loss |
-| `framebuffer_width` | uint32_t | framebuffer width in physical pixels |
-| `framebuffer_height` | uint32_t | framebuffer height in physical pixels |
-| `scale_x` | float | horizontal content scale |
-| `scale_y` | float | vertical content scale |
-| `owned_by_datoviz` | _Bool | whether Datoviz should destroy the surface |
+| `instance` | `void` * | borrowed VkInstance handle as an opaque pointer, or NULL for surface loss |
+| `surface` | `uint64_t` | borrowed or Datoviz-owned VkSurfaceKHR handle value, or zero for surface loss |
+| `framebuffer_width` | `uint32_t` | framebuffer width in physical pixels |
+| `framebuffer_height` | `uint32_t` | framebuffer height in physical pixels |
+| `scale_x` | `float` | horizontal content scale |
+| `scale_y` | `float` | vertical content scale |
+| `owned_by_datoviz` | `_Bool` | whether Datoviz should destroy the surface |
 
 _Declared in `include/datoviz/ffi.h`:88._
 
-#### `dvz_ffi_visual_transform_desc()`
+#### `dvz_ffi_visual_transform_desc()` { #dvz_ffi_visual_transform_desc }
 
 Initialize a default visual transform descriptor through an out pointer.
 
@@ -538,7 +538,7 @@ _Bool dvz_ffi_visual_transform_desc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | true on success, false when out is NULL |
+| return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzVisualTransformDesc`](visuals.md#type-dvzvisualtransformdesc) * | output descriptor |
 
 _Declared in `include/datoviz/ffi.h`:239._

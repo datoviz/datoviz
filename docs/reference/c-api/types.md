@@ -9,7 +9,7 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzAllocation`](runtime-vulkan.md#type-dvzallocation) | typedef | Vulkan Foundation API | `include/datoviz/vk/memory.h` |
 | [`DvzAllocationFlags`](runtime-vulkan.md#type-dvzallocationflags) | typedef | Vulkan Foundation API | `include/datoviz/vk/memory.h` |
 | [`DvzAlpha`](runtime-math.md#type-dvzalpha) | typedef | Math API | `include/datoviz/math/types.h` |
-| [`DvzAlphaMode`](scene.md#type-dvzalphamode) | enum | Scene API | `include/datoviz/scene/enums.h` |
+| [`DvzAlphaMode`](visuals.md#type-dvzalphamode) | enum | Visuals And Composites API | `include/datoviz/scene/enums.h` |
 | [`DvzAnimInteractionPolicy`](scene.md#type-dvzaniminteractionpolicy) | enum | Scene API | `include/datoviz/scene/animation.h` |
 | [`DvzAnimPhaseCallback`](scene.md#type-dvzanimphasecallback) | typedef | Scene API | `include/datoviz/scene/animation.h` |
 | [`DvzAnimPhaseDesc`](scene.md#type-dvzanimphasedesc) | record | Scene API | `include/datoviz/scene/animation.h` |
@@ -27,7 +27,7 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzAppFlags`](app.md#type-dvzappflags) | enum | App, Window, And I/O API | `include/datoviz/runner/enums.h` |
 | [`DvzAppResources`](app.md#type-dvzappresources) | record | App, Window, And I/O API | `include/datoviz/app.h` |
 | [`DvzAppScheduleMode`](app.md#type-dvzappschedulemode) | enum | App, Window, And I/O API | `include/datoviz/app.h` |
-| [`DvzArcball`](runtime-controllers.md#type-dvzarcball) | typedef | Low-Level Controllers API | `include/datoviz/app.h` |
+| [`DvzArcball`](runtime-controllers.md#type-dvzarcball) | typedef | Low-Level Controllers API | `include/datoviz/controller/arcball.h` |
 | [`DvzArcballDesc`](runtime-controllers.md#type-dvzarcballdesc) | record | Low-Level Controllers API | `include/datoviz/controller/arcball.h` |
 | [`DvzArcballFlags`](runtime-controllers.md#type-dvzarcballflags) | enum | Low-Level Controllers API | `include/datoviz/controller/arcball.h` |
 | [`DvzArcballState`](runtime-controllers.md#type-dvzarcballstate) | record | Low-Level Controllers API | `include/datoviz/controller/arcball.h` |
@@ -37,29 +37,29 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzAxisTickPolicy`](scene.md#type-dvzaxistickpolicy) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzAxisTicks`](scene.md#type-dvzaxisticks) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzBackend`](app.md#type-dvzbackend) | enum | App, Window, And I/O API | `include/datoviz/runner/enums.h` |
-| [`DvzBand`](scene.md#type-dvzband) | typedef | Scene API | `include/datoviz/scene/types.h` |
-| [`DvzBandDesc`](scene.md#type-dvzbanddesc) | record | Scene API | `include/datoviz/scene/types.h` |
+| [`DvzBand`](visuals.md#type-dvzband) | typedef | Visuals And Composites API | `include/datoviz/scene/types.h` |
+| [`DvzBandDesc`](visuals.md#type-dvzbanddesc) | record | Visuals And Composites API | `include/datoviz/scene/types.h` |
 | [`DvzBarrierBuffer`](runtime-vklite.md#type-dvzbarrierbuffer) | typedef | vklite API | `include/datoviz/vklite/sync.h` |
 | [`DvzBarrierImage`](runtime-vklite.md#type-dvzbarrierimage) | typedef | vklite API | `include/datoviz/vklite/sync.h` |
 | [`DvzBarrierMemory`](runtime-vklite.md#type-dvzbarriermemory) | typedef | vklite API | `include/datoviz/vklite/sync.h` |
 | [`DvzBarriers`](runtime-vklite.md#type-dvzbarriers) | record | vklite API | `include/datoviz/vklite/sync.h` |
-| [`DvzBars`](scene.md#type-dvzbars) | typedef | Scene API | `include/datoviz/scene/types.h` |
-| [`DvzBarsDesc`](scene.md#type-dvzbarsdesc) | record | Scene API | `include/datoviz/scene/types.h` |
-| [`DvzBarsOrientation`](scene.md#type-dvzbarsorientation) | enum | Scene API | `include/datoviz/scene/types.h` |
+| [`DvzBars`](visuals.md#type-dvzbars) | typedef | Visuals And Composites API | `include/datoviz/scene/types.h` |
+| [`DvzBarsDesc`](visuals.md#type-dvzbarsdesc) | record | Visuals And Composites API | `include/datoviz/scene/types.h` |
+| [`DvzBarsOrientation`](visuals.md#type-dvzbarsorientation) | enum | Visuals And Composites API | `include/datoviz/scene/types.h` |
 | [`DvzBezierTessellationDesc`](visuals.md#type-dvzbeziertessellationdesc) | record | Visuals And Composites API | `include/datoviz/geom/types.h` |
-| [`DvzBlendFactor`](runtime-utilities.md#type-dvzblendfactor) | enum | Common And Utility API | `include/datoviz/render_types.h` |
-| [`DvzBlendOp`](runtime-utilities.md#type-dvzblendop) | enum | Common And Utility API | `include/datoviz/render_types.h` |
+| [`DvzBlendFactor`](drp2.md#type-dvzblendfactor) | enum | DRP2 API | `include/datoviz/render_types.h` |
+| [`DvzBlendOp`](drp2.md#type-dvzblendop) | enum | DRP2 API | `include/datoviz/render_types.h` |
 | [`DvzBounds`](scene.md#type-dvzbounds) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzBoundsSpace`](scene.md#type-dvzboundsspace) | enum | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzBox`](runtime-math.md#type-dvzbox) | record | Math API | `include/datoviz/math/box.h` |
 | [`DvzBoxExtentStrategy`](runtime-math.md#type-dvzboxextentstrategy) | enum | Math API | `include/datoviz/math/box.h` |
 | [`DvzBoxMergeStrategy`](runtime-math.md#type-dvzboxmergestrategy) | enum | Math API | `include/datoviz/math/box.h` |
-| [`DvzBuffer`](runtime-vklite.md#type-dvzbuffer) | typedef | vklite API | `include/datoviz/drp2/runtime.h` |
+| [`DvzBuffer`](runtime-vklite.md#type-dvzbuffer) | typedef | vklite API | `include/datoviz/vklite/buffers.h` |
 | [`DvzBufferViews`](runtime-vklite.md#type-dvzbufferviews) | typedef | vklite API | `include/datoviz/vklite/buffers.h` |
 | [`DvzBuiltinColormap`](scene.md#type-dvzbuiltincolormap) | enum | Scene API | `include/datoviz/scene/enums.h` |
 | [`DvzCallbackId`](app.md#type-dvzcallbackid) | typedef | App, Window, And I/O API | `include/datoviz/input/router.h` |
 | [`DvzCallbackIdSpecial`](app.md#type-dvzcallbackidspecial) | enum | App, Window, And I/O API | `include/datoviz/input/router.h` |
-| [`DvzCamera`](runtime-controllers.md#type-dvzcamera) | typedef | Low-Level Controllers API | `include/datoviz/scene/types.h` |
+| [`DvzCamera`](runtime-controllers.md#type-dvzcamera) | typedef | Low-Level Controllers API | `include/datoviz/controller/camera.h` |
 | [`DvzCameraDesc`](runtime-controllers.md#type-dvzcameradesc) | record | Low-Level Controllers API | `include/datoviz/controller/camera.h` |
 | [`DvzCameraMotionDesc`](scene.md#type-dvzcameramotiondesc) | record | Scene API | `include/datoviz/scene/animation.h` |
 | [`DvzCameraProjection`](runtime-controllers.md#type-dvzcameraprojection) | record | Low-Level Controllers API | `include/datoviz/controller/camera.h` |
@@ -77,10 +77,10 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzCanvasOffscreenRuntimeState`](app.md#type-dvzcanvasoffscreenruntimestate) | enum | App, Window, And I/O API | `include/datoviz/canvas/enums.h` |
 | [`DvzCanvasPresentRuntimeState`](app.md#type-dvzcanvaspresentruntimestate) | enum | App, Window, And I/O API | `include/datoviz/canvas/enums.h` |
 | [`DvzCanvasRenderMode`](app.md#type-dvzcanvasrendermode) | enum | App, Window, And I/O API | `include/datoviz/canvas/enums.h` |
-| [`DvzCapabilitySnapshot`](scene.md#type-dvzcapabilitysnapshot) | record | Scene API | `include/datoviz/scene/types.h` |
+| [`DvzCapabilitySnapshot`](frame-plan.md#type-dvzcapabilitysnapshot) | record | FramePlan And Packet API | `include/datoviz/scene/types.h` |
 | [`DvzCategoryId`](scene.md#type-dvzcategoryid) | typedef | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzColor`](runtime-utilities.md#type-dvzcolor) | record | Common And Utility API | `include/datoviz/common/types.h` |
-| [`DvzColorMask`](runtime-utilities.md#type-dvzcolormask) | enum | Common And Utility API | `include/datoviz/render_types.h` |
+| [`DvzColorMask`](drp2.md#type-dvzcolormask) | enum | DRP2 API | `include/datoviz/render_types.h` |
 | [`DvzColorPipeline`](scene.md#type-dvzcolorpipeline) | enum | Scene API | `include/datoviz/scene/enums.h` |
 | [`DvzColorRole`](scene.md#type-dvzcolorrole) | enum | Scene API | `include/datoviz/scene/field.h` |
 | [`DvzColorbar`](scene.md#type-dvzcolorbar) | typedef | Scene API | `include/datoviz/scene/types.h` |
@@ -93,8 +93,8 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzColormapDesc`](scene.md#type-dvzcolormapdesc) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzColormapKind`](scene.md#type-dvzcolormapkind) | enum | Scene API | `include/datoviz/scene/enums.h` |
 | [`DvzColormapStop`](scene.md#type-dvzcolormapstop) | record | Scene API | `include/datoviz/scene/types.h` |
-| [`DvzCommands`](runtime-vklite.md#type-dvzcommands) | typedef | vklite API | `include/datoviz/vklite/sync.h` |
-| [`DvzCompareOp`](runtime-utilities.md#type-dvzcompareop) | enum | Common And Utility API | `include/datoviz/render_types.h` |
+| [`DvzCommands`](runtime-vklite.md#type-dvzcommands) | typedef | vklite API | `include/datoviz/vklite/commands.h` |
+| [`DvzCompareOp`](drp2.md#type-dvzcompareop) | enum | DRP2 API | `include/datoviz/render_types.h` |
 | [`DvzComposite`](visuals.md#type-dvzcomposite) | typedef | Visuals And Composites API | `include/datoviz/scene/types.h` |
 | [`DvzCompute`](runtime-vklite.md#type-dvzcompute) | typedef | vklite API | `include/datoviz/vklite/compute.h` |
 | [`DvzController`](scene.md#type-dvzcontroller) | typedef | Scene API | `include/datoviz/scene/types.h` |
@@ -103,7 +103,7 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzControllerLinkMode`](scene.md#type-dvzcontrollerlinkmode) | enum | Scene API | `include/datoviz/scene/enums.h` |
 | [`DvzControllerMode`](scene.md#type-dvzcontrollermode) | enum | Scene API | `include/datoviz/scene/enums.h` |
 | [`DvzControllerType`](scene.md#type-dvzcontrollertype) | enum | Scene API | `include/datoviz/scene/types.h` |
-| [`DvzCullMode`](runtime-utilities.md#type-dvzcullmode) | enum | Common And Utility API | `include/datoviz/render_types.h` |
+| [`DvzCullMode`](drp2.md#type-dvzcullmode) | enum | DRP2 API | `include/datoviz/render_types.h` |
 | [`DvzDataDomain`](scene.md#type-dvzdatadomain) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzDateTimeBuiltin`](scene.md#type-dvzdatetimebuiltin) | enum | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzDateTimeFormat`](scene.md#type-dvzdatetimeformat) | typedef | Scene API | `include/datoviz/scene/types.h` |
@@ -114,10 +114,10 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzDepthCueMode`](visuals.md#type-dvzdepthcuemode) | enum | Visuals And Composites API | `include/datoviz/scene/enums.h` |
 | [`DvzDescriptorType`](runtime-vulkan.md#type-dvzdescriptortype) | enum | Vulkan Foundation API | `include/datoviz/vk/enums.h` |
 | [`DvzDescriptors`](runtime-vklite.md#type-dvzdescriptors) | typedef | vklite API | `include/datoviz/vklite/descriptors.h` |
-| [`DvzDevice`](runtime-vulkan.md#type-dvzdevice) | typedef | Vulkan Foundation API | `include/datoviz/canvas.h` |
+| [`DvzDevice`](runtime-vulkan.md#type-dvzdevice) | typedef | Vulkan Foundation API | `include/datoviz/vk/device.h` |
 | [`DvzDeviceConfig`](runtime-vulkan.md#type-dvzdeviceconfig) | record | Vulkan Foundation API | `include/datoviz/vk/device.h` |
 | [`DvzDeviceQueueRequest`](runtime-vulkan.md#type-dvzdevicequeuerequest) | record | Vulkan Foundation API | `include/datoviz/vk/device.h` |
-| [`DvzDiagnosticReport`](scene.md#type-dvzdiagnosticreport) | record | Scene API | `include/datoviz/scene/types.h` |
+| [`DvzDiagnosticReport`](frame-plan.md#type-dvzdiagnosticreport) | record | FramePlan And Packet API | `include/datoviz/scene/types.h` |
 | [`DvzDim`](runtime-math.md#type-dvzdim) | enum | Math API | `include/datoviz/math/dim.h` |
 | [`DvzDimMask`](scene.md#type-dvzdimmask) | typedef | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzDimMaskFlag`](scene.md#type-dvzdimmaskflag) | enum | Scene API | `include/datoviz/scene/types.h` |
@@ -146,7 +146,7 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzDrp2RecordingInfo`](drp2.md#type-dvzdrp2recordinginfo) | record | DRP2 API | `include/datoviz/drp2/recording.h` |
 | [`DvzDrp2RenderPassDesc`](drp2.md#type-dvzdrp2renderpassdesc) | record | DRP2 API | `include/datoviz/drp2/types.h` |
 | [`DvzDrp2RenderPipelineDesc`](drp2.md#type-dvzdrp2renderpipelinedesc) | record | DRP2 API | `include/datoviz/drp2/types.h` |
-| [`DvzDrp2Runtime`](app.md#type-dvzdrp2runtime) | typedef | App, Window, And I/O API | `include/datoviz/app.h` |
+| [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) | typedef | DRP2 API | `include/datoviz/drp2/types.h` |
 | [`DvzDrp2RuntimeConfig`](drp2.md#type-dvzdrp2runtimeconfig) | record | DRP2 API | `include/datoviz/drp2/runtime.h` |
 | [`DvzDrp2ShaderStageFlags`](drp2.md#type-dvzdrp2shaderstageflags) | enum | DRP2 API | `include/datoviz/drp2/enums.h` |
 | [`DvzDrp2TextureDesc`](drp2.md#type-dvzdrp2texturedesc) | record | DRP2 API | `include/datoviz/drp2/types.h` |
@@ -167,27 +167,27 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzFieldSemantic`](scene.md#type-dvzfieldsemantic) | enum | Scene API | `include/datoviz/scene/field.h` |
 | [`DvzFigure`](scene.md#type-dvzfigure) | typedef | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzFilter`](runtime-vulkan.md#type-dvzfilter) | enum | Vulkan Foundation API | `include/datoviz/vk/enums.h` |
-| [`DvzFly`](runtime-controllers.md#type-dvzfly) | typedef | Low-Level Controllers API | `include/datoviz/app.h` |
+| [`DvzFly`](runtime-controllers.md#type-dvzfly) | typedef | Low-Level Controllers API | `include/datoviz/controller/fly.h` |
 | [`DvzFlyDesc`](runtime-controllers.md#type-dvzflydesc) | record | Low-Level Controllers API | `include/datoviz/controller/fly.h` |
 | [`DvzFlyFlags`](runtime-controllers.md#type-dvzflyflags) | enum | Low-Level Controllers API | `include/datoviz/controller/fly.h` |
 | [`DvzFlyMode`](runtime-controllers.md#type-dvzflymode) | enum | Low-Level Controllers API | `include/datoviz/controller/fly.h` |
 | [`DvzFont`](scene.md#type-dvzfont) | typedef | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzFontDefaults`](runtime-utilities.md#type-dvzfontdefaults) | record | Common And Utility API | `include/datoviz/font.h` |
 | [`DvzFontDesc`](runtime-utilities.md#type-dvzfontdesc) | record | Common And Utility API | `include/datoviz/font.h` |
-| [`DvzFormat`](runtime-utilities.md#type-dvzformat) | enum | Common And Utility API | `include/datoviz/render_types.h` |
+| [`DvzFormat`](drp2.md#type-dvzformat) | enum | DRP2 API | `include/datoviz/render_types.h` |
 | [`DvzFormatDesc`](scene.md#type-dvzformatdesc) | record | Scene API | `include/datoviz/scene/types.h` |
-| [`DvzFramePlan`](scene.md#type-dvzframeplan) | typedef | Scene API | `include/datoviz/scene/types.h` |
+| [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) | typedef | FramePlan And Packet API | `include/datoviz/scene/types.h` |
 | [`DvzFramePlanCopyDesc`](frame-plan.md#type-dvzframeplancopydesc) | record | FramePlan And Packet API | `include/datoviz/scene/frame_plan.h` |
-| [`DvzFramePlanEmitConfig`](scene.md#type-dvzframeplanemitconfig) | record | Scene API | `include/datoviz/scene/types.h` |
-| [`DvzFramePlanEmitter`](scene.md#type-dvzframeplanemitter) | typedef | Scene API | `include/datoviz/scene/types.h` |
-| [`DvzFramePlanNode`](scene.md#type-dvzframeplannode) | typedef | Scene API | `include/datoviz/scene/types.h` |
-| [`DvzFramePlanNodeType`](scene.md#type-dvzframeplannodetype) | enum | Scene API | `include/datoviz/scene/enums.h` |
+| [`DvzFramePlanEmitConfig`](frame-plan.md#type-dvzframeplanemitconfig) | record | FramePlan And Packet API | `include/datoviz/scene/types.h` |
+| [`DvzFramePlanEmitter`](frame-plan.md#type-dvzframeplanemitter) | typedef | FramePlan And Packet API | `include/datoviz/scene/types.h` |
+| [`DvzFramePlanNode`](frame-plan.md#type-dvzframeplannode) | typedef | FramePlan And Packet API | `include/datoviz/scene/types.h` |
+| [`DvzFramePlanNodeType`](frame-plan.md#type-dvzframeplannodetype) | enum | FramePlan And Packet API | `include/datoviz/scene/enums.h` |
 | [`DvzFramePlanPacketResult`](frame-plan.md#type-dvzframeplanpacketresult) | typedef | FramePlan And Packet API | `include/datoviz/scene/frame_packets.h` |
 | [`DvzFramePlanPacketStatus`](frame-plan.md#type-dvzframeplanpacketstatus) | enum | FramePlan And Packet API | `include/datoviz/scene/frame_packets.h` |
-| [`DvzFramePlanRenderPassRole`](scene.md#type-dvzframeplanrenderpassrole) | enum | Scene API | `include/datoviz/scene/enums.h` |
+| [`DvzFramePlanRenderPassRole`](frame-plan.md#type-dvzframeplanrenderpassrole) | enum | FramePlan And Packet API | `include/datoviz/scene/enums.h` |
 | [`DvzFramePlanUploadDesc`](frame-plan.md#type-dvzframeplanuploaddesc) | record | FramePlan And Packet API | `include/datoviz/scene/frame_plan.h` |
 | [`DvzFrameTiming`](app.md#type-dvzframetiming) | record | App, Window, And I/O API | `include/datoviz/canvas.h` |
-| [`DvzFrontFace`](runtime-utilities.md#type-dvzfrontface) | enum | Common And Utility API | `include/datoviz/render_types.h` |
+| [`DvzFrontFace`](drp2.md#type-dvzfrontface) | enum | DRP2 API | `include/datoviz/render_types.h` |
 | [`DvzGeometry`](visuals.md#type-dvzgeometry) | record | Visuals And Composites API | `include/datoviz/geom/types.h` |
 | [`DvzGeometryArrowDesc`](visuals.md#type-dvzgeometryarrowdesc) | record | Visuals And Composites API | `include/datoviz/geom/types.h` |
 | [`DvzGeometryBounds`](visuals.md#type-dvzgeometrybounds) | record | Visuals And Composites API | `include/datoviz/geom/types.h` |
@@ -210,7 +210,7 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzGeometrySurfaceGridDesc`](visuals.md#type-dvzgeometrysurfacegriddesc) | record | Visuals And Composites API | `include/datoviz/geom/types.h` |
 | [`DvzGeometryTorusDesc`](visuals.md#type-dvzgeometrytorusdesc) | record | Visuals And Composites API | `include/datoviz/geom/types.h` |
 | [`DvzGeometryType`](visuals.md#type-dvzgeometrytype) | enum | Visuals And Composites API | `include/datoviz/geom/enums.h` |
-| [`DvzGpuCtx`](app.md#type-dvzgpuctx) | typedef | App, Window, And I/O API | `include/datoviz/app.h` |
+| [`DvzGpuCtx`](runtime-vulkan.md#type-dvzgpuctx) | typedef | Vulkan Foundation API | `include/datoviz/vk/gpu_ctx.h` |
 | [`DvzGpuCtxConfig`](runtime-vulkan.md#type-dvzgpuctxconfig) | record | Vulkan Foundation API | `include/datoviz/vk/gpu_ctx.h` |
 | [`DvzGpuInfo`](runtime-vulkan.md#type-dvzgpuinfo) | record | Vulkan Foundation API | `include/datoviz/vk/gpu.h` |
 | [`DvzGraph`](visuals.md#type-dvzgraph) | typedef | Visuals And Composites API | `include/datoviz/scene/types.h` |
@@ -277,7 +277,7 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzKeyboardModifierState`](app.md#type-dvzkeyboardmodifierstate) | record | App, Window, And I/O API | `include/datoviz/input/keyboard.h` |
 | [`DvzKeyboardModifiers`](app.md#type-dvzkeyboardmodifiers) | enum | App, Window, And I/O API | `include/datoviz/input/enums.h` |
 | [`DvzLabelDesc`](scene.md#type-dvzlabeldesc) | record | Scene API | `include/datoviz/scene/types.h` |
-| [`DvzLabelsState`](scene.md#type-dvzlabelsstate) | record | Scene API | `include/datoviz/scene/types.h` |
+| [`DvzLabelsState`](visuals.md#type-dvzlabelsstate) | record | Visuals And Composites API | `include/datoviz/scene/types.h` |
 | [`DvzLegend`](scene.md#type-dvzlegend) | typedef | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzLegendDesc`](scene.md#type-dvzlegenddesc) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzLegendPlacementMode`](scene.md#type-dvzlegendplacementmode) | enum | Scene API | `include/datoviz/scene/enums.h` |
@@ -318,7 +318,7 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzPanelView3DDesc`](scene.md#type-dvzpanelview3ddesc) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzPanelView3DState`](scene.md#type-dvzpanelview3dstate) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzPanelViewKind`](scene.md#type-dvzpanelviewkind) | enum | Scene API | `include/datoviz/scene/types.h` |
-| [`DvzPanzoom`](runtime-controllers.md#type-dvzpanzoom) | typedef | Low-Level Controllers API | `include/datoviz/app.h` |
+| [`DvzPanzoom`](runtime-controllers.md#type-dvzpanzoom) | typedef | Low-Level Controllers API | `include/datoviz/controller/panzoom.h` |
 | [`DvzPanzoomDesc`](runtime-controllers.md#type-dvzpanzoomdesc) | record | Low-Level Controllers API | `include/datoviz/controller/panzoom.h` |
 | [`DvzPanzoomEval`](runtime-controllers.md#type-dvzpanzoomeval) | record | Low-Level Controllers API | `include/datoviz/controller/panzoom.h` |
 | [`DvzPanzoomFlags`](runtime-controllers.md#type-dvzpanzoomflags) | enum | Low-Level Controllers API | `include/datoviz/controller/panzoom.h` |
@@ -348,7 +348,7 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzPolygonStyle`](visuals.md#type-dvzpolygonstyle) | record | Visuals And Composites API | `include/datoviz/scene/types.h` |
 | [`DvzPolygons`](visuals.md#type-dvzpolygons) | typedef | Visuals And Composites API | `include/datoviz/scene/types.h` |
 | [`DvzPresentStatus`](runtime-vklite.md#type-dvzpresentstatus) | enum | vklite API | `include/datoviz/vklite/swapchain.h` |
-| [`DvzPrimitiveTopology`](runtime-utilities.md#type-dvzprimitivetopology) | enum | Common And Utility API | `include/datoviz/render_types.h` |
+| [`DvzPrimitiveTopology`](drp2.md#type-dvzprimitivetopology) | enum | DRP2 API | `include/datoviz/render_types.h` |
 | [`DvzPrng`](runtime-math.md#type-dvzprng) | typedef | Math API | `include/datoviz/math/prng.h` |
 | [`DvzQueryCapabilityFlag`](scene.md#type-dvzquerycapabilityflag) | enum | Scene API | `include/datoviz/scene/enums.h` |
 | [`DvzQueryHitPolicy`](scene.md#type-dvzqueryhitpolicy) | enum | Scene API | `include/datoviz/scene/enums.h` |
@@ -398,22 +398,22 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzSceneComputeDesc`](scene.md#type-dvzscenecomputedesc) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzSceneFrameArtifact`](scene.md#type-dvzsceneframeartifact) | typedef | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzSceneFrameArtifactStatus`](scene.md#type-dvzsceneframeartifactstatus) | enum | Scene API | `include/datoviz/scene/types.h` |
-| [`DvzSceneOcclusionDesc`](scene.md#type-dvzsceneocclusiondesc) | record | Scene API | `include/datoviz/scene/types.h` |
+| [`DvzSceneOcclusionDesc`](techniques.md#type-dvzsceneocclusiondesc) | record | Rendering Techniques API | `include/datoviz/scene/types.h` |
 | [`DvzSceneShaderFormat`](scene.md#type-dvzsceneshaderformat) | enum | Scene API | `include/datoviz/scene/enums.h` |
 | [`DvzSceneTargetKind`](scene.md#type-dvzscenetargetkind) | enum | Scene API | `include/datoviz/scene/enums.h` |
-| [`DvzSceneVisualFamily`](scene.md#type-dvzscenevisualfamily) | enum | Scene API | `include/datoviz/scene/enums.h` |
+| [`DvzSceneVisualFamily`](visuals.md#type-dvzscenevisualfamily) | enum | Visuals And Composites API | `include/datoviz/scene/enums.h` |
 | [`DvzSegmentCap`](visuals.md#type-dvzsegmentcap) | enum | Visuals And Composites API | `include/datoviz/scene/enums.h` |
 | [`DvzSelectMode`](scene.md#type-dvzselectmode) | enum | Scene API | `include/datoviz/scene/enums.h` |
 | [`DvzSelection`](scene.md#type-dvzselection) | typedef | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzSelectionDesc`](scene.md#type-dvzselectiondesc) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzSelectionItem`](scene.md#type-dvzselectionitem) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzSelectionVisualStyle`](scene.md#type-dvzselectionvisualstyle) | record | Scene API | `include/datoviz/scene/types.h` |
-| [`DvzSemaphore`](runtime-vulkan.md#type-dvzsemaphore) | typedef | Vulkan Foundation API | `include/datoviz/vk/memory_interop.h` |
+| [`DvzSemaphore`](runtime-vklite.md#type-dvzsemaphore) | typedef | vklite API | `include/datoviz/vklite/sync.h` |
 | [`DvzShader`](runtime-vklite.md#type-dvzshader) | typedef | vklite API | `include/datoviz/vklite/shader.h` |
 | [`DvzShaderFormat`](runtime-vulkan.md#type-dvzshaderformat) | enum | Vulkan Foundation API | `include/datoviz/vk/enums.h` |
 | [`DvzShaderStageFlags`](runtime-vulkan.md#type-dvzshaderstageflags) | typedef | Vulkan Foundation API | `include/datoviz/vk/enums.h` |
 | [`DvzShaderType`](runtime-vulkan.md#type-dvzshadertype) | enum | Vulkan Foundation API | `include/datoviz/vk/enums.h` |
-| [`DvzShapeAspect`](scene.md#type-dvzshapeaspect) | enum | Scene API | `include/datoviz/scene/enums.h` |
+| [`DvzShapeAspect`](visuals.md#type-dvzshapeaspect) | enum | Visuals And Composites API | `include/datoviz/scene/enums.h` |
 | [`DvzSize`](runtime-math.md#type-dvzsize) | typedef | Math API | `include/datoviz/math/types.h` |
 | [`DvzSizeSpace`](app.md#type-dvzsizespace) | enum | App, Window, And I/O API | `include/datoviz/window/size.h` |
 | [`DvzSlots`](runtime-vklite.md#type-dvzslots) | typedef | vklite API | `include/datoviz/vklite/graphics.h` |
@@ -474,7 +474,7 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzTransformOrder`](scene.md#type-dvztransformorder) | enum | Scene API | `include/datoviz/scene/animation.h` |
 | [`DvzTriangulationBackend`](visuals.md#type-dvztriangulationbackend) | enum | Visuals And Composites API | `include/datoviz/geom/enums.h` |
 | [`DvzTriangulationDesc`](visuals.md#type-dvztriangulationdesc) | record | Visuals And Composites API | `include/datoviz/geom/types.h` |
-| [`DvzTurntable`](runtime-controllers.md#type-dvzturntable) | typedef | Low-Level Controllers API | `include/datoviz/app.h` |
+| [`DvzTurntable`](runtime-controllers.md#type-dvzturntable) | typedef | Low-Level Controllers API | `include/datoviz/controller/turntable.h` |
 | [`DvzTurntableDesc`](runtime-controllers.md#type-dvzturntabledesc) | record | Low-Level Controllers API | `include/datoviz/controller/turntable.h` |
 | [`DvzTurntableFlags`](runtime-controllers.md#type-dvzturntableflags) | enum | Low-Level Controllers API | `include/datoviz/controller/turntable.h` |
 | [`DvzUnitDisplayMode`](scene.md#type-dvzunitdisplaymode) | enum | Scene API | `include/datoviz/scene/types.h` |
@@ -520,7 +520,7 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzVma`](drp2.md#type-dvzvma) | typedef | DRP2 API | `include/datoviz/drp2/runtime.h` |
 | [`DvzVolumeAlphaStop`](visuals.md#type-dvzvolumealphastop) | record | Visuals And Composites API | `include/datoviz/scene/types.h` |
 | [`DvzVolumeAxis`](visuals.md#type-dvzvolumeaxis) | enum | Visuals And Composites API | `include/datoviz/scene/enums.h` |
-| [`DvzVolumeOcclusionDesc`](visuals.md#type-dvzvolumeocclusiondesc) | record | Visuals And Composites API | `include/datoviz/scene/types.h` |
+| [`DvzVolumeOcclusionDesc`](techniques.md#type-dvzvolumeocclusiondesc) | record | Rendering Techniques API | `include/datoviz/scene/types.h` |
 | [`DvzVolumeRenderMode`](visuals.md#type-dvzvolumerendermode) | enum | Visuals And Composites API | `include/datoviz/scene/enums.h` |
 | [`DvzVolumeSamplingMode`](visuals.md#type-dvzvolumesamplingmode) | enum | Visuals And Composites API | `include/datoviz/scene/enums.h` |
 | [`DvzVolumeState`](visuals.md#type-dvzvolumestate) | record | Visuals And Composites API | `include/datoviz/scene/types.h` |
@@ -548,7 +548,6 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzWindowHost`](app.md#type-dvzwindowhost) | typedef | App, Window, And I/O API | `include/datoviz/app.h` |
 | [`DvzWindowMetrics`](app.md#type-dvzwindowmetrics) | record | App, Window, And I/O API | `include/datoviz/window/types.h` |
 | [`DvzWindowSurface`](app.md#type-dvzwindowsurface) | record | App, Window, And I/O API | `include/datoviz/window/types.h` |
-| [`VkInstance`](runtime-vulkan.md#type-vkinstance) | typedef | Vulkan Foundation API | `include/datoviz/vk/instance.h` |
 | [`cvec2`](runtime-math.md#type-cvec2) | typedef | Math API | `include/datoviz/math/types.h` |
 | [`cvec3`](runtime-math.md#type-cvec3) | typedef | Math API | `include/datoviz/math/types.h` |
 | [`cvec4`](runtime-math.md#type-cvec4) | typedef | Math API | `include/datoviz/math/types.h` |

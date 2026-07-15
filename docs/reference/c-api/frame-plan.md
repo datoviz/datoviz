@@ -18,41 +18,61 @@ Common workflows:
 - [WebGPU subset](../webgpu-subset.md)
 
 Functions: 41
-Types: 4
+Types: 12
 
 ## Symbol Groups
 
 | Group | Functions | Types | Headers |
 | --- | ---: | ---: | --- |
-| [Capability](#capability) | 2 | 0 | `include/datoviz/scene/frame_plan.h` |
-| [Diagnostic](#diagnostic) | 4 | 0 | `include/datoviz/scene/frame_plan.h` |
-| [Frame](#frame) | 35 | 4 | `include/datoviz/scene/frame_packets.h`, `include/datoviz/scene/frame_plan.h` |
+| [Capability](#capability) | 2 | 1 | `include/datoviz/scene/frame_plan.h`, `include/datoviz/scene/types.h` |
+| [Diagnostic](#diagnostic) | 4 | 1 | `include/datoviz/scene/frame_plan.h`, `include/datoviz/scene/types.h` |
+| [Emission](#emission) | 7 | 2 | 3 headers |
+| [Frame Planning](#frame-planning) | 23 | 6 | 3 headers |
+| [Packet Results](#packet-results) | 5 | 2 | `include/datoviz/scene/frame_packets.h` |
 
 ??? info "Grouped symbol index"
 
-    ### Capability
+    **Capability**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
+    | [`DvzCapabilitySnapshot`](#type-dvzcapabilitysnapshot) | record | `include/datoviz/scene/types.h` |
     | [`dvz_capability_snapshot()`](#dvz_capability_snapshot) | function | `include/datoviz/scene/frame_plan.h` |
     | [`dvz_capability_snapshot_copy()`](#dvz_capability_snapshot_copy) | function | `include/datoviz/scene/frame_plan.h` |
 
-    ### Diagnostic
+    **Diagnostic**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
+    | [`DvzDiagnosticReport`](#type-dvzdiagnosticreport) | record | `include/datoviz/scene/types.h` |
     | [`dvz_diagnostic_report_add()`](#dvz_diagnostic_report_add) | function | `include/datoviz/scene/frame_plan.h` |
     | [`dvz_diagnostic_report_count()`](#dvz_diagnostic_report_count) | function | `include/datoviz/scene/frame_plan.h` |
     | [`dvz_diagnostic_report_get()`](#dvz_diagnostic_report_get) | function | `include/datoviz/scene/frame_plan.h` |
     | [`dvz_diagnostic_report_init()`](#dvz_diagnostic_report_init) | function | `include/datoviz/scene/frame_plan.h` |
 
-    ### Frame
+    **Emission**
 
     | Symbol | Kind | Header |
     | --- | --- | --- |
+    | [`DvzFramePlanEmitConfig`](#type-dvzframeplanemitconfig) | record | `include/datoviz/scene/types.h` |
+    | [`DvzFramePlanEmitter`](#type-dvzframeplanemitter) | typedef | `include/datoviz/scene/types.h` |
+    | [`dvz_frame_plan_emit_config()`](#dvz_frame_plan_emit_config) | function | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_emit_drp2()`](#dvz_frame_plan_emit_drp2) | function | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_emit_drp2_ex()`](#dvz_frame_plan_emit_drp2_ex) | function | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_emitter_destroy()`](#dvz_frame_plan_emitter_destroy) | function | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_emitter_emit_drp2()`](#dvz_frame_plan_emitter_emit_drp2) | function | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_emitter_emit_drp2_packets()`](#dvz_frame_plan_emitter_emit_drp2_packets) | function | `include/datoviz/scene/frame_packets.h` |
+    | [`dvz_frame_plan_emitter_object_id()`](#dvz_frame_plan_emitter_object_id) | function | `include/datoviz/scene/frame_plan.h` |
+
+    **Frame Planning**
+
+    | Symbol | Kind | Header |
+    | --- | --- | --- |
+    | [`DvzFramePlan`](#type-dvzframeplan) | typedef | `include/datoviz/scene/types.h` |
     | [`DvzFramePlanCopyDesc`](#type-dvzframeplancopydesc) | record | `include/datoviz/scene/frame_plan.h` |
-    | [`DvzFramePlanPacketResult`](#type-dvzframeplanpacketresult) | typedef | `include/datoviz/scene/frame_packets.h` |
-    | [`DvzFramePlanPacketStatus`](#type-dvzframeplanpacketstatus) | enum | `include/datoviz/scene/frame_packets.h` |
+    | [`DvzFramePlanNode`](#type-dvzframeplannode) | typedef | `include/datoviz/scene/types.h` |
+    | [`DvzFramePlanNodeType`](#type-dvzframeplannodetype) | enum | `include/datoviz/scene/enums.h` |
+    | [`DvzFramePlanRenderPassRole`](#type-dvzframeplanrenderpassrole) | enum | `include/datoviz/scene/enums.h` |
     | [`DvzFramePlanUploadDesc`](#type-dvzframeplanuploaddesc) | record | `include/datoviz/scene/frame_plan.h` |
     | [`dvz_frame_plan()`](#dvz_frame_plan) | function | `include/datoviz/scene/frame_plan.h` |
     | [`dvz_frame_plan_clear()`](#dvz_frame_plan_clear) | function | `include/datoviz/scene/frame_plan.h` |
@@ -63,24 +83,12 @@ Types: 4
     | [`dvz_frame_plan_copy_desc()`](#dvz_frame_plan_copy_desc) | function | `include/datoviz/scene/frame_plan.h` |
     | [`dvz_frame_plan_copy_ex()`](#dvz_frame_plan_copy_ex) | function | `include/datoviz/scene/frame_plan.h` |
     | [`dvz_frame_plan_destroy()`](#dvz_frame_plan_destroy) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_emit_config()`](#dvz_frame_plan_emit_config) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_emit_drp2()`](#dvz_frame_plan_emit_drp2) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_emit_drp2_ex()`](#dvz_frame_plan_emit_drp2_ex) | function | `include/datoviz/scene/frame_plan.h` |
     | [`dvz_frame_plan_emitter()`](#dvz_frame_plan_emitter) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_emitter_destroy()`](#dvz_frame_plan_emitter_destroy) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_emitter_emit_drp2()`](#dvz_frame_plan_emitter_emit_drp2) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_emitter_emit_drp2_packets()`](#dvz_frame_plan_emitter_emit_drp2_packets) | function | `include/datoviz/scene/frame_packets.h` |
-    | [`dvz_frame_plan_emitter_object_id()`](#dvz_frame_plan_emitter_object_id) | function | `include/datoviz/scene/frame_plan.h` |
     | [`dvz_frame_plan_json()`](#dvz_frame_plan_json) | function | `include/datoviz/scene/frame_plan.h` |
     | [`dvz_frame_plan_json_destroy()`](#dvz_frame_plan_json_destroy) | function | `include/datoviz/scene/frame_plan.h` |
     | [`dvz_frame_plan_node_count()`](#dvz_frame_plan_node_count) | function | `include/datoviz/scene/frame_plan.h` |
     | [`dvz_frame_plan_node_get()`](#dvz_frame_plan_node_get) | function | `include/datoviz/scene/frame_plan.h` |
     | [`dvz_frame_plan_node_type()`](#dvz_frame_plan_node_type) | function | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_packet_result_destroy()`](#dvz_frame_plan_packet_result_destroy) | function | `include/datoviz/scene/frame_packets.h` |
-    | [`dvz_frame_plan_packet_result_frame_index()`](#dvz_frame_plan_packet_result_frame_index) | function | `include/datoviz/scene/frame_packets.h` |
-    | [`dvz_frame_plan_packet_result_get()`](#dvz_frame_plan_packet_result_get) | function | `include/datoviz/scene/frame_packets.h` |
-    | [`dvz_frame_plan_packet_result_resource_version()`](#dvz_frame_plan_packet_result_resource_version) | function | `include/datoviz/scene/frame_packets.h` |
-    | [`dvz_frame_plan_packet_result_status()`](#dvz_frame_plan_packet_result_status) | function | `include/datoviz/scene/frame_packets.h` |
     | [`dvz_frame_plan_readback()`](#dvz_frame_plan_readback) | function | `include/datoviz/scene/frame_plan.h` |
     | [`dvz_frame_plan_render()`](#dvz_frame_plan_render) | function | `include/datoviz/scene/frame_plan.h` |
     | [`dvz_frame_plan_render_pass_role()`](#dvz_frame_plan_render_pass_role) | function | `include/datoviz/scene/frame_plan.h` |
@@ -90,11 +98,61 @@ Types: 4
     | [`dvz_frame_plan_upload_desc()`](#dvz_frame_plan_upload_desc) | function | `include/datoviz/scene/frame_plan.h` |
     | [`dvz_frame_plan_upload_ex()`](#dvz_frame_plan_upload_ex) | function | `include/datoviz/scene/frame_plan.h` |
 
-## Capability
+    **Packet Results**
+
+    | Symbol | Kind | Header |
+    | --- | --- | --- |
+    | [`DvzFramePlanPacketResult`](#type-dvzframeplanpacketresult) | typedef | `include/datoviz/scene/frame_packets.h` |
+    | [`DvzFramePlanPacketStatus`](#type-dvzframeplanpacketstatus) | enum | `include/datoviz/scene/frame_packets.h` |
+    | [`dvz_frame_plan_packet_result_destroy()`](#dvz_frame_plan_packet_result_destroy) | function | `include/datoviz/scene/frame_packets.h` |
+    | [`dvz_frame_plan_packet_result_frame_index()`](#dvz_frame_plan_packet_result_frame_index) | function | `include/datoviz/scene/frame_packets.h` |
+    | [`dvz_frame_plan_packet_result_get()`](#dvz_frame_plan_packet_result_get) | function | `include/datoviz/scene/frame_packets.h` |
+    | [`dvz_frame_plan_packet_result_resource_version()`](#dvz_frame_plan_packet_result_resource_version) | function | `include/datoviz/scene/frame_packets.h` |
+    | [`dvz_frame_plan_packet_result_status()`](#dvz_frame_plan_packet_result_status) | function | `include/datoviz/scene/frame_packets.h` |
+
+## Capability { #capability }
+
+### Types
+
+#### `DvzCapabilitySnapshot` { #type-dvzcapabilitysnapshot }
+
+```c
+struct DvzCapabilitySnapshot {
+    uint32_t struct_size;
+    uint32_t flags;
+    uint64_t max_buffer_size;
+    uint32_t max_texture_dimension_2d;
+    uint32_t max_bind_groups;
+    uint32_t max_vertex_buffers;
+    uint32_t max_color_attachments;
+    uint32_t max_color_sample_count;
+    uint32_t max_depth_sample_count;
+    _Bool shader_format_wgsl;
+    _Bool shader_format_glsl;
+    _Bool render_target_format_rgba16float;
+    _Bool render_target_format_r16float;
+    _Bool supports_render_target_sampling;
+    _Bool supports_color_blending;
+    _Bool supports_readback;
+    uint32_t min_texture_copy_bytes_per_row_alignment;
+    uint64_t max_readback_size;
+    _Bool texture_format_r32uint;
+    _Bool texture_format_rg32uint;
+    _Bool render_target_format_r32uint;
+    _Bool render_target_format_rg32uint;
+    _Bool query_profile_u32_r32;
+    _Bool query_profile_u64_rg32;
+    _Bool query_profile_u64_2xr32;
+};
+```
+
+Used by: [`dvz_capability_snapshot()`](frame-plan.md#dvz_capability_snapshot), [`dvz_capability_snapshot_copy()`](frame-plan.md#dvz_capability_snapshot_copy), [`dvz_figure_emit_frame()`](scene.md#dvz_figure_emit_frame), [`dvz_figure_process_queries()`](scene.md#dvz_figure_process_queries), [`dvz_figure_validate()`](scene.md#dvz_figure_validate), [`dvz_frame_plan_emit_drp2()`](frame-plan.md#dvz_frame_plan_emit_drp2), [`dvz_frame_plan_emit_drp2_ex()`](frame-plan.md#dvz_frame_plan_emit_drp2_ex), [`dvz_frame_plan_emitter_emit_drp2()`](frame-plan.md#dvz_frame_plan_emitter_emit_drp2); plus 3 more.
+
+_Declared in `include/datoviz/scene/types.h`:214._
 
 ### Functions
 
-#### `dvz_capability_snapshot()`
+#### `dvz_capability_snapshot()` { #dvz_capability_snapshot }
 
 Return the default capability snapshot.
 
@@ -104,11 +162,11 @@ DvzCapabilitySnapshot dvz_capability_snapshot(void);
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzCapabilitySnapshot`](scene.md#type-dvzcapabilitysnapshot) | default capability snapshot |
+| return | [`DvzCapabilitySnapshot`](frame-plan.md#type-dvzcapabilitysnapshot) | default capability snapshot |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:104._
 
-#### `dvz_capability_snapshot_copy()`
+#### `dvz_capability_snapshot_copy()` { #dvz_capability_snapshot_copy }
 
 Copy a capability snapshot.
 
@@ -121,16 +179,31 @@ void dvz_capability_snapshot_copy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `dst` | [`DvzCapabilitySnapshot`](scene.md#type-dvzcapabilitysnapshot) * | the destination snapshot |
-| `src` | const [`DvzCapabilitySnapshot`](scene.md#type-dvzcapabilitysnapshot) * | the source snapshot |
+| `dst` | [`DvzCapabilitySnapshot`](frame-plan.md#type-dvzcapabilitysnapshot) * | the destination snapshot |
+| `src` | `const` [`DvzCapabilitySnapshot`](frame-plan.md#type-dvzcapabilitysnapshot) * | the source snapshot |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:115._
 
-## Diagnostic
+## Diagnostic { #diagnostic }
+
+### Types
+
+#### `DvzDiagnosticReport` { #type-dvzdiagnosticreport }
+
+```c
+struct DvzDiagnosticReport {
+    uint32_t count;
+    char[16][256] messages;
+};
+```
+
+Used by: [`dvz_diagnostic_report_add()`](frame-plan.md#dvz_diagnostic_report_add), [`dvz_diagnostic_report_count()`](frame-plan.md#dvz_diagnostic_report_count), [`dvz_diagnostic_report_get()`](frame-plan.md#dvz_diagnostic_report_get), [`dvz_diagnostic_report_init()`](frame-plan.md#dvz_diagnostic_report_init), [`dvz_figure_emit_frame()`](scene.md#dvz_figure_emit_frame), [`dvz_figure_validate()`](scene.md#dvz_figure_validate), [`dvz_frame_plan_emit_drp2()`](frame-plan.md#dvz_frame_plan_emit_drp2), [`dvz_frame_plan_emit_drp2_ex()`](frame-plan.md#dvz_frame_plan_emit_drp2_ex); plus 3 more.
+
+_Declared in `include/datoviz/scene/types.h`:245._
 
 ### Functions
 
-#### `dvz_diagnostic_report_add()`
+#### `dvz_diagnostic_report_add()` { #dvz_diagnostic_report_add }
 
 Add a diagnostic message.
 
@@ -143,13 +216,13 @@ _Bool dvz_diagnostic_report_add(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | whether the message was added |
-| `report` | [`DvzDiagnosticReport`](scene.md#type-dvzdiagnosticreport) * | the diagnostic report |
-| `message` | const char * | the diagnostic message |
+| return | `_Bool` | whether the message was added |
+| `report` | [`DvzDiagnosticReport`](frame-plan.md#type-dvzdiagnosticreport) * | the diagnostic report |
+| `message` | `const` `char` * | the diagnostic message |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:135._
 
-#### `dvz_diagnostic_report_count()`
+#### `dvz_diagnostic_report_count()` { #dvz_diagnostic_report_count }
 
 Return a diagnostic count.
 
@@ -161,12 +234,12 @@ uint32_t dvz_diagnostic_report_count(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | uint32_t | the number of diagnostic messages |
-| `report` | const [`DvzDiagnosticReport`](scene.md#type-dvzdiagnosticreport) * | the diagnostic report |
+| return | `uint32_t` | the number of diagnostic messages |
+| `report` | `const` [`DvzDiagnosticReport`](frame-plan.md#type-dvzdiagnosticreport) * | the diagnostic report |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:145._
 
-#### `dvz_diagnostic_report_get()`
+#### `dvz_diagnostic_report_get()` { #dvz_diagnostic_report_get }
 
 Return a diagnostic message.
 
@@ -179,13 +252,13 @@ const char * dvz_diagnostic_report_get(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | const char * | the diagnostic message, or NULL when index is out of bounds |
-| `report` | const [`DvzDiagnosticReport`](scene.md#type-dvzdiagnosticreport) * | the diagnostic report |
-| `index` | uint32_t | the diagnostic index |
+| return | `const` `char` * | the diagnostic message, or NULL when index is out of bounds |
+| `report` | `const` [`DvzDiagnosticReport`](frame-plan.md#type-dvzdiagnosticreport) * | the diagnostic report |
+| `index` | `uint32_t` | the diagnostic index |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:157._
 
-#### `dvz_diagnostic_report_init()`
+#### `dvz_diagnostic_report_init()` { #dvz_diagnostic_report_init }
 
 Initialize a diagnostic report.
 
@@ -197,17 +270,218 @@ void dvz_diagnostic_report_init(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `report` | [`DvzDiagnosticReport`](scene.md#type-dvzdiagnosticreport) * | the diagnostic report |
+| `report` | [`DvzDiagnosticReport`](frame-plan.md#type-dvzdiagnosticreport) * | the diagnostic report |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:124._
 
-## Frame
+## Emission { #emission }
 
 ### Types
 
-<a id="type-dvzframeplancopydesc"></a>
+#### `DvzFramePlanEmitConfig` { #type-dvzframeplanemitconfig }
 
-#### `DvzFramePlanCopyDesc`
+```c
+struct DvzFramePlanEmitConfig {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzSceneShaderFormat shader_format;
+    DvzColorPipeline color_pipeline;
+    _Bool external_color_target;
+    uint64_t color_target_id;
+    DvzFormat color_target_format;
+    uint32_t target_width;
+    uint32_t target_height;
+    float device_scale_x;
+    float device_scale_y;
+    float render_scale;
+    float user_scale;
+    _Bool fullscreen_triangle;
+    uint64_t runtime_resource_scope_id;
+    float[4] clear_color;
+};
+```
+
+Used by: [`dvz_figure_emit_frame()`](scene.md#dvz_figure_emit_frame), [`dvz_frame_plan_emit_config()`](frame-plan.md#dvz_frame_plan_emit_config), [`dvz_frame_plan_emit_drp2_ex()`](frame-plan.md#dvz_frame_plan_emit_drp2_ex), [`dvz_frame_plan_emitter_emit_drp2()`](frame-plan.md#dvz_frame_plan_emitter_emit_drp2), [`dvz_frame_plan_emitter_emit_drp2_packets()`](frame-plan.md#dvz_frame_plan_emitter_emit_drp2_packets).
+
+_Declared in `include/datoviz/scene/types.h`:252._
+
+#### `DvzFramePlanEmitter` { #type-dvzframeplanemitter }
+
+```c
+typedef struct DvzFramePlanEmitter DvzFramePlanEmitter;
+```
+
+Used by: [`dvz_frame_plan_emitter()`](frame-plan.md#dvz_frame_plan_emitter), [`dvz_frame_plan_emitter_destroy()`](frame-plan.md#dvz_frame_plan_emitter_destroy), [`dvz_frame_plan_emitter_emit_drp2()`](frame-plan.md#dvz_frame_plan_emitter_emit_drp2), [`dvz_frame_plan_emitter_emit_drp2_packets()`](frame-plan.md#dvz_frame_plan_emitter_emit_drp2_packets), [`dvz_frame_plan_emitter_object_id()`](frame-plan.md#dvz_frame_plan_emitter_object_id).
+
+_Declared in `include/datoviz/scene/types.h`:49._
+
+### Functions
+
+#### `dvz_frame_plan_emit_config()` { #dvz_frame_plan_emit_config }
+
+Return the default FramePlan-to-DRP2 emission configuration.
+
+```c
+DvzFramePlanEmitConfig dvz_frame_plan_emit_config(void);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzFramePlanEmitConfig`](frame-plan.md#type-dvzframeplanemitconfig) | the default emission configuration |
+
+_Declared in `include/datoviz/scene/frame_plan.h`:415._
+
+#### `dvz_frame_plan_emit_drp2()` { #dvz_frame_plan_emit_drp2 }
+
+Emit a DRP2 command stream from a FramePlan in fixture mode.
+
+```c
+DvzDrp2CommandStream * dvz_frame_plan_emit_drp2(
+    const DvzFramePlan * plan,
+    const DvzCapabilitySnapshot * caps,
+    DvzDiagnosticReport * report
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | an owned DRP2 command stream, or NULL on failure |
+| `plan` | `const` [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
+| `caps` | `const` [`DvzCapabilitySnapshot`](frame-plan.md#type-dvzcapabilitysnapshot) * | the capability snapshot |
+| `report` | [`DvzDiagnosticReport`](frame-plan.md#type-dvzdiagnosticreport) * | the diagnostic report |
+
+_Declared in `include/datoviz/scene/frame_plan.h`:406._
+
+#### `dvz_frame_plan_emit_drp2_ex()` { #dvz_frame_plan_emit_drp2_ex }
+
+Emit a DRP2 command stream from a FramePlan with explicit fixture options.
+
+```c
+DvzDrp2CommandStream * dvz_frame_plan_emit_drp2_ex(
+    const DvzFramePlan * plan,
+    const DvzCapabilitySnapshot * caps,
+    DvzDiagnosticReport * report,
+    const DvzFramePlanEmitConfig * cfg
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | an owned DRP2 command stream, or NULL on failure |
+| `plan` | `const` [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
+| `caps` | `const` [`DvzCapabilitySnapshot`](frame-plan.md#type-dvzcapabilitysnapshot) * | the capability snapshot |
+| `report` | [`DvzDiagnosticReport`](frame-plan.md#type-dvzdiagnosticreport) * | the diagnostic report |
+| `cfg` | `const` [`DvzFramePlanEmitConfig`](frame-plan.md#type-dvzframeplanemitconfig) * | the emission configuration |
+
+_Declared in `include/datoviz/scene/frame_plan.h`:427._
+
+#### `dvz_frame_plan_emitter_destroy()` { #dvz_frame_plan_emitter_destroy }
+
+Destroy a persistent FramePlan-to-DRP2 emitter.
+
+```c
+void dvz_frame_plan_emitter_destroy(
+    DvzFramePlanEmitter * emitter
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `emitter` | [`DvzFramePlanEmitter`](frame-plan.md#type-dvzframeplanemitter) * | the emitter |
+
+_Declared in `include/datoviz/scene/frame_plan.h`:445._
+
+#### `dvz_frame_plan_emitter_emit_drp2()` { #dvz_frame_plan_emitter_emit_drp2 }
+
+Emit a runtime-mode DRP2 command stream from a FramePlan.
+
+```c
+DvzDrp2CommandStream * dvz_frame_plan_emitter_emit_drp2(
+    DvzFramePlanEmitter * emitter,
+    const DvzFramePlan * plan,
+    const DvzCapabilitySnapshot * caps,
+    DvzDiagnosticReport * report,
+    const DvzFramePlanEmitConfig * cfg
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | an owned DRP2 command stream, or NULL on failure |
+| `emitter` | [`DvzFramePlanEmitter`](frame-plan.md#type-dvzframeplanemitter) * | the persistent emitter |
+| `plan` | `const` [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
+| `caps` | `const` [`DvzCapabilitySnapshot`](frame-plan.md#type-dvzcapabilitysnapshot) * | the capability snapshot |
+| `report` | [`DvzDiagnosticReport`](frame-plan.md#type-dvzdiagnosticreport) * | the diagnostic report |
+| `cfg` | `const` [`DvzFramePlanEmitConfig`](frame-plan.md#type-dvzframeplanemitconfig) * | the emission configuration |
+
+_Declared in `include/datoviz/scene/frame_plan.h`:458._
+
+#### `dvz_frame_plan_emitter_emit_drp2_packets()` { #dvz_frame_plan_emitter_emit_drp2_packets }
+
+Emit split setup/update/frame DRP2 binary packets from a FramePlan.
+
+This native boundary emits the packet stream consumed by the current runtime paths. JSON export
+remains separate fixture/debug output and is not used here.
+
+```c
+DvzFramePlanPacketResult * dvz_frame_plan_emitter_emit_drp2_packets(
+    DvzFramePlanEmitter * emitter,
+    const DvzFramePlan * plan,
+    const DvzCapabilitySnapshot * caps,
+    DvzDiagnosticReport * report,
+    const DvzFramePlanEmitConfig * cfg
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzFramePlanPacketResult`](frame-plan.md#type-dvzframeplanpacketresult) * | an owned packet result, or NULL on allocation failure; destroy with dvz_frame_plan_packet_result_destroy() |
+| `emitter` | [`DvzFramePlanEmitter`](frame-plan.md#type-dvzframeplanemitter) * | the persistent FramePlan-to-DRP2 emitter |
+| `plan` | `const` [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
+| `caps` | `const` [`DvzCapabilitySnapshot`](frame-plan.md#type-dvzcapabilitysnapshot) * | the capability snapshot |
+| `report` | [`DvzDiagnosticReport`](frame-plan.md#type-dvzdiagnosticreport) * | the diagnostic report |
+| `cfg` | `const` [`DvzFramePlanEmitConfig`](frame-plan.md#type-dvzframeplanemitconfig) * | the emission configuration |
+
+_Declared in `include/datoviz/scene/frame_packets.h`:70._
+
+#### `dvz_frame_plan_emitter_object_id()` { #dvz_frame_plan_emitter_object_id }
+
+Look up the DRP2 object id assigned to an emitter-internal key.
+
+Returns the id previously assigned to `key`, or 0 if the key has not been allocated yet.
+Debug/test-only advanced helper; string keys are internal emitter implementation details and are
+not stable public resource names.
+
+```c
+uint64_t dvz_frame_plan_emitter_object_id(
+    const DvzFramePlanEmitter * emitter,
+    const char * key
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `uint64_t` | the DRP2 id, or 0 if not found |
+| `emitter` | `const` [`DvzFramePlanEmitter`](frame-plan.md#type-dvzframeplanemitter) * | the persistent emitter |
+| `key` | `const` `char` * | the internal object key (e.g. "_rb", "_vs", "_pipe0") |
+
+_Declared in `include/datoviz/scene/frame_plan.h`:475._
+
+## Frame Planning { #frame-planning }
+
+### Types
+
+#### `DvzFramePlan` { #type-dvzframeplan }
+
+```c
+typedef struct DvzFramePlan DvzFramePlan;
+```
+
+Used by: [`dvz_frame_plan()`](frame-plan.md#dvz_frame_plan), [`dvz_frame_plan_clear()`](frame-plan.md#dvz_frame_plan_clear), [`dvz_frame_plan_compute()`](frame-plan.md#dvz_frame_plan_compute), [`dvz_frame_plan_compute_read()`](frame-plan.md#dvz_frame_plan_compute_read), [`dvz_frame_plan_compute_write()`](frame-plan.md#dvz_frame_plan_compute_write), [`dvz_frame_plan_copy()`](frame-plan.md#dvz_frame_plan_copy), [`dvz_frame_plan_copy_ex()`](frame-plan.md#dvz_frame_plan_copy_ex), [`dvz_frame_plan_destroy()`](frame-plan.md#dvz_frame_plan_destroy); plus 13 more.
+
+_Declared in `include/datoviz/scene/types.h`:51._
+
+#### `DvzFramePlanCopyDesc` { #type-dvzframeplancopydesc }
 
 ```c
 struct DvzFramePlanCopyDesc {
@@ -232,37 +506,61 @@ Used by: [`dvz_frame_plan_copy_desc()`](frame-plan.md#dvz_frame_plan_copy_desc),
 
 _Declared in `include/datoviz/scene/frame_plan.h`:37._
 
-<a id="type-dvzframeplanpacketresult"></a>
-
-#### `DvzFramePlanPacketResult`
+#### `DvzFramePlanNode` { #type-dvzframeplannode }
 
 ```c
-typedef struct DvzFramePlanPacketResult DvzFramePlanPacketResult;
+typedef struct DvzFramePlanNode DvzFramePlanNode;
 ```
 
-Used by: [`dvz_frame_plan_emitter_emit_drp2_packets()`](frame-plan.md#dvz_frame_plan_emitter_emit_drp2_packets), [`dvz_frame_plan_packet_result_destroy()`](frame-plan.md#dvz_frame_plan_packet_result_destroy), [`dvz_frame_plan_packet_result_frame_index()`](frame-plan.md#dvz_frame_plan_packet_result_frame_index), [`dvz_frame_plan_packet_result_get()`](frame-plan.md#dvz_frame_plan_packet_result_get), [`dvz_frame_plan_packet_result_resource_version()`](frame-plan.md#dvz_frame_plan_packet_result_resource_version), [`dvz_frame_plan_packet_result_status()`](frame-plan.md#dvz_frame_plan_packet_result_status).
+Used by: [`dvz_frame_plan_node_get()`](frame-plan.md#dvz_frame_plan_node_get), [`dvz_frame_plan_node_type()`](frame-plan.md#dvz_frame_plan_node_type), [`dvz_frame_plan_render_pass_role()`](frame-plan.md#dvz_frame_plan_render_pass_role).
 
-_Declared in `include/datoviz/scene/frame_packets.h`:35._
+_Declared in `include/datoviz/scene/types.h`:52._
 
-<a id="type-dvzframeplanpacketstatus"></a>
-
-#### `DvzFramePlanPacketStatus`
+#### `DvzFramePlanNodeType` { #type-dvzframeplannodetype }
 
 ```c
-enum DvzFramePlanPacketStatus {
-    DVZ_FRAME_PLAN_PACKET_STATUS_OK = 0,
-    DVZ_FRAME_PLAN_PACKET_STATUS_EMIT_ERROR = 1,
-    DVZ_FRAME_PLAN_PACKET_STATUS_ENCODE_ERROR = 2,
+enum DvzFramePlanNodeType {
+    DVZ_FRAME_PLAN_NODE_NONE = 0,
+    DVZ_FRAME_PLAN_NODE_UPLOAD = 1,
+    DVZ_FRAME_PLAN_NODE_COMPUTE = 2,
+    DVZ_FRAME_PLAN_NODE_RENDER = 3,
+    DVZ_FRAME_PLAN_NODE_CLEAR = 4,
+    DVZ_FRAME_PLAN_NODE_COPY = 5,
+    DVZ_FRAME_PLAN_NODE_READBACK = 6,
 };
 ```
 
-Used by: [`dvz_frame_plan_packet_result_status()`](frame-plan.md#dvz_frame_plan_packet_result_status).
+Used by: [`dvz_frame_plan_node_type()`](frame-plan.md#dvz_frame_plan_node_type).
 
-_Declared in `include/datoviz/scene/frame_packets.h`:43._
+_Declared in `include/datoviz/scene/enums.h`:21._
 
-<a id="type-dvzframeplanuploaddesc"></a>
+#### `DvzFramePlanRenderPassRole` { #type-dvzframeplanrenderpassrole }
 
-#### `DvzFramePlanUploadDesc`
+```c
+enum DvzFramePlanRenderPassRole {
+    DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE = 0,
+    DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER = 1,
+    DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION = 2,
+    DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION = 3,
+    DVZ_FRAME_PLAN_RENDER_PASS_SSAO = 4,
+    DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR = 5,
+    DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE = 6,
+    DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE = 7,
+    DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION = 8,
+    DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND = 9,
+    DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE = 10,
+    DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT = 11,
+    DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER = 12,
+    DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE = 13,
+    DVZ_FRAME_PLAN_RENDER_PASS_PICKING = 14,
+};
+```
+
+Used by: [`dvz_frame_plan_render_pass_role()`](frame-plan.md#dvz_frame_plan_render_pass_role).
+
+_Declared in `include/datoviz/scene/enums.h`:34._
+
+#### `DvzFramePlanUploadDesc` { #type-dvzframeplanuploaddesc }
 
 ```c
 struct DvzFramePlanUploadDesc {
@@ -294,7 +592,7 @@ _Declared in `include/datoviz/scene/frame_plan.h`:56._
 
 ### Functions
 
-#### `dvz_frame_plan()`
+#### `dvz_frame_plan()` { #dvz_frame_plan }
 
 Create an empty FramePlan.
 
@@ -307,13 +605,13 @@ DvzFramePlan * dvz_frame_plan(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
-| `figure_id` | const char * | the figure id |
-| `frame_index` | uint64_t | the frame index |
+| return | [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
+| `figure_id` | `const` `char` * | the figure id |
+| `frame_index` | `uint64_t` | the frame index |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:168._
 
-#### `dvz_frame_plan_clear()`
+#### `dvz_frame_plan_clear()` { #dvz_frame_plan_clear }
 
 Append a clear-only render node.
 
@@ -327,14 +625,14 @@ _Bool dvz_frame_plan_clear(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | whether the node was appended |
-| `plan` | [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
-| `panel_id` | const char * | the panel id |
-| `render_target_id` | const char * | the render target id |
+| return | `_Bool` | whether the node was appended |
+| `plan` | [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
+| `panel_id` | `const` `char` * | the panel id |
+| `render_target_id` | `const` `char` * | the render target id |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:334._
 
-#### `dvz_frame_plan_compute()`
+#### `dvz_frame_plan_compute()` { #dvz_frame_plan_compute }
 
 Append a compute node.
 
@@ -350,16 +648,16 @@ _Bool dvz_frame_plan_compute(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | whether the node was appended |
-| `plan` | [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
-| `shader_key` | const char * | the shader key |
-| `x` | uint32_t | dispatch workgroup count in X |
-| `y` | uint32_t | dispatch workgroup count in Y |
-| `z` | uint32_t | dispatch workgroup count in Z |
+| return | `_Bool` | whether the node was appended |
+| `plan` | [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
+| `shader_key` | `const` `char` * | the shader key |
+| `x` | `uint32_t` | dispatch workgroup count in X |
+| `y` | `uint32_t` | dispatch workgroup count in Y |
+| `z` | `uint32_t` | dispatch workgroup count in Z |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:284._
 
-#### `dvz_frame_plan_compute_read()`
+#### `dvz_frame_plan_compute_read()` { #dvz_frame_plan_compute_read }
 
 Add a resource read to the most recent compute node.
 
@@ -372,13 +670,13 @@ _Bool dvz_frame_plan_compute_read(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | whether the resource was appended |
-| `plan` | [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
-| `resource_id` | const char * | the resource id |
+| return | `_Bool` | whether the resource was appended |
+| `plan` | [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
+| `resource_id` | `const` `char` * | the resource id |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:296._
 
-#### `dvz_frame_plan_compute_write()`
+#### `dvz_frame_plan_compute_write()` { #dvz_frame_plan_compute_write }
 
 Add a resource write to the most recent compute node.
 
@@ -391,13 +689,13 @@ _Bool dvz_frame_plan_compute_write(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | whether the resource was appended |
-| `plan` | [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
-| `resource_id` | const char * | the resource id |
+| return | `_Bool` | whether the resource was appended |
+| `plan` | [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
+| `resource_id` | `const` `char` * | the resource id |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:307._
 
-#### `dvz_frame_plan_copy()`
+#### `dvz_frame_plan_copy()` { #dvz_frame_plan_copy }
 
 Append a copy node.
 
@@ -412,15 +710,15 @@ _Bool dvz_frame_plan_copy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | whether the node was appended |
-| `plan` | [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
-| `src_resource_id` | const char * | the source resource id |
-| `dst_resource_id` | const char * | the destination resource id |
-| `byte_size` | uint64_t | the copy size in bytes |
+| return | `_Bool` | whether the node was appended |
+| `plan` | [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
+| `src_resource_id` | `const` `char` * | the source resource id |
+| `dst_resource_id` | `const` `char` * | the destination resource id |
+| `byte_size` | `uint64_t` | the copy size in bytes |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:358._
 
-#### `dvz_frame_plan_copy_desc()`
+#### `dvz_frame_plan_copy_desc()` { #dvz_frame_plan_copy_desc }
 
 Return the default FramePlan copy descriptor.
 
@@ -436,7 +734,7 @@ Related: [`dvz_frame_plan_copy()`](#dvz_frame_plan_copy).
 
 _Declared in `include/datoviz/scene/frame_plan.h`:90._
 
-#### `dvz_frame_plan_copy_ex()`
+#### `dvz_frame_plan_copy_ex()` { #dvz_frame_plan_copy_ex }
 
 Append an explicit texture-to-buffer copy node.
 
@@ -449,13 +747,13 @@ _Bool dvz_frame_plan_copy_ex(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | whether the node was appended |
-| `plan` | [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
-| `desc` | const [`DvzFramePlanCopyDesc`](frame-plan.md#type-dvzframeplancopydesc) * | the copy descriptor |
+| return | `_Bool` | whether the node was appended |
+| `plan` | [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
+| `desc` | `const` [`DvzFramePlanCopyDesc`](frame-plan.md#type-dvzframeplancopydesc) * | the copy descriptor |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:370._
 
-#### `dvz_frame_plan_destroy()`
+#### `dvz_frame_plan_destroy()` { #dvz_frame_plan_destroy }
 
 Destroy a FramePlan.
 
@@ -467,69 +765,11 @@ void dvz_frame_plan_destroy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `plan` | [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
+| `plan` | [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:177._
 
-#### `dvz_frame_plan_emit_config()`
-
-Return the default FramePlan-to-DRP2 emission configuration.
-
-```c
-DvzFramePlanEmitConfig dvz_frame_plan_emit_config(void);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | [`DvzFramePlanEmitConfig`](scene.md#type-dvzframeplanemitconfig) | the default emission configuration |
-
-_Declared in `include/datoviz/scene/frame_plan.h`:415._
-
-#### `dvz_frame_plan_emit_drp2()`
-
-Emit a DRP2 command stream from a FramePlan in fixture mode.
-
-```c
-DvzDrp2CommandStream * dvz_frame_plan_emit_drp2(
-    const DvzFramePlan * plan,
-    const DvzCapabilitySnapshot * caps,
-    DvzDiagnosticReport * report
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | an owned DRP2 command stream, or NULL on failure |
-| `plan` | const [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
-| `caps` | const [`DvzCapabilitySnapshot`](scene.md#type-dvzcapabilitysnapshot) * | the capability snapshot |
-| `report` | [`DvzDiagnosticReport`](scene.md#type-dvzdiagnosticreport) * | the diagnostic report |
-
-_Declared in `include/datoviz/scene/frame_plan.h`:406._
-
-#### `dvz_frame_plan_emit_drp2_ex()`
-
-Emit a DRP2 command stream from a FramePlan with explicit fixture options.
-
-```c
-DvzDrp2CommandStream * dvz_frame_plan_emit_drp2_ex(
-    const DvzFramePlan * plan,
-    const DvzCapabilitySnapshot * caps,
-    DvzDiagnosticReport * report,
-    const DvzFramePlanEmitConfig * cfg
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | an owned DRP2 command stream, or NULL on failure |
-| `plan` | const [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
-| `caps` | const [`DvzCapabilitySnapshot`](scene.md#type-dvzcapabilitysnapshot) * | the capability snapshot |
-| `report` | [`DvzDiagnosticReport`](scene.md#type-dvzdiagnosticreport) * | the diagnostic report |
-| `cfg` | const [`DvzFramePlanEmitConfig`](scene.md#type-dvzframeplanemitconfig) * | the emission configuration |
-
-_Declared in `include/datoviz/scene/frame_plan.h`:427._
-
-#### `dvz_frame_plan_emitter()`
+#### `dvz_frame_plan_emitter()` { #dvz_frame_plan_emitter }
 
 Create a persistent FramePlan-to-DRP2 emitter for runtime-mode streams.
 
@@ -539,103 +779,11 @@ DvzFramePlanEmitter * dvz_frame_plan_emitter(void);
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzFramePlanEmitter`](scene.md#type-dvzframeplanemitter) * | the emitter |
+| return | [`DvzFramePlanEmitter`](frame-plan.md#type-dvzframeplanemitter) * | the emitter |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:437._
 
-#### `dvz_frame_plan_emitter_destroy()`
-
-Destroy a persistent FramePlan-to-DRP2 emitter.
-
-```c
-void dvz_frame_plan_emitter_destroy(
-    DvzFramePlanEmitter * emitter
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `emitter` | [`DvzFramePlanEmitter`](scene.md#type-dvzframeplanemitter) * | the emitter |
-
-_Declared in `include/datoviz/scene/frame_plan.h`:445._
-
-#### `dvz_frame_plan_emitter_emit_drp2()`
-
-Emit a runtime-mode DRP2 command stream from a FramePlan.
-
-```c
-DvzDrp2CommandStream * dvz_frame_plan_emitter_emit_drp2(
-    DvzFramePlanEmitter * emitter,
-    const DvzFramePlan * plan,
-    const DvzCapabilitySnapshot * caps,
-    DvzDiagnosticReport * report,
-    const DvzFramePlanEmitConfig * cfg
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | an owned DRP2 command stream, or NULL on failure |
-| `emitter` | [`DvzFramePlanEmitter`](scene.md#type-dvzframeplanemitter) * | the persistent emitter |
-| `plan` | const [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
-| `caps` | const [`DvzCapabilitySnapshot`](scene.md#type-dvzcapabilitysnapshot) * | the capability snapshot |
-| `report` | [`DvzDiagnosticReport`](scene.md#type-dvzdiagnosticreport) * | the diagnostic report |
-| `cfg` | const [`DvzFramePlanEmitConfig`](scene.md#type-dvzframeplanemitconfig) * | the emission configuration |
-
-_Declared in `include/datoviz/scene/frame_plan.h`:458._
-
-#### `dvz_frame_plan_emitter_emit_drp2_packets()`
-
-Emit split setup/update/frame DRP2 binary packets from a FramePlan.
-
-This native boundary emits the packet stream consumed by the current runtime paths. JSON export
-remains separate fixture/debug output and is not used here.
-
-```c
-DvzFramePlanPacketResult * dvz_frame_plan_emitter_emit_drp2_packets(
-    DvzFramePlanEmitter * emitter,
-    const DvzFramePlan * plan,
-    const DvzCapabilitySnapshot * caps,
-    DvzDiagnosticReport * report,
-    const DvzFramePlanEmitConfig * cfg
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | [`DvzFramePlanPacketResult`](frame-plan.md#type-dvzframeplanpacketresult) * | an owned packet result, or NULL on allocation failure; destroy with dvz_frame_plan_packet_result_destroy() |
-| `emitter` | [`DvzFramePlanEmitter`](scene.md#type-dvzframeplanemitter) * | the persistent FramePlan-to-DRP2 emitter |
-| `plan` | const [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
-| `caps` | const [`DvzCapabilitySnapshot`](scene.md#type-dvzcapabilitysnapshot) * | the capability snapshot |
-| `report` | [`DvzDiagnosticReport`](scene.md#type-dvzdiagnosticreport) * | the diagnostic report |
-| `cfg` | const [`DvzFramePlanEmitConfig`](scene.md#type-dvzframeplanemitconfig) * | the emission configuration |
-
-_Declared in `include/datoviz/scene/frame_packets.h`:70._
-
-#### `dvz_frame_plan_emitter_object_id()`
-
-Look up the DRP2 object id assigned to an emitter-internal key.
-
-Returns the id previously assigned to `key`, or 0 if the key has not been allocated yet.
-Debug/test-only advanced helper; string keys are internal emitter implementation details and are
-not stable public resource names.
-
-```c
-uint64_t dvz_frame_plan_emitter_object_id(
-    const DvzFramePlanEmitter * emitter,
-    const char * key
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | uint64_t | the DRP2 id, or 0 if not found |
-| `emitter` | const [`DvzFramePlanEmitter`](scene.md#type-dvzframeplanemitter) * | the persistent emitter |
-| `key` | const char * | the internal object key (e.g. "_rb", "_vs", "_pipe0") |
-
-_Declared in `include/datoviz/scene/frame_plan.h`:475._
-
-#### `dvz_frame_plan_json()`
+#### `dvz_frame_plan_json()` { #dvz_frame_plan_json }
 
 Serialize a FramePlan as deterministic debug JSON.
 
@@ -647,12 +795,12 @@ char * dvz_frame_plan_json(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | char * | an owned NUL-terminated JSON string |
-| `plan` | const [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
+| return | `char` * | an owned NUL-terminated JSON string |
+| `plan` | `const` [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:394._
 
-#### `dvz_frame_plan_json_destroy()`
+#### `dvz_frame_plan_json_destroy()` { #dvz_frame_plan_json_destroy }
 
 Destroy a JSON string returned by dvz_frame_plan_json().
 
@@ -664,11 +812,11 @@ void dvz_frame_plan_json_destroy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `json` | char * | the JSON string |
+| `json` | `char` * | the JSON string |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:484._
 
-#### `dvz_frame_plan_node_count()`
+#### `dvz_frame_plan_node_count()` { #dvz_frame_plan_node_count }
 
 Return a FramePlan node count.
 
@@ -680,12 +828,12 @@ uint32_t dvz_frame_plan_node_count(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | uint32_t | the node count |
-| `plan` | const [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
+| return | `uint32_t` | the node count |
+| `plan` | `const` [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:187._
 
-#### `dvz_frame_plan_node_get()`
+#### `dvz_frame_plan_node_get()` { #dvz_frame_plan_node_get }
 
 Return a FramePlan node.
 
@@ -698,13 +846,13 @@ const DvzFramePlanNode * dvz_frame_plan_node_get(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | const [`DvzFramePlanNode`](scene.md#type-dvzframeplannode) * | the node, or NULL when index is out of bounds |
-| `plan` | const [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
-| `index` | uint32_t | the node index |
+| return | `const` [`DvzFramePlanNode`](frame-plan.md#type-dvzframeplannode) * | the node, or NULL when index is out of bounds |
+| `plan` | `const` [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
+| `index` | `uint32_t` | the node index |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:199._
 
-#### `dvz_frame_plan_node_type()`
+#### `dvz_frame_plan_node_type()` { #dvz_frame_plan_node_type }
 
 Return a FramePlan node type.
 
@@ -716,108 +864,12 @@ DvzFramePlanNodeType dvz_frame_plan_node_type(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzFramePlanNodeType`](scene.md#type-dvzframeplannodetype) | the node type |
-| `node` | const [`DvzFramePlanNode`](scene.md#type-dvzframeplannode) * | the FramePlan node |
+| return | [`DvzFramePlanNodeType`](frame-plan.md#type-dvzframeplannodetype) | the node type |
+| `node` | `const` [`DvzFramePlanNode`](frame-plan.md#type-dvzframeplannode) * | the FramePlan node |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:209._
 
-#### `dvz_frame_plan_packet_result_destroy()`
-
-Destroy a split packet result.
-
-```c
-void dvz_frame_plan_packet_result_destroy(
-    DvzFramePlanPacketResult * result
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `result` | [`DvzFramePlanPacketResult`](frame-plan.md#type-dvzframeplanpacketresult) * | the packet result |
-
-_Declared in `include/datoviz/scene/frame_packets.h`:80._
-
-#### `dvz_frame_plan_packet_result_frame_index()`
-
-Return the frame index associated with the packet result.
-
-```c
-uint64_t dvz_frame_plan_packet_result_frame_index(
-    const DvzFramePlanPacketResult * result
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | uint64_t | the frame index |
-| `result` | const [`DvzFramePlanPacketResult`](frame-plan.md#type-dvzframeplanpacketresult) * | the packet result |
-
-_Declared in `include/datoviz/scene/frame_packets.h`:109._
-
-#### `dvz_frame_plan_packet_result_get()`
-
-Return one split packet and its companion payload arena.
-
-Empty phases return true with NULL packet and zero sizes.
-
-```c
-_Bool dvz_frame_plan_packet_result_get(
-    const DvzFramePlanPacketResult * result,
-    DvzDrp2PacketKind kind,
-    const void ** packet,
-    uint64_t * packet_size,
-    const void ** arena,
-    uint64_t * arena_size
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | _Bool | whether `kind` is valid and outputs were populated |
-| `result` | const [`DvzFramePlanPacketResult`](frame-plan.md#type-dvzframeplanpacketresult) * | the packet result |
-| `kind` | [`DvzDrp2PacketKind`](drp2.md#type-dvzdrp2packetkind) | setup, update, or frame |
-| `packet` | const void ** | output borrowed packet pointer |
-| `packet_size` | uint64_t * | output packet byte size |
-| `arena` | const void ** | output borrowed payload arena pointer |
-| `arena_size` | uint64_t * | output arena byte size |
-
-_Declared in `include/datoviz/scene/frame_packets.h`:126._
-
-#### `dvz_frame_plan_packet_result_resource_version()`
-
-Return the resource version associated with the packet result.
-
-```c
-uint64_t dvz_frame_plan_packet_result_resource_version(
-    const DvzFramePlanPacketResult * result
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | uint64_t | the retained resource version |
-| `result` | const [`DvzFramePlanPacketResult`](frame-plan.md#type-dvzframeplanpacketresult) * | the packet result |
-
-_Declared in `include/datoviz/scene/frame_packets.h`:99._
-
-#### `dvz_frame_plan_packet_result_status()`
-
-Return the result status.
-
-```c
-DvzFramePlanPacketStatus dvz_frame_plan_packet_result_status(
-    const DvzFramePlanPacketResult * result
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | [`DvzFramePlanPacketStatus`](frame-plan.md#type-dvzframeplanpacketstatus) | the packet emission status |
-| `result` | const [`DvzFramePlanPacketResult`](frame-plan.md#type-dvzframeplanpacketresult) * | the packet result |
-
-_Declared in `include/datoviz/scene/frame_packets.h`:90._
-
-#### `dvz_frame_plan_readback()`
+#### `dvz_frame_plan_readback()` { #dvz_frame_plan_readback }
 
 Append a readback node.
 
@@ -831,14 +883,14 @@ _Bool dvz_frame_plan_readback(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | whether the node was appended |
-| `plan` | [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
-| `resource_id` | const char * | the resource id |
-| `request_id` | const char * | the request id |
+| return | `_Bool` | whether the node was appended |
+| `plan` | [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
+| `resource_id` | `const` `char` * | the resource id |
+| `request_id` | `const` `char` * | the request id |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:384._
 
-#### `dvz_frame_plan_render()`
+#### `dvz_frame_plan_render()` { #dvz_frame_plan_render }
 
 Append a render node.
 
@@ -853,15 +905,15 @@ _Bool dvz_frame_plan_render(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | whether the node was appended |
-| `plan` | [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
-| `panel_id` | const char * | the panel id |
-| `render_target_id` | const char * | the render target id |
-| `picking` | _Bool | whether the node renders picking output |
+| return | `_Bool` | whether the node was appended |
+| `plan` | [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
+| `panel_id` | `const` `char` * | the panel id |
+| `render_target_id` | `const` `char` * | the render target id |
+| `picking` | `_Bool` | whether the node renders picking output |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:320._
 
-#### `dvz_frame_plan_render_pass_role()`
+#### `dvz_frame_plan_render_pass_role()` { #dvz_frame_plan_render_pass_role }
 
 Return a FramePlan render node pass role.
 
@@ -873,12 +925,12 @@ DvzFramePlanRenderPassRole dvz_frame_plan_render_pass_role(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzFramePlanRenderPassRole`](scene.md#type-dvzframeplanrenderpassrole) | the render pass role, or opaque for non-render nodes |
-| `node` | const [`DvzFramePlanNode`](scene.md#type-dvzframeplannode) * | the FramePlan node |
+| return | [`DvzFramePlanRenderPassRole`](frame-plan.md#type-dvzframeplanrenderpassrole) | the render pass role, or opaque for non-render nodes |
+| `node` | `const` [`DvzFramePlanNode`](frame-plan.md#type-dvzframeplannode) * | the FramePlan node |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:220._
 
-#### `dvz_frame_plan_render_visual()`
+#### `dvz_frame_plan_render_visual()` { #dvz_frame_plan_render_visual }
 
 Add a visual to the most recent render node.
 
@@ -891,13 +943,13 @@ _Bool dvz_frame_plan_render_visual(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | whether the visual was appended |
-| `plan` | [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
-| `visual_id` | const char * | the visual id |
+| return | `_Bool` | whether the visual was appended |
+| `plan` | [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
+| `visual_id` | `const` `char` * | the visual id |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:345._
 
-#### `dvz_frame_plan_upload()`
+#### `dvz_frame_plan_upload()` { #dvz_frame_plan_upload }
 
 Append an upload node.
 
@@ -913,16 +965,16 @@ _Bool dvz_frame_plan_upload(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | whether the node was appended |
-| `plan` | [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
-| `resource_id` | const char * | the resource id |
-| `byte_offset` | uint64_t | the byte offset |
-| `byte_size` | uint64_t | the byte size |
-| `data_tag` | const char * | the debug data tag |
+| return | `_Bool` | whether the node was appended |
+| `plan` | [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
+| `resource_id` | `const` `char` * | the resource id |
+| `byte_offset` | `uint64_t` | the byte offset |
+| `byte_size` | `uint64_t` | the byte size |
+| `data_tag` | `const` `char` * | the debug data tag |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:234._
 
-#### `dvz_frame_plan_upload_bytes()`
+#### `dvz_frame_plan_upload_bytes()` { #dvz_frame_plan_upload_bytes }
 
 Append an upload node with actual data to be encoded into the DRP2 stream.
 
@@ -943,17 +995,17 @@ _Bool dvz_frame_plan_upload_bytes(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | whether the node was appended |
-| `plan` | [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
-| `resource_id` | const char * | the resource id |
-| `byte_offset` | uint64_t | the byte offset |
-| `byte_size` | uint64_t | the byte size |
-| `data_tag` | const char * | the debug data tag |
-| `data` | const void * | pointer to the bytes to upload (must remain valid until emit time) |
+| return | `_Bool` | whether the node was appended |
+| `plan` | [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
+| `resource_id` | `const` `char` * | the resource id |
+| `byte_offset` | `uint64_t` | the byte offset |
+| `byte_size` | `uint64_t` | the byte size |
+| `data_tag` | `const` `char` * | the debug data tag |
+| `data` | `const` `void` * | pointer to the bytes to upload (must remain valid until emit time) |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:255._
 
-#### `dvz_frame_plan_upload_desc()`
+#### `dvz_frame_plan_upload_desc()` { #dvz_frame_plan_upload_desc }
 
 Return the default FramePlan upload descriptor.
 
@@ -969,7 +1021,7 @@ Related: [`dvz_frame_plan_upload()`](#dvz_frame_plan_upload).
 
 _Declared in `include/datoviz/scene/frame_plan.h`:97._
 
-#### `dvz_frame_plan_upload_ex()`
+#### `dvz_frame_plan_upload_ex()` { #dvz_frame_plan_upload_ex }
 
 Append an upload node from a descriptor.
 
@@ -985,8 +1037,134 @@ _Bool dvz_frame_plan_upload_ex(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | _Bool | whether the node was appended |
-| `plan` | [`DvzFramePlan`](scene.md#type-dvzframeplan) * | the FramePlan |
-| `desc` | const [`DvzFramePlanUploadDesc`](frame-plan.md#type-dvzframeplanuploaddesc) * | upload descriptor |
+| return | `_Bool` | whether the node was appended |
+| `plan` | [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) * | the FramePlan |
+| `desc` | `const` [`DvzFramePlanUploadDesc`](frame-plan.md#type-dvzframeplanuploaddesc) * | upload descriptor |
 
 _Declared in `include/datoviz/scene/frame_plan.h`:270._
+
+## Packet Results { #packet-results }
+
+### Types
+
+#### `DvzFramePlanPacketResult` { #type-dvzframeplanpacketresult }
+
+```c
+typedef struct DvzFramePlanPacketResult DvzFramePlanPacketResult;
+```
+
+Used by: [`dvz_frame_plan_emitter_emit_drp2_packets()`](frame-plan.md#dvz_frame_plan_emitter_emit_drp2_packets), [`dvz_frame_plan_packet_result_destroy()`](frame-plan.md#dvz_frame_plan_packet_result_destroy), [`dvz_frame_plan_packet_result_frame_index()`](frame-plan.md#dvz_frame_plan_packet_result_frame_index), [`dvz_frame_plan_packet_result_get()`](frame-plan.md#dvz_frame_plan_packet_result_get), [`dvz_frame_plan_packet_result_resource_version()`](frame-plan.md#dvz_frame_plan_packet_result_resource_version), [`dvz_frame_plan_packet_result_status()`](frame-plan.md#dvz_frame_plan_packet_result_status).
+
+_Declared in `include/datoviz/scene/frame_packets.h`:35._
+
+#### `DvzFramePlanPacketStatus` { #type-dvzframeplanpacketstatus }
+
+```c
+enum DvzFramePlanPacketStatus {
+    DVZ_FRAME_PLAN_PACKET_STATUS_OK = 0,
+    DVZ_FRAME_PLAN_PACKET_STATUS_EMIT_ERROR = 1,
+    DVZ_FRAME_PLAN_PACKET_STATUS_ENCODE_ERROR = 2,
+};
+```
+
+Used by: [`dvz_frame_plan_packet_result_status()`](frame-plan.md#dvz_frame_plan_packet_result_status).
+
+_Declared in `include/datoviz/scene/frame_packets.h`:43._
+
+### Functions
+
+#### `dvz_frame_plan_packet_result_destroy()` { #dvz_frame_plan_packet_result_destroy }
+
+Destroy a split packet result.
+
+```c
+void dvz_frame_plan_packet_result_destroy(
+    DvzFramePlanPacketResult * result
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `result` | [`DvzFramePlanPacketResult`](frame-plan.md#type-dvzframeplanpacketresult) * | the packet result |
+
+_Declared in `include/datoviz/scene/frame_packets.h`:80._
+
+#### `dvz_frame_plan_packet_result_frame_index()` { #dvz_frame_plan_packet_result_frame_index }
+
+Return the frame index associated with the packet result.
+
+```c
+uint64_t dvz_frame_plan_packet_result_frame_index(
+    const DvzFramePlanPacketResult * result
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `uint64_t` | the frame index |
+| `result` | `const` [`DvzFramePlanPacketResult`](frame-plan.md#type-dvzframeplanpacketresult) * | the packet result |
+
+_Declared in `include/datoviz/scene/frame_packets.h`:109._
+
+#### `dvz_frame_plan_packet_result_get()` { #dvz_frame_plan_packet_result_get }
+
+Return one split packet and its companion payload arena.
+
+Empty phases return true with NULL packet and zero sizes.
+
+```c
+_Bool dvz_frame_plan_packet_result_get(
+    const DvzFramePlanPacketResult * result,
+    DvzDrp2PacketKind kind,
+    const void ** packet,
+    uint64_t * packet_size,
+    const void ** arena,
+    uint64_t * arena_size
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether `kind` is valid and outputs were populated |
+| `result` | `const` [`DvzFramePlanPacketResult`](frame-plan.md#type-dvzframeplanpacketresult) * | the packet result |
+| `kind` | [`DvzDrp2PacketKind`](drp2.md#type-dvzdrp2packetkind) | setup, update, or frame |
+| `packet` | `const` `void` ** | output borrowed packet pointer |
+| `packet_size` | `uint64_t` * | output packet byte size |
+| `arena` | `const` `void` ** | output borrowed payload arena pointer |
+| `arena_size` | `uint64_t` * | output arena byte size |
+
+_Declared in `include/datoviz/scene/frame_packets.h`:126._
+
+#### `dvz_frame_plan_packet_result_resource_version()` { #dvz_frame_plan_packet_result_resource_version }
+
+Return the resource version associated with the packet result.
+
+```c
+uint64_t dvz_frame_plan_packet_result_resource_version(
+    const DvzFramePlanPacketResult * result
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `uint64_t` | the retained resource version |
+| `result` | `const` [`DvzFramePlanPacketResult`](frame-plan.md#type-dvzframeplanpacketresult) * | the packet result |
+
+_Declared in `include/datoviz/scene/frame_packets.h`:99._
+
+#### `dvz_frame_plan_packet_result_status()` { #dvz_frame_plan_packet_result_status }
+
+Return the result status.
+
+```c
+DvzFramePlanPacketStatus dvz_frame_plan_packet_result_status(
+    const DvzFramePlanPacketResult * result
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzFramePlanPacketStatus`](frame-plan.md#type-dvzframeplanpacketstatus) | the packet emission status |
+| `result` | `const` [`DvzFramePlanPacketResult`](frame-plan.md#type-dvzframeplanpacketresult) * | the packet result |
+
+_Declared in `include/datoviz/scene/frame_packets.h`:90._
