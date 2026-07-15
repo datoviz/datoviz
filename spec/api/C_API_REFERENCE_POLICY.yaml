@@ -33,10 +33,32 @@ pages:
     headers:
       - include/datoviz/scene/frame_plan.h
       - include/datoviz/scene/frame_packets.h
+    type_symbols:
+      - DvzCapabilitySnapshot
+      - DvzDiagnosticReport
+      - DvzFramePlan*
     prefixes:
       - capability
       - diagnostic
       - frame
+    group_labels:
+      frame: Frame Planning
+    group_patterns:
+      Frame Planning:
+        - DvzFramePlan
+        - DvzFramePlanNode
+        - DvzFramePlanNodeType
+        - DvzFramePlanRenderPassRole
+        - DvzFramePlanCopyDesc
+        - DvzFramePlanUploadDesc
+      Emission:
+        - DvzFramePlanEmitConfig
+        - DvzFramePlanEmitter
+        - dvz_frame_plan_emit_*
+        - dvz_frame_plan_emitter_*
+      Packet Results:
+        - DvzFramePlanPacket*
+        - dvz_frame_plan_packet_result_*
 
   techniques:
     title: Rendering Techniques API
@@ -61,6 +83,15 @@ pages:
       - DvzEdl*
       - DvzMsaa*
       - DvzSsao*
+      - dvz_scene_occlusion_*
+      - dvz_panel_set_scene_occlusion
+      - dvz_visual_set_scene_occluder
+      - dvz_visual_set_scene_occluded
+      - DvzSceneOcclusion*
+      - dvz_volume_occlusion_*
+      - dvz_panel_set_volume_occluder
+      - dvz_visual_set_volume_occluded
+      - DvzVolumeOcclusion*
     group_patterns:
       Eye-Dome Lighting:
         - dvz_edl_*
@@ -74,6 +105,17 @@ pages:
         - dvz_ssao_*
         - dvz_panel_set_ssao
         - DvzSsao*
+      Scene Occlusion:
+        - dvz_scene_occlusion_*
+        - dvz_panel_set_scene_occlusion
+        - dvz_visual_set_scene_occluder
+        - dvz_visual_set_scene_occluded
+        - DvzSceneOcclusion*
+      Volume Occlusion:
+        - dvz_volume_occlusion_*
+        - dvz_panel_set_volume_occluder
+        - dvz_visual_set_volume_occluded
+        - DvzVolumeOcclusion*
 
   scene:
     title: Scene API
@@ -156,6 +198,29 @@ pages:
       reference_grid: Reference Grid
       scale_bar: Scale Bar
       text_atlas: Text Atlas
+    group_patterns:
+      Anim:
+        - DvzAnimation
+      Colormap:
+        - DvzBuiltinColormap
+      Datetime:
+        - DvzDateTime*
+      Guide Line:
+        - DvzGuideLine*
+      Guide Span:
+        - DvzGuideSpan*
+      Overlay Card:
+        - DvzOverlayCard*
+      Reference Grid:
+        - DvzReferenceGrid*
+      Sampled Field:
+        - DvzSampledField*
+        - DvzField*
+        - DvzColorRole
+      Scale Bar:
+        - DvzScaleBar*
+      Text Atlas:
+        - DvzTextAtlas*
 
   visuals:
     title: Visuals And Composites API
@@ -176,6 +241,18 @@ pages:
       - include/datoviz/scene/**
       - include/datoviz/geom.h
       - include/datoviz/geom/**
+    symbols:
+      - dvz_band
+      - dvz_band_*
+      - DvzBand*
+      - dvz_bars
+      - dvz_bars_*
+      - DvzBars*
+      - dvz_labels*
+      - DvzLabels*
+      - DvzAlphaMode
+      - DvzShapeAspect
+      - DvzSceneVisualFamily
     prefixes:
       - composite
       - bezier
@@ -214,10 +291,27 @@ pages:
         - dvz_standard_*
         - dvz_visual_set_material
         - DvzMaterial*
+        - DvzPhongMaterial
+        - DvzStandardMaterial
       Depth Cueing:
         - dvz_depth_cue_*
         - dvz_visual_set_depth_cue
         - DvzDepthCue*
+      Band:
+        - dvz_band
+        - dvz_band_*
+        - DvzBand*
+      Bars:
+        - dvz_bars
+        - dvz_bars_*
+        - DvzBars*
+      Labels:
+        - dvz_labels*
+        - DvzLabels*
+      Visual:
+        - DvzAlphaMode
+        - DvzShapeAspect
+        - DvzSceneVisualFamily
 
   app:
     title: App, Window, And I/O API
@@ -262,6 +356,49 @@ pages:
       - video
       - view
       - window
+    group_patterns:
+      Application Lifecycle:
+        - DvzApp*
+        - dvz_app
+        - dvz_app_*
+      Views And Capture:
+        - DvzView*
+        - dvz_view
+        - dvz_view_*
+      Canvas Execution:
+        - DvzCanvas*
+        - DvzFrameTiming
+        - dvz_canvas_*
+      Window Hosting:
+        - DvzBackend
+        - DvzWindow*
+        - DvzHiDpiPolicy
+        - dvz_window_*
+      Display Sizing:
+        - DvzExtent
+        - DvzPhysicalMetricsSource
+        - DvzResolved*
+        - DvzScaleXY
+        - DvzSizeSpace
+      Input Routing:
+        - DvzCallback*
+        - DvzInput*
+        - DvzKey*
+        - DvzKeyboard*
+        - DvzPointer*
+        - DvzResizeCallback
+        - DvzScaleCallback
+        - dvz_input_*
+        - dvz_keyboard_*
+        - dvz_pointer_*
+      GUI:
+        - DvzGui*
+        - dvz_gui_*
+      Streaming And Video:
+        - DvzStream*
+        - DvzVideo*
+        - dvz_stream_*
+        - dvz_video_*
 
   drp2:
     title: DRP2 API
@@ -278,8 +415,59 @@ pages:
     headers:
       - include/datoviz/drp2.h
       - include/datoviz/drp2/**
+    type_symbols:
+      - DvzDrp2Runtime
+      - DvzFormat
+      - DvzPrimitiveTopology
+      - DvzCompareOp
+      - DvzFrontFace
+      - DvzCullMode
+      - DvzBlendFactor
+      - DvzBlendOp
+      - DvzColorMask
+    type_sources:
+      DvzDrp2Runtime: include/datoviz/drp2/types.h
     prefixes:
       - drp2
+    group_labels:
+      drp2: Command Streams
+    group_patterns:
+      Command Streams:
+        - DvzDrp2Attachment*
+        - DvzDrp2BindGroup*
+        - DvzDrp2Binding*
+        - DvzDrp2BufferUsage*
+        - DvzDrp2Color*
+        - DvzDrp2Command*
+        - DvzDrp2Filter*
+        - DvzDrp2Render*
+        - DvzDrp2Shader*
+        - DvzDrp2Texture*
+        - DvzDrp2Vertex*
+        - DvzFormat
+        - DvzPrimitiveTopology
+        - DvzCompareOp
+        - DvzFrontFace
+        - DvzCullMode
+        - DvzBlendFactor
+        - DvzBlendOp
+        - DvzColorMask
+        - dvz_drp2_stream_*
+        - dvz_drp2_command_type
+        - dvz_drp2_render_*
+      Packets:
+        - DvzDrp2Packet*
+        - dvz_drp2_packet_*
+      Recording And Replay:
+        - DvzDrp2Record*
+        - dvz_drp2_record*
+      Runtime Integration:
+        - DvzDrp2Runtime*
+        - DvzDrp2External*
+        - DvzDrp2Validation*
+        - DvzVma
+        - dvz_drp2_runtime_*
+        - dvz_drp2_external_*
 
   runtime_vklite:
     title: vklite API
@@ -296,6 +484,11 @@ pages:
       - include/datoviz/vklite/**
     type_symbols:
       - DvzBuffer
+      - DvzSemaphore
+    type_sources:
+      DvzBuffer: include/datoviz/vklite/buffers.h
+      DvzCommands: include/datoviz/vklite/commands.h
+      DvzSemaphore: include/datoviz/vklite/sync.h
     prefixes:
       - attachment
       - barrier
@@ -344,6 +537,7 @@ pages:
       Device And Presentation:
         - DvzSurface*
         - DvzSwapchain*
+        - DvzPresentStatus
       Resources:
         - DvzBuffer*
         - DvzImage*
@@ -364,6 +558,7 @@ pages:
         - DvzBarrier*
         - DvzBarriers*
         - DvzFence*
+        - DvzSemaphore*
         - DvzSubmit*
 
   runtime_vulkan:
@@ -382,6 +577,10 @@ pages:
       - include/datoviz/gpu/**
     type_symbols:
       - DvzDevice
+      - DvzGpuCtx
+    type_sources:
+      DvzDevice: include/datoviz/vk/device.h
+      DvzGpuCtx: include/datoviz/vk/gpu_ctx.h
     prefixes:
       - allocation
       - allocator
@@ -407,6 +606,7 @@ pages:
         - DvzInstance*
       Devices And Queues:
         - DvzDevice*
+        - DvzDefaultQueue
         - DvzQueue*
         - DvzQueues*
       GPU Context:
@@ -414,6 +614,13 @@ pages:
       Memory And Interop:
         - DvzAllocation*
         - DvzInterop*
+      Shared Render Types:
+        - DvzDescriptorType
+        - DvzFilter
+        - DvzPolygonMode
+        - DvzSamplerAddressMode
+        - DvzShader*
+        - DvzVertexInputRate
 
   runtime_controllers:
     title: Low-Level Controllers API
@@ -434,12 +641,21 @@ pages:
       - DvzFly
       - DvzPanzoom
       - DvzTurntable
+    type_sources:
+      DvzArcball: include/datoviz/controller/arcball.h
+      DvzCamera: include/datoviz/controller/camera.h
+      DvzFly: include/datoviz/controller/fly.h
+      DvzPanzoom: include/datoviz/controller/panzoom.h
+      DvzTurntable: include/datoviz/controller/turntable.h
     prefixes:
       - arcball
       - camera
       - fly
       - panzoom
       - turntable
+    group_patterns:
+      Camera:
+        - DvzMVP*
 
   runtime_math:
     title: Math API
@@ -462,6 +678,22 @@ pages:
       - range
       - vec2
       - vec3
+    group_patterns:
+      Scalar And Vector Types:
+        - DvzAlpha
+        - cvec*
+        - dmat*
+        - dvec*
+        - ivec*
+        - mat*
+        - uvec*
+        - vec*
+        - fvec*
+        - svec*
+        - usvec*
+        - DvzIndex
+        - DvzSize
+        - DvzId
 
   runtime_utilities:
     title: Common And Utility API
@@ -488,11 +720,18 @@ pages:
       - time
       - version
       - write
+    group_patterns:
+      Common Types:
+        - DvzColor*
+        - DvzResult
+        - DvzTime
 
 types:
   output: docs/reference/c-api/types.md
   title: C Types
   summary: Public enums, records, opaque handles, and callback typedefs grouped by C API page.
+  hidden:
+    - VkInstance
 
 hidden_headers:
   - include/datoviz/datoviz.h

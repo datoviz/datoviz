@@ -278,6 +278,7 @@ docs: doc
 
 api-docs:
     @python3 tools/build_api_c.py
+    @python3 tools/check_api_c_links.py
 #
 
 docs-api: api-docs
@@ -285,6 +286,8 @@ docs-api: api-docs
 
 check-api-docs:
     @python3 tools/build_api_c.py --check
+    @python3 -m unittest tools/tests/test_build_api_c.py
+    @python3 tools/check_api_c_links.py
 #
 
 docs-api-check: check-api-docs
