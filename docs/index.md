@@ -1,21 +1,41 @@
-# Datoviz
+# Datoviz — High-performance 2D and 3D scientific visualization
 
-**Datoviz is a GPU-powered visualization engine for scientific data.** It is built for
-interactive 2D and 3D scenes that outgrow ordinary plotting: dense points, images, meshes, volumes,
-text, annotations, linked panels, controllers, capture, and replayable render streams.
+**Datoviz is an open-source, cross-platform visualization engine written in C, with direct Python
+bindings designed for NumPy arrays.** Powered by Vulkan, it renders large, interactive scientific
+datasets at high visual quality on Linux, macOS, and Windows. Two-dimensional and three-dimensional
+visualization are both first-class use cases.
 
-Datoviz v0.4 is the **engine layer**: use it directly when you want explicit control over scene
-objects, GPU-backed rendering, native integration, and reproducible visual output.
+Datoviz is desktop-first and deliberately more explicit than a Matplotlib-like plotting library.
+Its retained scene API gives applications direct control over visuals, data, interaction, layout,
+GPU resources, and reproducible output. Built-in GUI support uses
+[Dear ImGui](https://github.com/ocornut/imgui); an experimental WebGPU/WASM path brings a growing
+subset of the same scenes to the browser.
 
-Datoviz is part of the [VisPy](https://vispy.org/) ecosystem. You can use it directly from C or
-Python today; it is also the flagship interactive GPU backend for the developing VisPy 2 and
-[Graphics Server Protocol](https://github.com/vispy/GSP_API) architecture.
+<div class="dvz-home-facts">
+<span>MIT open source</span>
+<span>C + Python/NumPy</span>
+<span>Vulkan</span>
+<span>Linux · macOS · Windows</span>
+<span>First-class 2D + 3D</span>
+<span>Dear ImGui</span>
+</div>
 
-!!! info "Release status"
+<div class="dvz-home-actions">
+<a class="md-button md-button--primary" href="start/">Get started</a>
+<a class="md-button" href="examples/">Browse examples</a>
+<a class="md-button" href="https://github.com/datoviz/datoviz">View on GitHub</a>
+</div>
 
-    Datoviz 0.4 is a release candidate. The native scene API is the primary supported path;
-    WebGPU and selected advanced facilities remain experimental. Check [Feature status](reference/feature-status.md)
-    before adopting an experimental path.
+Release packages are designed for a one-command `pip install datoviz`: wheels bundle the Python
+binding and native runtime for supported Linux, macOS, and Windows targets. Datoviz v0.4 is
+currently preparing its first release candidate, so use the exact command from the
+[installation page](start/install.md) until a public package is announced.
+
+!!! info "v0.4 release status"
+
+    The native scene API is the primary release-facing path. WebGPU and selected advanced
+    facilities remain experimental; check [Feature status](reference/feature-status.md) before
+    adopting them.
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video" style="margin:1.5rem 0 1.5rem;">
   <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_protein/" aria-label="Protein visualization"></a>
@@ -25,6 +45,34 @@ Python today; it is also the flagship interactive GPU backend for the developing
     <source data-src="assets/gallery/v0.4/showcases/showcases_protein.mp4" type="video/mp4">
   </video>
 </div>
+
+
+## One engine, three layers
+
+Datoviz is modular from the rendering core upward. Use the retained scene layer for normal
+applications, or work closer to the protocol and runtime when integration requires it.
+
+<div class="dvz-layer-grid">
+<div class="dvz-layer-card">
+<strong>Scene</strong>
+<span>Retained figures, panels, visuals, controllers, axes, annotations, queries, and frame planning.</span>
+</div>
+<div class="dvz-layer-arrow" aria-hidden="true">→</div>
+<div class="dvz-layer-card">
+<strong>DRP2</strong>
+<span>A backend-neutral, WebGPU-shaped rendering protocol for validation, replay, and portable command streams.</span>
+</div>
+<div class="dvz-layer-arrow" aria-hidden="true">→</div>
+<div class="dvz-layer-card">
+<strong>Rendering runtimes</strong>
+<span>The core Vulkan engine handles native rendering, windows, offscreen targets, capture, and streaming; WebGPU execution is experimental.</span>
+</div>
+</div>
+
+The CMake build exposes separate switches for the core, Vulkan runtime, canvas, DRP2, scene, app,
+GUI, and WebGPU components, so native applications can enable only the layers they need. See
+[Choose your layer](start/choose-your-layer.md) for API guidance and
+[Build options](reference/build-options.md) for the complete module list.
 
 
 ## Start here
@@ -65,16 +113,19 @@ See the annotated [Quickstart](start/quickstart.md) or [use Datoviz from C or C+
 
 ## Why Datoviz?
 
-- ⚡ **Large interactive scenes**: explore point clouds, sampled fields, meshes, volumes, and
-  scientific annotations with GPU-backed rendering.
-- 🧩 **Retained scene model**: create figures, panels, visuals, cameras, controllers, and adornments
-  as explicit objects instead of one-shot plotting calls.
-- 🖥️ **Native first**: use the C API for applications, embedding, offscreen rendering, screenshots,
-  video export, and low-level runtime integration.
-- 🐍 **Python without a wrapper stack**: call the generated `datoviz` binding directly with
-  documented NumPy array adaptation.
-- 🌐 **Browser experiments**: try the experimental WebGPU/WASM path for selected examples that share
-  the same scene model as the native runtime.
+- **Large, dynamic data**: dense points, sampled fields, images, meshes, volumes, text, and
+  scientific annotations remain interactive through GPU-backed rendering.
+- **Application-ready output**: render in native windows or offscreen, embed the C library, capture
+  screenshots, export video, and record or replay render streams.
+- **Interaction and composition**: combine linked panels, cameras, 2D and 3D controllers, picking,
+  queries, axes, colorbars, labels, and Dear ImGui controls.
+- **Direct APIs**: use the native C API from C or C++, or call the generated Python binding directly
+  with documented NumPy array adaptation.
+
+Datoviz is part of the [VisPy](https://vispy.org/) ecosystem and is the flagship interactive GPU
+backend for the developing VisPy 2 and
+[Graphics Server Protocol](https://github.com/vispy/GSP_API) architecture. That project owns the
+higher-level plotting layer; Datoviz v0.4 remains the explicit rendering engine underneath it.
 
 
 ## Gallery highlights
