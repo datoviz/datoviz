@@ -23,6 +23,7 @@ DOCS_ROOT = ROOT / "docs"
 SUMMARY_PATH = ROOT / "build/docs/c-api-reference-summary.json"
 PARAM_RE = re.compile(r"^@param\s+(?P<name>\w+)\s*(?P<doc>.*)$")
 RETURN_RE = re.compile(r"^@returns?\s+(?P<doc>.*)$")
+PUBLIC_TYPE_RE = re.compile(r"\bDvz[A-Za-z0-9_]+\b")
 
 
 @dataclass(frozen=True)
@@ -302,10 +303,28 @@ def related_functions(fn: dict, names: set[str]) -> list[str]:
     return sorted(set(related))
 
 
-def format_function(fn: dict, names: set[str]) -> list[str]:
+def type_anchor(name: str) -> str:
+    return f"type-{name.lower()}"
+
+
+def linked_type_name(type_info: dict | None, type_targets: dict[str, str]) -> str:
+    value = table_cell(type_name(type_info))
+    return PUBLIC_TYPE_RE.sub(
+        lambda match: (
+            f"[`{match.group(0)}`]({type_targets[match.group(0)]})"
+            if match.group(0) in type_targets
+            else f"`{match.group(0)}`"
+        ),
+        value,
+    )
+
+
+def format_function(
+    fn: dict, names: set[str], type_targets: dict[str, str], heading: str = "###"
+) -> list[str]:
     doc, param_docs, ret_doc = doc_parts(fn.get("doc"))
     header = header_of(fn)
-    lines = [f"### `{fn['name']}()`", ""]
+    lines = [f"{heading} `{fn['name']}()`", ""]
     if doc:
         lines.extend([doc, ""])
     lines.extend(
@@ -319,11 +338,13 @@ def format_function(fn: dict, names: set[str]) -> list[str]:
     if ret_doc or fn.get("parameters"):
         lines.extend(["| Field | Type | Description |", "| --- | --- | --- |"])
         if ret_doc:
-            lines.append(f"| return | `{table_cell(type_name(fn.get('result')))}` | {table_cell(ret_doc)} |")
+            lines.append(
+                f"| return | {linked_type_name(fn.get('result'), type_targets)} | {table_cell(ret_doc)} |"
+            )
         for arg in fn.get("parameters") or []:
             name = str(arg.get("name", ""))
             lines.append(
-                f"| `{name}` | `{table_cell(type_name(arg.get('type')))}` | {table_cell(param_docs.get(name, ''))} |"
+                f"| `{name}` | {linked_type_name(arg.get('type'), type_targets)} | {table_cell(param_docs.get(name, ''))} |"
             )
         lines.append("")
     related = related_functions(fn, names)
@@ -375,12 +396,13 @@ def header_summary(functions: list[dict]) -> str:
     return f"{len(headers)} headers"
 
 
-def render_page_intro(page: PagePolicy, functions: list[dict]) -> list[str]:
+def render_page_intro(page: PagePolicy, functions: list[dict], type_count: int) -> list[str]:
     lines = [
         f"!!! info \"Status: {page.status}\"",
         "",
-        "    This generated page lists exported C functions classified by the v0.4 C API",
-        "    reference policy. Raw Python `ctypes` call forms are documented separately.",
+        "    This generated page lists exported C functions and their canonical public types",
+        "    classified by the v0.4 C API reference policy. Raw Python `ctypes` call forms are",
+        "    documented separately.",
         "",
     ]
     if page.audience:
@@ -393,22 +415,30 @@ def render_page_intro(page: PagePolicy, functions: list[dict]) -> list[str]:
     lines.extend(
         [
             f"Functions: {len(functions)}",
+            f"Types: {type_count}",
             "",
         ]
     )
     return lines
 
 
-def render_symbol_groups(grouped: dict[str, list[dict]]) -> list[str]:
+def render_symbol_groups(
+    grouped: dict[str, list[dict]], types_grouped: dict[str, list[dict]]
+) -> list[str]:
     lines = [
         "## Symbol Groups",
         "",
-        "| Group | Functions | Headers |",
-        "| --- | ---: | --- |",
+        "| Group | Functions | Types | Headers |",
+        "| --- | ---: | ---: | --- |",
     ]
-    for group in sorted(grouped):
+    for group in sorted(set(grouped) | set(types_grouped)):
         functions = sorted(grouped[group], key=lambda item: item["name"])
-        lines.append(f"| [{group}](#{group.lower().replace(' ', '-')}) | {len(functions)} | {header_summary(functions)} |")
+        page_types = types_grouped[group]
+        headers = functions + [entity["source"] for entity in page_types]
+        lines.append(
+            f"| [{group}](#{group.lower().replace(' ', '-')}) | {len(functions)} | "
+            f"{len(page_types)} | {header_summary(headers)} |"
+        )
     lines.append("")
     lines.extend(
         [
@@ -416,31 +446,74 @@ def render_symbol_groups(grouped: dict[str, list[dict]]) -> list[str]:
             "",
         ]
     )
-    for group in sorted(grouped):
+    for group in sorted(set(grouped) | set(types_grouped)):
         functions = sorted(grouped[group], key=lambda item: item["name"])
-        lines.extend([f"    ### {group}", "", "    | Function | Header |", "    | --- | --- |"])
+        page_types = sorted(types_grouped[group], key=lambda item: item["name"])
+        lines.extend(
+            [
+                f"    ### {group}",
+                "",
+                "    | Symbol | Kind | Header |",
+                "    | --- | --- | --- |",
+            ]
+        )
+        for entity in page_types:
+            lines.append(
+                f"    | [`{entity['name']}`](#{type_anchor(entity['name'])}) | "
+                f"{entity['kind']} | `{header_of(entity['source'])}` |"
+            )
         for fn in functions:
             lines.append(
-                f"    | [`{fn['name']}()`](#{symbol_anchor(fn['name'])}) | `{header_of(fn)}` |"
+                f"    | [`{fn['name']}()`](#{symbol_anchor(fn['name'])}) | function | "
+                f"`{header_of(fn)}` |"
             )
         lines.append("")
     return lines
 
 
-def render_page(page: PagePolicy, functions: list[dict]) -> None:
+def render_type_entity(entity: dict) -> list[str]:
+    source = entity["source"]
+    doc, _, _ = doc_parts(source.get("doc"))
+    lines = [f'<a id="{type_anchor(entity["name"])}"></a>', "", f"#### `{entity['name']}`", ""]
+    if doc:
+        lines.extend([doc, ""])
+    lines.extend(["```c", entity["signature"], "```", ""])
+    header = header_of(source)
+    if header:
+        line = (source.get("location") or {}).get("line")
+        location = f"`{header}`" + (f":{line}" if line else "")
+        lines.extend([f"_Declared in {location}._", ""])
+    return lines
+
+
+def render_page(
+    page: PagePolicy,
+    functions: list[dict],
+    page_types: list[dict],
+    type_targets: dict[str, str],
+) -> None:
     lines = generated_header(page.title, page.summary)
-    lines.extend(render_page_intro(page, functions))
+    lines.extend(render_page_intro(page, functions, len(page_types)))
 
     grouped: dict[str, list[dict]] = defaultdict(list)
     for fn in functions:
         grouped[symbol_group(str(fn["name"]), page)].append(fn)
-    lines.extend(render_symbol_groups(grouped))
+    types_grouped: dict[str, list[dict]] = defaultdict(list)
+    for entity in page_types:
+        types_grouped[symbol_group(str(entity["name"]), page)].append(entity)
+    lines.extend(render_symbol_groups(grouped, types_grouped))
 
     names = {str(fn["name"]) for fn in functions}
-    for group in sorted(grouped):
+    for group in sorted(set(grouped) | set(types_grouped)):
         lines.extend([f"## {group}", ""])
+        if types_grouped[group]:
+            lines.extend(["### Types", ""])
+            for entity in sorted(types_grouped[group], key=lambda item: item["name"]):
+                lines.extend(render_type_entity(entity))
+        if grouped[group]:
+            lines.extend(["### Functions", ""])
         for fn in sorted(grouped[group], key=lambda item: item["name"]):
-            lines.extend(format_function(fn, names))
+            lines.extend(format_function(fn, names, type_targets, "####"))
 
     page.output.parent.mkdir(parents=True, exist_ok=True)
     page.output.write_text("\n".join(lines).rstrip() + "\n", encoding="utf8")
@@ -458,9 +531,11 @@ def type_signature(record: dict) -> str:
 
 
 def enum_signature(enum: dict) -> str:
-    lines = []
+    name = str(enum.get("name", ""))
+    lines = [f"enum {name} {{"]
     for value in enum.get("values") or []:
-        lines.append(f"{value['name']} = {value['value']},")
+        lines.append(f"    {value['name']} = {value['value']},")
+    lines.append("};")
     return "\n".join(lines)
 
 
@@ -468,60 +543,88 @@ def typedef_signature(typedef: dict) -> str:
     return f"typedef {type_name(typedef.get('type'))} {typedef['name']};"
 
 
-def render_types(
-    types_policy: dict, pages: list[PagePolicy], records: dict, enums: dict, typedefs: dict
+def build_type_catalog(
+    pages: list[PagePolicy], records: dict, enums: dict, typedefs: dict
+) -> tuple[dict[str, list[dict]], dict[str, str]]:
+    page_by_key = {page.key: page for page in pages}
+    components: dict[str, list[tuple[str, str, dict]]] = defaultdict(list)
+    for kind, classified in (("record", records), ("enum", enums), ("typedef", typedefs)):
+        for page_key, items in classified.items():
+            for item in items:
+                components[str(item.get("name", ""))].append((page_key, kind, item))
+
+    by_page: dict[str, list[dict]] = defaultdict(list)
+    targets: dict[str, str] = {}
+    for name, entries in sorted(components.items()):
+        records_for_name = [item for _, kind, item in entries if kind == "record"]
+        enums_for_name = [item for _, kind, item in entries if kind == "enum"]
+        typedefs_for_name = [item for _, kind, item in entries if kind == "typedef"]
+        concrete_records = [item for item in records_for_name if not item.get("opaque")]
+        if len(concrete_records) > 1 or len(enums_for_name) > 1:
+            raise ValueError(f"public type {name} has multiple concrete definitions")
+        definition_items = concrete_records + enums_for_name
+        owner_entries = (
+            [entry for entry in entries if entry[2] in definition_items]
+            if definition_items
+            else (
+                [entry for entry in entries if entry[1] == "record"]
+                if records_for_name
+                else entries
+            )
+        )
+        page_keys = {page_key for page_key, _, _ in owner_entries}
+        if len(page_keys) != 1:
+            raise ValueError(f"public type {name} has conflicting canonical owners: {sorted(page_keys)}")
+        page_key = next(iter(page_keys))
+        if concrete_records:
+            source = concrete_records[0]
+            kind = "record"
+            signature = type_signature(source)
+        elif enums_for_name:
+            source = enums_for_name[0]
+            kind = "enum"
+            signature = enum_signature(source)
+        elif typedefs_for_name:
+            source = typedefs_for_name[0]
+            kind = "typedef"
+            signature = typedef_signature(source)
+        else:
+            source = records_for_name[0]
+            kind = "opaque handle"
+            signature = type_signature(source)
+        entity = {"name": name, "kind": kind, "signature": signature, "source": source}
+        by_page[page_key].append(entity)
+        targets[name] = f"{page_by_key[page_key].output.name}#{type_anchor(name)}"
+    return by_page, targets
+
+
+def render_types_index(
+    types_policy: dict, pages: list[PagePolicy], types_by_page: dict[str, list[dict]]
 ) -> None:
     output = ROOT / str(types_policy["output"])
     title = str(types_policy.get("title", "C Types"))
-    summary = str(types_policy.get("summary", ""))
+    summary = (
+        "Alphabetical index of public C types. Canonical definitions live beside the functions "
+        "that use them on the generated module pages."
+    )
     lines = generated_header(title, summary)
-
+    lines.extend(
+        [
+            "| Type | Kind | Canonical module | Header |",
+            "| --- | --- | --- | --- |",
+        ]
+    )
+    entries = []
     for page in pages:
-        page_records = sorted(records.get(page.key, []), key=lambda item: item.get("name", ""))
-        page_enums = sorted(enums.get(page.key, []), key=lambda item: item.get("name", ""))
-        page_typedefs = sorted(typedefs.get(page.key, []), key=lambda item: item.get("name", ""))
-        if not page_records and not page_enums and not page_typedefs:
-            continue
-        lines.extend([f"## {page.title}", ""])
-        if page_typedefs:
-            lines.extend(["### Typedefs", ""])
-            for typedef in page_typedefs:
-                lines.extend(
-                    [
-                        f"#### `{typedef['name']}`",
-                        "",
-                        "```c",
-                        typedef_signature(typedef),
-                        "```",
-                        "",
-                    ]
-                )
-        if page_enums:
-            lines.extend(["### Enums", ""])
-            for enum in page_enums:
-                lines.extend(
-                    [
-                        f"#### `{enum['name']}`",
-                        "",
-                        "```c",
-                        enum_signature(enum),
-                        "```",
-                        "",
-                    ]
-                )
-        if page_records:
-            lines.extend(["### Records", ""])
-            for record in page_records:
-                lines.extend(
-                    [
-                        f"#### `{record['name']}`",
-                        "",
-                        "```c",
-                        type_signature(record),
-                        "```",
-                        "",
-                    ]
-                )
+        for entity in types_by_page.get(page.key, []):
+            entries.append((entity["name"], page, entity))
+    for name, page, entity in sorted(entries):
+        target = f"{page.output.name}#{type_anchor(name)}"
+        lines.append(
+            f"| [`{name}`]({target}) | {entity['kind']} | {page.title} | "
+            f"`{header_of(entity['source'])}` |"
+        )
+    lines.append("")
 
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text("\n".join(lines).rstrip() + "\n", encoding="utf8")
@@ -549,7 +652,9 @@ def validate_classification(kind: str, items: list[dict], pages: list[PagePolicy
     return by_page, missing
 
 
-def validate_policy_patterns(api: dict, pages: list[PagePolicy], functions: dict) -> None:
+def validate_policy_patterns(
+    api: dict, pages: list[PagePolicy], functions: dict, types_by_page: dict
+) -> None:
     all_items = [
         item
         for kind in ("functions", "records", "enums", "typedefs")
@@ -564,15 +669,17 @@ def validate_policy_patterns(api: dict, pages: list[PagePolicy], functions: dict
                 for item in all_items
             ):
                 errors.append(f"{page.key}: symbol pattern {pattern!r} matches nothing")
-        page_functions = functions.get(page.key, [])
+        page_entities = functions.get(page.key, []) + [
+            entity["source"] for entity in types_by_page.get(page.key, [])
+        ]
         for label, patterns in page.group_patterns.items():
             for pattern in patterns:
                 if not any(
                     fnmatch.fnmatchcase(str(item.get("name", "")), pattern)
-                    for item in page_functions
+                    for item in page_entities
                 ):
                     errors.append(
-                        f"{page.key}/{label}: group pattern {pattern!r} matches no function"
+                        f"{page.key}/{label}: group pattern {pattern!r} matches no entity"
                     )
     if errors:
         raise ValueError("invalid C API reference patterns:\n  " + "\n  ".join(errors))
@@ -614,7 +721,8 @@ def main() -> int:
     typedefs, missing_typedefs = validate_classification(
         "typedefs", api.get("typedefs", []), pages, hidden_headers
     )
-    validate_policy_patterns(api, pages, functions)
+    types_by_page, type_targets = build_type_catalog(pages, records, enums, typedefs)
+    validate_policy_patterns(api, pages, functions, types_by_page)
 
     missing = {
         "functions": missing_functions,
@@ -635,8 +743,13 @@ def main() -> int:
 
     if not args.check:
         for page in pages:
-            render_page(page, sorted(functions.get(page.key, []), key=lambda item: item["name"]))
-        render_types(types_policy, pages, records, enums, typedefs)
+            render_page(
+                page,
+                sorted(functions.get(page.key, []), key=lambda item: item["name"]),
+                sorted(types_by_page.get(page.key, []), key=lambda item: item["name"]),
+                type_targets,
+            )
+        render_types_index(types_policy, pages, types_by_page)
         write_summary(args.summary, pages, functions, records, enums, typedefs)
 
     total_functions = sum(len(items) for items in functions.values())

@@ -65,12 +65,15 @@ pages:
       Eye-Dome Lighting:
         - dvz_edl_*
         - dvz_panel_set_edl
+        - DvzEdl*
       Multisample Antialiasing:
         - dvz_msaa_*
         - dvz_panel_set_msaa
+        - DvzMsaa*
       Screen-Space Ambient Occlusion:
         - dvz_ssao_*
         - dvz_panel_set_ssao
+        - DvzSsao*
 
   scene:
     title: Scene API
@@ -210,9 +213,11 @@ pages:
         - dvz_phong_*
         - dvz_standard_*
         - dvz_visual_set_material
+        - DvzMaterial*
       Depth Cueing:
         - dvz_depth_cue_*
         - dvz_visual_set_depth_cue
+        - DvzDepthCue*
 
   app:
     title: App, Window, And I/O API
@@ -333,6 +338,31 @@ pages:
       submit: Synchronization And Submission
       surface: Device And Presentation
       swapchain: Device And Presentation
+    group_patterns:
+      Device And Presentation:
+        - DvzSurface*
+        - DvzSwapchain*
+      Resources:
+        - DvzBuffer*
+        - DvzImage*
+        - DvzImages*
+        - DvzSampler*
+      Pipelines And Bindings:
+        - DvzCompute*
+        - DvzDescriptors*
+        - DvzGraphics*
+        - DvzShader*
+        - DvzSlots*
+      Commands And Rendering:
+        - DvzAttachment*
+        - DvzCommand*
+        - DvzCommands*
+        - DvzRendering*
+      Synchronization And Submission:
+        - DvzBarrier*
+        - DvzBarriers*
+        - DvzFence*
+        - DvzSubmit*
 
   runtime_vulkan:
     title: Vulkan Foundation API
@@ -368,6 +398,18 @@ pages:
       interop: Memory And Interop
       queue: Devices And Queues
       queues: Devices And Queues
+    group_patterns:
+      Instances:
+        - DvzInstance*
+      Devices And Queues:
+        - DvzDevice*
+        - DvzQueue*
+        - DvzQueues*
+      GPU Context:
+        - DvzGpu*
+      Memory And Interop:
+        - DvzAllocation*
+        - DvzInterop*
 
   runtime_controllers:
     title: Low-Level Controllers API
