@@ -46,7 +46,7 @@
 
 #define WIDTH  EXAMPLE_WINDOW_WIDTH
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
-#define AGGREGATE_SIDE         9u
+#define AGGREGATE_SIDE         11u
 #define AGGREGATE_MAX_SPHERES  (AGGREGATE_SIDE * AGGREGATE_SIDE * AGGREGATE_SIDE)
 
 
@@ -114,10 +114,10 @@ static bool _add_sphere_cluster(DvzScene* scene, DvzPanel* panel)
                 const int32_t ix = (int32_t)x - center;
                 const int32_t iy = (int32_t)y - center;
                 const int32_t iz = (int32_t)z - center;
-                const float stagger = ((x + y + z) & 1u) != 0u ? 0.0817f : 0.0f;
-                const float px = 0.1633f * (float)ix + stagger;
-                const float py = 0.1462f * (float)iy;
-                const float pz = 0.1385f * (float)iz;
+                const float stagger = ((x + y + z) & 1u) != 0u ? 0.0668f : 0.0f;
+                const float px = 0.1336f * (float)ix + stagger;
+                const float py = 0.1196f * (float)iy;
+                const float pz = 0.1133f * (float)iz;
                 const float distance2 = px * px + py * py + pz * pz;
                 const bool outside = distance2 > 0.47f;
                 const bool cavity = pz > -0.08f && px * px + py * py < 0.045f;
@@ -128,7 +128,7 @@ static bool _add_sphere_cluster(DvzScene* scene, DvzPanel* panel)
                 positions[count][0] = px;
                 positions[count][1] = py;
                 positions[count][2] = pz;
-                radii[count] = 0.084f;
+                radii[count] = 0.0687f;
                 colors[count] =
                     example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
                 count++;

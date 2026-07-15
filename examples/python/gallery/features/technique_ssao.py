@@ -16,7 +16,7 @@ LABELS = (b"Plain lighting", b"Ambient occlusion")
 INITIAL_ANGLES = (ctypes.c_float * 3)(0.180, -0.120, 0.000)
 INITIAL_PAN = (ctypes.c_float * 2)(0.0, -0.020)
 INITIAL_ZOOM = 0.82
-AGGREGATE_SIDE = 9
+AGGREGATE_SIDE = 11
 
 
 def _sphere_data():
@@ -26,8 +26,8 @@ def _sphere_data():
         for y in range(AGGREGATE_SIDE):
             for x in range(AGGREGATE_SIDE):
                 ix, iy, iz = x - center, y - center, z - center
-                stagger = 0.0817 if (x + y + z) & 1 else 0.0
-                px, py, pz = 0.1633 * ix + stagger, 0.1462 * iy, 0.1385 * iz
+                stagger = 0.0668 if (x + y + z) & 1 else 0.0
+                px, py, pz = 0.1336 * ix + stagger, 0.1196 * iy, 0.1133 * iz
                 distance2 = px * px + py * py + pz * pz
                 outside = distance2 > 0.47
                 cavity = pz > -0.08 and px * px + py * py < 0.045
@@ -37,7 +37,7 @@ def _sphere_data():
                 positions.append((px, py, pz))
 
     count = len(positions)
-    radii = np.full(count, 0.084, dtype=np.float32)
+    radii = np.full(count, 0.0687, dtype=np.float32)
     colors = np.tile(np.array([[ex.CYAN.r, ex.CYAN.g, ex.CYAN.b, ex.CYAN.a]]), (count, 1))
     return np.asarray(positions, dtype=np.float32), radii, colors.astype(np.uint8)
 
