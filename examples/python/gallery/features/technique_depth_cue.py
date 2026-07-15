@@ -13,20 +13,29 @@ from examples.python.gallery import common as ex
 
 
 LABELS = (b"Plain depth", b"Depth cue")
-LATTICE_SIDE = 3
-INITIAL_ANGLES = (ctypes.c_float * 3)(0.48, -0.18, 0.20)
+LATTICE_SIDE = 5
+INITIAL_ANGLES = (ctypes.c_float * 3)(1.565489, -0.429644, 0.391422)
+INITIAL_PAN = (ctypes.c_float * 2)(0.0, 0.0)
+INITIAL_ZOOM = 0.403531
 
 
 def _sphere_lattice_data():
     positions = []
     colors = []
     radii = []
+    denominator = LATTICE_SIDE - 1
     for z in range(LATTICE_SIDE):
         for y in range(LATTICE_SIDE):
             for x in range(LATTICE_SIDE):
-                positions.append((-0.58 + 0.58 * x, -0.44 + 0.44 * y, -0.72 + 0.72 * z))
+                positions.append(
+                    (
+                        -0.64 + 1.28 * x / denominator,
+                        -0.52 + 1.04 * y / denominator,
+                        -0.78 + 1.56 * z / denominator,
+                    )
+                )
                 colors.append(ex.CYAN)
-                radii.append(0.115)
+                radii.append(0.070)
     return (
         np.array(positions, dtype=np.float32),
         ex.color_array(*colors),
@@ -39,10 +48,10 @@ def _depth_cue_desc():
     desc.mode = dvz.DVZ_DEPTH_CUE_FADE_TO_BACKGROUND
     desc.metric = dvz.DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE
     desc.falloff = dvz.DVZ_DEPTH_CUE_FALLOFF_LINEAR
-    desc.near_depth = 3.80
-    desc.far_depth = 5.80
-    desc.strength = 1.0
-    desc.density = 0.45
+    desc.near_depth = 4.055
+    desc.far_depth = 5.605
+    desc.strength = 0.959
+    desc.density = 0.774
     desc.background_color[:] = (0.035, 0.047, 0.067, 1.0)
     return desc
 
@@ -145,8 +154,12 @@ def _configure_view(view, scene, panels) -> None:
         arcball = dvz.dvz_controller_arcball(controller)
         if not arcball:
             raise RuntimeError("dvz_controller_arcball() failed")
-        if dvz.dvz_arcball_set(arcball, INITIAL_ANGLES) != 0:
-            raise RuntimeError("dvz_arcball_set() failed")
+        if dvz.dvz_arcball_initial(arcball, INITIAL_ANGLES) != 0:
+            raise RuntimeError("dvz_arcball_initial() failed")
+        if dvz.dvz_arcball_zoom(arcball, INITIAL_ZOOM) != 0:
+            raise RuntimeError("dvz_arcball_zoom() failed")
+        if dvz.dvz_arcball_pan(arcball, INITIAL_PAN) != 0:
+            raise RuntimeError("dvz_arcball_pan() failed")
         controllers.append(controller)
 
     components = (

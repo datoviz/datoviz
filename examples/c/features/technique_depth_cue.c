@@ -6,7 +6,7 @@
 
 /* This example compares a plain 3D sphere lattice with depth-dependent fading.
  *
- * What to look for: both panels upload the same uniformly colored 3x3x3 sphere lattice, but only
+ * What to look for: both panels upload the same uniformly colored 5x5x5 sphere lattice, but only
  * the right panel applies a depth-cue descriptor to the visual. The uniform material makes the
  * progressive fade toward the background attributable to depth rather than a color mapping. In
  * live mode, use the GUI to change cue mode, depth metric, falloff, near/far depth, strength,
@@ -46,7 +46,7 @@
 
 #define WIDTH  EXAMPLE_WINDOW_WIDTH
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
-#define LATTICE_SIDE  3u
+#define LATTICE_SIDE  5u
 #define SPHERE_COUNT  (LATTICE_SIDE * LATTICE_SIDE * LATTICE_SIDE)
 #define CUE_DISTANCE_MIN 0.05f
 #define CUE_DISTANCE_MAX 6.00f
@@ -83,10 +83,10 @@ static void _reset_depth_cue_controls(DepthCueDemoState* state)
     state->cue.mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND;
     state->cue.metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE;
     state->cue.falloff = DVZ_DEPTH_CUE_FALLOFF_LINEAR;
-    state->cue.near_depth = 3.80f;
-    state->cue.far_depth = 5.80f;
-    state->cue.strength = 1.0f;
-    state->cue.density = 0.45f;
+    state->cue.near_depth = 4.055000f;
+    state->cue.far_depth = 5.605000f;
+    state->cue.strength = 0.959000f;
+    state->cue.density = 0.774000f;
     state->cue.background_color[0] = 0.035f;
     state->cue.background_color[1] = 0.047f;
     state->cue.background_color[2] = 0.067f;
@@ -147,6 +147,7 @@ static bool _add_sphere_lattice(
     vec3 positions[SPHERE_COUNT] = {{0}};
     DvzColor colors[SPHERE_COUNT] = {{0}};
     float radii[SPHERE_COUNT] = {0};
+    const float denominator = (float)(LATTICE_SIDE - 1u);
 
     for (uint32_t z = 0; z < LATTICE_SIDE; z++)
     {
@@ -155,12 +156,12 @@ static bool _add_sphere_lattice(
             for (uint32_t x = 0; x < LATTICE_SIDE; x++)
             {
                 const uint32_t i = z * LATTICE_SIDE * LATTICE_SIDE + y * LATTICE_SIDE + x;
-                positions[i][0] = -0.58f + 0.58f * (float)x;
-                positions[i][1] = -0.44f + 0.44f * (float)y;
-                positions[i][2] = -0.72f + 0.72f * (float)z;
+                positions[i][0] = -0.64f + 1.28f * (float)x / denominator;
+                positions[i][1] = -0.52f + 1.04f * (float)y / denominator;
+                positions[i][2] = -0.78f + 1.56f * (float)z / denominator;
                 colors[i] =
                     example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
-                radii[i] = 0.115f;
+                radii[i] = 0.070f;
             }
         }
     }
@@ -198,7 +199,8 @@ static bool _add_sphere_lattice(
 
 
 
-static DvzController* _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel)
+static DvzController* _bind_arcball(
+    DvzScenarioContext* ctx, DvzPanel* panel, vec3 angles, float zoom, vec2 pan)
 {
     DvzController* controller = dvz_arcball(ctx->scene, NULL);
     if (controller == NULL)
@@ -208,7 +210,10 @@ static DvzController* _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel)
         return NULL;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return NULL;
-    dvz_arcball_set(arcball, (vec3){+0.48f, -0.18f, +0.20f});
+    if (
+        dvz_arcball_initial(arcball, angles) != DVZ_OK ||
+        dvz_arcball_zoom(arcball, zoom) != DVZ_OK || dvz_arcball_pan(arcball, pan) != DVZ_OK)
+        return NULL;
     return controller;
 }
 
@@ -287,8 +292,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (example_set_default_3d_camera(plain, 1.0f) == NULL ||
         example_set_default_3d_camera(cued, 1.0f) == NULL)
         return false;
-    DvzController* plain_controller = _bind_arcball(ctx, plain);
-    DvzController* cued_controller = _bind_arcball(ctx, cued);
+    vec3 arcball_angles = {+1.565489f, -0.429644f, +0.391422f};
+    vec2 arcball_pan = {+0.000000f, +0.000000f};
+    const float arcball_zoom = 0.403531f;
+    DvzController* plain_controller =
+        _bind_arcball(ctx, plain, arcball_angles, arcball_zoom, arcball_pan);
+    DvzController* cued_controller =
+        _bind_arcball(ctx, cued, arcball_angles, arcball_zoom, arcball_pan);
     if (plain_controller == NULL || cued_controller == NULL)
         return false;
     if (dvz_controller_link(
@@ -305,10 +315,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         !_add_sphere_lattice(ctx->scene, cued, &cue, &state->cued_sphere))
         return false;
 
-    vec3 arcball_angles = {+0.48f, -0.18f, +0.20f};
-    vec2 arcball_pan = {0.0f, 0.0f};
     example_tuner_arcball(
-        &state->tuner, "Arcball", state->arcball, arcball_angles, 1.0f, arcball_pan);
+        &state->tuner, "Arcball", state->arcball, arcball_angles, arcball_zoom, arcball_pan);
     example_tuner_depth_cue(
         &state->tuner, "Depth cue", state->cued_sphere, &state->enabled, &state->cue);
     return true;
