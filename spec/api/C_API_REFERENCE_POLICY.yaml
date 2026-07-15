@@ -38,6 +38,40 @@ pages:
       - diagnostic
       - frame
 
+  techniques:
+    title: Rendering Techniques API
+    output: docs/reference/c-api/techniques.md
+    summary: Panel-level rendering techniques including multisampling and depth-based post-processing.
+    audience: Use this page to configure rendering techniques that operate on a complete panel rather than one visual family.
+    workflows:
+      - label: Add a visual
+        href: ../../how-to/add-a-visual.md
+      - label: Runtime internals
+        href: ../../advanced/runtime-internals.md
+    headers:
+      - include/datoviz/scene.h
+      - include/datoviz/scene/**
+    symbols:
+      - dvz_edl_*
+      - dvz_panel_set_edl
+      - dvz_msaa_*
+      - dvz_panel_set_msaa
+      - dvz_ssao_*
+      - dvz_panel_set_ssao
+      - DvzEdl*
+      - DvzMsaa*
+      - DvzSsao*
+    group_patterns:
+      Eye-Dome Lighting:
+        - dvz_edl_*
+        - dvz_panel_set_edl
+      Multisample Antialiasing:
+        - dvz_msaa_*
+        - dvz_panel_set_msaa
+      Screen-Space Ambient Occlusion:
+        - dvz_ssao_*
+        - dvz_panel_set_ssao
+
   scene:
     title: Scene API
     output: docs/reference/c-api/scene.md
@@ -143,7 +177,6 @@ pages:
       - composite
       - bezier
       - depth
-      - edl
       - geometry
       - glyph
       - graph
@@ -151,7 +184,6 @@ pages:
       - marker
       - material
       - mesh
-      - msaa
       - path
       - phong
       - pixel
@@ -163,7 +195,6 @@ pages:
       - segment
       - sphere
       - splat
-      - ssao
       - standard
       - symbol
       - tessellate
@@ -173,6 +204,15 @@ pages:
       - vector
       - visual
       - volume
+    group_patterns:
+      Materials:
+        - dvz_material_*
+        - dvz_phong_*
+        - dvz_standard_*
+        - dvz_visual_set_material
+      Depth Cueing:
+        - dvz_depth_cue_*
+        - dvz_visual_set_depth_cue
 
   app:
     title: App, Window, And I/O API
@@ -236,118 +276,166 @@ pages:
     prefixes:
       - drp2
 
-  runtime:
-    title: Runtime And Utilities API
-    output: docs/reference/c-api/runtime.md
-    summary: Lower-level Vulkan, vklite, math, geometry, file, and utility APIs.
-    audience: Use this page for lower-level runtime, Vulkan, vklite, math, geometry, file, and utility integration.
+  runtime_vklite:
+    title: vklite API
+    output: docs/reference/c-api/runtime-vklite.md
+    summary: Vulkan rendering resources, pipelines, commands, and synchronization through the vklite runtime layer.
+    audience: Use this advanced API when building or integrating a renderer below DRP2. Ordinary applications should use the retained scene and app APIs.
     workflows:
       - label: Debug rendering
         href: ../../how-to/debug-rendering.md
-      - label: Profile performance
-        href: ../../how-to/profile-performance.md
       - label: Runtime internals
         href: ../../advanced/runtime-internals.md
     headers:
-      - include/datoviz/common.h
-      - include/datoviz/common/**
-      - include/datoviz/dvzmath.h
-      - include/datoviz/fileio.h
-      - include/datoviz/fileio/**
-      - include/datoviz/font.h
-      - include/datoviz/gpu/**
-      - include/datoviz/math/**
-      - include/datoviz/render_types.h
-      - include/datoviz/controller/**
-      - include/datoviz/controller.h
-      - include/datoviz/vk.h
-      - include/datoviz/vk/**
       - include/datoviz/vklite.h
       - include/datoviz/vklite/**
     prefixes:
-      - allocation
-      - allocator
-      - array
+      - attachment
       - barrier
       - barriers
-      - bezier
-      - box
       - buffer
-      - circular
-      - cond
       - cmd
-      - compile
-      - container
-      - deq
-      - arcball
-      - camera
-      - device
-      - dmat4
-      - dvec3
-      - dvec4
-      - easing
-      - error
-      - file
-      - fifo
-      - fly
-      - font
-      - geom
-      - geometry
-      - gpu
-      - graphics
-      - image
-      - images
-      - instance
-      - interop
-      - interpolate
-      - list
-      - load
-      - make
-      - map
-      - memory
-      - mean
-      - mock
-      - mutex
-      - min
-      - normalize
-      - obj
-      - orbit
-      - panzoom
-      - parse
-      - prng
-      - queue
-      - queues
-      - rand
-      - range
-      - read
-      - rendering
-      - resample
-      - resource
-      - sampler
-      - slots
-      - stats
-      - submit
-      - surface
-      - swapchain
-      - thread
-      - tessellate
-      - tessellated
-      - time
-      - turntable
-      - triangulate
-      - triangulation
-      - vec3
-      - vec2
-      - version
-      - write
-      - attachment
       - command
       - commands
       - compute
       - descriptors
       - fence
+      - graphics
+      - image
+      - images
+      - rendering
+      - sampler
       - semaphore
       - shader
+      - slots
+      - submit
+      - surface
+      - swapchain
+    group_labels:
+      attachment: Commands And Rendering
+      barrier: Synchronization And Submission
+      barriers: Synchronization And Submission
+      buffer: Resources
+      cmd: Commands And Rendering
+      command: Commands And Rendering
+      commands: Commands And Rendering
+      compute: Pipelines And Bindings
+      descriptors: Pipelines And Bindings
+      fence: Synchronization And Submission
+      graphics: Pipelines And Bindings
+      image: Resources
+      images: Resources
+      rendering: Commands And Rendering
+      sampler: Resources
+      semaphore: Synchronization And Submission
+      shader: Pipelines And Bindings
+      slots: Pipelines And Bindings
+      submit: Synchronization And Submission
+      surface: Device And Presentation
+      swapchain: Device And Presentation
+
+  runtime_vulkan:
+    title: Vulkan Foundation API
+    output: docs/reference/c-api/runtime-vulkan.md
+    summary: Vulkan instances, devices, queues, allocation, GPU contexts, and memory interop.
+    audience: Use this advanced API for direct Vulkan ownership and interop below vklite.
+    workflows:
+      - label: Runtime internals
+        href: ../../advanced/runtime-internals.md
+      - label: Profile performance
+        href: ../../how-to/profile-performance.md
+    headers:
+      - include/datoviz/vk.h
+      - include/datoviz/vk/**
+      - include/datoviz/gpu/**
+    prefixes:
+      - allocation
+      - allocator
+      - compile
+      - device
+      - gpu
+      - instance
+      - interop
+      - queue
+      - queues
+    group_labels:
+      allocation: Memory And Interop
+      allocator: Memory And Interop
+      compile: GPU Context
+      device: Devices And Queues
+      gpu: GPU Context
+      instance: Instances
+      interop: Memory And Interop
+      queue: Devices And Queues
+      queues: Devices And Queues
+
+  runtime_controllers:
+    title: Low-Level Controllers API
+    output: docs/reference/c-api/runtime-controllers.md
+    summary: Low-level camera, panzoom, arcball, fly, and turntable controller records.
+    audience: Use these advanced records for integrations below the retained scene controller API.
+    workflows:
+      - label: Configure cameras
+        href: ../../how-to/configure-cameras.md
+      - label: Controller reference
+        href: ../controllers.md
+    headers:
+      - include/datoviz/controller.h
+      - include/datoviz/controller/**
+    prefixes:
+      - arcball
+      - camera
+      - fly
+      - panzoom
+      - turntable
+
+  runtime_math:
+    title: Math API
+    output: docs/reference/c-api/runtime-math.md
+    summary: Boxes, vectors, animation curves, pseudo-random generation, and statistical helpers.
+    audience: Use these helpers for numeric work shared by scene, controller, and runtime integrations.
+    headers:
+      - include/datoviz/dvzmath.h
+      - include/datoviz/math/**
+    prefixes:
+      - box
+      - dmat4
+      - dvec3
+      - dvec4
+      - easing
+      - mean
+      - min
+      - normalize
+      - prng
+      - range
+      - vec2
+      - vec3
+
+  runtime_utilities:
+    title: Common And Utility API
+    output: docs/reference/c-api/runtime-utilities.md
+    summary: Common runtime, file I/O, font, render-type, and miscellaneous utility functions.
+    audience: Use these functions for allocation, diagnostics, resources, file access, and shared runtime support.
+    headers:
+      - include/datoviz/common.h
+      - include/datoviz/common/**
+      - include/datoviz/fileio.h
+      - include/datoviz/fileio/**
+      - include/datoviz/font.h
+      - include/datoviz/render_types.h
+    prefixes:
+      - error
+      - file
+      - font
+      - load
+      - make
+      - memory
+      - parse
+      - read
+      - resource
+      - time
+      - version
+      - write
 
 types:
   output: docs/reference/c-api/types.md

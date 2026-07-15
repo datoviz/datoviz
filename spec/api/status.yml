@@ -34,7 +34,7 @@ modules:
     umbrella: default
     raw_binding: true
     python_top_level: true
-    docs_group: runtime
+    docs_group: runtime_utilities
     rationale: null
 
   - module: math
@@ -45,7 +45,7 @@ modules:
     umbrella: default
     raw_binding: true
     python_top_level: true
-    docs_group: runtime
+    docs_group: runtime_math
     rationale: null
 
   - module: font
@@ -59,7 +59,8 @@ modules:
     docs_group:
       - scene
       - visuals
-      - runtime
+      - techniques
+      - runtime_utilities
     rationale: null
 
   - module: geometry
@@ -80,7 +81,7 @@ modules:
     umbrella: default
     raw_binding: true
     python_top_level: true
-    docs_group: runtime
+    docs_group: runtime_utilities
     rationale: null
 
   - module: input
@@ -259,7 +260,7 @@ modules:
     umbrella: advanced
     raw_binding: true
     python_top_level: false
-    docs_group: runtime
+    docs_group: runtime_controllers
     rationale: Low-level controller records; ordinary users access controllers through scene APIs.
 
   - module: fileio
@@ -270,7 +271,7 @@ modules:
     umbrella: advanced
     raw_binding: true
     python_top_level: false
-    docs_group: runtime
+    docs_group: runtime_utilities
     rationale: Low-level utility I/O helpers.
 
   - module: gpu_protocol_legacy
@@ -280,7 +281,7 @@ modules:
     umbrella: advanced
     raw_binding: true
     python_top_level: false
-    docs_group: runtime
+    docs_group: runtime_vulkan
     rationale: Advanced GPU data-management flags and forwarding header for moved render types.
 
   - module: vulkan_runtime
@@ -293,5 +294,7 @@ modules:
     umbrella: advanced
     raw_binding: true
     python_top_level: false
-    docs_group: runtime
+    docs_group:
+      - runtime_vulkan
+      - runtime_vklite
     rationale: Vulkan/vklite runtime foundation, explicitly opt-in for advanced users.

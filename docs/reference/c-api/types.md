@@ -97,7 +97,7 @@ struct DvzFramePlanUploadDesc {
 };
 ```
 
-## Scene API
+## Rendering Techniques API
 
 ### Typedefs
 
@@ -106,6 +106,411 @@ struct DvzFramePlanUploadDesc {
 ```c
 typedef enum DvzAlphaMode DvzAlphaMode;
 ```
+
+#### `DvzAnimation`
+
+```c
+typedef struct DvzAnimation DvzAnimation;
+```
+
+#### `DvzBounds`
+
+```c
+typedef struct DvzBounds DvzBounds;
+```
+
+#### `DvzBoundsSpace`
+
+```c
+typedef enum DvzBoundsSpace DvzBoundsSpace;
+```
+
+#### `DvzBuiltinColormap`
+
+```c
+typedef enum DvzBuiltinColormap DvzBuiltinColormap;
+```
+
+#### `DvzCategoryId`
+
+```c
+typedef int64_t DvzCategoryId;
+```
+
+#### `DvzColorPipeline`
+
+```c
+typedef enum DvzColorPipeline DvzColorPipeline;
+```
+
+#### `DvzColorRole`
+
+```c
+typedef enum DvzColorRole DvzColorRole;
+```
+
+#### `DvzDataDomain`
+
+```c
+typedef struct DvzDataDomain DvzDataDomain;
+```
+
+#### `DvzDateTimeBuiltin`
+
+```c
+typedef enum DvzDateTimeBuiltin DvzDateTimeBuiltin;
+```
+
+#### `DvzDateTimeFormat`
+
+```c
+typedef struct DvzDateTimeFormat DvzDateTimeFormat;
+```
+
+#### `DvzDimMask`
+
+```c
+typedef uint32_t DvzDimMask;
+```
+
+#### `DvzDimMaskFlag`
+
+```c
+typedef enum DvzDimMaskFlag DvzDimMaskFlag;
+```
+
+#### `DvzEdlDesc`
+
+```c
+typedef struct DvzEdlDesc DvzEdlDesc;
+```
+
+#### `DvzHorizontalAnchor`
+
+```c
+typedef enum DvzHorizontalAnchor DvzHorizontalAnchor;
+```
+
+#### `DvzMsaaDesc`
+
+```c
+typedef struct DvzMsaaDesc DvzMsaaDesc;
+```
+
+#### `DvzPlotRole`
+
+```c
+typedef enum DvzPlotRole DvzPlotRole;
+```
+
+#### `DvzRect`
+
+```c
+typedef struct DvzRect DvzRect;
+```
+
+#### `DvzRenderedContribution`
+
+```c
+typedef struct DvzRenderedContribution DvzRenderedContribution;
+```
+
+#### `DvzRenderedContributionKind`
+
+```c
+typedef enum DvzRenderedContributionKind DvzRenderedContributionKind;
+```
+
+#### `DvzSelectMode`
+
+```c
+typedef enum DvzSelectMode DvzSelectMode;
+```
+
+#### `DvzShapeAspect`
+
+```c
+typedef enum DvzShapeAspect DvzShapeAspect;
+```
+
+#### `DvzSsaoDesc`
+
+```c
+typedef struct DvzSsaoDesc DvzSsaoDesc;
+```
+
+#### `DvzTimeInterval`
+
+```c
+typedef enum DvzTimeInterval DvzTimeInterval;
+```
+
+#### `DvzTimerMode`
+
+```c
+typedef enum DvzTimerMode DvzTimerMode;
+```
+
+#### `DvzTimestamp`
+
+```c
+typedef int64_t DvzTimestamp;
+```
+
+#### `DvzVerticalAnchor`
+
+```c
+typedef enum DvzVerticalAnchor DvzVerticalAnchor;
+```
+
+### Enums
+
+#### `DvzAlphaMode`
+
+```c
+DVZ_ALPHA_OPAQUE = 0,
+DVZ_ALPHA_BLENDED = 1,
+DVZ_ALPHA_WBOIT = 2,
+DVZ_ALPHA_DEPTH_PEEL = 3,
+DVZ_ALPHA_MASK = 4,
+```
+
+#### `DvzBoundsSpace`
+
+```c
+DVZ_BOUNDS_SPACE_VISUAL = 0,
+DVZ_BOUNDS_SPACE_SCREEN = 1,
+```
+
+#### `DvzBuiltinColormap`
+
+```c
+DVZ_BUILTIN_COLORMAP_NONE = 0,
+DVZ_BUILTIN_COLORMAP_VIRIDIS = 1,
+DVZ_BUILTIN_COLORMAP_MAGMA = 2,
+DVZ_BUILTIN_COLORMAP_PLASMA = 3,
+DVZ_BUILTIN_COLORMAP_INFERNO = 4,
+DVZ_BUILTIN_COLORMAP_CIVIDIS = 5,
+DVZ_BUILTIN_COLORMAP_TURBO = 6,
+DVZ_BUILTIN_COLORMAP_GRAY = 7,
+```
+
+#### `DvzColorPipeline`
+
+```c
+DVZ_COLOR_PIPELINE_LINEAR_SRGB = 0,
+DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND = 1,
+```
+
+#### `DvzColorRole`
+
+```c
+DVZ_COLOR_ROLE_NONE = 0,
+DVZ_COLOR_ROLE_SRGB_COLOR = 1,
+DVZ_COLOR_ROLE_LINEAR_COLOR = 2,
+DVZ_COLOR_ROLE_DATA = 3,
+```
+
+#### `DvzDateTimeBuiltin`
+
+```c
+DVZ_DATETIME_FORMAT_CONCISE_UTC = 0,
+DVZ_DATETIME_FORMAT_ISO_UTC = 1,
+```
+
+#### `DvzDimMaskFlag`
+
+```c
+DVZ_DIM_MASK_NONE = 0,
+DVZ_DIM_MASK_X = 1,
+DVZ_DIM_MASK_Y = 2,
+DVZ_DIM_MASK_Z = 4,
+DVZ_DIM_MASK_XY = 3,
+DVZ_DIM_MASK_XYZ = 7,
+```
+
+#### `DvzHorizontalAnchor`
+
+```c
+DVZ_HORIZONTAL_ANCHOR_LEFT = 0,
+DVZ_HORIZONTAL_ANCHOR_CENTER = 1,
+DVZ_HORIZONTAL_ANCHOR_RIGHT = 2,
+```
+
+#### `DvzPlotRole`
+
+```c
+DVZ_PLOT_ROLE_FILL = 0,
+DVZ_PLOT_ROLE_LINE = 1,
+DVZ_PLOT_ROLE_OUTLINE = 2,
+DVZ_PLOT_ROLE_BOUNDS = 3,
+```
+
+#### `DvzRenderedContributionKind`
+
+```c
+DVZ_RENDERED_CONTRIBUTION_NONE = 0,
+DVZ_RENDERED_CONTRIBUTION_VISUAL = 1,
+DVZ_RENDERED_CONTRIBUTION_GUIDE = 2,
+```
+
+#### `DvzSelectMode`
+
+```c
+DVZ_SELECT_REPLACE = 0,
+DVZ_SELECT_ADDITIVE = 1,
+DVZ_SELECT_SUBTRACT = 2,
+DVZ_SELECT_TOGGLE = 3,
+```
+
+#### `DvzShapeAspect`
+
+```c
+DVZ_SHAPE_ASPECT_FILLED = 0,
+DVZ_SHAPE_ASPECT_STROKE = 1,
+DVZ_SHAPE_ASPECT_OUTLINE = 2,
+```
+
+#### `DvzTimeInterval`
+
+```c
+DVZ_TIME_INTERVAL_NANOSECOND = 0,
+DVZ_TIME_INTERVAL_MICROSECOND = 1,
+DVZ_TIME_INTERVAL_MILLISECOND = 2,
+DVZ_TIME_INTERVAL_SECOND = 3,
+DVZ_TIME_INTERVAL_MINUTE = 4,
+DVZ_TIME_INTERVAL_HOUR = 5,
+DVZ_TIME_INTERVAL_DAY = 6,
+DVZ_TIME_INTERVAL_MONTH = 7,
+DVZ_TIME_INTERVAL_YEAR = 8,
+```
+
+#### `DvzTimerMode`
+
+```c
+DVZ_TIMER_EVERY_FRAME = 0,
+DVZ_TIMER_INTERVAL = 1,
+DVZ_TIMER_CATCH_UP = 2,
+```
+
+#### `DvzVerticalAnchor`
+
+```c
+DVZ_VERTICAL_ANCHOR_TOP = 0,
+DVZ_VERTICAL_ANCHOR_CENTER = 1,
+DVZ_VERTICAL_ANCHOR_BOTTOM = 2,
+```
+
+### Records
+
+#### `DvzAnimation`
+
+```c
+typedef struct DvzAnimation DvzAnimation;
+```
+
+#### `DvzBounds`
+
+```c
+struct DvzBounds {
+    _Bool valid;
+    uint32_t dims;
+    double[3] min;
+    double[3] max;
+};
+```
+
+#### `DvzDataDomain`
+
+```c
+struct DvzDataDomain {
+    double min;
+    double max;
+};
+```
+
+#### `DvzDateTimeFormat`
+
+```c
+typedef struct DvzDateTimeFormat DvzDateTimeFormat;
+```
+
+#### `DvzEdlDesc`
+
+```c
+struct DvzEdlDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    float radius;
+    float strength;
+    float depth_scale;
+};
+```
+
+#### `DvzMsaaDesc`
+
+```c
+struct DvzMsaaDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    _Bool enabled;
+    uint32_t sample_count;
+    _Bool alpha_to_coverage;
+};
+```
+
+#### `DvzRect`
+
+```c
+struct DvzRect {
+    float x;
+    float y;
+    float width;
+    float height;
+};
+```
+
+#### `DvzRenderedContribution`
+
+```c
+struct DvzRenderedContribution {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzId snapshot_id;
+    DvzId contribution_id;
+    DvzId guide_id;
+    DvzId visual_id;
+    DvzRenderedContributionKind kind;
+    DvzGuideRole role;
+    DvzGuidePart part;
+    DvzRect box_px;
+    char[128] label;
+};
+```
+
+#### `DvzSsaoDesc`
+
+```c
+struct DvzSsaoDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    float radius;
+    float strength;
+    float bias;
+    float power;
+    float min_visibility;
+    float blur_radius;
+    float blur_depth_sigma;
+    float blur_normal_sigma;
+    uint32_t sample_count;
+    _Bool blur_enabled;
+    _Bool debug_view;
+};
+```
+
+## Scene API
+
+### Typedefs
 
 #### `DvzAnimInteractionPolicy`
 
@@ -135,12 +540,6 @@ typedef void (*)(DvzAnimation *, double, double, uint64_t, void *) DvzAnimTimerC
 
 ```c
 typedef struct DvzAnimTimerDesc DvzAnimTimerDesc;
-```
-
-#### `DvzAnimation`
-
-```c
-typedef struct DvzAnimation DvzAnimation;
 ```
 
 #### `DvzAnnotation`
@@ -215,24 +614,6 @@ typedef struct DvzBarsDesc DvzBarsDesc;
 typedef enum DvzBarsOrientation DvzBarsOrientation;
 ```
 
-#### `DvzBounds`
-
-```c
-typedef struct DvzBounds DvzBounds;
-```
-
-#### `DvzBoundsSpace`
-
-```c
-typedef enum DvzBoundsSpace DvzBoundsSpace;
-```
-
-#### `DvzBuiltinColormap`
-
-```c
-typedef enum DvzBuiltinColormap DvzBuiltinColormap;
-```
-
 #### `DvzCamera`
 
 ```c
@@ -255,24 +636,6 @@ typedef enum DvzCameraUpMode DvzCameraUpMode;
 
 ```c
 typedef struct DvzCapabilitySnapshot DvzCapabilitySnapshot;
-```
-
-#### `DvzCategoryId`
-
-```c
-typedef int64_t DvzCategoryId;
-```
-
-#### `DvzColorPipeline`
-
-```c
-typedef enum DvzColorPipeline DvzColorPipeline;
-```
-
-#### `DvzColorRole`
-
-```c
-typedef enum DvzColorRole DvzColorRole;
 ```
 
 #### `DvzColorbar`
@@ -365,40 +728,10 @@ typedef enum DvzControllerMode DvzControllerMode;
 typedef enum DvzControllerType DvzControllerType;
 ```
 
-#### `DvzDataDomain`
-
-```c
-typedef struct DvzDataDomain DvzDataDomain;
-```
-
-#### `DvzDateTimeBuiltin`
-
-```c
-typedef enum DvzDateTimeBuiltin DvzDateTimeBuiltin;
-```
-
-#### `DvzDateTimeFormat`
-
-```c
-typedef struct DvzDateTimeFormat DvzDateTimeFormat;
-```
-
 #### `DvzDiagnosticReport`
 
 ```c
 typedef struct DvzDiagnosticReport DvzDiagnosticReport;
-```
-
-#### `DvzDimMask`
-
-```c
-typedef uint32_t DvzDimMask;
-```
-
-#### `DvzDimMaskFlag`
-
-```c
-typedef enum DvzDimMaskFlag DvzDimMaskFlag;
 ```
 
 #### `DvzFieldDataView`
@@ -567,12 +900,6 @@ typedef struct DvzGuideSpan DvzGuideSpan;
 
 ```c
 typedef struct DvzGuideSpanDesc DvzGuideSpanDesc;
-```
-
-#### `DvzHorizontalAnchor`
-
-```c
-typedef enum DvzHorizontalAnchor DvzHorizontalAnchor;
 ```
 
 #### `DvzHover`
@@ -857,12 +1184,6 @@ typedef struct DvzPlacement DvzPlacement;
 typedef enum DvzPlacementSpace DvzPlacementSpace;
 ```
 
-#### `DvzPlotRole`
-
-```c
-typedef enum DvzPlotRole DvzPlotRole;
-```
-
 #### `DvzQueryCapabilityFlag`
 
 ```c
@@ -905,12 +1226,6 @@ typedef enum DvzQueryStatus DvzQueryStatus;
 typedef enum DvzQueryValueKind DvzQueryValueKind;
 ```
 
-#### `DvzRect`
-
-```c
-typedef struct DvzRect DvzRect;
-```
-
 #### `DvzReferenceGrid`
 
 ```c
@@ -927,18 +1242,6 @@ typedef struct DvzReferenceGridDesc DvzReferenceGridDesc;
 
 ```c
 typedef enum DvzReferenceGridPlane DvzReferenceGridPlane;
-```
-
-#### `DvzRenderedContribution`
-
-```c
-typedef struct DvzRenderedContribution DvzRenderedContribution;
-```
-
-#### `DvzRenderedContributionKind`
-
-```c
-typedef enum DvzRenderedContributionKind DvzRenderedContributionKind;
 ```
 
 #### `DvzSampledField`
@@ -1091,12 +1394,6 @@ typedef enum DvzSceneTargetKind DvzSceneTargetKind;
 typedef enum DvzSceneVisualFamily DvzSceneVisualFamily;
 ```
 
-#### `DvzSelectMode`
-
-```c
-typedef enum DvzSelectMode DvzSelectMode;
-```
-
 #### `DvzSelection`
 
 ```c
@@ -1119,12 +1416,6 @@ typedef struct DvzSelectionItem DvzSelectionItem;
 
 ```c
 typedef struct DvzSelectionVisualStyle DvzSelectionVisualStyle;
-```
-
-#### `DvzShapeAspect`
-
-```c
-typedef enum DvzShapeAspect DvzShapeAspect;
 ```
 
 #### `DvzText`
@@ -1209,24 +1500,6 @@ typedef enum DvzTextRenderer DvzTextRenderer;
 
 ```c
 typedef struct DvzTextStyle DvzTextStyle;
-```
-
-#### `DvzTimeInterval`
-
-```c
-typedef enum DvzTimeInterval DvzTimeInterval;
-```
-
-#### `DvzTimerMode`
-
-```c
-typedef enum DvzTimerMode DvzTimerMode;
-```
-
-#### `DvzTimestamp`
-
-```c
-typedef int64_t DvzTimestamp;
 ```
 
 #### `DvzTrack`
@@ -1343,23 +1616,7 @@ typedef enum DvzUnitLadderBuiltin DvzUnitLadderBuiltin;
 typedef struct DvzUnits DvzUnits;
 ```
 
-#### `DvzVerticalAnchor`
-
-```c
-typedef enum DvzVerticalAnchor DvzVerticalAnchor;
-```
-
 ### Enums
-
-#### `DvzAlphaMode`
-
-```c
-DVZ_ALPHA_OPAQUE = 0,
-DVZ_ALPHA_BLENDED = 1,
-DVZ_ALPHA_WBOIT = 2,
-DVZ_ALPHA_DEPTH_PEEL = 3,
-DVZ_ALPHA_MASK = 4,
-```
 
 #### `DvzAnimInteractionPolicy`
 
@@ -1387,48 +1644,12 @@ DVZ_BARS_ORIENTATION_VERTICAL = 0,
 DVZ_BARS_ORIENTATION_HORIZONTAL = 1,
 ```
 
-#### `DvzBoundsSpace`
-
-```c
-DVZ_BOUNDS_SPACE_VISUAL = 0,
-DVZ_BOUNDS_SPACE_SCREEN = 1,
-```
-
-#### `DvzBuiltinColormap`
-
-```c
-DVZ_BUILTIN_COLORMAP_NONE = 0,
-DVZ_BUILTIN_COLORMAP_VIRIDIS = 1,
-DVZ_BUILTIN_COLORMAP_MAGMA = 2,
-DVZ_BUILTIN_COLORMAP_PLASMA = 3,
-DVZ_BUILTIN_COLORMAP_INFERNO = 4,
-DVZ_BUILTIN_COLORMAP_CIVIDIS = 5,
-DVZ_BUILTIN_COLORMAP_TURBO = 6,
-DVZ_BUILTIN_COLORMAP_GRAY = 7,
-```
-
 #### `DvzCameraUpMode`
 
 ```c
 DVZ_CAMERA_UP_FIXED = 0,
 DVZ_CAMERA_UP_WORLD = 1,
 DVZ_CAMERA_UP_TRACK = 2,
-```
-
-#### `DvzColorPipeline`
-
-```c
-DVZ_COLOR_PIPELINE_LINEAR_SRGB = 0,
-DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND = 1,
-```
-
-#### `DvzColorRole`
-
-```c
-DVZ_COLOR_ROLE_NONE = 0,
-DVZ_COLOR_ROLE_SRGB_COLOR = 1,
-DVZ_COLOR_ROLE_LINEAR_COLOR = 2,
-DVZ_COLOR_ROLE_DATA = 3,
 ```
 
 #### `DvzColorbarOrientation`
@@ -1488,24 +1709,6 @@ DVZ_CONTROLLER_TYPE_PANZOOM = 1,
 DVZ_CONTROLLER_TYPE_ARCBALL = 2,
 DVZ_CONTROLLER_TYPE_FLY = 3,
 DVZ_CONTROLLER_TYPE_TURNTABLE = 4,
-```
-
-#### `DvzDateTimeBuiltin`
-
-```c
-DVZ_DATETIME_FORMAT_CONCISE_UTC = 0,
-DVZ_DATETIME_FORMAT_ISO_UTC = 1,
-```
-
-#### `DvzDimMaskFlag`
-
-```c
-DVZ_DIM_MASK_NONE = 0,
-DVZ_DIM_MASK_X = 1,
-DVZ_DIM_MASK_Y = 2,
-DVZ_DIM_MASK_Z = 4,
-DVZ_DIM_MASK_XY = 3,
-DVZ_DIM_MASK_XYZ = 7,
 ```
 
 #### `DvzFieldDim`
@@ -1656,14 +1859,6 @@ DVZ_GUIDE_ROLE_GUIDE_SPAN = 14,
 DVZ_GUIDE_ROLE_GUIDE_LABEL = 15,
 ```
 
-#### `DvzHorizontalAnchor`
-
-```c
-DVZ_HORIZONTAL_ANCHOR_LEFT = 0,
-DVZ_HORIZONTAL_ANCHOR_CENTER = 1,
-DVZ_HORIZONTAL_ANCHOR_RIGHT = 2,
-```
-
 #### `DvzItemStateKind`
 
 ```c
@@ -1758,15 +1953,6 @@ DVZ_PLACEMENT_SPACE_PANEL = 0,
 DVZ_PLACEMENT_SPACE_FIGURE = 1,
 ```
 
-#### `DvzPlotRole`
-
-```c
-DVZ_PLOT_ROLE_FILL = 0,
-DVZ_PLOT_ROLE_LINE = 1,
-DVZ_PLOT_ROLE_OUTLINE = 2,
-DVZ_PLOT_ROLE_BOUNDS = 3,
-```
-
 #### `DvzQueryCapabilityFlag`
 
 ```c
@@ -1834,14 +2020,6 @@ DVZ_REFERENCE_GRID_XY = 0,
 DVZ_REFERENCE_GRID_XZ = 1,
 DVZ_REFERENCE_GRID_YZ = 2,
 DVZ_REFERENCE_GRID_CUSTOM = 3,
-```
-
-#### `DvzRenderedContributionKind`
-
-```c
-DVZ_RENDERED_CONTRIBUTION_NONE = 0,
-DVZ_RENDERED_CONTRIBUTION_VISUAL = 1,
-DVZ_RENDERED_CONTRIBUTION_GUIDE = 2,
 ```
 
 #### `DvzScaleBarLabelPosition`
@@ -1972,23 +2150,6 @@ DVZ_SCENE_VISUAL_FAMILY_LABELS = 14,
 DVZ_SCENE_VISUAL_FAMILY_SPLAT = 15,
 ```
 
-#### `DvzSelectMode`
-
-```c
-DVZ_SELECT_REPLACE = 0,
-DVZ_SELECT_ADDITIVE = 1,
-DVZ_SELECT_SUBTRACT = 2,
-DVZ_SELECT_TOGGLE = 3,
-```
-
-#### `DvzShapeAspect`
-
-```c
-DVZ_SHAPE_ASPECT_FILLED = 0,
-DVZ_SHAPE_ASPECT_STROKE = 1,
-DVZ_SHAPE_ASPECT_OUTLINE = 2,
-```
-
 #### `DvzTextAlign`
 
 ```c
@@ -2030,28 +2191,6 @@ DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS = 1,
 DVZ_TEXT_RENDERER_BITMAP_ATLAS = 2,
 DVZ_TEXT_RENDERER_MSDF_ATLAS = 3,
 DVZ_TEXT_RENDERER_VECTOR_GPU = 4,
-```
-
-#### `DvzTimeInterval`
-
-```c
-DVZ_TIME_INTERVAL_NANOSECOND = 0,
-DVZ_TIME_INTERVAL_MICROSECOND = 1,
-DVZ_TIME_INTERVAL_MILLISECOND = 2,
-DVZ_TIME_INTERVAL_SECOND = 3,
-DVZ_TIME_INTERVAL_MINUTE = 4,
-DVZ_TIME_INTERVAL_HOUR = 5,
-DVZ_TIME_INTERVAL_DAY = 6,
-DVZ_TIME_INTERVAL_MONTH = 7,
-DVZ_TIME_INTERVAL_YEAR = 8,
-```
-
-#### `DvzTimerMode`
-
-```c
-DVZ_TIMER_EVERY_FRAME = 0,
-DVZ_TIMER_INTERVAL = 1,
-DVZ_TIMER_CATCH_UP = 2,
 ```
 
 #### `DvzTrackInterpolation`
@@ -2120,14 +2259,6 @@ DVZ_UNIT_LADDER_DURATION = 1,
 DVZ_UNIT_LADDER_RAW = 2,
 ```
 
-#### `DvzVerticalAnchor`
-
-```c
-DVZ_VERTICAL_ANCHOR_TOP = 0,
-DVZ_VERTICAL_ANCHOR_CENTER = 1,
-DVZ_VERTICAL_ANCHOR_BOTTOM = 2,
-```
-
 ### Records
 
 #### `DvzAnimPhaseDesc`
@@ -2157,12 +2288,6 @@ struct DvzAnimTimerDesc {
     DvzAnimTimerCallback callback;
     void * user_data;
 };
-```
-
-#### `DvzAnimation`
-
-```c
-typedef struct DvzAnimation DvzAnimation;
 ```
 
 #### `DvzAnnotation`
@@ -2291,17 +2416,6 @@ struct DvzBarsDesc {
 };
 ```
 
-#### `DvzBounds`
-
-```c
-struct DvzBounds {
-    _Bool valid;
-    uint32_t dims;
-    double[3] min;
-    double[3] max;
-};
-```
-
 #### `DvzCameraMotionDesc`
 
 ```c
@@ -2426,21 +2540,6 @@ typedef struct DvzController DvzController;
 
 ```c
 typedef struct DvzControllerLink DvzControllerLink;
-```
-
-#### `DvzDataDomain`
-
-```c
-struct DvzDataDomain {
-    double min;
-    double max;
-};
-```
-
-#### `DvzDateTimeFormat`
-
-```c
-typedef struct DvzDateTimeFormat DvzDateTimeFormat;
 ```
 
 #### `DvzDiagnosticReport`
@@ -3191,17 +3290,6 @@ struct DvzQueryResult {
 };
 ```
 
-#### `DvzRect`
-
-```c
-struct DvzRect {
-    float x;
-    float y;
-    float width;
-    float height;
-};
-```
-
 #### `DvzReferenceGrid`
 
 ```c
@@ -3231,24 +3319,6 @@ struct DvzReferenceGridDesc {
     _Bool show_major;
     _Bool show_axes;
     _Bool depth_test;
-};
-```
-
-#### `DvzRenderedContribution`
-
-```c
-struct DvzRenderedContribution {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzId snapshot_id;
-    DvzId contribution_id;
-    DvzId guide_id;
-    DvzId visual_id;
-    DvzRenderedContributionKind kind;
-    DvzGuideRole role;
-    DvzGuidePart part;
-    DvzRect box_px;
-    char[128] label;
 };
 ```
 
@@ -3723,12 +3793,6 @@ typedef enum DvzDepthCueMetric DvzDepthCueMetric;
 typedef enum DvzDepthCueMode DvzDepthCueMode;
 ```
 
-#### `DvzEdlDesc`
-
-```c
-typedef struct DvzEdlDesc DvzEdlDesc;
-```
-
 #### `DvzGeometry`
 
 ```c
@@ -3909,12 +3973,6 @@ typedef struct DvzMaterialDesc DvzMaterialDesc;
 typedef enum DvzMaterialModel DvzMaterialModel;
 ```
 
-#### `DvzMsaaDesc`
-
-```c
-typedef struct DvzMsaaDesc DvzMsaaDesc;
-```
-
 #### `DvzPathJoin`
 
 ```c
@@ -3979,12 +4037,6 @@ typedef enum DvzSphereFlags DvzSphereFlags;
 
 ```c
 typedef enum DvzSphereMode DvzSphereMode;
-```
-
-#### `DvzSsaoDesc`
-
-```c
-typedef struct DvzSsaoDesc DvzSsaoDesc;
 ```
 
 #### `DvzStandardMaterial`
@@ -4526,18 +4578,6 @@ struct DvzDepthCueDesc {
 };
 ```
 
-#### `DvzEdlDesc`
-
-```c
-struct DvzEdlDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    float radius;
-    float strength;
-    float depth_scale;
-};
-```
-
 #### `DvzGeometry`
 
 ```c
@@ -4852,18 +4892,6 @@ struct DvzMaterialDesc {
 };
 ```
 
-#### `DvzMsaaDesc`
-
-```c
-struct DvzMsaaDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    _Bool enabled;
-    uint32_t sample_count;
-    _Bool alpha_to_coverage;
-};
-```
-
 #### `DvzPhongMaterial`
 
 ```c
@@ -4935,26 +4963,6 @@ struct DvzPolygonStyle {
 
 ```c
 typedef struct DvzPolygons DvzPolygons;
-```
-
-#### `DvzSsaoDesc`
-
-```c
-struct DvzSsaoDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    float radius;
-    float strength;
-    float bias;
-    float power;
-    float min_visibility;
-    float blur_radius;
-    float blur_depth_sigma;
-    float blur_normal_sigma;
-    uint32_t sample_count;
-    _Bool blur_enabled;
-    _Bool debug_view;
-};
 ```
 
 #### `DvzStandardMaterial`
@@ -7538,39 +7546,9 @@ struct DvzDrp2ValidationResult {
 typedef struct DvzVma DvzVma;
 ```
 
-## Runtime And Utilities API
+## vklite API
 
 ### Typedefs
-
-#### `DvzAllocation`
-
-```c
-typedef struct DvzAllocation DvzAllocation;
-```
-
-#### `DvzAllocationFlags`
-
-```c
-typedef uint32_t DvzAllocationFlags;
-```
-
-#### `DvzAlpha`
-
-```c
-typedef uint8_t DvzAlpha;
-```
-
-#### `DvzArcballFlags`
-
-```c
-typedef enum DvzArcballFlags DvzArcballFlags;
-```
-
-#### `DvzArcballState`
-
-```c
-typedef struct DvzArcballState DvzArcballState;
-```
 
 #### `DvzAttachment`
 
@@ -7602,82 +7580,10 @@ typedef struct VkMemoryBarrier2 DvzBarrierMemory;
 typedef struct DvzBarriers DvzBarriers;
 ```
 
-#### `DvzBlendFactor`
-
-```c
-typedef enum DvzBlendFactor DvzBlendFactor;
-```
-
-#### `DvzBlendOp`
-
-```c
-typedef enum DvzBlendOp DvzBlendOp;
-```
-
-#### `DvzBox`
-
-```c
-typedef struct DvzBox DvzBox;
-```
-
-#### `DvzBoxExtentStrategy`
-
-```c
-typedef enum DvzBoxExtentStrategy DvzBoxExtentStrategy;
-```
-
-#### `DvzBoxMergeStrategy`
-
-```c
-typedef enum DvzBoxMergeStrategy DvzBoxMergeStrategy;
-```
-
 #### `DvzBufferViews`
 
 ```c
 typedef struct DvzBufferViews DvzBufferViews;
-```
-
-#### `DvzCameraDesc`
-
-```c
-typedef struct DvzCameraDesc DvzCameraDesc;
-```
-
-#### `DvzCameraProjection`
-
-```c
-typedef struct DvzCameraProjection DvzCameraProjection;
-```
-
-#### `DvzCameraType`
-
-```c
-typedef enum DvzCameraType DvzCameraType;
-```
-
-#### `DvzCameraView`
-
-```c
-typedef struct DvzCameraView DvzCameraView;
-```
-
-#### `DvzColor`
-
-```c
-typedef struct DvzColor DvzColor;
-```
-
-#### `DvzColorMask`
-
-```c
-typedef enum DvzColorMask DvzColorMask;
-```
-
-#### `DvzColorf`
-
-```c
-typedef struct DvzColorf DvzColorf;
 ```
 
 #### `DvzCommands`
@@ -7686,34 +7592,10 @@ typedef struct DvzColorf DvzColorf;
 typedef struct DvzCommands DvzCommands;
 ```
 
-#### `DvzCompareOp`
-
-```c
-typedef enum DvzCompareOp DvzCompareOp;
-```
-
 #### `DvzCompute`
 
 ```c
 typedef struct DvzCompute DvzCompute;
-```
-
-#### `DvzCullMode`
-
-```c
-typedef enum DvzCullMode DvzCullMode;
-```
-
-#### `DvzDefaultQueue`
-
-```c
-typedef enum DvzDefaultQueue DvzDefaultQueue;
-```
-
-#### `DvzDescriptorType`
-
-```c
-typedef enum DvzDescriptorType DvzDescriptorType;
 ```
 
 #### `DvzDescriptors`
@@ -7722,94 +7604,10 @@ typedef enum DvzDescriptorType DvzDescriptorType;
 typedef struct DvzDescriptors DvzDescriptors;
 ```
 
-#### `DvzDeviceConfig`
-
-```c
-typedef struct DvzDeviceConfig DvzDeviceConfig;
-```
-
-#### `DvzDeviceQueueRequest`
-
-```c
-typedef struct DvzDeviceQueueRequest DvzDeviceQueueRequest;
-```
-
-#### `DvzDim`
-
-```c
-typedef enum DvzDim DvzDim;
-```
-
-#### `DvzEasing`
-
-```c
-typedef enum DvzEasing DvzEasing;
-```
-
-#### `DvzErrorCallback`
-
-```c
-typedef void (*)(DvzLogLevel, const char *, void *) DvzErrorCallback;
-```
-
 #### `DvzFence`
 
 ```c
 typedef struct DvzFence DvzFence;
-```
-
-#### `DvzFilter`
-
-```c
-typedef enum DvzFilter DvzFilter;
-```
-
-#### `DvzFlyFlags`
-
-```c
-typedef enum DvzFlyFlags DvzFlyFlags;
-```
-
-#### `DvzFlyMode`
-
-```c
-typedef enum DvzFlyMode DvzFlyMode;
-```
-
-#### `DvzFontDefaults`
-
-```c
-typedef struct DvzFontDefaults DvzFontDefaults;
-```
-
-#### `DvzFontDesc`
-
-```c
-typedef struct DvzFontDesc DvzFontDesc;
-```
-
-#### `DvzFormat`
-
-```c
-typedef enum DvzFormat DvzFormat;
-```
-
-#### `DvzFrontFace`
-
-```c
-typedef enum DvzFrontFace DvzFrontFace;
-```
-
-#### `DvzGpuCtxConfig`
-
-```c
-typedef struct DvzGpuCtxConfig DvzGpuCtxConfig;
-```
-
-#### `DvzGpuInfo`
-
-```c
-typedef struct DvzGpuInfo DvzGpuInfo;
 ```
 
 #### `DvzGraphics`
@@ -7822,12 +7620,6 @@ typedef struct DvzGraphics DvzGraphics;
 
 ```c
 typedef enum DvzGraphicsFlags DvzGraphicsFlags;
-```
-
-#### `DvzId`
-
-```c
-typedef uint64_t DvzId;
 ```
 
 #### `DvzImageBlit`
@@ -7860,10 +7652,279 @@ typedef struct DvzImageViews DvzImageViews;
 typedef struct DvzImages DvzImages;
 ```
 
-#### `DvzIndex`
+#### `DvzPresentStatus`
 
 ```c
-typedef uint32_t DvzIndex;
+typedef enum DvzPresentStatus DvzPresentStatus;
+```
+
+#### `DvzRendering`
+
+```c
+typedef struct DvzRendering DvzRendering;
+```
+
+#### `DvzSampler`
+
+```c
+typedef struct DvzSampler DvzSampler;
+```
+
+#### `DvzSamplerAxis`
+
+```c
+typedef enum DvzSamplerAxis DvzSamplerAxis;
+```
+
+#### `DvzShader`
+
+```c
+typedef struct DvzShader DvzShader;
+```
+
+#### `DvzSlots`
+
+```c
+typedef struct DvzSlots DvzSlots;
+```
+
+#### `DvzSubmit`
+
+```c
+typedef struct DvzSubmit DvzSubmit;
+```
+
+#### `DvzSurface`
+
+```c
+typedef struct DvzSurface DvzSurface;
+```
+
+#### `DvzSwapchain`
+
+```c
+typedef struct DvzSwapchain DvzSwapchain;
+```
+
+#### `DvzSwapchainConfig`
+
+```c
+typedef struct DvzSwapchainConfig DvzSwapchainConfig;
+```
+
+### Enums
+
+#### `DvzGraphicsFlags`
+
+```c
+DVZ_GRAPHICS_FLAGS_DISABLE = 0,
+DVZ_GRAPHICS_FLAGS_FIXED = 1,
+DVZ_GRAPHICS_FLAGS_DYNAMIC = 2,
+```
+
+#### `DvzPresentStatus`
+
+```c
+DVZ_PRESENT_STATUS_OK = 0,
+DVZ_PRESENT_STATUS_RECREATE = 1,
+DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT = 2,
+DVZ_PRESENT_STATUS_DEVICE_LOST = 3,
+DVZ_PRESENT_STATUS_ERROR = 4,
+```
+
+#### `DvzSamplerAxis`
+
+```c
+DVZ_SAMPLER_AXIS_U = 0,
+DVZ_SAMPLER_AXIS_V = 1,
+DVZ_SAMPLER_AXIS_W = 2,
+```
+
+### Records
+
+#### `DvzBarriers`
+
+```c
+struct DvzBarriers {
+    VkDependencyInfo info;
+    DvzBarrierMemory[4] bmems;
+    DvzBarrierBuffer[4] bbufs;
+    DvzBarrierImage[4] bimg;
+};
+```
+
+#### `DvzBufferViews`
+
+```c
+typedef struct DvzBufferViews DvzBufferViews;
+```
+
+#### `DvzCommands`
+
+```c
+typedef struct DvzCommands DvzCommands;
+```
+
+#### `DvzCompute`
+
+```c
+typedef struct DvzCompute DvzCompute;
+```
+
+#### `DvzDescriptors`
+
+```c
+typedef struct DvzDescriptors DvzDescriptors;
+```
+
+#### `DvzFence`
+
+```c
+typedef struct DvzFence DvzFence;
+```
+
+#### `DvzGraphics`
+
+```c
+typedef struct DvzGraphics DvzGraphics;
+```
+
+#### `DvzImageBlit`
+
+```c
+typedef struct DvzImageBlit DvzImageBlit;
+```
+
+#### `DvzImageCopy`
+
+```c
+typedef struct DvzImageCopy DvzImageCopy;
+```
+
+#### `DvzImageViews`
+
+```c
+typedef struct DvzImageViews DvzImageViews;
+```
+
+#### `DvzImages`
+
+```c
+typedef struct DvzImages DvzImages;
+```
+
+#### `DvzRendering`
+
+```c
+typedef struct DvzRendering DvzRendering;
+```
+
+#### `DvzSampler`
+
+```c
+typedef struct DvzSampler DvzSampler;
+```
+
+#### `DvzShader`
+
+```c
+typedef struct DvzShader DvzShader;
+```
+
+#### `DvzSlots`
+
+```c
+typedef struct DvzSlots DvzSlots;
+```
+
+#### `DvzSubmit`
+
+```c
+typedef struct DvzSubmit DvzSubmit;
+```
+
+#### `DvzSurface`
+
+```c
+typedef struct DvzSurface DvzSurface;
+```
+
+#### `DvzSwapchain`
+
+```c
+typedef struct DvzSwapchain DvzSwapchain;
+```
+
+#### `DvzSwapchainConfig`
+
+```c
+struct DvzSwapchainConfig {
+    VkFormat image_format;
+    VkColorSpaceKHR color_space;
+    VkPresentModeKHR present_mode;
+    VkImageUsageFlags image_usage;
+    VkCompositeAlphaFlagBitsKHR composite_alpha;
+    uint32_t min_image_count;
+    _Bool clipped;
+};
+```
+
+## Vulkan Foundation API
+
+### Typedefs
+
+#### `DvzAllocation`
+
+```c
+typedef struct DvzAllocation DvzAllocation;
+```
+
+#### `DvzAllocationFlags`
+
+```c
+typedef uint32_t DvzAllocationFlags;
+```
+
+#### `DvzDefaultQueue`
+
+```c
+typedef enum DvzDefaultQueue DvzDefaultQueue;
+```
+
+#### `DvzDescriptorType`
+
+```c
+typedef enum DvzDescriptorType DvzDescriptorType;
+```
+
+#### `DvzDeviceConfig`
+
+```c
+typedef struct DvzDeviceConfig DvzDeviceConfig;
+```
+
+#### `DvzDeviceQueueRequest`
+
+```c
+typedef struct DvzDeviceQueueRequest DvzDeviceQueueRequest;
+```
+
+#### `DvzFilter`
+
+```c
+typedef enum DvzFilter DvzFilter;
+```
+
+#### `DvzGpuCtxConfig`
+
+```c
+typedef struct DvzGpuCtxConfig DvzGpuCtxConfig;
+```
+
+#### `DvzGpuInfo`
+
+```c
+typedef struct DvzGpuInfo DvzGpuInfo;
 ```
 
 #### `DvzInstance`
@@ -7896,10 +7957,400 @@ typedef struct DvzInteropBufferExport DvzInteropBufferExport;
 typedef struct DvzInteropBufferExportConfig DvzInteropBufferExportConfig;
 ```
 
-#### `DvzLogLevel`
+#### `DvzPolygonMode`
 
 ```c
-typedef enum DvzLogLevel DvzLogLevel;
+typedef enum DvzPolygonMode DvzPolygonMode;
+```
+
+#### `DvzQueue`
+
+```c
+typedef struct DvzQueue DvzQueue;
+```
+
+#### `DvzQueueCaps`
+
+```c
+typedef struct DvzQueueCaps DvzQueueCaps;
+```
+
+#### `DvzQueueRole`
+
+```c
+typedef enum DvzQueueRole DvzQueueRole;
+```
+
+#### `DvzQueues`
+
+```c
+typedef struct DvzQueues DvzQueues;
+```
+
+#### `DvzSamplerAddressMode`
+
+```c
+typedef enum DvzSamplerAddressMode DvzSamplerAddressMode;
+```
+
+#### `DvzSemaphore`
+
+```c
+typedef struct DvzSemaphore DvzSemaphore;
+```
+
+#### `DvzShaderFormat`
+
+```c
+typedef enum DvzShaderFormat DvzShaderFormat;
+```
+
+#### `DvzShaderStageFlags`
+
+```c
+typedef int32_t DvzShaderStageFlags;
+```
+
+#### `DvzShaderType`
+
+```c
+typedef enum DvzShaderType DvzShaderType;
+```
+
+#### `DvzVertexInputRate`
+
+```c
+typedef enum DvzVertexInputRate DvzVertexInputRate;
+```
+
+#### `VkInstance`
+
+```c
+typedef struct VkInstance_T * VkInstance;
+```
+
+### Enums
+
+#### `DvzDefaultQueue`
+
+```c
+DVZ_DEFAULT_QUEUE_TRANSFER = 0,
+DVZ_DEFAULT_QUEUE_COMPUTE = 1,
+DVZ_DEFAULT_QUEUE_RENDER = 2,
+DVZ_DEFAULT_QUEUE_PRESENT = 3,
+DVZ_DEFAULT_QUEUE_COUNT = 4,
+```
+
+#### `DvzDescriptorType`
+
+```c
+DVZ_DESCRIPTOR_TYPE_SAMPLER = 0,
+DVZ_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER = 1,
+DVZ_DESCRIPTOR_TYPE_SAMPLED_IMAGE = 2,
+DVZ_DESCRIPTOR_TYPE_STORAGE_IMAGE = 3,
+DVZ_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER = 4,
+DVZ_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER = 5,
+DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER = 6,
+DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER = 7,
+DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = 8,
+DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9,
+```
+
+#### `DvzFilter`
+
+```c
+DVZ_FILTER_NEAREST = 0,
+DVZ_FILTER_LINEAR = 1,
+DVZ_FILTER_CUBIC_IMG = 1000015000,
+```
+
+#### `DvzInstanceFlags`
+
+```c
+DVZ_INSTANCE_VALIDATION_FLAGS = 1,
+```
+
+#### `DvzPolygonMode`
+
+```c
+DVZ_POLYGON_MODE_FILL = 0,
+DVZ_POLYGON_MODE_LINE = 1,
+DVZ_POLYGON_MODE_POINT = 2,
+```
+
+#### `DvzQueueRole`
+
+```c
+DVZ_QUEUE_MAIN = 0,
+DVZ_QUEUE_COMPUTE = 1,
+DVZ_QUEUE_TRANSFER = 2,
+DVZ_QUEUE_VIDEO_ENCODE = 3,
+DVZ_QUEUE_VIDEO_DECODE = 4,
+DVZ_QUEUE_COUNT = 5,
+```
+
+#### `DvzSamplerAddressMode`
+
+```c
+DVZ_SAMPLER_ADDRESS_MODE_REPEAT = 0,
+DVZ_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT = 1,
+DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE = 2,
+DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER = 3,
+DVZ_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE = 4,
+```
+
+#### `DvzShaderFormat`
+
+```c
+DVZ_SHADER_NONE = 0,
+DVZ_SHADER_SPIRV = 1,
+DVZ_SHADER_GLSL = 2,
+```
+
+#### `DvzShaderType`
+
+```c
+DVZ_SHADER_VERTEX = 1,
+DVZ_SHADER_TESSELLATION_CONTROL = 2,
+DVZ_SHADER_TESSELLATION_EVALUATION = 4,
+DVZ_SHADER_GEOMETRY = 8,
+DVZ_SHADER_FRAGMENT = 16,
+DVZ_SHADER_COMPUTE = 32,
+```
+
+#### `DvzVertexInputRate`
+
+```c
+DVZ_VERTEX_INPUT_RATE_VERTEX = 0,
+DVZ_VERTEX_INPUT_RATE_INSTANCE = 1,
+```
+
+### Records
+
+#### `DvzAllocation`
+
+```c
+typedef struct DvzAllocation DvzAllocation;
+```
+
+#### `DvzDeviceConfig`
+
+```c
+struct DvzDeviceConfig {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzInstance * instance;
+    uint32_t gpu_index;
+    _Bool enable_canvas_extensions;
+    uint32_t queue_request_count;
+    DvzDeviceQueueRequest[8] queue_requests;
+    uint32_t extension_count;
+    const char *[256] extensions;
+    _Bool has_features10;
+    _Bool has_features11;
+    _Bool has_features12;
+    _Bool has_features13;
+    VkPhysicalDeviceFeatures features10;
+    VkPhysicalDeviceVulkan11Features features11;
+    VkPhysicalDeviceVulkan12Features features12;
+    VkPhysicalDeviceVulkan13Features features13;
+};
+```
+
+#### `DvzDeviceQueueRequest`
+
+```c
+struct DvzDeviceQueueRequest {
+    uint32_t family;
+    uint32_t count;
+};
+```
+
+#### `DvzGpuCtxConfig`
+
+```c
+struct DvzGpuCtxConfig {
+    uint32_t struct_size;
+    uint32_t flags;
+    _Bool enable_validation;
+    uint32_t gpu_index;
+    VkExternalMemoryHandleTypeFlagsKHR export_handle_type;
+    _Bool has_features10;
+    _Bool has_features12;
+    _Bool has_features13;
+    VkPhysicalDeviceFeatures features10;
+    VkPhysicalDeviceVulkan12Features features12;
+    VkPhysicalDeviceVulkan13Features features13;
+    uint32_t instance_extension_count;
+    const char *[16] instance_extensions;
+    _Bool enable_canvas_extensions;
+};
+```
+
+#### `DvzGpuInfo`
+
+```c
+struct DvzGpuInfo {
+    uint32_t index;
+    char[256] name;
+    VkPhysicalDeviceType device_type;
+    uint32_t api_version;
+    uint32_t driver_version;
+    uint32_t vendor_id;
+    uint32_t device_id;
+    DvzQueueCaps queue_caps;
+};
+```
+
+#### `DvzInstance`
+
+```c
+typedef struct DvzInstance DvzInstance;
+```
+
+#### `DvzInstanceConfig`
+
+```c
+struct DvzInstanceConfig {
+    uint32_t struct_size;
+    uint32_t flags;
+    uint32_t vk_version;
+    const char * app_name;
+    uint32_t app_version;
+    _Bool portability;
+    uint32_t layer_count;
+    const char *[32] layers;
+    uint32_t extension_count;
+    const char *[256] extensions;
+};
+```
+
+#### `DvzInteropBufferExport`
+
+```c
+struct DvzInteropBufferExport {
+    uint32_t version;
+    int memory_handle;
+    uint32_t memory_handle_type;
+    uint64_t allocation_size;
+    uint64_t offset;
+    uint64_t size;
+    uint32_t usage;
+    uint32_t vk_usage;
+    uint32_t drp2_usage;
+    uint32_t flags;
+    uint32_t device_uuid_valid;
+    uint8_t[16] device_uuid;
+    int semaphore_handle;
+    uint32_t semaphore_handle_type;
+    uint64_t semaphore_value;
+};
+```
+
+#### `DvzInteropBufferExportConfig`
+
+```c
+struct DvzInteropBufferExportConfig {
+    uint32_t struct_size;
+    uint32_t flags;
+    uint64_t offset;
+    uint64_t size;
+    uint32_t drp2_usage;
+    uint32_t export_flags;
+    DvzSemaphore * semaphore;
+    uint32_t semaphore_handle_type;
+    uint64_t semaphore_value;
+};
+```
+
+#### `DvzQueue`
+
+```c
+struct DvzQueue {
+    uint32_t family_idx;
+    uint32_t queue_idx;
+    VkQueue vk_queue;
+    VkQueueFlags flags;
+    _Bool is_main;
+    _Bool is_set;
+};
+```
+
+#### `DvzQueueCaps`
+
+```c
+struct DvzQueueCaps {
+    uint32_t family_count;
+    VkQueueFlags[8] flags;
+    uint32_t[8] queue_count;
+};
+```
+
+#### `DvzQueues`
+
+```c
+struct DvzQueues {
+    uint32_t queue_count;
+    DvzQueue[5] queues;
+};
+```
+
+#### `DvzSemaphore`
+
+```c
+typedef struct DvzSemaphore DvzSemaphore;
+```
+
+## Low-Level Controllers API
+
+### Typedefs
+
+#### `DvzArcballFlags`
+
+```c
+typedef enum DvzArcballFlags DvzArcballFlags;
+```
+
+#### `DvzArcballState`
+
+```c
+typedef struct DvzArcballState DvzArcballState;
+```
+
+#### `DvzCameraDesc`
+
+```c
+typedef struct DvzCameraDesc DvzCameraDesc;
+```
+
+#### `DvzCameraProjection`
+
+```c
+typedef struct DvzCameraProjection DvzCameraProjection;
+```
+
+#### `DvzCameraType`
+
+```c
+typedef enum DvzCameraType DvzCameraType;
+```
+
+#### `DvzCameraView`
+
+```c
+typedef struct DvzCameraView DvzCameraView;
+```
+
+#### `DvzFlyFlags`
+
+```c
+typedef enum DvzFlyFlags DvzFlyFlags;
+```
+
+#### `DvzFlyMode`
+
+```c
+typedef enum DvzFlyMode DvzFlyMode;
 ```
 
 #### `DvzMVP`
@@ -7938,22 +8389,282 @@ typedef struct DvzPanzoomResolved DvzPanzoomResolved;
 typedef struct DvzPanzoomState DvzPanzoomState;
 ```
 
-#### `DvzPolygonMode`
+#### `DvzTurntableFlags`
 
 ```c
-typedef enum DvzPolygonMode DvzPolygonMode;
+typedef enum DvzTurntableFlags DvzTurntableFlags;
 ```
 
-#### `DvzPresentStatus`
+### Enums
+
+#### `DvzArcballFlags`
 
 ```c
-typedef enum DvzPresentStatus DvzPresentStatus;
+DVZ_ARCBALL_FLAGS_NONE = 0,
+DVZ_ARCBALL_FLAGS_CONSTRAIN = 1,
 ```
 
-#### `DvzPrimitiveTopology`
+#### `DvzCameraType`
 
 ```c
-typedef enum DvzPrimitiveTopology DvzPrimitiveTopology;
+DVZ_CAMERA_PERSPECTIVE = 0,
+DVZ_CAMERA_ORTHOGRAPHIC = 1,
+```
+
+#### `DvzFlyFlags`
+
+```c
+DVZ_FLY_FLAGS_NONE = 0,
+DVZ_FLY_FLAGS_INVERT_Y = 1,
+DVZ_FLY_FLAGS_FIXED_UP = 2,
+DVZ_FLY_FLAGS_DISABLE_ROLL = 4,
+```
+
+#### `DvzFlyMode`
+
+```c
+DVZ_FLY_MODE_FREE = 0,
+DVZ_FLY_MODE_PLANE = 1,
+```
+
+#### `DvzMVPFlags`
+
+```c
+DVZ_MVP_FLAGS_NONE = 0,
+DVZ_MVP_FLAGS_ISOTROPIC_LOCAL = 1,
+```
+
+#### `DvzPanzoomFlags`
+
+```c
+DVZ_PANZOOM_FLAGS_NONE = 0,
+DVZ_PANZOOM_FLAGS_FIXED_X = 1,
+DVZ_PANZOOM_FLAGS_FIXED_Y = 2,
+DVZ_PANZOOM_FLAGS_KEEP_ASPECT = 4,
+```
+
+#### `DvzTurntableFlags`
+
+```c
+DVZ_TURNTABLE_FLAGS_NONE = 0,
+DVZ_TURNTABLE_FLAGS_INVERT_Y = 1,
+DVZ_TURNTABLE_FLAGS_ALLOW_PAN = 2,
+DVZ_TURNTABLE_FLAGS_WRAP_YAW = 4,
+DVZ_TURNTABLE_FLAGS_CLAMP_DISTANCE = 8,
+```
+
+### Records
+
+#### `DvzArcballDesc`
+
+```c
+struct DvzArcballDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    float width;
+    float height;
+    uint32_t controller_flags;
+};
+```
+
+#### `DvzArcballState`
+
+```c
+struct DvzArcballState {
+    float zoom;
+    vec2 pan;
+    _Bool interacting;
+};
+```
+
+#### `DvzCamera`
+
+```c
+typedef struct DvzCamera DvzCamera;
+```
+
+#### `DvzCameraDesc`
+
+```c
+struct DvzCameraDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzCameraView view;
+    DvzCameraProjection projection;
+};
+```
+
+#### `DvzCameraProjection`
+
+```c
+struct DvzCameraProjection {
+    DvzCameraType type;
+    float fov_y;
+    float near_clip;
+    float far_clip;
+    float ortho_height;
+};
+```
+
+#### `DvzCameraView`
+
+```c
+struct DvzCameraView {
+    vec3 eye;
+    vec3 target;
+    vec3 up;
+};
+```
+
+#### `DvzFlyDesc`
+
+```c
+struct DvzFlyDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzFlyMode mode;
+    uint32_t controller_flags;
+    DvzCameraView initial_view;
+    float yaw;
+    float pitch;
+    float roll;
+    _Bool use_angles;
+    float speed;
+    float fast_multiplier;
+    float slow_multiplier;
+    float look_speed;
+    float wheel_speed;
+};
+```
+
+#### `DvzMVP`
+
+```c
+struct DvzMVP {
+    mat4 model;
+    mat4 view;
+    mat4 proj;
+    float time;
+    uint32_t flags;
+};
+```
+
+#### `DvzPanzoom`
+
+```c
+typedef struct DvzPanzoom DvzPanzoom;
+```
+
+#### `DvzPanzoomDesc`
+
+```c
+struct DvzPanzoomDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    float width;
+    float height;
+    uint32_t controller_flags;
+};
+```
+
+#### `DvzPanzoomEval`
+
+```c
+struct DvzPanzoomEval {
+    float[4] base_extent;
+    float viewport_width;
+    float viewport_height;
+};
+```
+
+#### `DvzPanzoomResolved`
+
+```c
+struct DvzPanzoomResolved {
+    DvzMVP mvp;
+    float[4] visible_extent;
+};
+```
+
+#### `DvzPanzoomState`
+
+```c
+struct DvzPanzoomState {
+    vec2 pan;
+    vec2 zoom;
+    _Bool interacting;
+};
+```
+
+#### `DvzTurntableDesc`
+
+```c
+struct DvzTurntableDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzCameraView initial_view;
+    float yaw_speed;
+    float pitch_speed;
+    float zoom_speed;
+    float pan_speed;
+    float min_pitch;
+    float max_pitch;
+    float min_distance;
+    float max_distance;
+    uint32_t controller_flags;
+};
+```
+
+## Math API
+
+### Typedefs
+
+#### `DvzAlpha`
+
+```c
+typedef uint8_t DvzAlpha;
+```
+
+#### `DvzBox`
+
+```c
+typedef struct DvzBox DvzBox;
+```
+
+#### `DvzBoxExtentStrategy`
+
+```c
+typedef enum DvzBoxExtentStrategy DvzBoxExtentStrategy;
+```
+
+#### `DvzBoxMergeStrategy`
+
+```c
+typedef enum DvzBoxMergeStrategy DvzBoxMergeStrategy;
+```
+
+#### `DvzDim`
+
+```c
+typedef enum DvzDim DvzDim;
+```
+
+#### `DvzEasing`
+
+```c
+typedef enum DvzEasing DvzEasing;
+```
+
+#### `DvzId`
+
+```c
+typedef uint64_t DvzId;
+```
+
+#### `DvzIndex`
+
+```c
+typedef uint32_t DvzIndex;
 ```
 
 #### `DvzPrng`
@@ -7962,148 +8673,10 @@ typedef enum DvzPrimitiveTopology DvzPrimitiveTopology;
 typedef struct DvzPrng DvzPrng;
 ```
 
-#### `DvzQueue`
-
-```c
-typedef struct DvzQueue DvzQueue;
-```
-
-#### `DvzQueueCaps`
-
-```c
-typedef struct DvzQueueCaps DvzQueueCaps;
-```
-
-#### `DvzQueueRole`
-
-```c
-typedef enum DvzQueueRole DvzQueueRole;
-```
-
-#### `DvzQueues`
-
-```c
-typedef struct DvzQueues DvzQueues;
-```
-
-#### `DvzRendering`
-
-```c
-typedef struct DvzRendering DvzRendering;
-```
-
-#### `DvzResult`
-
-```c
-typedef int32_t DvzResult;
-```
-
-#### `DvzSampler`
-
-```c
-typedef struct DvzSampler DvzSampler;
-```
-
-#### `DvzSamplerAddressMode`
-
-```c
-typedef enum DvzSamplerAddressMode DvzSamplerAddressMode;
-```
-
-#### `DvzSamplerAxis`
-
-```c
-typedef enum DvzSamplerAxis DvzSamplerAxis;
-```
-
-#### `DvzSemaphore`
-
-```c
-typedef struct DvzSemaphore DvzSemaphore;
-```
-
-#### `DvzShader`
-
-```c
-typedef struct DvzShader DvzShader;
-```
-
-#### `DvzShaderFormat`
-
-```c
-typedef enum DvzShaderFormat DvzShaderFormat;
-```
-
-#### `DvzShaderStageFlags`
-
-```c
-typedef int32_t DvzShaderStageFlags;
-```
-
-#### `DvzShaderType`
-
-```c
-typedef enum DvzShaderType DvzShaderType;
-```
-
 #### `DvzSize`
 
 ```c
 typedef uint64_t DvzSize;
-```
-
-#### `DvzSlots`
-
-```c
-typedef struct DvzSlots DvzSlots;
-```
-
-#### `DvzSubmit`
-
-```c
-typedef struct DvzSubmit DvzSubmit;
-```
-
-#### `DvzSurface`
-
-```c
-typedef struct DvzSurface DvzSurface;
-```
-
-#### `DvzSwapchain`
-
-```c
-typedef struct DvzSwapchain DvzSwapchain;
-```
-
-#### `DvzSwapchainConfig`
-
-```c
-typedef struct DvzSwapchainConfig DvzSwapchainConfig;
-```
-
-#### `DvzTime`
-
-```c
-typedef struct DvzTime DvzTime;
-```
-
-#### `DvzTurntableFlags`
-
-```c
-typedef enum DvzTurntableFlags DvzTurntableFlags;
-```
-
-#### `DvzVertexInputRate`
-
-```c
-typedef enum DvzVertexInputRate DvzVertexInputRate;
-```
-
-#### `VkInstance`
-
-```c
-typedef struct VkInstance_T * VkInstance;
 ```
 
 #### `cvec2`
@@ -8324,43 +8897,6 @@ typedef float[4] vec4;
 
 ### Enums
 
-#### `DvzArcballFlags`
-
-```c
-DVZ_ARCBALL_FLAGS_NONE = 0,
-DVZ_ARCBALL_FLAGS_CONSTRAIN = 1,
-```
-
-#### `DvzBlendFactor`
-
-```c
-DVZ_BLEND_FACTOR_ZERO = 0,
-DVZ_BLEND_FACTOR_ONE = 1,
-DVZ_BLEND_FACTOR_SRC_COLOR = 2,
-DVZ_BLEND_FACTOR_ONE_MINUS_SRC_COLOR = 3,
-DVZ_BLEND_FACTOR_DST_COLOR = 4,
-DVZ_BLEND_FACTOR_ONE_MINUS_DST_COLOR = 5,
-DVZ_BLEND_FACTOR_SRC_ALPHA = 6,
-DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA = 7,
-DVZ_BLEND_FACTOR_DST_ALPHA = 8,
-DVZ_BLEND_FACTOR_ONE_MINUS_DST_ALPHA = 9,
-DVZ_BLEND_FACTOR_CONSTANT_COLOR = 10,
-DVZ_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR = 11,
-DVZ_BLEND_FACTOR_CONSTANT_ALPHA = 12,
-DVZ_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA = 13,
-DVZ_BLEND_FACTOR_SRC_ALPHA_SATURATE = 14,
-```
-
-#### `DvzBlendOp`
-
-```c
-DVZ_BLEND_OP_ADD = 0,
-DVZ_BLEND_OP_SUBTRACT = 1,
-DVZ_BLEND_OP_REVERSE_SUBTRACT = 2,
-DVZ_BLEND_OP_MIN = 3,
-DVZ_BLEND_OP_MAX = 4,
-```
-
 #### `DvzBoxExtentStrategy`
 
 ```c
@@ -8375,70 +8911,6 @@ DVZ_BOX_EXTENT_FIXED_ASPECT_CONTRACT = 2,
 DVZ_BOX_MERGE_DEFAULT = 0,
 DVZ_BOX_MERGE_CENTER = 1,
 DVZ_BOX_MERGE_CORNER = 2,
-```
-
-#### `DvzCameraType`
-
-```c
-DVZ_CAMERA_PERSPECTIVE = 0,
-DVZ_CAMERA_ORTHOGRAPHIC = 1,
-```
-
-#### `DvzColorMask`
-
-```c
-DVZ_MASK_COLOR_R = 1,
-DVZ_MASK_COLOR_G = 2,
-DVZ_MASK_COLOR_B = 4,
-DVZ_MASK_COLOR_A = 8,
-DVZ_MASK_COLOR_ALL = 15,
-```
-
-#### `DvzCompareOp`
-
-```c
-DVZ_COMPARE_OP_NEVER = 0,
-DVZ_COMPARE_OP_LESS = 1,
-DVZ_COMPARE_OP_EQUAL = 2,
-DVZ_COMPARE_OP_LESS_OR_EQUAL = 3,
-DVZ_COMPARE_OP_GREATER = 4,
-DVZ_COMPARE_OP_NOT_EQUAL = 5,
-DVZ_COMPARE_OP_GREATER_OR_EQUAL = 6,
-DVZ_COMPARE_OP_ALWAYS = 7,
-```
-
-#### `DvzCullMode`
-
-```c
-DVZ_CULL_MODE_NONE = 0,
-DVZ_CULL_MODE_FRONT = 1,
-DVZ_CULL_MODE_BACK = 2,
-DVZ_CULL_MODE_FRONT_AND_BACK = 3,
-```
-
-#### `DvzDefaultQueue`
-
-```c
-DVZ_DEFAULT_QUEUE_TRANSFER = 0,
-DVZ_DEFAULT_QUEUE_COMPUTE = 1,
-DVZ_DEFAULT_QUEUE_RENDER = 2,
-DVZ_DEFAULT_QUEUE_PRESENT = 3,
-DVZ_DEFAULT_QUEUE_COUNT = 4,
-```
-
-#### `DvzDescriptorType`
-
-```c
-DVZ_DESCRIPTOR_TYPE_SAMPLER = 0,
-DVZ_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER = 1,
-DVZ_DESCRIPTOR_TYPE_SAMPLED_IMAGE = 2,
-DVZ_DESCRIPTOR_TYPE_STORAGE_IMAGE = 3,
-DVZ_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER = 4,
-DVZ_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER = 5,
-DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER = 6,
-DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER = 7,
-DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = 8,
-DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9,
 ```
 
 #### `DvzDim`
@@ -8487,28 +8959,189 @@ DVZ_EASING_IN_OUT_BOUNCE = 30,
 DVZ_EASING_COUNT = 31,
 ```
 
-#### `DvzFilter`
+### Records
+
+#### `DvzBox`
 
 ```c
-DVZ_FILTER_NEAREST = 0,
-DVZ_FILTER_LINEAR = 1,
-DVZ_FILTER_CUBIC_IMG = 1000015000,
+struct DvzBox {
+    double xmin;
+    double xmax;
+    double ymin;
+    double ymax;
+    double zmin;
+    double zmax;
+};
 ```
 
-#### `DvzFlyFlags`
+#### `DvzPrng`
 
 ```c
-DVZ_FLY_FLAGS_NONE = 0,
-DVZ_FLY_FLAGS_INVERT_Y = 1,
-DVZ_FLY_FLAGS_FIXED_UP = 2,
-DVZ_FLY_FLAGS_DISABLE_ROLL = 4,
+typedef struct DvzPrng DvzPrng;
 ```
 
-#### `DvzFlyMode`
+## Common And Utility API
+
+### Typedefs
+
+#### `DvzBlendFactor`
 
 ```c
-DVZ_FLY_MODE_FREE = 0,
-DVZ_FLY_MODE_PLANE = 1,
+typedef enum DvzBlendFactor DvzBlendFactor;
+```
+
+#### `DvzBlendOp`
+
+```c
+typedef enum DvzBlendOp DvzBlendOp;
+```
+
+#### `DvzColor`
+
+```c
+typedef struct DvzColor DvzColor;
+```
+
+#### `DvzColorMask`
+
+```c
+typedef enum DvzColorMask DvzColorMask;
+```
+
+#### `DvzColorf`
+
+```c
+typedef struct DvzColorf DvzColorf;
+```
+
+#### `DvzCompareOp`
+
+```c
+typedef enum DvzCompareOp DvzCompareOp;
+```
+
+#### `DvzCullMode`
+
+```c
+typedef enum DvzCullMode DvzCullMode;
+```
+
+#### `DvzErrorCallback`
+
+```c
+typedef void (*)(DvzLogLevel, const char *, void *) DvzErrorCallback;
+```
+
+#### `DvzFontDefaults`
+
+```c
+typedef struct DvzFontDefaults DvzFontDefaults;
+```
+
+#### `DvzFontDesc`
+
+```c
+typedef struct DvzFontDesc DvzFontDesc;
+```
+
+#### `DvzFormat`
+
+```c
+typedef enum DvzFormat DvzFormat;
+```
+
+#### `DvzFrontFace`
+
+```c
+typedef enum DvzFrontFace DvzFrontFace;
+```
+
+#### `DvzLogLevel`
+
+```c
+typedef enum DvzLogLevel DvzLogLevel;
+```
+
+#### `DvzPrimitiveTopology`
+
+```c
+typedef enum DvzPrimitiveTopology DvzPrimitiveTopology;
+```
+
+#### `DvzResult`
+
+```c
+typedef int32_t DvzResult;
+```
+
+#### `DvzTime`
+
+```c
+typedef struct DvzTime DvzTime;
+```
+
+### Enums
+
+#### `DvzBlendFactor`
+
+```c
+DVZ_BLEND_FACTOR_ZERO = 0,
+DVZ_BLEND_FACTOR_ONE = 1,
+DVZ_BLEND_FACTOR_SRC_COLOR = 2,
+DVZ_BLEND_FACTOR_ONE_MINUS_SRC_COLOR = 3,
+DVZ_BLEND_FACTOR_DST_COLOR = 4,
+DVZ_BLEND_FACTOR_ONE_MINUS_DST_COLOR = 5,
+DVZ_BLEND_FACTOR_SRC_ALPHA = 6,
+DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA = 7,
+DVZ_BLEND_FACTOR_DST_ALPHA = 8,
+DVZ_BLEND_FACTOR_ONE_MINUS_DST_ALPHA = 9,
+DVZ_BLEND_FACTOR_CONSTANT_COLOR = 10,
+DVZ_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR = 11,
+DVZ_BLEND_FACTOR_CONSTANT_ALPHA = 12,
+DVZ_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA = 13,
+DVZ_BLEND_FACTOR_SRC_ALPHA_SATURATE = 14,
+```
+
+#### `DvzBlendOp`
+
+```c
+DVZ_BLEND_OP_ADD = 0,
+DVZ_BLEND_OP_SUBTRACT = 1,
+DVZ_BLEND_OP_REVERSE_SUBTRACT = 2,
+DVZ_BLEND_OP_MIN = 3,
+DVZ_BLEND_OP_MAX = 4,
+```
+
+#### `DvzColorMask`
+
+```c
+DVZ_MASK_COLOR_R = 1,
+DVZ_MASK_COLOR_G = 2,
+DVZ_MASK_COLOR_B = 4,
+DVZ_MASK_COLOR_A = 8,
+DVZ_MASK_COLOR_ALL = 15,
+```
+
+#### `DvzCompareOp`
+
+```c
+DVZ_COMPARE_OP_NEVER = 0,
+DVZ_COMPARE_OP_LESS = 1,
+DVZ_COMPARE_OP_EQUAL = 2,
+DVZ_COMPARE_OP_LESS_OR_EQUAL = 3,
+DVZ_COMPARE_OP_GREATER = 4,
+DVZ_COMPARE_OP_NOT_EQUAL = 5,
+DVZ_COMPARE_OP_GREATER_OR_EQUAL = 6,
+DVZ_COMPARE_OP_ALWAYS = 7,
+```
+
+#### `DvzCullMode`
+
+```c
+DVZ_CULL_MODE_NONE = 0,
+DVZ_CULL_MODE_FRONT = 1,
+DVZ_CULL_MODE_BACK = 2,
+DVZ_CULL_MODE_FRONT_AND_BACK = 3,
 ```
 
 #### `DvzFormat`
@@ -8583,60 +9216,12 @@ DVZ_FRONT_FACE_COUNTER_CLOCKWISE = 0,
 DVZ_FRONT_FACE_CLOCKWISE = 1,
 ```
 
-#### `DvzGraphicsFlags`
-
-```c
-DVZ_GRAPHICS_FLAGS_DISABLE = 0,
-DVZ_GRAPHICS_FLAGS_FIXED = 1,
-DVZ_GRAPHICS_FLAGS_DYNAMIC = 2,
-```
-
-#### `DvzInstanceFlags`
-
-```c
-DVZ_INSTANCE_VALIDATION_FLAGS = 1,
-```
-
 #### `DvzLogLevel`
 
 ```c
 DVZ_LOG_LEVEL_ERROR = 0,
 DVZ_LOG_LEVEL_WARNING = 1,
 DVZ_LOG_LEVEL_INFO = 2,
-```
-
-#### `DvzMVPFlags`
-
-```c
-DVZ_MVP_FLAGS_NONE = 0,
-DVZ_MVP_FLAGS_ISOTROPIC_LOCAL = 1,
-```
-
-#### `DvzPanzoomFlags`
-
-```c
-DVZ_PANZOOM_FLAGS_NONE = 0,
-DVZ_PANZOOM_FLAGS_FIXED_X = 1,
-DVZ_PANZOOM_FLAGS_FIXED_Y = 2,
-DVZ_PANZOOM_FLAGS_KEEP_ASPECT = 4,
-```
-
-#### `DvzPolygonMode`
-
-```c
-DVZ_POLYGON_MODE_FILL = 0,
-DVZ_POLYGON_MODE_LINE = 1,
-DVZ_POLYGON_MODE_POINT = 2,
-```
-
-#### `DvzPresentStatus`
-
-```c
-DVZ_PRESENT_STATUS_OK = 0,
-DVZ_PRESENT_STATUS_RECREATE = 1,
-DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT = 2,
-DVZ_PRESENT_STATUS_DEVICE_LOST = 3,
-DVZ_PRESENT_STATUS_ERROR = 4,
 ```
 
 #### `DvzPrimitiveTopology`
@@ -8650,169 +9235,7 @@ DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP = 4,
 DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN = 5,
 ```
 
-#### `DvzQueueRole`
-
-```c
-DVZ_QUEUE_MAIN = 0,
-DVZ_QUEUE_COMPUTE = 1,
-DVZ_QUEUE_TRANSFER = 2,
-DVZ_QUEUE_VIDEO_ENCODE = 3,
-DVZ_QUEUE_VIDEO_DECODE = 4,
-DVZ_QUEUE_COUNT = 5,
-```
-
-#### `DvzSamplerAddressMode`
-
-```c
-DVZ_SAMPLER_ADDRESS_MODE_REPEAT = 0,
-DVZ_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT = 1,
-DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE = 2,
-DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER = 3,
-DVZ_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE = 4,
-```
-
-#### `DvzSamplerAxis`
-
-```c
-DVZ_SAMPLER_AXIS_U = 0,
-DVZ_SAMPLER_AXIS_V = 1,
-DVZ_SAMPLER_AXIS_W = 2,
-```
-
-#### `DvzShaderFormat`
-
-```c
-DVZ_SHADER_NONE = 0,
-DVZ_SHADER_SPIRV = 1,
-DVZ_SHADER_GLSL = 2,
-```
-
-#### `DvzShaderType`
-
-```c
-DVZ_SHADER_VERTEX = 1,
-DVZ_SHADER_TESSELLATION_CONTROL = 2,
-DVZ_SHADER_TESSELLATION_EVALUATION = 4,
-DVZ_SHADER_GEOMETRY = 8,
-DVZ_SHADER_FRAGMENT = 16,
-DVZ_SHADER_COMPUTE = 32,
-```
-
-#### `DvzTurntableFlags`
-
-```c
-DVZ_TURNTABLE_FLAGS_NONE = 0,
-DVZ_TURNTABLE_FLAGS_INVERT_Y = 1,
-DVZ_TURNTABLE_FLAGS_ALLOW_PAN = 2,
-DVZ_TURNTABLE_FLAGS_WRAP_YAW = 4,
-DVZ_TURNTABLE_FLAGS_CLAMP_DISTANCE = 8,
-```
-
-#### `DvzVertexInputRate`
-
-```c
-DVZ_VERTEX_INPUT_RATE_VERTEX = 0,
-DVZ_VERTEX_INPUT_RATE_INSTANCE = 1,
-```
-
 ### Records
-
-#### `DvzAllocation`
-
-```c
-typedef struct DvzAllocation DvzAllocation;
-```
-
-#### `DvzArcballDesc`
-
-```c
-struct DvzArcballDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    float width;
-    float height;
-    uint32_t controller_flags;
-};
-```
-
-#### `DvzArcballState`
-
-```c
-struct DvzArcballState {
-    float zoom;
-    vec2 pan;
-    _Bool interacting;
-};
-```
-
-#### `DvzBarriers`
-
-```c
-struct DvzBarriers {
-    VkDependencyInfo info;
-    DvzBarrierMemory[4] bmems;
-    DvzBarrierBuffer[4] bbufs;
-    DvzBarrierImage[4] bimg;
-};
-```
-
-#### `DvzBox`
-
-```c
-struct DvzBox {
-    double xmin;
-    double xmax;
-    double ymin;
-    double ymax;
-    double zmin;
-    double zmax;
-};
-```
-
-#### `DvzBufferViews`
-
-```c
-typedef struct DvzBufferViews DvzBufferViews;
-```
-
-#### `DvzCamera`
-
-```c
-typedef struct DvzCamera DvzCamera;
-```
-
-#### `DvzCameraDesc`
-
-```c
-struct DvzCameraDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzCameraView view;
-    DvzCameraProjection projection;
-};
-```
-
-#### `DvzCameraProjection`
-
-```c
-struct DvzCameraProjection {
-    DvzCameraType type;
-    float fov_y;
-    float near_clip;
-    float far_clip;
-    float ortho_height;
-};
-```
-
-#### `DvzCameraView`
-
-```c
-struct DvzCameraView {
-    vec3 eye;
-    vec3 target;
-    vec3 up;
-};
-```
 
 #### `DvzColor`
 
@@ -8833,84 +9256,6 @@ struct DvzColorf {
     float g;
     float b;
     float a;
-};
-```
-
-#### `DvzCommands`
-
-```c
-typedef struct DvzCommands DvzCommands;
-```
-
-#### `DvzCompute`
-
-```c
-typedef struct DvzCompute DvzCompute;
-```
-
-#### `DvzDescriptors`
-
-```c
-typedef struct DvzDescriptors DvzDescriptors;
-```
-
-#### `DvzDeviceConfig`
-
-```c
-struct DvzDeviceConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzInstance * instance;
-    uint32_t gpu_index;
-    _Bool enable_canvas_extensions;
-    uint32_t queue_request_count;
-    DvzDeviceQueueRequest[8] queue_requests;
-    uint32_t extension_count;
-    const char *[256] extensions;
-    _Bool has_features10;
-    _Bool has_features11;
-    _Bool has_features12;
-    _Bool has_features13;
-    VkPhysicalDeviceFeatures features10;
-    VkPhysicalDeviceVulkan11Features features11;
-    VkPhysicalDeviceVulkan12Features features12;
-    VkPhysicalDeviceVulkan13Features features13;
-};
-```
-
-#### `DvzDeviceQueueRequest`
-
-```c
-struct DvzDeviceQueueRequest {
-    uint32_t family;
-    uint32_t count;
-};
-```
-
-#### `DvzFence`
-
-```c
-typedef struct DvzFence DvzFence;
-```
-
-#### `DvzFlyDesc`
-
-```c
-struct DvzFlyDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzFlyMode mode;
-    uint32_t controller_flags;
-    DvzCameraView initial_view;
-    float yaw;
-    float pitch;
-    float roll;
-    _Bool use_angles;
-    float speed;
-    float fast_multiplier;
-    float slow_multiplier;
-    float look_speed;
-    float wheel_speed;
 };
 ```
 
@@ -8950,316 +9295,11 @@ struct DvzFontDesc {
 };
 ```
 
-#### `DvzGpuCtxConfig`
-
-```c
-struct DvzGpuCtxConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    _Bool enable_validation;
-    uint32_t gpu_index;
-    VkExternalMemoryHandleTypeFlagsKHR export_handle_type;
-    _Bool has_features10;
-    _Bool has_features12;
-    _Bool has_features13;
-    VkPhysicalDeviceFeatures features10;
-    VkPhysicalDeviceVulkan12Features features12;
-    VkPhysicalDeviceVulkan13Features features13;
-    uint32_t instance_extension_count;
-    const char *[16] instance_extensions;
-    _Bool enable_canvas_extensions;
-};
-```
-
-#### `DvzGpuInfo`
-
-```c
-struct DvzGpuInfo {
-    uint32_t index;
-    char[256] name;
-    VkPhysicalDeviceType device_type;
-    uint32_t api_version;
-    uint32_t driver_version;
-    uint32_t vendor_id;
-    uint32_t device_id;
-    DvzQueueCaps queue_caps;
-};
-```
-
-#### `DvzGraphics`
-
-```c
-typedef struct DvzGraphics DvzGraphics;
-```
-
-#### `DvzImageBlit`
-
-```c
-typedef struct DvzImageBlit DvzImageBlit;
-```
-
-#### `DvzImageCopy`
-
-```c
-typedef struct DvzImageCopy DvzImageCopy;
-```
-
-#### `DvzImageViews`
-
-```c
-typedef struct DvzImageViews DvzImageViews;
-```
-
-#### `DvzImages`
-
-```c
-typedef struct DvzImages DvzImages;
-```
-
-#### `DvzInstance`
-
-```c
-typedef struct DvzInstance DvzInstance;
-```
-
-#### `DvzInstanceConfig`
-
-```c
-struct DvzInstanceConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint32_t vk_version;
-    const char * app_name;
-    uint32_t app_version;
-    _Bool portability;
-    uint32_t layer_count;
-    const char *[32] layers;
-    uint32_t extension_count;
-    const char *[256] extensions;
-};
-```
-
-#### `DvzInteropBufferExport`
-
-```c
-struct DvzInteropBufferExport {
-    uint32_t version;
-    int memory_handle;
-    uint32_t memory_handle_type;
-    uint64_t allocation_size;
-    uint64_t offset;
-    uint64_t size;
-    uint32_t usage;
-    uint32_t vk_usage;
-    uint32_t drp2_usage;
-    uint32_t flags;
-    uint32_t device_uuid_valid;
-    uint8_t[16] device_uuid;
-    int semaphore_handle;
-    uint32_t semaphore_handle_type;
-    uint64_t semaphore_value;
-};
-```
-
-#### `DvzInteropBufferExportConfig`
-
-```c
-struct DvzInteropBufferExportConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint64_t offset;
-    uint64_t size;
-    uint32_t drp2_usage;
-    uint32_t export_flags;
-    DvzSemaphore * semaphore;
-    uint32_t semaphore_handle_type;
-    uint64_t semaphore_value;
-};
-```
-
-#### `DvzMVP`
-
-```c
-struct DvzMVP {
-    mat4 model;
-    mat4 view;
-    mat4 proj;
-    float time;
-    uint32_t flags;
-};
-```
-
-#### `DvzPanzoom`
-
-```c
-typedef struct DvzPanzoom DvzPanzoom;
-```
-
-#### `DvzPanzoomDesc`
-
-```c
-struct DvzPanzoomDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    float width;
-    float height;
-    uint32_t controller_flags;
-};
-```
-
-#### `DvzPanzoomEval`
-
-```c
-struct DvzPanzoomEval {
-    float[4] base_extent;
-    float viewport_width;
-    float viewport_height;
-};
-```
-
-#### `DvzPanzoomResolved`
-
-```c
-struct DvzPanzoomResolved {
-    DvzMVP mvp;
-    float[4] visible_extent;
-};
-```
-
-#### `DvzPanzoomState`
-
-```c
-struct DvzPanzoomState {
-    vec2 pan;
-    vec2 zoom;
-    _Bool interacting;
-};
-```
-
-#### `DvzPrng`
-
-```c
-typedef struct DvzPrng DvzPrng;
-```
-
-#### `DvzQueue`
-
-```c
-struct DvzQueue {
-    uint32_t family_idx;
-    uint32_t queue_idx;
-    VkQueue vk_queue;
-    VkQueueFlags flags;
-    _Bool is_main;
-    _Bool is_set;
-};
-```
-
-#### `DvzQueueCaps`
-
-```c
-struct DvzQueueCaps {
-    uint32_t family_count;
-    VkQueueFlags[8] flags;
-    uint32_t[8] queue_count;
-};
-```
-
-#### `DvzQueues`
-
-```c
-struct DvzQueues {
-    uint32_t queue_count;
-    DvzQueue[5] queues;
-};
-```
-
-#### `DvzRendering`
-
-```c
-typedef struct DvzRendering DvzRendering;
-```
-
-#### `DvzSampler`
-
-```c
-typedef struct DvzSampler DvzSampler;
-```
-
-#### `DvzSemaphore`
-
-```c
-typedef struct DvzSemaphore DvzSemaphore;
-```
-
-#### `DvzShader`
-
-```c
-typedef struct DvzShader DvzShader;
-```
-
-#### `DvzSlots`
-
-```c
-typedef struct DvzSlots DvzSlots;
-```
-
-#### `DvzSubmit`
-
-```c
-typedef struct DvzSubmit DvzSubmit;
-```
-
-#### `DvzSurface`
-
-```c
-typedef struct DvzSurface DvzSurface;
-```
-
-#### `DvzSwapchain`
-
-```c
-typedef struct DvzSwapchain DvzSwapchain;
-```
-
-#### `DvzSwapchainConfig`
-
-```c
-struct DvzSwapchainConfig {
-    VkFormat image_format;
-    VkColorSpaceKHR color_space;
-    VkPresentModeKHR present_mode;
-    VkImageUsageFlags image_usage;
-    VkCompositeAlphaFlagBitsKHR composite_alpha;
-    uint32_t min_image_count;
-    _Bool clipped;
-};
-```
-
 #### `DvzTime`
 
 ```c
 struct DvzTime {
     uint64_t seconds;
     uint64_t nanoseconds;
-};
-```
-
-#### `DvzTurntableDesc`
-
-```c
-struct DvzTurntableDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzCameraView initial_view;
-    float yaw_speed;
-    float pitch_speed;
-    float zoom_speed;
-    float pan_speed;
-    float min_pitch;
-    float max_pitch;
-    float min_distance;
-    float max_distance;
-    uint32_t controller_flags;
 };
 ```

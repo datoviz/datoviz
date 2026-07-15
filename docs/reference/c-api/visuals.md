@@ -18,7 +18,7 @@ Common workflows:
 - [Update visual data](../../how-to/update-visual-data.md)
 - [Visual families reference](../visual-families/index.md)
 
-Functions: 206
+Functions: 203
 
 ## Symbol Groups
 
@@ -26,18 +26,15 @@ Functions: 206
 | --- | ---: | --- |
 | [Bezier](#bezier) | 1 | `include/datoviz/geom.h` |
 | [Composite](#composite) | 4 | `include/datoviz/scene.h` |
-| [Depth](#depth) | 1 | `include/datoviz/scene.h` |
-| [Edl](#edl) | 1 | `include/datoviz/scene.h` |
+| [Depth Cueing](#depth-cueing) | 2 | `include/datoviz/scene.h` |
 | [Geometry](#geometry) | 38 | `include/datoviz/geom.h` |
 | [Glyph](#glyph) | 2 | `include/datoviz/scene.h` |
 | [Graph](#graph) | 16 | `include/datoviz/scene.h` |
 | [Image](#image) | 2 | `include/datoviz/scene.h` |
 | [Marker](#marker) | 5 | `include/datoviz/scene.h` |
-| [Material](#material) | 1 | `include/datoviz/scene.h` |
+| [Materials](#materials) | 4 | `include/datoviz/scene.h` |
 | [Mesh](#mesh) | 2 | `include/datoviz/scene.h` |
-| [Msaa](#msaa) | 1 | `include/datoviz/scene.h` |
 | [Path](#path) | 4 | `include/datoviz/scene.h` |
-| [Phong](#phong) | 1 | `include/datoviz/scene.h` |
 | [Pixel](#pixel) | 1 | `include/datoviz/scene.h` |
 | [Point](#point) | 3 | `include/datoviz/scene.h` |
 | [Polygon](#polygon) | 16 | `include/datoviz/geom.h`, `include/datoviz/scene.h` |
@@ -46,15 +43,13 @@ Functions: 206
 | [Segment](#segment) | 2 | `include/datoviz/scene.h` |
 | [Sphere](#sphere) | 2 | `include/datoviz/scene.h` |
 | [Splat](#splat) | 1 | `include/datoviz/scene.h` |
-| [Ssao](#ssao) | 1 | `include/datoviz/scene.h` |
-| [Standard](#standard) | 1 | `include/datoviz/scene.h` |
 | [Symbol](#symbol) | 7 | `include/datoviz/scene.h` |
 | [Tessellate](#tessellate) | 2 | `include/datoviz/geom.h` |
 | [Tessellated](#tessellated) | 1 | `include/datoviz/geom.h` |
 | [Triangulate](#triangulate) | 1 | `include/datoviz/geom.h` |
 | [Triangulation](#triangulation) | 1 | `include/datoviz/geom.h` |
 | [Vector](#vector) | 4 | `include/datoviz/scene.h` |
-| [Visual](#visual) | 49 | 4 headers |
+| [Visual](#visual) | 47 | 4 headers |
 | [Volume](#volume) | 17 | `include/datoviz/scene.h` |
 
 ??? info "Grouped symbol index"
@@ -74,17 +69,12 @@ Functions: 206
     | [`dvz_composite_visual_at()`](#dvz_composite_visual_at) | `include/datoviz/scene.h` |
     | [`dvz_composite_visual_count()`](#dvz_composite_visual_count) | `include/datoviz/scene.h` |
 
-    ### Depth
+    ### Depth Cueing
 
     | Function | Header |
     | --- | --- |
     | [`dvz_depth_cue_desc()`](#dvz_depth_cue_desc) | `include/datoviz/scene.h` |
-
-    ### Edl
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_edl_desc()`](#dvz_edl_desc) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_depth_cue()`](#dvz_visual_set_depth_cue) | `include/datoviz/scene.h` |
 
     ### Geometry
 
@@ -174,11 +164,14 @@ Functions: 206
     | [`dvz_marker_set_symbols()`](#dvz_marker_set_symbols) | `include/datoviz/scene.h` |
     | [`dvz_marker_style()`](#dvz_marker_style) | `include/datoviz/scene.h` |
 
-    ### Material
+    ### Materials
 
     | Function | Header |
     | --- | --- |
     | [`dvz_material_desc()`](#dvz_material_desc) | `include/datoviz/scene.h` |
+    | [`dvz_phong_material_desc()`](#dvz_phong_material_desc) | `include/datoviz/scene.h` |
+    | [`dvz_standard_material_desc()`](#dvz_standard_material_desc) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_material()`](#dvz_visual_set_material) | `include/datoviz/scene.h` |
 
     ### Mesh
 
@@ -186,12 +179,6 @@ Functions: 206
     | --- | --- |
     | [`dvz_mesh()`](#dvz_mesh) | `include/datoviz/scene.h` |
     | [`dvz_mesh_set_geometry()`](#dvz_mesh_set_geometry) | `include/datoviz/scene.h` |
-
-    ### Msaa
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_msaa_desc()`](#dvz_msaa_desc) | `include/datoviz/scene.h` |
 
     ### Path
 
@@ -201,12 +188,6 @@ Functions: 206
     | [`dvz_path_set_caps()`](#dvz_path_set_caps) | `include/datoviz/scene.h` |
     | [`dvz_path_set_join()`](#dvz_path_set_join) | `include/datoviz/scene.h` |
     | [`dvz_path_set_subpaths()`](#dvz_path_set_subpaths) | `include/datoviz/scene.h` |
-
-    ### Phong
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_phong_material_desc()`](#dvz_phong_material_desc) | `include/datoviz/scene.h` |
 
     ### Pixel
 
@@ -291,18 +272,6 @@ Functions: 206
     | --- | --- |
     | [`dvz_splat()`](#dvz_splat) | `include/datoviz/scene.h` |
 
-    ### Ssao
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_ssao_desc()`](#dvz_ssao_desc) | `include/datoviz/scene.h` |
-
-    ### Standard
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_standard_material_desc()`](#dvz_standard_material_desc) | `include/datoviz/scene.h` |
-
     ### Symbol
 
     | Function | Header |
@@ -382,13 +351,11 @@ Functions: 206
     | [`dvz_visual_set_data()`](#dvz_visual_set_data) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_data_many()`](#dvz_visual_set_data_many) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_data_range()`](#dvz_visual_set_data_range) | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_depth_cue()`](#dvz_visual_set_depth_cue) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_depth_test()`](#dvz_visual_set_depth_test) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_field()`](#dvz_visual_set_field) | `include/datoviz/scene/field.h` |
     | [`dvz_visual_set_index_data()`](#dvz_visual_set_index_data) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_item_range()`](#dvz_visual_set_item_range) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_link_keys()`](#dvz_visual_set_link_keys) | `include/datoviz/scene/interaction.h` |
-    | [`dvz_visual_set_material()`](#dvz_visual_set_material) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_query_capabilities()`](#dvz_visual_set_query_capabilities) | `include/datoviz/scene/interaction.h` |
     | [`dvz_visual_set_scale()`](#dvz_visual_set_scale) | `include/datoviz/scene/scale.h` |
     | [`dvz_visual_set_scene_occluded()`](#dvz_visual_set_scene_occluded) | `include/datoviz/scene.h` |
@@ -516,7 +483,7 @@ uint32_t dvz_composite_visual_count(
 
 _Declared in `include/datoviz/scene.h`:3492._
 
-## Depth
+## Depth Cueing
 
 ### `dvz_depth_cue_desc()`
 
@@ -532,21 +499,29 @@ DvzDepthCueDesc dvz_depth_cue_desc(void);
 
 _Declared in `include/datoviz/scene.h`:2466._
 
-## Edl
+### `dvz_visual_set_depth_cue()`
 
-### `dvz_edl_desc()`
+Configure depth cueing for a point, pixel, primitive, mesh, or sphere visual.
 
-Return default Eye-Dome Lighting options.
+Primitive/mesh/sphere visuals use depth cueing through the material shader path. Point/pixel
+visuals use the same cue parameters without lighting. The `near_depth` and `far_depth` values
+are interpreted in the descriptor metric, where lower values are closer. The default metric is
+normalized clip depth after the visual's scene transform. Pass NULL to disable depth cueing.
 
 ```c
-DvzEdlDesc dvz_edl_desc(void);
+DvzResult dvz_visual_set_depth_cue(
+    DvzVisual * visual,
+    const DvzDepthCueDesc * desc
+);
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `DvzEdlDesc` | EDL descriptor |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `visual` | `DvzVisual *` | the visual |
+| `desc` | `const DvzDepthCueDesc *` | the depth-cue descriptor, or NULL to disable depth cueing |
 
-_Declared in `include/datoviz/scene.h`:1255._
+_Declared in `include/datoviz/scene.h`:2481._
 
 ## Geometry
 
@@ -1768,7 +1743,7 @@ DvzMarkerStyle dvz_marker_style(void);
 
 _Declared in `include/datoviz/scene.h`:2660._
 
-## Material
+## Materials
 
 ### `dvz_material_desc()`
 
@@ -1787,6 +1762,64 @@ DvzMaterialDesc dvz_material_desc(void);
 | return | `DvzMaterialDesc` | default material descriptor |
 
 _Declared in `include/datoviz/scene.h`:2421._
+
+### `dvz_phong_material_desc()`
+
+Return default Phong visual material options.
+
+The descriptor uses `DVZ_MATERIAL_MODEL_PHONG` with the same defaults as
+`dvz_material_desc()`.
+
+```c
+DvzMaterialDesc dvz_phong_material_desc(void);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzMaterialDesc` | default Phong material descriptor |
+
+_Declared in `include/datoviz/scene.h`:2432._
+
+### `dvz_standard_material_desc()`
+
+Return default standard visual material options.
+
+The descriptor uses `DVZ_MATERIAL_MODEL_STANDARD` with opaque alpha, full opacity, a white
+base-color factor, light direction `(-0.45, 0.35, 0.82)`, roughness `0.62`, specular `0.34`,
+metallic `0`, no emissive contribution, and rim contribution `0.10`.
+
+```c
+DvzMaterialDesc dvz_standard_material_desc(void);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzMaterialDesc` | default standard material descriptor |
+
+_Declared in `include/datoviz/scene.h`:2444._
+
+### `dvz_visual_set_material()`
+
+Set the shared material parameters for a primitive, mesh, or sphere visual.
+
+The Phong model maps directly to the current material shader payload. The standard model is
+retained in the scene material state and lowered to the current shader payload until the standard
+shader path is broadened. Pass NULL to restore default material parameters.
+
+```c
+DvzResult dvz_visual_set_material(
+    DvzVisual * visual,
+    const DvzMaterialDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `visual` | `DvzVisual *` | the visual |
+| `desc` | `const DvzMaterialDesc *` | the material descriptor, or NULL to restore defaults |
+
+_Declared in `include/datoviz/scene.h`:2458._
 
 ## Mesh
 
@@ -1836,22 +1869,6 @@ DvzResult dvz_mesh_set_geometry(
 | `geometry` | `const DvzGeometry *` | the CPU geometry object |
 
 _Declared in `include/datoviz/scene.h`:2900._
-
-## Msaa
-
-### `dvz_msaa_desc()`
-
-Return default panel MSAA options.
-
-```c
-DvzMsaaDesc dvz_msaa_desc(void);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzMsaaDesc` | MSAA descriptor with 4x samples and alpha-to-coverage enabled |
-
-_Declared in `include/datoviz/scene.h`:600._
 
 ## Path
 
@@ -1949,25 +1966,6 @@ DvzResult dvz_path_set_subpaths(
 | `lengths` | `const uint32_t *` | point count for each subpath |
 
 _Declared in `include/datoviz/scene.h`:3572._
-
-## Phong
-
-### `dvz_phong_material_desc()`
-
-Return default Phong visual material options.
-
-The descriptor uses `DVZ_MATERIAL_MODEL_PHONG` with the same defaults as
-`dvz_material_desc()`.
-
-```c
-DvzMaterialDesc dvz_phong_material_desc(void);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzMaterialDesc` | default Phong material descriptor |
-
-_Declared in `include/datoviz/scene.h`:2432._
 
 ## Pixel
 
@@ -2885,42 +2883,6 @@ DvzVisual * dvz_splat(
 | `flags` | `uint32_t` | variant flags |
 
 _Declared in `include/datoviz/scene.h`:2709._
-
-## Ssao
-
-### `dvz_ssao_desc()`
-
-Return default screen-space ambient occlusion options.
-
-```c
-DvzSsaoDesc dvz_ssao_desc(void);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzSsaoDesc` | SSAO descriptor |
-
-_Declared in `include/datoviz/scene.h`:1290._
-
-## Standard
-
-### `dvz_standard_material_desc()`
-
-Return default standard visual material options.
-
-The descriptor uses `DVZ_MATERIAL_MODEL_STANDARD` with opaque alpha, full opacity, a white
-base-color factor, light direction `(-0.45, 0.35, 0.82)`, roughness `0.62`, specular `0.34`,
-metallic `0`, no emissive contribution, and rim contribution `0.10`.
-
-```c
-DvzMaterialDesc dvz_standard_material_desc(void);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzMaterialDesc` | default standard material descriptor |
-
-_Declared in `include/datoviz/scene.h`:2444._
 
 ## Symbol
 
@@ -3950,30 +3912,6 @@ Related: [`dvz_visual_set_data()`](#dvz_visual_set_data).
 
 _Declared in `include/datoviz/scene.h`:2198._
 
-### `dvz_visual_set_depth_cue()`
-
-Configure depth cueing for a point, pixel, primitive, mesh, or sphere visual.
-
-Primitive/mesh/sphere visuals use depth cueing through the material shader path. Point/pixel
-visuals use the same cue parameters without lighting. The `near_depth` and `far_depth` values
-are interpreted in the descriptor metric, where lower values are closer. The default metric is
-normalized clip depth after the visual's scene transform. Pass NULL to disable depth cueing.
-
-```c
-DvzResult dvz_visual_set_depth_cue(
-    DvzVisual * visual,
-    const DvzDepthCueDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `visual` | `DvzVisual *` | the visual |
-| `desc` | `const DvzDepthCueDesc *` | the depth-cue descriptor, or NULL to disable depth cueing |
-
-_Declared in `include/datoviz/scene.h`:2481._
-
 ### `dvz_visual_set_depth_test()`
 
 Enable or disable depth testing for the visual.
@@ -4099,29 +4037,6 @@ DvzResult dvz_visual_set_link_keys(
 | `item_count` | `uint32_t` | number of keys |
 
 _Declared in `include/datoviz/scene/interaction.h`:133._
-
-### `dvz_visual_set_material()`
-
-Set the shared material parameters for a primitive, mesh, or sphere visual.
-
-The Phong model maps directly to the current material shader payload. The standard model is
-retained in the scene material state and lowered to the current shader payload until the standard
-shader path is broadened. Pass NULL to restore default material parameters.
-
-```c
-DvzResult dvz_visual_set_material(
-    DvzVisual * visual,
-    const DvzMaterialDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `visual` | `DvzVisual *` | the visual |
-| `desc` | `const DvzMaterialDesc *` | the material descriptor, or NULL to restore defaults |
-
-_Declared in `include/datoviz/scene.h`:2458._
 
 ### `dvz_visual_set_query_capabilities()`
 

@@ -18,7 +18,7 @@ Common workflows:
 - [Configure cameras](../../how-to/configure-cameras.md)
 - [Pick items](../../how-to/pick-items.md)
 
-Functions: 390
+Functions: 387
 
 ## Symbol Groups
 
@@ -54,7 +54,7 @@ Functions: 390
 | [Orientation](#orientation) | 4 | `include/datoviz/scene.h` |
 | [Overlay](#overlay) | 3 | `include/datoviz/scene/overlay.h` |
 | [Overlay Card](#overlay-card) | 11 | `include/datoviz/scene/overlay.h` |
-| [Panel](#panel) | 66 | 3 headers |
+| [Panel](#panel) | 63 | 3 headers |
 | [Panzoom](#panzoom) | 1 | `include/datoviz/scene/panzoom.h` |
 | [Pinned](#pinned) | 3 | `include/datoviz/scene/interaction.h` |
 | [Placement](#placement) | 3 | `include/datoviz/scene.h` |
@@ -463,12 +463,9 @@ Functions: 390
     | [`dvz_panel_set_camera_desc()`](#dvz_panel_set_camera_desc) | `include/datoviz/scene/camera.h` |
     | [`dvz_panel_set_desc()`](#dvz_panel_set_desc) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_domain()`](#dvz_panel_set_domain) | `include/datoviz/scene.h` |
-    | [`dvz_panel_set_edl()`](#dvz_panel_set_edl) | `include/datoviz/scene.h` |
-    | [`dvz_panel_set_msaa()`](#dvz_panel_set_msaa) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_padding()`](#dvz_panel_set_padding) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_reserve()`](#dvz_panel_set_reserve) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_scene_occlusion()`](#dvz_panel_set_scene_occlusion) | `include/datoviz/scene.h` |
-    | [`dvz_panel_set_ssao()`](#dvz_panel_set_ssao) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_view2d()`](#dvz_panel_set_view2d) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_view3d_desc()`](#dvz_panel_set_view3d_desc) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_volume_occluder()`](#dvz_panel_set_volume_occluder) | `include/datoviz/scene.h` |
@@ -5338,51 +5335,6 @@ DvzResult dvz_panel_set_domain(
 
 _Declared in `include/datoviz/scene.h`:1387._
 
-### `dvz_panel_set_edl()`
-
-Configure Eye-Dome Lighting for one panel.
-
-EDL is a depth-based post-process intended to improve local depth perception for dense point,
-pixel, and opaque geometry views. Pass NULL to disable EDL on the panel. The descriptor values
-are clamped to implementation-supported ranges.
-
-```c
-DvzResult dvz_panel_set_edl(
-    DvzPanel * panel,
-    const DvzEdlDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | DVZ_OK if the panel EDL state was updated, DVZ_ERROR otherwise |
-| `panel` | `DvzPanel *` | the panel |
-| `desc` | `const DvzEdlDesc *` | EDL descriptor, or NULL to disable |
-
-_Declared in `include/datoviz/scene.h`:1269._
-
-### `dvz_panel_set_msaa()`
-
-Configure internal multisample antialiasing for one panel.
-
-The panel renders opaque scene color/depth into transient multisample attachments and resolves
-into the figure target. Pass NULL or a descriptor with enabled=false to disable MSAA.
-
-```c
-DvzResult dvz_panel_set_msaa(
-    DvzPanel * panel,
-    const DvzMsaaDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | DVZ_OK if the panel MSAA state was updated, DVZ_ERROR otherwise |
-| `panel` | `DvzPanel *` | the panel |
-| `desc` | `const DvzMsaaDesc *` | MSAA descriptor, or NULL to disable |
-
-_Declared in `include/datoviz/scene.h`:1282._
-
 ### `dvz_panel_set_padding()`
 
 Set a fixed pixel padding inside one panel's outer rectangle.
@@ -5451,30 +5403,6 @@ DvzResult dvz_panel_set_scene_occlusion(
 | `desc` | `const DvzSceneOcclusionDesc *` | scene occlusion descriptor, or NULL to disable |
 
 _Declared in `include/datoviz/scene.h`:1348._
-
-### `dvz_panel_set_ssao()`
-
-Configure screen-space ambient occlusion for one panel.
-
-SSAO renders eligible opaque normal-producing visuals through an internal G-buffer, computes an
-occlusion texture from panel depth and normals, optionally blurs it, and composites the result
-into the panel output. Pass NULL to disable SSAO on the panel. Descriptor values are clamped to
-implementation-supported ranges.
-
-```c
-DvzResult dvz_panel_set_ssao(
-    DvzPanel * panel,
-    const DvzSsaoDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | DVZ_OK if the panel SSAO state was updated, DVZ_ERROR otherwise |
-| `panel` | `DvzPanel *` | the panel |
-| `desc` | `const DvzSsaoDesc *` | SSAO descriptor, or NULL to disable |
-
-_Declared in `include/datoviz/scene.h`:1305._
 
 ### `dvz_panel_set_view2d()`
 

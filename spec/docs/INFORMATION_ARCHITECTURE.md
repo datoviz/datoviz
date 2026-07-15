@@ -270,8 +270,14 @@ reference/
     c-api/index.md
     c-api/scene.md
     c-api/visuals.md
+    c-api/techniques.md
     c-api/app.md
     c-api/runtime.md
+    c-api/runtime-vklite.md
+    c-api/runtime-vulkan.md
+    c-api/runtime-controllers.md
+    c-api/runtime-math.md
+    c-api/runtime-utilities.md
     c-api/types.md
     ctypes.md
   Visual families/

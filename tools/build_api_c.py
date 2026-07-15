@@ -36,7 +36,9 @@ class PagePolicy:
     workflows: tuple[tuple[str, str], ...]
     headers: tuple[str, ...]
     prefixes: tuple[str, ...]
+    symbols: tuple[str, ...]
     group_labels: dict[str, str]
+    group_patterns: dict[str, tuple[str, ...]]
 
 
 def parse_args() -> argparse.Namespace:
@@ -113,9 +115,14 @@ def load_policy(path: Path, status_entries: list[dict]) -> tuple[list[PagePolicy
                 ),
                 headers=tuple(str(item) for item in entry.get("headers", ())),
                 prefixes=tuple(str(item) for item in entry.get("prefixes", ())),
+                symbols=tuple(str(item) for item in entry.get("symbols", ())),
                 group_labels={
                     str(prefix): str(label)
                     for prefix, label in (entry.get("group_labels") or {}).items()
+                },
+                group_patterns={
+                    str(label): tuple(str(pattern) for pattern in patterns)
+                    for label, patterns in (entry.get("group_patterns") or {}).items()
                 },
             )
         )
@@ -149,7 +156,19 @@ def classify_symbol(item: dict, pages: list[PagePolicy], hidden_headers: tuple[s
     if header_matches(header, hidden_headers):
         return None
 
-    prefix = symbol_prefix(str(item.get("name", "")))
+    name = str(item.get("name", ""))
+    explicit = [
+        page.key
+        for page in pages
+        if header_matches(header, page.headers)
+        and any(fnmatch.fnmatchcase(name, pattern) for pattern in page.symbols)
+    ]
+    if len(explicit) > 1:
+        raise ValueError(f"{name} matches explicit symbol rules for multiple pages: {explicit}")
+    if explicit:
+        return explicit[0]
+
+    prefix = symbol_prefix(name)
     for page in pages:
         if header_matches(header, page.headers) and prefix in page.prefixes:
             return page.key
@@ -330,6 +349,19 @@ def object_group(name: str, group_labels: dict[str, str] | None = None) -> str:
     return prefix.replace("_", " ").title()
 
 
+def symbol_group(name: str, page: PagePolicy) -> str:
+    matches = [
+        label
+        for label, patterns in page.group_patterns.items()
+        if any(fnmatch.fnmatchcase(name, pattern) for pattern in patterns)
+    ]
+    if len(matches) > 1:
+        raise ValueError(f"{name} matches multiple groups on {page.key}: {matches}")
+    if matches:
+        return matches[0]
+    return object_group(name, page.group_labels)
+
+
 def symbol_anchor(name: str) -> str:
     return name.lower()
 
@@ -401,7 +433,7 @@ def render_page(page: PagePolicy, functions: list[dict]) -> None:
 
     grouped: dict[str, list[dict]] = defaultdict(list)
     for fn in functions:
-        grouped[object_group(str(fn["name"]), page.group_labels)].append(fn)
+        grouped[symbol_group(str(fn["name"]), page)].append(fn)
     lines.extend(render_symbol_groups(grouped))
 
     names = {str(fn["name"]) for fn in functions}
@@ -517,6 +549,35 @@ def validate_classification(kind: str, items: list[dict], pages: list[PagePolicy
     return by_page, missing
 
 
+def validate_policy_patterns(api: dict, pages: list[PagePolicy], functions: dict) -> None:
+    all_items = [
+        item
+        for kind in ("functions", "records", "enums", "typedefs")
+        for item in api.get(kind, [])
+    ]
+    errors = []
+    for page in pages:
+        for pattern in page.symbols:
+            if not any(
+                header_matches(header_of(item), page.headers)
+                and fnmatch.fnmatchcase(str(item.get("name", "")), pattern)
+                for item in all_items
+            ):
+                errors.append(f"{page.key}: symbol pattern {pattern!r} matches nothing")
+        page_functions = functions.get(page.key, [])
+        for label, patterns in page.group_patterns.items():
+            for pattern in patterns:
+                if not any(
+                    fnmatch.fnmatchcase(str(item.get("name", "")), pattern)
+                    for item in page_functions
+                ):
+                    errors.append(
+                        f"{page.key}/{label}: group pattern {pattern!r} matches no function"
+                    )
+    if errors:
+        raise ValueError("invalid C API reference patterns:\n  " + "\n  ".join(errors))
+
+
 def write_summary(
     path: Path, pages: list[PagePolicy], functions: dict, records: dict, enums: dict, typedefs: dict
 ) -> None:
@@ -553,6 +614,7 @@ def main() -> int:
     typedefs, missing_typedefs = validate_classification(
         "typedefs", api.get("typedefs", []), pages, hidden_headers
     )
+    validate_policy_patterns(api, pages, functions)
 
     missing = {
         "functions": missing_functions,
