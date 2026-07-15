@@ -4,12 +4,16 @@
 from __future__ import annotations
 
 import ctypes
+import math
 
 import numpy as np
 
 import datoviz as dvz
 
 from examples.python.gallery import common as ex
+
+
+ANIMATION_LOOP_DURATION_S = 9.6
 
 
 class AnimationTracksState:
@@ -93,7 +97,7 @@ def _add_cube_mesh(scene, panel):
 def _add_visual_animation(scene, mesh, state: AnimationTracksState) -> None:
     rotation_desc = dvz.dvz_track_rotation_desc()
     rotation_desc.axis[:] = (0.35, 0.85, 0.25)
-    rotation_desc.speed_rad_per_sec = -1.0
+    rotation_desc.speed_rad_per_sec = -math.tau / ANIMATION_LOOP_DURATION_S
     rotation = dvz.dvz_track_rotation(ctypes.byref(rotation_desc))
     if not rotation:
         raise RuntimeError("dvz_track_rotation() failed")

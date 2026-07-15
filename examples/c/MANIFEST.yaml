@@ -948,9 +948,9 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 180
+        frames: 576
         fps: 60
-        sample_stride: 3
+        sample_stride: 1
         card:
           preferred: video-mp4
           size: 1024x576
