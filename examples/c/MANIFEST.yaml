@@ -26,7 +26,7 @@ taxonomy:
     tags: searchable labels for docs, agents, and gallery filters
     data.kind: synthetic | simulated | generated | real | prepared
     capture.mode: scenario by default; custom requires capture.reason
-    capture.size: optional WxH override; defaults to defaults.public_capture
+    capture.size: optional final artifact WxH; defaults to defaults.public_capture; HiDPI is downsampled
     portability: portable-scenario | native-only | browser-only
     webgpu.status: webgpu-live | webgpu-planned | webgpu-deferred | native-only | browser-only
     webgpu.route: live browser route for webgpu-live examples
@@ -869,7 +869,6 @@ examples:
     capture:
       mode: native-app
       args: ["--png"]
-      size: 2560x1440
       reason: native GUI examples capture the composed GLFW/ImGui view through app PNG capture
     data:
       kind: synthetic
@@ -895,7 +894,6 @@ examples:
     capture:
       mode: native-app
       args: ["--png"]
-      size: 2560x1440
       reason: native GUI examples capture the composed GLFW/ImGui view through app PNG capture
     data:
       kind: synthetic
@@ -922,7 +920,6 @@ examples:
     capture:
       mode: native-app
       args: ["--png"]
-      size: 2560x1440
       reason: native GUI examples capture the composed GLFW/ImGui view through app PNG capture
     data:
       kind: synthetic

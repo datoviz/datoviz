@@ -438,6 +438,44 @@ def png_dimensions(path: Path) -> tuple[bool, str]:
     return True, f"{width}x{height}"
 
 
+def normalize_png_size(path: Path, expected_size: tuple[int, int]) -> tuple[bool, str]:
+    """Downsample a same-aspect PNG to the canonical gallery artifact size."""
+    ok, detail = png_dimensions(path)
+    if not ok:
+        return False, detail
+
+    source_width, source_height = (int(part) for part in detail.split("x", 1))
+    expected_width, expected_height = expected_size
+    if source_width == expected_width and source_height == expected_height:
+        return True, detail
+    if source_width < expected_width or source_height < expected_height:
+        return False, (
+            f"capture {source_width}x{source_height} is smaller than canonical "
+            f"{expected_width}x{expected_height}"
+        )
+    if source_width * expected_height != source_height * expected_width:
+        return False, (
+            f"capture {source_width}x{source_height} does not match canonical aspect ratio "
+            f"{expected_width}x{expected_height}"
+        )
+
+    try:
+        from PIL import Image
+    except ImportError:
+        return False, "Pillow is required to normalize HiDPI gallery captures"
+
+    temporary = path.with_name(f".{path.name}.tmp")
+    try:
+        with Image.open(path) as source:
+            normalized = source.convert("RGBA").resize(expected_size, Image.Resampling.LANCZOS)
+            normalized.save(temporary, format="PNG")
+        temporary.replace(path)
+    except OSError as exc:
+        temporary.unlink(missing_ok=True)
+        return False, f"failed to normalize PNG: {exc}"
+    return True, f"normalized {source_width}x{source_height} -> {expected_width}x{expected_height}"
+
+
 def png_extrema(path: Path) -> tuple[int, int, dict[str, list[tuple[int, int]] | tuple[int, int]]]:
     data = path.read_bytes()
     if not data.startswith(b"\x89PNG\r\n\x1a\n"):
@@ -601,12 +639,18 @@ def capture_one(
     if result.returncode != 0:
         return False, "failed", f"exit {result.returncode}"
 
+    ok, detail = normalize_png_size(png, (example.expected_width, example.expected_height))
+    if not ok:
+        return False, "failed", detail
+    normalization_detail = detail
     if args.skip_nonblank_check:
-        detail = str(png.relative_to(ROOT))
+        detail = normalization_detail
     else:
         ok, detail = png_is_nonblank(png, (example.expected_width, example.expected_height))
         if not ok:
             return False, "failed", detail
+        if normalization_detail.startswith("normalized "):
+            detail = normalization_detail
 
     png_hash = file_sha256(png)
     status = "new"
