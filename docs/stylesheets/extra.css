@@ -110,6 +110,7 @@ img[alt*=gpuopen] {
 }
 
 .dvz-webgpu-live {
+    container-type: inline-size;
     width: 100%;
     margin: 1rem 0;
     border: 1px solid rgba(76, 201, 240, 0.22);
@@ -119,7 +120,7 @@ img[alt*=gpuopen] {
 .dvz-webgpu-live iframe {
     display: block;
     width: 100%;
-    min-height: 520px;
+    height: calc(56.25cqw + 48px);
     border: 0;
     background: #05070a;
 }
@@ -282,12 +283,6 @@ img[alt*=gpuopen] {
 
 .dvz-example-nav__siblings {
     margin-top: 0.25rem;
-}
-
-@media screen and (max-width: 760px) {
-    .dvz-webgpu-live iframe {
-        min-height: 420px;
-    }
 }
 
 /* ── Docs homepage ──────────────────────────────────────────────────────── */
