@@ -7,8 +7,8 @@
 /* terrain_relief - This example drapes aligned NAIP orthoimagery over USGS 3DEP elevation.
  *
  * What to look for: the real bare-earth DEM drives a lit surface-grid mesh while the matching
- * natural-color aerial image is sampled through the grid UVs. Rotate the upright turntable view to
- * inspect McHenrys Peak, Glacier Gorge, alpine lakes, and the Continental Divide.
+ * natural-color aerial image is sampled through the grid UVs. Rotate the arcball view to inspect
+ * McHenrys Peak, Glacier Gorge, alpine lakes, and the Continental Divide.
  *
  * Prepare the cache before running:
  *
@@ -41,6 +41,7 @@
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "example_tuner.h"
 #include "runner/scenario_runner.h"
 
 
@@ -90,6 +91,16 @@ typedef struct TerrainData
     float elevation_max_m;
     double* heights_m;
 } TerrainData;
+
+
+typedef struct TerrainReliefState
+{
+    ExampleTuner tuner;
+    DvzArcball* arcball;
+    DvzVisual* visual;
+    DvzMaterialDesc material;
+    DvzExampleGuiMsaaControls msaa;
+} TerrainReliefState;
 
 
 
@@ -554,28 +565,22 @@ static bool _add_base(DvzScene* scene, DvzPanel* panel, float display_depth)
  * @return terrain visual, or NULL on failure
  */
 static DvzVisual* _add_terrain(
-    DvzScene* scene, DvzPanel* panel, const DvzGeometry* geometry, DvzSampledField* texture)
+    DvzScene* scene, DvzPanel* panel, const DvzGeometry* geometry, DvzSampledField* texture,
+    DvzMaterialDesc* material)
 {
     ANN(scene);
     ANN(panel);
     ANN(geometry);
     ANN(texture);
+    ANN(material);
 
     DvzVisual* visual = dvz_mesh(scene, 0);
     if (visual == NULL)
         return NULL;
     DvzResult result = dvz_mesh_set_geometry(visual, geometry);
 
-    DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = -0.38f;
-    material.light_direction[1] = +0.76f;
-    material.light_direction[2] = +0.52f;
-    material.phong.ambient = 0.48f;
-    material.phong.diffuse = 0.62f;
-    material.phong.specular = 0.025f;
-    material.phong.shininess = 24.0f;
     if (result == DVZ_OK)
-        result = dvz_visual_set_material(visual, &material);
+        result = dvz_visual_set_material(visual, material);
     if (result == DVZ_OK)
         result = dvz_visual_set_field(visual, "texture", texture);
     if (result == DVZ_OK)
@@ -600,8 +605,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
     if (ctx == NULL)
         return false;
+    TerrainReliefState* state = (TerrainReliefState*)dvz_calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    state->tuner = example_tuner("Terrain relief settings");
     if (out_user != NULL)
-        *out_user = NULL;
+        *out_user = state;
 
     bool ok = false;
     char terrain_path[1024] = {0};
@@ -627,6 +636,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
+    example_tuner_figure(&state->tuner, ctx->figure);
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
     example_graphite_cyan_set_panel_background(panel);
@@ -644,35 +654,102 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(
         dvz_panel_set_camera_desc(panel, &camera) == DVZ_OK, "dvz_panel_set_camera_desc() failed");
 
+    DvzCamera* camera_ref = dvz_panel_camera(panel);
+    EXAMPLE_CHECK(camera_ref != NULL, "dvz_panel_camera() failed");
+
     EXAMPLE_CHECK(_add_base(ctx->scene, panel, display_depth), "failed to add terrain base");
     EXAMPLE_CHECK(_add_skirt(ctx->scene, panel, geometry), "failed to add terrain skirt");
-    DvzVisual* visual = _add_terrain(ctx->scene, panel, geometry, texture);
-    EXAMPLE_CHECK(visual != NULL, "failed to add textured terrain");
+    state->material = dvz_phong_material_desc();
+    state->material.light_direction[0] = -0.38f;
+    state->material.light_direction[1] = +0.76f;
+    state->material.light_direction[2] = +0.52f;
+    state->material.phong.ambient = 0.48f;
+    state->material.phong.diffuse = 0.62f;
+    state->material.phong.specular = 0.025f;
+    state->material.phong.shininess = 24.0f;
+    state->visual = _add_terrain(ctx->scene, panel, geometry, texture, &state->material);
+    EXAMPLE_CHECK(state->visual != NULL, "failed to add textured terrain");
     EXAMPLE_CHECK(
-        dvz_scenario_set_primary_visual(ctx, visual) == DVZ_OK,
+        dvz_scenario_set_primary_visual(ctx, state->visual) == DVZ_OK,
         "dvz_scenario_set_primary_visual() failed");
 
 #ifndef DVZ_EXAMPLE_NO_APP
-    DvzMsaaDesc msaa = dvz_msaa_desc();
-    msaa.sample_count = 8u;
-    EXAMPLE_CHECK(dvz_panel_set_msaa(panel, &msaa) == DVZ_OK, "dvz_panel_set_msaa() failed");
+    state->msaa = (DvzExampleGuiMsaaControls){
+        .enabled = true,
+        .alpha_to_coverage = false,
+        .samples = 8.0f,
+        .min_samples = 2.0f,
+        .max_samples = 16.0f,
+    };
+    DvzMsaaDesc msaa_desc = dvz_msaa_desc();
+    msaa_desc.sample_count = 8u;
+    EXAMPLE_CHECK(dvz_panel_set_msaa(panel, &msaa_desc) == DVZ_OK, "dvz_panel_set_msaa() failed");
 #endif
 
-    DvzTurntableDesc turntable = dvz_turntable_desc();
-    turntable.initial_view = camera.view;
-    turntable.min_distance = 3.8f;
-    turntable.max_distance = 22.0f;
-    DvzController* controller = dvz_turntable(ctx->scene, &turntable);
-    EXAMPLE_CHECK(controller != NULL, "dvz_turntable() failed");
+    DvzController* controller = dvz_arcball(ctx->scene, NULL);
+    EXAMPLE_CHECK(controller != NULL, "dvz_arcball() failed");
+    state->arcball = dvz_controller_arcball(controller);
+    EXAMPLE_CHECK(state->arcball != NULL, "dvz_controller_arcball() failed");
     EXAMPLE_CHECK(
         dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) == DVZ_OK,
         "dvz_scenario_bind_controller() failed");
+
+    vec3 arcball_angles = {0.0f, 0.0f, 0.0f};
+    vec2 arcball_pan = {0.0f, 0.0f};
+    example_tuner_camera_ref(&state->tuner, "Camera", panel, camera_ref, &camera);
+    example_tuner_arcball(
+        &state->tuner, "Arcball", state->arcball, arcball_angles, 1.0f, arcball_pan);
+    example_tuner_material(&state->tuner, "Terrain material", state->visual, &state->material);
+#ifndef DVZ_EXAMPLE_NO_APP
+    example_tuner_msaa(&state->tuner, "MSAA", panel, &state->msaa);
+#endif
     ok = true;
 
 cleanup:
     dvz_geometry_destroy(geometry);
     _terrain_destroy(&terrain);
     return ok;
+}
+
+
+
+/**
+ * Attach the live terrain tuner after the native view exists.
+ *
+ * @param ctx scenario context
+ * @param app native app
+ * @param view native view
+ * @param user scenario state
+ * @return whether the tuner was attached or intentionally skipped
+ */
+static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    (void)app;
+    TerrainReliefState* state = (TerrainReliefState*)user;
+    if (ctx == NULL || ctx->presentation != DVZ_RUNNER_PRESENT_GLFW || state == NULL ||
+        view == NULL)
+    {
+        return true;
+    }
+    return example_tuner_attach(&state->tuner, view);
+}
+
+
+
+/**
+ * Destroy the terrain-relief showcase state.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    TerrainReliefState* state = (TerrainReliefState*)user;
+    if (state == NULL)
+        return;
+    example_tuner_detach(&state->tuner);
+    dvz_free(state);
 }
 
 
@@ -690,8 +767,11 @@ DvzScenarioSpec dvz_showcase_terrain_relief_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
-        .requirements = DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER,
+        .requirements =
+            DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_ARCBALL,
         .init = _scenario_init,
+        .native_view = _scenario_native_view,
+        .destroy = _scenario_destroy,
     };
 }
 

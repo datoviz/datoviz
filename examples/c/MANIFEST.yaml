@@ -3469,7 +3469,10 @@ examples:
         - mesh
         - sampled-field
         - texture
-        - turntable
+        - arcball
+        - camera
+        - material
+        - msaa
         - prepared-data
       reason: the cache-only DEM and orthoimagery bundle is not packaged for the browser
     agent_copy_safe: false
@@ -3511,7 +3514,9 @@ examples:
       - sampled-field
       - texture
       - material
-      - turntable
+      - arcball
+      - camera
+      - msaa
 
   - id: showcases_cortical_activity
     title: Human Auditory Cortical Activity
