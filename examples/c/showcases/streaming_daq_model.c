@@ -17,7 +17,6 @@
 #include "_alloc.h"
 #include "_compat.h"
 #include "_time_utils.h"
-#include "datoviz/common/functions.h"
 
 
 
@@ -415,7 +414,7 @@ DaqConfig daq_config_default(void)
         .channel_count = 128u,
         .analog_channel_count = 16u,
         .sample_rate_hz = 1000u,
-        .display_sample_count = 4096u,
+        .display_sample_count = 2048u,
         .block_size = 16u,
         .seed = 20260716u,
     };
@@ -525,16 +524,19 @@ bool daq_model_prefill(DaqModel* model)
 {
     if (model == NULL || model->display_values == NULL)
         return false;
-    uint32_t remaining = model->config.display_sample_count;
+    uint64_t remaining = (uint64_t)model->config.display_sample_count +
+                         3u * (uint64_t)model->config.display_sample_count / 4u;
     while (remaining > 0)
     {
-        uint32_t count = remaining > DAQ_MAX_BLOCK_SAMPLES ? DAQ_MAX_BLOCK_SAMPLES : remaining;
+        uint32_t count =
+            remaining > DAQ_MAX_BLOCK_SAMPLES ? DAQ_MAX_BLOCK_SAMPLES : (uint32_t)remaining;
         DaqBlock block = {.first_sample = model->next_expected_sample, .sample_count = count};
         _generate_values(model, block.first_sample, count, block.values);
         if (_append_block(model, &block) != count)
             return false;
         remaining -= count;
     }
+    model->wrap_count = 0;
     model->producer_next_sample = model->next_expected_sample;
     atomic_store_explicit(
         &model->generated_sample_count, model->next_expected_sample, memory_order_relaxed);
