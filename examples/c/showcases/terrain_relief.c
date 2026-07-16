@@ -660,7 +660,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzTurntableDesc turntable = dvz_turntable_desc();
     turntable.initial_view = camera.view;
-    turntable.min_pitch = -0.20f;
     turntable.min_distance = 3.8f;
     turntable.max_distance = 22.0f;
     DvzController* controller = dvz_turntable(ctx->scene, &turntable);
