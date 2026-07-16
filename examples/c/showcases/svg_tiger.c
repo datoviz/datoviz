@@ -16,7 +16,7 @@
  *   python3 tools/data/prepare_svg_tiger.py --download
  *
  * Scenario: showcases_svg_tiger
- * Style: showcase, source artwork colors, 1000x1000 window target
+ * Style: showcase, source artwork colors, shared graphite-cyan background
  *
  * Build:  just example-c showcases/svg_tiger
  * Run:    ./build/examples/c/showcases/svg_tiger --live
@@ -45,8 +45,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1000u
-#define HEIGHT 1000u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
 #define SVG_TIGER_CACHE_PATH ".cache/datoviz/examples/svg_tiger/prepared/tiger_paths.bin"
 
@@ -79,7 +79,7 @@ static void _print_prepare_hint(void)
 
 
 /**
- * Configure a white equal-aspect SVG viewport and MSAA.
+ * Configure the shared equal-aspect showcase viewport and MSAA.
  *
  * @param panel target panel
  * @param data loaded SVG document metadata
@@ -95,8 +95,6 @@ static bool _configure_panel(DvzPanel* panel, const SvgTigerData* data)
     {
         return false;
     }
-    if (dvz_panel_set_background_color(panel, dvz_color_rgba(255, 255, 255, 255)) != 0)
-        return false;
     DvzMsaaDesc msaa = dvz_msaa_desc();
     msaa.enabled = true;
     return dvz_panel_set_msaa(panel, &msaa) == 0;

@@ -3153,8 +3153,6 @@ examples:
         language: python
         path: tools/data/prepare_svg_tiger.py
     validation: smoke+screenshot
-    capture:
-      size: 1000x1000
     data:
       kind: prepared
     portability: native-only
