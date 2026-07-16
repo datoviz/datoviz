@@ -12,6 +12,7 @@
  *
  * This workflow is useful for directional basis functions, radiation patterns, orbital-like
  * surfaces, and other spherical scalar fields that benefit from direct 3D shape perception.
+ * Native live mode adds controls for the surface mapping and every harmonic term.
  *
  * Scenario: showcases_spherical_harmonics
  * Style: showcase, graphite_cyan, 1280x720 window target
@@ -37,6 +38,7 @@
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "example_tuner.h"
 #include "runner/scenario_runner.h"
 
 
@@ -50,10 +52,6 @@
 
 #define ICOSPHERE_SUBDIVISIONS 5u
 #define HARMONIC_TERM_COUNT    4u
-#define HARMONIC_BASE_RADIUS     0.54
-#define HARMONIC_LOBE_SCALE      0.94
-#define HARMONIC_LOBE_POWER      1.00
-#define HARMONIC_NODE_SMOOTHING 0.18
 #define HARMONIC_MORPH_PERIOD  8.0
 
 #define PI 3.14159265358979323846
@@ -66,12 +64,27 @@
 
 typedef struct HarmonicTerm
 {
-    uint32_t degree;
-    int32_t order;
-    double base_weight;
-    double morph_amplitude;
-    uint32_t morph_frequency;
+    int degree;
+    int order;
+    float base_weight;
+    float morph_amplitude;
+    int morph_frequency;
+    float morph_phase;
 } HarmonicTerm;
+
+
+typedef struct HarmonicSettings
+{
+    bool animate;
+    float phase;
+    float speed;
+    float base_radius;
+    float lobe_scale;
+    float lobe_power;
+    float node_smoothing;
+    float breathing_amplitude;
+    HarmonicTerm terms[HARMONIC_TERM_COUNT];
+} HarmonicSettings;
 
 
 typedef struct MeshBuffers
@@ -93,13 +106,25 @@ typedef struct EdgeEntry
 
 typedef struct SphericalHarmonicsState
 {
+    ExampleTuner tuner;
     DvzGeometry* geometry;
     DvzVisual* visual;
+    DvzArcball* arcball;
+    DvzMaterialDesc material;
+    HarmonicSettings settings;
+    HarmonicSettings defaults;
     dvec3* directions;
     double* basis;
     double* amplitudes;
     vec3* gpu_positions;
     vec3* gpu_normals;
+    double last_time;
+    bool time_initialized;
+    bool basis_dirty;
+    bool geometry_dirty;
+    int preset_index;
+    int basis_degree[HARMONIC_TERM_COUNT];
+    int basis_order[HARMONIC_TERM_COUNT];
 } SphericalHarmonicsState;
 
 
@@ -108,27 +133,42 @@ typedef struct SphericalHarmonicsState
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-static const HarmonicTerm HARMONIC_TERMS[HARMONIC_TERM_COUNT] = {
-    {.degree = 7u,
-     .order = +3,
-     .base_weight = +1.00,
-     .morph_amplitude = 0.22,
-     .morph_frequency = 1u},
-    {.degree = 6u,
-     .order = -5,
-     .base_weight = +0.58,
-     .morph_amplitude = 0.25,
-     .morph_frequency = 2u},
-    {.degree = 5u,
-     .order = +2,
-     .base_weight = -0.38,
-     .morph_amplitude = 0.20,
-     .morph_frequency = 3u},
-    {.degree = 4u,
-     .order = -1,
-     .base_weight = +0.25,
-     .morph_amplitude = 0.18,
-     .morph_frequency = 1u},
+static const HarmonicSettings HARMONIC_DEFAULTS = {
+    .animate = true,
+    .phase = 0.0f,
+    .speed = 1.0f,
+    .base_radius = 0.54f,
+    .lobe_scale = 0.94f,
+    .lobe_power = 1.00f,
+    .node_smoothing = 0.18f,
+    .breathing_amplitude = 0.04f,
+    .terms =
+        {
+            {.degree = 7,
+             .order = +3,
+             .base_weight = +1.00f,
+             .morph_amplitude = 0.22f,
+             .morph_frequency = 1,
+             .morph_phase = 0.00f},
+            {.degree = 6,
+             .order = -5,
+             .base_weight = +0.58f,
+             .morph_amplitude = 0.25f,
+             .morph_frequency = 2,
+             .morph_phase = 0.00f},
+            {.degree = 5,
+             .order = +2,
+             .base_weight = -0.38f,
+             .morph_amplitude = 0.20f,
+             .morph_frequency = 3,
+             .morph_phase = 0.00f},
+            {.degree = 4,
+             .order = -1,
+             .base_weight = +0.25f,
+             .morph_amplitude = 0.18f,
+             .morph_frequency = 1,
+             .morph_phase = 0.00f},
+        },
 };
 
 
@@ -490,16 +530,20 @@ _real_spherical_harmonic(uint32_t degree, int32_t order, double cos_theta, doubl
  * Evaluate every harmonic basis term at one unit direction.
  *
  * @param direction unit sphere direction
+ * @param settings harmonic settings
  * @param out output basis values
  */
-static void _harmonic_basis(const dvec3 direction, double out[HARMONIC_TERM_COUNT])
+static void _harmonic_basis(
+    const dvec3 direction, const HarmonicSettings* settings, double out[HARMONIC_TERM_COUNT])
 {
+    if (settings == NULL)
+        return;
     const double cos_theta = fmax(-1.0, fmin(+1.0, direction[2]));
     const double phi = atan2(direction[1], direction[0]);
     for (uint32_t term = 0; term < HARMONIC_TERM_COUNT; term++)
     {
         out[term] = _real_spherical_harmonic(
-            HARMONIC_TERMS[term].degree, HARMONIC_TERMS[term].order, cos_theta, phi);
+            (uint32_t)settings->terms[term].degree, settings->terms[term].order, cos_theta, phi);
     }
 }
 
@@ -508,16 +552,21 @@ static void _harmonic_basis(const dvec3 direction, double out[HARMONIC_TERM_COUN
 /**
  * Compute the periodic harmonic coefficients for one animation phase.
  *
+ * @param settings harmonic settings
  * @param phase seamless animation phase in [0, 1)
  * @param out output harmonic weights
  */
-static void _harmonic_weights(double phase, double out[HARMONIC_TERM_COUNT])
+static void
+_harmonic_weights(const HarmonicSettings* settings, double phase, double out[HARMONIC_TERM_COUNT])
 {
+    if (settings == NULL)
+        return;
     for (uint32_t term = 0; term < HARMONIC_TERM_COUNT; term++)
     {
-        const double angle = 2.0 * PI * (double)HARMONIC_TERMS[term].morph_frequency * phase;
-        out[term] =
-            HARMONIC_TERMS[term].base_weight + HARMONIC_TERMS[term].morph_amplitude * sin(angle);
+        const HarmonicTerm* item = &settings->terms[term];
+        const double angle =
+            2.0 * PI * ((double)item->morph_frequency * phase + (double)item->morph_phase);
+        out[term] = (double)item->base_weight + (double)item->morph_amplitude * sin(angle);
     }
 }
 
@@ -552,8 +601,7 @@ static DvzColor _harmonic_color(double amplitude)
 {
     const DvzColor panel = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_PANEL_BG);
     const DvzColor stops[5] = {
-        _mix_color(
-            panel, example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY), 0.28),
+        _mix_color(panel, example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY), 0.28),
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT),
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
@@ -574,15 +622,18 @@ static DvzColor _harmonic_color(double amplitude)
  * The offset smooth magnitude is zero at a harmonic node and has a finite zero slope there. This
  * avoids the cusp produced by pow(abs(x), p) when p is below one.
  *
+ * @param settings harmonic settings
  * @param amplitude normalized signed amplitude in [-1, +1]
  * @return smooth lobe coordinate in [0, 1]
  */
-static double _smooth_lobe(double amplitude)
+static double _smooth_lobe(const HarmonicSettings* settings, double amplitude)
 {
-    const double epsilon = HARMONIC_NODE_SMOOTHING;
+    if (settings == NULL)
+        return 0.0;
+    const double epsilon = (double)settings->node_smoothing;
     const double magnitude = sqrt(amplitude * amplitude + epsilon * epsilon) - epsilon;
     const double maximum = sqrt(1.0 + epsilon * epsilon) - epsilon;
-    return pow(fmax(0.0, magnitude / maximum), HARMONIC_LOBE_POWER);
+    return pow(fmax(0.0, magnitude / maximum), (double)settings->lobe_power);
 }
 
 
@@ -645,10 +696,9 @@ static bool _compute_area_weighted_normals(SphericalHarmonicsState* state)
     {
         if (!_normalize(geometry->normals[vertex]))
             return false;
-        const double radial_dot =
-            geometry->normals[vertex][0] * state->directions[vertex][0] +
-            geometry->normals[vertex][1] * state->directions[vertex][1] +
-            geometry->normals[vertex][2] * state->directions[vertex][2];
+        const double radial_dot = geometry->normals[vertex][0] * state->directions[vertex][0] +
+                                  geometry->normals[vertex][1] * state->directions[vertex][1] +
+                                  geometry->normals[vertex][2] * state->directions[vertex][2];
         if (radial_dot < 0.0)
         {
             for (uint32_t axis = 0; axis < 3u; axis++)
@@ -656,6 +706,258 @@ static bool _compute_area_weighted_normals(SphericalHarmonicsState* state)
         }
     }
     return true;
+}
+
+
+
+/**
+ * Clamp live settings to the supported mathematical and visual ranges.
+ *
+ * @param settings settings to clamp
+ */
+static void _settings_clamp(HarmonicSettings* settings)
+{
+    if (settings == NULL)
+        return;
+    settings->phase = fmaxf(0.0f, fminf(1.0f, settings->phase));
+    settings->speed = fmaxf(0.1f, fminf(3.0f, settings->speed));
+    settings->base_radius = fmaxf(0.20f, fminf(0.90f, settings->base_radius));
+    settings->lobe_scale = fmaxf(0.20f, fminf(1.60f, settings->lobe_scale));
+    settings->lobe_power = fmaxf(0.65f, fminf(1.50f, settings->lobe_power));
+    settings->node_smoothing = fmaxf(0.01f, fminf(0.35f, settings->node_smoothing));
+    settings->breathing_amplitude = fmaxf(0.0f, fminf(0.12f, settings->breathing_amplitude));
+    for (uint32_t i = 0; i < HARMONIC_TERM_COUNT; i++)
+    {
+        HarmonicTerm* term = &settings->terms[i];
+        term->degree = term->degree < 0 ? 0 : (term->degree > 12 ? 12 : term->degree);
+        term->order = term->order < -term->degree ? -term->degree : term->order;
+        term->order = term->order > +term->degree ? +term->degree : term->order;
+        term->base_weight = fmaxf(-1.50f, fminf(+1.50f, term->base_weight));
+        term->morph_amplitude = fmaxf(0.0f, fminf(0.80f, term->morph_amplitude));
+        term->morph_frequency = term->morph_frequency < 0
+                                    ? 0
+                                    : (term->morph_frequency > 6 ? 6 : term->morph_frequency);
+        term->morph_phase = fmaxf(0.0f, fminf(1.0f, term->morph_phase));
+    }
+}
+
+
+
+/**
+ * Replace the current settings with one curated harmonic preset.
+ *
+ * @param state showcase state
+ * @param preset preset index
+ */
+static void _load_preset(SphericalHarmonicsState* state, int preset)
+{
+    if (state == NULL)
+        return;
+
+    state->settings = HARMONIC_DEFAULTS;
+    state->preset_index = preset;
+    if (preset == 1)
+    {
+        state->settings.terms[0] = (HarmonicTerm){7, +3, +1.00f, 0.24f, 1, 0.00f};
+        state->settings.terms[1] = (HarmonicTerm){5, -2, +0.48f, 0.18f, 2, 0.16f};
+        state->settings.terms[2] = (HarmonicTerm){3, +3, -0.32f, 0.16f, 3, 0.37f};
+        state->settings.terms[3] = (HarmonicTerm){2, 0, +0.20f, 0.12f, 1, 0.62f};
+    }
+    else if (preset == 2)
+    {
+        state->settings.terms[0] = (HarmonicTerm){8, 0, +1.00f, 0.20f, 1, 0.00f};
+        state->settings.terms[1] = (HarmonicTerm){6, +1, +0.44f, 0.22f, 2, 0.25f};
+        state->settings.terms[2] = (HarmonicTerm){4, -1, -0.30f, 0.18f, 3, 0.50f};
+        state->settings.terms[3] = (HarmonicTerm){2, 0, +0.18f, 0.10f, 1, 0.75f};
+    }
+    state->time_initialized = false;
+    state->basis_dirty = true;
+    state->geometry_dirty = true;
+}
+
+
+
+/**
+ * Recompute the cached basis after live degree or order edits.
+ *
+ * @param state initialized showcase state
+ * @return whether the cache was updated
+ */
+static bool _recompute_basis(SphericalHarmonicsState* state)
+{
+    if (state == NULL || state->geometry == NULL || state->directions == NULL ||
+        state->basis == NULL)
+    {
+        return false;
+    }
+    for (uint32_t vertex = 0; vertex < state->geometry->vertex_count; vertex++)
+    {
+        _harmonic_basis(
+            state->directions[vertex], &state->settings,
+            &state->basis[vertex * HARMONIC_TERM_COUNT]);
+    }
+    for (uint32_t i = 0; i < HARMONIC_TERM_COUNT; i++)
+    {
+        state->basis_degree[i] = state->settings.terms[i].degree;
+        state->basis_order[i] = state->settings.terms[i].order;
+    }
+    state->basis_dirty = false;
+    return true;
+}
+
+
+
+/**
+ * Draw the live spherical-harmonic controls.
+ *
+ * @param gui GUI
+ * @param user showcase state
+ * @return whether any setting changed
+ */
+static bool _harmonic_settings_gui(DvzGui* gui, void* user)
+{
+    SphericalHarmonicsState* state = (SphericalHarmonicsState*)user;
+    if (gui == NULL || state == NULL)
+        return false;
+
+    static const char* const presets[] = {"Showcase blend", "Sectoral bloom", "Zonal pulse"};
+    bool changed = false;
+    if (dvz_gui_combo(gui, "Preset", &state->preset_index, presets, DVZ_ARRAY_COUNT(presets)))
+    {
+        _load_preset(state, state->preset_index);
+        changed = true;
+    }
+
+    HarmonicSettings* settings = &state->settings;
+    dvz_gui_separator_text(gui, "Animation");
+    changed |= dvz_gui_checkbox(gui, "Animate", &settings->animate);
+    const bool phase_changed =
+        dvz_gui_slider_float_format(gui, "Phase", &settings->phase, 0.0f, 1.0f, "%.3f");
+    if (phase_changed)
+        settings->animate = false;
+    changed |= phase_changed;
+    changed |= dvz_gui_slider_float_format(gui, "Speed", &settings->speed, 0.1f, 3.0f, "%.2fx");
+    changed |= dvz_gui_slider_float_format(
+        gui, "Breathing", &settings->breathing_amplitude, 0.0f, 0.12f, "%.3f");
+
+    dvz_gui_separator_text(gui, "Surface");
+    changed |= dvz_gui_slider_float_format(
+        gui, "Base radius", &settings->base_radius, 0.20f, 0.90f, "%.2f");
+    changed |= dvz_gui_slider_float_format(
+        gui, "Lobe scale", &settings->lobe_scale, 0.20f, 1.60f, "%.2f");
+    changed |= dvz_gui_slider_float_format(
+        gui, "Lobe power", &settings->lobe_power, 0.65f, 1.50f, "%.2f");
+    changed |= dvz_gui_slider_float_format(
+        gui, "Node smoothing", &settings->node_smoothing, 0.01f, 0.35f, "%.3f");
+
+    for (uint32_t i = 0; i < HARMONIC_TERM_COUNT; i++)
+    {
+        HarmonicTerm* term = &settings->terms[i];
+        char label[64] = {0};
+        dvz_snprintf(label, sizeof(label), "Term %u", i + 1u);
+        dvz_gui_separator_text(gui, label);
+
+        dvz_snprintf(label, sizeof(label), "Degree l##degree_%u", i);
+        changed |= dvz_gui_slider_int(gui, label, &term->degree, 0, 12);
+        term->order = term->order < -term->degree ? -term->degree : term->order;
+        term->order = term->order > +term->degree ? +term->degree : term->order;
+        dvz_snprintf(label, sizeof(label), "Order m##order_%u", i);
+        changed |= dvz_gui_slider_int(gui, label, &term->order, -term->degree, +term->degree);
+        dvz_snprintf(label, sizeof(label), "Coefficient##weight_%u", i);
+        changed |=
+            dvz_gui_slider_float_format(gui, label, &term->base_weight, -1.50f, +1.50f, "%+.2f");
+        dvz_snprintf(label, sizeof(label), "Morph amplitude##amplitude_%u", i);
+        changed |=
+            dvz_gui_slider_float_format(gui, label, &term->morph_amplitude, 0.0f, 0.80f, "%.2f");
+        dvz_snprintf(label, sizeof(label), "Frequency##frequency_%u", i);
+        changed |= dvz_gui_slider_int(gui, label, &term->morph_frequency, 0, 6);
+        dvz_snprintf(label, sizeof(label), "Phase offset##phase_%u", i);
+        changed |=
+            dvz_gui_slider_float_format(gui, label, &term->morph_phase, 0.0f, 1.0f, "%.2f cycle");
+    }
+    return changed;
+}
+
+
+
+/**
+ * Apply live settings on the next scenario frame.
+ *
+ * @param user showcase state
+ */
+static void _harmonic_settings_apply(void* user)
+{
+    SphericalHarmonicsState* state = (SphericalHarmonicsState*)user;
+    if (state == NULL)
+        return;
+    _settings_clamp(&state->settings);
+    for (uint32_t i = 0; i < HARMONIC_TERM_COUNT; i++)
+    {
+        if (state->basis_degree[i] != state->settings.terms[i].degree ||
+            state->basis_order[i] != state->settings.terms[i].order)
+        {
+            state->basis_dirty = true;
+            break;
+        }
+    }
+    state->geometry_dirty = true;
+}
+
+
+
+/**
+ * Restore the showcase harmonic defaults.
+ *
+ * @param user showcase state
+ */
+static void _harmonic_settings_reset(void* user)
+{
+    SphericalHarmonicsState* state = (SphericalHarmonicsState*)user;
+    if (state == NULL)
+        return;
+    state->settings = state->defaults;
+    state->preset_index = 0;
+    state->time_initialized = false;
+    state->basis_dirty = true;
+    state->geometry_dirty = true;
+}
+
+
+
+/**
+ * Print pasteable C defaults for the live harmonic settings.
+ *
+ * @param fp output stream
+ * @param user showcase state
+ */
+static void _harmonic_settings_print(FILE* fp, void* user)
+{
+    const SphericalHarmonicsState* state = (const SphericalHarmonicsState*)user;
+    if (state == NULL)
+        return;
+    if (fp == NULL)
+        fp = stdout;
+    const HarmonicSettings* settings = &state->settings;
+    fprintf(fp, "static const HarmonicSettings HARMONIC_DEFAULTS = {\n");
+    fprintf(fp, "    .animate = %s,\n", settings->animate ? "true" : "false");
+    fprintf(fp, "    .phase = %.3ff,\n", (double)settings->phase);
+    fprintf(fp, "    .speed = %.3ff,\n", (double)settings->speed);
+    fprintf(fp, "    .base_radius = %.3ff,\n", (double)settings->base_radius);
+    fprintf(fp, "    .lobe_scale = %.3ff,\n", (double)settings->lobe_scale);
+    fprintf(fp, "    .lobe_power = %.3ff,\n", (double)settings->lobe_power);
+    fprintf(fp, "    .node_smoothing = %.3ff,\n", (double)settings->node_smoothing);
+    fprintf(
+        fp, "    .breathing_amplitude = %.3ff,\n    .terms = {\n",
+        (double)settings->breathing_amplitude);
+    for (uint32_t i = 0; i < HARMONIC_TERM_COUNT; i++)
+    {
+        const HarmonicTerm* term = &settings->terms[i];
+        fprintf(
+            fp, "        {%d, %+d, %+.3ff, %.3ff, %d, %.3ff},\n", term->degree, term->order,
+            (double)term->base_weight, (double)term->morph_amplitude, term->morph_frequency,
+            (double)term->morph_phase);
+    }
+    fprintf(fp, "    },\n};\n");
 }
 
 
@@ -703,7 +1005,7 @@ static bool _update_geometry(SphericalHarmonicsState* state, double phase)
     }
 
     double weights[HARMONIC_TERM_COUNT] = {0};
-    _harmonic_weights(phase, weights);
+    _harmonic_weights(&state->settings, phase, weights);
 
     double max_amplitude = 0.0;
     for (uint32_t vertex = 0; vertex < state->geometry->vertex_count; vertex++)
@@ -716,15 +1018,19 @@ static bool _update_geometry(SphericalHarmonicsState* state, double phase)
         state->amplitudes[vertex] = amplitude;
         max_amplitude = fmax(max_amplitude, fabs(amplitude));
     }
-    if (!(max_amplitude > 0.0) || !isfinite(max_amplitude))
+    if (!isfinite(max_amplitude))
         return false;
+    if (!(max_amplitude > 1e-12))
+        max_amplitude = 1.0;
 
-    const double breathing = 0.96 + 0.04 * cos(2.0 * PI * phase);
+    const double breathing = 1.0 - (double)state->settings.breathing_amplitude +
+                             (double)state->settings.breathing_amplitude * cos(2.0 * PI * phase);
     for (uint32_t vertex = 0; vertex < state->geometry->vertex_count; vertex++)
     {
         const double normalized = state->amplitudes[vertex] / max_amplitude;
-        const double radius = HARMONIC_BASE_RADIUS +
-                              HARMONIC_LOBE_SCALE * breathing * _smooth_lobe(normalized);
+        const double radius =
+            (double)state->settings.base_radius + (double)state->settings.lobe_scale * breathing *
+                                                      _smooth_lobe(&state->settings, normalized);
         for (uint32_t axis = 0; axis < 3u; axis++)
         {
             state->geometry->positions[vertex][axis] = radius * state->directions[vertex][axis];
@@ -785,10 +1091,8 @@ static bool _create_geometry(SphericalHarmonicsState* state)
     const size_t index_bytes = (size_t)mesh.index_count * sizeof(DvzIndex);
     (void)dvz_memcpy(state->directions, direction_bytes, mesh.positions, direction_bytes);
     (void)dvz_memcpy(state->geometry->indices, index_bytes, mesh.indices, index_bytes);
-    for (uint32_t vertex = 0; vertex < mesh.vertex_count; vertex++)
-    {
-        _harmonic_basis(state->directions[vertex], &state->basis[vertex * HARMONIC_TERM_COUNT]);
-    }
+    if (!_recompute_basis(state))
+        goto cleanup;
     ok = _update_geometry(state, 0.0);
 
 cleanup:
@@ -827,14 +1131,33 @@ static bool _upload_geometry(SphericalHarmonicsState* state)
  * @param ctx scenario context
  * @return seamless phase in [0, 1)
  */
-static double _animation_phase(const DvzScenarioContext* ctx)
+static double _animation_phase(const DvzScenarioContext* ctx, SphericalHarmonicsState* state)
 {
-    if (ctx == NULL)
+    if (ctx == NULL || state == NULL)
         return 0.0;
     if (ctx->preview_mode)
-        return dvz_scenario_preview_phase(ctx, DVZ_SCENARIO_PREVIEW_PHASE_SEAMLESS_LOOP);
+    {
+        state->settings.phase =
+            (float)dvz_scenario_preview_phase(ctx, DVZ_SCENARIO_PREVIEW_PHASE_SEAMLESS_LOOP);
+        return (double)state->settings.phase;
+    }
+
     const double time = fmax(0.0, ctx->time);
-    return fmod(time / HARMONIC_MORPH_PERIOD, 1.0);
+    if (!state->time_initialized)
+    {
+        state->last_time = time;
+        state->time_initialized = true;
+    }
+    const double delta = fmax(0.0, time - state->last_time);
+    state->last_time = time;
+    if (state->settings.animate)
+    {
+        state->settings.phase = (float)fmod(
+            (double)state->settings.phase +
+                delta * (double)state->settings.speed / HARMONIC_MORPH_PERIOD,
+            1.0);
+    }
+    return (double)state->settings.phase;
 }
 
 
@@ -864,11 +1187,17 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (out_user != NULL)
         *out_user = state;
+    state->tuner = example_tuner("Spherical harmonics");
+    state->settings = HARMONIC_DEFAULTS;
+    state->defaults = HARMONIC_DEFAULTS;
+    state->basis_dirty = true;
+    state->geometry_dirty = true;
 
     EXAMPLE_CHECK(_create_geometry(state), "spherical-harmonics geometry generation failed");
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
+    example_tuner_figure(&state->tuner, ctx->figure);
 
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
@@ -887,14 +1216,14 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     const int geometry_result = dvz_mesh_set_geometry(state->visual, state->geometry);
     EXAMPLE_CHECK(geometry_result == DVZ_OK, "dvz_mesh_set_geometry() failed");
 
-    DvzMaterialDesc material = example_default_standard_material_desc();
-    material.light_direction[0] = -0.48f;
-    material.light_direction[1] = +0.62f;
-    material.light_direction[2] = +0.72f;
-    material.standard.roughness = 0.58f;
-    material.standard.specular = 0.16f;
-    material.standard.rim_strength = 0.12f;
-    const int material_result = dvz_visual_set_material(state->visual, &material);
+    state->material = example_default_standard_material_desc();
+    state->material.light_direction[0] = -0.48f;
+    state->material.light_direction[1] = +0.62f;
+    state->material.light_direction[2] = +0.72f;
+    state->material.standard.roughness = 0.58f;
+    state->material.standard.specular = 0.16f;
+    state->material.standard.rim_strength = 0.12f;
+    const int material_result = dvz_visual_set_material(state->visual, &state->material);
     EXAMPLE_CHECK(material_result == DVZ_OK, "dvz_visual_set_material() failed");
 
     const int add_result = dvz_panel_add_visual(panel, state->visual, NULL);
@@ -911,12 +1240,20 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzController* controller = dvz_arcball(ctx->scene, NULL);
     EXAMPLE_CHECK(controller != NULL, "dvz_arcball() failed");
-    DvzArcball* arcball = dvz_controller_arcball(controller);
-    EXAMPLE_CHECK(arcball != NULL, "dvz_controller_arcball() failed");
+    state->arcball = dvz_controller_arcball(controller);
+    EXAMPLE_CHECK(state->arcball != NULL, "dvz_controller_arcball() failed");
     const int bind_result = dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ);
     EXAMPLE_CHECK(bind_result == DVZ_OK, "dvz_scenario_bind_controller() failed");
     vec3 initial_angles = {-0.32f, +0.48f, -0.16f};
-    dvz_arcball_initial(arcball, initial_angles);
+    dvz_arcball_initial(state->arcball, initial_angles);
+
+    (void)example_tuner_add_component(
+        &state->tuner, "Harmonic field", state, NULL, _harmonic_settings_gui,
+        _harmonic_settings_apply, _harmonic_settings_reset, _harmonic_settings_print);
+    vec2 initial_pan = {0.0f, 0.0f};
+    example_tuner_arcball(
+        &state->tuner, "Arcball", state->arcball, initial_angles, 1.0f, initial_pan);
+    example_tuner_material(&state->tuner, "Surface material", state->visual, &state->material);
 
     ok = true;
 cleanup:
@@ -936,10 +1273,38 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
     SphericalHarmonicsState* state = (SphericalHarmonicsState*)user;
     if (ctx == NULL || state == NULL)
         return;
-    const double phase = _animation_phase(ctx);
+    const double phase = _animation_phase(ctx, state);
+    if (state->basis_dirty && !_recompute_basis(state))
+        return;
+    if (!ctx->preview_mode && !state->settings.animate && !state->geometry_dirty)
+        return;
     if (!_update_geometry(state, phase))
         return;
-    (void)_upload_geometry(state);
+    if (_upload_geometry(state))
+        state->geometry_dirty = false;
+}
+
+
+
+/**
+ * Attach the native live tuner after the view exists.
+ *
+ * @param ctx scenario context
+ * @param app native app
+ * @param view native view
+ * @param user scenario state
+ * @return whether the tuner was attached or intentionally skipped
+ */
+static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    (void)app;
+    SphericalHarmonicsState* state = (SphericalHarmonicsState*)user;
+    if (ctx == NULL || ctx->presentation != DVZ_RUNNER_PRESENT_GLFW || state == NULL ||
+        view == NULL)
+    {
+        return true;
+    }
+    return example_tuner_attach(&state->tuner, view);
 }
 
 
@@ -956,6 +1321,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
     SphericalHarmonicsState* state = (SphericalHarmonicsState*)user;
     if (state == NULL)
         return;
+    example_tuner_detach(&state->tuner);
     _state_reset(state);
     dvz_free(state);
 }
@@ -1002,6 +1368,8 @@ DvzScenarioSpec dvz_showcase_spherical_harmonics_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = dvz_showcase_spherical_harmonics_scenario();
+    if (example_cli_wants_live_gui(argc, argv))
+        spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == DVZ_OK ? 0 : 1;
 }
 #endif
