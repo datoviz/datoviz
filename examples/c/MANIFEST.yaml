@@ -3101,7 +3101,8 @@ examples:
     data:
       kind: simulated
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=showcases_galaxy
       requirements:
         - point
         - marker
@@ -3110,9 +3111,6 @@ examples:
         - alpha-blending
         - frame-callbacks
         - arcball
-      reason: >-
-        the portable scenario and additive blend contract need browser registration and visual
-        proof
     agent_copy_safe: false
     gallery:
       card: section
@@ -3166,7 +3164,7 @@ examples:
     validation: smoke+screenshot
     data:
       kind: prepared
-    portability: native-only
+    portability: portable-scenario
     webgpu:
       status: native-only
       requirements:
@@ -3174,7 +3172,9 @@ examples:
         - path
         - polygon-triangulation
         - panzoom
-      reason: the cache-only prepared artwork is not packaged for the browser
+      reason: >-
+        the portable WebGPU stream is proven, but redistribution terms for the source artwork
+        remain unresolved
     agent_copy_safe: false
     dataset:
       name: Classic Ghostscript tiger SVG as distributed by Glumpy
@@ -3471,22 +3471,11 @@ examples:
         language: python
         path: tools/data/prepare_terrain_relief.py
     validation: smoke+interaction+screenshot+video
-    media:
-      preview:
-        kind: animated-webp
-        frames: 180
-        fps: 30
-        card:
-          preferred: video-mp4
-          size: 1024x576
-          fps: 30
-          sample_step: 1
-          mp4_crf: 28
     data:
       kind: prepared
-    portability: native-only
+    portability: portable-scenario
     webgpu:
-      status: native-only
+      status: webgpu-planned
       requirements:
         - mesh
         - sampled-field
@@ -3496,7 +3485,7 @@ examples:
         - material
         - msaa
         - prepared-data
-      reason: the cache-only DEM and orthoimagery bundle is not packaged for the browser
+      reason: the portable WebGPU stream is proven; promotion awaits a committed browser data bundle
     agent_copy_safe: false
     dataset:
       name: McHenrys Peak USGS 3DEP terrain and NAIP orthoimagery
@@ -3759,6 +3748,7 @@ examples:
         frames: 480
         fps: 60
         sample_stride: 1
+        time_scale: 2.0
         card:
           preferred: video-mp4
           size: 1024x576

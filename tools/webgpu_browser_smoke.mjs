@@ -936,6 +936,7 @@ async function main() {
         ['start_scatter', { label: 'Scatter Plot' }],
         ['features_datetime_axis', { label: 'Datetime Axis', kind: 'animated' }],
         ['features_marker_symbols', { label: 'Marker Symbols' }],
+        ['showcases_galaxy', { label: 'Density-Wave Galaxy', kind: 'animated' }],
       ]);
       const route = filteredRoutes.get(routeFilter);
       requireOk(route !== undefined, `unknown filtered WebGPU route: ${routeFilter}`);
@@ -1282,6 +1283,7 @@ async function main() {
         'scalebar-measurement',
       ],
       ['showcases_surface_grid', 'Surface Grid', 'webgpu_live_surface_grid.png', 'surface-grid'],
+      ['showcases_galaxy', 'Density-Wave Galaxy', 'webgpu_live_galaxy.png', 'galaxy'],
       [
         'showcases_choropleth',
         'U.S. State Choropleth',

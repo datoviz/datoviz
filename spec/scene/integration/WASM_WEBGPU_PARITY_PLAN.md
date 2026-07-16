@@ -1,6 +1,6 @@
 # WASM/WebGPU Parity Plan
 
-Status: active v0.4 RC plan. Updated: 2026-06-10.
+Status: active v0.4 RC plan. Updated: 2026-07-16.
 
 This file defines the route from the current experimental WASM/WebGPU subset to "good enough" v0.4
 RC browser support. It is not a full Vulkan/WebGPU parity promise.
@@ -32,9 +32,9 @@ Current source-of-truth files:
 4. `docs/reference/webgpu-subset.md`: public supported subset.
 5. `docs/examples/webgpu-matrix.md`: generated public matrix.
 
-As of 2026-07-12:
+As of 2026-07-16:
 
-1. Manifest counts: `82 webgpu-live`, with remaining examples explicitly classified as
+1. Manifest counts: `83 webgpu-live`, with remaining examples explicitly classified as
    `webgpu-planned`, `webgpu-deferred`, `native-only`, or non-public lab material.
 2. Live routes cover basic scene, timer animation, triangulation, builtin shapes 2D/3D, isolines,
    animation tracks, OBJ loading, picking, pixel/sphere/mesh selection, image probe, compute buffer
@@ -43,7 +43,8 @@ As of 2026-07-12:
    and colormap-scale routes, panel background, fly/turntable controller examples, colorbar,
    scale bars, categorical legend, annotation readout, linked probe/colorbar, scientific plotting,
    vector, wind field, polygon composite, linked panels with axes, scale-bar measurement workflow,
-   surface-grid showcase, U.S. state choropleth, textured planets and protein showcases, retained
+   surface-grid showcase, U.S. state choropleth, textured planets, protein, and density-wave galaxy
+   showcases, retained
    data update/visibility routes, depth-test route, alpha blending, material/lighting routes,
    coordinate/transform/View2D routes, Bezier and join-focused paths, manual-camera and arcball
    routes, textured mesh, reference grid, bounds overlay, graph composite, orientation gizmo, and
@@ -145,8 +146,8 @@ Keep these routes in smoke coverage while finishing the remaining composed/data-
 Current: synthetic composed showcase routes that reuse current primitives are live:
 
 `composites_polygon`, `showcases_panel_linked_axes`, `showcases_scalebar_measurement`,
-`showcases_surface_grid`, `showcases_choropleth`, `showcases_textured_planet`, and
-`showcases_protein`.
+`showcases_surface_grid`, `showcases_choropleth`, `showcases_textured_planet`,
+`showcases_protein`, and `showcases_galaxy`.
 
 Remaining planned composed/data-backed routes:
 
@@ -154,6 +155,11 @@ Remaining planned composed/data-backed routes:
 overlay behavior are stable enough. Do not promote data-backed showcase routes by relying on an
 in-memory simulated fallback; examples that expect prepared/generated data should fail with the
 preparation command when the bundle is absent.
+
+`showcases_terrain_relief` now compiles in the WASM scenario registry and its cache-backed
+textured-mesh stream passes packet-shape proof. Promotion still requires an approved committed
+browser data bundle. `showcases_svg_tiger` has equivalent mesh/path stream proof, but remains
+native-only until the source artwork's redistribution terms are resolved.
 
 ### 5. Explicit Deferrals
 

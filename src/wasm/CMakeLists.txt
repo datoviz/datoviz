@@ -78,6 +78,8 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/visibility.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/visual_transform.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/linked_probe_colorbar.c
+    ${PROJECT_SOURCE_DIR}/examples/c/showcases/galaxy.c
+    ${PROJECT_SOURCE_DIR}/examples/c/showcases/galaxy_model.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/gpu_particle_smoke.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/panel_linked_axes.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/protein.c
@@ -85,6 +87,9 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/scientific_plotting.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/spherical_harmonics.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/surface_grid.c
+    ${PROJECT_SOURCE_DIR}/examples/c/showcases/svg_tiger.c
+    ${PROJECT_SOURCE_DIR}/examples/c/showcases/svg_tiger_model.c
+    ${PROJECT_SOURCE_DIR}/examples/c/showcases/terrain_relief.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/choropleth.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/textured_planet.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/textured_planet_orbits.c
@@ -136,7 +141,7 @@ target_link_options(datoviz_wasm_scene PRIVATE
     "SHELL:-sALLOW_MEMORY_GROWTH=1"
     "SHELL:-sSTACK_SIZE=1048576"
     "SHELL:-sEXPORTED_FUNCTIONS=['_malloc','_free','_dvz_wasm_api_scene','_dvz_wasm_api_scene_destroy','_dvz_wasm_api_scenario_count','_dvz_wasm_api_scenario_id','_dvz_wasm_api_scenario_title','_dvz_wasm_api_scenario_width','_dvz_wasm_api_scenario_height','_dvz_wasm_api_scenario_fps','_dvz_wasm_api_scenario_requirements','_dvz_wasm_api_scenario_create','_dvz_wasm_api_scenario_figure','_dvz_wasm_api_scenario_frame','_dvz_wasm_api_scenario_post_frame','_dvz_wasm_api_scenario_pointer','_dvz_wasm_api_scenario_wheel','_dvz_wasm_api_figure','_dvz_wasm_api_panel_full','_dvz_wasm_api_visual','_dvz_wasm_api_buffer','_dvz_wasm_api_buffer_set_data','_dvz_wasm_api_controller','_dvz_wasm_api_panel_add_visual','_dvz_wasm_api_panel_bind_controller','_dvz_wasm_api_panel_set_camera','_dvz_wasm_api_panel_set_domain','_dvz_wasm_api_panel_axis','_dvz_wasm_api_axis_set_visible','_dvz_wasm_api_axis_set_grid','_dvz_wasm_api_axis_set_label','_dvz_wasm_api_axis_set_plot_margins','_dvz_wasm_api_arcball_initial','_dvz_wasm_api_visual_set_f32','_dvz_wasm_api_visual_set_rgba8','_dvz_wasm_api_visual_set_u32','_dvz_wasm_api_visual_set_strings','_dvz_wasm_api_visual_set_attr_buffer','_dvz_wasm_api_visual_set_texture_rgba8','_dvz_wasm_api_visual_set_labels_s32','_dvz_wasm_api_visual_set_material','_dvz_wasm_api_visual_set_segment_caps','_dvz_wasm_api_visual_set_path_caps','_dvz_wasm_api_visual_set_path_join','_dvz_wasm_api_set_canvas_format','_dvz_wasm_api_set_capabilities','_dvz_wasm_api_resize','_dvz_wasm_api_pointer','_dvz_wasm_api_wheel','_dvz_wasm_api_emit','_dvz_wasm_api_payload_ptr','_dvz_wasm_api_payload_size','_dvz_wasm_api_emit_packets','_dvz_wasm_api_runtime_reset','_dvz_wasm_api_release_packets','_dvz_wasm_api_query_pending_count','_dvz_wasm_api_query_active','_dvz_wasm_api_query_readback_size','_dvz_wasm_api_emit_query_packets','_dvz_wasm_api_query_resolve','_dvz_wasm_api_packet_status','_dvz_wasm_api_packet_ptr','_dvz_wasm_api_packet_size','_dvz_wasm_api_packet_arena_ptr','_dvz_wasm_api_packet_arena_size','_dvz_wasm_api_resource_version','_dvz_wasm_api_frame_index','_dvz_wasm_api_diagnostic_count','_dvz_wasm_api_diagnostic']"
-    "SHELL:-sEXPORTED_RUNTIME_METHODS=['UTF8ToString','HEAPU8','HEAPF32','HEAPU32']"
+    "SHELL:-sEXPORTED_RUNTIME_METHODS=['UTF8ToString','HEAPU8','HEAPF32','HEAPU32','FS']"
 )
 
 set(DVZ_WASM_CHOROPLETH_BUNDLE "")

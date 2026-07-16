@@ -15,7 +15,7 @@ versions. Runner command expansion should remain evidence-driven and scoped to t
 ## RC Promotion Target
 
 Current fixture proof counts remain the dashboard truth for the low-level runner. The live gallery
-now has 82 promoted routes backed by canonical C examples or portable C scenarios:
+now has 83 promoted routes backed by canonical C examples or portable C scenarios:
 `features_basic_scene`, `features_timer_animation`, `features_builtin_shapes_2d`,
 `features_builtin_shapes_3d`, `features_isolines`,
 `features_animation_tracks`, `features_compute_buffer_animation`, `features_obj_loading`,
@@ -30,6 +30,7 @@ now has 82 promoted routes backed by canonical C examples or portable C scenario
 `features_sampled_field_update`, `features_colormap_scale`,
 `features_panel_background`, `composites_polygon`, `showcases_panel_linked_axes`,
 `showcases_scalebar_measurement`, `showcases_surface_grid`, `showcases_choropleth`,
+`showcases_galaxy`,
 `features_update_partial`, `features_update_visual_data`, `features_visibility`,
 `features_technique_depth_test`, `features_alpha_blending`, `features_material_mesh`, `features_lighting`,
 `showcases_textured_planet`, `showcases_protein`, `visuals_point`, `visuals_pixel`,
@@ -106,6 +107,17 @@ selection and UTC string formatting remain canonical C scene behavior.
 Recorded local marker-symbol proof on 2026-07-12: bitmap, SDF, and MSDF marker WGSL variants and
 WebGPU `r8unorm` packet/runtime support landed; native build, shader ABI check, 83-scenario WASM
 packet smoke with atlas-format assertions, and filtered live-browser rendering passed.
+
+Recorded local galaxy and prepared-data bridge proof on 2026-07-16: native galaxy capture and the
+87-scenario WASM packet smoke passed. Targeted checks cover its bitmap atlas, 61,650-particle draw,
+additive color/coverage blend state, and retained position updates. The filtered browser route
+reached `QueueSubmit` and then hit the known external headless WebGPU instance-loss diagnostic, so
+that run is a skip rather than visual proof. The same WASM build compiles SVG Tiger and Terrain
+Relief and emits their mesh/path and textured-terrain streams when their cache-local prepared files
+are mounted. Public promotion remains blocked on committed browser bundles: SVG redistribution
+terms are unresolved, while Terrain Relief needs an approved `data` bundle. The generic browser
+loader now validates versions, paths, byte budgets, and SHA-256 hashes before mounting artifacts in
+the Emscripten filesystem; static-site bundle staging rejects cache-only inputs.
 
 Recorded local browser shader-payload proof on 2026-06-18: `node --check
 tools/webgpu_browser_smoke.mjs`, `node --check tools/wasm_scene_smoke.mjs`, and `just

@@ -58,6 +58,23 @@ function expectStatus(status, expected, label) {
   requireOk(status === expected, `${label} returned ${status}, expected ${expected}`);
 }
 
+async function mountOptionalHostFiles(Module, mappings) {
+  const loaded = [];
+  for (const [hostPath, virtualPath] of mappings) {
+    try {
+      loaded.push([await readFile(resolve(root, hostPath)), virtualPath]);
+    } catch (error) {
+      if (error?.code === "ENOENT") return false;
+      throw error;
+    }
+  }
+  for (const [bytes, virtualPath] of loaded) {
+    Module.FS.mkdirTree(virtualPath.slice(0, virtualPath.lastIndexOf("/")));
+    Module.FS.writeFile(virtualPath, bytes);
+  }
+  return true;
+}
+
 const stderrCaptures = [];
 
 function wasmPrintErr(text) {
@@ -1546,6 +1563,69 @@ function expectAlphaBlendingScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "Draw").length >= 1, `${label}: expected blended primitive draw`);
 }
 
+function expectGalaxyScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectPipeline(stream, `${label} background stars`, (candidate) =>
+    candidate.builtin_pipeline === "scene.point");
+  const marker = expectPipeline(
+    stream,
+    `${label} additive particles`,
+    (candidate) =>
+      candidate.builtin_pipeline === "scene.marker" &&
+      candidate.color_targets?.[0]?.blend !== undefined,
+  );
+  const blend = marker.color_targets[0].blend;
+  requireOk(
+    blend.color.src_factor === "src-alpha" &&
+      blend.color.dst_factor === "one" &&
+      blend.color.operation === "add",
+    `${label}: unexpected additive color blend state`,
+  );
+  requireOk(
+    blend.alpha.src_factor === "one" &&
+      blend.alpha.dst_factor === "one-minus-src-alpha" &&
+      blend.alpha.operation === "add",
+    `${label}: unexpected additive alpha blend state`,
+  );
+  requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected sprite atlas upload`);
+  requireOk(
+    commandsOf(stream, "Draw").some((command) => command.instance_count >= 60000),
+    `${label}: expected dense galaxy particle draw`,
+  );
+}
+
+function expectSvgTigerScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectPipeline(
+    stream,
+    `${label} fill mesh`,
+    (candidate) =>
+      candidate.builtin_pipeline === "scene.mesh" ||
+      candidate.builtin_pipeline === "scene.primitive",
+  );
+  expectPipeline(stream, `${label} strokes`, (candidate) => candidate.builtin_pipeline === "scene.path");
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 1, `${label}: expected indexed fill draw`);
+  requireOk(commandsOf(stream, "Draw").length >= 1, `${label}: expected path stroke draw`);
+}
+
+function expectTerrainReliefScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  const mesh = expectPipeline(
+    stream,
+    `${label} textured mesh`,
+    (candidate) => candidate.builtin_pipeline === "scene.mesh",
+  );
+  requireOk((mesh.sample_count ?? 1) >= 1, `${label}: invalid mesh sample count`);
+  requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected orthoimage upload`);
+  requireOk(
+    commandsOf(stream, "DrawIndexed").some((command) => command.index_count >= 1000000),
+    `${label}: expected dense indexed terrain draw`,
+  );
+}
+
 function expectMaterialMeshScenarioStreamShape(stream, label) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -2479,6 +2559,9 @@ try {
     "features_datetime_axis",
     "features_marker_symbols",
     "showcases_spherical_harmonics",
+    "showcases_galaxy",
+    "showcases_svg_tiger",
+    "showcases_terrain_relief",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -2517,7 +2600,7 @@ try {
         );
       }
     }
-    if (id === "showcases_spherical_harmonics") {
+    if (id === "showcases_spherical_harmonics" || id === "showcases_galaxy") {
       requireOk(
         (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 9)) !== 0,
         `${id} did not declare frame callbacks`,
@@ -3613,6 +3696,11 @@ try {
       (stream, label) => expectControllerMeshScenarioStreamShape(stream, label),
     ],
     [
+      "showcases_galaxy",
+      "density-wave galaxy",
+      (stream, label) => expectGalaxyScenarioStreamShape(stream, label),
+    ],
+    [
       "showcases_choropleth",
       "us state choropleth",
       (stream, label) => expectChoroplethScenarioStreamShape(stream, label),
@@ -3693,6 +3781,7 @@ try {
         id === "features_update_visual_data" ||
         id === "features_visibility" ||
         id === "showcases_spherical_harmonics" ||
+        id === "showcases_galaxy" ||
         id === "showcases_textured_planet"
       ) {
         expectStatus(
@@ -3718,6 +3807,67 @@ try {
           );
         }
       }
+    } finally {
+      Module._dvz_wasm_api_scene_destroy(scene);
+    }
+  }
+
+  const optionalPreparedScenarios = [
+    {
+      id: "showcases_svg_tiger",
+      label: "SVG tiger",
+      files: [[
+        ".cache/datoviz/examples/svg_tiger/prepared/tiger_paths.bin",
+        "/data/examples/svg_tiger/prepared/tiger_paths.bin",
+      ]],
+      expectShape: expectSvgTigerScenarioStreamShape,
+    },
+    {
+      id: "showcases_terrain_relief",
+      label: "terrain relief",
+      files: [
+        [
+          ".cache/datoviz/examples/terrain_relief/prepared/terrain.bin",
+          "/data/examples/terrain_relief/prepared/terrain.bin",
+        ],
+        [
+          ".cache/datoviz/examples/terrain_relief/prepared/terrain.jpg",
+          "/data/examples/terrain_relief/prepared/terrain.jpg",
+        ],
+      ],
+      expectShape: expectTerrainReliefScenarioStreamShape,
+    },
+  ];
+  for (const prepared of optionalPreparedScenarios) {
+    if (!(await mountOptionalHostFiles(Module, prepared.files))) {
+      console.log(`SKIP ${prepared.label} optional prepared-data WASM stream proof`);
+      continue;
+    }
+    const index = scenarioIndex(Module, prepared.id);
+    const scene = Module._dvz_wasm_api_scene(
+      Module._dvz_wasm_api_scenario_width(index),
+      Module._dvz_wasm_api_scenario_height(index),
+    );
+    requireOk(scene !== 0, `${prepared.label} scenario scene creation failed`);
+    try {
+      expectStatus(
+        Module._dvz_wasm_api_set_canvas_format(scene, DVZ_FORMAT_R16G16B16A16_SFLOAT),
+        0,
+        `${prepared.label} scenario canvas format`,
+      );
+      setCapabilities(
+        Module, scene, 4096, 4, 8, 256 * 1024 * 1024, 256, 1,
+        `${prepared.label} scenario capabilities`);
+      expectStatus(
+        Module._dvz_wasm_api_scenario_create(scene, index),
+        0,
+        `${prepared.label} scenario create`,
+      );
+      expectNoDiagnostics(Module, scene, `${prepared.label} scenario create diagnostics`);
+      const figure = Module._dvz_wasm_api_scenario_figure(scene);
+      requireOk(figure !== 0, `${prepared.label} scenario has no figure`);
+      const initial = emitStream(Module, scene, figure, `${prepared.label} initial`);
+      prepared.expectShape(initial.stream, `${prepared.label} initial`);
     } finally {
       Module._dvz_wasm_api_scene_destroy(scene);
     }

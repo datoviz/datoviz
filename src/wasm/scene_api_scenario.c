@@ -79,6 +79,7 @@ DvzScenarioSpec dvz_example_sampled_field_update_scenario(void);
 DvzScenarioSpec dvz_example_text_block_scenario(void);
 DvzScenarioSpec dvz_example_depth_test_scenario(void);
 DvzScenarioSpec dvz_showcase_linked_probe_colorbar_scenario(void);
+DvzScenarioSpec dvz_showcase_galaxy_scenario(void);
 DvzScenarioSpec dvz_showcase_gpu_particle_smoke_scenario(void);
 DvzScenarioSpec dvz_showcase_linked_panel_axes_scenario(void);
 DvzScenarioSpec dvz_showcase_protein_scenario(void);
@@ -86,6 +87,8 @@ DvzScenarioSpec dvz_showcase_scalebar_measurement_scenario(void);
 DvzScenarioSpec dvz_showcase_scientific_plotting_scenario(void);
 DvzScenarioSpec dvz_showcase_spherical_harmonics_scenario(void);
 DvzScenarioSpec dvz_showcase_surface_grid_scenario(void);
+DvzScenarioSpec dvz_showcase_svg_tiger_scenario(void);
+DvzScenarioSpec dvz_showcase_terrain_relief_scenario(void);
 DvzScenarioSpec dvz_showcase_textured_planet_scenario(void);
 DvzScenarioSpec dvz_showcase_us_state_choropleth_scenario(void);
 DvzScenarioSpec dvz_showcase_wind_field_scenario(void);
@@ -279,6 +282,12 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_example_marker_symbols_scenario();
     case 83:
         return dvz_showcase_spherical_harmonics_scenario();
+    case 84:
+        return dvz_showcase_galaxy_scenario();
+    case 85:
+        return dvz_showcase_svg_tiger_scenario();
+    case 86:
+        return dvz_showcase_terrain_relief_scenario();
     default:
         return (DvzScenarioSpec){0};
     }
@@ -519,6 +528,7 @@ int dvz_wasm_api_scenario_create(uint32_t scene_handle, uint32_t index)
     }
     scene->scenario_ctx = (DvzScenarioContext){
         .scene = scene->scene,
+        .presentation = DVZ_RUNNER_PRESENT_BROWSER,
         .logical_width = scene->width,
         .logical_height = scene->height,
         .framebuffer_width = scene->width,

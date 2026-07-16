@@ -18,6 +18,11 @@ webgpu-runner-smoke:
     @node tools/webgpu_runner_smoke.mjs
 #
 
+webgpu-data-check:
+    @node tools/webgpu_data_loader_smoke.mjs
+    @python3 tools/build_webgpu_data_bundles.py --check
+#
+
 webgpu-browser-smoke: wasm-scene-build
     @node tools/webgpu_browser_smoke.mjs
 #
@@ -76,7 +81,7 @@ wasm-scene-stack-usage:
         xargs -0 awk '{print $2 "\t" $1}' | sort -nr | head -n 30
 #
 
-wasm-scene-smoke: wasm-scene-build
+wasm-scene-smoke: wasm-scene-build webgpu-data-check
     @node tools/wasm_scene_smoke.mjs
     @python3 tools/webgpu_fixture_preflight.py build-wasm-scene/wasm/wasm_api_scene_point_pixel_marker_segment_path_primitive_image_mesh_panzoom.json
     @python3 tools/webgpu_fixture_preflight.py build-wasm-scene/wasm/wasm_api_scene_sphere_textured_mesh3d_arcball.json

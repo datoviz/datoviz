@@ -5180,8 +5180,8 @@
           "site_asset": "/assets/gallery/v0.4/showcases/showcases_galaxy.webp"
         }
       },
-      "webgpu_status": "webgpu-planned",
-      "webgpu_status_label": "Planned",
+      "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "point",
         "marker",
@@ -5191,9 +5191,9 @@
         "frame-callbacks",
         "arcball"
       ],
-      "webgpu_reason": "the portable scenario and additive blend contract need browser registration and visual proof",
       "webgpu": {
-        "status": "webgpu-planned",
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=showcases_galaxy",
         "requirements": [
           "point",
           "marker",
@@ -5202,9 +5202,10 @@
           "alpha-blending",
           "frame-callbacks",
           "arcball"
-        ],
-        "reason": "the portable scenario and additive blend contract need browser registration and visual proof"
+        ]
       },
+      "webgpu_route": "examples/webgpu/live.html?id=showcases_galaxy",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_galaxy",
       "dataset": {
         "name": "Density-wave spiral galaxy simulation",
         "source": "https://github.com/glumpy/glumpy/tree/master/examples",
@@ -5260,7 +5261,7 @@
         "polygon-triangulation",
         "panzoom"
       ],
-      "webgpu_reason": "the cache-only prepared artwork is not packaged for the browser",
+      "webgpu_reason": "the portable WebGPU stream is proven, but redistribution terms for the source artwork remain unresolved",
       "webgpu": {
         "status": "native-only",
         "requirements": [
@@ -5269,7 +5270,7 @@
           "polygon-triangulation",
           "panzoom"
         ],
-        "reason": "the cache-only prepared artwork is not packaged for the browser"
+        "reason": "the portable WebGPU stream is proven, but redistribution terms for the source artwork remain unresolved"
       },
       "dataset": {
         "name": "Classic Ghostscript tiger SVG as distributed by Glumpy",
@@ -5496,8 +5497,8 @@
           "site_asset": "/assets/gallery/v0.4/showcases/showcases_terrain_relief.webp"
         }
       },
-      "webgpu_status": "native-only",
-      "webgpu_status_label": "Native only",
+      "webgpu_status": "webgpu-planned",
+      "webgpu_status_label": "Planned",
       "webgpu_requirements": [
         "mesh",
         "sampled-field",
@@ -5508,9 +5509,9 @@
         "msaa",
         "prepared-data"
       ],
-      "webgpu_reason": "the cache-only DEM and orthoimagery bundle is not packaged for the browser",
+      "webgpu_reason": "the portable WebGPU stream is proven; promotion awaits a committed browser data bundle",
       "webgpu": {
-        "status": "native-only",
+        "status": "webgpu-planned",
         "requirements": [
           "mesh",
           "sampled-field",
@@ -5521,7 +5522,7 @@
           "msaa",
           "prepared-data"
         ],
-        "reason": "the cache-only DEM and orthoimagery bundle is not packaged for the browser"
+        "reason": "the portable WebGPU stream is proven; promotion awaits a committed browser data bundle"
       },
       "dataset": {
         "name": "McHenrys Peak USGS 3DEP terrain and NAIP orthoimagery",

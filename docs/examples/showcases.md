@@ -280,14 +280,7 @@ This example turns a generated height field into a lit mesh and wireframe.
 
 ### [McHenrys Peak Terrain Relief](gallery/showcases/showcases_terrain_relief.md)
 
-<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_terrain_relief/" aria-label="McHenrys Peak Terrain Relief"></a>
-  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_terrain_relief.poster.webp" alt="McHenrys Peak Terrain Relief" loading="lazy">
-  <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../../assets/gallery/v0.4/showcases/showcases_terrain_relief.poster.webp" aria-label="McHenrys Peak Terrain Relief preview">
-    <source data-src="../../assets/gallery/v0.4/showcases/showcases_terrain_relief.mp4" type="video/mp4">
-  </video>
-</div>
+[![McHenrys Peak Terrain Relief](../assets/gallery/v0.4/showcases/showcases_terrain_relief.webp)](gallery/showcases/showcases_terrain_relief.md)
 
 `experimental` `showcases`<br><span>`scientific`, `real-data`, `terrain`, `dem`, `orthoimagery`, ...</span>
 

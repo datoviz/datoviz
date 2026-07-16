@@ -221,6 +221,12 @@ export const LIVE_EXAMPLES = [
     scenarioId: "showcases_spherical_harmonics",
   },
   {
+    id: "showcases_galaxy",
+    label: "Density-Wave Galaxy",
+    scenarioId: "showcases_galaxy",
+    animate: true,
+  },
+  {
     id: "showcases_choropleth",
     label: "U.S. State Choropleth",
     scenarioId: "showcases_choropleth",

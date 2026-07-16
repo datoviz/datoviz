@@ -13,18 +13,23 @@ This example renders an animated density-wave spiral galaxy.
 
 ## Preview
 
-<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp" alt="Density-Wave Galaxy" loading="lazy">
-  <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../../../../assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp" aria-label="Density-Wave Galaxy preview">
-    <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_galaxy.mp4" type="video/mp4">
-  </video>
-</div>
+=== "Screenshot"
 
-<aside class="dvz-webgpu-unavailable" role="note">
-<strong>Live WebGPU preview not available yet</strong>
-<span>Browser support for this example is planned. The preview above shows the native version. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
-</aside>
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp" alt="Density-Wave Galaxy" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp" aria-label="Density-Wave Galaxy preview">
+        <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_galaxy.mp4" type="video/mp4">
+      </video>
+    </div>
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=showcases_galaxy" title="Density-Wave Galaxy WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=showcases_galaxy">Open the live WebGPU example</a>.
 
 ## Run And Adapt
 
@@ -35,7 +40,7 @@ Use your configured build environment; Python routes additionally require local 
 | --- | --- | --- |
 | C | Canonical native source | `just example-c showcases/galaxy` (build and run), or rerun `./build/examples/c/showcases/galaxy` |
 | Python | No verified adaptation on this page | Start from the C source. |
-| Browser | Planned | the portable scenario and additive blend contract need browser registration and visual proof |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_galaxy">Open live example</a> |
 
 !!! warning "Prepared data required"
 
@@ -83,8 +88,8 @@ The density-wave equations and rendering composition are adapted from Nicolas P.
     - Approved adaptation starter: `no`
     - Density-wave model source: [`examples/c/showcases/galaxy_model.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/galaxy_model.c)
     - Density-wave model header source: [`examples/c/showcases/galaxy_model.h`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/galaxy_model.h)
-    - Browser support: Planned
-    - Browser note: the portable scenario and additive blend contract need browser registration and visual proof
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_galaxy"><code>examples/webgpu/live.html?id=showcases_galaxy</code></a>
     - Browser capability tags: `point`, `marker`, `symbol-set`, `glyph-atlas`, `alpha-blending`, `frame-callbacks`, `arcball`
     - Validation: `smoke+screenshot`
 

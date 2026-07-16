@@ -29,7 +29,7 @@ Use your configured build environment; Python routes additionally require local 
 | --- | --- | --- |
 | C | Canonical native source | `just example-c showcases/svg_tiger` (build and run), or rerun `./build/examples/c/showcases/svg_tiger` |
 | SVG preparation tool | Additional integration source; check optional dependencies | `python3 -m tools.data.prepare_svg_tiger` |
-| Browser | Native only | the cache-only prepared artwork is not packaged for the browser |
+| Browser | Native only | the portable WebGPU stream is proven, but redistribution terms for the source artwork remain unresolved |
 
 !!! warning "Prepared data required"
 
@@ -88,7 +88,7 @@ The source artwork remains cache-local while its redistribution terms are unreso
     - Prepared path model header source: [`examples/c/showcases/svg_tiger_model.h`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/svg_tiger_model.h)
     - SVG preparation tool source: [`tools/data/prepare_svg_tiger.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/tools/data/prepare_svg_tiger.py)
     - Browser support: Native only
-    - Browser note: the cache-only prepared artwork is not packaged for the browser
+    - Browser note: the portable WebGPU stream is proven, but redistribution terms for the source artwork remain unresolved
     - Browser capability tags: `mesh`, `path`, `polygon-triangulation`, `panzoom`
     - Validation: `smoke+screenshot`
 

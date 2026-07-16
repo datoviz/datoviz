@@ -50,6 +50,7 @@ async function loadLiveExample(id) {
     label: example.label,
     scenarioId: example.scenarioId,
     animate: example.animate === true,
+    dataBundles: example.dataBundles ?? [],
   };
   document.title = `${example.label} - Datoviz WebGPU`;
   destroySession();

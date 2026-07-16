@@ -3,6 +3,7 @@ import {
   initWebGPU,
   resizeWebGpuCanvas,
 } from "../drp2/webgpu.js";
+import { mountDataBundles } from "./data_loader.js";
 
 const DVZ_FORMAT_R16G16B16A16_SFLOAT = 97;
 const DVZ_DIM_X = 0;
@@ -337,6 +338,7 @@ export class DatovizWasmScene {
 
   static async createScenario(canvas, scenarioId, options = {}) {
     const Module = await loadDatovizWasmModule();
+    await mountDataBundles(Module, options.dataBundles ?? []);
     requireOk(
       typeof Module._dvz_wasm_api_scenario_count === "function" &&
         typeof Module._dvz_wasm_api_scenario_create === "function" &&

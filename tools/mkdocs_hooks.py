@@ -219,9 +219,11 @@ def on_pre_build(**kwargs):
     import sys
     sys.path.insert(0, str(CURDIR))
     import build_gallery_webp
+    import build_webgpu_data_bundles
     import gen_start_thumbs
 
     build_gallery_webp.generate_gallery_webp(quiet_missing=True)
+    build_webgpu_data_bundles.stage_bundles()
     gen_start_thumbs.generate()
 
 
@@ -243,6 +245,7 @@ def on_files(files, config):
         'assets/gallery/v0.4',
         'gallery WebP asset',
     )
+    add_generated_tree(files, config, 'build/webgpu-data', 'webgpu-data', 'WebGPU data bundle')
     return files
 
 

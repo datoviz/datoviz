@@ -67,6 +67,7 @@ export class WasmSceneSession {
       ...(this.gpu !== null ? { gpu: this.gpu } : {}),
       logicalWidth: this.logicalWidth,
       logicalHeight: this.logicalHeight,
+      dataBundles: this.demo.dataBundles ?? [],
     };
     if (typeof this.demo.scenarioId === "string") {
       this.scene = await DatovizWasmScene.createScenario(this.canvas, this.demo.scenarioId, createOptions);

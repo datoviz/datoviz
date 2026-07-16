@@ -48,6 +48,7 @@
 #define WIDTH  EXAMPLE_WINDOW_WIDTH
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
+#define SVG_TIGER_DATA_PATH  "data/examples/svg_tiger/prepared/tiger_paths.bin"
 #define SVG_TIGER_CACHE_PATH ".cache/datoviz/examples/svg_tiger/prepared/tiger_paths.bin"
 
 
@@ -70,16 +71,16 @@ DvzScenarioSpec dvz_showcase_svg_tiger_scenario(void);
 static void _print_prepare_hint(void)
 {
     dvz_fprintf(
-        stderr, "svg_tiger: missing prepared data at %s\n"
+        stderr, "svg_tiger: missing prepared data at %s or %s\n"
                 "Run `python3 tools/data/prepare_svg_tiger.py --download` from the repository "
                 "root.\n",
-        SVG_TIGER_CACHE_PATH);
+        SVG_TIGER_DATA_PATH, SVG_TIGER_CACHE_PATH);
 }
 
 
 
 /**
- * Configure the shared equal-aspect showcase viewport and MSAA.
+ * Configure the shared equal-aspect showcase viewport and native MSAA.
  *
  * @param panel target panel
  * @param data loaded SVG document metadata
@@ -95,9 +96,13 @@ static bool _configure_panel(DvzPanel* panel, const SvgTigerData* data)
     {
         return false;
     }
+#ifndef DVZ_EXAMPLE_NO_APP
     DvzMsaaDesc msaa = dvz_msaa_desc();
     msaa.enabled = true;
     return dvz_panel_set_msaa(panel, &msaa) == 0;
+#else
+    return true;
+#endif
 }
 
 
@@ -204,7 +209,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         *out_user = NULL;
 
     SvgTigerData data = {0};
-    if (!svg_tiger_load(SVG_TIGER_CACHE_PATH, &data))
+    if (!svg_tiger_load(SVG_TIGER_DATA_PATH, &data) &&
+        !svg_tiger_load(SVG_TIGER_CACHE_PATH, &data))
     {
         _print_prepare_hint();
         return false;

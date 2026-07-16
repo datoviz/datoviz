@@ -3,6 +3,16 @@
 > **Status:** v0.4 implementation handoff
 > **Scope:** prepared example data used by live WebGPU/WASM gallery routes
 
+Implementation checkpoint, 2026-07-16:
+
+1. `web/wasm/data_loader.js` validates and mounts fetched bundles before scenario creation.
+2. `tools/build_webgpu_data_bundles.py` validates committed sources and stages declared live-route
+   bundles for MkDocs; cache-only sources are rejected.
+3. The WASM module exposes `FS`, and loader path, size, hash, cache, and unsafe-path behavior has a
+   Node smoke test.
+4. No route has migrated from build-time preload yet. Terrain Relief has portable packet proof but
+   awaits an approved committed data bundle; SVG Tiger also awaits redistribution clearance.
+
 Live WebGPU examples that require data should load versioned static data bundles at runtime. Do not
 grow the base WASM scene module by preloading every promoted gallery dataset. The browser runner is
 host glue: it fetches prepared bytes, mounts them into the Emscripten filesystem, and then runs the

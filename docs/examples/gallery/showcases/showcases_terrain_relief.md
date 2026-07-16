@@ -13,17 +13,11 @@ This example drapes aligned NAIP orthoimagery over USGS 3DEP elevation.
 
 ## Preview
 
-<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_terrain_relief.poster.webp" alt="McHenrys Peak Terrain Relief" loading="lazy">
-  <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../../../../assets/gallery/v0.4/showcases/showcases_terrain_relief.poster.webp" aria-label="McHenrys Peak Terrain Relief preview">
-    <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_terrain_relief.mp4" type="video/mp4">
-  </video>
-</div>
+![McHenrys Peak Terrain Relief](../../../assets/gallery/v0.4/showcases/showcases_terrain_relief.webp)
 
 <aside class="dvz-webgpu-unavailable" role="note">
-<strong>Native-only example</strong>
-<span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
+<strong>Live WebGPU preview not available yet</strong>
+<span>Browser support for this example is planned. The preview above shows the native version. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## Run And Adapt
@@ -35,7 +29,7 @@ Use your configured build environment; Python routes additionally require local 
 | --- | --- | --- |
 | C | Canonical native source | `just example-c showcases/terrain_relief` (build and run), or rerun `./build/examples/c/showcases/terrain_relief` |
 | Data preparation | Additional integration source; check optional dependencies | `python3 -m tools.data.prepare_terrain_relief` |
-| Browser | Native only | the cache-only DEM and orthoimagery bundle is not packaged for the browser |
+| Browser | Planned | the portable WebGPU stream is proven; promotion awaits a committed browser data bundle |
 
 !!! warning "Prepared data required"
 
@@ -79,8 +73,8 @@ Uv run tools/data/prepare_terrain_relief.py
     - Source: [`examples/c/showcases/terrain_relief.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/terrain_relief.c)
     - Approved adaptation starter: `no`
     - Data preparation source: [`tools/data/prepare_terrain_relief.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/tools/data/prepare_terrain_relief.py)
-    - Browser support: Native only
-    - Browser note: the cache-only DEM and orthoimagery bundle is not packaged for the browser
+    - Browser support: Planned
+    - Browser note: the portable WebGPU stream is proven; promotion awaits a committed browser data bundle
     - Browser capability tags: `mesh`, `sampled-field`, `texture`, `arcball`, `camera`, `material`, `msaa`, `prepared-data`
     - Validation: `smoke+interaction+screenshot+video`
 
