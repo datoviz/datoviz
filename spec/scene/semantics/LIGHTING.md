@@ -27,9 +27,10 @@ Current supported concepts:
 5. shader selection based on the visual family, material state, and available attributes.
 
 The limb model is a lightweight surface approximation, not volumetric atmospheric scattering. It
-uses mesh normals, the camera direction, and the material light direction to concentrate alpha at
-silhouettes and fade it across a configurable day/night terminator. The geometry remains an
-ordinary primitive or mesh; no atmosphere-specific visual family exists.
+uses mesh normals, the camera direction, and the material light direction to concentrate alpha near
+silhouettes, taper it smoothly at the geometry boundary, and fade it across a configurable
+day/night terminator. The geometry remains an ordinary primitive or mesh; no atmosphere-specific
+visual family exists.
 
 
 ## Core Rule

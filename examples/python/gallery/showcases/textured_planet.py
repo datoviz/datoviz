@@ -18,7 +18,7 @@ TEXTURE_WIDTH = 1024
 TEXTURE_HEIGHT = 512
 EARTH_TEXTURE_PATH = Path('data/assets/textures/world.200412.3x5400x2700.jpg')
 SPHERE_RADIUS = 0.92
-ATMOSPHERE_RADIUS = 0.936
+ATMOSPHERE_RADIUS = 0.932
 SPHERE_SECTORS = 96
 SPHERE_RINGS = 48
 ORBIT_DATA_PATHS = (
@@ -465,9 +465,9 @@ def _add_atmosphere(scene, panel):
         dvz.dvz_geometry_destroy(geometry)
 
     material = dvz.dvz_limb_material_desc()
-    material.opacity = 0.14
+    material.opacity = 0.10
     material.light_direction[:] = SUN_DIR
-    material.limb.falloff = 3.6
+    material.limb.falloff = 20.0
     material.limb.sun_bias = 0.06
     material.limb.terminator_width = 0.16
     material.limb.night_factor = 0.035

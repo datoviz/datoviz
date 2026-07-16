@@ -36,7 +36,10 @@ vec4 evaluateSceneMaterialLinearItem(vec4 linearItemColor, vec3 normal, vec3 wor
         float sunBias = material.limbParams.y;
         float terminatorWidth = max(material.limbParams.z, 1e-4);
         float nightFactor = clamp(material.limbParams.w, 0.0, 1.0);
-        float limb = pow(1.0 - clamp(abs(dot(n, v)), 0.0, 1.0), falloff);
+        float facing = clamp(dot(n, v), 0.0, 1.0);
+        float peakFacing = 2.0 / (falloff + 2.0);
+        float peak = peakFacing * peakFacing * pow(1.0 - peakFacing, falloff);
+        float limb = facing * facing * pow(1.0 - facing, falloff) / max(peak, 1e-6);
         float sunlight = smoothstep(
             -terminatorWidth, terminatorWidth, dot(n, l) + sunBias);
         float illumination = mix(nightFactor, 1.0, sunlight);

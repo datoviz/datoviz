@@ -71,7 +71,7 @@
 #define MARS_TEXTURE_PATH           "data/assets/textures/mars_viking_mdim21.jpg"
 
 #define SPHERE_RADIUS     0.92
-#define ATMOSPHERE_RADIUS 0.936
+#define ATMOSPHERE_RADIUS 0.932
 #define SPHERE_SECTORS    96
 #define SPHERE_RINGS      48
 
@@ -879,11 +879,11 @@ static DvzVisual* _create_atmosphere(DvzScene* scene, DvzPanel* panel)
     if (rc == DVZ_OK)
     {
         DvzMaterialDesc material = dvz_limb_material_desc();
-        material.opacity = 0.14f;
+        material.opacity = 0.10f;
         material.light_direction[0] = SUN_DIR_X;
         material.light_direction[1] = SUN_DIR_Y;
         material.light_direction[2] = SUN_DIR_Z;
-        material.limb.falloff = 3.6f;
+        material.limb.falloff = 20.0f;
         material.limb.sun_bias = 0.06f;
         material.limb.terminator_width = 0.16f;
         material.limb.night_factor = 0.035f;
