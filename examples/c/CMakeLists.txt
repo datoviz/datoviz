@@ -254,6 +254,7 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(composites graph composites/graph.c)
 
     dvz_add_example(showcases gpu_particle_smoke showcases/gpu_particle_smoke.c)
+    dvz_add_example(showcases cortical_activity showcases/cortical_activity.c)
     dvz_add_example(showcases brain_volume showcases/brain_volume.c)
     dvz_add_example(showcases embedding_atlas showcases/embedding_atlas.c)
     dvz_add_example(showcases lipid_brain_atlas showcases/lipid_brain_atlas.c)
