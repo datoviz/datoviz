@@ -6,10 +6,11 @@
 
 /* streaming_daq - This example renders a simulated real-time data acquisition system.
  *
- * What to look for: 128 independently generated digital and analog channels share one persistent
- * raw line-list visual. A wall-clock producer thread emits fixed acquisition blocks into a bounded
- * queue, while the render thread updates only the newly written circular-buffer vertex range. The
- * live GUI exposes acquisition pressure, display controls, and queue/overrun statistics.
+ * What to look for: 128 continuous extracellular traces combine correlated background activity,
+ * spatially coherent unit spikes, and occasional population events in one persistent raw line-list
+ * visual. A wall-clock producer thread emits fixed acquisition blocks into a bounded queue, while
+ * the render thread updates only the newly written circular-buffer vertex range. Sparse event
+ * markers and a live GUI expose acquisition timing, signal controls, and queue statistics.
  *
  * Scenario: showcases_streaming_daq
  * Style: showcase, graphite_cyan, 1280x720 window target
@@ -52,10 +53,10 @@
 #define WIDTH  EXAMPLE_WINDOW_WIDTH
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
-#define DIGITAL_VERTICES_PER_INTERVAL 4u
-#define ANALOG_VERTICES_PER_INTERVAL  2u
-#define CHANNEL_BANK_SIZE             8u
-#define MAX_DRAIN_BLOCKS_PER_FRAME    16u
+#define TRACE_VERTICES_PER_INTERVAL 2u
+#define CHANNEL_BANK_SIZE           16u
+#define EVENT_MARKER_CAPACITY       16u
+#define MAX_DRAIN_BLOCKS_PER_FRAME  16u
 
 
 
@@ -73,6 +74,7 @@ typedef struct StreamingDaqState
     DvzVisual* bands;
     DvzVisual* separators;
     DvzVisual* traces;
+    DvzVisual* event_markers;
     DvzVisual* sweep_band;
     DvzVisual* cursor;
     DvzView* view;
@@ -86,8 +88,12 @@ typedef struct StreamingDaqState
     bool show_cursor;
     bool show_grid;
     bool show_bands;
+    bool show_events;
     float gain;
     float noise;
+    float spike_rate;
+    float spike_amplitude;
+    float synchrony;
     float dropout_percent;
     int block_size;
 
@@ -133,29 +139,14 @@ static float _row_y(const StreamingDaqState* state, uint32_t channel)
  */
 static DvzColor _channel_color(const StreamingDaqState* state, uint32_t channel)
 {
-    const uint32_t digital_count =
-        state->model.config.channel_count - state->model.config.analog_channel_count;
-    DvzColor color = {0};
-    if (channel >= digital_count)
-    {
-        static const ExampleStyleColorRole roles[] = {
-            EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
-            EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
-            EXAMPLE_STYLE_COLOR_WARNING,
-            EXAMPLE_STYLE_COLOR_ERROR,
-        };
-        color = example_graphite_cyan_color(roles[(channel - digital_count) % 4u]);
-        color.a = 245u;
-        return color;
-    }
-
-    static const DvzColor digital_palette[] = {
-        {76, 201, 240, 225},
-        {128, 255, 219, 220},
-        {255, 183, 3, 225},
-        {239, 71, 111, 220},
+    (void)state;
+    static const DvzColor probe_palette[] = {
+        {94, 213, 220, 218},
+        {88, 193, 222, 212},
+        {113, 222, 199, 216},
+        {104, 187, 228, 210},
     };
-    return digital_palette[(channel / 28u) % 4u];
+    return probe_palette[(channel / 32u) % 4u];
 }
 
 
@@ -193,18 +184,15 @@ static void _fill_trace_interval(StreamingDaqState* state, uint32_t interval)
     for (uint32_t channel = 0; channel < config->channel_count; channel++)
     {
         const float row = _row_y(state, channel);
-        const bool digital = state->model.channels[channel].kind == DAQ_CHANNEL_DIGITAL;
-        const uint32_t vertex_count =
-            digital ? DIGITAL_VERTICES_PER_INTERVAL : ANALOG_VERTICES_PER_INTERVAL;
         if (!valid)
         {
-            for (uint32_t j = 0; j < vertex_count; j++)
+            for (uint32_t j = 0; j < TRACE_VERTICES_PER_INTERVAL; j++)
             {
                 state->trace_positions[vertex + j][0] = x0;
                 state->trace_positions[vertex + j][1] = row + 0.5f;
                 state->trace_positions[vertex + j][2] = 0.0f;
             }
-            vertex += vertex_count;
+            vertex += TRACE_VERTICES_PER_INTERVAL;
             continue;
         }
 
@@ -212,33 +200,15 @@ static void _fill_trace_interval(StreamingDaqState* state, uint32_t interval)
             state->model.display_values[(uint64_t)interval * config->channel_count + channel];
         const float value1 =
             state->model.display_values[(uint64_t)next * config->channel_count + channel];
-        if (digital)
-        {
-            const float y0 = row + 0.20f + 0.58f * value0;
-            const float y1 = row + 0.20f + 0.58f * value1;
-            state->trace_positions[vertex + 0u][0] = x0;
-            state->trace_positions[vertex + 0u][1] = y0;
-            state->trace_positions[vertex + 1u][0] = x1;
-            state->trace_positions[vertex + 1u][1] = y0;
-            state->trace_positions[vertex + 2u][0] = x1;
-            state->trace_positions[vertex + 2u][1] = y0;
-            state->trace_positions[vertex + 3u][0] = x1;
-            state->trace_positions[vertex + 3u][1] = y1;
-            for (uint32_t j = 0; j < DIGITAL_VERTICES_PER_INTERVAL; j++)
-                state->trace_positions[vertex + j][2] = 0.0f;
-        }
-        else
-        {
-            const float y0 = row + 0.5f + 0.38f * state->gain * value0;
-            const float y1 = row + 0.5f + 0.38f * state->gain * value1;
-            state->trace_positions[vertex + 0u][0] = x0;
-            state->trace_positions[vertex + 0u][1] = y0;
-            state->trace_positions[vertex + 0u][2] = 0.0f;
-            state->trace_positions[vertex + 1u][0] = x1;
-            state->trace_positions[vertex + 1u][1] = y1;
-            state->trace_positions[vertex + 1u][2] = 0.0f;
-        }
-        vertex += vertex_count;
+        const float y0 = row + 0.5f + 0.58f * state->gain * value0;
+        const float y1 = row + 0.5f + 0.58f * state->gain * value1;
+        state->trace_positions[vertex + 0u][0] = x0;
+        state->trace_positions[vertex + 0u][1] = y0;
+        state->trace_positions[vertex + 0u][2] = 0.0f;
+        state->trace_positions[vertex + 1u][0] = x1;
+        state->trace_positions[vertex + 1u][1] = y1;
+        state->trace_positions[vertex + 1u][2] = 0.0f;
+        vertex += TRACE_VERTICES_PER_INTERVAL;
     }
 }
 
@@ -347,6 +317,52 @@ static bool _update_cursor(StreamingDaqState* state)
 
 
 /**
+ * Refresh the small fixed-capacity hardware-event overlay.
+ *
+ * @param state showcase state
+ * @return whether both marker attributes were updated
+ */
+static bool _update_event_markers(StreamingDaqState* state)
+{
+    const uint32_t vertex_count = 2u * EVENT_MARKER_CAPACITY;
+    vec3 positions[2u * EVENT_MARKER_CAPACITY] = {{0}};
+    DvzColor colors[2u * EVENT_MARKER_CAPACITY] = {{0}};
+    const float y0 = -0.5f;
+    const float y1 = (float)state->model.config.channel_count - 0.5f;
+    uint32_t marker = 0;
+    for (uint32_t sample = 0; sample < state->model.config.display_sample_count; sample++)
+    {
+        DaqEventKind kind = (DaqEventKind)state->model.display_events[sample];
+        if (kind == DAQ_EVENT_NONE || marker == EVENT_MARKER_CAPACITY)
+            continue;
+        const float x = (float)sample / state->model.config.sample_rate_hz;
+        DvzColor color = kind == DAQ_EVENT_REWARD ? dvz_color_rgba(255, 179, 71, 150)
+                         : kind == DAQ_EVENT_SYNC ? dvz_color_rgba(255, 103, 129, 145)
+                                                  : dvz_color_rgba(132, 224, 210, 130);
+        positions[2u * marker + 0u][0] = x;
+        positions[2u * marker + 0u][1] = y0;
+        positions[2u * marker + 1u][0] = x;
+        positions[2u * marker + 1u][1] = y1;
+        colors[2u * marker + 0u] = color;
+        colors[2u * marker + 1u] = color;
+        marker++;
+    }
+    for (; marker < EVENT_MARKER_CAPACITY; marker++)
+    {
+        positions[2u * marker + 0u][1] = y0;
+        positions[2u * marker + 1u][1] = y0;
+    }
+
+    DvzResult position_result =
+        dvz_visual_set_data_range(state->event_markers, "position", 0u, positions, vertex_count);
+    DvzResult color_result =
+        dvz_visual_set_data_range(state->event_markers, "color", 0u, colors, vertex_count);
+    state->upload_bytes += sizeof(positions) + sizeof(colors);
+    return position_result == DVZ_OK && color_result == DVZ_OK;
+}
+
+
+/**
  * Allocate and fill retained trace arrays.
  *
  * @param state showcase state
@@ -354,11 +370,7 @@ static bool _update_cursor(StreamingDaqState* state)
  */
 static bool _allocate_trace_arrays(StreamingDaqState* state)
 {
-    const uint32_t digital_count =
-        state->model.config.channel_count - state->model.config.analog_channel_count;
-    state->vertices_per_interval =
-        digital_count * DIGITAL_VERTICES_PER_INTERVAL +
-        state->model.config.analog_channel_count * ANALOG_VERTICES_PER_INTERVAL;
+    state->vertices_per_interval = state->model.config.channel_count * TRACE_VERTICES_PER_INTERVAL;
     uint64_t vertex_count64 =
         (uint64_t)state->vertices_per_interval * state->model.config.display_sample_count;
     if (vertex_count64 == 0 || vertex_count64 > UINT32_MAX ||
@@ -378,10 +390,7 @@ static bool _allocate_trace_arrays(StreamingDaqState* state)
         for (uint32_t channel = 0; channel < state->model.config.channel_count; channel++)
         {
             DvzColor color = _channel_color(state, channel);
-            uint32_t count = state->model.channels[channel].kind == DAQ_CHANNEL_DIGITAL
-                                 ? DIGITAL_VERTICES_PER_INTERVAL
-                                 : ANALOG_VERTICES_PER_INTERVAL;
-            for (uint32_t j = 0; j < count; j++)
+            for (uint32_t j = 0; j < TRACE_VERTICES_PER_INTERVAL; j++)
                 state->trace_colors[vertex++] = color;
         }
     }
@@ -547,6 +556,34 @@ static bool _add_traces(StreamingDaqState* state, DvzScene* scene)
 
 
 /**
+ * Add sparse stimulus, reward, and synchronization event markers.
+ *
+ * @param state showcase state
+ * @param scene owning scene
+ * @return whether the marker visual was added
+ */
+static bool _add_event_markers(StreamingDaqState* state, DvzScene* scene)
+{
+    const uint32_t vertex_count = 2u * EVENT_MARKER_CAPACITY;
+    vec3 positions[2u * EVENT_MARKER_CAPACITY] = {{0}};
+    DvzColor colors[2u * EVENT_MARKER_CAPACITY] = {{0}};
+    state->event_markers = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST, 0);
+    if (state->event_markers == NULL)
+        return false;
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = vertex_count},
+        {.attr_name = "color", .data = colors, .item_count = vertex_count},
+    };
+    DvzResult upload_result = dvz_visual_set_data_many(state->event_markers, updates, 2u);
+    DvzResult alpha_result = dvz_visual_set_alpha_mode(state->event_markers, DVZ_ALPHA_BLENDED);
+    DvzResult depth_result = dvz_visual_set_depth_test(state->event_markers, false);
+    DvzResult add_result = dvz_panel_add_visual(state->panel, state->event_markers, NULL);
+    return upload_result == DVZ_OK && alpha_result == DVZ_OK && depth_result == DVZ_OK &&
+           add_result == DVZ_OK && _update_event_markers(state);
+}
+
+
+/**
  * Add the dark sweep band and bright write cursor overlays.
  *
  * @param state showcase state
@@ -604,13 +641,11 @@ static bool _configure_axes(StreamingDaqState* state)
         return false;
     }
 
-    const uint32_t digital_count =
-        state->model.config.channel_count - state->model.config.analog_channel_count;
     const double tick_values[] = {
-        _row_y(state, 0u) + 0.5,  _row_y(state, 28u) + 0.5,           _row_y(state, 56u) + 0.5,
-        _row_y(state, 84u) + 0.5, _row_y(state, digital_count) + 0.5,
+        _row_y(state, 0u) + 0.5,  _row_y(state, 32u) + 0.5,  _row_y(state, 64u) + 0.5,
+        _row_y(state, 96u) + 0.5, _row_y(state, 127u) + 0.5,
     };
-    const char* tick_labels[] = {"SYNC", "TTL A", "TTL B", "TTL C", "ANALOG"};
+    const char* tick_labels[] = {"AP000", "AP032", "AP064", "AP096", "AP127"};
     DvzAxisTicks ticks = {
         DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks),
         .count = 5u,
@@ -621,7 +656,7 @@ static bool _configure_axes(StreamingDaqState* state)
     DvzResult x_grid_result = dvz_axis_set_grid(state->x_axis, true);
     DvzResult y_grid_result = dvz_axis_set_grid(state->y_axis, true);
     DvzResult x_label_result = dvz_axis_set_label(state->x_axis, "acquisition time (s)");
-    DvzResult y_label_result = dvz_axis_set_label(state->y_axis, "128 channels");
+    DvzResult y_label_result = dvz_axis_set_label(state->y_axis, "probe channel");
     return ticks_result == DVZ_OK && x_grid_result == DVZ_OK && y_grid_result == DVZ_OK &&
            x_label_result == DVZ_OK && y_label_result == DVZ_OK;
 }
@@ -637,7 +672,7 @@ static bool _reset_acquisition(StreamingDaqState* state)
 {
     if (!daq_model_reset(&state->model))
         return false;
-    return _upload_all_traces(state) && _update_cursor(state);
+    return _upload_all_traces(state) && _update_event_markers(state) && _update_cursor(state);
 }
 
 
@@ -678,11 +713,15 @@ static void _gui_callback(DvzGui* gui, DvzView* view, void* user_data)
     bool pause_changed = false;
     bool gain_changed = false;
     bool noise_changed = false;
+    bool spike_rate_changed = false;
+    bool spike_amplitude_changed = false;
+    bool synchrony_changed = false;
     bool dropout_changed = false;
     bool block_changed = false;
     bool cursor_changed = false;
     bool grid_changed = false;
     bool bands_changed = false;
+    bool events_changed = false;
     bool reset = false;
     bool fit = false;
 
@@ -696,10 +735,19 @@ static void _gui_callback(DvzGui* gui, DvzView* view, void* user_data)
         block_changed |= dvz_gui_slider_int(gui, "Block samples", &state->block_size, 1, 64);
         dropout_changed |= dvz_gui_slider_float_format(
             gui, "Simulated dropout", &state->dropout_percent, 0.0f, 10.0f, "%.1f %%");
-        noise_changed |= dvz_gui_slider_float(gui, "Noise", &state->noise, 0.0f, 3.0f);
+
+        dvz_gui_separator_text(gui, "Neural source");
+        noise_changed |= dvz_gui_slider_float(gui, "Background noise", &state->noise, 0.0f, 3.0f);
+        spike_rate_changed |=
+            dvz_gui_slider_float(gui, "Firing rate", &state->spike_rate, 0.1f, 3.0f);
+        spike_amplitude_changed |=
+            dvz_gui_slider_float(gui, "Spike amplitude", &state->spike_amplitude, 0.0f, 3.0f);
+        synchrony_changed |=
+            dvz_gui_slider_float(gui, "Population synchrony", &state->synchrony, 0.0f, 3.0f);
 
         dvz_gui_separator_text(gui, "Display");
-        gain_changed |= dvz_gui_slider_float(gui, "Analog gain", &state->gain, 0.25f, 2.5f);
+        gain_changed |= dvz_gui_slider_float(gui, "Trace gain", &state->gain, 0.25f, 2.5f);
+        events_changed |= dvz_gui_checkbox(gui, "Event markers", &state->show_events);
         cursor_changed |= dvz_gui_checkbox(gui, "Sweep cursor", &state->show_cursor);
         grid_changed |= dvz_gui_checkbox(gui, "Grid", &state->show_grid);
         bands_changed |= dvz_gui_checkbox(gui, "Channel banks", &state->show_bands);
@@ -713,7 +761,8 @@ static void _gui_callback(DvzGui* gui, DvzView* view, void* user_data)
         dvz_snprintf(
             upload_text, sizeof(upload_text), "Upload: %.1f KiB (%u vertices)",
             (double)state->upload_bytes / 1024.0, state->uploaded_vertex_count);
-        dvz_gui_text(gui, "128 channels | 1 kHz | 2.048 s ring");
+        dvz_gui_text(gui, "128 channels | 10 kHz | 409.6 ms ring");
+        dvz_gui_text(gui, "28 units | spatial spike footprints");
         dvz_gui_text(gui, "One raw line-list trace draw");
         dvz_gui_text(gui, fps_text);
         dvz_gui_text(gui, upload_text);
@@ -744,6 +793,21 @@ static void _gui_callback(DvzGui* gui, DvzView* view, void* user_data)
         uint32_t permille = (uint32_t)lroundf(1000.0f * state->noise);
         daq_model_set_noise(&state->model, permille);
     }
+    if (spike_rate_changed)
+    {
+        uint32_t permille = (uint32_t)lroundf(1000.0f * state->spike_rate);
+        daq_model_set_spike_rate(&state->model, permille);
+    }
+    if (spike_amplitude_changed)
+    {
+        uint32_t permille = (uint32_t)lroundf(1000.0f * state->spike_amplitude);
+        daq_model_set_spike_amplitude(&state->model, permille);
+    }
+    if (synchrony_changed)
+    {
+        uint32_t permille = (uint32_t)lroundf(1000.0f * state->synchrony);
+        daq_model_set_synchrony(&state->model, permille);
+    }
     if (gain_changed)
         (void)_upload_all_traces(state);
     if (cursor_changed)
@@ -759,6 +823,8 @@ static void _gui_callback(DvzGui* gui, DvzView* view, void* user_data)
     }
     if (bands_changed)
         (void)dvz_visual_set_visible(state->bands, state->show_bands);
+    if (events_changed)
+        (void)dvz_visual_set_visible(state->event_markers, state->show_events);
     if (reset)
         (void)_reset_acquisition(state);
     if (fit)
@@ -787,10 +853,14 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     state->gain = 1.0f;
     state->noise = 1.0f;
-    state->block_size = 16;
+    state->spike_rate = 1.0f;
+    state->spike_amplitude = 1.0f;
+    state->synchrony = 1.0f;
+    state->block_size = 64;
     state->show_cursor = true;
     state->show_grid = true;
     state->show_bands = true;
+    state->show_events = true;
 
     DaqConfig config = daq_config_default();
     if (!daq_model_init(&state->model, &config) || !daq_model_prefill(&state->model) ||
@@ -813,7 +883,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         dvz_panel_set_domain(state->panel, DVZ_DIM_Y, -0.5, (double)config.channel_count - 0.5);
     if (x_domain != DVZ_OK || y_domain != DVZ_OK || !_add_bands(state, ctx->scene) ||
         !_add_separators(state, ctx->scene) || !_add_traces(state, ctx->scene) ||
-        !_add_cursor(state, ctx->scene) || !_configure_axes(state))
+        !_add_event_markers(state, ctx->scene) || !_add_cursor(state, ctx->scene) ||
+        !_configure_axes(state))
     {
         goto error;
     }
@@ -874,7 +945,8 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
         state->uploaded_vertex_count = 0;
     }
 
-    if (!_upload_dirty_traces(state, &dirty) || !_update_cursor(state))
+    if (!_upload_dirty_traces(state, &dirty) || !_update_event_markers(state) ||
+        !_update_cursor(state))
         dvz_fprintf(stderr, "streaming_daq: retained range update failed\n");
 }
 
@@ -972,7 +1044,7 @@ DvzScenarioSpec dvz_showcase_streaming_daq_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "showcases_streaming_daq",
-        .title = "Streaming DAQ · 128 channels",
+        .title = "Streaming DAQ · extracellular probe",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

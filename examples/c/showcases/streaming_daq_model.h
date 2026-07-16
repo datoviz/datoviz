@@ -41,6 +41,15 @@ typedef enum DaqChannelKind
 } DaqChannelKind;
 
 
+typedef enum DaqEventKind
+{
+    DAQ_EVENT_NONE = 0,
+    DAQ_EVENT_STIMULUS = 1,
+    DAQ_EVENT_REWARD = 2,
+    DAQ_EVENT_SYNC = 3,
+} DaqEventKind;
+
+
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
@@ -106,6 +115,7 @@ typedef struct DaqModel
 
     float* display_values;
     bool* display_valid;
+    uint8_t* display_events;
     uint32_t write_index;
     uint64_t next_expected_sample;
     uint64_t wrap_count;
@@ -118,6 +128,9 @@ typedef struct DaqModel
     atomic_uint producer_block_size;
     atomic_uint producer_dropout_permille;
     atomic_uint producer_noise_permille;
+    atomic_uint producer_spike_rate_permille;
+    atomic_uint producer_spike_amplitude_permille;
+    atomic_uint producer_synchrony_permille;
     atomic_ullong generated_sample_count;
     atomic_ullong dropped_sample_count;
     atomic_ullong overrun_block_count;
@@ -219,6 +232,33 @@ void daq_model_set_dropout(DaqModel* model, uint32_t dropout_permille);
  * @param noise_permille noise amplitude in thousandths of the default scale
  */
 void daq_model_set_noise(DaqModel* model, uint32_t noise_permille);
+
+
+/**
+ * Set the synthetic unit firing-rate multiplier.
+ *
+ * @param model model owning the producer
+ * @param rate_permille rate multiplier in thousandths
+ */
+void daq_model_set_spike_rate(DaqModel* model, uint32_t rate_permille);
+
+
+/**
+ * Set the synthetic extracellular spike amplitude.
+ *
+ * @param model model owning the producer
+ * @param amplitude_permille amplitude multiplier in thousandths
+ */
+void daq_model_set_spike_amplitude(DaqModel* model, uint32_t amplitude_permille);
+
+
+/**
+ * Set the amplitude of population-synchronous activity.
+ *
+ * @param model model owning the producer
+ * @param synchrony_permille synchrony multiplier in thousandths
+ */
+void daq_model_set_synchrony(DaqModel* model, uint32_t synchrony_permille);
 
 
 /**

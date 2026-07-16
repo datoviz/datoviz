@@ -26,6 +26,7 @@
 
 static const float TAU = 6.28318530718f;
 static const uint64_t NS_PER_SECOND = 1000000000ULL;
+static const uint32_t UNIT_COUNT = 28u;
 
 
 
@@ -67,105 +68,176 @@ static float _sample_noise(const DaqModel* model, uint32_t channel, uint64_t sam
 
 
 /**
- * Generate one deterministic digital channel value.
+ * Return one deterministic event sample in a repeated timing cell.
  *
- * @param channel channel index
- * @param sample logical sample index
- * @param sample_rate acquisition sample rate
- * @return zero or one
+ * @param model source model
+ * @param stream deterministic stream index
+ * @param cell repeated timing-cell index
+ * @param period timing-cell length in samples
+ * @param jitter maximum signed timing jitter
+ * @return logical event sample
  */
-static float _digital_value(uint32_t channel, uint64_t sample, uint32_t sample_rate)
+static int64_t _event_sample(
+    const DaqModel* model, uint32_t stream, int64_t cell, uint32_t period, uint32_t jitter)
 {
-    const uint64_t trial_period = 2u * (uint64_t)sample_rate;
-    const uint64_t phase = trial_period > 0 ? sample % trial_period : 0;
-    switch (channel)
+    uint32_t folded = (uint32_t)cell ^ (uint32_t)((uint64_t)cell >> 32u);
+    uint32_t hash = _hash_u32(folded ^ (stream * 0x9e3779b9u) ^ model->config.seed ^ 0x4f1bbcdcu);
+    int32_t offset = jitter > 0u ? (int32_t)(hash % (2u * jitter + 1u)) - (int32_t)jitter : 0;
+    return cell * (int64_t)period + period / 2u + offset;
+}
+
+
+/**
+ * Return a compact extracellular action-potential waveform.
+ *
+ * @param delta samples relative to the unit firing time
+ * @return normalized biphasic waveform
+ */
+static float _spike_waveform(int64_t delta)
+{
+    if (delta < -3 || delta > 19)
+        return 0.0f;
+    const float x = (float)delta;
+    const float pre = 0.18f * expf(-0.5f * ((x + 1.2f) / 1.2f) * ((x + 1.2f) / 1.2f));
+    const float trough = -1.15f * expf(-0.5f * ((x - 3.0f) / 2.2f) * ((x - 3.0f) / 2.2f));
+    const float rebound = 0.42f * expf(-0.5f * ((x - 9.0f) / 4.2f) * ((x - 9.0f) / 4.2f));
+    return pre + trough + rebound;
+}
+
+
+/**
+ * Return one unit waveform value at a logical sample.
+ *
+ * @param model source model
+ * @param unit synthetic unit index
+ * @param sample logical sample
+ * @param rate_scale firing-rate multiplier
+ * @return waveform value, or zero away from a spike
+ */
+static float _unit_value(const DaqModel* model, uint32_t unit, uint64_t sample, float rate_scale)
+{
+    const float base_rate_hz = 5.0f + 1.7f * (float)(unit % 9u);
+    uint32_t period = (uint32_t)lroundf(
+        (float)model->config.sample_rate_hz / fmaxf(0.5f, base_rate_hz * rate_scale));
+    if (period < 40u)
+        period = 40u;
+    const uint32_t jitter = period / 4u;
+    int64_t cell = (int64_t)(sample / period);
+    for (int32_t dc = -1; dc <= 1; dc++)
     {
-    case 0:
-        return phase < sample_rate / 50u ? 1.0f : 0.0f;
-    case 1:
-        return phase >= sample_rate / 4u && phase < 3u * sample_rate / 4u ? 1.0f : 0.0f;
-    case 2:
-        return phase >= sample_rate / 4u + 12u && phase < 3u * sample_rate / 4u + 12u ? 1.0f
-                                                                                      : 0.0f;
-    case 3:
-        return phase >= 4u * sample_rate / 5u && phase < 13u * sample_rate / 10u ? 1.0f : 0.0f;
-    case 4:
-        return phase >= 7u * sample_rate / 5u && phase < 7u * sample_rate / 5u + 18u ? 1.0f : 0.0f;
-    case 5:
-        return sample % 33u < 2u ? 1.0f : 0.0f;
-    case 6:
-        return sample % 17u < 1u ? 1.0f : 0.0f;
-    case 7:
-        return sample % 10u < 1u ? 1.0f : 0.0f;
-    default:
-    {
-        uint32_t period = 43u + 7u * (channel % 23u);
-        uint32_t width = 1u + channel % 5u;
-        uint64_t shifted = sample + 13u * channel;
-        bool pulse = shifted % period < width;
-        bool burst = ((sample / (211u + channel)) + channel) % 17u == 0u &&
-                     shifted % (9u + channel % 5u) < 2u;
-        return pulse || burst ? 1.0f : 0.0f;
+        int64_t candidate_cell = cell + dc;
+        if (candidate_cell < 0)
+            continue;
+        int64_t firing = _event_sample(model, unit, candidate_cell, period, jitter);
+        float waveform = _spike_waveform((int64_t)sample - firing);
+        if (waveform != 0.0f)
+            return waveform;
     }
+    return 0.0f;
+}
+
+
+/**
+ * Return the event marker at one logical sample.
+ *
+ * @param model source model
+ * @param sample logical sample
+ * @return event kind
+ */
+static DaqEventKind _event_kind(const DaqModel* model, uint64_t sample)
+{
+    const uint32_t period = model->config.sample_rate_hz / 4u;
+    if (period == 0u)
+        return DAQ_EVENT_NONE;
+    int64_t cell = (int64_t)(sample / period);
+    for (int32_t dc = -1; dc <= 1; dc++)
+    {
+        int64_t candidate_cell = cell + dc;
+        if (candidate_cell < 0)
+            continue;
+        int64_t event = _event_sample(model, 97u, candidate_cell, period, period / 7u);
+        if ((int64_t)sample == event)
+        {
+            switch ((uint32_t)candidate_cell % 6u)
+            {
+            case 1u:
+            case 4u:
+                return DAQ_EVENT_REWARD;
+            case 3u:
+                return DAQ_EVENT_SYNC;
+            default:
+                return DAQ_EVENT_STIMULUS;
+            }
+        }
+    }
+    return DAQ_EVENT_NONE;
+}
+
+
+/**
+ * Add one spatially tapered spike to nearby channels.
+ *
+ * @param model source model
+ * @param unit synthetic unit index
+ * @param waveform temporal waveform value
+ * @param amplitude overall spike amplitude
+ * @param values one interleaved sample row
+ */
+static void _add_unit_spike(
+    const DaqModel* model, uint32_t unit, float waveform, float amplitude, float* values)
+{
+    if (waveform == 0.0f)
+        return;
+    uint32_t center = unit % model->config.channel_count;
+    if (model->config.channel_count > 6u)
+    {
+        center = 3u + _hash_u32(model->config.seed ^ (unit * 0x45d9f3bu)) %
+                          (model->config.channel_count - 6u);
+    }
+    const int32_t radius = 4 + (int32_t)(unit % 3u);
+    for (int32_t offset = -radius; offset <= radius; offset++)
+    {
+        int32_t channel = (int32_t)center + offset;
+        if (channel < 0 || channel >= (int32_t)model->config.channel_count)
+            continue;
+        const float distance = (float)offset / (0.46f * (float)radius);
+        const float spatial = expf(-0.5f * distance * distance);
+        const float polarity = (unit % 5u == 0u && offset > 1) ? -0.72f : 1.0f;
+        values[channel] += amplitude * polarity * spatial * waveform;
     }
 }
 
 
 /**
- * Generate one deterministic analog channel value.
+ * Add deterministic population activity around hardware events.
  *
  * @param model source model
- * @param analog_channel analog channel index
- * @param sample logical sample index
- * @return normalized analog value
+ * @param sample logical sample
+ * @param amplitude population-event amplitude
+ * @param values one interleaved sample row
  */
-static float _analog_value(const DaqModel* model, uint32_t analog_channel, uint64_t sample)
+static void
+_add_population_event(const DaqModel* model, uint64_t sample, float amplitude, float* values)
 {
-    const float t = (float)((double)sample / (double)model->config.sample_rate_hz);
-    const float channel = (float)analog_channel;
-    const float noise_scale =
-        0.10f *
-        (float)atomic_load_explicit(&model->producer_noise_permille, memory_order_relaxed) /
-        1000.0f;
-    float value = 0.0f;
-    switch (analog_channel % 8u)
+    const uint32_t period = model->config.sample_rate_hz / 4u;
+    if (period == 0u || amplitude == 0.0f)
+        return;
+    int64_t cell = (int64_t)(sample / period);
+    for (int32_t dc = -1; dc <= 1; dc++)
     {
-    case 0:
-        value = 0.62f * sinf(TAU * (1.1f + 0.08f * channel) * t) + 0.16f * sinf(TAU * 7.2f * t);
-        break;
-    case 1:
-        value = 0.54f * sinf(TAU * 0.27f * t + 0.4f * channel) + 0.22f * sinf(TAU * 2.3f * t);
-        break;
-    case 2:
-    {
-        const float cardiac = fmodf(t * (1.05f + 0.02f * channel), 1.0f);
-        float spike = cardiac < 0.025f ? 1.0f - cardiac / 0.025f : 0.0f;
-        value = 0.18f * sinf(TAU * 1.05f * t) + 0.82f * spike;
-        break;
+        int64_t candidate_cell = cell + dc;
+        if (candidate_cell < 0)
+            continue;
+        int64_t event = _event_sample(model, 97u, candidate_cell, period, period / 7u);
+        float waveform = _spike_waveform((int64_t)sample - event - 4);
+        if (waveform == 0.0f)
+            continue;
+        for (uint32_t group = 0; group < 3u; group++)
+        {
+            uint32_t pseudo_unit = (uint32_t)(candidate_cell * 5 + group * 9) % UNIT_COUNT;
+            _add_unit_spike(model, pseudo_unit, waveform, amplitude, values);
+        }
     }
-    case 3:
-        value = 0.72f * sinf(TAU * 0.19f * t) + 0.08f * sinf(TAU * 11.0f * t);
-        break;
-    case 4:
-        value =
-            0.44f * sinf(TAU * 0.7f * t + channel) + 0.28f * sinf(TAU * 3.7f * t + 0.3f * channel);
-        break;
-    case 5:
-        value = 0.65f * tanhf(2.2f * sinf(TAU * 0.36f * t + channel));
-        break;
-    case 6:
-        value = 0.35f * sinf(TAU * 4.0f * t) + 0.22f * sinf(TAU * 17.0f * t);
-        break;
-    default:
-    {
-        uint64_t artifact_phase = sample % (5u * model->config.sample_rate_hz);
-        float artifact = artifact_phase < 20u ? 0.9f * (1.0f - artifact_phase / 20.0f) : 0.0f;
-        value = 0.38f * sinf(TAU * 0.52f * t + channel) + artifact;
-        break;
-    }
-    }
-    value += noise_scale * _sample_noise(model, analog_channel + 97u, sample);
-    return fmaxf(-1.0f, fminf(+1.0f, value));
 }
 
 
@@ -180,18 +252,44 @@ static float _analog_value(const DaqModel* model, uint32_t analog_channel, uint6
 static void _generate_values(
     const DaqModel* model, uint64_t first_sample, uint32_t sample_count, float* out_values)
 {
-    const uint32_t digital_count =
-        model->config.channel_count - model->config.analog_channel_count;
+    const float noise_scale =
+        0.125f *
+        (float)atomic_load_explicit(&model->producer_noise_permille, memory_order_relaxed) /
+        1000.0f;
+    const float rate_scale =
+        (float)atomic_load_explicit(&model->producer_spike_rate_permille, memory_order_relaxed) /
+        1000.0f;
+    const float spike_amplitude =
+        0.88f *
+        (float)atomic_load_explicit(
+            &model->producer_spike_amplitude_permille, memory_order_relaxed) /
+        1000.0f;
+    const float synchrony =
+        0.58f *
+        (float)atomic_load_explicit(&model->producer_synchrony_permille, memory_order_relaxed) /
+        1000.0f;
     for (uint32_t i = 0; i < sample_count; i++)
     {
         uint64_t sample = first_sample + i;
+        float* values = &out_values[(uint64_t)i * model->config.channel_count];
+        const float t = (float)((double)sample / (double)model->config.sample_rate_hz);
         for (uint32_t channel = 0; channel < model->config.channel_count; channel++)
         {
-            float value = channel < digital_count
-                              ? _digital_value(channel, sample, model->config.sample_rate_hz)
-                              : _analog_value(model, channel - digital_count, sample);
-            out_values[(uint64_t)i * model->config.channel_count + channel] = value;
+            const uint32_t shank = channel / 32u;
+            const float shared = 0.48f * _sample_noise(model, 311u + shank, sample) +
+                                 0.22f * _sample_noise(model, 401u + channel / 4u, sample);
+            const float local = _sample_noise(model, channel, sample);
+            const float lfp = 0.34f * sinf(TAU * (5.2f + 0.35f * shank) * t + 0.04f * channel) +
+                              0.16f * sinf(TAU * 17.0f * t + 0.11f * channel);
+            values[channel] = noise_scale * (0.58f * local + shared + lfp);
         }
+
+        for (uint32_t unit = 0; unit < UNIT_COUNT; unit++)
+        {
+            float waveform = _unit_value(model, unit, sample, rate_scale);
+            _add_unit_spike(model, unit, waveform, spike_amplitude, values);
+        }
+        _add_population_event(model, sample, synchrony, values);
     }
 }
 
@@ -207,7 +305,10 @@ static void _append_gap(DaqModel* model, uint64_t sample_count)
     if (sample_count >= model->config.display_sample_count)
     {
         for (uint32_t i = 0; i < model->config.display_sample_count; i++)
+        {
             model->display_valid[i] = false;
+            model->display_events[i] = DAQ_EVENT_NONE;
+        }
         uint64_t wraps =
             ((uint64_t)model->write_index + sample_count) / model->config.display_sample_count;
         model->wrap_count += wraps;
@@ -220,6 +321,7 @@ static void _append_gap(DaqModel* model, uint64_t sample_count)
     for (uint64_t i = 0; i < sample_count; i++)
     {
         model->display_valid[model->write_index] = false;
+        model->display_events[model->write_index] = DAQ_EVENT_NONE;
         model->write_index++;
         if (model->write_index == model->config.display_sample_count)
         {
@@ -258,6 +360,8 @@ static uint64_t _append_block(DaqModel* model, const DaqBlock* block)
         uint64_t byte_size = (uint64_t)model->config.channel_count * sizeof(float);
         dvz_memcpy(&model->display_values[dst], byte_size, &block->values[src], byte_size);
         model->display_valid[model->write_index] = true;
+        model->display_events[model->write_index] =
+            (uint8_t)_event_kind(model, block->first_sample + i);
         model->write_index++;
         if (model->write_index == model->config.display_sample_count)
         {
@@ -412,10 +516,10 @@ DaqConfig daq_config_default(void)
 {
     return (DaqConfig){
         .channel_count = 128u,
-        .analog_channel_count = 16u,
-        .sample_rate_hz = 1000u,
-        .display_sample_count = 2048u,
-        .block_size = 16u,
+        .analog_channel_count = 128u,
+        .sample_rate_hz = 10000u,
+        .display_sample_count = 4096u,
+        .block_size = 64u,
         .seed = 20260716u,
     };
 }
@@ -432,7 +536,7 @@ bool daq_model_init(DaqModel* model, const DaqConfig* config)
 {
     if (model == NULL || config == NULL || config->channel_count == 0 ||
         config->channel_count > DAQ_MAX_CHANNELS || config->analog_channel_count == 0 ||
-        config->analog_channel_count >= config->channel_count || config->sample_rate_hz == 0 ||
+        config->analog_channel_count > config->channel_count || config->sample_rate_hz == 0 ||
         config->display_sample_count < 2u || config->block_size == 0 ||
         config->block_size > DAQ_MAX_BLOCK_SAMPLES)
     {
@@ -446,7 +550,9 @@ bool daq_model_init(DaqModel* model, const DaqConfig* config)
         return false;
     model->display_values = (float*)dvz_calloc(value_count, sizeof(float));
     model->display_valid = (bool*)dvz_calloc(config->display_sample_count, sizeof(bool));
-    if (model->display_values == NULL || model->display_valid == NULL)
+    model->display_events = (uint8_t*)dvz_calloc(config->display_sample_count, sizeof(uint8_t));
+    if (model->display_values == NULL || model->display_valid == NULL ||
+        model->display_events == NULL)
     {
         daq_model_destroy(model);
         return false;
@@ -456,10 +562,6 @@ bool daq_model_init(DaqModel* model, const DaqConfig* config)
     static const char* const digital_names[] = {
         "trial_start", "stimulus",    "photodiode", "response",
         "reward",      "camera_sync", "frame_sync", "clock_100hz",
-    };
-    static const char* const analog_names[] = {
-        "wheel", "photometry", "ecg",        "breathing",
-        "force", "position",   "microphone", "temperature",
     };
     for (uint32_t channel = 0; channel < config->channel_count; channel++)
     {
@@ -476,10 +578,7 @@ bool daq_model_init(DaqModel* model, const DaqConfig* config)
         {
             uint32_t analog = channel - digital_count;
             meta->kind = DAQ_CHANNEL_ANALOG;
-            if (analog < sizeof(analog_names) / sizeof(analog_names[0]))
-                dvz_snprintf(meta->name, sizeof(meta->name), "%s", analog_names[analog]);
-            else
-                dvz_snprintf(meta->name, sizeof(meta->name), "analog_%02u", analog);
+            dvz_snprintf(meta->name, sizeof(meta->name), "AP%03u", analog);
         }
     }
 
@@ -490,6 +589,9 @@ bool daq_model_init(DaqModel* model, const DaqConfig* config)
     atomic_init(&model->producer_block_size, config->block_size);
     atomic_init(&model->producer_dropout_permille, 0u);
     atomic_init(&model->producer_noise_permille, 1000u);
+    atomic_init(&model->producer_spike_rate_permille, 1000u);
+    atomic_init(&model->producer_spike_amplitude_permille, 1000u);
+    atomic_init(&model->producer_synchrony_permille, 1000u);
     atomic_init(&model->generated_sample_count, 0u);
     atomic_init(&model->dropped_sample_count, 0u);
     atomic_init(&model->overrun_block_count, 0u);
@@ -507,8 +609,10 @@ void daq_model_destroy(DaqModel* model)
     if (model == NULL)
         return;
     daq_model_stop(model);
+    dvz_free(model->display_events);
     dvz_free(model->display_valid);
     dvz_free(model->display_values);
+    model->display_events = NULL;
     model->display_valid = NULL;
     model->display_values = NULL;
 }
@@ -646,6 +750,59 @@ void daq_model_set_noise(DaqModel* model, uint32_t noise_permille)
 
 
 /**
+ * Set the synthetic unit firing-rate multiplier.
+ *
+ * @param model model owning the producer
+ * @param rate_permille rate multiplier in thousandths
+ */
+void daq_model_set_spike_rate(DaqModel* model, uint32_t rate_permille)
+{
+    if (model == NULL)
+        return;
+    if (rate_permille < 100u)
+        rate_permille = 100u;
+    if (rate_permille > 3000u)
+        rate_permille = 3000u;
+    atomic_store_explicit(
+        &model->producer_spike_rate_permille, rate_permille, memory_order_relaxed);
+}
+
+
+/**
+ * Set the synthetic extracellular spike amplitude.
+ *
+ * @param model model owning the producer
+ * @param amplitude_permille amplitude multiplier in thousandths
+ */
+void daq_model_set_spike_amplitude(DaqModel* model, uint32_t amplitude_permille)
+{
+    if (model == NULL)
+        return;
+    if (amplitude_permille > 3000u)
+        amplitude_permille = 3000u;
+    atomic_store_explicit(
+        &model->producer_spike_amplitude_permille, amplitude_permille, memory_order_relaxed);
+}
+
+
+/**
+ * Set the amplitude of population-synchronous activity.
+ *
+ * @param model model owning the producer
+ * @param synchrony_permille synchrony multiplier in thousandths
+ */
+void daq_model_set_synchrony(DaqModel* model, uint32_t synchrony_permille)
+{
+    if (model == NULL)
+        return;
+    if (synchrony_permille > 3000u)
+        synchrony_permille = 3000u;
+    atomic_store_explicit(
+        &model->producer_synchrony_permille, synchrony_permille, memory_order_relaxed);
+}
+
+
+/**
  * Drain bounded producer blocks into the display ring.
  *
  * @param model model receiving queued blocks
@@ -725,6 +882,9 @@ bool daq_model_reset(DaqModel* model)
     dvz_memset(
         model->display_valid, model->config.display_sample_count * sizeof(bool), 0,
         model->config.display_sample_count * sizeof(bool));
+    dvz_memset(
+        model->display_events, model->config.display_sample_count * sizeof(uint8_t), 0,
+        model->config.display_sample_count * sizeof(uint8_t));
     model->write_index = 0;
     model->next_expected_sample = 0;
     model->wrap_count = 0;
