@@ -5619,8 +5619,8 @@
       },
       "encoding": {
         "position": "complete 319,834-vertex bilateral participant-native FreeSurfer pial surface with one shared uniform scale; whole-brain and split-lateral layouts preserve anatomical aspect ratio",
-        "color": "oct6 dSPM values interpolated through hemisphere-local spherical triangles onto the render mesh, then mapped with sequential magma over neutral graphite anatomy; the comparable 8/12/15 dSPM preset remains available while live controls permit exploratory limits",
-        "time": "0 to 240 ms after the left-ear tone, linearly interpolated between source-estimate frames; live mode opens paused at the strongest response"
+        "color": "oct6 dSPM values interpolated through hemisphere-local spherical triangles onto the render mesh, then mapped with sequential magma over neutral graphite anatomy; tuned 5.668/10.387/15.783 dSPM limits remain editable in explicit live mode",
+        "time": "0 to 240 ms after the left-ear tone, linearly interpolated between source-estimate frames; the initial frame is paused at a tuned 106 ms near the strongest response"
       }
     },
     {
