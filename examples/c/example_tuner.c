@@ -22,6 +22,7 @@
 
 #include "_assertions.h"
 #include "_compat.h"
+#include "datoviz/math/_cglm.h"
 #include "example_common.h"
 
 #ifndef CIMGUI_DEFINE_ENUMS_AND_STRUCTS
@@ -74,6 +75,66 @@ static void _copy_vec3(vec3 dst, const float src[3])
     dst[0] = src != NULL ? src[0] : 0.0f;
     dst[1] = src != NULL ? src[1] : 0.0f;
     dst[2] = src != NULL ? src[2] : 0.0f;
+}
+
+
+
+/**
+ * Recover the public turntable pose from the camera view it controls.
+ *
+ * @param view camera view
+ * @param world_up stable turntable up vector
+ * @param pivot output pivot
+ * @param yaw output yaw in radians
+ * @param pitch output pitch in radians
+ * @param distance output eye-to-pivot distance
+ * @return whether the view describes a valid pose
+ */
+static bool _turntable_pose_from_view(
+    const DvzCameraView* view, const vec3 world_up, vec3 pivot, float* yaw, float* pitch,
+    float* distance)
+{
+    ANN(view);
+    ANN(yaw);
+    ANN(pitch);
+    ANN(distance);
+
+    vec3 front = {0};
+    glm_vec3_sub(
+        (vec3){view->target[0], view->target[1], view->target[2]},
+        (vec3){view->eye[0], view->eye[1], view->eye[2]}, front);
+    const float norm = glm_vec3_norm(front);
+    if (norm <= 1e-6f || !isfinite(norm))
+        return false;
+    glm_vec3_scale(front, 1.0f / norm, front);
+
+    vec3 up = {world_up[0], world_up[1], world_up[2]};
+    if (glm_vec3_norm(up) <= 1e-6f)
+        glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, up);
+    glm_vec3_normalize(up);
+    vec3 axis0 = {0};
+    if (fabsf(up[2]) > 0.9f)
+        glm_vec3_cross((vec3){0.0f, 1.0f, 0.0f}, up, axis0);
+    else
+    {
+        glm_vec3_cross((vec3){0.0f, 0.0f, 1.0f}, up, axis0);
+        glm_vec3_scale(axis0, -1.0f, axis0);
+    }
+    glm_vec3_normalize(axis0);
+    vec3 axis1 = {0};
+    glm_vec3_cross(axis0, up, axis1);
+    glm_vec3_normalize(axis1);
+
+    const float sin_pitch = fminf(fmaxf(glm_vec3_dot(front, up), -1.0f), +1.0f);
+    vec3 vertical = {0};
+    vec3 horizontal = {0};
+    glm_vec3_scale(up, sin_pitch, vertical);
+    glm_vec3_sub(front, vertical, horizontal);
+    _copy_vec3(pivot, view->target);
+    *distance = norm;
+    *pitch = asinf(sin_pitch);
+    *yaw = atan2f(glm_vec3_dot(horizontal, axis1), glm_vec3_dot(horizontal, axis0));
+    return true;
 }
 
 
@@ -350,6 +411,54 @@ static void _arcball_print(FILE* fp, const ExampleTunerArcball* state)
     dvz_fprintf(
         fp, "dvz_arcball_pan(arcball, (vec2){%+.6ff, %+.6ff});\n", state->pan[0],
         state->pan[1]);
+}
+
+
+
+/**
+ * Dump one turntable descriptor at its current pose.
+ *
+ * @param fp output stream
+ * @param state component state
+ */
+static void _turntable_print(FILE* fp, const ExampleTunerTurntable* state)
+{
+    ANN(fp);
+    ANN(state);
+
+    const DvzTurntableDesc* desc = &state->reset_desc;
+    dvz_fprintf(fp, "/* turntable: %s */\n", _tuner_name(state->name, "turntable"));
+    dvz_fprintf(
+        fp, "/* yaw = %+.6ff; pitch = %+.6ff; distance = %.6ff */\n", state->yaw, state->pitch,
+        state->distance);
+    dvz_fprintf(fp, "DvzTurntableDesc turntable_desc = dvz_turntable_desc();\n");
+    dvz_fprintf(
+        fp,
+        "turntable_desc.initial_view.eye[0] = %+.6ff; "
+        "turntable_desc.initial_view.eye[1] = %+.6ff; "
+        "turntable_desc.initial_view.eye[2] = %+.6ff;\n",
+        state->view.eye[0], state->view.eye[1], state->view.eye[2]);
+    dvz_fprintf(
+        fp,
+        "turntable_desc.initial_view.target[0] = %+.6ff; "
+        "turntable_desc.initial_view.target[1] = %+.6ff; "
+        "turntable_desc.initial_view.target[2] = %+.6ff;\n",
+        state->pivot[0], state->pivot[1], state->pivot[2]);
+    dvz_fprintf(
+        fp,
+        "turntable_desc.initial_view.up[0] = %+.6ff; "
+        "turntable_desc.initial_view.up[1] = %+.6ff; "
+        "turntable_desc.initial_view.up[2] = %+.6ff;\n",
+        state->world_up[0], state->world_up[1], state->world_up[2]);
+    dvz_fprintf(fp, "turntable_desc.yaw_speed = %.6ff;\n", desc->yaw_speed);
+    dvz_fprintf(fp, "turntable_desc.pitch_speed = %.6ff;\n", desc->pitch_speed);
+    dvz_fprintf(fp, "turntable_desc.zoom_speed = %.6ff;\n", desc->zoom_speed);
+    dvz_fprintf(fp, "turntable_desc.pan_speed = %.6ff;\n", desc->pan_speed);
+    dvz_fprintf(fp, "turntable_desc.min_pitch = %+.6ff;\n", desc->min_pitch);
+    dvz_fprintf(fp, "turntable_desc.max_pitch = %+.6ff;\n", desc->max_pitch);
+    dvz_fprintf(fp, "turntable_desc.min_distance = %.6ff;\n", desc->min_distance);
+    dvz_fprintf(fp, "turntable_desc.max_distance = %.6ff;\n", desc->max_distance);
+    dvz_fprintf(fp, "turntable_desc.controller_flags = %uu;\n", desc->controller_flags);
 }
 
 
@@ -828,6 +937,91 @@ static void _arcball_print_cb(FILE* fp, void* user)
     ExampleTunerArcball* state = (ExampleTunerArcball*)user;
     if (state != NULL)
         _arcball_print(fp, state);
+}
+
+
+static void _turntable_sync(void* user)
+{
+    ExampleTunerTurntable* state = (ExampleTunerTurntable*)user;
+    if (state == NULL || state->camera == NULL)
+        return;
+
+    dvz_camera_get_view(state->camera, &state->view);
+    (void)_turntable_pose_from_view(
+        &state->view, state->world_up, state->pivot, &state->yaw, &state->pitch, &state->distance);
+}
+
+
+static bool _turntable_gui(DvzGui* gui, void* user)
+{
+    ExampleTunerTurntable* state = (ExampleTunerTurntable*)user;
+    if (gui == NULL || state == NULL)
+        return false;
+
+    const DvzTurntableDesc* desc = &state->reset_desc;
+    const float min_pitch = desc->max_pitch > desc->min_pitch ? desc->min_pitch : -1.5707f;
+    const float max_pitch = desc->max_pitch > desc->min_pitch ? desc->max_pitch : +1.5707f;
+    const float min_distance = desc->min_distance > 0.0f ? desc->min_distance : 0.01f;
+    const float max_distance = desc->max_distance > min_distance
+                                   ? desc->max_distance
+                                   : fmaxf(min_distance + 1.0f, state->distance * 4.0f);
+
+    bool changed = false;
+    changed |=
+        dvz_gui_slider_float_format(gui, "Yaw", &state->yaw, -3.14159f, +3.14159f, "%.3f rad");
+    changed |=
+        dvz_gui_slider_float_format(gui, "Pitch", &state->pitch, min_pitch, max_pitch, "%.3f rad");
+    changed |= dvz_gui_slider_float_format(
+        gui, "Distance", &state->distance, min_distance, max_distance, "%.3f");
+    changed |= dvz_gui_slider_float3(gui, "Pivot", state->pivot, -10.0f, +10.0f);
+    return changed;
+}
+
+
+static void _turntable_apply(void* user)
+{
+    ExampleTunerTurntable* state = (ExampleTunerTurntable*)user;
+    if (state == NULL || state->turntable == NULL || state->camera == NULL)
+        return;
+
+    (void)dvz_turntable_pivot(state->turntable, state->pivot);
+
+    DvzCameraView baseline_view = {0};
+    vec3 baseline_pivot = {0};
+    float baseline_yaw = 0.0f;
+    float baseline_pitch = 0.0f;
+    float baseline_distance = 0.0f;
+    dvz_camera_get_view(state->camera, &baseline_view);
+    if (!_turntable_pose_from_view(
+            &baseline_view, state->world_up, baseline_pivot, &baseline_yaw, &baseline_pitch,
+            &baseline_distance))
+        return;
+
+    float pitch_delta = state->pitch - baseline_pitch;
+    if ((state->reset_desc.controller_flags & DVZ_TURNTABLE_FLAGS_INVERT_Y) != 0)
+        pitch_delta = -pitch_delta;
+    (void)dvz_turntable_orbit(state->turntable, state->yaw - baseline_yaw, pitch_delta);
+    (void)dvz_turntable_dolly(state->turntable, state->distance - baseline_distance);
+    _turntable_sync(state);
+}
+
+
+static void _turntable_reset(void* user)
+{
+    ExampleTunerTurntable* state = (ExampleTunerTurntable*)user;
+    if (state == NULL || state->turntable == NULL)
+        return;
+
+    (void)dvz_turntable_reset(state->turntable);
+    _turntable_sync(state);
+}
+
+
+static void _turntable_print_cb(FILE* fp, void* user)
+{
+    ExampleTunerTurntable* state = (ExampleTunerTurntable*)user;
+    if (state != NULL)
+        _turntable_print(fp, state);
 }
 
 
@@ -1605,6 +1799,45 @@ void example_tuner_arcball(
     (void)example_tuner_add_component(
         tuner, _tuner_name(name, "Arcball"), state, _arcball_sync, _arcball_gui, _arcball_apply,
         _arcball_reset, _arcball_print_cb);
+}
+
+
+
+/**
+ * Register a turntable tuner component.
+ *
+ * @param tuner tuner
+ * @param name component name
+ * @param turntable live turntable controller
+ * @param panel panel whose camera is controlled by the turntable
+ * @param desc turntable reset descriptor
+ */
+void example_tuner_turntable(
+    ExampleTuner* tuner, const char* name, DvzTurntable* turntable, DvzPanel* panel,
+    const DvzTurntableDesc* desc)
+{
+    if (tuner == NULL || turntable == NULL || panel == NULL || desc == NULL ||
+        tuner->turntable_count >= EXAMPLE_TUNER_MAX_TURNTABLES)
+        return;
+
+    DvzCamera* camera = dvz_panel_camera(panel);
+    if (camera == NULL)
+        return;
+
+    ExampleTunerTurntable* state = &tuner->turntables[tuner->turntable_count++];
+    state->name = name;
+    state->turntable = turntable;
+    state->camera = camera;
+    state->reset_desc = *desc;
+    _copy_vec3(state->world_up, desc->initial_view.up);
+    if (glm_vec3_norm(state->world_up) <= 1e-6f)
+        glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, state->world_up);
+    glm_vec3_normalize(state->world_up);
+    _turntable_sync(state);
+
+    (void)example_tuner_add_component(
+        tuner, _tuner_name(name, "Turntable"), state, _turntable_sync, _turntable_gui,
+        _turntable_apply, _turntable_reset, _turntable_print_cb);
 }
 
 

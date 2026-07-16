@@ -38,6 +38,7 @@
 
 #define EXAMPLE_TUNER_MAX_COMPONENTS 16u
 #define EXAMPLE_TUNER_MAX_ARCBALLS   8u
+#define EXAMPLE_TUNER_MAX_TURNTABLES        8u
 #define EXAMPLE_TUNER_MAX_PANZOOMS   8u
 #define EXAMPLE_TUNER_MAX_CAMERAS    8u
 #define EXAMPLE_TUNER_MAX_EDL        8u
@@ -91,6 +92,21 @@ typedef struct ExampleTunerArcball
     vec2 reset_pan;
     float reset_zoom;
 } ExampleTunerArcball;
+
+
+typedef struct ExampleTunerTurntable
+{
+    const char* name;
+    DvzTurntable* turntable;
+    DvzCamera* camera;
+    DvzTurntableDesc reset_desc;
+    DvzCameraView view;
+    vec3 pivot;
+    vec3 world_up;
+    float yaw;
+    float pitch;
+    float distance;
+} ExampleTunerTurntable;
 
 
 typedef struct ExampleTunerPanzoom
@@ -200,6 +216,9 @@ struct ExampleTuner
     ExampleTunerArcball arcballs[EXAMPLE_TUNER_MAX_ARCBALLS];
     uint32_t arcball_count;
 
+    ExampleTunerTurntable turntables[EXAMPLE_TUNER_MAX_TURNTABLES];
+    uint32_t turntable_count;
+
     ExampleTunerPanzoom panzooms[EXAMPLE_TUNER_MAX_PANZOOMS];
     uint32_t panzoom_count;
 
@@ -299,6 +318,17 @@ static inline void example_tuner_arcball(
     (void)reset_angles;
     (void)reset_zoom;
     (void)reset_pan;
+}
+
+static inline void example_tuner_turntable(
+    ExampleTuner* tuner, const char* name, DvzTurntable* turntable, DvzPanel* panel,
+    const DvzTurntableDesc* desc)
+{
+    (void)tuner;
+    (void)name;
+    (void)turntable;
+    (void)panel;
+    (void)desc;
 }
 
 static inline void example_tuner_panzoom(
@@ -460,6 +490,10 @@ void example_tuner_arcball(
     const float reset_angles[3],
     float reset_zoom,
     const float reset_pan[2]);
+
+void example_tuner_turntable(
+    ExampleTuner* tuner, const char* name, DvzTurntable* turntable, DvzPanel* panel,
+    const DvzTurntableDesc* desc);
 
 void example_tuner_panzoom(
     ExampleTuner* tuner,
