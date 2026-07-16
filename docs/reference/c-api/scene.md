@@ -20,7 +20,7 @@ Common workflows:
 - [Pick items](../../how-to/pick-items.md)
 
 Functions: 362
-Types: 189
+Types: 190
 
 ## Symbol Groups
 
@@ -30,6 +30,7 @@ Types: 189
 | [Annotation](#annotation) | 8 | 3 | 3 headers |
 | [Arcball](#arcball) | 1 | 0 | `include/datoviz/scene/arcball.h` |
 | [Axis](#axis) | 13 | 4 | `include/datoviz/scene.h`, `include/datoviz/scene/types.h` |
+| [Blend](#blend) | 0 | 1 | `include/datoviz/scene/enums.h` |
 | [Bounds](#bounds) | 0 | 2 | `include/datoviz/scene/types.h` |
 | [Camera](#camera) | 1 | 2 | `include/datoviz/scene/animation.h` |
 | [Category](#category) | 0 | 1 | `include/datoviz/scene/types.h` |
@@ -1227,7 +1228,7 @@ _Declared in `include/datoviz/scene/annotation.h`:91._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:680._
+    _Declared in `include/datoviz/scene/enums.h`:687._
 
 ## Arcball { #arcball }
 
@@ -1597,6 +1598,23 @@ _Declared in `include/datoviz/scene.h`:1534._
     ```
 
     _Declared in `include/datoviz/scene/types.h`:738._
+
+## Blend { #blend }
+
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
+
+<a id="type-dvzblendmode"></a>
+
+??? abstract "`DvzBlendMode` · enum"
+
+    ```c
+    enum DvzBlendMode {
+        DVZ_BLEND_SOURCE_OVER = 0,
+        DVZ_BLEND_ADDITIVE = 1,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/enums.h`:233._
 
 ## Bounds { #bounds }
 
@@ -1991,7 +2009,7 @@ _Declared in `include/datoviz/scene/scale.h`:501._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:576._
+    _Declared in `include/datoviz/scene/enums.h`:583._
 
 <a id="type-dvzcolorbarplacementmode"></a>
 
@@ -2004,7 +2022,7 @@ _Declared in `include/datoviz/scene/scale.h`:501._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:583._
+    _Declared in `include/datoviz/scene/enums.h`:590._
 
 <a id="type-dvzcolorbarticks"></a>
 
@@ -2246,7 +2264,7 @@ _Declared in `include/datoviz/scene/scale.h`:467._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:562._
+    _Declared in `include/datoviz/scene/enums.h`:569._
 
 <a id="type-dvzcolormap"></a>
 
@@ -2286,7 +2304,7 @@ _Declared in `include/datoviz/scene/scale.h`:467._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:554._
+    _Declared in `include/datoviz/scene/enums.h`:561._
 
 <a id="type-dvzcolormapstop"></a>
 
@@ -2788,7 +2806,7 @@ DvzResult dvz_figure_add_compute(
 | `figure` | [`DvzFigure`](scene.md#type-dvzfigure) * | the figure |
 | `compute` | [`DvzSceneCompute`](scene.md#type-dvzscenecompute) * | the compute pass |
 
-_Declared in `include/datoviz/scene.h`:2345._
+_Declared in `include/datoviz/scene.h`:2369._
 
 #### `dvz_figure_color_pipeline()` { #dvz_figure_color_pipeline .dvz-api-function }
 
@@ -2948,7 +2966,7 @@ DvzResult dvz_figure_remove_compute(
 | `figure` | [`DvzFigure`](scene.md#type-dvzfigure) * | the figure |
 | `compute` | [`DvzSceneCompute`](scene.md#type-dvzscenecompute) * | the compute pass |
 
-_Declared in `include/datoviz/scene.h`:2355._
+_Declared in `include/datoviz/scene.h`:2379._
 
 #### `dvz_figure_resize()` { #dvz_figure_resize .dvz-api-function }
 
@@ -3928,7 +3946,7 @@ _Declared in `include/datoviz/scene/plot.h`:115._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:606._
+    _Declared in `include/datoviz/scene/enums.h`:613._
 
 ## Hover { #hover }
 
@@ -4397,7 +4415,7 @@ _Declared in `include/datoviz/scene/interaction.h`:178._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:516._
+    _Declared in `include/datoviz/scene/enums.h`:523._
 
 <a id="type-dvzitemstatevisualflag"></a>
 
@@ -4412,7 +4430,7 @@ _Declared in `include/datoviz/scene/interaction.h`:178._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:528._
+    _Declared in `include/datoviz/scene/enums.h`:535._
 
 <a id="type-dvzitemstatevisualstyle"></a>
 
@@ -4688,7 +4706,7 @@ _Declared in `include/datoviz/scene/scale.h`:674._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:590._
+    _Declared in `include/datoviz/scene/enums.h`:597._
 
 ## Link { #link }
 
@@ -5441,7 +5459,7 @@ DvzResult dvz_panel_bounds(
 | `space` | [`DvzBoundsSpace`](scene.md#type-dvzboundsspace) | target bounds space |
 | `out` | [`DvzBounds`](scene.md#type-dvzbounds) * | output bounding box |
 
-_Declared in `include/datoviz/scene.h`:2138._
+_Declared in `include/datoviz/scene.h`:2162._
 
 #### `dvz_panel_bounds_visible()` { #dvz_panel_bounds_visible .dvz-api-function }
 
@@ -6485,7 +6503,7 @@ DvzResult dvz_panel_visual_bounds(
 | `space` | [`DvzBoundsSpace`](scene.md#type-dvzboundsspace) | target bounds space |
 | `out` | [`DvzBounds`](scene.md#type-dvzbounds) * | output bounding box |
 
-_Declared in `include/datoviz/scene.h`:2126._
+_Declared in `include/datoviz/scene.h`:2150._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -7023,7 +7041,7 @@ _Declared in `include/datoviz/scene.h`:938._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:598._
+    _Declared in `include/datoviz/scene/enums.h`:605._
 
 ## Plot { #plot }
 
@@ -7080,7 +7098,7 @@ _Declared in `include/datoviz/scene/interaction.h`:389._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:706._
+    _Declared in `include/datoviz/scene/enums.h`:713._
 
 <a id="type-dvzqueryhitpolicy"></a>
 
@@ -7094,7 +7112,7 @@ _Declared in `include/datoviz/scene/interaction.h`:389._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:458._
+    _Declared in `include/datoviz/scene/enums.h`:465._
 
 <a id="type-dvzqueryprofile"></a>
 
@@ -7109,7 +7127,7 @@ _Declared in `include/datoviz/scene/interaction.h`:389._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:466._
+    _Declared in `include/datoviz/scene/enums.h`:473._
 
 <a id="type-dvzqueryrequest"></a>
 
@@ -7210,7 +7228,7 @@ _Declared in `include/datoviz/scene/interaction.h`:389._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:475._
+    _Declared in `include/datoviz/scene/enums.h`:482._
 
 <a id="type-dvzqueryvaluekind"></a>
 
@@ -7229,7 +7247,7 @@ _Declared in `include/datoviz/scene/interaction.h`:389._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:493._
+    _Declared in `include/datoviz/scene/enums.h`:500._
 
 ## Rect { #rect }
 
@@ -8159,7 +8177,7 @@ _Declared in `include/datoviz/scene/scale.h`:275._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:546._
+    _Declared in `include/datoviz/scene/enums.h`:553._
 
 ## Scale Bar { #scale-bar }
 
@@ -8389,7 +8407,7 @@ _Declared in `include/datoviz/scene/annotation.h`:146._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:690._
+    _Declared in `include/datoviz/scene/enums.h`:697._
 
 <a id="type-dvzscalebarreferencemode"></a>
 
@@ -8403,7 +8421,7 @@ _Declared in `include/datoviz/scene/annotation.h`:146._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:697._
+    _Declared in `include/datoviz/scene/enums.h`:704._
 
 ## Scene { #scene }
 
@@ -8445,7 +8463,7 @@ DvzSceneBuffer * dvz_scene_buffer(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `desc` | `const` [`DvzSceneBufferDesc`](scene.md#type-dvzscenebufferdesc) * | the buffer descriptor |
 
-_Declared in `include/datoviz/scene.h`:2215._
+_Declared in `include/datoviz/scene.h`:2239._
 
 #### `dvz_scene_buffer_desc()` { #dvz_scene_buffer_desc .dvz-api-function }
 
@@ -8461,7 +8479,7 @@ DvzSceneBufferDesc dvz_scene_buffer_desc(void);
 
 Related: [`dvz_scene_buffer()`](#dvz_scene_buffer).
 
-_Declared in `include/datoviz/scene.h`:2223._
+_Declared in `include/datoviz/scene.h`:2247._
 
 #### `dvz_scene_buffer_destroy()` { #dvz_scene_buffer_destroy .dvz-api-function }
 
@@ -8477,7 +8495,7 @@ void dvz_scene_buffer_destroy(
 | --- | --- | --- |
 | `buffer` | [`DvzSceneBuffer`](scene.md#type-dvzscenebuffer) * | the buffer |
 
-_Declared in `include/datoviz/scene.h`:2231._
+_Declared in `include/datoviz/scene.h`:2255._
 
 #### `dvz_scene_buffer_info()` { #dvz_scene_buffer_info .dvz-api-function }
 
@@ -8496,7 +8514,7 @@ _Bool dvz_scene_buffer_info(
 | `buffer` | `const` [`DvzSceneBuffer`](scene.md#type-dvzscenebuffer) * | the buffer |
 | `out` | [`DvzSceneBufferDesc`](scene.md#type-dvzscenebufferdesc) * | output buffer descriptor |
 
-_Declared in `include/datoviz/scene.h`:2255._
+_Declared in `include/datoviz/scene.h`:2279._
 
 #### `dvz_scene_buffer_resource_key()` { #dvz_scene_buffer_resource_key .dvz-api-function }
 
@@ -8521,7 +8539,7 @@ _Bool dvz_scene_buffer_resource_key(
 | `out` | `char` * | output string buffer |
 | `out_size` | `size_t` | output string capacity |
 
-_Declared in `include/datoviz/scene.h`:2271._
+_Declared in `include/datoviz/scene.h`:2295._
 
 #### `dvz_scene_buffer_set_data()` { #dvz_scene_buffer_set_data .dvz-api-function }
 
@@ -8542,7 +8560,7 @@ DvzResult dvz_scene_buffer_set_data(
 | `data` | `const` `void` * | the packed byte payload borrowed for the duration of the call |
 | `byte_size` | `uint64_t` | the payload size in bytes |
 
-_Declared in `include/datoviz/scene.h`:2246._
+_Declared in `include/datoviz/scene.h`:2270._
 
 #### `dvz_scene_clock_dt()` { #dvz_scene_clock_dt .dvz-api-function }
 
@@ -8598,7 +8616,7 @@ DvzSceneCompute * dvz_scene_compute(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `desc` | `const` [`DvzSceneComputeDesc`](scene.md#type-dvzscenecomputedesc) * | the compute descriptor |
 
-_Declared in `include/datoviz/scene.h`:2285._
+_Declared in `include/datoviz/scene.h`:2309._
 
 #### `dvz_scene_compute_desc()` { #dvz_scene_compute_desc .dvz-api-function }
 
@@ -8614,7 +8632,7 @@ DvzSceneComputeDesc dvz_scene_compute_desc(void);
 
 Related: [`dvz_scene_compute()`](#dvz_scene_compute).
 
-_Declared in `include/datoviz/scene.h`:2293._
+_Declared in `include/datoviz/scene.h`:2317._
 
 #### `dvz_scene_compute_destroy()` { #dvz_scene_compute_destroy .dvz-api-function }
 
@@ -8630,7 +8648,7 @@ void dvz_scene_compute_destroy(
 | --- | --- | --- |
 | `compute` | [`DvzSceneCompute`](scene.md#type-dvzscenecompute) * | the compute pass |
 
-_Declared in `include/datoviz/scene.h`:2301._
+_Declared in `include/datoviz/scene.h`:2325._
 
 #### `dvz_scene_compute_set_buffer()` { #dvz_scene_compute_set_buffer .dvz-api-function }
 
@@ -8660,7 +8678,7 @@ DvzResult dvz_scene_compute_set_buffer(
 | `byte_offset` | `uint64_t` | byte offset into the buffer |
 | `byte_size` | `uint64_t` | bound byte range, or 0 for the remaining buffer range |
 
-_Declared in `include/datoviz/scene.h`:2331._
+_Declared in `include/datoviz/scene.h`:2355._
 
 #### `dvz_scene_compute_set_dispatch()` { #dvz_scene_compute_set_dispatch .dvz-api-function }
 
@@ -8683,7 +8701,7 @@ DvzResult dvz_scene_compute_set_dispatch(
 | `y` | `uint32_t` | workgroup count in Y |
 | `z` | `uint32_t` | workgroup count in Z |
 
-_Declared in `include/datoviz/scene.h`:2314._
+_Declared in `include/datoviz/scene.h`:2338._
 
 #### `dvz_scene_destroy()` { #dvz_scene_destroy .dvz-api-function }
 
@@ -9121,7 +9139,7 @@ _Declared in `include/datoviz/scene/animation.h`:312._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:624._
+    _Declared in `include/datoviz/scene/enums.h`:631._
 
 <a id="type-dvzscenebuffer"></a>
 
@@ -9279,7 +9297,7 @@ _Declared in `include/datoviz/scene/animation.h`:312._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:416._
+    _Declared in `include/datoviz/scene/enums.h`:423._
 
 ## Select { #select }
 
@@ -9298,7 +9316,7 @@ _Declared in `include/datoviz/scene/animation.h`:312._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:507._
+    _Declared in `include/datoviz/scene/enums.h`:514._
 
 ## Selection { #selection }
 
@@ -9969,7 +9987,7 @@ _Declared in `include/datoviz/scene/text.h`:39._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:671._
+    _Declared in `include/datoviz/scene/enums.h`:678._
 
 <a id="type-dvztextitem"></a>
 
@@ -10041,7 +10059,7 @@ _Declared in `include/datoviz/scene/text.h`:39._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:652._
+    _Declared in `include/datoviz/scene/enums.h`:659._
 
 <a id="type-dvztextrenderer"></a>
 
@@ -10057,7 +10075,7 @@ _Declared in `include/datoviz/scene/text.h`:39._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:661._
+    _Declared in `include/datoviz/scene/enums.h`:668._
 
 <a id="type-dvztextstyle"></a>
 
@@ -11105,4 +11123,4 @@ _Declared in `include/datoviz/scene/scale.h`:115._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:615._
+    _Declared in `include/datoviz/scene/enums.h`:622._

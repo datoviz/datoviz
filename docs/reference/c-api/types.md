@@ -48,6 +48,7 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzBarsOrientation`](visuals.md#type-dvzbarsorientation) | enum | Visuals And Composites API | `include/datoviz/scene/types.h` |
 | [`DvzBezierTessellationDesc`](visuals.md#type-dvzbeziertessellationdesc) | record | Visuals And Composites API | `include/datoviz/geom/types.h` |
 | [`DvzBlendFactor`](drp2.md#type-dvzblendfactor) | enum | DRP2 API | `include/datoviz/render_types.h` |
+| [`DvzBlendMode`](scene.md#type-dvzblendmode) | enum | Scene API | `include/datoviz/scene/enums.h` |
 | [`DvzBlendOp`](drp2.md#type-dvzblendop) | enum | DRP2 API | `include/datoviz/render_types.h` |
 | [`DvzBounds`](scene.md#type-dvzbounds) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzBoundsSpace`](scene.md#type-dvzboundsspace) | enum | Scene API | `include/datoviz/scene/types.h` |

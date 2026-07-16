@@ -68,6 +68,7 @@ typedef enum
     DVZ_SCENE_BLEND_POLICY_NONE = 0,
     DVZ_SCENE_BLEND_POLICY_OPAQUE,
     DVZ_SCENE_BLEND_POLICY_SOURCE_OVER,
+    DVZ_SCENE_BLEND_POLICY_ADDITIVE,
     DVZ_SCENE_BLEND_POLICY_SEGMENT_COVERAGE,
     DVZ_SCENE_BLEND_POLICY_WBOIT,
     DVZ_SCENE_BLEND_POLICY_DEPTH_PEEL,
@@ -142,6 +143,7 @@ typedef struct DvzSceneDrawFacts
     uint32_t visual_type;
     uint32_t desc_kind;
     DvzAlphaMode alpha_mode;
+    DvzBlendMode blend_mode;
 
     bool can_depth_test;
     bool can_write_depth;
@@ -165,6 +167,7 @@ typedef struct DvzSceneDrawContract
 {
     uint32_t visual_type;
     DvzAlphaMode alpha_mode;
+    DvzBlendMode blend_mode;
     DvzFramePlanRenderPassRole pass_role;
 
     uint32_t depth_policy;
@@ -233,7 +236,7 @@ typedef struct DvzScenePassContract
     bool needs_depth_peel_sampled_layout;
     uint32_t sampled_texture_binding_count;
 
-    bool source_over_blend;
+    bool transparent_blend;
     bool wboit_accumulation;
     bool depth_peel;
     bool fullscreen_resolve;
@@ -248,6 +251,10 @@ typedef struct DvzScenePassContract
 bool _scene_draw_contract_resolve(
     const DvzSceneDrawFacts* facts, DvzFramePlanRenderPassRole pass_role,
     DvzSceneDrawContract* out);
+
+void _draw_blend_target_contracts(
+    DvzSceneBlendPolicy blend_policy, DvzSceneBlendTargetContract* targets,
+    uint32_t* target_count);
 
 bool _scene_draw_contract_from_visual(
     const DvzVisual* visual, const DvzPanelAttach* attach, DvzFramePlanRenderPassRole pass_role,

@@ -57,7 +57,7 @@ typedef struct DvzSceneTechniquePassPolicy
     DvzFramePlanRenderPassRole role;
     const char* work_label;
     bool graph_required;
-    bool source_over_blend;
+    bool transparent_blend;
     bool wboit_accumulation;
     bool depth_peel;
     bool fullscreen_resolve;

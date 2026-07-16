@@ -232,6 +232,13 @@ typedef enum
 
 typedef enum
 {
+    DVZ_BLEND_SOURCE_OVER = 0,
+    DVZ_BLEND_ADDITIVE,
+} DvzBlendMode;
+
+
+typedef enum
+{
     DVZ_MATERIAL_MODEL_UNLIT = 0,
     DVZ_MATERIAL_MODEL_PHONG,
     DVZ_MATERIAL_MODEL_STANDARD,

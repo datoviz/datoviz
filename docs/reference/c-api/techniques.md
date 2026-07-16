@@ -245,7 +245,7 @@ DvzResult dvz_visual_set_scene_occluded(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the visual |
 | `enabled` | `_Bool` | whether the visual should be attenuated by scene occlusion |
 
-_Declared in `include/datoviz/scene.h`:1837._
+_Declared in `include/datoviz/scene.h`:1861._
 
 #### `dvz_visual_set_scene_occluder()` { #dvz_visual_set_scene_occluder .dvz-api-function }
 
@@ -264,7 +264,7 @@ DvzResult dvz_visual_set_scene_occluder(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the visual |
 | `enabled` | `_Bool` | whether the visual should act as a scene occluder |
 
-_Declared in `include/datoviz/scene.h`:1827._
+_Declared in `include/datoviz/scene.h`:1851._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -395,7 +395,7 @@ DvzResult dvz_visual_set_volume_occluded(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the visual |
 | `enabled` | `_Bool` | whether the visual should sample panel volume occlusion |
 
-_Declared in `include/datoviz/scene.h`:1817._
+_Declared in `include/datoviz/scene.h`:1841._
 
 #### `dvz_volume_occlusion_desc()` { #dvz_volume_occlusion_desc .dvz-api-function }
 

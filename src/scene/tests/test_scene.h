@@ -618,6 +618,8 @@ int test_app_offscreen_wboit_mesh_order_independent_layers(TstContext* suite, co
 
 int test_app_offscreen_source_over_mesh_depth_and_blend(TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_additive_mesh_blend(TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_depth_peel_mesh_two_layers(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_depth_peel_mesh_three_layers(TstContext* suite, const TstCase* item);
@@ -839,6 +841,8 @@ int test_scene_sphere_ssao_glsl_executes(TstContext* suite, const TstCase* item)
 int test_scene_ssao_ignores_ineligible_visuals(TstContext* suite, const TstCase* item);
 
 int test_scene_visual_alpha_mode_standard_blend(TstContext* suite, const TstCase* item);
+
+int test_scene_visual_additive_blend(TstContext* suite, const TstCase* item);
 
 int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const TstCase* item);
 

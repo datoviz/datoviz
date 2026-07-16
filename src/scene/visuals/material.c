@@ -714,6 +714,45 @@ DvzAlphaMode dvz_visual_alpha_mode(const DvzVisual* visual)
 }
 
 
+
+/**
+ * Set how an ordinarily blended visual is composited with the current color target.
+ *
+ * @param visual the visual
+ * @param mode the visual blend mode
+ * @return 0 on success, -1 on error
+ */
+DvzResult dvz_visual_set_blend_mode(DvzVisual* visual, DvzBlendMode mode)
+{
+    ANN(visual);
+    if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual blend mode"))
+        return -1;
+    if (mode < DVZ_BLEND_SOURCE_OVER || mode > DVZ_BLEND_ADDITIVE)
+    {
+        log_error("invalid visual blend mode %d", (int)mode);
+        return -1;
+    }
+    visual->blend_mode = mode;
+    _visual_bump_version(&visual->material.version);
+    _scene_notify_visual_changed(visual);
+    return 0;
+}
+
+
+
+/**
+ * Return the visual blend mode.
+ *
+ * @param visual the visual
+ * @return the visual blend mode
+ */
+DvzBlendMode dvz_visual_blend_mode(const DvzVisual* visual)
+{
+    ANN(visual);
+    return visual->blend_mode;
+}
+
+
 /**
  * Mark a visual as embedded in the panel volume occluder.
  *

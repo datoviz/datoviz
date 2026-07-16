@@ -1024,6 +1024,7 @@ static bool _contract_validate_drp2_pipeline(
     }
     if ((depth_policy & DVZ_SCENE_DEPTH_POLICY_WRITE) == 0 &&
         (blend_policy == DVZ_SCENE_BLEND_POLICY_SOURCE_OVER ||
+         blend_policy == DVZ_SCENE_BLEND_POLICY_ADDITIVE ||
          blend_policy == DVZ_SCENE_BLEND_POLICY_WBOIT ||
          blend_policy == DVZ_SCENE_BLEND_POLICY_DEPTH_PEEL) &&
         command->u.create_render_pipeline.depth_write_enabled)

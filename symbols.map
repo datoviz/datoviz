@@ -1308,6 +1308,7 @@ dvz_view_update_external_surface
 dvz_view_user_scale
 dvz_view_wake
 dvz_visual_alpha_mode
+dvz_visual_blend_mode
 dvz_visual_attach_desc
 dvz_visual_attr_format
 dvz_visual_attr_mutability
@@ -1320,6 +1321,7 @@ dvz_visual_destroy
 dvz_visual_get_transform
 dvz_visual_has_transform
 dvz_visual_set_alpha_mode
+dvz_visual_set_blend_mode
 dvz_visual_set_attr_buffer
 dvz_visual_set_attr_format
 dvz_visual_set_attr_mutability

@@ -1749,6 +1749,7 @@ struct DvzVisual
     bool         visible;
     int32_t      z_layer;
     DvzAlphaMode alpha_mode;
+    DvzBlendMode blend_mode;
     bool         depth_test_enabled;
     DvzCompareOp depth_compare_op;
     DvzSceneMaterialState material;

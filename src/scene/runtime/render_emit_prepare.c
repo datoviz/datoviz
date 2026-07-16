@@ -47,6 +47,49 @@
 /*************************************************************************************************/
 
 /**
+ * Emit the exact DRP2 color-target state for one resolved blend policy.
+ *
+ * @param stream destination DRP2 command stream
+ * @param blend_policy resolved scene blend policy
+ * @return whether all target state was emitted
+ */
+static bool _emit_blend_policy(
+    DvzDrp2CommandStream* stream, DvzSceneBlendPolicy blend_policy)
+{
+    ANN(stream);
+    DvzSceneBlendTargetContract targets[DVZ_DRP2_MAX_COLOR_ATTACHMENTS] = {0};
+    uint32_t target_count = 0;
+    _draw_blend_target_contracts(blend_policy, targets, &target_count);
+    for (uint32_t i = 0; i < target_count; i++)
+    {
+        const DvzSceneBlendTargetContract* target = &targets[i];
+        if (
+            target->format != 0 &&
+            !dvz_drp2_stream_pipeline_set_color_target(
+                stream, target->target_index, target->format))
+        {
+            return false;
+        }
+        if (
+            target->blend_enabled &&
+            !dvz_drp2_stream_pipeline_set_color_blend(
+                stream, target->target_index,
+                (DvzBlendFactor)target->src_color_blend_factor,
+                (DvzBlendFactor)target->dst_color_blend_factor,
+                (DvzBlendOp)target->color_blend_op,
+                (DvzBlendFactor)target->src_alpha_blend_factor,
+                (DvzBlendFactor)target->dst_alpha_blend_factor,
+                (DvzBlendOp)target->alpha_blend_op, (DvzColorMask)target->color_write_mask))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+
+/**
  * Prepare resources for one panel's draws before opening the render pass.
  *
  * @param emitter frame-plan emitter carrying scene/runtime state.
@@ -208,6 +251,8 @@ bool _emitter_prepare_render_multi(
             _shader_glsl_variant_destroy(scene_occlusion_fragment_glsl);
             break;
         }
+        DvzSceneBlendPolicy effective_blend_policy =
+            segment_coverage_blend ? DVZ_SCENE_BLEND_POLICY_SEGMENT_COVERAGE : blend_policy;
 
         DvzSceneResolvedShader resolved_shader = {0};
         if (!_scene_runtime_shader_resolve(
@@ -235,6 +280,10 @@ bool _emitter_prepare_render_multi(
             ok = _runtime_key_appendf(
                 shader.pipeline_key, sizeof(shader.pipeline_key), report, "_fmt%u",
                 color_target_format);
+        if (ok)
+            ok = _runtime_key_appendf(
+                shader.pipeline_key, sizeof(shader.pipeline_key), report, "_bp%u",
+                (uint32_t)effective_blend_policy);
         if (!ok)
             break;
 
@@ -455,45 +504,11 @@ bool _emitter_prepare_render_multi(
                     stream, pipeline.cull_mode, pipeline.front_face);
             if (ok && wboit_accumulation)
             {
-                ok = ok &&
-                     dvz_drp2_stream_pipeline_set_color_target(
-                         stream, 0, DVZ_FORMAT_R16G16B16A16_SFLOAT) &&
-                     dvz_drp2_stream_pipeline_set_color_target(stream, 1, DVZ_FORMAT_R16_SFLOAT) &&
-                     dvz_drp2_stream_pipeline_set_color_blend(
-                         stream, 0, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD,
-                         DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD,
-                         DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G |
-                             DVZ_MASK_COLOR_B | DVZ_MASK_COLOR_A) &&
-                     dvz_drp2_stream_pipeline_set_color_blend(
-                         stream, 1, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD,
-                         DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD,
-                         DVZ_MASK_COLOR_R);
+                ok = _emit_blend_policy(stream, effective_blend_policy);
             }
             else if (ok && depth_peel_pass)
             {
-                ok = ok &&
-                     dvz_drp2_stream_pipeline_set_color_target(
-                         stream, 0, DVZ_FORMAT_R16G16B16A16_SFLOAT) &&
-                     dvz_drp2_stream_pipeline_set_color_target(
-                         stream, 1, DVZ_FORMAT_R16G16B16A16_SFLOAT) &&
-                     dvz_drp2_stream_pipeline_set_color_target(
-                         stream, 2, DVZ_FORMAT_R32G32_SFLOAT) &&
-                     dvz_drp2_stream_pipeline_set_color_blend(
-                         stream, 0, DVZ_BLEND_FACTOR_ONE_MINUS_DST_ALPHA, DVZ_BLEND_FACTOR_ONE,
-                         DVZ_BLEND_OP_ADD, DVZ_BLEND_FACTOR_ONE_MINUS_DST_ALPHA,
-                         DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD,
-                         DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G |
-                             DVZ_MASK_COLOR_B | DVZ_MASK_COLOR_A) &&
-                     dvz_drp2_stream_pipeline_set_color_blend(
-                         stream, 1, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-                         DVZ_BLEND_OP_ADD, DVZ_BLEND_FACTOR_ONE,
-                         DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, DVZ_BLEND_OP_ADD,
-                         DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G |
-                             DVZ_MASK_COLOR_B | DVZ_MASK_COLOR_A) &&
-                     dvz_drp2_stream_pipeline_set_color_blend(
-                         stream, 2, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_MAX,
-                         DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_MAX,
-                         DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G);
+                ok = _emit_blend_policy(stream, effective_blend_policy);
                 if (ok)
                     ok = dvz_drp2_stream_pipeline_set_raster_state(
                         stream, DVZ_CULL_MODE_NONE, DVZ_FRONT_FACE_COUNTER_CLOCKWISE);
@@ -514,19 +529,8 @@ bool _emitter_prepare_render_multi(
                     ok = dvz_drp2_stream_pipeline_set_color_target(
                         stream, 0, color_target_format);
                 }
-                bool source_over_blend =
-                    blend_policy == DVZ_SCENE_BLEND_POLICY_SOURCE_OVER ||
-                    blend_policy == DVZ_SCENE_BLEND_POLICY_SEGMENT_COVERAGE ||
-                    segment_coverage_blend;
-                if (ok && source_over_blend)
-                {
-                    ok = dvz_drp2_stream_pipeline_set_color_blend(
-                        stream, 0, DVZ_BLEND_FACTOR_SRC_ALPHA,
-                        DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, DVZ_BLEND_OP_ADD, DVZ_BLEND_FACTOR_ONE,
-                        DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, DVZ_BLEND_OP_ADD,
-                        DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G |
-                            DVZ_MASK_COLOR_B | DVZ_MASK_COLOR_A);
-                }
+                if (ok)
+                    ok = _emit_blend_policy(stream, effective_blend_policy);
             }
             if (!ok)
                 _diagnostic(report, "scene render pipeline setup failed");

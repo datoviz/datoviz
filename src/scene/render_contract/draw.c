@@ -114,7 +114,8 @@ static DvzSceneBlendPolicy _draw_blend_policy(
     switch (pass_role)
     {
     case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND:
-        return DVZ_SCENE_BLEND_POLICY_SOURCE_OVER;
+        return facts->blend_mode == DVZ_BLEND_ADDITIVE ? DVZ_SCENE_BLEND_POLICY_ADDITIVE :
+                                                        DVZ_SCENE_BLEND_POLICY_SOURCE_OVER;
     case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
         return DVZ_SCENE_BLEND_POLICY_WBOIT;
     case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT:
@@ -158,6 +159,22 @@ void _draw_blend_target_contracts(
             .blend_enabled = true,
             .src_color_blend_factor = DVZ_BLEND_FACTOR_SRC_ALPHA,
             .dst_color_blend_factor = DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+            .color_blend_op = DVZ_BLEND_OP_ADD,
+            .src_alpha_blend_factor = DVZ_BLEND_FACTOR_ONE,
+            .dst_alpha_blend_factor = DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+            .alpha_blend_op = DVZ_BLEND_OP_ADD,
+            .color_write_mask = DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G |
+                                DVZ_MASK_COLOR_B | DVZ_MASK_COLOR_A,
+        };
+        *target_count = 1;
+    }
+    else if (blend_policy == DVZ_SCENE_BLEND_POLICY_ADDITIVE)
+    {
+        targets[0] = (DvzSceneBlendTargetContract){
+            .target_index = 0,
+            .blend_enabled = true,
+            .src_color_blend_factor = DVZ_BLEND_FACTOR_SRC_ALPHA,
+            .dst_color_blend_factor = DVZ_BLEND_FACTOR_ONE,
             .color_blend_op = DVZ_BLEND_OP_ADD,
             .src_alpha_blend_factor = DVZ_BLEND_FACTOR_ONE,
             .dst_alpha_blend_factor = DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
@@ -295,8 +312,15 @@ bool _scene_draw_contract_resolve(
 
     bool scene_depth_pass = pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION;
     bool ordinary_visual_pass = _role_is_visual_pass(pass_role);
+    if (facts->blend_mode < DVZ_BLEND_SOURCE_OVER || facts->blend_mode > DVZ_BLEND_ADDITIVE)
+        return false;
+    if (
+        facts->blend_mode == DVZ_BLEND_ADDITIVE &&
+        (facts->alpha_mode == DVZ_ALPHA_WBOIT || facts->alpha_mode == DVZ_ALPHA_DEPTH_PEEL))
+        return false;
     out->visual_type = facts->visual_type;
     out->alpha_mode = facts->alpha_mode;
+    out->blend_mode = facts->blend_mode;
     out->pass_role = pass_role;
     out->depth_test = facts->can_depth_test && (ordinary_visual_pass || scene_depth_pass);
     out->depth_write = facts->writes_depth || (scene_depth_pass && facts->can_write_depth);
@@ -390,6 +414,7 @@ bool _scene_draw_contract_from_visual(
         .visual_type = (uint32_t)visual->type,
         .desc_kind = (uint32_t)caps.kind,
         .alpha_mode = visual->alpha_mode,
+        .blend_mode = visual->blend_mode,
         .can_depth_test = caps.can_depth_test,
         .can_write_depth = caps.can_write_depth,
         .writes_depth = caps.writes_depth && forward_depth_compare,

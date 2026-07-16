@@ -143,6 +143,7 @@ int test_scene_graph(TstSuite* suite)
     TST_SCENE_GRAPH_GPU_CASE(test_scene_sphere_ssao_glsl_executes);
     TST_CASE(test_scene_ssao_ignores_ineligible_visuals);
     TST_CASE(test_scene_visual_alpha_mode_standard_blend);
+    TST_CASE(test_scene_visual_additive_blend);
     TST_CASE(test_scene_visual_alpha_mode_splits_frame_plan_passes);
     TST_CASE(test_scene_visual_alpha_mode_wboit_transparent_only_depth);
     TST_CASE(test_scene_visual_alpha_mode_depth_peel_frame_plan);

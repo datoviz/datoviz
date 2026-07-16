@@ -149,6 +149,33 @@ int test_scene_draw_contract_resolver_matrix(TstContext* suite, const TstCase* i
     AT(contract.needs_scene_occlusion_set);
 
     facts = (DvzSceneDrawFacts){
+        .visual_type = DVZ_VISUAL_TYPE_POINT,
+        .alpha_mode = DVZ_ALPHA_BLENDED,
+        .blend_mode = DVZ_BLEND_ADDITIVE,
+        .can_depth_test = true,
+        .uses_common_set = true,
+    };
+    AT(_scene_draw_contract_resolve(
+        &facts, DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND, &contract));
+    AT(contract.alpha_mode == DVZ_ALPHA_BLENDED);
+    AT(contract.blend_mode == DVZ_BLEND_ADDITIVE);
+    AT(contract.blend_policy == DVZ_SCENE_BLEND_POLICY_ADDITIVE);
+    AT(contract.blend_target_count == 1);
+    AT(contract.blend_targets[0].blend_enabled);
+    AT(
+        contract.blend_targets[0].src_color_blend_factor ==
+        DVZ_BLEND_FACTOR_SRC_ALPHA);
+    AT(contract.blend_targets[0].dst_color_blend_factor == DVZ_BLEND_FACTOR_ONE);
+    AT(contract.blend_targets[0].src_alpha_blend_factor == DVZ_BLEND_FACTOR_ONE);
+    AT(
+        contract.blend_targets[0].dst_alpha_blend_factor ==
+        DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+
+    facts.alpha_mode = DVZ_ALPHA_WBOIT;
+    AT(!_scene_draw_contract_resolve(
+        &facts, DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION, &contract));
+
+    facts = (DvzSceneDrawFacts){
         .visual_type = DVZ_VISUAL_TYPE_MESH,
         .alpha_mode = DVZ_ALPHA_WBOIT,
         .can_depth_test = true,
@@ -239,14 +266,14 @@ int test_scene_role_work_label_mapping_complete(TstContext* suite, const TstCase
     }
     DvzSceneTechniquePassPolicy policy = {0};
     AT(_scene_technique_pass_policy(DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND, &policy));
-    AT(policy.source_over_blend);
+    AT(policy.transparent_blend);
     AT(!policy.wboit_accumulation);
     AT(!policy.depth_peel);
     AT(!policy.fullscreen_resolve);
     AT(policy.sampled_texture_binding_count == 0);
 
     AT(_scene_technique_pass_policy(DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION, &policy));
-    AT(!policy.source_over_blend);
+    AT(!policy.transparent_blend);
     AT(policy.wboit_accumulation);
     AT(!policy.depth_peel);
     AT(!policy.fullscreen_resolve);
@@ -299,7 +326,7 @@ int test_scene_render_contract_validation_errors(TstContext* suite, const TstCas
     DvzScenePassContract contract = {0};
 
     contract.role = DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND;
-    contract.source_over_blend = true;
+    contract.transparent_blend = true;
     contract.draw_count = 1;
     contract.draws[0].alpha_mode = DVZ_ALPHA_BLENDED;
     contract.draws[0].pass_role = DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND;
@@ -310,7 +337,7 @@ int test_scene_render_contract_validation_errors(TstContext* suite, const TstCas
 
     dvz_memset(&contract, sizeof(contract), 0, sizeof(contract));
     contract.role = DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND;
-    contract.source_over_blend = true;
+    contract.transparent_blend = true;
     contract.draw_count = 1;
     contract.draws[0].alpha_mode = DVZ_ALPHA_BLENDED;
     contract.draws[0].pass_role = DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND;
@@ -329,7 +356,7 @@ int test_scene_render_contract_validation_errors(TstContext* suite, const TstCas
 
     dvz_memset(&contract, sizeof(contract), 0, sizeof(contract));
     contract.role = DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND;
-    contract.source_over_blend = true;
+    contract.transparent_blend = true;
     contract.draw_count = 1;
     contract.draws[0].alpha_mode = DVZ_ALPHA_BLENDED;
     contract.draws[0].pass_role = DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND;
@@ -2742,6 +2769,91 @@ int test_scene_visual_alpha_mode_standard_blend(TstContext* suite, const TstCase
 
 
 /**
+ * Verify additive visuals use the ordinary transparent pass with exact additive RGB factors.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_additive_blend(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+    DvzVisual* point = dvz_point(scene, 0);
+    ANN(point);
+
+    vec3 positions[2] = {{-0.1f, 0.0f, 0.0f}, {+0.1f, 0.0f, 0.0f}};
+    DvzColor colors[2] = {{255, 128, 32, 96}, {64, 128, 255, 96}};
+    float sizes[2] = {24.0f, 24.0f};
+    AT(dvz_visual_set_data(point, "position", positions, 2) == DVZ_OK);
+    AT(dvz_visual_set_data(point, "color", colors, 2) == DVZ_OK);
+    AT(dvz_visual_set_data(point, "size", sizes, 2) == DVZ_OK);
+    AT(dvz_visual_set_alpha_mode(point, DVZ_ALPHA_BLENDED) == DVZ_OK);
+    AT(dvz_visual_set_blend_mode(point, DVZ_BLEND_ADDITIVE) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, point, NULL) == DVZ_OK);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.blend.additive", 0);
+    ANN(plan);
+    _scene_emit_panel_render(figure, 0, plan, "figure_0");
+    AT(dvz_frame_plan_node_count(plan) == 2);
+    const DvzFramePlanNode* node = dvz_frame_plan_node_get(plan, 1);
+    ANN(node);
+    AT(dvz_frame_plan_render_pass_role(node) == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND);
+    AT(node->u.render.visual_count == 1);
+    AT(node->u.render.visual_metadata[0].draw_blend_policy == DVZ_SCENE_BLEND_POLICY_ADDITIVE);
+
+    DvzScenePassContract pass = {0};
+    AT(_scene_pass_contract_from_render(plan, panel, node, NULL, &pass));
+    AT(pass.draw_count == 1);
+    AT(pass.draws[0].blend_policy == DVZ_SCENE_BLEND_POLICY_ADDITIVE);
+    AT(pass.draws[0].blend_targets[0].dst_color_blend_factor == DVZ_BLEND_FACTOR_ONE);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.supports_color_blending = true;
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 64;
+    cfg.target_height = 64;
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(dvz_drp2_validate_stream(stream).ok);
+
+    bool found = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+            continue;
+        const DvzDrp2ColorTarget* target = &command->u.create_render_pipeline.color_targets[0];
+        found = found ||
+                (target->blend_enabled &&
+                 target->src_color_blend_factor == DVZ_BLEND_FACTOR_SRC_ALPHA &&
+                 target->dst_color_blend_factor == DVZ_BLEND_FACTOR_ONE &&
+                 target->src_alpha_blend_factor == DVZ_BLEND_FACTOR_ONE &&
+                 target->dst_alpha_blend_factor == DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    }
+    AT(found);
+
+    _test_scene_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Verify source-over blended geometry is ordered with blended volume visuals by z layer.
  *
  * @param suite the active test suite
@@ -2886,7 +2998,7 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const T
 
     DvzScenePassContract contract = {0};
     AT(_scene_pass_contract_from_render(plan, panel, transparent_node, blend_pass, &contract));
-    AT(contract.source_over_blend);
+    AT(contract.transparent_blend);
     AT(contract.draw_count == 3);
     AT(contract.color_attachment_count == 1);
     AT(contract.has_depth_attachment);
@@ -3104,7 +3216,7 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
 
     DvzScenePassContract contract = {0};
     AT(_scene_pass_contract_from_render(plan, panel, blend_node, blend_pass, &contract));
-    AT(contract.source_over_blend);
+    AT(contract.transparent_blend);
     AT(contract.draw_count == 3);
     AT(contract.draws[1].samples_volume_occlusion);
     AT(contract.draws[1].samples_scene_occlusion);

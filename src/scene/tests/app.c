@@ -4593,6 +4593,74 @@ int test_app_offscreen_source_over_mesh_depth_and_blend(TstContext* suite, const
 }
 
 
+
+/**
+ * Ensure additive RGB accumulation is brighter than source-over for equal transparent layers.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_app_offscreen_additive_mesh_blend(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+    dvz_panel_set_background_color(panel, dvz_color_rgba(0, 0, 0, 255));
+
+    const DvzColor red = {255, 0, 0, 64};
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        DvzVisual* source_over = _app_primitive_add_quad(
+            scene, panel, -0.9f, -0.1f, -0.8f, 0.8f, 0.4f, red, DVZ_ALPHA_BLENDED, true);
+        DvzVisual* additive = _app_primitive_add_quad(
+            scene, panel, +0.1f, +0.9f, -0.8f, 0.8f, 0.4f, red, DVZ_ALPHA_BLENDED, true);
+        ANN(source_over);
+        ANN(additive);
+        AT(dvz_visual_set_blend_mode(additive, DVZ_BLEND_ADDITIVE) == DVZ_OK);
+    }
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_additive_mesh_blend skipped: GPU context failed");
+        tst_skip(suite, "GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
+    ANN(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+
+    for (uint32_t frame = 0; frame < 3; frame++)
+        dvz_app_run(app, 1);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == DVZ_OK);
+    ANN(rgba);
+    const uint8_t* source_over = _pixel_at(rgba, width, height, width / 4, height / 2);
+    const uint8_t* additive = _pixel_at(rgba, width, height, 3 * width / 4, height / 2);
+    AT(source_over[0] > 160);
+    AT(additive[0] > source_over[0] + 20);
+    AT(additive[0] > 240);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 /**
  * Ensure depth peeling renders two transparent layers and preserves opaque occlusion.
  *
@@ -8561,6 +8629,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_point_depth_orders_overlap);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_wboit_mesh_order_independent_layers);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_source_over_mesh_depth_and_blend);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_additive_mesh_blend);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_depth_peel_mesh_two_layers);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_depth_peel_mesh_three_layers);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_scene_occlusion_hidden_alpha);

@@ -124,6 +124,16 @@ bool dvz_visual_validate(const DvzVisual* visual, DvzDiagnosticReport* report)
         _visual_validation_report(report, "visual validation failed: unknown visual family");
         return false;
     }
+    if (
+        visual->blend_mode == DVZ_BLEND_ADDITIVE &&
+        (visual->alpha_mode == DVZ_ALPHA_WBOIT || visual->alpha_mode == DVZ_ALPHA_DEPTH_PEEL))
+    {
+        _visual_validation_report(
+            report,
+            "visual validation failed: additive blending requires DVZ_ALPHA_BLENDED and is "
+            "incompatible with WBOIT or depth peeling");
+        ok = false;
+    }
 
     char message[DVZ_SCENE_DIAGNOSTIC_SIZE];
     for (uint32_t i = 0; i < visual->attr_count; i++)

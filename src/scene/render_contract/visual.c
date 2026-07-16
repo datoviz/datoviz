@@ -202,7 +202,7 @@ bool _scene_pass_contract_from_render_ex(
     DvzSceneTechniquePassPolicy policy = {0};
     if (!_scene_technique_pass_policy(out->role, &policy))
         return false;
-    out->source_over_blend = policy.source_over_blend;
+    out->transparent_blend = policy.transparent_blend;
     out->wboit_accumulation = policy.wboit_accumulation;
     out->depth_peel = policy.depth_peel;
     out->fullscreen_resolve = policy.fullscreen_resolve;

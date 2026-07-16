@@ -1808,6 +1808,30 @@ DVZ_EXPORT DvzResult dvz_visual_set_alpha_mode(DvzVisual* visual, DvzAlphaMode m
 
 
 /**
+ * Set how an ordinarily blended visual is composited with the current color target.
+ *
+ * Blend mode is independent from alpha mode. `DVZ_BLEND_SOURCE_OVER` is the default and uses
+ * ordinary source-over composition. `DVZ_BLEND_ADDITIVE` accumulates source RGB using source alpha
+ * while preserving source-over alpha coverage. Additive composition requires
+ * `DVZ_ALPHA_BLENDED`; it is invalid with WBOIT or depth peeling.
+ *
+ * @param visual the visual
+ * @param mode the visual blend mode
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT DvzResult dvz_visual_set_blend_mode(DvzVisual* visual, DvzBlendMode mode);
+
+
+/**
+ * Return the visual blend mode.
+ *
+ * @param visual the visual
+ * @return the visual blend mode
+ */
+DVZ_EXPORT DvzBlendMode dvz_visual_blend_mode(const DvzVisual* visual);
+
+
+/**
  * Mark a visual as embedded in the panel volume occluder.
  *
  * @param visual the visual

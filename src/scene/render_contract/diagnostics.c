@@ -210,9 +210,9 @@ bool _scene_pass_contract_validate(
             _contract_report(report, "draw alpha mode does not match render pass role");
             ok = false;
         }
-        if (contract->source_over_blend && draw->depth_write)
+        if (contract->transparent_blend && draw->depth_write)
         {
-            _contract_report(report, "source-over draw must not write depth");
+            _contract_report(report, "ordinary transparent draw must not write depth");
             ok = false;
         }
         needs_depth = needs_depth || draw->depth_test || draw->depth_write;

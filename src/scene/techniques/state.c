@@ -140,7 +140,7 @@ const DvzSceneTechniquePassPolicy TECHNIQUE_PASS_POLICIES[] = {
         .role = DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND,
         .work_label = "transparent_blend",
         .graph_required = true,
-        .source_over_blend = true,
+        .transparent_blend = true,
     },
     {
         .role = DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE,

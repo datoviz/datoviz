@@ -379,6 +379,7 @@ DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t fla
     visual->visible = true;
     visual->z_layer = 0;
     visual->alpha_mode = DVZ_ALPHA_OPAQUE;
+    visual->blend_mode = DVZ_BLEND_SOURCE_OVER;
     visual->depth_test_enabled = true;
     visual->depth_compare_op = DVZ_COMPARE_OP_LESS_OR_EQUAL;
     visual->transform_desc = dvz_visual_transform_desc();

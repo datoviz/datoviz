@@ -11,7 +11,7 @@ Every visual declares an `alpha_mode` that tells the scene how to handle its fra
 | Mode | Description |
 |---|---|
 | `DVZ_ALPHA_OPAQUE` | all fragments fully opaque; depth test enabled, depth write enabled |
-| `DVZ_ALPHA_BLENDED` | ordinary source-over alpha blending; depth test enabled, depth write disabled |
+| `DVZ_ALPHA_BLENDED` | ordinary transparent pass using the visual's blend mode; depth test enabled, depth write disabled |
 | `DVZ_ALPHA_WBOIT` | weighted blended order-independent transparency; depth test enabled, depth write disabled |
 | `DVZ_ALPHA_DEPTH_PEEL` | depth-peeling transparency; depth test enabled, depth write controlled by peeling passes |
 | `DVZ_ALPHA_MASK` | binary alpha cutout (alpha < threshold → discard); depth write enabled |
@@ -22,13 +22,35 @@ Every visual declares an `alpha_mode` that tells the scene how to handle its fra
 hard edges are acceptable and depth write must be preserved.
 
 
+## Blend Modes
+
+Blend mode is independent from alpha mode. It controls how a visual in the ordinary transparent
+pass combines its fragment output with the current color target:
+
+| Mode | Linear RGB equation | Purpose |
+|---|---|---|
+| `DVZ_BLEND_SOURCE_OVER` | `src.rgb * src.a + dst.rgb * (1 - src.a)` | ordinary transparency |
+| `DVZ_BLEND_ADDITIVE` | `src.rgb * src.a + dst.rgb` | luminous particles, density, glow, and emission |
+
+Both modes preserve source-over alpha coverage:
+
+```text
+out.a = src.a + dst.a * (1 - src.a)
+```
+
+`DVZ_BLEND_SOURCE_OVER` is the default. `DVZ_BLEND_ADDITIVE` requires
+`DVZ_ALPHA_BLENDED`; combining it with WBOIT or depth peeling is invalid because those techniques
+own their accumulation equations. Opaque and masked visuals ignore blend mode while retaining it as
+visual state, so callers may configure blend mode before switching alpha mode.
+
+
 ## Render Pass Structure
 
 The scene splits rendering into ordered passes per panel:
 
 1. **Opaque pass** — all `DVZ_ALPHA_OPAQUE` and `DVZ_ALPHA_MASK` visuals,
    depth test and depth write enabled.
-2. **Source-over transparent pass** — `DVZ_ALPHA_BLENDED` visuals, depth test enabled,
+2. **Ordinary transparent pass** — `DVZ_ALPHA_BLENDED` visuals, depth test enabled,
    depth write disabled.
 3. **WBOIT accumulation/resolve passes** — `DVZ_ALPHA_WBOIT` visuals.
 4. **Depth-peeling passes** — `DVZ_ALPHA_DEPTH_PEEL` visuals when requested.
@@ -52,12 +74,15 @@ gamma-corrected.
 See [COLOR_MANAGEMENT.md](COLOR_MANAGEMENT.md).
 
 
-## Ordinary Source-Over Blending
+## Ordinary Transparent Blending
 
-`DVZ_ALPHA_BLENDED` uses ordinary source-over alpha blending.
+`DVZ_ALPHA_BLENDED` uses `DVZ_BLEND_SOURCE_OVER` by default. A visual may select
+`DVZ_BLEND_ADDITIVE` without changing its render-pass assignment.
 
-This path is useful for simple overlays and already-ordered transparent geometry. It is not
+Source-over is useful for simple overlays and already-ordered transparent geometry. It is not
 order-independent; intersecting or unsorted transparent geometry can show ordering artifacts.
+Additive blending is order-independent for finite nonnegative RGB contributions, although the
+target format may still saturate.
 
 
 ## Weighted Blended OIT (Active OIT Path)
@@ -157,7 +182,7 @@ For a panel containing both opaque and transparent visuals:
 ```text
 FramePlan (panel):
   RenderNode  — opaque pass  (DVZ_ALPHA_OPAQUE, DVZ_ALPHA_MASK visuals)
-  RenderNode  — source-over transparent pass  (DVZ_ALPHA_BLENDED visuals)
+  RenderNode  — ordinary transparent pass  (DVZ_ALPHA_BLENDED visuals)
   RenderNode  — WBOIT accumulation pass  (DVZ_ALPHA_WBOIT visuals)
   RenderNode  — OIT resolve pass  (fullscreen composite)
   RenderNode  — depth-peeling passes  (DVZ_ALPHA_DEPTH_PEEL visuals, when present)
@@ -183,6 +208,15 @@ a `FramePlan` rebuild for the affected panel.
 
 Per-item alpha is expressed through the item's color alpha channel or an opacity scale.
 `alpha_mode` controls the rendering path, not the per-item opacity value.
+
+Blend mode is also a visual-level property:
+
+```text
+dvz_visual_set_blend_mode(visual, DVZ_BLEND_ADDITIVE)
+```
+
+Changing blend mode invalidates the affected draw pipeline, but it does not create a different
+render pass.
 
 
 ## Relationship To Other Documents
