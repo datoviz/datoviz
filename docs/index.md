@@ -202,9 +202,11 @@ backend-specific feature.
 <a href="examples/">Examples</a>
 <a href="how-to/">How-To guides</a>
 <a href="reference/">Reference</a>
+<a href="ai-agents/">AI agents</a>
 <a href="https://github.com/datoviz/datoviz">GitHub</a>
 </nav>
 
-For coding-assistant guidance, see the [AI-assisted workflow](start/ai-workflow.md). Project
+For human-led coding-assistant guidance, see the [AI-assisted workflow](start/ai-workflow.md). For
+autonomous code generation, use the stricter [AI-agent contract](ai-agents.md). Project
 acknowledgements are recorded in the
 [repository credits](https://github.com/datoviz/datoviz#license-and-credits).
