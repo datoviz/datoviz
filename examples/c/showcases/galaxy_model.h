@@ -60,6 +60,7 @@ typedef struct GalaxyParticle
     float temperature;
     float brightness;
     float base_size_px;
+    float height;
     GalaxyParticleType type;
 } GalaxyParticle;
 

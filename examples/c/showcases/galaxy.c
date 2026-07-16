@@ -8,14 +8,15 @@
  *
  * What to look for: small temperature-colored stars form a warm central bulge while large soft
  * dust sprites reveal nested blue spiral arms. Additive blending lets overlapping particles
- * accumulate light without turning the dense core into an opaque disc.
+ * accumulate light without turning the dense core into an opaque disc. Drag to orbit through the
+ * thin stellar and dust layers, and use the wheel to inspect the core or the full disk.
  *
  * The density-wave equations and rendering composition are adapted from Nicolas P. Rougier's
  * Glumpy galaxy example and Ingo Berg's galaxy simulation. See galaxy_model.c for the retained BSD
  * notice and model details.
  *
  * Scenario: showcases_galaxy
- * Style: showcase, astronomical, 900x900 window target
+ * Style: showcase, astronomical, interactive 3D
  *
  * Build:  just example-c showcases/galaxy
  * Run:    ./build/examples/c/showcases/galaxy --live
@@ -45,8 +46,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  900u
-#define HEIGHT 900u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
 #define SPRITE_SIZE             64u
 #define GALAXY_YEARS_PER_SECOND 6000000.0
@@ -176,6 +177,22 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
     dvz_panel_set_background_color(panel, dvz_color_rgba(0, 0, 8, 255));
 
+    DvzCameraDesc camera = dvz_camera_desc();
+    camera.view.eye[0] = 0.0f;
+    camera.view.eye[1] = -3.0f;
+    camera.view.eye[2] = +4.8f;
+    camera.view.target[0] = 0.0f;
+    camera.view.target[1] = 0.0f;
+    camera.view.target[2] = 0.0f;
+    camera.view.up[0] = 0.0f;
+    camera.view.up[1] = 1.0f;
+    camera.view.up[2] = 0.0f;
+    camera.projection.fov_y = 0.55f;
+    camera.projection.near_clip = 0.05f;
+    camera.projection.far_clip = 100.0f;
+    DvzResult rc = dvz_panel_set_camera_desc(panel, &camera);
+    EXAMPLE_CHECK(rc == DVZ_OK, "galaxy camera setup failed");
+
     DvzSymbolSet* symbol_set = dvz_symbol_set(ctx->scene, 0);
     EXAMPLE_CHECK(symbol_set != NULL, "dvz_symbol_set() failed");
     DvzColor sprite[SPRITE_SIZE * SPRITE_SIZE] = {{0}};
@@ -188,7 +205,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     state->visual = dvz_marker(ctx->scene, 0);
     EXAMPLE_CHECK(state->visual != NULL, "dvz_marker() failed");
-    DvzResult rc = dvz_marker_set_symbols(state->visual, symbol_set);
+    rc = dvz_marker_set_symbols(state->visual, symbol_set);
     EXAMPLE_CHECK(rc == DVZ_OK, "dvz_marker_set_symbols() failed");
     DvzMarkerStyle style = dvz_marker_style();
     style.aspect = DVZ_SHAPE_ASPECT_FILLED;
@@ -219,6 +236,15 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(rc == DVZ_OK, "galaxy depth setup failed");
     rc = dvz_panel_add_visual(panel, state->visual, NULL);
     EXAMPLE_CHECK(rc == DVZ_OK, "galaxy visual attachment failed");
+
+    DvzController* controller = dvz_arcball(ctx->scene, NULL);
+    EXAMPLE_CHECK(controller != NULL, "dvz_arcball() failed");
+    DvzArcball* arcball = dvz_controller_arcball(controller);
+    EXAMPLE_CHECK(arcball != NULL, "dvz_controller_arcball() failed");
+    rc = dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ);
+    EXAMPLE_CHECK(rc == DVZ_OK, "galaxy arcball binding failed");
+    rc = dvz_arcball_initial(arcball, (vec3){0.0f, 0.0f, 0.0f});
+    EXAMPLE_CHECK(rc == DVZ_OK, "galaxy arcball initialization failed");
 
     state->elapsed_years = GALAXY_INITIAL_YEARS;
     ok = true;
@@ -298,6 +324,7 @@ DvzScenarioSpec dvz_showcase_galaxy_scenario(void)
         .height = HEIGHT,
         .fps = 60.0,
         .requirements = DVZ_SCENARIO_REQ_MARKER_VISUAL | DVZ_SCENARIO_REQ_FRAME_CALLBACKS |
+                        DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_ARCBALL |
                         DVZ_SCENARIO_REQ_CONTINUOUS_FRAMES,
         .init = _scenario_init,
         .frame = _scenario_frame,

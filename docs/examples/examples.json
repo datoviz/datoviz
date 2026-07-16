@@ -5097,6 +5097,9 @@
         "marker",
         "bitmap-symbol",
         "additive-blending",
+        "3d",
+        "interactive",
+        "arcball",
         "animation",
         "capture"
       ],
@@ -5119,7 +5122,8 @@
         "symbol-set",
         "glyph-atlas",
         "alpha-blending",
-        "frame-callbacks"
+        "frame-callbacks",
+        "arcball"
       ],
       "webgpu_reason": "the portable scenario and additive blend contract need browser registration and visual proof",
       "webgpu": {
@@ -5129,7 +5133,8 @@
           "symbol-set",
           "glyph-atlas",
           "alpha-blending",
-          "frame-callbacks"
+          "frame-callbacks",
+          "arcball"
         ],
         "reason": "the portable scenario and additive blend contract need browser registration and visual proof"
       },

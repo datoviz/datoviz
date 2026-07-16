@@ -3031,7 +3031,6 @@ examples:
         sample_stride: 2
         card:
           preferred: video-mp4
-          size: 900x900
           sample_step: 1
           fps: 60
           fallback_fps: 30
@@ -3048,6 +3047,7 @@ examples:
         - glyph-atlas
         - alpha-blending
         - frame-callbacks
+        - arcball
       reason: >-
         the portable scenario and additive blend contract need browser registration and visual
         proof
@@ -3063,6 +3063,9 @@ examples:
       - marker
       - bitmap-symbol
       - additive-blending
+      - 3d
+      - interactive
+      - arcball
       - animation
       - capture
     dataset:

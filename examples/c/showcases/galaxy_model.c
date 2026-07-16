@@ -58,6 +58,12 @@
 #define GALAXY_ANGULAR_OFFSET 0.0004f
 #define GALAXY_ECCENTRICITY   0.90f
 
+#define GALAXY_STAR_DISK_HEIGHT  180.0f
+#define GALAXY_STAR_BULGE_HEIGHT 950.0f
+#define GALAXY_BULGE_RADIUS      2800.0f
+#define GALAXY_DUST_HEIGHT       90.0f
+#define GALAXY_HII_HEIGHT        70.0f
+
 static const float PI = 3.14159265358979323846f;
 
 static const float BLACK_BODY_RGB[19][3] = {
@@ -280,6 +286,10 @@ bool galaxy_model_init(GalaxyModel* model, uint32_t seed)
         particle->temperature = 3000.0f + 6000.0f * _random_uniform(&random);
         particle->brightness = 0.05f + 0.20f * _random_uniform(&random);
         particle->base_size_px = 3.0f;
+        const float scale_height =
+            GALAXY_STAR_DISK_HEIGHT +
+            GALAXY_STAR_BULGE_HEIGHT * expf(-fabsf(radius) / GALAXY_BULGE_RADIUS);
+        particle->height = scale_height * _random_normal(&random);
     }
 
     const uint32_t dust_first = GALAXY_STAR_COUNT;
@@ -295,6 +305,7 @@ bool galaxy_model_init(GalaxyModel* model, uint32_t seed)
         particle->temperature = 6000.0f + 0.25f * radius;
         particle->brightness = 0.01f + 0.01f * _random_uniform(&random);
         particle->base_size_px = 64.0f;
+        particle->height = GALAXY_DUST_HEIGHT * _random_normal(&random);
     }
 
     const uint32_t hii_first = dust_first + GALAXY_DUST_COUNT;
@@ -314,6 +325,7 @@ bool galaxy_model_init(GalaxyModel* model, uint32_t seed)
         core->type = GALAXY_PARTICLE_HII_CORE;
         glow->temperature = core->temperature = temperature;
         glow->brightness = core->brightness = brightness;
+        glow->height = core->height = GALAXY_HII_HEIGHT * _random_normal(&random);
     }
 
     for (uint32_t i = 0; i < model->particle_count; i++)
@@ -354,7 +366,7 @@ void galaxy_model_update(GalaxyModel* model, double elapsed_years)
                         particle->minor_radius * sin_theta * cos_beta;
         model->positions[i][0] = x / GALAXY_NORMALIZATION;
         model->positions[i][1] = y / GALAXY_NORMALIZATION;
-        model->positions[i][2] = 0.0f;
+        model->positions[i][2] = particle->height / GALAXY_NORMALIZATION;
         model->sizes[i] = particle->base_size_px;
     }
 

@@ -1917,6 +1917,19 @@
       }
     },
     "tags": {
+      "3d": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_galaxy",
+            "title": "Density-Wave Galaxy",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/galaxy.c",
+            "page": "gallery/showcases/showcases_galaxy.md"
+          }
+        ]
+      },
       "additive-blending": {
         "count": 1,
         "examples": [
@@ -2047,7 +2060,7 @@
         ]
       },
       "arcball": {
-        "count": 9,
+        "count": 10,
         "examples": [
           {
             "id": "visuals_mesh",
@@ -2080,6 +2093,14 @@
             "status": "supported",
             "source": "examples/c/showcases/protein.c",
             "page": "gallery/showcases/showcases_protein.md"
+          },
+          {
+            "id": "showcases_galaxy",
+            "title": "Density-Wave Galaxy",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/galaxy.c",
+            "page": "gallery/showcases/showcases_galaxy.md"
           },
           {
             "id": "showcases_spherical_harmonics",
@@ -2978,6 +2999,19 @@
             "status": "supported",
             "source": "examples/c/visuals/mesh.c",
             "page": "gallery/visuals/visuals_mesh.md"
+          }
+        ]
+      },
+      "interactive": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_galaxy",
+            "title": "Density-Wave Galaxy",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/galaxy.c",
+            "page": "gallery/showcases/showcases_galaxy.md"
           }
         ]
       },
