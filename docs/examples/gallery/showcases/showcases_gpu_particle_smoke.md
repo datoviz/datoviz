@@ -4,7 +4,7 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_wind_field/">← Previous: Wind Field</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_galaxy/">← Previous: Density-Wave Galaxy</a></span>
 <span class="dvz-example-nav__next"><a href="../showcases_brain_volume/">Next: Allen Mouse Brain →</a></span>
 </div>
 </nav>
@@ -94,7 +94,7 @@ This experimental workflow is useful for simulations where GPU-updated arrays sh
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_wind_field/">← Previous: Wind Field</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_galaxy/">← Previous: Density-Wave Galaxy</a></span>
 <span class="dvz-example-nav__next"><a href="../showcases_brain_volume/">Next: Allen Mouse Brain →</a></span>
 </div>
 </nav>

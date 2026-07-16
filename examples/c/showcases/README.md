@@ -9,6 +9,7 @@ Current public showcase seeds:
 
 - `brain_volume.c`
 - `choropleth.c`
+- `galaxy.c`
 - `gpu_particle_smoke.c`
 - `linked_probe_colorbar.c`
 - `panel_linked_axes.c`

@@ -3,13 +3,13 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 110,
+  "example_count": 111,
   "categories": {
     "advanced": 4,
     "composite": 2,
     "feature": 68,
     "runtime": 5,
-    "showcase": 14,
+    "showcase": 15,
     "start": 1,
     "visual": 16
   },
@@ -17,7 +17,7 @@
     "diagnostic": 1,
     "experimental": 13,
     "prototype": 1,
-    "supported": 95
+    "supported": 96
   },
   "capabilities": {
     "composites": {
@@ -121,8 +121,16 @@
         ]
       },
       "simulated": {
-        "count": 1,
+        "count": 2,
         "examples": [
+          {
+            "id": "showcases_galaxy",
+            "title": "Density-Wave Galaxy",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/galaxy.c",
+            "page": "gallery/showcases/showcases_galaxy.md"
+          },
           {
             "id": "showcases_gpu_particle_smoke",
             "title": "GPU Particle Smoke",
@@ -1909,6 +1917,19 @@
       }
     },
     "tags": {
+      "additive-blending": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_galaxy",
+            "title": "Density-Wave Galaxy",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/galaxy.c",
+            "page": "gallery/showcases/showcases_galaxy.md"
+          }
+        ]
+      },
       "advanced": {
         "count": 4,
         "examples": [
@@ -1968,7 +1989,7 @@
         ]
       },
       "animation": {
-        "count": 3,
+        "count": 4,
         "examples": [
           {
             "id": "runtime_video_export",
@@ -1977,6 +1998,14 @@
             "status": "experimental",
             "source": "examples/c/runtime/video_export.c",
             "page": "gallery/runtime/runtime_video_export.md"
+          },
+          {
+            "id": "showcases_galaxy",
+            "title": "Density-Wave Galaxy",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/galaxy.c",
+            "page": "gallery/showcases/showcases_galaxy.md"
           },
           {
             "id": "showcases_spherical_harmonics",
@@ -2086,6 +2115,19 @@
           }
         ]
       },
+      "astronomy": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_galaxy",
+            "title": "Density-Wave Galaxy",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/galaxy.c",
+            "page": "gallery/showcases/showcases_galaxy.md"
+          }
+        ]
+      },
       "axes": {
         "count": 2,
         "examples": [
@@ -2121,7 +2163,7 @@
         ]
       },
       "bitmap-symbol": {
-        "count": 1,
+        "count": 2,
         "examples": [
           {
             "id": "features_marker_symbols",
@@ -2130,6 +2172,14 @@
             "status": "supported",
             "source": "examples/c/features/marker_symbols.c",
             "page": "gallery/features/features_marker_symbols.md"
+          },
+          {
+            "id": "showcases_galaxy",
+            "title": "Density-Wave Galaxy",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/galaxy.c",
+            "page": "gallery/showcases/showcases_galaxy.md"
           }
         ]
       },
@@ -2173,7 +2223,7 @@
         ]
       },
       "capture": {
-        "count": 24,
+        "count": 25,
         "examples": [
           {
             "id": "features_colorbar",
@@ -2334,6 +2384,14 @@
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
             "page": "gallery/showcases/showcases_wind_field.md"
+          },
+          {
+            "id": "showcases_galaxy",
+            "title": "Density-Wave Galaxy",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/galaxy.c",
+            "page": "gallery/showcases/showcases_galaxy.md"
           },
           {
             "id": "showcases_gpu_particle_smoke",
@@ -2968,7 +3026,7 @@
         ]
       },
       "marker": {
-        "count": 3,
+        "count": 4,
         "examples": [
           {
             "id": "features_marker_symbols",
@@ -2993,6 +3051,14 @@
             "status": "supported",
             "source": "examples/c/visuals/marker.c",
             "page": "gallery/visuals/visuals_marker.md"
+          },
+          {
+            "id": "showcases_galaxy",
+            "title": "Density-Wave Galaxy",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/galaxy.c",
+            "page": "gallery/showcases/showcases_galaxy.md"
           }
         ]
       },
@@ -3239,8 +3305,16 @@
         ]
       },
       "particles": {
-        "count": 1,
+        "count": 2,
         "examples": [
+          {
+            "id": "showcases_galaxy",
+            "title": "Density-Wave Galaxy",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/galaxy.c",
+            "page": "gallery/showcases/showcases_galaxy.md"
+          },
           {
             "id": "showcases_gpu_particle_smoke",
             "title": "GPU Particle Smoke",
@@ -3588,7 +3662,7 @@
         ]
       },
       "scientific": {
-        "count": 8,
+        "count": 9,
         "examples": [
           {
             "id": "showcases_scientific_plotting",
@@ -3621,6 +3695,14 @@
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
             "page": "gallery/showcases/showcases_wind_field.md"
+          },
+          {
+            "id": "showcases_galaxy",
+            "title": "Density-Wave Galaxy",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/galaxy.c",
+            "page": "gallery/showcases/showcases_galaxy.md"
           },
           {
             "id": "showcases_spherical_harmonics",
@@ -3683,8 +3765,16 @@
         ]
       },
       "simulation": {
-        "count": 1,
+        "count": 2,
         "examples": [
+          {
+            "id": "showcases_galaxy",
+            "title": "Density-Wave Galaxy",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/galaxy.c",
+            "page": "gallery/showcases/showcases_galaxy.md"
+          },
           {
             "id": "showcases_gpu_particle_smoke",
             "title": "GPU Particle Smoke",

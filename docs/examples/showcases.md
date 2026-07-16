@@ -96,6 +96,18 @@ This example combines a synthetic wind-speed field with vectors and streamlines.
 
 <div class="card" markdown="1">
 
+### [Density-Wave Galaxy](gallery/showcases/showcases_galaxy.md)
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for Density-Wave Galaxy"><span>Screenshot pending</span></div>
+
+`showcases`<br><span>`scientific`, `simulation`, `astronomy`, `particles`, `marker`, ...</span>
+
+This example renders an animated density-wave spiral galaxy.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [GPU Particle Smoke](gallery/showcases/showcases_gpu_particle_smoke.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">

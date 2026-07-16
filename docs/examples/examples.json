@@ -2,13 +2,13 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 110,
+  "count": 111,
   "categories": {
     "advanced": 4,
     "composite": 2,
     "feature": 68,
     "runtime": 5,
-    "showcase": 14,
+    "showcase": 15,
     "start": 1,
     "visual": 16
   },
@@ -16,7 +16,7 @@
     "diagnostic": 1,
     "experimental": 13,
     "prototype": 1,
-    "supported": 95
+    "supported": 96
   },
   "examples": [
     {
@@ -5074,6 +5074,74 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_wind_field",
       "python_source": "examples/python/gallery/showcases/wind_field.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/wind_field.py"
+    },
+    {
+      "id": "showcases_galaxy",
+      "title": "Density-Wave Galaxy",
+      "category": "showcase",
+      "lane": "showcases",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/showcases/galaxy.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/galaxy.c",
+      "page": "gallery/showcases/showcases_galaxy.md",
+      "summary": "This example renders an animated density-wave spiral galaxy.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c showcases/galaxy",
+      "smoke_command": "./build/examples/c/showcases/galaxy --png",
+      "tags": [
+        "scientific",
+        "simulation",
+        "astronomy",
+        "particles",
+        "marker",
+        "bitmap-symbol",
+        "additive-blending",
+        "animation",
+        "capture"
+      ],
+      "data": {
+        "kind": "simulated"
+      },
+      "data_kind": "simulated",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "pending",
+          "source": "data/gallery/v0.4/showcases/showcases_galaxy.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/showcases_galaxy.webp"
+        }
+      },
+      "webgpu_status": "webgpu-planned",
+      "webgpu_status_label": "Planned",
+      "webgpu_requirements": [
+        "marker",
+        "symbol-set",
+        "glyph-atlas",
+        "alpha-blending",
+        "frame-callbacks"
+      ],
+      "webgpu_reason": "the portable scenario and additive blend contract need browser registration and visual proof",
+      "webgpu": {
+        "status": "webgpu-planned",
+        "requirements": [
+          "marker",
+          "symbol-set",
+          "glyph-atlas",
+          "alpha-blending",
+          "frame-callbacks"
+        ],
+        "reason": "the portable scenario and additive blend contract need browser registration and visual proof"
+      },
+      "dataset": {
+        "name": "Density-wave spiral galaxy simulation",
+        "source": "https://github.com/glumpy/glumpy/tree/master/examples",
+        "source_url": "https://glumpy.github.io/gallery.html",
+        "license": "BSD-3-Clause for the adapted Glumpy simulation; specrend color reference is public domain",
+        "citation": "Nicolas P. Rougier, Glumpy galaxy example; Ingo Berg, Simulating a Galaxy with the density wave theory",
+        "preprocessing": "deterministic runtime simulation; no external data payload",
+        "provenance": "The orbital model is adapted from Glumpy's galaxy_simulation.py and preserves its BSD notice in galaxy_model.c. Stellar colors use the public-domain specrend reference values."
+      }
     },
     {
       "id": "showcases_gpu_particle_smoke",

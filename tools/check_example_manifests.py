@@ -80,6 +80,13 @@ def _check_manifest_semantics(manifest_path: Path) -> bool:
     ok = True
     entries = manifest["examples"]
     sources = {str(entry.get("source")) for entry in entries if entry.get("source")}
+    extra_sources = {
+        str(extra.get("path"))
+        for entry in entries
+        for extra in entry.get("extra_sources", [])
+        if extra.get("path")
+    }
+    documented_sources = sources | extra_sources
     by_source = {str(entry.get("source")): entry for entry in entries if entry.get("source")}
 
     for entry in entries:
@@ -97,10 +104,10 @@ def _check_manifest_semantics(manifest_path: Path) -> bool:
             if path.name == "CMakeLists.txt":
                 continue
             source = path.relative_to(ROOT).as_posix()
-            if source not in sources:
+            if source not in documented_sources:
                 print(f"public C example has no manifest row: {source}")
                 ok = False
-            elif source not in IGNORED_SOURCE_TITLE_CHECKS:
+            elif source in sources and source not in IGNORED_SOURCE_TITLE_CHECKS:
                 entry = by_source[source]
                 text = path.read_text(encoding="utf8")
                 titles = []

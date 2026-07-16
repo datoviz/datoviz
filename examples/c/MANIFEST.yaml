@@ -256,6 +256,7 @@ batches:
     - features_animation_tracks
     - features_timer_animation
     - features_compute_buffer_animation
+    - showcases_galaxy
     - showcases_gpu_particle_smoke
     - advanced_raw_triangle_drp2
 
@@ -3007,6 +3008,76 @@ examples:
       - wind-field
       - colorbar
       - capture
+
+  - id: showcases_galaxy
+    title: Density-Wave Galaxy
+    stage: v0.4_required
+    category: showcase
+    lane: showcases
+    source: examples/c/showcases/galaxy.c
+    extra_sources:
+      - label: Density-wave model
+        language: c
+        path: examples/c/showcases/galaxy_model.c
+      - label: Density-wave model header
+        language: c
+        path: examples/c/showcases/galaxy_model.h
+    validation: smoke+screenshot
+    media:
+      preview:
+        kind: animated-webp
+        frames: 180
+        fps: 60
+        sample_stride: 2
+        card:
+          preferred: video-mp4
+          size: 900x900
+          sample_step: 1
+          fps: 60
+          fallback_fps: 30
+          webp_quality: 60
+          mp4_crf: 26
+          webm_crf: 34
+    data:
+      kind: simulated
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - marker
+        - symbol-set
+        - glyph-atlas
+        - alpha-blending
+        - frame-callbacks
+      reason: >-
+        the portable scenario and additive blend contract need browser registration and visual
+        proof
+    agent_copy_safe: false
+    gallery:
+      card: section
+      status_label: supported
+    tags:
+      - scientific
+      - simulation
+      - astronomy
+      - particles
+      - marker
+      - bitmap-symbol
+      - additive-blending
+      - animation
+      - capture
+    dataset:
+      name: Density-wave spiral galaxy simulation
+      source: https://github.com/glumpy/glumpy/tree/master/examples
+      source_url: https://glumpy.github.io/gallery.html
+      license: >-
+        BSD-3-Clause for the adapted Glumpy simulation; specrend color reference is public domain
+      citation: >-
+        Nicolas P. Rougier, Glumpy galaxy example; Ingo Berg, Simulating a Galaxy with the density
+        wave theory
+      preprocessing: deterministic runtime simulation; no external data payload
+      provenance: >-
+        The orbital model is adapted from Glumpy's galaxy_simulation.py and preserves its BSD
+        notice in galaxy_model.c. Stellar colors use the public-domain specrend reference values.
 
   - id: showcases_gpu_particle_smoke
     title: GPU Particle Smoke

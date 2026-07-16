@@ -8,8 +8,8 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Reviewed public C examples generated for the website: 110
-- Examples declaring screenshot validation: 100
+- Reviewed public C examples generated for the website: 111
+- Examples declaring screenshot validation: 101
 - Examples that should have video or motion evidence: 6
 
 ## Commands
@@ -120,6 +120,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [U.S. State Choropleth](gallery/showcases/showcases_choropleth.md) | [`examples/c/showcases/choropleth.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/choropleth.c) | `supported` | `smoke+screenshot+manual` |
 | [Protein](gallery/showcases/showcases_protein.md) | [`examples/c/showcases/protein.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/protein.c) | `supported` | `smoke+screenshot+manual` |
 | [Wind Field](gallery/showcases/showcases_wind_field.md) | [`examples/c/showcases/wind_field.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/wind_field.c) | `supported` | `smoke+screenshot` |
+| [Density-Wave Galaxy](gallery/showcases/showcases_galaxy.md) | [`examples/c/showcases/galaxy.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/galaxy.c) | `supported` | `smoke+screenshot` |
 | [GPU Particle Smoke](gallery/showcases/showcases_gpu_particle_smoke.md) | [`examples/c/showcases/gpu_particle_smoke.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c) | `experimental` | `smoke+screenshot` |
 | [Spherical Harmonics](gallery/showcases/showcases_spherical_harmonics.md) | [`examples/c/showcases/spherical_harmonics.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/spherical_harmonics.c) | `supported` | `smoke+interaction+screenshot` |
 | [Surface Grid](gallery/showcases/showcases_surface_grid.md) | [`examples/c/showcases/surface_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/surface_grid.c) | `supported` | `smoke+screenshot` |
