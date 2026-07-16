@@ -880,6 +880,7 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
     AT(dvz_panel_add_visual(panel, overlay, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.supports_color_blending = true;
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
@@ -974,7 +975,7 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
     AT(found_image_bind_group);
     AT(found_depth_pipeline);
     AT(found_draw_indexed);
-    AT(_stream_set_vertex_buffer_count(stream) == 4);
+    AT(_stream_set_vertex_buffer_count(stream) == 6);
     AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzSceneMaterialParams)) == 1);
 
     _test_scene_stream_destroy(stream);
