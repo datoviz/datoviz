@@ -2767,6 +2767,19 @@
           }
         ]
       },
+      "full-resolution": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_cortical_activity",
+            "title": "Human Auditory Cortical Activity",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/cortical_activity.c",
+            "page": "gallery/showcases/showcases_cortical_activity.md"
+          }
+        ]
+      },
       "generated": {
         "count": 1,
         "examples": [
@@ -3155,7 +3168,7 @@
         ]
       },
       "material": {
-        "count": 1,
+        "count": 2,
         "examples": [
           {
             "id": "showcases_spherical_harmonics",
@@ -3164,6 +3177,14 @@
             "status": "supported",
             "source": "examples/c/showcases/spherical_harmonics.c",
             "page": "gallery/showcases/showcases_spherical_harmonics.md"
+          },
+          {
+            "id": "showcases_cortical_activity",
+            "title": "Human Auditory Cortical Activity",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/cortical_activity.c",
+            "page": "gallery/showcases/showcases_cortical_activity.md"
           }
         ]
       },
@@ -3953,6 +3974,19 @@
             "status": "supported",
             "source": "examples/c/showcases/spherical_harmonics.c",
             "page": "gallery/showcases/showcases_spherical_harmonics.md"
+          }
+        ]
+      },
+      "spherical-interpolation": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_cortical_activity",
+            "title": "Human Auditory Cortical Activity",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/cortical_activity.c",
+            "page": "gallery/showcases/showcases_cortical_activity.md"
           }
         ]
       },

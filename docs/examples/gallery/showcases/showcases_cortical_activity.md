@@ -44,7 +44,7 @@ after verifying the linked API reference.
 
 ## What To Look For
 
-Measured MEG trials from an audiovisual experiment were averaged and mapped onto the participant's complete bilateral cortical surface with a noise-normalized minimum-norm inverse. Activity emerges around auditory cortex near 100 ms after the left-ear tone. The live GUI controls playback, surface inflation, whole/split layouts, scientific limits, wireframe, and arcball state. The initial paused frame is the strongest measured response.
+Measured MEG trials from an audiovisual experiment were averaged and mapped onto an oct6 source grid with a noise-normalized minimum-norm inverse, then interpolated through hemisphere-local spherical triangles onto the participant's complete full-resolution FreeSurfer cortex. Activity emerges around auditory cortex near 100 ms after the left-ear tone. The live GUI controls playback, surface inflation, whole/split layouts, scientific limits, material, scientific/full wireframes, and arcball state. The initial paused frame is the strongest measured response.
 
 DSPM is a model-derived, dimensionless source estimate. It is not a direct measurement of neuronal firing or absolute current amplitude.
 
@@ -70,12 +70,12 @@ Control: live GUI; space plays/pauses; left/right arrows seek
     - Approved adaptation starter: `no`
     - Browser support: Deferred
     - Browser note: the browser path does not yet package the prepared cortical surface and time-series bundle
-    - Browser capability tags: `mesh`, `segment`, `colorbar`, `arcball`, `gui`, `frame-callbacks`, `continuous-frames`
-    - Validation: `smoke+interaction+screenshot+video`
+    - Browser capability tags: `mesh`, `segment`, `material`, `colorbar`, `arcball`, `gui`, `frame-callbacks`, `continuous-frames`
+    - Validation: `smoke+interaction+screenshot+video+performance`
 
     **Tags**
 
-    `scientific`, `real-data`, `human-brain`, `cortical-surface`, `meg`, `dspm`, `mesh`, `wireframe`, `gui`, `colorbar`, `arcball`, `animation`
+    `scientific`, `real-data`, `human-brain`, `cortical-surface`, `meg`, `dspm`, `mesh`, `full-resolution`, `spherical-interpolation`, `wireframe`, `gui`, `material`, `colorbar`, `arcball`, `animation`
 
     **Data**
 
@@ -94,14 +94,14 @@ Control: live GUI; space plays/pauses; left/right arrows seek
     | `citation` | OpenNeuro ds000248 v1.2.4, DOI 10.18112/openneuro.ds000248.v1.2.4 |
     | `preprocessing` | uv run --isolated --with mne==1.12.1 --with mne-bids==0.19.0 --with nibabel==5.4.2 --with numpy==2.3.4 --with scipy==1.18.0 --with requests `python tools/data/prepare_cortical_activity.py` |
     | `cache_prepared_path` | .cache/datoviz/examples/cortical_activity/prepared |
-    | `provenance` | Measured left-ear auditory MEG trials are averaged and mapped to the participant's cortical surface with a baseline-noise-normalized minimum-norm inverse (dSPM). dSPM is a model-derived dimensionless source estimate, not a direct measurement of neuronal firing or absolute current amplitude. |
+    | `provenance` | Measured left-ear auditory MEG trials are averaged and mapped to an 8,196-vertex oct6 source grid with a baseline-noise-normalized minimum-norm inverse (dSPM). The complete 319,834-vertex FreeSurfer cortex is a separate render domain. Each render vertex receives activity from one hemisphere-local spherical oct6 triangle with three validated barycentric weights. dSPM is a model-derived dimensionless source estimate, not a direct measurement of neuronal firing or absolute current amplitude. |
 
     **Encoding**
 
     | Field | Value |
     | --- | --- |
-    | `position` | complete bilateral participant-native pial and inflated cortical surfaces with one shared uniform scale; whole-brain and split-lateral layouts preserve anatomical aspect ratio |
-    | `color` | sequential magma activity over neutral graphite anatomy; the comparable 8/12/15 dSPM preset remains available while live controls permit exploratory limits |
+    | `position` | complete 319,834-vertex bilateral participant-native pial and inflated FreeSurfer surfaces with one shared uniform scale; whole-brain and split-lateral layouts preserve anatomical aspect ratio |
+    | `color` | oct6 dSPM values interpolated through hemisphere-local spherical triangles onto the render mesh, then mapped with sequential magma over neutral graphite anatomy; the comparable 8/12/15 dSPM preset remains available while live controls permit exploratory limits |
     | `time` | 0 to 240 ms after the left-ear tone, linearly interpolated between source-estimate frames; live mode opens paused at the strongest response |
 
 
