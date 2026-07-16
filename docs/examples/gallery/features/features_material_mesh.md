@@ -11,20 +11,6 @@
 
 This example compares cube meshes rendered with different material models and parameters.
 
-## Run And Adapt
-
-Commands below assume a Datoviz source checkout and start at the repository root.
-Use your configured build environment; Python routes additionally require local bindings.
-
-| Route | Availability | Command or action |
-| --- | --- | --- |
-| C | Canonical native source | `just example-c features/material_mesh` (build and run), or rerun `./build/examples/c/features/material_mesh` |
-| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.material_mesh` |
-| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_material_mesh">Open live example</a> |
-
-This example is approved as a starting point for user code and coding agents. Keep the
-object lifetimes and data shapes intact while adapting the data and styling.
-
 ## Preview
 
 === "Screenshot"
@@ -44,6 +30,20 @@ object lifetimes and data shapes intact while adapting the data and styling.
     </div>
 
     <a href="../../../webgpu/live.html?id=features_material_mesh">Open the live WebGPU example</a>.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/material_mesh` (build and run), or rerun `./build/examples/c/features/material_mesh` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.material_mesh` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_material_mesh">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## What To Look For
 

@@ -11,6 +11,15 @@
 
 This example renders Gaussian splats as translucent ellipses.
 
+## Preview
+
+![Splat](../../../assets/gallery/v0.4/visuals/visuals_splat.webp)
+
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>No live WebGPU preview</strong>
+<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
+</aside>
+
 ## Run And Adapt
 
 Commands below assume a Datoviz source checkout and start at the repository root.
@@ -25,15 +34,6 @@ Use your configured build environment; Python routes additionally require local 
 Use this example as capability or integration evidence, not as a minimal copy-paste
 template. Start from the nearest supported, copy-safe example and add this feature
 after verifying the linked API reference.
-
-## Preview
-
-![Splat](../../../assets/gallery/v0.4/visuals/visuals_splat.webp)
-
-<aside class="dvz-webgpu-unavailable" role="note">
-<strong>No live WebGPU preview</strong>
-<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
-</aside>
 
 ## What To Look For
 

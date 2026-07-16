@@ -11,26 +11,6 @@
 
 This example maps real planetary textures onto an indexed sphere mesh.
 
-## Run And Adapt
-
-Commands below assume a Datoviz source checkout and start at the repository root.
-Use your configured build environment; Python routes additionally require local bindings.
-
-| Route | Availability | Command or action |
-| --- | --- | --- |
-| C | Canonical native source | `just example-c showcases/textured_planet` (build and run), or rerun `./build/examples/c/showcases/textured_planet` |
-| Python | Available | `python3 -m examples.python.gallery.showcases.textured_planet` |
-| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_textured_planet">Open live example</a> |
-
-!!! info "Real dataset"
-
-    Check the dataset, license, citation, and preprocessing fields in Example details
-    before redistributing data or derived output.
-
-Use this example as capability or integration evidence, not as a minimal copy-paste
-template. Start from the nearest supported, copy-safe example and add this feature
-after verifying the linked API reference.
-
 ## Preview
 
 === "Screenshot"
@@ -50,6 +30,26 @@ after verifying the linked API reference.
     </div>
 
     <a href="../../../webgpu/live.html?id=showcases_textured_planet">Open the live WebGPU example</a>.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c showcases/textured_planet` (build and run), or rerun `./build/examples/c/showcases/textured_planet` |
+| Python | Available | `python3 -m examples.python.gallery.showcases.textured_planet` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_textured_planet">Open live example</a> |
+
+!!! info "Real dataset"
+
+    Check the dataset, license, citation, and preprocessing fields in Example details
+    before redistributing data or derived output.
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## What To Look For
 

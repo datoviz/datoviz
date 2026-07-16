@@ -11,20 +11,6 @@
 
 This example compares a synthetic molecular aggregate with and without ambient occlusion.
 
-## Run And Adapt
-
-Commands below assume a Datoviz source checkout and start at the repository root.
-Use your configured build environment; Python routes additionally require local bindings.
-
-| Route | Availability | Command or action |
-| --- | --- | --- |
-| C | Canonical native source | `just example-c features/technique_ssao` (build and run), or rerun `./build/examples/c/features/technique_ssao` |
-| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.technique_ssao` |
-| Browser | Deferred | Use the native route for this example. |
-
-This example is approved as a starting point for user code and coding agents. Keep the
-object lifetimes and data shapes intact while adapting the data and styling.
-
 ## Preview
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
@@ -39,6 +25,20 @@ object lifetimes and data shapes intact while adapting the data and styling.
 <strong>No live WebGPU preview</strong>
 <span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/technique_ssao` (build and run), or rerun `./build/examples/c/features/technique_ssao` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.technique_ssao` |
+| Browser | Deferred | Use the native route for this example. |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## What To Look For
 

@@ -11,6 +11,20 @@
 
 This example compares scale bars across overview, detail, and 3D views.
 
+## Preview
+
+=== "Screenshot"
+
+    ![Scale Bar Measurement Workflow](../../../assets/gallery/v0.4/showcases/showcases_scalebar_measurement.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=showcases_scalebar_measurement" title="Scale Bar Measurement Workflow WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=showcases_scalebar_measurement">Open the live WebGPU example</a>.
+
 ## Run And Adapt
 
 Commands below assume a Datoviz source checkout and start at the repository root.
@@ -25,20 +39,6 @@ Use your configured build environment; Python routes additionally require local 
 Use this example as capability or integration evidence, not as a minimal copy-paste
 template. Start from the nearest supported, copy-safe example and add this feature
 after verifying the linked API reference.
-
-## Preview
-
-=== "Screenshot"
-
-    ![Scale Bar Measurement Workflow](../../../assets/gallery/v0.4/showcases/showcases_scalebar_measurement.webp)
-
-=== "Live WebGPU"
-
-    <div class="dvz-webgpu-live" markdown="1">
-    <iframe src="../../../webgpu/live.html?id=showcases_scalebar_measurement" title="Scale Bar Measurement Workflow WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
-    </div>
-
-    <a href="../../../webgpu/live.html?id=showcases_scalebar_measurement">Open the live WebGPU example</a>.
 
 ## What To Look For
 

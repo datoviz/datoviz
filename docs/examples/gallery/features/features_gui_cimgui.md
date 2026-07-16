@@ -11,6 +11,15 @@
 
 This example shows raw cimgui widgets controlling a Datoviz visual.
 
+## Preview
+
+![Raw cimgui GUI](../../../assets/gallery/v0.4/features/features_gui_cimgui.webp)
+
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Native-only example</strong>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
+</aside>
+
 ## Run And Adapt
 
 Commands below assume a Datoviz source checkout and start at the repository root.
@@ -25,15 +34,6 @@ Use your configured build environment; Python routes additionally require local 
 Use this example as capability or integration evidence, not as a minimal copy-paste
 template. Start from the nearest supported, copy-safe example and add this feature
 after verifying the linked API reference.
-
-## Preview
-
-![Raw cimgui GUI](../../../assets/gallery/v0.4/features/features_gui_cimgui.webp)
-
-<aside class="dvz-webgpu-unavailable" role="note">
-<strong>Native-only example</strong>
-<span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
-</aside>
 
 ## What To Look For
 

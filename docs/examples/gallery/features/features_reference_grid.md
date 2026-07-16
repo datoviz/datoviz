@@ -11,20 +11,6 @@
 
 This example adds a ground-plane reference grid to a 3D scene.
 
-## Run And Adapt
-
-Commands below assume a Datoviz source checkout and start at the repository root.
-Use your configured build environment; Python routes additionally require local bindings.
-
-| Route | Availability | Command or action |
-| --- | --- | --- |
-| C | Canonical native source | `just example-c features/reference_grid` (build and run), or rerun `./build/examples/c/features/reference_grid` |
-| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.reference_grid` |
-| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_reference_grid">Open live example</a> |
-
-This example is approved as a starting point for user code and coding agents. Keep the
-object lifetimes and data shapes intact while adapting the data and styling.
-
 ## Preview
 
 === "Screenshot"
@@ -38,6 +24,20 @@ object lifetimes and data shapes intact while adapting the data and styling.
     </div>
 
     <a href="../../../webgpu/live.html?id=features_reference_grid">Open the live WebGPU example</a>.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/reference_grid` (build and run), or rerun `./build/examples/c/features/reference_grid` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.reference_grid` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_reference_grid">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## What To Look For
 

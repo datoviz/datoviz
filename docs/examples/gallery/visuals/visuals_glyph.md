@@ -11,6 +11,20 @@
 
 This example renders text by submitting low-level glyph atlas quads directly.
 
+## Preview
+
+=== "Screenshot"
+
+    ![Font Atlas Glyphs](../../../assets/gallery/v0.4/visuals/visuals_glyph.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=visuals_glyph" title="Font Atlas Glyphs WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=visuals_glyph">Open the live WebGPU example</a>.
+
 ## Run And Adapt
 
 Commands below assume a Datoviz source checkout and start at the repository root.
@@ -25,20 +39,6 @@ Use your configured build environment; Python routes additionally require local 
 Use this example as capability or integration evidence, not as a minimal copy-paste
 template. Start from the nearest supported, copy-safe example and add this feature
 after verifying the linked API reference.
-
-## Preview
-
-=== "Screenshot"
-
-    ![Font Atlas Glyphs](../../../assets/gallery/v0.4/visuals/visuals_glyph.webp)
-
-=== "Live WebGPU"
-
-    <div class="dvz-webgpu-live" markdown="1">
-    <iframe src="../../../webgpu/live.html?id=visuals_glyph" title="Font Atlas Glyphs WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
-    </div>
-
-    <a href="../../../webgpu/live.html?id=visuals_glyph">Open the live WebGPU example</a>.
 
 ## What To Look For
 

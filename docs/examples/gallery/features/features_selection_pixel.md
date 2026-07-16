@@ -11,20 +11,6 @@
 
 This example queries and selects individual cells in a pixel grid.
 
-## Run And Adapt
-
-Commands below assume a Datoviz source checkout and start at the repository root.
-Use your configured build environment; Python routes additionally require local bindings.
-
-| Route | Availability | Command or action |
-| --- | --- | --- |
-| C | Canonical native source | `just example-c features/selection_pixel` (build and run), or rerun `./build/examples/c/features/selection_pixel` |
-| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.selection_pixel` |
-| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_selection_pixel">Open live example</a> |
-
-This example is approved as a starting point for user code and coding agents. Keep the
-object lifetimes and data shapes intact while adapting the data and styling.
-
 ## Preview
 
 === "Screenshot"
@@ -38,6 +24,20 @@ object lifetimes and data shapes intact while adapting the data and styling.
     </div>
 
     <a href="../../../webgpu/live.html?id=features_selection_pixel">Open the live WebGPU example</a>.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/selection_pixel` (build and run), or rerun `./build/examples/c/features/selection_pixel` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.selection_pixel` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_selection_pixel">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## What To Look For
 

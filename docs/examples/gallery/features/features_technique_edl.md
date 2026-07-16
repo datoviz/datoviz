@@ -11,21 +11,6 @@
 
 This example compares a dense 3D point cloud with and without Eye-Dome Lighting.
 
-## Run And Adapt
-
-Commands below assume a Datoviz source checkout and start at the repository root.
-Use your configured build environment; Python routes additionally require local bindings.
-
-| Route | Availability | Command or action |
-| --- | --- | --- |
-| C | Canonical native source | `just example-c features/technique_edl` (build and run), or rerun `./build/examples/c/features/technique_edl` |
-| Python | No verified adaptation on this page | Start from the C source. |
-| Browser | Deferred | Use the native route for this example. |
-
-Use this example as capability or integration evidence, not as a minimal copy-paste
-template. Start from the nearest supported, copy-safe example and add this feature
-after verifying the linked API reference.
-
 ## Preview
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
@@ -40,6 +25,21 @@ after verifying the linked API reference.
 <strong>No live WebGPU preview</strong>
 <span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/technique_edl` (build and run), or rerun `./build/examples/c/features/technique_edl` |
+| Python | No verified adaptation on this page | Start from the C source. |
+| Browser | Deferred | Use the native route for this example. |
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## What To Look For
 

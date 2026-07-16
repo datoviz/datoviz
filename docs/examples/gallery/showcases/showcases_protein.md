@@ -11,6 +11,26 @@
 
 This example renders a prepared PDB structure as colored sphere impostors.
 
+## Preview
+
+=== "Screenshot"
+
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_protein.poster.webp" alt="Protein" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/showcases/showcases_protein.poster.webp" aria-label="Protein preview">
+        <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_protein.mp4" type="video/mp4">
+      </video>
+    </div>
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=showcases_protein" title="Protein WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=showcases_protein">Open the live WebGPU example</a>.
+
 ## Run And Adapt
 
 Commands below assume a Datoviz source checkout and start at the repository root.
@@ -36,26 +56,6 @@ Use your configured build environment; Python routes additionally require local 
 Use this example as capability or integration evidence, not as a minimal copy-paste
 template. Start from the nearest supported, copy-safe example and add this feature
 after verifying the linked API reference.
-
-## Preview
-
-=== "Screenshot"
-
-    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_protein.poster.webp" alt="Protein" loading="lazy">
-      <video class="dvz-gallery-video" muted loop playsinline preload="none"
-             poster="../../../../assets/gallery/v0.4/showcases/showcases_protein.poster.webp" aria-label="Protein preview">
-        <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_protein.mp4" type="video/mp4">
-      </video>
-    </div>
-
-=== "Live WebGPU"
-
-    <div class="dvz-webgpu-live" markdown="1">
-    <iframe src="../../../webgpu/live.html?id=showcases_protein" title="Protein WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
-    </div>
-
-    <a href="../../../webgpu/live.html?id=showcases_protein">Open the live WebGPU example</a>.
 
 ## What To Look For
 

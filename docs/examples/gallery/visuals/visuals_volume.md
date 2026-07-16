@@ -11,6 +11,15 @@
 
 This example volume-renders a generated 3D gyroid scalar field.
 
+## Preview
+
+![Volume](../../../assets/gallery/v0.4/visuals/visuals_volume.webp)
+
+<aside class="dvz-webgpu-unavailable" role="note">
+<strong>Live WebGPU preview not available yet</strong>
+<span>Browser support for this example is planned. The preview above shows the native version. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
+</aside>
+
 ## Run And Adapt
 
 Commands below assume a Datoviz source checkout and start at the repository root.
@@ -24,15 +33,6 @@ Use your configured build environment; Python routes additionally require local 
 
 This example is approved as a starting point for user code and coding agents. Keep the
 object lifetimes and data shapes intact while adapting the data and styling.
-
-## Preview
-
-![Volume](../../../assets/gallery/v0.4/visuals/visuals_volume.webp)
-
-<aside class="dvz-webgpu-unavailable" role="note">
-<strong>Live WebGPU preview not available yet</strong>
-<span>Browser support for this example is planned. The preview above shows the native version. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
-</aside>
 
 ## What To Look For
 

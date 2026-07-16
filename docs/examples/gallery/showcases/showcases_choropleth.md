@@ -11,6 +11,20 @@
 
 This example renders contiguous U.S. population density as polygon-set data.
 
+## Preview
+
+=== "Screenshot"
+
+    ![U.S. State Choropleth](../../../assets/gallery/v0.4/showcases/showcases_choropleth.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=showcases_choropleth" title="U.S. State Choropleth WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=showcases_choropleth">Open the live WebGPU example</a>.
+
 ## Run And Adapt
 
 Commands below assume a Datoviz source checkout and start at the repository root.
@@ -32,20 +46,6 @@ Use your configured build environment; Python routes additionally require local 
 Use this example as capability or integration evidence, not as a minimal copy-paste
 template. Start from the nearest supported, copy-safe example and add this feature
 after verifying the linked API reference.
-
-## Preview
-
-=== "Screenshot"
-
-    ![U.S. State Choropleth](../../../assets/gallery/v0.4/showcases/showcases_choropleth.webp)
-
-=== "Live WebGPU"
-
-    <div class="dvz-webgpu-live" markdown="1">
-    <iframe src="../../../webgpu/live.html?id=showcases_choropleth" title="U.S. State Choropleth WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
-    </div>
-
-    <a href="../../../webgpu/live.html?id=showcases_choropleth">Open the live WebGPU example</a>.
 
 ## What To Look For
 

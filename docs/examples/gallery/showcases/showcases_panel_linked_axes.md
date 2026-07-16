@@ -11,21 +11,6 @@
 
 This example builds linked time-series panels with shared axes behavior.
 
-## Run And Adapt
-
-Commands below assume a Datoviz source checkout and start at the repository root.
-Use your configured build environment; Python routes additionally require local bindings.
-
-| Route | Availability | Command or action |
-| --- | --- | --- |
-| C | Canonical native source | `just example-c showcases/panel_linked_axes` (build and run), or rerun `./build/examples/c/showcases/panel_linked_axes` |
-| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.showcases.panel_linked_axes` |
-| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_panel_linked_axes">Open live example</a> |
-
-Use this example as capability or integration evidence, not as a minimal copy-paste
-template. Start from the nearest supported, copy-safe example and add this feature
-after verifying the linked API reference.
-
 ## Preview
 
 === "Screenshot"
@@ -45,6 +30,21 @@ after verifying the linked API reference.
     </div>
 
     <a href="../../../webgpu/live.html?id=showcases_panel_linked_axes">Open the live WebGPU example</a>.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c showcases/panel_linked_axes` (build and run), or rerun `./build/examples/c/showcases/panel_linked_axes` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.showcases.panel_linked_axes` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_panel_linked_axes">Open live example</a> |
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## What To Look For
 
