@@ -24,17 +24,36 @@ annotations where each item has its own start and end point.
 Use [Path](path.md) for connected polylines with joins and subpaths, [Vector](vector.md) for
 direction fields or arrows, or [Primitive](primitive.md) for raw GPU line topology.
 
-## Data Model
+## Item And Data Model
 
-Create with `dvz_segment(scene, flags)`. Upload one item per endpoint pair. Caps are visual-wide in
-v0.4.
+Create with `dvz_segment(scene, flags)`. One item is one independent start/end pair. All four dense
+arrays have `N` rows and describe the same `N` segments. Caps are visual-wide, not per item.
 
-## Attributes
+## Attribute Contract
 
-| Kind | Attributes |
-| --- | --- |
-| Required | `position_start` (`vec3`), `position_end` (`vec3`), `color` (RGBA8), `stroke_width_px` (`float`, pixels) |
-| Optional | endpoint caps through `dvz_segment_set_caps()`; alpha mode; depth test; transform; visual-wide scale bindings |
+| Attribute | Requirement/default | C type and cardinality | Python dtype and shape | Units/coordinates and constraints | Update route |
+| --- | --- | --- | --- | --- | --- |
+| `position_start` | Required; no documented default | `vec3[N]` | `float32`, `(N, 3)` | Authored visual coordinates; start endpoint. | Dense or range upload. |
+| `position_end` | Required; no documented default | `vec3[N]` | `float32`, `(N, 3)` | Same space as `position_start`; end endpoint. | Dense or range upload. |
+| `color` | Required; no documented default | `DvzColor[N]` | `uint8`, `(N, 4)` | RGBA8, one color per segment in the dense route. Scalar color is deferred. | Dense or range upload. |
+| `stroke_width_px` | Required; no documented default | `float[N]` | `float32`, `(N,)` | Stroke width in logical pixels; use finite positive values for visible strokes. | Dense or range upload. |
+
+`color` and `stroke_width_px` may use an explicitly configured constant source. A one-row dense
+array is still one segment, not a broadcast value.
+
+## Constructor And Options
+
+- Constructor: `dvz_segment(scene, flags)`; current examples pass `flags = 0`.
+- Caps default to `DVZ_SEGMENT_CAP_BUTT` at both ends. Change them with
+  `dvz_segment_set_caps()`; supported values are none, round, triangle-in, triangle-out, square,
+  and butt.
+- Common options include alpha mode, depth test, and transform. Dashes, scalar color, arrow caps,
+  and per-item caps are deferred.
+
+## Verified Usage Pattern
+
+Upload the two endpoint arrays, color, and width together, optionally set caps, then attach the
+visual. See the complete [C and Python example](../../examples/gallery/visuals/visuals_segment.md).
 
 ## Picking And Probing
 
@@ -42,8 +61,8 @@ Picking and retained data are item-based: one segment item corresponds to one st
 
 ## Backend Notes
 
-Native and WebGPU paths are active. v0.4 caps include none, round, triangle-in,
-triangle-out, square, and butt. Dashes and per-item cap attributes are deferred.
+Native and WebGPU paths are active. Each source item lowers to expanded screen-space stroke
+geometry while retaining the source segment identity.
 
 ## Canonical Example
 

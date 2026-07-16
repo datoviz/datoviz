@@ -24,17 +24,33 @@ selection overlays where each item remains an independently addressable mark.
 Use [Point](point.md) for circular marks, [Marker](marker.md) for symbolic glyphs, or
 [Image](image.md) for dense regular sampled fields.
 
-## Data Model
+## Item And Data Model
 
-Create with `dvz_pixel(scene, flags)`. Upload one item per pixel mark. The canonical example uses
-scalar values for `color` and binds a color scale.
+Create with `dvz_pixel(scene, flags)`. One item is one independently addressable square sprite.
+Upload `N` rows for each required attribute. This is not a sampled image: items need not lie on a
+regular grid.
 
-## Attributes
+## Attribute Contract
 
-| Kind | Attributes |
-| --- | --- |
-| Required | `position` (`vec3` center), `color` (RGBA8 or configured scalar), `pixel_size_px` (`float`, pixels) |
-| Optional | `item_state` for retained hover/selection styling; alpha mode; depth test; transform; visual-wide scale bindings |
+| Attribute | Requirement/default | C type and cardinality | Python dtype and shape | Units/coordinates and constraints | Update route |
+| --- | --- | --- | --- | --- | --- |
+| `position` | Required; no documented default | `vec3[N]` | `float32`, `(N, 3)` | Authored visual coordinates; each row is the square center. | Dense or range upload. |
+| `color` | Required; no documented default | `DvzColor[N]` | `uint8`, `(N, 4)` | RGBA8. Scalar `float[N]` is supported after selecting `DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32` and binding a color scale. | Set format before data; dense or range upload. |
+| `pixel_size_px` | Required; no documented default | `float[N]` | `float32`, `(N,)` | Square side length in logical pixels; use finite nonnegative values. | Dense or range upload. |
+| `item_state` | Optional; absent means no per-item state payload | `uint32_t[N]` | `uint32`, `(N,)` | `DvzItemStateKind` bitfield for retained hover/selection styling. | Usually managed by interaction APIs; direct dense/range upload is supported. |
+
+## Constructor And Options
+
+- Constructor: `dvz_pixel(scene, flags)`; current examples pass `flags = 0`.
+- Common visual-wide options include alpha mode, depth test, depth cue, transform, and a color
+  scale. Pixel has no family-specific style setter.
+- `color` and `pixel_size_px` support configured constant or per-group sources; dense arrays do not
+  broadcast.
+
+## Verified Usage Pattern
+
+Upload `position`, `color`, and `pixel_size_px` together, then attach the visual to the panel. See
+the complete [C and Python example](../../examples/gallery/visuals/visuals_pixel.md).
 
 ## Picking And Probing
 

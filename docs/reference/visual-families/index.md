@@ -1,7 +1,7 @@
 # Visual Families
 
-Each public visual family has a concise reference page with status, backend support, data model,
-attributes, picking/probing notes, and links to the canonical example.
+Each public visual family has a concise reference page with status, backend support, an exact
+dense-data contract, picking notes, and links to verified C and Python examples.
 
 Use the [Examples gallery](../../examples/visuals.md) for complete executable source. Use
 [Choose a visual family](../../how-to/choose-a-visual-family.md) when deciding between neighboring
@@ -10,6 +10,28 @@ families.
 Visual families are batching units. Prefer one visual with many items over many visuals with one
 item each. Use per-item attributes for position, color, size, radius, state, and related styling
 whenever the visual family supports them.
+
+## Reading The Attribute Tables
+
+Unless a family page says otherwise:
+
+- `N` is the logical item or path-point count. Every array passed together to
+  `dvz_visual_set_data_many()` must have the same first dimension `N`.
+- C shapes describe one element followed by the array cardinality, for example `vec3[N]`.
+  Python shapes use NumPy notation, for example `(N, 3)`.
+- `position` attributes use the visual's authored coordinate space, normally data coordinates
+  transformed by the panel attachment and controller. Names ending in `_px` use logical pixels.
+- The normal Python route is `import datoviz as dvz` with C-contiguous NumPy arrays. Use
+  `float32`, `uint8`, and `uint32` exactly where specified.
+- A full upload uses `dvz_visual_set_data()` or `dvz_visual_set_data_many()`. Update a contiguous
+  existing interval with `dvz_visual_set_data_range()`.
+- "Required" means required for the documented family mode to render. No implicit value should be
+  assumed for a missing required dense attribute.
+
+The registry also supports selected constant, per-span, or per-group attribute sources. Those are
+advanced source configurations, not one-row broadcasting in the dense upload API. See
+[Visual attributes](../visual-attributes.md) and the generated
+[Visuals and composites API](../c-api/visuals.md) for exact setters and signatures.
 
 | Preview | Family | Status | Primary use | Example |
 | --- | --- | --- | --- | --- |
