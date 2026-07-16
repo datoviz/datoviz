@@ -1,5 +1,60 @@
 /* Reusable patterns for documentation section pages and guide introductions. */
 
+.md-typeset .dvz-blog-navigation {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0.6rem;
+    margin: 0 0 1.5rem;
+}
+
+.md-typeset .dvz-blog-navigation__link {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid rgba(76, 201, 240, 0.2);
+    border-radius: 6px;
+    background: rgba(76, 201, 240, 0.05);
+    color: var(--md-default-fg-color);
+}
+
+.md-typeset .dvz-blog-navigation__link:hover,
+.md-typeset .dvz-blog-navigation__link:focus-visible {
+    border-color: rgba(76, 201, 240, 0.62);
+    text-decoration: none;
+}
+
+.md-typeset .dvz-blog-navigation__link--index {
+    align-items: center;
+    grid-column: 2;
+    color: var(--dvz-cyan);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.md-typeset .dvz-blog-navigation__link--newer {
+    grid-column: 3;
+    text-align: right;
+}
+
+.md-typeset .dvz-blog-navigation__direction {
+    color: var(--md-default-fg-color--light);
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.md-typeset .dvz-blog-navigation__title {
+    overflow: hidden;
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .md-typeset .dvz-section-intro {
     margin: 0.8rem 0 1.8rem;
     padding: 1rem 1.15rem;
@@ -80,6 +135,19 @@
 }
 
 @media screen and (max-width: 700px) {
+    .md-typeset .dvz-blog-navigation {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .md-typeset .dvz-blog-navigation__link--index {
+        grid-column: 1 / -1;
+        grid-row: 1;
+    }
+
+    .md-typeset .dvz-blog-navigation__link--newer {
+        grid-column: 2;
+    }
+
     .md-typeset .dvz-section-grid {
         grid-template-columns: 1fr;
     }

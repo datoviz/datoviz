@@ -20,6 +20,7 @@ exclude_docs: |
   visuals/*
 theme:
   name: material
+  custom_dir: overrides
   logo: images/logow.png
   palette:
     scheme: slate
