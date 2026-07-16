@@ -44,6 +44,9 @@ as real implementation, not scaffolding.
    viewport behavior. Keep generated/adornment visual routing semantic and attachment-driven; do
    not reintroduce frame-plan pointer scans over axis, guide, colorbar, legend, panel chrome,
    scale-bar, overlay, or bounds-overlay object fields.
+10. Use [HANDOFF_VISUAL_DOCUMENTATION_PASS.md](HANDOFF_VISUAL_DOCUMENTATION_PASS.md) for the
+    approved visual-system pilot across Get Started, Core Concepts, Choose Your Layer, and the
+    Advanced overview. Complete the pilot and request maintainer review before broad rollout.
 
 
 ## Guardrails
