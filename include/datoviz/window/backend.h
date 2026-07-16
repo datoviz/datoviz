@@ -131,7 +131,7 @@ DVZ_EXPORT DvzWindowExternalSurfaceInfo dvz_window_external_surface_info(void);
  * Access the router attached to the window.
  *
  * @param window window that owns the router
- * @returns pointer to the router used for input emission
+ * @returns the borrowed router used for input emission, valid until window destruction
  */
 DVZ_EXPORT DvzInputRouter* dvz_window_backend_router(DvzWindow* window);
 
@@ -141,7 +141,7 @@ DVZ_EXPORT DvzInputRouter* dvz_window_backend_router(DvzWindow* window);
  * Access the surface description for mutation.
  *
  * @param window window whose surface is requested
- * @returns pointer to the surface owned by the window
+ * @returns mutable borrowed surface storage, valid until window destruction
  */
 DVZ_EXPORT DvzWindowSurface* dvz_window_backend_surface(DvzWindow* window);
 
@@ -150,8 +150,10 @@ DVZ_EXPORT DvzWindowSurface* dvz_window_backend_surface(DvzWindow* window);
 /**
  * Store a backend-specific handle on the window.
  *
+ * The window stores the pointer without taking ownership.
+ *
  * @param window target window
- * @param handle native handle owned by the backend
+ * @param handle borrowed native handle managed by the backend, or NULL
  */
 DVZ_EXPORT void dvz_window_backend_set_handle(DvzWindow* window, void* handle);
 
@@ -161,7 +163,7 @@ DVZ_EXPORT void dvz_window_backend_set_handle(DvzWindow* window, void* handle);
  * Retrieve the backend-specific handle stored with the window.
  *
  * @param window window queried for the handle
- * @returns pointer previously set with dvz_window_backend_set_handle()
+ * @returns the borrowed pointer previously set with dvz_window_backend_set_handle(), or NULL
  */
 DVZ_EXPORT void* dvz_window_backend_handle(const DvzWindow* window);
 
@@ -170,8 +172,10 @@ DVZ_EXPORT void* dvz_window_backend_handle(const DvzWindow* window);
 /**
  * Store additional backend data on the window.
  *
+ * The window stores the pointer without taking ownership.
+ *
  * @param window window to mutate
- * @param payload opaque backend payload pointer
+ * @param payload borrowed opaque backend payload pointer, or NULL
  */
 DVZ_EXPORT void dvz_window_backend_set_payload(DvzWindow* window, void* payload);
 
@@ -181,7 +185,7 @@ DVZ_EXPORT void dvz_window_backend_set_payload(DvzWindow* window, void* payload)
  * Retrieve backend payload associated with the window.
  *
  * @param window window queried for payload
- * @returns payload pointer or NULL
+ * @returns the borrowed backend payload pointer, or NULL
  */
 DVZ_EXPORT void* dvz_window_backend_payload(const DvzWindow* window);
 
@@ -199,11 +203,13 @@ DVZ_EXPORT bool dvz_window_glfw_init(void);
  * Register raw GLFW input callbacks for integrations that must see events before Datoviz routing.
  *
  * These callbacks are only used by GLFW windows. A callback returning true consumes the event and
- * prevents the corresponding Datoviz pointer/keyboard event from being emitted.
+ * prevents the corresponding Datoviz pointer/keyboard event from being emitted. The callback table
+ * is copied, but `user_data` is borrowed and must remain valid until the callbacks are replaced,
+ * cleared, or the window is destroyed.
  *
  * @param window target window
  * @param callbacks callback table, or NULL to clear it
- * @param user_data opaque pointer forwarded to every callback
+ * @param user_data borrowed opaque pointer forwarded to every callback
  */
 DVZ_EXPORT void dvz_window_glfw_set_input_callbacks(
     DvzWindow* window, const DvzWindowGlfwInputCallbacks* callbacks, void* user_data);
@@ -215,7 +221,7 @@ DVZ_EXPORT void dvz_window_glfw_set_input_callbacks(
  *
  * @param host host that owns the wrap backend state
  * @param count number of extension names passed in extensions
- * @param extensions extension-name array or NULL when count is zero
+ * @param extensions extension-name array copied by the host, or NULL when count is zero
  * @returns 0 on success, -1 on invalid input or allocation failure
  */
 DVZ_EXPORT int
@@ -226,8 +232,12 @@ dvz_window_wrap_set_required_extensions(DvzWindowHost* host, uint32_t count, con
 /**
  * Attach an externally-created Vulkan surface to a wrap window.
  *
+ * When `info->owned_by_datoviz` is false, the instance and surface remain caller-owned and must
+ * outlive their attachment. When true, Datoviz destroys the surface on replacement, detachment, or
+ * window destruction; the Vulkan instance always remains caller-owned and must outlive the surface.
+ *
  * @param window target window created with DVZ_BACKEND_WRAP
- * @param info external surface description
+ * @param info external surface description copied into the window
  * @returns 0 on success, -1 on invalid args/backend mismatch/invalid handles
  */
 DVZ_EXPORT int
@@ -238,8 +248,11 @@ dvz_window_wrap_attach_surface(DvzWindow* window, const DvzWindowExternalSurface
 /**
  * Update the externally-managed Vulkan surface associated with a wrap window.
  *
+ * Ownership of the old and replacement surfaces follows each descriptor's
+ * `owned_by_datoviz` value. Passing matching null handles reports temporary surface loss.
+ *
  * @param window target window created with DVZ_BACKEND_WRAP
- * @param info external surface description
+ * @param info replacement surface description copied into the window
  * @returns 0 on success, -1 on invalid args/backend mismatch/rejected update
  */
 DVZ_EXPORT int
@@ -271,10 +284,13 @@ dvz_window_host_required_extension_count(DvzWindowHost* host, DvzBackend backend
 /**
  * Query backend-required Vulkan instance extension names.
  *
+ * The returned names are borrowed from backend state and remain valid until that backend state is
+ * reconfigured or the host is destroyed.
+ *
  * @param host host that contains the backend registry
  * @param backend backend to query
  * @param capacity maximum number of names that can be written in out_extensions
- * @param out_extensions output array of extension names
+ * @param out_extensions output array receiving borrowed extension-name pointers
  * @returns number of names written, or -1 on invalid input/backend unavailable
  */
 DVZ_EXPORT int dvz_window_host_required_extensions(

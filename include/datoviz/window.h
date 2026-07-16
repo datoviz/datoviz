@@ -39,7 +39,7 @@ EXTERN_C_ON
 /**
  * Create a window host that stores available backends and owned windows.
  *
- * @returns pointer to the newly allocated host
+ * @returns a newly allocated host, or NULL on allocation failure
  */
 DVZ_EXPORT DvzWindowHost* dvz_window_host(void);
 
@@ -48,7 +48,7 @@ DVZ_EXPORT DvzWindowHost* dvz_window_host(void);
 /**
  * Destroy a window host and all windows associated with it.
  *
- * @param host host returned by dvz_window_host()
+ * @param host host returned by dvz_window_host(), or NULL
  */
 DVZ_EXPORT void dvz_window_host_destroy(DvzWindowHost* host);
 
@@ -57,8 +57,12 @@ DVZ_EXPORT void dvz_window_host_destroy(DvzWindowHost* host);
 /**
  * Register a backend so it can be used during window creation.
  *
+ * The descriptor is copied into the host. Pointers stored inside it, including `name`, `user_data`,
+ * and callback-dependent state, remain borrowed and must outlive the host or be unregistered only
+ * by destroying the host.
+ *
  * @param host host that receives the backend
- * @param backend backend descriptor containing the callback table
+ * @param backend backend descriptor containing the callback table and borrowed state
  */
 DVZ_EXPORT void dvz_window_host_register_backend(
     DvzWindowHost* host, const DvzWindowBackend* backend);
@@ -139,8 +143,10 @@ DVZ_EXPORT void dvz_window_destroy(DvzWindow* window);
 /**
  * Return the cached surface information for the window.
  *
+ * The returned storage is updated in place when the backend surface changes and must not be freed.
+ *
  * @param window window to query
- * @returns pointer to the surface data owned by the window
+ * @returns the borrowed surface data, valid until window destruction
  */
 DVZ_EXPORT const DvzWindowSurface* dvz_window_surface(const DvzWindow* window);
 
@@ -148,8 +154,10 @@ DVZ_EXPORT const DvzWindowSurface* dvz_window_surface(const DvzWindow* window);
 /**
  * Return the cached logical/native/surface metrics for the window.
  *
+ * The returned storage is updated in place when the window metrics change and must not be freed.
+ *
  * @param window window to query
- * @returns pointer to the metrics data owned by the window
+ * @returns the borrowed metrics data, valid until window destruction
  */
 DVZ_EXPORT const DvzWindowMetrics* dvz_window_metrics(const DvzWindow* window);
 
@@ -159,7 +167,7 @@ DVZ_EXPORT const DvzWindowMetrics* dvz_window_metrics(const DvzWindow* window);
  * Retrieve the router used to emit input events for the window.
  *
  * @param window window owning the router
- * @returns input router pointer
+ * @returns the borrowed input router, valid until window destruction
  */
 DVZ_EXPORT DvzInputRouter* dvz_window_router(DvzWindow* window);
 
@@ -168,8 +176,11 @@ DVZ_EXPORT DvzInputRouter* dvz_window_router(DvzWindow* window);
 /**
  * Store an opaque user data pointer on the window.
  *
+ * The window does not take ownership. The pointer must remain valid for every callback that uses
+ * it, until replaced or the window is destroyed.
+ *
  * @param window destination window
- * @param user_data pointer copied verbatim
+ * @param user_data borrowed pointer copied verbatim, or NULL to clear it
  */
 DVZ_EXPORT void dvz_window_set_user_data(DvzWindow* window, void* user_data);
 
@@ -179,7 +190,7 @@ DVZ_EXPORT void dvz_window_set_user_data(DvzWindow* window, void* user_data);
  * Read the user data pointer previously stored on a window.
  *
  * @param window window queried for user data
- * @returns pointer passed to dvz_window_set_user_data()
+ * @returns the borrowed pointer passed to dvz_window_set_user_data(), or NULL
  */
 DVZ_EXPORT void* dvz_window_user_data(const DvzWindow* window);
 

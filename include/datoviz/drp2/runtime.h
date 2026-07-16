@@ -96,8 +96,12 @@ DVZ_EXPORT DvzDrp2ExternalBufferDesc dvz_drp2_external_buffer_desc(void);
 /**
  * Create a DRP2 runtime using the vklite backend boundary.
  *
- * @param cfg the runtime configuration
- * @return the runtime, or NULL on invalid configuration
+ * The runtime copies the configuration but borrows its device and allocator. Both must remain live
+ * until the runtime is destroyed. A configuration with both pointers NULL creates a semantic-only
+ * runtime that validates streams without executing backend commands.
+ *
+ * @param cfg required runtime configuration
+ * @return a newly allocated runtime, or NULL on invalid configuration or allocation failure
  */
 DVZ_EXPORT DvzDrp2Runtime* dvz_drp2_runtime_vklite(const DvzDrp2RuntimeConfig* cfg);
 
@@ -106,7 +110,7 @@ DVZ_EXPORT DvzDrp2Runtime* dvz_drp2_runtime_vklite(const DvzDrp2RuntimeConfig* c
 /**
  * Return the borrowed configuration that was used to create a DRP2 runtime.
  *
- * @param runtime the runtime
+ * @param runtime the runtime, or NULL
  * @return the runtime configuration, or zero-initialized fields when runtime is NULL
  */
 DVZ_EXPORT DvzDrp2RuntimeConfig dvz_drp2_runtime_get_config(const DvzDrp2Runtime* runtime);
@@ -169,7 +173,8 @@ dvz_drp2_validate_stream(const DvzDrp2CommandStream* stream);
  *
  * @param runtime the runtime
  * @param stream the command stream
- * @return the validation result before backend execution
+ * @return the semantic-validation result for semantic-only runtimes, otherwise the backend
+ * execution result; `ok` is false when either stage fails
  */
 DVZ_EXPORT DvzDrp2ValidationResult
 dvz_drp2_runtime_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream);
@@ -177,6 +182,11 @@ dvz_drp2_runtime_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* st
 
 /**
  * Attach a borrowed stream frame as a runtime render target.
+ *
+ * The runtime retains the frame's borrowed image, image-view, and command-buffer handles under
+ * `texture_id`. They must remain valid until this target is replaced, the runtime is reset, or the
+ * runtime is destroyed. The command buffer must already be recording during subsequent execution;
+ * the runtime records into it but does not begin, end, reset, submit, or destroy it.
  *
  * @param runtime the runtime
  * @param texture_id the DRP2 texture id to expose for render passes
@@ -190,6 +200,10 @@ DVZ_EXPORT bool dvz_drp2_runtime_attach_frame_target(
 /**
  * Record a copy from a runtime-owned texture into a borrowed stream frame.
  *
+ * The destination frame must declare `DVZ_STREAM_FRAME_USAGE_COPY_DST`, and its command buffer must
+ * already be recording. This call records into the borrowed command buffer without ending,
+ * submitting, resetting, or destroying it.
+ *
  * @param runtime the runtime
  * @param texture_id the DRP2 texture id to copy from
  * @param frame the borrowed stream frame whose command buffer is currently recording
@@ -202,15 +216,15 @@ DVZ_EXPORT bool dvz_drp2_runtime_copy_texture_to_frame(
 /**
  * Download bytes from a DRP2 buffer into CPU memory.
  *
- * Must be called after dvz_drp2_runtime_execute() has completed.
- * The buffer must have been created with DVZ_DRP2_BUFFER_USAGE_COPY_DST usage.
+ * Must be called after dvz_drp2_runtime_execute() has completed. The requested byte range must fit
+ * in a live buffer created with `DVZ_DRP2_BUFFER_USAGE_MAP_READ`.
  *
  * @param runtime the vklite runtime
  * @param buffer_id the DRP2 buffer id used in the stream
  * @param offset byte offset within the buffer
  * @param size number of bytes to read
  * @param dst destination CPU buffer (caller-allocated, at least size bytes)
- * @return true on success
+ * @return true when the live buffer and byte range are valid and the bytes were copied
  */
 DVZ_EXPORT bool dvz_drp2_runtime_download_buffer(
     DvzDrp2Runtime* runtime, uint64_t buffer_id, uint64_t offset, uint64_t size, void* dst);

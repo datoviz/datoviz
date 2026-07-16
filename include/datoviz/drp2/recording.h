@@ -73,8 +73,8 @@ DVZ_EXPORT DvzDrp2RecordingInfo dvz_drp2_recording_info(void);
  * Open a linear DRP2 recorder.
  *
  * @param path recording directory path
- * @param info optional recording metadata
- * @return the recorder, or NULL on error
+ * @param info optional recording metadata copied by the recorder, or NULL for defaults
+ * @return a newly allocated recorder, or NULL on error
  */
 DVZ_EXPORT DvzDrp2Recorder*
 dvz_drp2_recorder_open(const char* path, const DvzDrp2RecordingInfo* info);
@@ -84,7 +84,7 @@ dvz_drp2_recorder_open(const char* path, const DvzDrp2RecordingInfo* info);
  * Append one timestamped command stream to a linear DRP2 recorder.
  *
  * @param recorder the recorder
- * @param t_present presentation timestamp for this stream
+ * @param t_present presentation timestamp in seconds relative to recording start
  * @param stream the command stream to append
  * @return whether the stream was appended
  */
@@ -95,8 +95,10 @@ DVZ_EXPORT bool dvz_drp2_recorder_write_stream(
 /**
  * Close a linear DRP2 recorder.
  *
- * @param recorder the recorder
- * @return whether the recorder was closed cleanly
+ * This flushes metadata and destroys the recorder even when finalization fails.
+ *
+ * @param recorder recorder to close, or NULL
+ * @return whether final metadata was written and all files closed cleanly
  */
 DVZ_EXPORT bool dvz_drp2_recorder_close(DvzDrp2Recorder* recorder);
 
@@ -109,7 +111,7 @@ DVZ_EXPORT bool dvz_drp2_recorder_close(DvzDrp2Recorder* recorder);
  *
  * @param path recording directory path
  * @param stream the command stream to record
- * @param info optional recording metadata
+ * @param info optional recording metadata copied for the write, or NULL for defaults
  * @return whether the recording was written
  */
 DVZ_EXPORT bool dvz_drp2_recording_write_stream(
@@ -128,7 +130,7 @@ DVZ_EXPORT DvzDrp2Recording* dvz_drp2_recording_open(const char* path);
 /**
  * Close a loaded DRP2 recording.
  *
- * @param recording loaded recording
+ * @param recording loaded recording, or NULL
  */
 DVZ_EXPORT void dvz_drp2_recording_close(DvzDrp2Recording* recording);
 
@@ -170,7 +172,8 @@ dvz_drp2_recording_frame(const DvzDrp2Recording* recording, uint32_t frame_index
  *
  * @param recording loaded recording
  * @param frame_index frame index
- * @return a newly allocated frame command stream, or NULL
+ * @return a newly allocated frame command stream that the caller must destroy with
+ * `dvz_drp2_stream_destroy()`, or NULL
  */
 DVZ_EXPORT DvzDrp2CommandStream*
 dvz_drp2_recording_frame_stream(const DvzDrp2Recording* recording, uint32_t frame_index);
@@ -215,7 +218,8 @@ DVZ_EXPORT DvzDrp2ValidationResult dvz_drp2_recording_playback(
  * Read a linear DRP2 recording directory.
  *
  * @param path recording directory path
- * @return a reconstructed command stream, or NULL on error
+ * @return a reconstructed command stream that the caller must destroy with
+ * `dvz_drp2_stream_destroy()`, or NULL on error
  */
 DVZ_EXPORT DvzDrp2CommandStream* dvz_drp2_recording_read_stream(const char* path);
 

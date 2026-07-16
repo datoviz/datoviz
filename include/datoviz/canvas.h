@@ -139,7 +139,11 @@ EXTERN_C_ON
 /**
  * Return a default canvas configuration used when callers do not override fields.
  *
- * @returns a configuration with null handles, RGBA8 color format, and empty timing history
+ * The caller must set the borrowed `window` and `device` fields before creating a canvas. The
+ * returned configuration selects present rendering, FIFO presentation, the runtime default color
+ * format, and `DVZ_CANVAS_DEFAULT_TIMING_HISTORY` timing samples.
+ *
+ * @returns the initialized configuration
  */
 DVZ_EXPORT DvzCanvasConfig dvz_canvas_config(void);
 
@@ -156,8 +160,12 @@ DVZ_EXPORT DvzCanvasLiveImageSinkConfig dvz_canvas_live_image_sink_config(void);
 /**
  * Allocate a new canvas tied to a window surface and device.
  *
- * @param cfg canvas configuration or NULL for defaults
- * @returns pointer to the created canvas or NULL on failure
+ * `cfg->window` and `cfg->device` are required borrowed objects and must outlive the canvas. The
+ * canvas copies the configuration and owns the stream, allocator, synchronization, and render
+ * resources it creates; it does not destroy the window or device.
+ *
+ * @param cfg required canvas configuration with non-NULL `window` and `device`
+ * @returns a newly allocated canvas, or NULL when the configuration or runtime setup is invalid
  */
 DVZ_EXPORT DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg);
 
@@ -166,18 +174,22 @@ DVZ_EXPORT DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg);
 /**
  * Destroy the canvas and any stream resources it owns.
  *
- * @param canvas canvas handle returned by dvz_canvas_create()
+ * @param canvas canvas returned by dvz_canvas_create(), or NULL
  */
 DVZ_EXPORT void dvz_canvas_destroy(DvzCanvas* canvas);
 
 
 
 /**
- * Register a draw callback executed whenever dvz_canvas_frame() succeeds.
+ * Register a draw callback executed before each successful dvz_canvas_frame() returns.
+ *
+ * The callback and `user_data` are borrowed and must remain valid until replaced, cleared, or the
+ * canvas is destroyed. The callback receives a borrowed frame whose Vulkan handles are valid only
+ * for that invocation and must not be destroyed, reset, submitted, transitioned, or retained.
  *
  * @param canvas target canvas
  * @param callback draw callback (NULL removes the callback)
- * @param user_data opaque pointer supplied to the callback on every invocation
+ * @param user_data borrowed opaque pointer supplied to the callback on every invocation
  */
 DVZ_EXPORT void
 dvz_canvas_set_draw_callback(DvzCanvas* canvas, DvzCanvasDraw callback, void* user_data);
@@ -240,7 +252,7 @@ dvz_canvas_offscreen_runtime_state(const DvzCanvas* canvas);
  * Expose the input router owned by the canvas window.
  *
  * @param canvas canvas owning the router
- * @returns pointer to the router or NULL when the canvas/window is invalid
+ * @returns the borrowed router, valid until the canvas window is destroyed, or NULL when absent
  */
 DVZ_EXPORT DvzInputRouter* dvz_canvas_input(DvzCanvas* canvas);
 
@@ -332,7 +344,10 @@ DVZ_EXPORT int dvz_canvas_configure_live_image_sink(
  * Access the stream underpinning the canvas.
  *
  * @param canvas canvas handle
- * @returns stream pointer or NULL when the canvas is invalid
+ * The caller must not destroy the returned stream. It remains valid until the canvas is destroyed
+ * or reconfiguring a sink rebuilds the canvas stream.
+ *
+ * @returns the borrowed underlying stream, or NULL when unavailable
  */
 DVZ_EXPORT DvzStream* dvz_canvas_stream(DvzCanvas* canvas);
 
@@ -341,9 +356,12 @@ DVZ_EXPORT DvzStream* dvz_canvas_stream(DvzCanvas* canvas);
 /**
  * Read the recorded frame timings.
  *
+ * The returned view is owned by the canvas and may be invalidated or overwritten by subsequent
+ * frame submissions. It must not be freed and remains valid at most until canvas destruction.
+ *
  * @param canvas canvas handle
- * @param count optional output storing the number of samples tracked
- * @returns pointer to the internal ring buffer with the latest timings
+ * @param count optional output receiving the number of readable samples
+ * @returns the borrowed internal timing buffer, or NULL when no samples are available
  */
 DVZ_EXPORT const DvzFrameTiming* dvz_canvas_timings(const DvzCanvas* canvas, size_t* count);
 
