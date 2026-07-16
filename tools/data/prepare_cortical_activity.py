@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import deque
 import hashlib
 import json
 import shutil
@@ -33,9 +34,11 @@ OPENNEURO_BASE = f"https://s3.amazonaws.com/openneuro.org/{OPENNEURO_DATASET}"
 MNE_VERSION = "1.12.1"
 MNE_BIDS_VERSION = "0.19.0"
 NIBABEL_VERSION = "5.4.2"
+NUMPY_VERSION = "2.3.4"
+SCIPY_VERSION = "1.18.0"
 PREPARE_COMMAND = (
     "uv run --isolated --with mne==1.12.1 --with mne-bids==0.19.0 "
-    "--with nibabel==5.4.2 --with requests --with numpy "
+    "--with nibabel==5.4.2 --with numpy==2.3.4 --with scipy==1.18.0 --with requests "
     "python tools/data/prepare_cortical_activity.py"
 )
 
@@ -47,12 +50,13 @@ OUTPUT_TMAX_S = 0.24
 LOWPASS_HZ = 40.0
 HIGHPASS_HZ = 1.0
 SOURCE_SPACING = "oct6"
+SMOOTHING_STEPS = 5
 SNR = 3.0
 LAMBDA2 = 1.0 / SNR**2
 # Match the established MNE audiovisual sample display convention. Values below fmin remain
 # neutral cortex; opacity rises through fmid and the sequential ramp saturates at fmax.
 DISPLAY_LIMITS = (8.0, 12.0, 15.0)
-HEMISPHERE_GAP_MM = 8.0
+HEMISPHERE_GAP_MM = 100.0
 
 
 @dataclass(frozen=True)
@@ -208,12 +212,13 @@ def _download_sources(source_root: Path, force: bool) -> None:
         raise ValueError("dataset_description.json does not match the pinned CC0 OpenNeuro snapshot")
 
 
-def _load_mne() -> tuple[Any, Any]:
+def _load_mne() -> tuple[Any, Any, Any]:
     """Load and version-check the preparation-only neuroimaging dependencies."""
     try:
         import mne
         import mne_bids
         import nibabel
+        import scipy
     except ImportError as exc:
         raise RuntimeError(f"missing preparation dependency; run `{PREPARE_COMMAND}`") from exc
 
@@ -221,15 +226,19 @@ def _load_mne() -> tuple[Any, Any]:
         "mne": mne.__version__,
         "mne_bids": mne_bids.__version__,
         "nibabel": nibabel.__version__,
+        "numpy": np.__version__,
+        "scipy": scipy.__version__,
     }
     expected = {
         "mne": MNE_VERSION,
         "mne_bids": MNE_BIDS_VERSION,
         "nibabel": NIBABEL_VERSION,
+        "numpy": NUMPY_VERSION,
+        "scipy": SCIPY_VERSION,
     }
     if versions != expected:
         raise RuntimeError(f"preparation dependency versions must be {expected}, got {versions}; run `{PREPARE_COMMAND}`")
-    return mne, mne_bids
+    return mne, mne_bids, scipy
 
 
 def _vertex_normals(positions: np.ndarray, triangles: np.ndarray) -> np.ndarray:
@@ -247,20 +256,26 @@ def _vertex_normals(positions: np.ndarray, triangles: np.ndarray) -> np.ndarray:
     return normals.astype(np.float32)
 
 
-def _source_mesh(
-    mne: Any, source_root: Path, src: Any, stc: Any
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, list[dict[str, int]]]:
-    """Build a compact two-hemisphere mesh matching the SourceEstimate vertex order."""
+def _source_mesh(mne: Any, source_root: Path, src: Any) -> tuple[
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    list[dict[str, int]],
+    list[tuple[np.ndarray, np.ndarray]],
+]:
+    """Build the complete two-hemisphere oct6 display mesh."""
     inflated_parts: list[np.ndarray] = []
     pial_parts: list[np.ndarray] = []
     normal_parts: list[np.ndarray] = []
     index_parts: list[np.ndarray] = []
     hemispheres: list[dict[str, int]] = []
+    sampling: list[tuple[np.ndarray, np.ndarray]] = []
     vertex_offset = 0
     index_offset = 0
 
     for hemi_index, hemi in enumerate(("lh", "rh")):
-        vertices = np.asarray(stc.vertices[hemi_index], dtype=np.int64)
+        vertices = np.asarray(src[hemi_index]["vertno"], dtype=np.int64)
         inflated_full, _ = mne.read_surface(
             source_root / f"derivatives/freesurfer/subjects/sub-01/surf/{hemi}.inflated",
             verbose="ERROR",
@@ -279,14 +294,25 @@ def _source_mesh(
 
         inflated = np.asarray(inflated_full[vertices], dtype=np.float64)
         pial = np.asarray(pial_full[vertices], dtype=np.float64)
-        inflated[:, 0] += -HEMISPHERE_GAP_MM if hemi == "lh" else HEMISPHERE_GAP_MM
-        pial[:, 0] += -HEMISPHERE_GAP_MM if hemi == "lh" else HEMISPHERE_GAP_MM
+        # Present the two real surfaces as mirrored lateral views. This is a rigid display-space
+        # reorientation per hemisphere: topology, vertex identity, and scalar correspondence stay
+        # unchanged. The outer (lateral) cortex faces +Z for both hemispheres.
+        surface_center = 0.5 * (inflated.min(axis=0) + inflated.max(axis=0))
+        inflated -= surface_center
+        pial -= surface_center
+        side = -1.0 if hemi == "lh" else 1.0
+        for surface in (inflated, pial):
+            original = surface.copy()
+            surface[:, 0] = side * original[:, 1] + side * HEMISPHERE_GAP_MM
+            surface[:, 1] = original[:, 2]
+            surface[:, 2] = side * original[:, 0]
         normals = _vertex_normals(inflated, local_triangles)
 
         inflated_parts.append(inflated)
         pial_parts.append(pial)
         normal_parts.append(normals)
         index_parts.append(local_triangles.astype(np.uint32) + vertex_offset)
+        sampling.append((vertices, local_triangles))
         hemispheres.append(
             {
                 "vertex_offset": vertex_offset,
@@ -310,7 +336,59 @@ def _source_mesh(
         np.concatenate(normal_parts, axis=0).astype(np.float32),
         np.concatenate(index_parts, axis=0).reshape(-1).astype(np.uint32),
         hemispheres,
+        sampling,
     )
+
+
+def _expand_activity(stc: Any, sampling: list[tuple[np.ndarray, np.ndarray]]) -> np.ndarray:
+    """Fill the complete oct6 mesh and apply short graph-neighbor display smoothing."""
+    from scipy import sparse
+
+    output: list[np.ndarray] = []
+    for hemi_index, (vertices, triangles) in enumerate(sampling):
+        stc_vertices = np.asarray(stc.vertices[hemi_index], dtype=np.int64)
+        full_to_local = {int(vertex): i for i, vertex in enumerate(vertices)}
+        known_local = np.asarray(
+            [full_to_local[int(vertex)] for vertex in stc_vertices], dtype=np.int64
+        )
+        vertex_count = vertices.size
+
+        adjacency: list[list[int]] = [[] for _ in range(vertex_count)]
+        edge_pairs = np.concatenate(
+            (triangles[:, [0, 1]], triangles[:, [1, 2]], triangles[:, [2, 0]]), axis=0
+        )
+        edge_pairs = np.concatenate((edge_pairs, edge_pairs[:, ::-1]), axis=0)
+        edge_pairs = np.unique(edge_pairs, axis=0)
+        for source, target in edge_pairs:
+            adjacency[int(source)].append(int(target))
+
+        owner = np.full(vertex_count, -1, dtype=np.int64)
+        owner[known_local] = np.arange(known_local.size, dtype=np.int64)
+        queue: deque[int] = deque(int(index) for index in known_local)
+        while queue:
+            source = queue.popleft()
+            for target in adjacency[source]:
+                if owner[target] >= 0:
+                    continue
+                owner[target] = owner[source]
+                queue.append(target)
+        if np.any(owner < 0):
+            raise ValueError(f"disconnected vertices remain in hemisphere {hemi_index}")
+
+        start = 0 if hemi_index == 0 else stc.vertices[0].size
+        stop = start + stc_vertices.size
+        values = np.asarray(stc.data[start:stop], dtype=np.float64).T[:, owner]
+        rows = edge_pairs[:, 0]
+        cols = edge_pairs[:, 1]
+        graph = sparse.csr_matrix(
+            (np.ones(rows.size, dtype=np.float64), (rows, cols)),
+            shape=(vertex_count, vertex_count),
+        )
+        degree = np.asarray(graph.sum(axis=1)).reshape(-1)
+        for _ in range(SMOOTHING_STEPS):
+            values = (values + graph.dot(values.T).T) / (degree[None, :] + 1.0)
+        output.append(values.astype(np.float32))
+    return np.concatenate(output, axis=1)
 
 
 def _write_binary(
@@ -363,8 +441,8 @@ def _write_binary(
 
 
 def _compute(source_root: Path) -> dict[str, Any]:
-    """Compute the auditory evoked dSPM estimate and matching compact surface mesh."""
-    mne, mne_bids = _load_mne()
+    """Compute the auditory evoked dSPM estimate and matching display surface mesh."""
+    mne, mne_bids, scipy = _load_mne()
     mne.set_log_level("WARNING")
     subjects_dir = source_root / "derivatives/freesurfer/subjects"
 
@@ -449,13 +527,10 @@ def _compute(source_root: Path) -> dict[str, Any]:
         verbose="ERROR",
     )
     stc.crop(OUTPUT_TMIN_S, OUTPUT_TMAX_S)
-    values = np.asarray(stc.data.T, dtype=np.float32)
+    inflated, pial, normals, indices, hemispheres, sampling = _source_mesh(mne, source_root, src)
+    values = _expand_activity(stc, sampling)
     if not np.all(np.isfinite(values)) or float(values.max()) < DISPLAY_LIMITS[1]:
         raise ValueError(f"unexpected dSPM activity range: {float(values.min())} .. {float(values.max())}")
-
-    inflated, pial, normals, indices, hemispheres = _source_mesh(
-        mne, source_root, inverse["src"], stc
-    )
     return {
         "times_ms": np.asarray(stc.times * 1000.0, dtype=np.float32),
         "inflated": inflated,
@@ -473,6 +548,7 @@ def _compute(source_root: Path) -> dict[str, Any]:
             "mne": mne.__version__,
             "mne_bids": mne_bids.__version__,
             "numpy": np.__version__,
+            "scipy": scipy.__version__,
         },
     }
 
@@ -521,6 +597,7 @@ def prepare(force_download: bool, download_only: bool) -> Path:
             "filter_hz": [HIGHPASS_HZ, LOWPASS_HZ],
             "baseline_seconds": [TMIN_S, 0.0],
             "source_spacing": SOURCE_SPACING,
+            "display_smoothing_steps": SMOOTHING_STEPS,
             "snr": SNR,
             "lambda2": LAMBDA2,
             "accepted_epochs": result["accepted_epochs"],
@@ -531,7 +608,8 @@ def prepare(force_download: bool, download_only: bool) -> Path:
         "mesh": {
             "surface": "inflated",
             "alternate_surface": "pial",
-            "hemisphere_gap_mm_before_normalization": HEMISPHERE_GAP_MM,
+            "display_orientation": "mirrored lateral hemispheres facing +Z",
+            "hemisphere_center_offset_mm_before_normalization": HEMISPHERE_GAP_MM,
             "hemispheres": result["hemispheres"],
             "vertex_count": int(result["inflated"].shape[0]),
             "triangle_count": int(result["indices"].size // 3),
@@ -597,6 +675,7 @@ def prepare(force_download: bool, download_only: bool) -> Path:
             "Estimated baseline noise covariance, participant-native BEM/forward solution, and a loose-orientation minimum-norm inverse.",
             f"Applied dSPM with SNR={SNR:g} and lambda2={LAMBDA2:.9f}; exported {OUTPUT_TMIN_S:g} to {OUTPUT_TMAX_S:g} seconds.",
             f"Sampled activity on the `{SOURCE_SPACING}` source mesh and preserved both inflated and pial coordinates.",
+            f"Filled inverse-excluded mesh vertices by nearest graph propagation and applied {SMOOTHING_STEPS} neighbor-averaging display steps.",
         ],
         license_lines=[
             "The pinned OpenNeuro dataset declares CC0.",
