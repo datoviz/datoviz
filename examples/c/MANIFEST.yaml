@@ -3751,7 +3751,7 @@ examples:
         frames: 480
         fps: 60
         sample_stride: 1
-        time_scale: 2.0
+        time_scale: 8.0
         card:
           preferred: video-mp4
           size: 1024x576
@@ -3759,7 +3759,7 @@ examples:
           fps: 60
           fallback_fps: 30
           webp_quality: 70
-          mp4_crf: 24
+          mp4_crf: 26
           webm_crf: 28
     data:
       kind: prepared
