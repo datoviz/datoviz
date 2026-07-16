@@ -1298,9 +1298,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.view.eye[0] = 0.0f;
-    camera_desc.view.eye[1] = 0.0f;
-    camera_desc.view.eye[2] = 3.0f;
+    camera_desc.view.eye[0] = -1.229315f;
+    camera_desc.view.eye[1] = +0.262005f;
+    camera_desc.view.eye[2] = +3.539440f;
+    camera_desc.view.up[0] = +0.022887f;
+    camera_desc.view.up[1] = +0.997564f;
+    camera_desc.view.up[2] = -0.065895f;
     camera_desc.projection.fov_y = 0.72f;
     camera_desc.projection.near_clip = 0.005f;
     camera_desc.projection.far_clip = 100.0f;
@@ -1383,6 +1386,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzTurntableDesc turntable_desc = dvz_turntable_desc();
     turntable_desc.initial_view = camera_desc.view;
+    turntable_desc.initial_view.up[0] = 0.0f;
+    turntable_desc.initial_view.up[1] = 1.0f;
+    turntable_desc.initial_view.up[2] = 0.0f;
     turntable_desc.min_distance = 1.02f;
     turntable_desc.max_distance = 20.0f;
     turntable_desc.zoom_speed = 0.018f;

@@ -32,6 +32,8 @@ SKY_DATA_PATHS = (
 DEBRIS_TIME_SCALE = 60.0
 DEBRIS_DEFAULT_COUNT = 520
 GLOBE_ROTATION_SPEED = 0.035
+CAMERA_EYE = (-1.229315, +0.262005, +3.539440)
+CAMERA_UP = (+0.022887, +0.997564, -0.065895)
 ORBIT_TRACE_COUNT = 12
 ORBIT_TRACE_SAMPLES = 121
 ORBIT_GLOW_WIDTH_PX = 1.8
@@ -582,9 +584,9 @@ def _add_debris(scene, panel, model: OrbitModel):
 
 def _setup_camera(panel) -> None:
     camera = dvz.dvz_camera_desc()
-    camera.view.eye[:] = (0.0, 0.0, 3.7)
+    camera.view.eye[:] = CAMERA_EYE
     camera.view.target[:] = (0.0, 0.0, 0.0)
-    camera.view.up[:] = (0.0, 1.0, 0.0)
+    camera.view.up[:] = CAMERA_UP
     camera.projection.fov_y = 0.72
     camera.projection.near_clip = 0.005
     camera.projection.far_clip = 100.0
@@ -640,6 +642,9 @@ def _build_scene():
 
 def _configure_view(view, panel) -> None:
     desc = dvz.dvz_turntable_desc()
+    desc.initial_view.eye[:] = CAMERA_EYE
+    desc.initial_view.target[:] = (0.0, 0.0, 0.0)
+    desc.initial_view.up[:] = (0.0, 1.0, 0.0)
     desc.min_distance = 1.02
     desc.max_distance = 20.0
     desc.zoom_speed = 0.018
