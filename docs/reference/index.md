@@ -1,7 +1,37 @@
 # Reference
 
+<div class="dvz-section-intro" markdown="1">
+
 Reference pages provide exact facts: status labels, signatures, constraints, lifetimes, backend
 support, and links to minimal examples.
+
+</div>
+
+<div class="dvz-context-strip">
+  <span>Exact contracts</span>
+  <span>Generated C API</span>
+  <span>NumPy shapes and dtypes</span>
+  <span>Backend status</span>
+</div>
+
+<div class="dvz-section-grid">
+  <a class="dvz-section-card" href="c-api/">
+    <strong>C API</strong>
+    <span>Generated signatures, parameters, result behavior, enums, structures, and module ownership.</span>
+  </a>
+  <a class="dvz-section-card" href="ctypes/">
+    <strong>Python API</strong>
+    <span>NumPy-adapted calls, raw ctypes forms, callback lifetimes, and exact boundary rules.</span>
+  </a>
+  <a class="dvz-section-card" href="visual-families/">
+    <strong>Visual data contracts</strong>
+    <span>Required attributes, dtype, shape, cardinality, units, update routes, and backend support.</span>
+  </a>
+  <a class="dvz-section-card" href="feature-status/">
+    <strong>Status and platforms</strong>
+    <span>Supported, experimental, deferred, native, browser, build, and platform classifications.</span>
+  </a>
+</div>
 
 ## Project Metadata
 

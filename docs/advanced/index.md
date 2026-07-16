@@ -8,6 +8,14 @@ You do not need this section to create an ordinary visualization. For scene cons
 data, interaction, and output, use the [How-To guides](../how-to/index.md). For exact attributes,
 API contracts, and support status, use the [Reference](../reference/index.md).
 
+<div class="dvz-context-strip">
+  <span>Concepts</span>
+  <span>Architecture</span>
+  <span>Runtime layers</span>
+  <span>Contributor workflows</span>
+  <span>Release operations</span>
+</div>
+
 ## Who This Section Is For
 
 Choose the path that matches your work. The paths are independent; you do not need to read the

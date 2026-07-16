@@ -1,7 +1,37 @@
 # How-To guides
 
+<div class="dvz-section-intro" markdown="1">
+
 Use these guides when you have a specific Datoviz task to complete. If this is your first scene,
 follow the short path below before moving to layout, interaction, or rendering options.
+
+</div>
+
+<div class="dvz-context-strip">
+  <span>Task-oriented</span>
+  <span>Python and C</span>
+  <span>Verified v0.4 calls</span>
+  <span>Runnable source linked</span>
+</div>
+
+<div class="dvz-section-grid">
+  <a class="dvz-section-card" href="create-a-scene/">
+    <strong>Build a visualization</strong>
+    <span>Create the scene, choose a visual, attach it, and present or capture the result.</span>
+  </a>
+  <a class="dvz-section-card" href="update-visual-data/">
+    <strong>Work with scientific data</strong>
+    <span>Upload typed arrays, sampled fields, scales, colors, and incremental updates.</span>
+  </a>
+  <a class="dvz-section-card" href="use-panzoom/">
+    <strong>Add interaction</strong>
+    <span>Navigate, handle input, pick rendered items, probe fields, and retain selections.</span>
+  </a>
+  <a class="dvz-section-card" href="render-offscreen/">
+    <strong>Produce output</strong>
+    <span>Open windows, render offscreen, capture screenshots, export video, or deploy a browser subset.</span>
+  </a>
+</div>
 
 ## Recommended first path
 

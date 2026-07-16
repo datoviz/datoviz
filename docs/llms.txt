@@ -1,0 +1,81 @@
+# Datoviz v0.4 documentation
+
+> Datoviz is a C-first GPU scientific-visualization engine with generated Python ctypes bindings.
+> Version 0.4 is a deep rewrite. Do not use v0.3 API names, tutorials, or model memory as evidence.
+
+Canonical coding-agent instructions: https://datoviz.org/ai-agents/
+
+## Start and choose a route
+
+- Documentation home: https://datoviz.org/
+- Get Started: https://datoviz.org/start/
+- Choose Python, C, browser, or lower-level integration: https://datoviz.org/start/choose-your-layer/
+- Core concepts and object flow: https://datoviz.org/start/core-concepts/
+- Complete Python quickstart: https://datoviz.org/start/quickstart/
+- Complete first C program: https://datoviz.org/start/first-c-program/
+- Installation: https://datoviz.org/start/install/
+- Build from source: https://datoviz.org/start/build-from-source/
+
+## Find verified code
+
+- Examples gallery: https://datoviz.org/examples/
+- Machine-readable example inventory: https://datoviz.org/examples/examples.json
+- Machine-readable capability-to-example index: https://datoviz.org/examples/capabilities.json
+- Visual and composite examples: https://datoviz.org/examples/visuals/
+- Focused feature examples: https://datoviz.org/examples/features/
+- Runtime and capture examples: https://datoviz.org/examples/runtime/
+- Composed scientific showcases: https://datoviz.org/examples/showcases/
+- Browser support matrix: https://datoviz.org/examples/webgpu-matrix/
+
+## Perform a task
+
+- How-To index: https://datoviz.org/how-to/
+- Create scenes and visuals: https://datoviz.org/how-to/create-a-scene/
+- Choose a visual family: https://datoviz.org/how-to/choose-a-visual-family/
+- Upload and update data: https://datoviz.org/how-to/update-visual-data/
+- Coordinate systems: https://datoviz.org/how-to/coordinate-systems/
+- Sampled fields: https://datoviz.org/how-to/use-sampled-fields/
+- Scales and colormaps: https://datoviz.org/how-to/use-colormaps/
+- Offscreen rendering: https://datoviz.org/how-to/render-offscreen/
+- Python binding: https://datoviz.org/how-to/use-python/
+- Raw ctypes boundary: https://datoviz.org/how-to/use-raw-ctypes/
+
+## Verify exact contracts
+
+- Reference index: https://datoviz.org/reference/
+- Generated C API: https://datoviz.org/reference/c-api/
+- Python API and NumPy adaptation: https://datoviz.org/reference/ctypes/
+- Visual-family dtype, shape, count, and unit contracts: https://datoviz.org/reference/visual-families/
+- Shared visual-attribute rules: https://datoviz.org/reference/visual-attributes/
+- Scale, normalization, category, and color contracts: https://datoviz.org/reference/colormaps/
+- Object ownership and lifetimes: https://datoviz.org/reference/objects-and-lifetimes/
+- Coordinate-space reference: https://datoviz.org/reference/coordinate-systems/
+- Query, picking, and probing contracts: https://datoviz.org/reference/queries/
+- Errors and diagnostics: https://datoviz.org/reference/errors-and-logging/
+- Feature status: https://datoviz.org/reference/feature-status/
+- Platform support: https://datoviz.org/reference/platform-support/
+- Experimental WebGPU subset: https://datoviz.org/reference/webgpu-subset/
+
+## Understand internals
+
+- Advanced index: https://datoviz.org/advanced/
+- Architecture: https://datoviz.org/explanation/architecture/
+- Scene-to-runtime boundary: https://datoviz.org/explanation/scene-to-runtime-boundary/
+- Frame lifecycle: https://datoviz.org/explanation/frame-lifecycle/
+- Runtime internals: https://datoviz.org/advanced/runtime-internals/
+- DRP2 command streams: https://datoviz.org/advanced/drp2-command-streams/
+
+## Rules for generated code
+
+1. Prefer `import datoviz as dvz` for Python and the public scene/app API for C.
+2. Start from one current executable example and preserve its object and cleanup order.
+3. Verify every function, enum, named attribute, dtype, shape, count, coordinate, unit, return value,
+   ownership rule, and backend claim in the current reference.
+4. Use `datoviz.raw` only when the Python reference requires an exact pointer/count or callback form.
+5. Write a complete runnable program; label fragments as excerpts and state their prerequisites.
+6. Treat WebGPU as an experimental subset. A native example does not imply browser support.
+7. Do not invent high-level `scatter()`, `imshow()`, wrapper-class, or keyword APIs.
+8. When current sources disagree, prefer generated API/reference contracts, then executable example
+   pages and sources, then How-To guidance, then Advanced explanation.
+
+Source repository: https://github.com/datoviz/datoviz/tree/v0.4-dev

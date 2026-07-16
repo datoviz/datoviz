@@ -84,6 +84,7 @@ When sources disagree, use this order:
 
 Generated inventories help an agent select evidence without guessing from filenames:
 
+- [`llms.txt`](llms.txt) is the compact root discovery map for documentation-aware tools;
 - [`examples.json`](examples/examples.json) describes current examples and source locations;
 - [`capabilities.json`](examples/capabilities.json) maps visuals, features, data kinds, domains, and
   backend requirements to examples.
@@ -140,6 +141,7 @@ Before returning code, confirm:
 | nearest executable visual or feature | [Examples](examples/index.md) |
 | task workflow | [How-To guides](how-to/index.md) |
 | visual attribute contract | [Visual families](reference/visual-families/index.md) and [visual attributes](reference/visual-attributes.md) |
+| scale, normalization, category, and color contract | [Scales and colormaps](reference/colormaps.md) |
 | exact C names and signatures | [C API reference](reference/c-api/index.md) |
 | NumPy-adapted versus exact Python calls | [Python API](reference/ctypes.md) |
 | object ownership and cleanup | [Objects and lifetimes](reference/objects-and-lifetimes.md) |
