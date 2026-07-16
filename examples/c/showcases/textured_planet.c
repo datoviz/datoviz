@@ -88,6 +88,10 @@ static const float TAU = 6.28318530718f;
 
 #define ORBIT_TRACE_COUNT   12
 #define ORBIT_TRACE_SAMPLES 121
+#define ORBIT_GLOW_WIDTH_PX 1.8f
+#define ORBIT_GLOW_ALPHA    4
+#define ORBIT_CORE_WIDTH_PX 0.42f
+#define ORBIT_CORE_ALPHA    72
 #define GLOBE_VISUAL_COUNT  4
 
 #define SUN_DIR_X -0.80f
@@ -1185,6 +1189,38 @@ static bool _textured_planet_gui(DvzGui* gui, void* user_data)
     return planet_changed || debris_visibility_changed || debris_density_changed ||
            sky_visibility_changed || rotation_changed || reset;
 }
+
+
+
+/**
+ * Print pasteable C defaults for the current textured-planet controls.
+ *
+ * @param fp output stream
+ * @param user_data example state
+ */
+static void _textured_planet_print_c(FILE* fp, void* user_data)
+{
+    const TexturedPlanetState* state = (const TexturedPlanetState*)user_data;
+    if (state == NULL)
+        return;
+    if (fp == NULL)
+        fp = stdout;
+
+    const char* planet = state->planet_index == PLANET_MARS ? "PLANET_MARS" : "PLANET_EARTH";
+    dvz_fprintf(fp, "/* textured planet controls */\n");
+    dvz_fprintf(fp, "state->planet_index = %s;\n", planet);
+    dvz_fprintf(fp, "state->show_atmosphere = %s;\n", state->show_atmosphere ? "true" : "false");
+    dvz_fprintf(fp, "state->show_stars = %s;\n", state->show_stars ? "true" : "false");
+    dvz_fprintf(fp, "state->show_galaxy = %s;\n", state->show_galaxy ? "true" : "false");
+    dvz_fprintf(fp, "state->show_debris = %s;\n", state->show_debris ? "true" : "false");
+    dvz_fprintf(fp, "state->show_orbits = %s;\n", state->show_orbits ? "true" : "false");
+    dvz_fprintf(fp, "state->show_orbit_glow = %s;\n", state->show_orbit_glow ? "true" : "false");
+    dvz_fprintf(fp, "state->animate_debris = %s;\n", state->animate_debris ? "true" : "false");
+    dvz_fprintf(fp, "state->rotate_globe = %s;\n", state->rotate_globe ? "true" : "false");
+    dvz_fprintf(fp, "state->debris_count = %d;\n", state->debris_count);
+    dvz_fprintf(fp, "state->debris_speed = %.3ff;\n", state->debris_speed);
+    dvz_fprintf(fp, "state->globe_speed = %.3ff;\n", state->globe_speed);
+}
 #endif
 
 
@@ -1328,10 +1364,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->atmosphere_visual = _create_atmosphere(ctx->scene, panel);
     EXAMPLE_CHECK(state->atmosphere_visual != NULL, "failed to create atmosphere shell");
 
-    state->orbit_glow_visual =
-        _create_orbit_traces(ctx->scene, panel, &state->orbit_model, 2.8f, 22);
+    state->orbit_glow_visual = _create_orbit_traces(
+        ctx->scene, panel, &state->orbit_model, ORBIT_GLOW_WIDTH_PX, ORBIT_GLOW_ALPHA);
     EXAMPLE_CHECK(state->orbit_glow_visual != NULL, "failed to create orbit glow");
-    state->orbit_visual = _create_orbit_traces(ctx->scene, panel, &state->orbit_model, 0.68f, 190);
+    state->orbit_visual = _create_orbit_traces(
+        ctx->scene, panel, &state->orbit_model, ORBIT_CORE_WIDTH_PX, ORBIT_CORE_ALPHA);
     EXAMPLE_CHECK(state->orbit_visual != NULL, "failed to create orbit traces");
 
     state->debris_visual = _create_debris_points(ctx->scene, panel, state);
@@ -1355,7 +1392,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 #ifndef DVZ_EXAMPLE_NO_MAIN
     EXAMPLE_CHECK(
         example_tuner_add_component(
-            &state->tuner, "Planet controls", state, NULL, _textured_planet_gui, NULL, NULL, NULL),
+            &state->tuner, "Planet controls", state, NULL, _textured_planet_gui, NULL, NULL,
+            _textured_planet_print_c),
         "failed to register textured planet tuner");
 #endif
 

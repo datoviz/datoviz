@@ -33,6 +33,10 @@ DEBRIS_TIME_SCALE = 60.0
 GLOBE_ROTATION_SPEED = 0.035
 ORBIT_TRACE_COUNT = 12
 ORBIT_TRACE_SAMPLES = 121
+ORBIT_GLOW_WIDTH_PX = 1.8
+ORBIT_GLOW_ALPHA = 4
+ORBIT_CORE_WIDTH_PX = 0.42
+ORBIT_CORE_ALPHA = 72
 SUN_DIR = (-0.80, +0.22, +0.55)
 TAU = 2.0 * np.pi
 ORBIT_HEADER = struct.Struct('<8sIIIIIddff32s')
@@ -619,8 +623,12 @@ def _build_scene():
     orbit_model = _load_orbit_model()
     if sky_model.snapshot_utc != orbit_model.snapshot_utc:
         raise RuntimeError('celestial sky and orbital-debris snapshots do not match')
-    orbit_glow = _add_orbit_traces(scene, panel, orbit_model, 2.8, 22)
-    orbits = _add_orbit_traces(scene, panel, orbit_model, 0.68, 190)
+    orbit_glow = _add_orbit_traces(
+        scene, panel, orbit_model, ORBIT_GLOW_WIDTH_PX, ORBIT_GLOW_ALPHA
+    )
+    orbits = _add_orbit_traces(
+        scene, panel, orbit_model, ORBIT_CORE_WIDTH_PX, ORBIT_CORE_ALPHA
+    )
     debris = _add_debris(scene, panel, orbit_model)
     state = GlobeState()
     _add_globe_rotation(scene, (mesh, orbit_glow, orbits, debris), state)
