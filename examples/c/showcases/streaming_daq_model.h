@@ -131,6 +131,8 @@ typedef struct DaqModel
     atomic_uint producer_spike_rate_permille;
     atomic_uint producer_spike_amplitude_permille;
     atomic_uint producer_synchrony_permille;
+    atomic_ullong producer_clock_sample;
+    atomic_ullong producer_clock_ns;
     atomic_ullong generated_sample_count;
     atomic_ullong dropped_sample_count;
     atomic_ullong overrun_block_count;
@@ -299,3 +301,12 @@ bool daq_model_reset(DaqModel* model);
  * @param out output statistics
  */
 void daq_model_stats(const DaqModel* model, DaqStats* out);
+
+
+/**
+ * Return the wall-clock-interpolated logical hardware cursor sample.
+ *
+ * @param model source model
+ * @return fractional logical sample position
+ */
+double daq_model_cursor_sample(const DaqModel* model);

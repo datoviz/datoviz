@@ -10,7 +10,8 @@
  * spatially coherent unit spikes, and occasional population events in one persistent raw line-list
  * visual. A wall-clock producer thread emits fixed acquisition blocks into a bounded queue, while
  * the render thread updates only the newly written circular-buffer vertex range. Sparse event
- * markers and a live GUI expose acquisition timing, signal controls, and queue statistics.
+ * markers and a live GUI expose acquisition timing, signal controls, and queue statistics. The
+ * sweep cursor interpolates the producer's monotonic hardware clock independently of render FPS.
  *
  * Scenario: showcases_streaming_daq
  * Style: showcase, graphite_cyan, 1280x720 window target
@@ -58,7 +59,6 @@
 #define TRACE_VERTICES_PER_INTERVAL 2u
 #define CHANNEL_BANK_SIZE           16u
 #define EVENT_MARKER_CAPACITY       16u
-#define MAX_DRAIN_BLOCKS_PER_FRAME  16u
 
 
 
@@ -311,7 +311,13 @@ static bool _update_cursor(StreamingDaqState* state)
 {
     const DaqConfig* config = &state->model.config;
     const float duration = (float)(config->display_sample_count - 1u) / config->sample_rate_hz;
-    const float x = (float)state->model.write_index / config->sample_rate_hz;
+    double cursor_sample = (double)state->model.write_index;
+    if (state->model.producer_started)
+    {
+        cursor_sample =
+            fmod(daq_model_cursor_sample(&state->model), (double)config->display_sample_count);
+    }
+    const float x = (float)(cursor_sample / config->sample_rate_hz);
     const float band_before = 0.012f * duration;
     const float band_after = 0.0035f * duration;
     const float x0 = fmaxf(0.0f, x - band_before);
@@ -951,7 +957,7 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
     {
         if (state->model.producer_started)
         {
-            (void)daq_model_drain(&state->model, MAX_DRAIN_BLOCKS_PER_FRAME, &dirty);
+            (void)daq_model_drain(&state->model, 0u, &dirty);
         }
         else
         {

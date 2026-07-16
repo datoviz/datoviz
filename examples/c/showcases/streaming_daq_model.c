@@ -441,7 +441,7 @@ static bool _drop_block(const DaqModel* model, uint64_t first_sample)
 static void* _producer_main(void* user_data)
 {
     DaqModel* model = (DaqModel*)user_data;
-    uint64_t next_ns = dvz_time_monotonic_ns();
+    uint64_t next_ns = atomic_load_explicit(&model->producer_clock_ns, memory_order_acquire);
     while (atomic_load_explicit(&model->producer_running, memory_order_acquire))
     {
         if (atomic_load_explicit(&model->producer_paused, memory_order_relaxed))
@@ -463,7 +463,8 @@ static void* _producer_main(void* user_data)
         }
 
         uint32_t produced_this_turn = 0;
-        while (now >= next_ns + block_ns && produced_this_turn < 8u)
+        while (now >= next_ns + block_ns && produced_this_turn < 8u &&
+               !atomic_load_explicit(&model->producer_paused, memory_order_relaxed))
         {
             uint64_t first_sample = model->producer_next_sample;
             bool drop = _drop_block(model, first_sample);
@@ -492,6 +493,9 @@ static void* _producer_main(void* user_data)
             atomic_fetch_add_explicit(
                 &model->generated_sample_count, block_size, memory_order_relaxed);
             next_ns += block_ns;
+            atomic_store_explicit(
+                &model->producer_clock_sample, model->producer_next_sample, memory_order_relaxed);
+            atomic_store_explicit(&model->producer_clock_ns, next_ns, memory_order_release);
             produced_this_turn++;
             block_size = atomic_load_explicit(&model->producer_block_size, memory_order_relaxed);
             block_ns = (uint64_t)block_size * NS_PER_SECOND / model->config.sample_rate_hz;
@@ -592,6 +596,8 @@ bool daq_model_init(DaqModel* model, const DaqConfig* config)
     atomic_init(&model->producer_spike_rate_permille, 1000u);
     atomic_init(&model->producer_spike_amplitude_permille, 1000u);
     atomic_init(&model->producer_synchrony_permille, 1000u);
+    atomic_init(&model->producer_clock_sample, 0u);
+    atomic_init(&model->producer_clock_ns, 0u);
     atomic_init(&model->generated_sample_count, 0u);
     atomic_init(&model->dropped_sample_count, 0u);
     atomic_init(&model->overrun_block_count, 0u);
@@ -643,6 +649,8 @@ bool daq_model_prefill(DaqModel* model)
     model->wrap_count = 0;
     model->producer_next_sample = model->next_expected_sample;
     atomic_store_explicit(
+        &model->producer_clock_sample, model->producer_next_sample, memory_order_relaxed);
+    atomic_store_explicit(
         &model->generated_sample_count, model->next_expected_sample, memory_order_relaxed);
     return true;
 }
@@ -658,6 +666,10 @@ bool daq_model_start(DaqModel* model)
 {
     if (model == NULL || model->producer_started)
         return model != NULL && model->producer_started;
+    atomic_store_explicit(
+        &model->producer_clock_sample, model->producer_next_sample, memory_order_relaxed);
+    atomic_store_explicit(
+        &model->producer_clock_ns, dvz_time_monotonic_ns(), memory_order_release);
     atomic_store_explicit(&model->producer_running, true, memory_order_release);
     if (pthread_create(&model->producer_thread, NULL, _producer_main, model) != 0)
     {
@@ -694,6 +706,11 @@ void daq_model_set_paused(DaqModel* model, bool paused)
 {
     if (model == NULL)
         return;
+    if (!paused)
+    {
+        atomic_store_explicit(
+            &model->producer_clock_ns, dvz_time_monotonic_ns(), memory_order_release);
+    }
     atomic_store_explicit(&model->producer_paused, paused, memory_order_relaxed);
 }
 
@@ -889,6 +906,8 @@ bool daq_model_reset(DaqModel* model)
     model->next_expected_sample = 0;
     model->wrap_count = 0;
     model->producer_next_sample = 0;
+    atomic_store_explicit(&model->producer_clock_sample, 0u, memory_order_relaxed);
+    atomic_store_explicit(&model->producer_clock_ns, 0u, memory_order_relaxed);
     atomic_store_explicit(&model->queue_head, 0u, memory_order_relaxed);
     atomic_store_explicit(&model->queue_tail, 0u, memory_order_relaxed);
     atomic_store_explicit(&model->generated_sample_count, 0u, memory_order_relaxed);
@@ -924,4 +943,33 @@ void daq_model_stats(const DaqModel* model, DaqStats* out)
         .wrap_count = model->wrap_count,
         .queue_depth = head - tail,
     };
+}
+
+
+/**
+ * Return the wall-clock-interpolated logical hardware cursor sample.
+ *
+ * @param model source model
+ * @return fractional logical sample position
+ */
+double daq_model_cursor_sample(const DaqModel* model)
+{
+    if (model == NULL)
+        return 0.0;
+
+    if (!atomic_load_explicit(&model->producer_running, memory_order_acquire) ||
+        atomic_load_explicit(&model->producer_paused, memory_order_relaxed))
+    {
+        return (double)atomic_load_explicit(&model->producer_clock_sample, memory_order_relaxed);
+    }
+
+    const uint64_t anchor_ns =
+        atomic_load_explicit(&model->producer_clock_ns, memory_order_acquire);
+    const uint64_t sample =
+        atomic_load_explicit(&model->producer_clock_sample, memory_order_relaxed);
+    const uint64_t now_ns = dvz_time_monotonic_ns();
+    if (anchor_ns == 0u || now_ns <= anchor_ns)
+        return (double)sample;
+    return (double)sample + (double)(now_ns - anchor_ns) * (double)model->config.sample_rate_hz /
+                                (double)NS_PER_SECOND;
 }
