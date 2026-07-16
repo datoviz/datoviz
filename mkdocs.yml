@@ -13,7 +13,6 @@ site_author: Cyrille Rossant
 exclude_docs: |
   README.md
   architecture/*
-  blog/*
   discussions/*
   gallery/*
   guide/*
@@ -68,6 +67,9 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
 plugins:
   - search
+  - material/blog:
+      authors: false
+      post_url_format: "{slug}"
   - mkdocstrings:
       handlers:
         python:
@@ -224,10 +226,10 @@ nav:
       - Agent release checklist: 'contributors/agent-release-checklist.md'
       - Generated documentation: 'contributors/generated-documentation.md'
       - Validation gallery: 'examples/validation-gallery.md'
+  - News: 'blog/index.md'
 not_in_nav: |
   _old/*
   architecture/*
-  blog/*
   discussions/*
   landing/*
   examples/webgpu/COMPAT.md
