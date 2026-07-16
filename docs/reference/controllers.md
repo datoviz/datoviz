@@ -31,8 +31,14 @@ DvzController* arcball = dvz_arcball(scene, NULL);
 dvz_panel_bind_controller(panel3d, arcball, DVZ_DIM_MASK_XYZ);
 ```
 
-Partial controller-state links are design direction for broader synchronization, but the release
-surface should be checked against the current C API before documenting a specific helper.
+When panels need independent controllers but selected state must stay synchronized, create a
+scene-owned link with `dvz_controller_link()`. Links connect distinct controllers of the same
+family, propagate a component mask such as X extent or rotation, and may be one-way or two-way.
+Sharing one controller remains the simplest choice when all of its bound state should be common.
+
+See [Link panels and controllers](../how-to/link-panels.md) for the selection rules and the
+generated [`dvz_controller_link()` reference](c-api/scene.md#dvz_controller_link) for the exact
+component and mode types.
 
 ## Event Flow
 

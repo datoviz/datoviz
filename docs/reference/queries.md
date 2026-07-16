@@ -19,15 +19,15 @@ The core question is: what rendered scene contribution is under this panel coord
 
 ## Current API Shape
 
-The current v0.4 direction uses:
+The current v0.4 API uses:
 
 ```c
-int dvz_panel_query_px(DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
-int dvz_panel_query_data(DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
+DvzResult dvz_panel_query_px(DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
+DvzResult dvz_panel_query_data(DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
 bool dvz_scene_poll_query(DvzScene* scene, DvzQueryResult* out_result);
 uint32_t dvz_figure_process_queries(
     DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps);
-int dvz_panel_query_now_px(
+DvzResult dvz_panel_query_now_px(
     DvzPanel* panel, DvzDrp2Runtime* runtime, double x, double y,
     const DvzQueryRequest* request, DvzQueryResult* out_result);
 ```
