@@ -3346,7 +3346,7 @@ examples:
     category: showcase
     lane: showcases
     source: examples/c/showcases/cortical_activity.c
-    validation: smoke+screenshot+video
+    validation: smoke+interaction+screenshot+video
     media:
       preview:
         kind: animated-webp
@@ -3364,8 +3364,10 @@ examples:
       status: webgpu-deferred
       requirements:
         - mesh
+        - segment
         - colorbar
         - arcball
+        - gui
         - frame-callbacks
         - continuous-frames
       reason: the browser path does not yet package the prepared cortical surface and time-series bundle
@@ -3387,9 +3389,15 @@ examples:
         model-derived dimensionless source estimate, not a direct measurement of neuronal firing
         or absolute current amplitude.
     encoding:
-      position: participant-native inflated cortical surface, shown as mirrored lateral hemispheres
-      color: fixed sequential magma scale from 8 to 15 dSPM over neutral graphite anatomy
-      time: 0 to 240 ms after the left-ear tone, linearly interpolated between source-estimate frames
+      position: >-
+        complete bilateral participant-native pial and inflated cortical surfaces with one shared
+        uniform scale; whole-brain and split-lateral layouts preserve anatomical aspect ratio
+      color: >-
+        sequential magma activity over neutral graphite anatomy; the comparable 8/12/15 dSPM
+        preset remains available while live controls permit exploratory limits
+      time: >-
+        0 to 240 ms after the left-ear tone, linearly interpolated between source-estimate frames;
+        live mode opens paused at the strongest response
     gallery:
       card: section
       status_label: experimental
@@ -3401,6 +3409,8 @@ examples:
       - meg
       - dspm
       - mesh
+      - wireframe
+      - gui
       - colorbar
       - arcball
       - animation

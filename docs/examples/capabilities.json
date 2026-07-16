@@ -2833,7 +2833,7 @@
         ]
       },
       "gui": {
-        "count": 3,
+        "count": 4,
         "examples": [
           {
             "id": "showcases_galaxy",
@@ -2842,6 +2842,14 @@
             "status": "supported",
             "source": "examples/c/showcases/galaxy.c",
             "page": "gallery/showcases/showcases_galaxy.md"
+          },
+          {
+            "id": "showcases_cortical_activity",
+            "title": "Human Auditory Cortical Activity",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/cortical_activity.c",
+            "page": "gallery/showcases/showcases_cortical_activity.md"
           },
           {
             "id": "showcases_point_cloud",
@@ -4301,7 +4309,7 @@
         ]
       },
       "wireframe": {
-        "count": 1,
+        "count": 2,
         "examples": [
           {
             "id": "showcases_surface_grid",
@@ -4310,6 +4318,14 @@
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
             "page": "gallery/showcases/showcases_surface_grid.md"
+          },
+          {
+            "id": "showcases_cortical_activity",
+            "title": "Human Auditory Cortical Activity",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/cortical_activity.c",
+            "page": "gallery/showcases/showcases_cortical_activity.md"
           }
         ]
       },

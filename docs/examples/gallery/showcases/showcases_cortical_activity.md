@@ -44,13 +44,13 @@ after verifying the linked API reference.
 
 ## What To Look For
 
-Measured MEG trials from an audiovisual experiment were averaged and mapped onto the participant's inflated cortical surface with a noise-normalized minimum-norm inverse. Activity emerges around auditory cortex near 100 ms after the left-ear tone. The magma overlay, numeric colorbar, and time readout share one fixed scale across the entire animation.
+Measured MEG trials from an audiovisual experiment were averaged and mapped onto the participant's complete bilateral cortical surface with a noise-normalized minimum-norm inverse. Activity emerges around auditory cortex near 100 ms after the left-ear tone. The live GUI controls playback, surface inflation, whole/split layouts, scientific limits, wireframe, and arcball state. The initial paused frame is the strongest measured response.
 
 DSPM is a model-derived, dimensionless source estimate. It is not a direct measurement of neuronal firing or absolute current amplitude.
 
 Prepare: uv run --isolated --with mne==1.12.1 --with mne-bids==0.19.0 \ --with nibabel==5.4.2 --with numpy==2.3.4 --with scipy==1.18.0 --with requests \ `python tools/data/prepare_cortical_activity.py`
 
-Control: space pauses; left/right arrows scrub while paused
+Control: live GUI; space plays/pauses; left/right arrows seek
 
 ## Source
 
@@ -70,12 +70,12 @@ Control: space pauses; left/right arrows scrub while paused
     - Approved adaptation starter: `no`
     - Browser support: Deferred
     - Browser note: the browser path does not yet package the prepared cortical surface and time-series bundle
-    - Browser capability tags: `mesh`, `colorbar`, `arcball`, `frame-callbacks`, `continuous-frames`
-    - Validation: `smoke+screenshot+video`
+    - Browser capability tags: `mesh`, `segment`, `colorbar`, `arcball`, `gui`, `frame-callbacks`, `continuous-frames`
+    - Validation: `smoke+interaction+screenshot+video`
 
     **Tags**
 
-    `scientific`, `real-data`, `human-brain`, `cortical-surface`, `meg`, `dspm`, `mesh`, `colorbar`, `arcball`, `animation`
+    `scientific`, `real-data`, `human-brain`, `cortical-surface`, `meg`, `dspm`, `mesh`, `wireframe`, `gui`, `colorbar`, `arcball`, `animation`
 
     **Data**
 
@@ -100,9 +100,9 @@ Control: space pauses; left/right arrows scrub while paused
 
     | Field | Value |
     | --- | --- |
-    | `position` | participant-native inflated cortical surface, shown as mirrored lateral hemispheres |
-    | `color` | fixed sequential magma scale from 8 to 15 dSPM over neutral graphite anatomy |
-    | `time` | 0 to 240 ms after the left-ear tone, linearly interpolated between source-estimate frames |
+    | `position` | complete bilateral participant-native pial and inflated cortical surfaces with one shared uniform scale; whole-brain and split-lateral layouts preserve anatomical aspect ratio |
+    | `color` | sequential magma activity over neutral graphite anatomy; the comparable 8/12/15 dSPM preset remains available while live controls permit exploratory limits |
+    | `time` | 0 to 240 ms after the left-ear tone, linearly interpolated between source-estimate frames; live mode opens paused at the strongest response |
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
