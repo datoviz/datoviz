@@ -50,9 +50,10 @@
 
 #define ICOSPHERE_SUBDIVISIONS 5u
 #define HARMONIC_TERM_COUNT    4u
-#define HARMONIC_BASE_RADIUS   0.43
-#define HARMONIC_LOBE_SCALE    1.04
-#define HARMONIC_LOBE_POWER    0.78
+#define HARMONIC_BASE_RADIUS     0.54
+#define HARMONIC_LOBE_SCALE      0.94
+#define HARMONIC_LOBE_POWER      1.00
+#define HARMONIC_NODE_SMOOTHING 0.18
 #define HARMONIC_MORPH_PERIOD  8.0
 
 #define PI 3.14159265358979323846
@@ -549,16 +550,112 @@ static DvzColor _mix_color(DvzColor a, DvzColor b, double t)
  */
 static DvzColor _harmonic_color(double amplitude)
 {
-    static const DvzColor stops[5] = {
-        {.r = 50, .g = 39, .b = 112, .a = 255},   {.r = 27, .g = 158, .b = 181, .a = 255},
-        {.r = 225, .g = 229, .b = 215, .a = 255}, {.r = 246, .g = 169, .b = 79, .a = 255},
-        {.r = 225, .g = 70, .b = 79, .a = 255},
+    const DvzColor panel = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_PANEL_BG);
+    const DvzColor stops[5] = {
+        _mix_color(
+            panel, example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY), 0.28),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ERROR),
     };
 
     const double x = 2.0 * (0.5 * (fmax(-1.0, fmin(+1.0, amplitude)) + 1.0));
     const uint32_t segment = x >= 2.0 ? 3u : (uint32_t)floor(x * 2.0);
     const double local = x >= 2.0 ? 1.0 : x * 2.0 - (double)segment;
     return _mix_color(stops[segment], stops[segment + 1u], local);
+}
+
+
+
+/**
+ * Map an absolute normalized amplitude to a smooth radial lobe coordinate.
+ *
+ * The offset smooth magnitude is zero at a harmonic node and has a finite zero slope there. This
+ * avoids the cusp produced by pow(abs(x), p) when p is below one.
+ *
+ * @param amplitude normalized signed amplitude in [-1, +1]
+ * @return smooth lobe coordinate in [0, 1]
+ */
+static double _smooth_lobe(double amplitude)
+{
+    const double epsilon = HARMONIC_NODE_SMOOTHING;
+    const double magnitude = sqrt(amplitude * amplitude + epsilon * epsilon) - epsilon;
+    const double maximum = sqrt(1.0 + epsilon * epsilon) - epsilon;
+    return pow(fmax(0.0, magnitude / maximum), HARMONIC_LOBE_POWER);
+}
+
+
+
+/**
+ * Compute area-weighted vertex normals for the deformed indexed mesh.
+ *
+ * @param state initialized showcase state
+ * @return whether every triangle index and output normal is valid
+ */
+static bool _compute_area_weighted_normals(SphericalHarmonicsState* state)
+{
+    if (state == NULL || state->geometry == NULL || state->geometry->positions == NULL ||
+        state->geometry->normals == NULL || state->geometry->indices == NULL ||
+        state->geometry->index_count % 3u != 0)
+    {
+        return false;
+    }
+
+    DvzGeometry* geometry = state->geometry;
+    dvz_memset(
+        geometry->normals, (size_t)geometry->vertex_count * sizeof(dvec3), 0,
+        (size_t)geometry->vertex_count * sizeof(dvec3));
+
+    for (uint32_t index = 0; index < geometry->index_count; index += 3u)
+    {
+        const DvzIndex i0 = geometry->indices[index + 0u];
+        const DvzIndex i1 = geometry->indices[index + 1u];
+        const DvzIndex i2 = geometry->indices[index + 2u];
+        if (i0 >= geometry->vertex_count || i1 >= geometry->vertex_count ||
+            i2 >= geometry->vertex_count)
+        {
+            return false;
+        }
+
+        dvec3 edge_a = {
+            geometry->positions[i1][0] - geometry->positions[i0][0],
+            geometry->positions[i1][1] - geometry->positions[i0][1],
+            geometry->positions[i1][2] - geometry->positions[i0][2],
+        };
+        dvec3 edge_b = {
+            geometry->positions[i2][0] - geometry->positions[i0][0],
+            geometry->positions[i2][1] - geometry->positions[i0][1],
+            geometry->positions[i2][2] - geometry->positions[i0][2],
+        };
+        const dvec3 normal = {
+            edge_a[1] * edge_b[2] - edge_a[2] * edge_b[1],
+            edge_a[2] * edge_b[0] - edge_a[0] * edge_b[2],
+            edge_a[0] * edge_b[1] - edge_a[1] * edge_b[0],
+        };
+        for (uint32_t axis = 0; axis < 3u; axis++)
+        {
+            geometry->normals[i0][axis] += normal[axis];
+            geometry->normals[i1][axis] += normal[axis];
+            geometry->normals[i2][axis] += normal[axis];
+        }
+    }
+
+    for (uint32_t vertex = 0; vertex < geometry->vertex_count; vertex++)
+    {
+        if (!_normalize(geometry->normals[vertex]))
+            return false;
+        const double radial_dot =
+            geometry->normals[vertex][0] * state->directions[vertex][0] +
+            geometry->normals[vertex][1] * state->directions[vertex][1] +
+            geometry->normals[vertex][2] * state->directions[vertex][2];
+        if (radial_dot < 0.0)
+        {
+            for (uint32_t axis = 0; axis < 3u; axis++)
+                geometry->normals[vertex][axis] = -geometry->normals[vertex][axis];
+        }
+    }
+    return true;
 }
 
 
@@ -626,16 +723,15 @@ static bool _update_geometry(SphericalHarmonicsState* state, double phase)
     for (uint32_t vertex = 0; vertex < state->geometry->vertex_count; vertex++)
     {
         const double normalized = state->amplitudes[vertex] / max_amplitude;
-        const double radius =
-            HARMONIC_BASE_RADIUS +
-            HARMONIC_LOBE_SCALE * breathing * pow(fabs(normalized), HARMONIC_LOBE_POWER);
+        const double radius = HARMONIC_BASE_RADIUS +
+                              HARMONIC_LOBE_SCALE * breathing * _smooth_lobe(normalized);
         for (uint32_t axis = 0; axis < 3u; axis++)
         {
             state->geometry->positions[vertex][axis] = radius * state->directions[vertex][axis];
         }
         state->geometry->colors[vertex] = _harmonic_color(normalized);
     }
-    if (dvz_geometry_compute_normals(state->geometry) != DVZ_OK)
+    if (!_compute_area_weighted_normals(state))
         return false;
 
     for (uint32_t vertex = 0; vertex < state->geometry->vertex_count; vertex++)
@@ -795,9 +891,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     material.light_direction[0] = -0.48f;
     material.light_direction[1] = +0.62f;
     material.light_direction[2] = +0.72f;
-    material.standard.roughness = 0.44f;
-    material.standard.specular = 0.28f;
-    material.standard.rim_strength = 0.18f;
+    material.standard.roughness = 0.58f;
+    material.standard.specular = 0.16f;
+    material.standard.rim_strength = 0.12f;
     const int material_result = dvz_visual_set_material(state->visual, &material);
     EXAMPLE_CHECK(material_result == DVZ_OK, "dvz_visual_set_material() failed");
 
