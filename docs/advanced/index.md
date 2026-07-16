@@ -38,26 +38,31 @@ whole section in order.
     APIs. Check [Project status](../reference/project-status.md) and
     [Feature status](../reference/feature-status.md) before depending on a lower-level surface.
 
-## Concepts and Architecture
+## Concepts
 
-Start here when you need the mental model behind an API or want to understand where a behavior
-belongs. These pages progress from user-visible objects to frame planning and resource reuse.
+Start here for the mental model behind ordinary scene, coordinate, interaction, and query behavior.
 
 | Page | What it answers |
 | --- | --- |
 | [Scene building blocks](../explanation/figure-panel-visual-model.md) | How scenes, figures, panels, visuals, attributes, and views fit together. |
+| [Coordinate systems](../explanation/coordinate-systems.md) | How data, panel, clip, logical-pixel, framebuffer, and sampled-field spaces relate. |
+| [Interaction model](../explanation/interaction-model.md) | How input, controllers, queries, and retained interaction state cooperate. |
+| [Queries, picking, and probing](../explanation/query-pick-probe-model.md) | How request identity, asynchronous freshness, item picks, and field probes differ. |
+| [Datoviz, GSP, and VisPy2](../explanation/gsp-vispy2-boundary.md) | Why high-level scientific plotting is outside the Datoviz v0.4 engine API. |
+
+## Scene Planning and Boundaries
+
+Continue here when you need to place an implementation change or understand how retained state
+becomes bounded GPU work.
+
+| Page | What it answers |
+| --- | --- |
 | [Architecture](../explanation/architecture.md) | Which layers make up Datoviz v0.4 and how data moves between them. |
 | [Scene to runtime boundary](../explanation/scene-to-runtime-boundary.md) | Which decisions belong to scene planning and which belong to backend execution. |
-| [Frame lifecycle](../explanation/frame-lifecycle.md) | How retained state becomes presentation, capture, or readback for one frame. |
 | [Retained resources](../explanation/retained-resources.md) | What persists between frames and why it is retained. |
 | [Invalidation and caching](../explanation/invalidation-and-caching.md) | How a scene change requests bounded work without rebuilding everything. |
+| [Frame lifecycle](../explanation/frame-lifecycle.md) | How retained state becomes presentation, capture, or readback for one frame. |
 | [GPU resource ownership](../explanation/gpu-resource-ownership.md) | Which layer owns or borrows concrete GPU resources and when they may be changed or destroyed. |
-
-For adjacent user-facing concepts, see [coordinate systems](../explanation/coordinate-systems.md),
-the [interaction model](../explanation/interaction-model.md), and
-[queries, picking, and probing](../explanation/query-pick-probe-model.md). The
-[Datoviz, GSP, and VisPy2](../explanation/gsp-vispy2-boundary.md) page explains why high-level
-scientific plotting is outside Datoviz v0.4 itself.
 
 ## Runtime Layers
 

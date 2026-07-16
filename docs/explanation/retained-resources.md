@@ -1,45 +1,64 @@
-# Retained Resources
+# Retained resources
 
-Retained resources are the state Datoviz keeps between frames so user code does not have to rebuild
-the renderer every time something changes.
+Datoviz keeps scene data and derived resource descriptions between frames. Retention is what lets an
+application update colors, move a camera, or redraw a panel without recreating the visualization and
+all GPU objects.
 
-## What Is Retained
+**Audience:** developers optimizing updates or changing resource preparation. **Prerequisite:** the
+[scene building blocks](figure-panel-visual-model.md). For public copy/borrow rules, use
+[Objects and lifetimes](../reference/objects-and-lifetimes.md).
 
-A visual keeps retained attribute data after a successful set-data call. A sampled field keeps the
-texture or buffer-shaped data needed by image, color-mapped, or probe workflows. A controller keeps
-view state. A figure and panel keep layout, viewport, and transform state. These objects are scene
-objects first; GPU resources are derived from them.
 
-## Consequences
+## Three kinds of state
 
-Retained state has two important consequences:
+| State | Examples | Authority and lifetime |
+| --- | --- | --- |
+| Authored scene state | Visual attributes, sampled fields, styles, controller state, domains. | Scene-owned after a successful copying call; changed only by later scene mutations. |
+| Persistent derived state | Normalized coordinates, prepared family geometry, atlas/texture data, parameter blocks. | Reusable cache derived from authored state; invalidated by its dependencies. |
+| Frame-local state | Transient render targets, compute results without declared persistence, command encoders, readback staging. | Exists for one planned/executed frame unless a contract promotes it to persistent state. |
 
-- updating data should usually update an existing object instead of destroying and recreating it;
-- the runtime can reuse buffers, textures, pipelines, and descriptor-shaped state when the resource
-  shape and render contract remain compatible.
+Concrete GPU buffers, textures, pipelines, and descriptors belong to the runtime. They may persist
+across frames, but they are caches of logical scene/runtime identity rather than the authoritative
+scientific data.
 
-## Content Versus Shape
 
-Data content changes are cheaper than shape changes. Replacing point positions with the same item
-count can usually become an update stream. Growing the item count, changing texture dimensions,
-changing visual family, or changing material/technique state may require setup work because buffers,
-textures, or pipelines need different shapes.
+## Copy, borrow, and external storage
 
-## Ownership
+Ordinary visual set-data calls copy the supplied array before returning; user code may then reuse or
+free its input. A borrowed pointer, mapped readback, external GPU buffer, packet span, or host handle
+has a narrower explicit lifetime. Never generalize a borrowing rule from one API to another.
 
-Ownership stays at the scene level. User arrays only need to remain valid until the set-data call
-returns, unless a specific API documents borrowed lifetime. After that, Datoviz owns its retained
-copy or retained resource description. Runtime GPU handles are implementation details unless the API
-explicitly exposes borrowed interop.
+An external resource also changes synchronization responsibilities. Its contract must state who may
+write, transition, submit, or destroy it and when Datoviz may consume it.
 
-## Narrow Invalidation
 
-Retained resources should be invalidated narrowly. A color array update should not rebuild a panel
-layout. A controller pan should not recreate a texture. A texture size change should refresh the
-texture resource and dependent bindings, not the whole scene.
+## Content, shape, and topology
 
-See also:
+These changes are not equivalent:
 
+| Change | Typical consequence |
+| --- | --- |
+| Same-size subrange content update | Update the retained bytes and emit a ranged write. |
+| Same logical resource, full content replacement | Update packet/write; persistent runtime identity may remain. |
+| Item count or byte size changes | Recreate or resize storage; dependencies may need rebinding. |
+| Texture dimensions, format, or usage change | Recreate the logical/runtime texture and dependent bindings. |
+| Visual family, pass participation, or technique changes | Rebuild relevant plan topology and possibly pipelines/targets. |
+| Camera or panzoom changes | Update panel-derived transforms and redraw; keep authored data and normalization. |
+
+Stable logical ids let the planner and runtime tell “update this object” from “create a different
+object.” They are not public backend handles.
+
+
+## Sharing
+
+Several panels or visuals may reference the same retained source or derived resource. Share only
+when the semantic mapping, format, and lifetime agree. A panel-local transform should remain local;
+changing one panel must not invalidate a shared normalized point array used by another.
+
+
+## Sources of truth
+
+- [Scene resource model](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/pipeline/RESOURCE_MODEL.md)
+- [Attribute sources and mutability](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/pipeline/ATTRIBUTE_SOURCES.md)
 - [Invalidation and caching](invalidation-and-caching.md)
-- [Frame lifecycle](frame-lifecycle.md)
-- [Objects and lifetimes](../reference/objects-and-lifetimes.md)
+- [GPU resource ownership](gpu-resource-ownership.md)

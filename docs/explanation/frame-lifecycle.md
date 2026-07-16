@@ -1,53 +1,83 @@
-# Frame Lifecycle
+# Frame lifecycle
 
-A frame starts with retained scene state and ends with presentation, capture, or readback. The
-runtime should execute the planned work; it should not rediscover scene semantics.
+A view render step turns retained scene state into presentation, capture, or readback. The scene
+decides *what* the frame means; the runtime executes the already-planned work. This page describes
+the internal ordering, not a public event-loop recipe.
 
-## Lifecycle Overview
+**Audience:** hosted-loop, scene-planning, runtime, and query contributors. **Prerequisite:**
+[Architecture](architecture.md). The frame-plan and artifact APIs are advanced/internal surfaces;
+ordinary applications use `DvzView`, `dvz.run(...)`, or documented capture helpers.
 
-The lifecycle is:
+
+## End-to-end sequence
 
 ```text
-scene mutation -> invalidation -> frame plan -> frame artifact ->
-DRP2 setup/update/frame packets -> runtime execution -> presentation or capture
+1 input and app edits
+2 controller/animation/derived-state update
+3 dirty-scope resolution
+4 validation
+5 capability adaptation
+6 one scene-level FramePlan
+7 immutable DvzSceneFrameArtifact
+8 DRP2 runtime execution
+9 presentation/capture/recording
+10 query/readback completion processing
 ```
 
-## Mutation and Invalidation
+Validation occurs after dirty-scope resolution so it can inspect the smallest correct scope.
+Capability adaptation occurs after semantic validation and before planning. Planning therefore sees
+validated intent plus an explicit capability decision; the runtime must not silently choose a
+different scene fallback.
 
-Scene mutation happens when user code creates objects, sets visual data, changes visibility,
-updates sampled fields, changes controller state, resizes a figure, or requests capture/query work.
-Those mutations mark the affected scene and resource state dirty.
 
-## Planning and Artifacts
+## What one `FramePlan` contains
 
-Frame planning gathers the dirty state and decides what the runtime needs. Setup work creates or
-recreates resources and pipelines. Update work refreshes retained resources whose shape or content
-changed. Frame work records the render, compute, copy, query, and presentation steps for the
-current frame.
+One scene-level plan is built for a figure frame even when several panels contribute local nodes.
+It records logical targets and stable resources plus ordered upload, compute, render, copy, and
+readback nodes. Dependencies express upload-before-use, compute-write-before-render-read, render-
+before-readback, panel ordering, and shared-resource ordering.
 
-The frame artifact is the ownership boundary for emitted work. It owns stream snapshots and packet
-spans long enough for the runtime or WASM host to consume them. JSON emission is a debug and
-fixture-export view, not the browser render path.
+Uploads and lazy materialization belong in this plan. They must not appear later through an
+execution-only side path. The plan contains no Vulkan, WebGPU, swapchain, command-buffer, or image-
+view handles.
 
-## Runtime Execution
 
-Runtime execution consumes the artifact through the supported backend path. Native execution uses
-the vklite/canvas/stream/app stack. Browser execution consumes split DRP2 packets through the
-experimental WebGPU path. The runtime may cache backend resources, but it should treat scene
-semantics as already decided.
+## Artifact snapshot and lifetime
 
-## Presentation, Capture, and Cleanup
+Emission translates the already-built plan into an owned `DvzSceneFrameArtifact`:
 
-Presentation displays an interactive frame. Capture renders a bounded frame and writes a raster
-artifact. Query and readback work may complete asynchronously on browser paths and should expose
-explicit status rather than blocking on hidden assumptions.
+- an immutable DRP2 stream snapshot;
+- frozen upload payload bytes;
+- zero or more setup/update/frame packet spans and payload arenas;
+- status, diagnostics, resource version, and frame index.
 
-Cleanup follows ownership. Destroy app/runtime objects before destroying the scene. Release emitted
-packet or readback views according to their documented lifetime; do not retain borrowed spans past
-the next emit or explicit release.
+Successful artifact creation ends the scene-mutation exclusion for that build. Later scene changes
+are legal and affect later artifacts only. Stream, diagnostic, packet, and arena views returned from
+the artifact are borrowed and must not outlive artifact destruction.
 
-See also:
 
-- [Invalidation and caching](invalidation-and-caching.md)
-- [GPU resource ownership](gpu-resource-ownership.md)
-- [Objects and lifetimes](../reference/objects-and-lifetimes.md)
+## View and runtime execution
+
+`DvzView` drives repeated submissions for one figure. It synchronizes target size and input state,
+requests the plan/artifact, executes the artifact stream through its reused `DvzDrp2Runtime`, then
+presents, captures, records, or replays at the app/canvas boundary. A hosted loop calls render-once
+when its surface is drawable; `dvz_app_run()` drives the same path from a Datoviz-owned loop.
+
+External native UI may render in an app-owned post-scene slot before presentation. It may mutate
+ordinary scene state before planning, but it does not become a parallel scene renderer.
+
+
+## Completion and failure
+
+Submission acceptance is distinct from later completion. Capture, query, and readback results need
+frame/request identity and explicit lifetime. Browser completion is asynchronous; native execution
+may also require polling. Runtime errors should map to scene-visible plan/resource/target identity,
+with backend text retained only as diagnostic detail.
+
+
+## Sources of truth
+
+- [Frame lifecycle specification](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/pipeline/FRAME_LIFECYCLE.md)
+- [FramePlan specification](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/pipeline/FRAME_PLAN.md)
+- [Frame artifact public contract](../reference/c-api/scene.md)
+- [Scene to runtime boundary](scene-to-runtime-boundary.md)

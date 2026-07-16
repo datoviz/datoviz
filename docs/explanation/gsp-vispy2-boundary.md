@@ -1,40 +1,36 @@
 # Datoviz, GSP, and VisPy2
 
-Datoviz v0.4 owns the rendering engine. GSP/VisPy2 owns high-level scientific plotting.
+Datoviz v0.4 is the rendering engine. GSP/VisPy2 owns the high-level scientific plotting direction.
+This division prevents the engine documentation from promising automatic plotting behavior that a
+different layer must define.
 
-## Boundary
+**Audience:** users choosing a Python abstraction and contributors deciding which repository owns a
+feature. **Prerequisite:** none. You will learn when direct Datoviz is appropriate and which plotting
+expectations belong to the external, work-in-progress GSP/VisPy2 layer.
 
-This boundary is intentional. Datoviz should provide a predictable C engine, retained scene model,
-visual families, runtime execution, offscreen capture, embedding hooks, generated Python binding,
-DRP2 streams, fixtures, and portability experiments. It should not grow a parallel
-high-level Python plotting API inside the v0.4 docs.
 
-## When to Use Datoviz
+## Choose by abstraction level
 
-Use Datoviz directly when you need engine control: C applications, native embedding, explicit
-visual data, retained resources, low-level Python smoke tests, backend validation, WebGPU/WASM
-experiments, or contributor work on rendering internals.
+| Need | Layer |
+| --- | --- |
+| Explicit scenes, visual families, typed arrays, controllers, capture, or native embedding | Datoviz |
+| C/C++ engine integration or lower-level Python access to the same engine | Datoviz |
+| Backend validation, WebGPU portability experiments, or runtime contribution | Datoviz Advanced |
+| Plot objects, automatic scales/layout, notebook-first ergonomics, or a rich Python object model | GSP/VisPy2, external work in progress |
 
-## When to Use GSP or VisPy2
+Datoviz's normal Python entry point is `import datoviz as dvz`: generated `dvz_*` calls with
+documented NumPy adaptation. `datoviz.raw` is the exact pointer/count form of that same binding, not
+a high-level plotting API. Datoviz v0.4 does not restore the old Python plotting surface or invent
+engine methods such as `scatter()` and `imshow()`.
 
-Use GSP/VisPy2 when you want plotting objects, automatic scales, declarative chart-like workflows,
-notebook-first ergonomics, rich Python object models, or migration from old high-level Python
-plotting patterns.
 
-## Documentation Rule
+## Boundary for examples and documentation
 
-This does not make Datoviz less user-facing. It means the user-facing Datoviz surface is the engine
-surface: examples, visual families, scenes, panels, controllers, capture, diagnostics, and exact
-status labels. Higher-level libraries can build friendlier plotting APIs on top without forcing the
-engine documentation to promise behavior it does not own.
+A Datoviz example should show the complete engine workflow: scene, figure, panel, visual, explicit
+attribute arrays, panel attachment, and window or capture target. A future GSP/VisPy2 example may
+turn a higher-level plot specification into that engine state, but its automatic scale, chart, and
+object semantics remain owned by the higher layer.
 
-When writing docs or examples, make the layer explicit. If a page describes C scene/app use,
-Datoviz owns it. If a page describes `datoviz.raw`, it is documenting the exact pointer/count call
-form of the same Python binding. If a page describes high-level plotting convenience, it belongs
-outside the Datoviz v0.4 public docs unless it is explicitly marked as GSP/VisPy2 scope.
-
-See also:
-
-- [What is Datoviz?](../start/what-is-datoviz.md)
-- [Choose your layer](../start/choose-your-layer.md)
-- [Feature status](../reference/feature-status.md)
+Use the [Project status](../reference/project-status.md) for the current `external/GSP` label and
+[Choose your layer](../start/choose-your-layer.md) for user routing. Do not infer availability from
+the intended architecture.

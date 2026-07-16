@@ -1,48 +1,78 @@
-# Coordinate Systems
+# Coordinate systems
 
-Datoviz separates semantic coordinates from backend coordinates. User code should describe data in
-the coordinate system that makes sense for the visualization; frame planning then lowers that state
-to the GPU-facing spaces required for rendering.
+Coordinates pass through semantic, panel, and GPU-facing spaces. This separation lets Datoviz keep
+scientific domains precise while rendering with efficient GPU formats. Read this page before mixing
+3D data, screen-sized marks, image samples, labels, overlays, or queries.
 
-## Common Spaces
+**Audience:** users combining coordinate spaces and contributors changing transforms or queries.
+**Prerequisite:** the [scene building blocks](figure-panel-visual-model.md). You will learn which
+layer owns each transformation and why navigation should not re-upload source data.
 
-The common spaces are:
+For the exact enums and conversion rules, use the
+[coordinate-system reference](../reference/coordinate-systems.md). For a recipe, use
+[Use coordinate systems](../how-to/coordinate-systems.md).
 
-- data coordinates: the user's scientific or application coordinates;
-- panel coordinates: the visible domain attached to a panel;
-- world/view coordinates: the camera or controller-oriented representation used by 3D navigation;
-- clip coordinates: the normalized GPU space after projection;
-- framebuffer coordinates: pixel positions in the render target;
-- texture or sample coordinates: indices or normalized coordinates used for images and fields.
 
-## Precision Boundary
+## The transform chain
 
-For v0.4, semantic and domain coordinates should remain authoritative in double precision where the
-scene contract needs it. Visual render attributes are lowered to GPU-facing float data unless a
-family contract says otherwise. This keeps the public model precise without requiring every shader
-input to be double precision.
+```text
+scientific DATA values (authoritative domain, often f64)
+        |
+        | normalization / family preparation
+        v
+visual-ready coordinates (commonly GPU-facing f32)
+        |
+        | panel controller, model/view/projection
+        v
+clip coordinates
+        |
+        | viewport and device-pixel mapping
+        v
+framebuffer pixels
+```
 
-## Controllers and Domains
+Images and sampled fields add a related path from a panel/data coordinate to normalized UV, texel,
+or voxel coordinates. Screen-sized attributes such as point diameter or stroke width stay measured
+in pixels and should not scale like data positions.
 
-Controllers change transforms, not the original data. Panzoom changes the visible 2D domain.
-Arcball, fly, and turntable controllers change view or camera state for 3D panels. Linked
-panels should share controller or domain state explicitly.
 
-## Projection Scope
+## Who owns each transformation
 
-Nonlinear or geographic projections are not scene-managed in v0.4. The supported pattern is to
-project data on the CPU into ordinary Cartesian coordinates, then upload the projected positions to
-Datoviz. A future scene-managed projection system should preserve the same distinction between data
-semantics and GPU lowering.
+| Stage | Owner | Changes when |
+| --- | --- | --- |
+| Scientific data/domain | User and retained scene resource | Source values, units, or declared domain change. |
+| Normalization/family preparation | Scene-derived resource | Data-space bounds, family geometry, or normalization policy changes. |
+| Panel view and camera | Panel/controller state | Panzoom, camera, framing, aspect, or viewport changes. |
+| Clip-to-framebuffer mapping | Frame target and viewport | Physical output size, panel rectangle, or device-pixel ratio changes. |
+| Sample lookup | Visual/field contract | Image/field dimensions, orientation, interpolation, or sample mapping changes. |
 
-## Queries
+This ownership is important for performance: a pan or camera move normally changes panel transforms
+and redraws, but does not renormalize or re-upload the source point cloud.
 
-Picking and probing depend on the same coordinate chain as rendering. A pointer starts in
-framebuffer coordinates, maps through the panel viewport into panel or data coordinates, and may
-then map into an item id, image texel, field sample, or readback request.
 
-See also:
+## Precision boundary
 
-- [Coordinate systems reference](../reference/coordinate-systems.md)
-- [Use coordinate systems](../how-to/coordinate-systems.md)
-- [Query, pick, and probe model](query-pick-probe-model.md)
+Semantic domains and transforms remain authoritative in double precision where the scene contract
+needs it. Visual render attributes are commonly lowered to 32-bit floats unless a family contract
+says otherwise. Optional GPU `fp64` is a reported capability, not something user code should infer
+from the backend.
+
+Large-offset or geospatial data often benefits from CPU-side normalization or pre-projection before
+upload. Scene-managed nonlinear/geographic projection is not a supported v0.4 feature; project into
+ordinary Cartesian coordinates and retain the original values in application state when queries or
+labels need them.
+
+
+## Interaction and query consistency
+
+Controllers mutate the view transform, not the original data. Queries use the same panel rectangle,
+viewport, and transform chain as rendering. A pointer begins in framebuffer coordinates, resolves
+to a panel, then may map to data position, scene item identity, texel, voxel, or readback request.
+Do not duplicate this mapping in host code when a scene query provides it.
+
+
+## Sources of truth
+
+- [Transform pipeline](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/pipeline/TRANSFORM_PIPELINE.md)
+- [Panel layout](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/core/PANEL_LAYOUT.md)
+- [Query model](query-pick-probe-model.md)

@@ -218,16 +218,19 @@ nav:
     - Citation: 'reference/citation.md'
   - Advanced:
     - Overview: 'advanced/index.md'
-    - Concepts and architecture:
+    - Concepts:
       - Figure, panel, and visual model: 'explanation/figure-panel-visual-model.md'
-      - Architecture: 'explanation/architecture.md'
-      - Scene-to-runtime boundary: 'explanation/scene-to-runtime-boundary.md'
-      - Frame lifecycle: 'explanation/frame-lifecycle.md'
-      - Retained resources: 'explanation/retained-resources.md'
-      - Invalidation and caching: 'explanation/invalidation-and-caching.md'
-      - GPU resource ownership: 'explanation/gpu-resource-ownership.md'
+      - Coordinate systems: 'explanation/coordinate-systems.md'
       - Interaction model: 'explanation/interaction-model.md'
       - Query, pick, and probe model: 'explanation/query-pick-probe-model.md'
+      - Datoviz, GSP, and VisPy2: 'explanation/gsp-vispy2-boundary.md'
+    - Scene planning and boundaries:
+      - Architecture: 'explanation/architecture.md'
+      - Scene-to-runtime boundary: 'explanation/scene-to-runtime-boundary.md'
+      - Retained resources: 'explanation/retained-resources.md'
+      - Invalidation and caching: 'explanation/invalidation-and-caching.md'
+      - Frame lifecycle: 'explanation/frame-lifecycle.md'
+      - GPU resource ownership: 'explanation/gpu-resource-ownership.md'
     - Runtime layers:
       - Runtime internals: 'advanced/runtime-internals.md'
       - DRP2 command streams: 'advanced/drp2-command-streams.md'

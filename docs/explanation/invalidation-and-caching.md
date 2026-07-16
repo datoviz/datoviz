@@ -1,46 +1,76 @@
-# Invalidation and Caching
+# Invalidation and caching
 
-Invalidation is the way retained scene changes become bounded runtime work. Caching is the matching
-runtime behavior: reuse backend objects when the scene contract has not changed.
+Invalidation records which derived facts became stale after a retained scene mutation. Caching reuses
+derived or backend state while its dependencies remain valid. A redraw request schedules work; it is
+not itself proof that data, a pipeline, or the frame-plan topology changed.
 
-## Invalidate by Meaning
+**Audience:** contributors changing updates, layout, controllers, axes, or planning, and developers
+investigating unexpected reuploads. **Prerequisite:** [Retained resources](retained-resources.md).
 
-Datoviz should invalidate by meaning, not by convenience. A visual data update invalidates the
-attribute and any derived upload stream. A visibility change invalidates draw planning. A resize
-invalidates framebuffer and viewport-dependent state. A material or technique change may invalidate
-pipeline-compatible state. A controller change invalidates transforms and frame work, but not the
-underlying data arrays.
 
-## Work Classes
+## Keep four ideas separate
 
-The frame planner turns invalidation into three broad classes of work:
+| Idea | Meaning |
+| --- | --- |
+| Dirty scope | A semantic dependency is stale: resource data, normalization, panel transform, axis layout, capability result, plan topology, or readback routing. |
+| Redraw | A view should produce another frame. |
+| Upload | The next plan must write changed bytes to an execution resource. |
+| Plan rebuild | Logical nodes, dependencies, targets, routing, or stage participation changed. |
 
-- setup work, for resources or pipelines whose shape or contract changed;
-- update work, for retained resources whose content changed without changing shape;
-- frame work, for commands that need to run each frame, such as render passes, draws, copies, and
-  presentation or capture requests.
+A mutation may cause several of these, but they are not synonyms. For example, panning redraws and
+updates panel transforms; it should not upload every point or rebuild stable render topology.
 
-## Runtime Caching
 
-Caching belongs below the scene boundary. The scene decides that a buffer, texture, pipeline, or
-draw contract is needed. The runtime may keep backend objects alive and refresh only the changed
-parts, but it should not infer new scene semantics from cached state.
+## Dependency layers
 
-## Interaction Cost
+```text
+authored source data
+    -> normalized/family-ready resources
+    -> panel-local transforms and axis layout
+    -> FramePlan topology and routing
+    -> artifact emission: setup/update/frame work
+    -> runtime object cache and execution
+```
 
-Good invalidation keeps interaction responsive. Panning a dense point cloud should update transform
-state and redraw; it should not re-upload every point. Animating colors should upload changed color
-data; it should not rebuild pipelines. Resizing a window should recreate size-dependent attachments
-without losing retained visual data.
+Invalidate from the changed layer downward, not from the root by default. Runtime caches may reuse
+buffers or pipelines, but they must not infer scene semantics that the plan omitted.
 
-## Debugging
 
-When debugging stale or missing output, ask which state changed and which work should have been
-invalidated: data upload, resource shape, transform, panel layout, draw visibility, render target,
-or capture/readback request.
+## Change matrix
 
-See also:
+| Change | Usually dirty | Rebuild plan when... | Should stay reusable |
+| --- | --- | --- | --- |
+| Same-shape data range | Resource content and upload range | Counts, topology, usage, or stage participation changes. | Panel transform, unrelated resources, compatible pipeline. |
+| Style/parameter value | Visual properties and small parameter upload | Variant, pass, target, or binding shape changes. | Source data and normalization. |
+| Panzoom/camera | Panel transform; redraw | A view-dependent technique or route changes topology. | Source arrays, normalized resources, stable pipelines. |
+| Axis domain motion | Panel transform | Covered domain/density/formatter/layout requires regenerated tick resources. | Data visual and unrelated panels. |
+| Visual attach/add/remove | Scene structure and plan | Normally: membership and draw routing changed. | Unreferenced independent resources. |
+| Resize | Viewport/target-dependent state | Attachment size/sample/target topology changes. | Retained visual data. |
+| Capability change | Adaptation result | Selected variant, targets, stages, or routing changes. | Authored source data. |
+| Capture/query request | Readback routing and frame work | A target or pass must be introduced or removed. | Normalized data unless representation differs. |
 
-- [Retained resources](retained-resources.md)
-- [Frame lifecycle](frame-lifecycle.md)
+
+## Setup, update, and frame emission
+
+Resolved dirtiness becomes three packet phases. `setup` creates, recreates, or destroys retained
+execution objects. `update` changes content without changing identity or dependency shape. `frame`
+encodes transient passes, draws, dispatches, copies, submits, and readback metadata. A same-shape
+change should normally avoid setup; a frame packet must never rely on an unknown resource id.
+
+The artifact carries `resource_version` and `frame_index` so a retained runtime can reject stale or
+out-of-order packet sets. These counters guard execution order; they do not own scene lifetime.
+
+
+## Diagnosing excess or missing work
+
+Record the mutation, expected dirty scopes, emitted packet phases, and whether the plan cache was
+reused. A useful diagnostic explains *why* an axis regenerated, a target was recreated, or a setup
+packet appeared. Timing alone cannot distinguish an unnecessary upload from slow execution.
+
+
+## Sources of truth
+
+- [Invalidation contract](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/pipeline/INVALIDATION_AND_CACHING.md)
+- [FramePlan contract](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/pipeline/FRAME_PLAN.md)
+- [DRP2 packet phases](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/drp2/PACKETS.md)
 - [Profile rendering performance](../how-to/profile-performance.md)

@@ -1,42 +1,73 @@
-# Queries, Picking, and Probing
+# Queries, picking, and probing
 
-Queries connect rendered output back to retained scene state. Support is feature-specific, but the
-conceptual split between picking, probing, and readback is stable.
+Queries connect a rendered frame back to retained scene meaning. Picking asks which item was
+rendered; probing asks what sampled value corresponds to a coordinate; readback retrieves GPU output
+such as pixels or typed buffer data. Support is visual-, query-, and backend-specific.
 
-## Picking
+Read this page when designing an interaction flow. Use the [Queries reference](../reference/queries.md)
+for exact request/result types and freshness rules, and the How-To pages for
+[picking](../how-to/pick-items.md) or [probing](../how-to/probe-fields.md).
 
-Picking answers "which scene item is under this pointer or region?" A pick usually starts from a
-framebuffer coordinate, maps it to the panel, and resolves it to an item, instance, visual, or
-selection target. Picking should report scene-level identities, not raw backend implementation
-details.
 
-## Probing
+## Three questions
 
-Probing answers "what data value is at this coordinate?" A probe maps from pointer or data
-coordinates into an image texel, sampled field, scalar value, or derived readout. Probing depends on
-the same transforms, domains, and sampled-resource metadata used for rendering.
+| Operation | Question | Result should describe |
+| --- | --- | --- |
+| Pick | “Which rendered item is under this pixel or region?” | Scene visual/item/instance identity, optional link key, and relevant coordinates. |
+| Probe | “What value is represented here?” | Texel/voxel/sample identity, source or displayed value, and coordinate metadata. |
+| Readback | “What bytes or values did the GPU produce?” | A typed/ranged result associated with a frame and request. |
 
-## Readback
+Backend object ids are never the public answer. Runtime payloads must be decoded back to stable
+scene identities before application selection, linking, or annotation uses them.
 
-Readback answers "what did the GPU produce?" It may read pixels, ids, buffers, or query results
-from a completed frame. Readback is where backend timing matters most. Browser WebGPU readback is
-asynchronous; native paths may also require explicit lifetime and completion handling.
 
-## Result Semantics
+## Request and result lifecycle
 
-The v0.4 rule is to keep query semantics above the backend. User-facing results should be expressed
-in terms of panels, visuals, items, samples, coordinates, and retained result state. DRP2 and runtime
-readback mechanisms are implementation paths, not the public mental model.
+```text
+request + panel/frame coordinates
+    -> frame plan adds query target/work/readback
+    -> DRP2 executes and schedules completion
+    -> scene polls and decodes result
+    -> request/frame/freshness check
+    -> application consumes scene-level result
+```
 
-## Support Boundary
+Readback can complete after later input has arrived. Hover therefore follows latest-request-wins:
+a result must carry enough request/frame identity to discard stale work. Click or explicit probe
+requests may use different acceptance rules, but freshness must be stated rather than assumed.
+Browser WebGPU results are asynchronous; native paths also require explicit completion and lifetime
+handling.
 
-Current support is feature-specific. Do not assume every visual family, controller, backend, or
-browser route has identical query parity. Use the project and WebGPU status pages for the current
-promoted slice.
 
-See also:
+## Coordinate and visual semantics
 
-- [Pick items](../how-to/pick-items.md)
-- [Probe fields](../how-to/probe-fields.md)
-- [Queries reference](../reference/queries.md)
-- [WebGPU subset](../reference/webgpu-subset.md)
+Query planning uses the same panel viewport, transforms, sampled-field metadata, clipping, depth,
+and visual-family rules as rendering. This matters for discarded marker pixels, path strokes,
+transparency, image orientation, integer label fields, and volume rendering. A backend approximation
+must not silently change the public meaning; an unsupported exact query should report unsupported.
+
+Technique effects such as blending or multi-pass composition also require an explicit query policy.
+“Frontmost opaque item” is not automatically equivalent to “largest transparent contribution.”
+
+
+## Ownership
+
+The scene owns requests, freshness policy, decoded identities, and retained selection/hover state.
+The frame artifact owns the emitted command and payload snapshot. The runtime owns GPU execution and
+temporary readback resources. Copy result data that must outlive the release point documented by its
+API.
+
+
+## Status boundary
+
+Do not infer parity across all visual families or backends. Check the [Feature status](../reference/feature-status.md),
+[Queries reference](../reference/queries.md), and [WebGPU subset](../reference/webgpu-subset.md) for
+the promoted slice. CPU sampling of retained data may be useful application logic, but it is not
+evidence that a rendered GPU probe path is supported.
+
+
+## Sources of truth
+
+- [GPU query system](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/interaction/GPU_QUERY_SYSTEM.md)
+- [Picking semantics](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/interaction/PICKING.md)
+- [Selection semantics](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/interaction/SELECTION.md)
