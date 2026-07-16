@@ -778,7 +778,7 @@ static void _gui_callback(DvzGui* gui, DvzView* view, void* user_data)
         dvz_snprintf(
             upload_text, sizeof(upload_text), "Upload: %.1f KiB (%u vertices)",
             (double)state->upload_bytes / 1024.0, state->uploaded_vertex_count);
-        dvz_gui_text(gui, "128 channels | 10 kHz | 409.6 ms ring");
+        dvz_gui_text(gui, "128 channels | 10 kHz | 1.000 s ring");
         dvz_gui_text(gui, "28 units | spatial spike footprints");
         dvz_gui_text(gui, "One raw line-list trace draw");
         dvz_gui_text(gui, fps_text);
