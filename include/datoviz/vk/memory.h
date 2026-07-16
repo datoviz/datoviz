@@ -69,7 +69,7 @@ EXTERN_C_ON
  * initialize with dvz_device_allocator(), destroy with dvz_allocator_destroy(),
  * and free only if this wrapper came from dvz_allocator_create().
  *
- * @returns allocated allocator wrapper, or NULL on allocation failure
+ * @return allocated allocator wrapper, or NULL on allocation failure
  */
 DVZ_EXPORT DvzVma* dvz_allocator_create(void);
 
@@ -92,7 +92,7 @@ DVZ_EXPORT void dvz_allocator_free(DvzVma* allocator);
  * resource before discarding them, and free only if this wrapper came from
  * dvz_allocation_create().
  *
- * @returns allocated allocation wrapper, or NULL on allocation failure
+ * @return allocated allocation wrapper, or NULL on allocation failure
  */
 DVZ_EXPORT DvzAllocation* dvz_allocation_create(void);
 
@@ -111,7 +111,7 @@ DVZ_EXPORT void dvz_allocation_free(DvzAllocation* alloc);
  * Return the device associated with an allocator.
  *
  * @param allocator the allocator
- * @returns associated device, or NULL if unset
+ * @return associated device, or NULL if unset
  */
 DVZ_EXPORT DvzDevice* dvz_allocator_device(DvzVma* allocator);
 
@@ -121,7 +121,7 @@ DVZ_EXPORT DvzDevice* dvz_allocator_device(DvzVma* allocator);
  * Return the mapped pointer currently associated with an allocation.
  *
  * @param alloc the allocation
- * @returns mapped pointer or NULL
+ * @return mapped pointer or NULL
  */
 DVZ_EXPORT void* dvz_allocation_mapped(DvzAllocation* alloc);
 
@@ -162,7 +162,7 @@ DVZ_EXPORT void dvz_allocation_set_flags(DvzAllocation* alloc, DvzAllocationFlag
  * Return the allocation size, in bytes.
  *
  * @param alloc the allocation
- * @returns allocation size in bytes
+ * @return allocation size in bytes
  */
 DVZ_EXPORT VkDeviceSize dvz_allocation_size(DvzAllocation* alloc);
 
@@ -179,6 +179,7 @@ DVZ_EXPORT VkDeviceSize dvz_allocation_size(DvzAllocation* alloc);
  * @param device the device
  * @param export_handle_type if exporting created allocations, the external memory handle type
  * @param[out] allocator the allocator
+ * @return 0 on success, non-zero on Vulkan or allocator failure
  */
 DVZ_EXPORT int dvz_device_allocator(
     DvzDevice* device, VkExternalMemoryHandleTypeFlagsKHR export_handle_type, DvzVma* allocator);
@@ -196,6 +197,7 @@ DVZ_EXPORT int dvz_device_allocator(
  * @param flags Datoviz allocation policy flags
  * @param[out] alloc the created allocation
  * @param[out] vk_buffer the created VkBuffer handle
+ * @return 0 on success, non-zero on Vulkan or allocator failure
  */
 DVZ_EXPORT int dvz_allocator_buffer(
     DvzVma* allocator, VkBufferCreateInfo* info, DvzAllocationFlags flags, DvzAllocation* alloc,
@@ -214,6 +216,7 @@ DVZ_EXPORT int dvz_allocator_buffer(
  * @param flags Datoviz allocation policy flags
  * @param[out] alloc the created allocation
  * @param[out] vk_image the created VkImage handle
+ * @return 0 on success, non-zero on Vulkan or allocator failure
  */
 DVZ_EXPORT int dvz_allocator_image(
     DvzVma* allocator, VkImageCreateInfo* info, DvzAllocationFlags flags, DvzAllocation* alloc,
@@ -225,7 +228,7 @@ DVZ_EXPORT int dvz_allocator_image(
  *
  * @param allocator the allocator
  * @param alloc the allocation
- * @returns the mapped pointer
+ * @return the mapped pointer
  */
 DVZ_EXPORT void* dvz_allocator_map(DvzVma* allocator, DvzAllocation* alloc);
 
@@ -248,7 +251,7 @@ DVZ_EXPORT void dvz_allocator_unmap(DvzVma* allocator, DvzAllocation* alloc);
  * @param alloc the allocation
  * @param offset the byte offset within the allocation
  * @param size the number of bytes to flush
- * @returns 0 on success, -1 on failure
+ * @return 0 on success, -1 on failure
  */
 DVZ_EXPORT int dvz_allocator_flush(
     DvzVma* allocator, DvzAllocation* alloc, VkDeviceSize offset, VkDeviceSize size);
@@ -261,7 +264,7 @@ DVZ_EXPORT int dvz_allocator_flush(
  * @param alloc the allocation
  * @param offset the byte offset within the allocation
  * @param size the number of bytes to invalidate
- * @returns 0 on success, -1 on failure
+ * @return 0 on success, -1 on failure
  */
 DVZ_EXPORT int dvz_allocator_invalidate(
     DvzVma* allocator, DvzAllocation* alloc, VkDeviceSize offset, VkDeviceSize size);

@@ -61,7 +61,7 @@ struct DvzGpuInfo
  * Return the number of detected physical GPUs.
  *
  * @param instance the instance
- * @returns the number of detected GPUs
+ * @return the number of detected GPUs
  */
 DVZ_EXPORT uint32_t dvz_instance_gpu_count(DvzInstance* instance);
 
@@ -73,7 +73,7 @@ DVZ_EXPORT uint32_t dvz_instance_gpu_count(DvzInstance* instance);
  * @param instance the instance
  * @param gpu_index selected GPU index in the instance
  * @param[out] out_info descriptor output
- * @returns true when the descriptor was populated
+ * @return true when the descriptor was populated
  */
 DVZ_EXPORT bool
 dvz_instance_gpu_info(DvzInstance* instance, uint32_t gpu_index, DvzGpuInfo* out_info);
@@ -86,7 +86,7 @@ dvz_instance_gpu_info(DvzInstance* instance, uint32_t gpu_index, DvzGpuInfo* out
  * @param instance the instance
  * @param gpu_index selected GPU index
  * @param[out] out_pdevice resolved Vulkan physical device
- * @returns true when the physical device handle was resolved
+ * @return true when the physical device handle was resolved
  */
 DVZ_EXPORT bool dvz_instance_gpu_handle(
     DvzInstance* instance, uint32_t gpu_index, VkPhysicalDevice* out_pdevice);

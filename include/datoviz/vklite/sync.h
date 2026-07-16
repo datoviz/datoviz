@@ -317,7 +317,7 @@ DVZ_EXPORT void dvz_barriers_flags(DvzBarriers* barriers, VkDependencyFlags flag
  * is exhausted.
  *
  * @param barriers the set of barriers
- * @returns the memory barrier
+ * @return mutable barrier owned by `barriers`, or NULL when capacity is exhausted
  */
 DVZ_EXPORT DvzBarrierMemory* dvz_barriers_memory(DvzBarriers* barriers);
 
@@ -330,10 +330,10 @@ DVZ_EXPORT DvzBarrierMemory* dvz_barriers_memory(DvzBarriers* barriers);
  * is exhausted.
  *
  * @param barriers the set of barriers
- * @param buffer the buffer
- * @param offset the offset
- * @param size the size
- * @returns the buffer barrier
+ * @param buffer buffer handle whose accesses are synchronized
+ * @param offset byte offset of the synchronized range within `buffer`
+ * @param size size of the synchronized range in bytes, or `VK_WHOLE_SIZE`
+ * @return mutable barrier owned by `barriers`, or NULL when capacity is exhausted
  */
 DVZ_EXPORT DvzBarrierBuffer* dvz_barriers_buffer(
     DvzBarriers* barriers, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize size);
@@ -347,8 +347,8 @@ DVZ_EXPORT DvzBarrierBuffer* dvz_barriers_buffer(
  * is exhausted.
  *
  * @param barriers the set of barriers
- * @param img an image
- * @returns the image barrier
+ * @param img live image handle whose known layout and access state will be transitioned
+ * @return mutable barrier owned by `barriers`, or NULL when capacity is exhausted
  */
 DVZ_EXPORT DvzBarrierImage* dvz_barriers_image(DvzBarriers* barriers, VkImage img);
 
@@ -368,7 +368,7 @@ DVZ_EXPORT void dvz_cmd_barriers(DvzCommands* cmds, DvzBarriers* barriers);
  * Return the number of recorded memory barriers in a barrier set.
  *
  * @param barriers the barrier set
- * @returns the memory-barrier count
+ * @return memory-barrier count
  */
 DVZ_EXPORT uint32_t dvz_barriers_memory_count(DvzBarriers* barriers);
 
@@ -378,7 +378,7 @@ DVZ_EXPORT uint32_t dvz_barriers_memory_count(DvzBarriers* barriers);
  * Return the number of recorded buffer barriers in a barrier set.
  *
  * @param barriers the barrier set
- * @returns the buffer-barrier count
+ * @return buffer-barrier count
  */
 DVZ_EXPORT uint32_t dvz_barriers_buffer_count(DvzBarriers* barriers);
 
@@ -388,7 +388,7 @@ DVZ_EXPORT uint32_t dvz_barriers_buffer_count(DvzBarriers* barriers);
  * Return the number of recorded image barriers in a barrier set.
  *
  * @param barriers the barrier set
- * @returns the image-barrier count
+ * @return image-barrier count
  */
 DVZ_EXPORT uint32_t dvz_barriers_image_count(DvzBarriers* barriers);
 
@@ -398,7 +398,7 @@ DVZ_EXPORT uint32_t dvz_barriers_image_count(DvzBarriers* barriers);
  * Return the dependency flags configured on a barrier set.
  *
  * @param barriers the barrier set
- * @returns the dependency flags
+ * @return dependency flags
  */
 DVZ_EXPORT VkDependencyFlags dvz_barriers_dependency_flags(DvzBarriers* barriers);
 
@@ -408,7 +408,7 @@ DVZ_EXPORT VkDependencyFlags dvz_barriers_dependency_flags(DvzBarriers* barriers
  * Return the maximum number of barriers supported per barrier type.
  *
  * @param barriers the barrier set
- * @returns the barrier capacity
+ * @return barrier capacity per barrier type
  */
 DVZ_EXPORT uint32_t dvz_barriers_capacity(DvzBarriers* barriers);
 
@@ -421,7 +421,7 @@ DVZ_EXPORT uint32_t dvz_barriers_capacity(DvzBarriers* barriers);
 /**
  * Initialize a fence (CPU-GPU synchronization).
  *
- * @param device the device
+ * @param device logical device that owns the fence; must outlive `fence`
  * @param signaled whether the fence is created in the signaled state or not
  * @param[out] fence the created fence
  */
@@ -443,7 +443,7 @@ DVZ_EXPORT bool dvz_fence_wait(DvzFence* fence);
  * Return the Vulkan fence handle owned by a fence wrapper.
  *
  * @param fence the fence
- * @returns the Vulkan fence handle or VK_NULL_HANDLE
+ * @return borrowed Vulkan fence handle, or `VK_NULL_HANDLE` when not initialized
  */
 DVZ_EXPORT VkFence dvz_fence_handle(DvzFence* fence);
 
@@ -453,13 +453,14 @@ DVZ_EXPORT VkFence dvz_fence_handle(DvzFence* fence);
  * Return whether a fence is ready.
  *
  * @param fence the fence
+ * @return true if the fence is signaled, false if it is unsignaled or the query failed
  */
 DVZ_EXPORT bool dvz_fence_ready(DvzFence* fence);
 
 
 
 /**
- * Rset the state of a fence.
+ * Reset a fence to the unsignaled state.
  *
  * @param fence the fence
  */
@@ -483,8 +484,8 @@ DVZ_EXPORT void dvz_fence_destroy(DvzFence* fence);
 /**
  * Initialize a semaphore (GPU-GPU synchronization).
  *
- * @param device the device
- * @param[out] the created semaphore
+ * @param device logical device that owns the semaphore; must outlive `semaphore`
+ * @param[out] semaphore initialized binary semaphore wrapper
  */
 DVZ_EXPORT void dvz_semaphore(DvzDevice* device, DvzSemaphore* semaphore);
 
@@ -493,9 +494,9 @@ DVZ_EXPORT void dvz_semaphore(DvzDevice* device, DvzSemaphore* semaphore);
 /**
  * Initialize a timeline semaphore (GPU-GPU synchronization).
  *
- * @param device the device
+ * @param device logical device that owns the semaphore; must outlive `semaphore`
  * @param value the initial value
- * @param[out] the created semaphore
+ * @param[out] semaphore initialized timeline semaphore wrapper
  * @param handle_type external semaphore handle type required for export (0 when unused)
  */
 DVZ_EXPORT void dvz_semaphore_timeline(
@@ -507,8 +508,8 @@ DVZ_EXPORT void dvz_semaphore_timeline(
 /**
  * Signal a timeline semaphore from the CPU.
  *
- * @param semaphore
- * @param value the value
+ * @param semaphore live timeline semaphore to signal
+ * @param value monotonically increasing timeline value to signal
  */
 DVZ_EXPORT void dvz_semaphore_signal(DvzSemaphore* semaphore, uint64_t value);
 
@@ -517,8 +518,8 @@ DVZ_EXPORT void dvz_semaphore_signal(DvzSemaphore* semaphore, uint64_t value);
 /**
  * Wait a timeline semaphore on the CPU.
  *
- * @param semaphore
- * @param value the value
+ * @param semaphore live timeline semaphore to wait on
+ * @param value timeline value that must be reached
  */
 DVZ_EXPORT void dvz_semaphore_wait(DvzSemaphore* semaphore, uint64_t value);
 
@@ -527,8 +528,8 @@ DVZ_EXPORT void dvz_semaphore_wait(DvzSemaphore* semaphore, uint64_t value);
 /**
  * Retrieve the current value of a timeline semaphore.
  *
- * @param semaphore
- * @returns the value
+ * @param semaphore live timeline semaphore to query
+ * @return current timeline value, or 0 if the query fails
  */
 DVZ_EXPORT uint64_t dvz_semaphore_query(DvzSemaphore* semaphore);
 
@@ -538,7 +539,7 @@ DVZ_EXPORT uint64_t dvz_semaphore_query(DvzSemaphore* semaphore);
  * Return the Vulkan semaphore handle owned by a semaphore wrapper.
  *
  * @param semaphore the semaphore
- * @returns the Vulkan semaphore handle or VK_NULL_HANDLE
+ * @return borrowed Vulkan semaphore handle, or `VK_NULL_HANDLE` when not initialized
  */
 DVZ_EXPORT VkSemaphore dvz_semaphore_handle(DvzSemaphore* semaphore);
 
@@ -549,7 +550,8 @@ DVZ_EXPORT VkSemaphore dvz_semaphore_handle(DvzSemaphore* semaphore);
  *
  * @param semaphore semaphore to export
  * @param handle_type external handle type requested by the caller
- * @returns file descriptor on success, -1 on failure or unsupported platforms
+ * @return owned file descriptor on success, -1 on failure or unsupported platforms; the caller
+ * must close a successful descriptor
  */
 DVZ_EXPORT int
 dvz_semaphore_export_fd(DvzSemaphore* semaphore, VkExternalSemaphoreHandleTypeFlags handle_type);
@@ -588,7 +590,7 @@ DVZ_EXPORT void dvz_submit(DvzSubmit* submit);
  * @param submit the submission
  * @param semaphore the semaphore
  * @param value the value to wait on, if using a timeline semaphore
- * @param stage the stage in the queue's execution that depends on that wait.
+ * @param stage destination pipeline stage mask that waits for the semaphore
  */
 DVZ_EXPORT void dvz_submit_wait(
     DvzSubmit* submit, VkSemaphore semaphore, uint64_t value, VkPipelineStageFlags2 stage);
@@ -604,7 +606,7 @@ DVZ_EXPORT void dvz_submit_wait(
  * @param submit the submission
  * @param semaphore the semaphore
  * @param value the value to signal, if using a timeline semaphore
- * @param stage the stage in the queue's execution that depends on that wait.
+ * @param stage pipeline stage mask associated with the signal operation
  */
 DVZ_EXPORT void dvz_submit_signal(
     DvzSubmit* submit, VkSemaphore semaphore, uint64_t value, VkPipelineStageFlags2 stage);
@@ -628,7 +630,7 @@ DVZ_EXPORT void dvz_submit_command(DvzSubmit* submit, VkCommandBuffer cmd);
  * Return the number of wait semaphores configured on a submission.
  *
  * @param submit the submission
- * @returns the wait-semaphore count
+ * @return wait-semaphore count
  */
 DVZ_EXPORT uint32_t dvz_submit_wait_count(DvzSubmit* submit);
 
@@ -638,7 +640,7 @@ DVZ_EXPORT uint32_t dvz_submit_wait_count(DvzSubmit* submit);
  * Return the number of signal semaphores configured on a submission.
  *
  * @param submit the submission
- * @returns the signal-semaphore count
+ * @return signal-semaphore count
  */
 DVZ_EXPORT uint32_t dvz_submit_signal_count(DvzSubmit* submit);
 
@@ -648,7 +650,7 @@ DVZ_EXPORT uint32_t dvz_submit_signal_count(DvzSubmit* submit);
  * Return the number of command buffers configured on a submission.
  *
  * @param submit the submission
- * @returns the command-buffer count
+ * @return command-buffer count
  */
 DVZ_EXPORT uint32_t dvz_submit_command_count(DvzSubmit* submit);
 
@@ -658,7 +660,7 @@ DVZ_EXPORT uint32_t dvz_submit_command_count(DvzSubmit* submit);
  * Return whether a submission has no recorded waits, signals, or command buffers.
  *
  * @param submit the submission
- * @returns true when the submission is empty
+ * @return true when the submission is empty
  */
 DVZ_EXPORT bool dvz_submit_is_empty(DvzSubmit* submit);
 
@@ -668,8 +670,8 @@ DVZ_EXPORT bool dvz_submit_is_empty(DvzSubmit* submit);
  * Send a submission to a queue.
  *
  * @param submit the submission
- * @param queue the queue
- * @param fence the fence that is signaled once all commands have completed
+ * @param queue borrowed Vulkan queue on which to submit
+ * @param fence optional borrowed fence signaled after completion, or `VK_NULL_HANDLE`
  * @return Vulkan result code cast to int32_t (VK_SUCCESS on success)
  */
 DVZ_EXPORT int32_t dvz_submit_send(DvzSubmit* submit, VkQueue queue, VkFence fence);

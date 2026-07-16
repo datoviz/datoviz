@@ -150,7 +150,7 @@ DVZ_EXPORT void dvz_rendering_layers(DvzRendering* rendering, uint32_t count);
  * Return the number of configured color attachments.
  *
  * @param rendering the rendering
- * @returns the color attachment count
+ * @return the color attachment count
  */
 DVZ_EXPORT uint32_t dvz_rendering_color_count(DvzRendering* rendering);
 
@@ -160,7 +160,7 @@ DVZ_EXPORT uint32_t dvz_rendering_color_count(DvzRendering* rendering);
  * Return the configured layer count.
  *
  * @param rendering the rendering
- * @returns the layer count
+ * @return the layer count
  */
 DVZ_EXPORT uint32_t dvz_rendering_layer_count(DvzRendering* rendering);
 
@@ -170,7 +170,7 @@ DVZ_EXPORT uint32_t dvz_rendering_layer_count(DvzRendering* rendering);
  * Return whether a depth attachment is configured.
  *
  * @param rendering the rendering
- * @returns true when a depth attachment is configured
+ * @return true when a depth attachment is configured
  */
 DVZ_EXPORT bool dvz_rendering_has_depth(DvzRendering* rendering);
 
@@ -180,7 +180,7 @@ DVZ_EXPORT bool dvz_rendering_has_depth(DvzRendering* rendering);
  * Return whether a stencil attachment is configured.
  *
  * @param rendering the rendering
- * @returns true when a stencil attachment is configured
+ * @return true when a stencil attachment is configured
  */
 DVZ_EXPORT bool dvz_rendering_has_stencil(DvzRendering* rendering);
 
@@ -191,7 +191,7 @@ DVZ_EXPORT bool dvz_rendering_has_stencil(DvzRendering* rendering);
  *
  * @param rendering the rendering
  * @param idx the color attachment index
- * @returns the attachment
+ * @return the attachment
  */
 DVZ_EXPORT DvzAttachment* dvz_rendering_color(DvzRendering* rendering, uint32_t idx);
 
@@ -201,7 +201,7 @@ DVZ_EXPORT DvzAttachment* dvz_rendering_color(DvzRendering* rendering, uint32_t 
  * Return the depth attachment of a rendering.
  *
  * @param rendering the rendering
- * @returns the attachment
+ * @return the attachment
  */
 DVZ_EXPORT DvzAttachment* dvz_rendering_depth(DvzRendering* rendering);
 
@@ -211,7 +211,7 @@ DVZ_EXPORT DvzAttachment* dvz_rendering_depth(DvzRendering* rendering);
  * Return the stencil attachment of a rendering.
  *
  * @param rendering the rendering
- * @returns the attachment
+ * @return the attachment
  */
 DVZ_EXPORT DvzAttachment* dvz_rendering_stencil(DvzRendering* rendering);
 
@@ -271,6 +271,8 @@ DVZ_EXPORT void dvz_rendering_free(DvzRendering* rendering);
  * @param cmds the set of command buffers to record
  * @param first_vertex index of the first vertex
  * @param vertex_count number of vertices to draw
+ * @param first_instance index of the first instance
+ * @param instance_count number of instances to draw
  */
 DVZ_EXPORT void dvz_cmd_draw(
     DvzCommands* cmds, uint32_t first_vertex, uint32_t vertex_count, uint32_t first_instance,
@@ -285,6 +287,8 @@ DVZ_EXPORT void dvz_cmd_draw(
  * @param first_index index of the first index
  * @param vertex_offset offset of the vertex
  * @param index_count number of indices to draw
+ * @param first_instance index of the first instance
+ * @param instance_count number of instances to draw
  */
 DVZ_EXPORT void dvz_cmd_draw_indexed(
     DvzCommands* cmds, uint32_t first_index, int32_t vertex_offset, uint32_t index_count,
@@ -296,7 +300,10 @@ DVZ_EXPORT void dvz_cmd_draw_indexed(
  * Indirect draw.
  *
  * @param cmds the set of command buffers to record
- * @param indirect buffer regions with the indirect draw info
+ * @param indirect buffer containing `VkDrawIndirectCommand` records
+ * @param offset byte offset of the first record within `indirect`
+ * @param draw_count number of draw records to execute
+ * @param stride byte stride between successive records
  */
 DVZ_EXPORT void dvz_cmd_draw_indirect(
     DvzCommands* cmds, VkBuffer indirect, DvzSize offset, uint32_t draw_count, DvzSize stride);
@@ -307,7 +314,10 @@ DVZ_EXPORT void dvz_cmd_draw_indirect(
  * Indirect indexed draw.
  *
  * @param cmds the set of command buffers to record
- * @param indirect buffer regions with the indirect draw info
+ * @param indirect buffer containing `VkDrawIndexedIndirectCommand` records
+ * @param offset byte offset of the first record within `indirect`
+ * @param draw_count number of draw records to execute
+ * @param stride byte stride between successive records
  */
 DVZ_EXPORT void dvz_cmd_draw_indexed_indirect(
     DvzCommands* cmds, VkBuffer indirect, DvzSize offset, uint32_t draw_count, DvzSize stride);

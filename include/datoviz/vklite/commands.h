@@ -78,8 +78,9 @@ DVZ_EXPORT void dvz_commands_free(DvzCommands* cmds);
  * The status is INIT when the command buffers are initialized, and CREATED when they are filled.
  * Reinitializing a live wrapper requires dvz_commands_destroy() first.
  *
- * @param device the device
- * @param queue the queue
+ * @param device logical device that owns the command pool and buffers; must outlive `cmds`
+ * @param queue queue whose family selects the command pool and on which submissions are made;
+ * must outlive `cmds`
  * @param count the number of command buffers to create
  * @param[out] cmds the created command buffers
  */
@@ -91,9 +92,10 @@ dvz_commands(DvzDevice* device, DvzQueue* queue, uint32_t count, DvzCommands* cm
 /**
  * Allocate a single primary command buffer from the device command pool of a queue family.
  *
- * @param device the device
+ * @param device logical device that owns the selected command pool
  * @param queue_family queue family index used to select the command pool
- * @returns the allocated command buffer, or VK_NULL_HANDLE on failure
+ * @return owned command buffer, or `VK_NULL_HANDLE` on failure; free it with
+ * dvz_command_buffer_free()
  */
 DVZ_EXPORT VkCommandBuffer dvz_command_buffer_alloc(DvzDevice* device, uint32_t queue_family);
 
@@ -102,7 +104,7 @@ DVZ_EXPORT VkCommandBuffer dvz_command_buffer_alloc(DvzDevice* device, uint32_t 
 /**
  * Free a single command buffer from the device command pool of a queue family.
  *
- * @param device the device
+ * @param device logical device whose command pool owns `cmd`
  * @param queue_family queue family index used to select the command pool
  * @param cmd command buffer to free
  */
@@ -115,7 +117,7 @@ dvz_command_buffer_free(DvzDevice* device, uint32_t queue_family, VkCommandBuffe
  * Return the Vulkan handle of the currently-selected command buffers.
  *
  * @param cmds the set of command buffers
- * @returns the command buffer Vulkan handle
+ * @return borrowed handle of the currently selected command buffer
  */
 DVZ_EXPORT VkCommandBuffer dvz_commands_handle(DvzCommands* cmds);
 
@@ -125,7 +127,7 @@ DVZ_EXPORT VkCommandBuffer dvz_commands_handle(DvzCommands* cmds);
  * Return the number of command buffers managed by a wrapper.
  *
  * @param cmds the set of command buffers
- * @returns the command-buffer count
+ * @return number of command buffers owned or wrapped by `cmds`
  */
 DVZ_EXPORT uint32_t dvz_commands_count(DvzCommands* cmds);
 
@@ -135,14 +137,16 @@ DVZ_EXPORT uint32_t dvz_commands_count(DvzCommands* cmds);
  * Set the current command buffer index.
  *
  * @param cmds the set of command buffers
- * @param current the current command buffer index
+ * @param current command-buffer index in `[0, dvz_commands_count(cmds))`
  */
 DVZ_EXPORT void dvz_commands_current(DvzCommands* cmds, uint32_t current);
 
 
 
 /**
- * Start recording a command buffer.
+ * Start recording the currently selected owned command buffer.
+ *
+ * This operation is rejected for an externally owned command buffer wrapped as already recording.
  *
  * @param cmds the set of command buffers
  * @return 0 on success, non-zero on Vulkan or state failure
@@ -152,7 +156,10 @@ DVZ_EXPORT int dvz_cmd_begin_result(DvzCommands* cmds);
 
 
 /**
- * Start recording a command buffer.
+ * Start recording the currently selected owned command buffer.
+ *
+ * This convenience wrapper logs failures from dvz_cmd_begin_result(). It must not be used with an
+ * externally owned command buffer wrapped as already recording.
  *
  * @param cmds the set of command buffers
  */
@@ -161,7 +168,9 @@ DVZ_EXPORT void dvz_cmd_begin(DvzCommands* cmds);
 
 
 /**
- * Stop recording a command buffer.
+ * Stop recording the currently selected owned command buffer.
+ *
+ * This operation is rejected for an externally owned command buffer wrapped as already recording.
  *
  * @param cmds the set of command buffers
  * @return 0 on success, non-zero on Vulkan or state failure
@@ -171,7 +180,10 @@ DVZ_EXPORT int dvz_cmd_end_result(DvzCommands* cmds);
 
 
 /**
- * Stop recording a command buffer.
+ * Stop recording the currently selected owned command buffer.
+ *
+ * This convenience wrapper logs failures from dvz_cmd_end_result(). It must not be used with an
+ * externally owned command buffer wrapped as already recording.
  *
  * @param cmds the set of command buffers
  */
@@ -180,7 +192,9 @@ DVZ_EXPORT void dvz_cmd_end(DvzCommands* cmds);
 
 
 /**
- * Reset a command buffer.
+ * Reset the currently selected owned command buffer.
+ *
+ * Do not call this on a borrowed recording command buffer.
  *
  * @param cmds the set of command buffers
  */
@@ -243,9 +257,9 @@ DVZ_EXPORT void dvz_commands_destroy(DvzCommands* cmds);
  * whose owner grants recording-control operations such as begin, end, or reset. Queue submission is
  * not supported for wrappers created by this function because no queue is supplied.
  *
- * @param device the device
- * @param vk_cmd the Vulkan command buffer
- * @param[out] cmds the created command buffers
+ * @param device logical device associated with `vk_cmd`; must outlive `cmds`
+ * @param vk_cmd externally owned command buffer whose owner permits recording-control operations
+ * @param[out] cmds wrapper initialized around `vk_cmd`; it does not acquire ownership of the handle
  */
 DVZ_EXPORT void dvz_commands_wrap(DvzDevice* device, VkCommandBuffer vk_cmd, DvzCommands* cmds);
 
@@ -257,9 +271,9 @@ DVZ_EXPORT void dvz_commands_wrap(DvzDevice* device, VkCommandBuffer vk_cmd, Dvz
  * begin, end, reset, submit, or destroy the borrowed command buffer are rejected before touching
  * Vulkan.
  *
- * @param device the device
- * @param vk_cmd the borrowed recording Vulkan command buffer
- * @param[out] cmds the created command buffers
+ * @param device logical device associated with `vk_cmd`; must outlive `cmds`
+ * @param vk_cmd externally owned command buffer that is already in the recording state
+ * @param[out] cmds wrapper initialized around `vk_cmd`; it does not acquire ownership of the handle
  */
 DVZ_EXPORT void
 dvz_commands_wrap_borrowed_recording(DvzDevice* device, VkCommandBuffer vk_cmd, DvzCommands* cmds);

@@ -81,7 +81,7 @@ DVZ_EXPORT void dvz_descriptors(DvzSlots* slots, DvzDescriptors* descriptors);
  * Return the number of descriptor sets allocated by the wrapper.
  *
  * @param descriptors the descriptors
- * @returns the descriptor set count
+ * @return the descriptor set count
  */
 DVZ_EXPORT uint32_t dvz_descriptors_set_count(DvzDescriptors* descriptors);
 
@@ -92,7 +92,7 @@ DVZ_EXPORT uint32_t dvz_descriptors_set_count(DvzDescriptors* descriptors);
  *
  * @param descriptors the descriptors
  * @param set the descriptor set index
- * @returns the descriptor set handle
+ * @return borrowed descriptor-set handle; `set` must be less than dvz_descriptors_set_count()
  */
 DVZ_EXPORT VkDescriptorSet dvz_descriptors_handle(DvzDescriptors* descriptors, uint32_t set);
 

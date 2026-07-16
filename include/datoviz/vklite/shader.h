@@ -76,7 +76,7 @@ dvz_shader(DvzDevice* device, DvzSize size, const uint32_t* buffer, DvzShader* s
  * Return the shader Vulkan handle.
  *
  * @param shader the shader
- * @returns the shader module handle
+ * @return borrowed shader-module handle, or `VK_NULL_HANDLE` when not created
  */
 DVZ_EXPORT VkShaderModule dvz_shader_handle(DvzShader* shader);
 

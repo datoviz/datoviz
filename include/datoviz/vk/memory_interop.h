@@ -186,6 +186,7 @@ DVZ_EXPORT VkExternalMemoryHandleTypeFlagsKHR dvz_allocator_external(DvzVma* all
  * @param allocator the allocator
  * @param alloc the allocation
  * @param[out] handle the exported handle pointing to that allocation
+ * @return 0 on success, non-zero on unsupported interop or Vulkan failure
  */
 DVZ_EXPORT int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle);
 
@@ -206,7 +207,7 @@ DVZ_EXPORT int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int
  * @param semaphore_handle_type external semaphore handle type, or 0 when absent
  * @param semaphore_value timeline semaphore value associated with the export
  * @param[out] out export descriptor
- * @return 0 on success, -1 on failure
+ * @return 0 on success, non-zero on invalid input, unsupported interop, or Vulkan failure
  */
 DVZ_EXPORT int dvz_interop_buffer_export(
     DvzVma* allocator, DvzAllocation* alloc, uint64_t offset, uint64_t size, uint32_t usage,
@@ -227,7 +228,7 @@ DVZ_EXPORT int dvz_interop_buffer_export(
  * @param buffer the live Vulkan-owned buffer
  * @param config logical export range and optional timeline semaphore metadata
  * @param[out] out export descriptor
- * @return 0 on success, -1 on failure
+ * @return 0 on success, non-zero on invalid input, unsupported interop, or Vulkan failure
  */
 DVZ_EXPORT int dvz_interop_buffer_export_from_buffer(
     DvzBuffer* buffer, const DvzInteropBufferExportConfig* config,
@@ -262,7 +263,7 @@ DVZ_EXPORT bool dvz_interop_buffer_wait_timeline(
  * handles.
  *
  * @param alloc the allocation
- * @returns Vulkan device memory handle
+ * @return borrowed Vulkan device-memory handle, or `VK_NULL_HANDLE` when unavailable
  */
 DVZ_EXPORT VkDeviceMemory dvz_allocation_memory(DvzAllocation* alloc);
 
@@ -290,6 +291,7 @@ DVZ_EXPORT VkDeviceMemory dvz_allocation_memory(DvzAllocation* alloc);
  * @param handle the handle to import
  * @param[out] alloc the created allocation
  * @param[out] vk_buffer the created VkBuffer handle
+ * @return 0 on success, -1 on failure
  */
 DVZ_EXPORT int dvz_allocator_import_buffer(
     DvzVma* allocator, VkBufferCreateInfo* info, DvzAllocationFlags flags, int handle,
@@ -313,6 +315,7 @@ DVZ_EXPORT int dvz_allocator_import_buffer(
  * @param handle the handle to import
  * @param[out] alloc the created allocation
  * @param[out] vk_image the created VkImage handle
+ * @return 0 on success, -1 on failure
  */
 DVZ_EXPORT int dvz_allocator_import_image(
     DvzVma* allocator, VkImageCreateInfo* info, DvzAllocationFlags flags, int handle,

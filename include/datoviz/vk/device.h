@@ -79,7 +79,7 @@ struct DvzDeviceConfig
  * Return default configuration values for creating a device.
  *
  * @param instance the source instance
- * @returns the default device configuration
+ * @return the default device configuration
  */
 DVZ_EXPORT DvzDeviceConfig dvz_device_config(DvzInstance* instance);
 
@@ -90,7 +90,7 @@ DVZ_EXPORT DvzDeviceConfig dvz_device_config(DvzInstance* instance);
  *
  * @param cfg the device configuration
  * @param gpu_index the selected GPU index in the instance
- * @returns whether the index was stored successfully
+ * @return whether the index was stored successfully
  */
 DVZ_EXPORT bool dvz_device_config_set_gpu_index(DvzDeviceConfig* cfg, uint32_t gpu_index);
 
@@ -102,7 +102,7 @@ DVZ_EXPORT bool dvz_device_config_set_gpu_index(DvzDeviceConfig* cfg, uint32_t g
  * @param cfg the device configuration
  * @param family the queue family index
  * @param count the number of queues requested
- * @returns whether the request was added
+ * @return whether the request was added
  */
 DVZ_EXPORT bool
 dvz_device_config_request_queue(DvzDeviceConfig* cfg, uint32_t family, uint32_t count);
@@ -114,7 +114,7 @@ dvz_device_config_request_queue(DvzDeviceConfig* cfg, uint32_t family, uint32_t 
  *
  * @param cfg the device configuration
  * @param extension the extension name
- * @returns whether the extension was added
+ * @return whether the extension was added
  */
 DVZ_EXPORT bool
 dvz_device_config_request_extension(DvzDeviceConfig* cfg, const char* extension);
@@ -179,7 +179,7 @@ DVZ_EXPORT void dvz_device_config_set_features13(
  * Create and initialize a heap-allocated device from a configuration.
  *
  * @param cfg the device configuration
- * @returns a created device on success, `NULL` on failure
+ * @return a created device on success, `NULL` on failure
  */
 DVZ_EXPORT DvzDevice* dvz_device_create(const DvzDeviceConfig* cfg);
 
@@ -189,7 +189,7 @@ DVZ_EXPORT DvzDevice* dvz_device_create(const DvzDeviceConfig* cfg);
  * Get the Vulkan VkDevice handle of a device.
  *
  * @param device the device
- * @returns the Vulkan VkDevice handle
+ * @return borrowed Vulkan logical-device handle, or `VK_NULL_HANDLE` when unavailable
  */
 DVZ_EXPORT VkDevice dvz_device_handle(DvzDevice* device);
 
@@ -199,7 +199,7 @@ DVZ_EXPORT VkDevice dvz_device_handle(DvzDevice* device);
  * Return the Vulkan physical device used by this logical device.
  *
  * @param device the device
- * @returns the Vulkan physical device handle
+ * @return borrowed Vulkan physical-device handle, or `VK_NULL_HANDLE` when unavailable
  */
 DVZ_EXPORT VkPhysicalDevice dvz_device_physical_device(DvzDevice* device);
 
@@ -209,7 +209,7 @@ DVZ_EXPORT VkPhysicalDevice dvz_device_physical_device(DvzDevice* device);
  * Return the Vulkan 1.0 feature set enabled on this device.
  *
  * @param device the device
- * @returns immutable pointer to enabled Vulkan 1.0 features
+ * @return borrowed immutable enabled-feature storage, valid until device destruction
  */
 DVZ_EXPORT const VkPhysicalDeviceFeatures* dvz_device_features10(DvzDevice* device);
 
@@ -220,7 +220,7 @@ DVZ_EXPORT const VkPhysicalDeviceFeatures* dvz_device_features10(DvzDevice* devi
  *
  * @param device the device
  * @param role the role
- * @returns the queue
+ * @return borrowed queue wrapper owned by the device, or NULL when the role is unavailable
  */
 DVZ_EXPORT DvzQueue* dvz_device_queue(DvzDevice* device, DvzQueueRole role);
 
@@ -231,7 +231,7 @@ DVZ_EXPORT DvzQueue* dvz_device_queue(DvzDevice* device, DvzQueueRole role);
  *
  * @param device the device
  * @param queue_family the queue family index
- * @returns the Vulkan command pool
+ * @return borrowed command-pool handle for `queue_family`, or `VK_NULL_HANDLE` if unavailable
  */
 DVZ_EXPORT VkCommandPool dvz_device_command_pool(DvzDevice* device, uint32_t queue_family);
 
@@ -241,7 +241,7 @@ DVZ_EXPORT VkCommandPool dvz_device_command_pool(DvzDevice* device, uint32_t que
  * Return the descriptor pool associated to a device.
  *
  * @param device the device
- * @returns the Vulkan descriptor pool
+ * @return borrowed descriptor-pool handle, or `VK_NULL_HANDLE` if unavailable
  */
 DVZ_EXPORT VkDescriptorPool dvz_device_descriptor_pool(DvzDevice* device);
 
@@ -259,7 +259,7 @@ DVZ_EXPORT void dvz_device_wait(DvzDevice* device);
 /**
  * Destroy a device.
  *
- * @param device
+ * @param device live logical device to destroy; NULL is ignored
  */
 DVZ_EXPORT void dvz_device_destroy(DvzDevice* device);
 
@@ -270,7 +270,7 @@ DVZ_EXPORT void dvz_device_destroy(DvzDevice* device);
  *
  * @param device the device
  * @param extension the extension name
- * @returns whether the device has support for the extension
+ * @return whether the device has support for the extension
  */
 DVZ_EXPORT bool dvz_device_has_extension(DvzDevice* device, const char* extension);
 

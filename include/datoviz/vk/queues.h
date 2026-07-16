@@ -128,7 +128,7 @@ EXTERN_C_ON
  * @param instance source instance
  * @param gpu_index selected GPU index in the instance
  * @param[out] out_caps destination queue capabilities snapshot
- * @returns whether queue capabilities were retrieved
+ * @return whether queue capabilities were retrieved
  */
 DVZ_EXPORT bool
 dvz_instance_gpu_queue_caps(DvzInstance* instance, uint32_t gpu_index, DvzQueueCaps* out_caps);
@@ -166,7 +166,7 @@ DVZ_EXPORT void dvz_queues_show(DvzQueues* queues);
  *
  * @param queues the queues
  * @param role the role
- * @returns the queue
+ * @return the queue
  */
 DVZ_EXPORT DvzQueue* dvz_queue_from_role(DvzQueues* queues, DvzQueueRole role);
 
@@ -176,7 +176,7 @@ DVZ_EXPORT DvzQueue* dvz_queue_from_role(DvzQueues* queues, DvzQueueRole role);
  * Return the queue index of a queue.
  *
  * @param queue the queue
- * @returns the queue index
+ * @return the queue index
  */
 DVZ_EXPORT uint32_t dvz_queue_index(DvzQueue* queue);
 
@@ -186,7 +186,7 @@ DVZ_EXPORT uint32_t dvz_queue_index(DvzQueue* queue);
  * Return the queue family of a queue.
  *
  * @param queue the queue
- * @returns the queue family index
+ * @return the queue family index
  */
 DVZ_EXPORT uint32_t dvz_queue_family(DvzQueue* queue);
 
@@ -196,7 +196,7 @@ DVZ_EXPORT uint32_t dvz_queue_family(DvzQueue* queue);
  * Return the Vulkan handle of a queue.
  *
  * @param queue the queue
- * @returns the queue Vulkan handle
+ * @return borrowed Vulkan queue handle, or `VK_NULL_HANDLE` when unavailable
  */
 DVZ_EXPORT VkQueue dvz_queue_handle(DvzQueue* queue);
 
@@ -216,6 +216,7 @@ DVZ_EXPORT void dvz_queue_wait(DvzQueue* queue);
  *
  * @param queue a queue
  * @param role a queue role
+ * @return true if the queue advertises the requested role
  */
 DVZ_EXPORT bool dvz_queue_supports(DvzQueue* queue, DvzQueueRole role);
 

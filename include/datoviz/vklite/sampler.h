@@ -132,7 +132,7 @@ DVZ_EXPORT void dvz_sampler_anisotropy(DvzSampler* sampler, float anisotropy);
  * wrapper. Call dvz_sampler_destroy() before attempting to create it again.
  *
  * @param sampler the sampler
- * @returns the creation result code
+ * @return the creation result code
  */
 DVZ_EXPORT int dvz_sampler_create(DvzSampler* sampler);
 
@@ -154,7 +154,7 @@ DVZ_EXPORT void dvz_sampler_destroy(DvzSampler* sampler);
  * Return the Vulkan sampler handle.
  *
  * @param sampler sampler wrapper
- * @return wrapped Vulkan sampler handle
+ * @return borrowed Vulkan sampler handle, or `VK_NULL_HANDLE` when not created
  */
 DVZ_EXPORT VkSampler dvz_sampler_handle(DvzSampler* sampler);
 

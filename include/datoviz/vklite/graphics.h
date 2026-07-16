@@ -444,7 +444,7 @@ DVZ_EXPORT int dvz_graphics_create(DvzGraphics* graphics);
  * Return the Vulkan pipeline handle owned by a graphics wrapper.
  *
  * @param graphics the graphics pipeline
- * @returns the Vulkan pipeline handle or VK_NULL_HANDLE
+ * @return borrowed Vulkan pipeline handle, or `VK_NULL_HANDLE` when not created
  */
 DVZ_EXPORT VkPipeline dvz_graphics_handle(DvzGraphics* graphics);
 
@@ -454,7 +454,7 @@ DVZ_EXPORT VkPipeline dvz_graphics_handle(DvzGraphics* graphics);
  * Return the pipeline layout bound to a graphics wrapper.
  *
  * @param graphics the graphics pipeline
- * @returns the pipeline layout handle or VK_NULL_HANDLE
+ * @return borrowed pipeline-layout handle, or `VK_NULL_HANDLE` when unset
  */
 DVZ_EXPORT VkPipelineLayout dvz_graphics_layout_handle(DvzGraphics* graphics);
 
@@ -464,7 +464,7 @@ DVZ_EXPORT VkPipelineLayout dvz_graphics_layout_handle(DvzGraphics* graphics);
  * Return the number of configured shader stages on a graphics wrapper.
  *
  * @param graphics the graphics pipeline
- * @returns the shader-stage count
+ * @return the shader-stage count
  */
 DVZ_EXPORT uint32_t dvz_graphics_shader_count(DvzGraphics* graphics);
 
@@ -474,7 +474,7 @@ DVZ_EXPORT uint32_t dvz_graphics_shader_count(DvzGraphics* graphics);
  * Return the number of configured color attachments on a graphics wrapper.
  *
  * @param graphics the graphics pipeline
- * @returns the color-attachment count
+ * @return the color-attachment count
  */
 DVZ_EXPORT uint32_t dvz_graphics_color_attachment_count(DvzGraphics* graphics);
 

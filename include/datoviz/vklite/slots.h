@@ -127,7 +127,7 @@ DVZ_EXPORT int dvz_slots_create(DvzSlots* slots);
  * Return the pipeline layout Vulkan handle.
  *
  * @param slots the slots
- * @returns the pipeline layout
+ * @return borrowed pipeline-layout handle, or `VK_NULL_HANDLE` when not created
  */
 DVZ_EXPORT VkPipelineLayout dvz_slots_handle(DvzSlots* slots);
 
@@ -153,7 +153,7 @@ DVZ_EXPORT VkPipelineLayout dvz_slots_combined_pipeline_layout(
  * Return the device that owns a slots wrapper.
  *
  * @param slots the slots
- * @returns the owning device
+ * @return borrowed owning device, valid at least as long as the slots wrapper
  */
 DVZ_EXPORT DvzDevice* dvz_slots_device(DvzSlots* slots);
 
@@ -163,7 +163,7 @@ DVZ_EXPORT DvzDevice* dvz_slots_device(DvzSlots* slots);
  * Return the number of descriptor sets configured on a slots wrapper.
  *
  * @param slots the slots
- * @returns the descriptor-set count
+ * @return the descriptor-set count
  */
 DVZ_EXPORT uint32_t dvz_slots_set_count(DvzSlots* slots);
 
@@ -174,7 +174,7 @@ DVZ_EXPORT uint32_t dvz_slots_set_count(DvzSlots* slots);
  *
  * @param slots the slots
  * @param set the descriptor-set index
- * @returns the binding count for that set
+ * @return the binding count for that set
  */
 DVZ_EXPORT uint32_t dvz_slots_binding_count(DvzSlots* slots, uint32_t set);
 
@@ -184,7 +184,7 @@ DVZ_EXPORT uint32_t dvz_slots_binding_count(DvzSlots* slots, uint32_t set);
  * Return the number of configured push-constant ranges.
  *
  * @param slots the slots
- * @returns the push-constant range count
+ * @return the push-constant range count
  */
 DVZ_EXPORT uint32_t dvz_slots_push_count(DvzSlots* slots);
 
@@ -196,7 +196,7 @@ DVZ_EXPORT uint32_t dvz_slots_push_count(DvzSlots* slots);
  * @param slots the slots
  * @param set the descriptor-set index
  * @param binding the binding index within the set
- * @returns the descriptor type
+ * @return the descriptor type
  */
 DVZ_EXPORT VkDescriptorType dvz_slots_descriptor_type(DvzSlots* slots, uint32_t set, uint32_t binding);
 
@@ -207,7 +207,7 @@ DVZ_EXPORT VkDescriptorType dvz_slots_descriptor_type(DvzSlots* slots, uint32_t 
  *
  * @param slots the slots
  * @param set the descriptor-set index
- * @returns the descriptor-set layout handle
+ * @return borrowed descriptor-set layout; `set` must be less than `DVZ_MAX_SETS`
  */
 DVZ_EXPORT VkDescriptorSetLayout dvz_slots_set_layout(DvzSlots* slots, uint32_t set);
 

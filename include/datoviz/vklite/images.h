@@ -104,8 +104,8 @@ DVZ_EXPORT void dvz_image_views_free(DvzImageViews* views);
  * after setting the desired format, size, usage, and allocation policy.
  * Recreating a live image set requires dvz_images_destroy() first.
  *
- * @param device the device
- * @param allocator the Datoviz allocator
+ * @param device logical device that owns created images; must outlive `images`
+ * @param allocator allocator used for image memory; must outlive created images
  * @param type the image type (1D, 2D, or 3D)
  * @param count the number of images
  * @param[out] images the initialized images
@@ -118,7 +118,7 @@ DVZ_EXPORT void dvz_images(
 /**
  * Set the images format.
  *
- * @param images the images
+ * @param img initialized image wrapper
  * @param format the image format
  */
 DVZ_EXPORT void dvz_images_format(DvzImages* img, VkFormat format);
@@ -128,7 +128,7 @@ DVZ_EXPORT void dvz_images_format(DvzImages* img, VkFormat format);
 /**
  * Set the images shape.
  *
- * @param images the images
+ * @param img initialized image wrapper
  * @param width the image width, in pixels
  * @param height the image height, in pixels
  * @param depth the image depth, in pixels
@@ -140,7 +140,7 @@ DVZ_EXPORT void dvz_images_size(DvzImages* img, uint32_t width, uint32_t height,
 /**
  * Set the images tiling.
  *
- * @param images the images
+ * @param img initialized image wrapper
  * @param tiling the image tiling
  */
 DVZ_EXPORT void dvz_images_tiling(DvzImages* img, VkImageTiling tiling);
@@ -150,7 +150,7 @@ DVZ_EXPORT void dvz_images_tiling(DvzImages* img, VkImageTiling tiling);
 /**
  * Set the images usage.
  *
- * @param images the images
+ * @param img initialized image wrapper
  * @param usage the image usage
  */
 DVZ_EXPORT void dvz_images_usage(DvzImages* img, VkImageUsageFlags usage);
@@ -160,8 +160,8 @@ DVZ_EXPORT void dvz_images_usage(DvzImages* img, VkImageUsageFlags usage);
 /**
  * Set the allocator policy flags used when the images create their memory.
  *
- * @param image the image
- * @param flags the flags
+ * @param img initialized image wrapper
+ * @param flags Datoviz allocation policy flags
  */
 DVZ_EXPORT void dvz_images_alloc_flags(DvzImages* img, DvzAllocationFlags flags);
 
@@ -170,8 +170,8 @@ DVZ_EXPORT void dvz_images_alloc_flags(DvzImages* img, DvzAllocationFlags flags)
 /**
  * Set the image creation flags.
  *
- * @param image the image
- * @param flags the flags
+ * @param img initialized image wrapper
+ * @param flags Vulkan image-creation flags
  */
 DVZ_EXPORT void dvz_images_flags(DvzImages* img, VkImageCreateFlags flags);
 
@@ -180,7 +180,7 @@ DVZ_EXPORT void dvz_images_flags(DvzImages* img, VkImageCreateFlags flags);
 /**
  * Set the number of mip levels.
  *
- * @param image the image
+ * @param img initialized image wrapper
  * @param mip the number of mip levels
  */
 DVZ_EXPORT void dvz_images_mip(DvzImages* img, uint32_t mip);
@@ -190,7 +190,7 @@ DVZ_EXPORT void dvz_images_mip(DvzImages* img, uint32_t mip);
 /**
  * Set the number of MSAA samples.
  *
- * @param image the image
+ * @param img initialized image wrapper
  * @param samples the Vulkan samples flags
  */
 DVZ_EXPORT void dvz_images_samples(DvzImages* img, VkSampleCountFlags samples);
@@ -200,7 +200,7 @@ DVZ_EXPORT void dvz_images_samples(DvzImages* img, VkSampleCountFlags samples);
 /**
  * Set the number of array layers.
  *
- * @param image the image
+ * @param img initialized image wrapper
  * @param layers the number of array layers
  */
 DVZ_EXPORT void dvz_images_layers(DvzImages* img, uint32_t layers);
@@ -213,8 +213,8 @@ DVZ_EXPORT void dvz_images_layers(DvzImages* img, uint32_t layers);
  * This function creates the wrapped Vulkan images exactly once per live
  * wrapper. Call dvz_images_destroy() before attempting to create them again.
  *
- * @param images the images
- * @returns 0 on success, non-zero on Vulkan or Datoviz state failure
+ * @param img configured image wrapper
+ * @return 0 on success, non-zero on Vulkan or Datoviz state failure
  */
 DVZ_EXPORT int dvz_images_create(DvzImages* img);
 
@@ -224,8 +224,8 @@ DVZ_EXPORT int dvz_images_create(DvzImages* img);
  * Return the Vulkan handle of an image.
  *
  * @param img the images
- * @param idx the image index
- * @returns the Vulkan image handle
+ * @param idx image index in `[0, dvz_images_count(img))`
+ * @return borrowed Vulkan image handle, possibly `VK_NULL_HANDLE` when not created
  */
 DVZ_EXPORT VkImage dvz_image_handle(DvzImages* img, uint32_t idx);
 
@@ -235,7 +235,7 @@ DVZ_EXPORT VkImage dvz_image_handle(DvzImages* img, uint32_t idx);
  * Return the number of images wrapped by an images object.
  *
  * @param img the images
- * @returns the image count
+ * @return the image count
  */
 DVZ_EXPORT uint32_t dvz_images_count(DvzImages* img);
 
@@ -245,7 +245,7 @@ DVZ_EXPORT uint32_t dvz_images_count(DvzImages* img);
  * Return the configured image format for an images object.
  *
  * @param img the images
- * @returns the Vulkan image format
+ * @return the Vulkan image format
  */
 DVZ_EXPORT VkFormat dvz_images_format_value(DvzImages* img);
 
@@ -257,7 +257,7 @@ DVZ_EXPORT VkFormat dvz_images_format_value(DvzImages* img);
  * This releases Datoviz-owned Vulkan images and returns the wrapper to a reusable initialized
  * state. Images installed with `dvz_images_wrap()` are borrowed and are not destroyed.
  *
- * @param images the images
+ * @param img live image wrapper; borrowed wrapped handles are retained
  */
 DVZ_EXPORT void dvz_images_destroy(DvzImages* img);
 
@@ -269,11 +269,11 @@ DVZ_EXPORT void dvz_images_destroy(DvzImages* img);
  * The Vulkan image remains externally owned. Datoviz records the handle for view creation,
  * transitions, and descriptor binding according to later calls, but does not destroy the image.
  *
- * @param device the device
- * @param allocator the Datoviz allocator
+ * @param device logical device associated with `vk_image`; must outlive `img`
+ * @param allocator allocator associated with the image, or NULL when not needed
  * @param type the image type (1D, 2D, or 3D)
- * @param vk_image the Vulkan image handle
- * @param[out] images the initialized images
+ * @param vk_image externally owned live Vulkan image handle
+ * @param[out] img initialized wrapper that borrows `vk_image`
  */
 DVZ_EXPORT void dvz_images_wrap(
     DvzDevice* device, DvzVma* allocator, VkImageType type, VkImage vk_image, DvzImages* img);
@@ -359,7 +359,7 @@ DVZ_EXPORT int dvz_image_views_create(DvzImageViews* views);
  *
  * @param views the image views
  * @param idx the image view index
- * @returns the Vulkan image view handle
+ * @return borrowed Vulkan image-view handle, possibly `VK_NULL_HANDLE` when not created
  */
 DVZ_EXPORT VkImageView dvz_image_views_handle(DvzImageViews* views, uint32_t idx);
 
@@ -369,7 +369,7 @@ DVZ_EXPORT VkImageView dvz_image_views_handle(DvzImageViews* views, uint32_t idx
  * Return the number of image views owned by a views wrapper.
  *
  * @param views the image views
- * @returns the image-view count
+ * @return the image-view count
  */
 DVZ_EXPORT uint32_t dvz_image_views_count(DvzImageViews* views);
 
@@ -520,10 +520,10 @@ DVZ_EXPORT void dvz_image_blit_free(DvzImageBlit* blit);
  *
  * @param cmds the command buffers
  * @param buffer the source buffer
- * @param offset the offset in the source buffer
+ * @param offset source byte offset within `buffer`
  * @param img the target image
- * @param layout the image layout
- * @param region the image region
+ * @param layout current layout of `img`, valid for transfer-destination access
+ * @param region destination subresource, offset, and extent
  */
 DVZ_EXPORT void dvz_cmd_copy_buffer_to_image(
     DvzCommands* cmds, VkBuffer buffer, DvzSize offset, //
@@ -535,11 +535,11 @@ DVZ_EXPORT void dvz_cmd_copy_buffer_to_image(
  * Copy a GPU image to a GPU buffer.
  *
  * @param cmds the set of command buffers to record
- * @param tex_offset the texture offset
- * @param shape the texture shape
- * @param images the image
- * @param buffer the buffer
- * @param buf_offset the buffer offset
+ * @param img source image handle
+ * @param layout current layout of `img`, valid for transfer-source access
+ * @param region source subresource, offset, and extent
+ * @param buffer destination buffer handle
+ * @param offset destination byte offset within `buffer`
  */
 DVZ_EXPORT void dvz_cmd_copy_image_to_buffer(
     DvzCommands* cmds, VkImage img, VkImageLayout layout, DvzImageRegion* region, VkBuffer buffer,
@@ -548,11 +548,11 @@ DVZ_EXPORT void dvz_cmd_copy_image_to_buffer(
 
 
 /**
- * Define the source of an image copy operation.
+ * Define the source image and region of an image copy operation.
  *
  * @param copy the copy structure
- * @param image the destination image
- * @param layout the destination image layout
+ * @param image source image handle
+ * @param layout current source image layout, valid for transfer-source access
  * @param x the source offset x
  * @param y the source offset y
  * @param z the source offset z
@@ -567,11 +567,11 @@ DVZ_EXPORT void dvz_cmd_copy_source(
 
 
 /**
- * Define the destination of an image copy operation.
+ * Define the destination image and offset of an image copy operation.
  *
  * @param copy the copy structure
- * @param image the source image
- * @param layout the source image layout
+ * @param image destination image handle
+ * @param layout current destination image layout, valid for transfer-destination access
  * @param x the destination offset x
  * @param y the destination offset y
  * @param z the destination offset z
@@ -582,8 +582,9 @@ DVZ_EXPORT void dvz_cmd_copy_destination(
 
 
 /**
- * End an image copy operation.
+ * Record the configured image copy operation.
  *
+ * @param cmds recording command-buffer wrapper
  * @param copy the copy structure
  */
 DVZ_EXPORT void dvz_cmd_copy_image(DvzCommands* cmds, DvzImageCopy* copy);
@@ -594,11 +595,11 @@ DVZ_EXPORT void dvz_cmd_copy_image(DvzCommands* cmds, DvzImageCopy* copy);
  * Define the source of a blit operation.
  *
  * @param blit the blit structure
- * @param image the source image
- * @param layout the source image layout
- * @param x0 the source onset x
- * @param y0 the source onset y
- * @param z0 the source onset z
+ * @param image source image handle
+ * @param layout current source image layout, valid for transfer-source access
+ * @param x0 first source x coordinate
+ * @param y0 first source y coordinate
+ * @param z0 first source z coordinate
  * @param x1 the source offset x
  * @param y1 the source offset y
  * @param z1 the source offset z
@@ -613,11 +614,11 @@ DVZ_EXPORT void dvz_cmd_blit_source(
  * Define the destination of a blit operation.
  *
  * @param blit the blit structure
- * @param image the source image
- * @param layout the source image layout
- * @param x0 the destination onset x
- * @param y0 the destination onset y
- * @param z0 the destination onset z
+ * @param image destination image handle
+ * @param layout current destination image layout, valid for transfer-destination access
+ * @param x0 first destination x coordinate
+ * @param y0 first destination y coordinate
+ * @param z0 first destination z coordinate
  * @param x1 the destination offset x
  * @param y1 the destination offset y
  * @param z1 the destination offset z
@@ -639,8 +640,9 @@ DVZ_EXPORT void dvz_cmd_blit_filter(DvzImageBlit* blit, VkFilter filter);
 
 
 /**
- * End an image blit operation.
+ * Record the configured image blit operation.
  *
+ * @param cmds recording command-buffer wrapper
  * @param blit the blit structure
  */
 DVZ_EXPORT void dvz_cmd_blit_image(DvzCommands* cmds, DvzImageBlit* blit);

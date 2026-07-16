@@ -82,7 +82,7 @@ EXTERN_C_ON
 /**
  * Return default configuration values for creating an instance.
  *
- * @returns the default instance configuration
+ * @return the default instance configuration
  */
 DVZ_EXPORT DvzInstanceConfig dvz_instance_config(void);
 
@@ -93,7 +93,7 @@ DVZ_EXPORT DvzInstanceConfig dvz_instance_config(void);
  *
  * @param cfg the instance configuration
  * @param layer the layer name
- * @returns whether the layer was added to the request list
+ * @return whether the layer was added to the request list
  */
 DVZ_EXPORT bool dvz_instance_config_request_layer(DvzInstanceConfig* cfg, const char* layer);
 
@@ -104,7 +104,7 @@ DVZ_EXPORT bool dvz_instance_config_request_layer(DvzInstanceConfig* cfg, const 
  *
  * @param cfg the instance configuration
  * @param extension the extension name
- * @returns whether the extension was added to the request list
+ * @return whether the extension was added to the request list
  */
 DVZ_EXPORT bool
 dvz_instance_config_request_extension(DvzInstanceConfig* cfg, const char* extension);
@@ -115,7 +115,7 @@ dvz_instance_config_request_extension(DvzInstanceConfig* cfg, const char* extens
  * Create and initialize a heap-allocated instance from a configuration.
  *
  * @param cfg the instance configuration
- * @returns a created instance on success, `NULL` on failure
+ * @return a created instance on success, `NULL` on failure
  */
 DVZ_EXPORT DvzInstance* dvz_instance_create(const DvzInstanceConfig* cfg);
 
@@ -125,7 +125,7 @@ DVZ_EXPORT DvzInstance* dvz_instance_create(const DvzInstanceConfig* cfg);
  * Return the native VkInstance for a DvzInstance.
  *
  * @param instance the Datoviz instance
- * @returns the Vulkan instance
+ * @return the Vulkan instance
  */
 DVZ_EXPORT VkInstance dvz_instance_handle(DvzInstance* instance);
 
@@ -144,7 +144,7 @@ DVZ_EXPORT void dvz_instance_destroy(DvzInstance* instance);
  * Return the validation error counter accumulated by an instance.
  *
  * @param instance the instance
- * @returns the number of validation errors reported through the debug callback
+ * @return the number of validation errors reported through the debug callback
  */
 DVZ_EXPORT uint32_t dvz_instance_error_count(DvzInstance* instance);
 
@@ -172,7 +172,8 @@ DVZ_EXPORT void dvz_instance_probe_layers(DvzInstance* instance);
  *
  * @param instance the instance
  * @param[out] count the number of supported layers
- * @returns a pointer to an array of strings
+ * @return borrowed string array owned by `instance`, valid until layers are reprobed or the
+ * instance is destroyed
  */
 DVZ_EXPORT char** dvz_instance_supported_layers(DvzInstance* instance, uint32_t* count);
 
@@ -183,7 +184,7 @@ DVZ_EXPORT char** dvz_instance_supported_layers(DvzInstance* instance, uint32_t*
  *
  * @param instance the instance
  * @param layer the layer name
- * @returns a boolean indicating whether this layer is supported
+ * @return a boolean indicating whether this layer is supported
  */
 DVZ_EXPORT bool dvz_instance_has_layer(DvzInstance* instance, const char* layer);
 
@@ -211,7 +212,8 @@ DVZ_EXPORT void dvz_instance_probe_extensions(DvzInstance* instance);
  *
  * @param instance the instance
  * @param[out] count the number of supported extensions
- * @returns a pointer to an array of strings
+ * @return borrowed string array owned by `instance`, valid until extensions are reprobed or the
+ * instance is destroyed
  */
 DVZ_EXPORT char** dvz_instance_supported_extensions(DvzInstance* instance, uint32_t* count);
 
@@ -222,7 +224,7 @@ DVZ_EXPORT char** dvz_instance_supported_extensions(DvzInstance* instance, uint3
  *
  * @param instance the instance
  * @param extension the extension name
- * @returns a boolean indicating whether this extension is supported
+ * @return a boolean indicating whether this extension is supported
  */
 DVZ_EXPORT bool dvz_instance_has_extension(DvzInstance* instance, const char* extension);
 

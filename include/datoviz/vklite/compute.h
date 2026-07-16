@@ -85,7 +85,7 @@ DVZ_EXPORT void dvz_compute(DvzDevice* device, DvzCompute* compute);
  * Set the shader module.
  *
  * @param compute the compute pipeline
- * @param shader the shader
+ * @param module borrowed compute shader module; it must remain live through pipeline creation
  */
 DVZ_EXPORT void dvz_compute_shader(DvzCompute* compute, VkShaderModule module);
 
@@ -132,7 +132,7 @@ DVZ_EXPORT int dvz_compute_create(DvzCompute* compute);
  * Return the Vulkan pipeline handle owned by a compute wrapper.
  *
  * @param compute the compute pipeline
- * @returns the Vulkan pipeline handle or VK_NULL_HANDLE
+ * @return borrowed Vulkan pipeline handle, or `VK_NULL_HANDLE` when not created
  */
 DVZ_EXPORT VkPipeline dvz_compute_handle(DvzCompute* compute);
 
@@ -142,7 +142,7 @@ DVZ_EXPORT VkPipeline dvz_compute_handle(DvzCompute* compute);
  * Return the pipeline layout bound to a compute wrapper.
  *
  * @param compute the compute pipeline
- * @returns the pipeline layout handle or VK_NULL_HANDLE
+ * @return borrowed pipeline-layout handle, or `VK_NULL_HANDLE` when unset
  */
 DVZ_EXPORT VkPipelineLayout dvz_compute_layout_handle(DvzCompute* compute);
 
