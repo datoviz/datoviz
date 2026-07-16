@@ -28,22 +28,22 @@ different platforms and GPUs.
 <!-- more -->
 
 
-## :material-image-multiple-outline: Four v0.4 highlights { .dvz-home-heading }
+## :material-image-multiple-outline: Datoviz in action { .dvz-home-heading }
 
-These examples show order-independent transparency, experimental GPU compute, screen-space ambient
-occlusion, and scene animation tracks introduced or expanded in v0.4.
+A few examples showing the range of interactive 2D and 3D scientific visualization supported by
+Datoviz.
 
 <div class="grid cards" markdown="1">
 
 <div class="card" markdown="1">
 
-### [Transparency order](../../examples/gallery/features/features_technique_transparency.md)
+### [Rotating Earth](../../examples/gallery/showcases/showcases_textured_planet.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_technique_transparency.poster.webp" alt="Comparison of transparency techniques" loading="lazy">
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" alt="Rotating textured Earth rendered in 3D" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../../assets/gallery/v0.4/features/features_technique_transparency.poster.webp" aria-label="Transparency technique comparison preview">
-    <source data-src="../../assets/gallery/v0.4/features/features_technique_transparency.mp4" type="video/mp4">
+         poster="../../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" aria-label="Rotating textured Earth preview">
+    <source data-src="../../assets/gallery/v0.4/showcases/showcases_textured_planet.mp4" type="video/mp4">
   </video>
 </div>
 
@@ -65,13 +65,13 @@ occlusion, and scene animation tracks introduced or expanded in v0.4.
 
 <div class="card" markdown="1">
 
-### [Screen-space ambient occlusion](../../examples/gallery/features/features_technique_ssao.md)
+### [Scientific 2D workflow](../../examples/gallery/showcases/showcases_panel_linked_axes.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_technique_ssao.poster.webp" alt="Screen-space ambient occlusion comparison" loading="lazy">
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.poster.webp" alt="Linked scientific 2D panels with axes and traces" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../../assets/gallery/v0.4/features/features_technique_ssao.poster.webp" aria-label="Screen-space ambient occlusion preview">
-    <source data-src="../../assets/gallery/v0.4/features/features_technique_ssao.mp4" type="video/mp4">
+         poster="../../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.poster.webp" aria-label="Scientific 2D workflow preview">
+    <source data-src="../../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.mp4" type="video/mp4">
   </video>
 </div>
 
@@ -79,13 +79,13 @@ occlusion, and scene animation tracks introduced or expanded in v0.4.
 
 <div class="card" markdown="1">
 
-### [Animation tracks](../../examples/gallery/features/features_animation_tracks.md)
+### [Large point cloud](../../examples/gallery/showcases/showcases_point_cloud.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_animation_tracks.poster.webp" alt="Scene animation tracks driving a cube and camera" loading="lazy">
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" alt="Large colored 3D point cloud" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../../assets/gallery/v0.4/features/features_animation_tracks.poster.webp" aria-label="Scene animation tracks preview">
-    <source data-src="../../assets/gallery/v0.4/features/features_animation_tracks.mp4" type="video/mp4">
+         poster="../../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" aria-label="Large 3D point cloud preview">
+    <source data-src="../../assets/gallery/v0.4/showcases/showcases_point_cloud.mp4" type="video/mp4">
   </video>
 </div>
 
