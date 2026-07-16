@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_builtin_shapes_2d">← Previous: Builtin Shapes 2D</a></span>
-<span class="dvz-example-nav__next"><a href="../features_marker_symbols">Next: Marker Symbols →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_builtin_shapes_2d/">← Previous: Builtin Shapes 2D</a></span>
+<span class="dvz-example-nav__next"><a href="../features_marker_symbols/">Next: Marker Symbols →</a></span>
 </div>
 </nav>
 
 This example shows built-in 3D geometry rendered as lit meshes.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/builtin_shapes_3d` (build and run), or rerun `./build/examples/c/features/builtin_shapes_3d` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.builtin_shapes_3d` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_builtin_shapes_3d">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ The scene uses geometry builders for common solids such as a cube, sphere, cylin
     - ID: `features_builtin_shapes_3d`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/builtin_shapes_3d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_3d.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/builtin_shapes_3d.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/builtin_shapes_3d.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_builtin_shapes_3d"><code>examples/webgpu/live.html?id=features_builtin_shapes_3d</code></a>
     - Browser capability tags: `mesh`, `controller`, `arcball`
@@ -64,7 +81,7 @@ The scene uses geometry builders for common solids such as a cube, sphere, cylin
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_builtin_shapes_2d">← Previous: Builtin Shapes 2D</a></span>
-<span class="dvz-example-nav__next"><a href="../features_marker_symbols">Next: Marker Symbols →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_builtin_shapes_2d/">← Previous: Builtin Shapes 2D</a></span>
+<span class="dvz-example-nav__next"><a href="../features_marker_symbols/">Next: Marker Symbols →</a></span>
 </div>
 </nav>

@@ -4,12 +4,27 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_timer_animation">← Previous: Timer Animation</a></span>
-<span class="dvz-example-nav__next"><a href="../features_update_partial">Next: Partial Data Update →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_timer_animation/">← Previous: Timer Animation</a></span>
+<span class="dvz-example-nav__next"><a href="../features_update_partial/">Next: Partial Data Update →</a></span>
 </div>
 </nav>
 
 This example shows a compute pass updating point positions.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/compute_buffer_animation` (build and run), or rerun `./build/examples/c/features/compute_buffer_animation` |
+| Python | No verified adaptation on this page | Start from the C source. |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_compute_buffer_animation">Open live example</a> |
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## Preview
 
@@ -44,6 +59,7 @@ The point visual reads its position attribute from a scene buffer that is also b
     - Lane: `features`
     - Status: `experimental`
     - Source: [`examples/c/features/compute_buffer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/compute_buffer_animation.c)
+    - Approved adaptation starter: `no`
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_compute_buffer_animation"><code>examples/webgpu/live.html?id=features_compute_buffer_animation</code></a>
     - Browser capability tags: `scene-buffers`, `storage-buffers`, `scene-compute`, `continuous-frames`, `point`
@@ -62,7 +78,7 @@ The point visual reads its position attribute from a scene buffer that is also b
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_timer_animation">← Previous: Timer Animation</a></span>
-<span class="dvz-example-nav__next"><a href="../features_update_partial">Next: Partial Data Update →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_timer_animation/">← Previous: Timer Animation</a></span>
+<span class="dvz-example-nav__next"><a href="../features_update_partial/">Next: Partial Data Update →</a></span>
 </div>
 </nav>

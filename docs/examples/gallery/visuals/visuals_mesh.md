@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_labels">← Previous: Labels</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_sphere">Next: Sphere →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_labels/">← Previous: Labels</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_sphere/">Next: Sphere →</a></span>
 </div>
 </nav>
 
 This example renders a lit indexed cube mesh in a 3D scene.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c visuals/mesh` (build and run), or rerun `./build/examples/c/visuals/mesh` |
+| Python | Available; manually maintained direct-engine example | `python3 -m examples.python.gallery.visuals.mesh` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=visuals_mesh">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,9 +62,12 @@ The cube geometry supplies vertices, indices, normals, and per-face colors to th
     - ID: `visuals_mesh`
     - Category: `visual`
     - Lane: `visuals`
+    - Status: `supported`
     - Source: [`examples/c/visuals/mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/mesh.c)
+    - Approved adaptation starter: `yes`
     - Reference: [Mesh visual family](../../../reference/visual-families/mesh.md)
     - Python source: [`examples/python/gallery/visuals/mesh.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/mesh.py)
+    - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_mesh"><code>examples/webgpu/live.html?id=visuals_mesh</code></a>
     - Browser capability tags: `mesh`, `indexed-geometry`, `arcball`
@@ -69,7 +86,7 @@ The cube geometry supplies vertices, indices, normals, and per-face colors to th
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_labels">← Previous: Labels</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_sphere">Next: Sphere →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_labels/">← Previous: Labels</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_sphere/">Next: Sphere →</a></span>
 </div>
 </nav>

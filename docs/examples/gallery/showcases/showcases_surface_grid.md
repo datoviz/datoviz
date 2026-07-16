@@ -4,12 +4,27 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_point_cloud">← Previous: Point Cloud</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_textured_planet">Next: Textured Planets →</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_point_cloud/">← Previous: Point Cloud</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_textured_planet/">Next: Textured Planets →</a></span>
 </div>
 </nav>
 
 This example turns a generated height field into a lit mesh and wireframe.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c showcases/surface_grid` (build and run), or rerun `./build/examples/c/showcases/surface_grid` |
+| Python | Available | `python3 -m examples.python.gallery.showcases.surface_grid` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_surface_grid">Open live example</a> |
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## Preview
 
@@ -50,8 +65,11 @@ This workflow is useful for scientific surfaces where the same gridded data shou
     - ID: `showcases_surface_grid`
     - Category: `showcase`
     - Lane: `showcases`
+    - Status: `supported`
     - Source: [`examples/c/showcases/surface_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/surface_grid.c)
+    - Approved adaptation starter: `no`
     - Python source: [`examples/python/gallery/showcases/surface_grid.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/surface_grid.py)
+    - Python adaptation: Available
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_surface_grid"><code>examples/webgpu/live.html?id=showcases_surface_grid</code></a>
     - Browser capability tags: `mesh`, `segment`, `arcball`
@@ -70,7 +88,7 @@ This workflow is useful for scientific surfaces where the same gridded data shou
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_point_cloud">← Previous: Point Cloud</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_textured_planet">Next: Textured Planets →</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_point_cloud/">← Previous: Point Cloud</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_textured_planet/">Next: Textured Planets →</a></span>
 </div>
 </nav>

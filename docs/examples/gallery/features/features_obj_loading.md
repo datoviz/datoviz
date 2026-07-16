@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_path_join">← Previous: Path Join</a></span>
-<span class="dvz-example-nav__next"><a href="../features_sampled_field_update">Next: Sampled Field Update →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_path_join/">← Previous: Path Join</a></span>
+<span class="dvz-example-nav__next"><a href="../features_sampled_field_update/">Next: Sampled Field Update →</a></span>
 </div>
 </nav>
 
 This example loads a Wavefront OBJ fixture and displays it as a mesh.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/obj_loading` (build and run), or rerun `./build/examples/c/features/obj_loading` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.obj_loading` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_obj_loading">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ The example writes a compact OBJ file, loads it through dvz_geometry_obj(), assi
     - ID: `features_obj_loading`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/obj_loading.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/obj_loading.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/obj_loading.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/obj_loading.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_obj_loading"><code>examples/webgpu/live.html?id=features_obj_loading</code></a>
     - Browser capability tags: `mesh`, `controller`, `arcball`
@@ -64,7 +81,7 @@ The example writes a compact OBJ file, loads it through dvz_geometry_obj(), assi
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_path_join">← Previous: Path Join</a></span>
-<span class="dvz-example-nav__next"><a href="../features_sampled_field_update">Next: Sampled Field Update →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_path_join/">← Previous: Path Join</a></span>
+<span class="dvz-example-nav__next"><a href="../features_sampled_field_update/">Next: Sampled Field Update →</a></span>
 </div>
 </nav>

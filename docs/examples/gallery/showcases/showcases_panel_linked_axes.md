@@ -4,12 +4,27 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_scientific_plotting">← Previous: Scientific Plotting Workflow</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_linked_probe_colorbar">Next: Linked Probe With Colorbar →</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_scientific_plotting/">← Previous: Scientific Plotting Workflow</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_linked_probe_colorbar/">Next: Linked Probe With Colorbar →</a></span>
 </div>
 </nav>
 
 This example builds linked time-series panels with shared axes behavior.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c showcases/panel_linked_axes` (build and run), or rerun `./build/examples/c/showcases/panel_linked_axes` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.showcases.panel_linked_axes` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_panel_linked_axes">Open live example</a> |
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## Preview
 
@@ -56,8 +71,11 @@ This workflow is useful for scientific dashboards where traces, events, and summ
     - ID: `showcases_panel_linked_axes`
     - Category: `showcase`
     - Lane: `showcases`
+    - Status: `supported`
     - Source: [`examples/c/showcases/panel_linked_axes.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/panel_linked_axes.c)
+    - Approved adaptation starter: `no`
     - Python source: [`examples/python/gallery/showcases/panel_linked_axes.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/panel_linked_axes.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_panel_linked_axes"><code>examples/webgpu/live.html?id=showcases_panel_linked_axes</code></a>
     - Browser capability tags: `panel-grid`, `linked-panels`, `axes`, `panzoom`, `path`
@@ -76,7 +94,7 @@ This workflow is useful for scientific dashboards where traces, events, and summ
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_scientific_plotting">← Previous: Scientific Plotting Workflow</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_linked_probe_colorbar">Next: Linked Probe With Colorbar →</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_scientific_plotting/">← Previous: Scientific Plotting Workflow</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_linked_probe_colorbar/">Next: Linked Probe With Colorbar →</a></span>
 </div>
 </nav>

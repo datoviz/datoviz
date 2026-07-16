@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../runtime_multi_window">← Previous: Multi Window</a></span>
-<span class="dvz-example-nav__next"><a href="../runtime_video_export">Next: Video Export →</a></span>
+<span class="dvz-example-nav__previous"><a href="../runtime_multi_window/">← Previous: Multi Window</a></span>
+<span class="dvz-example-nav__next"><a href="../runtime_video_export/">Next: Video Export →</a></span>
 </div>
 </nav>
 
 This example renders a point scene offscreen and writes one PNG.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c runtime/offscreen_capture` (build and run), or rerun `./build/examples/c/runtime/offscreen_capture` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.runtime.offscreen_capture` |
+| Browser | Native only | writes a native offscreen PNG through the app capture path |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -17,7 +31,7 @@ This example renders a point scene offscreen and writes one PNG.
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Native-only example</strong>
-<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## What To Look For
@@ -45,8 +59,11 @@ This is the runtime path to copy for reproducible batch figures, tests, and docu
     - ID: `runtime_offscreen_capture`
     - Category: `runtime`
     - Lane: `runtime`
+    - Status: `supported`
     - Source: [`examples/c/runtime/offscreen_capture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/offscreen_capture.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/runtime/offscreen_capture.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/runtime/offscreen_capture.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Native only
     - Browser note: writes a native offscreen PNG through the app capture path
     - Browser capability tags: `native-capture`
@@ -61,7 +78,7 @@ This is the runtime path to copy for reproducible batch figures, tests, and docu
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../runtime_multi_window">← Previous: Multi Window</a></span>
-<span class="dvz-example-nav__next"><a href="../runtime_video_export">Next: Video Export →</a></span>
+<span class="dvz-example-nav__previous"><a href="../runtime_multi_window/">← Previous: Multi Window</a></span>
+<span class="dvz-example-nav__next"><a href="../runtime_video_export/">Next: Video Export →</a></span>
 </div>
 </nav>

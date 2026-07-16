@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_panel_view2d">← Previous: Panel View 2D</a></span>
-<span class="dvz-example-nav__next"><a href="../features_user_scale">Next: User Scale →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_panel_view2d/">← Previous: Panel View 2D</a></span>
+<span class="dvz-example-nav__next"><a href="../features_user_scale/">Next: User Scale →</a></span>
 </div>
 </nav>
 
 This example shows a custom panel background behind a foreground primitive.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/panel_background` (build and run), or rerun `./build/examples/c/features/panel_background` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.panel_background` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_panel_background">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ The panel rectangle is explicitly inset inside the figure and receives a linear-
     - ID: `features_panel_background`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/panel_background.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_background.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/panel_background.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_background.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_panel_background"><code>examples/webgpu/live.html?id=features_panel_background</code></a>
     - Browser capability tags: `panel-background`, `primitive`
@@ -64,7 +81,7 @@ The panel rectangle is explicitly inset inside the figure and receives a linear-
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_panel_view2d">← Previous: Panel View 2D</a></span>
-<span class="dvz-example-nav__next"><a href="../features_user_scale">Next: User Scale →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_panel_view2d/">← Previous: Panel View 2D</a></span>
+<span class="dvz-example-nav__next"><a href="../features_user_scale/">Next: User Scale →</a></span>
 </div>
 </nav>

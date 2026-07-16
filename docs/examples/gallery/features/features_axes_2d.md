@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_axis_labels">← Previous: Axis Labels</a></span>
-<span class="dvz-example-nav__next"><a href="../features_datetime_axis">Next: Datetime Axis →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_axis_labels/">← Previous: Axis Labels</a></span>
+<span class="dvz-example-nav__next"><a href="../features_datetime_axis/">Next: Datetime Axis →</a></span>
 </div>
 </nav>
 
 This example shows a 2D data path with axes, ticks, and grid lines.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/axes_2d` (build and run), or rerun `./build/examples/c/features/axes_2d` |
+| Python | Available; manually maintained direct-engine example | `python3 -m examples.python.gallery.features.axes_2d` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_axes_2d">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ The path visual receives arrays for data-space position, color, and linewidth, t
     - ID: `features_axes_2d`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/axes_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axes_2d.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/axes_2d.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/axes_2d.py)
+    - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_axes_2d"><code>examples/webgpu/live.html?id=features_axes_2d</code></a>
     - Browser capability tags: `path`, `axes`, `text`, `panzoom`
@@ -64,7 +81,7 @@ The path visual receives arrays for data-space position, color, and linewidth, t
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_axis_labels">← Previous: Axis Labels</a></span>
-<span class="dvz-example-nav__next"><a href="../features_datetime_axis">Next: Datetime Axis →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_axis_labels/">← Previous: Axis Labels</a></span>
+<span class="dvz-example-nav__next"><a href="../features_datetime_axis/">Next: Datetime Axis →</a></span>
 </div>
 </nav>

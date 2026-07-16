@@ -4,12 +4,38 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_brain_volume">← Previous: Allen Mouse Brain</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_point_cloud">Next: Point Cloud →</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_brain_volume/">← Previous: Allen Mouse Brain</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_point_cloud/">Next: Point Cloud →</a></span>
 </div>
 </nav>
 
 This example renders a prepared PDB structure as colored sphere impostors.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c showcases/protein` (build and run), or rerun `./build/examples/c/showcases/protein` |
+| Python | Available | `python3 -m examples.python.gallery.showcases.protein` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_protein">Open live example</a> |
+
+!!! warning "Prepared data required"
+
+    This example intentionally fails when its prepared input is absent; it does not
+    substitute synthetic data.
+    Prepare it from the repository root with `python tools/preprocess_protein.py 6M0J`.
+
+!!! info "Real dataset"
+
+    Check the dataset, license, citation, and preprocessing fields in Example details
+    before redistributing data or derived output.
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## Preview
 
@@ -70,8 +96,11 @@ The full interactive GUI workbench lives in examples/c/lab/protein_viewer.c.
     - ID: `showcases_protein`
     - Category: `showcase`
     - Lane: `showcases`
+    - Status: `supported`
     - Source: [`examples/c/showcases/protein.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/protein.c)
+    - Approved adaptation starter: `no`
     - Python source: [`examples/python/gallery/showcases/protein.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/protein.py)
+    - Python adaptation: Available
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_protein"><code>examples/webgpu/live.html?id=showcases_protein</code></a>
     - Browser capability tags: `sphere`, `arcball`, `material`, `real-data`
@@ -115,7 +144,7 @@ The full interactive GUI workbench lives in examples/c/lab/protein_viewer.c.
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_brain_volume">← Previous: Allen Mouse Brain</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_point_cloud">Next: Point Cloud →</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_brain_volume/">← Previous: Allen Mouse Brain</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_point_cloud/">Next: Point Cloud →</a></span>
 </div>
 </nav>

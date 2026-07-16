@@ -25,7 +25,7 @@ This example composes common scientific plot elements in one figure.
 ### [Linked Panels With Axes](gallery/showcases/showcases_panel_linked_axes.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_panel_linked_axes" aria-label="Linked Panels With Axes"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_panel_linked_axes/" aria-label="Linked Panels With Axes"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.poster.webp" alt="Linked Panels With Axes" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.poster.webp" aria-label="Linked Panels With Axes preview">
@@ -80,7 +80,7 @@ This example renders contiguous U.S. population density as polygon-set data.
 ### [Wind Field](gallery/showcases/showcases_wind_field.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_wind_field" aria-label="Wind Field"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_wind_field/" aria-label="Wind Field"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_wind_field.poster.webp" alt="Wind Field" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/showcases/showcases_wind_field.poster.webp" aria-label="Wind Field preview">
@@ -99,7 +99,7 @@ This example combines a synthetic wind-speed field with vectors and streamlines.
 ### [GPU Particle Smoke](gallery/showcases/showcases_gpu_particle_smoke.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_gpu_particle_smoke" aria-label="GPU Particle Smoke"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_gpu_particle_smoke/" aria-label="GPU Particle Smoke"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.poster.webp" alt="GPU Particle Smoke" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.poster.webp" aria-label="GPU Particle Smoke preview">
@@ -124,7 +124,7 @@ This example uses scene compute buffers to animate particle smoke.
 ### [Allen Mouse Brain](gallery/showcases/showcases_brain_volume.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_brain_volume" aria-label="Allen Mouse Brain"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_brain_volume/" aria-label="Allen Mouse Brain"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp" alt="Allen Mouse Brain" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp" aria-label="Allen Mouse Brain preview">
@@ -143,7 +143,7 @@ This example renders a prepared Allen mouse brain volume with a visible slice.
 ### [Protein](gallery/showcases/showcases_protein.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_protein" aria-label="Protein"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_protein/" aria-label="Protein"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_protein.poster.webp" alt="Protein" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/showcases/showcases_protein.poster.webp" aria-label="Protein preview">
@@ -162,7 +162,7 @@ This example renders a prepared PDB structure as colored sphere impostors.
 ### [Point Cloud](gallery/showcases/showcases_point_cloud.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_point_cloud" aria-label="Point Cloud"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_point_cloud/" aria-label="Point Cloud"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" alt="Point Cloud" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" aria-label="Point Cloud preview">
@@ -193,7 +193,7 @@ This example turns a generated height field into a lit mesh and wireframe.
 ### [Textured Planets](gallery/showcases/showcases_textured_planet.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_textured_planet" aria-label="Textured Planets"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_textured_planet/" aria-label="Textured Planets"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" alt="Textured Planets" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" aria-label="Textured Planets preview">

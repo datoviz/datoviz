@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_user_scale">← Previous: User Scale</a></span>
-<span class="dvz-example-nav__next"><a href="../features_visual_transform">Next: Visual Transform →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_user_scale/">← Previous: User Scale</a></span>
+<span class="dvz-example-nav__next"><a href="../features_visual_transform/">Next: Visual Transform →</a></span>
 </div>
 </nav>
 
 This example demonstrates how requested view size policies resolve to real view sizes.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/view_size_policies` (build and run), or rerun `./build/examples/c/features/view_size_policies` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.view_size_policies` |
+| Browser | Native only | demonstrates native window, framebuffer, and physical-size policies |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -17,7 +31,7 @@ This example demonstrates how requested view size policies resolve to real view 
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Native-only example</strong>
-<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## What To Look For
@@ -43,8 +57,11 @@ Pass --policy pixel, host, reference, or physical to choose framebuffer pixels, 
     - ID: `features_view_size_policies`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/view_size_policies.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/view_size_policies.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/view_size_policies.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/view_size_policies.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Native only
     - Browser note: demonstrates native window, framebuffer, and physical-size policies
     - Browser capability tags: `native-view`, `view-size-policy`
@@ -63,7 +80,7 @@ Pass --policy pixel, host, reference, or physical to choose framebuffer pixels, 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_user_scale">← Previous: User Scale</a></span>
-<span class="dvz-example-nav__next"><a href="../features_visual_transform">Next: Visual Transform →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_user_scale/">← Previous: User Scale</a></span>
+<span class="dvz-example-nav__next"><a href="../features_visual_transform/">Next: Visual Transform →</a></span>
 </div>
 </nav>

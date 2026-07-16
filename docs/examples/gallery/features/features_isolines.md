@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_sampled_field_update">← Previous: Sampled Field Update</a></span>
-<span class="dvz-example-nav__next"><a href="../features_image_probe">Next: Image Probe →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_sampled_field_update/">← Previous: Sampled Field Update</a></span>
+<span class="dvz-example-nav__next"><a href="../features_image_probe/">Next: Image Probe →</a></span>
 </div>
 </nav>
 
 This example shows contour isolines over a scalar field.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/isolines` (build and run), or rerun `./build/examples/c/features/isolines` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.isolines` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_isolines">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ The scalar field is sampled on a regular grid, and CPU contour extraction turns 
     - ID: `features_isolines`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/isolines.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/isolines.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/isolines.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/isolines.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_isolines"><code>examples/webgpu/live.html?id=features_isolines</code></a>
     - Browser capability tags: `mesh`, `segment`, `controller`, `arcball`
@@ -64,7 +81,7 @@ The scalar field is sampled on a regular grid, and CPU contour extraction turns 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_sampled_field_update">← Previous: Sampled Field Update</a></span>
-<span class="dvz-example-nav__next"><a href="../features_image_probe">Next: Image Probe →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_sampled_field_update/">← Previous: Sampled Field Update</a></span>
+<span class="dvz-example-nav__next"><a href="../features_image_probe/">Next: Image Probe →</a></span>
 </div>
 </nav>

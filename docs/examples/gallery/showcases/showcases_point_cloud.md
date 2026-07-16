@@ -4,12 +4,34 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_protein">← Previous: Protein</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_surface_grid">Next: Surface Grid →</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_protein/">← Previous: Protein</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_surface_grid/">Next: Surface Grid →</a></span>
 </div>
 </nav>
 
 This example renders a prepared RGB LiDAR point cloud with direct colors.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c showcases/point_cloud` (build and run), or rerun `./build/examples/c/showcases/point_cloud` |
+| Python | Available | `python3 -m examples.python.gallery.showcases.point_cloud` |
+| Browser | Deferred | the public point-cloud showcase depends on large prepared data, native GUI controls, and EDL-style rendering |
+
+!!! warning "Prepared data required"
+
+    This example intentionally fails when its prepared input is absent; it does not
+    substitute synthetic data.
+    Expected input: `.cache/datoviz/examples/point_cloud/prepared`.
+    Prepare it from the repository root with `python tools/data/prepare_point_cloud.py --force`.
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## Preview
 
@@ -23,7 +45,7 @@ This example renders a prepared RGB LiDAR point cloud with direct colors.
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>No live WebGPU preview</strong>
-<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## What To Look For
@@ -55,8 +77,11 @@ Real data is loaded from `.cache/datoviz/examples/point_cloud/prepared/point_clo
     - ID: `showcases_point_cloud`
     - Category: `showcase`
     - Lane: `showcases`
+    - Status: `supported`
     - Source: [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c)
+    - Approved adaptation starter: `no`
     - Python source: [`examples/python/gallery/showcases/point_cloud.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/point_cloud.py)
+    - Python adaptation: Available
     - Browser support: Deferred
     - Browser note: the public point-cloud showcase depends on large prepared data, native GUI controls, and EDL-style rendering
     - Browser capability tags: `pixel`, `dense-point-cloud`, `depth-postprocess`, `gui`, `fly`
@@ -85,7 +110,7 @@ Real data is loaded from `.cache/datoviz/examples/point_cloud/prepared/point_clo
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_protein">← Previous: Protein</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_surface_grid">Next: Surface Grid →</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_protein/">← Previous: Protein</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_surface_grid/">Next: Surface Grid →</a></span>
 </div>
 </nav>

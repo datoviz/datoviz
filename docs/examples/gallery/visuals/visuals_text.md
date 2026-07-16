@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_image_rgba">← Previous: RGBA Image</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_glyph">Next: Font Atlas Glyphs →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_image_rgba/">← Previous: RGBA Image</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_glyph/">Next: Font Atlas Glyphs →</a></span>
 </div>
 </nav>
 
 This example places semantic text items in panel coordinates.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c visuals/text` (build and run), or rerun `./build/examples/c/visuals/text` |
+| Python | Available; manually maintained direct-engine example | `python3 -m examples.python.gallery.visuals.text` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=visuals_text">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,9 +62,12 @@ Each text item provides a string, x/y screen position, font size, angle, and col
     - ID: `visuals_text`
     - Category: `visual`
     - Lane: `visuals`
+    - Status: `supported`
     - Source: [`examples/c/visuals/text.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/text.c)
+    - Approved adaptation starter: `yes`
     - Reference: [Text visual family](../../../reference/visual-families/text.md)
     - Python source: [`examples/python/gallery/visuals/text.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/text.py)
+    - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_text"><code>examples/webgpu/live.html?id=visuals_text</code></a>
     - Browser capability tags: `text`, `glyph-atlas`
@@ -69,7 +86,7 @@ Each text item provides a string, x/y screen position, font size, angle, and col
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_image_rgba">← Previous: RGBA Image</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_glyph">Next: Font Atlas Glyphs →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_image_rgba/">← Previous: RGBA Image</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_glyph/">Next: Font Atlas Glyphs →</a></span>
 </div>
 </nav>

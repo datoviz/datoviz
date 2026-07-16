@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_basic_scene">← Previous: Basic Scene</a></span>
-<span class="dvz-example-nav__next"><a href="../features_panel_single">Next: Single Panel →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_basic_scene/">← Previous: Basic Scene</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_single/">Next: Single Panel →</a></span>
 </div>
 </nav>
 
 This example shows the Datoviz 3D coordinate convention.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/coordinate_system` (build and run), or rerun `./build/examples/c/features/coordinate_system` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.coordinate_system` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_coordinate_system">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ The axis triad uses red for X, green for Y, and blue for Z, with labels and a re
     - ID: `features_coordinate_system`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/coordinate_system.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/coordinate_system.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/coordinate_system.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/coordinate_system.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_coordinate_system"><code>examples/webgpu/live.html?id=features_coordinate_system</code></a>
     - Browser capability tags: `mesh`, `reference-grid`, `text`, `controller`
@@ -64,7 +81,7 @@ The axis triad uses red for X, green for Y, and blue for Z, with labels and a re
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_basic_scene">← Previous: Basic Scene</a></span>
-<span class="dvz-example-nav__next"><a href="../features_panel_single">Next: Single Panel →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_basic_scene/">← Previous: Basic Scene</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_single/">Next: Single Panel →</a></span>
 </div>
 </nav>

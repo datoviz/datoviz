@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_panel_linked">← Previous: Linked Panels</a></span>
-<span class="dvz-example-nav__next"><a href="../features_panel_background">Next: Panel Background →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_panel_linked/">← Previous: Linked Panels</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_background/">Next: Panel Background →</a></span>
 </div>
 </nav>
 
 This example animates the widths of free and equal-aspect 2D panels.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/panel_view2d` (build and run), or rerun `./build/examples/c/features/panel_view2d` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.panel_view2d` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_panel_view2d">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -54,8 +68,11 @@ Both panels draw the same unit circle path and styled X/Y axes. The left panel u
     - ID: `features_panel_view2d`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/panel_view2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_view2d.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/panel_view2d.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_view2d.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_panel_view2d"><code>examples/webgpu/live.html?id=features_panel_view2d</code></a>
     - Browser capability tags: `panel-view`, `panzoom`, `point`
@@ -70,7 +87,7 @@ Both panels draw the same unit circle path and styled X/Y axes. The left panel u
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_panel_linked">← Previous: Linked Panels</a></span>
-<span class="dvz-example-nav__next"><a href="../features_panel_background">Next: Panel Background →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_panel_linked/">← Previous: Linked Panels</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_background/">Next: Panel Background →</a></span>
 </div>
 </nav>

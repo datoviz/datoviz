@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_segment">← Previous: Segment</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_vector">Next: Vector →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_segment/">← Previous: Segment</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_vector/">Next: Vector →</a></span>
 </div>
 </nav>
 
 This example draws several continuous signals with one path visual.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c visuals/path` (build and run), or rerun `./build/examples/c/visuals/path` |
+| Python | Available; manually maintained direct-engine example | `python3 -m examples.python.gallery.visuals.path` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=visuals_path">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,9 +62,12 @@ Positions hold the sampled curves, colors and widths vary per sample, and the su
     - ID: `visuals_path`
     - Category: `visual`
     - Lane: `visuals`
+    - Status: `supported`
     - Source: [`examples/c/visuals/path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/path.c)
+    - Approved adaptation starter: `yes`
     - Reference: [Path visual family](../../../reference/visual-families/path.md)
     - Python source: [`examples/python/gallery/visuals/path.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/path.py)
+    - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_path"><code>examples/webgpu/live.html?id=visuals_path</code></a>
     - Browser capability tags: `path`, `panzoom`
@@ -69,7 +86,7 @@ Positions hold the sampled curves, colors and widths vary per sample, and the su
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_segment">← Previous: Segment</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_vector">Next: Vector →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_segment/">← Previous: Segment</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_vector/">Next: Vector →</a></span>
 </div>
 </nav>

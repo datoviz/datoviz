@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_datetime_axis">← Previous: Datetime Axis</a></span>
-<span class="dvz-example-nav__next"><a href="../features_guide_spans">Next: Guide Spans →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_datetime_axis/">← Previous: Datetime Axis</a></span>
+<span class="dvz-example-nav__next"><a href="../features_guide_spans/">Next: Guide Spans →</a></span>
 </div>
 </nav>
 
 This example shows movable horizontal and vertical guide lines.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/guide_lines` (build and run), or rerun `./build/examples/c/features/guide_lines` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.guide_lines` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_guide_lines">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ A path visual uploads position, color, and linewidth arrays for a signal, and th
     - ID: `features_guide_lines`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/guide_lines.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/guide_lines.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/guide_lines.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/guide_lines.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_guide_lines"><code>examples/webgpu/live.html?id=features_guide_lines</code></a>
     - Browser capability tags: `segment`, `overlay`, `panzoom`
@@ -64,7 +81,7 @@ A path visual uploads position, color, and linewidth arrays for a signal, and th
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_datetime_axis">← Previous: Datetime Axis</a></span>
-<span class="dvz-example-nav__next"><a href="../features_guide_spans">Next: Guide Spans →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_datetime_axis/">← Previous: Datetime Axis</a></span>
+<span class="dvz-example-nav__next"><a href="../features_guide_spans/">Next: Guide Spans →</a></span>
 </div>
 </nav>

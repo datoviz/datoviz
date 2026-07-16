@@ -4,12 +4,27 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../advanced_external_surface_glfw">← Previous: External Surface GLFW</a></span>
-<span class="dvz-example-nav__next"><a href="../advanced_raw_triangle_drp2">Next: Raw Triangle DRP2 →</a></span>
+<span class="dvz-example-nav__previous"><a href="../advanced_external_surface_glfw/">← Previous: External Surface GLFW</a></span>
+<span class="dvz-example-nav__next"><a href="../advanced_raw_triangle_drp2/">Next: Raw Triangle DRP2 →</a></span>
 </div>
 </nav>
 
 This example hosts a Datoviz Vulkan scene in live Qt Widgets.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C++ | Canonical native source | `DVZ_CMAKE_ARGS="-DDVZ_ENABLE_QT_BRIDGE=ON" just build`, then `./build/examples/qt/qt_hosting` |
+| PyQt | Additional integration source; check optional dependencies | `python3 -m examples.python.qt.hosted_pyqt` |
+| Browser | Native only | Qt and PyQt hosting use native toolkit windows and an optional bridge provider |
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## Preview
 
@@ -17,7 +32,7 @@ This example hosts a Datoviz Vulkan scene in live Qt Widgets.
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Native-only example</strong>
-<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## Source
@@ -39,7 +54,9 @@ This example hosts a Datoviz Vulkan scene in live Qt Widgets.
     - ID: `advanced_qt_hosting`
     - Category: `advanced`
     - Lane: `advanced`
+    - Status: `supported`
     - Source: [`examples/qt/qt_hosting.cpp`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/qt/qt_hosting.cpp)
+    - Approved adaptation starter: `no`
     - PyQt source: [`examples/python/qt/hosted_pyqt.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/qt/hosted_pyqt.py)
     - Browser support: Native only
     - Browser note: Qt and PyQt hosting use native toolkit windows and an optional bridge provider
@@ -59,7 +76,7 @@ This example hosts a Datoviz Vulkan scene in live Qt Widgets.
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../advanced_external_surface_glfw">← Previous: External Surface GLFW</a></span>
-<span class="dvz-example-nav__next"><a href="../advanced_raw_triangle_drp2">Next: Raw Triangle DRP2 →</a></span>
+<span class="dvz-example-nav__previous"><a href="../advanced_external_surface_glfw/">← Previous: External Surface GLFW</a></span>
+<span class="dvz-example-nav__next"><a href="../advanced_raw_triangle_drp2/">Next: Raw Triangle DRP2 →</a></span>
 </div>
 </nav>

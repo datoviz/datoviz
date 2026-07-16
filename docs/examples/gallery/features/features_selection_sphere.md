@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_selection_pixel">← Previous: Pixel Selection</a></span>
-<span class="dvz-example-nav__next"><a href="../features_selection_mesh_instances">Next: Mesh Instance Selection →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_selection_pixel/">← Previous: Pixel Selection</a></span>
+<span class="dvz-example-nav__next"><a href="../features_selection_mesh_instances/">Next: Mesh Instance Selection →</a></span>
 </div>
 </nav>
 
 This example queries and selects individual raycast spheres in a 3D cluster.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/selection_sphere` (build and run), or rerun `./build/examples/c/features/selection_sphere` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.selection_sphere` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_selection_sphere">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ The sphere visual uploads position, radius, and color arrays for a compact depth
     - ID: `features_selection_sphere`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/selection_sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_sphere.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/selection_sphere.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/selection_sphere.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_selection_sphere"><code>examples/webgpu/live.html?id=features_selection_sphere</code></a>
     - Browser capability tags: `sphere`, `arcball`, `query-readback`, `frame-callbacks`
@@ -64,7 +81,7 @@ The sphere visual uploads position, radius, and color arrays for a compact depth
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_selection_pixel">← Previous: Pixel Selection</a></span>
-<span class="dvz-example-nav__next"><a href="../features_selection_mesh_instances">Next: Mesh Instance Selection →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_selection_pixel/">← Previous: Pixel Selection</a></span>
+<span class="dvz-example-nav__next"><a href="../features_selection_mesh_instances/">Next: Mesh Instance Selection →</a></span>
 </div>
 </nav>

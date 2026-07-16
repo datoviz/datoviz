@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../composites_polygon">← Previous: Polygon Composite</a></span>
-<span class="dvz-example-nav__next"><a href="../../../features">Next: Features →</a></span>
+<span class="dvz-example-nav__previous"><a href="../composites_polygon/">← Previous: Polygon Composite</a></span>
+<span class="dvz-example-nav__next"><a href="../../../features/">Next: Features →</a></span>
 </div>
 </nav>
 
 This example builds a small graph composite.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c composites/graph` (build and run), or rerun `./build/examples/c/composites/graph` |
+| Python | Available | `python3 -m examples.python.gallery.composites.graph` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=composites_graph">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ Node arrays provide positions, semantic IDs, community colors, and sizes; edge a
     - ID: `composites_graph`
     - Category: `composite`
     - Lane: `composites`
+    - Status: `supported`
     - Source: [`examples/c/composites/graph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/graph.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/composites/graph.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/composites/graph.py)
+    - Python adaptation: Available
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=composites_graph"><code>examples/webgpu/live.html?id=composites_graph</code></a>
     - Browser capability tags: `composite`, `marker`, `bezier-edges`, `path`, `panzoom`
@@ -68,7 +85,7 @@ Node arrays provide positions, semantic IDs, community colors, and sizes; edge a
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../composites_polygon">← Previous: Polygon Composite</a></span>
-<span class="dvz-example-nav__next"><a href="../../../features">Next: Features →</a></span>
+<span class="dvz-example-nav__previous"><a href="../composites_polygon/">← Previous: Polygon Composite</a></span>
+<span class="dvz-example-nav__next"><a href="../../../features/">Next: Features →</a></span>
 </div>
 </nav>

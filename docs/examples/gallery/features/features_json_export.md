@@ -4,12 +4,27 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_input_events">← Previous: Input Events</a></span>
-<span class="dvz-example-nav__next"><a href="../features_bounds_overlay">Next: Bounds Overlay →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_input_events/">← Previous: Input Events</a></span>
+<span class="dvz-example-nav__next"><a href="../features_bounds_overlay/">Next: Bounds Overlay →</a></span>
 </div>
 </nav>
 
 This example writes a scene to a compact JSON diagnostic file.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/json_export` (build and run), or rerun `./build/examples/c/features/json_export` |
+| Python | No verified adaptation on this page | Start from the C source. |
+| Browser | Native only | scene JSON is a native diagnostic/fixture surface, not a live browser route |
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## Preview
 
@@ -17,7 +32,7 @@ This example writes a scene to a compact JSON diagnostic file.
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Native-only example</strong>
-<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## What To Look For
@@ -39,6 +54,7 @@ The live view is intentionally small, with three point items whose position, col
     - Lane: `features`
     - Status: `experimental`
     - Source: [`examples/c/features/json_export.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/json_export.c)
+    - Approved adaptation starter: `no`
     - Browser support: Native only
     - Browser note: scene JSON is a native diagnostic/fixture surface, not a live browser route
     - Browser capability tags: `diagnostics`
@@ -53,7 +69,7 @@ The live view is intentionally small, with three point items whose position, col
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_input_events">← Previous: Input Events</a></span>
-<span class="dvz-example-nav__next"><a href="../features_bounds_overlay">Next: Bounds Overlay →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_input_events/">← Previous: Input Events</a></span>
+<span class="dvz-example-nav__next"><a href="../features_bounds_overlay/">Next: Bounds Overlay →</a></span>
 </div>
 </nav>

@@ -4,12 +4,27 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_wind_field">← Previous: Wind Field</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_brain_volume">Next: Allen Mouse Brain →</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_wind_field/">← Previous: Wind Field</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_brain_volume/">Next: Allen Mouse Brain →</a></span>
 </div>
 </nav>
 
 This example uses scene compute buffers to animate particle smoke.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c showcases/gpu_particle_smoke` (build and run), or rerun `./build/examples/c/showcases/gpu_particle_smoke` |
+| Python | Available | `python3 -m examples.python.gallery.showcases.gpu_particle_smoke` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_gpu_particle_smoke">Open live example</a> |
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## Preview
 
@@ -58,7 +73,9 @@ This experimental workflow is useful for simulations where GPU-updated arrays sh
     - Lane: `showcases`
     - Status: `experimental`
     - Source: [`examples/c/showcases/gpu_particle_smoke.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c)
+    - Approved adaptation starter: `no`
     - Python source: [`examples/python/gallery/showcases/gpu_particle_smoke.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/gpu_particle_smoke.py)
+    - Python adaptation: Available
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_gpu_particle_smoke"><code>examples/webgpu/live.html?id=showcases_gpu_particle_smoke</code></a>
     - Browser capability tags: `scene-buffers`, `storage-buffers`, `scene-compute`, `point`, `alpha-blending`
@@ -77,7 +94,7 @@ This experimental workflow is useful for simulations where GPU-updated arrays sh
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_wind_field">← Previous: Wind Field</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_brain_volume">Next: Allen Mouse Brain →</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_wind_field/">← Previous: Wind Field</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_brain_volume/">Next: Allen Mouse Brain →</a></span>
 </div>
 </nav>

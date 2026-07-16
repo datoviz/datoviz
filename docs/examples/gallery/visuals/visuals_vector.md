@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_path">← Previous: Path</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_primitive">Next: Primitive →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_path/">← Previous: Path</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_primitive/">Next: Primitive →</a></span>
 </div>
 </nav>
 
 This example compares straight vector arrows with curved vector paths.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c visuals/vector` (build and run), or rerun `./build/examples/c/visuals/vector` |
+| Python | Available; manually maintained direct-engine example | `python3 -m examples.python.gallery.visuals.vector` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=visuals_vector">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,9 +62,12 @@ The straight field uses position, vector, color, and width arrays, while the cur
     - ID: `visuals_vector`
     - Category: `visual`
     - Lane: `visuals`
+    - Status: `supported`
     - Source: [`examples/c/visuals/vector.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/vector.c)
+    - Approved adaptation starter: `yes`
     - Reference: [Vector visual family](../../../reference/visual-families/vector.md)
     - Python source: [`examples/python/gallery/visuals/vector.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/vector.py)
+    - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_vector"><code>examples/webgpu/live.html?id=visuals_vector</code></a>
     - Browser capability tags: `vector`, `path`, `panzoom`
@@ -69,7 +86,7 @@ The straight field uses position, vector, color, and width arrays, while the cur
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_path">← Previous: Path</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_primitive">Next: Primitive →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_path/">← Previous: Path</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_primitive/">Next: Primitive →</a></span>
 </div>
 </nav>

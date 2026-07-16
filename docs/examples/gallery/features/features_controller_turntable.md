@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_controller_arcball">← Previous: Arcball Controller</a></span>
-<span class="dvz-example-nav__next"><a href="../features_controller_fly">Next: Fly Controller →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_controller_arcball/">← Previous: Arcball Controller</a></span>
+<span class="dvz-example-nav__next"><a href="../features_controller_fly/">Next: Fly Controller →</a></span>
 </div>
 </nav>
 
 This example shows world-up orbiting with a turntable controller.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/controller_turntable` (build and run), or rerun `./build/examples/c/features/controller_turntable` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.controller_turntable` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_controller_turntable">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -54,8 +68,11 @@ The lit cube and XZ grid provide a stable reference frame while the controller o
     - ID: `features_controller_turntable`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/controller_turntable.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_turntable.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/controller_turntable.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/controller_turntable.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_controller_turntable"><code>examples/webgpu/live.html?id=features_controller_turntable</code></a>
     - Browser capability tags: `controller`, `turntable`, `mesh`
@@ -70,7 +87,7 @@ The lit cube and XZ grid provide a stable reference frame while the controller o
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_controller_arcball">← Previous: Arcball Controller</a></span>
-<span class="dvz-example-nav__next"><a href="../features_controller_fly">Next: Fly Controller →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_controller_arcball/">← Previous: Arcball Controller</a></span>
+<span class="dvz-example-nav__next"><a href="../features_controller_fly/">Next: Fly Controller →</a></span>
 </div>
 </nav>

@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_mesh_texture">← Previous: Textured Mesh</a></span>
-<span class="dvz-example-nav__next"><a href="../features_technique_depth_cue">Next: Depth Cue →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_mesh_texture/">← Previous: Textured Mesh</a></span>
+<span class="dvz-example-nav__next"><a href="../features_technique_depth_cue/">Next: Depth Cue →</a></span>
 </div>
 </nav>
 
 This example compares cube meshes rendered with different material models and parameters.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/material_mesh` (build and run), or rerun `./build/examples/c/features/material_mesh` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.material_mesh` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_material_mesh">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -54,8 +68,11 @@ All three panels use the same colored cube geometry, while the material descript
     - ID: `features_material_mesh`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/material_mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/material_mesh.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/material_mesh.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/material_mesh.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_material_mesh"><code>examples/webgpu/live.html?id=features_material_mesh</code></a>
     - Browser capability tags: `mesh`, `material`, `lighting`, `arcball`
@@ -70,7 +87,7 @@ All three panels use the same colored cube geometry, while the material descript
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_mesh_texture">← Previous: Textured Mesh</a></span>
-<span class="dvz-example-nav__next"><a href="../features_technique_depth_cue">Next: Depth Cue →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_mesh_texture/">← Previous: Textured Mesh</a></span>
+<span class="dvz-example-nav__next"><a href="../features_technique_depth_cue/">Next: Depth Cue →</a></span>
 </div>
 </nav>

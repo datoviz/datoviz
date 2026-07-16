@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_glyph">← Previous: Font Atlas Glyphs</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_mesh">Next: Mesh →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_glyph/">← Previous: Font Atlas Glyphs</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_mesh/">Next: Mesh →</a></span>
 </div>
 </nav>
 
 This example turns an integer sampled field into categorical image labels.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c visuals/labels` (build and run), or rerun `./build/examples/c/visuals/labels` |
+| Python | Available | `python3 -m examples.python.gallery.visuals.labels` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=visuals_labels">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,9 +62,12 @@ The labels array stores category IDs, and the category scale assigns each ID a n
     - ID: `visuals_labels`
     - Category: `visual`
     - Lane: `visuals`
+    - Status: `supported`
     - Source: [`examples/c/visuals/labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/labels.c)
+    - Approved adaptation starter: `yes`
     - Reference: [Labels visual family](../../../reference/visual-families/labels.md)
     - Python source: [`examples/python/gallery/visuals/labels.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/labels.py)
+    - Python adaptation: Available
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_labels"><code>examples/webgpu/live.html?id=visuals_labels</code></a>
     - Browser capability tags: `labels`, `categorical-scale`, `panzoom`
@@ -69,7 +86,7 @@ The labels array stores category IDs, and the category scale assigns each ID a n
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_glyph">← Previous: Font Atlas Glyphs</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_mesh">Next: Mesh →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_glyph/">← Previous: Font Atlas Glyphs</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_mesh/">Next: Mesh →</a></span>
 </div>
 </nav>

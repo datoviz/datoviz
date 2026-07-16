@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_marker_symbols">← Previous: Marker Symbols</a></span>
-<span class="dvz-example-nav__next"><a href="../features_path_join">Next: Path Join →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_marker_symbols/">← Previous: Marker Symbols</a></span>
+<span class="dvz-example-nav__next"><a href="../features_path_join/">Next: Path Join →</a></span>
 </div>
 </nav>
 
 This example shows a cubic Bezier curve tessellated into a path.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/bezier_curve_path` (build and run), or rerun `./build/examples/c/features/bezier_curve_path` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.bezier_curve_path` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_bezier_curve_path">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ Four control points define the curve. The tessellated path uploads position, col
     - ID: `features_bezier_curve_path`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/bezier_curve_path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bezier_curve_path.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/bezier_curve_path.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/bezier_curve_path.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_bezier_curve_path"><code>examples/webgpu/live.html?id=features_bezier_curve_path</code></a>
     - Browser capability tags: `path`, `segment`, `marker`
@@ -64,7 +81,7 @@ Four control points define the curve. The tessellated path uploads position, col
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_marker_symbols">← Previous: Marker Symbols</a></span>
-<span class="dvz-example-nav__next"><a href="../features_path_join">Next: Path Join →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_marker_symbols/">← Previous: Marker Symbols</a></span>
+<span class="dvz-example-nav__next"><a href="../features_path_join/">Next: Path Join →</a></span>
 </div>
 </nav>

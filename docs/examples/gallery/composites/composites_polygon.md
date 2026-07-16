@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../../visuals/visuals_volume">← Previous: Volume</a></span>
-<span class="dvz-example-nav__next"><a href="../composites_graph">Next: Graph Composite →</a></span>
+<span class="dvz-example-nav__previous"><a href="../../visuals/visuals_volume/">← Previous: Volume</a></span>
+<span class="dvz-example-nav__next"><a href="../composites_graph/">Next: Graph Composite →</a></span>
 </div>
 </nav>
 
 This example compares one holed polygon with a multi-region polygon set.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c composites/polygon` (build and run), or rerun `./build/examples/c/composites/polygon` |
+| Python | Available | `python3 -m examples.python.gallery.composites.polygon` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=composites_polygon">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ The left shape uses outer and hole coordinate rings plus fill, stroke, width, jo
     - ID: `composites_polygon`
     - Category: `composite`
     - Lane: `composites`
+    - Status: `supported`
     - Source: [`examples/c/composites/polygon.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/polygon.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/composites/polygon.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/composites/polygon.py)
+    - Python adaptation: Available
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=composites_polygon"><code>examples/webgpu/live.html?id=composites_polygon</code></a>
     - Browser capability tags: `composite`, `polygon-set`, `primitive`, `segment`, `panzoom`
@@ -68,7 +85,7 @@ The left shape uses outer and hole coordinate rings plus fill, stroke, width, jo
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../../visuals/visuals_volume">← Previous: Volume</a></span>
-<span class="dvz-example-nav__next"><a href="../composites_graph">Next: Graph Composite →</a></span>
+<span class="dvz-example-nav__previous"><a href="../../visuals/visuals_volume/">← Previous: Volume</a></span>
+<span class="dvz-example-nav__next"><a href="../composites_graph/">Next: Graph Composite →</a></span>
 </div>
 </nav>

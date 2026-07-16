@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../runtime_app_glfw">← Previous: GLFW App</a></span>
-<span class="dvz-example-nav__next"><a href="../runtime_offscreen_capture">Next: Offscreen Capture →</a></span>
+<span class="dvz-example-nav__previous"><a href="../runtime_app_glfw/">← Previous: GLFW App</a></span>
+<span class="dvz-example-nav__next"><a href="../runtime_offscreen_capture/">Next: Offscreen Capture →</a></span>
 </div>
 </nav>
 
 This example drives two independent native GLFW windows from one Datoviz app.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c runtime/multi_window` (build and run), or rerun `./build/examples/c/runtime/multi_window` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.runtime.multi_window` |
+| Browser | Native only | multiple native GLFW windows are native-only |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -17,7 +31,7 @@ This example drives two independent native GLFW windows from one Datoviz app.
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Native-only example</strong>
-<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## What To Look For
@@ -45,8 +59,11 @@ This workflow is useful for scientific tools that need a coarse overview beside 
     - ID: `runtime_multi_window`
     - Category: `runtime`
     - Lane: `runtime`
+    - Status: `supported`
     - Source: [`examples/c/runtime/multi_window.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/multi_window.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/runtime/multi_window.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/runtime/multi_window.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Native only
     - Browser note: multiple native GLFW windows are native-only
     - Browser capability tags: `native-view`, `multi-window`
@@ -61,7 +78,7 @@ This workflow is useful for scientific tools that need a coarse overview beside 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../runtime_app_glfw">← Previous: GLFW App</a></span>
-<span class="dvz-example-nav__next"><a href="../runtime_offscreen_capture">Next: Offscreen Capture →</a></span>
+<span class="dvz-example-nav__previous"><a href="../runtime_app_glfw/">← Previous: GLFW App</a></span>
+<span class="dvz-example-nav__next"><a href="../runtime_offscreen_capture/">Next: Offscreen Capture →</a></span>
 </div>
 </nav>

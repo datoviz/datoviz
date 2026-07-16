@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_technique_ssao">← Previous: Screen-Space Ambient Occlusion</a></span>
-<span class="dvz-example-nav__next"><a href="../features_technique_transparency">Next: Transparency Order →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_technique_ssao/">← Previous: Screen-Space Ambient Occlusion</a></span>
+<span class="dvz-example-nav__next"><a href="../features_technique_transparency/">Next: Transparency Order →</a></span>
 </div>
 </nav>
 
 This example compares single-sample rendering with 8x multisample antialiasing.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/technique_msaa` (build and run), or rerun `./build/examples/c/features/technique_msaa` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.technique_msaa` |
+| Browser | Deferred | Use the native route for this example. |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -23,7 +37,7 @@ This example compares single-sample rendering with 8x multisample antialiasing.
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>No live WebGPU preview</strong>
-<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## What To Look For
@@ -49,8 +63,11 @@ Both panels draw the same translated cube cluster with linked arcball controls, 
     - ID: `features_technique_msaa`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/technique_msaa.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_msaa.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/technique_msaa.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/technique_msaa.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Deferred
     - Browser capability tags: `multisample`
     - Validation: `smoke+screenshot`
@@ -64,7 +81,7 @@ Both panels draw the same translated cube cluster with linked arcball controls, 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_technique_ssao">← Previous: Screen-Space Ambient Occlusion</a></span>
-<span class="dvz-example-nav__next"><a href="../features_technique_transparency">Next: Transparency Order →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_technique_ssao/">← Previous: Screen-Space Ambient Occlusion</a></span>
+<span class="dvz-example-nav__next"><a href="../features_technique_transparency/">Next: Transparency Order →</a></span>
 </div>
 </nav>

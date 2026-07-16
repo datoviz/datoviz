@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_panel_grid">← Previous: Panel Grid</a></span>
-<span class="dvz-example-nav__next"><a href="../features_panel_linked">Next: Linked Panels →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_panel_grid/">← Previous: Panel Grid</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_linked/">Next: Linked Panels →</a></span>
 </div>
 </nav>
 
 This example shows two panels with independent data, domains, and panzoom state.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/panel_multi` (build and run), or rerun `./build/examples/c/features/panel_multi` |
+| Python | Available; manually maintained direct-engine example | `python3 -m examples.python.gallery.features.panel_multi` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_panel_multi">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ The left panel uploads a point ring with position, color, and diameter_px arrays
     - ID: `features_panel_multi`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/panel_multi.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_multi.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/panel_multi.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_multi.py)
+    - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_panel_multi"><code>examples/webgpu/live.html?id=features_panel_multi</code></a>
     - Browser capability tags: `panel-grid`, `multi-panel`, `panzoom`, `point`
@@ -64,7 +81,7 @@ The left panel uploads a point ring with position, color, and diameter_px arrays
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_panel_grid">← Previous: Panel Grid</a></span>
-<span class="dvz-example-nav__next"><a href="../features_panel_linked">Next: Linked Panels →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_panel_grid/">← Previous: Panel Grid</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_linked/">Next: Linked Panels →</a></span>
 </div>
 </nav>

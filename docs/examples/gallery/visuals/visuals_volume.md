@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_sphere">← Previous: Sphere</a></span>
-<span class="dvz-example-nav__next"><a href="../../composites/composites_polygon">Next: Polygon Composite →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_sphere/">← Previous: Sphere</a></span>
+<span class="dvz-example-nav__next"><a href="../../composites/composites_polygon/">Next: Polygon Composite →</a></span>
 </div>
 </nav>
 
 This example volume-renders a generated 3D gyroid scalar field.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c visuals/volume` (build and run), or rerun `./build/examples/c/visuals/volume` |
+| Python | Available | `python3 -m examples.python.gallery.visuals.volume` |
+| Browser | Planned | Use the native route for this example. |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -17,7 +31,7 @@ This example volume-renders a generated 3D gyroid scalar field.
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Live WebGPU preview not available yet</strong>
-<span>Browser support for this example is planned. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+<span>Browser support for this example is planned. The preview above shows the native version. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## What To Look For
@@ -43,9 +57,12 @@ The FIELD_SIZE cubed data array is attached as a 3D sampled field, with color an
     - ID: `visuals_volume`
     - Category: `visual`
     - Lane: `visuals`
+    - Status: `supported`
     - Source: [`examples/c/visuals/volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/volume.c)
+    - Approved adaptation starter: `yes`
     - Reference: [Volume visual family](../../../reference/visual-families/volume.md)
     - Python source: [`examples/python/gallery/visuals/volume.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/volume.py)
+    - Python adaptation: Available
     - Browser support: Planned
     - Browser capability tags: `volume`, `sampled-field`, `texture-3d`, `arcball`
     - Validation: `smoke+screenshot`
@@ -63,7 +80,7 @@ The FIELD_SIZE cubed data array is attached as a 3D sampled field, with color an
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_sphere">← Previous: Sphere</a></span>
-<span class="dvz-example-nav__next"><a href="../../composites/composites_polygon">Next: Polygon Composite →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_sphere/">← Previous: Sphere</a></span>
+<span class="dvz-example-nav__next"><a href="../../composites/composites_polygon/">Next: Polygon Composite →</a></span>
 </div>
 </nav>

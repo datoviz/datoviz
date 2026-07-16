@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_scalebar_units">← Previous: Scale Bar Units</a></span>
-<span class="dvz-example-nav__next"><a href="../features_colormap_scale">Next: Scalar Color Scale →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_scalebar_units/">← Previous: Scale Bar Units</a></span>
+<span class="dvz-example-nav__next"><a href="../features_colormap_scale/">Next: Scalar Color Scale →</a></span>
 </div>
 </nav>
 
 This example shows a scalar image and a continuous colorbar.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/colorbar` (build and run), or rerun `./build/examples/c/features/colorbar` |
+| Python | Available; manually maintained direct-engine example | `python3 -m examples.python.gallery.features.colorbar` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_colorbar">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ A 192 by 144 float field is uploaded as an R32 sampled field, and the image visu
     - ID: `features_colorbar`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/colorbar.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/colorbar.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/colorbar.py)
+    - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_colorbar"><code>examples/webgpu/live.html?id=features_colorbar</code></a>
     - Browser capability tags: `colorbar`, `image`, `sampled-field`, `text`
@@ -68,7 +85,7 @@ A 192 by 144 float field is uploaded as an R32 sampled field, and the image visu
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_scalebar_units">← Previous: Scale Bar Units</a></span>
-<span class="dvz-example-nav__next"><a href="../features_colormap_scale">Next: Scalar Color Scale →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_scalebar_units/">← Previous: Scale Bar Units</a></span>
+<span class="dvz-example-nav__next"><a href="../features_colormap_scale/">Next: Scalar Color Scale →</a></span>
 </div>
 </nav>

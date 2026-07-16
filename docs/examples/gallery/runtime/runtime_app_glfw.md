@@ -5,11 +5,25 @@
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"></span>
-<span class="dvz-example-nav__next"><a href="../runtime_multi_window">Next: Multi Window →</a></span>
+<span class="dvz-example-nav__next"><a href="../runtime_multi_window/">Next: Multi Window →</a></span>
 </div>
 </nav>
 
 This example opens a native GLFW window for a small point scene.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c runtime/app_glfw` (build and run), or rerun `./build/examples/c/runtime/app_glfw` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.runtime.app_glfw` |
+| Browser | Native only | direct GLFW app lifecycle is native-only |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -17,7 +31,7 @@ This example opens a native GLFW window for a small point scene.
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Native-only example</strong>
-<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## What To Look For
@@ -45,8 +59,11 @@ Use this as the beginner native-app template when you want Datoviz to own the GL
     - ID: `runtime_app_glfw`
     - Category: `runtime`
     - Lane: `runtime`
+    - Status: `supported`
     - Source: [`examples/c/runtime/app_glfw.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/app_glfw.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/runtime/app_glfw.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/runtime/app_glfw.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Native only
     - Browser note: direct GLFW app lifecycle is native-only
     - Browser capability tags: `native-view`
@@ -62,6 +79,6 @@ Use this as the beginner native-app template when you want Datoviz to own the GL
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"></span>
-<span class="dvz-example-nav__next"><a href="../runtime_multi_window">Next: Multi Window →</a></span>
+<span class="dvz-example-nav__next"><a href="../runtime_multi_window/">Next: Multi Window →</a></span>
 </div>
 </nav>

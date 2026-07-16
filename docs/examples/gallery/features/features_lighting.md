@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_image_probe">← Previous: Image Probe</a></span>
-<span class="dvz-example-nav__next"><a href="../features_mesh_texture">Next: Textured Mesh →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_image_probe/">← Previous: Image Probe</a></span>
+<span class="dvz-example-nav__next"><a href="../features_mesh_texture/">Next: Textured Mesh →</a></span>
 </div>
 </nav>
 
 This example compares the same sphere cluster under three material and light configurations.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/lighting` (build and run), or rerun `./build/examples/c/features/lighting` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.lighting` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_lighting">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -54,8 +68,11 @@ Each panel uploads the same sphere position, radius, and color arrays, but chang
     - ID: `features_lighting`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/lighting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/lighting.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/lighting.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/lighting.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_lighting"><code>examples/webgpu/live.html?id=features_lighting</code></a>
     - Browser capability tags: `sphere`, `material`, `lighting`, `arcball`
@@ -70,7 +87,7 @@ Each panel uploads the same sphere position, radius, and color arrays, but chang
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_image_probe">← Previous: Image Probe</a></span>
-<span class="dvz-example-nav__next"><a href="../features_mesh_texture">Next: Textured Mesh →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_image_probe/">← Previous: Image Probe</a></span>
+<span class="dvz-example-nav__next"><a href="../features_mesh_texture/">Next: Textured Mesh →</a></span>
 </div>
 </nav>

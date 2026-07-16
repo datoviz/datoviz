@@ -4,12 +4,27 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_colormap_scale">← Previous: Scalar Color Scale</a></span>
-<span class="dvz-example-nav__next"><a href="../features_annotation_readout">Next: Annotation Readout →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_colormap_scale/">← Previous: Scalar Color Scale</a></span>
+<span class="dvz-example-nav__next"><a href="../features_annotation_readout/">Next: Annotation Readout →</a></span>
 </div>
 </nav>
 
 This example shows how one categorical scale drives both marker colors and a legend.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/legend_categorical` (build and run), or rerun `./build/examples/c/features/legend_categorical` |
+| Python | No verified adaptation on this page | Start from the C source. |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_legend_categorical">Open live example</a> |
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## Preview
 
@@ -44,6 +59,7 @@ Five category IDs are assigned labels, colors, and marker shapes, then the marke
     - Lane: `features`
     - Status: `experimental`
     - Source: [`examples/c/features/legend_categorical.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/legend_categorical.c)
+    - Approved adaptation starter: `no`
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_legend_categorical"><code>examples/webgpu/live.html?id=features_legend_categorical</code></a>
     - Browser capability tags: `legend`, `categorical-scale`, `marker`, `text`
@@ -62,7 +78,7 @@ Five category IDs are assigned labels, colors, and marker shapes, then the marke
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_colormap_scale">← Previous: Scalar Color Scale</a></span>
-<span class="dvz-example-nav__next"><a href="../features_annotation_readout">Next: Annotation Readout →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_colormap_scale/">← Previous: Scalar Color Scale</a></span>
+<span class="dvz-example-nav__next"><a href="../features_annotation_readout/">Next: Annotation Readout →</a></span>
 </div>
 </nav>

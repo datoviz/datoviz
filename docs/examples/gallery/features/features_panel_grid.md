@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_panel_single">← Previous: Single Panel</a></span>
-<span class="dvz-example-nav__next"><a href="../features_panel_multi">Next: Multiple Panels →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_panel_single/">← Previous: Single Panel</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_multi/">Next: Multiple Panels →</a></span>
 </div>
 </nav>
 
 This example arranges four independent panels in a 2x2 figure grid.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/panel_grid` (build and run), or rerun `./build/examples/c/features/panel_grid` |
+| Python | Available; manually maintained direct-engine example | `python3 -m examples.python.gallery.features.panel_grid` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_panel_grid">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ Each panel has its own border, background, and small point visual with position,
     - ID: `features_panel_grid`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/panel_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_grid.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/panel_grid.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_grid.py)
+    - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_panel_grid"><code>examples/webgpu/live.html?id=features_panel_grid</code></a>
     - Browser capability tags: `panel-grid`, `point`
@@ -64,7 +81,7 @@ Each panel has its own border, background, and small point visual with position,
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_panel_single">← Previous: Single Panel</a></span>
-<span class="dvz-example-nav__next"><a href="../features_panel_multi">Next: Multiple Panels →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_panel_single/">← Previous: Single Panel</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_multi/">Next: Multiple Panels →</a></span>
 </div>
 </nav>

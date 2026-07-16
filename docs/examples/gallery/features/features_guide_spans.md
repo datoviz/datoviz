@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_guide_lines">← Previous: Guide Lines</a></span>
-<span class="dvz-example-nav__next"><a href="../features_bars_bands">Next: Bars And Bands →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_guide_lines/">← Previous: Guide Lines</a></span>
+<span class="dvz-example-nav__next"><a href="../features_bars_bands/">Next: Bars And Bands →</a></span>
 </div>
 </nav>
 
 This example shows movable guide spans for highlighting data ranges.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/guide_spans` (build and run), or rerun `./build/examples/c/features/guide_spans` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.guide_spans` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_guide_spans">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ The point visual uploads position, color, and diameter_px arrays, while the pane
     - ID: `features_guide_spans`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/guide_spans.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/guide_spans.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/guide_spans.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/guide_spans.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_guide_spans"><code>examples/webgpu/live.html?id=features_guide_spans</code></a>
     - Browser capability tags: `primitive`, `overlay`, `panzoom`
@@ -64,7 +81,7 @@ The point visual uploads position, color, and diameter_px arrays, while the pane
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_guide_lines">← Previous: Guide Lines</a></span>
-<span class="dvz-example-nav__next"><a href="../features_bars_bands">Next: Bars And Bands →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_guide_lines/">← Previous: Guide Lines</a></span>
+<span class="dvz-example-nav__next"><a href="../features_bars_bands/">Next: Bars And Bands →</a></span>
 </div>
 </nav>

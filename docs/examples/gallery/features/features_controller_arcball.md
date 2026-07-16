@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_panzoom">← Previous: Panzoom</a></span>
-<span class="dvz-example-nav__next"><a href="../features_controller_turntable">Next: Turntable Controller →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_panzoom/">← Previous: Panzoom</a></span>
+<span class="dvz-example-nav__next"><a href="../features_controller_turntable/">Next: Turntable Controller →</a></span>
 </div>
 </nav>
 
 This example shows an arcball controller rotating a 3D view.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/controller_arcball` (build and run), or rerun `./build/examples/c/features/controller_arcball` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.controller_arcball` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_controller_arcball">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -54,8 +68,11 @@ A colored cube mesh and XZ reference grid make rotation easy to see, and the con
     - ID: `features_controller_arcball`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/controller_arcball.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_arcball.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/controller_arcball.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/controller_arcball.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_controller_arcball"><code>examples/webgpu/live.html?id=features_controller_arcball</code></a>
     - Browser capability tags: `controller`, `arcball`, `mesh`
@@ -70,7 +87,7 @@ A colored cube mesh and XZ reference grid make rotation easy to see, and the con
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_panzoom">← Previous: Panzoom</a></span>
-<span class="dvz-example-nav__next"><a href="../features_controller_turntable">Next: Turntable Controller →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_panzoom/">← Previous: Panzoom</a></span>
+<span class="dvz-example-nav__next"><a href="../features_controller_turntable/">Next: Turntable Controller →</a></span>
 </div>
 </nav>

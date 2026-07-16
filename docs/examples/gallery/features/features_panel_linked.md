@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_panel_multi">← Previous: Multiple Panels</a></span>
-<span class="dvz-example-nav__next"><a href="../features_panel_view2d">Next: Panel View 2D →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_panel_multi/">← Previous: Multiple Panels</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_view2d/">Next: Panel View 2D →</a></span>
 </div>
 </nav>
 
 This example links the X panzoom extent of two stacked signal panels.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/panel_linked` (build and run), or rerun `./build/examples/c/features/panel_linked` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.panel_linked` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_panel_linked">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ Both panels plot deterministic path data over the same X domain but use differen
     - ID: `features_panel_linked`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/panel_linked.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_linked.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/panel_linked.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_linked.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_panel_linked"><code>examples/webgpu/live.html?id=features_panel_linked</code></a>
     - Browser capability tags: `panel-grid`, `linked-panels`, `panzoom`, `point`
@@ -64,7 +81,7 @@ Both panels plot deterministic path data over the same X domain but use differen
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_panel_multi">← Previous: Multiple Panels</a></span>
-<span class="dvz-example-nav__next"><a href="../features_panel_view2d">Next: Panel View 2D →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_panel_multi/">← Previous: Multiple Panels</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_view2d/">Next: Panel View 2D →</a></span>
 </div>
 </nav>

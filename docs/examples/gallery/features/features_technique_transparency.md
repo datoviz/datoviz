@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_technique_msaa">← Previous: Multisample Antialiasing</a></span>
-<span class="dvz-example-nav__next"><a href="../features_alpha_blending">Next: Alpha Blending →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_technique_msaa/">← Previous: Multisample Antialiasing</a></span>
+<span class="dvz-example-nav__next"><a href="../features_alpha_blending/">Next: Alpha Blending →</a></span>
 </div>
 </nav>
 
 This example compares three transparency techniques on the same overlapping cubes.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/technique_transparency` (build and run), or rerun `./build/examples/c/features/technique_transparency` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.technique_transparency` |
+| Browser | Deferred | Use the native route for this example. |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -23,7 +37,7 @@ This example compares three transparency techniques on the same overlapping cube
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>No live WebGPU preview</strong>
-<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## What To Look For
@@ -49,8 +63,11 @@ Each panel draws two translucent cube meshes with the same geometry, transforms,
     - ID: `features_technique_transparency`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/technique_transparency.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_transparency.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/technique_transparency.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/technique_transparency.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Deferred
     - Browser capability tags: `wboit`, `depth-peeling`
     - Validation: `smoke+screenshot`
@@ -64,7 +81,7 @@ Each panel draws two translucent cube meshes with the same geometry, transforms,
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_technique_msaa">← Previous: Multisample Antialiasing</a></span>
-<span class="dvz-example-nav__next"><a href="../features_alpha_blending">Next: Alpha Blending →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_technique_msaa/">← Previous: Multisample Antialiasing</a></span>
+<span class="dvz-example-nav__next"><a href="../features_alpha_blending/">Next: Alpha Blending →</a></span>
 </div>
 </nav>

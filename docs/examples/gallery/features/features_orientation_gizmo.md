@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_controller_fly">← Previous: Fly Controller</a></span>
-<span class="dvz-example-nav__next"><a href="../features_reference_grid">Next: Reference Grid →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_controller_fly/">← Previous: Fly Controller</a></span>
+<span class="dvz-example-nav__next"><a href="../features_reference_grid/">Next: Reference Grid →</a></span>
 </div>
 </nav>
 
 This example adds a small orientation widget to a 3D panel.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/orientation_gizmo` (build and run), or rerun `./build/examples/c/features/orientation_gizmo` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.orientation_gizmo` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_orientation_gizmo">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -54,8 +68,11 @@ The main scene is a lit cube controlled by an arcball, and the orientation gizmo
     - ID: `features_orientation_gizmo`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/orientation_gizmo.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/orientation_gizmo.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/orientation_gizmo.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/orientation_gizmo.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_orientation_gizmo"><code>examples/webgpu/live.html?id=features_orientation_gizmo</code></a>
     - Browser capability tags: `orientation-gizmo`, `overlay`, `mesh`, `controller`
@@ -70,7 +87,7 @@ The main scene is a lit cube controlled by an arcball, and the orientation gizmo
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_controller_fly">← Previous: Fly Controller</a></span>
-<span class="dvz-example-nav__next"><a href="../features_reference_grid">Next: Reference Grid →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_controller_fly/">← Previous: Fly Controller</a></span>
+<span class="dvz-example-nav__next"><a href="../features_reference_grid/">Next: Reference Grid →</a></span>
 </div>
 </nav>

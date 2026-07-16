@@ -4,12 +4,27 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_gui_controls">← Previous: GUI Controls</a></span>
-<span class="dvz-example-nav__next"><a href="../features_gui_cimgui">Next: Raw cimgui GUI →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_gui_controls/">← Previous: GUI Controls</a></span>
+<span class="dvz-example-nav__next"><a href="../features_gui_cimgui/">Next: Raw cimgui GUI →</a></span>
 </div>
 </nav>
 
 This example shows a Datoviz render viewport embedded inside a GUI window.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/gui_viewport` (build and run), or rerun `./build/examples/c/features/gui_viewport` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.gui_viewport` |
+| Browser | Native only | dockable GUI viewports require native ImGui and an offscreen native source view |
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## Preview
 
@@ -17,7 +32,7 @@ This example shows a Datoviz render viewport embedded inside a GUI window.
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Native-only example</strong>
-<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## What To Look For
@@ -43,8 +58,11 @@ The application hosts a GUI window while a separate Datoviz figure renders a sma
     - ID: `features_gui_viewport`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/gui_viewport.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_viewport.c)
+    - Approved adaptation starter: `no`
     - Python source: [`examples/python/gallery/features/gui_viewport.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/gui_viewport.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Native only
     - Browser note: dockable GUI viewports require native ImGui and an offscreen native source view
     - Browser capability tags: `gui`, `native-view`
@@ -59,7 +77,7 @@ The application hosts a GUI window while a separate Datoviz figure renders a sma
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_gui_controls">← Previous: GUI Controls</a></span>
-<span class="dvz-example-nav__next"><a href="../features_gui_cimgui">Next: Raw cimgui GUI →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_gui_controls/">← Previous: GUI Controls</a></span>
+<span class="dvz-example-nav__next"><a href="../features_gui_cimgui/">Next: Raw cimgui GUI →</a></span>
 </div>
 </nav>

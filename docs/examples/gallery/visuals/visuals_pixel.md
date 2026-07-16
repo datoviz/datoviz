@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_point">← Previous: Point</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_marker">Next: Marker →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_point/">← Previous: Point</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_marker/">Next: Marker →</a></span>
 </div>
 </nav>
 
 This example renders a regular grid of independent screen-aligned pixels.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c visuals/pixel` (build and run), or rerun `./build/examples/c/visuals/pixel` |
+| Python | Available; manually maintained direct-engine example | `python3 -m examples.python.gallery.visuals.pixel` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=visuals_pixel">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,9 +62,12 @@ The positions array lays out the grid, scalar values drive the color scale, and 
     - ID: `visuals_pixel`
     - Category: `visual`
     - Lane: `visuals`
+    - Status: `supported`
     - Source: [`examples/c/visuals/pixel.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/pixel.c)
+    - Approved adaptation starter: `yes`
     - Reference: [Pixel visual family](../../../reference/visual-families/pixel.md)
     - Python source: [`examples/python/gallery/visuals/pixel.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/pixel.py)
+    - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_pixel"><code>examples/webgpu/live.html?id=visuals_pixel</code></a>
     - Browser capability tags: `pixel`, `panzoom`
@@ -69,7 +86,7 @@ The positions array lays out the grid, scalar values drive the color scale, and 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_point">← Previous: Point</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_marker">Next: Marker →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_point/">← Previous: Point</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_marker/">Next: Marker →</a></span>
 </div>
 </nav>

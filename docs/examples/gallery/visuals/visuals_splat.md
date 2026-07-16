@@ -4,12 +4,27 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_marker">← Previous: Marker</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_segment">Next: Segment →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_marker/">← Previous: Marker</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_segment/">Next: Segment →</a></span>
 </div>
 </nav>
 
 This example renders Gaussian splats as translucent ellipses.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c visuals/splat` (build and run), or rerun `./build/examples/c/visuals/splat` |
+| Python | No verified adaptation on this page | Start from the C source. |
+| Browser | Deferred | splat rendering is experimental and outside the RC browser subset |
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## Preview
 
@@ -17,7 +32,7 @@ This example renders Gaussian splats as translucent ellipses.
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>No live WebGPU preview</strong>
-<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## What To Look For
@@ -39,6 +54,7 @@ Positions place each splat, colors set the tint, sigma gives the two screen-spac
     - Lane: `visuals`
     - Status: `experimental`
     - Source: [`examples/c/visuals/splat.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/splat.c)
+    - Approved adaptation starter: `no`
     - Reference: [Splat visual family](../../../reference/visual-families/splat.md)
     - Browser support: Deferred
     - Browser note: splat rendering is experimental and outside the RC browser subset
@@ -58,7 +74,7 @@ Positions place each splat, colors set the tint, sigma gives the two screen-spac
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_marker">← Previous: Marker</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_segment">Next: Segment →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_marker/">← Previous: Marker</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_segment/">Next: Segment →</a></span>
 </div>
 </nav>

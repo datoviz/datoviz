@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_mesh">← Previous: Mesh</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_volume">Next: Volume →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_mesh/">← Previous: Mesh</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_volume/">Next: Volume →</a></span>
 </div>
 </nav>
 
 This example displays a 3D cluster of raycast impostor spheres.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c visuals/sphere` (build and run), or rerun `./build/examples/c/visuals/sphere` |
+| Python | Available; manually maintained direct-engine example | `python3 -m examples.python.gallery.visuals.sphere` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=visuals_sphere">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,9 +62,12 @@ Positions locate the sphere centers, radii control physical size, and colors dis
     - ID: `visuals_sphere`
     - Category: `visual`
     - Lane: `visuals`
+    - Status: `supported`
     - Source: [`examples/c/visuals/sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/sphere.c)
+    - Approved adaptation starter: `yes`
     - Reference: [Sphere visual family](../../../reference/visual-families/sphere.md)
     - Python source: [`examples/python/gallery/visuals/sphere.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/sphere.py)
+    - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_sphere"><code>examples/webgpu/live.html?id=visuals_sphere</code></a>
     - Browser capability tags: `sphere`, `arcball`
@@ -69,7 +86,7 @@ Positions locate the sphere centers, radii control physical size, and colors dis
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_mesh">← Previous: Mesh</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_volume">Next: Volume →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_mesh/">← Previous: Mesh</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_volume/">Next: Volume →</a></span>
 </div>
 </nav>

@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_controller_turntable">← Previous: Turntable Controller</a></span>
-<span class="dvz-example-nav__next"><a href="../features_orientation_gizmo">Next: Orientation Gizmo →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_controller_turntable/">← Previous: Turntable Controller</a></span>
+<span class="dvz-example-nav__next"><a href="../features_orientation_gizmo/">Next: Orientation Gizmo →</a></span>
 </div>
 </nav>
 
 This example shows fly-style camera navigation through a 3D scene.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/controller_fly` (build and run), or rerun `./build/examples/c/features/controller_fly` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.controller_fly` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_controller_fly">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -54,8 +68,11 @@ The same colored cube and reference grid used by the controller examples are sho
     - ID: `features_controller_fly`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/controller_fly.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_fly.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/controller_fly.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/controller_fly.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_controller_fly"><code>examples/webgpu/live.html?id=features_controller_fly</code></a>
     - Browser capability tags: `controller`, `fly`, `mesh`
@@ -70,7 +87,7 @@ The same colored cube and reference grid used by the controller examples are sho
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_controller_turntable">← Previous: Turntable Controller</a></span>
-<span class="dvz-example-nav__next"><a href="../features_orientation_gizmo">Next: Orientation Gizmo →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_controller_turntable/">← Previous: Turntable Controller</a></span>
+<span class="dvz-example-nav__next"><a href="../features_orientation_gizmo/">Next: Orientation Gizmo →</a></span>
 </div>
 </nav>

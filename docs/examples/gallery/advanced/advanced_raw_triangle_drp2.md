@@ -4,12 +4,27 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../advanced_qt_hosting">← Previous: Qt Hosting</a></span>
-<span class="dvz-example-nav__next"><a href="../advanced_raw_triangle_vklite">Next: Raw Triangle Vklite →</a></span>
+<span class="dvz-example-nav__previous"><a href="../advanced_qt_hosting/">← Previous: Qt Hosting</a></span>
+<span class="dvz-example-nav__next"><a href="../advanced_raw_triangle_vklite/">Next: Raw Triangle Vklite →</a></span>
 </div>
 </nav>
 
 This example renders one triangle from a hand-written DRP2 command stream.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c advanced/raw_triangle_drp2` (build and run), or rerun `./build/examples/c/advanced/raw_triangle_drp2` |
+| Python | No verified adaptation on this page | Start from the C source. |
+| Browser | Native only | hand-written DRP2 native execution is a low-level runtime example |
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## Preview
 
@@ -17,7 +32,7 @@ This example renders one triangle from a hand-written DRP2 command stream.
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Native-only example</strong>
-<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## What To Look For
@@ -43,6 +58,7 @@ Raw_triangle_drp2.png
     - Lane: `advanced`
     - Status: `experimental`
     - Source: [`examples/c/advanced/raw_triangle_drp2.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/raw_triangle_drp2.c)
+    - Approved adaptation starter: `no`
     - Browser support: Native only
     - Browser note: hand-written DRP2 native execution is a low-level runtime example
     - Browser capability tags: `drp2`, `vklite`
@@ -61,7 +77,7 @@ Raw_triangle_drp2.png
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../advanced_qt_hosting">← Previous: Qt Hosting</a></span>
-<span class="dvz-example-nav__next"><a href="../advanced_raw_triangle_vklite">Next: Raw Triangle Vklite →</a></span>
+<span class="dvz-example-nav__previous"><a href="../advanced_qt_hosting/">← Previous: Qt Hosting</a></span>
+<span class="dvz-example-nav__next"><a href="../advanced_raw_triangle_vklite/">Next: Raw Triangle Vklite →</a></span>
 </div>
 </nav>

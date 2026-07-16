@@ -81,6 +81,15 @@ RUNTIME_PAGE_GROUPS = navigation_groups("runtime")
 INDEX_FEATURE_GROUPS = navigation_groups("features", index=True)
 INDEX_ADVANCED_GROUPS = navigation_groups("advanced", index=True)
 
+INDEX_STARTER_IDS = (
+    "features_basic_scene",
+    "visuals_point",
+    "features_axes_2d",
+    "features_panzoom",
+    "runtime_offscreen_capture",
+    "showcases_scientific_plotting",
+)
+
 CATEGORY_TO_LANE = gallery_media.CATEGORY_TO_LANE
 LANE_TO_CATEGORY = gallery_media.LANE_TO_CATEGORY
 
@@ -137,6 +146,7 @@ class Example:
     extra_sources: tuple[SourceTab, ...]
     python_source: str | None
     python_status: str | None
+    build_command: str | None
     docs_page: str | None
 
     @property
@@ -466,6 +476,7 @@ def collect_examples(manifest: dict) -> list[Example]:
             extra_sources=extra_sources,
             python_source=python_source,
             python_status=python_status,
+            build_command=str(entry["build_command"]) if entry.get("build_command") else None,
             docs_page=str(entry["docs_page"]) if entry.get("docs_page") else None,
         )
         examples.append(example)
@@ -556,6 +567,22 @@ def webgpu_status_label(status: str) -> str:
     }.get(status, status or "Unclassified")
 
 
+def python_status_label(status: str | None) -> str:
+    return {
+        "manual": "Available; manually maintained direct-engine example",
+        "direct-engine": "Available; direct-engine adaptation",
+        "generated": "Available; generated adaptation",
+        "generated-with-hints": "Available; generated adaptation with authored hints",
+        "deferred": "Deferred",
+    }.get(status or "", "Available" if status is None else status)
+
+
+def python_module_name(path: str) -> str:
+    source = Path(path)
+    assert source.suffix == ".py"
+    return ".".join(source.with_suffix("").parts)
+
+
 def preferred_preview_media(example: Example) -> str:
     preview = example.media.get("preview") if isinstance(example.media, dict) else {}
     if not isinstance(preview, dict):
@@ -644,6 +671,108 @@ def render_source_tabs(example: Example) -> list[str]:
     return lines
 
 
+def render_run_and_adapt(example: Example, page_path: str | Path) -> list[str]:
+    if example.source.startswith("examples/c/"):
+        executable_name = example.rel_executable
+        run_command = f"`just example-c {executable_name}` (build and run)"
+        executable = f"./build/examples/c/{executable_name}"
+        native_action = f"{run_command}, or rerun `{executable}`"
+    else:
+        build_command = example.build_command or "just build"
+        executable = f"./build/{Path(example.source).with_suffix('').as_posix()}"
+        native_action = f"`{build_command}`, then `{executable}`"
+    lines = [
+        "## Run And Adapt",
+        "",
+        "Commands below assume a Datoviz source checkout and start at the repository root.",
+        "Use your configured build environment; Python routes additionally require local bindings.",
+        "",
+        "| Route | Availability | Command or action |",
+        "| --- | --- | --- |",
+        f"| {example.source_label} | Canonical native source | {native_action} |",
+    ]
+    if example.python_source is not None:
+        lines.append(
+            f"| Python | {python_status_label(example.python_status)} | "
+            f"`python3 -m {python_module_name(example.python_source)}` |"
+        )
+    elif not any(tab.language == "python" for tab in example.extra_sources):
+        lines.append("| Python | No verified adaptation on this page | Start from the C source. |")
+    for tab in example.extra_sources:
+        if tab.language == "python":
+            lines.append(
+                f"| {tab.label} | Additional integration source; check optional dependencies | "
+                f"`python3 -m {python_module_name(tab.path)}` |"
+            )
+    if example.webgpu_status == "webgpu-live" and example.webgpu_site_route:
+        route = site_html_relative_url(page_path, example.webgpu_site_route)
+        lines.append(f"| Browser | Live WebGPU route | {html_link(route, 'Open live example')} |")
+    else:
+        reason = example.webgpu_reason or "Use the native route for this example."
+        lines.append(
+            f"| Browser | {webgpu_status_label(example.webgpu_status)} | "
+            f"{format_markdown_inline(reason)} |"
+        )
+    lines.append("")
+
+    data_kind = str(example.data.get("kind", ""))
+    prepared_source = str(
+        example.dataset.get("prepared_source")
+        or example.dataset.get("promoted_prepared_path")
+        or example.dataset.get("cache_prepared_path")
+        or example.dataset.get("fallback_prepared_path")
+        or ""
+    )
+    preprocessing = str(example.dataset.get("preprocessing", ""))
+    preprocessing_required = bool(preprocessing) and not preprocessing.lower().startswith("none")
+    requires_preparation = bool(
+        preprocessing_required or prepared_source or data_kind == "prepared"
+    )
+    if requires_preparation:
+        lines.extend(
+            [
+                '!!! warning "Prepared data required"',
+                "",
+                "    This example intentionally fails when its prepared input is absent; it does not",
+                "    substitute synthetic data.",
+            ]
+        )
+        if prepared_source:
+            lines.append(f"    Expected input: `{prepared_source}`.")
+        if preprocessing_required:
+            lines.append(f"    Prepare it from the repository root with `{preprocessing}`.")
+        lines.append("")
+    if data_kind == "real":
+        lines.extend(
+            [
+                '!!! info "Real dataset"',
+                "",
+                "    Check the dataset, license, citation, and preprocessing fields in Example details",
+                "    before redistributing data or derived output.",
+                "",
+            ]
+        )
+
+    if example.agent_copy_safe is True:
+        lines.extend(
+            [
+                "This example is approved as a starting point for user code and coding agents. Keep the",
+                "object lifetimes and data shapes intact while adapting the data and styling.",
+                "",
+            ]
+        )
+    elif example.agent_copy_safe is False:
+        lines.extend(
+            [
+                "Use this example as capability or integration evidence, not as a minimal copy-paste",
+                "template. Start from the nearest supported, copy-safe example and add this feature",
+                "after verifying the linked API reference.",
+                "",
+            ]
+        )
+    return lines
+
+
 def indent_markdown(lines: list[str], spaces: int = 4) -> list[str]:
     prefix = " " * spaces
     return [f"{prefix}{line}" if line else "" for line in lines]
@@ -677,7 +806,8 @@ def render_preview(
             return ["## Preview", "", *screenshot, ""]
 
         title, message = notice
-        support_url = site_relative_url(page_path, "reference/webgpu-subset.md")
+        support_url = site_html_relative_url(page_path, "/reference/webgpu-subset/")
+        support_url = support_url.rstrip("/") + "/"
         status_lines = [
             '<aside class="dvz-webgpu-unavailable" role="note">',
             f'<strong>{title}</strong>',
@@ -733,10 +863,13 @@ def render_example_details(example: Example, page_path: str | Path) -> list[str]
         f"- ID: `{example.id}`",
         f"- Category: `{example.category}`",
         f"- Lane: `{example.lane}`",
+        f"- Status: `{example.status}`",
         f"- Source: [`{example.source}`]({source_url(example)})",
     ]
-    if example.status != DEFAULT_STATUS:
-        metadata.insert(3, f"- Status: `{example.status}`")
+    if example.agent_copy_safe is not None:
+        metadata.append(
+            f"- Approved adaptation starter: `{'yes' if example.agent_copy_safe else 'no'}`"
+        )
     visual_reference = VISUAL_REFERENCE_BY_ID.get(example.id)
     if visual_reference is not None:
         metadata.append(
@@ -748,6 +881,7 @@ def render_example_details(example: Example, page_path: str | Path) -> list[str]
         metadata.append(
             f"- Python source: [`{example.python_source}`]({SOURCE_BASE_URL}/{example.python_source})",
         )
+        metadata.append(f"- Python adaptation: {python_status_label(example.python_status)}")
     for tab in example.extra_sources:
         metadata.append(
             f"- {tab.label} source: [`{tab.path}`]({source_path_url(tab.path)})",
@@ -790,6 +924,7 @@ def render_card(
     media_href = href
     if preferred_preview_media(example) == "video-mp4":
         media_href = site_html_relative_url(page_path, f"examples/{example.page_path[:-3]}/")
+        media_href = media_href.rstrip("/") + "/"
     media = media_block(
         page_path,
         example,
@@ -879,12 +1014,17 @@ def render_example_nav(
 ) -> list[str]:
     previous_href = site_html_relative_url(page_path, f"examples/{previous.page_path[:-3]}/") if previous else ""
     next_href = site_html_relative_url(page_path, f"examples/{next_.page_path[:-3]}/") if next_ else ""
+    if previous_href:
+        previous_href = previous_href.rstrip("/") + "/"
+    if next_href:
+        next_href = next_href.rstrip("/") + "/"
     next_title = next_.title if next_ else ""
     if next_ is None:
         section_target = next_example_section(example)
         if section_target is not None:
             next_title, section_path = section_target
             next_href = site_html_relative_url(page_path, section_path)
+            next_href = next_href.rstrip("/") + "/"
     previous_link = (
         f'<a href="{previous_href}">← Previous: {previous.title}</a>'
         if previous
@@ -1008,33 +1148,57 @@ def render_index(
     image_url_base: str = DEFAULT_IMAGE_URL_BASE,
     image_format: str = DEFAULT_IMAGE_FORMAT,
 ) -> None:
-    by_lane = {lane: [e for e in examples if e.lane == lane] for lane in PUBLIC_LANES}
-    showcase_examples = semantic_sort(by_lane["showcases"], SHOWCASE_ORDER)
-    visual_examples = by_lane["visuals"]
-    composite_examples = by_lane["composites"]
-    feature_examples = by_lane["features"]
-    runtime_examples = by_lane["runtime"]
-    advanced_examples = by_lane["advanced"]
-    by_id = {e.id: e for e in examples}
+    by_id = {example.id: example for example in examples}
+    starters = [by_id[id_] for id_ in INDEX_STARTER_IDS if id_ in by_id]
+    counts = {
+        "visuals": sum(example.lane in ("visuals", "composites") for example in examples),
+        "features": sum(example.lane == "features" for example in examples),
+        "showcases": sum(example.lane == "showcases" for example in examples),
+        "runtime": sum(example.lane == "runtime" for example in examples),
+        "advanced": sum(example.lane == "advanced" for example in examples),
+    }
     index_path = docs_dir / "index.md"
     page_path = docs_site_path(docs_dir, "index.md")
-
     lines = generated_header("Examples")
-    lines.extend(render_page_intro("Browse the generated Datoviz v0.4 example gallery."))
-
-    # --- Showcases ---
-    lines.extend(["## Showcases", ""])
+    lines.extend(
+        render_page_intro(
+            "Choose the closest verified example for your goal, then adapt its complete C or "
+            "Python source. The category pages remain the exhaustive catalog."
+        )
+    )
     lines.extend(
         [
-            "Selected composed examples are shown below.",
+            "## Choose By Goal",
             "",
-            f"[Browse all {len(showcase_examples)} showcases](showcases.md).",
+            "| Goal | Start here | Then browse |",
+            "| --- | --- | --- |",
+            "| Learn the scene → figure → panel → visual workflow | "
+            "[Basic Scene](gallery/features/features_basic_scene.md) | "
+            f"[{counts['features']} focused features](features.md) |",
+            "| Choose marks, lines, images, meshes, text, or volumes | "
+            "[Point](gallery/visuals/visuals_point.md) | "
+            f"[{counts['visuals']} visuals and composites](visuals.md) |",
+            "| Add axes, interaction, layout, animation, or techniques | "
+            "[2D Axes](gallery/features/features_axes_2d.md) | "
+            f"[{counts['features']} focused features](features.md) |",
+            "| Open windows, render offscreen, capture, record, or export | "
+            "[Offscreen Capture](gallery/runtime/runtime_offscreen_capture.md) | "
+            f"[{counts['runtime']} runtime examples](runtime.md) |",
+            "| Study complete scientific visualization compositions | "
+            "[Scientific Plotting Workflow]"
+            "(gallery/showcases/showcases_scientific_plotting.md) | "
+            f"[{counts['showcases']} showcases](showcases.md) |",
+            "| Integrate a host or use lower-level rendering APIs | "
+            "[Advanced examples](advanced.md) | "
+            f"[{counts['advanced']} advanced examples](advanced.md) |",
+            "",
+            "## Good Starting Points",
+            "",
+            '<div class="grid cards" markdown="1">',
             "",
         ]
     )
-    lines.append('<div class="grid cards" markdown="1">')
-    lines.append("")
-    for example in showcase_examples:
+    for example in starters:
         lines.append(
             render_card(
                 example,
@@ -1046,139 +1210,30 @@ def render_index(
                 title_heading=False,
             )
         )
-    lines.append("</div>")
-    lines.append("")
-
-    # --- Visuals & Composites ---
-    n_vc = len(visual_examples) + len(composite_examples)
-    lines.extend(["## Visuals & Composites", ""])
     lines.extend(
         [
-            "Selected visual and composite examples are shown below.",
+            "</div>",
             "",
-            f"[Browse all {n_vc} visuals and composites](visuals.md).",
+            "## Before You Copy An Example",
+            "",
+            "Every detail page identifies the canonical C source, verified Python availability, "
+            "native run command, browser status, data origin, validation level, and whether the "
+            "example is approved as a coding-agent adaptation starter.",
+            "",
+            "- Prefer `supported` examples for application code. Treat `experimental`, "
+            "`prototype`, and `advanced/unstable` pages as explicitly scoped evidence.",
+            "- A Python tab uses the direct Datoviz engine API (`import datoviz as dvz`); its shape "
+            "and lifetime rules still follow the linked C/visual contract.",
+            "- `Live in browser` means the same canonical C scenario has a WebGPU route. Planned, "
+            "deferred, and native-only examples must be run natively.",
+            "- Prepared-data examples do not synthesize a fallback. Run the displayed preparation "
+            "command and respect the dataset license/citation notes.",
+            "",
+            "Coding agents can query [the example inventory](examples.json) and "
+            "[capability index](capabilities.json) before selecting a source page.",
             "",
         ]
     )
-    for group_label, group_ids in INDEX_VISUAL_GROUPS:
-        group_examples = [by_id[id_] for id_ in group_ids if id_ in by_id]
-        if not group_examples:
-            continue
-        lines.extend([f"### {group_label}", ""])
-        lines.append('<div class="grid cards" markdown="1">')
-        lines.append("")
-        for example in group_examples:
-            lines.append(
-                render_card(
-                    example,
-                    page_path,
-                    image_dir,
-                    image_url_base,
-                    image_format,
-                    show_tags=False,
-                    title_heading=False,
-                )
-            )
-        lines.append("</div>")
-        lines.append("")
-
-    # --- Features ---
-    all_flagship_ids = {id_ for _, ids in INDEX_FEATURE_GROUPS for id_ in ids}
-    lines.extend(["## Features", ""])
-    lines.extend(
-        [
-            "Selected isolated feature examples are shown below.",
-            "",
-            f"[Browse all {len(feature_examples)} feature examples](features.md).",
-            "",
-        ]
-    )
-    for group_label, group_ids in INDEX_FEATURE_GROUPS:
-        group_examples = [by_id[id_] for id_ in group_ids if id_ in by_id]
-        if not group_examples:
-            continue
-        lines.extend([f"### {group_label}", ""])
-        lines.append('<div class="grid cards" markdown="1">')
-        lines.append("")
-        for example in group_examples:
-            lines.append(
-                render_card(
-                    example,
-                    page_path,
-                    image_dir,
-                    image_url_base,
-                    image_format,
-                    show_tags=False,
-                    title_heading=False,
-                )
-            )
-        lines.append("</div>")
-        lines.append("")
-    # --- Runtime & Capture ---
-    lines.extend(["## Runtime & Capture", ""])
-    lines.extend(
-        [
-            "Selected windowing, capture, recording, and export examples are shown below.",
-            "",
-            f"[Browse all {len(runtime_examples)} runtime examples](runtime.md).",
-            "",
-        ]
-    )
-    for group_label, group_ids in RUNTIME_PAGE_GROUPS:
-        group_examples = [by_id[id_] for id_ in group_ids if id_ in by_id]
-        if not group_examples:
-            continue
-        lines.extend([f"### {group_label}", ""])
-        lines.append('<div class="grid cards" markdown="1">')
-        lines.append("")
-        for example in group_examples:
-            lines.append(
-                render_card(
-                    example,
-                    page_path,
-                    image_dir,
-                    image_url_base,
-                    image_format,
-                    show_tags=False,
-                    title_heading=False,
-                )
-            )
-        lines.append("</div>")
-        lines.append("")
-
-    # --- Advanced ---
-    lines.extend(
-        [
-            "## Advanced",
-            "",
-            "Host integration and low-level rendering examples for experienced users.",
-            "",
-            f"[Browse all {len(advanced_examples)} advanced examples](advanced.md).",
-            "",
-        ]
-    )
-    for group_label, group_ids in INDEX_ADVANCED_GROUPS:
-        group_examples = [by_id[id_] for id_ in group_ids if id_ in by_id]
-        if not group_examples:
-            continue
-        lines.extend([f"### {group_label}", ""])
-        lines.append('<div class="grid cards" markdown="1">')
-        lines.append("")
-        for example in group_examples:
-            lines.append(
-                render_card(
-                    example,
-                    page_path,
-                    image_dir,
-                    image_url_base,
-                    image_format,
-                    show_tags=False,
-                    title_heading=False,
-                )
-            )
-        lines.append("</div>")
-        lines.append("")
-
     write_text(index_path, "\n".join(lines))
 
 
@@ -1426,6 +1481,7 @@ def render_example_page(
     lines = generated_header(example.title)
     lines.extend(render_example_nav(example, page_path, previous, next_))
     lines.extend([example.summary, ""])
+    lines.extend(render_run_and_adapt(example, page_path))
     lines.extend(render_preview(example, page_path, image_dir, image_url_base, image_format))
     lines.extend(render_example_explanation(example))
     lines.extend(render_source_tabs(example))
@@ -1477,7 +1533,7 @@ def main() -> int:
             args.image_url_base,
             args.image_format,
         )
-    print(f"Generated {len(examples)} C gallery entries under {args.docs_dir}")
+    print(f"Generated {len(examples)} public gallery entries under {args.docs_dir}")
     return 0
 
 

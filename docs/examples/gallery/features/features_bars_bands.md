@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_guide_spans">← Previous: Guide Spans</a></span>
-<span class="dvz-example-nav__next"><a href="../features_scalebar">Next: Scale Bar →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_guide_spans/">← Previous: Guide Spans</a></span>
+<span class="dvz-example-nav__next"><a href="../features_scalebar/">Next: Scale Bar →</a></span>
 </div>
 </nav>
 
 This example shows bars and an uncertainty band in one 2D panel.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/bars_bands` (build and run), or rerun `./build/examples/c/features/bars_bands` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.bars_bands` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_bars_bands">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ The bar helper uses start, end, and value arrays so each bar has an explicit int
     - ID: `features_bars_bands`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/bars_bands.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bars_bands.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/bars_bands.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/bars_bands.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_bars_bands"><code>examples/webgpu/live.html?id=features_bars_bands</code></a>
     - Browser capability tags: `primitive`, `segment`, `axes`, `panzoom`
@@ -64,7 +81,7 @@ The bar helper uses start, end, and value arrays so each bar has an explicit int
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_guide_spans">← Previous: Guide Spans</a></span>
-<span class="dvz-example-nav__next"><a href="../features_scalebar">Next: Scale Bar →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_guide_spans/">← Previous: Guide Spans</a></span>
+<span class="dvz-example-nav__next"><a href="../features_scalebar/">Next: Scale Bar →</a></span>
 </div>
 </nav>

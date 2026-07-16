@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_panel_background">← Previous: Panel Background</a></span>
-<span class="dvz-example-nav__next"><a href="../features_view_size_policies">Next: View Size Policies →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_panel_background/">← Previous: Panel Background</a></span>
+<span class="dvz-example-nav__next"><a href="../features_view_size_policies/">Next: View Size Policies →</a></span>
 </div>
 </nav>
 
 This example shows how one user-scale value affects screen-space visual sizes and axes.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/user_scale` (build and run), or rerun `./build/examples/c/features/user_scale` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.user_scale` |
+| Browser | Native only | the user-scale control is a native ImGui slider on a Datoviz app view |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -23,7 +37,7 @@ This example shows how one user-scale value affects screen-space visual sizes an
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Native-only example</strong>
-<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## What To Look For
@@ -49,8 +63,11 @@ The panel combines a data-space path, outlined markers, axes, and panzoom. The p
     - ID: `features_user_scale`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/user_scale.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/user_scale.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/user_scale.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/user_scale.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Native only
     - Browser note: the user-scale control is a native ImGui slider on a Datoviz app view
     - Browser capability tags: `marker`, `panzoom`, `path`, `gui`
@@ -65,7 +82,7 @@ The panel combines a data-space path, outlined markers, axes, and panzoom. The p
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_panel_background">← Previous: Panel Background</a></span>
-<span class="dvz-example-nav__next"><a href="../features_view_size_policies">Next: View Size Policies →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_panel_background/">← Previous: Panel Background</a></span>
+<span class="dvz-example-nav__next"><a href="../features_view_size_policies/">Next: View Size Policies →</a></span>
 </div>
 </nav>

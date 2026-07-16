@@ -85,7 +85,7 @@ This example links the X panzoom extent of two stacked signal panels.
 ### [Panel View 2D](gallery/features/features_panel_view2d.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/features/features_panel_view2d" aria-label="Panel View 2D"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_panel_view2d/" aria-label="Panel View 2D"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_panel_view2d.poster.webp" alt="Panel View 2D" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/features/features_panel_view2d.poster.webp" aria-label="Panel View 2D preview">
@@ -116,7 +116,7 @@ This example shows a custom panel background behind a foreground primitive.
 ### [User Scale](gallery/features/features_user_scale.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/features/features_user_scale" aria-label="User Scale"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_user_scale/" aria-label="User Scale"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_user_scale.poster.webp" alt="User Scale" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/features/features_user_scale.poster.webp" aria-label="User Scale preview">
@@ -189,7 +189,7 @@ This example shows explicit perspective-camera setup for a 3D scene.
 ### [Panzoom](gallery/features/features_panzoom.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/features/features_panzoom" aria-label="Panzoom"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_panzoom/" aria-label="Panzoom"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_panzoom.poster.webp" alt="Panzoom" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/features/features_panzoom.poster.webp" aria-label="Panzoom preview">
@@ -208,7 +208,7 @@ This example binds a 2D panzoom controller to a point visual in data coordinates
 ### [Arcball Controller](gallery/features/features_controller_arcball.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/features/features_controller_arcball" aria-label="Arcball Controller"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_controller_arcball/" aria-label="Arcball Controller"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_controller_arcball.poster.webp" alt="Arcball Controller" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/features/features_controller_arcball.poster.webp" aria-label="Arcball Controller preview">
@@ -227,7 +227,7 @@ This example shows an arcball controller rotating a 3D view.
 ### [Turntable Controller](gallery/features/features_controller_turntable.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/features/features_controller_turntable" aria-label="Turntable Controller"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_controller_turntable/" aria-label="Turntable Controller"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_controller_turntable.poster.webp" alt="Turntable Controller" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/features/features_controller_turntable.poster.webp" aria-label="Turntable Controller preview">
@@ -246,7 +246,7 @@ This example shows world-up orbiting with a turntable controller.
 ### [Fly Controller](gallery/features/features_controller_fly.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/features/features_controller_fly" aria-label="Fly Controller"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_controller_fly/" aria-label="Fly Controller"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_controller_fly.poster.webp" alt="Fly Controller" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/features/features_controller_fly.poster.webp" aria-label="Fly Controller preview">
@@ -265,7 +265,7 @@ This example shows fly-style camera navigation through a 3D scene.
 ### [Orientation Gizmo](gallery/features/features_orientation_gizmo.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/features/features_orientation_gizmo" aria-label="Orientation Gizmo"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_orientation_gizmo/" aria-label="Orientation Gizmo"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_orientation_gizmo.poster.webp" alt="Orientation Gizmo" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/features/features_orientation_gizmo.poster.webp" aria-label="Orientation Gizmo preview">
@@ -326,7 +326,7 @@ This example shows a 2D data path with axes, ticks, and grid lines.
 ### [Datetime Axis](gallery/features/features_datetime_axis.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/features/features_datetime_axis" aria-label="Datetime Axis"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_datetime_axis/" aria-label="Datetime Axis"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_datetime_axis.poster.webp" alt="Datetime Axis" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/features/features_datetime_axis.poster.webp" aria-label="Datetime Axis preview">
@@ -615,7 +615,7 @@ This example shows probing a scalar image at a marked data position.
 ### [Lighting](gallery/features/features_lighting.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/features/features_lighting" aria-label="Lighting"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_lighting/" aria-label="Lighting"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_lighting.poster.webp" alt="Lighting" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/features/features_lighting.poster.webp" aria-label="Lighting preview">
@@ -634,7 +634,7 @@ This example compares the same sphere cluster under three material and light con
 ### [Textured Mesh](gallery/features/features_mesh_texture.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/features/features_mesh_texture" aria-label="Textured Mesh"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_mesh_texture/" aria-label="Textured Mesh"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_mesh_texture.poster.webp" alt="Textured Mesh" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/features/features_mesh_texture.poster.webp" aria-label="Textured Mesh preview">
@@ -653,7 +653,7 @@ This example maps an RGBA8 sampled field onto a UV sphere mesh.
 ### [Mesh Materials](gallery/features/features_material_mesh.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/features/features_material_mesh" aria-label="Mesh Materials"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_material_mesh/" aria-label="Mesh Materials"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_material_mesh.poster.webp" alt="Mesh Materials" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/features/features_material_mesh.poster.webp" aria-label="Mesh Materials preview">
@@ -678,7 +678,7 @@ This example compares cube meshes rendered with different material models and pa
 ### [Depth Cue](gallery/features/features_technique_depth_cue.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/features/features_technique_depth_cue" aria-label="Depth Cue"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_technique_depth_cue/" aria-label="Depth Cue"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_technique_depth_cue.poster.webp" alt="Depth Cue" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/features/features_technique_depth_cue.poster.webp" aria-label="Depth Cue preview">
@@ -697,7 +697,7 @@ This example compares a plain 3D sphere lattice with depth-dependent fading.
 ### [Eye-Dome Lighting](gallery/features/features_technique_edl.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/features/features_technique_edl" aria-label="Eye-Dome Lighting"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_technique_edl/" aria-label="Eye-Dome Lighting"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_technique_edl.poster.webp" alt="Eye-Dome Lighting" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/features/features_technique_edl.poster.webp" aria-label="Eye-Dome Lighting preview">
@@ -716,7 +716,7 @@ This example compares a dense 3D point cloud with and without Eye-Dome Lighting.
 ### [Screen-Space Ambient Occlusion](gallery/features/features_technique_ssao.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/features/features_technique_ssao" aria-label="Screen-Space Ambient Occlusion"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_technique_ssao/" aria-label="Screen-Space Ambient Occlusion"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_technique_ssao.poster.webp" alt="Screen-Space Ambient Occlusion" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/features/features_technique_ssao.poster.webp" aria-label="Screen-Space Ambient Occlusion preview">
@@ -735,7 +735,7 @@ This example compares a synthetic molecular aggregate with and without ambient o
 ### [Multisample Antialiasing](gallery/features/features_technique_msaa.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/features/features_technique_msaa" aria-label="Multisample Antialiasing"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_technique_msaa/" aria-label="Multisample Antialiasing"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_technique_msaa.poster.webp" alt="Multisample Antialiasing" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/features/features_technique_msaa.poster.webp" aria-label="Multisample Antialiasing preview">
@@ -754,7 +754,7 @@ This example compares single-sample rendering with 8x multisample antialiasing.
 ### [Transparency Order](gallery/features/features_technique_transparency.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/features/features_technique_transparency" aria-label="Transparency Order"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_technique_transparency/" aria-label="Transparency Order"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_technique_transparency.poster.webp" alt="Transparency Order" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/features/features_technique_transparency.poster.webp" aria-label="Transparency Order preview">
@@ -785,7 +785,7 @@ This example shows translucent triangles composited in draw order.
 ### [Depth Test Toggle](gallery/features/features_technique_depth_test.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/features/features_technique_depth_test" aria-label="Depth Test Toggle"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_technique_depth_test/" aria-label="Depth Test Toggle"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_technique_depth_test.poster.webp" alt="Depth Test Toggle" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/features/features_technique_depth_test.poster.webp" aria-label="Depth Test Toggle preview">
@@ -864,7 +864,7 @@ This example queries and selects individual instances of one mesh visual.
 ### [Animation Tracks](gallery/features/features_animation_tracks.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/features/features_animation_tracks" aria-label="Animation Tracks"></a>
+  <a class="dvz-gallery-media-target" href="../gallery/features/features_animation_tracks/" aria-label="Animation Tracks"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_animation_tracks.poster.webp" alt="Animation Tracks" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/features/features_animation_tracks.poster.webp" aria-label="Animation Tracks preview">

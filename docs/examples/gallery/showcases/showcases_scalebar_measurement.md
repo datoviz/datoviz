@@ -4,12 +4,27 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_linked_probe_colorbar">← Previous: Linked Probe With Colorbar</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_choropleth">Next: U.S. State Choropleth →</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_linked_probe_colorbar/">← Previous: Linked Probe With Colorbar</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_choropleth/">Next: U.S. State Choropleth →</a></span>
 </div>
 </nav>
 
 This example compares scale bars across overview, detail, and 3D views.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c showcases/scalebar_measurement` (build and run), or rerun `./build/examples/c/showcases/scalebar_measurement` |
+| Python | Available | `python3 -m examples.python.gallery.showcases.scalebar_measurement` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_scalebar_measurement">Open live example</a> |
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## Preview
 
@@ -50,8 +65,11 @@ This workflow is useful for scientific figures where readers must understand phy
     - ID: `showcases_scalebar_measurement`
     - Category: `showcase`
     - Lane: `showcases`
+    - Status: `supported`
     - Source: [`examples/c/showcases/scalebar_measurement.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scalebar_measurement.c)
+    - Approved adaptation starter: `no`
     - Python source: [`examples/python/gallery/showcases/scalebar_measurement.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/scalebar_measurement.py)
+    - Python adaptation: Available
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_scalebar_measurement"><code>examples/webgpu/live.html?id=showcases_scalebar_measurement</code></a>
     - Browser capability tags: `scale-bar`, `text`, `panel-grid`, `mesh`, `panzoom`
@@ -70,7 +88,7 @@ This workflow is useful for scientific figures where readers must understand phy
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_linked_probe_colorbar">← Previous: Linked Probe With Colorbar</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_choropleth">Next: U.S. State Choropleth →</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_linked_probe_colorbar/">← Previous: Linked Probe With Colorbar</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_choropleth/">Next: U.S. State Choropleth →</a></span>
 </div>
 </nav>

@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_reference_grid">← Previous: Reference Grid</a></span>
-<span class="dvz-example-nav__next"><a href="../features_axes_2d">Next: Path With 2D Axes →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_reference_grid/">← Previous: Reference Grid</a></span>
+<span class="dvz-example-nav__next"><a href="../features_axes_2d/">Next: Path With 2D Axes →</a></span>
 </div>
 </nav>
 
 This example shows axis titles and tick-label layout around a plotting panel.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/axis_labels` (build and run), or rerun `./build/examples/c/features/axis_labels` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.axis_labels` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_axis_labels">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ The panel has explicit x and y domains, matching tick policies, grid lines, and 
     - ID: `features_axis_labels`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/axis_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axis_labels.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/axis_labels.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/axis_labels.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_axis_labels"><code>examples/webgpu/live.html?id=features_axis_labels</code></a>
     - Browser capability tags: `axes`, `text`, `labels`
@@ -64,7 +81,7 @@ The panel has explicit x and y domains, matching tick policies, grid lines, and 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_reference_grid">← Previous: Reference Grid</a></span>
-<span class="dvz-example-nav__next"><a href="../features_axes_2d">Next: Path With 2D Axes →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_reference_grid/">← Previous: Reference Grid</a></span>
+<span class="dvz-example-nav__next"><a href="../features_axes_2d/">Next: Path With 2D Axes →</a></span>
 </div>
 </nav>

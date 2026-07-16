@@ -4,12 +4,32 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_surface_grid">← Previous: Surface Grid</a></span>
-<span class="dvz-example-nav__next"><a href="../../../visuals">Next: Visuals & Composites →</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_surface_grid/">← Previous: Surface Grid</a></span>
+<span class="dvz-example-nav__next"><a href="../../../visuals/">Next: Visuals & Composites →</a></span>
 </div>
 </nav>
 
 This example maps real planetary textures onto an indexed sphere mesh.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c showcases/textured_planet` (build and run), or rerun `./build/examples/c/showcases/textured_planet` |
+| Python | Available | `python3 -m examples.python.gallery.showcases.textured_planet` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_textured_planet">Open live example</a> |
+
+!!! info "Real dataset"
+
+    Check the dataset, license, citation, and preprocessing fields in Example details
+    before redistributing data or derived output.
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## Preview
 
@@ -56,8 +76,11 @@ The example uses real texture files from the data submodule when available. Eart
     - ID: `showcases_textured_planet`
     - Category: `showcase`
     - Lane: `showcases`
+    - Status: `supported`
     - Source: [`examples/c/showcases/textured_planet.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet.c)
+    - Approved adaptation starter: `no`
     - Python source: [`examples/python/gallery/showcases/textured_planet.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/textured_planet.py)
+    - Python adaptation: Available
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_textured_planet"><code>examples/webgpu/live.html?id=showcases_textured_planet</code></a>
     - Browser capability tags: `mesh`, `sampled-field`, `texture`, `arcball`
@@ -88,7 +111,7 @@ The example uses real texture files from the data submodule when available. Eart
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_surface_grid">← Previous: Surface Grid</a></span>
-<span class="dvz-example-nav__next"><a href="../../../visuals">Next: Visuals & Composites →</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_surface_grid/">← Previous: Surface Grid</a></span>
+<span class="dvz-example-nav__next"><a href="../../../visuals/">Next: Visuals & Composites →</a></span>
 </div>
 </nav>

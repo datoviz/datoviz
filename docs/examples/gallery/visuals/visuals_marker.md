@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_pixel">← Previous: Pixel</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_splat">Next: Splat →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_pixel/">← Previous: Pixel</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_splat/">Next: Splat →</a></span>
 </div>
 </nav>
 
 This example compares marker symbols, sizes, strokes, fills, and rotations.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c visuals/marker` (build and run), or rerun `./build/examples/c/visuals/marker` |
+| Python | Available; manually maintained direct-engine example | `python3 -m examples.python.gallery.visuals.marker` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=visuals_marker">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,9 +62,12 @@ Each row reuses position, symbol, color, size, edge color, and angle arrays to s
     - ID: `visuals_marker`
     - Category: `visual`
     - Lane: `visuals`
+    - Status: `supported`
     - Source: [`examples/c/visuals/marker.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/marker.c)
+    - Approved adaptation starter: `yes`
     - Reference: [Marker visual family](../../../reference/visual-families/marker.md)
     - Python source: [`examples/python/gallery/visuals/marker.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/marker.py)
+    - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_marker"><code>examples/webgpu/live.html?id=visuals_marker</code></a>
     - Browser capability tags: `marker`, `panzoom`
@@ -69,7 +86,7 @@ Each row reuses position, symbol, color, size, edge color, and angle arrays to s
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_pixel">← Previous: Pixel</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_splat">Next: Splat →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_pixel/">← Previous: Pixel</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_splat/">Next: Splat →</a></span>
 </div>
 </nav>

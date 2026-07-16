@@ -4,12 +4,27 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_json_export">← Previous: JSON Export</a></span>
-<span class="dvz-example-nav__next"><a href="../../../runtime">Next: Runtime & Capture →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_json_export/">← Previous: JSON Export</a></span>
+<span class="dvz-example-nav__next"><a href="../../../runtime/">Next: Runtime & Capture →</a></span>
 </div>
 </nav>
 
 This example shows diagnostic bounds overlays for 2D and 3D visuals.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/bounds_overlay` (build and run), or rerun `./build/examples/c/features/bounds_overlay` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.bounds_overlay` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_bounds_overlay">Open live example</a> |
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## Preview
 
@@ -50,7 +65,9 @@ The left panel contains a point cloud with position, color, and diameter arrays,
     - Lane: `features`
     - Status: `diagnostic`
     - Source: [`examples/c/features/bounds_overlay.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bounds_overlay.c)
+    - Approved adaptation starter: `no`
     - Python source: [`examples/python/gallery/features/bounds_overlay.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/bounds_overlay.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_bounds_overlay"><code>examples/webgpu/live.html?id=features_bounds_overlay</code></a>
     - Browser capability tags: `bounds-overlay`, `point`, `sphere`, `overlay`
@@ -69,7 +86,7 @@ The left panel contains a point cloud with position, color, and diameter arrays,
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_json_export">← Previous: JSON Export</a></span>
-<span class="dvz-example-nav__next"><a href="../../../runtime">Next: Runtime & Capture →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_json_export/">← Previous: JSON Export</a></span>
+<span class="dvz-example-nav__next"><a href="../../../runtime/">Next: Runtime & Capture →</a></span>
 </div>
 </nav>

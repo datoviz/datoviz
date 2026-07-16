@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../runtime_offscreen_capture">← Previous: Offscreen Capture</a></span>
-<span class="dvz-example-nav__next"><a href="../runtime_record_replay">Next: Record Replay →</a></span>
+<span class="dvz-example-nav__previous"><a href="../runtime_offscreen_capture/">← Previous: Offscreen Capture</a></span>
+<span class="dvz-example-nav__next"><a href="../runtime_record_replay/">Next: Record Replay →</a></span>
 </div>
 </nav>
 
 This example records a deterministic offscreen point animation to video.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c runtime/video_export` (build and run), or rerun `./build/examples/c/runtime/video_export` |
+| Python | No verified adaptation on this page | Start from the C source. |
+| Browser | Native only | video export uses native app/canvas capture backends, including CPU readback and optional external/NVENC paths |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -17,7 +31,7 @@ This example records a deterministic offscreen point animation to video.
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Native-only example</strong>
-<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## What To Look For
@@ -41,6 +55,7 @@ This runtime workflow is the reproducible offscreen video-export path: the scene
     - Lane: `runtime`
     - Status: `experimental`
     - Source: [`examples/c/runtime/video_export.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/video_export.c)
+    - Approved adaptation starter: `yes`
     - Browser support: Native only
     - Browser note: video export uses native app/canvas capture backends, including CPU readback and optional external/NVENC paths
     - Browser capability tags: `native-capture`
@@ -59,7 +74,7 @@ This runtime workflow is the reproducible offscreen video-export path: the scene
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../runtime_offscreen_capture">← Previous: Offscreen Capture</a></span>
-<span class="dvz-example-nav__next"><a href="../runtime_record_replay">Next: Record Replay →</a></span>
+<span class="dvz-example-nav__previous"><a href="../runtime_offscreen_capture/">← Previous: Offscreen Capture</a></span>
+<span class="dvz-example-nav__next"><a href="../runtime_record_replay/">Next: Record Replay →</a></span>
 </div>
 </nav>

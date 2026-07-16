@@ -4,12 +4,27 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_panel_linked_axes">← Previous: Linked Panels With Axes</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_scalebar_measurement">Next: Scale Bar Measurement Workflow →</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_panel_linked_axes/">← Previous: Linked Panels With Axes</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_scalebar_measurement/">Next: Scale Bar Measurement Workflow →</a></span>
 </div>
 </nav>
 
 This example links two image panels with a probe readout and colorbar.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c showcases/linked_probe_colorbar` (build and run), or rerun `./build/examples/c/showcases/linked_probe_colorbar` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.showcases.linked_probe_colorbar` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_linked_probe_colorbar">Open live example</a> |
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## Preview
 
@@ -50,8 +65,11 @@ This workflow is useful for inspecting transformed measurements while preserving
     - ID: `showcases_linked_probe_colorbar`
     - Category: `showcase`
     - Lane: `showcases`
+    - Status: `supported`
     - Source: [`examples/c/showcases/linked_probe_colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c)
+    - Approved adaptation starter: `no`
     - Python source: [`examples/python/gallery/showcases/linked_probe_colorbar.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/linked_probe_colorbar.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_linked_probe_colorbar"><code>examples/webgpu/live.html?id=showcases_linked_probe_colorbar</code></a>
     - Browser capability tags: `panel-grid`, `linked-panels`, `image`, `colorbar`, `query-readback`, `readout`
@@ -70,7 +88,7 @@ This workflow is useful for inspecting transformed measurements while preserving
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_panel_linked_axes">← Previous: Linked Panels With Axes</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_scalebar_measurement">Next: Scale Bar Measurement Workflow →</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_panel_linked_axes/">← Previous: Linked Panels With Axes</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_scalebar_measurement/">Next: Scale Bar Measurement Workflow →</a></span>
 </div>
 </nav>

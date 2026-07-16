@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_isolines">← Previous: Isolines</a></span>
-<span class="dvz-example-nav__next"><a href="../features_lighting">Next: Lighting →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_isolines/">← Previous: Isolines</a></span>
+<span class="dvz-example-nav__next"><a href="../features_lighting/">Next: Lighting →</a></span>
 </div>
 </nav>
 
 This example shows probing a scalar image at a marked data position.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/image_probe` (build and run), or rerun `./build/examples/c/features/image_probe` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.image_probe` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_image_probe">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ A synthetic microscopy-like float field is uploaded as an R32 sampled image and 
     - ID: `features_image_probe`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/image_probe.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/image_probe.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/image_probe.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/image_probe.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_image_probe"><code>examples/webgpu/live.html?id=features_image_probe</code></a>
     - Browser capability tags: `image`, `query-readback`, `frame-callbacks`, `overlay`, `text`
@@ -64,7 +81,7 @@ A synthetic microscopy-like float field is uploaded as an R32 sampled image and 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_isolines">← Previous: Isolines</a></span>
-<span class="dvz-example-nav__next"><a href="../features_lighting">Next: Lighting →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_isolines/">← Previous: Isolines</a></span>
+<span class="dvz-example-nav__next"><a href="../features_lighting/">Next: Lighting →</a></span>
 </div>
 </nav>

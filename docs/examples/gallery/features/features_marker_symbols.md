@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_builtin_shapes_3d">← Previous: Builtin Shapes 3D</a></span>
-<span class="dvz-example-nav__next"><a href="../features_bezier_curve_path">Next: Bezier Curve Path →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_builtin_shapes_3d/">← Previous: Builtin Shapes 3D</a></span>
+<span class="dvz-example-nav__next"><a href="../features_bezier_curve_path/">Next: Bezier Curve Path →</a></span>
 </div>
 </nav>
 
 This example compares several ways to define marker glyphs in one symbol set.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/marker_symbols` (build and run), or rerun `./build/examples/c/features/marker_symbols` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.marker_symbols` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_marker_symbols">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ Each row uses the same marker attributes, including position, color, diameter_px
     - ID: `features_marker_symbols`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/marker_symbols.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/marker_symbols.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/marker_symbols.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/marker_symbols.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_marker_symbols"><code>examples/webgpu/live.html?id=features_marker_symbols</code></a>
     - Browser capability tags: `marker`, `symbol-set`, `glyph-atlas`, `text`, `controller`, `panzoom`
@@ -68,7 +85,7 @@ Each row uses the same marker attributes, including position, color, diameter_px
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_builtin_shapes_3d">← Previous: Builtin Shapes 3D</a></span>
-<span class="dvz-example-nav__next"><a href="../features_bezier_curve_path">Next: Bezier Curve Path →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_builtin_shapes_3d/">← Previous: Builtin Shapes 3D</a></span>
+<span class="dvz-example-nav__next"><a href="../features_bezier_curve_path/">Next: Bezier Curve Path →</a></span>
 </div>
 </nav>

@@ -4,12 +4,34 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_gpu_particle_smoke">← Previous: GPU Particle Smoke</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_protein">Next: Protein →</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_gpu_particle_smoke/">← Previous: GPU Particle Smoke</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_protein/">Next: Protein →</a></span>
 </div>
 </nav>
 
 This example renders a prepared Allen mouse brain volume with a visible slice.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c showcases/brain_volume` (build and run), or rerun `./build/examples/c/showcases/brain_volume` |
+| Python | Available | `python3 -m examples.python.gallery.showcases.brain_volume` |
+| Browser | Planned | Use the native route for this example. |
+
+!!! warning "Prepared data required"
+
+    This example intentionally fails when its prepared input is absent; it does not
+    substitute synthetic data.
+    Expected input: `data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz`.
+    Prepare it from the repository root with `python tools/data/prepare_brain_volume.py`.
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## Preview
 
@@ -23,7 +45,7 @@ This example renders a prepared Allen mouse brain volume with a visible slice.
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Live WebGPU preview not available yet</strong>
-<span>Browser support for this example is planned. The preview above shows the native version. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+<span>Browser support for this example is planned. The preview above shows the native version. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## What To Look For
@@ -57,7 +79,9 @@ Prepare: `python tools/data/prepare_brain_volume.py`
     - Lane: `showcases`
     - Status: `prototype`
     - Source: [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c)
+    - Approved adaptation starter: `no`
     - Python source: [`examples/python/gallery/showcases/brain_volume.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/brain_volume.py)
+    - Python adaptation: Available
     - Browser support: Planned
     - Browser capability tags: `volume`, `texture-3d`, `arcball`
     - Validation: `smoke+screenshot`
@@ -88,7 +112,7 @@ Prepare: `python tools/data/prepare_brain_volume.py`
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_gpu_particle_smoke">← Previous: GPU Particle Smoke</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_protein">Next: Protein →</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_gpu_particle_smoke/">← Previous: GPU Particle Smoke</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_protein/">Next: Protein →</a></span>
 </div>
 </nav>

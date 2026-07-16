@@ -4,12 +4,27 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_gui_viewport">← Previous: GUI Viewport</a></span>
-<span class="dvz-example-nav__next"><a href="../features_input_events">Next: Input Events →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_gui_viewport/">← Previous: GUI Viewport</a></span>
+<span class="dvz-example-nav__next"><a href="../features_input_events/">Next: Input Events →</a></span>
 </div>
 </nav>
 
 This example shows raw cimgui widgets controlling a Datoviz visual.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/gui_cimgui` (build and run), or rerun `./build/examples/c/features/gui_cimgui` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.gui_cimgui` |
+| Browser | Native only | raw cimgui access requires the native ImGui app path |
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## Preview
 
@@ -17,7 +32,7 @@ This example shows raw cimgui widgets controlling a Datoviz visual.
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Native-only example</strong>
-<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## What To Look For
@@ -43,8 +58,11 @@ Four point positions and colors are uploaded once, while the GUI slider rewrites
     - ID: `features_gui_cimgui`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/gui_cimgui.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_cimgui.c)
+    - Approved adaptation starter: `no`
     - Python source: [`examples/python/gallery/features/gui_cimgui.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/gui_cimgui.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Native only
     - Browser note: raw cimgui access requires the native ImGui app path
     - Browser capability tags: `gui`
@@ -59,7 +77,7 @@ Four point positions and colors are uploaded once, while the GUI slider rewrites
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_gui_viewport">← Previous: GUI Viewport</a></span>
-<span class="dvz-example-nav__next"><a href="../features_input_events">Next: Input Events →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_gui_viewport/">← Previous: GUI Viewport</a></span>
+<span class="dvz-example-nav__next"><a href="../features_input_events/">Next: Input Events →</a></span>
 </div>
 </nav>

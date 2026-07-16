@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_splat">← Previous: Splat</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_path">Next: Path →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_splat/">← Previous: Splat</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_path/">Next: Path →</a></span>
 </div>
 </nav>
 
 This example draws independent line segments with different cap styles.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c visuals/segment` (build and run), or rerun `./build/examples/c/visuals/segment` |
+| Python | Available; manually maintained direct-engine example | `python3 -m examples.python.gallery.visuals.segment` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=visuals_segment">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,9 +62,12 @@ Start and end position arrays define each segment, while color and width arrays 
     - ID: `visuals_segment`
     - Category: `visual`
     - Lane: `visuals`
+    - Status: `supported`
     - Source: [`examples/c/visuals/segment.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/segment.c)
+    - Approved adaptation starter: `yes`
     - Reference: [Segment visual family](../../../reference/visual-families/segment.md)
     - Python source: [`examples/python/gallery/visuals/segment.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/segment.py)
+    - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_segment"><code>examples/webgpu/live.html?id=visuals_segment</code></a>
     - Browser capability tags: `segment`, `panzoom`
@@ -69,7 +86,7 @@ Start and end position arrays define each segment, while color and width arrays 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../visuals_splat">← Previous: Splat</a></span>
-<span class="dvz-example-nav__next"><a href="../visuals_path">Next: Path →</a></span>
+<span class="dvz-example-nav__previous"><a href="../visuals_splat/">← Previous: Splat</a></span>
+<span class="dvz-example-nav__next"><a href="../visuals_path/">Next: Path →</a></span>
 </div>
 </nav>

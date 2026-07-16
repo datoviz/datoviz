@@ -4,12 +4,27 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../advanced_raw_triangle_drp2">← Previous: Raw Triangle DRP2</a></span>
+<span class="dvz-example-nav__previous"><a href="../advanced_raw_triangle_drp2/">← Previous: Raw Triangle DRP2</a></span>
 <span class="dvz-example-nav__next"></span>
 </div>
 </nav>
 
 This example draws one RGB triangle with manual vklite commands.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c advanced/raw_triangle_vklite` (build and run), or rerun `./build/examples/c/advanced/raw_triangle_vklite` |
+| Python | No verified adaptation on this page | Start from the C source. |
+| Browser | Native only | raw vklite command recording is a native runtime example |
+
+Use this example as capability or integration evidence, not as a minimal copy-paste
+template. Start from the nearest supported, copy-safe example and add this feature
+after verifying the linked API reference.
 
 ## Preview
 
@@ -17,7 +32,7 @@ This example draws one RGB triangle with manual vklite commands.
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Native-only example</strong>
-<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## What To Look For
@@ -47,6 +62,7 @@ NOTE: this example intentionally uses an offscreen canvas. Hosted onscreen integ
     - Lane: `advanced`
     - Status: `experimental`
     - Source: [`examples/c/advanced/raw_triangle_vklite.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/raw_triangle_vklite.c)
+    - Approved adaptation starter: `no`
     - Browser support: Native only
     - Browser note: raw vklite command recording is a native runtime example
     - Browser capability tags: `vklite`, `canvas`
@@ -65,7 +81,7 @@ NOTE: this example intentionally uses an offscreen canvas. Hosted onscreen integ
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../advanced_raw_triangle_drp2">← Previous: Raw Triangle DRP2</a></span>
+<span class="dvz-example-nav__previous"><a href="../advanced_raw_triangle_drp2/">← Previous: Raw Triangle DRP2</a></span>
 <span class="dvz-example-nav__next"></span>
 </div>
 </nav>

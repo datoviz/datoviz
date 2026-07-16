@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_view_size_policies">← Previous: View Size Policies</a></span>
-<span class="dvz-example-nav__next"><a href="../features_visibility">Next: Visual Visibility →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_view_size_policies/">← Previous: View Size Policies</a></span>
+<span class="dvz-example-nav__next"><a href="../features_visibility/">Next: Visual Visibility →</a></span>
 </div>
 </nav>
 
 This example compares raw point data with a visual-local affine transform.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/visual_transform` (build and run), or rerun `./build/examples/c/features/visual_transform` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.visual_transform` |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_visual_transform">Open live example</a> |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -48,8 +62,11 @@ Both panels upload the same five point positions, colors, and diameter_px values
     - ID: `features_visual_transform`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/visual_transform.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visual_transform.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/visual_transform.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/visual_transform.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_visual_transform"><code>examples/webgpu/live.html?id=features_visual_transform</code></a>
     - Browser capability tags: `visual-transform`, `point`, `panzoom`
@@ -64,7 +81,7 @@ Both panels upload the same five point positions, colors, and diameter_px values
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_view_size_policies">← Previous: View Size Policies</a></span>
-<span class="dvz-example-nav__next"><a href="../features_visibility">Next: Visual Visibility →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_view_size_policies/">← Previous: View Size Policies</a></span>
+<span class="dvz-example-nav__next"><a href="../features_visibility/">Next: Visual Visibility →</a></span>
 </div>
 </nav>

@@ -4,12 +4,26 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_gui_cimgui">← Previous: Raw cimgui GUI</a></span>
-<span class="dvz-example-nav__next"><a href="../features_json_export">Next: JSON Export →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_gui_cimgui/">← Previous: Raw cimgui GUI</a></span>
+<span class="dvz-example-nav__next"><a href="../features_json_export/">Next: JSON Export →</a></span>
 </div>
 </nav>
 
 This example shows native keyboard, pointer, wheel, and resize events.
+
+## Run And Adapt
+
+Commands below assume a Datoviz source checkout and start at the repository root.
+Use your configured build environment; Python routes additionally require local bindings.
+
+| Route | Availability | Command or action |
+| --- | --- | --- |
+| C | Canonical native source | `just example-c features/input_events` (build and run), or rerun `./build/examples/c/features/input_events` |
+| Python | Available; direct-engine adaptation | `python3 -m examples.python.gallery.features.input_events` |
+| Browser | Native only | demonstrates native hosted event injection APIs |
+
+This example is approved as a starting point for user code and coding agents. Keep the
+object lifetimes and data shapes intact while adapting the data and styling.
 
 ## Preview
 
@@ -17,7 +31,7 @@ This example shows native keyboard, pointer, wheel, and resize events.
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Native-only example</strong>
-<span>This example currently runs with the native Vulkan backend only. <a href="../../../reference/webgpu-subset.md">Learn about browser support</a>.</span>
+<span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
 ## What To Look For
@@ -43,8 +57,11 @@ The native app registers input callbacks and prints event details for pointer mo
     - ID: `features_input_events`
     - Category: `feature`
     - Lane: `features`
+    - Status: `supported`
     - Source: [`examples/c/features/input_events.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/input_events.c)
+    - Approved adaptation starter: `yes`
     - Python source: [`examples/python/gallery/features/input_events.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/input_events.py)
+    - Python adaptation: Available; direct-engine adaptation
     - Browser support: Native only
     - Browser note: demonstrates native hosted event injection APIs
     - Browser capability tags: `native-view`, `input-events`
@@ -59,7 +76,7 @@ The native app registers input callbacks and prints event details for pointer mo
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_gui_cimgui">← Previous: Raw cimgui GUI</a></span>
-<span class="dvz-example-nav__next"><a href="../features_json_export">Next: JSON Export →</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_gui_cimgui/">← Previous: Raw cimgui GUI</a></span>
+<span class="dvz-example-nav__next"><a href="../features_json_export/">Next: JSON Export →</a></span>
 </div>
 </nav>
