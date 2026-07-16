@@ -7,8 +7,10 @@ import ast
 import os
 import shutil
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
+from mkdocs.plugins import event_priority
 from mkdocs.structure.files import File
 
 # Constants
@@ -188,6 +190,28 @@ def on_page_markdown(markdown, page, config, files):
     elif name in ROOT_DOCS:
         return read(f'../{name}.md')
     return markdown
+
+
+@event_priority(-99)
+def on_page_context(context, page, config, nav):
+    """Keep scheduled posts unlisted but directly previewable under ``mkdocs serve``."""
+    blog = config.plugins.get('material/blog')
+    if not blog or not blog.config.draft_if_future_date or not blog.config.draft:
+        return context
+
+    now = datetime.now(timezone.utc)
+    posts = getattr(page, 'posts', None)
+    if posts is not None:
+        posts[:] = [post for post in posts if post.config.date.created <= now]
+
+    if getattr(getattr(page, 'config', None), 'date', None):
+        for attr in ('previous_page', 'next_page'):
+            adjacent = getattr(page, attr, None)
+            adjacent_date = getattr(getattr(adjacent, 'config', None), 'date', None)
+            if adjacent_date and adjacent_date.created > now:
+                setattr(page, attr, None)
+
+    return context
 
 
 def on_pre_build(**kwargs):
