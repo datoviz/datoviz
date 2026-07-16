@@ -1220,9 +1220,6 @@ DvzScenarioSpec dvz_showcase_textured_planet_scenario(void)
         .fps = 60.0,
         .init = _scenario_init,
         .frame = _scenario_frame,
-#ifndef DVZ_EXAMPLE_NO_MAIN
-        .native_view = _scenario_native_view,
-#endif
         .destroy = _scenario_destroy,
     };
 }
@@ -1233,6 +1230,8 @@ DvzScenarioSpec dvz_showcase_textured_planet_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = dvz_showcase_textured_planet_scenario();
+    if (example_cli_wants_live_gui(argc, argv))
+        spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
 #endif
