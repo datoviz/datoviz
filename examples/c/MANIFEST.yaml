@@ -270,6 +270,7 @@ batches:
     - showcases_wind_field
     - showcases_spherical_harmonics
     - showcases_surface_grid
+    - showcases_terrain_relief
     - showcases_cortical_activity
     - showcases_point_cloud
     - showcases_textured_planet
@@ -3387,6 +3388,70 @@ examples:
       - mesh
       - wireframe
       - arcball
+
+  - id: showcases_terrain_relief
+    title: McHenrys Peak Terrain Relief
+    stage: v0.4_experimental
+    category: showcase
+    lane: showcases
+    source: examples/c/showcases/terrain_relief.c
+    extra_sources:
+      - label: Data preparation
+        language: python
+        path: tools/data/prepare_terrain_relief.py
+    validation: smoke+interaction+screenshot
+    data:
+      kind: prepared
+    portability: native-only
+    webgpu:
+      status: native-only
+      requirements:
+        - mesh
+        - sampled-field
+        - texture
+        - turntable
+        - prepared-data
+      reason: the cache-only DEM and orthoimagery bundle is not packaged for the browser
+    agent_copy_safe: false
+    dataset:
+      name: McHenrys Peak USGS 3DEP terrain and NAIP orthoimagery
+      source: USGS 3D Elevation Program and USDA National Agriculture Imagery Program
+      source_url: >-
+        https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer;
+        https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPPlus/ImageServer
+      license: >-
+        USGS 3DEP products and USDA NAIP imagery are public domain; credit the U.S. Geological
+        Survey and USDA National Agriculture Imagery Program as the data sources.
+      citation: U.S. Geological Survey 3D Elevation Program; USDA National Agriculture Imagery Program.
+      preprocessing: uv run tools/data/prepare_terrain_relief.py
+      prepared_source: >-
+        data/examples/terrain_relief/prepared/terrain.bin;
+        data/examples/terrain_relief/prepared/terrain.jpg
+      cache_prepared_path: .cache/datoviz/examples/terrain_relief/prepared
+      provenance: >-
+        An aligned 6.95 by 7.27 km crop around McHenrys Peak and Glacier Gorge is exported from
+        the public USGS image services into NAD83 / UTM zone 13N. The bare-earth DEM drives the
+        mesh and the natural-color orthoimage supplies its sampled texture. Exact export requests,
+        service descriptions, extents, and artifact checksums are retained in the cache manifest.
+    encoding:
+      elevation: 490 by 512 little-endian float32 meters, row-major north to south
+      texture: 1960 by 2048 RGB JPEG over the identical projected extent
+      geometry: physical UTM aspect ratio with 1.35x vertical exaggeration
+    gallery:
+      card: section
+      status_label: experimental
+    tags:
+      - scientific
+      - real-data
+      - terrain
+      - dem
+      - orthoimagery
+      - surface-grid
+      - mesh
+      - sampled-field
+      - texture
+      - material
+      - turntable
 
   - id: showcases_cortical_activity
     title: Human Auditory Cortical Activity

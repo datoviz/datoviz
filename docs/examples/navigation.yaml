@@ -23,6 +23,7 @@ sections:
           - showcases_point_cloud
           - showcases_spherical_harmonics
           - showcases_surface_grid
+          - showcases_terrain_relief
           - showcases_textured_planet
 
   - id: visuals
