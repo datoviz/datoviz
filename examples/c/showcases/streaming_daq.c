@@ -243,28 +243,20 @@ static bool _upload_all_traces(StreamingDaqState* state)
 
 
 /**
- * Upload only trace intervals affected by one display-ring advance.
+ * Rebuild and upload one physical display-ring span.
  *
  * @param state showcase state
- * @param dirty physical sample ranges changed by the model
- * @return whether the upload succeeded
+ * @param span physical sample span
+ * @return whether the range upload succeeded
  */
-static bool _upload_dirty_traces(StreamingDaqState* state, const DaqDirtyRanges* dirty)
+static bool _upload_trace_span(StreamingDaqState* state, DaqDirtySpan span)
 {
-    if (dirty->advanced_sample_count == 0)
-    {
-        state->uploaded_vertex_count = 0;
-        state->upload_bytes = 0;
+    if (span.sample_count == 0u)
         return true;
-    }
-    if (dirty->full || dirty->span_count > 1u)
-        return _upload_all_traces(state);
-
-    const DaqDirtySpan span = dirty->spans[0];
     const uint32_t first_interval = span.first_sample > 0u ? span.first_sample - 1u : 0u;
     uint64_t end = (uint64_t)span.first_sample + span.sample_count;
     if (end > state->model.config.display_sample_count)
-        return _upload_all_traces(state);
+        return false;
     const uint32_t end_interval = (uint32_t)end;
     if (end_interval <= first_interval)
         return true;
@@ -277,9 +269,34 @@ static bool _upload_dirty_traces(StreamingDaqState* state, const DaqDirtyRanges*
     DvzResult result = dvz_visual_set_data_range(
         state->traces, "position", first_vertex, &state->trace_positions[first_vertex],
         vertex_count);
-    state->uploaded_vertex_count = vertex_count;
-    state->upload_bytes = (uint64_t)vertex_count * sizeof(vec3);
+    state->uploaded_vertex_count += vertex_count;
+    state->upload_bytes += (uint64_t)vertex_count * sizeof(vec3);
     return result == DVZ_OK;
+}
+
+
+/**
+ * Upload only trace intervals affected by one display-ring advance.
+ *
+ * @param state showcase state
+ * @param dirty physical sample ranges changed by the model
+ * @return whether the upload succeeded
+ */
+static bool _upload_dirty_traces(StreamingDaqState* state, const DaqDirtyRanges* dirty)
+{
+    state->uploaded_vertex_count = 0;
+    state->upload_bytes = 0;
+    if (dirty->advanced_sample_count == 0)
+        return true;
+    if (dirty->full)
+        return _upload_all_traces(state);
+
+    for (uint32_t i = 0; i < dirty->span_count; i++)
+    {
+        if (!_upload_trace_span(state, dirty->spans[i]))
+            return false;
+    }
+    return true;
 }
 
 
