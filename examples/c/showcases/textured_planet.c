@@ -66,7 +66,8 @@
 #define EARTH_TEXTURE_FALLBACK_PATH "data/assets/textures/earth.jpg"
 #define MARS_TEXTURE_PATH           "data/assets/textures/mars_viking_mdim21.jpg"
 
-#define SPHERE_RADIUS 0.92
+#define SPHERE_RADIUS     0.92
+#define ATMOSPHERE_RADIUS 0.936
 #define SPHERE_SECTORS 96
 #define SPHERE_RINGS 48
 
@@ -83,6 +84,7 @@ static const float TAU = 6.28318530718f;
 
 #define ORBIT_TRACE_COUNT   12
 #define ORBIT_TRACE_SAMPLES 121
+#define GLOBE_VISUAL_COUNT  4
 
 #define SUN_DIR_X -0.80f
 #define SUN_DIR_Y +0.22f
@@ -127,10 +129,12 @@ typedef struct PlanetPreset
 typedef struct TexturedPlanetState
 {
     DvzVisual* visual;
+    DvzVisual* atmosphere_visual;
     DvzVisual* debris_visual;
     DvzVisual* orbit_visual;
+    DvzVisual* orbit_glow_visual;
     DvzTrack* globe_rotation;
-    DvzAnimation* globe_animations[3];
+    DvzAnimation* globe_animations[GLOBE_VISUAL_COUNT];
     PlanetTexture textures[PLANET_COUNT];
     TexturedPlanetOrbitModel orbit_model;
     vec3* debris_positions;
@@ -139,6 +143,8 @@ typedef struct TexturedPlanetState
     int planet_index;
     bool show_debris;
     bool show_orbits;
+    bool show_atmosphere;
+    bool show_orbit_glow;
     bool animate_debris;
     bool rotate_globe;
     int debris_count;
@@ -596,9 +602,9 @@ static void _state_fill_debris_style(TexturedPlanetState* state)
         state->debris_colors[i] = _debris_event_color(state->orbit_model.event_ids[i], 255);
         const uint32_t catalog_id = state->orbit_model.catalog_ids[i];
         const float variation = (float)((37u * catalog_id) % 101u) / 100.0f;
-        state->debris_sizes[i] = 2.0f + 2.8f * variation;
+        state->debris_sizes[i] = 1.4f + 2.1f * variation;
         if (catalog_id % 79u == 0)
-            state->debris_sizes[i] = 6.5f;
+            state->debris_sizes[i] = 5.0f;
     }
 }
 
@@ -667,10 +673,13 @@ static uint32_t _trace_object_index(
  * @param scene scene
  * @param panel panel receiving the visual
  * @param model prepared orbit model
+ * @param stroke_width path width in pixels
+ * @param alpha path alpha
  * @return orbit path visual, or NULL on failure
  */
-static DvzVisual*
-_create_orbit_traces(DvzScene* scene, DvzPanel* panel, const TexturedPlanetOrbitModel* model)
+static DvzVisual* _create_orbit_traces(
+    DvzScene* scene, DvzPanel* panel, const TexturedPlanetOrbitModel* model, float stroke_width,
+    uint8_t alpha)
 {
     ANN(scene);
     ANN(panel);
@@ -701,8 +710,8 @@ _create_orbit_traces(DvzScene* scene, DvzPanel* panel, const TexturedPlanetOrbit
         subpaths[trace_index] = ORBIT_TRACE_SAMPLES;
         for (uint32_t j = 0; j < ORBIT_TRACE_SAMPLES; j++)
         {
-            colors[offset + j] = _debris_event_color(event_id, 255);
-            widths[offset + j] = 0.85f;
+            colors[offset + j] = _debris_event_color(event_id, alpha);
+            widths[offset + j] = stroke_width;
         }
     }
 
@@ -735,6 +744,11 @@ _create_orbit_traces(DvzScene* scene, DvzPanel* panel, const TexturedPlanetOrbit
         path = NULL;
         goto cleanup;
     }
+    if (dvz_visual_set_alpha_mode(path, DVZ_ALPHA_BLENDED) != DVZ_OK)
+    {
+        path = NULL;
+        goto cleanup;
+    }
     if (dvz_panel_add_visual(panel, path, NULL) != DVZ_OK)
         path = NULL;
 
@@ -744,6 +758,77 @@ cleanup:
     dvz_free(widths);
     dvz_free(subpaths);
     return path;
+}
+
+
+
+/**
+ * Create the thin translucent atmosphere shell around Earth.
+ *
+ * The shell is slightly exaggerated relative to Earth's physical atmosphere so its limb remains
+ * legible at gallery scale. Depth testing hides its rear hemisphere behind the opaque planet.
+ *
+ * @param scene scene
+ * @param panel panel receiving the visual
+ * @return atmosphere mesh visual, or NULL on failure
+ */
+static DvzVisual* _create_atmosphere(DvzScene* scene, DvzPanel* panel)
+{
+    ANN(scene);
+    ANN(panel);
+    DvzGeometry* sphere = dvz_geometry_sphere(&(DvzGeometrySphereDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
+        .radius = ATMOSPHERE_RADIUS,
+        .sectors = SPHERE_SECTORS,
+        .rings = SPHERE_RINGS,
+        .color = {58, 142, 255, 7},
+    });
+    if (sphere == NULL)
+        return NULL;
+    _prepare_planet_geometry(sphere);
+
+    vec3* positions = (vec3*)dvz_calloc(sphere->index_count, sizeof(vec3));
+    vec3* normals = (vec3*)dvz_calloc(sphere->index_count, sizeof(vec3));
+    DvzColor* colors = (DvzColor*)dvz_calloc(sphere->index_count, sizeof(DvzColor));
+    DvzVisual* atmosphere = NULL;
+    if (positions == NULL || normals == NULL || colors == NULL)
+        goto cleanup;
+    for (uint32_t i = 0; i < sphere->index_count; i++)
+    {
+        const DvzIndex index = sphere->indices[i];
+        positions[i][0] = (float)sphere->positions[index][0];
+        positions[i][1] = (float)sphere->positions[index][1];
+        positions[i][2] = (float)sphere->positions[index][2];
+        normals[i][0] = (float)sphere->normals[index][0];
+        normals[i][1] = (float)sphere->normals[index][1];
+        normals[i][2] = (float)sphere->normals[index][2];
+        colors[i] = sphere->colors[index];
+    }
+
+    atmosphere = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    if (atmosphere == NULL)
+        goto cleanup;
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = sphere->index_count},
+        {.attr_name = "color", .data = colors, .item_count = sphere->index_count},
+        {.attr_name = "normal", .data = normals, .item_count = sphere->index_count},
+    };
+    DvzResult rc = dvz_visual_set_data_many(atmosphere, updates, 3);
+    if (rc == DVZ_OK)
+        rc = dvz_visual_set_alpha_mode(atmosphere, DVZ_ALPHA_BLENDED);
+    if (rc == DVZ_OK)
+        rc = dvz_visual_set_depth_test(atmosphere, true);
+    if (rc == DVZ_OK)
+        rc = dvz_panel_add_visual(panel, atmosphere, NULL);
+    if (rc != DVZ_OK)
+        atmosphere = NULL;
+
+cleanup:
+    dvz_free(positions);
+    dvz_free(normals);
+    dvz_free(colors);
+    dvz_geometry_destroy(sphere);
+    return atmosphere;
 }
 
 
@@ -807,6 +892,8 @@ static void _state_reset_debris_controls(TexturedPlanetState* state)
     ANN(state);
     state->show_debris = true;
     state->show_orbits = true;
+    state->show_atmosphere = true;
+    state->show_orbit_glow = true;
     state->animate_debris = true;
     state->rotate_globe = true;
     state->debris_count = (int)state->orbit_model.count;
@@ -830,6 +917,11 @@ static void _state_apply_debris_visibility(TexturedPlanetState* state)
         (void)dvz_visual_set_visible(state->debris_visual, is_earth && state->show_debris);
     if (state->orbit_visual != NULL)
         (void)dvz_visual_set_visible(state->orbit_visual, is_earth && state->show_orbits);
+    if (state->orbit_glow_visual != NULL)
+        (void)dvz_visual_set_visible(
+            state->orbit_glow_visual, is_earth && state->show_orbits && state->show_orbit_glow);
+    if (state->atmosphere_visual != NULL)
+        (void)dvz_visual_set_visible(state->atmosphere_visual, is_earth && state->show_atmosphere);
 }
 
 
@@ -843,7 +935,7 @@ static void _state_apply_globe_rotation(TexturedPlanetState* state)
 {
     ANN(state);
     const float speed = state->rotate_globe ? state->globe_speed : 0.0f;
-    for (uint32_t i = 0; i < 3; i++)
+    for (uint32_t i = 0; i < GLOBE_VISUAL_COUNT; i++)
     {
         if (state->globe_animations[i] != NULL)
             (void)dvz_anim_set_speed(state->globe_animations[i], speed);
@@ -872,10 +964,11 @@ static bool _create_globe_rotation(DvzScene* scene, TexturedPlanetState* state)
     if (state->globe_rotation == NULL)
         return false;
 
-    DvzVisual* visuals[3] = {state->visual, state->orbit_visual, state->debris_visual};
+    DvzVisual* visuals[GLOBE_VISUAL_COUNT] = {
+        state->visual, state->orbit_glow_visual, state->orbit_visual, state->debris_visual};
     DvzTransformMotionDesc transform_desc = dvz_transform_motion_desc();
     transform_desc.rotation = state->globe_rotation;
-    for (uint32_t i = 0; i < 3; i++)
+    for (uint32_t i = 0; i < GLOBE_VISUAL_COUNT; i++)
     {
         state->globe_animations[i] = dvz_anim_visual_transform(scene, visuals[i], &transform_desc);
         if (state->globe_animations[i] == NULL)
@@ -951,11 +1044,14 @@ static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
         rotation_changed |= dvz_gui_checkbox(gui, "Rotate globe", &state->rotate_globe);
         rotation_changed |= dvz_gui_slider_float_format(
             gui, "Globe rotation", &state->globe_speed, 0.0f, 0.20f, "%.3f rad/s");
+        debris_visibility_changed |=
+            dvz_gui_checkbox(gui, "Show atmosphere", &state->show_atmosphere);
 
         dvz_gui_separator_text(gui, "Catalogued orbital debris");
         debris_visibility_changed |= dvz_gui_checkbox(gui, "Show debris", &state->show_debris);
         debris_visibility_changed |=
             dvz_gui_checkbox(gui, "Show orbit lines", &state->show_orbits);
+        debris_visibility_changed |= dvz_gui_checkbox(gui, "Orbit glow", &state->show_orbit_glow);
         (void)dvz_gui_checkbox(gui, "Animate debris", &state->animate_debris);
         debris_density_changed |= dvz_gui_slider_int(
             gui, "Object count", &state->debris_count, 0, (int)state->orbit_model.count);
@@ -1093,10 +1189,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     material.light_direction[0] = SUN_DIR_X;
     material.light_direction[1] = SUN_DIR_Y;
     material.light_direction[2] = SUN_DIR_Z;
-    material.phong.ambient = 0.16f;
-    material.phong.diffuse = 0.92f;
-    material.phong.specular = 0.015f;
-    material.phong.shininess = 18.0f;
+    material.phong.ambient = 0.075f;
+    material.phong.diffuse = 1.02f;
+    material.phong.specular = 0.025f;
+    material.phong.shininess = 22.0f;
     EXAMPLE_CHECK(
         dvz_visual_set_material(visual, &material) == 0, "dvz_visual_set_material() failed");
 
@@ -1113,7 +1209,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     rc = dvz_panel_add_visual(panel, visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
 
-    state->orbit_visual = _create_orbit_traces(ctx->scene, panel, &state->orbit_model);
+    state->atmosphere_visual = _create_atmosphere(ctx->scene, panel);
+    EXAMPLE_CHECK(state->atmosphere_visual != NULL, "failed to create atmosphere shell");
+
+    state->orbit_glow_visual =
+        _create_orbit_traces(ctx->scene, panel, &state->orbit_model, 2.8f, 22);
+    EXAMPLE_CHECK(state->orbit_glow_visual != NULL, "failed to create orbit glow");
+    state->orbit_visual = _create_orbit_traces(ctx->scene, panel, &state->orbit_model, 0.68f, 190);
     EXAMPLE_CHECK(state->orbit_visual != NULL, "failed to create orbit traces");
 
     state->debris_visual = _create_debris_points(ctx->scene, panel, state);

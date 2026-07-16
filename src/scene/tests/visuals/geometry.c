@@ -869,6 +869,16 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
     AT(dvz_visual_set_field(visual, "texture", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
+    // A blended overlay creates a separate transparent pass. The opaque textured-mesh pipeline's
+    // combined set-1 layout must still satisfy its material contract in the mixed-pass stream.
+    DvzVisual* overlay = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    ANN(overlay);
+    DvzColor overlay_colors[3] = {{32, 128, 255, 48}, {32, 128, 255, 48}, {32, 128, 255, 48}};
+    AT(dvz_visual_set_data(overlay, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(overlay, "color", overlay_colors, 3) == 0);
+    AT(dvz_visual_set_alpha_mode(overlay, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_panel_add_visual(panel, overlay, NULL) == 0);
+
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);

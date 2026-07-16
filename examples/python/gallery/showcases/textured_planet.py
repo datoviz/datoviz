@@ -18,6 +18,7 @@ TEXTURE_WIDTH = 1024
 TEXTURE_HEIGHT = 512
 EARTH_TEXTURE_PATH = Path('data/assets/textures/world.200412.3x5400x2700.jpg')
 SPHERE_RADIUS = 0.92
+ATMOSPHERE_RADIUS = 0.936
 SPHERE_SECTORS = 96
 SPHERE_RINGS = 48
 STAR_COUNT = 900
@@ -276,10 +277,10 @@ def _add_star_shell(scene, panel) -> None:
 def _planet_material():
     material = dvz.dvz_phong_material_desc()
     material.light_direction[:] = SUN_DIR
-    material.phong.ambient = 0.16
-    material.phong.diffuse = 0.92
-    material.phong.specular = 0.015
-    material.phong.shininess = 18.0
+    material.phong.ambient = 0.075
+    material.phong.diffuse = 1.02
+    material.phong.specular = 0.025
+    material.phong.shininess = 22.0
     return material
 
 
@@ -317,7 +318,59 @@ def _add_planet(scene, panel):
     return mesh
 
 
-def _add_orbit_traces(scene, panel, model: OrbitModel):
+def _add_atmosphere(scene, panel):
+    latitude = np.linspace(0.0, np.pi, SPHERE_RINGS + 1, dtype=np.float32)
+    longitude = np.linspace(0.0, TAU, SPHERE_SECTORS + 1, dtype=np.float32)
+    theta, phi = np.meshgrid(latitude, longitude, indexing='ij')
+    positions = np.column_stack(
+        (
+            ATMOSPHERE_RADIUS * np.sin(theta).ravel() * np.cos(phi).ravel(),
+            ATMOSPHERE_RADIUS * np.cos(theta).ravel(),
+            ATMOSPHERE_RADIUS * np.sin(theta).ravel() * np.sin(phi).ravel(),
+        )
+    ).astype(np.float32)
+    normals = np.ascontiguousarray(positions / ATMOSPHERE_RADIUS, dtype=np.float32)
+    colors = np.tile(np.array([58, 142, 255, 7], dtype=np.uint8), (len(positions), 1))
+    indices: list[int] = []
+    row = SPHERE_SECTORS + 1
+    for ring in range(SPHERE_RINGS):
+        for sector in range(SPHERE_SECTORS):
+            first = ring * row + sector
+            second = first + row
+            indices.extend((first, second, first + 1, first + 1, second, second + 1))
+    index_array = np.asarray(indices, dtype=np.uint32)
+    positions = np.ascontiguousarray(positions[index_array])
+    normals = np.ascontiguousarray(normals[index_array])
+    colors = np.ascontiguousarray(colors[index_array])
+
+    atmosphere = dvz.dvz_primitive(scene, dvz.DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0)
+    if not atmosphere:
+        raise RuntimeError('dvz_primitive(atmosphere) failed')
+
+    if (
+        dvz.dvz_visual_set_data_many(
+            atmosphere,
+            {'position': positions, 'color': colors, 'normal': normals},
+        )
+        != 0
+    ):
+        raise RuntimeError('dvz_visual_set_data_many(atmosphere) failed')
+
+    if dvz.dvz_visual_set_alpha_mode(atmosphere, dvz.DVZ_ALPHA_BLENDED) != 0:
+        raise RuntimeError('dvz_visual_set_alpha_mode(atmosphere) failed')
+    if dvz.dvz_visual_set_depth_test(atmosphere, True) != 0:
+        raise RuntimeError('dvz_visual_set_depth_test(atmosphere) failed')
+    ex.add_visual(panel, atmosphere)
+    return atmosphere
+
+
+def _add_orbit_traces(
+    scene,
+    panel,
+    model: OrbitModel,
+    stroke_width: float,
+    alpha: int,
+):
     indices: list[int] = []
     trace_events: list[int] = []
     selections_per_event = (ORBIT_TRACE_COUNT + 2) // 3
@@ -331,14 +384,14 @@ def _add_orbit_traces(scene, panel, model: OrbitModel):
     positions = np.concatenate([_orbit_trace(model, int(index)) for index in indices])
     sample_count = len(positions)
     palette = np.array(
-        [[104, 220, 255, 255], [255, 196, 92, 255], [255, 112, 96, 255]],
+        [[104, 220, 255, alpha], [255, 196, 92, alpha], [255, 112, 96, alpha]],
         dtype=np.uint8,
     )
     colors = np.concatenate(
         [np.tile(palette[event_id], (ORBIT_TRACE_SAMPLES, 1)) for event_id in trace_events]
     )
     assert len(colors) == sample_count
-    widths = np.full(sample_count, 0.85, dtype=np.float32)
+    widths = np.full(sample_count, stroke_width, dtype=np.float32)
     subpaths = np.full(ORBIT_TRACE_COUNT, ORBIT_TRACE_SAMPLES, dtype=np.uint32)
 
     path = dvz.dvz_path(scene, 0)
@@ -363,6 +416,8 @@ def _add_orbit_traces(scene, panel, model: OrbitModel):
         raise RuntimeError('dvz_path_set_join() failed')
     if dvz.dvz_visual_set_depth_test(path, True) != 0:
         raise RuntimeError('dvz_visual_set_depth_test(orbits) failed')
+    if dvz.dvz_visual_set_alpha_mode(path, dvz.DVZ_ALPHA_BLENDED) != 0:
+        raise RuntimeError('dvz_visual_set_alpha_mode(orbits) failed')
     ex.add_visual(panel, path)
     return path
 
@@ -374,10 +429,10 @@ def _add_debris(scene, panel, model: OrbitModel):
         dtype=np.uint8,
     )
     colors = palette[model.event_ids]
-    sizes = (2.0 + 2.8 * ((37 * model.catalog_ids.astype(np.uint64)) % 101) / 100.0).astype(
+    sizes = (1.4 + 2.1 * ((37 * model.catalog_ids.astype(np.uint64)) % 101) / 100.0).astype(
         np.float32
     )
-    sizes[model.catalog_ids % 79 == 0] = 6.5
+    sizes[model.catalog_ids % 79 == 0] = 5.0
 
     points = dvz.dvz_point(scene, 0)
     if not points:
@@ -440,11 +495,13 @@ def _build_scene():
     _setup_camera(panel)
     _add_star_shell(scene, panel)
     mesh = _add_planet(scene, panel)
+    _atmosphere = _add_atmosphere(scene, panel)
     orbit_model = _load_orbit_model()
-    orbits = _add_orbit_traces(scene, panel, orbit_model)
+    orbit_glow = _add_orbit_traces(scene, panel, orbit_model, 2.8, 22)
+    orbits = _add_orbit_traces(scene, panel, orbit_model, 0.68, 190)
     debris = _add_debris(scene, panel, orbit_model)
     state = GlobeState()
-    _add_globe_rotation(scene, (mesh, orbits, debris), state)
+    _add_globe_rotation(scene, (mesh, orbit_glow, orbits, debris), state)
     return scene, figure, panel, mesh, debris, orbit_model, state
 
 

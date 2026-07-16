@@ -484,8 +484,8 @@ static bool _contract_pipeline_has_layout_label(
 /**
  * Return whether a pipeline has a material-compatible bind-group layout.
  *
- * Item-state point-like shaders use a combined set-1 layout containing both material params and
- * item-state style params, so that layout satisfies the material-set contract.
+ * Textured meshes and item-state point-like shaders use combined set-1 layouts containing material
+ * params plus their family-specific resources, so those layouts satisfy the material-set contract.
  *
  * @param stream the DRP2 command stream
  * @param command the CreateRenderPipeline command
@@ -495,6 +495,7 @@ static bool _contract_pipeline_has_material_layout(
     const DvzDrp2CommandStream* stream, const DvzDrp2Command* command)
 {
     return _contract_pipeline_has_layout_label(stream, command, "_bgl_material_params") ||
+           _contract_pipeline_has_layout_label(stream, command, "_bgl_mesh_textured") ||
            _contract_pipeline_has_layout_label(stream, command, "_bgl_item_state_style");
 }
 
