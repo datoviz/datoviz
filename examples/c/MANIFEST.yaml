@@ -268,6 +268,7 @@ batches:
 
   review-21-showcases-spatial-a:
     - showcases_wind_field
+    - showcases_svg_tiger
     - showcases_spherical_harmonics
     - showcases_surface_grid
     - showcases_terrain_relief
@@ -3134,6 +3135,67 @@ examples:
       provenance: >-
         The orbital model is adapted from Glumpy's galaxy_simulation.py and preserves its BSD
         notice in galaxy_model.c. Stellar colors use the public-domain specrend reference values.
+
+  - id: showcases_svg_tiger
+    title: SVG Tiger
+    stage: v0.4_experimental
+    category: showcase
+    lane: showcases
+    source: examples/c/showcases/svg_tiger.c
+    extra_sources:
+      - label: Prepared path model
+        language: c
+        path: examples/c/showcases/svg_tiger_model.c
+      - label: Prepared path model header
+        language: c
+        path: examples/c/showcases/svg_tiger_model.h
+      - label: SVG preparation tool
+        language: python
+        path: tools/data/prepare_svg_tiger.py
+    validation: smoke+screenshot
+    capture:
+      size: 1000x1000
+    data:
+      kind: prepared
+    portability: native-only
+    webgpu:
+      status: native-only
+      requirements:
+        - mesh
+        - path
+        - polygon-triangulation
+        - panzoom
+      reason: the cache-only prepared artwork is not packaged for the browser
+    agent_copy_safe: false
+    dataset:
+      name: Classic Ghostscript tiger SVG as distributed by Glumpy
+      source: pinned Glumpy tiger.svg revision
+      source_url: >-
+        https://github.com/glumpy/glumpy/blob/aedb9212a1e00a68b7c4669405a6a8f754daf283/glumpy/data/tiger.svg
+      license: >-
+        Artwork redistribution terms remain unresolved. The Glumpy BSD-3-Clause code license does
+        not by itself establish terms for this historical Ghostscript-derived artwork, so neither
+        the SVG nor prepared geometry is committed.
+      citation: Glumpy tiger example; historical Ghostscript tiger.eps artwork.
+      preprocessing: python3 tools/data/prepare_svg_tiger.py --download
+      cache_prepared_path: .cache/datoviz/examples/svg_tiger/prepared
+      provenance: >-
+        The preparation tool verifies a pinned source hash, resolves Glumpy-compatible inherited
+        paint, flattens M/L/C/Z paths with adaptive De Casteljau subdivision, and writes cache-only
+        path records. Datoviz triangulates fills with Earcut and renders outlines as retained paths.
+    gallery:
+      card: section
+      status_label: experimental
+    tags:
+      - vector-art
+      - svg
+      - bezier
+      - polygon-triangulation
+      - mesh
+      - path
+      - panzoom
+      - prepared-data
+      - capture
 
   - id: showcases_gpu_particle_smoke
     title: GPU Particle Smoke

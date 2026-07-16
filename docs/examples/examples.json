@@ -5216,6 +5216,73 @@
       }
     },
     {
+      "id": "showcases_svg_tiger",
+      "title": "SVG Tiger",
+      "category": "showcase",
+      "lane": "showcases",
+      "stage": "v0.4_experimental",
+      "status": "experimental",
+      "source": "examples/c/showcases/svg_tiger.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/svg_tiger.c",
+      "page": "gallery/showcases/showcases_svg_tiger.md",
+      "summary": "This example renders the classic colored tiger from prepared SVG paths.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c showcases/svg_tiger",
+      "smoke_command": "./build/examples/c/showcases/svg_tiger --png",
+      "tags": [
+        "vector-art",
+        "svg",
+        "bezier",
+        "polygon-triangulation",
+        "mesh",
+        "path",
+        "panzoom",
+        "prepared-data",
+        "capture"
+      ],
+      "data": {
+        "kind": "prepared"
+      },
+      "data_kind": "prepared",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "pending",
+          "source": "data/gallery/v0.4/showcases/showcases_svg_tiger.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/showcases_svg_tiger.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
+      "webgpu_requirements": [
+        "mesh",
+        "path",
+        "polygon-triangulation",
+        "panzoom"
+      ],
+      "webgpu_reason": "the cache-only prepared artwork is not packaged for the browser",
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "mesh",
+          "path",
+          "polygon-triangulation",
+          "panzoom"
+        ],
+        "reason": "the cache-only prepared artwork is not packaged for the browser"
+      },
+      "dataset": {
+        "name": "Classic Ghostscript tiger SVG as distributed by Glumpy",
+        "source": "pinned Glumpy tiger.svg revision",
+        "source_url": "https://github.com/glumpy/glumpy/blob/aedb9212a1e00a68b7c4669405a6a8f754daf283/glumpy/data/tiger.svg",
+        "license": "Artwork redistribution terms remain unresolved. The Glumpy BSD-3-Clause code license does not by itself establish terms for this historical Ghostscript-derived artwork, so neither the SVG nor prepared geometry is committed.",
+        "citation": "Glumpy tiger example; historical Ghostscript tiger.eps artwork.",
+        "preprocessing": "python3 tools/data/prepare_svg_tiger.py --download",
+        "cache_prepared_path": ".cache/datoviz/examples/svg_tiger/prepared",
+        "provenance": "The preparation tool verifies a pinned source hash, resolves Glumpy-compatible inherited paint, flattens M/L/C/Z paths with adaptive De Casteljau subdivision, and writes cache-only path records. Datoviz triangulates fills with Earcut and renders outlines as retained paths."
+      }
+    },
+    {
       "id": "showcases_gpu_particle_smoke",
       "title": "GPU Particle Smoke",
       "category": "showcase",

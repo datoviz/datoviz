@@ -108,6 +108,18 @@ This example combines a synthetic wind-speed field with vectors and streamlines.
 
 <div class="card" markdown="1">
 
+### [SVG Tiger](gallery/showcases/showcases_svg_tiger.md)
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for SVG Tiger"><span>Screenshot pending</span></div>
+
+`experimental` `showcases`<br><span>`vector-art`, `svg`, `bezier`, `polygon-triangulation`, `mesh`, ...</span>
+
+This example renders the classic colored tiger from prepared SVG paths.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Density-Wave Galaxy](gallery/showcases/showcases_galaxy.md)
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for Density-Wave Galaxy"><span>Screenshot pending</span></div>

@@ -63,7 +63,7 @@
         ]
       },
       "prepared": {
-        "count": 5,
+        "count": 6,
         "examples": [
           {
             "id": "showcases_choropleth",
@@ -72,6 +72,14 @@
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
             "page": "gallery/showcases/showcases_choropleth.md"
+          },
+          {
+            "id": "showcases_svg_tiger",
+            "title": "SVG Tiger",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/svg_tiger.c",
+            "page": "gallery/showcases/showcases_svg_tiger.md"
           },
           {
             "id": "showcases_cortical_activity",
@@ -2186,6 +2194,19 @@
           }
         ]
       },
+      "bezier": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_svg_tiger",
+            "title": "SVG Tiger",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/svg_tiger.c",
+            "page": "gallery/showcases/showcases_svg_tiger.md"
+          }
+        ]
+      },
       "bezier-edges": {
         "count": 1,
         "examples": [
@@ -2260,7 +2281,7 @@
         ]
       },
       "capture": {
-        "count": 25,
+        "count": 26,
         "examples": [
           {
             "id": "features_colorbar",
@@ -2429,6 +2450,14 @@
             "status": "supported",
             "source": "examples/c/showcases/galaxy.c",
             "page": "gallery/showcases/showcases_galaxy.md"
+          },
+          {
+            "id": "showcases_svg_tiger",
+            "title": "SVG Tiger",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/svg_tiger.c",
+            "page": "gallery/showcases/showcases_svg_tiger.md"
           },
           {
             "id": "showcases_gpu_particle_smoke",
@@ -3244,7 +3273,7 @@
         ]
       },
       "mesh": {
-        "count": 5,
+        "count": 6,
         "examples": [
           {
             "id": "visuals_mesh",
@@ -3253,6 +3282,14 @@
             "status": "supported",
             "source": "examples/c/visuals/mesh.c",
             "page": "gallery/visuals/visuals_mesh.md"
+          },
+          {
+            "id": "showcases_svg_tiger",
+            "title": "SVG Tiger",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/svg_tiger.c",
+            "page": "gallery/showcases/showcases_svg_tiger.md"
           },
           {
             "id": "showcases_spherical_harmonics",
@@ -3451,6 +3488,14 @@
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
             "page": "gallery/showcases/showcases_choropleth.md"
+          },
+          {
+            "id": "showcases_svg_tiger",
+            "title": "SVG Tiger",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/svg_tiger.c",
+            "page": "gallery/showcases/showcases_svg_tiger.md"
           }
         ]
       },
@@ -3489,7 +3534,7 @@
         ]
       },
       "path": {
-        "count": 3,
+        "count": 4,
         "examples": [
           {
             "id": "visuals_vector",
@@ -3506,6 +3551,14 @@
             "status": "supported",
             "source": "examples/c/visuals/path.c",
             "page": "gallery/visuals/visuals_path.md"
+          },
+          {
+            "id": "showcases_svg_tiger",
+            "title": "SVG Tiger",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/svg_tiger.c",
+            "page": "gallery/showcases/showcases_svg_tiger.md"
           },
           {
             "id": "showcases_textured_planet",
@@ -3648,6 +3701,32 @@
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
             "page": "gallery/showcases/showcases_choropleth.md"
+          }
+        ]
+      },
+      "polygon-triangulation": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_svg_tiger",
+            "title": "SVG Tiger",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/svg_tiger.c",
+            "page": "gallery/showcases/showcases_svg_tiger.md"
+          }
+        ]
+      },
+      "prepared-data": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_svg_tiger",
+            "title": "SVG Tiger",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/svg_tiger.c",
+            "page": "gallery/showcases/showcases_svg_tiger.md"
           }
         ]
       },
@@ -4157,6 +4236,19 @@
           }
         ]
       },
+      "svg": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_svg_tiger",
+            "title": "SVG Tiger",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/svg_tiger.c",
+            "page": "gallery/showcases/showcases_svg_tiger.md"
+          }
+        ]
+      },
       "svg-path-symbol": {
         "count": 1,
         "examples": [
@@ -4316,6 +4408,19 @@
             "status": "supported",
             "source": "examples/c/visuals/vector.c",
             "page": "gallery/visuals/visuals_vector.md"
+          }
+        ]
+      },
+      "vector-art": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_svg_tiger",
+            "title": "SVG Tiger",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/svg_tiger.c",
+            "page": "gallery/showcases/showcases_svg_tiger.md"
           }
         ]
       },

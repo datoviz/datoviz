@@ -4,7 +4,7 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_wind_field/">← Previous: Wind Field</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_svg_tiger/">← Previous: SVG Tiger</a></span>
 <span class="dvz-example-nav__next"><a href="../showcases_gpu_particle_smoke/">Next: GPU Particle Smoke →</a></span>
 </div>
 </nav>
@@ -107,7 +107,7 @@ The density-wave equations and rendering composition are adapted from Nicolas P.
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_wind_field/">← Previous: Wind Field</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_svg_tiger/">← Previous: SVG Tiger</a></span>
 <span class="dvz-example-nav__next"><a href="../showcases_gpu_particle_smoke/">Next: GPU Particle Smoke →</a></span>
 </div>
 </nav>

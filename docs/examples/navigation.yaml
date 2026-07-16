@@ -13,6 +13,7 @@ sections:
           - showcases_scalebar_measurement
           - showcases_choropleth
           - showcases_wind_field
+          - showcases_svg_tiger
           - showcases_galaxy
           - showcases_gpu_particle_smoke
       - title: 3D
