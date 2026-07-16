@@ -25,7 +25,8 @@
  *          python tools/data/prepare_cortical_activity.py
  * Run:     ./build/examples/c/showcases/cortical_activity --live
  * Smoke:   ./build/examples/c/showcases/cortical_activity --png
- * Control: live GUI; space plays/pauses; left/right arrows seek
+ * Control: pass --live explicitly for the tuner; D prints C defaults; space plays/pauses;
+ *          left/right arrows seek
  */
 
 
@@ -50,6 +51,7 @@
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
+#include "example_tuner.h"
 #include "runner/scenario_runner.h"
 
 
@@ -120,9 +122,8 @@ typedef struct CorticalActivityState
     DvzScale* scale;
     DvzColorbar* colorbar;
     DvzOverlayCard* readout;
-    DvzPanel* panel;
     DvzArcball* arcball;
-    DvzView* view;
+    ExampleTuner tuner;
     DvzColor* colors;
     float* source_frame;
     vec3* positions;
@@ -149,6 +150,9 @@ typedef struct CorticalActivityState
 
 DvzScenarioSpec dvz_showcase_cortical_activity_scenario(void);
 static float _clamp01(float value);
+static bool _cortical_activity_settings_gui(DvzGui* gui, void* user);
+static void _cortical_activity_settings_reset(void* user);
+static void _cortical_activity_settings_print(FILE* fp, void* user);
 
 
 
@@ -806,6 +810,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (state == NULL)
         return false;
     *out_user = state;
+    state->tuner = example_tuner("Cortical activity settings");
     if (!_activity_data_load(CORTICAL_ACTIVITY_PATH, &state->data))
         return false;
 
@@ -830,10 +835,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
         return false;
+    example_tuner_figure(&state->tuner, ctx->figure);
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     if (panel == NULL)
         return false;
-    state->panel = panel;
     example_graphite_cyan_set_panel_background(panel);
     if (example_set_default_3d_camera(panel, 0.50f) == NULL)
         return false;
@@ -905,8 +910,15 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (state->arcball == NULL)
         return false;
     vec3 angles = {-0.15f, -0.65f, +0.02f};
+    vec2 pan = {0.0f, 0.0f};
     dvz_arcball_initial(state->arcball, angles);
     (void)dvz_arcball_zoom(state->arcball, 1.0f);
+    (void)dvz_arcball_pan(state->arcball, pan);
+    (void)example_tuner_add_component(
+        &state->tuner, "Activity", state, NULL, _cortical_activity_settings_gui, NULL,
+        _cortical_activity_settings_reset, _cortical_activity_settings_print);
+    example_tuner_arcball(&state->tuner, "Arcball", state->arcball, angles, 1.0f, pan);
+    example_tuner_material(&state->tuner, "Cortical material", state->mesh, &state->material);
     return true;
 }
 
@@ -1085,23 +1097,21 @@ static void _load_material_preset(CorticalActivityState* state, int preset)
 
 
 /**
- * Build the native live control window.
+ * Build the activity-specific section of the shared live tuner.
  *
  * @param gui GUI overlay
- * @param view native view
- * @param user_data showcase state
+ * @param user showcase state
+ * @return whether a setting changed
  */
-static void _cortical_activity_gui(DvzGui* gui, DvzView* view, void* user_data)
+static bool _cortical_activity_settings_gui(DvzGui* gui, void* user)
 {
-    (void)view;
-    CorticalActivityState* state = (CorticalActivityState*)user_data;
+    CorticalActivityState* state = (CorticalActivityState*)user;
     if (gui == NULL || state == NULL)
-        return;
+        return false;
 
     static const char* const layouts[LAYOUT_COUNT] = {"Whole brain", "Split lateral"};
     static const char* const material_presets[MATERIAL_PRESET_COUNT] = {
         "Matte anatomy", "Soft studio", "High contrast", "Unlit data"};
-    static const char* const material_models[] = {"Unlit", "Phong", "Standard"};
     bool geometry_changed = false;
     bool layout_changed = false;
     bool scale_changed = false;
@@ -1112,132 +1122,81 @@ static void _cortical_activity_gui(DvzGui* gui, DvzView* view, void* user_data)
     bool reset_view = false;
     int view_preset = -1;
 
-    if (dvz_gui_begin(gui, "Cortical Activity", NULL, 0))
+    dvz_gui_separator_text(gui, "Time");
+    if (dvz_gui_button(gui, state->playing ? "Pause" : "Play"))
     {
-        dvz_gui_separator_text(gui, "Time");
-        if (dvz_gui_button(gui, state->playing ? "Pause" : "Play"))
-        {
-            state->playing = !state->playing;
-            playback_changed = true;
-        }
-        dvz_gui_same_line(gui, 0.0f, 8.0f);
-        if (dvz_gui_button(gui, "Restart"))
-        {
-            state->playing = false;
-            state->current_time_ms = state->data.times_ms[0];
-            seek_changed = true;
-        }
-        dvz_gui_same_line(gui, 0.0f, 8.0f);
-        if (dvz_gui_button(gui, "Peak"))
-        {
-            state->playing = false;
-            state->current_time_ms = state->peak_time_ms;
-            seek_changed = true;
-        }
-        seek_changed |= dvz_gui_slider_float_format(
-            gui, "Time", &state->current_time_ms, state->data.times_ms[0],
-            state->data.times_ms[state->data.time_count - 1u], "%.1f ms");
-        (void)dvz_gui_slider_float_format(
-            gui, "Playback speed", &state->playback_speed, 0.10f, 4.0f, "%.2fx");
-        (void)dvz_gui_checkbox(gui, "Loop", &state->loop);
-
-        dvz_gui_separator_text(gui, "Cortical surface");
-        layout_changed |= dvz_gui_combo(gui, "Layout", &state->layout, layouts, LAYOUT_COUNT);
-        geometry_changed |= layout_changed;
-
-        dvz_gui_separator_text(gui, "Material");
-        if (dvz_gui_combo(
-                gui, "Preset", &state->material_preset, material_presets, MATERIAL_PRESET_COUNT))
-        {
-            _load_material_preset(state, state->material_preset);
-            material_changed = true;
-        }
-        int model = (int)state->material.model;
-        if (dvz_gui_combo(gui, "Model", &model, material_models, 3))
-        {
-            state->material.model = (DvzMaterialModel)model;
-            material_changed = true;
-        }
-        anatomy_changed |= dvz_gui_color_edit_dvz(gui, "Neutral cortex", &state->anatomy_color, 0);
-        if (state->material.model != DVZ_MATERIAL_MODEL_UNLIT)
-        {
-            material_changed |= dvz_gui_slider_float3(
-                gui, "Light direction", state->material.light_direction, -1.0f, +1.0f);
-        }
-        if (state->material.model == DVZ_MATERIAL_MODEL_PHONG)
-        {
-            material_changed |=
-                dvz_gui_slider_float(gui, "Ambient", &state->material.phong.ambient, 0.0f, 1.0f);
-            material_changed |=
-                dvz_gui_slider_float(gui, "Diffuse", &state->material.phong.diffuse, 0.0f, 1.5f);
-            material_changed |=
-                dvz_gui_slider_float(gui, "Specular", &state->material.phong.specular, 0.0f, 1.5f);
-            material_changed |= dvz_gui_slider_float(
-                gui, "Shininess", &state->material.phong.shininess, 1.0f, 160.0f);
-        }
-        else if (state->material.model == DVZ_MATERIAL_MODEL_STANDARD)
-        {
-            material_changed |= dvz_gui_slider_float(
-                gui, "Roughness", &state->material.standard.roughness, 0.02f, 1.0f);
-            material_changed |= dvz_gui_slider_float(
-                gui, "Specular", &state->material.standard.specular, 0.0f, 1.5f);
-            material_changed |= dvz_gui_slider_float(
-                gui, "Metallic", &state->material.standard.metallic, 0.0f, 1.0f);
-            material_changed |= dvz_gui_slider_float(
-                gui, "Rim", &state->material.standard.rim_strength, 0.0f, 1.0f);
-        }
-
-        dvz_gui_separator_text(gui, "Activity scale (dSPM)");
-        scale_changed |= dvz_gui_slider_float(gui, "Threshold", &state->activity_min, 0.0f, 15.0f);
-        scale_changed |=
-            dvz_gui_slider_float(gui, "Full color", &state->activity_mid, 1.0f, 22.0f);
-        scale_changed |=
-            dvz_gui_slider_float(gui, "Saturation", &state->activity_max, 5.0f, 35.0f);
-        if (dvz_gui_button(gui, "Reset scientific scale"))
-        {
-            state->activity_min = state->data.display_min;
-            state->activity_mid = state->data.display_mid;
-            state->activity_max = state->data.display_max;
-            scale_changed = true;
-        }
-
-        dvz_gui_separator_text(gui, "Arcball");
-        vec3 angles = {0};
-        dvz_arcball_angles(state->arcball, angles);
-        DvzArcballState arcball_state = {0};
-        (void)dvz_arcball_state(state->arcball, &arcball_state);
-        bool arcball_changed = dvz_gui_slider_float3(gui, "Angles", angles, -3.14159f, +3.14159f);
-        arcball_changed |= dvz_gui_slider_float(gui, "Zoom", &arcball_state.zoom, 0.35f, 3.0f);
-        arcball_changed |= dvz_gui_slider_float2(gui, "Pan", arcball_state.pan, -1.5f, +1.5f);
-        if (arcball_changed)
-        {
-            (void)dvz_arcball_set(state->arcball, angles);
-            (void)dvz_arcball_zoom(state->arcball, arcball_state.zoom);
-            (void)dvz_arcball_pan(state->arcball, arcball_state.pan);
-        }
-        if (dvz_gui_button(gui, "Oblique"))
-            view_preset = 0;
-        dvz_gui_same_line(gui, 0.0f, 6.0f);
-        if (dvz_gui_button(gui, "Anterior"))
-            view_preset = 1;
-        dvz_gui_same_line(gui, 0.0f, 6.0f);
-        if (dvz_gui_button(gui, "Left"))
-            view_preset = 2;
-        dvz_gui_same_line(gui, 0.0f, 6.0f);
-        if (dvz_gui_button(gui, "Right"))
-            view_preset = 3;
-        dvz_gui_same_line(gui, 0.0f, 6.0f);
-        if (dvz_gui_button(gui, "Dorsal"))
-            view_preset = 4;
-        reset_view = dvz_gui_button(gui, "Reset view");
-
-        dvz_gui_separator_text(gui, "Data");
-        dvz_gui_text(gui, "Full FreeSurfer cortex: 319,834 vertices.");
-        dvz_gui_text(gui, "MEG dSPM domain: 8,196 oct6 vertices.");
-        dvz_gui_text(gui, "Activity is spherical-triangle interpolated, not upsampled evidence.");
-        dvz_gui_text(gui, "Space: play/pause | arrows: seek");
+        state->playing = !state->playing;
+        playback_changed = true;
     }
-    dvz_gui_end(gui);
+    dvz_gui_same_line(gui, 0.0f, 8.0f);
+    if (dvz_gui_button(gui, "Restart"))
+    {
+        state->playing = false;
+        state->current_time_ms = state->data.times_ms[0];
+        seek_changed = true;
+    }
+    dvz_gui_same_line(gui, 0.0f, 8.0f);
+    if (dvz_gui_button(gui, "Peak"))
+    {
+        state->playing = false;
+        state->current_time_ms = state->peak_time_ms;
+        seek_changed = true;
+    }
+    seek_changed |= dvz_gui_slider_float_format(
+        gui, "Time", &state->current_time_ms, state->data.times_ms[0],
+        state->data.times_ms[state->data.time_count - 1u], "%.1f ms");
+    playback_changed |= dvz_gui_slider_float_format(
+        gui, "Playback speed", &state->playback_speed, 0.10f, 4.0f, "%.2fx");
+    playback_changed |= dvz_gui_checkbox(gui, "Loop", &state->loop);
+
+    dvz_gui_separator_text(gui, "Cortical surface");
+    layout_changed |= dvz_gui_combo(gui, "Layout", &state->layout, layouts, LAYOUT_COUNT);
+    geometry_changed |= layout_changed;
+
+    dvz_gui_separator_text(gui, "Display");
+    if (dvz_gui_combo(
+            gui, "Material preset", &state->material_preset, material_presets,
+            MATERIAL_PRESET_COUNT))
+    {
+        _load_material_preset(state, state->material_preset);
+        material_changed = true;
+    }
+    anatomy_changed |= dvz_gui_color_edit_dvz(gui, "Neutral cortex", &state->anatomy_color, 0);
+
+    dvz_gui_separator_text(gui, "Activity scale (dSPM)");
+    scale_changed |= dvz_gui_slider_float(gui, "Threshold", &state->activity_min, 0.0f, 15.0f);
+    scale_changed |= dvz_gui_slider_float(gui, "Full color", &state->activity_mid, 1.0f, 22.0f);
+    scale_changed |= dvz_gui_slider_float(gui, "Saturation", &state->activity_max, 5.0f, 35.0f);
+    if (dvz_gui_button(gui, "Reset scientific scale"))
+    {
+        state->activity_min = state->data.display_min;
+        state->activity_mid = state->data.display_mid;
+        state->activity_max = state->data.display_max;
+        scale_changed = true;
+    }
+
+    dvz_gui_separator_text(gui, "Views");
+    if (dvz_gui_button(gui, "Oblique"))
+        view_preset = 0;
+    dvz_gui_same_line(gui, 0.0f, 6.0f);
+    if (dvz_gui_button(gui, "Anterior"))
+        view_preset = 1;
+    dvz_gui_same_line(gui, 0.0f, 6.0f);
+    if (dvz_gui_button(gui, "Left"))
+        view_preset = 2;
+    dvz_gui_same_line(gui, 0.0f, 6.0f);
+    if (dvz_gui_button(gui, "Right"))
+        view_preset = 3;
+    dvz_gui_same_line(gui, 0.0f, 6.0f);
+    if (dvz_gui_button(gui, "Dorsal"))
+        view_preset = 4;
+    reset_view = dvz_gui_button(gui, "Reset view");
+
+    dvz_gui_separator_text(gui, "Data");
+    dvz_gui_text(gui, "Full FreeSurfer cortex: 319,834 vertices.");
+    dvz_gui_text(gui, "MEG dSPM domain: 8,196 oct6 vertices.");
+    dvz_gui_text(gui, "Activity is spherical-triangle interpolated, not upsampled evidence.");
+    dvz_gui_text(gui, "Space: play/pause | arrows: seek");
 
     if (geometry_changed)
         (void)_update_geometry(state);
@@ -1259,17 +1218,81 @@ static void _cortical_activity_gui(DvzGui* gui, DvzView* view, void* user_data)
         _apply_view_preset(state, view_preset);
     if (reset_view)
         _apply_view_preset(state, state->layout == SPLIT_LATERAL_LAYOUT ? 1 : 0);
+    return geometry_changed || scale_changed || material_changed || anatomy_changed ||
+           seek_changed || playback_changed || view_preset >= 0 || reset_view;
 }
 
 
 /**
- * Attach native Dear ImGui controls in live mode.
+ * Restore the pial activity showcase defaults.
+ *
+ * @param user showcase state
+ */
+static void _cortical_activity_settings_reset(void* user)
+{
+    CorticalActivityState* state = (CorticalActivityState*)user;
+    if (state == NULL)
+        return;
+
+    state->playing = false;
+    state->loop = true;
+    state->playback_speed = 1.0f;
+    state->current_time_ms = state->peak_time_ms;
+    state->layout = WHOLE_BRAIN_LAYOUT;
+    state->anatomy_color = dvz_color_rgb(54u, 61u, 70u);
+    state->activity_min = state->data.display_min;
+    state->activity_mid = state->data.display_mid;
+    state->activity_max = state->data.display_max;
+    _load_material_preset(state, 0);
+
+    (void)_update_geometry(state);
+    (void)dvz_visual_set_material(state->mesh, &state->material);
+    (void)_update_activity_scale(state);
+    (void)_set_activity_time(state, state->current_time_ms);
+    _apply_view_preset(state, 0);
+}
+
+
+/**
+ * Print pasteable C defaults for the current activity display settings.
+ *
+ * Material and arcball defaults are emitted by their shared tuner components.
+ *
+ * @param fp output stream
+ * @param user showcase state
+ */
+static void _cortical_activity_settings_print(FILE* fp, void* user)
+{
+    const CorticalActivityState* state = (const CorticalActivityState*)user;
+    if (state == NULL)
+        return;
+    if (fp == NULL)
+        fp = stdout;
+
+    dvz_fprintf(fp, "/* cortical activity display */\n");
+    dvz_fprintf(fp, "state->playing = %s;\n", state->playing ? "true" : "false");
+    dvz_fprintf(fp, "state->loop = %s;\n", state->loop ? "true" : "false");
+    dvz_fprintf(fp, "state->playback_speed = %.6ff;\n", state->playback_speed);
+    dvz_fprintf(fp, "state->current_time_ms = %.6ff;\n", state->current_time_ms);
+    dvz_fprintf(fp, "state->layout = %d;\n", state->layout);
+    dvz_fprintf(fp, "state->material_preset = %d;\n", state->material_preset);
+    dvz_fprintf(
+        fp, "state->anatomy_color = dvz_color_rgba(%uu, %uu, %uu, %uu);\n", state->anatomy_color.r,
+        state->anatomy_color.g, state->anatomy_color.b, state->anatomy_color.a);
+    dvz_fprintf(fp, "state->activity_min = %.6ff;\n", state->activity_min);
+    dvz_fprintf(fp, "state->activity_mid = %.6ff;\n", state->activity_mid);
+    dvz_fprintf(fp, "state->activity_max = %.6ff;\n", state->activity_max);
+}
+
+
+/**
+ * Attach the shared example tuner in explicit live mode.
  *
  * @param ctx scenario context
  * @param app owning app
  * @param view native view
  * @param user showcase state
- * @return whether GUI setup succeeded
+ * @return whether tuner setup succeeded
  */
 static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
 {
@@ -1279,13 +1302,7 @@ static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView*
         view == NULL)
         return true;
 
-    DvzGuiConfig config = dvz_gui_config();
-    config.default_window_width = 390u;
-    DvzGui* gui = dvz_view_gui(view, &config);
-    if (gui == NULL)
-        return false;
-    state->view = view;
-    return dvz_view_set_gui_callback(view, _cortical_activity_gui, state) == DVZ_OK;
+    return example_tuner_attach(&state->tuner, view);
 }
 
 
@@ -1301,8 +1318,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
     CorticalActivityState* state = (CorticalActivityState*)user;
     if (state == NULL)
         return;
-    if (state->view != NULL)
-        (void)dvz_view_set_gui_callback(state->view, NULL, NULL);
+    example_tuner_detach(&state->tuner);
     dvz_free(state->display_normals);
     dvz_free(state->positions);
     dvz_free(state->source_frame);
@@ -1332,7 +1348,6 @@ DvzScenarioSpec dvz_showcase_cortical_activity_scenario(void)
         .init = _scenario_init,
         .frame = _scenario_frame,
         .event = _scenario_event,
-        .native_view = _scenario_native_view,
         .destroy = _scenario_destroy,
     };
 }
@@ -1354,6 +1369,8 @@ DvzScenarioSpec dvz_showcase_cortical_activity_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = dvz_showcase_cortical_activity_scenario();
+    if (example_arg_has(argc, argv, "--live"))
+        spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
 #endif
