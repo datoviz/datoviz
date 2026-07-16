@@ -7,6 +7,7 @@ sections:
       - title: 2D
         examples:
           - showcases_scientific_plotting
+          - showcases_streaming_daq
           - showcases_panel_linked_axes
           - showcases_linked_probe_colorbar
           - showcases_scalebar_measurement

@@ -148,6 +148,7 @@ batches:
     - showcases_panel_linked_axes
     - showcases_linked_probe_colorbar
     - showcases_scientific_plotting
+    - showcases_streaming_daq
 
   review-04-axes-scales:
     - features_axes_2d
@@ -1555,6 +1556,53 @@ examples:
       - guide-spans
       - stacked-traces
       - uncertainty-band
+
+  - id: showcases_streaming_daq
+    title: Streaming DAQ · 128 channels
+    stage: v0.4_experimental
+    category: showcase
+    lane: showcases
+    source: examples/c/showcases/streaming_daq.c
+    extra_sources:
+      - label: Acquisition model
+        language: c
+        path: examples/c/showcases/streaming_daq_model.c
+      - label: Acquisition model header
+        language: c
+        path: examples/c/showcases/streaming_daq_model.h
+    validation: smoke+interaction+screenshot+performance
+    capture:
+      mode: custom
+      args: ["--png", "4"]
+      reason: four warm-up frames realize the retained axes and text before capture
+    data:
+      kind: simulated
+    portability: native-only
+    webgpu:
+      status: native-only
+      requirements:
+        - primitive
+        - axes
+        - panzoom
+        - gui
+        - frame-callbacks
+        - continuous-frames
+      reason: the live source uses a native producer thread and the controls use native ImGui
+    agent_copy_safe: false
+    gallery:
+      card: section
+      status_label: experimental
+    tags:
+      - workflow
+      - simulated
+      - daq
+      - streaming
+      - time-series
+      - ring-buffer
+      - partial-updates
+      - gui
+      - panzoom
+      - performance
 
   - id: features_scalebar
     title: Scale Bar

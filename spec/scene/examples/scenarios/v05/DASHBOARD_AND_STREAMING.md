@@ -11,8 +11,14 @@
 Merged track for the old physiology signal workbench and streaming DAQ viewer. It should prove
 dense traces, sustained updates, linked X panzoom, overlays, and readable axes.
 
+The v0.4 experimental baseline now lives in
+[`examples/c/showcases/streaming_daq.c`](../../../../../examples/c/showcases/streaming_daq.c). It
+keeps the acquisition source, bounded SPSC queue, display ring, raw line-list technique, partial
+uploads, synchronization telemetry, and native GUI entirely example-local. It proves the engine
+path without making ring buffers or time-series helpers public API.
+
 Needed before full version: ring-buffer semantics, discontinuity handling at wrap, many-trace
-layout/stacking helpers, pause/reset controls, and update policies that do not recreate resources.
+layout/stacking helpers, shared cursor/selection semantics, and reusable update/telemetry policy.
 
 
 ## `toy_dicom_viewer`

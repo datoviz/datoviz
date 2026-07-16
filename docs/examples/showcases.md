@@ -22,6 +22,18 @@ This example composes common scientific plot elements in one figure.
 
 <div class="card" markdown="1">
 
+### [Streaming DAQ · 128 channels](gallery/showcases/showcases_streaming_daq.md)
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for Streaming DAQ · 128 channels"><span>Screenshot pending</span></div>
+
+`experimental` `showcases`<br><span>`workflow`, `simulated`, `daq`, `streaming`, `time-series`, ...</span>
+
+This example renders a simulated real-time data acquisition system.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Linked Panels With Axes](gallery/showcases/showcases_panel_linked_axes.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">

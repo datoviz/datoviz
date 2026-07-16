@@ -4,6 +4,11 @@
 > **Scope:** fast retained interactive dashboards built on the Datoviz scene, DRP2, and app stack.
 > **Primary proving ground:** [`../examples/scenarios/v05/DASHBOARD_AND_STREAMING.md`](../examples/scenarios/v05/DASHBOARD_AND_STREAMING.md).
 
+The first example-local proving slice is implemented in
+[`examples/c/showcases/streaming_daq.c`](../../../examples/c/showcases/streaming_daq.c). Keep its
+ring, producer queue, trace adapter, and telemetry private until another example demonstrates a
+reusable boundary.
+
 
 ## Summary
 

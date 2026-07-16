@@ -2,19 +2,19 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 111,
+  "count": 112,
   "categories": {
     "advanced": 4,
     "composite": 2,
     "feature": 68,
     "runtime": 5,
-    "showcase": 15,
+    "showcase": 16,
     "start": 1,
     "visual": 16
   },
   "statuses": {
     "diagnostic": 1,
-    "experimental": 13,
+    "experimental": 14,
     "prototype": 1,
     "supported": 96
   },
@@ -2450,6 +2450,68 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_scientific_plotting",
       "python_source": "examples/python/gallery/showcases/scientific_plotting.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/scientific_plotting.py"
+    },
+    {
+      "id": "showcases_streaming_daq",
+      "title": "Streaming DAQ \u00b7 128 channels",
+      "category": "showcase",
+      "lane": "showcases",
+      "stage": "v0.4_experimental",
+      "status": "experimental",
+      "source": "examples/c/showcases/streaming_daq.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/streaming_daq.c",
+      "page": "gallery/showcases/showcases_streaming_daq.md",
+      "summary": "This example renders a simulated real-time data acquisition system.",
+      "validation": "smoke+interaction+screenshot+performance",
+      "build_command": "just example-c showcases/streaming_daq",
+      "smoke_command": "./build/examples/c/showcases/streaming_daq --png",
+      "tags": [
+        "workflow",
+        "simulated",
+        "daq",
+        "streaming",
+        "time-series",
+        "ring-buffer",
+        "partial-updates",
+        "gui",
+        "panzoom",
+        "performance"
+      ],
+      "data": {
+        "kind": "simulated"
+      },
+      "data_kind": "simulated",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "pending",
+          "source": "data/gallery/v0.4/showcases/showcases_streaming_daq.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/showcases_streaming_daq.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
+      "webgpu_requirements": [
+        "primitive",
+        "axes",
+        "panzoom",
+        "gui",
+        "frame-callbacks",
+        "continuous-frames"
+      ],
+      "webgpu_reason": "the live source uses a native producer thread and the controls use native ImGui",
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "primitive",
+          "axes",
+          "panzoom",
+          "gui",
+          "frame-callbacks",
+          "continuous-frames"
+        ],
+        "reason": "the live source uses a native producer thread and the controls use native ImGui"
+      }
     },
     {
       "id": "features_scalebar",

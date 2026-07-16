@@ -3,19 +3,19 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 111,
+  "example_count": 112,
   "categories": {
     "advanced": 4,
     "composite": 2,
     "feature": 68,
     "runtime": 5,
-    "showcase": 15,
+    "showcase": 16,
     "start": 1,
     "visual": 16
   },
   "statuses": {
     "diagnostic": 1,
-    "experimental": 13,
+    "experimental": 14,
     "prototype": 1,
     "supported": 96
   },
@@ -121,8 +121,16 @@
         ]
       },
       "simulated": {
-        "count": 2,
+        "count": 3,
         "examples": [
+          {
+            "id": "showcases_streaming_daq",
+            "title": "Streaming DAQ \u00b7 128 channels",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/streaming_daq.c",
+            "page": "gallery/showcases/showcases_streaming_daq.md"
+          },
           {
             "id": "showcases_galaxy",
             "title": "Density-Wave Galaxy",
@@ -2603,6 +2611,19 @@
           }
         ]
       },
+      "daq": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_streaming_daq",
+            "title": "Streaming DAQ \u00b7 128 channels",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/streaming_daq.c",
+            "page": "gallery/showcases/showcases_streaming_daq.md"
+          }
+        ]
+      },
       "datetime": {
         "count": 1,
         "examples": [
@@ -2846,8 +2867,16 @@
         ]
       },
       "gui": {
-        "count": 4,
+        "count": 5,
         "examples": [
+          {
+            "id": "showcases_streaming_daq",
+            "title": "Streaming DAQ \u00b7 128 channels",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/streaming_daq.c",
+            "page": "gallery/showcases/showcases_streaming_daq.md"
+          },
           {
             "id": "showcases_galaxy",
             "title": "Density-Wave Galaxy",
@@ -3325,7 +3354,7 @@
         ]
       },
       "panzoom": {
-        "count": 11,
+        "count": 12,
         "examples": [
           {
             "id": "showcases_panel_linked_axes",
@@ -3334,6 +3363,14 @@
             "status": "supported",
             "source": "examples/c/showcases/panel_linked_axes.c",
             "page": "gallery/showcases/showcases_panel_linked_axes.md"
+          },
+          {
+            "id": "showcases_streaming_daq",
+            "title": "Streaming DAQ \u00b7 128 channels",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/streaming_daq.c",
+            "page": "gallery/showcases/showcases_streaming_daq.md"
           },
           {
             "id": "visuals_point",
@@ -3417,6 +3454,19 @@
           }
         ]
       },
+      "partial-updates": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_streaming_daq",
+            "title": "Streaming DAQ \u00b7 128 channels",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/streaming_daq.c",
+            "page": "gallery/showcases/showcases_streaming_daq.md"
+          }
+        ]
+      },
       "particles": {
         "count": 2,
         "examples": [
@@ -3464,6 +3514,19 @@
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
             "page": "gallery/showcases/showcases_textured_planet.md"
+          }
+        ]
+      },
+      "performance": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_streaming_daq",
+            "title": "Streaming DAQ \u00b7 128 channels",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/streaming_daq.c",
+            "page": "gallery/showcases/showcases_streaming_daq.md"
           }
         ]
       },
@@ -3706,6 +3769,19 @@
           }
         ]
       },
+      "ring-buffer": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_streaming_daq",
+            "title": "Streaming DAQ \u00b7 128 channels",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/streaming_daq.c",
+            "page": "gallery/showcases/showcases_streaming_daq.md"
+          }
+        ]
+      },
       "sampled-field": {
         "count": 5,
         "examples": [
@@ -3914,6 +3990,19 @@
           }
         ]
       },
+      "simulated": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_streaming_daq",
+            "title": "Streaming DAQ \u00b7 128 channels",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/streaming_daq.c",
+            "page": "gallery/showcases/showcases_streaming_daq.md"
+          }
+        ]
+      },
       "simulation": {
         "count": 2,
         "examples": [
@@ -4042,6 +4131,19 @@
           }
         ]
       },
+      "streaming": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_streaming_daq",
+            "title": "Streaming DAQ \u00b7 128 channels",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/streaming_daq.c",
+            "page": "gallery/showcases/showcases_streaming_daq.md"
+          }
+        ]
+      },
       "surface-grid": {
         "count": 1,
         "examples": [
@@ -4158,8 +4260,16 @@
         ]
       },
       "time-series": {
-        "count": 1,
+        "count": 2,
         "examples": [
+          {
+            "id": "showcases_streaming_daq",
+            "title": "Streaming DAQ \u00b7 128 channels",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/streaming_daq.c",
+            "page": "gallery/showcases/showcases_streaming_daq.md"
+          },
           {
             "id": "features_datetime_axis",
             "title": "Datetime Axis",
@@ -4364,7 +4474,7 @@
         ]
       },
       "workflow": {
-        "count": 4,
+        "count": 5,
         "examples": [
           {
             "id": "showcases_panel_linked_axes",
@@ -4389,6 +4499,14 @@
             "status": "supported",
             "source": "examples/c/showcases/scientific_plotting.c",
             "page": "gallery/showcases/showcases_scientific_plotting.md"
+          },
+          {
+            "id": "showcases_streaming_daq",
+            "title": "Streaming DAQ \u00b7 128 channels",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/streaming_daq.c",
+            "page": "gallery/showcases/showcases_streaming_daq.md"
           },
           {
             "id": "showcases_scalebar_measurement",
