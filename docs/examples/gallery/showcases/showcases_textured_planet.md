@@ -125,7 +125,7 @@ Prepare the debris ephemeris before running: uv run tools/data/prepare_orbital_d
     | `citation` | NASA Blue Marble Next Generation; USGS Astrogeology Mars Viking Colorized Global Mosaic 232m / Mars Digital Image Model 2.1; CelesTrak; Vallado, Crawford, Hujsak, and Kelso, Revisiting Spacetrack Report #3, AIAA 2006-6753. |
     | `preprocessing` | uv run tools/data/prepare_orbital_debris.py --force |
     | `cache_prepared_path` | .cache/datoviz/examples/orbital_debris/prepared |
-    | `provenance` | Earth uses NASA Blue Marble Next Generation texture assets; Mars uses the USGS Astrogeology/NASA Ames/JPL/USGS Viking MDIM 2.1 colorized global mosaic. Debris points are tracked catalog objects from three selected fragmentation events, propagated from a dated CelesTrak GP snapshot with SGP4 into a two-hour Earth-fixed ephemeris. This is not the full debris environment; point sizes are exaggerated and do not encode physical object size. |
+    | `provenance` | Earth uses NASA Blue Marble Next Generation texture assets; Mars uses the USGS Astrogeology/NASA Ames/JPL/USGS Viking MDIM 2.1 colorized global mosaic. Debris points are tracked catalog objects from three selected fragmentation events, propagated from a dated CelesTrak GP snapshot with SGP4 into a two-hour Earth-fixed point ephemeris and one closed full-period display trajectory per object. This is not the full debris environment; point sizes are exaggerated and do not encode physical object size. |
 
     **Encoding**
 
@@ -133,7 +133,8 @@ Prepare the debris ephemeris before running: uv run tools/data/prepare_orbital_d
     | --- | --- |
     | `position` | SGP4 TEME position rotated to approximate Earth-fixed coordinates and normalized by Earth radius |
     | `color` | cyan FENGYUN 1C, amber IRIDIUM 33, coral COSMOS 2251 |
-    | `time` | 120-minute prepared ephemeris shown at 60x real time by default |
+    | `time` | 120-minute prepared point ephemeris shown at 60x real time; shared globe rotation enabled by default |
+    | `path` | closed full-period SGP4 trajectory in the snapshot planet frame |
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

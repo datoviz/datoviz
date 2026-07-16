@@ -79,6 +79,7 @@ static const float TAU = 6.28318530718f;
 #define ORBIT_CACHE_PATH ".cache/datoviz/examples/orbital_debris/prepared/orbital_debris.bin"
 
 #define DEBRIS_TIME_SCALE 60.0f
+#define GLOBE_ROTATION_SPEED 0.035f
 
 #define ORBIT_TRACE_COUNT   12
 #define ORBIT_TRACE_SAMPLES 121
@@ -128,6 +129,8 @@ typedef struct TexturedPlanetState
     DvzVisual* visual;
     DvzVisual* debris_visual;
     DvzVisual* orbit_visual;
+    DvzTrack* globe_rotation;
+    DvzAnimation* globe_animations[3];
     PlanetTexture textures[PLANET_COUNT];
     TexturedPlanetOrbitModel orbit_model;
     vec3* debris_positions;
@@ -137,8 +140,10 @@ typedef struct TexturedPlanetState
     bool show_debris;
     bool show_orbits;
     bool animate_debris;
+    bool rotate_globe;
     int debris_count;
     float debris_speed;
+    float globe_speed;
     double debris_time;
 } TexturedPlanetState;
 
@@ -661,7 +666,7 @@ static uint32_t _trace_object_index(
  *
  * @param scene scene
  * @param panel panel receiving the visual
- * @param model simplified orbit model
+ * @param model prepared orbit model
  * @return orbit path visual, or NULL on failure
  */
 static DvzVisual*
@@ -803,8 +808,10 @@ static void _state_reset_debris_controls(TexturedPlanetState* state)
     state->show_debris = true;
     state->show_orbits = true;
     state->animate_debris = true;
+    state->rotate_globe = true;
     state->debris_count = (int)state->orbit_model.count;
     state->debris_speed = DEBRIS_TIME_SCALE;
+    state->globe_speed = GLOBE_ROTATION_SPEED;
     state->debris_time = 0.0;
 }
 
@@ -823,6 +830,60 @@ static void _state_apply_debris_visibility(TexturedPlanetState* state)
         (void)dvz_visual_set_visible(state->debris_visual, is_earth && state->show_debris);
     if (state->orbit_visual != NULL)
         (void)dvz_visual_set_visible(state->orbit_visual, is_earth && state->show_orbits);
+}
+
+
+
+/**
+ * Apply the shared display-rotation speed to Earth, debris, and orbit paths.
+ *
+ * @param state example state
+ */
+static void _state_apply_globe_rotation(TexturedPlanetState* state)
+{
+    ANN(state);
+    const float speed = state->rotate_globe ? state->globe_speed : 0.0f;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        if (state->globe_animations[i] != NULL)
+            (void)dvz_anim_set_speed(state->globe_animations[i], speed);
+    }
+}
+
+
+
+/**
+ * Create one shared display rotation for the planet-relative visual layers.
+ *
+ * @param scene scene
+ * @param state example state
+ * @return whether all animations were created
+ */
+static bool _create_globe_rotation(DvzScene* scene, TexturedPlanetState* state)
+{
+    ANN(scene);
+    ANN(state);
+    DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
+    rotation_desc.axis[0] = 0.0f;
+    rotation_desc.axis[1] = 1.0f;
+    rotation_desc.axis[2] = 0.0f;
+    rotation_desc.speed_rad_per_sec = 1.0f;
+    state->globe_rotation = dvz_track_rotation(&rotation_desc);
+    if (state->globe_rotation == NULL)
+        return false;
+
+    DvzVisual* visuals[3] = {state->visual, state->orbit_visual, state->debris_visual};
+    DvzTransformMotionDesc transform_desc = dvz_transform_motion_desc();
+    transform_desc.rotation = state->globe_rotation;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        state->globe_animations[i] = dvz_anim_visual_transform(scene, visuals[i], &transform_desc);
+        if (state->globe_animations[i] == NULL)
+            return false;
+        (void)dvz_anim_set_speed(state->globe_animations[i], state->globe_speed);
+        (void)dvz_anim_start(state->globe_animations[i], 0.0);
+    }
+    return true;
 }
 
 
@@ -879,6 +940,7 @@ static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
     bool planet_changed = false;
     bool debris_visibility_changed = false;
     bool debris_density_changed = false;
+    bool rotation_changed = false;
     bool reset = false;
 
     if (dvz_gui_begin(gui, "Textured Planets", NULL, 0))
@@ -886,6 +948,9 @@ static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
         dvz_gui_separator_text(gui, "Planet");
         planet_changed |=
             dvz_gui_combo(gui, "Preset", &state->planet_index, planet_items, PLANET_COUNT);
+        rotation_changed |= dvz_gui_checkbox(gui, "Rotate globe", &state->rotate_globe);
+        rotation_changed |= dvz_gui_slider_float_format(
+            gui, "Globe rotation", &state->globe_speed, 0.0f, 0.20f, "%.3f rad/s");
 
         dvz_gui_separator_text(gui, "Catalogued orbital debris");
         debris_visibility_changed |= dvz_gui_checkbox(gui, "Show debris", &state->show_debris);
@@ -921,11 +986,14 @@ static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
         _state_reset_debris_controls(state);
         debris_visibility_changed = true;
         debris_density_changed = true;
+        rotation_changed = true;
     }
     if (debris_visibility_changed)
         _state_apply_debris_visibility(state);
     if (debris_density_changed)
         (void)_state_upload_debris_style(state);
+    if (rotation_changed)
+        _state_apply_globe_rotation(state);
 }
 #endif
 
@@ -986,7 +1054,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     camera_desc.view.eye[1] = 0.0f;
     camera_desc.view.eye[2] = 3.7f;
     camera_desc.projection.fov_y = 0.72f;
-    camera_desc.projection.near_clip = 0.05f;
+    camera_desc.projection.near_clip = 0.005f;
     camera_desc.projection.far_clip = 100.0f;
     DvzResult camera_rc = dvz_panel_set_camera_desc(panel, &camera_desc);
     DvzCamera* camera = dvz_panel_camera(panel);
@@ -1051,11 +1119,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->debris_visual = _create_debris_points(ctx->scene, panel, state);
     EXAMPLE_CHECK(state->debris_visual != NULL, "failed to create orbital-debris points");
     _state_apply_debris_visibility(state);
+    ok = _create_globe_rotation(ctx->scene, state);
+    EXAMPLE_CHECK(ok, "failed to create shared globe rotation");
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.006f, 0.008f, 0.014f, 1.0f));
 
     DvzTurntableDesc turntable_desc = dvz_turntable_desc();
-    turntable_desc.min_distance = 1.65f;
-    turntable_desc.max_distance = 7.50f;
+    turntable_desc.min_distance = 1.02f;
+    turntable_desc.max_distance = 20.0f;
     turntable_desc.zoom_speed = 0.018f;
     DvzController* controller = dvz_turntable(ctx->scene, &turntable_desc);
     EXAMPLE_CHECK(controller != NULL, "dvz_turntable() failed");
@@ -1075,7 +1145,7 @@ cleanup:
 
 
 /**
- * Advance and upload the simplified orbital-debris positions.
+ * Advance and upload the prepared orbital-debris positions.
  *
  * @param ctx scenario context
  * @param user example state
@@ -1128,6 +1198,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
     TexturedPlanetState* state = (TexturedPlanetState*)user;
     if (state == NULL)
         return;
+    dvz_track_destroy(state->globe_rotation);
     textured_planet_orbit_model_destroy(&state->orbit_model);
     dvz_free(state->debris_positions);
     dvz_free(state->debris_colors);

@@ -39,8 +39,9 @@ Current v0.4 implementation target: `examples/c/showcases/textured_planet.c`, a 
 Earth/Mars textured-planet showcase using a UV sphere, mesh-bound sampled RGBA textures,
 lighting/material integration, arcball interaction, a procedural star field, and a dated CelesTrak
 snapshot of catalogued FENGYUN 1C, IRIDIUM 33, and COSMOS 2251 debris propagated with SGP4. The
-prepared two-hour ephemeris drives retained point updates and representative real trajectories in
-both native and WebGPU routes. It covers selected tracked objects, not the full debris environment;
+prepared two-hour ephemeris drives retained point updates, while closed full-period SGP4 paths show
+representative real trajectories in both native and WebGPU routes. Earth, debris, and paths share a
+default slow display rotation. It covers selected tracked objects, not the full debris environment;
 point sizes are exaggerated and do not encode physical size. Baked vertex colors do not satisfy
 this scenario.
 

@@ -27,7 +27,7 @@
 
 #define ORBIT_MAGIC           "DVZORB1"
 #define ORBIT_MAGIC_SIZE      8u
-#define ORBIT_VERSION         1u
+#define ORBIT_VERSION         2u
 #define ORBIT_MAX_OBJECTS     100000u
 #define ORBIT_MAX_FRAMES      10000u
 #define ORBIT_MAX_EVENT_COUNT 16u
@@ -102,13 +102,12 @@ bool textured_planet_orbit_model_load(const char* path, TexturedPlanetOrbitModel
     bool ok = false;
     char magic[ORBIT_MAGIC_SIZE] = {0};
     uint32_t version = 0;
-    uint32_t reserved = 0;
     float earth_radius_km = 0.0f;
     if (!_read_exact(fp, magic, sizeof(magic)) || !_read_exact(fp, &version, sizeof(version)) ||
         !_read_exact(fp, &model->count, sizeof(model->count)) ||
         !_read_exact(fp, &model->frame_count, sizeof(model->frame_count)) ||
         !_read_exact(fp, &model->event_count, sizeof(model->event_count)) ||
-        !_read_exact(fp, &reserved, sizeof(reserved)) ||
+        !_read_exact(fp, &model->trace_sample_count, sizeof(model->trace_sample_count)) ||
         !_read_exact(fp, &model->start_unix_s, sizeof(model->start_unix_s)) ||
         !_read_exact(fp, &model->step_seconds, sizeof(model->step_seconds)) ||
         !_read_exact(fp, &earth_radius_km, sizeof(earth_radius_km)) ||
@@ -122,6 +121,7 @@ bool textured_planet_orbit_model_load(const char* path, TexturedPlanetOrbitModel
         model->count == 0 || model->count > ORBIT_MAX_OBJECTS || model->frame_count < 2 ||
         model->frame_count > ORBIT_MAX_FRAMES || model->event_count == 0 ||
         model->event_count > ORBIT_MAX_EVENT_COUNT || model->step_seconds <= 0.0 ||
+        model->trace_sample_count < 3 || model->trace_sample_count > ORBIT_MAX_FRAMES ||
         !isfinite(model->step_seconds) || earth_radius_km <= 0.0f || !isfinite(model->max_radius))
     {
         goto cleanup;
@@ -133,15 +133,25 @@ bool textured_planet_orbit_model_load(const char* path, TexturedPlanetOrbitModel
     const size_t position_count = (size_t)model->frame_count * object_count;
     if (position_count > SIZE_MAX / sizeof(*model->ephemeris))
         goto cleanup;
+    if (model->trace_sample_count > SIZE_MAX / object_count)
+        goto cleanup;
+    const size_t trace_position_count = (size_t)model->trace_sample_count * object_count;
+    if (trace_position_count > SIZE_MAX / sizeof(*model->closed_traces))
+        goto cleanup;
 
     model->event_ids = (uint8_t*)dvz_calloc(object_count, sizeof(*model->event_ids));
     model->catalog_ids = (uint32_t*)dvz_calloc(object_count, sizeof(*model->catalog_ids));
     model->ephemeris = (float(*)[3])dvz_calloc(position_count, sizeof(*model->ephemeris));
-    if (model->event_ids == NULL || model->catalog_ids == NULL || model->ephemeris == NULL)
+    model->closed_traces =
+        (float(*)[3])dvz_calloc(trace_position_count, sizeof(*model->closed_traces));
+    if (model->event_ids == NULL || model->catalog_ids == NULL || model->ephemeris == NULL ||
+        model->closed_traces == NULL)
         goto cleanup;
     if (!_read_exact(fp, model->event_ids, object_count * sizeof(*model->event_ids)) ||
         !_read_exact(fp, model->catalog_ids, object_count * sizeof(*model->catalog_ids)) ||
-        !_read_exact(fp, model->ephemeris, position_count * sizeof(*model->ephemeris)))
+        !_read_exact(fp, model->ephemeris, position_count * sizeof(*model->ephemeris)) ||
+        !_read_exact(
+            fp, model->closed_traces, trace_position_count * sizeof(*model->closed_traces)))
     {
         goto cleanup;
     }
@@ -175,6 +185,7 @@ void textured_planet_orbit_model_destroy(TexturedPlanetOrbitModel* model)
     dvz_free(model->event_ids);
     dvz_free(model->catalog_ids);
     dvz_free(model->ephemeris);
+    dvz_free(model->closed_traces);
     memset(model, 0, sizeof(*model));
 }
 
@@ -204,7 +215,7 @@ void textured_planet_orbit_model_positions(
 
 
 /**
- * Sample one catalog object's prepared trajectory.
+ * Sample one catalog object's closed full-period trajectory.
  *
  * @param model orbit model
  * @param object_index catalog-object index
@@ -215,14 +226,24 @@ void textured_planet_orbit_model_trace(
     const TexturedPlanetOrbitModel* model, uint32_t object_index, uint32_t sample_count,
     float (*positions)[3])
 {
-    if (model == NULL || model->ephemeris == NULL || object_index >= model->count ||
+    if (model == NULL || model->closed_traces == NULL || object_index >= model->count ||
         sample_count < 2 || positions == NULL)
         return;
 
     const double denominator = (double)(sample_count - 1);
+    const double source_denominator = (double)(model->trace_sample_count - 1);
+    const size_t source_offset = (size_t)object_index * model->trace_sample_count;
     for (uint32_t i = 0; i < sample_count; i++)
     {
-        const double time_s = model->duration_seconds * (double)i / denominator;
-        _interpolate_position(model, object_index, time_s, positions[i]);
+        const double source_position = source_denominator * (double)i / denominator;
+        const uint32_t source0 = (uint32_t)floor(source_position);
+        const uint32_t source1 = source0 + 1 < model->trace_sample_count ? source0 + 1 : source0;
+        const float alpha = source1 > source0 ? (float)(source_position - (double)source0) : 0.0f;
+        const float* p0 = model->closed_traces[source_offset + source0];
+        const float* p1 = model->closed_traces[source_offset + source1];
+        for (uint32_t component = 0; component < 3; component++)
+            positions[i][component] = p0[component] + alpha * (p1[component] - p0[component]);
     }
+    for (uint32_t component = 0; component < 3; component++)
+        positions[sample_count - 1][component] = positions[0][component];
 }

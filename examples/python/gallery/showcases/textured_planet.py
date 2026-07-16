@@ -27,6 +27,7 @@ ORBIT_DATA_PATHS = (
     Path('.cache/datoviz/examples/orbital_debris/prepared/orbital_debris.bin'),
 )
 DEBRIS_TIME_SCALE = 60.0
+GLOBE_ROTATION_SPEED = 0.035
 ORBIT_TRACE_COUNT = 12
 ORBIT_TRACE_SAMPLES = 121
 SUN_DIR = (-0.80, +0.22, +0.55)
@@ -43,9 +44,23 @@ class OrbitModel:
     event_ids: np.ndarray
     catalog_ids: np.ndarray
     ephemeris: np.ndarray
+    closed_traces: np.ndarray
     snapshot_utc: str
     step_seconds: float
     duration_seconds: float
+
+
+@dataclass
+class GlobeState:
+    """Python-owned shared rotation track."""
+
+    rotation: object | None = None
+
+    def destroy(self) -> None:
+        """Destroy the shared track after the scene run ends."""
+        if self.rotation:
+            dvz.dvz_track_destroy(self.rotation)
+        self.rotation = None
 
 
 def _load_orbit_model() -> OrbitModel:
@@ -65,7 +80,7 @@ def _load_orbit_model() -> OrbitModel:
         object_count,
         frame_count,
         event_count,
-        _reserved,
+        trace_sample_count,
         _start_unix_s,
         step_seconds,
         _earth_radius_km,
@@ -74,10 +89,11 @@ def _load_orbit_model() -> OrbitModel:
     ) = ORBIT_HEADER.unpack_from(payload)
     if (
         magic != b'DVZORB1\0'
-        or version != 1
+        or version != 2
         or object_count <= 0
         or frame_count < 2
         or event_count != 3
+        or trace_sample_count < 3
         or step_seconds <= 0
     ):
         raise RuntimeError(f'invalid orbital-debris ephemeris header: {path}')
@@ -85,7 +101,8 @@ def _load_orbit_model() -> OrbitModel:
     event_offset = ORBIT_HEADER.size
     catalog_offset = event_offset + object_count
     position_offset = catalog_offset + 4 * object_count
-    expected_size = position_offset + 12 * object_count * frame_count
+    trace_offset = position_offset + 12 * object_count * frame_count
+    expected_size = trace_offset + 12 * object_count * trace_sample_count
     if len(payload) != expected_size:
         raise RuntimeError(f'unexpected orbital-debris ephemeris size: {path}')
     event_ids = np.frombuffer(
@@ -100,11 +117,18 @@ def _load_orbit_model() -> OrbitModel:
         count=3 * object_count * frame_count,
         offset=position_offset,
     ).reshape(frame_count, object_count, 3)
+    closed_traces = np.frombuffer(
+        payload,
+        dtype='<f4',
+        count=3 * object_count * trace_sample_count,
+        offset=trace_offset,
+    ).reshape(object_count, trace_sample_count, 3)
     snapshot_utc = snapshot_field.split(b'\0', 1)[0].decode('ascii')
     return OrbitModel(
         event_ids,
         catalog_ids,
         ephemeris,
+        closed_traces,
         snapshot_utc,
         float(step_seconds),
         float(step_seconds * (frame_count - 1)),
@@ -124,8 +148,20 @@ def _orbit_positions(model: OrbitModel, time_s: float) -> np.ndarray:
 
 
 def _orbit_trace(model: OrbitModel, index: int) -> np.ndarray:
-    frame_indices = np.linspace(0, len(model.ephemeris) - 1, ORBIT_TRACE_SAMPLES, dtype=np.int32)
-    return np.ascontiguousarray(model.ephemeris[frame_indices, index], dtype=np.float32)
+    source = model.closed_traces[index]
+    if len(source) == ORBIT_TRACE_SAMPLES:
+        trace = np.array(source, dtype=np.float32, copy=True, order='C')
+    else:
+        source_positions = np.linspace(0, len(source) - 1, ORBIT_TRACE_SAMPLES)
+        source0 = np.floor(source_positions).astype(np.int32)
+        source1 = np.minimum(source0 + 1, len(source) - 1)
+        alpha = (source_positions - source0).astype(np.float32)[:, None]
+        trace = np.ascontiguousarray(
+            source[source0] + alpha * (source[source1] - source[source0]),
+            dtype=np.float32,
+        )
+    trace[-1] = trace[0]
+    return trace
 
 
 def _earth_texture() -> np.ndarray:
@@ -281,7 +317,7 @@ def _add_planet(scene, panel):
     return mesh
 
 
-def _add_orbit_traces(scene, panel, model: OrbitModel) -> None:
+def _add_orbit_traces(scene, panel, model: OrbitModel):
     indices: list[int] = []
     trace_events: list[int] = []
     selections_per_event = (ORBIT_TRACE_COUNT + 2) // 3
@@ -328,6 +364,7 @@ def _add_orbit_traces(scene, panel, model: OrbitModel) -> None:
     if dvz.dvz_visual_set_depth_test(path, True) != 0:
         raise RuntimeError('dvz_visual_set_depth_test(orbits) failed')
     ex.add_visual(panel, path)
+    return path
 
 
 def _add_debris(scene, panel, model: OrbitModel):
@@ -370,10 +407,31 @@ def _setup_camera(panel) -> None:
     camera.view.target[:] = (0.0, 0.0, 0.0)
     camera.view.up[:] = (0.0, 1.0, 0.0)
     camera.projection.fov_y = 0.72
-    camera.projection.near_clip = 0.05
+    camera.projection.near_clip = 0.005
     camera.projection.far_clip = 100.0
     if dvz.dvz_panel_set_camera_desc(panel, ctypes.byref(camera)) != 0:
         raise RuntimeError('dvz_panel_set_camera_desc() failed')
+
+
+def _add_globe_rotation(scene, visuals, state: GlobeState) -> None:
+    rotation_desc = dvz.dvz_track_rotation_desc()
+    rotation_desc.axis[:] = (0.0, 1.0, 0.0)
+    rotation_desc.speed_rad_per_sec = 1.0
+    rotation = dvz.dvz_track_rotation(ctypes.byref(rotation_desc))
+    if not rotation:
+        raise RuntimeError('dvz_track_rotation() failed')
+    state.rotation = rotation
+
+    for visual in visuals:
+        transform_desc = dvz.dvz_transform_motion_desc()
+        transform_desc.rotation = rotation
+        animation = dvz.dvz_anim_visual_transform(scene, visual, ctypes.byref(transform_desc))
+        if not animation:
+            raise RuntimeError('dvz_anim_visual_transform() failed')
+        if dvz.dvz_anim_set_speed(animation, GLOBE_ROTATION_SPEED) != 0:
+            raise RuntimeError('dvz_anim_set_speed() failed')
+        if dvz.dvz_anim_start(animation, 0.0) != 0:
+            raise RuntimeError('dvz_anim_start() failed')
 
 
 def _build_scene():
@@ -383,15 +441,17 @@ def _build_scene():
     _add_star_shell(scene, panel)
     mesh = _add_planet(scene, panel)
     orbit_model = _load_orbit_model()
-    _add_orbit_traces(scene, panel, orbit_model)
+    orbits = _add_orbit_traces(scene, panel, orbit_model)
     debris = _add_debris(scene, panel, orbit_model)
-    return scene, figure, panel, mesh, debris, orbit_model
+    state = GlobeState()
+    _add_globe_rotation(scene, (mesh, orbits, debris), state)
+    return scene, figure, panel, mesh, debris, orbit_model, state
 
 
 def _configure_view(view, panel) -> None:
     desc = dvz.dvz_turntable_desc()
-    desc.min_distance = 1.65
-    desc.max_distance = 7.50
+    desc.min_distance = 1.02
+    desc.max_distance = 20.0
     desc.zoom_speed = 0.018
     turntable = dvz.dvz_view_turntable(view, panel, ctypes.byref(desc))
     if not turntable:
@@ -399,7 +459,7 @@ def _configure_view(view, panel) -> None:
 
 
 def main() -> None:
-    scene, figure, panel, _mesh, debris, orbit_model = _build_scene()
+    scene, figure, panel, _mesh, debris, orbit_model, state = _build_scene()
 
     def configure(view) -> None:
         _configure_view(view, panel)
@@ -413,13 +473,16 @@ def main() -> None:
         f'textured_planet: {len(orbit_model.catalog_ids)} real catalogued objects, '
         f'snapshot {orbit_model.snapshot_utc}'
     )
-    ex.run_with_frame_callback(
-        scene,
-        figure,
-        'Textured Planets and Orbital Debris',
-        on_frame,
-        configure,
-    )
+    try:
+        ex.run_with_frame_callback(
+            scene,
+            figure,
+            'Textured Planets and Orbital Debris',
+            on_frame,
+            configure,
+        )
+    finally:
+        state.destroy()
 
 
 if __name__ == '__main__':

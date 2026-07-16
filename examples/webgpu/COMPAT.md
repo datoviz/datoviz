@@ -198,9 +198,10 @@ live route; `just example-c showcases/textured_planet --png` passed natively wit
 offscreen warning that the Dear ImGui overlay requires a GLFW window.
 
 Recorded real orbital-debris extension proof on 2026-07-16: `just wasm-scene-smoke` passed with a
-cache-preloaded 2,508-object CelesTrak snapshot propagated into a two-hour SGP4 ephemeris. Targeted
-checks require more than 1,000 depth-tested debris points, representative event-colored paths, and
-the per-frame retained position-buffer update alongside the existing textured mesh. Native
+cache-preloaded 2,508-object CelesTrak snapshot propagated into a two-hour SGP4 point ephemeris and
+closed full-period display paths. Targeted checks require more than 1,000 depth-tested debris
+points, representative event-colored paths, and the per-frame retained position-buffer update
+alongside the existing textured mesh and shared globe rotation. Native
 `showcases/textured_planet --png` capture passed. `just webgpu-browser-smoke` exited successfully
 with the known headless external WebGPU instance-loss skip at `QueueSubmit`, including the updated
 textured-planets route.

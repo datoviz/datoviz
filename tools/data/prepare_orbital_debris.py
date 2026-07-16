@@ -48,9 +48,10 @@ CELESTRAK_GP_URL = 'https://celestrak.org/NORAD/elements/gp.php'
 SOURCE_CACHE_MIN_AGE = timedelta(hours=2)
 
 MAGIC = b'DVZORB1\0'
-VERSION = 1
+VERSION = 2
 EARTH_EQUATORIAL_RADIUS_KM = 6378.137
 SNAPSHOT_TEXT_SIZE = 32
+DEFAULT_TRACE_SAMPLE_COUNT = 121
 
 
 @dataclass(frozen=True)
@@ -234,7 +235,13 @@ def _propagate(
     rows: list[dict[str, Any]],
     frame_times: list[datetime],
     max_element_age: timedelta,
-) -> tuple[list[dict[str, Any]], list[list[tuple[float, float, float]]], dict[str, int]]:
+    trace_sample_count: int,
+) -> tuple[
+    list[dict[str, Any]],
+    list[list[tuple[float, float, float]]],
+    list[list[tuple[float, float, float]]],
+    dict[str, int],
+]:
     frame_jd = []
     for timestamp in frame_times:
         second = timestamp.second + timestamp.microsecond / 1_000_000.0
@@ -250,6 +257,7 @@ def _propagate(
 
     accepted: list[dict[str, Any]] = []
     tracks: list[list[tuple[float, float, float]]] = []
+    closed_traces: list[list[tuple[float, float, float]]] = []
     rejected = {'stale': 0, 'initialization': 0, 'propagation': 0, 'duplicate': 0}
     seen_catalog_ids: set[int] = set()
     snapshot = frame_times[0]
@@ -281,21 +289,49 @@ def _propagate(
         if failed:
             rejected['propagation'] += 1
             continue
+
+        if not math.isfinite(satellite.no_kozai) or satellite.no_kozai <= 0:
+            rejected['propagation'] += 1
+            continue
+        period_seconds = 60.0 * 2.0 * math.pi / satellite.no_kozai
+        snapshot_jd = frame_jd[0][0] + frame_jd[0][1]
+        closed_trace: list[tuple[float, float, float]] = []
+        for trace_index in range(trace_sample_count):
+            elapsed_s = period_seconds * trace_index / (trace_sample_count - 1)
+            propagation_jd = snapshot_jd + elapsed_s / 86400.0
+            jd = math.floor(propagation_jd)
+            fraction = propagation_jd - jd
+            error, position_km, _velocity_km_s = satellite.sgp4(jd, fraction)
+            if error != 0 or not all(math.isfinite(value) for value in position_km):
+                failed = True
+                break
+            # Hold the snapshot Earth orientation fixed so this is a complete inertial orbit
+            # expressed in the same planet-relative display frame as the first debris positions.
+            closed_trace.append(_teme_to_visual(position_km, snapshot_jd))
+        if failed:
+            rejected['propagation'] += 1
+            continue
+        # SGP4 perturbations can leave a sub-pixel endpoint difference over one nominal period.
+        # The path visual needs an explicit matching endpoint to avoid a visible front-side gap.
+        closed_trace[-1] = closed_trace[0]
         accepted.append(row)
         tracks.append(track)
-    return accepted, tracks, rejected
+        closed_traces.append(closed_trace)
+    return accepted, tracks, closed_traces, rejected
 
 
 def _write_binary(
     path: Path,
     rows: list[dict[str, Any]],
     tracks: list[list[tuple[float, float, float]]],
+    closed_traces: list[list[tuple[float, float, float]]],
     frame_times: list[datetime],
     step_seconds: float,
 ) -> dict[str, Any]:
     object_count = len(rows)
     frame_count = len(frame_times)
     event_count = len(EVENTS)
+    trace_sample_count = len(closed_traces[0])
     snapshot_text = _iso_utc(frame_times[0]).encode('ascii')
     if len(snapshot_text) >= SNAPSHOT_TEXT_SIZE:
         raise RuntimeError('snapshot timestamp exceeds binary field')
@@ -305,6 +341,14 @@ def _write_binary(
         math.sqrt(sum(value * value for value in position))
         for track in tracks
         for position in track
+    )
+    max_radius = max(
+        max_radius,
+        max(
+            math.sqrt(sum(value * value for value in position))
+            for trace in closed_traces
+            for position in trace
+        ),
     )
 
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -317,7 +361,7 @@ def _write_binary(
                 object_count,
                 frame_count,
                 event_count,
-                0,
+                trace_sample_count,
                 start_unix_s,
                 step_seconds,
                 EARTH_EQUATORIAL_RADIUS_KM,
@@ -330,17 +374,24 @@ def _write_binary(
         for frame_index in range(frame_count):
             for track in tracks:
                 f.write(struct.pack('<3f', *track[frame_index]))
+        for trace in closed_traces:
+            for position in trace:
+                f.write(struct.pack('<3f', *position))
 
     return {
         'object_count': object_count,
         'frame_count': frame_count,
         'event_count': event_count,
+        'trace_sample_count': trace_sample_count,
         'start_utc': _iso_utc(frame_times[0]),
         'step_seconds': step_seconds,
         'duration_seconds': step_seconds * (frame_count - 1),
         'earth_equatorial_radius_km': EARTH_EQUATORIAL_RADIUS_KM,
         'max_radius_earth_radii': max_radius,
-        'binary_layout': 'header; event_id u8[N]; NORAD catalog_id u32[N]; position f32[F,N,3]',
+        'binary_layout': (
+            'header; event_id u8[N]; NORAD catalog_id u32[N]; '
+            'position f32[F,N,3]; closed_trace f32[N,T,3]'
+        ),
     }
 
 
@@ -416,10 +467,11 @@ def prepare(args: argparse.Namespace) -> Path:
     ).replace(second=0, microsecond=0)
     frame_count = int(round(args.duration_minutes * 60.0 / args.step_seconds)) + 1
     frame_times = [snapshot + timedelta(seconds=i * args.step_seconds) for i in range(frame_count)]
-    accepted, tracks, rejected = _propagate(
+    accepted, tracks, closed_traces, rejected = _propagate(
         rows,
         frame_times,
         timedelta(days=args.max_element_age_days),
+        args.trace_samples,
     )
     if not accepted:
         raise RuntimeError('no valid catalogued objects remained after SGP4 validation')
@@ -429,7 +481,14 @@ def prepare(args: argparse.Namespace) -> Path:
     prepared_root.mkdir(parents=True, exist_ok=True)
     binary_path = prepared_root / 'orbital_debris.bin'
     metadata_path = prepared_root / 'metadata.json'
-    binary_metadata = _write_binary(binary_path, accepted, tracks, frame_times, args.step_seconds)
+    binary_metadata = _write_binary(
+        binary_path,
+        accepted,
+        tracks,
+        closed_traces,
+        frame_times,
+        args.step_seconds,
+    )
     _write_metadata(
         metadata_path,
         accepted,
@@ -469,7 +528,10 @@ def prepare(args: argparse.Namespace) -> Path:
                 'render_ready_ephemeris',
                 'DVZORB1',
                 dtype='mixed header + uint8 + uint32 + float32',
-                shape=[len(frame_times), len(accepted), 3],
+                shape={
+                    'positions': [len(frame_times), len(accepted), 3],
+                    'closed_traces': [len(accepted), args.trace_samples, 3],
+                },
             ),
             artifact(metadata_path, bundle_root, 'catalog_metadata', 'JSON'),
         ],
@@ -495,6 +557,7 @@ def prepare(args: argparse.Namespace) -> Path:
             'and normalized by 6378.137 km.',
             f'Generated {len(frame_times)} frames for {len(accepted)} catalogued objects '
             f'at {args.step_seconds:g}-second intervals.',
+            f'Generated one closed {args.trace_samples}-sample inertial trajectory per object.',
         ],
         license_lines=[
             'CelesTrak data is freely provided subject to its usage policy: https://celestrak.org/usage-policy.php',
@@ -518,6 +581,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument('--duration-minutes', type=float, default=120.0)
     parser.add_argument('--step-seconds', type=float, default=60.0)
     parser.add_argument('--max-element-age-days', type=float, default=14.0)
+    parser.add_argument('--trace-samples', type=int, default=DEFAULT_TRACE_SAMPLE_COUNT)
     parser.add_argument('--max-objects', type=int, default=0, help='zero keeps every valid object')
     parser.add_argument('--refresh-source', action='store_true')
     parser.add_argument('--offline', action='store_true')
@@ -528,8 +592,15 @@ def _parser() -> argparse.ArgumentParser:
 def main() -> int:
     """Run the command-line preparation workflow."""
     args = _parser().parse_args()
-    if args.duration_minutes <= 0 or args.step_seconds <= 0 or args.max_element_age_days <= 0:
-        raise SystemExit('duration, timestep, and maximum element age must be positive')
+    if (
+        args.duration_minutes <= 0
+        or args.step_seconds <= 0
+        or args.max_element_age_days <= 0
+        or args.trace_samples < 3
+    ):
+        raise SystemExit(
+            'duration, timestep, maximum element age, and trace sample count must be positive'
+        )
     try:
         bundle_root = prepare(args)
     except RuntimeError as exc:

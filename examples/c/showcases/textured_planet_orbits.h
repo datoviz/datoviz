@@ -21,9 +21,11 @@ typedef struct TexturedPlanetOrbitModel
     uint8_t* event_ids;
     uint32_t* catalog_ids;
     float (*ephemeris)[3];
+    float (*closed_traces)[3];
     uint32_t count;
     uint32_t frame_count;
     uint32_t event_count;
+    uint32_t trace_sample_count;
     double start_unix_s;
     double step_seconds;
     double duration_seconds;
@@ -70,7 +72,7 @@ void textured_planet_orbit_model_positions(
 
 
 /**
- * Sample one catalog object's prepared trajectory.
+ * Sample one catalog object's closed full-period trajectory.
  *
  * @param model orbit model
  * @param object_index catalog-object index
