@@ -1300,7 +1300,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.view.eye[0] = 0.0f;
     camera_desc.view.eye[1] = 0.0f;
-    camera_desc.view.eye[2] = 3.7f;
+    camera_desc.view.eye[2] = 3.0f;
     camera_desc.projection.fov_y = 0.72f;
     camera_desc.projection.near_clip = 0.005f;
     camera_desc.projection.far_clip = 100.0f;
@@ -1382,6 +1382,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.006f, 0.008f, 0.014f, 1.0f));
 
     DvzTurntableDesc turntable_desc = dvz_turntable_desc();
+    turntable_desc.initial_view = camera_desc.view;
     turntable_desc.min_distance = 1.02f;
     turntable_desc.max_distance = 20.0f;
     turntable_desc.zoom_speed = 0.018f;
@@ -1398,6 +1399,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             &state->tuner, "Planet controls", state, NULL, _textured_planet_gui, NULL, NULL,
             _textured_planet_print_c),
         "failed to register textured planet tuner");
+    example_tuner_turntable(&state->tuner, "Turntable", turntable, panel, &turntable_desc);
+    example_tuner_camera_ref(&state->tuner, "Camera", panel, camera, &camera_desc);
 #endif
 
     ok = true;
