@@ -70,6 +70,8 @@ plugins:
   - search
   - material/blog:
       authors: false
+      draft_if_future_date: true
+      draft_on_serve: true
       post_url_format: "{slug}"
   - mkdocstrings:
       handlers:
@@ -109,7 +111,6 @@ nav:
     - AI agents: 'ai-agents.md'
   - Examples:
     - Overview: 'examples/index.md'
-  - News: 'blog/index.md'
   - How-To:
     - Overview: 'how-to/index.md'
     - Core workflow:
@@ -249,6 +250,7 @@ nav:
       - Release validation: 'contributors/release-validation.md'
       - Agent release checklist: 'contributors/agent-release-checklist.md'
       - Validation gallery: 'examples/validation-gallery.md'
+  - News: 'blog/index.md'
 not_in_nav: |
   _old/*
   architecture/*
