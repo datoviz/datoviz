@@ -432,7 +432,7 @@ Types: 89
 
 ## Band { #band }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_band()` { #dvz_band .dvz-api-function }
 
@@ -567,7 +567,7 @@ DvzVisual * dvz_band_visual(
 
 _Declared in `include/datoviz/scene/plot.h`:250._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzband"></a>
 
@@ -602,7 +602,7 @@ _Declared in `include/datoviz/scene/plot.h`:250._
 
 ## Bars { #bars }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_bars()` { #dvz_bars .dvz-api-function }
 
@@ -711,7 +711,7 @@ DvzVisual * dvz_bars_visual(
 
 _Declared in `include/datoviz/scene/plot.h`:181._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzbars"></a>
 
@@ -758,7 +758,7 @@ _Declared in `include/datoviz/scene/plot.h`:181._
 
 ## Bezier { #bezier }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_bezier_tessellation_desc()` { #dvz_bezier_tessellation_desc .dvz-api-function }
 
@@ -774,7 +774,7 @@ DvzBezierTessellationDesc dvz_bezier_tessellation_desc(void);
 
 _Declared in `include/datoviz/geom.h`:421._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzbeziertessellationdesc"></a>
 
@@ -793,7 +793,7 @@ _Declared in `include/datoviz/geom.h`:421._
 
 ## Composite { #composite }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_composite_destroy()` { #dvz_composite_destroy .dvz-api-function }
 
@@ -868,7 +868,7 @@ uint32_t dvz_composite_visual_count(
 
 _Declared in `include/datoviz/scene.h`:3492._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzcomposite"></a>
 
@@ -882,7 +882,7 @@ _Declared in `include/datoviz/scene.h`:3492._
 
 ## Depth Cueing { #depth-cueing }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_depth_cue_desc()` { #dvz_depth_cue_desc .dvz-api-function }
 
@@ -922,7 +922,7 @@ DvzResult dvz_visual_set_depth_cue(
 
 _Declared in `include/datoviz/scene.h`:2481._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzdepthcuedesc"></a>
 
@@ -989,7 +989,7 @@ _Declared in `include/datoviz/scene.h`:2481._
 
 ## Geometry { #geometry }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_geometry()` { #dvz_geometry .dvz-api-function }
 
@@ -1644,7 +1644,7 @@ DvzResult dvz_geometry_transform(
 
 _Declared in `include/datoviz/geom.h`:97._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzgeometry"></a>
 
@@ -2038,7 +2038,7 @@ _Declared in `include/datoviz/geom.h`:97._
 
 ## Glyph { #glyph }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_glyph()` { #dvz_glyph .dvz-api-function }
 
@@ -2087,7 +2087,7 @@ _Declared in `include/datoviz/scene.h`:3747._
 
 ## Graph { #graph }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_graph()` { #dvz_graph .dvz-api-function }
 
@@ -2442,7 +2442,7 @@ DvzResult dvz_graph_set_node_sizes(
 
 _Declared in `include/datoviz/scene.h`:3070._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzgraph"></a>
 
@@ -2490,7 +2490,7 @@ _Declared in `include/datoviz/scene.h`:3070._
 
 ## Image { #image }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_image()` { #dvz_image .dvz-api-function }
 
@@ -2539,7 +2539,7 @@ DvzResult dvz_image_set_sampling(
 
 _Declared in `include/datoviz/scene.h`:3602._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzimagesampling"></a>
 
@@ -2556,7 +2556,7 @@ _Declared in `include/datoviz/scene.h`:3602._
 
 ## Labels { #labels }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_labels()` { #dvz_labels .dvz-api-function }
 
@@ -2774,7 +2774,7 @@ const DvzLabelsState * dvz_labels_state(
 
 _Declared in `include/datoviz/scene.h`:3720._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzlabelsstate"></a>
 
@@ -2802,7 +2802,7 @@ _Declared in `include/datoviz/scene.h`:3720._
 
 ## Marker { #marker }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_marker()` { #dvz_marker .dvz-api-function }
 
@@ -2916,7 +2916,7 @@ DvzMarkerStyle dvz_marker_style(void);
 
 _Declared in `include/datoviz/scene.h`:2660._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzmarkershape"></a>
 
@@ -2968,7 +2968,7 @@ _Declared in `include/datoviz/scene.h`:2660._
 
 ## Materials { #materials }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_material_desc()` { #dvz_material_desc .dvz-api-function }
 
@@ -3046,7 +3046,7 @@ DvzResult dvz_visual_set_material(
 
 _Declared in `include/datoviz/scene.h`:2458._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzmaterialdesc"></a>
 
@@ -3115,7 +3115,7 @@ _Declared in `include/datoviz/scene.h`:2458._
 
 ## Mesh { #mesh }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_mesh()` { #dvz_mesh .dvz-api-function }
 
@@ -3166,7 +3166,7 @@ _Declared in `include/datoviz/scene.h`:2900._
 
 ## Path { #path }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_path()` { #dvz_path .dvz-api-function }
 
@@ -3263,7 +3263,7 @@ DvzResult dvz_path_set_subpaths(
 
 _Declared in `include/datoviz/scene.h`:3572._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzpathjoin"></a>
 
@@ -3281,7 +3281,7 @@ _Declared in `include/datoviz/scene.h`:3572._
 
 ## Pixel { #pixel }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_pixel()` { #dvz_pixel .dvz-api-function }
 
@@ -3308,7 +3308,7 @@ _Declared in `include/datoviz/scene.h`:2723._
 
 ## Point { #point }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_point()` { #dvz_point .dvz-api-function }
 
@@ -3375,7 +3375,7 @@ DvzPointStyleDesc dvz_point_style_desc(void);
 
 _Declared in `include/datoviz/scene.h`:2493._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzpointstyledesc"></a>
 
@@ -3395,7 +3395,7 @@ _Declared in `include/datoviz/scene.h`:2493._
 
 ## Polygon { #polygon }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_polygon()` { #dvz_polygon .dvz-api-function }
 
@@ -3708,7 +3708,7 @@ DvzPolygonStyle dvz_polygon_style(void);
 
 _Declared in `include/datoviz/scene.h`:3139._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzpolygon"></a>
 
@@ -3772,7 +3772,7 @@ _Declared in `include/datoviz/scene.h`:3139._
 
 ## Polygons { #polygons }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_polygons()` { #dvz_polygons .dvz-api-function }
 
@@ -4133,7 +4133,7 @@ DvzResult dvz_polygons_set_stroke_join(
 
 _Declared in `include/datoviz/scene.h`:3465._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzpolygons"></a>
 
@@ -4147,7 +4147,7 @@ _Declared in `include/datoviz/scene.h`:3465._
 
 ## Primitive { #primitive }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_primitive()` { #dvz_primitive .dvz-api-function }
 
@@ -4176,7 +4176,7 @@ _Declared in `include/datoviz/scene.h`:2870._
 
 ## Segment { #segment }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_segment()` { #dvz_segment .dvz-api-function }
 
@@ -4226,7 +4226,7 @@ DvzResult dvz_segment_set_caps(
 
 _Declared in `include/datoviz/scene.h`:2799._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzsegmentcap"></a>
 
@@ -4247,7 +4247,7 @@ _Declared in `include/datoviz/scene.h`:2799._
 
 ## Sphere { #sphere }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_sphere()` { #dvz_sphere .dvz-api-function }
 
@@ -4295,7 +4295,7 @@ DvzResult dvz_sphere_set_mode(
 
 _Declared in `include/datoviz/scene.h`:2769._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzsphereflags"></a>
 
@@ -4325,7 +4325,7 @@ _Declared in `include/datoviz/scene.h`:2769._
 
 ## Splat { #splat }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_splat()` { #dvz_splat .dvz-api-function }
 
@@ -4353,7 +4353,7 @@ _Declared in `include/datoviz/scene.h`:2709._
 
 ## Symbol { #symbol }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_symbol_bitmap()` { #dvz_symbol_bitmap .dvz-api-function }
 
@@ -4538,7 +4538,7 @@ DvzSymbolId dvz_symbol_svg_path(
 
 _Declared in `include/datoviz/scene.h`:2620._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzsymbolbuiltin"></a>
 
@@ -4625,7 +4625,7 @@ _Declared in `include/datoviz/scene.h`:2620._
 
 ## Tessellate { #tessellate }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_tessellate_cubic_bezier()` { #dvz_tessellate_cubic_bezier .dvz-api-function }
 
@@ -4677,7 +4677,7 @@ _Declared in `include/datoviz/geom.h`:444._
 
 ## Tessellated { #tessellated }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_tessellated_path_destroy()` { #dvz_tessellated_path_destroy .dvz-api-function }
 
@@ -4695,7 +4695,7 @@ void dvz_tessellated_path_destroy(
 
 _Declared in `include/datoviz/geom.h`:468._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvztessellatedpath"></a>
 
@@ -4712,7 +4712,7 @@ _Declared in `include/datoviz/geom.h`:468._
 
 ## Triangulate { #triangulate }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_triangulate_polygon()` { #dvz_triangulate_polygon .dvz-api-function }
 
@@ -4735,7 +4735,7 @@ _Declared in `include/datoviz/geom.h`:432._
 
 ## Triangulation { #triangulation }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_triangulation_desc()` { #dvz_triangulation_desc .dvz-api-function }
 
@@ -4751,7 +4751,7 @@ DvzTriangulationDesc dvz_triangulation_desc(void);
 
 _Declared in `include/datoviz/geom.h`:413._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvztriangulationbackend"></a>
 
@@ -4782,7 +4782,7 @@ _Declared in `include/datoviz/geom.h`:413._
 
 ## Vector { #vector }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_vector()` { #dvz_vector .dvz-api-function }
 
@@ -4873,7 +4873,7 @@ DvzVectorStyle dvz_vector_style(void);
 
 _Declared in `include/datoviz/scene.h`:2810._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzvectoranchor"></a>
 
@@ -4910,7 +4910,7 @@ _Declared in `include/datoviz/scene.h`:2810._
 
 ## Visual { #visual }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_visual_alpha_mode()` { #dvz_visual_alpha_mode .dvz-api-function }
 
@@ -5898,7 +5898,7 @@ _Bool dvz_visual_validate(
 
 _Declared in `include/datoviz/scene.h`:1759._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzalphamode"></a>
 
@@ -6222,7 +6222,7 @@ _Declared in `include/datoviz/scene.h`:1759._
 
 ## Volume { #volume }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_volume()` { #dvz_volume .dvz-api-function }
 
@@ -6550,7 +6550,7 @@ const DvzVolumeState * dvz_volume_state(
 
 _Declared in `include/datoviz/scene.h`:3931._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzvolumealphastop"></a>
 

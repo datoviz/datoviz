@@ -121,7 +121,7 @@ Types: 8
 
 ## Common Types { #common-types }
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzcolor"></a>
 
@@ -178,7 +178,7 @@ Types: 8
 
 ## Error { #error }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_error_set_callback()` { #dvz_error_set_callback .dvz-api-function }
 
@@ -199,7 +199,7 @@ DvzResult dvz_error_set_callback(
 
 _Declared in `include/datoviz/common/functions.h`:57._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzerrorcallback"></a>
 
@@ -213,7 +213,7 @@ _Declared in `include/datoviz/common/functions.h`:57._
 
 ## File { #file }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_file_size()` { #dvz_file_size .dvz-api-function }
 
@@ -234,7 +234,7 @@ _Declared in `include/datoviz/fileio/fileio.h`:42._
 
 ## Font { #font }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_font_defaults()` { #dvz_font_defaults .dvz-api-function }
 
@@ -267,7 +267,7 @@ DvzFontDesc dvz_font_desc(void);
 
 _Declared in `include/datoviz/font.h`:75._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzfontdefaults"></a>
 
@@ -315,7 +315,7 @@ _Declared in `include/datoviz/font.h`:75._
 
 ## Load { #load }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_load_jpeg()` { #dvz_load_jpeg .dvz-api-function }
 
@@ -365,7 +365,7 @@ _Declared in `include/datoviz/fileio/fileio.h`:172._
 
 ## Log { #log }
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzloglevel"></a>
 
@@ -383,7 +383,7 @@ _Declared in `include/datoviz/fileio/fileio.h`:172._
 
 ## Make { #make }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_make_png()` { #dvz_make_png .dvz-api-function }
 
@@ -411,7 +411,7 @@ _Declared in `include/datoviz/fileio/fileio.h`:157._
 
 ## Memory { #memory }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_memory_free()` { #dvz_memory_free .dvz-api-function }
 
@@ -434,7 +434,7 @@ _Declared in `include/datoviz/common/functions.h`:68._
 
 ## Parse { #parse }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_parse_npy()` { #dvz_parse_npy .dvz-api-function }
 
@@ -457,7 +457,7 @@ _Declared in `include/datoviz/fileio/fileio.h`:76._
 
 ## Read { #read }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_read_file()` { #dvz_read_file .dvz-api-function }
 
@@ -560,7 +560,7 @@ _Declared in `include/datoviz/fileio/fileio.h`:129._
 
 ## Resource { #resource }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_resource_font()` { #dvz_resource_font .dvz-api-function }
 
@@ -630,7 +630,7 @@ _Declared in `include/datoviz/fileio/fileio.h`:219._
 
 ## Time { #time }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_time_monotonic_ns()` { #dvz_time_monotonic_ns .dvz-api-function }
 
@@ -648,7 +648,7 @@ _Declared in `include/datoviz/common/functions.h`:76._
 
 ## Version { #version }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_version()` { #dvz_version .dvz-api-function }
 
@@ -666,7 +666,7 @@ _Declared in `include/datoviz/common/version.h`:69._
 
 ## Write { #write }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_write_bytes()` { #dvz_write_bytes .dvz-api-function }
 

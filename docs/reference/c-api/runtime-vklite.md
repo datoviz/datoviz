@@ -350,7 +350,7 @@ Types: 29
 
 ## Commands And Rendering { #commands-and-rendering }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_attachment_clear()` { #dvz_attachment_clear .dvz-api-function }
 
@@ -1541,7 +1541,7 @@ DvzAttachment * dvz_rendering_stencil(
 
 _Declared in `include/datoviz/vklite/rendering.h`:216._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzattachment"></a>
 
@@ -1575,7 +1575,7 @@ _Declared in `include/datoviz/vklite/rendering.h`:216._
 
 ## Device And Presentation { #device-and-presentation }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_surface_capabilities()` { #dvz_surface_capabilities .dvz-api-function }
 
@@ -2268,7 +2268,7 @@ DvzPresentStatus dvz_swapchain_recreate(
 
 _Declared in `include/datoviz/vklite/swapchain.h`:234._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzpresentstatus"></a>
 
@@ -2326,7 +2326,7 @@ _Declared in `include/datoviz/vklite/swapchain.h`:234._
 
 ## Pipelines And Bindings { #pipelines-and-bindings }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_compute()` { #dvz_compute .dvz-api-function }
 
@@ -3777,7 +3777,7 @@ VkDescriptorSetLayout dvz_slots_set_layout(
 
 _Declared in `include/datoviz/vklite/slots.h`:212._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzcompute"></a>
 
@@ -3845,7 +3845,7 @@ _Declared in `include/datoviz/vklite/slots.h`:212._
 
 ## Resources { #resources }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_buffer()` { #dvz_buffer .dvz-api-function }
 
@@ -5251,7 +5251,7 @@ void dvz_sampler_min_filter(
 
 _Declared in `include/datoviz/vklite/sampler.h`:92._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzbuffer"></a>
 
@@ -5349,7 +5349,7 @@ _Declared in `include/datoviz/vklite/sampler.h`:92._
 
 ## Synchronization And Submission { #synchronization-and-submission }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_barrier_buffer_access()` { #dvz_barrier_buffer_access .dvz-api-function }
 
@@ -6289,7 +6289,7 @@ uint32_t dvz_submit_wait_count(
 
 _Declared in `include/datoviz/vklite/sync.h`:633._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzbarrierbuffer"></a>
 

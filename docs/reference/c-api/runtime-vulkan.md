@@ -150,7 +150,7 @@ Types: 26
 
 ## Devices And Queues { #devices-and-queues }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_device_allocator()` { #dvz_device_allocator .dvz-api-function }
 
@@ -668,7 +668,7 @@ void dvz_queues_show(
 
 _Declared in `include/datoviz/vk/queues.h`:157._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzdefaultqueue"></a>
 
@@ -800,7 +800,7 @@ _Declared in `include/datoviz/vk/queues.h`:157._
 
 ## GPU Context { #gpu-context }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_compile_glsl()` { #dvz_compile_glsl .dvz-api-function }
 
@@ -1142,7 +1142,7 @@ DvzQueue * dvz_gpu_ctx_queue(
 
 _Declared in `include/datoviz/vk/gpu_ctx.h`:235._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzgpuctx"></a>
 
@@ -1200,7 +1200,7 @@ _Declared in `include/datoviz/vk/gpu_ctx.h`:235._
 
 ## Instances { #instances }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_instance_config()` { #dvz_instance_config .dvz-api-function }
 
@@ -1527,7 +1527,7 @@ char ** dvz_instance_supported_layers(
 
 _Declared in `include/datoviz/vk/instance.h`:177._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzinstance"></a>
 
@@ -1574,7 +1574,7 @@ _Declared in `include/datoviz/vk/instance.h`:177._
 
 ## Memory And Interop { #memory-and-interop }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_allocation_create()` { #dvz_allocation_create .dvz-api-function }
 
@@ -2294,7 +2294,7 @@ DvzGpuCtx * dvz_interop_gpu_ctx_ex(
 
 _Declared in `include/datoviz/vk/memory_interop.h`:160._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzallocation"></a>
 
@@ -2364,7 +2364,7 @@ _Declared in `include/datoviz/vk/memory_interop.h`:160._
 
 ## Shared Render Types { #shared-render-types }
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzdescriptortype"></a>
 

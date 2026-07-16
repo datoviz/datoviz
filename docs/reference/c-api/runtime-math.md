@@ -131,7 +131,7 @@ Types: 46
 
 ## Box { #box }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_box()` { #dvz_box .dvz-api-function }
 
@@ -362,7 +362,7 @@ void dvz_box_normalize_polygon(
 
 _Declared in `include/datoviz/math/box.h`:181._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzbox"></a>
 
@@ -411,7 +411,7 @@ _Declared in `include/datoviz/math/box.h`:181._
 
 ## Dim { #dim }
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzdim"></a>
 
@@ -430,7 +430,7 @@ _Declared in `include/datoviz/math/box.h`:181._
 
 ## Dmat4 { #dmat4 }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_dmat4_copy()` { #dvz_dmat4_copy .dvz-api-function }
 
@@ -568,7 +568,7 @@ _Declared in `include/datoviz/math/vec.h`:86._
 
 ## Dvec3 { #dvec3 }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_dvec3()` { #dvz_dvec3 .dvz-api-function }
 
@@ -604,7 +604,7 @@ _Declared in `include/datoviz/math/vec.h`:46._
 
 ## Dvec4 { #dvec4 }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_dvec4()` { #dvz_dvec4 .dvz-api-function }
 
@@ -642,7 +642,7 @@ _Declared in `include/datoviz/math/vec.h`:50._
 
 ## Easing { #easing }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_easing()` { #dvz_easing .dvz-api-function }
 
@@ -663,7 +663,7 @@ double dvz_easing(
 
 _Declared in `include/datoviz/math/anim.h`:85._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzeasing"></a>
 
@@ -710,7 +710,7 @@ _Declared in `include/datoviz/math/anim.h`:85._
 
 ## Mean { #mean }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_mean()` { #dvz_mean .dvz-api-function }
 
@@ -733,7 +733,7 @@ _Declared in `include/datoviz/math/stats.h`:40._
 
 ## Min { #min }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_min_max()` { #dvz_min_max .dvz-api-function }
 
@@ -757,7 +757,7 @@ _Declared in `include/datoviz/math/stats.h`:51._
 
 ## Normalize { #normalize }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_normalize_bytes()` { #dvz_normalize_bytes .dvz-api-function }
 
@@ -783,7 +783,7 @@ _Declared in `include/datoviz/math/stats.h`:63._
 
 ## Prng { #prng }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_prng()` { #dvz_prng .dvz-api-function }
 
@@ -823,7 +823,7 @@ uint64_t dvz_prng_uuid(
 
 _Declared in `include/datoviz/math/prng.h`:42._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzprng"></a>
 
@@ -837,7 +837,7 @@ _Declared in `include/datoviz/math/prng.h`:42._
 
 ## Range { #range }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_range()` { #dvz_range .dvz-api-function }
 
@@ -861,7 +861,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
 
 ## Scalar And Vector Types { #scalar-and-vector-types }
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzalpha"></a>
 
@@ -1265,7 +1265,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
 
 ## Vec2 { #vec2 }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_vec2_copy()` { #dvz_vec2_copy .dvz-api-function }
 
@@ -1287,7 +1287,7 @@ _Declared in `include/datoviz/math/vec.h`:34._
 
 ## Vec3 { #vec3 }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_vec3_cast()` { #dvz_vec3_cast .dvz-api-function }
 

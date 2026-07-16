@@ -283,7 +283,7 @@ Types: 108
 
 ## Application Lifecycle { #application-lifecycle }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_app()` { #dvz_app .dvz-api-function }
 
@@ -574,7 +574,7 @@ DvzApp * dvz_app_with_resources(
 
 _Declared in `include/datoviz/app.h`:325._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzapp"></a>
 
@@ -712,7 +712,7 @@ _Declared in `include/datoviz/app.h`:325._
 
 ## Canvas Execution { #canvas-execution }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_canvas_capture_png()` { #dvz_canvas_capture_png .dvz-api-function }
 
@@ -1059,7 +1059,7 @@ const DvzFrameTiming * dvz_canvas_timings(
 
 _Declared in `include/datoviz/canvas.h`:348._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzcanvas"></a>
 
@@ -1245,7 +1245,7 @@ _Declared in `include/datoviz/canvas.h`:348._
 
 ## Display Sizing { #display-sizing }
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzextent"></a>
 
@@ -1356,7 +1356,7 @@ _Declared in `include/datoviz/canvas.h`:348._
 
 ## GUI { #gui }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_gui_begin()` { #dvz_gui_begin .dvz-api-function }
 
@@ -2105,7 +2105,7 @@ _Bool dvz_gui_viewport_window(
 
 _Declared in `include/datoviz/gui.h`:593._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzgui"></a>
 
@@ -2218,7 +2218,7 @@ _Declared in `include/datoviz/gui.h`:593._
 
 ## Input Routing { #input-routing }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_input_emit_event()` { #dvz_input_emit_event .dvz-api-function }
 
@@ -2732,7 +2732,7 @@ void dvz_pointer_gesture_handler_destroy(
 
 _Declared in `include/datoviz/input/pointer.h`:151._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzcallbackid"></a>
 
@@ -3193,7 +3193,7 @@ _Declared in `include/datoviz/input/pointer.h`:151._
 
 ## Streaming And Video { #streaming-and-video }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_stream_attach_sink()` { #dvz_stream_attach_sink .dvz-api-function }
 
@@ -3542,7 +3542,7 @@ DvzVideoSinkConfig dvz_video_sink_config(void);
 
 _Declared in `include/datoviz/video.h`:135._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzstream"></a>
 
@@ -3777,7 +3777,7 @@ _Declared in `include/datoviz/video.h`:135._
 
 ## Views And Capture { #views-and-capture }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_view()` { #dvz_view .dvz-api-function }
 
@@ -5068,7 +5068,7 @@ DvzView * dvz_view_window(
 
 _Declared in `include/datoviz/app.h`:508._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzview"></a>
 
@@ -5191,7 +5191,7 @@ _Declared in `include/datoviz/app.h`:508._
 
 ## Window Hosting { #window-hosting }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_window_backend_emit_resize()` { #dvz_window_backend_emit_resize .dvz-api-function }
 
@@ -5873,7 +5873,7 @@ int dvz_window_wrap_update_surface(
 
 _Declared in `include/datoviz/window/backend.h`:246._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzbackend"></a>
 

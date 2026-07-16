@@ -100,7 +100,7 @@ Types: 12
 
 ## Capability { #capability }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_capability_snapshot()` { #dvz_capability_snapshot .dvz-api-function }
 
@@ -134,7 +134,7 @@ void dvz_capability_snapshot_copy(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:115._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzcapabilitysnapshot"></a>
 
@@ -174,7 +174,7 @@ _Declared in `include/datoviz/scene/frame_plan.h`:115._
 
 ## Diagnostic { #diagnostic }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_diagnostic_report_add()` { #dvz_diagnostic_report_add .dvz-api-function }
 
@@ -247,7 +247,7 @@ void dvz_diagnostic_report_init(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:124._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzdiagnosticreport"></a>
 
@@ -264,7 +264,7 @@ _Declared in `include/datoviz/scene/frame_plan.h`:124._
 
 ## Emission { #emission }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_frame_plan_emit_config()` { #dvz_frame_plan_emit_config .dvz-api-function }
 
@@ -416,7 +416,7 @@ uint64_t dvz_frame_plan_emitter_object_id(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:475._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzframeplanemitconfig"></a>
 
@@ -457,7 +457,7 @@ _Declared in `include/datoviz/scene/frame_plan.h`:475._
 
 ## Frame Planning { #frame-planning }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_frame_plan()` { #dvz_frame_plan .dvz-api-function }
 
@@ -910,7 +910,7 @@ _Bool dvz_frame_plan_upload_ex(
 
 _Declared in `include/datoviz/scene/frame_plan.h`:270._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzframeplan"></a>
 
@@ -1033,7 +1033,7 @@ _Declared in `include/datoviz/scene/frame_plan.h`:270._
 
 ## Packet Results { #packet-results }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_frame_plan_packet_result_destroy()` { #dvz_frame_plan_packet_result_destroy .dvz-api-function }
 
@@ -1131,7 +1131,7 @@ DvzFramePlanPacketStatus dvz_frame_plan_packet_result_status(
 
 _Declared in `include/datoviz/scene/frame_packets.h`:90._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzframeplanpacketresult"></a>
 

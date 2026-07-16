@@ -3,10 +3,11 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+from pathlib import Path
 import sys
 import tempfile
 import unittest
-from pathlib import Path
 
 
 TOOLS = Path(__file__).resolve().parents[1]
@@ -46,6 +47,42 @@ def item(name: str, header: str, **values) -> dict:
 
 
 class TypeCatalogTests(unittest.TestCase):
+    def test_symbol_kind_label_is_accessible_but_not_a_markdown_heading(self) -> None:
+        rendered = api_docs.symbol_kind_label("Functions")
+        self.assertEqual(
+            rendered,
+            '<p class="dvz-api-kind-label" role="heading" aria-level="3">'
+            "<strong>Functions</strong></p>",
+        )
+        self.assertNotIn("###", rendered)
+
+    def test_rendered_kind_labels_do_not_add_toc_headings(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            policy = replace(page("scene", "scene.h"), output=Path(tmp) / "scene.md")
+            function = item(
+                "dvz_thing",
+                "scene.h",
+                result={"qualtype": "void"},
+                parameters=[],
+            )
+            entity = {
+                "name": "DvzThing",
+                "kind": "record",
+                "signature": "struct DvzThing {\n};",
+                "source": item("DvzThing", "scene.h"),
+                "canonical_header": "",
+            }
+
+            api_docs.render_page(policy, [function], [entity], {})
+            rendered = policy.output.read_text(encoding="utf8")
+
+            self.assertIn("## Thing { #thing }", rendered)
+            self.assertNotIn("\n### Functions", rendered)
+            self.assertNotIn("\n### Types", rendered)
+            self.assertIn('<p class="dvz-api-kind-label" role="heading"', rendered)
+            self.assertIn("#### `dvz_thing()` { #dvz_thing .dvz-api-function }", rendered)
+            self.assertIn('<a id="type-dvzthing"></a>', rendered)
+
     def test_function_heading_has_stable_style_hook(self) -> None:
         function = item(
             "dvz_thing",

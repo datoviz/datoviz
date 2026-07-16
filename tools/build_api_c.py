@@ -403,6 +403,14 @@ def group_anchor(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
 
 
+def symbol_kind_label(kind: str) -> str:
+    """Return an accessible visual label that is intentionally excluded from the page TOC."""
+    return (
+        '<p class="dvz-api-kind-label" role="heading" aria-level="3">'
+        f"<strong>{kind}</strong></p>"
+    )
+
+
 def header_summary(functions: list[dict]) -> str:
     headers = sorted({header_of(fn) for fn in functions if header_of(fn)})
     if not headers:
@@ -541,11 +549,11 @@ def render_page(
     for group in sorted(set(grouped) | set(types_grouped)):
         lines.extend([f"## {group} {{ #{group_anchor(group)} }}", ""])
         if grouped[group]:
-            lines.extend(["### Functions", ""])
+            lines.extend([symbol_kind_label("Functions"), ""])
         for fn in sorted(grouped[group], key=lambda item: item["name"]):
             lines.extend(format_function(fn, names, type_targets, "####"))
         if types_grouped[group]:
-            lines.extend(["### Types", ""])
+            lines.extend([symbol_kind_label("Types"), ""])
             for entity in sorted(types_grouped[group], key=lambda item: item["name"]):
                 lines.extend(render_type_entity(entity))
 

@@ -187,7 +187,7 @@ Types: 42
 
 ## Command Streams { #command-streams }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_drp2_command_type()` { #dvz_drp2_command_type .dvz-api-function }
 
@@ -2593,7 +2593,7 @@ DvzDrp2ValidationResult dvz_drp2_validate_stream(
 
 _Declared in `include/datoviz/drp2/runtime.h`:163._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzblendfactor"></a>
 
@@ -3190,7 +3190,7 @@ _Declared in `include/datoviz/drp2/runtime.h`:163._
 
 ## Packets { #packets }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_drp2_packet_command_kind()` { #dvz_drp2_packet_command_kind .dvz-api-function }
 
@@ -3322,7 +3322,7 @@ _Bool dvz_drp2_packet_encode_stream_phase(
 
 _Declared in `include/datoviz/drp2/packet.h`:88._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzdrp2packetinfo"></a>
 
@@ -3358,7 +3358,7 @@ _Declared in `include/datoviz/drp2/packet.h`:88._
 
 ## Recording And Replay { #recording-and-replay }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_drp2_recorder_close()` { #dvz_drp2_recorder_close .dvz-api-function }
 
@@ -3640,7 +3640,7 @@ _Bool dvz_drp2_recording_write_stream(
 
 _Declared in `include/datoviz/drp2/recording.h`:115._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzdrp2recordedframe"></a>
 
@@ -3697,7 +3697,7 @@ _Declared in `include/datoviz/drp2/recording.h`:115._
 
 ## Runtime Integration { #runtime-integration }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_drp2_external_buffer_desc()` { #dvz_drp2_external_buffer_desc .dvz-api-function }
 
@@ -3918,7 +3918,7 @@ DvzDrp2RuntimeConfig dvz_drp2_runtime_vklite_config(
 
 _Declared in `include/datoviz/drp2/runtime.h`:84._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzdrp2externalbufferdesc"></a>
 

@@ -72,7 +72,7 @@ Types: 5
 
 ## Eye-Dome Lighting { #eye-dome-lighting }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_edl_desc()` { #dvz_edl_desc .dvz-api-function }
 
@@ -111,7 +111,7 @@ DvzResult dvz_panel_set_edl(
 
 _Declared in `include/datoviz/scene.h`:1269._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzedldesc"></a>
 
@@ -131,7 +131,7 @@ _Declared in `include/datoviz/scene.h`:1269._
 
 ## Multisample Antialiasing { #multisample-antialiasing }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_msaa_desc()` { #dvz_msaa_desc .dvz-api-function }
 
@@ -169,7 +169,7 @@ DvzResult dvz_panel_set_msaa(
 
 _Declared in `include/datoviz/scene.h`:1282._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzmsaadesc"></a>
 
@@ -189,7 +189,7 @@ _Declared in `include/datoviz/scene.h`:1282._
 
 ## Scene Occlusion { #scene-occlusion }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_panel_set_scene_occlusion()` { #dvz_panel_set_scene_occlusion .dvz-api-function }
 
@@ -266,7 +266,7 @@ DvzResult dvz_visual_set_scene_occluder(
 
 _Declared in `include/datoviz/scene.h`:1827._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzsceneocclusiondesc"></a>
 
@@ -287,7 +287,7 @@ _Declared in `include/datoviz/scene.h`:1827._
 
 ## Screen-Space Ambient Occlusion { #screen-space-ambient-occlusion }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_panel_set_ssao()` { #dvz_panel_set_ssao .dvz-api-function }
 
@@ -327,7 +327,7 @@ DvzSsaoDesc dvz_ssao_desc(void);
 
 _Declared in `include/datoviz/scene.h`:1290._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzssaodesc"></a>
 
@@ -355,7 +355,7 @@ _Declared in `include/datoviz/scene.h`:1290._
 
 ## Volume Occlusion { #volume-occlusion }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_panel_set_volume_occluder()` { #dvz_panel_set_volume_occluder .dvz-api-function }
 
@@ -411,7 +411,7 @@ DvzVolumeOcclusionDesc dvz_volume_occlusion_desc(void);
 
 _Declared in `include/datoviz/scene.h`:1313._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzvolumeocclusiondesc"></a>
 

@@ -61,7 +61,7 @@ Types: 0
 
 ## Ffi { #ffi }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_ffi_depth_cue_desc()` { #dvz_ffi_depth_cue_desc .dvz-api-function }
 

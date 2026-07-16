@@ -159,7 +159,7 @@ Types: 24
 
 ## Arcball { #arcball }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_arcball_angles()` { #dvz_arcball_angles .dvz-api-function }
 
@@ -568,7 +568,7 @@ DvzResult dvz_arcball_zoom(
 
 _Declared in `include/datoviz/controller/arcball.h`:155._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzarcball"></a>
 
@@ -625,7 +625,7 @@ _Declared in `include/datoviz/controller/arcball.h`:155._
 
 ## Camera { #camera }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_camera_create()` { #dvz_camera_create .dvz-api-function }
 
@@ -910,7 +910,7 @@ DvzCameraView dvz_camera_view(void);
 
 _Declared in `include/datoviz/controller/camera.h`:105._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzcamera"></a>
 
@@ -1011,7 +1011,7 @@ _Declared in `include/datoviz/controller/camera.h`:105._
 
 ## Fly { #fly }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_fly_apply_camera()` { #dvz_fly_apply_camera .dvz-api-function }
 
@@ -1565,7 +1565,7 @@ DvzResult dvz_fly_viewport(
 
 _Declared in `include/datoviz/controller/fly.h`:137._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzfly"></a>
 
@@ -1632,7 +1632,7 @@ _Declared in `include/datoviz/controller/fly.h`:137._
 
 ## Panzoom { #panzoom }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_panzoom_connect()` { #dvz_panzoom_connect .dvz-api-function }
 
@@ -2014,7 +2014,7 @@ DvzResult dvz_panzoom_zoom_wheel(
 
 _Declared in `include/datoviz/controller/panzoom.h`:260._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzpanzoom"></a>
 
@@ -2100,7 +2100,7 @@ _Declared in `include/datoviz/controller/panzoom.h`:260._
 
 ## Turntable { #turntable }
 
-### Functions
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_turntable_apply_camera()` { #dvz_turntable_apply_camera .dvz-api-function }
 
@@ -2389,7 +2389,7 @@ DvzResult dvz_turntable_viewport(
 
 _Declared in `include/datoviz/controller/turntable.h`:130._
 
-### Types
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
 <a id="type-dvzturntable"></a>
 
