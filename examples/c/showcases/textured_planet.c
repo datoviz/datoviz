@@ -4,19 +4,23 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* textured_planet - This example maps real planetary textures onto an indexed sphere mesh.
+/* textured_planet - This example combines a textured Earth with real catalogued orbital debris.
  *
  * Scenario: showcases_textured_planet
  * Style: showcase, graphite_cyan, 1280x720 window target
  *
  * What to look for: `dvz_geometry_sphere()` creates positions, normals, UVs, and indices; the mesh
- * visual receives that geometry plus an RGBA8 sampled field bound to the mesh texture slot. Compare
- * the lit Earth or Mars sphere with the faint star shell and the turntable/arcball interaction to
- * see how texture, material, and camera controls work together.
+ * visual receives that geometry plus an RGBA8 sampled field bound to the mesh texture slot.
+ * Compare the lit Earth or Mars sphere with the faint star shell and, for Earth, real catalogued
+ * debris propagated with SGP4. Object sizes are exaggerated; the trajectories and positions are
+ * real.
  *
- * The example uses real texture files from the data submodule when available. Earth has a generated
- * fallback for local development; Mars requires its real texture file and is unavailable when that
- * file is missing.
+ * The example uses real texture files from the data submodule when available. Earth has a
+ * generated fallback for local development; Mars requires its real texture file and is unavailable
+ * when that file is missing.
+ *
+ * Prepare the debris ephemeris before running:
+ *   uv run tools/data/prepare_orbital_debris.py --force
  *
  * Build:  just example-c showcases/textured_planet
  * Run:    ./build/examples/c/showcases/textured_planet --live
@@ -45,6 +49,7 @@
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "runner/scenario_runner.h"
+#include "textured_planet_orbits.h"
 
 
 
@@ -65,12 +70,18 @@
 #define SPHERE_SECTORS 96
 #define SPHERE_RINGS 48
 
-#define ROTATION_SPEED_RAD_PER_SEC 0.16f
-
 static const float TAU = 6.28318530718f;
 
 #define STAR_COUNT 900
 #define STAR_RADIUS 48.0f
+
+#define ORBIT_DATA_PATH  "data/examples/orbital_debris/prepared/orbital_debris.bin"
+#define ORBIT_CACHE_PATH ".cache/datoviz/examples/orbital_debris/prepared/orbital_debris.bin"
+
+#define DEBRIS_TIME_SCALE 60.0f
+
+#define ORBIT_TRACE_COUNT   12
+#define ORBIT_TRACE_SAMPLES 121
 
 #define SUN_DIR_X -0.80f
 #define SUN_DIR_Y +0.22f
@@ -108,7 +119,6 @@ typedef struct PlanetPreset
     const char* texture_path;
     const char* fallback_path;
     bool require_texture_file;
-    float spin_speed;
 } PlanetPreset;
 
 
@@ -116,12 +126,20 @@ typedef struct PlanetPreset
 typedef struct TexturedPlanetState
 {
     DvzVisual* visual;
-    DvzTrack* spin_rotation;
-    DvzAnimation* spin_animation;
+    DvzVisual* debris_visual;
+    DvzVisual* orbit_visual;
     PlanetTexture textures[PLANET_COUNT];
+    TexturedPlanetOrbitModel orbit_model;
+    vec3* debris_positions;
+    DvzColor* debris_colors;
+    float* debris_sizes;
     int planet_index;
-    bool auto_rotate;
-    float spin_speed;
+    bool show_debris;
+    bool show_orbits;
+    bool animate_debris;
+    int debris_count;
+    float debris_speed;
+    double debris_time;
 } TexturedPlanetState;
 
 
@@ -140,7 +158,6 @@ static const PlanetPreset PLANETS[PLANET_COUNT] = {
             .label = "Earth",
             .texture_path = EARTH_TEXTURE_PATH,
             .fallback_path = EARTH_TEXTURE_FALLBACK_PATH,
-            .spin_speed = ROTATION_SPEED_RAD_PER_SEC,
         },
     [PLANET_MARS] =
         {
@@ -148,7 +165,6 @@ static const PlanetPreset PLANETS[PLANET_COUNT] = {
             .texture_path = MARS_TEXTURE_PATH,
             .fallback_path = NULL,
             .require_texture_file = true,
-            .spin_speed = 0.12f,
         },
 };
 
@@ -524,36 +540,289 @@ fail:
 
 
 /**
- * Reset GUI-controlled animation parameters from the selected preset.
+ * Return the display color assigned to one real debris event.
  *
- * @param state example state
+ * @param event_id prepared event index
+ * @param alpha alpha channel
+ * @return event color
  */
-static void _state_reset_controls(TexturedPlanetState* state)
+static DvzColor _debris_event_color(uint8_t event_id, uint8_t alpha)
 {
-    ANN(state);
-    ASSERT(state->planet_index >= 0);
-    ASSERT(state->planet_index < PLANET_COUNT);
-    const PlanetPreset* preset = &PLANETS[state->planet_index];
-
-    state->auto_rotate = true;
-    state->spin_speed = preset->spin_speed;
+    switch (event_id)
+    {
+    case 0:
+        return (DvzColor){104, 220, 255, alpha};
+    case 1:
+        return (DvzColor){255, 196, 92, alpha};
+    case 2:
+        return (DvzColor){255, 112, 96, alpha};
+    default:
+        return (DvzColor){220, 226, 235, alpha};
+    }
 }
 
 
 
 /**
- * Apply GUI-controlled animation speed to the spin animation.
+ * Fill the retained debris colors and point sizes for the active density.
+ *
+ * Objects outside the active prefix remain allocated but are fully transparent and zero-sized so
+ * the GUI can adjust density without changing the retained visual's item count.
  *
  * @param state example state
  */
-static void _state_apply_spin(TexturedPlanetState* state)
+static void _state_fill_debris_style(TexturedPlanetState* state)
 {
     ANN(state);
-    if (state->spin_animation == NULL)
-        return;
+    ANN(state->orbit_model.event_ids);
+    ANN(state->orbit_model.catalog_ids);
+    ANN(state->debris_colors);
+    ANN(state->debris_sizes);
 
-    const float speed = state->auto_rotate ? state->spin_speed : 0.0f;
-    dvz_anim_set_speed(state->spin_animation, speed);
+    for (uint32_t i = 0; i < state->orbit_model.count; i++)
+    {
+        if (i >= (uint32_t)state->debris_count)
+        {
+            state->debris_colors[i] = (DvzColor){0, 0, 0, 0};
+            state->debris_sizes[i] = 0.0f;
+            continue;
+        }
+
+        state->debris_colors[i] = _debris_event_color(state->orbit_model.event_ids[i], 255);
+        const uint32_t catalog_id = state->orbit_model.catalog_ids[i];
+        const float variation = (float)((37u * catalog_id) % 101u) / 100.0f;
+        state->debris_sizes[i] = 2.0f + 2.8f * variation;
+        if (catalog_id % 79u == 0)
+            state->debris_sizes[i] = 6.5f;
+    }
+}
+
+
+
+/**
+ * Upload debris colors and sizes after a density change.
+ *
+ * @param state example state
+ * @return whether the retained update succeeded
+ */
+static bool _state_upload_debris_style(TexturedPlanetState* state)
+{
+    ANN(state);
+    if (state->debris_visual == NULL)
+        return false;
+
+    _state_fill_debris_style(state);
+    const uint32_t count = state->orbit_model.count;
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "color", .data = state->debris_colors, .item_count = count},
+        {.attr_name = "size", .data = state->debris_sizes, .item_count = count},
+    };
+    return dvz_visual_set_data_many(state->debris_visual, updates, 2) == DVZ_OK;
+}
+
+
+
+/**
+ * Select one approximately quantile-spaced object from a prepared debris event.
+ *
+ * @param model prepared ephemeris
+ * @param event_id event index
+ * @param ordinal zero-based selection within the event
+ * @param selection_count selections requested for the event
+ * @return object index
+ */
+static uint32_t _trace_object_index(
+    const TexturedPlanetOrbitModel* model, uint8_t event_id, uint32_t ordinal,
+    uint32_t selection_count)
+{
+    ANN(model);
+    uint32_t event_count = 0;
+    for (uint32_t i = 0; i < model->count; i++)
+        event_count += model->event_ids[i] == event_id ? 1u : 0u;
+    if (event_count == 0)
+        return 0;
+
+    const uint32_t target = ordinal * event_count / selection_count;
+    uint32_t current = 0;
+    for (uint32_t i = 0; i < model->count; i++)
+    {
+        if (model->event_ids[i] != event_id)
+            continue;
+        if (current++ == target)
+            return i;
+    }
+    return 0;
+}
+
+
+
+/**
+ * Create representative subdued orbit traces.
+ *
+ * @param scene scene
+ * @param panel panel receiving the visual
+ * @param model simplified orbit model
+ * @return orbit path visual, or NULL on failure
+ */
+static DvzVisual*
+_create_orbit_traces(DvzScene* scene, DvzPanel* panel, const TexturedPlanetOrbitModel* model)
+{
+    ANN(scene);
+    ANN(panel);
+    ANN(model);
+    ASSERT(model->count >= ORBIT_TRACE_COUNT);
+    ASSERT(model->event_count > 0);
+
+    const uint32_t sample_count = ORBIT_TRACE_COUNT * ORBIT_TRACE_SAMPLES;
+    vec3* positions = (vec3*)dvz_calloc(sample_count, sizeof(vec3));
+    DvzColor* colors = (DvzColor*)dvz_calloc(sample_count, sizeof(DvzColor));
+    float* widths = (float*)dvz_calloc(sample_count, sizeof(float));
+    uint32_t* subpaths = (uint32_t*)dvz_calloc(ORBIT_TRACE_COUNT, sizeof(uint32_t));
+    DvzVisual* path = NULL;
+    if (positions == NULL || colors == NULL || widths == NULL || subpaths == NULL)
+        goto cleanup;
+
+    for (uint32_t trace_index = 0; trace_index < ORBIT_TRACE_COUNT; trace_index++)
+    {
+        const uint8_t event_id = (uint8_t)(trace_index % model->event_count);
+        const uint32_t ordinal = trace_index / model->event_count;
+        const uint32_t selection_count =
+            (ORBIT_TRACE_COUNT + model->event_count - 1) / model->event_count;
+        const uint32_t orbit_index =
+            _trace_object_index(model, event_id, ordinal, selection_count);
+        const uint32_t offset = trace_index * ORBIT_TRACE_SAMPLES;
+        textured_planet_orbit_model_trace(
+            model, orbit_index, ORBIT_TRACE_SAMPLES, &positions[offset]);
+        subpaths[trace_index] = ORBIT_TRACE_SAMPLES;
+        for (uint32_t j = 0; j < ORBIT_TRACE_SAMPLES; j++)
+        {
+            colors[offset + j] = _debris_event_color(event_id, 255);
+            widths[offset + j] = 0.85f;
+        }
+    }
+
+    path = dvz_path(scene, 0);
+    if (path == NULL)
+        goto cleanup;
+
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = sample_count},
+        {.attr_name = "color", .data = colors, .item_count = sample_count},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = sample_count},
+    };
+    if (dvz_visual_set_data_many(path, updates, 3) != DVZ_OK)
+    {
+        path = NULL;
+        goto cleanup;
+    }
+    if (dvz_path_set_subpaths(path, ORBIT_TRACE_COUNT, subpaths) != DVZ_OK)
+    {
+        path = NULL;
+        goto cleanup;
+    }
+    if (dvz_path_set_join(path, DVZ_PATH_JOIN_ROUND, 4.0f) != DVZ_OK)
+    {
+        path = NULL;
+        goto cleanup;
+    }
+    if (dvz_visual_set_depth_test(path, true) != DVZ_OK)
+    {
+        path = NULL;
+        goto cleanup;
+    }
+    if (dvz_panel_add_visual(panel, path, NULL) != DVZ_OK)
+        path = NULL;
+
+cleanup:
+    dvz_free(positions);
+    dvz_free(colors);
+    dvz_free(widths);
+    dvz_free(subpaths);
+    return path;
+}
+
+
+
+/**
+ * Create the retained orbital-debris point layer.
+ *
+ * @param scene scene
+ * @param panel panel receiving the visual
+ * @param state example state
+ * @return debris point visual, or NULL on failure
+ */
+static DvzVisual*
+_create_debris_points(DvzScene* scene, DvzPanel* panel, TexturedPlanetState* state)
+{
+    ANN(scene);
+    ANN(panel);
+    ANN(state);
+
+    textured_planet_orbit_model_positions(
+        &state->orbit_model, state->debris_time, state->debris_positions);
+    _state_fill_debris_style(state);
+
+    DvzVisual* points = dvz_point(scene, 0);
+    if (points == NULL)
+        return NULL;
+
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position",
+         .data = state->debris_positions,
+         .item_count = state->orbit_model.count},
+        {.attr_name = "color",
+         .data = state->debris_colors,
+         .item_count = state->orbit_model.count},
+        {.attr_name = "size", .data = state->debris_sizes, .item_count = state->orbit_model.count},
+    };
+    if (dvz_visual_set_data_many(points, updates, 3) != DVZ_OK)
+        return NULL;
+
+    DvzPointStyleDesc style = dvz_point_style_desc();
+    style.aspect = DVZ_SHAPE_ASPECT_FILLED;
+    style.stroke_width_px = 0.0f;
+    if (dvz_point_set_style(points, &style) != DVZ_OK)
+        return NULL;
+    if (dvz_visual_set_depth_test(points, true) != DVZ_OK)
+        return NULL;
+    if (dvz_panel_add_visual(panel, points, NULL) != DVZ_OK)
+        return NULL;
+    return points;
+}
+
+
+
+/**
+ * Reset orbital-debris controls to the showcase defaults.
+ *
+ * @param state example state
+ */
+static void _state_reset_debris_controls(TexturedPlanetState* state)
+{
+    ANN(state);
+    state->show_debris = true;
+    state->show_orbits = true;
+    state->animate_debris = true;
+    state->debris_count = (int)state->orbit_model.count;
+    state->debris_speed = DEBRIS_TIME_SCALE;
+    state->debris_time = 0.0;
+}
+
+
+
+/**
+ * Apply orbital-layer visibility controls.
+ *
+ * @param state example state
+ */
+static void _state_apply_debris_visibility(TexturedPlanetState* state)
+{
+    ANN(state);
+    const bool is_earth = state->planet_index == PLANET_EARTH;
+    if (state->debris_visual != NULL)
+        (void)dvz_visual_set_visible(state->debris_visual, is_earth && state->show_debris);
+    if (state->orbit_visual != NULL)
+        (void)dvz_visual_set_visible(state->orbit_visual, is_earth && state->show_orbits);
 }
 
 
@@ -608,7 +877,8 @@ static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
     static const char* const planet_items[PLANET_COUNT] = {"Earth", "Mars"};
     const int previous_planet_index = state->planet_index;
     bool planet_changed = false;
-    bool spin_changed = false;
+    bool debris_visibility_changed = false;
+    bool debris_density_changed = false;
     bool reset = false;
 
     if (dvz_gui_begin(gui, "Textured Planets", NULL, 0))
@@ -617,10 +887,19 @@ static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
         planet_changed |=
             dvz_gui_combo(gui, "Preset", &state->planet_index, planet_items, PLANET_COUNT);
 
-        dvz_gui_separator_text(gui, "Animation");
-        spin_changed |= dvz_gui_checkbox(gui, "Auto rotate", &state->auto_rotate);
-        spin_changed |= dvz_gui_slider_float_format(
-            gui, "Rotation speed", &state->spin_speed, 0.0f, 0.8f, "%.2f rad/s");
+        dvz_gui_separator_text(gui, "Catalogued orbital debris");
+        debris_visibility_changed |= dvz_gui_checkbox(gui, "Show debris", &state->show_debris);
+        debris_visibility_changed |=
+            dvz_gui_checkbox(gui, "Show orbit lines", &state->show_orbits);
+        (void)dvz_gui_checkbox(gui, "Animate debris", &state->animate_debris);
+        debris_density_changed |= dvz_gui_slider_int(
+            gui, "Object count", &state->debris_count, 0, (int)state->orbit_model.count);
+        (void)dvz_gui_slider_float_format(
+            gui, "Time scale", &state->debris_speed, 0.0f, 600.0f, "%.0fx real time");
+        dvz_gui_text(gui, "CelesTrak GP elements propagated with SGP4.");
+        dvz_gui_text(gui, state->orbit_model.snapshot_utc);
+        dvz_gui_text(gui, "Cyan: FENGYUN 1C | Amber: IRIDIUM 33");
+        dvz_gui_text(gui, "Coral: COSMOS 2251 | Point sizes exaggerated");
 
         reset = dvz_gui_button(gui, "Reset");
     }
@@ -630,8 +909,7 @@ static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
     {
         if (_state_apply_planet(state, true))
         {
-            _state_reset_controls(state);
-            spin_changed = true;
+            debris_visibility_changed = true;
         }
         else
         {
@@ -640,11 +918,14 @@ static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
     }
     if (reset)
     {
-        _state_reset_controls(state);
-        spin_changed = true;
+        _state_reset_debris_controls(state);
+        debris_visibility_changed = true;
+        debris_density_changed = true;
     }
-    if (spin_changed)
-        _state_apply_spin(state);
+    if (debris_visibility_changed)
+        _state_apply_debris_visibility(state);
+    if (debris_density_changed)
+        (void)_state_upload_debris_style(state);
 }
 #endif
 
@@ -669,9 +950,30 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (out_user != NULL)
         *out_user = state;
     state->planet_index = PLANET_EARTH;
-    _state_reset_controls(state);
-    if (ctx->preview_mode)
-        state->spin_speed = 0.0f;
+
+    ok = textured_planet_orbit_model_load(ORBIT_DATA_PATH, &state->orbit_model);
+    if (!ok)
+        ok = textured_planet_orbit_model_load(ORBIT_CACHE_PATH, &state->orbit_model);
+    if (!ok)
+    {
+        dvz_fprintf(
+            stderr,
+            "textured_planet: missing real orbital-debris ephemeris. Run "
+            "`uv run tools/data/prepare_orbital_debris.py --force` from the repository root.\n");
+    }
+    EXAMPLE_CHECK(ok, "real orbital-debris data setup failed");
+    _state_reset_debris_controls(state);
+    const uint32_t debris_count = state->orbit_model.count;
+    state->debris_positions = (vec3*)dvz_calloc(debris_count, sizeof(vec3));
+    state->debris_colors = (DvzColor*)dvz_calloc(debris_count, sizeof(DvzColor));
+    state->debris_sizes = (float*)dvz_calloc(debris_count, sizeof(float));
+    EXAMPLE_CHECK(
+        state->debris_positions != NULL && state->debris_colors != NULL &&
+            state->debris_sizes != NULL,
+        "failed to allocate orbital-debris data");
+    dvz_fprintf(
+        stderr, "textured_planet: %u real catalogued objects, snapshot %s\n", debris_count,
+        state->orbit_model.snapshot_utc);
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
@@ -682,7 +984,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.view.eye[0] = 0.0f;
     camera_desc.view.eye[1] = 0.0f;
-    camera_desc.view.eye[2] = 3.0f;
+    camera_desc.view.eye[2] = 3.7f;
     camera_desc.projection.fov_y = 0.72f;
     camera_desc.projection.near_clip = 0.05f;
     camera_desc.projection.far_clip = 100.0f;
@@ -742,10 +1044,17 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     rc = dvz_panel_add_visual(panel, visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
+
+    state->orbit_visual = _create_orbit_traces(ctx->scene, panel, &state->orbit_model);
+    EXAMPLE_CHECK(state->orbit_visual != NULL, "failed to create orbit traces");
+
+    state->debris_visual = _create_debris_points(ctx->scene, panel, state);
+    EXAMPLE_CHECK(state->debris_visual != NULL, "failed to create orbital-debris points");
+    _state_apply_debris_visibility(state);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.006f, 0.008f, 0.014f, 1.0f));
 
     DvzTurntableDesc turntable_desc = dvz_turntable_desc();
-    turntable_desc.min_distance = 1.45f;
+    turntable_desc.min_distance = 1.65f;
     turntable_desc.max_distance = 7.50f;
     turntable_desc.zoom_speed = 0.018f;
     DvzController* controller = dvz_turntable(ctx->scene, &turntable_desc);
@@ -756,25 +1065,41 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) == 0,
         "dvz_scenario_bind_controller() failed");
 
-    DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
-    rotation_desc.axis[0] = 0.0f;
-    rotation_desc.axis[1] = 1.0f;
-    rotation_desc.axis[2] = 0.0f;
-    rotation_desc.speed_rad_per_sec = 1.0f;
-    state->spin_rotation = dvz_track_rotation(&rotation_desc);
-    EXAMPLE_CHECK(state->spin_rotation != NULL, "dvz_track_rotation(planet) failed");
-    DvzTransformMotionDesc transform_desc = dvz_transform_motion_desc();
-    transform_desc.rotation = state->spin_rotation;
-    state->spin_animation = dvz_anim_visual_transform(ctx->scene, visual, &transform_desc);
-    EXAMPLE_CHECK(state->spin_animation != NULL, "dvz_anim_visual_transform(planet) failed");
-    dvz_anim_set_speed(state->spin_animation, state->spin_speed);
-    dvz_anim_start(state->spin_animation, 0.0);
-
     ok = true;
 cleanup:
     if (sphere != NULL)
         dvz_geometry_destroy(sphere);
     return ok;
+}
+
+
+
+/**
+ * Advance and upload the simplified orbital-debris positions.
+ *
+ * @param ctx scenario context
+ * @param user example state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    TexturedPlanetState* state = (TexturedPlanetState*)user;
+    if (ctx == NULL || state == NULL || state->debris_visual == NULL)
+        return;
+
+    if (ctx->preview_mode)
+    {
+        state->debris_time = dvz_scenario_preview_time(ctx) * state->debris_speed;
+    }
+    else if (state->animate_debris)
+    {
+        const double dt = fmin(fmax(ctx->dt, 0.0), 0.1);
+        state->debris_time += dt * state->debris_speed;
+    }
+
+    textured_planet_orbit_model_positions(
+        &state->orbit_model, state->debris_time, state->debris_positions);
+    (void)dvz_visual_set_data(
+        state->debris_visual, "position", state->debris_positions, state->orbit_model.count);
 }
 
 
@@ -803,7 +1128,10 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
     TexturedPlanetState* state = (TexturedPlanetState*)user;
     if (state == NULL)
         return;
-    dvz_track_destroy(state->spin_rotation);
+    textured_planet_orbit_model_destroy(&state->orbit_model);
+    dvz_free(state->debris_positions);
+    dvz_free(state->debris_colors);
+    dvz_free(state->debris_sizes);
     for (uint32_t i = 0; i < PLANET_COUNT; i++)
         dvz_free(state->textures[i].pixels);
     dvz_free(state);
@@ -815,11 +1143,12 @@ DvzScenarioSpec dvz_showcase_textured_planet_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "showcases_textured_planet",
-        .title = "Textured Planets",
+        .title = "Textured Planets and Orbital Debris",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
         .init = _scenario_init,
+        .frame = _scenario_frame,
 #ifndef DVZ_EXAMPLE_NO_MAIN
         .native_view = _scenario_native_view,
 #endif

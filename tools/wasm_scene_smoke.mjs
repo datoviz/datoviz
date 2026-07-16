@@ -1603,7 +1603,28 @@ function expectTexturedPlanetScenarioStreamShape(stream, label) {
     mesh.bind_group_layout_ids.length >= 2,
     `${label}: expected material or texture bind group layouts on mesh pipeline`,
   );
-  requireOk(commandsOf(stream, "DrawIndexed").length >= 1, `${label}: expected textured mesh draw`);
+  const point = expectPipeline(
+    stream,
+    `${label} debris points`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.point",
+  );
+  expectDepthPipeline(point, `${label} debris points`);
+  const debrisDraw = commandsOf(stream, "Draw").find((draw) => draw.instance_count > 1000);
+  requireOk(
+    debrisDraw !== undefined,
+    `${label}: expected more than 1000 real catalogued debris points`,
+  );
+  const path = expectPipeline(
+    stream,
+    `${label} orbit paths`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.path",
+  );
+  expectDepthPipeline(path, `${label} orbit paths`);
+  requireOk(commandsOf(stream, "Draw").length >= 2, `${label}: expected star and debris point draws`);
+  requireOk(
+    commandsOf(stream, "DrawIndexed").length >= 2,
+    `${label}: expected textured mesh and orbit-path draws`,
+  );
   requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected planet texture upload`);
   requireOk(commandsOf(stream, "WriteBuffer").length >= 4, `${label}: expected mesh and material uploads`);
 }
@@ -3660,7 +3681,8 @@ try {
         id === "features_update_partial" ||
         id === "features_update_visual_data" ||
         id === "features_visibility" ||
-        id === "showcases_spherical_harmonics"
+        id === "showcases_spherical_harmonics" ||
+        id === "showcases_textured_planet"
       ) {
         expectStatus(
           Module._dvz_wasm_api_scenario_frame(scene, 1.1, 1 / 60),

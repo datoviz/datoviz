@@ -37,8 +37,12 @@ or a narrow Mars/Earth slice, but it must use UVs and real texture sampling.
 
 Current v0.4 implementation target: `examples/c/showcases/textured_planet.c`, a retained
 Earth/Mars textured-planet showcase using a UV sphere, mesh-bound sampled RGBA textures,
-lighting/material integration, arcball interaction, slow rotation, procedural star field, and
-deterministic capture. Baked vertex colors do not satisfy this scenario.
+lighting/material integration, arcball interaction, a procedural star field, and a dated CelesTrak
+snapshot of catalogued FENGYUN 1C, IRIDIUM 33, and COSMOS 2251 debris propagated with SGP4. The
+prepared two-hour ephemeris drives retained point updates and representative real trajectories in
+both native and WebGPU routes. It covers selected tracked objects, not the full debris environment;
+point sizes are exaggerated and do not encode physical size. Baked vertex colors do not satisfy
+this scenario.
 
 Mars DEM terrain analysis, registered orthoimage/DEM preprocessing, slope/hazard layers, masks,
 probes, and GIS cache policy remain outside this v0.4 slice.

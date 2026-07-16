@@ -87,6 +87,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/surface_grid.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/choropleth.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/textured_planet.c
+    ${PROJECT_SOURCE_DIR}/examples/c/showcases/textured_planet_orbits.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/wind_field.c
     ${PROJECT_SOURCE_DIR}/examples/c/start/scatter.c
     ${PROJECT_SOURCE_DIR}/examples/c/visuals/glyph.c
@@ -155,6 +156,21 @@ endif()
 if(EXISTS "${PROJECT_SOURCE_DIR}/data/assets/textures")
     target_link_options(datoviz_wasm_scene PRIVATE
         "SHELL:--preload-file ${PROJECT_SOURCE_DIR}/data/assets/textures@data/assets/textures"
+    )
+endif()
+
+set(DVZ_WASM_ORBITAL_DEBRIS_FILE "")
+if(EXISTS "${PROJECT_SOURCE_DIR}/data/examples/orbital_debris/prepared/orbital_debris.bin")
+    set(DVZ_WASM_ORBITAL_DEBRIS_FILE
+        "${PROJECT_SOURCE_DIR}/data/examples/orbital_debris/prepared/orbital_debris.bin")
+elseif(EXISTS "${PROJECT_SOURCE_DIR}/.cache/datoviz/examples/orbital_debris/prepared/orbital_debris.bin")
+    set(DVZ_WASM_ORBITAL_DEBRIS_FILE
+        "${PROJECT_SOURCE_DIR}/.cache/datoviz/examples/orbital_debris/prepared/orbital_debris.bin")
+endif()
+
+if(NOT DVZ_WASM_ORBITAL_DEBRIS_FILE STREQUAL "")
+    target_link_options(datoviz_wasm_scene PRIVATE
+        "SHELL:--preload-file ${DVZ_WASM_ORBITAL_DEBRIS_FILE}@data/examples/orbital_debris/prepared/orbital_debris.bin"
     )
 endif()
 

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Real planetary texture mapped onto an indexed sphere mesh."""
+"""Textured Earth with real CelesTrak debris propagated into a prepared SGP4 ephemeris."""
 
 from __future__ import annotations
 
 import ctypes
+import struct
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -11,41 +12,126 @@ import numpy as np
 from PIL import Image
 
 import datoviz as dvz
-
 from examples.python.gallery import common as ex
-
 
 TEXTURE_WIDTH = 1024
 TEXTURE_HEIGHT = 512
-EARTH_TEXTURE_PATH = Path("data/assets/textures/world.200412.3x5400x2700.jpg")
+EARTH_TEXTURE_PATH = Path('data/assets/textures/world.200412.3x5400x2700.jpg')
 SPHERE_RADIUS = 0.92
 SPHERE_SECTORS = 96
 SPHERE_RINGS = 48
-ROTATION_SPEED_RAD_PER_SEC = 0.16
 STAR_COUNT = 900
 STAR_RADIUS = 48.0
+ORBIT_DATA_PATHS = (
+    Path('data/examples/orbital_debris/prepared/orbital_debris.bin'),
+    Path('.cache/datoviz/examples/orbital_debris/prepared/orbital_debris.bin'),
+)
+DEBRIS_TIME_SCALE = 60.0
+ORBIT_TRACE_COUNT = 12
+ORBIT_TRACE_SAMPLES = 121
 SUN_DIR = (-0.80, +0.22, +0.55)
 TAU = 2.0 * np.pi
+ORBIT_HEADER = struct.Struct('<8sIIIIIddff32s')
 
 PANEL_BG = dvz.DvzColor(2, 2, 4, 255)
 
 
-@dataclass
-class PlanetState:
-    spin_rotation: object | None = None
-    spin_animation: object | None = None
+@dataclass(frozen=True)
+class OrbitModel:
+    """Prepared catalog metadata and SGP4 ephemeris."""
 
-    def destroy_tracks(self) -> None:
-        if self.spin_rotation:
-            dvz.dvz_track_destroy(self.spin_rotation)
-        self.spin_rotation = None
-        self.spin_animation = None
+    event_ids: np.ndarray
+    catalog_ids: np.ndarray
+    ephemeris: np.ndarray
+    snapshot_utc: str
+    step_seconds: float
+    duration_seconds: float
+
+
+def _load_orbit_model() -> OrbitModel:
+    path = next((candidate for candidate in ORBIT_DATA_PATHS if candidate.exists()), None)
+    if path is None:
+        raise RuntimeError(
+            'missing real orbital-debris ephemeris; run '
+            '`uv run tools/data/prepare_orbital_debris.py --force`'
+        )
+    payload = path.read_bytes()
+    if len(payload) < ORBIT_HEADER.size:
+        raise RuntimeError(f'truncated orbital-debris ephemeris: {path}')
+
+    (
+        magic,
+        version,
+        object_count,
+        frame_count,
+        event_count,
+        _reserved,
+        _start_unix_s,
+        step_seconds,
+        _earth_radius_km,
+        _max_radius,
+        snapshot_field,
+    ) = ORBIT_HEADER.unpack_from(payload)
+    if (
+        magic != b'DVZORB1\0'
+        or version != 1
+        or object_count <= 0
+        or frame_count < 2
+        or event_count != 3
+        or step_seconds <= 0
+    ):
+        raise RuntimeError(f'invalid orbital-debris ephemeris header: {path}')
+
+    event_offset = ORBIT_HEADER.size
+    catalog_offset = event_offset + object_count
+    position_offset = catalog_offset + 4 * object_count
+    expected_size = position_offset + 12 * object_count * frame_count
+    if len(payload) != expected_size:
+        raise RuntimeError(f'unexpected orbital-debris ephemeris size: {path}')
+    event_ids = np.frombuffer(
+        payload, dtype=np.uint8, count=object_count, offset=event_offset
+    ).copy()
+    catalog_ids = np.frombuffer(
+        payload, dtype='<u4', count=object_count, offset=catalog_offset
+    ).copy()
+    ephemeris = np.frombuffer(
+        payload,
+        dtype='<f4',
+        count=3 * object_count * frame_count,
+        offset=position_offset,
+    ).reshape(frame_count, object_count, 3)
+    snapshot_utc = snapshot_field.split(b'\0', 1)[0].decode('ascii')
+    return OrbitModel(
+        event_ids,
+        catalog_ids,
+        ephemeris,
+        snapshot_utc,
+        float(step_seconds),
+        float(step_seconds * (frame_count - 1)),
+    )
+
+
+def _orbit_positions(model: OrbitModel, time_s: float) -> np.ndarray:
+    wrapped_time = float(time_s) % model.duration_seconds
+    frame = wrapped_time / model.step_seconds
+    frame0 = min(int(np.floor(frame)), len(model.ephemeris) - 1)
+    frame1 = min(frame0 + 1, len(model.ephemeris) - 1)
+    alpha = np.float32(frame - frame0 if frame1 > frame0 else 0.0)
+    return np.ascontiguousarray(
+        model.ephemeris[frame0] + alpha * (model.ephemeris[frame1] - model.ephemeris[frame0]),
+        dtype=np.float32,
+    )
+
+
+def _orbit_trace(model: OrbitModel, index: int) -> np.ndarray:
+    frame_indices = np.linspace(0, len(model.ephemeris) - 1, ORBIT_TRACE_SAMPLES, dtype=np.int32)
+    return np.ascontiguousarray(model.ephemeris[frame_indices, index], dtype=np.float32)
 
 
 def _earth_texture() -> np.ndarray:
     if EARTH_TEXTURE_PATH.exists():
         with Image.open(EARTH_TEXTURE_PATH) as image:
-            image = image.convert("RGBA")
+            image = image.convert('RGBA')
             width, height = image.size
             if width == 2 * height:
                 return np.ascontiguousarray(np.asarray(image, dtype=np.uint8))
@@ -132,19 +218,22 @@ def _add_star_shell(scene, panel) -> None:
 
     stars = dvz.dvz_point(scene, 0)
     if not stars:
-        raise RuntimeError("dvz_point() failed")
-    if dvz.dvz_visual_set_data_many(
-        stars,
-        {
-            "position": positions,
-            "color": colors,
-            "diameter_px": sizes,
-        },
-    ) != 0:
-        raise RuntimeError("dvz_visual_set_data_many(stars) failed")
+        raise RuntimeError('dvz_point() failed')
+    if (
+        dvz.dvz_visual_set_data_many(
+            stars,
+            {
+                'position': positions,
+                'color': colors,
+                'diameter_px': sizes,
+            },
+        )
+        != 0
+    ):
+        raise RuntimeError('dvz_visual_set_data_many(stars) failed')
     ex.set_filled_point_style(stars)
     if dvz.dvz_visual_set_depth_test(stars, False) != 0:
-        raise RuntimeError("dvz_visual_set_depth_test(stars) failed")
+        raise RuntimeError('dvz_visual_set_depth_test(stars) failed')
     ex.add_visual(panel, stars)
 
 
@@ -168,96 +257,170 @@ def _add_planet(scene, panel):
     desc.color = ex.WHITE
     geometry = dvz.dvz_geometry_sphere(ctypes.byref(desc))
     if not geometry:
-        raise RuntimeError("dvz_geometry_sphere() failed")
+        raise RuntimeError('dvz_geometry_sphere() failed')
 
     mesh = dvz.dvz_mesh(scene, 0)
     if not mesh:
         dvz.dvz_geometry_destroy(geometry)
-        raise RuntimeError("dvz_mesh() failed")
+        raise RuntimeError('dvz_mesh() failed')
 
     try:
         if dvz.dvz_geometry_transform(geometry, _planet_transform()) != 0:
-            raise RuntimeError("dvz_geometry_transform() failed")
+            raise RuntimeError('dvz_geometry_transform() failed')
         if dvz.dvz_mesh_set_geometry(mesh, geometry) != 0:
-            raise RuntimeError("dvz_mesh_set_geometry() failed")
+            raise RuntimeError('dvz_mesh_set_geometry() failed')
     finally:
         dvz.dvz_geometry_destroy(geometry)
 
     material = _planet_material()
     if dvz.dvz_visual_set_material(mesh, ctypes.byref(material)) != 0:
-        raise RuntimeError("dvz_visual_set_material() failed")
-    if dvz.dvz_visual_set_field(mesh, b"texture", field) != 0:
-        raise RuntimeError("dvz_visual_set_field(texture) failed")
+        raise RuntimeError('dvz_visual_set_material() failed')
+    if dvz.dvz_visual_set_field(mesh, b'texture', field) != 0:
+        raise RuntimeError('dvz_visual_set_field(texture) failed')
     ex.add_visual(panel, mesh)
     return mesh
 
 
+def _add_orbit_traces(scene, panel, model: OrbitModel) -> None:
+    indices: list[int] = []
+    trace_events: list[int] = []
+    selections_per_event = (ORBIT_TRACE_COUNT + 2) // 3
+    for trace_index in range(ORBIT_TRACE_COUNT):
+        event_id = trace_index % 3
+        event_indices = np.flatnonzero(model.event_ids == event_id)
+        ordinal = trace_index // 3
+        index = event_indices[ordinal * len(event_indices) // selections_per_event]
+        indices.append(int(index))
+        trace_events.append(event_id)
+    positions = np.concatenate([_orbit_trace(model, int(index)) for index in indices])
+    sample_count = len(positions)
+    palette = np.array(
+        [[104, 220, 255, 255], [255, 196, 92, 255], [255, 112, 96, 255]],
+        dtype=np.uint8,
+    )
+    colors = np.concatenate(
+        [np.tile(palette[event_id], (ORBIT_TRACE_SAMPLES, 1)) for event_id in trace_events]
+    )
+    assert len(colors) == sample_count
+    widths = np.full(sample_count, 0.85, dtype=np.float32)
+    subpaths = np.full(ORBIT_TRACE_COUNT, ORBIT_TRACE_SAMPLES, dtype=np.uint32)
+
+    path = dvz.dvz_path(scene, 0)
+    if not path:
+        raise RuntimeError('dvz_path() failed')
+    if (
+        dvz.dvz_visual_set_data_many(
+            path,
+            {
+                'position': positions,
+                'color': colors,
+                'stroke_width_px': widths,
+            },
+        )
+        != 0
+    ):
+        raise RuntimeError('dvz_visual_set_data_many(orbits) failed')
+    lengths = np.ctypeslib.as_ctypes(subpaths)
+    if dvz.dvz_path_set_subpaths(path, ORBIT_TRACE_COUNT, lengths) != 0:
+        raise RuntimeError('dvz_path_set_subpaths() failed')
+    if dvz.dvz_path_set_join(path, dvz.DVZ_PATH_JOIN_ROUND, 4.0) != 0:
+        raise RuntimeError('dvz_path_set_join() failed')
+    if dvz.dvz_visual_set_depth_test(path, True) != 0:
+        raise RuntimeError('dvz_visual_set_depth_test(orbits) failed')
+    ex.add_visual(panel, path)
+
+
+def _add_debris(scene, panel, model: OrbitModel):
+    positions = _orbit_positions(model, 0.0)
+    palette = np.array(
+        [[104, 220, 255, 255], [255, 196, 92, 255], [255, 112, 96, 255]],
+        dtype=np.uint8,
+    )
+    colors = palette[model.event_ids]
+    sizes = (2.0 + 2.8 * ((37 * model.catalog_ids.astype(np.uint64)) % 101) / 100.0).astype(
+        np.float32
+    )
+    sizes[model.catalog_ids % 79 == 0] = 6.5
+
+    points = dvz.dvz_point(scene, 0)
+    if not points:
+        raise RuntimeError('dvz_point() failed')
+    if (
+        dvz.dvz_visual_set_data_many(
+            points,
+            {
+                'position': positions,
+                'color': colors,
+                'diameter_px': sizes,
+            },
+        )
+        != 0
+    ):
+        raise RuntimeError('dvz_visual_set_data_many(debris) failed')
+    ex.set_filled_point_style(points)
+    if dvz.dvz_visual_set_depth_test(points, True) != 0:
+        raise RuntimeError('dvz_visual_set_depth_test(debris) failed')
+    ex.add_visual(panel, points)
+    return points
+
+
 def _setup_camera(panel) -> None:
     camera = dvz.dvz_camera_desc()
-    camera.view.eye[:] = (0.0, 0.0, 3.0)
+    camera.view.eye[:] = (0.0, 0.0, 3.7)
     camera.view.target[:] = (0.0, 0.0, 0.0)
     camera.view.up[:] = (0.0, 1.0, 0.0)
     camera.projection.fov_y = 0.72
     camera.projection.near_clip = 0.05
     camera.projection.far_clip = 100.0
     if dvz.dvz_panel_set_camera_desc(panel, ctypes.byref(camera)) != 0:
-        raise RuntimeError("dvz_panel_set_camera_desc() failed")
+        raise RuntimeError('dvz_panel_set_camera_desc() failed')
 
 
-def _add_spin(scene, mesh, state: PlanetState) -> None:
-    rotation_desc = dvz.dvz_track_rotation_desc()
-    rotation_desc.axis[:] = (0.0, 1.0, 0.0)
-    rotation_desc.speed_rad_per_sec = 1.0
-    rotation = dvz.dvz_track_rotation(ctypes.byref(rotation_desc))
-    if not rotation:
-        raise RuntimeError("dvz_track_rotation() failed")
-    state.spin_rotation = rotation
-
-    transform_desc = dvz.dvz_transform_motion_desc()
-    transform_desc.rotation = rotation
-    animation = dvz.dvz_anim_visual_transform(scene, mesh, ctypes.byref(transform_desc))
-    if not animation:
-        raise RuntimeError("dvz_anim_visual_transform() failed")
-    state.spin_animation = animation
-    if dvz.dvz_anim_set_speed(animation, ROTATION_SPEED_RAD_PER_SEC) != 0:
-        raise RuntimeError("dvz_anim_set_speed() failed")
-    if dvz.dvz_anim_start(animation, 0.0) != 0:
-        raise RuntimeError("dvz_anim_start() failed")
-
-
-def _build_scene(spin: bool = False):
+def _build_scene():
     scene, figure, panel = ex.scene_panel()
     dvz.dvz_panel_set_background_color(panel, PANEL_BG)
     _setup_camera(panel)
     _add_star_shell(scene, panel)
     mesh = _add_planet(scene, panel)
-    state = PlanetState()
-    if spin:
-        _add_spin(scene, mesh, state)
-    return scene, figure, panel, mesh, state
+    orbit_model = _load_orbit_model()
+    _add_orbit_traces(scene, panel, orbit_model)
+    debris = _add_debris(scene, panel, orbit_model)
+    return scene, figure, panel, mesh, debris, orbit_model
 
 
 def _configure_view(view, panel) -> None:
     desc = dvz.dvz_turntable_desc()
-    desc.min_distance = 1.45
+    desc.min_distance = 1.65
     desc.max_distance = 7.50
     desc.zoom_speed = 0.018
     turntable = dvz.dvz_view_turntable(view, panel, ctypes.byref(desc))
     if not turntable:
-        raise RuntimeError("dvz_view_turntable() failed")
+        raise RuntimeError('dvz_view_turntable() failed')
 
 
 def main() -> None:
-    scene, figure, panel, _mesh, state = _build_scene(spin=True)
+    scene, figure, panel, _mesh, debris, orbit_model = _build_scene()
 
     def configure(view) -> None:
         _configure_view(view, panel)
 
-    try:
-        ex.run_with_view(scene, figure, "Textured Planets", configure)
-    finally:
-        state.destroy_tracks()
+    def on_frame(_view, _frame_index: int, elapsed: float) -> None:
+        positions = _orbit_positions(orbit_model, elapsed * DEBRIS_TIME_SCALE)
+        if dvz.dvz_visual_set_data(debris, 'position', positions) != 0:
+            raise RuntimeError('dvz_visual_set_data(debris) failed')
+
+    print(
+        f'textured_planet: {len(orbit_model.catalog_ids)} real catalogued objects, '
+        f'snapshot {orbit_model.snapshot_utc}'
+    )
+    ex.run_with_frame_callback(
+        scene,
+        figure,
+        'Textured Planets and Orbital Debris',
+        on_frame,
+        configure,
+    )
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

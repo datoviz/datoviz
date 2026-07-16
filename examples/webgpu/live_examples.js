@@ -265,7 +265,7 @@ export const LIVE_EXAMPLES = [
   },
   {
     id: "showcases_textured_planet",
-    label: "Textured Planets",
+    label: "Textured Planets and Orbital Debris",
     scenarioId: "showcases_textured_planet",
   },
   {
