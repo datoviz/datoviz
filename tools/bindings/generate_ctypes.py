@@ -256,8 +256,14 @@ CTYPE_MAP = {
     'float': 'ctypes.c_float',
     'double': 'ctypes.c_double',
     'DvzId': 'ctypes.c_uint64',
+    'DvzCallbackId': 'ctypes.c_uint64',
+    'DvzCategoryId': 'ctypes.c_int64',
     'DvzResult': 'ctypes.c_int32',
     'DvzSize': 'ctypes.c_uint64',
+    'DvzTimestamp': 'ctypes.c_int64',
+    'VkAccessFlags2': 'ctypes.c_uint64',
+    'VkDeviceSize': 'ctypes.c_uint64',
+    'VkPipelineStageFlags2': 'ctypes.c_uint64',
 }
 
 SYNTHETIC_RECORD_CLASSES = {
@@ -334,7 +340,7 @@ def _callback_typedefs(api: dict) -> dict[str, dict]:
         if not name:
             continue
         type_info = typedef.get('type', {})
-        for spelling in (type_info.get('canonical', ''), type_info.get('qualtype', '')):
+        for spelling in (type_info.get('qualtype', ''), type_info.get('canonical', '')):
             parts = _function_pointer_parts(spelling)
             if parts is None:
                 continue

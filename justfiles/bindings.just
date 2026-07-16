@@ -32,6 +32,7 @@ ctypes-abi: api-json
 ctypes-check: api-json ctypes-abi
     @{{bindings_python}} tools/bindings/generate_ctypes.py --check
     @{{bindings_python}} tools/bindings/generate_array_facade.py --check
+    @{{bindings_python}} -m unittest tools/tests/test_generate_ctypes.py
     @{{bindings_python}} tools/bindings/validate_ctypes_policy.py
     @{{bindings_python}} tools/bindings/validate_array_facade.py
     @PYTHONPATH=. {{bindings_python}} tools/bindings/validate_ctypes_abi.py
