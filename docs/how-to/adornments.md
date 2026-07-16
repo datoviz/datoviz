@@ -4,6 +4,12 @@ Add visual context without turning the adornment into primary data.
 
 ![A vertical colorbar beside a colored scientific data panel](../assets/gallery/v0.4/features/features_colorbar.webp)
 
+!!! info "At a glance"
+
+    **Status:** Supported retained colorbar, scale-bar, and legend helpers · **Languages:** Python and C
+    **Prerequisites:** A panel and the same scale/units/category state used by its data visual
+    **Result:** Context that remains synchronized with the visual encoding it explains
+
 ## Task workflow
 
 Choose the adornment that explains the visual encoding: colorbars for scalar color, scale bars for
@@ -28,10 +34,23 @@ These excerpts assume a live panel and the required continuous or categorical sc
 may return `NULL`, and the setters return `DvzResult`; complete examples should check both. The
 canonical sources are linked under Related examples below.
 
-```c
-DvzColorbar* colorbar = dvz_colorbar(panel, scale, NULL);
-dvz_colorbar_set_title(colorbar, "Intensity");
-```
+=== "Python"
+
+    ```python
+    import datoviz as dvz
+
+    colorbar = dvz.dvz_colorbar(panel, scale, None)
+    if not colorbar:
+        raise RuntimeError("dvz_colorbar() failed")
+    dvz.dvz_colorbar_set_title(colorbar, b"Intensity")
+    ```
+
+=== "C"
+
+    ```c
+    DvzColorbar* colorbar = dvz_colorbar(panel, scale, NULL);
+    dvz_colorbar_set_title(colorbar, "Intensity");
+    ```
 
 ```c
 DvzScaleBar* scalebar = dvz_scale_bar(panel, NULL);
@@ -52,6 +71,9 @@ dvz_panel_add_visual(panel, visual, NULL);
 
 Colorbars require a continuous scale. Legends require a categorical scale. Scale bars describe one
 panel dimension and should match the panel's domain and units.
+
+The expected result is an attached adornment at its default panel edge. It is retained panel state;
+users do not add colorbars, legends, or scale bars with `dvz_panel_add_visual()`.
 
 
 ## Important details
@@ -74,6 +96,9 @@ explains.
 
 In multi-panel figures, prefer one adornment per independently encoded panel. Share an adornment
 only when the panels truly share the same scale, category table, units, and visible-domain policy.
+
+Colorbars and legends have dedicated destroy functions. A `DvzScaleBar` is a typed annotation
+alias; cast it to `DvzAnnotation*` when calling `dvz_annotation_destroy()`.
 
 Probe readouts are a common source of subtle errors. If a cursor readout describes a color-mapped
 field, it should sample the same field and use the same normalization and display format as the

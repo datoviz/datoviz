@@ -5,6 +5,12 @@ Map your data coordinates into panel space.
 Use this page to choose how uploaded positions are interpreted. Configure the initial 3D viewpoint
 and its interaction model in the camera and controller guides.
 
+!!! info "At a glance"
+
+    **Status:** Supported data/view/panel coordinate workflow · **Languages:** Python and C
+    **Prerequisites:** An existing panel and a visual with positions in a known coordinate system
+    **Result:** Data values, normalized positions, or panel overlays map predictably into the plot
+
 ## Task workflow
 
 Decide which coordinate space your positions use, set the panel domain when positions are data
@@ -41,19 +47,40 @@ For the common data/pixel cases, use `dvz_panel_position_to_data()` and
 
 ## Data-space call sequence
 
-```c
-dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
-dvz_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax);
+These setup excerpts assume `scene`, `panel`, `visual`, and finite ordered domain endpoints already
+exist.
 
-dvz_panel_add_visual(panel, visual, NULL);
+=== "Python"
 
-DvzController* controller = dvz_panzoom(scene, NULL);
-dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY);
-```
+    ```python
+    import datoviz as dvz
+
+    dvz.dvz_panel_set_domain(panel, dvz.DVZ_DIM_X, xmin, xmax)
+    dvz.dvz_panel_set_domain(panel, dvz.DVZ_DIM_Y, ymin, ymax)
+    dvz.dvz_panel_add_visual(panel, visual, None)
+
+    controller = dvz.dvz_panzoom(scene, None)
+    dvz.dvz_panel_bind_controller(panel, controller, dvz.DVZ_DIM_MASK_XY)
+    ```
+
+=== "C"
+
+    ```c
+    dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
+    dvz_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax);
+
+    dvz_panel_add_visual(panel, visual, NULL);
+
+    DvzController* controller = dvz_panzoom(scene, NULL);
+    dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY);
+    ```
 
 In this pattern, upload positions in your data units. The panel maps X and Y from the configured
 domain into the visual panel range used for rendering. Panzoom changes the visible part of that
 domain; it does not rewrite the uploaded source positions.
+
+The expected result is a panel whose initial visible X/Y interval matches the two domains; dragging
+and zooming changes the visible interval while the retained position arrays remain unchanged.
 
 ## View-space call sequence
 

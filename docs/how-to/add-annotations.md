@@ -4,6 +4,13 @@ Place readable text in or near a data view.
 
 ![A data-anchored text label displaying the value at a selected point](../assets/gallery/v0.4/features/features_annotation_readout.webp)
 
+!!! info "At a glance"
+
+    **Status:** Supported retained text, categorical label fields, and label annotations
+    **Languages:** C examples below; Python exposes the exact generated descriptor API
+    **Prerequisites:** A panel plus a deliberate screen-, panel-, or data-space placement policy
+    **Result:** Readable retained text that can stay fixed or follow a data/query location
+
 ## Task workflow
 
 Choose the text path from the job it needs to do. Use retained text for fixed panel text, labels for
@@ -15,6 +22,9 @@ deciding whether its placement is screen-space, data-space, or tied to a query r
 | Fixed title, status line, or short overlay block | `dvz_text()` | Screen or panel anchored placement. |
 | Integer label image, segmentation mask, or categorical field overlay | `dvz_labels()` | Same image placement attributes as image visuals. |
 | One retained label at a data point or query location | `dvz_annotation_label()` | Data placement plus pixel offset. |
+
+The snippets below are C function-body excerpts. They emphasize the three different semantic
+objects; use the linked complete examples for scene/app lifecycle and result checking.
 
 ## Fixed text block
 
@@ -57,6 +67,9 @@ fixed screen position without moving it with that reserve.
 
 Use `dvz_text_set_string()` to update a changing readout. Do not rebuild the panel or recreate the
 scene for every value change.
+
+The expected result is a two-line text block near the panel's top-left corner. Because its
+placement is screen based, panning or zooming the data does not move it.
 
 ## Categorical label fields
 

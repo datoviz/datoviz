@@ -2,6 +2,12 @@
 
 Add 2D axes, ticks, grid lines, and labels to a panel.
 
+!!! info "At a glance"
+
+    **Status:** Supported retained linear 2D axes · **Languages:** Python and C
+    **Prerequisites:** A panel with explicit finite X/Y domains and its data visual
+    **Result:** Panel-owned ticks, grid lines, and labels that follow the visible data domain
+
 ## Use this when
 
 - A 2D panel needs numeric X/Y context.
@@ -54,6 +60,9 @@ dvz_axis_set_label(y_axis, "y");
 
 Keep axes in the same panel as the data they describe. If the panel uses panzoom, bind the
 controller to the same X/Y dimensions so ticks, grid lines, and visible data move together.
+
+The expected result is one X axis and one Y axis around the panel plot area. Both show automatic
+ticks and labels; enabling the grid adds lines at the corresponding major ticks.
 
 ## Domain and coordinates
 

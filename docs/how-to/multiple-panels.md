@@ -4,6 +4,12 @@ Split a figure into coordinated viewports.
 
 ![Several data views arranged as panels in one figure](../assets/gallery/v0.4/features/features_panel_multi.webp)
 
+!!! info "At a glance"
+
+    **Status:** Supported retained grid and free-placement layouts · **Languages:** Python and C
+    **Prerequisites:** One figure plus prepared visuals for the intended panels
+    **Result:** One figure containing independently configurable panel viewports
+
 ## Task workflow
 
 Create one figure, define a panel grid or multiple panels, attach visuals to each panel, and bind
@@ -61,6 +67,10 @@ dvz_grid_set_margins(
         .left_px = 48.0f, .right_px = 32.0f, .top_px = 32.0f, .bottom_px = 48.0f});
 dvz_grid_set_gutter(grid, 24.0f, 20.0f);
 ```
+
+With the minimal 1 × 2 grid, the expected result is two equal-width panels. Margins shrink the
+outer grid area; the horizontal gutter separates the columns; neither setting reserves axis space
+inside a panel.
 
 Rows and columns default to equal weight. Use fixed-pixel or weighted row/column sizes when one
 panel is a sidebar, overview, or shared control strip:

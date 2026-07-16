@@ -4,6 +4,13 @@ Render regular 2D or 3D scalar data as image, texture, or volume content.
 
 ![A scalar sampled field rendered as an image after its values are updated](../assets/gallery/v0.4/features/features_sampled_field_update.webp)
 
+!!! info "At a glance"
+
+    **Status:** Supported native sampled-field workflow; backend coverage varies by field kind
+    **Languages:** C-first; Python exposes the exact pointer-shaped API without an ndarray field adapter
+    **Prerequisites:** Explicit dimensions, format, semantic role, row pitch, and CPU storage
+    **Result:** A regular 2D/3D field retained once and bound to an image, labels, mesh, or volume
+
 ## Task workflow
 
 Keep regular grids in sampled-field form when possible. Use image visuals for 2D arrays, volume
@@ -18,6 +25,11 @@ Choose the field descriptor before choosing the visual:
 | 2D RGBA texture | `DVZ_FIELD_DIM_2D`, `DVZ_FIELD_FORMAT_RGBA8_UNORM`, `DVZ_FIELD_SEMANTIC_COLOR` | `dvz_image()` slot `"field"` or mesh slot `"texture"` |
 | Integer segmentation or label mask | 2D integer format, `DVZ_FIELD_SEMANTIC_LABEL` | `dvz_labels()` slot `"field"` plus categorical scale |
 | 3D scalar array | `DVZ_FIELD_DIM_3D`, scalar format, `DVZ_FIELD_SEMANTIC_SCALAR` | `dvz_volume()` slot `"field"` |
+
+The four code blocks below are C function-body excerpts, not standalone programs. The current
+top-level Python facade adapts dense visual arrays but does not yet infer sampled-field dimensions,
+strides, or lifetimes from a NumPy array; use `datoviz.raw` only if you intentionally want the exact
+`DvzFieldDataView` pointer contract.
 
 ## 2D scalar image
 
@@ -128,6 +140,9 @@ if (volume == NULL || dvz_visual_set_field(volume, "field", field) != 0 ||
     return false;
 ```
 
+The result is a retained 3D texture sampled by the volume visual. Camera, transfer, and ray-march
+settings determine its final appearance; the field descriptor alone does not choose those policies.
+
 ## Textured meshes
 
 Use a sampled field as a mesh texture only when the texture belongs to surface geometry. The mesh
@@ -169,6 +184,10 @@ texture on the next frame.
 Use `DvzFieldGeometry` when the array has physical origin, spacing, axis order, flips, or units
 that matter to probing or measurement. The visual placement still controls where the field appears
 in the panel; geometry metadata records what the samples mean.
+
+`DvzFieldDataView.data` is borrowed only for the upload call; Datoviz copies the supplied payload.
+The descriptor dimensions and data-view strides must nevertheless describe every uploaded byte
+correctly. For subregion updates, offsets and extents are expressed in field sample coordinates.
 
 For color textures, set the semantic and color role intentionally. Scientific scalar fields should
 use scalar semantics and a scale. Ordinary RGBA textures should use color semantics so color-space

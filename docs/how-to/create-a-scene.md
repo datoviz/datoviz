@@ -4,6 +4,12 @@ Create the basic structure used by most Datoviz visualizations.
 
 ![Three colored points in a basic Datoviz scene](../assets/gallery/v0.4/features/features_basic_scene.webp)
 
+!!! info "At a glance"
+
+    **Status:** Supported scene workflow · **Languages:** Python NumPy facade and C
+    **Prerequisites:** A working Datoviz installation and native graphics runtime
+    **Result:** One 800 × 600 window containing three colored points
+
 ## Task workflow
 
 Start by creating the scene structure: one scene, one figure, one panel, and at least one visual.
@@ -45,6 +51,11 @@ Basic checklist:
 7. Clean up the app and scene when the program exits.
 
 ## Minimal call sequence
+
+The Python tab is a complete success-path script. The C tab is a function-body excerpt: add
+`#include <datoviz/datoviz.h>` and a `main()` function, and check pointer and result values in
+production code. Both tabs intentionally show explicit app ownership; the shorter managed Python
+path is `dvz.run(scene, figure)`.
 
 === "Python"
 
@@ -131,7 +142,7 @@ Use `dvz_panel_full()` for a single drawing area. Use panel-grid helpers only wh
 multiple coordinated panels.
 
 
-The result is an 800 by 600 native window containing three colored points. To add another dataset
+The result is an 800 × 600 native window containing three colored points. To add another dataset
 to an existing panel, continue with [Add visuals to a panel](add-a-visual.md).
 
 ## Important details

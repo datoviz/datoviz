@@ -2,6 +2,13 @@
 
 Update retained scene state over time without rebuilding the scene.
 
+!!! info "At a glance"
+
+    **Status:** Supported timer and track workflows; compute animation is experimental
+    **Languages:** Python exact binding for tracks, C for timers and tracks
+    **Prerequisites:** A prepared retained scene; a deterministic time source for reproducible output
+    **Result:** Later frames update visual attributes, object transforms, or camera state
+
 ## Use this when
 
 - Visual attributes change every frame, such as positions, colors, sizes, or visibility.
@@ -11,7 +18,7 @@ Update retained scene state over time without rebuilding the scene.
 Keep the scene hierarchy stable. Create figures, panels, visuals, buffers, and controllers once;
 then update only the state that changes.
 
-## Choose a Mechanism
+## Choose a mechanism
 
 | Goal | Use | Canonical example |
 | --- | --- | --- |
@@ -115,6 +122,10 @@ rotation driven by the scene clock. These fragments omit app creation and cleanu
 
 For camera paths, use `dvz_anim_camera_motion()` with eye, target, or up tracks. The animation
 tracks example shows both a rotating visual and a keyframed camera.
+
+Tracks are borrowed by their animations. Keep each `DvzTrack` alive until its animation is stopped
+or destroyed; then destroy the track with `dvz_track_destroy()`. Scene-owned animation handles can
+be stopped, restarted, or destroyed without rebuilding the scene.
 
 ## Deterministic runs
 

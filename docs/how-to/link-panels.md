@@ -4,6 +4,12 @@ Make multiple panels pan, zoom, or probe together.
 
 ![Two panels sharing linked navigation state](../assets/gallery/v0.4/features/features_panel_linked.webp)
 
+!!! info "At a glance"
+
+    **Status:** Supported controller sharing and selective links · **Languages:** Python and C
+    **Prerequisites:** Existing panels with compatible domains and controllers from one scene
+    **Result:** Navigation in one panel updates the selected state of another panel
+
 ## Task workflow
 
 Create the panels first. Bind the same controller object to every panel that should share view
@@ -18,11 +24,30 @@ state. Keep separate controllers for panels that should move independently.
 
 ## Minimal call sequence
 
-```c
-DvzController* shared = dvz_panzoom(scene, NULL);
-dvz_panel_bind_controller(panel_a, shared, DVZ_DIM_MASK_XY);
-dvz_panel_bind_controller(panel_b, shared, DVZ_DIM_MASK_XY);
-```
+These are setup excerpts. The shared-controller pattern is the shortest and should be your default.
+
+=== "Python"
+
+    ```python
+    import datoviz as dvz
+
+    shared = dvz.dvz_panzoom(scene, None)
+    if not shared:
+        raise RuntimeError("dvz_panzoom() failed")
+    dvz.dvz_panel_bind_controller(panel_a, shared, dvz.DVZ_DIM_MASK_XY)
+    dvz.dvz_panel_bind_controller(panel_b, shared, dvz.DVZ_DIM_MASK_XY)
+    ```
+
+=== "C"
+
+    ```c
+    DvzController* shared = dvz_panzoom(scene, NULL);
+    dvz_panel_bind_controller(panel_a, shared, DVZ_DIM_MASK_XY);
+    dvz_panel_bind_controller(panel_b, shared, DVZ_DIM_MASK_XY);
+    ```
+
+Dragging or zooming either panel now changes the same XY controller state, so both panels redraw
+with the matching visible extent.
 
 Use a narrower dimension mask to link only one axis.
 
@@ -46,6 +71,9 @@ DvzController* x_b = dvz_panzoom(scene, NULL);
 
 dvz_controller_link(scene, x_a, x_b, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_TWO_WAY);
 ```
+
+Retain the returned `DvzControllerLink*` if the relationship may be removed later; destroy the link
+with `dvz_controller_link_destroy()`. The scene owns any link that remains active.
 
 ## Important details
 

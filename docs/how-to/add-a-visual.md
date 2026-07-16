@@ -5,6 +5,12 @@ or another visual family.
 
 ![Colored circular points rendered in one panel](../assets/gallery/v0.4/visuals/visuals_point.webp)
 
+!!! info "At a glance"
+
+    **Status:** Supported retained-visual workflow · **Languages:** Python NumPy facade and C
+    **Prerequisites:** An existing scene and panel; arrays matching one visual-family contract
+    **Result:** One batched visual attached to and rendered by the chosen panel
+
 ## Task workflow
 
 A visual is a renderable collection of related items. For a point visual, the items are points. For
@@ -25,7 +31,8 @@ of a figure only after `dvz_panel_add_visual()`.
 
 ## Basic point visual
 
-This example adds three points to an existing `scene` and `panel`.
+This setup excerpt adds three points to an existing `scene` and `panel`. It is intentionally not a
+standalone program; use [Create a scene](create-a-scene.md) for the surrounding lifecycle.
 
 === "Python"
 

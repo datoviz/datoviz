@@ -4,6 +4,12 @@ Convert scalar data into colors and expose the scale to readers.
 
 ![Scalar values mapped through a colormap with a matching color scale](../assets/gallery/v0.4/features/features_colormap_scale.webp)
 
+!!! info "At a glance"
+
+    **Status:** Supported continuous and categorical scale objects · **Languages:** Python and C
+    **Prerequisites:** Scalar values with an explicit finite domain, or category IDs with labels
+    **Result:** A reproducible color encoding that can be shared with colorbars and readouts
+
 ## Task workflow
 
 Choose the scalar range, choose a colormap, upload the mapped colors or sampled-field data, then add
@@ -76,6 +82,9 @@ dvz_panel_add_visual(panel, visual, NULL);
 If you already have RGBA colors, upload them directly to `"color"` and skip the scale and colormap.
 For sampled fields, use the image or volume path shown in the field examples instead of manually
 expanding every scalar to geometry.
+
+Values at the low and high ends of the domain use the ends of Viridis; intermediate values are
+interpolated. Add a colorbar bound to this same `scale` when readers need to recover numeric values.
 
 
 ## Important details

@@ -4,6 +4,12 @@ Change the data shown by an existing visual.
 
 ![Point positions changing while the existing visual remains on screen](../assets/gallery/v0.4/features/features_update_visual_data.webp)
 
+!!! info "At a glance"
+
+    **Status:** Supported retained-data workflow · **Languages:** Python NumPy facade and C
+    **Prerequisites:** An existing visual with initialized, family-valid attributes
+    **Result:** Later frames use the new arrays without recreating the visual or scene
+
 Use this when the same plot should display new values: a time series advances, a simulation step
 finishes, a slider changes a threshold, or a selection changes the colors of some items. In most
 cases, keep the visual and update its data arrays. Do not rebuild the whole scene for every change.

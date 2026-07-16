@@ -2,6 +2,13 @@
 
 Pick the visual whose primitive and data layout match your task.
 
+!!! info "At a glance"
+
+    **Status:** Built-in families are supported unless their reference page says experimental
+    **Languages:** The same family constructors and attribute contracts apply in Python and C
+    **Input:** Geometry, regular fields, labels, or text with known item/grid structure
+    **Result:** A family choice that preserves batching, coordinates, and scientific meaning
+
 ## Task workflow
 
 Start from the geometry you have, not from the plot name. Use point or marker for independent 2D
@@ -32,6 +39,10 @@ when they truly need different visual families, materials, transforms, panels, o
 | 3D balls, atoms, or particles with world-space radius | Sphere | [Sphere](../reference/visual-families/sphere.md) | [Sphere](../examples/gallery/visuals/visuals_sphere.md) |
 | Human-readable retained strings | Text | [Text](../reference/visual-families/text.md) | [Text](../examples/gallery/visuals/visuals_text.md) |
 | Low-level font-atlas quads | Glyph | [Glyph](../reference/visual-families/glyph.md) | [Glyph](../examples/gallery/visuals/visuals_glyph.md) |
+
+The constructor names in the table are available from both `import datoviz as dvz` and the C API.
+The table selects a family only; its reference page remains authoritative for attribute names,
+dtypes, shapes, and required resources.
 
 ## Compare neighboring choices
 

@@ -2,6 +2,13 @@
 
 Apply object transforms or user scales without rewriting source data.
 
+!!! info "At a glance"
+
+    **Status:** Supported affine visual transforms and view user scale
+    **Languages:** C examples below; the exact generated Python binding exposes the same calls
+    **Prerequisites:** A retained visual, panel, or live view, depending on the mechanism
+    **Result:** Geometry placement or screen-space sizing changes without rewriting source arrays
+
 ## Task workflow
 
 Use panel domains for the view's data range. Use visual transforms when one visual needs a local
@@ -19,6 +26,9 @@ Choose the mechanism by the question you are answering:
 | Map scalar or categorical values to colors/labels | `DvzScale` and `dvz_visual_set_scale()` | Semantic color/label scale, not geometry. |
 
 ## Visual transform call sequence
+
+This is a C function-body excerpt. Datoviz matrices use the same `mat4` representation as the
+public headers; use the canonical example for complete setup and combined transforms.
 
 ```c
 mat4 transform = {
@@ -83,6 +93,9 @@ dvz_view_set_user_scale(view, scale * 1.25f);
 
 The user-scale example drives this value from a GUI slider. It changes visual readability without
 rewriting source positions or changing the panel domain.
+
+After multiplying the scale by `1.25`, screen-space quantities that honor user scale appear 25%
+larger; panel domains, camera distance, and uploaded positions are unchanged.
 
 ## Semantic scales
 

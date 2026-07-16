@@ -5,6 +5,12 @@ Run a scene in a native window for desktop interaction.
 You need a scene with a figure and panel. The result is a window whose event loop renders the
 figure and forwards resize and input events to its controllers.
 
+!!! info "At a glance"
+
+    **Status:** Supported native presentation path · **Languages:** Python and C
+    **Prerequisites:** A prepared scene and figure, GLFW, a display, and a Vulkan-capable GPU
+    **Result:** A resizable native window that runs until it is closed
+
 ## Use this when
 
 - You want a visible native window with mouse, keyboard, resize, and controller interaction.
@@ -21,29 +27,52 @@ native window.
 Build the retained scene first: create the scene, figure, panel, visuals, data, and panel
 attachments. Then create the native app and attach a window view to the figure.
 
-```c
-DvzApp* app = dvz_app(scene);
-if (app == NULL)
-    return -1;
-DvzView* view = dvz_view_window(app, figure, width, height, "Datoviz");
-if (view == NULL)
-{
-    dvz_app_destroy(app);
-    return -1;
-}
-DvzPanzoom* panzoom = dvz_view_panzoom(view, panel, NULL);
-if (panzoom == NULL)
-{
-    dvz_app_destroy(app);
-    return -1;
-}
+The Python tab is the recommended managed path for scripts. The C tab is a function-body excerpt
+that exposes the exact app/view lifecycle.
 
-dvz_app_run(app, 0);
-dvz_app_destroy(app);
-```
+=== "Python"
+
+    ```python
+    import datoviz as dvz
+
+    controller = dvz.dvz_panzoom(scene, None)
+    if not controller:
+        raise RuntimeError("dvz_panzoom() failed")
+    if dvz.dvz_panel_bind_controller(panel, controller, dvz.DVZ_DIM_MASK_XY) != 0:
+        raise RuntimeError("dvz_panel_bind_controller() failed")
+
+    # Blocks in a regular Python script; closes the app when the window closes.
+    dvz.run(scene, figure, width=800, height=600, title="Datoviz")
+    ```
+
+=== "C"
+
+    ```c
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+        return -1;
+    DvzView* view = dvz_view_window(app, figure, width, height, "Datoviz");
+    if (view == NULL)
+    {
+        dvz_app_destroy(app);
+        return -1;
+    }
+    DvzPanzoom* panzoom = dvz_view_panzoom(view, panel, NULL);
+    if (panzoom == NULL)
+    {
+        dvz_app_destroy(app);
+        return -1;
+    }
+
+    dvz_app_run(app, 0);
+    dvz_app_destroy(app);
+    ```
 
 Pass `0` to `dvz_app_run()` to run until the window closes. Pass a positive frame count for smoke
 tests or deterministic captures.
+
+In terminal IPython, `dvz.run()` is nonblocking by default and returns a live session. Retain that
+session and call `session.close()` when finished. In ordinary scripts it blocks by default.
 
 ## Lifecycle
 

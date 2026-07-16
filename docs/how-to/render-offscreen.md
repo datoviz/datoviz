@@ -2,6 +2,12 @@
 
 Render a scene without opening a visible window.
 
+!!! info "At a glance"
+
+    **Status:** Supported native rendering path · **Languages:** Python NumPy facade and C
+    **Prerequisites:** A prepared scene and figure plus a usable native GPU runtime
+    **Result:** An exact-size RGBA8 framebuffer, optionally captured as PNG or NumPy data
+
 ## Task workflow
 
 Use the normal scene, figure, panel, and visual setup. At the view step, create an offscreen view
@@ -16,33 +22,60 @@ see [Save screenshots](screenshots.md).
 This fragment assumes the scene, figure, panel, and visuals already exist. It shows the offscreen
 view step and uses a cleanup path so failed size checks or render calls still destroy the app.
 
-```c
-DvzApp* app = dvz_app(scene);
-int rc = -1;
-if (app == NULL)
+=== "Python"
+
+    ```python
+    import datoviz as dvz
+
+    app = dvz.dvz_app(scene)
+    if not app:
+        raise RuntimeError("dvz_app() failed")
+    try:
+        view = dvz.dvz_view_offscreen(app, figure, width, height)
+        if not view:
+            raise RuntimeError("dvz_view_offscreen() failed")
+        if dvz.dvz_view_render_once(view) != dvz.DVZ_CANVAS_FRAME_READY:
+            raise RuntimeError("dvz_view_render_once() failed")
+
+        rgba = dvz.dvz_view_capture_rgba(view)
+        assert rgba.shape == (height, width, 4)
+        assert rgba.dtype.name == "uint8"
+    finally:
+        dvz.dvz_app_destroy(app)
+    ```
+
+=== "C"
+
+    ```c
+    DvzApp* app = dvz_app(scene);
+    int rc = -1;
+    if (app == NULL)
+        return rc;
+    DvzView* view = dvz_view_offscreen(app, figure, width, height);
+    if (view == NULL)
+        goto cleanup;
+
+    uint32_t framebuffer_width = 0;
+    uint32_t framebuffer_height = 0;
+    dvz_view_framebuffer_size(view, &framebuffer_width, &framebuffer_height);
+    if (framebuffer_width != width || framebuffer_height != height)
+        goto cleanup;
+
+    if (dvz_view_render_once(view) != DVZ_CANVAS_FRAME_READY)
+        goto cleanup;
+
+    rc = 0;
+
+    cleanup:
+    dvz_app_destroy(app);
     return rc;
-DvzView* view = dvz_view_offscreen(app, figure, width, height);
-if (view == NULL)
-    goto cleanup;
-
-uint32_t framebuffer_width = 0;
-uint32_t framebuffer_height = 0;
-dvz_view_framebuffer_size(view, &framebuffer_width, &framebuffer_height);
-if (framebuffer_width != width || framebuffer_height != height)
-    goto cleanup;
-
-if (dvz_view_render_once(view) != DVZ_CANVAS_FRAME_READY)
-    goto cleanup;
-
-rc = 0;
-
-cleanup:
-dvz_app_destroy(app);
-return rc;
-```
+    ```
 
 Create the scene, figure, panel, and visuals before `dvz_view_offscreen()`. Render at least one
 frame before reading pixels or saving a screenshot from the view.
+
+The Python array returned above is top-row-first RGBA8 data. The C excerpt only proves rendering;
+use `dvz_view_capture_png()` or the canvas capture functions to consume its last frame.
 
 ## Static offscreen frames
 
