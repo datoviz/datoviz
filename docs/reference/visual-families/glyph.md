@@ -24,18 +24,39 @@ direct control over low-level text rendering.
 Use [Text](text.md) for retained semantic text. Avoid glyph visuals for ordinary annotations,
 labels, or user-facing strings unless you are implementing text infrastructure.
 
-## Data Model
+## Item And Data Model
 
-Create with `dvz_glyph(scene, flags)`. Upload one item per glyph quad and bind a font atlas with
-`dvz_glyph_set_atlas()`. The atlas remains owned by the font's scene and must outlive the glyph
-visual.
+Create with `dvz_glyph(scene, flags)`. The low-level draw contract is vertex-oriented: the
+canonical example expands each shaped glyph to six rows forming two triangles. Bind one font atlas
+with `dvz_glyph_set_atlas()`. The atlas is borrowed from a scene-owned font and must outlive the
+glyph visual.
 
-## Attributes
+## Attribute And Resource Contract
 
-| Kind | Attributes |
-| --- | --- |
-| Required | `position` (`vec3` anchor), `bounds` (`vec4` local pixel bounds), `texcoords` (`vec4` atlas UV bounds), `color` (RGBA8), `angle` (`float`, radians), font atlas |
-| Optional | alpha mode; depth test; transform; visual-wide scale bindings |
+| Attribute/resource | Requirement/default | C type and cardinality | Python dtype and shape | Units/coordinates and constraints | Update route |
+| --- | --- | --- | --- | --- | --- |
+| `position` | Required; no documented default | `vec3[V]` | `float32`, `(V, 3)` | Repeated glyph anchor in authored visual coordinates; canonical quads use six rows per glyph. | Dense or range upload. |
+| `bounds` | Required; no documented default | `vec4[V]` | `float32`, `(V, 4)` | Local glyph rectangle `(x0, y0, x1, y1)` in logical pixels, repeated for each generated quad vertex. | Dense or range upload. |
+| `texcoords` | Required; no documented default | `vec4[V]` | `float32`, `(V, 4)` | Normalized atlas UV bounds `(u0, v0, u1, v1)`, repeated per quad vertex. | Dense or range upload. |
+| `color` | Required; no documented default | `DvzColor[V]` | `uint8`, `(V, 4)` | RGBA8; vertices belonging to one glyph normally share a color. | Dense or range upload. |
+| `angle` | Required; no documented default | `float[V]` | `float32`, `(V,)` | Radians, positive counter-clockwise in rendered y-up coordinates around the glyph anchor. | Dense or range upload. |
+| atlas | Required | borrowed `const DvzTextAtlas*` | ctypes atlas handle | Atlas encoding and distance range configure the shader. Must belong to the same scene and remain alive. | `dvz_glyph_set_atlas()`. |
+
+## Constructor And Options
+
+- Constructor: `dvz_glyph(scene, flags)`; the canonical example passes `flags = 0`.
+- Create/ensure an atlas through `dvz_font_atlas_ensure_string()` or related font APIs, then borrow
+  it with `dvz_font_atlas()`.
+- Alpha blending and disabled depth testing are appropriate for the canonical annotation route but
+  are explicit visual-wide choices.
+- There is no canonical Python gallery example for manual glyph shaping; use [Text](text.md) in
+  normal Python code.
+
+## Verified Usage Pattern
+
+Shape text externally, expand each glyph to six matching attribute rows, upload all five arrays,
+bind the atlas, and attach the visual. See the
+[canonical C example](../../examples/gallery/visuals/visuals_glyph.md).
 
 ## Picking And Probing
 

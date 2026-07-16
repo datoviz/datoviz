@@ -27,17 +27,38 @@ than creating one mesh visual per copy. See [Add visuals to a panel](../../how-t
 Use [Primitive](primitive.md) for raw topology experiments, [Sphere](sphere.md) for many analytic
 spheres, or [Volume](volume.md) for sampled 3D scalar fields.
 
-## Data Model
+## Item And Data Model
 
-Create with `dvz_mesh(scene, flags)`. Upload dense vertex attributes directly or copy a
-`DvzGeometry` with `dvz_mesh_set_geometry()`. Optional indices bind through the `"index"` slot.
+Create with `dvz_mesh(scene, flags)`. `N` is the vertex count and the topology is triangle list.
+Upload dense vertex arrays directly or copy a `DvzGeometry` with `dvz_mesh_set_geometry()`.
+Optional `I` indices select vertices. Optional `M` instance transforms create `M` draws of the
+same geometry; upload them separately because their count differs from `N`.
 
-## Attributes
+## Attribute And Resource Contract
 
-| Kind | Attributes |
-| --- | --- |
-| Required | `position` (`vec3`) |
-| Optional | `color` (RGBA8, defaults to opaque white when omitted); `normal` (`vec3`); `texcoords` (`vec2`); `instance_transform` (`mat4` per instance); `"index"` buffer; RGBA8 sampled field bound to `"texture"`; material; depth cue; alpha mode; depth test; transform |
+| Attribute/resource | Requirement/default | C type and cardinality | Python dtype and shape | Units/coordinates and constraints | Update route |
+| --- | --- | --- | --- | --- | --- |
+| `position` | Required; no documented default | `vec3[N]` | `float32`, `(N, 3)` | Vertex positions in authored visual/object coordinates. | Dense or range upload; changing count regenerates omitted default color. |
+| `color` | Optional; omitted data becomes opaque white per vertex | `DvzColor[N]` | `uint8`, `(N, 4)` | RGBA8 vertex color. Scalar color is not supported. | Dense or range upload. |
+| `normal` | Optional; absence selects the non-normal material route | `vec3[N]` | `float32`, `(N, 3)` | Vertex normals in object/model basis for lighting. | Dense or range upload. |
+| `texcoords` | Optional; required for textured mesh | `vec2[N]` | `float32`, `(N, 2)` | Normalized texture UV coordinates. | Dense or range upload. |
+| `instance_transform` | Optional; absence means one instance | `mat4[M]` | `float32`, `(M, 4, 4)` contiguous | One model transform per instance. This is an instance-rate attribute and need not have vertex count `N`. | Upload separately with `dvz_visual_set_data()` or range update. |
+| `item_state` | Optional; instance-rate retained state | `uint32_t[M]` | `uint32`, `(M,)` | `DvzItemStateKind` bitfield; when transforms exist, count should match instance count. Textured-mesh item-state styling is not supported. | Usually interaction-managed; direct dense/range upload is supported. |
+| index data | Optional | `uint32_t[I]` | `uint32`, `(I,)` | Values index `[0,N)`; triangle-list grouping normally uses multiples of three. | `dvz_visual_set_index_data()` or external `"index"` buffer. |
+| texture slot `"texture"` | Optional; enables textured mesh | `DvzSampledField*` | sampled-field handle | RGBA8 2D sampled field in the active first slice; requires `texcoords`. | `dvz_visual_set_field()`. |
+
+## Constructor And Options
+
+- Constructor: `dvz_mesh(scene, flags)`; examples pass `flags = 0`.
+- `dvz_mesh_set_geometry()` copies geometry positions, colors, normals, texcoords, and optional
+  triangle indices.
+- Common options include material, alpha mode, depth test, depth cue, and transform.
+- Upload vertex attributes together; upload instance-rate arrays separately when `M != N`.
+
+## Verified Usage Pattern
+
+The [C example](../../examples/gallery/visuals/visuals_mesh.md) uses
+`dvz_mesh_set_geometry()`. Its Python counterpart uploads `position`, `color`, and indices directly.
 
 ## Picking And Probing
 

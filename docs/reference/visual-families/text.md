@@ -24,25 +24,51 @@ font style, placement, layout, and glyph atlas lowering.
 Use [Glyph](glyph.md) only for low-level atlas work. Use [Labels](labels.md) for categorical
 sampled fields, not strings.
 
-## Data Model
+## Item And Data Model
 
-Create semantic text with `dvz_text(panel, flags)`, not with a public visual constructor. Set UTF-8
-content, style, placement, and renderer; the scene prepares the underlying glyph visual at emit
-time.
+Create semantic text with `dvz_text(panel, flags)`, not with a visual constructor. One text object
+contains `N` semantic text items and is already attached to its panel. `dvz_text_set_items()`
+atomically replaces the collection and copies all item data and UTF-8 strings before returning;
+`item_count = 0` clears it.
 
-## Attributes
+For one item, `dvz_text_set_string()` and `dvz_text_set_position()` are convenient. For an existing
+collection, the per-property setters require exactly the current item count.
 
-| Kind | Attributes |
-| --- | --- |
-| Required | string content through `dvz_text_set_string()` |
-| Optional | `DvzTextStyle` through `dvz_text_set_style()`; `DvzTextPlacement` through `dvz_text_set_placement()`; renderer through `dvz_text_set_renderer()` |
-| Internal lowering | generated glyph visual uses glyph-family attributes internally |
+## Text Item Contract
+
+| Property | Requirement/default | C type and cardinality | Python representation | Units/coordinates and constraints | Update route |
+| --- | --- | --- | --- | --- | --- |
+| `string` | Required for visible content; `NULL` clears one-item text | UTF-8 `const char*` per item | `bytes` in `DvzTextItem`; raw string-array setter needs ctypes-compatible pointers | UTF-8 content is copied. | `dvz_text_set_items()`, `dvz_text_set_string()`, or `dvz_text_set_strings()`. |
+| `position` | Required placement input; zero-initialized item is `(0,0,0)` | `double[N][3]` | `float64`, `(N, 3)` with adapted `dvz_text_set_positions()` | Interpreted by current placement mode: logical panel pixels in screen mode, authored data coordinates in data mode. | Atomic items, one-item position, or array setter. |
+| `offset` | Optional; default `(0,0)` | `float[N][2]` | `float32`, `(N, 2)` | Logical-pixel offset in every placement mode. | Atomic items or `dvz_text_set_offsets()`. |
+| `anchor` | Optional; `(0,0)` resolves to the placement text anchor when one is set | `float[N][2]` | `float32`, `(N, 2)` | Normalized per-item text anchor. | Atomic items or `dvz_text_set_anchors()`. |
+| `size_px` | Optional per item; values `<= 0` resolve to the object style size | `float[N]` | `float32`, `(N,)` | Logical-pixel text size. | Atomic items or `dvz_text_set_sizes()`. |
+| `color` | Optional per item; all-zero RGBA resolves to the object style color | `DvzColor[N]` | `uint8`, `(N, 4)` with adapted setter | RGBA8. Use a nonzero alpha to request an explicit item color. | Atomic items or `dvz_text_set_colors()`. |
+| `angle` | Optional; default `0` | `float[N]` | `float32`, `(N,)` | Radians, positive counter-clockwise in rendered y-up coordinates. | Atomic items or `dvz_text_set_angles()`. |
+
+## Style, Placement, And Layout
+
+- `dvz_text_style()` returns white, small-bitmap-atlas text with `size_px = 0`; zero size resolves
+  from the scene font defaults. Pass the descriptor to `dvz_text_set_style()` after modification.
+- `dvz_text_placement()` defaults to panel-local screen placement anchored at panel top-left.
+  `DVZ_TEXT_PLACEMENT_DATA` anchors positions to data coordinates. Placement offset remains logical
+  pixels in either mode.
+- `dvz_text_layout()` defaults to line height `1`, zero extra gap, no wrapping, and left alignment.
+- `dvz_text_set_renderer()` changes the renderer directly. Atlas availability may cause documented
+  internal fallback; use semantic text unless low-level atlas control is required.
+- Current examples pass `flags = 0`. Destroy explicitly with `dvz_text_destroy()` when removing the
+  retained text before panel/scene teardown.
+
+## Verified Usage Pattern
+
+Create the panel-owned object, configure descriptors returned by the default helpers, populate an
+initialized `DvzTextItem[N]`, and call `dvz_text_set_items()`. The complete
+[C and Python example](../../examples/gallery/visuals/visuals_text.md) uses this route.
 
 ## Picking And Probing
 
 Text is semantic at the retained scene layer but currently lowers to glyph quads for rendering.
 Treat interaction as annotation-level unless a feature explicitly exposes glyph-level details.
-Text placement `angle` rotates counter-clockwise in rendered y-up coordinates.
 
 ## Backend Notes
 

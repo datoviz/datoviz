@@ -25,18 +25,37 @@ Use [Point](point.md) for stable circular sprites, [Sphere](sphere.md) for true 
 [Mesh](mesh.md) for surface geometry. Avoid splat as copy-paste starter code while it remains
 experimental.
 
-## Data Model
+## Item And Data Model
 
-Create with `dvz_splat(scene, flags)`. Upload one item per Gaussian footprint. The first
-implementation uses center depth, depth test on, depth writes off through alpha blending, and no
-sorting or projected 3D covariance.
+Create with `dvz_splat(scene, flags)`. One item is one screen-facing anisotropic Gaussian
+footprint. Upload `N` rows for every required attribute. The constructor enables alpha blending
+and depth testing; the first implementation uses center depth, no sorting, and no projected 3D
+covariance.
 
-## Attributes
+## Attribute Contract
 
-| Kind | Attributes |
-| --- | --- |
-| Required | `position` (`vec3` center), `color` (RGBA8), `sigma` (`vec2`, screen pixels), `angle` (`float`, radians) |
-| Optional | alpha mode; depth test; transform; visual-wide scale bindings |
+| Attribute | Requirement/default | C type and cardinality | Python dtype and shape | Units/coordinates and constraints | Update route |
+| --- | --- | --- | --- | --- | --- |
+| `position` | Required; no documented default | `vec3[N]` | `float32`, `(N, 3)` | Center in authored visual coordinates. | Dense or range upload. |
+| `color` | Required; no documented default | `DvzColor[N]` | `uint8`, `(N, 4)` | RGBA8. Scalar color is not supported by this family. | Dense or range upload. |
+| `sigma` | Required; no documented default | `vec2[N]` | `float32`, `(N, 2)` | Gaussian x/y standard deviations in logical pixels; both components must be finite and strictly positive. | Dense or range upload. |
+| `angle` | Required; no documented default | `float[N]` | `float32`, `(N,)` | Finite rotation angle in radians. | Dense or range upload. |
+
+Color and sigma accept explicitly configured constant/per-group sources. Dense arrays do not
+broadcast.
+
+## Constructor And Options
+
+- Constructor: `dvz_splat(scene, flags)`; the canonical C example passes `flags = 0`.
+- The constructor selects alpha blending and enables depth testing. Change those only with the
+  common visual-wide alpha/depth setters after considering translucent ordering limitations.
+- No canonical Python example is currently published; the top-level NumPy upload contract follows
+  the shapes above.
+
+## Verified Usage Pattern
+
+Upload all four arrays with `dvz_visual_set_data_many()`, then attach the visual. The
+[canonical C example](../../examples/gallery/visuals/visuals_splat.md) is the executable source.
 
 ## Picking And Probing
 

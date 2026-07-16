@@ -24,24 +24,43 @@ rasters where neighboring samples form one rectangular field.
 Use [Pixel](pixel.md) for sparse independently selectable square marks, [Labels](labels.md) for
 integer categorical label fields, or [Volume](volume.md) for 3D sampled fields.
 
-## Data Model
+## Item And Data Model
 
-Create with `dvz_image(scene, flags)`. Bind a `DvzSampledField` with
-`dvz_visual_set_field(image, "field", field)`. The scalar example uploads four corner positions,
-four texture coordinates, an `R32_FLOAT` 2D field, and a color scale. The RGBA example uploads the
-same placement data with a direct `RGBA8_UNORM` color field.
+Create with `dvz_image(scene, flags)`, bind one scene-owned 2D `DvzSampledField` to `"field"`, and
+choose exactly one placement form:
 
-Set texture filtering with `dvz_image_set_sampling(image, DVZ_IMAGE_SAMPLING_LINEAR)` or
-`dvz_image_set_sampling(image, DVZ_IMAGE_SAMPLING_NEAREST)`. Linear sampling is the default; nearest
-sampling is intended for pixel-exact image/checkerboard rendering.
+1. Quad-corner form: four `position` and four `texcoords` rows in triangle-strip order.
+2. Retained rectangle form: `N` matching `position`/`extent` rows in authored coordinates, or `N`
+   matching `position_px`/`extent_px` rows in logical pixels. Do not mix the two rectangle spaces.
 
-## Attributes
+## Attribute And Resource Contract
 
-| Kind | Attributes |
-| --- | --- |
-| Required | sampled field bound to `"field"` plus placement attributes |
-| Placement forms | four-corner `position` (`vec3[4]`) and `texcoords` (`vec2[4]`), or retained per-item `position` plus `extent` |
-| Optional | `tex_rect`; `anchor`; scale bound to `"color"`; alpha mode; depth test; transform |
+| Attribute/resource | Requirement/default | C type and cardinality | Python dtype and shape | Units/coordinates and constraints | Update route |
+| --- | --- | --- | --- | --- | --- |
+| field slot `"field"` | Required; one field per visual | `DvzSampledField*` | Handle from `dvz_sampled_field_from_array()` | 2D sampled field. Common inferred arrays are scalar `float32`/`uint8` `(H, W)` or color `uint8` `(H, W, 4)`. | Bind with `dvz_visual_set_field()`; update samples with sampled-field region APIs. |
+| `position` | Required in corner or authored-rectangle form | corner: `vec3[4]`; rectangle: `vec3[N]` | `float32`, `(4, 3)` or `(N, 3)` | Corner vertices or rectangle reference position in authored visual coordinates. | Dense/range upload; rectangle count must match `extent`. |
+| `texcoords` | Required only in corner form | `vec2[4]` | `float32`, `(4, 2)` | Normalized texture UVs matching the four corner rows. | Dense or range upload. |
+| `extent` | Required in authored-rectangle form | `vec2[N]` | `float32`, `(N, 2)` | Rectangle width/height in the same authored coordinate basis as `position`. | Dense/range upload; count must match `position`. |
+| `position_px` | Required in pixel-rectangle form | `vec3[N]` | `float32`, `(N, 3)` | Rectangle reference position in logical pixels; z is retained. | Dense/range upload; count must match `extent_px`. |
+| `extent_px` | Required in pixel-rectangle form | `vec2[N]` | `float32`, `(N, 2)` | Rectangle width/height in logical pixels. | Dense or range upload. |
+| `anchor` | Optional; default `(0, 0)` centers each retained rectangle | `vec2[N]` | `float32`, `(N, 2)` | Normalized anchor; generated corners use `-1` and `+1` as opposing edges. | Dense or range upload; rectangle form only. |
+| `tex_rect` | Optional; default `(0, 0, 1, 1)` | `vec4[N]` | `float32`, `(N, 4)` | Per-item normalized `(u0, v0, u1, v1)` atlas rectangle. | Dense or range upload; rectangle form only. |
+
+A continuous scalar field needs a scale bound to `"color"`; a direct color field uses its field
+color role without a scale.
+
+## Constructor And Options
+
+- Constructor: `dvz_image(scene, flags)`; examples pass `flags = 0`.
+- Sampling defaults to `DVZ_IMAGE_SAMPLING_LINEAR`. Use `dvz_image_set_sampling()` with
+  `DVZ_IMAGE_SAMPLING_NEAREST` for pixel-exact filtering.
+- Common options include alpha mode, depth test, transform, and color scale.
+
+## Verified Usage Pattern
+
+The [scalar C/Python example](../../examples/gallery/visuals/visuals_image.md) demonstrates a
+continuous field and scale. The [RGBA C example](../../examples/gallery/visuals/visuals_image_rgba.md)
+demonstrates a direct color field. Both use the four-corner placement form.
 
 ## Picking And Probing
 
