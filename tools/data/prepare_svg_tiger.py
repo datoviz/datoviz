@@ -15,7 +15,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Sequence
 
-from common import CACHE_ROOT
+try:
+    from .common import CACHE_ROOT
+except ImportError:
+    from common import CACHE_ROOT
 
 
 EXAMPLE_ID = "svg_tiger"
@@ -263,7 +266,9 @@ def _tokens(path_data: str) -> list[str]:
     return tokens
 
 
-def _take_numbers(tokens: Sequence[str], index: int, count: int, command: str) -> tuple[list[float], int]:
+def _take_numbers(
+    tokens: Sequence[str], index: int, count: int, command: str
+) -> tuple[list[float], int]:
     """Read a fixed number of numeric path arguments."""
     if index + count > len(tokens) or any(tokens[i].isalpha() for i in range(index, index + count)):
         raise SvgTigerError(f"path command {command} has incomplete arguments")
@@ -284,7 +289,9 @@ def _deduplicate(points: Iterable[Point]) -> tuple[Point, ...]:
     return tuple(out)
 
 
-def _flatten_path(path_data: str, matrix: Matrix, tolerance: float) -> tuple[tuple[Point, ...], bool]:
+def _flatten_path(
+    path_data: str, matrix: Matrix, tolerance: float
+) -> tuple[tuple[Point, ...], bool]:
     """Parse and flatten one single-subpath SVG path."""
     tokens = _tokens(path_data)
     if not tokens:
@@ -379,8 +386,10 @@ def parse_svg(path: Path, tolerance: float = 0.25) -> SvgDocument:
         raise SvgTigerError("SVG width and height must be positive")
 
     paths: list[FlatPath] = []
+    # Match Glumpy's Style defaults rather than the browser SVG default: unspecified paint is
+    # disabled. This matters for the tiger's open muzzle strokes, which specify only ``stroke``.
     base_style = {
-        "fill": "black",
+        "fill": "none",
         "stroke": "none",
         "stroke-width": "1",
         "fill-opacity": "1",
@@ -480,6 +489,7 @@ def write_bundle(document: SvgDocument, output: Path, source_path: Path, toleran
         },
         "processing": {
             "flatten_tolerance_px": tolerance,
+            "paint_defaults": "Glumpy-compatible: unspecified fill and stroke are disabled",
             "stroke_width_policy": "unscaled, matching the Glumpy tiger example",
         },
         "document": {

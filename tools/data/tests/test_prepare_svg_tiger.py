@@ -74,6 +74,16 @@ class SvgTigerTests(unittest.TestCase):
             self.assertEqual(first_record[0:2], (0, 3))
             self.assertEqual(first_record[2:5], (1, 1, 1))
 
+    def test_unspecified_fill_matches_glumpy_semantics(self) -> None:
+        text = (
+            '<svg width="10" height="10"><path stroke="#123456" '
+            'd="M0,0 L5,5"/></svg>'
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            document = tiger.parse_svg(self._svg(Path(tmp), text))
+        self.assertIsNone(document.paths[0].paint.fill)
+        self.assertEqual(document.paths[0].paint.stroke, (0x12, 0x34, 0x56, 255))
+
     def test_rejects_unsupported_elements_and_commands(self) -> None:
         cases = (
             '<svg width="1" height="1"><circle cx="0" cy="0" r="1"/></svg>',
