@@ -1,6 +1,23 @@
 (() => {
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const saveData = navigator.connection && navigator.connection.saveData;
+  const localPreview = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+  const localCacheKey = Date.now().toString(36);
+  const mediaUrl = (value) => {
+    if (!localPreview) return value;
+    const url = new URL(value, window.location.href);
+    url.searchParams.set("dvz-local", localCacheKey);
+    return url.href;
+  };
+
+  if (localPreview) {
+    for (const poster of document.querySelectorAll("img.dvz-gallery-poster[src]")) {
+      poster.src = mediaUrl(poster.getAttribute("src"));
+    }
+    for (const video of document.querySelectorAll("video.dvz-gallery-video[poster]")) {
+      video.poster = mediaUrl(video.getAttribute("poster"));
+    }
+  }
   if (reduceMotion || saveData) return;
 
   const updateControl = (card, video) => {
@@ -43,7 +60,7 @@
     if (!video) return;
 
     for (const source of video.querySelectorAll("source[data-src]")) {
-      source.src = source.dataset.src;
+      source.src = mediaUrl(source.dataset.src);
     }
     video.addEventListener("canplay", () => ready(video), { once: true });
     video.load();

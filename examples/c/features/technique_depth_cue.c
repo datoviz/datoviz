@@ -26,6 +26,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -64,6 +65,8 @@ typedef struct DepthCueDemoState
     bool enabled;
     DvzDepthCueDesc cue;
     DvzArcball* arcball;
+    vec3 arcball_angles;
+    float arcball_zoom;
     ExampleTuner tuner;
 } DepthCueDemoState;
 
@@ -292,13 +295,15 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (example_set_default_3d_camera(plain, 1.0f) == NULL ||
         example_set_default_3d_camera(cued, 1.0f) == NULL)
         return false;
-    vec3 arcball_angles = {+1.565489f, -0.429644f, +0.391422f};
+    state->arcball_angles[0] = +1.565489f;
+    state->arcball_angles[1] = -0.429644f;
+    state->arcball_angles[2] = +0.391422f;
+    state->arcball_zoom = 0.403531f;
     vec2 arcball_pan = {+0.000000f, +0.000000f};
-    const float arcball_zoom = 0.403531f;
     DvzController* plain_controller =
-        _bind_arcball(ctx, plain, arcball_angles, arcball_zoom, arcball_pan);
+        _bind_arcball(ctx, plain, state->arcball_angles, state->arcball_zoom, arcball_pan);
     DvzController* cued_controller =
-        _bind_arcball(ctx, cued, arcball_angles, arcball_zoom, arcball_pan);
+        _bind_arcball(ctx, cued, state->arcball_angles, state->arcball_zoom, arcball_pan);
     if (plain_controller == NULL || cued_controller == NULL)
         return false;
     if (dvz_controller_link(
@@ -316,7 +321,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
 
     example_tuner_arcball(
-        &state->tuner, "Arcball", state->arcball, arcball_angles, arcball_zoom, arcball_pan);
+        &state->tuner, "Arcball", state->arcball, state->arcball_angles, state->arcball_zoom,
+        arcball_pan);
     example_tuner_depth_cue(
         &state->tuner, "Depth cue", state->cued_sphere, &state->enabled, &state->cue);
     return true;
@@ -355,6 +361,10 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
     if (ctx == NULL || !ctx->preview_mode || state == NULL)
         return;
     ExamplePreviewArcballDesc desc = example_preview_arcball_cube_desc();
+    desc.base_angles[0] = state->arcball_angles[0];
+    desc.base_angles[1] = state->arcball_angles[1] - desc.amplitude[1];
+    desc.base_angles[2] = state->arcball_angles[2] - desc.amplitude[2] * sinf(0.72f);
+    desc.zoom = state->arcball_zoom;
     example_preview_arcball(
         state->arcball, ctx->preview_frame_index, ctx->preview_frame_count, &desc);
 }
