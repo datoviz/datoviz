@@ -268,7 +268,7 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(showcases point_cloud showcases/point_cloud.c)
     dvz_add_example(
         showcases textured_planet
-        "showcases/textured_planet.c;showcases/textured_planet_orbits.c")
+        "showcases/textured_planet.c;showcases/textured_planet_orbits.c;showcases/textured_planet_sky.c")
     dvz_add_example(showcases wind_field showcases/wind_field.c)
     dvz_add_example(showcases panel_linked_axes showcases/panel_linked_axes.c)
     dvz_add_example(showcases linked_probe_colorbar showcases/linked_probe_colorbar.c)

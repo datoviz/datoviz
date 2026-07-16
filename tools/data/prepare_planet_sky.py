@@ -227,9 +227,18 @@ def _load_2mass(
             red, green, blue = pixels[column, row]
             luminance = (0.2126 * red + 0.7152 * green + 0.0722 * blue) / 255.0
             # Discard the black survey floor and deterministically thin the remaining samples.
-            probability = min(1.0, max(0.0, (luminance - 0.018) * 8.0))
-            sample = ((1103515245 * (row * GALAXY_GRID_WIDTH + column) + 12345) & 0xFFFF) / 65535
+            seed = 1103515245 * (row * GALAXY_GRID_WIDTH + column) + 12345
+            probability = min(1.0, max(0.0, (luminance - 0.018) * 4.0))
+            sample = (seed & 0xFFFF) / 65535
             if sample > probability:
+                continue
+            jitter_x = ((seed >> 8) & 0xFFFF) / 65535 - 0.5
+            jitter_y = ((seed >> 16) & 0xFFFF) / 65535 - 0.5
+            coordinates = _hammer_inverse(
+                x + 1.6 * jitter_x / GALAXY_GRID_WIDTH,
+                y + 1.6 * jitter_y / GALAXY_GRID_HEIGHT,
+            )
+            if coordinates is None:
                 continue
             longitude, latitude = coordinates
             icrs = _galactic_to_icrs(longitude, latitude)
@@ -238,9 +247,9 @@ def _load_2mass(
                 round((0.45 * red + 0.55 * 205) * brightness),
                 round((0.45 * green + 0.55 * 218) * brightness),
                 round((0.45 * blue + 0.55 * 255) * brightness),
-                round(10 + 48 * brightness),
+                round(7 + 34 * brightness),
             )
-            galaxy.append((_icrs_to_visual(icrs, gmst), color, 2.0 + 3.5 * brightness))
+            galaxy.append((_icrs_to_visual(icrs, gmst), color, 1.4 + 2.6 * brightness))
     if len(galaxy) < 1000:
         raise RuntimeError('2MASS sampling produced too few sky points')
     return galaxy
@@ -264,8 +273,13 @@ def prepare(args: argparse.Namespace) -> Path:
     prepared = bundle / 'prepared'
     gaia_path = source / 'gaia_dr3_bright.csv'
     mass_path = source / 'PIA04250.jpg'
-    _download(_gaia_query_url(args.star_limit), gaia_path, offline=args.offline, force=args.force)
-    _download(MASS_URL, mass_path, offline=args.offline, force=args.force)
+    _download(
+        _gaia_query_url(args.star_limit),
+        gaia_path,
+        offline=args.offline,
+        force=args.refresh_source,
+    )
+    _download(MASS_URL, mass_path, offline=args.offline, force=args.refresh_source)
 
     snapshot = _snapshot(args.orbit_metadata.resolve())
     snapshot_text = snapshot.isoformat().replace('+00:00', 'Z')
@@ -341,6 +355,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument('--star-limit', type=int, default=STAR_LIMIT)
     parser.add_argument('--offline', action='store_true')
     parser.add_argument('--force', action='store_true')
+    parser.add_argument('--refresh-source', action='store_true')
     return parser
 
 

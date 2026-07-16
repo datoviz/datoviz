@@ -46,8 +46,8 @@ Use your configured build environment; Python routes additionally require local 
 
     This example intentionally fails when its prepared input is absent; it does not
     substitute synthetic data.
-    Expected input: `.cache/datoviz/examples/orbital_debris/prepared`.
-    Prepare it from the repository root with `uv run tools/data/prepare_orbital_debris.py --force`.
+    Expected input: `.cache/datoviz/examples/orbital_debris/prepared; .cache/datoviz/examples/planet_sky/prepared`.
+    Prepare it from the repository root with `uv run tools/data/prepare_orbital_debris.py --force && uv run tools/data/prepare_planet_sky.py --force`.
 
 Use this example as capability or integration evidence, not as a minimal copy-paste
 template. Start from the nearest supported, copy-safe example and add this feature
@@ -55,11 +55,11 @@ after verifying the linked API reference.
 
 ## What To Look For
 
-`dvz_geometry_sphere()` creates positions, normals, UVs, and indices; the mesh visual receives that geometry plus an RGBA8 sampled field bound to the mesh texture slot. Compare the lit Earth or Mars sphere with the faint star shell and, for Earth, real catalogued debris propagated with SGP4. Object sizes are exaggerated; the trajectories and positions are real.
+`dvz_geometry_sphere()` creates positions, normals, UVs, and indices; the mesh visual receives that geometry plus an RGBA8 sampled field bound to the mesh texture slot. Compare the lit Earth or Mars sphere with the Gaia/2MASS celestial background and, for Earth, real catalogued debris propagated with SGP4. Object sizes are exaggerated; the trajectories, debris positions, and celestial directions are data-derived.
 
 The example uses real texture files from the data submodule when available. Earth has a generated fallback for local development; Mars requires its real texture file and is unavailable when that file is missing.
 
-Prepare the debris ephemeris before running: uv run tools/data/prepare_orbital_debris.py --force
+Prepare the debris ephemeris before running: uv run tools/data/prepare_orbital_debris.py --force uv run tools/data/prepare_planet_sky.py --force
 
 ## Source
 
@@ -87,6 +87,18 @@ Prepare the debris ephemeris before running: uv run tools/data/prepare_orbital_d
     --8<-- "examples/c/showcases/textured_planet_orbits.h"
     ```
 
+=== "Celestial sky model"
+
+    ```c
+    --8<-- "examples/c/showcases/textured_planet_sky.c"
+    ```
+
+=== "Celestial sky model header"
+
+    ```c
+    --8<-- "examples/c/showcases/textured_planet_sky.h"
+    ```
+
 ??? info "Example details"
 
     - ID: `showcases_textured_planet`
@@ -99,6 +111,8 @@ Prepare the debris ephemeris before running: uv run tools/data/prepare_orbital_d
     - Python adaptation: Available
     - Orbital model source: [`examples/c/showcases/textured_planet_orbits.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet_orbits.c)
     - Orbital model header source: [`examples/c/showcases/textured_planet_orbits.h`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet_orbits.h)
+    - Celestial sky model source: [`examples/c/showcases/textured_planet_sky.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet_sky.c)
+    - Celestial sky model header source: [`examples/c/showcases/textured_planet_sky.h`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet_sky.h)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_textured_planet"><code>examples/webgpu/live.html?id=showcases_textured_planet</code></a>
     - Browser capability tags: `mesh`, `sampled-field`, `texture`, `arcball`, `point`, `path`, `buffer-update`, `frame-callbacks`
@@ -106,7 +120,7 @@ Prepare the debris ephemeris before running: uv run tools/data/prepare_orbital_d
 
     **Tags**
 
-    `real-data`, `mesh`, `sampled-field`, `texture`, `arcball`, `point`, `path`, `animation`, `orbital-debris`, `celestrak`, `sgp4`, `gui`, `capture`
+    `real-data`, `mesh`, `sampled-field`, `texture`, `arcball`, `point`, `path`, `animation`, `orbital-debris`, `celestrak`, `sgp4`, `gaia`, `2mass`, `gui`, `capture`
 
     **Data**
 
@@ -118,14 +132,14 @@ Prepare the debris ephemeris before running: uv run tools/data/prepare_orbital_d
 
     | Field | Value |
     | --- | --- |
-    | `name` | NASA/USGS planet textures and CelesTrak catalogued orbital debris |
-    | `source` | data/assets/textures/world.200412.3x5400x2700.jpg; data/assets/textures/earth.jpg; data/assets/textures/mars_viking_mdim21.jpg; CelesTrak GP element sets for FENGYUN 1C, IRIDIUM 33, and COSMOS 2251 debris |
-    | `source_url` | [https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/](https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/); [https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m](https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m); [https://celestrak.org/NORAD/documentation/gp-data-formats.php](https://celestrak.org/NORAD/documentation/gp-data-formats.php) |
-    | `license` | NASA media usage guidelines and USGS/NASA public-domain source-data terms apply; acknowledge NASA, NASA Ames, JPL, and USGS as source where relevant. CelesTrak data use must follow [https://celestrak.org/usage-policy.php](https://celestrak.org/usage-policy.php) and retain source attribution. |
-    | `citation` | NASA Blue Marble Next Generation; USGS Astrogeology Mars Viking Colorized Global Mosaic 232m / Mars Digital Image Model 2.1; CelesTrak; Vallado, Crawford, Hujsak, and Kelso, Revisiting Spacetrack Report #3, AIAA 2006-6753. |
-    | `preprocessing` | uv run tools/data/prepare_orbital_debris.py --force |
-    | `cache_prepared_path` | .cache/datoviz/examples/orbital_debris/prepared |
-    | `provenance` | Earth uses NASA Blue Marble Next Generation texture assets; Mars uses the USGS Astrogeology/NASA Ames/JPL/USGS Viking MDIM 2.1 colorized global mosaic. Debris points are tracked catalog objects from three selected fragmentation events, propagated from a dated CelesTrak GP snapshot with SGP4 into a two-hour Earth-fixed point ephemeris and one closed full-period display trajectory per object. This is not the full debris environment; point sizes are exaggerated and do not encode physical object size. |
+    | `name` | NASA/USGS planet textures, CelesTrak debris, and Gaia/2MASS celestial sky |
+    | `source` | data/assets/textures/world.200412.3x5400x2700.jpg; data/assets/textures/earth.jpg; data/assets/textures/mars_viking_mdim21.jpg; CelesTrak GP element sets for FENGYUN 1C, IRIDIUM 33, and COSMOS 2251 debris; Gaia DR3 bright-star astrometry/photometry; NASA Photojournal PIA04250 2MASS all-sky map |
+    | `source_url` | [https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/](https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/); [https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m](https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m); [https://celestrak.org/NORAD/documentation/gp-data-formats.php](https://celestrak.org/NORAD/documentation/gp-data-formats.php); [https://gea.esac.esa.int/archive/](https://gea.esac.esa.int/archive/); [https://science.nasa.gov/photojournal/point-source-all-sky/](https://science.nasa.gov/photojournal/point-source-all-sky/) |
+    | `license` | NASA media usage guidelines and USGS/NASA public-domain source-data terms apply; acknowledge NASA, NASA Ames, JPL, and USGS as source where relevant. CelesTrak data use must follow [https://celestrak.org/usage-policy.php](https://celestrak.org/usage-policy.php) and retain source attribution. Gaia ESA/DPAC acknowledgement and 2MASS/IPAC-Caltech/UMass attribution requirements apply. |
+    | `citation` | NASA Blue Marble Next Generation; USGS Astrogeology Mars Viking Colorized Global Mosaic 232m / Mars Digital Image Model 2.1; CelesTrak; Vallado, Crawford, Hujsak, and Kelso, Revisiting Spacetrack Report #3, AIAA 2006-6753; Gaia DR3 ESA/Gaia/DPAC; 2MASS Point Source Catalog/Stars All Sky View, IPAC-Caltech/University of Massachusetts. |
+    | `preprocessing` | uv run tools/data/prepare_orbital_debris.py --force && uv run tools/data/prepare_planet_sky.py --force |
+    | `cache_prepared_path` | .cache/datoviz/examples/orbital_debris/prepared; .cache/datoviz/examples/planet_sky/prepared |
+    | `provenance` | Earth uses NASA Blue Marble Next Generation texture assets; Mars uses the USGS Astrogeology/NASA Ames/JPL/USGS Viking MDIM 2.1 colorized global mosaic. Debris points are tracked catalog objects from three selected fragmentation events, propagated from a dated CelesTrak GP snapshot with SGP4 into a two-hour Earth-fixed point ephemeris and one closed full-period display trajectory per object. This is not the full debris environment; point sizes are exaggerated and do not encode physical object size. Bright stars use Gaia DR3 celestial positions, G magnitude, and BP-RP color. The Milky Way layer samples the 2MASS infrared false-color all-sky map. Both sky layers are oriented to the debris snapshot using GMST; their shell radius is display-only. |
 
     **Encoding**
 
@@ -135,6 +149,8 @@ Prepare the debris ephemeris before running: uv run tools/data/prepare_orbital_d
     | `color` | cyan FENGYUN 1C, amber IRIDIUM 33, coral COSMOS 2251 |
     | `time` | 120-minute prepared point ephemeris shown at 60x real time; shared globe rotation enabled by default |
     | `path` | closed full-period SGP4 trajectory in the snapshot planet frame |
+    | `stars` | Gaia DR3 direction, G-magnitude size, and BP-RP color at the prepared snapshot orientation |
+    | `galaxy` | translucent samples from the 2MASS Hammer all-sky infrared map in galactic coordinates |
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

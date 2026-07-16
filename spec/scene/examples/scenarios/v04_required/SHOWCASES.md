@@ -41,7 +41,9 @@ lighting/material integration, arcball interaction, a procedural star field, and
 snapshot of catalogued FENGYUN 1C, IRIDIUM 33, and COSMOS 2251 debris propagated with SGP4. The
 prepared two-hour ephemeris drives retained point updates, while closed full-period SGP4 paths show
 representative real trajectories in both native and WebGPU routes. Earth, debris, and paths share a
-default slow display rotation. It covers selected tracked objects, not the full debris environment;
+default slow display rotation. A Gaia DR3 bright-star layer and a subdued 2MASS infrared Milky Way
+layer remain fixed in the snapshot celestial frame, while a translucent shell suggests Earth's
+atmosphere. It covers selected tracked objects, not the full debris environment;
 point sizes are exaggerated and do not encode physical size. Baked vertex colors do not satisfy
 this scenario.
 

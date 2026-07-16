@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Textured Earth with real CelesTrak debris propagated into a prepared SGP4 ephemeris."""
+"""Textured Earth with real CelesTrak debris and a snapshot-oriented Gaia/2MASS sky."""
 
 from __future__ import annotations
 
@@ -21,11 +21,13 @@ SPHERE_RADIUS = 0.92
 ATMOSPHERE_RADIUS = 0.936
 SPHERE_SECTORS = 96
 SPHERE_RINGS = 48
-STAR_COUNT = 900
-STAR_RADIUS = 48.0
 ORBIT_DATA_PATHS = (
     Path('data/examples/orbital_debris/prepared/orbital_debris.bin'),
     Path('.cache/datoviz/examples/orbital_debris/prepared/orbital_debris.bin'),
+)
+SKY_DATA_PATHS = (
+    Path('data/examples/planet_sky/prepared/planet_sky.bin'),
+    Path('.cache/datoviz/examples/planet_sky/prepared/planet_sky.bin'),
 )
 DEBRIS_TIME_SCALE = 60.0
 GLOBE_ROTATION_SPEED = 0.035
@@ -34,6 +36,7 @@ ORBIT_TRACE_SAMPLES = 121
 SUN_DIR = (-0.80, +0.22, +0.55)
 TAU = 2.0 * np.pi
 ORBIT_HEADER = struct.Struct('<8sIIIIIddff32s')
+SKY_HEADER = struct.Struct('<8sIIII32s')
 
 PANEL_BG = dvz.DvzColor(2, 2, 4, 255)
 
@@ -49,6 +52,24 @@ class OrbitModel:
     snapshot_utc: str
     step_seconds: float
     duration_seconds: float
+
+
+@dataclass(frozen=True)
+class SkyLayer:
+    """One prepared celestial point layer."""
+
+    positions: np.ndarray
+    colors: np.ndarray
+    sizes: np.ndarray
+
+
+@dataclass(frozen=True)
+class SkyModel:
+    """Gaia stars and 2MASS Milky Way points in the snapshot celestial frame."""
+
+    stars: SkyLayer
+    galaxy: SkyLayer
+    snapshot_utc: str
 
 
 @dataclass
@@ -134,6 +155,47 @@ def _load_orbit_model() -> OrbitModel:
         float(step_seconds),
         float(step_seconds * (frame_count - 1)),
     )
+
+
+def _load_sky_model() -> SkyModel:
+    path = next((candidate for candidate in SKY_DATA_PATHS if candidate.exists()), None)
+    if path is None:
+        raise RuntimeError(
+            'missing real Gaia/2MASS sky; run `uv run tools/data/prepare_planet_sky.py`'
+        )
+    payload = path.read_bytes()
+    if len(payload) < SKY_HEADER.size:
+        raise RuntimeError(f'truncated celestial-sky binary: {path}')
+    magic, version, star_count, galaxy_count, _reserved, snapshot_field = SKY_HEADER.unpack_from(
+        payload
+    )
+    if magic != b'DVZSKY1\0' or version != 1 or star_count <= 0 or galaxy_count <= 0:
+        raise RuntimeError(f'invalid celestial-sky header: {path}')
+
+    def layer(offset: int, count: int) -> tuple[SkyLayer, int]:
+        position_bytes = 12 * count
+        color_bytes = 4 * count
+        size_bytes = 4 * count
+        end = offset + position_bytes + color_bytes + size_bytes
+        if end > len(payload):
+            raise RuntimeError(f'truncated celestial-sky layer: {path}')
+        positions = np.frombuffer(payload, dtype='<f4', count=3 * count, offset=offset).reshape(
+            count, 3
+        )
+        offset += position_bytes
+        colors = np.frombuffer(payload, dtype=np.uint8, count=4 * count, offset=offset).reshape(
+            count, 4
+        )
+        offset += color_bytes
+        sizes = np.frombuffer(payload, dtype='<f4', count=count, offset=offset)
+        return SkyLayer(positions, colors, sizes), end
+
+    stars, offset = layer(SKY_HEADER.size, star_count)
+    galaxy, offset = layer(offset, galaxy_count)
+    if offset != len(payload):
+        raise RuntimeError(f'unexpected celestial-sky binary size: {path}')
+    snapshot_utc = snapshot_field.split(b'\0', 1)[0].decode('ascii')
+    return SkyModel(stars, galaxy, snapshot_utc)
 
 
 def _orbit_positions(model: OrbitModel, time_s: float) -> np.ndarray:
@@ -229,30 +291,7 @@ def _planet_transform():
     return transform
 
 
-def _add_star_shell(scene, panel) -> None:
-    rng = np.random.default_rng(0xD42024)
-    z = 2.0 * rng.random(STAR_COUNT, dtype=np.float32) - 1.0
-    phi = TAU * rng.random(STAR_COUNT, dtype=np.float32)
-    radius = np.sqrt(np.maximum(0.0, 1.0 - z * z))
-    positions = np.column_stack(
-        (
-            STAR_RADIUS * radius * np.cos(phi),
-            STAR_RADIUS * radius * np.sin(phi),
-            STAR_RADIUS * z,
-        )
-    ).astype(np.float32)
-    brightness = 0.45 + 0.55 * rng.random(STAR_COUNT, dtype=np.float32)
-    colors = np.empty((STAR_COUNT, 4), dtype=np.uint8)
-    colors[:, 0] = np.clip(255.0 * 0.82 * brightness + 0.5, 0, 255).astype(np.uint8)
-    colors[:, 1] = np.clip(255.0 * 0.88 * brightness + 0.5, 0, 255).astype(np.uint8)
-    colors[:, 2] = np.clip(255.0 * brightness + 0.5, 0, 255).astype(np.uint8)
-    colors[:, 3] = 255
-    sizes = (1.0 + 2.2 * rng.random(STAR_COUNT) * rng.random(STAR_COUNT)).astype(np.float32)
-
-    positions[0] = (STAR_RADIUS * SUN_DIR[0], STAR_RADIUS * SUN_DIR[1], STAR_RADIUS * SUN_DIR[2])
-    colors[0] = (255, 244, 214, 255)
-    sizes[0] = 14.0
-
+def _add_sky_layer(scene, panel, layer: SkyLayer, *, blended: bool) -> None:
     stars = dvz.dvz_point(scene, 0)
     if not stars:
         raise RuntimeError('dvz_point() failed')
@@ -260,17 +299,19 @@ def _add_star_shell(scene, panel) -> None:
         dvz.dvz_visual_set_data_many(
             stars,
             {
-                'position': positions,
-                'color': colors,
-                'diameter_px': sizes,
+                'position': layer.positions,
+                'color': layer.colors,
+                'diameter_px': layer.sizes,
             },
         )
         != 0
     ):
         raise RuntimeError('dvz_visual_set_data_many(stars) failed')
     ex.set_filled_point_style(stars)
-    if dvz.dvz_visual_set_depth_test(stars, False) != 0:
+    if dvz.dvz_visual_set_depth_test(stars, True) != 0:
         raise RuntimeError('dvz_visual_set_depth_test(stars) failed')
+    if blended and dvz.dvz_visual_set_alpha_mode(stars, dvz.DVZ_ALPHA_BLENDED) != 0:
+        raise RuntimeError('dvz_visual_set_alpha_mode(sky) failed')
     ex.add_visual(panel, stars)
 
 
@@ -493,10 +534,14 @@ def _build_scene():
     scene, figure, panel = ex.scene_panel()
     dvz.dvz_panel_set_background_color(panel, PANEL_BG)
     _setup_camera(panel)
-    _add_star_shell(scene, panel)
+    sky_model = _load_sky_model()
+    _add_sky_layer(scene, panel, sky_model.galaxy, blended=True)
+    _add_sky_layer(scene, panel, sky_model.stars, blended=False)
     mesh = _add_planet(scene, panel)
     _atmosphere = _add_atmosphere(scene, panel)
     orbit_model = _load_orbit_model()
+    if sky_model.snapshot_utc != orbit_model.snapshot_utc:
+        raise RuntimeError('celestial sky and orbital-debris snapshots do not match')
     orbit_glow = _add_orbit_traces(scene, panel, orbit_model, 2.8, 22)
     orbits = _add_orbit_traces(scene, panel, orbit_model, 0.68, 190)
     debris = _add_debris(scene, panel, orbit_model)

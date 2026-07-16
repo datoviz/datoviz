@@ -11,9 +11,9 @@
  *
  * What to look for: `dvz_geometry_sphere()` creates positions, normals, UVs, and indices; the mesh
  * visual receives that geometry plus an RGBA8 sampled field bound to the mesh texture slot.
- * Compare the lit Earth or Mars sphere with the faint star shell and, for Earth, real catalogued
- * debris propagated with SGP4. Object sizes are exaggerated; the trajectories and positions are
- * real.
+ * Compare the lit Earth or Mars sphere with the Gaia/2MASS celestial background and, for Earth,
+ * real catalogued debris propagated with SGP4. Object sizes are exaggerated; the trajectories,
+ * debris positions, and celestial directions are data-derived.
  *
  * The example uses real texture files from the data submodule when available. Earth has a
  * generated fallback for local development; Mars requires its real texture file and is unavailable
@@ -21,6 +21,7 @@
  *
  * Prepare the debris ephemeris before running:
  *   uv run tools/data/prepare_orbital_debris.py --force
+ *   uv run tools/data/prepare_planet_sky.py --force
  *
  * Build:  just example-c showcases/textured_planet
  * Run:    ./build/examples/c/showcases/textured_planet --live
@@ -50,6 +51,7 @@
 #include "example_common.h"
 #include "runner/scenario_runner.h"
 #include "textured_planet_orbits.h"
+#include "textured_planet_sky.h"
 
 
 
@@ -73,11 +75,10 @@
 
 static const float TAU = 6.28318530718f;
 
-#define STAR_COUNT 900
-#define STAR_RADIUS 48.0f
-
 #define ORBIT_DATA_PATH  "data/examples/orbital_debris/prepared/orbital_debris.bin"
 #define ORBIT_CACHE_PATH ".cache/datoviz/examples/orbital_debris/prepared/orbital_debris.bin"
+#define SKY_DATA_PATH    "data/examples/planet_sky/prepared/planet_sky.bin"
+#define SKY_CACHE_PATH   ".cache/datoviz/examples/planet_sky/prepared/planet_sky.bin"
 
 #define DEBRIS_TIME_SCALE 60.0f
 #define GLOBE_ROTATION_SPEED 0.035f
@@ -130,6 +131,8 @@ typedef struct TexturedPlanetState
 {
     DvzVisual* visual;
     DvzVisual* atmosphere_visual;
+    DvzVisual* star_visual;
+    DvzVisual* galaxy_visual;
     DvzVisual* debris_visual;
     DvzVisual* orbit_visual;
     DvzVisual* orbit_glow_visual;
@@ -137,6 +140,7 @@ typedef struct TexturedPlanetState
     DvzAnimation* globe_animations[GLOBE_VISUAL_COUNT];
     PlanetTexture textures[PLANET_COUNT];
     TexturedPlanetOrbitModel orbit_model;
+    TexturedPlanetSkyModel sky_model;
     vec3* debris_positions;
     DvzColor* debris_colors;
     float* debris_sizes;
@@ -145,6 +149,8 @@ typedef struct TexturedPlanetState
     bool show_orbits;
     bool show_atmosphere;
     bool show_orbit_glow;
+    bool show_stars;
+    bool show_galaxy;
     bool animate_debris;
     bool rotate_globe;
     int debris_count;
@@ -455,97 +461,47 @@ static bool _create_planet_texture(
 
 
 /**
- * Deterministic 32-bit pseudo-random number.
- *
- * @param state generator state
- * @return next pseudo-random value
- */
-static uint32_t _rand_u32(uint32_t* state)
-{
-    ANN(state);
-    *state = 1664525u * (*state) + 1013904223u;
-    return *state;
-}
-
-
-
-/**
- * Deterministic pseudo-random float in [0, 1].
- *
- * @param state generator state
- * @return random scalar
- */
-static float _rand_f32(uint32_t* state)
-{
-    return (float)(_rand_u32(state) & 0x00FFFFFFu) / (float)0x01000000u;
-}
-
-
-
-/**
- * Create a sparse world-space star shell.
+ * Create one real celestial point layer.
  *
  * @param scene scene
+ * @param panel panel receiving the visual
+ * @param layer prepared Gaia or 2MASS layer
+ * @param blended whether to enable source-over alpha blending
  * @return point visual, or NULL on failure
  */
-static DvzVisual* _create_star_shell(DvzScene* scene)
+static DvzVisual* _create_sky_layer(
+    DvzScene* scene, DvzPanel* panel, const TexturedPlanetSkyLayer* layer, bool blended)
 {
     ANN(scene);
-    vec3* positions = (vec3*)dvz_calloc(STAR_COUNT, sizeof(vec3));
-    DvzColor* colors = (DvzColor*)dvz_calloc(STAR_COUNT, sizeof(DvzColor));
-    float* sizes = (float*)dvz_calloc(STAR_COUNT, sizeof(float));
-    if (positions == NULL || colors == NULL || sizes == NULL)
-        goto fail;
-
-    uint32_t rng = 0xD42024u;
-    for (uint32_t i = 0; i < STAR_COUNT; i++)
+    ANN(panel);
+    ANN(layer);
+    if (layer->count == 0 || layer->positions == NULL || layer->colors == NULL ||
+        layer->sizes == NULL)
     {
-        if (i == 0)
-        {
-            positions[i][0] = STAR_RADIUS * SUN_DIR_X;
-            positions[i][1] = STAR_RADIUS * SUN_DIR_Y;
-            positions[i][2] = STAR_RADIUS * SUN_DIR_Z;
-            colors[i] = (DvzColor){255, 244, 214, 255};
-            sizes[i] = 14.0f;
-            continue;
-        }
-
-        const float z = 2.0f * _rand_f32(&rng) - 1.0f;
-        const float phi = 2.0f * (float)DVZ_PI * _rand_f32(&rng);
-        const float r = sqrtf(fmaxf(0.0f, 1.0f - z * z));
-        positions[i][0] = STAR_RADIUS * r * cosf(phi);
-        positions[i][1] = STAR_RADIUS * r * sinf(phi);
-        positions[i][2] = STAR_RADIUS * z;
-        const float brightness = 0.45f + 0.55f * _rand_f32(&rng);
-        colors[i].r = _u8(0.82 * brightness);
-        colors[i].g = _u8(0.88 * brightness);
-        colors[i].b = _u8(1.00 * brightness);
-        colors[i].a = 255;
-        sizes[i] = 1.0f + 2.2f * _rand_f32(&rng) * _rand_f32(&rng);
+        return NULL;
     }
 
-    DvzVisual* stars = dvz_point(scene, 0);
-    if (stars == NULL)
-        goto fail;
-
+    DvzVisual* points = dvz_point(scene, 0);
+    if (points == NULL)
+        return NULL;
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = positions, .item_count = STAR_COUNT},
-        {.attr_name = "color", .data = colors, .item_count = STAR_COUNT},
-        {.attr_name = "size", .data = sizes, .item_count = STAR_COUNT},
+        {.attr_name = "position", .data = layer->positions, .item_count = layer->count},
+        {.attr_name = "color", .data = layer->colors, .item_count = layer->count},
+        {.attr_name = "size", .data = layer->sizes, .item_count = layer->count},
     };
-    if (dvz_visual_set_data_many(stars, updates, 3) != 0)
-        goto fail;
-
-    dvz_free(positions);
-    dvz_free(colors);
-    dvz_free(sizes);
-    return stars;
-
-fail:
-    dvz_free(positions);
-    dvz_free(colors);
-    dvz_free(sizes);
-    return NULL;
+    DvzResult rc = dvz_visual_set_data_many(points, updates, 3);
+    DvzPointStyleDesc style = dvz_point_style_desc();
+    style.aspect = DVZ_SHAPE_ASPECT_FILLED;
+    style.stroke_width_px = 0.0f;
+    if (rc == DVZ_OK)
+        rc = dvz_point_set_style(points, &style);
+    if (rc == DVZ_OK)
+        rc = dvz_visual_set_depth_test(points, true);
+    if (rc == DVZ_OK && blended)
+        rc = dvz_visual_set_alpha_mode(points, DVZ_ALPHA_BLENDED);
+    if (rc == DVZ_OK)
+        rc = dvz_panel_add_visual(panel, points, NULL);
+    return rc == DVZ_OK ? points : NULL;
 }
 
 
@@ -894,6 +850,8 @@ static void _state_reset_debris_controls(TexturedPlanetState* state)
     state->show_orbits = true;
     state->show_atmosphere = true;
     state->show_orbit_glow = true;
+    state->show_stars = true;
+    state->show_galaxy = true;
     state->animate_debris = true;
     state->rotate_globe = true;
     state->debris_count = (int)state->orbit_model.count;
@@ -922,6 +880,22 @@ static void _state_apply_debris_visibility(TexturedPlanetState* state)
             state->orbit_glow_visual, is_earth && state->show_orbits && state->show_orbit_glow);
     if (state->atmosphere_visual != NULL)
         (void)dvz_visual_set_visible(state->atmosphere_visual, is_earth && state->show_atmosphere);
+}
+
+
+
+/**
+ * Apply celestial-background visibility controls.
+ *
+ * @param state example state
+ */
+static void _state_apply_sky_visibility(TexturedPlanetState* state)
+{
+    ANN(state);
+    if (state->star_visual != NULL)
+        (void)dvz_visual_set_visible(state->star_visual, state->show_stars);
+    if (state->galaxy_visual != NULL)
+        (void)dvz_visual_set_visible(state->galaxy_visual, state->show_galaxy);
 }
 
 
@@ -1033,6 +1007,7 @@ static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
     bool planet_changed = false;
     bool debris_visibility_changed = false;
     bool debris_density_changed = false;
+    bool sky_visibility_changed = false;
     bool rotation_changed = false;
     bool reset = false;
 
@@ -1046,6 +1021,10 @@ static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
             gui, "Globe rotation", &state->globe_speed, 0.0f, 0.20f, "%.3f rad/s");
         debris_visibility_changed |=
             dvz_gui_checkbox(gui, "Show atmosphere", &state->show_atmosphere);
+
+        dvz_gui_separator_text(gui, "Celestial sky");
+        sky_visibility_changed |= dvz_gui_checkbox(gui, "Gaia stars", &state->show_stars);
+        sky_visibility_changed |= dvz_gui_checkbox(gui, "2MASS Milky Way", &state->show_galaxy);
 
         dvz_gui_separator_text(gui, "Catalogued orbital debris");
         debris_visibility_changed |= dvz_gui_checkbox(gui, "Show debris", &state->show_debris);
@@ -1083,6 +1062,7 @@ static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
         debris_visibility_changed = true;
         debris_density_changed = true;
         rotation_changed = true;
+        sky_visibility_changed = true;
     }
     if (debris_visibility_changed)
         _state_apply_debris_visibility(state);
@@ -1090,6 +1070,8 @@ static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
         (void)_state_upload_debris_style(state);
     if (rotation_changed)
         _state_apply_globe_rotation(state);
+    if (sky_visibility_changed)
+        _state_apply_sky_visibility(state);
 }
 #endif
 
@@ -1126,6 +1108,23 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             "`uv run tools/data/prepare_orbital_debris.py --force` from the repository root.\n");
     }
     EXAMPLE_CHECK(ok, "real orbital-debris data setup failed");
+    ok = textured_planet_sky_model_load(SKY_DATA_PATH, &state->sky_model);
+    if (!ok)
+        ok = textured_planet_sky_model_load(SKY_CACHE_PATH, &state->sky_model);
+    if (!ok)
+    {
+        dvz_fprintf(
+            stderr, "textured_planet: missing real Gaia/2MASS sky. Run "
+                    "`uv run tools/data/prepare_planet_sky.py` from the repository root.\n");
+    }
+    EXAMPLE_CHECK(ok, "real celestial-sky data setup failed");
+    EXAMPLE_CHECK(
+        strcmp(state->sky_model.snapshot_utc, state->orbit_model.snapshot_utc) == 0,
+        "celestial sky and debris snapshots do not match; rerun both preparation commands");
+    dvz_fprintf(
+        stderr, "textured_planet: %u Gaia stars, %u 2MASS samples, snapshot %s\n",
+        state->sky_model.stars.count, state->sky_model.galaxy.count,
+        state->sky_model.snapshot_utc);
     _state_reset_debris_controls(state);
     const uint32_t debris_count = state->orbit_model.count;
     state->debris_positions = (vec3*)dvz_calloc(debris_count, sizeof(vec3));
@@ -1157,10 +1156,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc() failed");
     EXAMPLE_CHECK(camera != NULL, "dvz_panel_set_camera_desc() failed");
 
-    DvzVisual* stars = _create_star_shell(ctx->scene);
-    EXAMPLE_CHECK(stars != NULL, "failed to create star shell");
-    int rc = dvz_panel_add_visual(panel, stars, NULL);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(stars) failed");
+    state->galaxy_visual = _create_sky_layer(ctx->scene, panel, &state->sky_model.galaxy, true);
+    EXAMPLE_CHECK(state->galaxy_visual != NULL, "failed to create 2MASS galaxy layer");
+    state->star_visual = _create_sky_layer(ctx->scene, panel, &state->sky_model.stars, false);
+    EXAMPLE_CHECK(state->star_visual != NULL, "failed to create Gaia star layer");
+    int rc = DVZ_OK;
 
     DvzColor white = {255, 255, 255, 255};
     sphere = dvz_geometry_sphere(&(DvzGeometrySphereDesc){
@@ -1302,6 +1302,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
         return;
     dvz_track_destroy(state->globe_rotation);
     textured_planet_orbit_model_destroy(&state->orbit_model);
+    textured_planet_sky_model_destroy(&state->sky_model);
     dvz_free(state->debris_positions);
     dvz_free(state->debris_colors);
     dvz_free(state->debris_sizes);

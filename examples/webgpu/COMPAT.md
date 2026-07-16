@@ -201,7 +201,9 @@ Recorded real orbital-debris extension proof on 2026-07-16: `just wasm-scene-smo
 cache-preloaded 2,508-object CelesTrak snapshot propagated into a two-hour SGP4 point ephemeris and
 closed full-period display paths. Targeted checks require more than 1,000 depth-tested debris
 points, representative event-colored paths, and the per-frame retained position-buffer update
-alongside the existing textured mesh and shared globe rotation. Native
+alongside the existing textured mesh and shared globe rotation. The same route now also loads a
+snapshot-oriented cache of 8,000 Gaia DR3 stars and about 50,000 subdued points sampled from the
+2MASS PIA04250 infrared all-sky map, plus the blended atmosphere and orbit-glow layers. Native
 `showcases/textured_planet --png` capture passed. `just webgpu-browser-smoke` exited successfully
 with the known headless external WebGPU instance-loss skip at `QueueSubmit`, including the updated
 textured-planets route.

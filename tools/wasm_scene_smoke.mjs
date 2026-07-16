@@ -1609,17 +1609,28 @@ function expectTexturedPlanetScenarioStreamShape(stream, label) {
     (pipeline) => pipeline.builtin_pipeline === "scene.point",
   );
   expectDepthPipeline(point, `${label} debris points`);
-  const debrisDraw = commandsOf(stream, "Draw").find((draw) => draw.instance_count > 1000);
+  const pointDraws = commandsOf(stream, "Draw");
+  const debrisDraw = pointDraws.find(
+    (draw) => draw.instance_count > 2000 && draw.instance_count < 5000,
+  );
   requireOk(
     debrisDraw !== undefined,
     `${label}: expected more than 1000 real catalogued debris points`,
+  );
+  requireOk(
+    pointDraws.some((draw) => draw.instance_count >= 8000 && draw.instance_count < 20000),
+    `${label}: expected the prepared Gaia bright-star layer`,
+  );
+  requireOk(
+    pointDraws.some((draw) => draw.instance_count > 20000),
+    `${label}: expected the prepared 2MASS Milky Way layer`,
   );
   const path = expectPipeline(
     stream,
     `${label} orbit paths`,
     (pipeline) => pipeline.builtin_pipeline === "scene.path",
   );
-  expectDepthPipeline(path, `${label} orbit paths`);
+  expectDepthPipeline(path, `${label} orbit paths`, false);
   requireOk(commandsOf(stream, "Draw").length >= 2, `${label}: expected star and debris point draws`);
   requireOk(
     commandsOf(stream, "DrawIndexed").length >= 2,
