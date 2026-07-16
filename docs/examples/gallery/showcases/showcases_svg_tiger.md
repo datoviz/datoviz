@@ -13,6 +13,8 @@ This example renders the classic colored tiger from prepared SVG paths.
 
 ## Preview
 
+<div class="dvz-public-webgpu-fallback" markdown="1">
+
 ![SVG Tiger](../../../assets/gallery/v0.4/showcases/showcases_svg_tiger.webp)
 
 <aside class="dvz-webgpu-unavailable" role="note">
@@ -20,13 +22,23 @@ This example renders the classic colored tiger from prepared SVG paths.
 <span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
-<section class="dvz-local-webgpu" hidden>
-<h3>Local WebGPU preview</h3>
-<div class="dvz-webgpu-live">
-<iframe data-src="../../../webgpu/live.html?id=showcases_svg_tiger" title="SVG Tiger local WebGPU example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
-<p><a href="../../../webgpu/live.html?id=showcases_svg_tiger">Open the local WebGPU example</a>.</p>
-</section>
+
+<div class="dvz-local-webgpu-tabs" hidden markdown="1">
+
+=== "Screenshot"
+
+    ![SVG Tiger](../../../assets/gallery/v0.4/showcases/showcases_svg_tiger.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe data-src="../../../webgpu/live.html?id=showcases_svg_tiger" title="SVG Tiger local WebGPU example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=showcases_svg_tiger">Open the local WebGPU example</a>.
+
+</div>
 
 ## Run And Adapt
 

@@ -844,18 +844,38 @@ def render_preview(
         local_lines = []
         if example.webgpu_local_site_route:
             local_route = site_html_relative_url(page_path, example.webgpu_local_site_route)
-            local_lines = [
-                '<section class="dvz-local-webgpu" hidden>',
-                "<h3>Local WebGPU preview</h3>",
-                '<div class="dvz-webgpu-live">',
+            local_live_lines = [
+                '<div class="dvz-webgpu-live" markdown="1">',
                 f'<iframe data-src="{local_route}" title="{example.title} local WebGPU example" '
                 'loading="lazy" allow="fullscreen; webgpu"></iframe>',
                 "</div>",
-                f'<p>{html_link(local_route, "Open the local WebGPU example")}.</p>',
-                "</section>",
+                "",
+                f'{html_link(local_route, "Open the local WebGPU example")}.',
+            ]
+            local_lines = [
+                '<div class="dvz-local-webgpu-tabs" hidden markdown="1">',
+                "",
+                '=== "Screenshot"',
+                "",
+                *indent_markdown(screenshot),
+                "",
+                '=== "Live WebGPU"',
+                "",
+                *indent_markdown(local_live_lines),
+                "",
+                "</div>",
             ]
         if local_lines:
-            return ["## Preview", "", *screenshot, "", *status_lines, "", *local_lines, ""]
+            fallback_lines = [
+                '<div class="dvz-public-webgpu-fallback" markdown="1">',
+                "",
+                *screenshot,
+                "",
+                *status_lines,
+                "",
+                "</div>",
+            ]
+            return ["## Preview", "", *fallback_lines, "", *local_lines, ""]
         return ["## Preview", "", *screenshot, "", *status_lines, ""]
 
     route = site_html_relative_url(page_path, example.webgpu_site_route)

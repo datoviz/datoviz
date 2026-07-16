@@ -14,7 +14,10 @@
     for (const action of document.querySelectorAll(".dvz-local-webgpu-action[hidden]")) {
       action.hidden = false;
     }
-    for (const preview of document.querySelectorAll(".dvz-local-webgpu[hidden]")) {
+    for (const fallback of document.querySelectorAll(".dvz-public-webgpu-fallback")) {
+      fallback.hidden = true;
+    }
+    for (const preview of document.querySelectorAll(".dvz-local-webgpu-tabs[hidden]")) {
       preview.hidden = false;
       const iframe = preview.querySelector("iframe[data-src]");
       if (iframe) iframe.src = iframe.dataset.src;
