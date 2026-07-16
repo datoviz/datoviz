@@ -1244,15 +1244,17 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(state->arcball != NULL, "dvz_controller_arcball() failed");
     const int bind_result = dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ);
     EXAMPLE_CHECK(bind_result == DVZ_OK, "dvz_scenario_bind_controller() failed");
-    vec3 initial_angles = {-0.32f, +0.48f, -0.16f};
+    vec3 initial_angles = {-0.233247f, +0.292663f, -0.038705f};
+    vec2 initial_pan = {0.0f, 0.0f};
     dvz_arcball_initial(state->arcball, initial_angles);
+    dvz_arcball_zoom(state->arcball, 0.606531f);
+    dvz_arcball_pan(state->arcball, initial_pan);
 
     (void)example_tuner_add_component(
         &state->tuner, "Harmonic field", state, NULL, _harmonic_settings_gui,
         _harmonic_settings_apply, _harmonic_settings_reset, _harmonic_settings_print);
-    vec2 initial_pan = {0.0f, 0.0f};
     example_tuner_arcball(
-        &state->tuner, "Arcball", state->arcball, initial_angles, 1.0f, initial_pan);
+        &state->tuner, "Arcball", state->arcball, initial_angles, 0.606531f, initial_pan);
     example_tuner_material(&state->tuner, "Surface material", state->visual, &state->material);
 
     ok = true;
