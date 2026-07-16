@@ -8,8 +8,8 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Reviewed public C examples generated for the website: 112
-- Examples declaring screenshot validation: 102
+- Reviewed public C examples generated for the website: 114
+- Examples declaring screenshot validation: 104
 - Examples that should have video or motion evidence: 6
 
 ## Commands
@@ -126,6 +126,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [GPU Particle Smoke](gallery/showcases/showcases_gpu_particle_smoke.md) | [`examples/c/showcases/gpu_particle_smoke.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c) | `experimental` | `smoke+screenshot` |
 | [Spherical Harmonics](gallery/showcases/showcases_spherical_harmonics.md) | [`examples/c/showcases/spherical_harmonics.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/spherical_harmonics.c) | `supported` | `smoke+interaction+screenshot` |
 | [Surface Grid](gallery/showcases/showcases_surface_grid.md) | [`examples/c/showcases/surface_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/surface_grid.c) | `supported` | `smoke+screenshot` |
+| [McHenrys Peak Terrain Relief](gallery/showcases/showcases_terrain_relief.md) | [`examples/c/showcases/terrain_relief.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/terrain_relief.c) | `experimental` | `smoke+interaction+screenshot` |
 | [Human Auditory Cortical Activity](gallery/showcases/showcases_cortical_activity.md) | [`examples/c/showcases/cortical_activity.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/cortical_activity.c) | `experimental` | `smoke+interaction+screenshot+video+performance` |
 | [Allen Mouse Brain](gallery/showcases/showcases_brain_volume.md) | [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c) | `prototype` | `smoke+screenshot` |
 | [Point Cloud](gallery/showcases/showcases_point_cloud.md) | [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c) | `supported` | `smoke+screenshot` |

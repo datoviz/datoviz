@@ -5,7 +5,7 @@
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../showcases_spherical_harmonics/">← Previous: Spherical Harmonics</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_textured_planet/">Next: Textured Planets and Orbital Debris →</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_terrain_relief/">Next: McHenrys Peak Terrain Relief →</a></span>
 </div>
 </nav>
 
@@ -89,6 +89,6 @@ This workflow is useful for scientific surfaces where the same gridded data shou
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../showcases_spherical_harmonics/">← Previous: Spherical Harmonics</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_textured_planet/">Next: Textured Planets and Orbital Debris →</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_terrain_relief/">Next: McHenrys Peak Terrain Relief →</a></span>
 </div>
 </nav>

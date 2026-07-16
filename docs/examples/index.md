@@ -12,7 +12,7 @@ Choose the closest verified example for your goal, then adapt its complete C or 
 | Choose marks, lines, images, meshes, text, or volumes | [Point](gallery/visuals/visuals_point.md) | [18 visuals and composites](visuals.md) |
 | Add axes, interaction, layout, animation, or techniques | [2D Axes](gallery/features/features_axes_2d.md) | [68 focused features](features.md) |
 | Open windows, render offscreen, capture, record, or export | [Offscreen Capture](gallery/runtime/runtime_offscreen_capture.md) | [5 runtime examples](runtime.md) |
-| Study complete scientific visualization compositions | [Scientific Plotting Workflow](gallery/showcases/showcases_scientific_plotting.md) | [16 showcases](showcases.md) |
+| Study complete scientific visualization compositions | [Scientific Plotting Workflow](gallery/showcases/showcases_scientific_plotting.md) | [18 showcases](showcases.md) |
 | Integrate a host or use lower-level rendering APIs | [Advanced examples](advanced.md) | [4 advanced examples](advanced.md) |
 
 ## Good Starting Points

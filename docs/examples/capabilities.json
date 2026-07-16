@@ -3,19 +3,19 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 112,
+  "example_count": 114,
   "categories": {
     "advanced": 4,
     "composite": 2,
     "feature": 68,
     "runtime": 5,
-    "showcase": 16,
+    "showcase": 18,
     "start": 1,
     "visual": 16
   },
   "statuses": {
     "diagnostic": 1,
-    "experimental": 14,
+    "experimental": 16,
     "prototype": 1,
     "supported": 96
   },
@@ -63,7 +63,7 @@
         ]
       },
       "prepared": {
-        "count": 6,
+        "count": 7,
         "examples": [
           {
             "id": "showcases_choropleth",
@@ -80,6 +80,14 @@
             "status": "experimental",
             "source": "examples/c/showcases/svg_tiger.c",
             "page": "gallery/showcases/showcases_svg_tiger.md"
+          },
+          {
+            "id": "showcases_terrain_relief",
+            "title": "McHenrys Peak Terrain Relief",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/terrain_relief.c",
+            "page": "gallery/showcases/showcases_terrain_relief.md"
           },
           {
             "id": "showcases_cortical_activity",
@@ -1933,6 +1941,19 @@
       }
     },
     "tags": {
+      "2mass": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_textured_planet",
+            "title": "Textured Planets and Orbital Debris",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/textured_planet.c",
+            "page": "gallery/showcases/showcases_textured_planet.md"
+          }
+        ]
+      },
       "3d": {
         "count": 1,
         "examples": [
@@ -2666,6 +2687,19 @@
           }
         ]
       },
+      "dem": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_terrain_relief",
+            "title": "McHenrys Peak Terrain Relief",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/terrain_relief.c",
+            "page": "gallery/showcases/showcases_terrain_relief.md"
+          }
+        ]
+      },
       "dense-point-cloud": {
         "count": 1,
         "examples": [
@@ -2827,6 +2861,19 @@
             "status": "experimental",
             "source": "examples/c/showcases/cortical_activity.c",
             "page": "gallery/showcases/showcases_cortical_activity.md"
+          }
+        ]
+      },
+      "gaia": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_textured_planet",
+            "title": "Textured Planets and Orbital Debris",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/textured_planet.c",
+            "page": "gallery/showcases/showcases_textured_planet.md"
           }
         ]
       },
@@ -3226,7 +3273,7 @@
         ]
       },
       "material": {
-        "count": 2,
+        "count": 3,
         "examples": [
           {
             "id": "showcases_spherical_harmonics",
@@ -3235,6 +3282,14 @@
             "status": "supported",
             "source": "examples/c/showcases/spherical_harmonics.c",
             "page": "gallery/showcases/showcases_spherical_harmonics.md"
+          },
+          {
+            "id": "showcases_terrain_relief",
+            "title": "McHenrys Peak Terrain Relief",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/terrain_relief.c",
+            "page": "gallery/showcases/showcases_terrain_relief.md"
           },
           {
             "id": "showcases_cortical_activity",
@@ -3273,7 +3328,7 @@
         ]
       },
       "mesh": {
-        "count": 6,
+        "count": 7,
         "examples": [
           {
             "id": "visuals_mesh",
@@ -3306,6 +3361,14 @@
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
             "page": "gallery/showcases/showcases_surface_grid.md"
+          },
+          {
+            "id": "showcases_terrain_relief",
+            "title": "McHenrys Peak Terrain Relief",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/terrain_relief.c",
+            "page": "gallery/showcases/showcases_terrain_relief.md"
           },
           {
             "id": "showcases_cortical_activity",
@@ -3377,6 +3440,19 @@
           }
         ]
       },
+      "orthoimagery": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_terrain_relief",
+            "title": "McHenrys Peak Terrain Relief",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/terrain_relief.c",
+            "page": "gallery/showcases/showcases_terrain_relief.md"
+          }
+        ]
+      },
       "overlay": {
         "count": 1,
         "examples": [
@@ -3391,7 +3467,7 @@
         ]
       },
       "panzoom": {
-        "count": 12,
+        "count": 13,
         "examples": [
           {
             "id": "showcases_panel_linked_axes",
@@ -3783,7 +3859,7 @@
         ]
       },
       "real-data": {
-        "count": 6,
+        "count": 7,
         "examples": [
           {
             "id": "showcases_choropleth",
@@ -3800,6 +3876,14 @@
             "status": "supported",
             "source": "examples/c/showcases/protein.c",
             "page": "gallery/showcases/showcases_protein.md"
+          },
+          {
+            "id": "showcases_terrain_relief",
+            "title": "McHenrys Peak Terrain Relief",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/terrain_relief.c",
+            "page": "gallery/showcases/showcases_terrain_relief.md"
           },
           {
             "id": "showcases_cortical_activity",
@@ -3862,7 +3946,7 @@
         ]
       },
       "sampled-field": {
-        "count": 5,
+        "count": 6,
         "examples": [
           {
             "id": "showcases_linked_probe_colorbar",
@@ -3895,6 +3979,14 @@
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
             "page": "gallery/visuals/visuals_volume.md"
+          },
+          {
+            "id": "showcases_terrain_relief",
+            "title": "McHenrys Peak Terrain Relief",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/terrain_relief.c",
+            "page": "gallery/showcases/showcases_terrain_relief.md"
           },
           {
             "id": "showcases_textured_planet",
@@ -3954,7 +4046,7 @@
         ]
       },
       "scientific": {
-        "count": 9,
+        "count": 10,
         "examples": [
           {
             "id": "showcases_scientific_plotting",
@@ -4011,6 +4103,14 @@
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
             "page": "gallery/showcases/showcases_surface_grid.md"
+          },
+          {
+            "id": "showcases_terrain_relief",
+            "title": "McHenrys Peak Terrain Relief",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/terrain_relief.c",
+            "page": "gallery/showcases/showcases_terrain_relief.md"
           },
           {
             "id": "showcases_cortical_activity",
@@ -4224,7 +4324,7 @@
         ]
       },
       "surface-grid": {
-        "count": 1,
+        "count": 2,
         "examples": [
           {
             "id": "showcases_surface_grid",
@@ -4233,6 +4333,14 @@
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
             "page": "gallery/showcases/showcases_surface_grid.md"
+          },
+          {
+            "id": "showcases_terrain_relief",
+            "title": "McHenrys Peak Terrain Relief",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/terrain_relief.c",
+            "page": "gallery/showcases/showcases_terrain_relief.md"
           }
         ]
       },
@@ -4312,6 +4420,19 @@
           }
         ]
       },
+      "terrain": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_terrain_relief",
+            "title": "McHenrys Peak Terrain Relief",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/terrain_relief.c",
+            "page": "gallery/showcases/showcases_terrain_relief.md"
+          }
+        ]
+      },
       "text": {
         "count": 1,
         "examples": [
@@ -4326,8 +4447,16 @@
         ]
       },
       "texture": {
-        "count": 1,
+        "count": 2,
         "examples": [
+          {
+            "id": "showcases_terrain_relief",
+            "title": "McHenrys Peak Terrain Relief",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/terrain_relief.c",
+            "page": "gallery/showcases/showcases_terrain_relief.md"
+          },
           {
             "id": "showcases_textured_planet",
             "title": "Textured Planets and Orbital Debris",
@@ -4382,6 +4511,19 @@
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
             "page": "gallery/visuals/visuals_volume.md"
+          }
+        ]
+      },
+      "turntable": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_terrain_relief",
+            "title": "McHenrys Peak Terrain Relief",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/terrain_relief.c",
+            "page": "gallery/showcases/showcases_terrain_relief.md"
           }
         ]
       },

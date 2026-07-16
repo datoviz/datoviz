@@ -122,7 +122,14 @@ This example renders the classic colored tiger from prepared SVG paths.
 
 ### [Density-Wave Galaxy](gallery/showcases/showcases_galaxy.md)
 
-<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for Density-Wave Galaxy"><span>Screenshot pending</span></div>
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_galaxy/" aria-label="Density-Wave Galaxy"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp" alt="Density-Wave Galaxy" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp" aria-label="Density-Wave Galaxy preview">
+    <source data-src="../../assets/gallery/v0.4/showcases/showcases_galaxy.mp4" type="video/mp4">
+  </video>
+</div>
 
 `showcases`<br><span>`scientific`, `simulation`, `astronomy`, `particles`, `point`, ...</span>
 
@@ -245,6 +252,18 @@ This example turns a real spherical-harmonic blend into a lit mesh.
 `showcases`<br><span>`scientific`, `synthetic`, `surface-grid`, `mesh`, `wireframe`, ...</span>
 
 This example turns a generated height field into a lit mesh and wireframe.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [McHenrys Peak Terrain Relief](gallery/showcases/showcases_terrain_relief.md)
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for McHenrys Peak Terrain Relief"><span>Screenshot pending</span></div>
+
+`experimental` `showcases`<br><span>`scientific`, `real-data`, `terrain`, `dem`, `orthoimagery`, ...</span>
+
+This example drapes aligned NAIP orthoimagery over USGS 3DEP elevation.
 
 </div>
 

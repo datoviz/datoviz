@@ -2,19 +2,19 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 112,
+  "count": 114,
   "categories": {
     "advanced": 4,
     "composite": 2,
     "feature": 68,
     "runtime": 5,
-    "showcase": 16,
+    "showcase": 18,
     "start": 1,
     "visual": 16
   },
   "statuses": {
     "diagnostic": 1,
-    "experimental": 14,
+    "experimental": 16,
     "prototype": 1,
     "supported": 96
   },
@@ -5175,7 +5175,7 @@
       "media": {
         "screenshot": {
           "expected": true,
-          "status": "pending",
+          "status": "available",
           "source": "data/gallery/v0.4/showcases/showcases_galaxy.png",
           "site_asset": "/assets/gallery/v0.4/showcases/showcases_galaxy.webp"
         }
@@ -5456,6 +5456,83 @@
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/surface_grid.py"
     },
     {
+      "id": "showcases_terrain_relief",
+      "title": "McHenrys Peak Terrain Relief",
+      "category": "showcase",
+      "lane": "showcases",
+      "stage": "v0.4_experimental",
+      "status": "experimental",
+      "source": "examples/c/showcases/terrain_relief.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/terrain_relief.c",
+      "page": "gallery/showcases/showcases_terrain_relief.md",
+      "summary": "This example drapes aligned NAIP orthoimagery over USGS 3DEP elevation.",
+      "validation": "smoke+interaction+screenshot",
+      "build_command": "just example-c showcases/terrain_relief",
+      "smoke_command": "./build/examples/c/showcases/terrain_relief --png",
+      "tags": [
+        "scientific",
+        "real-data",
+        "terrain",
+        "dem",
+        "orthoimagery",
+        "surface-grid",
+        "mesh",
+        "sampled-field",
+        "texture",
+        "material",
+        "turntable"
+      ],
+      "data": {
+        "kind": "prepared"
+      },
+      "data_kind": "prepared",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "pending",
+          "source": "data/gallery/v0.4/showcases/showcases_terrain_relief.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/showcases_terrain_relief.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
+      "webgpu_requirements": [
+        "mesh",
+        "sampled-field",
+        "texture",
+        "turntable",
+        "prepared-data"
+      ],
+      "webgpu_reason": "the cache-only DEM and orthoimagery bundle is not packaged for the browser",
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "mesh",
+          "sampled-field",
+          "texture",
+          "turntable",
+          "prepared-data"
+        ],
+        "reason": "the cache-only DEM and orthoimagery bundle is not packaged for the browser"
+      },
+      "dataset": {
+        "name": "McHenrys Peak USGS 3DEP terrain and NAIP orthoimagery",
+        "source": "USGS 3D Elevation Program and USDA National Agriculture Imagery Program",
+        "source_url": "https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer; https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPPlus/ImageServer",
+        "license": "USGS 3DEP products and USDA NAIP imagery are public domain; credit the U.S. Geological Survey and USDA National Agriculture Imagery Program as the data sources.",
+        "citation": "U.S. Geological Survey 3D Elevation Program; USDA National Agriculture Imagery Program.",
+        "preprocessing": "uv run tools/data/prepare_terrain_relief.py",
+        "prepared_source": "data/examples/terrain_relief/prepared/terrain.bin; data/examples/terrain_relief/prepared/terrain.jpg",
+        "cache_prepared_path": ".cache/datoviz/examples/terrain_relief/prepared",
+        "provenance": "An aligned 6.95 by 7.27 km crop around McHenrys Peak and Glacier Gorge is exported from the public USGS image services into NAD83 / UTM zone 13N. The bare-earth DEM drives the mesh and the natural-color orthoimage supplies its sampled texture. Exact export requests, service descriptions, extents, and artifact checksums are retained in the cache manifest."
+      },
+      "encoding": {
+        "elevation": "490 by 512 little-endian float32 meters, row-major north to south",
+        "texture": "1960 by 2048 RGB JPEG over the identical projected extent",
+        "geometry": "physical UTM aspect ratio with 1.35x vertical exaggeration"
+      }
+    },
+    {
       "id": "showcases_cortical_activity",
       "title": "Human Auditory Cortical Activity",
       "category": "showcase",
@@ -5697,6 +5774,8 @@
         "orbital-debris",
         "celestrak",
         "sgp4",
+        "gaia",
+        "2mass",
         "gui",
         "capture"
       ],
@@ -5741,20 +5820,22 @@
       "webgpu_route": "examples/webgpu/live.html?id=showcases_textured_planet",
       "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_textured_planet",
       "dataset": {
-        "name": "NASA/USGS planet textures and CelesTrak catalogued orbital debris",
-        "source": "data/assets/textures/world.200412.3x5400x2700.jpg; data/assets/textures/earth.jpg; data/assets/textures/mars_viking_mdim21.jpg; CelesTrak GP element sets for FENGYUN 1C, IRIDIUM 33, and COSMOS 2251 debris",
-        "source_url": "https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/; https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m; https://celestrak.org/NORAD/documentation/gp-data-formats.php",
-        "license": "NASA media usage guidelines and USGS/NASA public-domain source-data terms apply; acknowledge NASA, NASA Ames, JPL, and USGS as source where relevant. CelesTrak data use must follow https://celestrak.org/usage-policy.php and retain source attribution.",
-        "citation": "NASA Blue Marble Next Generation; USGS Astrogeology Mars Viking Colorized Global Mosaic 232m / Mars Digital Image Model 2.1; CelesTrak; Vallado, Crawford, Hujsak, and Kelso, Revisiting Spacetrack Report #3, AIAA 2006-6753.",
-        "preprocessing": "uv run tools/data/prepare_orbital_debris.py --force",
-        "cache_prepared_path": ".cache/datoviz/examples/orbital_debris/prepared",
-        "provenance": "Earth uses NASA Blue Marble Next Generation texture assets; Mars uses the USGS Astrogeology/NASA Ames/JPL/USGS Viking MDIM 2.1 colorized global mosaic. Debris points are tracked catalog objects from three selected fragmentation events, propagated from a dated CelesTrak GP snapshot with SGP4 into a two-hour Earth-fixed point ephemeris and one closed full-period display trajectory per object. This is not the full debris environment; point sizes are exaggerated and do not encode physical object size."
+        "name": "NASA/USGS planet textures, CelesTrak debris, and Gaia/2MASS celestial sky",
+        "source": "data/assets/textures/world.200412.3x5400x2700.jpg; data/assets/textures/earth.jpg; data/assets/textures/mars_viking_mdim21.jpg; CelesTrak GP element sets for FENGYUN 1C, IRIDIUM 33, and COSMOS 2251 debris; Gaia DR3 bright-star astrometry/photometry; NASA Photojournal PIA04250 2MASS all-sky map",
+        "source_url": "https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/; https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m; https://celestrak.org/NORAD/documentation/gp-data-formats.php; https://gea.esac.esa.int/archive/; https://science.nasa.gov/photojournal/point-source-all-sky/",
+        "license": "NASA media usage guidelines and USGS/NASA public-domain source-data terms apply; acknowledge NASA, NASA Ames, JPL, and USGS as source where relevant. CelesTrak data use must follow https://celestrak.org/usage-policy.php and retain source attribution. Gaia ESA/DPAC acknowledgement and 2MASS/IPAC-Caltech/UMass attribution requirements apply.",
+        "citation": "NASA Blue Marble Next Generation; USGS Astrogeology Mars Viking Colorized Global Mosaic 232m / Mars Digital Image Model 2.1; CelesTrak; Vallado, Crawford, Hujsak, and Kelso, Revisiting Spacetrack Report #3, AIAA 2006-6753; Gaia DR3 ESA/Gaia/DPAC; 2MASS Point Source Catalog/Stars All Sky View, IPAC-Caltech/University of Massachusetts.",
+        "preprocessing": "uv run tools/data/prepare_orbital_debris.py --force && uv run tools/data/prepare_planet_sky.py --force",
+        "cache_prepared_path": ".cache/datoviz/examples/orbital_debris/prepared; .cache/datoviz/examples/planet_sky/prepared",
+        "provenance": "Earth uses NASA Blue Marble Next Generation texture assets; Mars uses the USGS Astrogeology/NASA Ames/JPL/USGS Viking MDIM 2.1 colorized global mosaic. Debris points are tracked catalog objects from three selected fragmentation events, propagated from a dated CelesTrak GP snapshot with SGP4 into a two-hour Earth-fixed point ephemeris and one closed full-period display trajectory per object. This is not the full debris environment; point sizes are exaggerated and do not encode physical object size. Bright stars use Gaia DR3 celestial positions, G magnitude, and BP-RP color. The Milky Way layer samples the 2MASS infrared false-color all-sky map. Both sky layers are oriented to the debris snapshot using GMST; their shell radius is display-only."
       },
       "encoding": {
         "position": "SGP4 TEME position rotated to approximate Earth-fixed coordinates and normalized by Earth radius",
         "color": "cyan FENGYUN 1C, amber IRIDIUM 33, coral COSMOS 2251",
         "time": "120-minute prepared point ephemeris shown at 60x real time; shared globe rotation enabled by default",
-        "path": "closed full-period SGP4 trajectory in the snapshot planet frame"
+        "path": "closed full-period SGP4 trajectory in the snapshot planet frame",
+        "stars": "Gaia DR3 direction, G-magnitude size, and BP-RP color at the prepared snapshot orientation",
+        "galaxy": "translucent samples from the 2MASS Hammer all-sky infrared map in galactic coordinates"
       },
       "python_source": "examples/python/gallery/showcases/textured_planet.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/textured_planet.py"

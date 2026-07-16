@@ -4,7 +4,7 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_surface_grid/">← Previous: Surface Grid</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_terrain_relief/">← Previous: McHenrys Peak Terrain Relief</a></span>
 <span class="dvz-example-nav__next"><a href="../../../visuals/">Next: Visuals & Composites →</a></span>
 </div>
 </nav>
@@ -155,7 +155,7 @@ Prepare the debris ephemeris before running: uv run tools/data/prepare_orbital_d
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../showcases_surface_grid/">← Previous: Surface Grid</a></span>
+<span class="dvz-example-nav__previous"><a href="../showcases_terrain_relief/">← Previous: McHenrys Peak Terrain Relief</a></span>
 <span class="dvz-example-nav__next"><a href="../../../visuals/">Next: Visuals & Composites →</a></span>
 </div>
 </nav>
