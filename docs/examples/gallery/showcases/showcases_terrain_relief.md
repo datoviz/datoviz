@@ -13,12 +13,17 @@ This example drapes aligned NAIP orthoimagery over USGS 3DEP elevation.
 
 ## Preview
 
-![McHenrys Peak Terrain Relief](../../../assets/gallery/v0.4/showcases/showcases_terrain_relief.webp)
+=== "Screenshot"
 
-<aside class="dvz-webgpu-unavailable" role="note">
-<strong>Live WebGPU preview not available yet</strong>
-<span>Browser support for this example is planned. The preview above shows the native version. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
-</aside>
+    ![McHenrys Peak Terrain Relief](../../../assets/gallery/v0.4/showcases/showcases_terrain_relief.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=showcases_terrain_relief" title="McHenrys Peak Terrain Relief WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=showcases_terrain_relief">Open the live WebGPU example</a>.
 
 ## Run And Adapt
 
@@ -29,7 +34,7 @@ Use your configured build environment; Python routes additionally require local 
 | --- | --- | --- |
 | C | Canonical native source | `just example-c showcases/terrain_relief` (build and run), or rerun `./build/examples/c/showcases/terrain_relief` |
 | Data preparation | Additional integration source; check optional dependencies | `python3 -m tools.data.prepare_terrain_relief` |
-| Browser | Planned | the portable WebGPU stream is proven; promotion awaits a committed browser data bundle |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_terrain_relief">Open live example</a> |
 
 !!! warning "Prepared data required"
 
@@ -73,8 +78,9 @@ Uv run tools/data/prepare_terrain_relief.py
     - Source: [`examples/c/showcases/terrain_relief.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/terrain_relief.c)
     - Approved adaptation starter: `no`
     - Data preparation source: [`tools/data/prepare_terrain_relief.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/tools/data/prepare_terrain_relief.py)
-    - Browser support: Planned
-    - Browser note: the portable WebGPU stream is proven; promotion awaits a committed browser data bundle
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_terrain_relief"><code>examples/webgpu/live.html?id=showcases_terrain_relief</code></a>
+    - Browser note: the portable scenario fetches the versioned USGS/USDA terrain bundle before creation
     - Browser capability tags: `mesh`, `sampled-field`, `texture`, `arcball`, `camera`, `material`, `msaa`, `prepared-data`
     - Validation: `smoke+interaction+screenshot+video`
 

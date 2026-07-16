@@ -3478,7 +3478,14 @@ examples:
       kind: prepared
     portability: portable-scenario
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=showcases_terrain_relief
+      data_bundles:
+        - id: terrain_relief
+          source: data/examples/terrain_relief/manifest.json
+          url: webgpu-data/examples/terrain_relief/sha256-0539b707993348c0/manifest.json
+          virtual_root: data/examples/terrain_relief
+          required: true
       requirements:
         - mesh
         - sampled-field
@@ -3488,7 +3495,7 @@ examples:
         - material
         - msaa
         - prepared-data
-      reason: the portable WebGPU stream is proven; promotion awaits a committed browser data bundle
+      reason: the portable scenario fetches the versioned USGS/USDA terrain bundle before creation
     agent_copy_safe: false
     dataset:
       name: McHenrys Peak USGS 3DEP terrain and NAIP orthoimagery
@@ -3553,16 +3560,23 @@ examples:
     data:
       kind: prepared
     webgpu:
-      status: webgpu-deferred
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=showcases_cortical_activity
+      data_bundles:
+        - id: cortical_activity
+          source: data/examples/cortical_activity/manifest.json
+          url: webgpu-data/examples/cortical_activity/sha256-4b8e4d31566009f3/manifest.json
+          virtual_root: data/examples/cortical_activity
+          required: true
       requirements:
         - mesh
         - material
         - colorbar
         - arcball
-        - gui
+        - buffer-update
         - frame-callbacks
         - continuous-frames
-      reason: the browser path does not yet package the prepared cortical surface and time-series bundle
+      reason: the portable scenario fetches the versioned CC0 cortical activity bundle before creation
     agent_copy_safe: false
     dataset:
       name: MNE audiovisual sample auditory MEG dSPM
@@ -3766,6 +3780,17 @@ examples:
     webgpu:
       status: webgpu-live
       route: examples/webgpu/live.html?id=showcases_textured_planet
+      data_bundles:
+        - id: orbital_debris
+          source: data/examples/orbital_debris/manifest.json
+          url: webgpu-data/examples/orbital_debris/sha256-5ae33a50aeb8fa81/manifest.json
+          virtual_root: data/examples/orbital_debris
+          required: true
+        - id: planet_sky
+          source: data/examples/planet_sky/manifest.json
+          url: webgpu-data/examples/planet_sky/sha256-ca8592458acb5ae2/manifest.json
+          virtual_root: data/examples/planet_sky
+          required: true
       requirements:
         - mesh
         - sampled-field

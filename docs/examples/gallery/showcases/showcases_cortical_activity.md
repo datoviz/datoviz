@@ -13,18 +13,23 @@ This example animates a human auditory dSPM estimate on cortex.
 
 ## Preview
 
-<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp" alt="Human Auditory Cortical Activity" loading="lazy">
-  <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../../../../assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp" aria-label="Human Auditory Cortical Activity preview">
-    <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_cortical_activity.mp4" type="video/mp4">
-  </video>
-</div>
+=== "Screenshot"
 
-<aside class="dvz-webgpu-unavailable" role="note">
-<strong>No live WebGPU preview</strong>
-<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
-</aside>
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp" alt="Human Auditory Cortical Activity" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp" aria-label="Human Auditory Cortical Activity preview">
+        <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_cortical_activity.mp4" type="video/mp4">
+      </video>
+    </div>
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=showcases_cortical_activity" title="Human Auditory Cortical Activity WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=showcases_cortical_activity">Open the live WebGPU example</a>.
 
 ## Run And Adapt
 
@@ -35,7 +40,7 @@ Use your configured build environment; Python routes additionally require local 
 | --- | --- | --- |
 | C | Canonical native source | `just example-c showcases/cortical_activity` (build and run), or rerun `./build/examples/c/showcases/cortical_activity` |
 | Python | No verified adaptation on this page | Start from the C source. |
-| Browser | Deferred | the browser path does not yet package the prepared cortical surface and time-series bundle |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_cortical_activity">Open live example</a> |
 
 !!! warning "Prepared data required"
 
@@ -74,9 +79,10 @@ Control: pass --live explicitly for the tuner; D prints C defaults; space plays/
     - Status: `experimental`
     - Source: [`examples/c/showcases/cortical_activity.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/cortical_activity.c)
     - Approved adaptation starter: `no`
-    - Browser support: Deferred
-    - Browser note: the browser path does not yet package the prepared cortical surface and time-series bundle
-    - Browser capability tags: `mesh`, `material`, `colorbar`, `arcball`, `gui`, `frame-callbacks`, `continuous-frames`
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_cortical_activity"><code>examples/webgpu/live.html?id=showcases_cortical_activity</code></a>
+    - Browser note: the portable scenario fetches the versioned CC0 cortical activity bundle before creation
+    - Browser capability tags: `mesh`, `material`, `colorbar`, `arcball`, `buffer-update`, `frame-callbacks`, `continuous-frames`
     - Validation: `smoke+interaction+screenshot+video+performance`
 
     **Tags**

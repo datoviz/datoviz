@@ -13,18 +13,23 @@ This example renders a simulated real-time data acquisition system.
 
 ## Preview
 
-<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_streaming_daq.poster.webp" alt="Streaming DAQ · 128 channels" loading="lazy">
-  <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../../../../assets/gallery/v0.4/showcases/showcases_streaming_daq.poster.webp" aria-label="Streaming DAQ · 128 channels preview">
-    <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_streaming_daq.mp4" type="video/mp4">
-  </video>
-</div>
+=== "Screenshot"
 
-<aside class="dvz-webgpu-unavailable" role="note">
-<strong>Native-only example</strong>
-<span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
-</aside>
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_streaming_daq.poster.webp" alt="Streaming DAQ · 128 channels" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/showcases/showcases_streaming_daq.poster.webp" aria-label="Streaming DAQ · 128 channels preview">
+        <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_streaming_daq.mp4" type="video/mp4">
+      </video>
+    </div>
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=showcases_streaming_daq" title="Streaming DAQ · 128 channels WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=showcases_streaming_daq">Open the live WebGPU example</a>.
 
 ## Run And Adapt
 
@@ -35,7 +40,7 @@ Use your configured build environment; Python routes additionally require local 
 | --- | --- | --- |
 | C | Canonical native source | `just example-c showcases/streaming_daq` (build and run), or rerun `./build/examples/c/showcases/streaming_daq` |
 | Python | No verified adaptation on this page | Start from the C source. |
-| Browser | Native only | the live source uses a native producer thread and the controls use native ImGui |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_streaming_daq">Open live example</a> |
 
 Use this example as capability or integration evidence, not as a minimal copy-paste
 template. Start from the nearest supported, copy-safe example and add this feature
@@ -77,9 +82,10 @@ Control: --live opens a left-docked GUI; space pauses; R resets acquisition; F r
     - Approved adaptation starter: `no`
     - Acquisition model source: [`examples/c/showcases/streaming_daq_model.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/streaming_daq_model.c)
     - Acquisition model header source: [`examples/c/showcases/streaming_daq_model.h`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/streaming_daq_model.h)
-    - Browser support: Native only
-    - Browser note: the live source uses a native producer thread and the controls use native ImGui
-    - Browser capability tags: `primitive`, `axes`, `panzoom`, `gui`, `frame-callbacks`, `continuous-frames`
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_streaming_daq"><code>examples/webgpu/live.html?id=showcases_streaming_daq</code></a>
+    - Browser note: the browser scenario uses the shared deterministic acquisition model while the native live route additionally enables its producer thread and ImGui controls
+    - Browser capability tags: `primitive`, `axes`, `panzoom`, `buffer-update`, `frame-callbacks`, `continuous-frames`
     - Validation: `smoke+interaction+screenshot+video+performance`
 
     **Tags**

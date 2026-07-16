@@ -168,36 +168,6 @@ if(EXISTS "${PROJECT_SOURCE_DIR}/data/assets/textures")
     )
 endif()
 
-set(DVZ_WASM_ORBITAL_DEBRIS_FILE "")
-if(EXISTS "${PROJECT_SOURCE_DIR}/data/examples/orbital_debris/prepared/orbital_debris.bin")
-    set(DVZ_WASM_ORBITAL_DEBRIS_FILE
-        "${PROJECT_SOURCE_DIR}/data/examples/orbital_debris/prepared/orbital_debris.bin")
-elseif(EXISTS "${PROJECT_SOURCE_DIR}/.cache/datoviz/examples/orbital_debris/prepared/orbital_debris.bin")
-    set(DVZ_WASM_ORBITAL_DEBRIS_FILE
-        "${PROJECT_SOURCE_DIR}/.cache/datoviz/examples/orbital_debris/prepared/orbital_debris.bin")
-endif()
-
-if(NOT DVZ_WASM_ORBITAL_DEBRIS_FILE STREQUAL "")
-    target_link_options(datoviz_wasm_scene PRIVATE
-        "SHELL:--preload-file ${DVZ_WASM_ORBITAL_DEBRIS_FILE}@data/examples/orbital_debris/prepared/orbital_debris.bin"
-    )
-endif()
-
-set(DVZ_WASM_PLANET_SKY_FILE "")
-if(EXISTS "${PROJECT_SOURCE_DIR}/data/examples/planet_sky/prepared/planet_sky.bin")
-    set(DVZ_WASM_PLANET_SKY_FILE
-        "${PROJECT_SOURCE_DIR}/data/examples/planet_sky/prepared/planet_sky.bin")
-elseif(EXISTS "${PROJECT_SOURCE_DIR}/.cache/datoviz/examples/planet_sky/prepared/planet_sky.bin")
-    set(DVZ_WASM_PLANET_SKY_FILE
-        "${PROJECT_SOURCE_DIR}/.cache/datoviz/examples/planet_sky/prepared/planet_sky.bin")
-endif()
-
-if(NOT DVZ_WASM_PLANET_SKY_FILE STREQUAL "")
-    target_link_options(datoviz_wasm_scene PRIVATE
-        "SHELL:--preload-file ${DVZ_WASM_PLANET_SKY_FILE}@data/examples/planet_sky/prepared/planet_sky.bin"
-    )
-endif()
-
 set(DVZ_WASM_PROTEIN_6M0J_DIR "${PROJECT_SOURCE_DIR}/data/examples/proteins/6m0j/prepared")
 if(EXISTS "${DVZ_WASM_PROTEIN_6M0J_DIR}/atom_position.f32" AND
    EXISTS "${DVZ_WASM_PROTEIN_6M0J_DIR}/atom_radius_vdw.f32" AND

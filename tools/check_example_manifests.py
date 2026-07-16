@@ -62,7 +62,7 @@ def _check_file(path: Path, expected: str) -> bool:
 def _live_js_entries(path: Path) -> list[dict[str, str]]:
     text = path.read_text(encoding="utf8")
     out: list[dict[str, str]] = []
-    for match in re.finditer(r"\{(?P<body>.*?)\}", text, re.S):
+    for match in re.finditer(r"^  \{(?P<body>.*?)^  \},?$", text, re.S | re.M):
         body = match.group("body")
         id_match = re.search(r'\bid:\s*"([^"]+)"', body)
         scenario_match = re.search(r'\bscenarioId:\s*"([^"]+)"', body)

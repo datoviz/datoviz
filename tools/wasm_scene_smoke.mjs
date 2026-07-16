@@ -2309,6 +2309,20 @@ const Module = await createModule({
 });
 const smokeSize = 64;
 
+requireOk(
+  await mountOptionalHostFiles(Module, [
+    [
+      "data/examples/orbital_debris/prepared/orbital_debris.bin",
+      "/data/examples/orbital_debris/prepared/orbital_debris.bin",
+    ],
+    [
+      "data/examples/planet_sky/prepared/planet_sky.bin",
+      "/data/examples/planet_sky/prepared/planet_sky.bin",
+    ],
+  ]),
+  "textured planet committed data bundle is unavailable",
+);
+
 await expectBrowserWrapperPacketRuntime();
 expectNoLegacyDirectAbi(Module);
 

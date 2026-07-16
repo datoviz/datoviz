@@ -86,7 +86,12 @@ async function startStaticServer() {
     try {
       const url = new URL(req.url, 'http://127.0.0.1');
       const pathname = decodeURIComponent(url.pathname);
-      const relative = pathname === '/' ? 'examples/webgpu/index.html' : pathname.slice(1);
+      const relative =
+        pathname === '/'
+          ? 'examples/webgpu/index.html'
+          : pathname.startsWith('/webgpu-data/')
+            ? `build/${pathname.slice(1)}`
+            : pathname.slice(1);
       const file = resolve(root, relative);
       if (!file.startsWith(`${root}/`) && file !== root) {
         res.writeHead(403);
@@ -938,6 +943,8 @@ async function main() {
         ['features_marker_symbols', { label: 'Marker Symbols' }],
         ['showcases_spherical_harmonics', { label: 'Spherical Harmonics', kind: 'animated' }],
         ['showcases_streaming_daq', { label: 'Streaming DAQ · 128 channels', kind: 'animated' }],
+        ['showcases_cortical_activity', { label: 'Human Auditory Cortical Activity', kind: 'animated' }],
+        ['showcases_terrain_relief', { label: 'McHenrys Peak Terrain Relief' }],
         ['showcases_galaxy', { label: 'Density-Wave Galaxy', kind: 'animated' }],
         [
           'showcases_textured_planet',
@@ -1306,6 +1313,12 @@ async function main() {
       ],
       ['features_lighting', 'Lighting', 'webgpu_live_lighting.png', 'lighting'],
       [
+        'showcases_terrain_relief',
+        'McHenrys Peak Terrain Relief',
+        'webgpu_live_terrain_relief.png',
+        'terrain-relief',
+      ],
+      [
         'showcases_protein',
         'Protein',
         'webgpu_live_protein.png',
@@ -1379,6 +1392,13 @@ async function main() {
         'webgpu_live_streaming_daq.png',
         'streaming-daq',
         'showcases_streaming_daq',
+      ],
+      [
+        'showcases_cortical_activity',
+        'Human Auditory Cortical Activity',
+        'webgpu_live_cortical_activity.png',
+        'cortical-activity',
+        'showcases_cortical_activity',
       ],
       [
         'showcases_textured_planet',

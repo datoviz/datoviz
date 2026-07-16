@@ -216,6 +216,19 @@ export const LIVE_EXAMPLES = [
     scenarioId: "showcases_surface_grid",
   },
   {
+    id: "showcases_terrain_relief",
+    label: "McHenrys Peak Terrain Relief",
+    scenarioId: "showcases_terrain_relief",
+    dataBundles: [
+      {
+        id: "terrain_relief",
+        url: "../../webgpu-data/examples/terrain_relief/sha256-0539b707993348c0/manifest.json",
+        virtualRoot: "data/examples/terrain_relief",
+        required: true,
+      },
+    ],
+  },
+  {
     id: "showcases_spherical_harmonics",
     label: "Spherical Harmonics",
     scenarioId: "showcases_spherical_harmonics",
@@ -226,6 +239,20 @@ export const LIVE_EXAMPLES = [
     label: "Streaming DAQ · 128 channels",
     scenarioId: "showcases_streaming_daq",
     animate: true,
+  },
+  {
+    id: "showcases_cortical_activity",
+    label: "Human Auditory Cortical Activity",
+    scenarioId: "showcases_cortical_activity",
+    animate: true,
+    dataBundles: [
+      {
+        id: "cortical_activity",
+        url: "../../webgpu-data/examples/cortical_activity/sha256-4b8e4d31566009f3/manifest.json",
+        virtualRoot: "data/examples/cortical_activity",
+        required: true,
+      },
+    ],
   },
   {
     id: "showcases_galaxy",
@@ -281,6 +308,20 @@ export const LIVE_EXAMPLES = [
     label: "Textured Planets and Orbital Debris",
     scenarioId: "showcases_textured_planet",
     animate: true,
+    dataBundles: [
+      {
+        id: "orbital_debris",
+        url: "../../webgpu-data/examples/orbital_debris/sha256-5ae33a50aeb8fa81/manifest.json",
+        virtualRoot: "data/examples/orbital_debris",
+        required: true,
+      },
+      {
+        id: "planet_sky",
+        url: "../../webgpu-data/examples/planet_sky/sha256-ca8592458acb5ae2/manifest.json",
+        virtualRoot: "data/examples/planet_sky",
+        required: true,
+      },
+    ],
   },
   {
     id: "showcases_protein",
