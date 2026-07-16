@@ -11,7 +11,7 @@
  * hemisphere-local spherical triangles onto the participant's complete full-resolution FreeSurfer
  * cortex. Activity emerges around auditory cortex near 100 ms after the left-ear tone. The live
  * GUI controls playback, whole/split layouts, scientific limits, material, and arcball state. The
- * initial paused frame is the strongest measured response.
+ * tuned initial frame is paused at 106 ms, near the strongest measured response.
  *
  * dSPM is a model-derived, dimensionless source estimate. It is not a direct measurement of
  * neuronal firing or absolute current amplitude.
@@ -85,6 +85,20 @@
 #define SPLIT_HEMISPHERE_GAP  0.52f
 #define MATERIAL_PRESET_COUNT 4
 
+#define DEFAULT_TIME_MS       106.000000f
+#define DEFAULT_ACTIVITY_MIN  5.668000f
+#define DEFAULT_ACTIVITY_MID  10.387000f
+#define DEFAULT_ACTIVITY_MAX  15.783000f
+#define DEFAULT_ANATOMY_R     65u
+#define DEFAULT_ANATOMY_G     69u
+#define DEFAULT_ANATOMY_B     74u
+#define DEFAULT_ARCBALL_X     +0.065367f
+#define DEFAULT_ARCBALL_Y     -1.124700f
+#define DEFAULT_ARCBALL_Z     +0.325712f
+#define DEFAULT_ARCBALL_ZOOM  0.904838f
+#define DEFAULT_ARCBALL_PAN_X +0.103135f
+#define DEFAULT_ARCBALL_PAN_Y +0.038889f
+
 
 
 /*************************************************************************************************/
@@ -153,6 +167,7 @@ static float _clamp01(float value);
 static bool _cortical_activity_settings_gui(DvzGui* gui, void* user);
 static void _cortical_activity_settings_reset(void* user);
 static void _cortical_activity_settings_print(FILE* fp, void* user);
+static void _load_material_preset(CorticalActivityState* state, int preset);
 
 
 
@@ -818,12 +833,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->loop = true;
     state->playback_speed = 1.0f;
     state->layout = WHOLE_BRAIN_LAYOUT;
-    state->anatomy_color = dvz_color_rgb(54u, 61u, 70u);
-    state->activity_min = state->data.display_min;
-    state->activity_mid = state->data.display_mid;
-    state->activity_max = state->data.display_max;
+    state->anatomy_color = dvz_color_rgb(DEFAULT_ANATOMY_R, DEFAULT_ANATOMY_G, DEFAULT_ANATOMY_B);
+    state->activity_min = DEFAULT_ACTIVITY_MIN;
+    state->activity_mid = DEFAULT_ACTIVITY_MID;
+    state->activity_max = DEFAULT_ACTIVITY_MAX;
     state->peak_time_ms = _peak_time_ms(&state->data);
-    state->current_time_ms = state->peak_time_ms;
+    state->current_time_ms = DEFAULT_TIME_MS;
     state->colors = (DvzColor*)dvz_calloc(state->data.render_vertex_count, sizeof(DvzColor));
     state->source_frame = (float*)dvz_calloc(state->data.source_vertex_count, sizeof(float));
     state->positions = (vec3*)dvz_calloc(state->data.render_vertex_count, sizeof(vec3));
@@ -858,15 +873,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->mesh = dvz_mesh(ctx->scene, 0);
     if (state->mesh == NULL)
         return false;
-    state->material = dvz_phong_material_desc();
-    state->material.light_direction[0] = -0.35f;
-    state->material.light_direction[1] = +0.55f;
-    state->material.light_direction[2] = +0.75f;
-    state->material.phong.ambient = 0.58f;
-    state->material.phong.diffuse = 0.52f;
-    state->material.phong.specular = 0.025f;
-    state->material.phong.shininess = 10.0f;
-    state->material_preset = 0;
+    _load_material_preset(state, 0);
     if (dvz_visual_set_material(state->mesh, &state->material) != 0)
         return false;
 
@@ -897,7 +904,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->readout = _add_readout(panel);
     if (state->readout == NULL)
         return false;
-    if (!_set_activity_time(state, state->peak_time_ms))
+    if (!_update_activity_scale(state))
         return false;
 
     DvzController* controller = dvz_arcball(ctx->scene, NULL);
@@ -909,15 +916,16 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->arcball = dvz_controller_arcball(controller);
     if (state->arcball == NULL)
         return false;
-    vec3 angles = {-0.15f, -0.65f, +0.02f};
-    vec2 pan = {0.0f, 0.0f};
+    vec3 angles = {DEFAULT_ARCBALL_X, DEFAULT_ARCBALL_Y, DEFAULT_ARCBALL_Z};
+    vec2 pan = {DEFAULT_ARCBALL_PAN_X, DEFAULT_ARCBALL_PAN_Y};
     dvz_arcball_initial(state->arcball, angles);
-    (void)dvz_arcball_zoom(state->arcball, 1.0f);
+    (void)dvz_arcball_zoom(state->arcball, DEFAULT_ARCBALL_ZOOM);
     (void)dvz_arcball_pan(state->arcball, pan);
     (void)example_tuner_add_component(
         &state->tuner, "Activity", state, NULL, _cortical_activity_settings_gui, NULL,
         _cortical_activity_settings_reset, _cortical_activity_settings_print);
-    example_tuner_arcball(&state->tuner, "Arcball", state->arcball, angles, 1.0f, pan);
+    example_tuner_arcball(
+        &state->tuner, "Arcball", state->arcball, angles, DEFAULT_ARCBALL_ZOOM, pan);
     example_tuner_material(&state->tuner, "Cortical material", state->mesh, &state->material);
     return true;
 }
@@ -1015,34 +1023,44 @@ static void _apply_view_preset(CorticalActivityState* state, int preset)
     if (state == NULL || state->arcball == NULL)
         return;
 
-    vec3 angles = {-0.15f, -0.65f, +0.02f};
+    vec3 angles = {DEFAULT_ARCBALL_X, DEFAULT_ARCBALL_Y, DEFAULT_ARCBALL_Z};
+    vec2 pan = {DEFAULT_ARCBALL_PAN_X, DEFAULT_ARCBALL_PAN_Y};
+    float zoom = DEFAULT_ARCBALL_ZOOM;
     if (preset == 1)
     {
         angles[0] = 0.0f;
         angles[1] = 0.0f;
         angles[2] = 0.0f;
+        pan[0] = pan[1] = 0.0f;
+        zoom = 1.0f;
     }
     else if (preset == 2)
     {
         angles[0] = 0.0f;
         angles[1] = +1.5708f;
         angles[2] = 0.0f;
+        pan[0] = pan[1] = 0.0f;
+        zoom = 1.0f;
     }
     else if (preset == 3)
     {
         angles[0] = 0.0f;
         angles[1] = -1.5708f;
         angles[2] = 0.0f;
+        pan[0] = pan[1] = 0.0f;
+        zoom = 1.0f;
     }
     else if (preset == 4)
     {
         angles[0] = -1.5708f;
         angles[1] = 0.0f;
         angles[2] = 0.0f;
+        pan[0] = pan[1] = 0.0f;
+        zoom = 1.0f;
     }
     (void)dvz_arcball_set(state->arcball, angles);
-    (void)dvz_arcball_zoom(state->arcball, 1.0f);
-    (void)dvz_arcball_pan(state->arcball, (vec2){0.0f, 0.0f});
+    (void)dvz_arcball_zoom(state->arcball, zoom);
+    (void)dvz_arcball_pan(state->arcball, pan);
 }
 
 
@@ -1084,14 +1102,28 @@ static void _load_material_preset(CorticalActivityState* state, int preset)
     }
     else
     {
-        state->material = dvz_phong_material_desc();
+        state->material = dvz_material_desc();
+        state->material.model = DVZ_MATERIAL_MODEL_PHONG;
+        state->material.alpha_mode = DVZ_ALPHA_OPAQUE;
+        state->material.opacity = 1.0f;
+        state->material.base_color_factor[0] = 1.0f;
+        state->material.base_color_factor[1] = 1.0f;
+        state->material.base_color_factor[2] = 1.0f;
+        state->material.base_color_factor[3] = 1.0f;
         state->material.light_direction[0] = -0.35f;
         state->material.light_direction[1] = +0.55f;
         state->material.light_direction[2] = +0.75f;
-        state->material.phong.ambient = 0.58f;
-        state->material.phong.diffuse = 0.52f;
-        state->material.phong.specular = 0.025f;
-        state->material.phong.shininess = 10.0f;
+        state->material.phong.ambient = 0.225f;
+        state->material.phong.diffuse = 0.864f;
+        state->material.phong.specular = 0.129f;
+        state->material.phong.shininess = 56.687f;
+        state->material.standard.roughness = 0.620f;
+        state->material.standard.specular = 0.340f;
+        state->material.standard.metallic = 0.0f;
+        state->material.standard.emissive[0] = 0.0f;
+        state->material.standard.emissive[1] = 0.0f;
+        state->material.standard.emissive[2] = 0.0f;
+        state->material.standard.rim_strength = 0.100f;
     }
 }
 
@@ -1169,9 +1201,9 @@ static bool _cortical_activity_settings_gui(DvzGui* gui, void* user)
     scale_changed |= dvz_gui_slider_float(gui, "Saturation", &state->activity_max, 5.0f, 35.0f);
     if (dvz_gui_button(gui, "Reset scientific scale"))
     {
-        state->activity_min = state->data.display_min;
-        state->activity_mid = state->data.display_mid;
-        state->activity_max = state->data.display_max;
+        state->activity_min = DEFAULT_ACTIVITY_MIN;
+        state->activity_mid = DEFAULT_ACTIVITY_MID;
+        state->activity_max = DEFAULT_ACTIVITY_MAX;
         scale_changed = true;
     }
 
@@ -1237,12 +1269,12 @@ static void _cortical_activity_settings_reset(void* user)
     state->playing = false;
     state->loop = true;
     state->playback_speed = 1.0f;
-    state->current_time_ms = state->peak_time_ms;
+    state->current_time_ms = DEFAULT_TIME_MS;
     state->layout = WHOLE_BRAIN_LAYOUT;
-    state->anatomy_color = dvz_color_rgb(54u, 61u, 70u);
-    state->activity_min = state->data.display_min;
-    state->activity_mid = state->data.display_mid;
-    state->activity_max = state->data.display_max;
+    state->anatomy_color = dvz_color_rgb(DEFAULT_ANATOMY_R, DEFAULT_ANATOMY_G, DEFAULT_ANATOMY_B);
+    state->activity_min = DEFAULT_ACTIVITY_MIN;
+    state->activity_mid = DEFAULT_ACTIVITY_MID;
+    state->activity_max = DEFAULT_ACTIVITY_MAX;
     _load_material_preset(state, 0);
 
     (void)_update_geometry(state);
