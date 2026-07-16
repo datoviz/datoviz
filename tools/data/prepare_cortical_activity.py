@@ -21,9 +21,9 @@ from common import CACHE_ROOT, artifact, command_argv, relpath, write_manifest, 
 
 ROOT = Path(__file__).resolve().parents[2]
 EXAMPLE_ID = "cortical_activity"
-BUNDLE_VERSION = 2
-BINARY_MAGIC = b"DVZCTA2\0"
-BINARY_HEADER_FORMAT = "<8s8I5f5I"
+BUNDLE_VERSION = 3
+BINARY_MAGIC = b"DVZCTA3\0"
+BINARY_HEADER_FORMAT = "<8s11I5f10I"
 BINARY_HEADER_SIZE = struct.calcsize(BINARY_HEADER_FORMAT)
 
 OPENNEURO_DATASET = "ds000248"
@@ -57,6 +57,9 @@ LAMBDA2 = 1.0 / SNR**2
 # neutral cortex; opacity rises through fmid and the sequential ramp saturates at fmax.
 DISPLAY_LIMITS = (8.0, 12.0, 15.0)
 DISPLAY_EXTENT = 1.85
+INTERPOLATION_NEIGHBORS = 16
+INTERPOLATION_WEIGHT_TOLERANCE = 2e-4
+INTERPOLATION_ANGLE_TOLERANCE_RAD = 1e-4
 
 
 @dataclass(frozen=True)
@@ -219,6 +222,7 @@ def _load_mne() -> tuple[Any, Any, Any]:
         import mne_bids
         import nibabel
         import scipy
+        import scipy.spatial
     except ImportError as exc:
         raise RuntimeError(f"missing preparation dependency; run `{PREPARE_COMMAND}`") from exc
 
@@ -241,94 +245,185 @@ def _load_mne() -> tuple[Any, Any, Any]:
     return mne, mne_bids, scipy
 
 
-def _vertex_normals(positions: np.ndarray, triangles: np.ndarray) -> np.ndarray:
-    """Compute normalized area-weighted vertex normals."""
-    normals = np.zeros_like(positions, dtype=np.float64)
-    face_normals = np.cross(
-        positions[triangles[:, 1]] - positions[triangles[:, 0]],
-        positions[triangles[:, 2]] - positions[triangles[:, 0]],
+def _spherical_interpolation(
+    scipy: Any,
+    sphere: np.ndarray,
+    source_vertices: np.ndarray,
+    source_triangles: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, dict[str, float]]:
+    """Map every full-resolution sphere vertex into the oct6 spherical triangulation."""
+    sphere_unit = np.asarray(sphere, dtype=np.float64)
+    sphere_unit /= np.linalg.norm(sphere_unit, axis=1, keepdims=True)
+    source_sphere = sphere_unit[source_vertices]
+    triangle_points = source_sphere[source_triangles]
+    centroids = triangle_points.mean(axis=1)
+    centroids /= np.linalg.norm(centroids, axis=1, keepdims=True)
+    tree = scipy.spatial.cKDTree(centroids)
+
+    render_count = sphere_unit.shape[0]
+    triangle_owner = np.empty(render_count, dtype=np.int64)
+    weights = np.empty((render_count, 3), dtype=np.float64)
+    worst_min_weight = np.inf
+    batch_size = 16384
+    for start in range(0, render_count, batch_size):
+        stop = min(start + batch_size, render_count)
+        points = sphere_unit[start:stop]
+        _, candidates = tree.query(points, k=INTERPOLATION_NEIGHBORS, workers=1)
+        candidate_points = triangle_points[candidates]
+        a = candidate_points[:, :, 0]
+        edge0 = candidate_points[:, :, 1] - a
+        edge1 = candidate_points[:, :, 2] - a
+        normals = np.cross(edge0, edge1)
+        numerator = np.einsum("bkj,bkj->bk", normals, a)
+        denominator = np.einsum("bkj,bj->bk", normals, points)
+        projected = points[:, None, :] * (numerator / denominator)[:, :, None]
+        edge2 = projected - a
+        dot00 = np.einsum("bkj,bkj->bk", edge0, edge0)
+        dot01 = np.einsum("bkj,bkj->bk", edge0, edge1)
+        dot11 = np.einsum("bkj,bkj->bk", edge1, edge1)
+        dot20 = np.einsum("bkj,bkj->bk", edge2, edge0)
+        dot21 = np.einsum("bkj,bkj->bk", edge2, edge1)
+        inverse = 1.0 / (dot00 * dot11 - dot01 * dot01)
+        weight1 = (dot11 * dot20 - dot01 * dot21) * inverse
+        weight2 = (dot00 * dot21 - dot01 * dot20) * inverse
+        candidate_weights = np.stack((1.0 - weight1 - weight2, weight1, weight2), axis=2)
+        scores = candidate_weights.min(axis=2)
+        choice = np.argmax(scores, axis=1)
+        rows = np.arange(stop - start)
+        triangle_owner[start:stop] = candidates[rows, choice]
+        weights[start:stop] = candidate_weights[rows, choice]
+        worst_min_weight = min(worst_min_weight, float(scores[rows, choice].min()))
+
+    if worst_min_weight < -INTERPOLATION_WEIGHT_TOLERANCE:
+        raise ValueError(f"spherical interpolation left a triangle by {worst_min_weight:g}")
+    weights = np.clip(weights, 0.0, None)
+    weights /= weights.sum(axis=1, keepdims=True)
+    indices = source_triangles[triangle_owner]
+
+    # Make source-grid identity exact rather than merely numerically close at triangle corners.
+    source_local = np.arange(source_vertices.size, dtype=np.int64)
+    indices[source_vertices] = source_local[:, None]
+    weights[source_vertices] = (1.0, 0.0, 0.0)
+
+    reconstructed = np.einsum("vij,vi->vj", source_sphere[indices], weights)
+    reconstructed /= np.linalg.norm(reconstructed, axis=1, keepdims=True)
+    cosine = np.clip(np.einsum("ij,ij->i", reconstructed, sphere_unit), -1.0, 1.0)
+    angular_error = np.arccos(cosine)
+    max_angle = float(angular_error.max())
+    if max_angle > INTERPOLATION_ANGLE_TOLERANCE_RAD:
+        raise ValueError(f"spherical interpolation angular error {max_angle:g} rad")
+    if not np.array_equal(indices[source_vertices, 0], source_local) or not np.all(
+        weights[source_vertices, 0] == 1.0
+    ):
+        raise ValueError("source vertices do not reproduce identity interpolation")
+    return (
+        indices.astype(np.uint32),
+        weights.astype(np.float32),
+        {
+            "minimum_unclipped_weight": worst_min_weight,
+            "maximum_angular_error_rad": max_angle,
+        },
     )
-    for corner in range(3):
-        np.add.at(normals, triangles[:, corner], face_normals)
-    lengths = np.linalg.norm(normals, axis=1)
-    valid = lengths > 0
-    normals[valid] /= lengths[valid, None]
-    return normals.astype(np.float32)
 
 
-def _source_mesh(mne: Any, source_root: Path, src: Any) -> tuple[
-    np.ndarray,
-    np.ndarray,
-    np.ndarray,
-    np.ndarray,
-    list[dict[str, int]],
-    list[tuple[np.ndarray, np.ndarray]],
-]:
-    """Build the complete two-hemisphere oct6 display mesh."""
-    inflated_parts: list[np.ndarray] = []
-    pial_parts: list[np.ndarray] = []
-    normal_parts: list[np.ndarray] = []
-    index_parts: list[np.ndarray] = []
-    hemispheres: list[dict[str, int]] = []
+def _surface_bundle(mne: Any, scipy: Any, source_root: Path, src: Any) -> dict[str, Any]:
+    """Build full-resolution render surfaces and an oct6 scientific sampling domain."""
+    render_inflated_parts: list[np.ndarray] = []
+    render_pial_parts: list[np.ndarray] = []
+    render_index_parts: list[np.ndarray] = []
+    source_index_parts: list[np.ndarray] = []
+    interpolation_index_parts: list[np.ndarray] = []
+    interpolation_weight_parts: list[np.ndarray] = []
+    source_render_vertex_parts: list[np.ndarray] = []
+    render_hemispheres: list[dict[str, int]] = []
+    source_hemispheres: list[dict[str, int]] = []
     sampling: list[tuple[np.ndarray, np.ndarray]] = []
-    vertex_offset = 0
-    index_offset = 0
+    interpolation_validation: list[dict[str, float]] = []
+    render_vertex_offset = 0
+    render_index_offset = 0
+    source_vertex_offset = 0
+    source_index_offset = 0
 
     for hemi_index, hemi in enumerate(("lh", "rh")):
-        vertices = np.asarray(src[hemi_index]["vertno"], dtype=np.int64)
-        inflated_full, _ = mne.read_surface(
-            source_root / f"derivatives/freesurfer/subjects/sub-01/surf/{hemi}.inflated",
-            verbose="ERROR",
+        surface_root = source_root / "derivatives/freesurfer/subjects/sub-01/surf"
+        inflated, inflated_triangles = mne.read_surface(
+            surface_root / f"{hemi}.inflated", verbose="ERROR"
         )
-        pial_full, _ = mne.read_surface(
-            source_root / f"derivatives/freesurfer/subjects/sub-01/surf/{hemi}.pial",
-            verbose="ERROR",
+        pial, pial_triangles = mne.read_surface(surface_root / f"{hemi}.pial", verbose="ERROR")
+        sphere, sphere_triangles = mne.read_surface(
+            surface_root / f"{hemi}.sphere", verbose="ERROR"
         )
-        full_to_local = np.full(inflated_full.shape[0], -1, dtype=np.int64)
-        full_to_local[vertices] = np.arange(vertices.size, dtype=np.int64)
-        full_triangles = np.asarray(src[hemi_index]["use_tris"], dtype=np.int64)
-        local_triangles = full_to_local[full_triangles]
-        local_triangles = local_triangles[np.all(local_triangles >= 0, axis=1)]
-        if local_triangles.size == 0 or int(local_triangles.max()) >= vertices.size:
-            raise ValueError(f"could not derive compact {hemi} source-space triangles")
+        if not (
+            np.array_equal(inflated_triangles, pial_triangles)
+            and np.array_equal(inflated_triangles, sphere_triangles)
+        ):
+            raise ValueError(f"{hemi} FreeSurfer surface topology differs across geometries")
 
-        inflated = np.asarray(inflated_full[vertices], dtype=np.float64)
-        pial = np.asarray(pial_full[vertices], dtype=np.float64)
-        normals = _vertex_normals(inflated, local_triangles)
+        source_vertices = np.asarray(src[hemi_index]["vertno"], dtype=np.int64)
+        full_to_source = np.full(inflated.shape[0], -1, dtype=np.int64)
+        full_to_source[source_vertices] = np.arange(source_vertices.size, dtype=np.int64)
+        source_triangles = full_to_source[np.asarray(src[hemi_index]["use_tris"], dtype=np.int64)]
+        source_triangles = source_triangles[np.all(source_triangles >= 0, axis=1)]
+        if source_triangles.size == 0 or int(source_triangles.max()) >= source_vertices.size:
+            raise ValueError(f"could not derive compact {hemi} oct6 triangles")
 
-        inflated_parts.append(inflated)
-        pial_parts.append(pial)
-        normal_parts.append(normals)
-        index_parts.append(local_triangles.astype(np.uint32) + vertex_offset)
-        sampling.append((vertices, local_triangles))
-        hemispheres.append(
+        interpolation_indices, interpolation_weights, validation = _spherical_interpolation(
+            scipy, sphere, source_vertices, source_triangles
+        )
+        interpolation_indices += source_vertex_offset
+        interpolation_validation.append(validation)
+
+        render_inflated_parts.append(np.asarray(inflated, dtype=np.float64))
+        render_pial_parts.append(np.asarray(pial, dtype=np.float64))
+        render_index_parts.append(
+            np.asarray(inflated_triangles, dtype=np.uint32) + render_vertex_offset
+        )
+        source_index_parts.append(source_triangles.astype(np.uint32) + source_vertex_offset)
+        interpolation_index_parts.append(interpolation_indices)
+        interpolation_weight_parts.append(interpolation_weights)
+        source_render_vertex_parts.append(
+            source_vertices.astype(np.uint32) + render_vertex_offset
+        )
+        sampling.append((source_vertices, source_triangles))
+        render_hemispheres.append(
             {
-                "vertex_offset": vertex_offset,
-                "vertex_count": int(vertices.size),
-                "index_offset": index_offset,
-                "index_count": int(local_triangles.size),
+                "vertex_offset": render_vertex_offset,
+                "vertex_count": int(inflated.shape[0]),
+                "index_offset": render_index_offset,
+                "index_count": int(inflated_triangles.size),
             }
         )
-        vertex_offset += int(vertices.size)
-        index_offset += int(local_triangles.size)
+        source_hemispheres.append(
+            {
+                "vertex_offset": source_vertex_offset,
+                "vertex_count": int(source_vertices.size),
+                "index_offset": source_index_offset,
+                "index_count": int(source_triangles.size),
+            }
+        )
+        render_vertex_offset += int(inflated.shape[0])
+        render_index_offset += int(inflated_triangles.size)
+        source_vertex_offset += int(source_vertices.size)
+        source_index_offset += int(source_triangles.size)
 
-    inflated = np.concatenate(inflated_parts, axis=0)
-    pial = np.concatenate(pial_parts, axis=0)
-    # Preserve anatomical proportions with one translation and one scalar applied to every axis
-    # and both surfaces. Layout-specific rotations and hemisphere separation belong to the viewer.
+    inflated = np.concatenate(render_inflated_parts, axis=0)
+    pial = np.concatenate(render_pial_parts, axis=0)
     reference = np.concatenate((inflated, pial), axis=0)
     center = 0.5 * (reference.min(axis=0) + reference.max(axis=0))
     scale = DISPLAY_EXTENT / float(np.max(np.ptp(reference, axis=0)))
-    inflated = (inflated - center) * scale
-    pial = (pial - center) * scale
-    return (
-        inflated.astype(np.float32),
-        pial.astype(np.float32),
-        np.concatenate(normal_parts, axis=0).astype(np.float32),
-        np.concatenate(index_parts, axis=0).reshape(-1).astype(np.uint32),
-        hemispheres,
-        sampling,
-    )
+    return {
+        "inflated": ((inflated - center) * scale).astype(np.float32),
+        "pial": ((pial - center) * scale).astype(np.float32),
+        "render_indices": np.concatenate(render_index_parts).reshape(-1).astype(np.uint32),
+        "source_indices": np.concatenate(source_index_parts).reshape(-1).astype(np.uint32),
+        "interpolation_indices": np.concatenate(interpolation_index_parts).astype(np.uint32),
+        "interpolation_weights": np.concatenate(interpolation_weight_parts).astype(np.float32),
+        "source_render_vertices": np.concatenate(source_render_vertex_parts).astype(np.uint32),
+        "render_hemispheres": render_hemispheres,
+        "source_hemispheres": source_hemispheres,
+        "sampling": sampling,
+        "interpolation_validation": interpolation_validation,
+    }
 
 
 def _expand_activity(stc: Any, sampling: list[tuple[np.ndarray, np.ndarray]]) -> np.ndarray:
@@ -387,17 +482,28 @@ def _write_binary(
     times_ms: np.ndarray,
     inflated: np.ndarray,
     pial: np.ndarray,
-    normals: np.ndarray,
-    indices: np.ndarray,
+    render_indices: np.ndarray,
+    source_indices: np.ndarray,
+    interpolation_indices: np.ndarray,
+    interpolation_weights: np.ndarray,
+    source_render_vertices: np.ndarray,
     values: np.ndarray,
-    hemispheres: list[dict[str, int]],
+    render_hemispheres: list[dict[str, int]],
+    source_hemispheres: list[dict[str, int]],
 ) -> None:
-    """Write the compact little-endian runtime bundle."""
-    vertex_count = inflated.shape[0]
+    """Write the v3 full-render-mesh/scientific-source-grid runtime bundle."""
+    render_vertex_count = inflated.shape[0]
+    source_vertex_count = source_render_vertices.size
     time_count = times_ms.size
-    if values.shape != (time_count, vertex_count):
-        raise ValueError(f"activity shape {values.shape} does not match {(time_count, vertex_count)}")
-    if len(hemispheres) != 2:
+    if values.shape != (time_count, source_vertex_count):
+        raise ValueError(
+            f"activity shape {values.shape} does not match {(time_count, source_vertex_count)}"
+        )
+    if interpolation_indices.shape != (render_vertex_count, 3):
+        raise ValueError("interpolation indices must have three entries per render vertex")
+    if interpolation_weights.shape != interpolation_indices.shape:
+        raise ValueError("interpolation weights do not match interpolation indices")
+    if len(render_hemispheres) != 2 or len(source_hemispheres) != 2:
         raise ValueError("exactly two hemispheres are required")
 
     header = struct.pack(
@@ -407,17 +513,25 @@ def _write_binary(
         BINARY_HEADER_SIZE,
         2,
         time_count,
-        vertex_count,
-        indices.size,
+        source_vertex_count,
+        source_indices.size,
+        render_vertex_count,
+        render_indices.size,
         3,
-        1,
+        3,
+        0,
         float(times_ms[0]),
         float(times_ms[1] - times_ms[0]),
         *DISPLAY_LIMITS,
-        hemispheres[0]["vertex_count"],
-        hemispheres[0]["index_count"],
-        hemispheres[1]["vertex_count"],
-        hemispheres[1]["index_count"],
+        source_hemispheres[0]["vertex_count"],
+        source_hemispheres[0]["index_count"],
+        source_hemispheres[1]["vertex_count"],
+        source_hemispheres[1]["index_count"],
+        render_hemispheres[0]["vertex_count"],
+        render_hemispheres[0]["index_count"],
+        render_hemispheres[1]["vertex_count"],
+        render_hemispheres[1]["index_count"],
+        0,
         0,
     )
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -426,8 +540,11 @@ def _write_binary(
         stream.write(np.asarray(times_ms, dtype="<f4").tobytes(order="C"))
         stream.write(np.asarray(inflated, dtype="<f4").tobytes(order="C"))
         stream.write(np.asarray(pial, dtype="<f4").tobytes(order="C"))
-        stream.write(np.asarray(normals, dtype="<f4").tobytes(order="C"))
-        stream.write(np.asarray(indices, dtype="<u4").tobytes(order="C"))
+        stream.write(np.asarray(render_indices, dtype="<u4").tobytes(order="C"))
+        stream.write(np.asarray(source_indices, dtype="<u4").tobytes(order="C"))
+        stream.write(np.asarray(interpolation_indices, dtype="<u4").tobytes(order="C"))
+        stream.write(np.asarray(interpolation_weights, dtype="<f4").tobytes(order="C"))
+        stream.write(np.asarray(source_render_vertices, dtype="<u4").tobytes(order="C"))
         stream.write(np.asarray(values, dtype="<f4").tobytes(order="C"))
 
 
@@ -518,18 +635,14 @@ def _compute(source_root: Path) -> dict[str, Any]:
         verbose="ERROR",
     )
     stc.crop(OUTPUT_TMIN_S, OUTPUT_TMAX_S)
-    inflated, pial, normals, indices, hemispheres, sampling = _source_mesh(mne, source_root, src)
-    values = _expand_activity(stc, sampling)
+    surfaces = _surface_bundle(mne, scipy, source_root, src)
+    values = _expand_activity(stc, surfaces["sampling"])
     if not np.all(np.isfinite(values)) or float(values.max()) < DISPLAY_LIMITS[1]:
         raise ValueError(f"unexpected dSPM activity range: {float(values.min())} .. {float(values.max())}")
     return {
         "times_ms": np.asarray(stc.times * 1000.0, dtype=np.float32),
-        "inflated": inflated,
-        "pial": pial,
-        "normals": normals,
-        "indices": indices,
+        **surfaces,
         "values": values,
-        "hemispheres": hemispheres,
         "accepted_epochs": len(epochs),
         "available_events": event_id,
         "peak_dspm": float(values.max()),
@@ -563,14 +676,18 @@ def prepare(force_download: bool, download_only: bool) -> Path:
         result["times_ms"],
         result["inflated"],
         result["pial"],
-        result["normals"],
-        result["indices"],
+        result["render_indices"],
+        result["source_indices"],
+        result["interpolation_indices"],
+        result["interpolation_weights"],
+        result["source_render_vertices"],
         result["values"],
-        result["hemispheres"],
+        result["render_hemispheres"],
+        result["source_hemispheres"],
     )
 
     metadata = {
-        "schema": "datoviz.cortical-activity.v1",
+        "schema": "datoviz.cortical-activity.v3",
         "dataset": {
             "accession": OPENNEURO_DATASET,
             "snapshot": OPENNEURO_SNAPSHOT,
@@ -596,15 +713,27 @@ def prepare(force_download: bool, download_only: bool) -> Path:
             "peak_dspm": result["peak_dspm"],
             "peak_time_ms": result["peak_time_ms"],
         },
-        "mesh": {
-            "surface": "inflated",
-            "alternate_surface": "pial",
+        "render_mesh": {
+            "surfaces": ["pial", "inflated"],
             "coordinate_space": "participant-native FreeSurfer surface RAS",
             "normalization": "one shared translation and uniform scale across axes and surfaces",
             "display_extent": DISPLAY_EXTENT,
-            "hemispheres": result["hemispheres"],
+            "hemispheres": result["render_hemispheres"],
             "vertex_count": int(result["inflated"].shape[0]),
-            "triangle_count": int(result["indices"].size // 3),
+            "triangle_count": int(result["render_indices"].size // 3),
+        },
+        "scientific_mesh": {
+            "spacing": SOURCE_SPACING,
+            "hemispheres": result["source_hemispheres"],
+            "vertex_count": int(result["values"].shape[1]),
+            "triangle_count": int(result["source_indices"].size // 3),
+        },
+        "interpolation": {
+            "domain": "FreeSurfer spherical surface",
+            "method": "containing oct6 spherical triangle with barycentric weights",
+            "components": 3,
+            "candidate_triangles": INTERPOLATION_NEIGHBORS,
+            "validation": result["interpolation_validation"],
         },
         "time_ms": result["times_ms"].tolist(),
         "head_mri_transform": result["head_mri_transform"],
@@ -620,8 +749,10 @@ def prepare(force_download: bool, download_only: bool) -> Path:
             "cortical_activity_binary",
             "bin",
             version=BUNDLE_VERSION,
-            vertex_count=int(result["inflated"].shape[0]),
-            triangle_count=int(result["indices"].size // 3),
+            render_vertex_count=int(result["inflated"].shape[0]),
+            render_triangle_count=int(result["render_indices"].size // 3),
+            source_vertex_count=int(result["values"].shape[1]),
+            source_triangle_count=int(result["source_indices"].size // 3),
             time_count=int(result["times_ms"].size),
             value_dtype="float32",
             estimate="dSPM",
@@ -667,6 +798,8 @@ def prepare(force_download: bool, download_only: bool) -> Path:
             "Estimated baseline noise covariance, participant-native BEM/forward solution, and a loose-orientation minimum-norm inverse.",
             f"Applied dSPM with SNR={SNR:g} and lambda2={LAMBDA2:.9f}; exported {OUTPUT_TMIN_S:g} to {OUTPUT_TMAX_S:g} seconds.",
             f"Sampled activity on the `{SOURCE_SPACING}` source mesh and preserved both inflated and pial coordinates.",
+            "Kept the complete FreeSurfer pial/inflated meshes as the independent render domain.",
+            "Mapped every render vertex to a hemisphere-local oct6 spherical triangle with three barycentric weights.",
             "Centered both hemispheres together and applied one shared uniform scale, preserving the anatomical aspect ratio.",
             f"Filled inverse-excluded mesh vertices by nearest graph propagation and applied {SMOOTHING_STEPS} neighbor-averaging display steps.",
         ],
@@ -681,8 +814,10 @@ def prepare(force_download: bool, download_only: bool) -> Path:
     )
     print(f"wrote {bundle_root}")
     print(
-        f"activity: {result['inflated'].shape[0]} vertices, {result['indices'].size // 3} triangles, "
-        f"{result['times_ms'].size} frames, peak {result['peak_dspm']:.2f} dSPM at {result['peak_time_ms']:.1f} ms"
+        f"activity: {result['values'].shape[1]} source vertices, "
+        f"{result['inflated'].shape[0]} render vertices, "
+        f"{result['render_indices'].size // 3} render triangles, {result['times_ms'].size} frames, "
+        f"peak {result['peak_dspm']:.2f} dSPM at {result['peak_time_ms']:.1f} ms"
     )
     return bundle_root
 
