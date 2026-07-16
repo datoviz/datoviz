@@ -64,6 +64,9 @@ EXTERN_C_ON
 
 /**
  * Return the modifier bit mask for a key.
+ *
+ * @param key key code to classify
+ * @return the corresponding `DvzKeyboardModifiers` bit, or zero for a non-modifier key
  */
 DVZ_EXPORT int dvz_keyboard_modifier_bit(DvzKeyCode key);
 
@@ -71,6 +74,9 @@ DVZ_EXPORT int dvz_keyboard_modifier_bit(DvzKeyCode key);
 
 /**
  * Create a modifier tracker.
+ *
+ * @return a new owned zero-initialized tracker, or NULL on allocation failure; destroy it with
+ * `dvz_keyboard_modifier_state_destroy()`
  */
 DVZ_EXPORT DvzKeyboardModifierState* dvz_keyboard_modifier_state(void);
 
@@ -78,6 +84,8 @@ DVZ_EXPORT DvzKeyboardModifierState* dvz_keyboard_modifier_state(void);
 
 /**
  * Destroy a modifier tracker.
+ *
+ * @param state owned tracker to destroy; may be NULL
  */
 DVZ_EXPORT void dvz_keyboard_modifier_state_destroy(DvzKeyboardModifierState* state);
 
@@ -86,6 +94,9 @@ DVZ_EXPORT void dvz_keyboard_modifier_state_destroy(DvzKeyboardModifierState* st
 /**
  * Update the modifier tracker with a keyboard event.
  *
+ * @param state tracker to update; must not be NULL
+ * @param type press, repeat, or release event type
+ * @param key modifier key to update
  * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_keyboard_modifier_state_update(
@@ -95,6 +106,9 @@ DVZ_EXPORT DvzResult dvz_keyboard_modifier_state_update(
 
 /**
  * Return the current modifier mask.
+ *
+ * @param state tracker to query; must not be NULL
+ * @return bitwise combination of `DvzKeyboardModifiers` values
  */
 DVZ_EXPORT int dvz_keyboard_modifier_state_mods(const DvzKeyboardModifierState* state);
 
@@ -102,6 +116,15 @@ DVZ_EXPORT int dvz_keyboard_modifier_state_mods(const DvzKeyboardModifierState* 
 
 /**
  * Emit a keyboard event on the router.
+ *
+ * The constructed event borrows @p user_data; callbacks run synchronously before this function
+ * returns.
+ *
+ * @param router target router; must not be NULL
+ * @param type keyboard event type
+ * @param key backend-normalized key code
+ * @param mods bitwise combination of `DvzKeyboardModifiers` values
+ * @param user_data opaque pointer stored in the event; may be NULL
  */
 DVZ_EXPORT void dvz_keyboard_emit(
     DvzInputRouter* router, DvzKeyboardEventType type, DvzKeyCode key, int mods, void* user_data);

@@ -82,7 +82,7 @@ EXTERN_C_ON
  * @param ymax maximum y value
  * @param zmin minimum z value
  * @param zmax maximum z value
- * @returns the box
+ * @return box with the supplied axis bounds
  */
 DVZ_EXPORT DvzBox
 dvz_box(double xmin, double xmax, double ymin, double ymax, double zmin, double zmax);
@@ -93,7 +93,7 @@ dvz_box(double xmin, double xmax, double ymin, double ymax, double zmin, double 
  * Return the aspect ratio of a box.
  *
  * @param box the box
- * @returns the aspect ratio width/height
+ * @return `(xmax - xmin) / (ymax - ymin)`
  */
 DVZ_EXPORT double dvz_box_aspect(DvzBox box);
 
@@ -103,7 +103,7 @@ DVZ_EXPORT double dvz_box_aspect(DvzBox box);
  * Return the box center.
  *
  * @param box the box
- * @param[out] the box's center
+ * @param[out] center destination receiving the box center
  */
 DVZ_EXPORT void dvz_box_center(DvzBox box, dvec3 center);
 
@@ -116,10 +116,11 @@ DVZ_EXPORT void dvz_box_center(DvzBox box, dvec3 center);
  * the center and shrinks the larger axis so the returned box is contained by the input.
  *
  * @param box the original box
- * @param width the viewport width
- * @param height the viewport height
+ * @param width target viewport width in arbitrary units; nonpositive values leave the box unchanged
+ * @param height target viewport height in the same units as @p width; nonpositive values leave the
+ * box unchanged
  * @param strategy indicates how the extent box should be computed
- * @returns the extent box
+ * @return adjusted extent box
  */
 DVZ_EXPORT
 DvzBox dvz_box_extent(DvzBox box, float width, float height, DvzBoxExtentStrategy strategy);
@@ -129,10 +130,11 @@ DvzBox dvz_box_extent(DvzBox box, float width, float height, DvzBoxExtentStrateg
 /**
  * Merge a number of boxes into a single box.
  *
- * @param box_count the number of boxes to merge
- * @param boxes the boxes to merge
+ * @param box_count number of boxes to merge; may be zero
+ * @param boxes input array containing @p box_count boxes; must not be NULL when @p box_count is
+ * positive
  * @param strategy the merge strategy
- * @returns the merged box
+ * @return merged box, or `DVZ_BOX_NDC` when @p box_count is zero
  */
 DVZ_EXPORT DvzBox
 dvz_box_merge(uint32_t box_count, const DvzBox* boxes, DvzBoxMergeStrategy strategy);
@@ -145,9 +147,10 @@ dvz_box_merge(uint32_t box_count, const DvzBox* boxes, DvzBoxMergeStrategy strat
  * @param source the source box, in data coordinates
  * @param target the target box, typically in normalized coordinates
  * @param dim which dimension
- * @param count the number of positions to normalize
- * @param pos the positions to normalize (double precision)
- * @param[out] out normalized positions to compute, as single-precision 3D positions
+ * @param count number of positions
+ * @param pos input array containing @p count double-precision scalar positions; must not be NULL
+ * @param[out] out destination array receiving @p count single-precision 3D positions; must not be
+ * NULL
  */
 DVZ_EXPORT
 void dvz_box_normalize_1D(
@@ -160,9 +163,10 @@ void dvz_box_normalize_1D(
  *
  * @param source the source box, in data coordinates
  * @param target the target box, typically in normalized coordinates
- * @param count the number of positions to normalize
- * @param pos the positions to normalize (double precision)
- * @param[out] out normalized positions to compute, as single-precision 3D positions
+ * @param count number of positions
+ * @param pos input array containing @p count double-precision 2D positions; must not be NULL
+ * @param[out] out destination array receiving @p count single-precision 3D positions; must not be
+ * NULL
  */
 DVZ_EXPORT void
 dvz_box_normalize_2D(DvzBox source, DvzBox target, uint32_t count, dvec2* pos, vec3* out);
@@ -174,9 +178,10 @@ dvz_box_normalize_2D(DvzBox source, DvzBox target, uint32_t count, dvec2* pos, v
  *
  * @param source the source box, in data coordinates
  * @param target the target box, typically in normalized coordinates
- * @param count the number of positions to normalize
- * @param pos the positions to normalize (double precision)
- * @param[out] out normalized positions to compute, as double-precision 2D positions
+ * @param count number of positions
+ * @param pos input array containing @p count double-precision 2D positions; must not be NULL
+ * @param[out] out destination array receiving @p count double-precision 2D positions; must not be
+ * NULL
  */
 DVZ_EXPORT void dvz_box_normalize_polygon(
     DvzBox source, DvzBox target, uint32_t count, dvec2* pos, dvec2* out);
@@ -188,9 +193,10 @@ DVZ_EXPORT void dvz_box_normalize_polygon(
  *
  * @param source the source box, in data coordinates
  * @param target the target box, typically in normalized coordinates
- * @param count the number of positions to normalize
- * @param pos the positions to normalize (double precision)
- * @param[out] out normalized positions to compute, as single-precision 3D positions
+ * @param count number of positions
+ * @param pos input array containing @p count double-precision 3D positions; must not be NULL
+ * @param[out] out destination array receiving @p count single-precision 3D positions; must not be
+ * NULL
  */
 DVZ_EXPORT void
 dvz_box_normalize_3D(DvzBox source, DvzBox target, uint32_t count, dvec3* pos, vec3* out);
@@ -202,8 +208,9 @@ dvz_box_normalize_3D(DvzBox source, DvzBox target, uint32_t count, dvec3* pos, v
  *
  * @param source the source box, in data coordinates
  * @param target the target box, typically in normalized coordinates
- * @param pos the position in the target box
- * @param[out] out position transformed back into the source box
+ * @param pos single-precision position in the target box
+ * @param[out] out destination receiving the double-precision position in the source box; must not
+ * be NULL
  */
 DVZ_EXPORT void dvz_box_inverse(DvzBox source, DvzBox target, const vec3 pos, dvec3* out);
 

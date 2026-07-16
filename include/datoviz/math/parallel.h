@@ -33,7 +33,7 @@ EXTERN_C_ON
 /**
  * Return the number of processors on the current system.
  *
- *  @returns the number of processors
+ * @return number of processors reported by OpenMP, or zero when OpenMP is unavailable
  */
 DVZ_EXPORT int dvz_num_procs(void);
 
@@ -42,8 +42,11 @@ DVZ_EXPORT int dvz_num_procs(void);
 /**
  * Set the number of threads to use in OpenMP-aware functions.
  *
- *  @param num_threads the requested number of threads
- *  @returns DVZ_OK on success, DVZ_ERROR on validation error or when OpenMP is unavailable
+ * Positive values request an absolute count. Nonpositive values are interpreted relative to the
+ * processor count (`-1` means all but one processor); the resolved count must be positive.
+ *
+ * @param num_threads absolute or processor-relative requested thread count
+ * @return DVZ_OK on success, DVZ_ERROR on validation error or when OpenMP is unavailable
  */
 DVZ_EXPORT DvzResult dvz_threads_set(int num_threads);
 
@@ -52,7 +55,7 @@ DVZ_EXPORT DvzResult dvz_threads_set(int num_threads);
 /**
  * Get the number of threads to use in OpenMP-aware functions.
  *
- * @returns the current number of threads specified to OpenMP
+ * @return configured OpenMP thread count, or zero before configuration or when OpenMP is unavailable
  */
 DVZ_EXPORT int dvz_threads_get(void);
 
@@ -62,7 +65,7 @@ DVZ_EXPORT int dvz_threads_get(void);
  * Set the number of threads to use in OpenMP-aware functions based on DVZ_NUM_THREADS, or take
  * half of dvz_num_procs().
  *
- * @returns DVZ_OK on success, DVZ_ERROR on validation error or when OpenMP is unavailable
+ * @return DVZ_OK on success, DVZ_ERROR on validation error or when OpenMP is unavailable
  */
 DVZ_EXPORT DvzResult dvz_threads_default(void);
 

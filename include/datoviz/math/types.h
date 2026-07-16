@@ -85,6 +85,17 @@ typedef uint64_t DvzId;
 
 typedef uint64_t DvzSize;
 
+/**
+ * Format a byte count using bytes or a binary-scaled KB, MB, or GB suffix.
+ *
+ * Values up to `DVZ_PRETTY_SIZE_THRESHOLD` are rendered as an integer byte count; larger values
+ * use one decimal place. The output is always null-terminated when @p out_size is positive.
+ *
+ * @param size byte count to format
+ * @param[out] out caller-owned destination buffer
+ * @param out_size capacity of @p out in bytes, including the null terminator
+ * @return @p out on success, or NULL if @p out is NULL or @p out_size is zero
+ */
 static inline char* dvz_pretty_size(DvzSize size, char* out, size_t out_size)
 {
     if (out == NULL || out_size == 0)

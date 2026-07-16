@@ -110,7 +110,10 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 /**
- * Create a new router instance.
+ * Create an input event router.
+ *
+ * @return a new owned router, or NULL on allocation failure; destroy it with
+ * `dvz_input_router_destroy()`
  */
 DVZ_EXPORT DvzInputRouter* dvz_input_router(void);
 
@@ -133,6 +136,12 @@ DVZ_EXPORT void dvz_input_router_destroy(DvzInputRouter* router);
  * drag-start, drag, and drag-stop are emitted on the union input stream; use
  * `dvz_input_subscribe_event()` when those higher-level pointer events are needed.
  *
+ * The router borrows @p user_data and passes it unchanged to @p callback. The callback and user
+ * data must remain valid until the subscription is removed or the router is destroyed.
+ *
+ * @param router target router; must not be NULL
+ * @param callback callback invoked synchronously for each raw pointer event; must not be NULL
+ * @param user_data borrowed opaque pointer passed to the callback; may be NULL
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */
 DVZ_EXPORT DvzCallbackId
@@ -145,13 +154,20 @@ dvz_input_subscribe_pointer(DvzInputRouter* router, DvzPointerCallback callback,
  *
  * Returns true when a callback was removed and false when @p id is `DVZ_CALLBACK_ID_NONE` or is not
  * currently registered on this router.
+ *
+ * @param router target router; must not be NULL
+ * @param id subscription identifier returned by a subscribe function
+ * @return true if the subscription was removed, false if it was not registered
  */
 DVZ_EXPORT bool dvz_input_unsubscribe(DvzInputRouter* router, DvzCallbackId id);
 
 
 
 /**
- * Emit a pointer event. Callbacks run synchronously on the emitting thread.
+ * Emit a raw pointer event. Callbacks run synchronously on the emitting thread.
+ *
+ * @param router target router; must not be NULL
+ * @param event event borrowed for the duration of the call; must not be NULL
  */
 DVZ_EXPORT void dvz_input_emit_pointer(DvzInputRouter* router, const DvzPointerEvent* event);
 
@@ -160,6 +176,10 @@ DVZ_EXPORT void dvz_input_emit_pointer(DvzInputRouter* router, const DvzPointerE
 /**
  * Subscribe to keyboard events.
  *
+ * @param router target router; must not be NULL
+ * @param callback callback invoked synchronously for each keyboard event; must not be NULL
+ * @param user_data borrowed opaque pointer passed to the callback; may be NULL and must remain
+ * valid until unsubscription or router destruction
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */
 DVZ_EXPORT DvzCallbackId dvz_input_subscribe_keyboard(
@@ -169,6 +189,9 @@ DVZ_EXPORT DvzCallbackId dvz_input_subscribe_keyboard(
 
 /**
  * Emit a keyboard event. Callbacks run synchronously on the emitting thread.
+ *
+ * @param router target router; must not be NULL
+ * @param event event borrowed for the duration of the call; must not be NULL
  */
 DVZ_EXPORT void dvz_input_emit_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event);
 
@@ -177,6 +200,10 @@ DVZ_EXPORT void dvz_input_emit_keyboard(DvzInputRouter* router, const DvzKeyboar
 /**
  * Subscribe to resize events.
  *
+ * @param router target router; must not be NULL
+ * @param callback callback invoked synchronously for each resize event; must not be NULL
+ * @param user_data borrowed opaque pointer passed to the callback; may be NULL and must remain
+ * valid until unsubscription or router destruction
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */
 DVZ_EXPORT DvzCallbackId
@@ -186,6 +213,12 @@ dvz_input_subscribe_resize(DvzInputRouter* router, DvzResizeCallback callback, v
 
 /**
  * Emit a resize event. Callbacks run synchronously on the emitting thread.
+ *
+ * The router copies the event and caches it for `dvz_input_router_last_resize()`.
+ *
+ * @param router target router; must not be NULL
+ * @param event event borrowed for the duration of the call; dimensions are in pixels; must not be
+ * NULL
  */
 DVZ_EXPORT void
 dvz_input_emit_resize(DvzInputRouter* router, const DvzInputResizeEvent* event);
@@ -200,6 +233,10 @@ dvz_input_emit_resize(DvzInputRouter* router, const DvzInputResizeEvent* event);
  * Useful for late subscribers (e.g. controllers connected after window creation)
  * to learn the current window/framebuffer dimensions without waiting for the
  * next resize.
+ *
+ * @param router router to query; must not be NULL
+ * @param[out] out destination receiving a copy of the cached event; must not be NULL
+ * @return true if @p out was filled, false if no resize event has been emitted
  */
 DVZ_EXPORT bool
 dvz_input_router_last_resize(const DvzInputRouter* router, DvzInputResizeEvent* out);
@@ -209,6 +246,10 @@ dvz_input_router_last_resize(const DvzInputRouter* router, DvzInputResizeEvent* 
 /**
  * Subscribe to content scale events.
  *
+ * @param router target router; must not be NULL
+ * @param callback callback invoked synchronously for each scale event; must not be NULL
+ * @param user_data borrowed opaque pointer passed to the callback; may be NULL and must remain
+ * valid until unsubscription or router destruction
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */
 DVZ_EXPORT DvzCallbackId
@@ -218,6 +259,9 @@ dvz_input_subscribe_scale(DvzInputRouter* router, DvzScaleCallback callback, voi
 
 /**
  * Emit a scale event. Callbacks run synchronously on the emitting thread.
+ *
+ * @param router target router; must not be NULL
+ * @param event event borrowed for the duration of the call; must not be NULL
  */
 DVZ_EXPORT void dvz_input_emit_scale(DvzInputRouter* router, const DvzInputScaleEvent* event);
 
@@ -230,6 +274,10 @@ DVZ_EXPORT void dvz_input_emit_scale(DvzInputRouter* router, const DvzInputScale
  * `DvzPointerGestureHandler` is attached to the router, this stream also receives
  * gesture-derived pointer events such as click, double-click, drag-start, drag, and drag-stop.
  *
+ * @param router target router; must not be NULL
+ * @param callback callback invoked synchronously for each union event; must not be NULL
+ * @param user_data borrowed opaque pointer passed to the callback; may be NULL and must remain
+ * valid until unsubscription or router destruction
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */
 DVZ_EXPORT DvzCallbackId
@@ -238,7 +286,10 @@ dvz_input_subscribe_event(DvzInputRouter* router, DvzInputCallback callback, voi
 
 
 /**
- * Emit a union input event.
+ * Emit a union input event. Callbacks run synchronously on the emitting thread.
+ *
+ * @param router target router; must not be NULL
+ * @param event event borrowed for the duration of the call; must not be NULL
  */
 DVZ_EXPORT void dvz_input_emit_event(DvzInputRouter* router, const DvzInputEvent* event);
 

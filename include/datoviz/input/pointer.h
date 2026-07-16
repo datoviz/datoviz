@@ -102,13 +102,18 @@ EXTERN_C_ON
 
 /**
  * Translate a backend mouse button identifier into the Datoviz pointer button enum.
+ *
+ * @param button GLFW mouse-button value
+ * @return the matching pointer button, or `DVZ_POINTER_BUTTON_NONE` if unsupported
  */
 DVZ_EXPORT DvzPointerButton dvz_pointer_button_from_glfw(int button);
 
 
 
 /**
- * Return a monotonic timestamp in nanoseconds.
+ * Return the current wall-clock timestamp in nanoseconds.
+ *
+ * @return Unix wall-clock timestamp in nanoseconds
  */
 DVZ_EXPORT uint64_t dvz_input_timestamp_ns(void);
 
@@ -116,6 +121,21 @@ DVZ_EXPORT uint64_t dvz_input_timestamp_ns(void);
 
 /**
  * Emit a normalized pointer event on the router.
+ *
+ * Raw coordinates, window dimensions, and @p content_scale are stored unchanged. The constructed
+ * event borrows @p user_data and is dispatched synchronously.
+ *
+ * @param router target router; must not be NULL
+ * @param type pointer event type
+ * @param raw_x horizontal pointer position in backend window coordinates
+ * @param raw_y vertical pointer position in backend window coordinates
+ * @param window_width window width in the same units as @p raw_x
+ * @param window_height window height in the same units as @p raw_y
+ * @param button button associated with the event, or `DVZ_POINTER_BUTTON_NONE`
+ * @param mods bitwise combination of keyboard modifier flags
+ * @param content_scale backend content scale associated with the event
+ * @param timestamp_ns event timestamp in nanoseconds, or zero if unavailable
+ * @param user_data opaque pointer stored in the event; may be NULL
  */
 DVZ_EXPORT void dvz_pointer_emit_position(
     DvzInputRouter* router, DvzPointerEventType type, float raw_x, float raw_y, float window_width,
@@ -126,6 +146,21 @@ DVZ_EXPORT void dvz_pointer_emit_position(
 
 /**
  * Emit a wheel event with pixel deltas.
+ *
+ * Pointer coordinates, window dimensions, content scale, and wheel deltas are copied unchanged.
+ * Dispatch is synchronous.
+ *
+ * @param router target router; must not be NULL
+ * @param raw_x horizontal pointer position in backend window coordinates
+ * @param raw_y vertical pointer position in backend window coordinates
+ * @param window_width window width in the same units as @p raw_x
+ * @param window_height window height in the same units as @p raw_y
+ * @param dir_x horizontal wheel delta in pixels
+ * @param dir_y vertical wheel delta in pixels
+ * @param mods bitwise combination of keyboard modifier flags
+ * @param content_scale backend content scale associated with the event
+ * @param timestamp_ns event timestamp in nanoseconds, or zero if unavailable
+ * @param user_data opaque pointer stored in the event; may be NULL
  */
 DVZ_EXPORT void dvz_pointer_emit_wheel(
     DvzInputRouter* router, float raw_x, float raw_y, float window_width, float window_height,
@@ -140,6 +175,9 @@ DVZ_EXPORT void dvz_pointer_emit_wheel(
  * The interpreter listens to raw pointer events and emits gesture-derived pointer events on the
  * router's union input stream. Subscribe with `dvz_input_subscribe_event()` to receive click,
  * double-click, drag-start, drag, and drag-stop events.
+ *
+ * @param router router to observe; borrowed and must outlive the handler
+ * @return a new owned handler; destroy it before destroying @p router
  */
 DVZ_EXPORT DvzPointerGestureHandler* dvz_pointer_gesture_handler(DvzInputRouter* router);
 
@@ -147,6 +185,10 @@ DVZ_EXPORT DvzPointerGestureHandler* dvz_pointer_gesture_handler(DvzInputRouter*
 
 /**
  * Destroy the gesture interpreter.
+ *
+ * This also removes its raw-pointer subscription from the borrowed router.
+ *
+ * @param handler owned handler to destroy; may be NULL
  */
 DVZ_EXPORT void dvz_pointer_gesture_handler_destroy(DvzPointerGestureHandler* handler);
 

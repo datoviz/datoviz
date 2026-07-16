@@ -36,8 +36,8 @@ EXTERN_C_ON
 /**
  * Return the size of a file.
  *
- * @param filename path of the file
- * @returns the size of the file
+ * @param filename path of the file; must not be NULL
+ * @return file size in bytes, or zero if the file cannot be opened (also valid for an empty file)
  */
 DVZ_EXPORT DvzSize dvz_file_size(const char* filename);
 
@@ -46,32 +46,39 @@ DVZ_EXPORT DvzSize dvz_file_size(const char* filename);
 /**
  * Read a binary file.
  *
- * @param filename path of the file to open
- * @param[out] size of the file
- * @returns owned byte buffer allocated with the Datoviz allocator, or NULL on failure; free with
- * dvz_memory_free()
+ * @param filename path of the file to open; must not be NULL
+ * @param[out] size optional destination receiving the buffer size in bytes
+ * @return owned byte buffer, or NULL if the file cannot be opened; free with `dvz_memory_free()`
  */
 DVZ_EXPORT void* dvz_read_file(const char* filename, DvzSize* size);
 
 
 
 /**
- * Read a NumPy NPY file.
+ * Read the data payload of a NumPy NPY v1 file.
  *
- * @param filename path of the file to open
- * @param[out] size of the file
- * @returns owned buffer containing the array elements, or NULL on failure; free with dvz_memory_free()
+ * This minimal reader strips the NPY header but does not expose or convert the array dtype, shape,
+ * byte order, or storage order.
+ *
+ * @param filename path of the file to open; must not be NULL
+ * @param[out] size optional destination receiving the payload size in bytes
+ * @return owned buffer containing the array payload, or NULL on failure; free with
+ * `dvz_memory_free()`
  */
 DVZ_EXPORT void* dvz_read_npy(const char* filename, DvzSize* size);
 
 
 
 /**
- * Read a NumPy NPY file from memory.
+ * Extract the data payload from an in-memory NumPy NPY v1 buffer.
  *
- * @param bytes the contents of the NPY file
- * @param size_bytes size of the file in bytes
- * @returns owned buffer containing the array elements, or NULL on failure; free with dvz_memory_free()
+ * This minimal parser validates the magic and payload offset but does not expose or convert the
+ * array dtype, shape, byte order, or storage order.
+ *
+ * @param bytes complete NPY file bytes; must not be NULL
+ * @param size_bytes size of @p bytes in bytes
+ * @return owned copy of the array payload, or NULL for invalid input or allocation failure; free
+ * with `dvz_memory_free()`
  */
 DVZ_EXPORT void* dvz_parse_npy(const void* bytes, DvzSize size_bytes);
 
@@ -80,21 +87,24 @@ DVZ_EXPORT void* dvz_parse_npy(const void* bytes, DvzSize size_bytes);
 /**
  * Read a compressed GZIP file.
  *
- * @param filename path of the GZIP compressed file to open
- * @param[out] size of the decompressed buffer
- * @returns owned decompressed buffer, or NULL on failure; free with dvz_memory_free()
+ * @param filename path of the GZIP-compressed file; must not be NULL
+ * @param[out] size destination receiving the decompressed size in bytes; must not be NULL when
+ * zlib support is enabled
+ * @return owned decompressed byte buffer, or NULL on failure or when zlib support is unavailable;
+ * free with `dvz_memory_free()`
  */
 DVZ_EXPORT char* dvz_read_gz(const char* filename, DvzSize* size);
 
 
 
 /**
- * Save a binary file.
+ * Write bytes to a file.
  *
- * @param filename path to the PPM file to create
- * @param mode typically "wb" or "ab"
- * @param size size of the buffer
- * @param bytes buffer
+ * @param filename destination file path; must not be NULL
+ * @param mode standard `fopen()` mode, typically `"wb"` or `"ab"`; must not be NULL
+ * @param size number of bytes to write
+ * @param bytes source buffer containing at least @p size bytes; must not be NULL when size is nonzero
+ * @return zero if the file was opened, nonzero otherwise; write errors are not reported
  */
 DVZ_EXPORT int
 dvz_write_bytes(const char* filename, const char* mode, DvzSize size, const uint8_t* bytes);
@@ -108,10 +118,11 @@ dvz_write_bytes(const char* filename, const char* mode, DvzSize size, const uint
 /**
  * Save an image to a PPM file (short ASCII header and flat binary RGB values).
  *
- * @param filename path to the PPM file to create
- * @param width width of the image
- * @param height height of the image
- * @param image pointer to an array of 24-bit RGB values
+ * @param filename destination PPM file path; must not be NULL
+ * @param width image width in pixels
+ * @param height image height in pixels
+ * @param image tightly packed RGB8 pixels containing `width * height * 3` bytes; must not be NULL
+ * @return zero if the file was opened, nonzero otherwise; write errors are not reported
  */
 DVZ_EXPORT int
 dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8_t* image);
@@ -121,10 +132,11 @@ dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8
 /**
  * Read a PPM image file.
  *
- * @param filename path of the file to open
- * @param[out] width width of the image
- * @param[out] height of the image
- * @returns owned tightly packed RGB8 pixel buffer, or NULL on failure; free with dvz_memory_free()
+ * @param filename source P6 PPM file path; must not be NULL
+ * @param[out] width destination receiving the image width in pixels; must not be NULL
+ * @param[out] height destination receiving the image height in pixels; must not be NULL
+ * @return owned tightly packed RGB8 pixel buffer, or NULL on failure; free with
+ * `dvz_memory_free()`
  */
 DVZ_EXPORT uint8_t* dvz_read_ppm(const char* filename, uint32_t* width, uint32_t* height);
 
@@ -133,10 +145,12 @@ DVZ_EXPORT uint8_t* dvz_read_ppm(const char* filename, uint32_t* width, uint32_t
 /**
  * Save an sRGB RGBA8 image to a PNG file.
  *
- * @param filename path to the PNG file to create
- * @param width width of the image
- * @param height height of the image
- * @param rgba pointer to tightly packed sRGB RGBA8 pixels with straight linear alpha
+ * @param filename destination PNG file path; must not be NULL
+ * @param width image width in pixels; must be positive
+ * @param height image height in pixels; must be positive
+ * @param rgba tightly packed sRGB RGBA8 pixels with straight linear alpha; must contain
+ * `width * height * 4` bytes
+ * @return zero after the encode attempt
  */
 DVZ_EXPORT int
 dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* rgba);
@@ -146,12 +160,13 @@ dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8
 /**
  * Compress an sRGB RGB8 image to PNG and write it to a memory buffer.
  *
- * @param width width of the image
- * @param height height of the image
- * @param rgb pointer to tightly packed sRGB RGB8 pixels
- * @param size pointer to a variable that will contain the size of the buffer
- * @param out pointer to an owned PNG byte buffer allocated with the Datoviz allocator; free with
- * dvz_memory_free()
+ * @param width image width in pixels; must be positive
+ * @param height image height in pixels; must be positive
+ * @param rgb tightly packed sRGB RGB8 pixels containing `width * height * 3` bytes; must not be NULL
+ * @param[out] size destination receiving the PNG buffer size in bytes; must not be NULL
+ * @param[out] out destination receiving an owned PNG byte buffer; must not be NULL and the returned
+ * buffer must be freed with `dvz_memory_free()`
+ * @return zero after the encode attempt
  */
 DVZ_EXPORT int
 dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* size, void** out);
@@ -161,12 +176,11 @@ dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* size,
 /**
  * Decode a PNG image from memory into tightly packed RGB8 pixels.
  *
- * @param bytes PNG byte buffer
+ * @param bytes complete PNG byte buffer; must not be NULL
  * @param size_bytes size of the PNG byte buffer in bytes
- * @param[out] width decoded image width
- * @param[out] height decoded image height
- * @returns owned RGB8 pixel buffer allocated with the Datoviz allocator, or NULL on failure; free
- * with dvz_memory_free()
+ * @param[out] width destination receiving the decoded image width in pixels; must not be NULL
+ * @param[out] height destination receiving the decoded image height in pixels; must not be NULL
+ * @return owned RGB8 pixel buffer, or NULL on decode failure; free with `dvz_memory_free()`
  */
 DVZ_EXPORT uint8_t*
 dvz_load_png(const void* bytes, DvzSize size_bytes, uint32_t* width, uint32_t* height);
@@ -180,13 +194,11 @@ dvz_load_png(const void* bytes, DvzSize size_bytes, uint32_t* width, uint32_t* h
 /**
  * Decode a JPEG image from memory into tightly packed RGBA8 pixels.
  *
- * @param bytes JPEG byte buffer
+ * @param bytes complete JPEG byte buffer; must not be NULL
  * @param size_bytes size of the JPEG byte buffer in bytes
- * @param[out] width decoded image width
- * @param[out] height decoded image height
- * @returns RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure
- *
- * @note Free the returned buffer with dvz_memory_free().
+ * @param[out] width destination receiving the decoded image width in pixels; must not be NULL
+ * @param[out] height destination receiving the decoded image height in pixels; must not be NULL
+ * @return owned RGBA8 pixel buffer, or NULL on failure; free with `dvz_memory_free()`
  */
 DVZ_EXPORT uint8_t*
 dvz_load_jpeg(const void* bytes, DvzSize size_bytes, uint32_t* width, uint32_t* height);
@@ -196,12 +208,10 @@ dvz_load_jpeg(const void* bytes, DvzSize size_bytes, uint32_t* width, uint32_t* 
 /**
  * Read and decode a JPEG image file into tightly packed RGBA8 pixels.
  *
- * @param filename path of the JPEG file to open
- * @param[out] width decoded image width
- * @param[out] height decoded image height
- * @returns RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure
- *
- * @note Free the returned buffer with dvz_memory_free().
+ * @param filename source JPEG file path; must not be NULL
+ * @param[out] width destination receiving the decoded image width in pixels; must not be NULL
+ * @param[out] height destination receiving the decoded image height in pixels; must not be NULL
+ * @return owned RGBA8 pixel buffer, or NULL on failure; free with `dvz_memory_free()`
  */
 DVZ_EXPORT uint8_t* dvz_read_jpeg(const char* filename, uint32_t* width, uint32_t* height);
 
@@ -211,20 +221,44 @@ DVZ_EXPORT uint8_t* dvz_read_jpeg(const char* filename, uint32_t* width, uint32_
 /*  Resources utils (files included in the shared dynamic library)                               */
 /*************************************************************************************************/
 
-// Defined in cmake-generated file build/_shaders.c
+/**
+ * Look up an embedded SPIR-V shader resource by name.
+ *
+ * @param name resource name without a file extension; must not be NULL
+ * @param[out] size optional destination receiving the resource size in bytes, or zero if not found
+ * @return borrowed immutable bytes with static lifetime, or NULL if @p name is not found
+ */
 DVZ_EXPORT const unsigned char* dvz_resource_shader(const char* name, DvzSize* size);
 
 
-// Defined in cmake-generated file build/_wgsl_shaders.c
+/**
+ * Look up an embedded WGSL shader source by name.
+ *
+ * @param name resource name without a file extension; must not be NULL
+ * @param[out] size optional destination receiving the source size in bytes, or zero if not found
+ * @return borrowed immutable source bytes with static lifetime, or NULL if @p name is not found
+ */
 DVZ_EXPORT const char* dvz_resource_wgsl(const char* name, DvzSize* size);
 
 
-// Defined in cmake-generated file build/_glsl_shaders.c
+/**
+ * Look up an embedded GLSL shader source by name.
+ *
+ * @param name resource name without a file extension; must not be NULL
+ * @param[out] size optional destination receiving the source size in bytes, or zero if not found
+ * @return borrowed immutable source bytes with static lifetime, or NULL if @p name is not found
+ */
 DVZ_EXPORT const char* dvz_resource_glsl(const char* name, DvzSize* size);
 
 
 
-// Defined in cmake-generated file build/_fonts.c
+/**
+ * Look up an embedded font resource by name.
+ *
+ * @param name resource name without a file extension; must not be NULL
+ * @param[out] size optional destination receiving the font size in bytes, or zero if not found
+ * @return borrowed immutable font bytes with static lifetime, or NULL if @p name is not found
+ */
 DVZ_EXPORT const unsigned char* dvz_resource_font(const char* name, DvzSize* size);
 
 

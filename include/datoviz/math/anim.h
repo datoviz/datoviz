@@ -78,9 +78,9 @@ EXTERN_C_ON
 /**
  * Apply an easing function to a normalized value.
  *
- * @param easing the easing mode
- * @param t the normalized value
- * @returns the eased value
+ * @param easing easing curve to apply
+ * @param t normalized input, normally in the interval [0, 1]
+ * @return eased value; some curves intentionally overshoot [0, 1]
  */
 DVZ_EXPORT double dvz_easing(DvzEasing easing, double t);
 

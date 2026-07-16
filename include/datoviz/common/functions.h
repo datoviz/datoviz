@@ -48,10 +48,13 @@ EXTERN_C_ON
 
 
 /**
- * Register an error callback.
+ * Register or clear the process-wide error callback.
  *
- * @param cb the error callback
- * @param user_data opaque pointer passed to the callback
+ * The callback and borrowed user data must remain valid until replaced or cleared. Passing NULL
+ * for @p cb clears the callback.
+ *
+ * @param cb callback invoked for Datoviz errors, or NULL to clear the current callback
+ * @param user_data borrowed opaque pointer passed unchanged to @p cb; may be NULL
  * @return DVZ_OK on success
  */
 DVZ_EXPORT DvzResult dvz_error_set_callback(DvzErrorCallback cb, void* user_data);

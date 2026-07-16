@@ -64,7 +64,7 @@ EXTERN_C_ON
 /**
  * Return the current version string.
  *
- * @returns the version string
+ * @return borrowed, null-terminated version string with static lifetime
  */
 DVZ_EXPORT const char* dvz_version(void);
 

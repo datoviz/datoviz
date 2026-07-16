@@ -284,9 +284,10 @@ api-docs:
 docs-api: api-docs
 #
 
-check-api-docs:
+check-api-docs: api-json
+    @python3 tools/check_api_docstrings.py
     @python3 tools/build_api_c.py --check
-    @python3 -m unittest tools/tests/test_build_api_c.py
+    @python3 -m unittest tools/tests/test_build_api_c.py tools/tests/test_check_api_docstrings.py
     @python3 tools/check_api_c_links.py
 #
 
