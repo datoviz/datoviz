@@ -12,6 +12,13 @@ If the project does not build, Python does not import, or no graphics device can
 with [Diagnose build and platform issues](diagnose-platform.md). If only a browser route fails, use
 [Diagnose WebGPU support](debug-webgpu.md).
 
+!!! info "At a glance"
+
+    - **Status:** Supported diagnostic workflow for native, offscreen, and browser comparisons.
+    - **Languages:** Applies to C and Python scenes; backend tracing commands are maintainer-oriented.
+    - **Prerequisites:** The smallest reproducible scene, exact command, platform details, and expected image.
+    - **Result:** The failure is isolated to scene state, coordinates, rendering policy, runtime command flow, or platform/backend.
+
 ## Diagnostic order
 
 Use this order when a scene does not look right:
@@ -30,6 +37,10 @@ canonical example
 Do not start with the backend unless the same minimal scene fails after the scene-level checks pass.
 Most blank frames are caused by a missing visual attachment, zero items, an attribute shape mismatch,
 transparent colors, a camera/domain mismatch, or depth/blend state hiding valid geometry.
+
+Run diagnostic commands from the repository root unless a section explicitly describes an
+installed package. Preserve the first specific error and avoid changing several scene variables at
+once while reducing the reproducer.
 
 ## Start with a known-good baseline
 

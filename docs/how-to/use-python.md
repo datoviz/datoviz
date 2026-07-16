@@ -2,6 +2,13 @@
 
 Create Datoviz scenes from Python and upload NumPy arrays to visual attributes.
 
+!!! info "At a glance"
+
+    - **Status:** Supported generated ctypes binding with a focused NumPy array facade.
+    - **Languages:** Python; calls retain their C `dvz_*` names.
+    - **Prerequisites:** A v0.4 package/build matching the loaded native library, plus NumPy for adapted uploads.
+    - **Result:** Explicit retained scene code with validated dtype/shape and managed or exact runtime ownership.
+
 ## Task workflow
 
 Use the main Python package when you want the current v0.4 scene workflow from Python. Datoviz has
@@ -50,6 +57,9 @@ dvz.dvz_panel_add_visual(panel, points, None)
 After these calls, `scene` owns a figure with one panel and one point visual. Adapt the C examples
 one call at a time, keeping NumPy array dtype and shape matched to the C attribute contract.
 
+The block is a scene-construction excerpt, not a rendered program. It produces no pixels until you
+create a native/offscreen view or call the managed `dvz.run()` helper.
+
 The top-level `datoviz` module accepts NumPy arrays for the calls covered by the binding policy. Use
 `datoviz.raw` only when you need the exact C-shaped call form. Calls that are not covered by
 the policy may still expect explicit pointer/count arguments, so consult the C and Python binding
@@ -88,6 +98,10 @@ RGBA colors shaped `(n, 4)`, and `float32` diameters shaped `(n,)`.
 The top-level package may copy non-contiguous arrays during the call. For predictable performance
 and exact pointer compatibility, pass C-contiguous arrays yourself with
 `np.asarray(data, dtype=..., order="C")`.
+
+Adapted dense uploads copy their payload before returning. Exact callbacks, borrowed descriptors,
+and raw pointer APIs may have longer lifetimes; keep their Python/ctypes storage alive for the full
+lifetime stated by the C contract.
 
 When porting a C example:
 

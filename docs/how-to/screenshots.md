@@ -5,6 +5,13 @@ Capture a rendered figure to an image file.
 Use screenshot capture for documentation images, smoke-test artifacts, and user-facing raster
 exports. It captures the rendered framebuffer, not a scientific linear-float data buffer.
 
+!!! info "At a glance"
+
+    - **Status:** Supported native app/offscreen capture.
+    - **Languages:** Python and C.
+    - **Prerequisites:** A valid view with at least one successfully rendered frame and a writable output path.
+    - **Result:** A top-row-first sRGB RGBA8 frame written as PNG or available through the Python array facade.
+
 ## Task workflow
 
 Use offscreen rendering for deterministic screenshots. For interactive workflows, render at least
@@ -17,6 +24,9 @@ This page focuses on writing the rendered frame to an image file.
 
 This fragment assumes the scene, figure, panel, and visuals already exist. It renders one offscreen
 frame, writes a PNG, and keeps one cleanup path for success and failure.
+
+The block is a C function-body excerpt. For Python array capture and complete `try/finally` cleanup,
+use [Render offscreen](render-offscreen.md#core-offscreen-fragment).
 
 ```c
 DvzApp* app = dvz_app(scene);
@@ -97,6 +107,10 @@ readback or as a replacement for sampled-field data export.
 
 Always check capture return codes in examples and tests. A missing display, unavailable GPU, invalid
 output path, or failed readback should fail loudly.
+
+The view owns the captured framebuffer; `dvz_view_capture_png()` does not transfer view ownership.
+Finish capture before destroying the app. Python `dvz_view_capture_rgba()` returns a caller-owned
+NumPy array copy that remains usable after app teardown.
 
 ## Common mistakes
 

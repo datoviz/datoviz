@@ -4,6 +4,13 @@ Navigate 3D panels with arcball, turntable, or fly controls.
 
 ![A colored 3D object viewed with the arcball controller](../assets/gallery/v0.4/features/features_controller_arcball.poster.webp)
 
+!!! info "At a glance"
+
+    - **Status:** Supported arcball, turntable, and fly controllers; browser coverage is example-scoped.
+    - **Languages:** C-first; Python exposes the same generated descriptor and binding calls.
+    - **Prerequisites:** A 3D panel, explicit camera convention, scene scale, and valid clipping range.
+    - **Result:** Mouse, wheel, and keyboard input update retained 3D view state without rewriting geometry.
+
 3D navigation is the combination of a camera, a controller, and scene scale. The camera defines the
 initial eye, target, up vector, projection, and clipping range. The controller turns mouse, wheel,
 keyboard, and gesture input into changes to the panel's retained camera or view state.
@@ -16,6 +23,9 @@ dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ);
 ```
 
 Bind 3D controllers with `DVZ_DIM_MASK_XYZ`. Use `panzoom` only for 2D panels.
+
+All C blocks on this page are setup excerpts. Use the linked examples for complete scene, live-view
+input connection, error handling, and cleanup.
 
 ## Choose a controller
 
@@ -95,6 +105,10 @@ dvz_panel_bind_controller(right_panel, shared, DVZ_DIM_MASK_XYZ);
 
 Shared controllers link navigation state. Use separate controller handles when panels should move
 independently.
+
+Controllers returned by `dvz_arcball()`, `dvz_turntable()`, and `dvz_fly()` are scene-owned. Do not
+destroy their typed payloads separately; destroy an explicitly managed controller only through the
+controller API, or let scene destruction clean it up.
 
 ## Keep scenes upright with turntable
 

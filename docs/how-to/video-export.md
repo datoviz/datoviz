@@ -7,6 +7,13 @@ deterministic offscreen path for tests, documentation, and release artifacts. Us
 recording when you need to capture an interactive native window. For replayable frame streams, use
 DVZR recording instead.
 
+!!! info "At a glance"
+
+    - **Status:** Supported native CPU-readback video path; external/NVENC capture is optional and advanced.
+    - **Languages:** C app-capture API.
+    - **Prerequisites:** A working native render path, bounded frame policy, writable directory, and available encoder.
+    - **Result:** A finalized raster movie whose frame size, rate, and timing follow the capture configuration.
+
 ## Task workflow
 
 Choose the capture workflow first:
@@ -18,6 +25,10 @@ Choose the capture workflow first:
 
 Both workflows use `dvz_view_capture_start()` and `dvz_view_capture_stop()`. The difference is
 whether frames come from a fixed offscreen sequence or from a visible app view.
+
+The capture configuration is borrowed during `dvz_view_capture_start()`; Datoviz resolves its paths
+and backend state before that call returns. Stop capture before destroying its view/app so the
+encoder can flush and finalize output.
 
 ## Recommended example path
 
@@ -130,6 +141,10 @@ of rendered frames, not a scientific linear-float export.
 
 The CPU-readback path is the documented default for portable examples. It is slower than GPU
 interop but easier to validate across machines.
+
+Treat the produced codec/container as an encoder output, not scientific numeric data. Validate a
+release artifact's frame count, dimensions, duration, and readability with an independent media
+inspection tool.
 
 
 ## Advanced optional NVENC path

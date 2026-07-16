@@ -5,6 +5,13 @@ headers, linking, package discovery, and integration smoke tests. For the scene 
 sequence itself, start with [First C Program](../start/first-c-program.md) or
 [Create a scene](create-a-scene.md).
 
+!!! info "At a glance"
+
+    - **Status:** Supported installed-package and CMake `FetchContent` integration paths.
+    - **Languages:** C and C++ through the public C ABI.
+    - **Prerequisites:** CMake 3.21+ or a compatible C compiler/linker, plus Datoviz runtime dependencies.
+    - **Result:** An application linked to `datoviz::datoviz` with public headers and discoverable runtime libraries.
+
 
 ## Public interface
 
@@ -18,10 +25,17 @@ Application code should include Datoviz public headers only:
 Do not include files from `src/`; they are private implementation files and can change without
 public compatibility promises.
 
+The snippets on this page are complete build-system fragments, but `main.c` must contain a complete
+Datoviz program such as [First C Program](../start/first-c-program.md). Pin an exact release tag or
+commit before shipping an application.
+
 C++ applications should call the same C API. Wrap Datoviz pointers in your own C++ classes if that
 helps your application, but keep Datoviz ownership rules intact: destroy the app before destroying
 the scene, and do not manually destroy scene-owned objects unless a specific API grants that
 ownership.
+
+Do not mix headers and shared libraries from different Datoviz builds. That can compile successfully
+and still fail through ABI or generated-structure drift at runtime.
 
 
 ## Installed package

@@ -2,6 +2,13 @@
 
 Measure how much time Datoviz spends updating and drawing a scene.
 
+!!! info "At a glance"
+
+    - **Status:** Supported native measurement workflow; numbers are machine- and scene-specific.
+    - **Languages:** C example; Python can use the same warm-up/fixed-frame design with its own timer.
+    - **Prerequisites:** A minimal reproducible scene, fixed output size, warm-up, and disabled unrelated readbacks.
+    - **Result:** Reproducible steady-state frame time tied to a recorded scene/platform configuration.
+
 
 ## Task workflow
 
@@ -26,6 +33,10 @@ Before collecting numbers, record:
 
 
 ## Minimal call sequence
+
+This is a C function-body excerpt. `update_scene_for_frame()` is application code; omit it when
+measuring rendering without uploads. Always reject a zero timed-frame count and report failures
+instead of averaging partial runs.
 
 ```c
 const uint32_t warmup_frames = 8;
@@ -79,6 +90,9 @@ finish. Disable them unless those operations are the target of the measurement.
 Browser WebGPU is useful for browser testing, but it is not the desktop performance baseline.
 Compare desktop and browser results only after matching output size, feature set, item count, and
 screenshot or query behavior.
+
+`dvz_view_render_once()` measures the work and synchronization visible to the calling thread; it is
+not a standalone GPU timestamp. Use platform GPU profilers when the CPU/GPU split matters.
 
 
 ## What to measure

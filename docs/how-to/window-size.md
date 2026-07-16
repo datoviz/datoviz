@@ -7,6 +7,13 @@ Datoviz separates the size you request from the size actually used by the render
 matters on high-DPI displays, in offscreen screenshots, and when screen-space visual styling such as
 text size, marker diameter, or line width must stay predictable.
 
+!!! info "At a glance"
+
+    - **Status:** Supported native/offscreen view size policies; physical window size is approximate.
+    - **Languages:** C-first; Python exposes the exact generated descriptor APIs.
+    - **Prerequisites:** A valid app/figure and a deliberate logical, framebuffer, reference, or physical size goal.
+    - **Result:** A resolved view-size record that distinguishes canvas, host-logical, and framebuffer pixels.
+
 
 ## Choose a size policy
 
@@ -22,6 +29,9 @@ applications, logical pixels or reference pixels are usually easier to reason ab
 
 
 ## Minimal example
+
+This C setup excerpt creates a window view through the general descriptor API. Check `view` before
+calling `dvz_view_resolved_size()`; a native window may still fail because of display/runtime setup.
 
 ```c
 DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_WINDOW);
@@ -74,6 +84,9 @@ canvas; it does not change the requested window, framebuffer, or physical size. 
 
 Use offscreen rendering when the output must have a precise framebuffer size. Native windows may be
 resized by the window manager or scaled by the display.
+
+The `DvzViewDesc` and nested size values are copied during view creation. The returned `DvzView*` is
+app-owned and remains valid only until app destruction.
 
 
 ## See also

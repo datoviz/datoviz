@@ -8,6 +8,13 @@ rendered visual.
 
 ![A group of spheres with selected items highlighted](../assets/gallery/v0.4/features/features_selection_sphere.webp)
 
+!!! info "At a glance"
+
+    - **Status:** Supported retained selection for current query-capable families; examples are browser-promoted selectively.
+    - **Languages:** C-first; Python exposes the exact generated selection/query calls.
+    - **Prerequisites:** Stable visual item or link ids and resolved query results or application-owned ids.
+    - **Result:** Selected and unselected items render with distinct retained state without scene rebuilds.
+
 ## Task workflow
 
 Use picking or application state to compute selected ids, then update a visual attribute or a
@@ -17,6 +24,9 @@ separate highlight visual. Keep the base visual stable and make selection a smal
 
 For item queries, prefer the retained selection object. It stores selected targets and lets the
 renderer apply the configured selected/unselected style:
+
+These C blocks are excerpts. Check construction and setter results, and retain semantic selected ids
+in application state when selection affects more than rendering.
 
 ```c
 DvzSelection* selection = dvz_selection(
@@ -110,6 +120,10 @@ not own your semantic selection model.
 Retained selection targets are visual-local unless you bind explicit link keys. Keep a stable
 mapping from query result ids to application ids, especially after sorting, filtering, or replacing
 visual data.
+
+Selections, hover objects, and their visual styles are scene state. Destroy explicitly managed
+objects before the scene, or let scene destruction release them; never retain their pointers after
+scene destruction.
 
 ## Common mistakes
 

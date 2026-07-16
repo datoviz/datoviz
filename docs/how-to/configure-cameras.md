@@ -6,6 +6,13 @@ This page configures the initial viewpoint and projection. Choose interaction se
 [Use 3D controllers](3d-navigation.md), and use
 [coordinate systems](coordinate-systems.md) to decide how visual positions map into a panel.
 
+!!! info "At a glance"
+
+    - **Status:** Supported perspective and orthographic panel camera descriptors.
+    - **Languages:** C-first; Python exposes the exact generated descriptor call form.
+    - **Prerequisites:** A 3D panel and known data center, extent, axis convention, and units.
+    - **Result:** The first frame uses an explicit eye, target, up direction, projection, and clipping range.
+
 ## Task workflow
 
 Use panel domains and panzoom for 2D data. For 3D data, configure a panel camera or use a 3D
@@ -33,6 +40,9 @@ A camera descriptor defines the initial view and projection:
 
 ## Minimal call sequence
 
+This is a C setup excerpt. Check that `dvz_panel_set_camera_desc()` succeeds and attach the intended
+3D controller/live input path separately.
+
 ```c
 DvzCameraDesc camera = dvz_camera_desc();
 camera.view.eye[0] = 0.0f;
@@ -56,6 +66,9 @@ primarily object-inspection state, but it still depends on a clear view conventi
 drag axes and lighting.
 
 The result is a panel whose first rendered frame uses this camera.
+
+The descriptor is copied by the panel setter. The local `camera` variable may go out of scope after
+the call; later controller changes update retained panel/camera state, not this stack copy.
 
 
 ## Important details

@@ -4,6 +4,13 @@ Make 3D surfaces readable with normals, material attributes, and lights.
 
 ![Lit mesh surfaces comparing material settings](../assets/gallery/v0.4/features/features_material_mesh.poster.webp)
 
+!!! info "At a glance"
+
+    - **Status:** Supported mesh/primitive/sphere material workflows; advanced parity is backend-dependent.
+    - **Languages:** C-first; Python exposes the exact descriptor and visual setter calls.
+    - **Prerequisites:** Valid geometry, outward normals where required, a 3D camera, and depth testing.
+    - **Result:** Surface orientation is visible through consistent diffuse/specular or standard material shading.
+
 ## Task workflow
 
 Choose a visual family that supports material parameters, provide the geometry attributes required
@@ -39,6 +46,9 @@ controls; use the Phong descriptor when you want direct ambient, diffuse, specul
 tuning.
 
 ## Mesh call sequence
+
+Both code blocks are C setup excerpts. Check constructors and every upload/setter result; use the
+linked examples for geometry/index ownership and complete cleanup.
 
 ```c
 DvzVisual* mesh = dvz_mesh(scene, 0);
@@ -83,6 +93,9 @@ dvz_panel_add_visual(panel, spheres, NULL);
 
 Sphere impostors compute their surface normal in the sphere shader path, so they do not need an
 uploaded `normal` attribute. Mesh and primitive surfaces usually do.
+
+Material descriptors are copied into retained visual state. Geometry and attribute uploads follow
+their documented copy rules; the scene owns the visual after construction.
 
 
 ## Important details

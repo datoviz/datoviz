@@ -6,6 +6,13 @@ The v0.4 browser path is meant for Datoviz scene code, not for handwritten JavaS
 native examples. You build the same scene semantics into a WebAssembly module, the C/WASM scene
 host emits Datoviz frame packets, and the browser runtime replays those packets through WebGPU.
 
+!!! info "At a glance"
+
+    - **Status:** Experimental repository integration, not a stable export command or public JS API.
+    - **Languages:** Portable C scene/scenario code plus repository-owned JavaScript host glue.
+    - **Prerequisites:** A native-valid scene inside the promoted WebGPU subset and a WebGPU-capable secure browser context.
+    - **Result:** A registered HTTP-served route renders the same scene semantics on a browser canvas.
+
 ## Deployment workflow
 
 Start with a working Datoviz scene on the native path. Keep it within the portable scene subset,
@@ -76,11 +83,12 @@ error instead of silently choosing another scene.
 Open the route from the served site, not from `file://`:
 
 ```text
-http://localhost:8000/examples/webgpu/live.html?id=features_basic_scene
+http://localhost:8294/examples/webgpu/live.html?id=features_basic_scene
 ```
 
-The exact port depends on the local `just serve` invocation. Do not open WebGPU pages through
-`file://`; browsers restrict GPU access and resource loading from direct filesystem URLs.
+Port 8294 is the default; `just serve` selects the next available port when it is busy and prints
+the actual address. Do not open WebGPU pages through `file://`; browsers restrict GPU access and
+resource loading from direct filesystem URLs.
 
 
 ## Use existing live routes
@@ -130,6 +138,9 @@ filesystem URLs, and browser support varies by platform, GPU, driver, and user s
 
 Keep the generated WASM module, JavaScript runtime files, route registry, screenshots, and prepared
 data bundles together. A static host is enough when it serves the files with normal HTTP semantics.
+
+Generated WASM/JavaScript outputs are deployment artifacts. Rebuild them from the matching Datoviz
+source and route registry; do not mix assets from different commits or cache versions.
 
 Data-backed live examples need prepared web bundles with redistribution and provenance handled
 explicitly. Do not silently synthesize missing data in browser glue, and do not grow the base WASM

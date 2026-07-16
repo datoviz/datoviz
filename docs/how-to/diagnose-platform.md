@@ -7,6 +7,13 @@ Datoviz uses different platform layers for source builds, Python imports, native
 visible windows, offscreen capture, Qt hosting, video export, and browser WebGPU. A failure in one
 layer is not proof that the others are broken.
 
+!!! info "At a glance"
+
+    - **Status:** Supported triage workflow covering source, installed, native, browser, and optional-provider paths.
+    - **Languages:** C/C++, Python, shell, and browser diagnostics as relevant to the failing layer.
+    - **Prerequisites:** Exact install type, first failing command/error, OS/architecture, and GPU/driver details.
+    - **Result:** One failing layer is isolated with a minimal reproducer and actionable platform report.
+
 ## Diagnostic order
 
 Use this order:
@@ -33,7 +40,7 @@ showcase, real data bundle, video export, Qt embed, or browser iframe.
 | Native runtime renders. | `./build/examples/c/features/basic_scene` |
 | Offscreen rendering works. | `./build/examples/c/runtime/offscreen_capture` |
 | Python package imports. | `python -c "import datoviz as dvz; print('datoviz import ok')"` |
-| Browser WebGPU route works. | `http://localhost:8000/examples/webgpu/live.html?id=features_basic_scene` |
+| Browser WebGPU route works. | `http://localhost:8294/examples/webgpu/live.html?id=features_basic_scene` (or the address printed by `just serve`) |
 | Qt/PyQt hosting works. | Qt bridge build and PyQt smoke for the optional provider. |
 
 Stop at the first failing layer and debug that layer. For example, do not inspect WebGPU adapter
@@ -150,8 +157,11 @@ just serve
 Open:
 
 ```text
-http://localhost:8000/examples/webgpu/live.html?id=features_basic_scene
+http://localhost:8294/examples/webgpu/live.html?id=features_basic_scene
 ```
+
+If that port is busy, `just serve` selects and prints another port. Use the printed address rather
+than assuming a fixed URL.
 
 If native examples work but this route fails, use [Diagnose WebGPU support](debug-webgpu.md). Do not
 debug browser adapter issues through native Vulkan logs.
@@ -223,6 +233,9 @@ Relevant console/log output:
 
 Include the first failing command and its first specific error. Later errors are often cascades from
 the first missing dependency, failed device creation, or missing asset.
+
+Do not include credentials, private paths, proprietary datasets, or full environment dumps in a
+public report. Reduce logs to the commands, versions, detected options, and first relevant errors.
 
 ## Common mistakes
 

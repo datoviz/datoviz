@@ -4,6 +4,13 @@ Read the field value under a cursor or selected coordinate.
 
 ![An image panel with a pointer probe and numeric value readout](../assets/gallery/v0.4/features/features_image_probe.webp)
 
+!!! info "At a glance"
+
+    - **Status:** Supported query/readout workflow; promoted image and label probes run in WebGPU.
+    - **Languages:** C-first; Python must explicitly manage query descriptors, pointers, and polling.
+    - **Prerequisites:** A rendered query-capable field visual plus a defined data-to-sample mapping.
+    - **Result:** A later query result identifies a rendered location that application code samples and formats.
+
 ## Task workflow
 
 Convert the pointer position to panel data coordinates, map that coordinate into the sampled field's
@@ -19,6 +26,10 @@ instance id, or primitive id.
 3. Poll resolved query results after frames execute.
 4. Convert the returned panel position to the field's data or texture coordinate space.
 5. Sample the application-owned field value and update a retained label or readout visual.
+
+The following C excerpt deliberately leaves `sample_field_value()` and `update_probe_readout()` to
+the application because filtering, axis orientation, units, missing values, and formatting are part
+of the scientific-data contract, not generic renderer policy.
 
 ```c
 // After creating the image visual.
@@ -83,6 +94,10 @@ surface or application geometry to UV space before sampling the texture.
 Decide whether the readout reports nearest-texel values or interpolated values. The visual may be
 filtered by the GPU; a CPU-side nearest lookup can disagree with what the user sees between texel
 centers.
+
+Keep the sampled array alive according to your application model; Datoviz query results do not own
+or copy that application data. Discard stale results by `request_id` when a newer pointer request
+has superseded them.
 
 ## When to use it
 

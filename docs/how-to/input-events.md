@@ -5,6 +5,13 @@ React to keyboard, mouse, and pointer input in native examples.
 Use explicit input callbacks when an application needs custom shortcuts, selection modes, overlays,
 diagnostics, or host integration. Use controllers instead when the input is ordinary navigation.
 
+!!! info "At a glance"
+
+    - **Status:** Supported native/hosted input API; the canonical example is native-only.
+    - **Languages:** C-first callback API; Python raw callbacks require explicit ctypes lifetimes.
+    - **Prerequisites:** A live view and application-owned callback state that outlives its subscription.
+    - **Result:** Routed pointer, keyboard, resize, and gesture events update retained application state.
+
 ## Task workflow
 
 Use controllers for standard navigation first. Add explicit input callbacks when the application
@@ -24,6 +31,9 @@ state.
 5. Unsubscribe before the callback `user_data` is destroyed.
 
 Keep callback work small; defer expensive updates to the next frame or a controlled update path.
+
+The following is a C function-body excerpt. A complete program must reject a `NULL` router and
+`DVZ_CALLBACK_ID_NONE`, and must preserve `state` until after unsubscription.
 
 ```c
 typedef struct
@@ -109,6 +119,9 @@ WebGPU route and should not be copied from GLFW callback code.
 
 Callbacks run synchronously on the emitting thread. Keep callback state owned by the application,
 and unsubscribe before destroying that state or the view.
+
+`dvz_view_input()` returns a view-owned router. Do not destroy it. Unsubscribe while the view and
+router are still alive; a callback id is meaningful only to the router that created it.
 
 ## Common mistakes
 

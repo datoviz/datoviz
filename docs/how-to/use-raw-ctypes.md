@@ -4,6 +4,13 @@ Use `datoviz.raw` when Python code needs to call the generated `ctypes` binding 
 would. This is an advanced integration path for the same Python binding. For ordinary scene code
 with NumPy array adaptation, use `import datoviz as dvz` instead.
 
+!!! info "At a glance"
+
+    - **Status:** Supported advanced exact-call surface over the generated binding.
+    - **Languages:** Python with explicit ctypes pointers/counts/callbacks.
+    - **Prerequisites:** Knowledge of the matching C signature, ownership, dtype, layout, and lifetime contract.
+    - **Result:** Calls use the public C ABI shape without NumPy count or string adaptation.
+
 ## Task workflow
 
 Use the exact call form when you need generated signatures, explicit pointer/count arguments,
@@ -23,6 +30,9 @@ import datoviz.raw as raw
 ```
 
 ## Smallest handle check
+
+This is a complete CPU-side handle/lifetime check, not a rendering example. It intentionally creates
+no visual, app, or view.
 
 ```python
 import datoviz.raw as raw
@@ -99,6 +109,9 @@ app = raw.dvz_app(scene)
 raw.dvz_app_destroy(app)
 raw.dvz_scene_destroy(scene)
 ```
+
+Raw function return values are not converted into Python exceptions. Check `NULL`, boolean, and
+`DvzResult` values exactly as C code would before using an output or destroying an owner.
 
 Do not import `datoviz._ctypes` from examples or application code. It is generated implementation
 detail behind the public `datoviz.raw` module.

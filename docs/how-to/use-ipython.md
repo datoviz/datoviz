@@ -6,6 +6,13 @@ calling Datoviz functions at the prompt.
 This workflow is for the terminal `ipython` program. It is not the Jupyter notebook or browser
 WebGPU path.
 
+!!! info "At a glance"
+
+    - **Status:** Supported nonblocking terminal-IPython integration, with the macOS close issue below.
+    - **Languages:** Python with the top-level NumPy facade.
+    - **Prerequisites:** Terminal IPython, a visible native graphics environment, and a retained scene.
+    - **Result:** The prompt remains usable while a live native window accepts data updates and redraw requests.
+
 !!! warning "Active macOS close issue"
 
     On the current v0.4 development branch, closing a hosted Datoviz window from terminal IPython
@@ -25,6 +32,9 @@ PYTHONPATH=. ipython
 ## Create a live scene
 
 Paste this into IPython:
+
+The following is a complete live-session setup for terminal IPython. Keep `session`, `scene`, and
+the uploaded arrays bound at the prompt until cleanup.
 
 ```python
 import numpy as np
@@ -126,6 +136,9 @@ When you are finished with the retained scene state:
 session.close()
 dvz.dvz_scene_destroy(scene)
 ```
+
+Never destroy `scene` while a session still owns an app that borrows it. Calling `session.close()`
+is idempotent and is the required first cleanup step for an open hosted session.
 
 ## Common checks
 

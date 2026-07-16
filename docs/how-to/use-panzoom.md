@@ -5,6 +5,13 @@ Enable 2D mouse pan and wheel zoom on a panel.
 Use panzoom for 2D data views where pointer drag and wheel input should change the visible X/Y
 range. Use custom input callbacks only for application behavior that is not ordinary navigation.
 
+!!! info "At a glance"
+
+    - **Status:** Supported native 2D controller; promoted examples also run in WebGPU.
+    - **Languages:** Python and C.
+    - **Prerequisites:** A panel with finite X/Y domains and a live view for pointer input.
+    - **Result:** Dragging pans and the wheel zooms the dimensions bound to the controller.
+
 ## Task workflow
 
 Set a panel domain for the visible data range, create a panzoom controller, then bind it to the
@@ -42,6 +49,8 @@ wheel navigation over the declared domain. This is a setup fragment; see the com
 
 When you need one-axis or shared-controller binding in a live app, create the controller explicitly
 and bind it through the view so the panel is also connected to input:
+
+The following C blocks are setup excerpts. Check each returned pointer/result in application code.
 
 ```c
 dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
@@ -115,6 +124,9 @@ Controllers live with the scene that created them.
 `dvz_view_panzoom()` always binds both X and Y dimensions. Use `dvz_panzoom()` plus
 `dvz_view_bind_controller()` when you need one-axis binding, shared controllers, or custom link
 topology.
+
+The controller is scene-owned. The `DvzPanzoom*` returned by the view helper is a borrowed payload;
+do not destroy it separately.
 
 ## Common mistakes
 

@@ -6,6 +6,13 @@ Use picking when the user points at rendered geometry and the application needs 
 face, or primitive that was drawn there. Use probing when the user needs a sampled field value at a
 data coordinate.
 
+!!! info "At a glance"
+
+    - **Status:** Supported GPU-backed queries; promoted picking examples run natively and in WebGPU.
+    - **Languages:** C-first asynchronous workflow; Python exposes exact query descriptors and polling calls.
+    - **Prerequisites:** A query-capable visual, rendered frames, and outer-panel-local pointer coordinates.
+    - **Result:** A later poll returns the frontmost rendered target and its visual-local or linked id.
+
 ## Task workflow
 
 Use picking when the target is a rendered item, instance, or primitive. Use probing when the target
@@ -21,6 +28,9 @@ is a sampled field value at a data coordinate.
 6. Update hover, selection, or readout state from the query result.
 
 Keep the visual's item order stable if the pick result is used as an index into application data.
+
+The code below is an asynchronous C excerpt. Check every mutator/queue result, render subsequent
+frames, and keep polling rather than waiting synchronously in the input callback.
 
 ```c
 dvz_visual_set_query_capabilities(visual, DVZ_QUERY_CAPABILITY_ITEM);
@@ -53,7 +63,7 @@ Queries use `DVZ_PANEL_COORD_PANEL_PX` coordinates: logical pixels local to the 
 rectangle, not raw window coordinates. When the pointer event comes from the scenario runner, use
 the scenario helper shown in `examples/c/features/picking.c`. In a direct app or hosted
 integration, first translate host-window coordinates to figure coordinates with
-`dvz_event_window_to_figure()` when needed, then convert figure to panel pixels with
+`dvz_figure_window_to_layout()` when needed, then convert figure to panel pixels with
 `dvz_panel_transform_point()` before calling `dvz_panel_query_px()`.
 
 When the application already has a data-coordinate point, use `dvz_panel_query_data()` or convert it
@@ -98,6 +108,10 @@ behave like a CPU-side nearest-neighbor search.
 
 Panel queries are GPU-backed and normally resolve after rendering work has advanced. Queue the
 request from input or frame code, then consume results from the scene polling path.
+
+Query result storage is caller-owned. Hover and selection objects retain their own state after
+`dvz_hover_apply_query()` or `dvz_selection_apply_query()`; destroy those objects before destroying
+their scene if you remove them early.
 
 ## Common mistakes
 

@@ -6,6 +6,13 @@ Qt hosting is a supported optional-provider path in v0.4. It is an advanced nati
 configure, but it does not make Qt a dependency of the base Datoviz library. Build or supply the Qt
 provider only when the host application needs it.
 
+!!! info "At a glance"
+
+    - **Status:** Supported optional native provider; not part of the base dependency set.
+    - **Languages:** C++/Qt and Python/PyQt6 through the optional bridge.
+    - **Prerequisites:** Matching Qt development/runtime libraries, Vulkan hosting support, and a built/discoverable bridge.
+    - **Result:** Qt owns the window/event loop while Datoviz renders one hosted view and receives forwarded events.
+
 ## Task workflow
 
 Let Qt own the application shell, menus, widgets, and native window. Let Datoviz render the figure
@@ -20,6 +27,10 @@ platform you target.
 4. Let the host event loop drive resize, input, frame requests, and `dvz_view_render_once()`.
 
 Use the GLFW external-surface example as the closest maintained native embedding reference.
+
+This page describes an ownership protocol, not a copy-pasteable single function. Start from the
+linked Qt example because instance-extension discovery, surface creation, event forwarding, and
+teardown must agree with the host platform.
 
 
 ## Native Qt examples
@@ -133,6 +144,9 @@ Datoviz hosted view path.
 
 Qt and Datoviz must agree on Vulkan instance extensions before the Datoviz app is created. Query
 Qt's required extensions first, then pass them into Datoviz app creation.
+
+Destroy Datoviz presentation/app state while the borrowed Qt surface and adopted instance context
+are still valid. Then allow Qt to finish destroying its surface/window objects.
 
 ## Common mistakes
 

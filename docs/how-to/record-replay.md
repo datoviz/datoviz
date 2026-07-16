@@ -5,6 +5,13 @@ or release checks. This is an advanced diagnostic workflow; for ordinary visuali
 with [Create a scene](create-a-scene.md), [Open an interactive window](create-a-window.md), or
 [Render offscreen](render-offscreen.md).
 
+!!! info "At a glance"
+
+    - **Status:** Supported native diagnostic capture; DVZR is version-sensitive, not a stable interchange format.
+    - **Languages:** C app-view API; lower-level DRP2 recording is advanced/unstable.
+    - **Prerequisites:** A working rendered scene, writable directory, and matching replay runtime assumptions.
+    - **Result:** A complete `*.dvzr/` directory whose recorded frame commands can be replayed for diagnosis.
+
 ## Task workflow
 
 Record frames from an app view, keep the generated `*.dvzr/` directory, then replay it in another
@@ -43,7 +50,7 @@ For command-stream details, use [DRP2 command streams](../advanced/drp2-command-
 | Replay a saved recording into a live native window | the same app replay calls on a window-backed view |
 | Inspect lower-level command streams | [DRP2 command streams](../advanced/drp2-command-streams.md) |
 
-## App-Level recording fragment
+## App-level recording fragment
 
 For app-level recording, start recording before the frame you want to capture, render frames, then
 stop recording before replaying the directory. This function-body excerpt assumes valid app, scene,
@@ -87,6 +94,9 @@ if (dvz_view_replay_stop(replay) != 0)
 Use `dvz_view_replay_frame_count()` when replaying a multi-frame recording into `dvz_app_run()`.
 Use `dvz_view_replay_set_loop()`, `dvz_view_replay_set_paced()`, and
 `dvz_view_replay_set_speed()` for live inspection.
+
+Recording and replay state belongs to the view. Always stop an active recording or replay before
+destroying the view's app; keeping only a manifest or stream file does not preserve blob payloads.
 
 The following is a configuration excerpt for an already validated replay view; production code
 should check each setter and always stop replay before leaving the enclosing function:

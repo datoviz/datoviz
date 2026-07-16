@@ -11,6 +11,13 @@ For serving and deployment, use [Deploy Datoviz scenes to the web](deploy-to-web
 import, or native device failures, use
 [Diagnose build and platform issues](diagnose-platform.md).
 
+!!! info "At a glance"
+
+    - **Status:** Experimental WebGPU route diagnostics; native Vulkan success is separate evidence.
+    - **Languages:** Browser console and repository smoke commands; scene behavior remains portable C.
+    - **Prerequisites:** An example id/status, HTTP-served standalone route, browser version, and adapter details.
+    - **Result:** The failure is classified as status, serving/assets, adapter/device, shader/runtime, or scene parity.
+
 ## Diagnostic order
 
 Use this order:
@@ -48,11 +55,12 @@ just serve
 Open:
 
 ```text
-http://localhost:8000/examples/webgpu/live.html?id=features_basic_scene
+http://localhost:8294/examples/webgpu/live.html?id=features_basic_scene
 ```
 
 Replace `features_basic_scene` with the example id from the gallery page or matrix. Do not use
-`file://`; WebGPU and module loading require a proper browser security context.
+`file://`; WebGPU and module loading require a proper browser security context. If port 8294 is
+busy, use the alternate address printed by `just serve`.
 
 If the route id is wrong, the page should report a route error. Fix the route id before inspecting
 shader, adapter, or scene behavior.
@@ -128,6 +136,9 @@ and render in the local browser environment.
 Browser smoke can be limited by the local machine, CI runner, browser, or GPU. A browser skip or
 adapter failure should be recorded as environment evidence, not silently converted into example
 support.
+
+Smoke commands may rebuild generated assets. They do not publish routes or change source metadata;
+support status changes belong in the manifest and require the normal contributor validation path.
 
 ## Browser versus native differences
 

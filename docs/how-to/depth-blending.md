@@ -3,6 +3,13 @@
 Choose the rendering state for overlapping geometry, transparent visuals, and depth-based visual
 cues.
 
+!!! info "At a glance"
+
+    - **Status:** Depth testing and source-over blending are supported; OIT/depth techniques have narrower backend coverage.
+    - **Languages:** C-first; Python exposes the same generated visual/figure state calls.
+    - **Prerequisites:** Deliberate opaque/transparent grouping, meaningful alpha, and a valid camera/depth range.
+    - **Result:** Opaque geometry occludes correctly and transparent geometry uses an explicit approximation or technique.
+
 ## Use this when
 
 - 3D objects should occlude each other correctly.
@@ -29,6 +36,9 @@ dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_BLENDED);
 
 Use alpha blending only when the color data carries useful alpha. Keep technique state on the
 visual that needs it instead of changing unrelated scene state.
+
+These are C setup excerpts. Check setter results and validate the final result from multiple camera
+angles; one static viewpoint can hide order-dependent transparency errors.
 
 ## Choose a technique
 
