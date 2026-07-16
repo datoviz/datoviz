@@ -15,14 +15,16 @@ borrow Vulkan, WebGPU, swapchain, command-buffer, or synchronization ownership f
 
 | Object | Owner | Lifetime rule |
 | --- | --- | --- |
-| `DvzScene` | application | Top-level owner for figures, panels, visuals, controllers, scales, sampled fields, and scene-owned resources. Destroy scene-owned children before or with the scene according to the public API used to create them. |
+| `DvzScene` | application | Top-level owner for figures, panels, visuals, controllers, scales, sampled fields, and scene-owned resources. The application may destroy a child early only through its matching public destroy function; scene destruction releases children that remain. |
 | `DvzFigure` | scene | Layout/output container. A figure may be emitted repeatedly; one emitted frame artifact represents one immutable frame snapshot. |
 | `DvzPanel` | figure | Logical viewport, camera/controller binding target, and visual attachment target. Panel pointers are invalid after the owning figure/scene is destroyed. |
 | `DvzVisual` | scene | Retained visual family instance. Visuals reference copied data or scene-owned resources; they do not own backend buffers or command buffers. |
 | `DvzSampledField` and other scene resources | scene | Authoritative CPU-side resource state. Visuals borrow resource handles; the scene/lifetime API owns destruction. |
 | `DvzController` | scene | Scene-side input/navigation state. Panels bind controllers; controllers do not own panels. |
 | `DvzSceneFrameArtifact` | caller after emit | Immutable snapshot of one emitted frame, including DRP2 stream snapshot and packet payloads. Destroy it after the runtime or tooling has consumed it. |
-| Runtime/canvas/stream/app objects | application/runtime layer | Execute or present frame work. They are outside scene ownership and may outlive individual frame artifacts only if their API says so. |
+| `DvzApp` | application | Borrows the scene and owns its views plus the runtime resources it creates. Destroy the app before the borrowed scene. |
+| `DvzView` | app | Presents or captures one borrowed figure. There is no independent view destroy call; the pointer becomes invalid when its app is destroyed. |
+| Lower runtime/canvas/stream objects | application/runtime layer | Advanced execution objects outside scene ownership. Follow each API's explicit owner/borrower contract. |
 
 ## Data Writes
 
@@ -78,6 +80,10 @@ Recommended high-level order:
 3. release frame artifacts and debug exports;
 4. destroy runtime/app/canvas/stream objects according to their API;
 5. destroy scene-owned resources or the scene.
+
+At the normal app layer this reduces to: stop callbacks/capture, call `dvz_app_destroy(app)`, then
+call `dvz_scene_destroy(scene)`. `DvzFigure`, `DvzPanel`, and `DvzView` pointers must not be used
+after their respective scene/app owner is destroyed.
 
 For graphics ownership, only destroy, begin, end, reset, submit, or transition handles that the API
 contract says you own.

@@ -51,6 +51,11 @@ the query point is already in panel data coordinates.
 
 A miss is not a capability failure. A capability failure is not a background hit.
 
+Read optional fields only when their discriminator says they are present: for example,
+`has_data_position`, `has_visual_position`, `has_uvw`, `has_depth`, `has_display_rgba`, and
+`value_kind`. `DvzQueryResult.scale` is a borrowed scene-owned scale; it remains valid only while
+that scale and its source scene remain alive.
+
 ## Target Scopes
 
 `DvzQueryRequest.target` declares the semantic scope requested by the caller. Data-oriented scopes
@@ -89,6 +94,10 @@ and viewport rules that produced the rendered frame.
 | Click selection | Result must map to the issuing request or report miss/error. |
 | Tool/query helper | Synchronous helper may be used for tests and tools when a runtime is available. |
 | Browser/WebGPU | Only the promoted subset is live; unsupported cases must produce explicit diagnostics. |
+
+Queued panel queries are asynchronous: a successful queue call means the request was accepted, not
+that a hit is already available. Advance rendering and poll `dvz_scene_poll_query()`; use
+`request_id` and `freshness_serial` to reject superseded hover/readout results.
 
 ## Current Support Shape
 

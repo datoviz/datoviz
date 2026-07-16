@@ -12,6 +12,9 @@ external ownership.
 | deferred | Not part of the v0.4 release surface. |
 | external/GSP | Belongs to GSP, VisPy2, or another layer outside Datoviz v0.4. |
 
+Status applies to the named public workflow, not automatically to every backend, visual family,
+query target, optional provider, or gallery route. A `supported` native API can still have an
+`experimental` WebGPU route or an unavailable optional dependency.
 
 ## Current Broad Status
 
@@ -20,14 +23,15 @@ external ownership.
 | Native C scene/app path | supported, with feature-specific gaps | [C API](c-api/index.md), [Feature status](feature-status.md) |
 | Python API: NumPy-adapted and exact raw calls | supported | [Python API](ctypes.md) |
 | Retained visual families | supported/experimental by family | [Visual families](visual-families/index.md) |
-| Offscreen and GLFW app presentation | supported/experimental | [Platform support](platform-support.md) |
+| Offscreen and GLFW app presentation | supported, subject to platform/runtime availability | [Platform support](platform-support.md) |
+| Raster video capture through the app API | supported, optional encoder backend | [Export videos](../how-to/video-export.md) |
 | Scene compute shaders | experimental | [Compute and graphics](compute-graphics.md) |
 | Qt/PyQt hosted rendering | supported, optional provider | [Platform support](platform-support.md) |
 | CPU-side nonlinear/geographic pre-projection | supported pattern | [Coordinate systems](coordinate-systems.md) |
 | Scene-managed nonlinear transforms | deferred | [Feature status](feature-status.md) |
 | Custom visual/render shaders | deferred | [Visual attributes](visual-attributes.md) |
 | Built-in shader replacement and hot reload | deferred | [Feature status](feature-status.md) |
-| C FFI helper ABI | supported | [FFI helper API](c-api/ffi.md) |
+| C FFI helper ABI | advanced/unstable | [FFI helper API](c-api/ffi.md) |
 | WebGPU/WASM path | experimental | [WebGPU subset](webgpu-subset.md) |
 | DRP2 command stream and fixtures | advanced/unstable | [DRP2 command streams](../advanced/drp2-command-streams.md) |
 | v0.3 visible capability disposition | fixed/experimental/deferred/external by capability | [v0.3 visible parity](v03-visible-parity.md) |

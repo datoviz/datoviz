@@ -13,6 +13,10 @@ events while Datoviz keeps ownership of scene and runtime state.
 | Unregistration | Prefer explicit unregister/disconnect helpers when available. Destroying the owner invalidates registrations owned by that object. |
 | Reentrancy | Do not recursively run the app/frame loop from inside callbacks unless the API explicitly allows it. |
 
+Subscription APIs return `DVZ_CALLBACK_ID_NONE` on failure. A callback id is scoped to the router
+or owner that returned it; unsubscribe while that owner and the callback's `user_data` are still
+alive.
+
 ## Expected Callback Work
 
 Callbacks should mutate retained scene state, enqueue application work, or record small pieces of

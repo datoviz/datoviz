@@ -46,9 +46,10 @@ a compatible Qt/PyQt runtime at load time.
 
 ## Build Dependencies
 
-Core source builds need a C/C++ toolchain, CMake/Ninja-compatible build tools, and the enabled
-module dependencies. Common optional dependencies include Vulkan SDK/runtime, GLFW, cglm, mimalloc,
-Kvazaar, zlib, FreeType, msdf-atlas-gen, Qt6, and shaderc.
+Default native source builds need a C/C++ toolchain, CMake/build tools, Vulkan headers and loader,
+cglm, and the enabled module dependencies. A usable Vulkan driver/ICD is also required at runtime.
+Optional or configuration-dependent dependencies include GLFW, mimalloc, Kvazaar, zlib, FreeType,
+msdf-atlas-gen, Qt6, shaderc, CUDA, and video encoders.
 
 The default source build prefers vendored dependency submodules. Distribution builders may use
 `DVZ_VENDORED_DEPS=OFF` to prefer supported system packages with `AUTO` fallback. `glslc` is the
@@ -57,6 +58,10 @@ required by release-wheel configuration. The active default canvas build invokes
 `glslangValidator`, so full source builds require that tool as well.
 
 Use [Build options](build-options.md) for the CMake switches that enable or disable these paths.
+
+Wheel/installed-package support and source-build support are different claims. An installed wheel
+should carry its declared native runtime payload; a source build must satisfy the dependencies
+selected by its own CMake configuration.
 
 ## Known Limitations
 

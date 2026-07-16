@@ -8,7 +8,8 @@ affected scene, visual, frame plan, runtime service, or query.
 
 | Surface | Typical behavior |
 | --- | --- |
-| C return code | `0` or non-negative success; negative or non-zero failure according to the function contract. Check the generated C API for exact return values. |
+| `DvzResult` | `DVZ_OK` (`0`) on success and `DVZ_ERROR` (`-1`) on failure. |
+| Other C return values | Pointer, boolean, count, status, and third-party-style `int` functions have their own contracts. Check the generated C API instead of applying `DvzResult` rules to them. |
 | Result/status enum | Query, capability, runtime, or validation statuses distinguish hit/miss/unsupported/failure cases. |
 | Diagnostic report | Structured or textual report associated with validation, frame planning, emission, runtime submission, completion, or WebGPU/WASM execution. |
 | Log output | Human-readable diagnostics for development and runtime troubleshooting. |

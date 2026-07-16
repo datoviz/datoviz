@@ -4,6 +4,10 @@ Datoviz v0.4 should be cited as software. The current branch is still pre-RC; ci
 commit, or release-candidate tag you used. The final `v0.4.0` release will be archived with Zenodo
 so papers can cite either the exact version DOI or the project concept DOI.
 
+Do not cite a prepared version string or planned release date as a published release unless the
+matching public tag/release exists. During release preparation, package metadata and
+`CITATION.cff` may be updated before publication; verify against the public repository release.
+
 
 ## Preferred Citation
 

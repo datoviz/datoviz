@@ -92,11 +92,12 @@ just webgpu-browser-smoke
 For local manual testing, serve the site over HTTP and open a live route:
 
 ```text
-http://localhost:8000/examples/webgpu/live.html?id=features_basic_scene
+http://localhost:8294/examples/webgpu/live.html?id=features_basic_scene
 ```
 
-Do not open WebGPU routes through `file://`; browser WebGPU APIs require a proper browser security
-context.
+Port 8294 is the default. `just serve` chooses the next free port when necessary and prints the
+actual URL. Do not open WebGPU routes through `file://`; browser WebGPU APIs require a proper
+browser security context.
 
 
 ## See Also

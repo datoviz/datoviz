@@ -20,6 +20,10 @@ release validation.
 | `DVZ_BUILD_EXAMPLES` | `PROJECT_IS_TOP_LEVEL` | Build Datoviz example executables. |
 | `DVZ_INSTALL` | `PROJECT_IS_TOP_LEVEL` | Add install, CMake package export, pkg-config, and header install rules. |
 
+The module switches are constrained, not independent: scene requires core, controller, and DRP2;
+app requires scene, canvas, and Vulkan; canvas requires Vulkan; GUI requires app. CMake rejects
+inconsistent combinations instead of silently building a partial API.
+
 ## Optional Feature Options
 
 | Option | Default | Meaning |
@@ -54,6 +58,10 @@ release validation.
 
 Explicit `SYSTEM` or `VENDORED` source modes fail configuration if the requested source is not
 available. Only `AUTO` may fall back to the other source.
+
+Defaults shown here are source defaults from the current top-level CMake configuration. Package
+builders and `FetchContent` consumers may override them; inspect the CMake configure summary for the
+effective `DVZ_BUILD_*`, `DVZ_WITH_*`, and `DVZ_HAS_*` values.
 
 `msdf-atlas-gen` remains source/vendored-only. It is too niche to rely on as a package-manager
 dependency across supported distributions.

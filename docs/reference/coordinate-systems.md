@@ -47,7 +47,7 @@ and screenshots use framebuffer pixels.
 | Panel-fixed positions | Panel-local logical pixels | Lowered through the current panel attachment MVP | No | `DVZ_VISUAL_COORD_PANEL_PIXEL` |
 | Offscreen view extent | Framebuffer pixels | Direct exact output for `dvz_view_offscreen()` | No | `dvz_view_offscreen(app, figure, width, height)` |
 | Screenshot/RGBA capture | Framebuffer pixels | Already applied | No | `dvz_view_capture_png()`, Python `dvz_view_capture_rgba()` |
-| Pointer input | Host/window or figure logical pixels at the public scene boundary | Backend reports scale separately where available | Routed through panel/controller transforms | `dvz_event_window_to_figure()`, `dvz_panel_transform_point()`, query APIs |
+| Pointer input | Host/window or figure logical pixels at the public scene boundary | Backend reports scale separately where available | Routed through panel/controller transforms | `dvz_figure_window_to_layout()`, `dvz_panel_transform_point()`, query APIs |
 
 For a Matplotlib/GSP-style backend, convert display quantities to Datoviz logical-pixel style
 attributes before upload. Use framebuffer dimensions only when creating/capturing render targets or
@@ -89,10 +89,14 @@ or plot boundaries.
 ## Input And Queries
 
 Pointer input starts in host-window or figure coordinates at the public scene boundary. Query calls
-use outer-panel-local logical pixels. Convert pointer positions with `dvz_event_window_to_figure()`
+use outer-panel-local logical pixels. Convert pointer positions with `dvz_figure_window_to_layout()`
 and `dvz_panel_transform_point()` as needed before queuing `dvz_panel_query_px()`. If the application
 already has data coordinates, `dvz_panel_query_data()` performs the data-to-panel conversion before
 queuing the query.
+
+`dvz_figure_window_to_layout()` first uses the host-window/figure size ratio when valid dimensions
+are supplied; its content-scale arguments are fallbacks. The resulting figure-layout point still
+needs a `DVZ_PANEL_COORD_FIGURE_PX` to `DVZ_PANEL_COORD_PANEL_PX` conversion for a panel query.
 
 Do not compute rendered visual hits from CPU geometry as a fallback. Query semantics must follow the
 same transform, viewport, depth, clipping, and shader behavior used by rendering.

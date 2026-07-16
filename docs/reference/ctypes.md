@@ -79,6 +79,29 @@ The Python package may copy non-contiguous arrays for the duration of the call. 
 pointer/count, pointer/byte-size, string, and capture relationships declared in binding policy;
 unannotated calls may still require exact C-shaped arguments.
 
+Adaptation does not validate every visual-family semantic. Check each call's `DvzResult`, and use
+the visual-family reference for required dtype, shape, attribute name, and cardinality.
+
+The facade has two explicit sampled-field helpers for common packed layouts:
+
+```python
+field = dvz.dvz_sampled_field_from_array(scene, values)
+dvz.dvz_sampled_field_update_from_array(field, patch, offset=(x, y))
+```
+
+`dvz_sampled_field_from_array()` infers dimensions and row strides from C-contiguous forms:
+`(height, width)` and `(depth, height, width)` scalar arrays, plus `(height, width, 4)` RGBA8.
+Default format inference accepts `uint8` as R8 UNORM scalar, `uint32` as R32 UINT labels,
+`float32` as R32 float scalar, and four-channel `uint8` as RGBA8 sRGB color. Non-contiguous input
+is copied to contiguous storage, and Datoviz copies the upload before return.
+
+Use the keyword overrides `format=`, `semantic=`, `color_role=`, and `dim=` only for a packed
+layout compatible with the selected C field format. In particular, pass `dim=DVZ_FIELD_DIM_3D`
+when a three-dimensional array has a final width of 1, 2, or 4 and would otherwise look like a 2D
+channel array. `dvz_sampled_field_update_from_array()` uses the same inference; `offset` is in
+sample coordinates and an explicit `extent` must equal the array-derived extent. General padded,
+borrowed, or unsupported format layouts still require the exact descriptor/data-view API.
+
 
 ## Offscreen RGBA Capture
 
@@ -153,6 +176,9 @@ Keep Python storage alive for the documented borrowed lifetime. `datoviz._ctypes
 `datoviz._array_facade` are generated implementation details and must not be imported by examples
 or applications.
 
+Raw calls do not translate `NULL`, `false`, `DVZ_ERROR`, or status values into Python exceptions.
+Check them explicitly before consuming outputs or continuing ownership-sensitive setup.
+
 
 ## Naming And Types
 
@@ -226,7 +252,8 @@ just ctypes
 - Attribute names, dtypes, and shapes follow each visual family's C contract.
 - Offscreen capture requires a usable native GPU/runtime context.
 - PNG bytes are not yet exposed as an alpha-preserving Python memory helper.
-- Callback and host-helper ergonomics remain experimental.
+- Callback and host-helper ergonomics remain low-level: keep `CFUNCTYPE` objects and user-data
+  storage alive until explicit unregistration or owner destruction.
 
 
 ## Validation

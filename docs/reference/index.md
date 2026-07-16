@@ -53,7 +53,7 @@ support, and links to minimal examples.
 | --- | --- |
 | [Objects and lifetimes](objects-and-lifetimes.md) | Ownership, borrowed handles, frame artifacts, user data, and destroy order. |
 | [Coordinate systems](coordinate-systems.md) | Data, panel, world/view, clip, framebuffer, and texture/sample spaces. |
-| [Controllers](controllers.md) | Panzoom, arcball, fly, turntable and orbit behavior, binding, linking, and invalidation. |
+| [Controllers](controllers.md) | Panzoom, arcball, fly, and turntable behavior, binding, linking, and invalidation. |
 | [Callbacks](callbacks.md) | Callback lifetime, user data, threading assumptions, and mutation rules. |
 | [Visual attributes](visual-attributes.md) | Attribute names, dense writes, sources, mutability, updates, and external buffers. |
 | [Scales and colormaps](colormaps.md) | Continuous and categorical scale contracts, normalization, RGBA representation, missing values, and ownership. |

@@ -25,8 +25,8 @@ Status values:
 | Text blocks and annotations | fixed | semantic text, glyph lowering, annotation/readout examples | Complex shaping, glyph/text picking, and broader world/data placement remain deferred. |
 | Color maps, scales, colorbars, and categorical legends | fixed | sampled-field, colorbar, colormap-scale, and legend examples | First release slice is active; richer shared layout and query payloads remain follow-up work. |
 | Scale bars, guide lines/spans, overlays, and readouts | fixed | scale-bar, guide, overlay, and probe-label examples | These are v0.4 semantic/composite routes, not restored v0.3 helper APIs. |
-| Point visual | fixed | `dvz_point()` and point examples | Scalar color/diameter_px modes, shifts, and richer selection styling are deferred. |
-| Pixel visual | fixed | `dvz_pixel()` and pixel examples | Scalar color mode and data-space pixel sizing are deferred. |
+| Point visual | fixed | `dvz_point()` and point examples | RGBA8 and continuous-scale scalar color are active. Scalar-to-diameter mapping, shifts, and richer selection styling are deferred. |
+| Pixel visual | fixed | `dvz_pixel()` and pixel examples | RGBA8 and continuous-scale scalar color are active. Data-space pixel sizing is deferred. |
 | Marker visual and marker symbols | fixed | `dvz_marker()` plus built-in symbol ids | Built-in code-SDF vocabulary covers the v0.3 marker set plus target; exact SDF picking and atlas variants remain deferred. |
 | Primitive/basic visual | fixed | `dvz_primitive()` | v0.3 `basic` is renamed and narrowed as a low-level primitive family. |
 | Segment and path visuals | fixed | `dvz_segment()`, `dvz_path()`, path join/curve examples | Dashes, arrow caps, closed-path API, and richer path/span picking are deferred. |
@@ -37,7 +37,7 @@ Status values:
 | Volume visual and 3D sampled fields | fixed | `dvz_volume()`, volume, volume-occlusion, and brain-volume examples | Slice/MIP/composite paths are active. Isosurfaces, MPR, categorical label volumes, and DVR/MIP ray-hit picking are deferred. |
 | Picking, selection, image probing, and readback | fixed | unified query API, picking/selection/probe examples | First broad item/sample paths are active. Rich mesh face, text/glyph, path/span, and volume ray identities are deferred. |
 | Retained data updates, partial updates, transforms, and visibility | fixed | update, partial-update, transform, and visibility examples | Broader span/group source APIs remain future work unless a family documents support. |
-| Raster video export | experimental | experimental video example | Active, but not a required v0.3 visible parity blocker. |
+| Raster video export | fixed | app capture API and native video-export example | CPU-readback capture is release-facing when an encoder is available; external-memory/NVENC capture remains advanced and platform-specific. |
 | Scene compute and compute-to-render particles | experimental | experimental compute+graphics slice | Active as a v0.4 feature, not a v0.3 visible parity requirement. |
 | WebGPU/WASM browser rendering | experimental | experimental WebGPU subset | The browser route is promoted for selected examples but is not native Vulkan parity. |
 | DRP2/DVZR command streams, fixtures, and replay | experimental | advanced/unstable contributor surface | Useful for runtime authors; not a v0.3 user-facing parity requirement. |

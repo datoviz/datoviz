@@ -15,6 +15,10 @@ scene buffer with STORAGE | VERTEX usage
 This is not a general custom render-shader API, a general compute framework, or a CUDA/CuPy Python
 interop contract.
 
+The scene-compute constructors are an experimental authoring surface; emitted frame-plan and DRP2
+objects are advanced/unstable runtime contracts. Applications should not couple ordinary visual
+code to the lower packet representation.
+
 ## Supported Slice
 
 - `DvzSceneCompute` stores shader source, dispatch size, and explicit scene-buffer bindings.
@@ -66,3 +70,7 @@ initialization diagnostic. That does not invalidate the portable DRP2/WebGPU fix
 does mean that particular run is not fresh native GPU evidence. The recorded proof does not change
 the feature status: this remains a narrow experimental scene-compute/DRP2 interoperability slice,
 not a general compute framework.
+
+For exact current signatures, see the generated [scene API](c-api/scene.md),
+[frame-plan API](c-api/frame-plan.md), and [DRP2 API](c-api/drp2.md). The first is the authoring
+surface; the latter two are contributor/runtime surfaces.

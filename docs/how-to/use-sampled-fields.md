@@ -7,7 +7,7 @@ Render regular 2D or 3D scalar data as image, texture, or volume content.
 !!! info "At a glance"
 
     **Status:** Supported native sampled-field workflow; backend coverage varies by field kind
-    **Languages:** C-first; Python exposes the exact pointer-shaped API without an ndarray field adapter
+    **Languages:** Python helpers for common packed NumPy layouts; exact C descriptors for general layouts
     **Prerequisites:** Explicit dimensions, format, semantic role, row pitch, and CPU storage
     **Result:** A regular 2D/3D field retained once and bound to an image, labels, mesh, or volume
 
@@ -26,10 +26,42 @@ Choose the field descriptor before choosing the visual:
 | Integer segmentation or label mask | 2D integer format, `DVZ_FIELD_SEMANTIC_LABEL` | `dvz_labels()` slot `"field"` plus categorical scale |
 | 3D scalar array | `DVZ_FIELD_DIM_3D`, scalar format, `DVZ_FIELD_SEMANTIC_SCALAR` | `dvz_volume()` slot `"field"` |
 
-The four code blocks below are C function-body excerpts, not standalone programs. The current
-top-level Python facade adapts dense visual arrays but does not yet infer sampled-field dimensions,
-strides, or lifetimes from a NumPy array; use `datoviz.raw` only if you intentionally want the exact
-`DvzFieldDataView` pointer contract.
+The four family-specific code blocks below are C function-body excerpts, not standalone programs.
+Python users can create and update common packed field layouts with the helpers in the next section;
+use `datoviz.raw` only when you intentionally need the exact `DvzFieldDataView` contract.
+
+## Python array helpers
+
+`dvz_sampled_field_from_array()` makes a C-contiguous copy when necessary, infers dimensions and
+row strides, creates the field, and uploads data. The default inferred layouts are:
+
+| NumPy shape and dtype | Inferred field |
+| --- | --- |
+| `(height, width)`, `uint8` | 2D R8 UNORM scalar |
+| `(height, width)`, `uint32` | 2D R32 UINT label field |
+| `(height, width)`, `float32` | 2D R32 float scalar |
+| `(height, width, 4)`, `uint8` | 2D RGBA8 sRGB color |
+| `(depth, height, width)`, scalar dtype above | Corresponding 3D scalar/label field |
+
+This setup excerpt creates a 2D scalar field and updates one rectangular patch:
+
+```python
+import numpy as np
+import datoviz as dvz
+
+values = np.asarray(values, dtype=np.float32, order="C")
+field = dvz.dvz_sampled_field_from_array(scene, values)
+
+patch = np.asarray(patch, dtype=np.float32, order="C")
+dvz.dvz_sampled_field_update_from_array(field, patch, offset=(x, y))
+```
+
+Both helpers copy the payload before returning. `offset` is in sample coordinates; if you pass
+`extent=`, it must match the extent derived from `patch`. Use `format=`, `semantic=`,
+`color_role=`, or `dim=` only for compatible packed layouts. For a 3D array whose final width is
+1, 2, or 4, pass `dim=dvz.DVZ_FIELD_DIM_3D` to disambiguate it from a 2D channel array. Padded rows,
+borrowed storage, and formats outside the helper's compatible layouts require the exact C-shaped
+descriptor and data-view calls.
 
 ## 2D scalar image
 

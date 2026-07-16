@@ -1,7 +1,8 @@
 # Controllers
 
 Controllers are scene-side state machines. They translate input events into panel, camera,
-selection, hover, or navigation state changes. They do not emit DRP2, record backend commands, or
+or navigation state changes. Retained hover/selection objects are a related interaction layer, not
+separate navigation controller families. Controllers do not emit DRP2, record backend commands, or
 own backend resources.
 
 ## Public Controller Families
@@ -39,6 +40,11 @@ Sharing one controller remains the simplest choice when all of its bound state s
 See [Link panels and controllers](../how-to/link-panels.md) for the selection rules and the
 generated [`dvz_controller_link()` reference](c-api/scene.md#dvz_controller_link) for the exact
 component and mode types.
+
+Controller handles are scene-owned. Typed payloads returned by view helpers such as
+`dvz_view_panzoom()` are borrowed and must not be destroyed separately. A controller link is also
+scene-owned; retain its handle only when you need to remove it early with
+`dvz_controller_link_destroy()`.
 
 ## Event Flow
 
