@@ -10,7 +10,7 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 - Reviewed public C examples generated for the website: 114
 - Examples declaring screenshot validation: 104
-- Examples that should have video or motion evidence: 6
+- Examples that should have video or motion evidence: 8
 
 ## Commands
 
@@ -72,7 +72,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [Linked Panels With Axes](gallery/showcases/showcases_panel_linked_axes.md) | [`examples/c/showcases/panel_linked_axes.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/panel_linked_axes.c) | `supported` | `smoke+interaction+screenshot` |
 | [Linked Probe With Colorbar](gallery/showcases/showcases_linked_probe_colorbar.md) | [`examples/c/showcases/linked_probe_colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c) | `supported` | `smoke+readback+interaction+screenshot` |
 | [Scientific Plotting Workflow](gallery/showcases/showcases_scientific_plotting.md) | [`examples/c/showcases/scientific_plotting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scientific_plotting.c) | `supported` | `smoke+screenshot` |
-| [Streaming DAQ · 128 channels](gallery/showcases/showcases_streaming_daq.md) | [`examples/c/showcases/streaming_daq.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/streaming_daq.c) | `experimental` | `smoke+interaction+screenshot+performance` |
+| [Streaming DAQ · 128 channels](gallery/showcases/showcases_streaming_daq.md) | [`examples/c/showcases/streaming_daq.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/streaming_daq.c) | `experimental` | `smoke+interaction+screenshot+video+performance` |
 | [Scale Bar](gallery/features/features_scalebar.md) | [`examples/c/features/scalebar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar.c) | `supported` | `smoke+screenshot` |
 | [Scale Bar Units](gallery/features/features_scalebar_units.md) | [`examples/c/features/scalebar_units.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar_units.c) | `supported` | `smoke+screenshot` |
 | [Scale Bar Measurement Workflow](gallery/showcases/showcases_scalebar_measurement.md) | [`examples/c/showcases/scalebar_measurement.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scalebar_measurement.c) | `supported` | `smoke+screenshot` |
@@ -126,7 +126,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [GPU Particle Smoke](gallery/showcases/showcases_gpu_particle_smoke.md) | [`examples/c/showcases/gpu_particle_smoke.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c) | `experimental` | `smoke+screenshot` |
 | [Spherical Harmonics](gallery/showcases/showcases_spherical_harmonics.md) | [`examples/c/showcases/spherical_harmonics.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/spherical_harmonics.c) | `supported` | `smoke+interaction+screenshot` |
 | [Surface Grid](gallery/showcases/showcases_surface_grid.md) | [`examples/c/showcases/surface_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/surface_grid.c) | `supported` | `smoke+screenshot` |
-| [McHenrys Peak Terrain Relief](gallery/showcases/showcases_terrain_relief.md) | [`examples/c/showcases/terrain_relief.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/terrain_relief.c) | `experimental` | `smoke+interaction+screenshot` |
+| [McHenrys Peak Terrain Relief](gallery/showcases/showcases_terrain_relief.md) | [`examples/c/showcases/terrain_relief.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/terrain_relief.c) | `experimental` | `smoke+interaction+screenshot+video` |
 | [Human Auditory Cortical Activity](gallery/showcases/showcases_cortical_activity.md) | [`examples/c/showcases/cortical_activity.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/cortical_activity.c) | `experimental` | `smoke+interaction+screenshot+video+performance` |
 | [Allen Mouse Brain](gallery/showcases/showcases_brain_volume.md) | [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c) | `prototype` | `smoke+screenshot` |
 | [Point Cloud](gallery/showcases/showcases_point_cloud.md) | [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c) | `supported` | `smoke+screenshot` |

@@ -55,13 +55,13 @@ after verifying the linked API reference.
 
 ## What To Look For
 
-`dvz_geometry_sphere()` creates positions, normals, UVs, and indices; the mesh visual receives that geometry plus an RGBA8 sampled field bound to the mesh texture slot. Compare the lit Earth or Mars sphere with antialiased Gaia stars, the continuously reprojected 2MASS celestial sphere, and, for Earth, real catalogued debris propagated with SGP4. Object sizes are exaggerated; the trajectories, debris positions, and celestial directions are data-derived.
+`dvz_geometry_sphere()` creates positions, normals, UVs, and indices; the mesh visual receives that geometry plus an RGBA8 sampled field bound to the mesh texture slot. Compare the lit Earth or Mars sphere with the Gaia/2MASS celestial background and, for Earth, real catalogued debris propagated with SGP4. Object sizes are exaggerated; the trajectories, debris positions, and celestial directions are data-derived.
 
 The example uses real texture files from the data submodule when available. Earth has a generated fallback for local development; Mars requires its real texture file and is unavailable when that file is missing.
 
 Prepare the debris ephemeris before running: uv run tools/data/prepare_orbital_debris.py --force uv run tools/data/prepare_planet_sky.py --force
 
-Control: `--live` opens the planet controls docked on the left.
+Control: --live opens the planet controls docked on the left
 
 ## Source
 

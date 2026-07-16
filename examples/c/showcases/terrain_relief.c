@@ -74,6 +74,7 @@ DvzScenarioSpec dvz_showcase_terrain_relief_scenario(void);
 #define TERRAIN_DISPLAY_WIDTH 5.0
 #define TERRAIN_EXAGGERATION  1.35
 #define TERRAIN_BASE_HEIGHT   0.18f
+#define TERRAIN_PREVIEW_TAU   6.28318530718f
 
 
 
@@ -766,6 +767,26 @@ static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView*
 
 
 /**
+ * Rotate the complete terrain scene through one seamless preview orbit.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    TerrainReliefState* state = (TerrainReliefState*)user;
+    if (ctx == NULL || !ctx->preview_mode || state == NULL || state->arcball == NULL)
+        return;
+
+    const float phase =
+        (float)dvz_scenario_preview_phase(ctx, DVZ_SCENARIO_PREVIEW_PHASE_SEAMLESS_LOOP);
+    vec3 angles = {+0.050954f, -0.163512f + TERRAIN_PREVIEW_TAU * phase, -0.032719f};
+    (void)dvz_arcball_set(state->arcball, angles);
+}
+
+
+
+/**
  * Destroy the terrain-relief showcase state.
  *
  * @param ctx scenario context
@@ -799,6 +820,7 @@ DvzScenarioSpec dvz_showcase_terrain_relief_scenario(void)
         .requirements =
             DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_ARCBALL,
         .init = _scenario_init,
+        .frame = _scenario_frame,
         .destroy = _scenario_destroy,
     };
 }

@@ -39,7 +39,7 @@ after verifying the linked API reference.
 
 128 continuous extracellular traces combine correlated background activity, spatially coherent unit spikes, and occasional population events in one persistent raw line-list visual. A wall-clock producer thread emits fixed acquisition blocks into a bounded queue, while the render thread updates only the newly written circular-buffer vertex range. Sparse event markers and a live GUI expose acquisition timing, signal controls, and queue statistics. The sweep cursor interpolates the producer's monotonic hardware clock independently of render FPS.
 
-Control: `--live` opens a left-docked GUI; space pauses; R resets acquisition; F resets panzoom
+Control: --live opens a left-docked GUI; space pauses; R resets acquisition; F resets panzoom
 
 ## Source
 
@@ -74,7 +74,7 @@ Control: `--live` opens a left-docked GUI; space pauses; R resets acquisition; F
     - Browser support: Native only
     - Browser note: the live source uses a native producer thread and the controls use native ImGui
     - Browser capability tags: `primitive`, `axes`, `panzoom`, `gui`, `frame-callbacks`, `continuous-frames`
-    - Validation: `smoke+interaction+screenshot+performance`
+    - Validation: `smoke+interaction+screenshot+video+performance`
 
     **Tags**
 

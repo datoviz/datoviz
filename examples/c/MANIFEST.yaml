@@ -1572,11 +1572,22 @@ examples:
       - label: Acquisition model header
         language: c
         path: examples/c/showcases/streaming_daq_model.h
-    validation: smoke+interaction+screenshot+performance
+    validation: smoke+interaction+screenshot+video+performance
     capture:
       mode: custom
       args: ["--png", "4"]
       reason: four warm-up frames realize the retained axes and text before capture
+    media:
+      preview:
+        kind: animated-webp
+        frames: 180
+        fps: 60
+        card:
+          preferred: video-mp4
+          fps: 60
+          fallback_fps: 30
+          sample_step: 1
+          mp4_crf: 24
     data:
       kind: simulated
     portability: native-only
@@ -3459,7 +3470,18 @@ examples:
       - label: Data preparation
         language: python
         path: tools/data/prepare_terrain_relief.py
-    validation: smoke+interaction+screenshot
+    validation: smoke+interaction+screenshot+video
+    media:
+      preview:
+        kind: animated-webp
+        frames: 180
+        fps: 30
+        card:
+          preferred: video-mp4
+          size: 1024x576
+          fps: 30
+          sample_step: 1
+          mp4_crf: 24
     data:
       kind: prepared
     portability: native-only

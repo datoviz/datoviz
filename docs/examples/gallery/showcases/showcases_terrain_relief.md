@@ -76,7 +76,7 @@ Uv run tools/data/prepare_terrain_relief.py
     - Browser support: Native only
     - Browser note: the cache-only DEM and orthoimagery bundle is not packaged for the browser
     - Browser capability tags: `mesh`, `sampled-field`, `texture`, `arcball`, `camera`, `material`, `msaa`, `prepared-data`
-    - Validation: `smoke+interaction+screenshot`
+    - Validation: `smoke+interaction+screenshot+video`
 
     **Tags**
 

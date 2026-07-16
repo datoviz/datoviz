@@ -2462,7 +2462,7 @@
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/streaming_daq.c",
       "page": "gallery/showcases/showcases_streaming_daq.md",
       "summary": "This example renders a simulated real-time data acquisition system.",
-      "validation": "smoke+interaction+screenshot+performance",
+      "validation": "smoke+interaction+screenshot+video+performance",
       "build_command": "just example-c showcases/streaming_daq",
       "smoke_command": "./build/examples/c/showcases/streaming_daq --png",
       "tags": [
@@ -5466,7 +5466,7 @@
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/terrain_relief.c",
       "page": "gallery/showcases/showcases_terrain_relief.md",
       "summary": "This example drapes aligned NAIP orthoimagery over USGS 3DEP elevation.",
-      "validation": "smoke+interaction+screenshot",
+      "validation": "smoke+interaction+screenshot+video",
       "build_command": "just example-c showcases/terrain_relief",
       "smoke_command": "./build/examples/c/showcases/terrain_relief --png",
       "tags": [
