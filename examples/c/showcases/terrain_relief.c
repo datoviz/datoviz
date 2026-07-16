@@ -643,14 +643,20 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.025f, 0.034f, 0.040f, 1.0f));
 
     DvzCameraDesc camera = dvz_camera_desc();
+    camera.projection.type = DVZ_CAMERA_PERSPECTIVE;
     camera.view.eye[0] = +4.95f;
     camera.view.eye[1] = +3.95f;
     camera.view.eye[2] = +5.70f;
+    camera.view.target[0] = 0.0f;
     camera.view.target[1] = +0.38f;
+    camera.view.target[2] = 0.0f;
+    camera.view.up[0] = 0.0f;
     camera.view.up[1] = 1.0f;
+    camera.view.up[2] = 0.0f;
     camera.projection.fov_y = 0.56f;
     camera.projection.near_clip = 0.03f;
     camera.projection.far_clip = 100.0f;
+    camera.projection.ortho_height = 0.0f;
     EXAMPLE_CHECK(
         dvz_panel_set_camera_desc(panel, &camera) == DVZ_OK, "dvz_panel_set_camera_desc() failed");
 
@@ -659,14 +665,28 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     EXAMPLE_CHECK(_add_base(ctx->scene, panel, display_depth), "failed to add terrain base");
     EXAMPLE_CHECK(_add_skirt(ctx->scene, panel, geometry), "failed to add terrain skirt");
-    state->material = dvz_phong_material_desc();
+    state->material = dvz_material_desc();
+    state->material.model = DVZ_MATERIAL_MODEL_PHONG;
+    state->material.alpha_mode = DVZ_ALPHA_OPAQUE;
+    state->material.opacity = 1.0f;
+    state->material.base_color_factor[0] = 1.0f;
+    state->material.base_color_factor[1] = 1.0f;
+    state->material.base_color_factor[2] = 1.0f;
+    state->material.base_color_factor[3] = 1.0f;
     state->material.light_direction[0] = -0.38f;
     state->material.light_direction[1] = +0.76f;
     state->material.light_direction[2] = +0.52f;
-    state->material.phong.ambient = 0.48f;
-    state->material.phong.diffuse = 0.62f;
-    state->material.phong.specular = 0.025f;
-    state->material.phong.shininess = 24.0f;
+    state->material.phong.ambient = 0.282f;
+    state->material.phong.diffuse = 0.758f;
+    state->material.phong.specular = 0.118f;
+    state->material.phong.shininess = 47.446999f;
+    state->material.standard.roughness = 0.62f;
+    state->material.standard.specular = 0.34f;
+    state->material.standard.metallic = 0.0f;
+    state->material.standard.emissive[0] = 0.0f;
+    state->material.standard.emissive[1] = 0.0f;
+    state->material.standard.emissive[2] = 0.0f;
+    state->material.standard.rim_strength = 0.10f;
     state->visual = _add_terrain(ctx->scene, panel, geometry, texture, &state->material);
     EXAMPLE_CHECK(state->visual != NULL, "failed to add textured terrain");
     EXAMPLE_CHECK(
@@ -682,7 +702,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         .max_samples = 16.0f,
     };
     DvzMsaaDesc msaa_desc = dvz_msaa_desc();
+    msaa_desc.enabled = true;
     msaa_desc.sample_count = 8u;
+    msaa_desc.alpha_to_coverage = false;
     EXAMPLE_CHECK(dvz_panel_set_msaa(panel, &msaa_desc) == DVZ_OK, "dvz_panel_set_msaa() failed");
 #endif
 
@@ -694,11 +716,18 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) == DVZ_OK,
         "dvz_scenario_bind_controller() failed");
 
-    vec3 arcball_angles = {0.0f, 0.0f, 0.0f};
-    vec2 arcball_pan = {0.0f, 0.0f};
+    vec3 arcball_angles = {+0.050954f, -0.163512f, -0.032719f};
+    vec2 arcball_pan = {-0.191645f, +0.730556f};
+    EXAMPLE_CHECK(
+        dvz_arcball_initial(state->arcball, arcball_angles) == DVZ_OK,
+        "dvz_arcball_initial() failed");
+    EXAMPLE_CHECK(
+        dvz_arcball_zoom(state->arcball, 0.606531f) == DVZ_OK, "dvz_arcball_zoom() failed");
+    EXAMPLE_CHECK(
+        dvz_arcball_pan(state->arcball, arcball_pan) == DVZ_OK, "dvz_arcball_pan() failed");
     example_tuner_camera_ref(&state->tuner, "Camera", panel, camera_ref, &camera);
     example_tuner_arcball(
-        &state->tuner, "Arcball", state->arcball, arcball_angles, 1.0f, arcball_pan);
+        &state->tuner, "Arcball", state->arcball, arcball_angles, 0.606531f, arcball_pan);
     example_tuner_material(&state->tuner, "Terrain material", state->visual, &state->material);
 #ifndef DVZ_EXAMPLE_NO_APP
     example_tuner_msaa(&state->tuner, "MSAA", panel, &state->msaa);
