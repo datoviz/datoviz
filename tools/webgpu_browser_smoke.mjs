@@ -40,6 +40,7 @@ const CAPTURE_DEVICE_SCALE_FACTOR = 1;
 
 const routeFilterArgument = process.argv.find((argument) => argument.startsWith('--route='));
 const routeFilter = routeFilterArgument?.slice('--route='.length) ?? null;
+const headed = process.argv.includes('--headed');
 
 function useColor() {
   if (process.env.FORCE_COLOR !== undefined && process.env.FORCE_COLOR !== '0') return true;
@@ -137,17 +138,20 @@ async function startChrome() {
   const debugPort = await listen(debugServer);
   await new Promise((resolveClose) => debugServer.close(resolveClose));
 
-  const chrome = spawn(chromePath(), [
+  const chromeArgs = [
     `--remote-debugging-port=${debugPort}`,
     `--user-data-dir=${userDataDir}`,
-    '--headless=new',
     '--no-first-run',
     '--no-default-browser-check',
     '--disable-background-networking',
     '--disable-gpu-sandbox',
     '--enable-unsafe-webgpu',
     'about:blank',
-  ], { stdio: ['ignore', 'ignore', 'pipe'] });
+  ];
+  if (!headed) {
+    chromeArgs.splice(2, 0, '--headless=new');
+  }
+  const chrome = spawn(chromePath(), chromeArgs, { stdio: ['ignore', 'ignore', 'pipe'] });
 
   let stderr = '';
   chrome.stderr.on('data', (chunk) => {
@@ -945,6 +949,7 @@ async function main() {
         ['showcases_streaming_daq', { label: 'Streaming DAQ · 128 channels', kind: 'animated' }],
         ['showcases_cortical_activity', { label: 'Human Auditory Cortical Activity', kind: 'animated' }],
         ['showcases_terrain_relief', { label: 'McHenrys Peak Terrain Relief' }],
+        ['showcases_svg_tiger', { label: 'SVG Tiger · local development' }],
         ['showcases_galaxy', { label: 'Density-Wave Galaxy', kind: 'animated' }],
         [
           'showcases_textured_planet',
@@ -956,19 +961,31 @@ async function main() {
       const path = `/examples/webgpu/live.html?id=${routeFilter}`;
       const screenshot = join(artifactsDir, `webgpu_live_${routeFilter}.png`);
       let result = null;
-      if (route.kind === 'query') {
-        result = await smokeQueryWasmPage(
-          page,
-          baseUrl,
-          { path, scenarioId: routeFilter, ...route },
-          screenshot,
+      try {
+        if (route.kind === 'query') {
+          result = await smokeQueryWasmPage(
+            page,
+            baseUrl,
+            { path, scenarioId: routeFilter, ...route },
+            screenshot,
+          );
+        } else if (route.kind === 'animated') {
+          result = await smokeAnimatedWasmPage(
+            page, baseUrl, path, `Rendered ${route.label}`, screenshot, routeFilter,
+          );
+        } else {
+          result = await smokeWasmPage(page, baseUrl, path, `Rendered ${route.label}`, screenshot);
+        }
+      } catch (error) {
+        if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+          throw error;
+        }
+        console.log(
+          skipLine(
+            `filtered live ${routeFilter}: headless WebGPU instance loss (${error.message})`,
+          ),
         );
-      } else if (route.kind === 'animated') {
-        result = await smokeAnimatedWasmPage(
-          page, baseUrl, path, `Rendered ${route.label}`, screenshot, routeFilter,
-        );
-      } else {
-        result = await smokeWasmPage(page, baseUrl, path, `Rendered ${route.label}`, screenshot);
+        return;
       }
       console.log(passLine(`filtered live ${routeFilter}: ${result.initialStatus}`));
       return;

@@ -29,7 +29,7 @@ Use your configured build environment; Python routes additionally require local 
 | --- | --- | --- |
 | C | Canonical native source | `just example-c showcases/svg_tiger` (build and run), or rerun `./build/examples/c/showcases/svg_tiger` |
 | SVG preparation tool | Additional integration source; check optional dependencies | `python3 -m tools.data.prepare_svg_tiger` |
-| Browser | Native only | the portable WebGPU stream is proven, but redistribution terms for the source artwork remain unresolved |
+| Browser | Native only | the portable WebGPU stream and local live route are proven; public promotion awaits a separately approved prepared-data bundle commit |
 
 !!! warning "Prepared data required"
 
@@ -46,7 +46,7 @@ after verifying the linked API reference.
 
 Solid path fills, black outlines, thin whiskers, and document paint order are reproduced with one merged mesh plus one path visual. Cubic curves are flattened by the preparation script; Datoviz performs the final polygon triangulation at runtime.
 
-The source artwork remains cache-local while its redistribution terms are unresolved. Prepare it from a pinned Glumpy source revision with:
+The source artwork remains cache-local pending a separately reviewed data publication. Prepare it from a pinned Glumpy source revision with:
 
 `python3 tools/data/prepare_svg_tiger.py --download`
 
@@ -88,7 +88,7 @@ The source artwork remains cache-local while its redistribution terms are unreso
     - Prepared path model header source: [`examples/c/showcases/svg_tiger_model.h`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/svg_tiger_model.h)
     - SVG preparation tool source: [`tools/data/prepare_svg_tiger.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/tools/data/prepare_svg_tiger.py)
     - Browser support: Native only
-    - Browser note: the portable WebGPU stream is proven, but redistribution terms for the source artwork remain unresolved
+    - Browser note: the portable WebGPU stream and local live route are proven; public promotion awaits a separately approved prepared-data bundle commit
     - Browser capability tags: `mesh`, `path`, `polygon-triangulation`, `panzoom`
     - Validation: `smoke+screenshot`
 
@@ -109,7 +109,7 @@ The source artwork remains cache-local while its redistribution terms are unreso
     | `name` | Classic Ghostscript tiger SVG as distributed by Glumpy |
     | `source` | pinned Glumpy tiger.svg revision |
     | `source_url` | [https://github.com/glumpy/glumpy/blob/aedb9212a1e00a68b7c4669405a6a8f754daf283/glumpy/data/tiger.svg](https://github.com/glumpy/glumpy/blob/aedb9212a1e00a68b7c4669405a6a8f754daf283/glumpy/data/tiger.svg) |
-    | `license` | Artwork redistribution terms remain unresolved. The Glumpy BSD-3-Clause code license does not by itself establish terms for this historical Ghostscript-derived artwork, so neither the SVG nor prepared geometry is committed. |
+    | `license` | The maintainer has confirmed that this pinned artwork may be used. Record the exact permission and license provenance with the separately reviewed source or prepared-data publication. |
     | `citation` | Glumpy tiger example; historical Ghostscript tiger.eps artwork. |
     | `preprocessing` | `python3 tools/data/prepare_svg_tiger.py --download` |
     | `cache_prepared_path` | .cache/datoviz/examples/svg_tiger/prepared |

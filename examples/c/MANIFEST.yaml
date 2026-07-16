@@ -3184,8 +3184,8 @@ examples:
         - polygon-triangulation
         - panzoom
       reason: >-
-        the portable WebGPU stream is proven, but redistribution terms for the source artwork
-        remain unresolved
+        the portable WebGPU stream and local live route are proven; public promotion awaits a
+        separately approved prepared-data bundle commit
     agent_copy_safe: false
     dataset:
       name: Classic Ghostscript tiger SVG as distributed by Glumpy
@@ -3193,9 +3193,9 @@ examples:
       source_url: >-
         https://github.com/glumpy/glumpy/blob/aedb9212a1e00a68b7c4669405a6a8f754daf283/glumpy/data/tiger.svg
       license: >-
-        Artwork redistribution terms remain unresolved. The Glumpy BSD-3-Clause code license does
-        not by itself establish terms for this historical Ghostscript-derived artwork, so neither
-        the SVG nor prepared geometry is committed.
+        The maintainer has confirmed that this pinned artwork may be used. Record the exact
+        permission and license provenance with the separately reviewed source or prepared-data
+        publication.
       citation: Glumpy tiger example; historical Ghostscript tiger.eps artwork.
       preprocessing: python3 tools/data/prepare_svg_tiger.py --download
       cache_prepared_path: .cache/datoviz/examples/svg_tiger/prepared

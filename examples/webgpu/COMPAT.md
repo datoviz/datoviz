@@ -114,10 +114,15 @@ additive color/coverage blend state, and retained position updates. The filtered
 reached `QueueSubmit` and then hit the known external headless WebGPU instance-loss diagnostic, so
 that run is a skip rather than visual proof. The same WASM build compiles SVG Tiger and Terrain
 Relief and emits their mesh/path and textured-terrain streams when their cache-local prepared files
-are mounted. Public promotion remains blocked on committed browser bundles: SVG redistribution
-terms are unresolved, while Terrain Relief needs an approved `data` bundle. The generic browser
+are mounted. Public promotion remained blocked on committed browser bundles. The generic browser
 loader now validates versions, paths, byte budgets, and SHA-256 hashes before mounting artifacts in
 the Emscripten filesystem; static-site bundle staging rejects cache-only inputs.
+
+Recorded local SVG Tiger browser proof on 2026-07-16: the local-only bundle declaration stages the
+213,048-byte prepared path artifact from `.cache/` into ignored `build/webgpu-data`, and the headed
+filtered browser smoke rendered the full 240-path, 12,891-point composition through the canonical
+C/WASM scenario. The route remains absent from public gallery promotion until a separately approved
+prepared-data bundle and provenance record are committed.
 
 Recorded local streaming-DAQ promotion proof on 2026-07-16: the native four-frame PNG smoke and
 88-scenario WASM packet smoke passed. The browser build reuses the canonical deterministic

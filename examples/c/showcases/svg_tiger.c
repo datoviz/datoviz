@@ -10,8 +10,8 @@
  * reproduced with one merged mesh plus one retained path visual. Cubic curves are flattened by the
  * preparation script; Datoviz performs the final polygon triangulation at runtime.
  *
- * The source artwork remains cache-local while its redistribution terms are unresolved. Prepare it
- * from a pinned Glumpy source revision with:
+ * The source artwork remains cache-local pending a separately reviewed data publication. Prepare
+ * it from a pinned Glumpy source revision with:
  *
  *   python3 tools/data/prepare_svg_tiger.py --download
  *
@@ -232,7 +232,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     (void)panzoom;
 
     dvz_fprintf(
-        stderr, "svg_tiger: %u paths, %u flattened points\n", data.path_count, data.point_count);
+        stdout, "svg_tiger: %u paths, %u flattened points\n", data.path_count, data.point_count);
     ok = true;
 
 cleanup:

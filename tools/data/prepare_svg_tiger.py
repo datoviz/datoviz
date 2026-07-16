@@ -485,7 +485,7 @@ def write_bundle(document: SvgDocument, output: Path, source_path: Path, toleran
             "commit": SOURCE_COMMIT,
             "bytes": source_path.stat().st_size,
             "sha256": _sha256(source_path),
-            "redistribution": "unresolved; source and derived bundle remain cache-local",
+            "redistribution": "maintainer-confirmed; publication pending separate review",
         },
         "processing": {
             "flatten_tolerance_px": tolerance,
