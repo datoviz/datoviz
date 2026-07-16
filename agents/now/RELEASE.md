@@ -260,6 +260,12 @@ Candidate feature work, not an RC2 blocker:
    Implement it only if RC1 feedback and stabilization leave room for the public field-slot
    sampling API, deterministic nearest/clamp/no-mipmap fixtures, conversion-free linear RGBA,
    unlit multiplication, and native/WebGPU validation. Otherwise defer it without blocking RC2.
+2. Reassess the
+   [multi-light Klein bottle slice](../../spec/scene/slices/MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md).
+   Implement it only if RC1 feedback and stabilization leave room for the scene-owned light API,
+   panel-local fixed-capacity light sets, two-sided lighting, shared RGB example preset, generated
+   checkerboard Klein-bottle showcase, and native/WebGPU validation. Otherwise defer it without
+   blocking RC2.
 
 ### 9. RC3
 

@@ -27,6 +27,8 @@ slice.
 2. [ANNOTATION_LABEL_SLICE.md](ANNOTATION_LABEL_SLICE.md): first rendered label annotation path.
 3. [COLORBAR_RENDERING_SLICE.md](COLORBAR_RENDERING_SLICE.md): first rendered continuous colorbar.
 4. [LEGEND_SLICE.md](LEGEND_SLICE.md): deferred categorical/discrete legend boundary.
+5. [MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md](MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md): RC2 candidate for
+   scene-owned multi-light rendering and its checkerboard Klein-bottle pressure test.
 
 
 ## Feature Readiness Matrix
@@ -68,3 +70,6 @@ Use this order unless a concrete user task changes priority:
 3. Harden shared panel-edge layout across axes, colorbars, legends, annotations, and readouts.
 4. Decide whether rendered pinned readouts are required for RC1; otherwise defer richer readout UI.
 5. Define and implement `DvzLegend` only after categorical scale labels and ordering are concrete.
+
+After RC1 stabilization, reassess the multi-light Klein-bottle slice as optional RC2 feature work.
+It is not an RC2 blocker.

@@ -1,6 +1,6 @@
 > **Execution Status**
-> - **Status:** `PARTIALLY IMPLEMENTED MATERIAL SLICE; LIGHT OBJECTS STILL PROPOSED`
-> - **Updated on:** `2026-05-17`
+> - **Status:** `PARTIALLY IMPLEMENTED MATERIAL SLICE; RC2 LIGHT-OBJECT CANDIDATE PLANNED`
+> - **Updated on:** `2026-07-16`
 > - **Purpose:** define the intended v0.4 scene-facing material and lighting object model for mesh
 >   and future lit visual families.
 
@@ -30,6 +30,12 @@ material descriptors. Depth cueing remains a separate typed setter that composes
 payload. Scene-owned light objects and panel light sets described below remain future design; the
 current runtime still uses compact material/light-direction fields rather than a full reusable
 light-object API.
+
+The implementation-ready RC2 candidate is
+[MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md](../../slices/MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md). It uses a
+three-colored-light checkerboard Klein bottle as the pressure test for scene-owned lights,
+panel-local light sets, two-sided surface lighting, shared example presets, and native/WebGPU
+parity. This work is optional for RC2 and is not a release blocker.
 
 
 ## Existing Grounding In The Repo
