@@ -3,18 +3,33 @@
 This page is a compact C walkthrough for the same scene structure used throughout the v0.4
 examples. It creates one figure, one panel, one point visual, and one native window.
 
-The canonical complete source is `examples/docs/quickstart.c`, also displayed in the
-[Quickstart](quickstart.md).
-It includes data creation, headers, lifecycle cleanup, and the bounded-frame option used by checks.
-From a source checkout, build and run it with:
+<div class="dvz-context-strip">
+  <span>C11</span>
+  <span>Native window</span>
+  <span>Complete source linked</span>
+  <span>Call-order excerpt below</span>
+</div>
+
+The canonical complete program is `examples/docs/quickstart.c`, displayed in the C tab of the
+[Quickstart](quickstart.md). It includes data creation, headers, result checks, lifecycle cleanup,
+and the bounded-frame option used by automated checks.
+
+The gallery scenario at `examples/c/start/scatter.c` produces the corresponding release screenshot
+through the repository's example runner; it is not the standalone teaching fixture shown here.
+
+
+## Run the complete program
+
+From a source checkout:
 
 ```sh
 just quickstart-c
 ./build/examples/docs/quickstart
 ```
 
-The gallery scenario at `examples/c/start/scatter.c` produces the corresponding release screenshot
-through the repository's example runner; it is not the standalone teaching fixture shown here.
+You should see the same 10,000-point interactive scene as the Python Quickstart. Drag to pan and
+scroll to zoom. For a file in your own project, use the exported CMake target or
+`datoviz-config` described in [C/C++ integration](../how-to/c-integration.md).
 
 
 ## Program shape
@@ -30,11 +45,12 @@ A minimal C program follows this order:
 7. destroy the app before destroying the scene.
 
 
-## Call-sequence excerpt
+## Call-sequence excerpt—not a complete program
 
-The excerpt below assumes that `positions`, `colors`, `diameter_px`, and `count` already exist. It
-omits includes, allocation, return-value checks, and failure cleanup to emphasize the object and call
-order. Do not copy it as a complete program; use the canonical source linked above.
+The fragment below assumes that `positions`, `colors`, `diameter_px`, and `count` already exist. It
+omits headers, data allocation, result checks, and failure cleanup to emphasize object and call
+order. Use it to understand the sequence; copy the complete Quickstart program when starting a new
+file.
 
 ```c
 DvzScene* scene = dvz_scene();
@@ -58,10 +74,14 @@ dvz_scene_destroy(scene);
 The important rule is that uploading arrays prepares the visual, but the visual appears only after
 `dvz_panel_add_visual()` attaches it to a panel.
 
+The complete source also checks fallible setup calls and destroys `DvzApp` before `DvzScene`. Keep
+that cleanup order when adding an error path.
+
 
 ## Next steps
 
-- [Quickstart](quickstart.md) shows the same example in Python and C.
+- [Quickstart](quickstart.md) displays the complete source in both Python and C.
+- [Core concepts](core-concepts.md) explains the scene, figure, panel, visual, and view model.
 - [Use from C or C++](../how-to/c-integration.md) explains how to integrate Datoviz into a native
   project.
 - [Add visuals to a panel](../how-to/add-a-visual.md) explains visual attributes and panel

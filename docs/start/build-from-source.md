@@ -4,6 +4,17 @@ Use the source path for the current development branch, C/C++ integration before
 published, or Datoviz contribution work. For a published Python package, return to
 [Install](install.md).
 
+<div class="dvz-context-strip">
+  <span>Development checkout</span>
+  <span>macOS, Linux, Windows</span>
+  <span>Vulkan toolchain</span>
+  <span>About 15–30 minutes</span>
+</div>
+
+The shortest route is: install the platform prerequisites below, clone with submodules, run
+`just build`, then run one focused test and the scatter example. Build commands on this page are
+complete shell commands; the CMake fragments linked from the integration guide are excerpts.
+
 
 ## Prerequisites
 
@@ -14,44 +25,18 @@ published, or Datoviz contribution work. For a published Python package, return 
 | GCC 12+, Clang 15+, Apple Clang, or Visual Studio 2022 | Compiles native code. |
 | Ninja | Recommended build backend. |
 | `just` | Runs the project build commands used by the documentation. |
-| Python 3.10+ and NumPy | Runs Python examples and documentation tools. |
+| Python 3.10+ and NumPy | Runs Python examples, binding tools, and documentation tools. |
 | Vulkan-capable GPU and runtime | Renders native desktop and offscreen examples. |
 | Shader path | The default canvas build requires `glslangValidator`. `glslc` is recommended for precompiled built-in scene SPIR-V; otherwise a usable shaderc runtime is required. |
 
 
-## Clone and build
+## 1. Install platform prerequisites
 
-Clone the active branch and initialize its recorded submodule revisions:
-
-```sh
-git clone --branch v0.4-dev https://github.com/datoviz/datoviz.git
-cd datoviz
-git submodule update --init --recursive
-just build
-```
-
-If the first build stops after generating assets, run `just build` once more.
-
-To use the generated Python binding from the checkout:
-
-```sh
-python -m pip install -e .
-```
+Choose one platform section. WSL2 is a Linux environment and follows the Linux instructions; do not
+mix its libraries with a native Windows build.
 
 
-## Dependency policy
-
-The normal build prefers repository submodules for cglm, mimalloc, Kvazaar, GLFW, and
-msdf-atlas-gen where available. Distribution maintainers may set `DVZ_VENDORED_DEPS=OFF`; in that
-system-auto lane, CMake prefers installed dependencies while `AUTO` modes may fall back to vendored
-sources. See [Build options](../reference/build-options.md) for switches and packaging presets.
-
-The default canvas build invokes `glslangValidator`. `glslc` is the recommended build-time compiler
-for embedded scene SPIR-V. Shaderc provides runtime GLSL compilation and is required by the release
-wheel configuration. Keep these roles separate when diagnosing a missing shader tool.
-
-
-## macOS
+### macOS
 
 Install Apple's command-line tools and utilities for the normal vendored build:
 
@@ -66,7 +51,7 @@ wheels target macOS 15; source builds on other versions are development configur
 support claims.
 
 
-## Linux
+### Linux
 
 Ubuntu 24.04 is the reference Linux source-build environment:
 
@@ -85,15 +70,11 @@ Install a Vulkan SDK or distribution packages providing the loader, headers, and
 precompiled shaders. `glslang-tools` supplies `glslangValidator`. Desktop examples need a
 Vulkan-capable GPU and working drivers.
 
-System-auto packaging additionally prefers installed GLFW, cglm, mimalloc, and Kvazaar development
-packages. Those are not required when the normal vendored sources are available.
 
+### Native Windows
 
-## Windows
-
-A published native wheel is the primary Python release path; source builds are for native development
-and C++ integration. Native source builds use Visual Studio 2022, the Vulkan SDK, CMake, Ninja, and
-vcpkg:
+A published native wheel is the primary Python release path. Source builds are for native
+development and C/C++ integration. Use Visual Studio 2022, the Vulkan SDK, CMake, Ninja, and vcpkg:
 
 1. Install Visual Studio with the **Desktop development with C++** workload.
 2. Install the LunarG Vulkan SDK and put `glslc` and `glslangValidator` on `PATH`.
@@ -101,7 +82,7 @@ vcpkg:
 4. Open the Datoviz folder in Visual Studio.
 5. Select the `msvc` CMake preset and build.
 
-WSL2 with Ubuntu 24.04 is a separate Linux development option:
+For a Linux development environment instead, install WSL2:
 
 ```powershell
 wsl --install
@@ -111,7 +92,30 @@ Install Ubuntu, open its shell, and follow the Linux instructions above. On curr
 systems with suitable Intel, AMD, or NVIDIA drivers, WSLg usually provides Vulkan GPU passthrough.
 
 
-## Verify the build
+## 2. Clone and build
+
+Clone the active branch and initialize its recorded submodule revisions:
+
+```sh
+git clone --branch v0.4-dev https://github.com/datoviz/datoviz.git
+cd datoviz
+git submodule update --init --recursive
+just build
+```
+
+If the first build stops after generating assets, run `just build` once more.
+
+To use the generated Python binding from the checkout:
+
+```sh
+python -m pip install -e .
+```
+
+Run that command inside the virtual environment you intend to use. The editable installation points
+Python at this checkout; rebuilding the native library may still be necessary after source changes.
+
+
+## 3. Verify the build
 
 Run a focused scene test from the checkout:
 
@@ -132,9 +136,25 @@ just example-c start/scatter
 ./build/examples/c/start/scatter --live
 ```
 
-You should see colored points that pan and zoom. Continue with the [Quickstart](quickstart.md), or
-review [platform support and known limitations](../reference/platform-support.md) when a runtime
-target fails.
+You should see colored points that pan and zoom. If the process cannot create a Vulkan instance or
+window, use [platform diagnostics](../how-to/diagnose-platform.md) before changing the example.
+
+Continue with the complete [Quickstart](quickstart.md) or [First C Program](first-c-program.md).
+
+
+## Dependency policy and troubleshooting context
+
+The normal build prefers repository submodules for cglm, mimalloc, Kvazaar, GLFW, and
+msdf-atlas-gen where available. Distribution maintainers may set `DVZ_VENDORED_DEPS=OFF`; in that
+system-auto lane, CMake prefers installed dependencies while `AUTO` modes may fall back to vendored
+sources. See [Build options](../reference/build-options.md) for switches and packaging presets.
+
+The default canvas build invokes `glslangValidator`. `glslc` is the recommended build-time compiler
+for embedded scene SPIR-V. Shaderc provides runtime GLSL compilation and is required by the release
+wheel configuration. Keep these roles separate when diagnosing a missing shader tool.
+
+System-auto packaging additionally prefers installed GLFW, cglm, mimalloc, and Kvazaar development
+packages. Those are not required when the normal vendored sources are available.
 
 
 ## Package engineering status

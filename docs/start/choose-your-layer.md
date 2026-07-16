@@ -1,8 +1,8 @@
 # Choose your layer
 
-Datoviz has several entry points because different users need different levels of control. Start
-with the highest-level path that exists for your task, then move lower only when you need the extra
-control.
+Datoviz has several entry points because a Python analysis, native application, browser example,
+and rendering backend need different levels of control. Start with the scene API unless your host
+or task requires a lower layer.
 
 The high-level plotting layer for the broader GSP/VisPy2 project is still work in progress. Datoviz
 v0.4 is the rendering engine underneath that direction. Today, Python users who want to use Datoviz
@@ -10,15 +10,19 @@ directly use one generated `ctypes` binding: `import datoviz as dvz` is the norm
 documented NumPy array adaptation, and `datoviz.raw` is the exact pointer/count call form for the
 same binding.
 
-Most users should start with the Python or C scene API. Lower-level runtime layers are useful for
-embedding, backend work, and contributors, but they are not the shortest path to a first
-visualization.
+<div class="dvz-context-strip">
+  <span>Scene API recommended</span>
+  <span>Python and C</span>
+  <span>Browser subset experimental</span>
+  <span>Runtime layers unstable</span>
+</div>
 
 | Need | Use | Status |
 | --- | --- | --- |
-| Write Python code with NumPy arrays | [`import datoviz as dvz`](../reference/ctypes.md#numpy-adapted-calls) | supported for documented calls |
+| Explore scientific arrays from Python | [`import datoviz as dvz`](../reference/ctypes.md#numpy-adapted-calls) | supported for documented calls |
 | Build a native C or C++ application | [C `scene` and `app` APIs](first-c-program.md) | supported by feature |
-| Render without a window, capture images, or integrate a native view | [C integration](../how-to/c-integration.md) | supported by feature |
+| Render without a window or capture images | [Offscreen rendering](../how-to/render-offscreen.md) | supported feature |
+| Embed a native view or own the event loop | [C/C++ integration](../how-to/c-integration.md) | supported by feature |
 | Call the Python binding with explicit pointers and counts | [`datoviz.raw`](../reference/ctypes.md#exact-datovizraw-calls) | low-level exact call form |
 | Run selected examples in the browser | [WebGPU/WASM example routes](../reference/webgpu-subset.md) | experimental subset |
 | Work on advanced rendering, replay, or backend portability | [Advanced runtime APIs](../advanced/runtime-internals.md) | advanced/unstable |
@@ -27,16 +31,16 @@ visualization.
 
 ## Python with NumPy
 
-Choose the main Python package when you want to create Datoviz scenes from Python and upload NumPy
-arrays to visual attributes:
+Choose the main Python package when you want to create scenes from Python and upload NumPy arrays to
+visual attributes:
 
 ```python
 import datoviz as dvz
 ```
 
-This path keeps the same `dvz_*` function names as the C examples and adapts supported data-upload
-calls so you can pass NumPy arrays directly. It is the best starting point for scientists who are
-comfortable with Python but need lower-level rendering control than a plotting library gives.
+This path keeps the `dvz_*` function names used by the C API and adapts documented data-upload calls
+so they accept NumPy arrays. The `dvz.run(...)` helper manages the ordinary native-window session.
+Use this path first when your analysis already lives in NumPy.
 
 [Start with the Python-first Quickstart](quickstart.md).
 
@@ -44,8 +48,8 @@ comfortable with Python but need lower-level rendering control than a plotting l
 ## C or C++
 
 Choose the C API when your application owns the window, rendering loop, offscreen target, capture
-path, or integration with another native system. The C examples show the supported native API
-patterns for visual families, interaction, capture, and runtime behavior.
+path, or integration with another native system. C provides the same scene and visual model as
+Python, with explicit error handling and object destruction.
 
 Most public C examples follow the same visible sequence:
 
@@ -71,7 +75,11 @@ planned, deferred, or native-only.
 [WebGPU subset](../reference/webgpu-subset.md) before choosing a live route.
 
 
-## Advanced runtime layers
+## Exact Python calls and advanced runtime layers
+
+`datoviz.raw` is not a separate plotting API. It exposes exact generated C-shaped calls for cases
+that need explicit pointers, counts, callbacks, or ABI diagnosis. Prefer the normal NumPy-adapted
+package until a documented operation requires the exact form.
 
 Use the advanced runtime pages when you are working on Datoviz internals, backend portability,
 render replay, or specialized embedding. These pages are documented under
@@ -93,5 +101,9 @@ not plan around a stable high-level package until that status changes.
 
 ## Next steps
 
-Choose one action above and complete its first example. Return to this page only when you need a
-lower-level integration surface or a different runtime target.
+Choose one action above and complete its first example:
+
+- Python: [Quickstart](quickstart.md)
+- C/C++: [First C Program](first-c-program.md)
+- Browser: [Examples with WebGPU status](../examples/webgpu-matrix.md)
+- Embedding or backend work: [Advanced](../advanced/index.md)

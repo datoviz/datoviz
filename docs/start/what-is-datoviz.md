@@ -9,10 +9,11 @@ screenshots made without opening a window.
 
 The main idea is simple:
 
-1. create a scene;
+1. create a scene, figure, and panel;
 2. create one or more visuals, such as points, an image, or a mesh;
 3. upload data arrays to the visual's named attributes;
-4. show the scene in a window or save it as an image.
+4. attach each visual to a panel;
+5. open a window or render the figure offscreen.
 
 
 ## What you build
@@ -26,7 +27,8 @@ Most Datoviz examples use the same pieces:
 | Panel | A drawing area inside the figure. One figure can contain one panel or many panels. |
 | Visual | A renderable collection, such as points, line segments, an image, a mesh, or text. |
 | Data arrays | NumPy arrays or C arrays attached to visual attributes such as position, color, or size. |
-| View | A window or offscreen target where the figure is rendered. |
+| Controller | Optional navigation state, such as 2D panzoom or a 3D arcball. |
+| View | A native window, offscreen target, or supported embedded host where the figure is rendered. |
 
 This structure is more explicit than `scatter()` or `imshow()`, but it gives you direct control over
 what is drawn and what changes from one frame to the next.
@@ -41,6 +43,10 @@ Use Datoviz directly when you want to:
 - render native desktop windows or offscreen screenshots;
 - embed Datoviz in a C/C++ application;
 - write Python examples that pass NumPy arrays to the current v0.4 API.
+
+Datoviz is a good fit when render control, data volume, interaction, or embedding matters. For a
+small conventional chart where a high-level plotting library already provides the complete result,
+that library may be the shorter path.
 
 Datoviz v0.4 is not a high-level plotting library. Higher-level plotting belongs to GSP/VisPy2,
 which is still work in progress. Use Datoviz directly when you want the explicit scene model shown
@@ -58,7 +64,8 @@ import datoviz as dvz
 ```
 
 This package uses the same `dvz_*` function names as the C examples and supports documented NumPy
-array uploads. Use `datoviz.raw` only when you need the exact low-level pointer-and-count calls.
+array uploads. The `dvz.run(...)` helper manages the ordinary Python window session. Use
+`datoviz.raw` only when you need exact pointer-and-count calls or ABI-level control.
 
 
 ## Where to start
@@ -66,4 +73,5 @@ array uploads. Use `datoviz.raw` only when you need the exact low-level pointer-
 For the shortest first run, use the [Python-first Quickstart](quickstart.md). For a native C
 program, use [First C Program](first-c-program.md). Use
 [Choose your layer](choose-your-layer.md) when deciding between Python, C, browser examples, or
-advanced integration paths.
+advanced integration paths. Read [Core concepts](core-concepts.md) for the exact shared object
+model.

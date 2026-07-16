@@ -1,16 +1,38 @@
 # Install
 
-These instructions target Datoviz v0.4. No public release candidate is assumed by this page.
+These instructions target Datoviz v0.4. Choose a path by what you want to run and by whether a
+release package is currently published.
+
+<div class="dvz-context-strip">
+  <span>v0.4 pre-release</span>
+  <span>Python 3.10+</span>
+  <span>C and C++</span>
+  <span>Vulkan runtime required</span>
+</div>
 
 The [release notes index](../releases/index.md) is currently a draft, pre-publication record. Until
 it names a published package or artifact, use the [source-build fallback](build-from-source.md).
 Check [project status](../reference/project-status.md) for the current release posture.
 
 
-## Python package
+## Choose an installation path
 
-After an RC is published, its release notes will provide an exact version or artifact URL. Create a
-virtual environment now, but do not invent a generic pre-release command.
+| You want to... | Use this path now |
+| --- | --- |
+| try Python before a package is published | [Build from source](build-from-source.md), then install the checkout in a virtual environment |
+| install a published Python RC or final version | use the exact command or artifact URL in the published release notes |
+| develop a C or C++ application now | [Build from source](build-from-source.md), then follow [C/C++ integration](../how-to/c-integration.md) |
+| contribute to Datoviz or use the latest `v0.4-dev` code | [Build from source](build-from-source.md) |
+| inspect browser support without installing native Datoviz | open a `webgpu-live` route from the [Examples](../examples/index.md) section |
+
+Native windows and offscreen rendering require a working Vulkan-capable GPU, driver, and runtime.
+Browser routes use the smaller, experimental [WebGPU subset](../reference/webgpu-subset.md).
+
+
+## Python package path
+
+After an RC is published, its release notes will provide an exact version or artifact URL. Create an
+isolated environment first, then use that published command. Do not guess a pre-release version.
 
 === "macOS / Linux"
 
@@ -30,13 +52,13 @@ virtual environment now, but do not invent a generic pre-release command.
     # After publication, run the exact command from the linked release notes.
     ```
 
-After the final v0.4 package is published, the normal command will be:
+After the final v0.4 package is published, the normal installation command will be:
 
 ```sh
 python -m pip install datoviz
 ```
 
-Verify the active environment:
+Verify the active environment after installation:
 
 ```sh
 python -c "import datoviz as dvz; print('datoviz import ok')"
@@ -46,7 +68,7 @@ Then continue with the [Quickstart](quickstart.md). Before choosing optional pro
 targets, review [platform support and known limitations](../reference/platform-support.md).
 
 
-## C and C++
+## C and C++ package path
 
 Installed Datoviz packages expose the native library, public headers, runtime assets, and an
 exported CMake package:
@@ -56,18 +78,20 @@ find_package(datoviz CONFIG REQUIRED)
 target_link_libraries(my_app PRIVATE datoviz::datoviz)
 ```
 
-No public installed package is assumed before the RC notes publish one. Until then, follow
+This CMake fragment is an integration example, not a complete project. No public installed package
+is assumed before the RC notes publish one. Until then, follow
 [Build from source](build-from-source.md), then use the
 [C/C++ integration guide](../how-to/c-integration.md).
 
 
-## Source fallback
+## Source-build path
 
 Build from source when no published package exists, when you need the current development branch,
 or when you are contributing to Datoviz. The dedicated guide covers prerequisites, shader tools,
 vendored dependencies, macOS, Linux, native Windows, WSL2, verification, and example commands:
 
-[Build Datoviz from source](build-from-source.md)
+[Build Datoviz from source](build-from-source.md), then return to the
+[Quickstart](quickstart.md) or [First C Program](first-c-program.md).
 
 
 ## Package availability

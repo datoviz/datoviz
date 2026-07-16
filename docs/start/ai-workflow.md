@@ -1,47 +1,41 @@
 # AI-assisted workflow
 
-You can ask a coding assistant to write Datoviz examples for you. The simplest approach is to send
-the assistant to the documentation site and describe what you want to see.
+You can ask a coding assistant to draft a Datoviz example, then verify the result against the same
+examples and reference pages a human reader would use. This is especially useful while the direct
+Python API remains lower-level than a plotting library.
 
-For agents, the canonical public entry point is [AI Agents Start Here](../ai-agents.md). Use that
-page when you want the assistant to follow the API-checking workflow rather than guessing from
-memory.
+The canonical instructions and copyable prompt live on [AI Agents Start Here](../ai-agents.md).
+This page only explains how to make your request precise and how to review the result; it does not
+maintain a second copy of the agent contract.
 
 
-## Start with this prompt
+## Start in three steps
 
-Copy this prompt and replace the task with your own visualization:
+1. Open [AI Agents Start Here](../ai-agents.md) and copy its canonical prompt.
+2. Replace the task placeholder with the visual result, interaction, output, and language you want.
+3. Give the assistant access to `datoviz.org` so it can find an example and verify the current API.
 
-```text
-Use https://datoviz.org/ai-agents/ and the linked Datoviz v0.4 documentation to write my example.
-
-Task: create a scatter plot of 10,000 points, colored by a scalar value, with pan and zoom.
-
-Prefer Python with `import datoviz as dvz` unless I ask for C.
-Start by finding the closest working example on datoviz.org.
-Then check the API reference before using each Datoviz function.
-Make sure every function exists and that the signature, enum names, visual attribute names, and
-array shapes/counts match the current documentation.
-If a Python call does not support the needed array upload, use `datoviz.raw` with explicit
-pointers/counts or switch to C and explain why.
-Return a complete runnable example, then list the Datoviz pages and examples you used.
-```
-
-If the assistant cannot browse, paste the relevant parts of the [Quickstart](quickstart.md), one
-[How-To guide](../how-to/index.md), the closest [example](../examples/index.md), and the required
-[reference page](../reference/index.md). Tell it to identify unverified API details instead of
-guessing.
-
-For C code, change the language line:
+For example, the task portion can be:
 
 ```text
-Use C instead of Python. Follow the style of the documented C examples.
+Task: show 50,000 two-dimensional points. Read positions and one scalar per point from NumPy
+arrays, map the scalar to a perceptually uniform colormap, add XY panzoom, and save one 1600 x 900
+PNG without opening a window. Return a complete Python program.
 ```
+
+If the assistant cannot browse, provide these four inputs:
+
+- the [Quickstart](quickstart.md) for the complete program structure;
+- the closest page from [Examples](../examples/index.md);
+- the focused [How-To guide](../how-to/index.md) for the task;
+- the relevant [Reference](../reference/index.md) contract.
+
+Ask the assistant to mark any API detail it could not verify instead of guessing.
 
 
 ## Make the request specific
 
-A good request says what should appear on screen. For example:
+A useful request states the data, representation, interaction, output, and preferred language:
 
 | Instead of... | Write... |
 | --- | --- |
@@ -50,17 +44,22 @@ A good request says what should appear on screen. For example:
 | "make it 3D" | "show 3D points with an arcball controller" |
 | "export it" | "render one frame to a PNG without opening a window" |
 
+Include array shapes and dtypes when they are already known. If they are not known, ask the
+assistant to state the contract it chose before the code.
 
-## Optional pages for better precision
 
-The simple prompt above is enough to get started. For better precision, point the assistant to the
-same public pages you would use:
+## Review the answer before running it
 
-- [Quickstart](quickstart.md) for the first complete Python and C examples.
-- [Examples](../examples/index.md) for working visual and feature examples.
-- [How-To guides](../how-to/index.md) for focused tasks.
-- [Reference](../reference/index.md) for exact visual names, attribute names, and feature status.
-- [AI Agents Start Here](../ai-agents.md) for the full agent workflow and verification checklist.
+Check that the answer:
+
+- says whether the code is a complete program or an excerpt;
+- imports `datoviz as dvz` for the normal Python path, unless it explains a need for
+  `datoviz.raw`;
+- uses a documented visual family and exact attribute names;
+- gives each array's dtype, shape, and item-count relationship;
+- creates the scene objects, attaches the visual to a panel, and opens a window or captures output;
+- checks feature and backend status rather than assuming native/WebGPU parity;
+- lists the example and reference pages used.
 
 For Python, the normal v0.4 starting point is:
 
@@ -68,13 +67,13 @@ For Python, the normal v0.4 starting point is:
 import datoviz as dvz
 ```
 
-Datoviz v0.4 starts from scenes, visuals, and explicit data arrays. For high-level plotting helpers
-such as `scatter()` or `imshow()`, use GSP/VisPy2 when that layer is available. That layer is still
-work in progress; in the meantime, use the generated Datoviz Python binding directly through the
-documented Python entry points.
+Datoviz v0.4 starts from scenes, visuals, and explicit data arrays. It does not provide the old
+high-level Python plotting API. If an answer invents Datoviz methods such as `scatter()` or
+`imshow()`, ask the assistant to restart from a current v0.4 example. High-level plotting belongs to
+GSP/VisPy2 and remains external work in progress.
 
 
-## A useful follow-up
+## Useful follow-up requests
 
 After the assistant writes code, ask:
 
@@ -83,4 +82,11 @@ Which Datoviz documentation pages did you use, and which function or attribute n
 each page?
 ```
 
-This makes it easier to spot invented functions before running the code.
+For a larger result, also ask:
+
+```text
+Separate the minimal verified Datoviz program from optional extensions. For every extension, state
+its feature status and the example or reference page that supports it.
+```
+
+This keeps a working base visible when an optional backend or integration feature is uncertain.

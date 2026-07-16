@@ -80,6 +80,23 @@ or external-buffer APIs have separate lifetime and synchronization rules. See
 [Objects and lifetimes](../reference/objects-and-lifetimes.md) before using those paths.
 
 
+## The two language paths
+
+Python and C build the same retained objects and use the same visual attribute names. They differ
+mainly in array adaptation and session management:
+
+| Concern | Python | C |
+| --- | --- | --- |
+| Ordinary import/header | `import datoviz as dvz` | public headers such as `datoviz/scene.h` and `datoviz/app.h` |
+| Arrays | documented calls accept compatible NumPy arrays | pass typed C arrays plus item counts |
+| Window session | `dvz.run(scene, figure)` manages the common blocking session | create `DvzApp` and `DvzView`, run the app, then destroy objects |
+| Exact pointer/count access | use `datoviz.raw` only when required | already explicit in the C API |
+
+Start from a complete program before copying smaller API fragments. The
+[Quickstart](quickstart.md) contains complete Python and C programs; How-To pages label excerpts
+that assume existing objects or data.
+
+
 ## Coordinates and interaction
 
 Positions may be expressed in data, panel, world, or screen-related spaces depending on the visual
