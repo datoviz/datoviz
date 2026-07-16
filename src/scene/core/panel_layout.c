@@ -22,6 +22,7 @@
 #include "core/scene_notify_internal.h"
 #include "core/panel_layout_internal.h"
 #include "scene_emit/visual_lowering.h"
+#include "_visual_family.h"
 #include "_visual_internal.h"
 
 
@@ -82,14 +83,14 @@ float _scene_screen_scale(const DvzFigure* figure)
 /**
  * Return whether one attribute stores screen-space style pixels.
  *
+ * @param visual retained visual
  * @param attr_name attribute name
  * @return whether the attribute should be regenerated after screen scale changes
  */
-static bool _scene_attr_is_screen_space(const char* attr_name)
+static bool _scene_attr_is_screen_space(const DvzVisual* visual, const char* attr_name)
 {
-    return attr_name != NULL &&
-           (strcmp(attr_name, "size") == 0 || strcmp(attr_name, "line_width") == 0 ||
-            strcmp(attr_name, "sigma") == 0);
+    ANN(visual);
+    return attr_name != NULL && _visual_family_attr_is_screen_space(visual->type, attr_name);
 }
 
 
@@ -174,7 +175,7 @@ void _scene_figure_mark_screen_space_dirty(DvzFigure* figure)
             for (uint32_t ai = 0; ai < visual->attr_count; ai++)
             {
                 DvzVisualAttr* attr = &visual->attrs[ai];
-                if (!_scene_attr_is_screen_space(attr->name) || attr->item_count == 0)
+                if (!_scene_attr_is_screen_space(visual, attr->name) || attr->item_count == 0)
                     continue;
                 attr->dirty_first_item = 0;
                 attr->dirty_item_count = attr->item_count;

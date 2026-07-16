@@ -121,6 +121,7 @@ struct DvzVisualFamilyOps
     bool supports_depth_cue;
     bool sync_point_style_material;
     bool bounds_resolves_local_transform;
+    bool size_attr_is_data_space;
 };
 
 

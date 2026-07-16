@@ -114,6 +114,27 @@ bool _visual_family_attr_source_supported(
 
 
 /**
+ * Return whether a visual attribute is authored in logical screen pixels.
+ *
+ * @param type the visual type
+ * @param name the public or retained attribute name
+ * @return whether the attribute requires screen-scale lowering
+ */
+bool _visual_family_attr_is_screen_space(DvzVisualType type, const char* name)
+{
+    ANN(name);
+    const DvzVisualFamilyOps* ops = _scene_visual_family_ops(type);
+    if (ops == NULL)
+        return false;
+    name = _visual_family_attr_storage_name(type, name);
+    if (strcmp(name, "size") == 0)
+        return !ops->size_attr_is_data_space;
+    return strcmp(name, "line_width") == 0 || strcmp(name, "sigma") == 0;
+}
+
+
+
+/**
  * Return whether a visual family accepts continuous scales on scalar float color attributes.
  *
  * @param type the visual type

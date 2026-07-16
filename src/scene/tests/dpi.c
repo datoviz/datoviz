@@ -213,6 +213,81 @@ static int test_scene_dpi_physical_viewport_and_screen_scale(
 
 
 /**
+ * Verify data-space sphere radii are unchanged by device and user scale.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+static int test_scene_dpi_sphere_radius_stays_in_data_space(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 400, 300, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, NULL);
+    AT(panel != NULL);
+
+    DvzVisual* sphere = dvz_sphere(scene, 0);
+    AT(sphere != NULL);
+    vec3 pos[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor color[1] = {{255, 255, 255, 255}};
+    float radius[1] = {0.25f};
+    AT(dvz_visual_set_data(sphere, "position", pos, 1) == 0);
+    AT(dvz_visual_set_data(sphere, "color", color, 1) == 0);
+    AT(dvz_visual_set_data(sphere, "radius", radius, 1) == 0);
+    AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.shader_format_glsl = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 1024 * 1024;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 800;
+    cfg.target_height = 600;
+    cfg.device_scale_x = 2.0f;
+    cfg.device_scale_y = 2.0f;
+    cfg.user_scale = 1.5f;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    bool found_radius_upload = false;
+    uint32_t count = dvz_drp2_stream_count(stream);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_WRITE_BUFFER ||
+            cmd->u.write_buffer.size != sizeof(float))
+            continue;
+        const char* label = dvz_drp2_stream_label(stream, cmd->u.write_buffer.buffer_id);
+        if (label == NULL || strstr(label, "_size") == NULL)
+            continue;
+        const float* uploaded = (const float*)cmd->u.write_buffer.data_raw;
+        ANN(uploaded);
+        AC(uploaded[0], radius[0], 1e-6f);
+        found_radius_upload = true;
+    }
+    AT(found_radius_upload);
+
+    _test_scene_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Verify user scale affects built-in marker edge widths in material uploads.
  *
  * @param suite the active test suite
@@ -591,6 +666,7 @@ int test_scene_dpi(TstSuite* suite)
     ANN(suite);
     const char* tags = "scene,dpi";
     TST_CASE(test_scene_dpi_physical_viewport_and_screen_scale);
+    TST_CASE(test_scene_dpi_sphere_radius_stays_in_data_space);
     TST_CASE(test_scene_dpi_user_scale_marker_edge_width);
     TST_CASE(test_scene_dpi_user_scale_axis_segment_width);
     TST_CASE(test_scene_dpi_user_scale_axis_text_gap);

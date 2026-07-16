@@ -54,8 +54,8 @@ bool _scene_attach_upload_metadata(
     uint64_t logical_item_count);
 
 bool _scene_frame_plan_upload_style_bytes(
-    const DvzFigure* figure, DvzFramePlan* plan, const char* resource_id, uint64_t byte_offset,
-    uint64_t byte_size, const char* data_tag, const void* data, DvzFramePlanResourceRole role);
+    const DvzFigure* figure, const DvzVisual* visual, DvzFramePlan* plan, const char* resource_id,
+    uint64_t byte_offset, uint64_t byte_size, const char* data_tag, const void* data);
 
 bool _scene_payload_lower_fields(
     const DvzFigure* figure, const void* src, uint64_t byte_size,

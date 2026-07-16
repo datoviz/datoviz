@@ -342,7 +342,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .expected_attrs = "position, color, radius, item_state",
      .expand_overlay_bounds = _scene_sphere_visual_expand_overlay_bounds,
      .attr_alias_public = "radius", .attr_alias_storage = "size", .upload_position_topology = true,
-     .upload_material_params = true, .bounds_resolves_local_transform = true},
+     .upload_material_params = true, .bounds_resolves_local_transform = true,
+     .size_attr_is_data_space = true},
     {VISUAL_OPS(
          DVZ_VISUAL_TYPE_GLYPH, "glyph", _scene_glyph_visual_lowering,
          _scene_glyph_visual_bounds, _scene_glyph_visual_bind_desc,

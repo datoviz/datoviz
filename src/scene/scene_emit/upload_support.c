@@ -261,42 +261,29 @@ bool _scene_attach_upload_metadata(
 
 
 /**
- * Return whether one upload role stores logical screen-space pixels.
- *
- * @param role typed resource role
- * @return whether the upload should be lowered to physical style pixels
- */
-static bool _scene_upload_role_screen_space(DvzFramePlanResourceRole role)
-{
-    return role == DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE ||
-           role == DVZ_FRAME_PLAN_RESOURCE_ROLE_LINE_WIDTH ||
-           role == DVZ_FRAME_PLAN_RESOURCE_ROLE_SIGMA;
-}
-
-
-
-/**
  * Append an upload, scaling float screen-space payloads into owned plan storage when needed.
  *
  * @param figure parent figure
+ * @param visual retained visual owning the payload
  * @param plan destination frame plan
  * @param resource_id resource key
  * @param byte_offset upload byte offset
  * @param byte_size upload byte size
  * @param data_tag debug data tag
  * @param data source payload
- * @param role typed resource role
  * @return whether the upload was appended
  */
 bool _scene_frame_plan_upload_style_bytes(
-    const DvzFigure* figure, DvzFramePlan* plan, const char* resource_id, uint64_t byte_offset,
-    uint64_t byte_size, const char* data_tag, const void* data, DvzFramePlanResourceRole role)
+    const DvzFigure* figure, const DvzVisual* visual, DvzFramePlan* plan, const char* resource_id,
+    uint64_t byte_offset, uint64_t byte_size, const char* data_tag, const void* data)
 {
+    ANN(visual);
     ANN(plan);
     const void* upload_data = data;
     void* owned = NULL;
     float scale = _scene_screen_scale(figure);
-    if (_scene_upload_role_screen_space(role) && data != NULL && scale != 1.0f)
+    if (_visual_family_attr_is_screen_space(visual->type, data_tag) && data != NULL &&
+        scale != 1.0f)
     {
         if (byte_size % sizeof(float) != 0 || byte_size > SIZE_MAX)
             return false;
@@ -642,7 +629,7 @@ void _scene_emit_visual_dense_attr_uploads(
         const void* data_ptr = (const uint8_t*)attr->data + byte_offset;
         DvzFramePlanResourceRole role = _scene_attr_frame_plan_role(attr->name);
         if (!_scene_frame_plan_upload_style_bytes(
-                figure, plan, resource_id, byte_offset, byte_size, attr->name, data_ptr, role))
+                figure, visual, plan, resource_id, byte_offset, byte_size, attr->name, data_ptr))
         {
             continue;
         }
@@ -748,7 +735,8 @@ void _scene_emit_visual_buffer_payloads(
             }
         }
         else if (!_scene_frame_plan_upload_style_bytes(
-                     figure, plan, resource_id, 0, byte_size, payload->name, payload->data, role))
+                     figure, visual, plan, resource_id, 0, byte_size, payload->name,
+                     payload->data))
         {
             continue;
         }
