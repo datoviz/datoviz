@@ -13,7 +13,13 @@ This example renders a simulated real-time data acquisition system.
 
 ## Preview
 
-<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for Streaming DAQ · 128 channels"><span>Screenshot pending</span></div>
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_streaming_daq.poster.webp" alt="Streaming DAQ · 128 channels" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../../../assets/gallery/v0.4/showcases/showcases_streaming_daq.poster.webp" aria-label="Streaming DAQ · 128 channels preview">
+    <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_streaming_daq.mp4" type="video/mp4">
+  </video>
+</div>
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Native-only example</strong>

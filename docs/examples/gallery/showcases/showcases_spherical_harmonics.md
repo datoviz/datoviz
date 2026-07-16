@@ -15,7 +15,13 @@ This example turns a real spherical-harmonic blend into a lit mesh.
 
 === "Screenshot"
 
-    <div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for Spherical Harmonics"><span>Screenshot pending</span></div>
+    <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+      <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_spherical_harmonics.poster.webp" alt="Spherical Harmonics" loading="lazy">
+      <video class="dvz-gallery-video" muted loop playsinline preload="none"
+             poster="../../../../assets/gallery/v0.4/showcases/showcases_spherical_harmonics.poster.webp" aria-label="Spherical Harmonics preview">
+        <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_spherical_harmonics.mp4" type="video/mp4">
+      </video>
+    </div>
 
 === "Live WebGPU"
 

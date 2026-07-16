@@ -3481,7 +3481,7 @@ examples:
           size: 1024x576
           fps: 30
           sample_step: 1
-          mp4_crf: 24
+          mp4_crf: 28
     data:
       kind: prepared
     portability: native-only

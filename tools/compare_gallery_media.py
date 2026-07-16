@@ -151,6 +151,14 @@ def require_tool(name: str) -> str:
     return path
 
 
+def require_image_magick() -> str:
+    for name in ("magick", "convert"):
+        path = shutil.which(name)
+        if path is not None:
+            return path
+    raise RuntimeError("ImageMagick not found (expected `magick` or `convert`)")
+
+
 def run(cmd: list[str]) -> None:
     subprocess.run(cmd, cwd=ROOT, check=True)
 
@@ -256,7 +264,7 @@ def resize_cached_frames(
         if not source.exists():
             raise FileNotFoundError(source)
         resized = frame_dir / f"frame_{index:04d}.png"
-        run(["magick", str(source), "-resize", size, str(resized)])
+        run([require_image_magick(), str(source), "-resize", size, str(resized)])
         frames.append(FrameItem(path=resized, delay_ms=delay_ms))
     return frames
 
@@ -875,7 +883,7 @@ def main() -> int:
         ):
             if not 0 <= value <= 100:
                 raise ValueError(f"{label} must be between 0 and 100")
-        require_tool("magick")
+        require_image_magick()
         require_tool("img2webp")
         require_tool("cwebp")
         require_tool("ffmpeg")

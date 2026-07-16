@@ -24,7 +24,14 @@ This example composes common scientific plot elements in one figure.
 
 ### [Streaming DAQ · 128 channels](gallery/showcases/showcases_streaming_daq.md)
 
-<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for Streaming DAQ · 128 channels"><span>Screenshot pending</span></div>
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_streaming_daq/" aria-label="Streaming DAQ · 128 channels"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_streaming_daq.poster.webp" alt="Streaming DAQ · 128 channels" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/showcases/showcases_streaming_daq.poster.webp" aria-label="Streaming DAQ · 128 channels preview">
+    <source data-src="../../assets/gallery/v0.4/showcases/showcases_streaming_daq.mp4" type="video/mp4">
+  </video>
+</div>
 
 `experimental` `showcases`<br><span>`workflow`, `simulated`, `daq`, `streaming`, `time-series`, ...</span>
 
@@ -110,7 +117,7 @@ This example combines a synthetic wind-speed field with vectors and streamlines.
 
 ### [SVG Tiger](gallery/showcases/showcases_svg_tiger.md)
 
-<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for SVG Tiger"><span>Screenshot pending</span></div>
+[![SVG Tiger](../assets/gallery/v0.4/showcases/showcases_svg_tiger.webp)](gallery/showcases/showcases_svg_tiger.md)
 
 `experimental` `showcases`<br><span>`vector-art`, `svg`, `bezier`, `polygon-triangulation`, `mesh`, ...</span>
 
@@ -185,7 +192,14 @@ This example renders a prepared Allen mouse brain volume with a visible slice.
 
 ### [Human Auditory Cortical Activity](gallery/showcases/showcases_cortical_activity.md)
 
-<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for Human Auditory Cortical Activity"><span>Screenshot pending</span></div>
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_cortical_activity/" aria-label="Human Auditory Cortical Activity"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp" alt="Human Auditory Cortical Activity" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp" aria-label="Human Auditory Cortical Activity preview">
+    <source data-src="../../assets/gallery/v0.4/showcases/showcases_cortical_activity.mp4" type="video/mp4">
+  </video>
+</div>
 
 `experimental` `showcases`<br><span>`scientific`, `real-data`, `human-brain`, `cortical-surface`, `meg`, ...</span>
 
@@ -235,7 +249,14 @@ This example renders a prepared RGB LiDAR point cloud with direct colors.
 
 ### [Spherical Harmonics](gallery/showcases/showcases_spherical_harmonics.md)
 
-<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for Spherical Harmonics"><span>Screenshot pending</span></div>
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_spherical_harmonics/" aria-label="Spherical Harmonics"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_spherical_harmonics.poster.webp" alt="Spherical Harmonics" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/showcases/showcases_spherical_harmonics.poster.webp" aria-label="Spherical Harmonics preview">
+    <source data-src="../../assets/gallery/v0.4/showcases/showcases_spherical_harmonics.mp4" type="video/mp4">
+  </video>
+</div>
 
 `showcases`<br><span>`scientific`, `generated`, `spherical-harmonics`, `icosphere`, `mesh`, ...</span>
 
@@ -259,7 +280,14 @@ This example turns a generated height field into a lit mesh and wireframe.
 
 ### [McHenrys Peak Terrain Relief](gallery/showcases/showcases_terrain_relief.md)
 
-<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for McHenrys Peak Terrain Relief"><span>Screenshot pending</span></div>
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_terrain_relief/" aria-label="McHenrys Peak Terrain Relief"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_terrain_relief.poster.webp" alt="McHenrys Peak Terrain Relief" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/showcases/showcases_terrain_relief.poster.webp" aria-label="McHenrys Peak Terrain Relief preview">
+    <source data-src="../../assets/gallery/v0.4/showcases/showcases_terrain_relief.mp4" type="video/mp4">
+  </video>
+</div>
 
 `experimental` `showcases`<br><span>`scientific`, `real-data`, `terrain`, `dem`, `orthoimagery`, ...</span>
 

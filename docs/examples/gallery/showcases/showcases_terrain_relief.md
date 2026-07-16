@@ -13,7 +13,13 @@ This example drapes aligned NAIP orthoimagery over USGS 3DEP elevation.
 
 ## Preview
 
-<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for McHenrys Peak Terrain Relief"><span>Screenshot pending</span></div>
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_terrain_relief.poster.webp" alt="McHenrys Peak Terrain Relief" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../../../assets/gallery/v0.4/showcases/showcases_terrain_relief.poster.webp" aria-label="McHenrys Peak Terrain Relief preview">
+    <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_terrain_relief.mp4" type="video/mp4">
+  </video>
+</div>
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Native-only example</strong>

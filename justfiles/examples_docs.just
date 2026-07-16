@@ -132,9 +132,10 @@ gallery-capture *args: build
 # Refresh v0.4 gallery screenshots and generated docs with cached native captures.
 [positional-arguments]
 gallery-refresh *args: build
-    @python3 tools/capture_gallery.py --all-screenshot --cache --jobs auto "$@"
+    @python3 tools/capture_gallery.py --all-screenshot --cache --jobs auto --prune-stale "$@"
     @python3 tools/build_gallery_webp.py
     @python3 tools/build_gallery_animations.py
+    @python3 tools/compare_gallery_media.py --all-animated --write-site-assets
     @python3 tools/check_gallery_media_pipeline.py
     @python tools/build_gallery.py
     @python3 tools/build_examples_manifest.py
@@ -247,6 +248,7 @@ gallery:
     @echo "Generating build-local gallery WebP assets..."
     @python3 tools/build_gallery_webp.py
     @python3 tools/build_gallery_animations.py
+    @python3 tools/compare_gallery_media.py --all-animated --write-site-assets
     @python3 tools/check_gallery_media_pipeline.py
     @just docs-generate
 
@@ -259,7 +261,7 @@ docs-check-generated:
     @python3 tools/check_generated_docs.py
 
 docs-build-check:
-    @python3 -m mkdocs build --strict
+    @uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs build --strict
 
 check-example-manifests:
     @python3 tools/check_example_ids.py

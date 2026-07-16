@@ -13,7 +13,13 @@ This example animates a human auditory dSPM estimate on cortex.
 
 ## Preview
 
-<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for Human Auditory Cortical Activity"><span>Screenshot pending</span></div>
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp" alt="Human Auditory Cortical Activity" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../../../assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp" aria-label="Human Auditory Cortical Activity preview">
+    <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_cortical_activity.mp4" type="video/mp4">
+  </video>
+</div>
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>No live WebGPU preview</strong>

@@ -2484,7 +2484,7 @@
       "media": {
         "screenshot": {
           "expected": true,
-          "status": "pending",
+          "status": "available",
           "source": "data/gallery/v0.4/showcases/showcases_streaming_daq.png",
           "site_asset": "/assets/gallery/v0.4/showcases/showcases_streaming_daq.webp"
         }
@@ -5247,7 +5247,7 @@
       "media": {
         "screenshot": {
           "expected": true,
-          "status": "pending",
+          "status": "available",
           "source": "data/gallery/v0.4/showcases/showcases_svg_tiger.png",
           "site_asset": "/assets/gallery/v0.4/showcases/showcases_svg_tiger.webp"
         }
@@ -5372,7 +5372,7 @@
       "media": {
         "screenshot": {
           "expected": true,
-          "status": "pending",
+          "status": "available",
           "source": "data/gallery/v0.4/showcases/showcases_spherical_harmonics.png",
           "site_asset": "/assets/gallery/v0.4/showcases/showcases_spherical_harmonics.webp"
         }
@@ -5491,7 +5491,7 @@
       "media": {
         "screenshot": {
           "expected": true,
-          "status": "pending",
+          "status": "available",
           "source": "data/gallery/v0.4/showcases/showcases_terrain_relief.png",
           "site_asset": "/assets/gallery/v0.4/showcases/showcases_terrain_relief.webp"
         }
@@ -5577,7 +5577,7 @@
       "media": {
         "screenshot": {
           "expected": true,
-          "status": "pending",
+          "status": "available",
           "source": "data/gallery/v0.4/showcases/showcases_cortical_activity.png",
           "site_asset": "/assets/gallery/v0.4/showcases/showcases_cortical_activity.webp"
         }

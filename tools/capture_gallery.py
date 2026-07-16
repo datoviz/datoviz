@@ -254,6 +254,11 @@ def parse_args() -> argparse.Namespace:
         help="recapture even when the cache says the image is current",
     )
     parser.add_argument(
+        "--prune-stale",
+        action="store_true",
+        help="remove gallery PNGs whose lane/id pair is absent from the manifest",
+    )
+    parser.add_argument(
         "--jobs",
         default="1",
         help="parallel capture jobs, or 'auto' for a conservative default",
@@ -335,6 +340,21 @@ def collect_examples(manifest: dict) -> list[CaptureExample]:
             )
         )
     return examples
+
+
+def prune_stale_pngs(examples: list[CaptureExample], image_dir: Path) -> int:
+    valid = {(example.lane, example.id) for example in examples}
+    removed = 0
+    for lane in gallery_media.DOC_LANES:
+        lane_dir = image_dir / lane
+        if not lane_dir.exists():
+            continue
+        for png in lane_dir.glob("*.png"):
+            if (lane, png.stem) in valid:
+                continue
+            png.unlink()
+            removed += 1
+    return removed
 
 
 def matches_filter(
@@ -754,6 +774,8 @@ def main() -> int:
 
     summary = ", ".join(f"{key}={counts[key]}" for key in sorted(counts))
     print(f"summary: {summary}")
+    if args.prune_stale and failures == 0 and not args.dry_run:
+        print(f"pruned stale gallery PNGs: {prune_stale_pngs(examples, args.image_dir)}")
     if args.landing:
         print("note: the WebGPU landing card needs a separate browser-smoke screenshot.")
     return 1 if failures else 0

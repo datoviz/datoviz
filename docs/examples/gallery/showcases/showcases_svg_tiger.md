@@ -13,7 +13,7 @@ This example renders the classic colored tiger from prepared SVG paths.
 
 ## Preview
 
-<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for SVG Tiger"><span>Screenshot pending</span></div>
+![SVG Tiger](../../../assets/gallery/v0.4/showcases/showcases_svg_tiger.webp)
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Native-only example</strong>
