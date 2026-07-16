@@ -66,9 +66,9 @@
     "uv run --isolated --with mne==1.12.1 --with mne-bids==0.19.0 --with nibabel==5.4.2 "         \
     "--with numpy==2.3.4 --with scipy==1.18.0 --with requests "                                   \
     "python tools/data/prepare_cortical_activity.py"
-#define CORTICAL_ACTIVITY_MAGIC        "DVZCTA2"
-#define CORTICAL_ACTIVITY_VERSION      2u
-#define CORTICAL_ACTIVITY_HEADER_SIZE  80u
+#define CORTICAL_ACTIVITY_MAGIC        "DVZCTA3"
+#define CORTICAL_ACTIVITY_VERSION      3u
+#define CORTICAL_ACTIVITY_HEADER_SIZE  112u
 #define CORTICAL_ACTIVITY_MAX_VERTICES 1000000u
 #define CORTICAL_ACTIVITY_MAX_INDICES  10000000u
 #define CORTICAL_ACTIVITY_MAX_TIMES    10000u
@@ -92,18 +92,25 @@
 typedef struct CorticalActivityData
 {
     uint32_t time_count;
-    uint32_t vertex_count;
-    uint32_t index_count;
-    uint32_t hemisphere_vertex_count[2];
-    uint32_t hemisphere_index_count[2];
+    uint32_t source_vertex_count;
+    uint32_t source_index_count;
+    uint32_t render_vertex_count;
+    uint32_t render_index_count;
+    uint32_t source_hemisphere_vertex_count[2];
+    uint32_t source_hemisphere_index_count[2];
+    uint32_t render_hemisphere_vertex_count[2];
+    uint32_t render_hemisphere_index_count[2];
     float display_min;
     float display_mid;
     float display_max;
     float* times_ms;
     vec3* inflated;
     vec3* pial;
-    vec3* normals;
-    DvzIndex* indices;
+    DvzIndex* render_indices;
+    DvzIndex* source_indices;
+    DvzIndex* interpolation_indices;
+    vec3* interpolation_weights;
+    DvzIndex* source_render_vertices;
     float* values;
 } CorticalActivityData;
 
@@ -215,8 +222,11 @@ static void _activity_data_destroy(CorticalActivityData* data)
     if (data == NULL)
         return;
     dvz_free(data->values);
-    dvz_free(data->indices);
-    dvz_free(data->normals);
+    dvz_free(data->source_render_vertices);
+    dvz_free(data->interpolation_weights);
+    dvz_free(data->interpolation_indices);
+    dvz_free(data->source_indices);
+    dvz_free(data->render_indices);
     dvz_free(data->pial);
     dvz_free(data->inflated);
     dvz_free(data->times_ms);
@@ -259,39 +269,64 @@ static bool _activity_data_load(const char* path, CorticalActivityData* data)
     const uint32_t header_size = _u32_le(&header[12]);
     const uint32_t hemisphere_count = _u32_le(&header[16]);
     data->time_count = _u32_le(&header[20]);
-    data->vertex_count = _u32_le(&header[24]);
-    data->index_count = _u32_le(&header[28]);
-    const uint32_t position_components = _u32_le(&header[32]);
-    data->display_min = _f32_le(&header[48]);
-    data->display_mid = _f32_le(&header[52]);
-    data->display_max = _f32_le(&header[56]);
-    data->hemisphere_vertex_count[0] = _u32_le(&header[60]);
-    data->hemisphere_index_count[0] = _u32_le(&header[64]);
-    data->hemisphere_vertex_count[1] = _u32_le(&header[68]);
-    data->hemisphere_index_count[1] = _u32_le(&header[72]);
+    data->source_vertex_count = _u32_le(&header[24]);
+    data->source_index_count = _u32_le(&header[28]);
+    data->render_vertex_count = _u32_le(&header[32]);
+    data->render_index_count = _u32_le(&header[36]);
+    const uint32_t position_components = _u32_le(&header[40]);
+    const uint32_t interpolation_components = _u32_le(&header[44]);
+    data->display_min = _f32_le(&header[60]);
+    data->display_mid = _f32_le(&header[64]);
+    data->display_max = _f32_le(&header[68]);
+    data->source_hemisphere_vertex_count[0] = _u32_le(&header[72]);
+    data->source_hemisphere_index_count[0] = _u32_le(&header[76]);
+    data->source_hemisphere_vertex_count[1] = _u32_le(&header[80]);
+    data->source_hemisphere_index_count[1] = _u32_le(&header[84]);
+    data->render_hemisphere_vertex_count[0] = _u32_le(&header[88]);
+    data->render_hemisphere_index_count[0] = _u32_le(&header[92]);
+    data->render_hemisphere_vertex_count[1] = _u32_le(&header[96]);
+    data->render_hemisphere_index_count[1] = _u32_le(&header[100]);
 
     if (version != CORTICAL_ACTIVITY_VERSION || header_size != CORTICAL_ACTIVITY_HEADER_SIZE ||
-        hemisphere_count != 2u || position_components != 3u || data->time_count < 2u ||
-        data->time_count > CORTICAL_ACTIVITY_MAX_TIMES || data->vertex_count == 0u ||
-        data->vertex_count > CORTICAL_ACTIVITY_MAX_VERTICES || data->index_count == 0u ||
-        data->index_count > CORTICAL_ACTIVITY_MAX_INDICES || data->index_count % 3u != 0u ||
-        data->hemisphere_vertex_count[0] + data->hemisphere_vertex_count[1] !=
-            data->vertex_count ||
-        data->hemisphere_index_count[0] + data->hemisphere_index_count[1] != data->index_count ||
+        hemisphere_count != 2u || position_components != 3u || interpolation_components != 3u ||
+        data->time_count < 2u || data->time_count > CORTICAL_ACTIVITY_MAX_TIMES ||
+        data->source_vertex_count == 0u ||
+        data->source_vertex_count > CORTICAL_ACTIVITY_MAX_VERTICES ||
+        data->render_vertex_count == 0u ||
+        data->render_vertex_count > CORTICAL_ACTIVITY_MAX_VERTICES ||
+        data->source_index_count == 0u || data->source_index_count % 3u != 0u ||
+        data->render_index_count == 0u ||
+        data->render_index_count > CORTICAL_ACTIVITY_MAX_INDICES ||
+        data->render_index_count % 3u != 0u ||
+        data->source_hemisphere_vertex_count[0] + data->source_hemisphere_vertex_count[1] !=
+            data->source_vertex_count ||
+        data->source_hemisphere_index_count[0] + data->source_hemisphere_index_count[1] !=
+            data->source_index_count ||
+        data->render_hemisphere_vertex_count[0] + data->render_hemisphere_vertex_count[1] !=
+            data->render_vertex_count ||
+        data->render_hemisphere_index_count[0] + data->render_hemisphere_index_count[1] !=
+            data->render_index_count ||
         !(data->display_min < data->display_mid && data->display_mid < data->display_max))
     {
         goto cleanup;
     }
 
     const uint64_t time_bytes = (uint64_t)data->time_count * sizeof(float);
-    const uint64_t vector_bytes = (uint64_t)data->vertex_count * sizeof(vec3);
-    const uint64_t index_bytes = (uint64_t)data->index_count * sizeof(DvzIndex);
-    const uint64_t value_count = (uint64_t)data->time_count * data->vertex_count;
+    const uint64_t render_vector_bytes = (uint64_t)data->render_vertex_count * sizeof(vec3);
+    const uint64_t render_index_bytes = (uint64_t)data->render_index_count * sizeof(DvzIndex);
+    const uint64_t source_index_bytes = (uint64_t)data->source_index_count * sizeof(DvzIndex);
+    const uint64_t interpolation_bytes =
+        (uint64_t)data->render_vertex_count * 3u * sizeof(uint32_t);
+    const uint64_t source_render_vertex_bytes =
+        (uint64_t)data->source_vertex_count * sizeof(DvzIndex);
+    const uint64_t value_count = (uint64_t)data->time_count * data->source_vertex_count;
     if (value_count > SIZE_MAX / sizeof(float))
         goto cleanup;
     const uint64_t value_bytes = value_count * sizeof(float);
-    const uint64_t expected_size =
-        CORTICAL_ACTIVITY_HEADER_SIZE + time_bytes + 3u * vector_bytes + index_bytes + value_bytes;
+    const uint64_t expected_size = CORTICAL_ACTIVITY_HEADER_SIZE + time_bytes +
+                                   2u * render_vector_bytes + render_index_bytes +
+                                   source_index_bytes + 2u * interpolation_bytes +
+                                   source_render_vertex_bytes + value_bytes;
     if (expected_size > LONG_MAX || fseek(fp, 0, SEEK_END) != 0 ||
         ftell(fp) != (long)expected_size ||
         fseek(fp, CORTICAL_ACTIVITY_HEADER_SIZE, SEEK_SET) != 0)
@@ -300,21 +335,31 @@ static bool _activity_data_load(const char* path, CorticalActivityData* data)
     }
 
     data->times_ms = (float*)dvz_calloc(data->time_count, sizeof(float));
-    data->inflated = (vec3*)dvz_calloc(data->vertex_count, sizeof(vec3));
-    data->pial = (vec3*)dvz_calloc(data->vertex_count, sizeof(vec3));
-    data->normals = (vec3*)dvz_calloc(data->vertex_count, sizeof(vec3));
-    data->indices = (DvzIndex*)dvz_calloc(data->index_count, sizeof(DvzIndex));
+    data->inflated = (vec3*)dvz_calloc(data->render_vertex_count, sizeof(vec3));
+    data->pial = (vec3*)dvz_calloc(data->render_vertex_count, sizeof(vec3));
+    data->render_indices = (DvzIndex*)dvz_calloc(data->render_index_count, sizeof(DvzIndex));
+    data->source_indices = (DvzIndex*)dvz_calloc(data->source_index_count, sizeof(DvzIndex));
+    data->interpolation_indices =
+        (DvzIndex*)dvz_calloc((uint64_t)data->render_vertex_count * 3u, sizeof(DvzIndex));
+    data->interpolation_weights = (vec3*)dvz_calloc(data->render_vertex_count, sizeof(vec3));
+    data->source_render_vertices =
+        (DvzIndex*)dvz_calloc(data->source_vertex_count, sizeof(DvzIndex));
     data->values = (float*)dvz_calloc(value_count, sizeof(float));
     if (data->times_ms == NULL || data->inflated == NULL || data->pial == NULL ||
-        data->normals == NULL || data->indices == NULL || data->values == NULL)
+        data->render_indices == NULL || data->source_indices == NULL ||
+        data->interpolation_indices == NULL || data->interpolation_weights == NULL ||
+        data->source_render_vertices == NULL || data->values == NULL)
     {
         goto cleanup;
     }
     if (!_read_exact(fp, data->times_ms, time_bytes) ||
-        !_read_exact(fp, data->inflated, vector_bytes) ||
-        !_read_exact(fp, data->pial, vector_bytes) ||
-        !_read_exact(fp, data->normals, vector_bytes) ||
-        !_read_exact(fp, data->indices, index_bytes) ||
+        !_read_exact(fp, data->inflated, render_vector_bytes) ||
+        !_read_exact(fp, data->pial, render_vector_bytes) ||
+        !_read_exact(fp, data->render_indices, render_index_bytes) ||
+        !_read_exact(fp, data->source_indices, source_index_bytes) ||
+        !_read_exact(fp, data->interpolation_indices, interpolation_bytes) ||
+        !_read_exact(fp, data->interpolation_weights, interpolation_bytes) ||
+        !_read_exact(fp, data->source_render_vertices, source_render_vertex_bytes) ||
         !_read_exact(fp, data->values, value_bytes))
     {
         goto cleanup;
@@ -325,9 +370,35 @@ static bool _activity_data_load(const char* path, CorticalActivityData* data)
         if (!(data->times_ms[i] > data->times_ms[i - 1u]))
             goto cleanup;
     }
-    for (uint32_t i = 0; i < data->index_count; i++)
+    for (uint32_t i = 0; i < data->render_index_count; i++)
     {
-        if (data->indices[i] >= data->vertex_count)
+        if (data->render_indices[i] >= data->render_vertex_count)
+            goto cleanup;
+    }
+    for (uint32_t i = 0; i < data->source_index_count; i++)
+    {
+        if (data->source_indices[i] >= data->source_vertex_count)
+            goto cleanup;
+    }
+    for (uint32_t i = 0; i < data->render_vertex_count; i++)
+    {
+        float weight_sum = 0.0f;
+        for (uint32_t j = 0; j < 3u; j++)
+        {
+            if (data->interpolation_indices[3u * i + j] >= data->source_vertex_count ||
+                !isfinite(data->interpolation_weights[i][j]) ||
+                data->interpolation_weights[i][j] < 0.0f)
+            {
+                goto cleanup;
+            }
+            weight_sum += data->interpolation_weights[i][j];
+        }
+        if (fabsf(weight_sum - 1.0f) > 2e-5f)
+            goto cleanup;
+    }
+    for (uint32_t i = 0; i < data->source_vertex_count; i++)
+    {
+        if (data->source_render_vertices[i] >= data->render_vertex_count)
             goto cleanup;
     }
     ok = true;
@@ -358,13 +429,13 @@ static float _peak_time_ms(const CorticalActivityData* data)
 {
     ANN(data);
     uint64_t peak = 0;
-    const uint64_t count = (uint64_t)data->time_count * data->vertex_count;
+    const uint64_t count = (uint64_t)data->time_count * data->source_vertex_count;
     for (uint64_t i = 1; i < count; i++)
     {
         if (data->values[i] > data->values[peak])
             peak = i;
     }
-    return data->times_ms[peak / data->vertex_count];
+    return data->times_ms[peak / data->source_vertex_count];
 }
 
 
@@ -376,12 +447,12 @@ static float _peak_time_ms(const CorticalActivityData* data)
 static void _recompute_normals(CorticalActivityState* state)
 {
     ANN(state);
-    memset(state->display_normals, 0, (uint64_t)state->data.vertex_count * sizeof(vec3));
-    for (uint32_t i = 0; i < state->data.index_count; i += 3u)
+    memset(state->display_normals, 0, (uint64_t)state->data.render_vertex_count * sizeof(vec3));
+    for (uint32_t i = 0; i < state->data.render_index_count; i += 3u)
     {
-        const DvzIndex i0 = state->data.indices[i + 0u];
-        const DvzIndex i1 = state->data.indices[i + 1u];
-        const DvzIndex i2 = state->data.indices[i + 2u];
+        const DvzIndex i0 = state->data.render_indices[i + 0u];
+        const DvzIndex i1 = state->data.render_indices[i + 1u];
+        const DvzIndex i2 = state->data.render_indices[i + 2u];
         const float* p0 = state->positions[i0];
         const float* p1 = state->positions[i1];
         const float* p2 = state->positions[i2];
@@ -394,13 +465,13 @@ static void _recompute_normals(CorticalActivityState* state)
         const vec3 face = {ay * bz - az * by, az * bx - ax * bz, ax * by - ay * bx};
         for (uint32_t corner = 0; corner < 3u; corner++)
         {
-            vec3* normal = &state->display_normals[state->data.indices[i + corner]];
+            vec3* normal = &state->display_normals[state->data.render_indices[i + corner]];
             (*normal)[0] += face[0];
             (*normal)[1] += face[1];
             (*normal)[2] += face[2];
         }
     }
-    for (uint32_t i = 0; i < state->data.vertex_count; i++)
+    for (uint32_t i = 0; i < state->data.render_vertex_count; i++)
     {
         vec3* normal = &state->display_normals[i];
         const float length = sqrtf(
@@ -473,7 +544,7 @@ static bool _update_geometry(CorticalActivityState* state)
     }
 
     const float surface_mix = _clamp01(state->surface_mix);
-    for (uint32_t i = 0; i < state->data.vertex_count; i++)
+    for (uint32_t i = 0; i < state->data.render_vertex_count; i++)
     {
         for (uint32_t axis = 0; axis < 3u; axis++)
         {
@@ -487,7 +558,7 @@ static bool _update_geometry(CorticalActivityState* state)
         uint32_t offset = 0;
         for (uint32_t hemi = 0; hemi < 2u; hemi++)
         {
-            const uint32_t count = state->data.hemisphere_vertex_count[hemi];
+            const uint32_t count = state->data.render_hemisphere_vertex_count[hemi];
             vec3 min = {INFINITY, INFINITY, INFINITY};
             vec3 max = {-INFINITY, -INFINITY, -INFINITY};
             for (uint32_t i = offset; i < offset + count; i++)
@@ -520,7 +591,7 @@ static bool _update_geometry(CorticalActivityState* state)
     }
     else
     {
-        for (uint32_t i = 0; i < state->data.vertex_count; i++)
+        for (uint32_t i = 0; i < state->data.render_vertex_count; i++)
         {
             const vec3 p = {
                 state->positions[i][0], state->positions[i][1], state->positions[i][2]};
@@ -535,10 +606,10 @@ static bool _update_geometry(CorticalActivityState* state)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position",
          .data = state->positions,
-         .item_count = state->data.vertex_count},
+         .item_count = state->data.render_vertex_count},
         {.attr_name = "normal",
          .data = state->display_normals,
-         .item_count = state->data.vertex_count},
+         .item_count = state->data.render_vertex_count},
     };
     if (dvz_visual_set_data_many(state->mesh, updates, DVZ_ARRAY_COUNT(updates)) != DVZ_OK)
         return false;
@@ -609,13 +680,19 @@ static bool _set_activity_time(CorticalActivityState* state, float time_ms)
     const uint32_t lower = upper - 1u;
     const float interval = data->times_ms[upper] - data->times_ms[lower];
     const float alpha = interval > 0.0f ? (time_ms - data->times_ms[lower]) / interval : 0.0f;
-    const float* values0 = data->values + (uint64_t)lower * data->vertex_count;
-    const float* values1 = data->values + (uint64_t)upper * data->vertex_count;
+    const float* values0 = data->values + (uint64_t)lower * data->source_vertex_count;
+    const float* values1 = data->values + (uint64_t)upper * data->source_vertex_count;
     const DvzColor anatomy = dvz_color_rgb(54u, 61u, 70u);
 
-    for (uint32_t i = 0; i < data->vertex_count; i++)
+    for (uint32_t i = 0; i < data->render_vertex_count; i++)
     {
-        const float value = (1.0f - alpha) * values0[i] + alpha * values1[i];
+        float value = 0.0f;
+        for (uint32_t j = 0; j < 3u; j++)
+        {
+            const DvzIndex source = data->interpolation_indices[3u * i + j];
+            const float source_value = (1.0f - alpha) * values0[source] + alpha * values1[source];
+            value += data->interpolation_weights[i][j] * source_value;
+        }
         if (value <= state->activity_min)
         {
             state->colors[i] = anatomy;
@@ -630,7 +707,7 @@ static bool _set_activity_time(CorticalActivityState* state, float time_ms)
             _clamp01((value - state->activity_min) / (state->activity_mid - state->activity_min));
         state->colors[i] = _color_mix(anatomy, activity, visibility);
     }
-    if (dvz_visual_set_data(state->mesh, "color", state->colors, data->vertex_count) != 0)
+    if (dvz_visual_set_data(state->mesh, "color", state->colors, data->render_vertex_count) != 0)
         return false;
 
     state->current_time_ms = time_ms;
@@ -823,9 +900,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->activity_max = state->data.display_max;
     state->peak_time_ms = _peak_time_ms(&state->data);
     state->current_time_ms = state->peak_time_ms;
-    state->colors = (DvzColor*)dvz_calloc(state->data.vertex_count, sizeof(DvzColor));
-    state->positions = (vec3*)dvz_calloc(state->data.vertex_count, sizeof(vec3));
-    state->display_normals = (vec3*)dvz_calloc(state->data.vertex_count, sizeof(vec3));
+    state->colors = (DvzColor*)dvz_calloc(state->data.render_vertex_count, sizeof(DvzColor));
+    state->positions = (vec3*)dvz_calloc(state->data.render_vertex_count, sizeof(vec3));
+    state->display_normals = (vec3*)dvz_calloc(state->data.render_vertex_count, sizeof(vec3));
     if (state->colors == NULL || state->positions == NULL || state->display_normals == NULL)
         return false;
 
@@ -865,22 +942,20 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (dvz_visual_set_material(state->mesh, &material) != 0)
         return false;
 
-    DvzGeometry* geometry = dvz_geometry(state->data.vertex_count, state->data.index_count);
+    DvzGeometry* geometry =
+        dvz_geometry(state->data.render_vertex_count, state->data.render_index_count);
     if (geometry == NULL)
         return false;
-    for (uint32_t i = 0; i < state->data.vertex_count; i++)
+    for (uint32_t i = 0; i < state->data.render_vertex_count; i++)
     {
         geometry->positions[i][0] = state->data.inflated[i][0];
         geometry->positions[i][1] = state->data.inflated[i][1];
         geometry->positions[i][2] = state->data.inflated[i][2];
-        geometry->normals[i][0] = state->data.normals[i][0];
-        geometry->normals[i][1] = state->data.normals[i][1];
-        geometry->normals[i][2] = state->data.normals[i][2];
         geometry->colors[i] = dvz_color_rgb(54u, 61u, 70u);
     }
     memcpy(
-        geometry->indices, state->data.indices,
-        (uint64_t)state->data.index_count * sizeof(DvzIndex));
+        geometry->indices, state->data.render_indices,
+        (uint64_t)state->data.render_index_count * sizeof(DvzIndex));
     state->edges = dvz_geometry_edges(geometry);
     if (state->edges == NULL)
     {
