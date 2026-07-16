@@ -3539,7 +3539,6 @@ examples:
       status: webgpu-deferred
       requirements:
         - mesh
-        - segment
         - material
         - colorbar
         - arcball
@@ -3568,9 +3567,9 @@ examples:
         measurement of neuronal firing or absolute current amplitude.
     encoding:
       position: >-
-        complete 319,834-vertex bilateral participant-native pial and inflated FreeSurfer surfaces
-        with one shared uniform scale; whole-brain and split-lateral layouts preserve anatomical
-        aspect ratio
+        complete 319,834-vertex bilateral participant-native FreeSurfer pial surface with one
+        shared uniform scale; whole-brain and split-lateral layouts preserve anatomical aspect
+        ratio
       color: >-
         oct6 dSPM values interpolated through hemisphere-local spherical triangles onto the render
         mesh, then mapped with sequential magma over neutral graphite anatomy; the comparable
@@ -3591,7 +3590,6 @@ examples:
       - mesh
       - full-resolution
       - spherical-interpolation
-      - wireframe
       - gui
       - material
       - colorbar
