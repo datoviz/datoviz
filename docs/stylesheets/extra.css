@@ -377,6 +377,52 @@ img[alt*=gpuopen] {
     margin: 1.5rem 0 2.5rem;
 }
 
+/* ── Release posts ─────────────────────────────────────────────────────── */
+.dvz-release-scope {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 1.25rem 0;
+}
+
+.dvz-release-scope section {
+    min-width: 0;
+    padding: 0.9rem;
+    border: 1px solid rgba(76, 201, 240, 0.18);
+    border-top-width: 2px;
+    border-radius: 5px;
+    background: #10161f;
+}
+
+.dvz-release-scope__primary {
+    border-top-color: var(--dvz-cyan) !important;
+}
+
+.dvz-release-scope__experimental {
+    border-top-color: var(--dvz-amber) !important;
+}
+
+.dvz-release-scope__optional {
+    border-top-color: var(--dvz-mint) !important;
+}
+
+.dvz-release-scope strong,
+.dvz-release-scope span {
+    display: block;
+}
+
+.dvz-release-scope strong {
+    margin-bottom: 0.35rem;
+    color: #f0f6fc;
+    font-size: 0.75rem;
+}
+
+.dvz-release-scope span {
+    color: var(--dvz-muted);
+    font-size: 0.68rem;
+    line-height: 1.5;
+}
+
 .dvz-showcase-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -583,7 +629,8 @@ img[alt*=gpuopen] {
 @media screen and (max-width: 760px) {
     .dvz-showcase-grid,
     .dvz-language-grid,
-    .dvz-feature-grid {
+    .dvz-feature-grid,
+    .dvz-release-scope {
         grid-template-columns: 1fr;
     }
 
