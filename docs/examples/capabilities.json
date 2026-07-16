@@ -63,7 +63,7 @@
         ]
       },
       "prepared": {
-        "count": 4,
+        "count": 5,
         "examples": [
           {
             "id": "showcases_choropleth",
@@ -96,11 +96,19 @@
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
             "page": "gallery/showcases/showcases_point_cloud.md"
+          },
+          {
+            "id": "showcases_textured_planet",
+            "title": "Textured Planets and Orbital Debris",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/textured_planet.c",
+            "page": "gallery/showcases/showcases_textured_planet.md"
           }
         ]
       },
       "real": {
-        "count": 2,
+        "count": 1,
         "examples": [
           {
             "id": "showcases_protein",
@@ -109,14 +117,6 @@
             "status": "supported",
             "source": "examples/c/showcases/protein.c",
             "page": "gallery/showcases/showcases_protein.md"
-          },
-          {
-            "id": "showcases_textured_planet",
-            "title": "Textured Planets",
-            "category": "showcase",
-            "status": "supported",
-            "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/showcases_textured_planet.md"
           }
         ]
       },
@@ -1989,7 +1989,7 @@
         ]
       },
       "animation": {
-        "count": 4,
+        "count": 5,
         "examples": [
           {
             "id": "runtime_video_export",
@@ -2022,6 +2022,14 @@
             "status": "experimental",
             "source": "examples/c/showcases/cortical_activity.c",
             "page": "gallery/showcases/showcases_cortical_activity.md"
+          },
+          {
+            "id": "showcases_textured_planet",
+            "title": "Textured Planets and Orbital Debris",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/textured_planet.c",
+            "page": "gallery/showcases/showcases_textured_planet.md"
           }
         ]
       },
@@ -2107,7 +2115,7 @@
           },
           {
             "id": "showcases_textured_planet",
-            "title": "Textured Planets",
+            "title": "Textured Planets and Orbital Debris",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
@@ -2419,7 +2427,7 @@
           },
           {
             "id": "showcases_textured_planet",
-            "title": "Textured Planets",
+            "title": "Textured Planets and Orbital Debris",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
@@ -2445,6 +2453,19 @@
             "status": "supported",
             "source": "examples/c/visuals/labels.c",
             "page": "gallery/visuals/visuals_labels.md"
+          }
+        ]
+      },
+      "celestrak": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_textured_planet",
+            "title": "Textured Planets and Orbital Debris",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/textured_planet.c",
+            "page": "gallery/showcases/showcases_textured_planet.md"
           }
         ]
       },
@@ -2791,7 +2812,7 @@
         ]
       },
       "gui": {
-        "count": 1,
+        "count": 2,
         "examples": [
           {
             "id": "showcases_point_cloud",
@@ -2800,6 +2821,14 @@
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
             "page": "gallery/showcases/showcases_point_cloud.md"
+          },
+          {
+            "id": "showcases_textured_planet",
+            "title": "Textured Planets and Orbital Debris",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/textured_planet.c",
+            "page": "gallery/showcases/showcases_textured_planet.md"
           }
         ]
       },
@@ -3151,7 +3180,7 @@
           },
           {
             "id": "showcases_textured_planet",
-            "title": "Textured Planets",
+            "title": "Textured Planets and Orbital Debris",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
@@ -3195,6 +3224,19 @@
             "status": "supported",
             "source": "examples/qt/qt_hosting.cpp",
             "page": "gallery/advanced/advanced_qt_hosting.md"
+          }
+        ]
+      },
+      "orbital-debris": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_textured_planet",
+            "title": "Textured Planets and Orbital Debris",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/textured_planet.c",
+            "page": "gallery/showcases/showcases_textured_planet.md"
           }
         ]
       },
@@ -3326,7 +3368,7 @@
         ]
       },
       "path": {
-        "count": 2,
+        "count": 3,
         "examples": [
           {
             "id": "visuals_vector",
@@ -3343,6 +3385,14 @@
             "status": "supported",
             "source": "examples/c/visuals/path.c",
             "page": "gallery/visuals/visuals_path.md"
+          },
+          {
+            "id": "showcases_textured_planet",
+            "title": "Textured Planets and Orbital Debris",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/textured_planet.c",
+            "page": "gallery/showcases/showcases_textured_planet.md"
           }
         ]
       },
@@ -3381,7 +3431,7 @@
         ]
       },
       "point": {
-        "count": 4,
+        "count": 5,
         "examples": [
           {
             "id": "features_bounds_overlay",
@@ -3414,6 +3464,14 @@
             "status": "experimental",
             "source": "examples/c/showcases/gpu_particle_smoke.c",
             "page": "gallery/showcases/showcases_gpu_particle_smoke.md"
+          },
+          {
+            "id": "showcases_textured_planet",
+            "title": "Textured Planets and Orbital Debris",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/textured_planet.c",
+            "page": "gallery/showcases/showcases_textured_planet.md"
           }
         ]
       },
@@ -3548,7 +3606,7 @@
           },
           {
             "id": "showcases_textured_planet",
-            "title": "Textured Planets",
+            "title": "Textured Planets and Orbital Debris",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
@@ -3606,7 +3664,7 @@
           },
           {
             "id": "showcases_textured_planet",
-            "title": "Textured Planets",
+            "title": "Textured Planets and Orbital Debris",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
@@ -3761,6 +3819,19 @@
             "status": "supported",
             "source": "examples/c/visuals/segment.c",
             "page": "gallery/visuals/visuals_segment.md"
+          }
+        ]
+      },
+      "sgp4": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_textured_planet",
+            "title": "Textured Planets and Orbital Debris",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/textured_planet.c",
+            "page": "gallery/showcases/showcases_textured_planet.md"
           }
         ]
       },
@@ -3960,7 +4031,7 @@
         "examples": [
           {
             "id": "showcases_textured_planet",
-            "title": "Textured Planets",
+            "title": "Textured Planets and Orbital Debris",
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",

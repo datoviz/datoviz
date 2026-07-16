@@ -226,20 +226,20 @@ This example turns a generated height field into a lit mesh and wireframe.
 
 <div class="card" markdown="1">
 
-### [Textured Planets](gallery/showcases/showcases_textured_planet.md)
+### [Textured Planets and Orbital Debris](gallery/showcases/showcases_textured_planet.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_textured_planet/" aria-label="Textured Planets"></a>
-  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" alt="Textured Planets" loading="lazy">
+  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_textured_planet/" aria-label="Textured Planets and Orbital Debris"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" alt="Textured Planets and Orbital Debris" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" aria-label="Textured Planets preview">
+         poster="../../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" aria-label="Textured Planets and Orbital Debris preview">
     <source data-src="../../assets/gallery/v0.4/showcases/showcases_textured_planet.mp4" type="video/mp4">
   </video>
 </div>
 
 `showcases`<br><span>`real-data`, `mesh`, `sampled-field`, `texture`, `arcball`, ...</span>
 
-This example maps real planetary textures onto an indexed sphere mesh.
+This example combines a textured Earth with real catalogued orbital debris.
 
 </div>
 

@@ -5523,7 +5523,7 @@
     },
     {
       "id": "showcases_textured_planet",
-      "title": "Textured Planets",
+      "title": "Textured Planets and Orbital Debris",
       "category": "showcase",
       "lane": "showcases",
       "stage": "v0.4_required",
@@ -5531,7 +5531,7 @@
       "source": "examples/c/showcases/textured_planet.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet.c",
       "page": "gallery/showcases/showcases_textured_planet.md",
-      "summary": "This example maps real planetary textures onto an indexed sphere mesh.",
+      "summary": "This example combines a textured Earth with real catalogued orbital debris.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c showcases/textured_planet",
       "smoke_command": "./build/examples/c/showcases/textured_planet --png",
@@ -5541,12 +5541,19 @@
         "sampled-field",
         "texture",
         "arcball",
+        "point",
+        "path",
+        "animation",
+        "orbital-debris",
+        "celestrak",
+        "sgp4",
+        "gui",
         "capture"
       ],
       "data": {
-        "kind": "real"
+        "kind": "prepared"
       },
-      "data_kind": "real",
+      "data_kind": "prepared",
       "media": {
         "screenshot": {
           "expected": true,
@@ -5561,7 +5568,11 @@
         "mesh",
         "sampled-field",
         "texture",
-        "arcball"
+        "arcball",
+        "point",
+        "path",
+        "buffer-update",
+        "frame-callbacks"
       ],
       "webgpu": {
         "status": "webgpu-live",
@@ -5570,19 +5581,29 @@
           "mesh",
           "sampled-field",
           "texture",
-          "arcball"
+          "arcball",
+          "point",
+          "path",
+          "buffer-update",
+          "frame-callbacks"
         ]
       },
       "webgpu_route": "examples/webgpu/live.html?id=showcases_textured_planet",
       "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_textured_planet",
       "dataset": {
-        "name": "NASA Earth and Mars equirectangular texture maps",
-        "source": "data/assets/textures/world.200412.3x5400x2700.jpg; data/assets/textures/earth.jpg; data/assets/textures/mars_viking_mdim21.jpg",
-        "source_url": "https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/; https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m",
-        "license": "NASA media usage guidelines and USGS/NASA public-domain source-data terms apply; acknowledge NASA, NASA Ames, JPL, and USGS as source where relevant.",
-        "citation": "NASA Blue Marble Next Generation; USGS Astrogeology Mars Viking Colorized Global Mosaic 232m / Mars Digital Image Model 2.1.",
-        "preprocessing": "none; committed JPEG texture maps are loaded directly from data/assets/textures",
-        "provenance": "Earth uses NASA Blue Marble Next Generation texture assets; Mars uses the USGS Astrogeology/NASA Ames/JPL/USGS Viking MDIM 2.1 colorized global mosaic. The example can generate a procedural Earth fallback when the local Earth file is absent, but release gallery evidence should use the committed real texture assets."
+        "name": "NASA/USGS planet textures and CelesTrak catalogued orbital debris",
+        "source": "data/assets/textures/world.200412.3x5400x2700.jpg; data/assets/textures/earth.jpg; data/assets/textures/mars_viking_mdim21.jpg; CelesTrak GP element sets for FENGYUN 1C, IRIDIUM 33, and COSMOS 2251 debris",
+        "source_url": "https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/; https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m; https://celestrak.org/NORAD/documentation/gp-data-formats.php",
+        "license": "NASA media usage guidelines and USGS/NASA public-domain source-data terms apply; acknowledge NASA, NASA Ames, JPL, and USGS as source where relevant. CelesTrak data use must follow https://celestrak.org/usage-policy.php and retain source attribution.",
+        "citation": "NASA Blue Marble Next Generation; USGS Astrogeology Mars Viking Colorized Global Mosaic 232m / Mars Digital Image Model 2.1; CelesTrak; Vallado, Crawford, Hujsak, and Kelso, Revisiting Spacetrack Report #3, AIAA 2006-6753.",
+        "preprocessing": "uv run tools/data/prepare_orbital_debris.py --force",
+        "cache_prepared_path": ".cache/datoviz/examples/orbital_debris/prepared",
+        "provenance": "Earth uses NASA Blue Marble Next Generation texture assets; Mars uses the USGS Astrogeology/NASA Ames/JPL/USGS Viking MDIM 2.1 colorized global mosaic. Debris points are tracked catalog objects from three selected fragmentation events, propagated from a dated CelesTrak GP snapshot with SGP4 into a two-hour Earth-fixed ephemeris. This is not the full debris environment; point sizes are exaggerated and do not encode physical object size."
+      },
+      "encoding": {
+        "position": "SGP4 TEME position rotated to approximate Earth-fixed coordinates and normalized by Earth radius",
+        "color": "cyan FENGYUN 1C, amber IRIDIUM 33, coral COSMOS 2251",
+        "time": "120-minute prepared ephemeris shown at 60x real time by default"
       },
       "python_source": "examples/python/gallery/showcases/textured_planet.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/textured_planet.py"
