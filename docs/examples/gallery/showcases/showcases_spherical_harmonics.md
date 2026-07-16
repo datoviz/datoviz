@@ -44,7 +44,7 @@ after verifying the linked API reference.
 
 A uniformly tessellated icosphere is deformed radially by a deterministic blend of real spherical harmonics. The coefficients morph in a slow seamless loop, vertex color preserves the signed amplitude, and smooth normals reveal the changing folded surface.
 
-This workflow is useful for directional basis functions, radiation patterns, orbital-like surfaces, and other spherical scalar fields that benefit from direct 3D shape perception.
+This workflow is useful for directional basis functions, radiation patterns, orbital-like surfaces, and other spherical scalar fields that benefit from direct 3D shape perception. Native live mode adds controls for the surface mapping and every harmonic term.
 
 ## Source
 
