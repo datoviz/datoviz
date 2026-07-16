@@ -28,7 +28,7 @@ This example compares a plain 3D sphere lattice with depth-dependent fading.
 
 ## What To Look For
 
-Both panels upload the same uniformly colored 3x3x3 sphere lattice, but only the right panel applies a depth-cue descriptor to the visual. The uniform material makes the progressive fade toward the background attributable to depth rather than a color mapping. In live mode, use the GUI to change cue mode, depth metric, falloff, near/far depth, strength, density, and background color while the linked arcball keeps both views aligned.
+Both panels upload the same uniformly colored 5x5x5 sphere lattice, but only the right panel applies a depth-cue descriptor to the visual. The uniform material makes the progressive fade toward the background attributable to depth rather than a color mapping. In live mode, use the GUI to change cue mode, depth metric, falloff, near/far depth, strength, density, and background color while the linked arcball keeps both views aligned.
 
 ## Source
 

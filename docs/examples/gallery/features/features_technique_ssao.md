@@ -9,7 +9,7 @@
 </div>
 </nav>
 
-This example compares floor contact shadows with and without screen-space ambient occlusion.
+This example compares a synthetic molecular aggregate with and without ambient occlusion.
 
 ## Preview
 
@@ -28,7 +28,7 @@ This example compares floor contact shadows with and without screen-space ambien
 
 ## What To Look For
 
-Both panels render the same lit sphere cluster and floor, while the right panel applies SSAO with blur and tunable radius, strength, bias, power, visibility, sample count, and debug settings. In live mode, use the GUI and linked arcball to inspect the contact shadows beneath and between nearby spheres. SSAO helps reveal local shape and separation in crowded 3D scientific scenes.
+Both panels render the same irregular, multi-lobed aggregate of variable-sized spheres, while the right panel applies SSAO. Narrow clefts, recessed pockets, and near-contact atom clusters become easier to separate without a floor or external dataset. In live mode, use the GUI and linked arcball to inspect how radius, strength, bias, power, visibility, sample count, and blur affect local occlusion.
 
 ## Source
 

@@ -742,7 +742,7 @@ This example maps an RGBA8 sampled field onto a UV sphere mesh.
 
 `features`
 
-This example compares floor contact shadows with and without screen-space ambient occlusion.
+This example compares a synthetic molecular aggregate with and without ambient occlusion.
 
 </div>
 
