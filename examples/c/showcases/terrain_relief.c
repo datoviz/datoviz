@@ -770,7 +770,6 @@ DvzScenarioSpec dvz_showcase_terrain_relief_scenario(void)
         .requirements =
             DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_ARCBALL,
         .init = _scenario_init,
-        .native_view = _scenario_native_view,
         .destroy = _scenario_destroy,
     };
 }
@@ -792,6 +791,8 @@ DvzScenarioSpec dvz_showcase_terrain_relief_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = dvz_showcase_terrain_relief_scenario();
+    if (example_arg_has(argc, argv, "--live"))
+        spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
 #endif
