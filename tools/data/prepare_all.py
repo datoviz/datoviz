@@ -36,6 +36,7 @@ SCRIPT_GROUPS: dict[str, list[str]] = {
         "tools/data/prepare_synthetic_mouse.py",
     ],
     "external": [
+        "tools/data/prepare_cortical_activity.py",
         "tools/data/prepare_geo_public.py",
         "tools/data/prepare_physics_public.py",
         "tools/data/prepare_astronomy_public.py",
