@@ -50,7 +50,7 @@ DSPM is a model-derived, dimensionless source estimate. It is not a direct measu
 
 Prepare: uv run --isolated --with mne==1.12.1 --with mne-bids==0.19.0 \ --with nibabel==5.4.2 --with numpy==2.3.4 --with scipy==1.18.0 --with requests \ `python tools/data/prepare_cortical_activity.py`
 
-Control: live GUI; space plays/pauses; left/right arrows seek
+Control: pass --live explicitly for the tuner; D prints C defaults; space plays/pauses; left/right arrows seek
 
 ## Source
 
