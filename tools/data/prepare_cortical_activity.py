@@ -21,8 +21,8 @@ from common import CACHE_ROOT, artifact, command_argv, relpath, write_manifest, 
 
 ROOT = Path(__file__).resolve().parents[2]
 EXAMPLE_ID = "cortical_activity"
-BUNDLE_VERSION = 1
-BINARY_MAGIC = b"DVZCTA1\0"
+BUNDLE_VERSION = 2
+BINARY_MAGIC = b"DVZCTA2\0"
 BINARY_HEADER_FORMAT = "<8s8I5f5I"
 BINARY_HEADER_SIZE = struct.calcsize(BINARY_HEADER_FORMAT)
 
@@ -56,7 +56,7 @@ LAMBDA2 = 1.0 / SNR**2
 # Match the established MNE audiovisual sample display convention. Values below fmin remain
 # neutral cortex; opacity rises through fmid and the sequential ramp saturates at fmax.
 DISPLAY_LIMITS = (8.0, 12.0, 15.0)
-HEMISPHERE_GAP_MM = 100.0
+DISPLAY_EXTENT = 1.85
 
 
 @dataclass(frozen=True)
@@ -294,18 +294,6 @@ def _source_mesh(mne: Any, source_root: Path, src: Any) -> tuple[
 
         inflated = np.asarray(inflated_full[vertices], dtype=np.float64)
         pial = np.asarray(pial_full[vertices], dtype=np.float64)
-        # Present the two real surfaces as mirrored lateral views. This is a rigid display-space
-        # reorientation per hemisphere: topology, vertex identity, and scalar correspondence stay
-        # unchanged. The outer (lateral) cortex faces +Z for both hemispheres.
-        surface_center = 0.5 * (inflated.min(axis=0) + inflated.max(axis=0))
-        inflated -= surface_center
-        pial -= surface_center
-        side = -1.0 if hemi == "lh" else 1.0
-        for surface in (inflated, pial):
-            original = surface.copy()
-            surface[:, 0] = side * original[:, 1] + side * HEMISPHERE_GAP_MM
-            surface[:, 1] = original[:, 2]
-            surface[:, 2] = side * original[:, 0]
         normals = _vertex_normals(inflated, local_triangles)
 
         inflated_parts.append(inflated)
@@ -326,10 +314,13 @@ def _source_mesh(mne: Any, source_root: Path, src: Any) -> tuple[
 
     inflated = np.concatenate(inflated_parts, axis=0)
     pial = np.concatenate(pial_parts, axis=0)
-    center = 0.5 * (inflated.min(axis=0) + inflated.max(axis=0))
-    scale = float(np.max(inflated.max(axis=0) - inflated.min(axis=0)))
-    inflated = (inflated - center) * (1.85 / scale)
-    pial = (pial - center) * (1.85 / scale)
+    # Preserve anatomical proportions with one translation and one scalar applied to every axis
+    # and both surfaces. Layout-specific rotations and hemisphere separation belong to the viewer.
+    reference = np.concatenate((inflated, pial), axis=0)
+    center = 0.5 * (reference.min(axis=0) + reference.max(axis=0))
+    scale = DISPLAY_EXTENT / float(np.max(np.ptp(reference, axis=0)))
+    inflated = (inflated - center) * scale
+    pial = (pial - center) * scale
     return (
         inflated.astype(np.float32),
         pial.astype(np.float32),
@@ -608,8 +599,9 @@ def prepare(force_download: bool, download_only: bool) -> Path:
         "mesh": {
             "surface": "inflated",
             "alternate_surface": "pial",
-            "display_orientation": "mirrored lateral hemispheres facing +Z",
-            "hemisphere_center_offset_mm_before_normalization": HEMISPHERE_GAP_MM,
+            "coordinate_space": "participant-native FreeSurfer surface RAS",
+            "normalization": "one shared translation and uniform scale across axes and surfaces",
+            "display_extent": DISPLAY_EXTENT,
             "hemispheres": result["hemispheres"],
             "vertex_count": int(result["inflated"].shape[0]),
             "triangle_count": int(result["indices"].size // 3),
@@ -675,6 +667,7 @@ def prepare(force_download: bool, download_only: bool) -> Path:
             "Estimated baseline noise covariance, participant-native BEM/forward solution, and a loose-orientation minimum-norm inverse.",
             f"Applied dSPM with SNR={SNR:g} and lambda2={LAMBDA2:.9f}; exported {OUTPUT_TMIN_S:g} to {OUTPUT_TMAX_S:g} seconds.",
             f"Sampled activity on the `{SOURCE_SPACING}` source mesh and preserved both inflated and pial coordinates.",
+            "Centered both hemispheres together and applied one shared uniform scale, preserving the anatomical aspect ratio.",
             f"Filled inverse-excluded mesh vertices by nearest graph propagation and applied {SMOOTHING_STEPS} neighbor-averaging display steps.",
         ],
         license_lines=[
