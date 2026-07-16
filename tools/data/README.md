@@ -56,6 +56,7 @@ Individual preparation scripts may also be run directly when iterating on one bu
 
 ```bash
 python tools/data/prepare_cells3d.py
+uv run tools/data/prepare_orbital_debris.py --force
 python tools/data/normalize_manifests.py data/examples/napari/cells3d
 python tools/data/validate_manifests.py data/examples/napari/cells3d
 ```
