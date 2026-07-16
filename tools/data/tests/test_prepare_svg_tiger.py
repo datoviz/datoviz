@@ -69,6 +69,7 @@ class SvgTigerTests(unittest.TestCase):
             self.assertEqual(header[1], tiger.VERSION)
             self.assertEqual(header[2], 2)
             self.assertEqual(header[4], tiger.PATH_RECORD.size)
+            self.assertEqual(header[5:7], (100.0, 80.0))
             first_record = tiger.PATH_RECORD.unpack_from(first.read_bytes(), tiger.HEADER.size)
             self.assertEqual(first_record[0:2], (0, 3))
             self.assertEqual(first_record[2:5], (1, 1, 1))

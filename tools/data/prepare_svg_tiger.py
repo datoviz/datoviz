@@ -29,8 +29,8 @@ SOURCE_BYTES = 110724
 SOURCE_SHA256 = "1bc237707ae0523f0e2115917626bfaceb24bc4a388b5ef659b5604b311ff537"
 
 MAGIC = b"DVZSVG1\0"
-VERSION = 1
-HEADER = struct.Struct("<8sIIII4d")
+VERSION = 2
+HEADER = struct.Struct("<8sIIII6d")
 PATH_RECORD = struct.Struct("<II4B4B4BfI")
 POINT = struct.Struct("<dd")
 
@@ -442,6 +442,8 @@ def write_bundle(document: SvgDocument, output: Path, source_path: Path, toleran
                 len(document.paths),
                 point_count,
                 PATH_RECORD.size,
+                document.width,
+                document.height,
                 *bounds,
             )
         )
