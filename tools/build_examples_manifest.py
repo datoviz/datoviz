@@ -62,8 +62,11 @@ def _webgpu_fields(example: build_gallery.Example) -> dict[str, Any]:
     }
     if example.webgpu_reason:
         item["webgpu_reason"] = example.webgpu_reason
-    if example.webgpu:
-        item["webgpu"] = example.webgpu
+    public_webgpu = {
+        key: value for key, value in example.webgpu.items() if not key.startswith("local_")
+    }
+    if public_webgpu:
+        item["webgpu"] = public_webgpu
     if example.webgpu_route:
         item["webgpu_route"] = example.webgpu_route
         item["webgpu_site_route"] = example.webgpu_site_route

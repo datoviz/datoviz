@@ -52,6 +52,16 @@ def bundle_rows(manifest_path: Path) -> list[tuple[str, dict]]:
     return rows
 
 
+def local_bundle_rows(manifest_path: Path) -> list[tuple[str, dict]]:
+    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf8")) or {}
+    rows = []
+    for entry in manifest.get("examples", []):
+        webgpu = entry.get("webgpu") or {}
+        for descriptor in webgpu.get("local_data_bundles") or []:
+            rows.append((str(entry["id"]), descriptor))
+    return rows
+
+
 def validate_bundle(example_id: str, descriptor: dict) -> tuple[Path, dict, int]:
     bundle_id = str(descriptor.get("id") or "")
     if not bundle_id:
@@ -104,8 +114,76 @@ def validate_bundle(example_id: str, descriptor: dict) -> tuple[Path, dict, int]
     return source_path, payload, total
 
 
+def stage_local_bundle(
+    example_id: str, descriptor: dict, output_dir: Path, check: bool = False
+) -> tuple[int, int]:
+    bundle_id = str(descriptor.get("id") or "")
+    if not bundle_id:
+        raise ValueError(f"{example_id}: local data bundle id is required")
+    metadata_rel = safe_relative_path(
+        descriptor.get("metadata_source"), f"{example_id}/{bundle_id} metadata_source"
+    )
+    artifact_rel = safe_relative_path(
+        descriptor.get("artifact_source"), f"{example_id}/{bundle_id} artifact_source"
+    )
+    output_rel = safe_relative_path(
+        descriptor.get("artifact_path"), f"{example_id}/{bundle_id} artifact_path"
+    )
+    metadata_path = ROOT.joinpath(*metadata_rel.parts)
+    artifact_path = ROOT.joinpath(*artifact_rel.parts)
+    if not metadata_path.is_file() or not artifact_path.is_file():
+        return 0, 0
+
+    metadata = json.loads(metadata_path.read_text(encoding="utf8"))
+    artifact = metadata.get("artifact") or {}
+    expected_bytes = artifact.get("bytes")
+    expected_hash = str(artifact.get("sha256") or "").lower()
+    if not isinstance(expected_bytes, int) or artifact_path.stat().st_size != expected_bytes:
+        raise ValueError(f"{example_id}/{bundle_id}: local artifact byte-size mismatch")
+    if len(expected_hash) != 64 or sha256(artifact_path) != expected_hash:
+        raise ValueError(f"{example_id}/{bundle_id}: local artifact SHA-256 mismatch")
+    max_bytes = descriptor.get("max_bytes")
+    if not isinstance(max_bytes, int) or max_bytes < expected_bytes:
+        raise ValueError(f"{example_id}/{bundle_id}: invalid local max_bytes")
+    virtual_root = str(descriptor.get("virtual_root") or "")
+    safe_relative_path(virtual_root, f"{example_id}/{bundle_id} virtual_root")
+    version = f"sha256-{expected_hash[:16]}"
+    if check:
+        return 1, expected_bytes
+    output = output_dir / "examples" / bundle_id / version
+    target = output.joinpath(*output_rel.parts)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(artifact_path, target)
+    payload = {
+        "schema": "datoviz.example-data.v1",
+        "id": bundle_id,
+        "status": "committed",
+        "title": f"{example_id} local WebGPU bundle",
+        "artifacts": [
+            {
+                "path": output_rel.as_posix(),
+                "bytes": expected_bytes,
+                "sha256": expected_hash,
+            }
+        ],
+        "web": {
+            "version": version,
+            "virtual_root": virtual_root,
+            "max_bytes": max_bytes,
+            "required": True,
+        },
+        "local_only": True,
+    }
+    output.mkdir(parents=True, exist_ok=True)
+    (output / "manifest.json").write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf8"
+    )
+    return 1, expected_bytes
+
+
 def stage_bundles(manifest_path: Path = DEFAULT_MANIFEST, output_dir: Path = DEFAULT_OUTPUT, check: bool = False) -> int:
     rows = bundle_rows(manifest_path)
+    local_rows = local_bundle_rows(manifest_path)
     copied = 0
     total = 0
     if not check:
@@ -130,8 +208,17 @@ def stage_bundles(manifest_path: Path = DEFAULT_MANIFEST, output_dir: Path = DEF
             extra = source_path.parent / name
             if extra.is_file():
                 shutil.copy2(extra, output / name)
+    local_staged = 0
+    for example_id, descriptor in local_rows:
+        count, size = stage_local_bundle(example_id, descriptor, output_dir, check=check)
+        local_staged += count
+        copied += count
+        total += size
     action = "validated" if check else "staged"
-    print(f"WebGPU data bundles: {action} {len(rows)} bundles, {copied} artifacts, {total} bytes")
+    print(
+        f"WebGPU data bundles: {action} {len(rows)} public bundles, "
+        f"{local_staged} local bundles, {copied} artifacts, {total} bytes"
+    )
     return 0
 
 

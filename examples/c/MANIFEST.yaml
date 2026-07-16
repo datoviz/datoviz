@@ -3170,6 +3170,14 @@ examples:
     portability: portable-scenario
     webgpu:
       status: native-only
+      local_route: examples/webgpu/live.html?id=showcases_svg_tiger
+      local_data_bundles:
+        - id: svg_tiger
+          metadata_source: .cache/datoviz/examples/svg_tiger/prepared/metadata.json
+          artifact_source: .cache/datoviz/examples/svg_tiger/prepared/tiger_paths.bin
+          artifact_path: prepared/tiger_paths.bin
+          virtual_root: data/examples/svg_tiger
+          max_bytes: 500000
       requirements:
         - mesh
         - path

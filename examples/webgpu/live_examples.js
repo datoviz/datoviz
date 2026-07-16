@@ -216,6 +216,19 @@ export const LIVE_EXAMPLES = [
     scenarioId: "showcases_surface_grid",
   },
   {
+    id: "showcases_svg_tiger",
+    label: "SVG Tiger · local development",
+    scenarioId: "showcases_svg_tiger",
+    dataBundles: [
+      {
+        id: "svg_tiger",
+        url: "../../webgpu-data/examples/svg_tiger/sha256-640a536d848ff2eb/manifest.json",
+        virtualRoot: "data/examples/svg_tiger",
+        required: true,
+      },
+    ],
+  },
+  {
     id: "showcases_terrain_relief",
     label: "McHenrys Peak Terrain Relief",
     scenarioId: "showcases_terrain_relief",
