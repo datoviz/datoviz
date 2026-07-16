@@ -84,6 +84,7 @@ static const float TAU = 6.28318530718f;
 #define SKY_GALAXY_RADIUS 45.0
 
 #define DEBRIS_TIME_SCALE    60.0f
+#define DEBRIS_DEFAULT_COUNT 520
 #define GLOBE_ROTATION_SPEED 0.035f
 
 #define ORBIT_TRACE_COUNT   12
@@ -974,7 +975,9 @@ static void _state_reset_debris_controls(TexturedPlanetState* state)
     state->show_galaxy = true;
     state->animate_debris = true;
     state->rotate_globe = true;
-    state->debris_count = (int)state->orbit_model.count;
+    state->debris_count = state->orbit_model.count < DEBRIS_DEFAULT_COUNT
+                              ? (int)state->orbit_model.count
+                              : DEBRIS_DEFAULT_COUNT;
     state->debris_speed = DEBRIS_TIME_SCALE;
     state->globe_speed = GLOBE_ROTATION_SPEED;
     state->debris_time = 0.0;

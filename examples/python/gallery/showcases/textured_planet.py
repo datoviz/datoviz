@@ -30,6 +30,7 @@ SKY_DATA_PATHS = (
     Path('.cache/datoviz/examples/planet_sky/prepared/planet_sky.bin'),
 )
 DEBRIS_TIME_SCALE = 60.0
+DEBRIS_DEFAULT_COUNT = 520
 GLOBE_ROTATION_SPEED = 0.035
 ORBIT_TRACE_COUNT = 12
 ORBIT_TRACE_SAMPLES = 121
@@ -554,6 +555,8 @@ def _add_debris(scene, panel, model: OrbitModel):
         np.float32
     )
     sizes[model.catalog_ids % 79 == 0] = 5.0
+    colors[DEBRIS_DEFAULT_COUNT:, 3] = 0
+    sizes[DEBRIS_DEFAULT_COUNT:] = 0.0
 
     points = dvz.dvz_point(scene, 0)
     if not points:
