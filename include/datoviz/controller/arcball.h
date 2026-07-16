@@ -89,6 +89,13 @@ struct DvzArcballDesc
 
 
 
+/**
+ * Return the default standalone arcball descriptor.
+ *
+ * The default viewport is 800 by 600 pixels and no controller flags are enabled.
+ *
+ * @return a fully initialized descriptor that callers may modify
+ */
 DVZ_EXPORT DvzArcballDesc dvz_arcball_desc(void);
 
 
@@ -211,6 +218,9 @@ DVZ_EXPORT DvzResult dvz_arcball_constrain(DvzArcball* arcball, vec3 axis);
 
 /**
  * Read current Euler angles.
+ *
+ * @param arcball the arcball controller; must not be NULL
+ * @param out_angles output Euler angles in radians
  */
 DVZ_EXPORT void dvz_arcball_angles(DvzArcball* arcball, vec3 out_angles);
 
@@ -253,7 +263,11 @@ DVZ_EXPORT DvzResult dvz_arcball_end(DvzArcball* arcball);
 
 /**
  * Fill the MVP struct from the current arcball state.
+ *
  * Rotation is applied to the model matrix; pan and zoom are applied to view.
+ *
+ * @param arcball the arcball controller; must not be NULL
+ * @param mvp output MVP state; must not be NULL
  */
 DVZ_EXPORT void dvz_arcball_mvp(DvzArcball* arcball, DvzMVP* mvp);
 
@@ -261,7 +275,8 @@ DVZ_EXPORT void dvz_arcball_mvp(DvzArcball* arcball, DvzMVP* mvp);
 /**
  * Return whether the pointer is currently interacting with the arcball.
  *
- * @returns true while the user is pressing or dragging the arcball
+ * @param arcball the arcball controller, or NULL
+ * @return true while a valid controller is handling a press or drag, otherwise false
  */
 DVZ_EXPORT bool dvz_arcball_is_interacting(DvzArcball* arcball);
 
@@ -270,7 +285,11 @@ DVZ_EXPORT bool dvz_arcball_is_interacting(DvzArcball* arcball);
 /**
  * Process a pointer event and update arcball state.
  *
- * @returns true if the event was consumed
+ * The event is borrowed for the duration of the call.
+ *
+ * @param arcball the arcball controller; must not be NULL
+ * @param ev the pointer event to process; must not be NULL
+ * @return true if the event was consumed
  */
 DVZ_EXPORT bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev);
 
@@ -299,7 +318,11 @@ DVZ_EXPORT DvzResult dvz_arcball_disconnect(DvzArcball* arcball, DvzInputRouter*
 
 
 /**
- * Destroy the arcball.
+ * Destroy a standalone arcball controller.
+ *
+ * The controller must have been unsubscribed from any input router before this call.
+ *
+ * @param arcball the owned arcball controller to destroy; must not be NULL
  */
 DVZ_EXPORT void dvz_arcball_destroy(DvzArcball* arcball);
 

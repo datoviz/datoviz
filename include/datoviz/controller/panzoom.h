@@ -122,6 +122,13 @@ struct DvzPanzoomDesc
 
 
 
+/**
+ * Return the default standalone panzoom descriptor.
+ *
+ * The default viewport is 800 by 600 pixels and no controller flags are enabled.
+ *
+ * @return a fully initialized descriptor that callers may modify
+ */
 DVZ_EXPORT DvzPanzoomDesc dvz_panzoom_desc(void);
 
 
@@ -273,10 +280,26 @@ DVZ_EXPORT DvzResult dvz_panzoom_end(DvzPanzoom* pz);
 
 /**
  * Fill the view and proj matrices of an MVP struct from the current panzoom state.
+ *
  * The model matrix is left untouched.
+ *
+ * @param pz the panzoom controller; must not be NULL
+ * @param mvp output MVP state whose view and projection matrices are replaced; must not be NULL
  */
 DVZ_EXPORT void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp);
 
+
+/**
+ * Resolve panzoom state against a caller-provided base visual extent.
+ *
+ * On success, the model matrix is identity and the output contains the resolved view and
+ * orthographic projection matrices plus the visible extent in the base extent's coordinates.
+ *
+ * @param panzoom the panzoom controller; must not be NULL
+ * @param eval borrowed evaluation parameters containing a finite, non-empty base extent
+ * @param out output resolved MVP and visible extent; must not be NULL
+ * @return true on success, false if the extent or zoom state is invalid
+ */
 DVZ_EXPORT bool dvz_panzoom_resolve(
     const DvzPanzoom* panzoom, const DvzPanzoomEval* eval, DvzPanzoomResolved* out);
 
@@ -285,7 +308,12 @@ DVZ_EXPORT bool dvz_panzoom_resolve(
 /**
  * Process a pointer event and update panzoom state.
  *
- * @returns true if the event was consumed
+ * The event is borrowed for the duration of the call. Events outside the configured viewport are
+ * not consumed.
+ *
+ * @param pz the panzoom controller; must not be NULL
+ * @param ev the pointer event to process, in window coordinates; must not be NULL
+ * @return true if the event was consumed
  */
 DVZ_EXPORT bool dvz_panzoom_pointer(DvzPanzoom* pz, const DvzPointerEvent* ev);
 
@@ -315,7 +343,11 @@ DVZ_EXPORT DvzResult dvz_panzoom_disconnect(DvzPanzoom* pz, DvzInputRouter* rout
 
 
 /**
- * Destroy the panzoom.
+ * Destroy a standalone panzoom controller.
+ *
+ * The controller must have been unsubscribed from any input router before this call.
+ *
+ * @param pz the owned panzoom controller to destroy; must not be NULL
  */
 DVZ_EXPORT void dvz_panzoom_destroy(DvzPanzoom* pz);
 

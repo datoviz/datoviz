@@ -149,8 +149,10 @@ DVZ_EXPORT DvzGui* dvz_view_gui(DvzView* view, const DvzGuiConfig* config);
 /**
  * Register a GUI callback called while building each ImGui frame.
  *
- * The callback is applied only after `dvz_view_gui()` has created the overlay. Calling this before
- * overlay creation is a no-op in v0.4.
+ * The callback can be registered only after `dvz_view_gui()` has created the overlay; calling this
+ * before overlay creation returns DVZ_ERROR.
+ * The callback and user data are retained until replaced, cleared, or the view is destroyed; the
+ * caller must keep them valid for that lifetime.
  *
  * @param view the view
  * @param callback callback pointer, or NULL to clear it
@@ -509,11 +511,13 @@ DVZ_EXPORT void dvz_gui_demo(DvzGui* gui, bool* open);
  * supplied figure may contain any scene panels and visuals; the viewport creates and manages the
  * offscreen view used to render that figure, then displays the latest source image in an
  * ImGui window created by dvz_gui_viewport_window().
+ * The GUI overlay and figure are borrowed and must outlive the returned viewport. Destroying the
+ * viewport disables its internally created source view but does not destroy the figure.
  *
- * @param gui the GUI overlay
- * @param figure figure to render inside the GUI viewport
- * @param config optional viewport configuration
- * @return the GUI viewport, or NULL on failure
+ * @param gui the borrowed GUI overlay; must not be NULL
+ * @param figure the borrowed figure to render; must not be NULL
+ * @param config optional viewport configuration borrowed for the call, or NULL for defaults
+ * @return a newly allocated GUI viewport owned by the caller, or NULL on failure
  */
 DVZ_EXPORT DvzGuiViewport*
 dvz_gui_viewport(DvzGui* gui, DvzFigure* figure, const DvzGuiViewportConfig* config);
@@ -525,12 +529,13 @@ dvz_gui_viewport(DvzGui* gui, DvzFigure* figure, const DvzGuiViewportConfig* con
  *
  * This is the advanced path for callers that already own the source view. Most users should
  * prefer dvz_gui_viewport(), which creates the offscreen source from a figure. The source window
- * must use offscreen canvas rendering.
+ * must use offscreen canvas rendering. The GUI overlay and source view are borrowed and must
+ * outlive the returned viewport; destroying the viewport does not destroy or disable the source.
  *
- * @param gui the GUI overlay
- * @param source view providing the rendered image
- * @param config optional viewport configuration
- * @return the GUI viewport, or NULL on failure
+ * @param gui the borrowed GUI overlay; must not be NULL
+ * @param source the borrowed offscreen view providing the rendered image; must not be NULL
+ * @param config optional viewport configuration borrowed for the call, or NULL for defaults
+ * @return a newly allocated GUI viewport owned by the caller, or NULL on failure
  */
 DVZ_EXPORT DvzGuiViewport*
 dvz_gui_viewport_from_window(
@@ -570,7 +575,10 @@ DVZ_EXPORT bool dvz_gui_viewport_mouse(
 /**
  * Destroy a dockable ImGui viewport.
  *
- * @param viewport the GUI viewport
+ * An internally created source view is disabled; a caller-provided source view remains enabled.
+ * The associated GUI overlay, figure, and source view are not destroyed.
+ *
+ * @param viewport the owned GUI viewport to destroy, or NULL
  */
 DVZ_EXPORT void dvz_gui_viewport_destroy(DvzGuiViewport* viewport);
 

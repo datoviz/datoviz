@@ -329,7 +329,9 @@ DVZ_EXPORT DvzApp* dvz_app_with_resources(
 /**
  * Destroy the app and all owned resources (canvases, windows, runtime, GPU context).
  *
- * @param app the app
+ * The scene supplied at creation is borrowed and is not destroyed.
+ *
+ * @param app the owned app to destroy, or NULL
  */
 DVZ_EXPORT void dvz_app_destroy(DvzApp* app);
 
@@ -1057,6 +1059,8 @@ dvz_view_post(DvzView* view, DvzViewPostCallback callback, void* user_data);
  *
  * This is a passive scheduling signal: it does not change dvz_app_run() behavior and does not
  * render by itself. The host remains responsible for calling dvz_view_render_once().
+ * The callback and user data are retained until replaced, cleared, or the view is destroyed; the
+ * caller must keep them valid for that lifetime.
  *
  * @param view the view
  * @param callback callback pointer, or NULL to clear it
@@ -1073,6 +1077,8 @@ DVZ_EXPORT DvzResult dvz_view_set_request_frame_callback(
  * The callback runs after the scene frame artifact has been emitted, executed, request processing
  * has completed, and the artifact-owned stream snapshot has been destroyed. Scene mutations from
  * the callback are therefore allowed and become visible on the next frame.
+ * The callback and user data are retained until replaced, cleared, or the view is destroyed; the
+ * caller must keep them valid for that lifetime.
  *
  * @param view the view
  * @param callback callback pointer, or NULL to clear it

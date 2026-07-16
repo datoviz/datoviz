@@ -498,9 +498,12 @@ DVZ_EXPORT void dvz_track_destroy(DvzTrack* track);
 /**
  * Create a timer animation driven by the scene clock.
  *
- * @param scene owning scene
- * @param desc timer animation descriptor
- * @return the animation handle, or NULL on failure
+ * The descriptor is copied. Its callback and user data are retained until the animation is
+ * destroyed, so the caller must keep any objects referenced by them valid for that lifetime.
+ *
+ * @param scene the scene that owns the returned animation; must not be NULL
+ * @param desc timer animation descriptor with a non-NULL callback; must not be NULL
+ * @return the scene-owned animation handle, or NULL on validation or allocation failure
  */
 DVZ_EXPORT DvzAnimation* dvz_anim_timer(DvzScene* scene, const DvzAnimTimerDesc* desc);
 
@@ -508,9 +511,12 @@ DVZ_EXPORT DvzAnimation* dvz_anim_timer(DvzScene* scene, const DvzAnimTimerDesc*
 /**
  * Create a wrapped linear phase animation driven by the scene clock.
  *
- * @param scene owning scene
- * @param desc phase animation descriptor
- * @return the animation handle, or NULL on failure
+ * The descriptor is copied. Its callback and user data are retained until the animation is
+ * destroyed, so the caller must keep any objects referenced by them valid for that lifetime.
+ *
+ * @param scene the scene that owns the returned animation; must not be NULL
+ * @param desc phase animation descriptor with a non-NULL callback; must not be NULL
+ * @return the scene-owned animation handle, or NULL on validation or allocation failure
  */
 DVZ_EXPORT DvzAnimation* dvz_anim_phase(DvzScene* scene, const DvzAnimPhaseDesc* desc);
 
@@ -518,11 +524,15 @@ DVZ_EXPORT DvzAnimation* dvz_anim_phase(DvzScene* scene, const DvzAnimPhaseDesc*
 /**
  * Create a generic track animation driven by the scene clock.
  *
- * @param scene owning scene
- * @param track borrowed track evaluated every frame while active
- * @param callback callback receiving the evaluated value
- * @param user_data opaque pointer forwarded to the callback
- * @return the animation handle, or NULL on failure
+ * The track, callback, and user data are retained until the animation is destroyed. The caller
+ * must keep the track and any objects referenced by the callback or user data valid for that
+ * lifetime.
+ *
+ * @param scene the scene that owns the returned animation; must not be NULL
+ * @param track borrowed track evaluated every frame while active; must not be NULL
+ * @param callback callback receiving the evaluated value; must not be NULL
+ * @param user_data opaque pointer forwarded to the callback, or NULL
+ * @return the scene-owned animation handle, or NULL on validation or allocation failure
  */
 DVZ_EXPORT DvzAnimation* dvz_anim_track(
     DvzScene* scene,
@@ -534,10 +544,13 @@ DVZ_EXPORT DvzAnimation* dvz_anim_track(
 /**
  * Create a visual-local transform animation.
  *
- * @param scene owning scene
- * @param visual visual whose retained local transform is updated
- * @param desc transform motion descriptor
- * @return the animation handle, or NULL on failure
+ * The visual and any tracks referenced by the copied descriptor are borrowed and must outlive the
+ * animation.
+ *
+ * @param scene the scene that owns the returned animation; must not be NULL
+ * @param visual borrowed visual whose retained local transform is updated; must not be NULL
+ * @param desc optional transform motion descriptor borrowed for the call, or NULL for defaults
+ * @return the scene-owned animation handle, or NULL on validation or allocation failure
  */
 DVZ_EXPORT DvzAnimation* dvz_anim_visual_transform(
     DvzScene* scene, DvzVisual* visual, const DvzTransformMotionDesc* desc);
@@ -546,10 +559,13 @@ DVZ_EXPORT DvzAnimation* dvz_anim_visual_transform(
 /**
  * Create a camera motion animation.
  *
- * @param scene owning scene
- * @param camera camera whose view is updated
- * @param desc camera motion descriptor
- * @return the animation handle, or NULL on failure
+ * The camera and tracks referenced by the copied descriptor are borrowed and must outlive the
+ * animation.
+ *
+ * @param scene the scene that owns the returned animation; must not be NULL
+ * @param camera borrowed camera whose view is updated; must not be NULL
+ * @param desc optional camera motion descriptor borrowed for the call, or NULL for defaults
+ * @return the scene-owned animation handle, or NULL on validation or allocation failure
  */
 DVZ_EXPORT DvzAnimation*
 dvz_anim_camera_motion(DvzScene* scene, DvzCamera* camera, const DvzCameraMotionDesc* desc);
@@ -558,8 +574,11 @@ dvz_anim_camera_motion(DvzScene* scene, DvzCamera* camera, const DvzCameraMotion
 /**
  * Set how an animation responds to an interactive controller.
  *
+ * A non-NULL controller is borrowed until this policy is replaced or cleared and must remain valid
+ * for that lifetime.
+ *
  * @param animation animation handle
- * @param controller controller to observe, or NULL to clear policy
+ * @param controller borrowed controller to observe, or NULL to clear the policy
  * @param policy interaction policy
  * @param idle_s idle duration for resume-after-idle policies
  * @return DVZ_OK when the policy was accepted, DVZ_ERROR on error
@@ -617,7 +636,10 @@ DVZ_EXPORT DvzResult dvz_anim_stop(DvzAnimation* animation);
 /**
  * Destroy an animation handle owned by its scene.
  *
- * @param animation animation handle
+ * This invalidates the scene-owned handle without destroying any borrowed track, visual, camera,
+ * controller, callback user data, or the scene itself.
+ *
+ * @param animation animation handle to invalidate, or NULL
  */
 DVZ_EXPORT void dvz_anim_destroy(DvzAnimation* animation);
 
