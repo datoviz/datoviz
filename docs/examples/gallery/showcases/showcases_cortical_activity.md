@@ -44,7 +44,7 @@ after verifying the linked API reference.
 
 ## What To Look For
 
-Measured MEG trials from an audiovisual experiment were averaged and mapped onto an oct6 source grid with a noise-normalized minimum-norm inverse, then interpolated through hemisphere-local spherical triangles onto the participant's complete full-resolution FreeSurfer cortex. Activity emerges around auditory cortex near 100 ms after the left-ear tone. The live GUI controls playback, surface inflation, whole/split layouts, scientific limits, material, scientific/full wireframes, and arcball state. The initial paused frame is the strongest measured response.
+Measured MEG trials from an audiovisual experiment were averaged and mapped onto an oct6 source grid with a noise-normalized minimum-norm inverse, then interpolated through hemisphere-local spherical triangles onto the participant's complete full-resolution FreeSurfer cortex. Activity emerges around auditory cortex near 100 ms after the left-ear tone. The live GUI controls playback, whole/split layouts, scientific limits, material, and arcball state. The initial paused frame is the strongest measured response.
 
 DSPM is a model-derived, dimensionless source estimate. It is not a direct measurement of neuronal firing or absolute current amplitude.
 
@@ -70,12 +70,12 @@ Control: live GUI; space plays/pauses; left/right arrows seek
     - Approved adaptation starter: `no`
     - Browser support: Deferred
     - Browser note: the browser path does not yet package the prepared cortical surface and time-series bundle
-    - Browser capability tags: `mesh`, `segment`, `material`, `colorbar`, `arcball`, `gui`, `frame-callbacks`, `continuous-frames`
+    - Browser capability tags: `mesh`, `material`, `colorbar`, `arcball`, `gui`, `frame-callbacks`, `continuous-frames`
     - Validation: `smoke+interaction+screenshot+video+performance`
 
     **Tags**
 
-    `scientific`, `real-data`, `human-brain`, `cortical-surface`, `meg`, `dspm`, `mesh`, `full-resolution`, `spherical-interpolation`, `wireframe`, `gui`, `material`, `colorbar`, `arcball`, `animation`
+    `scientific`, `real-data`, `human-brain`, `cortical-surface`, `meg`, `dspm`, `mesh`, `full-resolution`, `spherical-interpolation`, `gui`, `material`, `colorbar`, `arcball`, `animation`
 
     **Data**
 
@@ -100,7 +100,7 @@ Control: live GUI; space plays/pauses; left/right arrows seek
 
     | Field | Value |
     | --- | --- |
-    | `position` | complete 319,834-vertex bilateral participant-native pial and inflated FreeSurfer surfaces with one shared uniform scale; whole-brain and split-lateral layouts preserve anatomical aspect ratio |
+    | `position` | complete 319,834-vertex bilateral participant-native FreeSurfer pial surface with one shared uniform scale; whole-brain and split-lateral layouts preserve anatomical aspect ratio |
     | `color` | oct6 dSPM values interpolated through hemisphere-local spherical triangles onto the render mesh, then mapped with sequential magma over neutral graphite anatomy; the comparable 8/12/15 dSPM preset remains available while live controls permit exploratory limits |
     | `time` | 0 to 240 ms after the left-ear tone, linearly interpolated between source-estimate frames; live mode opens paused at the strongest response |
 

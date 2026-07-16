@@ -5556,7 +5556,6 @@
         "mesh",
         "full-resolution",
         "spherical-interpolation",
-        "wireframe",
         "gui",
         "material",
         "colorbar",
@@ -5579,7 +5578,6 @@
       "webgpu_status_label": "Deferred",
       "webgpu_requirements": [
         "mesh",
-        "segment",
         "material",
         "colorbar",
         "arcball",
@@ -5592,7 +5590,6 @@
         "status": "webgpu-deferred",
         "requirements": [
           "mesh",
-          "segment",
           "material",
           "colorbar",
           "arcball",
@@ -5613,7 +5610,7 @@
         "provenance": "Measured left-ear auditory MEG trials are averaged and mapped to an 8,196-vertex oct6 source grid with a baseline-noise-normalized minimum-norm inverse (dSPM). The complete 319,834-vertex FreeSurfer cortex is a separate render domain. Each render vertex receives activity from one hemisphere-local spherical oct6 triangle with three validated barycentric weights. dSPM is a model-derived dimensionless source estimate, not a direct measurement of neuronal firing or absolute current amplitude."
       },
       "encoding": {
-        "position": "complete 319,834-vertex bilateral participant-native pial and inflated FreeSurfer surfaces with one shared uniform scale; whole-brain and split-lateral layouts preserve anatomical aspect ratio",
+        "position": "complete 319,834-vertex bilateral participant-native FreeSurfer pial surface with one shared uniform scale; whole-brain and split-lateral layouts preserve anatomical aspect ratio",
         "color": "oct6 dSPM values interpolated through hemisphere-local spherical triangles onto the render mesh, then mapped with sequential magma over neutral graphite anatomy; the comparable 8/12/15 dSPM preset remains available while live controls permit exploratory limits",
         "time": "0 to 240 ms after the left-ear tone, linearly interpolated between source-estimate frames; live mode opens paused at the strongest response"
       }

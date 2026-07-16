@@ -4700,7 +4700,7 @@
         ]
       },
       "wireframe": {
-        "count": 2,
+        "count": 1,
         "examples": [
           {
             "id": "showcases_surface_grid",
@@ -4709,14 +4709,6 @@
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
             "page": "gallery/showcases/showcases_surface_grid.md"
-          },
-          {
-            "id": "showcases_cortical_activity",
-            "title": "Human Auditory Cortical Activity",
-            "category": "showcase",
-            "status": "experimental",
-            "source": "examples/c/showcases/cortical_activity.c",
-            "page": "gallery/showcases/showcases_cortical_activity.md"
           }
         ]
       },
