@@ -219,6 +219,7 @@ export const LIVE_EXAMPLES = [
     id: "showcases_spherical_harmonics",
     label: "Spherical Harmonics",
     scenarioId: "showcases_spherical_harmonics",
+    animate: true,
   },
   {
     id: "showcases_galaxy",
