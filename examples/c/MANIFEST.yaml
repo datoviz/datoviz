@@ -3546,6 +3546,12 @@ examples:
       - label: Orbital model header
         language: c
         path: examples/c/showcases/textured_planet_orbits.h
+      - label: Celestial sky model
+        language: c
+        path: examples/c/showcases/textured_planet_sky.c
+      - label: Celestial sky model header
+        language: c
+        path: examples/c/showcases/textured_planet_sky.h
     python:
       source: examples/python/gallery/showcases/textured_planet.py
     validation: smoke+screenshot
@@ -3594,41 +3600,55 @@ examples:
       - orbital-debris
       - celestrak
       - sgp4
+      - gaia
+      - 2mass
       - gui
       - capture
     dataset:
-      name: NASA/USGS planet textures and CelesTrak catalogued orbital debris
+      name: NASA/USGS planet textures, CelesTrak debris, and Gaia/2MASS celestial sky
       source: >-
         data/assets/textures/world.200412.3x5400x2700.jpg;
         data/assets/textures/earth.jpg;
         data/assets/textures/mars_viking_mdim21.jpg;
-        CelesTrak GP element sets for FENGYUN 1C, IRIDIUM 33, and COSMOS 2251 debris
+        CelesTrak GP element sets for FENGYUN 1C, IRIDIUM 33, and COSMOS 2251 debris;
+        Gaia DR3 bright-star astrometry/photometry; NASA Photojournal PIA04250 2MASS all-sky map
       source_url: >-
         https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/;
         https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m;
-        https://celestrak.org/NORAD/documentation/gp-data-formats.php
+        https://celestrak.org/NORAD/documentation/gp-data-formats.php;
+        https://gea.esac.esa.int/archive/;
+        https://science.nasa.gov/photojournal/point-source-all-sky/
       license: >-
         NASA media usage guidelines and USGS/NASA public-domain source-data terms apply;
         acknowledge NASA, NASA Ames, JPL, and USGS as source where relevant. CelesTrak data use
-        must follow https://celestrak.org/usage-policy.php and retain source attribution.
+        must follow https://celestrak.org/usage-policy.php and retain source attribution. Gaia
+        ESA/DPAC acknowledgement and 2MASS/IPAC-Caltech/UMass attribution requirements apply.
       citation: >-
         NASA Blue Marble Next Generation; USGS Astrogeology Mars Viking Colorized Global Mosaic
         232m / Mars Digital Image Model 2.1; CelesTrak; Vallado, Crawford, Hujsak, and Kelso,
-        Revisiting Spacetrack Report #3, AIAA 2006-6753.
-      preprocessing: uv run tools/data/prepare_orbital_debris.py --force
-      cache_prepared_path: .cache/datoviz/examples/orbital_debris/prepared
+        Revisiting Spacetrack Report #3, AIAA 2006-6753; Gaia DR3 ESA/Gaia/DPAC; 2MASS
+        Point Source Catalog/Stars All Sky View, IPAC-Caltech/University of Massachusetts.
+      preprocessing: >-
+        uv run tools/data/prepare_orbital_debris.py --force &&
+        uv run tools/data/prepare_planet_sky.py --force
+      cache_prepared_path: .cache/datoviz/examples/orbital_debris/prepared; .cache/datoviz/examples/planet_sky/prepared
       provenance: >-
         Earth uses NASA Blue Marble Next Generation texture assets; Mars uses the USGS
         Astrogeology/NASA Ames/JPL/USGS Viking MDIM 2.1 colorized global mosaic. Debris points are
         tracked catalog objects from three selected fragmentation events, propagated from a dated
         CelesTrak GP snapshot with SGP4 into a two-hour Earth-fixed point ephemeris and one closed
         full-period display trajectory per object. This is not the full debris environment; point
-        sizes are exaggerated and do not encode physical object size.
+        sizes are exaggerated and do not encode physical object size. Bright stars use Gaia DR3
+        celestial positions, G magnitude, and BP-RP color. The Milky Way layer samples the 2MASS
+        infrared false-color all-sky map. Both sky layers are oriented to the debris snapshot using
+        GMST; their shell radius is display-only.
     encoding:
       position: SGP4 TEME position rotated to approximate Earth-fixed coordinates and normalized by Earth radius
       color: cyan FENGYUN 1C, amber IRIDIUM 33, coral COSMOS 2251
       time: 120-minute prepared point ephemeris shown at 60x real time; shared globe rotation enabled by default
       path: closed full-period SGP4 trajectory in the snapshot planet frame
+      stars: Gaia DR3 direction, G-magnitude size, and BP-RP color at the prepared snapshot orientation
+      galaxy: translucent samples from the 2MASS Hammer all-sky infrared map in galactic coordinates
 
   - id: advanced_raw_triangle_vklite
     title: Raw Triangle Vklite
