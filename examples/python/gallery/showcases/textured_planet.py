@@ -360,45 +360,38 @@ def _add_planet(scene, panel):
 
 
 def _add_atmosphere(scene, panel):
-    latitude = np.linspace(0.0, np.pi, SPHERE_RINGS + 1, dtype=np.float32)
-    longitude = np.linspace(0.0, TAU, SPHERE_SECTORS + 1, dtype=np.float32)
-    theta, phi = np.meshgrid(latitude, longitude, indexing='ij')
-    positions = np.column_stack(
-        (
-            ATMOSPHERE_RADIUS * np.sin(theta).ravel() * np.cos(phi).ravel(),
-            ATMOSPHERE_RADIUS * np.cos(theta).ravel(),
-            ATMOSPHERE_RADIUS * np.sin(theta).ravel() * np.sin(phi).ravel(),
-        )
-    ).astype(np.float32)
-    normals = np.ascontiguousarray(positions / ATMOSPHERE_RADIUS, dtype=np.float32)
-    colors = np.tile(np.array([58, 142, 255, 7], dtype=np.uint8), (len(positions), 1))
-    indices: list[int] = []
-    row = SPHERE_SECTORS + 1
-    for ring in range(SPHERE_RINGS):
-        for sector in range(SPHERE_SECTORS):
-            first = ring * row + sector
-            second = first + row
-            indices.extend((first, second, first + 1, first + 1, second, second + 1))
-    index_array = np.asarray(indices, dtype=np.uint32)
-    positions = np.ascontiguousarray(positions[index_array])
-    normals = np.ascontiguousarray(normals[index_array])
-    colors = np.ascontiguousarray(colors[index_array])
+    desc = dvz.dvz_geometry_sphere_desc()
+    desc.radius = ATMOSPHERE_RADIUS
+    desc.sectors = SPHERE_SECTORS
+    desc.rings = SPHERE_RINGS
+    desc.color = ex.WHITE
+    geometry = dvz.dvz_geometry_sphere(ctypes.byref(desc))
+    if not geometry:
+        raise RuntimeError('dvz_geometry_sphere(atmosphere) failed')
 
-    atmosphere = dvz.dvz_primitive(scene, dvz.DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0)
+    atmosphere = dvz.dvz_mesh(scene, 0)
     if not atmosphere:
-        raise RuntimeError('dvz_primitive(atmosphere) failed')
+        dvz.dvz_geometry_destroy(geometry)
+        raise RuntimeError('dvz_mesh(atmosphere) failed')
+    try:
+        if dvz.dvz_geometry_transform(geometry, _planet_transform()) != 0:
+            raise RuntimeError('dvz_geometry_transform(atmosphere) failed')
+        if dvz.dvz_mesh_set_geometry(atmosphere, geometry) != 0:
+            raise RuntimeError('dvz_mesh_set_geometry(atmosphere) failed')
+    finally:
+        dvz.dvz_geometry_destroy(geometry)
 
-    if (
-        dvz.dvz_visual_set_data_many(
-            atmosphere,
-            {'position': positions, 'color': colors, 'normal': normals},
-        )
-        != 0
-    ):
-        raise RuntimeError('dvz_visual_set_data_many(atmosphere) failed')
-
-    if dvz.dvz_visual_set_alpha_mode(atmosphere, dvz.DVZ_ALPHA_BLENDED) != 0:
-        raise RuntimeError('dvz_visual_set_alpha_mode(atmosphere) failed')
+    material = dvz.dvz_limb_material_desc()
+    material.opacity = 0.14
+    material.light_direction[:] = SUN_DIR
+    material.limb.falloff = 3.6
+    material.limb.sun_bias = 0.06
+    material.limb.terminator_width = 0.16
+    material.limb.night_factor = 0.035
+    if dvz.dvz_visual_set_material(atmosphere, ctypes.byref(material)) != 0:
+        raise RuntimeError('dvz_visual_set_material(atmosphere) failed')
+    if dvz.dvz_visual_set_blend_mode(atmosphere, dvz.DVZ_BLEND_ADDITIVE) != 0:
+        raise RuntimeError('dvz_visual_set_blend_mode(atmosphere) failed')
     if dvz.dvz_visual_set_depth_test(atmosphere, True) != 0:
         raise RuntimeError('dvz_visual_set_depth_test(atmosphere) failed')
     ex.add_visual(panel, atmosphere)
