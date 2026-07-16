@@ -415,12 +415,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(state->arcball != NULL, "dvz_controller_arcball() failed");
     rc = dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ);
     EXAMPLE_CHECK(rc == DVZ_OK, "galaxy arcball binding failed");
-    vec3 initial_angles = {0.0f, 0.0f, 0.0f};
+    vec3 initial_angles = {-0.302710f, +0.044938f, -0.017917f};
     vec2 initial_pan = {0.0f, 0.0f};
     rc = dvz_arcball_initial(state->arcball, initial_angles);
     EXAMPLE_CHECK(rc == DVZ_OK, "galaxy arcball initialization failed");
     example_tuner_arcball(
-        &state->tuner, "Arcball", state->arcball, initial_angles, 1.0f, initial_pan);
+        &state->tuner, "Arcball", state->arcball, initial_angles, 7.389051f, initial_pan);
     example_tuner_camera(&state->tuner, "Camera", panel, &camera);
     (void)example_tuner_add_component(
         &state->tuner, "Simulation", state, NULL, _galaxy_controls_gui, _galaxy_controls_apply,
