@@ -7,8 +7,8 @@
 /* spherical_harmonics - This example turns a real spherical-harmonic blend into a lit mesh.
  *
  * What to look for: a uniformly tessellated icosphere is deformed radially by a deterministic
- * blend of real spherical harmonics. Vertex color preserves the signed harmonic amplitude while
- * smooth normals and a restrained material reveal the folded surface.
+ * blend of real spherical harmonics. The coefficients morph in a slow seamless loop, vertex color
+ * preserves the signed amplitude, and smooth normals reveal the changing folded surface.
  *
  * This workflow is useful for directional basis functions, radiation patterns, orbital-like
  * surfaces, and other spherical scalar fields that benefit from direct 3D shape perception.
@@ -48,10 +48,12 @@
 #define WIDTH  EXAMPLE_WINDOW_WIDTH
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
-#define ICOSPHERE_SUBDIVISIONS 6u
+#define ICOSPHERE_SUBDIVISIONS 5u
+#define HARMONIC_TERM_COUNT    4u
 #define HARMONIC_BASE_RADIUS   0.43
 #define HARMONIC_LOBE_SCALE    1.04
 #define HARMONIC_LOBE_POWER    0.78
+#define HARMONIC_MORPH_PERIOD  8.0
 
 #define PI 3.14159265358979323846
 
@@ -65,7 +67,9 @@ typedef struct HarmonicTerm
 {
     uint32_t degree;
     int32_t order;
-    double weight;
+    double base_weight;
+    double morph_amplitude;
+    uint32_t morph_frequency;
 } HarmonicTerm;
 
 
@@ -89,7 +93,42 @@ typedef struct EdgeEntry
 typedef struct SphericalHarmonicsState
 {
     DvzGeometry* geometry;
+    DvzVisual* visual;
+    dvec3* directions;
+    double* basis;
+    double* amplitudes;
+    vec3* gpu_positions;
+    vec3* gpu_normals;
 } SphericalHarmonicsState;
+
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+static const HarmonicTerm HARMONIC_TERMS[HARMONIC_TERM_COUNT] = {
+    {.degree = 7u,
+     .order = +3,
+     .base_weight = +1.00,
+     .morph_amplitude = 0.22,
+     .morph_frequency = 1u},
+    {.degree = 6u,
+     .order = -5,
+     .base_weight = +0.58,
+     .morph_amplitude = 0.25,
+     .morph_frequency = 2u},
+    {.degree = 5u,
+     .order = +2,
+     .base_weight = -0.38,
+     .morph_amplitude = 0.20,
+     .morph_frequency = 3u},
+    {.degree = 4u,
+     .order = -1,
+     .base_weight = +0.25,
+     .morph_amplitude = 0.18,
+     .morph_frequency = 1u},
+};
 
 
 
@@ -447,29 +486,38 @@ _real_spherical_harmonic(uint32_t degree, int32_t order, double cos_theta, doubl
 
 
 /**
- * Evaluate the deterministic harmonic blend used by the showcase.
+ * Evaluate every harmonic basis term at one unit direction.
  *
  * @param direction unit sphere direction
- * @return signed harmonic amplitude
+ * @param out output basis values
  */
-static double _harmonic_amplitude(const dvec3 direction)
+static void _harmonic_basis(const dvec3 direction, double out[HARMONIC_TERM_COUNT])
 {
-    static const HarmonicTerm terms[] = {
-        {.degree = 7u, .order = +3, .weight = +1.00},
-        {.degree = 6u, .order = -5, .weight = +0.58},
-        {.degree = 5u, .order = +2, .weight = -0.38},
-        {.degree = 4u, .order = -1, .weight = +0.25},
-    };
-
     const double cos_theta = fmax(-1.0, fmin(+1.0, direction[2]));
     const double phi = atan2(direction[1], direction[0]);
-    double amplitude = 0.0;
-    for (uint32_t i = 0; i < sizeof(terms) / sizeof(terms[0]); i++)
+    for (uint32_t term = 0; term < HARMONIC_TERM_COUNT; term++)
     {
-        amplitude += terms[i].weight *
-                     _real_spherical_harmonic(terms[i].degree, terms[i].order, cos_theta, phi);
+        out[term] = _real_spherical_harmonic(
+            HARMONIC_TERMS[term].degree, HARMONIC_TERMS[term].order, cos_theta, phi);
     }
-    return amplitude;
+}
+
+
+
+/**
+ * Compute the periodic harmonic coefficients for one animation phase.
+ *
+ * @param phase seamless animation phase in [0, 1)
+ * @param out output harmonic weights
+ */
+static void _harmonic_weights(double phase, double out[HARMONIC_TERM_COUNT])
+{
+    for (uint32_t term = 0; term < HARMONIC_TERM_COUNT; term++)
+    {
+        const double angle = 2.0 * PI * (double)HARMONIC_TERMS[term].morph_frequency * phase;
+        out[term] =
+            HARMONIC_TERMS[term].base_weight + HARMONIC_TERMS[term].morph_amplitude * sin(angle);
+    }
 }
 
 
@@ -516,16 +564,106 @@ static DvzColor _harmonic_color(double amplitude)
 
 
 /**
- * Generate the deformed indexed icosphere used by the showcase.
+ * Release all CPU-side animation arrays owned by the showcase state.
  *
- * @return owned geometry, or NULL on failure
+ * @param state state to reset
  */
-static DvzGeometry* _spherical_harmonics_geometry(void)
+static void _state_reset(SphericalHarmonicsState* state)
 {
-    MeshBuffers mesh = {0};
-    double* amplitudes = NULL;
-    DvzGeometry* geometry = NULL;
+    if (state == NULL)
+        return;
+    dvz_geometry_destroy(state->geometry);
+    dvz_free(state->directions);
+    dvz_free(state->basis);
+    dvz_free(state->amplitudes);
+    dvz_free(state->gpu_positions);
+    dvz_free(state->gpu_normals);
+    state->geometry = NULL;
+    state->visual = NULL;
+    state->directions = NULL;
+    state->basis = NULL;
+    state->amplitudes = NULL;
+    state->gpu_positions = NULL;
+    state->gpu_normals = NULL;
+}
 
+
+
+/**
+ * Update positions, colors, and normals for one animation phase.
+ *
+ * @param state initialized showcase state
+ * @param phase seamless animation phase in [0, 1)
+ * @return whether the geometry update succeeded
+ */
+static bool _update_geometry(SphericalHarmonicsState* state, double phase)
+{
+    if (state == NULL || state->geometry == NULL || state->directions == NULL ||
+        state->basis == NULL || state->amplitudes == NULL || state->gpu_positions == NULL ||
+        state->gpu_normals == NULL)
+    {
+        return false;
+    }
+
+    double weights[HARMONIC_TERM_COUNT] = {0};
+    _harmonic_weights(phase, weights);
+
+    double max_amplitude = 0.0;
+    for (uint32_t vertex = 0; vertex < state->geometry->vertex_count; vertex++)
+    {
+        double amplitude = 0.0;
+        for (uint32_t term = 0; term < HARMONIC_TERM_COUNT; term++)
+        {
+            amplitude += weights[term] * state->basis[vertex * HARMONIC_TERM_COUNT + term];
+        }
+        state->amplitudes[vertex] = amplitude;
+        max_amplitude = fmax(max_amplitude, fabs(amplitude));
+    }
+    if (!(max_amplitude > 0.0) || !isfinite(max_amplitude))
+        return false;
+
+    const double breathing = 0.96 + 0.04 * cos(2.0 * PI * phase);
+    for (uint32_t vertex = 0; vertex < state->geometry->vertex_count; vertex++)
+    {
+        const double normalized = state->amplitudes[vertex] / max_amplitude;
+        const double radius =
+            HARMONIC_BASE_RADIUS +
+            HARMONIC_LOBE_SCALE * breathing * pow(fabs(normalized), HARMONIC_LOBE_POWER);
+        for (uint32_t axis = 0; axis < 3u; axis++)
+        {
+            state->geometry->positions[vertex][axis] = radius * state->directions[vertex][axis];
+        }
+        state->geometry->colors[vertex] = _harmonic_color(normalized);
+    }
+    if (dvz_geometry_compute_normals(state->geometry) != DVZ_OK)
+        return false;
+
+    for (uint32_t vertex = 0; vertex < state->geometry->vertex_count; vertex++)
+    {
+        for (uint32_t axis = 0; axis < 3u; axis++)
+        {
+            state->gpu_positions[vertex][axis] = (float)state->geometry->positions[vertex][axis];
+            state->gpu_normals[vertex][axis] = (float)state->geometry->normals[vertex][axis];
+        }
+    }
+    return true;
+}
+
+
+
+/**
+ * Generate the indexed icosphere and cache its harmonic basis values.
+ *
+ * @param state output showcase state
+ * @return whether geometry generation and initial deformation succeeded
+ */
+static bool _create_geometry(SphericalHarmonicsState* state)
+{
+    if (state == NULL)
+        return false;
+
+    bool ok = false;
+    MeshBuffers mesh = {0};
     if (!_icosahedron(&mesh))
         goto cleanup;
     for (uint32_t level = 0; level < ICOSPHERE_SUBDIVISIONS; level++)
@@ -534,45 +672,73 @@ static DvzGeometry* _spherical_harmonics_geometry(void)
             goto cleanup;
     }
 
-    amplitudes = (double*)dvz_calloc(mesh.vertex_count, sizeof(double));
-    if (amplitudes == NULL)
-        goto cleanup;
-
-    double max_amplitude = 0.0;
-    for (uint32_t i = 0; i < mesh.vertex_count; i++)
+    state->geometry = dvz_geometry(mesh.vertex_count, mesh.index_count);
+    state->directions = (dvec3*)dvz_calloc(mesh.vertex_count, sizeof(dvec3));
+    state->basis =
+        (double*)dvz_calloc((size_t)mesh.vertex_count * HARMONIC_TERM_COUNT, sizeof(double));
+    state->amplitudes = (double*)dvz_calloc(mesh.vertex_count, sizeof(double));
+    state->gpu_positions = (vec3*)dvz_calloc(mesh.vertex_count, sizeof(vec3));
+    state->gpu_normals = (vec3*)dvz_calloc(mesh.vertex_count, sizeof(vec3));
+    if (state->geometry == NULL || state->directions == NULL || state->basis == NULL ||
+        state->amplitudes == NULL || state->gpu_positions == NULL || state->gpu_normals == NULL)
     {
-        amplitudes[i] = _harmonic_amplitude(mesh.positions[i]);
-        max_amplitude = fmax(max_amplitude, fabs(amplitudes[i]));
-    }
-    if (!(max_amplitude > 0.0) || !isfinite(max_amplitude))
         goto cleanup;
-
-    geometry = dvz_geometry(mesh.vertex_count, mesh.index_count);
-    if (geometry == NULL)
-        goto cleanup;
-
-    for (uint32_t i = 0; i < mesh.vertex_count; i++)
-    {
-        const double normalized = amplitudes[i] / max_amplitude;
-        const double radius = HARMONIC_BASE_RADIUS +
-                              HARMONIC_LOBE_SCALE * pow(fabs(normalized), HARMONIC_LOBE_POWER);
-        geometry->positions[i][0] = radius * mesh.positions[i][0];
-        geometry->positions[i][1] = radius * mesh.positions[i][1];
-        geometry->positions[i][2] = radius * mesh.positions[i][2];
-        geometry->colors[i] = _harmonic_color(normalized);
     }
+
+    const size_t direction_bytes = (size_t)mesh.vertex_count * sizeof(dvec3);
     const size_t index_bytes = (size_t)mesh.index_count * sizeof(DvzIndex);
-    (void)dvz_memcpy(geometry->indices, index_bytes, mesh.indices, index_bytes);
-    if (dvz_geometry_compute_normals(geometry) != DVZ_OK)
+    (void)dvz_memcpy(state->directions, direction_bytes, mesh.positions, direction_bytes);
+    (void)dvz_memcpy(state->geometry->indices, index_bytes, mesh.indices, index_bytes);
+    for (uint32_t vertex = 0; vertex < mesh.vertex_count; vertex++)
     {
-        dvz_geometry_destroy(geometry);
-        geometry = NULL;
+        _harmonic_basis(state->directions[vertex], &state->basis[vertex * HARMONIC_TERM_COUNT]);
     }
+    ok = _update_geometry(state, 0.0);
 
 cleanup:
-    dvz_free(amplitudes);
     _mesh_buffers_reset(&mesh);
-    return geometry;
+    if (!ok)
+        _state_reset(state);
+    return ok;
+}
+
+
+
+/**
+ * Upload the current dynamic mesh attributes to the retained visual.
+ *
+ * @param state initialized showcase state
+ * @return whether the retained update succeeded
+ */
+static bool _upload_geometry(SphericalHarmonicsState* state)
+{
+    if (state == NULL || state->visual == NULL || state->geometry == NULL)
+        return false;
+    const uint32_t vertex_count = state->geometry->vertex_count;
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = state->gpu_positions, .item_count = vertex_count},
+        {.attr_name = "color", .data = state->geometry->colors, .item_count = vertex_count},
+        {.attr_name = "normal", .data = state->gpu_normals, .item_count = vertex_count},
+    };
+    return dvz_visual_set_data_many(state->visual, updates, DVZ_ARRAY_COUNT(updates)) == DVZ_OK;
+}
+
+
+
+/**
+ * Resolve the animation phase for live and deterministic preview execution.
+ *
+ * @param ctx scenario context
+ * @return seamless phase in [0, 1)
+ */
+static double _animation_phase(const DvzScenarioContext* ctx)
+{
+    if (ctx == NULL)
+        return 0.0;
+    if (ctx->preview_mode)
+        return dvz_scenario_preview_phase(ctx, DVZ_SCENARIO_PREVIEW_PHASE_SEAMLESS_LOOP);
+    const double time = fmax(0.0, ctx->time);
+    return fmod(time / HARMONIC_MORPH_PERIOD, 1.0);
 }
 
 
@@ -603,8 +769,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (out_user != NULL)
         *out_user = state;
 
-    state->geometry = _spherical_harmonics_geometry();
-    EXAMPLE_CHECK(state->geometry != NULL, "spherical-harmonics geometry generation failed");
+    EXAMPLE_CHECK(_create_geometry(state), "spherical-harmonics geometry generation failed");
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
@@ -621,9 +786,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     const int camera_result = dvz_panel_set_camera_desc(panel, &camera);
     EXAMPLE_CHECK(camera_result == DVZ_OK, "dvz_panel_set_camera_desc() failed");
 
-    DvzVisual* visual = dvz_mesh(ctx->scene, 0);
-    EXAMPLE_CHECK(visual != NULL, "dvz_mesh() failed");
-    const int geometry_result = dvz_mesh_set_geometry(visual, state->geometry);
+    state->visual = dvz_mesh(ctx->scene, 0);
+    EXAMPLE_CHECK(state->visual != NULL, "dvz_mesh() failed");
+    const int geometry_result = dvz_mesh_set_geometry(state->visual, state->geometry);
     EXAMPLE_CHECK(geometry_result == DVZ_OK, "dvz_mesh_set_geometry() failed");
 
     DvzMaterialDesc material = example_default_standard_material_desc();
@@ -633,12 +798,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     material.standard.roughness = 0.44f;
     material.standard.specular = 0.28f;
     material.standard.rim_strength = 0.18f;
-    const int material_result = dvz_visual_set_material(visual, &material);
+    const int material_result = dvz_visual_set_material(state->visual, &material);
     EXAMPLE_CHECK(material_result == DVZ_OK, "dvz_visual_set_material() failed");
 
-    const int add_result = dvz_panel_add_visual(panel, visual, NULL);
+    const int add_result = dvz_panel_add_visual(panel, state->visual, NULL);
     EXAMPLE_CHECK(add_result == DVZ_OK, "dvz_panel_add_visual() failed");
-    const int primary_result = dvz_scenario_set_primary_visual(ctx, visual);
+    const int primary_result = dvz_scenario_set_primary_visual(ctx, state->visual);
     EXAMPLE_CHECK(primary_result == DVZ_OK, "dvz_scenario_set_primary_visual() failed");
 
 #ifndef DVZ_EXAMPLE_NO_APP
@@ -665,6 +830,25 @@ cleanup:
 
 
 /**
+ * Advance the seamless harmonic morph and upload its retained attributes.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    SphericalHarmonicsState* state = (SphericalHarmonicsState*)user;
+    if (ctx == NULL || state == NULL)
+        return;
+    const double phase = _animation_phase(ctx);
+    if (!_update_geometry(state, phase))
+        return;
+    (void)_upload_geometry(state);
+}
+
+
+
+/**
  * Destroy the spherical-harmonics showcase state.
  *
  * @param ctx scenario context
@@ -676,8 +860,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
     SphericalHarmonicsState* state = (SphericalHarmonicsState*)user;
     if (state == NULL)
         return;
-    dvz_geometry_destroy(state->geometry);
-    state->geometry = NULL;
+    _state_reset(state);
     dvz_free(state);
 }
 
@@ -696,9 +879,12 @@ DvzScenarioSpec dvz_showcase_spherical_harmonics_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
-        .requirements =
-            DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_ARCBALL,
+        .requirements = DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER |
+                        DVZ_SCENARIO_REQ_ARCBALL | DVZ_SCENARIO_REQ_FRAME_CALLBACKS |
+                        DVZ_SCENARIO_REQ_CONTINUOUS_FRAMES,
+        .continuous_frames = true,
         .init = _scenario_init,
+        .frame = _scenario_frame,
         .destroy = _scenario_destroy,
     };
 }
