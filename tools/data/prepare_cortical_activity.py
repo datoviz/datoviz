@@ -21,8 +21,8 @@ from common import CACHE_ROOT, artifact, command_argv, relpath, write_manifest, 
 
 ROOT = Path(__file__).resolve().parents[2]
 EXAMPLE_ID = "cortical_activity"
-BUNDLE_VERSION = 3
-BINARY_MAGIC = b"DVZCTA3\0"
+BUNDLE_VERSION = 4
+BINARY_MAGIC = b"DVZCTA4\0"
 BINARY_HEADER_FORMAT = "<8s11I5f10I"
 BINARY_HEADER_SIZE = struct.calcsize(BINARY_HEADER_FORMAT)
 
@@ -131,11 +131,6 @@ SOURCE_FILES = (
         "md5:36d51554f1e74eadcef4601a67de929f",
     ),
     SourceFile(
-        "derivatives/freesurfer/subjects/sub-01/surf/lh.inflated",
-        5706248,
-        "md5:6ddbb17e160a857f6b1041addacc395e",
-    ),
-    SourceFile(
         "derivatives/freesurfer/subjects/sub-01/surf/lh.sphere",
         5706775,
         "md5:9feb604fa7cc509b0318810850c1439b",
@@ -149,11 +144,6 @@ SOURCE_FILES = (
         "derivatives/freesurfer/subjects/sub-01/surf/rh.pial",
         5811452,
         "md5:e39434a0c4e1ef7220593c15845dcc73",
-    ),
-    SourceFile(
-        "derivatives/freesurfer/subjects/sub-01/surf/rh.inflated",
-        5812376,
-        "md5:4196931400f0f3c35d4073dc3378fcf6",
     ),
     SourceFile(
         "derivatives/freesurfer/subjects/sub-01/surf/rh.sphere",
@@ -328,13 +318,11 @@ def _spherical_interpolation(
 
 def _surface_bundle(mne: Any, scipy: Any, source_root: Path, src: Any) -> dict[str, Any]:
     """Build full-resolution render surfaces and an oct6 scientific sampling domain."""
-    render_inflated_parts: list[np.ndarray] = []
     render_pial_parts: list[np.ndarray] = []
     render_index_parts: list[np.ndarray] = []
     source_index_parts: list[np.ndarray] = []
     interpolation_index_parts: list[np.ndarray] = []
     interpolation_weight_parts: list[np.ndarray] = []
-    source_render_vertex_parts: list[np.ndarray] = []
     render_hemispheres: list[dict[str, int]] = []
     source_hemispheres: list[dict[str, int]] = []
     sampling: list[tuple[np.ndarray, np.ndarray]] = []
@@ -346,21 +334,15 @@ def _surface_bundle(mne: Any, scipy: Any, source_root: Path, src: Any) -> dict[s
 
     for hemi_index, hemi in enumerate(("lh", "rh")):
         surface_root = source_root / "derivatives/freesurfer/subjects/sub-01/surf"
-        inflated, inflated_triangles = mne.read_surface(
-            surface_root / f"{hemi}.inflated", verbose="ERROR"
-        )
         pial, pial_triangles = mne.read_surface(surface_root / f"{hemi}.pial", verbose="ERROR")
         sphere, sphere_triangles = mne.read_surface(
             surface_root / f"{hemi}.sphere", verbose="ERROR"
         )
-        if not (
-            np.array_equal(inflated_triangles, pial_triangles)
-            and np.array_equal(inflated_triangles, sphere_triangles)
-        ):
+        if not np.array_equal(pial_triangles, sphere_triangles):
             raise ValueError(f"{hemi} FreeSurfer surface topology differs across geometries")
 
         source_vertices = np.asarray(src[hemi_index]["vertno"], dtype=np.int64)
-        full_to_source = np.full(inflated.shape[0], -1, dtype=np.int64)
+        full_to_source = np.full(pial.shape[0], -1, dtype=np.int64)
         full_to_source[source_vertices] = np.arange(source_vertices.size, dtype=np.int64)
         source_triangles = full_to_source[np.asarray(src[hemi_index]["use_tris"], dtype=np.int64)]
         source_triangles = source_triangles[np.all(source_triangles >= 0, axis=1)]
@@ -373,24 +355,20 @@ def _surface_bundle(mne: Any, scipy: Any, source_root: Path, src: Any) -> dict[s
         interpolation_indices += source_vertex_offset
         interpolation_validation.append(validation)
 
-        render_inflated_parts.append(np.asarray(inflated, dtype=np.float64))
         render_pial_parts.append(np.asarray(pial, dtype=np.float64))
         render_index_parts.append(
-            np.asarray(inflated_triangles, dtype=np.uint32) + render_vertex_offset
+            np.asarray(pial_triangles, dtype=np.uint32) + render_vertex_offset
         )
         source_index_parts.append(source_triangles.astype(np.uint32) + source_vertex_offset)
         interpolation_index_parts.append(interpolation_indices)
         interpolation_weight_parts.append(interpolation_weights)
-        source_render_vertex_parts.append(
-            source_vertices.astype(np.uint32) + render_vertex_offset
-        )
         sampling.append((source_vertices, source_triangles))
         render_hemispheres.append(
             {
                 "vertex_offset": render_vertex_offset,
-                "vertex_count": int(inflated.shape[0]),
+                "vertex_count": int(pial.shape[0]),
                 "index_offset": render_index_offset,
-                "index_count": int(inflated_triangles.size),
+                "index_count": int(pial_triangles.size),
             }
         )
         source_hemispheres.append(
@@ -401,24 +379,20 @@ def _surface_bundle(mne: Any, scipy: Any, source_root: Path, src: Any) -> dict[s
                 "index_count": int(source_triangles.size),
             }
         )
-        render_vertex_offset += int(inflated.shape[0])
-        render_index_offset += int(inflated_triangles.size)
+        render_vertex_offset += int(pial.shape[0])
+        render_index_offset += int(pial_triangles.size)
         source_vertex_offset += int(source_vertices.size)
         source_index_offset += int(source_triangles.size)
 
-    inflated = np.concatenate(render_inflated_parts, axis=0)
     pial = np.concatenate(render_pial_parts, axis=0)
-    reference = np.concatenate((inflated, pial), axis=0)
-    center = 0.5 * (reference.min(axis=0) + reference.max(axis=0))
-    scale = DISPLAY_EXTENT / float(np.max(np.ptp(reference, axis=0)))
+    center = 0.5 * (pial.min(axis=0) + pial.max(axis=0))
+    scale = DISPLAY_EXTENT / float(np.max(np.ptp(pial, axis=0)))
     return {
-        "inflated": ((inflated - center) * scale).astype(np.float32),
         "pial": ((pial - center) * scale).astype(np.float32),
         "render_indices": np.concatenate(render_index_parts).reshape(-1).astype(np.uint32),
         "source_indices": np.concatenate(source_index_parts).reshape(-1).astype(np.uint32),
         "interpolation_indices": np.concatenate(interpolation_index_parts).astype(np.uint32),
         "interpolation_weights": np.concatenate(interpolation_weight_parts).astype(np.float32),
-        "source_render_vertices": np.concatenate(source_render_vertex_parts).astype(np.uint32),
         "render_hemispheres": render_hemispheres,
         "source_hemispheres": source_hemispheres,
         "sampling": sampling,
@@ -480,20 +454,18 @@ def _expand_activity(stc: Any, sampling: list[tuple[np.ndarray, np.ndarray]]) ->
 def _write_binary(
     path: Path,
     times_ms: np.ndarray,
-    inflated: np.ndarray,
     pial: np.ndarray,
     render_indices: np.ndarray,
     source_indices: np.ndarray,
     interpolation_indices: np.ndarray,
     interpolation_weights: np.ndarray,
-    source_render_vertices: np.ndarray,
     values: np.ndarray,
     render_hemispheres: list[dict[str, int]],
     source_hemispheres: list[dict[str, int]],
 ) -> None:
-    """Write the v3 full-render-mesh/scientific-source-grid runtime bundle."""
-    render_vertex_count = inflated.shape[0]
-    source_vertex_count = source_render_vertices.size
+    """Write the v4 pial-render-mesh/scientific-source-grid runtime bundle."""
+    render_vertex_count = pial.shape[0]
+    source_vertex_count = values.shape[1]
     time_count = times_ms.size
     if values.shape != (time_count, source_vertex_count):
         raise ValueError(
@@ -538,13 +510,10 @@ def _write_binary(
     with path.open("wb") as stream:
         stream.write(header)
         stream.write(np.asarray(times_ms, dtype="<f4").tobytes(order="C"))
-        stream.write(np.asarray(inflated, dtype="<f4").tobytes(order="C"))
         stream.write(np.asarray(pial, dtype="<f4").tobytes(order="C"))
         stream.write(np.asarray(render_indices, dtype="<u4").tobytes(order="C"))
-        stream.write(np.asarray(source_indices, dtype="<u4").tobytes(order="C"))
         stream.write(np.asarray(interpolation_indices, dtype="<u4").tobytes(order="C"))
         stream.write(np.asarray(interpolation_weights, dtype="<f4").tobytes(order="C"))
-        stream.write(np.asarray(source_render_vertices, dtype="<u4").tobytes(order="C"))
         stream.write(np.asarray(values, dtype="<f4").tobytes(order="C"))
 
 
@@ -674,20 +643,18 @@ def prepare(force_download: bool, download_only: bool) -> Path:
     _write_binary(
         binary_path,
         result["times_ms"],
-        result["inflated"],
         result["pial"],
         result["render_indices"],
         result["source_indices"],
         result["interpolation_indices"],
         result["interpolation_weights"],
-        result["source_render_vertices"],
         result["values"],
         result["render_hemispheres"],
         result["source_hemispheres"],
     )
 
     metadata = {
-        "schema": "datoviz.cortical-activity.v3",
+        "schema": "datoviz.cortical-activity.v4",
         "dataset": {
             "accession": OPENNEURO_DATASET,
             "snapshot": OPENNEURO_SNAPSHOT,
@@ -714,12 +681,12 @@ def prepare(force_download: bool, download_only: bool) -> Path:
             "peak_time_ms": result["peak_time_ms"],
         },
         "render_mesh": {
-            "surfaces": ["pial", "inflated"],
+            "surface": "pial",
             "coordinate_space": "participant-native FreeSurfer surface RAS",
-            "normalization": "one shared translation and uniform scale across axes and surfaces",
+            "normalization": "one shared translation and uniform scale across both hemispheres",
             "display_extent": DISPLAY_EXTENT,
             "hemispheres": result["render_hemispheres"],
-            "vertex_count": int(result["inflated"].shape[0]),
+            "vertex_count": int(result["pial"].shape[0]),
             "triangle_count": int(result["render_indices"].size // 3),
         },
         "scientific_mesh": {
@@ -749,7 +716,7 @@ def prepare(force_download: bool, download_only: bool) -> Path:
             "cortical_activity_binary",
             "bin",
             version=BUNDLE_VERSION,
-            render_vertex_count=int(result["inflated"].shape[0]),
+            render_vertex_count=int(result["pial"].shape[0]),
             render_triangle_count=int(result["render_indices"].size // 3),
             source_vertex_count=int(result["values"].shape[1]),
             source_triangle_count=int(result["source_indices"].size // 3),
@@ -797,8 +764,8 @@ def prepare(force_download: bool, download_only: bool) -> Path:
             f"Epoched `{CONDITION}` trials from {TMIN_S:g} to {TMAX_S:g} seconds and baseline-corrected through stimulus onset.",
             "Estimated baseline noise covariance, participant-native BEM/forward solution, and a loose-orientation minimum-norm inverse.",
             f"Applied dSPM with SNR={SNR:g} and lambda2={LAMBDA2:.9f}; exported {OUTPUT_TMIN_S:g} to {OUTPUT_TMAX_S:g} seconds.",
-            f"Sampled activity on the `{SOURCE_SPACING}` source mesh and preserved both inflated and pial coordinates.",
-            "Kept the complete FreeSurfer pial/inflated meshes as the independent render domain.",
+            f"Sampled activity on the `{SOURCE_SPACING}` source mesh.",
+            "Kept the complete FreeSurfer pial mesh as the independent render domain.",
             "Mapped every render vertex to a hemisphere-local oct6 spherical triangle with three barycentric weights.",
             "Centered both hemispheres together and applied one shared uniform scale, preserving the anatomical aspect ratio.",
             f"Filled inverse-excluded mesh vertices by nearest graph propagation and applied {SMOOTHING_STEPS} neighbor-averaging display steps.",
@@ -815,7 +782,7 @@ def prepare(force_download: bool, download_only: bool) -> Path:
     print(f"wrote {bundle_root}")
     print(
         f"activity: {result['values'].shape[1]} source vertices, "
-        f"{result['inflated'].shape[0]} render vertices, "
+        f"{result['pial'].shape[0]} render vertices, "
         f"{result['render_indices'].size // 3} render triangles, {result['times_ms'].size} frames, "
         f"peak {result['peak_dspm']:.2f} dSPM at {result['peak_time_ms']:.1f} ms"
     )

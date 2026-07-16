@@ -10,9 +10,8 @@
  * onto an oct6 source grid with a noise-normalized minimum-norm inverse, then interpolated through
  * hemisphere-local spherical triangles onto the participant's complete full-resolution FreeSurfer
  * cortex. Activity emerges around auditory cortex near 100 ms after the left-ear tone. The live
- * GUI controls playback, surface inflation, whole/split layouts, scientific limits, material,
- * scientific/full wireframes, and arcball state. The initial paused frame is the strongest
- * measured response.
+ * GUI controls playback, whole/split layouts, scientific limits, material, and arcball state. The
+ * initial paused frame is the strongest measured response.
  *
  * dSPM is a model-derived, dimensionless source estimate. It is not a direct measurement of
  * neuronal firing or absolute current amplitude.
@@ -68,8 +67,8 @@
     "uv run --isolated --with mne==1.12.1 --with mne-bids==0.19.0 --with nibabel==5.4.2 "         \
     "--with numpy==2.3.4 --with scipy==1.18.0 --with requests "                                   \
     "python tools/data/prepare_cortical_activity.py"
-#define CORTICAL_ACTIVITY_MAGIC        "DVZCTA3"
-#define CORTICAL_ACTIVITY_VERSION      3u
+#define CORTICAL_ACTIVITY_MAGIC        "DVZCTA4"
+#define CORTICAL_ACTIVITY_VERSION      4u
 #define CORTICAL_ACTIVITY_HEADER_SIZE  112u
 #define CORTICAL_ACTIVITY_MAX_VERTICES 1000000u
 #define CORTICAL_ACTIVITY_MAX_INDICES  10000000u
@@ -81,13 +80,7 @@
 #define WHOLE_BRAIN_LAYOUT    0
 #define SPLIT_LATERAL_LAYOUT  1
 #define LAYOUT_COUNT          2
-#define DEFAULT_SURFACE_MIX   0.45f
 #define SPLIT_HEMISPHERE_GAP  0.52f
-#define WIREFRAME_OFFSET      0.010f
-#define WIREFRAME_OFF         0
-#define WIREFRAME_SOURCE      1
-#define WIREFRAME_FULL        2
-#define WIREFRAME_MODE_COUNT  3
 #define MATERIAL_PRESET_COUNT 4
 
 
@@ -111,13 +104,10 @@ typedef struct CorticalActivityData
     float display_mid;
     float display_max;
     float* times_ms;
-    vec3* inflated;
     vec3* pial;
     DvzIndex* render_indices;
-    DvzIndex* source_indices;
     DvzIndex* interpolation_indices;
     vec3* interpolation_weights;
-    DvzIndex* source_render_vertices;
     float* values;
 } CorticalActivityData;
 
@@ -126,7 +116,6 @@ typedef struct CorticalActivityState
 {
     CorticalActivityData data;
     DvzVisual* mesh;
-    DvzVisual* wire;
     DvzColormap* colormap;
     DvzScale* scale;
     DvzColorbar* colorbar;
@@ -138,12 +127,6 @@ typedef struct CorticalActivityState
     float* source_frame;
     vec3* positions;
     vec3* display_normals;
-    DvzGeometryEdges* edges;
-    vec3* wire_starts;
-    vec3* wire_ends;
-    DvzColor* wire_colors;
-    float* wire_widths;
-    uint32_t edge_count;
     DvzMaterialDesc material;
     DvzColor anatomy_color;
     bool playing;
@@ -151,15 +134,10 @@ typedef struct CorticalActivityState
     float playback_speed;
     float current_time_ms;
     float peak_time_ms;
-    float surface_mix;
     float activity_min;
     float activity_mid;
     float activity_max;
-    float wire_width;
-    DvzColor wire_color;
     int layout;
-    int wire_mode;
-    int wire_domain;
     int material_preset;
 } CorticalActivityState;
 
@@ -235,13 +213,10 @@ static void _activity_data_destroy(CorticalActivityData* data)
     if (data == NULL)
         return;
     dvz_free(data->values);
-    dvz_free(data->source_render_vertices);
     dvz_free(data->interpolation_weights);
     dvz_free(data->interpolation_indices);
-    dvz_free(data->source_indices);
     dvz_free(data->render_indices);
     dvz_free(data->pial);
-    dvz_free(data->inflated);
     dvz_free(data->times_ms);
     memset(data, 0, sizeof(*data));
 }
@@ -327,19 +302,15 @@ static bool _activity_data_load(const char* path, CorticalActivityData* data)
     const uint64_t time_bytes = (uint64_t)data->time_count * sizeof(float);
     const uint64_t render_vector_bytes = (uint64_t)data->render_vertex_count * sizeof(vec3);
     const uint64_t render_index_bytes = (uint64_t)data->render_index_count * sizeof(DvzIndex);
-    const uint64_t source_index_bytes = (uint64_t)data->source_index_count * sizeof(DvzIndex);
     const uint64_t interpolation_bytes =
         (uint64_t)data->render_vertex_count * 3u * sizeof(uint32_t);
-    const uint64_t source_render_vertex_bytes =
-        (uint64_t)data->source_vertex_count * sizeof(DvzIndex);
     const uint64_t value_count = (uint64_t)data->time_count * data->source_vertex_count;
     if (value_count > SIZE_MAX / sizeof(float))
         goto cleanup;
     const uint64_t value_bytes = value_count * sizeof(float);
     const uint64_t expected_size = CORTICAL_ACTIVITY_HEADER_SIZE + time_bytes +
-                                   2u * render_vector_bytes + render_index_bytes +
-                                   source_index_bytes + 2u * interpolation_bytes +
-                                   source_render_vertex_bytes + value_bytes;
+                                   render_vector_bytes + render_index_bytes +
+                                   2u * interpolation_bytes + value_bytes;
     if (expected_size > LONG_MAX || fseek(fp, 0, SEEK_END) != 0 ||
         ftell(fp) != (long)expected_size ||
         fseek(fp, CORTICAL_ACTIVITY_HEADER_SIZE, SEEK_SET) != 0)
@@ -348,31 +319,23 @@ static bool _activity_data_load(const char* path, CorticalActivityData* data)
     }
 
     data->times_ms = (float*)dvz_calloc(data->time_count, sizeof(float));
-    data->inflated = (vec3*)dvz_calloc(data->render_vertex_count, sizeof(vec3));
     data->pial = (vec3*)dvz_calloc(data->render_vertex_count, sizeof(vec3));
     data->render_indices = (DvzIndex*)dvz_calloc(data->render_index_count, sizeof(DvzIndex));
-    data->source_indices = (DvzIndex*)dvz_calloc(data->source_index_count, sizeof(DvzIndex));
     data->interpolation_indices =
         (DvzIndex*)dvz_calloc((uint64_t)data->render_vertex_count * 3u, sizeof(DvzIndex));
     data->interpolation_weights = (vec3*)dvz_calloc(data->render_vertex_count, sizeof(vec3));
-    data->source_render_vertices =
-        (DvzIndex*)dvz_calloc(data->source_vertex_count, sizeof(DvzIndex));
     data->values = (float*)dvz_calloc(value_count, sizeof(float));
-    if (data->times_ms == NULL || data->inflated == NULL || data->pial == NULL ||
-        data->render_indices == NULL || data->source_indices == NULL ||
+    if (data->times_ms == NULL || data->pial == NULL || data->render_indices == NULL ||
         data->interpolation_indices == NULL || data->interpolation_weights == NULL ||
-        data->source_render_vertices == NULL || data->values == NULL)
+        data->values == NULL)
     {
         goto cleanup;
     }
     if (!_read_exact(fp, data->times_ms, time_bytes) ||
-        !_read_exact(fp, data->inflated, render_vector_bytes) ||
         !_read_exact(fp, data->pial, render_vector_bytes) ||
         !_read_exact(fp, data->render_indices, render_index_bytes) ||
-        !_read_exact(fp, data->source_indices, source_index_bytes) ||
         !_read_exact(fp, data->interpolation_indices, interpolation_bytes) ||
         !_read_exact(fp, data->interpolation_weights, interpolation_bytes) ||
-        !_read_exact(fp, data->source_render_vertices, source_render_vertex_bytes) ||
         !_read_exact(fp, data->values, value_bytes))
     {
         goto cleanup;
@@ -386,11 +349,6 @@ static bool _activity_data_load(const char* path, CorticalActivityData* data)
     for (uint32_t i = 0; i < data->render_index_count; i++)
     {
         if (data->render_indices[i] >= data->render_vertex_count)
-            goto cleanup;
-    }
-    for (uint32_t i = 0; i < data->source_index_count; i++)
-    {
-        if (data->source_indices[i] >= data->source_vertex_count)
             goto cleanup;
     }
     for (uint32_t i = 0; i < data->render_vertex_count; i++)
@@ -407,11 +365,6 @@ static bool _activity_data_load(const char* path, CorticalActivityData* data)
             weight_sum += data->interpolation_weights[i][j];
         }
         if (fabsf(weight_sum - 1.0f) > 2e-5f)
-            goto cleanup;
-    }
-    for (uint32_t i = 0; i < data->source_vertex_count; i++)
-    {
-        if (data->source_render_vertices[i] >= data->render_vertex_count)
             goto cleanup;
     }
     ok = true;
@@ -501,136 +454,13 @@ static void _recompute_normals(CorticalActivityState* state)
 
 
 /**
- * Release CPU-side wireframe geometry.
- *
- * @param state showcase state
- */
-static void _release_wireframe(CorticalActivityState* state)
-{
-    if (state == NULL)
-        return;
-    dvz_geometry_edges_destroy(state->edges);
-    dvz_free(state->wire_widths);
-    dvz_free(state->wire_colors);
-    dvz_free(state->wire_ends);
-    dvz_free(state->wire_starts);
-    state->edges = NULL;
-    state->wire_widths = NULL;
-    state->wire_colors = NULL;
-    state->wire_ends = NULL;
-    state->wire_starts = NULL;
-    state->edge_count = 0;
-    state->wire_domain = WIREFRAME_OFF;
-}
-
-
-/**
- * Build unique edges for the selected scientific or render topology.
- *
- * @param state showcase state
- * @param mode wireframe mode
- * @return whether edge storage was prepared
- */
-static bool _prepare_wireframe(CorticalActivityState* state, int mode)
-{
-    if (state == NULL || (mode != WIREFRAME_SOURCE && mode != WIREFRAME_FULL))
-        return false;
-    if (state->wire_domain == mode && state->edges != NULL)
-        return true;
-
-    _release_wireframe(state);
-    const bool source = mode == WIREFRAME_SOURCE;
-    const uint32_t vertex_count =
-        source ? state->data.source_vertex_count : state->data.render_vertex_count;
-    const uint32_t index_count =
-        source ? state->data.source_index_count : state->data.render_index_count;
-    const DvzIndex* indices = source ? state->data.source_indices : state->data.render_indices;
-    DvzGeometry* geometry = dvz_geometry(vertex_count, index_count);
-    if (geometry == NULL)
-        return false;
-    memcpy(geometry->indices, indices, (uint64_t)index_count * sizeof(DvzIndex));
-    state->edges = dvz_geometry_edges(geometry);
-    dvz_geometry_destroy(geometry);
-    if (state->edges == NULL)
-        return false;
-
-    state->edge_count = state->edges->edge_count;
-    state->wire_starts = (vec3*)dvz_calloc(state->edge_count, sizeof(vec3));
-    state->wire_ends = (vec3*)dvz_calloc(state->edge_count, sizeof(vec3));
-    state->wire_colors = (DvzColor*)dvz_calloc(state->edge_count, sizeof(DvzColor));
-    state->wire_widths = (float*)dvz_calloc(state->edge_count, sizeof(float));
-    if (state->wire_starts == NULL || state->wire_ends == NULL || state->wire_colors == NULL ||
-        state->wire_widths == NULL)
-    {
-        _release_wireframe(state);
-        return false;
-    }
-    state->wire_domain = mode;
-    return true;
-}
-
-
-/**
- * Update wireframe endpoints and style from the current surface geometry.
- *
- * @param state showcase state
- * @return whether the wireframe was updated
- */
-static bool _update_wireframe(CorticalActivityState* state)
-{
-    if (state == NULL || state->wire == NULL)
-        return false;
-    if (state->wire_mode == WIREFRAME_OFF)
-    {
-        (void)dvz_visual_set_visible(state->wire, false);
-        return true;
-    }
-    if (!_prepare_wireframe(state, state->wire_mode))
-        return false;
-
-    for (uint32_t i = 0; i < state->edge_count; i++)
-    {
-        const DvzGeometryEdge* edge = &state->edges->edges[i];
-        const DvzIndex v0 = state->wire_domain == WIREFRAME_SOURCE
-                                ? state->data.source_render_vertices[edge->v0]
-                                : edge->v0;
-        const DvzIndex v1 = state->wire_domain == WIREFRAME_SOURCE
-                                ? state->data.source_render_vertices[edge->v1]
-                                : edge->v1;
-        for (uint32_t axis = 0; axis < 3u; axis++)
-        {
-            state->wire_starts[i][axis] =
-                state->positions[v0][axis] + WIREFRAME_OFFSET * state->display_normals[v0][axis];
-            state->wire_ends[i][axis] =
-                state->positions[v1][axis] + WIREFRAME_OFFSET * state->display_normals[v1][axis];
-        }
-        state->wire_colors[i] = state->wire_color;
-        state->wire_widths[i] = state->wire_width;
-    }
-    DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position_start",
-         .data = state->wire_starts,
-         .item_count = state->edge_count},
-        {.attr_name = "position_end", .data = state->wire_ends, .item_count = state->edge_count},
-        {.attr_name = "color", .data = state->wire_colors, .item_count = state->edge_count},
-        {.attr_name = "stroke_width_px",
-         .data = state->wire_widths,
-         .item_count = state->edge_count},
-    };
-    if (dvz_visual_set_data_many(state->wire, updates, DVZ_ARRAY_COUNT(updates)) != DVZ_OK)
-        return false;
-    return dvz_visual_set_visible(state->wire, true) == DVZ_OK;
-}
-
-
-/**
- * Apply the anatomical surface morph and selected whole-brain or split layout.
+ * Apply the selected whole-brain or split layout to the pial surface.
  *
  * The source bundle has one shared scalar normalization for all axes. These display transforms are
  * rotations and translations only, so neither layout can distort the anatomical aspect ratio.
  *
  * @param state showcase state
- * @return whether mesh and wireframe data were updated
+ * @return whether mesh data were updated
  */
 static bool _update_geometry(CorticalActivityState* state)
 {
@@ -640,14 +470,10 @@ static bool _update_geometry(CorticalActivityState* state)
         return false;
     }
 
-    const float surface_mix = _clamp01(state->surface_mix);
     for (uint32_t i = 0; i < state->data.render_vertex_count; i++)
     {
         for (uint32_t axis = 0; axis < 3u; axis++)
-        {
-            state->positions[i][axis] = (1.0f - surface_mix) * state->data.pial[i][axis] +
-                                        surface_mix * state->data.inflated[i][axis];
-        }
+            state->positions[i][axis] = state->data.pial[i][axis];
     }
 
     if (state->layout == SPLIT_LATERAL_LAYOUT)
@@ -708,9 +534,7 @@ static bool _update_geometry(CorticalActivityState* state)
          .data = state->display_normals,
          .item_count = state->data.render_vertex_count},
     };
-    if (dvz_visual_set_data_many(state->mesh, updates, DVZ_ARRAY_COUNT(updates)) != DVZ_OK)
-        return false;
-    return state->wire == NULL || _update_wireframe(state);
+    return dvz_visual_set_data_many(state->mesh, updates, DVZ_ARRAY_COUNT(updates)) == DVZ_OK;
 }
 
 
@@ -988,12 +812,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->playing = false;
     state->loop = true;
     state->playback_speed = 1.0f;
-    state->surface_mix = DEFAULT_SURFACE_MIX;
     state->layout = WHOLE_BRAIN_LAYOUT;
-    state->wire_mode = WIREFRAME_OFF;
-    state->wire_domain = WIREFRAME_OFF;
-    state->wire_width = 0.85f;
-    state->wire_color = dvz_color_rgba(176u, 195u, 202u, 92u);
     state->anatomy_color = dvz_color_rgb(54u, 61u, 70u);
     state->activity_min = state->data.display_min;
     state->activity_mid = state->data.display_mid;
@@ -1052,9 +871,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     for (uint32_t i = 0; i < state->data.render_vertex_count; i++)
     {
-        geometry->positions[i][0] = state->data.inflated[i][0];
-        geometry->positions[i][1] = state->data.inflated[i][1];
-        geometry->positions[i][2] = state->data.inflated[i][2];
+        geometry->positions[i][0] = state->data.pial[i][0];
+        geometry->positions[i][1] = state->data.pial[i][1];
+        geometry->positions[i][2] = state->data.pial[i][2];
         geometry->colors[i] = state->anatomy_color;
     }
     memcpy(
@@ -1068,13 +887,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     }
 
-    state->wire = dvz_segment(ctx->scene, 0);
-    if (state->wire == NULL || !_update_geometry(state) ||
-        dvz_segment_set_caps(state->wire, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_BUTT) != DVZ_OK ||
-        dvz_panel_add_visual(panel, state->wire, NULL) != DVZ_OK || !_update_wireframe(state))
-    {
+    if (!_update_geometry(state))
         return false;
-    }
     state->readout = _add_readout(panel);
     if (state->readout == NULL)
         return false;
@@ -1285,8 +1099,6 @@ static void _cortical_activity_gui(DvzGui* gui, DvzView* view, void* user_data)
         return;
 
     static const char* const layouts[LAYOUT_COUNT] = {"Whole brain", "Split lateral"};
-    static const char* const wire_modes[WIREFRAME_MODE_COUNT] = {
-        "Off", "Scientific oct6 grid", "Full render mesh"};
     static const char* const material_presets[MATERIAL_PRESET_COUNT] = {
         "Matte anatomy", "Soft studio", "High contrast", "Unlit data"};
     static const char* const material_models[] = {"Unlit", "Phong", "Standard"};
@@ -1295,8 +1107,6 @@ static void _cortical_activity_gui(DvzGui* gui, DvzView* view, void* user_data)
     bool scale_changed = false;
     bool material_changed = false;
     bool anatomy_changed = false;
-    bool wire_style_changed = false;
-    bool wire_mode_changed = false;
     bool seek_changed = false;
     bool playback_changed = false;
     bool reset_view = false;
@@ -1334,15 +1144,6 @@ static void _cortical_activity_gui(DvzGui* gui, DvzView* view, void* user_data)
         dvz_gui_separator_text(gui, "Cortical surface");
         layout_changed |= dvz_gui_combo(gui, "Layout", &state->layout, layouts, LAYOUT_COUNT);
         geometry_changed |= layout_changed;
-        geometry_changed |= dvz_gui_slider_float_format(
-            gui, "Pial to inflated", &state->surface_mix, 0.0f, 1.0f, "%.2f");
-        wire_mode_changed |=
-            dvz_gui_combo(gui, "Wireframe", &state->wire_mode, wire_modes, WIREFRAME_MODE_COUNT);
-        wire_style_changed |=
-            dvz_gui_slider_float(gui, "Wire width", &state->wire_width, 0.35f, 2.50f);
-        wire_style_changed |= dvz_gui_color_edit_dvz(gui, "Wire color", &state->wire_color, 0);
-        if (state->wire_mode == WIREFRAME_FULL)
-            dvz_gui_text(gui, "Full wireframe builds about one million edges on demand.");
 
         dvz_gui_separator_text(gui, "Material");
         if (dvz_gui_combo(
@@ -1442,8 +1243,6 @@ static void _cortical_activity_gui(DvzGui* gui, DvzView* view, void* user_data)
         (void)_update_geometry(state);
     if (layout_changed)
         _apply_view_preset(state, state->layout == SPLIT_LATERAL_LAYOUT ? 1 : 0);
-    if (wire_mode_changed || wire_style_changed)
-        (void)_update_wireframe(state);
     if (material_changed)
         (void)dvz_visual_set_material(state->mesh, &state->material);
     if (anatomy_changed)
@@ -1504,7 +1303,6 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
         return;
     if (state->view != NULL)
         (void)dvz_view_set_gui_callback(state->view, NULL, NULL);
-    _release_wireframe(state);
     dvz_free(state->display_normals);
     dvz_free(state->positions);
     dvz_free(state->source_frame);
