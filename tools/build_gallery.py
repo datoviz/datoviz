@@ -90,6 +90,15 @@ INDEX_STARTER_IDS = (
     "showcases_scientific_plotting",
 )
 
+INDEX_SHOWCASE_HIGHLIGHT_IDS = (
+    "showcases_galaxy",
+    "showcases_textured_planet",
+    "showcases_protein",
+    "showcases_wind_field",
+    "showcases_scientific_plotting",
+    "showcases_gpu_particle_smoke",
+)
+
 CATEGORY_TO_LANE = gallery_media.CATEGORY_TO_LANE
 LANE_TO_CATEGORY = gallery_media.LANE_TO_CATEGORY
 
@@ -1150,6 +1159,9 @@ def render_index(
 ) -> None:
     by_id = {example.id: example for example in examples}
     starters = [by_id[id_] for id_ in INDEX_STARTER_IDS if id_ in by_id]
+    showcase_highlights = [
+        by_id[id_] for id_ in INDEX_SHOWCASE_HIGHLIGHT_IDS if id_ in by_id
+    ]
     counts = {
         "visuals": sum(example.lane in ("visuals", "composites") for example in examples),
         "features": sum(example.lane == "features" for example in examples),
@@ -1166,6 +1178,30 @@ def render_index(
             "Python source. The category pages remain the exhaustive catalog."
         )
     )
+    lines.extend(
+        [
+            "## Showcase Highlights",
+            "",
+            "See Datoviz applied to animated simulations, real scientific data, and composed "
+            "visualization workflows. [Browse all showcases](showcases.md).",
+            "",
+            '<div class="grid cards" markdown="1">',
+            "",
+        ]
+    )
+    for example in showcase_highlights:
+        lines.append(
+            render_card(
+                example,
+                page_path,
+                image_dir,
+                image_url_base,
+                image_format,
+                show_tags=False,
+                title_heading=False,
+            )
+        )
+    lines.extend(["</div>", ""])
     lines.extend(
         [
             "## Choose By Goal",

@@ -4,6 +4,121 @@
 
 Choose the closest verified example for your goal, then adapt its complete C or Python source. The category pages remain the exhaustive catalog.
 
+## Showcase Highlights
+
+See Datoviz applied to animated simulations, real scientific data, and composed visualization workflows. [Browse all showcases](showcases.md).
+
+<div class="grid cards" markdown="1">
+
+<div class="card" markdown="1">
+
+**[Density-Wave Galaxy](gallery/showcases/showcases_galaxy.md)**
+
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_galaxy/" aria-label="Density-Wave Galaxy"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp" alt="Density-Wave Galaxy" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp" aria-label="Density-Wave Galaxy preview">
+    <source data-src="../assets/gallery/v0.4/showcases/showcases_galaxy.mp4" type="video/mp4">
+  </video>
+</div>
+
+`showcases`
+
+This example renders an animated density-wave spiral galaxy.
+
+</div>
+
+<div class="card" markdown="1">
+
+**[Textured Planets and Orbital Debris](gallery/showcases/showcases_textured_planet.md)**
+
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_textured_planet/" aria-label="Textured Planets and Orbital Debris"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" alt="Textured Planets and Orbital Debris" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" aria-label="Textured Planets and Orbital Debris preview">
+    <source data-src="../assets/gallery/v0.4/showcases/showcases_textured_planet.mp4" type="video/mp4">
+  </video>
+</div>
+
+`showcases`
+
+This example combines a textured Earth with real catalogued orbital debris.
+
+</div>
+
+<div class="card" markdown="1">
+
+**[Protein](gallery/showcases/showcases_protein.md)**
+
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_protein/" aria-label="Protein"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_protein.poster.webp" alt="Protein" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/showcases/showcases_protein.poster.webp" aria-label="Protein preview">
+    <source data-src="../assets/gallery/v0.4/showcases/showcases_protein.mp4" type="video/mp4">
+  </video>
+</div>
+
+`showcases`
+
+This example renders a prepared PDB structure as colored sphere impostors.
+
+</div>
+
+<div class="card" markdown="1">
+
+**[Wind Field](gallery/showcases/showcases_wind_field.md)**
+
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_wind_field/" aria-label="Wind Field"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_wind_field.poster.webp" alt="Wind Field" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/showcases/showcases_wind_field.poster.webp" aria-label="Wind Field preview">
+    <source data-src="../assets/gallery/v0.4/showcases/showcases_wind_field.mp4" type="video/mp4">
+  </video>
+</div>
+
+`showcases`
+
+This example combines a synthetic wind-speed field with vectors and streamlines.
+
+</div>
+
+<div class="card" markdown="1">
+
+**[Scientific Plotting Workflow](gallery/showcases/showcases_scientific_plotting.md)**
+
+[![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/showcases_scientific_plotting.webp)](gallery/showcases/showcases_scientific_plotting.md)
+
+`showcases`
+
+This example composes common scientific plot elements in one figure.
+
+</div>
+
+<div class="card" markdown="1">
+
+**[GPU Particle Smoke](gallery/showcases/showcases_gpu_particle_smoke.md)**
+
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_gpu_particle_smoke/" aria-label="GPU Particle Smoke"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.poster.webp" alt="GPU Particle Smoke" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.poster.webp" aria-label="GPU Particle Smoke preview">
+    <source data-src="../assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.mp4" type="video/mp4">
+  </video>
+</div>
+
+`experimental` `showcases`
+
+This example uses scene compute buffers to animate particle smoke.
+
+</div>
+
+</div>
+
 ## Choose By Goal
 
 | Goal | Start here | Then browse |
