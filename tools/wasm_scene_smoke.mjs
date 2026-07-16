@@ -1232,6 +1232,26 @@ function expectAxes2DScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
 }
 
+function expectStreamingDaqScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectCommandCount(stream, "HelloRenderer", 1, label);
+  expectCommandCount(stream, "RendererHelloReply", 1, label);
+  expectPipeline(
+    stream,
+    `${label} traces and overlays`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.primitive",
+  );
+  expectPipeline(
+    stream,
+    `${label} axis labels`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.glyph",
+  );
+  requireOk(commandsOf(stream, "Draw").length >= 6, `${label}: expected DAQ and axis draws`);
+  requireOk(commandsOf(stream, "WriteBuffer").length >= 8, `${label}: expected retained DAQ uploads`);
+  requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
+}
+
 function expectAxisLabelsScenarioStreamShape(stream, label) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -2562,6 +2582,7 @@ try {
     "showcases_galaxy",
     "showcases_svg_tiger",
     "showcases_terrain_relief",
+    "showcases_streaming_daq",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -2600,7 +2621,11 @@ try {
         );
       }
     }
-    if (id === "showcases_spherical_harmonics" || id === "showcases_galaxy") {
+    if (
+      id === "showcases_spherical_harmonics" ||
+      id === "showcases_streaming_daq" ||
+      id === "showcases_galaxy"
+    ) {
       requireOk(
         (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 9)) !== 0,
         `${id} did not declare frame callbacks`,
@@ -3696,6 +3721,11 @@ try {
       (stream, label) => expectControllerMeshScenarioStreamShape(stream, label),
     ],
     [
+      "showcases_streaming_daq",
+      "streaming DAQ",
+      (stream, label) => expectStreamingDaqScenarioStreamShape(stream, label),
+    ],
+    [
       "showcases_galaxy",
       "density-wave galaxy",
       (stream, label) => expectGalaxyScenarioStreamShape(stream, label),
@@ -3781,6 +3811,7 @@ try {
         id === "features_update_visual_data" ||
         id === "features_visibility" ||
         id === "showcases_spherical_harmonics" ||
+        id === "showcases_streaming_daq" ||
         id === "showcases_galaxy" ||
         id === "showcases_textured_planet"
       ) {

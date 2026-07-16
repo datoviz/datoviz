@@ -1590,17 +1590,20 @@ examples:
           mp4_crf: 24
     data:
       kind: simulated
-    portability: native-only
+    portability: portable-scenario
     webgpu:
-      status: native-only
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=showcases_streaming_daq
       requirements:
         - primitive
         - axes
         - panzoom
-        - gui
+        - buffer-update
         - frame-callbacks
         - continuous-frames
-      reason: the live source uses a native producer thread and the controls use native ImGui
+      reason: >-
+        the browser scenario uses the shared deterministic acquisition model while the native live
+        route additionally enables its producer thread and ImGui controls
     agent_copy_safe: false
     gallery:
       card: section

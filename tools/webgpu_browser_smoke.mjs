@@ -937,6 +937,7 @@ async function main() {
         ['features_datetime_axis', { label: 'Datetime Axis', kind: 'animated' }],
         ['features_marker_symbols', { label: 'Marker Symbols' }],
         ['showcases_spherical_harmonics', { label: 'Spherical Harmonics', kind: 'animated' }],
+        ['showcases_streaming_daq', { label: 'Streaming DAQ · 128 channels', kind: 'animated' }],
         ['showcases_galaxy', { label: 'Density-Wave Galaxy', kind: 'animated' }],
         [
           'showcases_textured_planet',
@@ -1371,6 +1372,13 @@ async function main() {
         'webgpu_live_spherical_harmonics.png',
         'spherical-harmonics',
         'showcases_spherical_harmonics',
+      ],
+      [
+        'showcases_streaming_daq',
+        'Streaming DAQ · 128 channels',
+        'webgpu_live_streaming_daq.png',
+        'streaming-daq',
+        'showcases_streaming_daq',
       ],
       [
         'showcases_textured_planet',

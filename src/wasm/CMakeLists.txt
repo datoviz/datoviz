@@ -86,6 +86,8 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/scalebar_measurement.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/scientific_plotting.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/spherical_harmonics.c
+    ${PROJECT_SOURCE_DIR}/examples/c/showcases/streaming_daq.c
+    ${PROJECT_SOURCE_DIR}/examples/c/showcases/streaming_daq_model.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/surface_grid.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/svg_tiger.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/svg_tiger_model.c

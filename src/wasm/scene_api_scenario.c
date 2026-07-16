@@ -86,6 +86,7 @@ DvzScenarioSpec dvz_showcase_protein_scenario(void);
 DvzScenarioSpec dvz_showcase_scalebar_measurement_scenario(void);
 DvzScenarioSpec dvz_showcase_scientific_plotting_scenario(void);
 DvzScenarioSpec dvz_showcase_spherical_harmonics_scenario(void);
+DvzScenarioSpec dvz_showcase_streaming_daq_scenario(void);
 DvzScenarioSpec dvz_showcase_surface_grid_scenario(void);
 DvzScenarioSpec dvz_showcase_svg_tiger_scenario(void);
 DvzScenarioSpec dvz_showcase_terrain_relief_scenario(void);
@@ -288,6 +289,8 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_showcase_svg_tiger_scenario();
     case 86:
         return dvz_showcase_terrain_relief_scenario();
+    case 87:
+        return dvz_showcase_streaming_daq_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

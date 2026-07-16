@@ -30,7 +30,7 @@ now has 83 promoted routes backed by canonical C examples or portable C scenario
 `features_sampled_field_update`, `features_colormap_scale`,
 `features_panel_background`, `composites_polygon`, `showcases_panel_linked_axes`,
 `showcases_scalebar_measurement`, `showcases_surface_grid`, `showcases_choropleth`,
-`showcases_galaxy`,
+`showcases_galaxy`, `showcases_streaming_daq`,
 `features_update_partial`, `features_update_visual_data`, `features_visibility`,
 `features_technique_depth_test`, `features_alpha_blending`, `features_material_mesh`, `features_lighting`,
 `showcases_textured_planet`, `showcases_protein`, `visuals_point`, `visuals_pixel`,
@@ -118,6 +118,12 @@ are mounted. Public promotion remains blocked on committed browser bundles: SVG 
 terms are unresolved, while Terrain Relief needs an approved `data` bundle. The generic browser
 loader now validates versions, paths, byte budgets, and SHA-256 hashes before mounting artifacts in
 the Emscripten filesystem; static-site bundle staging rejects cache-only inputs.
+
+Recorded local streaming-DAQ promotion proof on 2026-07-16: the native four-frame PNG smoke and
+88-scenario WASM packet smoke passed. The browser build reuses the canonical deterministic
+acquisition model, emits the primitive/glyph composition, and advances retained partial buffer
+updates continuously. Its filtered browser route reached `QueueSubmit` and then hit the known
+external headless WebGPU instance-loss diagnostic, so that run is a skip rather than visual proof.
 
 Recorded local browser shader-payload proof on 2026-06-18: `node --check
 tools/webgpu_browser_smoke.mjs`, `node --check tools/wasm_scene_smoke.mjs`, and `just

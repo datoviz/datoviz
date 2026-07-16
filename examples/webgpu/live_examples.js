@@ -222,6 +222,12 @@ export const LIVE_EXAMPLES = [
     animate: true,
   },
   {
+    id: "showcases_streaming_daq",
+    label: "Streaming DAQ · 128 channels",
+    scenarioId: "showcases_streaming_daq",
+    animate: true,
+  },
+  {
     id: "showcases_galaxy",
     label: "Density-Wave Galaxy",
     scenarioId: "showcases_galaxy",
