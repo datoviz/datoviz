@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Screen-space ambient occlusion on a porous close-packed sphere aggregate."""
+"""Screen-space ambient occlusion on a protein-like synthetic aggregate."""
 
 from __future__ import annotations
 
@@ -13,37 +13,99 @@ from examples.python.gallery import common as ex
 
 
 LABELS = (b"Plain lighting", b"Ambient occlusion")
-INITIAL_ANGLES = (ctypes.c_float * 3)(0.520, -0.320, 0.180)
+INITIAL_ANGLES = (ctypes.c_float * 3)(-0.239547, -0.407204, +0.824558)
 INITIAL_PAN = (ctypes.c_float * 2)(0.0, -0.020)
-INITIAL_ZOOM = 0.82
-AGGREGATE_SIDE = 25
-AGGREGATE_DIAMETER = 0.070
-AGGREGATE_RADIUS = 0.033
+INITIAL_ZOOM = 0.505017
+AGGREGATE_TARGET_SPHERES = 2600
+AGGREGATE_MAX_CANDIDATES = 200_000
+AGGREGATE_HASH_STEP = 0.080
+
+
+def _hash_u32(value: int) -> int:
+    value &= 0xFFFFFFFF
+    value ^= value >> 16
+    value = (value * 0x7FEB352D) & 0xFFFFFFFF
+    value ^= value >> 15
+    value = (value * 0x846CA68B) & 0xFFFFFFFF
+    value ^= value >> 16
+    return value & 0xFFFFFFFF
+
+
+def _hash_unit(value: int) -> float:
+    return (_hash_u32(value) & 0x00FFFFFF) / 16777215.0
 
 
 def _sphere_data():
     positions = []
-    center = AGGREGATE_SIDE // 2
-    for z in range(AGGREGATE_SIDE):
-        for y in range(AGGREGATE_SIDE):
-            for x in range(AGGREGATE_SIDE):
-                ix, iy, iz = x - center, y - center, z - center
-                layer = z & 1
-                px = AGGREGATE_DIAMETER * (ix + 0.5 * (y & 1) + 0.5 * layer)
-                py = AGGREGATE_DIAMETER * (0.8660254 * iy + 0.2886751 * layer)
-                pz = AGGREGATE_DIAMETER * 0.8164966 * iz
-                distance2 = px * px + py * py + pz * pz
-                outside = distance2 > 0.47
-                cavity = pz > -0.08 and px * px + py * py < 0.045
-                pore = (7 * x + 11 * y + 13 * z) % 23 == 0
-                if outside or cavity or pore:
-                    continue
-                positions.append((px, py, pz))
+    radii = []
+    spatial_hash: dict[tuple[int, int, int], list[int]] = {}
+    lobe_centers = (
+        (-0.40, +0.12, -0.02),
+        (+0.18, +0.17, +0.06),
+        (+0.55, -0.24, -0.08),
+        (-0.26, -0.38, +0.10),
+        (+0.08, -0.18, -0.30),
+    )
+    lobe_radii = (
+        (0.58, 0.45, 0.43),
+        (0.54, 0.49, 0.46),
+        (0.40, 0.34, 0.36),
+        (0.43, 0.32, 0.35),
+        (0.38, 0.32, 0.34),
+    )
+
+    for candidate in range(AGGREGATE_MAX_CANDIDATES):
+        if len(positions) >= AGGREGATE_TARGET_SPHERES:
+            break
+        px = -1.05 + 2.10 * _hash_unit(4 * candidate + 0)
+        py = -0.90 + 1.80 * _hash_unit(4 * candidate + 1)
+        pz = -0.80 + 1.60 * _hash_unit(4 * candidate + 2)
+        radius = 0.024 + 0.012 * _hash_unit(4 * candidate + 3)
+        inside = any(
+            ((px - cx) / rx) ** 2 + ((py - cy) / ry) ** 2 + ((pz - cz) / rz) ** 2 <= 1
+            for (cx, cy, cz), (rx, ry, rz) in zip(lobe_centers, lobe_radii)
+        )
+        pocket0 = (px + 0.03) ** 2 + (py - 0.31) ** 2 + (pz - 0.48) ** 2 < 0.070
+        pocket1 = (px - 0.48) ** 2 + (py - 0.08) ** 2 + (pz - 0.24) ** 2 < 0.030
+        if not inside or pocket0 or pocket1:
+            continue
+
+        cell = (
+            int(np.floor((px + 1.05) / AGGREGATE_HASH_STEP)),
+            int(np.floor((py + 0.90) / AGGREGATE_HASH_STEP)),
+            int(np.floor((pz + 0.80) / AGGREGATE_HASH_STEP)),
+        )
+        overlaps = False
+        for dz in range(-1, 2):
+            for dy in range(-1, 2):
+                for dx in range(-1, 2):
+                    for index in spatial_hash.get(
+                        (cell[0] + dx, cell[1] + dy, cell[2] + dz), ()
+                    ):
+                        qx, qy, qz = positions[index]
+                        minimum = radius + radii[index] + 0.002
+                        if (px - qx) ** 2 + (py - qy) ** 2 + (pz - qz) ** 2 < minimum**2:
+                            overlaps = True
+                            break
+                    if overlaps:
+                        break
+                if overlaps:
+                    break
+            if overlaps:
+                break
+        if overlaps:
+            continue
+        spatial_hash.setdefault(cell, []).append(len(positions))
+        positions.append((px, py, pz))
+        radii.append(radius)
 
     count = len(positions)
-    radii = np.full(count, AGGREGATE_RADIUS, dtype=np.float32)
     colors = np.tile(np.array([[ex.CYAN.r, ex.CYAN.g, ex.CYAN.b, ex.CYAN.a]]), (count, 1))
-    return np.asarray(positions, dtype=np.float32), radii, colors.astype(np.uint8)
+    return (
+        np.asarray(positions, dtype=np.float32),
+        np.asarray(radii, dtype=np.float32),
+        colors.astype(np.uint8),
+    )
 
 
 def _add_label(panel, label: bytes) -> None:
@@ -100,15 +162,15 @@ def _add_sphere_cluster(scene, panel) -> None:
 
 def _set_ssao(panel) -> None:
     desc = dvz.dvz_ssao_desc()
-    desc.radius = 0.12
-    desc.strength = 4.0
-    desc.bias = 0.0
-    desc.power = 1.25
-    desc.min_visibility = 0.30
+    desc.radius = 0.560
+    desc.strength = 3.318
+    desc.bias = 0.032
+    desc.power = 1.541
+    desc.min_visibility = 0.000
     desc.sample_count = 32
-    desc.blur_radius = 3.0
-    desc.blur_depth_sigma = 0.65
-    desc.blur_normal_sigma = 0.35
+    desc.blur_radius = 4.520
+    desc.blur_depth_sigma = 0.834
+    desc.blur_normal_sigma = 0.309
     desc.blur_enabled = True
     desc.debug_view = False
     if dvz.dvz_panel_set_ssao(panel, ctypes.byref(desc)) != 0:
@@ -158,8 +220,8 @@ def _configure_view(view, scene, panels) -> None:
         arcball = dvz.dvz_controller_arcball(controller)
         if not arcball:
             raise RuntimeError("dvz_controller_arcball() failed")
-        if dvz.dvz_arcball_set(arcball, INITIAL_ANGLES) != 0:
-            raise RuntimeError("dvz_arcball_set() failed")
+        if dvz.dvz_arcball_initial(arcball, INITIAL_ANGLES) != 0:
+            raise RuntimeError("dvz_arcball_initial() failed")
         if dvz.dvz_arcball_zoom(arcball, INITIAL_ZOOM) != 0:
             raise RuntimeError("dvz_arcball_zoom() failed")
         if dvz.dvz_arcball_pan(arcball, INITIAL_PAN) != 0:

@@ -4,12 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* This example compares a porous sphere aggregate with and without screen-space ambient occlusion.
+/* This example compares a synthetic molecular aggregate with and without ambient occlusion.
  *
- * What to look for: both panels render the same uniformly colored, close-packed sphere aggregate,
- * while the right panel applies SSAO. Contact seams, pores, and the open central cavity become
- * legible without a floor or color mapping. In live mode, use the GUI and linked arcball to inspect
- * how radius, strength, bias, power, visibility, sample count, and blur affect local occlusion.
+ * What to look for: both panels render the same irregular, multi-lobed aggregate of variable-sized
+ * spheres, while the right panel applies SSAO. Narrow clefts, recessed pockets, and near-contact
+ * atom clusters become easier to separate without a floor or external dataset. In live mode, use
+ * the GUI and linked arcball to inspect how radius, strength, bias, power, visibility, sample count,
+ * and blur affect local occlusion.
  *
  * Scenario: features_technique_ssao
  * Style: features, graphite_cyan, 1280x720 window target
@@ -25,6 +26,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -46,10 +48,14 @@
 
 #define WIDTH  EXAMPLE_WINDOW_WIDTH
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
-#define AGGREGATE_SIDE         25u
-#define AGGREGATE_MAX_SPHERES  6000u
-#define AGGREGATE_DIAMETER     0.070f
-#define AGGREGATE_RADIUS       0.033f
+#define AGGREGATE_TARGET_SPHERES 2600u
+#define AGGREGATE_MAX_CANDIDATES 200000u
+#define AGGREGATE_HASH_X         27
+#define AGGREGATE_HASH_Y         23
+#define AGGREGATE_HASH_Z         20
+#define AGGREGATE_HASH_CELLS                                                            \
+    (AGGREGATE_HASH_X * AGGREGATE_HASH_Y * AGGREGATE_HASH_Z)
+#define AGGREGATE_HASH_STEP 0.080f
 
 
 
@@ -93,7 +99,38 @@ static void _apply_arcball(SsaoDemoState* state)
 
 
 /**
- * Add a rounded close-packed sphere aggregate with pores and an open central cavity.
+ * Return a deterministic pseudo-random 32-bit value.
+ *
+ * @param value input value
+ * @return mixed value
+ */
+static uint32_t _hash_u32(uint32_t value)
+{
+    value ^= value >> 16u;
+    value *= 0x7feb352du;
+    value ^= value >> 15u;
+    value *= 0x846ca68bu;
+    value ^= value >> 16u;
+    return value;
+}
+
+
+
+/**
+ * Return a deterministic value in the [0, 1] interval.
+ *
+ * @param value input value
+ * @return normalized mixed value
+ */
+static float _hash_unit(uint32_t value)
+{
+    return (float)(_hash_u32(value) & 0x00ffffffu) / 16777215.0f;
+}
+
+
+
+/**
+ * Add a protein-like aggregate made from irregular lobes and recessed pockets.
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
@@ -101,45 +138,122 @@ static void _apply_arcball(SsaoDemoState* state)
  */
 static bool _add_sphere_cluster(DvzScene* scene, DvzPanel* panel)
 {
-    vec3 positions[AGGREGATE_MAX_SPHERES] = {{0}};
-    float radii[AGGREGATE_MAX_SPHERES] = {0};
-    DvzColor colors[AGGREGATE_MAX_SPHERES] = {{0}};
+    vec3 positions[AGGREGATE_TARGET_SPHERES] = {{0}};
+    float radii[AGGREGATE_TARGET_SPHERES] = {0};
+    DvzColor colors[AGGREGATE_TARGET_SPHERES] = {{0}};
+    int32_t hash_heads[AGGREGATE_HASH_CELLS] = {0};
+    int32_t hash_next[AGGREGATE_TARGET_SPHERES] = {0};
     uint32_t count = 0;
-    const int32_t center = (int32_t)(AGGREGATE_SIDE / 2u);
 
-    for (uint32_t z = 0; z < AGGREGATE_SIDE; z++)
+    const vec3 lobe_centers[5] = {
+        {-0.40f, +0.12f, -0.02f},
+        {+0.18f, +0.17f, +0.06f},
+        {+0.55f, -0.24f, -0.08f},
+        {-0.26f, -0.38f, +0.10f},
+        {+0.08f, -0.18f, -0.30f},
+    };
+    const vec3 lobe_radii[5] = {
+        {0.58f, 0.45f, 0.43f},
+        {0.54f, 0.49f, 0.46f},
+        {0.40f, 0.34f, 0.36f},
+        {0.43f, 0.32f, 0.35f},
+        {0.38f, 0.32f, 0.34f},
+    };
+
+    for (int32_t i = 0; i < AGGREGATE_HASH_CELLS; i++)
+        hash_heads[i] = -1;
+
+    for (uint32_t candidate = 0;
+         candidate < AGGREGATE_MAX_CANDIDATES && count < AGGREGATE_TARGET_SPHERES;
+         candidate++)
     {
-        for (uint32_t y = 0; y < AGGREGATE_SIDE; y++)
-        {
-            for (uint32_t x = 0; x < AGGREGATE_SIDE; x++)
-            {
-                const int32_t ix = (int32_t)x - center;
-                const int32_t iy = (int32_t)y - center;
-                const int32_t iz = (int32_t)z - center;
-                const float layer = (float)(z & 1u);
-                const float px = AGGREGATE_DIAMETER *
-                                 ((float)ix + 0.5f * (float)(y & 1u) + 0.5f * layer);
-                const float py = AGGREGATE_DIAMETER *
-                                 (0.8660254f * (float)iy + 0.2886751f * layer);
-                const float pz = AGGREGATE_DIAMETER * 0.8164966f * (float)iz;
-                const float distance2 = px * px + py * py + pz * pz;
-                const bool outside = distance2 > 0.47f;
-                const bool cavity = pz > -0.08f && px * px + py * py < 0.045f;
-                const bool pore = (7u * x + 11u * y + 13u * z) % 23u == 0u;
-                if (outside || cavity || pore)
-                    continue;
-                if (count >= AGGREGATE_MAX_SPHERES)
-                    return false;
+        const float px = -1.05f + 2.10f * _hash_unit(4u * candidate + 0u);
+        const float py = -0.90f + 1.80f * _hash_unit(4u * candidate + 1u);
+        const float pz = -0.80f + 1.60f * _hash_unit(4u * candidate + 2u);
+        const float radius = 0.024f + 0.012f * _hash_unit(4u * candidate + 3u);
 
-                positions[count][0] = px;
-                positions[count][1] = py;
-                positions[count][2] = pz;
-                radii[count] = AGGREGATE_RADIUS;
-                colors[count] =
-                    example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
-                count++;
+        bool inside = false;
+        for (uint32_t i = 0; i < 5; i++)
+        {
+            const float dx = (px - lobe_centers[i][0]) / lobe_radii[i][0];
+            const float dy = (py - lobe_centers[i][1]) / lobe_radii[i][1];
+            const float dz = (pz - lobe_centers[i][2]) / lobe_radii[i][2];
+            if (dx * dx + dy * dy + dz * dz <= 1.0f)
+            {
+                inside = true;
+                break;
             }
         }
+
+        const float pocket0_x = px + 0.03f;
+        const float pocket0_y = py - 0.31f;
+        const float pocket0_z = pz - 0.48f;
+        const bool pocket0 = pocket0_x * pocket0_x + pocket0_y * pocket0_y +
+                             pocket0_z * pocket0_z < 0.070f;
+        const float pocket1_x = px - 0.48f;
+        const float pocket1_y = py - 0.08f;
+        const float pocket1_z = pz - 0.24f;
+        const bool pocket1 = pocket1_x * pocket1_x + pocket1_y * pocket1_y +
+                             pocket1_z * pocket1_z < 0.030f;
+        if (!inside || pocket0 || pocket1)
+            continue;
+
+        const int32_t cell_x = (int32_t)floorf((px + 1.05f) / AGGREGATE_HASH_STEP);
+        const int32_t cell_y = (int32_t)floorf((py + 0.90f) / AGGREGATE_HASH_STEP);
+        const int32_t cell_z = (int32_t)floorf((pz + 0.80f) / AGGREGATE_HASH_STEP);
+        if (
+            cell_x < 0 || cell_x >= AGGREGATE_HASH_X || cell_y < 0 ||
+            cell_y >= AGGREGATE_HASH_Y || cell_z < 0 || cell_z >= AGGREGATE_HASH_Z)
+        {
+            continue;
+        }
+
+        bool overlaps = false;
+        for (int32_t dz = -1; dz <= 1 && !overlaps; dz++)
+        {
+            const int32_t nz = cell_z + dz;
+            if (nz < 0 || nz >= AGGREGATE_HASH_Z)
+                continue;
+            for (int32_t dy = -1; dy <= 1 && !overlaps; dy++)
+            {
+                const int32_t ny = cell_y + dy;
+                if (ny < 0 || ny >= AGGREGATE_HASH_Y)
+                    continue;
+                for (int32_t dx = -1; dx <= 1 && !overlaps; dx++)
+                {
+                    const int32_t nx = cell_x + dx;
+                    if (nx < 0 || nx >= AGGREGATE_HASH_X)
+                        continue;
+                    const int32_t hash_cell =
+                        nx + AGGREGATE_HASH_X * (ny + AGGREGATE_HASH_Y * nz);
+                    for (int32_t j = hash_heads[hash_cell]; j >= 0; j = hash_next[j])
+                    {
+                        const float sx = px - positions[j][0];
+                        const float sy = py - positions[j][1];
+                        const float sz = pz - positions[j][2];
+                        const float minimum = radius + radii[j] + 0.002f;
+                        if (sx * sx + sy * sy + sz * sz < minimum * minimum)
+                        {
+                            overlaps = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if (overlaps)
+            continue;
+
+        positions[count][0] = px;
+        positions[count][1] = py;
+        positions[count][2] = pz;
+        radii[count] = radius;
+        colors[count] = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
+        const int32_t hash_cell =
+            cell_x + AGGREGATE_HASH_X * (cell_y + AGGREGATE_HASH_Y * cell_z);
+        hash_next[count] = hash_heads[hash_cell];
+        hash_heads[hash_cell] = (int32_t)count;
+        count++;
     }
     if (count == 0)
         return false;
@@ -182,7 +296,8 @@ static DvzController* _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel, ve
         return NULL;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return NULL;
-    dvz_arcball_set(arcball, angles);
+    if (dvz_arcball_initial(arcball, angles) != DVZ_OK)
+        return NULL;
     return controller;
 }
 
@@ -264,10 +379,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!_add_sphere_cluster(ctx->scene, plain) || !_add_sphere_cluster(ctx->scene, ssao_panel))
         return false;
 
-    state->arcball_angles[0] = +0.520f;
-    state->arcball_angles[1] = -0.320f;
-    state->arcball_angles[2] = +0.180f;
-    state->arcball_zoom = 0.82f;
+    state->arcball_angles[0] = -0.239547f;
+    state->arcball_angles[1] = -0.407204f;
+    state->arcball_angles[2] = +0.824558f;
+    state->arcball_zoom = 0.505017f;
     state->arcball_pan[0] = +0.000f;
     state->arcball_pan[1] = -0.020f;
     DvzController* plain_controller = _bind_arcball(ctx, plain, state->arcball_angles);
@@ -291,18 +406,18 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         .debug_view = false,
         .show_blur_sigmas = true,
         .show_debug_view = true,
-        .radius = 0.12f,
-        .strength = 4.0f,
-        .bias = 0.000f,
-        .power = 1.25f,
-        .min_visibility = 0.30f,
+        .radius = 0.560f,
+        .strength = 3.318f,
+        .bias = 0.032f,
+        .power = 1.541f,
+        .min_visibility = 0.000f,
         .samples = 32.0f,
         .min_samples = 4.0f,
         .max_samples = 32.0f,
-        .blur_radius = 3.0f,
+        .blur_radius = 4.520f,
         .blur_radius_max = 16.0f,
-        .blur_depth_sigma = 0.65f,
-        .blur_normal_sigma = 0.35f,
+        .blur_depth_sigma = 0.834f,
+        .blur_normal_sigma = 0.309f,
     };
     example_tuner_ssao(&state->tuner, "Occlusion", state->ssao_panel, &state->ssao);
     example_tuner_arcball(
