@@ -64,11 +64,19 @@ class SkyLayer:
 
 
 @dataclass(frozen=True)
+class SkyTexture:
+    """Prepared 2MASS RGBA texture and its celestial orientation."""
+
+    rgba: np.ndarray
+    transform: np.ndarray
+
+
+@dataclass(frozen=True)
 class SkyModel:
-    """Gaia stars and 2MASS Milky Way points in the snapshot celestial frame."""
+    """Gaia stars and a continuous 2MASS Milky Way in the snapshot celestial frame."""
 
     stars: SkyLayer
-    galaxy: SkyLayer
+    galaxy: SkyTexture
     snapshot_utc: str
 
 
@@ -166,10 +174,15 @@ def _load_sky_model() -> SkyModel:
     payload = path.read_bytes()
     if len(payload) < SKY_HEADER.size:
         raise RuntimeError(f'truncated celestial-sky binary: {path}')
-    magic, version, star_count, galaxy_count, _reserved, snapshot_field = SKY_HEADER.unpack_from(
-        payload
-    )
-    if magic != b'DVZSKY1\0' or version != 1 or star_count <= 0 or galaxy_count <= 0:
+    header = SKY_HEADER.unpack_from(payload)
+    magic, version, star_count, galaxy_width, galaxy_height, snapshot_field = header
+    if (
+        magic != b'DVZSKY2\0'
+        or version != 2
+        or star_count <= 0
+        or galaxy_width <= 0
+        or galaxy_height <= 0
+    ):
         raise RuntimeError(f'invalid celestial-sky header: {path}')
 
     def layer(offset: int, count: int) -> tuple[SkyLayer, int]:
@@ -190,8 +203,25 @@ def _load_sky_model() -> SkyModel:
         sizes = np.frombuffer(payload, dtype='<f4', count=count, offset=offset)
         return SkyLayer(positions, colors, sizes), end
 
-    stars, offset = layer(SKY_HEADER.size, star_count)
-    galaxy, offset = layer(offset, galaxy_count)
+    transform_offset = SKY_HEADER.size
+    transform_end = transform_offset + 9 * 4
+    if transform_end > len(payload):
+        raise RuntimeError(f'truncated celestial-sky transform: {path}')
+    transform = np.frombuffer(
+        payload, dtype='<f4', count=9, offset=transform_offset
+    ).reshape(3, 3)
+    stars, offset = layer(transform_end, star_count)
+    galaxy_end = offset + 4 * galaxy_width * galaxy_height
+    if galaxy_end > len(payload):
+        raise RuntimeError(f'truncated celestial-sky texture: {path}')
+    galaxy_rgba = np.frombuffer(
+        payload,
+        dtype=np.uint8,
+        count=4 * galaxy_width * galaxy_height,
+        offset=offset,
+    ).reshape(galaxy_height, galaxy_width, 4)
+    galaxy = SkyTexture(galaxy_rgba, transform)
+    offset = galaxy_end
     if offset != len(payload):
         raise RuntimeError(f'unexpected celestial-sky binary size: {path}')
     snapshot_utc = snapshot_field.split(b'\0', 1)[0].decode('ascii')
@@ -291,7 +321,17 @@ def _planet_transform():
     return transform
 
 
-def _add_sky_layer(scene, panel, layer: SkyLayer, *, blended: bool) -> None:
+def _add_star_layer(scene, panel, layer: SkyLayer, *, halo: bool) -> None:
+    positions = layer.positions
+    colors = layer.colors
+    sizes = layer.sizes
+    if halo:
+        bright = sizes >= 2.6
+        positions = np.ascontiguousarray(positions[bright])
+        colors = np.ascontiguousarray(colors[bright].copy())
+        sizes = np.ascontiguousarray(2.8 * sizes[bright] + 1.5, dtype=np.float32)
+        colors[:, 3] = np.minimum(54.0, 12.0 + 7.0 * layer.sizes[bright]).astype(np.uint8)
+
     stars = dvz.dvz_point(scene, 0)
     if not stars:
         raise RuntimeError('dvz_point() failed')
@@ -299,9 +339,9 @@ def _add_sky_layer(scene, panel, layer: SkyLayer, *, blended: bool) -> None:
         dvz.dvz_visual_set_data_many(
             stars,
             {
-                'position': layer.positions,
-                'color': layer.colors,
-                'diameter_px': layer.sizes,
+                'position': positions,
+                'color': colors,
+                'diameter_px': sizes,
             },
         )
         != 0
@@ -310,9 +350,52 @@ def _add_sky_layer(scene, panel, layer: SkyLayer, *, blended: bool) -> None:
     ex.set_filled_point_style(stars)
     if dvz.dvz_visual_set_depth_test(stars, True) != 0:
         raise RuntimeError('dvz_visual_set_depth_test(stars) failed')
-    if blended and dvz.dvz_visual_set_alpha_mode(stars, dvz.DVZ_ALPHA_BLENDED) != 0:
-        raise RuntimeError('dvz_visual_set_alpha_mode(sky) failed')
+    if dvz.dvz_visual_set_alpha_mode(stars, dvz.DVZ_ALPHA_BLENDED) != 0:
+        raise RuntimeError('dvz_visual_set_alpha_mode(stars) failed')
+    if dvz.dvz_visual_set_blend_mode(stars, dvz.DVZ_BLEND_ADDITIVE) != 0:
+        raise RuntimeError('dvz_visual_set_blend_mode(stars) failed')
     ex.add_visual(panel, stars)
+
+
+def _add_galaxy_layer(scene, panel, texture: SkyTexture) -> None:
+    field = dvz.dvz_sampled_field_from_array(scene, texture.rgba)
+    desc = dvz.dvz_geometry_sphere_desc()
+    desc.radius = 45.0
+    desc.sectors = SPHERE_SECTORS
+    desc.rings = SPHERE_RINGS
+    desc.color = ex.WHITE
+    geometry = dvz.dvz_geometry_sphere(ctypes.byref(desc))
+    if not geometry:
+        raise RuntimeError('dvz_geometry_sphere(galaxy) failed')
+
+    galaxy = dvz.dvz_mesh(scene, 0)
+    if not galaxy:
+        dvz.dvz_geometry_destroy(geometry)
+        raise RuntimeError('dvz_mesh(galaxy) failed')
+    try:
+        transform = ((ctypes.c_double * 4) * 4)()
+        for row in range(3):
+            for column in range(3):
+                transform[column][row] = float(texture.transform[row, column])
+        transform[3][3] = 1.0
+        if dvz.dvz_geometry_transform(geometry, transform) != 0:
+            raise RuntimeError('dvz_geometry_transform(galaxy) failed')
+        if dvz.dvz_mesh_set_geometry(galaxy, geometry) != 0:
+            raise RuntimeError('dvz_mesh_set_geometry(galaxy) failed')
+    finally:
+        dvz.dvz_geometry_destroy(geometry)
+
+    material = dvz.dvz_material_desc()
+    material.model = dvz.DVZ_MATERIAL_MODEL_UNLIT
+    material.alpha_mode = dvz.DVZ_ALPHA_BLENDED
+    material.opacity = 0.72
+    if dvz.dvz_visual_set_material(galaxy, ctypes.byref(material)) != 0:
+        raise RuntimeError('dvz_visual_set_material(galaxy) failed')
+    if dvz.dvz_visual_set_field(galaxy, b'texture', field) != 0:
+        raise RuntimeError('dvz_visual_set_field(galaxy) failed')
+    if dvz.dvz_visual_set_depth_test(galaxy, True) != 0:
+        raise RuntimeError('dvz_visual_set_depth_test(galaxy) failed')
+    ex.add_visual(panel, galaxy)
 
 
 def _planet_material():
@@ -528,8 +611,9 @@ def _build_scene():
     dvz.dvz_panel_set_background_color(panel, PANEL_BG)
     _setup_camera(panel)
     sky_model = _load_sky_model()
-    _add_sky_layer(scene, panel, sky_model.galaxy, blended=True)
-    _add_sky_layer(scene, panel, sky_model.stars, blended=False)
+    _add_galaxy_layer(scene, panel, sky_model.galaxy)
+    _add_star_layer(scene, panel, sky_model.stars, halo=True)
+    _add_star_layer(scene, panel, sky_model.stars, halo=False)
     mesh = _add_planet(scene, panel)
     _atmosphere = _add_atmosphere(scene, panel)
     orbit_model = _load_orbit_model()

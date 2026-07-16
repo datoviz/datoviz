@@ -22,7 +22,7 @@ from pathlib import Path
 from common import CACHE_ROOT, REPO_ROOT, artifact, write_manifest, write_provenance
 
 try:
-    from PIL import Image
+    from PIL import Image, ImageFilter
 except ImportError as exc:  # pragma: no cover
     raise SystemExit('missing Pillow; run this script with `uv run`') from exc
 
@@ -35,12 +35,12 @@ MASS_URL = (
     'https://assets.science.nasa.gov/content/dam/science/psd/photojournal/'
     'pia/pia04/pia04250/PIA04250.jpg'
 )
-MAGIC = b'DVZSKY1\0'
-VERSION = 1
+MAGIC = b'DVZSKY2\0'
+VERSION = 2
 SNAPSHOT_TEXT_SIZE = 32
 STAR_LIMIT = 8000
-GALAXY_GRID_WIDTH = 512
-GALAXY_GRID_HEIGHT = 256
+GALAXY_TEXTURE_WIDTH = 1024
+GALAXY_TEXTURE_HEIGHT = 512
 SKY_RADIUS = 46.0
 
 
@@ -132,16 +132,23 @@ def _icrs_to_visual(vector: tuple[float, float, float], gmst: float) -> tuple[fl
     return -SKY_RADIUS * y_fixed, SKY_RADIUS * z_icrs, -SKY_RADIUS * x_fixed
 
 
-def _galactic_to_icrs(longitude: float, latitude: float) -> tuple[float, float, float]:
-    cosine_latitude = math.cos(latitude)
-    galactic = (
-        cosine_latitude * math.cos(longitude),
-        cosine_latitude * math.sin(longitude),
-        math.sin(latitude),
-    )
+def _galactic_to_icrs_vector(
+    galactic: tuple[float, float, float],
+) -> tuple[float, float, float]:
     return tuple(
         sum(ICRS_TO_GALACTIC[row][column] * galactic[row] for row in range(3))
         for column in range(3)
+    )
+
+
+def _galactic_to_icrs(longitude: float, latitude: float) -> tuple[float, float, float]:
+    cosine_latitude = math.cos(latitude)
+    return _galactic_to_icrs_vector(
+        (
+            cosine_latitude * math.cos(longitude),
+            cosine_latitude * math.sin(longitude),
+            math.sin(latitude),
+        )
     )
 
 
@@ -177,31 +184,50 @@ def _load_gaia(
             math.sin(declination),
         )
         magnitude = float(row['phot_g_mean_mag'])
-        size = max(1.0, min(6.5, 6.2 - 0.62 * magnitude))
-        stars.append((_icrs_to_visual(icrs, gmst), _star_color(float(row['bp_rp'])), size))
+        prominence = math.exp(-0.32 * max(0.0, magnitude + 1.0))
+        size = 1.05 + 5.2 * prominence
+        red, green, blue, _alpha = _star_color(float(row['bp_rp']))
+        alpha = round(150 + 105 * math.exp(-0.24 * max(0.0, magnitude + 1.0)))
+        stars.append((_icrs_to_visual(icrs, gmst), (red, green, blue, alpha), size))
     if not stars:
         raise RuntimeError('Gaia query returned no usable stars')
     return stars
 
 
-def _hammer_inverse(x: float, y: float) -> tuple[float, float] | None:
-    # x and y are normalized to the Hammer ellipse: x in [-1, 1], y in [-1, 1].
-    if x * x + y * y > 1.0:
-        return None
-    scaled_x = 2.0 * math.sqrt(2.0) * x
-    scaled_y = math.sqrt(2.0) * y
-    z_squared = 1.0 - scaled_x * scaled_x / 16.0 - scaled_y * scaled_y / 4.0
-    if z_squared <= 0.0:
-        return None
-    z = math.sqrt(z_squared)
-    longitude = 2.0 * math.atan2(z * scaled_x, 2.0 * (2.0 * z * z - 1.0))
-    latitude = math.asin(max(-1.0, min(1.0, z * scaled_y)))
-    return longitude, latitude
+def _hammer_forward(longitude: float, latitude: float) -> tuple[float, float]:
+    """Project galactic longitude/latitude into the normalized source Hammer ellipse."""
+    cosine_latitude = math.cos(latitude)
+    denominator = math.sqrt(max(1e-12, 1.0 + cosine_latitude * math.cos(0.5 * longitude)))
+    return (
+        cosine_latitude * math.sin(0.5 * longitude) / denominator,
+        math.sin(latitude) / denominator,
+    )
 
 
-def _load_2mass(
-    path: Path, gmst: float
-) -> list[tuple[tuple[float, float, float], tuple[int, ...], float]]:
+def _sample_rgb(pixels, width: int, height: int, x: float, y: float) -> tuple[int, int, int]:
+    """Bilinearly sample one RGB image at floating-point pixel coordinates."""
+    x = max(0.0, min(width - 1.0, x))
+    y = max(0.0, min(height - 1.0, y))
+    x0 = int(math.floor(x))
+    y0 = int(math.floor(y))
+    x1 = min(x0 + 1, width - 1)
+    y1 = min(y0 + 1, height - 1)
+    tx = x - x0
+    ty = y - y0
+    samples = (pixels[x0, y0], pixels[x1, y0], pixels[x0, y1], pixels[x1, y1])
+    weights = ((1.0 - tx) * (1.0 - ty), tx * (1.0 - ty), (1.0 - tx) * ty, tx * ty)
+    return tuple(
+        round(
+            sum(
+                weight * sample[channel]
+                for weight, sample in zip(weights, samples, strict=True)
+            )
+        )
+        for channel in range(3)
+    )
+
+
+def _load_2mass(path: Path) -> bytes:
     with Image.open(path) as image:
         image = image.convert('RGB')
         width, height = image.size
@@ -213,46 +239,54 @@ def _load_2mass(
                 round(0.954 * width),
                 round(0.934 * height),
             )
-        ).resize((GALAXY_GRID_WIDTH, GALAXY_GRID_HEIGHT), Image.Resampling.LANCZOS)
+        )
         pixels = crop.load()
+        crop_width, crop_height = crop.size
 
-    galaxy = []
-    for row in range(GALAXY_GRID_HEIGHT):
-        y = 1.0 - 2.0 * (row + 0.5) / GALAXY_GRID_HEIGHT
-        for column in range(GALAXY_GRID_WIDTH):
-            x = 2.0 * (column + 0.5) / GALAXY_GRID_WIDTH - 1.0
-            coordinates = _hammer_inverse(x, y)
-            if coordinates is None:
-                continue
-            red, green, blue = pixels[column, row]
+        reprojected_pixels = []
+        for row in range(GALAXY_TEXTURE_HEIGHT):
+            latitude = math.pi * (0.5 - (row + 0.5) / GALAXY_TEXTURE_HEIGHT)
+            for column in range(GALAXY_TEXTURE_WIDTH):
+                # Put the equirectangular seam at the galactic anticenter, not through the bright
+                # galactic center. The stored sky transform includes the matching half turn.
+                longitude = 2.0 * math.pi * (column + 0.5) / GALAXY_TEXTURE_WIDTH - math.pi
+                hammer_x, hammer_y = _hammer_forward(longitude, latitude)
+                source_x = 0.5 * (hammer_x + 1.0) * (crop_width - 1)
+                source_y = 0.5 * (1.0 - hammer_y) * (crop_height - 1)
+                reprojected_pixels.append(
+                    _sample_rgb(pixels, crop_width, crop_height, source_x, source_y)
+                )
+
+        # Gaia carries the resolved stars. Blur the point-source survey just enough to retain the
+        # real large-scale Milky Way structure without turning every source pixel into background
+        # grain at gallery resolution.
+        reprojected = Image.new('RGB', (GALAXY_TEXTURE_WIDTH, GALAXY_TEXTURE_HEIGHT))
+        reprojected.putdata(reprojected_pixels)
+        diffuse = reprojected.filter(ImageFilter.GaussianBlur(radius=3.0))
+        texture = bytearray(GALAXY_TEXTURE_WIDTH * GALAXY_TEXTURE_HEIGHT * 4)
+        for index, (red, green, blue) in enumerate(diffuse.getdata()):
             luminance = (0.2126 * red + 0.7152 * green + 0.0722 * blue) / 255.0
-            # Discard the black survey floor and deterministically thin the remaining samples.
-            seed = 1103515245 * (row * GALAXY_GRID_WIDTH + column) + 12345
-            probability = min(1.0, max(0.0, (luminance - 0.018) * 4.0))
-            sample = (seed & 0xFFFF) / 65535
-            if sample > probability:
-                continue
-            jitter_x = ((seed >> 8) & 0xFFFF) / 65535 - 0.5
-            jitter_y = ((seed >> 16) & 0xFFFF) / 65535 - 0.5
-            coordinates = _hammer_inverse(
-                x + 1.6 * jitter_x / GALAXY_GRID_WIDTH,
-                y + 1.6 * jitter_y / GALAXY_GRID_HEIGHT,
-            )
-            if coordinates is None:
-                continue
-            longitude, latitude = coordinates
-            icrs = _galactic_to_icrs(longitude, latitude)
-            brightness = min(1.0, max(0.0, luminance**0.65))
-            color = (
-                round((0.45 * red + 0.55 * 205) * brightness),
-                round((0.45 * green + 0.55 * 218) * brightness),
-                round((0.45 * blue + 0.55 * 255) * brightness),
-                round(7 + 34 * brightness),
-            )
-            galaxy.append((_icrs_to_visual(icrs, gmst), color, 1.4 + 2.6 * brightness))
-    if len(galaxy) < 1000:
-        raise RuntimeError('2MASS sampling produced too few sky points')
-    return galaxy
+            signal = min(1.0, max(0.0, (luminance - 0.035) / 0.45))
+            alpha = round(110.0 * signal**0.82)
+            gain = 0.82 + 0.30 * math.sqrt(signal)
+            offset = 4 * index
+            texture[offset + 0] = min(255, round(red * gain))
+            texture[offset + 1] = min(255, round(green * gain))
+            texture[offset + 2] = min(255, round(blue * gain))
+            texture[offset + 3] = alpha
+    return bytes(texture)
+
+
+def _galactic_visual_transform(gmst: float) -> tuple[float, ...]:
+    """Return a row-major rotation from sky-sphere local coordinates to visual coordinates."""
+    # The local sphere longitude is shifted by pi so the texture seam lies at the galactic
+    # anticenter. Apply that half turn before the physical galactic-to-ICRS/snapshot rotation.
+    galactic_basis = ((-1.0, 0.0, 0.0), (0.0, -1.0, 0.0), (0.0, 0.0, 1.0))
+    columns = []
+    for basis in galactic_basis:
+        visual = _icrs_to_visual(_galactic_to_icrs_vector(basis), gmst)
+        columns.append(tuple(component / SKY_RADIUS for component in visual))
+    return tuple(columns[column][row] for row in range(3) for column in range(3))
 
 
 def _write_layer(
@@ -285,7 +319,8 @@ def prepare(args: argparse.Namespace) -> Path:
     snapshot_text = snapshot.isoformat().replace('+00:00', 'Z')
     gmst = _gmst_radians(snapshot)
     stars = _load_gaia(gaia_path, gmst)
-    galaxy = _load_2mass(mass_path, gmst)
+    galaxy_texture = _load_2mass(mass_path)
+    galaxy_transform = _galactic_visual_transform(gmst)
 
     prepared.mkdir(parents=True, exist_ok=True)
     binary_path = prepared / 'planet_sky.bin'
@@ -299,13 +334,14 @@ def prepare(args: argparse.Namespace) -> Path:
                 MAGIC,
                 VERSION,
                 len(stars),
-                len(galaxy),
-                0,
+                GALAXY_TEXTURE_WIDTH,
+                GALAXY_TEXTURE_HEIGHT,
                 encoded_snapshot.ljust(SNAPSHOT_TEXT_SIZE, b'\0'),
             )
         )
+        file.write(struct.pack('<9f', *galaxy_transform))
         _write_layer(file, stars)
-        _write_layer(file, galaxy)
+        file.write(galaxy_texture)
 
     write_manifest(
         bundle,
@@ -320,8 +356,12 @@ def prepare(args: argparse.Namespace) -> Path:
             'mass': '2MASS Point Source Catalog/Stars All Sky View, PIA04250',
             'snapshot_utc': snapshot_text,
         },
-        artifacts=[artifact(binary_path, bundle, 'render_ready_sky', 'DVZSKY1')],
-        validation={'star_count': len(stars), 'galaxy_point_count': len(galaxy)},
+        artifacts=[artifact(binary_path, bundle, 'render_ready_sky', 'DVZSKY2')],
+        validation={
+            'star_count': len(stars),
+            'galaxy_texture_width': GALAXY_TEXTURE_WIDTH,
+            'galaxy_texture_height': GALAXY_TEXTURE_HEIGHT,
+        },
         extra={'notes': ['Prepared under .cache; the data submodule is not modified.']},
     )
     write_provenance(
@@ -333,7 +373,7 @@ def prepare(args: argparse.Namespace) -> Path:
         ],
         processing_lines=[
             f'Selected {len(stars)} bright Gaia stars by G magnitude with BP-RP colors.',
-            f'Sampled {len(galaxy)} translucent points from the 2MASS Hammer all-sky map.',
+            'Reprojected the 2MASS Hammer all-sky map to a continuous equirectangular texture.',
             f'Oriented both celestial layers to Earth at {snapshot_text} using GMST.',
         ],
         license_lines=[

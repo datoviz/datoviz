@@ -55,7 +55,7 @@ after verifying the linked API reference.
 
 ## What To Look For
 
-`dvz_geometry_sphere()` creates positions, normals, UVs, and indices; the mesh visual receives that geometry plus an RGBA8 sampled field bound to the mesh texture slot. Compare the lit Earth or Mars sphere with the Gaia/2MASS celestial background and, for Earth, real catalogued debris propagated with SGP4. Object sizes are exaggerated; the trajectories, debris positions, and celestial directions are data-derived.
+`dvz_geometry_sphere()` creates positions, normals, UVs, and indices; the mesh visual receives that geometry plus an RGBA8 sampled field bound to the mesh texture slot. Compare the lit Earth or Mars sphere with antialiased Gaia stars, the continuously reprojected 2MASS celestial sphere, and, for Earth, real catalogued debris propagated with SGP4. Object sizes are exaggerated; the trajectories, debris positions, and celestial directions are data-derived.
 
 The example uses real texture files from the data submodule when available. Earth has a generated fallback for local development; Mars requires its real texture file and is unavailable when that file is missing.
 
@@ -141,7 +141,7 @@ Control: `--live` opens the planet controls docked on the left.
     | `citation` | NASA Blue Marble Next Generation; USGS Astrogeology Mars Viking Colorized Global Mosaic 232m / Mars Digital Image Model 2.1; CelesTrak; Vallado, Crawford, Hujsak, and Kelso, Revisiting Spacetrack Report #3, AIAA 2006-6753; Gaia DR3 ESA/Gaia/DPAC; 2MASS Point Source Catalog/Stars All Sky View, IPAC-Caltech/University of Massachusetts. |
     | `preprocessing` | uv run tools/data/prepare_orbital_debris.py --force && uv run tools/data/prepare_planet_sky.py --force |
     | `cache_prepared_path` | .cache/datoviz/examples/orbital_debris/prepared; .cache/datoviz/examples/planet_sky/prepared |
-    | `provenance` | Earth uses NASA Blue Marble Next Generation texture assets; Mars uses the USGS Astrogeology/NASA Ames/JPL/USGS Viking MDIM 2.1 colorized global mosaic. Debris points are tracked catalog objects from three selected fragmentation events, propagated from a dated CelesTrak GP snapshot with SGP4 into a two-hour Earth-fixed point ephemeris and one closed full-period display trajectory per object. This is not the full debris environment; point sizes are exaggerated and do not encode physical object size. Bright stars use Gaia DR3 celestial positions, G magnitude, and BP-RP color. The Milky Way layer samples the 2MASS infrared false-color all-sky map. Both sky layers are oriented to the debris snapshot using GMST; their shell radius is display-only. |
+    | `provenance` | Earth uses NASA Blue Marble Next Generation texture assets; Mars uses the USGS Astrogeology/NASA Ames/JPL/USGS Viking MDIM 2.1 colorized global mosaic. Debris points are tracked catalog objects from three selected fragmentation events, propagated from a dated CelesTrak GP snapshot with SGP4 into a two-hour Earth-fixed point ephemeris and one closed full-period display trajectory per object. This is not the full debris environment; point sizes are exaggerated and do not encode physical object size. Bright stars use Gaia DR3 celestial positions, G magnitude, and BP-RP color, with a restrained halo for the brightest stars. The Milky Way layer continuously reprojects the 2MASS infrared false-color Hammer map onto a celestial sphere. Both sky layers are oriented to the debris snapshot using GMST; their shell radius is display-only. |
 
     **Encoding**
 
@@ -151,8 +151,8 @@ Control: `--live` opens the planet controls docked on the left.
     | `color` | cyan FENGYUN 1C, amber IRIDIUM 33, coral COSMOS 2251 |
     | `time` | 120-minute prepared point ephemeris shown at 60x real time; shared globe rotation enabled by default |
     | `path` | closed full-period SGP4 trajectory in the snapshot planet frame |
-    | `stars` | Gaia DR3 direction, G-magnitude size, and BP-RP color at the prepared snapshot orientation |
-    | `galaxy` | translucent samples from the 2MASS Hammer all-sky infrared map in galactic coordinates |
+    | `stars` | antialiased Gaia DR3 discs with G-magnitude prominence, BP-RP color, and bright-star halos |
+    | `galaxy` | continuous equirectangular reprojection of the 2MASS Hammer infrared map in galactic coordinates |
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

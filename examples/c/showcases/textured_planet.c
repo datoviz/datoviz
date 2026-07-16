@@ -77,10 +77,11 @@
 
 static const float TAU = 6.28318530718f;
 
-#define ORBIT_DATA_PATH  "data/examples/orbital_debris/prepared/orbital_debris.bin"
-#define ORBIT_CACHE_PATH ".cache/datoviz/examples/orbital_debris/prepared/orbital_debris.bin"
-#define SKY_DATA_PATH    "data/examples/planet_sky/prepared/planet_sky.bin"
-#define SKY_CACHE_PATH   ".cache/datoviz/examples/planet_sky/prepared/planet_sky.bin"
+#define ORBIT_DATA_PATH   "data/examples/orbital_debris/prepared/orbital_debris.bin"
+#define ORBIT_CACHE_PATH  ".cache/datoviz/examples/orbital_debris/prepared/orbital_debris.bin"
+#define SKY_DATA_PATH     "data/examples/planet_sky/prepared/planet_sky.bin"
+#define SKY_CACHE_PATH    ".cache/datoviz/examples/planet_sky/prepared/planet_sky.bin"
+#define SKY_GALAXY_RADIUS 45.0
 
 #define DEBRIS_TIME_SCALE    60.0f
 #define GLOBE_ROTATION_SPEED 0.035f
@@ -135,6 +136,7 @@ typedef struct TexturedPlanetState
     DvzVisual* visual;
     DvzVisual* atmosphere_visual;
     DvzVisual* star_visual;
+    DvzVisual* star_glow_visual;
     DvzVisual* galaxy_visual;
     DvzVisual* debris_visual;
     DvzVisual* orbit_visual;
@@ -465,16 +467,16 @@ static bool _create_planet_texture(DvzScene* scene, PlanetKind kind, PlanetTextu
 
 
 /**
- * Create one real celestial point layer.
+ * Create the real Gaia star layer or its restrained bright-star halo.
  *
  * @param scene scene
  * @param panel panel receiving the visual
- * @param layer prepared Gaia or 2MASS layer
- * @param blended whether to enable source-over alpha blending
+ * @param layer prepared Gaia layer
+ * @param halo whether to retain only bright stars and expand them into faint halos
  * @return point visual, or NULL on failure
  */
-static DvzVisual* _create_sky_layer(
-    DvzScene* scene, DvzPanel* panel, const TexturedPlanetSkyLayer* layer, bool blended)
+static DvzVisual* _create_star_layer(
+    DvzScene* scene, DvzPanel* panel, const TexturedPlanetSkyLayer* layer, bool halo)
 {
     ANN(scene);
     ANN(panel);
@@ -485,13 +487,50 @@ static DvzVisual* _create_sky_layer(
         return NULL;
     }
 
-    DvzVisual* points = dvz_point(scene, 0);
+    uint32_t count = layer->count;
+    vec3* positions = layer->positions;
+    DvzColor* colors = layer->colors;
+    float* sizes = layer->sizes;
+    vec3* halo_positions = NULL;
+    DvzColor* halo_colors = NULL;
+    float* halo_sizes = NULL;
+    DvzVisual* points = NULL;
+    if (halo)
+    {
+        count = 0;
+        for (uint32_t i = 0; i < layer->count; i++)
+            count += layer->sizes[i] >= 2.6f ? 1u : 0u;
+        if (count == 0)
+            return NULL;
+        halo_positions = (vec3*)dvz_calloc(count, sizeof(vec3));
+        halo_colors = (DvzColor*)dvz_calloc(count, sizeof(DvzColor));
+        halo_sizes = (float*)dvz_calloc(count, sizeof(float));
+        if (halo_positions == NULL || halo_colors == NULL || halo_sizes == NULL)
+            goto cleanup;
+        uint32_t halo_index = 0;
+        for (uint32_t i = 0; i < layer->count; i++)
+        {
+            if (layer->sizes[i] < 2.6f)
+                continue;
+            dvz_memcpy(
+                halo_positions[halo_index], sizeof(vec3), layer->positions[i], sizeof(vec3));
+            halo_colors[halo_index] = layer->colors[i];
+            halo_colors[halo_index].a = (uint8_t)fminf(54.0f, 12.0f + 7.0f * layer->sizes[i]);
+            halo_sizes[halo_index] = 2.8f * layer->sizes[i] + 1.5f;
+            halo_index++;
+        }
+        positions = halo_positions;
+        colors = halo_colors;
+        sizes = halo_sizes;
+    }
+
+    points = dvz_point(scene, 0);
     if (points == NULL)
-        return NULL;
+        goto cleanup;
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = layer->positions, .item_count = layer->count},
-        {.attr_name = "color", .data = layer->colors, .item_count = layer->count},
-        {.attr_name = "size", .data = layer->sizes, .item_count = layer->count},
+        {.attr_name = "position", .data = positions, .item_count = count},
+        {.attr_name = "color", .data = colors, .item_count = count},
+        {.attr_name = "diameter_px", .data = sizes, .item_count = count},
     };
     DvzResult rc = dvz_visual_set_data_many(points, updates, 3);
     DvzPointStyleDesc style = dvz_point_style_desc();
@@ -501,11 +540,97 @@ static DvzVisual* _create_sky_layer(
         rc = dvz_point_set_style(points, &style);
     if (rc == DVZ_OK)
         rc = dvz_visual_set_depth_test(points, true);
-    if (rc == DVZ_OK && blended)
+    if (rc == DVZ_OK)
         rc = dvz_visual_set_alpha_mode(points, DVZ_ALPHA_BLENDED);
     if (rc == DVZ_OK)
+        rc = dvz_visual_set_blend_mode(points, DVZ_BLEND_ADDITIVE);
+    if (rc == DVZ_OK)
         rc = dvz_panel_add_visual(panel, points, NULL);
-    return rc == DVZ_OK ? points : NULL;
+    if (rc != DVZ_OK)
+        points = NULL;
+
+cleanup:
+    dvz_free(halo_positions);
+    dvz_free(halo_colors);
+    dvz_free(halo_sizes);
+    return points;
+}
+
+
+
+/**
+ * Create the continuous snapshot-oriented 2MASS sky sphere.
+ *
+ * @param scene scene
+ * @param panel panel receiving the visual
+ * @param texture prepared 2MASS texture and celestial transform
+ * @return textured sky mesh, or NULL on failure
+ */
+static DvzVisual*
+_create_galaxy_layer(DvzScene* scene, DvzPanel* panel, const TexturedPlanetSkyTexture* texture)
+{
+    ANN(scene);
+    ANN(panel);
+    ANN(texture);
+    if (texture->rgba == NULL || texture->width == 0 || texture->height == 0)
+        return NULL;
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc), .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM, .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                   .width = texture->width, .height = texture->height, .depth = 1});
+    if (field == NULL)
+        return NULL;
+    DvzResult rc = dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){
+                   DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = texture->rgba,
+                   .bytes_per_row = texture->width * 4u, .rows_per_image = texture->height});
+
+    DvzGeometry* sphere = NULL;
+    DvzVisual* galaxy = NULL;
+    if (rc != DVZ_OK)
+        goto cleanup;
+    sphere = dvz_geometry_sphere(&(DvzGeometrySphereDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
+        .radius = SKY_GALAXY_RADIUS,
+        .sectors = SPHERE_SECTORS,
+        .rings = SPHERE_RINGS,
+        .color = {255, 255, 255, 255},
+    });
+    if (sphere == NULL)
+        goto cleanup;
+    dmat4 transform = {{0}};
+    for (uint32_t row = 0; row < 3; row++)
+    {
+        for (uint32_t column = 0; column < 3; column++)
+            transform[column][row] = texture->transform[3 * row + column];
+    }
+    transform[3][3] = 1.0;
+    if (dvz_geometry_transform(sphere, transform) != DVZ_OK)
+        goto cleanup;
+
+    galaxy = dvz_mesh(scene, 0);
+    if (galaxy == NULL || dvz_mesh_set_geometry(galaxy, sphere) != DVZ_OK)
+    {
+        galaxy = NULL;
+        goto cleanup;
+    }
+    DvzMaterialDesc material = dvz_material_desc();
+    material.model = DVZ_MATERIAL_MODEL_UNLIT;
+    material.alpha_mode = DVZ_ALPHA_BLENDED;
+    material.opacity = 0.72f;
+    if (dvz_visual_set_material(galaxy, &material) != DVZ_OK ||
+        dvz_visual_set_field(galaxy, "texture", field) != DVZ_OK ||
+        dvz_visual_set_depth_test(galaxy, true) != DVZ_OK ||
+        dvz_panel_add_visual(panel, galaxy, NULL) != DVZ_OK)
+    {
+        galaxy = NULL;
+    }
+
+cleanup:
+    dvz_geometry_destroy(sphere);
+    return galaxy;
 }
 
 
@@ -885,6 +1010,8 @@ static void _state_apply_sky_visibility(TexturedPlanetState* state)
     ANN(state);
     if (state->star_visual != NULL)
         (void)dvz_visual_set_visible(state->star_visual, state->show_stars);
+    if (state->star_glow_visual != NULL)
+        (void)dvz_visual_set_visible(state->star_glow_visual, state->show_stars);
     if (state->galaxy_visual != NULL)
         (void)dvz_visual_set_visible(state->galaxy_visual, state->show_galaxy);
 }
@@ -1108,9 +1235,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         strcmp(state->sky_model.snapshot_utc, state->orbit_model.snapshot_utc) == 0,
         "celestial sky and debris snapshots do not match; rerun both preparation commands");
     dvz_fprintf(
-        stderr, "textured_planet: %u Gaia stars, %u 2MASS samples, snapshot %s\n",
-        state->sky_model.stars.count, state->sky_model.galaxy.count,
-        state->sky_model.snapshot_utc);
+        stderr, "textured_planet: %u Gaia stars, %ux%u 2MASS sky, snapshot %s\n",
+        state->sky_model.stars.count, state->sky_model.galaxy.width,
+        state->sky_model.galaxy.height, state->sky_model.snapshot_utc);
     _state_reset_debris_controls(state);
     const uint32_t debris_count = state->orbit_model.count;
     state->debris_positions = (vec3*)dvz_calloc(debris_count, sizeof(vec3));
@@ -1143,9 +1270,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc() failed");
     EXAMPLE_CHECK(camera != NULL, "dvz_panel_set_camera_desc() failed");
 
-    state->galaxy_visual = _create_sky_layer(ctx->scene, panel, &state->sky_model.galaxy, true);
+    state->galaxy_visual = _create_galaxy_layer(ctx->scene, panel, &state->sky_model.galaxy);
     EXAMPLE_CHECK(state->galaxy_visual != NULL, "failed to create 2MASS galaxy layer");
-    state->star_visual = _create_sky_layer(ctx->scene, panel, &state->sky_model.stars, false);
+    state->star_glow_visual = _create_star_layer(ctx->scene, panel, &state->sky_model.stars, true);
+    EXAMPLE_CHECK(state->star_glow_visual != NULL, "failed to create Gaia star halo layer");
+    state->star_visual = _create_star_layer(ctx->scene, panel, &state->sky_model.stars, false);
     EXAMPLE_CHECK(state->star_visual != NULL, "failed to create Gaia star layer");
     int rc = DVZ_OK;
 

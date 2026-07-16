@@ -1622,8 +1622,8 @@ function expectTexturedPlanetScenarioStreamShape(stream, label) {
     `${label}: expected the prepared Gaia bright-star layer`,
   );
   requireOk(
-    pointDraws.some((draw) => draw.instance_count > 20000),
-    `${label}: expected the prepared 2MASS Milky Way layer`,
+    pointDraws.some((draw) => draw.instance_count > 0 && draw.instance_count < 2000),
+    `${label}: expected the bright Gaia halo layer`,
   );
   const path = expectPipeline(
     stream,
@@ -1633,10 +1633,10 @@ function expectTexturedPlanetScenarioStreamShape(stream, label) {
   expectDepthPipeline(path, `${label} orbit paths`, false);
   requireOk(commandsOf(stream, "Draw").length >= 2, `${label}: expected star and debris point draws`);
   requireOk(
-    commandsOf(stream, "DrawIndexed").length >= 2,
-    `${label}: expected textured mesh and orbit-path draws`,
+    commandsOf(stream, "DrawIndexed").length >= 3,
+    `${label}: expected planet, atmosphere, and 2MASS sky mesh draws`,
   );
-  requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected planet texture upload`);
+  requireOk(commandsOf(stream, "WriteTexture").length >= 2, `${label}: expected planet and 2MASS texture uploads`);
   requireOk(commandsOf(stream, "WriteBuffer").length >= 4, `${label}: expected mesh and material uploads`);
 }
 

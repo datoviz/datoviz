@@ -23,11 +23,20 @@ typedef struct TexturedPlanetSkyLayer
 } TexturedPlanetSkyLayer;
 
 
+typedef struct TexturedPlanetSkyTexture
+{
+    uint8_t* rgba;
+    uint32_t width;
+    uint32_t height;
+    float transform[9];
+} TexturedPlanetSkyTexture;
+
+
 
 typedef struct TexturedPlanetSkyModel
 {
     TexturedPlanetSkyLayer stars;
-    TexturedPlanetSkyLayer galaxy;
+    TexturedPlanetSkyTexture galaxy;
     char snapshot_utc[32];
 } TexturedPlanetSkyModel;
 

@@ -3815,16 +3815,17 @@ examples:
         CelesTrak GP snapshot with SGP4 into a two-hour Earth-fixed point ephemeris and one closed
         full-period display trajectory per object. This is not the full debris environment; point
         sizes are exaggerated and do not encode physical object size. Bright stars use Gaia DR3
-        celestial positions, G magnitude, and BP-RP color. The Milky Way layer samples the 2MASS
-        infrared false-color all-sky map. Both sky layers are oriented to the debris snapshot using
-        GMST; their shell radius is display-only.
+        celestial positions, G magnitude, and BP-RP color, with a restrained halo for the brightest
+        stars. The Milky Way layer continuously reprojects the 2MASS infrared false-color Hammer
+        map onto a celestial sphere. Both sky layers are oriented to the debris snapshot using GMST;
+        their shell radius is display-only.
     encoding:
       position: SGP4 TEME position rotated to approximate Earth-fixed coordinates and normalized by Earth radius
       color: cyan FENGYUN 1C, amber IRIDIUM 33, coral COSMOS 2251
       time: 120-minute prepared point ephemeris shown at 60x real time; shared globe rotation enabled by default
       path: closed full-period SGP4 trajectory in the snapshot planet frame
-      stars: Gaia DR3 direction, G-magnitude size, and BP-RP color at the prepared snapshot orientation
-      galaxy: translucent samples from the 2MASS Hammer all-sky infrared map in galactic coordinates
+      stars: antialiased Gaia DR3 discs with G-magnitude prominence, BP-RP color, and bright-star halos
+      galaxy: continuous equirectangular reprojection of the 2MASS Hammer infrared map in galactic coordinates
 
   - id: advanced_raw_triangle_vklite
     title: Raw Triangle Vklite
