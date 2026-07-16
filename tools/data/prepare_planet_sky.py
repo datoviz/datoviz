@@ -35,6 +35,9 @@ MASS_URL = (
     'https://assets.science.nasa.gov/content/dam/science/psd/photojournal/'
     'pia/pia04/pia04250/PIA04250.jpg'
 )
+MASS_HAMMER_INSET = 0.98
+MASS_EDGE_WHITE_MIN = 240
+MASS_EDGE_ALPHA_MIN = 64
 MAGIC = b'DVZSKY2\0'
 VERSION = 2
 SNAPSHOT_TEXT_SIZE = 32
@@ -251,6 +254,12 @@ def _load_2mass(path: Path) -> bytes:
                 # galactic center. The stored sky transform includes the matching half turn.
                 longitude = 2.0 * math.pi * (column + 0.5) / GALAXY_TEXTURE_WIDTH - math.pi
                 hammer_x, hammer_y = _hammer_forward(longitude, latitude)
+                # PIA04250 is presentation artwork: the sky ellipse is surrounded by a white
+                # background and annotations. Sampling the mathematical Hammer boundary therefore
+                # picks up white border pixels, which become a large wedge at the sphere's UV seam.
+                # Stay just inside the photographed sky without masking real bright sky pixels.
+                hammer_x *= MASS_HAMMER_INSET
+                hammer_y *= MASS_HAMMER_INSET
                 source_x = 0.5 * (hammer_x + 1.0) * (crop_width - 1)
                 source_y = 0.5 * (1.0 - hammer_y) * (crop_height - 1)
                 reprojected_pixels.append(
@@ -275,6 +284,25 @@ def _load_2mass(path: Path) -> bytes:
             texture[offset + 2] = min(255, round(blue * gain))
             texture[offset + 3] = alpha
     return bytes(texture)
+
+
+def _rgba_edge_metrics(texture: bytes, width: int, height: int) -> tuple[int, int]:
+    """Return maximum alpha and bright-artifact count on an RGBA8 texture boundary."""
+    if len(texture) != 4 * width * height:
+        raise RuntimeError('invalid RGBA texture size')
+    edge_indices = [
+        *(column for column in range(width)),
+        *((height - 1) * width + column for column in range(width)),
+        *(row * width for row in range(height)),
+        *(row * width + width - 1 for row in range(height)),
+    ]
+    pixels = [texture[4 * index : 4 * index + 4] for index in edge_indices]
+    max_alpha = max(pixel[3] for pixel in pixels)
+    bright_artifact_count = sum(
+        min(pixel[:3]) >= MASS_EDGE_WHITE_MIN and pixel[3] >= MASS_EDGE_ALPHA_MIN
+        for pixel in pixels
+    )
+    return max_alpha, bright_artifact_count
 
 
 def _galactic_visual_transform(gmst: float) -> tuple[float, ...]:
@@ -320,6 +348,13 @@ def prepare(args: argparse.Namespace) -> Path:
     gmst = _gmst_radians(snapshot)
     stars = _load_gaia(gaia_path, gmst)
     galaxy_texture = _load_2mass(mass_path)
+    galaxy_edge_alpha_max, galaxy_bright_edge_artifact_count = _rgba_edge_metrics(
+        galaxy_texture, GALAXY_TEXTURE_WIDTH, GALAXY_TEXTURE_HEIGHT
+    )
+    if galaxy_bright_edge_artifact_count != 0:
+        raise RuntimeError(
+            '2MASS reprojection retained bright source-artwork pixels on the texture boundary'
+        )
     galaxy_transform = _galactic_visual_transform(gmst)
 
     prepared.mkdir(parents=True, exist_ok=True)
@@ -361,6 +396,8 @@ def prepare(args: argparse.Namespace) -> Path:
             'star_count': len(stars),
             'galaxy_texture_width': GALAXY_TEXTURE_WIDTH,
             'galaxy_texture_height': GALAXY_TEXTURE_HEIGHT,
+            'galaxy_texture_edge_alpha_max': galaxy_edge_alpha_max,
+            'galaxy_texture_bright_edge_artifact_count': galaxy_bright_edge_artifact_count,
         },
         extra={'notes': ['Prepared under .cache; the data submodule is not modified.']},
     )
@@ -373,7 +410,8 @@ def prepare(args: argparse.Namespace) -> Path:
         ],
         processing_lines=[
             f'Selected {len(stars)} bright Gaia stars by G magnitude with BP-RP colors.',
-            'Reprojected the 2MASS Hammer all-sky map to a continuous equirectangular texture.',
+            'Reprojected the 2MASS Hammer all-sky map to a continuous equirectangular texture '
+            'with an inset that excludes the source artwork border.',
             f'Oriented both celestial layers to Earth at {snapshot_text} using GMST.',
         ],
         license_lines=[

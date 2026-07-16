@@ -937,6 +937,10 @@ async function main() {
         ['features_datetime_axis', { label: 'Datetime Axis', kind: 'animated' }],
         ['features_marker_symbols', { label: 'Marker Symbols' }],
         ['showcases_galaxy', { label: 'Density-Wave Galaxy', kind: 'animated' }],
+        [
+          'showcases_textured_planet',
+          { label: 'Textured Planets and Orbital Debris', kind: 'animated' },
+        ],
       ]);
       const route = filteredRoutes.get(routeFilter);
       requireOk(route !== undefined, `unknown filtered WebGPU route: ${routeFilter}`);
@@ -1300,12 +1304,6 @@ async function main() {
       ],
       ['features_lighting', 'Lighting', 'webgpu_live_lighting.png', 'lighting'],
       [
-        'showcases_textured_planet',
-        'Textured Planets',
-        'webgpu_live_textured_planets.png',
-        'textured-planets',
-      ],
-      [
         'showcases_protein',
         'Protein',
         'webgpu_live_protein.png',
@@ -1365,6 +1363,13 @@ async function main() {
         'webgpu_live_visibility.png',
         'visibility',
         'features_visibility',
+      ],
+      [
+        'showcases_textured_planet',
+        'Textured Planets and Orbital Debris',
+        'webgpu_live_textured_planets.png',
+        'textured-planets',
+        'showcases_textured_planet',
       ],
     ];
     for (const [id, label, filename, shortLabel, scenarioId] of promotedAnimatedRoutes) {
