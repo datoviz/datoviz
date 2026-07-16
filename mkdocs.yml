@@ -108,6 +108,7 @@ nav:
     - AI agents: 'ai-agents.md'
   - Examples:
     - Overview: 'examples/index.md'
+  - News: 'blog/index.md'
   - How-To:
     - Overview: 'how-to/index.md'
     - Core workflow:
