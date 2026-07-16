@@ -8,9 +8,10 @@
  *
  * What to look for: the panel combines a data-space path, outlined markers, axes, and panzoom.
  * The path uploads position, color, and stroke_width_px arrays, while the markers upload position,
- * color, diameter_px, angle, and symbol arrays. In live mode, move the GUI scale slider and compare
- * marker diameters, stroke widths, text, and axis styling while data coordinates stay fixed. User
- * scale is useful for HiDPI displays, screenshots, and accessibility-sized scientific figures.
+ * color, diameter_px, angle, and symbol arrays. In live mode, move the GUI scale slider and
+ * compare marker diameters, stroke widths, text, and axis styling while data coordinates stay
+ * fixed. User scale is useful for HiDPI displays, screenshots, and accessibility-sized scientific
+ * figures. The GUI is attached only for `--live`/`--live-record` and starts docked on the left.
  *
  * Scenario: features_user_scale
  * Style: features, graphite_cyan, 1280x720 window target
@@ -36,7 +37,9 @@
 #include "_compat.h"
 #include "datoviz/gui.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
+#include "example_tuner.h"
 #include "runner/scenario_runner.h"
 
 
@@ -47,14 +50,16 @@
 
 DvzScenarioSpec dvz_example_user_scale_scenario(void);
 
+static bool _gui_controls(DvzGui* gui, void* user_data);
+
 
 
 /*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  EXAMPLE_WINDOW_WIDTH
-#define HEIGHT EXAMPLE_WINDOW_HEIGHT
+#define WIDTH        EXAMPLE_WINDOW_WIDTH
+#define HEIGHT       EXAMPLE_WINDOW_HEIGHT
 #define PATH_COUNT   192u
 #define MARKER_COUNT 9u
 
@@ -68,6 +73,7 @@ static const float TAU = 6.28318530718f;
 
 typedef struct UserScaleState
 {
+    ExampleTuner tuner;
     DvzView* view;
     float user_scale;
 } UserScaleState;
@@ -246,11 +252,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     UserScaleState* state = (UserScaleState*)dvz_calloc(1, sizeof(UserScaleState));
     if (state == NULL)
         return false;
+    state->tuner = example_tuner("User scale");
     state->user_scale = ctx->user_scale > 0.0f ? ctx->user_scale : 1.0f;
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
         goto error;
+    example_tuner_figure(&state->tuner, ctx->figure);
 
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     if (panel == NULL)
@@ -271,6 +279,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
     if (panzoom == NULL)
         goto error;
+#ifndef DVZ_EXAMPLE_NO_APP
+    if (!example_tuner_add_component(
+            &state->tuner, "Display scale", state, NULL, _gui_controls, NULL, NULL, NULL))
+    {
+        goto error;
+    }
+#endif
 
     *out_user = state;
     return true;
@@ -283,24 +298,22 @@ error:
 
 
 /**
- * Draw the user-scale GUI.
+ * Draw the user-scale tuner component.
  *
  * @param gui GUI context
- * @param view app view
  * @param user_data example state
+ * @return whether the scale changed
  */
-static void _gui_callback(DvzGui* gui, DvzView* view, void* user_data)
+static bool _gui_controls(DvzGui* gui, void* user_data)
 {
     UserScaleState* state = (UserScaleState*)user_data;
-    if (state == NULL)
-        return;
+    if (gui == NULL || state == NULL || state->view == NULL)
+        return false;
 
-    if (dvz_gui_begin(gui, "User scale", NULL, 0))
-    {
-        if (dvz_gui_slider_float(gui, "Scale", &state->user_scale, 0.5f, 2.5f))
-            dvz_view_set_user_scale(view, state->user_scale);
-    }
-    dvz_gui_end(gui);
+    bool changed = dvz_gui_slider_float(gui, "Scale", &state->user_scale, 0.5f, 2.5f);
+    if (changed)
+        (void)dvz_view_set_user_scale(state->view, state->user_scale);
+    return changed;
 }
 
 
@@ -314,7 +327,7 @@ static void _gui_callback(DvzGui* gui, DvzView* view, void* user_data)
  * @param user scenario state
  * @return true on success
  */
-static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+static bool _scenario_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
 {
     (void)ctx;
     (void)app;
@@ -323,14 +336,27 @@ static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView*
         return false;
     state->view = view;
     state->user_scale = dvz_view_user_scale(view);
+    return true;
+}
+
+
+/**
+ * Attach the left-docked tuner in explicit live mode.
+ *
+ * @param ctx scenario context
+ * @param app app
+ * @param view native view
+ * @param user scenario state
+ * @return true on success
+ */
+static bool _scenario_live_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    if (!_scenario_view(ctx, app, view, user))
+        return false;
     if (ctx == NULL || ctx->presentation != DVZ_RUNNER_PRESENT_GLFW)
         return true;
-
-    DvzGui* gui = dvz_view_gui(view, NULL);
-    if (gui == NULL)
-        return true;
-    dvz_view_set_gui_callback(view, _gui_callback, state);
-    return true;
+    UserScaleState* state = (UserScaleState*)user;
+    return example_tuner_attach(&state->tuner, view);
 }
 
 
@@ -364,7 +390,11 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
 static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 {
     (void)ctx;
-    dvz_free(user);
+    UserScaleState* state = (UserScaleState*)user;
+    if (state == NULL)
+        return;
+    example_tuner_detach(&state->tuner);
+    dvz_free(state);
 }
 
 
@@ -387,7 +417,7 @@ DvzScenarioSpec dvz_example_user_scale_scenario(void)
                         DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
         .frame = _scenario_frame,
-        .native_view = _scenario_native_view,
+        .native_view = _scenario_view,
         .destroy = _scenario_destroy,
     };
 }
@@ -401,5 +431,7 @@ DvzScenarioSpec dvz_example_user_scale_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = dvz_example_user_scale_scenario();
+    if (example_cli_wants_live_gui(argc, argv))
+        spec.native_view = _scenario_live_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv);
 }

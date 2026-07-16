@@ -19,7 +19,7 @@
  * Run:     ./build/examples/c/showcases/streaming_daq --live
  * Smoke:   ./build/examples/c/showcases/streaming_daq --png
  * Video:   ./build/examples/c/showcases/streaming_daq --offscreen-record 180
- * Control: live GUI; space pauses; R resets acquisition; F resets panzoom
+ * Control: --live opens a left-docked GUI; space pauses; R resets acquisition; F resets panzoom
  */
 
 
@@ -40,7 +40,9 @@
 #include "datoviz/gui.h"
 #include "datoviz/input.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
+#include "example_tuner.h"
 #include "runner/scenario_runner.h"
 #include "streaming_daq_model.h"
 
@@ -67,6 +69,7 @@
 typedef struct StreamingDaqState
 {
     DaqModel model;
+    ExampleTuner tuner;
     DvzPanel* panel;
     DvzPanzoom* panzoom;
     DvzAxis* x_axis;
@@ -77,8 +80,6 @@ typedef struct StreamingDaqState
     DvzVisual* event_markers;
     DvzVisual* sweep_band;
     DvzVisual* cursor;
-    DvzView* view;
-
     vec3* trace_positions;
     DvzColor* trace_colors;
     uint32_t vertices_per_interval;
@@ -714,18 +715,17 @@ static void _gui_stat_u64(DvzGui* gui, const char* format, uint64_t value)
 
 
 /**
- * Build the native live acquisition control panel.
+ * Build the live acquisition tuner component.
  *
  * @param gui GUI overlay
- * @param view app view
  * @param user_data showcase state
+ * @return whether any control changed
  */
-static void _gui_callback(DvzGui* gui, DvzView* view, void* user_data)
+static bool _gui_controls(DvzGui* gui, void* user_data)
 {
-    (void)view;
     StreamingDaqState* state = (StreamingDaqState*)user_data;
-    if (state == NULL)
-        return;
+    if (gui == NULL || state == NULL)
+        return false;
 
     bool pause_changed = false;
     bool gain_changed = false;
@@ -742,59 +742,54 @@ static void _gui_callback(DvzGui* gui, DvzView* view, void* user_data)
     bool reset = false;
     bool fit = false;
 
-    if (dvz_gui_begin(gui, "Streaming DAQ", NULL, 0))
-    {
-        dvz_gui_separator_text(gui, "Acquisition");
-        pause_changed |= dvz_gui_checkbox(gui, "Paused", &state->paused);
-        reset |= dvz_gui_button(gui, "Reset buffer");
-        dvz_gui_same_line(gui, 0.0f, 8.0f);
-        fit |= dvz_gui_button(gui, "Fit view");
-        block_changed |= dvz_gui_slider_int(gui, "Block samples", &state->block_size, 1, 64);
-        dropout_changed |= dvz_gui_slider_float_format(
-            gui, "Simulated dropout", &state->dropout_percent, 0.0f, 10.0f, "%.1f %%");
+    dvz_gui_separator_text(gui, "Acquisition");
+    pause_changed |= dvz_gui_checkbox(gui, "Paused", &state->paused);
+    reset |= dvz_gui_button(gui, "Reset buffer");
+    dvz_gui_same_line(gui, 0.0f, 8.0f);
+    fit |= dvz_gui_button(gui, "Fit view");
+    block_changed |= dvz_gui_slider_int(gui, "Block samples", &state->block_size, 1, 64);
+    dropout_changed |= dvz_gui_slider_float_format(
+        gui, "Simulated dropout", &state->dropout_percent, 0.0f, 10.0f, "%.1f %%");
 
-        dvz_gui_separator_text(gui, "Neural source");
-        noise_changed |= dvz_gui_slider_float(gui, "Background noise", &state->noise, 0.0f, 3.0f);
-        spike_rate_changed |=
-            dvz_gui_slider_float(gui, "Firing rate", &state->spike_rate, 0.1f, 3.0f);
-        spike_amplitude_changed |=
-            dvz_gui_slider_float(gui, "Spike amplitude", &state->spike_amplitude, 0.0f, 3.0f);
-        synchrony_changed |=
-            dvz_gui_slider_float(gui, "Population synchrony", &state->synchrony, 0.0f, 3.0f);
+    dvz_gui_separator_text(gui, "Neural source");
+    noise_changed |= dvz_gui_slider_float(gui, "Background noise", &state->noise, 0.0f, 3.0f);
+    spike_rate_changed |= dvz_gui_slider_float(gui, "Firing rate", &state->spike_rate, 0.1f, 3.0f);
+    spike_amplitude_changed |=
+        dvz_gui_slider_float(gui, "Spike amplitude", &state->spike_amplitude, 0.0f, 3.0f);
+    synchrony_changed |=
+        dvz_gui_slider_float(gui, "Population synchrony", &state->synchrony, 0.0f, 3.0f);
 
-        dvz_gui_separator_text(gui, "Display");
-        gain_changed |= dvz_gui_slider_float(gui, "Trace gain", &state->gain, 0.25f, 2.5f);
-        events_changed |= dvz_gui_checkbox(gui, "Event markers", &state->show_events);
-        cursor_changed |= dvz_gui_checkbox(gui, "Sweep cursor", &state->show_cursor);
-        grid_changed |= dvz_gui_checkbox(gui, "Grid", &state->show_grid);
-        bands_changed |= dvz_gui_checkbox(gui, "Channel banks", &state->show_bands);
+    dvz_gui_separator_text(gui, "Display");
+    gain_changed |= dvz_gui_slider_float(gui, "Trace gain", &state->gain, 0.25f, 2.5f);
+    events_changed |= dvz_gui_checkbox(gui, "Event markers", &state->show_events);
+    cursor_changed |= dvz_gui_checkbox(gui, "Sweep cursor", &state->show_cursor);
+    grid_changed |= dvz_gui_checkbox(gui, "Grid", &state->show_grid);
+    bands_changed |= dvz_gui_checkbox(gui, "Channel banks", &state->show_bands);
 
-        dvz_gui_separator_text(gui, "Telemetry");
-        DaqStats stats = {0};
-        daq_model_stats(&state->model, &stats);
-        char fps_text[128] = {0};
-        char upload_text[128] = {0};
-        dvz_snprintf(fps_text, sizeof(fps_text), "Render: %.1f FPS", state->smoothed_fps);
-        dvz_snprintf(
-            upload_text, sizeof(upload_text), "Upload: %.1f KiB (%u vertices)",
-            (double)state->upload_bytes / 1024.0, state->uploaded_vertex_count);
-        dvz_gui_text(gui, "128 channels | 10 kHz | 1.000 s ring");
-        dvz_gui_text(gui, "28 units | spatial spike footprints");
-        dvz_gui_text(gui, "One raw line-list trace draw");
-        dvz_gui_text(gui, fps_text);
-        dvz_gui_text(gui, upload_text);
-        _gui_stat_u64(gui, "Generated samples: %" PRIu64, stats.generated_sample_count);
-        _gui_stat_u64(gui, "Dropped samples: %" PRIu64, stats.dropped_sample_count);
-        _gui_stat_u64(gui, "Queue overruns: %" PRIu64, stats.overrun_block_count);
-        _gui_stat_u64(gui, "Display wraps: %" PRIu64, stats.wrap_count);
-        char queue_text[128] = {0};
-        dvz_snprintf(
-            queue_text, sizeof(queue_text), "Queue depth: %u / %u", stats.queue_depth,
-            DAQ_BLOCK_QUEUE_CAPACITY);
-        dvz_gui_text(gui, queue_text);
-        dvz_gui_text(gui, "Space: pause | R: reset | F: fit");
-    }
-    dvz_gui_end(gui);
+    dvz_gui_separator_text(gui, "Telemetry");
+    DaqStats stats = {0};
+    daq_model_stats(&state->model, &stats);
+    char fps_text[128] = {0};
+    char upload_text[128] = {0};
+    dvz_snprintf(fps_text, sizeof(fps_text), "Render: %.1f FPS", state->smoothed_fps);
+    dvz_snprintf(
+        upload_text, sizeof(upload_text), "Upload: %.1f KiB (%u vertices)",
+        (double)state->upload_bytes / 1024.0, state->uploaded_vertex_count);
+    dvz_gui_text(gui, "128 channels | 10 kHz | 1.000 s ring");
+    dvz_gui_text(gui, "28 units | spatial spike footprints");
+    dvz_gui_text(gui, "One raw line-list trace draw");
+    dvz_gui_text(gui, fps_text);
+    dvz_gui_text(gui, upload_text);
+    _gui_stat_u64(gui, "Generated samples: %" PRIu64, stats.generated_sample_count);
+    _gui_stat_u64(gui, "Dropped samples: %" PRIu64, stats.dropped_sample_count);
+    _gui_stat_u64(gui, "Queue overruns: %" PRIu64, stats.overrun_block_count);
+    _gui_stat_u64(gui, "Display wraps: %" PRIu64, stats.wrap_count);
+    char queue_text[128] = {0};
+    dvz_snprintf(
+        queue_text, sizeof(queue_text), "Queue depth: %u / %u", stats.queue_depth,
+        DAQ_BLOCK_QUEUE_CAPACITY);
+    dvz_gui_text(gui, queue_text);
+    dvz_gui_text(gui, "Space: pause | R: reset | F: fit");
 
     if (pause_changed)
         daq_model_set_paused(&state->model, state->paused);
@@ -846,6 +841,9 @@ static void _gui_callback(DvzGui* gui, DvzView* view, void* user_data)
         (void)_reset_acquisition(state);
     if (fit)
         (void)dvz_panzoom_reset(state->panzoom);
+    return pause_changed || gain_changed || noise_changed || spike_rate_changed ||
+           spike_amplitude_changed || synchrony_changed || dropout_changed || block_changed ||
+           cursor_changed || grid_changed || bands_changed || events_changed || reset || fit;
 }
 
 
@@ -868,6 +866,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     StreamingDaqState* state = (StreamingDaqState*)dvz_calloc(1, sizeof(StreamingDaqState));
     if (state == NULL)
         return false;
+    state->tuner = example_tuner("Streaming DAQ");
     state->gain = 1.0f;
     state->noise = 1.0f;
     state->spike_rate = 1.0f;
@@ -889,6 +888,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
         goto error;
+    example_tuner_figure(&state->tuner, ctx->figure);
     state->panel = dvz_panel_full(ctx->figure);
     if (state->panel == NULL)
         goto error;
@@ -909,6 +909,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->panzoom = dvz_scenario_panzoom(ctx, state->panel, NULL, DVZ_DIM_MASK_XY);
     if (state->panzoom == NULL)
         goto error;
+#ifndef DVZ_EXAMPLE_NO_APP
+    if (!example_tuner_add_component(
+            &state->tuner, "Acquisition controls", state, NULL, _gui_controls, NULL, NULL, NULL))
+    {
+        goto error;
+    }
+#endif
     *out_user = state;
     return true;
 
@@ -1019,15 +1026,14 @@ static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView*
         return true;
     }
 
-    DvzGuiConfig config = dvz_gui_config();
-    config.default_window_width = 360u;
-    DvzGui* gui = dvz_view_gui(view, &config);
-    if (gui == NULL)
+    if (!example_tuner_attach(&state->tuner, view))
         return false;
-    state->view = view;
-    if (dvz_view_set_gui_callback(view, _gui_callback, state) != DVZ_OK)
+    if (!daq_model_start(&state->model))
+    {
+        example_tuner_detach(&state->tuner);
         return false;
-    return daq_model_start(&state->model);
+    }
+    return true;
 }
 
 
@@ -1043,8 +1049,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
     StreamingDaqState* state = (StreamingDaqState*)user;
     if (state == NULL)
         return;
-    if (state->view != NULL)
-        (void)dvz_view_set_gui_callback(state->view, NULL, NULL);
+    example_tuner_detach(&state->tuner);
     daq_model_destroy(&state->model);
     dvz_free(state->trace_colors);
     dvz_free(state->trace_positions);
@@ -1061,7 +1066,7 @@ DvzScenarioSpec dvz_showcase_streaming_daq_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "showcases_streaming_daq",
-        .title = "Streaming DAQ · extracellular probe",
+        .title = "Streaming DAQ · 128 channels",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
@@ -1071,7 +1076,6 @@ DvzScenarioSpec dvz_showcase_streaming_daq_scenario(void)
         .init = _scenario_init,
         .frame = _scenario_frame,
         .event = _scenario_event,
-        .native_view = _scenario_native_view,
         .destroy = _scenario_destroy,
     };
 }
@@ -1093,6 +1097,8 @@ DvzScenarioSpec dvz_showcase_streaming_daq_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = dvz_showcase_streaming_daq_scenario();
+    if (example_cli_wants_live_gui(argc, argv))
+        spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == DVZ_OK ? 0 : 1;
 }
 #endif

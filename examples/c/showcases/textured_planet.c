@@ -28,6 +28,7 @@
  * Smoke:  ./build/examples/c/showcases/textured_planet --png
  * DVZR:   ./build/examples/c/showcases/textured_planet --dvzr 60
  * Video:  ./build/examples/c/showcases/textured_planet --offscreen-record 60
+ * Control: --live opens the planet controls docked on the left
  */
 
 
@@ -49,6 +50,7 @@
 #endif
 #include "datoviz/scene.h"
 #include "example_common.h"
+#include "example_tuner.h"
 #include "runner/scenario_runner.h"
 #include "textured_planet_orbits.h"
 #include "textured_planet_sky.h"
@@ -62,16 +64,16 @@
 #define WIDTH  EXAMPLE_WINDOW_WIDTH
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
-#define TEXTURE_WIDTH  1024
-#define TEXTURE_HEIGHT 512
+#define TEXTURE_WIDTH               1024
+#define TEXTURE_HEIGHT              512
 #define EARTH_TEXTURE_PATH          "data/assets/textures/world.200412.3x5400x2700.jpg"
 #define EARTH_TEXTURE_FALLBACK_PATH "data/assets/textures/earth.jpg"
 #define MARS_TEXTURE_PATH           "data/assets/textures/mars_viking_mdim21.jpg"
 
 #define SPHERE_RADIUS     0.92
 #define ATMOSPHERE_RADIUS 0.936
-#define SPHERE_SECTORS 96
-#define SPHERE_RINGS 48
+#define SPHERE_SECTORS    96
+#define SPHERE_RINGS      48
 
 static const float TAU = 6.28318530718f;
 
@@ -80,7 +82,7 @@ static const float TAU = 6.28318530718f;
 #define SKY_DATA_PATH    "data/examples/planet_sky/prepared/planet_sky.bin"
 #define SKY_CACHE_PATH   ".cache/datoviz/examples/planet_sky/prepared/planet_sky.bin"
 
-#define DEBRIS_TIME_SCALE 60.0f
+#define DEBRIS_TIME_SCALE    60.0f
 #define GLOBE_ROTATION_SPEED 0.035f
 
 #define ORBIT_TRACE_COUNT   12
@@ -129,6 +131,7 @@ typedef struct PlanetPreset
 
 typedef struct TexturedPlanetState
 {
+    ExampleTuner tuner;
     DvzVisual* visual;
     DvzVisual* atmosphere_visual;
     DvzVisual* star_visual;
@@ -369,8 +372,8 @@ static void _make_earth_texture(uint8_t* pixels, uint32_t width, uint32_t height
  * @param height decoded texture height
  * @return RGBA8 pixel buffer, or NULL when the texture is unavailable or decoding fails
  */
-static uint8_t*
-_load_texture(const char* primary_path, const char* fallback_path, uint32_t* width, uint32_t* height)
+static uint8_t* _load_texture(
+    const char* primary_path, const char* fallback_path, uint32_t* width, uint32_t* height)
 {
     ANN(primary_path);
     ANN(width);
@@ -396,16 +399,15 @@ _load_texture(const char* primary_path, const char* fallback_path, uint32_t* wid
  * @param texture texture state to populate
  * @return whether the field was created successfully
  */
-static bool _create_planet_texture(
-    DvzScene* scene, PlanetKind kind, PlanetTexture* texture)
+static bool _create_planet_texture(DvzScene* scene, PlanetKind kind, PlanetTexture* texture)
 {
     ANN(scene);
     ANN(texture);
     ASSERT(kind < PLANET_COUNT);
     const PlanetPreset* preset = &PLANETS[kind];
 
-    texture->pixels =
-        _load_texture(preset->texture_path, preset->fallback_path, &texture->width, &texture->height);
+    texture->pixels = _load_texture(
+        preset->texture_path, preset->fallback_path, &texture->width, &texture->height);
     texture->loaded_from_file = texture->pixels != NULL;
     if (texture->pixels != NULL && !_is_equirectangular_texture(texture->width, texture->height))
     {
@@ -439,7 +441,8 @@ static bool _create_planet_texture(
     }
 
     texture->field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        scene, &(DvzSampledFieldDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_COLOR,
@@ -451,7 +454,8 @@ static bool _create_planet_texture(
         return false;
 
     return dvz_sampled_field_set_data(
-               texture->field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+               texture->field, &(DvzFieldDataView){
+                                   DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                                    .data = texture->pixels,
                                    .bytes_per_row = texture->width * 4,
                                    .rows_per_image = texture->height,
@@ -721,8 +725,8 @@ cleanup:
 /**
  * Create the thin translucent atmosphere shell around Earth.
  *
- * The shell is slightly exaggerated relative to Earth's physical atmosphere so its limb remains
- * legible at gallery scale. Depth testing hides its rear hemisphere behind the opaque planet.
+ * A view-dependent limb material keeps the shell nearly transparent over the planet center and
+ * concentrates scattered light at the horizon. Depth testing hides the rear shell behind Earth.
  *
  * @param scene scene
  * @param panel panel receiving the visual
@@ -737,41 +741,31 @@ static DvzVisual* _create_atmosphere(DvzScene* scene, DvzPanel* panel)
         .radius = ATMOSPHERE_RADIUS,
         .sectors = SPHERE_SECTORS,
         .rings = SPHERE_RINGS,
-        .color = {58, 142, 255, 7},
+        .color = {255, 255, 255, 255},
     });
     if (sphere == NULL)
         return NULL;
     _prepare_planet_geometry(sphere);
 
-    vec3* positions = (vec3*)dvz_calloc(sphere->index_count, sizeof(vec3));
-    vec3* normals = (vec3*)dvz_calloc(sphere->index_count, sizeof(vec3));
-    DvzColor* colors = (DvzColor*)dvz_calloc(sphere->index_count, sizeof(DvzColor));
-    DvzVisual* atmosphere = NULL;
-    if (positions == NULL || normals == NULL || colors == NULL)
-        goto cleanup;
-    for (uint32_t i = 0; i < sphere->index_count; i++)
-    {
-        const DvzIndex index = sphere->indices[i];
-        positions[i][0] = (float)sphere->positions[index][0];
-        positions[i][1] = (float)sphere->positions[index][1];
-        positions[i][2] = (float)sphere->positions[index][2];
-        normals[i][0] = (float)sphere->normals[index][0];
-        normals[i][1] = (float)sphere->normals[index][1];
-        normals[i][2] = (float)sphere->normals[index][2];
-        colors[i] = sphere->colors[index];
-    }
-
-    atmosphere = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* atmosphere = dvz_mesh(scene, 0);
     if (atmosphere == NULL)
         goto cleanup;
-    DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = positions, .item_count = sphere->index_count},
-        {.attr_name = "color", .data = colors, .item_count = sphere->index_count},
-        {.attr_name = "normal", .data = normals, .item_count = sphere->index_count},
-    };
-    DvzResult rc = dvz_visual_set_data_many(atmosphere, updates, 3);
+    DvzResult rc = dvz_mesh_set_geometry(atmosphere, sphere);
     if (rc == DVZ_OK)
-        rc = dvz_visual_set_alpha_mode(atmosphere, DVZ_ALPHA_BLENDED);
+    {
+        DvzMaterialDesc material = dvz_limb_material_desc();
+        material.opacity = 0.14f;
+        material.light_direction[0] = SUN_DIR_X;
+        material.light_direction[1] = SUN_DIR_Y;
+        material.light_direction[2] = SUN_DIR_Z;
+        material.limb.falloff = 3.6f;
+        material.limb.sun_bias = 0.06f;
+        material.limb.terminator_width = 0.16f;
+        material.limb.night_factor = 0.035f;
+        rc = dvz_visual_set_material(atmosphere, &material);
+    }
+    if (rc == DVZ_OK)
+        rc = dvz_visual_set_blend_mode(atmosphere, DVZ_BLEND_ADDITIVE);
     if (rc == DVZ_OK)
         rc = dvz_visual_set_depth_test(atmosphere, true);
     if (rc == DVZ_OK)
@@ -780,9 +774,6 @@ static DvzVisual* _create_atmosphere(DvzScene* scene, DvzPanel* panel)
         atmosphere = NULL;
 
 cleanup:
-    dvz_free(positions);
-    dvz_free(normals);
-    dvz_free(colors);
     dvz_geometry_destroy(sphere);
     return atmosphere;
 }
@@ -976,8 +967,7 @@ static bool _state_apply_planet(TexturedPlanetState* state, bool report_error)
     {
         if (report_error)
             fprintf(
-                stderr,
-                "textured_planet: %s texture is unavailable; keeping the current planet\n",
+                stderr, "textured_planet: %s texture is unavailable; keeping the current planet\n",
                 preset->label);
         return false;
     }
@@ -989,18 +979,17 @@ static bool _state_apply_planet(TexturedPlanetState* state, bool report_error)
 
 #ifndef DVZ_EXAMPLE_NO_MAIN
 /**
- * Build live GUI controls for the textured planet example.
+ * Build live tuner controls for the textured planet example.
  *
  * @param gui GUI overlay
- * @param win view
  * @param user_data example state
+ * @return whether any control changed
  */
-static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
+static bool _textured_planet_gui(DvzGui* gui, void* user_data)
 {
-    (void)win;
     TexturedPlanetState* state = (TexturedPlanetState*)user_data;
-    if (state == NULL)
-        return;
+    if (gui == NULL || state == NULL)
+        return false;
 
     static const char* const planet_items[PLANET_COUNT] = {"Earth", "Mars"};
     const int previous_planet_index = state->planet_index;
@@ -1011,39 +1000,33 @@ static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
     bool rotation_changed = false;
     bool reset = false;
 
-    if (dvz_gui_begin(gui, "Textured Planets", NULL, 0))
-    {
-        dvz_gui_separator_text(gui, "Planet");
-        planet_changed |=
-            dvz_gui_combo(gui, "Preset", &state->planet_index, planet_items, PLANET_COUNT);
-        rotation_changed |= dvz_gui_checkbox(gui, "Rotate globe", &state->rotate_globe);
-        rotation_changed |= dvz_gui_slider_float_format(
-            gui, "Globe rotation", &state->globe_speed, 0.0f, 0.20f, "%.3f rad/s");
-        debris_visibility_changed |=
-            dvz_gui_checkbox(gui, "Show atmosphere", &state->show_atmosphere);
+    dvz_gui_separator_text(gui, "Planet");
+    planet_changed |=
+        dvz_gui_combo(gui, "Preset", &state->planet_index, planet_items, PLANET_COUNT);
+    rotation_changed |= dvz_gui_checkbox(gui, "Rotate globe", &state->rotate_globe);
+    rotation_changed |= dvz_gui_slider_float_format(
+        gui, "Globe rotation", &state->globe_speed, 0.0f, 0.20f, "%.3f rad/s");
+    debris_visibility_changed |= dvz_gui_checkbox(gui, "Show atmosphere", &state->show_atmosphere);
 
-        dvz_gui_separator_text(gui, "Celestial sky");
-        sky_visibility_changed |= dvz_gui_checkbox(gui, "Gaia stars", &state->show_stars);
-        sky_visibility_changed |= dvz_gui_checkbox(gui, "2MASS Milky Way", &state->show_galaxy);
+    dvz_gui_separator_text(gui, "Celestial sky");
+    sky_visibility_changed |= dvz_gui_checkbox(gui, "Gaia stars", &state->show_stars);
+    sky_visibility_changed |= dvz_gui_checkbox(gui, "2MASS Milky Way", &state->show_galaxy);
 
-        dvz_gui_separator_text(gui, "Catalogued orbital debris");
-        debris_visibility_changed |= dvz_gui_checkbox(gui, "Show debris", &state->show_debris);
-        debris_visibility_changed |=
-            dvz_gui_checkbox(gui, "Show orbit lines", &state->show_orbits);
-        debris_visibility_changed |= dvz_gui_checkbox(gui, "Orbit glow", &state->show_orbit_glow);
-        (void)dvz_gui_checkbox(gui, "Animate debris", &state->animate_debris);
-        debris_density_changed |= dvz_gui_slider_int(
-            gui, "Object count", &state->debris_count, 0, (int)state->orbit_model.count);
-        (void)dvz_gui_slider_float_format(
-            gui, "Time scale", &state->debris_speed, 0.0f, 600.0f, "%.0fx real time");
-        dvz_gui_text(gui, "CelesTrak GP elements propagated with SGP4.");
-        dvz_gui_text(gui, state->orbit_model.snapshot_utc);
-        dvz_gui_text(gui, "Cyan: FENGYUN 1C | Amber: IRIDIUM 33");
-        dvz_gui_text(gui, "Coral: COSMOS 2251 | Point sizes exaggerated");
+    dvz_gui_separator_text(gui, "Catalogued orbital debris");
+    debris_visibility_changed |= dvz_gui_checkbox(gui, "Show debris", &state->show_debris);
+    debris_visibility_changed |= dvz_gui_checkbox(gui, "Show orbit lines", &state->show_orbits);
+    debris_visibility_changed |= dvz_gui_checkbox(gui, "Orbit glow", &state->show_orbit_glow);
+    (void)dvz_gui_checkbox(gui, "Animate debris", &state->animate_debris);
+    debris_density_changed |= dvz_gui_slider_int(
+        gui, "Object count", &state->debris_count, 0, (int)state->orbit_model.count);
+    (void)dvz_gui_slider_float_format(
+        gui, "Time scale", &state->debris_speed, 0.0f, 600.0f, "%.0fx real time");
+    dvz_gui_text(gui, "CelesTrak GP elements propagated with SGP4.");
+    dvz_gui_text(gui, state->orbit_model.snapshot_utc);
+    dvz_gui_text(gui, "Cyan: FENGYUN 1C | Amber: IRIDIUM 33");
+    dvz_gui_text(gui, "Coral: COSMOS 2251 | Point sizes exaggerated");
 
-        reset = dvz_gui_button(gui, "Reset");
-    }
-    dvz_gui_end(gui);
+    reset = dvz_gui_button(gui, "Reset");
 
     if (planet_changed)
     {
@@ -1072,6 +1055,8 @@ static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
         _state_apply_globe_rotation(state);
     if (sky_visibility_changed)
         _state_apply_sky_visibility(state);
+    return planet_changed || debris_visibility_changed || debris_density_changed ||
+           sky_visibility_changed || rotation_changed || reset;
 }
 #endif
 
@@ -1093,6 +1078,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     TexturedPlanetState* state = (TexturedPlanetState*)dvz_calloc(1, sizeof(*state));
     if (state == NULL)
         return false;
+    state->tuner = example_tuner("Textured planets");
     if (out_user != NULL)
         *out_user = state;
     state->planet_index = PLANET_EARTH;
@@ -1140,6 +1126,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
+    example_tuner_figure(&state->tuner, ctx->figure);
 
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
@@ -1236,6 +1223,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(
         dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) == 0,
         "dvz_scenario_bind_controller() failed");
+#ifndef DVZ_EXAMPLE_NO_MAIN
+    EXAMPLE_CHECK(
+        example_tuner_add_component(
+            &state->tuner, "Planet controls", state, NULL, _textured_planet_gui, NULL, NULL, NULL),
+        "failed to register textured planet tuner");
+#endif
 
     ok = true;
 cleanup:
@@ -1281,14 +1274,11 @@ static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView*
 {
     (void)app;
     TexturedPlanetState* state = (TexturedPlanetState*)user;
-    if (state == NULL || view == NULL || ctx == NULL || ctx->presentation != DVZ_RUNNER_PRESENT_GLFW)
+    if (state == NULL || view == NULL || ctx == NULL ||
+        ctx->presentation != DVZ_RUNNER_PRESENT_GLFW)
         return true;
 
-    DvzGui* gui = dvz_view_gui(view, NULL);
-    if (gui == NULL)
-        return true;
-    dvz_view_set_gui_callback(view, _textured_planet_gui, state);
-    return true;
+    return example_tuner_attach(&state->tuner, view);
 }
 #endif
 
@@ -1300,6 +1290,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
     TexturedPlanetState* state = (TexturedPlanetState*)user;
     if (state == NULL)
         return;
+    example_tuner_detach(&state->tuner);
     dvz_track_destroy(state->globe_rotation);
     textured_planet_orbit_model_destroy(&state->orbit_model);
     textured_planet_sky_model_destroy(&state->sky_model);

@@ -61,6 +61,8 @@ The example uses real texture files from the data submodule when available. Eart
 
 Prepare the debris ephemeris before running: uv run tools/data/prepare_orbital_debris.py --force uv run tools/data/prepare_planet_sky.py --force
 
+Control: `--live` opens the planet controls docked on the left.
+
 ## Source
 
 === "Python"

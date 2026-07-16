@@ -820,7 +820,7 @@ DvzScenarioSpec dvz_showcase_terrain_relief_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = dvz_showcase_terrain_relief_scenario();
-    if (example_arg_has(argc, argv, "--live"))
+    if (example_cli_wants_live_gui(argc, argv))
         spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
