@@ -43,7 +43,7 @@ after verifying the linked API reference.
 
 ## What To Look For
 
-Small temperature-colored stars form a warm central bulge while large soft dust sprites reveal nested blue spiral arms. Additive blending lets overlapping particles accumulate light without turning the dense core into an opaque disc. Drag to orbit through the thin stellar and dust layers, and use the wheel to inspect the core or the full disk.
+Small temperature-colored stars form a warm central bulge while large soft dust sprites reveal nested blue spiral arms. Additive blending lets overlapping particles accumulate light without turning the dense core into an opaque disc. Drag to orbit through the thin stellar and dust layers, and use the wheel to inspect the core or the full disk. A sparse world-space star shell provides depth without competing with the simulated particles.
 
 The density-wave equations and rendering composition are adapted from Nicolas P. Rougier's Glumpy galaxy example and Ingo Berg's galaxy simulation. See galaxy_model.c for the BSD notice and model details.
 
@@ -79,12 +79,12 @@ The density-wave equations and rendering composition are adapted from Nicolas P.
     - Density-wave model header source: [`examples/c/showcases/galaxy_model.h`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/galaxy_model.h)
     - Browser support: Planned
     - Browser note: the portable scenario and additive blend contract need browser registration and visual proof
-    - Browser capability tags: `marker`, `symbol-set`, `glyph-atlas`, `alpha-blending`, `frame-callbacks`, `arcball`
+    - Browser capability tags: `point`, `marker`, `symbol-set`, `glyph-atlas`, `alpha-blending`, `frame-callbacks`, `arcball`
     - Validation: `smoke+screenshot`
 
     **Tags**
 
-    `scientific`, `simulation`, `astronomy`, `particles`, `marker`, `bitmap-symbol`, `additive-blending`, `3d`, `interactive`, `arcball`, `animation`, `capture`
+    `scientific`, `simulation`, `astronomy`, `particles`, `point`, `marker`, `bitmap-symbol`, `additive-blending`, `3d`, `interactive`, `arcball`, `gui`, `starfield`, `animation`, `capture`
 
     **Data**
 

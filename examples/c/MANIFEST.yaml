@@ -3042,6 +3042,7 @@ examples:
     webgpu:
       status: webgpu-planned
       requirements:
+        - point
         - marker
         - symbol-set
         - glyph-atlas
@@ -3060,12 +3061,15 @@ examples:
       - simulation
       - astronomy
       - particles
+      - point
       - marker
       - bitmap-symbol
       - additive-blending
       - 3d
       - interactive
       - arcball
+      - gui
+      - starfield
       - animation
       - capture
     dataset:

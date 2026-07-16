@@ -2833,8 +2833,16 @@
         ]
       },
       "gui": {
-        "count": 2,
+        "count": 3,
         "examples": [
+          {
+            "id": "showcases_galaxy",
+            "title": "Density-Wave Galaxy",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/galaxy.c",
+            "page": "gallery/showcases/showcases_galaxy.md"
+          },
           {
             "id": "showcases_point_cloud",
             "title": "Point Cloud",
@@ -3465,7 +3473,7 @@
         ]
       },
       "point": {
-        "count": 5,
+        "count": 6,
         "examples": [
           {
             "id": "features_bounds_overlay",
@@ -3490,6 +3498,14 @@
             "status": "supported",
             "source": "examples/c/visuals/point.c",
             "page": "gallery/visuals/visuals_point.md"
+          },
+          {
+            "id": "showcases_galaxy",
+            "title": "Density-Wave Galaxy",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/galaxy.c",
+            "page": "gallery/showcases/showcases_galaxy.md"
           },
           {
             "id": "showcases_gpu_particle_smoke",
@@ -3955,6 +3971,19 @@
             "status": "supported",
             "source": "examples/c/showcases/scientific_plotting.c",
             "page": "gallery/showcases/showcases_scientific_plotting.md"
+          }
+        ]
+      },
+      "starfield": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_galaxy",
+            "title": "Density-Wave Galaxy",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/galaxy.c",
+            "page": "gallery/showcases/showcases_galaxy.md"
           }
         ]
       },

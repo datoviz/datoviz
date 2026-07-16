@@ -100,7 +100,7 @@ This example combines a synthetic wind-speed field with vectors and streamlines.
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for Density-Wave Galaxy"><span>Screenshot pending</span></div>
 
-`showcases`<br><span>`scientific`, `simulation`, `astronomy`, `particles`, `marker`, ...</span>
+`showcases`<br><span>`scientific`, `simulation`, `astronomy`, `particles`, `point`, ...</span>
 
 This example renders an animated density-wave spiral galaxy.
 

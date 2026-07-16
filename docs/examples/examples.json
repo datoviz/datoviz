@@ -5094,12 +5094,15 @@
         "simulation",
         "astronomy",
         "particles",
+        "point",
         "marker",
         "bitmap-symbol",
         "additive-blending",
         "3d",
         "interactive",
         "arcball",
+        "gui",
+        "starfield",
         "animation",
         "capture"
       ],
@@ -5118,6 +5121,7 @@
       "webgpu_status": "webgpu-planned",
       "webgpu_status_label": "Planned",
       "webgpu_requirements": [
+        "point",
         "marker",
         "symbol-set",
         "glyph-atlas",
@@ -5129,6 +5133,7 @@
       "webgpu": {
         "status": "webgpu-planned",
         "requirements": [
+          "point",
           "marker",
           "symbol-set",
           "glyph-atlas",
