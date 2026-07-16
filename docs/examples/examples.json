@@ -5480,7 +5480,9 @@
         "sampled-field",
         "texture",
         "material",
-        "turntable"
+        "arcball",
+        "camera",
+        "msaa"
       ],
       "data": {
         "kind": "prepared"
@@ -5500,7 +5502,10 @@
         "mesh",
         "sampled-field",
         "texture",
-        "turntable",
+        "arcball",
+        "camera",
+        "material",
+        "msaa",
         "prepared-data"
       ],
       "webgpu_reason": "the cache-only DEM and orthoimagery bundle is not packaged for the browser",
@@ -5510,7 +5515,10 @@
           "mesh",
           "sampled-field",
           "texture",
-          "turntable",
+          "arcball",
+          "camera",
+          "material",
+          "msaa",
           "prepared-data"
         ],
         "reason": "the cache-only DEM and orthoimagery bundle is not packaged for the browser"

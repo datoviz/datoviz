@@ -2097,7 +2097,7 @@
         ]
       },
       "arcball": {
-        "count": 10,
+        "count": 11,
         "examples": [
           {
             "id": "visuals_mesh",
@@ -2154,6 +2154,14 @@
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
             "page": "gallery/showcases/showcases_surface_grid.md"
+          },
+          {
+            "id": "showcases_terrain_relief",
+            "title": "McHenrys Peak Terrain Relief",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/terrain_relief.c",
+            "page": "gallery/showcases/showcases_terrain_relief.md"
           },
           {
             "id": "showcases_cortical_activity",
@@ -2285,6 +2293,19 @@
             "status": "diagnostic",
             "source": "examples/c/features/bounds_overlay.c",
             "page": "gallery/features/features_bounds_overlay.md"
+          }
+        ]
+      },
+      "camera": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_terrain_relief",
+            "title": "McHenrys Peak Terrain Relief",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/terrain_relief.c",
+            "page": "gallery/showcases/showcases_terrain_relief.md"
           }
         ]
       },
@@ -3401,6 +3422,19 @@
           }
         ]
       },
+      "msaa": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_terrain_relief",
+            "title": "McHenrys Peak Terrain Relief",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/terrain_relief.c",
+            "page": "gallery/showcases/showcases_terrain_relief.md"
+          }
+        ]
+      },
       "offscreen": {
         "count": 1,
         "examples": [
@@ -4511,19 +4545,6 @@
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
             "page": "gallery/visuals/visuals_volume.md"
-          }
-        ]
-      },
-      "turntable": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "showcases_terrain_relief",
-            "title": "McHenrys Peak Terrain Relief",
-            "category": "showcase",
-            "status": "experimental",
-            "source": "examples/c/showcases/terrain_relief.c",
-            "page": "gallery/showcases/showcases_terrain_relief.md"
           }
         ]
       },

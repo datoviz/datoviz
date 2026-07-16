@@ -44,7 +44,7 @@ after verifying the linked API reference.
 
 ## What To Look For
 
-The real bare-earth DEM drives a lit surface-grid mesh while the matching natural-color aerial image is sampled through the grid UVs. Rotate the upright turntable view to inspect McHenrys Peak, Glacier Gorge, alpine lakes, and the Continental Divide.
+The real bare-earth DEM drives a lit surface-grid mesh while the matching natural-color aerial image is sampled through the grid UVs. Rotate the arcball view to inspect McHenrys Peak, Glacier Gorge, alpine lakes, and the Continental Divide.
 
 Prepare the cache before running:
 
@@ -75,12 +75,12 @@ Uv run tools/data/prepare_terrain_relief.py
     - Data preparation source: [`tools/data/prepare_terrain_relief.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/tools/data/prepare_terrain_relief.py)
     - Browser support: Native only
     - Browser note: the cache-only DEM and orthoimagery bundle is not packaged for the browser
-    - Browser capability tags: `mesh`, `sampled-field`, `texture`, `turntable`, `prepared-data`
+    - Browser capability tags: `mesh`, `sampled-field`, `texture`, `arcball`, `camera`, `material`, `msaa`, `prepared-data`
     - Validation: `smoke+interaction+screenshot`
 
     **Tags**
 
-    `scientific`, `real-data`, `terrain`, `dem`, `orthoimagery`, `surface-grid`, `mesh`, `sampled-field`, `texture`, `material`, `turntable`
+    `scientific`, `real-data`, `terrain`, `dem`, `orthoimagery`, `surface-grid`, `mesh`, `sampled-field`, `texture`, `material`, `arcball`, `camera`, `msaa`
 
     **Data**
 
