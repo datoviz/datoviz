@@ -28,6 +28,62 @@ dvz_visual_set_data_range(visual, attr_name, first_item, data, item_count);
 Range writes update a contiguous item interval for one attribute. Attribute names and element
 formats must match the visual family contract.
 
+## Array Shape And Storage
+
+The first array dimension is the logical item count. Component dimensions describe one item: for
+example, positions are `float32` with shape `(N, 3)`, RGBA colors are `uint8` with shape `(N, 4)`,
+and scalar sizes are `float32` with shape `(N,)`. The exact contract is family-specific; never infer
+it from the attribute name alone.
+
+| Rule | C | Python NumPy facade |
+| --- | --- | --- |
+| Storage | Tightly packed array of the documented C element type. | Array with the documented dtype and shape. |
+| Contiguity | Caller provides contiguous packed elements. | Non-contiguous arrays are copied to C-contiguous temporary storage. |
+| Cardinality | `item_count` is explicit. | Inferred from `array.shape[0]`; a raw pointer still requires an explicit count. |
+| Ownership | Dense setter copies before returning. | The facade keeps temporary arrays alive for the call; retained C storage owns the copy afterward. |
+| Batch update | Every `DvzVisualDataUpdate` uses the same count. | A mapping or iterable of `(attribute, array)` pairs must have matching first dimensions. |
+
+The facade validates dtype only for functions whose generated binding policy declares one. Treat
+the family tables—not automatic conversion—as authoritative. Prefer explicit `np.asarray(...,
+dtype=...)` and validate shapes before crossing the API boundary.
+
+All configured dense per-item attributes on one visual must have the same logical count. When the
+count changes, use `dvz_visual_set_data_many()` so validation is atomic. Include every existing
+dense attribute whose old count would otherwise disagree. Use `dvz_visual_set_data_range()` only
+after a full allocation and keep the update inside that allocation.
+
+## Finite Values And Missing Data
+
+There is no single missing-data convention across all visual families. Follow the narrowest
+documented contract:
+
+- Geometry, transforms, sizes, widths, radii, and extents should be finite. Invalid values may be
+  rejected, produce incomplete bounds, or lead to backend-dependent geometry.
+- Scalar point and pixel color attributes currently map non-finite values to transparent RGBA when
+  the frame upload is derived. This is a specific scalar-color route, not a global mask policy.
+- Plot helpers that explicitly document `NaN` separators may split paths or filled regions at those
+  values.
+- Sampled image and volume fields do not define a general mask or bad-color policy. Preprocess
+  missing voxels/pixels or encode a deliberate alpha channel before upload.
+
+Do not use a sentinel numeric value unless the consuming family documents it. For reproducible
+scientific figures, decide missing-value handling before computing bounds, normalization, scales,
+and colorbars.
+
+## Numeric And Color Conventions
+
+- Floating-point visual attributes use single-precision storage unless the family page explicitly
+  says otherwise. Domains, tick values, and scale metadata may use `double` independently of GPU
+  attribute storage.
+- Integer identifiers and item-state bitfields retain their documented signedness and width. Do not
+  pass platform-default Python integers as untyped array storage.
+- `DvzColor` and `uint8 (N, 4)` arrays are RGBA8 display colors: sRGB-encoded RGB with straight
+  alpha. They are not linear floating-point radiometric values.
+- Angles are radians. A family page states the positive direction and coordinate convention when
+  rotation is exposed.
+- Names ending in `_px` use logical pixels. Framebuffer capture dimensions and pixel arrays use
+  physical framebuffer pixels.
+
 
 ## Screen-Space Attributes
 

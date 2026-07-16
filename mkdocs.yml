@@ -18,7 +18,6 @@ exclude_docs: |
   guide/*
   tasks/*
   visuals/*
-  reference/colormaps.md
 theme:
   name: material
   logo: images/logow.png
@@ -204,6 +203,7 @@ nav:
       - Controllers: 'reference/controllers.md'
       - Callbacks and events: 'reference/callbacks.md'
       - Visual attributes: 'reference/visual-attributes.md'
+      - Scales and colormaps: 'reference/colormaps.md'
       - Queries: 'reference/queries.md'
       - Errors and logging: 'reference/errors-and-logging.md'
     - Status:

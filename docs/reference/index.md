@@ -26,6 +26,7 @@ support, and links to minimal examples.
 | [Controllers](controllers.md) | Panzoom, arcball, fly, turntable and orbit behavior, binding, linking, and invalidation. |
 | [Callbacks](callbacks.md) | Callback lifetime, user data, threading assumptions, and mutation rules. |
 | [Visual attributes](visual-attributes.md) | Attribute names, dense writes, sources, mutability, updates, and external buffers. |
+| [Scales and colormaps](colormaps.md) | Continuous and categorical scale contracts, normalization, RGBA representation, missing values, and ownership. |
 | [Queries](queries.md) | Unified query model for picking, probing, readback, statuses, and freshness. |
 | [Errors and logging](errors-and-logging.md) | Return/status behavior, diagnostic phases, DRP2 tracing, and common failure classes. |
 
