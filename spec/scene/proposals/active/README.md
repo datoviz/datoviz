@@ -41,6 +41,8 @@ non-v0.4-blocking roadmaps live in [`../future/`](../future/).
 9. [VISUAL_LOCAL_TRANSFORM_AND_ARCBALL_TARGET.md](VISUAL_LOCAL_TRANSFORM_AND_ARCBALL_TARGET.md):
    retained visual-local transform and arcball model/camera target semantics for the textured
    planet cleanup.
+10. [ARBITRARY_CLIP_MASKS.md](ARBITRARY_CLIP_MASKS.md): post-RC1 retained polygon clip masks,
+    stencil lowering, query parity, and backend-neutral scene API direction.
 
 
 ## Visual And Render-Mode Pressure

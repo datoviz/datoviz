@@ -88,6 +88,10 @@ Preserved direction:
    graph reads, bind layout, shader variant, and disabled/enabled pixel behavior;
 7. material polish should use explicit retained fields and capability resolution, not one-off
    visual-family switches.
+8. post-RC1 arbitrary panel and attachment clipping should follow
+   [proposals/active/ARBITRARY_CLIP_MASKS.md](proposals/active/ARBITRARY_CLIP_MASKS.md): retain a
+   backend-neutral `DvzClip`, start with polygons and holes lowered through stencil, and require
+   rendering/query agreement across native and WebGPU paths.
 
 
 ## Runtime, WebGPU, WASM, And Packaging
