@@ -8,9 +8,9 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Reviewed public C examples generated for the website: 109
-- Examples declaring screenshot validation: 99
-- Examples that should have video or motion evidence: 5
+- Reviewed public C examples generated for the website: 110
+- Examples declaring screenshot validation: 100
+- Examples that should have video or motion evidence: 6
 
 ## Commands
 
@@ -123,6 +123,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [GPU Particle Smoke](gallery/showcases/showcases_gpu_particle_smoke.md) | [`examples/c/showcases/gpu_particle_smoke.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c) | `experimental` | `smoke+screenshot` |
 | [Spherical Harmonics](gallery/showcases/showcases_spherical_harmonics.md) | [`examples/c/showcases/spherical_harmonics.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/spherical_harmonics.c) | `supported` | `smoke+screenshot` |
 | [Surface Grid](gallery/showcases/showcases_surface_grid.md) | [`examples/c/showcases/surface_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/surface_grid.c) | `supported` | `smoke+screenshot` |
+| [Human Auditory Cortical Activity](gallery/showcases/showcases_cortical_activity.md) | [`examples/c/showcases/cortical_activity.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/cortical_activity.c) | `experimental` | `smoke+screenshot+video` |
 | [Allen Mouse Brain](gallery/showcases/showcases_brain_volume.md) | [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c) | `prototype` | `smoke+screenshot` |
 | [Point Cloud](gallery/showcases/showcases_point_cloud.md) | [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c) | `supported` | `smoke+screenshot` |
 | [Textured Planets](gallery/showcases/showcases_textured_planet.md) | [`examples/c/showcases/textured_planet.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet.c) | `supported` | `smoke+screenshot` |

@@ -3,19 +3,19 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 109,
+  "example_count": 110,
   "categories": {
     "advanced": 4,
     "composite": 2,
     "feature": 68,
     "runtime": 5,
-    "showcase": 13,
+    "showcase": 14,
     "start": 1,
     "visual": 16
   },
   "statuses": {
     "diagnostic": 1,
-    "experimental": 12,
+    "experimental": 13,
     "prototype": 1,
     "supported": 95
   },
@@ -63,7 +63,7 @@
         ]
       },
       "prepared": {
-        "count": 3,
+        "count": 4,
         "examples": [
           {
             "id": "showcases_choropleth",
@@ -72,6 +72,14 @@
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
             "page": "gallery/showcases/showcases_choropleth.md"
+          },
+          {
+            "id": "showcases_cortical_activity",
+            "title": "Human Auditory Cortical Activity",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/cortical_activity.c",
+            "page": "gallery/showcases/showcases_cortical_activity.md"
           },
           {
             "id": "showcases_brain_volume",
@@ -1960,7 +1968,7 @@
         ]
       },
       "animation": {
-        "count": 1,
+        "count": 2,
         "examples": [
           {
             "id": "runtime_video_export",
@@ -1969,6 +1977,14 @@
             "status": "experimental",
             "source": "examples/c/runtime/video_export.c",
             "page": "gallery/runtime/runtime_video_export.md"
+          },
+          {
+            "id": "showcases_cortical_activity",
+            "title": "Human Auditory Cortical Activity",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/cortical_activity.c",
+            "page": "gallery/showcases/showcases_cortical_activity.md"
           }
         ]
       },
@@ -1986,7 +2002,7 @@
         ]
       },
       "arcball": {
-        "count": 8,
+        "count": 9,
         "examples": [
           {
             "id": "visuals_mesh",
@@ -2035,6 +2051,14 @@
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
             "page": "gallery/showcases/showcases_surface_grid.md"
+          },
+          {
+            "id": "showcases_cortical_activity",
+            "title": "Human Auditory Cortical Activity",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/cortical_activity.c",
+            "page": "gallery/showcases/showcases_cortical_activity.md"
           },
           {
             "id": "showcases_brain_volume",
@@ -2372,7 +2396,7 @@
         ]
       },
       "colorbar": {
-        "count": 4,
+        "count": 5,
         "examples": [
           {
             "id": "showcases_linked_probe_colorbar",
@@ -2405,6 +2429,14 @@
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
             "page": "gallery/showcases/showcases_wind_field.md"
+          },
+          {
+            "id": "showcases_cortical_activity",
+            "title": "Human Auditory Cortical Activity",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/cortical_activity.c",
+            "page": "gallery/showcases/showcases_cortical_activity.md"
           }
         ]
       },
@@ -2447,6 +2479,19 @@
             "status": "experimental",
             "source": "examples/c/showcases/gpu_particle_smoke.c",
             "page": "gallery/showcases/showcases_gpu_particle_smoke.md"
+          }
+        ]
+      },
+      "cortical-surface": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_cortical_activity",
+            "title": "Human Auditory Cortical Activity",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/cortical_activity.c",
+            "page": "gallery/showcases/showcases_cortical_activity.md"
           }
         ]
       },
@@ -2525,6 +2570,19 @@
             "status": "experimental",
             "source": "examples/c/advanced/raw_triangle_drp2.c",
             "page": "gallery/advanced/advanced_raw_triangle_drp2.md"
+          }
+        ]
+      },
+      "dspm": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_cortical_activity",
+            "title": "Human Auditory Cortical Activity",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/cortical_activity.c",
+            "page": "gallery/showcases/showcases_cortical_activity.md"
           }
         ]
       },
@@ -2752,6 +2810,19 @@
           }
         ]
       },
+      "human-brain": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_cortical_activity",
+            "title": "Human Auditory Cortical Activity",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/cortical_activity.c",
+            "page": "gallery/showcases/showcases_cortical_activity.md"
+          }
+        ]
+      },
       "icosphere": {
         "count": 1,
         "examples": [
@@ -2956,8 +3027,21 @@
           }
         ]
       },
+      "meg": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_cortical_activity",
+            "title": "Human Auditory Cortical Activity",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/cortical_activity.c",
+            "page": "gallery/showcases/showcases_cortical_activity.md"
+          }
+        ]
+      },
       "mesh": {
-        "count": 4,
+        "count": 5,
         "examples": [
           {
             "id": "visuals_mesh",
@@ -2982,6 +3066,14 @@
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
             "page": "gallery/showcases/showcases_surface_grid.md"
+          },
+          {
+            "id": "showcases_cortical_activity",
+            "title": "Human Auditory Cortical Activity",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/cortical_activity.c",
+            "page": "gallery/showcases/showcases_cortical_activity.md"
           },
           {
             "id": "showcases_textured_planet",
@@ -3330,7 +3422,7 @@
         ]
       },
       "real-data": {
-        "count": 5,
+        "count": 6,
         "examples": [
           {
             "id": "showcases_choropleth",
@@ -3347,6 +3439,14 @@
             "status": "supported",
             "source": "examples/c/showcases/protein.c",
             "page": "gallery/showcases/showcases_protein.md"
+          },
+          {
+            "id": "showcases_cortical_activity",
+            "title": "Human Auditory Cortical Activity",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/cortical_activity.c",
+            "page": "gallery/showcases/showcases_cortical_activity.md"
           },
           {
             "id": "showcases_brain_volume",
@@ -3480,7 +3580,7 @@
         ]
       },
       "scientific": {
-        "count": 7,
+        "count": 8,
         "examples": [
           {
             "id": "showcases_scientific_plotting",
@@ -3529,6 +3629,14 @@
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
             "page": "gallery/showcases/showcases_surface_grid.md"
+          },
+          {
+            "id": "showcases_cortical_activity",
+            "title": "Human Auditory Cortical Activity",
+            "category": "showcase",
+            "status": "experimental",
+            "source": "examples/c/showcases/cortical_activity.c",
+            "page": "gallery/showcases/showcases_cortical_activity.md"
           },
           {
             "id": "showcases_brain_volume",

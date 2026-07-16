@@ -5,7 +5,7 @@
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../showcases_gpu_particle_smoke/">← Previous: GPU Particle Smoke</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_protein/">Next: Protein →</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_cortical_activity/">Next: Human Auditory Cortical Activity →</a></span>
 </div>
 </nav>
 
@@ -113,6 +113,6 @@ Prepare: `python tools/data/prepare_brain_volume.py`
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../showcases_gpu_particle_smoke/">← Previous: GPU Particle Smoke</a></span>
-<span class="dvz-example-nav__next"><a href="../showcases_protein/">Next: Protein →</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_cortical_activity/">Next: Human Auditory Cortical Activity →</a></span>
 </div>
 </nav>

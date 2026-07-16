@@ -16,6 +16,7 @@ sections:
       - title: 3D
         examples:
           - showcases_brain_volume
+          - showcases_cortical_activity
           - showcases_protein
           - showcases_point_cloud
           - showcases_spherical_harmonics

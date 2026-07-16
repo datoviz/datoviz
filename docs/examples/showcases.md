@@ -140,6 +140,18 @@ This example renders a prepared Allen mouse brain volume with a visible slice.
 
 <div class="card" markdown="1">
 
+### [Human Auditory Cortical Activity](gallery/showcases/showcases_cortical_activity.md)
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for Human Auditory Cortical Activity"><span>Screenshot pending</span></div>
+
+`experimental` `showcases`<br><span>`scientific`, `real-data`, `human-brain`, `cortical-surface`, `meg`, ...</span>
+
+This example animates a human auditory dSPM estimate on cortex.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Protein](gallery/showcases/showcases_protein.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">

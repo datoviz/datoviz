@@ -268,6 +268,7 @@ batches:
     - showcases_wind_field
     - showcases_spherical_harmonics
     - showcases_surface_grid
+    - showcases_cortical_activity
     - showcases_point_cloud
     - showcases_textured_planet
 
@@ -3236,6 +3237,71 @@ examples:
       - mesh
       - wireframe
       - arcball
+
+  - id: showcases_cortical_activity
+    title: Human Auditory Cortical Activity
+    stage: v0.4_experimental
+    category: showcase
+    lane: showcases
+    source: examples/c/showcases/cortical_activity.c
+    validation: smoke+screenshot+video
+    media:
+      preview:
+        kind: animated-webp
+        frames: 180
+        fps: 60
+        card:
+          preferred: video-mp4
+          sample_step: 1
+          fps: 60
+          fallback_fps: 30
+          mp4_crf: 24
+    data:
+      kind: prepared
+    webgpu:
+      status: webgpu-deferred
+      requirements:
+        - mesh
+        - colorbar
+        - arcball
+        - frame-callbacks
+        - continuous-frames
+      reason: the browser path does not yet package the prepared cortical surface and time-series bundle
+    agent_copy_safe: false
+    dataset:
+      name: MNE audiovisual sample auditory MEG dSPM
+      source: OpenNeuro ds000248 snapshot 1.2.4
+      source_url: https://openneuro.org/datasets/ds000248/versions/1.2.4
+      license: CC0
+      citation: OpenNeuro ds000248 v1.2.4, DOI 10.18112/openneuro.ds000248.v1.2.4
+      preprocessing: >-
+        uv run --isolated --with mne==1.12.1 --with mne-bids==0.19.0
+        --with nibabel==5.4.2 --with numpy==2.3.4 --with scipy==1.18.0
+        --with requests python tools/data/prepare_cortical_activity.py
+      cache_prepared_path: .cache/datoviz/examples/cortical_activity/prepared
+      provenance: >-
+        Measured left-ear auditory MEG trials are averaged and mapped to the participant's
+        cortical surface with a baseline-noise-normalized minimum-norm inverse (dSPM). dSPM is a
+        model-derived dimensionless source estimate, not a direct measurement of neuronal firing
+        or absolute current amplitude.
+    encoding:
+      position: participant-native inflated cortical surface, shown as mirrored lateral hemispheres
+      color: fixed sequential magma scale from 8 to 15 dSPM over neutral graphite anatomy
+      time: 0 to 240 ms after the left-ear tone, linearly interpolated between source-estimate frames
+    gallery:
+      card: section
+      status_label: experimental
+    tags:
+      - scientific
+      - real-data
+      - human-brain
+      - cortical-surface
+      - meg
+      - dspm
+      - mesh
+      - colorbar
+      - arcball
+      - animation
 
   - id: showcases_brain_volume
     title: Allen Mouse Brain

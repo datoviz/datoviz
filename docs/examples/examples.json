@@ -2,19 +2,19 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 109,
+  "count": 110,
   "categories": {
     "advanced": 4,
     "composite": 2,
     "feature": 68,
     "runtime": 5,
-    "showcase": 13,
+    "showcase": 14,
     "start": 1,
     "visual": 16
   },
   "statuses": {
     "diagnostic": 1,
-    "experimental": 12,
+    "experimental": 13,
     "prototype": 1,
     "supported": 95
   },
@@ -5242,6 +5242,81 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_surface_grid",
       "python_source": "examples/python/gallery/showcases/surface_grid.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/surface_grid.py"
+    },
+    {
+      "id": "showcases_cortical_activity",
+      "title": "Human Auditory Cortical Activity",
+      "category": "showcase",
+      "lane": "showcases",
+      "stage": "v0.4_experimental",
+      "status": "experimental",
+      "source": "examples/c/showcases/cortical_activity.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/cortical_activity.c",
+      "page": "gallery/showcases/showcases_cortical_activity.md",
+      "summary": "This example animates a human auditory dSPM estimate on cortex.",
+      "validation": "smoke+screenshot+video",
+      "build_command": "just example-c showcases/cortical_activity",
+      "smoke_command": "./build/examples/c/showcases/cortical_activity --png",
+      "tags": [
+        "scientific",
+        "real-data",
+        "human-brain",
+        "cortical-surface",
+        "meg",
+        "dspm",
+        "mesh",
+        "colorbar",
+        "arcball",
+        "animation"
+      ],
+      "data": {
+        "kind": "prepared"
+      },
+      "data_kind": "prepared",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "pending",
+          "source": "data/gallery/v0.4/showcases/showcases_cortical_activity.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/showcases_cortical_activity.webp"
+        }
+      },
+      "webgpu_status": "webgpu-deferred",
+      "webgpu_status_label": "Deferred",
+      "webgpu_requirements": [
+        "mesh",
+        "colorbar",
+        "arcball",
+        "frame-callbacks",
+        "continuous-frames"
+      ],
+      "webgpu_reason": "the browser path does not yet package the prepared cortical surface and time-series bundle",
+      "webgpu": {
+        "status": "webgpu-deferred",
+        "requirements": [
+          "mesh",
+          "colorbar",
+          "arcball",
+          "frame-callbacks",
+          "continuous-frames"
+        ],
+        "reason": "the browser path does not yet package the prepared cortical surface and time-series bundle"
+      },
+      "dataset": {
+        "name": "MNE audiovisual sample auditory MEG dSPM",
+        "source": "OpenNeuro ds000248 snapshot 1.2.4",
+        "source_url": "https://openneuro.org/datasets/ds000248/versions/1.2.4",
+        "license": "CC0",
+        "citation": "OpenNeuro ds000248 v1.2.4, DOI 10.18112/openneuro.ds000248.v1.2.4",
+        "preprocessing": "uv run --isolated --with mne==1.12.1 --with mne-bids==0.19.0 --with nibabel==5.4.2 --with numpy==2.3.4 --with scipy==1.18.0 --with requests python tools/data/prepare_cortical_activity.py",
+        "cache_prepared_path": ".cache/datoviz/examples/cortical_activity/prepared",
+        "provenance": "Measured left-ear auditory MEG trials are averaged and mapped to the participant's cortical surface with a baseline-noise-normalized minimum-norm inverse (dSPM). dSPM is a model-derived dimensionless source estimate, not a direct measurement of neuronal firing or absolute current amplitude."
+      },
+      "encoding": {
+        "position": "participant-native inflated cortical surface, shown as mirrored lateral hemispheres",
+        "color": "fixed sequential magma scale from 8 to 15 dSPM over neutral graphite anatomy",
+        "time": "0 to 240 ms after the left-ear tone, linearly interpolated between source-estimate frames"
+      }
     },
     {
       "id": "showcases_brain_volume",
