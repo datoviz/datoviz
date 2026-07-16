@@ -1646,6 +1646,28 @@ function expectTerrainReliefScenarioStreamShape(stream, label) {
   );
 }
 
+function expectCorticalActivityScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  const mesh = expectPipeline(
+    stream,
+    `${label} cortical mesh`,
+    (candidate) => candidate.topology === "triangle-list" && candidate.vertex_buffer_slots >= 3,
+  );
+  expectDepthPipeline(mesh, `${label} cortical mesh`);
+  expectPipeline(
+    stream,
+    `${label} annotations`,
+    (candidate) => candidate.builtin_pipeline === "scene.glyph",
+  );
+  requireOk(
+    commandsOf(stream, "DrawIndexed").some((command) => command.index_count >= 1900000),
+    `${label}: expected full cortical indexed draw`,
+  );
+  requireOk(commandsOf(stream, "WriteBuffer").length >= 8, `${label}: expected cortical uploads`);
+  requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
+}
+
 function expectMaterialMeshScenarioStreamShape(stream, label) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -2583,6 +2605,7 @@ try {
     "showcases_svg_tiger",
     "showcases_terrain_relief",
     "showcases_streaming_daq",
+    "showcases_cortical_activity",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -2624,6 +2647,7 @@ try {
     if (
       id === "showcases_spherical_harmonics" ||
       id === "showcases_streaming_daq" ||
+      id === "showcases_cortical_activity" ||
       id === "showcases_galaxy"
     ) {
       requireOk(
@@ -3868,6 +3892,16 @@ try {
       ],
       expectShape: expectTerrainReliefScenarioStreamShape,
     },
+    {
+      id: "showcases_cortical_activity",
+      label: "cortical activity",
+      files: [[
+        ".cache/datoviz/examples/cortical_activity/prepared/cortical_activity.bin",
+        "/data/examples/cortical_activity/prepared/cortical_activity.bin",
+      ]],
+      expectShape: expectCorticalActivityScenarioStreamShape,
+      animate: true,
+    },
   ];
   for (const prepared of optionalPreparedScenarios) {
     if (!(await mountOptionalHostFiles(Module, prepared.files))) {
@@ -3887,7 +3921,7 @@ try {
         `${prepared.label} scenario canvas format`,
       );
       setCapabilities(
-        Module, scene, 4096, 4, 8, 256 * 1024 * 1024, 256, 1,
+        Module, scene, 4096, 4, 8, 256 * 1024 * 1024, 256, prepared.maxSampleCount ?? 1,
         `${prepared.label} scenario capabilities`);
       expectStatus(
         Module._dvz_wasm_api_scenario_create(scene, index),
@@ -3899,6 +3933,19 @@ try {
       requireOk(figure !== 0, `${prepared.label} scenario has no figure`);
       const initial = emitStream(Module, scene, figure, `${prepared.label} initial`);
       prepared.expectShape(initial.stream, `${prepared.label} initial`);
+      if (prepared.animate) {
+        expectStatus(
+          Module._dvz_wasm_api_scenario_frame(scene, 1.1, 1 / 60),
+          0,
+          `${prepared.label} scenario update frame`,
+        );
+        const frame = emitIncrementalPacketStream(
+          Module, scene, figure, `${prepared.label} split packet frame`);
+        requireOk(
+          frame.update.decoded.commands.some((command) => command.cmd === "WriteBuffer"),
+          `${prepared.label}: expected retained color WriteBuffer update`,
+        );
+      }
     } finally {
       Module._dvz_wasm_api_scene_destroy(scene);
     }

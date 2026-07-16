@@ -92,6 +92,7 @@ DvzScenarioSpec dvz_showcase_svg_tiger_scenario(void);
 DvzScenarioSpec dvz_showcase_terrain_relief_scenario(void);
 DvzScenarioSpec dvz_showcase_textured_planet_scenario(void);
 DvzScenarioSpec dvz_showcase_us_state_choropleth_scenario(void);
+DvzScenarioSpec dvz_showcase_cortical_activity_scenario(void);
 DvzScenarioSpec dvz_showcase_wind_field_scenario(void);
 DvzScenarioSpec dvz_start_scatter_scenario(void);
 DvzScenarioSpec dvz_visual_glyph_scenario(void);
@@ -291,6 +292,8 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_showcase_terrain_relief_scenario();
     case 87:
         return dvz_showcase_streaming_daq_scenario();
+    case 88:
+        return dvz_showcase_cortical_activity_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

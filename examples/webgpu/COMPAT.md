@@ -125,6 +125,12 @@ acquisition model, emits the primitive/glyph composition, and advances retained 
 updates continuously. Its filtered browser route reached `QueueSubmit` and then hit the known
 external headless WebGPU instance-loss diagnostic, so that run is a skip rather than visual proof.
 
+Recorded local cortical-activity packet proof on 2026-07-16: the 89-scenario WASM build compiles
+the canonical C showcase, mounts its cache-local prepared bundle only for the Node test, emits the
+full 319,834-vertex/639,660-triangle cortical mesh, and advances retained activity-color updates.
+The browser route remains deferred until the CC0 bundle is committed and staged for runtime fetch;
+packet size and command generation do not currently justify a separate browser LOD.
+
 Recorded local browser shader-payload proof on 2026-06-18: `node --check
 tools/webgpu_browser_smoke.mjs`, `node --check tools/wasm_scene_smoke.mjs`, and `just
 wasm-scene-smoke` passed after resolving WGSL includes during scene shader emission and adding a

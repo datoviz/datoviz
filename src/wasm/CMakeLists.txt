@@ -93,6 +93,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/svg_tiger_model.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/terrain_relief.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/choropleth.c
+    ${PROJECT_SOURCE_DIR}/examples/c/showcases/cortical_activity.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/textured_planet.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/textured_planet_orbits.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/textured_planet_sky.c

@@ -64,6 +64,8 @@
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
 #define CORTICAL_ACTIVITY_PATH                                                                    \
+    "data/examples/cortical_activity/prepared/cortical_activity.bin"
+#define CORTICAL_ACTIVITY_CACHE_PATH                                                              \
     ".cache/datoviz/examples/cortical_activity/prepared/cortical_activity.bin"
 #define CORTICAL_ACTIVITY_PREPARE_COMMAND                                                         \
     "uv run --isolated --with mne==1.12.1 --with mne-bids==0.19.0 --with nibabel==5.4.2 "         \
@@ -256,14 +258,7 @@ static bool _activity_data_load(const char* path, CorticalActivityData* data)
 
     FILE* fp = fopen(path, "rb");
     if (fp == NULL)
-    {
-        dvz_fprintf(
-            stderr,
-            "cortical_activity: missing prepared data. Run `%s` from the repository "
-            "root.\n",
-            CORTICAL_ACTIVITY_PREPARE_COMMAND);
         return false;
-    }
 
     bool ok = false;
     uint8_t header[CORTICAL_ACTIVITY_HEADER_SIZE] = {0};
@@ -826,10 +821,17 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     *out_user = state;
     state->tuner = example_tuner("Cortical activity settings");
-    if (!_activity_data_load(CORTICAL_ACTIVITY_PATH, &state->data))
+    if (!_activity_data_load(CORTICAL_ACTIVITY_PATH, &state->data) &&
+        !_activity_data_load(CORTICAL_ACTIVITY_CACHE_PATH, &state->data))
+    {
+        dvz_fprintf(
+            stderr,
+            "cortical_activity: missing prepared data. Run `%s` from the repository root.\n",
+            CORTICAL_ACTIVITY_PREPARE_COMMAND);
         return false;
+    }
 
-    state->playing = false;
+    state->playing = true;
     state->loop = true;
     state->playback_speed = 1.0f;
     state->layout = WHOLE_BRAIN_LAYOUT;
@@ -858,10 +860,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (example_set_default_3d_camera(panel, 0.50f) == NULL)
         return false;
 
+#ifndef DVZ_EXAMPLE_NO_APP
     DvzMsaaDesc msaa = dvz_msaa_desc();
     msaa.alpha_to_coverage = false;
     if (dvz_panel_set_msaa(panel, &msaa) != DVZ_OK)
         return false;
+#endif
 
     state->scale = _activity_scale(ctx->scene, &state->data, &state->colormap);
     if (state->scale == NULL)
