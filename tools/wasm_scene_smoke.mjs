@@ -2446,6 +2446,7 @@ try {
     "start_scatter",
     "features_datetime_axis",
     "features_marker_symbols",
+    "showcases_spherical_harmonics",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -3563,6 +3564,11 @@ try {
       "showcases_surface_grid",
       "surface grid",
       (stream, label) => expectSurfaceGridScenarioStreamShape(stream, label),
+    ],
+    [
+      "showcases_spherical_harmonics",
+      "spherical harmonics",
+      (stream, label) => expectControllerMeshScenarioStreamShape(stream, label),
     ],
     [
       "showcases_choropleth",

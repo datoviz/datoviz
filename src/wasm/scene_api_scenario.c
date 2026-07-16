@@ -84,6 +84,7 @@ DvzScenarioSpec dvz_showcase_linked_panel_axes_scenario(void);
 DvzScenarioSpec dvz_showcase_protein_scenario(void);
 DvzScenarioSpec dvz_showcase_scalebar_measurement_scenario(void);
 DvzScenarioSpec dvz_showcase_scientific_plotting_scenario(void);
+DvzScenarioSpec dvz_showcase_spherical_harmonics_scenario(void);
 DvzScenarioSpec dvz_showcase_surface_grid_scenario(void);
 DvzScenarioSpec dvz_showcase_textured_planet_scenario(void);
 DvzScenarioSpec dvz_showcase_us_state_choropleth_scenario(void);
@@ -276,6 +277,8 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_example_datetime_axis_scenario();
     case 82:
         return dvz_example_marker_symbols_scenario();
+    case 83:
+        return dvz_showcase_spherical_harmonics_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

@@ -18,6 +18,7 @@ sections:
           - showcases_brain_volume
           - showcases_protein
           - showcases_point_cloud
+          - showcases_spherical_harmonics
           - showcases_surface_grid
           - showcases_textured_planet
 

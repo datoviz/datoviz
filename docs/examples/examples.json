@@ -2,13 +2,13 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 108,
+  "count": 109,
   "categories": {
     "advanced": 4,
     "composite": 2,
     "feature": 68,
     "runtime": 5,
-    "showcase": 12,
+    "showcase": 13,
     "start": 1,
     "visual": 16
   },
@@ -16,7 +16,7 @@
     "diagnostic": 1,
     "experimental": 12,
     "prototype": 1,
-    "supported": 94
+    "supported": 95
   },
   "examples": [
     {
@@ -5133,6 +5133,60 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_gpu_particle_smoke",
       "python_source": "examples/python/gallery/showcases/gpu_particle_smoke.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/gpu_particle_smoke.py"
+    },
+    {
+      "id": "showcases_spherical_harmonics",
+      "title": "Spherical Harmonics",
+      "category": "showcase",
+      "lane": "showcases",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/showcases/spherical_harmonics.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/spherical_harmonics.c",
+      "page": "gallery/showcases/showcases_spherical_harmonics.md",
+      "summary": "This example turns a real spherical-harmonic blend into a lit mesh.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c showcases/spherical_harmonics",
+      "smoke_command": "./build/examples/c/showcases/spherical_harmonics --png",
+      "tags": [
+        "scientific",
+        "generated",
+        "spherical-harmonics",
+        "icosphere",
+        "mesh",
+        "material",
+        "arcball"
+      ],
+      "data": {
+        "kind": "generated"
+      },
+      "data_kind": "generated",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "pending",
+          "source": "data/gallery/v0.4/showcases/showcases_spherical_harmonics.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/showcases_spherical_harmonics.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
+      "webgpu_requirements": [
+        "mesh",
+        "material",
+        "arcball"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=showcases_spherical_harmonics",
+        "requirements": [
+          "mesh",
+          "material",
+          "arcball"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=showcases_spherical_harmonics",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_spherical_harmonics"
     },
     {
       "id": "showcases_surface_grid",

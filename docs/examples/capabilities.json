@@ -3,13 +3,13 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 108,
+  "example_count": 109,
   "categories": {
     "advanced": 4,
     "composite": 2,
     "feature": 68,
     "runtime": 5,
-    "showcase": 12,
+    "showcase": 13,
     "start": 1,
     "visual": 16
   },
@@ -17,7 +17,7 @@
     "diagnostic": 1,
     "experimental": 12,
     "prototype": 1,
-    "supported": 94
+    "supported": 95
   },
   "capabilities": {
     "composites": {
@@ -49,6 +49,19 @@
       }
     },
     "data_kinds": {
+      "generated": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_spherical_harmonics",
+            "title": "Spherical Harmonics",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/spherical_harmonics.c",
+            "page": "gallery/showcases/showcases_spherical_harmonics.md"
+          }
+        ]
+      },
       "prepared": {
         "count": 3,
         "examples": [
@@ -1973,7 +1986,7 @@
         ]
       },
       "arcball": {
-        "count": 7,
+        "count": 8,
         "examples": [
           {
             "id": "visuals_mesh",
@@ -2006,6 +2019,14 @@
             "status": "supported",
             "source": "examples/c/showcases/protein.c",
             "page": "gallery/showcases/showcases_protein.md"
+          },
+          {
+            "id": "showcases_spherical_harmonics",
+            "title": "Spherical Harmonics",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/spherical_harmonics.c",
+            "page": "gallery/showcases/showcases_spherical_harmonics.md"
           },
           {
             "id": "showcases_surface_grid",
@@ -2580,6 +2601,19 @@
           }
         ]
       },
+      "generated": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_spherical_harmonics",
+            "title": "Spherical Harmonics",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/spherical_harmonics.c",
+            "page": "gallery/showcases/showcases_spherical_harmonics.md"
+          }
+        ]
+      },
       "geo": {
         "count": 1,
         "examples": [
@@ -2715,6 +2749,19 @@
             "status": "supported",
             "source": "examples/qt/qt_hosting.cpp",
             "page": "gallery/advanced/advanced_qt_hosting.md"
+          }
+        ]
+      },
+      "icosphere": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_spherical_harmonics",
+            "title": "Spherical Harmonics",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/spherical_harmonics.c",
+            "page": "gallery/showcases/showcases_spherical_harmonics.md"
           }
         ]
       },
@@ -2883,6 +2930,19 @@
           }
         ]
       },
+      "material": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_spherical_harmonics",
+            "title": "Spherical Harmonics",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/spherical_harmonics.c",
+            "page": "gallery/showcases/showcases_spherical_harmonics.md"
+          }
+        ]
+      },
       "measurement": {
         "count": 1,
         "examples": [
@@ -2897,7 +2957,7 @@
         ]
       },
       "mesh": {
-        "count": 3,
+        "count": 4,
         "examples": [
           {
             "id": "visuals_mesh",
@@ -2906,6 +2966,14 @@
             "status": "supported",
             "source": "examples/c/visuals/mesh.c",
             "page": "gallery/visuals/visuals_mesh.md"
+          },
+          {
+            "id": "showcases_spherical_harmonics",
+            "title": "Spherical Harmonics",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/spherical_harmonics.c",
+            "page": "gallery/showcases/showcases_spherical_harmonics.md"
           },
           {
             "id": "showcases_surface_grid",
@@ -3412,7 +3480,7 @@
         ]
       },
       "scientific": {
-        "count": 6,
+        "count": 7,
         "examples": [
           {
             "id": "showcases_scientific_plotting",
@@ -3445,6 +3513,14 @@
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
             "page": "gallery/showcases/showcases_wind_field.md"
+          },
+          {
+            "id": "showcases_spherical_harmonics",
+            "title": "Spherical Harmonics",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/spherical_harmonics.c",
+            "page": "gallery/showcases/showcases_spherical_harmonics.md"
           },
           {
             "id": "showcases_surface_grid",
@@ -3529,6 +3605,19 @@
             "status": "supported",
             "source": "examples/c/showcases/protein.c",
             "page": "gallery/showcases/showcases_protein.md"
+          }
+        ]
+      },
+      "spherical-harmonics": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "showcases_spherical_harmonics",
+            "title": "Spherical Harmonics",
+            "category": "showcase",
+            "status": "supported",
+            "source": "examples/c/showcases/spherical_harmonics.c",
+            "page": "gallery/showcases/showcases_spherical_harmonics.md"
           }
         ]
       },

@@ -178,6 +178,18 @@ This example renders a prepared RGB LiDAR point cloud with direct colors.
 
 <div class="card" markdown="1">
 
+### [Spherical Harmonics](gallery/showcases/showcases_spherical_harmonics.md)
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for Spherical Harmonics"><span>Screenshot pending</span></div>
+
+`showcases`<br><span>`scientific`, `generated`, `spherical-harmonics`, `icosphere`, `mesh`, ...</span>
+
+This example turns a real spherical-harmonic blend into a lit mesh.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Surface Grid](gallery/showcases/showcases_surface_grid.md)
 
 [![Surface Grid](../assets/gallery/v0.4/showcases/showcases_surface_grid.webp)](gallery/showcases/showcases_surface_grid.md)

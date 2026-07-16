@@ -15,5 +15,6 @@ Current public showcase seeds:
 - `point_cloud.c`
 - `protein.c`
 - `scalebar_measurement.c`
+- `spherical_harmonics.c`
 - `textured_planet.c`
 - `wind_field.c`

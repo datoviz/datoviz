@@ -216,6 +216,11 @@ export const LIVE_EXAMPLES = [
     scenarioId: "showcases_surface_grid",
   },
   {
+    id: "showcases_spherical_harmonics",
+    label: "Spherical Harmonics",
+    scenarioId: "showcases_spherical_harmonics",
+  },
+  {
     id: "showcases_choropleth",
     label: "U.S. State Choropleth",
     scenarioId: "showcases_choropleth",

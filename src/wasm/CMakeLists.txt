@@ -83,6 +83,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/protein.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/scalebar_measurement.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/scientific_plotting.c
+    ${PROJECT_SOURCE_DIR}/examples/c/showcases/spherical_harmonics.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/surface_grid.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/choropleth.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/textured_planet.c
