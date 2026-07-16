@@ -618,7 +618,8 @@ bool dvz_drp2_runtime_copy_texture_to_frame(
     dvz_barrier_image_stage(
         dst, VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
     dvz_barrier_image_access(
-        dst, VK_ACCESS_2_TRANSFER_WRITE_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+        dst, VK_ACCESS_2_TRANSFER_WRITE_BIT,
+        VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
     dvz_barrier_image_layout(
         dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, frame->image_layout);
     dvz_cmd_barriers(cmds, &barriers);
