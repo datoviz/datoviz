@@ -11,6 +11,14 @@
   };
 
   if (localPreview) {
+    for (const action of document.querySelectorAll(".dvz-local-webgpu-action[hidden]")) {
+      action.hidden = false;
+    }
+    for (const preview of document.querySelectorAll(".dvz-local-webgpu[hidden]")) {
+      preview.hidden = false;
+      const iframe = preview.querySelector("iframe[data-src]");
+      if (iframe) iframe.src = iframe.dataset.src;
+    }
     for (const poster of document.querySelectorAll("img.dvz-gallery-poster[src]")) {
       poster.src = mediaUrl(poster.getAttribute("src"));
     }

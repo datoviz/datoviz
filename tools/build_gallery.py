@@ -208,6 +208,16 @@ class Example:
         return f"/{self.webgpu_route}"
 
     @property
+    def webgpu_local_route(self) -> str:
+        return str(self.webgpu.get("local_route", ""))
+
+    @property
+    def webgpu_local_site_route(self) -> str:
+        if not self.webgpu_local_route:
+            return ""
+        return f"/{self.webgpu_local_route}"
+
+    @property
     def webgpu_requirements(self) -> tuple[str, ...]:
         requirements = self.webgpu.get("requirements") or ()
         return tuple(str(requirement) for requirement in requirements)
@@ -718,9 +728,17 @@ def render_run_and_adapt(example: Example, page_path: str | Path) -> list[str]:
         lines.append(f"| Browser | Live WebGPU route | {html_link(route, 'Open live example')} |")
     else:
         reason = example.webgpu_reason or "Use the native route for this example."
+        local_action = ""
+        if example.webgpu_local_site_route:
+            local_route = site_html_relative_url(page_path, example.webgpu_local_site_route)
+            local_action = (
+                ' <span class="dvz-local-webgpu-action" hidden>'
+                f"Local development: {html_link(local_route, 'Open WebGPU example')}."
+                "</span>"
+            )
         lines.append(
             f"| Browser | {webgpu_status_label(example.webgpu_status)} | "
-            f"{format_markdown_inline(reason)} |"
+            f"{format_markdown_inline(reason)}{local_action} |"
         )
     lines.append("")
 
@@ -823,6 +841,21 @@ def render_preview(
             f'<span>{message} <a href="{support_url}">Learn about browser support</a>.</span>',
             "</aside>",
         ]
+        local_lines = []
+        if example.webgpu_local_site_route:
+            local_route = site_html_relative_url(page_path, example.webgpu_local_site_route)
+            local_lines = [
+                '<section class="dvz-local-webgpu" hidden>',
+                "<h3>Local WebGPU preview</h3>",
+                '<div class="dvz-webgpu-live">',
+                f'<iframe data-src="{local_route}" title="{example.title} local WebGPU example" '
+                'loading="lazy" allow="fullscreen; webgpu"></iframe>',
+                "</div>",
+                f'<p>{html_link(local_route, "Open the local WebGPU example")}.</p>',
+                "</section>",
+            ]
+        if local_lines:
+            return ["## Preview", "", *screenshot, "", *status_lines, "", *local_lines, ""]
         return ["## Preview", "", *screenshot, "", *status_lines, ""]
 
     route = site_html_relative_url(page_path, example.webgpu_site_route)

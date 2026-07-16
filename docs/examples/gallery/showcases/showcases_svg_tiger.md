@@ -20,6 +20,14 @@ This example renders the classic colored tiger from prepared SVG paths.
 <span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
 </aside>
 
+<section class="dvz-local-webgpu" hidden>
+<h3>Local WebGPU preview</h3>
+<div class="dvz-webgpu-live">
+<iframe data-src="../../../webgpu/live.html?id=showcases_svg_tiger" title="SVG Tiger local WebGPU example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+<p><a href="../../../webgpu/live.html?id=showcases_svg_tiger">Open the local WebGPU example</a>.</p>
+</section>
+
 ## Run And Adapt
 
 Commands below assume a Datoviz source checkout and start at the repository root.
@@ -29,7 +37,7 @@ Use your configured build environment; Python routes additionally require local 
 | --- | --- | --- |
 | C | Canonical native source | `just example-c showcases/svg_tiger` (build and run), or rerun `./build/examples/c/showcases/svg_tiger` |
 | SVG preparation tool | Additional integration source; check optional dependencies | `python3 -m tools.data.prepare_svg_tiger` |
-| Browser | Native only | the portable WebGPU stream and local live route are proven; public promotion awaits a separately approved prepared-data bundle commit |
+| Browser | Native only | the portable WebGPU stream and local live route are proven; public promotion awaits a separately approved prepared-data bundle commit <span class="dvz-local-webgpu-action" hidden>Local development: <a href="../../../webgpu/live.html?id=showcases_svg_tiger">Open WebGPU example</a>.</span> |
 
 !!! warning "Prepared data required"
 
