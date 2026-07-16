@@ -684,6 +684,9 @@ Types: 189
 
 Create a camera motion animation.
 
+The camera and tracks referenced by the copied descriptor are borrowed and must outlive the
+animation.
+
 ```c
 DvzAnimation * dvz_anim_camera_motion(
     DvzScene * scene,
@@ -694,16 +697,19 @@ DvzAnimation * dvz_anim_camera_motion(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzAnimation`](scene.md#type-dvzanimation) * | the animation handle, or NULL on failure |
-| `scene` | [`DvzScene`](scene.md#type-dvzscene) * | owning scene |
-| `camera` | [`DvzCamera`](runtime-controllers.md#type-dvzcamera) * | camera whose view is updated |
-| `desc` | `const` [`DvzCameraMotionDesc`](scene.md#type-dvzcameramotiondesc) * | camera motion descriptor |
+| return | [`DvzAnimation`](scene.md#type-dvzanimation) * | the scene-owned animation handle, or NULL on validation or allocation failure |
+| `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene that owns the returned animation; must not be NULL |
+| `camera` | [`DvzCamera`](runtime-controllers.md#type-dvzcamera) * | borrowed camera whose view is updated; must not be NULL |
+| `desc` | `const` [`DvzCameraMotionDesc`](scene.md#type-dvzcameramotiondesc) * | optional camera motion descriptor borrowed for the call, or NULL for defaults |
 
-_Declared in `include/datoviz/scene/animation.h`:555._
+_Declared in `include/datoviz/scene/animation.h`:571._
 
 #### `dvz_anim_destroy()` { #dvz_anim_destroy .dvz-api-function }
 
 Destroy an animation handle owned by its scene.
+
+This invalidates the scene-owned handle without destroying any borrowed track, visual, camera,
+controller, callback user data, or the scene itself.
 
 ```c
 void dvz_anim_destroy(
@@ -713,13 +719,16 @@ void dvz_anim_destroy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `animation` | [`DvzAnimation`](scene.md#type-dvzanimation) * | animation handle |
+| `animation` | [`DvzAnimation`](scene.md#type-dvzanimation) * | animation handle to invalidate, or NULL |
 
-_Declared in `include/datoviz/scene/animation.h`:622._
+_Declared in `include/datoviz/scene/animation.h`:644._
 
 #### `dvz_anim_phase()` { #dvz_anim_phase .dvz-api-function }
 
 Create a wrapped linear phase animation driven by the scene clock.
+
+The descriptor is copied. Its callback and user data are retained until the animation is
+destroyed, so the caller must keep any objects referenced by them valid for that lifetime.
 
 ```c
 DvzAnimation * dvz_anim_phase(
@@ -730,11 +739,11 @@ DvzAnimation * dvz_anim_phase(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzAnimation`](scene.md#type-dvzanimation) * | the animation handle, or NULL on failure |
-| `scene` | [`DvzScene`](scene.md#type-dvzscene) * | owning scene |
-| `desc` | `const` [`DvzAnimPhaseDesc`](scene.md#type-dvzanimphasedesc) * | phase animation descriptor |
+| return | [`DvzAnimation`](scene.md#type-dvzanimation) * | the scene-owned animation handle, or NULL on validation or allocation failure |
+| `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene that owns the returned animation; must not be NULL |
+| `desc` | `const` [`DvzAnimPhaseDesc`](scene.md#type-dvzanimphasedesc) * | phase animation descriptor with a non-NULL callback; must not be NULL |
 
-_Declared in `include/datoviz/scene/animation.h`:515._
+_Declared in `include/datoviz/scene/animation.h`:521._
 
 #### `dvz_anim_phase_desc()` { #dvz_anim_phase_desc .dvz-api-function }
 
@@ -769,11 +778,14 @@ DvzResult dvz_anim_phase_set_value(
 | `animation` | [`DvzAnimation`](scene.md#type-dvzanimation) * | phase animation handle |
 | `value` | `float` | new phase value, wrapped into the configured interval |
 
-_Declared in `include/datoviz/scene/animation.h`:592._
+_Declared in `include/datoviz/scene/animation.h`:611._
 
 #### `dvz_anim_set_interaction_policy()` { #dvz_anim_set_interaction_policy .dvz-api-function }
 
 Set how an animation responds to an interactive controller.
+
+A non-NULL controller is borrowed until this policy is replaced or cleared and must remain valid
+for that lifetime.
 
 ```c
 DvzResult dvz_anim_set_interaction_policy(
@@ -788,11 +800,11 @@ DvzResult dvz_anim_set_interaction_policy(
 | --- | --- | --- |
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK when the policy was accepted, DVZ_ERROR on error |
 | `animation` | [`DvzAnimation`](scene.md#type-dvzanimation) * | animation handle |
-| `controller` | [`DvzController`](scene.md#type-dvzcontroller) * | controller to observe, or NULL to clear policy |
+| `controller` | [`DvzController`](scene.md#type-dvzcontroller) * | borrowed controller to observe, or NULL to clear the policy |
 | `policy` | [`DvzAnimInteractionPolicy`](scene.md#type-dvzaniminteractionpolicy) | interaction policy |
 | `idle_s` | `double` | idle duration for resume-after-idle policies |
 
-_Declared in `include/datoviz/scene/animation.h`:567._
+_Declared in `include/datoviz/scene/animation.h`:586._
 
 #### `dvz_anim_set_speed()` { #dvz_anim_set_speed .dvz-api-function }
 
@@ -812,7 +824,7 @@ DvzResult dvz_anim_set_speed(
 | `animation` | [`DvzAnimation`](scene.md#type-dvzanimation) * | animation handle |
 | `speed` | `float` | scalar speed in units per second |
 
-_Declared in `include/datoviz/scene/animation.h`:582._
+_Declared in `include/datoviz/scene/animation.h`:601._
 
 #### `dvz_anim_start()` { #dvz_anim_start .dvz-api-function }
 
@@ -831,7 +843,7 @@ DvzResult dvz_anim_start(
 | `animation` | [`DvzAnimation`](scene.md#type-dvzanimation) * | animation handle |
 | `t_start` | `double` | scene-clock start time, or 0 for immediate start |
 
-_Declared in `include/datoviz/scene/animation.h`:603._
+_Declared in `include/datoviz/scene/animation.h`:622._
 
 #### `dvz_anim_stop()` { #dvz_anim_stop .dvz-api-function }
 
@@ -848,11 +860,14 @@ DvzResult dvz_anim_stop(
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK when the animation was stopped, DVZ_ERROR on error |
 | `animation` | [`DvzAnimation`](scene.md#type-dvzanimation) * | animation handle |
 
-_Declared in `include/datoviz/scene/animation.h`:613._
+_Declared in `include/datoviz/scene/animation.h`:632._
 
 #### `dvz_anim_timer()` { #dvz_anim_timer .dvz-api-function }
 
 Create a timer animation driven by the scene clock.
+
+The descriptor is copied. Its callback and user data are retained until the animation is
+destroyed, so the caller must keep any objects referenced by them valid for that lifetime.
 
 ```c
 DvzAnimation * dvz_anim_timer(
@@ -863,11 +878,11 @@ DvzAnimation * dvz_anim_timer(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzAnimation`](scene.md#type-dvzanimation) * | the animation handle, or NULL on failure |
-| `scene` | [`DvzScene`](scene.md#type-dvzscene) * | owning scene |
-| `desc` | `const` [`DvzAnimTimerDesc`](scene.md#type-dvzanimtimerdesc) * | timer animation descriptor |
+| return | [`DvzAnimation`](scene.md#type-dvzanimation) * | the scene-owned animation handle, or NULL on validation or allocation failure |
+| `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene that owns the returned animation; must not be NULL |
+| `desc` | `const` [`DvzAnimTimerDesc`](scene.md#type-dvzanimtimerdesc) * | timer animation descriptor with a non-NULL callback; must not be NULL |
 
-_Declared in `include/datoviz/scene/animation.h`:505._
+_Declared in `include/datoviz/scene/animation.h`:508._
 
 #### `dvz_anim_timer_desc()` { #dvz_anim_timer_desc .dvz-api-function }
 
@@ -889,6 +904,10 @@ _Declared in `include/datoviz/scene/animation.h`:350._
 
 Create a generic track animation driven by the scene clock.
 
+The track, callback, and user data are retained until the animation is destroyed. The caller
+must keep the track and any objects referenced by the callback or user data valid for that
+lifetime.
+
 ```c
 DvzAnimation * dvz_anim_track(
     DvzScene * scene,
@@ -900,17 +919,20 @@ DvzAnimation * dvz_anim_track(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzAnimation`](scene.md#type-dvzanimation) * | the animation handle, or NULL on failure |
-| `scene` | [`DvzScene`](scene.md#type-dvzscene) * | owning scene |
-| `track` | `const` [`DvzTrack`](scene.md#type-dvztrack) * | borrowed track evaluated every frame while active |
-| `callback` | [`DvzTrackApplyCallback`](scene.md#type-dvztrackapplycallback) | callback receiving the evaluated value |
-| `user_data` | `void` * | opaque pointer forwarded to the callback |
+| return | [`DvzAnimation`](scene.md#type-dvzanimation) * | the scene-owned animation handle, or NULL on validation or allocation failure |
+| `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene that owns the returned animation; must not be NULL |
+| `track` | `const` [`DvzTrack`](scene.md#type-dvztrack) * | borrowed track evaluated every frame while active; must not be NULL |
+| `callback` | [`DvzTrackApplyCallback`](scene.md#type-dvztrackapplycallback) | callback receiving the evaluated value; must not be NULL |
+| `user_data` | `void` * | opaque pointer forwarded to the callback, or NULL |
 
-_Declared in `include/datoviz/scene/animation.h`:527._
+_Declared in `include/datoviz/scene/animation.h`:537._
 
 #### `dvz_anim_visual_transform()` { #dvz_anim_visual_transform .dvz-api-function }
 
 Create a visual-local transform animation.
+
+The visual and any tracks referenced by the copied descriptor are borrowed and must outlive the
+animation.
 
 ```c
 DvzAnimation * dvz_anim_visual_transform(
@@ -922,12 +944,12 @@ DvzAnimation * dvz_anim_visual_transform(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzAnimation`](scene.md#type-dvzanimation) * | the animation handle, or NULL on failure |
-| `scene` | [`DvzScene`](scene.md#type-dvzscene) * | owning scene |
-| `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | visual whose retained local transform is updated |
-| `desc` | `const` [`DvzTransformMotionDesc`](scene.md#type-dvztransformmotiondesc) * | transform motion descriptor |
+| return | [`DvzAnimation`](scene.md#type-dvzanimation) * | the scene-owned animation handle, or NULL on validation or allocation failure |
+| `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene that owns the returned animation; must not be NULL |
+| `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | borrowed visual whose retained local transform is updated; must not be NULL |
+| `desc` | `const` [`DvzTransformMotionDesc`](scene.md#type-dvztransformmotiondesc) * | optional transform motion descriptor borrowed for the call, or NULL for defaults |
 
-_Declared in `include/datoviz/scene/animation.h`:542._
+_Declared in `include/datoviz/scene/animation.h`:555._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 

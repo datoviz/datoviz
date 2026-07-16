@@ -171,11 +171,12 @@ int dvz_device_allocator(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `int` | 0 on success, non-zero on Vulkan or allocator failure |
 | `device` | [`DvzDevice`](runtime-vulkan.md#type-dvzdevice) * | the device |
 | `export_handle_type` | `VkExternalMemoryHandleTypeFlagsKHR` | if exporting created allocations, the external memory handle type |
 | `allocator` | [`DvzVma`](drp2.md#type-dvzvma) * |  |
 
-_Declared in `include/datoviz/vk/memory.h`:183._
+_Declared in `include/datoviz/vk/memory.h`:184._
 
 #### `dvz_device_command_pool()` { #dvz_device_command_pool .dvz-api-function }
 
@@ -190,7 +191,7 @@ VkCommandPool dvz_device_command_pool(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `VkCommandPool` | the Vulkan command pool |
+| return | `VkCommandPool` | borrowed command-pool handle for `queue_family`, or `VK_NULL_HANDLE` if unavailable |
 | `device` | [`DvzDevice`](runtime-vulkan.md#type-dvzdevice) * | the device |
 | `queue_family` | `uint32_t` | the queue family index |
 
@@ -395,7 +396,7 @@ VkDescriptorPool dvz_device_descriptor_pool(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `VkDescriptorPool` | the Vulkan descriptor pool |
+| return | `VkDescriptorPool` | borrowed descriptor-pool handle, or `VK_NULL_HANDLE` if unavailable |
 | `device` | [`DvzDevice`](runtime-vulkan.md#type-dvzdevice) * | the device |
 
 _Declared in `include/datoviz/vk/device.h`:246._
@@ -412,7 +413,7 @@ void dvz_device_destroy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `device` | [`DvzDevice`](runtime-vulkan.md#type-dvzdevice) * |  |
+| `device` | [`DvzDevice`](runtime-vulkan.md#type-dvzdevice) * | live logical device to destroy; NULL is ignored |
 
 Related: [`dvz_device_create()`](#dvz_device_create).
 
@@ -430,7 +431,7 @@ const VkPhysicalDeviceFeatures * dvz_device_features10(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `const` `VkPhysicalDeviceFeatures` * | immutable pointer to enabled Vulkan 1.0 features |
+| return | `const` `VkPhysicalDeviceFeatures` * | borrowed immutable enabled-feature storage, valid until device destruction |
 | `device` | [`DvzDevice`](runtime-vulkan.md#type-dvzdevice) * | the device |
 
 _Declared in `include/datoviz/vk/device.h`:214._
@@ -447,7 +448,7 @@ VkDevice dvz_device_handle(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `VkDevice` | the Vulkan VkDevice handle |
+| return | `VkDevice` | borrowed Vulkan logical-device handle, or `VK_NULL_HANDLE` when unavailable |
 | `device` | [`DvzDevice`](runtime-vulkan.md#type-dvzdevice) * | the device |
 
 _Declared in `include/datoviz/vk/device.h`:194._
@@ -483,7 +484,7 @@ VkPhysicalDevice dvz_device_physical_device(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `VkPhysicalDevice` | the Vulkan physical device handle |
+| return | `VkPhysicalDevice` | borrowed Vulkan physical-device handle, or `VK_NULL_HANDLE` when unavailable |
 | `device` | [`DvzDevice`](runtime-vulkan.md#type-dvzdevice) * | the device |
 
 _Declared in `include/datoviz/vk/device.h`:204._
@@ -501,7 +502,7 @@ DvzQueue * dvz_device_queue(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzQueue`](runtime-vulkan.md#type-dvzqueue) * | the queue |
+| return | [`DvzQueue`](runtime-vulkan.md#type-dvzqueue) * | borrowed queue wrapper owned by the device, or NULL when the role is unavailable |
 | `device` | [`DvzDevice`](runtime-vulkan.md#type-dvzdevice) * | the device |
 | `role` | [`DvzQueueRole`](runtime-vulkan.md#type-dvzqueuerole) | the role |
 
@@ -574,7 +575,7 @@ VkQueue dvz_queue_handle(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `VkQueue` | the queue Vulkan handle |
+| return | `VkQueue` | borrowed Vulkan queue handle, or `VK_NULL_HANDLE` when unavailable |
 | `queue` | [`DvzQueue`](runtime-vulkan.md#type-dvzqueue) * | the queue |
 
 _Declared in `include/datoviz/vk/queues.h`:201._
@@ -609,10 +610,11 @@ _Bool dvz_queue_supports(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `_Bool` | true if the queue advertises the requested role |
 | `queue` | [`DvzQueue`](runtime-vulkan.md#type-dvzqueue) * | a queue |
 | `role` | [`DvzQueueRole`](runtime-vulkan.md#type-dvzqueuerole) | a queue role |
 
-_Declared in `include/datoviz/vk/queues.h`:220._
+_Declared in `include/datoviz/vk/queues.h`:221._
 
 #### `dvz_queue_wait()` { #dvz_queue_wait .dvz-api-function }
 
@@ -1428,7 +1430,7 @@ _Bool dvz_instance_has_extension(
 | `instance` | [`DvzInstance`](runtime-vulkan.md#type-dvzinstance) * | the instance |
 | `extension` | `const` `char` * | the extension name |
 
-_Declared in `include/datoviz/vk/instance.h`:227._
+_Declared in `include/datoviz/vk/instance.h`:229._
 
 #### `dvz_instance_has_layer()` { #dvz_instance_has_layer .dvz-api-function }
 
@@ -1447,7 +1449,7 @@ _Bool dvz_instance_has_layer(
 | `instance` | [`DvzInstance`](runtime-vulkan.md#type-dvzinstance) * | the instance |
 | `layer` | `const` `char` * | the layer name |
 
-_Declared in `include/datoviz/vk/instance.h`:188._
+_Declared in `include/datoviz/vk/instance.h`:189._
 
 #### `dvz_instance_probe_extensions()` { #dvz_instance_probe_extensions .dvz-api-function }
 
@@ -1463,7 +1465,7 @@ void dvz_instance_probe_extensions(
 | --- | --- | --- |
 | `instance` | [`DvzInstance`](runtime-vulkan.md#type-dvzinstance) * | the instance |
 
-_Declared in `include/datoviz/vk/instance.h`:201._
+_Declared in `include/datoviz/vk/instance.h`:202._
 
 #### `dvz_instance_probe_layers()` { #dvz_instance_probe_layers .dvz-api-function }
 
@@ -1498,11 +1500,11 @@ char ** dvz_instance_supported_extensions(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `char` ** | a pointer to an array of strings |
+| return | `char` ** | borrowed string array owned by `instance`, valid until extensions are reprobed or the instance is destroyed |
 | `instance` | [`DvzInstance`](runtime-vulkan.md#type-dvzinstance) * | the instance |
 | `count` | `uint32_t` * |  |
 
-_Declared in `include/datoviz/vk/instance.h`:216._
+_Declared in `include/datoviz/vk/instance.h`:218._
 
 #### `dvz_instance_supported_layers()` { #dvz_instance_supported_layers .dvz-api-function }
 
@@ -1521,11 +1523,11 @@ char ** dvz_instance_supported_layers(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `char` ** | a pointer to an array of strings |
+| return | `char` ** | borrowed string array owned by `instance`, valid until layers are reprobed or the instance is destroyed |
 | `instance` | [`DvzInstance`](runtime-vulkan.md#type-dvzinstance) * | the instance |
 | `count` | `uint32_t` * |  |
 
-_Declared in `include/datoviz/vk/instance.h`:177._
+_Declared in `include/datoviz/vk/instance.h`:178._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -1680,10 +1682,10 @@ VkDeviceMemory dvz_allocation_memory(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `VkDeviceMemory` | Vulkan device memory handle |
+| return | `VkDeviceMemory` | borrowed Vulkan device-memory handle, or `VK_NULL_HANDLE` when unavailable |
 | `alloc` | [`DvzAllocation`](runtime-vulkan.md#type-dvzallocation) * | the allocation |
 
-_Declared in `include/datoviz/vk/memory_interop.h`:267._
+_Declared in `include/datoviz/vk/memory_interop.h`:268._
 
 #### `dvz_allocation_set_flags()` { #dvz_allocation_set_flags .dvz-api-function }
 
@@ -1739,13 +1741,14 @@ int dvz_allocator_buffer(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `int` | 0 on success, non-zero on Vulkan or allocator failure |
 | `allocator` | [`DvzVma`](drp2.md#type-dvzvma) * | the allocator |
 | `info` | `VkBufferCreateInfo` * | the buffer creation info Vulkan struct |
 | `flags` | [`DvzAllocationFlags`](runtime-vulkan.md#type-dvzallocationflags) | Datoviz allocation policy flags |
 | `alloc` | [`DvzAllocation`](runtime-vulkan.md#type-dvzallocation) * |  |
 | `vk_buffer` | `VkBuffer` * |  |
 
-_Declared in `include/datoviz/vk/memory.h`:200._
+_Declared in `include/datoviz/vk/memory.h`:202._
 
 #### `dvz_allocator_copy_from()` { #dvz_allocator_copy_from .dvz-api-function }
 
@@ -1770,7 +1773,7 @@ int dvz_allocator_copy_from(
 | `data` | `void` * | destination host pointer |
 | `size` | `VkDeviceSize` | number of bytes to copy |
 
-_Declared in `include/datoviz/vk/memory.h`:296._
+_Declared in `include/datoviz/vk/memory.h`:299._
 
 #### `dvz_allocator_copy_to()` { #dvz_allocator_copy_to .dvz-api-function }
 
@@ -1795,7 +1798,7 @@ int dvz_allocator_copy_to(
 | `data` | `const` `void` * | source host pointer |
 | `size` | `VkDeviceSize` | number of bytes to copy |
 
-_Declared in `include/datoviz/vk/memory.h`:280._
+_Declared in `include/datoviz/vk/memory.h`:283._
 
 #### `dvz_allocator_create()` { #dvz_allocator_create .dvz-api-function }
 
@@ -1833,7 +1836,7 @@ void dvz_allocator_destroy(
 
 Related: [`dvz_allocator_create()`](#dvz_allocator_create).
 
-_Declared in `include/datoviz/vk/memory.h`:330._
+_Declared in `include/datoviz/vk/memory.h`:333._
 
 #### `dvz_allocator_destroy_buffer()` { #dvz_allocator_destroy_buffer .dvz-api-function }
 
@@ -1853,7 +1856,7 @@ void dvz_allocator_destroy_buffer(
 | `alloc` | [`DvzAllocation`](runtime-vulkan.md#type-dvzallocation) * | the allocation |
 | `vk_buffer` | `VkBuffer` | the buffer |
 
-_Declared in `include/datoviz/vk/memory.h`:309._
+_Declared in `include/datoviz/vk/memory.h`:312._
 
 #### `dvz_allocator_destroy_image()` { #dvz_allocator_destroy_image .dvz-api-function }
 
@@ -1873,7 +1876,7 @@ void dvz_allocator_destroy_image(
 | `alloc` | [`DvzAllocation`](runtime-vulkan.md#type-dvzallocation) * | the allocation |
 | `vk_image` | `VkImage` | the image |
 
-_Declared in `include/datoviz/vk/memory.h`:321._
+_Declared in `include/datoviz/vk/memory.h`:324._
 
 #### `dvz_allocator_device()` { #dvz_allocator_device .dvz-api-function }
 
@@ -1909,11 +1912,12 @@ int dvz_allocator_export(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `int` | 0 on success, non-zero on unsupported interop or Vulkan failure |
 | `allocator` | [`DvzVma`](drp2.md#type-dvzvma) * | the allocator |
 | `alloc` | [`DvzAllocation`](runtime-vulkan.md#type-dvzallocation) * | the allocation |
 | `handle` | `int` * |  |
 
-_Declared in `include/datoviz/vk/memory_interop.h`:190._
+_Declared in `include/datoviz/vk/memory_interop.h`:191._
 
 #### `dvz_allocator_external()` { #dvz_allocator_external .dvz-api-function }
 
@@ -1956,7 +1960,7 @@ int dvz_allocator_flush(
 | `offset` | `VkDeviceSize` | the byte offset within the allocation |
 | `size` | `VkDeviceSize` | the number of bytes to flush |
 
-_Declared in `include/datoviz/vk/memory.h`:253._
+_Declared in `include/datoviz/vk/memory.h`:256._
 
 #### `dvz_allocator_free()` { #dvz_allocator_free .dvz-api-function }
 
@@ -1993,13 +1997,14 @@ int dvz_allocator_image(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `int` | 0 on success, non-zero on Vulkan or allocator failure |
 | `allocator` | [`DvzVma`](drp2.md#type-dvzvma) * | the allocator |
 | `info` | `VkImageCreateInfo` * | the image creation info Vulkan struct |
 | `flags` | [`DvzAllocationFlags`](runtime-vulkan.md#type-dvzallocationflags) | Datoviz allocation policy flags |
 | `alloc` | [`DvzAllocation`](runtime-vulkan.md#type-dvzallocation) * |  |
 | `vk_image` | `VkImage` * |  |
 
-_Declared in `include/datoviz/vk/memory.h`:218._
+_Declared in `include/datoviz/vk/memory.h`:221._
 
 #### `dvz_allocator_import_buffer()` { #dvz_allocator_import_buffer .dvz-api-function }
 
@@ -2031,6 +2036,7 @@ int dvz_allocator_import_buffer(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `int` | 0 on success, -1 on failure |
 | `allocator` | [`DvzVma`](drp2.md#type-dvzvma) * | the allocator |
 | `info` | `VkBufferCreateInfo` * | the buffer creation info Vulkan struct |
 | `flags` | [`DvzAllocationFlags`](runtime-vulkan.md#type-dvzallocationflags) | Datoviz allocation policy flags |
@@ -2038,7 +2044,7 @@ int dvz_allocator_import_buffer(
 | `alloc` | [`DvzAllocation`](runtime-vulkan.md#type-dvzallocation) * |  |
 | `vk_buffer` | `VkBuffer` * |  |
 
-_Declared in `include/datoviz/vk/memory_interop.h`:294._
+_Declared in `include/datoviz/vk/memory_interop.h`:296._
 
 #### `dvz_allocator_import_image()` { #dvz_allocator_import_image .dvz-api-function }
 
@@ -2064,6 +2070,7 @@ int dvz_allocator_import_image(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `int` | 0 on success, -1 on failure |
 | `allocator` | [`DvzVma`](drp2.md#type-dvzvma) * | the allocator |
 | `info` | `VkImageCreateInfo` * | the image creation info Vulkan struct |
 | `flags` | [`DvzAllocationFlags`](runtime-vulkan.md#type-dvzallocationflags) | Datoviz allocation policy flags |
@@ -2071,7 +2078,7 @@ int dvz_allocator_import_image(
 | `alloc` | [`DvzAllocation`](runtime-vulkan.md#type-dvzallocation) * |  |
 | `vk_image` | `VkImage` * |  |
 
-_Declared in `include/datoviz/vk/memory_interop.h`:317._
+_Declared in `include/datoviz/vk/memory_interop.h`:320._
 
 #### `dvz_allocator_invalidate()` { #dvz_allocator_invalidate .dvz-api-function }
 
@@ -2094,7 +2101,7 @@ int dvz_allocator_invalidate(
 | `offset` | `VkDeviceSize` | the byte offset within the allocation |
 | `size` | `VkDeviceSize` | the number of bytes to invalidate |
 
-_Declared in `include/datoviz/vk/memory.h`:266._
+_Declared in `include/datoviz/vk/memory.h`:269._
 
 #### `dvz_allocator_map()` { #dvz_allocator_map .dvz-api-function }
 
@@ -2113,7 +2120,7 @@ void * dvz_allocator_map(
 | `allocator` | [`DvzVma`](drp2.md#type-dvzvma) * | the allocator |
 | `alloc` | [`DvzAllocation`](runtime-vulkan.md#type-dvzallocation) * | the allocation |
 
-_Declared in `include/datoviz/vk/memory.h`:230._
+_Declared in `include/datoviz/vk/memory.h`:233._
 
 #### `dvz_allocator_unmap()` { #dvz_allocator_unmap .dvz-api-function }
 
@@ -2131,7 +2138,7 @@ void dvz_allocator_unmap(
 | `allocator` | [`DvzVma`](drp2.md#type-dvzvma) * | the allocator |
 | `alloc` | [`DvzAllocation`](runtime-vulkan.md#type-dvzallocation) * | the allocation |
 
-_Declared in `include/datoviz/vk/memory.h`:240._
+_Declared in `include/datoviz/vk/memory.h`:243._
 
 #### `dvz_interop_buffer_export()` { #dvz_interop_buffer_export .dvz-api-function }
 
@@ -2157,7 +2164,7 @@ int dvz_interop_buffer_export(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `int` | 0 on success, -1 on failure |
+| return | `int` | 0 on success, non-zero on invalid input, unsupported interop, or Vulkan failure |
 | `allocator` | [`DvzVma`](drp2.md#type-dvzvma) * | the allocator configured for external-memory export |
 | `alloc` | [`DvzAllocation`](runtime-vulkan.md#type-dvzallocation) * | the Vulkan-owned allocation backing the buffer |
 | `offset` | `uint64_t` | byte offset of the logical buffer view within the allocation |
@@ -2168,7 +2175,7 @@ int dvz_interop_buffer_export(
 | `semaphore_value` | `uint64_t` | timeline semaphore value associated with the export |
 | `out` | [`DvzInteropBufferExport`](runtime-vulkan.md#type-dvzinteropbufferexport) * |  |
 
-_Declared in `include/datoviz/vk/memory_interop.h`:211._
+_Declared in `include/datoviz/vk/memory_interop.h`:212._
 
 #### `dvz_interop_buffer_export_config()` { #dvz_interop_buffer_export_config .dvz-api-function }
 
@@ -2204,12 +2211,12 @@ int dvz_interop_buffer_export_from_buffer(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `int` | 0 on success, -1 on failure |
+| return | `int` | 0 on success, non-zero on invalid input, unsupported interop, or Vulkan failure |
 | `buffer` | [`DvzBuffer`](runtime-vklite.md#type-dvzbuffer) * | the live Vulkan-owned buffer |
 | `config` | `const` [`DvzInteropBufferExportConfig`](runtime-vulkan.md#type-dvzinteropbufferexportconfig) * | logical export range and optional timeline semaphore metadata |
 | `out` | [`DvzInteropBufferExport`](runtime-vulkan.md#type-dvzinteropbufferexport) * |  |
 
-_Declared in `include/datoviz/vk/memory_interop.h`:232._
+_Declared in `include/datoviz/vk/memory_interop.h`:233._
 
 #### `dvz_interop_buffer_wait_timeline()` { #dvz_interop_buffer_wait_timeline .dvz-api-function }
 
@@ -2238,7 +2245,7 @@ _Bool dvz_interop_buffer_wait_timeline(
 | `semaphore` | [`DvzSemaphore`](runtime-vklite.md#type-dvzsemaphore) * | timeline semaphore signaled by the external API |
 | `value` | `uint64_t` | timeline value to wait on |
 
-_Declared in `include/datoviz/vk/memory_interop.h`:252._
+_Declared in `include/datoviz/vk/memory_interop.h`:253._
 
 #### `dvz_interop_gpu_ctx()` { #dvz_interop_gpu_ctx .dvz-api-function }
 

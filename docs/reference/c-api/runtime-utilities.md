@@ -182,7 +182,10 @@ Types: 8
 
 #### `dvz_error_set_callback()` { #dvz_error_set_callback .dvz-api-function }
 
-Register an error callback.
+Register or clear the process-wide error callback.
+
+The callback and borrowed user data must remain valid until replaced or cleared. Passing NULL
+for @p cb clears the callback.
 
 ```c
 DvzResult dvz_error_set_callback(
@@ -194,10 +197,10 @@ DvzResult dvz_error_set_callback(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success |
-| `cb` | [`DvzErrorCallback`](runtime-utilities.md#type-dvzerrorcallback) | the error callback |
-| `user_data` | `void` * | opaque pointer passed to the callback |
+| `cb` | [`DvzErrorCallback`](runtime-utilities.md#type-dvzerrorcallback) | callback invoked for Datoviz errors, or NULL to clear the current callback |
+| `user_data` | `void` * | borrowed opaque pointer passed unchanged to @p cb; may be NULL |
 
-_Declared in `include/datoviz/common/functions.h`:57._
+_Declared in `include/datoviz/common/functions.h`:60._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -227,8 +230,8 @@ DvzSize dvz_file_size(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzSize`](runtime-math.md#type-dvzsize) | the size of the file |
-| `filename` | `const` `char` * | path of the file |
+| return | [`DvzSize`](runtime-math.md#type-dvzsize) | file size in bytes, or zero if the file cannot be opened (also valid for an empty file) |
+| `filename` | `const` `char` * | path of the file; must not be NULL |
 
 _Declared in `include/datoviz/fileio/fileio.h`:42._
 
@@ -332,13 +335,13 @@ uint8_t * dvz_load_jpeg(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `uint8_t` * | RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure |
-| `bytes` | `const` `void` * | JPEG byte buffer |
+| return | `uint8_t` * | owned RGBA8 pixel buffer, or NULL on failure; free with `dvz_memory_free()` |
+| `bytes` | `const` `void` * | complete JPEG byte buffer; must not be NULL |
 | `size_bytes` | [`DvzSize`](runtime-math.md#type-dvzsize) | size of the JPEG byte buffer in bytes |
 | `width` | `uint32_t` * |  |
 | `height` | `uint32_t` * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:192._
+_Declared in `include/datoviz/fileio/fileio.h`:204._
 
 #### `dvz_load_png()` { #dvz_load_png .dvz-api-function }
 
@@ -355,13 +358,13 @@ uint8_t * dvz_load_png(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `uint8_t` * | owned RGB8 pixel buffer allocated with the Datoviz allocator, or NULL on failure; free with dvz_memory_free() |
-| `bytes` | `const` `void` * | PNG byte buffer |
+| return | `uint8_t` * | owned RGB8 pixel buffer, or NULL on decode failure; free with `dvz_memory_free()` |
+| `bytes` | `const` `void` * | complete PNG byte buffer; must not be NULL |
 | `size_bytes` | [`DvzSize`](runtime-math.md#type-dvzsize) | size of the PNG byte buffer in bytes |
 | `width` | `uint32_t` * |  |
 | `height` | `uint32_t` * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:172._
+_Declared in `include/datoviz/fileio/fileio.h`:186._
 
 ## Log { #log }
 
@@ -389,6 +392,8 @@ _Declared in `include/datoviz/fileio/fileio.h`:172._
 
 Compress an sRGB RGB8 image to PNG and write it to a memory buffer.
 
+buffer must be freed with `dvz_memory_free()`
+
 ```c
 int dvz_make_png(
     uint32_t width,
@@ -401,13 +406,14 @@ int dvz_make_png(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `width` | `uint32_t` | width of the image |
-| `height` | `uint32_t` | height of the image |
-| `rgb` | `const` `uint8_t` * | pointer to tightly packed sRGB RGB8 pixels |
-| `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * | pointer to a variable that will contain the size of the buffer |
-| `out` | `void` ** | pointer to an owned PNG byte buffer allocated with the Datoviz allocator; free with dvz_memory_free() |
+| return | `int` | zero after the encode attempt |
+| `width` | `uint32_t` | image width in pixels; must be positive |
+| `height` | `uint32_t` | image height in pixels; must be positive |
+| `rgb` | `const` `uint8_t` * | tightly packed sRGB RGB8 pixels containing `width * height * 3` bytes; must not be NULL |
+| `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
+| `out` | `void` ** |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:157._
+_Declared in `include/datoviz/fileio/fileio.h`:172._
 
 ## Memory { #memory }
 
@@ -430,7 +436,7 @@ void dvz_memory_free(
 | --- | --- | --- |
 | `pointer` | `void` * | pointer returned by a Datoviz public API, or NULL |
 
-_Declared in `include/datoviz/common/functions.h`:68._
+_Declared in `include/datoviz/common/functions.h`:71._
 
 ## Parse { #parse }
 
@@ -438,7 +444,10 @@ _Declared in `include/datoviz/common/functions.h`:68._
 
 #### `dvz_parse_npy()` { #dvz_parse_npy .dvz-api-function }
 
-Read a NumPy NPY file from memory.
+Extract the data payload from an in-memory NumPy NPY v1 buffer.
+
+This minimal parser validates the magic and payload offset but does not expose or convert the
+array dtype, shape, byte order, or storage order.
 
 ```c
 void * dvz_parse_npy(
@@ -449,11 +458,11 @@ void * dvz_parse_npy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `void` * | owned buffer containing the array elements, or NULL on failure; free with dvz_memory_free() |
-| `bytes` | `const` `void` * | the contents of the NPY file |
-| `size_bytes` | [`DvzSize`](runtime-math.md#type-dvzsize) | size of the file in bytes |
+| return | `void` * | owned copy of the array payload, or NULL for invalid input or allocation failure; free with `dvz_memory_free()` |
+| `bytes` | `const` `void` * | complete NPY file bytes; must not be NULL |
+| `size_bytes` | [`DvzSize`](runtime-math.md#type-dvzsize) | size of @p bytes in bytes |
 
-_Declared in `include/datoviz/fileio/fileio.h`:76._
+_Declared in `include/datoviz/fileio/fileio.h`:83._
 
 ## Read { #read }
 
@@ -472,15 +481,17 @@ void * dvz_read_file(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `void` * | owned byte buffer allocated with the Datoviz allocator, or NULL on failure; free with dvz_memory_free() |
-| `filename` | `const` `char` * | path of the file to open |
+| return | `void` * | owned byte buffer, or NULL if the file cannot be opened; free with `dvz_memory_free()` |
+| `filename` | `const` `char` * | path of the file to open; must not be NULL |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:54._
+_Declared in `include/datoviz/fileio/fileio.h`:53._
 
 #### `dvz_read_gz()` { #dvz_read_gz .dvz-api-function }
 
 Read a compressed GZIP file.
+
+zlib support is enabled
 
 ```c
 char * dvz_read_gz(
@@ -491,11 +502,11 @@ char * dvz_read_gz(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `char` * | owned decompressed buffer, or NULL on failure; free with dvz_memory_free() |
-| `filename` | `const` `char` * | path of the GZIP compressed file to open |
+| return | `char` * | owned decompressed byte buffer, or NULL on failure or when zlib support is unavailable; free with `dvz_memory_free()` |
+| `filename` | `const` `char` * | path of the GZIP-compressed file; must not be NULL |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:87._
+_Declared in `include/datoviz/fileio/fileio.h`:96._
 
 #### `dvz_read_jpeg()` { #dvz_read_jpeg .dvz-api-function }
 
@@ -511,16 +522,19 @@ uint8_t * dvz_read_jpeg(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `uint8_t` * | RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure |
-| `filename` | `const` `char` * | path of the JPEG file to open |
+| return | `uint8_t` * | owned RGBA8 pixel buffer, or NULL on failure; free with `dvz_memory_free()` |
+| `filename` | `const` `char` * | source JPEG file path; must not be NULL |
 | `width` | `uint32_t` * |  |
 | `height` | `uint32_t` * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:206._
+_Declared in `include/datoviz/fileio/fileio.h`:216._
 
 #### `dvz_read_npy()` { #dvz_read_npy .dvz-api-function }
 
-Read a NumPy NPY file.
+Read the data payload of a NumPy NPY v1 file.
+
+This minimal reader strips the NPY header but does not expose or convert the array dtype, shape,
+byte order, or storage order.
 
 ```c
 void * dvz_read_npy(
@@ -531,11 +545,11 @@ void * dvz_read_npy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `void` * | owned buffer containing the array elements, or NULL on failure; free with dvz_memory_free() |
-| `filename` | `const` `char` * | path of the file to open |
+| return | `void` * | owned buffer containing the array payload, or NULL on failure; free with `dvz_memory_free()` |
+| `filename` | `const` `char` * | path of the file to open; must not be NULL |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:65._
+_Declared in `include/datoviz/fileio/fileio.h`:68._
 
 #### `dvz_read_ppm()` { #dvz_read_ppm .dvz-api-function }
 
@@ -551,18 +565,20 @@ uint8_t * dvz_read_ppm(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `uint8_t` * | owned tightly packed RGB8 pixel buffer, or NULL on failure; free with dvz_memory_free() |
-| `filename` | `const` `char` * | path of the file to open |
+| return | `uint8_t` * | owned tightly packed RGB8 pixel buffer, or NULL on failure; free with `dvz_memory_free()` |
+| `filename` | `const` `char` * | source P6 PPM file path; must not be NULL |
 | `width` | `uint32_t` * |  |
 | `height` | `uint32_t` * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:129._
+_Declared in `include/datoviz/fileio/fileio.h`:141._
 
 ## Resource { #resource }
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_resource_font()` { #dvz_resource_font .dvz-api-function }
+
+Look up an embedded font resource by name.
 
 ```c
 const unsigned char * dvz_resource_font(
@@ -573,12 +589,15 @@ const unsigned char * dvz_resource_font(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `name` | `const` `char` * |  |
+| return | `const` `unsigned` `char` * | borrowed immutable font bytes with static lifetime, or NULL if @p name is not found |
+| `name` | `const` `char` * | resource name without a file extension; must not be NULL |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:228._
+_Declared in `include/datoviz/fileio/fileio.h`:262._
 
 #### `dvz_resource_glsl()` { #dvz_resource_glsl .dvz-api-function }
+
+Look up an embedded GLSL shader source by name.
 
 ```c
 const char * dvz_resource_glsl(
@@ -589,14 +608,15 @@ const char * dvz_resource_glsl(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `name` | `const` `char` * |  |
+| return | `const` `char` * | borrowed immutable source bytes with static lifetime, or NULL if @p name is not found |
+| `name` | `const` `char` * | resource name without a file extension; must not be NULL |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:223._
+_Declared in `include/datoviz/fileio/fileio.h`:251._
 
 #### `dvz_resource_shader()` { #dvz_resource_shader .dvz-api-function }
 
-*********************************************************************************************
+Look up an embedded SPIR-V shader resource by name.
 
 ```c
 const unsigned char * dvz_resource_shader(
@@ -607,12 +627,15 @@ const unsigned char * dvz_resource_shader(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `name` | `const` `char` * |  |
+| return | `const` `unsigned` `char` * | borrowed immutable bytes with static lifetime, or NULL if @p name is not found |
+| `name` | `const` `char` * | resource name without a file extension; must not be NULL |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:215._
+_Declared in `include/datoviz/fileio/fileio.h`:231._
 
 #### `dvz_resource_wgsl()` { #dvz_resource_wgsl .dvz-api-function }
+
+Look up an embedded WGSL shader source by name.
 
 ```c
 const char * dvz_resource_wgsl(
@@ -623,10 +646,11 @@ const char * dvz_resource_wgsl(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `name` | `const` `char` * |  |
+| return | `const` `char` * | borrowed immutable source bytes with static lifetime, or NULL if @p name is not found |
+| `name` | `const` `char` * | resource name without a file extension; must not be NULL |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:219._
+_Declared in `include/datoviz/fileio/fileio.h`:241._
 
 ## Time { #time }
 
@@ -644,7 +668,7 @@ uint64_t dvz_time_monotonic_ns(void);
 | --- | --- | --- |
 | return | `uint64_t` | monotonic timestamp in nanoseconds |
 
-_Declared in `include/datoviz/common/functions.h`:76._
+_Declared in `include/datoviz/common/functions.h`:79._
 
 ## Version { #version }
 
@@ -660,7 +684,7 @@ const char * dvz_version(void);
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `const` `char` * | the version string |
+| return | `const` `char` * | borrowed, null-terminated version string with static lifetime |
 
 _Declared in `include/datoviz/common/version.h`:69._
 
@@ -670,7 +694,7 @@ _Declared in `include/datoviz/common/version.h`:69._
 
 #### `dvz_write_bytes()` { #dvz_write_bytes .dvz-api-function }
 
-Save a binary file.
+Write bytes to a file.
 
 ```c
 int dvz_write_bytes(
@@ -683,12 +707,13 @@ int dvz_write_bytes(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `filename` | `const` `char` * | path to the PPM file to create |
-| `mode` | `const` `char` * | typically "wb" or "ab" |
-| `size` | [`DvzSize`](runtime-math.md#type-dvzsize) | size of the buffer |
-| `bytes` | `const` `uint8_t` * | buffer |
+| return | `int` | zero if the file was opened, nonzero otherwise; write errors are not reported |
+| `filename` | `const` `char` * | destination file path; must not be NULL |
+| `mode` | `const` `char` * | standard `fopen()` mode, typically `"wb"` or `"ab"`; must not be NULL |
+| `size` | [`DvzSize`](runtime-math.md#type-dvzsize) | number of bytes to write |
+| `bytes` | `const` `uint8_t` * | source buffer containing at least @p size bytes; must not be NULL when size is nonzero |
 
-_Declared in `include/datoviz/fileio/fileio.h`:100._
+_Declared in `include/datoviz/fileio/fileio.h`:110._
 
 #### `dvz_write_png()` { #dvz_write_png .dvz-api-function }
 
@@ -705,12 +730,13 @@ int dvz_write_png(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `filename` | `const` `char` * | path to the PNG file to create |
-| `width` | `uint32_t` | width of the image |
-| `height` | `uint32_t` | height of the image |
-| `rgba` | `const` `uint8_t` * | pointer to tightly packed sRGB RGBA8 pixels with straight linear alpha |
+| return | `int` | zero after the encode attempt |
+| `filename` | `const` `char` * | destination PNG file path; must not be NULL |
+| `width` | `uint32_t` | image width in pixels; must be positive |
+| `height` | `uint32_t` | image height in pixels; must be positive |
+| `rgba` | `const` `uint8_t` * | tightly packed sRGB RGBA8 pixels with straight linear alpha; must contain `width * height * 4` bytes |
 
-_Declared in `include/datoviz/fileio/fileio.h`:142._
+_Declared in `include/datoviz/fileio/fileio.h`:156._
 
 #### `dvz_write_ppm()` { #dvz_write_ppm .dvz-api-function }
 
@@ -727,9 +753,10 @@ int dvz_write_ppm(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `filename` | `const` `char` * | path to the PPM file to create |
-| `width` | `uint32_t` | width of the image |
-| `height` | `uint32_t` | height of the image |
-| `image` | `const` `uint8_t` * | pointer to an array of 24-bit RGB values |
+| return | `int` | zero if the file was opened, nonzero otherwise; write errors are not reported |
+| `filename` | `const` `char` * | destination PPM file path; must not be NULL |
+| `width` | `uint32_t` | image width in pixels |
+| `height` | `uint32_t` | image height in pixels |
+| `image` | `const` `uint8_t` * | tightly packed RGB8 pixels containing `width * height * 3` bytes; must not be NULL |
 
-_Declared in `include/datoviz/fileio/fileio.h`:117._
+_Declared in `include/datoviz/fileio/fileio.h`:128._

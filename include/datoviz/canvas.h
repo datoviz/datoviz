@@ -343,10 +343,10 @@ DVZ_EXPORT int dvz_canvas_configure_live_image_sink(
 /**
  * Access the stream underpinning the canvas.
  *
- * @param canvas canvas handle
  * The caller must not destroy the returned stream. It remains valid until the canvas is destroyed
  * or reconfiguring a sink rebuilds the canvas stream.
  *
+ * @param canvas canvas handle
  * @returns the borrowed underlying stream, or NULL when unavailable
  */
 DVZ_EXPORT DvzStream* dvz_canvas_stream(DvzCanvas* canvas);

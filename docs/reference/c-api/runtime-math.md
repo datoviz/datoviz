@@ -150,7 +150,7 @@ DvzBox dvz_box(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzBox`](runtime-math.md#type-dvzbox) | the box |
+| return | [`DvzBox`](runtime-math.md#type-dvzbox) | box with the supplied axis bounds |
 | `xmin` | `double` | minimum x value |
 | `xmax` | `double` | maximum x value |
 | `ymin` | `double` | minimum y value |
@@ -172,7 +172,7 @@ double dvz_box_aspect(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `double` | the aspect ratio width/height |
+| return | `double` | `(xmax - xmin) / (ymax - ymin)` |
 | `box` | [`DvzBox`](runtime-math.md#type-dvzbox) | the box |
 
 _Declared in `include/datoviz/math/box.h`:98._
@@ -213,17 +213,19 @@ DvzBox dvz_box_extent(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzBox`](runtime-math.md#type-dvzbox) | the extent box |
+| return | [`DvzBox`](runtime-math.md#type-dvzbox) | adjusted extent box |
 | `box` | [`DvzBox`](runtime-math.md#type-dvzbox) | the original box |
-| `width` | `float` | the viewport width |
-| `height` | `float` | the viewport height |
+| `width` | `float` | target viewport width in arbitrary units; nonpositive values leave the box unchanged |
+| `height` | `float` | target viewport height in the same units as @p width; nonpositive values leave the box unchanged |
 | `strategy` | [`DvzBoxExtentStrategy`](runtime-math.md#type-dvzboxextentstrategy) | indicates how the extent box should be computed |
 
-_Declared in `include/datoviz/math/box.h`:125._
+_Declared in `include/datoviz/math/box.h`:126._
 
 #### `dvz_box_inverse()` { #dvz_box_inverse .dvz-api-function }
 
 Perform an inverse transformation of a position from a target box to a source box.
+
+be NULL
 
 ```c
 void dvz_box_inverse(
@@ -238,10 +240,10 @@ void dvz_box_inverse(
 | --- | --- | --- |
 | `source` | [`DvzBox`](runtime-math.md#type-dvzbox) | the source box, in data coordinates |
 | `target` | [`DvzBox`](runtime-math.md#type-dvzbox) | the target box, typically in normalized coordinates |
-| `pos` | `const` [`vec3`](runtime-math.md#type-vec3) | the position in the target box |
+| `pos` | `const` [`vec3`](runtime-math.md#type-vec3) | single-precision position in the target box |
 | `out` | [`dvec3`](runtime-math.md#type-dvec3) * |  |
 
-_Declared in `include/datoviz/math/box.h`:208._
+_Declared in `include/datoviz/math/box.h`:215._
 
 #### `dvz_box_merge()` { #dvz_box_merge .dvz-api-function }
 
@@ -257,16 +259,18 @@ DvzBox dvz_box_merge(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzBox`](runtime-math.md#type-dvzbox) | the merged box |
-| `box_count` | `uint32_t` | the number of boxes to merge |
-| `boxes` | `const` [`DvzBox`](runtime-math.md#type-dvzbox) * | the boxes to merge |
+| return | [`DvzBox`](runtime-math.md#type-dvzbox) | merged box, or `DVZ_BOX_NDC` when @p box_count is zero |
+| `box_count` | `uint32_t` | number of boxes to merge; may be zero |
+| `boxes` | `const` [`DvzBox`](runtime-math.md#type-dvzbox) * | input array containing @p box_count boxes; must not be NULL when @p box_count is positive |
 | `strategy` | [`DvzBoxMergeStrategy`](runtime-math.md#type-dvzboxmergestrategy) | the merge strategy |
 
-_Declared in `include/datoviz/math/box.h`:138._
+_Declared in `include/datoviz/math/box.h`:140._
 
 #### `dvz_box_normalize_1D()` { #dvz_box_normalize_1d .dvz-api-function }
 
 Normalize 1D input positions into a target box.
+
+NULL
 
 ```c
 void dvz_box_normalize_1D(
@@ -284,15 +288,17 @@ void dvz_box_normalize_1D(
 | `source` | [`DvzBox`](runtime-math.md#type-dvzbox) | the source box, in data coordinates |
 | `target` | [`DvzBox`](runtime-math.md#type-dvzbox) | the target box, typically in normalized coordinates |
 | `dim` | [`DvzDim`](runtime-math.md#type-dvzdim) | which dimension |
-| `count` | `uint32_t` | the number of positions to normalize |
-| `pos` | `const` `double` * | the positions to normalize (double precision) |
+| `count` | `uint32_t` | number of positions |
+| `pos` | `const` `double` * | input array containing @p count double-precision scalar positions; must not be NULL |
 | `out` | [`vec3`](runtime-math.md#type-vec3) * |  |
 
-_Declared in `include/datoviz/math/box.h`:153._
+_Declared in `include/datoviz/math/box.h`:156._
 
 #### `dvz_box_normalize_2D()` { #dvz_box_normalize_2d .dvz-api-function }
 
 Normalize 2D input positions into a target box.
+
+NULL
 
 ```c
 void dvz_box_normalize_2D(
@@ -308,15 +314,17 @@ void dvz_box_normalize_2D(
 | --- | --- | --- |
 | `source` | [`DvzBox`](runtime-math.md#type-dvzbox) | the source box, in data coordinates |
 | `target` | [`DvzBox`](runtime-math.md#type-dvzbox) | the target box, typically in normalized coordinates |
-| `count` | `uint32_t` | the number of positions to normalize |
-| `pos` | [`dvec2`](runtime-math.md#type-dvec2) * | the positions to normalize (double precision) |
+| `count` | `uint32_t` | number of positions |
+| `pos` | [`dvec2`](runtime-math.md#type-dvec2) * | input array containing @p count double-precision 2D positions; must not be NULL |
 | `out` | [`vec3`](runtime-math.md#type-vec3) * |  |
 
-_Declared in `include/datoviz/math/box.h`:168._
+_Declared in `include/datoviz/math/box.h`:172._
 
 #### `dvz_box_normalize_3D()` { #dvz_box_normalize_3d .dvz-api-function }
 
 Normalize 3D input positions into a target box.
+
+NULL
 
 ```c
 void dvz_box_normalize_3D(
@@ -332,15 +340,17 @@ void dvz_box_normalize_3D(
 | --- | --- | --- |
 | `source` | [`DvzBox`](runtime-math.md#type-dvzbox) | the source box, in data coordinates |
 | `target` | [`DvzBox`](runtime-math.md#type-dvzbox) | the target box, typically in normalized coordinates |
-| `count` | `uint32_t` | the number of positions to normalize |
-| `pos` | [`dvec3`](runtime-math.md#type-dvec3) * | the positions to normalize (double precision) |
+| `count` | `uint32_t` | number of positions |
+| `pos` | [`dvec3`](runtime-math.md#type-dvec3) * | input array containing @p count double-precision 3D positions; must not be NULL |
 | `out` | [`vec3`](runtime-math.md#type-vec3) * |  |
 
-_Declared in `include/datoviz/math/box.h`:196._
+_Declared in `include/datoviz/math/box.h`:202._
 
 #### `dvz_box_normalize_polygon()` { #dvz_box_normalize_polygon .dvz-api-function }
 
 Normalize 2D input positions into a target box, using dvec2* as output format.
+
+NULL
 
 ```c
 void dvz_box_normalize_polygon(
@@ -356,11 +366,11 @@ void dvz_box_normalize_polygon(
 | --- | --- | --- |
 | `source` | [`DvzBox`](runtime-math.md#type-dvzbox) | the source box, in data coordinates |
 | `target` | [`DvzBox`](runtime-math.md#type-dvzbox) | the target box, typically in normalized coordinates |
-| `count` | `uint32_t` | the number of positions to normalize |
-| `pos` | [`dvec2`](runtime-math.md#type-dvec2) * | the positions to normalize (double precision) |
+| `count` | `uint32_t` | number of positions |
+| `pos` | [`dvec2`](runtime-math.md#type-dvec2) * | input array containing @p count double-precision 2D positions; must not be NULL |
 | `out` | [`dvec2`](runtime-math.md#type-dvec2) * |  |
 
-_Declared in `include/datoviz/math/box.h`:181._
+_Declared in `include/datoviz/math/box.h`:186._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -434,6 +444,8 @@ _Declared in `include/datoviz/math/box.h`:181._
 
 #### `dvz_dmat4_copy()` { #dvz_dmat4_copy .dvz-api-function }
 
+Copy a double-precision 4x4 matrix.
+
 ```c
 void dvz_dmat4_copy(
     dmat4 mat,
@@ -443,12 +455,14 @@ void dvz_dmat4_copy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `mat` | [`dmat4`](runtime-math.md#type-dmat4) |  |
+| `mat` | [`dmat4`](runtime-math.md#type-dmat4) | source matrix |
 | `dest` | [`dmat4`](runtime-math.md#type-dmat4) |  |
 
-_Declared in `include/datoviz/math/vec.h`:54._
+_Declared in `include/datoviz/math/vec.h`:90._
 
 #### `dvz_dmat4_identity()` { #dvz_dmat4_identity .dvz-api-function }
+
+Set a double-precision 4x4 matrix to the identity matrix.
 
 ```c
 void dvz_dmat4_identity(
@@ -460,9 +474,11 @@ void dvz_dmat4_identity(
 | --- | --- | --- |
 | `mat` | [`dmat4`](runtime-math.md#type-dmat4) |  |
 
-_Declared in `include/datoviz/math/vec.h`:62._
+_Declared in `include/datoviz/math/vec.h`:109._
 
 #### `dvz_dmat4_inv()` { #dvz_dmat4_inv .dvz-api-function }
+
+Invert a double-precision 4x4 matrix.
 
 ```c
 void dvz_dmat4_inv(
@@ -473,12 +489,14 @@ void dvz_dmat4_inv(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `mat` | [`dmat4`](runtime-math.md#type-dmat4) |  |
+| `mat` | [`dmat4`](runtime-math.md#type-dmat4) | source matrix; must be invertible |
 | `dest` | [`dmat4`](runtime-math.md#type-dmat4) |  |
 
-_Declared in `include/datoviz/math/vec.h`:90._
+_Declared in `include/datoviz/math/vec.h`:184._
 
 #### `dvz_dmat4_mat4()` { #dvz_dmat4_mat4 .dvz-api-function }
+
+Cast a single-precision 4x4 matrix to double precision.
 
 ```c
 void dvz_dmat4_mat4(
@@ -489,12 +507,14 @@ void dvz_dmat4_mat4(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `mat` | [`mat4`](runtime-math.md#type-mat4) |  |
+| `mat` | [`mat4`](runtime-math.md#type-mat4) | source matrix |
 | `dest` | [`dmat4`](runtime-math.md#type-dmat4) |  |
 
-_Declared in `include/datoviz/math/vec.h`:58._
+_Declared in `include/datoviz/math/vec.h`:100._
 
 #### `dvz_dmat4_mul()` { #dvz_dmat4_mul .dvz-api-function }
+
+Multiply two double-precision 4x4 matrices.
 
 ```c
 void dvz_dmat4_mul(
@@ -506,13 +526,15 @@ void dvz_dmat4_mul(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `m1` | [`dmat4`](runtime-math.md#type-dmat4) |  |
-| `m2` | [`dmat4`](runtime-math.md#type-dmat4) |  |
+| `m1` | [`dmat4`](runtime-math.md#type-dmat4) | left operand |
+| `m2` | [`dmat4`](runtime-math.md#type-dmat4) | right operand |
 | `dest` | [`dmat4`](runtime-math.md#type-dmat4) |  |
 
-_Declared in `include/datoviz/math/vec.h`:66._
+_Declared in `include/datoviz/math/vec.h`:120._
 
 #### `dvz_dmat4_mulv()` { #dvz_dmat4_mulv .dvz-api-function }
+
+Multiply a double-precision 4x4 matrix by a four-component vector.
 
 ```c
 void dvz_dmat4_mulv(
@@ -524,13 +546,15 @@ void dvz_dmat4_mulv(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `m` | [`dmat4`](runtime-math.md#type-dmat4) |  |
-| `v` | [`dvec4`](runtime-math.md#type-dvec4) |  |
+| `m` | [`dmat4`](runtime-math.md#type-dmat4) | matrix operand |
+| `v` | [`dvec4`](runtime-math.md#type-dvec4) | vector operand |
 | `dest` | [`dvec4`](runtime-math.md#type-dvec4) |  |
 
-_Declared in `include/datoviz/math/vec.h`:70._
+_Declared in `include/datoviz/math/vec.h`:131._
 
 #### `dvz_dmat4_mulv3()` { #dvz_dmat4_mulv3 .dvz-api-function }
+
+Transform a three-component vector by a double-precision 4x4 matrix.
 
 ```c
 void dvz_dmat4_mulv3(
@@ -543,14 +567,16 @@ void dvz_dmat4_mulv3(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `m` | [`dmat4`](runtime-math.md#type-dmat4) |  |
-| `v` | [`dvec3`](runtime-math.md#type-dvec3) |  |
-| `last` | `double` |  |
+| `m` | [`dmat4`](runtime-math.md#type-dmat4) | transformation matrix |
+| `v` | [`dvec3`](runtime-math.md#type-dvec3) | source vector |
+| `last` | `double` | homogeneous fourth component, commonly 1 for a position or 0 for a direction |
 | `dest` | [`dvec3`](runtime-math.md#type-dvec3) |  |
 
-_Declared in `include/datoviz/math/vec.h`:82._
+_Declared in `include/datoviz/math/vec.h`:164._
 
 #### `dvz_dmat4_scale_p()` { #dvz_dmat4_scale_p .dvz-api-function }
+
+Multiply every component of a double-precision 4x4 matrix in place.
 
 ```c
 void dvz_dmat4_scale_p(
@@ -562,15 +588,17 @@ void dvz_dmat4_scale_p(
 | Field | Type | Description |
 | --- | --- | --- |
 | `m` | [`dmat4`](runtime-math.md#type-dmat4) |  |
-| `s` | `double` |  |
+| `s` | `double` | scalar multiplier |
 
-_Declared in `include/datoviz/math/vec.h`:86._
+_Declared in `include/datoviz/math/vec.h`:174._
 
 ## Dvec3 { #dvec3 }
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_dvec3()` { #dvz_dvec3 .dvz-api-function }
+
+Copy the first three components of a four-component vector.
 
 ```c
 void dvz_dvec3(
@@ -581,12 +609,14 @@ void dvz_dvec3(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `v4` | [`dvec4`](runtime-math.md#type-dvec4) |  |
+| `v4` | [`dvec4`](runtime-math.md#type-dvec4) | source vector |
 | `dest` | [`dvec3`](runtime-math.md#type-dvec3) |  |
 
-_Declared in `include/datoviz/math/vec.h`:78._
+_Declared in `include/datoviz/math/vec.h`:152._
 
 #### `dvz_dvec3_copy()` { #dvz_dvec3_copy .dvz-api-function }
+
+Copy a three-component double-precision vector.
 
 ```c
 void dvz_dvec3_copy(
@@ -597,16 +627,18 @@ void dvz_dvec3_copy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `a` | `const` [`dvec3`](runtime-math.md#type-dvec3) |  |
+| `a` | `const` [`dvec3`](runtime-math.md#type-dvec3) | source vector |
 | `b` | [`dvec3`](runtime-math.md#type-dvec3) |  |
 
-_Declared in `include/datoviz/math/vec.h`:46._
+_Declared in `include/datoviz/math/vec.h`:70._
 
 ## Dvec4 { #dvec4 }
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_dvec4()` { #dvz_dvec4 .dvz-api-function }
+
+Extend a three-component vector with a fourth component.
 
 ```c
 void dvz_dvec4(
@@ -618,13 +650,15 @@ void dvz_dvec4(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `v3` | [`dvec3`](runtime-math.md#type-dvec3) |  |
-| `last` | `double` |  |
+| `v3` | [`dvec3`](runtime-math.md#type-dvec3) | first three components |
+| `last` | `double` | fourth component, commonly 1 for a position or 0 for a direction |
 | `dest` | [`dvec4`](runtime-math.md#type-dvec4) |  |
 
-_Declared in `include/datoviz/math/vec.h`:74._
+_Declared in `include/datoviz/math/vec.h`:142._
 
 #### `dvz_dvec4_copy()` { #dvz_dvec4_copy .dvz-api-function }
+
+Copy a four-component double-precision vector.
 
 ```c
 void dvz_dvec4_copy(
@@ -635,10 +669,10 @@ void dvz_dvec4_copy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `a` | `const` [`dvec4`](runtime-math.md#type-dvec4) |  |
+| `a` | `const` [`dvec4`](runtime-math.md#type-dvec4) | source vector |
 | `b` | [`dvec4`](runtime-math.md#type-dvec4) |  |
 
-_Declared in `include/datoviz/math/vec.h`:50._
+_Declared in `include/datoviz/math/vec.h`:80._
 
 ## Easing { #easing }
 
@@ -657,9 +691,9 @@ double dvz_easing(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `double` | the eased value |
-| `easing` | [`DvzEasing`](runtime-math.md#type-dvzeasing) | the easing mode |
-| `t` | `double` | the normalized value |
+| return | `double` | eased value; some curves intentionally overshoot [0, 1] |
+| `easing` | [`DvzEasing`](runtime-math.md#type-dvzeasing) | easing curve to apply |
+| `t` | `double` | normalized input, normally in the interval [0, 1] |
 
 _Declared in `include/datoviz/math/anim.h`:85._
 
@@ -725,9 +759,9 @@ double dvz_mean(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `double` | the mean |
-| `n` | `uint32_t` | the number of values |
-| `values` | `const` `double` * | an array of double numbers |
+| return | `double` | arithmetic mean |
+| `n` | `uint32_t` | number of values; must be positive |
+| `values` | `const` `double` * | input array containing @p n values; must not be NULL |
 
 _Declared in `include/datoviz/math/stats.h`:40._
 
@@ -749,9 +783,9 @@ void dvz_min_max(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `n` | `uint32_t` | the number of values |
-| `values` | `const` `float` * | an array of float numbers |
-| `out_min_max` | [`vec2`](runtime-math.md#type-vec2) | the min and max |
+| `n` | `uint32_t` | number of values; must be positive |
+| `values` | `const` `float` * | input array containing @p n values; must not be NULL |
+| `out_min_max` | [`vec2`](runtime-math.md#type-vec2) |  |
 
 _Declared in `include/datoviz/math/stats.h`:51._
 
@@ -761,7 +795,10 @@ _Declared in `include/datoviz/math/stats.h`:51._
 
 #### `dvz_normalize_bytes()` { #dvz_normalize_bytes .dvz-api-function }
 
-Normalize the array.
+Map floating-point values linearly to unsigned bytes.
+
+Values at or below the selected minimum map to 0, and values at or above the maximum map to
+255. When both bounds are equal, the effective maximum is `minimum + 1`.
 
 ```c
 void dvz_normalize_bytes(
@@ -774,12 +811,12 @@ void dvz_normalize_bytes(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `min_max` | [`vec2`](runtime-math.md#type-vec2) | the minimum and maximum values, mapped to 0 and 255, the result will be clipped |
-| `count` | `uint32_t` | the number of values |
-| `values` | `float` * | an array of float numbers |
-| `out` | `uint8_t` * | the out uint8 array |
+| `min_max` | [`vec2`](runtime-math.md#type-vec2) | input bounds `{minimum, maximum}`; minimum must not exceed maximum |
+| `count` | `uint32_t` | number of values; must be positive |
+| `values` | `float` * | input array containing @p count values; must not be NULL |
+| `out` | `uint8_t` * |  |
 
-_Declared in `include/datoviz/math/stats.h`:63._
+_Declared in `include/datoviz/math/stats.h`:66._
 
 ## Prng { #prng }
 
@@ -787,15 +824,21 @@ _Declared in `include/datoviz/math/stats.h`:63._
 
 #### `dvz_prng()` { #dvz_prng .dvz-api-function }
 
-*********************************************************************************************
+Create a pseudorandom number generator seeded from the platform random device.
 
 ```c
 DvzPrng * dvz_prng(void);
 ```
 
-_Declared in `include/datoviz/math/prng.h`:38._
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzPrng`](runtime-math.md#type-dvzprng) * | a new owned generator; destroy it with `dvz_prng_destroy()` |
+
+_Declared in `include/datoviz/math/prng.h`:43._
 
 #### `dvz_prng_destroy()` { #dvz_prng_destroy .dvz-api-function }
+
+Destroy a pseudorandom number generator.
 
 ```c
 void dvz_prng_destroy(
@@ -805,11 +848,13 @@ void dvz_prng_destroy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `prng` | [`DvzPrng`](runtime-math.md#type-dvzprng) * |  |
+| `prng` | [`DvzPrng`](runtime-math.md#type-dvzprng) * | owned generator to destroy; must not be NULL |
 
-_Declared in `include/datoviz/math/prng.h`:46._
+_Declared in `include/datoviz/math/prng.h`:62._
 
 #### `dvz_prng_uuid()` { #dvz_prng_uuid .dvz-api-function }
+
+Generate the next pseudorandom 64-bit value.
 
 ```c
 uint64_t dvz_prng_uuid(
@@ -819,9 +864,10 @@ uint64_t dvz_prng_uuid(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `prng` | [`DvzPrng`](runtime-math.md#type-dvzprng) * |  |
+| return | `uint64_t` | pseudorandom value in the inclusive range [0, UINT64_MAX] |
+| `prng` | [`DvzPrng`](runtime-math.md#type-dvzprng) * | generator state to advance; must not be NULL |
 
-_Declared in `include/datoviz/math/prng.h`:42._
+_Declared in `include/datoviz/math/prng.h`:53._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -843,6 +889,8 @@ _Declared in `include/datoviz/math/prng.h`:42._
 
 Compute the range of an array of double values.
 
+If @p n is zero, this function returns without modifying @p min_max.
+
 ```c
 void dvz_range(
     uint32_t n,
@@ -853,11 +901,11 @@ void dvz_range(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `n` | `uint32_t` | the number of values |
-| `values` | `const` `double` * | an array of double numbers |
+| `n` | `uint32_t` | number of input values |
+| `values` | `const` `double` * | input array containing @p n values; must not be NULL when @p n is positive |
 | `min_max` | [`dvec2`](runtime-math.md#type-dvec2) |  |
 
-_Declared in `include/datoviz/math/stats.h`:74._
+_Declared in `include/datoviz/math/stats.h`:79._
 
 ## Scalar And Vector Types { #scalar-and-vector-types }
 
@@ -871,7 +919,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef uint8_t DvzAlpha;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:137._
+    _Declared in `include/datoviz/math/types.h`:148._
 
 <a id="type-dvzid"></a>
 
@@ -891,7 +939,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef uint32_t DvzIndex;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:167._
+    _Declared in `include/datoviz/math/types.h`:178._
 
 <a id="type-dvzsize"></a>
 
@@ -911,7 +959,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef uint8_t[2] cvec2;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:133._
+    _Declared in `include/datoviz/math/types.h`:144._
 
 <a id="type-cvec3"></a>
 
@@ -921,7 +969,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef uint8_t[3] cvec3;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:134._
+    _Declared in `include/datoviz/math/types.h`:145._
 
 <a id="type-cvec4"></a>
 
@@ -931,7 +979,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef uint8_t[4] cvec4;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:135._
+    _Declared in `include/datoviz/math/types.h`:146._
 
 <a id="type-dmat2"></a>
 
@@ -941,7 +989,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef dvec2[2] dmat2;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:276._
+    _Declared in `include/datoviz/math/types.h`:287._
 
 <a id="type-dmat3"></a>
 
@@ -951,7 +999,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef dvec3[3] dmat3;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:277._
+    _Declared in `include/datoviz/math/types.h`:288._
 
 <a id="type-dmat4"></a>
 
@@ -961,7 +1009,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef dvec4[4] dmat4;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:278._
+    _Declared in `include/datoviz/math/types.h`:289._
 
 <a id="type-dvec2"></a>
 
@@ -971,7 +1019,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef double[2] dvec2;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:271._
+    _Declared in `include/datoviz/math/types.h`:282._
 
 <a id="type-dvec3"></a>
 
@@ -981,7 +1029,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef double[3] dvec3;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:272._
+    _Declared in `include/datoviz/math/types.h`:283._
 
 <a id="type-dvec4"></a>
 
@@ -991,7 +1039,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef double[4] dvec4;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:273._
+    _Declared in `include/datoviz/math/types.h`:284._
 
 <a id="type-fvec2"></a>
 
@@ -1001,7 +1049,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef vec2 fvec2;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:260._
+    _Declared in `include/datoviz/math/types.h`:271._
 
 <a id="type-fvec3"></a>
 
@@ -1011,7 +1059,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef vec3 fvec3;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:261._
+    _Declared in `include/datoviz/math/types.h`:272._
 
 <a id="type-fvec4"></a>
 
@@ -1021,7 +1069,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef vec4 fvec4;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:262._
+    _Declared in `include/datoviz/math/types.h`:273._
 
 <a id="type-ivec2"></a>
 
@@ -1031,7 +1079,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef int32_t[2] ivec2;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:240._
+    _Declared in `include/datoviz/math/types.h`:251._
 
 <a id="type-ivec3"></a>
 
@@ -1041,7 +1089,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef int32_t[3] ivec3;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:241._
+    _Declared in `include/datoviz/math/types.h`:252._
 
 <a id="type-ivec4"></a>
 
@@ -1051,7 +1099,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef int32_t[4] ivec4;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:242._
+    _Declared in `include/datoviz/math/types.h`:253._
 
 <a id="type-mat2"></a>
 
@@ -1061,7 +1109,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef vec2[2] mat2;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:252._
+    _Declared in `include/datoviz/math/types.h`:263._
 
 <a id="type-mat2x3"></a>
 
@@ -1071,7 +1119,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef vec3[2] mat2x3;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:253._
+    _Declared in `include/datoviz/math/types.h`:264._
 
 <a id="type-mat2x4"></a>
 
@@ -1081,7 +1129,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef vec4[2] mat2x4;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:254._
+    _Declared in `include/datoviz/math/types.h`:265._
 
 <a id="type-mat3"></a>
 
@@ -1091,7 +1139,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef vec3[3] mat3;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:248._
+    _Declared in `include/datoviz/math/types.h`:259._
 
 <a id="type-mat3x2"></a>
 
@@ -1101,7 +1149,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef vec2[3] mat3x2;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:249._
+    _Declared in `include/datoviz/math/types.h`:260._
 
 <a id="type-mat3x4"></a>
 
@@ -1111,7 +1159,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef vec4[3] mat3x4;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:250._
+    _Declared in `include/datoviz/math/types.h`:261._
 
 <a id="type-mat4"></a>
 
@@ -1121,7 +1169,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef vec4[4] mat4;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:256._
+    _Declared in `include/datoviz/math/types.h`:267._
 
 <a id="type-mat4x2"></a>
 
@@ -1131,7 +1179,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef vec2[4] mat4x2;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:257._
+    _Declared in `include/datoviz/math/types.h`:268._
 
 <a id="type-mat4x3"></a>
 
@@ -1141,7 +1189,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef vec3[4] mat4x3;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:258._
+    _Declared in `include/datoviz/math/types.h`:269._
 
 <a id="type-svec2"></a>
 
@@ -1151,7 +1199,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef int16_t[2] svec2;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:146._
+    _Declared in `include/datoviz/math/types.h`:157._
 
 <a id="type-svec3"></a>
 
@@ -1161,7 +1209,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef int16_t[3] svec3;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:147._
+    _Declared in `include/datoviz/math/types.h`:158._
 
 <a id="type-svec4"></a>
 
@@ -1171,7 +1219,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef int16_t[4] svec4;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:148._
+    _Declared in `include/datoviz/math/types.h`:159._
 
 <a id="type-usvec2"></a>
 
@@ -1181,7 +1229,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef uint16_t[2] usvec2;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:151._
+    _Declared in `include/datoviz/math/types.h`:162._
 
 <a id="type-usvec3"></a>
 
@@ -1191,7 +1239,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef uint16_t[3] usvec3;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:152._
+    _Declared in `include/datoviz/math/types.h`:163._
 
 <a id="type-usvec4"></a>
 
@@ -1201,7 +1249,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef uint16_t[4] usvec4;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:153._
+    _Declared in `include/datoviz/math/types.h`:164._
 
 <a id="type-uvec2"></a>
 
@@ -1211,7 +1259,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef uint32_t[2] uvec2;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:162._
+    _Declared in `include/datoviz/math/types.h`:173._
 
 <a id="type-uvec3"></a>
 
@@ -1221,7 +1269,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef uint32_t[3] uvec3;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:163._
+    _Declared in `include/datoviz/math/types.h`:174._
 
 <a id="type-uvec4"></a>
 
@@ -1231,7 +1279,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef uint32_t[4] uvec4;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:164._
+    _Declared in `include/datoviz/math/types.h`:175._
 
 <a id="type-vec2"></a>
 
@@ -1241,7 +1289,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef float[2] vec2;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:244._
+    _Declared in `include/datoviz/math/types.h`:255._
 
 <a id="type-vec3"></a>
 
@@ -1251,7 +1299,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef float[3] vec3;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:245._
+    _Declared in `include/datoviz/math/types.h`:256._
 
 <a id="type-vec4"></a>
 
@@ -1261,7 +1309,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
     typedef float[4] vec4;
     ```
 
-    _Declared in `include/datoviz/math/types.h`:246._
+    _Declared in `include/datoviz/math/types.h`:257._
 
 ## Vec2 { #vec2 }
 
@@ -1269,7 +1317,7 @@ _Declared in `include/datoviz/math/stats.h`:74._
 
 #### `dvz_vec2_copy()` { #dvz_vec2_copy .dvz-api-function }
 
-*********************************************************************************************
+Copy a two-component single-precision vector.
 
 ```c
 void dvz_vec2_copy(
@@ -1280,16 +1328,18 @@ void dvz_vec2_copy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `a` | `const` [`vec2`](runtime-math.md#type-vec2) |  |
+| `a` | `const` [`vec2`](runtime-math.md#type-vec2) | source vector |
 | `b` | [`vec2`](runtime-math.md#type-vec2) |  |
 
-_Declared in `include/datoviz/math/vec.h`:34._
+_Declared in `include/datoviz/math/vec.h`:40._
 
 ## Vec3 { #vec3 }
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
 
 #### `dvz_vec3_cast()` { #dvz_vec3_cast .dvz-api-function }
+
+Cast a three-component double-precision vector to single precision.
 
 ```c
 void dvz_vec3_cast(
@@ -1300,12 +1350,14 @@ void dvz_vec3_cast(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `a` | `const` [`dvec3`](runtime-math.md#type-dvec3) * |  |
+| `a` | `const` [`dvec3`](runtime-math.md#type-dvec3) * | source vector; must not be NULL |
 | `b` | [`vec3`](runtime-math.md#type-vec3) * |  |
 
-_Declared in `include/datoviz/math/vec.h`:42._
+_Declared in `include/datoviz/math/vec.h`:60._
 
 #### `dvz_vec3_copy()` { #dvz_vec3_copy .dvz-api-function }
+
+Copy a three-component single-precision vector.
 
 ```c
 void dvz_vec3_copy(
@@ -1316,7 +1368,7 @@ void dvz_vec3_copy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `a` | `const` [`vec3`](runtime-math.md#type-vec3) |  |
+| `a` | `const` [`vec3`](runtime-math.md#type-vec3) | source vector |
 | `b` | [`vec3`](runtime-math.md#type-vec3) |  |
 
-_Declared in `include/datoviz/math/vec.h`:38._
+_Declared in `include/datoviz/math/vec.h`:50._

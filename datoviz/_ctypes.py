@@ -4590,7 +4590,7 @@ class DvzInputEventContent(ctypes.Union):
 DvzAnimPhaseCallback = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzAnimation), ctypes.c_float, ctypes.c_float, ctypes.c_void_p)
 
 
-DvzAnimTimerCallback = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzAnimation), ctypes.c_double, ctypes.c_double, ctypes.c_ulonglong, ctypes.c_void_p)
+DvzAnimTimerCallback = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzAnimation), ctypes.c_double, ctypes.c_double, ctypes.c_uint64, ctypes.c_void_p)
 
 
 DvzCanvasDraw = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzCanvas), ctypes.POINTER(DvzStreamFrame), ctypes.c_void_p)
@@ -4623,7 +4623,7 @@ DvzScaleCallback = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzInputRouter), ctypes
 DvzTrackApplyCallback = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzAnimation), ctypes.c_double, ctypes.c_void_p, ctypes.c_void_p)
 
 
-DvzVideoSinkCaptureFn = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint), ctypes.POINTER(ctypes.c_uint), ctypes.POINTER(ctypes.c_ulong), ctypes.POINTER(ctypes.POINTER(ctypes.c_uint8)))
+DvzVideoSinkCaptureFn = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_size_t), ctypes.POINTER(ctypes.POINTER(ctypes.c_uint8)))
 
 
 DvzVideoSinkReleaseFn = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8))
@@ -4653,10 +4653,10 @@ DvzWindowBackendProbe = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.POINTER(DvzWindow
 DvzWindowBackendRequestFrame = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzWindowBackend), ctypes.POINTER(DvzWindow))
 
 
-DvzWindowBackendRequiredExtensionAt = ctypes.CFUNCTYPE(ctypes.c_char_p, ctypes.POINTER(DvzWindowBackend), ctypes.POINTER(DvzWindowHost), ctypes.c_uint)
+DvzWindowBackendRequiredExtensionAt = ctypes.CFUNCTYPE(ctypes.c_char_p, ctypes.POINTER(DvzWindowBackend), ctypes.POINTER(DvzWindowHost), ctypes.c_uint32)
 
 
-DvzWindowBackendRequiredExtensionCount = ctypes.CFUNCTYPE(ctypes.c_uint, ctypes.POINTER(DvzWindowBackend), ctypes.POINTER(DvzWindowHost))
+DvzWindowBackendRequiredExtensionCount = ctypes.CFUNCTYPE(ctypes.c_uint32, ctypes.POINTER(DvzWindowBackend), ctypes.POINTER(DvzWindowHost))
 
 
 DvzWindowBackendShouldClose = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.POINTER(DvzWindowBackend), ctypes.POINTER(DvzWindow))
@@ -4668,7 +4668,7 @@ DvzWindowBackendWait = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzWindowBackend), 
 DvzWindowBackendWaitTimeout = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzWindowBackend), ctypes.POINTER(DvzWindowHost), ctypes.c_double)
 
 
-DvzWindowGlfwCharCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.POINTER(DvzWindow), ctypes.c_uint, ctypes.c_void_p)
+DvzWindowGlfwCharCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.POINTER(DvzWindow), ctypes.c_uint32, ctypes.c_void_p)
 
 
 DvzWindowGlfwCursorPosCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.POINTER(DvzWindow), ctypes.c_double, ctypes.c_double, ctypes.c_void_p)
@@ -5687,7 +5687,7 @@ DvzQueryResult._fields_ = [
     ('value_kind', ctypes.c_int),
     ('scalar', ctypes.c_double),
     ('vector', (ctypes.c_double * 4)),
-    ('category_id', ctypes.c_longlong),
+    ('category_id', ctypes.c_int64),
     ('label', (ctypes.c_char * 128)),
     ('unit', (ctypes.c_char * 32)),
     ('scale', ctypes.POINTER(DvzScale)),
@@ -5818,10 +5818,10 @@ DvzLabelDesc._fields_ = [
 
 DvzLabelsState._fields_ = [
     ('opacity', ctypes.c_float),
-    ('background_id', ctypes.c_longlong),
+    ('background_id', ctypes.c_int64),
     ('selected_enabled', ctypes.c_bool),
-    ('selected_id', ctypes.c_longlong),
-    ('hidden_ids', (ctypes.c_longlong * 256)),
+    ('selected_id', ctypes.c_int64),
+    ('hidden_ids', (ctypes.c_int64 * 256)),
     ('hidden_count', ctypes.c_uint32),
     ('boundary_enabled', ctypes.c_bool),
     ('boundary_width_px', ctypes.c_float),
@@ -6246,7 +6246,7 @@ DvzScaleBarDesc._fields_ = [
 
 
 DvzScaleCategory._fields_ = [
-    ('category_id', ctypes.c_longlong),
+    ('category_id', ctypes.c_int64),
     ('order', ctypes.c_uint32),
     ('label', ctypes.c_char_p),
     ('color', DvzColor),
@@ -6822,7 +6822,7 @@ else:
  * resource before discarding them, and free only if this wrapper came from
  * dvz_allocation_create().
  *
- * @returns allocated allocation wrapper, or NULL on allocation failure
+ * @return allocated allocation wrapper, or NULL on allocation failure
  */"""
     dvz_allocation_create.argtypes = []
     dvz_allocation_create.restype = ctypes.POINTER(DvzAllocation)
@@ -6882,7 +6882,7 @@ else:
  * Return the mapped pointer currently associated with an allocation.
  *
  * @param alloc the allocation
- * @returns mapped pointer or NULL
+ * @return mapped pointer or NULL
  */"""
     dvz_allocation_mapped.argtypes = [ctypes.POINTER(DvzAllocation)]
     dvz_allocation_mapped.restype = ctypes.c_void_p
@@ -6901,7 +6901,7 @@ else:
  * handles.
  *
  * @param alloc the allocation
- * @returns Vulkan device memory handle
+ * @return borrowed Vulkan device-memory handle, or `VK_NULL_HANDLE` when unavailable
  */"""
     dvz_allocation_memory.argtypes = [ctypes.POINTER(DvzAllocation)]
     dvz_allocation_memory.restype = ctypes.c_void_p
@@ -6931,10 +6931,10 @@ else:
  * Return the allocation size, in bytes.
  *
  * @param alloc the allocation
- * @returns allocation size in bytes
+ * @return allocation size in bytes
  */"""
     dvz_allocation_size.argtypes = [ctypes.POINTER(DvzAllocation)]
-    dvz_allocation_size.restype = ctypes.c_ulonglong
+    dvz_allocation_size.restype = ctypes.c_uint64
 
 
 try:
@@ -6953,6 +6953,7 @@ else:
  * @param flags Datoviz allocation policy flags
  * @param[out] alloc the created allocation
  * @param[out] vk_buffer the created VkBuffer handle
+ * @return 0 on success, non-zero on Vulkan or allocator failure
  */"""
     dvz_allocator_buffer.argtypes = [ctypes.POINTER(DvzVma), ctypes.c_void_p, ctypes.c_uint, ctypes.POINTER(DvzAllocation), ctypes.c_void_p]
     dvz_allocator_buffer.restype = ctypes.c_int
@@ -6973,7 +6974,7 @@ else:
  * @param size number of bytes to copy
  * @return 0 on success, -1 on failure
  */"""
-    dvz_allocator_copy_from.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulonglong, ctypes.c_void_p, ctypes.c_ulonglong]
+    dvz_allocator_copy_from.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_uint64, ctypes.c_void_p, ctypes.c_uint64]
     dvz_allocator_copy_from.restype = ctypes.c_int
 
 
@@ -6992,7 +6993,7 @@ else:
  * @param size number of bytes to copy
  * @return 0 on success, -1 on failure
  */"""
-    dvz_allocator_copy_to.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulonglong, ctypes.c_void_p, ctypes.c_ulonglong]
+    dvz_allocator_copy_to.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_uint64, ctypes.c_void_p, ctypes.c_uint64]
     dvz_allocator_copy_to.restype = ctypes.c_int
 
 
@@ -7008,7 +7009,7 @@ else:
  * initialize with dvz_device_allocator(), destroy with dvz_allocator_destroy(),
  * and free only if this wrapper came from dvz_allocator_create().
  *
- * @returns allocated allocator wrapper, or NULL on allocation failure
+ * @return allocated allocator wrapper, or NULL on allocation failure
  */"""
     dvz_allocator_create.argtypes = []
     dvz_allocator_create.restype = ctypes.POINTER(DvzVma)
@@ -7069,7 +7070,7 @@ else:
  * Return the device associated with an allocator.
  *
  * @param allocator the allocator
- * @returns associated device, or NULL if unset
+ * @return associated device, or NULL if unset
  */"""
     dvz_allocator_device.argtypes = [ctypes.POINTER(DvzVma)]
     dvz_allocator_device.restype = ctypes.POINTER(DvzDevice)
@@ -7089,6 +7090,7 @@ else:
  * @param allocator the allocator
  * @param alloc the allocation
  * @param[out] handle the exported handle pointing to that allocation
+ * @return 0 on success, non-zero on unsupported interop or Vulkan failure
  */"""
     dvz_allocator_export.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.POINTER(ctypes.c_int)]
     dvz_allocator_export.restype = ctypes.c_int
@@ -7124,9 +7126,9 @@ else:
  * @param alloc the allocation
  * @param offset the byte offset within the allocation
  * @param size the number of bytes to flush
- * @returns 0 on success, -1 on failure
+ * @return 0 on success, -1 on failure
  */"""
-    dvz_allocator_flush.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulonglong, ctypes.c_ulonglong]
+    dvz_allocator_flush.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_uint64, ctypes.c_uint64]
     dvz_allocator_flush.restype = ctypes.c_int
 
 
@@ -7160,6 +7162,7 @@ else:
  * @param flags Datoviz allocation policy flags
  * @param[out] alloc the created allocation
  * @param[out] vk_image the created VkImage handle
+ * @return 0 on success, non-zero on Vulkan or allocator failure
  */"""
     dvz_allocator_image.argtypes = [ctypes.POINTER(DvzVma), ctypes.c_void_p, ctypes.c_uint, ctypes.POINTER(DvzAllocation), ctypes.c_void_p]
     dvz_allocator_image.restype = ctypes.c_int
@@ -7192,6 +7195,7 @@ else:
  * @param handle the handle to import
  * @param[out] alloc the created allocation
  * @param[out] vk_buffer the created VkBuffer handle
+ * @return 0 on success, -1 on failure
  */"""
     dvz_allocator_import_buffer.argtypes = [ctypes.POINTER(DvzVma), ctypes.c_void_p, ctypes.c_uint, ctypes.c_int, ctypes.POINTER(DvzAllocation), ctypes.c_void_p]
     dvz_allocator_import_buffer.restype = ctypes.c_int
@@ -7218,6 +7222,7 @@ else:
  * @param handle the handle to import
  * @param[out] alloc the created allocation
  * @param[out] vk_image the created VkImage handle
+ * @return 0 on success, -1 on failure
  */"""
     dvz_allocator_import_image.argtypes = [ctypes.POINTER(DvzVma), ctypes.c_void_p, ctypes.c_uint, ctypes.c_int, ctypes.POINTER(DvzAllocation), ctypes.c_void_p]
     dvz_allocator_import_image.restype = ctypes.c_int
@@ -7235,9 +7240,9 @@ else:
  * @param alloc the allocation
  * @param offset the byte offset within the allocation
  * @param size the number of bytes to invalidate
- * @returns 0 on success, -1 on failure
+ * @return 0 on success, -1 on failure
  */"""
-    dvz_allocator_invalidate.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulonglong, ctypes.c_ulonglong]
+    dvz_allocator_invalidate.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_uint64, ctypes.c_uint64]
     dvz_allocator_invalidate.restype = ctypes.c_int
 
 
@@ -7251,7 +7256,7 @@ else:
  *
  * @param allocator the allocator
  * @param alloc the allocation
- * @returns the mapped pointer
+ * @return the mapped pointer
  */"""
     dvz_allocator_map.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation)]
     dvz_allocator_map.restype = ctypes.c_void_p
@@ -7280,10 +7285,13 @@ else:
     dvz_anim_camera_motion.__doc__ = """/**
  * Create a camera motion animation.
  *
- * @param scene owning scene
- * @param camera camera whose view is updated
- * @param desc camera motion descriptor
- * @return the animation handle, or NULL on failure
+ * The camera and tracks referenced by the copied descriptor are borrowed and must outlive the
+ * animation.
+ *
+ * @param scene the scene that owns the returned animation; must not be NULL
+ * @param camera borrowed camera whose view is updated; must not be NULL
+ * @param desc optional camera motion descriptor borrowed for the call, or NULL for defaults
+ * @return the scene-owned animation handle, or NULL on validation or allocation failure
  */"""
     dvz_anim_camera_motion.argtypes = [ctypes.POINTER(DvzScene), ctypes.POINTER(DvzCamera), ctypes.POINTER(DvzCameraMotionDesc)]
     dvz_anim_camera_motion.restype = ctypes.POINTER(DvzAnimation)
@@ -7297,7 +7305,10 @@ else:
     dvz_anim_destroy.__doc__ = """/**
  * Destroy an animation handle owned by its scene.
  *
- * @param animation animation handle
+ * This invalidates the scene-owned handle without destroying any borrowed track, visual, camera,
+ * controller, callback user data, or the scene itself.
+ *
+ * @param animation animation handle to invalidate, or NULL
  */"""
     dvz_anim_destroy.argtypes = [ctypes.POINTER(DvzAnimation)]
     dvz_anim_destroy.restype = None
@@ -7311,9 +7322,12 @@ else:
     dvz_anim_phase.__doc__ = """/**
  * Create a wrapped linear phase animation driven by the scene clock.
  *
- * @param scene owning scene
- * @param desc phase animation descriptor
- * @return the animation handle, or NULL on failure
+ * The descriptor is copied. Its callback and user data are retained until the animation is
+ * destroyed, so the caller must keep any objects referenced by them valid for that lifetime.
+ *
+ * @param scene the scene that owns the returned animation; must not be NULL
+ * @param desc phase animation descriptor with a non-NULL callback; must not be NULL
+ * @return the scene-owned animation handle, or NULL on validation or allocation failure
  */"""
     dvz_anim_phase.argtypes = [ctypes.POINTER(DvzScene), ctypes.POINTER(DvzAnimPhaseDesc)]
     dvz_anim_phase.restype = ctypes.POINTER(DvzAnimation)
@@ -7357,8 +7371,11 @@ else:
     dvz_anim_set_interaction_policy.__doc__ = """/**
  * Set how an animation responds to an interactive controller.
  *
+ * A non-NULL controller is borrowed until this policy is replaced or cleared and must remain valid
+ * for that lifetime.
+ *
  * @param animation animation handle
- * @param controller controller to observe, or NULL to clear policy
+ * @param controller borrowed controller to observe, or NULL to clear the policy
  * @param policy interaction policy
  * @param idle_s idle duration for resume-after-idle policies
  * @return DVZ_OK when the policy was accepted, DVZ_ERROR on error
@@ -7423,9 +7440,12 @@ else:
     dvz_anim_timer.__doc__ = """/**
  * Create a timer animation driven by the scene clock.
  *
- * @param scene owning scene
- * @param desc timer animation descriptor
- * @return the animation handle, or NULL on failure
+ * The descriptor is copied. Its callback and user data are retained until the animation is
+ * destroyed, so the caller must keep any objects referenced by them valid for that lifetime.
+ *
+ * @param scene the scene that owns the returned animation; must not be NULL
+ * @param desc timer animation descriptor with a non-NULL callback; must not be NULL
+ * @return the scene-owned animation handle, or NULL on validation or allocation failure
  */"""
     dvz_anim_timer.argtypes = [ctypes.POINTER(DvzScene), ctypes.POINTER(DvzAnimTimerDesc)]
     dvz_anim_timer.restype = ctypes.POINTER(DvzAnimation)
@@ -7453,11 +7473,15 @@ else:
     _dvz_anim_track.__doc__ = """/**
  * Create a generic track animation driven by the scene clock.
  *
- * @param scene owning scene
- * @param track borrowed track evaluated every frame while active
- * @param callback callback receiving the evaluated value
- * @param user_data opaque pointer forwarded to the callback
- * @return the animation handle, or NULL on failure
+ * The track, callback, and user data are retained until the animation is destroyed. The caller
+ * must keep the track and any objects referenced by the callback or user data valid for that
+ * lifetime.
+ *
+ * @param scene the scene that owns the returned animation; must not be NULL
+ * @param track borrowed track evaluated every frame while active; must not be NULL
+ * @param callback callback receiving the evaluated value; must not be NULL
+ * @param user_data opaque pointer forwarded to the callback, or NULL
+ * @return the scene-owned animation handle, or NULL on validation or allocation failure
  */"""
     _dvz_anim_track.argtypes = [ctypes.POINTER(DvzScene), ctypes.POINTER(DvzTrack), DvzTrackApplyCallback, ctypes.c_void_p]
     _dvz_anim_track.restype = ctypes.POINTER(DvzAnimation)
@@ -7477,10 +7501,13 @@ else:
     dvz_anim_visual_transform.__doc__ = """/**
  * Create a visual-local transform animation.
  *
- * @param scene owning scene
- * @param visual visual whose retained local transform is updated
- * @param desc transform motion descriptor
- * @return the animation handle, or NULL on failure
+ * The visual and any tracks referenced by the copied descriptor are borrowed and must outlive the
+ * animation.
+ *
+ * @param scene the scene that owns the returned animation; must not be NULL
+ * @param visual borrowed visual whose retained local transform is updated; must not be NULL
+ * @param desc optional transform motion descriptor borrowed for the call, or NULL for defaults
+ * @return the scene-owned animation handle, or NULL on validation or allocation failure
  */"""
     dvz_anim_visual_transform.argtypes = [ctypes.POINTER(DvzScene), ctypes.POINTER(DvzVisual), ctypes.POINTER(DvzTransformMotionDesc)]
     dvz_anim_visual_transform.restype = ctypes.POINTER(DvzAnimation)
@@ -7688,7 +7715,9 @@ else:
     dvz_app_destroy.__doc__ = """/**
  * Destroy the app and all owned resources (canvases, windows, runtime, GPU context).
  *
- * @param app the app
+ * The scene supplied at creation is borrowed and is not destroyed.
+ *
+ * @param app the owned app to destroy, or NULL
  */"""
     dvz_app_destroy.argtypes = [ctypes.POINTER(DvzApp)]
     dvz_app_destroy.restype = None
@@ -7896,6 +7925,9 @@ except AttributeError:
 else:
     dvz_arcball_angles.__doc__ = """/**
  * Read current Euler angles.
+ *
+ * @param arcball the arcball controller; must not be NULL
+ * @param out_angles output Euler angles in radians
  */"""
     dvz_arcball_angles.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 3)]
     dvz_arcball_angles.restype = None
@@ -7953,6 +7985,13 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_arcball_desc')
 else:
+    dvz_arcball_desc.__doc__ = """/**
+ * Return the default standalone arcball descriptor.
+ *
+ * The default viewport is 800 by 600 pixels and no controller flags are enabled.
+ *
+ * @return a fully initialized descriptor that callers may modify
+ */"""
     dvz_arcball_desc.argtypes = []
     dvz_arcball_desc.restype = DvzArcballDesc
 
@@ -7963,7 +8002,11 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_arcball_destroy')
 else:
     dvz_arcball_destroy.__doc__ = """/**
- * Destroy the arcball.
+ * Destroy a standalone arcball controller.
+ *
+ * The controller must have been unsubscribed from any input router before this call.
+ *
+ * @param arcball the owned arcball controller to destroy; must not be NULL
  */"""
     dvz_arcball_destroy.argtypes = [ctypes.POINTER(DvzArcball)]
     dvz_arcball_destroy.restype = None
@@ -8024,7 +8067,8 @@ else:
     dvz_arcball_is_interacting.__doc__ = """/**
  * Return whether the pointer is currently interacting with the arcball.
  *
- * @returns true while the user is pressing or dragging the arcball
+ * @param arcball the arcball controller, or NULL
+ * @return true while a valid controller is handling a press or drag, otherwise false
  */"""
     dvz_arcball_is_interacting.argtypes = [ctypes.POINTER(DvzArcball)]
     dvz_arcball_is_interacting.restype = ctypes.c_bool
@@ -8055,7 +8099,11 @@ except AttributeError:
 else:
     dvz_arcball_mvp.__doc__ = """/**
  * Fill the MVP struct from the current arcball state.
+ *
  * Rotation is applied to the model matrix; pan and zoom are applied to view.
+ *
+ * @param arcball the arcball controller; must not be NULL
+ * @param mvp output MVP state; must not be NULL
  */"""
     dvz_arcball_mvp.argtypes = [ctypes.POINTER(DvzArcball), ctypes.POINTER(DvzMVP)]
     dvz_arcball_mvp.restype = None
@@ -8101,7 +8149,11 @@ else:
     dvz_arcball_pointer.__doc__ = """/**
  * Process a pointer event and update arcball state.
  *
- * @returns true if the event was consumed
+ * The event is borrowed for the duration of the call.
+ *
+ * @param arcball the arcball controller; must not be NULL
+ * @param ev the pointer event to process; must not be NULL
+ * @return true if the event was consumed
  */"""
     dvz_arcball_pointer.argtypes = [ctypes.POINTER(DvzArcball), ctypes.POINTER(DvzPointerEvent)]
     dvz_arcball_pointer.restype = ctypes.c_bool
@@ -8318,7 +8370,7 @@ else:
  * @param t1 timestamp corresponding to data1, in microseconds since Unix epoch UTC
  * @return DVZ_OK if the mapping was updated, DVZ_ERROR otherwise
  */"""
-    dvz_axis_set_datetime_range.argtypes = [ctypes.POINTER(DvzAxis), ctypes.c_double, ctypes.c_double, ctypes.c_longlong, ctypes.c_longlong]
+    dvz_axis_set_datetime_range.argtypes = [ctypes.POINTER(DvzAxis), ctypes.c_double, ctypes.c_double, ctypes.c_int64, ctypes.c_int64]
     dvz_axis_set_datetime_range.restype = ctypes.c_int32
 
 
@@ -8616,7 +8668,7 @@ else:
  * @param src the source access
  * @param dst the destination access
  */"""
-    dvz_barrier_buffer_access.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
+    dvz_barrier_buffer_access.argtypes = [ctypes.c_void_p, ctypes.c_uint64, ctypes.c_uint64]
     dvz_barrier_buffer_access.restype = None
 
 
@@ -8648,7 +8700,7 @@ else:
  * @param src the source stages
  * @param dst the destination stages
  */"""
-    dvz_barrier_buffer_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
+    dvz_barrier_buffer_stage.argtypes = [ctypes.c_void_p, ctypes.c_uint64, ctypes.c_uint64]
     dvz_barrier_buffer_stage.restype = None
 
 
@@ -8664,7 +8716,7 @@ else:
  * @param src the source access
  * @param dst the destination access
  */"""
-    dvz_barrier_image_access.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
+    dvz_barrier_image_access.argtypes = [ctypes.c_void_p, ctypes.c_uint64, ctypes.c_uint64]
     dvz_barrier_image_access.restype = None
 
 
@@ -8759,7 +8811,7 @@ else:
  * @param src the source stages
  * @param dst the destination stages
  */"""
-    dvz_barrier_image_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
+    dvz_barrier_image_stage.argtypes = [ctypes.c_void_p, ctypes.c_uint64, ctypes.c_uint64]
     dvz_barrier_image_stage.restype = None
 
 
@@ -8775,7 +8827,7 @@ else:
  * @param src the source access
  * @param dst the destination access
  */"""
-    dvz_barrier_memory_access.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
+    dvz_barrier_memory_access.argtypes = [ctypes.c_void_p, ctypes.c_uint64, ctypes.c_uint64]
     dvz_barrier_memory_access.restype = None
 
 
@@ -8791,7 +8843,7 @@ else:
  * @param src the source stages
  * @param dst the destination stages
  */"""
-    dvz_barrier_memory_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
+    dvz_barrier_memory_stage.argtypes = [ctypes.c_void_p, ctypes.c_uint64, ctypes.c_uint64]
     dvz_barrier_memory_stage.restype = None
 
 
@@ -8821,12 +8873,12 @@ else:
  * is exhausted.
  *
  * @param barriers the set of barriers
- * @param buffer the buffer
- * @param offset the offset
- * @param size the size
- * @returns the buffer barrier
+ * @param buffer buffer handle whose accesses are synchronized
+ * @param offset byte offset of the synchronized range within `buffer`
+ * @param size size of the synchronized range in bytes, or `VK_WHOLE_SIZE`
+ * @return mutable barrier owned by `barriers`, or NULL when capacity is exhausted
  */"""
-    dvz_barriers_buffer.argtypes = [ctypes.POINTER(DvzBarriers), ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
+    dvz_barriers_buffer.argtypes = [ctypes.POINTER(DvzBarriers), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_uint64]
     dvz_barriers_buffer.restype = ctypes.c_void_p
 
 
@@ -8839,7 +8891,7 @@ else:
  * Return the number of recorded buffer barriers in a barrier set.
  *
  * @param barriers the barrier set
- * @returns the buffer-barrier count
+ * @return buffer-barrier count
  */"""
     dvz_barriers_buffer_count.argtypes = [ctypes.POINTER(DvzBarriers)]
     dvz_barriers_buffer_count.restype = ctypes.c_uint32
@@ -8854,7 +8906,7 @@ else:
  * Return the maximum number of barriers supported per barrier type.
  *
  * @param barriers the barrier set
- * @returns the barrier capacity
+ * @return barrier capacity per barrier type
  */"""
     dvz_barriers_capacity.argtypes = [ctypes.POINTER(DvzBarriers)]
     dvz_barriers_capacity.restype = ctypes.c_uint32
@@ -8869,7 +8921,7 @@ else:
  * Return the dependency flags configured on a barrier set.
  *
  * @param barriers the barrier set
- * @returns the dependency flags
+ * @return dependency flags
  */"""
     dvz_barriers_dependency_flags.argtypes = [ctypes.POINTER(DvzBarriers)]
     dvz_barriers_dependency_flags.restype = ctypes.c_uint
@@ -8902,8 +8954,8 @@ else:
  * is exhausted.
  *
  * @param barriers the set of barriers
- * @param img an image
- * @returns the image barrier
+ * @param img live image handle whose known layout and access state will be transitioned
+ * @return mutable barrier owned by `barriers`, or NULL when capacity is exhausted
  */"""
     dvz_barriers_image.argtypes = [ctypes.POINTER(DvzBarriers), ctypes.c_void_p]
     dvz_barriers_image.restype = ctypes.c_void_p
@@ -8918,7 +8970,7 @@ else:
  * Return the number of recorded image barriers in a barrier set.
  *
  * @param barriers the barrier set
- * @returns the image-barrier count
+ * @return image-barrier count
  */"""
     dvz_barriers_image_count.argtypes = [ctypes.POINTER(DvzBarriers)]
     dvz_barriers_image_count.restype = ctypes.c_uint32
@@ -8936,7 +8988,7 @@ else:
  * is exhausted.
  *
  * @param barriers the set of barriers
- * @returns the memory barrier
+ * @return mutable barrier owned by `barriers`, or NULL when capacity is exhausted
  */"""
     dvz_barriers_memory.argtypes = [ctypes.POINTER(DvzBarriers)]
     dvz_barriers_memory.restype = ctypes.c_void_p
@@ -8951,7 +9003,7 @@ else:
  * Return the number of recorded memory barriers in a barrier set.
  *
  * @param barriers the barrier set
- * @returns the memory-barrier count
+ * @return memory-barrier count
  */"""
     dvz_barriers_memory_count.argtypes = [ctypes.POINTER(DvzBarriers)]
     dvz_barriers_memory_count.restype = ctypes.c_uint32
@@ -9075,7 +9127,7 @@ else:
  * @param ymax maximum y value
  * @param zmin minimum z value
  * @param zmax maximum z value
- * @returns the box
+ * @return box with the supplied axis bounds
  */"""
     dvz_box.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]
     dvz_box.restype = DvzBox
@@ -9090,7 +9142,7 @@ else:
  * Return the aspect ratio of a box.
  *
  * @param box the box
- * @returns the aspect ratio width/height
+ * @return `(xmax - xmin) / (ymax - ymin)`
  */"""
     dvz_box_aspect.argtypes = [DvzBox]
     dvz_box_aspect.restype = ctypes.c_double
@@ -9105,7 +9157,7 @@ else:
  * Return the box center.
  *
  * @param box the box
- * @param[out] the box's center
+ * @param[out] center destination receiving the box center
  */"""
     dvz_box_center.argtypes = [DvzBox, (ctypes.c_double * 3)]
     dvz_box_center.restype = None
@@ -9123,10 +9175,11 @@ else:
  * the center and shrinks the larger axis so the returned box is contained by the input.
  *
  * @param box the original box
- * @param width the viewport width
- * @param height the viewport height
+ * @param width target viewport width in arbitrary units; nonpositive values leave the box unchanged
+ * @param height target viewport height in the same units as @p width; nonpositive values leave the
+ * box unchanged
  * @param strategy indicates how the extent box should be computed
- * @returns the extent box
+ * @return adjusted extent box
  */"""
     dvz_box_extent.argtypes = [DvzBox, ctypes.c_float, ctypes.c_float, ctypes.c_int]
     dvz_box_extent.restype = DvzBox
@@ -9142,8 +9195,9 @@ else:
  *
  * @param source the source box, in data coordinates
  * @param target the target box, typically in normalized coordinates
- * @param pos the position in the target box
- * @param[out] out position transformed back into the source box
+ * @param pos single-precision position in the target box
+ * @param[out] out destination receiving the double-precision position in the source box; must not
+ * be NULL
  */"""
     dvz_box_inverse.argtypes = [DvzBox, DvzBox, (ctypes.c_float * 3), ctypes.c_void_p]
     dvz_box_inverse.restype = None
@@ -9157,10 +9211,11 @@ else:
     dvz_box_merge.__doc__ = """/**
  * Merge a number of boxes into a single box.
  *
- * @param box_count the number of boxes to merge
- * @param boxes the boxes to merge
+ * @param box_count number of boxes to merge; may be zero
+ * @param boxes input array containing @p box_count boxes; must not be NULL when @p box_count is
+ * positive
  * @param strategy the merge strategy
- * @returns the merged box
+ * @return merged box, or `DVZ_BOX_NDC` when @p box_count is zero
  */"""
     dvz_box_merge.argtypes = [ctypes.c_uint32, ctypes.POINTER(DvzBox), ctypes.c_int]
     dvz_box_merge.restype = DvzBox
@@ -9177,9 +9232,10 @@ else:
  * @param source the source box, in data coordinates
  * @param target the target box, typically in normalized coordinates
  * @param dim which dimension
- * @param count the number of positions to normalize
- * @param pos the positions to normalize (double precision)
- * @param[out] out normalized positions to compute, as single-precision 3D positions
+ * @param count number of positions
+ * @param pos input array containing @p count double-precision scalar positions; must not be NULL
+ * @param[out] out destination array receiving @p count single-precision 3D positions; must not be
+ * NULL
  */"""
     dvz_box_normalize_1D.argtypes = [DvzBox, DvzBox, ctypes.c_int, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.c_void_p]
     dvz_box_normalize_1D.restype = None
@@ -9195,9 +9251,10 @@ else:
  *
  * @param source the source box, in data coordinates
  * @param target the target box, typically in normalized coordinates
- * @param count the number of positions to normalize
- * @param pos the positions to normalize (double precision)
- * @param[out] out normalized positions to compute, as single-precision 3D positions
+ * @param count number of positions
+ * @param pos input array containing @p count double-precision 2D positions; must not be NULL
+ * @param[out] out destination array receiving @p count single-precision 3D positions; must not be
+ * NULL
  */"""
     dvz_box_normalize_2D.argtypes = [DvzBox, DvzBox, ctypes.c_uint32, ctypes.c_void_p, ctypes.c_void_p]
     dvz_box_normalize_2D.restype = None
@@ -9213,9 +9270,10 @@ else:
  *
  * @param source the source box, in data coordinates
  * @param target the target box, typically in normalized coordinates
- * @param count the number of positions to normalize
- * @param pos the positions to normalize (double precision)
- * @param[out] out normalized positions to compute, as single-precision 3D positions
+ * @param count number of positions
+ * @param pos input array containing @p count double-precision 3D positions; must not be NULL
+ * @param[out] out destination array receiving @p count single-precision 3D positions; must not be
+ * NULL
  */"""
     dvz_box_normalize_3D.argtypes = [DvzBox, DvzBox, ctypes.c_uint32, ctypes.c_void_p, ctypes.c_void_p]
     dvz_box_normalize_3D.restype = None
@@ -9231,9 +9289,10 @@ else:
  *
  * @param source the source box, in data coordinates
  * @param target the target box, typically in normalized coordinates
- * @param count the number of positions to normalize
- * @param pos the positions to normalize (double precision)
- * @param[out] out normalized positions to compute, as double-precision 2D positions
+ * @param count number of positions
+ * @param pos input array containing @p count double-precision 2D positions; must not be NULL
+ * @param[out] out destination array receiving @p count double-precision 2D positions; must not be
+ * NULL
  */"""
     dvz_box_normalize_polygon.argtypes = [DvzBox, DvzBox, ctypes.c_uint32, ctypes.c_void_p, ctypes.c_void_p]
     dvz_box_normalize_polygon.restype = None
@@ -9251,8 +9310,8 @@ else:
  * after setting the desired size, usage, and allocation flags. Recreating a
  * live buffer requires dvz_buffer_destroy() first.
  *
- * @param device the device
- * @param allocator the Datoviz allocator
+ * @param device logical device that owns the Vulkan buffer; must outlive `buffer`
+ * @param allocator allocator used for buffer memory; must outlive the created buffer
  * @param[out] buffer the initialized buffer
  */"""
     dvz_buffer.argtypes = [ctypes.POINTER(DvzDevice), ctypes.POINTER(DvzVma), ctypes.POINTER(DvzBuffer)]
@@ -9285,8 +9344,8 @@ else:
  * This function creates the wrapped Vulkan buffer exactly once per live
  * wrapper. Call dvz_buffer_destroy() before attempting to create it again.
  *
- * @param buffer the buffer
- * @returns 0 on success, non-zero on Vulkan or Datoviz state failure
+ * @param buffer configured, not-yet-created buffer wrapper
+ * @return 0 on success, non-zero on Vulkan or Datoviz state failure
  */"""
     dvz_buffer_create.argtypes = [ctypes.POINTER(DvzBuffer)]
     dvz_buffer_create.restype = ctypes.c_int
@@ -9322,7 +9381,7 @@ else:
  * This releases the wrapped Vulkan buffer and returns the wrapper to a reusable
  * initialized state.
  *
- * @param buffer the buffer
+ * @param buffer live buffer to destroy; the wrapper itself is retained
  */"""
     dvz_buffer_destroy.argtypes = [ctypes.POINTER(DvzBuffer)]
     dvz_buffer_destroy.restype = None
@@ -9340,10 +9399,10 @@ else:
  *     This function does **not** use any GPU synchronization primitive: this is the responsibility
  *     of the caller.
  *
- * @param buffer the buffer
+ * @param buffer live host-visible source buffer
  * @param offset the offset within the buffer, in bytes
  * @param size the size of the region to download, in bytes
- * @param[out] data (array) the buffer to download on (must be allocated with the appropriate size)
+ * @param[out] data destination host-memory region with capacity for at least `size` bytes
  */"""
     dvz_buffer_download.argtypes = [ctypes.POINTER(DvzBuffer), ctypes.c_uint64, ctypes.c_uint64, ctypes.c_void_p]
     dvz_buffer_download.restype = None
@@ -9357,8 +9416,8 @@ else:
     dvz_buffer_flags.__doc__ = """/**
  * Set the allocation policy flags used when the buffer creates its memory.
  *
- * @param buffer the buffer
- * @param flags the flags
+ * @param buffer initialized, not-yet-created buffer wrapper
+ * @param flags Datoviz allocation policy flags
  */"""
     dvz_buffer_flags.argtypes = [ctypes.POINTER(DvzBuffer), ctypes.c_uint]
     dvz_buffer_flags.restype = None
@@ -9386,8 +9445,8 @@ else:
     dvz_buffer_handle.__doc__ = """/**
  * Return a Vulkan handle to a buffer.
  *
- * @param buffer the buffer
- * @returns the Vulkan buffer handle
+ * @param buffer live buffer wrapper
+ * @return borrowed Vulkan buffer handle, or `VK_NULL_HANDLE` when no buffer is live
  */"""
     dvz_buffer_handle.argtypes = [ctypes.POINTER(DvzBuffer)]
     dvz_buffer_handle.restype = ctypes.c_void_p
@@ -9401,8 +9460,8 @@ else:
     dvz_buffer_map.__doc__ = """/**
  * Memmap a GPU buffer.
  *
- * @param buffer the buffer
- * @returns 0 on success, non-zero on Vulkan or Datoviz state failure
+ * @param buffer live host-visible buffer
+ * @return 0 on success, non-zero on Vulkan or Datoviz state failure
  */"""
     dvz_buffer_map.argtypes = [ctypes.POINTER(DvzBuffer)]
     dvz_buffer_map.restype = ctypes.c_int
@@ -9435,7 +9494,7 @@ else:
     dvz_buffer_size.__doc__ = """/**
  * Set the buffer size.
  *
- * @param buffer the buffer
+ * @param buffer initialized, not-yet-created buffer wrapper
  * @param size the buffer size, in bytes
  */"""
     dvz_buffer_size.argtypes = [ctypes.POINTER(DvzBuffer), ctypes.c_uint64]
@@ -9450,8 +9509,8 @@ else:
     dvz_buffer_size_value.__doc__ = """/**
  * Return the requested logical size of a buffer, in bytes.
  *
- * @param buffer the buffer
- * @returns requested size in bytes
+ * @param buffer initialized buffer wrapper
+ * @return requested logical size in bytes
  */"""
     dvz_buffer_size_value.argtypes = [ctypes.POINTER(DvzBuffer)]
     dvz_buffer_size_value.restype = ctypes.c_uint64
@@ -9465,7 +9524,7 @@ else:
     dvz_buffer_unmap.__doc__ = """/**
  * Unmap a GPU buffer.
  *
- * @param buffer
+ * @param buffer mapped host-visible buffer; no action is taken when it is not mapped
  */"""
     dvz_buffer_unmap.argtypes = [ctypes.POINTER(DvzBuffer)]
     dvz_buffer_unmap.restype = None
@@ -9483,10 +9542,10 @@ else:
  *     This function does **not** use any GPU synchronization primitive: this is the responsibility
  *     of the caller.
  *
- * @param buffer the buffer
+ * @param buffer live host-visible destination buffer
  * @param offset the offset within the buffer, in bytes
- * @param size the buffer size, in bytes
- * @param data the data to upload
+ * @param size number of bytes to copy
+ * @param data source host-memory region containing at least `size` bytes
  */"""
     dvz_buffer_upload.argtypes = [ctypes.POINTER(DvzBuffer), ctypes.c_uint64, ctypes.c_uint64, ctypes.c_void_p]
     dvz_buffer_upload.restype = None
@@ -9500,8 +9559,8 @@ else:
     dvz_buffer_usage.__doc__ = """/**
  * Set the buffer usage.
  *
- * @param buffer the buffer
- * @param usage the buffer usage
+ * @param buffer initialized, not-yet-created buffer wrapper
+ * @param usage Vulkan usage flags for the buffer
  */"""
     dvz_buffer_usage.argtypes = [ctypes.POINTER(DvzBuffer), ctypes.c_uint]
     dvz_buffer_usage.restype = None
@@ -9515,9 +9574,9 @@ else:
     dvz_buffer_views.__doc__ = """/**
  * Create buffer views on an existing GPU buffer.
  *
- * @param buffer the buffer
+ * @param buffer live buffer borrowed by the views; it must outlive `views`
  * @param count the number of successive views
- * @param offset the offset within the buffer
+ * @param offset byte offset of the first view within `buffer`
  * @param size the size of each view, in bytes
  * @param alignment the alignment requirement for the view offsets
  * @param[out] views the created buffer views
@@ -9935,7 +9994,11 @@ else:
     dvz_canvas_config.__doc__ = """/**
  * Return a default canvas configuration used when callers do not override fields.
  *
- * @returns a configuration with null handles, RGBA8 color format, and empty timing history
+ * The caller must set the borrowed `window` and `device` fields before creating a canvas. The
+ * returned configuration selects present rendering, FIFO presentation, the runtime default color
+ * format, and `DVZ_CANVAS_DEFAULT_TIMING_HISTORY` timing samples.
+ *
+ * @returns the initialized configuration
  */"""
     dvz_canvas_config.argtypes = []
     dvz_canvas_config.restype = DvzCanvasConfig
@@ -9985,8 +10048,12 @@ else:
     dvz_canvas_create.__doc__ = """/**
  * Allocate a new canvas tied to a window surface and device.
  *
- * @param cfg canvas configuration or NULL for defaults
- * @returns pointer to the created canvas or NULL on failure
+ * `cfg->window` and `cfg->device` are required borrowed objects and must outlive the canvas. The
+ * canvas copies the configuration and owns the stream, allocator, synchronization, and render
+ * resources it creates; it does not destroy the window or device.
+ *
+ * @param cfg required canvas configuration with non-NULL `window` and `device`
+ * @returns a newly allocated canvas, or NULL when the configuration or runtime setup is invalid
  */"""
     dvz_canvas_create.argtypes = [ctypes.POINTER(DvzCanvasConfig)]
     dvz_canvas_create.restype = ctypes.POINTER(DvzCanvas)
@@ -10000,7 +10067,7 @@ else:
     dvz_canvas_destroy.__doc__ = """/**
  * Destroy the canvas and any stream resources it owns.
  *
- * @param canvas canvas handle returned by dvz_canvas_create()
+ * @param canvas canvas returned by dvz_canvas_create(), or NULL
  */"""
     dvz_canvas_destroy.argtypes = [ctypes.POINTER(DvzCanvas)]
     dvz_canvas_destroy.restype = None
@@ -10031,7 +10098,7 @@ else:
  * Expose the input router owned by the canvas window.
  *
  * @param canvas canvas owning the router
- * @returns pointer to the router or NULL when the canvas/window is invalid
+ * @returns the borrowed router, valid until the canvas window is destroyed, or NULL when absent
  */"""
     dvz_canvas_input.argtypes = [ctypes.POINTER(DvzCanvas)]
     dvz_canvas_input.restype = ctypes.POINTER(DvzInputRouter)
@@ -10102,11 +10169,15 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_canvas_set_draw_callback')
 else:
     _dvz_canvas_set_draw_callback.__doc__ = """/**
- * Register a draw callback executed whenever dvz_canvas_frame() succeeds.
+ * Register a draw callback executed before each successful dvz_canvas_frame() returns.
+ *
+ * The callback and `user_data` are borrowed and must remain valid until replaced, cleared, or the
+ * canvas is destroyed. The callback receives a borrowed frame whose Vulkan handles are valid only
+ * for that invocation and must not be destroyed, reset, submitted, transitioned, or retained.
  *
  * @param canvas target canvas
  * @param callback draw callback (NULL removes the callback)
- * @param user_data opaque pointer supplied to the callback on every invocation
+ * @param user_data borrowed opaque pointer supplied to the callback on every invocation
  */"""
     _dvz_canvas_set_draw_callback.argtypes = [ctypes.POINTER(DvzCanvas), DvzCanvasDraw, ctypes.c_void_p]
     _dvz_canvas_set_draw_callback.restype = None
@@ -10126,8 +10197,11 @@ else:
     dvz_canvas_stream.__doc__ = """/**
  * Access the stream underpinning the canvas.
  *
+ * The caller must not destroy the returned stream. It remains valid until the canvas is destroyed
+ * or reconfiguring a sink rebuilds the canvas stream.
+ *
  * @param canvas canvas handle
- * @returns stream pointer or NULL when the canvas is invalid
+ * @returns the borrowed underlying stream, or NULL when unavailable
  */"""
     dvz_canvas_stream.argtypes = [ctypes.POINTER(DvzCanvas)]
     dvz_canvas_stream.restype = ctypes.POINTER(DvzStream)
@@ -10156,9 +10230,12 @@ else:
     dvz_canvas_timings.__doc__ = """/**
  * Read the recorded frame timings.
  *
+ * The returned view is owned by the canvas and may be invalidated or overwritten by subsequent
+ * frame submissions. It must not be freed and remains valid at most until canvas destruction.
+ *
  * @param canvas canvas handle
- * @param count optional output storing the number of samples tracked
- * @returns pointer to the internal ring buffer with the latest timings
+ * @param count optional output receiving the number of readable samples
+ * @returns the borrowed internal timing buffer, or NULL when no samples are available
  */"""
     dvz_canvas_timings.argtypes = [ctypes.POINTER(DvzCanvas), ctypes.POINTER(ctypes.c_size_t)]
     dvz_canvas_timings.restype = ctypes.POINTER(DvzFrameTiming)
@@ -10214,7 +10291,10 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_cmd_begin')
 else:
     dvz_cmd_begin.__doc__ = """/**
- * Start recording a command buffer.
+ * Start recording the currently selected owned command buffer.
+ *
+ * This convenience wrapper logs failures from dvz_cmd_begin_result(). It must not be used with an
+ * externally owned command buffer wrapped as already recording.
  *
  * @param cmds the set of command buffers
  */"""
@@ -10228,7 +10308,9 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_cmd_begin_result')
 else:
     dvz_cmd_begin_result.__doc__ = """/**
- * Start recording a command buffer.
+ * Start recording the currently selected owned command buffer.
+ *
+ * This operation is rejected for an externally owned command buffer wrapped as already recording.
  *
  * @param cmds the set of command buffers
  * @return 0 on success, non-zero on Vulkan or state failure
@@ -10297,7 +10379,7 @@ else:
  *
  * @param cmds the command buffers
  * @param buffer the index buffer
- * @param offset the offset within the index buffer
+ * @param offset byte offset within the index buffer
  * @param index_type the Vulkan index type
  */"""
     dvz_cmd_bind_index_buffer.argtypes = [ctypes.POINTER(DvzCommands), ctypes.POINTER(DvzBuffer), ctypes.c_uint64, ctypes.c_int]
@@ -10316,7 +10398,7 @@ else:
  * @param first_binding the index of the first vertex binding
  * @param binding_count the number of bindings
  * @param buffers the "binding_count" buffers to bind
- * @param offsets the offsets within each buffer
+ * @param offsets array of `binding_count` byte offsets, one per buffer
  */"""
     dvz_cmd_bind_vertex_buffers.argtypes = [ctypes.POINTER(DvzCommands), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzBuffer), ctypes.POINTER(ctypes.c_uint64)]
     dvz_cmd_bind_vertex_buffers.restype = None
@@ -10331,11 +10413,11 @@ else:
  * Define the destination of a blit operation.
  *
  * @param blit the blit structure
- * @param image the source image
- * @param layout the source image layout
- * @param x0 the destination onset x
- * @param y0 the destination onset y
- * @param z0 the destination onset z
+ * @param image destination image handle
+ * @param layout current destination image layout, valid for transfer-destination access
+ * @param x0 first destination x coordinate
+ * @param y0 first destination y coordinate
+ * @param z0 first destination z coordinate
  * @param x1 the destination offset x
  * @param y1 the destination offset y
  * @param z1 the destination offset z
@@ -10365,8 +10447,9 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_cmd_blit_image')
 else:
     dvz_cmd_blit_image.__doc__ = """/**
- * End an image blit operation.
+ * Record the configured image blit operation.
  *
+ * @param cmds recording command-buffer wrapper
  * @param blit the blit structure
  */"""
     dvz_cmd_blit_image.argtypes = [ctypes.POINTER(DvzCommands), ctypes.POINTER(DvzImageBlit)]
@@ -10382,11 +10465,11 @@ else:
  * Define the source of a blit operation.
  *
  * @param blit the blit structure
- * @param image the source image
- * @param layout the source image layout
- * @param x0 the source onset x
- * @param y0 the source onset y
- * @param z0 the source onset z
+ * @param image source image handle
+ * @param layout current source image layout, valid for transfer-source access
+ * @param x0 first source x coordinate
+ * @param y0 first source y coordinate
+ * @param z0 first source z coordinate
  * @param x1 the source offset x
  * @param y1 the source offset y
  * @param z1 the source offset z
@@ -10405,10 +10488,10 @@ else:
  *
  * @param cmds the command buffers
  * @param buffer the source buffer
- * @param offset the offset in the source buffer
+ * @param offset source byte offset within `buffer`
  * @param img the target image
- * @param layout the image layout
- * @param region the image region
+ * @param layout current layout of `img`, valid for transfer-destination access
+ * @param region destination subresource, offset, and extent
  */"""
     dvz_cmd_copy_buffer_to_image.argtypes = [ctypes.POINTER(DvzCommands), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_void_p, ctypes.c_int, ctypes.c_void_p]
     dvz_cmd_copy_buffer_to_image.restype = None
@@ -10420,11 +10503,11 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_cmd_copy_destination')
 else:
     dvz_cmd_copy_destination.__doc__ = """/**
- * Define the destination of an image copy operation.
+ * Define the destination image and offset of an image copy operation.
  *
  * @param copy the copy structure
- * @param image the source image
- * @param layout the source image layout
+ * @param image destination image handle
+ * @param layout current destination image layout, valid for transfer-destination access
  * @param x the destination offset x
  * @param y the destination offset y
  * @param z the destination offset z
@@ -10439,8 +10522,9 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_cmd_copy_image')
 else:
     dvz_cmd_copy_image.__doc__ = """/**
- * End an image copy operation.
+ * Record the configured image copy operation.
  *
+ * @param cmds recording command-buffer wrapper
  * @param copy the copy structure
  */"""
     dvz_cmd_copy_image.argtypes = [ctypes.POINTER(DvzCommands), ctypes.POINTER(DvzImageCopy)]
@@ -10456,11 +10540,11 @@ else:
  * Copy a GPU image to a GPU buffer.
  *
  * @param cmds the set of command buffers to record
- * @param tex_offset the texture offset
- * @param shape the texture shape
- * @param images the image
- * @param buffer the buffer
- * @param buf_offset the buffer offset
+ * @param img source image handle
+ * @param layout current layout of `img`, valid for transfer-source access
+ * @param region source subresource, offset, and extent
+ * @param buffer destination buffer handle
+ * @param offset destination byte offset within `buffer`
  */"""
     dvz_cmd_copy_image_to_buffer.argtypes = [ctypes.POINTER(DvzCommands), ctypes.c_void_p, ctypes.c_int, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint64]
     dvz_cmd_copy_image_to_buffer.restype = None
@@ -10472,11 +10556,11 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_cmd_copy_source')
 else:
     dvz_cmd_copy_source.__doc__ = """/**
- * Define the source of an image copy operation.
+ * Define the source image and region of an image copy operation.
  *
  * @param copy the copy structure
- * @param image the destination image
- * @param layout the destination image layout
+ * @param image source image handle
+ * @param layout current source image layout, valid for transfer-source access
  * @param x the source offset x
  * @param y the source offset y
  * @param z the source offset z
@@ -10516,6 +10600,8 @@ else:
  * @param cmds the set of command buffers to record
  * @param first_vertex index of the first vertex
  * @param vertex_count number of vertices to draw
+ * @param first_instance index of the first instance
+ * @param instance_count number of instances to draw
  */"""
     dvz_cmd_draw.argtypes = [ctypes.POINTER(DvzCommands), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
     dvz_cmd_draw.restype = None
@@ -10533,6 +10619,8 @@ else:
  * @param first_index index of the first index
  * @param vertex_offset offset of the vertex
  * @param index_count number of indices to draw
+ * @param first_instance index of the first instance
+ * @param instance_count number of instances to draw
  */"""
     dvz_cmd_draw_indexed.argtypes = [ctypes.POINTER(DvzCommands), ctypes.c_uint32, ctypes.c_int32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
     dvz_cmd_draw_indexed.restype = None
@@ -10547,7 +10635,10 @@ else:
  * Indirect indexed draw.
  *
  * @param cmds the set of command buffers to record
- * @param indirect buffer regions with the indirect draw info
+ * @param indirect buffer containing `VkDrawIndexedIndirectCommand` records
+ * @param offset byte offset of the first record within `indirect`
+ * @param draw_count number of draw records to execute
+ * @param stride byte stride between successive records
  */"""
     dvz_cmd_draw_indexed_indirect.argtypes = [ctypes.POINTER(DvzCommands), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint64]
     dvz_cmd_draw_indexed_indirect.restype = None
@@ -10562,7 +10653,10 @@ else:
  * Indirect draw.
  *
  * @param cmds the set of command buffers to record
- * @param indirect buffer regions with the indirect draw info
+ * @param indirect buffer containing `VkDrawIndirectCommand` records
+ * @param offset byte offset of the first record within `indirect`
+ * @param draw_count number of draw records to execute
+ * @param stride byte stride between successive records
  */"""
     dvz_cmd_draw_indirect.argtypes = [ctypes.POINTER(DvzCommands), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint64]
     dvz_cmd_draw_indirect.restype = None
@@ -10574,7 +10668,10 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_cmd_end')
 else:
     dvz_cmd_end.__doc__ = """/**
- * Stop recording a command buffer.
+ * Stop recording the currently selected owned command buffer.
+ *
+ * This convenience wrapper logs failures from dvz_cmd_end_result(). It must not be used with an
+ * externally owned command buffer wrapped as already recording.
  *
  * @param cmds the set of command buffers
  */"""
@@ -10588,7 +10685,9 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_cmd_end_result')
 else:
     dvz_cmd_end_result.__doc__ = """/**
- * Stop recording a command buffer.
+ * Stop recording the currently selected owned command buffer.
+ *
+ * This operation is rejected for an externally owned command buffer wrapped as already recording.
  *
  * @param cmds the set of command buffers
  * @return 0 on success, non-zero on Vulkan or state failure
@@ -10650,7 +10749,9 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_cmd_reset')
 else:
     dvz_cmd_reset.__doc__ = """/**
- * Reset a command buffer.
+ * Reset the currently selected owned command buffer.
+ *
+ * Do not call this on a borrowed recording command buffer.
  *
  * @param cmds the set of command buffers
  */"""
@@ -11063,9 +11164,10 @@ else:
     dvz_command_buffer_alloc.__doc__ = """/**
  * Allocate a single primary command buffer from the device command pool of a queue family.
  *
- * @param device the device
+ * @param device logical device that owns the selected command pool
  * @param queue_family queue family index used to select the command pool
- * @returns the allocated command buffer, or VK_NULL_HANDLE on failure
+ * @return owned command buffer, or `VK_NULL_HANDLE` on failure; free it with
+ * dvz_command_buffer_free()
  */"""
     dvz_command_buffer_alloc.argtypes = [ctypes.POINTER(DvzDevice), ctypes.c_uint32]
     dvz_command_buffer_alloc.restype = ctypes.c_void_p
@@ -11079,7 +11181,7 @@ else:
     dvz_command_buffer_free.__doc__ = """/**
  * Free a single command buffer from the device command pool of a queue family.
  *
- * @param device the device
+ * @param device logical device whose command pool owns `cmd`
  * @param queue_family queue family index used to select the command pool
  * @param cmd command buffer to free
  */"""
@@ -11098,8 +11200,9 @@ else:
  * The status is INIT when the command buffers are initialized, and CREATED when they are filled.
  * Reinitializing a live wrapper requires dvz_commands_destroy() first.
  *
- * @param device the device
- * @param queue the queue
+ * @param device logical device that owns the command pool and buffers; must outlive `cmds`
+ * @param queue queue whose family selects the command pool and on which submissions are made;
+ * must outlive `cmds`
  * @param count the number of command buffers to create
  * @param[out] cmds the created command buffers
  */"""
@@ -11116,7 +11219,7 @@ else:
  * Return the number of command buffers managed by a wrapper.
  *
  * @param cmds the set of command buffers
- * @returns the command-buffer count
+ * @return number of command buffers owned or wrapped by `cmds`
  */"""
     dvz_commands_count.argtypes = [ctypes.POINTER(DvzCommands)]
     dvz_commands_count.restype = ctypes.c_uint32
@@ -11150,7 +11253,7 @@ else:
  * Set the current command buffer index.
  *
  * @param cmds the set of command buffers
- * @param current the current command buffer index
+ * @param current command-buffer index in `[0, dvz_commands_count(cmds))`
  */"""
     dvz_commands_current.argtypes = [ctypes.POINTER(DvzCommands), ctypes.c_uint32]
     dvz_commands_current.restype = None
@@ -11196,7 +11299,7 @@ else:
  * Return the Vulkan handle of the currently-selected command buffers.
  *
  * @param cmds the set of command buffers
- * @returns the command buffer Vulkan handle
+ * @return borrowed handle of the currently selected command buffer
  */"""
     dvz_commands_handle.argtypes = [ctypes.POINTER(DvzCommands)]
     dvz_commands_handle.restype = ctypes.c_void_p
@@ -11214,9 +11317,9 @@ else:
  * whose owner grants recording-control operations such as begin, end, or reset. Queue submission is
  * not supported for wrappers created by this function because no queue is supplied.
  *
- * @param device the device
- * @param vk_cmd the Vulkan command buffer
- * @param[out] cmds the created command buffers
+ * @param device logical device associated with `vk_cmd`; must outlive `cmds`
+ * @param vk_cmd externally owned command buffer whose owner permits recording-control operations
+ * @param[out] cmds wrapper initialized around `vk_cmd`; it does not acquire ownership of the handle
  */"""
     dvz_commands_wrap.argtypes = [ctypes.POINTER(DvzDevice), ctypes.c_void_p, ctypes.POINTER(DvzCommands)]
     dvz_commands_wrap.restype = None
@@ -11234,9 +11337,9 @@ else:
  * begin, end, reset, submit, or destroy the borrowed command buffer are rejected before touching
  * Vulkan.
  *
- * @param device the device
- * @param vk_cmd the borrowed recording Vulkan command buffer
- * @param[out] cmds the created command buffers
+ * @param device logical device associated with `vk_cmd`; must outlive `cmds`
+ * @param vk_cmd externally owned command buffer that is already in the recording state
+ * @param[out] cmds wrapper initialized around `vk_cmd`; it does not acquire ownership of the handle
  */"""
     dvz_commands_wrap_borrowed_recording.argtypes = [ctypes.POINTER(DvzDevice), ctypes.c_void_p, ctypes.POINTER(DvzCommands)]
     dvz_commands_wrap_borrowed_recording.restype = None
@@ -11421,7 +11524,7 @@ else:
  * Return the Vulkan pipeline handle owned by a compute wrapper.
  *
  * @param compute the compute pipeline
- * @returns the Vulkan pipeline handle or VK_NULL_HANDLE
+ * @return borrowed Vulkan pipeline handle, or `VK_NULL_HANDLE` when not created
  */"""
     dvz_compute_handle.argtypes = [ctypes.POINTER(DvzCompute)]
     dvz_compute_handle.restype = ctypes.c_void_p
@@ -11451,7 +11554,7 @@ else:
  * Return the pipeline layout bound to a compute wrapper.
  *
  * @param compute the compute pipeline
- * @returns the pipeline layout handle or VK_NULL_HANDLE
+ * @return borrowed pipeline-layout handle, or `VK_NULL_HANDLE` when unset
  */"""
     dvz_compute_layout_handle.argtypes = [ctypes.POINTER(DvzCompute)]
     dvz_compute_layout_handle.restype = ctypes.c_void_p
@@ -11466,7 +11569,7 @@ else:
  * Set the shader module.
  *
  * @param compute the compute pipeline
- * @param shader the shader
+ * @param module borrowed compute shader module; it must remain live through pipeline creation
  */"""
     dvz_compute_shader.argtypes = [ctypes.POINTER(DvzCompute), ctypes.c_void_p]
     dvz_compute_shader.restype = None
@@ -11801,7 +11904,7 @@ else:
  *
  * @param descriptors the descriptors
  * @param set the descriptor set index
- * @returns the descriptor set handle
+ * @return borrowed descriptor-set handle; `set` must be less than dvz_descriptors_set_count()
  */"""
     dvz_descriptors_handle.argtypes = [ctypes.POINTER(DvzDescriptors), ctypes.c_uint32]
     dvz_descriptors_handle.restype = ctypes.c_void_p
@@ -11836,7 +11939,7 @@ else:
  * Return the number of descriptor sets allocated by the wrapper.
  *
  * @param descriptors the descriptors
- * @returns the descriptor set count
+ * @return the descriptor set count
  */"""
     dvz_descriptors_set_count.argtypes = [ctypes.POINTER(DvzDescriptors)]
     dvz_descriptors_set_count.restype = ctypes.c_uint32
@@ -11858,6 +11961,7 @@ else:
  * @param device the device
  * @param export_handle_type if exporting created allocations, the external memory handle type
  * @param[out] allocator the allocator
+ * @return 0 on success, non-zero on Vulkan or allocator failure
  */"""
     dvz_device_allocator.argtypes = [ctypes.POINTER(DvzDevice), ctypes.c_uint, ctypes.POINTER(DvzVma)]
     dvz_device_allocator.restype = ctypes.c_int
@@ -11873,7 +11977,7 @@ else:
  *
  * @param device the device
  * @param queue_family the queue family index
- * @returns the Vulkan command pool
+ * @return borrowed command-pool handle for `queue_family`, or `VK_NULL_HANDLE` if unavailable
  */"""
     dvz_device_command_pool.argtypes = [ctypes.POINTER(DvzDevice), ctypes.c_uint32]
     dvz_device_command_pool.restype = ctypes.c_void_p
@@ -11904,7 +12008,7 @@ else:
  *
  * @param cfg the device configuration
  * @param extension the extension name
- * @returns whether the extension was added
+ * @return whether the extension was added
  */"""
     dvz_device_config_request_extension.argtypes = [ctypes.POINTER(DvzDeviceConfig), ctypes.c_char_p]
     dvz_device_config_request_extension.restype = ctypes.c_bool
@@ -11921,7 +12025,7 @@ else:
  * @param cfg the device configuration
  * @param family the queue family index
  * @param count the number of queues requested
- * @returns whether the request was added
+ * @return whether the request was added
  */"""
     dvz_device_config_request_queue.argtypes = [ctypes.POINTER(DvzDeviceConfig), ctypes.c_uint32, ctypes.c_uint32]
     dvz_device_config_request_queue.restype = ctypes.c_bool
@@ -11997,7 +12101,7 @@ else:
  *
  * @param cfg the device configuration
  * @param gpu_index the selected GPU index in the instance
- * @returns whether the index was stored successfully
+ * @return whether the index was stored successfully
  */"""
     dvz_device_config_set_gpu_index.argtypes = [ctypes.POINTER(DvzDeviceConfig), ctypes.c_uint32]
     dvz_device_config_set_gpu_index.restype = ctypes.c_bool
@@ -12012,7 +12116,7 @@ else:
  * Create and initialize a heap-allocated device from a configuration.
  *
  * @param cfg the device configuration
- * @returns a created device on success, `NULL` on failure
+ * @return a created device on success, `NULL` on failure
  */"""
     dvz_device_create.argtypes = [ctypes.POINTER(DvzDeviceConfig)]
     dvz_device_create.restype = ctypes.POINTER(DvzDevice)
@@ -12027,7 +12131,7 @@ else:
  * Return the descriptor pool associated to a device.
  *
  * @param device the device
- * @returns the Vulkan descriptor pool
+ * @return borrowed descriptor-pool handle, or `VK_NULL_HANDLE` if unavailable
  */"""
     dvz_device_descriptor_pool.argtypes = [ctypes.POINTER(DvzDevice)]
     dvz_device_descriptor_pool.restype = ctypes.c_void_p
@@ -12041,7 +12145,7 @@ else:
     dvz_device_destroy.__doc__ = """/**
  * Destroy a device.
  *
- * @param device
+ * @param device live logical device to destroy; NULL is ignored
  */"""
     dvz_device_destroy.argtypes = [ctypes.POINTER(DvzDevice)]
     dvz_device_destroy.restype = None
@@ -12056,7 +12160,7 @@ else:
  * Return the Vulkan 1.0 feature set enabled on this device.
  *
  * @param device the device
- * @returns immutable pointer to enabled Vulkan 1.0 features
+ * @return borrowed immutable enabled-feature storage, valid until device destruction
  */"""
     dvz_device_features10.argtypes = [ctypes.POINTER(DvzDevice)]
     dvz_device_features10.restype = ctypes.c_void_p
@@ -12071,7 +12175,7 @@ else:
  * Get the Vulkan VkDevice handle of a device.
  *
  * @param device the device
- * @returns the Vulkan VkDevice handle
+ * @return borrowed Vulkan logical-device handle, or `VK_NULL_HANDLE` when unavailable
  */"""
     dvz_device_handle.argtypes = [ctypes.POINTER(DvzDevice)]
     dvz_device_handle.restype = ctypes.c_void_p
@@ -12087,7 +12191,7 @@ else:
  *
  * @param device the device
  * @param extension the extension name
- * @returns whether the device has support for the extension
+ * @return whether the device has support for the extension
  */"""
     dvz_device_has_extension.argtypes = [ctypes.POINTER(DvzDevice), ctypes.c_char_p]
     dvz_device_has_extension.restype = ctypes.c_bool
@@ -12102,7 +12206,7 @@ else:
  * Return the Vulkan physical device used by this logical device.
  *
  * @param device the device
- * @returns the Vulkan physical device handle
+ * @return borrowed Vulkan physical-device handle, or `VK_NULL_HANDLE` when unavailable
  */"""
     dvz_device_physical_device.argtypes = [ctypes.POINTER(DvzDevice)]
     dvz_device_physical_device.restype = ctypes.c_void_p
@@ -12118,7 +12222,7 @@ else:
  *
  * @param device the device
  * @param role the role
- * @returns the queue
+ * @return borrowed queue wrapper owned by the device, or NULL when the role is unavailable
  */"""
     dvz_device_queue.argtypes = [ctypes.POINTER(DvzDevice), ctypes.c_int]
     dvz_device_queue.restype = ctypes.POINTER(DvzQueue)
@@ -12204,6 +12308,12 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_dmat4_copy')
 else:
+    dvz_dmat4_copy.__doc__ = """/**
+ * Copy a double-precision 4x4 matrix.
+ *
+ * @param mat source matrix
+ * @param[out] dest destination matrix
+ */"""
     dvz_dmat4_copy.argtypes = [((ctypes.c_double * 4) * 4), ((ctypes.c_double * 4) * 4)]
     dvz_dmat4_copy.restype = None
 
@@ -12213,6 +12323,11 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_dmat4_identity')
 else:
+    dvz_dmat4_identity.__doc__ = """/**
+ * Set a double-precision 4x4 matrix to the identity matrix.
+ *
+ * @param[out] mat matrix to initialize
+ */"""
     dvz_dmat4_identity.argtypes = [((ctypes.c_double * 4) * 4)]
     dvz_dmat4_identity.restype = None
 
@@ -12222,6 +12337,12 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_dmat4_inv')
 else:
+    dvz_dmat4_inv.__doc__ = """/**
+ * Invert a double-precision 4x4 matrix.
+ *
+ * @param mat source matrix; must be invertible
+ * @param[out] dest inverse matrix; may alias @p mat
+ */"""
     dvz_dmat4_inv.argtypes = [((ctypes.c_double * 4) * 4), ((ctypes.c_double * 4) * 4)]
     dvz_dmat4_inv.restype = None
 
@@ -12231,6 +12352,12 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_dmat4_mat4')
 else:
+    dvz_dmat4_mat4.__doc__ = """/**
+ * Cast a single-precision 4x4 matrix to double precision.
+ *
+ * @param mat source matrix
+ * @param[out] dest destination matrix
+ */"""
     dvz_dmat4_mat4.argtypes = [((ctypes.c_float * 4) * 4), ((ctypes.c_double * 4) * 4)]
     dvz_dmat4_mat4.restype = None
 
@@ -12240,6 +12367,13 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_dmat4_mul')
 else:
+    dvz_dmat4_mul.__doc__ = """/**
+ * Multiply two double-precision 4x4 matrices.
+ *
+ * @param m1 left operand
+ * @param m2 right operand
+ * @param[out] dest product matrix; may alias either operand
+ */"""
     dvz_dmat4_mul.argtypes = [((ctypes.c_double * 4) * 4), ((ctypes.c_double * 4) * 4), ((ctypes.c_double * 4) * 4)]
     dvz_dmat4_mul.restype = None
 
@@ -12249,6 +12383,13 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_dmat4_mulv')
 else:
+    dvz_dmat4_mulv.__doc__ = """/**
+ * Multiply a double-precision 4x4 matrix by a four-component vector.
+ *
+ * @param m matrix operand
+ * @param v vector operand
+ * @param[out] dest product vector; may alias @p v
+ */"""
     dvz_dmat4_mulv.argtypes = [((ctypes.c_double * 4) * 4), (ctypes.c_double * 4), (ctypes.c_double * 4)]
     dvz_dmat4_mulv.restype = None
 
@@ -12258,6 +12399,14 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_dmat4_mulv3')
 else:
+    dvz_dmat4_mulv3.__doc__ = """/**
+ * Transform a three-component vector by a double-precision 4x4 matrix.
+ *
+ * @param m transformation matrix
+ * @param v source vector
+ * @param last homogeneous fourth component, commonly 1 for a position or 0 for a direction
+ * @param[out] dest first three components of the transformed vector; may alias @p v
+ */"""
     dvz_dmat4_mulv3.argtypes = [((ctypes.c_double * 4) * 4), (ctypes.c_double * 3), ctypes.c_double, (ctypes.c_double * 3)]
     dvz_dmat4_mulv3.restype = None
 
@@ -12267,6 +12416,12 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_dmat4_scale_p')
 else:
+    dvz_dmat4_scale_p.__doc__ = """/**
+ * Multiply every component of a double-precision 4x4 matrix in place.
+ *
+ * @param[in,out] m matrix to scale
+ * @param s scalar multiplier
+ */"""
     dvz_dmat4_scale_p.argtypes = [((ctypes.c_double * 4) * 4), ctypes.c_double]
     dvz_dmat4_scale_p.restype = None
 
@@ -12410,8 +12565,10 @@ else:
     dvz_drp2_recorder_close.__doc__ = """/**
  * Close a linear DRP2 recorder.
  *
- * @param recorder the recorder
- * @return whether the recorder was closed cleanly
+ * This flushes metadata and destroys the recorder even when finalization fails.
+ *
+ * @param recorder recorder to close, or NULL
+ * @return whether final metadata was written and all files closed cleanly
  */"""
     dvz_drp2_recorder_close.argtypes = [ctypes.POINTER(DvzDrp2Recorder)]
     dvz_drp2_recorder_close.restype = ctypes.c_bool
@@ -12426,8 +12583,8 @@ else:
  * Open a linear DRP2 recorder.
  *
  * @param path recording directory path
- * @param info optional recording metadata
- * @return the recorder, or NULL on error
+ * @param info optional recording metadata copied by the recorder, or NULL for defaults
+ * @return a newly allocated recorder, or NULL on error
  */"""
     dvz_drp2_recorder_open.argtypes = [ctypes.c_char_p, ctypes.POINTER(DvzDrp2RecordingInfo)]
     dvz_drp2_recorder_open.restype = ctypes.POINTER(DvzDrp2Recorder)
@@ -12442,7 +12599,7 @@ else:
  * Append one timestamped command stream to a linear DRP2 recorder.
  *
  * @param recorder the recorder
- * @param t_present presentation timestamp for this stream
+ * @param t_present presentation timestamp in seconds relative to recording start
  * @param stream the command stream to append
  * @return whether the stream was appended
  */"""
@@ -12458,7 +12615,7 @@ else:
     dvz_drp2_recording_close.__doc__ = """/**
  * Close a loaded DRP2 recording.
  *
- * @param recording loaded recording
+ * @param recording loaded recording, or NULL
  */"""
     dvz_drp2_recording_close.argtypes = [ctypes.POINTER(DvzDrp2Recording)]
     dvz_drp2_recording_close.restype = None
@@ -12540,7 +12697,8 @@ else:
  *
  * @param recording loaded recording
  * @param frame_index frame index
- * @return a newly allocated frame command stream, or NULL
+ * @return a newly allocated frame command stream that the caller must destroy with
+ * `dvz_drp2_stream_destroy()`, or NULL
  */"""
     dvz_drp2_recording_frame_stream.argtypes = [ctypes.POINTER(DvzDrp2Recording), ctypes.c_uint32]
     dvz_drp2_recording_frame_stream.restype = ctypes.POINTER(DvzDrp2CommandStream)
@@ -12601,7 +12759,8 @@ else:
  * Read a linear DRP2 recording directory.
  *
  * @param path recording directory path
- * @return a reconstructed command stream, or NULL on error
+ * @return a reconstructed command stream that the caller must destroy with
+ * `dvz_drp2_stream_destroy()`, or NULL on error
  */"""
     dvz_drp2_recording_read_stream.argtypes = [ctypes.c_char_p]
     dvz_drp2_recording_read_stream.restype = ctypes.POINTER(DvzDrp2CommandStream)
@@ -12635,7 +12794,7 @@ else:
  *
  * @param path recording directory path
  * @param stream the command stream to record
- * @param info optional recording metadata
+ * @param info optional recording metadata copied for the write, or NULL for defaults
  * @return whether the recording was written
  */"""
     dvz_drp2_recording_write_stream.argtypes = [ctypes.c_char_p, ctypes.POINTER(DvzDrp2CommandStream), ctypes.POINTER(DvzDrp2RecordingInfo)]
@@ -12664,6 +12823,11 @@ else:
     dvz_drp2_runtime_attach_frame_target.__doc__ = """/**
  * Attach a borrowed stream frame as a runtime render target.
  *
+ * The runtime retains the frame's borrowed image, image-view, and command-buffer handles under
+ * `texture_id`. They must remain valid until this target is replaced, the runtime is reset, or the
+ * runtime is destroyed. The command buffer must already be recording during subsequent execution;
+ * the runtime records into it but does not begin, end, reset, submit, or destroy it.
+ *
  * @param runtime the runtime
  * @param texture_id the DRP2 texture id to expose for render passes
  * @param frame the borrowed stream frame whose command buffer is currently recording
@@ -12680,6 +12844,10 @@ except AttributeError:
 else:
     dvz_drp2_runtime_copy_texture_to_frame.__doc__ = """/**
  * Record a copy from a runtime-owned texture into a borrowed stream frame.
+ *
+ * The destination frame must declare `DVZ_STREAM_FRAME_USAGE_COPY_DST`, and its command buffer must
+ * already be recording. This call records into the borrowed command buffer without ending,
+ * submitting, resetting, or destroying it.
  *
  * @param runtime the runtime
  * @param texture_id the DRP2 texture id to copy from
@@ -12714,15 +12882,15 @@ else:
     dvz_drp2_runtime_download_buffer.__doc__ = """/**
  * Download bytes from a DRP2 buffer into CPU memory.
  *
- * Must be called after dvz_drp2_runtime_execute() has completed.
- * The buffer must have been created with DVZ_DRP2_BUFFER_USAGE_COPY_DST usage.
+ * Must be called after dvz_drp2_runtime_execute() has completed. The requested byte range must fit
+ * in a live buffer created with `DVZ_DRP2_BUFFER_USAGE_MAP_READ`.
  *
  * @param runtime the vklite runtime
  * @param buffer_id the DRP2 buffer id used in the stream
  * @param offset byte offset within the buffer
  * @param size number of bytes to read
  * @param dst destination CPU buffer (caller-allocated, at least size bytes)
- * @return true on success
+ * @return true when the live buffer and byte range are valid and the bytes were copied
  */"""
     dvz_drp2_runtime_download_buffer.argtypes = [ctypes.POINTER(DvzDrp2Runtime), ctypes.c_uint64, ctypes.c_uint64, ctypes.c_uint64, ctypes.c_void_p]
     dvz_drp2_runtime_download_buffer.restype = ctypes.c_bool
@@ -12738,7 +12906,8 @@ else:
  *
  * @param runtime the runtime
  * @param stream the command stream
- * @return the validation result before backend execution
+ * @return the semantic-validation result for semantic-only runtimes, otherwise the backend
+ * execution result; `ok` is false when either stage fails
  */"""
     dvz_drp2_runtime_execute.argtypes = [ctypes.POINTER(DvzDrp2Runtime), ctypes.POINTER(DvzDrp2CommandStream)]
     dvz_drp2_runtime_execute.restype = DvzDrp2ValidationResult
@@ -12752,7 +12921,7 @@ else:
     dvz_drp2_runtime_get_config.__doc__ = """/**
  * Return the borrowed configuration that was used to create a DRP2 runtime.
  *
- * @param runtime the runtime
+ * @param runtime the runtime, or NULL
  * @return the runtime configuration, or zero-initialized fields when runtime is NULL
  */"""
     dvz_drp2_runtime_get_config.argtypes = [ctypes.POINTER(DvzDrp2Runtime)]
@@ -12806,8 +12975,12 @@ else:
     dvz_drp2_runtime_vklite.__doc__ = """/**
  * Create a DRP2 runtime using the vklite backend boundary.
  *
- * @param cfg the runtime configuration
- * @return the runtime, or NULL on invalid configuration
+ * The runtime copies the configuration but borrows its device and allocator. Both must remain live
+ * until the runtime is destroyed. A configuration with both pointers NULL creates a semantic-only
+ * runtime that validates streams without executing backend commands.
+ *
+ * @param cfg required runtime configuration
+ * @return a newly allocated runtime, or NULL on invalid configuration or allocation failure
  */"""
     dvz_drp2_runtime_vklite.argtypes = [ctypes.POINTER(DvzDrp2RuntimeConfig)]
     dvz_drp2_runtime_vklite.restype = ctypes.POINTER(DvzDrp2Runtime)
@@ -14681,6 +14854,12 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_dvec3')
 else:
+    dvz_dvec3.__doc__ = """/**
+ * Copy the first three components of a four-component vector.
+ *
+ * @param v4 source vector
+ * @param[out] dest resulting three-component vector
+ */"""
     dvz_dvec3.argtypes = [(ctypes.c_double * 4), (ctypes.c_double * 3)]
     dvz_dvec3.restype = None
 
@@ -14690,6 +14869,12 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_dvec3_copy')
 else:
+    dvz_dvec3_copy.__doc__ = """/**
+ * Copy a three-component double-precision vector.
+ *
+ * @param a source vector
+ * @param[out] b destination vector
+ */"""
     dvz_dvec3_copy.argtypes = [(ctypes.c_double * 3), (ctypes.c_double * 3)]
     dvz_dvec3_copy.restype = None
 
@@ -14699,6 +14884,13 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_dvec4')
 else:
+    dvz_dvec4.__doc__ = """/**
+ * Extend a three-component vector with a fourth component.
+ *
+ * @param v3 first three components
+ * @param last fourth component, commonly 1 for a position or 0 for a direction
+ * @param[out] dest resulting four-component vector
+ */"""
     dvz_dvec4.argtypes = [(ctypes.c_double * 3), ctypes.c_double, (ctypes.c_double * 4)]
     dvz_dvec4.restype = None
 
@@ -14708,6 +14900,12 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_dvec4_copy')
 else:
+    dvz_dvec4_copy.__doc__ = """/**
+ * Copy a four-component double-precision vector.
+ *
+ * @param a source vector
+ * @param[out] b destination vector
+ */"""
     dvz_dvec4_copy.argtypes = [(ctypes.c_double * 4), (ctypes.c_double * 4)]
     dvz_dvec4_copy.restype = None
 
@@ -14720,9 +14918,9 @@ else:
     dvz_easing.__doc__ = """/**
  * Apply an easing function to a normalized value.
  *
- * @param easing the easing mode
- * @param t the normalized value
- * @returns the eased value
+ * @param easing easing curve to apply
+ * @param t normalized input, normally in the interval [0, 1]
+ * @return eased value; some curves intentionally overshoot [0, 1]
  */"""
     dvz_easing.argtypes = [ctypes.c_int, ctypes.c_double]
     dvz_easing.restype = ctypes.c_double
@@ -14748,10 +14946,13 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_error_set_callback')
 else:
     _dvz_error_set_callback.__doc__ = """/**
- * Register an error callback.
+ * Register or clear the process-wide error callback.
  *
- * @param cb the error callback
- * @param user_data opaque pointer passed to the callback
+ * The callback and borrowed user data must remain valid until replaced or cleared. Passing NULL
+ * for @p cb clears the callback.
+ *
+ * @param cb callback invoked for Datoviz errors, or NULL to clear the current callback
+ * @param user_data borrowed opaque pointer passed unchanged to @p cb; may be NULL
  * @return DVZ_OK on success
  */"""
     _dvz_error_set_callback.argtypes = [DvzErrorCallback, ctypes.c_void_p]
@@ -14772,7 +14973,7 @@ else:
     dvz_fence.__doc__ = """/**
  * Initialize a fence (CPU-GPU synchronization).
  *
- * @param device the device
+ * @param device logical device that owns the fence; must outlive `fence`
  * @param signaled whether the fence is created in the signaled state or not
  * @param[out] fence the created fence
  */"""
@@ -14831,7 +15032,7 @@ else:
  * Return the Vulkan fence handle owned by a fence wrapper.
  *
  * @param fence the fence
- * @returns the Vulkan fence handle or VK_NULL_HANDLE
+ * @return borrowed Vulkan fence handle, or `VK_NULL_HANDLE` when not initialized
  */"""
     dvz_fence_handle.argtypes = [ctypes.POINTER(DvzFence)]
     dvz_fence_handle.restype = ctypes.c_void_p
@@ -14846,6 +15047,7 @@ else:
  * Return whether a fence is ready.
  *
  * @param fence the fence
+ * @return true if the fence is signaled, false if it is unsignaled or the query failed
  */"""
     dvz_fence_ready.argtypes = [ctypes.POINTER(DvzFence)]
     dvz_fence_ready.restype = ctypes.c_bool
@@ -14857,7 +15059,7 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_fence_reset')
 else:
     dvz_fence_reset.__doc__ = """/**
- * Rset the state of a fence.
+ * Reset a fence to the unsignaled state.
  *
  * @param fence the fence
  */"""
@@ -15621,8 +15823,8 @@ else:
     dvz_file_size.__doc__ = """/**
  * Return the size of a file.
  *
- * @param filename path of the file
- * @returns the size of the file
+ * @param filename path of the file; must not be NULL
+ * @return file size in bytes, or zero if the file cannot be opened (also valid for an empty file)
  */"""
     dvz_file_size.argtypes = [ctypes.c_char_p]
     dvz_file_size.restype = ctypes.c_uint64
@@ -16842,9 +17044,12 @@ else:
     dvz_geometry.__doc__ = """/**
  * Allocate a geometry object with owned vertex and index buffers.
  *
- * @param vertex_count number of vertices
- * @param index_count number of indices
- * @return the new geometry, or NULL on failure
+ * The returned object owns arrays for @p vertex_count vertices and @p index_count indices. Destroy
+ * it with `dvz_geometry_destroy()`.
+ *
+ * @param vertex_count number of vertices to allocate; may be zero for an empty geometry
+ * @param index_count number of indices to allocate; may be zero for non-indexed geometry
+ * @return new owned geometry, or NULL on invalid input or allocation failure
  */"""
     dvz_geometry.argtypes = [ctypes.c_uint32, ctypes.c_uint32]
     dvz_geometry.restype = ctypes.POINTER(DvzGeometry)
@@ -16858,8 +17063,8 @@ else:
     dvz_geometry_arrow.__doc__ = """/**
  * Create an indexed Z-axis arrow geometry.
  *
- * @param desc optional arrow descriptor
- * @return the new geometry, or NULL on failure
+ * @param desc optional borrowed arrow descriptor, or NULL for defaults
+ * @return new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()`
  */"""
     dvz_geometry_arrow.argtypes = [ctypes.POINTER(DvzGeometryArrowDesc)]
     dvz_geometry_arrow.restype = ctypes.POINTER(DvzGeometry)
@@ -16887,7 +17092,7 @@ else:
     dvz_geometry_bounds.__doc__ = """/**
  * Compute the bounds of a geometry object's positions.
  *
- * @param geometry the geometry
+ * @param geometry geometry to inspect; must not be NULL
  * @return the geometry bounds, or an empty zero bounds when no vertices exist
  */"""
     dvz_geometry_bounds.argtypes = [ctypes.POINTER(DvzGeometry)]
@@ -16902,8 +17107,8 @@ else:
     dvz_geometry_compute_normals.__doc__ = """/**
  * Recompute smooth vertex normals from triangle indices.
  *
- * @param geometry the geometry
- * @return 0 on success, -1 on invalid input
+ * @param geometry indexed triangle geometry to update; must not be NULL
+ * @return DVZ_OK on success, DVZ_ERROR on invalid input
  */"""
     dvz_geometry_compute_normals.argtypes = [ctypes.POINTER(DvzGeometry)]
     dvz_geometry_compute_normals.restype = ctypes.c_int32
@@ -16917,8 +17122,8 @@ else:
     dvz_geometry_cone.__doc__ = """/**
  * Create an indexed Z-axis cone geometry.
  *
- * @param desc optional cone descriptor
- * @return the new geometry, or NULL on failure
+ * @param desc optional borrowed cone descriptor, or NULL for defaults
+ * @return new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()`
  */"""
     dvz_geometry_cone.argtypes = [ctypes.POINTER(DvzGeometryConeDesc)]
     dvz_geometry_cone.restype = ctypes.POINTER(DvzGeometry)
@@ -16946,12 +17151,13 @@ else:
     dvz_geometry_contours.__doc__ = """/**
  * Extract contour line segments from indexed triangle geometry and per-vertex scalar values.
  *
- * @param geometry the geometry
- * @param values scalar value per vertex
- * @param value_count number of scalar values
- * @param levels contour levels
- * @param level_count number of contour levels
- * @return the extracted contour segments, or NULL on invalid input or allocation failure
+ * @param geometry borrowed indexed triangle geometry; must not be NULL
+ * @param values array containing one scalar per geometry vertex; must not be NULL
+ * @param value_count number of values; must equal the geometry vertex count
+ * @param levels array of contour levels; must not be NULL
+ * @param level_count number of contour levels; must be positive
+ * @return new owned contour segments, or NULL on invalid input or allocation failure; destroy with
+ * `dvz_geometry_contours_destroy()`
  */"""
     dvz_geometry_contours.argtypes = [ctypes.POINTER(DvzGeometry), ctypes.POINTER(ctypes.c_double), ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.c_uint32]
     dvz_geometry_contours.restype = ctypes.POINTER(DvzGeometryContours)
@@ -16965,7 +17171,7 @@ else:
     dvz_geometry_contours_destroy.__doc__ = """/**
  * Destroy extracted contour segments.
  *
- * @param contours the contour segment list
+ * @param contours owned contour segment list to destroy; may be NULL
  */"""
     dvz_geometry_contours_destroy.argtypes = [ctypes.POINTER(DvzGeometryContours)]
     dvz_geometry_contours_destroy.restype = None
@@ -16979,8 +17185,8 @@ else:
     dvz_geometry_cube.__doc__ = """/**
  * Create an indexed cube geometry.
  *
- * @param desc optional cube descriptor
- * @return the new geometry, or NULL on failure
+ * @param desc optional borrowed cube descriptor, or NULL for defaults
+ * @return new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()`
  */"""
     dvz_geometry_cube.argtypes = [ctypes.POINTER(DvzGeometryCubeDesc)]
     dvz_geometry_cube.restype = ctypes.POINTER(DvzGeometry)
@@ -17008,8 +17214,8 @@ else:
     dvz_geometry_cylinder.__doc__ = """/**
  * Create an indexed Z-axis cylinder geometry.
  *
- * @param desc optional cylinder descriptor
- * @return the new geometry, or NULL on failure
+ * @param desc optional borrowed cylinder descriptor, or NULL for defaults
+ * @return new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()`
  */"""
     dvz_geometry_cylinder.argtypes = [ctypes.POINTER(DvzGeometryCylinderDesc)]
     dvz_geometry_cylinder.restype = ctypes.POINTER(DvzGeometry)
@@ -17037,7 +17243,7 @@ else:
     dvz_geometry_destroy.__doc__ = """/**
  * Destroy a geometry object.
  *
- * @param geometry the geometry
+ * @param geometry owned geometry to destroy; may be NULL
  */"""
     dvz_geometry_destroy.argtypes = [ctypes.POINTER(DvzGeometry)]
     dvz_geometry_destroy.restype = None
@@ -17051,8 +17257,8 @@ else:
     dvz_geometry_disc.__doc__ = """/**
  * Create an indexed XY disc geometry.
  *
- * @param desc optional disc descriptor
- * @return the new geometry, or NULL on failure
+ * @param desc optional borrowed disc descriptor, or NULL for defaults
+ * @return new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()`
  */"""
     dvz_geometry_disc.argtypes = [ctypes.POINTER(DvzGeometryDiscDesc)]
     dvz_geometry_disc.restype = ctypes.POINTER(DvzGeometry)
@@ -17080,8 +17286,9 @@ else:
     dvz_geometry_edges.__doc__ = """/**
  * Derive a unique edge list from indexed triangle geometry.
  *
- * @param geometry the geometry
- * @return the derived edge list, or NULL on invalid input or allocation failure
+ * @param geometry borrowed indexed triangle geometry; must not be NULL
+ * @return new owned edge list, or NULL on invalid input or allocation failure; destroy with
+ * `dvz_geometry_edges_destroy()`
  */"""
     dvz_geometry_edges.argtypes = [ctypes.POINTER(DvzGeometry)]
     dvz_geometry_edges.restype = ctypes.POINTER(DvzGeometryEdges)
@@ -17095,7 +17302,7 @@ else:
     dvz_geometry_edges_destroy.__doc__ = """/**
  * Destroy a derived geometry edge list.
  *
- * @param edges the edge list
+ * @param edges owned edge list to destroy; may be NULL
  */"""
     dvz_geometry_edges_destroy.argtypes = [ctypes.POINTER(DvzGeometryEdges)]
     dvz_geometry_edges_destroy.restype = None
@@ -17109,9 +17316,10 @@ else:
     dvz_geometry_merge.__doc__ = """/**
  * Merge several geometry objects into one indexed geometry.
  *
- * @param count number of input geometries
- * @param geometries input geometry array
- * @return the merged geometry, or NULL on failure
+ * @param count number of input geometry pointers; must be positive
+ * @param geometries array of @p count borrowed geometry pointers; entries must not be NULL
+ * @return new owned merged geometry, or NULL on invalid input or allocation failure; destroy with
+ * `dvz_geometry_destroy()`
  */"""
     dvz_geometry_merge.argtypes = [ctypes.c_uint32, ctypes.POINTER(ctypes.POINTER(DvzGeometry))]
     dvz_geometry_merge.restype = ctypes.POINTER(DvzGeometry)
@@ -17128,9 +17336,10 @@ else:
  * The first loader slice supports `v`, `vn`, and polygonal `f` records. Faces are triangulated as
  * fans and texture coordinates/materials are ignored.
  *
- * @param filename OBJ file path
- * @param desc optional loader descriptor
- * @return the loaded geometry, or NULL on unsupported input or I/O failure
+ * @param filename OBJ file path; must not be NULL
+ * @param desc optional borrowed loader descriptor, or NULL for defaults
+ * @return new owned geometry, or NULL on unsupported input, allocation, or I/O failure; destroy
+ * with `dvz_geometry_destroy()`
  */"""
     dvz_geometry_obj.argtypes = [ctypes.c_char_p, ctypes.POINTER(DvzGeometryObjDesc)]
     dvz_geometry_obj.restype = ctypes.POINTER(DvzGeometry)
@@ -17158,8 +17367,8 @@ else:
     dvz_geometry_plane.__doc__ = """/**
  * Create an indexed XY plane geometry.
  *
- * @param desc optional plane descriptor
- * @return the new geometry, or NULL on failure
+ * @param desc optional borrowed plane descriptor, or NULL for defaults
+ * @return new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()`
  */"""
     dvz_geometry_plane.argtypes = [ctypes.POINTER(DvzGeometryPlaneDesc)]
     dvz_geometry_plane.restype = ctypes.POINTER(DvzGeometry)
@@ -17187,8 +17396,8 @@ else:
     dvz_geometry_regular_polygon.__doc__ = """/**
  * Create an indexed XY regular-polygon geometry.
  *
- * @param desc optional regular-polygon descriptor
- * @return the new geometry, or NULL on failure
+ * @param desc optional borrowed regular-polygon descriptor, or NULL for defaults
+ * @return new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()`
  */"""
     dvz_geometry_regular_polygon.argtypes = [ctypes.POINTER(DvzGeometryRegularPolygonDesc)]
     dvz_geometry_regular_polygon.restype = ctypes.POINTER(DvzGeometry)
@@ -17216,7 +17425,7 @@ else:
     dvz_geometry_reset.__doc__ = """/**
  * Free all buffers owned by a geometry object and reset it to an empty state.
  *
- * @param geometry the geometry
+ * @param geometry geometry to reset; must not be NULL
  * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_geometry_reset.argtypes = [ctypes.POINTER(DvzGeometry)]
@@ -17231,8 +17440,8 @@ else:
     dvz_geometry_sector.__doc__ = """/**
  * Create an indexed XY sector geometry.
  *
- * @param desc optional sector descriptor
- * @return the new geometry, or NULL on failure
+ * @param desc optional borrowed sector descriptor, or NULL for defaults
+ * @return new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()`
  */"""
     dvz_geometry_sector.argtypes = [ctypes.POINTER(DvzGeometrySectorDesc)]
     dvz_geometry_sector.restype = ctypes.POINTER(DvzGeometry)
@@ -17260,8 +17469,8 @@ else:
     dvz_geometry_sphere.__doc__ = """/**
  * Create an indexed UV-sphere geometry.
  *
- * @param desc optional sphere descriptor
- * @return the new geometry, or NULL on failure
+ * @param desc optional borrowed sphere descriptor, or NULL for defaults
+ * @return new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()`
  */"""
     dvz_geometry_sphere.argtypes = [ctypes.POINTER(DvzGeometrySphereDesc)]
     dvz_geometry_sphere.restype = ctypes.POINTER(DvzGeometry)
@@ -17289,8 +17498,8 @@ else:
     dvz_geometry_star.__doc__ = """/**
  * Create an indexed XY star geometry.
  *
- * @param desc optional star descriptor
- * @return the new geometry, or NULL on failure
+ * @param desc optional borrowed star descriptor, or NULL for defaults
+ * @return new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()`
  */"""
     dvz_geometry_star.argtypes = [ctypes.POINTER(DvzGeometryStarDesc)]
     dvz_geometry_star.restype = ctypes.POINTER(DvzGeometry)
@@ -17318,8 +17527,8 @@ else:
     dvz_geometry_surface_grid.__doc__ = """/**
  * Create an indexed structured surface-grid geometry.
  *
- * @param desc surface-grid descriptor
- * @return the new geometry, or NULL on failure
+ * @param desc borrowed surface-grid descriptor; must not be NULL
+ * @return new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()`
  */"""
     dvz_geometry_surface_grid.argtypes = [ctypes.POINTER(DvzGeometrySurfaceGridDesc)]
     dvz_geometry_surface_grid.restype = ctypes.POINTER(DvzGeometry)
@@ -17347,10 +17556,10 @@ else:
     dvz_geometry_surface_grid_update_heights.__doc__ = """/**
  * Update the heights of an existing structured surface-grid geometry.
  *
- * @param geometry the surface-grid geometry
- * @param heights row-major height values
- * @param count number of height values
- * @return 0 on success, -1 on invalid input
+ * @param geometry surface-grid geometry to update; must not be NULL
+ * @param heights row-major height array; must not be NULL
+ * @param count number of height values; must equal the grid vertex count
+ * @return DVZ_OK on success, DVZ_ERROR on invalid input
  */"""
     dvz_geometry_surface_grid_update_heights.argtypes = [ctypes.POINTER(DvzGeometry), ctypes.POINTER(ctypes.c_double), ctypes.c_uint32]
     dvz_geometry_surface_grid_update_heights.restype = ctypes.c_int32
@@ -17364,8 +17573,8 @@ else:
     dvz_geometry_torus.__doc__ = """/**
  * Create an indexed torus geometry around the Z axis.
  *
- * @param desc optional torus descriptor
- * @return the new geometry, or NULL on failure
+ * @param desc optional borrowed torus descriptor, or NULL for defaults
+ * @return new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()`
  */"""
     dvz_geometry_torus.argtypes = [ctypes.POINTER(DvzGeometryTorusDesc)]
     dvz_geometry_torus.restype = ctypes.POINTER(DvzGeometry)
@@ -17393,9 +17602,9 @@ else:
     dvz_geometry_transform.__doc__ = """/**
  * Apply an affine transform to positions and normals in place.
  *
- * @param geometry the geometry
- * @param transform affine transform matrix
- * @return 0 on success, -1 on invalid input
+ * @param geometry geometry to update in place; must not be NULL
+ * @param transform affine 4x4 transform matrix
+ * @return DVZ_OK on success, DVZ_ERROR on invalid input
  */"""
     dvz_geometry_transform.argtypes = [ctypes.POINTER(DvzGeometry), ((ctypes.c_double * 4) * 4)]
     dvz_geometry_transform.restype = ctypes.c_int32
@@ -18116,7 +18325,7 @@ else:
  * Return the number of configured color attachments on a graphics wrapper.
  *
  * @param graphics the graphics pipeline
- * @returns the color-attachment count
+ * @return the color-attachment count
  */"""
     dvz_graphics_color_attachment_count.argtypes = [ctypes.POINTER(DvzGraphics)]
     dvz_graphics_color_attachment_count.restype = ctypes.c_uint32
@@ -18300,7 +18509,7 @@ else:
  * Return the Vulkan pipeline handle owned by a graphics wrapper.
  *
  * @param graphics the graphics pipeline
- * @returns the Vulkan pipeline handle or VK_NULL_HANDLE
+ * @return borrowed Vulkan pipeline handle, or `VK_NULL_HANDLE` when not created
  */"""
     dvz_graphics_handle.argtypes = [ctypes.POINTER(DvzGraphics)]
     dvz_graphics_handle.restype = ctypes.c_void_p
@@ -18330,7 +18539,7 @@ else:
  * Return the pipeline layout bound to a graphics wrapper.
  *
  * @param graphics the graphics pipeline
- * @returns the pipeline layout handle or VK_NULL_HANDLE
+ * @return borrowed pipeline-layout handle, or `VK_NULL_HANDLE` when unset
  */"""
     dvz_graphics_layout_handle.argtypes = [ctypes.POINTER(DvzGraphics)]
     dvz_graphics_layout_handle.restype = ctypes.c_void_p
@@ -18446,7 +18655,7 @@ else:
  * Return the number of configured shader stages on a graphics wrapper.
  *
  * @param graphics the graphics pipeline
- * @returns the shader-stage count
+ * @return the shader-stage count
  */"""
     dvz_graphics_shader_count.argtypes = [ctypes.POINTER(DvzGraphics)]
     dvz_graphics_shader_count.restype = ctypes.c_uint32
@@ -19176,11 +19385,13 @@ else:
  * supplied figure may contain any scene panels and visuals; the viewport creates and manages the
  * offscreen view used to render that figure, then displays the latest source image in an
  * ImGui window created by dvz_gui_viewport_window().
+ * The GUI overlay and figure are borrowed and must outlive the returned viewport. Destroying the
+ * viewport disables its internally created source view but does not destroy the figure.
  *
- * @param gui the GUI overlay
- * @param figure figure to render inside the GUI viewport
- * @param config optional viewport configuration
- * @return the GUI viewport, or NULL on failure
+ * @param gui the borrowed GUI overlay; must not be NULL
+ * @param figure the borrowed figure to render; must not be NULL
+ * @param config optional viewport configuration borrowed for the call, or NULL for defaults
+ * @return a newly allocated GUI viewport owned by the caller, or NULL on failure
  */"""
     dvz_gui_viewport.argtypes = [ctypes.POINTER(DvzGui), ctypes.POINTER(DvzFigure), ctypes.POINTER(DvzGuiViewportConfig)]
     dvz_gui_viewport.restype = ctypes.POINTER(DvzGuiViewport)
@@ -19208,7 +19419,10 @@ else:
     dvz_gui_viewport_destroy.__doc__ = """/**
  * Destroy a dockable ImGui viewport.
  *
- * @param viewport the GUI viewport
+ * An internally created source view is disabled; a caller-provided source view remains enabled.
+ * The associated GUI overlay, figure, and source view are not destroyed.
+ *
+ * @param viewport the owned GUI viewport to destroy, or NULL
  */"""
     dvz_gui_viewport_destroy.argtypes = [ctypes.POINTER(DvzGuiViewport)]
     dvz_gui_viewport_destroy.restype = None
@@ -19224,12 +19438,13 @@ else:
  *
  * This is the advanced path for callers that already own the source view. Most users should
  * prefer dvz_gui_viewport(), which creates the offscreen source from a figure. The source window
- * must use offscreen canvas rendering.
+ * must use offscreen canvas rendering. The GUI overlay and source view are borrowed and must
+ * outlive the returned viewport; destroying the viewport does not destroy or disable the source.
  *
- * @param gui the GUI overlay
- * @param source view providing the rendered image
- * @param config optional viewport configuration
- * @return the GUI viewport, or NULL on failure
+ * @param gui the borrowed GUI overlay; must not be NULL
+ * @param source the borrowed offscreen view providing the rendered image; must not be NULL
+ * @param config optional viewport configuration borrowed for the call, or NULL for defaults
+ * @return a newly allocated GUI viewport owned by the caller, or NULL on failure
  */"""
     dvz_gui_viewport_from_window.argtypes = [ctypes.POINTER(DvzGui), ctypes.POINTER(DvzView), ctypes.POINTER(DvzGuiViewportConfig)]
     dvz_gui_viewport_from_window.restype = ctypes.POINTER(DvzGuiViewport)
@@ -19635,8 +19850,8 @@ else:
  * Return the Vulkan handle of an image.
  *
  * @param img the images
- * @param idx the image index
- * @returns the Vulkan image handle
+ * @param idx image index in `[0, dvz_images_count(img))`
+ * @return borrowed Vulkan image handle, possibly `VK_NULL_HANDLE` when not created
  */"""
     dvz_image_handle.argtypes = [ctypes.POINTER(DvzImages), ctypes.c_uint32]
     dvz_image_handle.restype = ctypes.c_void_p
@@ -19798,7 +20013,7 @@ else:
  * Return the number of image views owned by a views wrapper.
  *
  * @param views the image views
- * @returns the image-view count
+ * @return the image-view count
  */"""
     dvz_image_views_count.argtypes = [ctypes.POINTER(DvzImageViews)]
     dvz_image_views_count.restype = ctypes.c_uint32
@@ -19883,7 +20098,7 @@ else:
  *
  * @param views the image views
  * @param idx the image view index
- * @returns the Vulkan image view handle
+ * @return borrowed Vulkan image-view handle, possibly `VK_NULL_HANDLE` when not created
  */"""
     dvz_image_views_handle.argtypes = [ctypes.POINTER(DvzImageViews), ctypes.c_uint32]
     dvz_image_views_handle.restype = ctypes.c_void_p
@@ -19948,8 +20163,8 @@ else:
  * after setting the desired format, size, usage, and allocation policy.
  * Recreating a live image set requires dvz_images_destroy() first.
  *
- * @param device the device
- * @param allocator the Datoviz allocator
+ * @param device logical device that owns created images; must outlive `images`
+ * @param allocator allocator used for image memory; must outlive created images
  * @param type the image type (1D, 2D, or 3D)
  * @param count the number of images
  * @param[out] images the initialized images
@@ -19966,8 +20181,8 @@ else:
     dvz_images_alloc_flags.__doc__ = """/**
  * Set the allocator policy flags used when the images create their memory.
  *
- * @param image the image
- * @param flags the flags
+ * @param img initialized image wrapper
+ * @param flags Datoviz allocation policy flags
  */"""
     dvz_images_alloc_flags.argtypes = [ctypes.POINTER(DvzImages), ctypes.c_uint]
     dvz_images_alloc_flags.restype = None
@@ -19982,7 +20197,7 @@ else:
  * Return the number of images wrapped by an images object.
  *
  * @param img the images
- * @returns the image count
+ * @return the image count
  */"""
     dvz_images_count.argtypes = [ctypes.POINTER(DvzImages)]
     dvz_images_count.restype = ctypes.c_uint32
@@ -19999,8 +20214,8 @@ else:
  * This function creates the wrapped Vulkan images exactly once per live
  * wrapper. Call dvz_images_destroy() before attempting to create them again.
  *
- * @param images the images
- * @returns 0 on success, non-zero on Vulkan or Datoviz state failure
+ * @param img configured image wrapper
+ * @return 0 on success, non-zero on Vulkan or Datoviz state failure
  */"""
     dvz_images_create.argtypes = [ctypes.POINTER(DvzImages)]
     dvz_images_create.restype = ctypes.c_int
@@ -20036,7 +20251,7 @@ else:
  * This releases Datoviz-owned Vulkan images and returns the wrapper to a reusable initialized
  * state. Images installed with `dvz_images_wrap()` are borrowed and are not destroyed.
  *
- * @param images the images
+ * @param img live image wrapper; borrowed wrapped handles are retained
  */"""
     dvz_images_destroy.argtypes = [ctypes.POINTER(DvzImages)]
     dvz_images_destroy.restype = None
@@ -20050,8 +20265,8 @@ else:
     dvz_images_flags.__doc__ = """/**
  * Set the image creation flags.
  *
- * @param image the image
- * @param flags the flags
+ * @param img initialized image wrapper
+ * @param flags Vulkan image-creation flags
  */"""
     dvz_images_flags.argtypes = [ctypes.POINTER(DvzImages), ctypes.c_uint]
     dvz_images_flags.restype = None
@@ -20065,7 +20280,7 @@ else:
     dvz_images_format.__doc__ = """/**
  * Set the images format.
  *
- * @param images the images
+ * @param img initialized image wrapper
  * @param format the image format
  */"""
     dvz_images_format.argtypes = [ctypes.POINTER(DvzImages), ctypes.c_int]
@@ -20081,7 +20296,7 @@ else:
  * Return the configured image format for an images object.
  *
  * @param img the images
- * @returns the Vulkan image format
+ * @return the Vulkan image format
  */"""
     dvz_images_format_value.argtypes = [ctypes.POINTER(DvzImages)]
     dvz_images_format_value.restype = ctypes.c_int
@@ -20109,7 +20324,7 @@ else:
     dvz_images_layers.__doc__ = """/**
  * Set the number of array layers.
  *
- * @param image the image
+ * @param img initialized image wrapper
  * @param layers the number of array layers
  */"""
     dvz_images_layers.argtypes = [ctypes.POINTER(DvzImages), ctypes.c_uint32]
@@ -20124,7 +20339,7 @@ else:
     dvz_images_mip.__doc__ = """/**
  * Set the number of mip levels.
  *
- * @param image the image
+ * @param img initialized image wrapper
  * @param mip the number of mip levels
  */"""
     dvz_images_mip.argtypes = [ctypes.POINTER(DvzImages), ctypes.c_uint32]
@@ -20139,7 +20354,7 @@ else:
     dvz_images_samples.__doc__ = """/**
  * Set the number of MSAA samples.
  *
- * @param image the image
+ * @param img initialized image wrapper
  * @param samples the Vulkan samples flags
  */"""
     dvz_images_samples.argtypes = [ctypes.POINTER(DvzImages), ctypes.c_uint]
@@ -20154,7 +20369,7 @@ else:
     dvz_images_size.__doc__ = """/**
  * Set the images shape.
  *
- * @param images the images
+ * @param img initialized image wrapper
  * @param width the image width, in pixels
  * @param height the image height, in pixels
  * @param depth the image depth, in pixels
@@ -20171,7 +20386,7 @@ else:
     dvz_images_tiling.__doc__ = """/**
  * Set the images tiling.
  *
- * @param images the images
+ * @param img initialized image wrapper
  * @param tiling the image tiling
  */"""
     dvz_images_tiling.argtypes = [ctypes.POINTER(DvzImages), ctypes.c_int]
@@ -20186,7 +20401,7 @@ else:
     dvz_images_usage.__doc__ = """/**
  * Set the images usage.
  *
- * @param images the images
+ * @param img initialized image wrapper
  * @param usage the image usage
  */"""
     dvz_images_usage.argtypes = [ctypes.POINTER(DvzImages), ctypes.c_uint]
@@ -20204,11 +20419,11 @@ else:
  * The Vulkan image remains externally owned. Datoviz records the handle for view creation,
  * transitions, and descriptor binding according to later calls, but does not destroy the image.
  *
- * @param device the device
- * @param allocator the Datoviz allocator
+ * @param device logical device associated with `vk_image`; must outlive `img`
+ * @param allocator allocator associated with the image, or NULL when not needed
  * @param type the image type (1D, 2D, or 3D)
- * @param vk_image the Vulkan image handle
- * @param[out] images the initialized images
+ * @param vk_image externally owned live Vulkan image handle
+ * @param[out] img initialized wrapper that borrows `vk_image`
  */"""
     dvz_images_wrap.argtypes = [ctypes.POINTER(DvzDevice), ctypes.POINTER(DvzVma), ctypes.c_int, ctypes.c_void_p, ctypes.POINTER(DvzImages)]
     dvz_images_wrap.restype = None
@@ -20220,7 +20435,10 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_input_emit_event')
 else:
     dvz_input_emit_event.__doc__ = """/**
- * Emit a union input event.
+ * Emit a union input event. Callbacks run synchronously on the emitting thread.
+ *
+ * @param router target router; must not be NULL
+ * @param event event borrowed for the duration of the call; must not be NULL
  */"""
     dvz_input_emit_event.argtypes = [ctypes.POINTER(DvzInputRouter), ctypes.POINTER(DvzInputEvent)]
     dvz_input_emit_event.restype = None
@@ -20233,6 +20451,9 @@ except AttributeError:
 else:
     dvz_input_emit_keyboard.__doc__ = """/**
  * Emit a keyboard event. Callbacks run synchronously on the emitting thread.
+ *
+ * @param router target router; must not be NULL
+ * @param event event borrowed for the duration of the call; must not be NULL
  */"""
     dvz_input_emit_keyboard.argtypes = [ctypes.POINTER(DvzInputRouter), ctypes.POINTER(DvzKeyboardEvent)]
     dvz_input_emit_keyboard.restype = None
@@ -20244,7 +20465,10 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_input_emit_pointer')
 else:
     dvz_input_emit_pointer.__doc__ = """/**
- * Emit a pointer event. Callbacks run synchronously on the emitting thread.
+ * Emit a raw pointer event. Callbacks run synchronously on the emitting thread.
+ *
+ * @param router target router; must not be NULL
+ * @param event event borrowed for the duration of the call; must not be NULL
  */"""
     dvz_input_emit_pointer.argtypes = [ctypes.POINTER(DvzInputRouter), ctypes.POINTER(DvzPointerEvent)]
     dvz_input_emit_pointer.restype = None
@@ -20257,6 +20481,12 @@ except AttributeError:
 else:
     dvz_input_emit_resize.__doc__ = """/**
  * Emit a resize event. Callbacks run synchronously on the emitting thread.
+ *
+ * The router copies the event and caches it for `dvz_input_router_last_resize()`.
+ *
+ * @param router target router; must not be NULL
+ * @param event event borrowed for the duration of the call; dimensions are in pixels; must not be
+ * NULL
  */"""
     dvz_input_emit_resize.argtypes = [ctypes.POINTER(DvzInputRouter), ctypes.POINTER(DvzInputResizeEvent)]
     dvz_input_emit_resize.restype = None
@@ -20269,6 +20499,9 @@ except AttributeError:
 else:
     dvz_input_emit_scale.__doc__ = """/**
  * Emit a scale event. Callbacks run synchronously on the emitting thread.
+ *
+ * @param router target router; must not be NULL
+ * @param event event borrowed for the duration of the call; must not be NULL
  */"""
     dvz_input_emit_scale.argtypes = [ctypes.POINTER(DvzInputRouter), ctypes.POINTER(DvzInputScaleEvent)]
     dvz_input_emit_scale.restype = None
@@ -20280,7 +20513,10 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_input_router')
 else:
     dvz_input_router.__doc__ = """/**
- * Create a new router instance.
+ * Create an input event router.
+ *
+ * @return a new owned router, or NULL on allocation failure; destroy it with
+ * `dvz_input_router_destroy()`
  */"""
     dvz_input_router.argtypes = []
     dvz_input_router.restype = ctypes.POINTER(DvzInputRouter)
@@ -20313,6 +20549,10 @@ else:
  * Useful for late subscribers (e.g. controllers connected after window creation)
  * to learn the current window/framebuffer dimensions without waiting for the
  * next resize.
+ *
+ * @param router router to query; must not be NULL
+ * @param[out] out destination receiving a copy of the cached event; must not be NULL
+ * @return true if @p out was filled, false if no resize event has been emitted
  */"""
     dvz_input_router_last_resize.argtypes = [ctypes.POINTER(DvzInputRouter), ctypes.POINTER(DvzInputResizeEvent)]
     dvz_input_router_last_resize.restype = ctypes.c_bool
@@ -20330,10 +20570,14 @@ else:
  * `DvzPointerGestureHandler` is attached to the router, this stream also receives
  * gesture-derived pointer events such as click, double-click, drag-start, drag, and drag-stop.
  *
+ * @param router target router; must not be NULL
+ * @param callback callback invoked synchronously for each union event; must not be NULL
+ * @param user_data borrowed opaque pointer passed to the callback; may be NULL and must remain
+ * valid until unsubscription or router destruction
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_event.argtypes = [ctypes.POINTER(DvzInputRouter), DvzInputCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_event.restype = ctypes.c_ulonglong
+    _dvz_input_subscribe_event.restype = ctypes.c_uint64
     def dvz_input_subscribe_event(router, callback, user_data):
         callback = _callback_coerce(DvzInputCallback, callback)
         subscription_id = _dvz_input_subscribe_event(router, callback, user_data)
@@ -20351,10 +20595,14 @@ else:
     _dvz_input_subscribe_keyboard.__doc__ = """/**
  * Subscribe to keyboard events.
  *
+ * @param router target router; must not be NULL
+ * @param callback callback invoked synchronously for each keyboard event; must not be NULL
+ * @param user_data borrowed opaque pointer passed to the callback; may be NULL and must remain
+ * valid until unsubscription or router destruction
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_keyboard.argtypes = [ctypes.POINTER(DvzInputRouter), DvzKeyboardCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_keyboard.restype = ctypes.c_ulonglong
+    _dvz_input_subscribe_keyboard.restype = ctypes.c_uint64
     def dvz_input_subscribe_keyboard(router, callback, user_data):
         callback = _callback_coerce(DvzKeyboardCallback, callback)
         subscription_id = _dvz_input_subscribe_keyboard(router, callback, user_data)
@@ -20377,10 +20625,16 @@ else:
  * drag-start, drag, and drag-stop are emitted on the union input stream; use
  * `dvz_input_subscribe_event()` when those higher-level pointer events are needed.
  *
+ * The router borrows @p user_data and passes it unchanged to @p callback. The callback and user
+ * data must remain valid until the subscription is removed or the router is destroyed.
+ *
+ * @param router target router; must not be NULL
+ * @param callback callback invoked synchronously for each raw pointer event; must not be NULL
+ * @param user_data borrowed opaque pointer passed to the callback; may be NULL
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_pointer.argtypes = [ctypes.POINTER(DvzInputRouter), DvzPointerCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_pointer.restype = ctypes.c_ulonglong
+    _dvz_input_subscribe_pointer.restype = ctypes.c_uint64
     def dvz_input_subscribe_pointer(router, callback, user_data):
         callback = _callback_coerce(DvzPointerCallback, callback)
         subscription_id = _dvz_input_subscribe_pointer(router, callback, user_data)
@@ -20398,10 +20652,14 @@ else:
     _dvz_input_subscribe_resize.__doc__ = """/**
  * Subscribe to resize events.
  *
+ * @param router target router; must not be NULL
+ * @param callback callback invoked synchronously for each resize event; must not be NULL
+ * @param user_data borrowed opaque pointer passed to the callback; may be NULL and must remain
+ * valid until unsubscription or router destruction
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_resize.argtypes = [ctypes.POINTER(DvzInputRouter), DvzResizeCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_resize.restype = ctypes.c_ulonglong
+    _dvz_input_subscribe_resize.restype = ctypes.c_uint64
     def dvz_input_subscribe_resize(router, callback, user_data):
         callback = _callback_coerce(DvzResizeCallback, callback)
         subscription_id = _dvz_input_subscribe_resize(router, callback, user_data)
@@ -20419,10 +20677,14 @@ else:
     _dvz_input_subscribe_scale.__doc__ = """/**
  * Subscribe to content scale events.
  *
+ * @param router target router; must not be NULL
+ * @param callback callback invoked synchronously for each scale event; must not be NULL
+ * @param user_data borrowed opaque pointer passed to the callback; may be NULL and must remain
+ * valid until unsubscription or router destruction
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_scale.argtypes = [ctypes.POINTER(DvzInputRouter), DvzScaleCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_scale.restype = ctypes.c_ulonglong
+    _dvz_input_subscribe_scale.restype = ctypes.c_uint64
     def dvz_input_subscribe_scale(router, callback, user_data):
         callback = _callback_coerce(DvzScaleCallback, callback)
         subscription_id = _dvz_input_subscribe_scale(router, callback, user_data)
@@ -20438,7 +20700,9 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_input_timestamp_ns')
 else:
     dvz_input_timestamp_ns.__doc__ = """/**
- * Return a monotonic timestamp in nanoseconds.
+ * Return the current wall-clock timestamp in nanoseconds.
+ *
+ * @return Unix wall-clock timestamp in nanoseconds
  */"""
     dvz_input_timestamp_ns.argtypes = []
     dvz_input_timestamp_ns.restype = ctypes.c_uint64
@@ -20454,8 +20718,12 @@ else:
  *
  * Returns true when a callback was removed and false when @p id is `DVZ_CALLBACK_ID_NONE` or is not
  * currently registered on this router.
+ *
+ * @param router target router; must not be NULL
+ * @param id subscription identifier returned by a subscribe function
+ * @return true if the subscription was removed, false if it was not registered
  */"""
-    _dvz_input_unsubscribe.argtypes = [ctypes.POINTER(DvzInputRouter), ctypes.c_ulonglong]
+    _dvz_input_unsubscribe.argtypes = [ctypes.POINTER(DvzInputRouter), ctypes.c_uint64]
     _dvz_input_unsubscribe.restype = ctypes.c_bool
     def dvz_input_unsubscribe(router, id):
         ok = _dvz_input_unsubscribe(router, id)
@@ -20475,7 +20743,7 @@ else:
     dvz_instance_config.__doc__ = """/**
  * Return default configuration values for creating an instance.
  *
- * @returns the default instance configuration
+ * @return the default instance configuration
  */"""
     dvz_instance_config.argtypes = []
     dvz_instance_config.restype = DvzInstanceConfig
@@ -20491,7 +20759,7 @@ else:
  *
  * @param cfg the instance configuration
  * @param extension the extension name
- * @returns whether the extension was added to the request list
+ * @return whether the extension was added to the request list
  */"""
     dvz_instance_config_request_extension.argtypes = [ctypes.POINTER(DvzInstanceConfig), ctypes.c_char_p]
     dvz_instance_config_request_extension.restype = ctypes.c_bool
@@ -20507,7 +20775,7 @@ else:
  *
  * @param cfg the instance configuration
  * @param layer the layer name
- * @returns whether the layer was added to the request list
+ * @return whether the layer was added to the request list
  */"""
     dvz_instance_config_request_layer.argtypes = [ctypes.POINTER(DvzInstanceConfig), ctypes.c_char_p]
     dvz_instance_config_request_layer.restype = ctypes.c_bool
@@ -20522,7 +20790,7 @@ else:
  * Create and initialize a heap-allocated instance from a configuration.
  *
  * @param cfg the instance configuration
- * @returns a created instance on success, `NULL` on failure
+ * @return a created instance on success, `NULL` on failure
  */"""
     dvz_instance_create.argtypes = [ctypes.POINTER(DvzInstanceConfig)]
     dvz_instance_create.restype = ctypes.POINTER(DvzInstance)
@@ -20551,7 +20819,7 @@ else:
  * Return the validation error counter accumulated by an instance.
  *
  * @param instance the instance
- * @returns the number of validation errors reported through the debug callback
+ * @return the number of validation errors reported through the debug callback
  */"""
     dvz_instance_error_count.argtypes = [ctypes.POINTER(DvzInstance)]
     dvz_instance_error_count.restype = ctypes.c_uint32
@@ -20566,7 +20834,7 @@ else:
  * Return the number of detected physical GPUs.
  *
  * @param instance the instance
- * @returns the number of detected GPUs
+ * @return the number of detected GPUs
  */"""
     dvz_instance_gpu_count.argtypes = [ctypes.POINTER(DvzInstance)]
     dvz_instance_gpu_count.restype = ctypes.c_uint32
@@ -20583,7 +20851,7 @@ else:
  * @param instance the instance
  * @param gpu_index selected GPU index
  * @param[out] out_pdevice resolved Vulkan physical device
- * @returns true when the physical device handle was resolved
+ * @return true when the physical device handle was resolved
  */"""
     dvz_instance_gpu_handle.argtypes = [ctypes.POINTER(DvzInstance), ctypes.c_uint32, ctypes.c_void_p]
     dvz_instance_gpu_handle.restype = ctypes.c_bool
@@ -20600,7 +20868,7 @@ else:
  * @param instance the instance
  * @param gpu_index selected GPU index in the instance
  * @param[out] out_info descriptor output
- * @returns true when the descriptor was populated
+ * @return true when the descriptor was populated
  */"""
     dvz_instance_gpu_info.argtypes = [ctypes.POINTER(DvzInstance), ctypes.c_uint32, ctypes.POINTER(DvzGpuInfo)]
     dvz_instance_gpu_info.restype = ctypes.c_bool
@@ -20621,7 +20889,7 @@ else:
  * @param instance source instance
  * @param gpu_index selected GPU index in the instance
  * @param[out] out_caps destination queue capabilities snapshot
- * @returns whether queue capabilities were retrieved
+ * @return whether queue capabilities were retrieved
  */"""
     dvz_instance_gpu_queue_caps.argtypes = [ctypes.POINTER(DvzInstance), ctypes.c_uint32, ctypes.POINTER(DvzQueueCaps)]
     dvz_instance_gpu_queue_caps.restype = ctypes.c_bool
@@ -20636,7 +20904,7 @@ else:
  * Return the native VkInstance for a DvzInstance.
  *
  * @param instance the Datoviz instance
- * @returns the Vulkan instance
+ * @return the Vulkan instance
  */"""
     dvz_instance_handle.argtypes = [ctypes.POINTER(DvzInstance)]
     dvz_instance_handle.restype = ctypes.c_void_p
@@ -20652,7 +20920,7 @@ else:
  *
  * @param instance the instance
  * @param extension the extension name
- * @returns a boolean indicating whether this extension is supported
+ * @return a boolean indicating whether this extension is supported
  */"""
     dvz_instance_has_extension.argtypes = [ctypes.POINTER(DvzInstance), ctypes.c_char_p]
     dvz_instance_has_extension.restype = ctypes.c_bool
@@ -20668,7 +20936,7 @@ else:
  *
  * @param instance the instance
  * @param layer the layer name
- * @returns a boolean indicating whether this layer is supported
+ * @return a boolean indicating whether this layer is supported
  */"""
     dvz_instance_has_layer.argtypes = [ctypes.POINTER(DvzInstance), ctypes.c_char_p]
     dvz_instance_has_layer.restype = ctypes.c_bool
@@ -20716,7 +20984,8 @@ else:
  *
  * @param instance the instance
  * @param[out] count the number of supported extensions
- * @returns a pointer to an array of strings
+ * @return borrowed string array owned by `instance`, valid until extensions are reprobed or the
+ * instance is destroyed
  */"""
     dvz_instance_supported_extensions.argtypes = [ctypes.POINTER(DvzInstance), ctypes.POINTER(ctypes.c_uint32)]
     dvz_instance_supported_extensions.restype = ctypes.POINTER(ctypes.c_char_p)
@@ -20736,7 +21005,8 @@ else:
  *
  * @param instance the instance
  * @param[out] count the number of supported layers
- * @returns a pointer to an array of strings
+ * @return borrowed string array owned by `instance`, valid until layers are reprobed or the
+ * instance is destroyed
  */"""
     dvz_instance_supported_layers.argtypes = [ctypes.POINTER(DvzInstance), ctypes.POINTER(ctypes.c_uint32)]
     dvz_instance_supported_layers.restype = ctypes.POINTER(ctypes.c_char_p)
@@ -20874,7 +21144,7 @@ else:
  * @param semaphore_handle_type external semaphore handle type, or 0 when absent
  * @param semaphore_value timeline semaphore value associated with the export
  * @param[out] out export descriptor
- * @return 0 on success, -1 on failure
+ * @return 0 on success, non-zero on invalid input, unsupported interop, or Vulkan failure
  */"""
     dvz_interop_buffer_export.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_uint64, ctypes.c_uint64, ctypes.c_uint32, ctypes.c_int, ctypes.c_uint32, ctypes.c_uint64, ctypes.POINTER(DvzInteropBufferExport)]
     dvz_interop_buffer_export.restype = ctypes.c_int
@@ -20911,7 +21181,7 @@ else:
  * @param buffer the live Vulkan-owned buffer
  * @param config logical export range and optional timeline semaphore metadata
  * @param[out] out export descriptor
- * @return 0 on success, -1 on failure
+ * @return 0 on success, non-zero on invalid input, unsupported interop, or Vulkan failure
  */"""
     dvz_interop_buffer_export_from_buffer.argtypes = [ctypes.POINTER(DvzBuffer), ctypes.POINTER(DvzInteropBufferExportConfig), ctypes.POINTER(DvzInteropBufferExport)]
     dvz_interop_buffer_export_from_buffer.restype = ctypes.c_int
@@ -21080,6 +21350,15 @@ except AttributeError:
 else:
     dvz_keyboard_emit.__doc__ = """/**
  * Emit a keyboard event on the router.
+ *
+ * The constructed event borrows @p user_data; callbacks run synchronously before this function
+ * returns.
+ *
+ * @param router target router; must not be NULL
+ * @param type keyboard event type
+ * @param key backend-normalized key code
+ * @param mods bitwise combination of `DvzKeyboardModifiers` values
+ * @param user_data opaque pointer stored in the event; may be NULL
  */"""
     dvz_keyboard_emit.argtypes = [ctypes.POINTER(DvzInputRouter), ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_void_p]
     dvz_keyboard_emit.restype = None
@@ -21092,6 +21371,9 @@ except AttributeError:
 else:
     dvz_keyboard_modifier_bit.__doc__ = """/**
  * Return the modifier bit mask for a key.
+ *
+ * @param key key code to classify
+ * @return the corresponding `DvzKeyboardModifiers` bit, or zero for a non-modifier key
  */"""
     dvz_keyboard_modifier_bit.argtypes = [ctypes.c_int]
     dvz_keyboard_modifier_bit.restype = ctypes.c_int
@@ -21104,6 +21386,9 @@ except AttributeError:
 else:
     dvz_keyboard_modifier_state.__doc__ = """/**
  * Create a modifier tracker.
+ *
+ * @return a new owned zero-initialized tracker, or NULL on allocation failure; destroy it with
+ * `dvz_keyboard_modifier_state_destroy()`
  */"""
     dvz_keyboard_modifier_state.argtypes = []
     dvz_keyboard_modifier_state.restype = ctypes.POINTER(DvzKeyboardModifierState)
@@ -21116,6 +21401,8 @@ except AttributeError:
 else:
     dvz_keyboard_modifier_state_destroy.__doc__ = """/**
  * Destroy a modifier tracker.
+ *
+ * @param state owned tracker to destroy; may be NULL
  */"""
     dvz_keyboard_modifier_state_destroy.argtypes = [ctypes.POINTER(DvzKeyboardModifierState)]
     dvz_keyboard_modifier_state_destroy.restype = None
@@ -21128,6 +21415,9 @@ except AttributeError:
 else:
     dvz_keyboard_modifier_state_mods.__doc__ = """/**
  * Return the current modifier mask.
+ *
+ * @param state tracker to query; must not be NULL
+ * @return bitwise combination of `DvzKeyboardModifiers` values
  */"""
     dvz_keyboard_modifier_state_mods.argtypes = [ctypes.POINTER(DvzKeyboardModifierState)]
     dvz_keyboard_modifier_state_mods.restype = ctypes.c_int
@@ -21141,6 +21431,9 @@ else:
     dvz_keyboard_modifier_state_update.__doc__ = """/**
  * Update the modifier tracker with a keyboard event.
  *
+ * @param state tracker to update; must not be NULL
+ * @param type press, repeat, or release event type
+ * @param key modifier key to update
  * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_keyboard_modifier_state_update.argtypes = [ctypes.POINTER(DvzKeyboardModifierState), ctypes.c_int, ctypes.c_int]
@@ -21209,7 +21502,7 @@ else:
  * @param label_id background label ID
  * @return 0 on success, -1 on error
  */"""
-    dvz_labels_set_background.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_longlong]
+    dvz_labels_set_background.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_int64]
     dvz_labels_set_background.restype = ctypes.c_int32
 
 
@@ -21260,7 +21553,7 @@ else:
  * @param count hidden label ID count
  * @return 0 on success, -1 on error
  */"""
-    dvz_labels_set_hidden.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_void_p, ctypes.c_uint32]
+    dvz_labels_set_hidden.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(ctypes.c_int64), ctypes.c_uint32]
     dvz_labels_set_hidden.restype = ctypes.c_int32
 
 
@@ -21292,7 +21585,7 @@ else:
  * @param label_id selected label ID
  * @return 0 on success, -1 on error
  */"""
-    dvz_labels_set_selected.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_longlong]
+    dvz_labels_set_selected.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_int64]
     dvz_labels_set_selected.restype = ctypes.c_int32
 
 
@@ -21432,7 +21725,7 @@ else:
  * @param id category id to highlight
  * @return DVZ_OK when the highlight state was accepted, DVZ_ERROR on error
  */"""
-    dvz_legend_set_highlight.argtypes = [ctypes.POINTER(DvzLegend), ctypes.c_longlong]
+    dvz_legend_set_highlight.argtypes = [ctypes.POINTER(DvzLegend), ctypes.c_int64]
     dvz_legend_set_highlight.restype = ctypes.c_int32
 
 
@@ -21451,7 +21744,7 @@ else:
  * @param count number of highlighted category ids
  * @return DVZ_OK when the highlight state was accepted, DVZ_ERROR on error
  */"""
-    dvz_legend_set_highlights.argtypes = [ctypes.POINTER(DvzLegend), ctypes.c_void_p, ctypes.c_uint32]
+    dvz_legend_set_highlights.argtypes = [ctypes.POINTER(DvzLegend), ctypes.POINTER(ctypes.c_int64), ctypes.c_uint32]
     dvz_legend_set_highlights.restype = ctypes.c_int32
 
 
@@ -21525,13 +21818,11 @@ else:
     dvz_load_jpeg.__doc__ = """/**
  * Decode a JPEG image from memory into tightly packed RGBA8 pixels.
  *
- * @param bytes JPEG byte buffer
+ * @param bytes complete JPEG byte buffer; must not be NULL
  * @param size_bytes size of the JPEG byte buffer in bytes
- * @param[out] width decoded image width
- * @param[out] height decoded image height
- * @returns RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure
- *
- * @note Free the returned buffer with dvz_memory_free().
+ * @param[out] width destination receiving the decoded image width in pixels; must not be NULL
+ * @param[out] height destination receiving the decoded image height in pixels; must not be NULL
+ * @return owned RGBA8 pixel buffer, or NULL on failure; free with `dvz_memory_free()`
  */"""
     dvz_load_jpeg.argtypes = [ctypes.c_void_p, ctypes.c_uint64, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
     dvz_load_jpeg.restype = ctypes.POINTER(ctypes.c_uint8)
@@ -21545,12 +21836,11 @@ else:
     dvz_load_png.__doc__ = """/**
  * Decode a PNG image from memory into tightly packed RGB8 pixels.
  *
- * @param bytes PNG byte buffer
+ * @param bytes complete PNG byte buffer; must not be NULL
  * @param size_bytes size of the PNG byte buffer in bytes
- * @param[out] width decoded image width
- * @param[out] height decoded image height
- * @returns owned RGB8 pixel buffer allocated with the Datoviz allocator, or NULL on failure; free
- * with dvz_memory_free()
+ * @param[out] width destination receiving the decoded image width in pixels; must not be NULL
+ * @param[out] height destination receiving the decoded image height in pixels; must not be NULL
+ * @return owned RGB8 pixel buffer, or NULL on decode failure; free with `dvz_memory_free()`
  */"""
     dvz_load_png.argtypes = [ctypes.c_void_p, ctypes.c_uint64, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
     dvz_load_png.restype = ctypes.POINTER(ctypes.c_uint8)
@@ -21564,12 +21854,13 @@ else:
     dvz_make_png.__doc__ = """/**
  * Compress an sRGB RGB8 image to PNG and write it to a memory buffer.
  *
- * @param width width of the image
- * @param height height of the image
- * @param rgb pointer to tightly packed sRGB RGB8 pixels
- * @param size pointer to a variable that will contain the size of the buffer
- * @param out pointer to an owned PNG byte buffer allocated with the Datoviz allocator; free with
- * dvz_memory_free()
+ * @param width image width in pixels; must be positive
+ * @param height image height in pixels; must be positive
+ * @param rgb tightly packed sRGB RGB8 pixels containing `width * height * 3` bytes; must not be NULL
+ * @param[out] size destination receiving the PNG buffer size in bytes; must not be NULL
+ * @param[out] out destination receiving an owned PNG byte buffer; must not be NULL and the returned
+ * buffer must be freed with `dvz_memory_free()`
+ * @return zero after the encode attempt
  */"""
     dvz_make_png.argtypes = [ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint64), ctypes.POINTER(ctypes.POINTER(None))]
     dvz_make_png.restype = ctypes.c_int
@@ -21701,9 +21992,9 @@ else:
     dvz_mean.__doc__ = """/**
  * Compute the mean of an array of double values.
  *
- * @param n the number of values
- * @param values an array of double numbers
- * @returns the mean
+ * @param n number of values; must be positive
+ * @param values input array containing @p n values; must not be NULL
+ * @return arithmetic mean
  */"""
     dvz_mean.argtypes = [ctypes.c_uint32, ctypes.POINTER(ctypes.c_double)]
     dvz_mean.restype = ctypes.c_double
@@ -21775,9 +22066,9 @@ else:
     dvz_min_max.__doc__ = """/**
  * Compute the min and max of an array of float values.
  *
- * @param n the number of values
- * @param values an array of float numbers
- * @param out_min_max the min and max
+ * @param n number of values; must be positive
+ * @param values input array containing @p n values; must not be NULL
+ * @param[out] out_min_max destination receiving `{minimum, maximum}`
  */"""
     dvz_min_max.argtypes = [ctypes.c_uint32, ctypes.POINTER(ctypes.c_float), (ctypes.c_float * 2)]
     dvz_min_max.restype = None
@@ -21803,12 +22094,15 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_normalize_bytes')
 else:
     dvz_normalize_bytes.__doc__ = """/**
- * Normalize the array.
+ * Map floating-point values linearly to unsigned bytes.
  *
- * @param min_max the minimum and maximum values, mapped to 0 and 255, the result will be clipped
- * @param count the number of values
- * @param values an array of float numbers
- * @param out the out uint8 array
+ * Values at or below the selected minimum map to 0, and values at or above the maximum map to
+ * 255. When both bounds are equal, the effective maximum is `minimum + 1`.
+ *
+ * @param min_max input bounds `{minimum, maximum}`; minimum must not exceed maximum
+ * @param count number of values; must be positive
+ * @param values input array containing @p count values; must not be NULL
+ * @param[out] out destination array receiving @p count normalized bytes; must not be NULL
  */"""
     dvz_normalize_bytes.argtypes = [(ctypes.c_float * 2), ctypes.c_uint32, ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_uint8)]
     dvz_normalize_bytes.restype = None
@@ -23322,6 +23616,13 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_panzoom_desc')
 else:
+    dvz_panzoom_desc.__doc__ = """/**
+ * Return the default standalone panzoom descriptor.
+ *
+ * The default viewport is 800 by 600 pixels and no controller flags are enabled.
+ *
+ * @return a fully initialized descriptor that callers may modify
+ */"""
     dvz_panzoom_desc.argtypes = []
     dvz_panzoom_desc.restype = DvzPanzoomDesc
 
@@ -23332,7 +23633,11 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_panzoom_destroy')
 else:
     dvz_panzoom_destroy.__doc__ = """/**
- * Destroy the panzoom.
+ * Destroy a standalone panzoom controller.
+ *
+ * The controller must have been unsubscribed from any input router before this call.
+ *
+ * @param pz the owned panzoom controller to destroy; must not be NULL
  */"""
     dvz_panzoom_destroy.argtypes = [ctypes.POINTER(DvzPanzoom)]
     dvz_panzoom_destroy.restype = None
@@ -23392,7 +23697,11 @@ except AttributeError:
 else:
     dvz_panzoom_mvp.__doc__ = """/**
  * Fill the view and proj matrices of an MVP struct from the current panzoom state.
+ *
  * The model matrix is left untouched.
+ *
+ * @param pz the panzoom controller; must not be NULL
+ * @param mvp output MVP state whose view and projection matrices are replaced; must not be NULL
  */"""
     dvz_panzoom_mvp.argtypes = [ctypes.POINTER(DvzPanzoom), ctypes.POINTER(DvzMVP)]
     dvz_panzoom_mvp.restype = None
@@ -23439,7 +23748,12 @@ else:
     dvz_panzoom_pointer.__doc__ = """/**
  * Process a pointer event and update panzoom state.
  *
- * @returns true if the event was consumed
+ * The event is borrowed for the duration of the call. Events outside the configured viewport are
+ * not consumed.
+ *
+ * @param pz the panzoom controller; must not be NULL
+ * @param ev the pointer event to process, in window coordinates; must not be NULL
+ * @return true if the event was consumed
  */"""
     dvz_panzoom_pointer.argtypes = [ctypes.POINTER(DvzPanzoom), ctypes.POINTER(DvzPointerEvent)]
     dvz_panzoom_pointer.restype = ctypes.c_bool
@@ -23482,6 +23796,17 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_panzoom_resolve')
 else:
+    dvz_panzoom_resolve.__doc__ = """/**
+ * Resolve panzoom state against a caller-provided base visual extent.
+ *
+ * On success, the model matrix is identity and the output contains the resolved view and
+ * orthographic projection matrices plus the visible extent in the base extent's coordinates.
+ *
+ * @param panzoom the panzoom controller; must not be NULL
+ * @param eval borrowed evaluation parameters containing a finite, non-empty base extent
+ * @param out output resolved MVP and visible extent; must not be NULL
+ * @return true on success, false if the extent or zoom state is invalid
+ */"""
     dvz_panzoom_resolve.argtypes = [ctypes.POINTER(DvzPanzoom), ctypes.POINTER(DvzPanzoomEval), ctypes.POINTER(DvzPanzoomResolved)]
     dvz_panzoom_resolve.restype = ctypes.c_bool
 
@@ -23594,11 +23919,15 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_parse_npy')
 else:
     dvz_parse_npy.__doc__ = """/**
- * Read a NumPy NPY file from memory.
+ * Extract the data payload from an in-memory NumPy NPY v1 buffer.
  *
- * @param bytes the contents of the NPY file
- * @param size_bytes size of the file in bytes
- * @returns owned buffer containing the array elements, or NULL on failure; free with dvz_memory_free()
+ * This minimal parser validates the magic and payload offset but does not expose or convert the
+ * array dtype, shape, byte order, or storage order.
+ *
+ * @param bytes complete NPY file bytes; must not be NULL
+ * @param size_bytes size of @p bytes in bytes
+ * @return owned copy of the array payload, or NULL for invalid input or allocation failure; free
+ * with `dvz_memory_free()`
  */"""
     dvz_parse_npy.argtypes = [ctypes.c_void_p, ctypes.c_uint64]
     dvz_parse_npy.restype = ctypes.c_void_p
@@ -23892,6 +24221,9 @@ except AttributeError:
 else:
     dvz_pointer_button_from_glfw.__doc__ = """/**
  * Translate a backend mouse button identifier into the Datoviz pointer button enum.
+ *
+ * @param button GLFW mouse-button value
+ * @return the matching pointer button, or `DVZ_POINTER_BUTTON_NONE` if unsupported
  */"""
     dvz_pointer_button_from_glfw.argtypes = [ctypes.c_int]
     dvz_pointer_button_from_glfw.restype = ctypes.c_int
@@ -23904,6 +24236,21 @@ except AttributeError:
 else:
     dvz_pointer_emit_position.__doc__ = """/**
  * Emit a normalized pointer event on the router.
+ *
+ * Raw coordinates, window dimensions, and @p content_scale are stored unchanged. The constructed
+ * event borrows @p user_data and is dispatched synchronously.
+ *
+ * @param router target router; must not be NULL
+ * @param type pointer event type
+ * @param raw_x horizontal pointer position in backend window coordinates
+ * @param raw_y vertical pointer position in backend window coordinates
+ * @param window_width window width in the same units as @p raw_x
+ * @param window_height window height in the same units as @p raw_y
+ * @param button button associated with the event, or `DVZ_POINTER_BUTTON_NONE`
+ * @param mods bitwise combination of keyboard modifier flags
+ * @param content_scale backend content scale associated with the event
+ * @param timestamp_ns event timestamp in nanoseconds, or zero if unavailable
+ * @param user_data opaque pointer stored in the event; may be NULL
  */"""
     dvz_pointer_emit_position.argtypes = [ctypes.POINTER(DvzInputRouter), ctypes.c_int, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_int, ctypes.c_int, ctypes.c_float, ctypes.c_uint64, ctypes.c_void_p]
     dvz_pointer_emit_position.restype = None
@@ -23916,6 +24263,21 @@ except AttributeError:
 else:
     dvz_pointer_emit_wheel.__doc__ = """/**
  * Emit a wheel event with pixel deltas.
+ *
+ * Pointer coordinates, window dimensions, content scale, and wheel deltas are copied unchanged.
+ * Dispatch is synchronous.
+ *
+ * @param router target router; must not be NULL
+ * @param raw_x horizontal pointer position in backend window coordinates
+ * @param raw_y vertical pointer position in backend window coordinates
+ * @param window_width window width in the same units as @p raw_x
+ * @param window_height window height in the same units as @p raw_y
+ * @param dir_x horizontal wheel delta in pixels
+ * @param dir_y vertical wheel delta in pixels
+ * @param mods bitwise combination of keyboard modifier flags
+ * @param content_scale backend content scale associated with the event
+ * @param timestamp_ns event timestamp in nanoseconds, or zero if unavailable
+ * @param user_data opaque pointer stored in the event; may be NULL
  */"""
     dvz_pointer_emit_wheel.argtypes = [ctypes.POINTER(DvzInputRouter), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_int, ctypes.c_float, ctypes.c_uint64, ctypes.c_void_p]
     dvz_pointer_emit_wheel.restype = None
@@ -23932,6 +24294,9 @@ else:
  * The interpreter listens to raw pointer events and emits gesture-derived pointer events on the
  * router's union input stream. Subscribe with `dvz_input_subscribe_event()` to receive click,
  * double-click, drag-start, drag, and drag-stop events.
+ *
+ * @param router router to observe; borrowed and must outlive the handler
+ * @return a new owned handler; destroy it before destroying @p router
  */"""
     dvz_pointer_gesture_handler.argtypes = [ctypes.POINTER(DvzInputRouter)]
     dvz_pointer_gesture_handler.restype = ctypes.POINTER(DvzPointerGestureHandler)
@@ -23944,6 +24309,10 @@ except AttributeError:
 else:
     dvz_pointer_gesture_handler_destroy.__doc__ = """/**
  * Destroy the gesture interpreter.
+ *
+ * This also removes its raw-pointer subscription from the borrowed router.
+ *
+ * @param handler owned handler to destroy; may be NULL
  */"""
     dvz_pointer_gesture_handler_destroy.argtypes = [ctypes.POINTER(DvzPointerGestureHandler)]
     dvz_pointer_gesture_handler_destroy.restype = None
@@ -24529,7 +24898,11 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_prng')
 else:
-    dvz_prng.__doc__ = """/*************************************************************************************************/"""
+    dvz_prng.__doc__ = """/**
+ * Create a pseudorandom number generator seeded from the platform random device.
+ *
+ * @return a new owned generator; destroy it with `dvz_prng_destroy()`
+ */"""
     dvz_prng.argtypes = []
     dvz_prng.restype = ctypes.POINTER(DvzPrng)
 
@@ -24539,6 +24912,11 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_prng_destroy')
 else:
+    dvz_prng_destroy.__doc__ = """/**
+ * Destroy a pseudorandom number generator.
+ *
+ * @param prng owned generator to destroy; must not be NULL
+ */"""
     dvz_prng_destroy.argtypes = [ctypes.POINTER(DvzPrng)]
     dvz_prng_destroy.restype = None
 
@@ -24548,6 +24926,12 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_prng_uuid')
 else:
+    dvz_prng_uuid.__doc__ = """/**
+ * Generate the next pseudorandom 64-bit value.
+ *
+ * @param prng generator state to advance; must not be NULL
+ * @return pseudorandom value in the inclusive range [0, UINT64_MAX]
+ */"""
     dvz_prng_uuid.argtypes = [ctypes.POINTER(DvzPrng)]
     dvz_prng_uuid.restype = ctypes.c_uint64
 
@@ -24575,7 +24959,7 @@ else:
  * Return the queue family of a queue.
  *
  * @param queue the queue
- * @returns the queue family index
+ * @return the queue family index
  */"""
     dvz_queue_family.argtypes = [ctypes.POINTER(DvzQueue)]
     dvz_queue_family.restype = ctypes.c_uint32
@@ -24594,7 +24978,7 @@ else:
  *
  * @param queues the queues
  * @param role the role
- * @returns the queue
+ * @return the queue
  */"""
     dvz_queue_from_role.argtypes = [ctypes.POINTER(DvzQueues), ctypes.c_int]
     dvz_queue_from_role.restype = ctypes.POINTER(DvzQueue)
@@ -24609,7 +24993,7 @@ else:
  * Return the Vulkan handle of a queue.
  *
  * @param queue the queue
- * @returns the queue Vulkan handle
+ * @return borrowed Vulkan queue handle, or `VK_NULL_HANDLE` when unavailable
  */"""
     dvz_queue_handle.argtypes = [ctypes.POINTER(DvzQueue)]
     dvz_queue_handle.restype = ctypes.c_void_p
@@ -24624,7 +25008,7 @@ else:
  * Return the queue index of a queue.
  *
  * @param queue the queue
- * @returns the queue index
+ * @return the queue index
  */"""
     dvz_queue_index.argtypes = [ctypes.POINTER(DvzQueue)]
     dvz_queue_index.restype = ctypes.c_uint32
@@ -24640,6 +25024,7 @@ else:
  *
  * @param queue a queue
  * @param role a queue role
+ * @return true if the queue advertises the requested role
  */"""
     dvz_queue_supports.argtypes = [ctypes.POINTER(DvzQueue), ctypes.c_int]
     dvz_queue_supports.restype = ctypes.c_bool
@@ -24700,9 +25085,11 @@ else:
     dvz_range.__doc__ = """/**
  * Compute the range of an array of double values.
  *
- * @param n the number of values
- * @param values an array of double numbers
- * @param[out] min_max the min and max values
+ * If @p n is zero, this function returns without modifying @p min_max.
+ *
+ * @param n number of input values
+ * @param values input array containing @p n values; must not be NULL when @p n is positive
+ * @param[out] min_max destination receiving `{minimum, maximum}` when @p n is positive
  */"""
     dvz_range.argtypes = [ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), (ctypes.c_double * 2)]
     dvz_range.restype = None
@@ -24716,10 +25103,9 @@ else:
     dvz_read_file.__doc__ = """/**
  * Read a binary file.
  *
- * @param filename path of the file to open
- * @param[out] size of the file
- * @returns owned byte buffer allocated with the Datoviz allocator, or NULL on failure; free with
- * dvz_memory_free()
+ * @param filename path of the file to open; must not be NULL
+ * @param[out] size optional destination receiving the buffer size in bytes
+ * @return owned byte buffer, or NULL if the file cannot be opened; free with `dvz_memory_free()`
  */"""
     dvz_read_file.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint64)]
     dvz_read_file.restype = ctypes.c_void_p
@@ -24733,9 +25119,11 @@ else:
     dvz_read_gz.__doc__ = """/**
  * Read a compressed GZIP file.
  *
- * @param filename path of the GZIP compressed file to open
- * @param[out] size of the decompressed buffer
- * @returns owned decompressed buffer, or NULL on failure; free with dvz_memory_free()
+ * @param filename path of the GZIP-compressed file; must not be NULL
+ * @param[out] size destination receiving the decompressed size in bytes; must not be NULL when
+ * zlib support is enabled
+ * @return owned decompressed byte buffer, or NULL on failure or when zlib support is unavailable;
+ * free with `dvz_memory_free()`
  */"""
     dvz_read_gz.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint64)]
     dvz_read_gz.restype = ctypes.c_void_p
@@ -24749,12 +25137,10 @@ else:
     dvz_read_jpeg.__doc__ = """/**
  * Read and decode a JPEG image file into tightly packed RGBA8 pixels.
  *
- * @param filename path of the JPEG file to open
- * @param[out] width decoded image width
- * @param[out] height decoded image height
- * @returns RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure
- *
- * @note Free the returned buffer with dvz_memory_free().
+ * @param filename source JPEG file path; must not be NULL
+ * @param[out] width destination receiving the decoded image width in pixels; must not be NULL
+ * @param[out] height destination receiving the decoded image height in pixels; must not be NULL
+ * @return owned RGBA8 pixel buffer, or NULL on failure; free with `dvz_memory_free()`
  */"""
     dvz_read_jpeg.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
     dvz_read_jpeg.restype = ctypes.POINTER(ctypes.c_uint8)
@@ -24766,11 +25152,15 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_read_npy')
 else:
     dvz_read_npy.__doc__ = """/**
- * Read a NumPy NPY file.
+ * Read the data payload of a NumPy NPY v1 file.
  *
- * @param filename path of the file to open
- * @param[out] size of the file
- * @returns owned buffer containing the array elements, or NULL on failure; free with dvz_memory_free()
+ * This minimal reader strips the NPY header but does not expose or convert the array dtype, shape,
+ * byte order, or storage order.
+ *
+ * @param filename path of the file to open; must not be NULL
+ * @param[out] size optional destination receiving the payload size in bytes
+ * @return owned buffer containing the array payload, or NULL on failure; free with
+ * `dvz_memory_free()`
  */"""
     dvz_read_npy.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint64)]
     dvz_read_npy.restype = ctypes.c_void_p
@@ -24784,10 +25174,11 @@ else:
     dvz_read_ppm.__doc__ = """/**
  * Read a PPM image file.
  *
- * @param filename path of the file to open
- * @param[out] width width of the image
- * @param[out] height of the image
- * @returns owned tightly packed RGB8 pixel buffer, or NULL on failure; free with dvz_memory_free()
+ * @param filename source P6 PPM file path; must not be NULL
+ * @param[out] width destination receiving the image width in pixels; must not be NULL
+ * @param[out] height destination receiving the image height in pixels; must not be NULL
+ * @return owned tightly packed RGB8 pixel buffer, or NULL on failure; free with
+ * `dvz_memory_free()`
  */"""
     dvz_read_ppm.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
     dvz_read_ppm.restype = ctypes.POINTER(ctypes.c_uint8)
@@ -24900,7 +25291,7 @@ else:
  *
  * @param rendering the rendering
  * @param idx the color attachment index
- * @returns the attachment
+ * @return the attachment
  */"""
     dvz_rendering_color.argtypes = [ctypes.POINTER(DvzRendering), ctypes.c_uint32]
     dvz_rendering_color.restype = ctypes.c_void_p
@@ -24915,7 +25306,7 @@ else:
  * Return the number of configured color attachments.
  *
  * @param rendering the rendering
- * @returns the color attachment count
+ * @return the color attachment count
  */"""
     dvz_rendering_color_count.argtypes = [ctypes.POINTER(DvzRendering)]
     dvz_rendering_color_count.restype = ctypes.c_uint32
@@ -24948,7 +25339,7 @@ else:
  * Return the depth attachment of a rendering.
  *
  * @param rendering the rendering
- * @returns the attachment
+ * @return the attachment
  */"""
     dvz_rendering_depth.argtypes = [ctypes.POINTER(DvzRendering)]
     dvz_rendering_depth.restype = ctypes.c_void_p
@@ -24977,7 +25368,7 @@ else:
  * Return whether a depth attachment is configured.
  *
  * @param rendering the rendering
- * @returns true when a depth attachment is configured
+ * @return true when a depth attachment is configured
  */"""
     dvz_rendering_has_depth.argtypes = [ctypes.POINTER(DvzRendering)]
     dvz_rendering_has_depth.restype = ctypes.c_bool
@@ -24992,7 +25383,7 @@ else:
  * Return whether a stencil attachment is configured.
  *
  * @param rendering the rendering
- * @returns true when a stencil attachment is configured
+ * @return true when a stencil attachment is configured
  */"""
     dvz_rendering_has_stencil.argtypes = [ctypes.POINTER(DvzRendering)]
     dvz_rendering_has_stencil.restype = ctypes.c_bool
@@ -25007,7 +25398,7 @@ else:
  * Return the configured layer count.
  *
  * @param rendering the rendering
- * @returns the layer count
+ * @return the layer count
  */"""
     dvz_rendering_layer_count.argtypes = [ctypes.POINTER(DvzRendering)]
     dvz_rendering_layer_count.restype = ctypes.c_uint32
@@ -25037,7 +25428,7 @@ else:
  * Return the stencil attachment of a rendering.
  *
  * @param rendering the rendering
- * @returns the attachment
+ * @return the attachment
  */"""
     dvz_rendering_stencil.argtypes = [ctypes.POINTER(DvzRendering)]
     dvz_rendering_stencil.restype = ctypes.c_void_p
@@ -25048,6 +25439,13 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_resource_font')
 else:
+    dvz_resource_font.__doc__ = """/**
+ * Look up an embedded font resource by name.
+ *
+ * @param name resource name without a file extension; must not be NULL
+ * @param[out] size optional destination receiving the font size in bytes, or zero if not found
+ * @return borrowed immutable font bytes with static lifetime, or NULL if @p name is not found
+ */"""
     dvz_resource_font.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint64)]
     dvz_resource_font.restype = ctypes.POINTER(ctypes.c_uint8)
 
@@ -25057,6 +25455,13 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_resource_glsl')
 else:
+    dvz_resource_glsl.__doc__ = """/**
+ * Look up an embedded GLSL shader source by name.
+ *
+ * @param name resource name without a file extension; must not be NULL
+ * @param[out] size optional destination receiving the source size in bytes, or zero if not found
+ * @return borrowed immutable source bytes with static lifetime, or NULL if @p name is not found
+ */"""
     dvz_resource_glsl.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint64)]
     dvz_resource_glsl.restype = ctypes.c_char_p
 
@@ -25066,7 +25471,13 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_resource_shader')
 else:
-    dvz_resource_shader.__doc__ = """/*************************************************************************************************/"""
+    dvz_resource_shader.__doc__ = """/**
+ * Look up an embedded SPIR-V shader resource by name.
+ *
+ * @param name resource name without a file extension; must not be NULL
+ * @param[out] size optional destination receiving the resource size in bytes, or zero if not found
+ * @return borrowed immutable bytes with static lifetime, or NULL if @p name is not found
+ */"""
     dvz_resource_shader.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint64)]
     dvz_resource_shader.restype = ctypes.POINTER(ctypes.c_uint8)
 
@@ -25076,6 +25487,13 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_resource_wgsl')
 else:
+    dvz_resource_wgsl.__doc__ = """/**
+ * Look up an embedded WGSL shader source by name.
+ *
+ * @param name resource name without a file extension; must not be NULL
+ * @param[out] size optional destination receiving the source size in bytes, or zero if not found
+ * @return borrowed immutable source bytes with static lifetime, or NULL if @p name is not found
+ */"""
     dvz_resource_wgsl.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint64)]
     dvz_resource_wgsl.restype = ctypes.c_char_p
 
@@ -25301,7 +25719,7 @@ else:
  * wrapper. Call dvz_sampler_destroy() before attempting to create it again.
  *
  * @param sampler the sampler
- * @returns the creation result code
+ * @return the creation result code
  */"""
     dvz_sampler_create.argtypes = [ctypes.POINTER(DvzSampler)]
     dvz_sampler_create.restype = ctypes.c_int
@@ -25366,7 +25784,7 @@ else:
  * Return the Vulkan sampler handle.
  *
  * @param sampler sampler wrapper
- * @return wrapped Vulkan sampler handle
+ * @return borrowed Vulkan sampler handle, or `VK_NULL_HANDLE` when not created
  */"""
     dvz_sampler_handle.argtypes = [ctypes.POINTER(DvzSampler)]
     dvz_sampler_handle.restype = ctypes.c_void_p
@@ -25675,7 +26093,7 @@ else:
  * @param count the number of ids
  * @return DVZ_OK when the category table was updated, DVZ_ERROR on error
  */"""
-    dvz_scale_remove_categories.argtypes = [ctypes.POINTER(DvzScale), ctypes.c_void_p, ctypes.c_uint32]
+    dvz_scale_remove_categories.argtypes = [ctypes.POINTER(DvzScale), ctypes.POINTER(ctypes.c_int64), ctypes.c_uint32]
     dvz_scale_remove_categories.restype = ctypes.c_int32
 
 
@@ -26596,8 +27014,8 @@ else:
     dvz_semaphore.__doc__ = """/**
  * Initialize a semaphore (GPU-GPU synchronization).
  *
- * @param device the device
- * @param[out] the created semaphore
+ * @param device logical device that owns the semaphore; must outlive `semaphore`
+ * @param[out] semaphore initialized binary semaphore wrapper
  */"""
     dvz_semaphore.argtypes = [ctypes.POINTER(DvzDevice), ctypes.POINTER(DvzSemaphore)]
     dvz_semaphore.restype = None
@@ -26641,7 +27059,8 @@ else:
  *
  * @param semaphore semaphore to export
  * @param handle_type external handle type requested by the caller
- * @returns file descriptor on success, -1 on failure or unsupported platforms
+ * @return owned file descriptor on success, -1 on failure or unsupported platforms; the caller
+ * must close a successful descriptor
  */"""
     dvz_semaphore_export_fd.argtypes = [ctypes.POINTER(DvzSemaphore), ctypes.c_uint]
     dvz_semaphore_export_fd.restype = ctypes.c_int
@@ -26670,7 +27089,7 @@ else:
  * Return the Vulkan semaphore handle owned by a semaphore wrapper.
  *
  * @param semaphore the semaphore
- * @returns the Vulkan semaphore handle or VK_NULL_HANDLE
+ * @return borrowed Vulkan semaphore handle, or `VK_NULL_HANDLE` when not initialized
  */"""
     dvz_semaphore_handle.argtypes = [ctypes.POINTER(DvzSemaphore)]
     dvz_semaphore_handle.restype = ctypes.c_void_p
@@ -26684,8 +27103,8 @@ else:
     dvz_semaphore_query.__doc__ = """/**
  * Retrieve the current value of a timeline semaphore.
  *
- * @param semaphore
- * @returns the value
+ * @param semaphore live timeline semaphore to query
+ * @return current timeline value, or 0 if the query fails
  */"""
     dvz_semaphore_query.argtypes = [ctypes.POINTER(DvzSemaphore)]
     dvz_semaphore_query.restype = ctypes.c_uint64
@@ -26699,8 +27118,8 @@ else:
     dvz_semaphore_signal.__doc__ = """/**
  * Signal a timeline semaphore from the CPU.
  *
- * @param semaphore
- * @param value the value
+ * @param semaphore live timeline semaphore to signal
+ * @param value monotonically increasing timeline value to signal
  */"""
     dvz_semaphore_signal.argtypes = [ctypes.POINTER(DvzSemaphore), ctypes.c_uint64]
     dvz_semaphore_signal.restype = None
@@ -26714,9 +27133,9 @@ else:
     dvz_semaphore_timeline.__doc__ = """/**
  * Initialize a timeline semaphore (GPU-GPU synchronization).
  *
- * @param device the device
+ * @param device logical device that owns the semaphore; must outlive `semaphore`
  * @param value the initial value
- * @param[out] the created semaphore
+ * @param[out] semaphore initialized timeline semaphore wrapper
  * @param handle_type external semaphore handle type required for export (0 when unused)
  */"""
     dvz_semaphore_timeline.argtypes = [ctypes.POINTER(DvzDevice), ctypes.c_uint64, ctypes.POINTER(DvzSemaphore), ctypes.c_uint]
@@ -26731,8 +27150,8 @@ else:
     dvz_semaphore_wait.__doc__ = """/**
  * Wait a timeline semaphore on the CPU.
  *
- * @param semaphore
- * @param value the value
+ * @param semaphore live timeline semaphore to wait on
+ * @param value timeline value that must be reached
  */"""
     dvz_semaphore_wait.argtypes = [ctypes.POINTER(DvzSemaphore), ctypes.c_uint64]
     dvz_semaphore_wait.restype = None
@@ -26817,7 +27236,7 @@ else:
  * Return the shader Vulkan handle.
  *
  * @param shader the shader
- * @returns the shader module handle
+ * @return borrowed shader-module handle, or `VK_NULL_HANDLE` when not created
  */"""
     dvz_shader_handle.argtypes = [ctypes.POINTER(DvzShader)]
     dvz_shader_handle.restype = ctypes.c_void_p
@@ -26871,7 +27290,7 @@ else:
  *
  * @param slots the slots
  * @param set the descriptor-set index
- * @returns the binding count for that set
+ * @return the binding count for that set
  */"""
     dvz_slots_binding_count.argtypes = [ctypes.POINTER(DvzSlots), ctypes.c_uint32]
     dvz_slots_binding_count.restype = ctypes.c_uint32
@@ -26946,7 +27365,7 @@ else:
  * @param slots the slots
  * @param set the descriptor-set index
  * @param binding the binding index within the set
- * @returns the descriptor type
+ * @return the descriptor type
  */"""
     dvz_slots_descriptor_type.argtypes = [ctypes.POINTER(DvzSlots), ctypes.c_uint32, ctypes.c_uint32]
     dvz_slots_descriptor_type.restype = ctypes.c_int
@@ -26978,7 +27397,7 @@ else:
  * Return the device that owns a slots wrapper.
  *
  * @param slots the slots
- * @returns the owning device
+ * @return borrowed owning device, valid at least as long as the slots wrapper
  */"""
     dvz_slots_device.argtypes = [ctypes.POINTER(DvzSlots)]
     dvz_slots_device.restype = ctypes.POINTER(DvzDevice)
@@ -27007,7 +27426,7 @@ else:
  * Return the pipeline layout Vulkan handle.
  *
  * @param slots the slots
- * @returns the pipeline layout
+ * @return borrowed pipeline-layout handle, or `VK_NULL_HANDLE` when not created
  */"""
     dvz_slots_handle.argtypes = [ctypes.POINTER(DvzSlots)]
     dvz_slots_handle.restype = ctypes.c_void_p
@@ -27039,7 +27458,7 @@ else:
  * Return the number of configured push-constant ranges.
  *
  * @param slots the slots
- * @returns the push-constant range count
+ * @return the push-constant range count
  */"""
     dvz_slots_push_count.argtypes = [ctypes.POINTER(DvzSlots)]
     dvz_slots_push_count.restype = ctypes.c_uint32
@@ -27054,7 +27473,7 @@ else:
  * Return the number of descriptor sets configured on a slots wrapper.
  *
  * @param slots the slots
- * @returns the descriptor-set count
+ * @return the descriptor-set count
  */"""
     dvz_slots_set_count.argtypes = [ctypes.POINTER(DvzSlots)]
     dvz_slots_set_count.restype = ctypes.c_uint32
@@ -27070,7 +27489,7 @@ else:
  *
  * @param slots the slots
  * @param set the descriptor-set index
- * @returns the descriptor-set layout handle
+ * @return borrowed descriptor-set layout; `set` must be less than `DVZ_MAX_SETS`
  */"""
     dvz_slots_set_layout.argtypes = [ctypes.POINTER(DvzSlots), ctypes.c_uint32]
     dvz_slots_set_layout.restype = ctypes.c_void_p
@@ -27178,8 +27597,8 @@ else:
  * Attach a backend sink to a stream before it starts streaming.
  *
  * @param stream target stream
- * @param backend sink backend descriptor with callbacks
- * @param config backend-specific configuration passed through to the backend
+ * @param backend borrowed sink backend descriptor retained until stream destruction
+ * @param config borrowed backend-specific configuration retained until sink destruction
  * @returns 0 on success or -1 if the backend is invalid, the stream is running,
  *           the backend probe fails, or the backend creation fails
  */"""
@@ -27197,7 +27616,7 @@ else:
  *
  * @param stream target stream
  * @param backend_name backend name (use "auto" or NULL for automatic selection)
- * @param config backend-specific configuration passed through to the backend
+ * @param config borrowed backend-specific configuration retained until sink destruction
  * @returns 0 on success or -1 when the named backend cannot be found or attached
  */"""
     dvz_stream_attach_sink_name.argtypes = [ctypes.POINTER(DvzStream), ctypes.c_char_p, ctypes.c_void_p]
@@ -27226,8 +27645,13 @@ else:
     dvz_stream_create.__doc__ = """/**
  * Allocate a stream tied to a Vulkan device and the requested configuration.
  *
+ * The stream copies `cfg` and frame descriptors, but borrows the Vulkan device, sink registry,
+ * backend descriptors, backend configurations, and Vulkan handles referenced by frames. The
+ * registry must remain valid while attachment by name is possible. Backend descriptors and their
+ * configuration payloads must remain valid until the corresponding sink is destroyed.
+ *
  * @param device the device that owns the stream (may be NULL if not required)
- * @param sink_registry registry that holds available sink backends
+ * @param sink_registry required borrowed registry that holds available sink backends
  * @param cfg optional configuration, falls back to the default when NULL
  * @returns a new stream handle or NULL when allocation fails
  */"""
@@ -27258,7 +27682,7 @@ else:
  * Return the Vulkan device associated with the stream.
  *
  * @param stream stream handle
- * @returns the owning device or NULL when the stream is NULL
+ * @returns the borrowed device supplied at creation, or NULL when absent
  */"""
     dvz_stream_device.argtypes = [ctypes.POINTER(DvzStream)]
     dvz_stream_device.restype = ctypes.POINTER(DvzDevice)
@@ -27273,7 +27697,7 @@ else:
  * Return the configuration currently driving the stream.
  *
  * @param stream stream handle
- * @returns pointer to the configuration or NULL when the stream is NULL
+ * @returns the borrowed internal configuration, valid until stream destruction, or NULL
  */"""
     dvz_stream_get_config.argtypes = [ctypes.POINTER(DvzStream)]
     dvz_stream_get_config.restype = ctypes.POINTER(DvzStreamConfig)
@@ -27317,7 +27741,7 @@ else:
  *
  * @param registry registry to query
  * @param name backend name to look up
- * @returns the backend descriptor or NULL when no match is found
+ * @returns a borrowed registered backend descriptor, or NULL when no match is found
  */"""
     dvz_stream_sink_registry_find.argtypes = [ctypes.POINTER(DvzStreamSinkRegistry), ctypes.c_char_p]
     dvz_stream_sink_registry_find.restype = ctypes.POINTER(DvzStreamSinkBackend)
@@ -27334,7 +27758,7 @@ else:
  * @param registry registry to query
  * @param name requested backend name, "auto", or NULL for automatic selection
  * @param config configuration forwarded to the backend probe callbacks
- * @returns the selected backend or NULL when none are available
+ * @returns a borrowed registered backend descriptor, or NULL when none are available
  */"""
     dvz_stream_sink_registry_pick.argtypes = [ctypes.POINTER(DvzStreamSinkRegistry), ctypes.c_char_p, ctypes.c_void_p]
     dvz_stream_sink_registry_pick.restype = ctypes.POINTER(DvzStreamSinkBackend)
@@ -27348,8 +27772,11 @@ else:
     dvz_stream_sink_registry_register.__doc__ = """/**
  * Register a sink backend for later attachment by name or automatic selection.
  *
+ * The registry stores the descriptor pointer rather than copying the descriptor or its name.
+ * Both must remain valid until the registry is destroyed.
+ *
  * @param registry registry that owns the backend database
- * @param backend backend descriptor with callbacks and a unique name
+ * @param backend borrowed backend descriptor with callbacks and a persistent unique name
  */"""
     dvz_stream_sink_registry_register.argtypes = [ctypes.POINTER(DvzStreamSinkRegistry), ctypes.POINTER(DvzStreamSinkBackend)]
     dvz_stream_sink_registry_register.restype = None
@@ -27377,8 +27804,11 @@ else:
     dvz_stream_start.__doc__ = """/**
  * Start the stream by providing a frame description and launching every sink.
  *
+ * The descriptor is copied, but its Vulkan and operating-system handles remain borrowed and must
+ * satisfy the ownership and lifetime contract in `DvzStreamFrame` until updated or stopped.
+ *
  * @param stream stream to start
- * @param frame description of the frame image and synchronization data (required)
+ * @param frame required frame image and synchronization descriptor
  * @returns 0 on success or -1 if the stream is already running, lacks a frame,
  *           or a sink fails to start
  */"""
@@ -27425,8 +27855,11 @@ else:
     dvz_stream_update.__doc__ = """/**
  * Update the frame description while the stream is running, restarting sinks if needed.
  *
+ * The descriptor is copied. Replaced borrowed handles may be released only after this call has
+ * stopped or successfully updated every sink.
+ *
  * @param stream active stream
- * @param frame new frame metadata to apply
+ * @param frame required new frame metadata to apply
  * @returns 0 on success or a sink error code (negative when a restart fails)
  */"""
     dvz_stream_update.argtypes = [ctypes.POINTER(DvzStream), ctypes.POINTER(DvzStreamFrame)]
@@ -27474,7 +27907,7 @@ else:
  * Return the number of command buffers configured on a submission.
  *
  * @param submit the submission
- * @returns the command-buffer count
+ * @return command-buffer count
  */"""
     dvz_submit_command_count.argtypes = [ctypes.POINTER(DvzSubmit)]
     dvz_submit_command_count.restype = ctypes.c_uint32
@@ -27517,7 +27950,7 @@ else:
  * Return whether a submission has no recorded waits, signals, or command buffers.
  *
  * @param submit the submission
- * @returns true when the submission is empty
+ * @return true when the submission is empty
  */"""
     dvz_submit_is_empty.argtypes = [ctypes.POINTER(DvzSubmit)]
     dvz_submit_is_empty.restype = ctypes.c_bool
@@ -27532,8 +27965,8 @@ else:
  * Send a submission to a queue.
  *
  * @param submit the submission
- * @param queue the queue
- * @param fence the fence that is signaled once all commands have completed
+ * @param queue borrowed Vulkan queue on which to submit
+ * @param fence optional borrowed fence signaled after completion, or `VK_NULL_HANDLE`
  * @return Vulkan result code cast to int32_t (VK_SUCCESS on success)
  */"""
     dvz_submit_send.argtypes = [ctypes.POINTER(DvzSubmit), ctypes.c_void_p, ctypes.c_void_p]
@@ -27554,9 +27987,9 @@ else:
  * @param submit the submission
  * @param semaphore the semaphore
  * @param value the value to signal, if using a timeline semaphore
- * @param stage the stage in the queue's execution that depends on that wait.
+ * @param stage pipeline stage mask associated with the signal operation
  */"""
-    dvz_submit_signal.argtypes = [ctypes.POINTER(DvzSubmit), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_ulonglong]
+    dvz_submit_signal.argtypes = [ctypes.POINTER(DvzSubmit), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_uint64]
     dvz_submit_signal.restype = None
 
 
@@ -27569,7 +28002,7 @@ else:
  * Return the number of signal semaphores configured on a submission.
  *
  * @param submit the submission
- * @returns the signal-semaphore count
+ * @return signal-semaphore count
  */"""
     dvz_submit_signal_count.argtypes = [ctypes.POINTER(DvzSubmit)]
     dvz_submit_signal_count.restype = ctypes.c_uint32
@@ -27589,9 +28022,9 @@ else:
  * @param submit the submission
  * @param semaphore the semaphore
  * @param value the value to wait on, if using a timeline semaphore
- * @param stage the stage in the queue's execution that depends on that wait.
+ * @param stage destination pipeline stage mask that waits for the semaphore
  */"""
-    dvz_submit_wait.argtypes = [ctypes.POINTER(DvzSubmit), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_ulonglong]
+    dvz_submit_wait.argtypes = [ctypes.POINTER(DvzSubmit), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_uint64]
     dvz_submit_wait.restype = None
 
 
@@ -27604,7 +28037,7 @@ else:
  * Return the number of wait semaphores configured on a submission.
  *
  * @param submit the submission
- * @returns the wait-semaphore count
+ * @return wait-semaphore count
  */"""
     dvz_submit_wait_count.argtypes = [ctypes.POINTER(DvzSubmit)]
     dvz_submit_wait_count.restype = ctypes.c_uint32
@@ -28305,8 +28738,9 @@ else:
  * @param p1 first control point
  * @param p2 second control point
  * @param p3 second endpoint
- * @param desc optional tessellation descriptor
- * @return the tessellated path, or NULL on invalid input or allocation failure
+ * @param desc optional borrowed tessellation descriptor, or NULL for defaults
+ * @return new owned tessellated path, or NULL on invalid input or allocation failure; destroy with
+ * `dvz_tessellated_path_destroy()`
  */"""
     dvz_tessellate_cubic_bezier.argtypes = [(ctypes.c_double * 3), (ctypes.c_double * 3), (ctypes.c_double * 3), (ctypes.c_double * 3), ctypes.POINTER(DvzBezierTessellationDesc)]
     dvz_tessellate_cubic_bezier.restype = ctypes.POINTER(DvzTessellatedPath)
@@ -28323,8 +28757,9 @@ else:
  * @param p0 first endpoint
  * @param p1 control point
  * @param p2 second endpoint
- * @param desc optional tessellation descriptor
- * @return the tessellated path, or NULL on invalid input or allocation failure
+ * @param desc optional borrowed tessellation descriptor, or NULL for defaults
+ * @return new owned tessellated path, or NULL on invalid input or allocation failure; destroy with
+ * `dvz_tessellated_path_destroy()`
  */"""
     dvz_tessellate_quadratic_bezier.argtypes = [(ctypes.c_double * 3), (ctypes.c_double * 3), (ctypes.c_double * 3), ctypes.POINTER(DvzBezierTessellationDesc)]
     dvz_tessellate_quadratic_bezier.restype = ctypes.POINTER(DvzTessellatedPath)
@@ -28338,7 +28773,7 @@ else:
     dvz_tessellated_path_destroy.__doc__ = """/**
  * Destroy a tessellated path.
  *
- * @param path tessellated path
+ * @param path owned tessellated path to destroy; may be NULL
  */"""
     dvz_tessellated_path_destroy.argtypes = [ctypes.POINTER(DvzTessellatedPath)]
     dvz_tessellated_path_destroy.restype = None
@@ -28998,9 +29433,11 @@ else:
     dvz_triangulate_polygon.__doc__ = """/**
  * Triangulate a polygon with optional holes into indexed XY mesh geometry.
  *
- * @param polygon borrowed polygon descriptor
- * @param desc optional triangulation descriptor
- * @return the triangulated geometry, or NULL on invalid input or triangulation failure
+ * @param polygon borrowed polygon descriptor; must not be NULL and its arrays must remain valid for
+ * the duration of the call
+ * @param desc optional borrowed triangulation descriptor, or NULL for defaults
+ * @return new owned geometry, or NULL on invalid input or triangulation failure; destroy with
+ * `dvz_geometry_destroy()`
  */"""
     dvz_triangulate_polygon.argtypes = [ctypes.POINTER(DvzPolygonDesc), ctypes.POINTER(DvzTriangulationDesc)]
     dvz_triangulate_polygon.restype = ctypes.POINTER(DvzGeometry)
@@ -29444,7 +29881,12 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_vec2_copy')
 else:
-    dvz_vec2_copy.__doc__ = """/*************************************************************************************************/"""
+    dvz_vec2_copy.__doc__ = """/**
+ * Copy a two-component single-precision vector.
+ *
+ * @param a source vector
+ * @param[out] b destination vector
+ */"""
     dvz_vec2_copy.argtypes = [(ctypes.c_float * 2), (ctypes.c_float * 2)]
     dvz_vec2_copy.restype = None
 
@@ -29454,6 +29896,12 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_vec3_cast')
 else:
+    dvz_vec3_cast.__doc__ = """/**
+ * Cast a three-component double-precision vector to single precision.
+ *
+ * @param a source vector; must not be NULL
+ * @param[out] b destination vector; must not be NULL
+ */"""
     dvz_vec3_cast.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
     dvz_vec3_cast.restype = None
 
@@ -29463,6 +29911,12 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_vec3_copy')
 else:
+    dvz_vec3_copy.__doc__ = """/**
+ * Copy a three-component single-precision vector.
+ *
+ * @param a source vector
+ * @param[out] b destination vector
+ */"""
     dvz_vec3_copy.argtypes = [(ctypes.c_float * 3), (ctypes.c_float * 3)]
     dvz_vec3_copy.restype = None
 
@@ -29554,7 +30008,7 @@ else:
     dvz_version.__doc__ = """/**
  * Return the current version string.
  *
- * @returns the version string
+ * @return borrowed, null-terminated version string with static lifetime
  */"""
     dvz_version.argtypes = []
     dvz_version.restype = ctypes.c_char_p
@@ -30395,6 +30849,8 @@ else:
  * The callback runs after the scene frame artifact has been emitted, executed, request processing
  * has completed, and the artifact-owned stream snapshot has been destroyed. Scene mutations from
  * the callback are therefore allowed and become visible on the next frame.
+ * The callback and user data are retained until replaced, cleared, or the view is destroyed; the
+ * caller must keep them valid for that lifetime.
  *
  * @param view the view
  * @param callback callback pointer, or NULL to clear it
@@ -30419,8 +30875,10 @@ else:
     _dvz_view_set_gui_callback.__doc__ = """/**
  * Register a GUI callback called while building each ImGui frame.
  *
- * The callback is applied only after `dvz_view_gui()` has created the overlay. Calling this before
- * overlay creation is a no-op in v0.4.
+ * The callback can be registered only after `dvz_view_gui()` has created the overlay; calling this
+ * before overlay creation returns DVZ_ERROR.
+ * The callback and user data are retained until replaced, cleared, or the view is destroyed; the
+ * caller must keep them valid for that lifetime.
  *
  * @param view the view
  * @param callback callback pointer, or NULL to clear it
@@ -30466,6 +30924,8 @@ else:
  *
  * This is a passive scheduling signal: it does not change dvz_app_run() behavior and does not
  * render by itself. The host remains responsible for calling dvz_view_render_once().
+ * The callback and user data are retained until replaced, cleared, or the view is destroyed; the
+ * caller must keep them valid for that lifetime.
  *
  * @param view the view
  * @param callback callback pointer, or NULL to clear it
@@ -31958,7 +32418,7 @@ else:
  * Retrieve the backend-specific handle stored with the window.
  *
  * @param window window queried for the handle
- * @returns pointer previously set with dvz_window_backend_set_handle()
+ * @returns the borrowed pointer previously set with dvz_window_backend_set_handle(), or NULL
  */"""
     dvz_window_backend_handle.argtypes = [ctypes.POINTER(DvzWindow)]
     dvz_window_backend_handle.restype = ctypes.c_void_p
@@ -31973,7 +32433,7 @@ else:
  * Retrieve backend payload associated with the window.
  *
  * @param window window queried for payload
- * @returns payload pointer or NULL
+ * @returns the borrowed backend payload pointer, or NULL
  */"""
     dvz_window_backend_payload.argtypes = [ctypes.POINTER(DvzWindow)]
     dvz_window_backend_payload.restype = ctypes.c_void_p
@@ -31988,7 +32448,7 @@ else:
  * Access the router attached to the window.
  *
  * @param window window that owns the router
- * @returns pointer to the router used for input emission
+ * @returns the borrowed router used for input emission, valid until window destruction
  */"""
     dvz_window_backend_router.argtypes = [ctypes.POINTER(DvzWindow)]
     dvz_window_backend_router.restype = ctypes.POINTER(DvzInputRouter)
@@ -32002,8 +32462,10 @@ else:
     dvz_window_backend_set_handle.__doc__ = """/**
  * Store a backend-specific handle on the window.
  *
+ * The window stores the pointer without taking ownership.
+ *
  * @param window target window
- * @param handle native handle owned by the backend
+ * @param handle borrowed native handle managed by the backend, or NULL
  */"""
     dvz_window_backend_set_handle.argtypes = [ctypes.POINTER(DvzWindow), ctypes.c_void_p]
     dvz_window_backend_set_handle.restype = None
@@ -32017,8 +32479,10 @@ else:
     dvz_window_backend_set_payload.__doc__ = """/**
  * Store additional backend data on the window.
  *
+ * The window stores the pointer without taking ownership.
+ *
  * @param window window to mutate
- * @param payload opaque backend payload pointer
+ * @param payload borrowed opaque backend payload pointer, or NULL
  */"""
     dvz_window_backend_set_payload.argtypes = [ctypes.POINTER(DvzWindow), ctypes.c_void_p]
     dvz_window_backend_set_payload.restype = None
@@ -32033,7 +32497,7 @@ else:
  * Access the surface description for mutation.
  *
  * @param window window whose surface is requested
- * @returns pointer to the surface owned by the window
+ * @returns mutable borrowed surface storage, valid until window destruction
  */"""
     dvz_window_backend_surface.argtypes = [ctypes.POINTER(DvzWindow)]
     dvz_window_backend_surface.restype = ctypes.POINTER(DvzWindowSurface)
@@ -32137,11 +32601,13 @@ else:
  * Register raw GLFW input callbacks for integrations that must see events before Datoviz routing.
  *
  * These callbacks are only used by GLFW windows. A callback returning true consumes the event and
- * prevents the corresponding Datoviz pointer/keyboard event from being emitted.
+ * prevents the corresponding Datoviz pointer/keyboard event from being emitted. The callback table
+ * is copied, but `user_data` is borrowed and must remain valid until the callbacks are replaced,
+ * cleared, or the window is destroyed.
  *
  * @param window target window
  * @param callbacks callback table, or NULL to clear it
- * @param user_data opaque pointer forwarded to every callback
+ * @param user_data borrowed opaque pointer forwarded to every callback
  */"""
     dvz_window_glfw_set_input_callbacks.argtypes = [ctypes.POINTER(DvzWindow), ctypes.POINTER(DvzWindowGlfwInputCallbacks), ctypes.c_void_p]
     dvz_window_glfw_set_input_callbacks.restype = None
@@ -32155,7 +32621,7 @@ else:
     dvz_window_host.__doc__ = """/**
  * Create a window host that stores available backends and owned windows.
  *
- * @returns pointer to the newly allocated host
+ * @returns a newly allocated host, or NULL on allocation failure
  */"""
     dvz_window_host.argtypes = []
     dvz_window_host.restype = ctypes.POINTER(DvzWindowHost)
@@ -32169,7 +32635,7 @@ else:
     dvz_window_host_destroy.__doc__ = """/**
  * Destroy a window host and all windows associated with it.
  *
- * @param host host returned by dvz_window_host()
+ * @param host host returned by dvz_window_host(), or NULL
  */"""
     dvz_window_host_destroy.argtypes = [ctypes.POINTER(DvzWindowHost)]
     dvz_window_host_destroy.restype = None
@@ -32197,8 +32663,12 @@ else:
     dvz_window_host_register_backend.__doc__ = """/**
  * Register a backend so it can be used during window creation.
  *
+ * The descriptor is copied into the host. Pointers stored inside it, including `name`, `user_data`,
+ * and callback-dependent state, remain borrowed and must outlive the host or be unregistered only
+ * by destroying the host.
+ *
  * @param host host that receives the backend
- * @param backend backend descriptor containing the callback table
+ * @param backend backend descriptor containing the callback table and borrowed state
  */"""
     dvz_window_host_register_backend.argtypes = [ctypes.POINTER(DvzWindowHost), ctypes.POINTER(DvzWindowBackend)]
     dvz_window_host_register_backend.restype = None
@@ -32243,10 +32713,13 @@ else:
     dvz_window_host_required_extensions.__doc__ = """/**
  * Query backend-required Vulkan instance extension names.
  *
+ * The returned names are borrowed from backend state and remain valid until that backend state is
+ * reconfigured or the host is destroyed.
+ *
  * @param host host that contains the backend registry
  * @param backend backend to query
  * @param capacity maximum number of names that can be written in out_extensions
- * @param out_extensions output array of extension names
+ * @param out_extensions output array receiving borrowed extension-name pointers
  * @returns number of names written, or -1 on invalid input/backend unavailable
  */"""
     dvz_window_host_required_extensions.argtypes = [ctypes.POINTER(DvzWindowHost), ctypes.c_int, ctypes.c_uint32, ctypes.POINTER(ctypes.c_char_p)]
@@ -32290,8 +32763,10 @@ else:
     dvz_window_metrics.__doc__ = """/**
  * Return the cached logical/native/surface metrics for the window.
  *
+ * The returned storage is updated in place when the window metrics change and must not be freed.
+ *
  * @param window window to query
- * @returns pointer to the metrics data owned by the window
+ * @returns the borrowed metrics data, valid until window destruction
  */"""
     dvz_window_metrics.argtypes = [ctypes.POINTER(DvzWindow)]
     dvz_window_metrics.restype = ctypes.POINTER(DvzWindowMetrics)
@@ -32348,7 +32823,7 @@ else:
  * Retrieve the router used to emit input events for the window.
  *
  * @param window window owning the router
- * @returns input router pointer
+ * @returns the borrowed input router, valid until window destruction
  */"""
     dvz_window_router.argtypes = [ctypes.POINTER(DvzWindow)]
     dvz_window_router.restype = ctypes.POINTER(DvzInputRouter)
@@ -32362,8 +32837,11 @@ else:
     dvz_window_set_user_data.__doc__ = """/**
  * Store an opaque user data pointer on the window.
  *
+ * The window does not take ownership. The pointer must remain valid for every callback that uses
+ * it, until replaced or the window is destroyed.
+ *
  * @param window destination window
- * @param user_data pointer copied verbatim
+ * @param user_data borrowed pointer copied verbatim, or NULL to clear it
  */"""
     dvz_window_set_user_data.argtypes = [ctypes.POINTER(DvzWindow), ctypes.c_void_p]
     dvz_window_set_user_data.restype = None
@@ -32394,8 +32872,10 @@ else:
     dvz_window_surface.__doc__ = """/**
  * Return the cached surface information for the window.
  *
+ * The returned storage is updated in place when the backend surface changes and must not be freed.
+ *
  * @param window window to query
- * @returns pointer to the surface data owned by the window
+ * @returns the borrowed surface data, valid until window destruction
  */"""
     dvz_window_surface.argtypes = [ctypes.POINTER(DvzWindow)]
     dvz_window_surface.restype = ctypes.POINTER(DvzWindowSurface)
@@ -32410,7 +32890,7 @@ else:
  * Read the user data pointer previously stored on a window.
  *
  * @param window window queried for user data
- * @returns pointer passed to dvz_window_set_user_data()
+ * @returns the borrowed pointer passed to dvz_window_set_user_data(), or NULL
  */"""
     dvz_window_user_data.argtypes = [ctypes.POINTER(DvzWindow)]
     dvz_window_user_data.restype = ctypes.c_void_p
@@ -32424,8 +32904,12 @@ else:
     dvz_window_wrap_attach_surface.__doc__ = """/**
  * Attach an externally-created Vulkan surface to a wrap window.
  *
+ * When `info->owned_by_datoviz` is false, the instance and surface remain caller-owned and must
+ * outlive their attachment. When true, Datoviz destroys the surface on replacement, detachment, or
+ * window destruction; the Vulkan instance always remains caller-owned and must outlive the surface.
+ *
  * @param window target window created with DVZ_BACKEND_WRAP
- * @param info external surface description
+ * @param info external surface description copied into the window
  * @returns 0 on success, -1 on invalid args/backend mismatch/invalid handles
  */"""
     dvz_window_wrap_attach_surface.argtypes = [ctypes.POINTER(DvzWindow), ctypes.POINTER(DvzWindowExternalSurfaceInfo)]
@@ -32456,7 +32940,7 @@ else:
  *
  * @param host host that owns the wrap backend state
  * @param count number of extension names passed in extensions
- * @param extensions extension-name array or NULL when count is zero
+ * @param extensions extension-name array copied by the host, or NULL when count is zero
  * @returns 0 on success, -1 on invalid input or allocation failure
  */"""
     dvz_window_wrap_set_required_extensions.argtypes = [ctypes.POINTER(DvzWindowHost), ctypes.c_uint32, ctypes.POINTER(ctypes.c_char_p)]
@@ -32471,8 +32955,11 @@ else:
     dvz_window_wrap_update_surface.__doc__ = """/**
  * Update the externally-managed Vulkan surface associated with a wrap window.
  *
+ * Ownership of the old and replacement surfaces follows each descriptor's
+ * `owned_by_datoviz` value. Passing matching null handles reports temporary surface loss.
+ *
  * @param window target window created with DVZ_BACKEND_WRAP
- * @param info external surface description
+ * @param info replacement surface description copied into the window
  * @returns 0 on success, -1 on invalid args/backend mismatch/rejected update
  */"""
     dvz_window_wrap_update_surface.argtypes = [ctypes.POINTER(DvzWindow), ctypes.POINTER(DvzWindowExternalSurfaceInfo)]
@@ -32485,12 +32972,13 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_write_bytes')
 else:
     dvz_write_bytes.__doc__ = """/**
- * Save a binary file.
+ * Write bytes to a file.
  *
- * @param filename path to the PPM file to create
- * @param mode typically "wb" or "ab"
- * @param size size of the buffer
- * @param bytes buffer
+ * @param filename destination file path; must not be NULL
+ * @param mode standard `fopen()` mode, typically `"wb"` or `"ab"`; must not be NULL
+ * @param size number of bytes to write
+ * @param bytes source buffer containing at least @p size bytes; must not be NULL when size is nonzero
+ * @return zero if the file was opened, nonzero otherwise; write errors are not reported
  */"""
     dvz_write_bytes.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_uint64, ctypes.POINTER(ctypes.c_uint8)]
     dvz_write_bytes.restype = ctypes.c_int
@@ -32504,10 +32992,12 @@ else:
     dvz_write_png.__doc__ = """/**
  * Save an sRGB RGBA8 image to a PNG file.
  *
- * @param filename path to the PNG file to create
- * @param width width of the image
- * @param height height of the image
- * @param rgba pointer to tightly packed sRGB RGBA8 pixels with straight linear alpha
+ * @param filename destination PNG file path; must not be NULL
+ * @param width image width in pixels; must be positive
+ * @param height image height in pixels; must be positive
+ * @param rgba tightly packed sRGB RGBA8 pixels with straight linear alpha; must contain
+ * `width * height * 4` bytes
+ * @return zero after the encode attempt
  */"""
     dvz_write_png.argtypes = [ctypes.c_char_p, ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint8)]
     dvz_write_png.restype = ctypes.c_int
@@ -32521,10 +33011,11 @@ else:
     dvz_write_ppm.__doc__ = """/**
  * Save an image to a PPM file (short ASCII header and flat binary RGB values).
  *
- * @param filename path to the PPM file to create
- * @param width width of the image
- * @param height height of the image
- * @param image pointer to an array of 24-bit RGB values
+ * @param filename destination PPM file path; must not be NULL
+ * @param width image width in pixels
+ * @param height image height in pixels
+ * @param image tightly packed RGB8 pixels containing `width * height * 3` bytes; must not be NULL
+ * @return zero if the file was opened, nonzero otherwise; write errors are not reported
  */"""
     dvz_write_ppm.argtypes = [ctypes.c_char_p, ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint8)]
     dvz_write_ppm.restype = ctypes.c_int

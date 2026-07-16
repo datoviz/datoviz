@@ -2591,7 +2591,7 @@ DvzDrp2ValidationResult dvz_drp2_validate_stream(
 | return | [`DvzDrp2ValidationResult`](drp2.md#type-dvzdrp2validationresult) | the validation result |
 | `stream` | `const` [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 
-_Declared in `include/datoviz/drp2/runtime.h`:163._
+_Declared in `include/datoviz/drp2/runtime.h`:167._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -3364,6 +3364,8 @@ _Declared in `include/datoviz/drp2/packet.h`:88._
 
 Close a linear DRP2 recorder.
 
+This flushes metadata and destroys the recorder even when finalization fails.
+
 ```c
 _Bool dvz_drp2_recorder_close(
     DvzDrp2Recorder * recorder
@@ -3372,10 +3374,10 @@ _Bool dvz_drp2_recorder_close(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the recorder was closed cleanly |
-| `recorder` | [`DvzDrp2Recorder`](drp2.md#type-dvzdrp2recorder) * | the recorder |
+| return | `_Bool` | whether final metadata was written and all files closed cleanly |
+| `recorder` | [`DvzDrp2Recorder`](drp2.md#type-dvzdrp2recorder) * | recorder to close, or NULL |
 
-_Declared in `include/datoviz/drp2/recording.h`:101._
+_Declared in `include/datoviz/drp2/recording.h`:103._
 
 #### `dvz_drp2_recorder_open()` { #dvz_drp2_recorder_open .dvz-api-function }
 
@@ -3390,9 +3392,9 @@ DvzDrp2Recorder * dvz_drp2_recorder_open(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzDrp2Recorder`](drp2.md#type-dvzdrp2recorder) * | the recorder, or NULL on error |
+| return | [`DvzDrp2Recorder`](drp2.md#type-dvzdrp2recorder) * | a newly allocated recorder, or NULL on error |
 | `path` | `const` `char` * | recording directory path |
-| `info` | `const` [`DvzDrp2RecordingInfo`](drp2.md#type-dvzdrp2recordinginfo) * | optional recording metadata |
+| `info` | `const` [`DvzDrp2RecordingInfo`](drp2.md#type-dvzdrp2recordinginfo) * | optional recording metadata copied by the recorder, or NULL for defaults |
 
 _Declared in `include/datoviz/drp2/recording.h`:80._
 
@@ -3412,7 +3414,7 @@ _Bool dvz_drp2_recorder_write_stream(
 | --- | --- | --- |
 | return | `_Bool` | whether the stream was appended |
 | `recorder` | [`DvzDrp2Recorder`](drp2.md#type-dvzdrp2recorder) * | the recorder |
-| `t_present` | `double` | presentation timestamp for this stream |
+| `t_present` | `double` | presentation timestamp in seconds relative to recording start |
 | `stream` | `const` [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream to append |
 
 _Declared in `include/datoviz/drp2/recording.h`:91._
@@ -3429,9 +3431,9 @@ void dvz_drp2_recording_close(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `recording` | [`DvzDrp2Recording`](drp2.md#type-dvzdrp2recording) * | loaded recording |
+| `recording` | [`DvzDrp2Recording`](drp2.md#type-dvzdrp2recording) * | loaded recording, or NULL |
 
-_Declared in `include/datoviz/drp2/recording.h`:133._
+_Declared in `include/datoviz/drp2/recording.h`:135._
 
 #### `dvz_drp2_recording_execute_all()` { #dvz_drp2_recording_execute_all .dvz-api-function }
 
@@ -3450,7 +3452,7 @@ DvzDrp2ValidationResult dvz_drp2_recording_execute_all(
 | `recording` | `const` [`DvzDrp2Recording`](drp2.md#type-dvzdrp2recording) * | loaded recording |
 | `runtime` | [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | the runtime |
 
-_Declared in `include/datoviz/drp2/recording.h`:199._
+_Declared in `include/datoviz/drp2/recording.h`:202._
 
 #### `dvz_drp2_recording_execute_frame()` { #dvz_drp2_recording_execute_frame .dvz-api-function }
 
@@ -3471,7 +3473,7 @@ DvzDrp2ValidationResult dvz_drp2_recording_execute_frame(
 | `runtime` | [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | the runtime |
 | `frame_index` | `uint32_t` | frame index |
 
-_Declared in `include/datoviz/drp2/recording.h`:187._
+_Declared in `include/datoviz/drp2/recording.h`:190._
 
 #### `dvz_drp2_recording_frame()` { #dvz_drp2_recording_frame .dvz-api-function }
 
@@ -3490,7 +3492,7 @@ const DvzDrp2RecordedFrame * dvz_drp2_recording_frame(
 | `recording` | `const` [`DvzDrp2Recording`](drp2.md#type-dvzdrp2recording) * | loaded recording |
 | `frame_index` | `uint32_t` | frame index |
 
-_Declared in `include/datoviz/drp2/recording.h`:163._
+_Declared in `include/datoviz/drp2/recording.h`:165._
 
 #### `dvz_drp2_recording_frame_count()` { #dvz_drp2_recording_frame_count .dvz-api-function }
 
@@ -3507,7 +3509,7 @@ uint32_t dvz_drp2_recording_frame_count(
 | return | `uint32_t` | the frame count |
 | `recording` | `const` [`DvzDrp2Recording`](drp2.md#type-dvzdrp2recording) * | loaded recording |
 
-_Declared in `include/datoviz/drp2/recording.h`:152._
+_Declared in `include/datoviz/drp2/recording.h`:154._
 
 #### `dvz_drp2_recording_frame_stream()` { #dvz_drp2_recording_frame_stream .dvz-api-function }
 
@@ -3524,11 +3526,11 @@ DvzDrp2CommandStream * dvz_drp2_recording_frame_stream(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | a newly allocated frame command stream, or NULL |
+| return | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | a newly allocated frame command stream that the caller must destroy with `dvz_drp2_stream_destroy()`, or NULL |
 | `recording` | `const` [`DvzDrp2Recording`](drp2.md#type-dvzdrp2recording) * | loaded recording |
 | `frame_index` | `uint32_t` | frame index |
 
-_Declared in `include/datoviz/drp2/recording.h`:176._
+_Declared in `include/datoviz/drp2/recording.h`:179._
 
 #### `dvz_drp2_recording_info()` { #dvz_drp2_recording_info .dvz-api-function }
 
@@ -3559,7 +3561,7 @@ DvzDrp2Recording * dvz_drp2_recording_open(
 | return | [`DvzDrp2Recording`](drp2.md#type-dvzdrp2recording) * | the loaded recording, or NULL on error |
 | `path` | `const` `char` * | recording directory path |
 
-_Declared in `include/datoviz/drp2/recording.h`:125._
+_Declared in `include/datoviz/drp2/recording.h`:127._
 
 #### `dvz_drp2_recording_playback()` { #dvz_drp2_recording_playback .dvz-api-function }
 
@@ -3580,7 +3582,7 @@ DvzDrp2ValidationResult dvz_drp2_recording_playback(
 | `runtime` | [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | the runtime |
 | `paced` | `_Bool` | whether to wait for each frame timestamp before execution |
 
-_Declared in `include/datoviz/drp2/recording.h`:210._
+_Declared in `include/datoviz/drp2/recording.h`:213._
 
 #### `dvz_drp2_recording_read_stream()` { #dvz_drp2_recording_read_stream .dvz-api-function }
 
@@ -3594,10 +3596,10 @@ DvzDrp2CommandStream * dvz_drp2_recording_read_stream(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | a reconstructed command stream, or NULL on error |
+| return | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | a reconstructed command stream that the caller must destroy with `dvz_drp2_stream_destroy()`, or NULL on error |
 | `path` | `const` `char` * | recording directory path |
 
-_Declared in `include/datoviz/drp2/recording.h`:220._
+_Declared in `include/datoviz/drp2/recording.h`:224._
 
 #### `dvz_drp2_recording_stream()` { #dvz_drp2_recording_stream .dvz-api-function }
 
@@ -3614,7 +3616,7 @@ const DvzDrp2CommandStream * dvz_drp2_recording_stream(
 | return | `const` [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the full command stream, valid until the recording is closed |
 | `recording` | `const` [`DvzDrp2Recording`](drp2.md#type-dvzdrp2recording) * | loaded recording |
 
-_Declared in `include/datoviz/drp2/recording.h`:143._
+_Declared in `include/datoviz/drp2/recording.h`:145._
 
 #### `dvz_drp2_recording_write_stream()` { #dvz_drp2_recording_write_stream .dvz-api-function }
 
@@ -3636,9 +3638,9 @@ _Bool dvz_drp2_recording_write_stream(
 | return | `_Bool` | whether the recording was written |
 | `path` | `const` `char` * | recording directory path |
 | `stream` | `const` [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream to record |
-| `info` | `const` [`DvzDrp2RecordingInfo`](drp2.md#type-dvzdrp2recordinginfo) * | optional recording metadata |
+| `info` | `const` [`DvzDrp2RecordingInfo`](drp2.md#type-dvzdrp2recordinginfo) * | optional recording metadata copied for the write, or NULL for defaults |
 
-_Declared in `include/datoviz/drp2/recording.h`:115._
+_Declared in `include/datoviz/drp2/recording.h`:117._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -3717,6 +3719,11 @@ _Declared in `include/datoviz/drp2/runtime.h`:92._
 
 Attach a borrowed stream frame as a runtime render target.
 
+The runtime retains the frame's borrowed image, image-view, and command-buffer handles under
+`texture_id`. They must remain valid until this target is replaced, the runtime is reset, or the
+runtime is destroyed. The command buffer must already be recording during subsequent execution;
+the runtime records into it but does not begin, end, reset, submit, or destroy it.
+
 ```c
 _Bool dvz_drp2_runtime_attach_frame_target(
     DvzDrp2Runtime * runtime,
@@ -3732,11 +3739,15 @@ _Bool dvz_drp2_runtime_attach_frame_target(
 | `texture_id` | `uint64_t` | the DRP2 texture id to expose for render passes |
 | `frame` | `const` [`DvzStreamFrame`](app.md#type-dvzstreamframe) * | the borrowed stream frame whose command buffer is currently recording |
 
-_Declared in `include/datoviz/drp2/runtime.h`:186._
+_Declared in `include/datoviz/drp2/runtime.h`:196._
 
 #### `dvz_drp2_runtime_copy_texture_to_frame()` { #dvz_drp2_runtime_copy_texture_to_frame .dvz-api-function }
 
 Record a copy from a runtime-owned texture into a borrowed stream frame.
+
+The destination frame must declare `DVZ_STREAM_FRAME_USAGE_COPY_DST`, and its command buffer must
+already be recording. This call records into the borrowed command buffer without ending,
+submitting, resetting, or destroying it.
 
 ```c
 _Bool dvz_drp2_runtime_copy_texture_to_frame(
@@ -3753,7 +3764,7 @@ _Bool dvz_drp2_runtime_copy_texture_to_frame(
 | `texture_id` | `uint64_t` | the DRP2 texture id to copy from |
 | `frame` | `const` [`DvzStreamFrame`](app.md#type-dvzstreamframe) * | the borrowed stream frame whose command buffer is currently recording |
 
-_Declared in `include/datoviz/drp2/runtime.h`:198._
+_Declared in `include/datoviz/drp2/runtime.h`:212._
 
 #### `dvz_drp2_runtime_destroy()` { #dvz_drp2_runtime_destroy .dvz-api-function }
 
@@ -3771,14 +3782,14 @@ void dvz_drp2_runtime_destroy(
 | --- | --- | --- |
 | `runtime` | [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | the runtime |
 
-_Declared in `include/datoviz/drp2/runtime.h`:123._
+_Declared in `include/datoviz/drp2/runtime.h`:127._
 
 #### `dvz_drp2_runtime_download_buffer()` { #dvz_drp2_runtime_download_buffer .dvz-api-function }
 
 Download bytes from a DRP2 buffer into CPU memory.
 
-Must be called after dvz_drp2_runtime_execute() has completed.
-The buffer must have been created with DVZ_DRP2_BUFFER_USAGE_COPY_DST usage.
+Must be called after dvz_drp2_runtime_execute() has completed. The requested byte range must fit
+in a live buffer created with `DVZ_DRP2_BUFFER_USAGE_MAP_READ`.
 
 ```c
 _Bool dvz_drp2_runtime_download_buffer(
@@ -3792,14 +3803,14 @@ _Bool dvz_drp2_runtime_download_buffer(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true on success |
+| return | `_Bool` | true when the live buffer and byte range are valid and the bytes were copied |
 | `runtime` | [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | the vklite runtime |
 | `buffer_id` | `uint64_t` | the DRP2 buffer id used in the stream |
 | `offset` | `uint64_t` | byte offset within the buffer |
 | `size` | `uint64_t` | number of bytes to read |
 | `dst` | `void` * | destination CPU buffer (caller-allocated, at least size bytes) |
 
-_Declared in `include/datoviz/drp2/runtime.h`:215._
+_Declared in `include/datoviz/drp2/runtime.h`:229._
 
 #### `dvz_drp2_runtime_execute()` { #dvz_drp2_runtime_execute .dvz-api-function }
 
@@ -3814,11 +3825,11 @@ DvzDrp2ValidationResult dvz_drp2_runtime_execute(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzDrp2ValidationResult`](drp2.md#type-dvzdrp2validationresult) | the validation result before backend execution |
+| return | [`DvzDrp2ValidationResult`](drp2.md#type-dvzdrp2validationresult) | the semantic-validation result for semantic-only runtimes, otherwise the backend execution result; `ok` is false when either stage fails |
 | `runtime` | [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | the runtime |
 | `stream` | `const` [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 
-_Declared in `include/datoviz/drp2/runtime.h`:175._
+_Declared in `include/datoviz/drp2/runtime.h`:180._
 
 #### `dvz_drp2_runtime_get_config()` { #dvz_drp2_runtime_get_config .dvz-api-function }
 
@@ -3833,9 +3844,9 @@ DvzDrp2RuntimeConfig dvz_drp2_runtime_get_config(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | [`DvzDrp2RuntimeConfig`](drp2.md#type-dvzdrp2runtimeconfig) | the runtime configuration, or zero-initialized fields when runtime is NULL |
-| `runtime` | `const` [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | the runtime |
+| `runtime` | `const` [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | the runtime, or NULL |
 
-_Declared in `include/datoviz/drp2/runtime.h`:112._
+_Declared in `include/datoviz/drp2/runtime.h`:116._
 
 #### `dvz_drp2_runtime_register_external_buffer()` { #dvz_drp2_runtime_register_external_buffer .dvz-api-function }
 
@@ -3860,7 +3871,7 @@ _Bool dvz_drp2_runtime_register_external_buffer(
 | `buffer_id` | `uint64_t` | the DRP2 buffer id to register |
 | `desc` | `const` [`DvzDrp2ExternalBufferDesc`](drp2.md#type-dvzdrp2externalbufferdesc) * | the external buffer descriptor |
 
-_Declared in `include/datoviz/drp2/runtime.h`:151._
+_Declared in `include/datoviz/drp2/runtime.h`:155._
 
 #### `dvz_drp2_runtime_reset()` { #dvz_drp2_runtime_reset .dvz-api-function }
 
@@ -3880,11 +3891,15 @@ void dvz_drp2_runtime_reset(
 | --- | --- | --- |
 | `runtime` | [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | the runtime |
 
-_Declared in `include/datoviz/drp2/runtime.h`:136._
+_Declared in `include/datoviz/drp2/runtime.h`:140._
 
 #### `dvz_drp2_runtime_vklite()` { #dvz_drp2_runtime_vklite .dvz-api-function }
 
 Create a DRP2 runtime using the vklite backend boundary.
+
+The runtime copies the configuration but borrows its device and allocator. Both must remain live
+until the runtime is destroyed. A configuration with both pointers NULL creates a semantic-only
+runtime that validates streams without executing backend commands.
 
 ```c
 DvzDrp2Runtime * dvz_drp2_runtime_vklite(
@@ -3894,10 +3909,10 @@ DvzDrp2Runtime * dvz_drp2_runtime_vklite(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | the runtime, or NULL on invalid configuration |
-| `cfg` | `const` [`DvzDrp2RuntimeConfig`](drp2.md#type-dvzdrp2runtimeconfig) * | the runtime configuration |
+| return | [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | a newly allocated runtime, or NULL on invalid configuration or allocation failure |
+| `cfg` | `const` [`DvzDrp2RuntimeConfig`](drp2.md#type-dvzdrp2runtimeconfig) * | required runtime configuration |
 
-_Declared in `include/datoviz/drp2/runtime.h`:102._
+_Declared in `include/datoviz/drp2/runtime.h`:106._
 
 #### `dvz_drp2_runtime_vklite_config()` { #dvz_drp2_runtime_vklite_config .dvz-api-function }
 

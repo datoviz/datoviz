@@ -174,10 +174,10 @@ void dvz_arcball_angles(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * |  |
-| `out_angles` | [`vec3`](runtime-math.md#type-vec3) |  |
+| `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * | the arcball controller; must not be NULL |
+| `out_angles` | [`vec3`](runtime-math.md#type-vec3) | output Euler angles in radians |
 
-_Declared in `include/datoviz/controller/arcball.h`:215._
+_Declared in `include/datoviz/controller/arcball.h`:225._
 
 #### `dvz_arcball_connect()` { #dvz_arcball_connect .dvz-api-function }
 
@@ -196,7 +196,7 @@ DvzResult dvz_arcball_connect(
 | `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * | arcball controller |
 | `router` | [`DvzInputRouter`](app.md#type-dvzinputrouter) * | input router |
 
-_Declared in `include/datoviz/controller/arcball.h`:286._
+_Declared in `include/datoviz/controller/arcball.h`:305._
 
 #### `dvz_arcball_constrain()` { #dvz_arcball_constrain .dvz-api-function }
 
@@ -215,7 +215,7 @@ DvzResult dvz_arcball_constrain(
 | `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * | arcball controller |
 | `axis` | [`vec3`](runtime-math.md#type-vec3) | rotation constraint axis |
 
-_Declared in `include/datoviz/controller/arcball.h`:208._
+_Declared in `include/datoviz/controller/arcball.h`:215._
 
 #### `dvz_arcball_create()` { #dvz_arcball_create .dvz-api-function }
 
@@ -234,19 +234,29 @@ DvzArcball * dvz_arcball_create(
 
 Related: [`dvz_arcball_destroy()`](#dvz_arcball_destroy).
 
-_Declared in `include/datoviz/controller/arcball.h`:102._
+_Declared in `include/datoviz/controller/arcball.h`:109._
 
 #### `dvz_arcball_desc()` { #dvz_arcball_desc .dvz-api-function }
+
+Return the default standalone arcball descriptor.
+
+The default viewport is 800 by 600 pixels and no controller flags are enabled.
 
 ```c
 DvzArcballDesc dvz_arcball_desc(void);
 ```
 
-_Declared in `include/datoviz/controller/arcball.h`:92._
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzArcballDesc`](runtime-controllers.md#type-dvzarcballdesc) | a fully initialized descriptor that callers may modify |
+
+_Declared in `include/datoviz/controller/arcball.h`:99._
 
 #### `dvz_arcball_destroy()` { #dvz_arcball_destroy .dvz-api-function }
 
-Destroy the arcball.
+Destroy a standalone arcball controller.
+
+The controller must have been unsubscribed from any input router before this call.
 
 ```c
 void dvz_arcball_destroy(
@@ -256,11 +266,11 @@ void dvz_arcball_destroy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * |  |
+| `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * | the owned arcball controller to destroy; must not be NULL |
 
 Related: [`dvz_arcball_create()`](#dvz_arcball_create).
 
-_Declared in `include/datoviz/controller/arcball.h`:304._
+_Declared in `include/datoviz/controller/arcball.h`:327._
 
 #### `dvz_arcball_disconnect()` { #dvz_arcball_disconnect .dvz-api-function }
 
@@ -279,7 +289,7 @@ DvzResult dvz_arcball_disconnect(
 | `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * | arcball controller |
 | `router` | [`DvzInputRouter`](app.md#type-dvzinputrouter) * | input router |
 
-_Declared in `include/datoviz/controller/arcball.h`:297._
+_Declared in `include/datoviz/controller/arcball.h`:316._
 
 #### `dvz_arcball_end()` { #dvz_arcball_end .dvz-api-function }
 
@@ -296,7 +306,7 @@ DvzResult dvz_arcball_end(
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR on validation error |
 | `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * | arcball controller |
 
-_Declared in `include/datoviz/controller/arcball.h`:250._
+_Declared in `include/datoviz/controller/arcball.h`:260._
 
 #### `dvz_arcball_initial()` { #dvz_arcball_initial .dvz-api-function }
 
@@ -315,7 +325,7 @@ DvzResult dvz_arcball_initial(
 | `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * | arcball controller |
 | `angles` | [`vec3`](runtime-math.md#type-vec3) | initial Euler angles |
 
-_Declared in `include/datoviz/controller/arcball.h`:113._
+_Declared in `include/datoviz/controller/arcball.h`:120._
 
 #### `dvz_arcball_is_interacting()` { #dvz_arcball_is_interacting .dvz-api-function }
 
@@ -329,10 +339,10 @@ _Bool dvz_arcball_is_interacting(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true while the user is pressing or dragging the arcball |
-| `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * |  |
+| return | `_Bool` | true while a valid controller is handling a press or drag, otherwise false |
+| `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * | the arcball controller, or NULL |
 
-_Declared in `include/datoviz/controller/arcball.h`:266._
+_Declared in `include/datoviz/controller/arcball.h`:281._
 
 #### `dvz_arcball_model()` { #dvz_arcball_model .dvz-api-function }
 
@@ -353,11 +363,12 @@ DvzResult dvz_arcball_model(
 | `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * | arcball controller |
 | `model` | [`mat4`](runtime-math.md#type-mat4) | output model matrix |
 
-_Declared in `include/datoviz/controller/arcball.h`:240._
+_Declared in `include/datoviz/controller/arcball.h`:250._
 
 #### `dvz_arcball_mvp()` { #dvz_arcball_mvp .dvz-api-function }
 
 Fill the MVP struct from the current arcball state.
+
 Rotation is applied to the model matrix; pan and zoom are applied to view.
 
 ```c
@@ -369,10 +380,10 @@ void dvz_arcball_mvp(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * |  |
-| `mvp` | [`DvzMVP`](runtime-controllers.md#type-dvzmvp) * |  |
+| `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * | the arcball controller; must not be NULL |
+| `mvp` | [`DvzMVP`](runtime-controllers.md#type-dvzmvp) * | output MVP state; must not be NULL |
 
-_Declared in `include/datoviz/controller/arcball.h`:258._
+_Declared in `include/datoviz/controller/arcball.h`:272._
 
 #### `dvz_arcball_pan()` { #dvz_arcball_pan .dvz-api-function }
 
@@ -391,7 +402,7 @@ DvzResult dvz_arcball_pan(
 | `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * | arcball controller |
 | `pan` | [`vec2`](runtime-math.md#type-vec2) | panel-plane pan offset |
 
-_Declared in `include/datoviz/controller/arcball.h`:165._
+_Declared in `include/datoviz/controller/arcball.h`:172._
 
 #### `dvz_arcball_pan_shift()` { #dvz_arcball_pan_shift .dvz-api-function }
 
@@ -410,11 +421,13 @@ DvzResult dvz_arcball_pan_shift(
 | `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * | arcball controller |
 | `shift_px` | [`vec2`](runtime-math.md#type-vec2) | shift in viewport pixels |
 
-_Declared in `include/datoviz/controller/arcball.h`:185._
+_Declared in `include/datoviz/controller/arcball.h`:192._
 
 #### `dvz_arcball_pointer()` { #dvz_arcball_pointer .dvz-api-function }
 
 Process a pointer event and update arcball state.
+
+The event is borrowed for the duration of the call.
 
 ```c
 _Bool dvz_arcball_pointer(
@@ -426,10 +439,10 @@ _Bool dvz_arcball_pointer(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | `_Bool` | true if the event was consumed |
-| `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * |  |
-| `ev` | `const` [`DvzPointerEvent`](app.md#type-dvzpointerevent) * |  |
+| `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * | the arcball controller; must not be NULL |
+| `ev` | `const` [`DvzPointerEvent`](app.md#type-dvzpointerevent) * | the pointer event to process; must not be NULL |
 
-_Declared in `include/datoviz/controller/arcball.h`:275._
+_Declared in `include/datoviz/controller/arcball.h`:294._
 
 #### `dvz_arcball_reset()` { #dvz_arcball_reset .dvz-api-function }
 
@@ -446,7 +459,7 @@ DvzResult dvz_arcball_reset(
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR on validation error |
 | `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * | arcball controller |
 
-_Declared in `include/datoviz/controller/arcball.h`:123._
+_Declared in `include/datoviz/controller/arcball.h`:130._
 
 #### `dvz_arcball_resize()` { #dvz_arcball_resize .dvz-api-function }
 
@@ -467,7 +480,7 @@ DvzResult dvz_arcball_resize(
 | `width` | `float` | viewport width in pixels |
 | `height` | `float` | viewport height in pixels |
 
-_Declared in `include/datoviz/controller/arcball.h`:197._
+_Declared in `include/datoviz/controller/arcball.h`:204._
 
 #### `dvz_arcball_rotate()` { #dvz_arcball_rotate .dvz-api-function }
 
@@ -488,7 +501,7 @@ DvzResult dvz_arcball_rotate(
 | `cur_pos` | [`vec2`](runtime-math.md#type-vec2) | current pointer position in normalized device coordinates |
 | `last_pos` | [`vec2`](runtime-math.md#type-vec2) | previous pointer position in normalized device coordinates |
 
-_Declared in `include/datoviz/controller/arcball.h`:227._
+_Declared in `include/datoviz/controller/arcball.h`:237._
 
 #### `dvz_arcball_rotate_axis()` { #dvz_arcball_rotate_axis .dvz-api-function }
 
@@ -509,7 +522,7 @@ DvzResult dvz_arcball_rotate_axis(
 | `angle` | `float` | rotation angle in radians |
 | `axis` | [`vec3`](runtime-math.md#type-vec3) | rotation axis |
 
-_Declared in `include/datoviz/controller/arcball.h`:145._
+_Declared in `include/datoviz/controller/arcball.h`:152._
 
 #### `dvz_arcball_set()` { #dvz_arcball_set .dvz-api-function }
 
@@ -528,7 +541,7 @@ DvzResult dvz_arcball_set(
 | `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * | arcball controller |
 | `angles` | [`vec3`](runtime-math.md#type-vec3) | Euler angles |
 
-_Declared in `include/datoviz/controller/arcball.h`:134._
+_Declared in `include/datoviz/controller/arcball.h`:141._
 
 #### `dvz_arcball_state()` { #dvz_arcball_state .dvz-api-function }
 
@@ -547,7 +560,7 @@ _Bool dvz_arcball_state(
 | `arcball` | `const` [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * | arcball controller |
 | `out` | [`DvzArcballState`](runtime-controllers.md#type-dvzarcballstate) * | target state snapshot |
 
-_Declared in `include/datoviz/controller/arcball.h`:175._
+_Declared in `include/datoviz/controller/arcball.h`:182._
 
 #### `dvz_arcball_zoom()` { #dvz_arcball_zoom .dvz-api-function }
 
@@ -566,7 +579,7 @@ DvzResult dvz_arcball_zoom(
 | `arcball` | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) * | arcball controller |
 | `zoom` | `float` | uniform zoom factor |
 
-_Declared in `include/datoviz/controller/arcball.h`:155._
+_Declared in `include/datoviz/controller/arcball.h`:162._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -1652,7 +1665,7 @@ DvzResult dvz_panzoom_connect(
 | `pz` | [`DvzPanzoom`](runtime-controllers.md#type-dvzpanzoom) * | panzoom controller |
 | `router` | [`DvzInputRouter`](app.md#type-dvzinputrouter) * | input router |
 
-_Declared in `include/datoviz/controller/panzoom.h`:302._
+_Declared in `include/datoviz/controller/panzoom.h`:330._
 
 #### `dvz_panzoom_create()` { #dvz_panzoom_create .dvz-api-function }
 
@@ -1671,19 +1684,29 @@ DvzPanzoom * dvz_panzoom_create(
 
 Related: [`dvz_panzoom_destroy()`](#dvz_panzoom_destroy).
 
-_Declared in `include/datoviz/controller/panzoom.h`:135._
+_Declared in `include/datoviz/controller/panzoom.h`:142._
 
 #### `dvz_panzoom_desc()` { #dvz_panzoom_desc .dvz-api-function }
+
+Return the default standalone panzoom descriptor.
+
+The default viewport is 800 by 600 pixels and no controller flags are enabled.
 
 ```c
 DvzPanzoomDesc dvz_panzoom_desc(void);
 ```
 
-_Declared in `include/datoviz/controller/panzoom.h`:125._
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzPanzoomDesc`](runtime-controllers.md#type-dvzpanzoomdesc) | a fully initialized descriptor that callers may modify |
+
+_Declared in `include/datoviz/controller/panzoom.h`:132._
 
 #### `dvz_panzoom_destroy()` { #dvz_panzoom_destroy .dvz-api-function }
 
-Destroy the panzoom.
+Destroy a standalone panzoom controller.
+
+The controller must have been unsubscribed from any input router before this call.
 
 ```c
 void dvz_panzoom_destroy(
@@ -1693,11 +1716,11 @@ void dvz_panzoom_destroy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `pz` | [`DvzPanzoom`](runtime-controllers.md#type-dvzpanzoom) * |  |
+| `pz` | [`DvzPanzoom`](runtime-controllers.md#type-dvzpanzoom) * | the owned panzoom controller to destroy; must not be NULL |
 
 Related: [`dvz_panzoom_create()`](#dvz_panzoom_create).
 
-_Declared in `include/datoviz/controller/panzoom.h`:320._
+_Declared in `include/datoviz/controller/panzoom.h`:352._
 
 #### `dvz_panzoom_disconnect()` { #dvz_panzoom_disconnect .dvz-api-function }
 
@@ -1716,7 +1739,7 @@ DvzResult dvz_panzoom_disconnect(
 | `pz` | [`DvzPanzoom`](runtime-controllers.md#type-dvzpanzoom) * | panzoom controller |
 | `router` | [`DvzInputRouter`](app.md#type-dvzinputrouter) * | input router |
 
-_Declared in `include/datoviz/controller/panzoom.h`:313._
+_Declared in `include/datoviz/controller/panzoom.h`:341._
 
 #### `dvz_panzoom_end()` { #dvz_panzoom_end .dvz-api-function }
 
@@ -1733,7 +1756,7 @@ DvzResult dvz_panzoom_end(
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR on validation error |
 | `pz` | [`DvzPanzoom`](runtime-controllers.md#type-dvzpanzoom) * | panzoom controller |
 
-_Declared in `include/datoviz/controller/panzoom.h`:270._
+_Declared in `include/datoviz/controller/panzoom.h`:277._
 
 #### `dvz_panzoom_extent()` { #dvz_panzoom_extent .dvz-api-function }
 
@@ -1752,11 +1775,12 @@ _Bool dvz_panzoom_extent(
 | `pz` | `const` [`DvzPanzoom`](runtime-controllers.md#type-dvzpanzoom) * | the panzoom controller |
 | `out` | `float`[4] | extent as xmin, xmax, ymin, ymax |
 
-_Declared in `include/datoviz/controller/panzoom.h`:214._
+_Declared in `include/datoviz/controller/panzoom.h`:221._
 
 #### `dvz_panzoom_mvp()` { #dvz_panzoom_mvp .dvz-api-function }
 
 Fill the view and proj matrices of an MVP struct from the current panzoom state.
+
 The model matrix is left untouched.
 
 ```c
@@ -1768,10 +1792,10 @@ void dvz_panzoom_mvp(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `pz` | [`DvzPanzoom`](runtime-controllers.md#type-dvzpanzoom) * |  |
-| `mvp` | [`DvzMVP`](runtime-controllers.md#type-dvzmvp) * |  |
+| `pz` | [`DvzPanzoom`](runtime-controllers.md#type-dvzpanzoom) * | the panzoom controller; must not be NULL |
+| `mvp` | [`DvzMVP`](runtime-controllers.md#type-dvzmvp) * | output MVP state whose view and projection matrices are replaced; must not be NULL |
 
-_Declared in `include/datoviz/controller/panzoom.h`:278._
+_Declared in `include/datoviz/controller/panzoom.h`:289._
 
 #### `dvz_panzoom_pan()` { #dvz_panzoom_pan .dvz-api-function }
 
@@ -1790,7 +1814,7 @@ DvzResult dvz_panzoom_pan(
 | `pz` | [`DvzPanzoom`](runtime-controllers.md#type-dvzpanzoom) * | panzoom controller |
 | `pan` | [`vec2`](runtime-math.md#type-vec2) | pan offset |
 
-_Declared in `include/datoviz/controller/panzoom.h`:182._
+_Declared in `include/datoviz/controller/panzoom.h`:189._
 
 #### `dvz_panzoom_pan_shift()` { #dvz_panzoom_pan_shift .dvz-api-function }
 
@@ -1811,11 +1835,14 @@ DvzResult dvz_panzoom_pan_shift(
 | `shift_px` | [`vec2`](runtime-math.md#type-vec2) | shift in viewport pixels |
 | `center_px` | [`vec2`](runtime-math.md#type-vec2) | pointer center in viewport pixels |
 
-_Declared in `include/datoviz/controller/panzoom.h`:236._
+_Declared in `include/datoviz/controller/panzoom.h`:243._
 
 #### `dvz_panzoom_pointer()` { #dvz_panzoom_pointer .dvz-api-function }
 
 Process a pointer event and update panzoom state.
+
+The event is borrowed for the duration of the call. Events outside the configured viewport are
+not consumed.
 
 ```c
 _Bool dvz_panzoom_pointer(
@@ -1827,10 +1854,10 @@ _Bool dvz_panzoom_pointer(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | `_Bool` | true if the event was consumed |
-| `pz` | [`DvzPanzoom`](runtime-controllers.md#type-dvzpanzoom) * |  |
-| `ev` | `const` [`DvzPointerEvent`](app.md#type-dvzpointerevent) * |  |
+| `pz` | [`DvzPanzoom`](runtime-controllers.md#type-dvzpanzoom) * | the panzoom controller; must not be NULL |
+| `ev` | `const` [`DvzPointerEvent`](app.md#type-dvzpointerevent) * | the pointer event to process, in window coordinates; must not be NULL |
 
-_Declared in `include/datoviz/controller/panzoom.h`:290._
+_Declared in `include/datoviz/controller/panzoom.h`:318._
 
 #### `dvz_panzoom_reset()` { #dvz_panzoom_reset .dvz-api-function }
 
@@ -1847,7 +1874,7 @@ DvzResult dvz_panzoom_reset(
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR on validation error |
 | `pz` | [`DvzPanzoom`](runtime-controllers.md#type-dvzpanzoom) * | panzoom controller |
 
-_Declared in `include/datoviz/controller/panzoom.h`:145._
+_Declared in `include/datoviz/controller/panzoom.h`:152._
 
 #### `dvz_panzoom_resize()` { #dvz_panzoom_resize .dvz-api-function }
 
@@ -1868,9 +1895,14 @@ DvzResult dvz_panzoom_resize(
 | `width` | `float` | viewport width in pixels |
 | `height` | `float` | viewport height in pixels |
 
-_Declared in `include/datoviz/controller/panzoom.h`:157._
+_Declared in `include/datoviz/controller/panzoom.h`:164._
 
 #### `dvz_panzoom_resolve()` { #dvz_panzoom_resolve .dvz-api-function }
+
+Resolve panzoom state against a caller-provided base visual extent.
+
+On success, the model matrix is identity and the output contains the resolved view and
+orthographic projection matrices plus the visible extent in the base extent's coordinates.
 
 ```c
 _Bool dvz_panzoom_resolve(
@@ -1882,11 +1914,12 @@ _Bool dvz_panzoom_resolve(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `panzoom` | `const` [`DvzPanzoom`](runtime-controllers.md#type-dvzpanzoom) * |  |
-| `eval` | `const` [`DvzPanzoomEval`](runtime-controllers.md#type-dvzpanzoomeval) * |  |
-| `out` | [`DvzPanzoomResolved`](runtime-controllers.md#type-dvzpanzoomresolved) * |  |
+| return | `_Bool` | true on success, false if the extent or zoom state is invalid |
+| `panzoom` | `const` [`DvzPanzoom`](runtime-controllers.md#type-dvzpanzoom) * | the panzoom controller; must not be NULL |
+| `eval` | `const` [`DvzPanzoomEval`](runtime-controllers.md#type-dvzpanzoomeval) * | borrowed evaluation parameters containing a finite, non-empty base extent |
+| `out` | [`DvzPanzoomResolved`](runtime-controllers.md#type-dvzpanzoomresolved) * | output resolved MVP and visible extent; must not be NULL |
 
-_Declared in `include/datoviz/controller/panzoom.h`:280._
+_Declared in `include/datoviz/controller/panzoom.h`:303._
 
 #### `dvz_panzoom_state()` { #dvz_panzoom_state .dvz-api-function }
 
@@ -1905,7 +1938,7 @@ _Bool dvz_panzoom_state(
 | `pz` | `const` [`DvzPanzoom`](runtime-controllers.md#type-dvzpanzoom) * | the panzoom controller |
 | `out` | [`DvzPanzoomState`](runtime-controllers.md#type-dvzpanzoomstate) * | target state snapshot |
 
-_Declared in `include/datoviz/controller/panzoom.h`:224._
+_Declared in `include/datoviz/controller/panzoom.h`:231._
 
 #### `dvz_panzoom_viewport()` { #dvz_panzoom_viewport .dvz-api-function }
 
@@ -1930,7 +1963,7 @@ DvzResult dvz_panzoom_viewport(
 | `width` | `float` | viewport width in window pixels |
 | `height` | `float` | viewport height in window pixels |
 
-_Declared in `include/datoviz/controller/panzoom.h`:171._
+_Declared in `include/datoviz/controller/panzoom.h`:178._
 
 #### `dvz_panzoom_zoom()` { #dvz_panzoom_zoom .dvz-api-function }
 
@@ -1949,7 +1982,7 @@ DvzResult dvz_panzoom_zoom(
 | `pz` | [`DvzPanzoom`](runtime-controllers.md#type-dvzpanzoom) * | panzoom controller |
 | `zoom` | [`vec2`](runtime-math.md#type-vec2) | zoom factors |
 
-_Declared in `include/datoviz/controller/panzoom.h`:193._
+_Declared in `include/datoviz/controller/panzoom.h`:200._
 
 #### `dvz_panzoom_zoom_limits()` { #dvz_panzoom_zoom_limits .dvz-api-function }
 
@@ -1970,7 +2003,7 @@ _Bool dvz_panzoom_zoom_limits(
 | `min_zoom` | [`vec2`](runtime-math.md#type-vec2) | minimum zoom factors |
 | `max_zoom` | [`vec2`](runtime-math.md#type-vec2) | maximum zoom factors |
 
-_Declared in `include/datoviz/controller/panzoom.h`:204._
+_Declared in `include/datoviz/controller/panzoom.h`:211._
 
 #### `dvz_panzoom_zoom_shift()` { #dvz_panzoom_zoom_shift .dvz-api-function }
 
@@ -1991,7 +2024,7 @@ DvzResult dvz_panzoom_zoom_shift(
 | `shift_px` | [`vec2`](runtime-math.md#type-vec2) | shift in viewport pixels |
 | `center_px` | [`vec2`](runtime-math.md#type-vec2) | zoom anchor in viewport pixels |
 
-_Declared in `include/datoviz/controller/panzoom.h`:248._
+_Declared in `include/datoviz/controller/panzoom.h`:255._
 
 #### `dvz_panzoom_zoom_wheel()` { #dvz_panzoom_zoom_wheel .dvz-api-function }
 
@@ -2012,7 +2045,7 @@ DvzResult dvz_panzoom_zoom_wheel(
 | `dir` | [`vec2`](runtime-math.md#type-vec2) | wheel direction |
 | `center_px` | [`vec2`](runtime-math.md#type-vec2) | zoom anchor in viewport pixels |
 
-_Declared in `include/datoviz/controller/panzoom.h`:260._
+_Declared in `include/datoviz/controller/panzoom.h`:267._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 

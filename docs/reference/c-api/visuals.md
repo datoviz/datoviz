@@ -772,7 +772,7 @@ DvzBezierTessellationDesc dvz_bezier_tessellation_desc(void);
 | --- | --- | --- |
 | return | [`DvzBezierTessellationDesc`](visuals.md#type-dvzbeziertessellationdesc) | initialized Bezier tessellation descriptor |
 
-_Declared in `include/datoviz/geom.h`:421._
+_Declared in `include/datoviz/geom.h`:428._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -995,6 +995,9 @@ _Declared in `include/datoviz/scene.h`:2481._
 
 Allocate a geometry object with owned vertex and index buffers.
 
+The returned object owns arrays for @p vertex_count vertices and @p index_count indices. Destroy
+it with `dvz_geometry_destroy()`.
+
 ```c
 DvzGeometry * dvz_geometry(
     uint32_t vertex_count,
@@ -1004,11 +1007,11 @@ DvzGeometry * dvz_geometry(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the new geometry, or NULL on failure |
-| `vertex_count` | `uint32_t` | number of vertices |
-| `index_count` | `uint32_t` | number of indices |
+| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | new owned geometry, or NULL on invalid input or allocation failure |
+| `vertex_count` | `uint32_t` | number of vertices to allocate; may be zero for an empty geometry |
+| `index_count` | `uint32_t` | number of indices to allocate; may be zero for non-indexed geometry |
 
-_Declared in `include/datoviz/geom.h`:47._
+_Declared in `include/datoviz/geom.h`:50._
 
 #### `dvz_geometry_arrow()` { #dvz_geometry_arrow .dvz-api-function }
 
@@ -1022,10 +1025,10 @@ DvzGeometry * dvz_geometry_arrow(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the new geometry, or NULL on failure |
-| `desc` | `const` [`DvzGeometryArrowDesc`](visuals.md#type-dvzgeometryarrowdesc) * | optional arrow descriptor |
+| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()` |
+| `desc` | `const` [`DvzGeometryArrowDesc`](visuals.md#type-dvzgeometryarrowdesc) * | optional borrowed arrow descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/geom.h`:375._
+_Declared in `include/datoviz/geom.h`:381._
 
 #### `dvz_geometry_arrow_desc()` { #dvz_geometry_arrow_desc .dvz-api-function }
 
@@ -1041,7 +1044,7 @@ DvzGeometryArrowDesc dvz_geometry_arrow_desc(void);
 
 Related: [`dvz_geometry_arrow()`](#dvz_geometry_arrow).
 
-_Declared in `include/datoviz/geom.h`:366._
+_Declared in `include/datoviz/geom.h`:372._
 
 #### `dvz_geometry_bounds()` { #dvz_geometry_bounds .dvz-api-function }
 
@@ -1056,9 +1059,9 @@ DvzGeometryBounds dvz_geometry_bounds(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | [`DvzGeometryBounds`](visuals.md#type-dvzgeometrybounds) | the geometry bounds, or an empty zero bounds when no vertices exist |
-| `geometry` | `const` [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the geometry |
+| `geometry` | `const` [`DvzGeometry`](visuals.md#type-dvzgeometry) * | geometry to inspect; must not be NULL |
 
-_Declared in `include/datoviz/geom.h`:76._
+_Declared in `include/datoviz/geom.h`:79._
 
 #### `dvz_geometry_compute_normals()` { #dvz_geometry_compute_normals .dvz-api-function }
 
@@ -1072,10 +1075,10 @@ DvzResult dvz_geometry_compute_normals(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | 0 on success, -1 on invalid input |
-| `geometry` | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the geometry |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR on invalid input |
+| `geometry` | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | indexed triangle geometry to update; must not be NULL |
 
-_Declared in `include/datoviz/geom.h`:86._
+_Declared in `include/datoviz/geom.h`:89._
 
 #### `dvz_geometry_cone()` { #dvz_geometry_cone .dvz-api-function }
 
@@ -1089,10 +1092,10 @@ DvzGeometry * dvz_geometry_cone(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the new geometry, or NULL on failure |
-| `desc` | `const` [`DvzGeometryConeDesc`](visuals.md#type-dvzgeometryconedesc) * | optional cone descriptor |
+| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()` |
+| `desc` | `const` [`DvzGeometryConeDesc`](visuals.md#type-dvzgeometryconedesc) * | optional borrowed cone descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/geom.h`:341._
+_Declared in `include/datoviz/geom.h`:347._
 
 #### `dvz_geometry_cone_desc()` { #dvz_geometry_cone_desc .dvz-api-function }
 
@@ -1108,7 +1111,7 @@ DvzGeometryConeDesc dvz_geometry_cone_desc(void);
 
 Related: [`dvz_geometry_cone()`](#dvz_geometry_cone).
 
-_Declared in `include/datoviz/geom.h`:332._
+_Declared in `include/datoviz/geom.h`:338._
 
 #### `dvz_geometry_contours()` { #dvz_geometry_contours .dvz-api-function }
 
@@ -1126,14 +1129,14 @@ DvzGeometryContours * dvz_geometry_contours(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzGeometryContours`](visuals.md#type-dvzgeometrycontours) * | the extracted contour segments, or NULL on invalid input or allocation failure |
-| `geometry` | `const` [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the geometry |
-| `values` | `const` `double` * | scalar value per vertex |
-| `value_count` | `uint32_t` | number of scalar values |
-| `levels` | `const` `double` * | contour levels |
-| `level_count` | `uint32_t` | number of contour levels |
+| return | [`DvzGeometryContours`](visuals.md#type-dvzgeometrycontours) * | new owned contour segments, or NULL on invalid input or allocation failure; destroy with `dvz_geometry_contours_destroy()` |
+| `geometry` | `const` [`DvzGeometry`](visuals.md#type-dvzgeometry) * | borrowed indexed triangle geometry; must not be NULL |
+| `values` | `const` `double` * | array containing one scalar per geometry vertex; must not be NULL |
+| `value_count` | `uint32_t` | number of values; must equal the geometry vertex count |
+| `levels` | `const` `double` * | array of contour levels; must not be NULL |
+| `level_count` | `uint32_t` | number of contour levels; must be positive |
 
-_Declared in `include/datoviz/geom.h`:142._
+_Declared in `include/datoviz/geom.h`:148._
 
 #### `dvz_geometry_contours_destroy()` { #dvz_geometry_contours_destroy .dvz-api-function }
 
@@ -1147,9 +1150,9 @@ void dvz_geometry_contours_destroy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `contours` | [`DvzGeometryContours`](visuals.md#type-dvzgeometrycontours) * | the contour segment list |
+| `contours` | [`DvzGeometryContours`](visuals.md#type-dvzgeometrycontours) * | owned contour segment list to destroy; may be NULL |
 
-_Declared in `include/datoviz/geom.h`:153._
+_Declared in `include/datoviz/geom.h`:159._
 
 #### `dvz_geometry_cube()` { #dvz_geometry_cube .dvz-api-function }
 
@@ -1163,10 +1166,10 @@ DvzGeometry * dvz_geometry_cube(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the new geometry, or NULL on failure |
-| `desc` | `const` [`DvzGeometryCubeDesc`](visuals.md#type-dvzgeometrycubedesc) * | optional cube descriptor |
+| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()` |
+| `desc` | `const` [`DvzGeometryCubeDesc`](visuals.md#type-dvzgeometrycubedesc) * | optional borrowed cube descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/geom.h`:171._
+_Declared in `include/datoviz/geom.h`:177._
 
 #### `dvz_geometry_cube_desc()` { #dvz_geometry_cube_desc .dvz-api-function }
 
@@ -1182,7 +1185,7 @@ DvzGeometryCubeDesc dvz_geometry_cube_desc(void);
 
 Related: [`dvz_geometry_cube()`](#dvz_geometry_cube).
 
-_Declared in `include/datoviz/geom.h`:162._
+_Declared in `include/datoviz/geom.h`:168._
 
 #### `dvz_geometry_cylinder()` { #dvz_geometry_cylinder .dvz-api-function }
 
@@ -1196,10 +1199,10 @@ DvzGeometry * dvz_geometry_cylinder(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the new geometry, or NULL on failure |
-| `desc` | `const` [`DvzGeometryCylinderDesc`](visuals.md#type-dvzgeometrycylinderdesc) * | optional cylinder descriptor |
+| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()` |
+| `desc` | `const` [`DvzGeometryCylinderDesc`](visuals.md#type-dvzgeometrycylinderdesc) * | optional borrowed cylinder descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/geom.h`:324._
+_Declared in `include/datoviz/geom.h`:330._
 
 #### `dvz_geometry_cylinder_desc()` { #dvz_geometry_cylinder_desc .dvz-api-function }
 
@@ -1215,7 +1218,7 @@ DvzGeometryCylinderDesc dvz_geometry_cylinder_desc(void);
 
 Related: [`dvz_geometry_cylinder()`](#dvz_geometry_cylinder).
 
-_Declared in `include/datoviz/geom.h`:315._
+_Declared in `include/datoviz/geom.h`:321._
 
 #### `dvz_geometry_destroy()` { #dvz_geometry_destroy .dvz-api-function }
 
@@ -1229,9 +1232,9 @@ void dvz_geometry_destroy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `geometry` | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the geometry |
+| `geometry` | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | owned geometry to destroy; may be NULL |
 
-_Declared in `include/datoviz/geom.h`:66._
+_Declared in `include/datoviz/geom.h`:69._
 
 #### `dvz_geometry_disc()` { #dvz_geometry_disc .dvz-api-function }
 
@@ -1245,10 +1248,10 @@ DvzGeometry * dvz_geometry_disc(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the new geometry, or NULL on failure |
-| `desc` | `const` [`DvzGeometryDiscDesc`](visuals.md#type-dvzgeometrydiscdesc) * | optional disc descriptor |
+| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()` |
+| `desc` | `const` [`DvzGeometryDiscDesc`](visuals.md#type-dvzgeometrydiscdesc) * | optional borrowed disc descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/geom.h`:256._
+_Declared in `include/datoviz/geom.h`:262._
 
 #### `dvz_geometry_disc_desc()` { #dvz_geometry_disc_desc .dvz-api-function }
 
@@ -1264,7 +1267,7 @@ DvzGeometryDiscDesc dvz_geometry_disc_desc(void);
 
 Related: [`dvz_geometry_disc()`](#dvz_geometry_disc).
 
-_Declared in `include/datoviz/geom.h`:247._
+_Declared in `include/datoviz/geom.h`:253._
 
 #### `dvz_geometry_edges()` { #dvz_geometry_edges .dvz-api-function }
 
@@ -1278,10 +1281,10 @@ DvzGeometryEdges * dvz_geometry_edges(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzGeometryEdges`](visuals.md#type-dvzgeometryedges) * | the derived edge list, or NULL on invalid input or allocation failure |
-| `geometry` | `const` [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the geometry |
+| return | [`DvzGeometryEdges`](visuals.md#type-dvzgeometryedges) * | new owned edge list, or NULL on invalid input or allocation failure; destroy with `dvz_geometry_edges_destroy()` |
+| `geometry` | `const` [`DvzGeometry`](visuals.md#type-dvzgeometry) * | borrowed indexed triangle geometry; must not be NULL |
 
-_Declared in `include/datoviz/geom.h`:119._
+_Declared in `include/datoviz/geom.h`:124._
 
 #### `dvz_geometry_edges_destroy()` { #dvz_geometry_edges_destroy .dvz-api-function }
 
@@ -1295,9 +1298,9 @@ void dvz_geometry_edges_destroy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `edges` | [`DvzGeometryEdges`](visuals.md#type-dvzgeometryedges) * | the edge list |
+| `edges` | [`DvzGeometryEdges`](visuals.md#type-dvzgeometryedges) * | owned edge list to destroy; may be NULL |
 
-_Declared in `include/datoviz/geom.h`:128._
+_Declared in `include/datoviz/geom.h`:133._
 
 #### `dvz_geometry_merge()` { #dvz_geometry_merge .dvz-api-function }
 
@@ -1312,11 +1315,11 @@ DvzGeometry * dvz_geometry_merge(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the merged geometry, or NULL on failure |
-| `count` | `uint32_t` | number of input geometries |
-| `geometries` | `const` [`DvzGeometry`](visuals.md#type-dvzgeometry) *`const` * | input geometry array |
+| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | new owned merged geometry, or NULL on invalid input or allocation failure; destroy with `dvz_geometry_destroy()` |
+| `count` | `uint32_t` | number of input geometry pointers; must be positive |
+| `geometries` | `const` [`DvzGeometry`](visuals.md#type-dvzgeometry) *`const` * | array of @p count borrowed geometry pointers; entries must not be NULL |
 
-_Declared in `include/datoviz/geom.h`:109._
+_Declared in `include/datoviz/geom.h`:113._
 
 #### `dvz_geometry_obj()` { #dvz_geometry_obj .dvz-api-function }
 
@@ -1334,11 +1337,11 @@ DvzGeometry * dvz_geometry_obj(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the loaded geometry, or NULL on unsupported input or I/O failure |
-| `filename` | `const` `char` * | OBJ file path |
-| `desc` | `const` [`DvzGeometryObjDesc`](visuals.md#type-dvzgeometryobjdesc) * | optional loader descriptor |
+| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | new owned geometry, or NULL on unsupported input, allocation, or I/O failure; destroy with `dvz_geometry_destroy()` |
+| `filename` | `const` `char` * | OBJ file path; must not be NULL |
+| `desc` | `const` [`DvzGeometryObjDesc`](visuals.md#type-dvzgeometryobjdesc) * | optional borrowed loader descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/geom.h`:396._
+_Declared in `include/datoviz/geom.h`:403._
 
 #### `dvz_geometry_obj_desc()` { #dvz_geometry_obj_desc .dvz-api-function }
 
@@ -1354,7 +1357,7 @@ DvzGeometryObjDesc dvz_geometry_obj_desc(void);
 
 Related: [`dvz_geometry_obj()`](#dvz_geometry_obj).
 
-_Declared in `include/datoviz/geom.h`:383._
+_Declared in `include/datoviz/geom.h`:389._
 
 #### `dvz_geometry_plane()` { #dvz_geometry_plane .dvz-api-function }
 
@@ -1368,10 +1371,10 @@ DvzGeometry * dvz_geometry_plane(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the new geometry, or NULL on failure |
-| `desc` | `const` [`DvzGeometryPlaneDesc`](visuals.md#type-dvzgeometryplanedesc) * | optional plane descriptor |
+| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()` |
+| `desc` | `const` [`DvzGeometryPlaneDesc`](visuals.md#type-dvzgeometryplanedesc) * | optional borrowed plane descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/geom.h`:189._
+_Declared in `include/datoviz/geom.h`:195._
 
 #### `dvz_geometry_plane_desc()` { #dvz_geometry_plane_desc .dvz-api-function }
 
@@ -1387,7 +1390,7 @@ DvzGeometryPlaneDesc dvz_geometry_plane_desc(void);
 
 Related: [`dvz_geometry_plane()`](#dvz_geometry_plane).
 
-_Declared in `include/datoviz/geom.h`:180._
+_Declared in `include/datoviz/geom.h`:186._
 
 #### `dvz_geometry_regular_polygon()` { #dvz_geometry_regular_polygon .dvz-api-function }
 
@@ -1401,10 +1404,10 @@ DvzGeometry * dvz_geometry_regular_polygon(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the new geometry, or NULL on failure |
-| `desc` | `const` [`DvzGeometryRegularPolygonDesc`](visuals.md#type-dvzgeometryregularpolygondesc) * | optional regular-polygon descriptor |
+| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()` |
+| `desc` | `const` [`DvzGeometryRegularPolygonDesc`](visuals.md#type-dvzgeometryregularpolygondesc) * | optional borrowed regular-polygon descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/geom.h`:290._
+_Declared in `include/datoviz/geom.h`:296._
 
 #### `dvz_geometry_regular_polygon_desc()` { #dvz_geometry_regular_polygon_desc .dvz-api-function }
 
@@ -1420,7 +1423,7 @@ DvzGeometryRegularPolygonDesc dvz_geometry_regular_polygon_desc(void);
 
 Related: [`dvz_geometry_regular_polygon()`](#dvz_geometry_regular_polygon).
 
-_Declared in `include/datoviz/geom.h`:281._
+_Declared in `include/datoviz/geom.h`:287._
 
 #### `dvz_geometry_reset()` { #dvz_geometry_reset .dvz-api-function }
 
@@ -1435,9 +1438,9 @@ DvzResult dvz_geometry_reset(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR on validation error |
-| `geometry` | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the geometry |
+| `geometry` | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | geometry to reset; must not be NULL |
 
-_Declared in `include/datoviz/geom.h`:57._
+_Declared in `include/datoviz/geom.h`:60._
 
 #### `dvz_geometry_sector()` { #dvz_geometry_sector .dvz-api-function }
 
@@ -1451,10 +1454,10 @@ DvzGeometry * dvz_geometry_sector(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the new geometry, or NULL on failure |
-| `desc` | `const` [`DvzGeometrySectorDesc`](visuals.md#type-dvzgeometrysectordesc) * | optional sector descriptor |
+| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()` |
+| `desc` | `const` [`DvzGeometrySectorDesc`](visuals.md#type-dvzgeometrysectordesc) * | optional borrowed sector descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/geom.h`:273._
+_Declared in `include/datoviz/geom.h`:279._
 
 #### `dvz_geometry_sector_desc()` { #dvz_geometry_sector_desc .dvz-api-function }
 
@@ -1470,7 +1473,7 @@ DvzGeometrySectorDesc dvz_geometry_sector_desc(void);
 
 Related: [`dvz_geometry_sector()`](#dvz_geometry_sector).
 
-_Declared in `include/datoviz/geom.h`:264._
+_Declared in `include/datoviz/geom.h`:270._
 
 #### `dvz_geometry_sphere()` { #dvz_geometry_sphere .dvz-api-function }
 
@@ -1484,10 +1487,10 @@ DvzGeometry * dvz_geometry_sphere(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the new geometry, or NULL on failure |
-| `desc` | `const` [`DvzGeometrySphereDesc`](visuals.md#type-dvzgeometryspheredesc) * | optional sphere descriptor |
+| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()` |
+| `desc` | `const` [`DvzGeometrySphereDesc`](visuals.md#type-dvzgeometryspheredesc) * | optional borrowed sphere descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/geom.h`:207._
+_Declared in `include/datoviz/geom.h`:213._
 
 #### `dvz_geometry_sphere_desc()` { #dvz_geometry_sphere_desc .dvz-api-function }
 
@@ -1503,7 +1506,7 @@ DvzGeometrySphereDesc dvz_geometry_sphere_desc(void);
 
 Related: [`dvz_geometry_sphere()`](#dvz_geometry_sphere).
 
-_Declared in `include/datoviz/geom.h`:198._
+_Declared in `include/datoviz/geom.h`:204._
 
 #### `dvz_geometry_star()` { #dvz_geometry_star .dvz-api-function }
 
@@ -1517,10 +1520,10 @@ DvzGeometry * dvz_geometry_star(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the new geometry, or NULL on failure |
-| `desc` | `const` [`DvzGeometryStarDesc`](visuals.md#type-dvzgeometrystardesc) * | optional star descriptor |
+| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()` |
+| `desc` | `const` [`DvzGeometryStarDesc`](visuals.md#type-dvzgeometrystardesc) * | optional borrowed star descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/geom.h`:307._
+_Declared in `include/datoviz/geom.h`:313._
 
 #### `dvz_geometry_star_desc()` { #dvz_geometry_star_desc .dvz-api-function }
 
@@ -1536,7 +1539,7 @@ DvzGeometryStarDesc dvz_geometry_star_desc(void);
 
 Related: [`dvz_geometry_star()`](#dvz_geometry_star).
 
-_Declared in `include/datoviz/geom.h`:298._
+_Declared in `include/datoviz/geom.h`:304._
 
 #### `dvz_geometry_surface_grid()` { #dvz_geometry_surface_grid .dvz-api-function }
 
@@ -1550,10 +1553,10 @@ DvzGeometry * dvz_geometry_surface_grid(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the new geometry, or NULL on failure |
-| `desc` | `const` [`DvzGeometrySurfaceGridDesc`](visuals.md#type-dvzgeometrysurfacegriddesc) * | surface-grid descriptor |
+| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()` |
+| `desc` | `const` [`DvzGeometrySurfaceGridDesc`](visuals.md#type-dvzgeometrysurfacegriddesc) * | borrowed surface-grid descriptor; must not be NULL |
 
-_Declared in `include/datoviz/geom.h`:225._
+_Declared in `include/datoviz/geom.h`:231._
 
 #### `dvz_geometry_surface_grid_desc()` { #dvz_geometry_surface_grid_desc .dvz-api-function }
 
@@ -1569,7 +1572,7 @@ DvzGeometrySurfaceGridDesc dvz_geometry_surface_grid_desc(void);
 
 Related: [`dvz_geometry_surface_grid()`](#dvz_geometry_surface_grid).
 
-_Declared in `include/datoviz/geom.h`:216._
+_Declared in `include/datoviz/geom.h`:222._
 
 #### `dvz_geometry_surface_grid_update_heights()` { #dvz_geometry_surface_grid_update_heights .dvz-api-function }
 
@@ -1585,12 +1588,12 @@ DvzResult dvz_geometry_surface_grid_update_heights(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | 0 on success, -1 on invalid input |
-| `geometry` | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the surface-grid geometry |
-| `heights` | `const` `double` * | row-major height values |
-| `count` | `uint32_t` | number of height values |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR on invalid input |
+| `geometry` | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | surface-grid geometry to update; must not be NULL |
+| `heights` | `const` `double` * | row-major height array; must not be NULL |
+| `count` | `uint32_t` | number of height values; must equal the grid vertex count |
 
-_Declared in `include/datoviz/geom.h`:238._
+_Declared in `include/datoviz/geom.h`:244._
 
 #### `dvz_geometry_torus()` { #dvz_geometry_torus .dvz-api-function }
 
@@ -1604,10 +1607,10 @@ DvzGeometry * dvz_geometry_torus(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the new geometry, or NULL on failure |
-| `desc` | `const` [`DvzGeometryTorusDesc`](visuals.md#type-dvzgeometrytorusdesc) * | optional torus descriptor |
+| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | new owned geometry, or NULL on failure; destroy with `dvz_geometry_destroy()` |
+| `desc` | `const` [`DvzGeometryTorusDesc`](visuals.md#type-dvzgeometrytorusdesc) * | optional borrowed torus descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/geom.h`:358._
+_Declared in `include/datoviz/geom.h`:364._
 
 #### `dvz_geometry_torus_desc()` { #dvz_geometry_torus_desc .dvz-api-function }
 
@@ -1623,7 +1626,7 @@ DvzGeometryTorusDesc dvz_geometry_torus_desc(void);
 
 Related: [`dvz_geometry_torus()`](#dvz_geometry_torus).
 
-_Declared in `include/datoviz/geom.h`:349._
+_Declared in `include/datoviz/geom.h`:355._
 
 #### `dvz_geometry_transform()` { #dvz_geometry_transform .dvz-api-function }
 
@@ -1638,11 +1641,11 @@ DvzResult dvz_geometry_transform(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | 0 on success, -1 on invalid input |
-| `geometry` | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the geometry |
-| `transform` | [`dmat4`](runtime-math.md#type-dmat4) | affine transform matrix |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR on invalid input |
+| `geometry` | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | geometry to update in place; must not be NULL |
+| `transform` | [`dmat4`](runtime-math.md#type-dmat4) | affine 4x4 transform matrix |
 
-_Declared in `include/datoviz/geom.h`:97._
+_Declared in `include/datoviz/geom.h`:100._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -3451,7 +3454,7 @@ DvzPolygonDesc dvz_polygon_desc(void);
 
 Related: [`dvz_polygon()`](#dvz_polygon).
 
-_Declared in `include/datoviz/geom.h`:405._
+_Declared in `include/datoviz/geom.h`:412._
 
 #### `dvz_polygon_destroy()` { #dvz_polygon_destroy .dvz-api-function }
 
@@ -4643,14 +4646,14 @@ DvzTessellatedPath * dvz_tessellate_cubic_bezier(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzTessellatedPath`](visuals.md#type-dvztessellatedpath) * | the tessellated path, or NULL on invalid input or allocation failure |
+| return | [`DvzTessellatedPath`](visuals.md#type-dvztessellatedpath) * | new owned tessellated path, or NULL on invalid input or allocation failure; destroy with `dvz_tessellated_path_destroy()` |
 | `p0` | `const` [`dvec3`](runtime-math.md#type-dvec3) | first endpoint |
 | `p1` | `const` [`dvec3`](runtime-math.md#type-dvec3) | first control point |
 | `p2` | `const` [`dvec3`](runtime-math.md#type-dvec3) | second control point |
 | `p3` | `const` [`dvec3`](runtime-math.md#type-dvec3) | second endpoint |
-| `desc` | `const` [`DvzBezierTessellationDesc`](visuals.md#type-dvzbeziertessellationdesc) * | optional tessellation descriptor |
+| `desc` | `const` [`DvzBezierTessellationDesc`](visuals.md#type-dvzbeziertessellationdesc) * | optional borrowed tessellation descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/geom.h`:458._
+_Declared in `include/datoviz/geom.h`:469._
 
 #### `dvz_tessellate_quadratic_bezier()` { #dvz_tessellate_quadratic_bezier .dvz-api-function }
 
@@ -4667,13 +4670,13 @@ DvzTessellatedPath * dvz_tessellate_quadratic_bezier(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzTessellatedPath`](visuals.md#type-dvztessellatedpath) * | the tessellated path, or NULL on invalid input or allocation failure |
+| return | [`DvzTessellatedPath`](visuals.md#type-dvztessellatedpath) * | new owned tessellated path, or NULL on invalid input or allocation failure; destroy with `dvz_tessellated_path_destroy()` |
 | `p0` | `const` [`dvec3`](runtime-math.md#type-dvec3) | first endpoint |
 | `p1` | `const` [`dvec3`](runtime-math.md#type-dvec3) | control point |
 | `p2` | `const` [`dvec3`](runtime-math.md#type-dvec3) | second endpoint |
-| `desc` | `const` [`DvzBezierTessellationDesc`](visuals.md#type-dvzbeziertessellationdesc) * | optional tessellation descriptor |
+| `desc` | `const` [`DvzBezierTessellationDesc`](visuals.md#type-dvzbeziertessellationdesc) * | optional borrowed tessellation descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/geom.h`:444._
+_Declared in `include/datoviz/geom.h`:454._
 
 ## Tessellated { #tessellated }
 
@@ -4691,9 +4694,9 @@ void dvz_tessellated_path_destroy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `path` | [`DvzTessellatedPath`](visuals.md#type-dvztessellatedpath) * | tessellated path |
+| `path` | [`DvzTessellatedPath`](visuals.md#type-dvztessellatedpath) * | owned tessellated path to destroy; may be NULL |
 
-_Declared in `include/datoviz/geom.h`:468._
+_Declared in `include/datoviz/geom.h`:479._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -4727,11 +4730,11 @@ DvzGeometry * dvz_triangulate_polygon(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the triangulated geometry, or NULL on invalid input or triangulation failure |
-| `polygon` | `const` [`DvzPolygonDesc`](visuals.md#type-dvzpolygondesc) * | borrowed polygon descriptor |
-| `desc` | `const` [`DvzTriangulationDesc`](visuals.md#type-dvztriangulationdesc) * | optional triangulation descriptor |
+| return | [`DvzGeometry`](visuals.md#type-dvzgeometry) * | new owned geometry, or NULL on invalid input or triangulation failure; destroy with `dvz_geometry_destroy()` |
+| `polygon` | `const` [`DvzPolygonDesc`](visuals.md#type-dvzpolygondesc) * | borrowed polygon descriptor; must not be NULL and its arrays must remain valid for the duration of the call |
+| `desc` | `const` [`DvzTriangulationDesc`](visuals.md#type-dvztriangulationdesc) * | optional borrowed triangulation descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/geom.h`:432._
+_Declared in `include/datoviz/geom.h`:441._
 
 ## Triangulation { #triangulation }
 
@@ -4749,7 +4752,7 @@ DvzTriangulationDesc dvz_triangulation_desc(void);
 | --- | --- | --- |
 | return | [`DvzTriangulationDesc`](visuals.md#type-dvztriangulationdesc) | initialized triangulation descriptor |
 
-_Declared in `include/datoviz/geom.h`:413._
+_Declared in `include/datoviz/geom.h`:420._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
