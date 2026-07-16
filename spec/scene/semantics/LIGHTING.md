@@ -5,8 +5,8 @@ This document defines the scene-level lighting model for Datoviz v0.4.
 
 ## Purpose
 
-The current active lighting slice provides per-visual material, Phong shading, and depth-cue
-controls for 3D-capable visual families.
+The current active lighting slice provides per-visual material, Phong and standard surface
+shading, view-dependent limb shading, and depth-cue controls for 3D-capable visual families.
 
 It is intentionally simple for v0.4 — covering the most common scientific visualization needs
 — while being designed to extend cleanly to physically-based rendering (PBR) and hardware
@@ -21,9 +21,15 @@ the visual/material block and emitted with the visual pipeline.
 Current supported concepts:
 
 1. per-visual material state,
-2. Phong/Blinn-Phong coefficients for lit primitive/mesh/sphere-style shader paths,
-3. depth cueing for point, pixel, primitive, mesh, and sphere visuals,
-4. shader selection based on the visual family, material state, and available attributes.
+2. Phong/Blinn-Phong and standard coefficients for lit primitive/mesh/sphere-style shader paths,
+3. a view- and light-dependent limb material for thin translucent shells,
+4. depth cueing for point, pixel, primitive, mesh, and sphere visuals,
+5. shader selection based on the visual family, material state, and available attributes.
+
+The limb model is a lightweight surface approximation, not volumetric atmospheric scattering. It
+uses mesh normals, the camera direction, and the material light direction to concentrate alpha at
+silhouettes and fade it across a configurable day/night terminator. The geometry remains an
+ordinary primitive or mesh; no atmosphere-specific visual family exists.
 
 
 ## Core Rule

@@ -65,6 +65,10 @@ void _material_params_default(DvzSceneMaterialParams* params)
     params->standard_params[1] = 0.34f;
     params->standard_params[3] = 0.10f;
     params->emissive_rim[3] = 0.10f;
+    params->limb_params[0] = 4.0f;
+    params->limb_params[1] = 0.05f;
+    params->limb_params[2] = 0.18f;
+    params->limb_params[3] = 0.08f;
     params->depth_cue[1] = 1.0f;
     params->depth_cue[2] = 1.0f;
     params->depth_cue_extra[2] = 3.0f;
@@ -88,6 +92,12 @@ DvzMaterialDesc dvz_material_desc(void)
         .light_direction = {-0.45f, +0.35f, 0.82f},
         .phong = {.ambient = 0.24f, .diffuse = 0.82f, .specular = 0.24f, .shininess = 26.0f},
         .standard = {.roughness = 0.62f, .specular = 0.34f, .rim_strength = 0.10f},
+        .limb = {
+            .falloff = 4.0f,
+            .sun_bias = 0.05f,
+            .terminator_width = 0.18f,
+            .night_factor = 0.08f,
+        },
     };
     return desc;
 }
@@ -175,6 +185,41 @@ bool dvz_ffi_standard_material_desc(DvzMaterialDesc* out)
 
 
 /**
+ * Return the default public view-dependent limb material descriptor.
+ *
+ * @return default limb material descriptor
+ */
+DvzMaterialDesc dvz_limb_material_desc(void)
+{
+    DvzMaterialDesc desc = dvz_material_desc();
+    desc.model = DVZ_MATERIAL_MODEL_LIMB;
+    desc.alpha_mode = DVZ_ALPHA_BLENDED;
+    desc.opacity = 0.12f;
+    desc.base_color_factor[0] = 0.20f;
+    desc.base_color_factor[1] = 0.52f;
+    desc.base_color_factor[2] = 1.00f;
+    return desc;
+}
+
+
+
+/**
+ * Initialize the default limb material descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */
+bool dvz_ffi_limb_material_desc(DvzMaterialDesc* out)
+{
+    if (out == NULL)
+        return false;
+    *out = dvz_limb_material_desc();
+    return true;
+}
+
+
+
+/**
  * Return default circular point styling.
  *
  * @return default point style descriptor
@@ -228,7 +273,7 @@ bool _material_visual_supported(DvzVisualType visual_type)
  */
 bool _material_model_valid(DvzMaterialModel model)
 {
-    return model >= DVZ_MATERIAL_MODEL_UNLIT && model <= DVZ_MATERIAL_MODEL_STANDARD;
+    return model >= DVZ_MATERIAL_MODEL_UNLIT && model <= DVZ_MATERIAL_MODEL_LIMB;
 }
 
 
@@ -329,6 +374,30 @@ bool _material_desc_valid(const DvzMaterialDesc* desc)
         log_error("standard material rim strength must be finite and nonnegative");
         return false;
     }
+    if (desc->model == DVZ_MATERIAL_MODEL_LIMB)
+    {
+        if (!isfinite(desc->limb.falloff) || desc->limb.falloff <= 0.0f)
+        {
+            log_error("limb material falloff must be finite and positive");
+            return false;
+        }
+        if (!isfinite(desc->limb.sun_bias))
+        {
+            log_error("limb material sun bias must be finite");
+            return false;
+        }
+        if (!isfinite(desc->limb.terminator_width) || desc->limb.terminator_width <= 0.0f)
+        {
+            log_error("limb material terminator width must be finite and positive");
+            return false;
+        }
+        if (!isfinite(desc->limb.night_factor) || desc->limb.night_factor < 0.0f ||
+            desc->limb.night_factor > 1.0f)
+        {
+            log_error("limb material night factor must be finite and in [0, 1]");
+            return false;
+        }
+    }
     return true;
 }
 
@@ -365,6 +434,10 @@ void _material_state_apply_desc(DvzSceneMaterialState* material, const DvzMateri
     material->emissive[1] = desc->standard.emissive[1];
     material->emissive[2] = desc->standard.emissive[2];
     material->rim_strength = desc->standard.rim_strength;
+    material->limb_falloff = desc->limb.falloff;
+    material->limb_sun_bias = desc->limb.sun_bias;
+    material->limb_terminator_width = desc->limb.terminator_width;
+    material->limb_night_factor = desc->limb.night_factor;
     material->depth_cue_far = material->depth_cue_far == 0.0f ? 1.0f : material->depth_cue_far;
     material->depth_cue_strength =
         material->depth_cue_strength == 0.0f ? 1.0f : material->depth_cue_strength;
@@ -405,6 +478,10 @@ void _material_params_sync_state(
     params->emissive_rim[1] = material->emissive[1];
     params->emissive_rim[2] = material->emissive[2];
     params->emissive_rim[3] = material->rim_strength;
+    params->limb_params[0] = material->limb_falloff;
+    params->limb_params[1] = material->limb_sun_bias;
+    params->limb_params[2] = material->limb_terminator_width;
+    params->limb_params[3] = material->limb_night_factor;
     if (material->model == DVZ_MATERIAL_MODEL_STANDARD)
     {
         float roughness = fminf(fmaxf(material->roughness, 0.0f), 1.0f);

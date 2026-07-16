@@ -276,6 +276,15 @@ DVZ_EXPORT bool dvz_ffi_standard_material_desc(DvzMaterialDesc* out);
 
 
 /**
+ * Initialize a default limb material descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */
+DVZ_EXPORT bool dvz_ffi_limb_material_desc(DvzMaterialDesc* out);
+
+
+/**
  * Initialize a default depth-cue descriptor through an out pointer.
  *
  * @param out output descriptor

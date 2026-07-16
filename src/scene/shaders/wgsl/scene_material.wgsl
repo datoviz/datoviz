@@ -7,6 +7,7 @@ struct SceneMaterial {
     base_color_factor: vec4f,
     standard_params: vec4f,
     emissive_rim: vec4f,
+    limb_params: vec4f,
     depth_cue: vec4f,
     depth_cue_color: vec4f,
     depth_cue_extra: vec4f,
@@ -33,6 +34,17 @@ fn evaluate_scene_material_linear_item(
     let n = normalize(normal);
     let l = normalize(material.light_direction.xyz);
     let v = normalize(camera_position - world_position);
+    if (model == 3) {
+        let falloff = max(material.limb_params.x, 0.01);
+        let sun_bias = material.limb_params.y;
+        let terminator_width = max(material.limb_params.z, 1e-4);
+        let night_factor = clamp(material.limb_params.w, 0.0, 1.0);
+        let limb = pow(1.0 - clamp(abs(dot(n, v)), 0.0, 1.0), falloff);
+        let sunlight = smoothstep(
+            -terminator_width, terminator_width, dot(n, l) + sun_bias);
+        let illumination = mix(night_factor, 1.0, sunlight);
+        return vec4f(clamp(base, vec3f(0.0), vec3f(1.0)), alpha * limb * illumination);
+    }
     let h = normalize(l + v);
     let lambert = max(dot(n, l), 0.0);
     if (model == 2) {

@@ -1458,6 +1458,7 @@ struct DvzSceneMaterialParams
     float base_color_factor[4];
     float standard_params[4];
     float emissive_rim[4];
+    float limb_params[4];
     float depth_cue[4];
     float depth_cue_color[4];
     float depth_cue_extra[4];
@@ -1505,6 +1506,10 @@ struct DvzSceneMaterialState
     float metallic;
     float emissive[3];
     float rim_strength;
+    float limb_falloff;
+    float limb_sun_bias;
+    float limb_terminator_width;
+    float limb_night_factor;
     bool depth_cue_enabled;
     DvzDepthCueMode depth_cue_mode;
     DvzDepthCueMetric depth_cue_metric;

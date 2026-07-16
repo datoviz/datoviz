@@ -2428,6 +2428,14 @@ int test_scene_visual_material_setter(TstContext* suite, const TstCase* item)
     DvzMaterialDesc standard_defaults = dvz_standard_material_desc();
     AT(standard_defaults.model == DVZ_MATERIAL_MODEL_STANDARD);
     AT(standard_defaults.standard.roughness == 0.62f);
+    DvzMaterialDesc limb_defaults = dvz_limb_material_desc();
+    AT(limb_defaults.model == DVZ_MATERIAL_MODEL_LIMB);
+    AT(limb_defaults.alpha_mode == DVZ_ALPHA_BLENDED);
+    AT(limb_defaults.opacity == 0.12f);
+    AT(limb_defaults.limb.falloff == 4.0f);
+    AT(limb_defaults.limb.sun_bias == 0.05f);
+    AT(limb_defaults.limb.terminator_width == 0.18f);
+    AT(limb_defaults.limb.night_factor == 0.08f);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -2503,6 +2511,28 @@ int test_scene_visual_material_setter(TstContext* suite, const TstCase* item)
     AT(_visual_family_state(mesh)->material_params.emissive_rim[1] == 0.05f);
     AT(mesh->material.version > version);
 
+    DvzMaterialDesc limb = dvz_limb_material_desc();
+    limb.opacity = 0.20f;
+    limb.limb.falloff = 5.0f;
+    limb.limb.sun_bias = -0.10f;
+    limb.limb.terminator_width = 0.25f;
+    limb.limb.night_factor = 0.04f;
+    version = mesh->material.version;
+    AT(dvz_visual_set_material(mesh, &limb) == 0);
+    AT(mesh->material.model == DVZ_MATERIAL_MODEL_LIMB);
+    AT(mesh->alpha_mode == DVZ_ALPHA_BLENDED);
+    AT(mesh->material.opacity == 0.20f);
+    AT(mesh->material.limb_falloff == 5.0f);
+    AT(mesh->material.limb_sun_bias == -0.10f);
+    AT(mesh->material.limb_terminator_width == 0.25f);
+    AT(mesh->material.limb_night_factor == 0.04f);
+    AT(_visual_family_state(mesh)->material_params.model[0] == (float)DVZ_MATERIAL_MODEL_LIMB);
+    AT(_visual_family_state(mesh)->material_params.limb_params[0] == 5.0f);
+    AT(_visual_family_state(mesh)->material_params.limb_params[1] == -0.10f);
+    AT(_visual_family_state(mesh)->material_params.limb_params[2] == 0.25f);
+    AT(_visual_family_state(mesh)->material_params.limb_params[3] == 0.04f);
+    AT(mesh->material.version > version);
+
     AT(dvz_visual_set_depth_cue(
            mesh,
            &(DvzDepthCueDesc){DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
@@ -2531,6 +2561,9 @@ int test_scene_visual_material_setter(TstContext* suite, const TstCase* item)
     AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_material(point, &phong) == -1);
     DvzMaterialDesc bad = dvz_material_desc();
     bad.opacity = 2.0f;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_material(mesh, &bad) == -1);
+    bad = dvz_limb_material_desc();
+    bad.limb.falloff = 0.0f;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_material(mesh, &bad) == -1);
 #endif
 

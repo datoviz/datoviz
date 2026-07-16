@@ -1003,6 +1003,16 @@ struct DvzStandardMaterial
 typedef struct DvzStandardMaterial DvzStandardMaterial;
 
 
+struct DvzLimbMaterial
+{
+    float falloff;
+    float sun_bias;
+    float terminator_width;
+    float night_factor;
+};
+typedef struct DvzLimbMaterial DvzLimbMaterial;
+
+
 struct DvzMaterialDesc
 {
     uint32_t struct_size;
@@ -1014,6 +1024,7 @@ struct DvzMaterialDesc
     float light_direction[3];
     DvzPhongMaterial phong;
     DvzStandardMaterial standard;
+    DvzLimbMaterial limb;
 };
 typedef struct DvzMaterialDesc DvzMaterialDesc;
 

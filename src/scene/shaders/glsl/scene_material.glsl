@@ -10,6 +10,7 @@ layout(set = 1, binding = 0) uniform SceneMaterial {
     vec4 baseColorFactor;
     vec4 standardParams;
     vec4 emissiveRim;
+    vec4 limbParams;
     vec4 depthCue;
     vec4 depthCueColor;
     vec4 depthCueExtra;
@@ -29,6 +30,18 @@ vec4 evaluateSceneMaterialLinearItem(vec4 linearItemColor, vec3 normal, vec3 wor
     vec3 n = normalize(normal);
     vec3 l = normalize(material.lightDir.xyz);
     vec3 v = normalize(cameraPos - worldPos);
+    if (model == 3)
+    {
+        float falloff = max(material.limbParams.x, 0.01);
+        float sunBias = material.limbParams.y;
+        float terminatorWidth = max(material.limbParams.z, 1e-4);
+        float nightFactor = clamp(material.limbParams.w, 0.0, 1.0);
+        float limb = pow(1.0 - clamp(abs(dot(n, v)), 0.0, 1.0), falloff);
+        float sunlight = smoothstep(
+            -terminatorWidth, terminatorWidth, dot(n, l) + sunBias);
+        float illumination = mix(nightFactor, 1.0, sunlight);
+        return vec4(clamp(base, 0.0, 1.0), alpha * limb * illumination);
+    }
     vec3 h = normalize(l + v);
     float lambert = max(dot(n, l), 0.0);
     if (model == 2)

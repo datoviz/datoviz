@@ -2469,11 +2469,21 @@ DVZ_EXPORT DvzMaterialDesc dvz_standard_material_desc(void);
 
 
 /**
+ * Return default view-dependent limb material options.
+ *
+ * The descriptor uses `DVZ_MATERIAL_MODEL_LIMB` with blended alpha, opacity `0.12`, a pale-blue
+ * base color, falloff `4`, sun bias `0.05`, terminator width `0.18`, and night factor `0.08`.
+ *
+ * @return default limb material descriptor
+ */
+DVZ_EXPORT DvzMaterialDesc dvz_limb_material_desc(void);
+
+
+/**
  * Set the shared material parameters for a primitive, mesh, or sphere visual.
  *
- * The Phong model maps directly to the current material shader payload. The standard model is
- * retained in the scene material state and lowered to the current shader payload until the standard
- * shader path is broadened. Pass NULL to restore default material parameters.
+ * Phong, standard, and view-dependent limb models map to the shared material shader payload. Pass
+ * NULL to restore default material parameters.
  *
  * @param visual the visual
  * @param desc the material descriptor, or NULL to restore defaults

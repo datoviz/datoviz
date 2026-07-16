@@ -78,6 +78,7 @@ smoke_symbols:
   - dvz_ffi_material_desc
   - dvz_ffi_phong_material_desc
   - dvz_ffi_standard_material_desc
+  - dvz_ffi_limb_material_desc
   - dvz_ffi_depth_cue_desc
   - dvz_ffi_scale_bar_desc
   - dvz_ffi_overlay_card_style
@@ -386,6 +387,11 @@ skipped_functions:
       disposition: emit
       reason: >
         User-facing standard material descriptor default is safe to return by value now that
+        DvzMaterialDesc and its nested material records are generated ctypes layouts.
+    dvz_limb_material_desc:
+      disposition: emit
+      reason: >
+        User-facing limb material descriptor default is safe to return by value now that
         DvzMaterialDesc and its nested material records are generated ctypes layouts.
     dvz_surface_capabilities:
       disposition: intentional-skip
