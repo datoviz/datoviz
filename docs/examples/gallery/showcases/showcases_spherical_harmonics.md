@@ -42,7 +42,7 @@ after verifying the linked API reference.
 
 ## What To Look For
 
-A uniformly tessellated icosphere is deformed radially by a deterministic blend of real spherical harmonics. Vertex color preserves the signed harmonic amplitude while smooth normals and a restrained material reveal the folded surface.
+A uniformly tessellated icosphere is deformed radially by a deterministic blend of real spherical harmonics. The coefficients morph in a slow seamless loop, vertex color preserves the signed amplitude, and smooth normals reveal the changing folded surface.
 
 This workflow is useful for directional basis functions, radiation patterns, orbital-like surfaces, and other spherical scalar fields that benefit from direct 3D shape perception.
 
@@ -64,12 +64,12 @@ This workflow is useful for directional basis functions, radiation patterns, orb
     - Approved adaptation starter: `no`
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_spherical_harmonics"><code>examples/webgpu/live.html?id=showcases_spherical_harmonics</code></a>
-    - Browser capability tags: `mesh`, `material`, `arcball`
-    - Validation: `smoke+screenshot`
+    - Browser capability tags: `mesh`, `material`, `arcball`, `frame-callbacks`, `continuous-frames`
+    - Validation: `smoke+interaction+screenshot`
 
     **Tags**
 
-    `scientific`, `generated`, `spherical-harmonics`, `icosphere`, `mesh`, `material`, `arcball`
+    `scientific`, `generated`, `spherical-harmonics`, `icosphere`, `mesh`, `material`, `arcball`, `animation`
 
     **Data**
 

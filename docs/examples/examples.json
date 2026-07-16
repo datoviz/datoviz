@@ -5145,7 +5145,7 @@
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/spherical_harmonics.c",
       "page": "gallery/showcases/showcases_spherical_harmonics.md",
       "summary": "This example turns a real spherical-harmonic blend into a lit mesh.",
-      "validation": "smoke+screenshot",
+      "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c showcases/spherical_harmonics",
       "smoke_command": "./build/examples/c/showcases/spherical_harmonics --png",
       "tags": [
@@ -5155,7 +5155,8 @@
         "icosphere",
         "mesh",
         "material",
-        "arcball"
+        "arcball",
+        "animation"
       ],
       "data": {
         "kind": "generated"
@@ -5174,7 +5175,9 @@
       "webgpu_requirements": [
         "mesh",
         "material",
-        "arcball"
+        "arcball",
+        "frame-callbacks",
+        "continuous-frames"
       ],
       "webgpu": {
         "status": "webgpu-live",
@@ -5182,7 +5185,9 @@
         "requirements": [
           "mesh",
           "material",
-          "arcball"
+          "arcball",
+          "frame-callbacks",
+          "continuous-frames"
         ]
       },
       "webgpu_route": "examples/webgpu/live.html?id=showcases_spherical_harmonics",

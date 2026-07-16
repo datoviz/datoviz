@@ -2485,6 +2485,16 @@ try {
         );
       }
     }
+    if (id === "showcases_spherical_harmonics") {
+      requireOk(
+        (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 9)) !== 0,
+        `${id} did not declare frame callbacks`,
+      );
+      requireOk(
+        (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 16)) !== 0,
+        `${id} did not declare continuous frames`,
+      );
+    }
   }
   const timerScenarioIndex = scenarioIndex(Module, "features_timer_animation");
   const scenarioIdPtr = Module._dvz_wasm_api_scenario_id(timerScenarioIndex);
@@ -3649,7 +3659,8 @@ try {
       if (
         id === "features_update_partial" ||
         id === "features_update_visual_data" ||
-        id === "features_visibility"
+        id === "features_visibility" ||
+        id === "showcases_spherical_harmonics"
       ) {
         expectStatus(
           Module._dvz_wasm_api_scenario_frame(scene, 1.1, 1 / 60),
