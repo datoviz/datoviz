@@ -1,0 +1,86 @@
+/* Reusable patterns for documentation section pages and guide introductions. */
+
+.md-typeset .dvz-section-intro {
+    margin: 0.8rem 0 1.8rem;
+    padding: 1rem 1.15rem;
+    border: 1px solid rgba(76, 201, 240, 0.2);
+    border-left: 3px solid var(--dvz-cyan);
+    border-radius: 6px;
+    background: linear-gradient(135deg, rgba(76, 201, 240, 0.08), rgba(22, 27, 34, 0.62));
+}
+
+.md-typeset .dvz-section-intro > :first-child {
+    margin-top: 0;
+}
+
+.md-typeset .dvz-section-intro > :last-child {
+    margin-bottom: 0;
+}
+
+.md-typeset .dvz-section-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin: 1rem 0 1.8rem;
+}
+
+.md-typeset .dvz-section-card {
+    display: block;
+    padding: 0.9rem 1rem;
+    border: 1px solid rgba(76, 201, 240, 0.18);
+    border-radius: 6px;
+    background: #10161f;
+    color: var(--md-default-fg-color);
+}
+
+.md-typeset a.dvz-section-card:hover,
+.md-typeset a.dvz-section-card:focus-visible {
+    border-color: rgba(76, 201, 240, 0.62);
+    text-decoration: none;
+}
+
+.md-typeset .dvz-section-card strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: #f0f6fc;
+}
+
+.md-typeset .dvz-section-card span {
+    display: block;
+    color: var(--md-default-fg-color--light);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.md-typeset .dvz-context-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.8rem 0 1.3rem;
+}
+
+.md-typeset .dvz-context-strip span {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid rgba(76, 201, 240, 0.22);
+    border-radius: 999px;
+    color: var(--md-default-fg-color--light);
+    background: rgba(76, 201, 240, 0.05);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.md-typeset .dvz-api-kind-label {
+    margin: 1rem 0 0.45rem;
+    color: var(--md-default-fg-color--light);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+@media screen and (max-width: 700px) {
+    .md-typeset .dvz-section-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,114 @@
+# Core concepts
+
+Datoviz uses a small set of explicit objects to turn scientific arrays into an interactive view or
+an image. Learn these names once; the same workflow appears in Python, C, examples, and the API
+reference.
+
+<div class="dvz-context-strip">
+  <span>Python and C</span>
+  <span>Native Vulkan</span>
+  <span>WebGPU subset</span>
+  <span>About 5 minutes</span>
+</div>
+
+
+## The object model
+
+```text
+scene
+└── figure                         output image area
+    ├── panel                      drawing region and view state
+    │   ├── visual                 one renderable collection
+    │   │   └── named data arrays  position, color, size, pixels, ...
+    │   └── controller             panzoom or 3D navigation
+    └── panel                      another view, when needed
+```
+
+| Object | Think of it as | Typical choice |
+| --- | --- | --- |
+| **Scene** | The retained state for one visualization workflow. | Usually one scene for a program or independent visualization. |
+| **Figure** | The complete output image, with a width and height in pixels. | One window or captured image usually presents one figure. |
+| **Panel** | A drawing region inside a figure. | Use one full panel first; add a grid only for multiple views. |
+| **Visual** | A collection rendered in one way: points, paths, an image, a mesh, text, or another family. | Group related items of the same family into one visual. |
+| **Data arrays** | Values assigned to exact visual attribute names. | Arrays commonly describe positions, colors, sizes, pixels, or indices. |
+| **Controller** | Navigation state bound to a panel. | Panzoom for 2D; arcball, fly, or turntable for 3D. |
+| **View or capture** | Where the figure is rendered. | Choose a native window, offscreen capture, or supported embedded host. |
+
+A visual normally represents many related items. For example, use one point visual with 10,000
+positions, colors, and diameters—not 10,000 one-point visuals. Separate visuals when the data needs
+a different visual family, panel, style, coordinate treatment, or update schedule.
+
+
+## The complete workflow
+
+Most programs follow the same sequence:
+
+1. Create a scene, figure, and at least one panel.
+2. Create a visual for the data representation you need.
+3. Assign arrays to the visual's named attributes.
+4. Add the visual to a panel.
+5. Add a controller or adornments such as axes when needed.
+6. Open a window or create an offscreen output.
+7. Run the application or capture the frame.
+
+Uploading data does not place a visual in the figure. The separate panel-attachment step is what
+makes the visual part of that view.
+
+
+## Data has a contract
+
+Every visual family defines which attributes it accepts and what each array means. Before uploading
+an array, check four properties:
+
+- the exact attribute name, such as `"position"` or `"diameter_px"`;
+- the data type, such as `float32` positions or `uint8` RGBA colors;
+- the shape and item count;
+- the coordinate space or unit, such as data coordinates or screen pixels.
+
+The [visual-family reference](../reference/visual-families/index.md) describes these contracts. The
+[visual attributes reference](../reference/visual-attributes.md) explains full writes, range
+updates, copied data, and external-buffer variants.
+
+
+## Retained state and updates
+
+The scene keeps the visualization description after the first frame. Update the arrays, camera,
+controller, visibility, or style that changed; you do not normally rebuild the whole scene.
+
+Ordinary `dvz_visual_set_data()` writes copy the supplied array before returning. Advanced borrowed
+or external-buffer APIs have separate lifetime and synchronization rules. See
+[Objects and lifetimes](../reference/objects-and-lifetimes.md) before using those paths.
+
+
+## Coordinates and interaction
+
+Positions may be expressed in data, panel, world, or screen-related spaces depending on the visual
+and attribute. A panel's camera or controller transforms the data view; screen-sized attributes
+such as point diameter remain measured in pixels.
+
+Start with [panzoom](../how-to/use-panzoom.md) for 2D data or a
+[3D controller](../how-to/3d-navigation.md) for spatial scenes. Use the
+[coordinate-system guide](../how-to/coordinate-systems.md) before mixing overlays, labels, images,
+and 3D geometry.
+
+
+## Choose the next page
+
+<div class="dvz-section-grid">
+  <a class="dvz-section-card" href="../quickstart/">
+    <strong>Build the first scene</strong>
+    <span>Run a complete Python or C scatter example with no external data.</span>
+  </a>
+  <a class="dvz-section-card" href="../../examples/">
+    <strong>Find a close example</strong>
+    <span>Start from executable source for a visual, feature, or scientific composition.</span>
+  </a>
+  <a class="dvz-section-card" href="../../how-to/choose-a-visual-family/">
+    <strong>Represent your data</strong>
+    <span>Choose between points, markers, paths, images, meshes, volumes, and other families.</span>
+  </a>
+  <a class="dvz-section-card" href="../../reference/">
+    <strong>Look up an exact contract</strong>
+    <span>Check attributes, signatures, lifetimes, platform support, and feature status.</span>
+  </a>
+</div>

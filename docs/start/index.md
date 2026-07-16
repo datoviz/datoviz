@@ -1,12 +1,30 @@
 # Get started
 
-Start here if you are new to Datoviz v0.4.
+<div class="dvz-section-intro" markdown="1">
 
-Datoviz helps you build interactive 2D and 3D scientific visualizations when you need more direct
-control than a plotting library gives. The usual workflow is: create a scene, add a figure
-and panel, upload data arrays to a visual, then show the result in a window or render it offscreen.
+Datoviz turns scientific arrays into interactive 2D and 3D GPU visualizations. Start with Python
+and NumPy or build directly with C; both paths use the same scene, visual, and data contracts.
 
-Read [What is Datoviz?](what-is-datoviz.md) first if scenes, panels, and visuals are new concepts.
+</div>
+
+<div class="dvz-section-grid">
+  <a class="dvz-section-card" href="quickstart/">
+    <strong>Python quickstart</strong>
+    <span>Render 10,000 points from NumPy arrays in an interactive window.</span>
+  </a>
+  <a class="dvz-section-card" href="first-c-program/">
+    <strong>First C program</strong>
+    <span>Build and run the same scene through the native API.</span>
+  </a>
+  <a class="dvz-section-card" href="core-concepts/">
+    <strong>Core concepts</strong>
+    <span>Understand scenes, figures, panels, visuals, attributes, controllers, and views.</span>
+  </a>
+  <a class="dvz-section-card" href="ai-workflow/">
+    <strong>AI-assisted workflow</strong>
+    <span>Ask a coding assistant for current, verified Datoviz v0.4 code.</span>
+  </a>
+</div>
 
 ## Recommended path
 
@@ -15,9 +33,10 @@ Read [What is Datoviz?](what-is-datoviz.md) first if scenes, panels, and visuals
    - **Python:** [Run the Quickstart](quickstart.md) with NumPy arrays.
    - **C:** [Run the First C Program](first-c-program.md), then use the
      [C/C++ integration guide](../how-to/c-integration.md) in your own project.
-3. [Choose your layer](choose-your-layer.md) if you are deciding between C, Python, WebGPU,
+3. Read [Core concepts](core-concepts.md) when you need the shared object and data model.
+4. [Choose your layer](choose-your-layer.md) if you are deciding between C, Python, WebGPU,
    `datoviz.raw` exact calls, or higher-level plotting tools.
-4. [Use AI-assisted workflow](ai-workflow.md) if you want a coding assistant to write a small
+5. [Use the AI-assisted workflow](ai-workflow.md) if you want a coding assistant to write a small
    Datoviz example from the public documentation.
 
 ## After the Quickstart

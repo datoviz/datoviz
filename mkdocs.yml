@@ -42,6 +42,7 @@ theme:
     repo: fontawesome/brands/github
 extra_css:
   - stylesheets/extra.css
+  - stylesheets/content.css
   - stylesheets/landing.css
 extra_javascript:
   - javascripts/gallery-media.js
@@ -89,7 +90,7 @@ plugins:
             show_signature_annotations: true
             show_source: false
             show_symbol_type_heading: true
-            show_symbol_type_toc: true
+            show_symbol_type_toc: false
             heading_level: 2
 hooks:
   - tools/mkdocs_hooks.py
@@ -101,6 +102,8 @@ nav:
     - Install: 'start/install.md'
     - Build from source: 'start/build-from-source.md'
     - Quickstart: 'start/quickstart.md'
+    - First C program: 'start/first-c-program.md'
+    - Core concepts: 'start/core-concepts.md'
     - Choose your layer: 'start/choose-your-layer.md'
     - AI-assisted workflow: 'start/ai-workflow.md'
     - AI agents: 'ai-agents.md'
@@ -214,22 +217,37 @@ nav:
       - Compute and graphics: 'reference/compute-graphics.md'
     - Citation: 'reference/citation.md'
   - Advanced:
-    - Runtime internals: 'advanced/runtime-internals.md'
-    - DRP2 command streams: 'advanced/drp2-command-streams.md'
-    - WebGPU/WASM runtime: 'reference/webgpu-subset.md'
-    - Record/replay diagnostics: 'how-to/record-replay.md'
+    - Overview: 'advanced/index.md'
+    - Concepts and architecture:
+      - Figure, panel, and visual model: 'explanation/figure-panel-visual-model.md'
+      - Architecture: 'explanation/architecture.md'
+      - Scene-to-runtime boundary: 'explanation/scene-to-runtime-boundary.md'
+      - Frame lifecycle: 'explanation/frame-lifecycle.md'
+      - Retained resources: 'explanation/retained-resources.md'
+      - Invalidation and caching: 'explanation/invalidation-and-caching.md'
+      - GPU resource ownership: 'explanation/gpu-resource-ownership.md'
+      - Interaction model: 'explanation/interaction-model.md'
+      - Query, pick, and probe model: 'explanation/query-pick-probe-model.md'
+    - Runtime layers:
+      - Runtime internals: 'advanced/runtime-internals.md'
+      - DRP2 command streams: 'advanced/drp2-command-streams.md'
+    - Contributors:
+      - Architecture map: 'contributors/architecture-map.md'
+      - Add a DRP2 command: 'contributors/adding-a-drp2-command.md'
+      - Add a WebGPU fixture: 'contributors/adding-a-webgpu-fixture.md'
+      - Select examples by capability: 'contributors/example-selection-by-capability.md'
+      - Generated documentation: 'contributors/generated-documentation.md'
     - Release maintainers:
       - Release process: 'contributors/release-process.md'
       - Release flight checklist: 'contributors/release-flight-checklist.md'
       - Release wheels: 'contributors/release-wheels.md'
       - Release validation: 'contributors/release-validation.md'
       - Agent release checklist: 'contributors/agent-release-checklist.md'
-      - Generated documentation: 'contributors/generated-documentation.md'
       - Validation gallery: 'examples/validation-gallery.md'
-  - News: 'blog/index.md'
 not_in_nav: |
   _old/*
   architecture/*
+  blog/*
   discussions/*
   landing/*
   examples/webgpu/COMPAT.md
@@ -239,8 +257,6 @@ not_in_nav: |
   tasks/*
   visuals/*
   examples/webgpu-matrix.md
-  start/first-c-program.md
-  start/what-is-datoviz.md
   how-to/capture-an-image.md
   how-to/create-multiple-panels.md
   how-to/rendering-techniques.md
@@ -250,18 +266,5 @@ not_in_nav: |
   tutorials/first-scene.md
   reference/api_c.md
   explanation/index.md
-  explanation/architecture.md
-  explanation/figure-panel-visual-model.md
   explanation/coordinate-systems.md
-  explanation/interaction-model.md
   explanation/gsp-vispy2-boundary.md
-  explanation/frame-lifecycle.md
-  explanation/retained-resources.md
-  explanation/invalidation-and-caching.md
-  explanation/gpu-resource-ownership.md
-  explanation/query-pick-probe-model.md
-  explanation/scene-to-runtime-boundary.md
-  contributors/architecture-map.md
-  contributors/adding-a-drp2-command.md
-  contributors/adding-a-webgpu-fixture.md
-  contributors/example-selection-by-capability.md

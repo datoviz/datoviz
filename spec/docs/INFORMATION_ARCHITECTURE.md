@@ -333,44 +333,66 @@ such as "use when", "avoid when", and comparisons with neighboring visual famili
 authored prose.
 
 
-## Explanation
+## Advanced
 
-Purpose: explain concepts, architecture, and tradeoffs.
+Purpose: explain concepts, architecture, runtime layers, portability boundaries, and contributor
+workflows without putting them in the primary visualization path.
 
-Current MkDocs navigation:
+Current MkDocs navigation groups Advanced material by responsibility:
 
 ```text
 Advanced/
+  Overview
+  Concepts and architecture/
+    figure-panel-visual-model.md
+    architecture.md
+    scene-to-runtime-boundary.md
+    frame-lifecycle.md
+    retained-resources.md
+    invalidation-and-caching.md
+    gpu-resource-ownership.md
+    interaction-model.md
+    query-pick-probe-model.md
   Runtime layers/
-    reference/drp2/index.md
-    advanced/vklite.md
-    advanced/canvas.md
-    advanced/webgpu-renderer.md
+    runtime-internals.md
+    drp2-command-streams.md
+  Contributors/
+    architecture-map.md
+    adding-a-drp2-command.md
+    adding-a-webgpu-fixture.md
+    example-selection-by-capability.md
+    generated-documentation.md
   Release maintainers/
-    releases/index.md
-    releases/v0.4.0rc1.md
-    contributors/release-process.md
-    contributors/release-flight-checklist.md
-    contributors/release-wheels.md
-    contributors/release-validation.md
+    release-process.md
+    release-flight-checklist.md
+    release-wheels.md
+    release-validation.md
+    agent-release-checklist.md
+    validation-gallery.md
 ```
 
 Explanation pages should answer why the system is shaped as it is. They should be explicit about
 boundaries so contributors and coding agents do not create parallel renderers, presentation layers,
-or runtime contracts. The retained explanation pages that are intentionally reachable by link but
-omitted from navigation are listed in `mkdocs.yml` `not_in_nav`; consolidate or delete them in a
-dedicated explanation cleanup pass.
+or runtime contracts. The Advanced overview also routes readers to canonical How-To and Reference
+pages for WebGPU, embedding, capture, replay, and platform support; those pages should not appear a
+second time in the navigation tree.
 
 
 ## Contributors
 
 Purpose: document how humans and agents change Datoviz safely.
 
-Current MkDocs navigation exposes release-maintainer pages under `Advanced`, not a general
-contributor section:
+Current MkDocs navigation exposes focused contributor and release-maintainer subsections under
+`Advanced`, not a separate top-level contributor tab:
 
 ```text
 Advanced/
+  Contributors/
+    architecture-map.md
+    adding-a-drp2-command.md
+    adding-a-webgpu-fixture.md
+    example-selection-by-capability.md
+    generated-documentation.md
   Release maintainers/
     release-process.md
     release-flight-checklist.md
@@ -378,14 +400,6 @@ Advanced/
     release-validation.md
     examples/validation-gallery.md
 ```
-
-Advanced contributor appendices may remain outside the navigation when they are linked from the
-main contributor pages:
-
-1. `contributors/architecture-map.md`;
-2. `contributors/adding-a-drp2-command.md`;
-3. `contributors/adding-a-webgpu-fixture.md`;
-4. `contributors/example-selection-by-capability.md`.
 
 Contributor pages may link to `spec/` and `agents/`, but public docs should not become execution
 history or active task queues. `CONTRIBUTING.md` is the short repository entry point; detailed
