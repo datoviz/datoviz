@@ -30,6 +30,7 @@ import 'justfiles/test.just'
 
 # Check syntax and public C identifiers in handwritten How-To, Start, homepage, and Reference snippets.
 check-howto-snippets:
+    python3 -m unittest tools/tests/test_check_howto_snippets.py
     python3 tools/check_howto_snippets.py
 
 # Check mechanically derived public status facts for drift.
