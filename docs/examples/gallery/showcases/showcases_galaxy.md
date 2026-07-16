@@ -13,7 +13,13 @@ This example renders an animated density-wave spiral galaxy.
 
 ## Preview
 
-<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for Density-Wave Galaxy"><span>Screenshot pending</span></div>
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp" alt="Density-Wave Galaxy" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../../../assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp" aria-label="Density-Wave Galaxy preview">
+    <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_galaxy.mp4" type="video/mp4">
+  </video>
+</div>
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Live WebGPU preview not available yet</strong>
