@@ -170,17 +170,17 @@ def _stage_native(config: ReleaseWheelConfig, package_dir: Path) -> list[Payload
             )
         )
     elif system == "Windows":
-        copied = _copy_matches(
-            config.root,
+        copied = _copy_matches_from_roots(
+            runtime_roots(config.native_build_dir, config.runtime_dirs_env),
             [
-                "build/src/*.dll",
-                "build/src/*.dll.a",
-                "build/src/*.lib",
-                "build/*.dll",
-                "build/*.dll.a",
-                "build/*.lib",
-                "build/vcpkg_installed/*-windows/bin/*.dll",
-                "build/vcpkg_installed/*-windows/debug/bin/*.dll",
+                "src/*.dll",
+                "src/*.dll.a",
+                "src/*.lib",
+                "*.dll",
+                "*.dll.a",
+                "*.lib",
+                "vcpkg_installed/*-windows/bin/*.dll",
+                "vcpkg_installed/*-windows/debug/bin/*.dll",
             ],
             package_dir,
         )
@@ -194,7 +194,8 @@ def _stage_native(config: ReleaseWheelConfig, package_dir: Path) -> list[Payload
                 else "runtime"
             )
             entries.append(_entry(dst, f"datoviz/{dst.name}", kind, "core-runtime"))
-        gcc = shutil.which("gcc")
+        uses_mingw = any(path.name.lower() == "libdatoviz.dll" for path in copied)
+        gcc = shutil.which("gcc") if uses_mingw else None
         if gcc is not None:
             mingw = Path(gcc).resolve().parent
             for name in ("libgcc_s_seh-1.dll", "libstdc++-6.dll", "libwinpthread-1.dll"):
@@ -208,11 +209,11 @@ def _stage_native(config: ReleaseWheelConfig, package_dir: Path) -> list[Payload
 
     if config.include_qtbridge:
         suffixes = {
-            "Linux": ["build/qtbridge/libdatoviz_qtbridge.so"],
-            "Darwin": ["build/qtbridge/libdatoviz_qtbridge.dylib"],
-            "Windows": ["build/qtbridge/*.dll"],
+            "Linux": ["qtbridge/libdatoviz_qtbridge.so"],
+            "Darwin": ["qtbridge/libdatoviz_qtbridge.dylib"],
+            "Windows": ["qtbridge/*.dll"],
         }[system]
-        copied = _copy_matches(config.root, suffixes, package_dir)
+        copied = _copy_matches(config.native_build_dir, suffixes, package_dir)
         if not copied:
             raise FileNotFoundError("Qt bridge requested but no datoviz_qtbridge library was found")
         for dst in copied:
@@ -229,18 +230,23 @@ def _first_existing(patterns: list[str], build_dir: Path) -> Path:
 
 
 def _copy_matches(root: Path, patterns: list[str], dst: Path) -> list[Path]:
+    return _copy_matches_from_roots([root], patterns, dst)
+
+
+def _copy_matches_from_roots(roots: list[Path], patterns: list[str], dst: Path) -> list[Path]:
     copied: list[Path] = []
     seen_names: set[str] = set()
-    for pattern in patterns:
-        for src in sorted(root.glob(pattern)):
-            if src.is_file():
-                key = src.name.lower()
-                if key in seen_names:
-                    continue
-                target = dst / src.name
-                copy_file(src, target)
-                copied.append(target)
-                seen_names.add(key)
+    for root in roots:
+        for pattern in patterns:
+            for src in sorted(root.glob(pattern)):
+                if src.is_file():
+                    key = src.name.lower()
+                    if key in seen_names:
+                        continue
+                    target = dst / src.name
+                    copy_file(src, target)
+                    copied.append(target)
+                    seen_names.add(key)
     return copied
 
 

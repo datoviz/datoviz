@@ -5,8 +5,10 @@ from pathlib import Path
 
 import pytest
 
+from tools.datoviz_build_backend import native_payload
 from tools.datoviz_build_backend.config import parse_config_settings
 from tools.datoviz_build_backend.manifest import PayloadEntry, write_manifest
+from tools.datoviz_build_backend.native_payload import _stage_native
 from tools.datoviz_build_backend.wheel import write_wheel_from_stage
 from tools.datoviz_build_backend.validate import validate_wheel
 
@@ -57,6 +59,52 @@ def test_parse_config_rejects_unknown_datoviz_setting(tmp_path: Path) -> None:
         parse_config_settings({"datoviz.unknown": "1"}, root=tmp_path)
 
 
+def test_stage_windows_native_uses_configured_build_dir(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _write_project(tmp_path)
+    native = tmp_path / "native"
+    (native / "src").mkdir(parents=True)
+    (native / "src" / "datoviz.dll").write_bytes(b"msvc dll")
+    (native / "src" / "datoviz.lib").write_bytes(b"msvc import library")
+    runtime = tmp_path / "runtime"
+    runtime.mkdir(parents=True)
+    (runtime / "runtime.dll").write_bytes(b"runtime")
+
+    stale = tmp_path / "build" / "src"
+    stale.mkdir(parents=True)
+    (stale / "libdatoviz.dll").write_bytes(b"stale mingw dll")
+    (stale / "libdatoviz.dll.a").write_bytes(b"stale mingw import library")
+
+    mingw = tmp_path / "mingw" / "bin"
+    mingw.mkdir(parents=True)
+    (mingw / "gcc.exe").write_bytes(b"")
+    for name in ("libgcc_s_seh-1.dll", "libstdc++-6.dll", "libwinpthread-1.dll"):
+        (mingw / name).write_bytes(b"mingw runtime")
+
+    config = parse_config_settings(
+        {"datoviz.release-wheel": "true", "datoviz.native-build-dir": "native"},
+        root=tmp_path,
+    )
+    package = tmp_path / "stage" / "datoviz"
+    monkeypatch.setattr(native_payload.platform, "system", lambda: "Windows")
+    monkeypatch.setattr(native_payload.shutil, "which", lambda name: str(mingw / "gcc.exe"))
+    monkeypatch.setenv("DVZ_WHEEL_RUNTIME_DIRS", str(runtime))
+
+    entries = _stage_native(config, package)
+
+    assert {path.name for path in package.iterdir()} == {
+        "datoviz.dll",
+        "datoviz.lib",
+        "runtime.dll",
+    }
+    assert {entry.wheel_path for entry in entries} == {
+        "datoviz/datoviz.dll",
+        "datoviz/datoviz.lib",
+        "datoviz/runtime.dll",
+    }
+
+
 def test_direct_wheel_writer_validates_record_and_manifest(tmp_path: Path) -> None:
     _write_project(tmp_path)
     stage = tmp_path / "stage"
@@ -105,4 +153,3 @@ def test_direct_wheel_writer_validates_record_and_manifest(tmp_path: Path) -> No
     assert "datoviz-0.4.0.dev0.dist-info/METADATA" in names
     assert "datoviz-0.4.0.dev0.dist-info/RECORD" in names
     assert "datoviz/_wheel_payload.json" in names
-
