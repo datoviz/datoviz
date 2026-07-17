@@ -27,6 +27,18 @@ Prerequisite: create a 2D `panel` and its data visual first. The result is panel
 with grid lines and labels. These are setup fragments; see the complete
 [Path With 2D Axes example](../examples/gallery/features/features_axes_2d.md).
 
+<figure class="dvz-output-example">
+  <a href="../../examples/gallery/features/features_axes_2d/">
+    <img src="../../assets/gallery/v0.4/features/features_axes_2d.webp"
+         alt="A colored 2D path framed by labeled axes, ticks, and grid lines" loading="lazy">
+  </a>
+  <figcaption>
+    <strong>Panel-owned axes.</strong> Ticks, labels, and grid lines follow the same data domain as
+    the path.
+    <a href="../../examples/gallery/features/features_axes_2d/">Open the axes example</a>.
+  </figcaption>
+</figure>
+
 ### Python
 
 ```python
@@ -87,6 +99,17 @@ preserves that endpoint order after View2D fitting and panzoom.
 ## Tick policy and labels
 
 Use the default tick policy for ordinary plots. Tune it when labels collide or the panel is small.
+
+<figure class="dvz-output-example">
+  <a href="../../examples/gallery/features/features_axis_labels/">
+    <img src="../../assets/gallery/v0.4/features/features_axis_labels.webp"
+         alt="A plot with explicit axis titles, tick labels, and reserved margins" loading="lazy">
+  </a>
+  <figcaption>
+    <strong>Labels and margins.</strong> Reserve enough plot space for axis titles and tick labels.
+    <a href="../../examples/gallery/features/features_axis_labels/">Open the labels example</a>.
+  </figcaption>
+</figure>
 
 ```c
 DvzAxisTickPolicy ticks = dvz_axis_tick_policy();
@@ -158,8 +181,6 @@ The 2D axes and axis-label examples have live WebGPU routes. Check the generated
 browser support matters, especially if the scene also uses panzoom or text-heavy annotations.
 
 ## Canonical examples
-
-![A colored 2D path framed by labeled axes, ticks, and grid lines](../assets/gallery/v0.4/features/features_axes_2d.webp)
 
 - [Path With 2D Axes](../examples/gallery/features/features_axes_2d.md) - minimal retained 2D axes and
   tick labels on a path plot. Source: `examples/c/features/axes_2d.c`.

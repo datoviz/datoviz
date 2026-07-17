@@ -27,6 +27,32 @@ native window.
 Build the retained scene first: create the scene, figure, panel, visuals, data, and panel
 attachments. Then create the native app and attach a window view to the figure.
 
+The retained scene remains independent of presentation. The app owns the live runtime and its
+window view, while the view presents one existing figure and routes input back to its panels.
+
+<div class="dvz-sequence" role="list" aria-label="Native window lifecycle">
+  <div class="dvz-sequence__step" role="listitem">
+    <span class="dvz-sequence__number">Step 1</span>
+    <strong>Retained scene</strong>
+    <span>Create the figure and visuals.</span>
+  </div>
+  <div class="dvz-sequence__step" role="listitem">
+    <span class="dvz-sequence__number">Step 2</span>
+    <strong>Application</strong>
+    <span>Create the live GPU runtime.</span>
+  </div>
+  <div class="dvz-sequence__step" role="listitem">
+    <span class="dvz-sequence__number">Step 3</span>
+    <strong>Window view</strong>
+    <span>Attach one figure and input.</span>
+  </div>
+  <div class="dvz-sequence__step" role="listitem">
+    <span class="dvz-sequence__number">Step 4</span>
+    <strong>Run loop</strong>
+    <span>Render until the window closes.</span>
+  </div>
+</div>
+
 The Python tab is the recommended managed path for scripts. The C tab is a function-body excerpt
 that exposes the exact app/view lifecycle.
 

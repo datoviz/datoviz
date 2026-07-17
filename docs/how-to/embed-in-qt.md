@@ -26,6 +26,32 @@ platform you target.
 3. Attach a Datoviz view to the external surface or hosted viewport path.
 4. Let the host event loop drive resize, input, frame requests, and `dvz_view_render_once()`.
 
+The host remains responsible for the window and events. Datoviz borrows the surface, updates its
+retained scene from forwarded input, renders one frame, and asks Qt to schedule the next update.
+
+<div class="dvz-sequence" role="list" aria-label="Qt and Datoviz event flow">
+  <div class="dvz-sequence__step" role="listitem">
+    <span class="dvz-sequence__number">Step 1</span>
+    <strong>Qt host</strong>
+    <span>Owns the window and event loop.</span>
+  </div>
+  <div class="dvz-sequence__step" role="listitem">
+    <span class="dvz-sequence__number">Step 2</span>
+    <strong>Forward events</strong>
+    <span>Send resize and input to the view.</span>
+  </div>
+  <div class="dvz-sequence__step" role="listitem">
+    <span class="dvz-sequence__number">Step 3</span>
+    <strong>Render once</strong>
+    <span>Datoviz draws to the Qt surface.</span>
+  </div>
+  <div class="dvz-sequence__step" role="listitem">
+    <span class="dvz-sequence__number">Step 4</span>
+    <strong>Request update</strong>
+    <span>Qt schedules the next frame.</span>
+  </div>
+</div>
+
 Use the GLFW external-surface example as the closest maintained native embedding reference.
 
 This page describes an ownership protocol, not a copy-pasteable single function. Start from the
@@ -46,6 +72,18 @@ DVZ_CMAKE_ARGS="-DDVZ_ENABLE_QT_BRIDGE=ON" just build
 
 `hosted_qt_smoke` is the minimal contract smoke. `qt_hosting` embeds the hosted Datoviz
 window in a Qt Widgets layout and lets widget callbacks mutate retained scene data.
+
+<figure class="dvz-output-example">
+  <a href="../../examples/gallery/advanced/advanced_qt_hosting/">
+    <img src="../../assets/gallery/v0.4/advanced/advanced_qt_hosting.webp"
+         alt="A Datoviz scene embedded beside controls in a Qt Widgets application" loading="lazy">
+  </a>
+  <figcaption>
+    <strong>Qt-hosted view.</strong> Qt owns the application shell and controls while Datoviz renders
+    the scene inside the hosted surface.
+    <a href="../../examples/gallery/advanced/advanced_qt_hosting/">Open the Qt example</a>.
+  </figcaption>
+</figure>
 
 
 ## Ownership contract

@@ -30,6 +30,19 @@ Choose the mechanism by the question you are answering:
 This is a C function-body excerpt. Datoviz matrices use the same `mat4` representation as the
 public headers; use the canonical example for complete setup and combined transforms.
 
+<figure class="dvz-output-example">
+  <a href="../../examples/gallery/features/features_visual_transform/">
+    <img src="../../assets/gallery/v0.4/features/features_visual_transform.webp"
+         alt="Copies of geometry positioned with different retained visual transforms"
+         loading="lazy">
+  </a>
+  <figcaption>
+    <strong>Visual-local transform.</strong> Geometry placement changes while the source vertex
+    arrays remain unchanged.
+    <a href="../../examples/gallery/features/features_visual_transform/">Open the example</a>.
+  </figcaption>
+</figure>
+
 ```c
 mat4 transform = {
     {1.0f, 0.0f, 0.0f, 0.0f},
@@ -85,6 +98,18 @@ around `[-1, +1]`. Use `DVZ_VISUAL_COORD_PANEL` for normalized panel-fixed overl
 User scale is presentation scale on a view. It is appropriate for screen-space sizes such as marker
 diameter_px, stroke width, axes, labels, and GUI-adjusted readability. It should not be used to change
 data units or world geometry.
+
+<figure class="dvz-output-example">
+  <a href="../../examples/gallery/features/features_user_scale/">
+    <img src="../../assets/gallery/v0.4/features/features_user_scale.poster.webp"
+         alt="The same scene shown with different screen-space user scale values" loading="lazy">
+  </a>
+  <figcaption>
+    <strong>Presentation scale.</strong> Screen-space marks and labels change size without changing
+    data coordinates or the panel domain.
+    <a href="../../examples/gallery/features/features_user_scale/">Open the example</a>.
+  </figcaption>
+</figure>
 
 ```c
 float scale = dvz_view_user_scale(view);

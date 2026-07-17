@@ -38,6 +38,45 @@ A camera descriptor defines the initial view and projection:
 | `projection.ortho_height` | Visible height for orthographic cameras. |
 | `projection.near_clip`, `projection.far_clip` | Clipping planes. Choose values that enclose the data without making the depth range needlessly large. |
 
+<figure class="dvz-output-example">
+  <a href="../../examples/gallery/features/features_camera_manual/">
+    <img src="../../assets/gallery/v0.4/features/features_camera_manual.webp"
+         alt="A three-dimensional scene rendered from an explicitly configured camera"
+         loading="lazy">
+  </a>
+  <figcaption>
+    <strong>Explicit camera.</strong> Eye, target, up direction, projection, and clipping determine
+    the first rendered view.
+    <a href="../../examples/gallery/features/features_camera_manual/">Open the manual camera example</a>.
+  </figcaption>
+</figure>
+
+The camera first establishes a view convention, then projects and clips the visible geometry. A
+controller may update that retained camera state later without modifying the geometry itself.
+
+<div class="dvz-sequence" role="list" aria-label="Camera configuration sequence">
+  <div class="dvz-sequence__step" role="listitem">
+    <span class="dvz-sequence__number">Step 1</span>
+    <strong>Eye</strong>
+    <span>Place the camera in scene space.</span>
+  </div>
+  <div class="dvz-sequence__step" role="listitem">
+    <span class="dvz-sequence__number">Step 2</span>
+    <strong>Target and up</strong>
+    <span>Define direction and vertical.</span>
+  </div>
+  <div class="dvz-sequence__step" role="listitem">
+    <span class="dvz-sequence__number">Step 3</span>
+    <strong>Projection</strong>
+    <span>Choose perspective or orthographic.</span>
+  </div>
+  <div class="dvz-sequence__step" role="listitem">
+    <span class="dvz-sequence__number">Step 4</span>
+    <strong>Clipping</strong>
+    <span>Keep the useful depth range.</span>
+  </div>
+</div>
+
 ## Minimal call sequence
 
 This is a C setup excerpt. Check that `dvz_panel_set_camera_desc()` succeeds and attach the intended

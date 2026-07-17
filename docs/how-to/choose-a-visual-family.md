@@ -19,6 +19,68 @@ Choose the coarsest visual family that lets you batch similar elements together.
 Datoviz layout is few visuals, many items per visual. Split elements into separate visuals only
 when they truly need different visual families, materials, transforms, panels, or update schedules.
 
+The examples below show the main data-shape choices. Each image links to the complete canonical
+example; use the decision matrix for neighboring or more specialized families.
+
+<div class="dvz-output-grid">
+  <figure class="dvz-output-example">
+    <a href="../../examples/gallery/visuals/visuals_point/">
+      <img src="../../assets/gallery/v0.4/visuals/visuals_point.webp"
+           alt="Dense colored samples rendered with the point visual" loading="lazy">
+    </a>
+    <figcaption><strong>Point</strong> — dense independent samples.</figcaption>
+  </figure>
+  <figure class="dvz-output-example">
+    <a href="../../examples/gallery/visuals/visuals_marker/">
+      <img src="../../assets/gallery/v0.4/visuals/visuals_marker.webp"
+           alt="Samples rendered with several marker symbols" loading="lazy">
+    </a>
+    <figcaption><strong>Marker</strong> — symbolic point samples.</figcaption>
+  </figure>
+  <figure class="dvz-output-example">
+    <a href="../../examples/gallery/visuals/visuals_path/">
+      <img src="../../assets/gallery/v0.4/visuals/visuals_path.webp"
+           alt="Connected colored curves rendered with the path visual" loading="lazy">
+    </a>
+    <figcaption><strong>Path</strong> — connected curves and trajectories.</figcaption>
+  </figure>
+  <figure class="dvz-output-example">
+    <a href="../../examples/gallery/visuals/visuals_image/">
+      <img src="../../assets/gallery/v0.4/visuals/visuals_image.webp"
+           alt="A regular two-dimensional scalar field rendered as an image" loading="lazy">
+    </a>
+    <figcaption><strong>Image</strong> — regular 2D sampled fields.</figcaption>
+  </figure>
+  <figure class="dvz-output-example">
+    <a href="../../examples/gallery/visuals/visuals_mesh/">
+      <img src="../../assets/gallery/v0.4/visuals/visuals_mesh.webp"
+           alt="A shaded triangulated surface rendered with the mesh visual" loading="lazy">
+    </a>
+    <figcaption><strong>Mesh</strong> — triangulated surfaces and objects.</figcaption>
+  </figure>
+  <figure class="dvz-output-example">
+    <a href="../../examples/gallery/visuals/visuals_sphere/">
+      <img src="../../assets/gallery/v0.4/visuals/visuals_sphere.webp"
+           alt="Lit three-dimensional balls rendered with the sphere visual" loading="lazy">
+    </a>
+    <figcaption><strong>Sphere</strong> — 3D balls with world-space radii.</figcaption>
+  </figure>
+  <figure class="dvz-output-example">
+    <a href="../../examples/gallery/visuals/visuals_volume/">
+      <img src="../../assets/gallery/v0.4/visuals/visuals_volume.webp"
+           alt="A three-dimensional sampled field rendered as a volume" loading="lazy">
+    </a>
+    <figcaption><strong>Volume</strong> — regular 3D sampled fields.</figcaption>
+  </figure>
+  <figure class="dvz-output-example">
+    <a href="../../examples/gallery/visuals/visuals_text/">
+      <img src="../../assets/gallery/v0.4/visuals/visuals_text.webp"
+           alt="Several retained strings rendered with the text visual" loading="lazy">
+    </a>
+    <figcaption><strong>Text</strong> — human-readable retained strings.</figcaption>
+  </figure>
+</div>
+
 ## Decision matrix
 
 | Data shape | Usually use | Reference | Canonical gallery |

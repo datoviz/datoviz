@@ -209,6 +209,21 @@
     color: var(--md-default-fg-color);
 }
 
+.md-typeset .dvz-output-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+    margin: 1rem 0 1.8rem;
+}
+
+.md-typeset .dvz-output-grid .dvz-output-example {
+    margin: 0;
+}
+
+.md-typeset .dvz-output-grid .dvz-output-example figcaption {
+    padding: 0.55rem 0.7rem;
+}
+
 .md-typeset .dvz-api-kind-label {
     margin: 1rem 0 0.45rem;
     color: var(--md-default-fg-color--light);
