@@ -25,15 +25,14 @@ This example turns a real spherical-harmonic blend into a lit mesh.
 
 === "Live WebGPU"
 
-    <aside class="dvz-webgpu-limitations" role="note">
-    <strong>WebGPU rendering differences</strong>
-    <ul>
-    <li><code>MSAA</code>: The desktop example enables 8x MSAA for smoother mesh silhouettes; the WebGPU route is currently single-sampled.</li>
-    </ul>
-    </aside>
     <div class="dvz-webgpu-live" markdown="1">
-    <iframe src="../../../webgpu/live.html?id=showcases_spherical_harmonics" title="Spherical Harmonics WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    <iframe src="../../../webgpu/live.html?id=showcases_spherical_harmonics&embedded=1" title="Spherical Harmonics WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
     </div>
+
+    <aside class="dvz-webgpu-unavailable" role="note">
+    <strong>WebGPU rendering difference</strong>
+    <span><code>MSAA</code>: The desktop example enables 8x MSAA for smoother mesh silhouettes; the WebGPU route is currently single-sampled.</span>
+    </aside>
 
     <a href="../../../webgpu/live.html?id=showcases_spherical_harmonics">Open the live WebGPU example</a>.
 
@@ -45,7 +44,7 @@ Use your configured build environment; Python routes additionally require local 
 | Route | Availability | Command or action |
 | --- | --- | --- |
 | C | Canonical native source | `just example-c showcases/spherical_harmonics` (build and run), or rerun `./build/examples/c/showcases/spherical_harmonics` |
-| Python | No verified adaptation on this page | Start from the C source. |
+| Python | Available | `python3 -m examples.python.gallery.showcases.spherical_harmonics` |
 | Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_spherical_harmonics">Open live example</a> |
 
 Use this example as capability or integration evidence, not as a minimal copy-paste
@@ -59,6 +58,12 @@ A uniformly tessellated icosphere is deformed radially by a deterministic blend 
 This workflow is useful for directional basis functions, radiation patterns, orbital-like surfaces, and other spherical scalar fields that benefit from direct 3D shape perception. Native live mode adds controls for the surface mapping and every harmonic term.
 
 ## Source
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/showcases/spherical_harmonics.py"
+    ```
 
 === "C"
 
@@ -74,6 +79,8 @@ This workflow is useful for directional basis functions, radiation patterns, orb
     - Status: `supported`
     - Source: [`examples/c/showcases/spherical_harmonics.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/spherical_harmonics.c)
     - Approved adaptation starter: `no`
+    - Python source: [`examples/python/gallery/showcases/spherical_harmonics.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/spherical_harmonics.py)
+    - Python adaptation: Available
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_spherical_harmonics"><code>examples/webgpu/live.html?id=showcases_spherical_harmonics</code></a>
     - Browser capability tags: `mesh`, `material`, `arcball`, `frame-callbacks`, `continuous-frames`

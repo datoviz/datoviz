@@ -25,15 +25,14 @@ This example animates a human auditory dSPM estimate on cortex.
 
 === "Live WebGPU"
 
-    <aside class="dvz-webgpu-limitations" role="note">
-    <strong>WebGPU rendering differences</strong>
-    <ul>
-    <li><code>MSAA</code>: The desktop example enables MSAA for smoother cortical mesh edges; the WebGPU route is currently single-sampled.</li>
-    </ul>
-    </aside>
     <div class="dvz-webgpu-live" markdown="1">
-    <iframe src="../../../webgpu/live.html?id=showcases_cortical_activity" title="Human Auditory Cortical Activity WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    <iframe src="../../../webgpu/live.html?id=showcases_cortical_activity&embedded=1" title="Human Auditory Cortical Activity WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
     </div>
+
+    <aside class="dvz-webgpu-unavailable" role="note">
+    <strong>WebGPU rendering difference</strong>
+    <span><code>MSAA</code>: The desktop example enables MSAA for smoother cortical mesh edges; the WebGPU route is currently single-sampled.</span>
+    </aside>
 
     <a href="../../../webgpu/live.html?id=showcases_cortical_activity">Open the live WebGPU example</a>.
 
@@ -45,7 +44,7 @@ Use your configured build environment; Python routes additionally require local 
 | Route | Availability | Command or action |
 | --- | --- | --- |
 | C | Canonical native source | `just example-c showcases/cortical_activity` (build and run), or rerun `./build/examples/c/showcases/cortical_activity` |
-| Python | No verified adaptation on this page | Start from the C source. |
+| Python | Available | `python3 -m examples.python.gallery.showcases.cortical_activity` |
 | Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_cortical_activity">Open live example</a> |
 
 !!! warning "Prepared data required"
@@ -71,6 +70,12 @@ Control: pass --live explicitly for the tuner; D prints C defaults; space plays/
 
 ## Source
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/showcases/cortical_activity.py"
+    ```
+
 === "C"
 
     ```c
@@ -85,6 +90,8 @@ Control: pass --live explicitly for the tuner; D prints C defaults; space plays/
     - Status: `experimental`
     - Source: [`examples/c/showcases/cortical_activity.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/cortical_activity.c)
     - Approved adaptation starter: `no`
+    - Python source: [`examples/python/gallery/showcases/cortical_activity.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/cortical_activity.py)
+    - Python adaptation: Available
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_cortical_activity"><code>examples/webgpu/live.html?id=showcases_cortical_activity</code></a>
     - Browser note: the portable scenario fetches the versioned CC0 cortical activity bundle before creation

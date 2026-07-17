@@ -19,15 +19,14 @@ This example drapes aligned NAIP orthoimagery over USGS 3DEP elevation.
 
 === "Live WebGPU"
 
-    <aside class="dvz-webgpu-limitations" role="note">
-    <strong>WebGPU rendering differences</strong>
-    <ul>
-    <li><code>MSAA</code>: The desktop example requests 8x MSAA; the WebGPU route lowers this to the supported 4x sample count.</li>
-    </ul>
-    </aside>
     <div class="dvz-webgpu-live" markdown="1">
-    <iframe src="../../../webgpu/live.html?id=showcases_terrain_relief" title="McHenrys Peak Terrain Relief WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    <iframe src="../../../webgpu/live.html?id=showcases_terrain_relief&embedded=1" title="McHenrys Peak Terrain Relief WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
     </div>
+
+    <aside class="dvz-webgpu-unavailable" role="note">
+    <strong>WebGPU rendering difference</strong>
+    <span><code>MSAA</code>: The desktop example requests 8x MSAA; the WebGPU route lowers this to the supported 4x sample count.</span>
+    </aside>
 
     <a href="../../../webgpu/live.html?id=showcases_terrain_relief">Open the live WebGPU example</a>.
 
@@ -39,6 +38,7 @@ Use your configured build environment; Python routes additionally require local 
 | Route | Availability | Command or action |
 | --- | --- | --- |
 | C | Canonical native source | `just example-c showcases/terrain_relief` (build and run), or rerun `./build/examples/c/showcases/terrain_relief` |
+| Python | Available | `python3 -m examples.python.gallery.showcases.terrain_relief` |
 | Data preparation | Additional integration source; check optional dependencies | `python3 -m tools.data.prepare_terrain_relief` |
 | Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_terrain_relief">Open live example</a> |
 
@@ -63,6 +63,12 @@ Uv run tools/data/prepare_terrain_relief.py
 
 ## Source
 
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/showcases/terrain_relief.py"
+    ```
+
 === "C"
 
     ```c
@@ -83,6 +89,8 @@ Uv run tools/data/prepare_terrain_relief.py
     - Status: `experimental`
     - Source: [`examples/c/showcases/terrain_relief.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/terrain_relief.c)
     - Approved adaptation starter: `no`
+    - Python source: [`examples/python/gallery/showcases/terrain_relief.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/terrain_relief.py)
+    - Python adaptation: Available
     - Data preparation source: [`tools/data/prepare_terrain_relief.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/tools/data/prepare_terrain_relief.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_terrain_relief"><code>examples/webgpu/live.html?id=showcases_terrain_relief</code></a>

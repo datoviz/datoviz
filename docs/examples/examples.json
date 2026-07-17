@@ -2514,7 +2514,9 @@
         "reason": "the browser scenario uses the shared deterministic acquisition model while the native live route additionally enables its producer thread and ImGui controls"
       },
       "webgpu_route": "examples/webgpu/live.html?id=showcases_streaming_daq",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_streaming_daq"
+      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_streaming_daq",
+      "python_source": "examples/python/gallery/showcases/streaming_daq.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/streaming_daq.py"
     },
     {
       "id": "features_scalebar",
@@ -5231,7 +5233,9 @@
         "citation": "Nicolas P. Rougier, Glumpy galaxy example; Ingo Berg, Simulating a Galaxy with the density wave theory",
         "preprocessing": "deterministic runtime simulation; no external data payload",
         "provenance": "The orbital model is adapted from Glumpy's galaxy_simulation.py and preserves its BSD notice in galaxy_model.c. Stellar colors use the public-domain specrend reference values."
-      }
+      },
+      "python_source": "examples/python/gallery/showcases/galaxy.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/galaxy.py"
     },
     {
       "id": "showcases_svg_tiger",
@@ -5314,7 +5318,9 @@
         "preprocessing": "python3 tools/data/prepare_svg_tiger.py --download",
         "cache_prepared_path": ".cache/datoviz/examples/svg_tiger/prepared",
         "provenance": "The artwork comes from Nicolas P. Rougier's Glumpy example gallery. The preparation tool verifies the pinned Glumpy source hash, resolves Glumpy-compatible inherited paint, flattens M/L/C/Z paths with adaptive De Casteljau subdivision, and writes prepared path records. Datoviz triangulates fills with Earcut and renders outlines as retained paths."
-      }
+      },
+      "python_source": "examples/python/gallery/showcases/svg_tiger.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/svg_tiger.py"
     },
     {
       "id": "showcases_gpu_particle_smoke",
@@ -5439,7 +5445,9 @@
         ]
       },
       "webgpu_route": "examples/webgpu/live.html?id=showcases_spherical_harmonics",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_spherical_harmonics"
+      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_spherical_harmonics",
+      "python_source": "examples/python/gallery/showcases/spherical_harmonics.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/spherical_harmonics.py"
     },
     {
       "id": "showcases_surface_grid",
@@ -5598,7 +5606,9 @@
         "elevation": "490 by 512 little-endian float32 meters, row-major north to south",
         "texture": "1960 by 2048 RGB JPEG over the identical projected extent",
         "geometry": "physical UTM aspect ratio with 1.35x vertical exaggeration"
-      }
+      },
+      "python_source": "examples/python/gallery/showcases/terrain_relief.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/terrain_relief.py"
     },
     {
       "id": "showcases_cortical_activity",
@@ -5700,7 +5710,9 @@
         "position": "complete 319,834-vertex bilateral participant-native FreeSurfer pial surface with one shared uniform scale; whole-brain and split-lateral layouts preserve anatomical aspect ratio",
         "color": "oct6 dSPM values interpolated through hemisphere-local spherical triangles onto the render mesh, then mapped with sequential magma over neutral graphite anatomy; tuned 5.668/10.387/15.783 dSPM limits remain editable in explicit live mode",
         "time": "0 to 240 ms after the left-ear tone, linearly interpolated between source-estimate frames; the initial frame is paused at a tuned 106 ms near the strongest response"
-      }
+      },
+      "python_source": "examples/python/gallery/showcases/cortical_activity.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/cortical_activity.py"
     },
     {
       "id": "showcases_brain_volume",

@@ -1566,6 +1566,8 @@ examples:
     category: showcase
     lane: showcases
     source: examples/c/showcases/streaming_daq.c
+    python:
+      source: examples/python/gallery/showcases/streaming_daq.py
     extra_sources:
       - label: Acquisition model
         language: c
@@ -3088,6 +3090,8 @@ examples:
     category: showcase
     lane: showcases
     source: examples/c/showcases/galaxy.c
+    python:
+      source: examples/python/gallery/showcases/galaxy.py
     extra_sources:
       - label: Density-wave model
         language: c
@@ -3163,6 +3167,8 @@ examples:
     category: showcase
     lane: showcases
     source: examples/c/showcases/svg_tiger.c
+    python:
+      source: examples/python/gallery/showcases/svg_tiger.py
     extra_sources:
       - label: Prepared path model
         language: c
@@ -3402,6 +3408,8 @@ examples:
     category: showcase
     lane: showcases
     source: examples/c/showcases/spherical_harmonics.c
+    python:
+      source: examples/python/gallery/showcases/spherical_harmonics.py
     validation: smoke+interaction+screenshot
     media:
       preview:
@@ -3489,6 +3497,8 @@ examples:
     category: showcase
     lane: showcases
     source: examples/c/showcases/terrain_relief.c
+    python:
+      source: examples/python/gallery/showcases/terrain_relief.py
     extra_sources:
       - label: Data preparation
         language: python
@@ -3569,6 +3579,8 @@ examples:
     category: showcase
     lane: showcases
     source: examples/c/showcases/cortical_activity.c
+    python:
+      source: examples/python/gallery/showcases/cortical_activity.py
     validation: smoke+interaction+screenshot+video+performance
     media:
       preview:

@@ -39,7 +39,7 @@ Use your configured build environment; Python routes additionally require local 
 | Route | Availability | Command or action |
 | --- | --- | --- |
 | C | Canonical native source | `just example-c showcases/galaxy` (build and run), or rerun `./build/examples/c/showcases/galaxy` |
-| Python | No verified adaptation on this page | Start from the C source. |
+| Python | Available | `python3 -m examples.python.gallery.showcases.galaxy` |
 | Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_galaxy">Open live example</a> |
 
 !!! warning "Prepared data required"
@@ -59,6 +59,12 @@ Small temperature-colored stars form a warm central bulge while large soft dust 
 The density-wave equations and rendering composition are adapted from Nicolas P. Rougier's Glumpy galaxy example and Ingo Berg's galaxy simulation. See galaxy_model.c for the BSD notice and model details.
 
 ## Source
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/showcases/galaxy.py"
+    ```
 
 === "C"
 
@@ -86,6 +92,8 @@ The density-wave equations and rendering composition are adapted from Nicolas P.
     - Status: `supported`
     - Source: [`examples/c/showcases/galaxy.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/galaxy.c)
     - Approved adaptation starter: `no`
+    - Python source: [`examples/python/gallery/showcases/galaxy.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/galaxy.py)
+    - Python adaptation: Available
     - Density-wave model source: [`examples/c/showcases/galaxy_model.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/galaxy_model.c)
     - Density-wave model header source: [`examples/c/showcases/galaxy_model.h`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/galaxy_model.h)
     - Browser support: Live in browser

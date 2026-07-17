@@ -19,15 +19,14 @@ This example renders the classic colored tiger from prepared SVG paths.
 
 === "Live WebGPU"
 
-    <aside class="dvz-webgpu-limitations" role="note">
-    <strong>WebGPU rendering differences</strong>
-    <ul>
-    <li><code>MSAA</code>: The desktop example enables MSAA for smoother fill and outline edges; the WebGPU route is currently single-sampled.</li>
-    </ul>
-    </aside>
     <div class="dvz-webgpu-live" markdown="1">
-    <iframe src="../../../webgpu/live.html?id=showcases_svg_tiger" title="SVG Tiger WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    <iframe src="../../../webgpu/live.html?id=showcases_svg_tiger&embedded=1" title="SVG Tiger WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
     </div>
+
+    <aside class="dvz-webgpu-unavailable" role="note">
+    <strong>WebGPU rendering difference</strong>
+    <span><code>MSAA</code>: The desktop example enables MSAA for smoother fill and outline edges; the WebGPU route is currently single-sampled.</span>
+    </aside>
 
     <a href="../../../webgpu/live.html?id=showcases_svg_tiger">Open the live WebGPU example</a>.
 
@@ -39,6 +38,7 @@ Use your configured build environment; Python routes additionally require local 
 | Route | Availability | Command or action |
 | --- | --- | --- |
 | C | Canonical native source | `just example-c showcases/svg_tiger` (build and run), or rerun `./build/examples/c/showcases/svg_tiger` |
+| Python | Available | `python3 -m examples.python.gallery.showcases.svg_tiger` |
 | SVG preparation tool | Additional integration source; check optional dependencies | `python3 -m tools.data.prepare_svg_tiger` |
 | Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_svg_tiger">Open live example</a> |
 
@@ -62,6 +62,12 @@ The artwork comes from Nicolas P. Rougier's Glumpy example gallery. The publishe
 `python3 tools/data/prepare_svg_tiger.py --download`
 
 ## Source
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/showcases/svg_tiger.py"
+    ```
 
 === "C"
 
@@ -95,6 +101,8 @@ The artwork comes from Nicolas P. Rougier's Glumpy example gallery. The publishe
     - Status: `experimental`
     - Source: [`examples/c/showcases/svg_tiger.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/svg_tiger.c)
     - Approved adaptation starter: `no`
+    - Python source: [`examples/python/gallery/showcases/svg_tiger.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/svg_tiger.py)
+    - Python adaptation: Available
     - Prepared path model source: [`examples/c/showcases/svg_tiger_model.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/svg_tiger_model.c)
     - Prepared path model header source: [`examples/c/showcases/svg_tiger_model.h`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/svg_tiger_model.h)
     - SVG preparation tool source: [`tools/data/prepare_svg_tiger.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/tools/data/prepare_svg_tiger.py)

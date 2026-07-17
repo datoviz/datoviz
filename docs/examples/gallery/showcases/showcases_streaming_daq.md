@@ -39,7 +39,7 @@ Use your configured build environment; Python routes additionally require local 
 | Route | Availability | Command or action |
 | --- | --- | --- |
 | C | Canonical native source | `just example-c showcases/streaming_daq` (build and run), or rerun `./build/examples/c/showcases/streaming_daq` |
-| Python | No verified adaptation on this page | Start from the C source. |
+| Python | Available | `python3 -m examples.python.gallery.showcases.streaming_daq` |
 | Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_streaming_daq">Open live example</a> |
 
 Use this example as capability or integration evidence, not as a minimal copy-paste
@@ -53,6 +53,12 @@ after verifying the linked API reference.
 Control: --live opens a left-docked GUI; space pauses; R resets acquisition; F resets panzoom
 
 ## Source
+
+=== "Python"
+
+    ```python
+    --8<-- "examples/python/gallery/showcases/streaming_daq.py"
+    ```
 
 === "C"
 
@@ -80,6 +86,8 @@ Control: --live opens a left-docked GUI; space pauses; R resets acquisition; F r
     - Status: `experimental`
     - Source: [`examples/c/showcases/streaming_daq.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/streaming_daq.c)
     - Approved adaptation starter: `no`
+    - Python source: [`examples/python/gallery/showcases/streaming_daq.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/streaming_daq.py)
+    - Python adaptation: Available
     - Acquisition model source: [`examples/c/showcases/streaming_daq_model.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/streaming_daq_model.c)
     - Acquisition model header source: [`examples/c/showcases/streaming_daq_model.h`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/streaming_daq_model.h)
     - Browser support: Live in browser
