@@ -97,17 +97,17 @@ Existing gallery examples are useful as compatibility references. Start from an 
 gallery page says `Browser support: Live in browser`, serve the docs site, then open the route shown
 on that page.
 
-The embedded route below is the canonical Basic Scene example running through the standalone
-WebGPU host. It uses the same portable C scene as native validation; the iframe only hosts the
-browser runtime, canvas, and diagnostics.
+The embedded route below is the canonical Panzoom example running through the standalone WebGPU
+host. It uses the same portable C scene as native validation; the iframe only hosts the browser
+runtime, canvas, input handling, and diagnostics. Drag to pan and use the wheel to zoom.
 
 <div class="dvz-webgpu-live" markdown="1">
-  <iframe src="../../examples/webgpu/live.html?id=features_basic_scene"
-          title="Basic Scene WebGPU live example" loading="lazy"
+  <iframe src="../../examples/webgpu/live.html?id=features_panzoom"
+          title="Interactive Panzoom WebGPU live example" loading="lazy"
           allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../examples/webgpu/live.html?id=features_basic_scene">Open the Basic Scene live
+<a href="../../examples/webgpu/live.html?id=features_panzoom">Open the Panzoom live
 example</a>.
 
 Only examples marked `webgpu-live` have public browser routes. `webgpu-planned`,
