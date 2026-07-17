@@ -168,7 +168,7 @@ EXTERN_C_ON
  *
  * @param obj the object
  */
-void dvz_obj_init(DvzObject* obj);
+DVZ_EXPORT void dvz_obj_init(DvzObject* obj);
 
 
 
@@ -177,7 +177,7 @@ void dvz_obj_init(DvzObject* obj);
  *
  * @param obj the object
  */
-void dvz_obj_created(DvzObject* obj);
+DVZ_EXPORT void dvz_obj_created(DvzObject* obj);
 
 
 
@@ -186,7 +186,7 @@ void dvz_obj_created(DvzObject* obj);
  *
  * @param obj the object
  */
-void dvz_obj_destroyed(DvzObject* obj);
+DVZ_EXPORT void dvz_obj_destroyed(DvzObject* obj);
 
 
 
@@ -196,7 +196,7 @@ void dvz_obj_destroyed(DvzObject* obj);
  * @param obj the object
  * @returns a boolean indicated whether the object has been successfully created
  */
-bool dvz_obj_is_created(DvzObject* obj);
+DVZ_EXPORT bool dvz_obj_is_created(DvzObject* obj);
 
 
 /*************************************************************************************************/
