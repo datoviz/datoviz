@@ -5,7 +5,23 @@ Enable 2D mouse pan and wheel zoom on a panel.
 Use panzoom for 2D data views where pointer drag and wheel input should change the visible X/Y
 range. Use custom input callbacks only for application behavior that is not ordinary navigation.
 
-![A 2D point scene navigated with pan and zoom](../assets/gallery/v0.4/features/features_panzoom.poster.webp)
+<figure class="dvz-output-example">
+  <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+    <img class="dvz-gallery-poster"
+         src="../../assets/gallery/v0.4/features/features_panzoom.poster.webp"
+         alt="A 2D point scene before pan and zoom interaction" loading="lazy">
+    <video class="dvz-gallery-video" muted loop playsinline preload="none"
+           poster="../../assets/gallery/v0.4/features/features_panzoom.poster.webp"
+           aria-label="Panzoom interaction preview">
+      <source data-src="../../assets/gallery/v0.4/features/features_panzoom.mp4" type="video/mp4">
+    </video>
+  </div>
+  <figcaption>
+    <strong>Panzoom interaction.</strong> Dragging changes the visible center and wheel input changes
+    the visible extent without rewriting point positions.
+    <a href="../../examples/gallery/features/features_panzoom/">Open the example</a>.
+  </figcaption>
+</figure>
 
 !!! info "At a glance"
 

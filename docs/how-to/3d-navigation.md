@@ -2,8 +2,6 @@
 
 Navigate 3D panels with arcball, turntable, or fly controls.
 
-![A colored 3D object viewed with the arcball controller](../assets/gallery/v0.4/features/features_controller_arcball.poster.webp)
-
 !!! info "At a glance"
 
     - **Status:** Supported arcball, turntable, and fly controllers; browser coverage is example-scoped.
@@ -80,6 +78,24 @@ Arcball is best when the user wants to inspect an object from arbitrary directio
 so it is useful for molecules, anatomical meshes, isolated geometry, and compact point clouds where
 the object is more important than a fixed horizon.
 
+<figure class="dvz-output-example">
+  <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+    <img class="dvz-gallery-poster"
+         src="../../assets/gallery/v0.4/features/features_controller_arcball.poster.webp"
+         alt="A colored cube before arcball rotation" loading="lazy">
+    <video class="dvz-gallery-video" muted loop playsinline preload="none"
+           poster="../../assets/gallery/v0.4/features/features_controller_arcball.poster.webp"
+           aria-label="Arcball controller preview">
+      <source data-src="../../assets/gallery/v0.4/features/features_controller_arcball.mp4"
+              type="video/mp4">
+    </video>
+  </div>
+  <figcaption>
+    <strong>Arcball.</strong> The object can rotate freely around its center, including roll.
+    <a href="../../examples/gallery/features/features_controller_arcball/">Open the example</a>.
+  </figcaption>
+</figure>
+
 ```c
 // Add visuals first: mesh, sphere, volume, or a compact 3D point cloud.
 // Then attach object-inspection navigation.
@@ -116,6 +132,24 @@ Turntable navigation keeps an upright feel. It is usually the right choice for s
 systems, instrument views, map-like 3D scenes, and any view where rolling the camera makes axes hard
 to read.
 
+<figure class="dvz-output-example">
+  <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+    <img class="dvz-gallery-poster"
+         src="../../assets/gallery/v0.4/features/features_controller_turntable.poster.webp"
+         alt="A colored cube before turntable orbit interaction" loading="lazy">
+    <video class="dvz-gallery-video" muted loop playsinline preload="none"
+           poster="../../assets/gallery/v0.4/features/features_controller_turntable.poster.webp"
+           aria-label="Turntable controller preview">
+      <source data-src="../../assets/gallery/v0.4/features/features_controller_turntable.mp4"
+              type="video/mp4">
+    </video>
+  </div>
+  <figcaption>
+    <strong>Turntable.</strong> Orbit motion preserves a stable vertical direction and horizon.
+    <a href="../../examples/gallery/features/features_controller_turntable/">Open the example</a>.
+  </figcaption>
+</figure>
+
 ```c
 DvzTurntableDesc desc = dvz_turntable_desc();
 desc.initial_view = camera.view;
@@ -140,6 +174,24 @@ preferred viewing range, or when moving inside the object would be confusing.
 
 Fly navigation moves the camera through the world. It is more sensitive to scale than arcball or
 turntable because speed is expressed in scene units.
+
+<figure class="dvz-output-example">
+  <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+    <img class="dvz-gallery-poster"
+         src="../../assets/gallery/v0.4/features/features_controller_fly.poster.webp"
+         alt="A three-dimensional scene before fly-controller movement" loading="lazy">
+    <video class="dvz-gallery-video" muted loop playsinline preload="none"
+           poster="../../assets/gallery/v0.4/features/features_controller_fly.poster.webp"
+           aria-label="Fly controller preview">
+      <source data-src="../../assets/gallery/v0.4/features/features_controller_fly.mp4"
+              type="video/mp4">
+    </video>
+  </div>
+  <figcaption>
+    <strong>Fly.</strong> The camera translates through the scene instead of orbiting one object.
+    <a href="../../examples/gallery/features/features_controller_fly/">Open the example</a>.
+  </figcaption>
+</figure>
 
 ```c
 DvzFlyDesc desc = dvz_fly_desc();

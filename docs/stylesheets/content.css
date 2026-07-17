@@ -209,6 +209,19 @@
     color: var(--md-default-fg-color);
 }
 
+.md-typeset .dvz-output-example .dvz-gallery-media {
+    border-radius: 0;
+}
+
+.md-typeset .dvz-output-example .dvz-gallery-poster,
+.md-typeset .dvz-output-example .dvz-gallery-video {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    aspect-ratio: auto;
+    object-fit: contain;
+}
+
 .md-typeset .dvz-output-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

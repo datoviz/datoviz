@@ -2,8 +2,6 @@
 
 Make 3D surfaces readable with normals, material attributes, and lights.
 
-![Lit mesh surfaces comparing material settings](../assets/gallery/v0.4/features/features_material_mesh.poster.webp)
-
 !!! info "At a glance"
 
     - **Status:** Supported mesh/primitive/sphere material workflows; advanced parity is backend-dependent.
@@ -26,6 +24,24 @@ sphere visuals. It is not a general style setter for every visual family.
 | Primitive | `position`, optional `normal`, `color`, `index` | Low-level indexed or non-indexed geometry. |
 | Sphere | `position`, `radius`, `color`; use `DVZ_SPHERE_FLAGS_LIGHTING` | Many lit sphere impostors without mesh vertices. |
 
+<figure class="dvz-output-example">
+  <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+    <img class="dvz-gallery-poster"
+         src="../../assets/gallery/v0.4/features/features_lighting.poster.webp"
+         alt="Lit spheres before the lighting preview rotates" loading="lazy">
+    <video class="dvz-gallery-video" muted loop playsinline preload="none"
+           poster="../../assets/gallery/v0.4/features/features_lighting.poster.webp"
+           aria-label="Lighting preview">
+      <source data-src="../../assets/gallery/v0.4/features/features_lighting.mp4" type="video/mp4">
+    </video>
+  </div>
+  <figcaption>
+    <strong>Lighting.</strong> Moving the view reveals how normals and light direction describe
+    surface orientation.
+    <a href="../../examples/gallery/features/features_lighting/">Open the lighting example</a>.
+  </figcaption>
+</figure>
+
 ## Choose a material model
 
 Start from one of the descriptor helpers, then override only the fields that matter:
@@ -44,6 +60,25 @@ The current standard model is retained as standard material state, then lowered 
 shader payload. Treat it as the recommended route for roughness, metallic, emissive, and rim-style
 controls; use the Phong descriptor when you want direct ambient, diffuse, specular, and shininess
 tuning.
+
+<figure class="dvz-output-example">
+  <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+    <img class="dvz-gallery-poster"
+         src="../../assets/gallery/v0.4/features/features_material_mesh.poster.webp"
+         alt="Lit mesh surfaces with different material parameters" loading="lazy">
+    <video class="dvz-gallery-video" muted loop playsinline preload="none"
+           poster="../../assets/gallery/v0.4/features/features_material_mesh.poster.webp"
+           aria-label="Mesh material preview">
+      <source data-src="../../assets/gallery/v0.4/features/features_material_mesh.mp4"
+              type="video/mp4">
+    </video>
+  </div>
+  <figcaption>
+    <strong>Material comparison.</strong> Roughness, specular response, and related parameters remain
+    readable as the mesh rotates.
+    <a href="../../examples/gallery/features/features_material_mesh/">Open the materials example</a>.
+  </figcaption>
+</figure>
 
 ## Mesh call sequence
 

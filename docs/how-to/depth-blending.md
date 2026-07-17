@@ -40,6 +40,25 @@ visual that needs it instead of changing unrelated scene state.
 These are C setup excerpts. Check setter results and validate the final result from multiple camera
 angles; one static viewpoint can hide order-dependent transparency errors.
 
+<figure class="dvz-output-example">
+  <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+    <img class="dvz-gallery-poster"
+         src="../../assets/gallery/v0.4/features/features_technique_depth_test.poster.webp"
+         alt="Overlapping 3D points before the depth-test comparison rotates" loading="lazy">
+    <video class="dvz-gallery-video" muted loop playsinline preload="none"
+           poster="../../assets/gallery/v0.4/features/features_technique_depth_test.poster.webp"
+           aria-label="Depth testing comparison preview">
+      <source data-src="../../assets/gallery/v0.4/features/features_technique_depth_test.mp4"
+              type="video/mp4">
+    </video>
+  </div>
+  <figcaption>
+    <strong>Depth testing.</strong> Rotation makes the correct and incorrect occlusion order visible
+    from several viewpoints.
+    <a href="../../examples/gallery/features/features_technique_depth_test/">Open the example</a>.
+  </figcaption>
+</figure>
+
 ## Choose a technique
 
 | Goal | Use | Notes |
@@ -66,6 +85,26 @@ interact:
 - Text, labels, images, and some annotation helpers may configure alpha blending internally because
   their pixels naturally include transparent coverage.
 
+<figure class="dvz-output-example">
+  <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+    <img class="dvz-gallery-poster"
+         src="../../assets/gallery/v0.4/features/features_technique_transparency.poster.webp"
+         alt="Overlapping translucent cubes before the transparency comparison rotates"
+         loading="lazy">
+    <video class="dvz-gallery-video" muted loop playsinline preload="none"
+           poster="../../assets/gallery/v0.4/features/features_technique_transparency.poster.webp"
+           aria-label="Transparency technique comparison preview">
+      <source data-src="../../assets/gallery/v0.4/features/features_technique_transparency.mp4"
+              type="video/mp4">
+    </video>
+  </div>
+  <figcaption>
+    <strong>Transparency order.</strong> A moving view exposes differences between source-over,
+    weighted blended, and depth-peel results.
+    <a href="../../examples/gallery/features/features_technique_transparency/">Open the example</a>.
+  </figcaption>
+</figure>
+
 ## Depth cue
 
 Depth cueing is a visual perception aid, not a camera or clipping change. It is supported on point,
@@ -81,6 +120,25 @@ dvz_visual_set_depth_cue(visual, &cue);
 `near_depth` and `far_depth` use the descriptor metric, where lower values are closer. The default
 metric is normalized clip depth after the scene transform. Pass `NULL` to
 `dvz_visual_set_depth_cue()` to disable depth cueing.
+
+<figure class="dvz-output-example">
+  <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+    <img class="dvz-gallery-poster"
+         src="../../assets/gallery/v0.4/features/features_technique_depth_cue.poster.webp"
+         alt="A sphere lattice before the depth-cue preview rotates" loading="lazy">
+    <video class="dvz-gallery-video" muted loop playsinline preload="none"
+           poster="../../assets/gallery/v0.4/features/features_technique_depth_cue.poster.webp"
+           aria-label="Depth cue preview">
+      <source data-src="../../assets/gallery/v0.4/features/features_technique_depth_cue.mp4"
+              type="video/mp4">
+    </video>
+  </div>
+  <figcaption>
+    <strong>Depth cue.</strong> Rotation shows how distance-dependent fading reinforces spatial
+    ordering without changing geometry.
+    <a href="../../examples/gallery/features/features_technique_depth_cue/">Open the example</a>.
+  </figcaption>
+</figure>
 
 ## Color pipeline
 
@@ -108,8 +166,6 @@ The native path is the reference for advanced transparency techniques. Check the
 technique for the experimental browser path.
 
 ## Complete examples
-
-![Overlapping 3D points with depth testing enabled and disabled](../assets/gallery/v0.4/features/features_technique_depth_test.poster.webp)
 
 - [Depth Test Toggle](../examples/gallery/features/features_technique_depth_test.md) - compare overlapping
   3D points with depth testing on and off. Source:
