@@ -8,10 +8,11 @@
  *
  * What to look for: the panel combines a data-space path, outlined markers, axes, and panzoom.
  * The path uploads position, color, and stroke_width_px arrays, while the markers upload position,
- * color, diameter_px, angle, and symbol arrays. In live mode, move the GUI scale slider and
- * compare marker diameters, stroke widths, text, and axis styling while data coordinates stay
- * fixed. User scale is useful for HiDPI displays, screenshots, and accessibility-sized scientific
- * figures. The GUI is attached only for `--live`/`--live-record` and starts docked on the left.
+ * color, diameter_px, angle, and symbol arrays. Live mode animates the user scale sinusoidally by
+ * default; disable animation or move the GUI scale slider to inspect a fixed value and compare
+ * marker diameters, stroke widths, text, and axis styling while data coordinates stay fixed. User
+ * scale is useful for HiDPI displays, screenshots, and accessibility-sized scientific figures. The
+ * GUI is attached only for `--live`/`--live-record` and starts docked on the left.
  *
  * Scenario: features_user_scale
  * Style: features, graphite_cyan, 1280x720 window target
@@ -62,6 +63,7 @@ static bool _gui_controls(DvzGui* gui, void* user_data);
 #define HEIGHT       EXAMPLE_WINDOW_HEIGHT
 #define PATH_COUNT   192u
 #define MARKER_COUNT 9u
+#define SCALE_PERIOD 2.0
 
 static const float TAU = 6.28318530718f;
 
@@ -76,6 +78,7 @@ typedef struct UserScaleState
     ExampleTuner tuner;
     DvzView* view;
     float user_scale;
+    bool animate;
 } UserScaleState;
 
 
@@ -254,6 +257,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     state->tuner = example_tuner("User scale");
     state->user_scale = ctx->user_scale > 0.0f ? ctx->user_scale : 1.0f;
+    state->animate = true;
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
@@ -302,7 +306,7 @@ error:
  *
  * @param gui GUI context
  * @param user_data example state
- * @return whether the scale changed
+ * @return whether an animation or scale control changed
  */
 static bool _gui_controls(DvzGui* gui, void* user_data)
 {
@@ -310,10 +314,15 @@ static bool _gui_controls(DvzGui* gui, void* user_data)
     if (gui == NULL || state == NULL || state->view == NULL)
         return false;
 
-    bool changed = dvz_gui_slider_float(gui, "Scale", &state->user_scale, 0.5f, 2.5f);
-    if (changed)
+    const bool animate_changed = dvz_gui_checkbox(gui, "Animate", &state->animate);
+    const bool scale_changed =
+        dvz_gui_slider_float(gui, "Scale", &state->user_scale, 0.5f, 2.5f);
+    if (scale_changed)
+    {
+        state->animate = false;
         (void)dvz_view_set_user_scale(state->view, state->user_scale);
-    return changed;
+    }
+    return animate_changed || scale_changed;
 }
 
 
@@ -362,7 +371,7 @@ static bool _scenario_live_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* v
 
 
 /**
- * Animate the user scale for generated gallery media.
+ * Animate the user scale for live runs and generated gallery media.
  *
  * @param ctx scenario context
  * @param user scenario state
@@ -370,12 +379,24 @@ static bool _scenario_live_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* v
 static void _scenario_frame(DvzScenarioContext* ctx, void* user)
 {
     UserScaleState* state = (UserScaleState*)user;
-    if (ctx == NULL || !ctx->preview_mode || state == NULL || state->view == NULL)
+    if (ctx == NULL || state == NULL || state->view == NULL)
         return;
 
-    const uint64_t count = ctx->preview_frame_count > 0 ? ctx->preview_frame_count : 1;
-    const float phase = (float)(ctx->preview_frame_index % count) / (float)count;
-    state->user_scale = 1.35f + 0.55f * sinf(TAU * phase);
+    double phase = 0.0;
+    if (ctx->preview_mode)
+    {
+        phase = dvz_scenario_preview_phase(ctx, DVZ_SCENARIO_PREVIEW_PHASE_SEAMLESS_LOOP);
+    }
+    else if (ctx->presentation == DVZ_RUNNER_PRESENT_GLFW && state->animate)
+    {
+        phase = fmod(fmax(ctx->time, 0.0) / SCALE_PERIOD, 1.0);
+    }
+    else
+    {
+        return;
+    }
+
+    state->user_scale = 1.35f + 0.55f * sinf(TAU * (float)phase);
     (void)dvz_view_set_user_scale(state->view, state->user_scale);
 }
 
