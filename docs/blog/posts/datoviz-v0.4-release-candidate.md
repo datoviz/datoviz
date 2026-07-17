@@ -124,8 +124,7 @@ boundaries.
 
 This makes the library easier to extend without creating a separate rendering path for every new
 platform or output mode. The specification-driven work behind this architecture, and the role
-coding agents played in it, are the subject of
-[a separate post](specifications-before-code-rebuilding-datoviz-with-coding-agents.md).
+coding agents played in it, will be the subject of a separate post.
 
 
 ## :material-flask-outline: Release-candidate scope { .dvz-home-heading }
