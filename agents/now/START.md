@@ -52,6 +52,9 @@ as real implementation, not scaffolding.
     [HANDOFF_MACOS_RC1_VALIDATION.md](HANDOFF_MACOS_RC1_VALIDATION.md). It detects the host
     architecture, runs source and physical-runtime preflight immediately, and accepts installed
     wheel evidence only from an all-green workflow at the exact checked-out commit.
+12. Use [HANDOFF_WINDOWS_RC1_WHEELS.md](HANDOFF_WINDOWS_RC1_WHEELS.md) to finish the active Windows
+    AMD64/ARM64 shaderc, packaging, deterministic CI, and vcpkg-cache lane. Its first external
+    NuGet package write and any push/workflow dispatch require explicit approval.
 
 
 ## Guardrails

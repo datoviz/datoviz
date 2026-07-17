@@ -240,7 +240,13 @@ Current packaging gate:
 2. Local artifact inspection confirmed expected wheel tags, required generated bindings and CMake
    package files, Windows `datoviz.dll` plus `datoviz.lib`, and architecture-correct macOS dylibs.
 3. The next release step is RC1 source bundle/checksum generation, final release notes, and
-   publication rehearsal before cutting RC1.
+   publication rehearsal before cutting RC1, after the current Windows regression is closed.
+4. A July 2026 Windows rerun exposed subsequent MSVC failures. Four local fixes now pass the full
+   AMD64 native/wheel path and a complete local ARM64 cross-build. Static inspection proves all 22
+   DLLs in the diagnostic ARM64 wheel are ARM64, but the wheel lacks the dynamically loaded
+   `libshaderc_shared.dll` and the Windows staging/repair path does not reject that omission.
+5. Complete [HANDOFF_WINDOWS_RC1_WHEELS.md](HANDOFF_WINDOWS_RC1_WHEELS.md) and require a new
+   all-green exact-SHA wheel matrix before treating the older June wheel run as final RC evidence.
 
 ### 8. RC2
 
