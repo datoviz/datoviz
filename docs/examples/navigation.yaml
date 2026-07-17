@@ -6,8 +6,8 @@ sections:
     highlights:
       - showcases_streaming_daq
       - showcases_choropleth
-      - showcases_galaxy
       - showcases_gpu_particle_smoke
+      - showcases_galaxy
       - showcases_cortical_activity
       - showcases_protein
       - showcases_textured_planet
