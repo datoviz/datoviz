@@ -340,6 +340,14 @@ jobs:
             just wheel-inspect --wheel "$wheelPath" --native-deps
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
+      - name: Installed wheel shaderc smoke
+        shell: pwsh
+        run: |
+          $wheel = Get-ChildItem wheelhouse/*.whl | Select-Object -First 1
+          if (!$wheel) { throw "no wheel found in wheelhouse" }
+          $wheelPath = $wheel.FullName.Replace('\\', '/')
+          python tools/release_wheels/check_wheel.py --wheel "$wheelPath" --shaderc
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
         with:
           name: wheel-windows-${{ matrix.arch }}

@@ -123,6 +123,10 @@ Keep this section compact; detailed history belongs in commits and release notes
   required generated Python bindings, CMake package files, Linux `libdatoviz.so` plus
   `libshaderc_shared.so`, Windows `datoviz.dll` plus `datoviz.lib`, and architecture-correct
   macOS dylibs for arm64 and x86_64.
+- On 2026-07-17, hosted wheel CI run `29618922450` passed the same full matrix at `d16512c1d`
+  after the Windows static-shaderc and cache-isolation work. It built and inspected ARM64 DLLs on
+  `windows-11-arm`; a final exact-SHA rerun must additionally execute shaderc from the installed
+  ARM64 wheel before the artifacts become RC evidence.
 
 
 ## Source Bundle

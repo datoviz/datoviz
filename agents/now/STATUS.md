@@ -1,6 +1,6 @@
 # Datoviz v0.4 Status
 
-Status: active v0.4 release candidate. Updated: 2026-07-17.
+Status: active v0.4 release candidate. Updated: 2026-07-18.
 
 Keep this file short. Durable behavior belongs in `spec/`; completed history belongs in git
 history, not in agent archives.
@@ -12,10 +12,15 @@ The macOS terminal-IPython hosted window close hang is resolved by `9c1e60912`. 
 in physical-machine RC validation; use
 [HANDOFF_IPYTHON_RUN_CLOSE_HANG.md](HANDOFF_IPYTHON_RUN_CLOSE_HANG.md) as the completed record.
 
-Next critical path: complete the Windows RC1 wheel lane in
-[HANDOFF_WINDOWS_RC1_WHEELS.md](HANDOFF_WINDOWS_RC1_WHEELS.md), then close RC1 release notes,
-source bundle/checksum, artifact inspection, publication rehearsal, and final public
-status/documentation reconciliation.
+The Windows shaderc, wheel-policy, ARM64 CI, cache-isolation, and GitHub Packages lanes are complete
+through [HANDOFF_WINDOWS_RC1_WHEELS.md](HANDOFF_WINDOWS_RC1_WHEELS.md). Workflow
+`29618922450` passed at `d16512c1d` with all Linux, macOS, and Windows wheel jobs and Python
+3.10--3.14 installed-wheel smokes. It is provisional evidence only: the RC candidate is now ahead
+at `76b1db052`, and the final exact-SHA run must execute an installed ARM64 wheel shaderc smoke.
+
+Next critical path: freeze and rerun the exact candidate wheel matrix, then close RC1 source
+bundle/checksum, physical installed-wheel evidence, release notes, publication rehearsal, and final
+public status/documentation reconciliation.
 
 Completed runtime cleanup to keep in validation: DRP2 render-pass begin commands now carry explicit
 render area, viewport, and scissor rectangles, scene emission initializes full targets before panel
@@ -59,7 +64,7 @@ Blockers:
 | Lane | Status | Next proof |
 | --- | --- | --- |
 | C/C++ distribution preflight | macOS vendored/system package, strict Homebrew-style source install, installed CMake/pkg-config consumers, host-native wheel CMake-consumer proof, Linux manylinux proof, and Windows AMD64 local wheel proof advanced on 2026-06-18 after `d94f72dd6`, `2c8a49f3d`, the macOS pkg-config validator fix, and `19e62968`; see [C_DISTRIBUTION.md](C_DISTRIBUTION.md) for exact evidence. Hosted wheel CI run `27975460115` passed on 2026-06-22 with Linux x86_64/aarch64, macOS 15 arm64/Intel, Windows AMD64/ARM64, Python 3.10 through 3.14 installed-wheel smokes, and Linux prerelease smoke. Local artifact inspection confirmed expected tags, CMake package files, Windows `datoviz.lib`, and architecture-correct macOS dylibs. | Prepare RC1 source bundle/checksum, release notes, and publication rehearsal; keep the wheel matrix in validation. |
-| Windows wheel proof | The July 2026 Windows pass fixes Win32 `min`/`max`, configured wheel paths, exported C11 requirements, and duplicate MSVC pthread implementations. Local AMD64 native/wheel/import/CMake-consumer proof passes. A full local ARM64 cross-build and wheel build also pass, and all packaged DLLs are ARM64, but the wheel lacks the required shaderc runtime while Windows staging and `delvewheel` fail to detect that dynamically loaded dependency. See [HANDOFF_WINDOWS_RC1_WHEELS.md](HANDOFF_WINDOWS_RC1_WHEELS.md). | Make Windows shaderc architecture-correct, enforce the wheel policy, port the proven ARM64 configuration to CI, isolate caches by triplet, and rerun the complete matrix before RC1 publication. |
+| Windows wheel proof | The July 2026 pass fixes Win32 `min`/`max`, configured wheel paths, exported C11 requirements, duplicate MSVC pthread implementations, and the ARM64 shaderc omission. Windows uses static shaderc; hosted run `29618922450` built and inspected AMD64/ARM64 wheels, confirmed ARM64 DLL architecture, and passed the AMD64 installed-wheel matrix. | On the final exact-SHA workflow, execute the installed ARM64 wheel shaderc smoke, inspect downloaded artifacts, and retain physical AMD64 proof. |
 | WebGPU/WASM experimental path | WebGPU fixture runner works; the generic WASM scene ABI and split DRP2 packet path now register 90 scenarios and expose 86 browser-live gallery routes. Point-cloud public route metadata references a hashed 500k-point bundle; native capture and deterministic WASM packet proof pass, while its local filtered browser route reaches the known external headless instance-loss skip. SVG Tiger has headed browser proof and an approved committed prepared-data bundle attributed to Nicolas P. Rougier's Glumpy example gallery. | Confirm point-cloud redistribution authorization and manually verify its public website route, then continue generic volume and rendering techniques. |
 | Compute+graphics experimental path | DRP2 `ResourceBarrier`, FramePlan scene compute lowering, WebGPU fixture parity, and the C `gpu_particle_smoke` showcase are active. CPU command-generation proof passed on 2026-06-04. Native Vulkan compute+graphics proof passed on 2026-06-17: `test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes`, `test_vklite_compute_1`, `test_technique_compute_graphics`, and `examples/c/showcases/gpu_particle_smoke.c --png` with artifact `build/release-evidence/gpu_particle_smoke.png`. | Keep the slice classified as experimental in the feature/status table: native proof exists, but this is a narrow scene-compute/DRP2 interop path, not a general compute framework. |
 | Qt/PyQt hosted path | Native Qt hosting and the optional `datoviz_qtbridge` provider are active. On 2026-06-18, `DVZ_CMAKE_ARGS="-DDVZ_ENABLE_QT_BRIDGE=ON" just build`, `./build/examples/qt/hosted_qt_smoke 120`, `./build/examples/qt/qt_hosting --smoke-ms 1000`, `DATOVIZ_QTBRIDGE_LIBRARY=build/qtbridge/libdatoviz_qtbridge.so uv run --isolated --with PyQt6 python -m datoviz.qt`, and the hosted PyQt smoke passed after updating the example to pass `DvzColor` to the raw background-color API. The isolated probe reported bridge Qt 6.11.1 and PyQt Qt 6.11.0; the system PyQt6 package in this shell lacks `QVulkanInstance` and is not a valid PyQt hosting proof. Public docs classify this as `supported, optional provider`. | Keep packaging/install diagnostics explicit for missing bridge, unsupported PyQt/PySide bindings, and Qt runtime mismatches; retain optional wheel checks with `--qt-probe optional`. |

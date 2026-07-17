@@ -27,15 +27,14 @@ checks or a decision that changes source code or external state.
 ## Current Release Position
 
 The active candidate version is `0.4.0rc1`. Wheel workflow
-[29595414678](https://github.com/datoviz/datoviz/actions/runs/29595414678) proved Linux x86_64 and
-aarch64 plus macOS Intel and arm64 builds and installed-wheel smokes, but the overall run failed on
-Windows. Its Mac artifacts are useful for diagnosis only; they are not final RC evidence.
+[29618922450](https://github.com/datoviz/datoviz/actions/runs/29618922450) passed Linux x86_64 and
+aarch64, macOS Intel and arm64, Windows AMD64 and ARM64, and the Python 3.10--3.14 installed-wheel
+smokes at `d16512c1d`. Its artifacts are provisional only because the release candidate is now ahead
+of that SHA.
 
-A Windows Codex session is debugging the remaining MSVC text-atlas failure described in
-[`HANDOFF_WINDOWS_RC1_WHEELS.md`](HANDOFF_WINDOWS_RC1_WHEELS.md). Final installed-wheel evidence
-must use wheels from a later all-green workflow whose `headSha` equals the commit checked out on the
-Mac. Until that exists, complete the source and physical-runtime preflight and report the final
-wheel phase as pending.
+Final installed-wheel evidence must use a later all-green workflow whose `headSha` equals the commit
+checked out on the Mac. Until that exists, complete the source and physical-runtime preflight and
+report the final wheel phase as pending.
 
 
 ## Select The Lane
@@ -50,7 +49,8 @@ git rev-parse HEAD
 git status --short --branch
 ```
 
-- `arm64`: use machine ID `macos-arm64-m1`; run the Apple Silicon lane and the full/manual checks.
+- `arm64`: use a descriptive machine ID such as `macos-arm64-m3`; run the Apple Silicon lane and the
+  full/manual checks.
 - `x86_64`: use machine ID `macos-x86_64-intel`; run the Intel lane and the focused manual checks.
 - Any other result: stop and report the unsupported architecture.
 

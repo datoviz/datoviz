@@ -234,19 +234,16 @@ Exit criteria:
 
 Current packaging gate:
 
-1. Hosted wheel CI run `27975460115` on 2026-06-22 passed the full required matrix on commit
-   `92c41fd6e`: Linux x86_64/aarch64, macOS 15 arm64/Intel, Windows AMD64/ARM64, and
-   installed-wheel smoke tests for Python 3.10 through 3.14 on Linux, macOS, and Windows.
-2. Local artifact inspection confirmed expected wheel tags, required generated bindings and CMake
-   package files, Windows `datoviz.dll` plus `datoviz.lib`, and architecture-correct macOS dylibs.
-3. The next release step is RC1 source bundle/checksum generation, final release notes, and
-   publication rehearsal before cutting RC1, after the current Windows regression is closed.
-4. A July 2026 Windows rerun exposed subsequent MSVC failures. Four local fixes now pass the full
-   AMD64 native/wheel path and a complete local ARM64 cross-build. Static inspection proves all 22
-   DLLs in the diagnostic ARM64 wheel are ARM64, but the wheel lacks the dynamically loaded
-   `libshaderc_shared.dll` and the Windows staging/repair path does not reject that omission.
-5. Complete [HANDOFF_WINDOWS_RC1_WHEELS.md](HANDOFF_WINDOWS_RC1_WHEELS.md) and require a new
-   all-green exact-SHA wheel matrix before treating the older June wheel run as final RC evidence.
+1. Hosted wheel CI run `29618922450` on 2026-07-17 passed the required matrix at `d16512c1d`:
+   Linux x86_64/aarch64, macOS 15 arm64/Intel, Windows AMD64/ARM64, Python 3.10 through 3.14
+   installed-wheel smokes on Linux/macOS/Windows, and the non-blocking Linux prerelease smoke.
+2. The Windows jobs use static shaderc, inspect the ARM64 DLL architecture, and package the CMake
+   files and Windows import library. The next workflow revision also executes shaderc from the
+   installed native ARM64 wheel.
+3. Freeze the candidate and require a new all-green matrix at that exact SHA before treating the
+   provisional run as final RC evidence.
+4. Then inspect downloaded artifacts, generate the RC1 source bundle/checksum, collect physical
+   machine evidence, finalize the notes, and rehearse publication.
 
 ### 8. RC2
 

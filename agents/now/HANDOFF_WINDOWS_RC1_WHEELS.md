@@ -1,11 +1,11 @@
 # Windows RC1 Wheel Completion Handoff
 
-Status: active RC1 blocker. Updated: 2026-07-17.
+Status: implementation complete; final exact-SHA wheel evidence pending. Updated: 2026-07-18.
 
-This is the end-to-end pickup plan for completing Windows AMD64/ARM64 RC1 wheels and making the
-Windows GitHub Actions lane fast enough to iterate reliably. Read [`../../AGENTS.md`](../../AGENTS.md),
-[`START.md`](START.md), [`STATUS.md`](STATUS.md), and [`RELEASE.md`](RELEASE.md) first. Execute the
-steps in order and make the checkpoint commits described below.
+This is the completed implementation record for Windows AMD64/ARM64 RC1 wheels. Read
+[`../../AGENTS.md`](../../AGENTS.md), [`START.md`](START.md), [`STATUS.md`](STATUS.md), and
+[`RELEASE.md`](RELEASE.md) first. Use the final-evidence steps below; do not restart the resolved
+implementation plan.
 
 
 ## Safety And Publication Boundaries
@@ -86,31 +86,25 @@ cold ARM64 vcpkg build took about 40 minutes; with the installed tree and binary
 present, the Datoviz ARM64 build itself took about 151 seconds.
 
 
-## Active Correctness Blocker: ARM64 Shaderc Runtime
+## Resolved Correctness Blocker: ARM64 Shaderc Runtime
 
-The ARM64 build config currently records:
+The earlier ARM64 build config recorded:
 
 ```text
 DVZ_HAS_SHADERC=1
 DVZ_SHADERC_RUNTIME_LIBRARY=libshaderc_shared.dll
 ```
 
-However, the `arm64-windows` vcpkg shaderc port supplies static linkage and no ARM64
+The `arm64-windows` vcpkg shaderc port supplies static linkage and no ARM64
 `libshaderc_shared.dll`. CMake may also discover the x64 Vulkan SDK import library while
 cross-building, but Datoviz calls shaderc through lazy-loaded function pointers, so no architecture
 mismatch is exposed at link time. The Windows wheel staging branch copies generic DLLs but does not
 enforce `require-shaderc = true`; `delvewheel` cannot find a dependency that is opened dynamically.
-The result is a wheel that builds and inspects successfully while runtime GLSL compilation fails.
-
-Preferred resolution: use vcpkg's static shaderc target on Windows and retain the existing
-lazy-loaded shared runtime on Linux/macOS. This avoids inventing and maintaining a custom ARM64
-shaderc DLL build. Keep the policy explicit in CMake rather than hiding an architecture-specific
-exception in the wheel script.
-
-Before implementing, inspect the vcpkg-exported shaderc targets and transitive link set for both
-`x64-windows` and `arm64-windows`. If static linkage would violate a license, CRT, symbol, or binary
-size constraint, document the evidence and propose an overlay port that builds the shared runtime;
-do not silently disable runtime GLSL compilation for ARM64.
+The result was a wheel that built and inspected successfully while runtime GLSL compilation failed.
+The resolved policy uses vcpkg's static shaderc target on Windows and retains the lazy-loaded shared
+runtime on Linux/macOS. Hosted workflow `29618922450` proved static shaderc configuration and ARM64
+DLL architecture at `d16512c1d`; the final exact-SHA workflow must also execute the installed ARM64
+wheel shaderc smoke.
 
 
 ## End-To-End Execution Plan
