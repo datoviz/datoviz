@@ -127,25 +127,6 @@ This example renders the classic colored tiger from prepared SVG paths.
 
 <div class="card" markdown="1">
 
-### [Density-Wave Galaxy](gallery/showcases/showcases_galaxy.md)
-
-<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_galaxy/" aria-label="Density-Wave Galaxy"></a>
-  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp" alt="Density-Wave Galaxy" loading="lazy">
-  <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../../assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp" aria-label="Density-Wave Galaxy preview">
-    <source data-src="../../assets/gallery/v0.4/showcases/showcases_galaxy.mp4" type="video/mp4">
-  </video>
-</div>
-
-`showcases`<br><span>`scientific`, `simulation`, `astronomy`, `particles`, `point`, ...</span>
-
-This example renders an animated density-wave spiral galaxy.
-
-</div>
-
-<div class="card" markdown="1">
-
 ### [GPU Particle Smoke](gallery/showcases/showcases_gpu_particle_smoke.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
@@ -168,6 +149,25 @@ This example uses scene compute buffers to animate particle smoke.
 ## 3D { #3d }
 
 <div class="grid cards" markdown="1">
+
+<div class="card" markdown="1">
+
+### [Density-Wave Galaxy](gallery/showcases/showcases_galaxy.md)
+
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_galaxy/" aria-label="Density-Wave Galaxy"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp" alt="Density-Wave Galaxy" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp" aria-label="Density-Wave Galaxy preview">
+    <source data-src="../../assets/gallery/v0.4/showcases/showcases_galaxy.mp4" type="video/mp4">
+  </video>
+</div>
+
+`showcases`<br><span>`scientific`, `simulation`, `astronomy`, `particles`, `point`, ...</span>
+
+This example renders an animated density-wave spiral galaxy.
+
+</div>
 
 <div class="card" markdown="1">
 

@@ -81,22 +81,27 @@ RUNTIME_PAGE_GROUPS = navigation_groups("runtime")
 INDEX_FEATURE_GROUPS = navigation_groups("features", index=True)
 INDEX_ADVANCED_GROUPS = navigation_groups("advanced", index=True)
 
-INDEX_STARTER_IDS = (
-    "features_basic_scene",
-    "visuals_point",
-    "features_axes_2d",
-    "features_panzoom",
-    "runtime_offscreen_capture",
-    "showcases_scientific_plotting",
-)
-
-INDEX_SHOWCASE_HIGHLIGHT_IDS = (
-    "showcases_galaxy",
-    "showcases_textured_planet",
-    "showcases_protein",
-    "showcases_wind_field",
-    "showcases_scientific_plotting",
-    "showcases_gpu_particle_smoke",
+INDEX_HIGHLIGHT_SECTIONS = (
+    (
+        "showcases",
+        "Showcases",
+        "Polished, composed demonstrations built around scientific data, simulations, and "
+        "complete visualization workflows.",
+        "showcase",
+    ),
+    (
+        "visuals",
+        "Visuals",
+        "Focused examples of the marks Datoviz can draw, from paths and images to meshes.",
+        "visual and composite",
+    ),
+    (
+        "features",
+        "Features",
+        "Focused capabilities for layout, navigation, adornments, geometry, rendering, and "
+        "interaction.",
+        "feature",
+    ),
 )
 
 CATEGORY_TO_LANE = gallery_media.CATEGORY_TO_LANE
@@ -1211,10 +1216,6 @@ def render_index(
     image_format: str = DEFAULT_IMAGE_FORMAT,
 ) -> None:
     by_id = {example.id: example for example in examples}
-    starters = [by_id[id_] for id_ in INDEX_STARTER_IDS if id_ in by_id]
-    showcase_highlights = [
-        by_id[id_] for id_ in INDEX_SHOWCASE_HIGHLIGHT_IDS if id_ in by_id
-    ]
     counts = {
         "visuals": sum(example.lane in ("visuals", "composites") for example in examples),
         "features": sum(example.lane == "features" for example in examples),
@@ -1227,36 +1228,55 @@ def render_index(
     lines = generated_header("Examples")
     lines.extend(
         render_page_intro(
-            "Choose the closest verified example for your goal, then adapt its complete C or "
-            "Python source. The category pages remain the exhaustive catalog."
+            "Explore polished showcases, individual visual families, and focused features. "
+            "Each section highlights a curated selection; its category page contains the complete "
+            "catalog."
         )
     )
     lines.extend(
         [
-            "## Showcase Highlights",
-            "",
-            "See Datoviz applied to animated simulations, real scientific data, and composed "
-            "visualization workflows. [Browse all showcases](showcases.md).",
-            "",
-            '<div class="grid cards" markdown="1">',
+            "[Showcases](#showcases) · [Visuals](#visuals) · [Features](#features) · "
+            "[Runtime](#runtime-and-advanced) · [Advanced](#runtime-and-advanced)",
             "",
         ]
     )
-    for example in showcase_highlights:
-        lines.append(
-            render_card(
-                example,
-                page_path,
-                image_dir,
-                image_url_base,
-                image_format,
-                show_tags=False,
-                title_heading=False,
+    for section_id, title, intro, singular_label in INDEX_HIGHLIGHT_SECTIONS:
+        section = EXAMPLE_NAVIGATION.section(section_id)
+        highlights = [by_id[id_] for id_ in section.highlight_ids if id_ in by_id]
+        lines.extend([f"## {title}", "", intro, "", '<div class="grid cards" markdown="1">', ""])
+        for example in highlights:
+            lines.append(
+                render_card(
+                    example,
+                    page_path,
+                    image_dir,
+                    image_url_base,
+                    image_format,
+                    show_tags=False,
+                    title_heading=False,
+                )
             )
+        lines.extend(
+            [
+                "</div>",
+                "",
+                f"**[Show all {counts[section_id]} {singular_label} examples →]"
+                f"({section.overview})**",
+                "",
+            ]
         )
-    lines.extend(["</div>", ""])
     lines.extend(
         [
+            "## Runtime And Advanced",
+            "",
+            "Some examples focus on how Datoviz runs rather than on a particular visual result.",
+            "",
+            "- **[Runtime & Capture](runtime.md)** — open windows, render offscreen, capture, "
+            f"record, replay, and export. [Show all {counts['runtime']} runtime examples →]"
+            "(runtime.md)",
+            "- **[Advanced](advanced.md)** — host integration and lower-level DRP2 or vklite "
+            f"workflows. [Show all {counts['advanced']} advanced examples →](advanced.md)",
+            "",
             "## Choose By Goal",
             "",
             "| Goal | Start here | Then browse |",
@@ -1280,28 +1300,6 @@ def render_index(
             "| Integrate a host or use lower-level rendering APIs | "
             "[Advanced examples](advanced.md) | "
             f"[{counts['advanced']} advanced examples](advanced.md) |",
-            "",
-            "## Good Starting Points",
-            "",
-            '<div class="grid cards" markdown="1">',
-            "",
-        ]
-    )
-    for example in starters:
-        lines.append(
-            render_card(
-                example,
-                page_path,
-                image_dir,
-                image_url_base,
-                image_format,
-                show_tags=False,
-                title_heading=False,
-            )
-        )
-    lines.extend(
-        [
-            "</div>",
             "",
             "## Before You Copy An Example",
             "",

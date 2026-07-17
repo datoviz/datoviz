@@ -3,6 +3,15 @@ sections:
     title: Showcases
     overview: showcases.md
     lanes: [showcases]
+    highlights:
+      - showcases_streaming_daq
+      - showcases_choropleth
+      - showcases_galaxy
+      - showcases_gpu_particle_smoke
+      - showcases_cortical_activity
+      - showcases_protein
+      - showcases_textured_planet
+      - showcases_point_cloud
     groups:
       - title: 2D
         examples:
@@ -14,10 +23,10 @@ sections:
           - showcases_choropleth
           - showcases_wind_field
           - showcases_svg_tiger
-          - showcases_galaxy
           - showcases_gpu_particle_smoke
       - title: 3D
         examples:
+          - showcases_galaxy
           - showcases_brain_volume
           - showcases_cortical_activity
           - showcases_protein
@@ -31,6 +40,11 @@ sections:
     title: Visuals & Composites
     overview: visuals.md
     lanes: [visuals, composites]
+    highlights:
+      - visuals_marker
+      - visuals_path
+      - visuals_image
+      - visuals_mesh
     groups:
       - title: 0D — point-like
         examples:
@@ -65,6 +79,15 @@ sections:
     title: Features
     overview: features.md
     lanes: [features]
+    highlights:
+      - features_panel_view2d
+      - features_user_scale
+      - features_bars_bands
+      - features_controller_turntable
+      - features_builtin_shapes_3d
+      - features_isolines
+      - features_lighting
+      - features_selection_mesh_instances
     groups:
       - title: Scene & Layout
         examples:

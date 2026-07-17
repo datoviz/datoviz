@@ -38,6 +38,7 @@ class ExampleSection:
     groups: tuple[ExampleGroup, ...]
     example_ids: tuple[str, ...]
     index_groups: tuple[ExampleGroup, ...]
+    highlight_ids: tuple[str, ...]
 
     @property
     def ordered_ids(self) -> tuple[str, ...]:
@@ -97,6 +98,7 @@ def load_navigation(path: Path = DEFAULT_NAVIGATION) -> ExampleNavigation:
                 groups=groups,
                 example_ids=example_ids,
                 index_groups=_groups(item.get('index_groups'), f'{id_}.index'),
+                highlight_ids=tuple(str(value) for value in item.get('highlights') or []),
             )
         )
     return ExampleNavigation(sections=tuple(sections))
@@ -154,3 +156,13 @@ def validate_navigation(navigation: ExampleNavigation, examples: Iterable[Any]) 
         invalid_index = sorted(set(index_ids) - set(section.ordered_ids))
         if invalid_index:
             raise ValueError(f'unknown {section.id!r} index entries: {", ".join(invalid_index)}')
+        highlight_duplicates = _duplicates(section.highlight_ids)
+        if highlight_duplicates:
+            raise ValueError(
+                f'duplicate {section.id!r} highlights: {", ".join(highlight_duplicates)}'
+            )
+        invalid_highlights = sorted(set(section.highlight_ids) - set(section.ordered_ids))
+        if invalid_highlights:
+            raise ValueError(
+                f'unknown {section.id!r} highlights: {", ".join(invalid_highlights)}'
+            )
