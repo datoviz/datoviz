@@ -136,6 +136,9 @@ jobs:
 
   windows:
     needs: python-bindings
+    permissions:
+      contents: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:
@@ -155,7 +158,8 @@ jobs:
     runs-on: ${{ matrix.runner }}
     env:
       VCPKG_ROOT: C:/vcpkg
-      VCPKG_BINARY_SOURCES: clear;files,C:/vcpkg-binary-cache,readwrite
+      VCPKG_NUGET_FEED: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+      VCPKG_BINARY_SOURCES: clear;files,C:/vcpkg-binary-cache,readwrite;nuget,https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json,readwrite
     steps:
       - uses: actions/checkout@v4
         with:
@@ -193,6 +197,25 @@ jobs:
           if (!(Test-Path "$env:VCPKG_ROOT/vcpkg.exe")) {
             & "$env:VCPKG_ROOT/bootstrap-vcpkg.bat"
           }
+      - name: Configure GitHub Packages NuGet cache
+        shell: pwsh
+        env:
+          VCPKG_PAT_TOKEN: ${{ secrets.VCPKG_PAT_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:VCPKG_PAT_TOKEN)) {
+            throw "VCPKG_PAT_TOKEN is required for the GitHub Packages vcpkg cache"
+          }
+          $nuget = & "$env:VCPKG_ROOT/vcpkg.exe" fetch nuget
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $nuget sources add `
+            -Name "datoviz-vcpkg" `
+            -Source "$env:VCPKG_NUGET_FEED" `
+            -UserName "${{ github.repository_owner }}" `
+            -Password "$env:VCPKG_PAT_TOKEN" `
+            -StorePasswordInClearText
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $nuget setapikey "$env:VCPKG_PAT_TOKEN" -Source "$env:VCPKG_NUGET_FEED"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Dependencies
         shell: pwsh
         run: |
