@@ -147,7 +147,7 @@ Current: synthetic composed showcase routes that reuse current primitives are li
 
 `composites_polygon`, `showcases_panel_linked_axes`, `showcases_scalebar_measurement`,
 `showcases_surface_grid`, `showcases_choropleth`, `showcases_textured_planet`,
-`showcases_protein`, and `showcases_galaxy`.
+`showcases_protein`, `showcases_galaxy`, and `showcases_svg_tiger`.
 
 Remaining planned composed/data-backed routes:
 
@@ -158,8 +158,8 @@ preparation command when the bundle is absent.
 
 `showcases_terrain_relief` now compiles in the WASM scenario registry and its cache-backed
 textured-mesh stream passes packet-shape proof. Promotion still requires an approved committed
-browser data bundle. `showcases_svg_tiger` has equivalent mesh/path stream proof, but remains
-native-only until the source artwork's redistribution terms are resolved.
+browser data bundle. `showcases_svg_tiger` has equivalent mesh/path stream proof and an approved
+committed browser bundle attributed to Nicolas P. Rougier's Glumpy example gallery.
 
 ### 5. Explicit Deferrals
 

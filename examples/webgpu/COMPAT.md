@@ -121,8 +121,9 @@ the Emscripten filesystem; static-site bundle staging rejects cache-only inputs.
 Recorded local SVG Tiger browser proof on 2026-07-16: the local-only bundle declaration stages the
 213,048-byte prepared path artifact from `.cache/` into ignored `build/webgpu-data`, and the headed
 filtered browser smoke rendered the full 240-path, 12,891-point composition through the canonical
-C/WASM scenario. The route remains absent from public gallery promotion until a separately approved
-prepared-data bundle and provenance record are committed.
+C/WASM scenario. On 2026-07-17, the maintainer approved publication of the prepared bundle; its
+committed provenance attributes the artwork to Nicolas P. Rougier's Glumpy example gallery, and the
+route is promoted to the public WebGPU gallery.
 
 Recorded local streaming-DAQ promotion proof on 2026-07-16: the native four-frame PNG smoke and
 88-scenario WASM packet smoke passed. The browser build reuses the canonical deterministic

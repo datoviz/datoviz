@@ -949,7 +949,7 @@ async function main() {
         ['showcases_streaming_daq', { label: 'Streaming DAQ · 64 channels', kind: 'animated' }],
         ['showcases_cortical_activity', { label: 'Human Auditory Cortical Activity', kind: 'animated' }],
         ['showcases_terrain_relief', { label: 'McHenrys Peak Terrain Relief' }],
-        ['showcases_svg_tiger', { label: 'SVG Tiger · local development' }],
+        ['showcases_svg_tiger', { label: 'SVG Tiger' }],
         ['showcases_galaxy', { label: 'Density-Wave Galaxy', kind: 'animated' }],
         [
           'showcases_textured_planet',

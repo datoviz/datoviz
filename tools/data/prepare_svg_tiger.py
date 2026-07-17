@@ -485,7 +485,9 @@ def write_bundle(document: SvgDocument, output: Path, source_path: Path, toleran
             "commit": SOURCE_COMMIT,
             "bytes": source_path.stat().st_size,
             "sha256": _sha256(source_path),
-            "redistribution": "maintainer-confirmed; publication pending separate review",
+            "attribution": "Nicolas P. Rougier, Glumpy example gallery, classic SVG Tiger example",
+            "gallery": "https://glumpy.github.io/gallery.html",
+            "redistribution": "maintainer-approved for Datoviz prepared-data publication",
         },
         "processing": {
             "flatten_tolerance_px": tolerance,

@@ -10,8 +10,8 @@
  * reproduced with one merged mesh plus one retained path visual. Cubic curves are flattened by the
  * preparation script; Datoviz performs the final polygon triangulation at runtime.
  *
- * The source artwork remains cache-local pending a separately reviewed data publication. Prepare
- * it from a pinned Glumpy source revision with:
+ * The artwork comes from Nicolas P. Rougier's Glumpy example gallery. The published Datoviz data
+ * bundle contains prepared paths from a pinned Glumpy source revision; regenerate them with:
  *
  *   python3 tools/data/prepare_svg_tiger.py --download
  *

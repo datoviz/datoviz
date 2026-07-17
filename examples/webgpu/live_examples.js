@@ -217,7 +217,7 @@ export const LIVE_EXAMPLES = [
   },
   {
     id: "showcases_svg_tiger",
-    label: "SVG Tiger · local development",
+    label: "SVG Tiger",
     scenarioId: "showcases_svg_tiger",
     dataBundles: [
       {

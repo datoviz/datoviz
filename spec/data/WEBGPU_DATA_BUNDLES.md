@@ -10,8 +10,8 @@ Implementation checkpoint, 2026-07-16:
    bundles for MkDocs; cache-only sources are rejected.
 3. The WASM module exposes `FS`, and loader path, size, hash, cache, and unsafe-path behavior has a
    Node smoke test.
-4. No route has migrated from build-time preload yet. Terrain Relief has portable packet proof but
-   awaits an approved committed data bundle; SVG Tiger also awaits redistribution clearance.
+4. SVG Tiger uses the first approved committed fetched bundle. Terrain Relief has portable packet
+   proof but still awaits an approved committed data bundle.
 
 Live WebGPU examples that require data should load versioned static data bundles at runtime. Do not
 grow the base WASM scene module by preloading every promoted gallery dataset. The browser runner is
