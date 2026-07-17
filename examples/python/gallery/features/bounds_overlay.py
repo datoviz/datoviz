@@ -12,6 +12,7 @@ from examples.python.gallery import common as ex
 
 POINT_COUNT = 256
 SPHERE_COUNT = 32
+SPHERE_RADIUS_SCALE = 1.5
 
 
 def _point_data():
@@ -54,7 +55,9 @@ def _sphere_data():
             255,
         )
         radius_class = (i * 7 + iz) % 3
-        radii[i] = radius_classes[radius_class] + 0.006 * np.sin(0.8 * i)
+        radii[i] = SPHERE_RADIUS_SCALE * (
+            radius_classes[radius_class] + 0.006 * np.sin(0.8 * i)
+        )
     return positions, colors, radii
 
 

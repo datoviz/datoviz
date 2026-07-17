@@ -55,6 +55,7 @@ DvzScenarioSpec dvz_example_bounds_overlay_scenario(void);
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define POINT_COUNT  256u
 #define SPHERE_COUNT 32u
+#define SPHERE_RADIUS_SCALE 1.5f
 
 
 
@@ -126,7 +127,9 @@ static void _fill_spheres(
             (uint8_t)(120.0f + 100.0f * t));
         const float radius_classes[3] = {0.070f, 0.105f, 0.165f};
         const uint32_t radius_class = (i * 7u + iz) % 3u;
-        radii[i] = radius_classes[radius_class] + 0.006f * sinf(0.8f * (float)i);
+        radii[i] =
+            SPHERE_RADIUS_SCALE *
+            (radius_classes[radius_class] + 0.006f * sinf(0.8f * (float)i));
     }
 }
 
