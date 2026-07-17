@@ -74,6 +74,7 @@ let observedScissors = [];
 let observedShaderModules = [];
 let observedTextureDescriptors = [];
 let observedRenderPipelineDescriptors = [];
+let observedRenderPassDescriptors = [];
 
 const pass = () => ({
   setPipeline() {},
@@ -160,7 +161,8 @@ const device = {
   },
   createCommandEncoder() {
     return {
-      beginRenderPass() {
+      beginRenderPass(desc = {}) {
+        observedRenderPassDescriptors.push(desc);
         return pass();
       },
       beginComputePass() {
@@ -699,6 +701,59 @@ async function smokeBrowserPresentResizeRetention(Drp2WebGpuRuntime) {
   fakeCanvas.clientHeight = 480;
 }
 
+
+
+async function smokeBrowserPresentMsaaResolve(Drp2WebGpuRuntime) {
+  observedRenderPassDescriptors = [];
+  observedRenderPipelineDescriptors = [];
+  const runtime = new Drp2WebGpuRuntime(device, context, 'rgba8unorm', {
+    canvas: fakeCanvas,
+    browserPresentFormat: 'rgba16float',
+    requireExplicitBindGroupLayouts: true,
+    requireExplicitPipelineMetadata: true,
+  });
+  const msaaTexture = texture(30, 'rgba16float');
+  msaaTexture.sample_count = 4;
+  const pipeline = renderPipeline([{ format: 'rgba16float', write_mask: ['all'] }]);
+  pipeline.multisample = { sample_count: 4, alpha_to_coverage_enabled: false };
+  const attachment = colorAttachment(30);
+  attachment.resolve_target = { texture_id: 0, mode: 1 };
+  await runtime.load({
+    capabilities: {
+      supported_texture_formats: ['rgba16float'],
+      supported_sample_counts: [1, 4],
+    },
+    commands: [
+      ...header,
+      ...triangleShaders,
+      msaaTexture,
+      pipeline,
+      { cmd: 'BeginCommandEncoder', id: 20 },
+      renderPass([attachment]),
+      { cmd: 'SetPipeline', pass_id: 21, pipeline_id: 10 },
+      { cmd: 'Draw', pass_id: 21, vertex_count: 3, instance_count: 1 },
+      { cmd: 'EndRenderPass', pass_id: 21 },
+      { cmd: 'FinishCommandEncoder', encoder_id: 20, command_buffer_id: 22 },
+      { cmd: 'QueueSubmit', command_buffer_id: 22 },
+    ],
+  });
+  await runtime.render();
+  const scenePass = observedRenderPassDescriptors.find(
+    (desc) => desc.label !== 'browser-present-pass',
+  );
+  if (scenePass?.colorAttachments?.[0]?.resolveTarget === undefined) {
+    throw new Error('browser MSAA pass did not receive a presentation resolveTarget');
+  }
+  const scenePipeline = observedRenderPipelineDescriptors.find(
+    (desc) => desc.label !== 'browser-present-pipeline',
+  );
+  if (scenePipeline?.multisample?.count !== 4) {
+    throw new Error(
+      `browser MSAA pipeline expected sample count 4, got ${scenePipeline?.multisample?.count}`,
+    );
+  }
+}
+
 async function smokeStreamPathsOnly(Drp2WebGpuRuntime, executeDrp2Stream, paths) {
   if (paths.length === 0) {
     throw new Error('--streams-only needs at least one stream path');
@@ -1216,6 +1271,7 @@ async function main() {
   await smokeRepeatedRuntimeFrames(Drp2WebGpuRuntime);
   await smokeBrowserCanvasDepthCache(Drp2WebGpuRuntime);
   await smokeBrowserPresentResizeRetention(Drp2WebGpuRuntime);
+  await smokeBrowserPresentMsaaResolve(Drp2WebGpuRuntime);
   await smokeDemoPath(WebGpuDemoSession);
 
   console.log(

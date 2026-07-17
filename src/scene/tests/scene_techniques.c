@@ -1010,6 +1010,42 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
     AT(found_sphere_a2c_shader);
 
     _test_scene_stream_destroy(stream);
+
+    cfg.external_color_target = true;
+    cfg.color_target_id = 0;
+    cfg.color_target_format = DVZ_FORMAT_R16G16B16A16_SFLOAT;
+    caps.max_color_sample_count = 4;
+    caps.max_depth_sample_count = 4;
+    AT(_scene_runtime_emitter_reset(scene));
+    dvz_diagnostic_report_init(&report);
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_error_count(&report) == 0);
+    validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
+    bool found_presentation_resolve = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS &&
+            cmd->u.begin_render_pass.color_attachment_count > 0)
+        {
+            const DvzDrp2ColorAttachment* attachment =
+                &cmd->u.begin_render_pass.color_attachments[0];
+            found_presentation_resolve =
+                found_presentation_resolve ||
+                (attachment->resolve_texture_id == 0 &&
+                 attachment->resolve_mode == VK_RESOLVE_MODE_AVERAGE_BIT);
+        }
+    }
+    AT(found_presentation_resolve);
+    char* json = dvz_drp2_stream_json(stream, "external_msaa_resolve");
+    ANN(json);
+    AT(strstr(json, "\"resolve_target\": { \"texture_id\": 0") != NULL);
+    dvz_drp2_stream_json_destroy(json);
+    _test_scene_stream_destroy(stream);
+
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;

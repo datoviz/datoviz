@@ -1242,6 +1242,14 @@ function validateRenderPipelineCapabilityPreflight(commandIndex, command, capabi
       "depth/stencil format",
     );
   }
+  requireCapabilityValue(
+    commandIndex,
+    command,
+    capabilities,
+    "supported_sample_counts",
+    command.multisample?.sample_count ?? 1,
+    "sample count",
+  );
 }
 
 
@@ -1417,12 +1425,14 @@ function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command, 
         bindGroupLayouts: pipelineBindGroupLayouts.map((record) => record.layout),
       })
     : "auto";
+  const sampleCount = command.multisample?.sample_count ?? 1;
 
   return {
     bindGroupLayoutIds,
     bindGroupLayouts: pipelineBindGroupLayouts,
     colorTargetFormats,
     depthStencilFormat: pipelineDepthStencilFormat,
+    sampleCount,
     vertexBufferSlots: command.vertex_buffer_slots ?? (command.vertex_buffers ?? []).length,
     pipeline: device.createRenderPipeline({
       label: command.label,
@@ -1441,6 +1451,10 @@ function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command, 
         topology: mapTopology(command.topology),
       },
       depthStencil: makeDepthStencil(command),
+      multisample: {
+        count: sampleCount,
+        alphaToCoverageEnabled: command.multisample?.alpha_to_coverage_enabled ?? false,
+      },
     }),
   };
 }
@@ -1544,21 +1558,36 @@ function makeDepthStencilAttachment(device, state, textures, command) {
 
 
 function makeColorAttachment(device, state, canvasFormat, textures, attachment, label = undefined) {
+  const extent = attachmentExtent(state, attachment);
   const textureView = isBrowserCanvasTextureId(attachment.texture_id)
     ? browserPresentTexture(
-        device, state, attachmentExtent(state, attachment), state.browserPresentFormat, label)
+        device, state, extent, state.browserPresentFormat, label)
         .createView()
     : required(textures.get(attachment.texture_id), `unknown texture ${attachment.texture_id}`)
         .createView();
   if (isBrowserCanvasTextureId(attachment.texture_id)) {
     state.browserPresent.pending = true;
   }
-  return {
+  const result = {
     view: textureView,
     loadOp: mapLoadOp(attachment.load_op),
     storeOp: mapStoreOp(attachment.store_op),
     clearValue: clearValue(attachment.clear_value),
   };
+  if (attachment.resolve_target !== undefined) {
+    const resolveTextureId = required(
+      attachment.resolve_target.texture_id,
+      "resolve target needs texture_id",
+    );
+    result.resolveTarget = isBrowserCanvasTextureId(resolveTextureId)
+      ? browserPresentTexture(device, state, extent, state.browserPresentFormat, label).createView()
+      : required(textures.get(resolveTextureId), `unknown resolve texture ${resolveTextureId}`)
+          .createView();
+    if (isBrowserCanvasTextureId(resolveTextureId)) {
+      state.browserPresent.pending = true;
+    }
+  }
+  return result;
 }
 
 
@@ -1601,6 +1630,15 @@ function depthAttachmentTextureFormat(state, attachment) {
 
 
 
+function attachmentTextureSampleCount(state, attachment) {
+  if (isBrowserCanvasTextureId(attachment.texture_id)) {
+    return 1;
+  }
+  return requireLiveRecord(state, attachment.texture_id, "texture").sampleCount;
+}
+
+
+
 function renderPassAttachmentFormats(state, canvasFormat, command) {
   const attachments = required(command.color_attachments, "BeginRenderPass needs color_attachments");
   const colorAttachmentFormats = attachments.map((attachment) =>
@@ -1609,7 +1647,8 @@ function renderPassAttachmentFormats(state, canvasFormat, command) {
   const depthStencilFormat = command.depth_stencil_attachment === undefined
     ? null
     : depthAttachmentTextureFormat(state, command.depth_stencil_attachment);
-  return { colorAttachmentFormats, depthStencilFormat };
+  const sampleCount = attachmentTextureSampleCount(state, attachments[0]);
+  return { colorAttachmentFormats, depthStencilFormat, sampleCount };
 }
 
 
@@ -1636,6 +1675,12 @@ function validateRenderPipelineForPass(passRecord, pipelineRecord, pipelineId) {
       `render pipeline ${pipelineId} depth_stencil format ` +
         `${pipelineRecord.depthStencilFormat ?? "none"} does not match render pass ` +
         `${passRecord.id} attachment format ${passRecord.depthStencilFormat ?? "none"}`,
+    );
+  }
+  if (pipelineRecord.sampleCount !== passRecord.sampleCount) {
+    throw new Error(
+      `render pipeline ${pipelineId} sample count ${pipelineRecord.sampleCount} does not match ` +
+        `render pass ${passRecord.id} sample count ${passRecord.sampleCount}`,
     );
   }
 }
@@ -3070,6 +3115,10 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           if (attachment.texture_id !== 0) {
             addEncoderRef(state, encoderRefs, command.encoder_id, attachment.texture_id, "texture");
           }
+          const resolveTextureId = attachment.resolve_target?.texture_id;
+          if (resolveTextureId !== undefined && resolveTextureId !== 0) {
+            addEncoderRef(state, encoderRefs, command.encoder_id, resolveTextureId, "texture");
+          }
         }
         if (command.depth_stencil_attachment !== undefined) {
           if (command.depth_stencil_attachment.texture_id !== 0) {
@@ -3088,6 +3137,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           encoderId: command.encoder_id,
           colorAttachmentFormats: attachmentFormats.colorAttachmentFormats,
           depthStencilFormat: attachmentFormats.depthStencilFormat,
+          sampleCount: attachmentFormats.sampleCount,
           vertexBuffers: new Set(),
           hasIndexBuffer: false,
           pass: beginRenderPass(device, state, canvasFormat, textures, encoders, command),

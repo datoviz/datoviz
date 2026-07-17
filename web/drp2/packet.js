@@ -197,10 +197,11 @@ function colorAttachment(view, offset) {
     },
   };
   const resolveTextureId = readU64(view, offset + 8);
-  if (resolveTextureId !== 0) {
+  const resolveMode = view.getUint32(offset + 16, true);
+  if (resolveTextureId !== 0 || resolveMode !== 0) {
     attachment.resolve_target = {
       texture_id: resolveTextureId,
-      mode: view.getUint32(offset + 16, true) || 1,
+      mode: resolveMode || 1,
     };
   }
   const access = attachmentAccess(view.getUint32(offset + 32, true));

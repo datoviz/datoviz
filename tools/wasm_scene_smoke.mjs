@@ -1671,7 +1671,16 @@ function expectTerrainReliefScenarioStreamShape(stream, label) {
     `${label} textured mesh`,
     (candidate) => candidate.builtin_pipeline === "scene.mesh",
   );
-  requireOk((mesh.sample_count ?? 1) >= 1, `${label}: invalid mesh sample count`);
+  requireOk(
+    mesh.multisample?.sample_count === 4,
+    `${label}: expected capability-lowered 4-sample mesh pipeline`,
+  );
+  requireOk(
+    commandsOf(stream, "BeginRenderPass").some(
+      (pass) => pass.color_attachments?.[0]?.resolve_target?.texture_id === 0,
+    ),
+    `${label}: expected MSAA resolve to browser presentation target`,
+  );
   requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected orthoimage upload`);
   requireOk(
     commandsOf(stream, "DrawIndexed").some((command) => command.index_count >= 1000000),
@@ -3928,6 +3937,7 @@ try {
     {
       id: "showcases_terrain_relief",
       label: "terrain relief",
+      maxSampleCount: 4,
       files: [
         [
           ".cache/datoviz/examples/terrain_relief/prepared/terrain.bin",

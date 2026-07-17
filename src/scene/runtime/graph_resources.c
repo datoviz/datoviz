@@ -531,8 +531,11 @@ bool _stream_apply_graph_color_ops(
         {
             uint64_t resolve_id = _graph_runtime_texture_id_for_resource(
                 attachment->resolve_resource_id, final_color_id, targets, 0);
-            ok = resolve_id != 0 && dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve(
-                                        stream, i, resolve_id, attachment->resolve_mode);
+            bool presentation_resolve =
+                resolve_id == 0 && strcmp(attachment->resolve_resource_id, "rt") == 0;
+            ok = (resolve_id != 0 || presentation_resolve) &&
+                 dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve(
+                     stream, i, resolve_id, attachment->resolve_mode);
         }
     }
     return ok;

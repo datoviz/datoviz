@@ -1006,7 +1006,7 @@ static void _json_append_command(
                 "{ \"texture_id\": %" PRIu64
                 ", \"load_op\": \"%s\", \"store_op\": \"%s\"",
                 texture_id, _attachment_load_name(load_op), _attachment_store_name(store_op));
-            if (attachment != NULL && attachment->resolve_texture_id != 0)
+            if (attachment != NULL && attachment->resolve_mode != 0)
             {
                 _json_append(
                     builder,

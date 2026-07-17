@@ -1316,7 +1316,13 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
             pass_sample_count = color_sample_count;
         else if (color_sample_count != pass_sample_count)
             return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
-        if (attachment != NULL && attachment->resolve_texture_id != 0)
+        bool has_resolve = attachment != NULL && attachment->resolve_mode != 0;
+        if (has_resolve && attachment->resolve_texture_id == 0)
+        {
+            if (color_sample_count <= 1)
+                return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+        }
+        else if (has_resolve)
         {
             const Drp2Object* resolve = _find_object(state, attachment->resolve_texture_id);
             if (resolve == NULL || resolve->kind != DRP2_OBJECT_TEXTURE)

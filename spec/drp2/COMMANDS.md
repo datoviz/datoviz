@@ -809,8 +809,11 @@ Optional fields:
 Attachment descriptor semantics:
 
 - `texture_id`: live texture used as the attachment target in active DRP2 `2.0`.
-  Depth/stencil attachments may use `0` for an implementation-owned transient depth attachment.
-- `resolve_target_texture_id`: optional live texture used as the resolve target in active DRP2 `2.0`.
+  Color attachments may use `0` for the portable browser presentation target. Depth/stencil
+  attachments may use `0` for an implementation-owned transient depth attachment.
+- `resolve_target_texture_id`: optional live texture used as the resolve target in active DRP2
+  `2.0`; color resolves may use `0` for the portable browser presentation target when an explicit
+  nonzero resolve mode marks the target as present.
 - `load_op`: whether the attachment content is loaded or cleared at pass start.
 - `store_op`: whether the final attachment content is stored after the pass.
 - `clear_value`: clear color used when a color attachment `load_op` is clear.
