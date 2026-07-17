@@ -1,5 +1,5 @@
 ---
-date: 2026-07-16
+date: 2026-07-17
 slug: datoviz-v0-4-release-candidate
 categories:
   - Releases
