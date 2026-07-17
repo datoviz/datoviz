@@ -48,6 +48,10 @@ as real implementation, not scaffolding.
 10. Use [HANDOFF_VISUAL_DOCUMENTATION_PASS.md](HANDOFF_VISUAL_DOCUMENTATION_PASS.md) for the
     approved visual-system pilot across Get Started, Core Concepts, Choose Your Layer, and the
     Advanced overview. Complete the pilot and request maintainer review before broad rollout.
+11. On a physical Apple Silicon or Intel Mac, execute
+    [HANDOFF_MACOS_RC1_VALIDATION.md](HANDOFF_MACOS_RC1_VALIDATION.md). It detects the host
+    architecture, runs source and physical-runtime preflight immediately, and accepts installed
+    wheel evidence only from an all-green workflow at the exact checked-out commit.
 
 
 ## Guardrails
