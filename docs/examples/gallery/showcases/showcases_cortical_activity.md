@@ -61,7 +61,7 @@ after verifying the linked API reference.
 
 ## What To Look For
 
-Measured MEG trials from an audiovisual experiment were averaged and mapped onto an oct6 source grid with a noise-normalized minimum-norm inverse, then interpolated through hemisphere-local spherical triangles onto the participant's complete full-resolution FreeSurfer cortex. Activity emerges around auditory cortex near 100 ms after the left-ear tone. The live GUI controls playback, whole/split layouts, scientific limits, material, and arcball state. The tuned initial frame is paused at 106 ms, near the strongest measured response.
+Measured MEG trials from an audiovisual experiment were averaged and mapped onto an oct6 source grid with a noise-normalized minimum-norm inverse, then interpolated through hemisphere-local spherical triangles onto the participant's complete full-resolution FreeSurfer cortex. Activity emerges around auditory cortex near 100 ms after the left-ear tone. The live GUI controls playback, whole/split layouts, scientific limits, material, and arcball state. The tuned initial frame is paused at 106 ms, near the strongest measured response. The gallery preview starts at that peak and preserves the live activity speed while the cortex rotates.
 
 DSPM is a model-derived, dimensionless source estimate. It is not a direct measurement of neuronal firing or absolute current amplitude.
 

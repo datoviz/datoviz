@@ -11,7 +11,8 @@
  * hemisphere-local spherical triangles onto the participant's complete full-resolution FreeSurfer
  * cortex. Activity emerges around auditory cortex near 100 ms after the left-ear tone. The live
  * GUI controls playback, whole/split layouts, scientific limits, material, and arcball state. The
- * tuned initial frame is paused at 106 ms, near the strongest measured response.
+ * tuned initial frame is paused at 106 ms, near the strongest measured response. The gallery
+ * preview starts at that peak and preserves the live activity speed while the cortex rotates.
  *
  * dSPM is a model-derived, dimensionless source estimate. It is not a direct measurement of
  * neuronal firing or absolute current amplitude.
@@ -54,6 +55,8 @@
 #include "example_tuner.h"
 #include "runner/scenario_runner.h"
 
+#include <cglm/affine.h>
+
 
 
 /*************************************************************************************************/
@@ -79,6 +82,7 @@
 #define CORTICAL_ACTIVITY_MAX_TIMES    10000u
 
 #define ACTIVITY_LOOP_SECONDS 3.6
+#define ROTATION_SECONDS      7.2
 #define SCRUB_STEP_FRAMES     4u
 #define READOUT_SIZE          192u
 #define WHOLE_BRAIN_LAYOUT    0
@@ -101,7 +105,16 @@
 #define DEFAULT_ARCBALL_PAN_X +0.103135f
 #define DEFAULT_ARCBALL_PAN_Y +0.038889f
 
-
+// Subject-native inferior-to-superior axis and pivot in display coordinates. They come from the
+// polar rotation of the pinned FreeSurfer talairach.xfm (native scanner RAS -> MNI305), with MNI
+// +Z mapped back through T1.mgz surface RAS, the shared pial normalization, and the whole-brain
+// display permutation. The pivot is the inverse-affine MNI origin mapped through the same chain.
+#define ROTATION_AXIS_X  -0.016549280f
+#define ROTATION_AXIS_Y  +0.923842950f
+#define ROTATION_AXIS_Z  -0.382413810f
+#define ROTATION_PIVOT_X +0.006792430f
+#define ROTATION_PIVOT_Y -0.048680960f
+#define ROTATION_PIVOT_Z +0.159077950f
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
@@ -148,6 +161,7 @@ typedef struct CorticalActivityState
     DvzColor anatomy_color;
     bool playing;
     bool loop;
+    double rotation_time;
     float playback_speed;
     float current_time_ms;
     float peak_time_ms;
@@ -857,7 +871,18 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (panel == NULL)
         return false;
     example_graphite_cyan_set_panel_background(panel);
-    if (example_set_default_3d_camera(panel, 0.50f) == NULL)
+    DvzCameraDesc camera_desc = dvz_camera_desc();
+    camera_desc.projection.type = 0;
+    camera_desc.view.eye[0] = -0.125000f;
+    camera_desc.view.eye[1] = +1.000000f;
+    camera_desc.view.eye[2] = +2.000000f;
+    camera_desc.view.target[0] = +0.000000f;
+    camera_desc.view.target[1] = +0.000000f;
+    camera_desc.view.target[2] = +0.000000f;
+    camera_desc.view.up[0] = +0.210683f;
+    camera_desc.view.up[1] = +0.897238f;
+    camera_desc.view.up[2] = -0.388042f;
+    if (dvz_panel_set_camera_desc(panel, &camera_desc) != DVZ_OK)
         return false;
 
 #ifndef DVZ_EXAMPLE_NO_APP
@@ -925,11 +950,16 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     dvz_arcball_initial(state->arcball, angles);
     (void)dvz_arcball_zoom(state->arcball, DEFAULT_ARCBALL_ZOOM);
     (void)dvz_arcball_pan(state->arcball, pan);
+
+    DvzCamera* camera = dvz_panel_camera(panel);
+    if (camera == NULL)
+        return false;
     (void)example_tuner_add_component(
         &state->tuner, "Activity", state, NULL, _cortical_activity_settings_gui, NULL,
         _cortical_activity_settings_reset, _cortical_activity_settings_print);
     example_tuner_arcball(
-        &state->tuner, "Arcball", state->arcball, angles, DEFAULT_ARCBALL_ZOOM, pan);
+        &state->tuner, "Controller", state->arcball, angles, DEFAULT_ARCBALL_ZOOM, pan);
+    example_tuner_camera_ref(&state->tuner, "Camera", panel, camera, &camera_desc);
     example_tuner_material(&state->tuner, "Cortical material", state->mesh, &state->material);
     return true;
 }
@@ -947,13 +977,36 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
     if (ctx == NULL || state == NULL || state->data.time_count < 2u)
         return;
 
+    double rotation_time = 0.0;
     if (ctx->preview_mode)
     {
-        const double phase =
-            dvz_scenario_preview_phase(ctx, DVZ_SCENARIO_PREVIEW_PHASE_SEAMLESS_LOOP);
+        rotation_time = dvz_scenario_preview_time(ctx);
+    }
+    else
+    {
+        if (!dvz_arcball_is_interacting(state->arcball))
+            state->rotation_time += fmax(0.0, ctx->dt);
+        rotation_time = state->rotation_time;
+    }
+    const double rotation_phase = fmod(rotation_time / ROTATION_SECONDS, 1.0);
+
+    vec3 rotation_axis = {ROTATION_AXIS_X, ROTATION_AXIS_Y, ROTATION_AXIS_Z};
+    vec3 rotation_pivot = {ROTATION_PIVOT_X, ROTATION_PIVOT_Y, ROTATION_PIVOT_Z};
+    mat4 transform = GLM_MAT4_IDENTITY_INIT;
+    glm_rotate_atm(
+        transform, rotation_pivot, (float)(6.283185307179586 * rotation_phase), rotation_axis);
+    (void)dvz_visual_set_transform(state->mesh, transform);
+
+    if (ctx->preview_mode)
+    {
         const float first = state->data.times_ms[0];
         const float last = state->data.times_ms[state->data.time_count - 1u];
-        (void)_set_activity_time(state, first + (float)phase * (last - first));
+        const float span = last - first;
+        const float rate_ms_per_second = span / ACTIVITY_LOOP_SECONDS;
+        const float elapsed = (float)dvz_scenario_preview_time(ctx);
+        const float time_ms =
+            first + fmodf(state->peak_time_ms - first + rate_ms_per_second * elapsed, span);
+        (void)_set_activity_time(state, time_ms);
         return;
     }
     if (!state->playing || ctx->frame_index == 0u)

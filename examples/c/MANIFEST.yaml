@@ -3573,7 +3573,7 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 180
+        frames: 432
         fps: 60
         card:
           preferred: video-mp4
