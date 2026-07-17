@@ -23,6 +23,7 @@ top to bottom and record skipped items as known exclusions.
 - [ ] Confirm C runtime version and public notes agree with the release identity.
 - [ ] Confirm the intended tag name, for example `v0.4.0rc1`.
 - [ ] Draft RC notes with commit, tag, feature status, known issues, and validation matrix.
+- [ ] Update the release-candidate blog post date to match the actual RC1 release date.
 - [ ] Confirm migration/status notes from v0.3 are honest about breaking changes.
 - [ ] Confirm `CITATION.cff` matches the intended release version.
 - [ ] Confirm [Citation](../reference/citation.md) has the correct DOI status for this release.
