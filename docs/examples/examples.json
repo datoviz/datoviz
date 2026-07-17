@@ -5755,21 +5755,19 @@
       "webgpu_requirements": [
         "pixel",
         "dense-point-cloud",
-        "depth-postprocess",
-        "gui",
-        "fly"
+        "fly",
+        "prepared-data"
       ],
-      "webgpu_reason": "the public point-cloud showcase depends on large prepared data, native GUI controls, and EDL-style rendering",
+      "webgpu_reason": "the portable 500k-point WebGPU route is proven locally; public promotion awaits a redistributable prepared-data bundle, while EDL and tuning controls remain native-only",
       "webgpu": {
         "status": "webgpu-deferred",
         "requirements": [
           "pixel",
           "dense-point-cloud",
-          "depth-postprocess",
-          "gui",
-          "fly"
+          "fly",
+          "prepared-data"
         ],
-        "reason": "the public point-cloud showcase depends on large prepared data, native GUI controls, and EDL-style rendering"
+        "reason": "the portable 500k-point WebGPU route is proven locally; public promotion awaits a redistributable prepared-data bundle, while EDL and tuning controls remain native-only"
       },
       "dataset": {
         "name": "RESEPI GENM2X colorized benchmark point cloud",

@@ -950,6 +950,7 @@ async function main() {
         ['showcases_cortical_activity', { label: 'Human Auditory Cortical Activity', kind: 'animated' }],
         ['showcases_terrain_relief', { label: 'McHenrys Peak Terrain Relief' }],
         ['showcases_svg_tiger', { label: 'SVG Tiger' }],
+        ['showcases_point_cloud', { label: 'Point Cloud · local development' }],
         ['showcases_galaxy', { label: 'Density-Wave Galaxy', kind: 'animated' }],
         [
           'showcases_textured_planet',

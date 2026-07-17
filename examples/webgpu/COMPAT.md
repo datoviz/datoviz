@@ -137,6 +137,15 @@ full 319,834-vertex/639,660-triangle cortical mesh, and advances retained activi
 The browser route remains deferred until the CC0 bundle is committed and staged for runtime fetch;
 packet size and command generation do not currently justify a separate browser LOD.
 
+Recorded local point-cloud proof on 2026-07-17: the canonical C scenario retains its six-million-
+point native path and derives a deterministic 500,000-point, 16,000,040-byte browser artifact.
+Native PNG capture and the 90-scenario WASM packet smoke passed; the latter asserts depth-tested
+pixel rendering, the dense draw count, and position/color/size uploads. The filtered local browser
+route loaded its hashed bundle and reached `QueueSubmit`, then hit the known external headless
+WebGPU instance-loss diagnostic, so that run is a skip rather than visual proof. Public promotion
+awaits a redistributable prepared-data bundle; native EDL and tuning controls remain out of the
+browser slice.
+
 Recorded local browser shader-payload proof on 2026-06-18: `node --check
 tools/webgpu_browser_smoke.mjs`, `node --check tools/wasm_scene_smoke.mjs`, and `just
 wasm-scene-smoke` passed after resolving WGSL includes during scene shader emission and adding a

@@ -188,9 +188,10 @@ Execute the remaining browser work in this order:
    `showcases_brain_volume` only after generic volume proof and prepared-data packaging pass.
 5. **Rendering techniques.** Advance depth cue, transparency ordering, MSAA, EDL, and SSAO in that
    order, with focused fixture/runtime tests for each new render-state or multipass contract.
-6. **Experimental large-data rendering.** Handle `visuals_splat` and `showcases_point_cloud` last,
-   with explicit browser data budgets, upload/memory limits, interaction proof, and no native GUI
-   dependency.
+6. **Experimental large-data rendering.** The canonical `showcases_point_cloud` scenario now has
+   native capture plus a local 500k-point WASM packet proof, an explicit 20 MB delivery ceiling,
+   and no browser GUI or EDL dependency. Obtain headed interaction proof and a redistributable
+   prepared bundle before public promotion; handle `visuals_splat` afterward.
 
 Keep GUI, GLFW, Qt, capture/export, raw Vulkan, and raw vklite examples native-only because their
 purpose is desktop runtime or host integration.

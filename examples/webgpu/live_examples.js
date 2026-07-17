@@ -216,6 +216,19 @@ export const LIVE_EXAMPLES = [
     scenarioId: "showcases_surface_grid",
   },
   {
+    id: "showcases_point_cloud",
+    label: "Point Cloud · local development",
+    scenarioId: "showcases_point_cloud",
+    dataBundles: [
+      {
+        id: "point_cloud",
+        url: "../../webgpu-data/examples/point_cloud/sha256-ad5b997813ca275a/manifest.json",
+        virtualRoot: "data/examples/point_cloud",
+        required: true,
+      },
+    ],
+  },
+  {
     id: "showcases_svg_tiger",
     label: "SVG Tiger",
     scenarioId: "showcases_svg_tiger",

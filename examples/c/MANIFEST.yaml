@@ -3713,13 +3713,22 @@ examples:
       kind: prepared
     webgpu:
       status: webgpu-deferred
+      local_route: examples/webgpu/live.html?id=showcases_point_cloud
+      local_data_bundles:
+        - id: point_cloud
+          metadata_source: .cache/datoviz/examples/point_cloud/web/prepared/metadata.json
+          artifact_source: .cache/datoviz/examples/point_cloud/web/prepared/point_cloud.bin
+          artifact_path: prepared/point_cloud.bin
+          virtual_root: data/examples/point_cloud
+          max_bytes: 20000000
       requirements:
         - pixel
         - dense-point-cloud
-        - depth-postprocess
-        - gui
         - fly
-      reason: the public point-cloud showcase depends on large prepared data, native GUI controls, and EDL-style rendering
+        - prepared-data
+      reason: >-
+        the portable 500k-point WebGPU route is proven locally; public promotion awaits a
+        redistributable prepared-data bundle, while EDL and tuning controls remain native-only
     agent_copy_safe: false
     dataset:
       name: RESEPI GENM2X colorized benchmark point cloud
