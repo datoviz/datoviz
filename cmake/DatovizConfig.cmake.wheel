@@ -26,6 +26,7 @@ if(NOT TARGET datoviz::datoviz)
 
     set_target_properties(datoviz::datoviz PROPERTIES
         IMPORTED_LOCATION "${_dvz_lib}"
+        INTERFACE_COMPILE_FEATURES "c_std_11"
         INTERFACE_INCLUDE_DIRECTORIES "${_dvz_root}/include"
     )
 

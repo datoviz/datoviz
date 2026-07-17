@@ -518,6 +518,7 @@ if(DVZ_BUILD_CORE)
     )
 
     target_compile_definitions(datoviz_core PUBLIC ${DVZ_COMPILE_DEFINITIONS})
+    target_compile_features(datoviz_core PUBLIC c_std_11)
 
 target_include_directories(datoviz_core
     PUBLIC
@@ -547,6 +548,7 @@ if(DVZ_BUILD_VK)
     endif()
 
     target_compile_definitions(datoviz_vk_layer PUBLIC ${DVZ_COMPILE_DEFINITIONS})
+    target_compile_features(datoviz_vk_layer PUBLIC c_std_11)
 
 target_include_directories(datoviz_vk_layer
     PUBLIC
@@ -573,6 +575,7 @@ if(DVZ_BUILD_CANVAS)
     )
 
     target_compile_definitions(datoviz_canvas_layer PUBLIC ${DVZ_COMPILE_DEFINITIONS})
+    target_compile_features(datoviz_canvas_layer PUBLIC c_std_11)
 
 target_include_directories(datoviz_canvas_layer
     PUBLIC
@@ -630,6 +633,7 @@ target_include_directories(datoviz
     $<$<BOOL:${DVZ_BUILD_GUI}>:$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/cimgui>>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
+target_compile_features(datoviz PUBLIC c_std_11)
 
 add_library(datoviz::datoviz ALIAS datoviz)
 

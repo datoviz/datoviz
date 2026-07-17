@@ -59,6 +59,13 @@ def test_parse_config_rejects_unknown_datoviz_setting(tmp_path: Path) -> None:
         parse_config_settings({"datoviz.unknown": "1"}, root=tmp_path)
 
 
+def test_wheel_cmake_config_requires_c11() -> None:
+    root = Path(__file__).resolve().parents[1]
+    config = (root / "cmake" / "DatovizConfig.cmake.wheel").read_text(encoding="utf8")
+
+    assert 'INTERFACE_COMPILE_FEATURES "c_std_11"' in config
+
+
 def test_stage_windows_native_uses_configured_build_dir(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
