@@ -237,6 +237,50 @@
     padding: 0.55rem 0.7rem;
 }
 
+.md-typeset .dvz-layer-diagram {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 1rem 0 1.8rem;
+}
+
+.md-typeset .dvz-layer-diagram__step {
+    position: relative;
+    min-width: 0;
+    padding: 0.65rem 0.55rem;
+    border: 1px solid rgba(76, 201, 240, 0.22);
+    border-radius: 6px;
+    background: rgba(76, 201, 240, 0.05);
+    text-align: center;
+}
+
+.md-typeset .dvz-layer-diagram__step:not(:last-child)::after {
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 0.14rem);
+    color: var(--dvz-cyan);
+    content: "\2192";
+    font-size: 0.8rem;
+    transform: translateY(-50%);
+}
+
+.md-typeset .dvz-layer-diagram__step strong,
+.md-typeset .dvz-layer-diagram__step span {
+    display: block;
+}
+
+.md-typeset .dvz-layer-diagram__step strong {
+    color: var(--md-default-fg-color);
+    font-size: 0.7rem;
+}
+
+.md-typeset .dvz-layer-diagram__step span {
+    margin-top: 0.18rem;
+    color: var(--md-default-fg-color--light);
+    font-size: 0.6rem;
+    line-height: 1.35;
+}
+
 .md-typeset .dvz-api-kind-label {
     margin: 1rem 0 0.45rem;
     color: var(--md-default-fg-color--light);
@@ -270,6 +314,17 @@
     }
 
     .md-typeset .dvz-sequence__step:not(:last-child)::after {
+        top: calc(100% + 0.05rem);
+        left: 50%;
+        transform: translateX(-50%) rotate(90deg);
+    }
+
+    .md-typeset .dvz-layer-diagram {
+        grid-template-columns: 1fr;
+        gap: 0.7rem;
+    }
+
+    .md-typeset .dvz-layer-diagram__step:not(:last-child)::after {
         top: calc(100% + 0.05rem);
         left: 50%;
         transform: translateX(-50%) rotate(90deg);

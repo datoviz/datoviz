@@ -2,81 +2,64 @@
 
 <div class="dvz-section-intro" markdown="1">
 
-Reference pages provide exact facts: status labels, signatures, constraints, lifetimes, backend
-support, and links to minimal examples.
+Use Reference for exact contracts: signatures, attributes, lifetimes, status labels, backend
+support, and build configuration.
 
-</div>
-
-<div class="dvz-context-strip">
-  <span>Exact contracts</span>
-  <span>Generated C API</span>
-  <span>NumPy shapes and dtypes</span>
-  <span>Backend status</span>
 </div>
 
 <div class="dvz-section-grid">
   <a class="dvz-section-card" href="c-api/">
     <strong>C API</strong>
-    <span>Generated signatures, parameters, result behavior, enums, structures, and module ownership.</span>
+    <span>Generated signatures, parameters, enums, structures, and module ownership.</span>
   </a>
   <a class="dvz-section-card" href="ctypes/">
     <strong>Python API</strong>
-    <span>NumPy-adapted calls, raw ctypes forms, callback lifetimes, and exact boundary rules.</span>
+    <span>NumPy-adapted calls, raw ctypes forms, and exact boundary rules.</span>
   </a>
   <a class="dvz-section-card" href="visual-families/">
-    <strong>Visual data contracts</strong>
-    <span>Required attributes, dtype, shape, cardinality, units, update routes, and backend support.</span>
+    <strong>Visual families</strong>
+    <span>Required attributes, dtype, shape, units, updates, and backend support.</span>
   </a>
   <a class="dvz-section-card" href="feature-status/">
     <strong>Status and platforms</strong>
-    <span>Supported, experimental, deferred, native, browser, build, and platform classifications.</span>
+    <span>Supported, experimental, deferred, native, browser, and platform classifications.</span>
   </a>
 </div>
 
-## Project Metadata
-
-| Page | Use it for |
-| --- | --- |
-| [Citation](citation.md) | Software citation guidance, v0.4 DOI status, and scholarly citation status. |
-
 ## API
 
-| Page | Use it for |
-| --- | --- |
-| [C API](c-api/index.md) | Generated public C reference, grouped by scene, visuals, app/runtime, and types. |
-| [Python API](ctypes.md) | NumPy-adapted scene calls and the exact `datoviz.raw` call form of the same generated binding. |
-| [Visual families](visual-families/index.md) | Family status, attributes, backend support, and canonical examples. |
+- [C API](c-api/index.md)
+- [Python API](ctypes.md)
+- [Visual families](visual-families/index.md)
 
-## Scene Contracts
+## Core contracts
 
-| Page | Use it for |
-| --- | --- |
-| [Objects and lifetimes](objects-and-lifetimes.md) | Ownership, borrowed handles, frame artifacts, user data, and destroy order. |
-| [Coordinate systems](coordinate-systems.md) | Data, panel, world/view, clip, framebuffer, and texture/sample spaces. |
-| [Controllers](controllers.md) | Panzoom, arcball, fly, and turntable behavior, binding, linking, and invalidation. |
-| [Callbacks](callbacks.md) | Callback lifetime, user data, threading assumptions, and mutation rules. |
-| [Visual attributes](visual-attributes.md) | Attribute names, dense writes, sources, mutability, updates, and external buffers. |
-| [Scales and colormaps](colormaps.md) | Continuous and categorical scale contracts, normalization, RGBA representation, missing values, and ownership. |
-| [Queries](queries.md) | Unified query model for picking, probing, readback, statuses, and freshness. |
-| [Errors and logging](errors-and-logging.md) | Return/status behavior, diagnostic phases, DRP2 tracing, and common failure classes. |
+- [Objects and lifetimes](objects-and-lifetimes.md)
+- [Coordinate systems](coordinate-systems.md)
+- [Controllers](controllers.md)
+- [Callbacks and events](callbacks.md)
+- [Visual attributes](visual-attributes.md)
+- [Scales and colormaps](colormaps.md)
+- [Queries](queries.md)
+- [Errors and logging](errors-and-logging.md)
 
-## Status
+## Status and platforms
 
-| Page | Use it for |
-| --- | --- |
-| [Project status](project-status.md) | Meaning of status labels and broad release posture. |
-| [Feature status](feature-status.md) | Feature-by-feature support, deferral, and ownership classification. |
-| [v0.3 visible parity](v03-visible-parity.md) | Fixed, deferred, and external/GSP disposition for visible v0.3-era capabilities. |
-| [Platform support](platform-support.md) | Native platforms, browser/WebGPU requirements, optional providers, and limitations. |
-| [Build options](build-options.md) | CMake options, dependency-source policy, and source-build configuration. |
+- [Project status](project-status.md)
+- [Feature status](feature-status.md)
+- [v0.3 visible parity](v03-visible-parity.md)
+- [Platform support](platform-support.md)
+- [Build options](build-options.md)
 
 ## Backends
 
-| Page | Use it for |
-| --- | --- |
-| [WebGPU subset](webgpu-subset.md) | Experimental browser/WASM support and parity limits. |
-| [Compute and graphics](compute-graphics.md) | Narrow experimental compute-to-render slice. |
+- [WebGPU subset](webgpu-subset.md)
+- [Compute and graphics](compute-graphics.md)
 
-Generated C signatures for frame-plan and DRP2 functions stay in the C API reference for exact
-lookup. Conceptual command-stream and lower-layer runtime guidance is under
-[Runtime internals](../advanced/runtime-internals.md), not the primary user path.
+Lower-level runtime, FramePlan, and DRP2 signatures remain available in the
+[generated C API](c-api/index.md). For architecture and command-stream concepts, use
+[Advanced](../advanced/index.md).
+
+## Project metadata
+
+- [Citation](citation.md)
