@@ -19,15 +19,14 @@ This example displays a 3D cluster of raycast impostor spheres.
 
 === "Live WebGPU"
 
-    <aside class="dvz-webgpu-limitations" role="note">
-    <strong>WebGPU rendering differences</strong>
-    <ul>
-    <li><code>MSAA</code>: The desktop example enables 8x MSAA with alpha-to-coverage; the WebGPU route is currently single-sampled.</li>
-    </ul>
-    </aside>
     <div class="dvz-webgpu-live" markdown="1">
-    <iframe src="../../../webgpu/live.html?id=visuals_sphere" title="Sphere WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    <iframe src="../../../webgpu/live.html?id=visuals_sphere&embedded=1" title="Sphere WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
     </div>
+
+    <aside class="dvz-webgpu-unavailable" role="note">
+    <strong>WebGPU rendering difference</strong>
+    <span><code>MSAA</code>: The desktop example enables 8x MSAA with alpha-to-coverage; the WebGPU route is currently single-sampled.</span>
+    </aside>
 
     <a href="../../../webgpu/live.html?id=visuals_sphere">Open the live WebGPU example</a>.
 

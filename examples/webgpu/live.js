@@ -6,6 +6,7 @@ const statusEl = document.querySelector("#status");
 const statsEl = document.querySelector("#stats");
 const limitationsEl = document.querySelector("#limitations");
 const limitationListEl = document.querySelector("#limitation-list");
+const isEmbedded = new URLSearchParams(window.location.search).get("embedded") === "1";
 let session = null;
 
 const DESIGN_WIDTH = 1280;
@@ -41,7 +42,7 @@ function showEffectLimitations(limitations) {
     item.textContent = `${effect}: ${limitation.warning}`;
     limitationListEl.append(item);
   }
-  limitationsEl.hidden = limitations.length === 0;
+  limitationsEl.hidden = isEmbedded || limitations.length === 0;
 }
 
 function destroySession() {

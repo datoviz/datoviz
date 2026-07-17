@@ -29,7 +29,7 @@
         height: 100vh;
         overflow: hidden;
         display: grid;
-        grid-template-rows: auto minmax(0, 1fr) auto;
+        grid-template-rows: minmax(0, 1fr) auto auto;
         background: #101318;
       }
 
@@ -37,11 +37,11 @@
         display: flex;
         align-items: baseline;
         gap: 10px;
-        padding: 8px 16px;
-        border-bottom: 1px solid rgba(240, 173, 78, 0.45);
-        background: rgba(240, 173, 78, 0.12);
-        color: #f2d39b;
-        font-size: 13px;
+        padding: 7px 16px;
+        border-top: 1px solid rgba(139, 148, 158, 0.35);
+        background: rgba(139, 148, 158, 0.08);
+        color: #aeb6c0;
+        font-size: 12px;
         line-height: 1.4;
       }
 
@@ -51,7 +51,7 @@
 
       #limitations strong {
         flex: 0 0 auto;
-        color: #ffd285;
+        color: #c7cdd4;
       }
 
       #limitation-list {
@@ -114,13 +114,13 @@
     </style>
   </head>
   <body>
+    <main id="stage">
+      <canvas id="viewport"></canvas>
+    </main>
     <aside id="limitations" role="note" hidden>
       <strong>WebGPU rendering difference</strong>
       <ul id="limitation-list"></ul>
     </aside>
-    <main id="stage">
-      <canvas id="viewport"></canvas>
-    </main>
     <footer>
       <span id="stats"></span>
       <span id="status">Starting</span>

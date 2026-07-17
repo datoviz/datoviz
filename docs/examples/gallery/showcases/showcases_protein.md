@@ -25,15 +25,14 @@ This example renders a prepared PDB structure as colored sphere impostors.
 
 === "Live WebGPU"
 
-    <aside class="dvz-webgpu-limitations" role="note">
-    <strong>WebGPU rendering differences</strong>
-    <ul>
-    <li><code>SSAO</code>: The desktop example enables SSAO; the WebGPU route currently omits this post-processing effect, so molecular creases and contacts have less ambient-occlusion shading.</li>
-    </ul>
-    </aside>
     <div class="dvz-webgpu-live" markdown="1">
-    <iframe src="../../../webgpu/live.html?id=showcases_protein" title="Protein WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    <iframe src="../../../webgpu/live.html?id=showcases_protein&embedded=1" title="Protein WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
     </div>
+
+    <aside class="dvz-webgpu-unavailable" role="note">
+    <strong>WebGPU rendering difference</strong>
+    <span><code>SSAO</code>: The desktop example enables SSAO; the WebGPU route currently omits this post-processing effect, so molecular creases and contacts have less ambient-occlusion shading.</span>
+    </aside>
 
     <a href="../../../webgpu/live.html?id=showcases_protein">Open the live WebGPU example</a>.
 

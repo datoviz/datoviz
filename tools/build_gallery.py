@@ -830,17 +830,16 @@ def render_webgpu_effect_notice(example: Example) -> list[str]:
         return []
 
     lines = [
-        '<aside class="dvz-webgpu-limitations" role="note">',
-        "<strong>WebGPU rendering differences</strong>",
-        "<ul>",
+        '<aside class="dvz-webgpu-unavailable" role="note">',
+        "<strong>WebGPU rendering difference</strong>",
     ]
     for limitation in limitations:
         label = limitation["effect"].replace("-", " ").upper()
         lines.append(
-            f"<li><code>{html.escape(label)}</code>: "
-            f"{html.escape(limitation['warning'])}</li>"
+            f"<span><code>{html.escape(label)}</code>: "
+            f"{html.escape(limitation['warning'])}</span>"
         )
-    lines.extend(["</ul>", "</aside>"])
+    lines.append("</aside>")
     return lines
 
 
@@ -919,13 +918,15 @@ def render_preview(
 
     route = site_html_relative_url(page_path, example.webgpu_site_route)
     effect_notice = render_webgpu_effect_notice(example)
+    embedded_route = f"{route}&embedded=1" if effect_notice else route
+    effect_notice_lines = [*effect_notice, ""] if effect_notice else []
     live_lines = [
-        *effect_notice,
         '<div class="dvz-webgpu-live" markdown="1">',
-        f'<iframe src="{route}" title="{example.title} WebGPU live example" '
+        f'<iframe src="{embedded_route}" title="{example.title} WebGPU live example" '
         'loading="lazy" allow="fullscreen; webgpu"></iframe>',
         "</div>",
         "",
+        *effect_notice_lines,
         f'{html_link(route, "Open the live WebGPU example")}.',
     ]
     return [
