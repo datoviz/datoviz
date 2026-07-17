@@ -32,6 +32,7 @@ taxonomy:
     webgpu.route: live browser route for webgpu-live examples
     webgpu.scenario_id: compiled C/WASM scenario id when it differs from the public route id
     webgpu.requirements: browser capability tags used by website routing and diagnostics
+    webgpu.rendering_effects: explicit browser parity for native SSAO, MSAA, EDL, depth cue, WBOIT, or depth peeling
     agent_copy_safe: true only for examples suitable as starting points for generated user code
   tag_not_folder:
     - workflow
@@ -2690,6 +2691,10 @@ examples:
       requirements:
         - sphere
         - arcball
+      rendering_effects:
+        - effect: msaa
+          status: unavailable
+          warning: The desktop example enables 8x MSAA with alpha-to-coverage; the WebGPU route is currently single-sampled.
     agent_copy_safe: true
     gallery:
       card: small
@@ -2995,6 +3000,10 @@ examples:
         - arcball
         - material
         - real-data
+      rendering_effects:
+        - effect: ssao
+          status: unavailable
+          warning: The desktop example enables SSAO; the WebGPU route currently omits this post-processing effect, so molecular creases and contacts have less ambient-occlusion shading.
     agent_copy_safe: false
     dataset:
       name: RCSB PDB protein structure
@@ -3181,6 +3190,10 @@ examples:
         - path
         - polygon-triangulation
         - panzoom
+      rendering_effects:
+        - effect: msaa
+          status: unavailable
+          warning: The desktop example enables MSAA for smoother fill and outline edges; the WebGPU route is currently single-sampled.
     agent_copy_safe: false
     dataset:
       name: Classic SVG Tiger from Nicolas P. Rougier's Glumpy example gallery
@@ -3422,6 +3435,10 @@ examples:
         - arcball
         - frame-callbacks
         - continuous-frames
+      rendering_effects:
+        - effect: msaa
+          status: unavailable
+          warning: The desktop example enables 8x MSAA for smoother mesh silhouettes; the WebGPU route is currently single-sampled.
     agent_copy_safe: false
     gallery:
       card: section
@@ -3498,6 +3515,10 @@ examples:
         - material
         - msaa
         - prepared-data
+      rendering_effects:
+        - effect: msaa
+          status: limited
+          warning: The desktop example requests 8x MSAA; the WebGPU route lowers this to the supported 4x sample count.
       reason: the portable scenario fetches the versioned USGS/USDA terrain bundle before creation
     agent_copy_safe: false
     dataset:
@@ -3579,6 +3600,10 @@ examples:
         - buffer-update
         - frame-callbacks
         - continuous-frames
+      rendering_effects:
+        - effect: msaa
+          status: unavailable
+          warning: The desktop example enables MSAA for smoother cortical mesh edges; the WebGPU route is currently single-sampled.
       reason: the portable scenario fetches the versioned CC0 cortical activity bundle before creation
     agent_copy_safe: false
     dataset:

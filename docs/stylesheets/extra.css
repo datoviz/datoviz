@@ -142,6 +142,25 @@ img[alt*=gpuopen] {
     color: var(--md-default-fg-color);
 }
 
+.dvz-webgpu-limitations {
+    margin: 0.75rem 0 1rem;
+    padding: 0.65rem 0.8rem;
+    border-left: 3px solid #f0ad4e;
+    background: rgba(240, 173, 78, 0.1);
+    color: var(--md-default-fg-color--light);
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.dvz-webgpu-limitations strong {
+    color: var(--md-default-fg-color);
+}
+
+.dvz-webgpu-limitations ul {
+    margin: 0.35rem 0 0;
+    padding-left: 1.25rem;
+}
+
 .dvz-gallery-placeholder {
     display: grid;
     place-items: center;

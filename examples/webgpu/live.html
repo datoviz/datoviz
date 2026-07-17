@@ -29,8 +29,37 @@
         height: 100vh;
         overflow: hidden;
         display: grid;
-        grid-template-rows: minmax(0, 1fr) auto;
+        grid-template-rows: auto minmax(0, 1fr) auto;
         background: #101318;
+      }
+
+      #limitations {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        padding: 8px 16px;
+        border-bottom: 1px solid rgba(240, 173, 78, 0.45);
+        background: rgba(240, 173, 78, 0.12);
+        color: #f2d39b;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      #limitations[hidden] {
+        display: none;
+      }
+
+      #limitations strong {
+        flex: 0 0 auto;
+        color: #ffd285;
+      }
+
+      #limitation-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 18px;
+        margin: 0;
+        padding-left: 18px;
       }
 
       footer {
@@ -85,6 +114,10 @@
     </style>
   </head>
   <body>
+    <aside id="limitations" role="note" hidden>
+      <strong>WebGPU rendering difference</strong>
+      <ul id="limitation-list"></ul>
+    </aside>
     <main id="stage">
       <canvas id="viewport"></canvas>
     </main>

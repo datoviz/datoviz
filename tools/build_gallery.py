@@ -228,6 +228,18 @@ class Example:
         return tuple(str(requirement) for requirement in requirements)
 
     @property
+    def webgpu_rendering_effects(self) -> tuple[dict[str, str], ...]:
+        effects = self.webgpu.get("rendering_effects") or ()
+        return tuple(
+            {
+                "effect": str(effect.get("effect", "")),
+                "status": str(effect.get("status", "")),
+                "warning": str(effect.get("warning", "")),
+            }
+            for effect in effects
+        )
+
+    @property
     def screenshot_expected(self) -> bool:
         return "screenshot" in self.validation
 
@@ -810,6 +822,28 @@ def indent_markdown(lines: list[str], spaces: int = 4) -> list[str]:
     return [f"{prefix}{line}" if line else "" for line in lines]
 
 
+def render_webgpu_effect_notice(example: Example) -> list[str]:
+    limitations = [
+        effect for effect in example.webgpu_rendering_effects if effect["status"] != "supported"
+    ]
+    if not limitations:
+        return []
+
+    lines = [
+        '<aside class="dvz-webgpu-limitations" role="note">',
+        "<strong>WebGPU rendering differences</strong>",
+        "<ul>",
+    ]
+    for limitation in limitations:
+        label = limitation["effect"].replace("-", " ").upper()
+        lines.append(
+            f"<li><code>{html.escape(label)}</code>: "
+            f"{html.escape(limitation['warning'])}</li>"
+        )
+    lines.extend(["</ul>", "</aside>"])
+    return lines
+
+
 def render_preview(
     example: Example,
     page_path: str | Path,
@@ -884,7 +918,9 @@ def render_preview(
         return ["## Preview", "", *screenshot, "", *status_lines, ""]
 
     route = site_html_relative_url(page_path, example.webgpu_site_route)
+    effect_notice = render_webgpu_effect_notice(example)
     live_lines = [
+        *effect_notice,
         '<div class="dvz-webgpu-live" markdown="1">',
         f'<iframe src="{route}" title="{example.title} WebGPU live example" '
         'loading="lazy" allow="fullscreen; webgpu"></iframe>',
@@ -965,6 +1001,12 @@ def render_example_details(example: Example, page_path: str | Path) -> list[str]
         if example.webgpu_requirements:
             requirements = ", ".join(f"`{requirement}`" for requirement in example.webgpu_requirements)
             metadata.append(f"- Browser capability tags: {requirements}")
+        if example.webgpu_rendering_effects:
+            effects = ", ".join(
+                f"`{effect['effect']}` ({effect['status']})"
+                for effect in example.webgpu_rendering_effects
+            )
+            metadata.append(f"- Browser rendering effects: {effects}")
     if example.validation:
         metadata.append(f"- Validation: `{example.validation}`")
     detail_lines = [*metadata, ""]
@@ -1546,7 +1588,12 @@ def render_webgpu_matrix(examples: list[Example], docs_dir: Path) -> None:
             if example.webgpu_route
             else "Not available"
         )
-        note = example.webgpu_reason or ""
+        effect_notes = "; ".join(
+            f"{effect['effect'].replace('-', ' ').upper()} {effect['status']}"
+            for effect in example.webgpu_rendering_effects
+            if effect["status"] != "supported"
+        )
+        note = "; ".join(part for part in (example.webgpu_reason, effect_notes) if part)
         lines.append(
             f"| [{example.title}]({example.page_path}) | "
             f"[`{example.source}`]({source_url(example)}) | "

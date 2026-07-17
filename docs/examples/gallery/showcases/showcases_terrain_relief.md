@@ -19,6 +19,12 @@ This example drapes aligned NAIP orthoimagery over USGS 3DEP elevation.
 
 === "Live WebGPU"
 
+    <aside class="dvz-webgpu-limitations" role="note">
+    <strong>WebGPU rendering differences</strong>
+    <ul>
+    <li><code>MSAA</code>: The desktop example requests 8x MSAA; the WebGPU route lowers this to the supported 4x sample count.</li>
+    </ul>
+    </aside>
     <div class="dvz-webgpu-live" markdown="1">
     <iframe src="../../../webgpu/live.html?id=showcases_terrain_relief" title="McHenrys Peak Terrain Relief WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
     </div>
@@ -82,6 +88,7 @@ Uv run tools/data/prepare_terrain_relief.py
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_terrain_relief"><code>examples/webgpu/live.html?id=showcases_terrain_relief</code></a>
     - Browser note: the portable scenario fetches the versioned USGS/USDA terrain bundle before creation
     - Browser capability tags: `mesh`, `sampled-field`, `texture`, `arcball`, `camera`, `material`, `msaa`, `prepared-data`
+    - Browser rendering effects: `msaa` (limited)
     - Validation: `smoke+interaction+screenshot+video`
 
     **Tags**

@@ -7,6 +7,7 @@ import argparse
 import re
 import sys
 from pathlib import Path
+from typing import Any
 from urllib.parse import parse_qs, urlparse
 
 import yaml
@@ -25,7 +26,7 @@ def _fail(message: str) -> int:
     return 1
 
 
-def _manifest_live_entries(path: Path) -> list[dict[str, str]]:
+def _manifest_live_entries(path: Path) -> list[dict[str, Any]]:
     manifest = yaml.safe_load(path.read_text(encoding="utf8")) or {}
     out: list[dict[str, str]] = []
     for entry in manifest.get("examples", []):
@@ -47,12 +48,21 @@ def _manifest_live_entries(path: Path) -> list[dict[str, str]]:
                 "title": str(entry["title"]),
                 "route_id": route_ids[0],
                 "scenario_id": str(webgpu.get("scenario_id") or entry["id"]),
+                "effect_limitations": [
+                    {
+                        "effect": str(effect.get("effect") or ""),
+                        "status": str(effect.get("status") or ""),
+                        "warning": str(effect.get("warning") or ""),
+                    }
+                    for effect in webgpu.get("rendering_effects") or []
+                    if effect.get("status") != "supported"
+                ],
             }
         )
     return out
 
 
-def _live_js_entries(path: Path) -> list[dict[str, str]]:
+def _live_js_entries(path: Path) -> list[dict[str, Any]]:
     text = path.read_text(encoding="utf8")
     array_match = re.search(r"export\s+const\s+LIVE_EXAMPLES\s*=\s*\[(?P<body>.*)\];", text, re.S)
     if array_match is None:
@@ -97,11 +107,22 @@ def _live_js_entries(path: Path) -> list[dict[str, str]]:
             continue
         if id_match is None or label_match is None or scenario_match is None:
             raise ValueError(f"incomplete LIVE_EXAMPLES entry: {body}")
+        effect_limitations = [
+            {"effect": match.group(1), "status": match.group(2), "warning": match.group(3)}
+            for match in re.finditer(
+                r'\beffect:\s*"([^"]+)"\s*,.*?'
+                r'\bstatus:\s*"([^"]+)"\s*,.*?'
+                r'\bwarning:\s*"([^"]+)"',
+                body,
+                re.S,
+            )
+        ]
         out.append(
             {
                 "id": id_match.group(1),
                 "label": label_match.group(1),
                 "scenario_id": scenario_match.group(1),
+                "effect_limitations": effect_limitations,
             }
         )
     return out
@@ -156,6 +177,15 @@ def main(argv: list[str] | None = None) -> int:
     if set(manifest_scenario_ids) != set(live_scenario_ids):
         return _fail(
             "examples/webgpu/live_examples.js scenario ids do not match manifest webgpu.scenario_id"
+        )
+    manifest_effects = {
+        entry["id"]: entry["effect_limitations"] for entry in manifest_live
+    }
+    live_effects = {entry["id"]: entry["effect_limitations"] for entry in live_js}
+    if manifest_effects != live_effects:
+        return _fail(
+            "examples/webgpu/live_examples.js effect limitations do not match "
+            "manifest webgpu.rendering_effects"
         )
     if c_count != c_cases:
         return _fail(f"DVZ_WASM_API_SCENARIO_COUNT={c_count}, but scenario switch has {c_cases} cases")

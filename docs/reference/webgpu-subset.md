@@ -65,6 +65,10 @@ until the example matrix and validation checks prove them.
 `webgpu-live` means a public browser route is registered for the example. It does not mean every
 browser, graphics card, driver, and CI runner has rendered that route successfully.
 
+When a live route omits or reduces a rendering effect used by its desktop counterpart, the live
+page and gallery preview show a **WebGPU rendering differences** warning. Treat that warning as
+part of the example's support status; `webgpu-live` alone does not imply pixel-level parity.
+
 Keep these facts separate:
 
 | Fact | Where to check |

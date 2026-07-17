@@ -30,6 +30,15 @@ PUBLIC_C_DIRS = (
     ROOT / "examples/c/advanced",
 )
 DATA_KINDS = {"synthetic", "simulated", "generated", "real", "prepared"}
+WEBGPU_EFFECT_STATUSES = {"supported", "limited", "unavailable"}
+WEBGPU_RENDERING_EFFECT_PATTERNS = {
+    "ssao": re.compile(r"\b(?:dvz_panel_set_ssao|example_tuner_ssao)\b"),
+    "msaa": re.compile(r"\b(?:dvz_panel_set_msaa|example_tuner_msaa)\b"),
+    "edl": re.compile(r"\b(?:dvz_panel_set_edl|example_tuner_edl)\b"),
+    "depth-cue": re.compile(r"\b(?:dvz_visual_set_depth_cue|example_tuner_depth_cue)\b"),
+    "wboit": re.compile(r"\bDVZ_ALPHA_WBOIT\b"),
+    "depth-peeling": re.compile(r"\bDVZ_ALPHA_DEPTH_PEEL\b"),
+}
 IGNORED_SOURCE_TITLE_CHECKS = {"examples/c/runtime/multi_window.c"}
 GALLERY_MEDIA_SUFFIXES = {".gif", ".jpeg", ".jpg", ".mp4", ".png", ".webm", ".webp"}
 
@@ -98,6 +107,41 @@ def _check_manifest_semantics(manifest_path: Path) -> bool:
         if data_kind is not None and str(data_kind) not in DATA_KINDS:
             print(f"{entry_id}: unknown data.kind {data_kind!r}")
             ok = False
+
+        webgpu = entry.get("webgpu") or {}
+        rendering_effects = webgpu.get("rendering_effects") or []
+        declared_effects = [str(effect.get("effect") or "") for effect in rendering_effects]
+        if len(set(declared_effects)) != len(declared_effects):
+            print(f"{entry_id}: duplicate webgpu.rendering_effects entries")
+            ok = False
+        for effect in rendering_effects:
+            effect_name = str(effect.get("effect") or "")
+            status = str(effect.get("status") or "")
+            warning = str(effect.get("warning") or "")
+            if effect_name not in WEBGPU_RENDERING_EFFECT_PATTERNS:
+                print(f"{entry_id}: unknown WebGPU rendering effect {effect_name!r}")
+                ok = False
+            if status not in WEBGPU_EFFECT_STATUSES:
+                print(f"{entry_id}: unknown WebGPU rendering-effect status {status!r}")
+                ok = False
+            if status != "supported" and not warning:
+                print(f"{entry_id}: {effect_name} {status} status needs a warning")
+                ok = False
+
+        if webgpu.get("status") == "webgpu-live" and entry.get("source"):
+            source_path = ROOT / str(entry["source"])
+            source_text = source_path.read_text(encoding="utf8")
+            detected_effects = {
+                name
+                for name, pattern in WEBGPU_RENDERING_EFFECT_PATTERNS.items()
+                if pattern.search(source_text)
+            }
+            if detected_effects != set(declared_effects):
+                print(
+                    f"{entry_id}: webgpu.rendering_effects must account for native effects; "
+                    f"detected={sorted(detected_effects)}, declared={sorted(declared_effects)}"
+                )
+                ok = False
 
     for directory in PUBLIC_C_DIRS:
         for path in sorted(directory.glob("*.c")):

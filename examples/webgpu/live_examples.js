@@ -232,6 +232,13 @@ export const LIVE_EXAMPLES = [
     id: "showcases_svg_tiger",
     label: "SVG Tiger",
     scenarioId: "showcases_svg_tiger",
+    effectLimitations: [
+      {
+        effect: "msaa",
+        status: "unavailable",
+        warning: "The desktop example enables MSAA for smoother fill and outline edges; the WebGPU route is currently single-sampled.",
+      },
+    ],
     dataBundles: [
       {
         id: "svg_tiger",
@@ -245,6 +252,13 @@ export const LIVE_EXAMPLES = [
     id: "showcases_terrain_relief",
     label: "McHenrys Peak Terrain Relief",
     scenarioId: "showcases_terrain_relief",
+    effectLimitations: [
+      {
+        effect: "msaa",
+        status: "limited",
+        warning: "The desktop example requests 8x MSAA; the WebGPU route lowers this to the supported 4x sample count.",
+      },
+    ],
     dataBundles: [
       {
         id: "terrain_relief",
@@ -259,6 +273,13 @@ export const LIVE_EXAMPLES = [
     label: "Spherical Harmonics",
     scenarioId: "showcases_spherical_harmonics",
     animate: true,
+    effectLimitations: [
+      {
+        effect: "msaa",
+        status: "unavailable",
+        warning: "The desktop example enables 8x MSAA for smoother mesh silhouettes; the WebGPU route is currently single-sampled.",
+      },
+    ],
   },
   {
     id: "showcases_streaming_daq",
@@ -271,6 +292,13 @@ export const LIVE_EXAMPLES = [
     label: "Human Auditory Cortical Activity",
     scenarioId: "showcases_cortical_activity",
     animate: true,
+    effectLimitations: [
+      {
+        effect: "msaa",
+        status: "unavailable",
+        warning: "The desktop example enables MSAA for smoother cortical mesh edges; the WebGPU route is currently single-sampled.",
+      },
+    ],
     dataBundles: [
       {
         id: "cortical_activity",
@@ -353,6 +381,13 @@ export const LIVE_EXAMPLES = [
     id: "showcases_protein",
     label: "Protein",
     scenarioId: "showcases_protein",
+    effectLimitations: [
+      {
+        effect: "ssao",
+        status: "unavailable",
+        warning: "The desktop example enables SSAO; the WebGPU route currently omits this post-processing effect, so molecular creases and contacts have less ambient-occlusion shading.",
+      },
+    ],
   },
   {
     id: "features_panel_multi",
@@ -499,6 +534,13 @@ export const LIVE_EXAMPLES = [
     id: "visuals_sphere",
     label: "Sphere",
     scenarioId: "visuals_sphere",
+    effectLimitations: [
+      {
+        effect: "msaa",
+        status: "unavailable",
+        warning: "The desktop example enables 8x MSAA with alpha-to-coverage; the WebGPU route is currently single-sampled.",
+      },
+    ],
   },
   {
     id: "visuals_text",

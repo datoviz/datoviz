@@ -19,6 +19,12 @@ This example displays a 3D cluster of raycast impostor spheres.
 
 === "Live WebGPU"
 
+    <aside class="dvz-webgpu-limitations" role="note">
+    <strong>WebGPU rendering differences</strong>
+    <ul>
+    <li><code>MSAA</code>: The desktop example enables 8x MSAA with alpha-to-coverage; the WebGPU route is currently single-sampled.</li>
+    </ul>
+    </aside>
     <div class="dvz-webgpu-live" markdown="1">
     <iframe src="../../../webgpu/live.html?id=visuals_sphere" title="Sphere WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
     </div>
@@ -71,6 +77,7 @@ Positions locate the sphere centers, radii control physical size, and colors dis
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_sphere"><code>examples/webgpu/live.html?id=visuals_sphere</code></a>
     - Browser capability tags: `sphere`, `arcball`
+    - Browser rendering effects: `msaa` (unavailable)
     - Validation: `smoke+screenshot`
 
     **Tags**

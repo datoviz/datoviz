@@ -25,6 +25,12 @@ This example turns a real spherical-harmonic blend into a lit mesh.
 
 === "Live WebGPU"
 
+    <aside class="dvz-webgpu-limitations" role="note">
+    <strong>WebGPU rendering differences</strong>
+    <ul>
+    <li><code>MSAA</code>: The desktop example enables 8x MSAA for smoother mesh silhouettes; the WebGPU route is currently single-sampled.</li>
+    </ul>
+    </aside>
     <div class="dvz-webgpu-live" markdown="1">
     <iframe src="../../../webgpu/live.html?id=showcases_spherical_harmonics" title="Spherical Harmonics WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
     </div>
@@ -71,6 +77,7 @@ This workflow is useful for directional basis functions, radiation patterns, orb
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_spherical_harmonics"><code>examples/webgpu/live.html?id=showcases_spherical_harmonics</code></a>
     - Browser capability tags: `mesh`, `material`, `arcball`, `frame-callbacks`, `continuous-frames`
+    - Browser rendering effects: `msaa` (unavailable)
     - Validation: `smoke+interaction+screenshot`
 
     **Tags**

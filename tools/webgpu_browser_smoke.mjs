@@ -483,12 +483,35 @@ async function createPage(debugPort) {
   return page;
 }
 
-async function smokeWasmPage(page, baseUrl, path, expectedStatus, screenshotPath) {
+async function assertEffectLimitations(page, path, expectedLimitations = []) {
+  if (expectedLimitations.length === 0) return;
+  const notice = await page.evaluate(`(() => {
+    const limitations = document.querySelector("#limitations");
+    return {
+      hidden: limitations?.hidden ?? true,
+      text: limitations?.textContent ?? "",
+    };
+  })()`);
+  requireOk(!notice.hidden, `${path}: expected a visible WebGPU rendering-difference warning`);
+  for (const expected of expectedLimitations) {
+    requireOk(notice.text.includes(expected), `${path}: missing WebGPU warning text ${expected}`);
+  }
+}
+
+async function smokeWasmPage(
+  page,
+  baseUrl,
+  path,
+  expectedStatus,
+  screenshotPath,
+  expectedLimitations = [],
+) {
   await page.navigate(`${baseUrl}${path}`);
   requireOk(
     await page.evaluate('typeof navigator.gpu === "object"'),
     `navigator.gpu is not available for ${path}`,
   );
+  await assertEffectLimitations(page, path, expectedLimitations);
   const initialStatus = await page.waitFor(`(() => {
     const status = document.querySelector("#status");
     const text = status?.textContent ?? "";
@@ -652,12 +675,14 @@ async function smokeAnimatedWasmPage(
   expectedStatus,
   screenshotPath,
   expectedScenarioId = 'features_timer_animation',
+  expectedLimitations = [],
 ) {
   await page.navigate(`${baseUrl}${path}`);
   requireOk(
     await page.evaluate('typeof navigator.gpu === "object"'),
     `navigator.gpu is not available for ${path}`,
   );
+  await assertEffectLimitations(page, path, expectedLimitations);
   const initialStatus = await page.waitFor(`(() => {
     const status = document.querySelector("#status");
     const text = status?.textContent ?? "";
@@ -945,11 +970,26 @@ async function main() {
         ['start_scatter', { label: 'Scatter Plot' }],
         ['features_datetime_axis', { label: 'Datetime Axis', kind: 'animated' }],
         ['features_marker_symbols', { label: 'Marker Symbols' }],
-        ['showcases_spherical_harmonics', { label: 'Spherical Harmonics', kind: 'animated' }],
+        [
+          'showcases_spherical_harmonics',
+          { label: 'Spherical Harmonics', kind: 'animated', limitations: ['MSAA', 'single-sampled'] },
+        ],
         ['showcases_streaming_daq', { label: 'Streaming DAQ · 64 channels', kind: 'animated' }],
-        ['showcases_cortical_activity', { label: 'Human Auditory Cortical Activity', kind: 'animated' }],
-        ['showcases_terrain_relief', { label: 'McHenrys Peak Terrain Relief' }],
-        ['showcases_svg_tiger', { label: 'SVG Tiger' }],
+        [
+          'showcases_cortical_activity',
+          {
+            label: 'Human Auditory Cortical Activity',
+            kind: 'animated',
+            limitations: ['MSAA', 'single-sampled'],
+          },
+        ],
+        [
+          'showcases_terrain_relief',
+          { label: 'McHenrys Peak Terrain Relief', limitations: ['MSAA', '4x sample count'] },
+        ],
+        ['showcases_svg_tiger', { label: 'SVG Tiger', limitations: ['MSAA', 'single-sampled'] }],
+        ['showcases_protein', { label: 'Protein', limitations: ['SSAO', 'ambient-occlusion'] }],
+        ['visuals_sphere', { label: 'Sphere', limitations: ['MSAA', 'alpha-to-coverage'] }],
         ['showcases_point_cloud', { label: 'Point Cloud · local development' }],
         ['showcases_galaxy', { label: 'Density-Wave Galaxy', kind: 'animated' }],
         [
@@ -972,10 +1012,23 @@ async function main() {
           );
         } else if (route.kind === 'animated') {
           result = await smokeAnimatedWasmPage(
-            page, baseUrl, path, `Rendered ${route.label}`, screenshot, routeFilter,
+            page,
+            baseUrl,
+            path,
+            `Rendered ${route.label}`,
+            screenshot,
+            routeFilter,
+            route.limitations,
           );
         } else {
-          result = await smokeWasmPage(page, baseUrl, path, `Rendered ${route.label}`, screenshot);
+          result = await smokeWasmPage(
+            page,
+            baseUrl,
+            path,
+            `Rendered ${route.label}`,
+            screenshot,
+            route.limitations,
+          );
         }
       } catch (error) {
         if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
@@ -1335,15 +1388,17 @@ async function main() {
         'McHenrys Peak Terrain Relief',
         'webgpu_live_terrain_relief.png',
         'terrain-relief',
+        ['MSAA', '4x sample count'],
       ],
       [
         'showcases_protein',
         'Protein',
         'webgpu_live_protein.png',
         'protein',
+        ['SSAO', 'ambient-occlusion'],
       ],
     ];
-    for (const [id, label, filename, shortLabel] of promotedLiveRoutes) {
+    for (const [id, label, filename, shortLabel, limitations] of promotedLiveRoutes) {
       try {
         const result = await smokeWasmPage(
           page,
@@ -1351,6 +1406,7 @@ async function main() {
           `/examples/webgpu/live.html?id=${id}`,
           `Rendered ${label}`,
           join(artifactsDir, filename),
+          limitations,
         );
         console.log(passLine(`live ${shortLabel}: ${result.initialStatus}`));
       } catch (error) {
@@ -1403,6 +1459,7 @@ async function main() {
         'webgpu_live_spherical_harmonics.png',
         'spherical-harmonics',
         'showcases_spherical_harmonics',
+        ['MSAA', 'single-sampled'],
       ],
       [
         'showcases_streaming_daq',
@@ -1417,6 +1474,7 @@ async function main() {
         'webgpu_live_cortical_activity.png',
         'cortical-activity',
         'showcases_cortical_activity',
+        ['MSAA', 'single-sampled'],
       ],
       [
         'showcases_textured_planet',
@@ -1426,7 +1484,9 @@ async function main() {
         'showcases_textured_planet',
       ],
     ];
-    for (const [id, label, filename, shortLabel, scenarioId] of promotedAnimatedRoutes) {
+    for (
+      const [id, label, filename, shortLabel, scenarioId, limitations] of promotedAnimatedRoutes
+    ) {
       try {
         const result = await smokeAnimatedWasmPage(
           page,
@@ -1435,6 +1495,7 @@ async function main() {
           `Rendered ${label}`,
           join(artifactsDir, filename),
           scenarioId,
+          limitations,
         );
         console.log(passLine(`live ${shortLabel}: ${result.initialStatus}`));
       } catch (error) {

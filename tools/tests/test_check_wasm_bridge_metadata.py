@@ -39,6 +39,38 @@ class WasmBridgeMetadataTests(unittest.TestCase):
                     "id": "showcases_planet",
                     "label": "Planet",
                     "scenario_id": "showcases_planet",
+                    "effect_limitations": [],
+                }
+            ],
+        )
+
+    def test_live_entries_parse_effect_limitations(self) -> None:
+        source = '''export const LIVE_EXAMPLES = [
+  {
+    id: "showcases_protein",
+    label: "Protein",
+    scenarioId: "showcases_protein",
+    effectLimitations: [
+      {
+        effect: "ssao",
+        status: "unavailable",
+        warning: "The browser route omits SSAO.",
+      },
+    ],
+  },
+];
+'''
+        with tempfile.TemporaryDirectory(dir=metadata.ROOT) as tmp:
+            path = Path(tmp) / "live_examples.js"
+            path.write_text(source, encoding="utf8")
+            entries = metadata._live_js_entries(path)
+        self.assertEqual(
+            entries[0]["effect_limitations"],
+            [
+                {
+                    "effect": "ssao",
+                    "status": "unavailable",
+                    "warning": "The browser route omits SSAO.",
                 }
             ],
         )

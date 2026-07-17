@@ -25,6 +25,12 @@ This example animates a human auditory dSPM estimate on cortex.
 
 === "Live WebGPU"
 
+    <aside class="dvz-webgpu-limitations" role="note">
+    <strong>WebGPU rendering differences</strong>
+    <ul>
+    <li><code>MSAA</code>: The desktop example enables MSAA for smoother cortical mesh edges; the WebGPU route is currently single-sampled.</li>
+    </ul>
+    </aside>
     <div class="dvz-webgpu-live" markdown="1">
     <iframe src="../../../webgpu/live.html?id=showcases_cortical_activity" title="Human Auditory Cortical Activity WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
     </div>
@@ -83,6 +89,7 @@ Control: pass --live explicitly for the tuner; D prints C defaults; space plays/
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_cortical_activity"><code>examples/webgpu/live.html?id=showcases_cortical_activity</code></a>
     - Browser note: the portable scenario fetches the versioned CC0 cortical activity bundle before creation
     - Browser capability tags: `mesh`, `material`, `colorbar`, `arcball`, `buffer-update`, `frame-callbacks`, `continuous-frames`
+    - Browser rendering effects: `msaa` (unavailable)
     - Validation: `smoke+interaction+screenshot+video+performance`
 
     **Tags**

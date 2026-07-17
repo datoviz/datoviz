@@ -4,6 +4,8 @@ import { liveExampleById } from "./live_examples.js";
 const canvas = document.querySelector("#viewport");
 const statusEl = document.querySelector("#status");
 const statsEl = document.querySelector("#stats");
+const limitationsEl = document.querySelector("#limitations");
+const limitationListEl = document.querySelector("#limitation-list");
 let session = null;
 
 const DESIGN_WIDTH = 1280;
@@ -31,6 +33,17 @@ function setStats(message) {
   statsEl.textContent = message;
 }
 
+function showEffectLimitations(limitations) {
+  limitationListEl.replaceChildren();
+  for (const limitation of limitations) {
+    const item = document.createElement("li");
+    const effect = String(limitation.effect ?? "effect").replaceAll("-", " ").toUpperCase();
+    item.textContent = `${effect}: ${limitation.warning}`;
+    limitationListEl.append(item);
+  }
+  limitationsEl.hidden = limitations.length === 0;
+}
+
 function destroySession() {
   if (session !== null) {
     session.destroy();
@@ -53,6 +66,7 @@ async function loadLiveExample(id) {
     dataBundles: example.dataBundles ?? [],
   };
   document.title = `${example.label} - Datoviz WebGPU`;
+  showEffectLimitations(example.effectLimitations ?? []);
   destroySession();
   setStats("");
   session = new WasmSceneSession({
