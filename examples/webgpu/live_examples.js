@@ -219,6 +219,13 @@ export const LIVE_EXAMPLES = [
     id: "showcases_point_cloud",
     label: "Point Cloud",
     scenarioId: "showcases_point_cloud",
+    effectLimitations: [
+      {
+        effect: "edl",
+        status: "unavailable",
+        warning: "The desktop example enables eye-dome lighting; the WebGPU route uses direct point rendering.",
+      },
+    ],
     dataBundles: [
       {
         id: "point_cloud",
