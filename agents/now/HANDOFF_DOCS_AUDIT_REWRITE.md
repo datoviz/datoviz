@@ -1,9 +1,9 @@
 # Datoviz v0.4 Public Documentation Rewrite Handoff
 
-Status: active pre-RC documentation campaign.
+Status: active RC documentation campaign.
 
-This is the active handoff for rebuilding the public Datoviz v0.4 documentation and website before
-RC publication. Use it as a mission brief, not a script. The coordinator may use subagents, but
+This is the active handoff for rebuilding the public Datoviz v0.4 documentation and website during
+the RC. Use it as a mission brief, not a script. The coordinator may use subagents, but
 must keep ownership boundaries clear and run final integration, validation, staging, and commits.
 
 
@@ -16,7 +16,7 @@ Rework the docs into a coherent public website for Datoviz v0.4:
 2. `Examples` as the centerpiece, with one visual or feature represented by one focused example
    where possible;
 3. polished showcase pages with real visual artifacts;
-4. clear install, release, API, and feature-status posture for the pre-RC state;
+4. clear install, release, API, and feature-status posture for the RC state;
 5. no stale v0.3 compatibility promises, obsolete Python wrapper examples, or internal agent-note
    tone in public pages.
 
@@ -577,7 +577,7 @@ Do not stage or commit:
 The campaign is done when:
 
 1. the maintainer has approved IA and tone sample;
-2. public docs match final pre-RC API and feature status;
+2. public docs match the RC API and feature status;
 3. the website has a coherent path from landing page to examples, how-to, and reference;
 4. public visual families and features have minimal examples or visible deferments;
 5. showcases are polished, screenshot/live-first, and distinct from minimal examples;

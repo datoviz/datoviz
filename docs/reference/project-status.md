@@ -1,8 +1,8 @@
 # Project Status
 
-Datoviz v0.4 is under active development. Public documentation uses explicit status labels so users
-can distinguish release surface, experimental slices, contributor surfaces, deferred work, and
-external ownership.
+Datoviz v0.4 is a release candidate. Public documentation uses explicit status labels so users can
+distinguish the RC surface, experimental slices, contributor surfaces, deferred work, and external
+ownership.
 
 | Status | Meaning |
 | --- | --- |

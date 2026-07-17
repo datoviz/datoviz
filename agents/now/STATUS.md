@@ -1,6 +1,6 @@
 # Datoviz v0.4 Status
 
-Status: active RC preparation. Updated: 2026-07-07.
+Status: active v0.4 release candidate. Updated: 2026-07-17.
 
 Keep this file short. Durable behavior belongs in `spec/`; completed history belongs in git
 history, not in agent archives.
@@ -21,7 +21,7 @@ render area, viewport, and scissor rectangles, scene emission initializes full t
 passes, and mixed plain/MSAA panels use an explicit-region resolve path so panel resolves do not
 clobber earlier framebuffer contents.
 
-Pre-RC1 execution order:
+RC1 execution order:
 
 1. Run the v0.4 Git history cleanup if it is still desired before stable RC refs exist.
 2. Keep the now-green wheel matrix in release evidence and inspect downloaded artifacts before
@@ -29,14 +29,14 @@ Pre-RC1 execution order:
 3. Prepare the RC1 source bundle, release notes, tag, and publication rehearsal.
 4. Install, inspect, and smoke-test the built wheels, including native dependencies and the CMake
    consumer check.
-5. Keep the v0.3 visible parity audit and public API/status disposition table reconciled before
+5. Keep the v0.3 visible parity audit and public API/status disposition table reconciled through
    RC1: specifically re-check `docs/reference/feature-status.md`,
    `docs/reference/project-status.md`, `docs/reference/v03-visible-parity.md`, generated C API
    docs, Python binding docs/policy, and the GSP/VisPy2 boundary language for contradictions.
 6. Polish the WebGPU/WASM story: supported live routes, experimental scope, diagnostics, and
    non-parity boundaries.
 7. Proofread the public docs, gallery pages, generated matrices, screenshots, and example metadata.
-8. Cut RC1 only after final validation and release notes are recorded.
+8. Publish the RC1 tag and artifacts only after final validation and release notes are recorded.
 9. Keep the narrow retained visual item-range slice in validation: the point-first
    `dvz_visual_set_item_range()` / clear/get API is active, with broader attribute views, scalar
    GPU mappings, modifiers, compaction, sorting, indirect draw, and additional visual families

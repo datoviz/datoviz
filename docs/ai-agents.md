@@ -1,8 +1,9 @@
 # AI Agents Start Here
 
-This is the canonical public contract for coding agents that generate Datoviz v0.4 code. Datoviz is
-changing before release candidates, so use current documentation and executable examples as
-evidence. Do not rely on model memory, v0.3 tutorials, or plausible-looking function names.
+This is the canonical public contract for coding agents that generate Datoviz v0.4 code. Datoviz
+v0.4 is a release candidate and may still change before the final release, so use current
+documentation and executable examples as evidence. Do not rely on model memory, v0.3 tutorials, or
+plausible-looking function names.
 
 <div class="dvz-context-strip">
   <span>Canonical agent entry point</span>

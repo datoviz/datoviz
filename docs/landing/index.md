@@ -80,7 +80,7 @@ binding.
 </div>
 <div class="dvz-public-panel" markdown="1">
 <strong>v0.4</strong>
-<span>RC preparation</span>
+<span>Release candidate</span>
 </div>
 </div>
 
@@ -159,7 +159,7 @@ to GSP/VisPy2, with Datoviz as a backend when that layer is ready.
 
 ## Release Status
 
-v0.4 is in release-candidate preparation. Supported and experimental surfaces stay explicitly
+v0.4 is a release candidate. Supported and experimental surfaces stay explicitly
 labelled in the docs and examples.
 
 </div>

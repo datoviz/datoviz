@@ -8,7 +8,7 @@
 </div>
 
 **Prerequisite:** Datoviz v0.4 installed from source or from a v0.4 package named in published
-release notes. During the pre-RC phase, check [Install](install.md) before using
+release notes. For the current release candidate, check [Install](install.md) before using
 `pip install datoviz`.
 
 This page builds one complete visualization: 10,000 random points in an interactive window. You can

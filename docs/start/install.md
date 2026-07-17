@@ -4,7 +4,7 @@ These instructions target Datoviz v0.4. Choose a path by what you want to run an
 release package is currently published.
 
 <div class="dvz-context-strip">
-  <span>v0.4 pre-release</span>
+  <span>v0.4 release candidate</span>
   <span>Python 3.10+</span>
   <span>C and C++</span>
   <span>Vulkan runtime required</span>

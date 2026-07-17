@@ -3,7 +3,7 @@
 Mandatory entry point for automation agents in this repository. Keep this file short. Detailed
 rules live in [agents/rules/](agents/rules/).
 
-Datoviz v0.4-dev is a deep rewrite of v0.3. The branch is preparing release candidates for v0.4.
+Datoviz v0.4-dev is a deep rewrite of v0.3 and is now the active v0.4 release-candidate line.
 
 
 ## Non-Negotiable Rules

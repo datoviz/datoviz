@@ -18,9 +18,9 @@ binding with `import datoviz as dvz` and pass NumPy arrays directly to supported
 
 ## v0.4 Release Status
 
-The `v0.4-dev` branch is preparing the first v0.4 release candidate. The native C and Python/NumPy
-paths are release-facing; experimental and deferred surfaces remain explicitly labeled throughout
-the documentation.
+The `v0.4-dev` branch is the first v0.4 release candidate. The native C and Python/NumPy paths are
+release-facing; experimental and deferred surfaces remain explicitly labeled throughout the
+documentation.
 
 | Surface | v0.4 status |
 | --- | --- |

@@ -138,9 +138,9 @@ target_link_libraries(my_datoviz_app PRIVATE datoviz::datoviz)
 ```
 
 FetchContent builds Datoviz from source and still needs the native toolchain and SDK dependencies.
-During the pre-RC period, pin `v0.4-dev` or a known commit. After RC or final publication, pin the
-exact release tag you tested. For installed-user workflows after packages are published, prefer
-`find_package(datoviz)` from a wheel or package-manager install.
+For the current RC sources, pin `v0.4-dev` or a known commit. After an RC or final tag is published,
+pin the exact release tag you tested. For installed-user workflows after packages are published,
+prefer `find_package(datoviz)` from a wheel or package-manager install.
 
 ## Package-Manager Status
 

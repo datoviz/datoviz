@@ -1,6 +1,6 @@
 # Datoviz v0.4 Dispatch
 
-Status: active v0.4 release-candidate preparation.
+Status: active v0.4 release candidate.
 
 Use [../../AGENTS.md](../../AGENTS.md) as the mandatory entry point. This file only records the
 current branch dispatch.
@@ -24,7 +24,7 @@ as real implementation, not scaffolding.
 
 ## Start Work
 
-1. Use [STATUS.md](STATUS.md) for the Pre-RC1 execution order, current blockers, and active lanes.
+1. Use [STATUS.md](STATUS.md) for the RC1 execution order, current blockers, and active lanes.
 2. Use [RELEASE.md](RELEASE.md) for release sequencing.
 3. Use [DOCUMENTATION.md](DOCUMENTATION.md) for public documentation gates.
 4. Use [../../spec/scene/README.md](../../spec/scene/README.md) before changing scene semantics.

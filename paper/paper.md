@@ -130,7 +130,7 @@ target for GSP/VisPy2-style visualization layers.
 The release is designed for reproducible evaluation. The repository includes focused tests,
 generated C and Python binding checks, native examples, WebGPU fixture and browser smoke tests,
 wheel build and installed-consumer checks, release status tables, and gallery examples that double
-as validation artifacts. During v0.4 release-candidate preparation, the project records
+as validation artifacts. During v0.4 release-candidate validation, the project records
 cross-platform wheel and installed-consumer evidence for Linux, macOS, Windows, and Python 3.10
 through 3.14, along with native CMake/pkg-config consumer checks. These materials give reviewers
 concrete ways to inspect the engine, reproduce examples, and assess the claimed release surface.
