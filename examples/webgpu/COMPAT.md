@@ -142,8 +142,9 @@ point native path and derives a deterministic 500,000-point, 16,000,040-byte bro
 Native PNG capture and the 90-scenario WASM packet smoke passed; the latter asserts depth-tested
 pixel rendering, the dense draw count, and position/color/size uploads. The filtered local browser
 route loaded its hashed bundle and reached `QueueSubmit`, then hit the known external headless
-WebGPU instance-loss diagnostic, so that run is a skip rather than visual proof. Public promotion
-awaits a redistributable prepared-data bundle; native EDL and tuning controls remain out of the
+WebGPU instance-loss diagnostic, so that run is a skip rather than visual proof. Public route
+metadata now references the hashed prepared bundle, but redistribution authorization and manual
+public-site confirmation remain release gates. Native EDL and tuning controls remain out of the
 browser slice.
 
 Recorded local browser shader-payload proof on 2026-06-18: `node --check
