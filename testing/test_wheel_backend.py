@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import zipfile
 from pathlib import Path
 
@@ -74,6 +75,9 @@ def test_stage_windows_native_uses_configured_build_dir(
     (native / "src").mkdir(parents=True)
     (native / "src" / "datoviz.dll").write_bytes(b"msvc dll")
     (native / "src" / "datoviz.lib").write_bytes(b"msvc import library")
+    (native / "CMakeCache.txt").write_text(
+        "DVZ_HAS_SHADERC:INTERNAL=1\nDVZ_SHADERC_STATIC:INTERNAL=1\n", encoding="utf8"
+    )
     runtime = tmp_path / "runtime"
     runtime.mkdir(parents=True)
     (runtime / "runtime.dll").write_bytes(b"runtime")
@@ -110,6 +114,56 @@ def test_stage_windows_native_uses_configured_build_dir(
         "datoviz/datoviz.lib",
         "datoviz/runtime.dll",
     }
+
+
+def test_stage_windows_native_rejects_missing_shared_shaderc(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _write_project(tmp_path)
+    native = tmp_path / "native"
+    (native / "src").mkdir(parents=True)
+    (native / "src" / "datoviz.dll").write_bytes(b"msvc dll")
+    (native / "CMakeCache.txt").write_text(
+        "DVZ_HAS_SHADERC:INTERNAL=1\nDVZ_SHADERC_STATIC:INTERNAL=0\n", encoding="utf8"
+    )
+
+    config = parse_config_settings(
+        {"datoviz.release-wheel": "true", "datoviz.native-build-dir": "native"},
+        root=tmp_path,
+    )
+    monkeypatch.setattr(native_payload.platform, "system", lambda: "Windows")
+    monkeypatch.setattr(native_payload, "_stage_c_integration", lambda *_: [])
+
+    with pytest.raises(FileNotFoundError, match="requires shaderc"):
+        native_payload.stage_payload(config, clean=True)
+
+
+def test_stage_windows_native_records_static_shaderc_policy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _write_project(tmp_path)
+    native = tmp_path / "native"
+    (native / "src").mkdir(parents=True)
+    (native / "src" / "datoviz.dll").write_bytes(b"msvc dll")
+    (native / "CMakeCache.txt").write_text(
+        "DVZ_HAS_SHADERC:INTERNAL=1\nDVZ_SHADERC_STATIC:INTERNAL=1\n", encoding="utf8"
+    )
+
+    config = parse_config_settings(
+        {
+            "datoviz.release-wheel": "true",
+            "datoviz.native-build-dir": "native",
+            "datoviz.stage-dir": "stage",
+        },
+        root=tmp_path,
+    )
+    monkeypatch.setattr(native_payload.platform, "system", lambda: "Windows")
+    monkeypatch.setattr(native_payload, "_stage_c_integration", lambda *_: [])
+
+    native_payload.stage_payload(config, clean=True)
+
+    manifest = json.loads((config.stage_dir / "datoviz" / "_wheel_payload.json").read_text())
+    assert manifest["metadata"]["shaderc"] == {"mode": "static"}
 
 
 def test_direct_wheel_writer_validates_record_and_manifest(tmp_path: Path) -> None:

@@ -44,6 +44,7 @@ def stage_payload(config: ReleaseWheelConfig, *, clean: bool = False) -> list[Pa
     entries.extend(_stage_python(config.root, package_dir))
     entries.extend(_stage_native(config, package_dir))
     entries.extend(_stage_c_integration(config.root, package_dir))
+    metadata = _payload_metadata(config, entries)
 
     manifest_path = stage / config.payload_manifest
     manifest_entry = PayloadEntry(
@@ -53,7 +54,7 @@ def stage_payload(config: ReleaseWheelConfig, *, clean: bool = False) -> list[Pa
         required=True,
         reason="payload-manifest",
     )
-    write_manifest([*entries, manifest_entry], manifest_path)
+    write_manifest([*entries, manifest_entry], manifest_path, metadata=metadata)
     entries.append(manifest_entry)
     return entries
 
@@ -219,6 +220,39 @@ def _stage_native(config: ReleaseWheelConfig, package_dir: Path) -> list[Payload
         for dst in copied:
             entries.append(_entry(dst, f"datoviz/{dst.name}", "qtbridge", "qtbridge"))
     return entries
+
+
+def _payload_metadata(config: ReleaseWheelConfig, entries: list[PayloadEntry]) -> dict[str, object]:
+    if platform.system() != "Windows":
+        return {}
+
+    shaderc_static = _cmake_cache_bool(config.native_build_dir, "DVZ_SHADERC_STATIC")
+    shaderc_enabled = _cmake_cache_bool(config.native_build_dir, "DVZ_HAS_SHADERC")
+    if shaderc_static:
+        return {"shaderc": {"mode": "static"}}
+
+    shaderc_runtime = any(
+        Path(entry.wheel_path).name.lower().startswith("libshaderc")
+        and entry.wheel_path.lower().endswith(".dll")
+        for entry in entries
+    )
+    if config.require_shaderc and (not shaderc_enabled or not shaderc_runtime):
+        raise FileNotFoundError(
+            "Windows release wheel requires shaderc, but the native build is neither statically "
+            "linked with shaderc nor staging libshaderc*.dll"
+        )
+    return {"shaderc": {"mode": "shared" if shaderc_enabled else "disabled"}}
+
+
+def _cmake_cache_bool(build_dir: Path, key: str) -> bool:
+    cache = build_dir / "CMakeCache.txt"
+    if not cache.exists():
+        return False
+    prefix = f"{key}:"
+    for line in cache.read_text(encoding="utf8", errors="replace").splitlines():
+        if line.startswith(prefix):
+            return line.partition("=")[2].strip().upper() in {"1", "ON", "TRUE", "YES"}
+    return False
 
 
 def _first_existing(patterns: list[str], build_dir: Path) -> Path:

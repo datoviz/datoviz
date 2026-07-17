@@ -43,7 +43,7 @@ typedef int shaderc_shader_kind;
 /*************************************************************************************************/
 
 #if DVZ_HAS_SHADERC
-/* Lazy-loaded shaderc function-pointer table. Populated once on first GLSL compile call. */
+/* Shaderc function table: statically initialized on Windows or lazy-loaded elsewhere. */
 typedef struct
 {
     shaderc_compiler_t (*compiler_initialize)(void);
@@ -66,12 +66,31 @@ typedef struct
     void (*result_release)(shaderc_compilation_result_t);
 } ShadercSyms;
 
+#if DVZ_SHADERC_STATIC
+static ShadercSyms g_shaderc = {
+    .compiler_initialize                 = shaderc_compiler_initialize,
+    .compiler_release                    = shaderc_compiler_release,
+    .compile_options_initialize           = shaderc_compile_options_initialize,
+    .compile_options_release              = shaderc_compile_options_release,
+    .compile_options_set_source_language  = shaderc_compile_options_set_source_language,
+    .compile_options_set_target_env       = shaderc_compile_options_set_target_env,
+    .compile_options_set_target_spirv     = shaderc_compile_options_set_target_spirv,
+    .compile_into_spv                     = shaderc_compile_into_spv,
+    .result_get_compilation_status        = shaderc_result_get_compilation_status,
+    .result_get_error_message             = shaderc_result_get_error_message,
+    .result_get_bytes                     = shaderc_result_get_bytes,
+    .result_get_length                    = shaderc_result_get_length,
+    .result_release                       = shaderc_result_release,
+};
+#else
 static ShadercSyms g_shaderc = {0};
 static bool g_shaderc_loaded = false;
 static bool g_shaderc_available = false;
 #endif
+#endif
 
 
+#if DVZ_HAS_SHADERC && !DVZ_SHADERC_STATIC
 static DvzDynLib _shaderc_open_runtime_dirs(const char* filename)
 {
     ANN(filename);
@@ -117,6 +136,7 @@ static DvzDynLib _shaderc_open_runtime_dirs(const char* filename)
     }
     return NULL;
 }
+#endif
 
 
 static VkShaderStageFlags _vklite_stage_flags(uint32_t visibility)
@@ -199,6 +219,9 @@ static VkPipelineLayout _vklite_combined_pipeline_layout(
 static bool _shaderc_load(void)
 {
 #if DVZ_HAS_SHADERC
+#if DVZ_SHADERC_STATIC
+    return true;
+#else
     if (g_shaderc_loaded)
         return g_shaderc_available;
     g_shaderc_loaded = true;
@@ -259,6 +282,7 @@ static bool _shaderc_load(void)
        so the symbols remain valid for the process lifetime without re-opening on each call. */
     g_shaderc_available = true;
     return true;
+#endif
 #else
     log_error(
         "runtime GLSL compilation unavailable: Datoviz was built without shaderc support");

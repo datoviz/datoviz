@@ -81,8 +81,24 @@ set(DVZ_MSDF_ATLAS_SOURCE_DIR "${PROJECT_SOURCE_DIR}/external/msdf-atlas-gen" CA
     "Optional local msdf-atlas-gen source directory")
 set(DVZ_HAS_QT_BRIDGE 0 CACHE INTERNAL "Qt bridge provider availability flag" FORCE)
 set(DVZ_HAS_SHADERC 0 CACHE INTERNAL "shaderc compile-time header availability flag" FORCE)
+set(DVZ_SHADERC_STATIC 0 CACHE INTERNAL "shaderc is linked statically into Datoviz" FORCE)
+set(DVZ_SHADERC_TARGET "" CACHE INTERNAL "CMake target providing statically linked shaderc" FORCE)
 
-if(NOT DVZ_ENABLE_SHADERC STREQUAL "OFF")
+if(WIN32 AND NOT DVZ_ENABLE_SHADERC STREQUAL "OFF")
+    find_package(unofficial-shaderc CONFIG QUIET)
+    if(TARGET unofficial::shaderc::shaderc)
+        set(DVZ_HAS_SHADERC 1 CACHE INTERNAL "shaderc compile-time header availability flag" FORCE)
+        set(DVZ_SHADERC_STATIC 1 CACHE INTERNAL "shaderc is linked statically into Datoviz" FORCE)
+        set(DVZ_SHADERC_TARGET unofficial::shaderc::shaderc CACHE INTERNAL
+            "CMake target providing statically linked shaderc" FORCE)
+    elseif(DVZ_ENABLE_SHADERC STREQUAL "ON")
+        message(FATAL_ERROR
+            "DVZ_ENABLE_SHADERC=ON on Windows requires the vcpkg shaderc package exporting "
+            "unofficial::shaderc::shaderc. Configure with the vcpkg toolchain and install shaderc.")
+    endif()
+endif()
+
+if(NOT DVZ_HAS_SHADERC AND NOT DVZ_ENABLE_SHADERC STREQUAL "OFF")
     find_path(_dvz_shaderc_include_dir
         NAMES shaderc/shaderc.h
         HINTS "${DVZ_SHADERC_INCLUDE_DIR}" "$ENV{VULKAN_SDK}/include"
@@ -106,28 +122,32 @@ if(NOT DVZ_ENABLE_SHADERC STREQUAL "OFF")
 endif()
 
 if(DVZ_HAS_SHADERC)
-    set(_dvz_shaderc_old_default "")
-    if(APPLE)
-        set(_dvz_shaderc_old_default "@loader_path/libshaderc_shared.1.dylib")
-    endif()
-    if(DVZ_SHADERC_RUNTIME_LIBRARY
-            AND NOT DVZ_SHADERC_RUNTIME_LIBRARY STREQUAL "${_dvz_shaderc_old_default}")
-        set(_dvz_shaderc_runtime "${DVZ_SHADERC_RUNTIME_LIBRARY}")
-    endif()
-    if(NOT _dvz_shaderc_runtime)
-        if(WIN32)
-            set(_dvz_shaderc_runtime "libshaderc_shared.dll")
-        elseif(APPLE)
-            set(_dvz_shaderc_runtime "@rpath/libshaderc_shared.1.dylib")
-        else()
-            set(_dvz_shaderc_runtime "libshaderc_shared.so.1")
+    if(DVZ_SHADERC_STATIC)
+        message(STATUS "shaderc support enabled; runtime GLSL compilation is statically linked")
+    else()
+        set(_dvz_shaderc_old_default "")
+        if(APPLE)
+            set(_dvz_shaderc_old_default "@loader_path/libshaderc_shared.1.dylib")
         endif()
+        if(DVZ_SHADERC_RUNTIME_LIBRARY
+                AND NOT DVZ_SHADERC_RUNTIME_LIBRARY STREQUAL "${_dvz_shaderc_old_default}")
+            set(_dvz_shaderc_runtime "${DVZ_SHADERC_RUNTIME_LIBRARY}")
+        endif()
+        if(NOT _dvz_shaderc_runtime)
+            if(WIN32)
+                set(_dvz_shaderc_runtime "libshaderc_shared.dll")
+            elseif(APPLE)
+                set(_dvz_shaderc_runtime "@rpath/libshaderc_shared.1.dylib")
+            else()
+                set(_dvz_shaderc_runtime "libshaderc_shared.so.1")
+            endif()
+        endif()
+        set(DVZ_SHADERC_RUNTIME_LIBRARY "${_dvz_shaderc_runtime}" CACHE STRING
+            "Optional shaderc runtime library name or path baked into Datoviz" FORCE)
+        message(STATUS
+            "shaderc support enabled; runtime GLSL compilation will lazy-load: "
+            "${DVZ_SHADERC_RUNTIME_LIBRARY}")
     endif()
-    set(DVZ_SHADERC_RUNTIME_LIBRARY "${_dvz_shaderc_runtime}" CACHE STRING
-        "Optional shaderc runtime library name or path baked into Datoviz" FORCE)
-    message(STATUS
-        "shaderc support enabled; runtime GLSL compilation will lazy-load: "
-        "${DVZ_SHADERC_RUNTIME_LIBRARY}")
 else()
     message(STATUS
         "shaderc support disabled; runtime GLSL compilation will be unavailable. "
