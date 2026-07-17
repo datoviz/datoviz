@@ -139,6 +139,7 @@ modules:
     python_top_level: true
     docs_group:
       - scene
+      - techniques
       - visuals
     rationale: null
 

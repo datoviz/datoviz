@@ -1,6 +1,11 @@
 # IPython Hosted Window Close Hang
 
-Status: active imminent runtime troubleshooting task.
+Status: resolved by `9c1e60912`; retain as the investigation and validation record.
+
+The hosted loop now reaps closed views through `dvz_app_reap_closed_views()` before session
+teardown, emits opt-in `DVZ_PYTHON_RUN_DEBUG=1` lifecycle tracing, and has focused C and Python
+tests. Keep macOS terminal-IPython close/reopen in physical-machine RC validation, but do not list
+the former hang as an active known issue.
 
 This handoff records the current investigation state for the terminal IPython integration added on
 the v0.4 development branch. The user can open a live Datoviz window from IPython and regain the

@@ -30,9 +30,13 @@ def _manifest_live_entries(path: Path) -> list[dict[str, str]]:
     out: list[dict[str, str]] = []
     for entry in manifest.get("examples", []):
         webgpu = entry.get("webgpu") or {}
-        if webgpu.get("status") != "webgpu-live":
+        route = str(
+            webgpu.get("route")
+            if webgpu.get("status") == "webgpu-live"
+            else webgpu.get("local_route") or ""
+        )
+        if not route:
             continue
-        route = str(webgpu.get("route") or "")
         query = parse_qs(urlparse(route).query)
         route_ids = query.get("id", [])
         if len(route_ids) != 1:
@@ -50,9 +54,42 @@ def _manifest_live_entries(path: Path) -> list[dict[str, str]]:
 
 def _live_js_entries(path: Path) -> list[dict[str, str]]:
     text = path.read_text(encoding="utf8")
+    array_match = re.search(r"export\s+const\s+LIVE_EXAMPLES\s*=\s*\[(?P<body>.*)\];", text, re.S)
+    if array_match is None:
+        raise ValueError("LIVE_EXAMPLES array not found")
+
+    bodies: list[str] = []
+    array_body = array_match.group("body")
+    depth = 0
+    start = -1
+    quote = ""
+    escaped = False
+    for index, char in enumerate(array_body):
+        if quote:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == quote:
+                quote = ""
+            continue
+        if char in {'"', "'", "`"}:
+            quote = char
+        elif char == "{":
+            if depth == 0:
+                start = index + 1
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth < 0:
+                raise ValueError("unbalanced LIVE_EXAMPLES object braces")
+            if depth == 0:
+                bodies.append(array_body[start:index])
+    if depth != 0 or quote:
+        raise ValueError("unterminated LIVE_EXAMPLES object or string")
+
     out: list[dict[str, str]] = []
-    for match in re.finditer(r"\{(?P<body>.*?)\}", text, re.S):
-        body = match.group("body")
+    for body in bodies:
         id_match = re.search(r'\bid:\s*"([^"]+)"', body)
         label_match = re.search(r'\blabel:\s*"([^"]+)"', body)
         scenario_match = re.search(r'\bscenarioId:\s*"([^"]+)"', body)

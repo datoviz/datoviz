@@ -32,8 +32,7 @@ dvz.dvz_scene_destroy(scene)
 
 Quickstart pages may use `dvz.run(scene, figure, title=...)` for brevity. The helper borrows the
 retained scene and figure and owns only the app/window resources it creates. See
-[Use from terminal IPython](../how-to/use-ipython.md) for hosted-session lifecycle and the current
-macOS close/reopen warning.
+[Use from terminal IPython](../how-to/use-ipython.md) for the hosted-session lifecycle.
 
 
 ## NumPy-Adapted Calls

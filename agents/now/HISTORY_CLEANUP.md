@@ -1,7 +1,7 @@
 # Datoviz v0.4 Git History Cleanup
 
-Status: preparation only. Do not rewrite or force-push without explicit final maintainer approval
-for the exact refs.
+Status: deferred beyond v0.4 by maintainer decision on 2026-07-17. Do not rewrite v0.4 release
+refs after RC1; any future cleanup requires a new coordinated plan and explicit approval.
 
 This checklist supports the optional pre-RC repository-size cleanup described in
 [RELEASE.md](RELEASE.md#0-pre-rc-git-history-cleanup). The source tree cleanup has already removed

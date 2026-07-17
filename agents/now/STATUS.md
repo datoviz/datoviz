@@ -8,10 +8,9 @@ history, not in agent archives.
 
 ## Current Pickup
 
-Immediate runtime troubleshooting task:
-[HANDOFF_IPYTHON_RUN_CLOSE_HANG.md](HANDOFF_IPYTHON_RUN_CLOSE_HANG.md) records the active
-investigation plan for the macOS terminal-IPython hosted window close hang. Handle this before
-returning to broader RC stabilization if the user's next pickup is Python/IPython runtime work.
+The macOS terminal-IPython hosted window close hang is resolved by `9c1e60912`. Keep close/reopen
+in physical-machine RC validation; use
+[HANDOFF_IPYTHON_RUN_CLOSE_HANG.md](HANDOFF_IPYTHON_RUN_CLOSE_HANG.md) as the completed record.
 
 Next critical path: close RC1 release notes, source bundle/checksum, artifact inspection,
 publication rehearsal, and final public status/documentation reconciliation.
@@ -23,7 +22,7 @@ clobber earlier framebuffer contents.
 
 RC1 execution order:
 
-1. Run the v0.4 Git history cleanup if it is still desired before stable RC refs exist.
+1. Keep the v0.4 Git history cleanup deferred; do not rewrite RC or final release refs.
 2. Keep the now-green wheel matrix in release evidence and inspect downloaded artifacts before
    upload.
 3. Prepare the RC1 source bundle, release notes, tag, and publication rehearsal.
@@ -42,9 +41,8 @@ RC1 execution order:
    GPU mappings, modifiers, compaction, sorting, indirect draw, and additional visual families
    deferred unless a concrete RC blocker appears.
 
-Pre-RC repository hygiene note: if the v0.4 Git history cleanup remains desired, do it before
-`v0.4.0-rc1` and before treating release refs as stable. The agreed process, user migration note,
-and force-push guardrails are recorded in [RELEASE.md](RELEASE.md#0-pre-rc-git-history-cleanup).
+Pre-RC repository hygiene decision: Git history cleanup is deferred beyond v0.4. Do not rewrite
+RC or final release refs; any future cleanup requires a separate coordinated plan.
 
 Release decision: explicit linear `f16`/`f32` scientific image export/readback is deferred beyond
 RC1. The v0.4.0 capture contract is sRGB RGBA8 screenshot/export pixels.

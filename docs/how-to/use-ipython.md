@@ -8,18 +8,10 @@ WebGPU path.
 
 !!! info "At a glance"
 
-    - **Status:** Supported nonblocking terminal-IPython integration, with the macOS close issue below.
+    - **Status:** Supported nonblocking terminal-IPython integration.
     - **Languages:** Python with the top-level NumPy facade.
     - **Prerequisites:** Terminal IPython, a visible native graphics environment, and a retained scene.
     - **Result:** The prompt remains usable while a live native window accepts data updates and redraw requests.
-
-!!! warning "Active macOS close issue"
-
-    On the current v0.4 development branch, closing a hosted Datoviz window from terminal IPython
-    can leave the native window unresponsive on macOS. Live updates work, but close and reopen are
-    not yet release-proven on that path. Save any prompt-side state before closing the window and
-    do not rely on repeated close/reopen until this known issue is resolved. Regular blocking
-    Python scripts and the native C app loop use a different run-loop path.
 
 ## Start IPython
 
@@ -75,7 +67,7 @@ session
 
 In a regular Python script, `dvz.run(scene, figure)` blocks until the window closes. In terminal
 IPython, it returns a `RunSession` and the prompt stays usable while the native window remains
-responsive. The macOS close limitation above applies when ending this hosted session.
+responsive.
 
 ## Update data at the prompt
 
@@ -112,10 +104,6 @@ For repeated prompt-side updates, keep using this pattern:
 3. call `session.request_frame()`.
 
 ## Close and reopen
-
-The intended lifecycle is shown below, but close and reopen are not yet release-proven in terminal
-IPython on macOS. On that platform, treat this section as the target contract rather than a reliable
-workflow until the active close issue is resolved.
 
 Close the native window normally, or close it from Python:
 

@@ -63,18 +63,18 @@ External ownership:
 
 ## Release Sequence
 
-### 0. Pre-RC Git History Cleanup
+### 0. Git History Cleanup
 
-Status: required before `v0.4.0-rc1` if the repository-size cleanup is still desired. Execution
-checklist: [HISTORY_CLEANUP.md](HISTORY_CLEANUP.md).
+Status: deferred beyond v0.4 by maintainer decision on 2026-07-17. Do not rewrite RC or final
+release refs. The preserved preparation record is [HISTORY_CLEANUP.md](HISTORY_CLEANUP.md).
 
 The v0.4 development branch briefly carried large generated/runtime payloads and copied legacy
 trees. The current source tree has removed those payloads, but the Git object database only shrinks
 after a coordinated history rewrite or deletion of every ref that still keeps those objects alive.
 
-Recommended policy:
+Policy if cleanup is reconsidered in a future maintenance window:
 
-1. Do the history cleanup before any v0.4 RC tag exists.
+1. Do not rewrite v0.4 RC or final release refs.
 2. From `v0.4.0-rc1` onward, treat public release refs as stable and do not rewrite history except
    for emergencies.
 3. Keep `datoviz/datoviz` as the active v0.4+ repository.

@@ -30,8 +30,9 @@ as real implementation, not scaffolding.
 4. Use [../../spec/scene/README.md](../../spec/scene/README.md) before changing scene semantics.
 5. Use [../../spec/drp2/README.md](../../spec/drp2/README.md) before changing DRP2 commands,
    schemas, fixtures, or scene DRP2 emission.
-6. Use [HANDOFF_IPYTHON_RUN_CLOSE_HANG.md](HANDOFF_IPYTHON_RUN_CLOSE_HANG.md) before continuing
-   the terminal IPython hosted `datoviz.run()` close-hang investigation.
+6. Keep the resolved terminal-IPython hosted close path in macOS RC validation; use
+   [HANDOFF_IPYTHON_RUN_CLOSE_HANG.md](HANDOFF_IPYTHON_RUN_CLOSE_HANG.md) only as its completed
+   investigation record.
 7. Use [../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md) and
    [../../spec/bindings/CTYPES_POLICY.md](../../spec/bindings/CTYPES_POLICY.md) before changing the
    top-level Python package, exact-call binding generation, FFI helpers, or NumPy/array argument
