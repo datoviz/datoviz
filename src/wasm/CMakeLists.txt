@@ -168,20 +168,36 @@ if(EXISTS "${PROJECT_SOURCE_DIR}/data/assets/textures")
     )
 endif()
 
+set(DVZ_WASM_PROTEIN_SOURCE_DIR "")
+set(DVZ_WASM_PROTEIN_TARGET_DIR "")
+set(DVZ_WASM_PROTEIN_CACHE_DIR "$ENV{HOME}/.cache/datoviz/proteins/6m0j")
 set(DVZ_WASM_PROTEIN_6M0J_DIR "${PROJECT_SOURCE_DIR}/data/examples/proteins/6m0j/prepared")
-if(EXISTS "${DVZ_WASM_PROTEIN_6M0J_DIR}/atom_position.f32" AND
-   EXISTS "${DVZ_WASM_PROTEIN_6M0J_DIR}/atom_radius_vdw.f32" AND
-   EXISTS "${DVZ_WASM_PROTEIN_6M0J_DIR}/atom_color_element.rgba8")
-    target_link_options(datoviz_wasm_scene PRIVATE
-        "SHELL:--preload-file ${DVZ_WASM_PROTEIN_6M0J_DIR}/atom_position.f32@data/examples/proteins/6m0j/prepared/atom_position.f32"
-        "SHELL:--preload-file ${DVZ_WASM_PROTEIN_6M0J_DIR}/atom_radius_vdw.f32@data/examples/proteins/6m0j/prepared/atom_radius_vdw.f32"
-        "SHELL:--preload-file ${DVZ_WASM_PROTEIN_6M0J_DIR}/atom_color_element.rgba8@data/examples/proteins/6m0j/prepared/atom_color_element.rgba8"
-    )
-elseif(EXISTS "${PROJECT_SOURCE_DIR}/data/examples/proteins/1ubq/prepared")
-    set(DVZ_WASM_PROTEIN_1UBQ_DIR "${PROJECT_SOURCE_DIR}/data/examples/proteins/1ubq/prepared")
-    target_link_options(datoviz_wasm_scene PRIVATE
-        "SHELL:--preload-file ${DVZ_WASM_PROTEIN_1UBQ_DIR}/atom_position.f32@data/examples/proteins/1ubq/prepared/atom_position.f32"
-        "SHELL:--preload-file ${DVZ_WASM_PROTEIN_1UBQ_DIR}/atom_radius_vdw.f32@data/examples/proteins/1ubq/prepared/atom_radius_vdw.f32"
-        "SHELL:--preload-file ${DVZ_WASM_PROTEIN_1UBQ_DIR}/atom_color_element.rgba8@data/examples/proteins/1ubq/prepared/atom_color_element.rgba8"
-    )
+set(DVZ_WASM_PROTEIN_1UBQ_DIR "${PROJECT_SOURCE_DIR}/data/examples/proteins/1ubq/prepared")
+
+if(EXISTS "${DVZ_WASM_PROTEIN_CACHE_DIR}/atom_position.f32" AND
+   EXISTS "${DVZ_WASM_PROTEIN_CACHE_DIR}/atom_radius_vdw.f32" AND
+   EXISTS "${DVZ_WASM_PROTEIN_CACHE_DIR}/atom_color_element.rgba8")
+    set(DVZ_WASM_PROTEIN_SOURCE_DIR "${DVZ_WASM_PROTEIN_CACHE_DIR}")
+    set(DVZ_WASM_PROTEIN_TARGET_DIR "data/examples/proteins/6m0j/prepared")
+elseif(EXISTS "${DVZ_WASM_PROTEIN_6M0J_DIR}/atom_position.f32" AND
+       EXISTS "${DVZ_WASM_PROTEIN_6M0J_DIR}/atom_radius_vdw.f32" AND
+       EXISTS "${DVZ_WASM_PROTEIN_6M0J_DIR}/atom_color_element.rgba8")
+    set(DVZ_WASM_PROTEIN_SOURCE_DIR "${DVZ_WASM_PROTEIN_6M0J_DIR}")
+    set(DVZ_WASM_PROTEIN_TARGET_DIR "data/examples/proteins/6m0j/prepared")
+elseif(EXISTS "${DVZ_WASM_PROTEIN_1UBQ_DIR}/atom_position.f32" AND
+       EXISTS "${DVZ_WASM_PROTEIN_1UBQ_DIR}/atom_radius_vdw.f32" AND
+       EXISTS "${DVZ_WASM_PROTEIN_1UBQ_DIR}/atom_color_element.rgba8")
+    set(DVZ_WASM_PROTEIN_SOURCE_DIR "${DVZ_WASM_PROTEIN_1UBQ_DIR}")
+    set(DVZ_WASM_PROTEIN_TARGET_DIR "data/examples/proteins/1ubq/prepared")
+endif()
+
+if(NOT DVZ_WASM_PROTEIN_SOURCE_DIR STREQUAL "")
+    foreach(DVZ_WASM_PROTEIN_ARRAY IN ITEMS
+            atom_position.f32
+            atom_radius_vdw.f32
+            atom_color_element.rgba8)
+        target_link_options(datoviz_wasm_scene PRIVATE
+            "SHELL:--preload-file ${DVZ_WASM_PROTEIN_SOURCE_DIR}/${DVZ_WASM_PROTEIN_ARRAY}@${DVZ_WASM_PROTEIN_TARGET_DIR}/${DVZ_WASM_PROTEIN_ARRAY}"
+        )
+    endforeach()
 endif()
