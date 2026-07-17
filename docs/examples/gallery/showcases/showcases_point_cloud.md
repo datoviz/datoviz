@@ -13,25 +13,6 @@ This example renders a prepared RGB LiDAR point cloud with direct colors.
 
 ## Preview
 
-<div class="dvz-public-webgpu-fallback" markdown="1">
-
-<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" alt="Point Cloud" loading="lazy">
-  <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../../../../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" aria-label="Point Cloud preview">
-    <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_point_cloud.mp4" type="video/mp4">
-  </video>
-</div>
-
-<aside class="dvz-webgpu-unavailable" role="note">
-<strong>No live WebGPU preview</strong>
-<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
-</aside>
-
-</div>
-
-<div class="dvz-local-webgpu-tabs" hidden markdown="1">
-
 === "Screenshot"
 
     <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
@@ -45,12 +26,15 @@ This example renders a prepared RGB LiDAR point cloud with direct colors.
 === "Live WebGPU"
 
     <div class="dvz-webgpu-live" markdown="1">
-    <iframe data-src="../../../webgpu/live.html?id=showcases_point_cloud" title="Point Cloud local WebGPU example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    <iframe src="../../../webgpu/live.html?id=showcases_point_cloud&embedded=1" title="Point Cloud WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
     </div>
 
-    <a href="../../../webgpu/live.html?id=showcases_point_cloud">Open the local WebGPU example</a>.
+    <aside class="dvz-webgpu-unavailable" role="note">
+    <strong>WebGPU rendering difference</strong>
+    <span><code>EDL</code>: The desktop example enables eye-dome lighting; the WebGPU route uses direct point rendering.</span>
+    </aside>
 
-</div>
+    <a href="../../../webgpu/live.html?id=showcases_point_cloud">Open the live WebGPU example</a>.
 
 ## Run And Adapt
 
@@ -61,7 +45,7 @@ Use your configured build environment; Python routes additionally require local 
 | --- | --- | --- |
 | C | Canonical native source | `just example-c showcases/point_cloud` (build and run), or rerun `./build/examples/c/showcases/point_cloud` |
 | Python | Available | `python3 -m examples.python.gallery.showcases.point_cloud` |
-| Browser | Deferred | the portable 500k-point WebGPU route is proven locally; public promotion awaits a redistributable prepared-data bundle, while EDL and tuning controls remain native-only <span class="dvz-local-webgpu-action" hidden>Local development: <a href="../../../webgpu/live.html?id=showcases_point_cloud">Open WebGPU example</a>.</span> |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_point_cloud">Open live example</a> |
 
 !!! warning "Prepared data required"
 
@@ -108,9 +92,11 @@ Real data is loaded from `.cache/datoviz/examples/point_cloud/prepared/point_clo
     - Approved adaptation starter: `no`
     - Python source: [`examples/python/gallery/showcases/point_cloud.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/point_cloud.py)
     - Python adaptation: Available
-    - Browser support: Deferred
-    - Browser note: the portable 500k-point WebGPU route is proven locally; public promotion awaits a redistributable prepared-data bundle, while EDL and tuning controls remain native-only
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_point_cloud"><code>examples/webgpu/live.html?id=showcases_point_cloud</code></a>
+    - Browser note: the portable WebGPU route renders a prepared 500k-point subset; tuning controls remain native-only
     - Browser capability tags: `pixel`, `dense-point-cloud`, `fly`, `prepared-data`
+    - Browser rendering effects: `edl` (unavailable)
     - Validation: `smoke+screenshot`
 
     **Tags**

@@ -217,7 +217,7 @@ export const LIVE_EXAMPLES = [
   },
   {
     id: "showcases_point_cloud",
-    label: "Point Cloud · local development",
+    label: "Point Cloud",
     scenarioId: "showcases_point_cloud",
     dataBundles: [
       {

@@ -3760,7 +3760,8 @@ examples:
     data:
       kind: prepared
     webgpu:
-      status: webgpu-deferred
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=showcases_point_cloud
       local_route: examples/webgpu/live.html?id=showcases_point_cloud
       local_data_bundles:
         - id: point_cloud
@@ -3774,9 +3775,11 @@ examples:
         - dense-point-cloud
         - fly
         - prepared-data
-      reason: >-
-        the portable 500k-point WebGPU route is proven locally; public promotion awaits a
-        redistributable prepared-data bundle, while EDL and tuning controls remain native-only
+      rendering_effects:
+        - effect: edl
+          status: unavailable
+          warning: The desktop example enables eye-dome lighting; the WebGPU route uses direct point rendering.
+      reason: the portable WebGPU route renders a prepared 500k-point subset; tuning controls remain native-only
     agent_copy_safe: false
     dataset:
       name: RESEPI GENM2X colorized benchmark point cloud
