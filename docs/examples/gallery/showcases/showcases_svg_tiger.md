@@ -13,32 +13,23 @@ This example renders the classic colored tiger from prepared SVG paths.
 
 ## Preview
 
-<div class="dvz-public-webgpu-fallback" markdown="1">
-
-![SVG Tiger](../../../assets/gallery/v0.4/showcases/showcases_svg_tiger.webp)
-
-<aside class="dvz-webgpu-unavailable" role="note">
-<strong>Native-only example</strong>
-<span>This example currently runs with the native Vulkan backend only. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
-</aside>
-
-</div>
-
-<div class="dvz-local-webgpu-tabs" hidden markdown="1">
-
 === "Screenshot"
 
     ![SVG Tiger](../../../assets/gallery/v0.4/showcases/showcases_svg_tiger.webp)
 
 === "Live WebGPU"
 
+    <aside class="dvz-webgpu-limitations" role="note">
+    <strong>WebGPU rendering differences</strong>
+    <ul>
+    <li><code>MSAA</code>: The desktop example enables MSAA for smoother fill and outline edges; the WebGPU route is currently single-sampled.</li>
+    </ul>
+    </aside>
     <div class="dvz-webgpu-live" markdown="1">
-    <iframe data-src="../../../webgpu/live.html?id=showcases_svg_tiger" title="SVG Tiger local WebGPU example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    <iframe src="../../../webgpu/live.html?id=showcases_svg_tiger" title="SVG Tiger WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
     </div>
 
-    <a href="../../../webgpu/live.html?id=showcases_svg_tiger">Open the local WebGPU example</a>.
-
-</div>
+    <a href="../../../webgpu/live.html?id=showcases_svg_tiger">Open the live WebGPU example</a>.
 
 ## Run And Adapt
 
@@ -49,7 +40,7 @@ Use your configured build environment; Python routes additionally require local 
 | --- | --- | --- |
 | C | Canonical native source | `just example-c showcases/svg_tiger` (build and run), or rerun `./build/examples/c/showcases/svg_tiger` |
 | SVG preparation tool | Additional integration source; check optional dependencies | `python3 -m tools.data.prepare_svg_tiger` |
-| Browser | Native only | the portable WebGPU stream and local live route are proven; public promotion awaits a separately approved prepared-data bundle commit <span class="dvz-local-webgpu-action" hidden>Local development: <a href="../../../webgpu/live.html?id=showcases_svg_tiger">Open WebGPU example</a>.</span> |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_svg_tiger">Open live example</a> |
 
 !!! warning "Prepared data required"
 
@@ -66,7 +57,7 @@ after verifying the linked API reference.
 
 Solid path fills, black outlines, thin whiskers, and document paint order are reproduced with one merged mesh plus one path visual. Cubic curves are flattened by the preparation script; Datoviz performs the final polygon triangulation at runtime.
 
-The source artwork remains cache-local pending a separately reviewed data publication. Prepare it from a pinned Glumpy source revision with:
+The artwork comes from Nicolas P. Rougier's Glumpy example gallery. The published Datoviz data bundle contains prepared paths from a pinned Glumpy source revision; regenerate them with:
 
 `python3 tools/data/prepare_svg_tiger.py --download`
 
@@ -107,9 +98,10 @@ The source artwork remains cache-local pending a separately reviewed data public
     - Prepared path model source: [`examples/c/showcases/svg_tiger_model.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/svg_tiger_model.c)
     - Prepared path model header source: [`examples/c/showcases/svg_tiger_model.h`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/svg_tiger_model.h)
     - SVG preparation tool source: [`tools/data/prepare_svg_tiger.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/tools/data/prepare_svg_tiger.py)
-    - Browser support: Native only
-    - Browser note: the portable WebGPU stream and local live route are proven; public promotion awaits a separately approved prepared-data bundle commit
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_svg_tiger"><code>examples/webgpu/live.html?id=showcases_svg_tiger</code></a>
     - Browser capability tags: `mesh`, `path`, `polygon-triangulation`, `panzoom`
+    - Browser rendering effects: `msaa` (unavailable)
     - Validation: `smoke+screenshot`
 
     **Tags**
@@ -126,14 +118,14 @@ The source artwork remains cache-local pending a separately reviewed data public
 
     | Field | Value |
     | --- | --- |
-    | `name` | Classic Ghostscript tiger SVG as distributed by Glumpy |
-    | `source` | pinned Glumpy tiger.svg revision |
+    | `name` | Classic SVG Tiger from Nicolas P. Rougier's Glumpy example gallery |
+    | `source` | Nicolas P. Rougier's Glumpy example gallery |
     | `source_url` | [https://github.com/glumpy/glumpy/blob/aedb9212a1e00a68b7c4669405a6a8f754daf283/glumpy/data/tiger.svg](https://github.com/glumpy/glumpy/blob/aedb9212a1e00a68b7c4669405a6a8f754daf283/glumpy/data/tiger.svg) |
-    | `license` | The maintainer has confirmed that this pinned artwork may be used. Record the exact permission and license provenance with the separately reviewed source or prepared-data publication. |
-    | `citation` | Glumpy tiger example; historical Ghostscript tiger.eps artwork. |
+    | `license` | Redistribution of this pinned artwork and its prepared Datoviz derivative was confirmed by the Datoviz maintainer for this release. |
+    | `citation` | Nicolas P. Rougier, Glumpy example gallery, classic SVG Tiger example. |
     | `preprocessing` | `python3 tools/data/prepare_svg_tiger.py --download` |
     | `cache_prepared_path` | .cache/datoviz/examples/svg_tiger/prepared |
-    | `provenance` | The preparation tool verifies a pinned source hash, resolves Glumpy-compatible inherited paint, flattens M/L/C/Z paths with adaptive De Casteljau subdivision, and writes cache-only path records. Datoviz triangulates fills with Earcut and renders outlines as retained paths. |
+    | `provenance` | The artwork comes from Nicolas P. Rougier's Glumpy example gallery. The preparation tool verifies the pinned Glumpy source hash, resolves Glumpy-compatible inherited paint, flattens M/L/C/Z paths with adaptive De Casteljau subdivision, and writes prepared path records. Datoviz triangulates fills with Earcut and renders outlines as retained paths. |
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

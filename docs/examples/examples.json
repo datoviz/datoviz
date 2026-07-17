@@ -5256,34 +5256,50 @@
           "site_asset": "/assets/gallery/v0.4/showcases/showcases_svg_tiger.webp"
         }
       },
-      "webgpu_status": "native-only",
-      "webgpu_status_label": "Native only",
+      "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "mesh",
         "path",
         "polygon-triangulation",
         "panzoom"
       ],
-      "webgpu_reason": "the portable WebGPU stream and local live route are proven; public promotion awaits a separately approved prepared-data bundle commit",
       "webgpu": {
-        "status": "native-only",
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=showcases_svg_tiger",
+        "data_bundles": [
+          {
+            "id": "svg_tiger",
+            "source": "data/examples/svg_tiger/manifest.json",
+            "url": "../../webgpu-data/examples/svg_tiger/sha256-640a536d848ff2eb/manifest.json",
+            "virtual_root": "data/examples/svg_tiger"
+          }
+        ],
         "requirements": [
           "mesh",
           "path",
           "polygon-triangulation",
           "panzoom"
         ],
-        "reason": "the portable WebGPU stream and local live route are proven; public promotion awaits a separately approved prepared-data bundle commit"
+        "rendering_effects": [
+          {
+            "effect": "msaa",
+            "status": "unavailable",
+            "warning": "The desktop example enables MSAA for smoother fill and outline edges; the WebGPU route is currently single-sampled."
+          }
+        ]
       },
+      "webgpu_route": "examples/webgpu/live.html?id=showcases_svg_tiger",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_svg_tiger",
       "dataset": {
-        "name": "Classic Ghostscript tiger SVG as distributed by Glumpy",
-        "source": "pinned Glumpy tiger.svg revision",
+        "name": "Classic SVG Tiger from Nicolas P. Rougier's Glumpy example gallery",
+        "source": "Nicolas P. Rougier's Glumpy example gallery",
         "source_url": "https://github.com/glumpy/glumpy/blob/aedb9212a1e00a68b7c4669405a6a8f754daf283/glumpy/data/tiger.svg",
-        "license": "The maintainer has confirmed that this pinned artwork may be used. Record the exact permission and license provenance with the separately reviewed source or prepared-data publication.",
-        "citation": "Glumpy tiger example; historical Ghostscript tiger.eps artwork.",
+        "license": "Redistribution of this pinned artwork and its prepared Datoviz derivative was confirmed by the Datoviz maintainer for this release.",
+        "citation": "Nicolas P. Rougier, Glumpy example gallery, classic SVG Tiger example.",
         "preprocessing": "python3 tools/data/prepare_svg_tiger.py --download",
         "cache_prepared_path": ".cache/datoviz/examples/svg_tiger/prepared",
-        "provenance": "The preparation tool verifies a pinned source hash, resolves Glumpy-compatible inherited paint, flattens M/L/C/Z paths with adaptive De Casteljau subdivision, and writes cache-only path records. Datoviz triangulates fills with Earcut and renders outlines as retained paths."
+        "provenance": "The artwork comes from Nicolas P. Rougier's Glumpy example gallery. The preparation tool verifies the pinned Glumpy source hash, resolves Glumpy-compatible inherited paint, flattens M/L/C/Z paths with adaptive De Casteljau subdivision, and writes prepared path records. Datoviz triangulates fills with Earcut and renders outlines as retained paths."
       }
     },
     {
