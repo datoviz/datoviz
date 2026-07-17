@@ -181,37 +181,37 @@ This example compares marker symbols, sizes, strokes, fills, and rotations.
 
 <div class="card" markdown="1">
 
-**[Path](gallery/visuals/visuals_path.md)**
+**[Vector](gallery/visuals/visuals_vector.md)**
 
-[![Path](../assets/gallery/v0.4/visuals/visuals_path.webp)](gallery/visuals/visuals_path.md)
+[![Vector](../assets/gallery/v0.4/visuals/visuals_vector.webp)](gallery/visuals/visuals_vector.md)
 
 `visuals`
 
-This example draws several continuous signals with one path visual.
+This example compares straight vector arrows with curved vector paths.
 
 </div>
 
 <div class="card" markdown="1">
 
-**[Image](gallery/visuals/visuals_image.md)**
+**[RGBA Image](gallery/visuals/visuals_image_rgba.md)**
 
-[![Image](../assets/gallery/v0.4/visuals/visuals_image.webp)](gallery/visuals/visuals_image.md)
+[![RGBA Image](../assets/gallery/v0.4/visuals/visuals_image_rgba.webp)](gallery/visuals/visuals_image_rgba.md)
 
 `visuals`
 
-This example displays a generated scalar field as a 2D image.
+This example displays a generated RGBA image as a 2D sampled field.
 
 </div>
 
 <div class="card" markdown="1">
 
-**[Mesh](gallery/visuals/visuals_mesh.md)**
+**[Text](gallery/visuals/visuals_text.md)**
 
-[![Mesh](../assets/gallery/v0.4/visuals/visuals_mesh.webp)](gallery/visuals/visuals_mesh.md)
+[![Text](../assets/gallery/v0.4/visuals/visuals_text.webp)](gallery/visuals/visuals_text.md)
 
 `visuals`
 
-This example renders a lit indexed cube mesh in a 3D scene.
+This example places semantic text items in panel coordinates.
 
 </div>
 

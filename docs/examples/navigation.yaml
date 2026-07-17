@@ -42,9 +42,9 @@ sections:
     lanes: [visuals, composites]
     highlights:
       - visuals_marker
-      - visuals_path
-      - visuals_image
-      - visuals_mesh
+      - visuals_vector
+      - visuals_image_rgba
+      - visuals_text
     groups:
       - title: 0D — point-like
         examples:
