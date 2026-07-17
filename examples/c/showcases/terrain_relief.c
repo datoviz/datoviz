@@ -677,10 +677,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->material.light_direction[0] = -0.38f;
     state->material.light_direction[1] = +0.76f;
     state->material.light_direction[2] = +0.52f;
-    state->material.phong.ambient = 0.282f;
-    state->material.phong.diffuse = 0.758f;
-    state->material.phong.specular = 0.118f;
-    state->material.phong.shininess = 47.446999f;
+    state->material.phong.ambient = 0.734f;
+    state->material.phong.diffuse = 0.454f;
+    state->material.phong.specular = 0.049f;
+    state->material.phong.shininess = 7.594f;
     state->material.standard.roughness = 0.62f;
     state->material.standard.specular = 0.34f;
     state->material.standard.metallic = 0.0f;
