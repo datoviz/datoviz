@@ -119,6 +119,7 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzDeviceConfig`](runtime-vulkan.md#type-dvzdeviceconfig) | record | Vulkan Foundation API | `include/datoviz/vk/device.h` |
 | [`DvzDeviceQueueRequest`](runtime-vulkan.md#type-dvzdevicequeuerequest) | record | Vulkan Foundation API | `include/datoviz/vk/device.h` |
 | [`DvzDiagnosticReport`](frame-plan.md#type-dvzdiagnosticreport) | record | FramePlan And Packet API | `include/datoviz/scene/types.h` |
+| [`DvzDiagnosticSeverity`](scene.md#type-dvzdiagnosticseverity) | enum | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzDim`](runtime-math.md#type-dvzdim) | enum | Math API | `include/datoviz/math/dim.h` |
 | [`DvzDimMask`](scene.md#type-dvzdimmask) | typedef | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzDimMaskFlag`](scene.md#type-dvzdimmaskflag) | enum | Scene API | `include/datoviz/scene/types.h` |
@@ -282,6 +283,7 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzLegend`](scene.md#type-dvzlegend) | typedef | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzLegendDesc`](scene.md#type-dvzlegenddesc) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzLegendPlacementMode`](scene.md#type-dvzlegendplacementmode) | enum | Scene API | `include/datoviz/scene/enums.h` |
+| [`DvzLimbMaterial`](visuals.md#type-dvzlimbmaterial) | record | Visuals And Composites API | `include/datoviz/scene/types.h` |
 | [`DvzLinkChannel`](scene.md#type-dvzlinkchannel) | typedef | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzLogLevel`](runtime-utilities.md#type-dvzloglevel) | enum | Common And Utility API | `include/datoviz/common/functions.h` |
 | [`DvzMVP`](runtime-controllers.md#type-dvzmvp) | record | Low-Level Controllers API | `include/datoviz/controller/panzoom.h` |

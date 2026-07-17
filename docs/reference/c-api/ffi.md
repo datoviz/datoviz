@@ -17,14 +17,14 @@ Common workflows:
 - [Python raw ctypes](../ctypes.md)
 - [Qt hosted rendering](../../how-to/embed-in-qt.md)
 
-Functions: 26
+Functions: 27
 Types: 0
 
 ## Symbol Groups
 
 | Group | Functions | Types | Headers |
 | --- | ---: | ---: | --- |
-| [Ffi](#ffi) | 26 | 0 | `include/datoviz/ffi.h` |
+| [Ffi](#ffi) | 27 | 0 | `include/datoviz/ffi.h` |
 
 ??? info "Grouped function index"
 
@@ -46,6 +46,7 @@ Types: 0
     | [`dvz_ffi_geometry_star_desc()`](#dvz_ffi_geometry_star_desc) | `include/datoviz/ffi.h` |
     | [`dvz_ffi_geometry_surface_grid_desc()`](#dvz_ffi_geometry_surface_grid_desc) | `include/datoviz/ffi.h` |
     | [`dvz_ffi_geometry_torus_desc()`](#dvz_ffi_geometry_torus_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_limb_material_desc()`](#dvz_ffi_limb_material_desc) | `include/datoviz/ffi.h` |
     | [`dvz_ffi_material_desc()`](#dvz_ffi_material_desc) | `include/datoviz/ffi.h` |
     | [`dvz_ffi_overlay_card_desc()`](#dvz_ffi_overlay_card_desc) | `include/datoviz/ffi.h` |
     | [`dvz_ffi_overlay_card_style()`](#dvz_ffi_overlay_card_style) | `include/datoviz/ffi.h` |
@@ -78,7 +79,7 @@ _Bool dvz_ffi_depth_cue_desc(
 | return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzDepthCueDesc`](visuals.md#type-dvzdepthcuedesc) * | output descriptor |
 
-_Declared in `include/datoviz/ffi.h`:284._
+_Declared in `include/datoviz/ffi.h`:293._
 
 #### `dvz_ffi_field_geometry()` { #dvz_ffi_field_geometry .dvz-api-function }
 
@@ -301,6 +302,23 @@ _Bool dvz_ffi_geometry_torus_desc(
 
 _Declared in `include/datoviz/ffi.h`:203._
 
+#### `dvz_ffi_limb_material_desc()` { #dvz_ffi_limb_material_desc .dvz-api-function }
+
+Initialize a default limb material descriptor through an out pointer.
+
+```c
+_Bool dvz_ffi_limb_material_desc(
+    DvzMaterialDesc * out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | true on success, false when out is NULL |
+| `out` | [`DvzMaterialDesc`](visuals.md#type-dvzmaterialdesc) * | output descriptor |
+
+_Declared in `include/datoviz/ffi.h`:284._
+
 #### `dvz_ffi_material_desc()` { #dvz_ffi_material_desc .dvz-api-function }
 
 Initialize a default material descriptor through an out pointer.
@@ -333,7 +351,7 @@ _Bool dvz_ffi_overlay_card_desc(
 | return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzOverlayCardDesc`](scene.md#type-dvzoverlaycarddesc) * | output descriptor |
 
-_Declared in `include/datoviz/ffi.h`:311._
+_Declared in `include/datoviz/ffi.h`:320._
 
 #### `dvz_ffi_overlay_card_style()` { #dvz_ffi_overlay_card_style .dvz-api-function }
 
@@ -350,7 +368,7 @@ _Bool dvz_ffi_overlay_card_style(
 | return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzOverlayCardStyle`](scene.md#type-dvzoverlaycardstyle) * | output descriptor |
 
-_Declared in `include/datoviz/ffi.h`:302._
+_Declared in `include/datoviz/ffi.h`:311._
 
 #### `dvz_ffi_panel_background_desc()` { #dvz_ffi_panel_background_desc .dvz-api-function }
 
@@ -435,7 +453,7 @@ _Bool dvz_ffi_scale_bar_desc(
 | return | `_Bool` | true on success, false when out is NULL |
 | `out` | [`DvzScaleBarDesc`](scene.md#type-dvzscalebardesc) * | output descriptor |
 
-_Declared in `include/datoviz/ffi.h`:293._
+_Declared in `include/datoviz/ffi.h`:302._
 
 #### `dvz_ffi_standard_material_desc()` { #dvz_ffi_standard_material_desc .dvz-api-function }
 
