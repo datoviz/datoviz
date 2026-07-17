@@ -305,6 +305,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     if (!_add_image(ctx->scene, panel, scale, state->values))
         goto error;
+    if (dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY) == NULL)
+        goto error;
 
     if (out_user != NULL)
         *out_user = state;

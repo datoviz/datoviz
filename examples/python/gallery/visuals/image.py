@@ -30,7 +30,12 @@ def main() -> None:
     field = dvz.dvz_sampled_field_from_array(scene, field_values)
     ex.add_image(scene, panel, field, scale=scale)
 
-    ex.run(scene, figure, "Image")
+    ex.run_with_view(
+        scene,
+        figure,
+        "Image",
+        lambda view: ex.bind_panzoom(view, scene, panel, dvz.DVZ_DIM_MASK_XY),
+    )
 
 
 if __name__ == "__main__":

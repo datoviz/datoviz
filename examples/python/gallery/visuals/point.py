@@ -56,7 +56,12 @@ def main() -> None:
     dvz.dvz_visual_set_alpha_mode(point, dvz.DVZ_ALPHA_BLENDED)
     ex.add_visual(panel, point)
 
-    ex.run(scene, figure, "Point")
+    ex.run_with_view(
+        scene,
+        figure,
+        "Point",
+        lambda view: ex.bind_panzoom(view, scene, panel, dvz.DVZ_DIM_MASK_XY),
+    )
 
 
 if __name__ == "__main__":

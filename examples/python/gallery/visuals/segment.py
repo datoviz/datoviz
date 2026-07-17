@@ -45,7 +45,12 @@ def main() -> None:
     dvz.dvz_segment_set_caps(segment, dvz.DVZ_SEGMENT_CAP_ROUND, dvz.DVZ_SEGMENT_CAP_ROUND)
     ex.add_visual(panel, segment)
 
-    ex.run(scene, figure, "Segment")
+    ex.run_with_view(
+        scene,
+        figure,
+        "Segment",
+        lambda view: ex.bind_panzoom(view, scene, panel, dvz.DVZ_DIM_MASK_XY),
+    )
 
 
 if __name__ == "__main__":

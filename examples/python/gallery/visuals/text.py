@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Retained semantic text items in panel screen coordinates."""
+"""Retained semantic text items in panel data coordinates."""
 
 from __future__ import annotations
 
@@ -23,24 +23,23 @@ def main() -> None:
         raise RuntimeError("dvz_text_set_style() failed")
 
     placement = dvz.dvz_text_placement()
-    placement.mode = dvz.DVZ_TEXT_PLACEMENT_SCREEN
-    placement.anchor = dvz.DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT
+    placement.mode = dvz.DVZ_TEXT_PLACEMENT_DATA
     if dvz.dvz_text_set_placement(text, ctypes.byref(placement)) != 0:
         raise RuntimeError("dvz_text_set_placement() failed")
 
     strings = [
         b"Retained text",
-        b"semantic strings, panel anchored",
+        b"semantic strings, data anchored",
         b"MSDF atlas renderer",
-        b"screen placement in logical pixels",
+        b"panzoom follows data coordinates",
         b"rotated label",
     ]
     positions = [
-        (128.0, 180.0, 0.0),
-        (132.0, 310.0, 0.0),
-        (134.0, 415.0, 0.0),
-        (136.0, 510.0, 0.0),
-        (845.0, 585.0, 0.0),
+        (-0.80, +0.50, 0.0),
+        (-0.79, +0.16, 0.0),
+        (-0.78, -0.12, 0.0),
+        (-0.77, -0.38, 0.0),
+        (+0.32, -0.58, 0.0),
     ]
     sizes = [60.0, 34.0, 28.0, 22.0, 26.0]
     angles = [0.0, 0.0, 0.0, 0.0, -0.34]
@@ -60,7 +59,12 @@ def main() -> None:
     if dvz.dvz_text_set_items(text, items, len(items)) != 0:
         raise RuntimeError("dvz_text_set_items() failed")
 
-    ex.run(scene, figure, "Text")
+    ex.run_with_view(
+        scene,
+        figure,
+        "Text",
+        lambda view: ex.bind_panzoom(view, scene, panel, dvz.DVZ_DIM_MASK_XY),
+    )
 
 
 if __name__ == "__main__":

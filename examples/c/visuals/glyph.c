@@ -337,7 +337,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     const DvzTextAtlas* atlas = _create_font_atlas(ctx->scene);
     if (atlas == NULL)
         return false;
-    return _add_glyphs(ctx->scene, panel, atlas);
+    if (!_add_glyphs(ctx->scene, panel, atlas))
+        return false;
+
+    return dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY) != NULL;
 }
 
 

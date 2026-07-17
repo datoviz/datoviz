@@ -222,7 +222,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    return _add_primitives(ctx->scene, panel);
+    if (!_add_primitives(ctx->scene, panel))
+        return false;
+
+    return dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY) != NULL;
 }
 
 

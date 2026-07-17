@@ -29,7 +29,12 @@ def main() -> None:
     dvz.dvz_visual_set_data_many(primitive, {"position": positions, "color": colors})
     ex.add_visual(panel, primitive)
 
-    ex.run(scene, figure, "Primitive")
+    ex.run_with_view(
+        scene,
+        figure,
+        "Primitive",
+        lambda view: ex.bind_panzoom(view, scene, panel, dvz.DVZ_DIM_MASK_XY),
+    )
 
 
 if __name__ == "__main__":

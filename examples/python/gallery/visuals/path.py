@@ -43,7 +43,12 @@ def main() -> None:
     dvz.dvz_path_set_join(path, dvz.DVZ_PATH_JOIN_ROUND, 4.0)
     ex.add_visual(panel, path)
 
-    ex.run(scene, figure, "Path")
+    ex.run_with_view(
+        scene,
+        figure,
+        "Path",
+        lambda view: ex.bind_panzoom(view, scene, panel, dvz.DVZ_DIM_MASK_XY),
+    )
 
 
 if __name__ == "__main__":

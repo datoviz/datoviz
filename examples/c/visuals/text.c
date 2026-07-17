@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* text - This example places retained semantic text items in panel coordinates.
+/* text - This example places retained semantic text items in data coordinates.
  *
- * What to look for: each text item provides a string, x/y screen position, font size, angle, and
+ * What to look for: each text item provides a string, x/y data position, font size, angle, and
  * color role, then the text system lowers it to atlas glyphs. Compare the headline, smaller
  * annotations, and rotated label to see how titles, units, and short scientific notes can be added
  * without managing glyph quads manually.
@@ -72,24 +72,6 @@ typedef struct TextVisualState
 /*************************************************************************************************/
 
 /**
- * Return the uniform font scale from the design-space text layout to the current panel.
- *
- * @param logical_width current logical panel width
- * @param logical_height current logical panel height
- * @return uniform layout scale
- */
-static float _font_scale(uint32_t logical_width, uint32_t logical_height)
-{
-    if (logical_width == 0 || logical_height == 0)
-        return 1.0f;
-    const float sx = (float)logical_width / (float)WIDTH;
-    const float sy = (float)logical_height / (float)HEIGHT;
-    return sx < sy ? sx : sy;
-}
-
-
-
-/**
  * Update retained text items for the current logical panel size.
  *
  * @param state text visual state
@@ -109,17 +91,13 @@ static bool _set_text_items(
     if (state->logical_width == logical_width && state->logical_height == logical_height)
         return true;
 
-    const float sx = (float)logical_width / (float)WIDTH;
-    const float sy = (float)logical_height / (float)HEIGHT;
-    const float scale = _font_scale(logical_width, logical_height);
-
     const char* strings[TEXT_COUNT] = {
-        "Retained text",       "semantic strings, panel anchored",
-        "MSDF atlas renderer", "screen placement in logical pixels",
+        "Retained text",       "semantic strings, data anchored",
+        "MSDF atlas renderer", "panzoom follows data coordinates",
         "rotated label",
     };
-    const float x[TEXT_COUNT] = {128.0f, 132.0f, 134.0f, 136.0f, 845.0f};
-    const float y[TEXT_COUNT] = {180.0f, 310.0f, 415.0f, 510.0f, 585.0f};
+    const float x[TEXT_COUNT] = {-0.80f, -0.79f, -0.78f, -0.77f, +0.32f};
+    const float y[TEXT_COUNT] = {+0.50f, +0.16f, -0.12f, -0.38f, -0.58f};
     const float sizes[TEXT_COUNT] = {60.0f, 34.0f, 28.0f, 22.0f, 26.0f};
     const float angles[TEXT_COUNT] = {0.0f, 0.0f, 0.0f, 0.0f, -0.34f};
     const ExampleStyleColorRole roles[TEXT_COUNT] = {
@@ -136,9 +114,9 @@ static bool _set_text_items(
         DvzColor color = example_graphite_cyan_color(roles[i]);
         items[i] = (DvzTextItem){DVZ_STRUCT_INIT_FIELDS(DvzTextItem),
             .string = strings[i],
-            .position = {x[i] * sx, y[i] * sy, 0.0},
+            .position = {x[i], y[i], 0.0},
             .anchor = {0.0f, 0.5f},
-            .size_px = sizes[i] * scale,
+            .size_px = sizes[i],
             .color = color,
             .angle = angles[i]};
     }
@@ -183,8 +161,7 @@ static bool _add_texts(
         goto error;
 
     DvzTextPlacement placement = dvz_text_placement();
-    placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
-    placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
+    placement.mode = DVZ_TEXT_PLACEMENT_DATA;
     if (dvz_text_set_placement(text, &placement) != 0)
         goto error;
 
@@ -231,6 +208,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     TextVisualState* state = NULL;
     if (!_add_texts(panel, ctx->width, ctx->height, &state))
         return false;
+    if (dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY) == NULL)
+    {
+        dvz_free(state);
+        return false;
+    }
     if (out_user != NULL)
         *out_user = state;
     return true;

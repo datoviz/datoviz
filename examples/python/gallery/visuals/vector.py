@@ -49,7 +49,12 @@ def main() -> None:
     dvz.dvz_visual_set_depth_test(vector, False)
     ex.add_visual(panel, vector)
 
-    ex.run(scene, figure, "Vector")
+    ex.run_with_view(
+        scene,
+        figure,
+        "Vector",
+        lambda view: ex.bind_panzoom(view, scene, panel, dvz.DVZ_DIM_MASK_XY),
+    )
 
 
 if __name__ == "__main__":
