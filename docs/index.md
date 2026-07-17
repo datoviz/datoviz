@@ -42,47 +42,91 @@ the same retained scene model.
 <div class="dvz-showcase-grid">
 <article class="dvz-showcase">
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_panel_linked_axes.poster.webp" alt="Two linked scientific 2D panels with axes" loading="lazy">
+  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_textured_planet/" aria-label="Open the textured planets and orbital debris example"></a>
+  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" alt="Textured Earth with orbital debris in a star field" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true"
-         poster="assets/gallery/v0.4/showcases/showcases_panel_linked_axes.poster.webp">
-    <source data-src="assets/gallery/v0.4/showcases/showcases_panel_linked_axes.mp4" type="video/mp4">
+         poster="assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp">
+    <source data-src="assets/gallery/v0.4/showcases/showcases_textured_planet.mp4" type="video/mp4">
   </video>
 </div>
-<h3><a href="examples/gallery/showcases/showcases_panel_linked_axes/">Scientific 2D</a></h3>
-<p>Linked panels, axes, traces, annotations, and interactive navigation.</p>
+<h3><a href="examples/gallery/showcases/showcases_textured_planet/">Textured planets</a></h3>
+<p>Textured worlds, a star field, orbital debris, and 3D navigation.</p>
 </article>
 <article class="dvz-showcase">
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" alt="A dense colored 3D point cloud" loading="lazy">
+  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_point_cloud/" aria-label="Open the point cloud example"></a>
+  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" alt="A dense colorized outdoor point cloud" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true"
          poster="assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp">
     <source data-src="assets/gallery/v0.4/showcases/showcases_point_cloud.mp4" type="video/mp4">
   </video>
 </div>
-<h3><a href="examples/gallery/showcases/showcases_point_cloud/">Large point clouds</a></h3>
-<p>Large 3D data with depth, color, and interactive navigation.</p>
+<h3><a href="examples/gallery/showcases/showcases_point_cloud/">Point cloud</a></h3>
+<p>Large colorized LiDAR data with fly navigation and depth enhancement.</p>
+</article>
+<article class="dvz-showcase">
+<div class="dvz-gallery-media">
+  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_choropleth/" aria-label="Open the U.S. state choropleth example"></a>
+  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_choropleth.webp" alt="U.S. state population density shown as a choropleth map" loading="lazy">
+</div>
+<h3><a href="examples/gallery/showcases/showcases_choropleth/">U.S. state choropleth</a></h3>
+<p>Population density mapped across contiguous U.S. state polygons.</p>
 </article>
 <article class="dvz-showcase">
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp" alt="A brain volume rendering with an anatomical mesh overlay" loading="lazy">
+  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_cortical_activity/" aria-label="Open the human auditory cortical activity example"></a>
+  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp" alt="Human cortical activity projected onto a rotating brain surface" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true"
+         poster="assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp">
+    <source data-src="assets/gallery/v0.4/showcases/showcases_cortical_activity.mp4" type="video/mp4">
+  </video>
+</div>
+<h3><a href="examples/gallery/showcases/showcases_cortical_activity/">Human cortical activity</a></h3>
+<p>Time-varying MEG activity projected onto a rotating cortical surface.</p>
+</article>
+<article class="dvz-showcase">
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_galaxy/" aria-label="Open the density-wave galaxy example"></a>
+  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp" alt="An animated spiral galaxy rendered from colored particles" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true"
+         poster="assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp">
+    <source data-src="assets/gallery/v0.4/showcases/showcases_galaxy.mp4" type="video/mp4">
+  </video>
+</div>
+<h3><a href="examples/gallery/showcases/showcases_galaxy/">Density-wave galaxy</a></h3>
+<p>An animated spiral galaxy built from a density-wave particle model.</p>
+</article>
+<article class="dvz-showcase">
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_gpu_particle_smoke/" aria-label="Open the GPU particle smoke example"></a>
+  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.poster.webp" alt="GPU-driven colored particles forming an animated smoke plume" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true"
+         poster="assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.poster.webp">
+    <source data-src="assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.mp4" type="video/mp4">
+  </video>
+</div>
+<h3><a href="examples/gallery/showcases/showcases_gpu_particle_smoke/">GPU particle smoke</a></h3>
+<p>Compute-driven particles rendered through native compute and graphics interop.</p>
+</article>
+<article class="dvz-showcase">
+<div class="dvz-gallery-media">
+  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_scientific_plotting/" aria-label="Open the Scientific Plotting Workflow example"></a>
+  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_scientific_plotting.webp" alt="A scientific plotting workflow with histograms, traces, axes, and annotations" loading="lazy">
+</div>
+<h3><a href="examples/gallery/showcases/showcases_scientific_plotting/">Scientific Plotting Workflow</a></h3>
+<p>Histograms, uncertainty bands, stacked traces, axes, and annotations.</p>
+</article>
+<article class="dvz-showcase">
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_brain_volume/" aria-label="Open the Allen mouse brain example"></a>
+  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp" alt="Allen mouse brain volume rendering with anatomical mesh overlays" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true"
          poster="assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp">
     <source data-src="assets/gallery/v0.4/showcases/showcases_brain_volume.mp4" type="video/mp4">
   </video>
 </div>
-<h3><a href="examples/gallery/showcases/showcases_brain_volume/">Volumes and meshes</a></h3>
-<p>Three-dimensional sampled fields, slices, lighting, and transparent geometry.</p>
-</article>
-<article class="dvz-showcase">
-<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_wind_field.poster.webp" alt="A color-mapped wind field with vector overlays" loading="lazy">
-  <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true"
-         poster="assets/gallery/v0.4/showcases/showcases_wind_field.poster.webp">
-    <source data-src="assets/gallery/v0.4/showcases/showcases_wind_field.mp4" type="video/mp4">
-  </video>
-</div>
-<h3><a href="examples/gallery/showcases/showcases_wind_field/">Vector and scalar fields</a></h3>
-<p>Color-mapped fields, vector overlays, colorbars, and probe-style workflows.</p>
+<h3><a href="examples/gallery/showcases/showcases_brain_volume/">Allen mouse brain</a></h3>
+<p>An anatomical RGBA volume with slices and structure meshes.</p>
 </article>
 </div>
 
