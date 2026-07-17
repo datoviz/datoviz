@@ -36,7 +36,7 @@ object lifetimes and data shapes intact while adapting the data and styling.
 
 ## What To Look For
 
-The overview and detail figures each get their own point-position, point-color, and point-diameter arrays, then the same app presents them in two positioned windows. Compare the two live windows rather than one screenshot: they prove that separate figures and views can share a process while keeping their own scene content.
+The overview and detail figures each get their own point-position, point-color, and point-diameter arrays, then the same app presents them in two standard-size, cascaded windows. Compare the two live windows rather than one screenshot: they prove that separate figures and views can share a process while keeping their own scene content.
 
 This workflow is useful for scientific tools that need a coarse overview beside a focused detail view without starting a second renderer.
 

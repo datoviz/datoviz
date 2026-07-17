@@ -42,7 +42,7 @@ object lifetimes and data shapes intact while adapting the data and styling.
 
 ## What To Look For
 
-The panel combines a data-space path, outlined markers, axes, and panzoom. The path uploads position, color, and stroke_width_px arrays, while the markers upload position, color, diameter_px, angle, and symbol arrays. In live mode, move the GUI scale slider and compare marker diameters, stroke widths, text, and axis styling while data coordinates stay fixed. User scale is useful for HiDPI displays, screenshots, and accessibility-sized scientific figures. The GUI is attached only for `--live`/`--live-record` and starts docked on the left.
+The panel combines a data-space path, outlined markers, axes, and panzoom. The path uploads position, color, and stroke_width_px arrays, while the markers upload position, color, diameter_px, angle, and symbol arrays. Live mode animates the user scale sinusoidally by default; disable animation or move the GUI scale slider to inspect a fixed value and compare marker diameters, stroke widths, text, and axis styling while data coordinates stay fixed. User scale is useful for HiDPI displays, screenshots, and accessibility-sized scientific figures. The GUI is attached only for `--live`/`--live-record` and starts docked on the left.
 
 ## Source
 
