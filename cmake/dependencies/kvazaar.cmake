@@ -87,9 +87,44 @@ if(DVZ_ENABLE_KVAZAAR AND NOT DVZ_KVAZAAR_SOURCE STREQUAL "OFF")
                         add_library(kvazaar::kvazaar ALIAS kvazaar)
                     endif()
                     set_target_properties(kvazaar PROPERTIES POSITION_INDEPENDENT_CODE ON)
-                    if(WIN32)
+                    if(MSVC AND TARGET PThreads4W::PThreads4W)
+                        # Datoviz already selected the pthread implementation for MSVC. Reuse that
+                        # target for Kvazaar so its vendored pthread shim cannot shadow PThreads4W.
+                        set(
+                            _dvz_kvz_threadwrapper_include
+                            "${_dvz_kvz_dir}/src/threadwrapper/include")
+                        foreach(
+                            _dvz_kvz_include_prop
+                            IN ITEMS INCLUDE_DIRECTORIES INTERFACE_INCLUDE_DIRECTORIES)
+                            get_target_property(
+                                _dvz_kvz_include_dirs kvazaar ${_dvz_kvz_include_prop})
+                            if(_dvz_kvz_include_dirs)
+                                list(
+                                    REMOVE_ITEM _dvz_kvz_include_dirs
+                                    "${_dvz_kvz_threadwrapper_include}")
+                                set_property(
+                                    TARGET kvazaar PROPERTY ${_dvz_kvz_include_prop}
+                                    "${_dvz_kvz_include_dirs}")
+                            endif()
+                        endforeach()
+
+                        set_source_files_properties(
+                            "${_dvz_kvz_dir}/src/threadwrapper/src/pthread.cpp"
+                            "${_dvz_kvz_dir}/src/threadwrapper/src/semaphore.cpp"
+                            DIRECTORY "${_dvz_kvz_dir}"
+                            PROPERTIES HEADER_FILE_ONLY ON)
+                        target_link_libraries(kvazaar PUBLIC PThreads4W::PThreads4W)
+
+                        unset(_dvz_kvz_include_dirs)
+                        unset(_dvz_kvz_include_prop)
+                        unset(_dvz_kvz_threadwrapper_include)
+                    endif()
+
+                    get_target_property(_dvz_kvazaar_type kvazaar TYPE)
+                    if(_dvz_kvazaar_type STREQUAL "STATIC_LIBRARY")
                         target_compile_definitions(kvazaar INTERFACE KVZ_STATIC_LIB)
                     endif()
+                    unset(_dvz_kvazaar_type)
                     set(DVZ_KVAZAAR_TARGET kvazaar::kvazaar)
                     set(DVZ_HAS_KVZ 1)
                     set(DVZ_KVAZAAR_SOURCE_RESOLVED "VENDORED")
