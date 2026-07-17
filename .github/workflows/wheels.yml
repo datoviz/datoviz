@@ -142,11 +142,13 @@ jobs:
         include:
           - runner: windows-latest
             arch: AMD64
+            cmake_processor: AMD64
             msvc_arch: x64
             platform_tag: win_amd64
             vcpkg_triplet: x64-windows
           - runner: windows-11-arm
             arch: ARM64
+            cmake_processor: ARM64
             msvc_arch: arm64
             platform_tag: win_arm64
             vcpkg_triplet: arm64-windows
@@ -164,8 +166,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - name: Cache vcpkg binary archives
-        uses: actions/cache@v4
+      - name: Restore vcpkg binary archives
+        id: vcpkg-binary-cache
+        uses: actions/cache/restore@v4
         with:
           path: C:/vcpkg-binary-cache
           key: ${{ matrix.runner }}-${{ matrix.vcpkg_triplet }}-wheel-vcpkg-binary-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
@@ -173,15 +176,14 @@ jobs:
             ${{ matrix.runner }}-${{ matrix.vcpkg_triplet }}-wheel-vcpkg-binary-
             ${{ runner.os }}-${{ matrix.vcpkg_triplet }}-wheel-vcpkg-binary-
             ${{ runner.os }}-wheel-vcpkg-binary-
-      - name: Cache vcpkg
-        uses: actions/cache@v4
+      - name: Restore vcpkg installed tree
+        id: vcpkg-installed-cache
+        uses: actions/cache/restore@v4
         with:
-          path: |
-            C:/vcpkg
-            build/vcpkg_installed
-          key: ${{ runner.os }}-wheel-vcpkg-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+          path: build/vcpkg_installed
+          key: ${{ matrix.runner }}-${{ matrix.vcpkg_triplet }}-wheel-vcpkg-installed-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
           restore-keys: |
-            ${{ runner.os }}-wheel-vcpkg-
+            ${{ matrix.runner }}-${{ matrix.vcpkg_triplet }}-wheel-vcpkg-installed-
       - name: Bootstrap vcpkg
         shell: pwsh
         run: |
@@ -215,20 +217,38 @@ jobs:
             --triplet ${{ matrix.vcpkg_triplet }} `
             --x-install-root="$PWD/build/vcpkg_installed"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: Resolve glslangValidator
+      - name: Save vcpkg binary archives
+        if: steps.vcpkg-binary-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: C:/vcpkg-binary-cache
+          key: ${{ matrix.runner }}-${{ matrix.vcpkg_triplet }}-wheel-vcpkg-binary-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+      - name: Save vcpkg installed tree
+        if: steps.vcpkg-installed-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: build/vcpkg_installed
+          key: ${{ matrix.runner }}-${{ matrix.vcpkg_triplet }}-wheel-vcpkg-installed-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+      - name: Resolve shader tools
         shell: pwsh
         run: |
           $validator = Get-ChildItem -Path "build/vcpkg_installed" -Recurse -Filter "glslangValidator.exe" -File |
             Select-Object -First 1
-          if (!$validator) {
+          $glslc = Get-ChildItem -Path "build/vcpkg_installed" -Recurse -Filter "glslc.exe" -File |
+            Select-Object -First 1
+          if (!$validator -or !$glslc) {
             Get-ChildItem -Path "build/vcpkg_installed" -Recurse -Depth 4 |
               Select-Object FullName
-            Write-Error "glslangValidator.exe not found under build/vcpkg_installed"
+            Write-Error "glslangValidator.exe or glslc.exe not found under build/vcpkg_installed"
           }
           $validatorPath = $validator.FullName.Replace('\', '/')
+          $glslcPath = $glslc.FullName.Replace('\', '/')
           "DVZ_GLSLANG_VALIDATOR=$validatorPath" |
             Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "DVZ_GLSLC=$glslcPath" |
+            Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           & $validator.FullName --version
+          & $glslc.FullName --version
       - name: Build native artifacts
         shell: pwsh
         run: |
@@ -241,11 +261,15 @@ jobs:
             "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
             "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake",
+            "-DCMAKE_SYSTEM_NAME=Windows",
+            "-DCMAKE_SYSTEM_PROCESSOR=${{ matrix.cmake_processor }}",
             "-DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }}",
+            "-DVCPKG_INSTALLED_DIR=$PWD/build/vcpkg_installed",
             "-DDVZ_ENABLE_SHADERC=ON",
             "-DDVZ_BUILD_TESTING=OFF",
             "-DDVZ_BUILD_EXAMPLES=OFF",
-            "-DDVZ_CANVAS_SHADER_GLSLANG_VALIDATOR=$env:DVZ_GLSLANG_VALIDATOR"
+            "-DDVZ_CANVAS_SHADER_GLSLANG_VALIDATOR=$env:DVZ_GLSLANG_VALIDATOR",
+            "-DGLSLC=$env:DVZ_GLSLC"
           )
           cmake @cmakeArgs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -257,16 +281,17 @@ jobs:
           import sys
 
           expected = "${{ matrix.arch }}"
-          dlls = list(pathlib.Path("build").rglob("*datoviz*.dll"))
+          dlls = list(pathlib.Path("build").rglob("*.dll"))
           if not dlls:
-              raise SystemExit("no Datoviz DLL found in build/")
-          data = dlls[0].read_bytes()
-          pe_offset = struct.unpack_from("<I", data, 0x3C)[0]
-          machine = struct.unpack_from("<H", data, pe_offset + 4)[0]
-          actual = {0x8664: "AMD64", 0xAA64: "ARM64"}.get(machine, hex(machine))
-          print(f"{dlls[0]} machine={actual}")
-          if actual != expected:
-              raise SystemExit(f"expected {expected}, got {actual}")
+              raise SystemExit("no DLL found in build/")
+          for dll in dlls:
+              data = dll.read_bytes()
+              pe_offset = struct.unpack_from("<I", data, 0x3C)[0]
+              machine = struct.unpack_from("<H", data, pe_offset + 4)[0]
+              actual = {0x8664: "AMD64", 0xAA64: "ARM64"}.get(machine, hex(machine))
+              print(f"{dll} machine={actual}")
+              if actual != expected:
+                  raise SystemExit(f"{dll}: expected {expected}, got {actual}")
           '@ | python -
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Build wheels
