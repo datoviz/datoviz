@@ -9,7 +9,7 @@
 </div>
 </nav>
 
-This example places semantic text items in panel coordinates.
+This example places semantic text items in data coordinates.
 
 ## Preview
 
@@ -41,7 +41,7 @@ object lifetimes and data shapes intact while adapting the data and styling.
 
 ## What To Look For
 
-Each text item provides a string, x/y screen position, font size, angle, and color role, then the text system lowers it to atlas glyphs. Compare the headline, smaller annotations, and rotated label to see how titles, units, and short scientific notes can be added without managing glyph quads manually.
+Each text item provides a string, x/y data position, font size, angle, and color role, then the text system lowers it to atlas glyphs. Compare the headline, smaller annotations, and rotated label to see how titles, units, and short scientific notes can be added without managing glyph quads manually.
 
 ## Source
 
@@ -70,12 +70,12 @@ Each text item provides a string, x/y screen position, font size, angle, and col
     - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_text"><code>examples/webgpu/live.html?id=visuals_text</code></a>
-    - Browser capability tags: `text`, `glyph-atlas`
+    - Browser capability tags: `text`, `glyph-atlas`, `panzoom`
     - Validation: `smoke+screenshot`
 
     **Tags**
 
-    `text`, `capture`
+    `text`, `panzoom`, `capture`
 
     **Data**
 

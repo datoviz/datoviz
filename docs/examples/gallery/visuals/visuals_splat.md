@@ -58,7 +58,7 @@ Positions place each splat, colors set the tint, sigma gives the two screen-spac
     - Reference: [Splat visual family](../../../reference/visual-families/splat.md)
     - Browser support: Deferred
     - Browser note: splat rendering is experimental and outside the RC browser subset
-    - Browser capability tags: `splat`, `alpha-blending`
+    - Browser capability tags: `splat`, `alpha-blending`, `panzoom`
     - Validation: `smoke+screenshot`
 
     **Tags**

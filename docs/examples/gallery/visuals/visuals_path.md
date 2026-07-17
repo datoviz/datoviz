@@ -75,7 +75,7 @@ Positions hold the sampled curves, colors and widths vary per sample, and the su
 
     **Tags**
 
-    `path`, `capture`
+    `path`, `panzoom`, `capture`
 
     **Data**
 

@@ -63,12 +63,12 @@ Each visible character in "Datoviz Atlas cafe" is built from explicit positions,
     - Reference: [Font Atlas Glyphs visual family](../../../reference/visual-families/glyph.md)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_glyph"><code>examples/webgpu/live.html?id=visuals_glyph</code></a>
-    - Browser capability tags: `glyph`, `glyph-atlas`, `sdf`
+    - Browser capability tags: `glyph`, `glyph-atlas`, `sdf`, `panzoom`
     - Validation: `smoke+screenshot`
 
     **Tags**
 
-    `glyph`, `font-atlas`, `texture-atlas`, `sdf`, `capture`
+    `glyph`, `font-atlas`, `texture-atlas`, `sdf`, `panzoom`, `capture`
 
     **Data**
 

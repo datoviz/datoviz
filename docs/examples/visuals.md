@@ -80,7 +80,7 @@ This example draws independent line segments with different cap styles.
 
 [![Path](../assets/gallery/v0.4/visuals/visuals_path.webp)](gallery/visuals/visuals_path.md)
 
-`visuals`<br><span>`path`, `capture`</span>
+`visuals`<br><span>`path`, `panzoom`, `capture`</span>
 
 This example draws several continuous signals with one path visual.
 
@@ -104,7 +104,7 @@ This example compares straight vector arrows with curved vector paths.
 
 [![Primitive](../assets/gallery/v0.4/visuals/visuals_primitive.webp)](gallery/visuals/visuals_primitive.md)
 
-`visuals`<br><span>`primitive`, `capture`</span>
+`visuals`<br><span>`primitive`, `panzoom`, `capture`</span>
 
 This example compares basic primitive topologies.
 
@@ -122,7 +122,7 @@ This example compares basic primitive topologies.
 
 [![Image](../assets/gallery/v0.4/visuals/visuals_image.webp)](gallery/visuals/visuals_image.md)
 
-`visuals`<br><span>`image`, `sampled-field`, `capture`</span>
+`visuals`<br><span>`image`, `sampled-field`, `panzoom`, `capture`</span>
 
 This example displays a generated scalar field as a 2D image.
 
@@ -134,7 +134,7 @@ This example displays a generated scalar field as a 2D image.
 
 [![RGBA Image](../assets/gallery/v0.4/visuals/visuals_image_rgba.webp)](gallery/visuals/visuals_image_rgba.md)
 
-`visuals`<br><span>`image`, `sampled-field`, `rgba8`, `alpha-blending`, `capture`</span>
+`visuals`<br><span>`image`, `sampled-field`, `rgba8`, `alpha-blending`, `panzoom`, ...</span>
 
 This example displays a generated RGBA image as a 2D sampled field.
 
@@ -146,9 +146,9 @@ This example displays a generated RGBA image as a 2D sampled field.
 
 [![Text](../assets/gallery/v0.4/visuals/visuals_text.webp)](gallery/visuals/visuals_text.md)
 
-`visuals`<br><span>`text`, `capture`</span>
+`visuals`<br><span>`text`, `panzoom`, `capture`</span>
 
-This example places semantic text items in panel coordinates.
+This example places semantic text items in data coordinates.
 
 </div>
 
@@ -158,7 +158,7 @@ This example places semantic text items in panel coordinates.
 
 [![Font Atlas Glyphs](../assets/gallery/v0.4/visuals/visuals_glyph.webp)](gallery/visuals/visuals_glyph.md)
 
-`experimental` `visuals`<br><span>`glyph`, `font-atlas`, `texture-atlas`, `sdf`, `capture`</span>
+`experimental` `visuals`<br><span>`glyph`, `font-atlas`, `texture-atlas`, `sdf`, `panzoom`, ...</span>
 
 This example renders text by submitting low-level glyph atlas quads directly.
 

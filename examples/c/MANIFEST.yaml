@@ -2491,12 +2491,14 @@ examples:
       route: examples/webgpu/live.html?id=visuals_primitive
       requirements:
         - primitive
+        - panzoom
     agent_copy_safe: true
     gallery:
       card: small
       status_label: supported
     tags:
       - primitive
+      - panzoom
       - capture
 
   - id: visuals_segment
@@ -2582,6 +2584,7 @@ examples:
       status_label: supported
     tags:
       - path
+      - panzoom
       - capture
 
   - id: visuals_image
@@ -2611,6 +2614,7 @@ examples:
     tags:
       - image
       - sampled-field
+      - panzoom
       - capture
 
   - id: visuals_image_rgba
@@ -2633,6 +2637,7 @@ examples:
         - image
         - sampled-field
         - alpha-blending
+        - panzoom
     agent_copy_safe: true
     gallery:
       card: small
@@ -2642,6 +2647,7 @@ examples:
       - sampled-field
       - rgba8
       - alpha-blending
+      - panzoom
       - capture
 
   - id: visuals_mesh
@@ -2721,6 +2727,7 @@ examples:
       requirements:
         - splat
         - alpha-blending
+        - panzoom
       reason: splat rendering is experimental and outside the RC browser subset
     agent_copy_safe: false
     gallery:
@@ -2750,12 +2757,14 @@ examples:
       requirements:
         - text
         - glyph-atlas
+        - panzoom
     agent_copy_safe: true
     gallery:
       card: small
       status_label: supported
     tags:
       - text
+      - panzoom
       - capture
 
   - id: visuals_glyph
@@ -2775,6 +2784,7 @@ examples:
         - glyph
         - glyph-atlas
         - sdf
+        - panzoom
     agent_copy_safe: false
     gallery:
       card: small
@@ -2784,6 +2794,7 @@ examples:
       - font-atlas
       - texture-atlas
       - sdf
+      - panzoom
       - capture
 
   - id: visuals_labels

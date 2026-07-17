@@ -3501,7 +3501,7 @@
         ]
       },
       "panzoom": {
-        "count": 13,
+        "count": 19,
         "examples": [
           {
             "id": "showcases_panel_linked_axes",
@@ -3544,6 +3544,14 @@
             "page": "gallery/visuals/visuals_marker.md"
           },
           {
+            "id": "visuals_primitive",
+            "title": "Primitive",
+            "category": "visual",
+            "status": "supported",
+            "source": "examples/c/visuals/primitive.c",
+            "page": "gallery/visuals/visuals_primitive.md"
+          },
+          {
             "id": "visuals_segment",
             "title": "Segment",
             "category": "visual",
@@ -3560,12 +3568,52 @@
             "page": "gallery/visuals/visuals_vector.md"
           },
           {
+            "id": "visuals_path",
+            "title": "Path",
+            "category": "visual",
+            "status": "supported",
+            "source": "examples/c/visuals/path.c",
+            "page": "gallery/visuals/visuals_path.md"
+          },
+          {
+            "id": "visuals_image",
+            "title": "Image",
+            "category": "visual",
+            "status": "supported",
+            "source": "examples/c/visuals/image.c",
+            "page": "gallery/visuals/visuals_image.md"
+          },
+          {
+            "id": "visuals_image_rgba",
+            "title": "RGBA Image",
+            "category": "visual",
+            "status": "supported",
+            "source": "examples/c/visuals/image_rgba.c",
+            "page": "gallery/visuals/visuals_image_rgba.md"
+          },
+          {
             "id": "visuals_splat",
             "title": "Splat",
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/splat.c",
             "page": "gallery/visuals/visuals_splat.md"
+          },
+          {
+            "id": "visuals_text",
+            "title": "Text",
+            "category": "visual",
+            "status": "supported",
+            "source": "examples/c/visuals/text.c",
+            "page": "gallery/visuals/visuals_text.md"
+          },
+          {
+            "id": "visuals_glyph",
+            "title": "Font Atlas Glyphs",
+            "category": "visual",
+            "status": "experimental",
+            "source": "examples/c/visuals/glyph.c",
+            "page": "gallery/visuals/visuals_glyph.md"
           },
           {
             "id": "visuals_labels",

@@ -4141,6 +4141,7 @@
       "smoke_command": "./build/examples/c/visuals/primitive --png",
       "tags": [
         "primitive",
+        "panzoom",
         "capture"
       ],
       "data": {
@@ -4158,13 +4159,15 @@
       "webgpu_status": "webgpu-live",
       "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
-        "primitive"
+        "primitive",
+        "panzoom"
       ],
       "webgpu": {
         "status": "webgpu-live",
         "route": "examples/webgpu/live.html?id=visuals_primitive",
         "requirements": [
-          "primitive"
+          "primitive",
+          "panzoom"
         ]
       },
       "webgpu_route": "examples/webgpu/live.html?id=visuals_primitive",
@@ -4297,6 +4300,7 @@
       "smoke_command": "./build/examples/c/visuals/path --png",
       "tags": [
         "path",
+        "panzoom",
         "capture"
       ],
       "data": {
@@ -4349,6 +4353,7 @@
       "tags": [
         "image",
         "sampled-field",
+        "panzoom",
         "capture"
       ],
       "data": {
@@ -4405,6 +4410,7 @@
         "sampled-field",
         "rgba8",
         "alpha-blending",
+        "panzoom",
         "capture"
       ],
       "data": {
@@ -4424,7 +4430,8 @@
       "webgpu_requirements": [
         "image",
         "sampled-field",
-        "alpha-blending"
+        "alpha-blending",
+        "panzoom"
       ],
       "webgpu": {
         "status": "webgpu-live",
@@ -4432,7 +4439,8 @@
         "requirements": [
           "image",
           "sampled-field",
-          "alpha-blending"
+          "alpha-blending",
+          "panzoom"
         ]
       },
       "webgpu_route": "examples/webgpu/live.html?id=visuals_image_rgba",
@@ -4591,14 +4599,16 @@
       "webgpu_status_label": "Deferred",
       "webgpu_requirements": [
         "splat",
-        "alpha-blending"
+        "alpha-blending",
+        "panzoom"
       ],
       "webgpu_reason": "splat rendering is experimental and outside the RC browser subset",
       "webgpu": {
         "status": "webgpu-deferred",
         "requirements": [
           "splat",
-          "alpha-blending"
+          "alpha-blending",
+          "panzoom"
         ],
         "reason": "splat rendering is experimental and outside the RC browser subset"
       },
@@ -4614,12 +4624,13 @@
       "source": "examples/c/visuals/text.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/text.c",
       "page": "gallery/visuals/visuals_text.md",
-      "summary": "This example places semantic text items in panel coordinates.",
+      "summary": "This example places semantic text items in data coordinates.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/text",
       "smoke_command": "./build/examples/c/visuals/text --png",
       "tags": [
         "text",
+        "panzoom",
         "capture"
       ],
       "data": {
@@ -4638,14 +4649,16 @@
       "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "text",
-        "glyph-atlas"
+        "glyph-atlas",
+        "panzoom"
       ],
       "webgpu": {
         "status": "webgpu-live",
         "route": "examples/webgpu/live.html?id=visuals_text",
         "requirements": [
           "text",
-          "glyph-atlas"
+          "glyph-atlas",
+          "panzoom"
         ]
       },
       "webgpu_route": "examples/webgpu/live.html?id=visuals_text",
@@ -4674,6 +4687,7 @@
         "font-atlas",
         "texture-atlas",
         "sdf",
+        "panzoom",
         "capture"
       ],
       "data": {
@@ -4693,7 +4707,8 @@
       "webgpu_requirements": [
         "glyph",
         "glyph-atlas",
-        "sdf"
+        "sdf",
+        "panzoom"
       ],
       "webgpu": {
         "status": "webgpu-live",
@@ -4701,7 +4716,8 @@
         "requirements": [
           "glyph",
           "glyph-atlas",
-          "sdf"
+          "sdf",
+          "panzoom"
         ]
       },
       "webgpu_route": "examples/webgpu/live.html?id=visuals_glyph",

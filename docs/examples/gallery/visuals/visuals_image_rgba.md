@@ -70,12 +70,12 @@ The FIELD_WIDTH by FIELD_HEIGHT RGBA8 array is attached directly as a color samp
     - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_image_rgba"><code>examples/webgpu/live.html?id=visuals_image_rgba</code></a>
-    - Browser capability tags: `image`, `sampled-field`, `alpha-blending`
+    - Browser capability tags: `image`, `sampled-field`, `alpha-blending`, `panzoom`
     - Validation: `smoke+screenshot`
 
     **Tags**
 
-    `image`, `sampled-field`, `rgba8`, `alpha-blending`, `capture`
+    `image`, `sampled-field`, `rgba8`, `alpha-blending`, `panzoom`, `capture`
 
     **Data**
 

@@ -211,7 +211,7 @@ This example displays a generated RGBA image as a 2D sampled field.
 
 `visuals`
 
-This example places semantic text items in panel coordinates.
+This example places semantic text items in data coordinates.
 
 </div>
 

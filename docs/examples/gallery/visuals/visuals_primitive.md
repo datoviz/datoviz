@@ -70,12 +70,12 @@ Each primitive supplies positions, colors, and group IDs, then chooses a line or
     - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_primitive"><code>examples/webgpu/live.html?id=visuals_primitive</code></a>
-    - Browser capability tags: `primitive`
+    - Browser capability tags: `primitive`, `panzoom`
     - Validation: `smoke+screenshot`
 
     **Tags**
 
-    `primitive`, `capture`
+    `primitive`, `panzoom`, `capture`
 
     **Data**
 

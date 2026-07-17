@@ -75,7 +75,7 @@ The FIELD_WIDTH by FIELD_HEIGHT value array is attached as a sampled field, whil
 
     **Tags**
 
-    `image`, `sampled-field`, `capture`
+    `image`, `sampled-field`, `panzoom`, `capture`
 
     **Data**
 
