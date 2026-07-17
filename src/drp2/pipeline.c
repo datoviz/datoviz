@@ -347,12 +347,22 @@ bool _vklite_compile_glsl(
     }
 
     g_shaderc.compile_options_set_source_language(options, shaderc_source_language_glsl);
-    /* Match build-time glslc output and avoid requiring optional shader demote features. */
-    g_shaderc.compile_options_set_target_env(
-        options, shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_0);
-    g_shaderc.compile_options_set_target_spirv(options, shaderc_spirv_version_1_0);
-
     shaderc_shader_kind kind = _vklite_shader_kind(stage);
+    if (kind == shaderc_glsl_compute_shader)
+    {
+        /* SPIR-V 1.6 removes the deprecated WorkgroupSize built-in emitted for compute shaders. */
+        g_shaderc.compile_options_set_target_env(
+            options, shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
+        g_shaderc.compile_options_set_target_spirv(options, shaderc_spirv_version_1_6);
+    }
+    else
+    {
+        /* SPIR-V 1.6 maps discard to an optional device capability; retain the graphics policy. */
+        g_shaderc.compile_options_set_target_env(
+            options, shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_0);
+        g_shaderc.compile_options_set_target_spirv(options, shaderc_spirv_version_1_0);
+    }
+
     shaderc_compilation_result_t result = g_shaderc.compile_into_spv(
         compiler, code, strlen(code), kind, "drp2_scene_fixture.glsl", "main", options);
 

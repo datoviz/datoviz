@@ -405,10 +405,17 @@ if(GLSLC)
     set(SPIRV_OUTPUTS "")
     foreach(glsl_src ${GLSL_STAGE_SOURCES})
         get_filename_component(shader_name "${glsl_src}" NAME)
+        get_filename_component(shader_ext "${glsl_src}" EXT)
         set(spv_out "${SPIRV_DIR}/${shader_name}.spv")
+        if(shader_ext STREQUAL ".comp")
+            set(glslc_target_args --target-env=vulkan1.3 --target-spv=spv1.6)
+        else()
+            set(glslc_target_args --target-env=vulkan1.0 --target-spv=spv1.0)
+        endif()
         add_custom_command(
             OUTPUT  "${spv_out}"
-            COMMAND "${GLSLC}" -I "${GLSL_SOURCE_DIR}" -o "${spv_out}" "${glsl_src}"
+            COMMAND "${GLSLC}" ${glslc_target_args} -I "${GLSL_SOURCE_DIR}"
+                -o "${spv_out}" "${glsl_src}"
             DEPENDS "${glsl_src}" ${GLSL_INCLUDES}
             COMMENT "Compiling ${shader_name} to SPIR-V"
         )

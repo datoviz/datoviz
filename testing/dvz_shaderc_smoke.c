@@ -29,22 +29,17 @@
 int main(void)
 {
     static const char glsl[] = "#version 450\n"
-                               "vec2 positions[3] = vec2[](\n"
-                               "    vec2(0.0, -0.5),\n"
-                               "    vec2(0.5, 0.5),\n"
-                               "    vec2(-0.5, 0.5));\n"
-                               "void main() {\n"
-                               "    gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);\n"
-                               "}\n";
+                               "layout(local_size_x = 1) in;\n"
+                               "void main() {}\n";
 
     uint64_t size = 0;
-    uint32_t* spv = dvz_compile_glsl("vertex", glsl, &size);
+    uint32_t* spv = dvz_compile_glsl("compute", glsl, &size);
     if (spv == NULL)
     {
         fprintf(stderr, "dvz_compile_glsl returned NULL\n");
         return 1;
     }
-    if (size < 4 || size % sizeof(uint32_t) != 0)
+    if (size < 5 * sizeof(uint32_t) || size % sizeof(uint32_t) != 0)
     {
         fprintf(stderr, "invalid SPIR-V size: %llu\n", (unsigned long long)size);
         dvz_free(spv);
@@ -56,8 +51,35 @@ int main(void)
         dvz_free(spv);
         return 1;
     }
+    if (spv[1] != 0x00010600)
+    {
+        fprintf(stderr, "unexpected SPIR-V version: 0x%08x\n", spv[1]);
+        dvz_free(spv);
+        return 1;
+    }
 
-    printf("source-build shaderc smoke produced %llu bytes\n", (unsigned long long)size);
+    const uint32_t word_count = (uint32_t)(size / sizeof(uint32_t));
+    for (uint32_t i = 5; i < word_count;)
+    {
+        const uint32_t instruction_words = spv[i] >> 16;
+        const uint32_t opcode = spv[i] & 0xffff;
+        if (instruction_words == 0 || instruction_words > word_count - i)
+        {
+            fprintf(stderr, "invalid SPIR-V instruction at word %u\n", i);
+            dvz_free(spv);
+            return 1;
+        }
+        /* OpDecorate <target> BuiltIn WorkgroupSize. */
+        if (opcode == 71 && instruction_words >= 4 && spv[i + 2] == 11 && spv[i + 3] == 25)
+        {
+            fprintf(stderr, "deprecated SPIR-V WorkgroupSize built-in found\n");
+            dvz_free(spv);
+            return 1;
+        }
+        i += instruction_words;
+    }
+
+    printf("source-build shaderc compute smoke produced %llu bytes\n", (unsigned long long)size);
     dvz_free(spv);
     return 0;
 }
