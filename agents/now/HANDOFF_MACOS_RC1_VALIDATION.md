@@ -86,11 +86,11 @@ facts.
 Run bounded native render smokes on both architectures:
 
 ```sh
-direnv exec . ./build/examples/c/start/scatter --frames 10 --png
-direnv exec . ./build/examples/c/features/controller_arcball --frames 10 --png
-direnv exec . ./build/examples/c/features/text_block --frames 10 --png
-direnv exec . ./build/examples/c/features/mesh_texture --frames 10 --png
-direnv exec . ./build/examples/c/features/picking --frames 10 --png
+direnv exec . ./build/examples/c/start/scatter --png 10
+direnv exec . ./build/examples/c/features/controller_arcball --png 10
+direnv exec . ./build/examples/c/features/text_block --png 10
+direnv exec . ./build/examples/c/features/mesh_texture --png 10
+direnv exec . ./build/examples/c/features/picking --png 10
 ```
 
 If an example reports missing prepared data, follow its exact preparation instruction only when it
@@ -129,10 +129,11 @@ DVZ_PYTHON_RUN_DEBUG=1 PYTHONPATH=. ipython
 Create the documented retained point scene, then verify all of the following:
 
 1. `datoviz.run(scene, figure)` returns a `RunSession` and leaves the prompt responsive.
-2. Prompt-side data mutation plus `session.request_frame()` updates the live window.
-3. Closing the native window returns cleanly without a spinner or hung process.
-4. Reopening the same retained scene creates a responsive new window.
-5. `session.close()` is idempotent and final scene destruction exits cleanly.
+2. The retained pan/zoom controller responds to mouse pan and wheel zoom.
+3. Prompt-side data mutation plus `session.request_frame()` updates the live window.
+4. Closing the native window returns cleanly without a spinner or hung process.
+5. Reopening the same retained scene creates a responsive window whose pan/zoom still works.
+6. `session.close()` is idempotent and final scene destruction exits cleanly.
 
 Keep the `DVZ_PYTHON_RUN_DEBUG` trace. If it hangs, record the last lifecycle line and use
 [`HANDOFF_IPYTHON_RUN_CLOSE_HANG.md`](HANDOFF_IPYTHON_RUN_CLOSE_HANG.md) as the resolved-path

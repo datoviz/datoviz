@@ -4073,6 +4073,8 @@ void dvz_app_destroy(DvzApp* app)
     }
     if (app->scene != NULL)
         _scene_request_executor_destroy(&app->scene->query_executor);
+    if (app->owns_runtime && app->scene != NULL && !_scene_runtime_emitter_reset(app->scene))
+        log_error("dvz_app_destroy() failed to reset the scene runtime emitter");
     _app_destroy_resources(app);
 #endif
 

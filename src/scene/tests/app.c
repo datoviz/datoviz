@@ -1966,6 +1966,68 @@ int test_app_offscreen_shared_scene_request_frame_subscribers(
 }
 
 
+
+/**
+ * Ensure a retained scene renders on the first frame after replacing its app/runtime boundary.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_reopen_same_scene_first_frame(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel =
+        dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+    AT(panel != NULL);
+    dvz_panel_set_background_color(panel, (DvzColor){32, 160, 224, 255});
+
+    uint64_t sums[2] = {0};
+    for (uint32_t pass = 0; pass < 2; pass++)
+    {
+        DvzApp* app = dvz_app(scene);
+        if (app == NULL)
+        {
+            log_warn(
+                "test_app_offscreen_reopen_same_scene_first_frame skipped: app creation failed");
+            tst_skip(suite, "app creation failed");
+            dvz_scene_destroy(scene);
+            return 0;
+        }
+        DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
+        AT(win != NULL);
+        DvzCanvas* canvas = dvz_view_canvas(win);
+        AT(canvas != NULL);
+
+        AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+        uint32_t width = 0, height = 0;
+        uint8_t* rgba = NULL;
+        AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+        ANN(rgba);
+        AT(width == 64 && height == 64);
+        sums[pass] = _app_rgb_sum(rgba, width * height);
+        dvz_free(rgba);
+        dvz_app_destroy(app);
+    }
+
+    AT(sums[0] > 0);
+    AT(sums[1] == sums[0]);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_app_offscreen_timer_advances_in_app_run(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -8615,6 +8677,9 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_frame_callback_enables_continuous_scheduler);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_query_requests_notify_hosted_callback);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_shared_scene_request_frame_subscribers);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_reopen_same_scene_first_frame, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_SERIAL);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_timer_advances_in_app_run);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_timer_advances_in_render_once);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_render_enabled_gate);

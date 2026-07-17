@@ -49,6 +49,11 @@ diameters = np.full(n, 5.0, dtype=np.float32)
 scene = dvz.dvz_scene()
 figure = dvz.dvz_figure(scene, 800, 600, 0)
 panel = dvz.dvz_panel_full(figure)
+controller = dvz.dvz_panzoom(scene, None)
+if not controller:
+    raise RuntimeError("dvz_panzoom() failed")
+if dvz.dvz_panel_bind_controller(panel, controller, dvz.DVZ_DIM_MASK_XY) != 0:
+    raise RuntimeError("dvz_panel_bind_controller() failed")
 points = dvz.dvz_point(scene, 0)
 
 dvz.dvz_visual_set_data_many(
@@ -68,6 +73,9 @@ session
 In a regular Python script, `dvz.run(scene, figure)` blocks until the window closes. In terminal
 IPython, it returns a `RunSession` and the prompt stays usable while the native window remains
 responsive.
+
+The retained pan/zoom controller is bound before the view is created, so the live window supports
+mouse pan and wheel zoom as well as prompt-side data updates.
 
 ## Update data at the prompt
 
@@ -117,6 +125,8 @@ the retained scene, figure, panel, or visual objects. You can reopen the same sc
 ```python
 session = dvz.run(scene, figure, title="IPython live update")
 ```
+
+The reopened view reconnects the retained panel controller, so pan/zoom should work immediately.
 
 When you are finished with the retained scene state:
 
