@@ -17,6 +17,8 @@ and the bounded-frame option used by automated checks.
 The gallery scenario at `examples/c/start/scatter.c` produces the corresponding release screenshot
 through the repository's example runner; it is not the standalone teaching fixture shown here.
 
+![The 10,000-point scene produced by the first C program](../assets/gallery/v0.4/start/start_scatter.webp)
+
 
 ## Run the complete program
 

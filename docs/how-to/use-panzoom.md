@@ -5,6 +5,8 @@ Enable 2D mouse pan and wheel zoom on a panel.
 Use panzoom for 2D data views where pointer drag and wheel input should change the visible X/Y
 range. Use custom input callbacks only for application behavior that is not ordinary navigation.
 
+![A 2D point scene navigated with pan and zoom](../assets/gallery/v0.4/features/features_panzoom.poster.webp)
+
 !!! info "At a glance"
 
     - **Status:** Supported native 2D controller; promoted examples also run in WebGPU.

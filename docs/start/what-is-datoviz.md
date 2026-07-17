@@ -7,6 +7,8 @@ control than a plotting function provides.
 Examples include point clouds, images, meshes, volumes, text labels, several linked panels, and
 screenshots made without opening a window.
 
+![A large outdoor point cloud rendered as an interactive 3D scene](../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp)
+
 The main idea is simple:
 
 1. create a scene, figure, and panel;

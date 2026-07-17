@@ -7,6 +7,8 @@ legend, and any probe formatting that explains that visual.
 This page is the exact data contract. For a task-oriented walkthrough, see
 [Map scalar values with colormaps](../how-to/use-colormaps.md).
 
+![A scalar field encoded with a continuous colormap and matching colorbar](../assets/gallery/v0.4/features/features_colorbar.webp)
+
 ## Choose The Encoding
 
 | Input | Scale | Color source | Adornment |

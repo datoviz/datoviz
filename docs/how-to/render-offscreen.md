@@ -17,6 +17,8 @@ Use this path for exact-size native rendering, automated checks, documentation i
 renders where a visible window would be fragile or unnecessary. To save the rendered frame as a PNG,
 see [Save screenshots](screenshots.md).
 
+![Four colored points rendered to an offscreen framebuffer](../assets/gallery/v0.4/runtime/runtime_offscreen_capture.webp)
+
 ## Core offscreen fragment
 
 This fragment assumes the scene, figure, panel, and visuals already exist. It shows the offscreen

@@ -12,6 +12,8 @@ For the exact enums and conversion rules, use the
 [coordinate-system reference](../reference/coordinate-systems.md). For a recipe, use
 [Use coordinate systems](../how-to/coordinate-systems.md).
 
+![3D coordinate system with red X, green Y, and blue Z axes](../assets/gallery/v0.4/features/features_coordinate_system.webp)
+
 
 ## The transform chain
 

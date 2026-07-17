@@ -18,6 +18,8 @@ data coordinate.
 Use picking when the target is a rendered item, instance, or primitive. Use probing when the target
 is a sampled field value at a data coordinate.
 
+![Marker items with the item under the pointer identified by picking](../assets/gallery/v0.4/features/features_picking.webp)
+
 ## Minimal workflow
 
 1. Enable query support on the visual with `dvz_visual_set_query_capabilities()`.
