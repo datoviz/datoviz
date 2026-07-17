@@ -44,9 +44,13 @@ target_include_directories(datoviz_gui
     ${PROJECT_SOURCE_DIR}/src/common
     ${PROJECT_SOURCE_DIR}/src/gui
     ${PROJECT_SOURCE_DIR}/external
+    ${PROJECT_SOURCE_DIR}/external/volk
+)
+
+target_include_directories(datoviz_gui
+    SYSTEM PRIVATE
     ${PROJECT_SOURCE_DIR}/external/cimgui/imgui
     ${PROJECT_SOURCE_DIR}/external/cimgui/imgui/backends
-    ${PROJECT_SOURCE_DIR}/external/volk
 )
 
 target_link_libraries(datoviz_gui
