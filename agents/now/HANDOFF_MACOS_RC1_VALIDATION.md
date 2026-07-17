@@ -19,6 +19,9 @@ checks or a decision that changes source code or external state.
 5. Do not push, dispatch workflows, upload evidence, or publish anything without explicit approval
    in the Mac session.
 6. Keep all generated evidence under `build/release/0.4.0rc1/`.
+7. Do not install Emscripten or require the strict MkDocs/WebGPU site build in this Mac lane. The
+   designated Linux documentation host supplies that proof at the exact release commit. Run only
+   lightweight documentation checks here when they are relevant to the source changes.
 
 
 ## Current Release Position

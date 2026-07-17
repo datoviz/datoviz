@@ -67,6 +67,13 @@ Each release candidate should record which of these ran and what remains exclude
     swapchains, or synchronization;
 11. source archive and wheel build/install smokes on supported platforms.
 
+The strict documentation-site build, including WebGPU/WASM assets, is required once at the exact
+release commit on the designated documentation host. It is not required on every physical or wheel
+validation machine. Other source-validation hosts should still run the lightweight documentation
+checks relevant to their checkout: API documentation, doctests, generated-document drift, public
+status facts, and example manifests. Release evidence must record the host and exact commit used for
+the strict site build.
+
 
 ## Release-Blocking Checklists
 

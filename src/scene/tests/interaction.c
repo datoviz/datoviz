@@ -3830,7 +3830,7 @@ int test_scene_text_batched_collection_items(TstContext* suite, const TstCase* i
     AT(dvz_text_set_items(text, items, 3) == 0);
     AT(text->item_count == 3);
     const double bad_positions[2][3] = {{1.0, 2.0, 0.0}, {3.0, 4.0, 0.0}};
-    AT(dvz_text_set_positions(text, bad_positions, 2) != 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_text_set_positions(text, bad_positions, 2) != 0);
     AC((float)text->positions[0][0], 24.0f, 1e-6f);
 
     _scene_prepare_text_visuals(figure);

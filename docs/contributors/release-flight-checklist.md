@@ -48,7 +48,12 @@ top to bottom and record skipped items as known exclusions.
 
 ## 4. Examples, Docs, And Gallery
 
-- [ ] Build the documentation site.
+- [ ] Build the documentation site once on the designated documentation host at the exact release
+      commit, including WebGPU/WASM assets; do not require this build on every physical validation
+      machine.
+- [ ] Record the documentation-build host and commit in release evidence.
+- [ ] On other source-validation hosts, run the applicable lightweight documentation checks: API
+      docs, doctests, generated-document drift, public status facts, and example manifests.
 - [ ] Confirm `release-docs-validate` passed or record the accepted docs validation exclusion.
 - [ ] Run docs link checks if available.
 - [ ] Verify feature/status and known-issues pages.
