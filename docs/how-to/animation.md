@@ -118,11 +118,18 @@ Use tracks when the motion is a reusable path rather than arbitrary per-frame da
 can drive visual-local transforms or camera state.
 
 <figure class="dvz-output-example">
-  <a href="../../examples/gallery/features/features_animation_tracks/">
-    <img src="../../assets/gallery/v0.4/features/features_animation_tracks.poster.webp"
+  <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+    <img class="dvz-gallery-poster"
+         src="../../assets/gallery/v0.4/features/features_animation_tracks.poster.webp"
          alt="A colored cube above a grid in the visual and camera track example"
          loading="lazy">
-  </a>
+    <video class="dvz-gallery-video" muted loop playsinline preload="none"
+           poster="../../assets/gallery/v0.4/features/features_animation_tracks.poster.webp"
+           aria-label="Track-based visual and camera motion preview">
+      <source data-src="../../assets/gallery/v0.4/features/features_animation_tracks.mp4"
+              type="video/mp4">
+    </video>
+  </div>
   <figcaption>
     <strong>Track-based motion.</strong> One track rotates the cube while another moves the camera;
     the gallery page includes the moving preview and live WebGPU route.
