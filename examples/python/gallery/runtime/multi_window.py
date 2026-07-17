@@ -12,12 +12,13 @@ import datoviz as dvz
 from examples.python.gallery import common as ex
 
 
-WIDTH = 720
-HEIGHT = 520
+WIDTH = ex.WIDTH
+HEIGHT = ex.HEIGHT
 POINT_COUNT = 8
 FIRST_WINDOW_X = 64
 FIRST_WINDOW_Y = 96
-WINDOW_GAP_X = 32
+SECOND_WINDOW_OFFSET_X = 96
+SECOND_WINDOW_OFFSET_Y = 64
 
 
 def _add_points(scene, panel, positions, colors, diameters) -> None:
@@ -138,8 +139,8 @@ def main() -> None:
             app,
             detail,
             b"multi_window detail",
-            FIRST_WINDOW_X + WIDTH + WINDOW_GAP_X,
-            FIRST_WINDOW_Y,
+            FIRST_WINDOW_X + SECOND_WINDOW_OFFSET_X,
+            FIRST_WINDOW_Y + SECOND_WINDOW_OFFSET_Y,
         )
         _configure_view(overview_view, scene, overview_panel)
         _configure_view(detail_view, scene, detail_panel)

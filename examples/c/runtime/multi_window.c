@@ -7,9 +7,9 @@
 /* multi_window - This example drives two independent native GLFW windows from one Datoviz app.
  *
  * What to look for: the overview and detail figures each get their own point-position,
- * point-color, and point-diameter arrays, then the same app presents them in two positioned
- * windows. Compare the two live windows rather than one screenshot: they prove that separate
- * figures and views can share a process while keeping their own scene content.
+ * point-color, and point-diameter arrays, then the same app presents them in two standard-size,
+ * cascaded windows. Compare the two live windows rather than one screenshot: they prove that
+ * separate figures and views can share a process while keeping their own scene content.
  *
  * This workflow is useful for scientific tools that need a coarse overview beside a focused
  * detail view without starting a second renderer.
@@ -42,12 +42,13 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  720u
-#define HEIGHT 520u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define POINT_COUNT 8u
-#define FIRST_WINDOW_X  64
-#define FIRST_WINDOW_Y  96
-#define WINDOW_GAP_X    32
+#define FIRST_WINDOW_X         64
+#define FIRST_WINDOW_Y         96
+#define SECOND_WINDOW_OFFSET_X 96
+#define SECOND_WINDOW_OFFSET_Y 64
 
 
 
@@ -183,8 +184,8 @@ int main(int argc, char** argv)
     DvzView* overview_view =
         _positioned_view(app, overview, "multi_window overview", FIRST_WINDOW_X, FIRST_WINDOW_Y);
     DvzView* detail_view = _positioned_view(
-        app, detail, "multi_window detail", FIRST_WINDOW_X + (int32_t)WIDTH + WINDOW_GAP_X,
-        FIRST_WINDOW_Y);
+        app, detail, "multi_window detail", FIRST_WINDOW_X + SECOND_WINDOW_OFFSET_X,
+        FIRST_WINDOW_Y + SECOND_WINDOW_OFFSET_Y);
     EXAMPLE_CHECK(
         overview_view != NULL && detail_view != NULL,
         "dvz_view_window() failed (GLFW unavailable?)");
