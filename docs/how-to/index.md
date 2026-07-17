@@ -1,96 +1,58 @@
-# How-To guides
+# How-to guides
 
-<div class="dvz-section-intro" markdown="1">
+Choose the task you want to complete. New to Datoviz? Start with the
+[Quickstart](../start/quickstart.md).
 
-Use these guides when you have a specific Datoviz task to complete. If this is your first scene,
-follow the short path below before moving to layout, interaction, or rendering options.
+## Create and update a visualization
 
-</div>
+- [Create a scene](create-a-scene.md)
+- [Open an interactive window](create-a-window.md)
+- [Choose a visual family](choose-a-visual-family.md)
+- [Add visuals to a panel](add-a-visual.md)
+- [Update visual data](update-visual-data.md)
+- [Animate a scene](animation.md)
+- [Use coordinate systems](coordinate-systems.md)
+- [Transform visual data](transforms-and-scales.md)
+- [Map scalar values with colormaps](use-colormaps.md)
+- [Use sampled fields and textures](use-sampled-fields.md)
 
-<div class="dvz-context-strip">
-  <span>Task-oriented</span>
-  <span>Python and C</span>
-  <span>Verified v0.4 calls</span>
-  <span>Runnable source linked</span>
-</div>
+## Layout and appearance
 
-<div class="dvz-section-grid">
-  <a class="dvz-section-card" href="create-a-scene/">
-    <strong>Build a visualization</strong>
-    <span>Create the scene, choose a visual, attach it, and present or capture the result.</span>
-  </a>
-  <a class="dvz-section-card" href="update-visual-data/">
-    <strong>Work with scientific data</strong>
-    <span>Upload typed arrays, sampled fields, scales, colors, and incremental updates.</span>
-  </a>
-  <a class="dvz-section-card" href="use-panzoom/">
-    <strong>Add interaction</strong>
-    <span>Navigate, handle input, pick rendered items, probe fields, and retain selections.</span>
-  </a>
-  <a class="dvz-section-card" href="render-offscreen/">
-    <strong>Produce output</strong>
-    <span>Open windows, render offscreen, capture screenshots, export video, or deploy a browser subset.</span>
-  </a>
-</div>
+- [Create multiple panels](multiple-panels.md)
+- [Link panels and controllers](link-panels.md)
+- [Add axes](axes.md)
+- [Add colorbars, scale bars, and legends](adornments.md)
+- [Add text, labels, and annotations](add-annotations.md)
+- [Configure cameras](configure-cameras.md)
+- [Use lighting and materials](lighting-and-materials.md)
+- [Control depth, blending, and transparency](depth-blending.md)
 
-## Recommended first path
+## Interaction
 
-1. [Create a scene](create-a-scene.md) with a figure and panel.
-2. [Add visuals to the panel](add-a-visual.md) and upload their data.
-3. [Open an interactive window](create-a-window.md), or
-   [render offscreen](render-offscreen.md) for an exact-size image.
-4. [Update visual data](update-visual-data.md) without rebuilding the scene.
+- [Use panzoom](use-panzoom.md)
+- [Use 3D controllers](3d-navigation.md)
+- [Handle input events](input-events.md)
+- [Pick items](pick-items.md)
+- [Probe image or field values](probe-fields.md)
+- [Select and highlight data](select-items.md)
 
-For a complete first program, start with the [Quickstart](../start/quickstart.md). In Python, use
-`import datoviz as dvz` for the normal NumPy-adapted call form. Use
-[the exact binding call form](use-raw-ctypes.md) only when you need explicit pointers, counts, or
-other C-shaped arguments.
+## Output
 
-## Choose a guide by outcome
+- [Choose window size](window-size.md)
+- [Render offscreen](render-offscreen.md)
+- [Save screenshots](screenshots.md)
+- [Export videos](video-export.md)
+- [Record and replay frame streams](record-replay.md)
+- [Profile rendering performance](profile-performance.md)
 
-| I want to... | Start here |
-| --- | --- |
-| choose how to represent my data | [Choose a visual family](choose-a-visual-family.md) |
-| place data in the right coordinate space | [Use coordinate systems](coordinate-systems.md) |
-| change positions, colors, sizes, or field values | [Update visual data](update-visual-data.md) |
-| map scalar data to colors | [Map scalar values with colormaps](use-colormaps.md) |
-| display images, label fields, volumes, or textures | [Use sampled fields and textures](use-sampled-fields.md) |
-| arrange several views | [Create multiple panels](multiple-panels.md) |
-| add axes, colorbars, legends, or labels | [Add axes](axes.md), [add adornments](adornments.md), or [add annotations](add-annotations.md) |
-| navigate 2D or 3D data | [Use panzoom](use-panzoom.md) or [use 3D controllers](3d-navigation.md) |
-| animate a scene | [Animate a scene](animation.md) |
-| save an image or video | [Save screenshots](screenshots.md) or [export videos](video-export.md) |
-| use Datoviz from another environment | [Python](use-python.md), [C/C++](c-integration.md), [Qt](embed-in-qt.md), or [the browser](deploy-to-web.md) |
-| diagnose a problem | [Debug rendering](debug-rendering.md), [diagnose WebGPU](debug-webgpu.md), or [diagnose platform issues](diagnose-platform.md) |
+## Integration and troubleshooting
 
-## Build interaction step by step
-
-Use the smallest interaction layer that satisfies the task:
-
-```text
-input event -> rendered query -> application action
-                    |                  |
-                    +-> pick item -----+-> select or highlight it
-                    +-> probe field ---+-> show or store its value
-```
-
-1. Start with a built-in [2D](use-panzoom.md) or [3D](3d-navigation.md) controller for ordinary
-   navigation.
-2. Add [input event handling](input-events.md) only for custom shortcuts or interaction modes.
-3. [Pick items](pick-items.md) when you need the rendered item under the pointer, or
-   [probe a field](probe-fields.md) when you need a sampled image, label, or volume value.
-4. [Select and highlight data](select-items.md) after a successful query, while keeping semantic
-   selection state in the application.
-
-## Rendering and output
-
-- [Configure cameras](configure-cameras.md) and
-  [use lighting and materials](lighting-and-materials.md) for 3D scenes.
-- [Control depth, blending, and transparency](depth-blending.md) when objects overlap or use alpha.
-- [Render offscreen](render-offscreen.md) for deterministic output, then
-  [save a screenshot](screenshots.md) or [export a video](video-export.md).
-- [Profile rendering performance](profile-performance.md) only after a small correct scene works.
-
-The native Vulkan path is the reference path. Browser WebGPU support is experimental and does not
-cover every native feature; check the [WebGPU subset](../reference/webgpu-subset.md) and each
-example's published status before choosing a browser workflow.
+- [Use from C or C++](c-integration.md)
+- [Use from Python](use-python.md)
+- [Use from terminal IPython](use-ipython.md)
+- [Use raw ctypes](use-raw-ctypes.md)
+- [Embed in Qt](embed-in-qt.md)
+- [Deploy WebGPU examples to the browser](deploy-to-web.md)
+- [Debug rendering output](debug-rendering.md)
+- [Diagnose WebGPU support](debug-webgpu.md)
+- [Diagnose build and platform issues](diagnose-platform.md)
