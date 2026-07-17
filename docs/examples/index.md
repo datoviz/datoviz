@@ -14,13 +14,13 @@ Polished, composed demonstrations built around scientific data, simulations, and
 
 <div class="card" markdown="1">
 
-**[Streaming DAQ · 128 channels](gallery/showcases/showcases_streaming_daq.md)**
+**[Streaming DAQ · 64 channels](gallery/showcases/showcases_streaming_daq.md)**
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_streaming_daq/" aria-label="Streaming DAQ · 128 channels"></a>
-  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_streaming_daq.poster.webp" alt="Streaming DAQ · 128 channels" loading="lazy">
+  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_streaming_daq/" aria-label="Streaming DAQ · 64 channels"></a>
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_streaming_daq.poster.webp" alt="Streaming DAQ · 64 channels" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../assets/gallery/v0.4/showcases/showcases_streaming_daq.poster.webp" aria-label="Streaming DAQ · 128 channels preview">
+         poster="../assets/gallery/v0.4/showcases/showcases_streaming_daq.poster.webp" aria-label="Streaming DAQ · 64 channels preview">
     <source data-src="../assets/gallery/v0.4/showcases/showcases_streaming_daq.mp4" type="video/mp4">
   </video>
 </div>

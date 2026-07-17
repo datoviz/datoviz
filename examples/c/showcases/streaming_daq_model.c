@@ -519,8 +519,8 @@ static void* _producer_main(void* user_data)
 DaqConfig daq_config_default(void)
 {
     return (DaqConfig){
-        .channel_count = 128u,
-        .analog_channel_count = 128u,
+        .channel_count = 64u,
+        .analog_channel_count = 64u,
         .sample_rate_hz = 10000u,
         .display_sample_count = 10000u,
         .block_size = 64u,

@@ -1560,7 +1560,7 @@ examples:
       - uncertainty-band
 
   - id: showcases_streaming_daq
-    title: Streaming DAQ · 128 channels
+    title: Streaming DAQ · 64 channels
     stage: v0.4_experimental
     category: showcase
     lane: showcases

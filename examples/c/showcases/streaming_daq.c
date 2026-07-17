@@ -6,7 +6,7 @@
 
 /* streaming_daq - This example renders a simulated real-time data acquisition system.
  *
- * What to look for: 128 continuous extracellular traces combine correlated background activity,
+ * What to look for: 64 continuous extracellular traces combine correlated background activity,
  * spatially coherent unit spikes, and occasional population events in one persistent raw line-list
  * visual. A wall-clock producer thread emits fixed acquisition blocks into a bounded queue, while
  * the render thread updates only the newly written circular-buffer vertex range. Sparse event
@@ -777,11 +777,16 @@ static bool _gui_controls(DvzGui* gui, void* user_data)
     daq_model_stats(&state->model, &stats);
     char fps_text[128] = {0};
     char upload_text[128] = {0};
+    char acquisition_text[128] = {0};
     dvz_snprintf(fps_text, sizeof(fps_text), "Render: %.1f FPS", state->smoothed_fps);
     dvz_snprintf(
         upload_text, sizeof(upload_text), "Upload: %.1f KiB (%u vertices)",
         (double)state->upload_bytes / 1024.0, state->uploaded_vertex_count);
-    dvz_gui_text(gui, "128 channels | 10 kHz | 1.000 s ring");
+    dvz_snprintf(
+        acquisition_text, sizeof(acquisition_text), "%u channels | %u kHz | %.3f s ring",
+        state->model.config.channel_count, state->model.config.sample_rate_hz / 1000u,
+        (double)state->model.config.display_sample_count / state->model.config.sample_rate_hz);
+    dvz_gui_text(gui, acquisition_text);
     dvz_gui_text(gui, "28 units | spatial spike footprints");
     dvz_gui_text(gui, "One raw line-list trace draw");
     dvz_gui_text(gui, fps_text);
@@ -1072,7 +1077,7 @@ DvzScenarioSpec dvz_showcase_streaming_daq_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "showcases_streaming_daq",
-        .title = "Streaming DAQ · 128 channels",
+        .title = "Streaming DAQ · 64 channels",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

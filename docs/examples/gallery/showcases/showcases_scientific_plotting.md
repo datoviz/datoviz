@@ -5,7 +5,7 @@
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"></span>
-<span class="dvz-example-nav__next"><a href="../showcases_streaming_daq/">Next: Streaming DAQ · 128 channels →</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_streaming_daq/">Next: Streaming DAQ · 64 channels →</a></span>
 </div>
 </nav>
 
@@ -89,6 +89,6 @@ This workflow is useful when a paper-style diagnostic figure needs multiple coor
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"></span>
-<span class="dvz-example-nav__next"><a href="../showcases_streaming_daq/">Next: Streaming DAQ · 128 channels →</a></span>
+<span class="dvz-example-nav__next"><a href="../showcases_streaming_daq/">Next: Streaming DAQ · 64 channels →</a></span>
 </div>
 </nav>

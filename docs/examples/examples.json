@@ -2453,7 +2453,7 @@
     },
     {
       "id": "showcases_streaming_daq",
-      "title": "Streaming DAQ \u00b7 128 channels",
+      "title": "Streaming DAQ \u00b7 64 channels",
       "category": "showcase",
       "lane": "showcases",
       "stage": "v0.4_experimental",

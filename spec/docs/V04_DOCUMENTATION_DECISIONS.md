@@ -163,8 +163,8 @@ Panel contents:
 1. **Wind globe** (dominant, ~55% of frame): Earth with streamlines and wind vectors, daytime
    or night-side texture. Basis: new `showcases/wind_globe.c` example (spec at
    `spec/scene/examples/scenarios/WIND_GLOBE.md`).
-2. **Signal traces + ImGui** (medium): 128-channel dense time series with visible Dear ImGui
-   controls panel. Label: "Signal Traces · 128 channels" (not EEG-specific).
+2. **Signal traces + ImGui** (medium): 64-channel dense time series with visible Dear ImGui
+   controls panel. Label: "Signal Traces · 64 channels" (not EEG-specific).
 3. **Protein structure** (medium): CPK sphere rendering with legend. Basis: existing protein
    arcball viewer example.
 4. **Browser inset** (small): WebGPU scatter or point cloud in browser chrome showing

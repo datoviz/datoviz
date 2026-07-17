@@ -946,7 +946,7 @@ async function main() {
         ['features_datetime_axis', { label: 'Datetime Axis', kind: 'animated' }],
         ['features_marker_symbols', { label: 'Marker Symbols' }],
         ['showcases_spherical_harmonics', { label: 'Spherical Harmonics', kind: 'animated' }],
-        ['showcases_streaming_daq', { label: 'Streaming DAQ · 128 channels', kind: 'animated' }],
+        ['showcases_streaming_daq', { label: 'Streaming DAQ · 64 channels', kind: 'animated' }],
         ['showcases_cortical_activity', { label: 'Human Auditory Cortical Activity', kind: 'animated' }],
         ['showcases_terrain_relief', { label: 'McHenrys Peak Terrain Relief' }],
         ['showcases_svg_tiger', { label: 'SVG Tiger · local development' }],
@@ -1405,7 +1405,7 @@ async function main() {
       ],
       [
         'showcases_streaming_daq',
-        'Streaming DAQ · 128 channels',
+        'Streaming DAQ · 64 channels',
         'webgpu_live_streaming_daq.png',
         'streaming-daq',
         'showcases_streaming_daq',

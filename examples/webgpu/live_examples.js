@@ -249,7 +249,7 @@ export const LIVE_EXAMPLES = [
   },
   {
     id: "showcases_streaming_daq",
-    label: "Streaming DAQ · 128 channels",
+    label: "Streaming DAQ · 64 channels",
     scenarioId: "showcases_streaming_daq",
     animate: true,
   },
