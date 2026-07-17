@@ -125,6 +125,90 @@
     letter-spacing: 0.02em;
 }
 
+.md-typeset .dvz-sequence {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.1rem;
+    margin: 1rem 0 1.8rem;
+}
+
+.md-typeset .dvz-sequence__step {
+    position: relative;
+    min-width: 0;
+    padding: 0.85rem 0.9rem;
+    border: 1px solid rgba(76, 201, 240, 0.22);
+    border-radius: 6px;
+    background: rgba(76, 201, 240, 0.05);
+}
+
+.md-typeset .dvz-sequence__step:not(:last-child)::after {
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 0.26rem);
+    color: var(--dvz-cyan);
+    content: "\2192";
+    font-size: 1rem;
+    transform: translateY(-50%);
+}
+
+.md-typeset .dvz-sequence__number {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--dvz-cyan);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.md-typeset .dvz-sequence__step strong,
+.md-typeset .dvz-sequence__step span:last-child {
+    display: block;
+}
+
+.md-typeset .dvz-sequence__step strong {
+    color: var(--md-default-fg-color);
+    font-size: 0.78rem;
+}
+
+.md-typeset .dvz-sequence__step span:last-child {
+    margin-top: 0.18rem;
+    color: var(--md-default-fg-color--light);
+    font-size: 0.7rem;
+    line-height: 1.45;
+}
+
+.md-typeset .dvz-output-example {
+    margin: 1rem 0 1.7rem;
+    overflow: hidden;
+    border: 1px solid rgba(76, 201, 240, 0.2);
+    border-radius: 6px;
+    background: #10161f;
+}
+
+.md-typeset .dvz-output-example a:first-child {
+    display: block;
+}
+
+.md-typeset .dvz-output-example img {
+    display: block;
+    width: 100%;
+    margin: 0;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+}
+
+.md-typeset .dvz-output-example figcaption {
+    padding: 0.75rem 0.9rem;
+    color: var(--md-default-fg-color--light);
+    font-size: 0.72rem;
+    line-height: 1.5;
+}
+
+.md-typeset .dvz-output-example figcaption strong {
+    color: var(--md-default-fg-color);
+}
+
 .md-typeset .dvz-api-kind-label {
     margin: 1rem 0 0.45rem;
     color: var(--md-default-fg-color--light);
@@ -150,5 +234,16 @@
 
     .md-typeset .dvz-section-grid {
         grid-template-columns: 1fr;
+    }
+
+    .md-typeset .dvz-sequence {
+        grid-template-columns: 1fr;
+        gap: 0.7rem;
+    }
+
+    .md-typeset .dvz-sequence__step:not(:last-child)::after {
+        top: calc(100% + 0.05rem);
+        left: 50%;
+        transform: translateX(-50%) rotate(90deg);
     }
 }

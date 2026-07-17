@@ -27,11 +27,51 @@ then update only the state that changes.
 | Repeatable camera motion | Track plus `dvz_anim_camera_motion()` | [Animation Tracks](../examples/gallery/features/features_animation_tracks.md) |
 | Video or deterministic capture | Bounded frame loop and capture path | [Export videos](video-export.md) |
 
+On each frame, the scene clock supplies time to a timer or track. That mechanism changes retained
+scene state, and the renderer uses the updated state for the next frame.
+
+<div class="dvz-sequence" role="list" aria-label="Animation update sequence">
+  <div class="dvz-sequence__step" role="listitem">
+    <span class="dvz-sequence__number">Step 1</span>
+    <strong>Scene clock</strong>
+    <span>Supplies frame time.</span>
+  </div>
+  <div class="dvz-sequence__step" role="listitem">
+    <span class="dvz-sequence__number">Step 2</span>
+    <strong>Timer or track</strong>
+    <span>Computes the new value.</span>
+  </div>
+  <div class="dvz-sequence__step" role="listitem">
+    <span class="dvz-sequence__number">Step 3</span>
+    <strong>Retained state</strong>
+    <span>Updates data or transforms.</span>
+  </div>
+  <div class="dvz-sequence__step" role="listitem">
+    <span class="dvz-sequence__number">Step 4</span>
+    <strong>Next frame</strong>
+    <span>Renders the changed scene.</span>
+  </div>
+</div>
+
 ## Minimal retained update
 
 For direct app code, a scene timer can update retained visual attributes from the scene clock. The
 default timer mode runs on every scene frame. This function-body excerpt assumes valid `scene`,
 `visual`, `positions`, and `n` state; its setup path returns `false` on failure.
+
+<figure class="dvz-output-example">
+  <a href="../../examples/gallery/features/features_timer_animation/">
+    <img src="../../assets/gallery/v0.4/features/features_timer_animation.webp"
+         alt="Eight colored points following a sine curve in the timer animation example"
+         loading="lazy">
+  </a>
+  <figcaption>
+    <strong>Timer-driven retained update.</strong> The same point visual receives new positions,
+    colors, and sizes on each frame.
+    <a href="../../examples/gallery/features/features_timer_animation/">Open the timer animation
+    example</a>.
+  </figcaption>
+</figure>
 
 ```c
 static void
@@ -76,6 +116,20 @@ update idea in native and browser routes.
 
 Use tracks when the motion is a reusable path rather than arbitrary per-frame data mutation. Tracks
 can drive visual-local transforms or camera state.
+
+<figure class="dvz-output-example">
+  <a href="../../examples/gallery/features/features_animation_tracks/">
+    <img src="../../assets/gallery/v0.4/features/features_animation_tracks.poster.webp"
+         alt="A colored cube above a grid in the visual and camera track example"
+         loading="lazy">
+  </a>
+  <figcaption>
+    <strong>Track-based motion.</strong> One track rotates the cube while another moves the camera;
+    the gallery page includes the moving preview and live WebGPU route.
+    <a href="../../examples/gallery/features/features_animation_tracks/">Open the animation tracks
+    example</a>.
+  </figcaption>
+</figure>
 
 Prerequisite: create `scene` and an attached `visual` first. The result is a retained visual-local
 rotation driven by the scene clock. These fragments omit app creation and cleanup; see the complete
@@ -160,8 +214,6 @@ example is experimental because it exercises scene compute, storage buffers, and
 synchronization.
 
 ## Canonical examples
-
-![Colored points moving along a curve during a timer-driven animation](../assets/gallery/v0.4/features/features_timer_animation.webp)
 
 - [Timer Animation](../examples/gallery/features/features_timer_animation.md) - retained point data
   updated on frames. Source: `examples/c/features/timer_animation.c`.
