@@ -27,7 +27,7 @@ while the documented result remains the same.
 
 Both tabs contain complete programs, including imports or headers, data generation, rendering, and
 the appropriate session or cleanup path. The source is included from checked files in
-`examples/docs/`; it is not a shortened documentation excerpt.
+`examples/docs/`.
 
 === "Python"
 
