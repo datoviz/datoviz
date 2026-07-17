@@ -61,6 +61,9 @@
 #define POINT_CLOUD_VERSION    2u
 #define POINT_CLOUD_MAX_POINTS 8000000u
 
+#define DATA_POINT_CLOUD_PATH      "data/examples/point_cloud/prepared/point_cloud.bin"
+#define CACHE_POINT_CLOUD_WEB_PATH \
+    ".cache/datoviz/examples/point_cloud/web/prepared/point_cloud.bin"
 #define CACHE_POINT_CLOUD_PATH ".cache/datoviz/examples/point_cloud/prepared/point_cloud.bin"
 
 static const float TAU = 6.28318530718f;
@@ -112,6 +115,14 @@ typedef struct PointCloudState
     ExampleTuner tuner;
     DvzExampleGuiEdlControls edl;
 } PointCloudState;
+
+
+
+/*************************************************************************************************/
+/*  Forward declarations                                                                         */
+/*************************************************************************************************/
+
+DvzScenarioSpec dvz_showcase_point_cloud_scenario(void);
 
 
 
@@ -224,12 +235,19 @@ static bool _load_data(PointCloudData* data)
     ANN(data);
     memset(data, 0, sizeof(*data));
 
-    if (_load_binary(CACHE_POINT_CLOUD_PATH, data))
+#ifdef DVZ_EXAMPLE_NO_APP
+    if (_load_binary(DATA_POINT_CLOUD_PATH, data) ||
+        _load_binary(CACHE_POINT_CLOUD_WEB_PATH, data) ||
+        _load_binary(CACHE_POINT_CLOUD_PATH, data))
+#else
+    if (_load_binary(CACHE_POINT_CLOUD_PATH, data) || _load_binary(DATA_POINT_CLOUD_PATH, data))
+#endif
         return true;
 
     dvz_fprintf(
-        stderr, "point_cloud: missing real v2 prepared data. Run "
-                "`python tools/data/prepare_point_cloud.py --force` from the repository root.\n");
+        stderr,
+        "point_cloud: missing real v2 prepared data. Run "
+        "`python tools/data/prepare_point_cloud.py --force` from the repository root.\n");
     return false;
 }
 
@@ -335,14 +353,16 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->camera = camera;
     state->base_view = camera_desc.view;
 
+    example_tuner_camera_ref(&state->tuner, "Camera", panel, camera, &camera_desc);
+#ifndef DVZ_EXAMPLE_NO_APP
     state->edl = (DvzExampleGuiEdlControls){
         .enabled = true,
         .radius = 1.8f,
         .strength = 34.0f,
         .depth_scale = 1.0f,
     };
-    example_tuner_camera_ref(&state->tuner, "Camera", panel, camera, &camera_desc);
     example_tuner_edl(&state->tuner, "EDL", panel, &state->edl);
+#endif
 
     DvzVisual* pixels = dvz_pixel(ctx->scene, 0);
     EXAMPLE_CHECK(pixels != NULL, "dvz_pixel() failed");
@@ -451,7 +471,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _point_cloud_scenario(void)
+DvzScenarioSpec dvz_showcase_point_cloud_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "showcases_point_cloud",
@@ -459,7 +479,7 @@ static DvzScenarioSpec _point_cloud_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
-        .requirements = DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
+        .requirements = DVZ_SCENARIO_REQ_PIXEL_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER,
         .init = _scenario_init,
         .frame = _scenario_frame,
         .destroy = _scenario_destroy,
@@ -479,10 +499,12 @@ static DvzScenarioSpec _point_cloud_scenario(void)
  * @param argv command-line argument vector
  * @return process exit code
  */
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _point_cloud_scenario();
+    DvzScenarioSpec spec = dvz_showcase_point_cloud_scenario();
     if (example_cli_wants_live_gui(argc, argv))
         spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

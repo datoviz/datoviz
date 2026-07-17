@@ -15,7 +15,16 @@ from urllib.parse import urlparse
 import numpy as np
 import requests
 
-from common import CACHE_ROOT, artifact, command_argv, relpath, write_manifest, write_provenance
+from common import (
+    CACHE_ROOT,
+    artifact,
+    command_argv,
+    relpath,
+    sha256_file,
+    write_json,
+    write_manifest,
+    write_provenance,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -40,6 +49,8 @@ V03_PROVENANCE_NOTE = (
 
 MAGIC = b"DVZPCD1\0"
 VERSION = 2
+HEADER_SIZE = struct.calcsize("<8sII6f")
+DEFAULT_WEB_MAX_POINTS = 500_000
 
 PALETTE_FRAME_BG = np.array([14, 17, 23], dtype=np.float32) / 255.0
 PALETTE_PANEL_BG = np.array([22, 27, 34], dtype=np.float32) / 255.0
@@ -285,6 +296,51 @@ def _write_binary(path: Path, records: np.ndarray) -> None:
         f.write(np.ascontiguousarray(records, dtype="<f4").tobytes())
 
 
+def _web_records(records: np.ndarray, max_points: int) -> np.ndarray:
+    """Return a deterministic, bounded subset for browser delivery."""
+    if records.shape[0] <= max_points:
+        return np.ascontiguousarray(records, dtype=np.float32)
+    indices = np.linspace(0, records.shape[0] - 1, max_points, dtype=np.int64)
+    return np.ascontiguousarray(records[indices], dtype=np.float32)
+
+
+def _write_web_bundle(bundle_root: Path, records: np.ndarray, max_points: int) -> Path:
+    """Write the cache-local browser point-cloud artifact and staging metadata."""
+    web_records = _web_records(records, max_points)
+    web_prepared = bundle_root / "web" / "prepared"
+    binary_path = web_prepared / "point_cloud.bin"
+    _write_binary(binary_path, web_records)
+    write_json(
+        web_prepared / "metadata.json",
+        {
+            "schema": "datoviz.point-cloud-web-cache.v1",
+            "artifact": {
+                "path": "prepared/point_cloud.bin",
+                "bytes": binary_path.stat().st_size,
+                "sha256": sha256_file(binary_path),
+            },
+            "point_count": int(web_records.shape[0]),
+            "source_point_count": int(records.shape[0]),
+        },
+    )
+    return binary_path
+
+
+def _read_prepared_records(path: Path) -> np.ndarray:
+    """Read an existing v2 prepared binary without loading the raw LAZ source."""
+    with path.open("rb") as f:
+        header = f.read(HEADER_SIZE)
+    if len(header) != HEADER_SIZE:
+        raise RuntimeError(f"invalid point-cloud header: {path}")
+    magic, version, count, *_ = struct.unpack("<8sII6f", header)
+    if magic != MAGIC or version != VERSION or count <= 0:
+        raise RuntimeError(f"unsupported point-cloud binary: {path}")
+    expected_size = HEADER_SIZE + count * 8 * np.dtype("<f4").itemsize
+    if path.stat().st_size != expected_size:
+        raise RuntimeError(f"invalid point-cloud byte size: {path}")
+    return np.memmap(path, mode="r", dtype="<f4", offset=HEADER_SIZE, shape=(count, 8))
+
+
 def _write_preview(path: Path, records: np.ndarray) -> None:
     """Write a quick top-down preview for source-selection iteration."""
     try:
@@ -327,6 +383,7 @@ def prepare(args: argparse.Namespace) -> None:
     bin_path = prepared / "point_cloud.bin"
     preview_path = prepared / "preview.png"
     _write_binary(bin_path, records)
+    web_path = _write_web_bundle(bundle_root, records, args.web_max_points)
     _write_preview(preview_path, records)
 
     artifacts = [
@@ -340,6 +397,17 @@ def prepare(args: argparse.Namespace) -> None:
             columns=["x", "y", "z", "r", "g", "b", "a", "pixel_size"],
         )
     ]
+    artifacts.append(
+        artifact(
+            web_path,
+            bundle_root,
+            "browser-point-cloud-records",
+            "datoviz-point-cloud-v2",
+            dtype="float32",
+            shape=[min(int(records.shape[0]), args.web_max_points), 8],
+            columns=["x", "y", "z", "r", "g", "b", "a", "pixel_size"],
+        )
+    )
     if preview_path.exists():
         artifacts.append(artifact(preview_path, bundle_root, "preview", "png"))
     artifacts.append(artifact(source_path, bundle_root, "raw-source", "laz"))
@@ -396,6 +464,12 @@ def main() -> int:
     parser.add_argument("--force", action="store_true", help="replace prepared outputs")
     parser.add_argument("--refresh-source", action="store_true", help="redownload the raw LAZ source")
     parser.add_argument("--max-points", type=int, default=6_000_000)
+    parser.add_argument("--web-max-points", type=int, default=DEFAULT_WEB_MAX_POINTS)
+    parser.add_argument(
+        "--web-only",
+        action="store_true",
+        help="derive only the browser bundle from the existing prepared binary",
+    )
     parser.add_argument("--seed", type=int, default=12345)
     parser.add_argument(
         "--z-exaggeration",
@@ -407,8 +481,16 @@ def main() -> int:
     args = parser.parse_args()
     if args.max_points <= 0:
         parser.error("--max-points must be positive")
+    if args.web_max_points <= 0:
+        parser.error("--web-max-points must be positive")
     if args.z_exaggeration <= 0:
         parser.error("--z-exaggeration must be positive")
+    if args.web_only:
+        bundle_root = CACHE_ROOT / EXAMPLE_ID
+        records = _read_prepared_records(bundle_root / "prepared" / "point_cloud.bin")
+        path = _write_web_bundle(bundle_root, records, args.web_max_points)
+        print(f"wrote {relpath(path, ROOT)} ({min(records.shape[0], args.web_max_points)} points)")
+        return 0
     prepare(args)
     return 0
 

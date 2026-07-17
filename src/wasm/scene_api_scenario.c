@@ -82,6 +82,7 @@ DvzScenarioSpec dvz_showcase_linked_probe_colorbar_scenario(void);
 DvzScenarioSpec dvz_showcase_galaxy_scenario(void);
 DvzScenarioSpec dvz_showcase_gpu_particle_smoke_scenario(void);
 DvzScenarioSpec dvz_showcase_linked_panel_axes_scenario(void);
+DvzScenarioSpec dvz_showcase_point_cloud_scenario(void);
 DvzScenarioSpec dvz_showcase_protein_scenario(void);
 DvzScenarioSpec dvz_showcase_scalebar_measurement_scenario(void);
 DvzScenarioSpec dvz_showcase_scientific_plotting_scenario(void);
@@ -294,6 +295,8 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_showcase_streaming_daq_scenario();
     case 88:
         return dvz_showcase_cortical_activity_scenario();
+    case 89:
+        return dvz_showcase_point_cloud_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

@@ -82,6 +82,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/galaxy_model.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/gpu_particle_smoke.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/panel_linked_axes.c
+    ${PROJECT_SOURCE_DIR}/examples/c/showcases/point_cloud.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/protein.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/scalebar_measurement.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/scientific_plotting.c

@@ -1627,6 +1627,27 @@ function expectGalaxyScenarioStreamShape(stream, label) {
   );
 }
 
+function expectPointCloudScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  const pixel = expectPipeline(
+    stream,
+    `${label} depth-tested pixels`,
+    (candidate) =>
+      candidate.builtin_pipeline === "scene.pixel" &&
+      candidate.depth_stencil?.depth_write_enabled === true,
+  );
+  expectDepthPipeline(pixel, `${label} depth-tested pixels`);
+  requireOk(
+    commandsOf(stream, "Draw").some((command) => command.instance_count >= 100000),
+    `${label}: expected bounded dense point-cloud draw`,
+  );
+  requireOk(
+    commandsOf(stream, "WriteBuffer").length >= 3,
+    `${label}: expected position, color, and pixel-size uploads`,
+  );
+}
+
 function expectSvgTigerScenarioStreamShape(stream, label) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -2632,6 +2653,7 @@ try {
     "showcases_terrain_relief",
     "showcases_streaming_daq",
     "showcases_cortical_activity",
+    "showcases_point_cloud",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -3927,6 +3949,15 @@ try {
       ]],
       expectShape: expectCorticalActivityScenarioStreamShape,
       animate: true,
+    },
+    {
+      id: "showcases_point_cloud",
+      label: "point cloud",
+      files: [[
+        ".cache/datoviz/examples/point_cloud/web/prepared/point_cloud.bin",
+        "/data/examples/point_cloud/prepared/point_cloud.bin",
+      ]],
+      expectShape: expectPointCloudScenarioStreamShape,
     },
   ];
   for (const prepared of optionalPreparedScenarios) {
