@@ -245,9 +245,6 @@ static int _bounds_overlay_source_bounds(const DvzVisual* visual, DvzBounds* out
     ANN(out);
     if (dvz_visual_bounds(visual, out) != 0)
         return -1;
-    const DvzVisualFamilyOps* ops = _scene_visual_family_ops(visual->type);
-    if (ops != NULL && ops->expand_overlay_bounds != NULL)
-        ops->expand_overlay_bounds(visual, out);
     return 0;
 }
 

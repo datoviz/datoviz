@@ -33,8 +33,6 @@ bool _scene_sphere_visual_desc_from_metadata(
 
 bool _scene_sphere_visual_bounds(const DvzVisual* visual, DvzBounds* out, bool* out_force_3d);
 
-void _scene_sphere_visual_expand_overlay_bounds(const DvzVisual* visual, DvzBounds* bounds);
-
 bool _scene_sphere_visual_bind_desc(
     const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
     DvzSceneVisualBindDesc* out);

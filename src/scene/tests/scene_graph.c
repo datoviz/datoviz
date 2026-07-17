@@ -175,7 +175,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_panel_visual_bounds_sphere_local_transform_screen);
     TST_CASE(test_scene_panel_bounds_overlay_visual);
     TST_CASE(test_scene_panel_bounds_overlay_visual_panzoom_padding);
-    TST_CASE(test_scene_panel_bounds_overlay_sphere_wire_padding);
+    TST_CASE(test_scene_panel_bounds_overlay_sphere_item_state_bounds);
     TST_CASE(test_scene_panel_bounds_overlay_sphere_multi_radius_bounds);
     TST_CASE(test_scene_panel_bounds_overlay_emit_runtime);
     TST_CASE(test_scene_point_typed_data_upload);

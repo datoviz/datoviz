@@ -911,7 +911,7 @@ int test_scene_panel_bounds_overlay_visual(TstContext* suite, const TstCase* ite
 int test_scene_panel_bounds_overlay_visual_panzoom_padding(
     TstContext* suite, const TstCase* item);
 
-int test_scene_panel_bounds_overlay_sphere_wire_padding(
+int test_scene_panel_bounds_overlay_sphere_item_state_bounds(
     TstContext* suite, const TstCase* item);
 
 int test_scene_panel_bounds_overlay_sphere_multi_radius_bounds(

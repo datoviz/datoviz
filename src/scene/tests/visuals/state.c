@@ -1239,13 +1239,13 @@ int test_scene_panel_bounds_overlay_visual_panzoom_padding(TstContext* suite, co
 
 
 /**
- * Verify sphere visual bounds stay exact while the wire overlay uses conservative padding.
+ * Verify a sphere overlay uses exact item-state-scaled bounds.
  *
  * @param suite the active test suite
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_panel_bounds_overlay_sphere_wire_padding(
+int test_scene_panel_bounds_overlay_sphere_item_state_bounds(
     TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -1287,13 +1287,12 @@ int test_scene_panel_bounds_overlay_sphere_wire_padding(
     float min_extent[3] = {0};
     float max_extent[3] = {0};
     AT(_scene_visuals_overlay_extents(panel->bounds_visual, min_extent, max_extent));
-    const float pad = (sqrtf(3.0f) - 1.0f) * 0.5f;
-    AC(min_extent[0], -0.5f - pad, 1e-6);
-    AC(min_extent[1], -0.5f - pad, 1e-6);
-    AC(min_extent[2], -0.5f - pad, 1e-6);
-    AC(max_extent[0], +0.5f + pad, 1e-6);
-    AC(max_extent[1], +0.5f + pad, 1e-6);
-    AC(max_extent[2], +0.5f + pad, 1e-6);
+    AC(min_extent[0], -0.5f, 1e-6);
+    AC(min_extent[1], -0.5f, 1e-6);
+    AC(min_extent[2], -0.5f, 1e-6);
+    AC(max_extent[0], +0.5f, 1e-6);
+    AC(max_extent[1], +0.5f, 1e-6);
+    AC(max_extent[2], +0.5f, 1e-6);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -1301,7 +1300,7 @@ int test_scene_panel_bounds_overlay_sphere_wire_padding(
 
 
 /**
- * Verify a multi-item sphere overlay uses exact bounds plus max-radius wire padding.
+ * Verify a multi-item sphere overlay uses exact radius-expanded bounds.
  *
  * @param suite the active test suite
  * @param item the active test item
@@ -1341,13 +1340,12 @@ int test_scene_panel_bounds_overlay_sphere_multi_radius_bounds(
     float min_extent[3] = {0};
     float max_extent[3] = {0};
     AT(_scene_visuals_overlay_extents(panel->bounds_visual, min_extent, max_extent));
-    const float pad = (sqrtf(3.0f) - 1.0f) * 1.25f;
-    AC(min_extent[0], -1.5f - pad, 1e-6);
-    AC(min_extent[1], -4.25f - pad, 1e-6);
-    AC(min_extent[2], -0.5f - pad, 1e-6);
-    AC(max_extent[0], +5.25f + pad, 1e-6);
-    AC(max_extent[1], +2.5f + pad, 1e-6);
-    AC(max_extent[2], +3.25f + pad, 1e-6);
+    AC(min_extent[0], -1.5f, 1e-6);
+    AC(min_extent[1], -4.25f, 1e-6);
+    AC(min_extent[2], -0.5f, 1e-6);
+    AC(max_extent[0], +5.25f, 1e-6);
+    AC(max_extent[1], +2.5f, 1e-6);
+    AC(max_extent[2], +3.25f, 1e-6);
 
     dvz_scene_destroy(scene);
     return 0;

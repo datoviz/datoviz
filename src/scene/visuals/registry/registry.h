@@ -40,8 +40,6 @@ typedef bool (*DvzVisualFamilyLoweringFn)(
 typedef bool (*DvzVisualFamilyBoundsFn)(
     const DvzVisual* visual, DvzBounds* out, bool* out_force_3d);
 
-typedef void (*DvzVisualFamilyOverlayBoundsFn)(const DvzVisual* visual, DvzBounds* bounds);
-
 typedef bool (*DvzVisualFamilyPassCapsFn)(
     const DvzVisual* visual, const DvzPanelAttach* attach, const DvzVisualLowering* lowering,
     DvzSceneVisualPassCaps* out);
@@ -95,7 +93,6 @@ struct DvzVisualFamilyOps
     const char* item_range_attr_name;
     DvzVisualFamilyLoweringFn resolve_lowering;
     DvzVisualFamilyBoundsFn resolve_bounds;
-    DvzVisualFamilyOverlayBoundsFn expand_overlay_bounds;
     DvzVisualFamilyPassCapsFn resolve_pass_caps;
     DvzVisualFamilyBindDescFn resolve_bind_desc;
     DvzVisualFamilyPipelineDescFn resolve_pipeline_desc;
