@@ -50,10 +50,30 @@ void dvz_diagnostic_report_init(DvzDiagnosticReport* report)
  */
 bool dvz_diagnostic_report_add(DvzDiagnosticReport* report, const char* message)
 {
+    return dvz_diagnostic_report_add_with_severity(
+        report, DVZ_DIAGNOSTIC_SEVERITY_FATAL, message);
+}
+
+
+
+/**
+ * Add a diagnostic message with an explicit severity.
+ *
+ * @param report the diagnostic report
+ * @param severity the diagnostic severity
+ * @param message the diagnostic message
+ * @return whether the message was added
+ */
+bool dvz_diagnostic_report_add_with_severity(
+    DvzDiagnosticReport* report, DvzDiagnosticSeverity severity, const char* message)
+{
     ANN(report);
     ANN(message);
     if (report->count >= DVZ_SCENE_MAX_DIAGNOSTICS)
         return false;
+    if (severity < DVZ_DIAGNOSTIC_SEVERITY_FATAL || severity > DVZ_DIAGNOSTIC_SEVERITY_INFO)
+        return false;
+    report->severities[report->count] = severity;
     char* dst = report->messages[report->count];
     size_t len = strlen(message);
     if (len >= DVZ_SCENE_DIAGNOSTIC_SIZE)
@@ -82,6 +102,27 @@ uint32_t dvz_diagnostic_report_count(const DvzDiagnosticReport* report)
 
 
 /**
+ * Return the number of fatal or recoverable diagnostics.
+ *
+ * @param report the diagnostic report
+ * @return the number of error-level diagnostic messages
+ */
+uint32_t dvz_diagnostic_report_error_count(const DvzDiagnosticReport* report)
+{
+    if (report == NULL)
+        return 0;
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < report->count; i++)
+    {
+        if (report->severities[i] <= DVZ_DIAGNOSTIC_SEVERITY_RECOVERABLE)
+            count++;
+    }
+    return count;
+}
+
+
+
+/**
  * Return a diagnostic message.
  *
  * @param report the diagnostic report
@@ -93,4 +134,21 @@ const char* dvz_diagnostic_report_get(const DvzDiagnosticReport* report, uint32_
     if (report == NULL || index >= report->count)
         return NULL;
     return report->messages[index];
+}
+
+
+
+/**
+ * Return a diagnostic severity.
+ *
+ * @param report the diagnostic report
+ * @param index the diagnostic index
+ * @return the diagnostic severity, or fatal when index is out of bounds
+ */
+DvzDiagnosticSeverity
+dvz_diagnostic_report_get_severity(const DvzDiagnosticReport* report, uint32_t index)
+{
+    if (report == NULL || index >= report->count)
+        return DVZ_DIAGNOSTIC_SEVERITY_FATAL;
+    return report->severities[index];
 }

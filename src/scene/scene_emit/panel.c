@@ -752,7 +752,8 @@ static const DvzSceneMsaaTechniqueState* _scene_effective_msaa_state(
                 "attachments",
                 panel_id != NULL ? panel_id : "?");
         }
-        (void)dvz_diagnostic_report_add(report, message);
+        (void)dvz_diagnostic_report_add_with_severity(
+            report, DVZ_DIAGNOSTIC_SEVERITY_WARNING, message);
     }
     if (effective <= 1)
         return NULL;

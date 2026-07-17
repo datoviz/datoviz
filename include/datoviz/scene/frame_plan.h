@@ -137,12 +137,35 @@ DVZ_EXPORT bool dvz_diagnostic_report_add(DvzDiagnosticReport* report, const cha
 
 
 /**
+ * Add a diagnostic message with an explicit severity.
+ *
+ * @param report the diagnostic report
+ * @param severity the diagnostic severity
+ * @param message the diagnostic message
+ * @return whether the message was added
+ */
+DVZ_EXPORT bool dvz_diagnostic_report_add_with_severity(
+    DvzDiagnosticReport* report, DvzDiagnosticSeverity severity, const char* message);
+
+
+
+/**
  * Return a diagnostic count.
  *
  * @param report the diagnostic report
  * @return the number of diagnostic messages
  */
 DVZ_EXPORT uint32_t dvz_diagnostic_report_count(const DvzDiagnosticReport* report);
+
+
+
+/**
+ * Return the number of fatal or recoverable diagnostics.
+ *
+ * @param report the diagnostic report
+ * @return the number of error-level diagnostic messages
+ */
+DVZ_EXPORT uint32_t dvz_diagnostic_report_error_count(const DvzDiagnosticReport* report);
 
 
 
@@ -155,6 +178,18 @@ DVZ_EXPORT uint32_t dvz_diagnostic_report_count(const DvzDiagnosticReport* repor
  */
 DVZ_EXPORT const char*
 dvz_diagnostic_report_get(const DvzDiagnosticReport* report, uint32_t index);
+
+
+
+/**
+ * Return a diagnostic severity.
+ *
+ * @param report the diagnostic report
+ * @param index the diagnostic index
+ * @return the diagnostic severity, or fatal when index is out of bounds
+ */
+DVZ_EXPORT DvzDiagnosticSeverity
+dvz_diagnostic_report_get_severity(const DvzDiagnosticReport* report, uint32_t index);
 
 
 

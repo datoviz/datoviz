@@ -1485,6 +1485,8 @@ int test_scene_msaa_runtime_capability_lowering(TstContext* suite, const TstCase
     DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) >= 1);
+    AT(dvz_diagnostic_report_error_count(&report) == 0);
+    AT(dvz_diagnostic_report_get_severity(&report, 0) == DVZ_DIAGNOSTIC_SEVERITY_WARNING);
     const char* fallback_message = dvz_diagnostic_report_get(&report, 0);
     ANN(fallback_message);
     AT(strstr(fallback_message, "sample count lowered from 16 to 8") != NULL);
@@ -1577,6 +1579,8 @@ int test_scene_msaa_runtime_capability_disable_topology(TstContext* suite, const
     DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) >= 1);
+    AT(dvz_diagnostic_report_error_count(&report) == 0);
+    AT(dvz_diagnostic_report_get_severity(&report, 0) == DVZ_DIAGNOSTIC_SEVERITY_WARNING);
     const char* message = dvz_diagnostic_report_get(&report, 0);
     ANN(message);
     AT(strstr(message, "MSAA disabled") != NULL);

@@ -49,6 +49,7 @@ const DVZ_SCENE_BUFFER_USAGE_VERTEX = 1;
 const DVZ_DRP2_PACKET_SETUP = 1;
 const DVZ_DRP2_PACKET_UPDATE = 2;
 const DVZ_DRP2_PACKET_FRAME = 3;
+const DVZ_DIAGNOSTIC_SEVERITY_WARNING = 2;
 
 function requireOk(condition, message) {
   if (!condition) throw new Error(message);
@@ -150,6 +151,17 @@ function diagnostics(Module, scene) {
     messages.push(ptr !== 0 ? Module.UTF8ToString(ptr) : "<null diagnostic>");
   }
   return messages;
+}
+
+function expectNonfatalDiagnostics(Module, scene, label) {
+  const count = Module._dvz_wasm_api_diagnostic_count(scene);
+  for (let i = 0; i < count; i++) {
+    const severity = Module._dvz_wasm_api_diagnostic_severity(scene, i);
+    requireOk(
+      severity >= DVZ_DIAGNOSTIC_SEVERITY_WARNING,
+      `${label}: successful emit reported error-level diagnostic ${i}`,
+    );
+  }
 }
 
 function expectDiagnostics(Module, scene, needle, label) {
@@ -267,7 +279,7 @@ function emitStream(Module, scene, figure, label) {
     requireOk(messages.length > 0, `${label}: no diagnostic was reported`);
     throw new Error(`${label}: ${messages.join("; ")}`);
   }
-  requireOk(messages.length === 0, `${label} emit unexpectedly reported diagnostics: ${messages.join("; ")}`);
+  expectNonfatalDiagnostics(Module, scene, label);
   const ptr = Module._dvz_wasm_api_payload_ptr(scene);
   const size = Module._dvz_wasm_api_payload_size(scene);
   requireOk(ptr !== 0 && size > 0, `${label} emitted no payload`);
@@ -331,7 +343,7 @@ function emitPacketStream(Module, scene, figure, label) {
     throw new Error(`${label}: ${messages.join("; ")}`);
   }
   requireOk(Module._dvz_wasm_api_packet_status(scene) === 0, `${label}: packet status not OK`);
-  requireOk(messages.length === 0, `${label}: diagnostics: ${messages.join("; ")}`);
+  expectNonfatalDiagnostics(Module, scene, label);
   const resourceVersion = Module._dvz_wasm_api_resource_version(scene);
   const frameIndex = Module._dvz_wasm_api_frame_index(scene);
   requireOk(resourceVersion > 0, `${label}: missing resource version`);
@@ -381,7 +393,7 @@ function emitIncrementalPacketStream(Module, scene, figure, label) {
     throw new Error(`${label}: ${messages.join("; ")}`);
   }
   requireOk(Module._dvz_wasm_api_packet_status(scene) === 0, `${label}: packet status not OK`);
-  requireOk(messages.length === 0, `${label}: diagnostics: ${messages.join("; ")}`);
+  expectNonfatalDiagnostics(Module, scene, label);
 
   return {
     update: expectPacket(Module, scene, DVZ_DRP2_PACKET_UPDATE, `${label} update`, { expectArena: true }),

@@ -778,6 +778,19 @@ DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = DvzDescriptorType.DVZ_DESCRIPTOR_TY
 DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = DvzDescriptorType.DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC
 
 
+class DvzDiagnosticSeverity(CtypesEnum):
+    DVZ_DIAGNOSTIC_SEVERITY_FATAL = 0
+    DVZ_DIAGNOSTIC_SEVERITY_RECOVERABLE = 1
+    DVZ_DIAGNOSTIC_SEVERITY_WARNING = 2
+    DVZ_DIAGNOSTIC_SEVERITY_INFO = 3
+
+
+DVZ_DIAGNOSTIC_SEVERITY_FATAL = DvzDiagnosticSeverity.DVZ_DIAGNOSTIC_SEVERITY_FATAL
+DVZ_DIAGNOSTIC_SEVERITY_RECOVERABLE = DvzDiagnosticSeverity.DVZ_DIAGNOSTIC_SEVERITY_RECOVERABLE
+DVZ_DIAGNOSTIC_SEVERITY_WARNING = DvzDiagnosticSeverity.DVZ_DIAGNOSTIC_SEVERITY_WARNING
+DVZ_DIAGNOSTIC_SEVERITY_INFO = DvzDiagnosticSeverity.DVZ_DIAGNOSTIC_SEVERITY_INFO
+
+
 class DvzDim(CtypesEnum):
     DVZ_DIM_X = 0
     DVZ_DIM_Y = 1
@@ -5072,6 +5085,7 @@ DvzDeviceQueueRequest._fields_ = [
 
 DvzDiagnosticReport._fields_ = [
     ('count', ctypes.c_uint32),
+    ('severities', (ctypes.c_int * 16)),
     ('messages', ((ctypes.c_char * 256) * 16)),
 ]
 
@@ -12283,6 +12297,23 @@ else:
 
 
 try:
+    dvz_diagnostic_report_add_with_severity = dvz.dvz_diagnostic_report_add_with_severity
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_diagnostic_report_add_with_severity')
+else:
+    dvz_diagnostic_report_add_with_severity.__doc__ = """/**
+ * Add a diagnostic message with an explicit severity.
+ *
+ * @param report the diagnostic report
+ * @param severity the diagnostic severity
+ * @param message the diagnostic message
+ * @return whether the message was added
+ */"""
+    dvz_diagnostic_report_add_with_severity.argtypes = [ctypes.POINTER(DvzDiagnosticReport), ctypes.c_int, ctypes.c_char_p]
+    dvz_diagnostic_report_add_with_severity.restype = ctypes.c_bool
+
+
+try:
     dvz_diagnostic_report_count = dvz.dvz_diagnostic_report_count
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_diagnostic_report_count')
@@ -12295,6 +12326,21 @@ else:
  */"""
     dvz_diagnostic_report_count.argtypes = [ctypes.POINTER(DvzDiagnosticReport)]
     dvz_diagnostic_report_count.restype = ctypes.c_uint32
+
+
+try:
+    dvz_diagnostic_report_error_count = dvz.dvz_diagnostic_report_error_count
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_diagnostic_report_error_count')
+else:
+    dvz_diagnostic_report_error_count.__doc__ = """/**
+ * Return the number of fatal or recoverable diagnostics.
+ *
+ * @param report the diagnostic report
+ * @return the number of error-level diagnostic messages
+ */"""
+    dvz_diagnostic_report_error_count.argtypes = [ctypes.POINTER(DvzDiagnosticReport)]
+    dvz_diagnostic_report_error_count.restype = ctypes.c_uint32
 
 
 try:
@@ -12311,6 +12357,22 @@ else:
  */"""
     dvz_diagnostic_report_get.argtypes = [ctypes.POINTER(DvzDiagnosticReport), ctypes.c_uint32]
     dvz_diagnostic_report_get.restype = ctypes.c_char_p
+
+
+try:
+    dvz_diagnostic_report_get_severity = dvz.dvz_diagnostic_report_get_severity
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_diagnostic_report_get_severity')
+else:
+    dvz_diagnostic_report_get_severity.__doc__ = """/**
+ * Return a diagnostic severity.
+ *
+ * @param report the diagnostic report
+ * @param index the diagnostic index
+ * @return the diagnostic severity, or fatal when index is out of bounds
+ */"""
+    dvz_diagnostic_report_get_severity.argtypes = [ctypes.POINTER(DvzDiagnosticReport), ctypes.c_uint32]
+    dvz_diagnostic_report_get_severity.restype = ctypes.c_int
 
 
 try:
@@ -33112,7 +33174,7 @@ else:
     dvz_write_ppm.restype = ctypes.c_int
 
 
-_GENERATED_FUNCTION_COUNT = 1540
+_GENERATED_FUNCTION_COUNT = 1543
 _SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_device_config', 'dvz_drp2_render_pass_desc', 'dvz_field_geometry', 'dvz_gpu_ctx_config', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
 _DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzDataDomain', 'DvzDepthCueDesc', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2TextureDesc', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFlyDesc', 'DvzFontDefaults', 'DvzFontDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanEmitConfig', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzLimbMaterial', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzStandardMaterial', 'DvzMaterialDesc', 'DvzMsaaDesc', 'DvzOrientationGizmoDesc', 'DvzOverlayCardDesc', 'DvzOverlayCardStyle', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBackgroundGradient', 'DvzPanelBackgroundImage', 'DvzPanelBackgroundDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonRing', 'DvzPolygonDesc', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzReferenceGridDesc', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleBarDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTextPlacement', 'DvzTextStyle', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewDesc', 'DvzViewSizeDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
 __all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]

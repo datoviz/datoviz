@@ -111,7 +111,7 @@ _emit_frame_artifact(uint32_t scene_handle, uint32_t figure_handle, const char* 
         scene->packet_status = -1;
         return -1;
     }
-    if (dvz_diagnostic_report_count(&scene->report) > 0)
+    if (dvz_diagnostic_report_error_count(&scene->report) > 0)
     {
         dvz_scene_frame_artifact_destroy(scene->frame_artifact);
         scene->frame_artifact = NULL;
@@ -344,4 +344,14 @@ uint32_t dvz_wasm_api_diagnostic(uint32_t scene_handle, uint32_t index)
     const char* diagnostic =
         scene != NULL ? dvz_diagnostic_report_get(&scene->report, index) : NULL;
     return diagnostic != NULL ? (uint32_t)(uintptr_t)diagnostic : 0;
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_diagnostic_severity(uint32_t scene_handle, uint32_t index)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    return scene != NULL ? (uint32_t)dvz_diagnostic_report_get_severity(&scene->report, index)
+                         : (uint32_t)DVZ_DIAGNOSTIC_SEVERITY_FATAL;
 }

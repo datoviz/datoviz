@@ -183,6 +183,15 @@ typedef enum
 
 typedef enum
 {
+    DVZ_DIAGNOSTIC_SEVERITY_FATAL       = 0,
+    DVZ_DIAGNOSTIC_SEVERITY_RECOVERABLE = 1,
+    DVZ_DIAGNOSTIC_SEVERITY_WARNING     = 2,
+    DVZ_DIAGNOSTIC_SEVERITY_INFO        = 3,
+} DvzDiagnosticSeverity;
+
+
+typedef enum
+{
     DVZ_PANEL_VIEW_KIND_NONE = 0,
     DVZ_PANEL_VIEW_KIND_2D   = 1,
     DVZ_PANEL_VIEW_KIND_3D   = 2,
@@ -245,6 +254,7 @@ struct DvzCapabilitySnapshot
 struct DvzDiagnosticReport
 {
     uint32_t count;
+    DvzDiagnosticSeverity severities[DVZ_SCENE_MAX_DIAGNOSTICS];
     char messages[DVZ_SCENE_MAX_DIAGNOSTICS][DVZ_SCENE_DIAGNOSTIC_SIZE];
 };
 

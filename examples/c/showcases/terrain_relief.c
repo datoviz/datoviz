@@ -694,7 +694,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         dvz_scenario_set_primary_visual(ctx, state->visual) == DVZ_OK,
         "dvz_scenario_set_primary_visual() failed");
 
-#ifndef DVZ_EXAMPLE_NO_APP
     state->msaa = (DvzExampleGuiMsaaControls){
         .enabled = true,
         .alpha_to_coverage = false,
@@ -707,7 +706,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     msaa_desc.sample_count = 8u;
     msaa_desc.alpha_to_coverage = false;
     EXAMPLE_CHECK(dvz_panel_set_msaa(panel, &msaa_desc) == DVZ_OK, "dvz_panel_set_msaa() failed");
-#endif
 
     DvzController* controller = dvz_arcball(ctx->scene, NULL);
     EXAMPLE_CHECK(controller != NULL, "dvz_arcball() failed");
@@ -730,9 +728,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_tuner_arcball(
         &state->tuner, "Arcball", state->arcball, arcball_angles, 0.606531f, arcball_pan);
     example_tuner_material(&state->tuner, "Terrain material", state->visual, &state->material);
-#ifndef DVZ_EXAMPLE_NO_APP
     example_tuner_msaa(&state->tuner, "MSAA", panel, &state->msaa);
-#endif
     ok = true;
 
 cleanup:

@@ -1656,6 +1656,8 @@ static int test_frame_plan_emitter_rejects_untyped_visual_metadata(
         dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &cfg);
     AT(stream == NULL);
     AT(dvz_diagnostic_report_count(&report) >= 1);
+    AT(dvz_diagnostic_report_error_count(&report) >= 1);
+    AT(dvz_diagnostic_report_get_severity(&report, 0) == DVZ_DIAGNOSTIC_SEVERITY_FATAL);
     AT(strcmp(dvz_diagnostic_report_get(&report, 0), "render visual missing typed metadata") == 0);
 
     dvz_frame_plan_emitter_destroy(emitter);

@@ -225,6 +225,11 @@ A report should contain:
 2. one or more `DiagnosticRecord` items,
 3. a summary result such as success, degraded success, recoverable failure, or fatal failure.
 
+The active compact `DvzDiagnosticReport` stores severity alongside each message. Existing
+`dvz_diagnostic_report_add()` calls remain fatal by default; callers use an explicit severity for
+adaptation outcomes. A host must reject fatal or recoverable diagnostics, but warning-only and
+info-only reports are degraded success and must not suppress an otherwise valid frame artifact.
+
 
 ## Agent-Repairable Diagnostics
 
