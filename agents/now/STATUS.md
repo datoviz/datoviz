@@ -23,14 +23,13 @@ third-party `ilammy/msvc-dev-cmd@v1` has no Node 24 release yet.
 
 Physical MacBook M3 validation of the exact `29641789685` arm64 wheel passed the repeated
 standalone installed-wheel profile, all three deterministic and cross-frontend-parity captures,
-and all seven attended scenarios. The all-green combined report is local at
-`build/release/0.4.0rc1/report-combined-29641789685/index.html`; the durable hosted report artifact
-is `wheel-conformance-report-29641789685` from run `29642182037`. The approved M3 evidence remains
-local until its external upload and intake are explicitly authorized.
+and all seven attended scenarios. Physical evidence intake run `29643044327` accepted the approved
+bundle as artifact `physical-evidence-29641789685-macbook-m3`. The synced seven-machine report is
+all green at `build/physical-evidence/29641789685/report/index.html`; the durable hosted report
+artifact is `wheel-conformance-report-29641789685` from run `29642182037`.
 
-Next critical path: preserve the approved physical evidence if authorized, then close the RC1
-source bundle/checksum, release notes, publication rehearsal, and final public
-status/documentation reconciliation.
+Next critical path: close the RC1 source bundle/checksum, release notes, publication rehearsal,
+and final public status/documentation reconciliation.
 
 Completed runtime cleanup to keep in validation: DRP2 render-pass begin commands now carry explicit
 render area, viewport, and scissor rectangles, scene emission initializes full targets before panel
@@ -73,7 +72,7 @@ Blockers:
 
 | Lane | Status | Next proof |
 | --- | --- | --- |
-| C/C++ distribution preflight | Wheels run `29641789685` passed all 29 matrix jobs. Conformance run `29642182037` passed all six hosted lanes, including clean Linux shaderc and software-Vulkan rendering. Exact-wheel MacBook M3 unattended, parity-capture, and attended evidence passed; the combined local report has every gate green. | Preserve the approved physical evidence if authorized, then use this exact campaign for the source bundle/checksum and publication rehearsal. |
+| C/C++ distribution preflight | Wheels run `29641789685` passed all 29 matrix jobs. Conformance run `29642182037` passed all six hosted lanes, including clean Linux shaderc and software-Vulkan rendering. Exact-wheel MacBook M3 unattended, parity-capture, and attended evidence passed; intake run `29643044327` preserved it, and the synced seven-machine report has every gate green. | Use this exact campaign for the source bundle/checksum and publication rehearsal. |
 | Windows wheel proof | The July 2026 pass fixes Win32 `min`/`max`, configured wheel paths, exported C11 requirements, duplicate MSVC pthread implementations, and the ARM64 shaderc omission. Windows uses static shaderc. Hosted run `29624999442` built and inspected AMD64/ARM64 wheels, confirmed architecture, and passed installed shader-resource, shaderc, render, and Python smokes on both architectures. Physical Windows AMD64 validation passed end to end; this is provisional because the corrected Release matrix changes the artifact checksum. | Repeat or confirm physical AMD64 proof against the exact replacement artifact. |
 | WebGPU/WASM experimental path | WebGPU fixture runner works; the generic WASM scene ABI and split DRP2 packet path now register 90 scenarios and expose 86 browser-live gallery routes. Point-cloud public route metadata references a hashed 500k-point bundle; native capture and deterministic WASM packet proof pass, while its local filtered browser route reaches the known external headless instance-loss skip. SVG Tiger has headed browser proof and an approved committed prepared-data bundle attributed to Nicolas P. Rougier's Glumpy example gallery. | Confirm point-cloud redistribution authorization and manually verify its public website route, then continue generic volume and rendering techniques. |
 | Compute+graphics experimental path | DRP2 `ResourceBarrier`, FramePlan scene compute lowering, WebGPU fixture parity, and the C `gpu_particle_smoke` showcase are active. CPU command-generation proof passed on 2026-06-04. Native Vulkan compute+graphics proof passed on 2026-06-17: `test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes`, `test_vklite_compute_1`, `test_technique_compute_graphics`, and `examples/c/showcases/gpu_particle_smoke.c --png` with artifact `build/release-evidence/gpu_particle_smoke.png`. | Keep the slice classified as experimental in the feature/status table: native proof exists, but this is a narrow scene-compute/DRP2 interop path, not a general compute framework. |
