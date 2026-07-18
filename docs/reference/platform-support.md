@@ -34,15 +34,16 @@ separately in smoke output or compatibility notes.
 
 | Provider | Status | Requirement |
 | --- | --- | --- |
-| Qt/PyQt hosting | Supported, optional provider | Needs the optional `datoviz_qtbridge`, compatible Qt runtime, PyQt6 Vulkan binding surface, and platform WSI support. |
+| Qt/PyQt hosting | Implemented; source-build-only in RC1 | Needs a source-built `datoviz_qtbridge`, compatible Qt runtime, PyQt6 Vulkan binding surface, and platform WSI support. A packaged provider is planned for RC2. |
 | PySide6 hosting | Not a v0.4 target by default | Only viable if a binding exposes the same required Vulkan surface and pointer-unwrapping support. |
 | Shaderc runtime compilation | Optional | Enabled when headers/library are found or required by `DVZ_ENABLE_SHADERC=ON`; otherwise precompiled shaders are required. |
 | CUDA/CuPy interop | Advanced/unstable | Native/provider-style work only; not portable WebGPU support. |
 | Video encoders | Optional/backend-dependent | Software or hardware encoders depend on build options and installed libraries. |
 
-The base `libdatoviz` build and base Python wheel do not link Qt. PyQt hosting needs a
-`datoviz_qtbridge` shared library built with `DVZ_ENABLE_QT_BRIDGE=ON` or supplied separately, plus
-a compatible Qt/PyQt runtime at load time.
+The base `libdatoviz` build and base Python wheel do not link Qt. RC1 wheels include the
+`datoviz.qt` adapter, and the `datoviz[qt]` extra installs PyQt6, but neither includes the native
+bridge. PyQt hosting therefore needs a `datoviz_qtbridge` shared library built with
+`DVZ_ENABLE_QT_BRIDGE=ON` or supplied separately, plus a compatible Qt/PyQt runtime at load time.
 
 ## Build Dependencies
 

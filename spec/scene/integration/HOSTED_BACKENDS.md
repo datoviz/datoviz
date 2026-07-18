@@ -35,8 +35,9 @@ core. The Qt-specific hosting and PyQt FFI policy lives in [QT_HOSTING.md](QT_HO
 Qt integration should be optional integration code outside `libdatoviz`.
 
 Outside core means outside the base shared library target, not necessarily outside the repository.
-Possible locations include `extras/qt/`, `integrations/qt/`, a companion `datoviz-qt` package, or
-the Python extra `datoviz[qt]`.
+Possible locations include `extras/qt/`, `integrations/qt/`, or a companion `datoviz-qt` package.
+The Python extra `datoviz[qt]` installs Python dependencies only; it does not supply the native
+bridge in RC1.
 
 Reasons:
 
@@ -163,7 +164,7 @@ For IPython terminal:
 
 In practice, the best IPython terminal path is probably:
 
-1. `datoviz[qt]` creates a Qt adapter,
+1. `datoviz.qt` creates a Qt adapter after a compatible native bridge has been built or installed,
 2. IPython `%gui qt` runs the Qt event loop while waiting for input,
 3. Datoviz renders when Qt schedules updates.
 

@@ -40,8 +40,9 @@ Required before feature freeze:
 6. Core examples compile and exercise the release feature set.
 7. Minimal compute+graphics interop has an experimental C-first proof, explicit DRP2
    synchronization, and a gallery-oriented particle example.
-8. Low-level Qt/PyQt hosted rendering works through the optional Qt bridge provider, is documented
-   as an optional provider, and does not add Qt as a dependency of `libdatoviz`.
+8. Low-level Qt/PyQt hosted rendering works through a source-built Qt bridge, is documented as
+   source-build-only in RC1, and does not add Qt as a dependency of `libdatoviz`. Packaged-provider
+   work is an RC2 deliverable.
 
 Not required for v0.4:
 
@@ -135,8 +136,9 @@ Exit criteria:
 4. Retained textured mesh remains in validation with deterministic proof.
 5. Text, axes, ticks, colorbars, annotations, scale bars, and retained visuals are represented in
    examples or tests.
-6. Qt/PyQt hosting remains classified as `supported, optional provider`, with bridge diagnostics
-   and wheel checks kept explicit.
+6. Qt/PyQt hosting remains classified as implemented but source-build-only in RC1, with the absence
+   of a packaged bridge, the limits of `datoviz[qt]`, bridge diagnostics, and wheel checks kept
+   explicit.
 
 Suggested validation:
 
@@ -195,6 +197,10 @@ Exit criteria:
 6. Optional CUDA SDK interop remains native-only, capability-gated, and advanced/unstable.
 
 ### 5. Qt/PyQt Hosted Path
+
+RC1 availability: the implementation and local source-build proof are complete, but canonical RC1
+wheels do not contain `datoviz_qtbridge`. The `datoviz[qt]` extra supplies PyQt6 only. Ordinary
+wheel users therefore do not have a ready-to-use Qt hosted path in RC1.
 
 Exit criteria:
 
@@ -258,6 +264,9 @@ Exit criteria:
 4. RC1 feedback is triaged.
 5. Gallery/data attribution and outreach candidates satisfy
    [../../spec/release/GALLERY_OUTREACH.md](../../spec/release/GALLERY_OUTREACH.md).
+6. Qt/PyQt hosting has a tested packaged `datoviz_qtbridge` provider, preferably conda-first,
+   without adding Qt to the base wheel. PyPI provider wheels remain optional until their runtime
+   and repair policy is proven on every target OS.
 
 Candidate feature work, not an RC2 blocker:
 

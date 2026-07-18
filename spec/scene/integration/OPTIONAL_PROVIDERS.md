@@ -61,8 +61,9 @@ Qt host bridge:
    binding for `QVulkanInstance::setVkInstance()` or `QVulkanInstance::vkInstance()`.
 2. Must be separate from core `libdatoviz`.
 3. Should be loaded by `datoviz.qt` only when PyQt hosting is requested.
-4. Has v0.4 status `supported, optional provider`: Qt/PyQt hosting is supported when the provider,
-   Qt runtime, PyQt Vulkan binding surface, and platform WSI extensions are available.
+4. Is implemented but source-build-only in RC1: Qt/PyQt hosting works when a source-built provider,
+   Qt runtime, PyQt Vulkan binding surface, and platform WSI extensions are available. A packaged
+   provider is an RC2 deliverable.
 5. Must diagnose missing bridge libraries, ABI mismatches, Qt runtime mismatches, unsupported
    PyQt/PySide bindings, and missing Vulkan platform support before creating hosted Datoviz views.
 

@@ -223,17 +223,19 @@ If those exist later, the same native bridge can be reused by passing the unwrap
 
 Main Datoviz wheels should not bundle Qt or PyQt just for this bridge.
 
-Planned v0.4 packaging route:
+RC1 disposition and RC2 packaging route:
 
 1. The main `datoviz` wheel ships the `datoviz.qt` Python adapter and the `datoviz[qt]` extra, but
    not Qt, PyQt, or `datoviz_qtbridge`.
 2. Source builds keep `DVZ_ENABLE_QT_BRIDGE=AUTO`: build `datoviz_qtbridge` when Qt development
    files are present and skip it without failing the core build when they are absent.
-3. Local developers and early RC testers use `DATOVIZ_QTBRIDGE_LIBRARY` or an installed provider
-   location to point `datoviz.qt` at the bridge.
-4. Conda-forge should be the first split binary route because it can keep PyQt, Qt, and the bridge
-   on one managed Qt runtime.
-5. PyPI provider wheels can be considered only after the bridge ABI, Qt runtime-version policy,
+3. RC1 has no packaged bridge provider. Its Qt/PyQt path is source-build-only, and
+   `datoviz[qt]` alone is insufficient because that extra installs PyQt6 but not the native bridge.
+4. Local developers and RC1 testers use `DATOVIZ_QTBRIDGE_LIBRARY` or an installed provider
+   location to point `datoviz.qt` at a source-built bridge.
+5. RC2 should provide the first split binary route through conda-forge because it can keep PyQt,
+   Qt, and the bridge on one managed Qt runtime.
+6. PyPI provider wheels can be considered only after the bridge ABI, Qt runtime-version policy,
    wheel repair behavior, and failure diagnostics are proven on every target OS.
 
 Do not build a Qt-linked bridge into the main manylinux, macOS, or Windows Datoviz wheels unless a
@@ -243,7 +245,7 @@ layout consequences.
 
 ## Split Provider Release Route
 
-The bridge is a provider artifact, not part of the base wheel. The next release work is:
+The bridge is a provider artifact, not part of the base wheel. RC2 release work is:
 
 1. Keep the base wheel proof on `--qt-probe optional` and verify that it installs, imports, and
    diagnoses missing Qt/PyQt/bridge state cleanly.

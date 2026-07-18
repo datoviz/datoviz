@@ -37,7 +37,10 @@ Exit criteria:
 5. gallery examples include data attribution, source links, licenses, and reproducible capture
    commands where relevant;
 6. candidate real-dataset outreach examples and gallery media are reviewed for scientific
-   usefulness, not only visual polish.
+   usefulness, not only visual polish;
+7. Qt/PyQt hosting has a tested packaged `datoviz_qtbridge` provider, preferably conda-first,
+   without adding Qt to the base Datoviz wheel. PyPI provider wheels remain optional until their
+   Qt runtime and per-platform repair policy are proven.
 
 
 ## RC3: Packaging And Quality Candidate

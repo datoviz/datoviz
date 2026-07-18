@@ -168,8 +168,10 @@ python -m pip install "datoviz[qt]"
 ```
 
 The main wheel must still install and import without PyQt. It must not bundle Qt, PyQt, or
-`datoviz_qtbridge`. `datoviz.qt` should fail with a clear diagnostic when PyQt6, Qt Vulkan support,
-the optional Qt bridge provider, or platform Vulkan WSI support is missing.
+`datoviz_qtbridge`. The `datoviz[qt]` extra installs PyQt6 only and is insufficient for hosted
+rendering without a compatible native bridge. `datoviz.qt` should fail with a clear diagnostic when
+PyQt6, Qt Vulkan support, the optional Qt bridge provider, or platform Vulkan WSI support is
+missing.
 
 Maintainer checks should use:
 
@@ -180,12 +182,13 @@ just wheel-check --cmake-consumer --qt-probe optional
 Use `--qt-probe required` only on a machine or CI runner where PyQt6, Qt Vulkan support, and the
 Datoviz Qt bridge provider are expected to be present.
 
-The planned Qt release route is a separate provider route, not a base-wheel dependency. Source
-builds may build `datoviz_qtbridge` with `DVZ_ENABLE_QT_BRIDGE=ON` or `AUTO`; local and split
-provider validation should point `datoviz.qt` at that bridge with `DATOVIZ_QTBRIDGE_LIBRARY`.
-Conda-forge is the preferred first binary provider channel because it can keep Qt, PyQt, and the
-bridge on one managed runtime. PyPI provider wheels should wait until the bridge ABI,
-runtime-version policy, and per-platform Qt library layout are proven.
+RC1 has no packaged Qt bridge provider; its Qt/PyQt path is source-build-only. The RC2 release goal
+is a separate provider route, not a base-wheel dependency. Source builds may build
+`datoviz_qtbridge` with `DVZ_ENABLE_QT_BRIDGE=ON` or `AUTO`; local and split provider validation
+should point `datoviz.qt` at that bridge with `DATOVIZ_QTBRIDGE_LIBRARY`. Conda-forge is the
+preferred first binary provider channel because it can keep Qt, PyQt, and the bridge on one managed
+runtime. PyPI provider wheels should wait until the bridge ABI, runtime-version policy, and
+per-platform Qt library layout are proven.
 
 On a Qt-capable source host, validate the split provider route with:
 
