@@ -15,7 +15,7 @@ jobs:
     outputs:
       json: ${{ steps.matrix.outputs.json }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - id: matrix
         run: |
           python tools/release_wheels/wheel_matrix.py --json > matrix.json
@@ -24,10 +24,10 @@ jobs:
   python-bindings:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
       - name: Generate Python bindings
@@ -39,7 +39,7 @@ jobs:
           python tools/bindings/generate_array_facade.py
           test -f datoviz/_ctypes.py
           test -f datoviz/_array_facade.py
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: python-bindings
           path: |
@@ -63,7 +63,7 @@ jobs:
             arch: aarch64
             platform_tag: manylinux_2_34_aarch64
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
       - name: Build, inspect, and smoke-test manylinux wheel
@@ -71,7 +71,7 @@ jobs:
           DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_MIMALLOC_SOURCE=OFF -DDVZ_BUILD_TESTING=OFF -DDVZ_BUILD_EXAMPLES=OFF"
         run: |
           bash tools/release_wheels/manylinux_build_inside.sh ${{ matrix.arch }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheel-linux-${{ matrix.arch }}
           path: wheelhouse/*.whl
@@ -95,10 +95,10 @@ jobs:
       MACOSX_DEPLOYMENT_TARGET: ${{ matrix.deployment_target }}
       DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_MIMALLOC_SOURCE=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.deployment_target }}"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
       - name: Dependencies
@@ -107,7 +107,7 @@ jobs:
           python -m pip install -U pip build delocate
           command -v glslangValidator
           command -v delocate-listdeps
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: python-bindings
           path: .
@@ -155,7 +155,7 @@ jobs:
               "${render_args[@]}" \
               --cmake-consumer \
               --examples "$example_profile"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheel-macos-${{ matrix.arch }}
           path: wheelhouse/*.whl
@@ -187,18 +187,18 @@ jobs:
       VCPKG_NUGET_FEED: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
       VCPKG_BINARY_SOURCES: clear;files,C:/vcpkg-binary-cache,readwrite;nuget,https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json,readwrite
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: ${{ matrix.msvc_arch }}
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
       - name: Restore vcpkg binary archives
         id: vcpkg-binary-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: C:/vcpkg-binary-cache
           key: ${{ matrix.runner }}-${{ matrix.vcpkg_triplet }}-wheel-vcpkg-binary-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
@@ -208,7 +208,7 @@ jobs:
             ${{ runner.os }}-wheel-vcpkg-binary-
       - name: Restore vcpkg installed tree
         id: vcpkg-installed-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: build/vcpkg_installed
           key: ${{ matrix.runner }}-${{ matrix.vcpkg_triplet }}-wheel-vcpkg-installed-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
@@ -250,7 +250,7 @@ jobs:
           Get-Command ccache
           python -c "import delvewheel"
           python -c "from clang import cindex; print(cindex.Config.library_path)"
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: python-bindings
           path: .
@@ -268,13 +268,13 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Save vcpkg binary archives
         if: steps.vcpkg-binary-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: C:/vcpkg-binary-cache
           key: ${{ matrix.runner }}-${{ matrix.vcpkg_triplet }}-wheel-vcpkg-binary-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
       - name: Save vcpkg installed tree
         if: steps.vcpkg-installed-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: build/vcpkg_installed
           key: ${{ matrix.runner }}-${{ matrix.vcpkg_triplet }}-wheel-vcpkg-installed-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
@@ -375,7 +375,7 @@ jobs:
           $wheelPath = $wheel.FullName.Replace('\\', '/')
           python tools/release_wheels/check_wheel.py --wheel "$wheelPath" --release-build --precompiled-shaders --shaderc --render
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheel-windows-${{ matrix.arch }}
           path: wheelhouse/*.whl
@@ -388,12 +388,12 @@ jobs:
       matrix:
         python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           name: wheel-linux-x86_64
           path: wheelhouse
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
       - name: Dependencies
@@ -406,12 +406,12 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           name: wheel-linux-x86_64
           path: wheelhouse
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.15-dev"
           allow-prereleases: true
@@ -437,12 +437,12 @@ jobs:
     env:
       MACOSX_DEPLOYMENT_TARGET: ${{ matrix.target.deployment_target }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           name: wheel-macos-${{ matrix.target.arch }}
           path: wheelhouse
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
       - name: Dependencies
@@ -460,12 +460,12 @@ jobs:
       matrix:
         python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           name: wheel-windows-AMD64
           path: wheelhouse
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
       - name: Dependencies

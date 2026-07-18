@@ -32,7 +32,7 @@ jobs:
     steps:
     - name: Checkout
       if: env.USING_ACT == 0
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: recursive
 
@@ -67,14 +67,14 @@ jobs:
     steps:
     - name: Checkout
       if: env.USING_ACT == 0
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: recursive
 
 
     # Cache Homebrew dependencies
     - name: Cache Homebrew
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: |
           /usr/local/Homebrew/Library/Homebrew
@@ -93,7 +93,7 @@ jobs:
 
     # Cache pip dependencies
     - name: Cache pip
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt') }}
@@ -150,7 +150,7 @@ jobs:
     # Cache
     - name: Cache
       if: env.USING_ACT == 0
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: |
           C:/vcpkg
@@ -186,13 +186,13 @@ jobs:
     # Checkout
     - name: Checkout
       if: env.USING_ACT == 0
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: recursive
 
     # Cache Python
     - name: Cache Python
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: |
           c:/hostedtoolcache/windows/python/3.9.13/x64/lib/site-packages

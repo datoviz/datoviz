@@ -111,11 +111,11 @@ jobs:
             setup: windows
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: ${{ matrix.artifact }}
           path: wheelhouse
@@ -179,7 +179,7 @@ jobs:
               "${render_args[@]}" \
               "${cmake_args[@]}" \
               "${example_args[@]}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: wheel-conformance-evidence-${{ matrix.machine_id }}
@@ -191,8 +191,8 @@ jobs:
     needs: [prepare, conformance]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: wheel-conformance-evidence-*
           path: build/conformance-inputs
@@ -207,7 +207,7 @@ jobs:
             --expected-machine cloud-macos-x86_64-no-gpu \
             --expected-machine cloud-windows-amd64 \
             --expected-machine cloud-windows-arm64
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheel-conformance-report-${{ needs.prepare.outputs.wheel_run_id }}
           path: build/conformance-report

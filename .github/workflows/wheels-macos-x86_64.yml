@@ -11,10 +11,10 @@ jobs:
   python-bindings:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
       - name: Generate Python bindings
@@ -26,7 +26,7 @@ jobs:
           python tools/bindings/generate_array_facade.py
           test -f datoviz/_ctypes.py
           test -f datoviz/_array_facade.py
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: python-bindings
           path: |
@@ -38,10 +38,10 @@ jobs:
     needs: python-bindings
     runs-on: macos-15-intel
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
       - name: Dependencies
@@ -50,7 +50,7 @@ jobs:
           python -m pip install -U pip build delocate
           command -v glslangValidator
           command -v delocate-listdeps
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: python-bindings
           path: .
@@ -71,7 +71,7 @@ jobs:
           for whl in wheelhouse/*.whl; do
             just wheel-inspect --wheel "$whl" --native-deps
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheel-macos-x86_64
           path: wheelhouse/*.whl
@@ -84,12 +84,12 @@ jobs:
       matrix:
         python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           name: wheel-macos-x86_64
           path: wheelhouse
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
       - name: Dependencies

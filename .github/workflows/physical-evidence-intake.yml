@@ -29,7 +29,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: oras-project/setup-oras@v1
       - name: Download submitted bundle
         env:
@@ -54,7 +54,7 @@ jobs:
             --wheel-run-id "$WHEEL_RUN_ID" \
             --machine-id "$MACHINE_ID" \
             --version "$RELEASE_VERSION"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: physical-evidence-${{ inputs.wheel_run_id }}-${{ inputs.machine_id }}
           path: build/accepted
