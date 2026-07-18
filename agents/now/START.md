@@ -56,9 +56,9 @@ as real implementation, not scaffolding.
 12. Use [HANDOFF_WINDOWS_RC1_WHEELS.md](HANDOFF_WINDOWS_RC1_WHEELS.md) to finish the active Windows
     AMD64/ARM64 shaderc, packaging, deterministic CI, and vcpkg-cache lane. Its first external
     NuGet package write and any push/workflow dispatch require explicit approval.
-13. Before any TestPyPI upload, resolve the Release validation/logging blocker in
-    [HANDOFF_RC1_RELEASE_SILENCE.md](HANDOFF_RC1_RELEASE_SILENCE.md). Its fix changes native wheel
-    bytes, so run `29641789685` is historical evidence rather than the final RC1 payload campaign.
+13. TestPyPI upload and six-platform package-index verification passed for canonical Wheels run
+    `29644925786`; keep [HANDOFF_RC1_RELEASE_SILENCE.md](HANDOFF_RC1_RELEASE_SILENCE.md) as the
+    completed blocker record and preserve those exact wheel hashes through PyPI publication.
 
 
 ## Guardrails

@@ -236,16 +236,17 @@ Exit criteria:
 
 Current packaging gate:
 
-1. Hosted wheel CI run `29618922450` on 2026-07-17 passed the required matrix at `d16512c1d`:
-   Linux x86_64/aarch64, macOS 15 arm64/Intel, Windows AMD64/ARM64, Python 3.10 through 3.14
-   installed-wheel smokes on Linux/macOS/Windows, and the non-blocking Linux prerelease smoke.
-2. The Windows jobs use static shaderc, inspect the ARM64 DLL architecture, and package the CMake
-   files and Windows import library. The next workflow revision also executes shaderc from the
-   installed native ARM64 wheel.
-3. Freeze the candidate and require a new all-green matrix at that exact SHA before treating the
-   provisional run as final RC evidence.
-4. Then inspect downloaded artifacts, generate the RC1 source bundle/checksum, collect physical
-   machine evidence, finalize the notes, and rehearse publication.
+1. Canonical Wheels run `29644925786` passed all 29 jobs at exact artifact commit `ea06c5cdf`,
+   covering Linux x86_64/aarch64, macOS 15 arm64/Intel, Windows AMD64/ARM64, Python 3.10 through
+   3.14 installed-wheel smokes, and the non-blocking Linux prerelease smoke.
+2. Hosted conformance run `29645577693` passed all six lanes. Physical intake run `29645582130`
+   accepted the exact macOS arm64 wheel evidence, including all seven attended scenarios; the
+   consolidated seven-machine report passes every gate.
+3. The RC1 source bundle, validation pack, checksums, release report, and notes are recorded.
+4. TestPyPI package-index verification run `29652477816` matched all six indexed wheel filenames,
+   byte counts, and SHA-256 values to run `29644925786`; all clean installed-package smokes and the
+   aggregate report passed. Preserve these bytes through PyPI publication and repeat the index
+   verification there before changing public installation guidance.
 
 ### 8. RC2
 
