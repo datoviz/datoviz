@@ -278,10 +278,30 @@ def _pip_install(python: Path, cwd: Path, args: list[str]) -> None:
 def _python_smokes(python: Path, work: Path) -> None:
     _run([str(python), "-c", "import datoviz; print(datoviz.__file__)"], cwd=work)
     _run([str(python), "-c", "import datoviz.raw as dvz; print(dvz.__file__)"], cwd=work)
+    _builtin_shader_resource_smoke(python, work)
     _run([str(python), "-m", "datoviz.cli", "--prefix"], cwd=work)
     _run([str(python), "-m", "datoviz.cli", "--cflags"], cwd=work)
     _run([str(python), "-m", "datoviz.cli", "--libs"], cwd=work)
     _run([str(python), "-m", "datoviz.cli", "--cmake-dir"], cwd=work)
+
+
+def _builtin_shader_resource_smoke(python: Path, work: Path) -> None:
+    code = r'''
+import ctypes
+import datoviz.raw as dvz
+
+for function, key in (
+    (dvz.dvz_resource_shader, b"point_vert"),
+    (dvz.dvz_resource_glsl, b"point_vert"),
+):
+    size = ctypes.c_uint64(0)
+    pointer = function(key, ctypes.byref(size))
+    if not pointer or size.value == 0:
+        raise SystemExit(f"missing embedded shader resource: {key.decode()}")
+
+print("installed built-in shader resources: OK")
+'''
+    _run([str(python), "-c", code], cwd=work)
 
 
 def _shaderc_smoke(python: Path, work: Path) -> None:

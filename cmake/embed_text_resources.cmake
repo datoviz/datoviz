@@ -35,6 +35,9 @@ function(read_text_with_local_includes input output_data output_size)
 endfunction()
 
 function(create_text_resources files prefix output)
+    # Custom-command argument escaping preserves list separators as "\\;" on Windows.
+    # Normalize them before using IN LISTS so every generated shader becomes a resource.
+    string(REPLACE "\\;" ";" files "${files}")
     file(WRITE "${output}" "")
     file(APPEND "${output}" "#include <string.h>\n")
     file(APPEND "${output}" "#include \"datoviz/fileio/fileio.h\"\n\n")

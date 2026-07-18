@@ -14,6 +14,9 @@
 # <name> is derived from the filename with extension stripped and non-alnum chars → '_'.
 
 function(create_resources files prefix output)
+    # Custom-command argument escaping preserves list separators as "\\;" on Windows.
+    # Normalize them before using IN LISTS so every generated shader becomes a resource.
+    string(REPLACE "\\;" ";" files "${files}")
     file(WRITE "${output}" "")
     file(APPEND "${output}" "#include <string.h>\n")
     file(APPEND "${output}" "#include \"datoviz/fileio/fileio.h\"\n\n")
