@@ -64,6 +64,26 @@ The target platform lanes are:
 2. macOS `x86_64` and `arm64`;
 3. Windows `AMD64` and `ARM64`.
 
+Run the shared cloud/physical unattended conformance harness against an exact wheel with:
+
+```sh
+just wheel-conformance \
+  --wheel path/to/datoviz.whl \
+  --output-dir build/conformance/machine-id \
+  --version 0.4.0rc1 \
+  --wheel-run-id 29635132595 \
+  --artifact-commit 443adb067 \
+  --machine-id machine-id \
+  --execution-class physical-interactive \
+  --mode physical
+```
+
+Physical mode runs the same repeated installed-wheel render profile as cloud mode and leaves the
+manual interaction set pending. After the guided checks, record every observation with
+`just release-test-approve`. Consolidate any number of returned evidence directories with
+`just wheel-conformance-report`; download and open a hosted report with
+`just wheel-report <wheel-run-id>`.
+
 The GitHub Actions workflow is stored in `.github/workflows/wheels.yml` and is manual-only through
 `workflow_dispatch`. Keep `.github/workflows-draft/wheels.yml` as a staging reference for major
 workflow rewrites, but use the live workflow for RC wheel evidence after local validation passes.

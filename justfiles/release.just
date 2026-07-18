@@ -151,6 +151,14 @@ release-machine-validate version *args:
     @python3 tools/release_automation.py machine-validate "{{version}}" {{args}}
 #
 
+release-test *args:
+    @python3 tools/release_wheels/conformance.py run {{args}}
+#
+
+release-test-approve *args:
+    @python3 tools/release_wheels/conformance.py approve {{args}}
+#
+
 release-report version *args:
     @python3 tools/release_automation.py report "{{version}}" {{args}}
 #

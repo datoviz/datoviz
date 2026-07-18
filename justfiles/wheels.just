@@ -30,6 +30,18 @@ wheel-check *args:
     @python tools/release_wheels/check_wheel.py {{args}}
 #
 
+wheel-conformance *args:
+    @python tools/release_wheels/conformance.py run {{args}}
+#
+
+wheel-conformance-report *args:
+    @python tools/release_wheels/conformance.py aggregate {{args}}
+#
+
+wheel-report wheel_run_id='' *args:
+    @python tools/release_wheels/conformance.py fetch {{if wheel_run_id == '' { '' } else { '--wheel-run-id ' + wheel_run_id }}} {{args}}
+#
+
 release-source-bundle version:
     @python tools/release_source_bundle.py {{version}}
 #
