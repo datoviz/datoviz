@@ -28,6 +28,7 @@ except ModuleNotFoundError:  # pragma: no cover - Python 3.10 fallback.
 
 ROOT = Path(__file__).resolve().parents[1]
 STATE_SCHEMA = "datoviz.release-state.v1"
+CONFORMANCE_REPORT_SCHEMA = "datoviz.release-conformance-report.v1"
 DEFAULT_DIST_DIR = ROOT / "dist"
 
 PREFLIGHT_PROFILES: dict[str, list[list[str]]] = {
@@ -728,6 +729,9 @@ def release_analysis(version: str) -> dict[str, Any]:
     missing_required = [
         row for row in matrix if row["required_for_rc"] is True and row["status"] == "missing"
     ]
+    campaign = conformance_campaign(state, artifacts)
+    if campaign.get("status") == "pass":
+        missing_required = []
 
     changed = []
     missing = []
@@ -752,6 +756,7 @@ def release_analysis(version: str) -> dict[str, Any]:
         "evidence": evidence,
         "failed_evidence": failed_evidence,
         "matrix": matrix,
+        "conformance_campaign": campaign,
         "missing_required": missing_required,
         "missing_artifacts": missing,
         "changed_artifacts": changed,
@@ -761,6 +766,76 @@ def release_analysis(version: str) -> dict[str, Any]:
 
 def artifact_kinds(artifacts: list[dict[str, Any]], kind: str) -> list[dict[str, Any]]:
     return [artifact for artifact in artifacts if artifact.get("kind") == kind]
+
+
+def conformance_campaign(
+    state: dict[str, Any], artifacts: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Validate an accepted cross-platform conformance report against candidate wheels."""
+    reports = artifact_kinds(artifacts, "conformance-report")
+    if not reports:
+        return {"status": "missing", "detail": "no conformance campaign report recorded"}
+    report_path = ROOT / str(reports[-1].get("path", ""))
+    try:
+        report = json.loads(report_path.read_text(encoding="utf8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return {"status": "fail", "detail": f"unable to read conformance report: {exc}"}
+
+    failures = []
+    if report.get("schema") != CONFORMANCE_REPORT_SCHEMA:
+        failures.append(f"unexpected schema {report.get('schema')!r}")
+    if report.get("status") != "pass":
+        failures.append(f"campaign status is {report.get('status')!r}")
+    failed_gates = [
+        str(key) for key, value in (report.get("gates") or {}).items() if value != "pass"
+    ]
+    if failed_gates:
+        failures.append("non-passing gates: " + ", ".join(sorted(failed_gates)))
+    if report.get("missing_machines"):
+        failures.append("required machines are missing")
+
+    expected_wheels = {
+        (str(item.get("name", "")), str(item.get("sha256", "")))
+        for item in artifact_kinds(artifacts, "wheel")
+    }
+    reported_wheels = {
+        (
+            str((item.get("artifact_checksums") or {}).get("wheel", {}).get("name", "")),
+            str((item.get("artifact_checksums") or {}).get("wheel", {}).get("sha256", "")),
+        )
+        for item in report.get("evidence", [])
+    }
+    if expected_wheels != reported_wheels:
+        failures.append("campaign wheel names or checksums differ from candidate artifacts")
+
+    campaign = report.get("campaign") or {}
+    artifact_commit = str(campaign.get("artifact_commit", ""))
+    release_commit = str(state.get("commit", ""))
+    if not artifact_commit or not release_commit:
+        failures.append("campaign or release commit is missing")
+    elif subprocess.call(
+        ["git", "merge-base", "--is-ancestor", artifact_commit, release_commit],
+        cwd=ROOT,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    ) != 0:
+        failures.append("validated wheel commit is not an ancestor of the release commit")
+
+    return {
+        "status": "fail" if failures else "pass",
+        "detail": "; ".join(failures)
+        if failures
+        else "accepted hosted and physical campaign matches all candidate wheels",
+        "path": relpath(report_path),
+        "wheel_run_id": str(campaign.get("wheel_run_id", "")),
+        "artifact_commit": artifact_commit,
+        "validator_commit": str(campaign.get("validator_commit", "")),
+        "machines": sorted(
+            str(item.get("machine_id", ""))
+            for item in report.get("evidence", [])
+            if item.get("machine_id")
+        ),
+    }
 
 
 def gate_rows(analysis: dict[str, Any]) -> list[dict[str, str]]:
@@ -776,6 +851,7 @@ def gate_rows(analysis: dict[str, Any]) -> list[dict[str, str]]:
     )
     required_missing = analysis["missing_required"]
     failed_evidence = analysis["failed_evidence"]
+    campaign = analysis["conformance_campaign"]
 
     rows = [
         {
@@ -822,8 +898,16 @@ def gate_rows(analysis: dict[str, Any]) -> list[dict[str, str]]:
         },
         {
             "id": "machine_matrix",
-            "status": "fail" if failed_evidence else "missing" if required_missing else "pass",
-            "detail": "required machine evidence passed"
+            "status": "pass"
+            if campaign.get("status") == "pass"
+            else "fail"
+            if failed_evidence or campaign.get("status") == "fail"
+            else "missing"
+            if required_missing
+            else "pass",
+            "detail": str(campaign.get("detail"))
+            if campaign.get("status") != "missing"
+            else "required legacy machine evidence passed"
             if not required_missing and not failed_evidence
             else "missing or failing required machine evidence",
         },
@@ -1028,6 +1112,8 @@ def rehearsal_blockers(analysis: dict[str, Any]) -> list[str]:
         blockers.append("machine evidence contains failures")
     if analysis["missing_required"]:
         blockers.append("required machine evidence is missing")
+    if analysis["conformance_campaign"].get("status") == "fail":
+        blockers.append("accepted conformance campaign evidence failed validation")
     for row in gate_rows(analysis):
         if (
             row["id"] in {"source_bundle", "docs_validation", "release_report", "checksums"}
@@ -1903,6 +1989,13 @@ def candidate(args: argparse.Namespace) -> int:
     if not args.dry_run:
         state["artifacts"].extend(discover_wheels(args.dist_dir))
         state["artifacts"].extend(discover_release_notes(version))
+        if args.conformance_report:
+            report_path = (
+                args.conformance_report
+                if args.conformance_report.is_absolute()
+                else ROOT / args.conformance_report
+            )
+            state["artifacts"].append(artifact_record(report_path, "conformance-report"))
         state["evidence"] = discover_evidence(version)
         state["updated_at_utc"] = utc_now()
         state["status"] = "fail" if failures else "candidate"
@@ -1984,7 +2077,17 @@ def render_report_text(analysis: dict[str, Any]) -> str:
     else:
         lines.append("- missing: no physical-machine evidence ingested")
 
-    lines.extend(["", "## Machine Matrix"])
+    campaign = analysis["conformance_campaign"]
+    lines.extend(["", "## Cross-Platform Conformance Campaign"])
+    lines.append(f"- status: `{campaign.get('status', 'missing')}`")
+    lines.append(f"- detail: {campaign.get('detail', '-')}")
+    if campaign.get("wheel_run_id"):
+        lines.append(f"- wheel run: `{campaign['wheel_run_id']}`")
+        lines.append(f"- wheel commit: `{campaign.get('artifact_commit', '')}`")
+        lines.append(f"- validator commit: `{campaign.get('validator_commit', '')}`")
+        lines.append(f"- machines: {', '.join(campaign.get('machines', []))}")
+
+    lines.extend(["", "## Legacy Physical Evidence Matrix"])
     for row in matrix:
         profiles = ", ".join(row["profiles"]) if row["profiles"] else "-"
         machines = ", ".join(row["machines"]) if row["machines"] else "-"
@@ -2689,6 +2792,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     candidate_parser.add_argument("--skip-source", action="store_true")
     candidate_parser.add_argument("--dist-dir", type=Path, default=DEFAULT_DIST_DIR)
     candidate_parser.add_argument("--artifact-dir", type=Path)
+    candidate_parser.add_argument(
+        "--conformance-report",
+        type=Path,
+        help="accepted hosted and physical conformance campaign report",
+    )
 
     pack_parser = subparsers.add_parser(
         "validation-pack", help="Create a portable validation pack for physical machines"
