@@ -2,6 +2,10 @@ name: "Package index verification"
 run-name: "Package index verification · ${{ inputs.index }} · ${{ inputs.version }} · Wheels ${{ inputs.wheel_run_id }}"
 
 on:
+  push:
+    branches: [v0.4-dev]
+    paths:
+      - ".github/package-index-verification-request.json"
   workflow_dispatch:
     inputs:
       index:
@@ -36,6 +40,7 @@ jobs:
       wheel_run_id: ${{ steps.request.outputs.wheel_run_id }}
       artifact_commit: ${{ steps.request.outputs.artifact_commit }}
     steps:
+      - uses: actions/checkout@v7
       - id: request
         env:
           GH_TOKEN: ${{ github.token }}
@@ -43,6 +48,14 @@ jobs:
           RELEASE_VERSION: ${{ inputs.version }}
           WHEEL_RUN_ID: ${{ inputs.wheel_run_id }}
         run: |
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            PACKAGE_INDEX=$(jq -r '.index // empty' .github/package-index-verification-request.json)
+            RELEASE_VERSION=$(jq -r '.version // empty' .github/package-index-verification-request.json)
+            WHEEL_RUN_ID=$(jq -r '.wheel_run_id // empty' .github/package-index-verification-request.json)
+          fi
+          test -n "$PACKAGE_INDEX"
+          test -n "$RELEASE_VERSION"
+          test -n "$WHEEL_RUN_ID"
           case "$PACKAGE_INDEX" in
             testpypi) index_url="https://test.pypi.org/simple" ;;
             pypi) index_url="https://pypi.org/simple" ;;

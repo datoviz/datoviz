@@ -266,6 +266,21 @@ gh workflow run package-index-verification.yml --ref v0.4-dev \
   -f wheel_run_id=29641789685
 ```
 
+`workflow_dispatch` requires the workflow file to exist on the repository default branch. Before
+that is true for a release branch, commit
+`.github/package-index-verification-request.json` on `v0.4-dev` with the equivalent request:
+
+```json
+{
+  "index": "testpypi",
+  "version": "0.4.0rc1",
+  "wheel_run_id": "29641789685"
+}
+```
+
+Changing that request file triggers the same workflow on the release branch. Do not create or
+update it until the named version has been uploaded to the selected index.
+
 The six native jobs download Datoviz through the selected package index, require the downloaded
 filename and SHA-256 to match the corresponding GitHub Actions wheel artifact exactly, and run a
 lightweight clean installed-package import/version/CLI smoke. They intentionally do not repeat the
