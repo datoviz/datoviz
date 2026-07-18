@@ -12,22 +12,24 @@ The macOS terminal-IPython hosted window close hang is resolved by `9c1e60912`. 
 in physical-machine RC validation; use
 [HANDOFF_IPYTHON_RUN_CLOSE_HANG.md](HANDOFF_IPYTHON_RUN_CLOSE_HANG.md) as the completed record.
 
-The Windows shaderc, wheel-policy, ARM64 CI, cache-isolation, and GitHub Packages lanes are complete
-through [HANDOFF_WINDOWS_RC1_WHEELS.md](HANDOFF_WINDOWS_RC1_WHEELS.md). Workflow
-`29624999442` (`Wheels` #457) passed at `06317fa4f` with all platform builds and installed-wheel
-smokes. Physical Windows AMD64 validation passed end to end. Physical Linux validation also passed
-functionally, but rejected the artifact after the installed native version reported
-`0.4.0rc1 (DEBUG)`. The standalone macOS MoltenVK/ICD packaging fix and no-SDK render smoke landed
-in `30bbbe483`. Run `29634509734` at `77d4eeebf` then produced Release wheels: physical Linux
-x86_64 and Windows AMD64 validation passed, while the hosted macOS Intel VM aborted during a render
-smoke despite lacking GPU/Metal acceleration. Commit `7ceb18df5` gates that hosted lane to
-non-render checks and leaves Intel rendering to physical proof. The replacement matrix must also
-keep mimalloc disabled on every platform and provide the final exact artifacts.
+The corrected Release wheel matrix is `Wheels` run `29635132595` (#460), artifact commit
+`443adb067`; all six wheel-build lanes passed with mimalloc disabled. Cross-platform conformance run
+`29640430991`, validator `249937c91`, then passed macOS arm64 rendering, macOS Intel installation,
+and Windows AMD64/ARM64 installation. It exposed one real artifact blocker on both Linux wheels:
+the archive contains `datoviz/libshaderc_shared.so`, but the runtime is baked to load
+`libshaderc_shared.so.1`. The original manylinux build smoke was masked by the container's system
+shaderc library. Hosted Windows is explicitly no-GPU; ARM64 also records native CMake/example
+compiler checks as unavailable because the image only supplies x64 MinGW.
 
-Next critical path: dispatch and validate the corrected Release wheel matrix, repeat exact-artifact
-physical installed-wheel evidence on Linux, macOS, and Windows, then close the RC1 source
-bundle/checksum, release notes, publication rehearsal, and final public status/documentation
-reconciliation.
+Physical MacBook M3 validation of the exact #460 arm64 wheel passed the repeated standalone
+installed-wheel profile, all three deterministic captures, and all seven attended scenarios. The
+combined report is local at `build/release/0.4.0rc1/report-combined/index.html`; the durable hosted
+report artifact is `wheel-conformance-report-29635132595` from run `29640430991`.
+
+Next critical path: fix the Linux shaderc SONAME/package lookup, produce a new wheel matrix, rerun
+hosted conformance and exact-artifact physical evidence where machines are available, then close
+the RC1 source bundle/checksum, release notes, publication rehearsal, and final public
+status/documentation reconciliation.
 
 Completed runtime cleanup to keep in validation: DRP2 render-pass begin commands now carry explicit
 render area, viewport, and scissor rectangles, scene emission initializes full targets before panel
@@ -70,7 +72,7 @@ Blockers:
 
 | Lane | Status | Next proof |
 | --- | --- | --- |
-| C/C++ distribution preflight | macOS vendored/system package, strict Homebrew-style source install, installed CMake/pkg-config consumers, host-native wheel CMake-consumer proof, Linux manylinux proof, and Windows AMD64 local wheel proof advanced on 2026-06-18 after `d94f72dd6`, `2c8a49f3d`, the macOS pkg-config validator fix, and `19e62968`; see [C_DISTRIBUTION.md](C_DISTRIBUTION.md) for exact evidence. Hosted run `29624999442` passed the full build and installed-smoke matrix. The standalone macOS loader, MoltenVK ICD manifest, and no-SDK installed render smoke fix landed in `30bbbe483`. Physical Linux functionally passed run #457 but correctly rejected its Debug native build. | Rerun the matrix with Release-only enforcement, then repeat exact-artifact physical validation and prepare the RC1 source bundle/checksum and publication rehearsal. |
+| C/C++ distribution preflight | Wheels run `29635132595` produced the six Release artifacts. Conformance run `29640430991` passed macOS and Windows but found that both standalone Linux wheels package `libshaderc_shared.so` while runtime lookup requires `libshaderc_shared.so.1`; the build-container smoke masked this with its system library. Exact-wheel MacBook M3 unattended and attended evidence passed. | Fix Linux shaderc runtime discovery/packaging, rebuild wheels, and repeat hosted plus available physical exact-artifact validation before the source bundle/checksum and publication rehearsal. |
 | Windows wheel proof | The July 2026 pass fixes Win32 `min`/`max`, configured wheel paths, exported C11 requirements, duplicate MSVC pthread implementations, and the ARM64 shaderc omission. Windows uses static shaderc. Hosted run `29624999442` built and inspected AMD64/ARM64 wheels, confirmed architecture, and passed installed shader-resource, shaderc, render, and Python smokes on both architectures. Physical Windows AMD64 validation passed end to end; this is provisional because the corrected Release matrix changes the artifact checksum. | Repeat or confirm physical AMD64 proof against the exact replacement artifact. |
 | WebGPU/WASM experimental path | WebGPU fixture runner works; the generic WASM scene ABI and split DRP2 packet path now register 90 scenarios and expose 86 browser-live gallery routes. Point-cloud public route metadata references a hashed 500k-point bundle; native capture and deterministic WASM packet proof pass, while its local filtered browser route reaches the known external headless instance-loss skip. SVG Tiger has headed browser proof and an approved committed prepared-data bundle attributed to Nicolas P. Rougier's Glumpy example gallery. | Confirm point-cloud redistribution authorization and manually verify its public website route, then continue generic volume and rendering techniques. |
 | Compute+graphics experimental path | DRP2 `ResourceBarrier`, FramePlan scene compute lowering, WebGPU fixture parity, and the C `gpu_particle_smoke` showcase are active. CPU command-generation proof passed on 2026-06-04. Native Vulkan compute+graphics proof passed on 2026-06-17: `test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes`, `test_vklite_compute_1`, `test_technique_compute_graphics`, and `examples/c/showcases/gpu_particle_smoke.c --png` with artifact `build/release-evidence/gpu_particle_smoke.png`. | Keep the slice classified as experimental in the feature/status table: native proof exists, but this is a narrow scene-compute/DRP2 interop path, not a general compute framework. |
