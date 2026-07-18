@@ -166,6 +166,33 @@ def test_aggregate_rejects_missing_expected_machine(tmp_path: Path) -> None:
     assert report['missing_machines'] == ['windows-ci']
 
 
+def test_aggregate_keeps_pending_physical_human_gate_non_green(tmp_path: Path) -> None:
+    """Passing unattended work cannot promote pending human observations."""
+    inputs = tmp_path / 'inputs'
+    evidence_dir = _evidence(inputs, 'macbook-m3', physical=True)
+    evidence_path = evidence_dir / 'evidence.json'
+    evidence = json.loads(evidence_path.read_text(encoding='utf8'))
+    evidence['manual']['state'] = 'pending'
+    evidence_path.write_text(json.dumps(evidence), encoding='utf8')
+    (evidence_dir / 'manual-observations.json').write_text(
+        json.dumps(evidence['manual']), encoding='utf8'
+    )
+    output = tmp_path / 'report'
+    args = Namespace(
+        input=[inputs],
+        output_dir=output,
+        replace=False,
+        strict=True,
+        expected_machine=['macbook-m3'],
+    )
+
+    assert conformance.aggregate(args) == 1
+    report = json.loads((output / 'report.json').read_text())
+    assert report['status'] == 'pending'
+    assert report['gates']['physical_unattended'] == 'pass'
+    assert report['gates']['physical_human_interaction'] == 'pending'
+
+
 def test_verify_bundle_accepts_approved_physical_evidence(tmp_path: Path) -> None:
     """Intake accepts one approved bundle with matching immutable identity."""
     evidence_dir = _evidence(tmp_path / 'source', 'macbook-m3', physical=True)

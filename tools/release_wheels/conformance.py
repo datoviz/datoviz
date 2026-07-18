@@ -455,6 +455,47 @@ def discover_evidence(inputs: list[Path]) -> list[tuple[Path, dict[str, Any]]]:
     return records
 
 
+def report_gates(evidence: list[dict[str, Any]], missing: list[str]) -> dict[str, str]:
+    """Calculate separate hosted, rendering, physical, coverage, and integrity gates."""
+    hosted = [
+        item for item in evidence if str(item.get('execution_class', '')).startswith('github-')
+    ]
+    hosted_render = [
+        item for item in hosted if item.get('execution_class') != 'github-hosted-no-gpu'
+    ]
+    physical = [item for item in evidence if item.get('mode') == 'physical']
+
+    def automated(items: list[dict[str, Any]]) -> str:
+        if not items:
+            return 'not-applicable'
+        return 'pass' if all(item.get('status') == 'pass' for item in items) else 'fail'
+
+    if not hosted_render:
+        rendering = 'not-applicable'
+    else:
+        rendering = (
+            'pass'
+            if all(item.get('status') == 'pass' and item.get('captures') for item in hosted_render)
+            else 'fail'
+        )
+    if not physical:
+        human = 'not-applicable'
+    elif any(item.get('manual', {}).get('state') == 'rejected' for item in physical):
+        human = 'fail'
+    elif all(item.get('manual', {}).get('state') == 'approved' for item in physical):
+        human = 'pass'
+    else:
+        human = 'pending'
+    return {
+        'hosted_artifact_conformance': automated(hosted),
+        'hosted_rendering': rendering,
+        'physical_unattended': automated(physical),
+        'physical_human_interaction': human,
+        'required_machine_coverage': 'fail' if missing else 'pass',
+        'evidence_integrity': 'pass',
+    }
+
+
 def _report_html(report: dict[str, Any]) -> str:
     rows = []
     sections = []
@@ -503,6 +544,13 @@ def _report_html(report: dict[str, Any]) -> str:
         if missing
         else ''
     )
+    gate_rows = ''.join(
+        '<tr>'
+        f'<td>{html.escape(name.replace("_", " "))}</td>'
+        f"<td class='{status}'>{html.escape(status.upper())}</td>"
+        '</tr>'
+        for name, status in report['gates'].items()
+    )
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <title>Datoviz wheel conformance {html.escape(str(campaign.get('wheel_run_id', '')))}</title>
@@ -512,6 +560,7 @@ color:#20242b}}
 table{{border-collapse:collapse;width:100%}}
 th,td{{border:1px solid #ccd2da;padding:.5rem;text-align:left}}
 .pass{{color:#087830;font-weight:700}}.fail{{color:#b00020;font-weight:700}}
+.pending{{color:#9a6500;font-weight:700}}
 .captures{{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}}
 figure{{margin:0;border:1px solid #ccd2da;padding:.75rem;background:#f7f8fa}}
 img{{width:100%;image-rendering:auto}}
@@ -523,7 +572,9 @@ code{{word-break:break-all}}section{{margin-top:2.5rem}}.meta{{background:#f0f3f
 <b>Validator commit:</b> <code>{html.escape(str(campaign.get('validator_commit', '')))}</code><br>
 <b>Generated:</b> {html.escape(report['generated_at_utc'])}</div>
 {missing_html}
-<h2>Summary</h2><table><thead><tr><th>Machine</th><th>Environment</th><th>Automated</th>
+<h2>Release gates</h2><table><thead><tr><th>Gate</th><th>Status</th></tr></thead>
+<tbody>{gate_rows}</tbody></table>
+<h2>Machines</h2><table><thead><tr><th>Machine</th><th>Environment</th><th>Automated</th>
 <th>Human</th><th>Captures</th></tr></thead><tbody>{''.join(rows)}</tbody></table>
 {''.join(sections)}
 </body></html>"""
@@ -541,6 +592,7 @@ def aggregate(args: argparse.Namespace) -> int:
     evidence = []
     campaigns = set()
     for path, record in records:
+        _verify_evidence_files(path, record)
         machine_id = safe_name(str(record.get('machine_id', 'unknown')))
         destination = output / 'platforms' / machine_id
         shutil.copytree(path.parent, destination)
@@ -560,6 +612,9 @@ def aggregate(args: argparse.Namespace) -> int:
     wheel_run_id, artifact_commit, validator_commit = campaigns.pop()
     actual_machines = {str(item.get('machine_id', '')) for item in evidence}
     missing_machines = sorted(set(args.expected_machine) - actual_machines)
+    gates = report_gates(evidence, missing_machines)
+    gate_states = set(gates.values())
+    status = 'fail' if 'fail' in gate_states else 'pending' if 'pending' in gate_states else 'pass'
     report = {
         'schema': REPORT_SCHEMA,
         'generated_at_utc': utc_now(),
@@ -568,9 +623,8 @@ def aggregate(args: argparse.Namespace) -> int:
             'artifact_commit': artifact_commit,
             'validator_commit': validator_commit,
         },
-        'status': 'fail'
-        if missing_machines or any(item.get('status') == 'fail' for item in evidence)
-        else 'pass',
+        'status': status,
+        'gates': gates,
         'missing_machines': missing_machines,
         'evidence': evidence,
     }
@@ -596,7 +650,7 @@ def aggregate(args: argparse.Namespace) -> int:
         json.dumps(manifest, indent=2, sort_keys=True) + '\n', encoding='utf8'
     )
     print(output / 'index.html')
-    return 1 if args.strict and report['status'] == 'fail' else 0
+    return 1 if args.strict and report['status'] != 'pass' else 0
 
 
 def validate_manifest(report_dir: Path) -> dict[str, Any]:
