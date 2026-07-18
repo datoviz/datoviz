@@ -63,7 +63,7 @@ function(create_text_resources files prefix output)
         file(APPEND "${output}" "static const DvzSize DVZ_RESOURCE_${prefix}_${cname}_size = ${filesize}ULL;\n\n")
     endforeach()
 
-    file(APPEND "${output}" "const char* dvz_resource_${prefix}(const char* name, DvzSize* size)\n{\n")
+    file(APPEND "${output}" "DVZ_EXPORT const char* dvz_resource_${prefix}(const char* name, DvzSize* size)\n{\n")
     file(APPEND "${output}" "    if (size) *size = 0;\n")
     foreach(txt IN LISTS files)
         if(NOT EXISTS "${txt}")

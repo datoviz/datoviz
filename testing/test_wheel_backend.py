@@ -6,12 +6,14 @@ from pathlib import Path
 
 import pytest
 
-from tools.datoviz_build_backend import native_payload
+from tools.datoviz_build_backend import native_payload, repair
+from tools.datoviz_build_backend import wheel as wheel_backend
 from tools.datoviz_build_backend.config import parse_config_settings
 from tools.datoviz_build_backend.manifest import PayloadEntry, write_manifest
 from tools.datoviz_build_backend.native_payload import _stage_native
-from tools.datoviz_build_backend.wheel import write_wheel_from_stage
-from tools.datoviz_build_backend.validate import validate_wheel
+from tools.datoviz_build_backend.tags import repair_input_platform_tag, wheel_tags
+from tools.datoviz_build_backend.validate import validate_dist, validate_wheel
+from tools.datoviz_build_backend.wheel import build_from_stage, write_wheel_from_stage
 
 
 def _write_project(root: Path) -> None:
@@ -32,6 +34,42 @@ datoviz-config = "datoviz.cli:main"
 """.lstrip(),
         encoding="utf8",
     )
+
+
+def _write_stage(root: Path) -> Path:
+    stage = root / "stage"
+    package = stage / "datoviz"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text("__version__ = '0.4.0.dev0'\n", encoding="utf8")
+    (package / "cli.py").write_text("def main(): return 0\n", encoding="utf8")
+    manifest = package / "_wheel_payload.json"
+    write_manifest(
+        [
+            PayloadEntry(
+                source=str(package / "__init__.py"),
+                wheel_path="datoviz/__init__.py",
+                kind="python",
+                required=True,
+                reason="python-package",
+            ),
+            PayloadEntry(
+                source=str(package / "cli.py"),
+                wheel_path="datoviz/cli.py",
+                kind="python",
+                required=True,
+                reason="python-package",
+            ),
+            PayloadEntry(
+                source=str(manifest),
+                wheel_path="datoviz/_wheel_payload.json",
+                kind="metadata",
+                required=True,
+                reason="payload-manifest",
+            ),
+        ],
+        manifest,
+    )
+    return stage
 
 
 def test_parse_release_config_namespaced(tmp_path: Path) -> None:
@@ -94,7 +132,11 @@ def test_stage_windows_native_uses_configured_build_dir(
         (mingw / name).write_bytes(b"mingw runtime")
 
     config = parse_config_settings(
-        {"datoviz.release-wheel": "true", "datoviz.native-build-dir": "native"},
+        {
+            "datoviz.release-wheel": "true",
+            "datoviz.native-build-dir": "native",
+            "datoviz.stage-dir": "stage",
+        },
         root=tmp_path,
     )
     package = tmp_path / "stage" / "datoviz"
@@ -128,7 +170,11 @@ def test_stage_windows_native_rejects_missing_shared_shaderc(
     )
 
     config = parse_config_settings(
-        {"datoviz.release-wheel": "true", "datoviz.native-build-dir": "native"},
+        {
+            "datoviz.release-wheel": "true",
+            "datoviz.native-build-dir": "native",
+            "datoviz.stage-dir": "stage",
+        },
         root=tmp_path,
     )
     monkeypatch.setattr(native_payload.platform, "system", lambda: "Windows")
@@ -168,38 +214,7 @@ def test_stage_windows_native_records_static_shaderc_policy(
 
 def test_direct_wheel_writer_validates_record_and_manifest(tmp_path: Path) -> None:
     _write_project(tmp_path)
-    stage = tmp_path / "stage"
-    package = stage / "datoviz"
-    package.mkdir(parents=True)
-    (package / "__init__.py").write_text("__version__ = '0.4.0.dev0'\n", encoding="utf8")
-    (package / "cli.py").write_text("def main(): return 0\n", encoding="utf8")
-    manifest = package / "_wheel_payload.json"
-    write_manifest(
-        [
-            PayloadEntry(
-                source=str(package / "__init__.py"),
-                wheel_path="datoviz/__init__.py",
-                kind="python",
-                required=True,
-                reason="python-package",
-            ),
-            PayloadEntry(
-                source=str(package / "cli.py"),
-                wheel_path="datoviz/cli.py",
-                kind="python",
-                required=True,
-                reason="python-package",
-            ),
-            PayloadEntry(
-                source=str(manifest),
-                wheel_path="datoviz/_wheel_payload.json",
-                kind="metadata",
-                required=True,
-                reason="payload-manifest",
-            ),
-        ],
-        manifest,
-    )
+    stage = _write_stage(tmp_path)
 
     wheel = write_wheel_from_stage(
         stage,
@@ -214,3 +229,99 @@ def test_direct_wheel_writer_validates_record_and_manifest(tmp_path: Path) -> No
     assert "datoviz-0.4.0.dev0.dist-info/METADATA" in names
     assert "datoviz-0.4.0.dev0.dist-info/RECORD" in names
     assert "datoviz/_wheel_payload.json" in names
+
+
+def test_manylinux_build_uses_neutral_input_tag(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _write_project(tmp_path)
+    stage = _write_stage(tmp_path)
+    captured: dict[str, object] = {}
+
+    def fake_repair(
+        wheel: Path, *, skip: bool = False, platform_tag: str | None = None
+    ) -> Path:
+        captured.update(wheel=wheel, skip=skip, platform_tag=platform_tag)
+        return wheel
+
+    monkeypatch.setattr(wheel_backend, "repair_wheel", fake_repair)
+    built = build_from_stage(
+        stage,
+        tmp_path / "dist",
+        "manylinux_2_34_x86_64",
+        root=tmp_path,
+    )
+
+    assert built.name.endswith("-py3-none-linux_x86_64.whl")
+    assert captured == {
+        "wheel": built,
+        "skip": False,
+        "platform_tag": "manylinux_2_34_x86_64",
+    }
+    assert repair_input_platform_tag("manylinux_2_34_aarch64") == "linux_aarch64"
+
+
+def test_linux_repair_requests_exact_manylinux_policy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _write_project(tmp_path)
+    stage = _write_stage(tmp_path)
+    wheel = write_wheel_from_stage(stage, tmp_path / "dist", "linux_x86_64", root=tmp_path)
+    commands: list[list[str]] = []
+
+    monkeypatch.setattr(repair.shutil, "which", lambda name: f"/usr/bin/{name}")
+
+    def fake_run(command: list[str], *, check: bool) -> None:
+        assert check is True
+        commands.append(command)
+        if command[1] != "repair":
+            return
+        output = Path(command[command.index("-w") + 1])
+        repaired = output / wheel.name.replace("linux_x86_64", "manylinux_2_34_x86_64")
+        repaired.write_bytes(wheel.read_bytes())
+
+    monkeypatch.setattr(repair.subprocess, "run", fake_run)
+    repaired = repair._repair_linux(wheel, platform_tag="manylinux_2_34_x86_64")
+
+    assert commands[1][1:4] == ["repair", "--plat", "manylinux_2_34_x86_64"]
+    assert repaired.name.endswith("-py3-none-manylinux_2_34_x86_64.whl")
+
+
+def test_compressed_wheel_tags_are_valid_but_not_release_evidence(tmp_path: Path) -> None:
+    _write_project(tmp_path)
+    stage = _write_stage(tmp_path)
+    dist = tmp_path / "dist"
+    wheel = write_wheel_from_stage(stage, dist, "manylinux_2_34_x86_64", root=tmp_path)
+    compressed = wheel.with_name(
+        wheel.name.replace(
+            "manylinux_2_34_x86_64", "manylinux_2_34_x86_64.manylinux_2_39_x86_64"
+        )
+    )
+    with zipfile.ZipFile(wheel) as zf:
+        files = {
+            info.filename: zf.read(info.filename)
+            for info in zf.infolist()
+            if not info.filename.endswith("/")
+        }
+    wheel_meta = next(name for name in files if name.endswith(".dist-info/WHEEL"))
+    files[wheel_meta] = files[wheel_meta].replace(
+        b"Tag: py3-none-manylinux_2_34_x86_64\n",
+        b"Tag: py3-none-manylinux_2_34_x86_64\n"
+        b"Tag: py3-none-manylinux_2_39_x86_64\n",
+    )
+    record = next(name for name in files if name.endswith(".dist-info/RECORD"))
+    files[record] = repair._record_bytes(files, record)
+    repair._write_wheel_files(compressed, files)
+    wheel.unlink()
+
+    assert wheel_tags(compressed) == {
+        "py3-none-manylinux_2_34_x86_64",
+        "py3-none-manylinux_2_39_x86_64",
+    }
+    validate_wheel(compressed)
+    with pytest.raises(RuntimeError, match="release artifact must have exactly one tag"):
+        validate_dist(
+            dist,
+            version="0.4.0.dev0",
+            platform_tags=["manylinux_2_34_x86_64"],
+        )

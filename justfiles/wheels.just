@@ -65,9 +65,9 @@ wheel-ci-local platform_tag='' rebuild='0' render='0':
     fi
     just wheel-inspect --native-deps
     if [ "{{render}}" = "1" ]; then
-        just wheel-check --shaderc --cmake-consumer --render --qt-probe optional
+        just wheel-check --precompiled-shaders --shaderc --cmake-consumer --render --qt-probe optional
     else
-        just wheel-check --shaderc --cmake-consumer --qt-probe optional
+        just wheel-check --precompiled-shaders --shaderc --cmake-consumer --qt-probe optional
     fi
 #
 

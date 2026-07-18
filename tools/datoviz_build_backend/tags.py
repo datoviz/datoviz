@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import itertools
 import json
 import re
 from dataclasses import asdict, dataclass
@@ -13,7 +14,6 @@ except ModuleNotFoundError:  # pragma: no cover - Python < 3.11 fallback.
     import tomli as tomllib  # type: ignore[no-redef]
 
 from .config import ROOT
-
 
 PYTHONS_REQUIRED = ("3.10", "3.11", "3.12", "3.13", "3.14")
 PYTHONS_PRERELEASE = ("3.15",)
@@ -73,6 +73,29 @@ def wheel_parts(path: Path) -> tuple[str, str]:
         raise RuntimeError(f"unexpected wheel filename: {path.name}")
     tag = "-".join((match.group("python"), match.group("abi"), match.group("platform")))
     return match.group("version"), tag
+
+
+def wheel_tags(path: Path) -> set[str]:
+    """Return the expanded complete tags encoded by a wheel filename."""
+
+    match = WHEEL_RE.match(path.name)
+    if match is None:
+        raise RuntimeError(f"unexpected wheel filename: {path.name}")
+    components = (
+        match.group("python").split("."),
+        match.group("abi").split("."),
+        match.group("platform").split("."),
+    )
+    return {"-".join(parts) for parts in itertools.product(*components)}
+
+
+def repair_input_platform_tag(platform_tag: str) -> str:
+    """Return the neutral Linux tag required before manylinux repair."""
+
+    match = re.match(r"^manylinux_[0-9]+_[0-9]+_(?P<arch>.+)$", platform_tag)
+    if match is None:
+        return platform_tag
+    return f"linux_{match.group('arch')}"
 
 
 def matrix_json() -> str:

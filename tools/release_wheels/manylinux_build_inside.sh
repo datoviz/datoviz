@@ -22,6 +22,7 @@ if [ "$(id -u)" -eq 0 ]; then
         freetype-devel \
         glslang \
         glslang-devel \
+        glslc \
         libshaderc \
         libshaderc-devel \
         libX11-devel \
@@ -33,6 +34,11 @@ if [ "$(id -u)" -eq 0 ]; then
         ninja-build \
         vulkan-loader-devel \
         zlib-devel
+fi
+
+if ! command -v glslc >/dev/null 2>&1; then
+    echo "glslc is required for release manylinux wheels" >&2
+    exit 2
 fi
 
 python_bin="${DATOVIZ_MANYLINUX_PYTHON:-/opt/python/cp313-cp313/bin/python}"
@@ -106,6 +112,7 @@ for whl in wheelhouse/datoviz-*.whl; do
     "$python_bin" tools/release_wheels/inspect_wheel.py --wheel "$whl" --native-deps
     "$python_bin" tools/release_wheels/check_wheel.py \
         --wheel "$whl" \
+        --precompiled-shaders \
         --shaderc \
         --cmake-consumer \
         --qt-probe optional

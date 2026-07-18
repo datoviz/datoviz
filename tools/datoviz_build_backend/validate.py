@@ -17,7 +17,7 @@ from pathlib import Path
 from .config import ROOT
 from .manifest import read_manifest
 from .repair import inspect_native_deps
-from .tags import expected_tags, project_version, wheel_parts
+from .tags import expected_tags, project_version, wheel_parts, wheel_tags
 
 
 def resolve_wheel(path: str | None = None, *, dist_dir: Path = ROOT / "dist") -> Path:
@@ -46,13 +46,20 @@ def validate_dist(
     found: dict[str, Path] = {}
     errors: list[str] = []
     for wheel in wheels:
-        wheel_version, tag = wheel_parts(wheel)
+        wheel_version, _ = wheel_parts(wheel)
+        tags = wheel_tags(wheel)
         if wheel_version != expected_version:
             errors.append(f"{wheel.name}: version {wheel_version!r} != expected {expected_version!r}")
+        validate_wheel(wheel)
+        if len(tags) != 1:
+            errors.append(
+                f"{wheel.name}: release artifact must have exactly one tag, found {sorted(tags)!r}"
+            )
+            continue
+        tag = next(iter(tags))
         if tag in found:
             errors.append(f"duplicate wheel tag {tag}: {found[tag].name} and {wheel.name}")
         found[tag] = wheel
-        validate_wheel(wheel)
     actual = set(found)
     for tag in sorted(expected - actual):
         errors.append(f"missing wheel tag: {tag}")
@@ -75,12 +82,19 @@ def validate_wheel(wheel: Path) -> None:
             raise RuntimeError(f"{wheel}: expected one .dist-info directory, found {dist_infos}")
         dist_info = dist_infos[0]
         wheel_meta = zf.read(f"{dist_info}/WHEEL").decode("utf8")
-        version, tag = wheel_parts(wheel)
-        del version
+        filename_tags = wheel_tags(wheel)
+        metadata_tags = {
+            line.removeprefix("Tag: ")
+            for line in wheel_meta.splitlines()
+            if line.startswith("Tag: ")
+        }
         if "Root-Is-Purelib: true\n" not in wheel_meta:
             raise RuntimeError(f"{wheel}: WHEEL does not declare Root-Is-Purelib: true")
-        if f"Tag: {tag}\n" not in wheel_meta:
-            raise RuntimeError(f"{wheel}: WHEEL tag does not match filename tag {tag}")
+        if metadata_tags != filename_tags:
+            raise RuntimeError(
+                f"{wheel}: WHEEL tags {sorted(metadata_tags)!r} do not match "
+                f"filename tags {sorted(filename_tags)!r}"
+            )
         _validate_record(zf, f"{dist_info}/RECORD")
         _validate_payload_manifest(zf)
         forbidden = [name for name in names if "__pycache__" in name or name.endswith(".pyc") or name.endswith(".DS_Store")]
@@ -105,6 +119,7 @@ def run_installed_checks(
     *,
     work_dir: Path | None = None,
     render: bool = False,
+    precompiled_shaders: bool = False,
     shaderc: bool = False,
     cmake_consumer: bool = False,
     examples: str = "skip",
@@ -123,7 +138,7 @@ def run_installed_checks(
         python = _bin_dir(venv) / ("python.exe" if os.name == "nt" else "python")
         _pip_install(python, work, ["--upgrade", "pip", "wheel"])
         _pip_install(python, work, [str(wheel)])
-        _python_smokes(python, work)
+        _python_smokes(python, work, require_precompiled_shaders=precompiled_shaders)
         if shaderc:
             _shaderc_smoke(python, work)
         if render:
@@ -152,6 +167,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--native-deps", action="store_true")
     parser.add_argument("--work-dir", type=Path)
     parser.add_argument("--render", action="store_true")
+    parser.add_argument("--precompiled-shaders", action="store_true")
     parser.add_argument("--shaderc", action="store_true")
     parser.add_argument("--cmake-consumer", action="store_true")
     parser.add_argument("--examples", choices=("skip", "basic", "render"), default="skip")
@@ -177,6 +193,7 @@ def main(argv: list[str] | None = None) -> int:
             wheel,
             work_dir=args.work_dir,
             render=args.render,
+            precompiled_shaders=args.precompiled_shaders,
             shaderc=args.shaderc,
             cmake_consumer=args.cmake_consumer,
             examples=args.examples,
@@ -275,32 +292,41 @@ def _pip_install(python: Path, cwd: Path, args: list[str]) -> None:
     _run([uv, "pip", "install", "--python", str(python), *args], cwd=cwd)
 
 
-def _python_smokes(python: Path, work: Path) -> None:
+def _python_smokes(python: Path, work: Path, *, require_precompiled_shaders: bool = False) -> None:
     _run([str(python), "-c", "import datoviz; print(datoviz.__file__)"], cwd=work)
     _run([str(python), "-c", "import datoviz.raw as dvz; print(dvz.__file__)"], cwd=work)
-    _builtin_shader_resource_smoke(python, work)
+    _builtin_shader_resource_smoke(
+        python, work, require_precompiled_shaders=require_precompiled_shaders
+    )
     _run([str(python), "-m", "datoviz.cli", "--prefix"], cwd=work)
     _run([str(python), "-m", "datoviz.cli", "--cflags"], cwd=work)
     _run([str(python), "-m", "datoviz.cli", "--libs"], cwd=work)
     _run([str(python), "-m", "datoviz.cli", "--cmake-dir"], cwd=work)
 
 
-def _builtin_shader_resource_smoke(python: Path, work: Path) -> None:
+def _builtin_shader_resource_smoke(
+    python: Path, work: Path, *, require_precompiled_shaders: bool = False
+) -> None:
     code = r'''
 import ctypes
 import datoviz.raw as dvz
 
-for function, key in (
-    (dvz.dvz_resource_shader, b"point_vert"),
-    (dvz.dvz_resource_glsl, b"point_vert"),
-):
+def check(function, key, required=True):
     size = ctypes.c_uint64(0)
     pointer = function(key, ctypes.byref(size))
-    if not pointer or size.value == 0:
+    if required and (not pointer or size.value == 0):
         raise SystemExit(f"missing embedded shader resource: {key.decode()}")
+    return bool(pointer and size.value > 0)
 
-print("installed built-in shader resources: OK")
-'''
+check(dvz.dvz_resource_glsl, b"point_vert")
+has_spirv = check(
+    dvz.dvz_resource_shader,
+    b"point_vert",
+    required=REQUIRE_PRECOMPILED_SHADERS,
+)
+status = "present" if has_spirv else "unavailable (runtime GLSL fallback)"
+print(f"installed built-in shader resources: OK; SPIR-V {status}")
+'''.replace("REQUIRE_PRECOMPILED_SHADERS", repr(require_precompiled_shaders))
     _run([str(python), "-c", code], cwd=work)
 
 
@@ -339,7 +365,14 @@ print(f"shaderc GLSL smoke produced {size.value} bytes")
 def _render_smoke(python: Path, work: Path) -> None:
     script = work / "datoviz-wheel-render-smoke.py"
     script.write_text(_PYTHON_RENDER_EXAMPLE, encoding="utf8")
-    _run([str(python), str(script)], cwd=work)
+    cmd = [str(python), str(script)]
+    print("+", " ".join(cmd))
+    result = subprocess.run(cmd, cwd=work, check=False)
+    if result.returncode == 77:
+        print("check_wheel: render smoke skipped because no Vulkan runtime is available")
+        return
+    if result.returncode != 0:
+        raise subprocess.CalledProcessError(result.returncode, cmd)
     path = work / "python_render_example.png"
     size = path.stat().st_size if path.exists() else 0
     if size == 0:
@@ -526,11 +559,11 @@ try:
     app = dvz.dvz_app(scene)
     if not app:
         print("installed Python render example: SKIP (dvz_app() failed)")
-        raise SystemExit(0)
+        raise SystemExit(77)
     view = dvz.dvz_view_offscreen(app, figure, 128, 128)
     if not view:
         print("installed Python render example: SKIP (dvz_view_offscreen() failed)")
-        raise SystemExit(0)
+        raise SystemExit(77)
     if dvz.dvz_view_render_once(view) < 0:
         raise SystemExit("dvz_view_render_once() failed")
     path = Path("python_render_example.png")

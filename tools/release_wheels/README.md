@@ -8,11 +8,17 @@ Current local loop:
 ```sh
 just build
 just wheel-stage --clean
-just wheel-build
-just wheel-validate --platform-tag manylinux_2_34_x86_64
+just wheel-build --platform-tag linux_x86_64 --skip-repair
+just wheel-validate --platform-tag linux_x86_64
 just wheel-inspect --native-deps
-just wheel-check --cmake-consumer --examples render --render --qt-probe optional
+just wheel-check --precompiled-shaders --cmake-consumer --examples render --render --qt-probe optional
 ```
+
+Native Linux builds use the neutral `linux_<arch>` tag and skip repair because the host toolchain
+may be newer than the release policy. Build release Linux wheels with `just wheel-manylinux-docker`.
+The release backend writes a neutral input wheel, then asks `auditwheel` explicitly for
+`manylinux_2_34_<arch>`; repair fails if the container or toolchain cannot honestly satisfy that
+policy.
 
 Use `--examples basic` for installed Python/C no-window example smokes and `--examples render` for
 installed Python/C offscreen render example smokes. The release `rc` machine profile uses

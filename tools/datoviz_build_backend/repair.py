@@ -14,8 +14,12 @@ import sys
 import zipfile
 from pathlib import Path
 
+from .tags import wheel_tags
 
-def repair_wheel(wheel: Path, *, skip: bool = False) -> Path:
+
+def repair_wheel(
+    wheel: Path, *, skip: bool = False, platform_tag: str | None = None
+) -> Path:
     """Repair a wheel with the platform tool when required."""
 
     if skip:
@@ -24,7 +28,7 @@ def repair_wheel(wheel: Path, *, skip: bool = False) -> Path:
     if system == "Darwin":
         return _repair_macos(wheel)
     if system == "Linux":
-        return _repair_linux(wheel)
+        return _repair_linux(wheel, platform_tag=platform_tag)
     if system == "Windows":
         return _repair_windows(wheel)
     return wheel
@@ -62,7 +66,7 @@ def _repair_macos(wheel: Path) -> Path:
     return target
 
 
-def _repair_linux(wheel: Path) -> Path:
+def _repair_linux(wheel: Path, *, platform_tag: str | None = None) -> Path:
     auditwheel = shutil.which("auditwheel")
     if auditwheel is None:
         raise RuntimeError("auditwheel is required to repair Linux wheels")
@@ -71,8 +75,19 @@ def _repair_linux(wheel: Path) -> Path:
     if repaired_dir.exists():
         shutil.rmtree(repaired_dir)
     repaired_dir.mkdir(parents=True)
-    subprocess.run([auditwheel, "repair", "-w", str(repaired_dir), str(wheel)], check=True)
+    command = [auditwheel, "repair"]
+    if platform_tag and platform_tag.startswith("manylinux_"):
+        command.extend(["--plat", platform_tag])
+    command.extend(["-w", str(repaired_dir), str(wheel)])
+    subprocess.run(command, check=True)
     repaired = _single_wheel(repaired_dir)
+    if platform_tag and platform_tag.startswith("manylinux_"):
+        expected = {f"py3-none-{platform_tag}"}
+        actual = wheel_tags(repaired)
+        if actual != expected:
+            raise RuntimeError(
+                f"auditwheel produced tags {sorted(actual)!r}, expected {sorted(expected)!r}"
+            )
     wheel.unlink()
     target = wheel.parent / repaired.name
     repaired.replace(target)

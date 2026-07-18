@@ -6,8 +6,6 @@ import base64
 import csv
 import hashlib
 import io
-import os
-import shutil
 import zipfile
 from pathlib import Path
 
@@ -22,6 +20,7 @@ from .metadata import (
 )
 from .native_payload import stage_payload
 from .repair import repair_wheel
+from .tags import repair_input_platform_tag
 
 
 def build_release_wheel(
@@ -30,14 +29,17 @@ def build_release_wheel(
     """Build and optionally repair a Datoviz release wheel."""
 
     del metadata_directory
-    tag = config.platform_tag or default_platform_tag()
+    requested_tag = config.platform_tag or default_platform_tag()
+    input_tag = requested_tag if config.skip_repair else repair_input_platform_tag(requested_tag)
     stage_payload(config, clean=True)
     dist_dir = Path(wheel_directory)
     dist_dir.mkdir(parents=True, exist_ok=True)
     for old in dist_dir.glob("datoviz-*.whl"):
         old.unlink()
-    wheel_path = write_wheel_from_stage(config.stage_dir, dist_dir, tag, root=config.root)
-    repaired = repair_wheel(wheel_path, skip=config.skip_repair)
+    wheel_path = write_wheel_from_stage(config.stage_dir, dist_dir, input_tag, root=config.root)
+    repaired = repair_wheel(
+        wheel_path, skip=config.skip_repair, platform_tag=requested_tag
+    )
     return repaired.name
 
 
@@ -95,12 +97,13 @@ def build_from_stage(
 ) -> Path:
     """Compatibility helper for existing staged local workflows."""
 
-    tag = platform_tag or default_platform_tag()
+    requested_tag = platform_tag or default_platform_tag()
+    input_tag = requested_tag if skip_repair else repair_input_platform_tag(requested_tag)
     dist_dir.mkdir(parents=True, exist_ok=True)
     for old in dist_dir.glob("datoviz-*.whl"):
         old.unlink()
-    wheel_path = write_wheel_from_stage(stage_dir, dist_dir, tag, root=root)
-    return repair_wheel(wheel_path, skip=skip_repair)
+    wheel_path = write_wheel_from_stage(stage_dir, dist_dir, input_tag, root=root)
+    return repair_wheel(wheel_path, skip=skip_repair, platform_tag=requested_tag)
 
 
 def single_wheel(dist_dir: Path) -> Path:

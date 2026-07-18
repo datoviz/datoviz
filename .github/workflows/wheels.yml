@@ -346,7 +346,7 @@ jobs:
           $wheel = Get-ChildItem wheelhouse/*.whl | Select-Object -First 1
           if (!$wheel) { throw "no wheel found in wheelhouse" }
           $wheelPath = $wheel.FullName.Replace('\\', '/')
-          python tools/release_wheels/check_wheel.py --wheel "$wheelPath" --shaderc --render
+          python tools/release_wheels/check_wheel.py --wheel "$wheelPath" --precompiled-shaders --shaderc --render
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
         with:
@@ -372,7 +372,7 @@ jobs:
       - name: Dependencies
         run: python -m pip install -U pip wheel tomli
       - name: Installed wheel smoke
-        run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --cmake-consumer --qt-probe optional
+        run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --precompiled-shaders --cmake-consumer --qt-probe optional
 
   linux-python-prerelease-smoke:
     needs: linux
@@ -391,7 +391,7 @@ jobs:
       - name: Dependencies
         run: python -m pip install -U pip wheel tomli
       - name: Installed wheel smoke
-        run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --cmake-consumer --qt-probe optional
+        run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --precompiled-shaders --cmake-consumer --qt-probe optional
 
   macos-python-smoke:
     needs: macos
@@ -423,7 +423,7 @@ jobs:
           brew install ninja
           python -m pip install -U pip wheel tomli
       - name: Installed wheel smoke
-        run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --cmake-consumer --qt-probe optional
+        run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --precompiled-shaders --cmake-consumer --qt-probe optional
 
   windows-python-smoke:
     needs: windows
@@ -452,4 +452,4 @@ jobs:
           $wheel = Get-ChildItem wheelhouse/*.whl | Select-Object -First 1
           if (!$wheel) { throw "no wheel found in wheelhouse" }
           $wheelPath = $wheel.FullName.Replace('\', '/')
-          python tools/release_wheels/check_wheel.py --wheel "$wheelPath" --cmake-consumer --qt-probe optional
+          python tools/release_wheels/check_wheel.py --wheel "$wheelPath" --precompiled-shaders --cmake-consumer --qt-probe optional

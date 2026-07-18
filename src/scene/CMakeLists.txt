@@ -65,8 +65,9 @@ list(
     ${SCENE_TECHNIQUE_SRC}
     ${SCENE_TEXT_SRC})
 
-# Include precompiled SPIR-V shaders if glslc was found.
-if(DVZ_HAS_PRECOMPILED_SHADERS AND DVZ_SHADERS_C)
+# Always include the SPIR-V resource registry so the public lookup symbol remains available. The
+# registry is empty when glslc was not found.
+if(DVZ_SHADERS_C)
     list(APPEND SCENE_SRC "${DVZ_SHADERS_C}")
 endif()
 if(DVZ_HAS_GLSL_SHADERS AND DVZ_GLSL_SHADERS_C)
@@ -81,7 +82,7 @@ endif()
 
 add_library(datoviz_scene OBJECT ${SCENE_SRC})
 
-if(DVZ_HAS_PRECOMPILED_SHADERS AND TARGET datoviz_shaders)
+if(TARGET datoviz_shaders)
     add_dependencies(datoviz_scene datoviz_shaders)
 endif()
 if(DVZ_HAS_GLSL_SHADERS AND TARGET datoviz_glsl_shaders)

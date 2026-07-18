@@ -418,6 +418,7 @@ find_program(GLSLC glslc
     HINTS "${GLSLC_PATH}" "$ENV{VULKAN_SDK}/bin"
 )
 
+set(SHADERS_C "${CMAKE_BINARY_DIR}/_shaders.c")
 if(GLSLC)
     set(SPIRV_DIR       "${CMAKE_BINARY_DIR}/shaders")
     file(MAKE_DIRECTORY "${SPIRV_DIR}")
@@ -444,7 +445,6 @@ if(GLSLC)
 
     add_custom_target(datoviz_shaders_spirv DEPENDS ${SPIRV_OUTPUTS})
 
-    set(SHADERS_C "${CMAKE_BINARY_DIR}/_shaders.c")
     # Pass the file list with semicolons escaped so cmake -P receives a proper CMake list.
     string(REPLACE ";" "\\;" _spirv_list_escaped "${SPIRV_OUTPUTS}")
     add_custom_command(
@@ -463,8 +463,19 @@ if(GLSLC)
     set(DVZ_SHADERS_C "${SHADERS_C}")
 else()
     message(WARNING "glslc not found — builtin shaders will use runtime GLSL compilation.")
+    add_custom_command(
+        OUTPUT  "${SHADERS_C}"
+        COMMAND "${CMAKE_COMMAND}"
+            "-DFILES="
+            "-DPREFIX=shader"
+            "-DOUTPUT=${SHADERS_C}"
+            -P "${DVZ_EMBED_RESOURCES_SCRIPT}"
+        DEPENDS "${DVZ_EMBED_RESOURCES_SCRIPT}"
+        COMMENT "Generating empty SPIR-V shader resource registry"
+    )
+    add_custom_target(datoviz_shaders DEPENDS "${SHADERS_C}")
     set(DVZ_HAS_PRECOMPILED_SHADERS 0)
-    set(DVZ_SHADERS_C "")
+    set(DVZ_SHADERS_C "${SHADERS_C}")
 endif()
 
 # -------------------------------------------------------------------------------------------------
