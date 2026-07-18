@@ -12,23 +12,24 @@ The macOS terminal-IPython hosted window close hang is resolved by `9c1e60912`. 
 in physical-machine RC validation; use
 [HANDOFF_IPYTHON_RUN_CLOSE_HANG.md](HANDOFF_IPYTHON_RUN_CLOSE_HANG.md) as the completed record.
 
-The corrected Release wheel matrix is `Wheels` run `29635132595` (#460), artifact commit
-`443adb067`; all six wheel-build lanes passed with mimalloc disabled. Cross-platform conformance run
-`29640430991`, validator `249937c91`, then passed macOS arm64 rendering, macOS Intel installation,
-and Windows AMD64/ARM64 installation. It exposed one real artifact blocker on both Linux wheels:
-the archive contains `datoviz/libshaderc_shared.so`, but the runtime is baked to load
-`libshaderc_shared.so.1`. The original manylinux build smoke was masked by the container's system
-shaderc library. Hosted Windows is explicitly no-GPU; ARM64 also records native CMake/example
-compiler checks as unavailable because the image only supplies x64 MinGW.
+The replacement Release wheel matrix is `Wheels` run `29641789685`, artifact commit `fac0a29d3`;
+all 29 build and installed-wheel jobs passed across Linux x86_64/aarch64, macOS Intel/arm64,
+Windows AMD64/ARM64, Python 3.10 through 3.14, and the Linux prerelease interpreter. Linux staging
+now packages shaderc under the exact CMake runtime basename `libshaderc_shared.so.1`, resolving the
+clean-host failure exposed by #460. Cross-platform conformance run `29642182037`, validator
+`ae155814b`, passed all six hosted lanes, including software-Vulkan Linux rendering and exact
+C/Python decoded-pixel parity. Active workflows use Node 24-native GitHub action majors; the
+third-party `ilammy/msvc-dev-cmd@v1` has no Node 24 release yet.
 
-Physical MacBook M3 validation of the exact #460 arm64 wheel passed the repeated standalone
-installed-wheel profile, all three deterministic captures, and all seven attended scenarios. The
-combined report is local at `build/release/0.4.0rc1/report-combined/index.html`; the durable hosted
-report artifact is `wheel-conformance-report-29635132595` from run `29640430991`.
+Physical MacBook M3 validation of the exact `29641789685` arm64 wheel passed the repeated
+standalone installed-wheel profile, all three deterministic and cross-frontend-parity captures,
+and all seven attended scenarios. The all-green combined report is local at
+`build/release/0.4.0rc1/report-combined-29641789685/index.html`; the durable hosted report artifact
+is `wheel-conformance-report-29641789685` from run `29642182037`. The approved M3 evidence remains
+local until its external upload and intake are explicitly authorized.
 
-Next critical path: fix the Linux shaderc SONAME/package lookup, produce a new wheel matrix, rerun
-hosted conformance and exact-artifact physical evidence where machines are available, then close
-the RC1 source bundle/checksum, release notes, publication rehearsal, and final public
+Next critical path: preserve the approved physical evidence if authorized, then close the RC1
+source bundle/checksum, release notes, publication rehearsal, and final public
 status/documentation reconciliation.
 
 Completed runtime cleanup to keep in validation: DRP2 render-pass begin commands now carry explicit
@@ -72,7 +73,7 @@ Blockers:
 
 | Lane | Status | Next proof |
 | --- | --- | --- |
-| C/C++ distribution preflight | Wheels run `29635132595` produced the six Release artifacts. Conformance run `29640430991` passed macOS and Windows but found that both standalone Linux wheels package `libshaderc_shared.so` while runtime lookup requires `libshaderc_shared.so.1`; the build-container smoke masked this with its system library. Exact-wheel MacBook M3 unattended and attended evidence passed. | Fix Linux shaderc runtime discovery/packaging, rebuild wheels, and repeat hosted plus available physical exact-artifact validation before the source bundle/checksum and publication rehearsal. |
+| C/C++ distribution preflight | Wheels run `29641789685` passed all 29 matrix jobs. Conformance run `29642182037` passed all six hosted lanes, including clean Linux shaderc and software-Vulkan rendering. Exact-wheel MacBook M3 unattended, parity-capture, and attended evidence passed; the combined local report has every gate green. | Preserve the approved physical evidence if authorized, then use this exact campaign for the source bundle/checksum and publication rehearsal. |
 | Windows wheel proof | The July 2026 pass fixes Win32 `min`/`max`, configured wheel paths, exported C11 requirements, duplicate MSVC pthread implementations, and the ARM64 shaderc omission. Windows uses static shaderc. Hosted run `29624999442` built and inspected AMD64/ARM64 wheels, confirmed architecture, and passed installed shader-resource, shaderc, render, and Python smokes on both architectures. Physical Windows AMD64 validation passed end to end; this is provisional because the corrected Release matrix changes the artifact checksum. | Repeat or confirm physical AMD64 proof against the exact replacement artifact. |
 | WebGPU/WASM experimental path | WebGPU fixture runner works; the generic WASM scene ABI and split DRP2 packet path now register 90 scenarios and expose 86 browser-live gallery routes. Point-cloud public route metadata references a hashed 500k-point bundle; native capture and deterministic WASM packet proof pass, while its local filtered browser route reaches the known external headless instance-loss skip. SVG Tiger has headed browser proof and an approved committed prepared-data bundle attributed to Nicolas P. Rougier's Glumpy example gallery. | Confirm point-cloud redistribution authorization and manually verify its public website route, then continue generic volume and rendering techniques. |
 | Compute+graphics experimental path | DRP2 `ResourceBarrier`, FramePlan scene compute lowering, WebGPU fixture parity, and the C `gpu_particle_smoke` showcase are active. CPU command-generation proof passed on 2026-06-04. Native Vulkan compute+graphics proof passed on 2026-06-17: `test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes`, `test_vklite_compute_1`, `test_technique_compute_graphics`, and `examples/c/showcases/gpu_particle_smoke.c --png` with artifact `build/release-evidence/gpu_particle_smoke.png`. | Keep the slice classified as experimental in the feature/status table: native proof exists, but this is a narrow scene-compute/DRP2 interop path, not a general compute framework. |
