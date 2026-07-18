@@ -575,6 +575,7 @@ try:
     panel = dvz.dvz_panel_full(figure)
     if not panel:
         raise SystemExit("dvz_panel_full() failed")
+    dvz.dvz_panel_set_background_color(panel, dvz.DvzColor(13, 15, 20, 255))
 
     visual = dvz.dvz_point(scene, 0)
     if not visual:

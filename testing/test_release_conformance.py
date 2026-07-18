@@ -73,6 +73,13 @@ def _evidence(
                 'stats': conformance.png_stats(captures / 'point.png'),
             }
         ],
+        'capture_comparisons': [
+            {
+                'id': 'c-python-point-render',
+                'status': 'pass',
+                'scenarios': ['point'],
+            }
+        ],
         'manual': manual,
         'failures': [] if status == 'pass' else [{'id': 'test'}],
         'status': status,
@@ -92,6 +99,30 @@ def test_png_stats_rgba(tmp_path: Path) -> None:
     assert stats['height'] == 2
     assert stats['channel_mean'] == [20.0, 40.0, 60.0, 255.0]
     assert stats['nontransparent_fraction'] == 1.0
+    assert len(stats['pixel_sha256']) == 64
+
+
+def test_capture_parity_compares_decoded_pixels() -> None:
+    """Equivalent C and Python scenarios require identical decoded pixels."""
+    scenarios = conformance.CAPTURE_PARITY_GROUPS['c-python-point-render']
+    captures = [
+        {
+            'scenario': scenario,
+            'stats': {
+                'width': 2,
+                'height': 2,
+                'channels': 4,
+                'pixel_sha256': 'same-pixels',
+            },
+        }
+        for scenario in scenarios
+    ]
+
+    comparisons = conformance.capture_parity_records(captures)
+
+    assert comparisons[0]['status'] == 'pass'
+    captures[-1]['stats']['pixel_sha256'] = 'different-pixels'
+    assert conformance.capture_parity_records(captures)[0]['status'] == 'fail'
 
 
 def test_validate_wheels_run_uses_workflow_path_not_display_case() -> None:
@@ -163,6 +194,8 @@ def test_aggregate_builds_self_contained_report(tmp_path: Path) -> None:
     assert 'Full environment and Vulkan metadata' in report_html
     assert 'Capture statistics' in report_html
     assert 'Release gates' in report_html
+    assert report['gates']['cross_frontend_render_parity'] == 'pass'
+    assert 'Cross-frontend capture parity' in report_html
 
 
 def test_aggregate_writes_report_before_strict_failure(tmp_path: Path) -> None:
@@ -181,6 +214,27 @@ def test_aggregate_writes_report_before_strict_failure(tmp_path: Path) -> None:
     assert conformance.aggregate(args) == 1
     assert (output / 'index.html').is_file()
     assert json.loads((output / 'report.json').read_text())['status'] == 'fail'
+
+
+def test_aggregate_rejects_cross_frontend_capture_mismatch(tmp_path: Path) -> None:
+    """A frontend parity mismatch fails the report even when each repeat is deterministic."""
+    evidence_dir = _evidence(tmp_path / 'inputs', 'macos-ci')
+    evidence_path = evidence_dir / 'evidence.json'
+    evidence = json.loads(evidence_path.read_text(encoding='utf8'))
+    evidence['capture_comparisons'][0]['status'] = 'fail'
+    evidence_path.write_text(json.dumps(evidence), encoding='utf8')
+    output = tmp_path / 'report'
+    args = Namespace(
+        input=[evidence_dir],
+        output_dir=output,
+        replace=False,
+        strict=True,
+        expected_machine=['macos-ci'],
+    )
+
+    assert conformance.aggregate(args) == 1
+    report = json.loads((output / 'report.json').read_text())
+    assert report['gates']['cross_frontend_render_parity'] == 'fail'
 
 
 def test_aggregate_rejects_missing_expected_machine(tmp_path: Path) -> None:

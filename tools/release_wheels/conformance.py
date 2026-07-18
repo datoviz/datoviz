@@ -33,6 +33,13 @@ MANUAL_SCENARIOS = (
     'picking',
     'close-reopen',
 )
+CAPTURE_PARITY_GROUPS = {
+    'c-python-point-render': (
+        'installed-examples/c_render_example.png',
+        'installed-examples/python_render_example.png',
+        'python_render_example.png',
+    ),
+}
 WHEEL_ARTIFACTS = {
     ('Darwin', 'arm64'): 'wheel-macos-arm64',
     ('Darwin', 'x86_64'): 'wheel-macos-x86_64',
@@ -222,6 +229,7 @@ def png_stats(path: Path) -> dict[str, Any]:
         'channel_max': [max(values) for values in channel_values],
         'channel_mean': [round(sum(values) / count, 3) for values in channel_values],
         'nontransparent_fraction': round(sum(value > 0 for value in alpha) / count, 6),
+        'pixel_sha256': hashlib.sha256(pixels).hexdigest(),
     }
 
 
@@ -259,6 +267,44 @@ def capture_records(work_dirs: list[Path], capture_dir: Path) -> list[dict[str, 
             }
         )
     return records
+
+
+def capture_parity_records(captures: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Compare decoded pixels for scenarios that exercise equivalent frontend behavior."""
+    by_scenario = {capture['scenario']: capture for capture in captures}
+    comparisons = []
+    for comparison_id, scenarios in CAPTURE_PARITY_GROUPS.items():
+        missing = [scenario for scenario in scenarios if scenario not in by_scenario]
+        fingerprints = {}
+        for scenario in scenarios:
+            if scenario not in by_scenario:
+                continue
+            stats = by_scenario[scenario].get('stats', {})
+            fingerprints[scenario] = {
+                key: stats.get(key)
+                for key in ('width', 'height', 'channels', 'pixel_sha256')
+            }
+        complete = all(
+            all(value is not None for value in item.values())
+            for item in fingerprints.values()
+        )
+        status = (
+            'pass'
+            if not missing
+            and complete
+            and len({json.dumps(item, sort_keys=True) for item in fingerprints.values()}) == 1
+            else 'fail'
+        )
+        comparisons.append(
+            {
+                'id': comparison_id,
+                'status': status,
+                'scenarios': list(scenarios),
+                'missing_scenarios': missing,
+                'pixel_fingerprints': fingerprints,
+            }
+        )
+    return comparisons
 
 
 def run_conformance(args: argparse.Namespace) -> int:
@@ -334,6 +380,9 @@ def run_conformance(args: argparse.Namespace) -> int:
                 break
 
     captures = capture_records(work_dirs, output / 'captures') if args.render else []
+    capture_comparisons = (
+        capture_parity_records(captures) if args.render and args.examples else []
+    )
     nondeterministic = [capture for capture in captures if not capture['deterministic']]
     if args.render and not captures:
         failures.append({'id': 'captures', 'status': 'fail', 'message': 'no PNG captures found'})
@@ -345,6 +394,15 @@ def run_conformance(args: argparse.Namespace) -> int:
                 'message': f'repeat capture differs: {capture["scenario"]}',
             }
         )
+    for comparison in capture_comparisons:
+        if comparison['status'] != 'pass':
+            failures.append(
+                {
+                    'id': 'capture-parity',
+                    'status': 'fail',
+                    'message': f'cross-frontend capture differs: {comparison["id"]}',
+                }
+            )
 
     manual_state = 'pending' if args.mode == 'physical' else 'not-applicable'
     manual = {
@@ -385,6 +443,7 @@ def run_conformance(args: argparse.Namespace) -> int:
         'environment': 'environment.json',
         'results': results,
         'captures': captures,
+        'capture_comparisons': capture_comparisons,
         'manual': manual,
         'skips': skips,
         'failures': failures,
@@ -475,6 +534,7 @@ def report_gates(evidence: list[dict[str, Any]], missing: list[str]) -> dict[str
         item for item in hosted if item.get('execution_class') != 'github-hosted-no-gpu'
     ]
     physical = [item for item in evidence if item.get('mode') == 'physical']
+    rendered = [item for item in evidence if item.get('captures')]
 
     def automated(items: list[dict[str, Any]]) -> str:
         if not items:
@@ -500,6 +560,20 @@ def report_gates(evidence: list[dict[str, Any]], missing: list[str]) -> dict[str
     return {
         'hosted_artifact_conformance': automated(hosted),
         'hosted_rendering': rendering,
+        'cross_frontend_render_parity': (
+            'not-applicable'
+            if not rendered
+            else 'pass'
+            if all(
+                item.get('capture_comparisons')
+                and all(
+                    comparison.get('status') == 'pass'
+                    for comparison in item['capture_comparisons']
+                )
+                for item in rendered
+            )
+            else 'fail'
+        ),
         'physical_unattended': automated(physical),
         'physical_human_interaction': human,
         'required_machine_coverage': 'fail' if missing else 'pass',
@@ -561,6 +635,21 @@ def _report_html(report: dict[str, Any]) -> str:
             f'{html.escape(str(failure.get("message", failure.get("status", "failed"))))}</li>'
             for failure in item.get('failures', [])
         )
+        comparison_rows = ''.join(
+            '<tr>'
+            f'<td>{html.escape(str(comparison.get("id", "")))}</td>'
+            f'<td class="{html.escape(str(comparison.get("status", "")))}">'
+            f'{html.escape(str(comparison.get("status", "")).upper())}</td>'
+            f'<td>{html.escape(", ".join(comparison.get("scenarios", [])))}</td>'
+            '</tr>'
+            for comparison in item.get('capture_comparisons', [])
+        )
+        comparisons_html = (
+            '<table><thead><tr><th>Comparison</th><th>Status</th><th>Scenarios</th></tr>'
+            f'<tbody>{comparison_rows}</tbody></table>'
+            if comparison_rows
+            else '<p>Not applicable.</p>'
+        )
         sections.append(
             f'<section><h2>{html.escape(item["machine_id"])}</h2>'
             f'<p><b>Environment:</b> {html.escape(item["execution_class"])}; '
@@ -576,6 +665,7 @@ def _report_html(report: dict[str, Any]) -> str:
             f'<th>Evidence</th></tr></thead><tbody>{"".join(result_rows)}</tbody></table>'
             f'<h3>Explicit skips</h3>{"<ul>" + skips + "</ul>" if skips else "<p>None.</p>"}'
             f'<h3>Failures</h3>{"<ul>" + failures + "</ul>" if failures else "<p>None.</p>"}'
+            f'<h3>Cross-frontend capture parity</h3>{comparisons_html}'
             "<div class='captures'>"
             f'{"".join(capture_html) or "<p>No captures.</p>"}</div>'
             '<details><summary>Full environment and Vulkan metadata</summary><pre>'
