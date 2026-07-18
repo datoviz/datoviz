@@ -7,9 +7,9 @@ state and pending machine work live in `agents/now/`.
 
 ## Inputs And Safety
 
-Set the concrete release version, candidate commit, wheel-workflow run ID, host wheel, and stable
-machine ID before starting. Work from a compatible clean checkout at the candidate commit and
-preserve unrelated changes. Keep wheels, captures, logs, and evidence under
+Set the concrete release version, artifact commit, release commit, wheel-workflow run ID, host
+wheel, and stable machine ID before starting. Work from a compatible clean checkout and preserve
+unrelated changes. Keep wheels, captures, logs, and evidence under
 `build/release/<version>/`; do not stage them.
 
 Do not push, dispatch workflows, upload evidence, or publish during physical validation without the
@@ -19,8 +19,22 @@ explicit approval required by the repository rules.
 ## 1. Verify The Candidate Artifact
 
 Record host facts, `git rev-parse HEAD`, and `git status --short --branch`. Inspect the selected
-successful `wheels.yml` run and require its `headSha` to equal the candidate commit. Record the wheel
+successful `wheels.yml` run and require its `headSha` to equal the artifact commit. Record the wheel
 filename and SHA-256 before installation.
+
+If the release commit differs, require it to descend from the artifact commit and audit the complete
+diff before accepting the wheel:
+
+```sh
+git merge-base --is-ancestor <artifact-commit> <release-commit>
+git diff --name-status <artifact-commit>..<release-commit>
+git diff --stat <artifact-commit>..<release-commit>
+```
+
+Record why every intervening file is artifact-neutral and runtime-neutral. Release-process prose,
+authored documentation, and site navigation normally qualify. Native/Python source, headers,
+bindings, live examples, build or packaging inputs, dependencies, versions, wheel workflows,
+runtime payloads, and uncertain files require a new wheel run.
 
 Install only that wheel into a new virtual environment. Run the applicable installed validator:
 
@@ -63,7 +77,8 @@ four actions succeed. Retain the wheel checksum beside this result.
 
 ## 3. Run The Fixed Native Interaction Set
 
-Build the checkout at the same candidate commit. Launch each executable without `--png`,
+Build the checkout at the artifact commit, or at a descendant release commit whose intervening diff
+has also been audited as runtime-neutral. Launch each executable without `--png`,
 `--smoke-ms`, or other bounded flags. State the requested action, wait for the maintainer's result,
 then close the program before launching the next one.
 
@@ -129,13 +144,14 @@ not execute an ARM64 wheel on an x64 host.
 Record:
 
 1. machine ID, OS/architecture, GPU, driver, and runtime facts;
-2. release version, candidate commit, workflow run ID, wheel filename, and checksum;
-3. installed-validator profile and evidence path;
-4. exact-wheel Quickstart result;
-5. one result for every selected native example;
-6. resize, close, reopen, visual, and lifecycle observations;
-7. explicit skips and blocking failures.
+2. release version, artifact commit, release commit, workflow run ID, wheel filename, and checksum;
+3. intervening-diff classification when the two commits differ;
+4. installed-validator profile and evidence path;
+5. exact-wheel Quickstart result;
+6. one result for every selected native example;
+7. resize, close, reopen, visual, and lifecycle observations;
+8. explicit skips and blocking failures.
 
-Summarize the results to the maintainer before moving to another machine. If the candidate commit or
-wheel checksum changes afterward, mark this evidence stale and repeat the complete procedure with
-the regenerated artifact.
+Summarize the results to the maintainer before moving to another machine. A new artifact checksum or
+artifact/runtime-affecting intervening change makes the corresponding evidence stale. An audited
+artifact-neutral release commit does not require a rebuild or repeat pass.

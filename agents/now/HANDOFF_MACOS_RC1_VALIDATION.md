@@ -11,6 +11,7 @@ Intel runs at least the `rc` installed-wheel profile and focused live set. Apple
 the IPython close/reopen lifecycle check; Qt/PyQt remains an optional-provider pass or explicit
 skip.
 
-Any successful Mac result obtained before the pending Windows fix is included in a new exact-SHA
-wheel workflow becomes stale when that candidate commit or wheel checksum changes. Repeat it with
-the regenerated Mac wheel before accepting the final RC1 matrix.
+For the current candidate, use run `29622780390` at artifact commit `bfa569916` if it passes. The
+descendant release commit `73b10cf95` contains only audited release-process documentation, so it
+does not invalidate the Mac artifact or manual pass. Apply the general intervening-diff audit if the
+release commit advances again.

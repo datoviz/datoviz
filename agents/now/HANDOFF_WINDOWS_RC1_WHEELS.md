@@ -1,6 +1,6 @@
 # Windows RC1 Wheel Completion Handoff
 
-Status: implementation complete; final exact-SHA wheel evidence pending. Updated: 2026-07-18.
+Status: implementation complete; final artifact wheel evidence pending. Updated: 2026-07-18.
 
 This is the completed implementation record for Windows AMD64/ARM64 RC1 wheels. Read
 [`../../AGENTS.md`](../../AGENTS.md), [`START.md`](START.md), [`STATUS.md`](STATUS.md), and
@@ -103,8 +103,9 @@ enforce `require-shaderc = true`; `delvewheel` cannot find a dependency that is 
 The result was a wheel that built and inspected successfully while runtime GLSL compilation failed.
 The resolved policy uses vcpkg's static shaderc target on Windows and retains the lazy-loaded shared
 runtime on Linux/macOS. Hosted workflow `29618922450` proved static shaderc configuration and ARM64
-DLL architecture at `d16512c1d`; the final exact-SHA workflow must also execute the installed ARM64
-wheel shaderc smoke.
+DLL architecture at `d16512c1d`; the final eligible artifact workflow must also execute the
+installed ARM64 wheel shaderc smoke. A descendant release commit is acceptable only through the
+audited artifact-neutral/runtime-neutral policy in `spec/release/PHYSICAL_VALIDATION.md`.
 
 
 ## End-To-End Execution Plan

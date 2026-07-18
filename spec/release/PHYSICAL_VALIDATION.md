@@ -10,7 +10,7 @@ The runnable procedure lives in
 
 Each available required machine class must provide both:
 
-1. installed-artifact evidence from the exact candidate wheel; and
+1. installed-artifact evidence from the accepted candidate wheel; and
 2. a maintainer-guided live interaction pass on the same machine.
 
 The installed-artifact phase proves imports, ABI, CLI, native dependency inventory, a CMake
@@ -22,14 +22,24 @@ replace live interaction, and a checkout-built example must not be reported as i
 evidence.
 
 
-## Candidate Identity And Invalidation
+## Artifact And Release Identity
 
-Evidence must record the release version, candidate commit, successful wheel-workflow run, artifact
-filename, and artifact checksum. The workflow `headSha` must equal the candidate commit.
+Evidence must record the release version, artifact commit, release commit, successful wheel-workflow
+run, artifact filename, and artifact checksum. The workflow `headSha` must equal the artifact commit.
+The release commit may equal or descend from the artifact commit.
 
-Any change to the candidate commit or artifact checksum invalidates all earlier installed-artifact
-and manual evidence. Regenerate the artifacts and repeat physical validation on every required
-machine; do not carry a pass forward because the changed code appears platform-specific.
+When the commits differ, audit and record the complete intervening diff. Existing artifacts remain
+eligible only when every intervening change is demonstrably artifact-neutral and runtime-neutral,
+such as release-process prose, authored documentation, or site navigation. Changes to native or
+Python source, public headers, bindings or generators, examples used by the live pass, CMake/build
+configuration, packaging, dependencies, version metadata, wheel workflows, vendored runtime
+payloads, or any uncertain path require regenerated artifacts and repeated affected evidence.
+
+A changed wheel checksum always identifies a new artifact and invalidates installed-artifact
+evidence for the prior checksum. A runtime-affecting commit invalidates manual evidence on every
+required machine unless the release policy explicitly narrows the affected matrix with recorded
+technical justification. Do not rebuild merely because the release commit advanced through an
+audited artifact-neutral diff.
 
 
 ## Manual Interaction Coverage

@@ -51,7 +51,8 @@ as real implementation, not scaffolding.
 11. On a physical RC validation machine, use
     [HANDOFF_RC1_PHYSICAL_WHEEL_SMOKE.md](HANDOFF_RC1_PHYSICAL_WHEEL_SMOKE.md) for current status and
     [the reusable procedure](../../docs/contributors/release-physical-validation.md) for Linux,
-    macOS, or Windows execution.
+    macOS, or Windows execution. The artifact commit may precede the release commit only through an
+    explicitly audited artifact-neutral and runtime-neutral diff.
 12. Use [HANDOFF_WINDOWS_RC1_WHEELS.md](HANDOFF_WINDOWS_RC1_WHEELS.md) to finish the active Windows
     AMD64/ARM64 shaderc, packaging, deterministic CI, and vcpkg-cache lane. Its first external
     NuGet package write and any push/workflow dispatch require explicit approval.

@@ -90,6 +90,9 @@ top to bottom and record skipped items as known exclusions.
 - [ ] Run the shared [physical release-validation procedure](release-physical-validation.md)
       on each available required machine: exact-wheel Quickstart plus the fixed maintainer-guided
       interaction set. Record every pass, fail, and explicit skip.
+- [ ] Record artifact and release commits. If they differ, confirm ancestry and audit every
+      intervening path as artifact/runtime-neutral; otherwise regenerate wheels and repeat affected
+      evidence.
 - [ ] On at least one graphics-capable host, run
       `./validate-full.sh` or `./validate.ps1 -Profile full` from the extracted pack, or record why
       render smoke is covered by lower-level checks.

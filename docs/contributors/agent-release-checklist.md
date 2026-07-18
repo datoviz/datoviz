@@ -84,6 +84,9 @@ examples one at a time, explicitly
 ask the maintainer to perform each listed interaction, and record the answer. Run the Quickstart
 from the isolated candidate-wheel environment; do not call a checkout launch installed-wheel
 evidence.
+Record both artifact and release commits. When they differ, inspect and report the complete
+intervening diff; accept existing wheels only if every change is clearly artifact-neutral and
+runtime-neutral. Treat uncertainty as requiring regenerated artifacts.
 Treat error-level diagnostics in machine evidence as blockers even when the underlying command
 returned 0. Summarize warning-level diagnostics separately for maintainer review.
 Prefer quoting `release-machine-plan` output over reconstructing machine commands manually. Rerun it

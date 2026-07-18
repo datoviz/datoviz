@@ -7,14 +7,20 @@ For `0.4.0rc1`, execute the reusable
 each available required Linux, macOS, and Windows machine. Durable acceptance policy lives in
 [`spec/release/PHYSICAL_VALIDATION.md`](../../spec/release/PHYSICAL_VALIDATION.md).
 
-Accept only wheels from an all-green `wheels.yml` run whose `headSha` equals the final RC1 candidate
-commit. Record the run ID and wheel checksum on every machine.
+The current wheel run is
+[29622780390](https://github.com/datoviz/datoviz/actions/runs/29622780390) at artifact commit
+`bfa569916` (`fix: embed Windows wheel shader resources`). Accept it if all required jobs pass.
+Record that artifact commit, the release commit, run ID, and wheel checksum on every machine.
 
-A problem found on the Windows laptop has been fixed locally but is not yet part of regenerated CI
-wheels. Current Windows evidence is provisional. After explicit approval to push the fix, wait for
-an all-green exact-SHA workflow, download the regenerated wheels, and repeat the complete physical
-procedure on all required machines. The new commit and checksums invalidate earlier Linux, macOS,
-and Windows passes.
+The current release commit `73b10cf95` descends from the artifact commit through one
+release-documentation/process change. The audited `bfa569916..73b10cf95` diff contains only
+`agents/`, `docs/`, `spec/`, and `mkdocs.yml` instruction/navigation changes; it does not affect
+wheel inputs, runtime behavior, or live example sources. Under the durable policy, this diff does
+not require cancelling or rerunning the wheel workflow.
+
+If RC1 advances again, audit the new intervening diff. Regenerate wheels and repeat affected
+physical evidence only if it changes artifact/runtime inputs, changes a wheel checksum, or cannot
+be classified confidently as neutral.
 
 Do not push, dispatch the workflow, upload evidence, or publish from this handoff without explicit
 approval in the current session.

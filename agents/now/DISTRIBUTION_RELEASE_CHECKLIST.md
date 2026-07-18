@@ -125,8 +125,9 @@ Keep this section compact; detailed history belongs in commits and release notes
   macOS dylibs for arm64 and x86_64.
 - On 2026-07-17, hosted wheel CI run `29618922450` passed the same full matrix at `d16512c1d`
   after the Windows static-shaderc and cache-isolation work. It built and inspected ARM64 DLLs on
-  `windows-11-arm`; a final exact-SHA rerun must additionally execute shaderc from the installed
-  ARM64 wheel before the artifacts become RC evidence.
+  `windows-11-arm`; the final eligible artifact run must additionally execute shaderc from the
+  installed ARM64 wheel before the artifacts become RC evidence. A descendant release commit may
+  reuse that artifact only under the audited-neutral-diff release policy.
 
 
 ## Source Bundle
