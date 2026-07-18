@@ -1,5 +1,8 @@
 # Release Artifact And Evidence State
 
+Campaign identity and the shared cloud/physical execution model are defined in
+[VALIDATION_CAMPAIGNS.md](VALIDATION_CAMPAIGNS.md).
+
 Release automation writes state under:
 
 ```text

@@ -1,5 +1,8 @@
 # Release Validation Matrix
 
+The shared unattended and physical campaign contract is defined in
+[VALIDATION_CAMPAIGNS.md](VALIDATION_CAMPAIGNS.md).
+
 This matrix defines what release automation should ask the maintainer to validate. It is a target
 for the v0.4 automation, not a claim that all runners are already implemented.
 
