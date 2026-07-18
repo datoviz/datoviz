@@ -1006,10 +1006,10 @@ def submit_physical(args: argparse.Namespace) -> int:
         '--format',
         'json',
         package_ref,
-        f'{archive}:{media_type}',
+        f'{archive.name}:{media_type}',
     ]
     result = subprocess.run(  # noqa: S603
-        push, cwd=ROOT, text=True, capture_output=True, check=False
+        push, cwd=archive.parent, text=True, capture_output=True, check=False
     )
     if result.returncode != 0:
         print(result.stderr, file=sys.stderr)

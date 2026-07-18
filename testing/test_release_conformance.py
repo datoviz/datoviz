@@ -8,6 +8,7 @@ import tarfile
 import zlib
 from argparse import Namespace
 from pathlib import Path
+from types import SimpleNamespace
 
 from tools.release_wheels import conformance
 
@@ -300,6 +301,42 @@ def test_verify_bundle_accepts_approved_physical_evidence(tmp_path: Path) -> Non
 
     assert conformance.verify_bundle(args) == 0
     assert (output / 'macbook-m3/evidence.json').is_file()
+
+
+def test_submit_physical_passes_oras_a_relative_archive(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """ORAS keeps path validation enabled by receiving a layer relative to its working directory."""
+    evidence_dir = _evidence(tmp_path / 'source', 'macbook-m3', physical=True)
+    calls = []
+
+    def fake_run(argv, **kwargs):
+        calls.append((argv, kwargs))
+        if argv[0] == 'oras':
+            return SimpleNamespace(
+                returncode=0,
+                stdout=json.dumps(
+                    {
+                        'reference': 'ghcr.io/datoviz/evidence@sha256:' + 'a' * 64,
+                    }
+                ),
+                stderr='',
+            )
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(conformance.subprocess, 'run', fake_run)
+    args = Namespace(
+        evidence_dir=evidence_dir,
+        package='ghcr.io/datoviz/evidence',
+        ref='v0.4-dev',
+        confirm='yes',
+    )
+
+    assert conformance.submit_physical(args) == 0
+    push, kwargs = calls[0]
+    archive_layer = push[-1].partition(':application/')[0]
+    assert Path(archive_layer).name == archive_layer
+    assert kwargs['cwd'] == evidence_dir.parent
 
 
 def test_verify_bundle_rejects_tampered_capture(tmp_path: Path) -> None:
