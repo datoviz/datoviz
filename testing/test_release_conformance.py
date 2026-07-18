@@ -106,6 +106,35 @@ def test_validate_wheels_run_uses_workflow_path_not_display_case() -> None:
     conformance.validate_wheels_run(run, '123')
 
 
+def test_run_parser_records_capability_skips() -> None:
+    """Hosted lanes can disable unavailable checks without changing shared defaults."""
+    args = conformance.parse_args(
+        [
+            'run',
+            '--wheel',
+            'wheel.whl',
+            '--output-dir',
+            'evidence',
+            '--version',
+            '0.4.0rc1',
+            '--wheel-run-id',
+            '123',
+            '--artifact-commit',
+            'artifact',
+            '--machine-id',
+            'windows-arm64',
+            '--execution-class',
+            'github-hosted-no-gpu',
+            '--no-render',
+            '--no-cmake-consumer',
+        ]
+    )
+
+    assert args.render is False
+    assert args.cmake_consumer is False
+    assert args.shaderc is True
+
+
 def test_aggregate_builds_self_contained_report(tmp_path: Path) -> None:
     """Aggregation preserves captures and writes HTML, JSON, and a manifest."""
     inputs = tmp_path / 'inputs'

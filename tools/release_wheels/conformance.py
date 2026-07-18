@@ -296,13 +296,15 @@ def run_conformance(args: argparse.Namespace) -> int:
             os.fspath(work),
             '--release-build',
             '--precompiled-shaders',
-            '--shaderc',
-            '--cmake-consumer',
             '--examples',
             'render' if args.render else 'basic',
             '--qt-probe',
             'optional',
         ]
+        if args.shaderc:
+            argv.append('--shaderc')
+        if args.cmake_consumer:
+            argv.append('--cmake-consumer')
         if args.render:
             argv.append('--render')
         result = subprocess.run(  # noqa: S603
@@ -357,6 +359,13 @@ def run_conformance(args: argparse.Namespace) -> int:
     (output / 'manual-observations.json').write_text(
         json.dumps(manual, indent=2, sort_keys=True) + '\n', encoding='utf8'
     )
+    skips = []
+    if not args.render:
+        skips.append({'id': 'render', 'reason': args.render_skip_reason})
+    if not args.cmake_consumer:
+        skips.append({'id': 'cmake-consumer', 'reason': args.cmake_skip_reason})
+    if not args.shaderc:
+        skips.append({'id': 'shaderc', 'reason': args.shaderc_skip_reason})
     evidence = {
         'schema': EVIDENCE_SCHEMA,
         'version': args.version,
@@ -375,7 +384,7 @@ def run_conformance(args: argparse.Namespace) -> int:
         'results': results,
         'captures': captures,
         'manual': manual,
-        'skips': [] if args.render else [{'id': 'render', 'reason': args.render_skip_reason}],
+        'skips': skips,
         'failures': failures,
         'status': 'fail' if failures else 'pass',
     }
@@ -941,6 +950,10 @@ def prepare_physical(args: argparse.Namespace) -> int:
         repeat=args.repeat,
         render=True,
         render_skip_reason='',
+        shaderc=True,
+        shaderc_skip_reason='',
+        cmake_consumer=True,
+        cmake_skip_reason='',
         keep_going=args.keep_going,
         replace=args.replace,
     )
@@ -1042,6 +1055,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     run_parser.add_argument('--repeat', type=int, default=2)
     run_parser.add_argument('--render', action=argparse.BooleanOptionalAction, default=True)
     run_parser.add_argument('--render-skip-reason', default='graphics capability unavailable')
+    run_parser.add_argument('--shaderc', action=argparse.BooleanOptionalAction, default=True)
+    run_parser.add_argument('--shaderc-skip-reason', default='shaderc capability unavailable')
+    run_parser.add_argument(
+        '--cmake-consumer', action=argparse.BooleanOptionalAction, default=True
+    )
+    run_parser.add_argument('--cmake-skip-reason', default='native CMake toolchain unavailable')
     run_parser.add_argument('--keep-going', action='store_true')
     run_parser.add_argument('--replace', action='store_true')
 
