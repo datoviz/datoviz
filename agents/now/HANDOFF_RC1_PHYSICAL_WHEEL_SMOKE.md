@@ -18,6 +18,17 @@ version reported `0.4.0rc1 (DEBUG)`, so it is not a release artifact. The standa
 MoltenVK/ICD packaging fix landed in `30bbbe483`. Use only artifacts from the replacement matrix
 that enforces a Release native build; record its run, commit, and per-wheel checksums here.
 
+Run
+[29634509734](https://github.com/datoviz/datoviz/actions/runs/29634509734) (`Wheels` #459) at
+`77d4eeebf` produced Release wheels. Its Linux x86_64 wheel has SHA-256
+`ffcca2c4f299e3f677c15df1d85ab198628a98b86225c42188b34169f964bacb`; the full installed-wheel
+validator and physical Quickstart resize, pan, zoom, and close checks passed. The Windows AMD64
+wheel also passed physical end-to-end validation. Do not promote run #459 as the final matrix: its
+macOS Intel render smoke ran on a hosted VM without GPU/Metal acceleration and aborted. Commit
+`7ceb18df5` gates hosted Intel validation to non-render checks, leaving Intel render proof to the
+physical machine. The job-local CMake arguments also overrode the workflow default and re-enabled
+mimalloc; the replacement run must retain `DVZ_MIMALLOC_SOURCE=OFF` on macOS.
+
 Do not accept run #457 as macOS or Linux physical installed-wheel evidence. On an M3 MacBook Air, the full
 validator passes only when it inherits the checkout's Vulkan SDK environment. A fresh wheel install
 without those variables cannot initialize Volk because the wheel lacks `MoltenVK_icd.json` and the

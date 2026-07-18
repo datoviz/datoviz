@@ -18,8 +18,11 @@ through [HANDOFF_WINDOWS_RC1_WHEELS.md](HANDOFF_WINDOWS_RC1_WHEELS.md). Workflow
 smokes. Physical Windows AMD64 validation passed end to end. Physical Linux validation also passed
 functionally, but rejected the artifact after the installed native version reported
 `0.4.0rc1 (DEBUG)`. The standalone macOS MoltenVK/ICD packaging fix and no-SDK render smoke landed
-in `30bbbe483`; the replacement matrix must build Release native libraries, reject Debug artifacts,
-and provide the new exact artifacts for physical validation.
+in `30bbbe483`. Run `29634509734` at `77d4eeebf` then produced Release wheels: physical Linux
+x86_64 and Windows AMD64 validation passed, while the hosted macOS Intel VM aborted during a render
+smoke despite lacking GPU/Metal acceleration. Commit `7ceb18df5` gates that hosted lane to
+non-render checks and leaves Intel rendering to physical proof. The replacement matrix must also
+keep mimalloc disabled on every platform and provide the final exact artifacts.
 
 Next critical path: dispatch and validate the corrected Release wheel matrix, repeat exact-artifact
 physical installed-wheel evidence on Linux, macOS, and Windows, then close the RC1 source
