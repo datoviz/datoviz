@@ -1,6 +1,6 @@
 # RC1 Release Validation And Logging Handoff
 
-Status: fixed locally by `e5bb34631`; replacement cross-platform wheels required before TestPyPI.
+Status: closed by `e5bb34631`; replacement wheel and seven-machine conformance evidence passed.
 Created: 2026-07-18. Updated: 2026-07-18.
 
 The maintainer wants final C and Python release packages to be silent by default and not request
@@ -142,5 +142,26 @@ Commit `e5bb34631` implements the narrow native fix and regression coverage:
 - a locally built macOS arm64 Release wheel installed and passed the new Release smoke;
 - `just spec-check`, `just ctypes-check`, and `git diff --check` passed.
 
-This closes the source-level blocker. Cross-platform MSVC behavior and the replacement artifact
-checksums remain pending until the commit is pushed and a new six-platform Wheels run completes.
+This closes the source-level blocker. Cross-platform MSVC behavior and replacement artifact bytes
+are covered by the final evidence below.
+
+
+## Final Replacement Evidence
+
+- `Wheels` run `29644925786` built exact commit
+  `ea06c5cdf0e7a267341b5834419d7854959399dd`; all 29 build and installed-wheel jobs passed.
+- Hosted conformance run `29645577693` passed Linux x86_64/aarch64, Windows AMD64/ARM64, macOS
+  Intel without a GPU, macOS arm64 with MoltenVK, and the aggregate report gate.
+- The physical MacBook M3 tested the exact arm64 wheel
+  `datoviz-0.4.0rc1-py3-none-macosx_15_0_arm64.whl`, SHA-256
+  `21c1f68e852d92c7a8134867c5f5455442a37f73dfb57b8b40752fce871a26e2`.
+- Both physical unattended profiles passed, including deterministic captures, cross-frontend
+  decoded-pixel parity, installed C/Python examples, shaderc, and the CMake consumer.
+- The maintainer approved all seven attended scenarios: pan/zoom, 3D arcball, text resize, image
+  probe, textured mesh, picking, and close/reopen.
+- Physical evidence intake run `29645582130` accepted the immutable bundle. The synced report at
+  `build/physical-evidence/report/index.html` contains six hosted rows plus the physical M3 row,
+  has no missing machines, and passes every release gate.
+
+The Release-silence issue no longer blocks TestPyPI. Preserve the exact wheel checksums through the
+package-index verification workflow.
