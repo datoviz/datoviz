@@ -8,11 +8,13 @@ blockers and [DOCUMENTATION.md](DOCUMENTATION.md) for public documentation gates
 Durable release policy lives in [../../spec/release/](../../spec/release/):
 [READINESS.md](../../spec/release/READINESS.md),
 [RC_PROCESS.md](../../spec/release/RC_PROCESS.md),
+[PHYSICAL_VALIDATION.md](../../spec/release/PHYSICAL_VALIDATION.md),
 [COMMUNICATION.md](../../spec/release/COMMUNICATION.md), and
 [GALLERY_OUTREACH.md](../../spec/release/GALLERY_OUTREACH.md).
 
 Maintainer execution docs live in
 [../../docs/contributors/release-process.md](../../docs/contributors/release-process.md),
+[../../docs/contributors/release-physical-validation.md](../../docs/contributors/release-physical-validation.md),
 [../../docs/contributors/release-flight-checklist.md](../../docs/contributors/release-flight-checklist.md),
 and [../../docs/contributors/release-wheels.md](../../docs/contributors/release-wheels.md).
 Public status docs live in [../../docs/reference/project-status.md](../../docs/reference/project-status.md)

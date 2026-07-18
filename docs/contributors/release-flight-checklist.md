@@ -87,6 +87,9 @@ top to bottom and record skipped items as known exclusions.
 - [ ] Copy the generated validation pack to each required physical machine.
 - [ ] On each required physical machine, run
       `./validate-rc.sh` or `./validate.ps1 -Profile rc` from the extracted pack.
+- [ ] Run the shared [physical release-validation procedure](release-physical-validation.md)
+      on each available required machine: exact-wheel Quickstart plus the fixed maintainer-guided
+      interaction set. Record every pass, fail, and explicit skip.
 - [ ] On at least one graphics-capable host, run
       `./validate-full.sh` or `./validate.ps1 -Profile full` from the extracted pack, or record why
       render smoke is covered by lower-level checks.

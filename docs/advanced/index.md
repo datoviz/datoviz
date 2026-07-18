@@ -107,5 +107,6 @@ in `docs/`, and current execution status in `agents/`.
 - [Release flight checklist](../contributors/release-flight-checklist.md)
 - [Release wheels](../contributors/release-wheels.md)
 - [Release validation](../contributors/release-validation.md)
+- [Physical release validation](../contributors/release-physical-validation.md)
 - [Agent release checklist](../contributors/agent-release-checklist.md)
 - [Validation gallery](../examples/validation-gallery.md)

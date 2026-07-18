@@ -15,8 +15,10 @@ Before running release commands, read:
 5. `spec/release/RELEASE_AUTOMATION.md`;
 6. `spec/release/ARTIFACT_EVIDENCE.md`;
 7. `spec/release/VALIDATION_MATRIX.md`;
-8. `docs/contributors/release-process.md`;
-9. `docs/contributors/release-flight-checklist.md`.
+8. `spec/release/PHYSICAL_VALIDATION.md`;
+9. `docs/contributors/release-process.md`;
+10. `docs/contributors/release-physical-validation.md`;
+11. `docs/contributors/release-flight-checklist.md`.
 
 
 ## Local Candidate Flow
@@ -76,6 +78,12 @@ Use `quick` for a short install/import/CLI smoke, `rc` for the required CMake co
 installed Python/C no-window example smokes, and `full` when the machine should also attempt
 shaderc and installed offscreen render example smokes. Clearly separate required machines from
 optional or unavailable machines.
+After that automated phase, execute the shared
+[physical release-validation procedure](release-physical-validation.md). Launch the fixed native
+examples one at a time, explicitly
+ask the maintainer to perform each listed interaction, and record the answer. Run the Quickstart
+from the isolated candidate-wheel environment; do not call a checkout launch installed-wheel
+evidence.
 Treat error-level diagnostics in machine evidence as blockers even when the underlying command
 returned 0. Summarize warning-level diagnostics separately for maintainer review.
 Prefer quoting `release-machine-plan` output over reconstructing machine commands manually. Rerun it

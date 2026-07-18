@@ -28,10 +28,12 @@ Before starting an RC branch pass, collect these inputs:
 1. active blockers from `agents/now/STATUS.md`;
 2. release sequence from `agents/now/RELEASE.md`;
 3. durable policy from `spec/release/READINESS.md` and `spec/release/RC_PROCESS.md`;
-4. public documentation gates from `agents/now/DOCUMENTATION.md`;
-5. wheel workflow details from [Release wheels](release-wheels.md);
-6. the flight checklist from [Release flight checklist](release-flight-checklist.md);
-7. citation metadata from `CITATION.cff`, [Citation](../reference/citation.md), and the JOSS draft
+4. physical-machine policy from `spec/release/PHYSICAL_VALIDATION.md` and the runnable
+   [physical release-validation procedure](release-physical-validation.md);
+5. public documentation gates from `agents/now/DOCUMENTATION.md`;
+6. wheel workflow details from [Release wheels](release-wheels.md);
+7. the flight checklist from [Release flight checklist](release-flight-checklist.md);
+8. citation metadata from `CITATION.cff`, [Citation](../reference/citation.md), and the JOSS draft
    in `paper/`.
 
 
@@ -196,6 +198,13 @@ just release-machine-validate 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl -
 Use `quick` for a short install/import/CLI smoke, `rc` for CMake consumer evidence, and `full` for
 shaderc plus render smoke on a graphics-capable host. The validator writes environment metadata,
 logs, failures, and `evidence.json` under `build/release/<version>/evidence/<machine-id>/`.
+
+After installed validation, run the shared
+[physical release-validation procedure](release-physical-validation.md)
+using its platform section. It requires the isolated candidate-wheel Quickstart and a fixed,
+maintainer-guided native interaction set. The wheel does not currently package the rich interactive
+examples, so record the exact-wheel Quickstart separately from the checkout-built live examples;
+neither may be substituted for the other.
 
 Return each machine evidence directory as-is or as a tarball:
 

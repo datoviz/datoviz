@@ -79,6 +79,11 @@ with status 0; warning diagnostics are recorded for review.
 Use `release-machine-plan` after each evidence ingest to see which machine classes are still
 missing, failed, or ready.
 
+Automated installed-artifact profiles do not replace the required human interaction pass. On each
+available required machine, continue with [Physical release validation](release-physical-validation.md):
+run the Quickstart from the isolated candidate wheel, then let the local agent launch the fixed live
+example set and record the maintainer's observations.
+
 To return evidence from a validation pack, archive the generated evidence directory:
 
 ```sh

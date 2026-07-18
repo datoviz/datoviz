@@ -48,10 +48,10 @@ as real implementation, not scaffolding.
 10. Use [HANDOFF_VISUAL_DOCUMENTATION_PASS.md](HANDOFF_VISUAL_DOCUMENTATION_PASS.md) for the
     approved visual-system pilot across Get Started, Core Concepts, Choose Your Layer, and the
     Advanced overview. Complete the pilot and request maintainer review before broad rollout.
-11. On a physical Apple Silicon or Intel Mac, execute
-    [HANDOFF_MACOS_RC1_VALIDATION.md](HANDOFF_MACOS_RC1_VALIDATION.md). It detects the host
-    architecture, runs source and physical-runtime preflight immediately, and accepts installed
-    wheel evidence only from an all-green workflow at the exact checked-out commit.
+11. On a physical RC validation machine, use
+    [HANDOFF_RC1_PHYSICAL_WHEEL_SMOKE.md](HANDOFF_RC1_PHYSICAL_WHEEL_SMOKE.md) for current status and
+    [the reusable procedure](../../docs/contributors/release-physical-validation.md) for Linux,
+    macOS, or Windows execution.
 12. Use [HANDOFF_WINDOWS_RC1_WHEELS.md](HANDOFF_WINDOWS_RC1_WHEELS.md) to finish the active Windows
     AMD64/ARM64 shaderc, packaging, deterministic CI, and vcpkg-cache lane. Its first external
     NuGet package write and any push/workflow dispatch require explicit approval.

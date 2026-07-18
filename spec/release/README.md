@@ -17,6 +17,8 @@ for release contracts that should survive agent handoffs, documentation rebuilds
   bundles, and report status values.
 - [VALIDATION_MATRIX.md](VALIDATION_MATRIX.md): machine classes, validation profiles, and required
   release evidence.
+- [PHYSICAL_VALIDATION.md](PHYSICAL_VALIDATION.md): exact-artifact identity, maintainer-guided live
+  interaction, evidence invalidation, and physical-machine acceptance policy.
 - [WHEEL_BACKEND_ARCHITECTURE.md](WHEEL_BACKEND_ARCHITECTURE.md): aggressive long-term wheel
   backend refactor plan for producing `py3-none-<platform>` artifacts directly.
 - [COMMUNICATION.md](COMMUNICATION.md): release notes, blog/announcement assets, public messages,

@@ -66,8 +66,11 @@ The `full` profile may add:
 
 ## Manual Profile
 
-The manual profile is intentionally short and targeted. It should be generated from release
-metadata so the maintainer does not hand-maintain a second checklist.
+The manual profile is intentionally short and targeted. Durable requirements live in
+[PHYSICAL_VALIDATION.md](PHYSICAL_VALIDATION.md), and the reusable agent procedure lives in
+[`docs/contributors/release-physical-validation.md`](../../docs/contributors/release-physical-validation.md).
+The local agent must launch the selected apps one at a time and ask the maintainer to perform the
+stated interaction; it must not hand-maintain an ad hoc checklist.
 
 Manual smoke should cover:
 
