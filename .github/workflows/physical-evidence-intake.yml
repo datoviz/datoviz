@@ -1,7 +1,12 @@
 name: "Physical evidence intake"
-run-name: "Physical evidence · Wheels ${{ inputs.wheel_run_id }} · ${{ inputs.machine_id }}"
+run-name: "Physical evidence · Wheels ${{ inputs.wheel_run_id || 'RC branch request' }} · ${{ inputs.machine_id || github.ref_name }}"
 
 on:
+  push:
+    branches: [v0.4-dev]
+    paths:
+      - ".github/physical-evidence-request.json"
+      - ".github/workflows/physical-evidence-intake.yml"
   workflow_dispatch:
     inputs:
       package_ref:
@@ -26,7 +31,41 @@ permissions:
   packages: read
 
 jobs:
+  request:
+    runs-on: ubuntu-latest
+    outputs:
+      package_ref: ${{ steps.request.outputs.package_ref }}
+      wheel_run_id: ${{ steps.request.outputs.wheel_run_id }}
+      machine_id: ${{ steps.request.outputs.machine_id }}
+      version: ${{ steps.request.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: request
+        env:
+          INPUT_PACKAGE_REF: ${{ inputs.package_ref }}
+          INPUT_WHEEL_RUN_ID: ${{ inputs.wheel_run_id }}
+          INPUT_MACHINE_ID: ${{ inputs.machine_id }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            jq -n \
+              --arg package_ref "$INPUT_PACKAGE_REF" \
+              --arg wheel_run_id "$INPUT_WHEEL_RUN_ID" \
+              --arg machine_id "$INPUT_MACHINE_ID" \
+              --arg version "$INPUT_VERSION" \
+              '{package_ref: $package_ref, wheel_run_id: $wheel_run_id, machine_id: $machine_id, version: $version}' \
+              > request.json
+          else
+            cp .github/physical-evidence-request.json request.json
+          fi
+          for key in package_ref wheel_run_id machine_id version; do
+            value=$(jq -r --arg key "$key" '.[$key] // empty' request.json)
+            test -n "$value"
+            echo "$key=$value" >> "$GITHUB_OUTPUT"
+          done
+
   verify:
+    needs: request
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -34,16 +73,16 @@ jobs:
       - name: Download submitted bundle
         env:
           GHCR_TOKEN: ${{ github.token }}
-          PACKAGE_REF: ${{ inputs.package_ref }}
+          PACKAGE_REF: ${{ needs.request.outputs.package_ref }}
         run: |
           echo "$GHCR_TOKEN" | oras login ghcr.io --username "${{ github.actor }}" --password-stdin
           mkdir -p build/intake
           oras pull "$PACKAGE_REF" --output build/intake
       - name: Verify immutable identity and manual approval
         env:
-          WHEEL_RUN_ID: ${{ inputs.wheel_run_id }}
-          MACHINE_ID: ${{ inputs.machine_id }}
-          RELEASE_VERSION: ${{ inputs.version }}
+          WHEEL_RUN_ID: ${{ needs.request.outputs.wheel_run_id }}
+          MACHINE_ID: ${{ needs.request.outputs.machine_id }}
+          RELEASE_VERSION: ${{ needs.request.outputs.version }}
         run: |
           archive=$(find build/intake -maxdepth 1 -name '*.tar.gz' -print -quit)
           test -n "$archive"
@@ -56,6 +95,6 @@ jobs:
             --version "$RELEASE_VERSION"
       - uses: actions/upload-artifact@v7
         with:
-          name: physical-evidence-${{ inputs.wheel_run_id }}-${{ inputs.machine_id }}
+          name: physical-evidence-${{ needs.request.outputs.wheel_run_id }}-${{ needs.request.outputs.machine_id }}
           path: build/accepted
           retention-days: 90
