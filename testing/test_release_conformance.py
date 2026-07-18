@@ -103,6 +103,23 @@ def test_png_stats_rgba(tmp_path: Path) -> None:
     assert len(stats['pixel_sha256']) == 64
 
 
+def test_physical_evidence_machine_matches_campaign_artifact() -> None:
+    """Physical sync discovers accepted machines from authoritative artifact names."""
+    assert (
+        conformance.physical_evidence_machine(
+            'physical-evidence-29641789685-macbook-m3', '29641789685'
+        )
+        == 'macbook-m3'
+    )
+    assert conformance.physical_evidence_machine('physical-evidence-other', '29641789685') == ''
+    assert (
+        conformance.physical_evidence_machine(
+            'physical-evidence-29641789684-macbook-m3', '29641789685'
+        )
+        == ''
+    )
+
+
 def test_capture_parity_compares_decoded_pixels() -> None:
     """Equivalent C and Python scenarios require identical decoded pixels."""
     scenarios = conformance.CAPTURE_PARITY_GROUPS['c-python-point-render']

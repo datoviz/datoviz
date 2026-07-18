@@ -71,6 +71,14 @@ def safe_name(value: str) -> str:
     return re.sub(r'[^A-Za-z0-9_.-]+', '-', value).strip('-.') or 'unknown'
 
 
+def physical_evidence_machine(artifact_name: str, wheel_run_id: str) -> str:
+    """Return the machine identifier encoded in an accepted evidence artifact name."""
+    prefix = f'physical-evidence-{wheel_run_id}-'
+    if not artifact_name.startswith(prefix):
+        return ''
+    return artifact_name.removeprefix(prefix)
+
+
 def validate_wheels_run(run: dict[str, Any], run_id: str) -> None:
     """Require metadata for the successful canonical wheel workflow."""
     identity = (run.get('path'), run.get('status'), run.get('conclusion'))
@@ -1139,14 +1147,38 @@ def sync_physical(args: argparse.Namespace) -> int:
     )
     if result.returncode != 0:
         raise RuntimeError(result.stderr.strip() or 'unable to query physical evidence intake')
-    marker = f'Wheels {args.wheel_run_id} · '
+    repository_result = subprocess.run(  # noqa: S603
+        ['gh', 'repo', 'view', '--json', 'nameWithOwner', '--jq', '.nameWithOwner'],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if repository_result.returncode != 0:
+        raise RuntimeError(
+            repository_result.stderr.strip() or 'unable to identify GitHub repository'
+        )
+    repository = repository_result.stdout.strip()
     selected: dict[str, dict[str, Any]] = {}
     for run in json.loads(result.stdout):
-        title = str(run.get('displayTitle', ''))
-        if marker not in title:
-            continue
-        machine_id = title.split(marker, 1)[1].strip()
-        selected.setdefault(machine_id, run)
+        run_id = str(run['databaseId'])
+        artifacts_result = subprocess.run(  # noqa: S603
+            ['gh', 'api', f'repos/{repository}/actions/runs/{run_id}/artifacts'],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if artifacts_result.returncode != 0:
+            raise RuntimeError(
+                artifacts_result.stderr.strip() or f'unable to query artifacts for run {run_id}'
+            )
+        for artifact in json.loads(artifacts_result.stdout).get('artifacts', []):
+            machine_id = physical_evidence_machine(
+                str(artifact.get('name', '')), str(args.wheel_run_id)
+            )
+            if machine_id:
+                selected.setdefault(machine_id, run)
     output = args.output_dir.resolve()
     inputs = output / 'inputs'
     inputs.mkdir(parents=True, exist_ok=True)
