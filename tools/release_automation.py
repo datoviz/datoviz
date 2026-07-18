@@ -2088,6 +2088,8 @@ def render_report_text(analysis: dict[str, Any]) -> str:
         lines.append(f"- machines: {', '.join(campaign.get('machines', []))}")
 
     lines.extend(["", "## Legacy Physical Evidence Matrix"])
+    if campaign.get("status") == "pass":
+        lines.append("- informational only; the accepted campaign above is authoritative for RC gates")
     for row in matrix:
         profiles = ", ".join(row["profiles"]) if row["profiles"] else "-"
         machines = ", ".join(row["machines"]) if row["machines"] else "-"
@@ -2097,8 +2099,8 @@ def render_report_text(analysis: dict[str, Any]) -> str:
         )
 
     lines.extend(["", "## Gates"])
-    for gate in state.get("gates", APPROVAL_GATES):
-        lines.append(f"- `{gate.get('status', 'manual')}` {gate.get('id')}: {gate.get('description')}")
+    for gate in gate_rows(analysis):
+        lines.append(f"- `{gate['status']}` {gate['id']}: {gate['detail']}")
 
     if missing or changed or version_mismatch:
         lines.extend(["", "## Artifact Drift"])
