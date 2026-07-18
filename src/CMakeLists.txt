@@ -214,11 +214,11 @@ endif()
 # -------------------------------------------------------------------------------------------------
 # Compile definitions
 # -------------------------------------------------------------------------------------------------
-# Validation layers are enabled by default except for Release builds unless manually overridden.
-option(DVZ_USE_VALIDATION "Enable Vulkan validation layers and debug utils" ON)
+# Validation layers are enabled by default in non-Release builds when requested at configure time.
+option(DVZ_USE_VALIDATION "Enable validation by default in non-Release builds" ON)
 
 set(ENABLE_VALIDATION_LAYERS
-    $<IF:$<OR:$<CONFIG:Release>,$<NOT:$<BOOL:${DVZ_USE_VALIDATION}>>>,0,1>)
+    $<IF:$<AND:$<NOT:$<CONFIG:Release>>,$<BOOL:${DVZ_USE_VALIDATION}>>,1,0>)
 
 set(DVZ_COMPILE_DEFINITIONS ${DVZ_COMPILE_DEFINITIONS}
     ENABLE_VALIDATION_LAYERS=${ENABLE_VALIDATION_LAYERS}

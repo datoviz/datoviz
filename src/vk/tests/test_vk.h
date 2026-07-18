@@ -26,6 +26,8 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
+int test_gpu_ctx_config_validation_default(TstContext* suite, const TstCase* tstitem);
+
 int test_instance_layers(TstContext* suite, const TstCase* tstitem);
 
 int test_instance_extensions(TstContext* suite, const TstCase* tstitem);

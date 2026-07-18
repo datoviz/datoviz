@@ -45,7 +45,7 @@ extern "C"
         LOG_FATAL
     };
 
-#ifdef DEBUG
+#if DEBUG
 #define DVZ_DEFAULT_LOG_LEVEL LOG_INFO
 #else
 // In RELEASE mode, by default (when DVZ_LOG_LEVEL env variable is not set), effectively

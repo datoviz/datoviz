@@ -37,6 +37,7 @@
 
 #if OS_LINUX
 // #include <sys/types.h>
+#include <pthread.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 #elif OS_MACOS
@@ -65,12 +66,93 @@ static struct
     FILE* fp;
     int level;
     int quiet;
-} L;
+} L = {.level = DVZ_DEFAULT_LOG_LEVEL};
 
 static const char* level_names[] = {"T", "D", "I", "W", "E", "F"};
 
 static const char* level_colors[] = {"\x1b[94m", "\x1b[36m", "\x1b[32m",
                                      "\x1b[33m", "\x1b[31m", "\x1b[35m"};
+
+
+
+/**
+ * Resolve the configured log threshold from the environment.
+ *
+ * @returns the resolved log level
+ */
+static int _log_level_from_env(void)
+{
+    const char* level = getenv("DVZ_LOG_LEVEL");
+    int level_int = DVZ_DEFAULT_LOG_LEVEL;
+    if (level != NULL)
+    {
+        if (strcmp(level, "trace") == 0)       level_int = LOG_TRACE;
+        else if (strcmp(level, "debug") == 0)  level_int = LOG_DEBUG;
+        else if (strcmp(level, "info") == 0)   level_int = LOG_INFO;
+        else if (strcmp(level, "warn") == 0)   level_int = LOG_WARN;
+        else if (strcmp(level, "error") == 0)  level_int = LOG_ERROR;
+        else if (strcmp(level, "fatal") == 0)  level_int = LOG_FATAL;
+        else                                    level_int = (int)strtol(level, NULL, 10);
+    }
+    return level_int;
+}
+
+
+
+#if OS_WINDOWS
+static INIT_ONCE _log_once = INIT_ONCE_STATIC_INIT;
+
+
+
+/** Initialize the logger exactly once on Windows. */
+static BOOL CALLBACK _log_init_once(PINIT_ONCE once, PVOID parameter, PVOID* context)
+{
+    (void)once;
+    (void)parameter;
+    (void)context;
+    L.level = _log_level_from_env();
+    return TRUE;
+}
+
+
+
+/** Ensure the environment-provided log threshold has been applied. */
+static void _log_ensure_env(void)
+{
+    BOOL success = InitOnceExecuteOnce(&_log_once, _log_init_once, NULL, NULL);
+    assert(success != FALSE);
+}
+#elif OS_LINUX || OS_MACOS
+static pthread_once_t _log_once = PTHREAD_ONCE_INIT;
+
+
+
+/** Initialize the logger exactly once on POSIX hosts. */
+static void _log_init_once(void) { L.level = _log_level_from_env(); }
+
+
+
+/** Ensure the environment-provided log threshold has been applied. */
+static void _log_ensure_env(void)
+{
+    int status = pthread_once(&_log_once, _log_init_once);
+    assert(status == 0);
+}
+#else
+static bool _log_initialized = false;
+
+
+
+/** Ensure the environment-provided log threshold has been applied. */
+static void _log_ensure_env(void)
+{
+    if (!_log_initialized)
+    {
+        L.level = _log_level_from_env();
+        _log_initialized = true;
+    }
+}
+#endif
 
 static bool _log_color_enabled(void)
 {
@@ -136,6 +218,7 @@ void log_set_fp(FILE* fp) { L.fp = fp; }
 
 void log_set_level(int level)
 {
+    _log_ensure_env();
     // log_debug("set log level to %d", level);
     L.level = level;
 }
@@ -157,6 +240,7 @@ void log_set_intercept(log_InterceptFn fn, void* udata)
 
 void log_log(int level, const char* file, int line, const char* fmt, ...)
 {
+    _log_ensure_env();
     if (level < L.level)
     {
         return;
@@ -250,22 +334,6 @@ static void _lock(void* udata, int lock)
  */
 void log_set_level_env(void)
 {
-    const char* level = getenv("DVZ_LOG_LEVEL");
-    int level_int = DVZ_DEFAULT_LOG_LEVEL;
-    if (level != NULL)
-    {
-        if (strcmp(level, "trace") == 0)       level_int = LOG_TRACE;
-        else if (strcmp(level, "debug") == 0)  level_int = LOG_DEBUG;
-        else if (strcmp(level, "info") == 0)   level_int = LOG_INFO;
-        else if (strcmp(level, "warn") == 0)   level_int = LOG_WARN;
-        else if (strcmp(level, "error") == 0)  level_int = LOG_ERROR;
-        else if (strcmp(level, "fatal") == 0)  level_int = LOG_FATAL;
-        else                                    level_int = (int)strtol(level, NULL, 10);
-    }
-    log_set_level(level_int);
+    _log_ensure_env();
+    L.level = _log_level_from_env();
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
-static void _log_init(void) { log_set_level_env(); }
-#endif

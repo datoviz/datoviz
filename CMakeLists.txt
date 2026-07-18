@@ -782,7 +782,7 @@ message(STATUS "DVZ_ENABLE_QT_BRIDGE: ${DVZ_ENABLE_QT_BRIDGE}")
 message(STATUS "DVZ_HAS_QT_BRIDGE: ${DVZ_HAS_QT_BRIDGE}")
 
 if(DEFINED DVZ_USE_VALIDATION)
-    message(STATUS "DVZ_USE_VALIDATION: ${DVZ_USE_VALIDATION} (Release configs disable validation unless explicitly ON)")
+    message(STATUS "DVZ_USE_VALIDATION: ${DVZ_USE_VALIDATION} (default contexts remain quiet in Release configs)")
 endif()
 
 message(STATUS "-------------------------------------------------------------")

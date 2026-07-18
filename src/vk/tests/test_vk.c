@@ -102,6 +102,8 @@ int test_vk(TstSuite* suite)
     const char* tags = "vk";
     TST_MODULE(suite, tags);
 
+    TST_CASE(test_gpu_ctx_config_validation_default);
+
     TST_VK_CASE(test_instance_layers);
     TST_VK_CASE(test_instance_extensions);
     TST_VK_CASE(test_instance_creation);

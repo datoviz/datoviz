@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Testing common                                                                               */
+/*  Testing logging                                                                              */
 /*************************************************************************************************/
 
 
@@ -15,35 +15,25 @@
 /*************************************************************************************************/
 
 #include "_assertions.h"
-
+#include "_log.h"
 #include "test_common.h"
 #include "testing.h"
 
 
 
 /*************************************************************************************************/
-/*  Entry-point                                                                                  */
+/*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_common(TstSuite* suite)
+int test_log_default_level(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
+    ANN(tstitem);
 
-    const char* tags = "common";
-
-    TST_MODULE(suite, "common");
-    TST_GROUP("obj");
-    TST_CASE(test_obj_1);
-
-    TST_GROUP("alloc");
-    TST_CASE(test_alloc_basic);
-    TST_CASE(test_alloc_aligned);
-
-    TST_GROUP("time");
-    TST_CASE(test_time_monotonic_ns);
-
-    TST_GROUP("log");
-    TST_CASE(test_log_default_level);
-
+#if DEBUG
+    AT(DVZ_DEFAULT_LOG_LEVEL == LOG_INFO);
+#else
+    AT(DVZ_DEFAULT_LOG_LEVEL > LOG_FATAL);
+#endif
     return 0;
 }

@@ -142,3 +142,41 @@ def test_release_build_smoke_rejects_debug_native_library(
             validate._release_build_smoke(Path("python"), tmp_path)
     else:
         validate._release_build_smoke(Path("python"), tmp_path)
+
+
+def test_release_silence_smoke_checks_default_and_opt_in(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Release validation requires silence by default and visible explicit opt-in."""
+
+    calls: list[dict[str, str]] = []
+
+    def run(*args, **kwargs):
+        env = kwargs["env"]
+        calls.append(env)
+        stderr = "datoviz-release-log-opt-in\n" if env.get("DVZ_LOG_LEVEL") == "info" else ""
+        return SimpleNamespace(returncode=0, stdout="", stderr=stderr)
+
+    monkeypatch.setattr(validate.subprocess, "run", run)
+    monkeypatch.setenv("DVZ_LOG_LEVEL", "debug")
+
+    validate._release_silence_smoke(Path("python"), tmp_path)
+
+    assert "DVZ_LOG_LEVEL" not in calls[0]
+    assert calls[1]["DVZ_LOG_LEVEL"] == "info"
+    assert calls[1]["DVZ_LOG_COLOR"] == "0"
+
+
+def test_release_silence_smoke_rejects_default_output(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Any default Release output is a packaging failure."""
+
+    monkeypatch.setattr(
+        validate.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr="unexpected"),
+    )
+
+    with pytest.raises(RuntimeError, match="emitted output"):
+        validate._release_silence_smoke(Path("python"), tmp_path)

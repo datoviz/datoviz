@@ -150,7 +150,7 @@ DvzGpuCtxConfig dvz_gpu_ctx_config(void)
 {
     DvzGpuCtxConfig cfg = {
         DVZ_STRUCT_INIT_FIELDS(DvzGpuCtxConfig),
-        .enable_validation = true,
+        .enable_validation = ENABLE_VALIDATION_LAYERS != 0,
         .gpu_index = 0,
         .export_handle_type = 0,
         .has_features10 = false,

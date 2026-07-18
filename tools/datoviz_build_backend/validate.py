@@ -143,6 +143,7 @@ def run_installed_checks(
         _pip_install(python, work, [str(wheel)])
         if release_build:
             _release_build_smoke(python, work)
+            _release_silence_smoke(python, work)
         _python_smokes(python, work, require_precompiled_shaders=precompiled_shaders)
         if shaderc:
             _shaderc_smoke(python, work)
@@ -351,6 +352,67 @@ def _release_build_smoke(python: Path, work: Path) -> None:
     print(f"installed native version: {version}")
     if "(DEBUG)" in version.upper():
         raise RuntimeError(f"release wheel contains a Debug native library: {version}")
+
+
+def _release_silence_smoke(python: Path, work: Path) -> None:
+    """Verify silent Release logging and the explicit environment opt-in."""
+
+    marker = "datoviz-release-log-opt-in"
+    code = rf'''
+import ctypes
+import datoviz._ctypes as bindings
+
+scene = bindings.dvz_scene()
+if not scene:
+    raise SystemExit("unable to create a basic scene")
+bindings.dvz_scene_destroy(scene)
+
+bindings.dvz.log_log.argtypes = [
+    ctypes.c_int,
+    ctypes.c_char_p,
+    ctypes.c_int,
+    ctypes.c_char_p,
+]
+bindings.dvz.log_log.restype = None
+bindings.dvz.log_log(2, b"release-smoke", 1, b"{marker}")
+'''
+
+    quiet_env = _venv_env()
+    quiet_env.pop("DVZ_LOG_LEVEL", None)
+    quiet = subprocess.run(
+        [str(python), "-c", code],
+        cwd=work,
+        env=quiet_env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if quiet.returncode != 0:
+        raise RuntimeError(f"release silence smoke failed:\n{quiet.stderr}")
+    if quiet.stdout or quiet.stderr:
+        raise RuntimeError(
+            "release library emitted output without DVZ_LOG_LEVEL:\n"
+            f"stdout={quiet.stdout!r}\nstderr={quiet.stderr!r}"
+        )
+
+    verbose_env = quiet_env.copy()
+    verbose_env["DVZ_LOG_LEVEL"] = "info"
+    verbose_env["DVZ_LOG_COLOR"] = "0"
+    verbose = subprocess.run(
+        [str(python), "-c", code],
+        cwd=work,
+        env=verbose_env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if verbose.returncode != 0:
+        raise RuntimeError(f"release logging opt-in smoke failed:\n{verbose.stderr}")
+    if marker not in verbose.stderr:
+        raise RuntimeError(
+            "DVZ_LOG_LEVEL=info did not enable Release logging:\n"
+            f"stdout={verbose.stdout!r}\nstderr={verbose.stderr!r}"
+        )
 
 
 def _builtin_shader_resource_smoke(

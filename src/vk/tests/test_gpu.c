@@ -32,6 +32,26 @@
 /*  GPU tests                                                                                    */
 /*************************************************************************************************/
 
+int test_gpu_ctx_config_validation_default(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+#if ENABLE_VALIDATION_LAYERS
+    AT(cfg.enable_validation);
+#else
+    AT(!cfg.enable_validation);
+#endif
+
+    dvz_gpu_ctx_config_validation(&cfg, true);
+    AT(cfg.enable_validation);
+
+    return 0;
+}
+
+
+
 int test_gpu_props(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
