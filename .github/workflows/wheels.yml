@@ -134,6 +134,13 @@ jobs:
           brew unlink vulkan-loader
           brew unlink molten-vk
           wheel=$(find wheelhouse -maxdepth 1 -name '*.whl' -print -quit)
+          example_profile=basic
+          render_args=()
+          # The standard Intel VM has no GPU/Metal acceleration; physical Intel owns render proof.
+          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
+            example_profile=render
+            render_args=(--render)
+          fi
           env -u VULKAN_SDK \
             -u VK_ICD_FILENAMES \
             -u VK_DRIVER_FILES \
@@ -145,9 +152,9 @@ jobs:
               --release-build \
               --precompiled-shaders \
               --shaderc \
-              --render \
+              "${render_args[@]}" \
               --cmake-consumer \
-              --examples render
+              --examples "$example_profile"
       - uses: actions/upload-artifact@v4
         with:
           name: wheel-macos-${{ matrix.arch }}
