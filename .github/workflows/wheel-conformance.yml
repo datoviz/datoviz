@@ -1,7 +1,12 @@
 name: "Wheel conformance"
-run-name: "Wheel conformance · Wheels ${{ inputs.wheel_run_id || github.event.workflow_run.id }}"
+run-name: "Wheel conformance · Wheels ${{ inputs.wheel_run_id || github.event.workflow_run.id || 'latest successful branch run' }}"
 
 on:
+  push:
+    branches: [v0.4-dev]
+    paths:
+      - ".github/workflows/wheel-conformance.yml"
+      - "tools/release_wheels/conformance.py"
   workflow_dispatch:
     inputs:
       wheel_run_id:
@@ -23,7 +28,7 @@ permissions:
 
 jobs:
   prepare:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     outputs:
       wheel_run_id: ${{ steps.candidate.outputs.wheel_run_id }}
@@ -36,6 +41,12 @@ jobs:
           REQUESTED_RUN_ID: ${{ inputs.wheel_run_id || github.event.workflow_run.id }}
           REQUESTED_VERSION: ${{ inputs.version || '0.4.0rc1' }}
         run: |
+          if [[ -z "$REQUESTED_RUN_ID" ]]; then
+            REQUESTED_RUN_ID=$(gh api \
+              "repos/${{ github.repository }}/actions/workflows/wheels.yml/runs?branch=$GITHUB_REF_NAME&status=success&per_page=1" \
+              --jq '.workflow_runs[0].id // empty')
+          fi
+          test -n "$REQUESTED_RUN_ID"
           candidate=$(gh api "repos/${{ github.repository }}/actions/runs/$REQUESTED_RUN_ID")
           test "$(jq -r .path <<<"$candidate")" = ".github/workflows/wheels.yml"
           test "$(jq -r .status <<<"$candidate")" = "completed"
