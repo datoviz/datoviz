@@ -1,0 +1,200 @@
+name: "Package index verification"
+run-name: "Package index verification · ${{ inputs.index }} · ${{ inputs.version }} · Wheels ${{ inputs.wheel_run_id }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      index:
+        description: "Package index to verify"
+        required: true
+        default: "testpypi"
+        type: choice
+        options:
+          - testpypi
+          - pypi
+      version:
+        description: "Exact package version"
+        required: true
+        default: "0.4.0rc1"
+        type: string
+      wheel_run_id:
+        description: "Canonical successful Wheels workflow run ID"
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      index: ${{ steps.request.outputs.index }}
+      index_url: ${{ steps.request.outputs.index_url }}
+      version: ${{ steps.request.outputs.version }}
+      wheel_run_id: ${{ steps.request.outputs.wheel_run_id }}
+      artifact_commit: ${{ steps.request.outputs.artifact_commit }}
+    steps:
+      - id: request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_INDEX: ${{ inputs.index }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          WHEEL_RUN_ID: ${{ inputs.wheel_run_id }}
+        run: |
+          case "$PACKAGE_INDEX" in
+            testpypi) index_url="https://test.pypi.org/simple" ;;
+            pypi) index_url="https://pypi.org/simple" ;;
+            *) echo "unsupported package index: $PACKAGE_INDEX" >&2; exit 2 ;;
+          esac
+          candidate=$(gh api "repos/${{ github.repository }}/actions/runs/$WHEEL_RUN_ID")
+          test "$(jq -r .path <<<"$candidate")" = ".github/workflows/wheels.yml"
+          test "$(jq -r .status <<<"$candidate")" = "completed"
+          test "$(jq -r .conclusion <<<"$candidate")" = "success"
+          echo "index=$PACKAGE_INDEX" >> "$GITHUB_OUTPUT"
+          echo "index_url=$index_url" >> "$GITHUB_OUTPUT"
+          echo "version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "wheel_run_id=$WHEEL_RUN_ID" >> "$GITHUB_OUTPUT"
+          echo "artifact_commit=$(jq -r .head_sha <<<"$candidate")" >> "$GITHUB_OUTPUT"
+
+  verify:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            artifact: wheel-linux-x86_64
+            machine_id: index-linux-x86_64
+          - runner: ubuntu-24.04-arm
+            artifact: wheel-linux-aarch64
+            machine_id: index-linux-aarch64
+          - runner: macos-15
+            artifact: wheel-macos-arm64
+            machine_id: index-macos-arm64
+          - runner: macos-15-intel
+            artifact: wheel-macos-x86_64
+            machine_id: index-macos-x86_64
+          - runner: windows-latest
+            artifact: wheel-windows-AMD64
+            machine_id: index-windows-amd64
+          - runner: windows-11-arm
+            artifact: wheel-windows-ARM64
+            machine_id: index-windows-arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - uses: actions/download-artifact@v8
+        with:
+          name: ${{ matrix.artifact }}
+          path: canonical
+          github-token: ${{ github.token }}
+          run-id: ${{ needs.prepare.outputs.wheel_run_id }}
+      - name: Download exact package from index
+        shell: bash
+        env:
+          INDEX_URL: ${{ needs.prepare.outputs.index_url }}
+          RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          python -m pip install --upgrade pip
+          mkdir -p indexed
+          for attempt in $(seq 1 30); do
+            if python -m pip download \
+              --no-cache-dir \
+              --no-deps \
+              --only-binary=:all: \
+              --index-url "$INDEX_URL" \
+              --dest indexed \
+              "datoviz==$RELEASE_VERSION"; then
+              break
+            fi
+            if [[ "$attempt" -eq 30 ]]; then
+              echo "package was not available after $attempt attempts" >&2
+              exit 1
+            fi
+            sleep 10
+          done
+      - name: Verify bytes and lightweight installed package
+        shell: bash
+        env:
+          PACKAGE_INDEX: ${{ needs.prepare.outputs.index }}
+          INDEX_URL: ${{ needs.prepare.outputs.index_url }}
+          RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+          WHEEL_RUN_ID: ${{ needs.prepare.outputs.wheel_run_id }}
+          ARTIFACT_COMMIT: ${{ needs.prepare.outputs.artifact_commit }}
+          MACHINE_ID: ${{ matrix.machine_id }}
+          ARTIFACT_NAME: ${{ matrix.artifact }}
+        run: |
+          python tools/release_wheels/index_verify.py verify \
+            --canonical-dir canonical \
+            --indexed-dir indexed \
+            --output-dir "build/index-verification/$MACHINE_ID" \
+            --index "$PACKAGE_INDEX" \
+            --index-url "$INDEX_URL" \
+            --version "$RELEASE_VERSION" \
+            --wheel-run-id "$WHEEL_RUN_ID" \
+            --artifact-commit "$ARTIFACT_COMMIT" \
+            --machine-id "$MACHINE_ID" \
+            --artifact-name "$ARTIFACT_NAME"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: package-index-evidence-${{ needs.prepare.outputs.index }}-${{ matrix.machine_id }}
+          path: build/index-verification/${{ matrix.machine_id }}
+          if-no-files-found: warn
+          retention-days: 30
+
+  report:
+    if: always() && needs.prepare.result == 'success'
+    needs: [prepare, verify]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: package-index-evidence-${{ needs.prepare.outputs.index }}-*
+          path: build/index-verification-inputs
+      - name: Build consolidated HTML report
+        run: |
+          python tools/release_wheels/index_verify.py aggregate \
+            --input build/index-verification-inputs \
+            --output-dir build/index-verification-report \
+            --expected-machine index-linux-x86_64 \
+            --expected-machine index-linux-aarch64 \
+            --expected-machine index-macos-arm64 \
+            --expected-machine index-macos-x86_64 \
+            --expected-machine index-windows-amd64 \
+            --expected-machine index-windows-arm64
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: package-index-report-${{ needs.prepare.outputs.index }}-${{ needs.prepare.outputs.version }}-${{ needs.prepare.outputs.wheel_run_id }}
+          path: build/index-verification-report
+          retention-days: 90
+      - name: Publish summary
+        if: always()
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+
+          path = Path("build/index-verification-report/report.json")
+          if not path.is_file():
+              print("# Package-index verification: NO REPORT")
+              raise SystemExit()
+          report = json.loads(path.read_text())
+          print(f"# Package-index verification: {report['status'].upper()}")
+          print(f"\nIndex: `{report['index']}` · Version: `{report['version']}`")
+          print(f"\nCanonical Wheels run: `{report['wheel_run_id']}`\n")
+          print("| Machine | Wheel | Byte identity | Install smoke |")
+          print("| --- | --- | --- | --- |")
+          for item in report["evidence"]:
+              print(
+                  f"| {item['machine_id']} | {item['index_wheel']['name']} | "
+                  f"{item['identity']['status']} | {item['installed_smoke']['status']} |"
+              )
+          PY

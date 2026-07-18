@@ -153,7 +153,12 @@ top to bottom and record skipped items as known exclusions.
 - [ ] Use `just testpypi-upload <host-platform-tag> dist yes` for local single-wheel rehearsal.
 - [ ] Use `just testpypi-upload-all wheelhouse yes` for full-wheelhouse rehearsal.
 - [ ] Install from TestPyPI in a clean environment.
-- [ ] Run import, CLI, CMake consumer, and optional Qt checks.
+- [ ] Dispatch `package-index-verification.yml` for the exact version and canonical Wheels run.
+- [ ] Confirm all six indexed wheel filenames and SHA-256 values match the canonical artifacts.
+- [ ] Inspect the consolidated package-index HTML report and confirm all lightweight install smokes
+      passed.
+- [ ] Confirm clean-index import, raw binding, version, and CLI metadata checks passed; rely on the
+      byte-identical canonical-wheel campaign for CMake, Qt, rendering, and example conformance.
 - [ ] Confirm dependency metadata and optional extras.
 - [ ] Record TestPyPI artifact URLs.
 

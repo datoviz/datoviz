@@ -257,6 +257,29 @@ The upload recipes refuse to run unless the final argument is `yes`. TestPyPI do
 overwriting an existing filename/version, so bump the package version before retrying a previously
 uploaded candidate.
 
+After the upload, verify the package-index path against the exact successful Wheels run:
+
+```sh
+gh workflow run package-index-verification.yml --ref v0.4-dev \
+  -f index=testpypi \
+  -f version=0.4.0rc1 \
+  -f wheel_run_id=29641789685
+```
+
+The six native jobs download Datoviz through the selected package index, require the downloaded
+filename and SHA-256 to match the corresponding GitHub Actions wheel artifact exactly, and run a
+lightweight clean installed-package import/version/CLI smoke. They intentionally do not repeat the
+full rendering and example conformance campaign: exact byte identity transfers that evidence to
+the indexed files. The report job publishes one consolidated HTML artifact. Retrieve and open it
+with the verification workflow run ID:
+
+```sh
+just package-index-report <verification-workflow-run-id>
+```
+
+Use the same workflow with `-f index=pypi` after public publication and before switching public
+installation documentation to the released package.
+
 
 ## Known Constraints
 

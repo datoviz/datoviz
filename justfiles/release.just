@@ -171,6 +171,10 @@ release-evidence-sync wheel_run_id *args:
     @python3 tools/release_wheels/conformance.py sync --wheel-run-id "{{wheel_run_id}}" {{args}}
 #
 
+package-index-report workflow_run_id *args:
+    @python3 tools/release_wheels/index_verify.py fetch --workflow-run-id "{{workflow_run_id}}" {{args}}
+#
+
 release-report version *args:
     @python3 tools/release_automation.py report "{{version}}" {{args}}
 #
