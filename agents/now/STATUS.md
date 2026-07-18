@@ -18,21 +18,9 @@ The macOS terminal-IPython hosted window close hang is resolved by `9c1e60912`. 
 in physical-machine RC validation; use
 [HANDOFF_IPYTHON_RUN_CLOSE_HANG.md](HANDOFF_IPYTHON_RUN_CLOSE_HANG.md) as the completed record.
 
-The replacement Release wheel matrix is `Wheels` run `29641789685`, artifact commit `fac0a29d3`;
-all 29 build and installed-wheel jobs passed across Linux x86_64/aarch64, macOS Intel/arm64,
-Windows AMD64/ARM64, Python 3.10 through 3.14, and the Linux prerelease interpreter. Linux staging
-now packages shaderc under the exact CMake runtime basename `libshaderc_shared.so.1`, resolving the
-clean-host failure exposed by #460. Cross-platform conformance run `29642182037`, validator
-`ae155814b`, passed all six hosted lanes, including software-Vulkan Linux rendering and exact
-C/Python decoded-pixel parity. Active workflows use Node 24-native GitHub action majors; the
-third-party `ilammy/msvc-dev-cmd@v1` has no Node 24 release yet.
-
-Physical MacBook M3 validation of the exact `29641789685` arm64 wheel passed the repeated
-standalone installed-wheel profile, all three deterministic and cross-frontend-parity captures,
-and all seven attended scenarios. Physical evidence intake run `29643044327` accepted the approved
-bundle as artifact `physical-evidence-29641789685-macbook-m3`. The synced seven-machine report is
-all green at `build/physical-evidence/29641789685/report/index.html`; the durable hosted report
-artifact is `wheel-conformance-report-29641789685` from run `29642182037`.
+Linux staging packages shaderc under the exact CMake runtime basename `libshaderc_shared.so.1`,
+resolving the clean-host failure exposed by #460. Active workflows use Node 24-native GitHub action
+majors; the third-party `ilammy/msvc-dev-cmd@v1` has no Node 24 release yet.
 
 Physical MacBook M3 validation used the exact arm64 wheel from run `29644925786`, SHA-256
 `21c1f68e852d92c7a8134867c5f5455442a37f73dfb57b8b40752fce871a26e2`. Both unattended
