@@ -8,11 +8,12 @@ history, not in agent archives.
 
 ## Current Pickup
 
-TestPyPI is paused on the Release logging and implicit-validation blocker documented in
-[HANDOFF_RC1_RELEASE_SILENCE.md](HANDOFF_RC1_RELEASE_SILENCE.md). Release currently defines
-`DEBUG=0` but selects logging with `#ifdef DEBUG`, defaults GPU contexts to validation enabled, and
-does not portably initialize `DVZ_LOG_LEVEL` on MSVC. Fix and rebuild all wheel bytes before
-resuming publication.
+TestPyPI remains paused while the Release logging and implicit-validation fix in `e5bb34631` awaits
+replacement cross-platform wheels. The source-level blocker documented in
+[HANDOFF_RC1_RELEASE_SILENCE.md](HANDOFF_RC1_RELEASE_SILENCE.md) is resolved locally: Release is
+silent by default, default GPU contexts do not request validation, explicit validation/logging
+opt-ins remain active, and portable Windows/Unix initialization is covered by wheel smoke. Push the
+fix, rebuild all wheel bytes, and repeat hosted plus physical evidence before publication.
 
 The macOS terminal-IPython hosted window close hang is resolved by `9c1e60912`. Keep close/reopen
 in physical-machine RC validation; use
@@ -34,8 +35,9 @@ bundle as artifact `physical-evidence-29641789685-macbook-m3`. The synced seven-
 all green at `build/physical-evidence/29641789685/report/index.html`; the durable hosted report
 artifact is `wheel-conformance-report-29641789685` from run `29642182037`.
 
-Next critical path: close the RC1 source bundle/checksum, release notes, publication rehearsal,
-and final public status/documentation reconciliation.
+Next critical path: push the Release-silence fix, dispatch and validate the replacement wheel
+matrix, repeat the hosted and MacBook M3 campaigns, then close the RC1 source bundle/checksum,
+release notes, publication rehearsal, and final public status/documentation reconciliation.
 
 Completed runtime cleanup to keep in validation: DRP2 render-pass begin commands now carry explicit
 render area, viewport, and scissor rectangles, scene emission initializes full targets before panel
@@ -78,7 +80,7 @@ Blockers:
 
 | Lane | Status | Next proof |
 | --- | --- | --- |
-| C/C++ distribution preflight | Wheels run `29641789685` and its seven-lane conformance campaign passed, but the Release logging/implicit-validation audit found a native payload blocker before TestPyPI. | Fix default Release silence and validation opt-in, then rebuild and repeat the wheel, hosted, and physical evidence campaign. |
+| C/C++ distribution preflight | Wheels run `29641789685` and its seven-lane conformance campaign passed, but its bytes are superseded. Source fix `e5bb34631` passes the full M3 suite and a local installed Release-wheel silence/opt-in smoke. | Push the fix, then rebuild and repeat the wheel, hosted, and physical evidence campaign. |
 | Windows wheel proof | The July 2026 pass fixes Win32 `min`/`max`, configured wheel paths, exported C11 requirements, duplicate MSVC pthread implementations, and the ARM64 shaderc omission. Windows uses static shaderc. Hosted run `29624999442` built and inspected AMD64/ARM64 wheels, confirmed architecture, and passed installed shader-resource, shaderc, render, and Python smokes on both architectures. Physical Windows AMD64 validation passed end to end; this is provisional because the corrected Release matrix changes the artifact checksum. | Repeat or confirm physical AMD64 proof against the exact replacement artifact. |
 | WebGPU/WASM experimental path | WebGPU fixture runner works; the generic WASM scene ABI and split DRP2 packet path now register 90 scenarios and expose 86 browser-live gallery routes. Point-cloud public route metadata references a hashed 500k-point bundle; native capture and deterministic WASM packet proof pass, while its local filtered browser route reaches the known external headless instance-loss skip. SVG Tiger has headed browser proof and an approved committed prepared-data bundle attributed to Nicolas P. Rougier's Glumpy example gallery. | Confirm point-cloud redistribution authorization and manually verify its public website route, then continue generic volume and rendering techniques. |
 | Compute+graphics experimental path | DRP2 `ResourceBarrier`, FramePlan scene compute lowering, WebGPU fixture parity, and the C `gpu_particle_smoke` showcase are active. CPU command-generation proof passed on 2026-06-04. Native Vulkan compute+graphics proof passed on 2026-06-17: `test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes`, `test_vklite_compute_1`, `test_technique_compute_graphics`, and `examples/c/showcases/gpu_particle_smoke.c --png` with artifact `build/release-evidence/gpu_particle_smoke.png`. | Keep the slice classified as experimental in the feature/status table: native proof exists, but this is a narrow scene-compute/DRP2 interop path, not a general compute framework. |

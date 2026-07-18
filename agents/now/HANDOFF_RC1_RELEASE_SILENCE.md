@@ -1,6 +1,7 @@
 # RC1 Release Validation And Logging Handoff
 
-Status: urgent pre-TestPyPI native release blocker. Created: 2026-07-18.
+Status: fixed locally by `e5bb34631`; replacement cross-platform wheels required before TestPyPI.
+Created: 2026-07-18. Updated: 2026-07-18.
 
 The maintainer wants final C and Python release packages to be silent by default and not request
 Vulkan validation layers implicitly. Resolve this before uploading RC1 wheels to TestPyPI.
@@ -123,3 +124,23 @@ After committing and pushing:
 
 The package-index workflow work may proceed independently, but it must be dispatched against the
 new canonical wheel run rather than `29641789685`.
+
+
+## Local Resolution Evidence
+
+Commit `e5bb34631` implements the narrow native fix and regression coverage:
+
+- Release builds select a silent logger threshold with `#if DEBUG` and a compile-time state
+  initializer;
+- macOS/Linux `pthread_once` and Windows `InitOnceExecuteOnce` apply `DVZ_LOG_LEVEL` portably;
+- default GPU-context validation follows `ENABLE_VALIDATION_LAYERS`, while the existing explicit
+  configuration opt-in remains active;
+- installed Release-wheel validation captures both streams around a basic scene lifecycle, proves
+  default silence, and proves `DVZ_LOG_LEVEL=info` output;
+- focused Python validation passed 12 tests;
+- the full M3 native suite passed 1035/1045 with 10 capability skips and no failures;
+- a locally built macOS arm64 Release wheel installed and passed the new Release smoke;
+- `just spec-check`, `just ctypes-check`, and `git diff --check` passed.
+
+This closes the source-level blocker. Cross-platform MSVC behavior and the replacement artifact
+checksums remain pending until the commit is pushed and a new six-platform Wheels run completes.
