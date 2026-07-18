@@ -94,6 +94,18 @@ def test_png_stats_rgba(tmp_path: Path) -> None:
     assert stats['nontransparent_fraction'] == 1.0
 
 
+def test_validate_wheels_run_uses_workflow_path_not_display_case() -> None:
+    """Run identity follows the canonical file even when its API name is title-cased."""
+    run = {
+        'name': 'Wheels',
+        'path': '.github/workflows/wheels.yml',
+        'status': 'completed',
+        'conclusion': 'success',
+    }
+
+    conformance.validate_wheels_run(run, '123')
+
+
 def test_aggregate_builds_self_contained_report(tmp_path: Path) -> None:
     """Aggregation preserves captures and writes HTML, JSON, and a manifest."""
     inputs = tmp_path / 'inputs'

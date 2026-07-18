@@ -37,7 +37,7 @@ jobs:
           REQUESTED_VERSION: ${{ inputs.version || '0.4.0rc1' }}
         run: |
           candidate=$(gh api "repos/${{ github.repository }}/actions/runs/$REQUESTED_RUN_ID")
-          test "$(jq -r .name <<<"$candidate")" = "WHEELS"
+          test "$(jq -r .path <<<"$candidate")" = ".github/workflows/wheels.yml"
           test "$(jq -r .status <<<"$candidate")" = "completed"
           test "$(jq -r .conclusion <<<"$candidate")" = "success"
           echo "wheel_run_id=$REQUESTED_RUN_ID" >> "$GITHUB_OUTPUT"

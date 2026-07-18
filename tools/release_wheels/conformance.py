@@ -64,6 +64,14 @@ def safe_name(value: str) -> str:
     return re.sub(r'[^A-Za-z0-9_.-]+', '-', value).strip('-.') or 'unknown'
 
 
+def validate_wheels_run(run: dict[str, Any], run_id: str) -> None:
+    """Require metadata for the successful canonical wheel workflow."""
+    identity = (run.get('path'), run.get('status'), run.get('conclusion'))
+    expected = ('.github/workflows/wheels.yml', 'completed', 'success')
+    if identity != expected:
+        raise ValueError(f'run {run_id} is not a successful completed Wheels run')
+
+
 def command_output(argv: list[str], *, timeout: int = 20) -> dict[str, Any]:
     """Run a metadata probe and return a structured result."""
     try:
@@ -827,12 +835,7 @@ def prepare_physical(args: argparse.Namespace) -> int:
     if run_result.get('status') != 'pass':
         raise RuntimeError(f'unable to query Wheels run {args.wheel_run_id}')
     run = json.loads(run_result['stdout'])
-    if (run.get('name'), run.get('status'), run.get('conclusion')) != (
-        'WHEELS',
-        'completed',
-        'success',
-    ):
-        raise ValueError(f'run {args.wheel_run_id} is not a successful completed WHEELS run')
+    validate_wheels_run(run, str(args.wheel_run_id))
     platform_key = (platform.system(), platform.machine())
     artifact = WHEEL_ARTIFACTS.get(platform_key)
     if not artifact:
