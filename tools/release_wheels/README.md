@@ -11,7 +11,7 @@ just wheel-stage --clean
 just wheel-build --platform-tag linux_x86_64 --skip-repair
 just wheel-validate --platform-tag linux_x86_64
 just wheel-inspect --native-deps
-just wheel-check --precompiled-shaders --cmake-consumer --examples render --render --qt-probe optional
+just wheel-check --release-build --precompiled-shaders --cmake-consumer --examples render --render --qt-probe optional
 ```
 
 Native Linux builds use the neutral `linux_<arch>` tag and skip repair because the host toolchain

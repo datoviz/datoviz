@@ -28,6 +28,11 @@ Shaderc and Vulkan dependency policy:
 - Source builds default to `DVZ_ENABLE_SHADERC=AUTO`, so runtime GLSL compilation is enabled when
   shaderc headers are present and unavailable otherwise.
 - Official release wheels must configure with `DVZ_ENABLE_SHADERC=ON`.
+- Official release wheels must use a Release native build and pass the installed
+  `--release-build` check; a native version containing `(DEBUG)` is not publishable.
+- Official release wheels disable mimalloc. A wheel loads Datoviz into an existing interpreter,
+  where overriding the process allocator can cross unsafe allocation boundaries with dynamically
+  loaded dependencies such as shaderc.
 - Do not commit vendored SDK or runtime payloads such as Vulkan SDK libraries or shaderc dylibs.
 - On macOS wheels, `delocate` repairs linked dylib dependencies. `DVZ_WHEEL_RUNTIME_DIRS` is only
   for libraries Datoviz loads with `dlopen()` at runtime.

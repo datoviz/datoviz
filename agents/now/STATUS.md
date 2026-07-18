@@ -15,16 +15,16 @@ in physical-machine RC validation; use
 The Windows shaderc, wheel-policy, ARM64 CI, cache-isolation, and GitHub Packages lanes are complete
 through [HANDOFF_WINDOWS_RC1_WHEELS.md](HANDOFF_WINDOWS_RC1_WHEELS.md). Workflow
 `29624999442` (`Wheels` #457) passed at `06317fa4f` with all platform builds and installed-wheel
-smokes. Physical macOS arm64 inspection then found that its full render validator passes only under
-the checkout's Vulkan SDK environment. A fresh install cannot initialize Volk because the wheel
-omits `MoltenVK_icd.json` and the macOS loader aliases Volk searches. The packaged loader and
-MoltenVK binaries work when discovery is supplied, so macOS wheel packaging/runtime discovery and a
-no-SDK CI render smoke are the current blockers before physical interaction evidence.
+smokes. Physical Windows AMD64 validation passed end to end. Physical Linux validation also passed
+functionally, but rejected the artifact after the installed native version reported
+`0.4.0rc1 (DEBUG)`. The standalone macOS MoltenVK/ICD packaging fix and no-SDK render smoke landed
+in `30bbbe483`; the replacement matrix must build Release native libraries, reject Debug artifacts,
+and provide the new exact artifacts for physical validation.
 
-Next critical path: fix standalone macOS wheel Vulkan/MoltenVK discovery, add a no-SDK installed
-render smoke, freeze and rerun the exact candidate wheel matrix, then close RC1 source
-bundle/checksum, physical installed-wheel evidence, release notes, publication rehearsal, and final
-public status/documentation reconciliation.
+Next critical path: dispatch and validate the corrected Release wheel matrix, repeat exact-artifact
+physical installed-wheel evidence on Linux, macOS, and Windows, then close the RC1 source
+bundle/checksum, release notes, publication rehearsal, and final public status/documentation
+reconciliation.
 
 Completed runtime cleanup to keep in validation: DRP2 render-pass begin commands now carry explicit
 render area, viewport, and scissor rectangles, scene emission initializes full targets before panel
@@ -67,8 +67,8 @@ Blockers:
 
 | Lane | Status | Next proof |
 | --- | --- | --- |
-| C/C++ distribution preflight | macOS vendored/system package, strict Homebrew-style source install, installed CMake/pkg-config consumers, host-native wheel CMake-consumer proof, Linux manylinux proof, and Windows AMD64 local wheel proof advanced on 2026-06-18 after `d94f72dd6`, `2c8a49f3d`, the macOS pkg-config validator fix, and `19e62968`; see [C_DISTRIBUTION.md](C_DISTRIBUTION.md) for exact evidence. Hosted run `29624999442` passed the full build and installed-smoke matrix. Physical M3 inspection confirmed the macOS arm64 tag, headers, CMake files, architectures, and dependency inventory, but found that the wheel cannot discover its bundled Vulkan/MoltenVK runtime without an external SDK environment. | Fix standalone macOS runtime discovery, require a no-SDK installed render smoke, rerun the matrix, then prepare the RC1 source bundle/checksum and publication rehearsal. |
-| Windows wheel proof | The July 2026 pass fixes Win32 `min`/`max`, configured wheel paths, exported C11 requirements, duplicate MSVC pthread implementations, and the ARM64 shaderc omission. Windows uses static shaderc. Hosted run `29624999442` built and inspected AMD64/ARM64 wheels, confirmed architecture, and passed installed shader-resource, shaderc, render, and Python smokes on both architectures. | Inspect downloaded Windows artifacts and retain physical AMD64 proof. |
+| C/C++ distribution preflight | macOS vendored/system package, strict Homebrew-style source install, installed CMake/pkg-config consumers, host-native wheel CMake-consumer proof, Linux manylinux proof, and Windows AMD64 local wheel proof advanced on 2026-06-18 after `d94f72dd6`, `2c8a49f3d`, the macOS pkg-config validator fix, and `19e62968`; see [C_DISTRIBUTION.md](C_DISTRIBUTION.md) for exact evidence. Hosted run `29624999442` passed the full build and installed-smoke matrix. The standalone macOS loader, MoltenVK ICD manifest, and no-SDK installed render smoke fix landed in `30bbbe483`. Physical Linux functionally passed run #457 but correctly rejected its Debug native build. | Rerun the matrix with Release-only enforcement, then repeat exact-artifact physical validation and prepare the RC1 source bundle/checksum and publication rehearsal. |
+| Windows wheel proof | The July 2026 pass fixes Win32 `min`/`max`, configured wheel paths, exported C11 requirements, duplicate MSVC pthread implementations, and the ARM64 shaderc omission. Windows uses static shaderc. Hosted run `29624999442` built and inspected AMD64/ARM64 wheels, confirmed architecture, and passed installed shader-resource, shaderc, render, and Python smokes on both architectures. Physical Windows AMD64 validation passed end to end; this is provisional because the corrected Release matrix changes the artifact checksum. | Repeat or confirm physical AMD64 proof against the exact replacement artifact. |
 | WebGPU/WASM experimental path | WebGPU fixture runner works; the generic WASM scene ABI and split DRP2 packet path now register 90 scenarios and expose 86 browser-live gallery routes. Point-cloud public route metadata references a hashed 500k-point bundle; native capture and deterministic WASM packet proof pass, while its local filtered browser route reaches the known external headless instance-loss skip. SVG Tiger has headed browser proof and an approved committed prepared-data bundle attributed to Nicolas P. Rougier's Glumpy example gallery. | Confirm point-cloud redistribution authorization and manually verify its public website route, then continue generic volume and rendering techniques. |
 | Compute+graphics experimental path | DRP2 `ResourceBarrier`, FramePlan scene compute lowering, WebGPU fixture parity, and the C `gpu_particle_smoke` showcase are active. CPU command-generation proof passed on 2026-06-04. Native Vulkan compute+graphics proof passed on 2026-06-17: `test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes`, `test_vklite_compute_1`, `test_technique_compute_graphics`, and `examples/c/showcases/gpu_particle_smoke.c --png` with artifact `build/release-evidence/gpu_particle_smoke.png`. | Keep the slice classified as experimental in the feature/status table: native proof exists, but this is a narrow scene-compute/DRP2 interop path, not a general compute framework. |
 | Qt/PyQt hosted path | Native Qt hosting and the optional `datoviz_qtbridge` provider are active. On 2026-06-18, `DVZ_CMAKE_ARGS="-DDVZ_ENABLE_QT_BRIDGE=ON" just build`, `./build/examples/qt/hosted_qt_smoke 120`, `./build/examples/qt/qt_hosting --smoke-ms 1000`, `DATOVIZ_QTBRIDGE_LIBRARY=build/qtbridge/libdatoviz_qtbridge.so uv run --isolated --with PyQt6 python -m datoviz.qt`, and the hosted PyQt smoke passed after updating the example to pass `DvzColor` to the raw background-color API. The isolated probe reported bridge Qt 6.11.1 and PyQt Qt 6.11.0; the system PyQt6 package in this shell lacks `QVulkanInstance` and is not a valid PyQt hosting proof. Public docs classify this as `supported, optional provider`. | Keep packaging/install diagnostics explicit for missing bridge, unsupported PyQt/PySide bindings, and Qt runtime mismatches; retain optional wheel checks with `--qt-probe optional`. |

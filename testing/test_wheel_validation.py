@@ -122,3 +122,23 @@ def test_shader_resource_smoke_propagates_precompiled_requirement(
     )
 
     assert f"required={required!r}" in commands[0][2]
+
+
+@pytest.mark.parametrize(
+    ("version", "raises"),
+    [("0.4.0rc1", False), ("0.4.0rc1 (DEBUG)", True)],
+)
+def test_release_build_smoke_rejects_debug_native_library(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    version: str,
+    raises: bool,
+) -> None:
+    """Release-wheel validation rejects an installed Debug native payload."""
+
+    monkeypatch.setattr(validate.subprocess, "check_output", lambda *args, **kwargs: version)
+    if raises:
+        with pytest.raises(RuntimeError, match="Debug native library"):
+            validate._release_build_smoke(Path("python"), tmp_path)
+    else:
+        validate._release_build_smoke(Path("python"), tmp_path)

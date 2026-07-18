@@ -122,7 +122,10 @@ VALIDATION_PROFILES: dict[str, dict[str, Any]] = {
         "description": "Wheel inventory plus installed import and CLI smoke.",
         "commands": [
             {"kind": "wheel-inspect", "args": []},
-            {"kind": "wheel-check", "args": ["--qt-probe", "optional"]},
+            {
+                "kind": "wheel-check",
+                "args": ["--release-build", "--qt-probe", "optional"],
+            },
         ],
     },
     "rc": {
@@ -133,7 +136,14 @@ VALIDATION_PROFILES: dict[str, dict[str, Any]] = {
             {"kind": "wheel-inspect", "args": ["--native-deps"]},
             {
                 "kind": "wheel-check",
-                "args": ["--cmake-consumer", "--examples", "basic", "--qt-probe", "optional"],
+                "args": [
+                    "--release-build",
+                    "--cmake-consumer",
+                    "--examples",
+                    "basic",
+                    "--qt-probe",
+                    "optional",
+                ],
             },
         ],
     },
@@ -144,6 +154,7 @@ VALIDATION_PROFILES: dict[str, dict[str, Any]] = {
             {
                 "kind": "wheel-check",
                 "args": [
+                    "--release-build",
                     "--shaderc",
                     "--cmake-consumer",
                     "--examples",

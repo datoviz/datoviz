@@ -116,7 +116,8 @@ static void queues_per_family(DvzQueues* queues, uint32_t* qfn, uint32_t* qfi, u
 
 
 static void fill_queue_requests(
-    uint32_t qfn, uint32_t* qfi, uint32_t* qfc, VkDeviceQueueCreateInfo* infos, float* priority)
+    uint32_t qfn, uint32_t* qfi, uint32_t* qfc, VkDeviceQueueCreateInfo* infos,
+    float* priorities)
 {
     ASSERT(qfn > 0);
     ASSERT(qfn < DVZ_MAX_QUEUE_FAMILIES);
@@ -124,7 +125,7 @@ static void fill_queue_requests(
     ANN(qfi);
     ANN(qfc);
     ANN(infos);
-    ANN(priority);
+    ANN(priorities);
 
     VkDeviceQueueCreateInfo* info = NULL;
 
@@ -139,7 +140,7 @@ static void fill_queue_requests(
         info->sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         info->queueFamilyIndex = qf;
         info->queueCount = qc;
-        info->pQueuePriorities = priority;
+        info->pQueuePriorities = priorities;
     }
 }
 
@@ -663,8 +664,10 @@ int dvz_device_build(DvzDevice* device)
 
     // Queue family info.
     VkDeviceQueueCreateInfo queue_families_info[DVZ_MAX_QUEUE_FAMILIES] = {0};
-    float priority = 1.0f;
-    fill_queue_requests(qfn, qfi, qfc, queue_families_info, &priority);
+    float priorities[DVZ_QUEUE_COUNT] = {0};
+    for (uint32_t i = 0; i < device->queues.queue_count; i++)
+        priorities[i] = 1.0f;
+    fill_queue_requests(qfn, qfi, qfc, queue_families_info, priorities);
     if (qfn == 0)
     {
         log_error("at least one queue must be requested to create the device");

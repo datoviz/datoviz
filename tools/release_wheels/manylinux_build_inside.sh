@@ -68,7 +68,7 @@ cleanup_owner()
 trap cleanup_owner EXIT
 
 export PATH="$(dirname "$python_bin"):$PATH"
-export DVZ_CMAKE_ARGS="${DVZ_CMAKE_ARGS:--DDVZ_ENABLE_SHADERC=ON -DDVZ_BUILD_TESTING=OFF -DDVZ_BUILD_EXAMPLES=OFF}"
+export DVZ_CMAKE_ARGS="${DVZ_CMAKE_ARGS:--DDVZ_ENABLE_SHADERC=ON -DDVZ_MIMALLOC_SOURCE=OFF -DDVZ_BUILD_TESTING=OFF -DDVZ_BUILD_EXAMPLES=OFF}"
 export DVZ_WHEEL_RUNTIME_DIRS="${DVZ_WHEEL_RUNTIME_DIRS:-/usr/lib64:/usr/lib}"
 
 "$python_bin" -m pip install -U pip auditwheel build libclang tqdm wheel
@@ -82,7 +82,7 @@ cmake_args="${DVZ_CMAKE_ARGS:-}"
     cd "$build_dir"
     CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake ../.. \
         -GNinja \
-        -DCMAKE_BUILD_TYPE=Debug \
+        -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
         ${cmake_args}
     ninja
@@ -112,6 +112,7 @@ for whl in wheelhouse/datoviz-*.whl; do
     "$python_bin" tools/release_wheels/inspect_wheel.py --wheel "$whl" --native-deps
     "$python_bin" tools/release_wheels/check_wheel.py \
         --wheel "$whl" \
+        --release-build \
         --precompiled-shaders \
         --shaderc \
         --cmake-consumer \

@@ -7,7 +7,7 @@ env:
   # Build once per platform; Datoviz is Python-ABI independent and the backend emits
   # py3-none-<platform> directly. Separate install-smoke jobs cover Python 3.10 through 3.14,
   # with 3.15 prerelease enabled only for nightly/prerelease checks.
-  DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON"
+  DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_MIMALLOC_SOURCE=OFF"
 
 jobs:
   matrix:
@@ -68,7 +68,7 @@ jobs:
           submodules: recursive
       - name: Build, inspect, and smoke-test manylinux wheel
         env:
-          DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_BUILD_TESTING=OFF -DDVZ_BUILD_EXAMPLES=OFF"
+          DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_MIMALLOC_SOURCE=OFF -DDVZ_BUILD_TESTING=OFF -DDVZ_BUILD_EXAMPLES=OFF"
         run: |
           bash tools/release_wheels/manylinux_build_inside.sh ${{ matrix.arch }}
       - uses: actions/upload-artifact@v4
@@ -117,7 +117,7 @@ jobs:
           test -f datoviz/_array_facade.py
       - name: Build native artifacts
         run: |
-          just build
+          just build Release
       - name: Build wheels
         run: |
           export DVZ_WHEEL_RUNTIME_DIRS="$(brew --prefix shaderc)/lib:$(brew --prefix vulkan-loader)/lib:$(brew --prefix molten-vk)/lib:$(brew --prefix molten-vk)/share/vulkan/icd.d"
@@ -142,6 +142,7 @@ jobs:
             -u DYLD_FALLBACK_LIBRARY_PATH \
             python tools/release_wheels/check_wheel.py \
               --wheel "$wheel" \
+              --release-build \
               --precompiled-shaders \
               --shaderc \
               --render \
@@ -297,7 +298,7 @@ jobs:
             "-S", ".",
             "-B", "build",
             "-GNinja",
-            "-DCMAKE_BUILD_TYPE=Debug",
+            "-DCMAKE_BUILD_TYPE=Release",
             "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
             "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
@@ -307,6 +308,7 @@ jobs:
             "-DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }}",
             "-DVCPKG_INSTALLED_DIR=$PWD/build/vcpkg_installed",
             "-DDVZ_ENABLE_SHADERC=ON",
+            "-DDVZ_MIMALLOC_SOURCE=OFF",
             "-DDVZ_BUILD_TESTING=OFF",
             "-DDVZ_BUILD_EXAMPLES=OFF",
             "-DDVZ_CANVAS_SHADER_GLSLANG_VALIDATOR=$env:DVZ_GLSLANG_VALIDATOR",
@@ -364,7 +366,7 @@ jobs:
           $wheel = Get-ChildItem wheelhouse/*.whl | Select-Object -First 1
           if (!$wheel) { throw "no wheel found in wheelhouse" }
           $wheelPath = $wheel.FullName.Replace('\\', '/')
-          python tools/release_wheels/check_wheel.py --wheel "$wheelPath" --precompiled-shaders --shaderc --render
+          python tools/release_wheels/check_wheel.py --wheel "$wheelPath" --release-build --precompiled-shaders --shaderc --render
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
         with:
@@ -390,7 +392,7 @@ jobs:
       - name: Dependencies
         run: python -m pip install -U pip wheel tomli
       - name: Installed wheel smoke
-        run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --precompiled-shaders --cmake-consumer --qt-probe optional
+        run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --release-build --precompiled-shaders --cmake-consumer --qt-probe optional
 
   linux-python-prerelease-smoke:
     needs: linux
@@ -409,7 +411,7 @@ jobs:
       - name: Dependencies
         run: python -m pip install -U pip wheel tomli
       - name: Installed wheel smoke
-        run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --precompiled-shaders --cmake-consumer --qt-probe optional
+        run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --release-build --precompiled-shaders --cmake-consumer --qt-probe optional
 
   macos-python-smoke:
     needs: macos
@@ -441,7 +443,7 @@ jobs:
           brew install ninja
           python -m pip install -U pip wheel tomli
       - name: Installed wheel smoke
-        run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --precompiled-shaders --cmake-consumer --qt-probe optional
+        run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --release-build --precompiled-shaders --cmake-consumer --qt-probe optional
 
   windows-python-smoke:
     needs: windows
@@ -470,4 +472,4 @@ jobs:
           $wheel = Get-ChildItem wheelhouse/*.whl | Select-Object -First 1
           if (!$wheel) { throw "no wheel found in wheelhouse" }
           $wheelPath = $wheel.FullName.Replace('\', '/')
-          python tools/release_wheels/check_wheel.py --wheel "$wheelPath" --precompiled-shaders --cmake-consumer --qt-probe optional
+          python tools/release_wheels/check_wheel.py --wheel "$wheelPath" --release-build --precompiled-shaders --cmake-consumer --qt-probe optional

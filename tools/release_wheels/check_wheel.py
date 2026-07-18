@@ -23,6 +23,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--wheel")
     parser.add_argument("--work-dir", type=Path)
+    parser.add_argument("--release-build", action="store_true")
     parser.add_argument("--render", action="store_true")
     parser.add_argument("--precompiled-shaders", action="store_true")
     parser.add_argument("--shaderc", action="store_true")
@@ -40,6 +41,7 @@ def main() -> int:
     run_installed_checks(
         wheel,
         work_dir=args.work_dir,
+        release_build=args.release_build,
         render=args.render,
         precompiled_shaders=args.precompiled_shaders,
         shaderc=args.shaderc,

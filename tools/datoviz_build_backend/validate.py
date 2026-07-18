@@ -120,6 +120,7 @@ def run_installed_checks(
     wheel: Path,
     *,
     work_dir: Path | None = None,
+    release_build: bool = False,
     render: bool = False,
     precompiled_shaders: bool = False,
     shaderc: bool = False,
@@ -140,6 +141,8 @@ def run_installed_checks(
         python = _bin_dir(venv) / ("python.exe" if os.name == "nt" else "python")
         _pip_install(python, work, ["--upgrade", "pip", "wheel"])
         _pip_install(python, work, [str(wheel)])
+        if release_build:
+            _release_build_smoke(python, work)
         _python_smokes(python, work, require_precompiled_shaders=precompiled_shaders)
         if shaderc:
             _shaderc_smoke(python, work)
@@ -168,6 +171,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--inspect", action="store_true")
     parser.add_argument("--native-deps", action="store_true")
     parser.add_argument("--work-dir", type=Path)
+    parser.add_argument("--release-build", action="store_true")
     parser.add_argument("--render", action="store_true")
     parser.add_argument("--precompiled-shaders", action="store_true")
     parser.add_argument("--shaderc", action="store_true")
@@ -185,7 +189,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.inspect or args.native_deps:
         inspect_wheel(wheel, native_deps=args.native_deps)
     if (
-        args.render
+        args.release_build
+        or args.render
         or args.shaderc
         or args.cmake_consumer
         or args.examples != "skip"
@@ -194,6 +199,7 @@ def main(argv: list[str] | None = None) -> int:
         run_installed_checks(
             wheel,
             work_dir=args.work_dir,
+            release_build=args.release_build,
             render=args.render,
             precompiled_shaders=args.precompiled_shaders,
             shaderc=args.shaderc,
@@ -327,6 +333,24 @@ def _python_smokes(python: Path, work: Path, *, require_precompiled_shaders: boo
     _run([str(python), "-m", "datoviz.cli", "--cflags"], cwd=work)
     _run([str(python), "-m", "datoviz.cli", "--libs"], cwd=work)
     _run([str(python), "-m", "datoviz.cli", "--cmake-dir"], cwd=work)
+
+
+def _release_build_smoke(python: Path, work: Path) -> None:
+    """Reject an installed release artifact carrying a Debug native library."""
+
+    version = subprocess.check_output(
+        [
+            str(python),
+            "-c",
+            "import datoviz.raw as dvz; print(dvz.dvz_version().decode())",
+        ],
+        cwd=work,
+        env=_venv_env(),
+        text=True,
+    ).strip()
+    print(f"installed native version: {version}")
+    if "(DEBUG)" in version.upper():
+        raise RuntimeError(f"release wheel contains a Debug native library: {version}")
 
 
 def _builtin_shader_resource_smoke(
