@@ -16,6 +16,7 @@ import socket
 import struct
 import subprocess
 import sys
+import tarfile
 import zlib
 from pathlib import Path
 from typing import Any
@@ -32,6 +33,14 @@ MANUAL_SCENARIOS = (
     'picking',
     'close-reopen',
 )
+WHEEL_ARTIFACTS = {
+    ('Darwin', 'arm64'): 'wheel-macos-arm64',
+    ('Darwin', 'x86_64'): 'wheel-macos-x86_64',
+    ('Linux', 'x86_64'): 'wheel-linux-x86_64',
+    ('Linux', 'aarch64'): 'wheel-linux-aarch64',
+    ('Windows', 'AMD64'): 'wheel-windows-AMD64',
+    ('Windows', 'ARM64'): 'wheel-windows-ARM64',
+}
 
 
 def utc_now() -> str:
@@ -480,6 +489,12 @@ def _report_html(report: dict[str, Any]) -> str:
             f'{"".join(capture_html) or "<p>No captures.</p>"}</div></section>'
         )
     campaign = report['campaign']
+    missing = report.get('missing_machines', [])
+    missing_html = (
+        '<p class="fail"><b>Missing evidence:</b> ' + html.escape(', '.join(missing)) + '</p>'
+        if missing
+        else ''
+    )
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <title>Datoviz wheel conformance {html.escape(str(campaign.get('wheel_run_id', '')))}</title>
@@ -499,6 +514,7 @@ code{{word-break:break-all}}section{{margin-top:2.5rem}}.meta{{background:#f0f3f
 <b>Artifact commit:</b> <code>{html.escape(str(campaign.get('artifact_commit', '')))}</code><br>
 <b>Validator commit:</b> <code>{html.escape(str(campaign.get('validator_commit', '')))}</code><br>
 <b>Generated:</b> {html.escape(report['generated_at_utc'])}</div>
+{missing_html}
 <h2>Summary</h2><table><thead><tr><th>Machine</th><th>Environment</th><th>Automated</th>
 <th>Human</th><th>Captures</th></tr></thead><tbody>{''.join(rows)}</tbody></table>
 {''.join(sections)}
@@ -534,6 +550,8 @@ def aggregate(args: argparse.Namespace) -> int:
     if len(campaigns) != 1:
         raise ValueError(f'evidence belongs to multiple campaigns: {sorted(campaigns)}')
     wheel_run_id, artifact_commit, validator_commit = campaigns.pop()
+    actual_machines = {str(item.get('machine_id', '')) for item in evidence}
+    missing_machines = sorted(set(args.expected_machine) - actual_machines)
     report = {
         'schema': REPORT_SCHEMA,
         'generated_at_utc': utc_now(),
@@ -542,7 +560,10 @@ def aggregate(args: argparse.Namespace) -> int:
             'artifact_commit': artifact_commit,
             'validator_commit': validator_commit,
         },
-        'status': 'fail' if any(item.get('status') == 'fail' for item in evidence) else 'pass',
+        'status': 'fail'
+        if missing_machines or any(item.get('status') == 'fail' for item in evidence)
+        else 'pass',
+        'missing_machines': missing_machines,
         'evidence': evidence,
     }
     (output / 'report.json').write_text(
@@ -647,6 +668,295 @@ def fetch_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def _safe_extract(archive: Path, output: Path) -> None:
+    """Extract a data-only evidence archive without path traversal."""
+    root = output.resolve()
+    with tarfile.open(archive) as tar:
+        members = tar.getmembers()
+        if len(members) > 10_000 or sum(member.size for member in members) > 512 * 1024 * 1024:
+            raise ValueError('evidence archive exceeds intake limits')
+        for member in members:
+            if not (member.isfile() or member.isdir()):
+                raise ValueError(f'unsupported evidence archive member: {member.name}')
+            target = (output / member.name).resolve()
+            if not target.is_relative_to(root):
+                raise ValueError(f'unsafe evidence archive path: {member.name}')
+            if member.isdir():
+                target.mkdir(parents=True, exist_ok=True)
+                continue
+            target.parent.mkdir(parents=True, exist_ok=True)
+            source = tar.extractfile(member)
+            if source is None:
+                raise ValueError(f'unreadable evidence archive member: {member.name}')
+            with source, target.open('wb') as destination:
+                shutil.copyfileobj(source, destination)
+
+
+def _verify_evidence_files(evidence_path: Path, evidence: dict[str, Any]) -> None:
+    """Verify that evidence references stay inside the bundle and match recorded digests."""
+    root = evidence_path.parent.resolve()
+
+    def resolve_file(relative: str) -> Path:
+        path = (root / relative).resolve()
+        if not path.is_relative_to(root) or not path.is_file():
+            raise ValueError(f'invalid evidence file reference: {relative}')
+        return path
+
+    environment = resolve_file(str(evidence.get('environment', '')))
+    json.loads(environment.read_text(encoding='utf8'))
+    manual_path = resolve_file('manual-observations.json')
+    manual = json.loads(manual_path.read_text(encoding='utf8'))
+    if manual != evidence.get('manual'):
+        raise ValueError('manual observation file does not match evidence record')
+    for capture in evidence.get('captures', []):
+        path = resolve_file(str(capture.get('path', '')))
+        if sha256(path) != capture.get('sha256'):
+            raise ValueError(f'capture checksum mismatch: {capture.get("path", "")}')
+
+
+def verify_bundle(args: argparse.Namespace) -> int:
+    """Safely extract and validate a submitted physical evidence archive."""
+    archive = args.archive.resolve()
+    output = args.output_dir.resolve()
+    if output.exists():
+        if not args.replace:
+            raise FileExistsError(f'output already exists: {output}; pass --replace')
+        shutil.rmtree(output)
+    output.mkdir(parents=True)
+    _safe_extract(archive, output)
+    records = discover_evidence([output])
+    if len(records) != 1:
+        raise ValueError(f'evidence archive must contain one record, found {len(records)}')
+    evidence_path, evidence = records[0]
+    _verify_evidence_files(evidence_path, evidence)
+    campaign = evidence.get('campaign', {})
+    if str(campaign.get('wheel_run_id')) != str(args.wheel_run_id):
+        raise ValueError('evidence wheel run does not match intake request')
+    if str(evidence.get('machine_id')) != args.machine_id:
+        raise ValueError('evidence machine ID does not match intake request')
+    if str(evidence.get('version')) != args.version:
+        raise ValueError('evidence version does not match intake request')
+    if evidence.get('status') != 'pass':
+        raise ValueError('submitted physical evidence is not passing')
+    if evidence.get('mode') != 'physical':
+        raise ValueError('submitted evidence is not a physical validation record')
+    if evidence.get('execution_class') != 'physical-interactive':
+        raise ValueError('submitted evidence is not from an interactive physical machine')
+    if evidence.get('manual', {}).get('state') != 'approved':
+        raise ValueError('physical evidence lacks explicit manual approval')
+    print(records[0][0].parent)
+    return 0
+
+
+def submit_physical(args: argparse.Namespace) -> int:
+    """Upload approved physical evidence to GHCR and dispatch its intake workflow."""
+    if args.confirm != 'yes':
+        raise RuntimeError('refusing physical evidence upload without --confirm yes')
+    evidence_dir = args.evidence_dir.resolve()
+    evidence = json.loads((evidence_dir / 'evidence.json').read_text(encoding='utf8'))
+    if evidence.get('status') != 'pass':
+        raise ValueError('only passing evidence may be submitted')
+    if evidence.get('mode') != 'physical':
+        raise ValueError('only physical evidence may be submitted')
+    if evidence.get('execution_class') != 'physical-interactive':
+        raise ValueError('physical evidence must come from an interactive machine')
+    if evidence.get('manual', {}).get('state') != 'approved':
+        raise ValueError('physical evidence must have explicit manual approval before submission')
+    campaign = evidence.get('campaign', {})
+    wheel_run_id = str(campaign.get('wheel_run_id', ''))
+    machine_id = safe_name(str(evidence.get('machine_id', 'unknown')))
+    archive = evidence_dir.parent / f'evidence-{wheel_run_id}-{machine_id}.tar.gz'
+    with tarfile.open(archive, 'w:gz') as tar:
+        tar.add(evidence_dir, arcname=machine_id, recursive=True)
+    digest = sha256(archive)
+    package = args.package.rstrip('/')
+    package_ref = f'{package}:wheels-{wheel_run_id}-{machine_id}-{digest[:16]}'
+    media_type = 'application/vnd.datoviz.release-evidence.v1+gzip'
+    push = [
+        'oras',
+        'push',
+        '--artifact-type',
+        'application/vnd.datoviz.release-evidence.v1',
+        '--format',
+        'json',
+        package_ref,
+        f'{archive}:{media_type}',
+    ]
+    result = subprocess.run(  # noqa: S603
+        push, cwd=ROOT, text=True, capture_output=True, check=False
+    )
+    if result.returncode != 0:
+        print(result.stderr, file=sys.stderr)
+        return result.returncode
+    immutable_ref = str(json.loads(result.stdout).get('reference', ''))
+    if '@sha256:' not in immutable_ref:
+        raise ValueError('ORAS did not return an immutable manifest reference')
+    dispatch = [
+        'gh',
+        'workflow',
+        'run',
+        'physical-evidence-intake.yml',
+        '--ref',
+        args.ref,
+        '-f',
+        f'package_ref={immutable_ref}',
+        '-f',
+        f'wheel_run_id={wheel_run_id}',
+        '-f',
+        f'machine_id={machine_id}',
+        '-f',
+        f'version={evidence.get("version", "")}',
+    ]
+    result = subprocess.run(dispatch, cwd=ROOT, check=False)  # noqa: S603
+    if result.returncode == 0:
+        print(f'submitted {machine_id}: {immutable_ref}')
+    return result.returncode
+
+
+def prepare_physical(args: argparse.Namespace) -> int:
+    """Download an exact native wheel and run the shared physical validation profile."""
+    repository_result = command_output(
+        ['gh', 'repo', 'view', '--json', 'nameWithOwner', '--jq', '.nameWithOwner']
+    )
+    if repository_result.get('status') != 'pass':
+        raise RuntimeError('unable to identify the GitHub repository')
+    repository = repository_result['stdout']
+    run_result = command_output(
+        ['gh', 'api', f'repos/{repository}/actions/runs/{args.wheel_run_id}']
+    )
+    if run_result.get('status') != 'pass':
+        raise RuntimeError(f'unable to query Wheels run {args.wheel_run_id}')
+    run = json.loads(run_result['stdout'])
+    if (run.get('name'), run.get('status'), run.get('conclusion')) != (
+        'WHEELS',
+        'completed',
+        'success',
+    ):
+        raise ValueError(f'run {args.wheel_run_id} is not a successful completed WHEELS run')
+    platform_key = (platform.system(), platform.machine())
+    artifact = WHEEL_ARTIFACTS.get(platform_key)
+    if not artifact:
+        raise ValueError(f'no native wheel artifact mapping for {platform_key!r}')
+    machine_id = safe_name(args.machine_id or socket.gethostname())
+    output = (
+        args.output_dir or ROOT / 'build' / 'release' / args.version / 'conformance' / machine_id
+    ).resolve()
+    wheelhouse = output.parent / f'.wheel-{args.wheel_run_id}-{artifact}'
+    if wheelhouse.exists():
+        shutil.rmtree(wheelhouse)
+    wheelhouse.mkdir(parents=True)
+    download = [
+        'gh',
+        'run',
+        'download',
+        str(args.wheel_run_id),
+        '--name',
+        artifact,
+        '--dir',
+        os.fspath(wheelhouse),
+    ]
+    completed = subprocess.run(download, cwd=ROOT, check=False)  # noqa: S603
+    if completed.returncode != 0:
+        return completed.returncode
+    wheels = sorted(wheelhouse.glob('*.whl'))
+    if len(wheels) != 1:
+        raise ValueError(f'expected one wheel in {artifact}, found {len(wheels)}')
+    for key in (
+        'VULKAN_SDK',
+        'VK_DRIVER_FILES',
+        'VK_ICD_FILENAMES',
+        'VK_LAYER_PATH',
+        'DYLD_LIBRARY_PATH',
+        'DYLD_FALLBACK_LIBRARY_PATH',
+        'LD_LIBRARY_PATH',
+    ):
+        os.environ.pop(key, None)
+    conformance_args = argparse.Namespace(
+        wheel=wheels[0],
+        output_dir=output,
+        version=args.version,
+        wheel_run_id=str(args.wheel_run_id),
+        artifact_commit=str(run['head_sha']),
+        validator_commit=command_output(['git', 'rev-parse', 'HEAD'])['stdout'],
+        machine_id=machine_id,
+        execution_class='physical-interactive',
+        mode='physical',
+        repeat=args.repeat,
+        render=True,
+        render_skip_reason='',
+        keep_going=args.keep_going,
+        replace=args.replace,
+    )
+    result = run_conformance(conformance_args)
+    print(f'physical evidence: {output}')
+    return result
+
+
+def sync_physical(args: argparse.Namespace) -> int:
+    """Download accepted physical evidence and regenerate the local campaign report."""
+    list_command = [
+        'gh',
+        'run',
+        'list',
+        '--workflow',
+        'physical-evidence-intake.yml',
+        '--status',
+        'success',
+        '--limit',
+        '100',
+        '--json',
+        'databaseId,displayTitle,createdAt',
+    ]
+    result = subprocess.run(  # noqa: S603
+        list_command, cwd=ROOT, text=True, capture_output=True, check=False
+    )
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip() or 'unable to query physical evidence intake')
+    marker = f'Wheels {args.wheel_run_id} · '
+    selected: dict[str, dict[str, Any]] = {}
+    for run in json.loads(result.stdout):
+        title = str(run.get('displayTitle', ''))
+        if marker not in title:
+            continue
+        machine_id = title.split(marker, 1)[1].strip()
+        selected.setdefault(machine_id, run)
+    output = args.output_dir.resolve()
+    inputs = output / 'inputs'
+    inputs.mkdir(parents=True, exist_ok=True)
+    for machine_id, run in selected.items():
+        destination = inputs / safe_name(machine_id)
+        if destination.exists():
+            continue
+        destination.mkdir()
+        download = [
+            'gh',
+            'run',
+            'download',
+            str(run['databaseId']),
+            '--name',
+            f'physical-evidence-{args.wheel_run_id}-{safe_name(machine_id)}',
+            '--dir',
+            os.fspath(destination),
+        ]
+        completed = subprocess.run(download, cwd=ROOT, check=False)  # noqa: S603
+        if completed.returncode != 0:
+            raise RuntimeError(f'unable to download physical evidence run {run["databaseId"]}')
+    aggregate_inputs = [inputs, *args.input]
+    report_args = argparse.Namespace(
+        input=aggregate_inputs,
+        output_dir=output / 'report',
+        replace=True,
+        strict=False,
+        expected_machine=args.expected_machine,
+    )
+    aggregate(report_args)
+    index = output / 'report' / 'index.html'
+    print(f'accepted physical machines: {", ".join(sorted(selected)) or "none"}')
+    if args.open and sys.platform == 'darwin':
+        subprocess.run(['open', os.fspath(index)], check=False)  # noqa: S603, S607
+    return 0
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     """Parse conformance command-line arguments."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -688,12 +998,49 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     aggregate_parser.add_argument('--output-dir', type=Path, required=True)
     aggregate_parser.add_argument('--replace', action='store_true')
     aggregate_parser.add_argument('--strict', action='store_true')
+    aggregate_parser.add_argument('--expected-machine', action='append', default=[])
 
     fetch_parser = subparsers.add_parser('fetch', help='download and open a consolidated report')
     fetch_parser.add_argument('--wheel-run-id', default='')
     fetch_parser.add_argument('--output-dir', type=Path, default=ROOT / 'build' / 'wheel-reports')
     fetch_parser.add_argument('--open', action=argparse.BooleanOptionalAction, default=True)
     fetch_parser.add_argument('--replace', action='store_true')
+
+    verify_parser = subparsers.add_parser(
+        'verify-bundle', help='verify a physical evidence upload'
+    )
+    verify_parser.add_argument('--archive', type=Path, required=True)
+    verify_parser.add_argument('--output-dir', type=Path, required=True)
+    verify_parser.add_argument('--wheel-run-id', required=True)
+    verify_parser.add_argument('--machine-id', required=True)
+    verify_parser.add_argument('--version', required=True)
+    verify_parser.add_argument('--replace', action='store_true')
+
+    submit_parser = subparsers.add_parser('submit', help='submit approved physical evidence')
+    submit_parser.add_argument('--evidence-dir', type=Path, required=True)
+    submit_parser.add_argument('--package', default='ghcr.io/datoviz/datoviz-release-evidence')
+    submit_parser.add_argument('--ref', default='v0.4-dev')
+    submit_parser.add_argument('--confirm', default='no')
+
+    physical_parser = subparsers.add_parser(
+        'physical', help='download an exact wheel and run physical validation'
+    )
+    physical_parser.add_argument('--wheel-run-id', required=True)
+    physical_parser.add_argument('--version', required=True)
+    physical_parser.add_argument('--machine-id', default='')
+    physical_parser.add_argument('--output-dir', type=Path)
+    physical_parser.add_argument('--repeat', type=int, default=2)
+    physical_parser.add_argument('--keep-going', action='store_true')
+    physical_parser.add_argument('--replace', action='store_true')
+
+    sync_parser = subparsers.add_parser('sync', help='sync physical evidence and build a report')
+    sync_parser.add_argument('--wheel-run-id', required=True)
+    sync_parser.add_argument(
+        '--output-dir', type=Path, default=ROOT / 'build' / 'physical-evidence'
+    )
+    sync_parser.add_argument('--input', type=Path, action='append', default=[])
+    sync_parser.add_argument('--expected-machine', action='append', default=[])
+    sync_parser.add_argument('--open', action=argparse.BooleanOptionalAction, default=True)
     return parser.parse_args(argv)
 
 
@@ -710,6 +1057,14 @@ def main(argv: list[str] | None = None) -> int:
         return aggregate(args)
     if args.command == 'fetch':
         return fetch_report(args)
+    if args.command == 'verify-bundle':
+        return verify_bundle(args)
+    if args.command == 'submit':
+        return submit_physical(args)
+    if args.command == 'physical':
+        return prepare_physical(args)
+    if args.command == 'sync':
+        return sync_physical(args)
     raise AssertionError(args.command)
 
 

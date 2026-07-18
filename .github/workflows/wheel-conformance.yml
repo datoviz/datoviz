@@ -1,0 +1,204 @@
+name: "Wheel conformance"
+run-name: "Wheel conformance · Wheels ${{ inputs.wheel_run_id || github.event.workflow_run.id }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      wheel_run_id:
+        description: "Exact successful Wheels workflow run ID"
+        required: true
+        type: string
+      version:
+        description: "Release version contained in the wheels"
+        required: true
+        default: "0.4.0rc1"
+        type: string
+  workflow_run:
+    workflows: ["WHEELS"]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  prepare:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    outputs:
+      wheel_run_id: ${{ steps.candidate.outputs.wheel_run_id }}
+      artifact_commit: ${{ steps.candidate.outputs.artifact_commit }}
+      version: ${{ steps.candidate.outputs.version }}
+    steps:
+      - id: candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_RUN_ID: ${{ inputs.wheel_run_id || github.event.workflow_run.id }}
+          REQUESTED_VERSION: ${{ inputs.version || '0.4.0rc1' }}
+        run: |
+          candidate=$(gh api "repos/${{ github.repository }}/actions/runs/$REQUESTED_RUN_ID")
+          test "$(jq -r .name <<<"$candidate")" = "WHEELS"
+          test "$(jq -r .status <<<"$candidate")" = "completed"
+          test "$(jq -r .conclusion <<<"$candidate")" = "success"
+          echo "wheel_run_id=$REQUESTED_RUN_ID" >> "$GITHUB_OUTPUT"
+          echo "artifact_commit=$(jq -r .head_sha <<<"$candidate")" >> "$GITHUB_OUTPUT"
+          echo "version=$REQUESTED_VERSION" >> "$GITHUB_OUTPUT"
+
+  conformance:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            artifact: wheel-linux-x86_64
+            machine_id: cloud-linux-x86_64-lavapipe
+            execution_class: github-hosted-software-gpu
+            render: true
+            setup: linux
+          - runner: ubuntu-24.04-arm
+            artifact: wheel-linux-aarch64
+            machine_id: cloud-linux-aarch64-lavapipe
+            execution_class: github-hosted-software-gpu
+            render: true
+            setup: linux
+          - runner: macos-15
+            artifact: wheel-macos-arm64
+            machine_id: cloud-macos-arm64-moltenvk
+            execution_class: github-hosted-hardware-gpu
+            render: true
+            setup: macos
+          - runner: macos-15-intel
+            artifact: wheel-macos-x86_64
+            machine_id: cloud-macos-x86_64-no-gpu
+            execution_class: github-hosted-no-gpu
+            render: false
+            setup: macos
+          - runner: windows-latest
+            artifact: wheel-windows-AMD64
+            machine_id: cloud-windows-amd64
+            execution_class: github-hosted-software-gpu
+            render: true
+            setup: windows
+          - runner: windows-11-arm
+            artifact: wheel-windows-ARM64
+            machine_id: cloud-windows-arm64
+            execution_class: github-hosted-software-gpu
+            render: true
+            setup: windows
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: wheelhouse
+          github-token: ${{ github.token }}
+          run-id: ${{ needs.prepare.outputs.wheel_run_id }}
+      - name: Linux software Vulkan environment
+        if: matrix.setup == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build mesa-vulkan-drivers vulkan-tools
+          lvp=$(find /usr/share/vulkan/icd.d -name 'lvp_icd*.json' -print -quit)
+          test -n "$lvp"
+          echo "VK_DRIVER_FILES=$lvp" >> "$GITHUB_ENV"
+      - name: macOS build tools
+        if: matrix.setup == 'macos'
+        run: brew install ninja
+      - name: Python tools
+        run: python -m pip install --upgrade pip
+      - name: Installed-wheel conformance
+        shell: bash
+        env:
+          WHEEL_RUN_ID: ${{ needs.prepare.outputs.wheel_run_id }}
+          ARTIFACT_COMMIT: ${{ needs.prepare.outputs.artifact_commit }}
+          RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+          MACHINE_ID: ${{ matrix.machine_id }}
+          EXECUTION_CLASS: ${{ matrix.execution_class }}
+          RENDER: ${{ matrix.render }}
+        run: |
+          wheel=$(find wheelhouse -maxdepth 1 -name '*.whl' -print -quit)
+          test -n "$wheel"
+          render_args=()
+          if [[ "$RENDER" != "true" ]]; then
+            render_args=(--no-render --render-skip-reason "hosted runner has no graphics device")
+          fi
+          env -u VULKAN_SDK \
+            -u VK_ICD_FILENAMES \
+            -u VK_LAYER_PATH \
+            -u DYLD_LIBRARY_PATH \
+            -u DYLD_FALLBACK_LIBRARY_PATH \
+            python tools/release_wheels/conformance.py run \
+              --wheel "$wheel" \
+              --output-dir "build/conformance/$MACHINE_ID" \
+              --version "$RELEASE_VERSION" \
+              --wheel-run-id "$WHEEL_RUN_ID" \
+              --artifact-commit "$ARTIFACT_COMMIT" \
+              --validator-commit "$GITHUB_SHA" \
+              --machine-id "$MACHINE_ID" \
+              --execution-class "$EXECUTION_CLASS" \
+              --mode unattended \
+              --repeat 2 \
+              "${render_args[@]}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wheel-conformance-evidence-${{ matrix.machine_id }}
+          path: build/conformance/${{ matrix.machine_id }}
+          retention-days: 1
+
+  report:
+    if: always() && needs.prepare.result == 'success'
+    needs: [prepare, conformance]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheel-conformance-evidence-*
+          path: build/conformance-inputs
+      - name: Build consolidated HTML report
+        run: |
+          python tools/release_wheels/conformance.py aggregate \
+            --input build/conformance-inputs \
+            --output-dir build/conformance-report \
+            --expected-machine cloud-linux-x86_64-lavapipe \
+            --expected-machine cloud-linux-aarch64-lavapipe \
+            --expected-machine cloud-macos-arm64-moltenvk \
+            --expected-machine cloud-macos-x86_64-no-gpu \
+            --expected-machine cloud-windows-amd64 \
+            --expected-machine cloud-windows-arm64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-conformance-report-${{ needs.prepare.outputs.wheel_run_id }}
+          path: build/conformance-report
+          retention-days: 90
+      - name: Publish summary
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+          report = json.loads(Path("build/conformance-report/report.json").read_text())
+          print(f"# Wheel conformance: {report['status'].upper()}")
+          print(f"\nWheels run: `{report['campaign']['wheel_run_id']}`")
+          print(f"\nArtifact commit: `{report['campaign']['artifact_commit']}`\n")
+          print("| Machine | Environment | Automated | Human | Captures |")
+          print("| --- | --- | --- | --- | ---: |")
+          for item in report["evidence"]:
+              print(
+                  f"| {item['machine_id']} | {item['execution_class']} | {item['status']} | "
+                  f"{item['manual']['state']} | {len(item.get('captures', []))} |"
+              )
+          PY
+      - name: Enforce aggregate result
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("build/conformance-report/report.json").read_text())
+          raise SystemExit(0 if report["status"] == "pass" else 1)
+          PY

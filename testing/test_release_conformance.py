@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import struct
+import tarfile
 import zlib
 from argparse import Namespace
 from pathlib import Path
@@ -32,16 +33,23 @@ def _png(path: Path, rgba: tuple[int, int, int, int]) -> None:
     )
 
 
-def _evidence(root: Path, machine_id: str, status: str = 'pass') -> Path:
+def _evidence(
+    root: Path, machine_id: str, status: str = 'pass', *, physical: bool = False
+) -> Path:
     evidence_dir = root / machine_id
     captures = evidence_dir / 'captures'
     captures.mkdir(parents=True)
     _png(captures / 'point.png', (20, 40, 60, 255))
     environment = {
         'platform': {'system': 'TestOS', 'machine': 'test64'},
-        'execution_class': 'github-hosted-software-gpu',
+        'execution_class': 'physical-interactive' if physical else 'github-hosted-software-gpu',
     }
     (evidence_dir / 'environment.json').write_text(json.dumps(environment), encoding='utf8')
+    manual = {
+        'state': 'approved' if physical else 'not-applicable',
+        'scenarios': [],
+    }
+    (evidence_dir / 'manual-observations.json').write_text(json.dumps(manual), encoding='utf8')
     evidence = {
         'schema': conformance.EVIDENCE_SCHEMA,
         'version': '0.4.0rc1',
@@ -51,8 +59,8 @@ def _evidence(root: Path, machine_id: str, status: str = 'pass') -> Path:
             'validator_commit': 'validator',
         },
         'machine_id': machine_id,
-        'execution_class': 'github-hosted-software-gpu',
-        'mode': 'unattended',
+        'execution_class': environment['execution_class'],
+        'mode': 'physical' if physical else 'unattended',
         'artifact_checksums': {'wheel': {'name': 'wheel.whl', 'sha256': 'abc'}},
         'environment': 'environment.json',
         'results': [],
@@ -65,7 +73,7 @@ def _evidence(root: Path, machine_id: str, status: str = 'pass') -> Path:
                 'stats': conformance.png_stats(captures / 'point.png'),
             }
         ],
-        'manual': {'state': 'not-applicable', 'scenarios': []},
+        'manual': manual,
         'failures': [] if status == 'pass' else [{'id': 'test'}],
         'status': status,
     }
@@ -92,7 +100,13 @@ def test_aggregate_builds_self_contained_report(tmp_path: Path) -> None:
     _evidence(inputs, 'linux-ci')
     _evidence(inputs, 'macbook-m3')
     output = tmp_path / 'report'
-    args = Namespace(input=[inputs], output_dir=output, replace=False, strict=True)
+    args = Namespace(
+        input=[inputs],
+        output_dir=output,
+        replace=False,
+        strict=True,
+        expected_machine=['linux-ci', 'macbook-m3'],
+    )
 
     assert conformance.aggregate(args) == 0
 
@@ -109,8 +123,92 @@ def test_aggregate_writes_report_before_strict_failure(tmp_path: Path) -> None:
     inputs = tmp_path / 'inputs'
     _evidence(inputs, 'windows-ci', status='fail')
     output = tmp_path / 'report'
-    args = Namespace(input=[inputs], output_dir=output, replace=False, strict=True)
+    args = Namespace(
+        input=[inputs],
+        output_dir=output,
+        replace=False,
+        strict=True,
+        expected_machine=['windows-ci'],
+    )
 
     assert conformance.aggregate(args) == 1
     assert (output / 'index.html').is_file()
     assert json.loads((output / 'report.json').read_text())['status'] == 'fail'
+
+
+def test_aggregate_rejects_missing_expected_machine(tmp_path: Path) -> None:
+    """Missing matrix evidence is a report failure rather than an implicit pass."""
+    inputs = tmp_path / 'inputs'
+    _evidence(inputs, 'linux-ci')
+    output = tmp_path / 'report'
+    args = Namespace(
+        input=[inputs],
+        output_dir=output,
+        replace=False,
+        strict=True,
+        expected_machine=['linux-ci', 'windows-ci'],
+    )
+
+    assert conformance.aggregate(args) == 1
+    report = json.loads((output / 'report.json').read_text())
+    assert report['missing_machines'] == ['windows-ci']
+
+
+def test_verify_bundle_accepts_approved_physical_evidence(tmp_path: Path) -> None:
+    """Intake accepts one approved bundle with matching immutable identity."""
+    evidence_dir = _evidence(tmp_path / 'source', 'macbook-m3', physical=True)
+    archive = tmp_path / 'evidence.tar.gz'
+    with tarfile.open(archive, 'w:gz') as tar:
+        tar.add(evidence_dir, arcname='macbook-m3')
+    output = tmp_path / 'accepted'
+    args = Namespace(
+        archive=archive,
+        output_dir=output,
+        wheel_run_id='123',
+        machine_id='macbook-m3',
+        version='0.4.0rc1',
+        replace=False,
+    )
+
+    assert conformance.verify_bundle(args) == 0
+    assert (output / 'macbook-m3/evidence.json').is_file()
+
+
+def test_verify_bundle_rejects_tampered_capture(tmp_path: Path) -> None:
+    """Intake verifies every recorded image checksum after extraction."""
+    evidence_dir = _evidence(tmp_path / 'source', 'macbook-m3', physical=True)
+    _png(evidence_dir / 'captures/point.png', (200, 40, 60, 255))
+    archive = tmp_path / 'evidence.tar.gz'
+    with tarfile.open(archive, 'w:gz') as tar:
+        tar.add(evidence_dir, arcname='macbook-m3')
+    args = Namespace(
+        archive=archive,
+        output_dir=tmp_path / 'accepted',
+        wheel_run_id='123',
+        machine_id='macbook-m3',
+        version='0.4.0rc1',
+        replace=False,
+    )
+
+    try:
+        conformance.verify_bundle(args)
+    except ValueError as exc:
+        assert 'capture checksum mismatch' in str(exc)
+    else:
+        raise AssertionError('tampered capture was accepted')
+
+
+def test_safe_extract_rejects_path_traversal(tmp_path: Path) -> None:
+    """Evidence archive extraction cannot write outside its intake directory."""
+    payload = tmp_path / 'payload'
+    payload.write_text('unsafe', encoding='utf8')
+    archive = tmp_path / 'unsafe.tar.gz'
+    with tarfile.open(archive, 'w:gz') as tar:
+        tar.add(payload, arcname='../escaped')
+
+    try:
+        conformance._safe_extract(archive, tmp_path / 'accepted')
+    except ValueError as exc:
+        assert 'unsafe evidence archive path' in str(exc)
+    else:
+        raise AssertionError('path traversal archive was accepted')

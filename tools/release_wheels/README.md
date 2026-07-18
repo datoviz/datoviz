@@ -84,6 +84,10 @@ manual interaction set pending. After the guided checks, record every observatio
 `just wheel-conformance-report`; download and open a hosted report with
 `just wheel-report <wheel-run-id>`.
 
+The agent-first physical-worker, evidence-submission, coordinator-polling, and combined-report
+commands are documented in
+[Physical Release Validation](../../docs/contributors/release-physical-validation.md).
+
 The GitHub Actions workflow is stored in `.github/workflows/wheels.yml` and is manual-only through
 `workflow_dispatch`. Keep `.github/workflows-draft/wheels.yml` as a staging reference for major
 workflow rewrites, but use the live workflow for RC wheel evidence after local validation passes.

@@ -1,0 +1,61 @@
+name: "Physical evidence intake"
+run-name: "Physical evidence · Wheels ${{ inputs.wheel_run_id }} · ${{ inputs.machine_id }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      package_ref:
+        description: "Immutable GHCR reference containing one evidence archive"
+        required: true
+        type: string
+      wheel_run_id:
+        description: "Exact Wheels workflow run ID"
+        required: true
+        type: string
+      machine_id:
+        description: "Physical machine evidence identity"
+        required: true
+        type: string
+      version:
+        description: "Release version contained in the wheel"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oras-project/setup-oras@v1
+      - name: Download submitted bundle
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+          PACKAGE_REF: ${{ inputs.package_ref }}
+        run: |
+          echo "$GHCR_TOKEN" | oras login ghcr.io --username "${{ github.actor }}" --password-stdin
+          mkdir -p build/intake
+          oras pull "$PACKAGE_REF" --output build/intake
+      - name: Verify immutable identity and manual approval
+        env:
+          WHEEL_RUN_ID: ${{ inputs.wheel_run_id }}
+          MACHINE_ID: ${{ inputs.machine_id }}
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          archive=$(find build/intake -maxdepth 1 -name '*.tar.gz' -print -quit)
+          test -n "$archive"
+          test "$(find build/intake -maxdepth 1 -name '*.tar.gz' | wc -l)" -eq 1
+          python tools/release_wheels/conformance.py verify-bundle \
+            --archive "$archive" \
+            --output-dir build/accepted \
+            --wheel-run-id "$WHEEL_RUN_ID" \
+            --machine-id "$MACHINE_ID" \
+            --version "$RELEASE_VERSION"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: physical-evidence-${{ inputs.wheel_run_id }}-${{ inputs.machine_id }}
+          path: build/accepted
+          retention-days: 90

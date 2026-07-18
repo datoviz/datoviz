@@ -155,3 +155,60 @@ Record:
 Summarize the results to the maintainer before moving to another machine. A new artifact checksum or
 artifact/runtime-affecting intervening change makes the corresponding evidence stale. An audited
 artifact-neutral release commit does not require a rebuild or repeat pass.
+
+
+## Agent-First Campaign Commands
+
+The worker agent can download the native wheel from an exact successful Wheels run, clear local
+Vulkan SDK and dynamic-library discovery overrides, and run the shared cloud/physical unattended
+profile twice without maintainer input:
+
+```sh
+just release-test-physical 29635132595 0.4.0rc1 --machine-id macbook-m3
+```
+
+After it guides the maintainer through the fixed interaction set above, it records every result.
+Omitted scenarios remain pending and cannot be approved:
+
+```sh
+just release-test-approve \
+  --evidence-dir build/release/0.4.0rc1/conformance/macbook-m3 \
+  --approved-by cyrille \
+  --result scatter-panzoom=pass \
+  --result arcball-3d=pass \
+  --result text-resize=pass \
+  --result image-probe=pass \
+  --result textured-mesh=pass \
+  --result picking=pass \
+  --result close-reopen=pass
+```
+
+Submission requires ORAS, GitHub CLI authentication, package write access, and explicit upload
+approval. `--confirm yes` creates a checksummed archive, pushes it to
+`ghcr.io/datoviz/datoviz-release-evidence`, and dispatches the intake workflow:
+
+```sh
+just release-test-submit \
+  --evidence-dir build/release/0.4.0rc1/conformance/macbook-m3 \
+  --confirm yes
+```
+
+The intake workflow safely extracts the bundle, checks the immutable campaign identity, rejects
+failed or unapproved evidence, and retains the accepted bundle as a GitHub Actions artifact. The
+release machine is also a worker and must submit its own evidence. Its agent may repeatedly poll
+accepted submissions and regenerate the combined hosted/physical HTML report:
+
+```sh
+just release-evidence-sync 29635132595 \
+  --input build/wheel-reports/29635132595 \
+  --expected-machine release-linux-x86_64 \
+  --expected-machine macbook-m3
+```
+
+The report opens from `build/physical-evidence/report/index.html`. Hosted and physical rows retain
+their distinct execution classes and manual state. Missing required machines remain visible and
+fail the report; hosted success never substitutes for unavailable physical testing.
+
+An agent performs unattended work before requesting attention, stops on an unattended failure, and
+only asks the maintainer when interactive scenarios are ready. It must not infer a human pass from
+an exit code, screenshot, synthetic input, or earlier run.

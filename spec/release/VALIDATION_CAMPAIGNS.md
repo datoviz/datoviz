@@ -104,7 +104,9 @@ maintainer approval.
 
 Durable campaign state must survive agent sessions and machine restarts. The release coordinator
 may poll submitted evidence and regenerate the HTML report at any time. Missing and unavailable
-physical classes remain visible and are never inferred from cloud success.
+physical classes remain visible and are never inferred from cloud success. The concrete operator
+commands live in
+[release-physical-validation.md](../../docs/contributors/release-physical-validation.md).
 
 
 ## Human Interaction Set

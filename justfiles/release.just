@@ -159,6 +159,18 @@ release-test-approve *args:
     @python3 tools/release_wheels/conformance.py approve {{args}}
 #
 
+release-test-physical wheel_run_id version="0.4.0rc1" *args:
+    @python3 tools/release_wheels/conformance.py physical --wheel-run-id "{{wheel_run_id}}" --version "{{version}}" {{args}}
+#
+
+release-test-submit *args:
+    @python3 tools/release_wheels/conformance.py submit {{args}}
+#
+
+release-evidence-sync wheel_run_id *args:
+    @python3 tools/release_wheels/conformance.py sync --wheel-run-id "{{wheel_run_id}}" {{args}}
+#
+
 release-report version *args:
     @python3 tools/release_automation.py report "{{version}}" {{args}}
 #
