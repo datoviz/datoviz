@@ -531,22 +531,57 @@ def _report_html(report: dict[str, Any]) -> str:
                 f'<figcaption><strong>{html.escape(capture["scenario"])}</strong><br>'
                 f'{stats.get("width", "?")}×{stats.get("height", "?")} · '
                 f'sha256 {capture.get("sha256", "")[:16]}… · '
-                f'repeat deterministic={capture.get("deterministic")}</figcaption></figure>'
+                f'repeat deterministic={capture.get("deterministic")}</figcaption>'
+                '<details><summary>Capture statistics</summary><pre>'
+                f'{html.escape(json.dumps(stats, indent=2, sort_keys=True))}'
+                '</pre></details></figure>'
             )
         environment = item.get('environment_data', {})
         platform_data = environment.get('platform', {})
         wheel = (item.get('artifact_checksums') or {}).get('wheel') or {}
+        machine_path = f'platforms/{safe_name(item["machine_id"])}'
+        result_rows = []
+        for result in item.get('results', []):
+            result_status = str(result.get('status', ''))
+            log_path = machine_path + '/' + str(result.get('log', ''))
+            result_rows.append(
+                '<tr>'
+                f'<td>{html.escape(str(result.get("id", "")))}</td>'
+                f"<td class='{result_status}'>{html.escape(result_status.upper())}</td>"
+                f'<td><a href="{html.escape(log_path)}">log</a></td>'
+                '</tr>'
+            )
+        skips = ''.join(
+            f'<li><code>{html.escape(str(skip.get("id", "")))}</code>: '
+            f'{html.escape(str(skip.get("reason", "")))}</li>'
+            for skip in item.get('skips', [])
+        )
+        failures = ''.join(
+            f'<li><code>{html.escape(str(failure.get("id", "")))}</code>: '
+            f'{html.escape(str(failure.get("message", failure.get("status", "failed"))))}</li>'
+            for failure in item.get('failures', [])
+        )
         sections.append(
             f'<section><h2>{html.escape(item["machine_id"])}</h2>'
             f'<p><b>Environment:</b> {html.escape(item["execution_class"])}; '
             f'{html.escape(str(platform_data.get("system", "")))} '
+            f'{html.escape(str(platform_data.get("release", "")))} '
             f'{html.escape(str(platform_data.get("machine", "")))}</p>'
             f'<p><b>Wheel:</b> {html.escape(str(wheel.get("name", "")))} · '
-            f'sha256 {html.escape(str(wheel.get("sha256", "")))}</p>'
+            f'{wheel.get("bytes", "?")} bytes · sha256 '
+            f'{html.escape(str(wheel.get("sha256", "")))}</p>'
             f'<p><b>Automated:</b> {html.escape(item["status"])}; '
             f'<b>human:</b> {html.escape(str(manual.get("state", "not-applicable")))}</p>'
+            '<h3>Automated results</h3><table><thead><tr><th>Check</th><th>Status</th>'
+            f'<th>Evidence</th></tr></thead><tbody>{"".join(result_rows)}</tbody></table>'
+            f'<h3>Explicit skips</h3>{"<ul>" + skips + "</ul>" if skips else "<p>None.</p>"}'
+            f'<h3>Failures</h3>{"<ul>" + failures + "</ul>" if failures else "<p>None.</p>"}'
             "<div class='captures'>"
-            f'{"".join(capture_html) or "<p>No captures.</p>"}</div></section>'
+            f'{"".join(capture_html) or "<p>No captures.</p>"}</div>'
+            '<details><summary>Full environment and Vulkan metadata</summary><pre>'
+            f'{html.escape(json.dumps(environment, indent=2, sort_keys=True))}</pre></details>'
+            '<details><summary>Full machine evidence record</summary><pre>'
+            f'{html.escape(json.dumps(item, indent=2, sort_keys=True))}</pre></details></section>'
         )
     campaign = report['campaign']
     missing = report.get('missing_machines', [])
@@ -576,6 +611,8 @@ th,td{{border:1px solid #ccd2da;padding:.5rem;text-align:left}}
 figure{{margin:0;border:1px solid #ccd2da;padding:.75rem;background:#f7f8fa}}
 img{{width:100%;image-rendering:auto}}
 code{{word-break:break-all}}section{{margin-top:2.5rem}}.meta{{background:#f0f3f6;padding:1rem}}
+pre{{white-space:pre-wrap;overflow-wrap:anywhere;background:#111827;color:#f3f4f6;padding:1rem}}
+details{{margin-top:.75rem}}a{{color:#0759b5}}
 </style></head><body>
 <h1>Datoviz wheel conformance</h1>
 <div class="meta"><b>Wheel run:</b> {html.escape(str(campaign.get('wheel_run_id', '')))}<br>
@@ -683,30 +720,56 @@ def fetch_report(args: argparse.Namespace) -> int:
         'gh',
         'run',
         'list',
-        '--workflow',
-        'wheel-conformance.yml',
-        '--status',
-        'success',
         '--limit',
-        '30',
+        '50',
         '--json',
-        'databaseId,displayTitle,headSha,createdAt',
+        'databaseId,workflowName,status,conclusion,displayTitle,headSha,createdAt',
     ]
     result = subprocess.run(  # noqa: S603
         list_command, cwd=ROOT, text=True, capture_output=True, check=False
     )
     if result.returncode != 0:
         raise RuntimeError(result.stderr.strip() or 'unable to query conformance runs')
-    runs = json.loads(result.stdout)
-    if args.wheel_run_id:
-        marker = f'Wheels {args.wheel_run_id}'
-        runs = [run for run in runs if marker in str(run.get('displayTitle', ''))]
-    if not runs:
+    runs = [
+        run
+        for run in json.loads(result.stdout)
+        if run.get('workflowName') == 'Wheel conformance' and run.get('status') == 'completed'
+    ]
+    repository_result = command_output(
+        ['gh', 'repo', 'view', '--json', 'nameWithOwner', '--jq', '.nameWithOwner']
+    )
+    if repository_result.get('status') != 'pass':
+        raise RuntimeError('unable to identify the GitHub repository')
+    selected = None
+    artifact_name = ''
+    prefix = 'wheel-conformance-report-'
+    requested_name = f'{prefix}{args.wheel_run_id}' if args.wheel_run_id else ''
+    for run in runs:
+        artifacts_result = command_output(
+            [
+                'gh',
+                'api',
+                f'repos/{repository_result["stdout"]}/actions/runs/{run["databaseId"]}/artifacts',
+                '--jq',
+                '.artifacts[] | select(.expired == false) | .name',
+            ]
+        )
+        if artifacts_result.get('status') != 'pass':
+            continue
+        names = artifacts_result.get('stdout', '').splitlines()
+        matches = [
+            name
+            for name in names
+            if name == requested_name or (not requested_name and name.startswith(prefix))
+        ]
+        if matches:
+            selected = run
+            artifact_name = matches[0]
+            break
+    if selected is None:
         requested = args.wheel_run_id or 'latest'
-        raise RuntimeError(f'no successful conformance report found for {requested}')
-    selected = runs[0]
-    match = re.search(r'Wheels\s+(\d+)', str(selected.get('displayTitle', '')))
-    wheel_run_id = args.wheel_run_id or (match.group(1) if match else 'unknown')
+        raise RuntimeError(f'no conformance report artifact found for {requested}')
+    wheel_run_id = artifact_name.removeprefix(prefix)
     output = (args.output_dir / str(wheel_run_id)).resolve()
     if output.exists() and args.replace:
         shutil.rmtree(output)
@@ -718,7 +781,7 @@ def fetch_report(args: argparse.Namespace) -> int:
             'download',
             str(selected['databaseId']),
             '--name',
-            f'wheel-conformance-report-{wheel_run_id}',
+            artifact_name,
             '--dir',
             os.fspath(output),
         ]

@@ -159,6 +159,10 @@ def test_aggregate_builds_self_contained_report(tmp_path: Path) -> None:
     assert (output / 'index.html').is_file()
     assert (output / 'manifest.json').is_file()
     assert (output / 'platforms/linux-ci/captures/point.png').is_file()
+    report_html = (output / 'index.html').read_text(encoding='utf8')
+    assert 'Full environment and Vulkan metadata' in report_html
+    assert 'Capture statistics' in report_html
+    assert 'Release gates' in report_html
 
 
 def test_aggregate_writes_report_before_strict_failure(tmp_path: Path) -> None:
