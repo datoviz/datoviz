@@ -105,6 +105,82 @@ def test_wheel_cmake_config_requires_c11() -> None:
     assert 'INTERFACE_COMPILE_FEATURES "c_std_11"' in config
 
 
+def test_stage_macos_native_normalizes_vulkan_runtime(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _write_project(tmp_path)
+    native = tmp_path / "native"
+    (native / "src").mkdir(parents=True)
+    (native / "src" / "libdatoviz.dylib").write_bytes(b"datoviz")
+    runtime = tmp_path / "runtime"
+    runtime.mkdir()
+    (runtime / "libshaderc_shared.1.dylib").write_bytes(b"shaderc")
+    (runtime / "libvulkan.1.4.350.dylib").write_bytes(b"vulkan")
+    (runtime / "libMoltenVK.dylib").write_bytes(b"moltenvk")
+
+    config = parse_config_settings(
+        {
+            "datoviz.release-wheel": "true",
+            "datoviz.native-build-dir": "native",
+            "datoviz.stage-dir": "stage",
+        },
+        root=tmp_path,
+    )
+    package = config.stage_dir / "datoviz"
+    monkeypatch.setattr(native_payload.platform, "system", lambda: "Darwin")
+    monkeypatch.setenv("DVZ_WHEEL_RUNTIME_DIRS", str(runtime))
+
+    entries = _stage_native(config, package)
+
+    assert {path.name for path in package.iterdir()} == {
+        "MoltenVK_icd.json",
+        "libMoltenVK.dylib",
+        "libdatoviz.dylib",
+        "libshaderc_shared.1.dylib",
+        "libvulkan.1.dylib",
+    }
+    icd = json.loads((package / "MoltenVK_icd.json").read_text(encoding="utf8"))
+    assert icd == {
+        "file_format_version": "1.0.0",
+        "ICD": {
+            "library_path": "./libMoltenVK.dylib",
+            "api_version": "1.4.0",
+            "is_portability_driver": True,
+        },
+    }
+    reasons = {entry.wheel_path: entry.reason for entry in entries}
+    assert reasons["datoviz/libvulkan.1.dylib"] == "vulkan-loader"
+    assert reasons["datoviz/libMoltenVK.dylib"] == "moltenvk"
+    assert reasons["datoviz/MoltenVK_icd.json"] == "moltenvk-icd"
+
+
+def test_stage_macos_native_requires_moltenvk(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _write_project(tmp_path)
+    native = tmp_path / "native"
+    (native / "src").mkdir(parents=True)
+    (native / "src" / "libdatoviz.dylib").write_bytes(b"datoviz")
+    runtime = tmp_path / "runtime"
+    runtime.mkdir()
+    (runtime / "libshaderc_shared.1.dylib").write_bytes(b"shaderc")
+    (runtime / "libvulkan.1.dylib").write_bytes(b"vulkan")
+
+    config = parse_config_settings(
+        {
+            "datoviz.release-wheel": "true",
+            "datoviz.native-build-dir": "native",
+            "datoviz.stage-dir": "stage",
+        },
+        root=tmp_path,
+    )
+    monkeypatch.setattr(native_payload.platform, "system", lambda: "Darwin")
+    monkeypatch.setenv("DVZ_WHEEL_RUNTIME_DIRS", str(runtime))
+
+    with pytest.raises(FileNotFoundError, match="libMoltenVK"):
+        _stage_native(config, config.stage_dir / "datoviz")
+
+
 def test_stage_windows_native_uses_configured_build_dir(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

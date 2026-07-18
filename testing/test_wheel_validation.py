@@ -2,13 +2,62 @@
 
 from __future__ import annotations
 
+import json
 import subprocess
+import zipfile
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
 from tools.datoviz_build_backend import validate
+
+
+def test_macos_runtime_payload_is_relocatable(tmp_path: Path) -> None:
+    """The macOS wheel carries a canonical loader and sibling MoltenVK manifest."""
+
+    archive = tmp_path / "runtime.zip"
+    with zipfile.ZipFile(archive, "w") as zf:
+        zf.writestr("datoviz/libvulkan.1.dylib", b"vulkan")
+        zf.writestr("datoviz/libMoltenVK.dylib", b"moltenvk")
+        zf.writestr(
+            "datoviz/MoltenVK_icd.json",
+            json.dumps(
+                {
+                    "file_format_version": "1.0.0",
+                    "ICD": {
+                        "library_path": "./libMoltenVK.dylib",
+                        "api_version": "1.4.0",
+                        "is_portability_driver": True,
+                    },
+                }
+            ),
+        )
+    with zipfile.ZipFile(archive) as zf:
+        validate._validate_macos_runtime(zf, {"py3-none-macosx_15_0_arm64"})
+
+
+def test_macos_runtime_payload_rejects_external_moltenvk(tmp_path: Path) -> None:
+    """An ICD manifest cannot escape the installed wheel directory."""
+
+    archive = tmp_path / "runtime.zip"
+    with zipfile.ZipFile(archive, "w") as zf:
+        zf.writestr("datoviz/libvulkan.1.dylib", b"vulkan")
+        zf.writestr("datoviz/libMoltenVK.dylib", b"moltenvk")
+        zf.writestr(
+            "datoviz/MoltenVK_icd.json",
+            json.dumps(
+                {
+                    "ICD": {
+                        "library_path": "/opt/homebrew/lib/libMoltenVK.dylib",
+                        "is_portability_driver": True,
+                    }
+                }
+            ),
+        )
+    with zipfile.ZipFile(archive) as zf:
+        with pytest.raises(RuntimeError, match=r"sibling .*libMoltenVK"):
+            validate._validate_macos_runtime(zf, {"py3-none-macosx_15_0_arm64"})
 
 
 def test_render_smoke_accepts_capability_skip(

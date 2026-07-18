@@ -11,7 +11,10 @@ Intel runs at least the `rc` installed-wheel profile and focused live set. Apple
 the IPython close/reopen lifecycle check; Qt/PyQt remains an optional-provider pass or explicit
 skip.
 
-For the current candidate, use run `29622780390` at artifact commit `bfa569916` if it passes. The
-descendant release commit `73b10cf95` contains only audited release-process documentation, so it
-does not invalidate the Mac artifact or manual pass. Apply the general intervening-diff audit if the
-release commit advances again.
+Run `29624999442` (`Wheels` #457) passed at artifact commit `06317fa4f`, but its macOS wheels are not
+eligible for physical installed-wheel acceptance. The arm64 artifact passes under this machine's
+Vulkan SDK environment and its native binaries are architecture-correct, but a fresh install cannot
+render without external Vulkan discovery variables: the wheel omits `MoltenVK_icd.json` and the
+loader aliases Volk searches on macOS. Fix the packaging/runtime discovery path, require a no-SDK
+installed render smoke in CI, rerun the matrix, and perform the Quickstart plus live interaction set
+only on the corrected checksum.

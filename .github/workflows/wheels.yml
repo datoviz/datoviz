@@ -129,6 +129,24 @@ jobs:
           for whl in wheelhouse/*.whl; do
             just wheel-inspect --wheel "$whl" --native-deps
           done
+      - name: Installed standalone wheel smoke
+        run: |
+          brew unlink vulkan-loader
+          brew unlink molten-vk
+          wheel=$(find wheelhouse -maxdepth 1 -name '*.whl' -print -quit)
+          env -u VULKAN_SDK \
+            -u VK_ICD_FILENAMES \
+            -u VK_DRIVER_FILES \
+            -u VK_LAYER_PATH \
+            -u DYLD_LIBRARY_PATH \
+            -u DYLD_FALLBACK_LIBRARY_PATH \
+            python tools/release_wheels/check_wheel.py \
+              --wheel "$wheel" \
+              --precompiled-shaders \
+              --shaderc \
+              --render \
+              --cmake-consumer \
+              --examples render
       - uses: actions/upload-artifact@v4
         with:
           name: wheel-macos-${{ matrix.arch }}

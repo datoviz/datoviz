@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import platform
 import shutil
@@ -159,17 +160,11 @@ def _stage_native(config: ReleaseWheelConfig, package_dir: Path) -> list[Payload
         entries.append(_entry(lib, f"datoviz/{dst.name}", "libdatoviz", "core-runtime"))
         entries.extend(
             _copy_runtime_matches(
-                config,
-                [
-                    "libvulkan*.dylib",
-                    "libshaderc*.dylib",
-                    "libMoltenVK.dylib",
-                    "MoltenVK_icd.json",
-                ],
-                package_dir,
+                config, ["libshaderc*.dylib"], package_dir,
                 required=config.require_shaderc,
             )
         )
+        entries.extend(_stage_macos_vulkan_runtime(config, package_dir))
     elif system == "Windows":
         copied = _copy_matches_from_roots(
             runtime_roots(config.native_build_dir, config.runtime_dirs_env),
@@ -222,6 +217,40 @@ def _stage_native(config: ReleaseWheelConfig, package_dir: Path) -> list[Payload
     return entries
 
 
+def _stage_macos_vulkan_runtime(
+    config: ReleaseWheelConfig, package_dir: Path
+) -> list[PayloadEntry]:
+    """Stage a relocatable macOS Vulkan loader and MoltenVK driver pair."""
+
+    loader = _first_runtime_existing(
+        config,
+        ["libvulkan.1.dylib", "libvulkan.dylib", "libvulkan.*.dylib"],
+    )
+    moltenvk = _first_runtime_existing(config, ["libMoltenVK.dylib"])
+
+    loader_dst = package_dir / "libvulkan.1.dylib"
+    moltenvk_dst = package_dir / "libMoltenVK.dylib"
+    copy_file(loader, loader_dst)
+    copy_file(moltenvk, moltenvk_dst)
+
+    icd_dst = package_dir / "MoltenVK_icd.json"
+    icd = {
+        "file_format_version": "1.0.0",
+        "ICD": {
+            "library_path": "./libMoltenVK.dylib",
+            "api_version": "1.4.0",
+            "is_portability_driver": True,
+        },
+    }
+    icd_dst.write_text(json.dumps(icd, indent=2) + "\n", encoding="utf8")
+
+    return [
+        _entry(loader, "datoviz/libvulkan.1.dylib", "runtime", "vulkan-loader"),
+        _entry(moltenvk, "datoviz/libMoltenVK.dylib", "runtime", "moltenvk"),
+        _entry(icd_dst, "datoviz/MoltenVK_icd.json", "runtime", "moltenvk-icd"),
+    ]
+
+
 def _payload_metadata(config: ReleaseWheelConfig, entries: list[PayloadEntry]) -> dict[str, object]:
     if platform.system() != "Windows":
         return {}
@@ -261,6 +290,22 @@ def _first_existing(patterns: list[str], build_dir: Path) -> Path:
         if matches:
             return matches[0]
     raise FileNotFoundError(f"none of these build artifacts were found: {patterns}")
+
+
+def _first_runtime_existing(config: ReleaseWheelConfig, patterns: list[str]) -> Path:
+    """Return the first runtime file matching a prioritized pattern list."""
+
+    roots = runtime_roots(config.native_build_dir, config.runtime_dirs_env)
+    for pattern in patterns:
+        for root in roots:
+            matches = sorted(path for path in root.glob(pattern) if path.is_file())
+            if matches:
+                return matches[0]
+    roots_text = ", ".join(os.fspath(root) for root in roots)
+    raise FileNotFoundError(
+        f"no runtime file matched {patterns}; searched build dir and "
+        f"{config.runtime_dirs_env}: {roots_text}"
+    )
 
 
 def _copy_matches(root: Path, patterns: list[str], dst: Path) -> list[Path]:

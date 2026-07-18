@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import json
 import os
 import shutil
 import subprocess
@@ -97,6 +98,7 @@ def validate_wheel(wheel: Path) -> None:
             )
         _validate_record(zf, f"{dist_info}/RECORD")
         _validate_payload_manifest(zf)
+        _validate_macos_runtime(zf, filename_tags)
         forbidden = [name for name in names if "__pycache__" in name or name.endswith(".pyc") or name.endswith(".DS_Store")]
         if forbidden:
             raise RuntimeError(f"{wheel}: forbidden payload entries: {forbidden[:5]}")
@@ -242,6 +244,29 @@ def _validate_payload_manifest(zf: zipfile.ZipFile) -> None:
     missing = payload_names - manifest_names
     if missing:
         raise RuntimeError(f"payload manifest missing entries: {sorted(missing)[:5]}")
+
+
+def _validate_macos_runtime(zf: zipfile.ZipFile, tags: set[str]) -> None:
+    """Validate the standalone Vulkan/MoltenVK payload of a macOS wheel."""
+
+    if not any("macosx_" in tag for tag in tags):
+        return
+
+    required = {
+        "datoviz/MoltenVK_icd.json",
+        "datoviz/libMoltenVK.dylib",
+        "datoviz/libvulkan.1.dylib",
+    }
+    missing = required - set(zf.namelist())
+    if missing:
+        raise RuntimeError(f"macOS wheel runtime is incomplete: {sorted(missing)}")
+
+    manifest = json.loads(zf.read("datoviz/MoltenVK_icd.json"))
+    icd = manifest.get("ICD", {})
+    if icd.get("library_path") != "./libMoltenVK.dylib":
+        raise RuntimeError("macOS MoltenVK manifest must use sibling ./libMoltenVK.dylib")
+    if icd.get("is_portability_driver") is not True:
+        raise RuntimeError("macOS MoltenVK manifest must declare a portability driver")
 
 
 def _bin_dir(venv: Path) -> Path:

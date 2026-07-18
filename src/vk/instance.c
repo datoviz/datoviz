@@ -20,14 +20,19 @@
 #include <string.h>
 #include <volk.h>
 
+#if OS_MACOS
+#include <dlfcn.h>
+#include <unistd.h>
+#endif
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_instance.h"
 #include "_log.h"
-#include "obj.h"
 #include "datoviz/vk/instance.h"
 #include "macros.h"
+#include "obj.h"
 #include "validation.h"
 
 
@@ -42,14 +47,120 @@
 // Consistency check.
 #define MAX_COUNT 1024
 
+#if OS_MACOS
+#define DVZ_MACOS_RUNTIME_PATH_MAX 4096
+#endif
+
 
 
 static bool _volk_initialized = false;
 static bool _volk_ready = false;
 
+
+
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+#if OS_MACOS
+/**
+ * Resolve a file beside the loaded Datoviz library.
+ *
+ * @param name sibling filename
+ * @param path output path buffer
+ * @param size output path buffer size
+ * @return true when the path was resolved
+ */
+static bool _dvz_macos_runtime_path(const char* name, char* path, size_t size)
+{
+    ANN(name);
+    ANN(path);
+    if (size == 0)
+        return false;
+
+    Dl_info info = {0};
+    if (dladdr((const void*)&vkGetInstanceProcAddr, &info) == 0 || info.dli_fname == NULL)
+        return false;
+
+    const char* slash = strrchr(info.dli_fname, '/');
+    if (slash == NULL)
+        return false;
+    size_t directory_length = (size_t)(slash - info.dli_fname);
+    if (directory_length + 1 >= size)
+        return false;
+
+    int written = dvz_snprintf(path, size, "%.*s/%s", (int)directory_length, info.dli_fname, name);
+    return written > 0 && (size_t)written < size;
+}
+
+
+
+/**
+ * Configure the packaged MoltenVK manifest unless the caller selected a Vulkan driver.
+ */
+static void _dvz_macos_configure_packaged_driver(void)
+{
+    if (getenv("VK_DRIVER_FILES") != NULL || getenv("VK_ICD_FILENAMES") != NULL)
+        return;
+
+    char manifest_path[DVZ_MACOS_RUNTIME_PATH_MAX] = {0};
+    bool resolved =
+        _dvz_macos_runtime_path("MoltenVK_icd.json", manifest_path, sizeof(manifest_path));
+    if (!resolved || access(manifest_path, R_OK) != 0)
+        return;
+
+    if (setenv("VK_DRIVER_FILES", manifest_path, 0) != 0)
+    {
+        log_warn("unable to select packaged MoltenVK manifest %s", manifest_path);
+    }
+}
+
+
+
+/**
+ * Initialize Volk from a Vulkan loader packaged beside Datoviz.
+ *
+ * @return true when the packaged loader initialized Volk
+ */
+static bool _dvz_macos_packaged_volk_init(void)
+{
+    char loader_path[DVZ_MACOS_RUNTIME_PATH_MAX] = {0};
+    bool resolved = _dvz_macos_runtime_path("libvulkan.1.dylib", loader_path, sizeof(loader_path));
+    if (!resolved || access(loader_path, R_OK) != 0)
+        return false;
+
+    void* module = dlopen(loader_path, RTLD_NOW | RTLD_LOCAL);
+    if (module == NULL)
+    {
+        log_warn("unable to load packaged Vulkan loader %s: %s", loader_path, dlerror());
+        return false;
+    }
+
+    PFN_vkGetInstanceProcAddr handler =
+        (PFN_vkGetInstanceProcAddr)dlsym(module, "vkGetInstanceProcAddr");
+    if (handler == NULL)
+    {
+        log_warn("packaged Vulkan loader has no vkGetInstanceProcAddr: %s", loader_path);
+        dlclose(module);
+        return false;
+    }
+
+    _dvz_macos_configure_packaged_driver();
+    volkInitializeCustom(handler);
+    if (vkCreateInstance == NULL)
+    {
+        log_warn("packaged Vulkan loader did not expose vkCreateInstance: %s", loader_path);
+        dlclose(module);
+        return false;
+    }
+
+    // Volk retains function pointers from this module for the process lifetime.
+    log_debug("using packaged Vulkan loader %s", loader_path);
+    return true;
+}
+#endif
+
+
 
 /**
  * Initialize Volk once and report whether Vulkan loader entry points are available.
@@ -64,6 +175,14 @@ static bool _dvz_volk_init(void)
     }
 
     log_trace("initializing volk");
+#if OS_MACOS
+    if (_dvz_macos_packaged_volk_init())
+    {
+        _volk_initialized = true;
+        _volk_ready = true;
+        return true;
+    }
+#endif
     VkResult res = volkInitialize();
     _volk_initialized = true;
     if (res != VK_SUCCESS)
