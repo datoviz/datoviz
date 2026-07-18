@@ -297,7 +297,7 @@ def run_conformance(args: argparse.Namespace) -> int:
             '--release-build',
             '--precompiled-shaders',
             '--examples',
-            'render' if args.render else 'basic',
+            'render' if args.examples and args.render else 'basic' if args.examples else 'skip',
             '--qt-probe',
             'optional',
         ]
@@ -366,6 +366,8 @@ def run_conformance(args: argparse.Namespace) -> int:
         skips.append({'id': 'cmake-consumer', 'reason': args.cmake_skip_reason})
     if not args.shaderc:
         skips.append({'id': 'shaderc', 'reason': args.shaderc_skip_reason})
+    if not args.examples:
+        skips.append({'id': 'installed-examples', 'reason': args.examples_skip_reason})
     evidence = {
         'schema': EVIDENCE_SCHEMA,
         'version': args.version,
@@ -954,6 +956,8 @@ def prepare_physical(args: argparse.Namespace) -> int:
         shaderc_skip_reason='',
         cmake_consumer=True,
         cmake_skip_reason='',
+        examples=True,
+        examples_skip_reason='',
         keep_going=args.keep_going,
         replace=args.replace,
     )
@@ -1061,6 +1065,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         '--cmake-consumer', action=argparse.BooleanOptionalAction, default=True
     )
     run_parser.add_argument('--cmake-skip-reason', default='native CMake toolchain unavailable')
+    run_parser.add_argument('--examples', action=argparse.BooleanOptionalAction, default=True)
+    run_parser.add_argument(
+        '--examples-skip-reason', default='native example toolchain unavailable'
+    )
     run_parser.add_argument('--keep-going', action='store_true')
     run_parser.add_argument('--replace', action='store_true')
 

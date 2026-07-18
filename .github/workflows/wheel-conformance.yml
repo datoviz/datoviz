@@ -67,6 +67,7 @@ jobs:
             execution_class: github-hosted-software-gpu
             render: true
             cmake_consumer: true
+            examples: true
             setup: linux
           - runner: ubuntu-24.04-arm
             artifact: wheel-linux-aarch64
@@ -74,6 +75,7 @@ jobs:
             execution_class: github-hosted-software-gpu
             render: true
             cmake_consumer: true
+            examples: true
             setup: linux
           - runner: macos-15
             artifact: wheel-macos-arm64
@@ -81,6 +83,7 @@ jobs:
             execution_class: github-hosted-hardware-gpu
             render: true
             cmake_consumer: true
+            examples: true
             setup: macos
           - runner: macos-15-intel
             artifact: wheel-macos-x86_64
@@ -88,6 +91,7 @@ jobs:
             execution_class: github-hosted-no-gpu
             render: false
             cmake_consumer: true
+            examples: true
             setup: macos
           - runner: windows-latest
             artifact: wheel-windows-AMD64
@@ -95,6 +99,7 @@ jobs:
             execution_class: github-hosted-no-gpu
             render: false
             cmake_consumer: true
+            examples: true
             setup: windows
           - runner: windows-11-arm
             artifact: wheel-windows-ARM64
@@ -102,6 +107,7 @@ jobs:
             execution_class: github-hosted-no-gpu
             render: false
             cmake_consumer: false
+            examples: false
             setup: windows
     runs-on: ${{ matrix.runner }}
     steps:
@@ -138,16 +144,21 @@ jobs:
           EXECUTION_CLASS: ${{ matrix.execution_class }}
           RENDER: ${{ matrix.render }}
           CMAKE_CONSUMER: ${{ matrix.cmake_consumer }}
+          EXAMPLES: ${{ matrix.examples }}
         run: |
           wheel=$(find wheelhouse -maxdepth 1 -name '*.whl' -print -quit)
           test -n "$wheel"
           render_args=()
           cmake_args=()
+          example_args=()
           if [[ "$RENDER" != "true" ]]; then
             render_args=(--no-render --render-skip-reason "hosted runner has no graphics device")
           fi
           if [[ "$CMAKE_CONSUMER" != "true" ]]; then
             cmake_args=(--no-cmake-consumer --cmake-skip-reason "hosted ARM64 image has no native ARM64 C compiler")
+          fi
+          if [[ "$EXAMPLES" != "true" ]]; then
+            example_args=(--no-examples --examples-skip-reason "hosted ARM64 image has no native ARM64 C compiler")
           fi
           env -u VULKAN_SDK \
             -u VK_ICD_FILENAMES \
@@ -166,7 +177,8 @@ jobs:
               --mode unattended \
               --repeat 2 \
               "${render_args[@]}" \
-              "${cmake_args[@]}"
+              "${cmake_args[@]}" \
+              "${example_args[@]}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

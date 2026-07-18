@@ -127,11 +127,13 @@ def test_run_parser_records_capability_skips() -> None:
             'github-hosted-no-gpu',
             '--no-render',
             '--no-cmake-consumer',
+            '--no-examples',
         ]
     )
 
     assert args.render is False
     assert args.cmake_consumer is False
+    assert args.examples is False
     assert args.shaderc is True
 
 
