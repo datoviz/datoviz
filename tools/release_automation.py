@@ -1161,6 +1161,25 @@ def write_release_artifacts(version: str, report_text: str) -> list[dict[str, An
     ] + generated
     state["updated_at_utc"] = utc_now()
     save_state(version, state)
+
+    # Render once more after registering the generated files so the attached report describes
+    # its own report/checksum gates accurately. Checksum manifests intentionally exclude the
+    # release report and checksum files, so this second pass does not introduce a digest cycle.
+    final_report = render_report_text(release_analysis(version))
+    report_path.write_text(final_report + "\n", encoding="utf8")
+    generated = [
+        artifact_record(report_path, "release-report"),
+        artifact_record(sha256_path, "checksum"),
+        artifact_record(sha512_path, "checksum"),
+    ]
+    state = load_state(version)
+    state["artifacts"] = [
+        artifact
+        for artifact in state.get("artifacts", [])
+        if artifact.get("path") not in generated_paths
+    ] + generated
+    state["updated_at_utc"] = utc_now()
+    save_state(version, state)
     return generated
 
 
