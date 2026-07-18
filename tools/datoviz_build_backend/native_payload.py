@@ -145,11 +145,7 @@ def _stage_native(config: ReleaseWheelConfig, package_dir: Path) -> list[Payload
         dst = package_dir / lib.name
         copy_file(lib, dst)
         entries.append(_entry(lib, f"datoviz/{dst.name}", "libdatoviz", "core-runtime"))
-        entries.extend(
-            _copy_runtime_matches(
-                config, ["libshaderc*.so*"], package_dir, required=config.require_shaderc
-            )
-        )
+        entries.extend(_stage_linux_shaderc_runtime(config, package_dir))
     elif system == "Darwin":
         lib = _first_existing(
             ["src/libdatoviz.dylib", "libdatoviz.dylib", "**/libdatoviz.dylib"],
@@ -273,15 +269,40 @@ def _payload_metadata(config: ReleaseWheelConfig, entries: list[PayloadEntry]) -
     return {"shaderc": {"mode": "shared" if shaderc_enabled else "disabled"}}
 
 
-def _cmake_cache_bool(build_dir: Path, key: str) -> bool:
+def _stage_linux_shaderc_runtime(
+    config: ReleaseWheelConfig, package_dir: Path
+) -> list[PayloadEntry]:
+    """Stage shaderc under the exact runtime basename baked into libdatoviz."""
+
+    runtime = _cmake_cache_value(config.native_build_dir, "DVZ_SHADERC_RUNTIME_LIBRARY")
+    if not runtime:
+        if config.require_shaderc:
+            raise FileNotFoundError("CMake cache does not declare DVZ_SHADERC_RUNTIME_LIBRARY")
+        return []
+    runtime_name = Path(runtime).name
+    if not runtime_name.startswith("libshaderc") or ".so" not in runtime_name:
+        raise ValueError(f"invalid Linux shaderc runtime name in CMake cache: {runtime!r}")
+    source = _first_runtime_existing(config, [runtime_name, "libshaderc*.so*"])
+    target = package_dir / runtime_name
+    copy_file(source, target)
+    return [
+        _entry(source, f"datoviz/{runtime_name}", "runtime", "shaderc-runtime")
+    ]
+
+
+def _cmake_cache_value(build_dir: Path, key: str) -> str:
     cache = build_dir / "CMakeCache.txt"
     if not cache.exists():
-        return False
+        return ""
     prefix = f"{key}:"
     for line in cache.read_text(encoding="utf8", errors="replace").splitlines():
         if line.startswith(prefix):
-            return line.partition("=")[2].strip().upper() in {"1", "ON", "TRUE", "YES"}
-    return False
+            return line.partition("=")[2].strip()
+    return ""
+
+
+def _cmake_cache_bool(build_dir: Path, key: str) -> bool:
+    return _cmake_cache_value(build_dir, key).upper() in {"1", "ON", "TRUE", "YES"}
 
 
 def _first_existing(patterns: list[str], build_dir: Path) -> Path:

@@ -154,6 +154,43 @@ def test_stage_macos_native_normalizes_vulkan_runtime(
     assert reasons["datoviz/MoltenVK_icd.json"] == "moltenvk-icd"
 
 
+def test_stage_linux_native_normalizes_shaderc_runtime_name(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Linux staging uses the runtime basename baked into libdatoviz, not a devel alias."""
+    _write_project(tmp_path)
+    native = tmp_path / "native"
+    (native / "src").mkdir(parents=True)
+    (native / "src" / "libdatoviz.so").write_bytes(b"datoviz")
+    (native / "CMakeCache.txt").write_text(
+        "DVZ_SHADERC_RUNTIME_LIBRARY:STRING=libshaderc_shared.so.1\n", encoding="utf8"
+    )
+    runtime = tmp_path / "runtime"
+    runtime.mkdir()
+    (runtime / "libshaderc_shared.so").write_bytes(b"shaderc")
+    config = parse_config_settings(
+        {
+            "datoviz.release-wheel": "true",
+            "datoviz.native-build-dir": "native",
+            "datoviz.stage-dir": "stage",
+        },
+        root=tmp_path,
+    )
+    package = config.stage_dir / "datoviz"
+    monkeypatch.setattr(native_payload.platform, "system", lambda: "Linux")
+    monkeypatch.setenv("DVZ_WHEEL_RUNTIME_DIRS", str(runtime))
+
+    entries = _stage_native(config, package)
+
+    assert {path.name for path in package.iterdir()} == {
+        "libdatoviz.so",
+        "libshaderc_shared.so.1",
+    }
+    shaderc = next(entry for entry in entries if entry.reason == "shaderc-runtime")
+    assert shaderc.source == str(runtime / "libshaderc_shared.so")
+    assert shaderc.wheel_path == "datoviz/libshaderc_shared.so.1"
+
+
 def test_stage_macos_native_requires_moltenvk(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
