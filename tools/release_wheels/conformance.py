@@ -570,12 +570,7 @@ def report_gates(evidence: list[dict[str, Any]], missing: list[str]) -> dict[str
     window_capable = [
         item
         for item in evidence
-        if item.get('execution_class')
-        in {
-            'physical-interactive',
-            'github-hosted-hardware-gpu',
-            'github-hosted-software-gpu',
-        }
+        if not any(skip.get('id') == 'native-window' for skip in item.get('skips', []))
     ]
 
     def automated(items: list[dict[str, Any]]) -> str:

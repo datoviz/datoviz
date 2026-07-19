@@ -64,7 +64,13 @@ def _evidence(
         'mode': 'physical' if physical else 'unattended',
         'artifact_checksums': {'wheel': {'name': 'wheel.whl', 'sha256': 'abc'}},
         'environment': 'environment.json',
-        'results': [],
+        'results': [
+            {
+                'id': 'installed-wheel-native-window-1',
+                'status': 'pass',
+                'returncode': 0,
+            }
+        ],
         'captures': [
             {
                 'scenario': 'point',
@@ -82,6 +88,7 @@ def _evidence(
             }
         ],
         'manual': manual,
+        'skips': [],
         'failures': [] if status == 'pass' else [{'id': 'test'}],
         'status': status,
     }
@@ -253,6 +260,35 @@ def test_aggregate_rejects_cross_frontend_capture_mismatch(tmp_path: Path) -> No
     assert conformance.aggregate(args) == 1
     report = json.loads((output / 'report.json').read_text())
     assert report['gates']['cross_frontend_render_parity'] == 'fail'
+
+
+def test_native_window_gate_respects_declared_capability_skip() -> None:
+    """A rendering-capable hosted runner need not expose an interactive desktop session."""
+    linux = {
+        'results': [{'id': 'installed-wheel-native-window-1', 'status': 'pass'}],
+        'skips': [],
+    }
+    hosted_macos = {
+        'execution_class': 'github-hosted-hardware-gpu',
+        'results': [],
+        'skips': [
+            {
+                'id': 'native-window',
+                'reason': 'hosted runner has no windowed graphics device',
+            }
+        ],
+    }
+
+    gates = conformance.report_gates([linux, hosted_macos], [])
+
+    assert gates['installed_wheel_native_window'] == 'pass'
+
+
+def test_native_window_gate_requires_result_without_skip() -> None:
+    """Evidence that claims window capability must contain a passing window result."""
+    gates = conformance.report_gates([{'results': [], 'skips': []}], [])
+
+    assert gates['installed_wheel_native_window'] == 'fail'
 
 
 def test_aggregate_rejects_missing_expected_machine(tmp_path: Path) -> None:

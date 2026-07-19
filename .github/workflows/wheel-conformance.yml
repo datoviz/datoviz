@@ -86,7 +86,7 @@ jobs:
             machine_id: cloud-macos-arm64-moltenvk
             execution_class: github-hosted-hardware-gpu
             render: true
-            window: true
+            window: false
             cmake_consumer: true
             examples: true
             setup: macos
