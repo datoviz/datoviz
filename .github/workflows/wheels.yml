@@ -9,8 +9,12 @@ env:
   # with 3.15 prerelease enabled only for nightly/prerelease checks.
   DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_MIMALLOC_SOURCE=OFF"
 
+permissions:
+  contents: read
+
 jobs:
   matrix:
+    name: "Resolve wheel matrix"
     runs-on: ubuntu-latest
     outputs:
       json: ${{ steps.matrix.outputs.json }}
@@ -22,6 +26,7 @@ jobs:
           echo "json=$(python -c 'import json; print(json.dumps(json.load(open("matrix.json"))))')" >> "$GITHUB_OUTPUT"
 
   python-bindings:
+    name: "Generate Python bindings"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -52,6 +57,7 @@ jobs:
             data/assets/fonts/RobotoMono-Medium.ttf
 
   linux:
+    name: "Build / Linux ${{ matrix.arch }}"
     needs: [matrix, python-bindings]
     runs-on: ${{ matrix.runner }}
     container:
@@ -85,6 +91,7 @@ jobs:
           path: wheelhouse/*.whl
 
   macos:
+    name: "Build / macOS ${{ matrix.arch }}"
     needs: python-bindings
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -169,6 +176,7 @@ jobs:
           path: wheelhouse/*.whl
 
   windows:
+    name: "Build / Windows ${{ matrix.arch }}"
     needs: python-bindings
     permissions:
       contents: read
@@ -389,6 +397,7 @@ jobs:
           path: wheelhouse/*.whl
 
   linux-python-smoke:
+    name: "Smoke / Linux x86_64 / Python ${{ matrix.python }}"
     needs: linux
     runs-on: ubuntu-latest
     strategy:
@@ -410,6 +419,7 @@ jobs:
         run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --release-build --precompiled-shaders --cmake-consumer --qt-probe optional
 
   linux-python-prerelease-smoke:
+    name: "Prerelease smoke / Linux x86_64 / Python 3.15"
     needs: linux
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -429,6 +439,7 @@ jobs:
         run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --release-build --precompiled-shaders --cmake-consumer --qt-probe optional
 
   macos-python-smoke:
+    name: "Smoke / macOS ${{ matrix.target.arch }} / Python ${{ matrix.python }}"
     needs: macos
     runs-on: ${{ matrix.target.runner }}
     strategy:
@@ -461,6 +472,7 @@ jobs:
         run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --release-build --precompiled-shaders --cmake-consumer --qt-probe optional
 
   windows-python-smoke:
+    name: "Smoke / Windows AMD64 / Python ${{ matrix.python }}"
     needs: windows
     runs-on: windows-latest
     strategy:

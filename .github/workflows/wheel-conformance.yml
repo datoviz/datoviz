@@ -19,7 +19,7 @@ on:
         default: "0.4.0rc1"
         type: string
   workflow_run:
-    workflows: ["WHEELS"]
+    workflows: ["Wheels"]
     types: [completed]
 
 permissions:
@@ -28,6 +28,7 @@ permissions:
 
 jobs:
   prepare:
+    name: "Resolve conformance request"
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     outputs:
@@ -56,6 +57,7 @@ jobs:
           echo "version=$REQUESTED_VERSION" >> "$GITHUB_OUTPUT"
 
   conformance:
+    name: "Conformance / ${{ matrix.machine_id }}"
     needs: prepare
     strategy:
       fail-fast: false
@@ -205,6 +207,7 @@ jobs:
           retention-days: 1
 
   report:
+    name: "Build conformance report"
     if: always() && needs.prepare.result == 'success'
     needs: [prepare, conformance]
     runs-on: ubuntu-latest

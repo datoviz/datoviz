@@ -1,4 +1,4 @@
-name: "TEST"
+name: "Test"
 
 on:
   workflow_dispatch:
@@ -12,8 +12,16 @@ on:
 env:
   DVZ_LOG_LEVEL: 2
 
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   test-linux:
+    name: "Test / Linux"
     runs-on: ubuntu-24.04
     env:
       DVZ_CMAKE_ARGS: >-
@@ -58,6 +66,7 @@ jobs:
           just test
 
   test-macos:
+    name: "Test / macOS"
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v7
@@ -83,6 +92,7 @@ jobs:
         run: just test
 
   build-windows:
+    name: "Build / Windows"
     runs-on: windows-latest
     env:
       VCPKG_ROOT: C:/vcpkg

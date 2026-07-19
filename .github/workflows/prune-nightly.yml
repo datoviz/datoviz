@@ -1,12 +1,16 @@
-name: "PRUNE NIGHTLY"
+name: "Prune nightly"
 
 on:
   schedule:
     - cron: "0 4 * * 0"  # every Sunday at 4am UTC
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   prune:
+    name: "Prune nightly assets"
     runs-on: ubuntu-latest
 
     env:

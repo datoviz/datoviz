@@ -32,6 +32,7 @@ permissions:
 
 jobs:
   request:
+    name: "Resolve evidence request"
     runs-on: ubuntu-latest
     outputs:
       package_ref: ${{ steps.request.outputs.package_ref }}
@@ -65,6 +66,7 @@ jobs:
           done
 
   verify:
+    name: "Verify physical evidence"
     needs: request
     runs-on: ubuntu-latest
     steps:

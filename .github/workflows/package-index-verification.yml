@@ -32,6 +32,7 @@ permissions:
 
 jobs:
   prepare:
+    name: "Resolve verification request"
     runs-on: ubuntu-latest
     outputs:
       index: ${{ steps.request.outputs.index }}
@@ -72,6 +73,7 @@ jobs:
           echo "artifact_commit=$(jq -r .head_sha <<<"$candidate")" >> "$GITHUB_OUTPUT"
 
   verify:
+    name: "Verify / ${{ matrix.machine_id }}"
     needs: prepare
     strategy:
       fail-fast: false
@@ -162,6 +164,7 @@ jobs:
           retention-days: 30
 
   report:
+    name: "Build verification report"
     if: always() && needs.prepare.result == 'success'
     needs: [prepare, verify]
     runs-on: ubuntu-latest

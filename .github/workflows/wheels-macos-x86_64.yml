@@ -7,8 +7,12 @@ env:
   MACOSX_DEPLOYMENT_TARGET: "15.0"
   DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0"
 
+permissions:
+  contents: read
+
 jobs:
   python-bindings:
+    name: "Generate Python bindings"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -39,6 +43,7 @@ jobs:
             data/assets/fonts/RobotoMono-Medium.ttf
 
   macos-x86_64:
+    name: "Build / macOS x86_64"
     needs: python-bindings
     runs-on: macos-15-intel
     steps:
@@ -81,6 +86,7 @@ jobs:
           path: wheelhouse/*.whl
 
   macos-x86_64-python-smoke:
+    name: "Smoke / macOS x86_64 / Python ${{ matrix.python }}"
     needs: macos-x86_64
     runs-on: macos-15-intel
     strategy:
