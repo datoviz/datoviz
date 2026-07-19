@@ -261,6 +261,7 @@ docs-check-generated:
     @python3 tools/check_generated_docs.py
 
 docs-build-check:
+    @mkdir -p build/gallery-webp/v0.4
     @uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs build --strict
 
 check-example-manifests:
