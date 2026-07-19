@@ -245,7 +245,7 @@ layout consequences.
 
 ## Split Provider Release Route
 
-The bridge is a provider artifact, not part of the base wheel. RC2 release work is:
+The bridge is a provider artifact, not part of the base wheel. RC3 release work is:
 
 1. Keep the base wheel proof on `--qt-probe optional` and verify that it installs, imports, and
    diagnoses missing Qt/PyQt/bridge state cleanly.

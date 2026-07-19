@@ -26,33 +26,33 @@ Success criteria:
    release.
 
 
-## RC2: Documentation And Gallery Candidate
+## RC2: Packaged Native-Window Hotfix
+
+Exit criteria:
+
+1. the macOS packaged Vulkan-loader/GLFW mismatch is fixed;
+2. installed-wheel native windows have automated macOS and Linux/Xvfb regression proof;
+3. the exact canonical macOS wheel has explicit attended Quickstart evidence;
+4. all six replacement wheels pass the normal RC artifact and conformance gates;
+5. public guidance discloses the RC1 limitation until RC2 is available;
+6. unrelated documentation, gallery, provider, and feature work remains deferred.
+
+
+## RC3: Documentation, Packaging, And Quality Candidate
 
 Exit criteria:
 
 1. documentation and gallery structure are mostly final;
-2. generated C reference or complete outline exists;
-3. captured artifacts prove the declared feature set;
-4. RC1 feedback is triaged;
-5. gallery examples include data attribution, source links, licenses, and reproducible capture
-   commands where relevant;
-6. candidate real-dataset outreach examples and gallery media are reviewed for scientific
-   usefulness, not only visual polish;
-7. Qt/PyQt hosting has a tested packaged `datoviz_qtbridge` provider, preferably conda-first,
-   without adding Qt to the base Datoviz wheel. PyPI provider wheels remain optional until their
-   Qt runtime and per-platform repair policy are proven.
-
-
-## RC3: Packaging And Quality Candidate
-
-Exit criteria:
-
-1. only blocker fixes remain;
-2. packaging, licenses, generated artifacts, release notes, and docs are final candidates;
-3. source archives and wheels build, install, and pass installed smoke tests on supported platforms;
-4. static-analysis, memory/UB, Vulkan validation, long-running loop, docs link, gallery smoke, and
+2. generated C reference, captured artifacts, RC feedback triage, attribution, and gallery review
+   are complete;
+3. Qt/PyQt hosting has a tested packaged `datoviz_qtbridge` provider, preferably conda-first,
+   without adding Qt to the base wheel;
+4. only blocker fixes remain after the planned RC3 deliverables;
+5. packaging, licenses, generated artifacts, release notes, and docs are final candidates;
+6. source archives and wheels build, install, and pass installed smoke tests on supported platforms;
+7. static-analysis, memory/UB, Vulkan validation, long-running loop, docs link, gallery smoke, and
    example smoke results are either clean or recorded as known issues;
-5. checksums/signing policy and required third-party notices are decided.
+8. checksums/signing policy and required third-party notices are decided.
 
 
 ## Final v0.4.0
@@ -94,5 +94,7 @@ Each RC should have issue labels or project fields that separate:
 5. documentation issues;
 6. final-release blockers.
 
-After one to two weeks of RC1 feedback, summarize the findings and decide whether RC2 is a blocker
-fix release, a documentation/gallery candidate, or unnecessary before the next planned RC gate.
+After one to two weeks of RC1 feedback, summarize the findings and decide whether the next RC is a
+blocker fix, a documentation/gallery candidate, or unnecessary before the next planned gate. RC1
+feedback produced a narrow RC2 packaged native-window hotfix, moving its former planned scope to
+RC3.

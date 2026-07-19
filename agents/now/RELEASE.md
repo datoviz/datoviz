@@ -1,6 +1,6 @@
 # Datoviz v0.4 Release Plan
 
-Status: active release roadmap. Updated: 2026-07-05.
+Status: active release roadmap. Updated: 2026-07-19.
 
 This is the short route from the current branch to `v0.4.0`. Use [STATUS.md](STATUS.md) for current
 blockers and [DOCUMENTATION.md](DOCUMENTATION.md) for public documentation gates.
@@ -42,7 +42,7 @@ Required before feature freeze:
    synchronization, and a gallery-oriented particle example.
 8. Low-level Qt/PyQt hosted rendering works through a source-built Qt bridge, is documented as
    source-build-only in RC1, and does not add Qt as a dependency of `libdatoviz`. Packaged-provider
-   work is an RC2 deliverable.
+   work is an RC3 deliverable after the narrow RC2 packaging hotfix.
 
 Not required for v0.4:
 
@@ -122,6 +122,12 @@ git am /tmp/datoviz-patches/*.patch
 
 Do not run the destructive rewrite from an automation session without an explicit final maintainer
 confirmation for the exact refs to rewrite and force-push.
+
+Branch routing is separate from history cleanup. During the narrow RC2 hotfix, make `v0.4-dev` the
+GitHub default without changing either branch tip. After RC2, preserve the old v0.3 `main` as
+`v0.3-maintenance`, rename `v0.4-dev` to `main`, and update branch-specific automation and links.
+That cutover must preserve commits and tags; it is not permission to merge the incompatible lines,
+rewrite history, or force-update release refs.
 
 ### 1. Feature-Freeze Candidate
 
@@ -246,8 +252,9 @@ Current packaging gate:
    covering Linux x86_64/aarch64, macOS 15 arm64/Intel, Windows AMD64/ARM64, Python 3.10 through
    3.14 installed-wheel smokes, and the non-blocking Linux prerelease smoke.
 2. Hosted conformance run `29645577693` passed all six lanes. Physical intake run `29645582130`
-   accepted the exact macOS arm64 wheel evidence, including all seven attended scenarios; the
-   consolidated seven-machine report passes every gate.
+   accepted seven attended labels for checkout-built examples, but the schema did not separately
+   record the exact-wheel Quickstart and allowed empty observations. Post-release testing therefore
+   supersedes the claim that this bundle proved an RC1 installed native window.
 3. The RC1 source bundle, validation pack, checksums, release report, and notes are recorded.
 4. TestPyPI package-index verification run `29652477816` matched all six indexed wheel filenames,
    byte counts, and SHA-256 values to run `29644925786`; all clean installed-package smokes and the
@@ -255,49 +262,52 @@ Current packaging gate:
    byte counts, and SHA-256 values and passed every clean installed-package smoke plus the aggregate
    report. Public installation guidance may now use PyPI.
 
-### 8. RC2
+### 8. RC2 Hotfix
 
 Exit criteria:
 
-1. Documentation and gallery structure are mostly final.
-2. Generated C reference or complete outline exists.
-3. Captured artifacts prove the declared feature set.
-4. RC1 feedback is triaged.
-5. Gallery/data attribution and outreach candidates satisfy
-   [../../spec/release/GALLERY_OUTREACH.md](../../spec/release/GALLERY_OUTREACH.md).
-6. Qt/PyQt hosting has a tested packaged `datoviz_qtbridge` provider, preferably conda-first,
-   without adding Qt to the base wheel. PyPI provider wheels remain optional until their runtime
-   and repair policy is proven on every target OS.
+1. The macOS packaged Vulkan loader is handed to GLFW before initialization.
+2. Clean installed-wheel native-window smokes run on macOS arm64 and Linux Xvfb/Lavapipe.
+3. The exact canonical macOS arm64 wheel passes the Quickstart outside the checkout, with explicit
+   resize, pan, zoom, and close observations.
+4. All six canonical wheels pass the normal build, inspection, installed-package, rendering,
+   consumer, and hosted conformance gates.
+5. RC1 artifacts and evidence remain immutable; RC2 uses new checksums and evidence.
+6. Public installation and release guidance disclose the RC1 limitation until RC2 replaces it.
 
-Candidate feature work, not an RC2 blocker:
+Deferred to RC3, not RC2 hotfix work:
 
 1. Reassess the post-RC1
    [GSP Texture2D mesh integration plan](../../spec/scene/integration/GSP_TEXTURE2D_MESH_PLAN.md).
    Implement it only if RC1 feedback and stabilization leave room for the public field-slot
    sampling API, deterministic nearest/clamp/no-mipmap fixtures, conversion-free linear RGBA,
-   unlit multiplication, and native/WebGPU validation. Otherwise defer it without blocking RC2.
+   unlit multiplication, and native/WebGPU validation. Otherwise defer it without blocking RC3.
 2. Reassess the
    [multi-light Klein bottle slice](../../spec/scene/slices/MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md).
    Implement it only if RC1 feedback and stabilization leave room for the scene-owned light API,
    panel-local fixed-capacity light sets, two-sided lighting, shared RGB example preset, generated
    checkerboard Klein-bottle showcase, and native/WebGPU validation. Otherwise defer it without
-   blocking RC2.
+   blocking RC3.
 
-Candidate release infrastructure, not an RC2 blocker:
+Candidate release infrastructure, not an RC2 hotfix blocker:
 
 1. Begin the post-RC1
    [website deployment and versioning migration](../../spec/docs/WEBSITE_DEPLOYMENT.md): preserve
    the guarded local publisher as a fallback, add hosted preview/artifact validation, and introduce
    manual production promotion of exact documentation bytes. Complete it before v0.4.0 final when
-   practical; do not delay RC2 solely for this infrastructure work.
+   practical; do not delay RC3 solely for this infrastructure work.
 
-### 9. RC3
+### 9. RC3 Documentation, Packaging, And Quality Candidate
 
 Exit criteria:
 
-1. Only blocker fixes remain.
-2. Packaging, licenses, generated artifacts, release notes, and docs are final candidates.
-3. Packaging and quality checks from
+1. The former RC2 documentation/gallery scope is complete: structure, generated C reference,
+   captured artifacts, feedback triage, attribution, and outreach review.
+2. Qt/PyQt hosting has a tested packaged `datoviz_qtbridge` provider, preferably conda-first,
+   without adding Qt to the base wheel.
+3. Only blocker fixes remain after those planned deliverables.
+4. Packaging, licenses, generated artifacts, release notes, and docs are final candidates.
+5. Packaging and quality checks from
    [../../spec/release/READINESS.md](../../spec/release/READINESS.md) are clean or recorded as
    known issues.
 

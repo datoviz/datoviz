@@ -13,12 +13,13 @@ Use explicit release candidates. Do not treat RCs as anonymous nightly snapshots
 |---|---|---|
 | Pre-RC | Remove known blockers and prove the release path locally. | Draft notes, local validation, draft artifacts. |
 | RC1 | API and architecture candidate. | Public tag, release notes, first broad tester artifacts. |
-| RC2 | Documentation and gallery candidate. | Mostly final docs, examples, gallery media, known gaps. |
-| RC3 | Packaging and quality candidate. | Final packaging checks, licenses, checksums, blocker fixes only. |
+| RC2 | Narrow packaged native-window hotfix. | Replacement wheels and exact-wheel regression evidence. |
+| RC3 | Documentation, packaging, and quality candidate. | Former RC2 scope, Qt provider, final packaging and docs. |
 | Final | Publish v0.4.0. | Final tag, PyPI artifacts, documentation, announcement assets. |
 
-RC1 can still expose rough documentation and known issues. RC2 should make the user story coherent.
-RC3 should be close enough that only release-blocking defects change before final.
+RC1 exposed a macOS packaged native-window defect, so RC2 is deliberately limited to that repair
+and its regression proof. RC3 absorbs the former RC2 documentation/gallery/provider scope and
+should finish close enough that only release-blocking defects change before final.
 
 
 ## Release Inputs

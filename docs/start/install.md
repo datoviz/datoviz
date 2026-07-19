@@ -27,6 +27,12 @@ validation evidence, and known limitations. Check
 Native windows and offscreen rendering require a working Vulkan-capable GPU, driver, and runtime.
 Browser routes use the smaller, experimental [WebGPU subset](../reference/webgpu-subset.md).
 
+!!! warning "macOS RC1 native-window limitation"
+
+    The published RC1 macOS wheel can fail in `glfwCreateWindowSurface()` because Datoviz and GLFW
+    select different Vulkan loaders. Offscreen rendering is unaffected. For native windows, build
+    the current `v0.4-dev` source until the narrow RC2 replacement is published.
+
 
 ## Python package path
 

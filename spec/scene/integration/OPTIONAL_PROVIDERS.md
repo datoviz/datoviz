@@ -63,7 +63,7 @@ Qt host bridge:
 3. Should be loaded by `datoviz.qt` only when PyQt hosting is requested.
 4. Is implemented but source-build-only in RC1: Qt/PyQt hosting works when a source-built provider,
    Qt runtime, PyQt Vulkan binding surface, and platform WSI extensions are available. A packaged
-   provider is an RC2 deliverable.
+   provider is an RC3 deliverable.
 5. Must diagnose missing bridge libraries, ABI mismatches, Qt runtime mismatches, unsupported
    PyQt/PySide bindings, and missing Vulkan platform support before creating hosted Datoviz views.
 

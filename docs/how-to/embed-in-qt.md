@@ -9,7 +9,7 @@ is planned for RC2.
 
 !!! info "At a glance"
 
-    - **Status:** Implemented; source-build-only in RC1, with a packaged provider planned for RC2.
+    - **Status:** Implemented; source-build-only in RC1, with a packaged provider planned for RC3.
     - **Languages:** C++/Qt and Python/PyQt6 through the optional bridge.
     - **Prerequisites:** Matching Qt development/runtime libraries, Vulkan hosting support, and a built/discoverable bridge.
     - **Result:** Qt owns the window/event loop while Datoviz renders one hosted view and receives forwarded events.

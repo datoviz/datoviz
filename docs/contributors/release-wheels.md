@@ -182,7 +182,7 @@ just wheel-check --cmake-consumer --qt-probe optional
 Use `--qt-probe required` only on a machine or CI runner where PyQt6, Qt Vulkan support, and the
 Datoviz Qt bridge provider are expected to be present.
 
-RC1 has no packaged Qt bridge provider; its Qt/PyQt path is source-build-only. The RC2 release goal
+RC1 has no packaged Qt bridge provider; its Qt/PyQt path is source-build-only. The RC3 release goal
 is a separate provider route, not a base-wheel dependency. Source builds may build
 `datoviz_qtbridge` with `DVZ_ENABLE_QT_BRIDGE=ON` or `AUTO`; local and split provider validation
 should point `datoviz.qt` at that bridge with `DATOVIZ_QTBRIDGE_LIBRARY`. Conda-forge is the

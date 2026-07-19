@@ -16,7 +16,7 @@ The exact RC tag/package command remains a release-cut substitution: current pub
 - [x] Document explicit Qt enablement, prerequisites, provider discovery, installed smoke, and
   platform-specific bridge libraries in `embed-in-qt.md`.
 - [x] Describe Qt as implemented but source-build-only in RC1, while noting configuration
-  complexity and the RC2 packaged-provider plan.
+  complexity and the packaged-provider plan, now scheduled for RC3.
 - [x] Distinguish supported native surfaces from the WebGPU matrix label `native-only` in window
   and offscreen pages.
 - [x] Repair the empty `Build and Serve` section in `deploy-to-web.md`.

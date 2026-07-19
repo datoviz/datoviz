@@ -30,6 +30,11 @@ Install the published v0.4.0rc1 package from PyPI with:
 python -m pip install --pre datoviz==0.4.0rc1
 ```
 
+> **macOS native-window warning:** the published RC1 wheel can fail while creating a GLFW Vulkan
+> surface because its packaged Vulkan loader is not shared with GLFW. Offscreen rendering is
+> unaffected. Build `v0.4-dev` from source for native windows until the narrow RC2 replacement is
+> published.
+
 After the final v0.4 release, the normal command will be:
 
 ```sh

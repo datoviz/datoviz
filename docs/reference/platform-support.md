@@ -34,7 +34,7 @@ separately in smoke output or compatibility notes.
 
 | Provider | Status | Requirement |
 | --- | --- | --- |
-| Qt/PyQt hosting | Implemented; source-build-only in RC1 | Needs a source-built `datoviz_qtbridge`, compatible Qt runtime, PyQt6 Vulkan binding surface, and platform WSI support. A packaged provider is planned for RC2. |
+| Qt/PyQt hosting | Implemented; source-build-only in RC1 | Needs a source-built `datoviz_qtbridge`, compatible Qt runtime, PyQt6 Vulkan binding surface, and platform WSI support. A packaged provider is planned for RC3. |
 | PySide6 hosting | Not a v0.4 target by default | Only viable if a binding exposes the same required Vulkan surface and pointer-unwrapping support. |
 | Shaderc runtime compilation | Optional | Enabled when headers/library are found or required by `DVZ_ENABLE_SHADERC=ON`; otherwise precompiled shaders are required. |
 | CUDA/CuPy interop | Advanced/unstable | Native/provider-style work only; not portable WebGPU support. |

@@ -26,7 +26,7 @@ query target, optional provider, or gallery route. A `supported` native API can 
 | Offscreen and GLFW app presentation | supported, subject to platform/runtime availability | [Platform support](platform-support.md) |
 | Raster video capture through the app API | supported, optional encoder backend | [Export videos](../how-to/video-export.md) |
 | Scene compute shaders | experimental | [Compute and graphics](compute-graphics.md) |
-| Qt/PyQt hosted rendering | supported from source; no packaged provider in RC1, packaged provider planned for RC2 | [Platform support](platform-support.md) |
+| Qt/PyQt hosted rendering | supported from source; no packaged provider in RC1, packaged provider planned for RC3 | [Platform support](platform-support.md) |
 | CPU-side nonlinear/geographic pre-projection | supported pattern | [Coordinate systems](coordinate-systems.md) |
 | Scene-managed nonlinear transforms | deferred | [Feature status](feature-status.md) |
 | Custom visual/render shaders | deferred | [Visual attributes](visual-attributes.md) |

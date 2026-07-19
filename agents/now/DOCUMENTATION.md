@@ -139,7 +139,7 @@ the boundary with GSP/VisPy2. Do not hand-maintain exhaustive C or Python bindin
 prose.
 
 
-## RC2 Gate
+## RC3 Gate
 
 Required:
 
