@@ -344,6 +344,23 @@ def test_direct_wheel_writer_validates_record_and_manifest(tmp_path: Path) -> No
     assert "datoviz/_wheel_payload.json" in names
 
 
+def test_wheel_validation_rejects_relative_description_image(tmp_path: Path) -> None:
+    _write_project(tmp_path)
+    (tmp_path / "README.md").write_text(
+        "# Datoviz test\n\n![Broken on PyPI](docs/image.webp)\n", encoding="utf8"
+    )
+    stage = _write_stage(tmp_path)
+    wheel = write_wheel_from_stage(
+        stage,
+        tmp_path / "dist",
+        "manylinux_2_34_x86_64",
+        root=tmp_path,
+    )
+
+    with pytest.raises(RuntimeError, match="absolute HTTPS URLs"):
+        validate_wheel(wheel)
+
+
 def test_manylinux_build_uses_neutral_input_tag(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

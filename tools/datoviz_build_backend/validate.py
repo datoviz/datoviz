@@ -7,6 +7,7 @@ import csv
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -19,6 +20,10 @@ from .config import ROOT
 from .manifest import read_manifest
 from .repair import inspect_native_deps
 from .tags import expected_tags, project_version, wheel_parts, wheel_tags
+
+
+_MARKDOWN_IMAGE_URL_RE = re.compile(r"!\[[^\]]*\]\(\s*<?([^\s)>]+)>?")
+_HTML_IMAGE_URL_RE = re.compile(r"<img\b[^>]*\bsrc\s*=\s*['\"]([^'\"]+)['\"]", re.IGNORECASE)
 
 
 def resolve_wheel(path: str | None = None, *, dist_dir: Path = ROOT / "dist") -> Path:
@@ -96,12 +101,28 @@ def validate_wheel(wheel: Path) -> None:
                 f"{wheel}: WHEEL tags {sorted(metadata_tags)!r} do not match "
                 f"filename tags {sorted(filename_tags)!r}"
             )
+        metadata = zf.read(f"{dist_info}/METADATA").decode("utf8")
+        _validate_description_image_urls(metadata)
         _validate_record(zf, f"{dist_info}/RECORD")
         _validate_payload_manifest(zf)
         _validate_macos_runtime(zf, filename_tags)
         forbidden = [name for name in names if "__pycache__" in name or name.endswith(".pyc") or name.endswith(".DS_Store")]
         if forbidden:
             raise RuntimeError(f"{wheel}: forbidden payload entries: {forbidden[:5]}")
+
+
+def _validate_description_image_urls(metadata: str) -> None:
+    """Require PyPI-rendered description images to use stable absolute HTTPS URLs."""
+
+    description = metadata.partition("\n\n")[2]
+    urls = _MARKDOWN_IMAGE_URL_RE.findall(description)
+    urls.extend(_HTML_IMAGE_URL_RE.findall(description))
+    relative = sorted({url for url in urls if not url.startswith("https://")})
+    if relative:
+        raise RuntimeError(
+            "wheel description image URLs must use absolute HTTPS URLs for PyPI rendering: "
+            + ", ".join(relative)
+        )
 
 
 def inspect_wheel(wheel: Path, *, native_deps: bool = False) -> None:
