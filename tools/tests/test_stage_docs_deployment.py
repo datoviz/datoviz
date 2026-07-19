@@ -68,3 +68,21 @@ def test_refuse_missing_legacy_without_seed(tmp_path: Path) -> None:
             legacy_prefix="v0.3",
             seed_legacy=False,
         )
+
+
+def test_refuse_missing_gallery_media(tmp_path: Path) -> None:
+    built = _built_site(tmp_path)
+    (built / "index.html").write_text(
+        '<video poster="/assets/gallery/v0.4/showcases/example.poster.webp">'
+        '<source data-src="/assets/gallery/v0.4/showcases/example.mp4">',
+        encoding="utf8",
+    )
+
+    with pytest.raises(ValueError, match="example.mp4"):
+        stage_deployment(
+            built,
+            _site_repo(tmp_path),
+            tmp_path / "output",
+            legacy_prefix="v0.3",
+            seed_legacy=True,
+        )
