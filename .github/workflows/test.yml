@@ -53,10 +53,10 @@ jobs:
         run: |
           just docs-check-generated
           just docs-build-check
-      - name: Test Python tooling
-        run: python -m pytest testing tools/tests -q
       - name: Build
         run: just build
+      - name: Test Python tooling
+        run: python -m pytest testing tools/tests -q
       - name: Check shaderc runtime
         run: just shaderc-smoke
       - name: Test quickstart fixtures
