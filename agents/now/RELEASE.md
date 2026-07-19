@@ -251,8 +251,9 @@ Current packaging gate:
 3. The RC1 source bundle, validation pack, checksums, release report, and notes are recorded.
 4. TestPyPI package-index verification run `29652477816` matched all six indexed wheel filenames,
    byte counts, and SHA-256 values to run `29644925786`; all clean installed-package smokes and the
-   aggregate report passed. Preserve these bytes through PyPI publication and repeat the index
-   verification there before changing public installation guidance.
+   aggregate report passed. PyPI verification run `29666589331` then matched the same six filenames,
+   byte counts, and SHA-256 values and passed every clean installed-package smoke plus the aggregate
+   report. Public installation guidance may now use PyPI.
 
 ### 8. RC2
 
