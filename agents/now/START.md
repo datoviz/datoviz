@@ -24,7 +24,7 @@ as real implementation, not scaffolding.
 
 ## Start Work
 
-1. Use [STATUS.md](STATUS.md) for the RC2 execution order, current blockers, and active lanes.
+1. Use [STATUS.md](STATUS.md) for the post-RC2 execution order, current blockers, and active lanes.
 2. Use [RELEASE.md](RELEASE.md) for release sequencing.
 3. Use [DOCUMENTATION.md](DOCUMENTATION.md) for public documentation gates.
 4. Use [../../spec/scene/README.md](../../spec/scene/README.md) before changing scene semantics.

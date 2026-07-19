@@ -44,46 +44,22 @@ full compiled test suite. Hosted conformance run `29693217596` passed all six la
 aggregate report against the RC1 wheel campaign with the corrected validator. This proves the
 validator and hosted capability model, not the future RC2 artifact bytes.
 
-The canonical RC2 campaign is complete. Wheels run `29695746332` passed all 29 jobs and produced
-the six `0.4.0rc2` wheels at artifact commit `8765535db`. Exact-artifact hosted conformance run
-`29696169890` passed all six lanes and its aggregate report. Physical intake run `29697580837`
-accepted the MacBook M3 bundle after the canonical arm64 wheel passed two unattended profiles and
-all eight attended interaction scenarios. TestPyPI verification run `29698900673` matched all six
-indexed files byte-for-byte to the canonical Wheels run and passed every clean-install lane plus
-the aggregate report. Artifact-neutral follow-up Test run `29696633533` passed all three operating
-systems. Production publication is now the critical path.
+The canonical RC2 campaign is complete. Wheels run `29695746332` passed all 29 jobs and produced the six `0.4.0rc2` wheels at artifact commit `8765535db`. Exact-artifact hosted conformance run `29696169890` passed all six lanes and its aggregate report. Physical intake run `29697580837` accepted the MacBook M3 bundle after the canonical arm64 wheel passed two unattended profiles and all eight attended interaction scenarios. TestPyPI verification run `29698900673` matched all six indexed files byte-for-byte to the canonical Wheels run and passed every clean-install lane plus the aggregate report. Artifact-neutral follow-up Test run `29696633533` passed all three operating systems.
 
-The RC1 source bundle/checksums and release notes are closed. All six wheels are on TestPyPI and
-PyPI. TestPyPI verification run `29652477816` and PyPI verification run `29666589331` matched every
-indexed file byte-for-byte to canonical Wheels run `29644925786` and passed all six clean
-installed-package smokes plus their aggregate gates. The tag and GitHub prerelease are public with
-11 verified assets. `datoviz.org` now serves the v0.4 RC documentation, the former site is preserved
-under `/v0.3/`, and the four initially missing gallery video/poster pairs are public and verified.
-Post-RC1 branch cleanup is complete. Next critical path: ship the narrow RC2 replacement-wheel
-hotfix. The former RC2 documentation/gallery and packaged-provider scope moves to RC3.
+RC2 is published and closed. Tag `v0.4.0rc2` resolves to release commit `8a3bd7509`; the GitHub prerelease has 11 verified assets, all six canonical wheels are on PyPI, and production package-index verification run `29703021322` passed every clean-install lane plus the aggregate gate. Post-publication source Test run `29703704413` passed Linux, macOS, and Windows at `409b8e9b4`. Documentation deployment `e65e229` publishes that source state at `datoviz.org`, preserves the former site under `/v0.3/`, and serves the stable absolute gallery image used by future PyPI descriptions. The already-published RC2 PyPI description retains its broken relative image because PyPI does not permit replacing release metadata or reusing uploaded filenames; do not issue a cosmetic replacement version.
 
 Completed runtime cleanup to keep in validation: DRP2 render-pass begin commands now carry explicit
 render area, viewport, and scissor rectangles, scene emission initializes full targets before panel
 passes, and mixed plain/MSAA panels use an explicit-region resolve path so panel resolves do not
 clobber earlier framebuffer contents.
 
-RC2 hotfix execution order:
+Post-RC2 execution order:
 
 1. Keep the v0.4 Git history cleanup deferred; do not rewrite RC or final release refs.
-2. After the reviewed fixes reach `v0.4-dev`, make it the GitHub default branch so the repository
-   landing page, clone default, PR base, website, and public RC agree. Keep the old v0.3 `main`
-   unchanged until the post-RC2 naming cutover.
-3. Keep RC2 limited to the packaged Vulkan/GLFW loader fix, its automated regression gates,
-   corrected Quickstart guidance, and release evidence/process corrections.
-4. Keep the RC1 wheel and package-index reports immutable; build a new canonical matrix for RC2
-   rather than modifying RC1 evidence.
-5. Completed: six-platform hosted conformance and exact canonical arm64-wheel physical evidence
-   passed; physical Linux and Windows are recorded as unavailable exclusions, never as passes.
-6. Completed: TestPyPI byte-identity and clean-install verification passed for all six wheels.
-7. After RC2, preserve old `main` as `v0.3-maintenance`, rename `v0.4-dev` to `main`, and update
-   branch-specific workflows, links, badges, and clone instructions without rewriting history.
-8. Move Qt provider packaging, gallery/data attribution, generated C reference completion,
-   documentation/gallery freeze, PR #132 triage, and candidate features to RC3.
+2. Preserve old `main` as `v0.3-maintenance`, rename `v0.4-dev` to `main`, and update branch-specific workflows, links, badges, and clone instructions without rewriting history.
+3. Keep the RC1 and RC2 artifacts, wheel reports, package-index reports, physical evidence, tags, and release records immutable.
+4. Restore exact-artifact physical Linux and Windows proof for RC3 or final; their RC2 absence remains an explicit unavailable exclusion, never a pass.
+5. Move Qt provider packaging, gallery/data attribution, generated C reference completion, documentation/gallery freeze, PR #132 triage, and candidate features to RC3.
 
 Pre-RC repository hygiene decision: Git history cleanup is deferred beyond v0.4. Do not rewrite
 RC or final release refs; any future cleanup requires a separate coordinated plan.
@@ -134,8 +110,7 @@ alpha-preserving PNG bytes can be deferred.
 
 ## Active Lanes
 
-1. **RC2 hotfix:** packaged macOS Vulkan/GLFW loader repair, installed native-window regression
-   gates, corrected public guidance, and new canonical evidence without changing RC1 artifacts.
+1. **Post-RC2 branch cutover:** preserve old `main` as `v0.3-maintenance`, rename `v0.4-dev` to `main`, and reconcile branch-specific automation and links without rewriting history.
 2. **Example proof:** C examples and fixture smokes for the declared release surface, especially
    one short feature example per public v0.4 feature, retained textured mesh, and composed
    annotation/layout examples.

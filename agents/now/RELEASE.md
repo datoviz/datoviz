@@ -264,6 +264,8 @@ Current packaging gate:
 
 ### 8. RC2 Hotfix
 
+Status: published and closed on 2026-07-19. Tag `v0.4.0rc2`, the GitHub prerelease, all six PyPI wheels, production package-index verification, and the v0.4 documentation deployment are complete. Preserve the release artifacts and evidence unchanged; continue with the post-RC2 branch cutover and RC3 scope.
+
 Exit criteria:
 
 1. The macOS packaged Vulkan loader is handed to GLFW before initialization.
