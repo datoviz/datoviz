@@ -75,7 +75,7 @@ class WasmBridgeMetadataTests(unittest.TestCase):
             ],
         )
 
-    def test_manifest_includes_public_and_local_routes(self) -> None:
+    def test_manifest_live_entries_exclude_local_only_routes(self) -> None:
         source = '''examples:
   - id: public
     title: Public
@@ -92,7 +92,7 @@ class WasmBridgeMetadataTests(unittest.TestCase):
             path = Path(tmp) / "MANIFEST.yaml"
             path.write_text(source, encoding="utf8")
             entries = metadata._manifest_live_entries(path)
-        self.assertEqual([entry["id"] for entry in entries], ["public", "local"])
+        self.assertEqual([entry["id"] for entry in entries], ["public"])
 
 
 if __name__ == "__main__":

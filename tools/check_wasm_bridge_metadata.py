@@ -31,11 +31,9 @@ def _manifest_live_entries(path: Path) -> list[dict[str, Any]]:
     out: list[dict[str, str]] = []
     for entry in manifest.get("examples", []):
         webgpu = entry.get("webgpu") or {}
-        route = str(
-            webgpu.get("route")
-            if webgpu.get("status") == "webgpu-live"
-            else webgpu.get("local_route") or ""
-        )
+        if webgpu.get("status") != "webgpu-live":
+            continue
+        route = str(webgpu.get("route") or "")
         if not route:
             continue
         query = parse_qs(urlparse(route).query)
