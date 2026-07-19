@@ -118,12 +118,40 @@ static void kvz_cpu_ctx_destroy(KvzCpuCtx* ctx)
     dvz_memset(ctx, sizeof(*ctx), 0, sizeof(*ctx));
 }
 
-static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
+
+
+/**
+ * Record the Vulkan initialization stage that prevented the kvazaar fixture from running.
+ *
+ * @param failure_reason output failure reason
+ * @param message stage-specific failure message
+ * @return false
+ */
+static bool kvz_cpu_init_failed(const char** failure_reason, const char* message)
+{
+    ANN(failure_reason);
+    ANN(message);
+    *failure_reason = message;
+    return false;
+}
+
+
+
+/**
+ * Initialize the minimal Vulkan context used by the kvazaar CPU-readback test.
+ *
+ * @param ctx output Vulkan context
+ * @param failure_reason output stage-specific failure reason
+ * @return true on success
+ */
+static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx, const char** failure_reason)
 {
     ANN(ctx);
+    ANN(failure_reason);
+    *failure_reason = "unknown Vulkan initialization failure";
     if (volkInitialize() != VK_SUCCESS)
     {
-        return false;
+        return kvz_cpu_init_failed(failure_reason, "Vulkan loader initialization failed");
     }
     dvz_memset(ctx, sizeof(*ctx), 0, sizeof(*ctx));
 
@@ -133,9 +161,15 @@ static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
 
     VkInstanceCreateInfo ici = {.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};
     ici.pApplicationInfo = &app;
+#if OS_MACOS
+    const char* instance_extensions[] = {VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME};
+    ici.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+    ici.enabledExtensionCount = 1;
+    ici.ppEnabledExtensionNames = instance_extensions;
+#endif
     if (vkCreateInstance(&ici, NULL, &ctx->instance) != VK_SUCCESS)
     {
-        return false;
+        return kvz_cpu_init_failed(failure_reason, "Vulkan instance creation failed");
     }
     volkLoadInstance(ctx->instance);
 
@@ -143,18 +177,18 @@ static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
     if (vkEnumeratePhysicalDevices(ctx->instance, &gpu_count, NULL) != VK_SUCCESS ||
         gpu_count == 0)
     {
-        return false;
+        return kvz_cpu_init_failed(failure_reason, "no Vulkan physical device is available");
     }
     VkPhysicalDevice* devices = (VkPhysicalDevice*)dvz_calloc(gpu_count, sizeof(VkPhysicalDevice));
     if (!devices)
     {
-        return false;
+        return kvz_cpu_init_failed(failure_reason, "physical-device allocation failed");
     }
     if (vkEnumeratePhysicalDevices(ctx->instance, &gpu_count, devices) != VK_SUCCESS ||
         gpu_count == 0)
     {
         dvz_free(devices);
-        return false;
+        return kvz_cpu_init_failed(failure_reason, "physical-device enumeration failed");
     }
     ctx->phys = devices[0];
     dvz_free(devices);
@@ -165,19 +199,25 @@ static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
         (VkQueueFamilyProperties*)dvz_calloc(queue_family_count, sizeof(VkQueueFamilyProperties));
     if (!queue_props)
     {
-        return false;
+        return kvz_cpu_init_failed(failure_reason, "queue-family allocation failed");
     }
     vkGetPhysicalDeviceQueueFamilyProperties(ctx->phys, &queue_family_count, queue_props);
     ctx->queue_family = 0;
+    bool queue_found = false;
     for (uint32_t i = 0; i < queue_family_count; ++i)
     {
-        if (queue_props[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+        if (queue_props[i].queueCount > 0 && (queue_props[i].queueFlags & VK_QUEUE_GRAPHICS_BIT))
         {
             ctx->queue_family = i;
+            queue_found = true;
             break;
         }
     }
     dvz_free(queue_props);
+    if (!queue_found)
+    {
+        return kvz_cpu_init_failed(failure_reason, "no Vulkan graphics queue is available");
+    }
 
     float priority = 1.0f;
     VkDeviceQueueCreateInfo queue_info = {.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO};
@@ -188,9 +228,14 @@ static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
     VkDeviceCreateInfo device_info = {.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO};
     device_info.queueCreateInfoCount = 1;
     device_info.pQueueCreateInfos = &queue_info;
+#if OS_MACOS
+    const char* device_extensions[] = {"VK_KHR_portability_subset"};
+    device_info.enabledExtensionCount = 1;
+    device_info.ppEnabledExtensionNames = device_extensions;
+#endif
     if (vkCreateDevice(ctx->phys, &device_info, NULL, &ctx->device) != VK_SUCCESS)
     {
-        return false;
+        return kvz_cpu_init_failed(failure_reason, "Vulkan device creation failed");
     }
     volkLoadDevice(ctx->device);
     vkGetDeviceQueue(ctx->device, ctx->queue_family, 0, &ctx->queue);
@@ -200,7 +245,7 @@ static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
     pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     if (vkCreateCommandPool(ctx->device, &pool_info, NULL, &ctx->cmd_pool) != VK_SUCCESS)
     {
-        return false;
+        return kvz_cpu_init_failed(failure_reason, "Vulkan command-pool creation failed");
     }
 
     VkCommandBufferAllocateInfo cmd_alloc = {
@@ -210,7 +255,7 @@ static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
     cmd_alloc.commandBufferCount = 1;
     if (vkAllocateCommandBuffers(ctx->device, &cmd_alloc, &ctx->cmd) != VK_SUCCESS)
     {
-        return false;
+        return kvz_cpu_init_failed(failure_reason, "Vulkan command-buffer allocation failed");
     }
 
     VkImageCreateInfo image_info = {.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
@@ -227,7 +272,7 @@ static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
     image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     if (vkCreateImage(ctx->device, &image_info, NULL, &ctx->image) != VK_SUCCESS)
     {
-        return false;
+        return kvz_cpu_init_failed(failure_reason, "linear Vulkan capture image is unsupported");
     }
 
     VkMemoryRequirements mem_req;
@@ -236,18 +281,18 @@ static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
     if (!kvz_cpu_pick_memory(
             ctx->phys, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &mem_index))
     {
-        return false;
+        return kvz_cpu_init_failed(failure_reason, "host-visible capture memory is unavailable");
     }
     VkMemoryAllocateInfo alloc_info = {.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
     alloc_info.allocationSize = mem_req.size;
     alloc_info.memoryTypeIndex = mem_index;
     if (vkAllocateMemory(ctx->device, &alloc_info, NULL, &ctx->memory) != VK_SUCCESS)
     {
-        return false;
+        return kvz_cpu_init_failed(failure_reason, "capture-image memory allocation failed");
     }
     if (vkBindImageMemory(ctx->device, ctx->image, ctx->memory, 0) != VK_SUCCESS)
     {
-        return false;
+        return kvz_cpu_init_failed(failure_reason, "capture-image memory binding failed");
     }
     ctx->memory_size = mem_req.size;
     ctx->image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -259,6 +304,11 @@ static bool kvz_cpu_record_clear(KvzCpuCtx* ctx, const VkClearColorValue* clr)
 {
     ANN(ctx);
     ANN(clr);
+    // The same command buffer records every frame after the previous submission completes.
+    if (vkResetCommandBuffer(ctx->cmd, 0) != VK_SUCCESS)
+    {
+        return false;
+    }
     VkCommandBufferBeginInfo begin_info = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
     begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     if (vkBeginCommandBuffer(ctx->cmd, &begin_info) != VK_SUCCESS)
@@ -296,16 +346,13 @@ static bool kvz_cpu_record_clear(KvzCpuCtx* ctx, const VkClearColorValue* clr)
         return false;
     }
 
-    VkCommandBufferSubmitInfo cmd_info = {
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
-        .commandBuffer = ctx->cmd,
+    // Keep this Vulkan 1.2 fixture on the core submission path; synchronization2 is not enabled.
+    VkSubmitInfo submit = {
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .commandBufferCount = 1,
+        .pCommandBuffers = &ctx->cmd,
     };
-    VkSubmitInfo2 submit = {
-        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
-        .commandBufferInfoCount = 1,
-        .pCommandBufferInfos = &cmd_info,
-    };
-    if (vkQueueSubmit2(ctx->queue, 1, &submit, VK_NULL_HANDLE) != VK_SUCCESS)
+    if (vkQueueSubmit(ctx->queue, 1, &submit, VK_NULL_HANDLE) != VK_SUCCESS)
     {
         return false;
     }
@@ -327,9 +374,10 @@ int test_video_kvazaar(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
     KvzCpuCtx ctx = {0};
-    if (!kvz_cpu_ctx_init(&ctx))
+    const char* init_failure = NULL;
+    if (!kvz_cpu_ctx_init(&ctx, &init_failure))
     {
-        tst_skip(suite, "unable to initialize Vulkan for kvazaar CPU fallback");
+        tst_skip(suite, init_failure);
         kvz_cpu_ctx_destroy(&ctx);
         return 0;
     }

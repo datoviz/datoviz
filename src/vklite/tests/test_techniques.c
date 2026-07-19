@@ -584,11 +584,13 @@ int test_technique_msaa(TstContext* suite, const TstCase* tstitem)
     DvzImageViews* msimg_view = dvz_image_views_create_wrapper();
     DvzImages* msdepth = dvz_images_create_wrapper();
     DvzImageViews* msdepth_view = dvz_image_views_create_wrapper();
+    DvzImageViews* resolve_depth_view = dvz_image_views_create_wrapper();
     {
         ANN(msimg);
         ANN(msimg_view);
         ANN(msdepth);
         ANN(msdepth_view);
+        ANN(resolve_depth_view);
         dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, msimg);
         dvz_images_format(msimg, VK_FORMAT_R8G8B8A8_UNORM);
         dvz_images_samples(msimg, sample_count);
@@ -607,11 +609,15 @@ int test_technique_msaa(TstContext* suite, const TstCase* tstitem)
         dvz_images_usage(msdepth, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
         dvz_images_create(msdepth);
 
-        // Image views.
+        // Use depth-only views so the test does not alias depth and stencil resolve accesses.
         dvz_image_views(msdepth, msdepth_view);
-        dvz_image_views_aspect(
-            msdepth_view, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
+        dvz_image_views_aspect(msdepth_view, VK_IMAGE_ASPECT_DEPTH_BIT);
         dvz_image_views_create(msdepth_view);
+
+        DvzImages* resolve_depth = dvz_fixture_offscreen_depth(off);
+        dvz_image_views(resolve_depth, resolve_depth_view);
+        dvz_image_views_aspect(resolve_depth_view, VK_IMAGE_ASPECT_DEPTH_BIT);
+        dvz_image_views_create(resolve_depth_view);
     }
 
 
@@ -642,8 +648,9 @@ int test_technique_msaa(TstContext* suite, const TstCase* tstitem)
     // Resolve in rendering.
     DvzRendering* rendering = dvz_fixture_offscreen_rendering(off);
     ANN(rendering);
+    dvz_rendering(rendering);
+    dvz_rendering_area(rendering, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
     DvzImageViews* color_view = dvz_fixture_offscreen_color_view(off);
-    DvzImageViews* depth_view = dvz_fixture_offscreen_depth_view(off);
     DvzAttachment* att = dvz_rendering_color(rendering, 0);
     ANN(att);
     dvz_attachment_image(
@@ -657,15 +664,10 @@ int test_technique_msaa(TstContext* suite, const TstCase* tstitem)
     dvz_attachment_image(
         datt, dvz_image_views_handle(msdepth_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
     dvz_attachment_resolve(
-        datt, VK_RESOLVE_MODE_SAMPLE_ZERO_BIT, dvz_image_views_handle(depth_view, 0),
+        datt, VK_RESOLVE_MODE_SAMPLE_ZERO_BIT, dvz_image_views_handle(resolve_depth_view, 0),
         VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
-
-    DvzAttachment* satt = dvz_rendering_stencil(rendering);
-    dvz_attachment_image(
-        satt, dvz_image_views_handle(msdepth_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
-    dvz_attachment_resolve(
-        satt, VK_RESOLVE_MODE_SAMPLE_ZERO_BIT, dvz_image_views_handle(depth_view, 0),
-        VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
+    dvz_attachment_ops(datt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+    dvz_attachment_clear(datt, (VkClearValue){.depthStencil = {1.0f, 0}});
 
     // Record the command buffer.
     DvzCommands* cmds = dvz_fixture_offscreen_cmds(off);
@@ -740,6 +742,8 @@ int test_technique_msaa(TstContext* suite, const TstCase* tstitem)
     dvz_image_views_free(msimg_view);
     dvz_image_views_destroy(msdepth_view);
     dvz_image_views_free(msdepth_view);
+    dvz_image_views_destroy(resolve_depth_view);
+    dvz_image_views_free(resolve_depth_view);
     dvz_images_destroy(msimg);
     dvz_images_free(msimg);
     dvz_images_destroy(msdepth);
