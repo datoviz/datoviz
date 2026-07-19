@@ -52,6 +52,8 @@ Use this routing:
 The `docs/` tree may be aggressively rebuilt in place for v0.4 public documentation. Do not put
 private implementation plans, scratch notes, or agent diaries there.
 
+Never hard-wrap Markdown prose, including list items. Keep each paragraph or list item on one source line; use line breaks only where Markdown structure requires them, such as headings, blank paragraph separators, separate list or table rows, blockquotes, and fenced code blocks. This applies to public documentation, release notes, specifications, agent instructions, and GitHub text prepared from repository Markdown.
+
 Keep `agents/` small. Prefer updating the current status or durable spec over adding another plan.
 Delete obsolete agent notes once their useful facts are captured in code, tests, `spec/`, or git
 history.
