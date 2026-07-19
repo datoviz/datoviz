@@ -139,7 +139,7 @@ jobs:
           # The standard Intel VM has no GPU/Metal acceleration; physical Intel owns render proof.
           if [[ "${{ matrix.arch }}" == "arm64" ]]; then
             example_profile=render
-            render_args=(--render)
+            render_args=(--render --window)
           fi
           env -u VULKAN_SDK \
             -u VK_ICD_FILENAMES \

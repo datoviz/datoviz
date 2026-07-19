@@ -66,6 +66,7 @@ jobs:
             machine_id: cloud-linux-x86_64-lavapipe
             execution_class: github-hosted-software-gpu
             render: true
+            window: true
             cmake_consumer: true
             examples: true
             setup: linux
@@ -74,6 +75,7 @@ jobs:
             machine_id: cloud-linux-aarch64-lavapipe
             execution_class: github-hosted-software-gpu
             render: true
+            window: true
             cmake_consumer: true
             examples: true
             setup: linux
@@ -82,6 +84,7 @@ jobs:
             machine_id: cloud-macos-arm64-moltenvk
             execution_class: github-hosted-hardware-gpu
             render: true
+            window: true
             cmake_consumer: true
             examples: true
             setup: macos
@@ -90,6 +93,7 @@ jobs:
             machine_id: cloud-macos-x86_64-no-gpu
             execution_class: github-hosted-no-gpu
             render: false
+            window: false
             cmake_consumer: true
             examples: true
             setup: macos
@@ -98,6 +102,7 @@ jobs:
             machine_id: cloud-windows-amd64
             execution_class: github-hosted-no-gpu
             render: false
+            window: false
             cmake_consumer: true
             examples: true
             setup: windows
@@ -106,6 +111,7 @@ jobs:
             machine_id: cloud-windows-arm64
             execution_class: github-hosted-no-gpu
             render: false
+            window: false
             cmake_consumer: false
             examples: false
             setup: windows
@@ -125,7 +131,7 @@ jobs:
         if: matrix.setup == 'linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build mesa-vulkan-drivers vulkan-tools
+          sudo apt-get install -y cmake ninja-build mesa-vulkan-drivers vulkan-tools xvfb
           lvp=$(find /usr/share/vulkan/icd.d -name 'lvp_icd*.json' -print -quit)
           test -n "$lvp"
           echo "VK_DRIVER_FILES=$lvp" >> "$GITHUB_ENV"
@@ -143,16 +149,27 @@ jobs:
           MACHINE_ID: ${{ matrix.machine_id }}
           EXECUTION_CLASS: ${{ matrix.execution_class }}
           RENDER: ${{ matrix.render }}
+          WINDOW: ${{ matrix.window }}
           CMAKE_CONSUMER: ${{ matrix.cmake_consumer }}
           EXAMPLES: ${{ matrix.examples }}
         run: |
           wheel=$(find wheelhouse -maxdepth 1 -name '*.whl' -print -quit)
           test -n "$wheel"
           render_args=()
+          window_args=()
           cmake_args=()
           example_args=()
+          command_prefix=(python)
           if [[ "$RENDER" != "true" ]]; then
             render_args=(--no-render --render-skip-reason "hosted runner has no graphics device")
+          fi
+          if [[ "$WINDOW" == "true" ]]; then
+            window_args=(--window)
+          else
+            window_args=(--no-window --window-skip-reason "hosted runner has no windowed graphics device")
+          fi
+          if [[ "${{ matrix.setup }}" == "linux" ]]; then
+            command_prefix=(xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" python)
           fi
           if [[ "$CMAKE_CONSUMER" != "true" ]]; then
             cmake_args=(--no-cmake-consumer --cmake-skip-reason "hosted ARM64 image has no native ARM64 C compiler")
@@ -165,7 +182,7 @@ jobs:
             -u VK_LAYER_PATH \
             -u DYLD_LIBRARY_PATH \
             -u DYLD_FALLBACK_LIBRARY_PATH \
-            python tools/release_wheels/conformance.py run \
+            "${command_prefix[@]}" tools/release_wheels/conformance.py run \
               --wheel "$wheel" \
               --output-dir "build/conformance/$MACHINE_ID" \
               --version "$RELEASE_VERSION" \
@@ -177,6 +194,7 @@ jobs:
               --mode unattended \
               --repeat 2 \
               "${render_args[@]}" \
+              "${window_args[@]}" \
               "${cmake_args[@]}" \
               "${example_args[@]}"
       - uses: actions/upload-artifact@v7

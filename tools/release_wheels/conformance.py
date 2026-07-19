@@ -25,6 +25,7 @@ ROOT = Path(__file__).resolve().parents[2]
 EVIDENCE_SCHEMA = 'datoviz.release-conformance.v1'
 REPORT_SCHEMA = 'datoviz.release-conformance-report.v1'
 MANUAL_SCENARIOS = (
+    'exact-wheel-quickstart',
     'scatter-panzoom',
     'arcball-3d',
     'text-resize',
@@ -361,6 +362,8 @@ def run_conformance(args: argparse.Namespace) -> int:
             argv.append('--cmake-consumer')
         if args.render:
             argv.append('--render')
+        if args.window:
+            argv.append('--window')
         result = subprocess.run(  # noqa: S603
             argv, cwd=ROOT, text=True, capture_output=True, check=False
         )
@@ -382,6 +385,16 @@ def run_conformance(args: argparse.Namespace) -> int:
             'log': f'logs/{log_path.name}',
         }
         results.append(record)
+        if args.window:
+            results.append(
+                {
+                    'id': f'installed-wheel-native-window-{repeat}',
+                    'argv': argv,
+                    'status': record['status'],
+                    'returncode': result.returncode,
+                    'log': record['log'],
+                }
+            )
         if result.returncode != 0:
             failures.append(record)
             if not args.keep_going:
@@ -428,6 +441,8 @@ def run_conformance(args: argparse.Namespace) -> int:
     skips = []
     if not args.render:
         skips.append({'id': 'render', 'reason': args.render_skip_reason})
+    if not args.window:
+        skips.append({'id': 'native-window', 'reason': args.window_skip_reason})
     if not args.cmake_consumer:
         skips.append({'id': 'cmake-consumer', 'reason': args.cmake_skip_reason})
     if not args.shaderc:
@@ -498,6 +513,15 @@ def approve_physical(args: argparse.Namespace) -> int:
     for item in manual['scenarios']:
         if item['id'] in supplied:
             item['status'], item['observation'] = supplied[item['id']]
+    undocumented_results = [
+        item['id']
+        for item in manual['scenarios']
+        if item['status'] != 'pending' and not item['observation'].strip()
+    ]
+    if undocumented_results:
+        raise ValueError(
+            f'manual results require non-empty observations: {undocumented_results}'
+        )
     pending = [item['id'] for item in manual['scenarios'] if item['status'] == 'pending']
     if pending:
         raise RuntimeError(f'manual scenarios still pending: {pending}')
@@ -543,6 +567,16 @@ def report_gates(evidence: list[dict[str, Any]], missing: list[str]) -> dict[str
     ]
     physical = [item for item in evidence if item.get('mode') == 'physical']
     rendered = [item for item in evidence if item.get('captures')]
+    window_capable = [
+        item
+        for item in evidence
+        if item.get('execution_class')
+        in {
+            'physical-interactive',
+            'github-hosted-hardware-gpu',
+            'github-hosted-software-gpu',
+        }
+    ]
 
     def automated(items: list[dict[str, Any]]) -> str:
         if not items:
@@ -568,6 +602,20 @@ def report_gates(evidence: list[dict[str, Any]], missing: list[str]) -> dict[str
     return {
         'hosted_artifact_conformance': automated(hosted),
         'hosted_rendering': rendering,
+        'installed_wheel_native_window': (
+            'not-applicable'
+            if not window_capable
+            else 'pass'
+            if all(
+                any(
+                    str(result.get('id', '')).startswith('installed-wheel-native-window-')
+                    and result.get('status') == 'pass'
+                    for result in item.get('results', [])
+                )
+                for item in window_capable
+            )
+            else 'fail'
+        ),
         'cross_frontend_render_parity': (
             'not-applicable'
             if not rendered
@@ -1113,6 +1161,8 @@ def prepare_physical(args: argparse.Namespace) -> int:
         repeat=args.repeat,
         render=True,
         render_skip_reason='',
+        window=True,
+        window_skip_reason='',
         shaderc=True,
         shaderc_skip_reason='',
         cmake_consumer=True,
@@ -1244,6 +1294,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     run_parser.add_argument('--repeat', type=int, default=2)
     run_parser.add_argument('--render', action=argparse.BooleanOptionalAction, default=True)
     run_parser.add_argument('--render-skip-reason', default='graphics capability unavailable')
+    run_parser.add_argument('--window', action=argparse.BooleanOptionalAction, default=False)
+    run_parser.add_argument('--window-skip-reason', default='window capability unavailable')
     run_parser.add_argument('--shaderc', action=argparse.BooleanOptionalAction, default=True)
     run_parser.add_argument('--shaderc-skip-reason', default='shaderc capability unavailable')
     run_parser.add_argument(

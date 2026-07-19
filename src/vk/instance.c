@@ -29,6 +29,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_instance.h"
+#include "_loader.h"
 #include "_log.h"
 #include "datoviz/vk/instance.h"
 #include "macros.h"
@@ -194,6 +195,18 @@ static bool _dvz_volk_init(void)
 
     _volk_ready = true;
     return true;
+}
+
+
+
+/**
+ * Initialize Datoviz's Vulkan loader and return its instance-procedure entry point.
+ *
+ * @return the active Vulkan loader entry point, or NULL when initialization failed
+ */
+PFN_vkGetInstanceProcAddr _dvz_vulkan_loader(void)
+{
+    return _dvz_volk_init() ? vkGetInstanceProcAddr : NULL;
 }
 
 

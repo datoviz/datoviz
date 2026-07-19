@@ -16,6 +16,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_loader.h"
 #include "_log.h"
 #include "datoviz/input/keyboard.h"
 #include "datoviz/input/pointer.h"
@@ -72,6 +73,13 @@ static bool _glfw_init(void)
     if (_glfw_state.initialized)
         return true;
 #if defined(__APPLE__)
+    PFN_vkGetInstanceProcAddr loader = _dvz_vulkan_loader();
+    if (loader == NULL)
+    {
+        log_error("unable to initialize Vulkan before GLFW");
+        return false;
+    }
+    glfwInitVulkanLoader(loader);
 #ifdef GLFW_COCOA_MENUBAR
     glfwInitHint(GLFW_COCOA_MENUBAR, GLFW_TRUE);
 #endif

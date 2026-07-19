@@ -122,6 +122,7 @@ def run_installed_checks(
     work_dir: Path | None = None,
     release_build: bool = False,
     render: bool = False,
+    window: bool = False,
     precompiled_shaders: bool = False,
     shaderc: bool = False,
     cmake_consumer: bool = False,
@@ -149,6 +150,8 @@ def run_installed_checks(
             _shaderc_smoke(python, work)
         if render:
             _render_smoke(python, work)
+        if window:
+            _window_smoke(python, work)
         if cmake_consumer:
             _cmake_consumer_smoke(python, work)
         if examples != "skip":
@@ -174,6 +177,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--work-dir", type=Path)
     parser.add_argument("--release-build", action="store_true")
     parser.add_argument("--render", action="store_true")
+    parser.add_argument("--window", action="store_true")
     parser.add_argument("--precompiled-shaders", action="store_true")
     parser.add_argument("--shaderc", action="store_true")
     parser.add_argument("--cmake-consumer", action="store_true")
@@ -192,6 +196,7 @@ def main(argv: list[str] | None = None) -> int:
     if (
         args.release_build
         or args.render
+        or args.window
         or args.shaderc
         or args.cmake_consumer
         or args.examples != "skip"
@@ -202,6 +207,7 @@ def main(argv: list[str] | None = None) -> int:
             work_dir=args.work_dir,
             release_build=args.release_build,
             render=args.render,
+            window=args.window,
             precompiled_shaders=args.precompiled_shaders,
             shaderc=args.shaderc,
             cmake_consumer=args.cmake_consumer,
@@ -490,6 +496,27 @@ def _render_smoke(python: Path, work: Path) -> None:
         raise RuntimeError(f"render smoke output is missing or too small: {path} ({size} bytes)")
 
 
+def _window_smoke(python: Path, work: Path) -> None:
+    """Create, render, and destroy a native installed-wheel window."""
+
+    script = work / "datoviz-wheel-window-smoke.py"
+    script.write_text(_PYTHON_WINDOW_EXAMPLE, encoding="utf8")
+    cmd = [str(python), str(script)]
+    env = _venv_env()
+    if sys.platform == "darwin":
+        for name in (
+            "VULKAN_SDK",
+            "VK_DRIVER_FILES",
+            "VK_ICD_FILENAMES",
+            "VK_LAYER_PATH",
+            "DYLD_LIBRARY_PATH",
+            "DYLD_FALLBACK_LIBRARY_PATH",
+        ):
+            env.pop(name, None)
+    print("+", " ".join(cmd))
+    subprocess.run(cmd, cwd=work, env=env, check=True)
+
+
 def _qt_probe(python: Path, work: Path, *, required: bool) -> None:
     cmd = [str(python), "-m", "datoviz.qt"]
     print("+", " ".join(cmd))
@@ -676,14 +703,48 @@ try:
     if not view:
         print("installed Python render example: SKIP (dvz_view_offscreen() failed)")
         raise SystemExit(77)
-    if dvz.dvz_view_render_once(view) < 0:
-        raise SystemExit("dvz_view_render_once() failed")
+    status = dvz.dvz_view_render_once(view)
+    if status != dvz.DVZ_CANVAS_FRAME_READY:
+        raise SystemExit(f"dvz_view_render_once() failed with status {status}")
     path = Path("python_render_example.png")
     if dvz.dvz_view_capture_png(view, str(path).encode()) != 0:
         raise SystemExit("dvz_view_capture_png() failed")
     if not path.exists() or path.stat().st_size == 0:
         raise SystemExit("PNG capture was not written")
     print("installed Python render example: OK")
+finally:
+    if app:
+        dvz.dvz_app_destroy(app)
+    dvz.dvz_scene_destroy(scene)
+'''
+
+
+_PYTHON_WINDOW_EXAMPLE = r'''
+import datoviz as dvz
+
+
+scene = dvz.dvz_scene()
+if not scene:
+    raise SystemExit("dvz_scene() failed")
+
+app = None
+try:
+    figure = dvz.dvz_figure(scene, 320, 240, 0)
+    if not figure:
+        raise SystemExit("dvz_figure() failed")
+    panel = dvz.dvz_panel_full(figure)
+    if not panel:
+        raise SystemExit("dvz_panel_full() failed")
+
+    app = dvz.dvz_app(scene)
+    if not app:
+        raise SystemExit("dvz_app() failed")
+    view = dvz.dvz_view_window(app, figure, 320, 240, b"Datoviz wheel window smoke")
+    if not view:
+        raise SystemExit("dvz_view_window() failed")
+    if dvz.dvz_view_render_once(view) < 0:
+        raise SystemExit("dvz_view_render_once() failed")
+    print("installed Python native-window example: OK")
 finally:
     if app:
         dvz.dvz_app_destroy(app)

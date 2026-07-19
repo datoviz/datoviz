@@ -25,6 +25,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--work-dir", type=Path)
     parser.add_argument("--release-build", action="store_true")
     parser.add_argument("--render", action="store_true")
+    parser.add_argument("--window", action="store_true")
     parser.add_argument("--precompiled-shaders", action="store_true")
     parser.add_argument("--shaderc", action="store_true")
     parser.add_argument("--cmake-consumer", action="store_true")
@@ -43,6 +44,7 @@ def main() -> int:
         work_dir=args.work_dir,
         release_build=args.release_build,
         render=args.render,
+        window=args.window,
         precompiled_shaders=args.precompiled_shaders,
         shaderc=args.shaderc,
         cmake_consumer=args.cmake_consumer,
