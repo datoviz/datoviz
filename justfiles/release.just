@@ -154,11 +154,12 @@ release-test *args:
     @python3 tools/release_wheels/conformance.py run {{args}}
 #
 
+[positional-arguments]
 release-test-approve *args:
-    @python3 tools/release_wheels/conformance.py approve {{args}}
+    @python3 tools/release_wheels/conformance.py approve "$@"
 #
 
-release-test-physical wheel_run_id version="0.4.0rc1" *args:
+release-test-physical wheel_run_id version *args:
     @python3 tools/release_wheels/conformance.py physical --wheel-run-id "{{wheel_run_id}}" --version "{{version}}" {{args}}
 #
 
