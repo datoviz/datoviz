@@ -2,134 +2,68 @@
 
 Status: active release gate, no current distribution blocker recorded. Updated: 2026-07-05.
 
-Keep this file as the short active handoff. Durable user documentation, build options, and release
-validation details live in the linked files below.
-
+Keep this file as the short active handoff. Durable user documentation, build options, and release validation details live in the linked files below.
 
 ## Goal
 
-Make Datoviz installable as a normal C/C++ library that downstream projects can consume without
-cloning this repository. The v0.4 RC priority is the Python wheel because it carries the first
-installed C/C++ integration path; conda-forge, Homebrew, vcpkg, `.deb`, Spack, and other package
-manager channels follow from the same source-bundle and install metadata.
-
+Make Datoviz installable as a normal C/C++ library that downstream projects can consume without cloning this repository. The v0.4 RC priority is the Python wheel because it carries the first installed C/C++ integration path; conda-forge, Homebrew, vcpkg, `.deb`, Spack, and other package manager channels follow from the same source-bundle and install metadata.
 
 ## Source Of Truth
 
-- Release validation and evidence:
-  [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md).
-- User-facing C/C++ integration:
-  [../../docs/how-to/c-integration.md](../../docs/how-to/c-integration.md).
-- CMake options, dependency source modes, package smoke presets, and package CI matrix:
-  [../../docs/reference/build-options.md](../../docs/reference/build-options.md).
-- Wheel build/check tooling:
-  [../../docs/contributors/release-wheels.md](../../docs/contributors/release-wheels.md) and
-  `tools/release_wheels/`.
-- vcpkg overlay draft:
-  [../../vcpkg-overlay/README.md](../../vcpkg-overlay/README.md).
-- conda-forge draft recipe:
-  [../../conda-recipe/README.md](../../conda-recipe/README.md) and
-  [../../conda-recipe/meta.yaml](../../conda-recipe/meta.yaml).
-
+- Release validation and evidence: [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md).
+- User-facing C/C++ integration: [../../docs/how-to/c-integration.md](../../docs/how-to/c-integration.md).
+- CMake options, dependency source modes, package smoke presets, and package CI matrix: [../../docs/reference/build-options.md](../../docs/reference/build-options.md).
+- Wheel build/check tooling: [../../docs/contributors/release-wheels.md](../../docs/contributors/release-wheels.md) and `tools/release_wheels/`.
+- vcpkg overlay draft: [../../vcpkg-overlay/README.md](../../vcpkg-overlay/README.md).
+- conda-forge draft recipe: [../../conda-recipe/README.md](../../conda-recipe/README.md) and [../../conda-recipe/meta.yaml](../../conda-recipe/meta.yaml).
 
 ## Current Proof
 
 On 2026-06-18 macOS arm64:
 
-- `just c-integration-smoke` passes for both installed-package and FetchContent consumers after
-  `d94f72dd6` exported the Vulkan header dependency from `datoviz::datoviz`.
+- `just c-integration-smoke` passes for both installed-package and FetchContent consumers after `d94f72dd6` exported the Vulkan header dependency from `datoviz::datoviz`.
 - Vendored and system-auto package smoke/install presets pass.
-- Strict Homebrew-style system proof passes with Homebrew `glfw`, `cglm`, `kvazaar`, and
-  `mimalloc`; Vulkan still comes from the local Vulkan SDK, not Homebrew `vulkan-loader`.
-- `DATOVIZ_SOURCE_DEPS=system just distribution-validate-local source-install` and
-  `just distribution-validate-local audit` pass against the strict source install prefix.
-- Host-native repaired macOS wheel proof passes for imports, `datoviz-config`, bundled
-  headers/CMake files, native dependency inspection, and the wheel CMake consumer. The optional Qt
-  probe fails only because PyQt6 is absent in the clean venv.
-- Local Linux x86_64 manylinux proof passes with
-  `just wheel-manylinux-docker x86_64` against
-  `quay.io/pypa/manylinux_2_34_x86_64@sha256:e05e1c4b281f10dc4c3df2b6f546392a0dd4c6383d620c3f8a6c33e19069d056`
-  (image created 2026-06-12). The run built
-  `wheelhouse/datoviz-0.4.0.dev0-py3-none-manylinux_2_34_x86_64.whl`; auditwheel kept the
-  `manylinux_2_34_x86_64` tag; installed-wheel import, `datoviz.cli`, shaderc GLSL compilation,
-  and CMake consumer checks passed; optional Qt probe failed only because PyQt6 was absent.
-- Local Windows AMD64 wheel proof passes after `19e62968`: the Windows wheel builds, native
-  dependencies inspect, installed-wheel import and `datoviz.cli` checks pass, shaderc GLSL
-  compilation is available, and the installed-wheel CMake consumer builds and runs with bundled
-  DLL discovery.
-- Local conda render/build proof passes from a generated release source bundle after the Python
-  recipe scripts force `PIP_USER=false`: `libdatoviz` and `datoviz` packages build, and the package
-  test imports `datoviz.raw` and creates/destroys a scene without a Vulkan device.
-- Hosted CI confirmed that current macOS Vulkan/Homebrew runtime dependencies require macOS 15.
-  The v0.4 wheel policy therefore targets `macosx_15_0_arm64` and `macosx_15_0_x86_64`.
-- Hosted wheel CI run `27975460115` passed on 2026-06-22 with Linux x86_64/aarch64, macOS 15
-  arm64/Intel, Windows AMD64/ARM64, Python 3.10 through 3.14 installed-wheel smokes on
-  Linux/macOS/Windows, and Linux prerelease smoke. Downloaded artifacts were inspected locally for
-  expected wheel tags, required generated bindings and CMake package files, Windows import
-  libraries, and macOS dylib architectures.
-
+- Strict Homebrew-style system proof passes with Homebrew `glfw`, `cglm`, `kvazaar`, and `mimalloc`; Vulkan still comes from the local Vulkan SDK, not Homebrew `vulkan-loader`.
+- `DATOVIZ_SOURCE_DEPS=system just distribution-validate-local source-install` and `just distribution-validate-local audit` pass against the strict source install prefix.
+- Host-native repaired macOS wheel proof passes for imports, `datoviz-config`, bundled headers/CMake files, native dependency inspection, and the wheel CMake consumer. The optional Qt probe fails only because PyQt6 is absent in the clean venv.
+- Local Linux x86_64 manylinux proof passes with `just wheel-manylinux-docker x86_64` against `quay.io/pypa/manylinux_2_34_x86_64@sha256:e05e1c4b281f10dc4c3df2b6f546392a0dd4c6383d620c3f8a6c33e19069d056` (image created 2026-06-12). The run built `wheelhouse/datoviz-0.4.0.dev0-py3-none-manylinux_2_34_x86_64.whl`; auditwheel kept the `manylinux_2_34_x86_64` tag; installed-wheel import, `datoviz.cli`, shaderc GLSL compilation, and CMake consumer checks passed; optional Qt probe failed only because PyQt6 was absent.
+- Local Windows AMD64 wheel proof passes after `19e62968`: the Windows wheel builds, native dependencies inspect, installed-wheel import and `datoviz.cli` checks pass, shaderc GLSL compilation is available, and the installed-wheel CMake consumer builds and runs with bundled DLL discovery.
+- Local conda render/build proof passes from a generated release source bundle after the Python recipe scripts force `PIP_USER=false`: `libdatoviz` and `datoviz` packages build, and the package test imports `datoviz.raw` and creates/destroys a scene without a Vulkan device.
+- Hosted CI confirmed that current macOS Vulkan/Homebrew runtime dependencies require macOS 15. The v0.4 wheel policy therefore targets `macosx_15_0_arm64` and `macosx_15_0_x86_64`.
+- Hosted wheel CI run `27975460115` passed on 2026-06-22 with Linux x86_64/aarch64, macOS 15 arm64/Intel, Windows AMD64/ARM64, Python 3.10 through 3.14 installed-wheel smokes on Linux/macOS/Windows, and Linux prerelease smoke. Downloaded artifacts were inspected locally for expected wheel tags, required generated bindings and CMake package files, Windows import libraries, and macOS dylib architectures.
 
 ## Implemented Surface
 
 - `include/datoviz.h` is the preferred public umbrella include.
 - Public C headers parse from C++ through the public header probes.
-- Installed CMake consumers use `find_package(datoviz CONFIG REQUIRED)` and link
-  `datoviz::datoviz`.
-- FetchContent consumers link the same target, while tests, examples, and install/export rules
-  default to disabled when Datoviz is embedded as a subproject.
-- `datoviz-config` is installed by wheels for GCC-compatible Linux, macOS, and MSYS2/MinGW shells.
-  MSVC users use CMake, not `datoviz-config`.
+- Installed CMake consumers use `find_package(datoviz CONFIG REQUIRED)` and link `datoviz::datoviz`.
+- FetchContent consumers link the same target, while tests, examples, and install/export rules default to disabled when Datoviz is embedded as a subproject.
+- `datoviz-config` is installed by wheels for GCC-compatible Linux, macOS, and MSYS2/MinGW shells. MSVC users use CMake, not `datoviz-config`.
 - Wheels bundle public headers and a relocatable wheel-local `DatovizConfig.cmake`.
-- Windows MSVC/vcpkg wheels bundle the Datoviz DLL, `datoviz.lib` import library,
-  split Datoviz import libraries, and vcpkg runtime DLLs; `libdatoviz.dll.a` remains a MinGW
-  fallback when present. `datoviz.raw` configures wheel-local runtime DLL discovery before loading
-  the library.
+- Windows MSVC/vcpkg wheels bundle the Datoviz DLL, `datoviz.lib` import library, split Datoviz import libraries, and vcpkg runtime DLLs; `libdatoviz.dll.a` remains a MinGW fallback when present. `datoviz.raw` configures wheel-local runtime DLL discovery before loading the library.
 - System installs generate `datoviz.pc` and installed CMake package metadata.
-- `DVZ_VENDORED_DEPS=OFF` plus per-dependency source modes supports package-manager builds for
-  GLFW, cglm, Kvazaar, and mimalloc where those packages are available. `msdf-atlas-gen` remains
-  source/vendored-only for v0.4.
-- Draft vcpkg overlay and conda-forge split recipe exist. The conda draft currently depends on
-  `cglm` and disables Kvazaar because direct conda-forge repodata did not find a usable `kvazaar`
-  package for the target platforms.
-- `.github/workflows/wheels.yml` has Linux, macOS, and Windows wheel jobs plus installed-wheel
-  Python/CMake consumer smokes.
-
+- `DVZ_VENDORED_DEPS=OFF` plus per-dependency source modes supports package-manager builds for GLFW, cglm, Kvazaar, and mimalloc where those packages are available. `msdf-atlas-gen` remains source/vendored-only for v0.4.
+- Draft vcpkg overlay and conda-forge split recipe exist. The conda draft currently depends on `cglm` and disables Kvazaar because direct conda-forge repodata did not find a usable `kvazaar` package for the target platforms.
+- `.github/workflows/wheels.yml` has Linux, macOS, and Windows wheel jobs plus installed-wheel Python/CMake consumer smokes.
 
 ## Distribution Decisions
 
-- Windows pip wheels are MSVC/vcpkg-built and must include `datoviz.dll`, the MSVC
-  `datoviz.lib` import library, wheel-local CMake package files, and required vcpkg runtime DLLs.
-- MSVC users consume Datoviz through CMake `find_package(datoviz CONFIG REQUIRED)`, not
-  `datoviz-config`. `datoviz-config` remains a GCC-compatible Linux, macOS, and MSYS2/MinGW
-  convenience.
-- Windows DLL discovery is explicit: downstream CMake consumers should copy `datoviz.dll` next to
-  their executable or add the wheel/prefix runtime directory to `PATH`; Python wheels configure
-  `os.add_dll_directory()` before loading `datoviz.raw`.
-- Visual Studio source builds use the CMake preset path with Visual Studio 2022, Vulkan SDK, and
-  vcpkg. A dedicated Visual Studio walkthrough is documentation work, not an engineering blocker.
-- vcpkg remains the preferred Windows C/C++ package-manager path: publish the overlay first after a
-  stable source bundle exists, then submit the official registry PR after validation.
-- conda-forge should use the split-package proposal: `libdatoviz` for the native library and
-  headers, `datoviz` for Python bindings depending on `libdatoviz`.
-- Conda packages use dynamic conda-forge dependencies with `DVZ_VENDORED_DEPS=OFF`; pip wheels keep
-  their vendored/static dependency policy where required for portable wheel payloads.
-- Headless conda validation must prove `import datoviz`, `import datoviz.raw`, `raw.dvz_scene()`,
-  and `raw.dvz_scene_destroy()` do not require a live Vulkan device.
-- Chocolatey and winget are out of scope for v0.4 because they are application installers, not the
-  C library distribution path. MSYS2, nix/nixpkgs, rpm, Docker, conan, and similar channels remain
-  community-driven or post-v0.4 unless release scope changes.
+- Windows pip wheels are MSVC/vcpkg-built and must include `datoviz.dll`, the MSVC `datoviz.lib` import library, wheel-local CMake package files, and required vcpkg runtime DLLs.
+- MSVC users consume Datoviz through CMake `find_package(datoviz CONFIG REQUIRED)`, not `datoviz-config`. `datoviz-config` remains a GCC-compatible Linux, macOS, and MSYS2/MinGW convenience.
+- Windows DLL discovery is explicit: downstream CMake consumers should copy `datoviz.dll` next to their executable or add the wheel/prefix runtime directory to `PATH`; Python wheels configure `os.add_dll_directory()` before loading `datoviz.raw`.
+- Visual Studio source builds use the CMake preset path with Visual Studio 2022, Vulkan SDK, and vcpkg. A dedicated Visual Studio walkthrough is documentation work, not an engineering blocker.
+- vcpkg remains the preferred Windows C/C++ package-manager path: publish the overlay first after a stable source bundle exists, then submit the official registry PR after validation.
+- conda-forge should use the split-package proposal: `libdatoviz` for the native library and headers, `datoviz` for Python bindings depending on `libdatoviz`.
+- Conda packages use dynamic conda-forge dependencies with `DVZ_VENDORED_DEPS=OFF`; pip wheels keep their vendored/static dependency policy where required for portable wheel payloads.
+- Headless conda validation must prove `import datoviz`, `import datoviz.raw`, `raw.dvz_scene()`, and `raw.dvz_scene_destroy()` do not require a live Vulkan device.
+- Chocolatey and winget are out of scope for v0.4 because they are application installers, not the C library distribution path. MSYS2, nix/nixpkgs, rpm, Docker, conan, and similar channels remain community-driven or post-v0.4 unless release scope changes.
 - Spack is low-effort and release-tag-gated; do not let it block wheel, conda, or vcpkg proof.
-
 
 ## Active Blockers
 
-1. Validate the vcpkg overlay on Windows with vcpkg installed; replace placeholder source-bundle
-   SHA512 values only after tagging/release-asset publication.
-2. Confirm conda recipe dependency names, Unix paths, and Windows DLL layout in staged-recipes or
-   feedstock CI logs; local macOS arm64 render/build is green.
-3. Keep Homebrew, `.deb`, Spack, rpm, and conan behind the wheel/conda/vcpkg proof unless release
-   scope changes.
-
+1. Validate the vcpkg overlay on Windows with vcpkg installed; replace placeholder source-bundle SHA512 values only after tagging/release-asset publication.
+2. Confirm conda recipe dependency names, Unix paths, and Windows DLL layout in staged-recipes or feedstock CI logs; local macOS arm64 render/build is green.
+3. Keep Homebrew, `.deb`, Spack, rpm, and conan behind the wheel/conda/vcpkg proof unless release scope changes.
 
 ## Preferred Validation
 
@@ -166,8 +100,7 @@ just wheel-inspect --wheel wheelhouse/*.whl --native-deps
 python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --cmake-consumer --qt-probe optional
 ```
 
-On Windows, `wheel-stage` requires Git Bash for the C integration copy script. The
-`--cmake-consumer` check is part of the Windows proof, not just inventory.
+On Windows, `wheel-stage` requires Git Bash for the C integration copy script. The `--cmake-consumer` check is part of the Windows proof, not just inventory.
 
 Before finalizing edits in this lane, run:
 
@@ -176,13 +109,9 @@ git diff --check
 git status --short
 ```
 
-
 ## Guardrails
 
 - Do not stage or commit `data` submodule state unless explicitly approved in the current turn.
-- Do not commit generated binaries, vendored runtime libraries, or wheel artifacts unless
-  explicitly approved.
+- Do not commit generated binaries, vendored runtime libraries, or wheel artifacts unless explicitly approved.
 - Do not duplicate long implementation recipes here. Link to maintained docs/checklists instead.
-- Keep wheel, conda, and vcpkg release paths tied to the same explicit source bundle; do not use
-  GitHub auto-generated archives for package-manager release proof because they omit required
-  submodule contents.
+- Keep wheel, conda, and vcpkg release paths tied to the same explicit source bundle; do not use GitHub auto-generated archives for package-manager release proof because they omit required submodule contents.

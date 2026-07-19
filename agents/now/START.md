@@ -1,72 +1,35 @@
 # Datoviz v0.4 Dispatch
 
-Status: active v0.4 release candidate.
+Status: active post-RC2 work toward RC3. Updated: 2026-07-20.
 
-Use [../../AGENTS.md](../../AGENTS.md) as the mandatory entry point. This file only records the
-current branch dispatch.
-
+Use [../../AGENTS.md](../../AGENTS.md) as the mandatory entry point. This file identifies only the current work; durable contracts belong in `spec/`, public guidance belongs in `docs/`, and completed evidence belongs in release records and Git history.
 
 ## Current Position
 
-The active stack is:
+Datoviz `v0.4.0rc2` is published and closed. The active source branch and GitHub default remain `v0.4-dev` until the approved post-RC2 branch cutover is executed. The next release milestone is RC3.
+
+The active runtime path is:
 
 ```text
-scene -> drp2 -> vklite/canvas/stream -> app
+scene frame plans -> drp2 command streams -> vklite runtime -> canvas/stream frame execution -> optional app presentation
 ```
-
-Native scene, app/offscreen rendering, DRP2 command emission, the generated Python binding
-(`datoviz` with NumPy adaptation plus `datoviz.raw` exact calls), retained textured mesh, text,
-axes, colorbars, labels, scale bars,
-picking/query first slices, and the WebGPU fixture runner are active v0.4 surfaces. The WASM
-point/panzoom scene bridge is also active as the first experimental browser scene slice. Treat them
-as real implementation, not scaffolding.
-
 
 ## Start Work
 
-1. Use [STATUS.md](STATUS.md) for the post-RC2 execution order, current blockers, and active lanes.
-2. Use [RELEASE.md](RELEASE.md) for release sequencing.
-3. Use [DOCUMENTATION.md](DOCUMENTATION.md) for public documentation gates.
-4. Use [../../spec/scene/README.md](../../spec/scene/README.md) before changing scene semantics.
-5. Use [../../spec/drp2/README.md](../../spec/drp2/README.md) before changing DRP2 commands,
-   schemas, fixtures, or scene DRP2 emission.
-6. Keep the resolved terminal-IPython hosted close path in macOS RC validation; use
-   [HANDOFF_IPYTHON_RUN_CLOSE_HANG.md](HANDOFF_IPYTHON_RUN_CLOSE_HANG.md) only as its completed
-   investigation record.
-7. Use [../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md) and
-   [../../spec/bindings/CTYPES_POLICY.md](../../spec/bindings/CTYPES_POLICY.md) before changing the
-   top-level Python package, exact-call binding generation, FFI helpers, or NumPy/array argument
-   adaptation.
-8. Use [HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md](HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md) as the completed
-   pre-RC API cleanup record before changing public headers, exported API, generated C reference,
-   generated `ctypes`, or public examples.
-9. Use [../../plans/AXIS_GUIDE_VIEWPORT_REFACTOR_PLAN.md](../../plans/AXIS_GUIDE_VIEWPORT_REFACTOR_PLAN.md)
-   before changing 2D axes, grid lines, guides, View2D domains, aspect ratio, or plot/panel
-   viewport behavior. Keep generated/adornment visual routing semantic and attachment-driven; do
-   not reintroduce frame-plan pointer scans over axis, guide, colorbar, legend, panel chrome,
-   scale-bar, overlay, or bounds-overlay object fields.
-10. Use [HANDOFF_VISUAL_DOCUMENTATION_PASS.md](HANDOFF_VISUAL_DOCUMENTATION_PASS.md) for the
-    approved visual-system pilot across Get Started, Core Concepts, Choose Your Layer, and the
-    Advanced overview. Complete the pilot and request maintainer review before broad rollout.
-11. On a physical RC validation machine, use
-    [HANDOFF_RC1_PHYSICAL_WHEEL_SMOKE.md](HANDOFF_RC1_PHYSICAL_WHEEL_SMOKE.md) for current status and
-    [the reusable procedure](../../docs/contributors/release-physical-validation.md) for Linux,
-    macOS, or Windows execution. The artifact commit may precede the release commit only through an
-    explicitly audited artifact-neutral and runtime-neutral diff.
-12. Use [HANDOFF_WINDOWS_RC1_WHEELS.md](HANDOFF_WINDOWS_RC1_WHEELS.md) to finish the active Windows
-    AMD64/ARM64 shaderc, packaging, deterministic CI, and vcpkg-cache lane. Its first external
-    NuGet package write and any push/workflow dispatch require explicit approval.
-13. TestPyPI upload and six-platform package-index verification passed for canonical Wheels run
-    `29644925786`; keep [HANDOFF_RC1_RELEASE_SILENCE.md](HANDOFF_RC1_RELEASE_SILENCE.md) as the
-    completed blocker record and preserve those exact wheel hashes through PyPI publication.
-
+1. Read [STATUS.md](STATUS.md) for the ordered post-RC2 queue and current gates.
+2. Read [RELEASE.md](RELEASE.md) for RC3 and final-release exit criteria.
+3. Use [BRANCH_CUTOVER.md](BRANCH_CUTOVER.md) for the pending `main`/`v0.3-maintenance` transition; do not execute external branch operations without explicit approval of the exact actions.
+4. Use [GALLERY_MEDIA_SINGLE_RESOLUTION.md](GALLERY_MEDIA_SINGLE_RESOLUTION.md) for the approved gallery resolution, encoding, freshness, and bounded-parallelism plan; implementation still requires its own execution approval.
+5. Read [DOCUMENTATION.md](DOCUMENTATION.md) before public documentation, generated-reference, gallery, attribution, or release-communication work.
+6. Use [C_DISTRIBUTION.md](C_DISTRIBUTION.md) and [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for C/C++ packaging and distribution work.
+7. Use [HANDOFF_VISUAL_DOCUMENTATION_PASS.md](HANDOFF_VISUAL_DOCUMENTATION_PASS.md) only for the approved visual-documentation pilot; request maintainer review after the pilot before broad rollout.
+8. Read [../../spec/scene/README.md](../../spec/scene/README.md) before changing scene semantics or runtime boundaries, [../../spec/drp2/README.md](../../spec/drp2/README.md) before changing DRP2, and [../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md) plus [../../spec/bindings/CTYPES_POLICY.md](../../spec/bindings/CTYPES_POLICY.md) before changing bindings.
 
 ## Guardrails
 
-1. Keep the runtime path unified; do not create parallel renderers, presentation layers, frame
-   streams, or Vulkan wrappers.
-2. Prefer small generalizations and cleaner subsystem boundaries over ad-hoc patches.
-3. Keep examples and focused tests in lockstep with retained v0.4 slices.
-4. Do not add texture/resource-name-based render shortcuts. Uploads define resources; render nodes,
-   visual descriptors, and draw contracts define draws.
-5. For documentation-only work, run `git diff --check` and inspect `git status --short`.
+- Do not rewrite v0.4 RC or final-release history; repository-history cleanup is deferred beyond v0.4.
+- Keep RC1 and RC2 tags, artifacts, reports, checksums, physical evidence, and release records immutable.
+- Do not treat unavailable physical Linux or Windows validation as a pass.
+- Keep the runtime path unified; do not create parallel renderers, presentation layers, frame streams, or Vulkan wrappers.
+- Prefer focused blocker fixes and release-proof improvements over optional feature expansion.
+- Follow the repository prohibition on hard-wrapped Markdown prose.
