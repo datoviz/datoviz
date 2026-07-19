@@ -191,7 +191,10 @@ Execute the remaining browser work in this order:
 6. **Experimental large-data rendering.** The canonical `showcases_point_cloud` scenario now has
    native capture plus a local 500k-point WASM packet proof, an explicit 20 MB delivery ceiling,
    and no browser GUI or EDL dependency. Obtain headed interaction proof and a redistributable
-   prepared bundle before public promotion; handle `visuals_splat` afterward.
+   prepared bundle before public promotion; handle `visuals_splat` afterward. Disposition
+   2026-07-19: the RESEPI source dataset is third-party and all-rights-reserved, so no
+   redistributable public bundle is possible; the example is delisted to `webgpu-deferred` (public
+   route removed, localhost-only dev route retained) unless redistribution is licensed later.
 
 Keep GUI, GLFW, Qt, capture/export, raw Vulkan, and raw vklite examples native-only because their
 purpose is desktop runtime or host integration.

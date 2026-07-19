@@ -147,6 +147,11 @@ metadata now references the hashed prepared bundle, but redistribution authoriza
 public-site confirmation remain release gates. Native EDL and tuning controls remain out of the
 browser slice.
 
+Resolved on 2026-07-19: point-cloud browser promotion is withdrawn. The RESEPI source dataset is
+third-party and all-rights-reserved (Inertial Labs), so no redistributable public bundle is
+possible. The example is delisted to `webgpu-deferred`, its public route removed from
+`live_examples.js`, and only the localhost-only dev route is retained.
+
 Recorded local browser shader-payload proof on 2026-06-18: `node --check
 tools/webgpu_browser_smoke.mjs`, `node --check tools/wasm_scene_smoke.mjs`, and `just
 wasm-scene-smoke` passed after resolving WGSL includes during scene shader emission and adding a
