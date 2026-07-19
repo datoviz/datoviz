@@ -1233,6 +1233,7 @@ int test_drp2_runtime_vklite_reallocates_object_table_safely(TstContext* suite, 
         stream, 4, 2, 2,
         DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
 
+    /* Fill the initial 64-slot table; the pipeline created below must grow it. */
     for (uint64_t id = 100; id < 161; id++)
     {
         AT(dvz_drp2_stream_create_sampler(stream, id));
@@ -1241,11 +1242,6 @@ int test_drp2_runtime_vklite_reallocates_object_table_safely(TstContext* suite, 
     AT(drp2_test_create_render_pipeline(stream, 3, 1, 2, 0));
     AT(dvz_drp2_stream_create_buffer(
         stream, 5, 4, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
-
-    for (uint64_t id = 200; id < 262; id++)
-    {
-        AT(dvz_drp2_stream_create_sampler(stream, id));
-    }
 
     AT(dvz_drp2_stream_begin_command_encoder(stream, 10));
     AT(dvz_drp2_stream_begin_render_pass(stream, 11, 10, 4));
