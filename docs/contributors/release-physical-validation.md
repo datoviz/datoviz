@@ -166,7 +166,7 @@ Vulkan SDK and dynamic-library discovery overrides, and run the shared cloud/phy
 profile twice without maintainer input:
 
 ```sh
-just release-test-physical 29635132595 0.4.0rc1 --machine-id macbook-m3
+just release-test-physical <wheels-run-id> <version> --machine-id macbook-m3
 ```
 
 After it guides the maintainer through the fixed interaction set above, it records every result.
@@ -174,7 +174,7 @@ Omitted scenarios remain pending and cannot be approved:
 
 ```sh
 just release-test-approve \
-  --evidence-dir build/release/0.4.0rc1/conformance/macbook-m3 \
+  --evidence-dir build/release/<version>/conformance/macbook-m3 \
   --approved-by cyrille \
   --result 'exact-wheel-quickstart=pass:wheel SHA-256, interpreter, import path, command; resize, pan, zoom, and close succeeded' \
   --result 'scatter-panzoom=pass:resize, pan, and wheel-zoom succeeded' \
@@ -196,7 +196,7 @@ approval. `--confirm yes` creates a checksummed archive, pushes it to
 
 ```sh
 just release-test-submit \
-  --evidence-dir build/release/0.4.0rc1/conformance/macbook-m3 \
+  --evidence-dir build/release/<version>/conformance/macbook-m3 \
   --confirm yes
 ```
 
@@ -206,9 +206,8 @@ release machine is also a worker and must submit its own evidence. Its agent may
 accepted submissions and regenerate the combined hosted/physical HTML report:
 
 ```sh
-just release-evidence-sync 29635132595 \
-  --input build/wheel-reports/29635132595 \
-  --expected-machine release-linux-x86_64 \
+just release-evidence-sync <wheels-run-id> \
+  --input path/to/hosted-evidence \
   --expected-machine macbook-m3
 ```
 
