@@ -56,6 +56,8 @@
         _tst_desc.isolation = TST_ISOLATION_SERIAL;                                               \
         _tst_desc.fixture = TST_DRP2_VKLITE_FIXTURE;                                              \
         _tst_desc.fixture_scope = TST_FIXTURE_SCOPE_PROCESS;                                      \
+        _tst_desc.setup = drp2_test_vklite_validation_setup;                                      \
+        _tst_desc.teardown = drp2_test_vklite_validation_teardown;                                \
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 

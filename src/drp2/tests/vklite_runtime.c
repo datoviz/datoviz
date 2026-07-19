@@ -58,6 +58,42 @@ bool _dvz_drp2_runtime_vklite_download_buffer(
 /*************************************************************************************************/
 
 
+/**
+ * Return the smallest multisample count supported for an RGBA8 color attachment.
+ *
+ * @param ctx GPU context owning the selected physical device.
+ * @return A supported multisample count, or one when multisampling is unavailable.
+ */
+static uint32_t _supported_color_sample_count(DvzGpuCtx* ctx)
+{
+    ANN(ctx);
+    DvzDevice* device = dvz_gpu_ctx_device(ctx);
+    if (device == NULL)
+        return 1;
+    VkPhysicalDevice physical_device = dvz_device_physical_device(device);
+    if (physical_device == VK_NULL_HANDLE)
+        return 1;
+
+    VkImageFormatProperties props = {0};
+    VkResult result = vkGetPhysicalDeviceImageFormatProperties(
+        physical_device, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TYPE_2D,
+        VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, 0, &props);
+    if (result != VK_SUCCESS)
+        return 1;
+
+    const VkSampleCountFlagBits candidates[] = {
+        VK_SAMPLE_COUNT_2_BIT,  VK_SAMPLE_COUNT_4_BIT,  VK_SAMPLE_COUNT_8_BIT,
+        VK_SAMPLE_COUNT_16_BIT, VK_SAMPLE_COUNT_32_BIT, VK_SAMPLE_COUNT_64_BIT,
+    };
+    for (uint32_t i = 0; i < sizeof(candidates) / sizeof(candidates[0]); i++)
+    {
+        if ((props.sampleCounts & candidates[i]) != 0)
+            return (uint32_t)candidates[i];
+    }
+    return 1;
+}
+
+
 
 /*************************************************************************************************/
 /*  Tests                                                                                        */
@@ -281,7 +317,7 @@ int test_drp2_runtime_vklite_samples_3d_texture(TstContext* suite, const TstCase
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t downloaded[16] = {0};
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 9, 0, 16, downloaded));
@@ -328,7 +364,7 @@ int test_drp2_runtime_vklite_executes_resource_commands(TstContext* suite, const
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     dvz_drp2_stream_destroy(stream);
     return 0;
@@ -360,7 +396,7 @@ int test_drp2_runtime_vklite_writes_buffer_contents(TstContext* suite, const Tst
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t expected[16] = {
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
@@ -407,7 +443,7 @@ int test_drp2_runtime_vklite_copies_buffer_contents(TstContext* suite, const Tst
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t expected[16] = {
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
@@ -468,7 +504,7 @@ int test_drp2_runtime_vklite_uses_external_buffer(TstContext* suite, const TstCa
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t downloaded[16] = {0};
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 2, 8, 16, downloaded));
@@ -853,7 +889,7 @@ int test_drp2_runtime_vklite_writes_texture_contents(TstContext* suite, const Ts
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t expected[16] = {
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
@@ -903,7 +939,7 @@ int test_drp2_runtime_vklite_copies_buffer_to_texture(TstContext* suite, const T
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t expected[16] = {
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
@@ -952,7 +988,7 @@ int test_drp2_runtime_vklite_copies_texture_to_texture(TstContext* suite, const 
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t expected[16] = {
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
@@ -996,7 +1032,7 @@ int test_drp2_runtime_vklite_creates_glsl_shader_modules(TstContext* suite, cons
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     dvz_drp2_stream_destroy(stream);
     return 0;
@@ -1033,7 +1069,7 @@ int test_drp2_runtime_vklite_creates_render_pipeline(TstContext* suite, const Ts
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     dvz_drp2_stream_destroy(stream);
     return 0;
@@ -1143,7 +1179,7 @@ int test_drp2_runtime_vklite_rejects_pipeline_with_failed_shader(TstContext* sui
     AT(tst_expect_error_end(suite) == 0);
     AT(!result.ok);
     /* Runtime must not crash or leave a NULL pipeline object registered. */
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     dvz_drp2_stream_destroy(stream);
     dvz_drp2_runtime_destroy(runtime);
@@ -1199,7 +1235,7 @@ int test_drp2_runtime_vklite_destroy_after_partial_failure(TstContext* suite, co
 
     /* Destroy the runtime after the failed execution — must not crash or leak. */
     dvz_drp2_runtime_destroy(runtime);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     dvz_gpu_ctx_destroy(ctx);
     return 0;
@@ -1255,7 +1291,7 @@ int test_drp2_runtime_vklite_reallocates_object_table_safely(TstContext* suite, 
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t downloaded[4] = {0};
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 5, 0, 4, downloaded));
@@ -1310,7 +1346,7 @@ int test_drp2_runtime_vklite_draws_render_pass(TstContext* suite, const TstCase*
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t downloaded[4] = {0};
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 5, 0, 4, downloaded));
@@ -1381,7 +1417,7 @@ int test_drp2_runtime_vklite_render_area_independent_from_viewport(
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t downloaded[16] = {0};
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 5, 0, 16, downloaded));
@@ -1430,7 +1466,7 @@ int test_drp2_runtime_vklite_draws_named_depth_render_pass(TstContext* suite, co
     AT(dvz_drp2_stream_create_buffer(
         stream, 6, 4, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 10));
-    AT(dvz_drp2_stream_begin_render_pass(stream, 11, 10, 4));
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 11, 10, 4, 0, 0, 0, 1));
     AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, 5, 1.0f));
     AT(dvz_drp2_stream_set_pipeline(stream, 11, 3));
     AT(dvz_drp2_stream_draw(stream, 11, 3, 1, 0, 0));
@@ -1442,7 +1478,7 @@ int test_drp2_runtime_vklite_draws_named_depth_render_pass(TstContext* suite, co
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t downloaded[4] = {0};
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 6, 0, 4, downloaded));
@@ -1480,7 +1516,14 @@ int test_drp2_runtime_vklite_draws_msaa_resolve_render_pass(TstContext* suite, c
         "#version 450\nlayout(location=0)out vec4 color;"
         "void main(){color=vec4(0,0,1,1);}"));
     AT(drp2_test_create_render_pipeline(stream, 3, 1, 2, 0));
-    AT(dvz_drp2_stream_pipeline_set_multisampling(stream, 2, false));
+    uint32_t sample_count = _supported_color_sample_count(ctx);
+    if (sample_count == 1)
+    {
+        tst_skip(suite, "multisampled RGBA8 color attachments are unsupported");
+        dvz_drp2_stream_destroy(stream);
+        return 0;
+    }
+    AT(dvz_drp2_stream_pipeline_set_multisampling(stream, sample_count, false));
     DvzDrp2TextureDesc msaa_desc = dvz_drp2_texture_desc();
     msaa_desc.id = 4;
     msaa_desc.width = 2;
@@ -1488,7 +1531,7 @@ int test_drp2_runtime_vklite_draws_msaa_resolve_render_pass(TstContext* suite, c
     msaa_desc.depth = 1;
     msaa_desc.format = DVZ_FORMAT_R8G8B8A8_UNORM;
     msaa_desc.usage = DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT;
-    msaa_desc.sample_count = 2;
+    msaa_desc.sample_count = sample_count;
     AT(dvz_drp2_stream_create_texture(stream, &msaa_desc));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 5, 2, 2,
@@ -1509,7 +1552,7 @@ int test_drp2_runtime_vklite_draws_msaa_resolve_render_pass(TstContext* suite, c
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t downloaded[4] = {0};
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 6, 0, 4, downloaded));
@@ -1572,7 +1615,7 @@ int test_drp2_runtime_vklite_draws_rg32uint_readback(TstContext* suite, const Ts
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint32_t downloaded[2] = {0};
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 5, 0, sizeof(downloaded), downloaded));
@@ -1634,7 +1677,7 @@ int test_drp2_runtime_vklite_draws_multi_color_render_pass(TstContext* suite, co
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t red[4] = {0};
     uint8_t green[4] = {0};
@@ -1812,7 +1855,7 @@ int test_drp2_runtime_vklite_draws_wboit_format_passes(TstContext* suite, const 
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t resolved[4] = {0};
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 33, 0, 4, resolved));
@@ -2099,7 +2142,7 @@ int test_drp2_runtime_vklite_draws_depth_peeling_shape(TstContext* suite, const 
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t resolved[4] = {0};
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 70, 0, 4, resolved));
@@ -2278,7 +2321,7 @@ int test_drp2_runtime_vklite_samples_read_only_active_depth(
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t resolved[4] = {0};
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 60, 0, 4, resolved));
@@ -2391,7 +2434,7 @@ int test_drp2_runtime_vklite_ignores_unused_render_pass_bind_groups(
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     Drp2VkliteObject* depth = _vklite_find(runtime->vklite_state, 51);
     ANN(depth);
@@ -2457,7 +2500,7 @@ int test_drp2_runtime_vklite_samples_then_copies_texture(TstContext* suite, cons
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t downloaded[16] = {0};
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 9, 0, 16, downloaded));
@@ -2570,7 +2613,7 @@ int test_drp2_runtime_vklite_refreshes_bind_group_after_texture_recreate(
     result = dvz_drp2_runtime_execute(runtime, resized);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t downloaded[16] = {0};
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 19, 0, 16, downloaded));
@@ -2718,7 +2761,7 @@ int test_drp2_runtime_vklite_refreshes_bind_group_after_buffer_sampler_recreate(
     result = dvz_drp2_runtime_execute(runtime, recreated);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t downloaded[4] = {0};
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 21, 0, sizeof(downloaded), downloaded));
@@ -2837,7 +2880,7 @@ int test_drp2_write_buffer_bytes_large_payload_executes(TstContext* suite, const
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
-    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     float* downloaded = (float*)dvz_malloc(SIZE);
     ANN(downloaded);

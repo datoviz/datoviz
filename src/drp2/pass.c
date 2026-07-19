@@ -528,6 +528,24 @@ static VkAttachmentStoreOp _vklite_attachment_store_op(DvzDrp2AttachmentStoreOp 
 }
 
 
+
+/**
+ * Resolve a depth attachment store operation without introducing writes for read-only access.
+ *
+ * @param op requested DRP2 store operation
+ * @param access effective attachment access
+ * @return Vulkan store operation
+ */
+static VkAttachmentStoreOp _vklite_depth_attachment_store_op(
+    DvzDrp2AttachmentStoreOp op, DvzDrp2AttachmentAccess access)
+{
+    if (access == DVZ_DRP2_ATTACHMENT_ACCESS_READ &&
+        op == DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE)
+        return VK_ATTACHMENT_STORE_OP_NONE;
+    return _vklite_attachment_store_op(op);
+}
+
+
 /**
  * Begin a vklite dynamic-rendering pass for a DRP2 BeginRenderPass command.
  *
@@ -900,7 +918,8 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
         dvz_attachment_image(datt, depth_view, _vklite_texture_access_layout(depth_access));
         dvz_attachment_ops(
             datt, _vklite_attachment_load_op(depth_load_op),
-            _vklite_attachment_store_op(command->u.begin_render_pass.depth_store_op));
+            _vklite_depth_attachment_store_op(
+                command->u.begin_render_pass.depth_store_op, depth_attachment_access));
         if (depth_load_op == DVZ_DRP2_ATTACHMENT_LOAD_CLEAR)
         {
             dvz_attachment_clear(

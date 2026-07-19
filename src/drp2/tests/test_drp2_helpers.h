@@ -68,4 +68,10 @@ void* drp2_test_vklite_fixture_create(TstSuite* suite, uint32_t worker_index);
 void drp2_test_vklite_fixture_destroy(void* fixture_ptr);
 
 DvzDrp2Runtime* drp2_test_vklite_fixture_runtime(TstContext* suite, DvzGpuCtx** out_gpu_ctx);
+
+int drp2_test_vklite_validation_setup(TstContext* suite, const TstCase* item);
+
+int drp2_test_vklite_validation_teardown(TstContext* suite, const TstCase* item);
+
+bool drp2_test_vklite_validation_clean(TstContext* suite, DvzGpuCtx* gpu_ctx);
 #endif

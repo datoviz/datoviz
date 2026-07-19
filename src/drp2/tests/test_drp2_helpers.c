@@ -24,6 +24,7 @@
 
 #if DVZ_DRP2_HAS_VKLITE
 #include "_log.h"
+#include "datoviz/vk/device.h"
 #include "datoviz/vk/instance.h"
 #endif
 
@@ -87,6 +88,7 @@ typedef struct
 {
     DvzGpuCtx* gpu_ctx;
     DvzDrp2Runtime* runtime;
+    uint32_t validation_errors_before;
     bool available;
     const char* skip_reason;
 } DvzDrp2VkliteFixture;
@@ -210,6 +212,79 @@ DvzDrp2Runtime* drp2_test_vklite_fixture_runtime(TstContext* suite, DvzGpuCtx** 
     if (out_gpu_ctx != NULL)
         *out_gpu_ctx = fixture->gpu_ctx;
     return fixture->runtime;
+}
+
+
+
+/**
+ * Record the validation-error count before one shared-fixture DRP2 test.
+ *
+ * @param suite Active test context.
+ * @param item Active test case.
+ * @return Zero.
+ */
+int drp2_test_vklite_validation_setup(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzDrp2VkliteFixture* fixture =
+        (DvzDrp2VkliteFixture*)tst_context_fixture(suite, TST_DRP2_VKLITE_FIXTURE);
+    if (fixture != NULL && fixture->available && fixture->gpu_ctx != NULL)
+        fixture->validation_errors_before = dvz_gpu_ctx_error_count(fixture->gpu_ctx);
+    return 0;
+}
+
+
+
+/**
+ * Wait for shared GPU work and attribute new validation errors to the active test.
+ *
+ * @param suite Active test context.
+ * @param item Active test case.
+ * @return Zero when no validation error was added, otherwise nonzero.
+ */
+int drp2_test_vklite_validation_teardown(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzDrp2VkliteFixture* fixture =
+        (DvzDrp2VkliteFixture*)tst_context_fixture(suite, TST_DRP2_VKLITE_FIXTURE);
+    if (fixture == NULL || !fixture->available || fixture->gpu_ctx == NULL)
+        return 0;
+
+    DvzDevice* device = dvz_gpu_ctx_device(fixture->gpu_ctx);
+    if (device != NULL)
+        dvz_device_wait(device);
+    uint32_t validation_errors_after = dvz_gpu_ctx_error_count(fixture->gpu_ctx);
+    if (validation_errors_after != fixture->validation_errors_before)
+    {
+        log_error(
+            "Vulkan validation errors increased during %s (%u -> %u)", item->name,
+            fixture->validation_errors_before, validation_errors_after);
+        return 1;
+    }
+    return 0;
+}
+
+
+
+/**
+ * Check that a test has not added a Vulkan validation error to its GPU context.
+ *
+ * @param suite Active test context.
+ * @param gpu_ctx GPU context used by the test.
+ * @return Whether the validation count still matches the test baseline.
+ */
+bool drp2_test_vklite_validation_clean(TstContext* suite, DvzGpuCtx* gpu_ctx)
+{
+    ANN(suite);
+    ANN(gpu_ctx);
+    DvzDrp2VkliteFixture* fixture =
+        (DvzDrp2VkliteFixture*)tst_context_fixture(suite, TST_DRP2_VKLITE_FIXTURE);
+    uint32_t baseline = 0;
+    if (fixture != NULL && fixture->available && fixture->gpu_ctx == gpu_ctx)
+        baseline = fixture->validation_errors_before;
+    return dvz_gpu_ctx_error_count(gpu_ctx) == baseline;
 }
 #endif
 
