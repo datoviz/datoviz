@@ -1,14 +1,14 @@
 name: "TEST"
 
-# Trigger on push and PR on main
+# Trigger on the active v0.4 release-candidate branch.
 on:
   workflow_dispatch: # enable manual workflow trigger from the GitHub website
   push:
     branches:
-      - main
+      - v0.4-dev
   pull_request:
     branches:
-      - main
+      - v0.4-dev
 
 env:
   DVZ_LOG_LEVEL: 2  # 1 for DEBUG and 0 for TRACE
