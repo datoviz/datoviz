@@ -110,7 +110,7 @@ quickstart-c: build
         -Iinclude -Lbuild/src -Wl,-rpath,"$PWD/build/src" -ldatoviz -lm
 
 quickstart-check: quickstart-c
-    @python3 examples/docs/quickstart_smoke.py
+    @PYTHONPATH=. python3 examples/docs/quickstart_smoke.py
     @./build/examples/docs/quickstart --frames 1
 
 # Run all Python examples and generate screenshots in data/gallery/.
