@@ -283,6 +283,14 @@ Candidate feature work, not an RC2 blocker:
    checkerboard Klein-bottle showcase, and native/WebGPU validation. Otherwise defer it without
    blocking RC2.
 
+Candidate release infrastructure, not an RC2 blocker:
+
+1. Begin the post-RC1
+   [website deployment and versioning migration](../../spec/docs/WEBSITE_DEPLOYMENT.md): preserve
+   the guarded local publisher as a fallback, add hosted preview/artifact validation, and introduce
+   manual production promotion of exact documentation bytes. Complete it before v0.4.0 final when
+   practical; do not delay RC2 solely for this infrastructure work.
+
 ### 9. RC3
 
 Exit criteria:
