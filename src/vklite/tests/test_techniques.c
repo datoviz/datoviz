@@ -699,6 +699,28 @@ int test_technique_msaa(TstContext* suite, const TstCase* tstitem)
         dvz_barrier_image_aspect(
             bdepth, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
 
+        DvzBarrierImage* bmscolor =
+            dvz_barriers_image(&barriers, dvz_image_handle(msimg, 0));
+        dvz_barrier_image_stage(
+            bmscolor, VK_PIPELINE_STAGE_2_NONE,
+            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
+        dvz_barrier_image_access(bmscolor, 0, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+        dvz_barrier_image_layout(
+            bmscolor, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
+
+        DvzBarrierImage* bmsdepth =
+            dvz_barriers_image(&barriers, dvz_image_handle(msdepth, 0));
+        dvz_barrier_image_stage(
+            bmsdepth, VK_PIPELINE_STAGE_2_NONE,
+            VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
+                VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT);
+        dvz_barrier_image_access(
+            bmsdepth, 0, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+        dvz_barrier_image_layout(
+            bmsdepth, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
+        dvz_barrier_image_aspect(
+            bmsdepth, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
+
         dvz_cmd_barriers(cmds, &barriers);
     }
     dvz_cmd_rendering_begin(cmds, rendering);
