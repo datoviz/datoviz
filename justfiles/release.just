@@ -5,9 +5,9 @@ version:
     /#define DVZ_VERSION_MAJOR/ { major = $3 }
     /#define DVZ_VERSION_MINOR/ { minor = $3 }
     /#define DVZ_VERSION_PATCH/ { patch = $3 }
-    /#define DVZ_VERSION_DEV/ { dev = $3 }
+    /#define DVZ_VERSION_DEVEL/ { dev = $3 }
     END { print major "." minor "." patch dev }
-    ' "include/datoviz_version.h")
+    ' "include/datoviz/common/version.h")
     echo ${VERSION}
 #
 
@@ -18,20 +18,19 @@ version-bump version confirm='no':
 bump version confirm='no':
     #!/usr/bin/env python
     from datetime import datetime
-    import os
     import re
+    import subprocess
 
     if "{{confirm}}" != "yes":
         raise SystemExit("Refusing to bump versions without confirm=yes. Run: just version-bump {{version}} yes")
 
     # Define the version
     version = "{{version}}"
-    major, minor, patch = version.split('.')
-    dev = ""
-    if "-" in patch:
-        patch, dev = patch.split("-")
-        dev = "-" + dev
-    # dev variable contains either "" or "-dev"
+    match = re.fullmatch(r'(\d+)\.(\d+)\.(\d+)((?:dev|a|b|rc)\d+)?', version)
+    if match is None:
+        raise SystemExit(f"Invalid PEP 440 release version: {version}")
+    major, minor, patch, dev = match.groups()
+    dev = dev or ""
 
     # Function to update file content using regex
     def update_file(file_path, patterns_replacements):
@@ -43,7 +42,7 @@ bump version confirm='no':
             file.write(content)
 
     # Update the include file with the new version numbers
-    include_file = "include/datoviz_version.h"
+    include_file = "include/datoviz/common/version.h"
     include_patterns_replacements = [
         (r'#define DVZ_VERSION_MAJOR \d+', f'#define DVZ_VERSION_MAJOR {major}'),
         (r'#define DVZ_VERSION_MINOR \d+', f'#define DVZ_VERSION_MINOR {minor}'),
@@ -74,7 +73,7 @@ bump version confirm='no':
     print(f"Updated {toml_file}")
 
     # Call the `just ctypes` command
-    os.system("just ctypes")
+    subprocess.run(["just", "ctypes"], check=True)
     print("Updated ctypes wrapper")
 #
 
