@@ -11,33 +11,15 @@ more control and performance than an ordinary plotting library provides.
 
 [![Scientific wind-field visualization rendered with Datoviz](docs/images/gallery/showcases/showcase_wind_field.png)](https://datoviz.org/examples/gallery/showcases/showcases_wind_field/)
 
+| [![Allen mouse brain volume rendered with Datoviz](docs/images/gallery/showcases/brain_volume_mesh.png)](https://datoviz.org/examples/gallery/showcases/showcases_brain_volume/) | [![Large colorized LiDAR point cloud rendered with Datoviz](docs/images/gallery/showcases/point_cloud.png)](https://datoviz.org/examples/gallery/showcases/showcases_point_cloud/) | [![U.S. state population choropleth rendered with Datoviz](docs/images/gallery/showcases/us_state_choropleth.png)](https://datoviz.org/examples/gallery/showcases/showcases_choropleth/) |
+| --- | --- | --- |
+| [Allen mouse brain](https://datoviz.org/examples/gallery/showcases/showcases_brain_volume/) | [Point cloud](https://datoviz.org/examples/gallery/showcases/showcases_point_cloud/) | [U.S. state choropleth](https://datoviz.org/examples/gallery/showcases/showcases_choropleth/) |
+
+**[Browse the full gallery →](https://datoviz.org/examples/)**
+
 Datoviz v0.4 provides a retained scene model, native Vulkan rendering, desktop and offscreen
 presentation, reproducible capture, and direct use from C or Python. Python users call the generated
 binding with `import datoviz as dvz` and pass NumPy arrays directly to supported data-upload APIs.
-
-
-## v0.4 Release Status
-
-The `v0.4-dev` branch is the first v0.4 release candidate. The native C and Python/NumPy paths are
-release-facing; experimental and deferred surfaces remain explicitly labeled throughout the
-documentation.
-
-| Surface | v0.4 status |
-| --- | --- |
-| Native C scene/app API | supported, with feature-specific gaps |
-| Python API with NumPy adaptation and exact raw calls | supported |
-| Offscreen rendering and capture | supported |
-| Qt/PyQt hosted rendering | supported, optional provider |
-| Retained visual families | supported/experimental by family |
-| WebGPU/WASM browser path | experimental |
-| Scene compute-to-render integration | experimental |
-| DRP2 command streams and runtime internals | advanced/unstable |
-| High-level plotting API | external/GSP |
-
-See the detailed [feature status](https://datoviz.org/reference/feature-status/),
-[platform support](https://datoviz.org/reference/platform-support/), and
-[v0.3 capability disposition](https://datoviz.org/reference/v03-visible-parity/) before relying on
-an experimental or backend-specific feature.
 
 
 ## Install
@@ -62,48 +44,67 @@ C/C++ integration.
 ## Minimal Python Example
 
 This deterministic example creates the scatter plot shown in the documentation: 10,000 random
-points with random colors and sizes on a dark background.
+points with random colors and sizes.
 
 ```python
-import ctypes
-
 import numpy as np
 import datoviz as dvz
 
-N = 10_000
+# Create deterministic NumPy arrays for one point per row.
+n = 10_000
 rng = np.random.default_rng(12345)
-pos = np.zeros((N, 3), dtype=np.float32)
-pos[:, :2] = rng.uniform(-1, 1, (N, 2))
-color = rng.integers(0, 255, (N, 4), dtype=np.uint8)
-color[:, 3] = 200
-diameter = rng.uniform(4, 12, N).astype(np.float32)
+positions = rng.uniform(-1, 1, (n, 3)).astype(np.float32)
+positions[:, 2] = 0
+colors = rng.integers(0, 256, (n, 4), dtype=np.uint8)
+colors[:, 3] = 200
+diameters = rng.uniform(4, 12, n).astype(np.float32)
 
+# Create the retained scene, its output figure, and one full-size panel.
 scene = dvz.dvz_scene()
 figure = dvz.dvz_figure(scene, 1280, 720, 0)
 panel = dvz.dvz_panel_full(figure)
-dvz.dvz_panel_set_background_color(panel, dvz.DvzColor(13, 18, 25, 255))
 
-panzoom = dvz.dvz_panzoom(scene, None)
-dvz.dvz_panel_bind_controller(panel, panzoom, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY)
-
+# Attach the arrays to a point visual, then add it to the panel.
 points = dvz.dvz_point(scene, 0)
-dvz.dvz_visual_set_data(points, "position", pos)
-dvz.dvz_visual_set_data(points, "color", color)
-dvz.dvz_visual_set_data(points, "diameter_px", diameter)
-
-style = dvz.dvz_point_style_desc()
-style.aspect = dvz.DVZ_SHAPE_ASPECT_FILLED
-style.stroke_width_px = 0
-dvz.dvz_point_set_style(points, ctypes.byref(style))
-dvz.dvz_visual_set_depth_test(points, False)
-dvz.dvz_visual_set_alpha_mode(points, dvz.DVZ_ALPHA_BLENDED)
+dvz.dvz_visual_set_data_many(
+    points,
+    {"position": positions, "color": colors, "diameter_px": diameters},
+)
 dvz.dvz_panel_add_visual(panel, points, None)
 
-dvz.run(scene, figure, title="Datoviz")
+# Bind 2D pan and zoom interaction, then open the native window.
+panzoom = dvz.dvz_panzoom(scene, None)
+dvz.dvz_panel_bind_controller(panel, panzoom, dvz.DVZ_DIM_MASK_XY)
+
+dvz.run(scene, figure, title="Datoviz Quickstart")
 ```
 
 Continue with the annotated [Quickstart](https://datoviz.org/start/quickstart/) or browse the
 [example gallery](https://datoviz.org/examples/).
+
+
+## v0.4 Release Status
+
+The `v0.4-dev` branch is the first v0.4 release candidate. The native C and Python/NumPy paths are
+release-facing; experimental and deferred surfaces remain explicitly labeled throughout the
+documentation.
+
+| Surface | v0.4 status |
+| --- | --- |
+| Native C scene/app API | supported, with feature-specific gaps |
+| Python API with NumPy adaptation and exact raw calls | supported |
+| Offscreen rendering and capture | supported |
+| Qt/PyQt hosted rendering | supported, optional provider |
+| Retained visual families | supported/experimental by family |
+| WebGPU/WASM browser path | experimental |
+| Scene compute-to-render integration | experimental |
+| DRP2 command streams and runtime internals | advanced/unstable |
+| High-level plotting API | external/GSP |
+
+See the detailed [feature status](https://datoviz.org/reference/feature-status/),
+[platform support](https://datoviz.org/reference/platform-support/), and
+[v0.3 capability disposition](https://datoviz.org/reference/v03-visible-parity/) before relying on
+an experimental or backend-specific feature.
 
 
 ## C And C++
@@ -148,7 +149,7 @@ also read [CONTRIBUTING.md](CONTRIBUTING.md) and [BUILD.md](BUILD.md).
 | Native application or C/C++ integration | C scene/app API |
 | Exact pointer/count form of the Python binding | `datoviz.raw` |
 | Browser rendering for promoted examples | experimental WebGPU/WASM subset |
-| High-level functions such as `scatter()` or `imshow()` | GSP/VisPy2 when available |
+| High-level functions such as `scatter()` or `imshow()` | Not in v0.4 — use the scene API today; GSP/VisPy2 later |
 
 Datoviz v0.4 is the explicit engine layer: scenes, visuals, data uploads, controllers, windows,
 captures, and integration surfaces. The old high-level Datoviz Python plotting API is not part of

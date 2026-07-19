@@ -203,7 +203,7 @@ protocol and runtime layers directly.
 <ol class="dvz-architecture" aria-label="Datoviz software layers">
 <li>
 <strong>High-level plotting</strong>
-<span>Developing GSP and VisPy 2 interfaces outside Datoviz v0.4</span>
+<span>Developing GSP and VisPy 2 interfaces outside Datoviz v0.4 — use the scene API below today</span>
 </li>
 <li>
 <strong><a href="start/what-is-datoviz/">Retained scene API</a></strong>
