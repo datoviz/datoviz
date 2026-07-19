@@ -1,7 +1,6 @@
 # Install
 
-These instructions target Datoviz v0.4.0rc2, the active release candidate now undergoing final
-wheel validation. Choose a path by what you want to run.
+These instructions target Datoviz v0.4.0rc2, the active release candidate published on PyPI and GitHub. Choose a path by what you want to run.
 
 <div class="dvz-context-strip">
   <span>v0.4 release candidate</span>
@@ -10,9 +9,7 @@ wheel validation. Choose a path by what you want to run.
   <span>Vulkan runtime required</span>
 </div>
 
-See the [v0.4.0rc2 status](../releases/v0.4.0rc2.md) for the package, validation scope, and current
-publication state. Check
-[project status](../reference/project-status.md) for the broader release posture.
+See the [v0.4.0rc2 release notes](../releases/v0.4.0rc2.md) for the package, validation scope, and known limitations. Check [project status](../reference/project-status.md) for the broader release posture.
 
 
 ## Choose an installation path
@@ -27,16 +24,14 @@ publication state. Check
 Native windows and offscreen rendering require a working Vulkan-capable GPU, driver, and runtime.
 Browser routes use the smaller, experimental [WebGPU subset](../reference/webgpu-subset.md).
 
-!!! info "RC2 publication in progress"
+!!! success "RC2 is published"
 
-    RC2 fixes the packaged macOS native-window Vulkan-loader defect found in RC1. Until the RC2
-    wheels are published, build the current `v0.4-dev` source to test native windows; RC1 remains
-    available on PyPI but retains that known defect.
+    RC2 fixes the packaged macOS native-window Vulkan-loader defect found in RC1. Install RC2 from PyPI for native-window use; RC1 remains available for reproducibility but is superseded.
 
 
 ## Python package path
 
-After RC2 publication, create an isolated environment and install the exact version from PyPI.
+Create an isolated environment and install the exact version from PyPI.
 
 === "macOS / Linux"
 
@@ -68,8 +63,7 @@ Verify the active environment after installation:
 python -c "import datoviz as dvz; print('datoviz import ok')"
 ```
 
-Then continue with the [Quickstart](quickstart.md). Before choosing optional providers or deployment
-targets, review [platform support and known limitations](../reference/platform-support.md).
+Then continue with the [Quickstart](quickstart.md). Before choosing optional providers or deployment targets, review [platform support and known limitations](../reference/platform-support.md).
 
 
 ## C and C++ package path
@@ -102,8 +96,8 @@ vendored dependencies, macOS, Linux, native Windows, WSL2, verification, and exa
 
 | Path | Current v0.4 posture |
 | --- | --- |
-| Python RC package | `datoviz==0.4.0rc2` is in final validation and not yet published. |
+| Python RC package | `datoviz==0.4.0rc2` is published on PyPI and verified against the canonical release wheels. |
 | Source build | Available now for development, C/C++ integration, and package validation. |
-| Native Windows wheels | RC2 AMD64 and ARM64 replacements require fresh hosted validation before publication. |
-| Source bundle | The RC2 source bundle is generated during candidate preparation and published with the prerelease. |
+| Native Windows wheels | RC2 AMD64 and ARM64 wheels are published and passed hosted build, package, and clean-install validation. |
+| Source bundle | The RC2 source bundle is published with the GitHub prerelease. |
 | vcpkg and conda-forge | Engineering and preflight paths; not published as RC2 package channels. |

@@ -24,15 +24,13 @@ binding with `import datoviz as dvz` and pass NumPy arrays directly to supported
 
 ## Install
 
-Datoviz v0.4.0rc2 is the active release candidate. Its replacement wheels are being validated;
-after publication, install the exact package with:
+Datoviz v0.4.0rc2 is the active published release candidate. Install the exact package from PyPI with:
 
 ```sh
 python -m pip install --pre datoviz==0.4.0rc2
 ```
 
-Until RC2 is published, v0.4.0rc1 remains the package available from PyPI. Its macOS wheel has a
-known native-window Vulkan-loader defect; build `v0.4-dev` from source when testing native windows.
+RC2 supersedes RC1. In particular, macOS users should upgrade because the RC1 wheel has a native-window Vulkan-loader defect that RC2 fixes.
 
 After the final v0.4 release, the normal command will be:
 
