@@ -32,9 +32,9 @@ Current source-of-truth files:
 4. `docs/reference/webgpu-subset.md`: public supported subset.
 5. `docs/examples/webgpu-matrix.md`: generated public matrix.
 
-As of 2026-07-16:
+As of 2026-07-19:
 
-1. Manifest counts: `83 webgpu-live`, with remaining examples explicitly classified as
+1. Manifest counts: `89 webgpu-live`, with remaining examples explicitly classified as
    `webgpu-planned`, `webgpu-deferred`, `native-only`, or non-public lab material.
 2. Live routes cover basic scene, timer animation, triangulation, builtin shapes 2D/3D, isolines,
    animation tracks, OBJ loading, picking, pixel/sphere/mesh selection, image probe, compute buffer
