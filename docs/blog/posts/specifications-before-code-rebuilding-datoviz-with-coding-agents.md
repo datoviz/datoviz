@@ -1,5 +1,6 @@
 ---
-date: 2026-07-19
+date: 2026-07-21
+draft: true
 slug: specifications-before-code-rebuilding-datoviz-with-coding-agents
 categories:
   - Development
