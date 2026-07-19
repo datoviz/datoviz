@@ -37,6 +37,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lane", action="append", default=[], help="gallery lane")
     parser.add_argument("--dry-run", action="store_true", help="list conversions without writing WebP files")
     parser.add_argument("--force", action="store_true", help="rewrite WebP files even when newer than PNGs")
+    parser.add_argument(
+        "--animated-fallbacks",
+        action="store_true",
+        help="create missing still-image fallbacks for animated and video previews",
+    )
     parser.add_argument("--strict", action="store_true", help="fail when selected PNG inputs are missing")
     parser.add_argument(
         "--require-image-dir",
@@ -57,6 +62,16 @@ def split_values(values: list[str]) -> set[str]:
 
 def output_path(example: build_gallery.Example, output_dir: Path) -> Path:
     return gallery_media.gallery_webp_path(example, output_dir)
+
+
+def fallback_output_path(example: build_gallery.Example, output_dir: Path) -> Path:
+    """Return the documentation fallback path for an animated preview."""
+    suffix = (
+        ".poster.webp"
+        if build_gallery.preferred_preview_media(example) == "video-mp4"
+        else ".webp"
+    )
+    return output_dir / example.lane / f"{example.id}{suffix}"
 
 
 def animated_preview_keys(manifest_data: dict) -> set[tuple[str, str]]:
@@ -87,11 +102,12 @@ def prune_stale_webp(output_dir: Path, examples: list[build_gallery.Example]) ->
     return removed
 
 
-def select_static_examples(
+def select_examples(
     examples: list[build_gallery.Example],
     animated_keys: set[tuple[str, str]],
     ids: set[str],
     lanes: set[str],
+    animated_fallbacks: bool,
 ) -> tuple[list[build_gallery.Example], int]:
     selected: list[build_gallery.Example] = []
     animated_skipped = 0
@@ -105,8 +121,9 @@ def select_static_examples(
         if lanes and example.lane not in lanes:
             continue
         if (example.lane, example.id) in animated_keys:
-            animated_skipped += 1
-            continue
+            if not animated_fallbacks:
+                animated_skipped += 1
+                continue
         selected.append(example)
     selected.sort(key=lambda item: (item.lane, item.id))
     return selected, animated_skipped
@@ -126,6 +143,7 @@ def generate_gallery_webp(
     require_image_dir: bool = False,
     quiet_missing: bool = False,
     prune_stale: bool = True,
+    animated_fallbacks: bool = False,
 ) -> tuple[int, GalleryWebPResult]:
     if not 0 <= quality <= 100:
         print("--quality must be between 0 and 100")
@@ -145,7 +163,9 @@ def generate_gallery_webp(
     animated_keys = animated_preview_keys(manifest_data)
     ids = ids or set()
     lanes = lanes or set()
-    examples, animated_skipped = select_static_examples(all_examples, animated_keys, ids, lanes)
+    examples, animated_skipped = select_examples(
+        all_examples, animated_keys, ids, lanes, animated_fallbacks
+    )
     if not examples:
         if animated_skipped:
             print("No static WebP conversions; animated previews are owned by build_gallery_animations.py")
@@ -165,12 +185,22 @@ def generate_gallery_webp(
     missing = 0
     for example in examples:
         png = gallery_media.gallery_png_path(example, image_dir)
-        webp = output_path(example, output_dir)
+        is_animated = (example.lane, example.id) in animated_keys
+        webp = (
+            fallback_output_path(example, output_dir)
+            if is_animated and animated_fallbacks
+            else output_path(example, output_dir)
+        )
         if not png.exists():
             missing += 1
             if not quiet_missing:
                 rel_png = png.relative_to(ROOT) if png.is_relative_to(ROOT) else png
                 print(f"missing: {example.id} -> {rel_png}")
+            continue
+        # A richer animation or video pipeline owns existing animated outputs. The documentation
+        # fallback only fills missing paths and must never replace those assets, even with --force.
+        if is_animated and animated_fallbacks and webp.exists():
+            skipped += 1
             continue
         if not needs_update(png, webp, force):
             skipped += 1
@@ -222,6 +252,7 @@ def main() -> int:
         strict=args.strict,
         require_image_dir=args.require_image_dir,
         quiet_missing=args.quiet_missing,
+        animated_fallbacks=args.animated_fallbacks,
     )
     return rc
 

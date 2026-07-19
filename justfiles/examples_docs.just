@@ -262,6 +262,7 @@ docs-check-generated:
 
 docs-build-check:
     @mkdir -p build/gallery-webp/v0.4 build-wasm-scene/wasm
+    @python3 -m unittest tools/tests/test_build_gallery_webp.py
     @uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs build --strict
 
 check-example-manifests:

@@ -222,7 +222,7 @@ def on_pre_build(**kwargs):
     import build_webgpu_data_bundles
     import gen_start_thumbs
 
-    build_gallery_webp.generate_gallery_webp(quiet_missing=True)
+    build_gallery_webp.generate_gallery_webp(quiet_missing=True, animated_fallbacks=True)
     build_webgpu_data_bundles.stage_bundles()
     gen_start_thumbs.generate()
 
