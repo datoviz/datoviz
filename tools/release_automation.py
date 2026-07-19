@@ -2417,35 +2417,41 @@ def github_draft(args: argparse.Namespace) -> int:
     ) if command_exists("gh") and not args.dry_run else 1
 
     if view_rc == 0:
+        edit_cmd = [
+            "gh",
+            "release",
+            "edit",
+            str(tag),
+            "--draft",
+            "--title",
+            str(tag),
+            "--notes-file",
+            os.fspath(notes_file),
+        ]
+        if is_prerelease_version(args.version):
+            edit_cmd.append("--prerelease")
         rc = run_checked(
-            [
-                "gh",
-                "release",
-                "edit",
-                str(tag),
-                "--draft",
-                "--title",
-                str(tag),
-                "--notes-file",
-                os.fspath(notes_file),
-            ],
+            edit_cmd,
             dry_run=args.dry_run,
         )
         if rc != 0:
             return rc
     else:
+        create_cmd = [
+            "gh",
+            "release",
+            "create",
+            str(tag),
+            "--draft",
+            "--title",
+            str(tag),
+            "--notes-file",
+            os.fspath(notes_file),
+        ]
+        if is_prerelease_version(args.version):
+            create_cmd.append("--prerelease")
         rc = run_checked(
-            [
-                "gh",
-                "release",
-                "create",
-                str(tag),
-                "--draft",
-                "--title",
-                str(tag),
-                "--notes-file",
-                os.fspath(notes_file),
-            ],
+            create_cmd,
             dry_run=args.dry_run,
         )
         if rc != 0:

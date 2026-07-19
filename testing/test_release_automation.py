@@ -5,6 +5,7 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 TOOL_PATH = ROOT_DIR / "tools" / "release_automation.py"
@@ -74,6 +75,47 @@ def test_rc2_command_plan_discloses_machine_exceptions() -> None:
 
     machine_plan = release_automation.machine_plan_text("0.4.0rc2")
     assert "no physical action; satisfy the hosted evidence" in machine_plan
+
+
+def test_github_draft_marks_release_candidate_as_prerelease(tmp_path, monkeypatch) -> None:
+    """A draft for an RC must retain GitHub's prerelease classification."""
+    release_automation = _load_release_automation()
+    monkeypatch.setattr(release_automation, "ROOT", tmp_path)
+    (tmp_path / "notes.md").write_text("RC notes\n", encoding="utf8")
+    (tmp_path / "candidate.whl").write_bytes(b"wheel")
+    state = {
+        "tag": "v0.4.0rc2",
+        "artifacts": [
+            {"kind": "release-notes", "path": "notes.md"},
+            {"kind": "wheel", "path": "candidate.whl"},
+        ],
+    }
+    monkeypatch.setattr(
+        release_automation,
+        "require_rehearsal_ready",
+        lambda version, allow_incomplete: {"state": state},
+    )
+    commands = []
+    monkeypatch.setattr(
+        release_automation,
+        "run_checked",
+        lambda argv, dry_run: commands.append(argv) or 0,
+    )
+
+    result = release_automation.github_draft(
+        SimpleNamespace(
+            version="0.4.0rc2",
+            confirm="no",
+            dry_run=True,
+            allow_incomplete=False,
+            allow_missing_tag=True,
+            notes_file=None,
+        )
+    )
+
+    assert result == 0
+    assert commands[0][:4] == ["gh", "release", "create", "v0.4.0rc2"]
+    assert "--prerelease" in commands[0]
 
 
 def test_conformance_campaign_matches_candidate_wheels(tmp_path, monkeypatch) -> None:
