@@ -216,26 +216,6 @@ export const LIVE_EXAMPLES = [
     scenarioId: "showcases_surface_grid",
   },
   {
-    id: "showcases_point_cloud",
-    label: "Point Cloud",
-    scenarioId: "showcases_point_cloud",
-    effectLimitations: [
-      {
-        effect: "edl",
-        status: "unavailable",
-        warning: "The desktop example enables eye-dome lighting; the WebGPU route uses direct point rendering.",
-      },
-    ],
-    dataBundles: [
-      {
-        id: "point_cloud",
-        url: "../../webgpu-data/examples/point_cloud/sha256-ad5b997813ca275a/manifest.json",
-        virtualRoot: "data/examples/point_cloud",
-        required: true,
-      },
-    ],
-  },
-  {
     id: "showcases_svg_tiger",
     label: "SVG Tiger",
     scenarioId: "showcases_svg_tiger",

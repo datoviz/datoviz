@@ -5829,18 +5829,17 @@
           "site_asset": "/assets/gallery/v0.4/showcases/showcases_point_cloud.webp"
         }
       },
-      "webgpu_status": "webgpu-live",
-      "webgpu_status_label": "Live in browser",
+      "webgpu_status": "webgpu-deferred",
+      "webgpu_status_label": "Deferred",
       "webgpu_requirements": [
         "pixel",
         "dense-point-cloud",
         "fly",
         "prepared-data"
       ],
-      "webgpu_reason": "the portable WebGPU route renders a prepared 500k-point subset; tuning controls remain native-only",
+      "webgpu_reason": "the browser route renders a prepared 500k-point subset locally, but the source LiDAR dataset is third-party (Inertial Labs RESEPI sample data, all rights reserved) and cannot be redistributed as a public web data bundle",
       "webgpu": {
-        "status": "webgpu-live",
-        "route": "examples/webgpu/live.html?id=showcases_point_cloud",
+        "status": "webgpu-deferred",
         "requirements": [
           "pixel",
           "dense-point-cloud",
@@ -5854,10 +5853,8 @@
             "warning": "The desktop example enables eye-dome lighting; the WebGPU route uses direct point rendering."
           }
         ],
-        "reason": "the portable WebGPU route renders a prepared 500k-point subset; tuning controls remain native-only"
+        "reason": "the browser route renders a prepared 500k-point subset locally, but the source LiDAR dataset is third-party (Inertial Labs RESEPI sample data, all rights reserved) and cannot be redistributed as a public web data bundle"
       },
-      "webgpu_route": "examples/webgpu/live.html?id=showcases_point_cloud",
-      "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_point_cloud",
       "dataset": {
         "name": "RESEPI GENM2X colorized benchmark point cloud",
         "source": "https://lidarpayload.com/sample-data/",

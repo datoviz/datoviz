@@ -3760,8 +3760,7 @@ examples:
     data:
       kind: prepared
     webgpu:
-      status: webgpu-live
-      route: examples/webgpu/live.html?id=showcases_point_cloud
+      status: webgpu-deferred
       local_route: examples/webgpu/live.html?id=showcases_point_cloud
       local_data_bundles:
         - id: point_cloud
@@ -3779,7 +3778,7 @@ examples:
         - effect: edl
           status: unavailable
           warning: The desktop example enables eye-dome lighting; the WebGPU route uses direct point rendering.
-      reason: the portable WebGPU route renders a prepared 500k-point subset; tuning controls remain native-only
+      reason: the browser route renders a prepared 500k-point subset locally, but the source LiDAR dataset is third-party (Inertial Labs RESEPI sample data, all rights reserved) and cannot be redistributed as a public web data bundle
     agent_copy_safe: false
     dataset:
       name: RESEPI GENM2X colorized benchmark point cloud
