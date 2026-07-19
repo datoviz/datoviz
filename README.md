@@ -9,9 +9,9 @@
 dense points, images, meshes, volumes, annotations, linked panels, or custom scientific scenes need
 more control and performance than an ordinary plotting library provides.
 
-[![Scientific wind-field visualization rendered with Datoviz](https://datoviz.org/images/gallery/showcases/showcase_wind_field.png)](https://datoviz.org/examples/gallery/showcases/showcases_wind_field/)
+[![Interactive 3D protein visualization rendered with Datoviz](https://datoviz.org/assets/gallery/v0.4/showcases/showcases_protein.poster.webp)](https://datoviz.org/examples/gallery/showcases/showcases_protein/)
 
-| [![Allen mouse brain volume rendered with Datoviz](https://datoviz.org/images/gallery/showcases/brain_volume_mesh.png)](https://datoviz.org/examples/gallery/showcases/showcases_brain_volume/) | [![Large colorized LiDAR point cloud rendered with Datoviz](https://datoviz.org/images/gallery/showcases/point_cloud.png)](https://datoviz.org/examples/gallery/showcases/showcases_point_cloud/) | [![U.S. state population choropleth rendered with Datoviz](https://datoviz.org/images/gallery/showcases/us_state_choropleth.png)](https://datoviz.org/examples/gallery/showcases/showcases_choropleth/) |
+| [![Allen mouse brain volume rendered with Datoviz](https://datoviz.org/assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp)](https://datoviz.org/examples/gallery/showcases/showcases_brain_volume/) | [![Large colorized LiDAR point cloud rendered with Datoviz](https://datoviz.org/assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp)](https://datoviz.org/examples/gallery/showcases/showcases_point_cloud/) | [![U.S. state population choropleth rendered with Datoviz](https://datoviz.org/assets/gallery/v0.4/showcases/showcases_choropleth.webp)](https://datoviz.org/examples/gallery/showcases/showcases_choropleth/) |
 | --- | --- | --- |
 | [Allen mouse brain](https://datoviz.org/examples/gallery/showcases/showcases_brain_volume/) | [Point cloud](https://datoviz.org/examples/gallery/showcases/showcases_point_cloud/) | [U.S. state choropleth](https://datoviz.org/examples/gallery/showcases/showcases_choropleth/) |
 
