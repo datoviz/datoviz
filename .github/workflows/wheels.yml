@@ -27,6 +27,8 @@ jobs:
       - uses: actions/checkout@v7
         with:
           submodules: recursive
+      - name: Materialize submodule LFS assets
+        run: bash tools/materialize_lfs_assets.sh
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
@@ -46,9 +48,11 @@ jobs:
             build/bindings/datoviz_api.json
             datoviz/_ctypes.py
             datoviz/_array_facade.py
+            data/assets/fonts/Roboto-Regular.ttf
+            data/assets/fonts/RobotoMono-Medium.ttf
 
   linux:
-    needs: matrix
+    needs: [matrix, python-bindings]
     runs-on: ${{ matrix.runner }}
     container:
       image: quay.io/pypa/manylinux_2_34_${{ matrix.arch }}:latest
@@ -66,6 +70,10 @@ jobs:
       - uses: actions/checkout@v7
         with:
           submodules: recursive
+      - uses: actions/download-artifact@v8
+        with:
+          name: python-bindings
+          path: .
       - name: Build, inspect, and smoke-test manylinux wheel
         env:
           DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_MIMALLOC_SOURCE=OFF -DDVZ_BUILD_TESTING=OFF -DDVZ_BUILD_EXAMPLES=OFF"

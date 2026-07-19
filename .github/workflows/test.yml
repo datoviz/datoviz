@@ -21,10 +21,7 @@ jobs:
           submodules: recursive
       - name: Materialize submodule LFS assets
         shell: bash
-        run: |
-          git submodule foreach --recursive git lfs pull
-          ! grep -aq '^version https://git-lfs.github.com/spec/v1$' \
-            data/assets/fonts/Roboto-Regular.ttf
+        run: bash tools/materialize_lfs_assets.sh
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
@@ -60,10 +57,7 @@ jobs:
         with:
           submodules: recursive
       - name: Materialize submodule LFS assets
-        run: |
-          git submodule foreach --recursive git lfs pull
-          ! grep -aq '^version https://git-lfs.github.com/spec/v1$' \
-            data/assets/fonts/Roboto-Regular.ttf
+        run: bash tools/materialize_lfs_assets.sh
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
@@ -92,10 +86,7 @@ jobs:
           submodules: recursive
       - name: Materialize submodule LFS assets
         shell: bash
-        run: |
-          git submodule foreach --recursive git lfs pull
-          ! grep -aq '^version https://git-lfs.github.com/spec/v1$' \
-            data/assets/fonts/Roboto-Regular.ttf
+        run: bash tools/materialize_lfs_assets.sh
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
