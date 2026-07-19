@@ -19,9 +19,11 @@ Desktop-first</p>
 </nav>
 
 <p class="dvz-home-status">
-<strong>v0.4 status:</strong> the native Vulkan scene API is the primary supported path. The first
-public release candidate is in preparation; browser WebGPU and advanced/unstable facilities remain
-experimental. See <a href="reference/feature-status/">feature status</a>.
+<strong>v0.4.0rc1:</strong> the first public release candidate is available for testing. The native
+Vulkan scene API is the primary supported path; browser WebGPU and advanced/unstable facilities
+remain experimental. See <a href="releases/v0.4.0rc1/">release notes</a>,
+<a href="reference/feature-status/">feature status</a>, or the
+<a href="/v0.3/">legacy v0.3 documentation</a>.
 </p>
 
 <div class="dvz-gallery-media dvz-gallery-media--video dvz-home-hero" data-gallery-lazy="video">
@@ -148,9 +150,9 @@ lower-level runtime integration. The public API uses C linkage and is callable f
 </section>
 </div>
 
-Prebuilt wheels containing the Python binding and native runtime have been validated for supported
-Linux, macOS, and Windows targets. They will provide the normal `pip install datoviz` path when the
-first public release candidate is published. Until then, follow the current
+Prebuilt wheels containing the Python binding and native runtime are published and validated for
+supported Linux, macOS, and Windows targets. Install the exact release candidate with
+`python -m pip install --pre datoviz==0.4.0rc1`, then follow the
 [installation instructions](start/install.md).
 
 

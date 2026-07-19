@@ -1,7 +1,7 @@
 # Install
 
-These instructions target Datoviz v0.4. Choose a path by what you want to run and by whether a
-release package is currently published.
+These instructions target the published Datoviz v0.4.0rc1 release candidate. Choose a path by what
+you want to run.
 
 <div class="dvz-context-strip">
   <span>v0.4 release candidate</span>
@@ -10,17 +10,16 @@ release package is currently published.
   <span>Vulkan runtime required</span>
 </div>
 
-The [release notes index](../releases/index.md) is currently a draft, pre-publication record. Until
-it names a published package or artifact, use the [source-build fallback](build-from-source.md).
-Check [project status](../reference/project-status.md) for the current release posture.
+See the [v0.4.0rc1 release notes](../releases/v0.4.0rc1.md) for the exact package, artifacts,
+validation evidence, and known limitations. Check
+[project status](../reference/project-status.md) for the broader release posture.
 
 
 ## Choose an installation path
 
 | You want to... | Use this path now |
 | --- | --- |
-| try Python before a package is published | [Build from source](build-from-source.md), then install the checkout in a virtual environment |
-| install a published Python RC or final version | use the exact command or artifact URL in the published release notes |
+| install the published Python RC | use the exact PyPI command below or a wheel from the release assets |
 | develop a C or C++ application now | [Build from source](build-from-source.md), then follow [C/C++ integration](../how-to/c-integration.md) |
 | contribute to Datoviz or use the latest `v0.4-dev` code | [Build from source](build-from-source.md) |
 | inspect browser support without installing native Datoviz | open a `webgpu-live` route from the [Examples](../examples/index.md) section |
@@ -31,8 +30,7 @@ Browser routes use the smaller, experimental [WebGPU subset](../reference/webgpu
 
 ## Python package path
 
-After an RC is published, its release notes will provide an exact version or artifact URL. Create an
-isolated environment first, then use that published command. Do not guess a pre-release version.
+Create an isolated environment, then install the exact RC1 version from PyPI.
 
 === "macOS / Linux"
 
@@ -40,7 +38,7 @@ isolated environment first, then use that published command. Do not guess a pre-
     python -m venv .venv
     source .venv/bin/activate
     python -m pip install --upgrade pip
-    # After publication, run the exact command from the linked release notes.
+    python -m pip install --pre datoviz==0.4.0rc1
     ```
 
 === "Windows PowerShell"
@@ -49,7 +47,7 @@ isolated environment first, then use that published command. Do not guess a pre-
     py -m venv .venv
     .\.venv\Scripts\Activate.ps1
     py -m pip install --upgrade pip
-    # After publication, run the exact command from the linked release notes.
+    py -m pip install --pre datoviz==0.4.0rc1
     ```
 
 After the final v0.4 package is published, the normal installation command will be:
@@ -78,9 +76,9 @@ find_package(datoviz CONFIG REQUIRED)
 target_link_libraries(my_app PRIVATE datoviz::datoviz)
 ```
 
-This CMake fragment is an integration example, not a complete project. No public installed package
-is assumed before the RC notes publish one. Until then, follow
-[Build from source](build-from-source.md), then use the
+This CMake fragment is an integration example, not a complete project. The RC1 wheels expose the
+installed C package and passed the release CMake-consumer checks. Source developers and system
+packagers may instead follow [Build from source](build-from-source.md), then use the
 [C/C++ integration guide](../how-to/c-integration.md).
 
 
@@ -98,7 +96,8 @@ vendored dependencies, macOS, Linux, native Windows, WSL2, verification, and exa
 
 | Path | Current v0.4 posture |
 | --- | --- |
-| Python RC/final package | Not assumed published; use only a version or artifact linked by published release notes. |
+| Python RC package | Published on PyPI as `datoviz==0.4.0rc1`; six native wheels are validated. |
 | Source build | Available now for development, C/C++ integration, and package validation. |
-| Native Windows wheels | AMD64/ARM64 lanes are validated, but validation is not publication. |
-| vcpkg, conda-forge, source bundle | Pre-publication engineering paths; see the draft release notes and project status. |
+| Native Windows wheels | AMD64 and ARM64 wheels are published and passed hosted package-index verification. |
+| Source bundle | Published with the GitHub prerelease and covered by the release checksums. |
+| vcpkg and conda-forge | Engineering and preflight paths; not published as RC1 package channels. |

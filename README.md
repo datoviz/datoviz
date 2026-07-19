@@ -42,11 +42,10 @@ an experimental or backend-specific feature.
 
 ## Install
 
-Once a v0.4 release candidate is published on PyPI, use the exact command from its release notes. A
-pre-release install will normally look like:
+Install the published v0.4.0rc1 package from PyPI with:
 
 ```sh
-python -m pip install --pre datoviz
+python -m pip install --pre datoviz==0.4.0rc1
 ```
 
 After the final v0.4 release, the normal command will be:
@@ -55,7 +54,7 @@ After the final v0.4 release, the normal command will be:
 python -m pip install datoviz
 ```
 
-Until packages are published for your platform, use the source build below. The full
+Use the source build below for development or platforms without a published wheel. The full
 [installation guide](https://datoviz.org/start/install/) covers macOS, Linux, Windows, Python, and
 C/C++ integration.
 

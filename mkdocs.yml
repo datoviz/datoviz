@@ -12,6 +12,7 @@ site_description: 'Datoviz v0.4: C-first GPU rendering engine for scientific vis
 site_author: Cyrille Rossant
 exclude_docs: |
   README.md
+  assets~/*
   architecture/*
   discussions/*
   gallery/*

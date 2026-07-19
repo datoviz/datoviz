@@ -159,8 +159,8 @@ packages. Those are not required when the normal vendored sources are available.
 
 ## Package engineering status
 
-Hosted wheel validation covers Linux x86_64/aarch64, macOS arm64/Intel, and Windows AMD64/ARM64, but
-passing validation does not publish an artifact. The vcpkg overlay, split conda-forge recipe, and
-release source bundle remain pre-publication engineering paths until release notes publish their
-locations and checksums. Use the [draft release notes index](../releases/index.md) and
+Published RC1 wheels cover Linux x86_64/aarch64, macOS arm64/Intel, and Windows AMD64/ARM64. The
+release source bundle and checksums are attached to the GitHub prerelease. The vcpkg overlay and
+split conda-forge recipe remain engineering paths rather than published RC1 package channels. Use
+the [release notes index](../releases/index.md) and
 [project status](../reference/project-status.md) for the current posture.

@@ -313,9 +313,9 @@ just release-notes 0.4.0rc1
 Review `build/release/0.4.0rc1/release-notes.md` and replace generated commit grouping with
 user-facing highlights before GitHub draft approval.
 
-The current RC1 draft lives in [v0.4.0rc1 release notes](../releases/v0.4.0rc1.md). Keep it as a
-draft until the final commit, tag, artifact URLs, checksums, and platform validation matrix are
-filled in.
+The published RC1 record lives in [v0.4.0rc1 release notes](../releases/v0.4.0rc1.md). For future
+candidates, keep the note as a draft until the final commit, tag, artifact URLs, checksums, and
+platform validation matrix are filled in.
 
 For final `v0.4.0`, enable or verify GitHub-Zenodo archiving before creating the GitHub release.
 After Zenodo archives the release, update `CITATION.cff`, [Citation](../reference/citation.md), and
