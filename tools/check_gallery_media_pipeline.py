@@ -35,8 +35,8 @@ def main() -> int:
     manifest = gallery_media.load_manifest(args.manifest)
     examples = build_gallery.collect_examples(manifest)
     animated_keys = gallery_media.animated_preview_keys(manifest)
-    static_examples, animated_skipped = build_gallery_webp.select_static_examples(
-        examples, animated_keys, set(), set()
+    static_examples, animated_skipped = build_gallery_webp.select_examples(
+        examples, animated_keys, set(), set(), False
     )
     static_keys = _keys(static_examples)
     overlap = static_keys & animated_keys

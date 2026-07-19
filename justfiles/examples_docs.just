@@ -137,6 +137,7 @@ gallery-refresh *args: build
     @python3 tools/build_gallery_animations.py
     @python3 tools/compare_gallery_media.py --all-animated --write-site-assets
     @python3 tools/check_gallery_media_pipeline.py
+    @python3 tools/check_gallery_media_freshness.py
     @python tools/build_gallery.py
     @python3 tools/build_examples_manifest.py
     @python3 tools/build_capabilities.py
@@ -172,6 +173,10 @@ gallery-animations *args:
 [positional-arguments]
 check-gallery-media-pipeline *args:
     @python3 tools/check_gallery_media_pipeline.py "$@"
+
+[positional-arguments]
+check-gallery-media-freshness *args:
+    @python3 tools/check_gallery_media_freshness.py "$@"
 
 
 # Build the build-local gallery media comparison report.
@@ -250,6 +255,7 @@ gallery:
     @python3 tools/build_gallery_animations.py
     @python3 tools/compare_gallery_media.py --all-animated --write-site-assets
     @python3 tools/check_gallery_media_pipeline.py
+    @python3 tools/check_gallery_media_freshness.py
     @just docs-generate
 
 docs-generate:
@@ -381,6 +387,7 @@ publish confirm='no' source_branch='main' seed_legacy='no':
 
     just wasm-scene-build-if-needed
     just wasm-scene-export-check
+    just check-gallery-media-freshness
 
     deploy_tmp=$(mktemp -d)
     trap 'rm -rf "$deploy_tmp"' EXIT
