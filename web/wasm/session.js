@@ -28,6 +28,7 @@ export class WasmSceneSession {
     this.status = messageCallback(options.status);
     this.stats = messageCallback(options.stats);
     this.onScene = sceneCallback(options.onScene);
+    this.networkProgress = messageCallback(options.networkProgress);
     this.scene = null;
     this.demo = null;
     this.rendering = false;
@@ -68,6 +69,7 @@ export class WasmSceneSession {
       logicalWidth: this.logicalWidth,
       logicalHeight: this.logicalHeight,
       dataBundles: this.demo.dataBundles ?? [],
+      networkProgress: this.networkProgress,
     };
     if (typeof this.demo.scenarioId === "string") {
       this.scene = await DatovizWasmScene.createScenario(this.canvas, this.demo.scenarioId, createOptions);

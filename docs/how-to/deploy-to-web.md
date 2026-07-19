@@ -70,6 +70,12 @@ just wasm-scene-build
 just serve
 ```
 
+The build also emits `datoviz_wasm_scene.assets.json`. Deploy it atomically with the generated
+`.mjs`, `.wasm`, and `.data` files. The browser uses the manifest's output-derived version for all
+three payload URLs, so unchanged builds reuse cached bytes while a changed payload receives a new
+cache key. The live page reports byte-level network progress after one second; WebGPU
+initialization is intentionally not represented as a percentage.
+
 ### Route shape
 
 ```text

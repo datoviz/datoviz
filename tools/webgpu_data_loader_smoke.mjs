@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
-import { mountDataBundles } from "../web/wasm/data_loader.js";
+import { mountDataBundles, prepareDataBundles } from "../web/wasm/data_loader.js";
+import { NetworkProgress } from "../web/wasm/network.js";
 
 function requireOk(condition, message) {
   if (!condition) throw new Error(message);
@@ -74,10 +75,15 @@ const descriptor = {
   required: true,
 };
 
-const first = await mountDataBundles(Module, [descriptor], { fetchImpl });
+const prepared = await prepareDataBundles([descriptor], { fetchImpl });
+const progressEvents = [];
+const progress = new NetworkProgress((event) => progressEvents.push(event));
+progress.expect(`bundle:demo:prepared/demo.bin`, artifact.byteLength);
+const first = await mountDataBundles(Module, [descriptor], { fetchImpl, prepared, progress });
 requireOk(first.length === 1 && first[0].cached === false, "first mount was not fresh");
 requireOk(Module.FS.files.has("/data/examples/demo/prepared/demo.bin"), "artifact was not mounted");
 requireOk(Module.FS.files.has("/data/examples/demo/manifest.json"), "manifest was not mounted");
+requireOk(progress.snapshot().percentage === 100, "bundle download progress did not complete");
 const second = await mountDataBundles(Module, [descriptor], { fetchImpl });
 requireOk(second.length === 1 && second[0].cached === true, "second mount was not cached");
 requireOk(fetchCount === 3, "cached mount should fetch only the version manifest");

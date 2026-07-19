@@ -20,6 +20,8 @@ webgpu-runner-smoke:
 
 webgpu-data-check:
     @node tools/webgpu_data_loader_smoke.mjs
+    @node tools/webgpu_network_smoke.mjs
+    @node tools/webgpu_loading_smoke.mjs
     @python3 tools/build_webgpu_data_bundles.py --check
 #
 
@@ -47,6 +49,7 @@ _wasm-scene-build-mode build_dir build_type flag_config c_flags='' cxx_flags='' 
 
 wasm-scene-build:
     @just _wasm-scene-build-mode build-wasm-scene Release RELEASE
+    @python3 tools/write_wasm_asset_manifest.py
 #
 
 wasm-scene-build-if-needed:
@@ -55,6 +58,7 @@ wasm-scene-build-if-needed:
 
 wasm-scene-export-check module='build-wasm-scene/wasm/datoviz_wasm_scene.mjs':
     @node tools/check_wasm_module_exports.mjs "{{module}}"
+    @python3 tools/write_wasm_asset_manifest.py --wasm-dir "$(dirname "{{module}}")" --check
 #
 
 wasm-scene-build-debug:

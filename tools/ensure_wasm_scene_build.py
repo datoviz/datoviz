@@ -96,6 +96,11 @@ def main() -> int:
     files = iter_inputs()
     digest = input_hash(files)
     if OUTPUT.exists() and load_stamp().get("input_hash") == digest:
+        result = subprocess.run(
+            ["python3", "tools/write_wasm_asset_manifest.py"], cwd=ROOT, check=False
+        )
+        if result.returncode != 0:
+            return result.returncode
         print("wasm scene build: current")
         return 0
 

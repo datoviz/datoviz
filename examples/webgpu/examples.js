@@ -1,4 +1,5 @@
 import { WasmSceneSession } from "../../web/wasm/session.js";
+import { NetworkLoadingOverlay } from "./loading.js";
 
 const DEMOS = [
   {
@@ -32,6 +33,7 @@ const canvas = document.querySelector("#viewport");
 const select = document.querySelector("#demo-select");
 const statusEl = document.querySelector("#status");
 const statsEl = document.querySelector("#stats");
+const loading = new NetworkLoadingOverlay(document.querySelector("#network-loading"));
 let session = null;
 
 function setStatus(message, isError = false) {
@@ -57,17 +59,20 @@ async function loadDemo(id) {
   select.value = entry.id;
   destroySession();
   setStats("");
+  loading.start();
   const { demo } = await entry.load();
   session = new WasmSceneSession({
     canvas,
     status: setStatus,
     stats: setStats,
+    networkProgress: (progress) => loading.update(progress),
     onScene(scene) {
       window.__datovizWasmScene = scene;
     },
   });
   window.__datovizWasmSession = session;
   await session.load(demo);
+  loading.finish();
   const url = new URL(window.location.href);
   url.searchParams.set("demo", demo.id);
   window.history.replaceState(null, "", url);
@@ -82,6 +87,7 @@ for (const demo of DEMOS) {
 
 select.addEventListener("change", () => {
   loadDemo(select.value).catch((error) => {
+    loading.finish();
     setStatus(error instanceof Error ? error.message : String(error), true);
   });
 });
@@ -92,6 +98,7 @@ window.addEventListener("pagehide", () => {
 
 const params = new URLSearchParams(window.location.search);
 loadDemo(params.get("demo") ?? DEMOS[0].id).catch((error) => {
+  loading.finish();
   setStatus(error instanceof Error ? error.message : String(error), true);
   console.error(error);
 });

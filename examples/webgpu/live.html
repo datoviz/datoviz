@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="./loading.css">
     <title>Datoviz WebGPU Live Example</title>
     <style>
       :root {
@@ -88,6 +89,7 @@
       }
 
       #stage {
+        position: relative;
         min-width: 0;
         min-height: 0;
         overflow: hidden;
@@ -116,6 +118,10 @@
   <body>
     <main id="stage">
       <canvas id="viewport"></canvas>
+      <div id="network-loading" class="network-loading" role="status" aria-live="polite" hidden>
+        <span data-loading-label>Preparing download…</span>
+        <progress max="100" value="0" aria-label="Network download progress"></progress>
+      </div>
     </main>
     <aside id="limitations" role="note" hidden>
       <strong>WebGPU rendering difference</strong>

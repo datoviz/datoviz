@@ -1,3 +1,5 @@
+import { trackedFetch } from "./network.js";
+
 const mountedBundles = new WeakMap();
 
 function requireValue(condition, message) {
@@ -44,21 +46,12 @@ function removeMountedFiles(FS, mounted) {
   }
 }
 
-export async function mountDataBundles(Module, bundles, options = {}) {
+export async function prepareDataBundles(bundles, options = {}) {
   if (bundles === undefined || bundles === null || bundles.length === 0) return [];
   requireValue(Array.isArray(bundles), "dataBundles must be an array");
-  const FS = Module?.FS;
-  requireValue(FS !== undefined, "WASM module does not expose its filesystem");
   const fetchImpl = options.fetchImpl ?? globalThis.fetch;
   requireValue(typeof fetchImpl === "function", "fetch is unavailable for WebGPU data bundles");
-  const verifyHashes = options.verifyHashes !== false;
-  let moduleBundles = mountedBundles.get(Module);
-  if (moduleBundles === undefined) {
-    moduleBundles = new Map();
-    mountedBundles.set(Module, moduleBundles);
-  }
-
-  const mounted = [];
+  const prepared = [];
   for (const descriptor of bundles) {
     requireValue(descriptor !== null && typeof descriptor === "object", "invalid data bundle descriptor");
     const id = String(descriptor.id ?? "");
@@ -93,9 +86,36 @@ export async function mountDataBundles(Module, bundles, options = {}) {
       totalBytes += artifactBytes(artifact);
     }
     requireValue(totalBytes <= maxBytes, `${id}: bundle exceeds its browser byte budget`);
+    prepared.push({ descriptor, id, manifest, root, totalBytes });
+  }
+  return prepared;
+}
+
+export async function mountDataBundles(Module, bundles, options = {}) {
+  if (bundles === undefined || bundles === null || bundles.length === 0) return [];
+  const FS = Module?.FS;
+  requireValue(FS !== undefined, "WASM module does not expose its filesystem");
+  const fetchImpl = options.fetchImpl ?? globalThis.fetch;
+  requireValue(typeof fetchImpl === "function", "fetch is unavailable for WebGPU data bundles");
+  const verifyHashes = options.verifyHashes !== false;
+  const prepared = options.prepared ?? await prepareDataBundles(bundles, { fetchImpl });
+  let moduleBundles = mountedBundles.get(Module);
+  if (moduleBundles === undefined) {
+    moduleBundles = new Map();
+    mountedBundles.set(Module, moduleBundles);
+  }
+
+  const mounted = [];
+  for (const bundle of prepared) {
+    const { descriptor, id, manifest, root, totalBytes } = bundle;
+    const version = String(manifest.web.version);
+    const artifacts = manifest.artifacts;
 
     const previous = moduleBundles.get(id);
     if (previous?.version === version && previous.root === root) {
+      for (const artifact of artifacts) {
+        options.progress?.complete(`bundle:${id}:${artifact.path}`);
+      }
       mounted.push({ id, version, root, bytes: previous.bytes, cached: true });
       continue;
     }
@@ -105,7 +125,10 @@ export async function mountDataBundles(Module, bundles, options = {}) {
     const manifestUrl = new URL(descriptor.url, globalThis.location?.href ?? "http://localhost/");
     for (const artifact of artifacts) {
       const artifactUrl = new URL(artifact.path, manifestUrl);
-      const artifactResponse = await fetchImpl(artifactUrl.href);
+      const progressId = `bundle:${id}:${artifact.path}`;
+      const artifactResponse = await trackedFetch(
+        fetchImpl, artifactUrl.href, progressId, options.progress ?? null,
+      );
       requireValue(
         artifactResponse.ok,
         `${id}: artifact fetch failed for ${artifact.path} (${artifactResponse.status} ${artifactResponse.statusText})`,
@@ -113,7 +136,10 @@ export async function mountDataBundles(Module, bundles, options = {}) {
       const bytes = await artifactResponse.arrayBuffer();
       requireValue(bytes.byteLength === artifactBytes(artifact), `${id}: byte-size mismatch for ${artifact.path}`);
       if (verifyHashes && typeof artifact.sha256 === "string" && artifact.sha256.length > 0) {
-        requireValue(await sha256Hex(bytes) === artifact.sha256.toLowerCase(), `${id}: SHA-256 mismatch for ${artifact.path}`);
+        requireValue(
+          await sha256Hex(bytes) === artifact.sha256.toLowerCase(),
+          `${id}: SHA-256 mismatch for ${artifact.path}`,
+        );
       }
       const outputPath = `${root}/${artifact.path}`;
       FS.mkdirTree(outputPath.slice(0, outputPath.lastIndexOf("/")));

@@ -1,11 +1,13 @@
 import { WasmSceneSession } from "../../web/wasm/session.js";
 import { liveExampleById } from "./live_examples.js";
+import { NetworkLoadingOverlay } from "./loading.js";
 
 const canvas = document.querySelector("#viewport");
 const statusEl = document.querySelector("#status");
 const statsEl = document.querySelector("#stats");
 const limitationsEl = document.querySelector("#limitations");
 const limitationListEl = document.querySelector("#limitation-list");
+const loading = new NetworkLoadingOverlay(document.querySelector("#network-loading"));
 const isEmbedded = new URLSearchParams(window.location.search).get("embedded") === "1";
 let session = null;
 
@@ -70,18 +72,21 @@ async function loadLiveExample(id) {
   showEffectLimitations(example.effectLimitations ?? []);
   destroySession();
   setStats("");
+  loading.start();
   session = new WasmSceneSession({
     canvas,
     logicalWidth: DESIGN_WIDTH,
     logicalHeight: DESIGN_HEIGHT,
     status: setStatus,
     stats: setStats,
+    networkProgress: (progress) => loading.update(progress),
     onScene(scene) {
       window.__datovizWasmScene = scene;
     },
   });
   window.__datovizWasmSession = session;
   await session.load(demo);
+  loading.finish();
 }
 
 window.addEventListener("pagehide", () => {
@@ -92,6 +97,7 @@ window.addEventListener("pagehide", () => {
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id") ?? "features_timer_animation";
 loadLiveExample(id).catch((error) => {
+  loading.finish();
   setStatus(error instanceof Error ? error.message : String(error), true);
   console.error(error);
 });

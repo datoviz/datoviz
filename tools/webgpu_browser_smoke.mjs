@@ -498,6 +498,30 @@ async function assertEffectLimitations(page, path, expectedLimitations = []) {
   }
 }
 
+async function assertWasmAssetLoading(page, path) {
+  const proof = await page.evaluate(`(() => {
+    const names = performance.getEntriesByType("resource").map((entry) => entry.name);
+    const runtime = names.filter((name) => /datoviz_wasm_scene\\.(mjs|wasm|data)\\?/.test(name));
+    const versions = runtime.map((name) => new URL(name).searchParams.get("v"));
+    return {
+      runtime,
+      versions,
+      manifest: names.some((name) => name.endsWith("datoviz_wasm_scene.assets.json")),
+      overlayHidden: document.querySelector("#network-loading")?.hidden ?? false,
+    };
+  })()`);
+  requireOk(proof.manifest, `${path}: WASM asset manifest was not requested`);
+  requireOk(
+    proof.runtime.length === 3,
+    `${path}: expected three versioned runtime assets (${JSON.stringify(proof.runtime)})`,
+  );
+  requireOk(
+    proof.versions.every((version) => version === proof.versions[0] && /^sha256-[a-f0-9]{64}$/.test(version)),
+    `${path}: runtime assets do not share one content-derived version`,
+  );
+  requireOk(proof.overlayHidden, `${path}: loading overlay remained visible after first render`);
+}
+
 async function smokeWasmPage(
   page,
   baseUrl,
@@ -519,6 +543,7 @@ async function smokeWasmPage(
     return (text.includes(${JSON.stringify(expectedStatus)}) || text.startsWith("Rendered ")) && text;
   })()`, 45000);
   requireOk(!String(initialStatus).startsWith('ERROR:'), initialStatus);
+  await assertWasmAssetLoading(page, path);
   await page.screenshotCanvas(screenshotPath, {
     width: CAPTURE_CANVAS_WIDTH,
     height: CAPTURE_CANVAS_HEIGHT,
@@ -690,6 +715,7 @@ async function smokeAnimatedWasmPage(
     return text.includes(${JSON.stringify(expectedStatus)}) && text;
   })()`, 45000);
   requireOk(!String(initialStatus).startsWith('ERROR:'), initialStatus);
+  await assertWasmAssetLoading(page, path);
   const initialFrame = await page.evaluate(`(() => {
     const scene = window.__datovizWasmScene;
     return scene?.runtime?.packetFrameIndex ?? 0;
@@ -757,6 +783,7 @@ async function smokeQueryWasmPage(page, baseUrl, scenario, screenshotPath) {
     return text.includes(${JSON.stringify(`Rendered ${scenario.label}`)}) && text;
   })()`, 45000);
   requireOk(!String(initialStatus).startsWith('ERROR:'), initialStatus);
+  await assertWasmAssetLoading(page, path);
   await page.screenshotCanvas(screenshotPath);
 
   const queryDelivery = await page.waitFor(`(async () => {

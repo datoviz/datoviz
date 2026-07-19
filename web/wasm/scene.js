@@ -3,7 +3,8 @@ import {
   initWebGPU,
   resizeWebGpuCanvas,
 } from "../drp2/webgpu.js";
-import { mountDataBundles } from "./data_loader.js";
+import { mountDataBundles, prepareDataBundles } from "./data_loader.js";
+import { NetworkProgress, validateWasmAssetManifest, withTrackedFetch } from "./network.js";
 
 const DVZ_FORMAT_R16G16B16A16_SFLOAT = 97;
 const DVZ_DIM_X = 0;
@@ -203,25 +204,73 @@ function sceneBufferUsageCode(usage = "vertex") {
   return code;
 }
 
-function wasmModuleUrl() {
-  const url = new URL("../../build-wasm-scene/wasm/datoviz_wasm_scene.mjs", import.meta.url);
-  url.searchParams.set("v", Date.now().toString());
+const WASM_MODULE_NAME = "datoviz_wasm_scene.mjs";
+const WASM_BINARY_NAME = "datoviz_wasm_scene.wasm";
+const WASM_DATA_NAME = "datoviz_wasm_scene.data";
+
+function wasmAssetUrl(name, version = null) {
+  const url = new URL(`../../build-wasm-scene/wasm/${name}`, import.meta.url);
+  if (version !== null) url.searchParams.set("v", version);
   return url;
 }
 
-async function loadDatovizWasmModule() {
-  const moduleUrl = wasmModuleUrl();
+async function loadWasmAssetManifest(fetchImpl) {
+  const url = wasmAssetUrl("datoviz_wasm_scene.assets.json");
+  const response = await fetchImpl(url.href, { cache: "no-cache" });
+  requireOk(response.ok, `WASM asset manifest fetch failed (${response.status} ${response.statusText})`);
+  return validateWasmAssetManifest(await response.json());
+}
+
+function registerBundleDownloads(progress, preparedBundles) {
+  for (const bundle of preparedBundles) {
+    for (const artifact of bundle.manifest.artifacts) {
+      progress.expect(
+        `bundle:${bundle.id}:${artifact.path}`,
+        artifact.byte_size ?? artifact.bytes,
+      );
+    }
+  }
+}
+
+async function loadDatovizWasmModule(options = {}) {
+  const fetchImpl = options.fetchImpl ?? globalThis.fetch;
+  requireOk(typeof fetchImpl === "function", "fetch is unavailable for the WASM runtime");
+  const [assetManifest, preparedBundles] = await Promise.all([
+    loadWasmAssetManifest(fetchImpl),
+    prepareDataBundles(options.dataBundles ?? [], { fetchImpl }),
+  ]);
+  const progress = new NetworkProgress(options.networkProgress);
+  for (const name of [WASM_MODULE_NAME, WASM_BINARY_NAME, WASM_DATA_NAME]) {
+    progress.expect(`runtime:${name}`, assetManifest.artifacts[name].bytes);
+  }
+  registerBundleDownloads(progress, preparedBundles);
+  progress.emit();
+
+  const moduleUrl = wasmAssetUrl(WASM_MODULE_NAME, assetManifest.version);
+  const wasmUrl = wasmAssetUrl(WASM_BINARY_NAME, assetManifest.version);
+  const dataUrl = wasmAssetUrl(WASM_DATA_NAME, assetManifest.version);
   const { default: createDatovizWasm } = await import(moduleUrl.href);
-  const Module = await createDatovizWasm({
-    locateFile(path) {
-      const url = new URL(path, moduleUrl);
-      url.searchParams.set("v", moduleUrl.searchParams.get("v"));
-      return url.href;
-    },
+  progress.complete(`runtime:${WASM_MODULE_NAME}`);
+  const targets = new Map([
+    [wasmUrl.href, `runtime:${WASM_BINARY_NAME}`],
+    [dataUrl.href, `runtime:${WASM_DATA_NAME}`],
+  ]);
+  const Module = await withTrackedFetch(fetchImpl, targets, progress, async () => {
+    return await createDatovizWasm({
+      locateFile(path) {
+        return wasmAssetUrl(path, assetManifest.version).href;
+      },
+    });
   });
+  await mountDataBundles(Module, options.dataBundles ?? [], {
+    fetchImpl,
+    prepared: preparedBundles,
+    progress,
+  });
+  progress.finish();
   requireOk(
     typeof Module._malloc === "function" && typeof Module._free === "function",
-    "WASM module is stale or missing malloc/free exports; run `just wasm-scene-smoke` and hard-refresh",
+    "WASM module is stale or missing malloc/free exports; rebuild and redeploy the WebGPU assets",
   );
   return Module;
 }
@@ -303,7 +352,7 @@ function frameArtifactPacketSet(setup, update, frame, resourceVersion, frameInde
 
 export class DatovizWasmScene {
   static async create(canvas, options = {}) {
-    const Module = await loadDatovizWasmModule();
+    const Module = await loadDatovizWasmModule(options);
 
     const gpu = options.gpu ?? await initWebGPU(canvas);
     resizeWebGpuCanvas(canvas, gpu.device, gpu.context, gpu.format);
@@ -337,8 +386,7 @@ export class DatovizWasmScene {
   }
 
   static async createScenario(canvas, scenarioId, options = {}) {
-    const Module = await loadDatovizWasmModule();
-    await mountDataBundles(Module, options.dataBundles ?? []);
+    const Module = await loadDatovizWasmModule(options);
     requireOk(
       typeof Module._dvz_wasm_api_scenario_count === "function" &&
         typeof Module._dvz_wasm_api_scenario_create === "function" &&
@@ -347,7 +395,7 @@ export class DatovizWasmScene {
         typeof Module._dvz_wasm_api_scenario_post_frame === "function" &&
         typeof Module._dvz_wasm_api_scenario_pointer === "function" &&
         typeof Module._dvz_wasm_api_scenario_wheel === "function",
-      "WASM module is stale or missing scenario exports; run `just wasm-scene-smoke` and hard-refresh",
+      "WASM module is stale or missing scenario exports; rebuild and redeploy the WebGPU assets",
     );
 
     const gpu = options.gpu ?? await initWebGPU(canvas);
@@ -937,7 +985,7 @@ export class DatovizWasmScene {
     this._requireAlive();
     requireOk(
       hasPacketApi(this.Module),
-      "WASM module is stale or missing split packet exports; run `just wasm-scene-smoke` and hard-refresh",
+      "WASM module is stale or missing split packet exports; rebuild and redeploy the WebGPU assets",
     );
     const status = this.Module._dvz_wasm_api_emit_packets(this.scene, this.figure);
     if (status !== 0) {
@@ -983,7 +1031,7 @@ export class DatovizWasmScene {
       typeof Module._dvz_wasm_api_query_readback_size !== "function" ||
       typeof Module._dvz_wasm_api_query_resolve !== "function"
     ) {
-      throw new Error("WASM module is stale or missing query exports; run `just wasm-scene-smoke` and hard-refresh");
+      throw new Error("WASM module is stale or missing query exports; rebuild and redeploy the WebGPU assets");
     }
 
     let processed = 0;
@@ -1059,7 +1107,7 @@ export class DatovizWasmScene {
     this._requireAlive();
     requireOk(
       typeof this.Module._dvz_wasm_api_runtime_reset === "function",
-      "WASM module is stale or missing runtime reset export; run `just wasm-scene-smoke` and hard-refresh",
+      "WASM module is stale or missing runtime reset export; rebuild and redeploy the WebGPU assets",
     );
     if (this.runtime !== null) {
       this.runtime.destroy();
