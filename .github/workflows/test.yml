@@ -93,6 +93,13 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
+      - name: Cache vcpkg dependencies
+        uses: actions/cache@v6
+        with:
+          path: |
+            C:/vcpkg-binary-cache
+            build/vcpkg_installed
+          key: windows-x64-test-vcpkg-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
       - name: Dependencies
         shell: pwsh
         run: |
