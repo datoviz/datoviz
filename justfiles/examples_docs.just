@@ -377,10 +377,15 @@ publish confirm='no' source_branch='main' seed_legacy='no':
     fi
     git -C "$site_repo" pull --ff-only
 
+    just wasm-scene-build-if-needed
+    just wasm-scene-export-check
+
     deploy_tmp=$(mktemp -d)
     trap 'rm -rf "$deploy_tmp"' EXIT
     uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow \
         mkdocs build --strict --site-dir "$deploy_tmp/built"
+    just wasm-scene-export-check \
+        "$deploy_tmp/built/build-wasm-scene/wasm/datoviz_wasm_scene.mjs"
     stage_args=(
         python3 tools/stage_docs_deployment.py
         --built-site "$deploy_tmp/built"

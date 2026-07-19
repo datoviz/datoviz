@@ -53,6 +53,10 @@ wasm-scene-build-if-needed:
     @python3 tools/ensure_wasm_scene_build.py
 #
 
+wasm-scene-export-check module='build-wasm-scene/wasm/datoviz_wasm_scene.mjs':
+    @node tools/check_wasm_module_exports.mjs "{{module}}"
+#
+
 wasm-scene-build-debug:
     @just _wasm-scene-build-mode build-wasm-scene-debug Debug DEBUG \
         "-O0 -g3 -fno-omit-frame-pointer" \
