@@ -2,6 +2,7 @@
 """Automated one-frame smoke test for the public Python Quickstart."""
 
 import ctypes
+from pathlib import Path
 
 import numpy as np
 import datoviz as dvz
@@ -12,12 +13,23 @@ N = 10_000
 TITLE = "Datoviz Quickstart"
 
 
+def _check_documented_source():
+    root = Path(__file__).resolve().parents[2]
+    source = (root / "examples/docs/quickstart.py").read_text(encoding="utf8")
+    page = (root / "docs/start/quickstart.md").read_text(encoding="utf8")
+    if "dvz.App" in source or "dvz.App" in page:
+        raise RuntimeError("v0.4 Quickstart must not use the removed dvz.App API")
+    if '--8<-- "examples/docs/quickstart.py"' not in page:
+        raise RuntimeError("Python Quickstart must include the checked canonical fixture")
+
+
 def _check(result, call):
     if result != 0:
         raise RuntimeError(f"{call} failed with code {result}")
 
 
 def main():
+    _check_documented_source()
     rng = np.random.default_rng(12345)
     positions = np.zeros((N, 3), dtype=np.float32)
     positions[:, :2] = rng.uniform(-1, 1, (N, 2)).astype(np.float32)

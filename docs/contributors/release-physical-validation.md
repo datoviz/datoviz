@@ -72,7 +72,9 @@ Set-Location $releaseScratch
 ```
 
 Ask the maintainer to resize, pan, zoom, and close the window normally. Record `pass` only after all
-four actions succeed. Retain the wheel checksum beside this result.
+four actions succeed. The exact-wheel Quickstart is a distinct manual scenario; neither an
+offscreen render nor a checkout-built native example can satisfy it. Retain the wheel checksum,
+interpreter path, imported `datoviz` path, command, and interaction observation beside this result.
 
 
 ## 3. Run The Fixed Native Interaction Set
@@ -174,14 +176,19 @@ Omitted scenarios remain pending and cannot be approved:
 just release-test-approve \
   --evidence-dir build/release/0.4.0rc1/conformance/macbook-m3 \
   --approved-by cyrille \
-  --result scatter-panzoom=pass \
-  --result arcball-3d=pass \
-  --result text-resize=pass \
-  --result image-probe=pass \
-  --result textured-mesh=pass \
-  --result picking=pass \
-  --result close-reopen=pass
+  --result 'exact-wheel-quickstart=pass:wheel SHA-256, interpreter, import path, command; resize, pan, zoom, and close succeeded' \
+  --result 'scatter-panzoom=pass:resize, pan, and wheel-zoom succeeded' \
+  --result 'arcball-3d=pass:rotate and zoom succeeded' \
+  --result 'text-resize=pass:text remained legible after resize' \
+  --result 'image-probe=pass:probe readout changed coherently' \
+  --result 'textured-mesh=pass:texture and depth remained correct while rotating' \
+  --result 'picking=pass:picking and resize succeeded' \
+  --result 'close-reopen=pass:closed, reopened, and closed normally'
 ```
+
+Every manual result requires a non-empty observation. Use `skip:<reason>` for an unavailable
+optional scenario and `fail:<observation>` for a failure; do not turn an automated native-window
+smoke into a human interaction pass.
 
 Submission requires ORAS, GitHub CLI authentication, package write access, and explicit upload
 approval. `--confirm yes` creates a checksummed archive, pushes it to
