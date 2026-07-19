@@ -31,7 +31,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             build-essential ccache cmake glslang-tools glslc libfreetype-dev libvulkan-dev \
-            mesa-vulkan-drivers ninja-build vulkan-tools vulkan-validationlayers xorg-dev xvfb
+            mesa-vulkan-drivers ninja-build vulkan-tools vulkan-validationlayers webp xorg-dev xvfb
           python -m pip install -U pip uv
           python -m pip install -r requirements-dev.txt
           command -v glslangValidator
