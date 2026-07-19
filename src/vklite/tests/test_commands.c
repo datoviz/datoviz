@@ -16,8 +16,11 @@
 
 #include <stdint.h>
 
+#include "../../thread/thread_internal.h"
+#include "_time_utils.h"
 #include "test_vk.h"
 #include "_assertions.h"
+#include "datoviz/common/functions.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/queues.h"
@@ -40,10 +43,39 @@
 static DvzGpuCtx* _commands_ctx(void)
 {
     DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan12Features features12 = {0};
+    features12.timelineSemaphore = true;
+    dvz_gpu_ctx_config_features12(&cfg, &features12);
     VkPhysicalDeviceVulkan13Features features13 = {0};
     features13.synchronization2 = true;
     dvz_gpu_ctx_config_features13(&cfg, &features13);
     return dvz_gpu_ctx(&cfg);
+}
+
+
+
+typedef struct
+{
+    DvzSemaphore* semaphore;
+    uint64_t value;
+    int delay_ms;
+} TimelineSignalData;
+
+
+
+/**
+ * Signal a timeline semaphore after a controlled delay.
+ *
+ * @param user_data timeline signal configuration
+ * @return NULL
+ */
+static void* _delayed_timeline_signal(void* user_data)
+{
+    ANN(user_data);
+    TimelineSignalData* data = (TimelineSignalData*)user_data;
+    dvz_sleep(data->delay_ms);
+    dvz_semaphore_signal(data->semaphore, data->value);
+    return NULL;
 }
 
 int test_vklite_commands_1(TstContext* suite, const TstCase* tstitem)
@@ -149,6 +181,46 @@ int test_vklite_commands_destroy_idempotent(TstContext* suite, const TstCase* ts
     dvz_semaphore_destroy(semaphore);
     dvz_semaphore_free(semaphore);
 
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
+
+    return err_count > 0;
+}
+
+
+
+int test_vklite_timeline_wait_blocks_until_signal(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzGpuCtx* ctx = _commands_ctx();
+    ANN(ctx);
+    DvzDevice* device = dvz_gpu_ctx_device(ctx);
+    ANN(device);
+
+    DvzSemaphore* semaphore = dvz_semaphore_create_wrapper();
+    ANN(semaphore);
+    dvz_semaphore_timeline(device, 0, semaphore, 0);
+
+    TimelineSignalData data = {
+        .semaphore = semaphore,
+        .value = 1,
+        .delay_ms = 250,
+    };
+    DvzThread* thread = dvz_thread(_delayed_timeline_signal, &data);
+    ANN(thread);
+
+    uint64_t start = dvz_time_monotonic_ns();
+    dvz_semaphore_wait(semaphore, data.value);
+    uint64_t elapsed = dvz_time_monotonic_ns() - start;
+
+    AT(dvz_semaphore_query(semaphore) >= data.value);
+    AT(elapsed >= 200000000ULL);
+
+    dvz_thread_join(thread);
+    dvz_semaphore_destroy(semaphore);
+    dvz_semaphore_free(semaphore);
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
     dvz_gpu_ctx_destroy(ctx);
 

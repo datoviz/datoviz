@@ -29,14 +29,6 @@
 
 
 /*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
-
-#define MAX_WAIT 100000000
-
-
-
-/*************************************************************************************************/
 /*  Wrapper allocation                                                                           */
 /*************************************************************************************************/
 
@@ -626,7 +618,7 @@ void dvz_semaphore_wait(DvzSemaphore* semaphore, uint64_t value)
     };
     VkDevice vkd = dvz_device_handle(semaphore->device);
     ANNVK(vkd);
-    vkWaitSemaphores(vkd, &waitInfo, MAX_WAIT);
+    VK_CHECK_RESULT(vkWaitSemaphores(vkd, &waitInfo, UINT64_MAX));
 }
 
 

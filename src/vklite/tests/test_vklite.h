@@ -83,6 +83,7 @@ static inline void* dvz_test_shader_load(const char* filename, DvzSize* size_out
 int test_vklite_commands_1(TstContext* suite, const TstCase* tstitem);
 int test_vklite_commands_repeat_submit(TstContext* suite, const TstCase* tstitem);
 int test_vklite_commands_destroy_idempotent(TstContext* suite, const TstCase* tstitem);
+int test_vklite_timeline_wait_blocks_until_signal(TstContext* suite, const TstCase* tstitem);
 int test_vklite_commands_destroy_without_recording(TstContext* suite, const TstCase* tstitem);
 int test_vklite_commands_borrowed_recording_rejects_lifecycle(
     TstContext* suite, const TstCase* tstitem);
