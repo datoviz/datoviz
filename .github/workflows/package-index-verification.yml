@@ -19,7 +19,7 @@ on:
       version:
         description: "Exact package version"
         required: true
-        default: "0.4.0rc1"
+        default: "0.4.0rc2"
         type: string
       wheel_run_id:
         description: "Canonical successful Wheels workflow run ID"

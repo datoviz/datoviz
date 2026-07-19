@@ -23,12 +23,12 @@ Before running release commands, read:
 
 ## Local Candidate Flow
 
-For a requested version such as `0.4.0rc1`:
+For a requested version such as `0.4.0rc2`:
 
 ```sh
-just release-plan 0.4.0rc1
-just release-dry-run 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
-just release-candidate 0.4.0rc1 --dry-run
+just release-plan 0.4.0rc2
+just release-dry-run 0.4.0rc2 --wheel path/to/datoviz-0.4.0rc2-...whl
+just release-candidate 0.4.0rc2 --dry-run
 ```
 
 Summarize the plan and ask the maintainer before running the non-dry candidate command. State your
@@ -37,11 +37,11 @@ preference with the ask.
 After approval:
 
 ```sh
-just release-candidate 0.4.0rc1
-just release-notes 0.4.0rc1
-just release-docs-validate 0.4.0rc1
-just release-validation-pack 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
-just release-report 0.4.0rc1
+just release-candidate 0.4.0rc2
+just release-notes 0.4.0rc2
+just release-docs-validate 0.4.0rc2
+just release-validation-pack 0.4.0rc2 --wheel path/to/datoviz-0.4.0rc2-...whl
+just release-report 0.4.0rc2
 ```
 
 Do not tag, push, upload, publish, create GitHub releases, or modify package registry state during
@@ -60,8 +60,8 @@ When the candidate report is ready, give the maintainer exact commands for each 
 For the first automated evidence slice, use:
 
 ```sh
-just release-validation-pack 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
-just release-machine-plan 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
+just release-validation-pack 0.4.0rc2 --wheel path/to/datoviz-0.4.0rc2-...whl
+just release-machine-plan 0.4.0rc2 --wheel path/to/datoviz-0.4.0rc2-...whl
 ```
 
 Then send the generated `build/release/<version>/validation-pack/datoviz-<version>-validation.tar.gz`
@@ -71,7 +71,7 @@ to each physical machine. After extraction, use `./validate-quick.sh`, `./valida
 If the target machine has the repository checkout, it may instead run:
 
 ```sh
-just release-machine-validate 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl --profile rc
+just release-machine-validate 0.4.0rc2 --wheel path/to/datoviz-0.4.0rc2-...whl --profile rc
 ```
 
 Use `quick` for a short install/import/CLI smoke, `rc` for the required CMake consumer and
@@ -117,17 +117,17 @@ On Windows PowerShell, use `./archive-evidence.ps1 -MachineId <machine-id>`.
 Ingest returned evidence in the release checkout:
 
 ```sh
-just release-ingest-evidence 0.4.0rc1 path/to/evidence-or-tar
-just release-report 0.4.0rc1 --strict-matrix
-just release-gates 0.4.0rc1 --write-artifacts --strict-matrix
+just release-ingest-evidence 0.4.0rc2 path/to/evidence-or-tar
+just release-report 0.4.0rc2 --strict-matrix
+just release-gates 0.4.0rc2 --write-artifacts --strict-matrix
 ```
 
 Before asking for upload or GitHub draft approval, run dry rehearsals:
 
 ```sh
-just release-dry-run 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl --dist-dir dist --write-report
-just release-testpypi 0.4.0rc1 --dry-run --dist-dir dist
-just release-github-draft 0.4.0rc1 --dry-run
+just release-dry-run 0.4.0rc2 --wheel path/to/datoviz-0.4.0rc2-...whl --dist-dir dist --write-report
+just release-testpypi 0.4.0rc2 --dry-run --dist-dir dist
+just release-github-draft 0.4.0rc2 --dry-run
 just release-create-tag 0.4.0 --dry-run
 just release-pypi 0.4.0 --dry-run
 just release-github-publish 0.4.0 --dry-run

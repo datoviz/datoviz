@@ -1,7 +1,7 @@
 # Install
 
-These instructions target the published Datoviz v0.4.0rc1 release candidate. Choose a path by what
-you want to run.
+These instructions target Datoviz v0.4.0rc2, the active release candidate now undergoing final
+wheel validation. Choose a path by what you want to run.
 
 <div class="dvz-context-strip">
   <span>v0.4 release candidate</span>
@@ -10,8 +10,8 @@ you want to run.
   <span>Vulkan runtime required</span>
 </div>
 
-See the [v0.4.0rc1 release notes](../releases/v0.4.0rc1.md) for the exact package, artifacts,
-validation evidence, and known limitations. Check
+See the [v0.4.0rc2 status](../releases/v0.4.0rc2.md) for the package, validation scope, and current
+publication state. Check
 [project status](../reference/project-status.md) for the broader release posture.
 
 
@@ -27,16 +27,16 @@ validation evidence, and known limitations. Check
 Native windows and offscreen rendering require a working Vulkan-capable GPU, driver, and runtime.
 Browser routes use the smaller, experimental [WebGPU subset](../reference/webgpu-subset.md).
 
-!!! warning "macOS RC1 native-window limitation"
+!!! info "RC2 publication in progress"
 
-    The published RC1 macOS wheel can fail in `glfwCreateWindowSurface()` because Datoviz and GLFW
-    select different Vulkan loaders. Offscreen rendering is unaffected. For native windows, build
-    the current `v0.4-dev` source until the narrow RC2 replacement is published.
+    RC2 fixes the packaged macOS native-window Vulkan-loader defect found in RC1. Until the RC2
+    wheels are published, build the current `v0.4-dev` source to test native windows; RC1 remains
+    available on PyPI but retains that known defect.
 
 
 ## Python package path
 
-Create an isolated environment, then install the exact RC1 version from PyPI.
+After RC2 publication, create an isolated environment and install the exact version from PyPI.
 
 === "macOS / Linux"
 
@@ -44,7 +44,7 @@ Create an isolated environment, then install the exact RC1 version from PyPI.
     python -m venv .venv
     source .venv/bin/activate
     python -m pip install --upgrade pip
-    python -m pip install --pre datoviz==0.4.0rc1
+    python -m pip install --pre datoviz==0.4.0rc2
     ```
 
 === "Windows PowerShell"
@@ -53,7 +53,7 @@ Create an isolated environment, then install the exact RC1 version from PyPI.
     py -m venv .venv
     .\.venv\Scripts\Activate.ps1
     py -m pip install --upgrade pip
-    py -m pip install --pre datoviz==0.4.0rc1
+    py -m pip install --pre datoviz==0.4.0rc2
     ```
 
 After the final v0.4 package is published, the normal installation command will be:
@@ -82,9 +82,9 @@ find_package(datoviz CONFIG REQUIRED)
 target_link_libraries(my_app PRIVATE datoviz::datoviz)
 ```
 
-This CMake fragment is an integration example, not a complete project. The RC1 wheels expose the
-installed C package and passed the release CMake-consumer checks. Source developers and system
-packagers may instead follow [Build from source](build-from-source.md), then use the
+This CMake fragment is an integration example, not a complete project. The RC2 wheels expose the
+installed C package and are required to pass the release CMake-consumer checks. Source developers
+and system packagers may instead follow [Build from source](build-from-source.md), then use the
 [C/C++ integration guide](../how-to/c-integration.md).
 
 
@@ -102,8 +102,8 @@ vendored dependencies, macOS, Linux, native Windows, WSL2, verification, and exa
 
 | Path | Current v0.4 posture |
 | --- | --- |
-| Python RC package | Published on PyPI as `datoviz==0.4.0rc1`; six native wheels are validated. |
+| Python RC package | `datoviz==0.4.0rc2` is in final validation and not yet published. |
 | Source build | Available now for development, C/C++ integration, and package validation. |
-| Native Windows wheels | AMD64 and ARM64 wheels are published and passed hosted package-index verification. |
-| Source bundle | Published with the GitHub prerelease and covered by the release checksums. |
-| vcpkg and conda-forge | Engineering and preflight paths; not published as RC1 package channels. |
+| Native Windows wheels | RC2 AMD64 and ARM64 replacements require fresh hosted validation before publication. |
+| Source bundle | The RC2 source bundle is generated during candidate preparation and published with the prerelease. |
+| vcpkg and conda-forge | Engineering and preflight paths; not published as RC2 package channels. |

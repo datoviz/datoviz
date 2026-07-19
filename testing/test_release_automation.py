@@ -31,6 +31,51 @@ def test_utc_now_is_python_310_compatible_utc_timestamp() -> None:
     assert parsed.microsecond == 0
 
 
+def test_rc2_machine_matrix_records_physical_host_exceptions() -> None:
+    """RC2 requires the available M3 without pretending hosted CI is physical evidence."""
+    release_automation = _load_release_automation()
+
+    rows = {
+        row["class"]: row
+        for row in release_automation.machine_matrix([], version="0.4.0rc2")
+    }
+
+    assert rows["macos-arm64"]["status"] == "missing"
+    assert rows["linux-x86_64-vulkan"]["status"] == "excluded-unavailable"
+    assert rows["windows-amd64"]["status"] == "excluded-unavailable"
+    assert "hosted Linux" in rows["linux-x86_64-vulkan"]["exception"]
+    assert "hosted Windows" in rows["windows-amd64"]["exception"]
+
+
+def test_rc2_machine_exceptions_do_not_weaken_rc3() -> None:
+    """The narrow RC2 exception must not change later-candidate physical requirements."""
+    release_automation = _load_release_automation()
+
+    rows = {
+        row["class"]: row
+        for row in release_automation.machine_matrix([], version="0.4.0rc3")
+    }
+
+    assert rows["macos-arm64"]["status"] == "missing"
+    assert rows["linux-x86_64-vulkan"]["status"] == "missing"
+    assert rows["windows-amd64"]["status"] == "missing"
+
+
+def test_rc2_command_plan_discloses_machine_exceptions() -> None:
+    """Maintainer-facing plans make the reduced physical matrix explicit."""
+    release_automation = _load_release_automation()
+
+    plan = release_automation.command_plan("0.4.0rc2")
+
+    assert "linux-x86_64-vulkan: required=excluded-unavailable" in plan
+    assert "windows-amd64: required=excluded-unavailable" in plan
+    assert "No physical Linux host is available for RC2" in plan
+    assert "No physical Windows host is available for RC2" in plan
+
+    machine_plan = release_automation.machine_plan_text("0.4.0rc2")
+    assert "no physical action; satisfy the hosted evidence" in machine_plan
+
+
 def test_conformance_campaign_matches_candidate_wheels(tmp_path, monkeypatch) -> None:
     """Accepted campaign evidence supersedes unavailable legacy physical hosts."""
     release_automation = _load_release_automation()

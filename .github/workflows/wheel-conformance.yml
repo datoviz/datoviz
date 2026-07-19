@@ -16,7 +16,7 @@ on:
       version:
         description: "Release version contained in the wheels"
         required: true
-        default: "0.4.0rc1"
+        default: "0.4.0rc2"
         type: string
   workflow_run:
     workflows: ["Wheels"]
@@ -40,7 +40,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REQUESTED_RUN_ID: ${{ inputs.wheel_run_id || github.event.workflow_run.id }}
-          REQUESTED_VERSION: ${{ inputs.version || '0.4.0rc1' }}
+          REQUESTED_VERSION: ${{ inputs.version }}
         run: |
           if [[ -z "$REQUESTED_RUN_ID" ]]; then
             REQUESTED_RUN_ID=$(gh api \
@@ -52,8 +52,16 @@ jobs:
           test "$(jq -r .path <<<"$candidate")" = ".github/workflows/wheels.yml"
           test "$(jq -r .status <<<"$candidate")" = "completed"
           test "$(jq -r .conclusion <<<"$candidate")" = "success"
+          artifact_commit=$(jq -r .head_sha <<<"$candidate")
+          if [[ -z "$REQUESTED_VERSION" ]]; then
+            REQUESTED_VERSION=$(gh api \
+              -H "Accept: application/vnd.github.raw+json" \
+              "repos/${{ github.repository }}/contents/pyproject.toml?ref=$artifact_commit" | \
+              python3 -c 'import sys, tomllib; print(tomllib.loads(sys.stdin.read())["project"]["version"])')
+          fi
+          test -n "$REQUESTED_VERSION"
           echo "wheel_run_id=$REQUESTED_RUN_ID" >> "$GITHUB_OUTPUT"
-          echo "artifact_commit=$(jq -r .head_sha <<<"$candidate")" >> "$GITHUB_OUTPUT"
+          echo "artifact_commit=$artifact_commit" >> "$GITHUB_OUTPUT"
           echo "version=$REQUESTED_VERSION" >> "$GITHUB_OUTPUT"
 
   conformance:

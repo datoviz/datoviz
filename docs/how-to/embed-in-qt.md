@@ -2,14 +2,14 @@
 
 Integrate Datoviz with a Qt application that owns the window and event loop.
 
-Qt hosting is implemented, but it is source-build-only in RC1. It is an advanced native integration
+Qt hosting is implemented, but it is source-build-only in RC2. It is an advanced native integration
 to configure, and it does not make Qt a dependency of the base Datoviz library. No packaged native
-Qt bridge provider is available in RC1; build or supply the bridge separately. A packaged provider
-is planned for RC2.
+Qt bridge provider is available in RC2; build or supply the bridge separately. A packaged provider
+is planned for RC3.
 
 !!! info "At a glance"
 
-    - **Status:** Implemented; source-build-only in RC1, with a packaged provider planned for RC3.
+    - **Status:** Implemented; source-build-only in RC2, with a packaged provider planned for RC3.
     - **Languages:** C++/Qt and Python/PyQt6 through the optional bridge.
     - **Prerequisites:** Matching Qt development/runtime libraries, Vulkan hosting support, and a built/discoverable bridge.
     - **Result:** Qt owns the window/event loop while Datoviz renders one hosted view and receives forwarded events.
@@ -133,9 +133,9 @@ expected.
 
 ## PyQt hosting
 
-The Python hosted path uses the optional `datoviz_qtbridge` provider. RC1 wheels contain the
+The Python hosted path uses the optional `datoviz_qtbridge` provider. RC2 wheels contain the
 `datoviz.qt` adapter but not the native bridge. The `datoviz[qt]` extra installs PyQt6 only; it does
-not make Qt hosting usable by itself. For RC1, build the bridge with `DVZ_ENABLE_QT_BRIDGE=ON` or
+not make Qt hosting usable by itself. For RC2, build the bridge with `DVZ_ENABLE_QT_BRIDGE=ON` or
 supply a compatible source-built bridge separately. The loader checks the package directory, its
 `.libs` directory, common source-checkout build directories, and the platform library search path.
 Set `DATOVIZ_QTBRIDGE_LIBRARY` only when discovery needs an explicit bridge path.

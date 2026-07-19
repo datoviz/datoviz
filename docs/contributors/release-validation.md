@@ -24,13 +24,13 @@ just release-preflight rc1
 For the v0.4 release automation front door, use:
 
 ```sh
-just release-plan 0.4.0rc1
-just release-dry-run 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
-just release-candidate 0.4.0rc1 --dry-run
-just release-candidate 0.4.0rc1
-just release-notes 0.4.0rc1
-just release-docs-validate 0.4.0rc1
-just release-report 0.4.0rc1
+just release-plan 0.4.0rc2
+just release-dry-run 0.4.0rc2 --wheel path/to/datoviz-0.4.0rc2-...whl
+just release-candidate 0.4.0rc2 --dry-run
+just release-candidate 0.4.0rc2
+just release-notes 0.4.0rc2
+just release-docs-validate 0.4.0rc2
+just release-report 0.4.0rc2
 ```
 
 `release-candidate` writes local state under `build/release/<version>/`. The first automation slice
@@ -45,11 +45,11 @@ it as the GitHub draft notes artifact. Review and edit the wording before using 
 For installed-artifact validation on a physical machine, use:
 
 ```sh
-just release-validation-pack 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
-just release-machine-plan 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl
+just release-validation-pack 0.4.0rc2 --wheel path/to/datoviz-0.4.0rc2-...whl
+just release-machine-plan 0.4.0rc2 --wheel path/to/datoviz-0.4.0rc2-...whl
 ```
 
-Copy `build/release/0.4.0rc1/validation-pack/datoviz-0.4.0rc1-validation.tar.gz` to the target
+Copy `build/release/0.4.0rc2/validation-pack/datoviz-0.4.0rc2-validation.tar.gz` to the target
 machine, extract it, then run:
 
 ```sh
@@ -65,8 +65,8 @@ On Windows PowerShell:
 If the target machine has the repository checkout, it can run the validator directly:
 
 ```sh
-just release-machine-validate 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl --profile rc
-just release-report 0.4.0rc1
+just release-machine-validate 0.4.0rc2 --wheel path/to/datoviz-0.4.0rc2-...whl --profile rc
+just release-report 0.4.0rc2
 ```
 
 The `quick` profile runs wheel inventory plus installed import/CLI smoke. The `rc` profile adds the
@@ -99,18 +99,18 @@ On Windows PowerShell:
 Back in the release checkout, ingest it and refresh the matrix report:
 
 ```sh
-just release-ingest-evidence 0.4.0rc1 path/to/evidence-<machine-id>.tar.gz
-just release-machine-plan 0.4.0rc1
-just release-report 0.4.0rc1 --strict-matrix
-just release-gates 0.4.0rc1 --write-artifacts --strict-matrix
+just release-ingest-evidence 0.4.0rc2 path/to/evidence-<machine-id>.tar.gz
+just release-machine-plan 0.4.0rc2
+just release-report 0.4.0rc2 --strict-matrix
+just release-gates 0.4.0rc2 --write-artifacts --strict-matrix
 ```
 
 Publication rehearsals stay approval-gated:
 
 ```sh
-just release-dry-run 0.4.0rc1 --wheel path/to/datoviz-0.4.0rc1-...whl --dist-dir dist --write-report
-just release-testpypi 0.4.0rc1 --dry-run --dist-dir dist
-just release-github-draft 0.4.0rc1 --dry-run
+just release-dry-run 0.4.0rc2 --wheel path/to/datoviz-0.4.0rc2-...whl --dist-dir dist --write-report
+just release-testpypi 0.4.0rc2 --dry-run --dist-dir dist
+just release-github-draft 0.4.0rc2 --dry-run
 just release-create-tag 0.4.0 --dry-run
 just release-pypi 0.4.0 --dry-run
 just release-github-publish 0.4.0 --dry-run

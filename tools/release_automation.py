@@ -118,6 +118,25 @@ MACHINE_CLASSES = [
     },
 ]
 
+MACHINE_REQUIREMENT_OVERRIDES: dict[str, dict[str, dict[str, Any]]] = {
+    "0.4.0rc2": {
+        "linux-x86_64-vulkan": {
+            "required_for_rc": "excluded-unavailable",
+            "exception": (
+                "No physical Linux host is available for RC2; require fresh hosted Linux "
+                "build, wheel, install, Vulkan, and Xvfb window evidence instead."
+            ),
+        },
+        "windows-amd64": {
+            "required_for_rc": "excluded-unavailable",
+            "exception": (
+                "No physical Windows host is available for RC2; require fresh hosted Windows "
+                "AMD64 and ARM64 build, wheel, install, shaderc, and consumer evidence instead."
+            ),
+        },
+    }
+}
+
 VALIDATION_PROFILES: dict[str, dict[str, Any]] = {
     "quick": {
         "description": "Wheel inventory plus installed import and CLI smoke.",
@@ -687,13 +706,19 @@ def evidence_class(item: dict[str, Any]) -> str:
     return "unknown"
 
 
-def machine_matrix(evidence: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def machine_classes(version: str) -> list[dict[str, Any]]:
+    """Return physical-machine requirements, including exact-candidate exceptions."""
+    overrides = MACHINE_REQUIREMENT_OVERRIDES.get(version, {})
+    return [{**machine, **overrides.get(str(machine["class"]), {})} for machine in MACHINE_CLASSES]
+
+
+def machine_matrix(evidence: list[dict[str, Any]], version: str = "") -> list[dict[str, Any]]:
     rows = []
     evidence_by_class: dict[str, list[dict[str, Any]]] = {}
     for item in evidence:
         evidence_by_class.setdefault(evidence_class(item), []).append(item)
 
-    for machine in MACHINE_CLASSES:
+    for machine in machine_classes(version):
         class_name = str(machine["class"])
         items = evidence_by_class.get(class_name, [])
         passing = [item for item in items if item.get("status") == "pass"]
@@ -704,6 +729,8 @@ def machine_matrix(evidence: list[dict[str, Any]]) -> list[dict[str, Any]]:
             status = "fail"
         elif machine["required_for_rc"] is True:
             status = "missing"
+        elif machine["required_for_rc"] == "excluded-unavailable":
+            status = "excluded-unavailable"
         else:
             status = "optional-missing"
         rows.append(
@@ -714,6 +741,7 @@ def machine_matrix(evidence: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "profiles": sorted({str(item.get("profile", "")) for item in items if item.get("profile")}),
                 "machines": sorted({str(item.get("machine_id", "")) for item in items if item.get("machine_id")}),
                 "proof": machine["proof"],
+                "exception": machine.get("exception", ""),
             }
         )
     return rows
@@ -725,7 +753,7 @@ def release_analysis(version: str) -> dict[str, Any]:
     commands = state.get("commands", [])
     evidence = discover_evidence(version) or state.get("evidence", [])
     failed_evidence = [item for item in evidence if item.get("status") == "fail"]
-    matrix = machine_matrix(evidence)
+    matrix = machine_matrix(evidence, version)
     missing_required = [
         row for row in matrix if row["required_for_rc"] is True and row["status"] == "missing"
     ]
@@ -948,7 +976,7 @@ def machine_plan_text(version: str, wheel: Path | None = None) -> str:
         evidence = analysis["evidence"]
         gate_summary = gate_rows(analysis)
     else:
-        matrix = machine_matrix([])
+        matrix = machine_matrix([], version)
         artifacts = []
         evidence = []
         gate_summary = []
@@ -984,10 +1012,14 @@ def machine_plan_text(version: str, wheel: Path | None = None) -> str:
         lines.append(f"- current machines: `{machines}`")
         lines.append(f"- current profiles: `{profiles}`")
         lines.append(f"- proof: {row['proof']}")
+        if row.get("exception"):
+            lines.append(f"- exception: {row['exception']}")
         if status == "pass":
             lines.append("- next: no action needed unless you want broader optional coverage")
         elif status == "fail":
             lines.append("- next: inspect `failures.md`, fix the issue, then rerun validation")
+        elif status == "excluded-unavailable":
+            lines.append("- next: no physical action; satisfy the hosted evidence in the exception")
         else:
             lines.append(f"- pack command: `./validate-{profile}.sh`")
             lines.append(f"- PowerShell: `./validate.ps1 -Profile {profile}`")
@@ -1454,10 +1486,12 @@ def command_plan(version: str) -> str:
         "",
         "Target machine classes:",
     ]
-    for machine in MACHINE_CLASSES:
+    for machine in machine_classes(version):
         required = machine["required_for_rc"]
         profiles = ", ".join(machine["profiles"])
         lines.append(f"  - {machine['class']}: required={required}, profiles={profiles}")
+        if machine.get("exception"):
+            lines.append(f"    exception: {machine['exception']}")
     lines.extend(
         [
             "",

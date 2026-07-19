@@ -267,13 +267,23 @@ Current packaging gate:
 Exit criteria:
 
 1. The macOS packaged Vulkan loader is handed to GLFW before initialization.
-2. Clean installed-wheel native-window smokes run on macOS arm64 and Linux Xvfb/Lavapipe.
+2. Clean installed-wheel native-window smokes run on Linux Xvfb/Lavapipe; hosted macOS arm64
+   requires offscreen MoltenVK rendering because hosted runners do not reliably expose an
+   interactive desktop session.
 3. The exact canonical macOS arm64 wheel passes the Quickstart outside the checkout, with explicit
    resize, pan, zoom, and close observations.
 4. All six canonical wheels pass the normal build, inspection, installed-package, rendering,
    consumer, and hosted conformance gates.
 5. RC1 artifacts and evidence remain immutable; RC2 uses new checksums and evidence.
 6. Public installation and release guidance disclose the RC1 limitation until RC2 replaces it.
+
+RC2 physical-matrix exception: only the MacBook M3 is available for fresh exact-artifact physical
+validation. Physical Linux and Windows are explicit unavailable exclusions and must not be inferred
+from hosted results. This narrowing is accepted for the macOS-focused replacement hotfix only.
+Linux retains full native tests plus installed-wheel Xvfb/Lavapipe window proof; Windows retains
+fresh AMD64/ARM64 build, packaging, installation, shaderc, and consumer proof. The RC2 notes must
+disclose the reduced physical matrix. Fresh exact-artifact physical Linux and Windows proof returns
+as an RC3 or final-release requirement.
 
 Deferred to RC3, not RC2 hotfix work:
 

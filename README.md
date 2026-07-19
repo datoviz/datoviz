@@ -24,16 +24,15 @@ binding with `import datoviz as dvz` and pass NumPy arrays directly to supported
 
 ## Install
 
-Install the published v0.4.0rc1 package from PyPI with:
+Datoviz v0.4.0rc2 is the active release candidate. Its replacement wheels are being validated;
+after publication, install the exact package with:
 
 ```sh
-python -m pip install --pre datoviz==0.4.0rc1
+python -m pip install --pre datoviz==0.4.0rc2
 ```
 
-> **macOS native-window warning:** the published RC1 wheel can fail while creating a GLFW Vulkan
-> surface because its packaged Vulkan loader is not shared with GLFW. Offscreen rendering is
-> unaffected. Build `v0.4-dev` from source for native windows until the narrow RC2 replacement is
-> published.
+Until RC2 is published, v0.4.0rc1 remains the package available from PyPI. Its macOS wheel has a
+known native-window Vulkan-loader defect; build `v0.4-dev` from source when testing native windows.
 
 After the final v0.4 release, the normal command will be:
 
@@ -90,9 +89,9 @@ Continue with the annotated [Quickstart](https://datoviz.org/start/quickstart/) 
 
 ## v0.4 Release Status
 
-The `v0.4-dev` branch is the first v0.4 release candidate. The native C and Python/NumPy paths are
-release-facing; experimental and deferred surfaces remain explicitly labeled throughout the
-documentation.
+The `v0.4-dev` branch is the active v0.4 release-candidate line. The native C and Python/NumPy
+paths are release-facing; experimental and deferred surfaces remain explicitly labeled throughout
+the documentation.
 
 | Surface | v0.4 status |
 | --- | --- |

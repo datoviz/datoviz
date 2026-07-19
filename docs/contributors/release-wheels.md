@@ -182,7 +182,7 @@ just wheel-check --cmake-consumer --qt-probe optional
 Use `--qt-probe required` only on a machine or CI runner where PyQt6, Qt Vulkan support, and the
 Datoviz Qt bridge provider are expected to be present.
 
-RC1 has no packaged Qt bridge provider; its Qt/PyQt path is source-build-only. The RC3 release goal
+RC2 has no packaged Qt bridge provider; its Qt/PyQt path is source-build-only. The RC3 release goal
 is a separate provider route, not a base-wheel dependency. Source builds may build
 `datoviz_qtbridge` with `DVZ_ENABLE_QT_BRIDGE=ON` or `AUTO`; local and split provider validation
 should point `datoviz.qt` at that bridge with `DATOVIZ_QTBRIDGE_LIBRARY`. Conda-forge is the
@@ -265,8 +265,8 @@ After the upload, verify the package-index path against the exact successful Whe
 ```sh
 gh workflow run package-index-verification.yml --ref v0.4-dev \
   -f index=testpypi \
-  -f version=0.4.0rc1 \
-  -f wheel_run_id=29641789685
+  -f version=0.4.0rc2 \
+  -f wheel_run_id=<wheels-run-id>
 ```
 
 `workflow_dispatch` requires the workflow file to exist on the repository default branch. Before
@@ -276,8 +276,8 @@ that is true for a release branch, commit
 ```json
 {
   "index": "testpypi",
-  "version": "0.4.0rc1",
-  "wheel_run_id": "29641789685"
+  "version": "0.4.0rc2",
+  "wheel_run_id": "<wheels-run-id>"
 }
 ```
 

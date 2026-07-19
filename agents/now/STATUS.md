@@ -38,6 +38,12 @@ A fresh local arm64 wheel passed the complete installed validator and its canoni
 the maintainer explicitly confirmed resize, pan, zoom, and normal close. RC2 is now a narrow
 replacement-wheel hotfix. Its proof must use new canonical artifacts; the local wheel is diagnostic.
 
+Post-fix Test run `29693662817` passed Linux, macOS, and Windows. Linux now includes the complete
+Python tooling suite after the native build, shaderc validation, Xvfb Quickstart fixtures, and the
+full compiled test suite. Hosted conformance run `29693217596` passed all six lanes and its
+aggregate report against the RC1 wheel campaign with the corrected validator. This proves the
+validator and hosted capability model, not the future RC2 artifact bytes.
+
 The RC1 source bundle/checksums and release notes are closed. All six wheels are on TestPyPI and
 PyPI. TestPyPI verification run `29652477816` and PyPI verification run `29666589331` matched every
 indexed file byte-for-byte to canonical Wheels run `29644925786` and passed all six clean
@@ -62,8 +68,9 @@ RC2 hotfix execution order:
    corrected Quickstart guidance, and release evidence/process corrections.
 4. Keep the RC1 wheel and package-index reports immutable; build a new canonical matrix for RC2
    rather than modifying RC1 evidence.
-5. Run the new six-platform hosted conformance matrix and repeat formal physical evidence against
-   the exact canonical RC2 artifacts.
+5. Run the new six-platform hosted conformance matrix. For this narrow RC2 hotfix, require fresh
+   physical evidence only from the available MacBook M3 against the exact canonical arm64 wheel.
+   Record physical Linux and Windows as unavailable exclusions, never as hosted or physical passes.
 6. Publish RC2 only after TestPyPI byte-identity and clean-install verification pass.
 7. After RC2, preserve old `main` as `v0.3-maintenance`, rename `v0.4-dev` to `main`, and update
    branch-specific workflows, links, badges, and clone instructions without rewriting history.
@@ -85,8 +92,8 @@ Blockers:
 
 | Lane | Status | Next proof |
 | --- | --- | --- |
-| C/C++ distribution preflight | RC1 build, offscreen, install, and package-index checks passed, but its physical evidence schema did not distinguish an exact-wheel native window. Post-release testing exposed the packaged macOS loader split and proved the local repair. | Build a canonical RC2 matrix; require hosted native-window gates and exact-wheel physical Quickstart evidence before publication. Preserve RC1 artifacts and reports unchanged. |
-| Windows wheel proof | The July 2026 pass fixes Win32 `min`/`max`, configured wheel paths, exported C11 requirements, duplicate MSVC pthread implementations, and the ARM64 shaderc omission. Windows uses static shaderc. Hosted run `29624999442` built and inspected AMD64/ARM64 wheels, confirmed architecture, and passed installed shader-resource, shaderc, render, and Python smokes on both architectures. Physical Windows AMD64 validation passed end to end; this is provisional because the corrected Release matrix changes the artifact checksum. | Repeat or confirm physical AMD64 proof against the exact replacement artifact. |
+| C/C++ distribution preflight | RC1 build, offscreen, install, and package-index checks passed, but its physical evidence schema did not distinguish an exact-wheel native window. Post-release testing exposed the packaged macOS loader split and proved the local repair. Hosted Test run `29693662817` and six-lane conformance run `29693217596` pass with the corrected capability model. | Build a canonical RC2 matrix; require Linux Xvfb installed-window proof, macOS hosted offscreen proof, and exact-wheel physical MacBook M3 Quickstart evidence before publication. Preserve RC1 artifacts and reports unchanged. |
+| Windows wheel proof | The July 2026 pass fixes Win32 `min`/`max`, configured wheel paths, exported C11 requirements, duplicate MSVC pthread implementations, and the ARM64 shaderc omission. Windows uses static shaderc. Hosted run `29624999442` built and inspected AMD64/ARM64 wheels, confirmed architecture, and passed installed shader-resource, shaderc, render, and Python smokes on both architectures. Physical Windows AMD64 validation passed against RC1-era bytes, but no physical Windows machine is available for the replacement campaign. | Require fresh hosted AMD64/ARM64 build, wheel, install, shaderc, and consumer proof for RC2. Record physical AMD64 as unavailable, not passed; restore exact-artifact physical Windows proof for RC3 or final. |
 | WebGPU/WASM experimental path | WebGPU fixture runner works; the generic WASM scene ABI and split DRP2 packet path now register 90 scenarios and expose 89 browser-live gallery routes (point cloud is registered but no longer exposed). Point cloud is delisted from the public browser gallery (`webgpu-deferred`, 2026-07-19): its source RESEPI LiDAR dataset is third-party and all-rights-reserved, so it cannot be redistributed as a public web data bundle; native capture and the deterministic local WASM packet proof still pass, and the localhost-only dev route is retained. SVG Tiger has headed browser proof and an approved committed prepared-data bundle attributed to Nicolas P. Rougier's Glumpy example gallery. | Point-cloud redistribution disposition resolved (unlicensed → delisted); continue generic volume and rendering techniques. |
 | Compute+graphics experimental path | DRP2 `ResourceBarrier`, FramePlan scene compute lowering, WebGPU fixture parity, and the C `gpu_particle_smoke` showcase are active. CPU command-generation proof passed on 2026-06-04. Native Vulkan compute+graphics proof passed on 2026-06-17: `test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes`, `test_vklite_compute_1`, `test_technique_compute_graphics`, and `examples/c/showcases/gpu_particle_smoke.c --png` with artifact `build/release-evidence/gpu_particle_smoke.png`. | Keep the slice classified as experimental in the feature/status table: native proof exists, but this is a narrow scene-compute/DRP2 interop path, not a general compute framework. |
 | Qt/PyQt hosted path | Native Qt hosting and `datoviz_qtbridge` are implemented and locally proven from source. On 2026-06-18, `DVZ_CMAKE_ARGS="-DDVZ_ENABLE_QT_BRIDGE=ON" just build`, `./build/examples/qt/hosted_qt_smoke 120`, `./build/examples/qt/qt_hosting --smoke-ms 1000`, `DATOVIZ_QTBRIDGE_LIBRARY=build/qtbridge/libdatoviz_qtbridge.so uv run --isolated --with PyQt6 python -m datoviz.qt`, and the hosted PyQt smoke passed after updating the example to pass `DvzColor` to the raw background-color API. The isolated probe reported bridge Qt 6.11.1 and PyQt Qt 6.11.0; the system PyQt6 package in this shell lacks `QVulkanInstance` and is not a valid PyQt hosting proof. Canonical RC1 wheels include `datoviz.qt` and the `datoviz[qt]` extra but not the native bridge, so Qt hosting is source-build-only in RC1. | Deliver and validate a packaged provider for RC3, preferably conda-first. Keep diagnostics explicit for a missing bridge, unsupported PyQt/PySide bindings, and Qt runtime mismatches; retain base-wheel checks with `--qt-probe optional`. |

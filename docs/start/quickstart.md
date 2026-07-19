@@ -7,8 +7,8 @@
   <span>No external data</span>
 </div>
 
-**Prerequisite:** Datoviz v0.4 installed from source or with
-`python -m pip install --pre datoviz==0.4.0rc1`. Check [Install](install.md) for platform details.
+**Prerequisite:** Datoviz v0.4 installed from source or, after RC2 publication, with
+`python -m pip install --pre datoviz==0.4.0rc2`. Check [Install](install.md) for platform details.
 
 This page builds one complete visualization: 10,000 random points in an interactive window. You can
 drag to pan and scroll to zoom. No data files are needed.

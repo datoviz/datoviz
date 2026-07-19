@@ -31,11 +31,13 @@ Success criteria:
 Exit criteria:
 
 1. the macOS packaged Vulkan-loader/GLFW mismatch is fixed;
-2. installed-wheel native windows have automated macOS and Linux/Xvfb regression proof;
-3. the exact canonical macOS wheel has explicit attended Quickstart evidence;
+2. installed-wheel native windows have automated Linux/Xvfb regression proof, while hosted macOS
+   retains offscreen MoltenVK render proof without claiming an interactive desktop session;
+3. the exact canonical macOS wheel has explicit attended Quickstart evidence on the MacBook M3;
 4. all six replacement wheels pass the normal RC artifact and conformance gates;
 5. public guidance discloses the RC1 limitation until RC2 is available;
-6. unrelated documentation, gallery, provider, and feature work remains deferred.
+6. RC2 notes record physical Linux and Windows as unavailable exclusions, not passes; and
+7. unrelated documentation, gallery, provider, and feature work remains deferred.
 
 
 ## RC3: Documentation, Packaging, And Quality Candidate

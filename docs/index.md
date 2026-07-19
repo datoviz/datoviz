@@ -19,9 +19,10 @@ Desktop-first</p>
 </nav>
 
 <p class="dvz-home-status">
-<strong>v0.4.0rc1:</strong> the first public release candidate is available for testing. The native
-Vulkan scene API is the primary supported path; browser WebGPU and advanced/unstable facilities
-remain experimental. See <a href="releases/v0.4.0rc1/">release notes</a>,
+<strong>v0.4.0rc2:</strong> replacement wheels are being validated for the active release candidate,
+including the packaged macOS native-window repair. The native Vulkan scene API is the primary
+supported path; browser WebGPU and advanced/unstable facilities remain experimental. See the
+<a href="releases/v0.4.0rc2/">RC2 status</a>,
 <a href="reference/feature-status/">feature status</a>, or the
 <a href="/v0.3/">legacy v0.3 documentation</a>.
 </p>
@@ -150,10 +151,10 @@ lower-level runtime integration. The public API uses C linkage and is callable f
 </section>
 </div>
 
-Prebuilt wheels containing the Python binding and native runtime are published and validated for
-supported Linux, macOS, and Windows targets. Install the exact release candidate with
-`python -m pip install --pre datoviz==0.4.0rc1`, then follow the
-[installation instructions](start/install.md).
+Prebuilt wheels containing the Python binding and native runtime are validated for supported Linux,
+macOS, and Windows targets. After RC2 publication, install the exact release candidate with
+`python -m pip install --pre datoviz==0.4.0rc2`, then follow the [installation
+instructions](start/install.md).
 
 
 ## :material-flask-outline: Built for scientific applications { .dvz-home-heading }
