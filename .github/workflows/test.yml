@@ -15,6 +15,10 @@ env:
 jobs:
   test-linux:
     runs-on: ubuntu-24.04
+    env:
+      DVZ_CMAKE_ARGS: >-
+        -DDVZ_ENABLE_SHADERC=ON
+        -DDVZ_SHADERC_RUNTIME_LIBRARY=libshaderc.so.1
     steps:
       - uses: actions/checkout@v7
         with:
@@ -31,7 +35,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             build-essential ccache cmake glslang-tools glslc libfreetype-dev libvulkan-dev \
-            mesa-vulkan-drivers ninja-build vulkan-tools vulkan-validationlayers webp xorg-dev xvfb
+            libshaderc-dev mesa-vulkan-drivers ninja-build vulkan-tools vulkan-validationlayers \
+            webp xorg-dev xvfb
           python -m pip install -U pip uv
           python -m pip install -r requirements-dev.txt
           command -v glslangValidator
@@ -42,6 +47,8 @@ jobs:
           just docs-build-check
       - name: Build
         run: just build
+      - name: Check shaderc runtime
+        run: just shaderc-smoke
       - name: Test quickstart fixtures
         run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" just quickstart-check
       - name: Test
