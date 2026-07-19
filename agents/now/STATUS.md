@@ -1,6 +1,6 @@
 # Datoviz v0.4 Status
 
-Status: active v0.4 release candidate. Updated: 2026-07-18.
+Status: active v0.4 release candidate. Updated: 2026-07-19.
 
 Keep this file short. Durable behavior belongs in `spec/`; completed history belongs in git
 history, not in agent archives.
@@ -33,34 +33,34 @@ The RC1 source bundle/checksums and release notes are closed. All six wheels are
 PyPI. TestPyPI verification run `29652477816` and PyPI verification run `29666589331` matched every
 indexed file byte-for-byte to canonical Wheels run `29644925786` and passed all six clean
 installed-package smokes plus their aggregate gates. The tag and GitHub prerelease are public with
-11 verified assets. Next critical path: switch `datoviz.org` from the v0.3 site to the v0.4 RC
-documentation while preserving a usable v0.3 archive.
+11 verified assets. `datoviz.org` now serves the v0.4 RC documentation, the former site is preserved
+under `/v0.3/`, and the four initially missing gallery video/poster pairs are public and verified.
+Post-RC1 branch cleanup is complete. Next critical path: triage RC1 feedback and deliver a packaged
+`datoviz_qtbridge` provider for RC2, preferably conda-first.
 
 Completed runtime cleanup to keep in validation: DRP2 render-pass begin commands now carry explicit
 render area, viewport, and scissor rectangles, scene emission initializes full targets before panel
 passes, and mixed plain/MSAA panels use an explicit-region resolve path so panel resolves do not
 clobber earlier framebuffer contents.
 
-RC1 execution order:
+Post-RC1 / RC2 execution order:
 
 1. Keep the v0.4 Git history cleanup deferred; do not rewrite RC or final release refs.
-2. Keep the now-green wheel matrix in release evidence and inspect downloaded artifacts before
-   upload.
-3. Prepare the RC1 source bundle, release notes, tag, and publication rehearsal.
-4. Install, inspect, and smoke-test the built wheels, including native dependencies and the CMake
-   consumer check.
-5. Keep the v0.3 visible parity audit and public API/status disposition table reconciled through
-   RC1: specifically re-check `docs/reference/feature-status.md`,
-   `docs/reference/project-status.md`, `docs/reference/v03-visible-parity.md`, generated C API
-   docs, Python binding docs/policy, and the GSP/VisPy2 boundary language for contradictions.
-6. Polish the WebGPU/WASM story: supported live routes, experimental scope, diagnostics, and
-   non-parity boundaries.
-7. Proofread the public docs, gallery pages, generated matrices, screenshots, and example metadata.
-8. Publish the RC1 tag and artifacts only after final validation and release notes are recorded.
-9. Keep the narrow retained visual item-range slice in validation: the point-first
-   `dvz_visual_set_item_range()` / clear/get API is active, with broader attribute views, scalar
-   GPU mappings, modifiers, compaction, sorting, indirect draw, and additional visual families
-   deferred unless a concrete RC blocker appears.
+2. Triage RC1 feedback and open integration work, especially
+   [PR #132](https://github.com/datoviz/datoviz/pull/132), into RC2 blockers, later fixes, or
+   explicit non-goals.
+3. Define, package, and validate the optional `datoviz_qtbridge` provider without adding Qt to the
+   base wheel contract.
+4. Finish gallery/data attribution, point-cloud redistribution disposition, generated C reference
+   coverage, and the documentation/gallery freeze.
+5. Keep the RC1 wheel and package-index reports immutable; build a new canonical matrix for RC2
+   rather than modifying RC1 evidence.
+6. Accept stabilization fixes backed by focused regression proof. Reassess candidate feature work
+   only when RC1 feedback exposes a concrete need and release capacity remains.
+7. Begin the guarded website-deployment automation described in
+   [WEBSITE_DEPLOYMENT.md](../../spec/docs/WEBSITE_DEPLOYMENT.md) when practical, without making it
+   an RC2 blocker.
+8. Prepare RC2 artifacts only after the RC2 exit criteria in [RELEASE.md](RELEASE.md) are met.
 
 Pre-RC repository hygiene decision: Git history cleanup is deferred beyond v0.4. Do not rewrite
 RC or final release refs; any future cleanup requires a separate coordinated plan.
@@ -111,8 +111,9 @@ alpha-preserving PNG bytes can be deferred.
 
 ## Active Lanes
 
-1. **Release closure:** visible parity audit, final API/status reconciliation, known gaps, release
-   notes, source bundle/checksum, artifact inspection, and publication rehearsal.
+1. **RC2 stabilization:** RC1 feedback triage, regression fixes, Qt provider packaging, final
+   documentation/gallery structure, attribution, generated reference coverage, and new canonical
+   release evidence without changing RC1 artifacts.
 2. **Example proof:** C examples and fixture smokes for the declared release surface, especially
    one short feature example per public v0.4 feature, retained textured mesh, and composed
    annotation/layout examples.
