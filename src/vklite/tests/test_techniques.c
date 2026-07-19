@@ -584,13 +584,11 @@ int test_technique_msaa(TstContext* suite, const TstCase* tstitem)
     DvzImageViews* msimg_view = dvz_image_views_create_wrapper();
     DvzImages* msdepth = dvz_images_create_wrapper();
     DvzImageViews* msdepth_view = dvz_image_views_create_wrapper();
-    DvzImageViews* resolve_depth_view = dvz_image_views_create_wrapper();
     {
         ANN(msimg);
         ANN(msimg_view);
         ANN(msdepth);
         ANN(msdepth_view);
-        ANN(resolve_depth_view);
         dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, msimg);
         dvz_images_format(msimg, VK_FORMAT_R8G8B8A8_UNORM);
         dvz_images_samples(msimg, sample_count);
@@ -609,15 +607,10 @@ int test_technique_msaa(TstContext* suite, const TstCase* tstitem)
         dvz_images_usage(msdepth, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
         dvz_images_create(msdepth);
 
-        // Use depth-only views so the test does not alias depth and stencil resolve accesses.
+        // This color-resolve smoke test needs multisampled depth, but does not consume depth later.
         dvz_image_views(msdepth, msdepth_view);
         dvz_image_views_aspect(msdepth_view, VK_IMAGE_ASPECT_DEPTH_BIT);
         dvz_image_views_create(msdepth_view);
-
-        DvzImages* resolve_depth = dvz_fixture_offscreen_depth(off);
-        dvz_image_views(resolve_depth, resolve_depth_view);
-        dvz_image_views_aspect(resolve_depth_view, VK_IMAGE_ASPECT_DEPTH_BIT);
-        dvz_image_views_create(resolve_depth_view);
     }
 
 
@@ -663,9 +656,6 @@ int test_technique_msaa(TstContext* suite, const TstCase* tstitem)
     DvzAttachment* datt = dvz_rendering_depth(rendering);
     dvz_attachment_image(
         datt, dvz_image_views_handle(msdepth_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
-    dvz_attachment_resolve(
-        datt, VK_RESOLVE_MODE_SAMPLE_ZERO_BIT, dvz_image_views_handle(resolve_depth_view, 0),
-        VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
     dvz_attachment_ops(datt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
     dvz_attachment_clear(datt, (VkClearValue){.depthStencil = {1.0f, 0}});
 
@@ -684,22 +674,6 @@ int test_technique_msaa(TstContext* suite, const TstCase* tstitem)
         dvz_barrier_image_access(bcolor, 0, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
         dvz_barrier_image_layout(
             bcolor, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-
-        DvzBarrierImage* bdepth =
-            dvz_barriers_image(&barriers, dvz_image_handle(dvz_fixture_offscreen_depth(off), 0));
-        dvz_barrier_image_stage(
-            bdepth, VK_PIPELINE_STAGE_2_NONE,
-            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT |
-            VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
-                VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT);
-        dvz_barrier_image_access(
-            bdepth, 0,
-            VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT |
-                VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
-        dvz_barrier_image_layout(
-            bdepth, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
-        dvz_barrier_image_aspect(
-            bdepth, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
 
         DvzBarrierImage* bmscolor =
             dvz_barriers_image(&barriers, dvz_image_handle(msimg, 0));
@@ -742,8 +716,6 @@ int test_technique_msaa(TstContext* suite, const TstCase* tstitem)
     dvz_image_views_free(msimg_view);
     dvz_image_views_destroy(msdepth_view);
     dvz_image_views_free(msdepth_view);
-    dvz_image_views_destroy(resolve_depth_view);
-    dvz_image_views_free(resolve_depth_view);
     dvz_images_destroy(msimg);
     dvz_images_free(msimg);
     dvz_images_destroy(msdepth);
