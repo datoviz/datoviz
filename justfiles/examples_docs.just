@@ -340,8 +340,8 @@ serve: docs-assets wasm-scene-build-if-needed
 docs-serve: serve
 #
 
-# Publish the mkdocs website on GitHub Pages.
-publish confirm='no':
+# Publish the MkDocs website on GitHub Pages while preserving the legacy v0.3 archive.
+publish confirm='no' source_branch='main' seed_legacy='no':
     #!/usr/bin/env bash
     set -e
     if [ "{{confirm}}" != "yes" ]; then
@@ -349,21 +349,71 @@ publish confirm='no':
         exit 2
     fi
 
-    # Get the current branch name
     current_branch=$(git rev-parse --abbrev-ref HEAD)
-
-    # Check if the current branch is "main"
-    if [ "$current_branch" != "main" ]; then
-        echo "You can only publish the documentation from the main branch (current branch is '$current_branch')."
+    if [ "$current_branch" != "{{source_branch}}" ]; then
+        echo "Refusing docs publish: expected source branch '{{source_branch}}', found '$current_branch'." >&2
+        exit 1
+    fi
+    case "$current_branch" in
+        main|v0.4-dev) ;;
+        *)
+            echo "Refusing docs publish from unsupported branch '$current_branch'." >&2
+            exit 1
+            ;;
+    esac
+    if ! git diff --quiet || ! git diff --cached --quiet; then
+        echo "Refusing docs publish with tracked source changes." >&2
         exit 1
     fi
 
-    pushd ../datoviz.github.io
-    git pull
-    mkdocs gh-deploy --config-file ../datoviz/mkdocs.yml --remote-branch main
-    popd
+    site_repo=${DATOVIZ_SITE_REPO:-../datoviz.github.io}
+    if [ ! -d "$site_repo/.git" ]; then
+        echo "Website checkout not found at '$site_repo'." >&2
+        exit 1
+    fi
+    if [ -n "$(git -C "$site_repo" status --porcelain)" ]; then
+        echo "Refusing docs publish with a dirty website checkout." >&2
+        exit 1
+    fi
+    git -C "$site_repo" pull --ff-only
+
+    deploy_tmp=$(mktemp -d)
+    trap 'rm -rf "$deploy_tmp"' EXIT
+    uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow \
+        mkdocs build --strict --site-dir "$deploy_tmp/built"
+    stage_args=(
+        python3 tools/stage_docs_deployment.py
+        --built-site "$deploy_tmp/built"
+        --site-repo "$site_repo"
+        --output "$deploy_tmp/output"
+    )
+    if [ "{{seed_legacy}}" = "yes" ]; then
+        stage_args+=(--seed-legacy)
+    elif [ "{{seed_legacy}}" != "no" ]; then
+        echo "seed_legacy must be 'yes' or 'no'." >&2
+        exit 2
+    fi
+    "${stage_args[@]}"
+
+    rsync -a --delete --exclude .git "$deploy_tmp/output/" "$site_repo/"
+    git -C "$site_repo" add -A
+    if git -C "$site_repo" diff --cached --quiet; then
+        echo "Refusing docs publish with an empty website deployment." >&2
+        exit 1
+    fi
+    if git -C "$site_repo" diff --cached --name-only | grep -Eq '(^|/)\.DS_Store$'; then
+        echo "Refusing docs publish with staged .DS_Store metadata." >&2
+        exit 1
+    fi
+    large_file=$(find "$site_repo" -path "$site_repo/.git" -prune -o -type f -size +99M -print -quit)
+    if [ -n "$large_file" ]; then
+        echo "Refusing docs publish with a file over 99 MiB: $large_file" >&2
+        exit 1
+    fi
+    git -C "$site_repo" commit -m "Deploy Datoviz ${current_branch} at $(git rev-parse --short HEAD)"
+    git -C "$site_repo" push origin main
 #
 
-docs-publish confirm='no':
-    @just publish "{{confirm}}"
+docs-publish confirm='no' source_branch='main' seed_legacy='no':
+    @just publish "{{confirm}}" "{{source_branch}}" "{{seed_legacy}}"
 #
