@@ -18,7 +18,7 @@ Desktop-first</p>
 <a href="https://github.com/datoviz/datoviz">View on GitHub</a>
 </nav>
 
-<p class="dvz-home-status"><strong>v0.4.0rc2:</strong> the active release candidate is published on PyPI and GitHub, including the packaged macOS native-window repair. The native Vulkan scene API is the primary supported path; browser WebGPU and advanced/unstable facilities remain experimental. See the <a href="releases/v0.4.0rc2/">RC2 release notes</a>, <a href="reference/feature-status/">feature status</a>, or the <a href="/v0.3/">legacy v0.3 documentation</a>.</p>
+<p class="dvz-home-status"><strong>v0.4.0rc2:</strong> the active release candidate is published on PyPI and GitHub. The native Vulkan scene API is the primary supported path; browser WebGPU and advanced/unstable facilities remain experimental. See the <a href="releases/v0.4.0rc2/">RC2 release notes</a>, <a href="reference/feature-status/">feature status</a>, or the <a href="/v0.3/">legacy v0.3 documentation</a>.</p>
 
 <div class="dvz-gallery-media dvz-gallery-media--video dvz-home-hero" data-gallery-lazy="video">
   <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_protein/" aria-label="Open the protein visualization example"></a>
