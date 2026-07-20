@@ -1,6 +1,23 @@
 # Change Log
 
-## v0.4.0rc1 (draft)
+## v0.4.0rc2
+
+RC2 replaces RC1 to fix interactive windows created from the packaged macOS wheels. The API and
+feature scope are otherwise unchanged from RC1.
+
+### Fixes
+
+* Ensure GLFW and Datoviz select the same packaged Vulkan loader on macOS, so native windows no
+  longer fail with `glfwCreateWindowSurface() failed (-3)`. Offscreen rendering was unaffected.
+
+### Release
+
+* Publish wheels for macOS 15 (Apple Silicon and Intel), Linux `manylinux_2_34` (x86_64 and
+  aarch64), and Windows (AMD64 and ARM64), tested on Python 3.10 through 3.14.
+* macOS RC1 users should upgrade; Linux and Windows RC1 users may upgrade for consistency.
+
+
+## v0.4.0rc1
 
 This release candidate is a controlled public testing milestone for the v0.4 rewrite. It is not the
 final v0.4 release, and it is not VisPy 2.0.
