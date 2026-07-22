@@ -199,7 +199,21 @@ if (mesh == NULL || texture == NULL || dvz_sampled_field_set_data(texture, &data
 
 if (dvz_visual_set_field(mesh, "texture", texture) != 0)
     return false;
+
+DvzFieldSamplingDesc sampling = dvz_field_sampling_desc();
+sampling.min_filter = DVZ_FIELD_FILTER_NEAREST;
+sampling.mag_filter = DVZ_FIELD_FILTER_NEAREST;
+if (dvz_visual_set_field_sampling(mesh, "texture", &sampling) != 0)
+    return false;
 ```
+
+Sampling belongs to the visual slot, not the sampled field. The same field may therefore use
+linear filtering on one visual and nearest filtering on another. Sampling may be configured before
+or after field binding. Pass `NULL` as the descriptor to restore the family default.
+
+The current public slice supports matching linear or nearest minification/magnification filters,
+clamp-to-edge addressing, and no mipmaps. Repeat modes, mixed filters, and mipmaps return an error
+until their native and WebGPU behavior is implemented.
 
 
 ## Important details

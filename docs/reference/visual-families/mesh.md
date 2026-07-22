@@ -45,7 +45,7 @@ same geometry; upload them separately because their count differs from `N`.
 | `instance_transform` | Optional; absence means one instance | `mat4[M]` | `float32`, `(M, 4, 4)` contiguous | One model transform per instance. This is an instance-rate attribute and need not have vertex count `N`. | Upload separately with `dvz_visual_set_data()` or range update. |
 | `item_state` | Optional; instance-rate retained state | `uint32_t[M]` | `uint32`, `(M,)` | `DvzItemStateKind` bitfield; when transforms exist, count should match instance count. Textured-mesh item-state styling is not supported. | Usually interaction-managed; direct dense/range upload is supported. |
 | index data | Optional | `uint32_t[I]` | `uint32`, `(I,)` | Values index `[0,N)`; triangle-list grouping normally uses multiples of three. | `dvz_visual_set_index_data()` or external `"index"` buffer. |
-| texture slot `"texture"` | Optional; enables textured mesh | `DvzSampledField*` | sampled-field handle | RGBA8 2D sampled field in the active first slice; requires `texcoords`. | `dvz_visual_set_field()`. |
+| texture slot `"texture"` | Optional; enables textured mesh | `DvzSampledField*` | sampled-field handle | RGBA8 2D sampled field in the active first slice; requires `texcoords`. | `dvz_visual_set_field()`; configure filtering with `dvz_visual_set_field_sampling()`. |
 
 ## Constructor And Options
 
@@ -53,6 +53,9 @@ same geometry; upload them separately because their count differs from `N`.
 - `dvz_mesh_set_geometry()` copies geometry positions, colors, normals, texcoords, and optional
   triangle indices.
 - Common options include material, alpha mode, depth test, depth cue, and transform.
+- Texture sampling defaults to linear filtering, clamp-to-edge addressing, and no mipmaps. Use
+  `dvz_visual_set_field_sampling(mesh, "texture", &sampling)` for nearest filtering when texels
+  must remain discrete.
 - Upload vertex attributes together; upload instance-rate arrays separately when `M != N`.
 
 ## Verified Usage Pattern
@@ -67,8 +70,9 @@ use explicit instance attributes when instance-level identity matters.
 
 ## Backend Notes
 
-Native and WebGPU paths are active for indexed geometry. The canonical example uses an arcball-style
-3D camera and a retained cube mesh helper.
+Native and WebGPU paths are active for indexed and RGBA8 textured geometry. The
+[textured-mesh example](../../examples/gallery/features/features_mesh_texture.md) demonstrates an
+explicit field-slot sampling descriptor.
 
 ## Canonical Example
 

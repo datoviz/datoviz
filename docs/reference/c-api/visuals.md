@@ -19,7 +19,7 @@ Common workflows:
 - [Update visual data](../../how-to/update-visual-data.md)
 - [Visual families reference](../visual-families/index.md)
 
-Functions: 224
+Functions: 225
 Types: 90
 
 ## Symbol Groups
@@ -55,7 +55,7 @@ Types: 90
 | [Triangulate](#triangulate) | 1 | 0 | `include/datoviz/geom.h` |
 | [Triangulation](#triangulation) | 1 | 2 | 3 headers |
 | [Vector](#vector) | 4 | 2 | 3 headers |
-| [Visual](#visual) | 46 | 20 | 6 headers |
+| [Visual](#visual) | 47 | 20 | 6 headers |
 | [Volume](#volume) | 16 | 5 | 3 headers |
 
 ??? info "Grouped function index"
@@ -399,6 +399,7 @@ Types: 90
     | [`dvz_visual_set_data_range()`](#dvz_visual_set_data_range) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_depth_test()`](#dvz_visual_set_depth_test) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_field()`](#dvz_visual_set_field) | `include/datoviz/scene/field.h` |
+    | [`dvz_visual_set_field_sampling()`](#dvz_visual_set_field_sampling) | `include/datoviz/scene/field.h` |
     | [`dvz_visual_set_index_data()`](#dvz_visual_set_index_data) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_item_range()`](#dvz_visual_set_item_range) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_link_keys()`](#dvz_visual_set_link_keys) | `include/datoviz/scene/interaction.h` |
@@ -5689,7 +5690,34 @@ DvzResult dvz_visual_set_field(
 | `slot_name` | `const` `char` * | the semantic slot name |
 | `field` | `const` [`DvzSampledField`](scene.md#type-dvzsampledfield) * | the field, or NULL to clear the binding |
 
-_Declared in `include/datoviz/scene/field.h`:307._
+_Declared in `include/datoviz/scene/field.h`:357._
+
+#### `dvz_visual_set_field_sampling()` { #dvz_visual_set_field_sampling .dvz-api-function }
+
+Set sampling state for a named visual field slot.
+
+Sampling state belongs to the visual slot and may be set before or after binding a field.
+Passing NULL restores the visual-family default. The first implementation supports linear or
+nearest filtering with matching minification and magnification filters, clamp-to-edge
+addressing, and no mipmaps. Image `"field"` and mesh `"texture"` slots support linear or nearest
+filtering. Labels `"field"` supports nearest filtering only.
+
+```c
+DvzResult dvz_visual_set_field_sampling(
+    DvzVisual * visual,
+    const char * slot_name,
+    const DvzFieldSamplingDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR on error |
+| `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the visual |
+| `slot_name` | `const` `char` * | the semantic slot name |
+| `desc` | `const` [`DvzFieldSamplingDesc`](scene.md#type-dvzfieldsamplingdesc) * | the sampling descriptor, or NULL to restore the default |
+
+_Declared in `include/datoviz/scene/field.h`:375._
 
 #### `dvz_visual_set_index_data()` { #dvz_visual_set_index_data .dvz-api-function }
 

@@ -19,8 +19,8 @@ Common workflows:
 - [Configure cameras](../../how-to/configure-cameras.md)
 - [Pick items](../../how-to/pick-items.md)
 
-Functions: 362
-Types: 191
+Functions: 363
+Types: 195
 
 ## Symbol Groups
 
@@ -42,7 +42,7 @@ Types: 191
 | [Datetime](#datetime) | 4 | 2 | `include/datoviz/scene/scale.h`, `include/datoviz/scene/types.h` |
 | [Diagnostic](#diagnostic) | 0 | 1 | `include/datoviz/scene/types.h` |
 | [Dim](#dim) | 0 | 2 | `include/datoviz/scene/types.h` |
-| [Field](#field) | 2 | 0 | `include/datoviz/scene/field.h` |
+| [Field](#field) | 3 | 0 | `include/datoviz/scene/field.h` |
 | [Figure](#figure) | 17 | 1 | `include/datoviz/scene.h`, `include/datoviz/scene/types.h` |
 | [Fly](#fly) | 1 | 0 | `include/datoviz/scene/fly.h` |
 | [Font](#font) | 2 | 1 | `include/datoviz/scene/text.h`, `include/datoviz/scene/types.h` |
@@ -71,7 +71,7 @@ Types: 191
 | [Rect](#rect) | 0 | 1 | `include/datoviz/scene/types.h` |
 | [Reference Grid](#reference-grid) | 4 | 3 | 3 headers |
 | [Rendered](#rendered) | 0 | 2 | `include/datoviz/scene/types.h` |
-| [Sampled Field](#sampled-field) | 9 | 9 | `include/datoviz/scene/field.h`, `include/datoviz/scene/types.h` |
+| [Sampled Field](#sampled-field) | 9 | 13 | `include/datoviz/scene/field.h`, `include/datoviz/scene/types.h` |
 | [Scale](#scale) | 15 | 4 | 3 headers |
 | [Scale Bar](#scale-bar) | 9 | 4 | 3 headers |
 | [Scene](#scene) | 34 | 13 | 5 headers |
@@ -213,6 +213,7 @@ Types: 191
     | --- | --- |
     | [`dvz_field_data_view()`](#dvz_field_data_view) | `include/datoviz/scene/field.h` |
     | [`dvz_field_geometry()`](#dvz_field_geometry) | `include/datoviz/scene/field.h` |
+    | [`dvz_field_sampling_desc()`](#dvz_field_sampling_desc) | `include/datoviz/scene/field.h` |
 
     **Figure**
 
@@ -2764,7 +2765,7 @@ DvzFieldDataView dvz_field_data_view(void);
 | --- | --- | --- |
 | return | [`DvzFieldDataView`](scene.md#type-dvzfielddataview) | default sampled-field data view descriptor |
 
-_Declared in `include/datoviz/scene/field.h`:183._
+_Declared in `include/datoviz/scene/field.h`:222._
 
 #### `dvz_field_geometry()` { #dvz_field_geometry .dvz-api-function }
 
@@ -2778,7 +2779,24 @@ DvzFieldGeometry dvz_field_geometry(void);
 | --- | --- | --- |
 | return | [`DvzFieldGeometry`](scene.md#type-dvzfieldgeometry) | default sampled-field geometry descriptor |
 
-_Declared in `include/datoviz/scene/field.h`:175._
+_Declared in `include/datoviz/scene/field.h`:214._
+
+#### `dvz_field_sampling_desc()` { #dvz_field_sampling_desc .dvz-api-function }
+
+Return the default field-slot sampling descriptor.
+
+The default uses linear minification and magnification filters, clamp-to-edge addressing, and
+no mipmaps.
+
+```c
+DvzFieldSamplingDesc dvz_field_sampling_desc(void);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzFieldSamplingDesc`](scene.md#type-dvzfieldsamplingdesc) | default field-slot sampling descriptor |
+
+_Declared in `include/datoviz/scene/field.h`:233._
 
 ## Figure { #figure }
 
@@ -7482,7 +7500,7 @@ DvzSampledField * dvz_sampled_field(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `desc` | `const` [`DvzSampledFieldDesc`](scene.md#type-dvzsampledfielddesc) * | the field descriptor |
 
-_Declared in `include/datoviz/scene/field.h`:193._
+_Declared in `include/datoviz/scene/field.h`:243._
 
 #### `dvz_sampled_field_desc()` { #dvz_sampled_field_desc .dvz-api-function }
 
@@ -7498,7 +7516,7 @@ DvzSampledFieldDesc dvz_sampled_field_desc(void);
 
 Related: [`dvz_sampled_field()`](#dvz_sampled_field).
 
-_Declared in `include/datoviz/scene/field.h`:167._
+_Declared in `include/datoviz/scene/field.h`:206._
 
 #### `dvz_sampled_field_destroy()` { #dvz_sampled_field_destroy .dvz-api-function }
 
@@ -7516,7 +7534,7 @@ void dvz_sampled_field_destroy(
 | --- | --- | --- |
 | `field` | [`DvzSampledField`](scene.md#type-dvzsampledfield) * | the sampled field |
 
-_Declared in `include/datoviz/scene/field.h`:213._
+_Declared in `include/datoviz/scene/field.h`:263._
 
 #### `dvz_sampled_field_id()` { #dvz_sampled_field_id .dvz-api-function }
 
@@ -7533,7 +7551,7 @@ DvzId dvz_sampled_field_id(
 | return | [`DvzId`](runtime-math.md#type-dvzid) | the scene-local identity, or DVZ_ID_NONE when field is NULL or destroyed |
 | `field` | `const` [`DvzSampledField`](scene.md#type-dvzsampledfield) * | the sampled field |
 
-_Declared in `include/datoviz/scene/field.h`:203._
+_Declared in `include/datoviz/scene/field.h`:253._
 
 #### `dvz_sampled_field_info()` { #dvz_sampled_field_info .dvz-api-function }
 
@@ -7554,7 +7572,7 @@ _Bool dvz_sampled_field_info(
 | `field` | `const` [`DvzSampledField`](scene.md#type-dvzsampledfield) * | the sampled field |
 | `out` | [`DvzSampledFieldDesc`](scene.md#type-dvzsampledfielddesc) * | output field descriptor |
 
-_Declared in `include/datoviz/scene/field.h`:286._
+_Declared in `include/datoviz/scene/field.h`:336._
 
 #### `dvz_sampled_field_resize()` { #dvz_sampled_field_resize .dvz-api-function }
 
@@ -7584,7 +7602,7 @@ DvzResult dvz_sampled_field_resize(
 | `depth` | `uint32_t` | new field depth in samples (must be 1 for 2D fields) |
 | `view` | `const` [`DvzFieldDataView`](scene.md#type-dvzfielddataview) * | the uploaded data view for the new extent |
 
-_Declared in `include/datoviz/scene/field.h`:246._
+_Declared in `include/datoviz/scene/field.h`:296._
 
 #### `dvz_sampled_field_set_data()` { #dvz_sampled_field_set_data .dvz-api-function }
 
@@ -7607,7 +7625,7 @@ DvzResult dvz_sampled_field_set_data(
 | `field` | [`DvzSampledField`](scene.md#type-dvzsampledfield) * | the sampled field |
 | `view` | `const` [`DvzFieldDataView`](scene.md#type-dvzfielddataview) * | the uploaded data view |
 
-_Declared in `include/datoviz/scene/field.h`:227._
+_Declared in `include/datoviz/scene/field.h`:277._
 
 #### `dvz_sampled_field_set_geometry()` { #dvz_sampled_field_set_geometry .dvz-api-function }
 
@@ -7626,7 +7644,7 @@ DvzResult dvz_sampled_field_set_geometry(
 | `field` | [`DvzSampledField`](scene.md#type-dvzsampledfield) * | the sampled field |
 | `geometry` | `const` [`DvzFieldGeometry`](scene.md#type-dvzfieldgeometry) * | the geometry descriptor |
 
-_Declared in `include/datoviz/scene/field.h`:273._
+_Declared in `include/datoviz/scene/field.h`:323._
 
 #### `dvz_sampled_field_update_region()` { #dvz_sampled_field_update_region .dvz-api-function }
 
@@ -7650,7 +7668,7 @@ DvzResult dvz_sampled_field_update_region(
 | `region` | [`DvzFieldRegion`](scene.md#type-dvzfieldregion) | the updated sample-space region |
 | `view` | `const` [`DvzFieldDataView`](scene.md#type-dvzfielddataview) * | the uploaded data view |
 
-_Declared in `include/datoviz/scene/field.h`:262._
+_Declared in `include/datoviz/scene/field.h`:312._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -7669,6 +7687,20 @@ _Declared in `include/datoviz/scene/field.h`:262._
 
     _Declared in `include/datoviz/scene/field.h`:89._
 
+<a id="type-dvzfieldaddressmode"></a>
+
+??? abstract "`DvzFieldAddressMode` · enum"
+
+    ```c
+    enum DvzFieldAddressMode {
+        DVZ_FIELD_ADDRESS_CLAMP_TO_EDGE = 0,
+        DVZ_FIELD_ADDRESS_REPEAT = 1,
+        DVZ_FIELD_ADDRESS_MIRROR_REPEAT = 2,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/field.h`:107._
+
 <a id="type-dvzfielddataview"></a>
 
 ??? abstract "`DvzFieldDataView` · record"
@@ -7683,7 +7715,7 @@ _Declared in `include/datoviz/scene/field.h`:262._
     };
     ```
 
-    _Declared in `include/datoviz/scene/field.h`:146._
+    _Declared in `include/datoviz/scene/field.h`:170._
 
 <a id="type-dvzfielddim"></a>
 
@@ -7697,6 +7729,19 @@ _Declared in `include/datoviz/scene/field.h`:262._
     ```
 
     _Declared in `include/datoviz/scene/field.h`:30._
+
+<a id="type-dvzfieldfilter"></a>
+
+??? abstract "`DvzFieldFilter` · enum"
+
+    ```c
+    enum DvzFieldFilter {
+        DVZ_FIELD_FILTER_LINEAR = 0,
+        DVZ_FIELD_FILTER_NEAREST = 1,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/field.h`:99._
 
 <a id="type-dvzfieldformat"></a>
 
@@ -7757,7 +7802,19 @@ _Declared in `include/datoviz/scene/field.h`:262._
     };
     ```
 
-    _Declared in `include/datoviz/scene/field.h`:119._
+    _Declared in `include/datoviz/scene/field.h`:143._
+
+<a id="type-dvzfieldmipmapmode"></a>
+
+??? abstract "`DvzFieldMipmapMode` · enum"
+
+    ```c
+    enum DvzFieldMipmapMode {
+        DVZ_FIELD_MIPMAP_NONE = 0,
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/field.h`:116._
 
 <a id="type-dvzfieldregion"></a>
 
@@ -7774,7 +7831,26 @@ _Declared in `include/datoviz/scene/field.h`:262._
     };
     ```
 
-    _Declared in `include/datoviz/scene/field.h`:133._
+    _Declared in `include/datoviz/scene/field.h`:157._
+
+<a id="type-dvzfieldsamplingdesc"></a>
+
+??? abstract "`DvzFieldSamplingDesc` · record"
+
+    ```c
+    struct DvzFieldSamplingDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzFieldFilter min_filter;
+        DvzFieldFilter mag_filter;
+        DvzFieldAddressMode address_u;
+        DvzFieldAddressMode address_v;
+        DvzFieldAddressMode address_w;
+        DvzFieldMipmapMode mipmap_mode;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/field.h`:182._
 
 <a id="type-dvzfieldsemantic"></a>
 
@@ -7822,7 +7898,7 @@ _Declared in `include/datoviz/scene/field.h`:262._
     };
     ```
 
-    _Declared in `include/datoviz/scene/field.h`:103._
+    _Declared in `include/datoviz/scene/field.h`:127._
 
 ## Scale { #scale }
 

@@ -3627,7 +3627,9 @@ DVZ_EXPORT DvzVisual* dvz_image(DvzScene* scene, uint32_t flags);
  * Set the sampler filter mode for an image visual.
  *
  * `DVZ_IMAGE_SAMPLING_LINEAR` is the default. `DVZ_IMAGE_SAMPLING_NEAREST` emits a nearest
- * minification and magnification sampler for pixel-exact image rendering.
+ * minification and magnification sampler for pixel-exact image rendering. This image-specific
+ * compatibility convenience delegates to `dvz_visual_set_field_sampling(image, "field", ...)`;
+ * new slot-oriented code should prefer the general field-sampling API.
  *
  * @param visual the image visual
  * @param sampling the image sampler filter mode

@@ -14,7 +14,7 @@ techniques. App lifecycle, capture, recording, replay, and media export examples
 - `controller_arcball.c`: arcball controller attached to a small 3D mesh.
 - `controller_fly.c`: fly controller attached to a sparse 3D scene.
 - `controller_turntable.c`: constrained turntable controller attached to a small 3D mesh.
-- `mesh_texture.c`: minimal UV textured mesh with a procedural RGBA8 texture.
+- `mesh_texture.c`: UV textured mesh with a procedural RGBA8 field and explicit slot sampling.
 - `material_mesh.c`: neutral mesh material parameters with readable normals and shading.
 - `lighting.c`: simple 3D lighting direction and intensity proof.
 - `gui_controls.c`: native Datoviz GUI controls mutating retained visual state.

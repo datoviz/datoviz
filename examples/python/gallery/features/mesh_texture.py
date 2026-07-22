@@ -62,6 +62,11 @@ def _add_textured_mesh(scene, panel) -> None:
 
     if dvz.dvz_visual_set_field(mesh, b"texture", field) != 0:
         raise RuntimeError("dvz_visual_set_field(texture) failed")
+    sampling = dvz.dvz_field_sampling_desc()
+    sampling.min_filter = dvz.DVZ_FIELD_FILTER_LINEAR
+    sampling.mag_filter = dvz.DVZ_FIELD_FILTER_LINEAR
+    if dvz.dvz_visual_set_field_sampling(mesh, b"texture", ctypes.byref(sampling)) != 0:
+        raise RuntimeError("dvz_visual_set_field_sampling(texture) failed")
     ex.add_visual(panel, mesh)
 
 

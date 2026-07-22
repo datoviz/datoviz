@@ -52,8 +52,9 @@ color role without a scale.
 ## Constructor And Options
 
 - Constructor: `dvz_image(scene, flags)`; examples pass `flags = 0`.
-- Sampling defaults to `DVZ_IMAGE_SAMPLING_LINEAR`. Use `dvz_image_set_sampling()` with
-  `DVZ_IMAGE_SAMPLING_NEAREST` for pixel-exact filtering.
+- Sampling defaults to linear filtering, clamp-to-edge addressing, and no mipmaps. Configure the
+  `"field"` slot with `dvz_visual_set_field_sampling()` for linear or nearest filtering.
+  `dvz_image_set_sampling()` remains available as an image-specific compatibility convenience.
 - Common options include alpha mode, depth test, transform, and color scale.
 
 ## Verified Usage Pattern

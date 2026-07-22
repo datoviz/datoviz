@@ -7,10 +7,10 @@
 /* This example maps an RGBA8 sampled field onto a UV sphere mesh.
  *
  * What to look for: the texture pixels are generated as a 1024x512 color field, attached to the
- * mesh as the "texture" field, and combined with the sphere geometry's UV coordinates. Rotate the
- * live sphere with the arcball controller and check that longitude waves wrap cleanly while the
- * poles avoid radial artifacts. Textures are useful for scientific surfaces, maps, and instrument
- * images that belong on geometry instead of in a flat panel.
+ * mesh as the "texture" field, explicitly configured for linear slot sampling, and combined with
+ * the sphere geometry's UV coordinates. Rotate the live sphere with the arcball controller and
+ * check that longitude waves wrap cleanly while the poles avoid radial artifacts. Change both
+ * filters below to `DVZ_FIELD_FILTER_NEAREST` to see pixel-exact sampling.
  *
  * Scenario: features_mesh_texture
  * Style: features, graphite_cyan, 1280x720 window target
@@ -187,6 +187,11 @@ static bool _add_textured_mesh(
     if (dvz_visual_set_material(visual, material) != 0)
         return false;
     if (dvz_visual_set_field(visual, "texture", texture) != DVZ_OK)
+        return false;
+    DvzFieldSamplingDesc sampling = dvz_field_sampling_desc();
+    sampling.min_filter = DVZ_FIELD_FILTER_LINEAR;
+    sampling.mag_filter = DVZ_FIELD_FILTER_LINEAR;
+    if (dvz_visual_set_field_sampling(visual, "texture", &sampling) != DVZ_OK)
         return false;
     if (dvz_panel_add_visual(panel, visual, NULL) != 0)
         return false;

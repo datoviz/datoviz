@@ -161,11 +161,15 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzErrorCallback`](runtime-utilities.md#type-dvzerrorcallback) | typedef | Common And Utility API | `include/datoviz/common/functions.h` |
 | [`DvzExtent`](app.md#type-dvzextent) | record | App, Window, And I/O API | `include/datoviz/window/size.h` |
 | [`DvzFence`](runtime-vklite.md#type-dvzfence) | typedef | vklite API | `include/datoviz/vklite/sync.h` |
+| [`DvzFieldAddressMode`](scene.md#type-dvzfieldaddressmode) | enum | Scene API | `include/datoviz/scene/field.h` |
 | [`DvzFieldDataView`](scene.md#type-dvzfielddataview) | record | Scene API | `include/datoviz/scene/field.h` |
 | [`DvzFieldDim`](scene.md#type-dvzfielddim) | enum | Scene API | `include/datoviz/scene/field.h` |
+| [`DvzFieldFilter`](scene.md#type-dvzfieldfilter) | enum | Scene API | `include/datoviz/scene/field.h` |
 | [`DvzFieldFormat`](scene.md#type-dvzfieldformat) | enum | Scene API | `include/datoviz/scene/field.h` |
 | [`DvzFieldGeometry`](scene.md#type-dvzfieldgeometry) | record | Scene API | `include/datoviz/scene/field.h` |
+| [`DvzFieldMipmapMode`](scene.md#type-dvzfieldmipmapmode) | enum | Scene API | `include/datoviz/scene/field.h` |
 | [`DvzFieldRegion`](scene.md#type-dvzfieldregion) | record | Scene API | `include/datoviz/scene/field.h` |
+| [`DvzFieldSamplingDesc`](scene.md#type-dvzfieldsamplingdesc) | record | Scene API | `include/datoviz/scene/field.h` |
 | [`DvzFieldSemantic`](scene.md#type-dvzfieldsemantic) | enum | Scene API | `include/datoviz/scene/field.h` |
 | [`DvzFigure`](scene.md#type-dvzfigure) | typedef | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzFilter`](runtime-vulkan.md#type-dvzfilter) | enum | Vulkan Foundation API | `include/datoviz/vk/enums.h` |
