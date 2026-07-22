@@ -55,22 +55,21 @@ DvzResult dvz_image_set_sampling(DvzVisual* visual, DvzImageSampling sampling)
         log_error("dvz_image_set_sampling requires an image visual");
         return -1;
     }
-    if (!_scene_visual_mutation_allowed(visual->scene, "update image sampling"))
-        return -1;
-
+    DvzFieldSamplingDesc desc = dvz_field_sampling_desc();
     switch (sampling)
     {
     case DVZ_IMAGE_SAMPLING_LINEAR:
-        _visual_family_state(visual)->image_nearest_sampler = false;
+        desc.min_filter = DVZ_FIELD_FILTER_LINEAR;
+        desc.mag_filter = DVZ_FIELD_FILTER_LINEAR;
         break;
     case DVZ_IMAGE_SAMPLING_NEAREST:
-        _visual_family_state(visual)->image_nearest_sampler = true;
+        desc.min_filter = DVZ_FIELD_FILTER_NEAREST;
+        desc.mag_filter = DVZ_FIELD_FILTER_NEAREST;
         break;
     default:
         log_error("invalid image sampling mode");
         return -1;
     }
 
-    _visual_bump_version(&_visual_family_state(visual)->image_sampling_version);
-    return 0;
+    return dvz_visual_set_field_sampling(visual, "field", &desc);
 }

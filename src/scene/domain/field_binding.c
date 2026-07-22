@@ -35,6 +35,10 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_FIELD_SAMPLING_DESC_KNOWN_FLAGS 0u
+
+
+
 static bool _field_binding_mul_u64_overflows(uint64_t a, uint64_t b, uint64_t* out)
 {
     ANN(out);
@@ -42,6 +46,80 @@ static bool _field_binding_mul_u64_overflows(uint64_t a, uint64_t b, uint64_t* o
         return true;
     *out = a * b;
     return false;
+}
+
+
+/**
+ * Return whether a visual exposes a caller-controlled field-sampling slot.
+ *
+ * @param visual the visual
+ * @param slot_name the requested slot
+ * @return whether the pair is supported
+ */
+static bool _field_sampling_slot_supported(const DvzVisual* visual, const char* slot_name)
+{
+    ANN(visual);
+    ANN(slot_name);
+    if (visual->type == DVZ_VISUAL_TYPE_MESH)
+        return strcmp(slot_name, "texture") == 0;
+    if (visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_LABELS)
+        return strcmp(slot_name, "field") == 0;
+    return false;
+}
+
+
+/**
+ * Validate the first-slice field sampling descriptor.
+ *
+ * @param visual the target visual
+ * @param desc the descriptor
+ * @return whether the descriptor is supported
+ */
+static bool _field_sampling_desc_validate(
+    const DvzVisual* visual, const DvzFieldSamplingDesc* desc)
+{
+    ANN(visual);
+    ANN(desc);
+    if (!DVZ_STRUCT_VALID(desc, DvzFieldSamplingDesc, DVZ_FIELD_SAMPLING_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzFieldSamplingDesc ABI prologue");
+        return false;
+    }
+    if (
+        (desc->min_filter != DVZ_FIELD_FILTER_LINEAR &&
+         desc->min_filter != DVZ_FIELD_FILTER_NEAREST) ||
+        (desc->mag_filter != DVZ_FIELD_FILTER_LINEAR &&
+         desc->mag_filter != DVZ_FIELD_FILTER_NEAREST))
+    {
+        log_error("invalid field sampling filter");
+        return false;
+    }
+    if (desc->min_filter != desc->mag_filter)
+    {
+        log_error("field sampling requires matching minification and magnification filters");
+        return false;
+    }
+    if (
+        desc->address_u != DVZ_FIELD_ADDRESS_CLAMP_TO_EDGE ||
+        desc->address_v != DVZ_FIELD_ADDRESS_CLAMP_TO_EDGE ||
+        desc->address_w != DVZ_FIELD_ADDRESS_CLAMP_TO_EDGE)
+    {
+        log_error("field sampling only supports clamp-to-edge addressing in the first slice");
+        return false;
+    }
+    if (desc->mipmap_mode != DVZ_FIELD_MIPMAP_NONE)
+    {
+        log_error("field sampling mipmaps are not supported in the first slice");
+        return false;
+    }
+    if (
+        visual->type == DVZ_VISUAL_TYPE_LABELS &&
+        desc->min_filter != DVZ_FIELD_FILTER_NEAREST)
+    {
+        log_error("labels field sampling requires nearest filtering");
+        return false;
+    }
+    return true;
 }
 
 
@@ -217,6 +295,44 @@ DvzResult dvz_visual_set_field(
     {
         _visual_binding_clear(visual, DVZ_VISUAL_BINDING_FIELD);
     }
+    _scene_notify_visual_changed(visual);
+    return DVZ_OK;
+}
+
+
+
+DvzResult dvz_visual_set_field_sampling(
+    DvzVisual* visual, const char* slot_name, const DvzFieldSamplingDesc* desc)
+{
+    ANN(visual);
+    ANN(slot_name);
+    if (!_field_sampling_slot_supported(visual, slot_name))
+    {
+        log_error(
+            "field sampling is only supported for image 'field', mesh 'texture', and labels "
+            "'field' slots");
+        return DVZ_ERROR;
+    }
+
+    DvzFieldSamplingDesc resolved = dvz_field_sampling_desc();
+    if (visual->type == DVZ_VISUAL_TYPE_LABELS)
+    {
+        resolved.min_filter = DVZ_FIELD_FILTER_NEAREST;
+        resolved.mag_filter = DVZ_FIELD_FILTER_NEAREST;
+    }
+    if (desc != NULL)
+    {
+        if (!_field_sampling_desc_validate(visual, desc))
+            return DVZ_ERROR;
+        resolved = *desc;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "update field sampling"))
+        return DVZ_ERROR;
+
+    DvzVisualFamilyState* state = _visual_family_state(visual);
+    state->image_nearest_sampler = resolved.min_filter == DVZ_FIELD_FILTER_NEAREST;
+    dvz_strlcpy(state->field_sampling_slot, slot_name, sizeof(state->field_sampling_slot));
+    _visual_bump_version(&state->field_sampling_version);
     _scene_notify_visual_changed(visual);
     return DVZ_OK;
 }

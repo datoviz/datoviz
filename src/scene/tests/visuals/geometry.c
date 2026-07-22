@@ -866,6 +866,10 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
     AT(dvz_visual_set_data(visual, "normal", normals, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
     AT(dvz_visual_set_buffer(visual, "index", index_buffer) == DVZ_OK);
+    DvzFieldSamplingDesc sampling = dvz_field_sampling_desc();
+    sampling.min_filter = DVZ_FIELD_FILTER_NEAREST;
+    sampling.mag_filter = DVZ_FIELD_FILTER_NEAREST;
+    AT(dvz_visual_set_field_sampling(visual, "texture", &sampling) == DVZ_OK);
     AT(dvz_visual_set_field(visual, "texture", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
@@ -896,6 +900,7 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
     bool found_material_upload = false;
     bool found_draw_indexed = false;
     bool found_depth_pipeline = false;
+    bool found_nearest_sampler = false;
     uint64_t texture_id = 0;
     uint64_t material_id = 0;
 
@@ -927,6 +932,13 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
                 found_material_upload = true;
                 material_id = cmd->u.write_buffer.buffer_id;
             }
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_SAMPLER)
+        {
+            found_nearest_sampler =
+                found_nearest_sampler ||
+                (cmd->u.create_sampler.mag_filter == DVZ_DRP2_FILTER_NEAREST &&
+                 cmd->u.create_sampler.min_filter == DVZ_DRP2_FILTER_NEAREST);
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP && texture_id != 0)
         {
@@ -973,6 +985,7 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
     AT(found_upload);
     AT(found_material_upload);
     AT(found_image_bind_group);
+    AT(found_nearest_sampler);
     AT(found_depth_pipeline);
     AT(found_draw_indexed);
     AT(_stream_set_vertex_buffer_count(stream) == 6);

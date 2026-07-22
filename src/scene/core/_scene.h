@@ -1727,8 +1727,9 @@ struct DvzVisualFamilyState
     float                  glyph_distance_range_px;
     DvzImageGpuCache       image_gpu;
     bool                   image_nearest_sampler;
-    uint64_t               image_sampling_version;
-    uint64_t               image_sampling_realized_version;
+    char                   field_sampling_slot[32];
+    uint64_t               field_sampling_version;
+    uint64_t               field_sampling_realized_version;
     DvzSphereMode          sphere_mode;
     bool                   mesh_default_color;
     bool                   volume_occluded;

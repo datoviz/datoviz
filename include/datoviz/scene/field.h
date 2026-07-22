@@ -96,6 +96,30 @@ typedef enum
 
 
 
+typedef enum
+{
+    DVZ_FIELD_FILTER_LINEAR = 0,
+    DVZ_FIELD_FILTER_NEAREST,
+} DvzFieldFilter;
+
+
+
+typedef enum
+{
+    DVZ_FIELD_ADDRESS_CLAMP_TO_EDGE = 0,
+    DVZ_FIELD_ADDRESS_REPEAT,
+    DVZ_FIELD_ADDRESS_MIRROR_REPEAT,
+} DvzFieldAddressMode;
+
+
+
+typedef enum
+{
+    DVZ_FIELD_MIPMAP_NONE = 0,
+} DvzFieldMipmapMode;
+
+
+
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
@@ -155,6 +179,21 @@ typedef struct DvzFieldDataView DvzFieldDataView;
 
 
 
+struct DvzFieldSamplingDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzFieldFilter min_filter;
+    DvzFieldFilter mag_filter;
+    DvzFieldAddressMode address_u;
+    DvzFieldAddressMode address_v;
+    DvzFieldAddressMode address_w;
+    DvzFieldMipmapMode mipmap_mode;
+};
+typedef struct DvzFieldSamplingDesc DvzFieldSamplingDesc;
+
+
+
 /*************************************************************************************************/
 /*  Sampled-field lifecycle                                                                      */
 /*************************************************************************************************/
@@ -181,6 +220,17 @@ DVZ_EXPORT DvzFieldGeometry dvz_field_geometry(void);
  * @return default sampled-field data view descriptor
  */
 DVZ_EXPORT DvzFieldDataView dvz_field_data_view(void);
+
+
+/**
+ * Return the default field-slot sampling descriptor.
+ *
+ * The default uses linear minification and magnification filters, clamp-to-edge addressing, and
+ * no mipmaps.
+ *
+ * @return default field-slot sampling descriptor
+ */
+DVZ_EXPORT DvzFieldSamplingDesc dvz_field_sampling_desc(void);
 
 
 /**
@@ -306,6 +356,24 @@ DVZ_EXPORT bool dvz_sampled_field_info(const DvzSampledField* field, DvzSampledF
  */
 DVZ_EXPORT DvzResult dvz_visual_set_field(
     DvzVisual* visual, const char* slot_name, const DvzSampledField* field);
+
+
+/**
+ * Set sampling state for a named visual field slot.
+ *
+ * Sampling state belongs to the visual slot and may be set before or after binding a field.
+ * Passing NULL restores the visual-family default. The first implementation supports linear or
+ * nearest filtering with matching minification and magnification filters, clamp-to-edge
+ * addressing, and no mipmaps. Image `"field"` and mesh `"texture"` slots support linear or nearest
+ * filtering. Labels `"field"` supports nearest filtering only.
+ *
+ * @param visual the visual
+ * @param slot_name the semantic slot name
+ * @param desc the sampling descriptor, or NULL to restore the default
+ * @return DVZ_OK on success, DVZ_ERROR on error
+ */
+DVZ_EXPORT DvzResult dvz_visual_set_field_sampling(
+    DvzVisual* visual, const char* slot_name, const DvzFieldSamplingDesc* desc);
 
 
 EXTERN_C_OFF

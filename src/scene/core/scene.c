@@ -205,7 +205,7 @@ static void _scene_mark_visual_runtime_dirty(DvzVisual* visual)
     state->image_gpu.dirty = true;
     state->labels_realized_version = 0;
     state->volume_realized_version = 0;
-    state->image_sampling_realized_version = 0;
+    state->field_sampling_realized_version = 0;
     state->text.realized_version = 0;
 
     if (state->field != NULL)

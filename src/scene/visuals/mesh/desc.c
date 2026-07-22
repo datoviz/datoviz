@@ -75,6 +75,7 @@ bool _scene_mesh_visual_desc_from_metadata(
         out->kind = DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH;
         out->vbuf_ids[out->vbuf_count++] = texcoords_id;
         out->image_texture_id = texture_id;
+        out->image_nearest_sampler = meta->image_nearest_sampler;
         out->image_color_role = _scene_visual_desc_resource_color_role(emitter, texture_id);
         if (out->image_color_role == DVZ_COLOR_ROLE_NONE)
             out->image_color_role = meta->image_color_role;

@@ -594,23 +594,31 @@ bool _emitter_prepare_render_multi(
                 ok = false;
                 break;
             }
-            if (img_sampler_linear_id == 0)
+            uint64_t* mesh_sampler_id =
+                bind.image_nearest_sampler ? &img_sampler_nearest_id : &img_sampler_linear_id;
+            if (*mesh_sampler_id == 0)
             {
-                img_sampler_linear_id = _obj_id(emitter, "_sampler_img", &is_new);
-                if (img_sampler_linear_id == 0)
+                *mesh_sampler_id = _obj_id(
+                    emitter, bind.image_nearest_sampler ? "_sampler_img_nearest" : "_sampler_img",
+                    &is_new);
+                if (*mesh_sampler_id == 0)
                 {
                     ok = false;
                     break;
                 }
                 if (ok && is_new)
+                {
+                    DvzDrp2FilterMode filter = bind.image_nearest_sampler ?
+                                                   DVZ_DRP2_FILTER_NEAREST :
+                                                   DVZ_DRP2_FILTER_LINEAR;
                     ok = ok && dvz_drp2_stream_create_sampler_filter(
-                                   stream, img_sampler_linear_id, DVZ_DRP2_FILTER_LINEAR,
-                                   DVZ_DRP2_FILTER_LINEAR);
+                                   stream, *mesh_sampler_id, filter, filter);
+                }
             }
             uint64_t mesh_bg_id = 0;
             ok = ok && _resolve_textured_mesh_bind_group(
                            emitter, stream, textured_mesh_bgl_id, bind.material_buffer_id,
-                           bind.image_texture_id, img_sampler_linear_id, bind.image_color_role,
+                           bind.image_texture_id, *mesh_sampler_id, bind.image_color_role,
                            &mesh_bg_id);
             vis_bg_set1 = mesh_bg_id;
         }

@@ -179,6 +179,20 @@ DvzFieldGeometry dvz_field_geometry(void)
 }
 
 
+
+DvzFieldSamplingDesc dvz_field_sampling_desc(void)
+{
+    DvzFieldSamplingDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzFieldSamplingDesc)};
+    desc.min_filter = DVZ_FIELD_FILTER_LINEAR;
+    desc.mag_filter = DVZ_FIELD_FILTER_LINEAR;
+    desc.address_u = DVZ_FIELD_ADDRESS_CLAMP_TO_EDGE;
+    desc.address_v = DVZ_FIELD_ADDRESS_CLAMP_TO_EDGE;
+    desc.address_w = DVZ_FIELD_ADDRESS_CLAMP_TO_EDGE;
+    desc.mipmap_mode = DVZ_FIELD_MIPMAP_NONE;
+    return desc;
+}
+
+
 bool dvz_ffi_field_geometry(DvzFieldGeometry* out)
 {
     if (out == NULL)

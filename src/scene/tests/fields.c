@@ -47,6 +47,7 @@
 int test_scene_mesh_visual_binds_texture_field(TstContext* suite, const TstCase* item);
 int test_scene_colorbar_left_title_uses_content_lane(TstContext* suite, const TstCase* item);
 int test_scene_figure_reserve_resolves_content_layout(TstContext* suite, const TstCase* item);
+int test_scene_field_slot_sampling_state(TstContext* suite, const TstCase* item);
 
 
 /**
@@ -4817,6 +4818,86 @@ int test_scene_field_descriptor_abi_rejects_invalid_structs(
 }
 
 
+
+int test_scene_field_slot_sampling_state(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* image = dvz_image(scene, 0);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    DvzVisual* labels = dvz_labels(scene, 0);
+    DvzVisual* point = dvz_point(scene, 0);
+    ANN(image);
+    ANN(mesh);
+    ANN(labels);
+    ANN(point);
+
+    DvzFieldSamplingDesc sampling = dvz_field_sampling_desc();
+    AT(sampling.struct_size == DVZ_STRUCT_SIZE(DvzFieldSamplingDesc));
+    AT(sampling.flags == 0);
+    AT(sampling.min_filter == DVZ_FIELD_FILTER_LINEAR);
+    AT(sampling.mag_filter == DVZ_FIELD_FILTER_LINEAR);
+    AT(sampling.address_u == DVZ_FIELD_ADDRESS_CLAMP_TO_EDGE);
+    AT(sampling.address_v == DVZ_FIELD_ADDRESS_CLAMP_TO_EDGE);
+    AT(sampling.address_w == DVZ_FIELD_ADDRESS_CLAMP_TO_EDGE);
+    AT(sampling.mipmap_mode == DVZ_FIELD_MIPMAP_NONE);
+
+    sampling.min_filter = DVZ_FIELD_FILTER_NEAREST;
+    sampling.mag_filter = DVZ_FIELD_FILTER_NEAREST;
+    AT(dvz_visual_set_field_sampling(mesh, "texture", &sampling) == DVZ_OK);
+    AT(_visual_family_state(mesh)->image_nearest_sampler);
+    AT(strcmp(_visual_family_state(mesh)->field_sampling_slot, "texture") == 0);
+    AT(_visual_family_state(mesh)->field_sampling_version == 1);
+
+    AT(dvz_visual_set_field_sampling(mesh, "texture", NULL) == DVZ_OK);
+    AT(!_visual_family_state(mesh)->image_nearest_sampler);
+    AT(_visual_family_state(mesh)->field_sampling_version == 2);
+
+    AT(dvz_visual_set_field_sampling(image, "field", &sampling) == DVZ_OK);
+    AT(_visual_family_state(image)->image_nearest_sampler);
+    AT(dvz_image_set_sampling(image, DVZ_IMAGE_SAMPLING_LINEAR) == DVZ_OK);
+    AT(!_visual_family_state(image)->image_nearest_sampler);
+
+    AT(dvz_visual_set_field_sampling(labels, "field", NULL) == DVZ_OK);
+    AT(_visual_family_state(labels)->image_nearest_sampler);
+    DvzFieldSamplingDesc linear = dvz_field_sampling_desc();
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_field_sampling(labels, "field", &linear) == DVZ_ERROR);
+
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_field_sampling(mesh, "field", &sampling) == DVZ_ERROR);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_field_sampling(point, "field", &sampling) == DVZ_ERROR);
+
+    DvzFieldSamplingDesc invalid = dvz_field_sampling_desc();
+    invalid.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_field_sampling(mesh, "texture", &invalid) == DVZ_ERROR);
+    invalid = dvz_field_sampling_desc();
+    invalid.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_field_sampling(mesh, "texture", &invalid) == DVZ_ERROR);
+    invalid = dvz_field_sampling_desc();
+    invalid.min_filter = DVZ_FIELD_FILTER_NEAREST;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_field_sampling(mesh, "texture", &invalid) == DVZ_ERROR);
+    invalid = dvz_field_sampling_desc();
+    invalid.address_u = DVZ_FIELD_ADDRESS_REPEAT;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_field_sampling(mesh, "texture", &invalid) == DVZ_ERROR);
+    invalid = dvz_field_sampling_desc();
+    invalid.mipmap_mode = (DvzFieldMipmapMode)1;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_field_sampling(mesh, "texture", &invalid) == DVZ_ERROR);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 /**
  * Register scene field and scale tests.
  *
@@ -4833,6 +4914,7 @@ int test_scene_fields(TstSuite* suite)
 
     TST_CASE(test_scene_scale_guide_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_field_descriptor_abi_rejects_invalid_structs);
+    TST_CASE(test_scene_field_slot_sampling_state);
     TST_CASE(test_scene_scale_colormap_colorbar_core);
     TST_CASE(test_scene_categorical_scale_entries);
     TST_CASE(test_scene_placement_helpers);

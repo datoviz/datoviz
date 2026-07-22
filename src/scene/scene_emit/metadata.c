@@ -167,6 +167,7 @@ bool _scene_visual_frame_plan_metadata(
     if (!_scene_visual_texture_resource_key(
             figure, visual, visual_index, metadata->texture_id, sizeof(metadata->texture_id)))
         return false;
+    metadata->image_nearest_sampler = _visual_family_state(visual)->image_nearest_sampler;
     if (!_scene_visual_lowering_fill_metadata(visual, metadata))
         return false;
     if (_scene_visual_desc_is_volume(lowering.desc_kind))
