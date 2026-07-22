@@ -22,6 +22,10 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
+static int _scene_textured_mesh_sampling_executes(TstContext* suite);
+
+
+
 static int _scene_primitive_emit_executes(
     TstContext* suite, DvzPrimitiveTopology topology, uint32_t vertex_count)
 {
@@ -866,10 +870,6 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
     AT(dvz_visual_set_data(visual, "normal", normals, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
     AT(dvz_visual_set_buffer(visual, "index", index_buffer) == DVZ_OK);
-    DvzFieldSamplingDesc sampling = dvz_field_sampling_desc();
-    sampling.min_filter = DVZ_FIELD_FILTER_NEAREST;
-    sampling.mag_filter = DVZ_FIELD_FILTER_NEAREST;
-    AT(dvz_visual_set_field_sampling(visual, "texture", &sampling) == DVZ_OK);
     AT(dvz_visual_set_field(visual, "texture", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
@@ -900,7 +900,7 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
     bool found_material_upload = false;
     bool found_draw_indexed = false;
     bool found_depth_pipeline = false;
-    bool found_nearest_sampler = false;
+    bool found_linear_sampler = false;
     uint64_t texture_id = 0;
     uint64_t material_id = 0;
 
@@ -935,10 +935,10 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_SAMPLER)
         {
-            found_nearest_sampler =
-                found_nearest_sampler ||
-                (cmd->u.create_sampler.mag_filter == DVZ_DRP2_FILTER_NEAREST &&
-                 cmd->u.create_sampler.min_filter == DVZ_DRP2_FILTER_NEAREST);
+            found_linear_sampler =
+                found_linear_sampler ||
+                (cmd->u.create_sampler.mag_filter == DVZ_DRP2_FILTER_LINEAR &&
+                 cmd->u.create_sampler.min_filter == DVZ_DRP2_FILTER_LINEAR);
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP && texture_id != 0)
         {
@@ -985,12 +985,44 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
     AT(found_upload);
     AT(found_material_upload);
     AT(found_image_bind_group);
-    AT(found_nearest_sampler);
+    AT(found_linear_sampler);
     AT(found_depth_pipeline);
     AT(found_draw_indexed);
     AT(_stream_set_vertex_buffer_count(stream) == 6);
     AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzSceneMaterialParams)) == 1);
 
+    _test_scene_stream_destroy(stream);
+
+    DvzFieldSamplingDesc sampling = dvz_field_sampling_desc();
+    sampling.min_filter = DVZ_FIELD_FILTER_NEAREST;
+    sampling.mag_filter = DVZ_FIELD_FILTER_NEAREST;
+    AT(dvz_visual_set_field_sampling(visual, "texture", &sampling) == DVZ_OK);
+    caps.shader_format_wgsl = true;
+    caps.shader_format_glsl = false;
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+    dvz_diagnostic_report_init(&report);
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+    bool found_nearest_sampler = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd != NULL && cmd->type == DVZ_DRP2_COMMAND_CREATE_SAMPLER)
+        {
+            found_nearest_sampler =
+                found_nearest_sampler ||
+                (cmd->u.create_sampler.mag_filter == DVZ_DRP2_FILTER_NEAREST &&
+                 cmd->u.create_sampler.min_filter == DVZ_DRP2_FILTER_NEAREST);
+        }
+    }
+    AT(found_nearest_sampler);
+    char* json = dvz_drp2_stream_json(stream, "scene_textured_mesh_nearest_wgsl_from_c");
+    ANN(json);
+    AT(strstr(json, "\"cmd\": \"CreateSampler\"") != NULL);
+    AT(strstr(json, "\"mag_filter\": \"nearest\"") != NULL);
+    AT(strstr(json, "\"min_filter\": \"nearest\"") != NULL);
+    dvz_drp2_stream_json_destroy(json);
     _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
@@ -1141,11 +1173,119 @@ int test_scene_shared_index_buffer_emits_one_upload(TstContext* suite, const Tst
 }
 
 
+static int _scene_textured_mesh_sampling_executes(TstContext* suite)
+{
+    ANN(suite);
+
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = _scene_graph_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
+        return 0;
+    ANN(ctx);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_mesh(scene, 0);
+    ANN(visual);
+
+    vec3 positions[4] = {
+        {-0.8f, -0.8f, 0.0f}, {-0.8f, 0.8f, 0.0f},
+        {0.8f, -0.8f, 0.0f},  {0.8f, 0.8f, 0.0f},
+    };
+    DvzColor colors[4] = {
+        {255, 255, 255, 255}, {128, 255, 255, 255},
+        {255, 128, 255, 255}, {255, 255, 128, 255},
+    };
+    vec3 normals[4] = {
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+    };
+    vec2 texcoords[4] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f},
+        {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
+    static const uint8_t pixels[2 * 2 * 4] = {
+        255, 0,   0,   255,
+        0,   255, 0,   255,
+        0,   0,   255, 255,
+        255, 255, 255, 255,
+    };
+
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
+    DvzSampledFieldDesc field_desc = dvz_sampled_field_desc();
+    field_desc.semantic = DVZ_FIELD_SEMANTIC_COLOR;
+    field_desc.color_role = DVZ_COLOR_ROLE_LINEAR_COLOR;
+    field_desc.width = 2;
+    field_desc.height = 2;
+    DvzSampledField* field = dvz_sampled_field(scene, &field_desc);
+    ANN(field);
+    DvzFieldDataView view = dvz_field_data_view();
+    view.data = pixels;
+    view.bytes_per_row = 2 * 4;
+    view.rows_per_image = 2;
+    AT(dvz_sampled_field_set_data(field, &view) == DVZ_OK);
+
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == DVZ_OK);
+    AT(dvz_visual_set_data(visual, "color", colors, 4) == DVZ_OK);
+    AT(dvz_visual_set_data(visual, "normal", normals, 4) == DVZ_OK);
+    AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == DVZ_OK);
+    AT(dvz_visual_set_buffer(visual, "index", index_buffer) == DVZ_OK);
+    AT(dvz_visual_set_field(visual, "texture", field) == DVZ_OK);
+    DvzFieldSamplingDesc sampling = dvz_field_sampling_desc();
+    sampling.min_filter = DVZ_FIELD_FILTER_NEAREST;
+    sampling.mag_filter = DVZ_FIELD_FILTER_NEAREST;
+    AT(dvz_visual_set_field_sampling(visual, "texture", &sampling) == DVZ_OK);
+    DvzMaterialDesc material = dvz_material_desc();
+    material.model = DVZ_MATERIAL_MODEL_UNLIT;
+    AT(dvz_visual_set_material(visual, &material) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == DVZ_OK);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    DvzDrp2CommandStream* stream =
+        _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    _test_scene_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_mesh_glsl_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
     return _scene_mesh_emit_executes(suite);
+}
+
+
+
+int test_scene_textured_mesh_sampling_glsl_executes(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    return _scene_textured_mesh_sampling_executes(suite);
 }
 
 

@@ -420,6 +420,8 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
 
 int test_scene_mesh_glsl_executes(TstContext* suite, const TstCase* item);
 
+int test_scene_textured_mesh_sampling_glsl_executes(TstContext* suite, const TstCase* item);
+
 int test_scene_indexed_primitive_emits_draw_indexed(TstContext* suite, const TstCase* item);
 
 int test_scene_shared_index_buffer_emits_one_upload(TstContext* suite, const TstCase* item);

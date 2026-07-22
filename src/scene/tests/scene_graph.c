@@ -62,6 +62,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_indexed_primitive_emits_draw_indexed);
     TST_CASE(test_scene_shared_index_buffer_emits_one_upload);
     TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_mesh_glsl_executes);
+    TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_textured_mesh_sampling_glsl_executes);
     TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_path_glsl_executes);
     TST_CASE(test_scene_path_line_width_emit_glsl);
     TST_CASE(test_scene_path_repeated_endpoint_closes_subpath);
