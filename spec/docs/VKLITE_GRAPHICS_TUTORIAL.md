@@ -89,13 +89,14 @@ API improvements motivated by the tutorial must be generally useful Canvas, vkli
 
 Tutorial shaders are external GLSL files read as null-terminated text and compiled with shaderc through a public Datoviz API. The resulting heap-owned SPIR-V is used to create a vklite shader module and released with `dvz_memory_free()`.
 
-The public path must distinguish the existing tools clearly:
+The public path must distinguish the compiler roles defined in [../architecture/SHADER_TOOLCHAIN.md](../architecture/SHADER_TOOLCHAIN.md):
 
-- `glslc` is an optional build-time compiler for embedded built-in scene SPIR-V.
-- `glslangValidator` is a build-time compiler for Canvas shaders and a validation tool.
-- the shaderc library is the runtime compiler used by tutorial applications; Datoviz does not launch the build-time command-line tools from `dvz_compile_glsl()`.
+- `glslc` is the single build-time command-line compiler for Datoviz-owned native scene, Canvas, test, and example shaders.
+- the shaderc library is the runtime compiler used by tutorial applications.
+- `spirv-val` validates generated SPIR-V in CI and release lanes.
+- `glslangValidator` is optional cross-check or specialized-workflow tooling, not a normal native build requirement.
 
-The tutorial-facing API must preserve the source filename in compiler diagnostics, expose a clear availability or preflight result, obey the public allocator contract, and fail with actionable diagnostics when runtime shaderc is unavailable. Exact signatures remain spike-driven.
+Datoviz does not launch build-time command-line tools from the runtime API. The tutorial-facing API must use a typed stage and target profile, preserve the source filename in compiler diagnostics, expose a clear availability or preflight result, distinguish provider and compilation failures, obey the public allocator contract, and fail with actionable diagnostics when runtime shaderc is unavailable. Exact signatures remain spike-driven.
 
 
 ## Progressive C Guidance

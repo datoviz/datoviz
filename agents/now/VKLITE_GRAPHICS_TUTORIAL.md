@@ -2,7 +2,7 @@
 
 Status: required RC3 API-and-pilot work followed by required RC4 course completion. Updated: 2026-07-24.
 
-Use [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) for the durable educational, abstraction, asset, versioning, and validation contract. This file owns execution order, checkpoints, and agent handoff from RC3 through final v0.4.0.
+Use [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) for the durable educational, abstraction, asset, versioning, and validation contract and [../../spec/architecture/SHADER_TOOLCHAIN.md](../../spec/architecture/SHADER_TOOLCHAIN.md) for the agreed build-time, runtime, API, packaging, target-profile, and validation design. This file owns execution order, checkpoints, and agent handoff from RC3 through final v0.4.0.
 
 ## Objective
 
@@ -45,17 +45,18 @@ Acceptance requires focused unit or integration tests for every new contract, a 
 
 Move vertex and fragment GLSL into external files and compile them at application startup. Shader edits must require only an example restart, not a C rebuild.
 
-Implement a generally useful public contract that:
+Execute this checkpoint in four reviewable slices:
 
-- reads null-terminated text or compiles directly from a file;
-- retains the actual source filename in shaderc diagnostics;
-- reports compiler availability and actionable failure details;
-- distinguishes build-time `glslc` and `glslangValidator` from runtime shaderc;
-- returns owned SPIR-V under the `dvz_memory_free()` allocation contract;
-- works from source builds and installed wheel/package layouts on Linux, macOS, and Windows;
-- validates malformed stages, empty source, missing files, compilation errors, unavailable shaderc, and successful vertex, fragment, and compute compilation.
+1. Consolidate native build-time compilation behind one reusable `glslc` CMake helper for scene, Canvas, tests, and applicable examples; remove the normal Canvas `glslangValidator` requirement, preserve named graphics and compute profiles, and validate generated SPIR-V with `spirv-val` in CI and release lanes.
+2. Move runtime shaderc discovery, loading, target selection, compilation, diagnostics, and ownership out of DRP2 pipeline code into a focused thread-safe shader-compilation module.
+3. Implement a generally useful typed public API with explicit source size, source filename, entry point, stage, target profile, availability, status, diagnostics, and `dvz_memory_free()`-owned SPIR-V, plus a compile-file convenience or null-terminated text reader.
+4. Prove source-build enabled and disabled configurations, packaged-provider discovery, installed CMake consumers, external vertex and fragment files, and supported-platform behavior.
+
+The implementation must distinguish build-time `glslc`, runtime shaderc, `spirv-val`, and optional `glslangValidator`; report malformed stages, empty source, missing files, compilation errors, absent or incompatible providers, and successful vertex, fragment, and compute compilation; and work from source builds and installed wheel/package layouts on Linux, macOS, and Windows.
 
 Audit existing `dvz_compile_glsl()` callers during this checkpoint. Correct allocator mismatches and misleading hardcoded diagnostic names without preserving an inferior v0.3-era contract.
+
+Runtime GLSL is a supported v0.4 user capability, not only a fallback for built-in scene shaders. Official packages must guarantee the runtime provider, while custom source builds may disable it and use precompiled SPIR-V.
 
 ## RC3 Checkpoint 3: Three-Chapter Pilot
 
@@ -89,7 +90,9 @@ RC3 must either deliver each outcome below or record a maintainer-approved reaso
 | Outcome | Required proof |
 | --- | --- |
 | Canvas-aware GPU configuration | GLFW and offscreen examples configure the required instance extensions, device features, and Canvas extensions without copied backend bootstrap code. |
-| External shader compilation | Real filenames appear in successful and failing installed-consumer shader paths; ownership and availability are testable. |
+| Unified native shader build | Scene, Canvas, tests, and examples use one `glslc` helper; normal builds no longer require `glslangValidator`; release products carry validated precompiled SPIR-V. |
+| External shader compilation | A focused thread-safe module and typed public API report availability, status, real filenames, diagnostics, target profiles, and ownership in successful and failing installed-consumer paths. |
+| Runtime shaderc packaging | Official installed packages guarantee the provider on Linux, macOS, and Windows; disabled source builds retain precompiled-SPIR-V rendering with an honest unavailable-capability result. |
 | Borrowed frame commands | Tutorial code records without destroying, resetting, submitting, transitioning, or retaining the frame command buffer. |
 | Dynamic viewport and scissor | Resizing preserves correct output and requires no unexplained raw/wrapper state duplication. |
 | Optional depth attachment | Format, borrowed handles, resize recreation, generation, layout, clear, and lifetime contracts are public and tested. |

@@ -12,6 +12,7 @@ but still normative enough to guide implementation and tests.
    scene-independent primitives out of the retained scene layer.
 3. [EXTERNAL_DEPENDENCIES.md](EXTERNAL_DEPENDENCIES.md): policy for optional third-party
    dependencies such as UI integration layers.
+4. [SHADER_TOOLCHAIN.md](SHADER_TOOLCHAIN.md): build-time `glslc`, runtime shaderc, SPIR-V validation, public compilation API, packaging, and RC3/RC4 proof contract.
 
 
 ## Boundary

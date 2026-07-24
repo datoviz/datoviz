@@ -15,7 +15,7 @@ Use these names consistently when planning or documenting extension work:
 
 | Class | Purpose | v0.4 status |
 | --- | --- | --- |
-| Provider | Optional bridge to an external dependency or host SDK. | In scope for Qt bridge only. |
+| Provider | Optional bridge to an external dependency or host SDK. | In scope for the Qt bridge and runtime shaderc boundary. |
 | Recipe | Higher-level reusable composition of public Datoviz objects. | Public API usage, not core ABI. |
 | Custom visual | Descriptor-backed visual with user-provided shaders and resources. | Design only. |
 | Technique/pass | Frame-plan extension for postprocess, prepass, or render effect work. | Future design only. |
@@ -38,10 +38,9 @@ Vulkan commands directly in the first public design.
 
 ## v0.4 Provider Rules
 
-1. `libdatoviz` remains the core runtime and must not link Qt, PyQt, shaderc, CUDA, NVENC,
-   Kvazaar, Naga, Tint, SPIRV-Cross, or other optional heavy dependencies by default.
-2. A provider is built as a separate shared object, executable helper, or host-language package.
-3. A provider is loaded explicitly by the integration layer that needs it.
+1. `libdatoviz` remains the core runtime and must not gain a hard startup or shared-link dependency on Qt, PyQt, shaderc, CUDA, NVENC, Kvazaar, Naga, Tint, SPIRV-Cross, or other optional heavy dependencies by default; the approved v0.4 shaderc adapter may lazy-load or use a reviewed platform-specific static provider under [../../architecture/SHADER_TOOLCHAIN.md](../../architecture/SHADER_TOOLCHAIN.md).
+2. A provider is normally built as a separate shared object, executable helper, or host-language package; the approved shaderc provider is a shared or reviewed static compiler library reached through the focused `libdatoviz` adapter.
+3. A provider is loaded or activated only when the integration layer needs its capability; optional provider discovery must not become an eager core-startup requirement.
 4. Provider failure must be diagnosed as an unavailable optional capability, not as a core Datoviz
    import or startup failure.
 5. Providers must check ABI, runtime version, and host-library compatibility before doing work.
@@ -70,10 +69,11 @@ Qt host bridge:
 Shader compiler provider:
 
 1. Core DRP2 and scene code should be able to consume precompiled shader modules.
-2. Runtime GLSL, WGSL, SPIR-V transformation, Naga, Tint, shaderc, and SPIRV-Cross support should
-   be optional provider work unless a dependency is small and release-critical.
-3. Shader compiler provider absence should produce a clear diagnostic that precompiled shader
-   modules are required.
+2. Runtime GLSL through shaderc is an approved release-critical v0.4 capability for external user shaders and the modern GPU graphics tutorial; it must remain lazy, capability-checked, and independent of GPU initialization.
+3. Official v0.4 packages must guarantee the runtime shaderc provider used by installed tutorial consumers, while custom source builds may disable it and continue using precompiled SPIR-V.
+4. Provider absence must produce a public actionable diagnostic and must not affect precompiled-SPIR-V rendering.
+5. Runtime WGSL, SPIR-V transformation, Naga, Tint, SPIRV-Cross, multiple compiler backends, and a general shader-provider ABI remain deferred.
+6. Follow [../../architecture/SHADER_TOOLCHAIN.md](../../architecture/SHADER_TOOLCHAIN.md) for compiler roles, module placement, API outcomes, target profiles, packaging, and validation.
 
 Video encoder providers:
 
@@ -150,8 +150,7 @@ commands into Datoviz-owned command buffers.
 
 ## Packaging Policy
 
-Main Datoviz wheels should stay lean and should not bundle Qt, CUDA, heavy shader toolchains, or
-large codec stacks by default.
+Main Datoviz wheels should stay lean and should not bundle Qt, CUDA, full shader toolchains, or large codec stacks by default. The exact runtime shaderc library required by the supported v0.4 external-shader capability is an approved exception; do not bundle `glslc`, `glslangValidator`, or a full Vulkan SDK in the base wheel.
 
 Preferred packaging order:
 

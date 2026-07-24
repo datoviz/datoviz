@@ -45,8 +45,9 @@ Required deliverables:
 6. Keep representative WebGPU/WASM, query/readback, compute-to-render, runtime-recovery, and native render-conformance proof current for the advertised subset.
 7. Make packaging, generated artifacts, release notes, documentation, and quality checks from [../../spec/release/READINESS.md](../../spec/release/READINESS.md) clean or record the remaining limitations explicitly.
 8. Implement the tutorial-enabling Canvas, vklite, shader-file, borrowed-command, dynamic-state, optional-depth, OBJ-UV, image-upload, and direct-arcball outcomes from executable chapter spikes, without adding a tutorial-only runtime path.
-9. Publish and validate the first three tutorial chapters through standalone installed CMake consumers, external runtime-compiled shaders, live GLFW execution, deterministic offscreen captures, Vulkan validation, generated binding checks, and supported hosted-platform proof.
-10. End RC3 with only recorded RC3 blockers plus the explicitly planned RC4 tutorial chapters, asset work, installed exact-artifact proof, and full-course freeze remaining.
+9. Implement [../../spec/architecture/SHADER_TOOLCHAIN.md](../../spec/architecture/SHADER_TOOLCHAIN.md): consolidate scene, Canvas, test, and example shader builds on one `glslc` helper; add release/CI SPIR-V validation; move runtime shaderc out of DRP2 into a focused thread-safe module; land typed availability, diagnostic, file, profile, and ownership API outcomes; and guarantee the provider in official packages while retaining disabled source builds.
+10. Publish and validate the first three tutorial chapters through standalone installed CMake consumers, external runtime-compiled shaders, live GLFW execution, deterministic offscreen captures, Vulkan validation, generated binding checks, and supported hosted-platform proof.
+11. End RC3 with only recorded RC3 blockers plus the explicitly planned RC4 tutorial chapters, asset work, installed exact-artifact proof, and full-course freeze remaining.
 
 Physical-validation policy:
 
