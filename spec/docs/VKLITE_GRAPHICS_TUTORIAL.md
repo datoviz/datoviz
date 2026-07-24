@@ -1,6 +1,6 @@
-# Vklite Vulkan Concepts Tutorial
+# Modern GPU Graphics in C
 
-Status: future documentation proposal; not an RC3 requirement.
+Status: required final-v0.4 tutorial; RC3 owns the enabling API and three-chapter pilot, and RC4 owns the complete course and installed-artifact proof.
 
 
 ## Purpose
@@ -11,12 +11,23 @@ The tutorial should give readers a live GLFW result quickly, then progressively 
 
 The intended result is not a comprehensive Vulkan course, a general C course, or an introduction to the high-level Datoviz scene API. It is a practical path into modern GPU graphics for readers who find raw Vulkan onboarding overwhelming and do not want to begin with the older OpenGL state-machine model.
 
+The public title should lead with the user benefit rather than the unfamiliar `vklite` name. The preferred presentation is "Modern GPU Graphics in C" with a subtitle such as "Learn Vulkan concepts with Datoviz and vklite."
+
+
+## Release Contract
+
+The tutorial is required for the final v0.4 documentation surface. RC3 must land and validate the tutorial-facing API improvements plus the first three polished chapters. RC4 must complete the course through a textured, lit, mouse-rotatable Suzanne mesh, validate the exact installed packages, and freeze the tutorial-facing API and assets. Final v0.4.0 should contain only feedback-driven fixes, regenerated final media, and publication work.
+
+This promotion is intentional release scope, not optional visual polish. Agents must not restore the earlier "future proposal" or "not an RC3 requirement" status without an explicit maintainer decision that also updates the active and durable release plans.
+
 
 ## Audience
 
-The primary reader understands basic programming but may have little or no experience with computer graphics, Vulkan, C memory management, pointers, callbacks, or common C resource-lifetime idioms.
+The primary reader is comfortable with basic programming and a terminal, possibly in a language other than C, but may have little or no experience with computer graphics, Vulkan, C memory management, pointers, callbacks, or common C resource-lifetime idioms.
 
 The tutorial should not require prior Vulkan or OpenGL knowledge. It should introduce C constructs only when the reader needs them to understand or change visible behavior.
+
+The primary success criterion is that a programmer new to graphics can understand the execution of a modern GPU frame. Datoviz contributor and low-level-user onboarding is a secondary benefit. The course is not aimed primarily at existing Vulkan developers or complete programming beginners.
 
 
 ## Teaching Contract
@@ -36,6 +47,24 @@ The first chapter should reach a live, resizable GLFW triangle as quickly as pra
 
 Each later chapter should open one more part of the system. The tutorial should preserve Vulkan terminology and relationships even when vklite removes repetitive configuration, allocation, platform, and lifecycle code.
 
+The landing page should show the final textured, lit, rotatable Suzanne result so readers understand the destination before beginning with the triangle.
+
+
+## Delivery Contract
+
+The intended public path is a small standalone CMake consumer using an installed Datoviz package:
+
+```cmake
+find_package(datoviz CONFIG REQUIRED)
+target_link_libraries(gpu_tutorial PRIVATE datoviz::datoviz)
+```
+
+Canonical sources, shaders, assets, captures, and validation remain in the Datoviz repository. Source-tree convenience commands may exist, but understanding or rebuilding the entire Datoviz repository must not be a reader prerequisite.
+
+Each lesson should use external shader files compiled at application startup. Editing a shader and restarting the example must not require recompiling C. Live shader hot-reload is optional after the core course and must not complicate the pilot.
+
+The same teaching code should support live GLFW execution and deterministic offscreen validation. Prefer one program with a presentation selection or two thin entry points over duplicated pipeline, resource, and draw implementations.
+
 
 ## Abstraction Boundary
 
@@ -45,12 +74,28 @@ The tutorial should use:
 
 - Datoviz window and Canvas support for GLFW hosting, surfaces, frame acquisition, swapchain recreation, submission, presentation, and other platform-sensitive frame plumbing during the early lessons.
 - Vklite for shader modules, graphics and compute pipelines, buffers, images, samplers, descriptors, render scopes, commands, and synchronization where its API gives a direct conceptual mapping to Vulkan.
+- Datoviz CPU-side geometry and controller helpers when they avoid unrelated asset-parsing or arcball-mathematics detours; GPU buffers, images, descriptors, pipelines, attachments, and commands remain explicit.
 - Native Vulkan types and handles when they clarify the real object being used, including `VkCommandBuffer`, `VkImageView`, formats, stage masks, access masks, layouts, and queue-related concepts.
 - Selected raw `vkCmd*` calls when they are clearer than a wrapper or when comparing the vklite operation with its Vulkan equivalent is itself useful.
 
 The main narrative should not repeatedly expand every vklite operation into full raw Vulkan code. Short "Vulkan underneath" notes may name the corresponding native objects and calls. A complete raw Vulkan triangle may appear as an optional final comparison after the reader understands the purpose of its parts.
 
 Every important wrapper should make ownership explicit. In particular, tutorial code must distinguish owned vklite resources from borrowed device, frame, attachment, and command-buffer handles.
+
+API improvements motivated by the tutorial must be generally useful Canvas, vklite, file-I/O, geometry, or controller improvements. Do not introduce a tutorial-only renderer, frame stream, application runtime, Vulkan wrapper, or opaque ownership layer.
+
+
+## Runtime Shader Contract
+
+Tutorial shaders are external GLSL files read as null-terminated text and compiled with shaderc through a public Datoviz API. The resulting heap-owned SPIR-V is used to create a vklite shader module and released with `dvz_memory_free()`.
+
+The public path must distinguish the existing tools clearly:
+
+- `glslc` is an optional build-time compiler for embedded built-in scene SPIR-V.
+- `glslangValidator` is a build-time compiler for Canvas shaders and a validation tool.
+- the shaderc library is the runtime compiler used by tutorial applications; Datoviz does not launch the build-time command-line tools from `dvz_compile_glsl()`.
+
+The tutorial-facing API must preserve the source filename in compiler diagnostics, expose a clear availability or preflight result, obey the public allocator contract, and fail with actionable diagnostics when runtime shaderc is unavailable. Exact signatures remain spike-driven.
 
 
 ## Progressive C Guidance
@@ -86,35 +131,37 @@ The sequence should remain adjustable after testing the first chapters, but the 
 
 ### 1. First Live Triangle
 
-Build and run a supplied program, see a live GLFW triangle, change its color and shape, and learn the high-level anatomy of one frame. Datoviz initially owns device, surface, swapchain, resize, and submission plumbing.
+Build and run a supplied program, see a live resizable GLFW triangle, change its color and shape, and learn the high-level anatomy of one frame. Positions and colors begin in the vertex shader through `gl_VertexIndex`; Datoviz initially owns device, surface, swapchain, resize, and submission plumbing.
 
-### 2. Shaders and the Programmable Pipeline
+### 2. Shaders and the Graphics Pipeline
 
-Edit vertex and fragment shaders, observe interpolation, introduce shader stages, inputs and outputs, clip space, GLSL, SPIR-V, and shader modules.
+Edit external vertex and fragment shaders, observe interpolation, and relate shader stages, inputs and outputs, clip space, GLSL, SPIR-V, primitive topology, rasterization, viewport, scissor, blending, attachment formats, and pipeline layout to a vklite graphics pipeline. End with a visually rewarding shader playground rather than only the unchanged RGB triangle.
 
-### 3. The Graphics Pipeline
+### 3. Vertex Data and GPU Buffers
 
-Relate shaders, primitive topology, rasterization, viewport, scissor, blending, attachment formats, and pipeline layout to a vklite graphics pipeline. Use small state changes with visible consequences.
+Move positions and colors from shader-generated values into a C vertex array and GPU buffer. Introduce structs, vertex bindings, attributes, formats, strides, offsets, uploads, and resource lifetime.
 
-### 4. Vertex Buffers and GPU Memory
+These three chapters are the RC3 pilot.
 
-Move positions and colors from shader-generated values into a C vertex array and GPU buffer. Introduce vertex bindings, attributes, formats, strides, offsets, uploads, and resource lifetime.
+### 4. Per-Frame State and Transforms
 
-### 5. Command Buffers
+Animate the 2D geometry and pass changing application state to shaders. Introduce model transforms, push constants, uniform buffers, pipeline layouts, descriptor layouts and sets, and per-frame resource lifetime without attempting the full 3D scene at once.
 
-Focus on recording rather than immediate execution, command ordering, render scopes, pipeline and buffer binding, multiple draw calls, reset and reuse, and the ownership of the frame-provided command buffer.
+### 5. Indexed 3D Geometry and Depth
 
-### 6. Uniforms, Push Constants, and Descriptors
+Build an indexed 3D mesh and introduce index buffers, indexed drawing, model-view-projection transforms, perspective, depth attachments, depth testing, culling, coordinate conventions, and resize-dependent attachment recreation.
 
-Animate transforms and pass application state to shaders. Introduce pipeline layouts, descriptor layouts and sets, uniform buffers, per-frame resources, and push constants as related data-binding mechanisms.
+### 6. Images, Textures, and Samplers
 
-### 7. Images, Textures, and Samplers
+Load the supplied Suzanne OBJ and Datoviz-owned UV diagnostic texture while keeping image storage, image views, samplers, descriptors, layouts, upload commands, transfer synchronization, UV coordinates, filtering, and sRGB-to-linear sampling conceptually distinct.
 
-Render a textured quad while keeping image storage, image views, samplers, descriptors, layouts, upload commands, and transfer synchronization conceptually distinct.
+### 7. Mouse-Driven Arcball
 
-### 8. Indexed Geometry, Transforms, and Depth
+Connect the public CPU-side `DvzArcball` to the Canvas input router, replace automatic rotation with direct mouse interaction, and update the model-view-projection state without turning the lesson into an arcball-mathematics course.
 
-Build a rotating textured mesh. Introduce index buffers, indexed drawing, model-view-projection transforms, depth attachments, depth testing, culling, and coordinate conventions.
+### 8. Normals and Basic Lighting
+
+Finish the textured, lit, mouse-rotatable Suzanne. Visualize interpolated normals, introduce normalization, the dot product, object and world space, the inverse-transpose normal matrix, Lambert diffuse lighting, ambient fill, and linear-space lighting of an sRGB albedo texture. A short optional Blinn-Phong specular extension is appropriate; a general BRDF or physically based rendering course is not.
 
 ### 9. Queue Submission and Synchronization
 
@@ -179,9 +226,30 @@ examples/c/tutorial/
     first_triangle.c
     shaders_and_pipeline.c
     vertex_buffers.c
+    transforms.c
+    indexed_depth.c
+    texture.c
+    arcball.c
+    lighting.c
+    shaders/
+    assets/
+        suzanne.obj
+        suzanne_albedo.png
+        ASSETS.md
 ```
 
-The exact example directory must be reconciled with the public example taxonomy before implementation. The tutorial should not create a parallel renderer, presentation runtime, frame stream, or Vulkan wrapper.
+The exact executable and shader naming should be finalized during the RC3 pilot. The tutorial should not create a parallel renderer, presentation runtime, frame stream, or Vulkan wrapper.
+
+
+## Suzanne and Texture Assets
+
+Distribute a small triangulated, UV-unwrapped, smooth-normal Suzanne as a human-inspectable ASCII OBJ in the main repository, not the `data` submodule. Record the Blender version, export and triangulation recipe, source history, license, coordinate convention, vertex and face counts, and any transformations in `ASSETS.md`. Do not require Blender at build or runtime.
+
+The OBJ path requires the public geometry loader to preserve `vt` coordinates and correctly resolve independent OBJ position, normal, and texture-coordinate indices. The loader must retain its bounds, overflow, malformed-input, negative-index, polygon-triangulation, and cleanup guarantees.
+
+Use a small deterministic Datoviz-owned PNG with an asymmetrical UV grid, labeled or otherwise recognizable regions, and the Datoviz palette. Commit the source or generation script, provenance, license, and deterministic generation or checksum record with the PNG. The texture should expose UV orientation, seams, mirroring, filtering, and mip behavior while remaining attractive on the final mesh. Readers should be able to replace it with their own image without changing the rendering architecture.
+
+All shipped tutorial assets require the normal v0.4 asset-license and provenance review. Adding the generated PNG or other binary asset requires the repository-mandated approval for the exact file in the implementation turn.
 
 
 ## Pilot
@@ -202,7 +270,23 @@ The pilot should test:
 - whether screenshots and exercises add useful feedback;
 - whether the API subset is stable enough to support durable teaching material.
 
-Broader course work should wait until the pilot establishes a successful voice, abstraction boundary, and validation workflow.
+Broader course work belongs to RC4 and should begin only after the RC3 pilot establishes a successful voice, abstraction boundary, public API profile, and validation workflow.
+
+
+## Tutorial-Enabling API Requirements
+
+RC3 must use executable chapter spikes to design, implement, and validate generally reusable improvements for these outcomes:
+
+1. Configure a GPU context for a selected Canvas window backend without making readers manually reproduce backend instance-extension discovery and the standard Canvas Vulkan feature set.
+2. Read null-terminated shader text or compile a shader file while preserving its real source name, returning actionable compiler availability and failure diagnostics, and honoring Datoviz allocation ownership.
+3. Record commands into the Canvas frame's borrowed command buffer without repeated accidental wrapper-allocation ceremony, while preserving the prohibition on destroying, resetting, submitting, transitioning, or retaining borrowed handles.
+4. Set frame-sized dynamic viewport and scissor state through a coherent vklite or Canvas contract.
+5. Request and inspect an optional Canvas-owned depth attachment with explicit format, borrowed frame handles, resize recreation, resource-generation reporting, and ownership.
+6. Load OBJ texture coordinates and independent OBJ indices safely into `DvzGeometry`.
+7. Upload sampled images and transition them for shader use without hiding layouts, barriers, ownership, or synchronization; add convenience only where the chapter spike demonstrates recurring accidental complexity.
+8. Connect the public low-level arcball to the Canvas input router and obtain the model-view-projection state without depending on the retained scene layer.
+
+Exact APIs must not be invented in this specification. Each public change requires a narrow chapter spike, ownership review, focused tests, generated binding refresh where applicable, installed-consumer proof, and documentation before it is accepted. Prefer improving an existing subsystem boundary over adding tutorial-local helpers.
 
 
 ## Validation Direction
@@ -213,10 +297,28 @@ Documentation validation should detect stale or missing example links and should
 
 The tutorial must label vklite honestly as advanced/unstable unless its release status changes. Published tutorial versions should pin or clearly declare a compatible Datoviz version rather than implicitly tracking an unstable development tip.
 
+The RC3 and RC4 gates additionally require:
+
+- standalone `find_package(datoviz CONFIG REQUIRED)` builds against installed packages;
+- runtime compilation of the external tutorial shaders through the packaged shaderc path;
+- deterministic offscreen captures with basic nonblank or reference-image validation;
+- bounded live GLFW smoke for resize, frame recreation, depth, input, and shutdown;
+- Vulkan validation coverage for attachment layouts, barriers, descriptors, resource lifetime, and resize;
+- focused malformed-OBJ and UV/normal/index tests;
+- exact-artifact Linux, macOS, and Windows consumer proof consistent with the release validation policy;
+- asset-license, provenance, install-location, and runtime-discovery checks;
+- `just ctypes` and `just ctypes-check` after public headers, exported API, binding policy, or generator changes;
+- strict documentation builds, link checks, example synchronization checks, and `git diff --check`.
+
+
+## Versioning
+
+Do not promise general vklite stability for v0.4. Define a small tutorial profile consisting of the API and behavior exercised by the compiled chapters, test it continuously, and declare compatibility with an exact Datoviz release series. Changes to the profile require deliberate tutorial updates and release notes.
+
 
 ## Possible Standalone Repository
 
-A standalone repository may become useful after the pilot if the tutorial needs an independent release cadence or a deliberately linear learning history.
+A standalone repository may become useful after final v0.4 if the tutorial needs an independent release cadence or a deliberately linear learning history.
 
 One possible later format is a sequence of small, runnable commits or stable lesson tags in which each change represents the result the reader is expected to reproduce. A lightweight progression tool could run, check, compare, and advance between lessons without requiring strong Git knowledge or discarding learner edits.
 
@@ -236,13 +338,25 @@ This is a future delivery option, not an initial requirement. Ordinary Markdown,
 - Custom course tooling before the Markdown pilot is proven.
 
 
-## Open Decisions
+## Resolved Decisions
 
-1. Which exact Canvas and vklite API subset should be treated as the tutorial foundation?
-2. Should the first triangle use shader-generated positions or begin immediately with a vertex buffer?
-3. How much of the frame command buffer should the first chapter expose before the detailed command-buffer lesson?
-4. Should early shader compilation happen at runtime for immediacy or through the normal build pipeline for reproducibility?
-5. Which live GLFW example pattern gives the shortest copy-safe program while preserving explicit ownership?
-6. How should live examples pair with deterministic offscreen captures without duplicating the teaching code?
-7. Which vklite operations are clearer as native `vkCmd*` calls in the main text?
-8. What compatibility and versioning promise, if any, should the educational vklite subset receive?
+1. Optimize for programmers who know basic programming but are new to graphics; do not target complete programming beginners or existing Vulkan experts as the primary reader.
+2. Lead public positioning with modern GPU graphics and Vulkan concepts, using Datoviz and vklite as the mechanism.
+3. Treat the installed standalone CMake consumer as the public path and the Datoviz repository as the canonical source and validation home.
+4. Start with shader-generated positions and colors, expose the borrowed command buffer and draw sequence early, and defer detailed acquisition, submission, and presentation machinery.
+5. Compile external GLSL files at runtime with shaderc; do not require a C rebuild for shader edits or require hot reload in the pilot.
+6. Share rendering code between GLFW and deterministic offscreen execution.
+7. Use Datoviz CPU-side geometry and arcball helpers while keeping GPU resources and commands explicit.
+8. Use a supplied Suzanne OBJ and a deterministic Datoviz-owned texture as the final course asset.
+9. Teach basic lighting mathematics and linear-space texture lighting, but not general BRDF or PBR theory.
+10. Provide a tested, release-pinned tutorial profile rather than a general vklite stability promise.
+11. Land tutorial-enabling API and the three-chapter pilot in RC3, complete and freeze the course in RC4, and reserve final v0.4.0 for feedback fixes and publication.
+
+
+## Spike-Dependent Decisions
+
+1. What exact API signatures satisfy the tutorial-enabling outcomes without introducing a tutorial-only abstraction?
+2. Which live GLFW program shape gives the shortest copy-safe result while preserving explicit ownership and installed-package use?
+3. Which current image-upload and barrier operations need general convenience versus clearer documentation?
+4. Which vklite operations are clearer as selected native `vkCmd*` calls in the main text?
+5. What exact Suzanne export, unwrap, texture-generation recipe, and asset license pass the final provenance review?

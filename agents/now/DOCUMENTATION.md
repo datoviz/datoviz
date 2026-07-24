@@ -1,6 +1,6 @@
 # Datoviz v0.4 Documentation Plan
 
-Status: active RC3 documentation and gallery gate. Updated: 2026-07-20.
+Status: active RC3 documentation, gallery, and tutorial-pilot gate followed by RC4 tutorial completion. Updated: 2026-07-24.
 
 Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for current blockers, [../../spec/docs/](../../spec/docs/) for durable information architecture and documentation decisions, and [../../spec/release/](../../spec/release/) for readiness, communication, and attribution policy.
 
@@ -22,6 +22,8 @@ Do not modify or stage the `data` submodule without explicit approval for the ex
 6. Review real-dataset showcases for source links, license and citation terms, prepared-data provenance, scientific context, and usefulness to the dataset authors.
 7. Document and validate the gallery generation path for screenshots, animated WebP, MP4 cards, posters, and freshness checks using [GALLERY_MEDIA_SINGLE_RESOLUTION.md](GALLERY_MEDIA_SINGLE_RESOLUTION.md).
 8. Review outreach drafts before contacting dataset authors or publishing external messages.
+9. Publish the first three chapters of the release-required modern GPU graphics tutorial with complete standalone CMake examples, external GLSL, live GLFW and deterministic offscreen paths, focused C guidance, ownership explanations, experiments, exercises, screenshots, validation commands, and advanced/unstable compatibility labels.
+10. Document every RC3 tutorial-facing public API change and keep generated C reference, bindings, ownership guidance, diagnostics, installed-package instructions, and tutorial source snippets synchronized with the compiled examples.
 
 ## Active Documentation Work
 
@@ -29,6 +31,15 @@ Do not modify or stage the `data` submodule without explicit approval for the ex
 - The visual-system pilot is specified in [HANDOFF_VISUAL_DOCUMENTATION_PASS.md](HANDOFF_VISUAL_DOCUMENTATION_PASS.md). Apply it first to the approved pilot pages, render locally, and request maintainer review before broader rollout.
 - Source-screenshot reconciliation must distinguish stale fingerprints from uncached but dimensionally valid images and must not update the `data` gitlink without exact approval.
 - Branch-specific public links and clone instructions must change atomically with [BRANCH_CUTOVER.md](BRANCH_CUTOVER.md), not before the branch transition.
+- The modern GPU graphics tutorial execution and validation plan is [VKLITE_GRAPHICS_TUTORIAL.md](VKLITE_GRAPHICS_TUTORIAL.md). RC3 owns its enabling API and three-chapter pilot; do not publish uncompiled prose sketches or duplicate the advanced raw-triangle example as a beginner chapter.
+
+## Required for RC4
+
+1. Complete the tutorial through textured, lit, mouse-rotatable Suzanne while preserving the one-concept-at-a-time learning contract.
+2. Ship the Suzanne OBJ, deterministic texture, source or generation recipe, provenance, license, hashes, install rules, and exact binary-asset approval outside the `data` submodule.
+3. Freeze the tutorial-facing API profile and publish exact Datoviz version compatibility with honest `advanced/unstable` vklite status.
+4. Validate every chapter against exact installed packages, external shaders and assets, deterministic captures, bounded GLFW interaction, Vulkan validation, and supported hosted platforms.
+5. Collect and resolve or record RC4 tutorial feedback before final v0.4.0.
 
 ## Optional Unless Promoted
 
@@ -47,6 +58,7 @@ These projects may improve the final site, but they do not block RC3 unless the 
 3. Generate final README, website, gallery, short-video, and announcement assets from current canonical examples.
 4. Add the exact Zenodo version DOI, concept DOI, and release date to citation and announcement material after the final archive exists.
 5. Submit the JOSS draft or record its explicit deferral.
+6. Publish the release-pinned modern GPU graphics tutorial, final Suzanne captures, assets, provenance, compatibility statement, and known limitations after resolving or recording RC4 feedback.
 
 ## Validation
 

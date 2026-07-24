@@ -1,6 +1,6 @@
 # Datoviz v0.4 Status
 
-Status: active post-RC2 work toward RC3. Updated: 2026-07-20.
+Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Updated: 2026-07-24.
 
 Keep this file current and short. Durable behavior belongs in `spec/`; completed implementation and campaign detail belongs in Git history, release assets, and tagged documentation.
 
@@ -18,10 +18,11 @@ The GitHub default and active development branch remain `v0.4-dev`. The old v0.3
 
 1. Preserve old `main` as `v0.3-maintenance`, rename `v0.4-dev` to `main`, and update live branch-specific automation and guidance without merging the incompatible histories or rewriting commits.
 2. Implement the two gallery-media checkpoints in [GALLERY_MEDIA_SINGLE_RESOLUTION.md](GALLERY_MEDIA_SINGLE_RESOLUTION.md): first the single-resolution encoding/freshness policy, then bounded parallel generation.
-3. Freeze the RC3 documentation and gallery surface, complete generated C and Python reference coverage, finish data attribution and provenance, and triage remaining feedback including PR #132.
-4. Package and validate a `datoviz_qtbridge` provider, preferably conda-first, without adding Qt to the base wheel contract.
-5. Reassess optional RC3 candidates only after required release work is on track.
-6. Cut RC3 when only recorded blocker fixes remain, then complete the final `v0.4.0` readiness and publication campaign.
+3. Execute the RC3 tutorial checkpoints in [VKLITE_GRAPHICS_TUTORIAL.md](VKLITE_GRAPHICS_TUTORIAL.md): prove and improve the tutorial-facing Canvas, vklite, shader-file, depth, OBJ-UV, image-upload, and arcball boundaries, then publish the three-chapter pilot through an installed CMake consumer.
+4. Freeze the non-tutorial RC3 documentation and gallery surface, complete generated C and Python reference coverage, finish data attribution and provenance, and triage remaining feedback including PR #132.
+5. Package and validate a `datoviz_qtbridge` provider, preferably conda-first, without adding Qt to the base wheel contract.
+6. Cut RC3 after its required API, pilot, packaging, documentation, and quality gates pass; then complete and freeze the full tutorial in RC4 before final v0.4.0.
+7. Reassess optional candidates only after the required RC3 and RC4 release work is on track.
 
 ## Active Gates
 
@@ -29,10 +30,15 @@ The GitHub default and active development branch remain `v0.4-dev`. The old v0.3
 | --- | --- | --- |
 | Branch cutover | Pending; GitHub defaults to `v0.4-dev`, old v0.3 remains `main`, and `v0.3-maintenance` does not yet exist. | Audit settings and live references, approve the exact external operations, execute the cutover, then verify branches, protections, workflows, links, and fresh clones. |
 | Gallery media pipeline | The approved plan is recorded but not implemented. Published animation freshness is current for 38 animations and 29 video cards. The separate source-screenshot checker currently reports four stale and 100 uncached screenshots, with the former invalid dimensions and missing datetime-axis image resolved. | Implement and test the `1280x720` encoding ladder and freshness policy, then add bounded parallel execution as a separate checkpoint; keep generated media and `data` changes uncommitted unless separately approved. |
-| Documentation and gallery freeze | Public RC2 documentation is deployed; generated-reference completion, source-screenshot cache reconciliation, attribution, provenance, visual-pilot review, and final RC3 inventory remain. | Classify every remaining documentation idea as required, optional, or deferred; complete the required RC3 gate without allowing polish projects to expand the release scope. |
+| Tutorial API and pilot | The durable educational contract and RC3/RC4 execution plan are recorded; the current advanced offscreen triangle is a seed, not the beginner tutorial, and the tutorial-facing API spikes have not begun. | Complete the first-result, external-shader, and three-chapter RC3 checkpoints; require installed CMake, packaged shaderc, live GLFW, deterministic offscreen, Vulkan ownership, binding, and cross-platform proof before RC3. |
+| Documentation and gallery freeze | Public RC2 documentation is deployed; generated-reference completion, source-screenshot cache reconciliation, attribution, provenance, visual-pilot review, final RC3 inventory, and tutorial pilot remain. | Freeze the non-tutorial surface in RC3 while publishing the pilot; reserve the planned chapters and tutorial asset freeze for RC4 rather than treating them as accidental post-RC3 polish. |
 | Qt/PyQt provider | Source-built hosting and diagnostics are proven; canonical RC2 wheels do not contain the native bridge. | Deliver a tested packaged provider for RC3, preferably conda-first, while retaining optional base-wheel Qt probes and explicit missing-provider diagnostics. |
 | Linux and Windows physical proof | Hosted build, packaging, clean-install, rendering, and consumer evidence is current; fresh physical machines are unavailable to the maintainer. | Hosted proof is mandatory for RC3. Attempt exact-artifact physical proof when suitable machines are available; final release requires either that proof or an explicit maintainer-approved exception. |
 | Runtime and experimental paths | Native runtime, retained visuals, broad query paths, WebGPU/WASM subset, and narrow compute-to-render interop have recorded proof. | Fix concrete lifetime, resize, descriptor, repeated-frame, recovery, or parity blockers; keep WebGPU and compute scope honest and do not broaden v0.4 into a general compute or browser-parity project. |
+
+## Required RC4 Gate
+
+RC4 completes the installed "Modern GPU Graphics in C" course through textured, lit, mouse-rotatable Suzanne; freezes the tutorial-facing API profile; ships reviewed OBJ and texture assets outside the `data` submodule; and proves every chapter from exact installed packages on supported hosted platforms. Follow [VKLITE_GRAPHICS_TUTORIAL.md](VKLITE_GRAPHICS_TUTORIAL.md); do not move first-time public API design, asset provenance, or source-tree-only assumptions into the final release gate.
 
 ## Optional RC3 Candidates
 
@@ -48,6 +54,7 @@ The GitHub default and active development branch remain `v0.4-dev`. The old v0.3
 - v0.3 source and ABI compatibility must not constrain v0.4 architecture.
 - High-level object-oriented plotting and publication vector export remain external GSP/VisPy2 scope.
 - Point-cloud public WebGPU redistribution remains delisted because the source dataset is not licensed for redistribution; native capture and localhost-only development proof may remain.
+- The modern GPU graphics tutorial is required for final v0.4. RC3 owns enabling API and the three-chapter pilot; RC4 owns full-course completion and freeze; final owns feedback fixes and publication.
 
 ## Validation Defaults
 

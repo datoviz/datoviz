@@ -1,6 +1,6 @@
 # Datoviz v0.4 Release Plan
 
-Status: active roadmap from closed RC2 to RC3 and final `v0.4.0`. Updated: 2026-07-20.
+Status: active roadmap from closed RC2 through RC3 and RC4 to final `v0.4.0`. Updated: 2026-07-24.
 
 Use [STATUS.md](STATUS.md) for current state, [DOCUMENTATION.md](DOCUMENTATION.md) for public documentation gates, [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for packaging proof, and [../../spec/release/](../../spec/release/) for durable readiness, evidence, physical-validation, communication, and gallery-outreach policy.
 
@@ -8,7 +8,7 @@ Use [STATUS.md](STATUS.md) for current state, [DOCUMENTATION.md](DOCUMENTATION.m
 
 Datoviz v0.4 owns the C engine, native scene/app runtime, generated low-level Python binding with NumPy adaptation, raster capture, an experimental WebGPU/WASM subset, and a narrow experimental compute-to-render path. GSP/VisPy2 owns high-level object-oriented plotting and publication-oriented vector export.
 
-Required release work is correctness and lifetime hardening, honest supported/experimental/deferred status, representative native and browser proof, complete generated-reference and binding guidance, reproducible packaging, attribution and license review, and user-facing examples and release communication.
+Required release work is correctness and lifetime hardening, honest supported/experimental/deferred status, representative native and browser proof, complete generated-reference and binding guidance, reproducible packaging, attribution and license review, user-facing examples and release communication, and the release-pinned modern GPU graphics tutorial specified in [VKLITE_GRAPHICS_TUTORIAL.md](VKLITE_GRAPHICS_TUTORIAL.md).
 
 Not required for v0.4 are v0.3 source or ABI compatibility, a new high-level plotting API, publication-quality vector export, complete WebGPU/native parity, complete advanced visual parity, a general compute framework, broad CUDA/CuPy interop, complex text shaping, dashboards, or long-horizon backend refactors.
 
@@ -33,7 +33,7 @@ Exit criteria:
 3. Intentional tag-pinned and historical RC1/RC2 links remain unchanged.
 4. Fresh recursive clones of both maintained lines work, and no tag or release artifact changes.
 
-## 2. RC3 Documentation, Packaging, and Quality Candidate
+## 2. RC3 Documentation, Packaging, Quality, and Tutorial API Candidate
 
 Required deliverables:
 
@@ -44,7 +44,9 @@ Required deliverables:
 5. Triage RC feedback and PR #132, and retain only fixes or additions that fit the declared RC3 scope.
 6. Keep representative WebGPU/WASM, query/readback, compute-to-render, runtime-recovery, and native render-conformance proof current for the advertised subset.
 7. Make packaging, generated artifacts, release notes, documentation, and quality checks from [../../spec/release/READINESS.md](../../spec/release/READINESS.md) clean or record the remaining limitations explicitly.
-8. End with only recorded blocker fixes remaining before final.
+8. Implement the tutorial-enabling Canvas, vklite, shader-file, borrowed-command, dynamic-state, optional-depth, OBJ-UV, image-upload, and direct-arcball outcomes from executable chapter spikes, without adding a tutorial-only runtime path.
+9. Publish and validate the first three tutorial chapters through standalone installed CMake consumers, external runtime-compiled shaders, live GLFW execution, deterministic offscreen captures, Vulkan validation, generated binding checks, and supported hosted-platform proof.
+10. End RC3 with only recorded RC3 blockers plus the explicitly planned RC4 tutorial chapters, asset work, installed exact-artifact proof, and full-course freeze remaining.
 
 Physical-validation policy:
 
@@ -60,18 +62,33 @@ Optional RC3 candidates that must not delay the required gate:
 - Hosted documentation preview and manual promotion of exact documentation bytes, while preserving the guarded local publisher as fallback.
 - Wind-globe, prompt-widget, Pyodide-playground, hero-composition, and broad visual-polish projects unless explicitly promoted by the maintainer.
 
-## 3. Final `v0.4.0`
+## 3. RC4 Tutorial and Installed Developer Experience Candidate
+
+Required deliverables:
+
+1. Complete the tutorial chapters for per-frame transforms, indexed 3D geometry and depth, Suzanne texture sampling, mouse-driven arcball interaction, and normal-based basic lighting.
+2. Ship the triangulated UV-unwrapped Suzanne OBJ and deterministic Datoviz-owned texture with exact provenance, licenses, generation/export recipes, hashes, package/install rules, and explicit approval for binary assets; do not use the `data` submodule.
+3. Freeze the tutorial-facing API profile and document vklite as advanced/unstable with exact release compatibility rather than promising general low-level stability.
+4. Build and run every chapter from exact installed source archives and wheels through `find_package(datoviz CONFIG REQUIRED)`, packaged runtime shaderc, external asset discovery, deterministic offscreen proof, and bounded GLFW resize, depth, arcball, repeated-frame, and shutdown smoke.
+5. Pass strict Vulkan validation, public-header and binding checks, documentation source synchronization, links, captures, license review, known-issue review, and supported hosted-platform validation, or record explicit limitations.
+6. Collect RC4 feedback on time-to-first-result, complete-course progression, shader diagnostics, GPU/driver behavior, resize and input, asset discovery, conceptual clarity, and ownership.
+7. End with only recorded release or tutorial blockers remaining before final.
+
+Physical-validation policy continues unchanged through RC4. Hosted proof is mandatory; unavailable physical hardware is an exclusion, and final requires the missing proof or an explicit maintainer-approved exception.
+
+## 4. Final `v0.4.0`
 
 Exit criteria:
 
 1. Reproducible source and binary artifacts pass the final packaging, installation, consumer, rendering, documentation, license, and known-issue gates.
 2. `v0.4.0` is tagged and published with checksums, validation evidence, release notes, and public documentation.
-3. Launch screenshots, short clips, README and website assets, and announcement text are generated from current canonical gallery examples.
+3. Launch screenshots, short clips, README and website assets, and announcement text are generated from current canonical gallery examples and the final tutorial result where appropriate.
 4. Direct feedback channels are open for early users, especially scientists whose public datasets appear in showcase examples.
 5. GitHub–Zenodo archiving is enabled, and the GitHub release, `CITATION.cff`, citation documentation, final notes, and announcement contain the exact version DOI, concept DOI, and release date.
 6. Any future `.zenodo.json` remains consistent with `CITATION.cff` because Zenodo gives it precedence.
 7. The JOSS draft is submitted or explicitly deferred; JOSS acceptance remains separate from the software release.
-8. The active queue resets for v0.4 patch maintenance and v0.5 planning.
+8. RC4 tutorial and installed-consumer feedback is resolved or recorded as a known limitation, and the release-pinned tutorial is published with its final assets and compatibility statement.
+9. The active queue resets for v0.4 patch maintenance and v0.5 planning.
 
 ## Deferred Beyond v0.4
 

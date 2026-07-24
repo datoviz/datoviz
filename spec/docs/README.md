@@ -28,7 +28,7 @@ scientific plotting belongs to VisPy2/GSP, with Datoviz as one rendering backend
   policy.
 - [WEBSITE_DEPLOYMENT.md](WEBSITE_DEPLOYMENT.md): current website topology, long-term documentation
   channels, build-once promotion policy, deployment gates, and post-RC1 automation plan.
-- [VKLITE_GRAPHICS_TUTORIAL.md](VKLITE_GRAPHICS_TUTORIAL.md): future proposal for a result-first beginner graphics tutorial that teaches Vulkan concepts through vklite and Canvas.
+- [VKLITE_GRAPHICS_TUTORIAL.md](VKLITE_GRAPHICS_TUTORIAL.md): required final-v0.4 result-first graphics tutorial contract, including RC3 enabling API and pilot work plus RC4 completion through textured, lit, rotatable Suzanne.
 
 AI-facing usage contracts are routed through this directory first. Scene-level default API guidance
 lives in [`../scene/api/API_SURFACE.md`](../scene/api/API_SURFACE.md), copy-safe example policy
