@@ -109,6 +109,15 @@ def copy_gallery_webp_assets(site_dir):
     )
 
 
+def copy_tutorial_webp_assets(site_dir):
+    site = Path(site_dir)
+    copy_tree_if_exists(
+        'build/tutorial-webp/vulkan',
+        site / 'assets/tutorials/vulkan',
+        'Vulkan tutorial WebP asset',
+    )
+
+
 def add_generated_tree(files, config, src, dst_prefix, label='asset'):
     src_path = ROOT / src
     if not src_path.exists():
@@ -219,10 +228,14 @@ def on_pre_build(**kwargs):
     import sys
     sys.path.insert(0, str(CURDIR))
     import build_gallery_webp
+    import build_tutorial_media
     import build_webgpu_data_bundles
     import gen_start_thumbs
 
     build_gallery_webp.generate_gallery_webp(quiet_missing=True, animated_fallbacks=True)
+    tutorial_rc, _ = build_tutorial_media.generate_tutorial_media(strict=True)
+    if tutorial_rc != 0:
+        raise RuntimeError("Vulkan tutorial preview generation failed")
     build_webgpu_data_bundles.stage_bundles()
     gen_start_thumbs.generate()
 
@@ -245,10 +258,18 @@ def on_files(files, config):
         'assets/gallery/v0.4',
         'gallery WebP asset',
     )
+    add_generated_tree(
+        files,
+        config,
+        'build/tutorial-webp/vulkan',
+        'assets/tutorials/vulkan',
+        'Vulkan tutorial WebP asset',
+    )
     add_generated_tree(files, config, 'build/webgpu-data', 'webgpu-data', 'WebGPU data bundle')
     return files
 
 
 def on_post_build(config, **kwargs):
     copy_gallery_webp_assets(config['site_dir'])
+    copy_tutorial_webp_assets(config['site_dir'])
     copy_webgpu_live_assets(config['site_dir'])

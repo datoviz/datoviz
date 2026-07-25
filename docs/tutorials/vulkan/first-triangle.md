@@ -2,6 +2,8 @@
 
 The first result is a colored triangle in a live, resizable window. Its three positions and colors initially live in the vertex shader, so no vertex buffer is needed yet.
 
+![A pastel triangle rendered from positions and colors generated in the vertex shader](../../assets/tutorials/vulkan/first-triangle.webp)
+
 ## Run it
 
 From the standalone tutorial build:

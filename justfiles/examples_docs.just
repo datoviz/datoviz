@@ -165,6 +165,12 @@ gallery-webp-build *args:
     @just gallery-webp "$@"
 
 
+# Generate build-local WebP derivatives for Vulkan tutorial previews.
+[positional-arguments]
+tutorial-media *args:
+    @python3 tools/build_tutorial_media.py "$@"
+
+
 # Generate build-local animated WebP previews for gallery examples.
 [positional-arguments]
 gallery-animations *args:
@@ -267,8 +273,9 @@ docs-check-generated:
     @python3 tools/check_generated_docs.py
 
 docs-build-check:
-    @mkdir -p build/gallery-webp/v0.4 build-wasm-scene/wasm
+    @mkdir -p build/gallery-webp/v0.4 build/tutorial-webp/vulkan build-wasm-scene/wasm
     @python3 -m unittest tools/tests/test_build_gallery_webp.py
+    @python3 -m unittest tools/tests/test_build_tutorial_media.py
     @uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs build --strict
 
 check-example-manifests:

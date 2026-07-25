@@ -2,6 +2,8 @@
 
 The third result looks like the first triangle, but its positions and colors now begin in a C array, are uploaded into an owned GPU buffer, and enter the vertex shader through declared attributes.
 
+![The triangle reproduced from interleaved positions and colors stored in a GPU vertex buffer](../../assets/tutorials/vulkan/vertex-buffers.webp)
+
 ## Run it
 
 ```console

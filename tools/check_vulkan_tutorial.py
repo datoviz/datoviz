@@ -12,9 +12,14 @@ EXAMPLE = ROOT / "examples" / "c" / "tutorial"
 DOCS = ROOT / "docs" / "tutorials" / "vulkan"
 
 CHAPTERS = {
-    "first_triangle": ("first-triangle.md", "shaders", False),
-    "shaders_and_pipeline": ("shaders-and-pipeline.md", "shaders/pipeline", False),
-    "vertex_buffers": ("vertex-buffers.md", "shaders/vertex_buffer", True),
+    "first_triangle": ("first-triangle.md", "first-triangle.webp", "shaders", False),
+    "shaders_and_pipeline": (
+        "shaders-and-pipeline.md",
+        "shaders-and-pipeline.webp",
+        "shaders/pipeline",
+        False,
+    ),
+    "vertex_buffers": ("vertex-buffers.md", "vertex-buffers.webp", "shaders/vertex_buffer", True),
 }
 
 
@@ -68,7 +73,7 @@ def main() -> int:
                 f"{forbidden!r}"
             )
 
-    for target, (doc_name, shader_dir, uses_vertex_buffer) in CHAPTERS.items():
+    for target, (doc_name, preview_name, shader_dir, uses_vertex_buffer) in CHAPTERS.items():
         cmake_label = "examples/c/tutorial/CMakeLists.txt"
         _require(cmake, f"add_tutorial_chapter({target} {shader_dir} ", cmake_label, errors)
         expected_flag = "1)" if uses_vertex_buffer else "0)"
@@ -86,6 +91,12 @@ def main() -> int:
         document = doc_path.read_text()
         for token in (target, "--live", "--offscreen", "--validate", "## Checkpoint", "## Exercise"):
             _require(document, token, str(doc_path.relative_to(ROOT)), errors)
+        _require(
+            document,
+            f"../../assets/tutorials/vulkan/{preview_name}",
+            str(doc_path.relative_to(ROOT)),
+            errors,
+        )
 
         directory = EXAMPLE / shader_dir
         for suffix in ("vert", "frag"):

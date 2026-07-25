@@ -2,6 +2,8 @@
 
 This chapter keeps positions in the vertex shader but changes the shader interface and fragment calculation. The result has a luminous cyan edge produced entirely by editing external GLSL.
 
+![A pastel triangle with a luminous cyan edge produced by the fragment shader](../../assets/tutorials/vulkan/shaders-and-pipeline.webp)
+
 ## Run the pipeline experiment
 
 ```console

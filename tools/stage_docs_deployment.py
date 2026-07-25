@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 TEXT_SUFFIXES = {".css", ".html", ".js", ".json", ".txt", ".xml"}
-GALLERY_ASSET_PREFIX = "assets/gallery/v0.4/"
+MEDIA_ASSET_PREFIXES = ("assets/gallery/v0.4/", "assets/tutorials/vulkan/")
 MEDIA_REFERENCE_RE = re.compile(r"(?:data-src|poster|src)=[\"']([^\"']+)[\"']")
 
 
@@ -37,21 +37,22 @@ def _rewrite_legacy_urls(root: Path, prefix: str) -> None:
             path.write_text(rewritten, encoding="utf8")
 
 
-def _validate_gallery_asset_references(root: Path) -> None:
+def _validate_media_asset_references(root: Path) -> None:
     missing: set[str] = set()
     for path in sorted(root.rglob("*.html")):
         text = path.read_text(encoding="utf8", errors="ignore")
         for reference in MEDIA_REFERENCE_RE.findall(text):
-            if GALLERY_ASSET_PREFIX not in reference:
-                continue
-            relative = reference.split(GALLERY_ASSET_PREFIX, 1)[1]
-            relative = relative.split("?", 1)[0].split("#", 1)[0]
-            asset = root / GALLERY_ASSET_PREFIX / relative
-            if not asset.is_file():
-                missing.add(asset.relative_to(root).as_posix())
+            for prefix in MEDIA_ASSET_PREFIXES:
+                if prefix not in reference:
+                    continue
+                relative = reference.split(prefix, 1)[1]
+                relative = relative.split("?", 1)[0].split("#", 1)[0]
+                asset = root / prefix / relative
+                if not asset.is_file():
+                    missing.add(asset.relative_to(root).as_posix())
     if missing:
         details = "\n  ".join(sorted(missing))
-        raise ValueError(f"generated site references missing gallery media:\n  {details}")
+        raise ValueError(f"generated site references missing media:\n  {details}")
 
 
 def stage_deployment(
@@ -76,7 +77,7 @@ def stage_deployment(
 
     _copy_tree(built_site, output)
     (output / ".nojekyll").touch()
-    _validate_gallery_asset_references(output)
+    _validate_media_asset_references(output)
 
     existing_legacy = site_repo / legacy_prefix
     staged_legacy = output / legacy_prefix

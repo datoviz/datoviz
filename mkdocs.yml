@@ -4,6 +4,8 @@ repo_url: https://github.com/datoviz/datoviz
 docs_dir: docs
 watch:
   - build/gallery-webp/v0.4
+  - build/tutorial-webp/vulkan
+  - data/tutorials/vulkan
   - build-wasm-scene/wasm
   - examples/webgpu
   - web/drp2

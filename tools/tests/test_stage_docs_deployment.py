@@ -86,3 +86,20 @@ def test_refuse_missing_gallery_media(tmp_path: Path) -> None:
             legacy_prefix="v0.3",
             seed_legacy=True,
         )
+
+
+def test_refuse_missing_tutorial_media(tmp_path: Path) -> None:
+    built = _built_site(tmp_path)
+    (built / "index.html").write_text(
+        '<img src="/assets/tutorials/vulkan/first-triangle.webp">',
+        encoding="utf8",
+    )
+
+    with pytest.raises(ValueError, match="first-triangle.webp"):
+        stage_deployment(
+            built,
+            _site_repo(tmp_path),
+            tmp_path / "output",
+            legacy_prefix="v0.3",
+            seed_legacy=True,
+        )
