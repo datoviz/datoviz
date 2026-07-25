@@ -32,7 +32,6 @@
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vklite.h"
 #include "datoviz/window.h"
-#include "datoviz/window/backend.h"
 
 
 
@@ -402,40 +401,11 @@ static int _create_gpu(SpikeRuntime* runtime, const SpikeOptions* options)
 {
     DvzGpuCtxConfig gpu_config = dvz_gpu_ctx_config();
     dvz_gpu_ctx_config_validation(&gpu_config, options->validation);
-
-    VkPhysicalDeviceVulkan12Features features12 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-        .timelineSemaphore = VK_TRUE,
-    };
-    dvz_gpu_ctx_config_features12(&gpu_config, &features12);
-    VkPhysicalDeviceVulkan13Features features13 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
-        .dynamicRendering = VK_TRUE,
-        .synchronization2 = VK_TRUE,
-    };
-    dvz_gpu_ctx_config_features13(&gpu_config, &features13);
-
-    if (options->live)
-    {
-        uint32_t extension_count =
-            dvz_window_host_required_extension_count(runtime->host, DVZ_BACKEND_GLFW);
-        if (extension_count == 0 || extension_count > 16)
-        {
-            dvz_fprintf(stderr, "vklite_triangle_spike: GLFW Vulkan extensions unavailable\n");
-            return -1;
-        }
-        const char* extensions[16] = {0};
-        int written = dvz_window_host_required_extensions(
-            runtime->host, DVZ_BACKEND_GLFW, extension_count, extensions);
-        if (written != (int)extension_count)
-        {
-            dvz_fprintf(stderr, "vklite_triangle_spike: GLFW extension query failed\n");
-            return -1;
-        }
-        for (uint32_t i = 0; i < extension_count; i++)
-            dvz_gpu_ctx_config_add_instance_extension(&gpu_config, extensions[i]);
-        dvz_gpu_ctx_config_enable_canvas_extensions(&gpu_config, true);
-    }
+    DvzBackend backend = options->live ? DVZ_BACKEND_GLFW : DVZ_BACKEND_OFFSCREEN;
+    DvzCanvasRenderMode render_mode =
+        options->live ? DVZ_CANVAS_RENDER_MODE_PRESENT : DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+    if (dvz_canvas_configure_gpu_ctx(runtime->host, backend, render_mode, &gpu_config) != DVZ_OK)
+        return -1;
 
     runtime->gpu = dvz_gpu_ctx(&gpu_config);
     return runtime->gpu != NULL ? 0 : -1;

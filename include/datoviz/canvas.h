@@ -38,6 +38,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzCanvas DvzCanvas;
+typedef struct DvzGpuCtxConfig DvzGpuCtxConfig;
 typedef struct DvzWindow DvzWindow;
 typedef struct DvzDevice DvzDevice;
 
@@ -154,6 +155,27 @@ DVZ_EXPORT DvzCanvasConfig dvz_canvas_config(void);
  * @returns a configuration with no callback or user data
  */
 DVZ_EXPORT DvzCanvasLiveImageSinkConfig dvz_canvas_live_image_sink_config(void);
+
+
+
+/**
+ * Augment a GPU-context configuration with the requirements of a Canvas route.
+ *
+ * The caller must initialize @p config with dvz_gpu_ctx_config(). Existing caller-selected
+ * validation, GPU, allocation, extension, and feature choices are preserved. The helper adds the
+ * standard Canvas Vulkan features, deduplicates backend-required instance extensions, and enables
+ * presentation device extensions only for present mode.
+ *
+ * @param host window host that owns the selected backend
+ * @param backend selected window backend
+ * @param render_mode intended Canvas render mode
+ * @param config caller-owned GPU-context configuration to augment
+ * @returns DVZ_OK on success or DVZ_ERROR on invalid input, unavailable backend, or extension
+ * capacity overflow
+ */
+DVZ_EXPORT DvzResult dvz_canvas_configure_gpu_ctx(
+    DvzWindowHost* host, DvzBackend backend, DvzCanvasRenderMode render_mode,
+    DvzGpuCtxConfig* config);
 
 
 

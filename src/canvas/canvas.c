@@ -29,10 +29,12 @@
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/video.h"
 #include "datoviz/vk/enums.h"
+#include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/images.h"
+#include "datoviz/window/backend.h"
 
 
 
@@ -55,6 +57,21 @@ static bool _canvas_config_validate(const DvzCanvasConfig* cfg)
         return false;
     }
     return true;
+}
+
+
+
+static bool _canvas_gpu_config_has_extension(const DvzGpuCtxConfig* config, const char* extension)
+{
+    ANN(config);
+    ANN(extension);
+    for (uint32_t i = 0; i < config->instance_extension_count; i++)
+    {
+        const char* existing = config->instance_extensions[i];
+        if (existing != NULL && strcmp(existing, extension) == 0)
+            return true;
+    }
+    return false;
 }
 
 
@@ -1122,6 +1139,102 @@ DvzCanvasLiveImageSinkConfig dvz_canvas_live_image_sink_config(void)
     return (DvzCanvasLiveImageSinkConfig){
         DVZ_STRUCT_INIT_FIELDS(DvzCanvasLiveImageSinkConfig),
     };
+}
+
+
+
+/**
+ * Augment a GPU-context configuration with the selected Canvas route requirements.
+ *
+ * @param host window host that owns the selected backend
+ * @param backend selected window backend
+ * @param render_mode intended Canvas render mode
+ * @param config caller-owned GPU-context configuration to augment
+ * @return DVZ_OK on success or DVZ_ERROR on invalid input or unavailable requirements
+ */
+DvzResult dvz_canvas_configure_gpu_ctx(
+    DvzWindowHost* host, DvzBackend backend, DvzCanvasRenderMode render_mode,
+    DvzGpuCtxConfig* config)
+{
+    if (host == NULL || !DVZ_STRUCT_VALID(config, DvzGpuCtxConfig, 0) ||
+        (render_mode != DVZ_CANVAS_RENDER_MODE_PRESENT &&
+         render_mode != DVZ_CANVAS_RENDER_MODE_OFFSCREEN))
+    {
+        log_error("invalid Canvas GPU-context configuration request");
+        return DVZ_ERROR;
+    }
+    if (render_mode == DVZ_CANVAS_RENDER_MODE_PRESENT && backend == DVZ_BACKEND_OFFSCREEN)
+    {
+        log_error("present Canvas mode requires a presentation-capable window backend");
+        return DVZ_ERROR;
+    }
+    if (config->instance_extension_count > 16)
+    {
+        log_error("invalid GPU-context instance extension count");
+        return DVZ_ERROR;
+    }
+
+    uint32_t required_count = dvz_window_host_required_extension_count(host, backend);
+    if (required_count > 16)
+    {
+        log_error("Canvas backend requires too many Vulkan instance extensions");
+        return DVZ_ERROR;
+    }
+    const char* required_extensions[16] = {0};
+    int written = dvz_window_host_required_extensions(
+        host, backend, required_count, required_count > 0 ? required_extensions : NULL);
+    if (written != (int)required_count)
+    {
+        log_error("selected Canvas window backend is unavailable");
+        return DVZ_ERROR;
+    }
+
+    DvzGpuCtxConfig resolved = *config;
+    if (!resolved.has_features12)
+    {
+        resolved.features12 = (VkPhysicalDeviceVulkan12Features){
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+        };
+        resolved.has_features12 = true;
+    }
+    resolved.features12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+    resolved.features12.timelineSemaphore = VK_TRUE;
+
+    if (!resolved.has_features13)
+    {
+        resolved.features13 = (VkPhysicalDeviceVulkan13Features){
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        };
+        resolved.has_features13 = true;
+    }
+    resolved.features13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+    resolved.features13.dynamicRendering = VK_TRUE;
+    resolved.features13.synchronization2 = VK_TRUE;
+
+    if (render_mode == DVZ_CANVAS_RENDER_MODE_PRESENT)
+    {
+        for (uint32_t i = 0; i < required_count; i++)
+        {
+            const char* extension = required_extensions[i];
+            if (extension == NULL)
+            {
+                log_error("Canvas backend returned a NULL Vulkan instance extension");
+                return DVZ_ERROR;
+            }
+            if (_canvas_gpu_config_has_extension(&resolved, extension))
+                continue;
+            if (resolved.instance_extension_count >= 16)
+            {
+                log_error("Canvas GPU-context instance extension capacity exceeded");
+                return DVZ_ERROR;
+            }
+            resolved.instance_extensions[resolved.instance_extension_count++] = extension;
+        }
+        resolved.enable_canvas_extensions = true;
+    }
+
+    *config = resolved;
+    return DVZ_OK;
 }
 
 

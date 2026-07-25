@@ -2069,7 +2069,7 @@ DvzVisual * dvz_glyph(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-_Declared in `include/datoviz/scene.h`:3768._
+_Declared in `include/datoviz/scene.h`:3770._
 
 #### `dvz_glyph_set_atlas()` { #dvz_glyph_set_atlas .dvz-api-function }
 
@@ -2091,7 +2091,7 @@ DvzResult dvz_glyph_set_atlas(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the glyph visual |
 | `atlas` | `const` [`DvzTextAtlas`](scene.md#type-dvztextatlas) * | the text atlas |
 
-_Declared in `include/datoviz/scene.h`:3781._
+_Declared in `include/datoviz/scene.h`:3783._
 
 ## Graph { #graph }
 
@@ -2530,7 +2530,9 @@ _Declared in `include/datoviz/scene.h`:3623._
 Set the sampler filter mode for an image visual.
 
 `DVZ_IMAGE_SAMPLING_LINEAR` is the default. `DVZ_IMAGE_SAMPLING_NEAREST` emits a nearest
-minification and magnification sampler for pixel-exact image rendering.
+minification and magnification sampler for pixel-exact image rendering. This image-specific
+compatibility convenience delegates to `dvz_visual_set_field_sampling(image, "field", ...)`;
+new slot-oriented code should prefer the general field-sampling API.
 
 ```c
 DvzResult dvz_image_set_sampling(
@@ -2545,7 +2547,7 @@ DvzResult dvz_image_set_sampling(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the image visual |
 | `sampling` | [`DvzImageSampling`](visuals.md#type-dvzimagesampling) | the image sampler filter mode |
 
-_Declared in `include/datoviz/scene.h`:3636._
+_Declared in `include/datoviz/scene.h`:3638._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -2588,7 +2590,7 @@ DvzVisual * dvz_labels(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-_Declared in `include/datoviz/scene.h`:3651._
+_Declared in `include/datoviz/scene.h`:3653._
 
 #### `dvz_labels_clear_selected()` { #dvz_labels_clear_selected .dvz-api-function }
 
@@ -2605,7 +2607,7 @@ DvzResult dvz_labels_clear_selected(
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | 0 on success, -1 on error |
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the labels visual |
 
-_Declared in `include/datoviz/scene.h`:3690._
+_Declared in `include/datoviz/scene.h`:3692._
 
 #### `dvz_labels_set_background()` { #dvz_labels_set_background .dvz-api-function }
 
@@ -2624,7 +2626,7 @@ DvzResult dvz_labels_set_background(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the labels visual |
 | `label_id` | [`DvzCategoryId`](scene.md#type-dvzcategoryid) | background label ID |
 
-_Declared in `include/datoviz/scene.h`:3671._
+_Declared in `include/datoviz/scene.h`:3673._
 
 #### `dvz_labels_set_boundary()` { #dvz_labels_set_boundary .dvz-api-function }
 
@@ -2647,7 +2649,7 @@ DvzResult dvz_labels_set_boundary(
 | `width_px` | `float` | boundary width in pixels |
 | `color` | [`DvzColor`](runtime-utilities.md#type-dvzcolor) | boundary color |
 
-_Declared in `include/datoviz/scene.h`:3715._
+_Declared in `include/datoviz/scene.h`:3717._
 
 #### `dvz_labels_set_fallback_seed()` { #dvz_labels_set_fallback_seed .dvz-api-function }
 
@@ -2666,7 +2668,7 @@ DvzResult dvz_labels_set_fallback_seed(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the labels visual |
 | `seed` | `uint32_t` | fallback-color seed |
 
-_Declared in `include/datoviz/scene.h`:3725._
+_Declared in `include/datoviz/scene.h`:3727._
 
 #### `dvz_labels_set_hidden()` { #dvz_labels_set_hidden .dvz-api-function }
 
@@ -2687,7 +2689,7 @@ DvzResult dvz_labels_set_hidden(
 | `ids` | `const` [`DvzCategoryId`](scene.md#type-dvzcategoryid) * | hidden label IDs, or NULL when count is 0 |
 | `count` | `uint32_t` | hidden label ID count |
 
-_Declared in `include/datoviz/scene.h`:3702._
+_Declared in `include/datoviz/scene.h`:3704._
 
 #### `dvz_labels_set_opacity()` { #dvz_labels_set_opacity .dvz-api-function }
 
@@ -2706,7 +2708,7 @@ DvzResult dvz_labels_set_opacity(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the labels visual |
 | `opacity` | `float` | opacity multiplier in [0, 1] |
 
-_Declared in `include/datoviz/scene.h`:3661._
+_Declared in `include/datoviz/scene.h`:3663._
 
 #### `dvz_labels_set_selected()` { #dvz_labels_set_selected .dvz-api-function }
 
@@ -2725,7 +2727,7 @@ DvzResult dvz_labels_set_selected(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the labels visual |
 | `label_id` | [`DvzCategoryId`](scene.md#type-dvzcategoryid) | selected label ID |
 
-_Declared in `include/datoviz/scene.h`:3681._
+_Declared in `include/datoviz/scene.h`:3683._
 
 #### `dvz_labels_set_slice_axis()` { #dvz_labels_set_slice_axis .dvz-api-function }
 
@@ -2744,7 +2746,7 @@ DvzResult dvz_labels_set_slice_axis(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the labels visual |
 | `axis` | [`DvzVolumeAxis`](visuals.md#type-dvzvolumeaxis) | slice axis |
 
-_Declared in `include/datoviz/scene.h`:3735._
+_Declared in `include/datoviz/scene.h`:3737._
 
 #### `dvz_labels_set_slice_position()` { #dvz_labels_set_slice_position .dvz-api-function }
 
@@ -2763,7 +2765,7 @@ DvzResult dvz_labels_set_slice_position(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the labels visual |
 | `position` | `double` | normalized slice position in [0, 1] |
 
-_Declared in `include/datoviz/scene.h`:3745._
+_Declared in `include/datoviz/scene.h`:3747._
 
 #### `dvz_labels_state()` { #dvz_labels_state .dvz-api-function }
 
@@ -2780,7 +2782,7 @@ const DvzLabelsState * dvz_labels_state(
 | return | `const` [`DvzLabelsState`](visuals.md#type-dvzlabelsstate) * | the labels state, or NULL on error |
 | `visual` | `const` [`DvzVisual`](visuals.md#type-dvzvisual) * | the labels visual |
 
-_Declared in `include/datoviz/scene.h`:3754._
+_Declared in `include/datoviz/scene.h`:3756._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -6358,7 +6360,7 @@ DvzVisual * dvz_volume(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-_Declared in `include/datoviz/scene.h`:3795._
+_Declared in `include/datoviz/scene.h`:3797._
 
 #### `dvz_volume_clear_clipping()` { #dvz_volume_clear_clipping .dvz-api-function }
 
@@ -6375,7 +6377,7 @@ DvzResult dvz_volume_clear_clipping(
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | 0 on success, -1 on error |
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual |
 
-_Declared in `include/datoviz/scene.h`:3956._
+_Declared in `include/datoviz/scene.h`:3958._
 
 #### `dvz_volume_clear_clipping_plane()` { #dvz_volume_clear_clipping_plane .dvz-api-function }
 
@@ -6392,7 +6394,7 @@ DvzResult dvz_volume_clear_clipping_plane(
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | 0 on success, -1 on error |
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual |
 
-_Declared in `include/datoviz/scene.h`:3947._
+_Declared in `include/datoviz/scene.h`:3949._
 
 #### `dvz_volume_set_alpha_stops()` { #dvz_volume_set_alpha_stops .dvz-api-function }
 
@@ -6413,7 +6415,7 @@ DvzResult dvz_volume_set_alpha_stops(
 | `stops` | `const` [`DvzVolumeAlphaStop`](visuals.md#type-dvzvolumealphastop) * | alpha stops sorted or unsorted by position |
 | `count` | `uint32_t` | number of stops, at most 8 |
 
-_Declared in `include/datoviz/scene.h`:3909._
+_Declared in `include/datoviz/scene.h`:3911._
 
 #### `dvz_volume_set_axis_mapping()` { #dvz_volume_set_axis_mapping .dvz-api-function }
 
@@ -6438,7 +6440,7 @@ DvzResult dvz_volume_set_axis_mapping(
 | `axis_order` | `const` `uint32_t`[3] | texture-axis source order, a permutation of 0, 1, 2 |
 | `axis_flip` | `const` `_Bool`[3] | optional per-texture-axis flips |
 
-_Declared in `include/datoviz/scene.h`:3886._
+_Declared in `include/datoviz/scene.h`:3888._
 
 #### `dvz_volume_set_bounds()` { #dvz_volume_set_bounds .dvz-api-function }
 
@@ -6462,7 +6464,7 @@ DvzResult dvz_volume_set_bounds(
 | `bounds_min` | `const` `double`[3] | minimum object-space coordinate |
 | `bounds_max` | `const` `double`[3] | maximum object-space coordinate |
 
-_Declared in `include/datoviz/scene.h`:3871._
+_Declared in `include/datoviz/scene.h`:3873._
 
 #### `dvz_volume_set_clipping_box()` { #dvz_volume_set_clipping_box .dvz-api-function }
 
@@ -6483,7 +6485,7 @@ DvzResult dvz_volume_set_clipping_box(
 | `clip_min` | `const` `double`[3] | minimum normalized clip coordinate |
 | `clip_max` | `const` `double`[3] | maximum normalized clip coordinate |
 
-_Declared in `include/datoviz/scene.h`:3922._
+_Declared in `include/datoviz/scene.h`:3924._
 
 #### `dvz_volume_set_clipping_plane()` { #dvz_volume_set_clipping_plane .dvz-api-function }
 
@@ -6509,7 +6511,7 @@ DvzResult dvz_volume_set_clipping_plane(
 | `normal` | `const` `double`[3] | non-zero clipping plane normal |
 | `keep_positive` | `_Bool` | whether to keep the positive side of the plane |
 
-_Declared in `include/datoviz/scene.h`:3937._
+_Declared in `include/datoviz/scene.h`:3939._
 
 #### `dvz_volume_set_opacity()` { #dvz_volume_set_opacity .dvz-api-function }
 
@@ -6528,7 +6530,7 @@ DvzResult dvz_volume_set_opacity(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual |
 | `opacity` | `float` | opacity multiplier in [0, 1] |
 
-_Declared in `include/datoviz/scene.h`:3805._
+_Declared in `include/datoviz/scene.h`:3807._
 
 #### `dvz_volume_set_render_mode()` { #dvz_volume_set_render_mode .dvz-api-function }
 
@@ -6547,7 +6549,7 @@ DvzResult dvz_volume_set_render_mode(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual |
 | `mode` | [`DvzVolumeRenderMode`](visuals.md#type-dvzvolumerendermode) | the render mode |
 
-_Declared in `include/datoviz/scene.h`:3826._
+_Declared in `include/datoviz/scene.h`:3828._
 
 #### `dvz_volume_set_sampling()` { #dvz_volume_set_sampling .dvz-api-function }
 
@@ -6566,7 +6568,7 @@ DvzResult dvz_volume_set_sampling(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual |
 | `sampling` | [`DvzVolumeSamplingMode`](visuals.md#type-dvzvolumesamplingmode) | the sampling mode |
 
-_Declared in `include/datoviz/scene.h`:3816._
+_Declared in `include/datoviz/scene.h`:3818._
 
 #### `dvz_volume_set_slice_axis()` { #dvz_volume_set_slice_axis .dvz-api-function }
 
@@ -6585,7 +6587,7 @@ DvzResult dvz_volume_set_slice_axis(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual |
 | `axis` | [`DvzVolumeAxis`](visuals.md#type-dvzvolumeaxis) | axis normal for slicing planes (X/Y/Z) |
 
-_Declared in `include/datoviz/scene.h`:3836._
+_Declared in `include/datoviz/scene.h`:3838._
 
 #### `dvz_volume_set_slice_position()` { #dvz_volume_set_slice_position .dvz-api-function }
 
@@ -6604,7 +6606,7 @@ DvzResult dvz_volume_set_slice_position(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual |
 | `position` | `double` | slice position in [0, 1], where 0 is the minimum axis coordinate |
 
-_Declared in `include/datoviz/scene.h`:3846._
+_Declared in `include/datoviz/scene.h`:3848._
 
 #### `dvz_volume_set_step_count()` { #dvz_volume_set_step_count .dvz-api-function }
 
@@ -6623,7 +6625,7 @@ DvzResult dvz_volume_set_step_count(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual |
 | `step_count` | `uint32_t` | number of raymarch samples |
 
-_Declared in `include/datoviz/scene.h`:3856._
+_Declared in `include/datoviz/scene.h`:3858._
 
 #### `dvz_volume_set_value_range()` { #dvz_volume_set_value_range .dvz-api-function }
 
@@ -6644,7 +6646,7 @@ DvzResult dvz_volume_set_value_range(
 | `min` | `double` | minimum scalar value mapped to 0 |
 | `max` | `double` | maximum scalar value mapped to 1 |
 
-_Declared in `include/datoviz/scene.h`:3898._
+_Declared in `include/datoviz/scene.h`:3900._
 
 #### `dvz_volume_state()` { #dvz_volume_state .dvz-api-function }
 
@@ -6661,7 +6663,7 @@ const DvzVolumeState * dvz_volume_state(
 | return | `const` [`DvzVolumeState`](visuals.md#type-dvzvolumestate) * | the volume state, or NULL on error |
 | `visual` | `const` [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual |
 
-_Declared in `include/datoviz/scene.h`:3965._
+_Declared in `include/datoviz/scene.h`:3967._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 

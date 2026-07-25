@@ -17,6 +17,7 @@
 #include "canvas_internal.h"
 #include <sys/stat.h>
 #include <stdlib.h>
+#include <string.h>
 #if OS_UNIX
 #include <unistd.h>
 #endif
@@ -30,6 +31,7 @@
 #include "datoviz/video.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
+#include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/commands.h"
@@ -531,6 +533,100 @@ int test_canvas_config_rejects_invalid_abi(TstContext* suite, const TstCase* ite
     cfg.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_canvas_create(&cfg) == NULL);
 
+    return 0;
+}
+
+
+
+/**
+ * Validate additive Canvas GPU-context configuration for offscreen and presentation routes.
+ */
+int test_canvas_configure_gpu_ctx(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzWindowHost* host = dvz_window_host();
+    ANN(host);
+
+    DvzGpuCtxConfig offscreen = dvz_gpu_ctx_config();
+    offscreen.enable_validation = false;
+    offscreen.gpu_index = 3;
+    offscreen.export_handle_type = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+    AT(dvz_canvas_configure_gpu_ctx(
+           host, DVZ_BACKEND_OFFSCREEN, DVZ_CANVAS_RENDER_MODE_OFFSCREEN, &offscreen) == DVZ_OK);
+    AT(!offscreen.enable_validation);
+    AT(offscreen.gpu_index == 3);
+    AT(offscreen.export_handle_type == VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT);
+    AT(offscreen.has_features12);
+    AT(offscreen.features12.timelineSemaphore == VK_TRUE);
+    AT(offscreen.has_features13);
+    AT(offscreen.features13.dynamicRendering == VK_TRUE);
+    AT(offscreen.features13.synchronization2 == VK_TRUE);
+    AT(offscreen.instance_extension_count == 0);
+    AT(!offscreen.enable_canvas_extensions);
+
+    const char* required[] = {"VK_TEST_canvas_surface", "VK_TEST_canvas_platform"};
+    AT(dvz_window_wrap_set_required_extensions(host, 2, required) == 0);
+
+    DvzGpuCtxConfig present = dvz_gpu_ctx_config();
+    present.enable_validation = false;
+    present.gpu_index = 2;
+    VkPhysicalDeviceVulkan12Features features12 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+        .bufferDeviceAddress = VK_TRUE,
+    };
+    dvz_gpu_ctx_config_features12(&present, &features12);
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .maintenance4 = VK_TRUE,
+    };
+    dvz_gpu_ctx_config_features13(&present, &features13);
+    dvz_gpu_ctx_config_add_instance_extension(&present, required[0]);
+
+    AT(dvz_canvas_configure_gpu_ctx(
+           host, DVZ_BACKEND_WRAP, DVZ_CANVAS_RENDER_MODE_PRESENT, &present) == DVZ_OK);
+    AT(!present.enable_validation);
+    AT(present.gpu_index == 2);
+    AT(present.features12.bufferDeviceAddress == VK_TRUE);
+    AT(present.features12.timelineSemaphore == VK_TRUE);
+    AT(present.features13.maintenance4 == VK_TRUE);
+    AT(present.features13.dynamicRendering == VK_TRUE);
+    AT(present.features13.synchronization2 == VK_TRUE);
+    AT(present.instance_extension_count == 2);
+    AT(strcmp(present.instance_extensions[0], required[0]) == 0);
+    AT(strcmp(present.instance_extensions[1], required[1]) == 0);
+    AT(present.enable_canvas_extensions);
+
+    DvzGpuCtxConfig invalid = dvz_gpu_ctx_config();
+    AT_EXPECTED_ERROR_STRICT(
+        suite,
+        dvz_canvas_configure_gpu_ctx(
+            host, DVZ_BACKEND_OFFSCREEN, DVZ_CANVAS_RENDER_MODE_PRESENT, &invalid) == DVZ_ERROR);
+    AT(!invalid.has_features12);
+    AT(!invalid.has_features13);
+
+    invalid = dvz_gpu_ctx_config();
+    invalid.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_canvas_configure_gpu_ctx(
+                   host, DVZ_BACKEND_WRAP, DVZ_CANVAS_RENDER_MODE_PRESENT, &invalid) == DVZ_ERROR);
+
+    const char* overflow_required[] = {"VK_TEST_canvas_overflow"};
+    AT(dvz_window_wrap_set_required_extensions(host, 1, overflow_required) == 0);
+    DvzGpuCtxConfig overflow = dvz_gpu_ctx_config();
+    for (uint32_t i = 0; i < 16; i++)
+        dvz_gpu_ctx_config_add_instance_extension(&overflow, "VK_TEST_existing");
+    AT_EXPECTED_ERROR_STRICT(
+        suite,
+        dvz_canvas_configure_gpu_ctx(
+            host, DVZ_BACKEND_WRAP, DVZ_CANVAS_RENDER_MODE_PRESENT, &overflow) == DVZ_ERROR);
+    AT(overflow.instance_extension_count == 16);
+    AT(!overflow.has_features12);
+    AT(!overflow.has_features13);
+    AT(!overflow.enable_canvas_extensions);
+
+    dvz_window_host_destroy(host);
     return 0;
 }
 
@@ -1848,6 +1944,7 @@ int test_canvas(TstSuite* suite)
     TST_MODULE(suite, tags);
     TST_CANVAS_CASE(test_canvas_defaults, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_config_rejects_invalid_abi, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
+    TST_CANVAS_CASE(test_canvas_configure_gpu_ctx, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_frame_pool, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_timings, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(
