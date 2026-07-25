@@ -299,4 +299,9 @@ endif()
 
 if(TARGET datoviz_vklite AND TARGET datoviz_canvas AND DVZ_HAS_GLFW)
     dvz_add_example(tutorial vklite_triangle_spike tutorial/vklite_triangle_spike.c)
+    target_compile_definitions(
+        example_c_tutorial_vklite_triangle_spike
+        PRIVATE
+        DVZ_TUTORIAL_SHADER_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tutorial/shaders"
+    )
 endif()
