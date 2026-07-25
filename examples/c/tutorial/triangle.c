@@ -4,18 +4,19 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* vklite_triangle_spike - RC3 first-result spike for the Vulkan tutorial.
+/* triangle - shared RC3 pilot renderer for the Vulkan tutorial.
  *
  * This intentionally uses the current public API without proposing tutorial-only helpers. One
  * renderer records a shader-generated triangle into Canvas frames supplied by either a live GLFW
  * window or the deterministic offscreen backend.
  *
- * Build: just example-c tutorial/vklite_triangle_spike
- * Run:   ./build/examples/c/tutorial/vklite_triangle_spike --offscreen --frames 3
- *        ./build/examples/c/tutorial/vklite_triangle_spike --live --frames 300
+ * Build: just example-c tutorial/first_triangle
+ * Run:   ./build/examples/c/tutorial/first_triangle --offscreen --frames 3
+ *        ./build/examples/c/tutorial/first_triangle --live --frames 300
  */
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,6 +45,10 @@
 #define DVZ_TUTORIAL_SHADER_DIR "shaders"
 #endif
 
+#ifndef DVZ_TUTORIAL_USE_VERTEX_BUFFER
+#define DVZ_TUTORIAL_USE_VERTEX_BUFFER 0
+#endif
+
 #define SPIKE_PATH_MAX 4096
 
 
@@ -59,19 +64,39 @@ typedef struct
     uint32_t frame_count;
     const char* png_path;
     const char* shader_dir;
+    bool vertex_buffer;
 } SpikeOptions;
 
 
 
 typedef struct
 {
+    float position[2];
+    float color[3];
+} SpikeVertex;
+
+
+
+static const SpikeVertex TRIANGLE_VERTICES[3] = {
+    {{0.00f, -0.65f}, {1.0f, 0.2f, 0.2f}},
+    {{0.65f, +0.65f}, {0.2f, 1.0f, 0.2f}},
+    {{-0.65f, +0.65f}, {0.2f, 0.4f, 1.0f}},
+};
+
+
+
+typedef struct
+{
     DvzDevice* device;
+    DvzVma* allocator;
     DvzSlots* slots;
     DvzGraphics* pipeline;
+    DvzBuffer* vertex_buffer;
     DvzCommands* commands;
     DvzRendering* rendering;
     VkFormat color_format;
     const char* shader_dir;
+    bool use_vertex_buffer;
     bool create_failed;
     uint64_t draw_count;
     uint64_t extent_change_count;
@@ -110,7 +135,7 @@ static void _print_usage(const char* executable)
     fprintf(
         stderr,
         "Usage: %s [--offscreen|--live] [--frames N] [--validate] [--png PATH] "
-        "[--shader-dir PATH]\n",
+        "[--shader-dir PATH] [--vertex-buffer]\n",
         executable);
 }
 
@@ -131,8 +156,9 @@ static int _parse_options(int argc, char** argv, SpikeOptions* options)
         .live = false,
         .validation = false,
         .frame_count = 3,
-        .png_path = "vklite_triangle_spike.png",
+        .png_path = "triangle.png",
         .shader_dir = DVZ_TUTORIAL_SHADER_DIR,
+        .vertex_buffer = DVZ_TUTORIAL_USE_VERTEX_BUFFER != 0,
     };
 
     for (int i = 1; i < argc; i++)
@@ -168,6 +194,10 @@ static int _parse_options(int argc, char** argv, SpikeOptions* options)
         {
             options->shader_dir = argv[++i];
         }
+        else if (strcmp(argv[i], "--vertex-buffer") == 0)
+        {
+            options->vertex_buffer = true;
+        }
         else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0)
         {
             _print_usage(argv[0]);
@@ -194,6 +224,12 @@ static void _renderer_destroy(SpikeRenderer* renderer)
     renderer->commands = NULL;
     dvz_rendering_free(renderer->rendering);
     renderer->rendering = NULL;
+    if (renderer->vertex_buffer != NULL)
+    {
+        dvz_buffer_destroy(renderer->vertex_buffer);
+        dvz_buffer_free(renderer->vertex_buffer);
+        renderer->vertex_buffer = NULL;
+    }
     if (renderer->pipeline != NULL)
     {
         dvz_graphics_destroy(renderer->pipeline);
@@ -227,7 +263,7 @@ static int _compile_shader(
     int length = snprintf(path, sizeof(path), "%s/%s", shader_dir, filename);
     if (length < 0 || (size_t)length >= sizeof(path))
     {
-        fprintf(stderr, "vklite_triangle_spike: shader path is too long\n");
+        fprintf(stderr, "triangle: shader path is too long\n");
         return -1;
     }
 
@@ -235,7 +271,7 @@ static int _compile_shader(
     char* source = dvz_read_text(path, &source_size);
     if (source == NULL)
     {
-        fprintf(stderr, "vklite_triangle_spike: unable to read shader %s\n", path);
+        fprintf(stderr, "triangle: unable to read shader %s\n", path);
         return -1;
     }
 
@@ -252,7 +288,7 @@ static int _compile_shader(
     if (status != DVZ_SHADER_COMPILE_SUCCESS)
     {
         fprintf(
-            stderr, "vklite_triangle_spike: unable to compile %s (%s): %s\n", path,
+            stderr, "triangle: unable to compile %s (%s): %s\n", path,
             dvz_shader_compile_status_name(status),
             result->diagnostics != NULL ? result->diagnostics : "no diagnostics");
         return -1;
@@ -267,12 +303,15 @@ static int _compile_shader(
  *
  * @param renderer renderer receiving owned vklite objects
  * @param device borrowed device that outlives the renderer
+ * @param allocator borrowed allocator that outlives the renderer
  * @param color_format Canvas attachment format used by the pipeline
  * @return 0 on success or -1 on failure
  */
-static int _renderer_create(SpikeRenderer* renderer, DvzDevice* device, VkFormat color_format)
+static int _renderer_create(
+    SpikeRenderer* renderer, DvzDevice* device, DvzVma* allocator, VkFormat color_format)
 {
     renderer->device = device;
+    renderer->allocator = allocator;
     renderer->color_format = color_format;
 
     DvzShaderCompileResult vertex = {0};
@@ -315,6 +354,17 @@ static int _renderer_create(SpikeRenderer* renderer, DvzDevice* device, VkFormat
         renderer->pipeline, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vertex_shader));
     dvz_graphics_shader(
         renderer->pipeline, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fragment_shader));
+    if (renderer->use_vertex_buffer)
+    {
+        dvz_graphics_vertex_binding(
+            renderer->pipeline, 0, sizeof(SpikeVertex), VK_VERTEX_INPUT_RATE_VERTEX);
+        dvz_graphics_vertex_attr(
+            renderer->pipeline, 0, 0, VK_FORMAT_R32G32_SFLOAT,
+            offsetof(SpikeVertex, position));
+        dvz_graphics_vertex_attr(
+            renderer->pipeline, 0, 1, VK_FORMAT_R32G32B32_SFLOAT,
+            offsetof(SpikeVertex, color));
+    }
     dvz_graphics_primitive(renderer->pipeline, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     dvz_graphics_attachment_color(renderer->pipeline, 0, color_format);
     dvz_graphics_layout(renderer->pipeline, dvz_slots_handle(renderer->slots));
@@ -330,6 +380,29 @@ static int _renderer_create(SpikeRenderer* renderer, DvzDevice* device, VkFormat
     {
         _renderer_destroy(renderer);
         return -1;
+    }
+
+    if (renderer->use_vertex_buffer)
+    {
+        renderer->vertex_buffer = dvz_buffer_create_wrapper();
+        if (renderer->vertex_buffer == NULL)
+        {
+            _renderer_destroy(renderer);
+            return -1;
+        }
+        dvz_buffer(device, allocator, renderer->vertex_buffer);
+        dvz_buffer_size(renderer->vertex_buffer, sizeof(TRIANGLE_VERTICES));
+        dvz_buffer_usage(renderer->vertex_buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+        dvz_buffer_flags(
+            renderer->vertex_buffer,
+            DVZ_ALLOC_MAPPED | DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE);
+        if (dvz_buffer_create(renderer->vertex_buffer) != 0)
+        {
+            _renderer_destroy(renderer);
+            return -1;
+        }
+        dvz_buffer_upload(
+            renderer->vertex_buffer, 0, sizeof(TRIANGLE_VERTICES), TRIANGLE_VERTICES);
     }
     return 0;
 
@@ -370,7 +443,8 @@ static void _draw_triangle(DvzCanvas* canvas, const DvzStreamFrame* frame, void*
 
     if (renderer->pipeline == NULL)
     {
-        if (_renderer_create(renderer, renderer->device, frame->color_format) != 0)
+        if (_renderer_create(
+                renderer, renderer->device, renderer->allocator, frame->color_format) != 0)
         {
             renderer->create_failed = true;
             return;
@@ -406,6 +480,11 @@ static void _draw_triangle(DvzCanvas* canvas, const DvzStreamFrame* frame, void*
         (VkClearValue){.color.float32 = {0.03f, 0.04f, 0.07f, 1.0f}}, rendering);
     dvz_cmd_rendering_begin(commands, rendering);
     dvz_cmd_bind_graphics(commands, renderer->pipeline);
+    if (renderer->use_vertex_buffer)
+    {
+        DvzSize offset = 0;
+        dvz_cmd_bind_vertex_buffers(commands, 0, 1, renderer->vertex_buffer, &offset);
+    }
 
     dvz_cmd_set_viewport_scissor(commands, frame->extent);
     dvz_cmd_draw(commands, 0, 3, 0, 1);
@@ -481,7 +560,7 @@ static int _runtime_create(SpikeRuntime* runtime, const SpikeOptions* options)
     DvzWindowConfig window_config = dvz_window_config();
     window_config.width = SPIKE_WIDTH;
     window_config.height = SPIKE_HEIGHT;
-    window_config.title = "Datoviz vklite triangle spike";
+    window_config.title = "Modern GPU Graphics in C";
     runtime->window = dvz_window_create(
         runtime->host, options->live ? DVZ_BACKEND_GLFW : DVZ_BACKEND_OFFSCREEN, &window_config);
     if (runtime->window == NULL || dvz_window_backend_type(runtime->window) !=
@@ -500,14 +579,18 @@ static int _runtime_create(SpikeRuntime* runtime, const SpikeOptions* options)
         return -1;
 
     runtime->renderer.device = dvz_gpu_ctx_device(runtime->gpu);
+    runtime->renderer.allocator = dvz_gpu_ctx_alloc(runtime->gpu);
     runtime->renderer.shader_dir = options->shader_dir;
+    runtime->renderer.use_vertex_buffer = options->vertex_buffer;
     runtime->renderer.commands = dvz_commands_create_wrapper();
     runtime->renderer.rendering = dvz_rendering_create_wrapper();
     if (runtime->renderer.commands == NULL || runtime->renderer.rendering == NULL)
         return -1;
     VkFormat frame_format = dvz_canvas_frame_format(runtime->canvas);
     if (frame_format != VK_FORMAT_UNDEFINED &&
-        _renderer_create(&runtime->renderer, runtime->renderer.device, frame_format) != 0)
+        _renderer_create(
+            &runtime->renderer, runtime->renderer.device, runtime->renderer.allocator,
+            frame_format) != 0)
     {
         return -1;
     }
@@ -548,12 +631,12 @@ static int _run(SpikeRuntime* runtime, const SpikeOptions* options)
         if (capture_result != 0)
             return -1;
         fprintf(
-            stdout, "vklite_triangle_spike: saved %s after %u frames\n", options->png_path,
+            stdout, "triangle: saved %s after %u frames\n", options->png_path,
             submitted_count);
     }
     fprintf(
         stdout,
-        "vklite_triangle_spike: submitted=%u drawn=%llu extent_changes=%llu "
+        "triangle: submitted=%u drawn=%llu extent_changes=%llu "
         "generation_changes=%llu "
         "format_mismatches=%llu "
         "invalid_frame_contracts=%llu create_failed=%d\n",
@@ -596,11 +679,11 @@ int main(int argc, char** argv)
     if (options.validation && runtime.validation_error_count != 0)
     {
         fprintf(
-            stderr, "vklite_triangle_spike: %u Vulkan validation error(s)\n",
+            stderr, "triangle: %u Vulkan validation error(s)\n",
             runtime.validation_error_count);
         result = -1;
     }
     if (result != 0)
-        fprintf(stderr, "vklite_triangle_spike: failed\n");
+        fprintf(stderr, "triangle: failed\n");
     return result == 0 ? 0 : 1;
 }

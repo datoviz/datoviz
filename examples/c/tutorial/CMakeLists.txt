@@ -3,10 +3,17 @@ project(datoviz_vklite_triangle C)
 
 find_package(datoviz CONFIG REQUIRED)
 
-add_executable(vklite_triangle vklite_triangle_spike.c)
-target_link_libraries(vklite_triangle PRIVATE datoviz::datoviz)
-target_compile_definitions(
-    vklite_triangle
-    PRIVATE
-    DVZ_TUTORIAL_SHADER_DIR="${CMAKE_CURRENT_SOURCE_DIR}/shaders"
-)
+function(add_tutorial_chapter target shader_dir use_vertex_buffer)
+    add_executable(${target} triangle.c)
+    target_link_libraries(${target} PRIVATE datoviz::datoviz)
+    target_compile_definitions(
+        ${target}
+        PRIVATE
+        DVZ_TUTORIAL_SHADER_DIR="${CMAKE_CURRENT_SOURCE_DIR}/${shader_dir}"
+        DVZ_TUTORIAL_USE_VERTEX_BUFFER=${use_vertex_buffer}
+    )
+endfunction()
+
+add_tutorial_chapter(first_triangle shaders 0)
+add_tutorial_chapter(shaders_and_pipeline shaders/pipeline 0)
+add_tutorial_chapter(vertex_buffers shaders/vertex_buffer 1)
