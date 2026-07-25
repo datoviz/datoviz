@@ -14,6 +14,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <pthread.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -23,11 +25,66 @@
 
 
 /*************************************************************************************************/
+/*  Concurrent first use                                                                         */
+/*************************************************************************************************/
+
+typedef struct
+{
+    bool succeeded;
+} ShaderCompileThread;
+
+
+
+/**
+ * Compile one shader on a worker thread.
+ *
+ * @param user_data worker result
+ * @return NULL
+ */
+static void* _compile_thread(void* user_data)
+{
+    ShaderCompileThread* thread = (ShaderCompileThread*)user_data;
+    static const char glsl[] = "#version 450\n"
+                               "void main() { gl_Position = vec4(0.0); }\n";
+    uint64_t size = 0;
+    uint32_t* spv = dvz_compile_glsl("vertex", glsl, &size);
+    thread->succeeded =
+        spv != NULL && size >= 5 * sizeof(uint32_t) && spv[0] == 0x07230203;
+    dvz_free(spv);
+    return NULL;
+}
+
+
+
+/*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
 
 int main(void)
 {
+    enum
+    {
+        THREAD_COUNT = 8,
+    };
+    pthread_t threads[THREAD_COUNT] = {0};
+    ShaderCompileThread results[THREAD_COUNT] = {0};
+    for (uint32_t i = 0; i < THREAD_COUNT; i++)
+    {
+        if (pthread_create(&threads[i], NULL, _compile_thread, &results[i]) != 0)
+        {
+            fprintf(stderr, "unable to create shader compilation thread %u\n", i);
+            return 1;
+        }
+    }
+    for (uint32_t i = 0; i < THREAD_COUNT; i++)
+    {
+        if (pthread_join(threads[i], NULL) != 0 || !results[i].succeeded)
+        {
+            fprintf(stderr, "concurrent shader compilation failed on thread %u\n", i);
+            return 1;
+        }
+    }
+
     static const char glsl[] = "#version 450\n"
                                "layout(local_size_x = 1) in;\n"
                                "void main() {}\n";

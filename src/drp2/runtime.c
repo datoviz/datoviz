@@ -28,6 +28,7 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_runtime.h"
+#include "_shader.h"
 #include "_stream.h"
 #include "datoviz/vk/gpu_ctx.h"
 
@@ -646,18 +647,13 @@ DVZ_EXPORT uint32_t* dvz_compile_glsl(const char* stage, const char* glsl, uint6
     ANN(glsl);
     ANN(out_size);
     *out_size = 0;
-#if DVZ_DRP2_HAS_VKLITE
     uint32_t* spv = NULL;
     uint64_t spv_size = 0;
-    if (!_vklite_compile_glsl(stage, glsl, &spv, &spv_size))
+    if (!_dvz_shader_compile_glsl(
+            stage, glsl, strlen(glsl), "<memory>", "main", &spv, &spv_size))
         return NULL;
     *out_size = spv_size;
     return spv;
-#else
-    (void)stage;
-    (void)glsl;
-    return NULL;
-#endif
 }
 
 
