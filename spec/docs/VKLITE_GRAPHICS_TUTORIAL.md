@@ -292,6 +292,8 @@ RC3 must use executable chapter spikes to design, implement, and validate genera
 
 Exact APIs must not be invented in this specification. Each public change requires a narrow chapter spike, ownership review, focused tests, generated binding refresh where applicable, installed-consumer proof, and documentation before it is accepted. Prefer improving an existing subsystem boundary over adding tutorial-local helpers.
 
+The accepted first-result profile consists of `dvz_canvas_configure_gpu_ctx()`, `dvz_canvas_frame_format()`, `dvz_commands_wrap_borrowed_recording()` followed by `dvz_commands_unwrap()`, `dvz_cmd_set_viewport()`, `dvz_cmd_set_scissor()`, and `dvz_cmd_set_viewport_scissor()`. GPU configuration augments caller policy instead of replacing it. A present Canvas without an explicit color format reports `VK_FORMAT_UNDEFINED` until swapchain creation resolves the actual format. Unwrapping detaches only borrowed-recording wrappers and never ends, resets, submits, frees, or otherwise touches the Vulkan command buffer. The combined dynamic-state helper means full-frame zero-origin viewport and scissor state; the separate helpers remain available for non-default rectangles.
+
 
 ## Validation Direction
 
