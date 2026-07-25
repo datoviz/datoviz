@@ -296,3 +296,7 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(lab text_msdf_diagnostics lab/text_msdf_diagnostics.c)
     dvz_add_example(lab text_msdf_lab lab/text_msdf_lab.c)
 endif()
+
+if(TARGET datoviz_vklite AND TARGET datoviz_canvas AND DVZ_HAS_GLFW)
+    dvz_add_example(tutorial vklite_triangle_spike tutorial/vklite_triangle_spike.c)
+endif()
