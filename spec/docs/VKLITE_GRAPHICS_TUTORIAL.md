@@ -82,6 +82,8 @@ The main narrative should not repeatedly expand every vklite operation into full
 
 Every important wrapper should make ownership explicit. In particular, tutorial code must distinguish owned vklite resources from borrowed device, frame, attachment, and command-buffer handles.
 
+`DvzStreamFrame.resource_generation` identifies a concrete borrowed frame-resource set or slot, not a global recreation epoch. Equality confirms stable matching handles; inequality may indicate ordinary frame-slot rotation or resource recreation. Consumers must use `handles_dirty`, extent, format, and generation together when refreshing dependent state rather than treating every generation difference as resize or recreation.
+
 API improvements motivated by the tutorial must be generally useful Canvas, vklite, file-I/O, geometry, or controller improvements. Do not introduce a tutorial-only renderer, frame stream, application runtime, Vulkan wrapper, or opaque ownership layer.
 
 
@@ -282,10 +284,11 @@ RC3 must use executable chapter spikes to design, implement, and validate genera
 2. Read null-terminated shader text or compile a shader file while preserving its real source name, returning actionable compiler availability and failure diagnostics, and honoring Datoviz allocation ownership.
 3. Record commands into the Canvas frame's borrowed command buffer without repeated accidental wrapper-allocation ceremony, while preserving the prohibition on destroying, resetting, submitting, transitioning, or retaining borrowed handles.
 4. Set frame-sized dynamic viewport and scissor state through a coherent vklite or Canvas contract.
-5. Request and inspect an optional Canvas-owned depth attachment with explicit format, borrowed frame handles, resize recreation, resource-generation reporting, and ownership.
-6. Load OBJ texture coordinates and independent OBJ indices safely into `DvzGeometry`.
-7. Upload sampled images and transition them for shader use without hiding layouts, barriers, ownership, or synchronization; add convenience only where the chapter spike demonstrates recurring accidental complexity.
-8. Connect the public low-level arcball to the Canvas input router and obtain the model-view-projection state without depending on the retained scene layer.
+5. Resolve and inspect the Canvas render-target color format before pipeline creation, distinguish the requested configuration from the actual frame format, and detect later format changes without assuming a particular RGBA/BGRA ordering.
+6. Request and inspect an optional Canvas-owned depth attachment with explicit format, borrowed frame handles, resize recreation, resource-generation reporting, and ownership.
+7. Load OBJ texture coordinates and independent OBJ indices safely into `DvzGeometry`.
+8. Upload sampled images and transition them for shader use without hiding layouts, barriers, ownership, or synchronization; add convenience only where the chapter spike demonstrates recurring accidental complexity.
+9. Connect the public low-level arcball to the Canvas input router and obtain the model-view-projection state without depending on the retained scene layer.
 
 Exact APIs must not be invented in this specification. Each public change requires a narrow chapter spike, ownership review, focused tests, generated binding refresh where applicable, installed-consumer proof, and documentation before it is accepted. Prefer improving an existing subsystem boundary over adding tutorial-local helpers.
 

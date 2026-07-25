@@ -1,6 +1,6 @@
 # Modern GPU Graphics Tutorial Execution Plan
 
-Status: required RC3 API-and-pilot work followed by required RC4 course completion. Updated: 2026-07-24.
+Status: required RC3 API-and-pilot work followed by required RC4 course completion. Updated: 2026-07-25.
 
 Use [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) for the durable educational, abstraction, asset, versioning, and validation contract and [../../spec/architecture/SHADER_TOOLCHAIN.md](../../spec/architecture/SHADER_TOOLCHAIN.md) for the agreed build-time, runtime, API, packaging, target-profile, and validation design. This file owns execution order, checkpoints, and agent handoff from RC3 through final v0.4.0.
 
@@ -40,6 +40,12 @@ Use the spike to resolve:
 - error paths for absent GLFW, Vulkan, shaderc, or a suitable device.
 
 Acceptance requires focused unit or integration tests for every new contract, a successful resizable live smoke where available, deterministic offscreen capture, clean Vulkan validation, explicit ownership documentation, and no parallel runtime path.
+
+Evidence commit `0be0fe350` adds the `597`-line source-tree spike at `examples/c/tutorial/vklite_triangle_spike.c`. One renderer submitted and drew all 30 validated offscreen frames into an inspected nonblank `800x600` capture and all 114 validated live GLFW frames before attended window closure, with no frame-contract, format, or Vulkan-validation errors. The full Canvas selection passed 26 tests with seven declared platform or capability skips; the external GLFW resize test skipped because macOS did not deliver the requested resize, so the live-resize gate remains open.
+
+The spike demonstrated four general API needs: augment a caller-owned GPU-context configuration with the selected Canvas backend requirements; resolve the actual Canvas render-target format before ordinary pipeline creation; reuse an opaque borrowed-recording command wrapper without invoking owned-command lifecycle operations; and emit frame-sized dynamic viewport and scissor commands through the installed vklite surface rather than raw loader symbols. It also confirmed the separate typed shader-compilation requirement already owned by Checkpoint 2.
+
+`DvzStreamFrame.resource_generation` is a frame-resource identity, not a global recreation epoch. Present mode rotates among independently allocated slots with distinct generations, so consecutive generation differences may be ordinary slot rotation. Equality confirms the same resource handles; refresh logic must consider `handles_dirty`, extent, format, and generation together. The tutorial and tests must distinguish slot rotation from resize, swapchain recreation, and depth-resource recreation.
 
 ## RC3 Checkpoint 2: External Shader Contract
 
@@ -95,6 +101,7 @@ RC3 must either deliver each outcome below or record a maintainer-approved reaso
 | Runtime shaderc packaging | Official installed packages guarantee the provider on Linux, macOS, and Windows; disabled source builds retain precompiled-SPIR-V rendering with an honest unavailable-capability result. |
 | Borrowed frame commands | Tutorial code records without destroying, resetting, submitting, transitioning, or retaining the frame command buffer. |
 | Dynamic viewport and scissor | Resizing preserves correct output and requires no unexplained raw/wrapper state duplication. |
+| Resolved Canvas frame format | Pipelines use the actual Canvas render-target format before first drawing; requested, resolved, and per-frame formats are distinguished; later format changes are detected without assuming RGBA/BGRA ordering or invalidating in-flight resources. |
 | Optional depth attachment | Format, borrowed handles, resize recreation, generation, layout, clear, and lifetime contracts are public and tested. |
 | OBJ UV support | `v`, `vt`, `vn`, independent and negative indices, triangulation, malformed input, cleanup, and generated geometry arrays are tested. |
 | Image upload clarity | Texture upload, layouts, views, samplers, descriptors, and barriers remain explicit while repeated accidental ceremony is reduced where justified. |
@@ -111,7 +118,7 @@ Implement chapters four and five:
 
 Begin with a comprehensible small mesh before Suzanne. Teach model-view-projection state, perspective, index buffers, indexed drawing, depth attachment ownership, depth testing, culling, coordinate conventions, and resize recreation through visible experiments. Do not combine texture or lighting into the first 3D checkpoint.
 
-Validate repeated frames, resizing, minimized-window recovery, depth recreation, generation changes, index bounds, cleanup order, and Vulkan attachment-layout correctness.
+Validate repeated frames, resizing, minimized-window recovery, frame-slot identity, resource-set refresh, depth recreation, index bounds, cleanup order, and Vulkan attachment-layout correctness.
 
 ## RC4 Checkpoint 2: Texture And Suzanne
 
