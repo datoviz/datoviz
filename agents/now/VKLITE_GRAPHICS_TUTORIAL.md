@@ -62,6 +62,8 @@ Execute this checkpoint in four reviewable slices:
 3. Implement a generally useful typed public API with explicit source size, source filename, entry point, stage, target profile, availability, status, diagnostics, and `dvz_memory_free()`-owned SPIR-V, plus a compile-file convenience or null-terminated text reader.
 4. Prove source-build enabled and disabled configurations, packaged-provider discovery, installed CMake consumers, external vertex and fragment files, and supported-platform behavior.
 
+Slices 1 and 2 are implemented by commits `f46ac75bd` and `3544a520a`. Native scene, Canvas, and test shaders share the named-profile `glslc` helper with optional `spirv-val`; CI and release configurations require both precompilation and validation; Canvas no longer requires `glslangValidator`; and the runtime adapter now lives in `src/shader` with once-only provider initialization, distinct unavailable-provider states, owned SPIR-V, real per-consumer diagnostic names, enabled and disabled source builds, packaged-provider smokes, and concurrent-first-use proof.
+
 The implementation must distinguish build-time `glslc`, runtime shaderc, `spirv-val`, and optional `glslangValidator`; report malformed stages, empty source, missing files, compilation errors, absent or incompatible providers, and successful vertex, fragment, and compute compilation; and work from source builds and installed wheel/package layouts on Linux, macOS, and Windows.
 
 Audit existing `dvz_compile_glsl()` callers during this checkpoint. Correct allocator mismatches and misleading hardcoded diagnostic names without preserving an inferior v0.3-era contract.
