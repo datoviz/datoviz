@@ -275,6 +275,16 @@ modules:
     docs_group: runtime_utilities
     rationale: Low-level utility I/O helpers.
 
+  - module: shader_compiler
+    headers:
+      - include/datoviz/shader.h
+    tier: advanced
+    umbrella: advanced
+    raw_binding: true
+    python_top_level: false
+    docs_group: runtime_shader
+    rationale: Explicit runtime GLSL-to-SPIR-V compilation for advanced native rendering and tutorial consumers.
+
   - module: gpu_protocol_legacy
     headers:
       - include/datoviz/gpu/**

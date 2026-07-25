@@ -309,6 +309,7 @@ endif()
 #
 set(DVZ_CORE_COMPONENTS
     datoviz_common
+    datoviz_shader_objects
     datoviz_fileio
     datoviz_geom
     datoviz_math
@@ -803,6 +804,7 @@ if(DVZ_SANITIZER_FLAGS)
         datoviz_canvas_layer
         datoviz_common
         datoviz_shader
+        datoviz_shader_objects
         datoviz_fileio
         datoviz_math
         datoviz_thread

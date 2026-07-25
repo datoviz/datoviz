@@ -52,11 +52,7 @@ cglm, and the enabled module dependencies. A usable Vulkan driver/ICD is also re
 Optional or configuration-dependent dependencies include GLFW, mimalloc, Kvazaar, zlib, FreeType,
 msdf-atlas-gen, Qt6, shaderc, CUDA, and video encoders.
 
-The default source build prefers vendored dependency submodules. Distribution builders may use
-`DVZ_VENDORED_DEPS=OFF` to prefer supported system packages with `AUTO` fallback. `glslc` is the
-recommended build-time compiler for embedded SPIR-V; shaderc is the runtime-GLSL fallback and is
-required by release-wheel configuration. The active default canvas build invokes
-`glslangValidator`, so full source builds require that tool as well.
+The default source build prefers vendored dependency submodules. Distribution builders may use `DVZ_VENDORED_DEPS=OFF` to prefer supported system packages with `AUTO` fallback. The normal native build uses `glslc` for Datoviz-owned SPIR-V, the typed runtime API uses shaderc for external GLSL, and CI/release lanes use `spirv-val`; `glslangValidator` is optional.
 
 Use [Build options](build-options.md) for the CMake switches that enable or disable these paths.
 

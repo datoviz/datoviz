@@ -471,6 +471,33 @@ pages:
         - dvz_drp2_runtime_*
         - dvz_drp2_external_*
 
+  runtime_shader:
+    title: Runtime Shader Compilation API
+    output: docs/reference/c-api/runtime-shader.md
+    summary: Typed runtime GLSL-to-SPIR-V compilation, provider availability, diagnostics, profiles, and result ownership.
+    audience: Use this advanced API for external GLSL shaders in direct native rendering code. Applications with precompiled SPIR-V do not need the runtime compiler.
+    workflows:
+      - label: Build options
+        href: ../build-options.md
+      - label: Runtime internals
+        href: ../../advanced/runtime-internals.md
+    headers:
+      - include/datoviz/shader.h
+    type_symbols:
+      - DvzShaderCompileRequest
+      - DvzShaderCompileResult
+    prefixes:
+      - shader
+      - compile
+    group_labels:
+      shader: Shader Compilation
+      compile: Shader Compilation
+    group_patterns:
+      Shader Compilation:
+        - DvzShader*
+        - dvz_shader_*
+        - dvz_compile_glsl
+
   runtime_vklite:
     title: vklite API
     output: docs/reference/c-api/runtime-vklite.md

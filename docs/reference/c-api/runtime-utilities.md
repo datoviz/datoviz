@@ -12,7 +12,7 @@ Common runtime, file I/O, font, render-type, and miscellaneous utility functions
 
 Use these functions for allocation, diagnostics, resources, file access, and shared runtime support.
 
-Functions: 23
+Functions: 24
 Types: 8
 
 ## Symbol Groups
@@ -28,7 +28,7 @@ Types: 8
 | [Make](#make) | 1 | 0 | `include/datoviz/fileio/fileio.h` |
 | [Memory](#memory) | 1 | 0 | `include/datoviz/common/functions.h` |
 | [Parse](#parse) | 1 | 0 | `include/datoviz/fileio/fileio.h` |
-| [Read](#read) | 5 | 0 | `include/datoviz/fileio/fileio.h` |
+| [Read](#read) | 6 | 0 | `include/datoviz/fileio/fileio.h` |
 | [Resource](#resource) | 4 | 0 | `include/datoviz/fileio/fileio.h` |
 | [Time](#time) | 1 | 0 | `include/datoviz/common/functions.h` |
 | [Version](#version) | 1 | 0 | `include/datoviz/common/version.h` |
@@ -89,6 +89,7 @@ Types: 8
     | [`dvz_read_jpeg()`](#dvz_read_jpeg) | `include/datoviz/fileio/fileio.h` |
     | [`dvz_read_npy()`](#dvz_read_npy) | `include/datoviz/fileio/fileio.h` |
     | [`dvz_read_ppm()`](#dvz_read_ppm) | `include/datoviz/fileio/fileio.h` |
+    | [`dvz_read_text()`](#dvz_read_text) | `include/datoviz/fileio/fileio.h` |
 
     **Resource**
 
@@ -341,7 +342,7 @@ uint8_t * dvz_load_jpeg(
 | `width` | `uint32_t` * |  |
 | `height` | `uint32_t` * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:204._
+_Declared in `include/datoviz/fileio/fileio.h`:218._
 
 #### `dvz_load_png()` { #dvz_load_png .dvz-api-function }
 
@@ -364,7 +365,7 @@ uint8_t * dvz_load_png(
 | `width` | `uint32_t` * |  |
 | `height` | `uint32_t` * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:186._
+_Declared in `include/datoviz/fileio/fileio.h`:200._
 
 ## Log { #log }
 
@@ -413,7 +414,7 @@ int dvz_make_png(
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 | `out` | `void` ** |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:172._
+_Declared in `include/datoviz/fileio/fileio.h`:186._
 
 ## Memory { #memory }
 
@@ -462,7 +463,7 @@ void * dvz_parse_npy(
 | `bytes` | `const` `void` * | complete NPY file bytes; must not be NULL |
 | `size_bytes` | [`DvzSize`](runtime-math.md#type-dvzsize) | size of @p bytes in bytes |
 
-_Declared in `include/datoviz/fileio/fileio.h`:83._
+_Declared in `include/datoviz/fileio/fileio.h`:97._
 
 ## Read { #read }
 
@@ -506,7 +507,7 @@ char * dvz_read_gz(
 | `filename` | `const` `char` * | path of the GZIP-compressed file; must not be NULL |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:96._
+_Declared in `include/datoviz/fileio/fileio.h`:110._
 
 #### `dvz_read_jpeg()` { #dvz_read_jpeg .dvz-api-function }
 
@@ -527,7 +528,7 @@ uint8_t * dvz_read_jpeg(
 | `width` | `uint32_t` * |  |
 | `height` | `uint32_t` * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:216._
+_Declared in `include/datoviz/fileio/fileio.h`:230._
 
 #### `dvz_read_npy()` { #dvz_read_npy .dvz-api-function }
 
@@ -549,7 +550,7 @@ void * dvz_read_npy(
 | `filename` | `const` `char` * | path of the file to open; must not be NULL |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:68._
+_Declared in `include/datoviz/fileio/fileio.h`:82._
 
 #### `dvz_read_ppm()` { #dvz_read_ppm .dvz-api-function }
 
@@ -570,7 +571,29 @@ uint8_t * dvz_read_ppm(
 | `width` | `uint32_t` * |  |
 | `height` | `uint32_t` * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:141._
+_Declared in `include/datoviz/fileio/fileio.h`:155._
+
+#### `dvz_read_text()` { #dvz_read_text .dvz-api-function }
+
+Read a text file into an owned null-terminated buffer.
+
+The returned size excludes the terminating null byte. Embedded null bytes are preserved and
+remain observable through the explicit size.
+
+```c
+char * dvz_read_text(
+    const char * filename,
+    DvzSize * size
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `char` * | owned null-terminated text, or NULL on failure; free with `dvz_memory_free()` |
+| `filename` | `const` `char` * | path of the file to open; must not be NULL |
+| `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
+
+_Declared in `include/datoviz/fileio/fileio.h`:67._
 
 ## Resource { #resource }
 
@@ -593,7 +616,7 @@ const unsigned char * dvz_resource_font(
 | `name` | `const` `char` * | resource name without a file extension; must not be NULL |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:262._
+_Declared in `include/datoviz/fileio/fileio.h`:276._
 
 #### `dvz_resource_glsl()` { #dvz_resource_glsl .dvz-api-function }
 
@@ -612,7 +635,7 @@ const char * dvz_resource_glsl(
 | `name` | `const` `char` * | resource name without a file extension; must not be NULL |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:251._
+_Declared in `include/datoviz/fileio/fileio.h`:265._
 
 #### `dvz_resource_shader()` { #dvz_resource_shader .dvz-api-function }
 
@@ -631,7 +654,7 @@ const unsigned char * dvz_resource_shader(
 | `name` | `const` `char` * | resource name without a file extension; must not be NULL |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:231._
+_Declared in `include/datoviz/fileio/fileio.h`:245._
 
 #### `dvz_resource_wgsl()` { #dvz_resource_wgsl .dvz-api-function }
 
@@ -650,7 +673,7 @@ const char * dvz_resource_wgsl(
 | `name` | `const` `char` * | resource name without a file extension; must not be NULL |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) * |  |
 
-_Declared in `include/datoviz/fileio/fileio.h`:241._
+_Declared in `include/datoviz/fileio/fileio.h`:255._
 
 ## Time { #time }
 
@@ -713,7 +736,7 @@ int dvz_write_bytes(
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) | number of bytes to write |
 | `bytes` | `const` `uint8_t` * | source buffer containing at least @p size bytes; must not be NULL when size is nonzero |
 
-_Declared in `include/datoviz/fileio/fileio.h`:110._
+_Declared in `include/datoviz/fileio/fileio.h`:124._
 
 #### `dvz_write_png()` { #dvz_write_png .dvz-api-function }
 
@@ -736,7 +759,7 @@ int dvz_write_png(
 | `height` | `uint32_t` | image height in pixels; must be positive |
 | `rgba` | `const` `uint8_t` * | tightly packed sRGB RGBA8 pixels with straight linear alpha; must contain `width * height * 4` bytes |
 
-_Declared in `include/datoviz/fileio/fileio.h`:156._
+_Declared in `include/datoviz/fileio/fileio.h`:170._
 
 #### `dvz_write_ppm()` { #dvz_write_ppm .dvz-api-function }
 
@@ -759,4 +782,4 @@ int dvz_write_ppm(
 | `height` | `uint32_t` | image height in pixels |
 | `image` | `const` `uint8_t` * | tightly packed RGB8 pixels containing `width * height * 3` bytes; must not be NULL |
 
-_Declared in `include/datoviz/fileio/fileio.h`:128._
+_Declared in `include/datoviz/fileio/fileio.h`:142._

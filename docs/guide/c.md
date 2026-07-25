@@ -81,7 +81,7 @@ visuals/text
 | `dvz_app_run()` | Render N frames, or run interactively with zero |
 | `dvz_app_window_canvas()` | Access the underlying `DvzCanvas` |
 | `dvz_app_window_capture_png()` | Save the last rendered frame as a PNG |
-| `dvz_compile_glsl()` | Compile a GLSL string to SPIR-V at runtime |
+| `dvz_shader_compile()` | Compile explicit GLSL source bytes to owned SPIR-V with typed stage, profile, status, and diagnostics |
 | `dvz_drp2_runtime_download_buffer()` | Download GPU buffer bytes after execution |
 | `dvz_drp2_stream_write_buffer_bytes()` | Append a write-buffer command from raw bytes |
 | `dvz_primitive()` | Create a topology-parametric primitive visual |

@@ -396,7 +396,6 @@ else()
 endif()
 
 if(_dvz_has_core AND _dvz_has_drp2)
-    if(DVZ_HAS_SHADERC)
         add_executable(dvz_shaderc_smoke
             dvz_shaderc_smoke.c
         )
@@ -485,10 +484,6 @@ if(_dvz_has_core AND _dvz_has_drp2)
             set_tests_properties(dvz_shaderc_runtime_dirs_smoke PROPERTIES
                 ENVIRONMENT "DVZ_WHEEL_RUNTIME_DIRS=${_dvz_shaderc_runtime_dir}")
         endif()
-    else()
-        message(STATUS "Skipping dvz_shaderc_smoke: shaderc support is not enabled.")
-    endif()
-
     add_executable(dvztest_drp2
         ${DVZ_TEST_DRP2_SOURCES}
         components/dvztest_drp2.c

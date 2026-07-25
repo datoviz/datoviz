@@ -37,6 +37,8 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/canvas.h"
+#include "datoviz/common/functions.h"
+#include "datoviz/shader.h"
 #include "datoviz/stream/frame_stream.h"
 #include "datoviz/vk/enums.h"
 #include "datoviz/vk/gpu_ctx.h"
@@ -133,8 +135,8 @@ static int tri_state_create(TriState* s, DvzDevice* device, DvzVma* alloc)
     DvzShader* fs = dvz_shader_create_wrapper();
     dvz_shader(device, vs_sz, vs_spv, vs);
     dvz_shader(device, fs_sz, fs_spv, fs);
-    free(vs_spv);
-    free(fs_spv);
+    dvz_memory_free(vs_spv);
+    dvz_memory_free(fs_spv);
 
     /* Empty pipeline layout (no descriptors, no push constants) */
     s->slots = dvz_slots_create_wrapper();

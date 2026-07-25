@@ -176,6 +176,7 @@ nav:
         - DRP2: 'reference/c-api/drp2.md'
       - Low-level runtime:
         - Overview: 'reference/c-api/runtime.md'
+        - Runtime shaders: 'reference/c-api/runtime-shader.md'
         - vklite: 'reference/c-api/runtime-vklite.md'
         - Vulkan foundation: 'reference/c-api/runtime-vulkan.md'
         - Low-level controllers: 'reference/c-api/runtime-controllers.md'

@@ -23,6 +23,7 @@ headers:
     - datoviz/runner.h
     - datoviz/scene.h
     - datoviz/scene/frame_packets.h
+    - datoviz/shader.h
     - datoviz/stream.h
     - datoviz/video.h
     - datoviz/vk.h
@@ -32,6 +33,10 @@ headers:
 
 smoke_symbols:
   - dvz_time_monotonic_ns
+  - dvz_shader_compiler_status
+  - dvz_shader_compile
+  - dvz_shader_compile_result_destroy
+  - dvz_read_text
   - dvz_scene
   - dvz_scene_id
   - dvz_figure_id
@@ -111,6 +116,8 @@ layout_records:
     - DvzQueryResult
     - DvzSampledFieldDesc
     - DvzStreamConfig
+    - DvzShaderCompileRequest
+    - DvzShaderCompileResult
     - DvzAxisTickPolicy
     - DvzAxisTicks
     - DvzAxisStyle

@@ -16,26 +16,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#include "datoviz/common/macros.h"
-
-
-
-/*************************************************************************************************/
-/*  Typedefs                                                                                     */
-/*************************************************************************************************/
-
-typedef enum
-{
-    DVZ_SHADER_COMPILER_UNINITIALIZED = 0,
-    DVZ_SHADER_COMPILER_READY,
-    DVZ_SHADER_COMPILER_BUILT_WITHOUT_ADAPTER,
-    DVZ_SHADER_COMPILER_PROVIDER_MISSING,
-    DVZ_SHADER_COMPILER_PROVIDER_INCOMPATIBLE,
-} DvzShaderCompilerState;
+#include "datoviz/shader.h"
 
 
 
@@ -44,8 +28,6 @@ EXTERN_C_ON
 /*************************************************************************************************/
 /*  Internal functions                                                                          */
 /*************************************************************************************************/
-
-DvzShaderCompilerState _dvz_shader_compiler_state(void);
 
 bool _dvz_shader_compile_glsl(
     const char* stage, const char* code, size_t code_size, const char* source_name,

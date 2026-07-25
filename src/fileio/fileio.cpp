@@ -71,6 +71,30 @@ void* dvz_read_file(const char* filename, DvzSize* size)
 
 
 
+char* dvz_read_text(const char* filename, DvzSize* size)
+{
+    DvzSize file_size = 0;
+    void* bytes = dvz_read_file(filename, &file_size);
+    if (bytes == NULL)
+        return NULL;
+
+    char* text = (char*)dvz_malloc((size_t)file_size + 1);
+    if (text == NULL)
+    {
+        dvz_free(bytes);
+        return NULL;
+    }
+    if (file_size > 0)
+        dvz_memcpy(text, (size_t)file_size + 1, bytes, (size_t)file_size);
+    text[file_size] = '\0';
+    dvz_free(bytes);
+    if (size != NULL)
+        *size = file_size;
+    return text;
+}
+
+
+
 void* dvz_read_npy(const char* filename, DvzSize* size)
 {
     /* Tiny NPY reader that requires the user to know in advance the data type of the file. */

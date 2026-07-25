@@ -486,16 +486,29 @@ void main() {
 }
 """
 
-size = ctypes.c_uint64(0)
-ptr = dvz.dvz_compile_glsl(b"VERTEX", glsl, ctypes.byref(size))
-if not ptr:
-    raise SystemExit("dvz_compile_glsl returned NULL")
-if size.value == 0 or size.value % 4 != 0:
-    raise SystemExit(f"invalid SPIR-V size: {size.value}")
-words = ctypes.cast(ptr, ctypes.POINTER(ctypes.c_uint32))
+request = dvz.DvzShaderCompileRequest(
+    stage=dvz.DVZ_SHADER_STAGE_VERTEX,
+    profile=dvz.DVZ_SHADER_PROFILE_GRAPHICS,
+    source=glsl,
+    source_size=len(glsl),
+    source_name=b"installed_shaderc_smoke.vert",
+    entry_point=b"main",
+)
+result = dvz.DvzShaderCompileResult()
+status = dvz.dvz_shader_compile(ctypes.byref(request), ctypes.byref(result))
+if status != dvz.DVZ_SHADER_COMPILE_SUCCESS:
+    diagnostic = result.diagnostics.decode(errors="replace") if result.diagnostics else "no diagnostics"
+    dvz.dvz_shader_compile_result_destroy(ctypes.byref(result))
+    raise SystemExit(f"dvz_shader_compile failed: {diagnostic}")
+if result.spirv_size == 0 or result.spirv_size % 4 != 0:
+    dvz.dvz_shader_compile_result_destroy(ctypes.byref(result))
+    raise SystemExit(f"invalid SPIR-V size: {result.spirv_size}")
+words = result.spirv
 if words[0] != 0x07230203:
+    dvz.dvz_shader_compile_result_destroy(ctypes.byref(result))
     raise SystemExit(f"invalid SPIR-V magic: {words[0]:08x}")
-print(f"shaderc GLSL smoke produced {size.value} bytes")
+print(f"shaderc GLSL smoke produced {result.spirv_size} bytes")
+dvz.dvz_shader_compile_result_destroy(ctypes.byref(result))
 '''
     _run([str(python), "-c", code], cwd=work)
 

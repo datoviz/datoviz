@@ -15,6 +15,7 @@ Most applications should start with the [Scene API](scene.md) or
 
 | Reference | Use it for | Main headers |
 | --- | --- | --- |
+| [Runtime shaders](runtime-shader.md) | External GLSL compilation, provider preflight, target profiles, diagnostics, and SPIR-V ownership | `include/datoviz/shader.h` |
 | [vklite](runtime-vklite.md) | Rendering resources, pipelines, command recording, dynamic rendering, and synchronization | `include/datoviz/vklite/**` |
 | [Vulkan foundation](runtime-vulkan.md) | Instances, devices, queues, GPU contexts, allocation, and memory interop | `include/datoviz/vk/**` |
 | [Low-level controllers](runtime-controllers.md) | Camera, panzoom, arcball, fly, and turntable records below the scene API | `include/datoviz/controller/**` |

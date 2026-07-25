@@ -28,7 +28,6 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_runtime.h"
-#include "_shader.h"
 #include "_stream.h"
 #include "datoviz/vk/gpu_ctx.h"
 
@@ -635,26 +634,6 @@ bool dvz_drp2_runtime_copy_texture_to_frame(
 #endif
 }
 
-
-
-/*************************************************************************************************/
-/*  Public GLSL compilation utility                                                              */
-/*************************************************************************************************/
-
-DVZ_EXPORT uint32_t* dvz_compile_glsl(const char* stage, const char* glsl, uint64_t* out_size)
-{
-    ANN(stage);
-    ANN(glsl);
-    ANN(out_size);
-    *out_size = 0;
-    uint32_t* spv = NULL;
-    uint64_t spv_size = 0;
-    if (!_dvz_shader_compile_glsl(
-            stage, glsl, strlen(glsl), "<memory>", "main", &spv, &spv_size))
-        return NULL;
-    *out_size = spv_size;
-    return spv;
-}
 
 
 bool dvz_drp2_runtime_download_buffer(

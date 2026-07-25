@@ -28,6 +28,7 @@
 #include "imgui.h"
 #include "app_interop.h"
 #include "runner.h"
+#include "shader.h"
 #include "stream.h"
 #include "video.h"
 #include "vk.h"

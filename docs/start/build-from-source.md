@@ -22,7 +22,7 @@ The shortest route is: install the platform prerequisites below, clone with subm
 | `just` | Runs the project build commands used by the documentation. |
 | Python 3.10+ and NumPy | Runs Python examples, binding tools, and documentation tools. |
 | Vulkan-capable GPU and runtime | Renders native desktop and offscreen examples. |
-| Shader path | The default canvas build requires `glslangValidator`. `glslc` is recommended for precompiled built-in scene SPIR-V; otherwise a usable shaderc runtime is required. |
+| Shader path | Native scene, Canvas, and test shaders use `glslc`; external GLSL uses the optional runtime shaderc provider; CI and release builds also require `spirv-val`. |
 
 ## 1. Install platform prerequisites
 
@@ -124,7 +124,7 @@ Continue with the complete [Quickstart](quickstart.md) or [First C Program](firs
 
 The normal build prefers repository submodules for cglm, mimalloc, Kvazaar, GLFW, and msdf-atlas-gen where available. Distribution maintainers may set `DVZ_VENDORED_DEPS=OFF`; in that system-auto lane, CMake prefers installed dependencies while `AUTO` modes may fall back to vendored sources. See [Build options](../reference/build-options.md) for switches and packaging presets.
 
-The default canvas build invokes `glslangValidator`. `glslc` is the recommended build-time compiler for embedded scene SPIR-V. Shaderc provides runtime GLSL compilation and is required by the release wheel configuration. Keep these roles separate when diagnosing a missing shader tool.
+The normal native build uses `glslc` for scene, Canvas, and test SPIR-V and does not require `glslangValidator`. Shaderc provides the separate runtime GLSL API for external shaders, while CI and release builds use `spirv-val` to validate generated SPIR-V. Keep these roles separate when diagnosing a missing shader tool.
 
 System-auto packaging additionally prefers installed GLFW, cglm, mimalloc, and Kvazaar development packages. Those are not required when the normal vendored sources are available.
 

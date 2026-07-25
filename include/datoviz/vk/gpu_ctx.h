@@ -21,6 +21,7 @@
 #include "datoviz/vk/vulkan.h"
 
 #include "datoviz/common/macros.h"
+#include "datoviz/shader.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
@@ -252,24 +253,5 @@ DVZ_EXPORT uint32_t dvz_gpu_ctx_error_count(DvzGpuCtx* ctx);
  * @param ctx the GPU context
  */
 DVZ_EXPORT void dvz_gpu_ctx_destroy(DvzGpuCtx* ctx);
-
-
-
-/*************************************************************************************************/
-/*  GLSL compilation utility                                                                     */
-/*************************************************************************************************/
-
-/**
- * Compile a GLSL source string to SPIR-V using shaderc (lazy-loaded).
- *
- * The returned buffer is heap-allocated and must be freed with dvz_memory_free().
- * Returns NULL if shaderc is unavailable or compilation fails.
- *
- * @param stage   shader stage: "vertex", "fragment", or "compute"
- * @param glsl    null-terminated GLSL source string
- * @param out_size receives the byte size of the returned SPIR-V buffer
- * @return heap-allocated SPIR-V words, or NULL on failure
- */
-DVZ_EXPORT uint32_t* dvz_compile_glsl(const char* stage, const char* glsl, uint64_t* out_size);
 
 EXTERN_C_OFF

@@ -2825,6 +2825,27 @@ DVZ_SELECT_SUBTRACT = DvzSelectMode.DVZ_SELECT_SUBTRACT
 DVZ_SELECT_TOGGLE = DvzSelectMode.DVZ_SELECT_TOGGLE
 
 
+class DvzShaderCompileStatus(CtypesEnum):
+    DVZ_SHADER_COMPILE_SUCCESS = 0
+    DVZ_SHADER_COMPILE_ADAPTER_UNAVAILABLE = 1
+    DVZ_SHADER_COMPILE_PROVIDER_MISSING = 2
+    DVZ_SHADER_COMPILE_PROVIDER_INCOMPATIBLE = 3
+    DVZ_SHADER_COMPILE_INVALID_REQUEST = 4
+    DVZ_SHADER_COMPILE_FAILED = 5
+    DVZ_SHADER_COMPILE_OUT_OF_MEMORY = 6
+    DVZ_SHADER_COMPILE_INTERNAL_ERROR = 7
+
+
+DVZ_SHADER_COMPILE_SUCCESS = DvzShaderCompileStatus.DVZ_SHADER_COMPILE_SUCCESS
+DVZ_SHADER_COMPILE_ADAPTER_UNAVAILABLE = DvzShaderCompileStatus.DVZ_SHADER_COMPILE_ADAPTER_UNAVAILABLE
+DVZ_SHADER_COMPILE_PROVIDER_MISSING = DvzShaderCompileStatus.DVZ_SHADER_COMPILE_PROVIDER_MISSING
+DVZ_SHADER_COMPILE_PROVIDER_INCOMPATIBLE = DvzShaderCompileStatus.DVZ_SHADER_COMPILE_PROVIDER_INCOMPATIBLE
+DVZ_SHADER_COMPILE_INVALID_REQUEST = DvzShaderCompileStatus.DVZ_SHADER_COMPILE_INVALID_REQUEST
+DVZ_SHADER_COMPILE_FAILED = DvzShaderCompileStatus.DVZ_SHADER_COMPILE_FAILED
+DVZ_SHADER_COMPILE_OUT_OF_MEMORY = DvzShaderCompileStatus.DVZ_SHADER_COMPILE_OUT_OF_MEMORY
+DVZ_SHADER_COMPILE_INTERNAL_ERROR = DvzShaderCompileStatus.DVZ_SHADER_COMPILE_INTERNAL_ERROR
+
+
 class DvzShaderFormat(CtypesEnum):
     DVZ_SHADER_NONE = 0
     DVZ_SHADER_SPIRV = 1
@@ -2834,6 +2855,30 @@ class DvzShaderFormat(CtypesEnum):
 DVZ_SHADER_NONE = DvzShaderFormat.DVZ_SHADER_NONE
 DVZ_SHADER_SPIRV = DvzShaderFormat.DVZ_SHADER_SPIRV
 DVZ_SHADER_GLSL = DvzShaderFormat.DVZ_SHADER_GLSL
+
+
+class DvzShaderProfile(CtypesEnum):
+    DVZ_SHADER_PROFILE_NONE = 0
+    DVZ_SHADER_PROFILE_GRAPHICS = 1
+    DVZ_SHADER_PROFILE_COMPUTE = 2
+
+
+DVZ_SHADER_PROFILE_NONE = DvzShaderProfile.DVZ_SHADER_PROFILE_NONE
+DVZ_SHADER_PROFILE_GRAPHICS = DvzShaderProfile.DVZ_SHADER_PROFILE_GRAPHICS
+DVZ_SHADER_PROFILE_COMPUTE = DvzShaderProfile.DVZ_SHADER_PROFILE_COMPUTE
+
+
+class DvzShaderStage(CtypesEnum):
+    DVZ_SHADER_STAGE_NONE = 0
+    DVZ_SHADER_STAGE_VERTEX = 1
+    DVZ_SHADER_STAGE_FRAGMENT = 2
+    DVZ_SHADER_STAGE_COMPUTE = 3
+
+
+DVZ_SHADER_STAGE_NONE = DvzShaderStage.DVZ_SHADER_STAGE_NONE
+DVZ_SHADER_STAGE_VERTEX = DvzShaderStage.DVZ_SHADER_STAGE_VERTEX
+DVZ_SHADER_STAGE_FRAGMENT = DvzShaderStage.DVZ_SHADER_STAGE_FRAGMENT
+DVZ_SHADER_STAGE_COMPUTE = DvzShaderStage.DVZ_SHADER_STAGE_COMPUTE
 
 
 class DvzShaderType(CtypesEnum):
@@ -4379,6 +4424,14 @@ class DvzSemaphore(ctypes.Structure):
 
 
 class DvzShader(ctypes.Structure):
+    pass
+
+
+class DvzShaderCompileRequest(ctypes.Structure):
+    pass
+
+
+class DvzShaderCompileResult(ctypes.Structure):
     pass
 
 
@@ -6410,6 +6463,25 @@ DvzSelectionVisualStyle._fields_ = [
     ('unselected_tint', DvzColor),
     ('unselected_tint_mix', ctypes.c_float),
     ('unselected_scale', ctypes.c_float),
+]
+
+
+DvzShaderCompileRequest._fields_ = [
+    ('stage', ctypes.c_int),
+    ('profile', ctypes.c_int),
+    ('source', ctypes.c_char_p),
+    ('source_size', ctypes.c_uint64),
+    ('source_name', ctypes.c_char_p),
+    ('entry_point', ctypes.c_char_p),
+]
+
+
+DvzShaderCompileResult._fields_ = [
+    ('status', ctypes.c_int),
+    ('spirv', ctypes.POINTER(ctypes.c_uint32)),
+    ('spirv_size', ctypes.c_uint64),
+    ('diagnostics', ctypes.c_char_p),
+    ('diagnostics_size', ctypes.c_uint64),
 ]
 
 
@@ -11525,15 +11597,16 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_compile_glsl')
 else:
     dvz_compile_glsl.__doc__ = """/**
- * Compile a GLSL source string to SPIR-V using shaderc (lazy-loaded).
+ * Compile a null-terminated GLSL string through the typed API.
  *
- * The returned buffer is heap-allocated and must be freed with dvz_memory_free().
- * Returns NULL if shaderc is unavailable or compilation fails.
+ * This transitional convenience accepts only `vertex`, `fragment`, or `compute`, uses the matching
+ * v0.4 target profile, reports errors through the log, and returns owned SPIR-V that must be freed
+ * with dvz_memory_free(). New code should use dvz_shader_compile().
  *
- * @param stage   shader stage: "vertex", "fragment", or "compute"
- * @param glsl    null-terminated GLSL source string
- * @param out_size receives the byte size of the returned SPIR-V buffer
- * @return heap-allocated SPIR-V words, or NULL on failure
+ * @param stage shader stage string
+ * @param glsl null-terminated GLSL source string
+ * @param[out] out_size returned SPIR-V byte size
+ * @return owned SPIR-V words, or NULL
  */"""
     dvz_compile_glsl.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint64)]
     dvz_compile_glsl.restype = ctypes.POINTER(ctypes.c_uint32)
@@ -25458,6 +25531,25 @@ else:
 
 
 try:
+    dvz_read_text = dvz.dvz_read_text
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_read_text')
+else:
+    dvz_read_text.__doc__ = """/**
+ * Read a text file into an owned null-terminated buffer.
+ *
+ * The returned size excludes the terminating null byte. Embedded null bytes are preserved and
+ * remain observable through the explicit size.
+ *
+ * @param filename path of the file to open; must not be NULL
+ * @param[out] size optional destination receiving the text size in bytes
+ * @return owned null-terminated text, or NULL on failure; free with `dvz_memory_free()`
+ */"""
+    dvz_read_text.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint64)]
+    dvz_read_text.restype = ctypes.c_char_p
+
+
+try:
     dvz_reference_grid = dvz.dvz_reference_grid
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_reference_grid')
@@ -27449,6 +27541,95 @@ else:
  */"""
     dvz_shader.argtypes = [ctypes.POINTER(DvzDevice), ctypes.c_uint64, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(DvzShader)]
     dvz_shader.restype = ctypes.c_int
+
+
+try:
+    dvz_shader_compile = dvz.dvz_shader_compile
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_shader_compile')
+else:
+    dvz_shader_compile.__doc__ = """/**
+ * Compile GLSL source bytes to owned SPIR-V.
+ *
+ * Vertex and fragment shaders require `DVZ_SHADER_PROFILE_GRAPHICS`, which targets Vulkan 1.0 and
+ * SPIR-V 1.0. Compute shaders require `DVZ_SHADER_PROFILE_COMPUTE`, which targets Vulkan 1.3 and
+ * SPIR-V 1.6. `source_name` must identify the real source for diagnostics. A NULL or empty
+ * `entry_point` selects `main`.
+ *
+ * On every call with a non-NULL result, the result is initialized and receives the returned
+ * status. On success it owns aligned SPIR-V words. On failure it normally owns a null-terminated
+ * diagnostic string. Call dvz_shader_compile_result_destroy() exactly once before reusing or
+ * discarding the result.
+ *
+ * @param request compilation request
+ * @param[out] result owned compilation result
+ * @return compilation status
+ */"""
+    dvz_shader_compile.argtypes = [ctypes.POINTER(DvzShaderCompileRequest), ctypes.POINTER(DvzShaderCompileResult)]
+    dvz_shader_compile.restype = ctypes.c_int
+
+
+try:
+    dvz_shader_compile_result_destroy = dvz.dvz_shader_compile_result_destroy
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_shader_compile_result_destroy')
+else:
+    dvz_shader_compile_result_destroy.__doc__ = """/**
+ * Destroy owned data in a shader compilation result and reset it.
+ *
+ * This function is idempotent. The SPIR-V and diagnostic buffers use the Datoviz allocator and
+ * follow the same ownership contract as dvz_memory_free().
+ *
+ * @param result compilation result
+ */"""
+    dvz_shader_compile_result_destroy.argtypes = [ctypes.POINTER(DvzShaderCompileResult)]
+    dvz_shader_compile_result_destroy.restype = None
+
+
+try:
+    dvz_shader_compile_status_name = dvz.dvz_shader_compile_status_name
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_shader_compile_status_name')
+else:
+    dvz_shader_compile_status_name.__doc__ = """/**
+ * Return a stable name for a shader compilation status.
+ *
+ * @param status shader compilation status
+ * @return static status name
+ */"""
+    dvz_shader_compile_status_name.argtypes = [ctypes.c_int]
+    dvz_shader_compile_status_name.restype = ctypes.c_char_p
+
+
+try:
+    dvz_shader_compiler_available = dvz.dvz_shader_compiler_available
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_shader_compiler_available')
+else:
+    dvz_shader_compiler_available.__doc__ = """/**
+ * Return whether runtime GLSL compilation is ready.
+ *
+ * @return true when the shader compiler adapter and provider are available
+ */"""
+    dvz_shader_compiler_available.argtypes = []
+    dvz_shader_compiler_available.restype = ctypes.c_bool
+
+
+try:
+    dvz_shader_compiler_status = dvz.dvz_shader_compiler_status
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_shader_compiler_status')
+else:
+    dvz_shader_compiler_status.__doc__ = """/**
+ * Return the runtime shader compiler status without requiring a GPU context.
+ *
+ * This function performs thread-safe, once-only provider discovery. A successful status means
+ * runtime GLSL compilation is ready.
+ *
+ * @return current compiler status
+ */"""
+    dvz_shader_compiler_status.argtypes = []
+    dvz_shader_compiler_status.restype = ctypes.c_int
 
 
 try:
@@ -33352,7 +33533,7 @@ else:
     dvz_write_ppm.restype = ctypes.c_int
 
 
-_GENERATED_FUNCTION_COUNT = 1550
+_GENERATED_FUNCTION_COUNT = 1556
 _SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_cmd_set_viewport_scissor', 'dvz_device_config', 'dvz_drp2_render_pass_desc', 'dvz_field_geometry', 'dvz_gpu_ctx_config', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
-_DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzDataDomain', 'DvzDepthCueDesc', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2TextureDesc', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFieldSamplingDesc', 'DvzFlyDesc', 'DvzFontDefaults', 'DvzFontDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanEmitConfig', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzLimbMaterial', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzStandardMaterial', 'DvzMaterialDesc', 'DvzMsaaDesc', 'DvzOrientationGizmoDesc', 'DvzOverlayCardDesc', 'DvzOverlayCardStyle', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBackgroundGradient', 'DvzPanelBackgroundImage', 'DvzPanelBackgroundDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonRing', 'DvzPolygonDesc', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzReferenceGridDesc', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleBarDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTextPlacement', 'DvzTextStyle', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewDesc', 'DvzViewSizeDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
+_DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzDataDomain', 'DvzDepthCueDesc', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2TextureDesc', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFieldSamplingDesc', 'DvzFlyDesc', 'DvzFontDefaults', 'DvzFontDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanEmitConfig', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzLimbMaterial', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzStandardMaterial', 'DvzMaterialDesc', 'DvzMsaaDesc', 'DvzOrientationGizmoDesc', 'DvzOverlayCardDesc', 'DvzOverlayCardStyle', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBackgroundGradient', 'DvzPanelBackgroundImage', 'DvzPanelBackgroundDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonRing', 'DvzPolygonDesc', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzReferenceGridDesc', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleBarDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzShaderCompileRequest', 'DvzShaderCompileResult', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTextPlacement', 'DvzTextStyle', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewDesc', 'DvzViewSizeDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
 __all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]

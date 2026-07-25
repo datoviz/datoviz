@@ -27,6 +27,7 @@
 #include "_compat.h"
 #include "datoviz/canvas.h"
 #include "datoviz/common/functions.h"
+#include "datoviz/shader.h"
 #include "datoviz/stream/frame_stream.h"
 #include "datoviz/vk/enums.h"
 #include "datoviz/vk/gpu_ctx.h"

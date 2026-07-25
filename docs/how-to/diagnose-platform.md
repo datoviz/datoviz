@@ -182,7 +182,7 @@ Optional providers should fail clearly without breaking the base library.
 | Qt/PyQt hosting | Check base native rendering first, then Qt bridge build, then PyQt/PySide binding support, then runtime Qt version compatibility. |
 | Video export | Check native rendering first, then encoder build options and installed encoder libraries. |
 | CUDA/CuPy interop | Check native rendering first, then CUDA SDK availability and advanced/unstable interop status. |
-| Shaderc runtime compilation | Check whether shaderc headers/library were found and whether precompiled shaders are available. |
+| Shaderc runtime compilation | Call `dvz_shader_compiler_status()` before GPU initialization, inspect the typed status, and check the relevant provider override or packaged runtime directory. |
 
 Do not add Qt, CUDA, video, or shaderc requirements to a base-platform bug unless the failing path
 actually uses that provider.

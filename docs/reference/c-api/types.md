@@ -417,7 +417,12 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzSelectionVisualStyle`](scene.md#type-dvzselectionvisualstyle) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzSemaphore`](runtime-vklite.md#type-dvzsemaphore) | typedef | vklite API | `include/datoviz/vklite/sync.h` |
 | [`DvzShader`](runtime-vklite.md#type-dvzshader) | typedef | vklite API | `include/datoviz/vklite/shader.h` |
+| [`DvzShaderCompileRequest`](runtime-shader.md#type-dvzshadercompilerequest) | record | Runtime Shader Compilation API | `include/datoviz/shader.h` |
+| [`DvzShaderCompileResult`](runtime-shader.md#type-dvzshadercompileresult) | record | Runtime Shader Compilation API | `include/datoviz/shader.h` |
+| [`DvzShaderCompileStatus`](runtime-shader.md#type-dvzshadercompilestatus) | enum | Runtime Shader Compilation API | `include/datoviz/shader.h` |
 | [`DvzShaderFormat`](runtime-vulkan.md#type-dvzshaderformat) | enum | Vulkan Foundation API | `include/datoviz/vk/enums.h` |
+| [`DvzShaderProfile`](runtime-shader.md#type-dvzshaderprofile) | enum | Runtime Shader Compilation API | `include/datoviz/shader.h` |
+| [`DvzShaderStage`](runtime-shader.md#type-dvzshaderstage) | enum | Runtime Shader Compilation API | `include/datoviz/shader.h` |
 | [`DvzShaderStageFlags`](runtime-vulkan.md#type-dvzshaderstageflags) | typedef | Vulkan Foundation API | `include/datoviz/vk/enums.h` |
 | [`DvzShaderType`](runtime-vulkan.md#type-dvzshadertype) | enum | Vulkan Foundation API | `include/datoviz/vk/enums.h` |
 | [`DvzShapeAspect`](visuals.md#type-dvzshapeaspect) | enum | Visuals And Composites API | `include/datoviz/scene/enums.h` |

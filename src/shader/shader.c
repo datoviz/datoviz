@@ -14,8 +14,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <inttypes.h>
 #include <pthread.h>
 #include <stdbool.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,7 +72,7 @@ typedef struct
 /*************************************************************************************************/
 
 static pthread_once_t _shaderc_once = PTHREAD_ONCE_INIT;
-static DvzShaderCompilerState _shaderc_state = DVZ_SHADER_COMPILER_UNINITIALIZED;
+static DvzShaderCompileStatus _shaderc_state = DVZ_SHADER_COMPILE_INTERNAL_ERROR;
 
 #if DVZ_HAS_SHADERC
 #if DVZ_SHADERC_STATIC
@@ -163,7 +165,7 @@ static void _shaderc_initialize_once(void)
 {
 #if DVZ_HAS_SHADERC
 #if DVZ_SHADERC_STATIC
-    _shaderc_state = DVZ_SHADER_COMPILER_READY;
+    _shaderc_state = DVZ_SHADER_COMPILE_SUCCESS;
 #else
 #ifndef DVZ_SHADERC_LIB_PATH
 #define DVZ_SHADERC_LIB_PATH "libshaderc_shared.so.1"
@@ -175,7 +177,7 @@ static void _shaderc_initialize_once(void)
         lib = dvz_dynlib_open(env_path);
         if (lib == NULL)
         {
-            _shaderc_state = DVZ_SHADER_COMPILER_PROVIDER_MISSING;
+            _shaderc_state = DVZ_SHADER_COMPILE_PROVIDER_MISSING;
             log_error(
                 "runtime GLSL compilation unavailable: DVZ_SHADERC_RUNTIME_LIBRARY could not "
                 "be loaded: %s",
@@ -193,7 +195,7 @@ static void _shaderc_initialize_once(void)
 #endif
     if (lib == NULL)
     {
-        _shaderc_state = DVZ_SHADER_COMPILER_PROVIDER_MISSING;
+        _shaderc_state = DVZ_SHADER_COMPILE_PROVIDER_MISSING;
         log_error(
             "runtime GLSL compilation unavailable: could not load shaderc runtime "
             DVZ_SHADERC_LIB_PATH);
@@ -208,7 +210,7 @@ static void _shaderc_initialize_once(void)
         void* _p = dvz_dynlib_sym(lib, name);                                                     \
         if (_p == NULL)                                                                           \
         {                                                                                         \
-            _shaderc_state = DVZ_SHADER_COMPILER_PROVIDER_INCOMPATIBLE;                           \
+            _shaderc_state = DVZ_SHADER_COMPILE_PROVIDER_INCOMPATIBLE;                           \
             log_error("shaderc provider is incompatible: symbol '%s' not found", name);          \
             dvz_dynlib_close(lib);                                                                \
             return;                                                                               \
@@ -232,10 +234,10 @@ static void _shaderc_initialize_once(void)
 #undef _SC_SYM
 
     /* The provider remains resident so the resolved symbols stay valid for the process lifetime. */
-    _shaderc_state = DVZ_SHADER_COMPILER_READY;
+    _shaderc_state = DVZ_SHADER_COMPILE_SUCCESS;
 #endif
 #else
-    _shaderc_state = DVZ_SHADER_COMPILER_BUILT_WITHOUT_ADAPTER;
+    _shaderc_state = DVZ_SHADER_COMPILE_ADAPTER_UNAVAILABLE;
 #endif
 }
 
@@ -246,13 +248,13 @@ static void _shaderc_initialize_once(void)
  *
  * @return provider state
  */
-DvzShaderCompilerState _dvz_shader_compiler_state(void)
+DvzShaderCompileStatus dvz_shader_compiler_status(void)
 {
     int status = pthread_once(&_shaderc_once, _shaderc_initialize_once);
     if (status != 0)
     {
         log_error("shaderc provider initialization failed with pthread status %d", status);
-        return DVZ_SHADER_COMPILER_PROVIDER_INCOMPATIBLE;
+        return DVZ_SHADER_COMPILE_PROVIDER_INCOMPATIBLE;
     }
     return _shaderc_state;
 }
@@ -264,20 +266,19 @@ DvzShaderCompilerState _dvz_shader_compiler_state(void)
 /*************************************************************************************************/
 
 /**
- * Return the shaderc shader kind for a stage string.
+ * Return the shaderc shader kind for a typed stage.
  *
- * @param stage shader stage string
+ * @param stage shader stage
  * @return shaderc shader kind, or infer-from-source when the stage is unknown
  */
-static shaderc_shader_kind _shaderc_kind(const char* stage)
+static shaderc_shader_kind _shaderc_kind(DvzShaderStage stage)
 {
 #if DVZ_HAS_SHADERC
-    ANN(stage);
-    if (strcmp(stage, "VERTEX") == 0 || strcmp(stage, "vertex") == 0)
+    if (stage == DVZ_SHADER_STAGE_VERTEX)
         return shaderc_glsl_vertex_shader;
-    if (strcmp(stage, "FRAGMENT") == 0 || strcmp(stage, "fragment") == 0)
+    if (stage == DVZ_SHADER_STAGE_FRAGMENT)
         return shaderc_glsl_fragment_shader;
-    if (strcmp(stage, "COMPUTE") == 0 || strcmp(stage, "compute") == 0)
+    if (stage == DVZ_SHADER_STAGE_COMPUTE)
         return shaderc_glsl_compute_shader;
     return shaderc_glsl_infer_from_source;
 #else
@@ -289,58 +290,164 @@ static shaderc_shader_kind _shaderc_kind(const char* stage)
 
 
 /**
- * Compile GLSL source bytes into owned SPIR-V.
+ * Set owned formatted diagnostics on a compilation result.
  *
- * @param stage shader stage string
- * @param code GLSL source bytes
- * @param code_size GLSL source byte size
- * @param source_name source filename used in diagnostics
- * @param entry_point shader entry point
- * @param spv output pointer to aligned SPIR-V words, freed by the caller
- * @param spv_size output SPIR-V byte size
- * @return true when compilation succeeds, false otherwise
+ * @param result compilation result
+ * @param format printf-style diagnostic format
  */
-bool _dvz_shader_compile_glsl(
-    const char* stage, const char* code, size_t code_size, const char* source_name,
-    const char* entry_point, uint32_t** spv, uint64_t* spv_size)
+static void _shader_result_diagnostics(DvzShaderCompileResult* result, const char* format, ...)
 {
-    ANN(stage);
-    ANN(code);
-    ANN(source_name);
-    ANN(entry_point);
-    ANN(spv);
-    ANN(spv_size);
-    *spv = NULL;
-    *spv_size = 0;
+    ANN(result);
+    ANN(format);
+    va_list args;
+    va_start(args, format);
+    va_list copy;
+    va_copy(copy, args);
+    int length = vsnprintf(NULL, 0, format, copy);
+    va_end(copy);
+    if (length < 0)
+    {
+        va_end(args);
+        return;
+    }
+
+    result->diagnostics = (char*)dvz_malloc((size_t)length + 1);
+    if (result->diagnostics != NULL)
+    {
+        vsnprintf(result->diagnostics, (size_t)length + 1, format, args);
+        result->diagnostics_size = (uint64_t)length;
+    }
+    va_end(args);
+}
+
+
+
+/**
+ * Return whether a stage and target profile form a supported v0.4 pair.
+ *
+ * @param stage shader stage
+ * @param profile target profile
+ * @return true when the pair is valid
+ */
+static bool _shader_profile_valid(DvzShaderStage stage, DvzShaderProfile profile)
+{
+    if (stage == DVZ_SHADER_STAGE_COMPUTE)
+        return profile == DVZ_SHADER_PROFILE_COMPUTE;
+    if (stage == DVZ_SHADER_STAGE_VERTEX || stage == DVZ_SHADER_STAGE_FRAGMENT)
+        return profile == DVZ_SHADER_PROFILE_GRAPHICS;
+    return false;
+}
+
+
+
+bool dvz_shader_compiler_available(void)
+{
+    return dvz_shader_compiler_status() == DVZ_SHADER_COMPILE_SUCCESS;
+}
+
+
+
+const char* dvz_shader_compile_status_name(DvzShaderCompileStatus status)
+{
+    switch (status)
+    {
+    case DVZ_SHADER_COMPILE_SUCCESS:
+        return "success";
+    case DVZ_SHADER_COMPILE_ADAPTER_UNAVAILABLE:
+        return "adapter-unavailable";
+    case DVZ_SHADER_COMPILE_PROVIDER_MISSING:
+        return "provider-missing";
+    case DVZ_SHADER_COMPILE_PROVIDER_INCOMPATIBLE:
+        return "provider-incompatible";
+    case DVZ_SHADER_COMPILE_INVALID_REQUEST:
+        return "invalid-request";
+    case DVZ_SHADER_COMPILE_FAILED:
+        return "compilation-failed";
+    case DVZ_SHADER_COMPILE_OUT_OF_MEMORY:
+        return "out-of-memory";
+    case DVZ_SHADER_COMPILE_INTERNAL_ERROR:
+        return "internal-error";
+    default:
+        return "unknown";
+    }
+}
+
+
+
+DvzShaderCompileStatus
+dvz_shader_compile(const DvzShaderCompileRequest* request, DvzShaderCompileResult* result)
+{
+    if (result == NULL)
+        return DVZ_SHADER_COMPILE_INVALID_REQUEST;
+    memset(result, 0, sizeof(DvzShaderCompileResult));
+    result->status = DVZ_SHADER_COMPILE_INVALID_REQUEST;
+
+    if (request == NULL)
+    {
+        _shader_result_diagnostics(result, "shader compilation request is NULL");
+        return result->status;
+    }
+    if (request->source == NULL || request->source_size == 0)
+    {
+        _shader_result_diagnostics(result, "shader source is empty");
+        return result->status;
+    }
+    if (request->source_size > SIZE_MAX)
+    {
+        _shader_result_diagnostics(result, "shader source is too large for this platform");
+        return result->status;
+    }
+    if (request->source_name == NULL || request->source_name[0] == '\0')
+    {
+        _shader_result_diagnostics(result, "shader source_name is required");
+        return result->status;
+    }
+    if (!_shader_profile_valid(request->stage, request->profile))
+    {
+        _shader_result_diagnostics(
+            result, "shader stage %d and target profile %d are incompatible",
+            (int)request->stage, (int)request->profile);
+        return result->status;
+    }
+
+    DvzShaderCompileStatus provider_status = dvz_shader_compiler_status();
+    if (provider_status != DVZ_SHADER_COMPILE_SUCCESS)
+    {
+        result->status = provider_status;
+        if (provider_status == DVZ_SHADER_COMPILE_ADAPTER_UNAVAILABLE)
+            _shader_result_diagnostics(
+                result, "Datoviz was built without the runtime shader compiler adapter");
+        else if (provider_status == DVZ_SHADER_COMPILE_PROVIDER_MISSING)
+            _shader_result_diagnostics(
+                result,
+                "the shaderc runtime provider is missing; check "
+                "DVZ_SHADERC_RUNTIME_LIBRARY and DVZ_WHEEL_RUNTIME_DIRS");
+        else
+            _shader_result_diagnostics(
+                result, "the shaderc runtime provider is incompatible or failed initialization");
+        return result->status;
+    }
 
 #if DVZ_HAS_SHADERC
-    if (code_size == 0)
-    {
-        log_error("GLSL compilation request for '%s' has empty source", source_name);
-        return false;
-    }
-
-    shaderc_shader_kind kind = _shaderc_kind(stage);
-    if (kind == shaderc_glsl_infer_from_source)
-    {
-        log_error("GLSL compilation request for '%s' has invalid stage '%s'", source_name, stage);
-        return false;
-    }
-    if (_dvz_shader_compiler_state() != DVZ_SHADER_COMPILER_READY)
-        return false;
-
+    shaderc_shader_kind kind = _shaderc_kind(request->stage);
     shaderc_compiler_t compiler = _shaderc.compiler_initialize();
     if (compiler == NULL)
-        return false;
+    {
+        result->status = DVZ_SHADER_COMPILE_INTERNAL_ERROR;
+        _shader_result_diagnostics(result, "shaderc compiler initialization failed");
+        return result->status;
+    }
     shaderc_compile_options_t options = _shaderc.compile_options_initialize();
     if (options == NULL)
     {
         _shaderc.compiler_release(compiler);
-        return false;
+        result->status = DVZ_SHADER_COMPILE_INTERNAL_ERROR;
+        _shader_result_diagnostics(result, "shaderc compile-options initialization failed");
+        return result->status;
     }
 
     _shaderc.compile_options_set_source_language(options, shaderc_source_language_glsl);
-    if (kind == shaderc_glsl_compute_shader)
+    if (request->profile == DVZ_SHADER_PROFILE_COMPUTE)
     {
         _shaderc.compile_options_set_target_env(
             options, shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
@@ -353,49 +460,177 @@ bool _dvz_shader_compile_glsl(
         _shaderc.compile_options_set_target_spirv(options, shaderc_spirv_version_1_0);
     }
 
-    shaderc_compilation_result_t result = _shaderc.compile_into_spv(
-        compiler, code, code_size, kind, source_name, entry_point, options);
+    const char* entry_point =
+        request->entry_point != NULL && request->entry_point[0] != '\0'
+            ? request->entry_point
+            : "main";
+    shaderc_compilation_result_t compiled = _shaderc.compile_into_spv(
+        compiler, request->source, (size_t)request->source_size, kind, request->source_name,
+        entry_point, options);
 
     _shaderc.compile_options_release(options);
     _shaderc.compiler_release(compiler);
 
-    if (result == NULL)
-        return false;
-    if (_shaderc.result_get_compilation_status(result) != shaderc_compilation_status_success)
+    if (compiled == NULL)
     {
-        log_error(
-            "GLSL compilation failed for '%s' (%s): %s", source_name, stage,
-            _shaderc.result_get_error_message(result));
-        _shaderc.result_release(result);
-        return false;
+        result->status = DVZ_SHADER_COMPILE_INTERNAL_ERROR;
+        _shader_result_diagnostics(
+            result, "shaderc returned no result for '%s'", request->source_name);
+        return result->status;
+    }
+    if (_shaderc.result_get_compilation_status(compiled) != shaderc_compilation_status_success)
+    {
+        result->status = DVZ_SHADER_COMPILE_FAILED;
+        const char* message = _shaderc.result_get_error_message(compiled);
+        _shader_result_diagnostics(
+            result, "%s", message != NULL ? message : "shaderc compilation failed");
+        _shaderc.result_release(compiled);
+        return result->status;
     }
 
-    const char* bytes = _shaderc.result_get_bytes(result);
-    uint64_t size = (uint64_t)_shaderc.result_get_length(result);
+    const char* bytes = _shaderc.result_get_bytes(compiled);
+    uint64_t size = (uint64_t)_shaderc.result_get_length(compiled);
     if (bytes == NULL || size == 0 || size % sizeof(uint32_t) != 0)
     {
-        _shaderc.result_release(result);
-        return false;
+        _shaderc.result_release(compiled);
+        result->status = DVZ_SHADER_COMPILE_INTERNAL_ERROR;
+        _shader_result_diagnostics(
+            result, "shaderc returned invalid SPIR-V for '%s'", request->source_name);
+        return result->status;
     }
 
-    uint32_t* out = (uint32_t*)dvz_calloc((size_t)(size / sizeof(uint32_t)), sizeof(uint32_t));
-    if (out == NULL)
+    result->spirv =
+        (uint32_t*)dvz_calloc((size_t)(size / sizeof(uint32_t)), sizeof(uint32_t));
+    if (result->spirv == NULL)
     {
-        _shaderc.result_release(result);
+        _shaderc.result_release(compiled);
+        result->status = DVZ_SHADER_COMPILE_OUT_OF_MEMORY;
+        _shader_result_diagnostics(
+            result, "unable to allocate %" PRIu64 " SPIR-V bytes", size);
+        return result->status;
+    }
+    dvz_memcpy(result->spirv, (size_t)size, bytes, (size_t)size);
+    _shaderc.result_release(compiled);
+
+    result->spirv_size = size;
+    result->status = DVZ_SHADER_COMPILE_SUCCESS;
+    return result->status;
+#else
+    result->status = DVZ_SHADER_COMPILE_ADAPTER_UNAVAILABLE;
+    _shader_result_diagnostics(
+        result, "Datoviz was built without the runtime shader compiler adapter");
+    return result->status;
+#endif
+}
+
+
+
+void dvz_shader_compile_result_destroy(DvzShaderCompileResult* result)
+{
+    if (result == NULL)
+        return;
+    dvz_free(result->spirv);
+    dvz_free(result->diagnostics);
+    memset(result, 0, sizeof(DvzShaderCompileResult));
+}
+
+
+
+/**
+ * Convert a legacy stage string to the typed stage and profile.
+ *
+ * @param stage stage string
+ * @param[out] typed_stage typed stage
+ * @param[out] profile target profile
+ * @return whether the stage is recognized
+ */
+static bool _shader_legacy_stage(
+    const char* stage, DvzShaderStage* typed_stage, DvzShaderProfile* profile)
+{
+    ANN(stage);
+    ANN(typed_stage);
+    ANN(profile);
+    if (strcmp(stage, "VERTEX") == 0 || strcmp(stage, "vertex") == 0)
+    {
+        *typed_stage = DVZ_SHADER_STAGE_VERTEX;
+        *profile = DVZ_SHADER_PROFILE_GRAPHICS;
+        return true;
+    }
+    if (strcmp(stage, "FRAGMENT") == 0 || strcmp(stage, "fragment") == 0)
+    {
+        *typed_stage = DVZ_SHADER_STAGE_FRAGMENT;
+        *profile = DVZ_SHADER_PROFILE_GRAPHICS;
+        return true;
+    }
+    if (strcmp(stage, "COMPUTE") == 0 || strcmp(stage, "compute") == 0)
+    {
+        *typed_stage = DVZ_SHADER_STAGE_COMPUTE;
+        *profile = DVZ_SHADER_PROFILE_COMPUTE;
+        return true;
+    }
+    return false;
+}
+
+
+
+bool _dvz_shader_compile_glsl(
+    const char* stage, const char* code, size_t code_size, const char* source_name,
+    const char* entry_point, uint32_t** spv, uint64_t* spv_size)
+{
+    ANN(stage);
+    ANN(code);
+    ANN(source_name);
+    ANN(spv);
+    ANN(spv_size);
+    *spv = NULL;
+    *spv_size = 0;
+
+    DvzShaderStage typed_stage = DVZ_SHADER_STAGE_NONE;
+    DvzShaderProfile profile = DVZ_SHADER_PROFILE_NONE;
+    if (!_shader_legacy_stage(stage, &typed_stage, &profile))
+    {
+        log_error("GLSL compilation request for '%s' has invalid stage '%s'", source_name, stage);
         return false;
     }
-    dvz_memcpy(out, (size_t)size, bytes, (size_t)size);
-    _shaderc.result_release(result);
 
-    *spv = out;
-    *spv_size = size;
+    DvzShaderCompileRequest request = {
+        .stage = typed_stage,
+        .profile = profile,
+        .source = code,
+        .source_size = (uint64_t)code_size,
+        .source_name = source_name,
+        .entry_point = entry_point,
+    };
+    DvzShaderCompileResult result = {0};
+    DvzShaderCompileStatus status = dvz_shader_compile(&request, &result);
+    if (status != DVZ_SHADER_COMPILE_SUCCESS)
+    {
+        log_error(
+            "GLSL compilation failed for '%s' (%s): %s", source_name,
+            dvz_shader_compile_status_name(status),
+            result.diagnostics != NULL ? result.diagnostics : "no diagnostics");
+        dvz_shader_compile_result_destroy(&result);
+        return false;
+    }
+
+    *spv = result.spirv;
+    *spv_size = result.spirv_size;
+    result.spirv = NULL;
+    dvz_shader_compile_result_destroy(&result);
     return true;
-#else
-    (void)code_size;
-    log_error(
-        "runtime GLSL compilation unavailable for '%s': Datoviz was built without shaderc "
-        "support",
-        source_name);
-    return false;
-#endif
+}
+
+
+
+uint32_t* dvz_compile_glsl(const char* stage, const char* glsl, uint64_t* out_size)
+{
+    ANN(stage);
+    ANN(glsl);
+    ANN(out_size);
+    *out_size = 0;
+    uint32_t* spv = NULL;
+    if (!_dvz_shader_compile_glsl(
+            stage, glsl, strlen(glsl), "<memory>", "main", &spv, out_size))
+        return NULL;
+    return spv;
 }

@@ -55,6 +55,20 @@ DVZ_EXPORT void* dvz_read_file(const char* filename, DvzSize* size);
 
 
 /**
+ * Read a text file into an owned null-terminated buffer.
+ *
+ * The returned size excludes the terminating null byte. Embedded null bytes are preserved and
+ * remain observable through the explicit size.
+ *
+ * @param filename path of the file to open; must not be NULL
+ * @param[out] size optional destination receiving the text size in bytes
+ * @return owned null-terminated text, or NULL on failure; free with `dvz_memory_free()`
+ */
+DVZ_EXPORT char* dvz_read_text(const char* filename, DvzSize* size);
+
+
+
+/**
  * Read the data payload of a NumPy NPY v1 file.
  *
  * This minimal reader strips the NPY header but does not expose or convert the array dtype, shape,

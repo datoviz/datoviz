@@ -109,6 +109,23 @@ int test_png_1(TstContext* suite, const TstCase* tstitem)
 
 
 
+int test_read_text(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+
+    DvzSize size = 0;
+    char* text = dvz_read_text(__FILE__, &size);
+    AT(text != NULL);
+    AT(size > 0);
+    AT(text[size] == '\0');
+    AT(strlen(text) == size);
+    AT(strstr(text, "test_read_text") != NULL);
+    dvz_free(text);
+    return 0;
+}
+
+
+
 int test_parse_npy(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
@@ -217,6 +234,9 @@ int test_fileio(TstSuite* suite)
     TST_MODULE(suite, "fileio");
     TST_GROUP("png");
     TST_CASE(test_png_1);
+
+    TST_GROUP("text");
+    TST_CASE(test_read_text);
 
     TST_GROUP("jpeg");
     TST_CASE(test_jpeg_bytes_earth);

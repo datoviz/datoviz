@@ -17,7 +17,7 @@ Common workflows:
 - [Runtime internals](../../advanced/runtime-internals.md)
 - [Profile performance](../../how-to/profile-performance.md)
 
-Functions: 96
+Functions: 95
 Types: 26
 
 ## Symbol Groups
@@ -25,7 +25,7 @@ Types: 26
 | Group | Functions | Types | Headers |
 | --- | ---: | ---: | --- |
 | [Devices And Queues](#devices-and-queues) | 28 | 8 | 4 headers |
-| [GPU Context](#gpu-context) | 19 | 3 | `include/datoviz/vk/gpu.h`, `include/datoviz/vk/gpu_ctx.h` |
+| [GPU Context](#gpu-context) | 18 | 3 | `include/datoviz/vk/gpu.h`, `include/datoviz/vk/gpu_ctx.h` |
 | [Instances](#instances) | 17 | 3 | 3 headers |
 | [Memory And Interop](#memory-and-interop) | 32 | 4 | `include/datoviz/vk/memory.h`, `include/datoviz/vk/memory_interop.h` |
 | [Shared Render Types](#shared-render-types) | 0 | 8 | `include/datoviz/vk/enums.h` |
@@ -69,7 +69,6 @@ Types: 26
 
     | Function | Header |
     | --- | --- |
-    | [`dvz_compile_glsl()`](#dvz_compile_glsl) | `include/datoviz/vk/gpu_ctx.h` |
     | [`dvz_gpu_ctx()`](#dvz_gpu_ctx) | `include/datoviz/vk/gpu_ctx.h` |
     | [`dvz_gpu_ctx_alloc()`](#dvz_gpu_ctx_alloc) | `include/datoviz/vk/gpu_ctx.h` |
     | [`dvz_gpu_ctx_config()`](#dvz_gpu_ctx_config) | `include/datoviz/vk/gpu_ctx.h` |
@@ -803,30 +802,6 @@ _Declared in `include/datoviz/vk/queues.h`:157._
 ## GPU Context { #gpu-context }
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
-
-#### `dvz_compile_glsl()` { #dvz_compile_glsl .dvz-api-function }
-
-Compile a GLSL source string to SPIR-V using shaderc (lazy-loaded).
-
-The returned buffer is heap-allocated and must be freed with dvz_memory_free().
-Returns NULL if shaderc is unavailable or compilation fails.
-
-```c
-uint32_t * dvz_compile_glsl(
-    const char * stage,
-    const char * glsl,
-    uint64_t * out_size
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `uint32_t` * | heap-allocated SPIR-V words, or NULL on failure |
-| `stage` | `const` `char` * | shader stage: "vertex", "fragment", or "compute" |
-| `glsl` | `const` `char` * | null-terminated GLSL source string |
-| `out_size` | `uint64_t` * | receives the byte size of the returned SPIR-V buffer |
-
-_Declared in `include/datoviz/vk/gpu_ctx.h`:273._
 
 #### `dvz_gpu_ctx()` { #dvz_gpu_ctx .dvz-api-function }
 

@@ -28,6 +28,8 @@ int test_png_1(TstContext* suite, const TstCase* tstitem);
 
 int test_parse_npy(TstContext* suite, const TstCase* tstitem);
 
+int test_read_text(TstContext* suite, const TstCase* tstitem);
+
 int test_jpeg_bytes_earth(TstContext* suite, const TstCase* tstitem);
 
 int test_jpeg_file_earth(TstContext* suite, const TstCase* tstitem);
