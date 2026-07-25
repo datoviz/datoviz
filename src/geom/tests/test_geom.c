@@ -14,13 +14,14 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "test_geom.h"
 #include "_assertions.h"
 #include "datoviz/geom.h"
-#include "test_geom.h"
 #include "testing.h"
 
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 
 
 
@@ -106,10 +107,9 @@ int test_geometry_descriptor_abi(TstContext* suite, const TstCase* tstitem)
     DvzBezierTessellationDesc bezier = dvz_bezier_tessellation_desc();
     bezier.struct_size = 0;
     AT_EXPECTED_ERROR_STRICT(
-        suite,
-        dvz_tessellate_quadratic_bezier(
-            (dvec3){0.0, 0.0, 0.0}, (dvec3){1.0, 1.0, 0.0}, (dvec3){2.0, 0.0, 0.0},
-            &bezier) == NULL);
+        suite, dvz_tessellate_quadratic_bezier(
+                   (dvec3){0.0, 0.0, 0.0}, (dvec3){1.0, 1.0, 0.0}, (dvec3){2.0, 0.0, 0.0},
+                   &bezier) == NULL);
 
     return 0;
 }
@@ -450,26 +450,40 @@ int test_geometry_builtin_shapes(TstContext* suite, const TstCase* tstitem)
 
 
 
+static bool _write_obj_test_file(const char* path, const char* contents)
+{
+    ANN(path);
+    ANN(contents);
+
+    FILE* fp = fopen(path, "wb");
+    if (fp == NULL)
+        return false;
+    const size_t size = strlen(contents);
+    const bool ok = fwrite(contents, 1, size, fp) == size;
+    fclose(fp);
+    return ok;
+}
+
+
+
 int test_geometry_obj_loader(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     (void)tstitem;
 
     const char* path = "build/test_geom_obj_loader.obj";
-    FILE* fp = fopen(path, "wb");
-    ANN(fp);
-    const char obj[] =
-        "v -1 0 0\n"
-        "v 1 0 0\n"
-        "v 1 1 0\n"
-        "v -1 1 0\n"
-        "vt 0 0\n"
-        "vt 1 0\n"
-        "vt 1 1\n"
-        "vt 0 1\n"
-        "f 1/1 2/2 3/3 4/4\n";
-    AT(fwrite(obj, 1, sizeof(obj) - 1u, fp) == sizeof(obj) - 1u);
-    fclose(fp);
+    const char obj[] = "  v -1 0 0\n"
+                       "v 1 0 0\n"
+                       "v 1 1 0\n"
+                       "v -1 1 0\n"
+                       "\tvt 0.1 0.2\n"
+                       "vt 0.8 0.2\n"
+                       "vt 0.9 0.9\n"
+                       "vt 0.2 0.8\n"
+                       "vn 0 0 1\n"
+                       "vn 0 1 0\n"
+                       " f\t-4/-1/-2 -3/-4/-1 -2/-2/-2 -1/-3/-1 # independent negative indices\n";
+    AT(_write_obj_test_file(path, obj));
 
     DvzGeometry* geometry = dvz_geometry_obj(
         path, &(DvzGeometryObjDesc){
@@ -480,18 +494,88 @@ int test_geometry_obj_loader(TstContext* suite, const TstCase* tstitem)
     AT(geometry->type == DVZ_GEOMETRY_CUSTOM);
     AT(geometry->vertex_count == 6);
     AT(geometry->index_count == 6);
+    const uint32_t position_indices[6] = {0, 1, 2, 0, 2, 3};
+    const uint32_t texcoord_indices[6] = {3, 0, 2, 3, 2, 1};
+    const uint32_t normal_indices[6] = {0, 1, 0, 0, 0, 1};
+    const dvec3 positions[4] = {{-1, 0, 0}, {1, 0, 0}, {1, 1, 0}, {-1, 1, 0}};
+    const dvec2 texcoords[4] = {{0.1, 0.2}, {0.8, 0.2}, {0.9, 0.9}, {0.2, 0.8}};
+    const dvec3 normals[2] = {{0, 0, 1}, {0, 1, 0}};
     for (uint32_t i = 0; i < geometry->vertex_count; i++)
     {
         AT(geometry->indices[i] == i);
-        AC(geometry->normals[i][0], 0.0, EPS);
-        AC(geometry->normals[i][1], 0.0, EPS);
-        AC(geometry->normals[i][2], 1.0, EPS);
+        AC(geometry->positions[i][0], positions[position_indices[i]][0], EPS);
+        AC(geometry->positions[i][1], positions[position_indices[i]][1], EPS);
+        AC(geometry->positions[i][2], positions[position_indices[i]][2], EPS);
+        AC(geometry->texcoords[i][0], texcoords[texcoord_indices[i]][0], EPS);
+        AC(geometry->texcoords[i][1], texcoords[texcoord_indices[i]][1], EPS);
+        AC(geometry->normals[i][0], normals[normal_indices[i]][0], EPS);
+        AC(geometry->normals[i][1], normals[normal_indices[i]][1], EPS);
+        AC(geometry->normals[i][2], normals[normal_indices[i]][2], EPS);
         AT(geometry->colors[i].r == 10);
         AT(geometry->colors[i].g == 20);
         AT(geometry->colors[i].b == 30);
         AT(geometry->colors[i].a == 255);
     }
     dvz_geometry_destroy(geometry);
+
+    const char no_texcoords[] = "v 0 0 0\n"
+                                "v 1 0 0\n"
+                                "v 0 1 0\n"
+                                "vn 0 0 -1\n"
+                                "f 1//1 2//1 3//1\n";
+    AT(_write_obj_test_file(path, no_texcoords));
+    geometry = dvz_geometry_obj(path, NULL);
+    AT(geometry != NULL);
+    for (uint32_t i = 0; i < geometry->vertex_count; i++)
+    {
+        AC(geometry->texcoords[i][0], 0.0, EPS);
+        AC(geometry->texcoords[i][1], 0.0, EPS);
+        AC(geometry->normals[i][2], -1.0, EPS);
+    }
+    dvz_geometry_destroy(geometry);
+
+    const char no_attributes[] = "v 0 0 0\n"
+                                 "v 1 0 0\n"
+                                 "v 0 1 0\n"
+                                 "f 1 2 3\n";
+    AT(_write_obj_test_file(path, no_attributes));
+    geometry = dvz_geometry_obj(path, NULL);
+    AT(geometry != NULL);
+    for (uint32_t i = 0; i < geometry->vertex_count; i++)
+    {
+        AC(geometry->texcoords[i][0], 0.0, EPS);
+        AC(geometry->texcoords[i][1], 0.0, EPS);
+        AC(geometry->normals[i][0], 0.0, EPS);
+        AC(geometry->normals[i][1], 0.0, EPS);
+        AC(geometry->normals[i][2], 1.0, EPS);
+    }
+    dvz_geometry_destroy(geometry);
+
+    const char* malformed[] = {
+        "v 0 0 0\nv 1 0 0\nv 0 1 0\nvt 0 0\nf 1/2 2/1 3/1\n",
+        "v 0 0 0\nv 1 0 0\nv 0 1 0\nvt 0 0\nf 1/ 2/1 3/1\n",
+        "v 0 0 0\nv 1 0 0\nv 0 1 0\nvn 0 0 1\nf 1// 2//1 3//1\n",
+        "v 0 0 0\nv 1 0 0\nv 0 1 0\nf -4 -2 -1\n",
+        "v 0 0 0\nv 1 0 0\nv 0 1 0\nf 1 2\n",
+    };
+    for (uint32_t i = 0; i < sizeof(malformed) / sizeof(malformed[0]); i++)
+    {
+        AT(_write_obj_test_file(path, malformed[i]));
+        AT(dvz_geometry_obj(path, NULL) == NULL);
+    }
+
+    char oversized[2300] = "v 0 0 0\n"
+                           "v 1 0 0\n"
+                           "v 0 1 0\n"
+                           "#";
+    size_t offset = strlen(oversized);
+    memset(&oversized[offset], 'x', 2100);
+    offset += 2100;
+    const char suffix[] = "\nf 1 2 3\n";
+    memcpy(&oversized[offset], suffix, sizeof(suffix));
+    AT(_write_obj_test_file(path, oversized));
+    AT(dvz_geometry_obj(path, NULL) == NULL);
+
     remove(path);
     return 0;
 }
@@ -851,10 +935,9 @@ int test_geometry_bezier_tessellation(TstContext* suite, const TstCase* tstitem)
     desc = dvz_bezier_tessellation_desc();
     desc.tolerance = -1.0;
     AT_EXPECTED_ERROR_STRICT(
-        suite,
-        dvz_tessellate_cubic_bezier(
-            (dvec3){0.0, 0.0, 0.0}, (dvec3){0.0, 1.0, 0.0}, (dvec3){1.0, 1.0, 0.0},
-            (dvec3){1.0, 0.0, 0.0}, &desc) == NULL);
+        suite, dvz_tessellate_cubic_bezier(
+                   (dvec3){0.0, 0.0, 0.0}, (dvec3){0.0, 1.0, 0.0}, (dvec3){1.0, 1.0, 0.0},
+                   (dvec3){1.0, 0.0, 0.0}, &desc) == NULL);
 
     return 0;
 }

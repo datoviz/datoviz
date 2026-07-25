@@ -392,8 +392,9 @@ DVZ_EXPORT DvzGeometryObjDesc dvz_geometry_obj_desc(void);
 /**
  * Load a Wavefront OBJ mesh as indexed geometry.
  *
- * The first loader slice supports `v`, `vn`, and polygonal `f` records. Faces are triangulated as
- * fans and texture coordinates/materials are ignored.
+ * Supports `v`, `vt`, `vn`, and polygonal `f` records, including independent and negative face
+ * indices. Faces are triangulated as fans. Missing texture coordinates default to `(0, 0)` and
+ * missing normals are computed. Materials, objects, groups, and smoothing records are ignored.
  *
  * @param filename OBJ file path; must not be NULL
  * @param desc optional borrowed loader descriptor, or NULL for defaults

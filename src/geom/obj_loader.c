@@ -12,6 +12,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <ctype.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -32,8 +33,8 @@
 /*************************************************************************************************/
 
 #define DVZ_GEOMETRY_OBJ_DESC_KNOWN_FLAGS 0u
-#define OBJ_LINE_MAX 2048
-#define OBJ_FACE_MAX 128
+#define OBJ_LINE_MAX                      2048
+#define OBJ_FACE_MAX                      128
 
 
 
@@ -44,6 +45,7 @@
 typedef struct ObjFaceVertex
 {
     uint32_t position;
+    uint32_t texcoord;
     uint32_t normal;
 } ObjFaceVertex;
 
@@ -58,6 +60,10 @@ typedef struct ObjArrays
     dvec3* normals;
     uint32_t normal_count;
     uint32_t normal_capacity;
+
+    dvec2* texcoords;
+    uint32_t texcoord_count;
+    uint32_t texcoord_capacity;
 
     ObjFaceVertex* vertices;
     uint32_t vertex_count;
@@ -141,7 +147,7 @@ static bool _obj_append_dvec3(dvec3** data, uint32_t* count, uint32_t* capacity,
     ANN(capacity);
     ANN(value);
 
-    if (!_obj_reserve((void**)data, capacity, *count + 1u, sizeof(dvec3)))
+    if (*count == UINT32_MAX || !_obj_reserve((void**)data, capacity, *count + 1u, sizeof(dvec3)))
         return false;
     (*data)[*count][0] = value[0];
     (*data)[*count][1] = value[1];
@@ -152,10 +158,28 @@ static bool _obj_append_dvec3(dvec3** data, uint32_t* count, uint32_t* capacity,
 
 
 
+static bool _obj_append_dvec2(dvec2** data, uint32_t* count, uint32_t* capacity, const dvec2 value)
+{
+    ANN(data);
+    ANN(count);
+    ANN(capacity);
+    ANN(value);
+
+    if (*count == UINT32_MAX || !_obj_reserve((void**)data, capacity, *count + 1u, sizeof(dvec2)))
+        return false;
+    (*data)[*count][0] = value[0];
+    (*data)[*count][1] = value[1];
+    (*count)++;
+    return true;
+}
+
+
+
 static bool _obj_append_face_vertex(ObjArrays* arrays, ObjFaceVertex value)
 {
     ANN(arrays);
-    if (!_obj_reserve(
+    if (arrays->vertex_count == UINT32_MAX ||
+        !_obj_reserve(
             (void**)&arrays->vertices, &arrays->vertex_capacity, arrays->vertex_count + 1u,
             sizeof(ObjFaceVertex)))
     {
@@ -182,7 +206,8 @@ static bool _obj_index_from_token(long raw, uint32_t count, uint32_t* out)
 
 
 static bool _obj_parse_face_vertex(
-    const char* token, uint32_t position_count, uint32_t normal_count, ObjFaceVertex* out)
+    const char* token, uint32_t position_count, uint32_t texcoord_count, uint32_t normal_count,
+    ObjFaceVertex* out)
 {
     ANN(token);
     ANN(out);
@@ -190,8 +215,10 @@ static bool _obj_parse_face_vertex(
     errno = 0;
     char* end = NULL;
     const long position = strtol(token, &end, 10);
-    if (errno != 0 || end == token || !_obj_index_from_token(position, position_count, &out->position))
+    if (errno != 0 || end == token ||
+        !_obj_index_from_token(position, position_count, &out->position))
         return false;
+    out->texcoord = UINT32_MAX;
     out->normal = UINT32_MAX;
 
     if (*end == '\0')
@@ -200,28 +227,34 @@ static bool _obj_parse_face_vertex(
         return false;
     end++;
 
-    if (*end != '/' && *end != '\0')
+    if (*end != '/')
     {
-        (void)strtol(end, &end, 10);
-        if (errno != 0)
+        if (*end == '\0')
             return false;
+        errno = 0;
+        char* texcoord_end = NULL;
+        const long texcoord = strtol(end, &texcoord_end, 10);
+        if (errno != 0 || texcoord_end == end ||
+            !_obj_index_from_token(texcoord, texcoord_count, &out->texcoord))
+        {
+            return false;
+        }
+        end = texcoord_end;
     }
     if (*end == '/')
     {
         end++;
-        if (*end != '\0')
+        if (*end == '\0')
+            return false;
+        errno = 0;
+        char* normal_end = NULL;
+        const long normal = strtol(end, &normal_end, 10);
+        if (errno != 0 || normal_end == end ||
+            !_obj_index_from_token(normal, normal_count, &out->normal))
         {
-            errno = 0;
-            char* normal_end = NULL;
-            const long normal = strtol(end, &normal_end, 10);
-            if (
-                errno != 0 || normal_end == end ||
-                !_obj_index_from_token(normal, normal_count, &out->normal))
-            {
-                return false;
-            }
-            end = normal_end;
+            return false;
         }
+        end = normal_end;
     }
     return *end == '\0';
 }
@@ -239,10 +272,13 @@ static bool _obj_parse_face(char* line, ObjArrays* arrays)
     for (char* token = _obj_strtok(line, " \t\r\n", &saveptr); token != NULL;
          token = _obj_strtok(NULL, " \t\r\n", &saveptr))
     {
+        if (token[0] == '#')
+            break;
         if (face_count >= OBJ_FACE_MAX)
             return false;
         if (!_obj_parse_face_vertex(
-                token, arrays->position_count, arrays->normal_count, &face[face_count]))
+                token, arrays->position_count, arrays->texcoord_count, arrays->normal_count,
+                &face[face_count]))
         {
             return false;
         }
@@ -271,6 +307,7 @@ static void _obj_arrays_destroy(ObjArrays* arrays)
         return;
     dvz_free(arrays->positions);
     dvz_free(arrays->normals);
+    dvz_free(arrays->texcoords);
     dvz_free(arrays->vertices);
 }
 
@@ -310,10 +347,19 @@ DvzGeometry* dvz_geometry_obj(const char* filename, const DvzGeometryObjDesc* de
     char line[OBJ_LINE_MAX] = {0};
     while (fgets(line, sizeof(line), fp) != NULL)
     {
-        if (line[0] == 'v' && line[1] == ' ')
+        if (strchr(line, '\n') == NULL && fgetc(fp) != EOF)
+        {
+            ok = false;
+            break;
+        }
+
+        char* record = line;
+        while (isspace((unsigned char)*record))
+            record++;
+        if (record[0] == 'v' && isspace((unsigned char)record[1]))
         {
             dvec3 value = {0};
-            if (sscanf(line + 2, "%lf %lf %lf", &value[0], &value[1], &value[2]) != 3 ||
+            if (sscanf(record + 2, "%lf %lf %lf", &value[0], &value[1], &value[2]) != 3 ||
                 !_obj_append_dvec3(
                     &arrays.positions, &arrays.position_count, &arrays.position_capacity, value))
             {
@@ -321,10 +367,10 @@ DvzGeometry* dvz_geometry_obj(const char* filename, const DvzGeometryObjDesc* de
                 break;
             }
         }
-        else if (line[0] == 'v' && line[1] == 'n' && line[2] == ' ')
+        else if (record[0] == 'v' && record[1] == 'n' && isspace((unsigned char)record[2]))
         {
             dvec3 value = {0};
-            if (sscanf(line + 3, "%lf %lf %lf", &value[0], &value[1], &value[2]) != 3 ||
+            if (sscanf(record + 3, "%lf %lf %lf", &value[0], &value[1], &value[2]) != 3 ||
                 !_obj_append_dvec3(
                     &arrays.normals, &arrays.normal_count, &arrays.normal_capacity, value))
             {
@@ -332,15 +378,28 @@ DvzGeometry* dvz_geometry_obj(const char* filename, const DvzGeometryObjDesc* de
                 break;
             }
         }
-        else if (line[0] == 'f' && line[1] == ' ')
+        else if (record[0] == 'v' && record[1] == 't' && isspace((unsigned char)record[2]))
         {
-            if (!_obj_parse_face(line + 2, &arrays))
+            dvec2 value = {0};
+            if (sscanf(record + 3, "%lf %lf", &value[0], &value[1]) != 2 ||
+                !_obj_append_dvec2(
+                    &arrays.texcoords, &arrays.texcoord_count, &arrays.texcoord_capacity, value))
+            {
+                ok = false;
+                break;
+            }
+        }
+        else if (record[0] == 'f' && isspace((unsigned char)record[1]))
+        {
+            if (!_obj_parse_face(record + 2, &arrays))
             {
                 ok = false;
                 break;
             }
         }
     }
+    if (ferror(fp))
+        ok = false;
     fclose(fp);
 
     if (!ok || arrays.position_count == 0 || arrays.vertex_count == 0)
@@ -372,8 +431,11 @@ DvzGeometry* dvz_geometry_obj(const char* filename, const DvzGeometryObjDesc* de
         geometry->positions[i][1] = arrays.positions[face.position][1];
         geometry->positions[i][2] = arrays.positions[face.position][2];
         geometry->colors[i] = color;
-        geometry->texcoords[i][0] = 0.0;
-        geometry->texcoords[i][1] = 0.0;
+        if (face.texcoord != UINT32_MAX && face.texcoord < arrays.texcoord_count)
+        {
+            geometry->texcoords[i][0] = arrays.texcoords[face.texcoord][0];
+            geometry->texcoords[i][1] = arrays.texcoords[face.texcoord][1];
+        }
         geometry->indices[i] = i;
         if (face.normal != UINT32_MAX && face.normal < arrays.normal_count)
         {

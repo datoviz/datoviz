@@ -61,7 +61,7 @@ Generators produce ordinary indexed geometry payloads.
 | `dvz_geometry_plane` | center, width, height, z offset, color | implemented as indexed XY plane |
 | `dvz_geometry_gizmo_axes` | axis length, shaft/head dimensions, tessellation, per-axis colors | scene/app owns pinning and camera sync |
 | `dvz_geometry_surface_grid` | rows/cols, height/color arrays, origin, basis, height policy, normals, metadata | implemented with row/column provenance and height updates; richer update helpers remain future work |
-| `dvz_geometry_obj` | path, fallback color | first Wavefront OBJ slice supports vertices, normals, and polygon faces triangulated as fans |
+| `dvz_geometry_obj` | path, fallback color | Wavefront `v`, `vt`, `vn`, and polygon faces with independent or negative indices; faces are triangulated as fans |
 
 
 ## Derived Mesh Overlays
