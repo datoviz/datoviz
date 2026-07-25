@@ -950,3 +950,63 @@ void dvz_cmd_bind_graphics(DvzCommands* cmds, DvzGraphics* graphics)
         vkCmdSetBlendConstants(cmd, graphics->blend.blendConstants);
     }
 }
+
+
+
+/**
+ * Set the first dynamic viewport in a command buffer.
+ *
+ * @param cmds the set of command buffers to record
+ * @param viewport viewport state
+ */
+void dvz_cmd_set_viewport(DvzCommands* cmds, const VkViewport* viewport)
+{
+    ANN(cmds);
+    ANN(viewport);
+    VkCommandBuffer cmd = dvz_commands_handle(cmds);
+    ANNVK(cmd);
+    vkCmdSetViewport(cmd, 0, 1, viewport);
+}
+
+
+
+/**
+ * Set the first dynamic scissor in a command buffer.
+ *
+ * @param cmds the set of command buffers to record
+ * @param scissor scissor state
+ */
+void dvz_cmd_set_scissor(DvzCommands* cmds, const VkRect2D* scissor)
+{
+    ANN(cmds);
+    ANN(scissor);
+    VkCommandBuffer cmd = dvz_commands_handle(cmds);
+    ANNVK(cmd);
+    vkCmdSetScissor(cmd, 0, 1, scissor);
+}
+
+
+
+/**
+ * Set a full-frame dynamic viewport and scissor for an extent.
+ *
+ * @param cmds the set of command buffers to record
+ * @param extent full-frame extent
+ */
+void dvz_cmd_set_viewport_scissor(DvzCommands* cmds, VkExtent2D extent)
+{
+    VkViewport viewport = {
+        .x = 0,
+        .y = 0,
+        .width = (float)extent.width,
+        .height = (float)extent.height,
+        .minDepth = 0.0f,
+        .maxDepth = 1.0f,
+    };
+    VkRect2D scissor = {
+        .offset = {0, 0},
+        .extent = extent,
+    };
+    dvz_cmd_set_viewport(cmds, &viewport);
+    dvz_cmd_set_scissor(cmds, &scissor);
+}

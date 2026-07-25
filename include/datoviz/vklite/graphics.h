@@ -511,4 +511,36 @@ DVZ_EXPORT void dvz_cmd_bind_graphics(DvzCommands* cmds, DvzGraphics* graphics);
 
 
 
+/**
+ * Set the first dynamic viewport in a command buffer.
+ *
+ * @param cmds the set of command buffers to record
+ * @param viewport viewport state copied into the Vulkan command stream
+ */
+DVZ_EXPORT void dvz_cmd_set_viewport(DvzCommands* cmds, const VkViewport* viewport);
+
+
+
+/**
+ * Set the first dynamic scissor in a command buffer.
+ *
+ * @param cmds the set of command buffers to record
+ * @param scissor scissor state copied into the Vulkan command stream
+ */
+DVZ_EXPORT void dvz_cmd_set_scissor(DvzCommands* cmds, const VkRect2D* scissor);
+
+
+
+/**
+ * Set a full-frame dynamic viewport and scissor for an extent.
+ *
+ * The viewport uses x/y = 0, minDepth = 0, and maxDepth = 1. The scissor uses offset (0, 0).
+ *
+ * @param cmds the set of command buffers to record
+ * @param extent full-frame viewport and scissor extent
+ */
+DVZ_EXPORT void dvz_cmd_set_viewport_scissor(DvzCommands* cmds, VkExtent2D extent);
+
+
+
 EXTERN_C_OFF

@@ -193,6 +193,18 @@ int test_vklite_graphics_1(TstContext* suite, const TstCase* tstitem)
     dvz_cmd_barriers(cmds, &barriers);
     dvz_cmd_rendering_begin(cmds, rendering);
     dvz_cmd_bind_graphics(cmds, graphics);
+    VkViewport viewport = {
+        .x = 0,
+        .y = 0,
+        .width = WIDTH,
+        .height = HEIGHT,
+        .minDepth = 0,
+        .maxDepth = 1,
+    };
+    VkRect2D scissor = {.offset = {0, 0}, .extent = {WIDTH, HEIGHT}};
+    dvz_cmd_set_viewport(cmds, &viewport);
+    dvz_cmd_set_scissor(cmds, &scissor);
+    dvz_cmd_set_viewport_scissor(cmds, (VkExtent2D){WIDTH, HEIGHT});
     dvz_cmd_draw(cmds, 0, 3, 0, 1);
     dvz_cmd_rendering_end(cmds);
     dvz_cmd_end(cmds);

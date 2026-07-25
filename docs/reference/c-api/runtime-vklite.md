@@ -17,14 +17,14 @@ Common workflows:
 - [Debug rendering](../../how-to/debug-rendering.md)
 - [Runtime internals](../../advanced/runtime-internals.md)
 
-Functions: 292
+Functions: 295
 Types: 29
 
 ## Symbol Groups
 
 | Group | Functions | Types | Headers |
 | --- | ---: | ---: | --- |
-| [Commands And Rendering](#commands-and-rendering) | 59 | 3 | 8 headers |
+| [Commands And Rendering](#commands-and-rendering) | 62 | 3 | 8 headers |
 | [Device And Presentation](#device-and-presentation) | 38 | 4 | `include/datoviz/vklite/surface.h`, `include/datoviz/vklite/swapchain.h` |
 | [Pipelines And Bindings](#pipelines-and-bindings) | 70 | 6 | 5 headers |
 | [Resources](#resources) | 74 | 9 | 3 headers |
@@ -69,6 +69,9 @@ Types: 29
     | [`dvz_cmd_rendering_default()`](#dvz_cmd_rendering_default) | `include/datoviz/vklite/rendering.h` |
     | [`dvz_cmd_rendering_end()`](#dvz_cmd_rendering_end) | `include/datoviz/vklite/rendering.h` |
     | [`dvz_cmd_reset()`](#dvz_cmd_reset) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_cmd_set_scissor()`](#dvz_cmd_set_scissor) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_cmd_set_viewport()`](#dvz_cmd_set_viewport) | `include/datoviz/vklite/graphics.h` |
+    | [`dvz_cmd_set_viewport_scissor()`](#dvz_cmd_set_viewport_scissor) | `include/datoviz/vklite/graphics.h` |
     | [`dvz_cmd_submit()`](#dvz_cmd_submit) | `include/datoviz/vklite/commands.h` |
     | [`dvz_cmd_submit_result()`](#dvz_cmd_submit_result) | `include/datoviz/vklite/commands.h` |
     | [`dvz_command_buffer_alloc()`](#dvz_command_buffer_alloc) | `include/datoviz/vklite/commands.h` |
@@ -1082,6 +1085,62 @@ void dvz_cmd_reset(
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | the set of command buffers |
 
 _Declared in `include/datoviz/vklite/commands.h`:201._
+
+#### `dvz_cmd_set_scissor()` { #dvz_cmd_set_scissor .dvz-api-function }
+
+Set the first dynamic scissor in a command buffer.
+
+```c
+void dvz_cmd_set_scissor(
+    DvzCommands * cmds,
+    const VkRect2D * scissor
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | the set of command buffers to record |
+| `scissor` | `const` `VkRect2D` * | scissor state copied into the Vulkan command stream |
+
+_Declared in `include/datoviz/vklite/graphics.h`:530._
+
+#### `dvz_cmd_set_viewport()` { #dvz_cmd_set_viewport .dvz-api-function }
+
+Set the first dynamic viewport in a command buffer.
+
+```c
+void dvz_cmd_set_viewport(
+    DvzCommands * cmds,
+    const VkViewport * viewport
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | the set of command buffers to record |
+| `viewport` | `const` `VkViewport` * | viewport state copied into the Vulkan command stream |
+
+_Declared in `include/datoviz/vklite/graphics.h`:520._
+
+#### `dvz_cmd_set_viewport_scissor()` { #dvz_cmd_set_viewport_scissor .dvz-api-function }
+
+Set a full-frame dynamic viewport and scissor for an extent.
+
+The viewport uses x/y = 0, minDepth = 0, and maxDepth = 1. The scissor uses offset (0, 0).
+
+```c
+void dvz_cmd_set_viewport_scissor(
+    DvzCommands * cmds,
+    VkExtent2D extent
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | the set of command buffers to record |
+| `extent` | `VkExtent2D` | full-frame viewport and scissor extent |
+
+_Declared in `include/datoviz/vklite/graphics.h`:542._
 
 #### `dvz_cmd_submit()` { #dvz_cmd_submit .dvz-api-function }
 

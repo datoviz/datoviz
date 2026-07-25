@@ -1193,7 +1193,7 @@ DvzDrp2ValidationResult _vklite_set_viewport(
         .minDepth = 0.0f,
         .maxDepth = 1.0f,
     };
-    vkCmdSetViewport(dvz_commands_handle(pass->commands), 0, 1, &viewport);
+    dvz_cmd_set_viewport(pass->commands, &viewport);
     return _drp2_ok();
 }
 
@@ -1228,7 +1228,7 @@ DvzDrp2ValidationResult _vklite_set_scissor(
         .offset = {.x = (int32_t)x, .y = (int32_t)y},
         .extent = {.width = width, .height = height},
     };
-    vkCmdSetScissor(dvz_commands_handle(pass->commands), 0, 1, &scissor);
+    dvz_cmd_set_scissor(pass->commands, &scissor);
     return _drp2_ok();
 }
 

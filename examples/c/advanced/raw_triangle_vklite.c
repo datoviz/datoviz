@@ -227,15 +227,7 @@ static void draw_triangle(DvzCanvas* canvas, const DvzStreamFrame* frame, void* 
     dvz_cmd_bind_graphics(cmds, s->pipeline);
 
     /* Viewport and scissor must be set dynamically for dynamic rendering */
-    VkViewport vp = {
-        .x = 0, .y = 0,
-        .width  = (float)frame->extent.width,
-        .height = (float)frame->extent.height,
-        .minDepth = 0.0f, .maxDepth = 1.0f,
-    };
-    VkRect2D sc = {{0, 0}, frame->extent};
-    vkCmdSetViewport(cmd, 0, 1, &vp);
-    vkCmdSetScissor(cmd, 0, 1, &sc);
+    dvz_cmd_set_viewport_scissor(cmds, frame->extent);
 
     DvzSize offset = 0;
     dvz_cmd_bind_vertex_buffers(cmds, 0, 1, s->vbuf, &offset);
