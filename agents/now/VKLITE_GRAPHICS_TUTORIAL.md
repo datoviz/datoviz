@@ -86,6 +86,10 @@ Each chapter requires a preview, one principal concept, complete runnable source
 
 The public path must be a standalone CMake consumer using `find_package(datoviz CONFIG REQUIRED)`. Repository targets may provide contributor convenience but are not the reader prerequisite.
 
+Commits `1a748def3`, `3b567370a`, and `b5a5b989f` implement and publish the pilot. `first_triangle`, `shaders_and_pipeline`, and `vertex_buffers` compile one canonical `examples/c/tutorial/triangle.c` renderer with chapter-specific defaults; chapter two uses a visibly distinct external shader pair, and chapter three uploads interleaved C positions and colors into an owned mapped vertex buffer while frame commands remain borrowed. Repository and standalone installed-package CMake builds each ran three validated offscreen frames at `800x600`; all captures were nonblank, chapter two differed from chapter one, and the source and installed smoke paths are repeatable through `just vulkan-tutorial-smoke` and `just vulkan-tutorial-installed-smoke`.
+
+The public tutorial pages provide commands, one principal concept, complete-source and shader links, focused C and ownership guidance, visible experiments, deliberate failures, checkpoints, and exercises. `tools/check_vulkan_tutorial.py` keeps target names, shader mappings, required APIs, prose commands, and legacy-API exclusions synchronized. The pilot passes the 80-test vklite selection, 98-page/113-C-block snippet validation, strict MkDocs link and build validation, the full specification check, Python syntax validation for its checkers, and `git diff --check`. Exact screenshot assets, official packaged-provider and Linux/Windows hosted proof, and a platform-delivered live-resize smoke remain open.
+
 RC3 exit evidence must include:
 
 - source-tree and installed-package builds;
