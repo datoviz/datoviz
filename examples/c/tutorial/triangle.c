@@ -53,6 +53,10 @@
 #define DVZ_TUTORIAL_USE_INDEXED_DEPTH 0
 #endif
 
+#ifndef DVZ_TUTORIAL_USE_TEXTURE_UPLOAD
+#define DVZ_TUTORIAL_USE_TEXTURE_UPLOAD 0
+#endif
+
 #define SPIKE_PATH_MAX 4096
 
 
@@ -70,6 +74,7 @@ typedef struct
     const char* shader_dir;
     bool vertex_buffer;
     bool indexed_depth;
+    bool texture_upload;
 } SpikeOptions;
 
 
@@ -82,6 +87,9 @@ typedef struct
     float position[2];
 #endif
     float color[3];
+#if DVZ_TUTORIAL_USE_TEXTURE_UPLOAD
+    float texcoord[2];
+#endif
 } SpikeVertex;
 
 
@@ -94,6 +102,12 @@ static const SpikeVertex TRIANGLE_VERTICES[6] = {
     {{-0.35f, +0.70f, 0.70f}, {0.20f, 0.45f, 1.00f}},
     {{+0.70f, +0.70f, 0.70f}, {0.25f, 0.90f, 0.90f}},
     {{+0.15f, -0.55f, 0.70f}, {0.35f, 0.30f, 1.00f}},
+};
+#elif DVZ_TUTORIAL_USE_TEXTURE_UPLOAD
+static const SpikeVertex TRIANGLE_VERTICES[3] = {
+    {{0.00f, -0.75f}, {1.0f, 1.0f, 1.0f}, {0.50f, 1.00f}},
+    {{0.75f, +0.70f}, {1.0f, 1.0f, 1.0f}, {1.00f, 0.00f}},
+    {{-0.75f, +0.70f}, {1.0f, 1.0f, 1.0f}, {0.00f, 0.00f}},
 };
 #else
 static const SpikeVertex TRIANGLE_VERTICES[3] = {
@@ -114,12 +128,17 @@ typedef struct
     DvzGraphics* pipeline;
     DvzBuffer* vertex_buffer;
     DvzBuffer* index_buffer;
+    DvzImages* texture;
+    DvzImageViews* texture_view;
+    DvzSampler* sampler;
+    DvzDescriptors* descriptors;
     DvzCommands* commands;
     DvzRendering* rendering;
     VkFormat color_format;
     const char* shader_dir;
     bool use_vertex_buffer;
     bool use_indexed_depth;
+    bool use_texture_upload;
     bool create_failed;
     uint64_t draw_count;
     uint64_t extent_change_count;
@@ -183,6 +202,7 @@ static int _parse_options(int argc, char** argv, SpikeOptions* options)
         .shader_dir = DVZ_TUTORIAL_SHADER_DIR,
         .vertex_buffer = DVZ_TUTORIAL_USE_VERTEX_BUFFER != 0,
         .indexed_depth = DVZ_TUTORIAL_USE_INDEXED_DEPTH != 0,
+        .texture_upload = DVZ_TUTORIAL_USE_TEXTURE_UPLOAD != 0,
     };
 
     for (int i = 1; i < argc; i++)
@@ -260,6 +280,26 @@ static void _renderer_destroy(SpikeRenderer* renderer)
         dvz_buffer_free(renderer->index_buffer);
         renderer->index_buffer = NULL;
     }
+    dvz_descriptors_free(renderer->descriptors);
+    renderer->descriptors = NULL;
+    if (renderer->sampler != NULL)
+    {
+        dvz_sampler_destroy(renderer->sampler);
+        dvz_sampler_free(renderer->sampler);
+        renderer->sampler = NULL;
+    }
+    if (renderer->texture_view != NULL)
+    {
+        dvz_image_views_destroy(renderer->texture_view);
+        dvz_image_views_free(renderer->texture_view);
+        renderer->texture_view = NULL;
+    }
+    if (renderer->texture != NULL)
+    {
+        dvz_images_destroy(renderer->texture);
+        dvz_images_free(renderer->texture);
+        renderer->texture = NULL;
+    }
     if (renderer->pipeline != NULL)
     {
         dvz_graphics_destroy(renderer->pipeline);
@@ -329,6 +369,131 @@ static int _compile_shader(
 
 
 /**
+ * Create and upload a small procedural sRGB texture.
+ *
+ * The upload remains deliberately explicit: host-visible staging storage, two image-layout
+ * transitions, the copy, blocking submission, view, sampler, and descriptor are separate objects.
+ *
+ * @param renderer renderer receiving the owned texture resources
+ * @return 0 on success or -1 on failure
+ */
+static int _renderer_create_texture(SpikeRenderer* renderer)
+{
+    static const uint8_t PIXELS[4 * 4 * 4] = {
+        255, 64,  64,  255, 255, 64,  64,  255, 32,  210, 220, 255, 32, 210, 220, 255,
+        255, 190, 32,  255, 255, 255, 255, 255, 60,  70,  130, 255, 32, 210, 220, 255,
+        180, 60,  220, 255, 180, 60,  220, 255, 255, 255, 255, 255, 40, 210, 110, 255,
+        180, 60,  220, 255, 20,  25,  45,  255, 40,  210, 110, 255, 40, 210, 110, 255,
+    };
+
+    DvzBuffer* staging = dvz_buffer_create_wrapper();
+    DvzCommands* upload = dvz_commands_create_wrapper();
+    renderer->texture = dvz_images_create_wrapper();
+    renderer->texture_view = dvz_image_views_create_wrapper();
+    renderer->sampler = dvz_sampler_create_wrapper();
+    renderer->descriptors = dvz_descriptors_create_wrapper();
+    if (staging == NULL || upload == NULL || renderer->texture == NULL ||
+        renderer->texture_view == NULL || renderer->sampler == NULL ||
+        renderer->descriptors == NULL)
+    {
+        goto error;
+    }
+
+    dvz_buffer(renderer->device, renderer->allocator, staging);
+    dvz_buffer_size(staging, sizeof(PIXELS));
+    dvz_buffer_usage(staging, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    dvz_buffer_flags(staging, DVZ_ALLOC_MAPPED | DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE);
+    if (dvz_buffer_create(staging) != 0)
+        goto error;
+    dvz_buffer_upload(staging, 0, sizeof(PIXELS), PIXELS);
+
+    dvz_images(renderer->device, renderer->allocator, VK_IMAGE_TYPE_2D, 1, renderer->texture);
+    dvz_images_format(renderer->texture, VK_FORMAT_R8G8B8A8_SRGB);
+    dvz_images_size(renderer->texture, 4, 4, 1);
+    dvz_images_usage(
+        renderer->texture, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    if (dvz_images_create(renderer->texture) != 0)
+        goto error;
+
+    dvz_image_views(renderer->texture, renderer->texture_view);
+    if (dvz_image_views_create(renderer->texture_view) != 0)
+        goto error;
+
+    dvz_sampler(renderer->device, renderer->sampler);
+    dvz_sampler_min_filter(renderer->sampler, VK_FILTER_NEAREST);
+    dvz_sampler_mag_filter(renderer->sampler, VK_FILTER_NEAREST);
+    dvz_sampler_address_mode(
+        renderer->sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_address_mode(
+        renderer->sampler, DVZ_SAMPLER_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    if (dvz_sampler_create(renderer->sampler) != 0)
+        goto error;
+
+    dvz_commands(renderer->device, dvz_device_queue(renderer->device, DVZ_QUEUE_MAIN), 1, upload);
+    if (dvz_cmd_begin_result(upload) != 0)
+        goto error;
+
+    DvzBarriers barriers = {0};
+    dvz_barriers(&barriers);
+    DvzBarrierImage* image_barrier =
+        dvz_barriers_image(&barriers, dvz_image_handle(renderer->texture, 0));
+    if (image_barrier == NULL)
+        goto error;
+    dvz_barrier_image_stage(image_barrier, VK_PIPELINE_STAGE_2_NONE, VK_PIPELINE_STAGE_2_COPY_BIT);
+    dvz_barrier_image_access(image_barrier, 0, VK_ACCESS_2_TRANSFER_WRITE_BIT);
+    dvz_barrier_image_layout(
+        image_barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    dvz_barrier_image_aspect(image_barrier, VK_IMAGE_ASPECT_COLOR_BIT);
+    dvz_cmd_barriers(upload, &barriers);
+
+    DvzImageRegion region = {0};
+    dvz_image_region(&region);
+    dvz_image_region_extent(&region, 4, 4, 1);
+    dvz_cmd_copy_buffer_to_image(
+        upload, dvz_buffer_handle(staging), 0, dvz_image_handle(renderer->texture, 0),
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &region);
+
+    dvz_barrier_image_stage(
+        image_barrier, VK_PIPELINE_STAGE_2_COPY_BIT, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
+    dvz_barrier_image_access(
+        image_barrier, VK_ACCESS_2_TRANSFER_WRITE_BIT, VK_ACCESS_2_SHADER_SAMPLED_READ_BIT);
+    dvz_barrier_image_layout(
+        image_barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    dvz_cmd_barriers(upload, &barriers);
+    if (dvz_cmd_end_result(upload) != 0 || dvz_cmd_submit_result(upload) != 0)
+        goto error;
+
+    dvz_descriptors(renderer->slots, renderer->descriptors);
+    dvz_descriptors_image(
+        renderer->descriptors, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        dvz_image_views_handle(renderer->texture_view, 0), dvz_sampler_handle(renderer->sampler));
+    if (dvz_descriptors_handle(renderer->descriptors, 0) == VK_NULL_HANDLE)
+        goto error;
+
+    dvz_commands_destroy(upload);
+    dvz_commands_free(upload);
+    dvz_buffer_destroy(staging);
+    dvz_buffer_free(staging);
+    return 0;
+
+error:
+    if (upload != NULL)
+    {
+        dvz_commands_destroy(upload);
+        dvz_commands_free(upload);
+    }
+    if (staging != NULL)
+    {
+        dvz_buffer_destroy(staging);
+        dvz_buffer_free(staging);
+    }
+    return -1;
+}
+
+
+
+/**
  * Compile the external spike shaders and create the graphics pipeline.
  *
  * @param renderer renderer receiving owned vklite objects
@@ -377,7 +542,14 @@ static int _renderer_create(
         goto error;
 
     dvz_slots(device, renderer->slots);
-    dvz_slots_create(renderer->slots);
+    if (renderer->use_texture_upload)
+    {
+        dvz_slots_binding(
+            renderer->slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    }
+    if (dvz_slots_create(renderer->slots) != 0)
+        goto error;
 
     dvz_graphics(device, renderer->pipeline);
     dvz_graphics_shader(
@@ -395,6 +567,10 @@ static int _renderer_create(
         dvz_graphics_vertex_attr(
             renderer->pipeline, 0, 1, VK_FORMAT_R32G32B32_SFLOAT,
             offsetof(SpikeVertex, color));
+#if DVZ_TUTORIAL_USE_TEXTURE_UPLOAD
+        dvz_graphics_vertex_attr(
+            renderer->pipeline, 0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(SpikeVertex, texcoord));
+#endif
     }
     dvz_graphics_primitive(renderer->pipeline, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     dvz_graphics_attachment_color(renderer->pipeline, 0, color_format);
@@ -462,6 +638,11 @@ static int _renderer_create(
         }
         dvz_buffer_upload(
             renderer->index_buffer, 0, sizeof(TRIANGLE_INDICES), TRIANGLE_INDICES);
+    }
+    if (renderer->use_texture_upload && _renderer_create_texture(renderer) != 0)
+    {
+        _renderer_destroy(renderer);
+        return -1;
     }
     return 0;
 
@@ -567,6 +748,11 @@ static void _draw_triangle(DvzCanvas* canvas, const DvzStreamFrame* frame, void*
     }
 
     dvz_cmd_set_viewport_scissor(commands, frame->extent);
+    if (renderer->use_texture_upload)
+    {
+        dvz_cmd_bind_descriptors(
+            commands, VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->descriptors, 0, 1, 0, NULL);
+    }
     if (renderer->use_indexed_depth)
         dvz_cmd_draw_indexed(commands, 0, 0, 6, 0, 1);
     else
@@ -666,8 +852,10 @@ static int _runtime_create(SpikeRuntime* runtime, const SpikeOptions* options)
     runtime->renderer.device = dvz_gpu_ctx_device(runtime->gpu);
     runtime->renderer.allocator = dvz_gpu_ctx_alloc(runtime->gpu);
     runtime->renderer.shader_dir = options->shader_dir;
-    runtime->renderer.use_vertex_buffer = options->vertex_buffer || options->indexed_depth;
+    runtime->renderer.use_vertex_buffer =
+        options->vertex_buffer || options->indexed_depth || options->texture_upload;
     runtime->renderer.use_indexed_depth = options->indexed_depth;
+    runtime->renderer.use_texture_upload = options->texture_upload;
     runtime->renderer.commands = dvz_commands_create_wrapper();
     runtime->renderer.rendering = dvz_rendering_create_wrapper();
     if (runtime->renderer.commands == NULL || runtime->renderer.rendering == NULL)

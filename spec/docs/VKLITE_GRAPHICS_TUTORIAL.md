@@ -296,6 +296,8 @@ The accepted first-result profile consists of `dvz_canvas_configure_gpu_ctx()`, 
 
 The accepted depth profile uses `DvzCanvasConfig.depth_format`: `VK_FORMAT_UNDEFINED` disables depth, while a depth or depth-stencil format requests one Canvas-owned attachment per frame resource set. `DvzStreamFrame.depth_image`, `depth_view`, `depth_format`, `depth_layout`, `depth_image_borrowed`, `depth_view_borrowed`, and `depth_valid` describe the callback-duration attachment. Canvas creates, transitions, recreates, and destroys it with the matching color resource; `resource_generation`, `handles_dirty`, format, and extent describe the coupled resource set. The callback may attach the reported view in the reported layout but must not destroy, transition, or retain the borrowed handles.
 
+The accepted image-upload profile uses the existing vklite resource and command boundaries rather than an opaque upload helper. Initialization creates an owned host-visible staging buffer, sampled image, image view, sampler, descriptor slots, and descriptors; records the explicit `UNDEFINED` to `TRANSFER_DST_OPTIMAL` barrier, buffer-to-image copy, and `TRANSFER_DST_OPTIMAL` to `SHADER_READ_ONLY_OPTIMAL` barrier; then performs one blocking owned-command submission before releasing staging storage. The sampled image, view, sampler, and descriptors remain owned by the renderer and are destroyed in dependency-safe order after submitted drawing completes. Convenience may reduce wrapper allocation in future only if it keeps layouts, stages, access scopes, ownership, and synchronization visible at the call site.
+
 
 ## Validation Direction
 

@@ -18,7 +18,7 @@ from capture_gallery import png_is_nonblank
 ROOT = Path(__file__).resolve().parents[1]
 TUTORIAL_SOURCE = ROOT / "examples" / "c" / "tutorial"
 CHAPTERS = ("first_triangle", "shaders_and_pipeline", "vertex_buffers")
-EXECUTABLES = (*CHAPTERS, "indexed_depth_spike")
+EXECUTABLES = (*CHAPTERS, "indexed_depth_spike", "texture_upload_spike")
 
 
 def _run(command: list[str], env: dict[str, str] | None = None) -> None:
@@ -40,16 +40,20 @@ def _run(command: list[str], env: dict[str, str] | None = None) -> None:
 
 def _runtime_environment(prefix: Path | None, runtime_dirs: list[Path]) -> dict[str, str]:
     env = os.environ.copy()
-    directories = [str(path) for path in runtime_dirs]
+    directories = [str(path.resolve()) for path in runtime_dirs]
     if prefix is not None:
         directories = [str(prefix / "lib"), str(prefix / "lib64"), *directories]
     variable = "PATH"
     if platform.system() == "Darwin":
-        variable = "DYLD_LIBRARY_PATH"
+        variable = "DYLD_FALLBACK_LIBRARY_PATH"
     elif platform.system() != "Windows":
         variable = "LD_LIBRARY_PATH"
     previous = env.get(variable)
     env[variable] = os.pathsep.join([*directories, *([previous] if previous else [])])
+    previous_runtime_dirs = env.get("DVZ_WHEEL_RUNTIME_DIRS")
+    env["DVZ_WHEEL_RUNTIME_DIRS"] = os.pathsep.join(
+        [*directories, *([previous_runtime_dirs] if previous_runtime_dirs else [])]
+    )
     return env
 
 
@@ -117,6 +121,8 @@ def main() -> int:
 
     if hashes["first_triangle"] == hashes["shaders_and_pipeline"]:
         raise RuntimeError("chapter two capture does not differ from chapter one")
+    if len(set(hashes.values())) != len(hashes):
+        raise RuntimeError("tutorial chapters or enabling spikes produced duplicate captures")
     print("Vulkan tutorial examples smoke: OK")
     if temporary_build is not None:
         temporary_build.cleanup()

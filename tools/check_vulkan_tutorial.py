@@ -94,6 +94,32 @@ def main() -> int:
         if not depth_shader.is_file():
             errors.append(f"missing depth spike shader {depth_shader.relative_to(ROOT)}")
 
+    for token in (
+        "texture_upload_spike",
+        "DVZ_TUTORIAL_USE_TEXTURE_UPLOAD=1",
+        'DVZ_TUTORIAL_SHADER_DIR="${CMAKE_CURRENT_SOURCE_DIR}/shaders/texture"',
+    ):
+        _require(cmake, token, "examples/c/tutorial/CMakeLists.txt", errors)
+    for token in (
+        "VK_FORMAT_R8G8B8A8_SRGB",
+        "VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL",
+        "VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL",
+        "VK_ACCESS_2_SHADER_SAMPLED_READ_BIT",
+        "dvz_barrier_image_stage(",
+        "dvz_barrier_image_access(",
+        "dvz_barrier_image_layout(",
+        "dvz_cmd_copy_buffer_to_image(",
+        "dvz_sampler_create(",
+        "dvz_slots_binding(",
+        "dvz_descriptors_image(",
+        "dvz_cmd_bind_descriptors(",
+    ):
+        _require(source, token, "examples/c/tutorial/triangle.c", errors)
+    for suffix in ("vert", "frag"):
+        texture_shader = EXAMPLE / "shaders" / "texture" / f"vklite_triangle.{suffix}"
+        if not texture_shader.is_file():
+            errors.append(f"missing texture spike shader {texture_shader.relative_to(ROOT)}")
+
     for target, (doc_name, preview_name, shader_dir, uses_vertex_buffer) in CHAPTERS.items():
         cmake_label = "examples/c/tutorial/CMakeLists.txt"
         _require(cmake, f"add_tutorial_chapter({target} {shader_dir} ", cmake_label, errors)

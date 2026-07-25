@@ -37,11 +37,11 @@ check-howto-snippets:
 vulkan-tutorial-check:
     python3 tools/check_vulkan_tutorial.py
 
-# Run all three compiled tutorial chapters offscreen and validate their captures.
+# Run all compiled tutorial chapters and enabling spikes offscreen and validate their captures.
 vulkan-tutorial-smoke: build
     python3 tools/run_vulkan_tutorial.py
 
-# Build all three tutorial chapters against an installed prefix, then validate them offscreen.
+# Build all tutorial chapters and enabling spikes against an installed prefix, then validate them.
 vulkan-tutorial-installed-smoke prefix runtime_dir="":
     #!/usr/bin/env bash
     set -euo pipefail
