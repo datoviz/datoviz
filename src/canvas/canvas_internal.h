@@ -104,6 +104,11 @@ struct DvzCanvas
     DvzAllocation* offscreen_alloc;
     DvzImages* offscreen_images;
     DvzImageViews* offscreen_views;
+    DvzImages* offscreen_depth_images;
+    DvzImageViews* offscreen_depth_views;
+    VkImage offscreen_depth_image;
+    VkImageView offscreen_depth_view;
+    VkImageLayout offscreen_depth_layout;
     VkImageLayout offscreen_layout;
     VkCommandBuffer offscreen_command_buffer;
     VkImage retired_offscreen_image;
@@ -111,6 +116,10 @@ struct DvzCanvas
     DvzAllocation* retired_offscreen_alloc;
     DvzImages* retired_offscreen_images;
     DvzImageViews* retired_offscreen_views;
+    DvzImages* retired_offscreen_depth_images;
+    DvzImageViews* retired_offscreen_depth_views;
+    VkImage retired_offscreen_depth_image;
+    VkImageView retired_offscreen_depth_view;
     VkCommandBuffer retired_offscreen_command_buffer;
     int retired_offscreen_memory_fd;
     VkQueue offscreen_queue;
@@ -193,6 +202,19 @@ void dvz_canvas_swapchain_destroy(DvzCanvas* canvas);
 int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame);
 
 int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value);
+
+bool dvz_canvas_depth_format_valid(VkFormat format);
+
+VkImageAspectFlags dvz_canvas_depth_aspect(VkFormat format);
+
+VkImageLayout dvz_canvas_depth_layout(VkFormat format);
+
+int dvz_canvas_depth_create(
+    DvzCanvas* canvas, VkExtent2D extent, DvzImages** images, DvzImageViews** views,
+    VkImage* image, VkImageView* view);
+
+void dvz_canvas_depth_destroy(
+    DvzImages** images, DvzImageViews** views, VkImage* image, VkImageView* view);
 
 void dvz_canvas_swapchain_mark_out_of_date(DvzCanvas* canvas);
 

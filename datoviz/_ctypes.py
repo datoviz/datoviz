@@ -5035,6 +5035,7 @@ DvzCanvasConfig._fields_ = [
     ('device', ctypes.POINTER(DvzDevice)),
     ('render_mode', ctypes.c_int),
     ('color_format', ctypes.c_int),
+    ('depth_format', ctypes.c_int),
     ('present_mode', ctypes.c_int),
     ('enable_video_sink', ctypes.c_bool),
     ('timing_history', ctypes.c_size_t),
@@ -10149,7 +10150,9 @@ else:
  *
  * The caller must set the borrowed `window` and `device` fields before creating a canvas. The
  * returned configuration selects present rendering, FIFO presentation, the runtime default color
- * format, and `DVZ_CANVAS_DEFAULT_TIMING_HISTORY` timing samples.
+ * format, no depth attachment, and `DVZ_CANVAS_DEFAULT_TIMING_HISTORY` timing samples. Set
+ * `depth_format` to a supported Vulkan depth or depth-stencil format to request a Canvas-owned
+ * attachment for every frame resource set.
  *
  * @returns the initialized configuration
  */"""

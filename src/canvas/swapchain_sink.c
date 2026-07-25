@@ -65,11 +65,16 @@ struct DvzCanvasSwapchainSlot
     VkImageView swapchain_view;
     DvzImages* offscreen_images;
     DvzImageViews* offscreen_views;
+    DvzImages* depth_images;
+    DvzImageViews* depth_views;
+    VkImage depth_image;
+    VkImageView depth_view;
     DvzAllocation* offscreen_alloc;
     DvzSemaphore* image_available;
     DvzFence* in_flight;
     VkCommandBuffer command_buffer;
     VkImageLayout offscreen_layout;
+    VkImageLayout depth_layout;
     VkImageLayout swapchain_layout;
     VkExtent2D offscreen_extent;
     uint32_t image_index;
@@ -267,6 +272,10 @@ static VkPipelineStageFlags2 canvas_stage_for_layout(VkImageLayout layout)
         return VK_PIPELINE_STAGE_2_NONE;
     case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
         return VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+    case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+    case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+        return VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
+               VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
     case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
         return VK_PIPELINE_STAGE_2_TRANSFER_BIT;
     case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
@@ -292,6 +301,10 @@ static VkAccessFlags2 canvas_access_for_layout(VkImageLayout layout)
         return 0;
     case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
         return VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT;
+    case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+    case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+        return VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+               VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
     case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
         return VK_ACCESS_2_TRANSFER_READ_BIT;
     case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
@@ -309,7 +322,7 @@ static VkAccessFlags2 canvas_access_for_layout(VkImageLayout layout)
 
 static void canvas_cmd_pipeline_barrier(
     DvzCanvas* canvas, VkCommandBuffer cmd, VkImage image, VkImageLayout old_layout,
-    VkImageLayout new_layout, VkPipelineStageFlags2 src_stage)
+    VkImageLayout new_layout, VkPipelineStageFlags2 src_stage, VkImageAspectFlags aspect)
 {
     if (!canvas || cmd == VK_NULL_HANDLE || image == VK_NULL_HANDLE || old_layout == new_layout)
     {
@@ -327,6 +340,7 @@ static void canvas_cmd_pipeline_barrier(
     dvz_barrier_image_access(
         bimg, canvas_access_for_layout(old_layout), canvas_access_for_layout(new_layout));
     dvz_barrier_image_layout(bimg, old_layout, new_layout);
+    dvz_barrier_image_aspect(bimg, aspect);
 
     dvz_cmd_barriers(cmds, &barriers);
     dvz_commands_free(cmds);
@@ -338,7 +352,18 @@ static void canvas_cmd_transition(
     VkImageLayout new_layout)
 {
     canvas_cmd_pipeline_barrier(
-        canvas, cmd, image, old_layout, new_layout, canvas_stage_for_layout(old_layout));
+        canvas, cmd, image, old_layout, new_layout, canvas_stage_for_layout(old_layout),
+        VK_IMAGE_ASPECT_COLOR_BIT);
+}
+
+
+static void canvas_cmd_transition_depth(
+    DvzCanvas* canvas, VkCommandBuffer cmd, VkImage image, VkImageLayout old_layout,
+    VkImageLayout new_layout)
+{
+    canvas_cmd_pipeline_barrier(
+        canvas, cmd, image, old_layout, new_layout, canvas_stage_for_layout(old_layout),
+        dvz_canvas_depth_aspect(canvas->cfg.depth_format));
 }
 
 
@@ -348,7 +373,8 @@ static void canvas_cmd_transition_swapchain(
 {
     VkPipelineStageFlags2 release_stage =
         VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-    canvas_cmd_pipeline_barrier(canvas, cmd, image, old_layout, new_layout, release_stage);
+    canvas_cmd_pipeline_barrier(
+        canvas, cmd, image, old_layout, new_layout, release_stage, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 
@@ -454,6 +480,13 @@ static int canvas_slot_begin_recording(DvzCanvasSwapchain* swapchain, DvzCanvasS
         swapchain->canvas, cmd, slot->offscreen_image, slot->offscreen_layout,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     slot->offscreen_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    if (slot->depth_image != VK_NULL_HANDLE)
+    {
+        canvas_cmd_transition_depth(
+            swapchain->canvas, cmd, slot->depth_image, slot->depth_layout,
+            dvz_canvas_depth_layout(swapchain->canvas->cfg.depth_format));
+        slot->depth_layout = dvz_canvas_depth_layout(swapchain->canvas->cfg.depth_format);
+    }
     slot->commands_recording = true;
     dvz_commands_free(cmds);
     return 0;
@@ -538,10 +571,13 @@ static bool canvas_slot_init(
 
     dvz_memset(slot, sizeof(*slot), 0, sizeof(*slot));
     slot->offscreen_view = VK_NULL_HANDLE;
+    slot->depth_image = VK_NULL_HANDLE;
+    slot->depth_view = VK_NULL_HANDLE;
     slot->swapchain_image = VK_NULL_HANDLE;
     slot->swapchain_view = VK_NULL_HANDLE;
     slot->image_index = UINT32_MAX;
     slot->offscreen_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    slot->depth_layout = VK_IMAGE_LAYOUT_UNDEFINED;
     slot->swapchain_layout = VK_IMAGE_LAYOUT_UNDEFINED;
     slot->offscreen_extent = extent;
     slot->handles_dirty = handles_changed;
@@ -637,6 +673,13 @@ static bool canvas_slot_init(
         slot->offscreen_views = NULL;
         dvz_images_free(slot->offscreen_images);
         slot->offscreen_images = NULL;
+        return false;
+    }
+    if (
+        dvz_canvas_depth_create(
+            canvas, extent, &slot->depth_images, &slot->depth_views, &slot->depth_image,
+            &slot->depth_view) != 0)
+    {
         return false;
     }
 
@@ -943,6 +986,8 @@ static void canvas_destroy_slot(
         slot->offscreen_views = NULL;
         slot->offscreen_view = VK_NULL_HANDLE;
     }
+    dvz_canvas_depth_destroy(
+        &slot->depth_images, &slot->depth_views, &slot->depth_image, &slot->depth_view);
     if (slot->offscreen_images != NULL)
     {
         dvz_images_free(slot->offscreen_images);
@@ -976,6 +1021,7 @@ static void canvas_destroy_slot(
     slot->swapchain_image = VK_NULL_HANDLE;
     slot->commands_recording = false;
     slot->handles_dirty = false;
+    slot->depth_layout = VK_IMAGE_LAYOUT_UNDEFINED;
     slot->offscreen_extent = (VkExtent2D){0, 0};
 }
 
@@ -1332,16 +1378,26 @@ static void canvas_frame_from_slot(
     frame->extent = slot->offscreen_extent;
     frame->color_format = state->frame_format;
     frame->image_layout = slot->offscreen_layout;
+    frame->depth_image = slot->depth_image;
+    frame->depth_view = slot->depth_view;
+    frame->depth_format = state->canvas->cfg.depth_format;
+    frame->depth_layout = slot->depth_layout;
     frame->usage = DVZ_STREAM_FRAME_USAGE_RENDER_TARGET | DVZ_STREAM_FRAME_USAGE_COPY_SRC |
                    DVZ_STREAM_FRAME_USAGE_COPY_DST;
     frame->command_buffer_recording = slot->commands_recording;
     frame->image_borrowed = true;
     frame->image_view_borrowed = true;
     frame->command_buffer_borrowed = true;
+    frame->depth_image_borrowed = frame->depth_image != VK_NULL_HANDLE;
+    frame->depth_view_borrowed = frame->depth_view != VK_NULL_HANDLE;
     frame->handles_dirty = slot->handles_dirty;
     frame->resource_generation = slot->resource_generation;
     frame->image_valid = frame->image != VK_NULL_HANDLE && frame->image_view != VK_NULL_HANDLE &&
                          frame->extent.width > 0 && frame->extent.height > 0;
+    frame->depth_valid =
+        frame->depth_format != VK_FORMAT_UNDEFINED && frame->depth_image != VK_NULL_HANDLE &&
+        frame->depth_view != VK_NULL_HANDLE &&
+        frame->depth_layout == dvz_canvas_depth_layout(frame->depth_format);
     frame->memory_fd = slot->memory_fd;
     frame->wait_semaphore_fd = -1;
 }

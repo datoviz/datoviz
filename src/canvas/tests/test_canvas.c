@@ -179,6 +179,12 @@ canvas_offscreen_clear_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void
     dvz_cmd_rendering_default(
         cmds, frame->image_view, frame->extent.width, frame->extent.height,
         (VkClearValue){.color.float32 = {0.08f, 0.12f, 0.16f, 1.00f}}, rendering);
+    if (frame->depth_valid)
+    {
+        DvzAttachment* depth = dvz_rendering_depth(rendering);
+        dvz_attachment_image(depth, frame->depth_view, frame->depth_layout);
+        dvz_attachment_clear(depth, (VkClearValue){.depthStencil = {1.0f, 0}});
+    }
     dvz_cmd_rendering_begin(cmds, rendering);
     dvz_cmd_rendering_end(cmds);
     dvz_rendering_free(rendering);
@@ -512,6 +518,7 @@ int test_canvas_defaults(TstContext* suite, const TstCase* item)
     AT(cfg.device == NULL);
     AT(cfg.render_mode == DVZ_CANVAS_RENDER_MODE_PRESENT);
     AT(cfg.color_format == VK_FORMAT_UNDEFINED);
+    AT(cfg.depth_format == VK_FORMAT_UNDEFINED);
     AT(cfg.present_mode == VK_PRESENT_MODE_FIFO_KHR);
     AT(!cfg.enable_video_sink);
     AT(cfg.timing_history == DVZ_CANVAS_DEFAULT_TIMING_HISTORY);
@@ -533,6 +540,36 @@ int test_canvas_config_rejects_invalid_abi(TstContext* suite, const TstCase* ite
     cfg.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_canvas_create(&cfg) == NULL);
 
+    cfg = dvz_canvas_config();
+    cfg.depth_format = VK_FORMAT_R8G8B8A8_UNORM;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_canvas_create(&cfg) == NULL);
+
+    return 0;
+}
+
+
+
+/**
+ * Validate accepted Canvas depth formats, aspects, and attachment layouts.
+ */
+static int test_canvas_depth_formats(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    AT(dvz_canvas_depth_format_valid(VK_FORMAT_UNDEFINED));
+    AT(dvz_canvas_depth_format_valid(VK_FORMAT_D32_SFLOAT));
+    AT(dvz_canvas_depth_format_valid(VK_FORMAT_D24_UNORM_S8_UINT));
+    AT(!dvz_canvas_depth_format_valid(VK_FORMAT_R8G8B8A8_UNORM));
+    AT(dvz_canvas_depth_aspect(VK_FORMAT_D32_SFLOAT) == VK_IMAGE_ASPECT_DEPTH_BIT);
+    AT(
+        dvz_canvas_depth_aspect(VK_FORMAT_D24_UNORM_S8_UINT) ==
+        (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT));
+    AT(
+        dvz_canvas_depth_layout(VK_FORMAT_D32_SFLOAT) ==
+        VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+    AT(
+        dvz_canvas_depth_layout(VK_FORMAT_D24_UNORM_S8_UINT) ==
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     return 0;
 }
 
@@ -781,6 +818,96 @@ offscreen_recreate_cleanup:
     {
         dvz_window_host_destroy(host);
     }
+    canvas_test_destroy_instance_device(instance, device);
+    return 0;
+}
+
+
+
+/**
+ * Validate Canvas-owned offscreen depth metadata, rendering, and resize recreation.
+ */
+static int test_canvas_offscreen_depth_attachment(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    const char* skip_reason = NULL;
+    DvzInstance* instance = NULL;
+    DvzDevice* device = NULL;
+    DvzWindowHost* host = NULL;
+    DvzWindow* window = NULL;
+    DvzCanvas* canvas = NULL;
+
+    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
+        goto offscreen_depth_cleanup;
+
+    host = dvz_window_host();
+    ANN(host);
+    DvzWindowConfig window_cfg = dvz_window_config();
+    window_cfg.title = "canvas-offscreen-depth";
+    window_cfg.width = 320;
+    window_cfg.height = 240;
+    window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &window_cfg);
+    if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_OFFSCREEN)
+    {
+        skip_reason = "headless window creation failed";
+        goto offscreen_depth_cleanup;
+    }
+
+    DvzCanvasConfig cfg = dvz_canvas_config();
+    cfg.window = window;
+    cfg.device = device;
+    cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+    cfg.depth_format = VK_FORMAT_D32_SFLOAT;
+    canvas = dvz_canvas_create(&cfg);
+    AT(canvas != NULL);
+    dvz_canvas_set_draw_callback(canvas, canvas_offscreen_clear_draw, NULL);
+
+    AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+    DvzStreamFrame* frame = dvz_canvas_frame_pool_current(&canvas->frame_pool);
+    AT(frame != NULL);
+    AT(frame->depth_valid);
+    AT(frame->depth_image != VK_NULL_HANDLE);
+    AT(frame->depth_view != VK_NULL_HANDLE);
+    AT(frame->depth_format == VK_FORMAT_D32_SFLOAT);
+    AT(frame->depth_layout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+    AT(frame->depth_image_borrowed);
+    AT(frame->depth_view_borrowed);
+    AT(frame->extent.width == 320);
+    AT(frame->extent.height == 240);
+    uint64_t first_generation = frame->resource_generation;
+    VkImage first_depth_image = frame->depth_image;
+    VkImageView first_depth_view = frame->depth_view;
+    AT(dvz_canvas_submit(canvas) == 0);
+
+    AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+    frame = dvz_canvas_frame_pool_current(&canvas->frame_pool);
+    AT(frame->resource_generation == first_generation);
+    AT(frame->depth_image == first_depth_image);
+    AT(frame->depth_view == first_depth_view);
+    AT(dvz_canvas_submit(canvas) == 0);
+
+    dvz_window_backend_emit_resize(window, 400, 300, 400, 300, 1.0f, 1.0f);
+    AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+    frame = dvz_canvas_frame_pool_current(&canvas->frame_pool);
+    AT(frame->depth_valid);
+    AT(frame->extent.width == 400);
+    AT(frame->extent.height == 300);
+    AT(frame->resource_generation > first_generation);
+    AT(frame->depth_image != first_depth_image);
+    AT(frame->depth_view != first_depth_view);
+    AT(dvz_canvas_submit(canvas) == 0);
+
+offscreen_depth_cleanup:
+    if (skip_reason != NULL)
+        tst_skip(suite, skip_reason);
+    if (canvas != NULL)
+        dvz_canvas_destroy(canvas);
+    if (window != NULL)
+        dvz_window_destroy(window);
+    if (host != NULL)
+        dvz_window_host_destroy(host);
     canvas_test_destroy_instance_device(instance, device);
     return 0;
 }
@@ -1975,12 +2102,15 @@ int test_canvas(TstSuite* suite)
     TST_MODULE(suite, tags);
     TST_CANVAS_CASE(test_canvas_defaults, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_config_rejects_invalid_abi, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
+    TST_CANVAS_CASE(test_canvas_depth_formats, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_configure_gpu_ctx, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_frame_format, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_frame_pool, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_timings, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(
         test_canvas_offscreen_destroy_recreate, TST_CANVAS_VK_RES, TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_offscreen_depth_attachment, TST_CANVAS_VK_RES, TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(test_canvas_glfw_destroy_recreate, TST_CANVAS_GLFW_RES, TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(test_canvas_offscreen_mode_headless, TST_CANVAS_VK_RES, TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(

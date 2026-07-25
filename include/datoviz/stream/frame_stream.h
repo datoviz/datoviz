@@ -71,12 +71,14 @@ typedef enum
 // Stream frame descriptor.
 //
 // Vulkan handles are owned by the stream unless the corresponding `*_borrowed` field is true. A
-// borrowed handle is never destroyed by Datoviz. A stream sink may inspect handles during its
+// borrowed handle is never destroyed by the receiver. A stream sink may inspect handles during its
 // start/update/submit callbacks, but must not destroy, reset, transition, or retain them unless the
-// sink duplicates the underlying OS handle or owns the wrapped object by contract. `memory_fd` and
-// `wait_semaphore_fd` are callback-duration descriptors owned by Datoviz; duplicate before
-// retaining and do not close the originals. `command_buffer_recording` tells sinks whether the
-// command buffer is currently open for recording.
+// sink duplicates the underlying OS handle or owns the wrapped object by contract. A configured
+// depth attachment is already in `depth_layout` when the recording callback begins and is part of
+// the resource set identified by `resource_generation`; the receiver may use it only as an
+// attachment in that reported layout. `memory_fd` and `wait_semaphore_fd` are callback-duration
+// descriptors owned by Datoviz; duplicate before retaining and do not close the originals.
+// `command_buffer_recording` tells sinks whether the command buffer is currently open for recording.
 typedef struct DvzStreamFrame
 {
     VkImage image;
@@ -87,14 +89,21 @@ typedef struct DvzStreamFrame
     VkExtent2D extent;
     VkFormat color_format;
     VkImageLayout image_layout;
+    VkImage depth_image;
+    VkImageView depth_view;
+    VkFormat depth_format;
+    VkImageLayout depth_layout;
     uint32_t usage;
     bool command_buffer_recording;
     bool image_borrowed;
     bool image_view_borrowed;
     bool command_buffer_borrowed;
+    bool depth_image_borrowed;
+    bool depth_view_borrowed;
     bool handles_dirty;
     uint64_t resource_generation;
     bool image_valid;
+    bool depth_valid;
     int memory_fd;
     int wait_semaphore_fd;
 } DvzStreamFrame;

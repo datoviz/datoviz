@@ -294,6 +294,8 @@ Exact APIs must not be invented in this specification. Each public change requir
 
 The accepted first-result profile consists of `dvz_canvas_configure_gpu_ctx()`, `dvz_canvas_frame_format()`, `dvz_commands_wrap_borrowed_recording()` followed by `dvz_commands_unwrap()`, `dvz_cmd_set_viewport()`, `dvz_cmd_set_scissor()`, and `dvz_cmd_set_viewport_scissor()`. GPU configuration augments caller policy instead of replacing it. A present Canvas without an explicit color format reports `VK_FORMAT_UNDEFINED` until swapchain creation resolves the actual format. Unwrapping detaches only borrowed-recording wrappers and never ends, resets, submits, frees, or otherwise touches the Vulkan command buffer. The combined dynamic-state helper means full-frame zero-origin viewport and scissor state; the separate helpers remain available for non-default rectangles.
 
+The accepted depth profile uses `DvzCanvasConfig.depth_format`: `VK_FORMAT_UNDEFINED` disables depth, while a depth or depth-stencil format requests one Canvas-owned attachment per frame resource set. `DvzStreamFrame.depth_image`, `depth_view`, `depth_format`, `depth_layout`, `depth_image_borrowed`, `depth_view_borrowed`, and `depth_valid` describe the callback-duration attachment. Canvas creates, transitions, recreates, and destroys it with the matching color resource; `resource_generation`, `handles_dirty`, format, and extent describe the coupled resource set. The callback may attach the reported view in the reported layout but must not destroy, transition, or retain the borrowed handles.
+
 
 ## Validation Direction
 
