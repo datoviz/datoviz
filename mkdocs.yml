@@ -110,6 +110,13 @@ nav:
     - Choose your layer: 'start/choose-your-layer.md'
     - AI-assisted workflow: 'start/ai-workflow.md'
     - AI agents: 'ai-agents.md'
+  - Tutorials:
+    - Overview: 'tutorials/index.md'
+    - Modern GPU Graphics in C:
+      - Course setup: 'tutorials/vulkan/index.md'
+      - First live triangle: 'tutorials/vulkan/first-triangle.md'
+      - Shaders and the graphics pipeline: 'tutorials/vulkan/shaders-and-pipeline.md'
+      - Vertex data and GPU buffers: 'tutorials/vulkan/vertex-buffers.md'
   - Examples:
     - Overview: 'examples/index.md'
   - How-To:
@@ -272,7 +279,6 @@ not_in_nav: |
   how-to/rendering-techniques.md
   how-to/replay-dvzr.md
   releases/*
-  tutorials/index.md
   tutorials/first-scene.md
   reference/api_c.md
   explanation/index.md

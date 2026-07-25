@@ -33,6 +33,10 @@ check-howto-snippets:
     python3 -m unittest tools/tests/test_check_howto_snippets.py
     python3 tools/check_howto_snippets.py
 
+# Check compiled Vulkan tutorial chapter, shader, build, and documentation synchronization.
+vulkan-tutorial-check:
+    python3 tools/check_vulkan_tutorial.py
+
 # Check mechanically derived public status facts for drift.
 docs-status-check:
     python3 tools/check_docs_status.py
@@ -41,4 +45,4 @@ docs-status-check:
 check-docs-status: docs-status-check
 
 # Also compile/run Quickstart fixtures and validate generated API/status facts.
-check-doc-snippets: check-howto-snippets quickstart-check docs-api-check docs-status-check
+check-doc-snippets: check-howto-snippets vulkan-tutorial-check quickstart-check docs-api-check docs-status-check
