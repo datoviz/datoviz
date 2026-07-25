@@ -26,18 +26,8 @@ file(GLOB DVZ_CANVAS_SHADER_SOURCES
 if(DVZ_CANVAS_SHADER_SOURCES)
     find_package(Python COMPONENTS Interpreter REQUIRED)
 
-    set(DVZ_CANVAS_SHADER_GLSLANG_VALIDATOR "" CACHE FILEPATH "glslangValidator for canvas shaders")
-
-    if(NOT DVZ_CANVAS_SHADER_GLSLANG_VALIDATOR)
-        find_program(_dvz_shader_validator glslangValidator)
-
-        if(_dvz_shader_validator)
-            set(DVZ_CANVAS_SHADER_GLSLANG_VALIDATOR "${_dvz_shader_validator}" CACHE FILEPATH "glslangValidator for canvas shaders" FORCE)
-        endif()
-    endif()
-
-    if(NOT DVZ_CANVAS_SHADER_GLSLANG_VALIDATOR)
-        message(FATAL_ERROR "glslangValidator not found; install the tool or set DVZ_CANVAS_SHADER_GLSLANG_VALIDATOR.")
+    if(NOT GLSLC)
+        message(FATAL_ERROR "glslc is required to compile Canvas shaders; set GLSLC or DVZ_GLSLC.")
     endif()
 
     set(DVZ_CANVAS_SHADER_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders")
@@ -48,19 +38,24 @@ if(DVZ_CANVAS_SHADER_SOURCES)
     foreach(_dvz_shader ${DVZ_CANVAS_SHADER_SOURCES})
         get_filename_component(_dvz_shader_name ${_dvz_shader} NAME_WE)
         get_filename_component(_dvz_shader_ext ${_dvz_shader} EXT)
+        if(_dvz_shader_ext STREQUAL ".vert")
+            set(_dvz_shader_stage vertex)
+        else()
+            set(_dvz_shader_stage fragment)
+        endif()
         string(REPLACE "." "_" _dvz_shader_ext_tag ${_dvz_shader_ext})
         set(_dvz_shader_base "${_dvz_shader_name}${_dvz_shader_ext_tag}")
         set(_dvz_shader_spv "${DVZ_CANVAS_SHADER_OUT_DIR}/${_dvz_shader_base}.spv")
         set(_dvz_shader_header "${DVZ_CANVAS_SHADER_OUT_DIR}/${_dvz_shader_base}_spirv.h")
 
+        dvz_compile_glsl(
+            SOURCE "${_dvz_shader}"
+            OUTPUT "${_dvz_shader_spv}"
+            STAGE "${_dvz_shader_stage}"
+            PROFILE graphics)
+
         add_custom_command(
-            OUTPUT ${_dvz_shader_spv} ${_dvz_shader_header}
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DVZ_CANVAS_SHADER_OUT_DIR}
-            COMMAND ${DVZ_CANVAS_SHADER_GLSLANG_VALIDATOR}
-            -V
-            ${_dvz_shader}
-            -o
-            ${_dvz_shader_spv}
+            OUTPUT ${_dvz_shader_header}
             COMMAND ${Python_EXECUTABLE}
             ${PROJECT_SOURCE_DIR}/tools/spirv_to_c.py
             --input
@@ -69,8 +64,8 @@ if(DVZ_CANVAS_SHADER_SOURCES)
             ${_dvz_shader_header}
             --symbol
             dvz_canvas_${_dvz_shader_base}_spv
-            DEPENDS ${_dvz_shader} ${PROJECT_SOURCE_DIR}/tools/spirv_to_c.py
-            COMMENT "Compiling canvas shader ${_dvz_shader_name}"
+            DEPENDS ${_dvz_shader_spv} ${PROJECT_SOURCE_DIR}/tools/spirv_to_c.py
+            COMMENT "Embedding Canvas shader ${_dvz_shader_name}"
             VERBATIM
         )
 

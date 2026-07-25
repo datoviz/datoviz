@@ -5,7 +5,7 @@ on:
 
 env:
   MACOSX_DEPLOYMENT_TARGET: "15.0"
-  DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0"
+  DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 -DDVZ_VALIDATE_SPIRV=ON -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON"
 
 permissions:
   contents: read
@@ -55,9 +55,9 @@ jobs:
           python-version: "3.13"
       - name: Dependencies
         run: |
-          brew install just ccache ninja jq glslang shaderc vulkan-headers vulkan-loader molten-vk freetype tinyxml2
+          brew install just ccache ninja jq shaderc spirv-tools vulkan-headers vulkan-loader molten-vk freetype tinyxml2
           python -m pip install -U pip build delocate
-          command -v glslangValidator
+          command -v spirv-val
           command -v delocate-listdeps
       - uses: actions/download-artifact@v8
         with:

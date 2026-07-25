@@ -37,6 +37,8 @@ inconsistent combinations instead of silently building a partial API.
 | `DVZ_WITH_MSDF_SVG` | `ON` | Enable SVG path import through msdfgen when tinyxml2 is available. |
 | `DVZ_ENABLE_QT_BRIDGE` | `AUTO` | Build the optional Qt bridge provider when Qt6 Gui development files are available. |
 | `DVZ_ENABLE_SHADERC` | `AUTO` | Enable runtime GLSL compilation through lazy-loaded shaderc when headers/library are available. |
+| `DVZ_VALIDATE_SPIRV` | `OFF` | Validate every generated native shader with `spirv-val`; CI and release builds enable this. |
+| `DVZ_REQUIRE_PRECOMPILED_SHADERS` | `OFF` | Fail configuration when `glslc` is unavailable instead of allowing the scene embedded-GLSL fallback; release builds enable this. |
 | `DVZ_ENABLE_ASAN_IN_DEBUG` | `OFF` | Enable sanitizer instrumentation in Debug builds. |
 | `DVZ_ENABLE_COVERAGE` | `OFF` | Enable code coverage instrumentation for supported compilers. |
 | `DVZ_ENABLE_GPROF` | `OFF` | Enable gprof instrumentation on supported compilers. |
@@ -68,15 +70,11 @@ dependency across supported distributions.
 
 ## Shader Tools
 
-`glslc` and shaderc serve different build paths. When `glslc` is available, the native build
-precompiles built-in GLSL shaders to embedded SPIR-V. Without `glslc`, CMake embeds GLSL sources and
-the runtime needs shaderc support; `DVZ_ENABLE_SHADERC=AUTO` enables that path when shaderc headers
-and a loadable library are found, while `ON` makes their absence a configuration error.
+`glslc` and shaderc serve different build paths. One shared CMake helper uses `glslc` for scene, Canvas, and native test shaders with the named graphics profile (Vulkan 1.0 and SPIR-V 1.0) or compute profile (Vulkan 1.3 and SPIR-V 1.6). Set the `GLSLC` cache path or `DVZ_GLSLC` environment variable to select an explicit compiler. Canvas and native shader fixtures require `glslc`; scene-only developer configurations may retain the embedded-GLSL runtime fallback when `DVZ_REQUIRE_PRECOMPILED_SHADERS=OFF`.
 
-The active default canvas build invokes `glslangValidator` for its canvas shaders, so normal full
-source builds require it. Additional shader validation and WebGPU workflows also invoke it.
-Release-wheel builds require shaderc so installed wheels do not depend on an accidental
-developer-machine fallback when precompiled scene shaders are unavailable.
+`DVZ_VALIDATE_SPIRV=ON` discovers `spirv-val` through `DVZ_SPIRV_VAL_EXECUTABLE`, `DVZ_SPIRV_VAL`, the Vulkan SDK, or `PATH` and validates each generated file against its profile environment. CI and release builds enable both validation and required precompilation. `glslangValidator` is optional and is not used by the normal native scene, Canvas, or fixture build.
+
+Runtime shaderc remains independent: `DVZ_ENABLE_SHADERC=AUTO` enables runtime GLSL compilation when shaderc headers and a loadable provider are found, while `ON` makes their absence a configuration error. Release-wheel builds require and package shaderc so installed external-shader consumers do not depend on a developer-machine provider.
 
 ## Package Smoke Presets
 

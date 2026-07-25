@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 3.21)
 project(datoviz VERSION 0.4 LANGUAGES C CXX)
 
 include(GNUInstallDirs)
+include(cmake/DvzShaders.cmake)
 
 # Threading setup (portable: Linux, macOS, Windows-MSVC, Windows-MinGW)
 if(WIN32)
@@ -414,10 +415,6 @@ endif()
 set(DVZ_EMBED_RESOURCES_SCRIPT "${PROJECT_SOURCE_DIR}/cmake/embed_resources.cmake")
 set(DVZ_EMBED_TEXT_RESOURCES_SCRIPT "${PROJECT_SOURCE_DIR}/cmake/embed_text_resources.cmake")
 
-find_program(GLSLC glslc
-    HINTS "${GLSLC_PATH}" "$ENV{VULKAN_SDK}/bin"
-)
-
 set(SHADERS_C "${CMAKE_BINARY_DIR}/_shaders.c")
 if(GLSLC)
     set(SPIRV_DIR       "${CMAKE_BINARY_DIR}/shaders")
@@ -429,16 +426,22 @@ if(GLSLC)
         get_filename_component(shader_ext "${glsl_src}" EXT)
         set(spv_out "${SPIRV_DIR}/${shader_name}.spv")
         if(shader_ext STREQUAL ".comp")
-            set(glslc_target_args --target-env=vulkan1.3 --target-spv=spv1.6)
+            set(shader_stage compute)
+            set(shader_profile compute)
+        elseif(shader_ext STREQUAL ".vert")
+            set(shader_stage vertex)
+            set(shader_profile graphics)
         else()
-            set(glslc_target_args --target-env=vulkan1.0 --target-spv=spv1.0)
+            set(shader_stage fragment)
+            set(shader_profile graphics)
         endif()
-        add_custom_command(
-            OUTPUT  "${spv_out}"
-            COMMAND "${GLSLC}" ${glslc_target_args} -I "${GLSL_SOURCE_DIR}"
-                -o "${spv_out}" "${glsl_src}"
-            DEPENDS "${glsl_src}" ${GLSL_INCLUDES}
-            COMMENT "Compiling ${shader_name} to SPIR-V"
+        dvz_compile_glsl(
+            SOURCE "${glsl_src}"
+            OUTPUT "${spv_out}"
+            STAGE "${shader_stage}"
+            PROFILE "${shader_profile}"
+            INCLUDE_DIRS "${GLSL_SOURCE_DIR}"
+            DEPENDS ${GLSL_INCLUDES}
         )
         list(APPEND SPIRV_OUTPUTS "${spv_out}")
     endforeach()
@@ -462,6 +465,9 @@ if(GLSLC)
     set(DVZ_HAS_PRECOMPILED_SHADERS 1)
     set(DVZ_SHADERS_C "${SHADERS_C}")
 else()
+    if(DVZ_REQUIRE_PRECOMPILED_SHADERS)
+        message(FATAL_ERROR "DVZ_REQUIRE_PRECOMPILED_SHADERS=ON requires glslc.")
+    endif()
     message(WARNING "glslc not found — builtin shaders will use runtime GLSL compilation.")
     add_custom_command(
         OUTPUT  "${SHADERS_C}"
@@ -780,6 +786,9 @@ message(STATUS "DVZ_INSTALL: ${DVZ_INSTALL}")
 message(STATUS "DVZ_VENDORED_DEPS: ${DVZ_VENDORED_DEPS}")
 message(STATUS "DVZ_ENABLE_QT_BRIDGE: ${DVZ_ENABLE_QT_BRIDGE}")
 message(STATUS "DVZ_HAS_QT_BRIDGE: ${DVZ_HAS_QT_BRIDGE}")
+message(STATUS "GLSLC: ${GLSLC}")
+message(STATUS "DVZ_VALIDATE_SPIRV: ${DVZ_VALIDATE_SPIRV}")
+message(STATUS "DVZ_SPIRV_VAL_EXECUTABLE: ${DVZ_SPIRV_VAL_EXECUTABLE}")
 
 if(DEFINED DVZ_USE_VALIDATION)
     message(STATUS "DVZ_USE_VALIDATION: ${DVZ_USE_VALIDATION} (default contexts remain quiet in Release configs)")

@@ -42,19 +42,19 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            build-essential ccache cmake glslang-tools glslc libfreetype-dev libvulkan-dev \
+            build-essential ccache cmake glslc libfreetype-dev libvulkan-dev spirv-tools \
             libshaderc-dev mesa-vulkan-drivers ninja-build vulkan-tools vulkan-validationlayers \
             webp xorg-dev xvfb
           python -m pip install -U pip uv
           python -m pip install -r requirements-dev.txt
-          command -v glslangValidator
           command -v glslc
+          command -v spirv-val
       - name: Check generated documentation
         run: |
           just docs-check-generated
           just docs-build-check
       - name: Build
-        run: just build
+        run: DVZ_CMAKE_ARGS="-DDVZ_VALIDATE_SPIRV=ON -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON" just build
       - name: Test Python tooling
         run: python -m pytest testing tools/tests -q
       - name: Check shaderc runtime
@@ -82,14 +82,14 @@ jobs:
       - name: Dependencies
         run: |
           brew install \
-            just ccache ninja glslang shaderc vulkan-headers vulkan-loader molten-vk \
+            just ccache ninja shaderc spirv-tools vulkan-headers vulkan-loader molten-vk \
             vulkan-validationlayers freetype tinyxml2
           python -m pip install -U pip
           python -m pip install -r requirements-dev.txt
-          command -v glslangValidator
           command -v glslc
+          command -v spirv-val
       - name: Build
-        run: just build
+        run: DVZ_CMAKE_ARGS="-DDVZ_VALIDATE_SPIRV=ON -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON" just build
       - name: Test
         run: just test
 
@@ -136,14 +136,14 @@ jobs:
       - name: Resolve shader tools
         shell: pwsh
         run: |
-          $validator = Get-ChildItem build/vcpkg_installed -Recurse -Filter glslangValidator.exe -File |
+          $validator = Get-ChildItem build/vcpkg_installed -Recurse -Filter spirv-val.exe -File |
             Select-Object -First 1
           $glslc = Get-ChildItem build/vcpkg_installed -Recurse -Filter glslc.exe -File |
             Select-Object -First 1
           if (!$validator -or !$glslc) {
-            throw "glslangValidator.exe or glslc.exe was not installed by vcpkg"
+            throw "spirv-val.exe or glslc.exe was not installed by vcpkg"
           }
-          "DVZ_GLSLANG_VALIDATOR=$($validator.FullName.Replace('\', '/'))" |
+          "DVZ_SPIRV_VAL=$($validator.FullName.Replace('\', '/'))" |
             Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "DVZ_GLSLC=$($glslc.FullName.Replace('\', '/'))" |
             Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
@@ -160,8 +160,10 @@ jobs:
             -DDVZ_ENABLE_SHADERC=ON `
             -DDVZ_MIMALLOC_SOURCE=OFF `
             -DDVZ_BUILD_EXAMPLES=OFF `
-            -DDVZ_CANVAS_SHADER_GLSLANG_VALIDATOR="$env:DVZ_GLSLANG_VALIDATOR" `
-            -DGLSLC="$env:DVZ_GLSLC"
+            -DGLSLC="$env:DVZ_GLSLC" `
+            -DDVZ_SPIRV_VAL_EXECUTABLE="$env:DVZ_SPIRV_VAL" `
+            -DDVZ_VALIDATE_SPIRV=ON `
+            -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cmake --build build
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

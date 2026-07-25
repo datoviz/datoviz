@@ -20,8 +20,6 @@ if [ "$(id -u)" -eq 0 ]; then
         ccache \
         clang \
         freetype-devel \
-        glslang \
-        glslang-devel \
         glslc \
         libshaderc \
         libshaderc-devel \
@@ -32,12 +30,17 @@ if [ "$(id -u)" -eq 0 ]; then
         libXrandr-devel \
         mesa-libGL-devel \
         ninja-build \
+        spirv-tools \
         vulkan-loader-devel \
         zlib-devel
 fi
 
 if ! command -v glslc >/dev/null 2>&1; then
     echo "glslc is required for release manylinux wheels" >&2
+    exit 2
+fi
+if ! command -v spirv-val >/dev/null 2>&1; then
+    echo "spirv-val is required for release manylinux wheels" >&2
     exit 2
 fi
 
@@ -68,7 +71,7 @@ cleanup_owner()
 trap cleanup_owner EXIT
 
 export PATH="$(dirname "$python_bin"):$PATH"
-export DVZ_CMAKE_ARGS="${DVZ_CMAKE_ARGS:--DDVZ_ENABLE_SHADERC=ON -DDVZ_MIMALLOC_SOURCE=OFF -DDVZ_BUILD_TESTING=OFF -DDVZ_BUILD_EXAMPLES=OFF}"
+export DVZ_CMAKE_ARGS="${DVZ_CMAKE_ARGS:--DDVZ_ENABLE_SHADERC=ON -DDVZ_MIMALLOC_SOURCE=OFF -DDVZ_BUILD_TESTING=OFF -DDVZ_BUILD_EXAMPLES=OFF -DDVZ_VALIDATE_SPIRV=ON -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON}"
 export DVZ_WHEEL_RUNTIME_DIRS="${DVZ_WHEEL_RUNTIME_DIRS:-/usr/lib64:/usr/lib}"
 
 "$python_bin" -m pip install -U pip auditwheel build libclang tqdm wheel

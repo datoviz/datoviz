@@ -10,6 +10,12 @@
     "libpng",
     "pthreads",
     "shaderc",
+    {
+      "name": "spirv-tools",
+      "features": [
+        "tools"
+      ]
+    },
     "vulkan-headers"
   ]
 }

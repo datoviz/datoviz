@@ -7,7 +7,7 @@ env:
   # Build once per platform; Datoviz is Python-ABI independent and the backend emits
   # py3-none-<platform> directly. Separate install-smoke jobs cover Python 3.10 through 3.14,
   # with 3.15 prerelease enabled only for nightly/prerelease checks.
-  DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_MIMALLOC_SOURCE=OFF"
+  DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_MIMALLOC_SOURCE=OFF -DDVZ_VALIDATE_SPIRV=ON -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON"
 
 permissions:
   contents: read
@@ -82,7 +82,7 @@ jobs:
           path: .
       - name: Build, inspect, and smoke-test manylinux wheel
         env:
-          DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_MIMALLOC_SOURCE=OFF -DDVZ_BUILD_TESTING=OFF -DDVZ_BUILD_EXAMPLES=OFF"
+          DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_MIMALLOC_SOURCE=OFF -DDVZ_BUILD_TESTING=OFF -DDVZ_BUILD_EXAMPLES=OFF -DDVZ_VALIDATE_SPIRV=ON -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON"
         run: |
           bash tools/release_wheels/manylinux_build_inside.sh ${{ matrix.arch }}
       - uses: actions/upload-artifact@v7
@@ -108,7 +108,7 @@ jobs:
             deployment_target: "15.0"
     env:
       MACOSX_DEPLOYMENT_TARGET: ${{ matrix.deployment_target }}
-      DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_MIMALLOC_SOURCE=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.deployment_target }}"
+      DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_MIMALLOC_SOURCE=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.deployment_target }} -DDVZ_VALIDATE_SPIRV=ON -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON"
     steps:
       - uses: actions/checkout@v7
         with:
@@ -118,9 +118,9 @@ jobs:
           python-version: "3.13"
       - name: Dependencies
         run: |
-          brew install just ccache ninja jq glslang shaderc vulkan-headers vulkan-loader molten-vk freetype tinyxml2
+          brew install just ccache ninja jq shaderc spirv-tools vulkan-headers vulkan-loader molten-vk freetype tinyxml2
           python -m pip install -U pip build delocate
-          command -v glslangValidator
+          command -v spirv-val
           command -v delocate-listdeps
       - uses: actions/download-artifact@v8
         with:
@@ -297,18 +297,18 @@ jobs:
       - name: Resolve shader tools
         shell: pwsh
         run: |
-          $validator = Get-ChildItem -Path "build/vcpkg_installed" -Recurse -Filter "glslangValidator.exe" -File |
+          $validator = Get-ChildItem -Path "build/vcpkg_installed" -Recurse -Filter "spirv-val.exe" -File |
             Select-Object -First 1
           $glslc = Get-ChildItem -Path "build/vcpkg_installed" -Recurse -Filter "glslc.exe" -File |
             Select-Object -First 1
           if (!$validator -or !$glslc) {
             Get-ChildItem -Path "build/vcpkg_installed" -Recurse -Depth 4 |
               Select-Object FullName
-            Write-Error "glslangValidator.exe or glslc.exe not found under build/vcpkg_installed"
+            Write-Error "spirv-val.exe or glslc.exe not found under build/vcpkg_installed"
           }
           $validatorPath = $validator.FullName.Replace('\', '/')
           $glslcPath = $glslc.FullName.Replace('\', '/')
-          "DVZ_GLSLANG_VALIDATOR=$validatorPath" |
+          "DVZ_SPIRV_VAL=$validatorPath" |
             Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "DVZ_GLSLC=$glslcPath" |
             Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
@@ -334,8 +334,10 @@ jobs:
             "-DDVZ_MIMALLOC_SOURCE=OFF",
             "-DDVZ_BUILD_TESTING=OFF",
             "-DDVZ_BUILD_EXAMPLES=OFF",
-            "-DDVZ_CANVAS_SHADER_GLSLANG_VALIDATOR=$env:DVZ_GLSLANG_VALIDATOR",
-            "-DGLSLC=$env:DVZ_GLSLC"
+            "-DGLSLC=$env:DVZ_GLSLC",
+            "-DDVZ_SPIRV_VAL_EXECUTABLE=$env:DVZ_SPIRV_VAL",
+            "-DDVZ_VALIDATE_SPIRV=ON",
+            "-DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON"
           )
           cmake @cmakeArgs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

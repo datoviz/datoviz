@@ -129,18 +129,8 @@ file(GLOB DVZ_VKLITE_TEST_SHADERS
 if(DVZ_VKLITE_TEST_SHADERS)
     file(MAKE_DIRECTORY "${DVZ_TEST_SPIRV_DIR}")
 
-    set(_dvz_glslc_hints
-        "$ENV{VULKAN_SDK}/bin"
-        "$ENV{VULKAN_SDK}/Bin"
-    )
-
-    find_program(DVZ_GLSLC_EXECUTABLE
-        NAMES glslc
-        HINTS ${_dvz_glslc_hints}
-    )
-
-    if(NOT DVZ_GLSLC_EXECUTABLE)
-        message(FATAL_ERROR "glslc is required to compile vklite test shaders.")
+    if(NOT GLSLC)
+        message(FATAL_ERROR "glslc is required to compile vklite test shaders; set GLSLC or DVZ_GLSLC.")
     endif()
 
     set(DVZ_VKLITE_TEST_SPIRV_OUTPUTS)
@@ -150,24 +140,22 @@ if(DVZ_VKLITE_TEST_SHADERS)
         get_filename_component(_dvz_shader_ext "${_dvz_shader}" EXT)
         set(_dvz_shader_output "${DVZ_TEST_SPIRV_DIR}/${_dvz_shader_name}.spv")
 
-        set(_dvz_shader_args)
         if(_dvz_shader_ext STREQUAL ".comp")
-            list(APPEND _dvz_shader_args
-                --target-env=vulkan1.3
-                --target-spv=spv1.6
-            )
+            set(_dvz_shader_stage compute)
+            set(_dvz_shader_profile compute)
+        elseif(_dvz_shader_ext STREQUAL ".vert")
+            set(_dvz_shader_stage vertex)
+            set(_dvz_shader_profile graphics)
+        else()
+            set(_dvz_shader_stage fragment)
+            set(_dvz_shader_profile graphics)
         endif()
 
-        add_custom_command(
+        dvz_compile_glsl(
+            SOURCE "${_dvz_shader}"
             OUTPUT "${_dvz_shader_output}"
-            COMMAND ${DVZ_GLSLC_EXECUTABLE}
-            ${_dvz_shader_args}
-            -o "${_dvz_shader_output}"
-            "${_dvz_shader}"
-            DEPENDS "${_dvz_shader}"
-            COMMENT "Compiling ${_dvz_shader_name} to SPIR-V"
-            VERBATIM
-        )
+            STAGE "${_dvz_shader_stage}"
+            PROFILE "${_dvz_shader_profile}")
         list(APPEND DVZ_VKLITE_TEST_SPIRV_OUTPUTS "${_dvz_shader_output}")
     endforeach()
 
