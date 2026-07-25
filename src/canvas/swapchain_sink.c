@@ -1591,7 +1591,7 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
     canvas->swapchain->dirty = true;
     canvas->swapchain->frame_index = 0;
     canvas->swapchain->last_presented_slot_index = UINT32_MAX;
-    canvas->swapchain->frame_format = canvas_frame_format(canvas);
+    canvas->swapchain->frame_format = canvas->cfg.color_format;
     canvas->swapchain->runtime_state = DVZ_CANVAS_PRESENT_STATE_UNINITIALIZED;
     canvas->swapchain->test_fail_slot_index = -1;
     canvas->swapchain->test_force_recreate_status = -1;
@@ -1805,6 +1805,21 @@ bool dvz_canvas_swapchain_present_mode(const DvzCanvas* canvas, VkPresentModeKHR
     }
     *out_mode = dvz_swapchain_present_mode(canvas->swapchain->swapchain_wrapper);
     return true;
+}
+
+
+
+/**
+ * Return the resolved format of present-mode Canvas frames.
+ *
+ * @param canvas canvas owning the swapchain
+ * @returns resolved frame format, or VK_FORMAT_UNDEFINED before swapchain creation
+ */
+VkFormat dvz_canvas_swapchain_frame_format(const DvzCanvas* canvas)
+{
+    if (canvas == NULL || canvas->swapchain == NULL)
+        return VK_FORMAT_UNDEFINED;
+    return canvas->swapchain->frame_format;
 }
 
 

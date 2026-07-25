@@ -1660,6 +1660,30 @@ DvzCanvasRenderMode dvz_canvas_render_mode(const DvzCanvas* canvas)
 
 
 /**
+ * Return the resolved color-attachment format used by Canvas frames.
+ *
+ * @param canvas canvas handle
+ * @returns resolved frame format, or VK_FORMAT_UNDEFINED while unavailable
+ */
+VkFormat dvz_canvas_frame_format(const DvzCanvas* canvas)
+{
+    if (canvas == NULL)
+        return VK_FORMAT_UNDEFINED;
+    if (canvas_is_offscreen_mode(canvas))
+    {
+        if (canvas->offscreen_format != VK_FORMAT_UNDEFINED)
+            return canvas->offscreen_format;
+        return canvas->cfg.color_format != VK_FORMAT_UNDEFINED ? canvas->cfg.color_format
+                                                               : DVZ_DEFAULT_COLOR_FORMAT;
+    }
+    if (canvas->cfg.color_format != VK_FORMAT_UNDEFINED)
+        return canvas->cfg.color_format;
+    return dvz_canvas_swapchain_frame_format(canvas);
+}
+
+
+
+/**
  * Return the current present runtime state for diagnostics/tests.
  *
  * @param canvas canvas handle

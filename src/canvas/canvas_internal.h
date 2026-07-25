@@ -198,6 +198,8 @@ void dvz_canvas_swapchain_mark_out_of_date(DvzCanvas* canvas);
 
 bool dvz_canvas_swapchain_present_mode(const DvzCanvas* canvas, VkPresentModeKHR* out_mode);
 
+VkFormat dvz_canvas_swapchain_frame_format(const DvzCanvas* canvas);
+
 void dvz_canvas_swapchain_handles_refreshed(DvzCanvas* canvas);
 
 int dvz_canvas_swapchain_capture_rgba_into(

@@ -308,7 +308,6 @@ error:
  */
 static void _draw_triangle(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data)
 {
-    (void)canvas;
     SpikeRenderer* renderer = (SpikeRenderer*)user_data;
     if (renderer == NULL || frame == NULL || frame->command_buffer == VK_NULL_HANDLE ||
         frame->image_view == VK_NULL_HANDLE || frame->extent.width == 0 ||
@@ -345,7 +344,8 @@ static void _draw_triangle(DvzCanvas* canvas, const DvzStreamFrame* frame, void*
         renderer->generation_change_count++;
     }
     renderer->last_resource_generation = frame->resource_generation;
-    if (frame->color_format != renderer->color_format)
+    if (frame->color_format != renderer->color_format ||
+        dvz_canvas_frame_format(canvas) != frame->color_format)
     {
         renderer->format_mismatch_count++;
         return;
@@ -472,6 +472,12 @@ static int _runtime_create(SpikeRuntime* runtime, const SpikeOptions* options)
         return -1;
 
     runtime->renderer.device = dvz_gpu_ctx_device(runtime->gpu);
+    VkFormat frame_format = dvz_canvas_frame_format(runtime->canvas);
+    if (frame_format != VK_FORMAT_UNDEFINED &&
+        _renderer_create(&runtime->renderer, runtime->renderer.device, frame_format) != 0)
+    {
+        return -1;
+    }
     dvz_canvas_set_draw_callback(runtime->canvas, _draw_triangle, &runtime->renderer);
     return 0;
 }

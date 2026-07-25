@@ -30,6 +30,8 @@ int test_canvas_config_rejects_invalid_abi(TstContext* suite, const TstCase* ite
 
 int test_canvas_configure_gpu_ctx(TstContext* suite, const TstCase* item);
 
+int test_canvas_frame_format(TstContext* suite, const TstCase* item);
+
 int test_canvas_frame_pool(TstContext* suite, const TstCase* item);
 
 int test_canvas_timings(TstContext* suite, const TstCase* item);

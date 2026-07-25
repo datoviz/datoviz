@@ -250,6 +250,20 @@ DVZ_EXPORT DvzCanvasRenderMode dvz_canvas_render_mode(const DvzCanvas* canvas);
 
 
 /**
+ * Return the resolved color-attachment format used by Canvas frames.
+ *
+ * Offscreen canvases resolve their format at creation. Present canvases with an explicit
+ * DvzCanvasConfig::color_format also resolve immediately; otherwise the format remains
+ * VK_FORMAT_UNDEFINED until the swapchain is created by a successful frame acquisition.
+ *
+ * @param canvas canvas handle
+ * @returns resolved frame format, or VK_FORMAT_UNDEFINED while unavailable
+ */
+DVZ_EXPORT VkFormat dvz_canvas_frame_format(const DvzCanvas* canvas);
+
+
+
+/**
  * Return the present-mode runtime state for diagnostics.
  *
  * @param canvas canvas handle

@@ -633,6 +633,37 @@ int test_canvas_configure_gpu_ctx(TstContext* suite, const TstCase* item)
 
 
 /**
+ * Validate Canvas frame-format resolution before runtime frame acquisition.
+ */
+int test_canvas_frame_format(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    AT(dvz_canvas_frame_format(NULL) == VK_FORMAT_UNDEFINED);
+
+    DvzCanvas canvas = {0};
+    canvas.cfg = dvz_canvas_config();
+    canvas.cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+    AT(dvz_canvas_frame_format(&canvas) == DVZ_DEFAULT_COLOR_FORMAT);
+
+    canvas.cfg.color_format = VK_FORMAT_R16G16B16A16_SFLOAT;
+    AT(dvz_canvas_frame_format(&canvas) == VK_FORMAT_R16G16B16A16_SFLOAT);
+    canvas.offscreen_format = VK_FORMAT_B8G8R8A8_SRGB;
+    AT(dvz_canvas_frame_format(&canvas) == VK_FORMAT_B8G8R8A8_SRGB);
+
+    canvas.cfg = dvz_canvas_config();
+    canvas.cfg.render_mode = DVZ_CANVAS_RENDER_MODE_PRESENT;
+    canvas.offscreen_format = VK_FORMAT_UNDEFINED;
+    AT(dvz_canvas_frame_format(&canvas) == VK_FORMAT_UNDEFINED);
+    canvas.cfg.color_format = VK_FORMAT_R8G8B8A8_UNORM;
+    AT(dvz_canvas_frame_format(&canvas) == VK_FORMAT_R8G8B8A8_UNORM);
+    return 0;
+}
+
+
+
+/**
  * Ensure the frame pool rotates across entries.
  */
 int test_canvas_frame_pool(TstContext* suite, const TstCase* item)
@@ -1945,6 +1976,7 @@ int test_canvas(TstSuite* suite)
     TST_CANVAS_CASE(test_canvas_defaults, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_config_rejects_invalid_abi, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_configure_gpu_ctx, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
+    TST_CANVAS_CASE(test_canvas_frame_format, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_frame_pool, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_timings, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(
