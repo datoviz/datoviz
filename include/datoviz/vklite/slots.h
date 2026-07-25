@@ -32,6 +32,7 @@
 typedef struct DvzDevice DvzDevice;
 
 typedef struct DvzSlots DvzSlots;
+typedef struct DvzCommands DvzCommands;
 
 
 
@@ -106,6 +107,27 @@ DVZ_EXPORT void dvz_slots_binding(
  */
 DVZ_EXPORT void
 dvz_slots_push(DvzSlots* slots, VkShaderStageFlagBits stages, DvzSize offset, DvzSize size);
+
+
+
+/**
+ * Record a push-constant update for a slots pipeline layout.
+ *
+ * The requested byte range must be non-empty, four-byte aligned, contained in a range previously
+ * declared with `dvz_slots_push()`, and visible to every requested shader stage. The function
+ * copies `size` bytes from @p data into the command stream before returning.
+ *
+ * @param cmds recording command wrapper
+ * @param slots live slots wrapper whose pipeline layout declares the range
+ * @param stages shader stages that will read the values
+ * @param offset byte offset within the declared push-constant range
+ * @param size number of bytes to copy
+ * @param data borrowed source bytes valid for the duration of the call
+ * @return DVZ_OK on success or DVZ_ERROR on invalid state or range
+ */
+DVZ_EXPORT DvzResult dvz_cmd_push_constants(
+    DvzCommands* cmds, DvzSlots* slots, VkShaderStageFlags stages, DvzSize offset, DvzSize size,
+    const void* data);
 
 
 

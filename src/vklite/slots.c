@@ -25,6 +25,7 @@
 #include "_slots.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/queues.h"
+#include "datoviz/vklite/commands.h"
 
 
 
@@ -175,6 +176,45 @@ void dvz_slots_push(DvzSlots* slots, VkShaderStageFlagBits stages, DvzSize offse
     slots->pushs[0].size = size;
     slots->pushs[0].stageFlags = stages;
     slots->push_count = 1;
+}
+
+
+
+DvzResult dvz_cmd_push_constants(
+    DvzCommands* cmds, DvzSlots* slots, VkShaderStageFlags stages, DvzSize offset, DvzSize size,
+    const void* data)
+{
+    if (
+        cmds == NULL || slots == NULL || data == NULL || stages == 0 || size == 0 ||
+        offset > UINT32_MAX || size > UINT32_MAX || offset % 4 != 0 || size % 4 != 0 ||
+        slots->pipeline_layout == VK_NULL_HANDLE)
+    {
+        return DVZ_ERROR;
+    }
+
+    bool covered = false;
+    for (uint32_t i = 0; i < slots->push_count; i++)
+    {
+        const VkPushConstantRange* range = &slots->pushs[i];
+        uint64_t range_end = (uint64_t)range->offset + range->size;
+        uint64_t update_end = (uint64_t)offset + size;
+        if (
+            offset >= range->offset && update_end <= range_end &&
+            (range->stageFlags & stages) == stages)
+        {
+            covered = true;
+            break;
+        }
+    }
+    if (!covered)
+        return DVZ_ERROR;
+
+    VkCommandBuffer cmd = dvz_commands_handle(cmds);
+    if (cmd == VK_NULL_HANDLE)
+        return DVZ_ERROR;
+    vkCmdPushConstants(
+        cmd, slots->pipeline_layout, stages, (uint32_t)offset, (uint32_t)size, data);
+    return DVZ_OK;
 }
 
 

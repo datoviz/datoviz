@@ -20,6 +20,7 @@
 #include "_assertions.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu_ctx.h"
+#include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/slots.h"
 #include "test_vklite.h"
 #include "testing.h"
@@ -66,6 +67,35 @@ int test_vklite_slots_1(TstContext* suite, const TstCase* tstitem)
     // Retrieve the pipeline layout handle.
     VkPipelineLayout handle = dvz_slots_handle(slots);
     AT(handle != VK_NULL_HANDLE);
+
+    DvzCommands* commands = dvz_commands_create_wrapper();
+    ANN(commands);
+    dvz_commands(
+        dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_queue(ctx, DVZ_QUEUE_MAIN), 1, commands);
+    AT(dvz_cmd_begin_result(commands) == 0);
+    uint32_t push_data[16] = {0};
+    AT(
+        dvz_cmd_push_constants(
+            commands, slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(push_data), push_data) ==
+        DVZ_OK);
+    AT(
+        dvz_cmd_push_constants(
+            commands, slots, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(push_data), push_data) ==
+        DVZ_ERROR);
+    AT(
+        dvz_cmd_push_constants(
+            commands, slots, VK_SHADER_STAGE_COMPUTE_BIT, 2, sizeof(push_data), push_data) ==
+        DVZ_ERROR);
+    AT(
+        dvz_cmd_push_constants(
+            commands, slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(push_data) + 4, push_data) ==
+        DVZ_ERROR);
+    AT(dvz_cmd_push_constants(commands, slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, 0, push_data) ==
+       DVZ_ERROR);
+    AT(dvz_cmd_push_constants(commands, slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, 4, NULL) == DVZ_ERROR);
+    AT(dvz_cmd_end_result(commands) == 0);
+    dvz_commands_destroy(commands);
+    dvz_commands_free(commands);
 
     // Cleanup.
     dvz_slots_destroy(slots);
