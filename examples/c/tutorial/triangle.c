@@ -49,6 +49,10 @@
 #define DVZ_TUTORIAL_USE_VERTEX_BUFFER 0
 #endif
 
+#ifndef DVZ_TUTORIAL_USE_INDEXED_DEPTH
+#define DVZ_TUTORIAL_USE_INDEXED_DEPTH 0
+#endif
+
 #define SPIKE_PATH_MAX 4096
 
 
@@ -65,23 +69,40 @@ typedef struct
     const char* png_path;
     const char* shader_dir;
     bool vertex_buffer;
+    bool indexed_depth;
 } SpikeOptions;
 
 
 
 typedef struct
 {
+#if DVZ_TUTORIAL_USE_INDEXED_DEPTH
+    float position[3];
+#else
     float position[2];
+#endif
     float color[3];
 } SpikeVertex;
 
 
 
+#if DVZ_TUTORIAL_USE_INDEXED_DEPTH
+static const SpikeVertex TRIANGLE_VERTICES[6] = {
+    {{-0.70f, +0.55f, 0.20f}, {1.00f, 0.35f, 0.25f}},
+    {{+0.35f, +0.55f, 0.20f}, {1.00f, 0.70f, 0.25f}},
+    {{-0.15f, -0.70f, 0.20f}, {0.95f, 0.20f, 0.55f}},
+    {{-0.35f, +0.70f, 0.70f}, {0.20f, 0.45f, 1.00f}},
+    {{+0.70f, +0.70f, 0.70f}, {0.25f, 0.90f, 0.90f}},
+    {{+0.15f, -0.55f, 0.70f}, {0.35f, 0.30f, 1.00f}},
+};
+#else
 static const SpikeVertex TRIANGLE_VERTICES[3] = {
     {{0.00f, -0.65f}, {1.0f, 0.2f, 0.2f}},
     {{0.65f, +0.65f}, {0.2f, 1.0f, 0.2f}},
     {{-0.65f, +0.65f}, {0.2f, 0.4f, 1.0f}},
 };
+#endif
+static const uint16_t TRIANGLE_INDICES[6] = {0, 1, 2, 3, 4, 5};
 
 
 
@@ -92,11 +113,13 @@ typedef struct
     DvzSlots* slots;
     DvzGraphics* pipeline;
     DvzBuffer* vertex_buffer;
+    DvzBuffer* index_buffer;
     DvzCommands* commands;
     DvzRendering* rendering;
     VkFormat color_format;
     const char* shader_dir;
     bool use_vertex_buffer;
+    bool use_indexed_depth;
     bool create_failed;
     uint64_t draw_count;
     uint64_t extent_change_count;
@@ -159,6 +182,7 @@ static int _parse_options(int argc, char** argv, SpikeOptions* options)
         .png_path = "triangle.png",
         .shader_dir = DVZ_TUTORIAL_SHADER_DIR,
         .vertex_buffer = DVZ_TUTORIAL_USE_VERTEX_BUFFER != 0,
+        .indexed_depth = DVZ_TUTORIAL_USE_INDEXED_DEPTH != 0,
     };
 
     for (int i = 1; i < argc; i++)
@@ -229,6 +253,12 @@ static void _renderer_destroy(SpikeRenderer* renderer)
         dvz_buffer_destroy(renderer->vertex_buffer);
         dvz_buffer_free(renderer->vertex_buffer);
         renderer->vertex_buffer = NULL;
+    }
+    if (renderer->index_buffer != NULL)
+    {
+        dvz_buffer_destroy(renderer->index_buffer);
+        dvz_buffer_free(renderer->index_buffer);
+        renderer->index_buffer = NULL;
     }
     if (renderer->pipeline != NULL)
     {
@@ -359,7 +389,8 @@ static int _renderer_create(
         dvz_graphics_vertex_binding(
             renderer->pipeline, 0, sizeof(SpikeVertex), VK_VERTEX_INPUT_RATE_VERTEX);
         dvz_graphics_vertex_attr(
-            renderer->pipeline, 0, 0, VK_FORMAT_R32G32_SFLOAT,
+            renderer->pipeline, 0, 0,
+            renderer->use_indexed_depth ? VK_FORMAT_R32G32B32_SFLOAT : VK_FORMAT_R32G32_SFLOAT,
             offsetof(SpikeVertex, position));
         dvz_graphics_vertex_attr(
             renderer->pipeline, 0, 1, VK_FORMAT_R32G32B32_SFLOAT,
@@ -367,6 +398,12 @@ static int _renderer_create(
     }
     dvz_graphics_primitive(renderer->pipeline, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     dvz_graphics_attachment_color(renderer->pipeline, 0, color_format);
+    if (renderer->use_indexed_depth)
+    {
+        dvz_graphics_attachment_depth(renderer->pipeline, VK_FORMAT_D32_SFLOAT);
+        dvz_graphics_depth(
+            renderer->pipeline, false, true, VK_COMPARE_OP_LESS, DVZ_GRAPHICS_FLAGS_FIXED);
+    }
     dvz_graphics_layout(renderer->pipeline, dvz_slots_handle(renderer->slots));
     dvz_graphics_viewport(renderer->pipeline, 0, 0, 0, 0, 0, 1, DVZ_GRAPHICS_FLAGS_DYNAMIC);
     dvz_graphics_scissor(renderer->pipeline, 0, 0, 0, 0, DVZ_GRAPHICS_FLAGS_DYNAMIC);
@@ -404,6 +441,28 @@ static int _renderer_create(
         dvz_buffer_upload(
             renderer->vertex_buffer, 0, sizeof(TRIANGLE_VERTICES), TRIANGLE_VERTICES);
     }
+    if (renderer->use_indexed_depth)
+    {
+        renderer->index_buffer = dvz_buffer_create_wrapper();
+        if (renderer->index_buffer == NULL)
+        {
+            _renderer_destroy(renderer);
+            return -1;
+        }
+        dvz_buffer(device, allocator, renderer->index_buffer);
+        dvz_buffer_size(renderer->index_buffer, sizeof(TRIANGLE_INDICES));
+        dvz_buffer_usage(renderer->index_buffer, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+        dvz_buffer_flags(
+            renderer->index_buffer,
+            DVZ_ALLOC_MAPPED | DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE);
+        if (dvz_buffer_create(renderer->index_buffer) != 0)
+        {
+            _renderer_destroy(renderer);
+            return -1;
+        }
+        dvz_buffer_upload(
+            renderer->index_buffer, 0, sizeof(TRIANGLE_INDICES), TRIANGLE_INDICES);
+    }
     return 0;
 
 error:
@@ -436,6 +495,15 @@ static void _draw_triangle(DvzCanvas* canvas, const DvzStreamFrame* frame, void*
 
     if (!frame->command_buffer_recording || !frame->command_buffer_borrowed ||
         !frame->image_view_borrowed || !frame->image_valid || frame->resource_generation == 0)
+    {
+        renderer->invalid_frame_contract_count++;
+        return;
+    }
+    if (
+        renderer->use_indexed_depth &&
+        (!frame->depth_valid || !frame->depth_image_borrowed || !frame->depth_view_borrowed ||
+         frame->depth_format != VK_FORMAT_D32_SFLOAT ||
+         frame->depth_layout != VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL))
     {
         renderer->invalid_frame_contract_count++;
         return;
@@ -478,6 +546,13 @@ static void _draw_triangle(DvzCanvas* canvas, const DvzStreamFrame* frame, void*
     dvz_cmd_rendering_default(
         commands, frame->image_view, frame->extent.width, frame->extent.height,
         (VkClearValue){.color.float32 = {0.03f, 0.04f, 0.07f, 1.0f}}, rendering);
+    if (renderer->use_indexed_depth)
+    {
+        DvzAttachment* depth = dvz_rendering_depth(rendering);
+        dvz_attachment_image(depth, frame->depth_view, frame->depth_layout);
+        dvz_attachment_ops(depth, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+        dvz_attachment_clear(depth, (VkClearValue){.depthStencil = {1.0f, 0}});
+    }
     dvz_cmd_rendering_begin(commands, rendering);
     dvz_cmd_bind_graphics(commands, renderer->pipeline);
     if (renderer->use_vertex_buffer)
@@ -485,9 +560,17 @@ static void _draw_triangle(DvzCanvas* canvas, const DvzStreamFrame* frame, void*
         DvzSize offset = 0;
         dvz_cmd_bind_vertex_buffers(commands, 0, 1, renderer->vertex_buffer, &offset);
     }
+    if (renderer->use_indexed_depth)
+    {
+        dvz_cmd_bind_index_buffer(
+            commands, renderer->index_buffer, 0, VK_INDEX_TYPE_UINT16);
+    }
 
     dvz_cmd_set_viewport_scissor(commands, frame->extent);
-    dvz_cmd_draw(commands, 0, 3, 0, 1);
+    if (renderer->use_indexed_depth)
+        dvz_cmd_draw_indexed(commands, 0, 0, 6, 0, 1);
+    else
+        dvz_cmd_draw(commands, 0, 3, 0, 1);
     dvz_cmd_rendering_end(commands);
 
     renderer->draw_count++;
@@ -574,6 +657,8 @@ static int _runtime_create(SpikeRuntime* runtime, const SpikeOptions* options)
     canvas_config.device = dvz_gpu_ctx_device(runtime->gpu);
     canvas_config.render_mode =
         options->live ? DVZ_CANVAS_RENDER_MODE_PRESENT : DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+    if (options->indexed_depth)
+        canvas_config.depth_format = VK_FORMAT_D32_SFLOAT;
     runtime->canvas = dvz_canvas_create(&canvas_config);
     if (runtime->canvas == NULL)
         return -1;
@@ -581,7 +666,8 @@ static int _runtime_create(SpikeRuntime* runtime, const SpikeOptions* options)
     runtime->renderer.device = dvz_gpu_ctx_device(runtime->gpu);
     runtime->renderer.allocator = dvz_gpu_ctx_alloc(runtime->gpu);
     runtime->renderer.shader_dir = options->shader_dir;
-    runtime->renderer.use_vertex_buffer = options->vertex_buffer;
+    runtime->renderer.use_vertex_buffer = options->vertex_buffer || options->indexed_depth;
+    runtime->renderer.use_indexed_depth = options->indexed_depth;
     runtime->renderer.commands = dvz_commands_create_wrapper();
     runtime->renderer.rendering = dvz_rendering_create_wrapper();
     if (runtime->renderer.commands == NULL || runtime->renderer.rendering == NULL)

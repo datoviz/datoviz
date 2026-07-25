@@ -73,6 +73,27 @@ def main() -> int:
                 f"{forbidden!r}"
             )
 
+    for token in (
+        "indexed_depth_spike",
+        "DVZ_TUTORIAL_USE_INDEXED_DEPTH=1",
+        'DVZ_TUTORIAL_SHADER_DIR="${CMAKE_CURRENT_SOURCE_DIR}/shaders/depth"',
+    ):
+        _require(cmake, token, "examples/c/tutorial/CMakeLists.txt", errors)
+    for token in (
+        "canvas_config.depth_format = VK_FORMAT_D32_SFLOAT",
+        "frame->depth_valid",
+        "frame->depth_view",
+        "dvz_graphics_attachment_depth(",
+        "dvz_graphics_depth(",
+        "dvz_cmd_bind_index_buffer(",
+        "dvz_cmd_draw_indexed(",
+    ):
+        _require(source, token, "examples/c/tutorial/triangle.c", errors)
+    for suffix in ("vert", "frag"):
+        depth_shader = EXAMPLE / "shaders" / "depth" / f"vklite_triangle.{suffix}"
+        if not depth_shader.is_file():
+            errors.append(f"missing depth spike shader {depth_shader.relative_to(ROOT)}")
+
     for target, (doc_name, preview_name, shader_dir, uses_vertex_buffer) in CHAPTERS.items():
         cmake_label = "examples/c/tutorial/CMakeLists.txt"
         _require(cmake, f"add_tutorial_chapter({target} {shader_dir} ", cmake_label, errors)

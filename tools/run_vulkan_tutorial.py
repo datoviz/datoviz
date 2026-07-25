@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build or run the RC3 Vulkan tutorial pilot and validate offscreen captures."""
+"""Build or run the RC3 Vulkan tutorial examples and validate offscreen captures."""
 
 from __future__ import annotations
 
@@ -18,6 +18,7 @@ from capture_gallery import png_is_nonblank
 ROOT = Path(__file__).resolve().parents[1]
 TUTORIAL_SOURCE = ROOT / "examples" / "c" / "tutorial"
 CHAPTERS = ("first_triangle", "shaders_and_pipeline", "vertex_buffers")
+EXECUTABLES = (*CHAPTERS, "indexed_depth_spike")
 
 
 def _run(command: list[str], env: dict[str, str] | None = None) -> None:
@@ -90,7 +91,7 @@ def main() -> int:
     hashes: dict[str, str] = {}
     with tempfile.TemporaryDirectory(prefix="datoviz-vulkan-captures-") as capture_directory:
         captures = Path(capture_directory)
-        for chapter in CHAPTERS:
+        for chapter in EXECUTABLES:
             executable = executables_dir / chapter
             if platform.system() == "Windows":
                 executable = executable.with_suffix(".exe")
@@ -116,7 +117,7 @@ def main() -> int:
 
     if hashes["first_triangle"] == hashes["shaders_and_pipeline"]:
         raise RuntimeError("chapter two capture does not differ from chapter one")
-    print("Vulkan tutorial pilot smoke: OK")
+    print("Vulkan tutorial examples smoke: OK")
     if temporary_build is not None:
         temporary_build.cleanup()
     return 0

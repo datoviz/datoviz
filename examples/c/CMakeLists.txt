@@ -326,4 +326,13 @@ if(TARGET datoviz_vklite AND TARGET datoviz_canvas AND DVZ_HAS_GLFW)
         DVZ_TUTORIAL_SHADER_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tutorial/shaders/vertex_buffer"
         DVZ_TUTORIAL_USE_VERTEX_BUFFER=1
     )
+
+    dvz_add_example(tutorial indexed_depth_spike tutorial/triangle.c)
+    target_compile_definitions(
+        example_c_tutorial_indexed_depth_spike
+        PRIVATE
+        DVZ_TUTORIAL_SHADER_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tutorial/shaders/depth"
+        DVZ_TUTORIAL_USE_VERTEX_BUFFER=1
+        DVZ_TUTORIAL_USE_INDEXED_DEPTH=1
+    )
 endif()
