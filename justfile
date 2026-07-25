@@ -37,6 +37,20 @@ check-howto-snippets:
 vulkan-tutorial-check:
     python3 tools/check_vulkan_tutorial.py
 
+# Run all three compiled tutorial chapters offscreen and validate their captures.
+vulkan-tutorial-smoke: build
+    python3 tools/run_vulkan_tutorial.py
+
+# Build all three tutorial chapters against an installed prefix, then validate them offscreen.
+vulkan-tutorial-installed-smoke prefix runtime_dir="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    args=(--installed-prefix "{{prefix}}")
+    if [[ -n "{{runtime_dir}}" ]]; then
+        args+=(--runtime-dir "{{runtime_dir}}")
+    fi
+    python3 tools/run_vulkan_tutorial.py "${args[@]}"
+
 # Check mechanically derived public status facts for drift.
 docs-status-check:
     python3 tools/check_docs_status.py
