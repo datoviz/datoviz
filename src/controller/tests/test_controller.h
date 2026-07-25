@@ -29,6 +29,7 @@ int test_controller_panzoom_create(TstContext* suite, const TstCase* item);
 int test_controller_panzoom_keep_aspect_drag(TstContext* suite, const TstCase* item);
 
 int test_controller_arcball_create(TstContext* suite, const TstCase* item);
+int test_controller_arcball_router_mvp(TstContext* suite, const TstCase* item);
 
 int test_controller_camera_create(TstContext* suite, const TstCase* item);
 

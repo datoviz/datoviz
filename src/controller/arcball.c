@@ -438,7 +438,7 @@ DvzResult dvz_arcball_pan_shift(DvzArcball* arcball, vec2 shift_px)
 
 DvzResult dvz_arcball_resize(DvzArcball* arcball, float width, float height)
 {
-    if (arcball == NULL)
+    if (arcball == NULL || !isfinite(width) || !isfinite(height) || width <= 0.0f || height <= 0.0f)
         return DVZ_ERROR;
     arcball->viewport_size[0] = width;
     arcball->viewport_size[1] = height;
@@ -653,7 +653,12 @@ DvzResult dvz_arcball_connect(DvzArcball* arcball, DvzInputRouter* router)
     arcball->input_router = router;
     arcball->input_subscription_id =
         dvz_input_subscribe_event(router, _arcball_input_callback, arcball);
-    return arcball->input_subscription_id != DVZ_CALLBACK_ID_NONE ? DVZ_OK : DVZ_ERROR;
+    if (arcball->input_subscription_id == DVZ_CALLBACK_ID_NONE)
+    {
+        arcball->input_router = NULL;
+        return DVZ_ERROR;
+    }
+    return DVZ_OK;
 }
 
 

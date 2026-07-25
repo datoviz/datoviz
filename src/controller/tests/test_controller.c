@@ -104,6 +104,72 @@ int test_controller_arcball_create(TstContext* suite, const TstCase* item)
 
 
 
+int test_controller_arcball_router_mvp(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzInputRouter* router = dvz_input_router();
+    ANN(router);
+    DvzInputResizeEvent resize = {
+        .framebuffer_width = 640,
+        .framebuffer_height = 480,
+        .window_width = 320,
+        .window_height = 240,
+        .content_scale_x = 2.0f,
+        .content_scale_y = 2.0f,
+    };
+    dvz_input_emit_resize(router, &resize);
+
+    DvzArcball* arcball = dvz_arcball_create(NULL);
+    ANN(arcball);
+    AT(dvz_arcball_connect(arcball, router) == DVZ_OK);
+    AT(arcball->viewport_size[0] == 320.0f);
+    AT(arcball->viewport_size[1] == 240.0f);
+    AT(dvz_arcball_resize(arcball, 0.0f, 240.0f) == DVZ_ERROR);
+    AT(arcball->viewport_size[0] == 320.0f);
+
+    DvzInputEvent drag = {
+        .type = DVZ_INPUT_EVENT_POINTER,
+        .content.pointer =
+            {
+                .type = DVZ_POINTER_EVENT_DRAG,
+                .button = DVZ_POINTER_BUTTON_LEFT,
+                .pos = {240.0f, 120.0f},
+                .content.d.press_pos = {80.0f, 120.0f},
+                .content.d.is_press_valid = true,
+            },
+    };
+    dvz_input_emit_event(router, &drag);
+    AT(dvz_arcball_is_interacting(arcball));
+
+    DvzCamera* camera = dvz_camera_create(NULL);
+    ANN(camera);
+    AT(dvz_camera_resize(camera, 640.0f, 480.0f) == DVZ_OK);
+    DvzMVP mvp = {0};
+    dvz_camera_mvp(camera, &mvp);
+    dvz_arcball_mvp(arcball, &mvp);
+    AT(fabsf(mvp.model[0][0] - 1.0f) > 0.001f);
+    AT(mvp.view[3][2] != 0.0f);
+    AT(mvp.proj[0][0] != 0.0f);
+
+    resize.window_width = 800;
+    resize.window_height = 600;
+    dvz_input_emit_resize(router, &resize);
+    AT(arcball->viewport_size[0] == 800.0f);
+    AT(arcball->viewport_size[1] == 600.0f);
+
+    AT(dvz_arcball_disconnect(arcball, router) == DVZ_OK);
+    AT(arcball->input_router == NULL);
+    AT(arcball->input_subscription_id == DVZ_CALLBACK_ID_NONE);
+    dvz_camera_destroy(camera);
+    dvz_arcball_destroy(arcball);
+    dvz_input_router_destroy(router);
+    return 0;
+}
+
+
+
 int test_controller_camera_create(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -351,6 +417,7 @@ int test_controller(TstSuite* suite)
     TST_CASE(test_controller_panzoom_create);
     TST_CASE(test_controller_panzoom_keep_aspect_drag);
     TST_CASE(test_controller_arcball_create);
+    TST_CASE(test_controller_arcball_router_mvp);
     TST_CASE(test_controller_camera_create);
     TST_CASE(test_controller_camera_orthographic_bounds);
     TST_CASE(test_controller_fly_create);
