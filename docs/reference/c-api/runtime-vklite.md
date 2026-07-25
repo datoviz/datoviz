@@ -17,14 +17,14 @@ Common workflows:
 - [Debug rendering](../../how-to/debug-rendering.md)
 - [Runtime internals](../../advanced/runtime-internals.md)
 
-Functions: 291
+Functions: 292
 Types: 29
 
 ## Symbol Groups
 
 | Group | Functions | Types | Headers |
 | --- | ---: | ---: | --- |
-| [Commands And Rendering](#commands-and-rendering) | 58 | 3 | 8 headers |
+| [Commands And Rendering](#commands-and-rendering) | 59 | 3 | 8 headers |
 | [Device And Presentation](#device-and-presentation) | 38 | 4 | `include/datoviz/vklite/surface.h`, `include/datoviz/vklite/swapchain.h` |
 | [Pipelines And Bindings](#pipelines-and-bindings) | 70 | 6 | 5 headers |
 | [Resources](#resources) | 74 | 9 | 3 headers |
@@ -80,6 +80,7 @@ Types: 29
     | [`dvz_commands_destroy()`](#dvz_commands_destroy) | `include/datoviz/vklite/commands.h` |
     | [`dvz_commands_free()`](#dvz_commands_free) | `include/datoviz/vklite/commands.h` |
     | [`dvz_commands_handle()`](#dvz_commands_handle) | `include/datoviz/vklite/commands.h` |
+    | [`dvz_commands_unwrap()`](#dvz_commands_unwrap) | `include/datoviz/vklite/commands.h` |
     | [`dvz_commands_wrap()`](#dvz_commands_wrap) | `include/datoviz/vklite/commands.h` |
     | [`dvz_commands_wrap_borrowed_recording()`](#dvz_commands_wrap_borrowed_recording) | `include/datoviz/vklite/commands.h` |
     | [`dvz_rendering()`](#dvz_rendering) | `include/datoviz/vklite/rendering.h` |
@@ -1288,6 +1289,28 @@ VkCommandBuffer dvz_commands_handle(
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | the set of command buffers |
 
 _Declared in `include/datoviz/vklite/commands.h`:122._
+
+#### `dvz_commands_unwrap()` { #dvz_commands_unwrap .dvz-api-function }
+
+Detach a borrowed recording command buffer from a reusable wrapper.
+
+This operation only accepts wrappers initialized by dvz_commands_wrap_borrowed_recording(). It
+clears all borrowed device and command-buffer references without ending, resetting, submitting,
+freeing, or otherwise touching the Vulkan command buffer. Owned and recording-control wrappers
+are rejected without mutation.
+
+```c
+DvzResult dvz_commands_unwrap(
+    DvzCommands * cmds
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success or DVZ_ERROR when the wrapper is null or not borrowed-recording |
+| `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | borrowed recording commands wrapper to detach |
+
+_Declared in `include/datoviz/vklite/commands.h`:294._
 
 #### `dvz_commands_wrap()` { #dvz_commands_wrap .dvz-api-function }
 

@@ -106,6 +106,8 @@ typedef struct
     DvzSlots*    slots;
     DvzGraphics* pipeline;
     DvzBuffer*   vbuf;
+    DvzCommands* commands;
+    DvzRendering* rendering;
 } TriState;
 
 
@@ -113,6 +115,10 @@ static int tri_state_create(TriState* s, DvzDevice* device, DvzVma* alloc)
 {
     s->device = device;
     s->alloc  = alloc;
+    s->commands = dvz_commands_create_wrapper();
+    s->rendering = dvz_rendering_create_wrapper();
+    if (s->commands == NULL || s->rendering == NULL)
+        return -1;
 
     /* Compile shaders */
     uint64_t vs_sz = 0, fs_sz = 0;
@@ -183,6 +189,8 @@ static int tri_state_create(TriState* s, DvzDevice* device, DvzVma* alloc)
 
 static void tri_state_destroy(TriState* s)
 {
+    dvz_commands_free(s->commands);
+    dvz_rendering_free(s->rendering);
     dvz_buffer_destroy(s->vbuf);
     dvz_buffer_free(s->vbuf);
     dvz_graphics_destroy(s->pipeline);
@@ -206,10 +214,10 @@ static void draw_triangle(DvzCanvas* canvas, const DvzStreamFrame* frame, void* 
     if (cmd == VK_NULL_HANDLE)
         return;
 
-    DvzCommands* cmds = dvz_commands_create_wrapper();
-    dvz_commands_wrap(s->device, cmd, cmds);
+    DvzCommands* cmds = s->commands;
+    dvz_commands_wrap_borrowed_recording(s->device, cmd, cmds);
 
-    DvzRendering* rendering = dvz_rendering_create_wrapper();
+    DvzRendering* rendering = s->rendering;
     dvz_cmd_rendering_default(cmds, frame->image_view,
                               frame->extent.width, frame->extent.height,
                               (VkClearValue){.color.float32 = {0.05f, 0.05f, 0.08f, 1.0f}},
@@ -234,8 +242,8 @@ static void draw_triangle(DvzCanvas* canvas, const DvzStreamFrame* frame, void* 
     dvz_cmd_draw(cmds, 0, 3, 0, 1);
 
     dvz_cmd_rendering_end(cmds);
-    dvz_rendering_free(rendering);
-    dvz_commands_free(cmds);
+    if (dvz_commands_unwrap(cmds) != DVZ_OK)
+        dvz_fprintf(stderr, "Failed to unwrap borrowed Canvas command buffer\n");
 }
 
 

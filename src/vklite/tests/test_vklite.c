@@ -78,6 +78,7 @@ int test_vklite(TstSuite* suite)
     TST_VKLITE_CASE(test_vklite_timeline_wait_blocks_until_signal);
     TST_VKLITE_CASE(test_vklite_commands_destroy_without_recording);
     TST_VKLITE_CASE(test_vklite_commands_borrowed_recording_rejects_lifecycle);
+    TST_VKLITE_CASE(test_vklite_commands_borrowed_recording_unwrap);
     TST_VKLITE_CASE(test_vklite_barriers_reset);
     TST_VKLITE_CASE(test_vklite_submit_reset_reuse);
     TST_VKLITE_CASE(test_vklite_sampler_1);

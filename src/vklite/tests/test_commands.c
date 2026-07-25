@@ -308,6 +308,46 @@ int test_vklite_commands_borrowed_recording_rejects_lifecycle(TstContext* suite,
 
 
 
+int test_vklite_commands_borrowed_recording_unwrap(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzGpuCtx* ctx = _commands_ctx();
+    ANN(ctx);
+    DvzDevice* device = dvz_gpu_ctx_device(ctx);
+    ANN(device);
+
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    VkCommandBuffer first = (VkCommandBuffer)(uintptr_t)0x12345678;
+    VkCommandBuffer second = (VkCommandBuffer)(uintptr_t)0x87654321;
+
+    dvz_commands_wrap_borrowed_recording(device, first, cmds);
+    AT(dvz_commands_handle(cmds) == first);
+    AT(dvz_commands_unwrap(cmds) == DVZ_OK);
+    AT(dvz_commands_count(cmds) == 0);
+    AT(dvz_commands_handle(cmds) == VK_NULL_HANDLE);
+
+    dvz_commands_wrap_borrowed_recording(device, second, cmds);
+    AT(dvz_commands_handle(cmds) == second);
+    AT(dvz_commands_unwrap(cmds) == DVZ_OK);
+
+    dvz_commands_wrap(device, first, cmds);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_commands_unwrap(cmds) == DVZ_ERROR);
+    AT(dvz_commands_count(cmds) == 1);
+    AT(dvz_commands_handle(cmds) == first);
+    dvz_commands_destroy(cmds);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_commands_unwrap(NULL) == DVZ_ERROR);
+    dvz_commands_free(cmds);
+
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
+    return err_count > 0;
+}
+
+
+
 int test_vklite_barriers_reset(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);

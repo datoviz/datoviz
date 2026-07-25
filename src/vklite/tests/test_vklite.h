@@ -87,6 +87,8 @@ int test_vklite_timeline_wait_blocks_until_signal(TstContext* suite, const TstCa
 int test_vklite_commands_destroy_without_recording(TstContext* suite, const TstCase* tstitem);
 int test_vklite_commands_borrowed_recording_rejects_lifecycle(
     TstContext* suite, const TstCase* tstitem);
+int test_vklite_commands_borrowed_recording_unwrap(
+    TstContext* suite, const TstCase* tstitem);
 int test_vklite_barriers_reset(TstContext* suite, const TstCase* tstitem);
 int test_vklite_submit_reset_reuse(TstContext* suite, const TstCase* tstitem);
 

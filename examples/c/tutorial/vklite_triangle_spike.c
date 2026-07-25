@@ -89,6 +89,8 @@ typedef struct
     DvzDevice* device;
     DvzSlots* slots;
     DvzGraphics* pipeline;
+    DvzCommands* commands;
+    DvzRendering* rendering;
     VkFormat color_format;
     bool create_failed;
     uint64_t draw_count;
@@ -201,6 +203,10 @@ static int _parse_options(int argc, char** argv, SpikeOptions* options)
  */
 static void _renderer_destroy(SpikeRenderer* renderer)
 {
+    dvz_commands_free(renderer->commands);
+    renderer->commands = NULL;
+    dvz_rendering_free(renderer->rendering);
+    renderer->rendering = NULL;
     if (renderer->pipeline != NULL)
     {
         dvz_graphics_destroy(renderer->pipeline);
@@ -351,14 +357,10 @@ static void _draw_triangle(DvzCanvas* canvas, const DvzStreamFrame* frame, void*
         return;
     }
 
-    DvzCommands* commands = dvz_commands_create_wrapper();
-    DvzRendering* rendering = dvz_rendering_create_wrapper();
+    DvzCommands* commands = renderer->commands;
+    DvzRendering* rendering = renderer->rendering;
     if (commands == NULL || rendering == NULL)
-    {
-        dvz_commands_free(commands);
-        dvz_rendering_free(rendering);
         return;
-    }
     dvz_commands_wrap_borrowed_recording(renderer->device, frame->command_buffer, commands);
     dvz_cmd_rendering_default(
         commands, frame->image_view, frame->extent.width, frame->extent.height,
@@ -384,8 +386,8 @@ static void _draw_triangle(DvzCanvas* canvas, const DvzStreamFrame* frame, void*
     dvz_cmd_rendering_end(commands);
 
     renderer->draw_count++;
-    dvz_rendering_free(rendering);
-    dvz_commands_free(commands);
+    if (dvz_commands_unwrap(commands) != DVZ_OK)
+        renderer->invalid_frame_contract_count++;
 }
 
 
@@ -472,6 +474,10 @@ static int _runtime_create(SpikeRuntime* runtime, const SpikeOptions* options)
         return -1;
 
     runtime->renderer.device = dvz_gpu_ctx_device(runtime->gpu);
+    runtime->renderer.commands = dvz_commands_create_wrapper();
+    runtime->renderer.rendering = dvz_rendering_create_wrapper();
+    if (runtime->renderer.commands == NULL || runtime->renderer.rendering == NULL)
+        return -1;
     VkFormat frame_format = dvz_canvas_frame_format(runtime->canvas);
     if (frame_format != VK_FORMAT_UNDEFINED &&
         _renderer_create(&runtime->renderer, runtime->renderer.device, frame_format) != 0)

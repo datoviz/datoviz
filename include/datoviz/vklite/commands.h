@@ -280,4 +280,19 @@ dvz_commands_wrap_borrowed_recording(DvzDevice* device, VkCommandBuffer vk_cmd, 
 
 
 
+/**
+ * Detach a borrowed recording command buffer from a reusable wrapper.
+ *
+ * This operation only accepts wrappers initialized by dvz_commands_wrap_borrowed_recording(). It
+ * clears all borrowed device and command-buffer references without ending, resetting, submitting,
+ * freeing, or otherwise touching the Vulkan command buffer. Owned and recording-control wrappers
+ * are rejected without mutation.
+ *
+ * @param cmds borrowed recording commands wrapper to detach
+ * @returns DVZ_OK on success or DVZ_ERROR when the wrapper is null or not borrowed-recording
+ */
+DVZ_EXPORT DvzResult dvz_commands_unwrap(DvzCommands* cmds);
+
+
+
 EXTERN_C_OFF

@@ -487,3 +487,30 @@ void dvz_commands_wrap_borrowed_recording(
     dvz_commands_wrap(device, vk_cmd, cmds);
     cmds->borrowed_recording = true;
 }
+
+
+
+/**
+ * Detach a borrowed recording command buffer without touching Vulkan.
+ *
+ * @param cmds borrowed recording commands wrapper
+ * @returns DVZ_OK on success or DVZ_ERROR when the wrapper is not borrowed-recording
+ */
+DvzResult dvz_commands_unwrap(DvzCommands* cmds)
+{
+    if (cmds == NULL || !cmds->borrowed_recording)
+    {
+        log_error("can only unwrap a borrowed recording command buffer");
+        return DVZ_ERROR;
+    }
+
+    cmds->device = NULL;
+    cmds->queue = NULL;
+    cmds->count = 0;
+    cmds->current = 0;
+    dvz_memset(cmds->cmds, sizeof(cmds->cmds), 0, sizeof(cmds->cmds));
+    dvz_memset(cmds->blocked, sizeof(cmds->blocked), 0, sizeof(cmds->blocked));
+    cmds->borrowed_recording = false;
+    dvz_obj_init(&cmds->obj);
+    return DVZ_OK;
+}
