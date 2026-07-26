@@ -37,3 +37,14 @@ target_compile_definitions(
     DVZ_TUTORIAL_USE_VERTEX_BUFFER=1
     DVZ_TUTORIAL_USE_TEXTURE_UPLOAD=1
 )
+
+add_executable(arcball_spike triangle.c)
+target_link_libraries(arcball_spike PRIVATE datoviz::datoviz)
+target_compile_definitions(
+    arcball_spike
+    PRIVATE
+    DVZ_TUTORIAL_SHADER_DIR="${CMAKE_CURRENT_SOURCE_DIR}/shaders/arcball"
+    DVZ_TUTORIAL_USE_VERTEX_BUFFER=1
+    DVZ_TUTORIAL_USE_INDEXED_DEPTH=1
+    DVZ_TUTORIAL_USE_ARCBALL=1
+)

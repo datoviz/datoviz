@@ -298,6 +298,8 @@ The accepted depth profile uses `DvzCanvasConfig.depth_format`: `VK_FORMAT_UNDEF
 
 The accepted image-upload profile uses the existing vklite resource and command boundaries rather than an opaque upload helper. Initialization creates an owned host-visible staging buffer, sampled image, image view, sampler, descriptor slots, and descriptors; records the explicit `UNDEFINED` to `TRANSFER_DST_OPTIMAL` barrier, buffer-to-image copy, and `TRANSFER_DST_OPTIMAL` to `SHADER_READ_ONLY_OPTIMAL` barrier; then performs one blocking owned-command submission before releasing staging storage. The sampled image, view, sampler, and descriptors remain owned by the renderer and are destroyed in dependency-safe order after submitted drawing completes. Convenience may reduce wrapper allocation in future only if it keeps layouts, stages, access scopes, ownership, and synchronization visible at the call site.
 
+The accepted direct-controller profile obtains the Canvas-owned borrowed router through `dvz_canvas_input()`, connects an owned standalone `DvzArcball`, combines its model and view contribution with an owned standalone `DvzCamera`, refreshes camera projection from each framebuffer extent, and disconnects before destroying the controller or Canvas window. `dvz_cmd_push_constants()` writes the resulting combined transform through a range declared by `dvz_slots_push()` while validating non-empty four-byte-aligned bounds and shader-stage visibility; this avoids raw Vulkan commands and shared per-frame uniform mutation in the enabling spike. The final chapter may use ordinary frame-safe uniform buffers when teaching persistent per-frame state.
+
 
 ## Validation Direction
 

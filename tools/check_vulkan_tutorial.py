@@ -120,6 +120,29 @@ def main() -> int:
         if not texture_shader.is_file():
             errors.append(f"missing texture spike shader {texture_shader.relative_to(ROOT)}")
 
+    for token in (
+        "arcball_spike",
+        "DVZ_TUTORIAL_USE_ARCBALL=1",
+        'DVZ_TUTORIAL_SHADER_DIR="${CMAKE_CURRENT_SOURCE_DIR}/shaders/arcball"',
+    ):
+        _require(cmake, token, "examples/c/tutorial/CMakeLists.txt", errors)
+    for token in (
+        "dvz_canvas_input(",
+        "dvz_arcball_create(",
+        "dvz_arcball_connect(",
+        "dvz_camera_resize(",
+        "dvz_camera_mvp(",
+        "dvz_arcball_mvp(",
+        "dvz_slots_push(",
+        "dvz_cmd_push_constants(",
+        "dvz_arcball_disconnect(",
+    ):
+        _require(source, token, "examples/c/tutorial/triangle.c", errors)
+    for suffix in ("vert", "frag"):
+        arcball_shader = EXAMPLE / "shaders" / "arcball" / f"vklite_triangle.{suffix}"
+        if not arcball_shader.is_file():
+            errors.append(f"missing arcball spike shader {arcball_shader.relative_to(ROOT)}")
+
     for target, (doc_name, preview_name, shader_dir, uses_vertex_buffer) in CHAPTERS.items():
         cmake_label = "examples/c/tutorial/CMakeLists.txt"
         _require(cmake, f"add_tutorial_chapter({target} {shader_dir} ", cmake_label, errors)

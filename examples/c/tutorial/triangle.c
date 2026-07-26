@@ -24,6 +24,7 @@
 
 #include "datoviz/canvas.h"
 #include "datoviz/common/functions.h"
+#include "datoviz/controller.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/shader.h"
 #include "datoviz/stream/frame_stream.h"
@@ -57,6 +58,10 @@
 #define DVZ_TUTORIAL_USE_TEXTURE_UPLOAD 0
 #endif
 
+#ifndef DVZ_TUTORIAL_USE_ARCBALL
+#define DVZ_TUTORIAL_USE_ARCBALL 0
+#endif
+
 #define SPIKE_PATH_MAX 4096
 
 
@@ -75,13 +80,14 @@ typedef struct
     bool vertex_buffer;
     bool indexed_depth;
     bool texture_upload;
+    bool arcball;
 } SpikeOptions;
 
 
 
 typedef struct
 {
-#if DVZ_TUTORIAL_USE_INDEXED_DEPTH
+#if DVZ_TUTORIAL_USE_INDEXED_DEPTH || DVZ_TUTORIAL_USE_ARCBALL
     float position[3];
 #else
     float position[2];
@@ -94,7 +100,18 @@ typedef struct
 
 
 
-#if DVZ_TUTORIAL_USE_INDEXED_DEPTH
+#if DVZ_TUTORIAL_USE_ARCBALL
+static const SpikeVertex TRIANGLE_VERTICES[8] = {
+    {{-0.65f, -0.65f, -0.65f}, {1.00f, 0.25f, 0.25f}},
+    {{+0.65f, -0.65f, -0.65f}, {1.00f, 0.75f, 0.25f}},
+    {{+0.65f, +0.65f, -0.65f}, {0.30f, 0.90f, 0.40f}},
+    {{-0.65f, +0.65f, -0.65f}, {0.20f, 0.75f, 1.00f}},
+    {{-0.65f, -0.65f, +0.65f}, {0.55f, 0.30f, 1.00f}},
+    {{+0.65f, -0.65f, +0.65f}, {1.00f, 0.30f, 0.75f}},
+    {{+0.65f, +0.65f, +0.65f}, {0.30f, 1.00f, 0.90f}},
+    {{-0.65f, +0.65f, +0.65f}, {0.90f, 0.90f, 0.25f}},
+};
+#elif DVZ_TUTORIAL_USE_INDEXED_DEPTH
 static const SpikeVertex TRIANGLE_VERTICES[6] = {
     {{-0.70f, +0.55f, 0.20f}, {1.00f, 0.35f, 0.25f}},
     {{+0.35f, +0.55f, 0.20f}, {1.00f, 0.70f, 0.25f}},
@@ -116,7 +133,16 @@ static const SpikeVertex TRIANGLE_VERTICES[3] = {
     {{-0.65f, +0.65f}, {0.2f, 0.4f, 1.0f}},
 };
 #endif
+#if DVZ_TUTORIAL_USE_ARCBALL
+static const uint16_t TRIANGLE_INDICES[36] = {
+    0, 1, 2, 2, 3, 0, 4, 6, 5, 6, 4, 7, 0, 4, 5, 5, 1, 0,
+    3, 2, 6, 6, 7, 3, 1, 5, 6, 6, 2, 1, 0, 3, 7, 7, 4, 0,
+};
+#define SPIKE_INDEX_COUNT 36
+#else
 static const uint16_t TRIANGLE_INDICES[6] = {0, 1, 2, 3, 4, 5};
+#define SPIKE_INDEX_COUNT 6
+#endif
 
 
 
@@ -132,6 +158,9 @@ typedef struct
     DvzImageViews* texture_view;
     DvzSampler* sampler;
     DvzDescriptors* descriptors;
+    DvzArcball* arcball;
+    DvzCamera* camera;
+    DvzInputRouter* input_router;
     DvzCommands* commands;
     DvzRendering* rendering;
     VkFormat color_format;
@@ -139,6 +168,7 @@ typedef struct
     bool use_vertex_buffer;
     bool use_indexed_depth;
     bool use_texture_upload;
+    bool use_arcball;
     bool create_failed;
     uint64_t draw_count;
     uint64_t extent_change_count;
@@ -203,6 +233,7 @@ static int _parse_options(int argc, char** argv, SpikeOptions* options)
         .vertex_buffer = DVZ_TUTORIAL_USE_VERTEX_BUFFER != 0,
         .indexed_depth = DVZ_TUTORIAL_USE_INDEXED_DEPTH != 0,
         .texture_upload = DVZ_TUTORIAL_USE_TEXTURE_UPLOAD != 0,
+        .arcball = DVZ_TUTORIAL_USE_ARCBALL != 0,
     };
 
     for (int i = 1; i < argc; i++)
@@ -258,12 +289,48 @@ static int _parse_options(int argc, char** argv, SpikeOptions* options)
 
 
 /**
+ * Multiply two column-major 4x4 matrices.
+ *
+ * @param left left matrix
+ * @param right right matrix
+ * @param[out] out product matrix
+ */
+static void _mat4_multiply(const mat4 left, const mat4 right, mat4 out)
+{
+    mat4 product = {{0}};
+    for (uint32_t column = 0; column < 4; column++)
+    {
+        for (uint32_t row = 0; row < 4; row++)
+        {
+            for (uint32_t k = 0; k < 4; k++)
+                product[column][row] += left[k][row] * right[column][k];
+        }
+    }
+    memcpy(out, product, sizeof(product));
+}
+
+
+
+/**
  * Destroy renderer-owned vklite objects.
  *
  * @param renderer renderer to destroy
  */
 static void _renderer_destroy(SpikeRenderer* renderer)
 {
+    if (renderer->arcball != NULL && renderer->input_router != NULL)
+        (void)dvz_arcball_disconnect(renderer->arcball, renderer->input_router);
+    if (renderer->camera != NULL)
+    {
+        dvz_camera_destroy(renderer->camera);
+        renderer->camera = NULL;
+    }
+    if (renderer->arcball != NULL)
+    {
+        dvz_arcball_destroy(renderer->arcball);
+        renderer->arcball = NULL;
+    }
+    renderer->input_router = NULL;
     dvz_commands_free(renderer->commands);
     renderer->commands = NULL;
     dvz_rendering_free(renderer->rendering);
@@ -548,6 +615,8 @@ static int _renderer_create(
             renderer->slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
     }
+    if (renderer->use_arcball)
+        dvz_slots_push(renderer->slots, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(mat4));
     if (dvz_slots_create(renderer->slots) != 0)
         goto error;
 
@@ -734,6 +803,35 @@ static void _draw_triangle(DvzCanvas* canvas, const DvzStreamFrame* frame, void*
         dvz_attachment_ops(depth, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
         dvz_attachment_clear(depth, (VkClearValue){.depthStencil = {1.0f, 0}});
     }
+    if (renderer->use_arcball)
+    {
+        if (
+            renderer->arcball == NULL || renderer->camera == NULL ||
+            dvz_camera_resize(
+                renderer->camera, (float)frame->extent.width, (float)frame->extent.height) !=
+                DVZ_OK)
+        {
+            renderer->invalid_frame_contract_count++;
+            (void)dvz_commands_unwrap(commands);
+            return;
+        }
+        DvzMVP mvp = {0};
+        mat4 view_model = {{0}};
+        mat4 transform = {{0}};
+        dvz_camera_mvp(renderer->camera, &mvp);
+        dvz_arcball_mvp(renderer->arcball, &mvp);
+        _mat4_multiply(mvp.view, mvp.model, view_model);
+        _mat4_multiply(mvp.proj, view_model, transform);
+        if (
+            dvz_cmd_push_constants(
+                commands, renderer->slots, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(transform),
+                transform) != DVZ_OK)
+        {
+            renderer->invalid_frame_contract_count++;
+            (void)dvz_commands_unwrap(commands);
+            return;
+        }
+    }
     dvz_cmd_rendering_begin(commands, rendering);
     dvz_cmd_bind_graphics(commands, renderer->pipeline);
     if (renderer->use_vertex_buffer)
@@ -754,7 +852,7 @@ static void _draw_triangle(DvzCanvas* canvas, const DvzStreamFrame* frame, void*
             commands, VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->descriptors, 0, 1, 0, NULL);
     }
     if (renderer->use_indexed_depth)
-        dvz_cmd_draw_indexed(commands, 0, 0, 6, 0, 1);
+        dvz_cmd_draw_indexed(commands, 0, 0, SPIKE_INDEX_COUNT, 0, 1);
     else
         dvz_cmd_draw(commands, 0, 3, 0, 1);
     dvz_cmd_rendering_end(commands);
@@ -856,10 +954,27 @@ static int _runtime_create(SpikeRuntime* runtime, const SpikeOptions* options)
         options->vertex_buffer || options->indexed_depth || options->texture_upload;
     runtime->renderer.use_indexed_depth = options->indexed_depth;
     runtime->renderer.use_texture_upload = options->texture_upload;
+    runtime->renderer.use_arcball = options->arcball;
     runtime->renderer.commands = dvz_commands_create_wrapper();
     runtime->renderer.rendering = dvz_rendering_create_wrapper();
     if (runtime->renderer.commands == NULL || runtime->renderer.rendering == NULL)
         return -1;
+    if (runtime->renderer.use_arcball)
+    {
+        runtime->renderer.input_router = dvz_canvas_input(runtime->canvas);
+        runtime->renderer.arcball = dvz_arcball_create(NULL);
+        runtime->renderer.camera = dvz_camera_create(NULL);
+        if (
+            runtime->renderer.input_router == NULL || runtime->renderer.arcball == NULL ||
+            runtime->renderer.camera == NULL ||
+            dvz_arcball_initial(
+                runtime->renderer.arcball, (vec3){0.45f, -0.55f, 0.15f}) != DVZ_OK ||
+            dvz_arcball_connect(
+                runtime->renderer.arcball, runtime->renderer.input_router) != DVZ_OK)
+        {
+            return -1;
+        }
+    }
     VkFormat frame_format = dvz_canvas_frame_format(runtime->canvas);
     if (frame_format != VK_FORMAT_UNDEFINED &&
         _renderer_create(

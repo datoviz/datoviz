@@ -344,4 +344,14 @@ if(TARGET datoviz_vklite AND TARGET datoviz_canvas AND DVZ_HAS_GLFW)
         DVZ_TUTORIAL_USE_VERTEX_BUFFER=1
         DVZ_TUTORIAL_USE_TEXTURE_UPLOAD=1
     )
+
+    dvz_add_example(tutorial arcball_spike tutorial/triangle.c)
+    target_compile_definitions(
+        example_c_tutorial_arcball_spike
+        PRIVATE
+        DVZ_TUTORIAL_SHADER_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tutorial/shaders/arcball"
+        DVZ_TUTORIAL_USE_VERTEX_BUFFER=1
+        DVZ_TUTORIAL_USE_INDEXED_DEPTH=1
+        DVZ_TUTORIAL_USE_ARCBALL=1
+    )
 endif()

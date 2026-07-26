@@ -18,7 +18,7 @@ from capture_gallery import png_is_nonblank
 ROOT = Path(__file__).resolve().parents[1]
 TUTORIAL_SOURCE = ROOT / "examples" / "c" / "tutorial"
 CHAPTERS = ("first_triangle", "shaders_and_pipeline", "vertex_buffers")
-EXECUTABLES = (*CHAPTERS, "indexed_depth_spike", "texture_upload_spike")
+EXECUTABLES = (*CHAPTERS, "indexed_depth_spike", "texture_upload_spike", "arcball_spike")
 
 
 def _run(command: list[str], env: dict[str, str] | None = None) -> None:
@@ -121,8 +121,17 @@ def main() -> int:
 
     if hashes["first_triangle"] == hashes["shaders_and_pipeline"]:
         raise RuntimeError("chapter two capture does not differ from chapter one")
-    if len(set(hashes.values())) != len(hashes):
-        raise RuntimeError("tutorial chapters or enabling spikes produced duplicate captures")
+    duplicate_groups: dict[str, list[str]] = {}
+    for name, digest in hashes.items():
+        duplicate_groups.setdefault(digest, []).append(name)
+    duplicates = [
+        names
+        for names in duplicate_groups.values()
+        if len(names) > 1 and any(name not in CHAPTERS for name in names)
+    ]
+    if duplicates:
+        detail = "; ".join(", ".join(names) for names in duplicates)
+        raise RuntimeError(f"tutorial chapters or enabling spikes produced duplicate captures: {detail}")
     print("Vulkan tutorial examples smoke: OK")
     if temporary_build is not None:
         temporary_build.cleanup()
