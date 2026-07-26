@@ -94,8 +94,10 @@ A GPU buffer needs to be told, upfront, both *what for* and *where it lives*:
   some performance cost. These flags request host-visible, CPU-mapped memory — the simplest option,
   and the right one for a small buffer written once at startup. Uploading a large or
   frequently-changing buffer would instead normally go through a device-local buffer plus a
-  temporary host-visible **staging buffer** to copy from — a pattern you can see in the optional
-  texture-upload chapter's code, but not one this triangle needs.
+  temporary host-visible **staging buffer** to copy from — a pattern used by this same repo's
+  `texture_upload_spike` example (see `_renderer_create_texture()` in
+  [`triangle.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/tutorial/triangle.c)),
+  but not one this triangle needs.
 - **`dvz_buffer_upload`** then does the actual CPU→GPU copy, into the memory just configured.
 
 The wrapper and Vulkan buffer are owned by the renderer. The device and allocator are borrowed from

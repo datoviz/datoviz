@@ -178,9 +178,16 @@ One call at a time:
 2. **`dvz_graphics`** — creates an empty pipeline object tied to the device, ready to have state
    attached to it.
 3. **`dvz_graphics_shader`** — attaches a compiled shader module to one stage of the pipeline. Two
-   calls here, one per stage, each naming which `VK_SHADER_STAGE_*` it fills.
+   calls here, one per stage, each naming which `VK_SHADER_STAGE_*` it fills. The two shaders'
+   interfaces (which `location` each declares, and with what type) only get checked against each
+   other once `dvz_graphics_create` (step 8) actually builds the pipeline — that check has nothing
+   to do with the pipeline layout from step 1, which is about descriptor/push-constant resources,
+   not the vertex→fragment interface between stages.
 4. **`dvz_graphics_primitive`** — sets the primitive topology (chapter 1): triangle-list, so every
-   3 vertices in a draw call become one independent triangle.
+   3 vertices in a draw call become one independent triangle. The trailing `0`
+   (`DVZ_GRAPHICS_FLAGS_DISABLE`) says this topology is fixed at pipeline creation rather than
+   settable dynamically per draw — the same fixed-vs-dynamic choice you'll see made the other way,
+   for viewport and scissor, in step 7.
 5. **`dvz_graphics_attachment_color`** — declares that this pipeline renders into one color
    attachment, in `color_format`. This format must match the format Canvas actually hands the
    renderer each frame — it's the exact fact the "format mismatches" counter from chapter 1 checks
@@ -216,8 +223,10 @@ Restart after each edit and connect the visible edge width to the interpolated `
 Change the vertex shader output location from `0` to `1` without changing the fragment input. Each
 shader may still compile individually — runtime compilation treats stages independently, and
 `location = 1` is valid GLSL on its own. The mismatch only becomes visible when the two stages meet
-inside `dvz_graphics_create`, where the pipeline layout requires every output location the vertex
-shader declares to have a matching input location in the fragment shader. With validation enabled,
+inside `dvz_graphics_create`, which validates that every `location` the vertex shader outputs has a
+matching input `location` in the fragment shader (this is a check on the two shaders' interfaces,
+separate from the pipeline layout built in step 1 above, which only concerns descriptor and
+push-constant resources). With validation enabled,
 this incompatibility is reported there. Restore matching locations before continuing.
 
 ## Checkpoint

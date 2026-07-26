@@ -26,9 +26,15 @@ scripting and for this tutorial's checkpoints. `--frames 3` stops after 3 frames
 until you close the window. `--validate` turns on the Vulkan validation layers, which catch
 API-misuse bugs and turn them into a failing exit status instead of undefined behavior.
 
-The program should report three submitted and three drawn frames, zero format mismatches, zero
-invalid frame contracts, and no creation failure. Keep this running (or re-run it after each
-change below) — the rest of the chapter explains what you just saw.
+The program prints one summary line: how many frames it submitted and drew, plus a handful of
+counters it uses to check itself — how many times the window's size changed, how many times
+Canvas's internal image generation changed, how many frames had a color-format mismatch, and how
+many frames broke Canvas's "frame contract" (the set of guarantees Canvas makes about what it hands
+your draw callback each frame — e.g. that the command buffer really is recording, and the image
+view really is valid — checked in code, not something you need to inspect yourself). For this
+recipe, every one of those counters should read `0` except submitted/drawn, which should both read
+`3`, and there should be no creation failure. Keep this running (or re-run it after each change
+below) — the rest of the chapter explains what you just saw.
 
 ## Before you go further: how a GPU draws one frame
 
@@ -93,15 +99,10 @@ depending on which layer of a program you're reading:
 In short: Canvas removes the boilerplate that has nothing to teach you about GPU rendering;
 `vklite` keeps every remaining Vulkan concept visible, just typed and named.
 
-> **A note on shading languages.** The shaders below are written in **GLSL** (the OpenGL Shading
-> Language), which Vulkan also accepts. GLSL source is compiled to **SPIR-V**, a binary
-> instruction format, before the GPU can run it — Datoviz does that compilation for you at
-> startup. GLSL is not the only shading language you'll encounter in GPU programming: **WebGPU**,
-> the browser-oriented GPU API, uses a different language called **WGSL**, and cross-compilers
-> such as Google's **Tint** or Mozilla's **Naga** (used by `wgpu`, and by Google's **Dawn** WebGPU
-> implementation) translate between SPIR-V, WGSL, HLSL, and MSL so the same shader logic can target
-> multiple backends. None of that matters for this tutorial — it's here so the term "GLSL" doesn't
-> read as *the* shading language rather than *a* shading language.
+> **A note on shading languages.** The shaders below are written in **GLSL**, one of several
+> languages GPU APIs accept — Vulkan also accepts it. GLSL source is compiled to **SPIR-V**, an
+> intermediate binary format, before the GPU can run it; Datoviz does that compilation for you at
+> startup.
 
 ## The shaders: where the triangle actually comes from
 
@@ -263,9 +264,12 @@ Copy the shader directory, introduce an invalid token in the copied fragment sha
 ./build/gpu-tutorial/first_triangle --offscreen --frames 1 --shader-dir /path/to/copied/shaders
 ```
 
-Compilation should fail before drawing and name the copied file and source line. A missing
-provider, incompatible provider, missing file, invalid request, and GLSL compilation error each
-have a distinct status in the [runtime shader API](../../reference/c-api/runtime-shader.md).
+Compilation should fail before drawing and name the copied file and source line. If the file itself
+can't be found, this tutorial's own file-reading code reports that directly; if the file is found
+but the GLSL in it is invalid, the failure instead comes back as a distinct
+[`DvzShaderCompileStatus`](../../reference/c-api/runtime-shader.md) value from the runtime shader
+API — a missing or incompatible compiler provider, an invalid request, or a compilation failure
+each get their own status, so calling code can tell these situations apart.
 
 ## Checkpoint
 
