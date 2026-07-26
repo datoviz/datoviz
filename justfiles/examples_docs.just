@@ -352,7 +352,8 @@ serve: docs-assets wasm-scene-build-if-needed
     uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs serve -a "${host}:${port}"
 #
 
-docs-serve: serve
+docs-serve:
+    @just --jobs "${DVZ_DOCS_JOBS:-2}" serve
 #
 
 # Publish the MkDocs website on GitHub Pages while preserving the legacy v0.3 archive.

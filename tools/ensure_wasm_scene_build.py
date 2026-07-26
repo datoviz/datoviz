@@ -19,9 +19,28 @@ INPUT_ROOTS = (
     ROOT / "include/datoviz",
     ROOT / "src",
     ROOT / "shaders",
-    ROOT / "examples/c",
     ROOT / "tasks/wasm_build.sh",
     ROOT / "justfiles/webgpu_wasm.just",
+)
+WASM_EXAMPLE_INPUT_ROOTS = (
+    ROOT / "examples/c/composites",
+    ROOT / "examples/c/features",
+    ROOT / "examples/c/runner",
+    ROOT / "examples/c/showcases",
+    ROOT / "examples/c/start",
+    ROOT / "examples/c/visuals",
+)
+WASM_EXAMPLE_SHARED_INPUTS = (
+    ROOT / "examples/c/example_common.c",
+    ROOT / "examples/c/example_common.h",
+    ROOT / "examples/c/example_controller_preview.c",
+    ROOT / "examples/c/example_controller_preview.h",
+    ROOT / "examples/c/example_gui_controls.h",
+    ROOT / "examples/c/example_random.c",
+    ROOT / "examples/c/example_random.h",
+    ROOT / "examples/c/example_style.c",
+    ROOT / "examples/c/example_style.h",
+    ROOT / "examples/c/example_tuner.h",
 )
 INPUT_SUFFIXES = {
     ".c",
@@ -49,7 +68,7 @@ IGNORED_PARTS = {
 
 def iter_inputs() -> list[Path]:
     files: list[Path] = []
-    for root in INPUT_ROOTS:
+    for root in (*INPUT_ROOTS, *WASM_EXAMPLE_INPUT_ROOTS, *WASM_EXAMPLE_SHARED_INPUTS):
         if root.is_file():
             files.append(root)
             continue
@@ -65,7 +84,7 @@ def iter_inputs() -> list[Path]:
 
 def input_hash(files: list[Path]) -> str:
     digest = hashlib.sha256()
-    for path in files:
+    for path in sorted(files):
         try:
             rel = path.relative_to(ROOT)
             data = path.read_bytes()

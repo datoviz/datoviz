@@ -45,8 +45,22 @@ build_mode()
     local c_flags=${4:-}
     local cxx_flags=${5:-}
     local linker_flags=${6:-}
+    local build_jobs=${DVZ_BUILD_JOBS:-}
 
     activate_emsdk
+    if [[ -z "$build_jobs" ]]; then
+        if command -v getconf >/dev/null 2>&1; then
+            build_jobs=$(getconf _NPROCESSORS_ONLN 2>/dev/null || true)
+        fi
+        if [[ -z "$build_jobs" ]] && command -v sysctl >/dev/null 2>&1; then
+            build_jobs=$(sysctl -n hw.logicalcpu 2>/dev/null || true)
+        fi
+        build_jobs=${build_jobs:-8}
+    fi
+    if [[ ! "$build_jobs" =~ ^[1-9][0-9]*$ ]]; then
+        echo "DVZ_BUILD_JOBS must be a positive integer, got: $build_jobs" >&2
+        return 2
+    fi
     cmake_args=(
         -S .
         -B "$build_dir"
@@ -73,7 +87,7 @@ build_mode()
         cmake_args+=("-DCMAKE_EXE_LINKER_FLAGS_${flag_config}=${linker_flags}")
     fi
     emcmake cmake "${cmake_args[@]}"
-    cmake --build "$build_dir" --target datoviz_wasm_scene -j 8
+    cmake --build "$build_dir" --target datoviz_wasm_scene --parallel "$build_jobs"
 }
 
 case "${1:-}" in
