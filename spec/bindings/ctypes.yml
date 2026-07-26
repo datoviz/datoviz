@@ -136,7 +136,9 @@ layout_records:
     - DvzOverlayCardDesc
     - DvzOverlayCardStyle
     - DvzPanelView2DDesc
+    - DvzPanelView2DState
     - DvzPanelView3DDesc
+    - DvzPanelView3DState
     - DvzPolygonRing
     - DvzPolygonDesc
     - DvzTextItem
@@ -144,6 +146,9 @@ layout_records:
     - DvzTextPlacement
     - DvzTextStyle
     - DvzVideoEncoderConfig
+  required_alignment:
+    DvzPanelView2DState: 16
+    DvzPanelView3DState: 16
 
 callback_functions:
   subscription:

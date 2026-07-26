@@ -80,7 +80,7 @@ def main() -> int:
     _check_same('skipped functions', expected_skipped, actual_skipped)
 
     expected_layout = _policy_list(args.policy, 'layout_records', 'include')
-    actual_layout = _generated_list(args.ctypes, '_DATOVIZ_CTYPES_LAYOUT_RECORDS')
+    actual_layout = _generated_list(args.ctypes, '_DATOVIZ_CTYPES_DECLARED_LAYOUT_RECORDS')
     missing_layout = sorted(set(expected_layout) - set(actual_layout))
     if missing_layout:
         raise SystemExit('missing generated layout records: ' + ', '.join(missing_layout))

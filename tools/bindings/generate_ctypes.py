@@ -114,8 +114,18 @@ def _load_library():
 
 dvz = _load_library()
 _MISSING_FUNCTIONS = []
+_UNSUPPORTED_FUNCTIONS = {}
+_UNSUPPORTED_LAYOUT_RECORDS = {}
 _DATOVIZ_CTYPES_LAYOUT_RECORDS = []
 _CALLBACK_KEEPALIVE = {}
+
+
+def _ctypes_alignment_is_effective(requested):
+    class _AlignmentProbe(ctypes.Structure):
+        _align_ = requested
+        _fields_ = [('_value', ctypes.c_char)]
+
+    return ctypes.alignment(_AlignmentProbe) == requested
 
 
 def _ptr_value(obj):
@@ -533,6 +543,56 @@ def _layout_records_from_policy(path: Path) -> set[str]:
     return out
 
 
+def _required_alignments_from_policy(path: Path) -> dict[str, int]:
+    if not path.exists():
+        return {}
+    try:
+        import yaml  # type: ignore
+
+        with path.open(encoding='utf8') as f:
+            policy = yaml.safe_load(f) or {}
+        entries = policy.get('layout_records', {}).get('required_alignment', {})
+        if isinstance(entries, dict):
+            out = {}
+            for name, alignment in entries.items():
+                if (
+                    isinstance(name, str)
+                    and isinstance(alignment, int)
+                    and not isinstance(alignment, bool)
+                    and alignment > 0
+                ):
+                    out[name] = alignment
+            return out
+    except ModuleNotFoundError:
+        pass
+
+    out: dict[str, int] = {}
+    in_layout = False
+    in_alignments = False
+    for line in path.read_text().splitlines():
+        stripped = line.strip()
+        if stripped == 'layout_records:':
+            in_layout = True
+            in_alignments = False
+            continue
+        if in_layout and not line.startswith(' ') and stripped:
+            break
+        if in_layout and stripped == 'required_alignment:':
+            in_alignments = True
+            continue
+        if in_alignments and line.startswith('    ') and ':' in stripped:
+            name, value = stripped.split(':', 1)
+            try:
+                alignment = int(value.strip())
+            except ValueError:
+                continue
+            if alignment > 0:
+                out[name.strip()] = alignment
+        elif in_alignments and stripped and not stripped.startswith('#'):
+            break
+    return out
+
+
 def _callback_policy_from_policy(path: Path) -> dict[str, str]:
     if not path.exists():
         return {}
@@ -657,6 +717,29 @@ def _class_name_for_pointer(qualtype: str, records: set[str]) -> str | None:
     return None
 
 
+def _output_record_dependencies(
+    function: dict, records_by_name: dict[str, dict], conditional_records: set[str]
+) -> list[str]:
+    dependencies = []
+    record_names = set(records_by_name)
+    for param in function.get('parameters', []):
+        type_info = param.get('type', {})
+        raw_qualtype = ' '.join(type_info.get('qualtype', '').split())
+        qualtype = _clean_type(raw_qualtype)
+        if raw_qualtype.startswith('const ') or '*' not in qualtype:
+            continue
+        name = _class_name_for_pointer(qualtype, record_names)
+        record = records_by_name.get(name or '')
+        if (
+            name in conditional_records
+            and record
+            and not record.get('opaque')
+            and record.get('fields')
+        ):
+            dependencies.append(name)
+    return sorted(set(dependencies))
+
+
 def _ctype_for(
     qualtype: str,
     records: set[str],
@@ -693,6 +776,7 @@ def generate(
     api: dict,
     *,
     forced_layout_records: set[str] | None = None,
+    required_alignments: dict[str, int] | None = None,
     callback_policy: dict[str, str] | None = None,
     owned_string_returns: dict[str, str] | None = None,
 ) -> tuple[str, list[str]]:
@@ -702,6 +786,7 @@ def generate(
     callbacks = set(callback_typedefs)
     callback_policy = callback_policy or {}
     owned_string_returns = owned_string_returns or {}
+    required_alignments = required_alignments or {}
     lines = [HEADER]
 
     for enum in api.get('enums', []):
@@ -771,6 +856,7 @@ def generate(
             lines.append(f'{name} = {ctype}\n\n\n')
 
     layout_records = []
+    conditional_layout_records = []
     deferred_layout_records = []
     for record in ordered_records:
         name = record.get('name')
@@ -797,11 +883,38 @@ def generate(
                 break
             fields.append((field_name, ctype))
         else:
-            lines.append(f'{name}._fields_ = [\n')
+            alignment = required_alignments.get(name)
+            if alignment is not None:
+                lines.append(f"if _ctypes_alignment_is_effective({alignment}):\n")
+                lines.append(f'    {name}._align_ = {alignment}\n')
+                lines.append(f'    {name}._fields_ = [\n')
+            else:
+                lines.append(f'{name}._fields_ = [\n')
             for field_name, ctype in fields:
-                lines.append(f"    ('{field_name}', {ctype}),\n")
-            lines.append(']\n\n\n')
-            layout_records.append(name)
+                indent = '        ' if alignment is not None else '    '
+                lines.append(f"{indent}('{field_name}', {ctype}),\n")
+            if alignment is not None:
+                lines.append('    ]\n')
+                lines.append(
+                    f'    if ctypes.sizeof({name}) > 0 and '
+                    f'ctypes.alignment({name}) == {alignment}:\n'
+                )
+                lines.append(f"        _DATOVIZ_CTYPES_LAYOUT_RECORDS.append('{name}')\n")
+                lines.append('    else:\n')
+                lines.append(
+                    f"        _UNSUPPORTED_LAYOUT_RECORDS['{name}'] = "
+                    f"'ctypes did not produce the requested {alignment}-byte alignment'\n"
+                )
+                lines.append('else:\n')
+                lines.append(
+                    f"    _UNSUPPORTED_LAYOUT_RECORDS['{name}'] = "
+                    f"'ctypes runtime does not support effective {alignment}-byte structure alignment'\n"
+                )
+                lines.append('\n\n')
+                conditional_layout_records.append(name)
+            else:
+                lines.append(']\n\n\n')
+                layout_records.append(name)
 
     for name, fields in SYNTHETIC_RECORD_FIELDS.items():
         lines.append(f'{name}._fields_ = [\n')
@@ -835,8 +948,17 @@ def generate(
 
     skipped = []
     emitted = []
+    output_record_dependencies = {}
+    records_by_name = {
+        record['name']: record for record in api.get('records', []) if record.get('name')
+    }
     for function in api.get('functions', []):
         name = function['name']
+        dependencies = _output_record_dependencies(
+            function, records_by_name, set(required_alignments)
+        )
+        if dependencies:
+            output_record_dependencies[name] = dependencies
         result = _ctype_for_type(
             function.get('result', {'qualtype': 'void'}),
             records,
@@ -969,9 +1091,31 @@ def generate(
             continue
         skipped.append(name)
 
+    lines.append(
+        f'_DATOVIZ_CTYPES_LAYOUT_RECORDS[:0] = {layout_records!r}\n'
+    )
+    lines.append(f'_OUTPUT_RECORD_DEPENDENCIES = {output_record_dependencies!r}\n')
+    lines.append('for _function_name, _required_records in _OUTPUT_RECORD_DEPENDENCIES.items():\n')
+    lines.append(
+        '    _missing_records = [name for name in _required_records '
+        'if name not in _DATOVIZ_CTYPES_LAYOUT_RECORDS]\n'
+    )
+    lines.append('    if _missing_records:\n')
+    lines.append('        globals().pop(_function_name, None)\n')
+    lines.append('        globals().pop(f"_{_function_name}", None)\n')
+    lines.append(
+        '        _UNSUPPORTED_FUNCTIONS[_function_name] = '
+        '"requires unavailable ABI-exact output record layout(s): " '
+        '+ ", ".join(_missing_records)\n'
+    )
+    if output_record_dependencies:
+        lines.append('del _function_name, _required_records, _missing_records\n')
     lines.append(f'_GENERATED_FUNCTION_COUNT = {len(emitted)}\n')
     lines.append(f'_SKIPPED_FUNCTIONS = {skipped!r}\n')
-    lines.append(f'_DATOVIZ_CTYPES_LAYOUT_RECORDS = {layout_records!r}\n')
+    lines.append(
+        f'_DATOVIZ_CTYPES_DECLARED_LAYOUT_RECORDS = '
+        f'{sorted(set(layout_records) | set(conditional_layout_records))!r}\n'
+    )
     lines.append("__all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]\n")
     return ''.join(lines), skipped
 
@@ -989,6 +1133,7 @@ def main() -> int:
     text, skipped = generate(
         api,
         forced_layout_records=_layout_records_from_policy(args.policy),
+        required_alignments=_required_alignments_from_policy(args.policy),
         callback_policy=_callback_policy_from_policy(args.policy),
         owned_string_returns=_owned_string_returns_from_policy(args.policy),
     )

@@ -202,6 +202,87 @@ def _check_camera_layout_and_bounds(dvz) -> None:
         dvz.dvz_camera_destroy(camera)
 
 
+def _check_panel_view_state_layout_and_readback(dvz) -> None:
+    from datoviz import _ctypes as generated
+
+    supported = generated._ctypes_alignment_is_effective(16)
+    records = [dvz.DvzPanelView2DState, dvz.DvzPanelView3DState]
+    functions = ['dvz_panel_view2d_state', 'dvz_panel_view3d_state']
+    if not supported:
+        for record in records:
+            assert not hasattr(record, '_fields_')
+            assert ctypes.sizeof(record) == 0
+        for function in functions:
+            assert not hasattr(dvz, function)
+            assert function in generated._UNSUPPORTED_FUNCTIONS
+        return
+
+    expected = {
+        dvz.DvzPanelView2DState: (
+            192,
+            [
+                'struct_size',
+                'view_id',
+                'revision',
+                'mode',
+                'aspect',
+                'domain_x',
+                'domain_y',
+                'view_extent',
+                'data_to_view',
+            ],
+        ),
+        dvz.DvzPanelView3DState: (
+            304,
+            [
+                'struct_size',
+                'view_id',
+                'revision',
+                'view',
+                'projection',
+                'has_explicit_orthographic_bounds',
+                'orthographic_bounds',
+                'model_matrix',
+                'view_matrix',
+                'projection_matrix',
+            ],
+        ),
+    }
+    for record, (size, fields) in expected.items():
+        assert ctypes.sizeof(record) == size
+        assert ctypes.alignment(record) == 16
+        for field in fields:
+            assert hasattr(record, field)
+
+    scene = dvz.dvz_scene()
+    assert bool(scene)
+    try:
+        figure = dvz.dvz_figure(scene, 64, 64, 0)
+        assert bool(figure)
+        panel = dvz.dvz_panel_full(figure)
+        assert bool(panel)
+
+        view2d = dvz.dvz_panel_view2d_desc()
+        assert dvz.dvz_panel_set_view2d(panel, ctypes.byref(view2d)) == 0
+        state2d = dvz.DvzPanelView2DState()
+        assert dvz.dvz_panel_view2d_state(panel, ctypes.byref(state2d))
+        assert state2d.struct_size == ctypes.sizeof(state2d)
+        assert state2d.view_id
+        assert state2d.revision
+
+        view3d = dvz.dvz_panel_view3d_desc()
+        assert dvz.dvz_panel_set_view3d_desc(panel, ctypes.byref(view3d)) == 0
+        state3d = dvz.DvzPanelView3DState()
+        assert dvz.dvz_panel_view3d_state(panel, ctypes.byref(state3d))
+        assert state3d.struct_size == ctypes.sizeof(state3d)
+        assert state3d.view_id
+        assert state3d.revision
+        assert state3d.projection.far_clip > state3d.projection.near_clip
+        assert any(value != 0 for row in state3d.projection_matrix for value in row)
+    finally:
+        dvz.dvz_scene_destroy(scene)
+
+
 def _check_input_event_layout(dvz) -> None:
     assert [name for name, _ in dvz.DvzInputEvent._fields_] == ['type', 'content']
     assert [name for name, _ in dvz.DvzInputEventContent._fields_] == [
@@ -268,6 +349,7 @@ def main() -> int:
 
     _check_query_result_layout(dvz)
     _check_camera_layout_and_bounds(dvz)
+    _check_panel_view_state_layout_and_readback(dvz)
     _check_input_event_layout(dvz)
     _run_gsp_query_smoke(dvz)
 
