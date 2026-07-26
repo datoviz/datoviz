@@ -6,7 +6,7 @@ Use [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHIC
 
 ## Objective
 
-Deliver a beginner-oriented "Modern GPU Graphics in C" course that gives a programmer new to graphics a live Vulkan-backed result quickly, then progresses through explicit GPU resources and commands to a textured, lit, mouse-rotatable Suzanne mesh. Use Datoviz Canvas and vklite to remove platform boilerplate without hiding Vulkan terminology, ownership, command recording, resource state, or synchronization.
+Deliver a beginner-oriented "Modern GPU Graphics in Vulkan" course that gives a programmer new to graphics a live Vulkan-backed result quickly, then progresses through explicit GPU resources and commands to a textured, lit, mouse-rotatable Suzanne mesh. Use Datoviz Canvas and vklite to remove platform boilerplate without hiding Vulkan terminology, ownership, command recording, resource state, or synchronization.
 
 The tutorial is also an API quality gate. Chapter spikes must improve generally reusable Canvas, vklite, file-I/O, geometry, and controller boundaries when current ceremony obscures the graphics concept. Do not create a tutorial-only runtime, renderer, frame stream, wrapper layer, or ownership model.
 

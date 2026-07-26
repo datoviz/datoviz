@@ -1,4 +1,4 @@
-# Modern GPU Graphics in C
+# Modern GPU Graphics in Vulkan
 
 Status: required final-v0.4 tutorial; RC3 owns the enabling API and three-chapter pilot, and RC4 owns the complete course and installed-artifact proof.
 
@@ -11,7 +11,7 @@ The tutorial should give readers a live GLFW result quickly, then progressively 
 
 The intended result is not a comprehensive Vulkan course, a general C course, or an introduction to the high-level Datoviz scene API. It is a practical path into modern GPU graphics for readers who find raw Vulkan onboarding overwhelming and do not want to begin with the older OpenGL state-machine model.
 
-The public title should lead with the user benefit rather than the unfamiliar `vklite` name. The preferred presentation is "Modern GPU Graphics in C" with a subtitle such as "Learn Vulkan concepts with Datoviz and vklite."
+The public title should name what the tutorial actually teaches — Vulkan concepts — rather than the host language or the unfamiliar `vklite` name. The preferred presentation is "Modern GPU Graphics in Vulkan" with a subtitle such as "Learn Vulkan concepts with Datoviz and vklite."
 
 
 ## Release Contract

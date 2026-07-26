@@ -1,4 +1,4 @@
-# Modern GPU Graphics in C
+# Modern GPU Graphics in Vulkan
 
 This course teaches Vulkan concepts through Datoviz Canvas and `vklite`. You will see a live triangle first, then progressively take ownership of shaders, pipeline state, and GPU data.
 

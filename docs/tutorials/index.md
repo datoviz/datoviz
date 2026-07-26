@@ -2,7 +2,7 @@
 
 Tutorials are result-first learning paths backed by complete, runnable examples.
 
-## Modern GPU Graphics in C
+## Modern GPU Graphics in Vulkan
 
 Learn the execution of a modern Vulkan-backed GPU frame without beginning with raw Vulkan platform setup. Datoviz supplies the window, Canvas, frame acquisition, submission, presentation, and resize machinery; the tutorial uses the advanced `vklite` API to keep shaders, pipelines, buffers, commands, and ownership explicit.
 

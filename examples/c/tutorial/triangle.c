@@ -927,7 +927,7 @@ static int _runtime_create(SpikeRuntime* runtime, const SpikeOptions* options)
     DvzWindowConfig window_config = dvz_window_config();
     window_config.width = SPIKE_WIDTH;
     window_config.height = SPIKE_HEIGHT;
-    window_config.title = "Modern GPU Graphics in C";
+    window_config.title = "Modern GPU Graphics in Vulkan";
     runtime->window = dvz_window_create(
         runtime->host, options->live ? DVZ_BACKEND_GLFW : DVZ_BACKEND_OFFSCREEN, &window_config);
     if (runtime->window == NULL || dvz_window_backend_type(runtime->window) !=

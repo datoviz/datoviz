@@ -38,7 +38,7 @@ The GitHub default and active development branch remain `v0.4-dev`. The old v0.3
 
 ## Required RC4 Gate
 
-RC4 completes the installed "Modern GPU Graphics in C" course through textured, lit, mouse-rotatable Suzanne; freezes the tutorial-facing API profile; ships reviewed OBJ and texture assets outside the `data` submodule; and proves every chapter from exact installed packages on supported hosted platforms. Follow [VKLITE_GRAPHICS_TUTORIAL.md](VKLITE_GRAPHICS_TUTORIAL.md); do not move first-time public API design, asset provenance, or source-tree-only assumptions into the final release gate.
+RC4 completes the installed "Modern GPU Graphics in Vulkan" course through textured, lit, mouse-rotatable Suzanne; freezes the tutorial-facing API profile; ships reviewed OBJ and texture assets outside the `data` submodule; and proves every chapter from exact installed packages on supported hosted platforms. Follow [VKLITE_GRAPHICS_TUTORIAL.md](VKLITE_GRAPHICS_TUTORIAL.md); do not move first-time public API design, asset provenance, or source-tree-only assumptions into the final release gate.
 
 ## Optional RC3 Candidates
 
