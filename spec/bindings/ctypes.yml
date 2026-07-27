@@ -79,6 +79,20 @@ smoke_symbols:
   - dvz_ffi_polygon_desc
   - dvz_ffi_field_geometry
   - dvz_ffi_visual_transform_desc
+  - dvz_field_geometry
+  - dvz_sampled_field_set_geometry
+  - dvz_visual_transform_desc
+  - dvz_visual_set_transform_desc
+  - dvz_visual_bounds
+  - dvz_panel_visual_bounds
+  - dvz_panel_bounds
+  - dvz_panel_frame_guide_hit
+  - dvz_panel_frame_guide_layout
+  - dvz_arcball_mvp
+  - dvz_camera_mvp
+  - dvz_panzoom_mvp
+  - dvz_panel_frame_info
+  - dvz_panzoom_resolve
   - dvz_ffi_panel_background_desc
   - dvz_ffi_material_desc
   - dvz_ffi_phong_material_desc
@@ -100,8 +114,12 @@ layout_records:
   include:
     - DvzCapabilitySnapshot
     - DvzCanvasConfig
+    - DvzBounds
     - DvzFieldDataView
+    - DvzFieldGeometry
     - DvzFieldRegion
+    - DvzGuideHit
+    - DvzGuideLayout
     - DvzInteropBufferExport
     - DvzInteropBufferExportConfig
     - DvzDrp2RenderPipelineDesc
@@ -139,6 +157,10 @@ layout_records:
     - DvzPanelView2DState
     - DvzPanelView3DDesc
     - DvzPanelView3DState
+    - DvzMVP
+    - DvzPanelFrameInfo
+    - DvzPanzoomEval
+    - DvzPanzoomResolved
     - DvzPolygonRing
     - DvzPolygonDesc
     - DvzTextItem
@@ -146,9 +168,89 @@ layout_records:
     - DvzTextPlacement
     - DvzTextStyle
     - DvzVideoEncoderConfig
+    - DvzVisualTransformDesc
   required_alignment:
+    DvzMVP: 16
+    DvzPanelFrameInfo: 16
     DvzPanelView2DState: 16
     DvzPanelView3DState: 16
+    DvzPanzoomResolved: 16
+    DvzVisualTransformDesc: 16
+
+concrete_records:
+  DvzGeometry:
+    disposition: pointer-opaque
+    provenance:
+      - native-returned
+      - native-owned-input
+    reason: >
+      Geometry storage is native-owned. Python may pass only pointers returned by geometry APIs
+      back to geometry consumers and destroyers; the zero-sized declaration is not allocatable.
+  DvzTessellatedPath:
+    disposition: pointer-opaque
+    provenance:
+      - native-returned
+      - native-owned-input
+    reason: >
+      Tessellators return native-owned paths that Python may pass only to the matching destroyer.
+  DvzTextAtlasGlyph:
+    disposition: pointer-opaque
+    provenance:
+      - native-returned
+    reason: >
+      Text atlas glyph lookup returns a borrowed const pointer and never accepts caller allocation.
+  DvzVolumeState:
+    disposition: pointer-opaque
+    provenance:
+      - native-returned
+    reason: >
+      Volume state inspection returns a borrowed const pointer and never accepts caller allocation.
+  DvzWindowSurface:
+    disposition: pointer-opaque
+    provenance:
+      - native-returned
+    reason: >
+      Window surface inspection returns borrowed pointers and never accepts caller allocation.
+  DvzCanvasLiveImageFrame:
+    disposition: pointer-opaque
+    provenance:
+      - callback-borrowed:DvzCanvasLiveImageCallback
+    reason: >
+      Live-image callbacks receive a borrowed payload valid only for the callback invocation.
+  DvzBarriers:
+    disposition: unsupported
+    reason: >
+      The record embeds Vulkan dependency and barrier records whose layouts are intentionally not
+      mirrored by ctypes.
+  DvzDeviceConfig:
+    disposition: unsupported
+    reason: >
+      The record embeds Vulkan feature-chain state whose platform ABI is intentionally unsupported.
+  DvzGpuCtxConfig:
+    disposition: unsupported
+    reason: >
+      The record embeds Vulkan feature-chain state whose platform ABI is intentionally unsupported.
+  DvzDrp2ColorAttachment:
+    disposition: unsupported
+    reason: >
+      This low-level DRP2 attachment record is unavailable as part of the unsupported render-pass
+      descriptor family.
+  DvzDrp2RenderPassDesc:
+    disposition: unsupported
+    reason: >
+      This low-level DRP2 descriptor depends on the unsupported color-attachment record.
+  DvzStreamFrame:
+    disposition: unsupported
+    provenance:
+      - callback-borrowed:DvzCanvasDraw
+    reason: >
+      Caller-supplied stream-frame APIs are unsafe without the Vulkan-shaped layout, while the
+      canvas draw callback may retain its explicitly borrowed payload pointer.
+  DvzWindowExternalSurfaceInfo:
+    disposition: unsupported
+    reason: >
+      The native external-surface descriptor embeds platform and Vulkan surface state. Scalar FFI
+      helpers remain the supported Python path.
 
 callback_functions:
   subscription:
@@ -359,28 +461,6 @@ skipped_functions:
       reason: >
         User-facing descriptor default is useful for direct Python examples. The full
         DvzDepthCueDesc ABI layout is generated, so the by-value default helper is safe to emit.
-    dvz_device_config:
-      disposition: intentional-skip
-      reason: >
-        Device configuration contains Vulkan feature-chain state and is advanced runtime setup.
-        Do not add a Python wrapper unless a concrete supported Python device-configuration
-        workflow requires one.
-    dvz_drp2_render_pass_desc:
-      disposition: intentional-skip
-      reason: >
-        Advanced DRP2 descriptor default returns a record by value. Raw Python can construct the
-        generated DvzDrp2RenderPassDesc layout directly when this low-level protocol path is needed.
-    dvz_field_geometry:
-      disposition: ffi-helper
-      helper: dvz_ffi_field_geometry
-      reason: >
-        User-facing sampled-field geometry default is available through the pointer-output FFI
-        helper.
-    dvz_gpu_ctx_config:
-      disposition: intentional-skip
-      reason: >
-        GPU-context configuration is low-level runtime/Vulkan setup. Keep skipped for raw Python
-        unless a concrete supported workflow needs a safe opaque configuration API.
     dvz_material_desc:
       disposition: emit
       reason: >
@@ -431,28 +511,11 @@ skipped_functions:
       reason: >
         Returns VkExtent2D by value from a low-level swapchain wrapper. Python-facing workflows
         should use view/window sizing APIs.
-    dvz_visual_transform_desc:
-      disposition: ffi-helper
-      helper: dvz_ffi_visual_transform_desc
-      reason: >
-        User-facing visual-transform descriptor default is available through the pointer-output FFI
-        helper.
-    dvz_window_external_surface_info:
-      disposition: intentional-skip
-      reason: >
-        Native external-surface descriptor is backend plumbing. Raw Python already has scalar FFI
-        helpers for the supported hosted-surface update path.
   expected:
     - dvz_attachment_clear
     - dvz_cmd_rendering_default
     - dvz_cmd_set_viewport_scissor
-    - dvz_device_config
-    - dvz_drp2_render_pass_desc
-    - dvz_field_geometry
-    - dvz_gpu_ctx_config
     - dvz_surface_capabilities
     - dvz_surface_extent
     - dvz_surface_preferred_format
     - dvz_swapchain_extent
-    - dvz_visual_transform_desc
-    - dvz_window_external_surface_info

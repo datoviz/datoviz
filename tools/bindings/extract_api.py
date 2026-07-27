@@ -255,17 +255,28 @@ def _extract_translation_unit(tu: cindex.TranslationUnit) -> dict[str, list[dict
                 'fields': [],
             }
             if is_definition:
+                record_size = cursor.type.get_size()
+                record_align = cursor.type.get_align()
+                if record_size >= 0:
+                    record['size'] = record_size
+                if record_align >= 0:
+                    record['align'] = record_align
                 fields = []
                 for child in cursor.get_children():
                     if child.kind != cindex.CursorKind.FIELD_DECL:
                         continue
-                    fields.append(
-                        {
-                            'name': child.spelling,
-                            'type': _type_info(child.type),
-                            'location': _location(child),
-                        }
-                    )
+                    field = {
+                        'name': child.spelling,
+                        'type': _type_info(child.type),
+                        'location': _location(child),
+                    }
+                    offset_bits = child.get_field_offsetof()
+                    field_size = child.type.get_size()
+                    if offset_bits >= 0 and offset_bits % 8 == 0:
+                        field['offset'] = offset_bits // 8
+                    if field_size >= 0:
+                        field['size'] = field_size
+                    fields.append(field)
                 record['fields'] = fields
             if not records.get(name) or not record['opaque']:
                 records[name] = record

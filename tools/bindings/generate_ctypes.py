@@ -663,12 +663,221 @@ def _owned_string_returns_from_policy(path: Path) -> dict[str, str]:
             continue
         if in_section and not line.startswith(' ') and stripped:
             break
-        if in_section and line.startswith('  ') and not line.startswith('    ') and stripped.endswith(':'):
+        if (
+            in_section
+            and line.startswith('  ')
+            and not line.startswith('    ')
+            and stripped.endswith(':')
+        ):
             current_name = stripped[:-1]
             continue
         if in_section and current_name is not None and stripped.startswith('destroy:'):
             out[current_name] = stripped.split(':', 1)[1].strip()
     return out
+
+
+def _concrete_record_policy_from_policy(path: Path) -> dict[str, dict]:
+    if not path.exists():
+        return {}
+    try:
+        import yaml  # type: ignore
+
+        with path.open(encoding='utf8') as f:
+            policy = yaml.safe_load(f) or {}
+        entries = policy.get('concrete_records', {})
+        out: dict[str, dict] = {}
+        if isinstance(entries, dict):
+            for name, entry in entries.items():
+                if not isinstance(name, str) or not isinstance(entry, dict):
+                    continue
+                disposition = entry.get('disposition')
+                provenance = entry.get('provenance', [])
+                if not isinstance(disposition, str):
+                    continue
+                if not isinstance(provenance, list) or not all(
+                    isinstance(item, str) for item in provenance
+                ):
+                    provenance = []
+                out[name] = {
+                    'disposition': disposition,
+                    'provenance': list(provenance),
+                }
+        return out
+    except ModuleNotFoundError:
+        pass
+
+    out: dict[str, dict] = {}
+    in_section = False
+    current_name: str | None = None
+    in_provenance = False
+    for line in path.read_text().splitlines():
+        stripped = line.strip()
+        if stripped == 'concrete_records:':
+            in_section = True
+            current_name = None
+            in_provenance = False
+            continue
+        if in_section and not line.startswith(' ') and stripped:
+            break
+        if in_section and line.startswith('  ') and not line.startswith('    ') and stripped.endswith(':'):
+            current_name = stripped[:-1]
+            out[current_name] = {'disposition': '', 'provenance': []}
+            in_provenance = False
+            continue
+        if current_name is None:
+            continue
+        if line.startswith('    ') and not line.startswith('      ') and stripped.startswith(
+            'disposition:'
+        ):
+            out[current_name]['disposition'] = stripped.split(':', 1)[1].strip()
+            in_provenance = False
+            continue
+        if line.startswith('    ') and not line.startswith('      ') and stripped == 'provenance:':
+            in_provenance = True
+            continue
+        if in_provenance and line.startswith('      ') and stripped.startswith('- '):
+            out[current_name]['provenance'].append(stripped[2:].strip())
+        elif line.startswith('    ') and not line.startswith('      ') and stripped:
+            in_provenance = False
+    return out
+
+
+def _record_reference(qualtype: str, records: set[str]) -> tuple[str, int] | None:
+    t = _clean_type(qualtype)
+    pointer_depth = t.count('*')
+    t = t.replace('*', ' ').strip()
+    match = ARRAY_RE.match(t)
+    if match:
+        t = match.group('base').strip()
+    if t.startswith('struct '):
+        t = t[len('struct ') :]
+    if t in records:
+        return t, pointer_depth
+    return None
+
+
+def _record_reference_from_type(type_info: dict, records: set[str]) -> tuple[str, int] | None:
+    for spelling in (type_info.get('qualtype', ''), type_info.get('canonical', '')):
+        reference = _record_reference(spelling, records)
+        if reference is not None:
+            return reference
+    return None
+
+
+def _concrete_record_closure(api: dict, records_by_name: dict[str, dict]) -> set[str]:
+    records = set(records_by_name)
+    roots: set[str] = set()
+    for function in api.get('functions', []):
+        type_infos = [
+            function.get('result', {'qualtype': 'void'}),
+            *[param.get('type', {}) for param in function.get('parameters', [])],
+        ]
+        for type_info in type_infos:
+            reference = _record_reference_from_type(type_info, records)
+            if reference is not None:
+                roots.add(reference[0])
+    for typedef in _callback_typedefs(api).values():
+        for spelling in [typedef['result'], *typedef['args']]:
+            reference = _record_reference(spelling, records)
+            if reference is not None:
+                roots.add(reference[0])
+
+    concrete: set[str] = set()
+
+    def visit(name: str) -> None:
+        record = records_by_name.get(name)
+        if not record or record.get('opaque') or not record.get('fields') or name in concrete:
+            return
+        concrete.add(name)
+        for field in record.get('fields', []):
+            dependency = _record_dependency(field.get('type', {}), records)
+            if dependency is not None:
+                visit(dependency)
+
+    for name in roots:
+        visit(name)
+    return concrete
+
+
+def _validate_concrete_record_policy(
+    api: dict,
+    layoutable_records: set[str],
+    concrete_record_policy: dict[str, dict],
+) -> dict[str, str]:
+    records_by_name = {
+        record['name']: record for record in api.get('records', []) if record.get('name')
+    }
+    records = set(records_by_name)
+    concrete = _concrete_record_closure(api, records_by_name)
+    valid_dispositions = {'pointer-opaque', 'unsupported'}
+    unknown = sorted(set(concrete_record_policy) - concrete)
+    if unknown:
+        raise ValueError(
+            'concrete record policy names unused or non-concrete records: ' + ', '.join(unknown)
+        )
+    invalid = sorted(
+        name
+        for name, entry in concrete_record_policy.items()
+        if entry.get('disposition') not in valid_dispositions
+    )
+    if invalid:
+        raise ValueError('invalid concrete record disposition: ' + ', '.join(invalid))
+
+    missing = sorted(concrete - layoutable_records - set(concrete_record_policy))
+    if missing:
+        raise ValueError('missing concrete record disposition: ' + ', '.join(missing))
+
+    callback_typedefs = _callback_typedefs(api)
+    for name, entry in concrete_record_policy.items():
+        if entry.get('disposition') != 'pointer-opaque':
+            continue
+        provenance = set(entry.get('provenance', []))
+        for function in api.get('functions', []):
+            result_reference = _record_reference_from_type(
+                function.get('result', {'qualtype': 'void'}), records
+            )
+            if result_reference and result_reference[0] == name and result_reference[1] > 0:
+                if 'native-returned' not in provenance:
+                    raise ValueError(
+                        f'{name}: pointer result {function["name"]} lacks '
+                        'native-returned provenance'
+                    )
+            for param in function.get('parameters', []):
+                reference = _record_reference_from_type(param.get('type', {}), records)
+                if reference and reference[0] == name and reference[1] > 0:
+                    if 'native-owned-input' not in provenance:
+                        raise ValueError(
+                            f'{name}: pointer parameter '
+                            f'{function["name"]}.{param.get("name", "?")} '
+                            'lacks native-owned-input provenance'
+                        )
+
+    for callback_name, typedef in callback_typedefs.items():
+        for spelling in [typedef['result'], *typedef['args']]:
+            reference = _record_reference(spelling, records)
+            if reference is None or reference[0] in layoutable_records:
+                continue
+            record_name, pointer_depth = reference
+            record = records_by_name.get(record_name, {})
+            if record.get('opaque') or not record.get('fields'):
+                continue
+            if pointer_depth == 0:
+                raise ValueError(
+                    f'{callback_name}: unavailable concrete record {record_name} '
+                    'is passed by value'
+                )
+            provenance = set(concrete_record_policy.get(record_name, {}).get('provenance', []))
+            expected = f'callback-borrowed:{callback_name}'
+            if expected not in provenance:
+                raise ValueError(
+                    f'{record_name}: callback {callback_name} lacks explicit {expected} provenance'
+                )
+
+    dispositions = {}
+    for name in sorted(concrete):
+        entry = concrete_record_policy.get(name)
+        dispositions[name] = entry.get('disposition') if entry else 'layout'
+    return dispositions
 
 
 def _layoutable_records(
@@ -677,12 +886,14 @@ def _layoutable_records(
     enums: set[str],
     callbacks: set[str],
     forced_records: set[str] | None = None,
+    blocked_records: set[str] | None = None,
 ) -> set[str]:
     out: set[str] = set()
     forced_records = forced_records or set()
+    blocked_records = blocked_records or set()
     for record in ordered_records:
         name = record.get('name')
-        if not name or record.get('opaque'):
+        if not name or record.get('opaque') or name in blocked_records:
             continue
         for field in record.get('fields', []):
             field_name = field.get('name')
@@ -717,27 +928,88 @@ def _class_name_for_pointer(qualtype: str, records: set[str]) -> str | None:
     return None
 
 
-def _output_record_dependencies(
-    function: dict, records_by_name: dict[str, dict], conditional_records: set[str]
-) -> list[str]:
-    dependencies = []
-    record_names = set(records_by_name)
+def _function_record_dependencies(
+    function: dict,
+    records_by_name: dict[str, dict],
+    layoutable_records: set[str],
+    required_alignments: dict[str, int],
+    concrete_record_policy: dict[str, dict],
+    callback_typedefs: dict[str, dict],
+) -> tuple[list[str], str | None]:
+    records = set(records_by_name)
+    conditional_records = set(required_alignments)
+    runtime_dependencies: set[str] = set()
+
+    def visit_layout(name: str, root: str, visiting: set[str]) -> str | None:
+        if name in visiting:
+            return None
+        visiting.add(name)
+        entry = concrete_record_policy.get(name, {})
+        disposition = entry.get('disposition')
+        if disposition == 'unsupported':
+            if name == root:
+                return f'requires unsupported concrete record {name}'
+            return f'requires unsupported concrete record {name} through {root}'
+        if disposition == 'pointer-opaque' or name not in layoutable_records:
+            if name == root:
+                return f'requires unavailable concrete layout {name}'
+            return f'requires unavailable concrete layout {name} through {root}'
+        if name in conditional_records:
+            runtime_dependencies.add(name)
+        record = records_by_name.get(name, {})
+        for field in record.get('fields', []):
+            dependency = _record_dependency(field.get('type', {}), records)
+            if dependency is None:
+                continue
+            diagnostic = visit_layout(dependency, root, visiting)
+            if diagnostic is not None:
+                return diagnostic
+        visiting.remove(name)
+        return None
+
+    def inspect_reference(reference: tuple[str, int] | None) -> str | None:
+        if reference is None:
+            return None
+        name, pointer_depth = reference
+        record = records_by_name.get(name, {})
+        if record.get('opaque') or not record.get('fields'):
+            return None
+        disposition = concrete_record_policy.get(name, {}).get('disposition')
+        if disposition == 'pointer-opaque' and pointer_depth > 0:
+            return None
+        return visit_layout(name, name, set())
+
+    result_reference = _record_reference_from_type(
+        function.get('result', {'qualtype': 'void'}), records
+    )
+    diagnostic = inspect_reference(result_reference)
+    if diagnostic is not None:
+        return [], diagnostic
+
     for param in function.get('parameters', []):
         type_info = param.get('type', {})
-        raw_qualtype = ' '.join(type_info.get('qualtype', '').split())
-        qualtype = _clean_type(raw_qualtype)
-        if raw_qualtype.startswith('const ') or '*' not in qualtype:
+        diagnostic = inspect_reference(_record_reference_from_type(type_info, records))
+        if diagnostic is not None:
+            return [], diagnostic
+        callback = callback_typedefs.get(_clean_type(type_info.get('qualtype', '')))
+        if callback is None:
             continue
-        name = _class_name_for_pointer(qualtype, record_names)
-        record = records_by_name.get(name or '')
-        if (
-            name in conditional_records
-            and record
-            and not record.get('opaque')
-            and record.get('fields')
-        ):
-            dependencies.append(name)
-    return sorted(set(dependencies))
+        for spelling in [callback['result'], *callback['args']]:
+            reference = _record_reference(spelling, records)
+            if reference is None:
+                continue
+            name, pointer_depth = reference
+            disposition = concrete_record_policy.get(name, {}).get('disposition')
+            provenance = set(concrete_record_policy.get(name, {}).get('provenance', []))
+            if pointer_depth > 0 and f'callback-borrowed:{callback["name"]}' in provenance:
+                continue
+            if disposition == 'pointer-opaque' and pointer_depth > 0:
+                continue
+            diagnostic = inspect_reference(reference)
+            if diagnostic is not None:
+                return [], diagnostic
+
+    return sorted(runtime_dependencies), None
 
 
 def _ctype_for(
@@ -777,6 +1049,7 @@ def generate(
     *,
     forced_layout_records: set[str] | None = None,
     required_alignments: dict[str, int] | None = None,
+    concrete_record_policy: dict[str, dict] | None = None,
     callback_policy: dict[str, str] | None = None,
     owned_string_returns: dict[str, str] | None = None,
 ) -> tuple[str, list[str]]:
@@ -787,6 +1060,8 @@ def generate(
     callback_policy = callback_policy or {}
     owned_string_returns = owned_string_returns or {}
     required_alignments = required_alignments or {}
+    concrete_record_policy = concrete_record_policy or {}
+    forced_layout_records = forced_layout_records or set()
     lines = [HEADER]
 
     for enum in api.get('enums', []):
@@ -808,9 +1083,21 @@ def generate(
             lines.append('\n\n')
 
     ordered_records = _ordered_records(api, records)
+    blocked_records = set(concrete_record_policy)
     layoutable_records = _layoutable_records(
-        ordered_records, records, enums, callbacks, forced_records=forced_layout_records
+        ordered_records,
+        records,
+        enums,
+        callbacks,
+        forced_records=forced_layout_records,
+        blocked_records=blocked_records,
     )
+    concrete_record_dispositions = _validate_concrete_record_policy(
+        api, layoutable_records, concrete_record_policy
+    )
+    for name in required_alignments:
+        if concrete_record_dispositions.get(name) == 'layout':
+            concrete_record_dispositions[name] = 'conditional-layout'
 
     for record in ordered_records:
         name = record.get('name')
@@ -858,6 +1145,27 @@ def generate(
     layout_records = []
     conditional_layout_records = []
     deferred_layout_records = []
+
+    def conditional_field_dependencies(name: str, visiting: set[str] | None = None) -> set[str]:
+        visiting = visiting or set()
+        if name in visiting:
+            return set()
+        visiting.add(name)
+        dependencies = set()
+        record = next(
+            (item for item in ordered_records if item.get('name') == name),
+            {},
+        )
+        for field in record.get('fields', []):
+            dependency = _record_dependency(field.get('type', {}), records)
+            if dependency is None:
+                continue
+            if dependency in required_alignments:
+                dependencies.add(dependency)
+            dependencies.update(conditional_field_dependencies(dependency, visiting))
+        visiting.remove(name)
+        return dependencies
+
     for record in ordered_records:
         name = record.get('name')
         if not name or record.get('opaque'):
@@ -881,34 +1189,97 @@ def generate(
             )
             if ctype is None:
                 break
-            fields.append((field_name, ctype))
+            fields.append((field_name, ctype, field.get('offset'), field.get('size')))
         else:
+            if name in forced_layout_records and record.get('kind') != 'union':
+                padded_fields = []
+                current_end = 0
+                padding_index = 0
+                for field_name, ctype, offset, field_size in fields:
+                    if not isinstance(offset, int) or not isinstance(field_size, int):
+                        padded_fields = fields
+                        break
+                    if offset < current_end:
+                        padded_fields = fields
+                        break
+                    if offset > current_end:
+                        padded_fields.append(
+                            (
+                                f'_ctypes_padding_{padding_index}',
+                                f'(ctypes.c_uint8 * {offset - current_end})',
+                                current_end,
+                                offset - current_end,
+                            )
+                        )
+                        padding_index += 1
+                    padded_fields.append((field_name, ctype, offset, field_size))
+                    current_end = offset + field_size
+                record_size = record.get('size')
+                if (
+                    padded_fields is not fields
+                    and isinstance(record_size, int)
+                    and record_size > current_end
+                ):
+                    padded_fields.append(
+                        (
+                            f'_ctypes_padding_{padding_index}',
+                            f'(ctypes.c_uint8 * {record_size - current_end})',
+                            current_end,
+                            record_size - current_end,
+                        )
+                    )
+                fields = padded_fields
             alignment = required_alignments.get(name)
+            nested_conditional = sorted(conditional_field_dependencies(name) - {name})
+            condition_parts = []
             if alignment is not None:
-                lines.append(f"if _ctypes_alignment_is_effective({alignment}):\n")
+                condition_parts.append(f'_ctypes_alignment_is_effective({alignment})')
+            condition_parts.extend(
+                f"'{dependency}' in _DATOVIZ_CTYPES_LAYOUT_RECORDS"
+                for dependency in nested_conditional
+            )
+            conditional = bool(condition_parts)
+            if conditional:
+                lines.append(f"if {' and '.join(condition_parts)}:\n")
+            if alignment is not None:
                 lines.append(f'    {name}._align_ = {alignment}\n')
+                lines.append(f'    {name}._fields_ = [\n')
+            elif conditional:
                 lines.append(f'    {name}._fields_ = [\n')
             else:
                 lines.append(f'{name}._fields_ = [\n')
-            for field_name, ctype in fields:
-                indent = '        ' if alignment is not None else '    '
+            for field_name, ctype, _offset, _field_size in fields:
+                indent = '        ' if conditional else '    '
                 lines.append(f"{indent}('{field_name}', {ctype}),\n")
-            if alignment is not None:
+            if conditional:
                 lines.append('    ]\n')
-                lines.append(
-                    f'    if ctypes.sizeof({name}) > 0 and '
-                    f'ctypes.alignment({name}) == {alignment}:\n'
-                )
+                checks = [f'ctypes.sizeof({name}) > 0']
+                if alignment is not None:
+                    checks.append(f'ctypes.alignment({name}) == {alignment}')
+                lines.append(f"    if {' and '.join(checks)}:\n")
                 lines.append(f"        _DATOVIZ_CTYPES_LAYOUT_RECORDS.append('{name}')\n")
                 lines.append('    else:\n')
-                lines.append(
-                    f"        _UNSUPPORTED_LAYOUT_RECORDS['{name}'] = "
-                    f"'ctypes did not produce the requested {alignment}-byte alignment'\n"
-                )
+                if alignment is not None:
+                    lines.append(
+                        f"        _UNSUPPORTED_LAYOUT_RECORDS['{name}'] = "
+                        f"'ctypes did not produce the requested {alignment}-byte alignment'\n"
+                    )
+                else:
+                    lines.append(
+                        f"        _UNSUPPORTED_LAYOUT_RECORDS['{name}'] = "
+                        "'ctypes did not produce a nonzero nested record layout'\n"
+                    )
                 lines.append('else:\n')
+                requirements = []
+                if alignment is not None:
+                    requirements.append(f'effective {alignment}-byte structure alignment')
+                if nested_conditional:
+                    requirements.append(
+                        'available nested layout(s): ' + ', '.join(nested_conditional)
+                    )
                 lines.append(
                     f"    _UNSUPPORTED_LAYOUT_RECORDS['{name}'] = "
-                    f"'ctypes runtime does not support effective {alignment}-byte structure alignment'\n"
+                    f"{('requires ' + ' and '.join(requirements))!r}\n"
                 )
                 lines.append('\n\n')
                 conditional_layout_records.append(name)
@@ -948,17 +1319,26 @@ def generate(
 
     skipped = []
     emitted = []
-    output_record_dependencies = {}
+    function_layout_dependencies = {}
+    policy_unsupported_functions = {}
     records_by_name = {
         record['name']: record for record in api.get('records', []) if record.get('name')
     }
     for function in api.get('functions', []):
         name = function['name']
-        dependencies = _output_record_dependencies(
-            function, records_by_name, set(required_alignments)
+        dependencies, unsupported_diagnostic = _function_record_dependencies(
+            function,
+            records_by_name,
+            layoutable_records,
+            required_alignments,
+            concrete_record_policy,
+            callback_typedefs,
         )
+        if unsupported_diagnostic is not None:
+            policy_unsupported_functions[name] = unsupported_diagnostic
+            continue
         if dependencies:
-            output_record_dependencies[name] = dependencies
+            function_layout_dependencies[name] = dependencies
         result = _ctype_for_type(
             function.get('result', {'qualtype': 'void'}),
             records,
@@ -1094,8 +1474,12 @@ def generate(
     lines.append(
         f'_DATOVIZ_CTYPES_LAYOUT_RECORDS[:0] = {layout_records!r}\n'
     )
-    lines.append(f'_OUTPUT_RECORD_DEPENDENCIES = {output_record_dependencies!r}\n')
-    lines.append('for _function_name, _required_records in _OUTPUT_RECORD_DEPENDENCIES.items():\n')
+    lines.append(f'_POLICY_UNSUPPORTED_FUNCTIONS = {policy_unsupported_functions!r}\n')
+    lines.append('_UNSUPPORTED_FUNCTIONS.update(_POLICY_UNSUPPORTED_FUNCTIONS)\n')
+    lines.append(f'_FUNCTION_LAYOUT_DEPENDENCIES = {function_layout_dependencies!r}\n')
+    lines.append(
+        'for _function_name, _required_records in _FUNCTION_LAYOUT_DEPENDENCIES.items():\n'
+    )
     lines.append(
         '    _missing_records = [name for name in _required_records '
         'if name not in _DATOVIZ_CTYPES_LAYOUT_RECORDS]\n'
@@ -1105,10 +1489,10 @@ def generate(
     lines.append('        globals().pop(f"_{_function_name}", None)\n')
     lines.append(
         '        _UNSUPPORTED_FUNCTIONS[_function_name] = '
-        '"requires unavailable ABI-exact output record layout(s): " '
+        '"requires unavailable ABI-exact concrete record layout(s): " '
         '+ ", ".join(_missing_records)\n'
     )
-    if output_record_dependencies:
+    if function_layout_dependencies:
         lines.append('del _function_name, _required_records, _missing_records\n')
     lines.append(f'_GENERATED_FUNCTION_COUNT = {len(emitted)}\n')
     lines.append(f'_SKIPPED_FUNCTIONS = {skipped!r}\n')
@@ -1116,6 +1500,10 @@ def generate(
         f'_DATOVIZ_CTYPES_DECLARED_LAYOUT_RECORDS = '
         f'{sorted(set(layout_records) | set(conditional_layout_records))!r}\n'
     )
+    lines.append(
+        f'_CONCRETE_RECORD_DISPOSITIONS = {concrete_record_dispositions!r}\n'
+    )
+    lines.append(f'_CONCRETE_RECORD_POLICY = {concrete_record_policy!r}\n')
     lines.append("__all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]\n")
     return ''.join(lines), skipped
 
@@ -1134,6 +1522,7 @@ def main() -> int:
         api,
         forced_layout_records=_layout_records_from_policy(args.policy),
         required_alignments=_required_alignments_from_policy(args.policy),
+        concrete_record_policy=_concrete_record_policy_from_policy(args.policy),
         callback_policy=_callback_policy_from_policy(args.policy),
         owned_string_returns=_owned_string_returns_from_policy(args.policy),
     )

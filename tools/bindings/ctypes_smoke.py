@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import ctypes
+import gc
+import math
 import sys
 from pathlib import Path
 
@@ -198,8 +200,191 @@ def _check_camera_layout_and_bounds(dvz) -> None:
         assert (left.value, right.value, bottom.value, top.value) == (2.0, -2.0, -1.0, 3.0)
         assert abs(near.value - 0.1) < 1e-6
         assert abs(far.value - 100.0) < 1e-6
+
+        if hasattr(dvz, 'dvz_camera_mvp'):
+            mvp = dvz.DvzMVP()
+            dvz.dvz_camera_mvp(camera, ctypes.byref(mvp))
+            assert any(value != 0 for row in mvp.view for value in row)
+            assert any(value != 0 for row in mvp.proj for value in row)
     finally:
         dvz.dvz_camera_destroy(camera)
+
+
+def _check_concrete_record_defaults_and_controllers(dvz) -> None:
+    from datoviz import _ctypes as generated
+
+    geometry = dvz.dvz_field_geometry()
+    assert geometry.struct_size == ctypes.sizeof(dvz.DvzFieldGeometry)
+    geometry_out = dvz.DvzFieldGeometry()
+    assert dvz.dvz_ffi_field_geometry(ctypes.byref(geometry_out))
+    assert geometry_out.struct_size == ctypes.sizeof(dvz.DvzFieldGeometry)
+
+    aligned_symbols = [
+        'dvz_arcball_mvp',
+        'dvz_panzoom_mvp',
+        'dvz_panzoom_resolve',
+        'dvz_visual_transform_desc',
+        'dvz_ffi_visual_transform_desc',
+    ]
+    if not generated._ctypes_alignment_is_effective(16):
+        assert all(not hasattr(dvz, name) for name in aligned_symbols)
+        return
+    assert all(hasattr(dvz, name) for name in aligned_symbols)
+
+    transform = dvz.dvz_visual_transform_desc()
+    assert transform.struct_size == ctypes.sizeof(dvz.DvzVisualTransformDesc)
+    transform_out = dvz.DvzVisualTransformDesc()
+    assert dvz.dvz_ffi_visual_transform_desc(ctypes.byref(transform_out))
+    assert transform_out.struct_size == ctypes.sizeof(dvz.DvzVisualTransformDesc)
+
+    arcball_desc = dvz.dvz_arcball_desc()
+    arcball = dvz.dvz_arcball_create(ctypes.byref(arcball_desc))
+    assert bool(arcball)
+    try:
+        arcball_mvp = dvz.DvzMVP()
+        dvz.dvz_arcball_mvp(arcball, ctypes.byref(arcball_mvp))
+        assert any(value != 0 for row in arcball_mvp.model for value in row)
+    finally:
+        dvz.dvz_arcball_destroy(arcball)
+
+    panzoom_desc = dvz.dvz_panzoom_desc()
+    panzoom = dvz.dvz_panzoom_create(ctypes.byref(panzoom_desc))
+    assert bool(panzoom)
+    try:
+        panzoom_mvp = dvz.DvzMVP()
+        model_before = tuple(float(index + 1) for index in range(16))
+        for index, value in enumerate(model_before):
+            panzoom_mvp.model[index // 4][index % 4] = value
+        panzoom_mvp.time = 17.25
+        panzoom_mvp.flags = 0xA5A5A5A5
+        dvz.dvz_panzoom_mvp(panzoom, ctypes.byref(panzoom_mvp))
+        assert tuple(value for row in panzoom_mvp.model for value in row) == model_before
+        assert panzoom_mvp.time == 17.25
+        assert panzoom_mvp.flags == 0xA5A5A5A5
+        for matrix in [panzoom_mvp.view, panzoom_mvp.proj]:
+            values = [value for row in matrix for value in row]
+            assert all(math.isfinite(value) for value in values)
+            assert any(value != 0 for value in values)
+
+        evaluation = dvz.DvzPanzoomEval()
+        evaluation.base_extent[:] = (-1.0, 1.0, -1.0, 1.0)
+        evaluation.viewport_width = 640.0
+        evaluation.viewport_height = 480.0
+        resolved = dvz.DvzPanzoomResolved()
+        assert dvz.dvz_panzoom_resolve(
+            panzoom, ctypes.byref(evaluation), ctypes.byref(resolved)
+        )
+        assert resolved.visible_extent[1] > resolved.visible_extent[0]
+        assert resolved.visible_extent[3] > resolved.visible_extent[2]
+    finally:
+        dvz.dvz_panzoom_destroy(panzoom)
+
+
+def _check_bounds_frame_and_guides(dvz) -> None:
+    positions = ((ctypes.c_float * 3) * 3)(
+        (-2.0, -1.0, 0.0),
+        (0.5, 3.0, 0.0),
+        (4.0, 1.0, 0.0),
+    )
+    colors = ((ctypes.c_uint8 * 4) * 3)(
+        (255, 0, 0, 255),
+        (0, 255, 0, 255),
+        (0, 0, 255, 255),
+    )
+    diameters = (ctypes.c_float * 3)(4.0, 5.0, 6.0)
+
+    scene = dvz.dvz_scene()
+    assert bool(scene)
+    snapshot = None
+    try:
+        figure = dvz.dvz_figure(scene, 320, 240, 0)
+        panel = dvz.dvz_panel_full(figure)
+        view = dvz.dvz_panel_view2d_desc()
+        assert dvz.dvz_panel_set_view2d(panel, ctypes.byref(view)) == 0
+
+        visual = dvz.dvz_point(scene, 0)
+        assert bool(visual)
+        assert (
+            dvz.dvz_visual_set_data(
+                visual, b'position', ctypes.cast(positions, ctypes.c_void_p), 3
+            )
+            == 0
+        )
+        assert (
+            dvz.dvz_visual_set_data(
+                visual, b'color', ctypes.cast(colors, ctypes.c_void_p), 3
+            )
+            == 0
+        )
+        assert (
+            dvz.dvz_visual_set_data(
+                visual, b'diameter_px', ctypes.cast(diameters, ctypes.c_void_p), 3
+            )
+            == 0
+        )
+
+        visual_bounds = dvz.DvzBounds()
+        assert dvz.dvz_visual_bounds(visual, ctypes.byref(visual_bounds)) == 0
+        assert visual_bounds.valid
+        assert tuple(visual_bounds.min) == (-2.0, -1.0, 0.0)
+        assert tuple(visual_bounds.max) == (4.0, 3.0, 0.0)
+
+        assert dvz.dvz_panel_add_visual(panel, visual, None) == 0
+        panel_visual_bounds = dvz.DvzBounds()
+        assert (
+            dvz.dvz_panel_visual_bounds(
+                panel,
+                visual,
+                dvz.DVZ_BOUNDS_SPACE_VISUAL,
+                ctypes.byref(panel_visual_bounds),
+            )
+            == 0
+        )
+        assert panel_visual_bounds.valid
+        panel_bounds = dvz.DvzBounds()
+        assert (
+            dvz.dvz_panel_bounds(
+                panel, dvz.DVZ_BOUNDS_SPACE_VISUAL, ctypes.byref(panel_bounds)
+            )
+            == 0
+        )
+        assert panel_bounds.valid
+
+        line_desc = dvz.dvz_guide_line_desc()
+        line_desc.orientation = dvz.DVZ_GUIDE_ORIENTATION_HORIZONTAL
+        line_desc.value = 0.25
+        line_desc.label = b'ctypes threshold'
+        assert bool(dvz.dvz_guide_line(panel, ctypes.byref(line_desc)))
+
+        snapshot = dvz.dvz_panel_resolve_frame(panel)
+        assert bool(snapshot)
+        snapshot_id = dvz.dvz_panel_frame_id(snapshot)
+        assert snapshot_id
+        if hasattr(dvz, 'dvz_panel_frame_info'):
+            info = dvz.DvzPanelFrameInfo()
+            assert dvz.dvz_panel_frame_info(snapshot, ctypes.byref(info))
+            assert info.struct_size == ctypes.sizeof(dvz.DvzPanelFrameInfo)
+            assert info.snapshot_id == snapshot_id
+
+        guide_count = dvz.dvz_panel_frame_guide_count(snapshot)
+        assert guide_count > 0
+        layout = dvz.DvzGuideLayout()
+        assert dvz.dvz_panel_frame_guide_layout(snapshot, 0, ctypes.byref(layout))
+        assert layout.struct_size == ctypes.sizeof(dvz.DvzGuideLayout)
+        assert layout.has_box
+        hit = dvz.DvzGuideHit()
+        assert dvz.dvz_panel_frame_guide_hit(
+            snapshot,
+            layout.box_px.x + 0.5 * layout.box_px.width,
+            layout.box_px.y + 0.5 * layout.box_px.height,
+            ctypes.byref(hit),
+        )
+        assert hit.struct_size == ctypes.sizeof(dvz.DvzGuideHit)
+        assert hit.hit
+    finally:
+        if snapshot:
+            dvz.dvz_panel_frame_unref(snapshot)
+        dvz.dvz_scene_destroy(scene)
 
 
 def _check_panel_view_state_layout_and_readback(dvz) -> None:
@@ -305,10 +490,13 @@ def main() -> int:
     sys.path.insert(0, str(ROOT_DIR))
 
     import datoviz.raw as dvz  # noqa: PLC0415
+    from datoviz import _ctypes as generated  # noqa: PLC0415
 
     assert dvz.DvzResult is ctypes.c_int32
 
     for symbol in _smoke_symbols():
+        if symbol in generated._UNSUPPORTED_FUNCTIONS:
+            continue
         assert hasattr(dvz, symbol), f'missing datoviz.raw.{symbol}'
 
     expected_create_args = [
@@ -349,6 +537,8 @@ def main() -> int:
 
     _check_query_result_layout(dvz)
     _check_camera_layout_and_bounds(dvz)
+    _check_concrete_record_defaults_and_controllers(dvz)
+    _check_bounds_frame_and_guides(dvz)
     _check_panel_view_state_layout_and_readback(dvz)
     _check_input_event_layout(dvz)
     _run_gsp_query_smoke(dvz)
@@ -437,6 +627,7 @@ def main() -> int:
     assert recorder.calls == [1234]
     dvz.dvz_input_router_destroy(router)
 
+    gc.collect()
     print('raw ctypes smoke: OK')
     return 0
 
