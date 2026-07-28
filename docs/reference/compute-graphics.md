@@ -74,4 +74,4 @@ For exact current signatures, see the generated [scene API](c-api/scene.md),
 [frame-plan API](c-api/frame-plan.md), and [DRP2 API](c-api/drp2.md). The first is the authoring
 surface; the latter two are contributor/runtime surfaces.
 
-For the separate native external-object contract, see [Share Datoviz buffers with CUDA](../advanced/cuda-external-memory.md). For Python consumers, see [Update a Datoviz buffer from CUDA Python](../how-to/cupy-interop.md).
+For the separate native external-object contract, see [Share Datoviz buffers with CUDA](../advanced/cuda-external-memory.md). For Python consumers, see [Update Datoviz buffers and images from CUDA Python](../how-to/cupy-interop.md).

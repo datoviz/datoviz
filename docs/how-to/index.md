@@ -51,7 +51,7 @@ Choose the task you want to complete. New to Datoviz? Start with the
 - [Use from Python](use-python.md)
 - [Use from terminal IPython](use-ipython.md)
 - [Use raw ctypes](use-raw-ctypes.md)
-- [Update a Datoviz buffer from CUDA Python](cupy-interop.md)
+- [Update Datoviz buffers and images from CUDA Python](cupy-interop.md)
 - [Embed in Qt](embed-in-qt.md)
 - [Deploy WebGPU examples to the browser](deploy-to-web.md)
 - [Debug rendering output](debug-rendering.md)

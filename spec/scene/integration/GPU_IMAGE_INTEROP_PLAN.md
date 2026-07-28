@@ -1,6 +1,6 @@
 # GPU Image Interop Implementation Plan
 
-Status: proposed implementation plan. No GPU image interop API is implemented by this document.
+Status: Lane 1 is implemented behind the experimental Linux/NVIDIA CUDA surface, with native and CPU-only lifecycle validation. Its physical `--image` CuPy render/readback gate is implemented but has not been run on compatible hardware. Lane 2 remains proposed.
 
 This plan extends the experimental Linux/NVIDIA CUDA interop work from vertex buffers to image visuals and sampled fields without introducing a parallel renderer, frame stream, Vulkan wrapper, or backend-specific scene semantic.
 
@@ -19,7 +19,7 @@ Do not make both lanes modes of one ambiguous Python object. The first API shoul
 
 ## Current Baseline
 
-The repository already has:
+The repository now has:
 
 1. Datoviz-owned exportable buffers in `include/datoviz/vk/memory_interop.h`, `src/vk/memory.c`, and `src/vklite/buffers.c`.
 2. CUDA opaque-FD memory and timeline-semaphore import in `datoviz/experimental/_cuda_interop_bridge.c`.
@@ -28,18 +28,21 @@ The repository already has:
 5. DRP2 `CopyBufferToTexture` execution and validation.
 6. Retained sampled fields and image visuals that lower through the normal frame-plan, DRP2 texture, sampler, descriptor, and render path.
 7. CUDA external-image mapping precedent in the NVENC provider.
+8. A generated-ABI-validated Python runtime configuration and a distinct `CudaSceneImageBuffer` API for tightly packed `uint8[H,W,4]` data.
+9. Scene/frame-plan lowering from an external `COPY_SRC` scene buffer to a persistent sampled texture.
+10. One-shot DRP2 timeline handoffs that wait, acquire, copy, release, and signal on the exact buffer-to-texture submission.
+11. External sampled fields with strict RGBA8 ownership, lifetime, invalidation, and one-visual binding rules.
+12. A hardware-gated two-frame CuPy image smoke and an experimental source example.
 
 The repository does not yet have:
 
-1. A validated real-runtime configuration layout in `datoviz/experimental/_cuda_runtime.py`; `CONFIG_FIELDS` is stale relative to `DvzInteropBufferExportConfig` and must be fixed before treating the current Python runtime as evidence.
-2. A scene/frame-plan contract for copying an externally populated scene buffer into a persistent sampled texture.
-3. A sampled-field mode that has external GPU backing and no retained CPU pixel payload.
-4. Export-capable image creation in `dvz_allocator_image()`; unlike buffer creation, it does not append `VkExternalMemoryImageCreateInfo`.
-5. A public image-export descriptor or `DvzImages` export helper.
-6. CUDA bridge support for `cudaExternalMemoryGetMappedMipmappedArray()`, CUDA array levels, and CUDA surface objects.
-7. Explicit Vulkan-to-CUDA image release and CUDA-to-Vulkan image acquire helpers.
-8. DRP2 live-runtime external-texture registration.
-9. Physical Linux/NVIDIA proof for PyTorch or Taichi image updates.
+1. A recorded physical Linux/NVIDIA Lane 1 image run; macOS and unavailable-provider skips are not proof.
+2. Export-capable image creation in `dvz_allocator_image()`; unlike buffer creation, it does not append `VkExternalMemoryImageCreateInfo`.
+3. A public image-export descriptor or `DvzImages` export helper.
+4. CUDA bridge support for `cudaExternalMemoryGetMappedMipmappedArray()`, CUDA array levels, and CUDA surface objects.
+5. Explicit Vulkan-to-CUDA image release and CUDA-to-Vulkan image acquire helpers.
+6. DRP2 live-runtime external-texture registration.
+7. Physical Linux/NVIDIA proof for PyTorch or Taichi image updates.
 
 
 ## Goals
