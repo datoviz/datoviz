@@ -58,10 +58,12 @@ EXPORT_FIELDS = (
 
 
 CONFIG_FIELDS = (
+    'struct_size',
+    'flags',
     'offset',
     'size',
     'drp2_usage',
-    'flags',
+    'export_flags',
     'semaphore',
     'semaphore_handle_type',
     'semaphore_value',
@@ -280,7 +282,9 @@ def require_cupy():
 
 
 def field_names(record) -> tuple[str, ...]:
-    return tuple(name for name, _ctype in record._fields_)
+    return tuple(
+        name for name, _ctype in record._fields_ if not name.startswith('_ctypes_padding_')
+    )
 
 
 def validate_raw_surface(dvz) -> None:
@@ -308,6 +312,21 @@ def validate_raw_surface(dvz) -> None:
     wait_fn = dvz.dvz_interop_buffer_wait_timeline
     if wait_fn.argtypes != wait_args or wait_fn.restype is not ctypes.c_bool:
         raise RuntimeError('dvz_interop_buffer_wait_timeline ctypes signature is stale')
+
+
+def interop_buffer_export_config(dvz, semaphore, drp2_usage: int):
+    """Return an ABI-initialized export configuration for a Datoviz-owned buffer."""
+    cfg = dvz.DvzInteropBufferExportConfig()
+    cfg.struct_size = ctypes.sizeof(dvz.DvzInteropBufferExportConfig)
+    cfg.flags = 0
+    cfg.offset = 0
+    cfg.size = 0
+    cfg.drp2_usage = drp2_usage
+    cfg.export_flags = 0
+    cfg.semaphore = semaphore
+    cfg.semaphore_handle_type = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT
+    cfg.semaphore_value = 0
+    return cfg
 
 
 def ensure_frame_plan_emit_config_layout(dvz) -> None:
@@ -496,14 +515,7 @@ class ExportedDatovizBuffer:
             device, 0, self.semaphore, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT
         )
 
-        cfg = dvz.DvzInteropBufferExportConfig()
-        cfg.offset = 0
-        cfg.size = 0
-        cfg.drp2_usage = self.drp2_usage
-        cfg.flags = 0
-        cfg.semaphore = self.semaphore
-        cfg.semaphore_handle_type = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT
-        cfg.semaphore_value = 0
+        cfg = interop_buffer_export_config(dvz, self.semaphore, self.drp2_usage)
         if dvz.dvz_interop_buffer_export_from_buffer(
             self.buffer, ctypes.byref(cfg), ctypes.byref(self.desc)
         ) != 0:
