@@ -17,14 +17,15 @@ Use these files when scene behavior crosses into application-owned state, UI fra
 8. [HOSTED_BACKENDS.md](HOSTED_BACKENDS.md): Qt, Python console, IPython, Jupyter, SDL, Tk, and other host-owned event-loop integrations.
 9. [CUPY_CUDA_INTEROP.md](CUPY_CUDA_INTEROP.md): zero-copy CUDA/CuPy memory sharing design for real-time Datoviz visualization.
 10. [GPU_ARRAY_INTEROP.md](GPU_ARRAY_INTEROP.md): implemented experimental Python resource and synchronization contract for external GPU arrays.
-11. [NVDEC_VIDEO_SOURCE_PLAN.md](NVDEC_VIDEO_SOURCE_PLAN.md): future low-level video source and NVIDIA hardware-decode plan for image/sampled-field workflows.
-12. [TIMED_MEDIA_SYNC.md](TIMED_MEDIA_SYNC.md): future synchronized video, audio, events, and signal timing model for scientific playback and analysis.
-13. [ENTRY_POINTS.md](ENTRY_POINTS.md): low-level and hybrid public integration lanes for canvas, vklite, DRP2, scene export, and full scene/app usage.
-14. [WEBGPU_WASM.md](WEBGPU_WASM.md): experimental browser WebGPU and WASM scene integration contract.
-15. [WASM_WEBGPU_PARITY_PLAN.md](WASM_WEBGPU_PARITY_PLAN.md): implementation plan for broad native Vulkan and WASM/WebGPU scene parity.
-16. [GSP_TEXTURE2D_MESH_PLAN.md](GSP_TEXTURE2D_MESH_PLAN.md): Datoviz-side plan for generic field-slot sampling needed by GSP strict Texture2D meshes.
-17. [future](future/README.md): Android, iOS, and touch pressure notes.
-18. [napari](napari/README.md): informative napari adapter guidance and historical PoC notes.
+11. [GPU_IMAGE_INTEROP_PLAN.md](GPU_IMAGE_INTEROP_PLAN.md): phased tensor-buffer and direct Vulkan/CUDA image-sharing implementation plan.
+12. [NVDEC_VIDEO_SOURCE_PLAN.md](NVDEC_VIDEO_SOURCE_PLAN.md): future low-level video source and NVIDIA hardware-decode plan for image/sampled-field workflows.
+13. [TIMED_MEDIA_SYNC.md](TIMED_MEDIA_SYNC.md): future synchronized video, audio, events, and signal timing model for scientific playback and analysis.
+14. [ENTRY_POINTS.md](ENTRY_POINTS.md): low-level and hybrid public integration lanes for canvas, vklite, DRP2, scene export, and full scene/app usage.
+15. [WEBGPU_WASM.md](WEBGPU_WASM.md): experimental browser WebGPU and WASM scene integration contract.
+16. [WASM_WEBGPU_PARITY_PLAN.md](WASM_WEBGPU_PARITY_PLAN.md): implementation plan for broad native Vulkan and WASM/WebGPU scene parity.
+17. [GSP_TEXTURE2D_MESH_PLAN.md](GSP_TEXTURE2D_MESH_PLAN.md): Datoviz-side plan for generic field-slot sampling needed by GSP strict Texture2D meshes.
+18. [future](future/README.md): Android, iOS, and touch pressure notes.
+19. [napari](napari/README.md): informative napari adapter guidance and historical PoC notes.
 
 
 ## Active Proposal Inputs
