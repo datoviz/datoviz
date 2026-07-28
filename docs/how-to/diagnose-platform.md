@@ -209,10 +209,29 @@ the package was installed.
 | Native example starts but frame is blank. | Scene/rendering state. | Use [Debug rendering output](debug-rendering.md). |
 | Native visible window fails, offscreen works. | Window system or presentation. | Check GLFW/window backend and resize/presentation diagnostics. |
 | Offscreen fails too. | Graphics runtime or command execution. | Check Vulkan runtime/driver and DRP2/runtime diagnostics. |
+| `no Vulkan loader could be loaded`. | Vulkan loader discovery. | See [No Vulkan loader found](#no-vulkan-loader-found) below. |
 | Browser route fails, native works. | WebGPU route/browser/adapter. | Use [Diagnose WebGPU support](debug-webgpu.md). |
 | Qt embed fails, native works. | Optional Qt provider. | Check bridge library, Qt runtime, and binding support. |
 | Video export fails, screenshots work. | Encoder/provider path. | Check encoder build option and runtime libraries. |
 | Real-data showcase fails, synthetic example works. | Data bundle or path. | Check prepared data availability and example manifest instructions. |
+
+## No Vulkan loader found
+
+Datoviz reaches the GPU through the Vulkan loader, and it reports `no Vulkan loader could be loaded`
+when it cannot find one. On macOS it looks in this order, taking the first that works:
+
+1. `DVZ_VULKAN_LOADER_LIBRARY`, a full path to a loader library. Use this to pin an exact loader.
+2. Any directory listed in `DVZ_WHEEL_RUNTIME_DIRS`. Installed packages set this themselves.
+3. Next to the Datoviz library itself, which is where official packages ship one.
+4. `$VULKAN_SDK/lib`, which covers a source build, since the SDK exports `VULKAN_SDK`.
+5. The platform default search path.
+
+So a package install needs nothing from you, and a source build needs only the Vulkan SDK present in
+the environment. If the message still appears, check that `VULKAN_SDK` is exported, or point
+`DVZ_VULKAN_LOADER_LIBRARY` straight at the loader.
+
+On Linux the loader is a system library, `libvulkan.so.1`, supplied by your distribution's Vulkan
+runtime package; install that rather than setting variables.
 
 ## Prepare a platform report
 

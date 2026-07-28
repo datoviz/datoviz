@@ -50,6 +50,7 @@
 
 #if OS_MACOS
 #define DVZ_MACOS_RUNTIME_PATH_MAX 4096
+#define DVZ_VULKAN_LOADER_FILENAME  "libvulkan.1.dylib"
 #endif
 
 
@@ -119,21 +120,20 @@ static void _dvz_macos_configure_packaged_driver(void)
 
 
 /**
- * Initialize Volk from a Vulkan loader packaged beside Datoviz.
+ * Try to initialize Volk from one candidate Vulkan loader path.
  *
- * @return true when the packaged loader initialized Volk
+ * @param loader_path candidate loader path, may be NULL or missing
+ * @return true when this loader initialized Volk
  */
-static bool _dvz_macos_packaged_volk_init(void)
+static bool _dvz_try_vulkan_loader(const char* loader_path)
 {
-    char loader_path[DVZ_MACOS_RUNTIME_PATH_MAX] = {0};
-    bool resolved = _dvz_macos_runtime_path("libvulkan.1.dylib", loader_path, sizeof(loader_path));
-    if (!resolved || access(loader_path, R_OK) != 0)
+    if (loader_path == NULL || loader_path[0] == '\0' || access(loader_path, R_OK) != 0)
         return false;
 
     void* module = dlopen(loader_path, RTLD_NOW | RTLD_LOCAL);
     if (module == NULL)
     {
-        log_warn("unable to load packaged Vulkan loader %s: %s", loader_path, dlerror());
+        log_warn("unable to load Vulkan loader %s: %s", loader_path, dlerror());
         return false;
     }
 
@@ -141,7 +141,7 @@ static bool _dvz_macos_packaged_volk_init(void)
         (PFN_vkGetInstanceProcAddr)dlsym(module, "vkGetInstanceProcAddr");
     if (handler == NULL)
     {
-        log_warn("packaged Vulkan loader has no vkGetInstanceProcAddr: %s", loader_path);
+        log_warn("Vulkan loader has no vkGetInstanceProcAddr: %s", loader_path);
         dlclose(module);
         return false;
     }
@@ -150,14 +150,90 @@ static bool _dvz_macos_packaged_volk_init(void)
     volkInitializeCustom(handler);
     if (vkCreateInstance == NULL)
     {
-        log_warn("packaged Vulkan loader did not expose vkCreateInstance: %s", loader_path);
+        log_warn("Vulkan loader did not expose vkCreateInstance: %s", loader_path);
         dlclose(module);
         return false;
     }
 
     // Volk retains function pointers from this module for the process lifetime.
-    log_debug("using packaged Vulkan loader %s", loader_path);
+    log_debug("using Vulkan loader %s", loader_path);
     return true;
+}
+
+
+
+/**
+ * Try each directory of DVZ_WHEEL_RUNTIME_DIRS for a Vulkan loader.
+ *
+ * @return true when one of them initialized Volk
+ */
+static bool _dvz_vulkan_loader_runtime_dirs(void)
+{
+    const char* dirs = getenv("DVZ_WHEEL_RUNTIME_DIRS");
+    if (dirs == NULL || dirs[0] == '\0')
+        return false;
+
+    const char* cursor = dirs;
+    while (*cursor != '\0')
+    {
+        const char* end = strchr(cursor, ':');
+        size_t dir_len = end == NULL ? strlen(cursor) : (size_t)(end - cursor);
+        if (dir_len > 0)
+        {
+            char path[DVZ_MACOS_RUNTIME_PATH_MAX] = {0};
+            int rc = dvz_snprintf(
+                path, sizeof(path), "%.*s/%s", (int)dir_len, cursor, DVZ_VULKAN_LOADER_FILENAME);
+            if (rc > 0 && (size_t)rc < sizeof(path) && _dvz_try_vulkan_loader(path))
+                return true;
+        }
+        if (end == NULL)
+            break;
+        cursor = end + 1;
+    }
+    return false;
+}
+
+
+
+/**
+ * Initialize Volk from the first Vulkan loader Datoviz can discover.
+ *
+ * Candidates are tried in decreasing specificity: an explicit override, the packaged runtime
+ * directories, a loader shipped beside the Datoviz library, and the Vulkan SDK. Packages carry their
+ * own loader beside the library; source installs normally rely on the SDK, which exports
+ * VULKAN_SDK. When none of these match, the caller falls back to the platform default.
+ *
+ * @return true when a discovered loader initialized Volk
+ */
+static bool _dvz_macos_vulkan_loader_init(void)
+{
+    // 1. An explicit loader path always wins.
+    if (_dvz_try_vulkan_loader(getenv("DVZ_VULKAN_LOADER_LIBRARY")))
+        return true;
+
+    // 2. Runtime directories declared by a package payload.
+    if (_dvz_vulkan_loader_runtime_dirs())
+        return true;
+
+    char path[DVZ_MACOS_RUNTIME_PATH_MAX] = {0};
+
+    // 3. A loader packaged beside the Datoviz library, as wheels do.
+    if (_dvz_macos_runtime_path(DVZ_VULKAN_LOADER_FILENAME, path, sizeof(path)) &&
+        _dvz_try_vulkan_loader(path))
+    {
+        return true;
+    }
+
+    // 4. The Vulkan SDK, which is what a source build was compiled against.
+    const char* sdk = getenv("VULKAN_SDK");
+    if (sdk != NULL && sdk[0] != '\0')
+    {
+        int rc = dvz_snprintf(path, sizeof(path), "%s/lib/%s", sdk, DVZ_VULKAN_LOADER_FILENAME);
+        if (rc > 0 && (size_t)rc < sizeof(path) && _dvz_try_vulkan_loader(path))
+            return true;
+    }
+
+    return false;
 }
 #endif
 
@@ -177,7 +253,7 @@ static bool _dvz_volk_init(void)
 
     log_trace("initializing volk");
 #if OS_MACOS
-    if (_dvz_macos_packaged_volk_init())
+    if (_dvz_macos_vulkan_loader_init())
     {
         _volk_initialized = true;
         _volk_ready = true;
@@ -188,6 +264,17 @@ static bool _dvz_volk_init(void)
     _volk_initialized = true;
     if (res != VK_SUCCESS)
     {
+        log_error("no Vulkan loader could be loaded, so Datoviz cannot reach a GPU");
+#if OS_MACOS
+        log_error(
+            "install the Vulkan SDK (which exports VULKAN_SDK), or set DVZ_VULKAN_LOADER_LIBRARY "
+            "to a " DVZ_VULKAN_LOADER_FILENAME " path, or DVZ_WHEEL_RUNTIME_DIRS to a directory "
+            "containing one; official packages ship a loader beside the Datoviz library");
+#else
+        log_error(
+            "install a Vulkan driver package providing libvulkan.so.1, or set "
+            "DVZ_WHEEL_RUNTIME_DIRS so a packaged loader is discoverable");
+#endif
         check_result(res);
         _volk_ready = false;
         return false;
