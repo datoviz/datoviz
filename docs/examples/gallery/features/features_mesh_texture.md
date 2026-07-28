@@ -47,7 +47,7 @@ object lifetimes and data shapes intact while adapting the data and styling.
 
 ## What To Look For
 
-The texture pixels are generated as a 1024x512 color field, attached to the mesh as the "texture" field, and combined with the sphere geometry's UV coordinates. Rotate the live sphere with the arcball controller and check that longitude waves wrap cleanly while the poles avoid radial artifacts. Textures are useful for scientific surfaces, maps, and instrument images that belong on geometry instead of in a flat panel.
+The texture pixels are generated as a 1024x512 color field, attached to the mesh as the "texture" field, explicitly configured for linear slot sampling, and combined with the sphere geometry's UV coordinates. Rotate the live sphere with the arcball controller and check that longitude waves wrap cleanly while the poles avoid radial artifacts. Change both filters below to `DVZ_FIELD_FILTER_NEAREST` to see pixel-exact sampling.
 
 ## Source
 
