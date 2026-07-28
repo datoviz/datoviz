@@ -306,7 +306,7 @@ if(DVZ_HAS_CUDA AND CMAKE_SYSTEM_NAME STREQUAL "Linux" AND TARGET datoviz_vklite
 endif()
 
 # Vulkan course: one program per chapter, each the reader's file at the end of that chapter.
-# See docs/advanced/vulkan/ and tools/check_vulkan_course.py.
+# See docs/gpu-graphics/ and tools/check_vulkan_course.py.
 if(TARGET datoviz_vklite AND TARGET datoviz_canvas AND DVZ_HAS_GLFW)
     dvz_add_example(vulkan step01 vulkan/step01.c)
     dvz_add_example(vulkan step02 vulkan/step02.c)

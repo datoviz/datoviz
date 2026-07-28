@@ -259,10 +259,10 @@ nav:
       - Agent release checklist: 'contributors/agent-release-checklist.md'
       - Validation gallery: 'examples/validation-gallery.md'
   - GPU Graphics:
-    - Course overview: 'advanced/vulkan/index.md'
-    - 1. Setup: 'advanced/vulkan/01-setup.md'
-    - 2. Your first window: 'advanced/vulkan/02-window.md'
-    - 3. How a frame works: 'advanced/vulkan/03-frame.md'
+    - Course overview: 'gpu-graphics/index.md'
+    - 1. Setup: 'gpu-graphics/01-setup.md'
+    - 2. Your first window: 'gpu-graphics/02-window.md'
+    - 3. How a frame works: 'gpu-graphics/03-frame.md'
   - News: 'blog/index.md'
 not_in_nav: |
   _old/*

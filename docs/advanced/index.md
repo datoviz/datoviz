@@ -11,7 +11,7 @@ contracts.
     **advanced/unstable**; WebGPU/WASM and compute-to-render paths are **experimental**.
 
 <div class="dvz-section-grid">
-  <a class="dvz-section-card" href="vulkan/">
+  <a class="dvz-section-card" href="../gpu-graphics/">
     <strong>Learn GPU graphics</strong>
     <span>Write a Vulkan renderer from an empty file, up to a textured and lit 3D mesh.</span>
   </a>
@@ -85,7 +85,7 @@ produces presentation, capture, or readback output.
 
 ## Learn GPU graphics
 
-- [Modern GPU Graphics in Vulkan](vulkan/index.md) — a course that builds a renderer from an empty
+- [Modern GPU Graphics in Vulkan](../gpu-graphics/index.md) — a course that builds a renderer from an empty
   C file up to an interactive textured and lit 3D mesh, using `vklite` and the canvas.
 
 ## Runtime and portability

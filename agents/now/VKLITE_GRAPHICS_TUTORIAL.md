@@ -10,7 +10,7 @@ The working structure is [../../docs/architecture/vulkan_course_plan.md](../../d
 
 Landed:
 
-- `docs/advanced/vulkan/` — course overview plus chapters 1-3 (setup, first window, how a frame works), navigated under `Advanced`.
+- `docs/gpu-graphics/` — course overview plus chapters 1-3 (setup, first window, how a frame works), navigated under the top-level `GPU Graphics` tab.
 - `examples/c/vulkan/step01.c` … `step03.c` — one verified program per chapter, built in-tree as `example_c_vulkan_stepNN`.
 - `tools/check_vulkan_course.py` (`just vulkan-course-check`) — every C excerpt in a chapter must appear verbatim in its step program.
 - `tools/run_vulkan_course.py` (`just vulkan-course-smoke`, `just vulkan-course-installed-smoke`) — every step renders a reproducible capture with zero Vulkan validation errors; the installed path builds the steps as a standalone `find_package(datoviz)` consumer.

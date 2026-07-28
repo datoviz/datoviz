@@ -18,7 +18,7 @@ discovered in chapter 12 is much harder to read than the same problem discovered
 
 === "From source (works today)"
 
-    Follow [Build from source](../../start/build-from-source.md), then install the result into a
+    Follow [Build from source](../start/build-from-source.md), then install the result into a
     prefix of your own:
 
     ```sh
@@ -151,7 +151,7 @@ you will find out in chapter 2, and the error message will say so clearly. One s
 in advance: `no Vulkan loader could be loaded` means Datoviz could not find the Vulkan *loader* at
 run time. Package installs bundle one and source installs fall back to the SDK, so this usually
 means `VULKAN_SDK` is not exported —
-[No Vulkan loader found](../../how-to/diagnose-platform.md#no-vulkan-loader-found) lists every
+[No Vulkan loader found](../how-to/diagnose-platform.md#no-vulkan-loader-found) lists every
 location Datoviz checks.
 
 ## Checkpoint

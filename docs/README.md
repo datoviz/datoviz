@@ -9,7 +9,8 @@ The active v0.4 public documentation lives in:
 - `how-to/`
 - `reference/`
 - `explanation/`
-- `advanced/` — including the `advanced/vulkan/` GPU graphics course
+- `advanced/`
+- `gpu-graphics/` — the standalone Modern GPU Graphics in Vulkan course
 - `releases/`
 - `contributors/`
 

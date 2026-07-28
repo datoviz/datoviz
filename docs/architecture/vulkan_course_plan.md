@@ -7,7 +7,7 @@ This note plans a full rewrite of the AI-generated Vulkan tutorial that lived at
 `docs/tutorials/vulkan/`. The rewrite changes the section, the pedagogy, the code delivery model,
 and the end goal.
 
-Landed so far, in `docs/advanced/vulkan/` and `examples/c/vulkan/`:
+Landed so far, in `docs/gpu-graphics/` and `examples/c/vulkan/`:
 
 | Chapter | Page | Step program | Result |
 | --- | --- | --- | --- |
@@ -76,11 +76,9 @@ feel the course is after, with Vulkan concepts underneath.
 
 ## 3. Placement, naming, URLs
 
-- **Section: `Advanced`.** Recommended as its own nav group named **Vulkan course**, placed
-  directly after `Advanced > Overview` so it stays discoverable (alternative: after
-  `Runtime layers`, which is thematically closer but buries it).
+- **Section: `GPU Graphics`.** A dedicated top-level tab keeps this general graphics course distinct from the Datoviz-focused advanced documentation.
 - **Title: `Modern GPU Graphics in Vulkan`** — fixes the stale `in C`.
-- **Files: `docs/advanced/vulkan/`**, numbered for a linear read:
+- **Files: `docs/gpu-graphics/`**, numbered for a linear read:
   `index.md`, `01-setup.md`, `02-window.md`, … `15-mesh.md`, `16-next.md`.
 - **Consequence to confirm:** moving this out empties the `Tutorials` tab — only a 6-line
   `tutorials/first-scene.md` stub remains, and it is not even in the nav. Recommendation: drop the
@@ -223,7 +221,7 @@ Two things to verify before chapter 1 is written:
 
 ## 8. Migration checklist
 
-1. Add `docs/advanced/vulkan/` and write the prologue plus part 1.
+1. Add `docs/gpu-graphics/` and write the prologue plus part 1.
 2. Renumber the nav: new `Advanced > Vulkan course` group; delete the `Tutorials` tab and
    `docs/tutorials/`.
 3. Add `examples/c/vulkan-course/` step by step, in lockstep with each chapter.

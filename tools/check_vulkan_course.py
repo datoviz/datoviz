@@ -15,7 +15,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCS = ROOT / "docs" / "advanced" / "vulkan"
+DOCS = ROOT / "docs" / "gpu-graphics"
 SOURCES = ROOT / "examples" / "c" / "vulkan"
 
 # Chapter page -> step program whose content its C excerpts must match.
@@ -119,7 +119,7 @@ def main() -> int:
 
     index = DOCS / "index.md"
     if not index.is_file():
-        errors.append("missing course overview: docs/advanced/vulkan/index.md")
+        errors.append("missing course overview: docs/gpu-graphics/index.md")
 
     for source in sorted(SOURCES.glob("step*.c")):
         if source.name not in CHAPTERS.values():
