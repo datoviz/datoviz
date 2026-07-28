@@ -330,8 +330,16 @@ int test_memory_interop_buffer_timeline(TstContext* suite, const TstCase* tstite
     dvz_semaphore_timeline(device, 0, semaphore, 0);
 
     dvz_semaphore_signal(semaphore, 1);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, !dvz_interop_buffer_wait_timeline_for_consumer(
+                   device, buffer, 257, semaphore, 1,
+                   DVZ_INTEROP_BUFFER_CONSUMER_TRANSFER_READ));
     AT(dvz_interop_buffer_wait_timeline_for_consumer(
         device, buffer, 256, semaphore, 1, DVZ_INTEROP_BUFFER_CONSUMER_TRANSFER_READ));
+    AT_EXPECTED_ERROR_STRICT(
+        suite,
+        !dvz_interop_buffer_signal_timeline_after_transfer(
+            device, buffer, 257, semaphore, 2));
     AT(dvz_interop_buffer_signal_timeline_after_transfer(device, buffer, 256, semaphore, 2));
     AT(dvz_semaphore_query(semaphore) == 2);
 

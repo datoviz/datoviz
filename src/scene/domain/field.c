@@ -342,7 +342,9 @@ DvzResult dvz_sampled_field_set_buffer(DvzSampledField* field, DvzSceneBuffer* b
         log_error("sampled field and external buffer must belong to the same scene");
         return DVZ_ERROR;
     }
-    if (field->desc.dim != DVZ_FIELD_DIM_2D || field->desc.format != DVZ_FIELD_FORMAT_RGBA8_UNORM ||
+    if (field->desc.dim != DVZ_FIELD_DIM_2D ||
+        field->desc.format != DVZ_FIELD_FORMAT_RGBA8_UNORM ||
+        field->desc.width > UINT32_MAX / 4u ||
         buffer->desc.stride != 4 || buffer->desc.byte_size != field->data_size ||
         (buffer->desc.usage & DVZ_SCENE_BUFFER_USAGE_COPY_SRC) == 0)
     {

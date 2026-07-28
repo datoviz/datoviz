@@ -298,7 +298,8 @@ bool _emitter_emit_buffer_to_texture_copy(
     ANN(stream);
     ANN(copy);
     if (copy->u.copy.dst_origin[0] != 0 || copy->u.copy.dst_origin[1] != 0 ||
-        copy->u.copy.dst_origin[2] != 0 || copy->u.copy.extent[2] != 1)
+        copy->u.copy.dst_origin[2] != 0 || copy->u.copy.extent[2] != 1 ||
+        copy->u.copy.bytes_per_row > UINT32_MAX)
         return false;
 
     ResourceId* src = _resource_find(&emitter->resources, copy->u.copy.src_resource_id);

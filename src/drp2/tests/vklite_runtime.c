@@ -568,6 +568,8 @@ int test_drp2_runtime_vklite_external_buffer_timeline_copy(
     DvzDrp2ExternalBufferDesc buffer = dvz_drp2_external_buffer_desc();
     buffer.buffer = external;
     buffer.size = sizeof(source);
+    buffer.usage = DVZ_DRP2_BUFFER_USAGE_VERTEX;
+    AT(!dvz_drp2_runtime_register_external_buffer(runtime, 9, &buffer));
     buffer.usage = DVZ_DRP2_BUFFER_USAGE_COPY_SRC;
     AT(dvz_drp2_runtime_register_external_buffer(runtime, 1, &buffer));
 
@@ -597,6 +599,10 @@ int test_drp2_runtime_vklite_external_buffer_timeline_copy(
     dvz_semaphore_wait(semaphore, 5);
     AT(dvz_semaphore_query(semaphore) >= 5);
     AT(!dvz_drp2_runtime_external_buffer_timeline_pending(runtime, 1));
+    dvz_semaphore_signal(semaphore, 10);
+    timeline.wait_value = 6;
+    timeline.signal_value = 7;
+    AT(!dvz_drp2_runtime_arm_external_buffer_timeline(runtime, 1, &timeline));
     AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     dvz_drp2_stream_destroy(stream);

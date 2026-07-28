@@ -287,6 +287,14 @@ DvzSize dvz_buffer_size_value(DvzBuffer* buffer)
 
 
 
+VkBufferUsageFlags dvz_buffer_usage_value(DvzBuffer* buffer)
+{
+    ANN(buffer);
+    return buffer->req_usage;
+}
+
+
+
 /**
  * Export a vklite buffer and package external interop metadata.
  *
@@ -469,6 +477,11 @@ bool dvz_interop_buffer_wait_timeline_for_consumer(
         log_error("cannot synchronize an uncreated interop buffer");
         return false;
     }
+    if (size > buffer->req_size)
+    {
+        log_error("interop synchronization range exceeds the buffer size");
+        return false;
+    }
     if ((buffer->req_usage & required_usage) == 0)
     {
         log_error("interop buffer lacks usage required by declared consumer");
@@ -579,6 +592,11 @@ bool dvz_interop_buffer_signal_timeline_after_transfer(
     if (!dvz_obj_is_created(&buffer->obj) || buffer->vk_buffer == VK_NULL_HANDLE)
     {
         log_error("cannot synchronize an uncreated interop buffer");
+        return false;
+    }
+    if (size > buffer->req_size)
+    {
+        log_error("interop synchronization range exceeds the buffer size");
         return false;
     }
     if ((buffer->req_usage & VK_BUFFER_USAGE_TRANSFER_SRC_BIT) == 0)

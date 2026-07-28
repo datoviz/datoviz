@@ -162,6 +162,16 @@ DVZ_EXPORT DvzSize dvz_buffer_size_value(DvzBuffer* buffer);
 
 
 /**
+ * Return the requested Vulkan usage flags of a buffer.
+ *
+ * @param buffer initialized buffer wrapper
+ * @return requested Vulkan buffer usage flags
+ */
+DVZ_EXPORT VkBufferUsageFlags dvz_buffer_usage_value(DvzBuffer* buffer);
+
+
+
+/**
  * Resize a buffer.
  *
  * The requested logical size is updated only on a valid buffer. This helper does not preserve

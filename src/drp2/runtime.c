@@ -192,6 +192,28 @@ static bool _drp2_external_buffer_desc_validate(const DvzDrp2ExternalBufferDesc*
 
 
 
+#if DVZ_DRP2_HAS_VKLITE
+static VkBufferUsageFlags _drp2_external_buffer_required_vk_usage(uint32_t usage)
+{
+    VkBufferUsageFlags out = 0;
+    if ((usage & DVZ_DRP2_BUFFER_USAGE_COPY_SRC) != 0)
+        out |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    if ((usage & DVZ_DRP2_BUFFER_USAGE_COPY_DST) != 0)
+        out |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    if ((usage & DVZ_DRP2_BUFFER_USAGE_VERTEX) != 0)
+        out |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    if ((usage & DVZ_DRP2_BUFFER_USAGE_INDEX) != 0)
+        out |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+    if ((usage & DVZ_DRP2_BUFFER_USAGE_UNIFORM) != 0)
+        out |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    if ((usage & DVZ_DRP2_BUFFER_USAGE_STORAGE) != 0)
+        out |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+    return out;
+}
+#endif
+
+
+
 static bool _drp2_external_buffer_timeline_desc_validate(
     const DvzDrp2ExternalBufferTimelineDesc* desc)
 {
@@ -382,6 +404,10 @@ bool dvz_drp2_runtime_register_external_buffer(
             return false;
         if (desc->size > dvz_buffer_size_value(desc->buffer))
             return false;
+        VkBufferUsageFlags required_usage =
+            _drp2_external_buffer_required_vk_usage(desc->usage);
+        if ((dvz_buffer_usage_value(desc->buffer) & required_usage) != required_usage)
+            return false;
         if (!_vklite_runtime_state_ensure(runtime))
             return false;
         if (_vklite_find(runtime->vklite_state, buffer_id) != NULL)
@@ -443,7 +469,8 @@ bool dvz_drp2_runtime_arm_external_buffer_timeline(
             return false;
         Drp2VkliteObject* object = _vklite_find(runtime->vklite_state, buffer_id);
         if (object == NULL || object->buffer == NULL || object->external_timeline_pending ||
-            dvz_semaphore_handle(desc->semaphore) == VK_NULL_HANDLE)
+            dvz_semaphore_handle(desc->semaphore) == VK_NULL_HANDLE ||
+            dvz_semaphore_query(desc->semaphore) >= desc->signal_value)
         {
             return false;
         }
