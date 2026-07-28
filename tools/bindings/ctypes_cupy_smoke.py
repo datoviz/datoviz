@@ -3,7 +3,8 @@
 
 This is intentionally not a public example. It records the first Python-side smoke target for the
 Vulkan-owned buffer -> CUDA/CuPy import route. It validates the raw advanced interop ctypes
-surface before gating on local CuPy/CUDA availability.
+surface before gating on local CuPy/CUDA availability. ``--image`` additionally proves the
+CUDA-written RGBA8 image-buffer -> Datoviz texture transfer path with two offscreen captures.
 """
 
 from __future__ import annotations
@@ -11,9 +12,11 @@ from __future__ import annotations
 import argparse
 import ctypes
 
-from datoviz.experimental import cuda as dvz_cuda
-from datoviz.experimental import _cuda_runtime as ci
+import numpy as np
 
+from datoviz._array_facade import dvz_view_capture_rgba, dvz_visual_set_data
+from datoviz.experimental import _cuda_runtime as ci
+from datoviz.experimental import cuda as dvz_cuda
 
 DVZ_DRP2_BUFFER_USAGE_COPY_DST = 0x0002
 DVZ_DRP2_BUFFER_USAGE_MAP_READ = 0x0004
@@ -24,6 +27,7 @@ DVZ_DRP2_VERTEX_STEP_MODE_VERTEX = 0
 VK_FORMAT_R32G32_SFLOAT = 103
 VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST = 3
 PARTICLE_COUNT = 1024
+IMAGE_STRESS_FRAMES = 100
 
 
 def _check_drp2(ok: bool, label: str) -> None:
@@ -216,6 +220,111 @@ def _run_taichi_write_smoke(dvz) -> tuple[int, int, int, int]:
         ti.reset()
 
 
+def _validate_image_capture(
+    before: np.ndarray, after: np.ndarray
+) -> tuple[tuple[int, ...], tuple[int, ...]]:
+    """Assert that the image center changed from red to green after the second CUDA write."""
+
+    if before.shape != after.shape or before.ndim != 3 or before.shape[2] != 4:
+        raise RuntimeError('offscreen image captures have incompatible RGBA shapes')
+
+    height, width, _ = before.shape
+    y0, y1 = height * 3 // 8, height * 5 // 8
+    x0, x1 = width * 3 // 8, width * 5 // 8
+    red = np.median(before[y0:y1, x0:x1, :3], axis=(0, 1))
+    green = np.median(after[y0:y1, x0:x1, :3], axis=(0, 1))
+    difference = float(
+        np.mean(
+            np.abs(
+                after[y0:y1, x0:x1, :3].astype(np.int16)
+                - before[y0:y1, x0:x1, :3].astype(np.int16)
+            )
+        )
+    )
+    if red[0] < 80 or red[0] < max(red[1], red[2]) + 40:
+        raise RuntimeError(
+            f'first image capture is not red-dominant: {tuple(int(v) for v in red)}'
+        )
+    if green[1] < 80 or green[1] < max(green[0], green[2]) + 40:
+        raise RuntimeError(
+            f'second image capture is not green-dominant: {tuple(int(v) for v in green)}'
+        )
+    if difference < 40:
+        raise RuntimeError(
+            f'image captures did not change enough: mean RGB delta={difference:.1f}'
+        )
+    return tuple(int(v) for v in red), tuple(int(v) for v in green)
+
+
+def _run_cupy_image_smoke(
+    dvz, frame_count: int = IMAGE_STRESS_FRAMES
+) -> tuple[tuple[int, ...], tuple[int, ...]]:
+    """Render repeated CUDA-written frames through the external buffer-to-texture path."""
+
+    if frame_count < 2:
+        raise ValueError('image smoke requires at least two frames')
+    scene = dvz.dvz_scene()
+    if not scene:
+        raise RuntimeError('dvz_scene() failed')
+
+    try:
+        figure = dvz.dvz_figure(scene, 64, 64, 0)
+        if not figure:
+            raise RuntimeError('dvz_figure() failed')
+        panel = dvz.dvz_panel_full(figure)
+        if not panel:
+            raise RuntimeError('dvz_panel_full() failed')
+        visual = dvz.dvz_image(scene, 0)
+        if not visual:
+            raise RuntimeError('dvz_image() failed')
+        positions = np.asarray(
+            [[-0.88, -0.88, 0.0], [-0.88, 0.88, 0.0], [0.88, -0.88, 0.0], [0.88, 0.88, 0.0]],
+            dtype=np.float32,
+        )
+        texcoords = np.asarray([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]], dtype=np.float32)
+        if dvz_visual_set_data(visual, b'position', positions) != 0:
+            raise RuntimeError('dvz_visual_set_data(position) failed')
+        if dvz_visual_set_data(visual, b'texcoords', texcoords) != 0:
+            raise RuntimeError('dvz_visual_set_data(texcoords) failed')
+        if dvz.dvz_visual_set_depth_test(visual, False) != 0:
+            raise RuntimeError('dvz_visual_set_depth_test() failed')
+        if dvz.dvz_panel_add_visual(panel, visual, None) != 0:
+            raise RuntimeError('dvz_panel_add_visual() failed')
+
+        with dvz_cuda.scene_session(scene) as session:
+            app = None
+            try:
+                image = session.image_buffer(shape=(8, 8, 4), dtype='uint8')
+                with image.cupy_write() as pixels:
+                    pixels[...] = session.cupy.asarray((255, 0, 0, 255), dtype=session.cupy.uint8)
+                image.bind_field(visual)
+
+                app, view = session.offscreen_app(figure, 64, 64)
+                if dvz.dvz_view_render_once(view) < 0:
+                    raise RuntimeError('first dvz_view_render_once() failed')
+                before = dvz_view_capture_rgba(view)
+
+                after = None
+                for frame_idx in range(1, frame_count):
+                    color = (0, 255, 0, 255) if frame_idx % 2 else (255, 0, 0, 255)
+                    with image.cupy_write() as pixels:
+                        pixels[...] = session.cupy.asarray(color, dtype=session.cupy.uint8)
+                    if dvz.dvz_view_render_once(view) < 0:
+                        raise RuntimeError(
+                            f'image dvz_view_render_once() failed at frame {frame_idx}'
+                        )
+                    if frame_idx == 1:
+                        after = dvz_view_capture_rgba(view)
+                if after is None:
+                    raise RuntimeError('image smoke did not capture its second frame')
+                return _validate_image_capture(before, after)
+            finally:
+                if app:
+                    dvz.dvz_app_destroy(app)
+    finally:
+        dvz.dvz_scene_destroy(scene)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -234,6 +343,11 @@ def main() -> int:
     )
     parser.add_argument(
         '--taichi', action='store_true', help='run the optional zero-copy Taichi write smoke'
+    )
+    parser.add_argument(
+        '--image',
+        action='store_true',
+        help='run the CUDA RGBA8 image-buffer to Datoviz texture smoke',
     )
     args = parser.parse_args()
 
@@ -256,6 +370,25 @@ def main() -> int:
                 f'(size={exported.desc.size}, memory_fd={exported.desc.memory_handle}, '
                 f'semaphore_fd={exported.desc.semaphore_handle})'
             )
+        return 0
+
+    if args.image:
+        first_red, first_green = _run_cupy_image_smoke(dvz)
+        second_red, second_green = _run_cupy_image_smoke(dvz)
+        cp = ci.require_cupy()
+        device = cp.cuda.runtime.getDeviceProperties(cp.cuda.runtime.getDevice())
+        device_name = device['name']
+        if isinstance(device_name, bytes):
+            device_name = device_name.decode(errors='replace')
+        datoviz_version = dvz.dvz_version().decode()
+        print(
+            'ctypes CuPy image interop smoke: READY '
+            f'(runs=2, frames_per_run={IMAGE_STRESS_FRAMES}, '
+            f'red={first_red}/{second_red}, green={first_green}/{second_green}, '
+            f'GPU={device_name}, CUDA driver={cp.cuda.runtime.driverGetVersion()}, '
+            f'CUDA runtime={cp.cuda.runtime.runtimeGetVersion()}, CuPy={cp.__version__}, '
+            f'Datoviz={datoviz_version})'
+        )
         return 0
 
     if args.torch:
